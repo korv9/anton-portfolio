@@ -1,0 +1,229 @@
+﻿session,session_year,party,topic_id,topic_label,segments,words,word_share_pct
+2010/11,2010,SD,-1,Ej grupperade,96,7216,50.2962
+2010/11,2010,SD,3,flyktingar / migrationspolitik / invandring,23,1870,13.0341
+2010/11,2010,SD,1,polisen / poliser / brott,15,1198,8.3502
+2010/11,2010,SD,25,jobb / arbetslösheten / arbetsmarknaden,11,957,6.6704
+2010/11,2010,SD,16,partier / politiska / valet,7,523,3.6454
+2010/11,2010,SD,10,barn / föräldrar / barnen,4,364,2.5371
+2010/11,2010,SD,14,vården / vård / sjukvården,4,356,2.4814
+2010/11,2010,SD,19,fn / afghanistan / usa,4,342,2.3838
+2010/11,2010,SD,21,jobb / arbetslösheten / arbetsmarknaden,4,312,2.1747
+2010/11,2010,SD,20,skatter / skatten / skatt,5,287,2.0004
+2010/11,2010,SD,24,partier / ansvar / folket,5,260,1.8122
+2010/11,2010,SD,18,eu / europa / europeiska,2,181,1.2616
+2010/11,2010,SD,0,kvinnor / män / kvinnors,2,174,1.2128
+2010/11,2010,SD,13,skolan / skola / elever,2,156,1.0873
+2010/11,2010,SD,15,äldre / äldreomsorgen / pensionärer,1,82,0.5715
+2010/11,2010,SD,12,skolan / lärare / eleverna,1,69,0.4809
+2011/12,2011,SD,-1,Ej grupperade,103,7560,55.0659
+2011/12,2011,SD,3,flyktingar / migrationspolitik / invandring,25,2036,14.8299
+2011/12,2011,SD,1,polisen / poliser / brott,14,1140,8.3036
+2011/12,2011,SD,24,partier / ansvar / folket,9,760,5.5357
+2011/12,2011,SD,25,jobb / arbetslösheten / arbetsmarknaden,8,619,4.5087
+2011/12,2011,SD,0,kvinnor / män / kvinnors,3,281,2.0468
+2011/12,2011,SD,20,skatter / skatten / skatt,3,253,1.8428
+2011/12,2011,SD,21,jobb / arbetslösheten / arbetsmarknaden,3,239,1.7408
+2011/12,2011,SD,18,eu / europa / europeiska,2,190,1.3839
+2011/12,2011,SD,11,euron / valuta / europa,2,181,1.3184
+2011/12,2011,SD,12,skolan / lärare / eleverna,2,174,1.2674
+2011/12,2011,SD,13,skolan / skola / elever,2,103,0.7502
+2011/12,2011,SD,14,vården / vård / sjukvården,1,100,0.7284
+2011/12,2011,SD,16,partier / politiska / valet,1,93,0.6774
+2012/13,2012,SD,-1,Ej grupperade,97,6974,53.9992
+2012/13,2012,SD,3,flyktingar / migrationspolitik / invandring,29,2424,18.7689
+2012/13,2012,SD,1,polisen / poliser / brott,8,651,5.0407
+2012/13,2012,SD,23,nato / försvaret / militära,6,507,3.9257
+2012/13,2012,SD,21,jobb / arbetslösheten / arbetsmarknaden,5,404,3.1281
+2012/13,2012,SD,24,partier / ansvar / folket,5,380,2.9423
+2012/13,2012,SD,25,jobb / arbetslösheten / arbetsmarknaden,5,374,2.8959
+2012/13,2012,SD,16,partier / politiska / valet,5,363,2.8107
+2012/13,2012,SD,14,vården / vård / sjukvården,4,337,2.6094
+2012/13,2012,SD,18,eu / europa / europeiska,3,253,1.959
+2012/13,2012,SD,0,kvinnor / män / kvinnors,1,88,0.6814
+2012/13,2012,SD,22,ryssland / ukraina / ryska,1,83,0.6427
+2012/13,2012,SD,20,skatter / skatten / skatt,2,77,0.5962
+2013/14,2013,SD,-1,Ej grupperade,114,8225,43.743
+2013/14,2013,SD,18,eu / europa / europeiska,38,2937,15.6198
+2013/14,2013,SD,3,flyktingar / migrationspolitik / invandring,23,1939,10.3122
+2013/14,2013,SD,0,kvinnor / män / kvinnors,13,955,5.079
+2013/14,2013,SD,16,partier / politiska / valet,12,855,4.5471
+2013/14,2013,SD,1,polisen / poliser / brott,12,774,4.1164
+2013/14,2013,SD,15,äldre / äldreomsorgen / pensionärer,6,490,2.606
+2013/14,2013,SD,9,kärnkraft / kärnkraften / el,6,453,2.4092
+2013/14,2013,SD,21,jobb / arbetslösheten / arbetsmarknaden,6,446,2.372
+2013/14,2013,SD,11,euron / valuta / europa,4,352,1.872
+2013/14,2013,SD,25,jobb / arbetslösheten / arbetsmarknaden,4,315,1.6753
+2013/14,2013,SD,24,partier / ansvar / folket,4,269,1.4306
+2013/14,2013,SD,20,skatter / skatten / skatt,5,264,1.404
+2013/14,2013,SD,14,vården / vård / sjukvården,3,261,1.3881
+2013/14,2013,SD,19,fn / afghanistan / usa,1,98,0.5212
+2013/14,2013,SD,7,eu / utsläppen / utsläpp,1,78,0.4148
+2013/14,2013,SD,22,ryssland / ukraina / ryska,1,77,0.4095
+2013/14,2013,SD,10,barn / föräldrar / barnen,1,15,0.0798
+2014/15,2014,SD,-1,Ej grupperade,129,9300,61.3254
+2014/15,2014,SD,3,flyktingar / migrationspolitik / invandring,20,1575,10.3858
+2014/15,2014,SD,24,partier / ansvar / folket,12,884,5.8292
+2014/15,2014,SD,23,nato / försvaret / militära,7,597,3.9367
+2014/15,2014,SD,16,partier / politiska / valet,9,577,3.8048
+2014/15,2014,SD,10,barn / föräldrar / barnen,7,518,3.4158
+2014/15,2014,SD,19,fn / afghanistan / usa,5,424,2.7959
+2014/15,2014,SD,22,ryssland / ukraina / ryska,4,355,2.3409
+2014/15,2014,SD,15,äldre / äldreomsorgen / pensionärer,3,253,1.6683
+2014/15,2014,SD,21,jobb / arbetslösheten / arbetsmarknaden,3,189,1.2463
+2014/15,2014,SD,8,skatteväxling / gröna / grön skatteväxling,2,173,1.1408
+2014/15,2014,SD,1,polisen / poliser / brott,1,87,0.5737
+2014/15,2014,SD,9,kärnkraft / kärnkraften / el,1,81,0.5341
+2014/15,2014,SD,0,kvinnor / män / kvinnors,1,79,0.5209
+2014/15,2014,SD,20,skatter / skatten / skatt,1,73,0.4814
+2015/16,2015,SD,-1,Ej grupperade,119,8519,55.3649
+2015/16,2015,SD,3,flyktingar / migrationspolitik / invandring,28,2268,14.7397
+2015/16,2015,SD,16,partier / politiska / valet,11,897,5.8296
+2015/16,2015,SD,22,ryssland / ukraina / ryska,7,615,3.9969
+2015/16,2015,SD,18,eu / europa / europeiska,7,535,3.477
+2015/16,2015,SD,23,nato / försvaret / militära,7,527,3.425
+2015/16,2015,SD,20,skatter / skatten / skatt,8,517,3.36
+2015/16,2015,SD,0,kvinnor / män / kvinnors,6,466,3.0285
+2015/16,2015,SD,19,fn / afghanistan / usa,4,333,2.1642
+2015/16,2015,SD,24,partier / ansvar / folket,3,262,1.7027
+2015/16,2015,SD,1,polisen / poliser / brott,2,167,1.0853
+2015/16,2015,SD,12,skolan / lärare / eleverna,1,97,0.6304
+2015/16,2015,SD,25,jobb / arbetslösheten / arbetsmarknaden,1,93,0.6044
+2015/16,2015,SD,7,eu / utsläppen / utsläpp,1,91,0.5914
+2016/17,2016,SD,-1,Ej grupperade,115,8047,58.7201
+2016/17,2016,SD,3,flyktingar / migrationspolitik / invandring,16,1309,9.552
+2016/17,2016,SD,22,ryssland / ukraina / ryska,13,1106,8.0706
+2016/17,2016,SD,1,polisen / poliser / brott,10,773,5.6407
+2016/17,2016,SD,25,jobb / arbetslösheten / arbetsmarknaden,5,426,3.1086
+2016/17,2016,SD,24,partier / ansvar / folket,4,334,2.4372
+2016/17,2016,SD,7,eu / utsläppen / utsläpp,4,309,2.2548
+2016/17,2016,SD,15,äldre / äldreomsorgen / pensionärer,4,267,1.9483
+2016/17,2016,SD,16,partier / politiska / valet,3,267,1.9483
+2016/17,2016,SD,20,skatter / skatten / skatt,3,246,1.7951
+2016/17,2016,SD,21,jobb / arbetslösheten / arbetsmarknaden,3,224,1.6346
+2016/17,2016,SD,19,fn / afghanistan / usa,1,97,0.7078
+2016/17,2016,SD,0,kvinnor / män / kvinnors,1,84,0.613
+2016/17,2016,SD,18,eu / europa / europeiska,1,77,0.5619
+2016/17,2016,SD,14,vården / vård / sjukvården,1,74,0.54
+2016/17,2016,SD,23,nato / försvaret / militära,1,64,0.467
+2017/18,2017,SD,-1,Ej grupperade,69,4776,46.7365
+2017/18,2017,SD,3,flyktingar / migrationspolitik / invandring,30,2262,22.1352
+2017/18,2017,SD,14,vården / vård / sjukvården,8,676,6.6151
+2017/18,2017,SD,1,polisen / poliser / brott,9,634,6.2041
+2017/18,2017,SD,15,äldre / äldreomsorgen / pensionärer,6,502,4.9124
+2017/18,2017,SD,16,partier / politiska / valet,4,335,3.2782
+2017/18,2017,SD,24,partier / ansvar / folket,4,268,2.6226
+2017/18,2017,SD,25,jobb / arbetslösheten / arbetsmarknaden,3,213,2.0844
+2017/18,2017,SD,21,jobb / arbetslösheten / arbetsmarknaden,3,147,1.4385
+2017/18,2017,SD,8,skatteväxling / gröna / grön skatteväxling,2,128,1.2526
+2017/18,2017,SD,20,skatter / skatten / skatt,2,124,1.2134
+2017/18,2017,SD,10,barn / föräldrar / barnen,1,82,0.8024
+2017/18,2017,SD,0,kvinnor / män / kvinnors,1,72,0.7046
+2018/19,2018,SD,-1,Ej grupperade,84,6028,60.0339
+2018/19,2018,SD,18,eu / europa / europeiska,17,1411,14.0524
+2018/19,2018,SD,3,flyktingar / migrationspolitik / invandring,9,621,6.1846
+2018/19,2018,SD,24,partier / ansvar / folket,9,545,5.4277
+2018/19,2018,SD,16,partier / politiska / valet,6,369,3.6749
+2018/19,2018,SD,8,skatteväxling / gröna / grön skatteväxling,4,264,2.6292
+2018/19,2018,SD,11,euron / valuta / europa,2,181,1.8026
+2018/19,2018,SD,15,äldre / äldreomsorgen / pensionärer,2,164,1.6333
+2018/19,2018,SD,21,jobb / arbetslösheten / arbetsmarknaden,2,141,1.4042
+2018/19,2018,SD,23,nato / försvaret / militära,2,121,1.2051
+2018/19,2018,SD,0,kvinnor / män / kvinnors,1,74,0.737
+2018/19,2018,SD,17,skatt / skatten / skatter,1,66,0.6573
+2018/19,2018,SD,20,skatter / skatten / skatt,1,56,0.5577
+2019/20,2019,SD,-1,Ej grupperade,103,7259,58.2631
+2019/20,2019,SD,18,eu / europa / europeiska,18,1497,12.0154
+2019/20,2019,SD,1,polisen / poliser / brott,14,1059,8.4999
+2019/20,2019,SD,3,flyktingar / migrationspolitik / invandring,11,780,6.2605
+2019/20,2019,SD,15,äldre / äldreomsorgen / pensionärer,4,363,2.9136
+2019/20,2019,SD,8,skatteväxling / gröna / grön skatteväxling,4,323,2.5925
+2019/20,2019,SD,16,partier / politiska / valet,5,219,1.7578
+2019/20,2019,SD,9,kärnkraft / kärnkraften / el,3,203,1.6293
+2019/20,2019,SD,20,skatter / skatten / skatt,2,145,1.1638
+2019/20,2019,SD,24,partier / ansvar / folket,2,145,1.1638
+2019/20,2019,SD,14,vården / vård / sjukvården,1,91,0.7304
+2019/20,2019,SD,25,jobb / arbetslösheten / arbetsmarknaden,1,86,0.6903
+2019/20,2019,SD,11,euron / valuta / europa,1,86,0.6903
+2019/20,2019,SD,7,eu / utsläppen / utsläpp,1,84,0.6742
+2019/20,2019,SD,21,jobb / arbetslösheten / arbetsmarknaden,1,72,0.5779
+2019/20,2019,SD,12,skolan / lärare / eleverna,1,47,0.3772
+2020/21,2020,SD,-1,Ej grupperade,65,4392,51.964
+2020/21,2020,SD,1,polisen / poliser / brott,15,1207,14.2806
+2020/21,2020,SD,3,flyktingar / migrationspolitik / invandring,11,795,9.4061
+2020/21,2020,SD,15,äldre / äldreomsorgen / pensionärer,9,735,8.6962
+2020/21,2020,SD,24,partier / ansvar / folket,4,303,3.585
+2020/21,2020,SD,18,eu / europa / europeiska,3,265,3.1354
+2020/21,2020,SD,16,partier / politiska / valet,3,235,2.7804
+2020/21,2020,SD,9,kärnkraft / kärnkraften / el,2,196,2.319
+2020/21,2020,SD,14,vården / vård / sjukvården,1,87,1.0293
+2020/21,2020,SD,10,barn / föräldrar / barnen,1,83,0.982
+2020/21,2020,SD,19,fn / afghanistan / usa,1,79,0.9347
+2020/21,2020,SD,21,jobb / arbetslösheten / arbetsmarknaden,2,75,0.8874
+2021/22,2021,SD,-1,Ej grupperade,80,5419,63.8656
+2021/22,2021,SD,1,polisen / poliser / brott,9,747,8.8038
+2021/22,2021,SD,15,äldre / äldreomsorgen / pensionärer,7,537,6.3288
+2021/22,2021,SD,24,partier / ansvar / folket,6,509,5.9988
+2021/22,2021,SD,3,flyktingar / migrationspolitik / invandring,5,334,3.9364
+2021/22,2021,SD,2,bostäder / marknadshyror / hyresrätter,3,248,2.9228
+2021/22,2021,SD,7,eu / utsläppen / utsläpp,2,163,1.921
+2021/22,2021,SD,22,ryssland / ukraina / ryska,2,115,1.3553
+2021/22,2021,SD,6,perssons / åt / talar,1,100,1.1786
+2021/22,2021,SD,20,skatter / skatten / skatt,1,92,1.0843
+2021/22,2021,SD,16,partier / politiska / valet,1,88,1.0371
+2021/22,2021,SD,14,vården / vård / sjukvården,1,84,0.99
+2021/22,2021,SD,12,skolan / lärare / eleverna,1,49,0.5775
+2022/23,2022,SD,-1,Ej grupperade,72,5001,53.8147
+2022/23,2022,SD,9,kärnkraft / kärnkraften / el,13,953,10.255
+2022/23,2022,SD,18,eu / europa / europeiska,10,726,7.8123
+2022/23,2022,SD,1,polisen / poliser / brott,7,507,5.4557
+2022/23,2022,SD,24,partier / ansvar / folket,7,439,4.724
+2022/23,2022,SD,16,partier / politiska / valet,6,351,3.777
+2022/23,2022,SD,3,flyktingar / migrationspolitik / invandring,4,344,3.7017
+2022/23,2022,SD,14,vården / vård / sjukvården,2,182,1.9585
+2022/23,2022,SD,22,ryssland / ukraina / ryska,2,167,1.7971
+2022/23,2022,SD,8,skatteväxling / gröna / grön skatteväxling,3,166,1.7863
+2022/23,2022,SD,20,skatter / skatten / skatt,2,164,1.7648
+2022/23,2022,SD,7,eu / utsläppen / utsläpp,2,158,1.7002
+2022/23,2022,SD,15,äldre / äldreomsorgen / pensionärer,1,86,0.9254
+2022/23,2022,SD,23,nato / försvaret / militära,1,49,0.5273
+2023/24,2023,SD,-1,Ej grupperade,92,6203,59.3305
+2023/24,2023,SD,18,eu / europa / europeiska,12,983,9.4022
+2023/24,2023,SD,24,partier / ansvar / folket,9,633,6.0545
+2023/24,2023,SD,3,flyktingar / migrationspolitik / invandring,7,525,5.0215
+2023/24,2023,SD,7,eu / utsläppen / utsläpp,6,498,4.7633
+2023/24,2023,SD,16,partier / politiska / valet,3,262,2.506
+2023/24,2023,SD,1,polisen / poliser / brott,3,259,2.4773
+2023/24,2023,SD,19,fn / afghanistan / usa,4,245,2.3434
+2023/24,2023,SD,20,skatter / skatten / skatt,3,236,2.2573
+2023/24,2023,SD,2,bostäder / marknadshyror / hyresrätter,3,221,2.1138
+2023/24,2023,SD,11,euron / valuta / europa,2,145,1.3869
+2023/24,2023,SD,15,äldre / äldreomsorgen / pensionärer,1,86,0.8226
+2023/24,2023,SD,17,skatt / skatten / skatter,1,80,0.7652
+2023/24,2023,SD,4,järnväg / järnvägen / stockholm,1,79,0.7556
+2024/25,2024,SD,-1,Ej grupperade,97,6935,59.8103
+2024/25,2024,SD,3,flyktingar / migrationspolitik / invandring,14,964,8.3139
+2024/25,2024,SD,24,partier / ansvar / folket,10,829,7.1496
+2024/25,2024,SD,14,vården / vård / sjukvården,8,578,4.9849
+2024/25,2024,SD,9,kärnkraft / kärnkraften / el,7,557,4.8038
+2024/25,2024,SD,18,eu / europa / europeiska,6,457,3.9414
+2024/25,2024,SD,16,partier / politiska / valet,5,367,3.1652
+2024/25,2024,SD,22,ryssland / ukraina / ryska,3,222,1.9146
+2024/25,2024,SD,7,eu / utsläppen / utsläpp,2,184,1.5869
+2024/25,2024,SD,1,polisen / poliser / brott,2,169,1.4575
+2024/25,2024,SD,11,euron / valuta / europa,1,92,0.7934
+2024/25,2024,SD,8,skatteväxling / gröna / grön skatteväxling,1,90,0.7762
+2024/25,2024,SD,13,skolan / skola / elever,1,88,0.7589
+2024/25,2024,SD,21,jobb / arbetslösheten / arbetsmarknaden,1,63,0.5433
+2025/26,2025,SD,-1,Ej grupperade,103,7045,68.0348
+2025/26,2025,SD,3,flyktingar / migrationspolitik / invandring,7,533,5.1473
+2025/26,2025,SD,9,kärnkraft / kärnkraften / el,6,468,4.5196
+2025/26,2025,SD,18,eu / europa / europeiska,6,446,4.3071
+2025/26,2025,SD,24,partier / ansvar / folket,3,280,2.704
+2025/26,2025,SD,16,partier / politiska / valet,4,279,2.6944
+2025/26,2025,SD,1,polisen / poliser / brott,3,254,2.4529
+2025/26,2025,SD,22,ryssland / ukraina / ryska,4,248,2.395
+2025/26,2025,SD,19,fn / afghanistan / usa,3,228,2.2018
+2025/26,2025,SD,11,euron / valuta / europa,2,182,1.7576
+2025/26,2025,SD,14,vården / vård / sjukvården,2,172,1.661
+2025/26,2025,SD,8,skatteväxling / gröna / grön skatteväxling,2,128,1.2361
+2025/26,2025,SD,13,skolan / skola / elever,1,92,0.8885

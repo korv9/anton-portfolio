@@ -1,0 +1,461 @@
+﻿pair_id,source_document_id,source_document_type,source_reference,source_url,source_sha256,source_excerpt,source_excerpt_sha256,proposition_id,proposition_reference,proposition_url,proposition_sha256,proposal_section,provision_reference,proposal_excerpt,proposal_excerpt_sha256,link_status,comparison_status,review_note,direction_eligible,proposition_text_role
+hc01mju17-datacenter-3-4,HC01MJU17,bet,2024/25:MJU17,https://data.riksdagen.se/dokument/HC01MJU17.html,99906d332403cef3634e5b3fee90e442d1b7d0d1f233a3f17c6b36a8d3bc5996,Den nya lagen om offentliggörande av information om datacenters energiprestanda innebär att datacenter ska rapportera in information om bl.a. energianvändning till en europeisk databas.,4a20c72a9df443acd6576a87894a20527df9892b9858e72ad7614a9d81c37cc1,HC03131,2024/25:131,https://data.riksdagen.se/dokument/HC03131.html,bcc34266b5475115e1cf17ee18686001ef7ab0f082e7449f3642f4ca0ae6a638,2.1,"förslag till ny lag, 3–4 §§","3 §
+Den som äger eller förvaltar ett datacenter med ett installerat it- effektbehov på minst 500 kilowatt ska årligen offentliggöra uppgifter om datacentrets energiprestanda genom att rapportera uppgifterna till den databas som avses i artikel 12 i Europaparlamentets och rådets direktiv (EU) 2023/1791 av den 13 september 2023 om energieffektivitet och om ändring av förordning (EU) 2023/955, i den ursprungliga lydelsen.
+Rapporteringsskyldigheten gäller inte för uppgifter som omfattas av sekretess enligt offentlighets- och sekretesslagen (2009:400).
+Bestämmelser om rapportering finns i kommissionens delegerade förordning (EU) 2024/1364 av den 14 mars 2024 om den första delen av inrättandet av ett gemensamt unionssystem för bedömning av data- centraler.
+4 §
+Skyldigheten att rapportera enligt 3 § gäller inte för datacenter
+1.
+som används för säkerhetskänslig verksamhet,
+2.
+som används för försvars- eller krisberedskapsändamål, eller
+3.
+där tjänster tillhandahålls uteslutande för säkerhetskänslig verksam- het eller försvars- eller krisberedskapsändamål.",9061f86a76281555f13a3a49988cc4f2f2910bff95097501b8e26854fdc5e9f5,reviewed_excerpt_to_provisions,excerpt_omits_scope_and_exceptions,"Betänkandets korta sammanfattningsmening nämner rapportering men inte tröskeln 500 kW, vem som är skyldig eller undantagen i 3–4 §§. Det är inte ett omdöme om hela betänkandet.",False,proposed_law_text
+hc023368-flygfotogen-2-8,HC023368,mot,2024/25:3368,https://data.riksdagen.se/dokument/HC023368.html,e54464953cdaa47c3417fd236834d85b440db440b1f899b2c955868183c62ac4,I linje med EU:s regelverk föreslår regeringen att den svenska reduktionsplikten för flygfotogen tas bort och ersätts med EU:s gemensamma reduktionsplikt som vid införandet den 1 januari 2025 är minst 2 volymprocent hållbara flygbränslen.,b9d6a6cbaeb51fbbbf1419b8987fb29e6b3c0ac2c7115e8f868819722c4dfb24,HC03131,2024/25:131,https://data.riksdagen.se/dokument/HC03131.html,bcc34266b5475115e1cf17ee18686001ef7ab0f082e7449f3642f4ca0ae6a638,2.8,"förslag till ändring i lagen (2017:1201), avsnitt 2.8","2.8
+Förslag till lag om ändring i lagen (2017:1201)
+Prop. 2024/25:131
+om reduktion av växthusgasutsläpp från vissa
+fossila drivmedel
+Härigenom föreskrivs
+1
+i fråga om lagen (2017:1201) om reduktion av växthusgasutsläpp från vissa fossila drivmedel
+2
+dels
+att 5 a § ska upphöra att gälla,
+dels
+att rubriken till lagen samt 1, 2, 5, 7, 8,
+11–13
+och 15 §§ ska ha följande lydelse,
+dels
+att det ska införas fyra nya paragrafer, 5 a, 6, 7 a och 8 a §§, och närmast före 6 och 8 a §§ nya rubriker av följande lydelse.
+Nuvarande lydelse
+Föreslagen lydelse
+Lag om reduktion av växthusgasutsläpp från
+vissa fossila drivmedel
+Lag om reduktion av växthusgasutsläpp från
+bensin och diesel
+1 §
+3
+Denna lag innehåller bestämmelser
+Denna lag innehåller bestämmelser
+om en skyldighet att minska
+om en skyldighet att minska
+växthusgasutsläppen från bensin
+,
+växthusgasutsläppen från bensin
+diesel
+och flygfotogen
+.
+och
+diesel.
+2 §
+4
+I denna lag betyder
+bensin
+: ett bränsle som är avsett för motordrift och omfattas av
+KN-nr
+2710 11 41, 2710 11 45, 2710 11 49, 2710 11 51 eller 2710 11 59,
+biodrivmedel
+: ett
+vätskeformigt
+biodrivmedel
+: ett
+flytande
+bränsle som framställs av biomassa
+bränsle som framställs av biomassa
+och som
+är avsett
+för motordrift,
+och som
+används
+för motordrift,
+biomassa
+: den biologiskt nedbrytbara delen av produkter, avfall och restprodukter av biologiskt ursprung från jordbruk, inklusive material av vegetabiliskt och animaliskt ursprung, av skogsbruk och därmed förknippad industri inklusive fiske och vattenbruk, liksom den biologiskt nedbrytbara delen av avfall, inklusive industriavfall och kommunalt avfall av biologiskt ursprung,
+diesel
+: ett bränsle som är avsett för motordrift och omfattas av
+KN-nr
+2710 19 41 eller 2710 19 45,
+1
+Jfr Europaparlamentets och rådets direktiv (EU) 2018/2001 av den 11 december 2018 om främjande av användningen av energi från förnybara energikällor, i lydelsen enligt Europa- parlamentets och rådets direktiv (EU) 2023/2413.
+2
+Senaste lydelse av
+lagens rubrik 2021:412 5 a § 2021:412.
+3
+Senaste lydelse 2021:412.
+35
+4
+Senaste lydelse 2021:747.
+Prop. 2024/25:131
+flygfotogen
+: ett
+bränsle
+som är
+avsett för motordrift och som
+omfattas av
+KN-nr
+2710 19 21,
+koldioxidekvivalent
+: den mängd växthusgas som medför en lika stor
+klimatpåverkan som ett kilogram koldioxid,
+KN-nr
+:
+nummer i Kombinerade nomenklaturen enligt kommissionens
+förordning (EG) nr 2031/2001 av den 6 augusti 2001 om ändring av
+bilaga I till rådets förordning (EEG) nr 2658/87 om tulltaxe- och statistik-
+nomenklaturen och om gemensamma tulltaxan,
+reduktionsplikt
+: en skyldighet att
+reduktionsplikt
+: en skyldighet att
+minska utsläppen av växthusgaser i
+minska utsläppen av växthusgaser i
+ett livscykelperspektiv per energi-
+ett livscykelperspektiv per energi-
+enhet från reduktionspliktigt driv-
+enhet från reduktionspliktigt driv-
+medel genom inblandning av för-
+medel
+med en viss procentsats
+,
+nybara eller
+andra
+fossilfria
+drivmedel,
+reduktionspliktigt drivmedel
+: ett
+drivmedel som innehåller högst
+98 volymprocent biodrivmedel och som skattskyldighet har inträtt för enligt 5 kap. lagen (1994:1776) om skatt på energi, om drivmedlet är
+1. bensin som inte används av
+1. bensin som inte
+Försvarsmakten eller som inte är en
+a)
+används
+av
+Försvarsmakten
+alkylatbensin enligt
+5 § driv-
+eller
+en
+motsvarande
+utländsk
+medelslagen (2011:319),
+myndighet, eller
+b)
+är en alkylatbensin enligt 5 §
+drivmedelslagen (2011:319),
+eller
+2. diesel som inte
+används av
+2. diesel som inte
+Försvarsmakten eller som inte har
+a)
+används
+av
+Försvarsmakten
+försetts med märk- eller färgämnen
+eller
+en
+motsvarande
+utländsk
+enligt 2 kap. 8 § lagen om skatt på
+myndighet, eller
+energi,
+eller
+b)
+har försetts med märk- eller
+färgämnen enligt 2 kap. 8 § lagen
+om skatt på energi,
+3.
+flygfotogen som inte används av Försvarsmakten,
+reduktionspliktig energimängd
+: den energimängd som motsvarar volymen reduktionspliktigt drivmedel under ett kalenderår,
+växthusgas
+: koldioxid, metan och dikväveoxid.
+5 §
+5
+Den som har reduktionsplikt för bensin eller diesel ska för varje kalenderår se till att utsläppen av växthusgaser från den reduktionspliktiga energi- mängden av sådana bränslen understiger utsläppen från motsvarande energimängd fossil bensin eller fossil diesel med minst den procentsats som anges nedan för respektive drivmedel:
+36
+5
+Senaste lydelse 2023:823
+År
+Bensin
+Diesel
+År
+Bensin
+Diesel
+Prop. 2024/25:131
+2020
+4,2
+21
+2020
+4,2
+21
+2021
+6
+26
+2021
+6
+26
+2022
+7,8
+30,5
+2022
+7,8
+30,5
+2023
+7,8
+30,5
+2023
+7,8
+30,5
+2024
+6
+6
+2024
+6
+6
+2025
+6
+6
+2025
+10
+10
+2026
+6
+6
+2026
+10
+10
+2027
+10
+10
+2028
+10
+10
+2029
+10
+10
+2030
+10
+10
+6
+Tidigare 6 § upphävd genom 2021:747.
+5 a §
+Reduktionsplikten ska uppfyllas genom
+1.
+inblandning av förnybara eller andra fossilfria drivmedel, eller
+2.
+leverans av fossilfri el från en publik laddningsstation.
+För bensin ska minst 6 procent- enheter av den procentsats som anges i 5 § uppnås genom inbland- ning av förnybara eller andra fossilfria drivmedel.
+Utsläppsminskningar från leverans av fossilfri el från publika laddningsstationer
+6 §
+6
+Den som inte har reduktionsplikt och som under ett kalenderår har minskat utsläppen av växthusgaser genom leverans av fossilfri el från publika laddningsstationer får överlåta utsläppsminskningen till
+37
+Den som har reduktionsplikt och har minskat utsläppen för ett visst drivmedel på det sätt som anges i denna lag och mer än vad som krävs enligt 5 § får använda över- skottet för att uppfylla reduktions- plikten eller överlåta överskottet till någon annan som därefter får använda det för att uppfylla sin reduktionsplikt.
+Ett överskott
+som har uppstått genom inblandning av förnybara eller andra fossilfria drivmedel i diesel eller genom leverans av fossilfri el från publika laddnings- stationer får inte användas för att uppfylla kravet i 5 a § andra stycket.
+Prop. 2024/25:131
+38
+någon annan som därefter får använda den för att uppfylla sin reduktionsplikt för samma kalen- derår.
+En utsläppsminskning som har överlåtits enligt första stycket får inte användas för att uppfylla kravet i 5 a § andra stycket.
+7 §
+7
+Den som har reduktionsplikt och har minskat utsläppen för ett visst drivmedel på det sätt som anges i denna lag och mer än vad som krävs enligt 5
+eller 5 a
+§ får använda överskottet för att uppfylla reduktionsplikten eller överlåta överskottet till någon annan som därefter får använda det för att uppfylla sin reduktionsplikt.
+Ett överskott
+får användas för att uppfylla reduktionsplikten för
+1.
+diesel, om överskottet avser bensin eller diesel,
+2.
+bensin, om överskottet avser bensin,
+3.
+bensin, om överskottet avser diesel och om minst 6 procent- enheter av plikten för bensin redan har uppfyllts genom egen inbland- ning av förnybara eller andra fossilfria drivmedel eller genom användning av ett överskott som avser bensin, eller
+4.
+flygfotogen, om överskottet avser flygfotogen
+.
+Ett överskott får användas enligt denna paragraf endast om det har uppkommit
+1.
+samma kalenderår, eller
+2.
+kalenderåret dessförinnan, i den utsträckning som regeringen föreskriver.
+7
+Senaste lydelse 2022:1217.
+Prop. 2024/25:131
+7 a §
+Ett överskott får användas enligt
+7 § om det har uppkommit samma
+kalenderår.
+Regeringen får meddela före-
+skrifter om att ett överskott får
+användas enligt 7 § även om det
+har
+uppkommit
+kalenderåret
+dessförinnan.
+8 §
+8
+Den som har reduktionsplikt ska
+Den som har reduktionsplikt ska
+varje år
+, senast vid föreskriven
+varje år redovisa till tillsyns-
+tidpunkt,
+redovisa till tillsyns-
+myndigheten i vilken utsträckning
+myndigheten i vilken utsträckning
+och
+hur
+reduktionsplikten
+har
+och hur
+reduktionsplikten
+har
+uppfyllts
+under det
+föregående
+uppfyllts
+under det
+föregående
+kalenderåret.
+Överlåtelse
+och
+kalenderåret.
+Överlåtelse
+och
+förvärv
+av
+en
+utsläppsminskning
+förvärv av en
+utsläppsminskning
+ska framgå av redovisningen.
+ska framgå av redovisningen.
+Redovisning för den som inte har
+reduktionsplikt
+8 a §
+Den som har överlåtit utsläpps-
+minskningar enligt
+6 § ska
+till
+tillsynsmyndigheten redovisa leve-
+ranser av fossilfri el från publika
+laddningsstationer och överlåtelser
+av utsläppsminskningar.
+11 §
+Om en förseningsavgift eller en
+Om en förseningsavgift eller en
+reduktionspliktsavgift
+inte
+har
+reduktionspliktsavgift
+inte
+har
+betalats efter betalningsuppmaning
+betalats
+efter
+betalningsupp-
+ska avgiften lämnas för indrivning.
+maning
+,
+ska avgiften lämnas för
+Indrivningen får verkställas enligt
+indrivning.
+utsökningsbalken.
+12 §
+Den som har eller har haft reduk-
+Den som har eller har haft reduk-
+tionsplikt ska spara uppgifter som
+tionsplikt ska spara uppgifter som
+har betydelse för reduktionsplikten
+har betydelse för reduktionsplikten
+i
+tio
+år från utgången av det
+i
+sju
+år från utgången av det
+kalenderår som uppgifterna avser.
+kalenderår som uppgifterna avser.
+8
+Senaste lydelse 2021:747.
+39
+Prop. 2024/25:131
+13 §
+Den som har eller har haft
+Den som har eller har haft
+reduktionsplikt ska på tillsyns-
+reduktionsplikt
+eller
+som har
+myndighetens
+begäran
+lämna
+de
+överlåtit
+utsläppsminskningar
+upplysningar
+och
+de
+handlingar
+enligt 6 §
+ska på tillsynsmyndig-
+som myndigheten
+behöver
+för
+hetens begäran lämna de upp-
+tillsynen.
+lysningar och de handlingar som
+myndigheten behöver för till-
+synen.
+15 §
+Regeringen eller den myndighet som regeringen bestämmer får meddela
+föreskrifter om
+1. hur reduktionsplikten ska uppfyllas,
+2. beräkning av den reduktions-
+2. beräkning av den reduktions-
+pliktiga energimängden,
+pliktiga energimängden
+och energi-
+mängden fossilfri el som har
+levererats från publika laddnings-
+stationer
+,
+3. beräkning
+av
+växthusgas-
+3. beräkning
+av
+växthusgas-
+utsläpp och koldioxidekvivalenter,
+utsläpp och koldioxidekvivalenter,
+och
+4. redovisning
+av
+reduktions-
+4. redovisning av reduktionsplikt
+plikt.
+och överlåtelser av utsläppsminsk-
+ningar från leverans av fossilfri el
+från publika
+laddningsstationer,
+och
+5. vem som ska anses leverera
+fossilfri el från publika laddnings-
+stationer.
+1.
+Denna lag träder i kraft den 1 juli 2025.
+2.
+Den upphävda 5 a § om reduktionsplikt för flygfotogen tillämpas inte för kalenderåret 2025.
+3.
+Äldre föreskrifter gäller fortfarande för reduktionsplikt för flyg- fotogen för tiden före den 1 januari 2025.
+4.
+Äldre föreskrifter gäller fortfarande för reduktionsplikt för diesel och bensin för tiden före ikraftträdandet.
+5.
+För perioden
+januari–juni
+2025 ska reduktionsplikten redovisas separat vid rapportering enligt 8 §.
+6.
+I fråga om leverans av fossilfri el från en publik laddningsstation tillämpas den nya 5 a § endast på el som levererats efter ikraftträdandet.
+40",15511b1971c0d3436a3d56b34a660283a3c99ee3fba4b09986f08cb9ded97737,explicit_followup_motion_to_proposition,needs_two_column_law_layout_review,Motionen anger propositionen i titeln. Avsnitt 2.8 visar nuvarande och föreslagen lydelse i kolumner; HTML-textens läsordning måste granskas innan en bestämmelse eller riktning bedöms.,False,proposed_law_text

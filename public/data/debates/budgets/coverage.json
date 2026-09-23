@@ -1,0 +1,93 @@
+{
+  "generated_at": "2026-09-22T14:04:06.681285+00:00",
+  "documents": [
+    {
+      "session": "2025/26",
+      "document_id": "HD01FiU1",
+      "source_url": "https://data.riksdagen.se/dokument/HD01FiU1.html",
+      "rows": 135
+    },
+    {
+      "session": "2024/25",
+      "document_id": "HC01FiU1",
+      "source_url": "https://data.riksdagen.se/dokument/HC01FiU1.html",
+      "rows": 135
+    },
+    {
+      "session": "2023/24",
+      "document_id": "HB01FiU1",
+      "source_url": "https://data.riksdagen.se/dokument/HB01FiU1.html",
+      "rows": 135
+    },
+    {
+      "session": "2022/23",
+      "document_id": "HA01FiU1",
+      "source_url": "https://data.riksdagen.se/dokument/HA01FiU1.html",
+      "rows": 135
+    },
+    {
+      "session": "2019/20",
+      "document_id": "H701FiU1",
+      "source_url": "https://data.riksdagen.se/dokument/H701FiU1.html",
+      "rows": 135
+    },
+    {
+      "session": "2018/19",
+      "document_id": "H601FiU1",
+      "source_url": "https://data.riksdagen.se/dokument/H601FiU1.html",
+      "rows": 143
+    },
+    {
+      "session": "2017/18",
+      "document_id": "H501FiU1",
+      "source_url": "https://data.riksdagen.se/dokument/H501FiU1.html",
+      "rows": 124
+    },
+    {
+      "session": "2016/17",
+      "document_id": "H401FiU1",
+      "source_url": "https://data.riksdagen.se/dokument/H401FiU1.html",
+      "rows": 162
+    }
+  ],
+  "rows": 1104,
+  "errors": [
+    {
+      "session": "2021/22",
+      "candidates": [
+        {
+          "document_id": "H901FiU1",
+          "error": "Hittade ingen jämförelsetabell för utgiftsramar"
+        }
+      ]
+    },
+    {
+      "session": "2020/21",
+      "candidates": [
+        {
+          "document_id": "H801FiU1",
+          "error": "Hittade ingen jämförelsetabell för utgiftsramar"
+        }
+      ]
+    },
+    {
+      "session": "2015/16",
+      "candidates": [
+        {
+          "document_id": "H301FiU1",
+          "error": "Hittade ingen jämförelsetabell för utgiftsramar"
+        }
+      ]
+    },
+    {
+      "session": "2014/15",
+      "candidates": [
+        {
+          "document_id": "H201FiU1",
+          "error": "Hittade ingen jämförelsetabell för utgiftsramar"
+        }
+      ]
+    }
+  ],
+  "note": "Partikolumner är avvikelser från regeringens förslag; amount_msek är omräknat totalförslag."
+}

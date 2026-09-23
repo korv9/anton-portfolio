@@ -1,0 +1,135 @@
+﻿session,session_year,party,topic_id,topic_label,segments,words,word_share_pct
+2019/20,2019,C,-1,Ej grupperade,89,6343,55.7724
+2019/20,2019,C,14,vården / vård / sjukvården,16,1355,11.9142
+2019/20,2019,C,24,partier / ansvar / folket,8,511,4.4931
+2019/20,2019,C,25,jobb / arbetslösheten / arbetsmarknaden,5,412,3.6226
+2019/20,2019,C,18,eu / europa / europeiska,5,405,3.5611
+2019/20,2019,C,0,kvinnor / män / kvinnors,5,355,3.1214
+2019/20,2019,C,21,jobb / arbetslösheten / arbetsmarknaden,4,302,2.6554
+2019/20,2019,C,7,eu / utsläppen / utsläpp,3,264,2.3213
+2019/20,2019,C,10,barn / föräldrar / barnen,3,246,2.163
+2019/20,2019,C,3,flyktingar / migrationspolitik / invandring,3,216,1.8992
+2019/20,2019,C,15,äldre / äldreomsorgen / pensionärer,2,180,1.5827
+2019/20,2019,C,23,nato / försvaret / militära,2,169,1.486
+2019/20,2019,C,1,polisen / poliser / brott,2,161,1.4156
+2019/20,2019,C,8,skatteväxling / gröna / grön skatteväxling,2,154,1.3541
+2019/20,2019,C,16,partier / politiska / valet,2,131,1.1519
+2019/20,2019,C,12,skolan / lärare / eleverna,1,85,0.7474
+2019/20,2019,C,4,järnväg / järnvägen / stockholm,1,84,0.7386
+2019/20,2019,KD,-1,Ej grupperade,93,6227,54.5081
+2019/20,2019,KD,14,vården / vård / sjukvården,24,1849,16.1852
+2019/20,2019,KD,3,flyktingar / migrationspolitik / invandring,9,681,5.9611
+2019/20,2019,KD,24,partier / ansvar / folket,8,660,5.7773
+2019/20,2019,KD,20,skatter / skatten / skatt,5,336,2.9412
+2019/20,2019,KD,18,eu / europa / europeiska,4,322,2.8186
+2019/20,2019,KD,1,polisen / poliser / brott,4,302,2.6436
+2019/20,2019,KD,15,äldre / äldreomsorgen / pensionärer,3,237,2.0746
+2019/20,2019,KD,9,kärnkraft / kärnkraften / el,3,214,1.8732
+2019/20,2019,KD,16,partier / politiska / valet,4,212,1.8557
+2019/20,2019,KD,10,barn / föräldrar / barnen,2,177,1.5494
+2019/20,2019,KD,11,euron / valuta / europa,1,83,0.7265
+2019/20,2019,KD,7,eu / utsläppen / utsläpp,1,73,0.639
+2019/20,2019,KD,0,kvinnor / män / kvinnors,1,51,0.4464
+2019/20,2019,L,-1,Ej grupperade,94,6760,58.3211
+2019/20,2019,L,18,eu / europa / europeiska,13,1083,9.3435
+2019/20,2019,L,1,polisen / poliser / brott,9,623,5.3749
+2019/20,2019,L,9,kärnkraft / kärnkraften / el,6,423,3.6494
+2019/20,2019,L,15,äldre / äldreomsorgen / pensionärer,5,352,3.0368
+2019/20,2019,L,13,skolan / skola / elever,4,335,2.8902
+2019/20,2019,L,22,ryssland / ukraina / ryska,3,251,2.1655
+2019/20,2019,L,16,partier / politiska / valet,3,208,1.7945
+2019/20,2019,L,24,partier / ansvar / folket,3,207,1.7859
+2019/20,2019,L,3,flyktingar / migrationspolitik / invandring,2,184,1.5874
+2019/20,2019,L,14,vården / vård / sjukvården,2,177,1.527
+2019/20,2019,L,7,eu / utsläppen / utsläpp,2,170,1.4667
+2019/20,2019,L,20,skatter / skatten / skatt,2,119,1.0267
+2019/20,2019,L,10,barn / föräldrar / barnen,1,100,0.8627
+2019/20,2019,L,25,jobb / arbetslösheten / arbetsmarknaden,1,91,0.7851
+2019/20,2019,L,8,skatteväxling / gröna / grön skatteväxling,2,91,0.7851
+2019/20,2019,L,0,kvinnor / män / kvinnors,1,88,0.7592
+2019/20,2019,L,12,skolan / lärare / eleverna,1,85,0.7333
+2019/20,2019,L,11,euron / valuta / europa,1,84,0.7247
+2019/20,2019,L,19,fn / afghanistan / usa,1,81,0.6988
+2019/20,2019,L,17,skatt / skatten / skatter,1,79,0.6816
+2019/20,2019,M,-1,Ej grupperade,97,6980,58.0795
+2019/20,2019,M,9,kärnkraft / kärnkraften / el,13,882,7.339
+2019/20,2019,M,18,eu / europa / europeiska,9,754,6.2739
+2019/20,2019,M,24,partier / ansvar / folket,11,693,5.7664
+2019/20,2019,M,25,jobb / arbetslösheten / arbetsmarknaden,6,514,4.2769
+2019/20,2019,M,3,flyktingar / migrationspolitik / invandring,7,495,4.1188
+2019/20,2019,M,1,polisen / poliser / brott,6,468,3.8942
+2019/20,2019,M,23,nato / försvaret / militära,5,361,3.0038
+2019/20,2019,M,15,äldre / äldreomsorgen / pensionärer,3,247,2.0553
+2019/20,2019,M,20,skatter / skatten / skatt,3,138,1.1483
+2019/20,2019,M,13,skolan / skola / elever,1,100,0.8321
+2019/20,2019,M,16,partier / politiska / valet,2,98,0.8154
+2019/20,2019,M,21,jobb / arbetslösheten / arbetsmarknaden,1,92,0.7655
+2019/20,2019,M,19,fn / afghanistan / usa,1,79,0.6573
+2019/20,2019,M,14,vården / vård / sjukvården,1,61,0.5076
+2019/20,2019,M,12,skolan / lärare / eleverna,1,36,0.2996
+2019/20,2019,M,7,eu / utsläppen / utsläpp,1,20,0.1664
+2019/20,2019,MP,-1,Ej grupperade,85,6260,57.3733
+2019/20,2019,MP,9,kärnkraft / kärnkraften / el,16,1102,10.0999
+2019/20,2019,MP,3,flyktingar / migrationspolitik / invandring,13,992,9.0917
+2019/20,2019,MP,18,eu / europa / europeiska,8,644,5.9023
+2019/20,2019,MP,24,partier / ansvar / folket,6,464,4.2526
+2019/20,2019,MP,8,skatteväxling / gröna / grön skatteväxling,5,298,2.7312
+2019/20,2019,MP,1,polisen / poliser / brott,4,280,2.5662
+2019/20,2019,MP,7,eu / utsläppen / utsläpp,4,277,2.5387
+2019/20,2019,MP,4,järnväg / järnvägen / stockholm,2,172,1.5764
+2019/20,2019,MP,15,äldre / äldreomsorgen / pensionärer,2,121,1.109
+2019/20,2019,MP,10,barn / föräldrar / barnen,2,105,0.9623
+2019/20,2019,MP,21,jobb / arbetslösheten / arbetsmarknaden,1,95,0.8707
+2019/20,2019,MP,0,kvinnor / män / kvinnors,1,92,0.8432
+2019/20,2019,MP,16,partier / politiska / valet,1,9,0.0825
+2019/20,2019,S,-1,Ej grupperade,137,10094,55.0412
+2019/20,2019,S,18,eu / europa / europeiska,20,1555,8.4792
+2019/20,2019,S,14,vården / vård / sjukvården,18,1429,7.7921
+2019/20,2019,S,15,äldre / äldreomsorgen / pensionärer,12,904,4.9294
+2019/20,2019,S,1,polisen / poliser / brott,8,648,3.5335
+2019/20,2019,S,9,kärnkraft / kärnkraften / el,9,623,3.3971
+2019/20,2019,S,3,flyktingar / migrationspolitik / invandring,8,581,3.1681
+2019/20,2019,S,24,partier / ansvar / folket,8,544,2.9664
+2019/20,2019,S,25,jobb / arbetslösheten / arbetsmarknaden,6,452,2.4647
+2019/20,2019,S,7,eu / utsläppen / utsläpp,5,365,1.9903
+2019/20,2019,S,23,nato / försvaret / militära,5,303,1.6522
+2019/20,2019,S,13,skolan / skola / elever,3,225,1.2269
+2019/20,2019,S,8,skatteväxling / gröna / grön skatteväxling,2,168,0.9161
+2019/20,2019,S,19,fn / afghanistan / usa,2,162,0.8834
+2019/20,2019,S,20,skatter / skatten / skatt,2,149,0.8125
+2019/20,2019,S,12,skolan / lärare / eleverna,1,89,0.4853
+2019/20,2019,S,22,ryssland / ukraina / ryska,1,38,0.2072
+2019/20,2019,S,16,partier / politiska / valet,2,10,0.0545
+2019/20,2019,SD,-1,Ej grupperade,103,7259,58.2631
+2019/20,2019,SD,18,eu / europa / europeiska,18,1497,12.0154
+2019/20,2019,SD,1,polisen / poliser / brott,14,1059,8.4999
+2019/20,2019,SD,3,flyktingar / migrationspolitik / invandring,11,780,6.2605
+2019/20,2019,SD,15,äldre / äldreomsorgen / pensionärer,4,363,2.9136
+2019/20,2019,SD,8,skatteväxling / gröna / grön skatteväxling,4,323,2.5925
+2019/20,2019,SD,16,partier / politiska / valet,5,219,1.7578
+2019/20,2019,SD,9,kärnkraft / kärnkraften / el,3,203,1.6293
+2019/20,2019,SD,20,skatter / skatten / skatt,2,145,1.1638
+2019/20,2019,SD,24,partier / ansvar / folket,2,145,1.1638
+2019/20,2019,SD,14,vården / vård / sjukvården,1,91,0.7304
+2019/20,2019,SD,25,jobb / arbetslösheten / arbetsmarknaden,1,86,0.6903
+2019/20,2019,SD,11,euron / valuta / europa,1,86,0.6903
+2019/20,2019,SD,7,eu / utsläppen / utsläpp,1,84,0.6742
+2019/20,2019,SD,21,jobb / arbetslösheten / arbetsmarknaden,1,72,0.5779
+2019/20,2019,SD,12,skolan / lärare / eleverna,1,47,0.3772
+2019/20,2019,V,-1,Ej grupperade,130,8700,59.2603
+2019/20,2019,V,15,äldre / äldreomsorgen / pensionärer,22,1606,10.9393
+2019/20,2019,V,23,nato / försvaret / militära,9,694,4.7272
+2019/20,2019,V,14,vården / vård / sjukvården,8,625,4.2572
+2019/20,2019,V,8,skatteväxling / gröna / grön skatteväxling,8,478,3.2559
+2019/20,2019,V,21,jobb / arbetslösheten / arbetsmarknaden,6,453,3.0856
+2019/20,2019,V,18,eu / europa / europeiska,6,429,2.9221
+2019/20,2019,V,7,eu / utsläppen / utsläpp,4,323,2.2001
+2019/20,2019,V,25,jobb / arbetslösheten / arbetsmarknaden,4,320,2.1797
+2019/20,2019,V,11,euron / valuta / europa,3,208,1.4168
+2019/20,2019,V,22,ryssland / ukraina / ryska,2,189,1.2874
+2019/20,2019,V,24,partier / ansvar / folket,3,173,1.1784
+2019/20,2019,V,2,bostäder / marknadshyror / hyresrätter,3,165,1.1239
+2019/20,2019,V,4,järnväg / järnvägen / stockholm,1,94,0.6403
+2019/20,2019,V,3,flyktingar / migrationspolitik / invandring,1,87,0.5926
+2019/20,2019,V,19,fn / afghanistan / usa,1,79,0.5381
+2019/20,2019,V,16,partier / politiska / valet,1,58,0.3951

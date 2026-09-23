@@ -1,0 +1,95 @@
+﻿session,session_year,party,topic_id,topic_label,segments,words,word_share_pct
+1996/97,1996,C,-1,Ej grupperade,83,6029,65.8691
+1996/97,1996,C,16,partier / politiska / valet,13,877,9.5816
+1996/97,1996,C,9,kärnkraft / kärnkraften / el,9,596,6.5115
+1996/97,1996,C,24,partier / ansvar / folket,6,439,4.7962
+1996/97,1996,C,20,skatter / skatten / skatt,4,279,3.0482
+1996/97,1996,C,14,vården / vård / sjukvården,3,262,2.8624
+1996/97,1996,C,15,äldre / äldreomsorgen / pensionärer,3,215,2.349
+1996/97,1996,C,21,jobb / arbetslösheten / arbetsmarknaden,2,145,1.5842
+1996/97,1996,C,2,bostäder / marknadshyror / hyresrätter,1,85,0.9287
+1996/97,1996,C,0,kvinnor / män / kvinnors,1,79,0.8631
+1996/97,1996,C,4,järnväg / järnvägen / stockholm,1,74,0.8085
+1996/97,1996,C,25,jobb / arbetslösheten / arbetsmarknaden,1,73,0.7976
+1996/97,1996,KD,-1,Ej grupperade,76,5825,65.8862
+1996/97,1996,KD,6,perssons / åt / talar,12,956,10.8133
+1996/97,1996,KD,14,vården / vård / sjukvården,6,481,5.4406
+1996/97,1996,KD,16,partier / politiska / valet,4,332,3.7552
+1996/97,1996,KD,1,polisen / poliser / brott,4,320,3.6195
+1996/97,1996,KD,21,jobb / arbetslösheten / arbetsmarknaden,4,297,3.3593
+1996/97,1996,KD,9,kärnkraft / kärnkraften / el,2,170,1.9229
+1996/97,1996,KD,15,äldre / äldreomsorgen / pensionärer,2,159,1.7984
+1996/97,1996,KD,10,barn / föräldrar / barnen,1,80,0.9049
+1996/97,1996,KD,13,skolan / skola / elever,1,76,0.8596
+1996/97,1996,KD,0,kvinnor / män / kvinnors,1,73,0.8257
+1996/97,1996,KD,12,skolan / lärare / eleverna,1,72,0.8144
+1996/97,1996,L,-1,Ej grupperade,79,6077,64.4296
+1996/97,1996,L,21,jobb / arbetslösheten / arbetsmarknaden,11,831,8.8104
+1996/97,1996,L,16,partier / politiska / valet,7,442,4.6862
+1996/97,1996,L,25,jobb / arbetslösheten / arbetsmarknaden,5,414,4.3893
+1996/97,1996,L,6,perssons / åt / talar,6,362,3.838
+1996/97,1996,L,14,vården / vård / sjukvården,3,217,2.3007
+1996/97,1996,L,0,kvinnor / män / kvinnors,2,159,1.6858
+1996/97,1996,L,20,skatter / skatten / skatt,2,156,1.6539
+1996/97,1996,L,24,partier / ansvar / folket,3,154,1.6327
+1996/97,1996,L,9,kärnkraft / kärnkraften / el,2,110,1.1662
+1996/97,1996,L,1,polisen / poliser / brott,1,88,0.933
+1996/97,1996,L,17,skatt / skatten / skatter,1,88,0.933
+1996/97,1996,L,23,nato / försvaret / militära,1,87,0.9224
+1996/97,1996,L,12,skolan / lärare / eleverna,1,86,0.9118
+1996/97,1996,L,10,barn / föräldrar / barnen,1,77,0.8164
+1996/97,1996,L,15,äldre / äldreomsorgen / pensionärer,1,75,0.7952
+1996/97,1996,L,8,skatteväxling / gröna / grön skatteväxling,1,9,0.0954
+1996/97,1996,M,-1,Ej grupperade,78,5953,58.3742
+1996/97,1996,M,21,jobb / arbetslösheten / arbetsmarknaden,12,866,8.4919
+1996/97,1996,M,6,perssons / åt / talar,11,855,8.384
+1996/97,1996,M,16,partier / politiska / valet,8,594,5.8247
+1996/97,1996,M,9,kärnkraft / kärnkraften / el,8,566,5.5501
+1996/97,1996,M,24,partier / ansvar / folket,5,356,3.4909
+1996/97,1996,M,25,jobb / arbetslösheten / arbetsmarknaden,3,226,2.2161
+1996/97,1996,M,22,ryssland / ukraina / ryska,2,169,1.6572
+1996/97,1996,M,14,vården / vård / sjukvården,2,151,1.4807
+1996/97,1996,M,15,äldre / äldreomsorgen / pensionärer,2,129,1.265
+1996/97,1996,M,11,euron / valuta / europa,2,93,0.9119
+1996/97,1996,M,17,skatt / skatten / skatter,1,83,0.8139
+1996/97,1996,M,18,eu / europa / europeiska,1,81,0.7943
+1996/97,1996,M,20,skatter / skatten / skatt,1,76,0.7452
+1996/97,1996,MP,-1,Ej grupperade,78,6182,64.102
+1996/97,1996,MP,21,jobb / arbetslösheten / arbetsmarknaden,17,1313,13.6147
+1996/97,1996,MP,9,kärnkraft / kärnkraften / el,10,764,7.922
+1996/97,1996,MP,6,perssons / åt / talar,4,351,3.6396
+1996/97,1996,MP,14,vården / vård / sjukvården,3,274,2.8411
+1996/97,1996,MP,24,partier / ansvar / folket,2,175,1.8146
+1996/97,1996,MP,8,skatteväxling / gröna / grön skatteväxling,2,165,1.7109
+1996/97,1996,MP,18,eu / europa / europeiska,2,164,1.7005
+1996/97,1996,MP,20,skatter / skatten / skatt,1,89,0.9229
+1996/97,1996,MP,25,jobb / arbetslösheten / arbetsmarknaden,1,89,0.9229
+1996/97,1996,MP,4,järnväg / järnvägen / stockholm,1,78,0.8088
+1996/97,1996,S,-1,Ej grupperade,136,10355,70.3512
+1996/97,1996,S,21,jobb / arbetslösheten / arbetsmarknaden,9,710,4.8237
+1996/97,1996,S,16,partier / politiska / valet,10,654,4.4432
+1996/97,1996,S,9,kärnkraft / kärnkraften / el,8,576,3.9133
+1996/97,1996,S,24,partier / ansvar / folket,6,432,2.935
+1996/97,1996,S,20,skatter / skatten / skatt,4,335,2.276
+1996/97,1996,S,25,jobb / arbetslösheten / arbetsmarknaden,4,322,2.1876
+1996/97,1996,S,18,eu / europa / europeiska,3,269,1.8276
+1996/97,1996,S,23,nato / försvaret / militära,2,184,1.2501
+1996/97,1996,S,10,barn / föräldrar / barnen,2,178,1.2093
+1996/97,1996,S,11,euron / valuta / europa,2,174,1.1821
+1996/97,1996,S,14,vården / vård / sjukvården,2,110,0.7473
+1996/97,1996,S,1,polisen / poliser / brott,1,88,0.5979
+1996/97,1996,S,13,skolan / skola / elever,1,87,0.5911
+1996/97,1996,S,15,äldre / äldreomsorgen / pensionärer,1,85,0.5775
+1996/97,1996,S,3,flyktingar / migrationspolitik / invandring,1,81,0.5503
+1996/97,1996,S,12,skolan / lärare / eleverna,1,79,0.5367
+1996/97,1996,V,-1,Ej grupperade,100,7983,74.7262
+1996/97,1996,V,0,kvinnor / män / kvinnors,7,599,5.607
+1996/97,1996,V,21,jobb / arbetslösheten / arbetsmarknaden,8,591,5.5322
+1996/97,1996,V,6,perssons / åt / talar,5,399,3.7349
+1996/97,1996,V,9,kärnkraft / kärnkraften / el,4,304,2.8456
+1996/97,1996,V,15,äldre / äldreomsorgen / pensionärer,3,228,2.1342
+1996/97,1996,V,16,partier / politiska / valet,2,184,1.7224
+1996/97,1996,V,14,vården / vård / sjukvården,2,173,1.6194
+1996/97,1996,V,18,eu / europa / europeiska,2,99,0.9267
+1996/97,1996,V,25,jobb / arbetslösheten / arbetsmarknaden,1,80,0.7489
+1996/97,1996,V,1,polisen / poliser / brott,1,43,0.4025

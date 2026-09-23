@@ -1,0 +1,13 @@
+node_modules/
+dist/
+*.tsbuildinfo
+.env*
+!.env.example
+.sites-runtime/
+test-results/
+playwright-report/
+.research/
+
+__pycache__/
+.pytest_cache/
+*.pyc

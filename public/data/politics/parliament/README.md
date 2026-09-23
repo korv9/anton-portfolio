@@ -1,0 +1,32 @@
+# Portfolio-data
+
+Den här katalogen genereras av `python scripts/export_portfolio.py` efter `dbt build`.
+
+Börja med `manifest.json` eller `overview.json`. JSON är avsett för webbsidan och CSV för nedladdning och kontroll.
+
+```javascript
+const topics = await fetch('/data/partiledardebatter/topics/summary.json')
+  .then(response => response.json());
+
+console.log(topics.data);
+```
+
+Alla JSON-filer innehåller `schema_version`, `generated_at` och `data`. UMAP är uppdelad per riksmöte under `sessions/<riksmöte>/umap.json`, med högst 400 deterministiskt valda punkter per fil.
+
+Budgetramar finns i `budgets/summary.json` och per riksmöte i `sessions/<riksmöte>/budgets.json`. `GOV` är regeringens samlade förslag; övriga aktörer är partiernas budgetmotioner.
+
+Budgeten kan visas intill UMAP-kartan med samma filter för parti och riksmöte. Beloppen är inte koordinater i den semantiska kartan.
+
+`votes/summary.json` och `sessions/<riksmöte>/votes.json` visar registrerade röster per parti och beslutspunkt. `decision-motions.json` innehåller bara motioner som uttryckligen nämns i just den beslutspunkten. En röst gäller beslutspunkten, inte varje motion var för sig.
+
+`decision-speech-links.json` kopplar beslut till tidigare tal från samma parti via textlikhet. Länken säger inget om talarens ståndpunkt i sakfrågan.
+
+`decisions/`, `activities/` och `budgets/outturn-areas.json` innehåller nya spårbara lager. Öppna `sessions/<riksmöte>/decisions/index.json` först och ladda sedan filer per utskott. En `citation` är en uttrycklig dokument- eller numrerad yrkandehänvisning i utskottets förslag; en reservation är registrerad för en beslutspunkt. Inget av detta är en automatisk bedömning av ett partis stöd. Budgetutfall är verkliga utgifter, inte ett effektmått.
+
+`laws/index.json` och `laws/<SFS-ID>/provisions.json` innehåller full bestämmelsetext från versionsmärkta SFS-snapshots som verifierats mot Allegorias källhashar. `laws/mentions.json` är enbart lexikala träffar på lagnamn i tal; ingen paragraf eller giltig lydelse vid taldatum har verifierats och inga direction-poäng beräknas.
+
+`debates/index.json` listar de importerade protokollen. Varje posts `path` pekar på en liten JSON-fil med samtliga anföranden och repliker i källans ordning, inklusive fulltext, `speech_id`, parti, talare, `is_reply` och länk till Riksdagen. Läs indexet först och hämta bara det protokoll användaren öppnar. `is_reply` anger källans replikkod, inte vem repliken riktas till. Alla importerade tal finns med även om de är för korta för NLP-analysen. `data/speeches.csv` är motsvarande lokal CSV men ingår inte i den statiska webbexporten.
+
+`issues/index.json` listar riksmöten med sakdebatter. Följ respektive `index_path` för att hitta en debattsektion och hämta sedan dess `path` (ett helt protokoll). Avgränsningen bygger på Riksdagens metadata för ärende-, särskilda, aktuella, budget- och utrikespolitiska debatter; frågestunder och interpellationer ingår inte. Fulltexten har inte körts genom partiledardebattens NLP-modell. Källa: Sveriges riksdag. Denna tjänst är fristående från Riksdagen.
+
+`legislative/comparisons.json` innehåller källpinnade exempel där ett betänkande eller en följdmotion ställs bredvid propositionens **föreslagna** lagtext. Utdragens och dokumentens SHA-256 samt granskningsstatus följer med. `legislative/proposition-committee-links.json` är den bredare mängden uttryckliga proposition→betänkandepunkt-hänvisningar; de saknar granskad paragrafkoppling. Ingen post är en automatisk sannings- eller direction-poäng.

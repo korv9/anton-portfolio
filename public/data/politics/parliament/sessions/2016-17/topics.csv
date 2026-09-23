@@ -1,0 +1,141 @@
+﻿session,session_year,party,topic_id,topic_label,segments,words,word_share_pct
+2016/17,2016,C,-1,Ej grupperade,97,7020,60.4131
+2016/17,2016,C,14,vården / vård / sjukvården,8,601,5.1721
+2016/17,2016,C,3,flyktingar / migrationspolitik / invandring,7,513,4.4148
+2016/17,2016,C,22,ryssland / ukraina / ryska,8,479,4.1222
+2016/17,2016,C,25,jobb / arbetslösheten / arbetsmarknaden,5,416,3.58
+2016/17,2016,C,1,polisen / poliser / brott,5,366,3.1497
+2016/17,2016,C,19,fn / afghanistan / usa,5,360,3.0981
+2016/17,2016,C,0,kvinnor / män / kvinnors,5,309,2.6592
+2016/17,2016,C,23,nato / försvaret / militära,4,244,2.0998
+2016/17,2016,C,21,jobb / arbetslösheten / arbetsmarknaden,3,243,2.0912
+2016/17,2016,C,24,partier / ansvar / folket,4,219,1.8847
+2016/17,2016,C,7,eu / utsläppen / utsläpp,2,164,1.4114
+2016/17,2016,C,10,barn / föräldrar / barnen,2,93,0.8003
+2016/17,2016,C,2,bostäder / marknadshyror / hyresrätter,1,90,0.7745
+2016/17,2016,C,4,järnväg / järnvägen / stockholm,1,89,0.7659
+2016/17,2016,C,12,skolan / lärare / eleverna,1,88,0.7573
+2016/17,2016,C,8,skatteväxling / gröna / grön skatteväxling,1,85,0.7315
+2016/17,2016,C,16,partier / politiska / valet,1,75,0.6454
+2016/17,2016,C,15,äldre / äldreomsorgen / pensionärer,1,74,0.6368
+2016/17,2016,C,13,skolan / skola / elever,1,69,0.5938
+2016/17,2016,C,17,skatt / skatten / skatter,1,23,0.1979
+2016/17,2016,KD,-1,Ej grupperade,36,2241,31.7287
+2016/17,2016,KD,1,polisen / poliser / brott,21,1665,23.5736
+2016/17,2016,KD,15,äldre / äldreomsorgen / pensionärer,16,1170,16.5652
+2016/17,2016,KD,14,vården / vård / sjukvården,7,545,7.7163
+2016/17,2016,KD,10,barn / föräldrar / barnen,5,414,5.8615
+2016/17,2016,KD,0,kvinnor / män / kvinnors,3,220,3.1148
+2016/17,2016,KD,21,jobb / arbetslösheten / arbetsmarknaden,2,159,2.2512
+2016/17,2016,KD,23,nato / försvaret / militära,2,140,1.9822
+2016/17,2016,KD,17,skatt / skatten / skatter,2,129,1.8264
+2016/17,2016,KD,22,ryssland / ukraina / ryska,2,124,1.7556
+2016/17,2016,KD,16,partier / politiska / valet,2,91,1.2884
+2016/17,2016,KD,24,partier / ansvar / folket,1,83,1.1751
+2016/17,2016,KD,20,skatter / skatten / skatt,1,82,1.161
+2016/17,2016,L,-1,Ej grupperade,71,4895,49.5797
+2016/17,2016,L,9,kärnkraft / kärnkraften / el,11,830,8.4068
+2016/17,2016,L,25,jobb / arbetslösheten / arbetsmarknaden,7,576,5.8341
+2016/17,2016,L,14,vården / vård / sjukvården,7,518,5.2466
+2016/17,2016,L,23,nato / försvaret / militära,7,500,5.0643
+2016/17,2016,L,13,skolan / skola / elever,6,476,4.8212
+2016/17,2016,L,24,partier / ansvar / folket,5,356,3.6058
+2016/17,2016,L,12,skolan / lärare / eleverna,6,344,3.4842
+2016/17,2016,L,4,järnväg / järnvägen / stockholm,3,271,2.7449
+2016/17,2016,L,3,flyktingar / migrationspolitik / invandring,3,240,2.4309
+2016/17,2016,L,22,ryssland / ukraina / ryska,3,177,1.7928
+2016/17,2016,L,0,kvinnor / män / kvinnors,2,162,1.6408
+2016/17,2016,L,18,eu / europa / europeiska,3,141,1.4281
+2016/17,2016,L,21,jobb / arbetslösheten / arbetsmarknaden,2,138,1.3978
+2016/17,2016,L,20,skatter / skatten / skatt,1,90,0.9116
+2016/17,2016,L,17,skatt / skatten / skatter,1,79,0.8002
+2016/17,2016,L,10,barn / föräldrar / barnen,1,71,0.7191
+2016/17,2016,L,16,partier / politiska / valet,1,9,0.0912
+2016/17,2016,M,-1,Ej grupperade,73,5416,51.7931
+2016/17,2016,M,1,polisen / poliser / brott,16,1235,11.8103
+2016/17,2016,M,25,jobb / arbetslösheten / arbetsmarknaden,11,912,8.7214
+2016/17,2016,M,23,nato / försvaret / militära,7,573,5.4796
+2016/17,2016,M,22,ryssland / ukraina / ryska,5,413,3.9495
+2016/17,2016,M,24,partier / ansvar / folket,7,326,3.1175
+2016/17,2016,M,3,flyktingar / migrationspolitik / invandring,3,263,2.5151
+2016/17,2016,M,9,kärnkraft / kärnkraften / el,3,250,2.3907
+2016/17,2016,M,13,skolan / skola / elever,3,243,2.3238
+2016/17,2016,M,14,vården / vård / sjukvården,3,190,1.817
+2016/17,2016,M,21,jobb / arbetslösheten / arbetsmarknaden,3,181,1.7309
+2016/17,2016,M,18,eu / europa / europeiska,1,95,0.9085
+2016/17,2016,M,4,järnväg / järnvägen / stockholm,1,93,0.8894
+2016/17,2016,M,7,eu / utsläppen / utsläpp,1,91,0.8702
+2016/17,2016,M,10,barn / föräldrar / barnen,1,88,0.8415
+2016/17,2016,M,12,skolan / lärare / eleverna,1,45,0.4303
+2016/17,2016,M,8,skatteväxling / gröna / grön skatteväxling,2,30,0.2869
+2016/17,2016,M,16,partier / politiska / valet,1,13,0.1243
+2016/17,2016,MP,-1,Ej grupperade,96,6622,54.7273
+2016/17,2016,MP,8,skatteväxling / gröna / grön skatteväxling,18,1213,10.0248
+2016/17,2016,MP,9,kärnkraft / kärnkraften / el,11,818,6.7603
+2016/17,2016,MP,1,polisen / poliser / brott,8,645,5.3306
+2016/17,2016,MP,7,eu / utsläppen / utsläpp,6,442,3.6529
+2016/17,2016,MP,3,flyktingar / migrationspolitik / invandring,5,427,3.5289
+2016/17,2016,MP,13,skolan / skola / elever,4,332,2.7438
+2016/17,2016,MP,19,fn / afghanistan / usa,4,302,2.4959
+2016/17,2016,MP,4,järnväg / järnvägen / stockholm,4,292,2.4132
+2016/17,2016,MP,10,barn / föräldrar / barnen,3,228,1.8843
+2016/17,2016,MP,12,skolan / lärare / eleverna,3,191,1.5785
+2016/17,2016,MP,21,jobb / arbetslösheten / arbetsmarknaden,2,181,1.4959
+2016/17,2016,MP,20,skatter / skatten / skatt,2,152,1.2562
+2016/17,2016,MP,23,nato / försvaret / militära,1,83,0.686
+2016/17,2016,MP,24,partier / ansvar / folket,1,83,0.686
+2016/17,2016,MP,22,ryssland / ukraina / ryska,1,72,0.595
+2016/17,2016,MP,16,partier / politiska / valet,1,17,0.1405
+2016/17,2016,S,-1,Ej grupperade,111,7567,53.5869
+2016/17,2016,S,1,polisen / poliser / brott,14,1190,8.4272
+2016/17,2016,S,21,jobb / arbetslösheten / arbetsmarknaden,15,1145,8.1085
+2016/17,2016,S,23,nato / försvaret / militära,11,859,6.0831
+2016/17,2016,S,14,vården / vård / sjukvården,10,761,5.3891
+2016/17,2016,S,25,jobb / arbetslösheten / arbetsmarknaden,6,479,3.3921
+2016/17,2016,S,24,partier / ansvar / folket,5,339,2.4007
+2016/17,2016,S,15,äldre / äldreomsorgen / pensionärer,4,322,2.2803
+2016/17,2016,S,2,bostäder / marknadshyror / hyresrätter,4,316,2.2378
+2016/17,2016,S,3,flyktingar / migrationspolitik / invandring,4,309,2.1882
+2016/17,2016,S,18,eu / europa / europeiska,3,195,1.3809
+2016/17,2016,S,19,fn / afghanistan / usa,2,162,1.1472
+2016/17,2016,S,17,skatt / skatten / skatter,1,89,0.6303
+2016/17,2016,S,20,skatter / skatten / skatt,2,88,0.6232
+2016/17,2016,S,13,skolan / skola / elever,1,88,0.6232
+2016/17,2016,S,16,partier / politiska / valet,1,86,0.609
+2016/17,2016,S,0,kvinnor / män / kvinnors,1,79,0.5595
+2016/17,2016,S,9,kärnkraft / kärnkraften / el,1,47,0.3328
+2016/17,2016,SD,-1,Ej grupperade,115,8047,58.7201
+2016/17,2016,SD,3,flyktingar / migrationspolitik / invandring,16,1309,9.552
+2016/17,2016,SD,22,ryssland / ukraina / ryska,13,1106,8.0706
+2016/17,2016,SD,1,polisen / poliser / brott,10,773,5.6407
+2016/17,2016,SD,25,jobb / arbetslösheten / arbetsmarknaden,5,426,3.1086
+2016/17,2016,SD,24,partier / ansvar / folket,4,334,2.4372
+2016/17,2016,SD,7,eu / utsläppen / utsläpp,4,309,2.2548
+2016/17,2016,SD,15,äldre / äldreomsorgen / pensionärer,4,267,1.9483
+2016/17,2016,SD,16,partier / politiska / valet,3,267,1.9483
+2016/17,2016,SD,20,skatter / skatten / skatt,3,246,1.7951
+2016/17,2016,SD,21,jobb / arbetslösheten / arbetsmarknaden,3,224,1.6346
+2016/17,2016,SD,19,fn / afghanistan / usa,1,97,0.7078
+2016/17,2016,SD,0,kvinnor / män / kvinnors,1,84,0.613
+2016/17,2016,SD,18,eu / europa / europeiska,1,77,0.5619
+2016/17,2016,SD,14,vården / vård / sjukvården,1,74,0.54
+2016/17,2016,SD,23,nato / försvaret / militära,1,64,0.467
+2016/17,2016,V,-1,Ej grupperade,85,6254,47.7368
+2016/17,2016,V,1,polisen / poliser / brott,18,1298,9.9076
+2016/17,2016,V,14,vården / vård / sjukvården,11,801,6.114
+2016/17,2016,V,15,äldre / äldreomsorgen / pensionärer,9,669,5.1065
+2016/17,2016,V,20,skatter / skatten / skatt,8,654,4.992
+2016/17,2016,V,0,kvinnor / män / kvinnors,9,626,4.7783
+2016/17,2016,V,17,skatt / skatten / skatter,7,538,4.1066
+2016/17,2016,V,25,jobb / arbetslösheten / arbetsmarknaden,6,448,3.4196
+2016/17,2016,V,22,ryssland / ukraina / ryska,4,319,2.4349
+2016/17,2016,V,24,partier / ansvar / folket,4,316,2.412
+2016/17,2016,V,21,jobb / arbetslösheten / arbetsmarknaden,4,269,2.0533
+2016/17,2016,V,23,nato / försvaret / militära,4,256,1.954
+2016/17,2016,V,4,järnväg / järnvägen / stockholm,2,130,0.9923
+2016/17,2016,V,19,fn / afghanistan / usa,2,125,0.9541
+2016/17,2016,V,2,bostäder / marknadshyror / hyresrätter,1,96,0.7328
+2016/17,2016,V,3,flyktingar / migrationspolitik / invandring,1,87,0.6641
+2016/17,2016,V,8,skatteväxling / gröna / grön skatteväxling,1,86,0.6564
+2016/17,2016,V,7,eu / utsläppen / utsläpp,1,71,0.5419
+2016/17,2016,V,18,eu / europa / europeiska,1,58,0.4427
