@@ -8,6 +8,8 @@ type UmapPoint = { chunk_id: string; topic_id: number; topic_label: string; x: n
 type Topic = { topic_id: number; topic_label: string; words: number; word_share_pct: number; is_unclustered: boolean }
 type MonthlyAd = { month: string; role: string; new_ads: number; unique_employers: number }
 type Technology = { cohort: string; technology: string; ads_mentioning: number; share_pct: number }
+type DebateOverview = { analyzed_speeches: number; analyzed_segments: number }
+type JobKpis = { ads_total: number; employers_unique: number; software_change_2022_2025_pct: number; junior_share_pct: number; junior_software_2022: number; junior_software_2025: number; junior_software_change_pct: number }
 
 const sessions = ['2015-16', '2020-21', '2022-23', '2025-26']
 const roles = ['Software Developer', 'Data Engineer', 'Data Scientist', 'Analytics Engineer']
@@ -24,19 +26,13 @@ const topicNames: Record<number, string> = {
 }
 const topicName = (id: number, fallback: string) => topicNames[id] ?? fallback
 
-function parseCsv<T>(text: string): T[] {
-  const lines = text.trim().split(/\r?\n/)
-  const headers = lines[0].split(',')
-  return lines.slice(1).map((line) => {
-    const values = line.split(',')
-    return Object.fromEntries(headers.map((header, index) => {
-      const value = values[index]
-      return [header, value !== '' && Number.isFinite(Number(value)) ? Number(value) : value]
-    })) as T
-  })
-}
-
 function formatNumber(value: number) { return new Intl.NumberFormat('en-GB').format(value) }
+function formatSignedPercent(value: number) { return `${value < 0 ? '−' : '+'}${Math.abs(value).toFixed(1)}%` }
+async function fetchReport(url: string) {
+  const response = await fetch(url)
+  if (!response.ok) throw new Error(`Report data unavailable: ${url}`)
+  return response.json()
+}
 
 function LineChart({ rows, role }: { rows: MonthlyAd[]; role: string }) {
   const data = rows.filter((row) => row.role === role)
@@ -82,22 +78,33 @@ function App() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [umap, setUmap] = useState<UmapPoint[]>([])
   const [topics, setTopics] = useState<Topic[]>([])
+  const [debateOverview, setDebateOverview] = useState<DebateOverview | null>(null)
   const [monthly, setMonthly] = useState<MonthlyAd[]>([])
   const [technologies, setTechnologies] = useState<Technology[]>([])
+  const [jobKpis, setJobKpis] = useState<JobKpis | null>(null)
   const [session, setSession] = useState('2025-26')
   const [party, setParty] = useState('All')
   const [selectedPoint, setSelectedPoint] = useState<UmapPoint | null>(null)
   const [role, setRole] = useState('Software Developer')
   const [loading, setLoading] = useState(true)
+  const [reportError, setReportError] = useState<string | null>(null)
 
-  useEffect(() => { Promise.all([
-    fetch(`/data/debates/sessions/${session}/umap.json`).then((r) => r.json()),
-    fetch('/data/debates/summary.json').then((r) => r.json()),
-    fetch('/data/jobs/03_ads_by_month.csv').then((r) => r.text()),
-    fetch('/data/jobs/06_top_technologies.csv').then((r) => r.text()),
-  ]).then(([umapData, topicData, monthlyCsv, techCsv]) => {
-    setUmap(umapData.data); setTopics(topicData.data); setMonthly(parseCsv<MonthlyAd>(monthlyCsv)); setTechnologies(parseCsv<Technology>(techCsv)); setSelectedPoint(umapData.data.find((point: UmapPoint) => point.topic_id !== -1) ?? umapData.data[0]); setLoading(false)
-  }) }, [session])
+  useEffect(() => {
+    let active = true
+    setLoading(true)
+    setReportError(null)
+    Promise.all([
+      fetchReport(`/data/gold/marts/debate/${session}.json`),
+      fetchReport('/data/gold/marts/debate/topics.json'),
+      fetchReport('/data/gold/marts/jobs.json'),
+    ]).then(([umapData, topicData, jobsData]) => {
+      if (!active) return
+      setUmap(umapData.data); setTopics(topicData.data); setDebateOverview(topicData.overview); setMonthly(jobsData.monthly as MonthlyAd[]); setTechnologies(jobsData.technologies as Technology[]); setJobKpis(jobsData.kpis); setSelectedPoint(umapData.data.find((point: UmapPoint) => point.topic_id !== -1) ?? umapData.data[0]); setLoading(false)
+    }).catch((error: Error) => {
+      if (active) { setReportError(error.message); setLoading(false) }
+    })
+    return () => { active = false }
+  }, [session])
 
   const parties = useMemo(() => ['All', ...Array.from(new Set(umap.map((point) => point.party))).sort()], [umap])
   const visiblePoints = party === 'All' ? umap : umap.filter((point) => point.party === party)
@@ -110,6 +117,7 @@ function App() {
   const groupedShare = visiblePoints.length ? groupedCount / visiblePoints.length * 100 : 0
   const sessionPopulation = umap[0]?.session_population ?? 0
   const topTopics = topics.filter((topic) => !topic.is_unclustered).slice(0, 7)
+  const unclusteredShare = topics.find((topic) => topic.is_unclustered)?.word_share_pct
   const topTech = technologies.filter((tech) => tech.cohort === 'Data roles').slice(0, 10)
   const annual = useMemo(() => roles.map((item) => ({ role: item, values: [2022, 2023, 2024, 2025].map((year) => monthly.filter((row) => row.role === item && row.month.startsWith(String(year))).reduce((sum, row) => sum + row.new_ads, 0)) })), [monthly])
   const selectedAnnual = annual.find((item) => item.role === role)?.values ?? []
@@ -127,17 +135,17 @@ function App() {
         <div className="project-side"><a href="#politics"><span>Interactive observatory</span><h3>Swedish political observatory</h3><p>Speeches, recorded votes and source law, with traceable evidence.</p><strong>Explore report ↓</strong></a><a href="#job-market"><span>Interactive report</span><h3>Swedish job market analytics</h3><p>Ad volume, junior openings and technology mentions from 2022–2025.</p><strong>Explore report ↓</strong></a><article><span>More experiments</span><h3>Allegoria, Homie API & DrugComb</h3><p>Normative text analysis, FastAPI work and drug synergy prediction.</p><div className="inline-links"><a href="#rfc-drift">Allegoria · RFC drift ↓</a><a href="https://github.com/korv9/homie-api" target="_blank" rel="noreferrer">Homie ↗</a><a href="https://github.com/korv9/DrugComb-Synergy-Prediction" target="_blank" rel="noreferrer">DrugComb ↗</a></div></article></div>
       </div></section>
 
-      <section className="reports" id="reports" aria-label="Reports"><PoliticsLab /><article className="report" id="debates"><ReportHeader number="01" eyebrow="Language & politics" title="What do party leaders talk about?" intro="A map of language used in Swedish party leader debates. Nearby dots use similar words; the map does not show political positions." source="Swedish Parliament open data" period="1993/94–2025/26" unit="Text segments" /><a className="report-jump" href="#budget-comparison">Explore debate × budget charts ↓</a><div className="kpis"><div><strong>10,055</strong><span>speeches analysed</span></div><div><strong>39,269</strong><span>text segments</span></div><div><strong>25</strong><span>topic clusters</span></div><div><strong>49.7%</strong><span>words ungrouped</span></div></div>
+      <section className="reports" id="reports" aria-label="Reports"><PoliticsLab /><article className="report" id="debates"><ReportHeader number="01" eyebrow="Language & politics" title="What do party leaders talk about?" intro="A map of language used in Swedish party leader debates. Nearby dots use similar words; the map does not show political positions." source="Swedish Parliament open data" period="1993/94–2025/26" unit="Text segments" /><a className="report-jump" href="#budget-comparison">Explore debate × budget charts ↓</a><div className="kpis"><div><strong>{debateOverview ? formatNumber(debateOverview.analyzed_speeches) : '—'}</strong><span>speeches analysed</span></div><div><strong>{debateOverview ? formatNumber(debateOverview.analyzed_segments) : '—'}</strong><span>text segments</span></div><div><strong>{topics.length ? topics.filter((topic) => !topic.is_unclustered).length : '—'}</strong><span>topic clusters</span></div><div><strong>{unclusteredShare == null ? '—' : `${unclusteredShare.toFixed(1)}%`}</strong><span>words ungrouped</span></div></div>
         <div className="viz-shell"><div className="viz-toolbar"><div><span className="control-label">Parliamentary session</span><div className="segmented">{sessions.map((item) => <button key={item} className={session === item ? 'active' : ''} onClick={() => { setLoading(true); setSession(item); setParty('All') }}>{item.replace('-', '/')}</button>)}</div></div><label><span className="control-label">Party</span><select value={party} onChange={(event) => { const nextParty = event.target.value; setParty(nextParty); setSelectedPoint(umap.find((point) => nextParty === 'All' || point.party === nextParty) ?? null) }}>{parties.map((item) => <option key={item}>{item}</option>)}</select></label></div>
           <div className="umap-guide"><div><strong>How to read the map</strong><span>Each dot is a text segment. Nearby dots use similar language. The axes have no direct meaning.</span></div><dl><div><dt>Shown</dt><dd>{formatNumber(visiblePoints.length)}</dd></div><div><dt>Sample grouped</dt><dd>{groupedShare.toFixed(0)}%</dd></div><div><dt>Full session</dt><dd>{formatNumber(sessionPopulation)}</dd></div></dl></div>
           <div className="topic-legend" aria-label="Topic colour legend">{featuredTopics.map((id, index) => <span key={id}><i style={{ background: topicColors[index] }} />{topicName(id, String(id))}</span>)}<span><i style={{ background:'#76817e' }} />Other topics</span><span><i style={{ background:'#cbc9c1' }} />Ungrouped</span></div>
-          <div className="umap-layout"><div>{loading ? <div className="loading">Loading report data…</div> : <UmapChart points={visiblePoints} domainPoints={umap} selected={selectedPoint} onSelect={setSelectedPoint} featuredTopics={featuredTopics} />}</div><aside className="point-detail" aria-live="polite"><p className="eyebrow">Selected segment</p>{selectedPoint ? <><h3>{topicName(selectedPoint.topic_id, selectedPoint.topic_label)}</h3><p className="speaker">{selectedPoint.speaker} · {selectedPoint.party}<br /><time>{selectedPoint.speech_date}</time></p><small className="source-language">Original Swedish excerpt</small><blockquote>“{selectedPoint.excerpt}…”</blockquote><a href={selectedPoint.source_url} target="_blank" rel="noreferrer">Open parliamentary source ↗</a></> : <p>Select a dot on the map.</p>}</aside></div></div>
-        <div className="reading-grid compact-reading"><div className="finding"><p className="eyebrow">Main observation</p><h3>Climate, energy and the EU form the largest coherent cluster.</h3><p>It accounts for 13.3% of all words. Almost half the words remain ungrouped.</p></div><div className="bar-list" aria-label="Largest topic clusters by word share">{topTopics.slice(0, 5).map((topic) => <div key={topic.topic_id}><div><span>{topicName(topic.topic_id, topic.topic_label)}</span><strong>{topic.word_share_pct.toLocaleString('en-GB', { maximumFractionDigits: 1 })}%</strong></div><span className="bar"><i style={{ width: `${topic.word_share_pct / topTopics[0].word_share_pct * 100}%`, background: topicColors[Math.abs(topic.topic_id) % topicColors.length] }} /></span></div>)}</div></div>
+          <div className="umap-layout"><div>{loading ? <div className="loading">Loading report data…</div> : reportError ? <p role="alert">{reportError}</p> : <UmapChart points={visiblePoints} domainPoints={umap} selected={selectedPoint} onSelect={setSelectedPoint} featuredTopics={featuredTopics} />}</div><aside className="point-detail" aria-live="polite"><p className="eyebrow">Selected segment</p>{selectedPoint ? <><h3>{topicName(selectedPoint.topic_id, selectedPoint.topic_label)}</h3><p className="speaker">{selectedPoint.speaker} · {selectedPoint.party}<br /><time>{selectedPoint.speech_date}</time></p><small className="source-language">Original Swedish excerpt</small><blockquote>“{selectedPoint.excerpt}…”</blockquote><a href={selectedPoint.source_url} target="_blank" rel="noreferrer">Open parliamentary source ↗</a></> : <p>Select a dot on the map.</p>}</aside></div></div>
+        <div className="reading-grid compact-reading"><div className="finding"><p className="eyebrow">Main observation</p><h3>{topTopics[0] ? `${topicName(topTopics[0].topic_id, topTopics[0].topic_label)} is the largest grouped language pattern.` : 'Loading topic patterns…'}</h3><p>{topTopics[0] ? `It accounts for ${topTopics[0].word_share_pct.toFixed(1)}% of all words; ${unclusteredShare?.toFixed(1) ?? '—'}% remain ungrouped.` : 'Topic shares use the full analysed corpus, not the map sample.'}</p></div><div className="bar-list" aria-label="Largest topic clusters by word share">{topTopics.slice(0, 5).map((topic) => <div key={topic.topic_id}><div><span>{topicName(topic.topic_id, topic.topic_label)}</span><strong>{topic.word_share_pct.toLocaleString('en-GB', { maximumFractionDigits: 1 })}%</strong></div><span className="bar"><i style={{ width: `${topic.word_share_pct / topTopics[0].word_share_pct * 100}%`, background: topicColors[Math.abs(topic.topic_id) % topicColors.length] }} /></span></div>)}</div></div>
         <details className="method"><summary>Method & limitations</summary><div><p>Segments are embedded with <code>paraphrase-multilingual-MiniLM-L12-v2</code>, reduced with UMAP and clustered with HDBSCAN. The map shows a deterministic sample of up to 400 segments per session.</p><p>Two-dimensional distance is approximate. Labels are machine-generated keywords, not manual coding. Clusters describe language patterns, not political positions.</p><a href="https://github.com/korv9/partiledardebatt-analys" target="_blank" rel="noreferrer">Code and documentation on GitHub ↗</a></div></details><BudgetLab /></article>
 
-        <RfcReport /><article className="report" id="job-market"><ReportHeader number="02" eyebrow="Labour market & technology" title="What is happening to tech jobs?" intro="A compact view of ad volume, junior openings and technologies mentioned in Swedish job ads." source="JobTech Historical Ads" period="2022–2025" unit="Unique ad IDs" /><div className="kpis jobs-kpis"><div><strong>35,726</strong><span>ads in the sample</span></div><div><strong>2,862</strong><span>unique employers</span></div><div><strong>−52.6%</strong><span>developer ads, 2022–25</span></div><div><strong>4.1%</strong><span>junior share</span></div></div>
-        <div className="viz-shell"><div className="viz-toolbar"><div><span className="control-label">Role family</span><div className="role-tabs">{roles.map((item) => <button key={item} className={role === item ? 'active' : ''} onClick={() => setRole(item)}>{roleNames[item]}</button>)}</div></div></div><div className="job-chart-head"><div><p className="eyebrow">New ads per month</p><h3>{roleNames[role]}</h3></div><div className="year-totals">{selectedAnnual.map((value, index) => <span key={index}><small>{2022 + index}</small><strong>{formatNumber(value)}</strong></span>)}</div></div>{monthly.length ? <LineChart rows={monthly} role={role} /> : <div className="loading">Loading report data…</div>}</div>
-        <div className="reading-grid compact-reading"><div className="finding"><p className="eyebrow">Main observation</p><h3>Junior openings fell faster than total volume.</h3><p>Junior software ads fell from 651 in 2022 to 187 in 2025: −71.3%, compared with −52.6% for all software ads.</p></div><div className="tech-bars"><p className="eyebrow">Most mentioned in data ads</p>{topTech.slice(0, 7).map((tech) => <div key={tech.technology}><span>{tech.technology}</span><span className="bar"><i style={{ width: `${tech.share_pct / topTech[0].share_pct * 100}%` }} /></span><strong>{tech.share_pct.toLocaleString('en-GB', { maximumFractionDigits: 1 })}%</strong></div>)}</div></div>
+        <RfcReport /><article className="report" id="job-market"><ReportHeader number="02" eyebrow="Labour market & technology" title="What is happening to tech jobs?" intro="A compact view of ad volume, junior openings and technologies mentioned in Swedish job ads." source="JobTech Historical Ads" period="2022–2025" unit="Unique ad IDs" /><div className="kpis jobs-kpis"><div><strong>{jobKpis ? formatNumber(jobKpis.ads_total) : '—'}</strong><span>ads in the sample</span></div><div><strong>{jobKpis ? formatNumber(jobKpis.employers_unique) : '—'}</strong><span>unique employers</span></div><div><strong>{jobKpis ? formatSignedPercent(jobKpis.software_change_2022_2025_pct) : '—'}</strong><span>developer ads, 2022–25</span></div><div><strong>{jobKpis ? `${jobKpis.junior_share_pct.toFixed(1)}%` : '—'}</strong><span>junior share</span></div></div>
+        <div className="viz-shell"><div className="viz-toolbar"><div><span className="control-label">Role family</span><div className="role-tabs">{roles.map((item) => <button key={item} className={role === item ? 'active' : ''} onClick={() => setRole(item)}>{roleNames[item]}</button>)}</div></div></div><div className="job-chart-head"><div><p className="eyebrow">New ads per month</p><h3>{roleNames[role]}</h3></div><div className="year-totals">{selectedAnnual.map((value, index) => <span key={index}><small>{2022 + index}</small><strong>{formatNumber(value)}</strong></span>)}</div></div>{monthly.length ? <LineChart rows={monthly} role={role} /> : reportError ? <p role="alert">{reportError}</p> : <div className="loading">Loading report data…</div>}</div>
+        <div className="reading-grid compact-reading"><div className="finding"><p className="eyebrow">Main observation</p><h3>Junior openings fell faster than total volume.</h3><p>{jobKpis ? `Junior software ads fell from ${formatNumber(jobKpis.junior_software_2022)} in 2022 to ${formatNumber(jobKpis.junior_software_2025)} in 2025: ${formatSignedPercent(jobKpis.junior_software_change_pct)}, compared with ${formatSignedPercent(jobKpis.software_change_2022_2025_pct)} for all software ads.` : 'Loading the job-market summary…'}</p></div><div className="tech-bars"><p className="eyebrow">Most mentioned in data ads</p>{topTech.slice(0, 7).map((tech) => <div key={tech.technology}><span>{tech.technology}</span><span className="bar"><i style={{ width: `${tech.share_pct / topTech[0].share_pct * 100}%` }} /></span><strong>{tech.share_pct.toLocaleString('en-GB', { maximumFractionDigits: 1 })}%</strong></div>)}</div></div>
         <details className="method"><summary>Definitions & limitations</summary><div><p>Documented text rules define role families and detect technology mentions. A mention may be optional or negated.</p><p>An ad is not a hire. The archive may not cover every Swedish vacancy, and title-based seniority is an approximation.</p><a href="https://github.com/korv9/swedish-job-market-analytics" target="_blank" rel="noreferrer">Code and methodology on GitHub ↗</a></div></details></article></section>
 
       </main>

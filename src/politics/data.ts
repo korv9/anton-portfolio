@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 
 export const PARTIES = ['C', 'KD', 'L', 'M', 'MP', 'S', 'SD', 'V']
 export const ROOT = '/data/politics/'
+export const GOLD_ROOT = '/data/gold/'
 export type PartyVote = {
   party: string
   party_position: string
@@ -43,7 +44,7 @@ export type Overview = {
   meaning_tests: { passed: number; total: number }
   validated_vote_direction_pairs: number
 }
-export function useData<T>(path: string | null) {
+export function useData<T>(path: string | null, root = ROOT) {
   const [state, setState] = useState<{ data: T | null; error: string | null }>({
     data: null,
     error: null,
@@ -52,7 +53,7 @@ export function useData<T>(path: string | null) {
     const controller = new AbortController()
     setState({ data: null, error: null })
     if (path)
-      fetch(ROOT + path, { signal: controller.signal })
+      fetch(root + path, { signal: controller.signal })
         .then((response) => {
           if (!response.ok) throw new Error(`Could not load ${path}`)
           return response.json() as Promise<T>
@@ -63,10 +64,21 @@ export function useData<T>(path: string | null) {
             setState({ data: null, error: error.message })
         })
     return () => controller.abort()
-  }, [path])
+  }, [path, root])
   return state
 }
+export function useGoldData<T>(path: string | null) {
+  return useData<T>(path, GOLD_ROOT)
+}
 export const count = (n: number) => n.toLocaleString('en-GB')
+export function positionFromVotes(vote: PartyVote) {
+  const counts = [
+    ['Ja', vote.yes_votes],
+    ['Nej', vote.no_votes],
+    ['Avstår', vote.abstain_votes],
+  ] as const
+  return counts.reduce((highest, current) => current[1] > highest[1] ? current : highest)[0]
+}
 export function partyStats(decisions: Decision[], party: string) {
   const rows = decisions.flatMap((d) =>
     d.parties.filter((p) => p.party === party),

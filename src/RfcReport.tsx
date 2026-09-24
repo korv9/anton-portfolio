@@ -18,7 +18,7 @@ export default function RfcReport() {
   const [error, setError] = useState(false)
   const [scenario, setScenario] = useState(0)
   useEffect(() => {
-    fetch('/data/reports/rfc-drift.json')
+    fetch('/data/gold/marts/rfc-drift.json')
       .then((r) => {
         if (!r.ok) throw Error()
         return r.json()

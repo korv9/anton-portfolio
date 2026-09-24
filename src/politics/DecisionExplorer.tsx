@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useData, type Decision, type PartyVote } from './data'
+import { positionFromVotes, useData, type Decision, type PartyVote } from './data'
 
 type Detail = {
   point: { proposal_text: string; source_url: string } | null
@@ -48,7 +48,7 @@ function DecisionDetail({ decision }: { decision: Decision }) {
         {data.parties.map((p) => (
           <div key={p.party}>
             <strong>
-              {p.party} · {p.party_position}
+              {p.party} · {positionFromVotes(p)}
             </strong>
             <span>
               {p.yes_votes} yes / {p.no_votes} no / {p.abstain_votes} abstain /{' '}

@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import {
   PARTIES,
+  GOLD_ROOT,
   ROOT,
   count,
-  useData,
+  useGoldData,
   type Decision,
   type Overview,
 } from './data'
@@ -14,7 +15,7 @@ import DebateArchive from './DebateArchive'
 import './politics.css'
 
 function SessionAnalysis({ path }: { path: string }) {
-  const { data, error } = useData<Decision[]>(path)
+  const { data, error } = useGoldData<Decision[]>(path)
   const [committee, setCommittee] = useState('All')
   const [party, setParty] = useState('M')
   const committees = [...new Set(data?.map((d) => d.committee) ?? [])].sort()
@@ -56,7 +57,7 @@ function SessionAnalysis({ path }: { path: string }) {
 }
 
 export default function PoliticsLab() {
-  const { data, error } = useData<Overview>('overview.json')
+  const { data, error } = useGoldData<Overview>('overview.json')
   const [session, setSession] = useState('2025/26')
   const [tab, setTab] = useState('votes')
   const active = data?.sessions.find((s) => s.id === session)
@@ -135,14 +136,18 @@ export default function PoliticsLab() {
           {tab === 'meaning' && <LawLibrary />}
           {tab === 'data' && (
             <section className="politics-card">
-              <h3>One data collection, explicit evidence levels.</h3>
+              <h3>One source trail, explicit evidence levels.</h3>
               <p>
-                Every upstream frontend export is preserved under the Parliament
-                snapshot. Decisions and law provisions have small, separately
-                loaded files. The catalog lists their sizes and SHA-256
-                checksums.
+                The charts read a versioned gold model with keyed facts,
+                dimensions and documented measures. Original parliamentary
+                exports remain available for audit; decision details and law
+                provisions load separately when selected. The source catalog
+                records file sizes and SHA-256 checksums.
               </p>
               <div className="data-downloads">
+                <a href={GOLD_ROOT + 'semantic-model.json'} download>
+                  Download gold semantic model
+                </a>
                 <a href={ROOT + 'catalog.json'} download>
                   Download complete data catalog
                 </a>

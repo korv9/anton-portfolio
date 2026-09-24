@@ -1,0 +1,3 @@
+public/data/gold/** text eol=lf
+scripts/build-gold.py text eol=lf
+scripts/validate-gold.py text eol=lf

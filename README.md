@@ -15,6 +15,7 @@ Open http://127.0.0.1:5173. The political dashboard starts at `/#politics`.
 npm run build
 npm run test:e2e
 python scripts/validate-politics.py
+python scripts/validate-gold.py
 ```
 
 The browser tests require Playwright Chromium. `dist/` is the static output. Data paths currently assume hosting at the domain root; configure a base-path strategy before subdirectory deployment.
@@ -26,6 +27,7 @@ Allegoria now has a separate compact RFC drift report at `/#rfc-drift`. The law 
 ## Political observatory
 
 See [architecture, KPI definitions, layout sketch and evidence gaps](docs/political-observatory.md).
+The current reporting contract is the [gold semantic model](docs/gold-semantic-model.md), with 31 keyed tables, validated joins, metric definitions and source hashes. Frontend report views read gold marts; original evidence stays in source shards.
 
 - All eight parties in vote distribution, pairwise agreement, cohesion and recorded attendance.
 - 1,436 roll calls with exact committee proposals, individual member votes, citations and reservations.
@@ -39,6 +41,8 @@ The engine has no validated vote-to-direction pairs yet. Party-level tightening/
 ## Project structure
 
 - `src/politics/`: reusable dashboard views, data types and voting measures.
+- `public/data/gold/`: versioned dimensions, facts, metric contract and frontend marts.
+- `scripts/build-gold.py` / `scripts/validate-gold.py`: deterministic build and independent data-contract checks.
 - `public/data/politics/`: public snapshots, document shards, provenance catalog.
 - `packages/meaningquality/`: standalone upstream Python engine.
 - `data/allegoria/`: offline source snapshots and annotated corpora.
@@ -47,6 +51,8 @@ The engine has no validated vote-to-direction pairs yet. Party-level tightening/
 - `tests/`: desktop/mobile browser checks and upstream Python engine tests.
 
 CV, contact links and thesis summary are already populated from the supplied material. Internal incident text and employer raw data are not included. Original parliamentary and statute quotations remain Swedish.
+
+After changing a source export, run `python scripts/build-gold.py` and `python scripts/validate-gold.py` before the website build. The checked-in gold JSON means ordinary local development and static deployment need only Node/npm.
 
 ## Review status
 

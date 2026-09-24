@@ -737,45 +737,18 @@ export default function BudgetLab() {
   const [method, setMethod] = useState('exact')
 
   useEffect(() => {
-    Promise.all([
-      fetch('/data/debates/budgets/summary.json').then((response) => {
-        if (!response.ok) throw new Error('Budget export unavailable')
+    fetch('/data/gold/marts/budget-report.json')
+      .then((response) => {
+        if (!response.ok) throw new Error('Budget report unavailable')
         return response.json()
-      }),
-      fetch('/data/debates/budgets/speech-alignment.json').then((response) => {
-        if (!response.ok) throw new Error('Comparison export unavailable')
-        return response.json()
-      }),
-      fetch('/data/debates/budgets/coverage.json').then((response) => {
-        if (!response.ok) throw new Error('Coverage export unavailable')
-        return response.json()
-      }),
-      fetch('/data/debates/budgets/speech-keywords-all-parties.json').then(
-        (response) => {
-          if (!response.ok) throw new Error('Speech export unavailable')
-          return response.json()
-        },
-      ),
-      fetch('/data/reports/budget-language.json').then((r) => {
-        if (!r.ok) throw Error('Language audit unavailable')
-        return r.json()
-      }),
-    ])
-      .then(
-        ([
-          budgetFile,
-          alignmentFile,
-          coverageFile,
-          speechFile,
-          languageFile,
-        ]) => {
-          setLanguage(languageFile)
-          setBudgets(budgetFile.data)
-          setAlignment(alignmentFile.data)
-          setCoverage(coverageFile)
-          setSpeechRows(speechFile.data)
-        },
-      )
+      })
+      .then((report) => {
+        setLanguage(report.language)
+        setBudgets(report.budgets)
+        setAlignment(report.alignment)
+        setCoverage(report.coverage)
+        setSpeechRows(report.speech_rows)
+      })
       .catch(() => setError(true))
   }, [])
 
