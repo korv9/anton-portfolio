@@ -9,8 +9,8 @@ import json
 from collections import defaultdict
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
-PUB = ROOT / "public/data"
+ROOT = Path(__file__).resolve().parents[2]
+PUB = ROOT / "frontend/public/data"
 OUT = ROOT / "docs/data-dictionary.md"
 
 # Name, glob relative to public/data, shape, declared grain, join/key columns.
@@ -114,7 +114,7 @@ def matching(pattern):
 def main():
     lines = [
         "# Datakatalog: portfolio", "",
-        "Genererad från filerna i `public/data/` och utvalda källsnapshot under `data/` med `python scripts/generate-data-dictionary.py`.",
+        "Genererad från filerna i `frontend/public/data/` och utvalda källsnapshot under `platform/sources/` med `python platform/legacy/generate_data_dictionary.py`.",
         "Kolumnerna nedan är **observerade fältnamn på tabellnivå** (och för den kuraterade voteringsvyn även underlistorna), inte en påstådd databasspecifikation.",
         "JSON-filer med `schema_version`, `generated_at` och `data` listas som tabellen inuti `data`.",
         "CSV-exporter som speglar JSON och riksmötespartitioner är inte nya observationer.", "",

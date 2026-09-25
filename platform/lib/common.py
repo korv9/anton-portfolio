@@ -8,10 +8,11 @@ newline normalisation. Line-ending normalisation in particular is not cosmetic, 
 import hashlib
 import json
 import os
+import time
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
-PUBLIC = ROOT / "public/data"
+ROOT = Path(__file__).resolve().parents[2]
+PUBLIC = ROOT / "frontend/public/data"
 GOLD = PUBLIC / "gold"
 POLITICS = PUBLIC / "politics"
 
@@ -34,6 +35,33 @@ def write_json(path, data, indent=None):
     text = (json.dumps(data, ensure_ascii=False, indent=indent) + "\n" if indent
             else json.dumps(data, ensure_ascii=False, separators=(",", ":")))
     path.write_text(text, encoding="utf-8")
+    return path
+
+
+def write_bytes_retrying(path, payload: bytes, attempts: int = 5):
+    """Write bytes, retrying briefly on transient Windows open failures.
+
+    A build writes dozens of files in quick succession, and on Windows an indexer, virus
+    scanner or editor file-watcher holding a freshly created file makes open() fail with
+    EINVAL or EACCES. The failure moves between files from run to run, so it is contention
+    rather than anything wrong with the path.
+    """
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    for attempt in range(attempts):
+        # Write beside the target and rename over it. Opening an existing file for
+        # truncation is what fails here; creating a fresh one and replacing it atomically
+        # also means a crashed build never leaves a half-written table behind.
+        temporary = path.with_name(f"{path.name}.{os.getpid()}.tmp")
+        try:
+            temporary.write_bytes(payload)
+            os.replace(temporary, path)
+            return path
+        except OSError:
+            temporary.unlink(missing_ok=True)
+            if attempt == attempts - 1:
+                raise
+            time.sleep(0.2 * (attempt + 1))
     return path
 
 

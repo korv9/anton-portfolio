@@ -1,5 +1,10 @@
 """Check the budget context against imported, unmodified gold facts."""
 
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "lib"))
+
 import json
 from collections import Counter
 from common import GOLD, read_json

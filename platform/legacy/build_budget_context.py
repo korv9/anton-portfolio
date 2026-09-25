@@ -4,6 +4,11 @@ The government proposal is a collective document. Never copy its amounts into
 individual party proposals or turn a speech similarity into a voting motive.
 """
 
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "lib"))
+
 import json
 from collections import Counter
 from common import GOLD, read_json
@@ -21,7 +26,7 @@ def main():
     citations = read("tables/fact_point_citation.json")
     reservations = read("tables/fact_point_reservation.json")
     speech_candidates = read("tables/fact_speech_vote_candidate.json")
-    coverage = json.loads((ROOT / "public/data/debates/budgets/coverage.json").read_text(encoding="utf-8"))
+    coverage = json.loads((ROOT / "frontend/public/data/debates/budgets/coverage.json").read_text(encoding="utf-8"))
     counts = Counter((row["session"], row["actor"]) for row in frames)
     docs = {row["session"]: row for row in coverage["documents"]}
     errors = {row["session"]: row for row in coverage["errors"]}

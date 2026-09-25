@@ -2,8 +2,8 @@
 import json
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
-SOURCE = ROOT / 'public/data/politics/parliament'
+ROOT = Path(__file__).resolve().parents[2]
+SOURCE = ROOT / 'frontend/public/data/politics/parliament'
 read = lambda p: json.loads(p.read_text(encoding='utf-8'))['data']
 entries = [('leaders', d) for d in read(SOURCE / 'debates/index.json')]
 for session in read(SOURCE / 'issues/index.json'):
@@ -28,7 +28,7 @@ for kind, debate in entries:
             'excerpt': ' '.join(speech['speech_text'].split())[:260],
         })
 cards.sort(key=lambda s: (s['speech_date'], s['speech_number']), reverse=True)
-directory = ROOT / 'public/data/discovery'
+directory = ROOT / 'frontend/public/data/discovery'
 directory.mkdir(parents=True, exist_ok=True)
 manifest = []
 for session in sorted({s['session'] for s in cards}, reverse=True):

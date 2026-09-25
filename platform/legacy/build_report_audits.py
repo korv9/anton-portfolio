@@ -1,6 +1,11 @@
 """Reproducible RFC profile and budget-language coverage; no model/API calls.
 Dependency: snowballstemmer==3.1.1. Public text snapshots are the only inputs.
 """
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "lib"))
+
 import csv
 import hashlib
 import json
@@ -10,7 +15,7 @@ from collections import Counter, defaultdict
 from functools import lru_cache
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 sys.path[:0] = [str(ROOT/'packages'), str(ROOT/'.research/nlp')]
 from common import read_json
 import snowballstemmer
@@ -38,7 +43,7 @@ def rfc_report():
           'method':'Upstream meaningquality.rfc heuristic reader; first modal keyword per extracted sentence; quoted sentences skipped. Descriptive profiles are not aligned normative changes.'})
 
 def language_report():
-    lexicon=list(csv.DictReader((ROOT/'data/budget/keywords.csv').open(encoding='utf8')))
+    lexicon=list(csv.DictReader((ROOT/'platform/sources/budget/keywords.csv').open(encoding='utf8')))
     stemmer=snowballstemmer.stemmer('swedish')
     @lru_cache(maxsize=250000)
     def stem(word): return stemmer.stemWord(word)
@@ -87,6 +92,6 @@ def language_report():
 if __name__=='__main__':
     rfc_report()
     language_report()
-    write('manifest.json', {'generator':'scripts/build-report-audits.py','dependency':'snowballstemmer==3.1.1',
-      'inputs': [{'path':str(p.relative_to(ROOT)).replace('\\','/'),'sha256':hashlib.sha256(p.read_bytes()).hexdigest()} for p in [ROOT/'public/data/politics/catalog.json',ROOT/'data/budget/keywords.csv',ROOT/'scripts/build-report-audits.py']],
+    write('manifest.json', {'generator':'platform/legacy/build_report_audits.py','dependency':'snowballstemmer==3.1.1',
+      'inputs': [{'path':str(p.relative_to(ROOT)).replace('\\','/'),'sha256':hashlib.sha256(p.read_bytes()).hexdigest()} for p in [ROOT/'frontend/public/data/politics/catalog.json',ROOT/'platform/sources/budget/keywords.csv',ROOT/'platform/legacy/build_report_audits.py']],
       'outputs':[{'path':p.name,'sha256':hashlib.sha256(p.read_bytes()).hexdigest()} for p in [ROOT/'public/data/reports/rfc-drift.json',ROOT/'public/data/reports/budget-language.json']]})

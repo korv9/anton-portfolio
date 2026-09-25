@@ -11,3 +11,6 @@ playwright-report/
 __pycache__/
 .pytest_cache/
 *.pyc
+
+# Warehouse: bronze files and the local DuckDB build
+warehouse/

@@ -7,6 +7,11 @@ groups a filter touches, over HTTP range requests.
 
 Shards are read through delivery.py, so this works whether or not they are still local.
 """
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "lib"))
+
 import json
 from concurrent.futures import ThreadPoolExecutor
 

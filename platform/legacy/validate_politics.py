@@ -5,6 +5,11 @@ are not present locally. Everything the site serves itself is still verified byt
 The authoritative hash check for remote shards is `upload-shards.py --verify-only`, which
 compares every catalogued hash against the stored object.
 """
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "lib"))
+
 import hashlib
 import json
 from collections import Counter

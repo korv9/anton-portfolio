@@ -9,8 +9,8 @@ import subprocess
 from collections import defaultdict
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
-OUT = ROOT / 'public/data/politics'
+ROOT = Path(__file__).resolve().parents[2]
+OUT = ROOT / 'frontend/public/data/politics'
 
 def read(path):
     obj = json.loads(path.read_text(encoding='utf-8-sig'))
@@ -27,13 +27,13 @@ def build(parliament, allegoria, local_corpus):
     OUT.mkdir(parents=True, exist_ok=True)
     target = OUT / 'parliament'
     shutil.copytree(parliament / 'portfolio-data', target, dirs_exist_ok=True)
-    package = ROOT / 'packages/meaningquality'
+    package = ROOT / 'platform/packages/meaningquality'
     shutil.copytree(allegoria / 'meaningquality', package, dirs_exist_ok=True, ignore=shutil.ignore_patterns('__pycache__'))
     shutil.copy2(allegoria / 'DIRECTION.md', package / 'DIRECTION.md')
-    shutil.copytree(allegoria / 'corpus', ROOT / 'data/allegoria/corpus', dirs_exist_ok=True)
-    shutil.copytree(allegoria / 'data', ROOT / 'data/allegoria/sources-v1', dirs_exist_ok=True)
-    shutil.copytree(local_corpus / 'data/local/pool_v2', ROOT / 'data/allegoria/sources-v2', dirs_exist_ok=True)
-    sys.path.insert(0, str(ROOT / 'packages'))
+    shutil.copytree(allegoria / 'corpus', ROOT / 'platform/sources/allegoria/corpus', dirs_exist_ok=True)
+    shutil.copytree(allegoria / 'data', ROOT / 'platform/sources/allegoria/sources-v1', dirs_exist_ok=True)
+    shutil.copytree(local_corpus / 'data/local/pool_v2', ROOT / 'platform/sources/allegoria/sources-v2', dirs_exist_ok=True)
+    sys.path.insert(0, str(ROOT / 'platform/packages'))
     import yaml
     from meaningquality import Part, Presence, SlotChange, classify
     from meaningquality.conformance import CASES, run

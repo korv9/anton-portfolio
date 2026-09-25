@@ -4,6 +4,11 @@ Sources that moved to object storage are fetched from the delivery base, so the
 "source changed without a rebuild" guarantee still covers every input.
 """
 
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "lib"))
+
 import hashlib
 import json
 from collections import Counter, defaultdict
@@ -21,7 +26,7 @@ def read(path):
 
 def source_sha(item):
     """Hash a gold input, reading it from object storage when it is no longer local."""
-    relative = item["path"].removeprefix("public/data/")
+    relative = item["path"].removeprefix("frontend/public/data/")
     return item, sha_of(delivery.read_bytes(relative))
 
 

@@ -1,6 +1,6 @@
 """Export lexical debate attention for every party, including parties without a budget motion.
 
-Usage: python scripts/export-debate-keywords.py PATH_TO_PARTILEDARDEBATT/analytics.duckdb
+Usage: python platform/legacy/export_debate_keywords.py PATH_TO_PARTILEDARDEBATT/analytics.duckdb
 """
 
 import json

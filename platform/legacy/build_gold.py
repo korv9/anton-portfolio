@@ -1,18 +1,26 @@
 """Build the static, versioned semantic layer from checked-in source exports.
 
 No network access, model calls, or inferred political positions are involved.
-Run ``python scripts/build-gold.py`` after the upstream export builders.
+Run ``python platform/legacy/build_gold.py`` after the upstream export builders.
 """
 
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "lib"))
+
+import common
+import delivery
 import csv
 import hashlib
+import io
 import json
 import re
 from collections import Counter, defaultdict
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
-SOURCE = ROOT / "public/data"
+ROOT = Path(__file__).resolve().parents[2]
+SOURCE = ROOT / "frontend/public/data"
 GOLD = SOURCE / "gold"
 PARTIES = ("C", "KD", "L", "M", "MP", "S", "SD", "V")
 HISTORICAL_PARTIES = ("NYD",)
@@ -28,19 +36,30 @@ source_hashes = {}
 outputs = {}
 
 
-def portable_sha(path):
+def portable_sha_of(content):
     # Git may check out source JSON/CSV with CRLF on Windows; hash logical text.
-    return hashlib.sha256(Path(path).read_bytes().replace(b"\r\n", b"\n")).hexdigest()
+    return hashlib.sha256(content.replace(b"\r\n", b"\n")).hexdigest()
+
+
+def portable_sha(path):
+    return portable_sha_of(Path(path).read_bytes())
 
 
 def source(path):
+    """Read a build input, from disk or from object storage, and record its hash.
+
+    Inputs that moved to object storage must still be hashed, or the "source changed
+    without a rebuild" guarantee quietly stops covering them.
+    """
     path = Path(path)
     relative = path.relative_to(ROOT).as_posix()
-    source_hashes[relative] = portable_sha(path)
+    content = (path.read_bytes() if path.is_file()
+               else delivery.read_bytes(relative.removeprefix("frontend/public/data/")))
+    source_hashes[relative] = portable_sha_of(content)
+    text = content.decode("utf-8-sig")
     if path.suffix == ".csv":
-        with path.open(encoding="utf-8-sig", newline="") as handle:
-            return list(csv.DictReader(handle))
-    return json.loads(path.read_text(encoding="utf-8-sig"))
+        return list(csv.DictReader(io.StringIO(text), dialect="excel"))
+    return json.loads(text)
 
 
 def rows(path):
@@ -49,14 +68,15 @@ def rows(path):
 
 
 def source_glob(pattern):
-    return [row for path in sorted(SOURCE.glob(pattern)) for row in rows(path)]
+    """Rows from every delivered file matching the pattern, local or remote."""
+    return [row for relative in delivery.catalogue_paths(pattern)
+            for row in rows(SOURCE / relative)]
 
 
 def emit(relative, data):
     path = GOLD / relative
-    path.parent.mkdir(parents=True, exist_ok=True)
     payload = (json.dumps(data, ensure_ascii=False, separators=(",", ":"), sort_keys=True) + "\n").encode("utf-8")
-    path.write_bytes(payload)
+    common.write_bytes_retrying(path, payload)
     outputs[relative] = {"sha256": hashlib.sha256(payload).hexdigest(), "bytes": len(payload)}
 
 
@@ -393,8 +413,8 @@ def main():
 
     semantic_model = {
         "model_id": MODEL_ID,
-        "builder": {"path": "scripts/build-gold.py",
-                    "sha256": portable_sha(ROOT / "scripts/build-gold.py")},
+        "builder": {"path": "platform/legacy/build_gold.py",
+                    "sha256": portable_sha(ROOT / "platform/legacy/build_gold.py")},
         "description": "Static, reproducible analytics model. Tables are arrays of records; source text is accessed through detail paths.",
         "tables": model_tables,
         "relationships": [

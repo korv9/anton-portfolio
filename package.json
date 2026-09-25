@@ -4,16 +4,18 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "vite --host 127.0.0.1 --port 5173 --strictPort",
-    "build": "tsc -b && vite build",
-    "preview": "vite preview --host 127.0.0.1",
-    "data:build": "python scripts/build-gold.py && python scripts/build-budget-context.py && python scripts/build-products.py && python scripts/build-speech-browser.py && python scripts/build-catalog.py",
-    "data:check": "python scripts/validate-gold.py && python scripts/validate-budget-context.py && python scripts/validate-products.py && python scripts/validate-politics.py",
-    "check": "tsc -b",
-    "test:e2e": "playwright test",
+    "dev": "vite --config frontend/vite.config.ts --host 127.0.0.1 --port 5173 --strictPort",
+    "build": "tsc -b frontend && vite build --config frontend/vite.config.ts",
+    "preview": "vite preview --config frontend/vite.config.ts --host 127.0.0.1",
+    "check": "tsc -b frontend",
+    "test:e2e": "playwright test --config frontend/playwright.config.ts",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "data:catalog": "python scripts/build-catalog.py"
+    "data:build": "python platform/legacy/build_gold.py && python platform/legacy/build_budget_context.py && python platform/legacy/build_products.py && python platform/legacy/build_speech_browser.py && python platform/publish/build_catalog.py",
+    "data:catalog": "python platform/publish/build_catalog.py",
+    "data:parquet": "python platform/publish/build_parquet.py",
+    "data:upload": "python platform/publish/upload.py",
+    "data:check": "python platform/legacy/validate_gold.py && python platform/legacy/validate_budget_context.py && python platform/legacy/validate_products.py && python platform/legacy/validate_politics.py"
   },
   "dependencies": {
     "@duckdb/duckdb-wasm": "1.32.0",

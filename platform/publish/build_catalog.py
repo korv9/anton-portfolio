@@ -20,8 +20,8 @@ import json
 import re
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
-PUBLIC = ROOT / "public/data"
+ROOT = Path(__file__).resolve().parents[2]
+PUBLIC = ROOT / "frontend/public/data"
 CATALOG = PUBLIC / "catalog.json"
 DELIVERY = PUBLIC / "delivery.json"
 SCHEMA_VERSION = 1

@@ -22,6 +22,11 @@ Usage:
     python scripts/upload-shards.py                # upload changed shards
     python scripts/upload-shards.py --verify-only  # confirm every shard is present and correct
 """
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "lib"))
+
 import argparse
 import json
 import os

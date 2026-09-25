@@ -17,6 +17,7 @@ Two ways to reach object storage:
             real agent and retry with backoff on 429 and 5xx.
 """
 import json
+from fnmatch import fnmatch
 import os
 import random
 import time
@@ -70,7 +71,14 @@ def fetch(relative: str) -> bytes:
     client = _bucket_client()
     if client:
         s3, bucket = client
-        return s3.get_object(Bucket=bucket, Key=relative)["Body"].read()
+        # The streaming body holds a connection. A build reading hundreds of objects that
+        # never closes them exhausts the process's handles, and the next unrelated open()
+        # fails with EINVAL.
+        body = s3.get_object(Bucket=bucket, Key=relative)["Body"]
+        try:
+            return body.read()
+        finally:
+            body.close()
 
     request = urllib.request.Request(BASES["shard"] + relative, headers={"User-Agent": AGENT})
     for attempt in range(RETRIES):
@@ -84,6 +92,18 @@ def fetch(relative: str) -> bytes:
             # Full jitter, because every worker backs off from the same rate limit at once.
             time.sleep(random.uniform(0, 2 ** attempt))
     raise RuntimeError(f"Unreachable: {relative}")
+
+
+def catalogue_paths(pattern: str) -> list[str]:
+    """Delivered paths matching a glob, from the catalogue rather than the filesystem.
+
+    Globbing public/data only sees what is still local, so a build that enumerates sources
+    that way silently produces an empty result once those files move to object storage.
+    The catalogue is the record of what exists, wherever it is served from.
+    """
+    catalogue = json.loads((PUBLIC / "catalog.json").read_text(encoding="utf-8"))
+    return sorted(entry["path"] for entry in catalogue["files"]
+                  if fnmatch(entry["path"], pattern))
 
 
 def read_bytes(relative: str) -> bytes:
