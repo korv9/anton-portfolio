@@ -24,7 +24,9 @@ The browser tests require Playwright Chromium. `dist/` is the static output. Dat
 
 Six project products now have a shared directory: politics, job-market analytics, DrugComb, Allegoria RFC drift, the thesis and Homie API. See [product contracts and pipeline locations](products/README.md).
 
-The data desk at `/#data-explorer` provides searchable, paginated access to all 31 gold tables and 22 DrugComb result tables, with full downloads. The DrugComb report at `/#drugcomb` compares published model evaluations across four generalisation splits and shows dataset composition. Its pinned upstream pipeline is included for inspection; raw training data and a newly executed training run are not included. Homie remains explicitly marked as partially implemented.
+The public entry at `/#data-explorer` is a speech browser: filter by party, parliamentary year and debate type, search speakers/titles/opening excerpts, read full speeches and move through their discussion in parliamentary order. Discovery cards are generated from existing source shards using `scripts/build-speech-browser.py`, split by year to avoid downloading the entire index. Original quotations retain source encoding issues and link to Parliament for verification. Budgets, votes and legal sources have separate navigation; no unsupported speech-to-decision relationship is inferred.
+
+Technical tables are now in a collapsed analyst section at `/#raw-data`, covering 31 gold tables and 22 DrugComb result tables. The DrugComb report at `/#drugcomb` compares published model evaluations across four generalisation splits and shows dataset composition. Its pinned upstream pipeline is included for inspection; raw training data and a newly executed training run are not included. Homie remains explicitly marked as partially implemented.
 
 Use `npm run data:build` to regenerate gold and product exports, then `npm run data:check` to verify both. This is a static, reproducible data portfolio; it does not yet implement dbt.
 

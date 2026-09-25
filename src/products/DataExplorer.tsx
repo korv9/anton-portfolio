@@ -8,6 +8,18 @@ const labels: Record<string, string> = { session: 'Session', party: 'Party', act
 const display = (value: unknown): string => value == null ? '—' : typeof value === 'object' ? JSON.stringify(value) : String(value)
 
 export default function DataExplorer() {
+  useEffect(() => {
+    const openTables = () => {
+      if (window.location.hash !== '#raw-data') return
+      const section = document.getElementById('raw-data')
+      const disclosure = section?.closest('details')
+      if (disclosure) disclosure.open = true
+      section?.scrollIntoView({ block: 'start' })
+    }
+    openTables()
+    window.addEventListener('hashchange', openTables)
+    return () => window.removeEventListener('hashchange', openTables)
+  }, [])
   const [datasets, setDatasets] = useState<Dataset[]>([])
   const [selected, setSelected] = useState('fact_budget_frame')
   const [rows, setRows] = useState<Row[]>([])
@@ -45,7 +57,7 @@ export default function DataExplorer() {
     (!query || Object.values(row).some((value) => display(value).toLocaleLowerCase().includes(query.toLocaleLowerCase())))
   ), [rows, query, filters])
   const pageCount = Math.max(1, Math.ceil(visible.length / 25))
-  return <section className="report data-explorer" id="data-explorer">
+  return <section className="report data-explorer" id="raw-data">
     <p className="eyebrow">Open data desk</p><h2>Inspect the records behind the charts.</h2>
     <p className="report-intro">Search every row in the imported datasets, including budget proposals and decisions without a recorded roll call. Downloads contain the full selected table. Coverage is limited to the imported snapshots.</p>
     <div className="dataset-presets" aria-label="Popular datasets">{[

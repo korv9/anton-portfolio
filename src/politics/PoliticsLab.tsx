@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   PARTIES,
   GOLD_ROOT,
@@ -60,9 +60,19 @@ export default function PoliticsLab() {
   const { data, error } = useGoldData<Overview>('overview.json')
   const [session, setSession] = useState('2025/26')
   const [tab, setTab] = useState('votes')
+  useEffect(() => {
+    const navigate = () => {
+      if (window.location.hash === '#politics-votes') setTab('votes')
+      if (window.location.hash === '#politics-laws') setTab('meaning')
+    }
+    navigate()
+    window.addEventListener('hashchange', navigate)
+    return () => window.removeEventListener('hashchange', navigate)
+  }, [])
   const active = data?.sessions.find((s) => s.id === session)
   return (
     <article className="politics-lab report" id="politics">
+      <span id="politics-votes" /><span id="politics-laws" />
       <p className="eyebrow">Political observatory · Swedish Parliament</p>
       <h2>From political words to recorded decisions.</h2>
       <p className="politics-intro">
@@ -75,7 +85,7 @@ export default function PoliticsLab() {
         <a href="#politics" onClick={() => setTab('debates')}><strong>01 · What was said</strong><span>Full speeches, replies and searchable transcripts</span></a>
         <a href="#budget-comparison"><strong>02 · What was proposed</strong><span>Budget frames and language comparisons</span></a>
         <a href="#politics" onClick={() => setTab('votes')}><strong>03 · How they voted</strong><span>Party votes, exact proposals and cited documents</span></a>
-        <a href="#data-explorer"><strong>04 · Inspect every record</strong><span>All imported budget and decision rows, filters and downloads</span></a>
+        <a href="#data-explorer"><strong>04 · Explore the people and speeches</strong><span>Find a politician, read their words and follow the discussion</span></a>
       </div>
       <nav className="politics-tabs" aria-label="Political analysis views">
         {[

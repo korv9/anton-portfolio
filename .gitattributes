@@ -7,3 +7,4 @@ scripts/build-products.py text eol=lf
 scripts/validate-products.py text eol=lf
 # Preserve the generated upstream Matplotlib SVGs verbatim.
 public/data/products/drugcomb/figures/*.svg -whitespace
+public/data/discovery/** text eol=lf

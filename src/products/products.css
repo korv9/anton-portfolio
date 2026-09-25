@@ -59,3 +59,25 @@
 .table-pagination button:disabled { opacity:.45; cursor:default; }
 @media(max-width:1000px) { .product-cards { grid-template-columns:1fr 1fr; } .lineage-grid { grid-template-columns:1fr 1fr; } }
 @media(max-width:650px) { .product-cards,.product-analysis-grid,.figure-gallery,.explorer-controls { grid-template-columns:1fr; } .politics-journey,.pipeline-strip { grid-template-columns:1fr 1fr; } .lineage-grid { grid-template-columns:1fr; } .dataset-context { flex-direction:column; gap:1rem; } .product-directory { padding-bottom:2rem; } .analysis-panel { padding:1rem; } }
+.speech-browse-layout { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.2fr); gap:1.5rem; align-items:start; }
+.speech-cards { display:grid; grid-template-columns:1fr 1fr; gap:.75rem; }
+.speech-card { min-width:0; border:1px solid var(--line); background:var(--paper); padding:1.1rem; text-align:left; color:var(--ink); cursor:pointer; font:inherit; }
+.speech-card[aria-pressed=true] { border:2px solid var(--teal); background:#eaf1ed; }
+.speech-card strong,.speech-card span,.speech-card small,.speech-card b { display:block; }
+.speech-card strong { margin:.5rem 0; font-size:1rem; }
+.speech-card span { font-size:.85rem; font-weight:600; }
+.speech-card p { font-size:.82rem; color:var(--muted); }
+.speech-card small { font-size:.72rem; }
+.speech-card b { font-size:.8rem; color:var(--teal); }
+.speech-reader { background:var(--paper); border:1px solid var(--line); padding:1.5rem; min-width:0; scroll-margin-top:95px; }
+.speech-reader h3 { font-size:1.3rem; }
+.speech-reader .source-text { white-space:pre-wrap; font-size:1rem; line-height:1.8; max-height:650px; overflow:auto; }
+.speech-reader details { margin-top:1.5rem; }
+.speaker-order { display:grid; gap:.4rem; margin-top:1rem; }
+.speaker-order button { text-align:left; background:white; color:var(--ink); border:1px solid var(--line); padding:.7rem; cursor:pointer; }
+.speaker-order button[aria-pressed=true] { border-color:var(--teal); font-weight:bold; }
+.technical-data { border-top:1px solid var(--line); margin-top:2rem; }
+.technical-data>summary { padding:1.5rem 0; cursor:pointer; color:var(--muted); }
+#speech-search,#politics-votes,#politics-laws { scroll-margin-top:95px; }
+@media(max-width:800px) { .speech-browse-layout { grid-template-columns:1fr; } .speech-reader { grid-row:1; padding:1rem; } }
+@media(max-width:450px) { .speech-cards { grid-template-columns:1fr; } }
