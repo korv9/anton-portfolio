@@ -66,10 +66,17 @@ export default function PoliticsLab() {
       <p className="eyebrow">Political observatory · Swedish Parliament</p>
       <h2>From political words to recorded decisions.</h2>
       <p className="politics-intro">
-        Explore what was said, what Parliament voted on, and what the legal text
-        actually contains. A source-led research notebook on Swedish politics,
-        with room to inspect the evidence behind every interpretation.
+        Speeches, budget proposals and formal decisions are spread across
+        different documents. This observatory brings the imported records
+        together so you can follow the evidence and make your own comparisons.
       </p>
+      <div className="politics-purpose"><strong>Why I built this</strong><p>I find it difficult to connect political language with budget priorities and what is actually decided. This is my attempt to make that formal record easier to navigate: start with a question, inspect the data, then open the original source.</p></div>
+      <div className="politics-journey" aria-label="Explore political records">
+        <a href="#politics" onClick={() => setTab('debates')}><strong>01 · What was said</strong><span>Full speeches, replies and searchable transcripts</span></a>
+        <a href="#budget-comparison"><strong>02 · What was proposed</strong><span>Budget frames and language comparisons</span></a>
+        <a href="#politics" onClick={() => setTab('votes')}><strong>03 · How they voted</strong><span>Party votes, exact proposals and cited documents</span></a>
+        <a href="#data-explorer"><strong>04 · Inspect every record</strong><span>All imported budget and decision rows, filters and downloads</span></a>
+      </div>
       <nav className="politics-tabs" aria-label="Political analysis views">
         {[
           ['votes', 'Votes & decisions'],

@@ -22,6 +22,12 @@ The browser tests require Playwright Chromium. `dist/` is the static output. Dat
 
 ## Latest report update
 
+Six project products now have a shared directory: politics, job-market analytics, DrugComb, Allegoria RFC drift, the thesis and Homie API. See [product contracts and pipeline locations](products/README.md).
+
+The data desk at `/#data-explorer` provides searchable, paginated access to all 31 gold tables and 22 DrugComb result tables, with full downloads. The DrugComb report at `/#drugcomb` compares published model evaluations across four generalisation splits and shows dataset composition. Its pinned upstream pipeline is included for inspection; raw training data and a newly executed training run are not included. Homie remains explicitly marked as partially implemented.
+
+Use `npm run data:build` to regenerate gold and product exports, then `npm run data:check` to verify both. This is a static, reproducible data portfolio; it does not yet implement dbt.
+
 Allegoria now has a separate compact RFC drift report at `/#rfc-drift`. The law tab contains source material only. Budget comparisons support separate party-leader/issue archives and exact/Swedish-stem matching, with eight-party spending summaries. See [audit, findings and reproduction](docs/rfc-and-budget-audit.md).
 
 ## Political observatory

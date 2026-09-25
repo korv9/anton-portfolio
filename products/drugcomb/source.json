@@ -1,0 +1,8 @@
+{
+  "repository": "https://github.com/korv9/DrugComb-Synergy-Prediction",
+  "revision": "d6803443a46d84feba5ad43d9b5d22256eebe8a4",
+  "report": "/data/products/drugcomb/REPORT.md",
+  "data_manifest": "/data/products/drugcomb/data_manifest.json",
+  "status": "Published upstream results; training not rerun in this portfolio integration",
+  "raw_data_included": false
+}

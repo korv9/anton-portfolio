@@ -1,0 +1,1 @@
+[{"step": "raw rows", "rows": 498865}, {"step": "has drug & cell names", "rows": 498855}, {"step": "numeric ZIP score", "rows": 498855}, {"step": "ZIP within [-100, 100]", "rows": 498309}, {"step": "two different molecules", "rows": 497926}, {"step": "human cell lines only", "rows": 484846}, {"step": "unique (pair, cell line, study) after replicate mean", "rows": 396498}]

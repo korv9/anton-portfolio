@@ -1,3 +1,9 @@
 public/data/gold/** text eol=lf
 scripts/build-gold.py text eol=lf
 scripts/validate-gold.py text eol=lf
+public/data/products/**/*.csv text eol=lf
+public/data/products/**/*.json text eol=lf
+scripts/build-products.py text eol=lf
+scripts/validate-products.py text eol=lf
+# Preserve the generated upstream Matplotlib SVGs verbatim.
+public/data/products/drugcomb/figures/*.svg -whitespace

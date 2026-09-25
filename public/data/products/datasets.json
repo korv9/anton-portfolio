@@ -1,0 +1,366 @@
+[
+  {
+    "id": "drugcomb_data_funnel",
+    "label": "data funnel",
+    "product": "drugcomb",
+    "rows": 7,
+    "columns": [
+      "step",
+      "rows"
+    ],
+    "path": "/data/products/drugcomb/tables/data_funnel.json",
+    "csv": "/data/products/drugcomb/tables/data_funnel.csv",
+    "sha256": "e183f76590ad8d228f6eb1a8e75fe469a045271ef166d5912bfa7ffcb086e36c"
+  },
+  {
+    "id": "drugcomb_data_quality",
+    "label": "data quality",
+    "product": "drugcomb",
+    "rows": 10,
+    "columns": [
+      "check",
+      "passed",
+      "detail"
+    ],
+    "path": "/data/products/drugcomb/tables/data_quality.json",
+    "csv": "/data/products/drugcomb/tables/data_quality.csv",
+    "sha256": "a1b6a349f64bda3b7c70c874ba0d0816daacc414317c071247b958c0e0f72162"
+  },
+  {
+    "id": "drugcomb_entity_resolution",
+    "label": "entity resolution",
+    "product": "drugcomb",
+    "rows": 7,
+    "columns": [
+      "entity",
+      "method",
+      "names",
+      "measurement_share"
+    ],
+    "path": "/data/products/drugcomb/tables/entity_resolution.json",
+    "csv": "/data/products/drugcomb/tables/entity_resolution.csv",
+    "sha256": "ff29faf5d79e6c973deb435941dcd0ba431b8a6ecd76b48a9e676a468324eea1"
+  },
+  {
+    "id": "drugcomb_eval_boosting_rounds",
+    "label": "eval boosting rounds",
+    "product": "drugcomb",
+    "rows": 800,
+    "columns": [
+      "round",
+      "train_rmse",
+      "test_rmse"
+    ],
+    "path": "/data/products/drugcomb/tables/eval_boosting_rounds.json",
+    "csv": "/data/products/drugcomb/tables/eval_boosting_rounds.csv",
+    "sha256": "fff19b4c551fc07a6091a17844bf6fe030cad6d5bfd973d9844f6957aa87fbdf"
+  },
+  {
+    "id": "drugcomb_eval_by_study",
+    "label": "eval by study",
+    "product": "drugcomb",
+    "rows": 30,
+    "columns": [
+      "scheme",
+      "study",
+      "model",
+      "n",
+      "pearson",
+      "rmse"
+    ],
+    "path": "/data/products/drugcomb/tables/eval_by_study.json",
+    "csv": "/data/products/drugcomb/tables/eval_by_study.csv",
+    "sha256": "a9c96e5ccea957ce69952fef7e3bda03f154e748e8ed4436e15fa5e40fbe6f42"
+  },
+  {
+    "id": "drugcomb_eval_calibration",
+    "label": "eval calibration",
+    "product": "drugcomb",
+    "rows": 40,
+    "columns": [
+      "decile",
+      "pred",
+      "obs",
+      "obs_q25",
+      "obs_q75",
+      "n",
+      "scheme"
+    ],
+    "path": "/data/products/drugcomb/tables/eval_calibration.json",
+    "csv": "/data/products/drugcomb/tables/eval_calibration.csv",
+    "sha256": "99d99a16008450ef3e63c5c8943306759fef409f101e3c5870741fcfa3b28f9d"
+  },
+  {
+    "id": "drugcomb_eval_enrichment",
+    "label": "eval enrichment",
+    "product": "drugcomb",
+    "rows": 24,
+    "columns": [
+      "scheme",
+      "model",
+      "top_fraction",
+      "hit_rate",
+      "base_rate",
+      "enrichment"
+    ],
+    "path": "/data/products/drugcomb/tables/eval_enrichment.json",
+    "csv": "/data/products/drugcomb/tables/eval_enrichment.csv",
+    "sha256": "525d60754d6641c13cd0c2e9b889c30c0b827679fcd9b3ff610205e731293502"
+  },
+  {
+    "id": "drugcomb_eval_learning_curve",
+    "label": "eval learning curve",
+    "product": "drugcomb",
+    "rows": 4,
+    "columns": [
+      "train_fraction",
+      "n_train",
+      "train_r",
+      "test_r"
+    ],
+    "path": "/data/products/drugcomb/tables/eval_learning_curve.json",
+    "csv": "/data/products/drugcomb/tables/eval_learning_curve.csv",
+    "sha256": "e2e4a40d1df8c8bde8c90f981ffd9d197de571af072103e6649b695cec1cf9c5"
+  },
+  {
+    "id": "drugcomb_eval_y_scramble",
+    "label": "eval y scramble",
+    "product": "drugcomb",
+    "rows": 1,
+    "columns": [
+      "scheme",
+      "labels",
+      "test_r"
+    ],
+    "path": "/data/products/drugcomb/tables/eval_y_scramble.json",
+    "csv": "/data/products/drugcomb/tables/eval_y_scramble.csv",
+    "sha256": "42629a219440fbb6a24ed8601ed63617945d0babe02b95cc945e197a161405ca"
+  },
+  {
+    "id": "drugcomb_feature_importance_family",
+    "label": "feature importance family",
+    "product": "drugcomb",
+    "rows": 172,
+    "columns": [
+      "scheme",
+      "model",
+      "family",
+      "gain"
+    ],
+    "path": "/data/products/drugcomb/tables/feature_importance_family.json",
+    "csv": "/data/products/drugcomb/tables/feature_importance_family.csv",
+    "sha256": "e49ba6817cc36d0d69cba00966a0993ed52849e199c4434d719f0ff68535a423"
+  },
+  {
+    "id": "drugcomb_feature_importance_top",
+    "label": "feature importance top",
+    "product": "drugcomb",
+    "rows": 600,
+    "columns": [
+      "scheme",
+      "model",
+      "feature",
+      "family",
+      "gain"
+    ],
+    "path": "/data/products/drugcomb/tables/feature_importance_top.json",
+    "csv": "/data/products/drugcomb/tables/feature_importance_top.csv",
+    "sha256": "2984fd150d0ab526923119a99219467d283537cc11ba41e81acb0ff8f26ea436"
+  },
+  {
+    "id": "drugcomb_metrics",
+    "label": "metrics",
+    "product": "drugcomb",
+    "rows": 32,
+    "columns": [
+      "scheme",
+      "model",
+      "pearson",
+      "spearman",
+      "rmse",
+      "r2",
+      "auprc_synergy",
+      "prevalence_synergy",
+      "pearson_sd",
+      "spearman_sd",
+      "rmse_sd",
+      "r2_sd",
+      "auprc_synergy_sd",
+      "prevalence_synergy_sd",
+      "model_label"
+    ],
+    "path": "/data/products/drugcomb/tables/metrics.json",
+    "csv": "/data/products/drugcomb/tables/metrics.csv",
+    "sha256": "fbdf585bfde306f040781362c915d90baa7e3e0a9f293d5d32891962414a927b"
+  },
+  {
+    "id": "drugcomb_metrics_by_fold",
+    "label": "metrics by fold",
+    "product": "drugcomb",
+    "rows": 96,
+    "columns": [
+      "scheme",
+      "fold",
+      "model",
+      "pearson",
+      "spearman",
+      "rmse",
+      "r2",
+      "auprc_synergy",
+      "prevalence_synergy",
+      "n_test"
+    ],
+    "path": "/data/products/drugcomb/tables/metrics_by_fold.json",
+    "csv": "/data/products/drugcomb/tables/metrics_by_fold.csv",
+    "sha256": "3a63e252dbbdea63ed92d07f98468fcd5a3f6d4dc8c5d1875dfba676364f81eb"
+  },
+  {
+    "id": "drugcomb_rna_pca_explained_variance",
+    "label": "rna pca explained variance",
+    "product": "drugcomb",
+    "rows": 32,
+    "columns": [
+      "component",
+      "explained_variance"
+    ],
+    "path": "/data/products/drugcomb/tables/rna_pca_explained_variance.json",
+    "csv": "/data/products/drugcomb/tables/rna_pca_explained_variance.csv",
+    "sha256": "b587164ffae13bda7cd368d038ac0f2a071b6a028752efb858d18f4a8f0fc0b5"
+  },
+  {
+    "id": "drugcomb_sql_drug_profile",
+    "label": "sql drug profile",
+    "product": "drugcomb",
+    "rows": 50,
+    "columns": [
+      "drug_name",
+      "combinations",
+      "partners",
+      "cell_lines",
+      "mean_zip",
+      "share_synergistic"
+    ],
+    "path": "/data/products/drugcomb/tables/sql_drug_profile.json",
+    "csv": "/data/products/drugcomb/tables/sql_drug_profile.csv",
+    "sha256": "dcf06c8928537634883a703c1cf9d3ea8467a910b3cbf3eab8ad80f25fb0aa84"
+  },
+  {
+    "id": "drugcomb_sql_kpi_overview",
+    "label": "sql kpi overview",
+    "product": "drugcomb",
+    "rows": 1,
+    "columns": [
+      "combinations",
+      "drug_pairs",
+      "drugs",
+      "cell_lines",
+      "lineages",
+      "mean_zip",
+      "share_synergistic",
+      "share_antagonistic",
+      "share_with_structures",
+      "share_with_rna"
+    ],
+    "path": "/data/products/drugcomb/tables/sql_kpi_overview.json",
+    "csv": "/data/products/drugcomb/tables/sql_kpi_overview.csv",
+    "sha256": "64953b0e0232a01314e427deac0c6b14b3926112ced5098dfc72a35cb56426d0"
+  },
+  {
+    "id": "drugcomb_sql_score_concordance",
+    "label": "sql score concordance",
+    "product": "drugcomb",
+    "rows": 6,
+    "columns": [
+      "pair",
+      "pearson"
+    ],
+    "path": "/data/products/drugcomb/tables/sql_score_concordance.json",
+    "csv": "/data/products/drugcomb/tables/sql_score_concordance.csv",
+    "sha256": "2fc3599de086486f8b96260ea44f10ca1f6e4bd28c89272cbd4e5eb580b463ea"
+  },
+  {
+    "id": "drugcomb_sql_screen_coverage",
+    "label": "sql screen coverage",
+    "product": "drugcomb",
+    "rows": 1,
+    "columns": [
+      "observed",
+      "possible",
+      "density",
+      "pairs_in_one_cell_line"
+    ],
+    "path": "/data/products/drugcomb/tables/sql_screen_coverage.json",
+    "csv": "/data/products/drugcomb/tables/sql_screen_coverage.csv",
+    "sha256": "d059784fabf380016b863fc7bc873c1d81de874e4c4791353510f17b6e471a48"
+  },
+  {
+    "id": "drugcomb_sql_study_overview",
+    "label": "sql study overview",
+    "product": "drugcomb",
+    "rows": 4,
+    "columns": [
+      "study",
+      "combinations",
+      "drug_pairs",
+      "cell_lines",
+      "mean_zip",
+      "sd_zip",
+      "q25",
+      "median_zip",
+      "q75",
+      "share_synergistic"
+    ],
+    "path": "/data/products/drugcomb/tables/sql_study_overview.json",
+    "csv": "/data/products/drugcomb/tables/sql_study_overview.csv",
+    "sha256": "b7932a290845402f716d2ff0b047aa7adc8bc1a6c2b725ece429218008357714"
+  },
+  {
+    "id": "drugcomb_sql_synergy_by_lineage",
+    "label": "sql synergy by lineage",
+    "product": "drugcomb",
+    "rows": 13,
+    "columns": [
+      "lineage",
+      "combinations",
+      "cell_lines",
+      "mean_zip",
+      "q25",
+      "median_zip",
+      "q75",
+      "share_synergistic"
+    ],
+    "path": "/data/products/drugcomb/tables/sql_synergy_by_lineage.json",
+    "csv": "/data/products/drugcomb/tables/sql_synergy_by_lineage.csv",
+    "sha256": "a2b8a43d64985ff299b18243fe2dd615b844f090941c445ad848049399fe4ed3"
+  },
+  {
+    "id": "drugcomb_sql_top_synergistic_pairs",
+    "label": "sql top synergistic pairs",
+    "product": "drugcomb",
+    "rows": 25,
+    "columns": [
+      "pair_name",
+      "cell_lines",
+      "mean_zip",
+      "sd_zip",
+      "share_synergistic"
+    ],
+    "path": "/data/products/drugcomb/tables/sql_top_synergistic_pairs.json",
+    "csv": "/data/products/drugcomb/tables/sql_top_synergistic_pairs.csv",
+    "sha256": "96f2a253ece0c68138f8d55dc00bf76d860a2ea78ab2c92ed9474a4e5f81f30b"
+  },
+  {
+    "id": "drugcomb_study_readout",
+    "label": "study readout",
+    "product": "drugcomb",
+    "rows": 4,
+    "columns": [
+      "source",
+      "untreated_median",
+      "readout"
+    ],
+    "path": "/data/products/drugcomb/tables/study_readout.json",
+    "csv": "/data/products/drugcomb/tables/study_readout.csv",
+    "sha256": "6c124fbcfba376489b41545663697e24c625b209b6e493166f3b63a73cd149f4"
+  }
+]
