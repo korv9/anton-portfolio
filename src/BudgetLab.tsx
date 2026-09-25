@@ -1,4 +1,5 @@
 import { currentLocale, l, t } from './i18n'
+import { fetchData } from './dataSource'
 import BudgetLedger from './BudgetLedger'
 import BudgetOverview from './BudgetOverview'
 import BudgetLanguage, { type Language } from './BudgetLanguage'
@@ -79,10 +80,17 @@ const areaNames: Record<number, string> = {
 }
 export const nameOf = (area: number) => t(areaNames[area] ?? `Area ${area}`)
 const percent = (value: number, digits = 1) =>
-  value > 0 && value < 0.1 ? (currentLocale() === 'sv' ? '<0,1%' : '<0.1%') : `${value.toLocaleString(currentLocale() === 'sv' ? 'sv-SE' : 'en-GB', { minimumFractionDigits: digits, maximumFractionDigits: digits })}%`
+  value > 0 && value < 0.1
+    ? currentLocale() === 'sv'
+      ? '<0,1%'
+      : '<0.1%'
+    : `${value.toLocaleString(currentLocale() === 'sv' ? 'sv-SE' : 'en-GB', { minimumFractionDigits: digits, maximumFractionDigits: digits })}%`
 const signed = (value: number, digits = 1) =>
   `${value > 0 ? '+' : ''}${value.toFixed(digits)}`
-const number = (value: number) => new Intl.NumberFormat(currentLocale() === 'sv' ? 'sv-SE' : 'en-GB').format(value)
+const number = (value: number) =>
+  new Intl.NumberFormat(currentLocale() === 'sv' ? 'sv-SE' : 'en-GB').format(
+    value,
+  )
 const partyColors: Record<string, string> = {
   C: '#006b52',
   KD: '#415990',
@@ -124,7 +132,10 @@ function ScatterChart({
       className="budget-scatter"
       viewBox={`0 0 ${width} ${height}`}
       role="group"
-      aria-label={l(`Budget share on the horizontal axis and debate keyword share on the vertical axis, one point per party and expenditure area${allParties ? ' for all available parties' : ''}`, `Budgetandel på den vågräta axeln och andel debattnyckelord på den lodräta, en punkt per parti och utgiftsområde${allParties ? ' för alla tillgängliga partier' : ''}`)}
+      aria-label={l(
+        `Budget share on the horizontal axis and debate keyword share on the vertical axis, one point per party and expenditure area${allParties ? ' for all available parties' : ''}`,
+        `Budgetandel på den vågräta axeln och andel debattnyckelord på den lodräta, en punkt per parti och utgiftsområde${allParties ? ' för alla tillgängliga partier' : ''}`,
+      )}
     >
       {[0, 0.25, 0.5, 0.75, 1].map((step) => (
         <g key={step}>
@@ -180,7 +191,10 @@ function ScatterChart({
           }
           tabIndex={0}
           role="button"
-          aria-label={l(`${row.party}, ${nameOf(row.expenditure_area)}: ${percent(row.budget_share_pct)} of budget, ${percent(row.speech_attention_pct)} of matched debate keywords`, `${row.party}, ${nameOf(row.expenditure_area)}: ${percent(row.budget_share_pct)} av budgeten, ${percent(row.speech_attention_pct)} av matchade debattnyckelord`)}
+          aria-label={l(
+            `${row.party}, ${nameOf(row.expenditure_area)}: ${percent(row.budget_share_pct)} of budget, ${percent(row.speech_attention_pct)} of matched debate keywords`,
+            `${row.party}, ${nameOf(row.expenditure_area)}: ${percent(row.budget_share_pct)} av budgeten, ${percent(row.speech_attention_pct)} av matchade debattnyckelord`,
+          )}
           onClick={() => onSelect(row)}
           onKeyDown={(event) => {
             if (event.key === 'Enter' || event.key === ' ') {
@@ -200,13 +214,15 @@ function ScatterChart({
         textAnchor="middle"
         className="budget-axis-title"
       >
-        {t("Share of party budget\n      ")}</text>
+        {t('Share of party budget\n      ')}
+      </text>
       <text
         transform={`translate(15 ${height / 2}) rotate(-90)`}
         textAnchor="middle"
         className="budget-axis-title"
       >
-        {t("Share of matched debate keywords\n      ")}</text>
+        {t('Share of matched debate keywords\n      ')}
+      </text>
     </svg>
   )
 }
@@ -235,7 +251,10 @@ function DifferenceBars({
           key={`${row.party}-${row.expenditure_area}`}
           className="difference-row"
           onClick={() => onSelect(row)}
-          aria-label={l(`${row.party}, ${nameOf(row.expenditure_area)}: ${signed(row.attention_minus_budget_pp)} percentage points`, `${row.party}, ${nameOf(row.expenditure_area)}: ${signed(row.attention_minus_budget_pp)} procentenheter`)}
+          aria-label={l(
+            `${row.party}, ${nameOf(row.expenditure_area)}: ${signed(row.attention_minus_budget_pp)} percentage points`,
+            `${row.party}, ${nameOf(row.expenditure_area)}: ${signed(row.attention_minus_budget_pp)} procentenheter`,
+          )}
         >
           <span>
             {allParties && (
@@ -262,7 +281,9 @@ function DifferenceBars({
               }}
             />
           </span>
-          <strong>{signed(row.attention_minus_budget_pp)} {t("pp")}</strong>
+          <strong>
+            {signed(row.attention_minus_budget_pp)} {t('pp')}
+          </strong>
         </button>
       ))}
     </div>
@@ -302,13 +323,19 @@ function PartyAreaComparison({
   return (
     <div
       className="party-area-comparison"
-      aria-label={l(`Budget and keyword shares for ${nameOf(area)} across all eight parties`, `Budgetandelar och nyckelordsandelar för ${nameOf(area)} för alla åtta partier`)}
+      aria-label={l(
+        `Budget and keyword shares for ${nameOf(area)} across all eight parties`,
+        `Budgetandelar och nyckelordsandelar för ${nameOf(area)} för alla åtta partier`,
+      )}
     >
       <div className="party-area-head">
-        <strong>{nameOf(area)} {t("· all eight parties")}</strong>
+        <strong>
+          {nameOf(area)} {t('· all eight parties')}
+        </strong>
         <span>
-          <i className="budget-key" /> {t("Budget share")}{' '}
-          <i className="keyword-key" /> {t("Keyword share\n        ")}</span>
+          <i className="budget-key" /> {t('Budget share')}{' '}
+          <i className="keyword-key" /> {t('Keyword share\n        ')}
+        </span>
       </div>
       <div className="party-area-rows">
         {selected.map((row) => (
@@ -333,8 +360,14 @@ function PartyAreaComparison({
               )}
             </div>
             <span
-              aria-label={l(`${row.party}: budget ${row.budget ? percent(row.budget.budget_share_pct) : 'no separate frame'}, keyword share ${row.speech?.keyword_share_pct != null ? percent(row.speech.keyword_share_pct) : 'unavailable'}`, `${row.party}: budget ${row.budget ? percent(row.budget.budget_share_pct) : 'ingen separat ram'}, nyckelordsandel ${row.speech?.keyword_share_pct != null ? percent(row.speech.keyword_share_pct) : 'saknas'}`)}
-              title={l(`${row.speech?.occurrences ?? 0} keyword matches`, `${row.speech?.occurrences ?? 0} nyckelordsträffar`)}
+              aria-label={l(
+                `${row.party}: budget ${row.budget ? percent(row.budget.budget_share_pct) : 'no separate frame'}, keyword share ${row.speech?.keyword_share_pct != null ? percent(row.speech.keyword_share_pct) : 'unavailable'}`,
+                `${row.party}: budget ${row.budget ? percent(row.budget.budget_share_pct) : 'ingen separat ram'}, nyckelordsandel ${row.speech?.keyword_share_pct != null ? percent(row.speech.keyword_share_pct) : 'saknas'}`,
+              )}
+              title={l(
+                `${row.speech?.occurrences ?? 0} keyword matches`,
+                `${row.speech?.occurrences ?? 0} nyckelordsträffar`,
+              )}
             >
               {row.budget ? percent(row.budget.budget_share_pct) : '—'} /{' '}
               {row.speech?.keyword_share_pct != null
@@ -345,7 +378,10 @@ function PartyAreaComparison({
         ))}
       </div>
       <p>
-        {t("Budget share / keyword share. A dash means no separate party budget\n        frame. Keyword shares use the selected method and archive, calculated\n        separately within each party. 0.0% means zero detected matches; — means\n        unavailable. They do not measure policy support.\n      ")}</p>
+        {t(
+          'Budget share / keyword share. A dash means no separate party budget\n        frame. Keyword shares use the selected method and archive, calculated\n        separately within each party. 0.0% means zero detected matches; — means\n        unavailable. They do not measure policy support.\n      ',
+        )}
+      </p>
     </div>
   )
 }
@@ -371,25 +407,32 @@ function CoverageMatrix({
     rows.filter((row) => row.session === year && row.actor === actor).length
   return (
     <details className="coverage-details">
-      <summary>{t("Coverage: all eight parties and missing budget data")}</summary>
+      <summary>
+        {t('Coverage: all eight parties and missing budget data')}
+      </summary>
       <p>
-        {t("Debate speeches are present for all eight parties in these sessions. The\n        cells below count expenditure areas in the imported FiU1 budget table;\n        27/27 is complete. A dash means there is no separate party budget frame\n        in this export, not zero spending. GOV is the collective government\n        proposal and cannot be assigned to individual parties.\n      ")}</p>
+        {t(
+          'Debate speeches are present for all eight parties in these sessions. The\n        cells below count expenditure areas in the imported FiU1 budget table;\n        27/27 is complete. A dash means there is no separate party budget frame\n        in this export, not zero spending. GOV is the collective government\n        proposal and cannot be assigned to individual parties.\n      ',
+        )}
+      </p>
       <div
         className="coverage-scroll"
         tabIndex={0}
-        aria-label={t("Budget coverage table scrolls horizontally on small screens")}
+        aria-label={t(
+          'Budget coverage table scrolls horizontally on small screens',
+        )}
       >
         <table>
-          <caption>{t("Imported budget areas by session and actor")}</caption>
+          <caption>{t('Imported budget areas by session and actor')}</caption>
           <thead>
             <tr>
-              <th scope="col">{t("Session")}</th>
+              <th scope="col">{t('Session')}</th>
               {allPartyCodes.map((code) => (
                 <th key={code} scope="col">
                   {code}
                 </th>
               ))}
-              <th scope="col">{t("GOV")}</th>
+              <th scope="col">{t('GOV')}</th>
             </tr>
           </thead>
           <tbody>
@@ -426,7 +469,10 @@ function CoverageMatrix({
         </table>
       </div>
       <p>
-        {t("2017/18 and 2018/19 are incomplete imports and are excluded from\n        share-based charts until repaired. In 2014/15, 2015/16, 2020/21 and\n        2021/22 the importer did not find a machine-readable FiU1 comparison\n        table.\n      ")}</p>
+        {t(
+          '2017/18 and 2018/19 are incomplete imports and are excluded from\n        share-based charts until repaired. In 2014/15, 2015/16, 2020/21 and\n        2021/22 the importer did not find a machine-readable FiU1 comparison\n        table.\n      ',
+        )}
+      </p>
     </details>
   )
 }
@@ -468,7 +514,9 @@ function BudgetHeatmap({
     <div
       className="heatmap-scroll"
       tabIndex={0}
-      aria-label={t("Budget deviation heatmap can scroll horizontally on small screens")}
+      aria-label={t(
+        'Budget deviation heatmap can scroll horizontally on small screens',
+      )}
     >
       <div
         className="budget-heatmap"
@@ -476,7 +524,7 @@ function BudgetHeatmap({
           gridTemplateColumns: `minmax(185px, 1.7fr) repeat(${parties.length}, minmax(72px, 1fr))`,
         }}
       >
-        <div className="heatmap-heading">{t("Expenditure area")}</div>
+        <div className="heatmap-heading">{t('Expenditure area')}</div>
         {parties.map((party) => (
           <div className="heatmap-heading" key={party}>
             {party}
@@ -497,7 +545,10 @@ function BudgetHeatmap({
                 <span
                   key={`${item.area}-${party}`}
                   className="heatmap-cell missing"
-                  aria-label={l(`${party}, ${nameOf(item.area)}: no comparable figure`, `${party}, ${nameOf(item.area)}: ingen jämförbar siffra`)}
+                  aria-label={l(
+                    `${party}, ${nameOf(item.area)}: no comparable figure`,
+                    `${party}, ${nameOf(item.area)}: ingen jämförbar siffra`,
+                  )}
                 >
                   —
                 </span>
@@ -519,7 +570,10 @@ function BudgetHeatmap({
                   color: '#172321',
                 }}
                 onClick={() => onSelect(item.area)}
-                aria-label={l(`${party}, ${nameOf(item.area)}: ${value > 0 ? '+' : ''}${number(value)} million SEK versus government proposal`, `${party}, ${nameOf(item.area)}: ${value > 0 ? '+' : ''}${number(value)} miljoner kronor jämfört med regeringens förslag`)}
+                aria-label={l(
+                  `${party}, ${nameOf(item.area)}: ${value > 0 ? '+' : ''}${number(value)} million SEK versus government proposal`,
+                  `${party}, ${nameOf(item.area)}: ${value > 0 ? '+' : ''}${number(value)} miljoner kronor jämfört med regeringens förslag`,
+                )}
               >
                 {value > 0 ? '+' : ''}
                 {number(value)}
@@ -547,7 +601,8 @@ function TrendChart({
   if (data.length < 2)
     return (
       <p className="budget-empty">
-        {t("Fewer than two comparable years for this choice.\n      ")}</p>
+        {t('Fewer than two comparable years for this choice.\n      ')}
+      </p>
     )
   const width = 620,
     height = 250,
@@ -594,7 +649,10 @@ function TrendChart({
       className="budget-trend"
       viewBox={`0 0 ${width} ${height}`}
       role="img"
-      aria-label={l(`Budget share and matched debate keyword share for ${party} in ${nameOf(area)} across available budget years`, `Budgetandel och andel matchade debattnyckelord för ${party} inom ${nameOf(area)} över tillgängliga budgetår`)}
+      aria-label={l(
+        `Budget share and matched debate keyword share for ${party} in ${nameOf(area)} across available budget years`,
+        `Budgetandel och andel matchade debattnyckelord för ${party} inom ${nameOf(area)} över tillgängliga budgetår`,
+      )}
     >
       {[0, 0.5, 1].map((step) => (
         <g key={step}>
@@ -679,7 +737,10 @@ function CorrelationTimeline({
     <div
       className="correlation-timeline"
       role="img"
-      aria-label={l(`Correlation between budget share and keyword share by available session for ${party}`, `Korrelation mellan budgetandel och nyckelordsandel per tillgängligt riksmöte för ${party}`)}
+      aria-label={l(
+        `Correlation between budget share and keyword share by available session for ${party}`,
+        `Korrelation mellan budgetandel och nyckelordsandel per tillgängligt riksmöte för ${party}`,
+      )}
     >
       {unique.map((row) => {
         const value = row.alignment_correlation
@@ -722,7 +783,7 @@ export default function BudgetLab() {
   const [method, setMethod] = useState('exact')
 
   useEffect(() => {
-    fetch('/data/gold/marts/budget-report.json')
+    fetchData('gold/marts/budget-report.json')
       .then((response) => {
         if (!response.ok) throw new Error('Budget report unavailable')
         return response.json()
@@ -836,9 +897,18 @@ export default function BudgetLab() {
     (sum, row) => sum + row.speech_keyword_occurrences,
     0,
   )
-  const illustrationParty = allParties && availableParties.includes('S') ? 'S' : allParties ? availableParties[0] : activeParty
-  const illustration = sessionAlignment.find(row => row.party === illustrationParty && row.expenditure_area === area)
-  const illustrationHits = sessionAlignment.filter(row => row.party === illustrationParty).reduce((sum, row) => sum + row.speech_keyword_occurrences, 0)
+  const illustrationParty =
+    allParties && availableParties.includes('S')
+      ? 'S'
+      : allParties
+        ? availableParties[0]
+        : activeParty
+  const illustration = sessionAlignment.find(
+    (row) => row.party === illustrationParty && row.expenditure_area === area,
+  )
+  const illustrationHits = sessionAlignment
+    .filter((row) => row.party === illustrationParty)
+    .reduce((sum, row) => sum + row.speech_keyword_occurrences, 0)
   const areaOptions = [
     ...new Set(comparableAlignment.map((row) => row.expenditure_area)),
   ].sort((a, b) => a - b)
@@ -850,12 +920,14 @@ export default function BudgetLab() {
   if (error)
     return (
       <p id="budget-comparison" className="budget-empty">
-        {t("The budget exports could not be loaded.\n      ")}</p>
+        {t('The budget exports could not be loaded.\n      ')}
+      </p>
     )
   if (!alignment.length || !coverage || !speechRows.length || !language)
     return (
       <p id="budget-comparison" className="budget-empty">
-        {t("Loading the budget comparison…\n      ")}</p>
+        {t('Loading the budget comparison…\n      ')}
+      </p>
     )
   return (
     <section
@@ -865,30 +937,47 @@ export default function BudgetLab() {
     >
       <div className="budget-lab-head">
         <div>
-          <p className="eyebrow">{t("Budgets / proposals and annual accounts")}</p>
+          <p className="eyebrow">
+            {t('Budgets / proposals and annual accounts')}
+          </p>
           <h3 id="budget-lab-title">
-            {t("What do the budget proposals contain?\n          ")}</h3>
+            {t('What do the budget proposals contain?\n          ')}
+          </h3>
           <p>
-            {t("Start with the proposed amounts for any imported year. The optional language comparison uses only sessions with complete budget frames and detectable speech keywords.\n          ")}</p>
-          <a className="budget-jump" href="#budget-outturn">{t("See approved budget versus actual spending ↓")}</a>
+            {t(
+              'Start with the proposed amounts for any imported year. The optional language comparison uses only sessions with complete budget frames and detectable speech keywords.\n          ',
+            )}
+          </p>
+          <a className="budget-jump" href="#budget-outturn">
+            {t('See approved budget versus actual spending ↓')}
+          </a>
         </div>
       </div>
       <BudgetLedger rows={budgets} nameOf={nameOf} />
-      <details className="budget-secondary"><summary>{t("Compare the separate party proposals at a glance")}</summary>
-      <BudgetOverview
-        rows={sessionBudgets}
-        nameOf={nameOf}
-        select={(p, a) => {
-          setParty(p)
-          setArea(a)
-        }}
-      />
+      <details className="budget-secondary">
+        <summary>
+          {t('Compare the separate party proposals at a glance')}
+        </summary>
+        <BudgetOverview
+          rows={sessionBudgets}
+          nameOf={nameOf}
+          select={(p, a) => {
+            setParty(p)
+            setArea(a)
+          }}
+        />
       </details>
-      <details className="budget-secondary"><summary>{t("Explore speech keywords beside budget shares")}</summary>
-        <p>{t("Select a session and party to compare complete proposals with detected topic words. These controls apply only to the language charts below.")}</p>
+      <details className="budget-secondary">
+        <summary>{t('Explore speech keywords beside budget shares')}</summary>
+        <p>
+          {t(
+            'Select a session and party to compare complete proposals with detected topic words. These controls apply only to the language charts below.',
+          )}
+        </p>
         <div className="budget-controls">
           <label>
-            {t("Session\n            ")}<select
+            {t('Session\n            ')}
+            <select
               value={session}
               onChange={(event) => setSession(event.target.value)}
             >
@@ -900,11 +989,12 @@ export default function BudgetLab() {
             </select>
           </label>
           <label>
-            {t("Party\n            ")}<select
+            {t('Party\n            ')}
+            <select
               value={activeParty}
               onChange={(event) => setParty(event.target.value)}
             >
-              <option value="ALL">{t("All available parties")}</option>
+              <option value="ALL">{t('All available parties')}</option>
               {availableParties.map((value) => (
                 <option key={value}>{value}</option>
               ))}
@@ -912,276 +1002,362 @@ export default function BudgetLab() {
           </label>
         </div>
 
-      <div className="budget-summary">
-        <div>
-          <strong>{number(sessionBudgets.length)}</strong>
-          <span>{t("budget rows in session")}</span>
+        <div className="budget-summary">
+          <div>
+            <strong>{number(sessionBudgets.length)}</strong>
+            <span>{t('budget rows in session')}</span>
+          </div>
+          <div>
+            <strong>
+              {allParties ? availableParties.length : number(keywordHits)}
+            </strong>
+            <span>
+              {allParties
+                ? t('parties with comparable data')
+                : currentLocale() === 'sv'
+                  ? `matchade nyckelordsträffar för ${activeParty}`
+                  : `matched keyword occurrences for ${activeParty}`}
+            </span>
+          </div>
+          <div>
+            <strong>
+              {allParties
+                ? number(keywordHits)
+                : correlation == null
+                  ? '—'
+                  : correlation.toFixed(2)}
+            </strong>
+            <span>
+              {allParties
+                ? t('matched keyword occurrences across parties')
+                : currentLocale() === 'sv'
+                  ? `andelarnas korrelation över ${selectedRows.length} områden`
+                  : `share correlation across ${selectedRows.length} areas`}
+            </span>
+          </div>
         </div>
-        <div>
+        <div
+          className="budget-party-status"
+          aria-label={l(
+            `Budget coverage for all eight parties in ${session}`,
+            `Budgettäckning för alla åtta partier i ${session}`,
+          )}
+        >
           <strong>
-            {allParties ? availableParties.length : number(keywordHits)}
+            {t('All eight parties · ')}
+            {session}
           </strong>
-          <span>
-            {allParties
-              ? t('parties with comparable data')
-              : currentLocale() === 'sv' ? `matchade nyckelordsträffar för ${activeParty}` : `matched keyword occurrences for ${activeParty}`}
-          </span>
+          <div>
+            {allPartyCodes.map((code) => {
+              const count = sessionBudgets.filter(
+                (row) => row.actor === code,
+              ).length
+              return (
+                <span
+                  key={code}
+                  className={count === 27 ? 'available' : 'unavailable'}
+                >
+                  <b>{code}</b>{' '}
+                  {t(count === 27 ? 'budget + debate' : 'debate only')}
+                </span>
+              )
+            })}
+          </div>
+          <p>
+            {t(
+              'The FiU1 source reports one collective government proposal and\n          separate budget motions for some parties. Debate data exists for all\n          eight; a missing party frame cannot be inferred from GOV.\n        ',
+            )}
+          </p>
         </div>
-        <div>
-          <strong>
-            {allParties
-              ? number(keywordHits)
-              : correlation == null
-                ? '—'
-                : correlation.toFixed(2)}
-          </strong>
-          <span>
-            {allParties
-              ? t('matched keyword occurrences across parties')
-              : currentLocale() === 'sv' ? `andelarnas korrelation över ${selectedRows.length} områden` : `share correlation across ${selectedRows.length} areas`}
-          </span>
-        </div>
-      </div>
-      <div
-        className="budget-party-status"
-        aria-label={l(`Budget coverage for all eight parties in ${session}`, `Budgettäckning för alla åtta partier i ${session}`)}
-      >
-        <strong>{t("All eight parties · ")}{session}</strong>
-        <div>
-          {allPartyCodes.map((code) => {
-            const count = sessionBudgets.filter(
-              (row) => row.actor === code,
-            ).length
-            return (
-              <span
-                key={code}
-                className={count === 27 ? 'available' : 'unavailable'}
-              >
-                <b>{code}</b> {t(count === 27 ? 'budget + debate' : 'debate only')}
-              </span>
-            )
-          })}
-        </div>
-        <p>
-          {t("The FiU1 source reports one collective government proposal and\n          separate budget motions for some parties. Debate data exists for all\n          eight; a missing party frame cannot be inferred from GOV.\n        ")}</p>
-      </div>
 
-        <p className="evidence-note">{t("These two percentages have different denominators. Budget share is a fraction of a party's proposed expenditure; keyword share is a fraction of matched words across 27 topic dictionaries. A difference between them is a descriptive comparison, not an amount of money, a position on an issue, or a measure of honesty. The debates span the whole session, including speeches after the budget proposal.")}</p>
-        {illustration && <div className="comparison-walkthrough"><strong>{t("A concrete example: ")}{illustrationParty} · {nameOf(area)} · {session}</strong><p>{t("The proposal assigns ")}{percent(illustration.budget_share_pct)} {t("of ")}{illustrationParty}{t("'s total proposed expenditure to this area (")}{number(illustration.amount_msek)} {t("million SEK). In the selected ")}{t(corpus === 'leaders' ? 'party-leader' : 'issue')} {t("debates, ")}{illustration.speech_keyword_occurrences} {t("of ")}{number(illustrationHits)} {t("detected area-word matches fall into this dictionary (")}{percent(illustration.speech_attention_pct)}{t("). Those percentages use different totals. A match does not tell us whether the speaker supported, criticised or merely mentioned the issue.")}</p><a href={illustration.source_url} target="_blank" rel="noreferrer">{t("Read the budget source ↗")}</a></div>}
-      <BudgetLanguage
-        data={language}
-        session={session}
-        corpus={corpus}
-        method={method}
-        area={area}
-        setCorpus={setCorpus}
-        setMethod={setMethod}
-      />
-      <PartyAreaComparison
-        speechRows={activeSpeechRows}
-        budgetRows={sessionAlignment}
-        session={session}
-        area={area}
-      />
-      <div className="budget-panels">
-        <section className="budget-panel scatter-panel">
-          <div className="panel-heading">
-            <span>{t("01 / Budget versus debate")}</span>
-            <h4>{t("Where do money and words meet?")}</h4>
+        <p className="evidence-note">
+          {t(
+            "These two percentages have different denominators. Budget share is a fraction of a party's proposed expenditure; keyword share is a fraction of matched words across 27 topic dictionaries. A difference between them is a descriptive comparison, not an amount of money, a position on an issue, or a measure of honesty. The debates span the whole session, including speeches after the budget proposal.",
+          )}
+        </p>
+        {illustration && (
+          <div className="comparison-walkthrough">
+            <strong>
+              {t('A concrete example: ')}
+              {illustrationParty} · {nameOf(area)} · {session}
+            </strong>
             <p>
-              {t("Each dot is one ")}{allParties ? 'party and ' : ''}{t("expenditure area.\n              Above the diagonal: more keyword attention than budget share.")}{' '}
-              {allParties ? 'Select a dot to focus on that party.' : ''}
+              {t('The proposal assigns ')}
+              {percent(illustration.budget_share_pct)} {t('of ')}
+              {illustrationParty}
+              {t("'s total proposed expenditure to this area (")}
+              {number(illustration.amount_msek)}{' '}
+              {t('million SEK). In the selected ')}
+              {t(corpus === 'leaders' ? 'party-leader' : 'issue')}{' '}
+              {t('debates, ')}
+              {illustration.speech_keyword_occurrences} {t('of ')}
+              {number(illustrationHits)}{' '}
+              {t('detected area-word matches fall into this dictionary (')}
+              {percent(illustration.speech_attention_pct)}
+              {t(
+                '). Those percentages use different totals. A match does not tell us whether the speaker supported, criticised or merely mentioned the issue.',
+              )}
             </p>
+            <a href={illustration.source_url} target="_blank" rel="noreferrer">
+              {t('Read the budget source ↗')}
+            </a>
           </div>
-          {allParties && (
-            <div className="party-legend">
-              {availableParties.map((value) => (
-                <span key={value}>
-                  <i style={{ background: partyColors[value] }} />
-                  {value}
-                </span>
-              ))}
+        )}
+        <BudgetLanguage
+          data={language}
+          session={session}
+          corpus={corpus}
+          method={method}
+          area={area}
+          setCorpus={setCorpus}
+          setMethod={setMethod}
+        />
+        <PartyAreaComparison
+          speechRows={activeSpeechRows}
+          budgetRows={sessionAlignment}
+          session={session}
+          area={area}
+        />
+        <div className="budget-panels">
+          <section className="budget-panel scatter-panel">
+            <div className="panel-heading">
+              <span>{t('01 / Budget versus debate')}</span>
+              <h4>{t('Where do money and words meet?')}</h4>
+              <p>
+                {t('Each dot is one ')}
+                {allParties ? 'party and ' : ''}
+                {t(
+                  'expenditure area.\n              Above the diagonal: more keyword attention than budget share.',
+                )}{' '}
+                {allParties ? 'Select a dot to focus on that party.' : ''}
+              </p>
             </div>
-          )}
-          <ScatterChart
-            rows={selectedRows}
-            selected={area}
-            allParties={allParties}
-            onSelect={chooseRow}
-          />
-          {!allParties && (
-            <div className="budget-selection" aria-live="polite">
-              <strong>{nameOf(area)}</strong>
-              <span>
-                {t("Budget")}{' '}
-                {selectedRow ? percent(selectedRow.budget_share_pct) : '—'}
-              </span>
-              <span>
-                {t("Keywords")}{' '}
-                {selectedRow ? percent(selectedRow.speech_attention_pct) : '—'}
-              </span>
-              <span>
-                {selectedRow
-                  ? number(selectedRow.speech_keyword_occurrences)
-                  : '—'}{' '}
-                {t("matches\n              ")}</span>
-            </div>
-          )}
-        </section>
-        <section className="budget-panel difference-panel">
-          <div className="panel-heading">
-            <span>{t("02 / Difference in shares")}</span>
-            <h4>{t("Most above and below budget share")}</h4>
-            <p>
-              {t("Keyword share minus budget share, in percentage points. Select a\n              row to inspect that party and area.\n            ")}</p>
-          </div>
-          <DifferenceBars
-            rows={selectedRows}
-            allParties={allParties}
-            onSelect={chooseRow}
-          />
-        </section>
-        <section className="budget-panel heatmap-panel">
-          <div className="panel-heading">
-            <span>{t("03 / Money versus government")}</span>
-            <h4>{t("Where do party proposals differ?")}</h4>
-            <p>
-              {t("Largest 12 deviations among the 27 expenditure areas. Figures are\n              million SEK above or below the government's proposal.\n            ")}</p>
-          </div>
-          <div className="heatmap-legend">
-            <span>{t("− less")}</span>
-            <i />
-            <span>{t("+ more")}</span>
-          </div>
-          <BudgetHeatmap
-            rows={sessionBudgets}
-            selectedArea={area}
-            onSelect={setArea}
-          />
-          <p className="budget-small">
-            {t("GOV denotes the collective government proposal. Only parties with a\n            machine-readable budget motion in this session appear.\n          ")}</p>
-        </section>
-        <section className="budget-panel trend-panel">
-          <div className="panel-heading">
-            <span>{t("04 / Available years")}</span>
-            <h4>{t("Does the gap move over time?")}</h4>
-            <p>
-              {t("Follow budget share and matched debate keyword share for")}{' '}
-              {t(allParties ? 'each available party' : 'one party')} {t("and area.\n              Missing years are not estimated.\n            ")}</p>
-          </div>
-          <div className="trend-controls">
-            <label>
-              {t("Expenditure area\n              ")}<select
-                value={area}
-                onChange={(event) => setArea(Number(event.target.value))}
-              >
-                {areaOptions.map((value) => (
-                  <option value={value} key={value}>
-                    {nameOf(value)}
-                  </option>
+            {allParties && (
+              <div className="party-legend">
+                {availableParties.map((value) => (
+                  <span key={value}>
+                    <i style={{ background: partyColors[value] }} />
+                    {value}
+                  </span>
                 ))}
-              </select>
-            </label>
-            <div className="trend-key">
-              <span>
-                <i />
-                {t("Budget share\n              ")}</span>
-              <span>
-                <i />
-                {t("Keyword share\n              ")}</span>
-            </div>
-          </div>
-          {allParties ? (
-            <div className="party-small-multiples">
-              {availableParties.map((value) => (
-                <div className="party-mini" key={value}>
-                  <strong style={{ color: partyColors[value] }}>{value}</strong>
-                  <TrendChart
-                    rows={comparableAlignment}
-                    party={value}
-                    area={area}
-                  />
-                </div>
-              ))}
-            </div>
-          ) : (
-            <>
-              <TrendChart
-                rows={comparableAlignment}
-                party={activeParty}
-                area={area}
-              />
-              <div className="budget-selection">
-                <strong>
-                  {activeParty} · {nameOf(area)}
-                </strong>
+              </div>
+            )}
+            <ScatterChart
+              rows={selectedRows}
+              selected={area}
+              allParties={allParties}
+              onSelect={chooseRow}
+            />
+            {!allParties && (
+              <div className="budget-selection" aria-live="polite">
+                <strong>{nameOf(area)}</strong>
                 <span>
-                  {t("Current proposal")}{' '}
-                  {selectedBudget
-                    ? `${number(selectedBudget.amount_msek)} m SEK`
+                  {t('Budget')}{' '}
+                  {selectedRow ? percent(selectedRow.budget_share_pct) : '—'}
+                </span>
+                <span>
+                  {t('Keywords')}{' '}
+                  {selectedRow
+                    ? percent(selectedRow.speech_attention_pct)
                     : '—'}
                 </span>
                 <span>
-                  {t("Versus government")}{' '}
-                  {selectedBudget
-                    ? `${selectedBudget.deviation_msek > 0 ? '+' : ''}${number(selectedBudget.deviation_msek)} m SEK`
-                    : '—'}
+                  {selectedRow
+                    ? number(selectedRow.speech_keyword_occurrences)
+                    : '—'}{' '}
+                  {t('matches\n              ')}
                 </span>
               </div>
-            </>
-          )}
-        </section>
-        <section className="budget-panel correlation-panel">
-          <div className="panel-heading">
-            <span>{t("05 / All available sessions")}</span>
-            <h4>{t("How does the overall relationship change?")}</h4>
-            <p>
-              {t("Correlation across expenditure areas")}{' '}
-              {allParties
-                ? 'for each party with comparable data'
-                : `for ${activeParty}`}
-              {t(". Values near zero indicate a weak linear relationship; this is a\n              compact indicator, not a score of policy consistency.\n            ")}</p>
-          </div>
-          {allParties ? (
-            <div className="party-correlation-grid">
-              {availableParties.map((value) => (
-                <div key={value}>
-                  <strong style={{ color: partyColors[value] }}>{value}</strong>
-                  <CorrelationTimeline
-                    rows={comparableAlignment}
-                    party={value}
-                  />
-                </div>
-              ))}
+            )}
+          </section>
+          <section className="budget-panel difference-panel">
+            <div className="panel-heading">
+              <span>{t('02 / Difference in shares')}</span>
+              <h4>{t('Most above and below budget share')}</h4>
+              <p>
+                {t(
+                  'Keyword share minus budget share, in percentage points. Select a\n              row to inspect that party and area.\n            ',
+                )}
+              </p>
             </div>
-          ) : (
-            <CorrelationTimeline
-              rows={comparableAlignment}
-              party={activeParty}
+            <DifferenceBars
+              rows={selectedRows}
+              allParties={allParties}
+              onSelect={chooseRow}
             />
-          )}
-        </section>
-      </div>
-      <CoverageMatrix rows={budgets} coverage={coverage} session={session} />
+          </section>
+          <section className="budget-panel heatmap-panel">
+            <div className="panel-heading">
+              <span>{t('03 / Money versus government')}</span>
+              <h4>{t('Where do party proposals differ?')}</h4>
+              <p>
+                {t(
+                  "Largest 12 deviations among the 27 expenditure areas. Figures are\n              million SEK above or below the government's proposal.\n            ",
+                )}
+              </p>
+            </div>
+            <div className="heatmap-legend">
+              <span>{t('− less')}</span>
+              <i />
+              <span>{t('+ more')}</span>
+            </div>
+            <BudgetHeatmap
+              rows={sessionBudgets}
+              selectedArea={area}
+              onSelect={setArea}
+            />
+            <p className="budget-small">
+              {t(
+                'GOV denotes the collective government proposal. Only parties with a\n            machine-readable budget motion in this session appear.\n          ',
+              )}
+            </p>
+          </section>
+          <section className="budget-panel trend-panel">
+            <div className="panel-heading">
+              <span>{t('04 / Available years')}</span>
+              <h4>{t('Does the gap move over time?')}</h4>
+              <p>
+                {t('Follow budget share and matched debate keyword share for')}{' '}
+                {t(allParties ? 'each available party' : 'one party')}{' '}
+                {t(
+                  'and area.\n              Missing years are not estimated.\n            ',
+                )}
+              </p>
+            </div>
+            <div className="trend-controls">
+              <label>
+                {t('Expenditure area\n              ')}
+                <select
+                  value={area}
+                  onChange={(event) => setArea(Number(event.target.value))}
+                >
+                  {areaOptions.map((value) => (
+                    <option value={value} key={value}>
+                      {nameOf(value)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <div className="trend-key">
+                <span>
+                  <i />
+                  {t('Budget share\n              ')}
+                </span>
+                <span>
+                  <i />
+                  {t('Keyword share\n              ')}
+                </span>
+              </div>
+            </div>
+            {allParties ? (
+              <div className="party-small-multiples">
+                {availableParties.map((value) => (
+                  <div className="party-mini" key={value}>
+                    <strong style={{ color: partyColors[value] }}>
+                      {value}
+                    </strong>
+                    <TrendChart
+                      rows={comparableAlignment}
+                      party={value}
+                      area={area}
+                    />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <>
+                <TrendChart
+                  rows={comparableAlignment}
+                  party={activeParty}
+                  area={area}
+                />
+                <div className="budget-selection">
+                  <strong>
+                    {activeParty} · {nameOf(area)}
+                  </strong>
+                  <span>
+                    {t('Current proposal')}{' '}
+                    {selectedBudget
+                      ? `${number(selectedBudget.amount_msek)} m SEK`
+                      : '—'}
+                  </span>
+                  <span>
+                    {t('Versus government')}{' '}
+                    {selectedBudget
+                      ? `${selectedBudget.deviation_msek > 0 ? '+' : ''}${number(selectedBudget.deviation_msek)} m SEK`
+                      : '—'}
+                  </span>
+                </div>
+              </>
+            )}
+          </section>
+          <section className="budget-panel correlation-panel">
+            <div className="panel-heading">
+              <span>{t('05 / All available sessions')}</span>
+              <h4>{t('How does the overall relationship change?')}</h4>
+              <p>
+                {t('Correlation across expenditure areas')}{' '}
+                {allParties
+                  ? 'for each party with comparable data'
+                  : `for ${activeParty}`}
+                {t(
+                  '. Values near zero indicate a weak linear relationship; this is a\n              compact indicator, not a score of policy consistency.\n            ',
+                )}
+              </p>
+            </div>
+            {allParties ? (
+              <div className="party-correlation-grid">
+                {availableParties.map((value) => (
+                  <div key={value}>
+                    <strong style={{ color: partyColors[value] }}>
+                      {value}
+                    </strong>
+                    <CorrelationTimeline
+                      rows={comparableAlignment}
+                      party={value}
+                    />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <CorrelationTimeline
+                rows={comparableAlignment}
+                party={activeParty}
+              />
+            )}
+          </section>
+        </div>
+        <CoverageMatrix rows={budgets} coverage={coverage} session={session} />
       </details>
       <details className="budget-method">
-        <summary>{t("Sources, definitions & important limits")}</summary>
+        <summary>{t('Sources, definitions & important limits')}</summary>
         <div>
           <p>
-            {t("Budget frames come from the Swedish Parliament's FiU1 comparisons.\n            Each party amount is the government proposal plus that party's\n            reported deviation, in million SEK. Tables are selected for the\n            exact budget year, excluding later forecast years. Budget share\n            divides an area by the party's total proposal for that session.\n          ")}</p>
+            {t(
+              "Budget frames come from the Swedish Parliament's FiU1 comparisons.\n            Each party amount is the government proposal plus that party's\n            reported deviation, in million SEK. Tables are selected for the\n            exact budget year, excluding later forecast years. Budget share\n            divides an area by the party's total proposal for that session.\n          ",
+            )}
+          </p>
           <p>
-            {t("Debate attention is the area's share of occurrences of the selected\n            exact-word or Swedish-stem lexicon across the 27 mapped areas for\n            that party and session in the selected archive. Only speeches of at\n            least 20 words are included; reply speeches are included and\n            duplicates removed within each archive. It is not a semantic reading\n            of all speech, a measure of policy support, or evidence of budget\n            intent. Correlation summarises the two shares across areas, but is\n            not a score of consistency.\n          ")}</p>
+            {t(
+              "Debate attention is the area's share of occurrences of the selected\n            exact-word or Swedish-stem lexicon across the 27 mapped areas for\n            that party and session in the selected archive. Only speeches of at\n            least 20 words are included; reply speeches are included and\n            duplicates removed within each archive. It is not a semantic reading\n            of all speech, a measure of policy support, or evidence of budget\n            intent. Correlation summarises the two shares across areas, but is\n            not a score of consistency.\n          ",
+            )}
+          </p>
           <p>
-            {t("Six imported sessions have complete 27-area budget frames for every\n            actor listed in their FiU1 table. The incomplete 2017/18 and 2018/19\n            imports are excluded from share-based charts. The heatmap shows the\n            largest 12 deviations for readability. A combined semantic map of\n            speeches and budget text, or a separate budget UMAP, would require\n            new embeddings and modelling; no points are invented here.\n          ")}</p>
+            {t(
+              'Six imported sessions have complete 27-area budget frames for every\n            actor listed in their FiU1 table. The incomplete 2017/18 and 2018/19\n            imports are excluded from share-based charts. The heatmap shows the\n            largest 12 deviations for readability. A combined semantic map of\n            speeches and budget text, or a separate budget UMAP, would require\n            new embeddings and modelling; no points are invented here.\n          ',
+            )}
+          </p>
           <a
             href="https://github.com/korv9/partiledardebatt-analys"
             target="_blank"
             rel="noreferrer"
           >
-            {t("Explore methods and source code ↗\n          ")}</a>
+            {t('Explore methods and source code ↗\n          ')}
+          </a>
           {selectedRow && (
             <a href={selectedRow.source_url} target="_blank" rel="noreferrer">
-              {t("Open the selected budget source ↗\n            ")}</a>
+              {t('Open the selected budget source ↗\n            ')}
+            </a>
           )}
         </div>
       </details>

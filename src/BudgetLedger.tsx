@@ -1,4 +1,5 @@
 import { currentLocale, l, t } from './i18n'
+import { fetchData } from './dataSource'
 import { useEffect, useMemo, useState } from 'react'
 
 export type BudgetLine = {
@@ -57,7 +58,7 @@ export default function BudgetLedger({
   const [selectedArea, setSelectedArea] = useState(9)
   const [context, setContext] = useState<BudgetContextYear[]>([])
   useEffect(() => {
-    fetch('/data/gold/marts/budget-context.json')
+    fetchData('gold/marts/budget-context.json')
       .then((response) => {
         if (!response.ok) throw new Error('Budget context unavailable')
         return response.json()

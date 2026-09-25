@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
+import { resolveDataUrl } from '../dataSource'
 
 export const PARTIES = ['C', 'KD', 'L', 'M', 'MP', 'S', 'SD', 'V']
-export const ROOT = '/data/politics/'
-export const GOLD_ROOT = '/data/gold/'
+// Logical paths, relative to the data root. dataSource resolves them to real URLs.
+export const ROOT = 'politics/'
+export const GOLD_ROOT = 'gold/'
 export type PartyVote = {
   party: string
   party_position: string
@@ -53,7 +55,8 @@ export function useData<T>(path: string | null, root = ROOT) {
     const controller = new AbortController()
     setState({ data: null, error: null })
     if (path)
-      fetch(root + path, { signal: controller.signal })
+      resolveDataUrl(root + path)
+        .then((url) => fetch(url, { signal: controller.signal }))
         .then((response) => {
           if (!response.ok) throw new Error(`Could not load ${path}`)
           return response.json() as Promise<T>
@@ -70,6 +73,20 @@ export function useData<T>(path: string | null, root = ROOT) {
 export function useGoldData<T>(path: string | null) {
   return useData<T>(path, GOLD_ROOT)
 }
+/** Resolved URL for a logical path, for anchors and downloads rather than fetches. */
+export function useDataUrl(path: string) {
+  const [url, setUrl] = useState('/data/' + path)
+  useEffect(() => {
+    let live = true
+    resolveDataUrl(path).then((resolved) => {
+      if (live) setUrl(resolved)
+    })
+    return () => {
+      live = false
+    }
+  }, [path])
+  return url
+}
 export const count = (n: number) => n.toLocaleString('en-GB')
 export function positionFromVotes(vote: PartyVote) {
   const counts = [
@@ -77,32 +94,18 @@ export function positionFromVotes(vote: PartyVote) {
     ['Nej', vote.no_votes],
     ['Avstår', vote.abstain_votes],
   ] as const
-  return counts.reduce((highest, current) => current[1] > highest[1] ? current : highest)[0]
+  return counts.reduce((highest, current) =>
+    current[1] > highest[1] ? current : highest,
+  )[0]
 }
 export function partyStats(decisions: Decision[], party: string) {
   const rows = decisions.flatMap((d) =>
     d.parties.filter((p) => p.party === party),
-  )
-  const cast = rows.reduce(
-    (n, p) => n + p.yes_votes + p.no_votes + p.abstain_votes,
-    0,
   )
   return {
     rows: rows.length,
     yes: rows.filter((p) => p.party_position === 'Ja').length,
     no: rows.filter((p) => p.party_position === 'Nej').length,
     abstain: rows.filter((p) => p.party_position === 'Avstår').length,
-    cohesion: cast
-      ? (rows.reduce(
-          (n, p) => n + Math.max(p.yes_votes, p.no_votes, p.abstain_votes),
-          0,
-        ) /
-          cast) *
-        100
-      : null,
-    attendance:
-      cast + rows.reduce((n, p) => n + p.absent_votes, 0)
-        ? (cast / (cast + rows.reduce((n, p) => n + p.absent_votes, 0))) * 100
-        : null,
   }
 }

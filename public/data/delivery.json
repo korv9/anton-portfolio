@@ -1,0 +1,22 @@
+{
+ "schema_version": 1,
+ "run_id": "806de1f494fa94d7",
+ "bases": {
+  "json": "/data/",
+  "parquet": "https://pub-9867b18896ba49e4a0b4a3d2f39c0385.r2.dev/",
+  "shard": "https://pub-9867b18896ba49e4a0b4a3d2f39c0385.r2.dev/"
+ },
+ "shard_prefixes": [
+  "politics/parliament/issues/",
+  "politics/parliament/debates/",
+  "politics/decisions/",
+  "politics/laws/v1/",
+  "politics/laws/v2/"
+ ],
+ "parquet_datasets": {
+  "fact_member_vote": [
+   "parquet/fact_member_vote/session=2024-25/part-0.parquet",
+   "parquet/fact_member_vote/session=2025-26/part-0.parquet"
+  ]
+ }
+}
