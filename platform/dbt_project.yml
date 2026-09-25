@@ -1,0 +1,28 @@
+name: portfolio
+version: '1.0.0'
+config-version: 2
+profile: portfolio
+
+model-paths: [models]
+seed-paths: [seeds]
+test-paths: [tests]
+macro-paths: [macros]
+clean-targets: [target, dbt_packages]
+
+flags:
+  send_anonymous_usage_stats: false
+
+# Medallion layers are schemas in the warehouse, not directories of files. Only bronze
+# reads from disk; silver and gold are built and stay inside DuckDB until publish/
+# exports the delivery artefacts.
+models:
+  portfolio:
+    bronze:
+      +materialized: view
+      +schema: bronze
+    silver:
+      +materialized: view
+      +schema: silver
+    gold:
+      +materialized: table
+      +schema: gold

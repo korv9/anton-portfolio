@@ -2,9 +2,9 @@ import json
 from collections import defaultdict
 from pathlib import Path
 
-ROOT=Path(__file__).resolve().parents[2]
+ROOT=Path(__file__).resolve().parents[3]
 def load(name):
-    return json.loads((ROOT/'public/data/reports'/name).read_text(encoding='utf8'))
+    return json.loads((ROOT/'frontend/public/data/reports'/name).read_text(encoding='utf8'))
 
 def test_language_denominators_and_coverage():
     data=load('budget-language.json')

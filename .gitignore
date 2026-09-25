@@ -14,3 +14,8 @@ __pycache__/
 
 # Warehouse: bronze files and the local DuckDB build
 warehouse/
+
+# dbt
+platform/target/
+platform/dbt_packages/
+platform/logs/

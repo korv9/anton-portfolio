@@ -1,0 +1,9 @@
+# Safe to commit: local database settings, no credentials.
+portfolio:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: "{{ env_var('PORTFOLIO_DB', '../warehouse/portfolio.duckdb') }}"
+      schema: main
+      threads: 4

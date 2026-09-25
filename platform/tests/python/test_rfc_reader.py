@@ -5,7 +5,7 @@ from pathlib import Path
 from meaningquality.direction import Modality
 from meaningquality.rfc import Requirement, drift, profile, requirements
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[3]
 
 SNIPPET = """
    Servers SHOULD limit the number of cookies.
@@ -56,7 +56,7 @@ def test_profile_shares_sum_and_count():
 
 
 def test_reads_the_real_committed_rfc_6265():
-    path = ROOT / "data/allegoria/sources-v1/source/rfc/rfc-6265.txt"
+    path = ROOT / "platform/sources/allegoria/sources-v1/source/rfc/rfc-6265.txt"
     assert path.exists()
     reqs = requirements(path.read_text(encoding="utf-8"))
     assert len(reqs) > 30
