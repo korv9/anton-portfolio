@@ -137,7 +137,7 @@ export default function DecisionExplorer({
   const active = matches.find((d) => d.id === selected)
   return (
     <section className="politics-card decision-explorer">
-      <p className="eyebrow">{t("04 / Follow the evidence")}</p>
+      <p className="eyebrow">{t("03 / Follow the evidence")}</p>
       <h4>{t("What did they actually vote on?")}</h4>
       <div className="politics-controls">
         <label>

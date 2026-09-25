@@ -14,7 +14,7 @@ POLITICAL OBSERVATORY
 VOTES: session / committee / party for detail
 ┌ Party position distribution ┐ ┌ Pairwise agreement matrix ┐
 └ Yes / no / abstain          ┘ └ Click → paired denominator ┘
-┌ Internal cohesion + recorded attendance, all eight parties ┐
+┌ Selected committee No share versus other committees ┐
 └ Searchable decision list ───→ exact proposal and all votes ┘
                                citations / reservations / speech candidates
 
@@ -36,9 +36,8 @@ The strongest portfolio demonstration is the drill-down from a graph to the exac
 | Question | Metric and denominator | Visual | Status |
 | --- | --- | --- | --- |
 | How did each party vote? | Modal cast position per imported roll call | All-party stacked bars | Implemented |
+| Does voting No vary by committee? | No positions / imported roll calls, selected committee versus other committees in the same session | Paired bars sorted by selected-committee share, with numerator and denominator | Implemented; does not explain motive |
 | Which parties vote together? | Same yes/no position / calls with both yes/no | Interactive 8×8 matrix, numerator and denominator | Implemented |
-| How unified are party votes? | Sum of largest cast-vote group per call / all cast party votes | Cohesion bars | Implemented; weighted by cast votes |
-| How much recorded participation? | Cast / (cast + recorded absences) | Numeric attendance beside bars | Implemented; pairing not known |
 | Who contributes to a debate? | Imported speeches and reply flags by party | Bars + full source passages | Implemented; not speaking time |
 | Where do words and budget frames differ? | Lexicon share minus expenditure share | Scatter, divergent bars, heatmap, history | Existing dashboard, budget year corrected |
 | What language groups emerge? | Word-weighted topic share; ungrouped share | Existing UMAP + topic bars | Existing model; not ideological distance |

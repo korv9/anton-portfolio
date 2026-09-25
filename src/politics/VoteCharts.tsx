@@ -111,22 +111,6 @@ export default function VoteCharts({
           </table>
         </div>
       </section>
-      <section className="politics-card">
-        <p className="eyebrow">{t("03 / Internal agreement")}</p>
-        <h4>{t("How unified are the recorded votes?")}</h4>
-        <p>
-          {t("Sum of each roll call's largest party vote group ÷ all cast party\n          votes. Attendance is cast votes ÷ cast plus recorded absences; pairing\n          arrangements are not known.\n        ")}</p>
-        {stats.map((s) => (
-          <div className="cohesion-row" key={s.party}>
-            <b>{s.party}</b>
-            <span className="metric-track">
-              <i style={{ width: `${s.cohesion ?? 0}%` }} />
-            </span>
-            <span>{s.cohesion?.toFixed(1) ?? '—'}{t("% cohesion")}</span>
-            <span>{s.attendance?.toFixed(1) ?? '—'}{t("% attendance")}</span>
-          </div>
-        ))}
-      </section>
     </div>
   )
 }
