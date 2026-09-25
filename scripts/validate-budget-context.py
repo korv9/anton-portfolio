@@ -2,14 +2,11 @@
 
 import json
 from collections import Counter
-from pathlib import Path
-
-ROOT = Path(__file__).resolve().parents[1]
-GOLD = ROOT / "public/data/gold"
+from common import GOLD, read_json
 
 
 def read(relative):
-    return json.loads((GOLD / relative).read_text(encoding="utf-8"))
+    return read_json(GOLD / relative)
 
 
 years = read("marts/budget-context.json")["years"]

@@ -12,12 +12,13 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(ROOT/'packages'), str(ROOT/'.research/nlp')]
+from common import read_json
 import snowballstemmer
 from meaningquality.rfc import requirements, profile, drift
 from meaningquality import Part, Modality, SlotChange, classify
 
 def read(path):
-    return json.loads(path.read_text(encoding='utf8'))
+    return read_json(path)
 def write(name, data):
     path=ROOT/'public/data/reports'/name
     path.parent.mkdir(parents=True,exist_ok=True)

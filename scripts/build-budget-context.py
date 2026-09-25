@@ -6,15 +6,12 @@ individual party proposals or turn a speech similarity into a voting motive.
 
 import json
 from collections import Counter
-from pathlib import Path
-
-ROOT = Path(__file__).resolve().parents[1]
-GOLD = ROOT / "public/data/gold"
+from common import GOLD, read_json
 PARTIES = ("C", "KD", "L", "M", "MP", "S", "SD", "V")
 
 
 def read(name):
-    return json.loads((GOLD / name).read_text(encoding="utf-8"))
+    return read_json(GOLD / name)
 
 
 def main():
