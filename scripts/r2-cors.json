@@ -1,0 +1,18 @@
+[
+  {
+    "AllowedOrigins": [
+      "https://korv9.github.io",
+      "http://127.0.0.1:5173",
+      "http://localhost:5173"
+    ],
+    "AllowedMethods": ["GET", "HEAD"],
+    "AllowedHeaders": ["range", "if-match", "if-none-match"],
+    "ExposeHeaders": [
+      "content-length",
+      "content-range",
+      "etag",
+      "accept-ranges"
+    ],
+    "MaxAgeSeconds": 3600
+  }
+]

@@ -1,20 +1,28 @@
-"""Independent contract checks for the checked-in gold semantic model."""
+"""Independent contract checks for the checked-in gold semantic model.
+
+Sources that moved to object storage are fetched from the delivery base, so the
+"source changed without a rebuild" guarantee still covers every input.
+"""
 
 import hashlib
 import json
 from collections import Counter, defaultdict
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
-GOLD = ROOT / "public/data/gold"
+import delivery
+from common import GOLD, ROOT, portable_sha, read_json, sha_of
 
 
 def read(path):
-    return json.loads(path.read_text(encoding="utf-8"))
+    return read_json(path)
 
 
-def portable_sha(path):
-    return hashlib.sha256(path.read_bytes().replace(b"\r\n", b"\n")).hexdigest()
+
+def source_sha(item):
+    """Hash a gold input, reading it from object storage when it is no longer local."""
+    relative = item["path"].removeprefix("public/data/")
+    return item, sha_of(delivery.read_bytes(relative))
 
 
 def require(condition, message):
@@ -27,10 +35,10 @@ def main():
     require(model["model_id"] == "portfolio-gold-v1", "Unexpected model version")
     require(portable_sha(ROOT / model["builder"]["path"])
             == model["builder"]["sha256"], "Gold builder changed without a rebuild")
-    for item in model["source_files"]:
-        path = ROOT / item["path"]
-        require(path.is_file() and portable_sha(path) == item["sha256"],
-                f"Source changed without rebuilding gold: {item['path']}")
+    with ThreadPoolExecutor(max_workers=16) as pool:
+        for item, digest in pool.map(source_sha, model["source_files"]):
+            require(digest == item["sha256"],
+                    f"Source changed without rebuilding gold: {item['path']}")
     for relative, item in model["materializations"].items():
         path = GOLD / relative
         content = path.read_bytes()

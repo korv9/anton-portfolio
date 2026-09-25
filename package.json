@@ -7,14 +7,16 @@
     "dev": "vite --host 127.0.0.1 --port 5173 --strictPort",
     "build": "tsc -b && vite build",
     "preview": "vite preview --host 127.0.0.1",
-    "data:build": "python scripts/build-gold.py && python scripts/build-budget-context.py && python scripts/build-products.py && python scripts/build-speech-browser.py",
-    "data:check": "python scripts/validate-gold.py && python scripts/validate-budget-context.py && python scripts/validate-products.py",
+    "data:build": "python scripts/build-gold.py && python scripts/build-budget-context.py && python scripts/build-products.py && python scripts/build-speech-browser.py && python scripts/build-catalog.py",
+    "data:check": "python scripts/validate-gold.py && python scripts/validate-budget-context.py && python scripts/validate-products.py && python scripts/validate-politics.py",
     "check": "tsc -b",
     "test:e2e": "playwright test",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "data:catalog": "python scripts/build-catalog.py"
   },
   "dependencies": {
+    "@duckdb/duckdb-wasm": "1.32.0",
     "@fontsource-variable/dm-sans": "^5.3.0",
     "@fontsource-variable/manrope": "^5.3.0",
     "react": "^19.1.0",
