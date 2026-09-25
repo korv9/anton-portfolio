@@ -6,6 +6,8 @@ test('budget corpus and NLP choices update all comparison data', async ({
 }) => {
   await page.goto('/#budget-comparison')
   const budget = page.locator('#budget-comparison')
+  await budget.getByText('Compare the separate party proposals at a glance').click()
+  await budget.getByText('Explore speech keywords beside budget shares').click()
   await expect(budget.locator('.budget-overview-grid article')).toHaveCount(8)
   await expect(budget.locator('.language-audit')).toContainText('98 of 216')
   await budget.getByLabel('Speech corpus').selectOption('issues')

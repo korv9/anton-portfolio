@@ -28,7 +28,7 @@
     ],
     "href": "#job-market",
     "source": "https://github.com/korv9/swedish-job-market-analytics",
-    "data": "#raw-data"
+    "data": "#job-data"
   },
   {
     "id": "drugcomb",
@@ -44,7 +44,7 @@
     ],
     "href": "#drugcomb",
     "source": "https://github.com/korv9/DrugComb-Synergy-Prediction",
-    "data": "#raw-data"
+    "data": "#drugcomb-data"
   },
   {
     "id": "allegoria",
@@ -59,7 +59,7 @@
     ],
     "href": "#rfc-drift",
     "source": "https://github.com/korv9/allegoria",
-    "data": "#raw-data"
+    "data": null
   },
   {
     "id": "thesis",

@@ -1,3 +1,4 @@
+import BudgetLedger from './BudgetLedger'
 import BudgetOverview from './BudgetOverview'
 import BudgetLanguage, { type Language } from './BudgetLanguage'
 import { useEffect, useMemo, useState } from 'react'
@@ -75,7 +76,7 @@ const areaNames: Record<number, string> = {
   26: 'Public debt interest',
   27: 'EU contribution',
 }
-const nameOf = (area: number) => areaNames[area] ?? `Area ${area}`
+export const nameOf = (area: number) => areaNames[area] ?? `Area ${area}`
 const percent = (value: number, digits = 1) =>
   value > 0 && value < 0.1 ? '<0.1%' : `${value.toFixed(digits)}%`
 const signed = (value: number, digits = 1) =>
@@ -851,6 +852,9 @@ export default function BudgetLab() {
     (sum, row) => sum + row.speech_keyword_occurrences,
     0,
   )
+  const illustrationParty = allParties && availableParties.includes('S') ? 'S' : allParties ? availableParties[0] : activeParty
+  const illustration = sessionAlignment.find(row => row.party === illustrationParty && row.expenditure_area === area)
+  const illustrationHits = sessionAlignment.filter(row => row.party === illustrationParty).reduce((sum, row) => sum + row.speech_keyword_occurrences, 0)
   const areaOptions = [
     ...new Set(comparableAlignment.map((row) => row.expenditure_area)),
   ].sort((a, b) => a - b)
@@ -879,16 +883,29 @@ export default function BudgetLab() {
     >
       <div className="budget-lab-head">
         <div>
-          <p className="eyebrow">Debate × budget</p>
+          <p className="eyebrow">Budgets / proposals and annual accounts</p>
           <h3 id="budget-lab-title">
-            Do parties talk about where they put money?
+            What do the budget proposals contain?
           </h3>
           <p>
-            Read the proposed spending changes, then compare topic attention in
-            party-leader or issue debates. Choose a session, corpus and language
-            method.
+            Start with the proposed amounts for any imported year. The optional language comparison uses only sessions with complete budget frames and detectable speech keywords.
           </p>
+          <a className="budget-jump" href="#budget-outturn">See approved budget versus actual spending ↓</a>
         </div>
+      </div>
+      <BudgetLedger rows={budgets} nameOf={nameOf} />
+      <details className="budget-secondary"><summary>Compare the separate party proposals at a glance</summary>
+      <BudgetOverview
+        rows={sessionBudgets}
+        nameOf={nameOf}
+        select={(p, a) => {
+          setParty(p)
+          setArea(a)
+        }}
+      />
+      </details>
+      <details className="budget-secondary"><summary>Explore speech keywords beside budget shares</summary>
+        <p>Select a session and party to compare complete proposals with detected topic words. These controls apply only to the language charts below.</p>
         <div className="budget-controls">
           <label>
             Session
@@ -916,7 +933,7 @@ export default function BudgetLab() {
             </select>
           </label>
         </div>
-      </div>
+
       <div className="budget-summary">
         <div>
           <strong>{number(sessionBudgets.length)}</strong>
@@ -973,14 +990,9 @@ export default function BudgetLab() {
           eight; a missing party frame cannot be inferred from GOV.
         </p>
       </div>
-      <BudgetOverview
-        rows={sessionBudgets}
-        nameOf={nameOf}
-        select={(p, a) => {
-          setParty(p)
-          setArea(a)
-        }}
-      />
+
+        <p className="evidence-note">These two percentages have different denominators. Budget share is a fraction of a party's proposed expenditure; keyword share is a fraction of matched words across 27 topic dictionaries. A difference between them is a descriptive comparison, not an amount of money, a position on an issue, or a measure of honesty. The debates span the whole session, including speeches after the budget proposal.</p>
+        {illustration && <div className="comparison-walkthrough"><strong>A concrete example: {illustrationParty} · {nameOf(area)} · {session}</strong><p>The proposal assigns {percent(illustration.budget_share_pct)} of {illustrationParty}'s total proposed expenditure to this area ({number(illustration.amount_msek)} million SEK). In the selected {corpus === 'leaders' ? 'party-leader' : 'issue'} debates, {illustration.speech_keyword_occurrences} of {number(illustrationHits)} detected area-word matches fall into this dictionary ({percent(illustration.speech_attention_pct)}). Those percentages use different totals. A match does not tell us whether the speaker supported, criticised or merely mentioned the issue.</p><a href={illustration.source_url} target="_blank" rel="noreferrer">Read the budget source ↗</a></div>}
       <BudgetLanguage
         data={language}
         session={session}
@@ -1191,6 +1203,7 @@ export default function BudgetLab() {
         </section>
       </div>
       <CoverageMatrix rows={budgets} coverage={coverage} session={session} />
+      </details>
       <details className="budget-method">
         <summary>Sources, definitions & important limits</summary>
         <div>

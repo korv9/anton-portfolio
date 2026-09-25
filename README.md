@@ -2,6 +2,10 @@
 
 English-language React/TypeScript portfolio with a static Swedish political observatory, thesis case study and job-market report. No backend or live API is required. Nothing has been published.
 
+The home page is Anton's profile and project directory. Each main project opens on its own hash-routed page: `/#politics`, `/#job-market`, `/#drugcomb`, `/#rfc-drift`, `/#thesis` and `/#homie`. Within politics, the tabs open decisions, speeches, budget proposals, a provisional language map and technical data. `/#budget-outturn` leads directly to the annual approved-versus-spent view. These routes work on static hosting without server-side rewrites.
+
+See [report findings and coverage](docs/report-findings.md) for the budget, language and annual-account definitions and their limits.
+
 ## Run locally
 
 ```powershell

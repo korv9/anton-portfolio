@@ -20,5 +20,5 @@ test('visitors find a speaker, read full speeches and move through a debate', as
   await page.goto('/#data-explorer')
   await browser.getByRole('link', { name: /See how they voted/ }).click()
   await expect(page.getByRole('combobox', { name: 'Voting session', exact: true })).toBeVisible()
-  await expect(page.locator('.technical-data')).not.toHaveAttribute('open')
+  await expect(page.locator('#data-explorer')).toHaveCount(0)
 })

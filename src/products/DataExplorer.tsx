@@ -7,11 +7,11 @@ const facets = ['session', 'party', 'actor', 'budget_year', 'expenditure_area', 
 const labels: Record<string, string> = { session: 'Session', party: 'Party', actor: 'Budget proposer', budget_year: 'Budget year', expenditure_area: 'Expenditure area', scheme: 'Evaluation split', model: 'Model' }
 const display = (value: unknown): string => value == null ? '—' : typeof value === 'object' ? JSON.stringify(value) : String(value)
 
-export default function DataExplorer() {
+export default function DataExplorer({ initialDataset = 'fact_budget_frame', sectionId = 'raw-data' }: { initialDataset?: string; sectionId?: string }) {
   useEffect(() => {
     const openTables = () => {
-      if (window.location.hash !== '#raw-data') return
-      const section = document.getElementById('raw-data')
+      if (window.location.hash !== '#' + sectionId) return
+      const section = document.getElementById(sectionId)
       const disclosure = section?.closest('details')
       if (disclosure) disclosure.open = true
       section?.scrollIntoView({ block: 'start' })
@@ -19,9 +19,9 @@ export default function DataExplorer() {
     openTables()
     window.addEventListener('hashchange', openTables)
     return () => window.removeEventListener('hashchange', openTables)
-  }, [])
+  }, [sectionId])
   const [datasets, setDatasets] = useState<Dataset[]>([])
-  const [selected, setSelected] = useState('fact_budget_frame')
+  const [selected, setSelected] = useState(initialDataset)
   const [rows, setRows] = useState<Row[]>([])
   const [query, setQuery] = useState('')
   const [filters, setFilters] = useState<Record<string, string>>({})
@@ -57,7 +57,7 @@ export default function DataExplorer() {
     (!query || Object.values(row).some((value) => display(value).toLocaleLowerCase().includes(query.toLocaleLowerCase())))
   ), [rows, query, filters])
   const pageCount = Math.max(1, Math.ceil(visible.length / 25))
-  return <section className="report data-explorer" id="raw-data">
+  return <section className="report data-explorer" id={sectionId}>
     <p className="eyebrow">Open data desk</p><h2>Inspect the records behind the charts.</h2>
     <p className="report-intro">Search every row in the imported datasets, including budget proposals and decisions without a recorded roll call. Downloads contain the full selected table. Coverage is limited to the imported snapshots.</p>
     <div className="dataset-presets" aria-label="Popular datasets">{[
