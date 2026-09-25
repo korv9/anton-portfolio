@@ -1,0 +1,14 @@
+# The heavy wheels come from the parent interpreter via --system-site-packages, so the
+# environment is separate without a second 2.5 GB torch download. Recreate with:
+#   python -m venv ml/.venv --system-site-packages
+#   ml/.venv/Scripts/python.exe -m pip install -r ml/requirements.txt
+torch==2.5.1
+transformers==5.6.2
+sentence-transformers==5.4.1
+scikit-learn==1.8.0
+umap-learn==0.5.12
+hdbscan
+pandas==3.0.1
+pyarrow==23.0.1
+duckdb==1.5.5
+scipy==1.17.1

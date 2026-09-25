@@ -19,3 +19,8 @@ warehouse/
 platform/target/
 platform/dbt_packages/
 platform/logs/
+
+# ML: environment, run artefacts and model caches. Never weights or raw text.
+ml/.venv/
+ml/runs/
+ml/.cache/
