@@ -1,3 +1,4 @@
+import { t } from '../i18n'
 import { useEffect, useState } from 'react'
 import {
   PARTIES,
@@ -22,33 +23,30 @@ function SessionAnalysis({ path }: { path: string }) {
   const decisions =
     data?.filter((d) => committee === 'All' || d.committee === committee) ?? []
   if (error) return <p role="alert">{error}</p>
-  if (!data) return <p>Loading recorded votes…</p>
+  if (!data) return <p>{t("Loading recorded votes…")}</p>
   return (
     <>
       <div className="politics-controls">
         <label>
-          Committee
-          <select
+          {t("Committee\n          ")}<select
             value={committee}
             onChange={(e) => setCommittee(e.target.value)}
           >
-            <option value="All">All committees</option>
+            <option value="All">{t("All committees")}</option>
             {committees.map((c) => (
               <option key={c}>{c}</option>
             ))}
           </select>
         </label>
         <label>
-          Party for decision detail
-          <select value={party} onChange={(e) => setParty(e.target.value)}>
+          {t("Party for decision detail\n          ")}<select value={party} onChange={(e) => setParty(e.target.value)}>
             {PARTIES.map((p) => (
               <option key={p}>{p}</option>
             ))}
           </select>
         </label>
         <p>
-          {count(decisions.length)} roll calls in this view · all eight parties
-        </p>
+          {count(decisions.length)} {t("roll calls in this view · all eight parties\n        ")}</p>
       </div>
       <VoteCharts decisions={decisions} onParty={setParty} />
       <DecisionExplorer decisions={decisions} party={party} />
@@ -73,21 +71,18 @@ export default function PoliticsLab() {
   return (
     <article className="politics-lab report" id="politics">
       <span id="politics-votes" /><span id="politics-laws" />
-      <p className="eyebrow">Political observatory · Swedish Parliament</p>
-      <h2>From political words to recorded decisions.</h2>
+      <p className="eyebrow">{t("Political observatory · Swedish Parliament")}</p>
+      <h2>{t("From political words to recorded decisions.")}</h2>
       <p className="politics-intro">
-        Speeches, budget proposals and formal decisions are spread across
-        different documents. This observatory brings the imported records
-        together so you can follow the evidence and make your own comparisons.
-      </p>
-      <div className="politics-purpose"><strong>Why I built this</strong><p>I find it difficult to connect political language with budget priorities and what is actually decided. This is my attempt to make that formal record easier to navigate: start with a question, inspect the data, then open the original source.</p></div>
-      <div className="politics-journey" aria-label="Explore political records">
-        <a href="#politics" onClick={() => setTab('debates')}><strong>01 · What was said</strong><span>Full speeches, replies and searchable transcripts</span></a>
-        <a href="#budget-comparison"><strong>02 · What was proposed</strong><span>Budget frames and language comparisons</span></a>
-        <a href="#politics" onClick={() => setTab('votes')}><strong>03 · How they voted</strong><span>Party votes, exact proposals and cited documents</span></a>
-        <a href="#data-explorer"><strong>04 · Explore the people and speeches</strong><span>Find a politician, read their words and follow the discussion</span></a>
+        {t("Speeches, budget proposals and formal decisions are spread across\n        different documents. This observatory brings the imported records\n        together so you can follow the evidence and make your own comparisons.\n      ")}</p>
+      <div className="politics-purpose"><strong>{t("Why I built this")}</strong><p>{t("I find it difficult to connect political language with budget priorities and what is actually decided. This is my attempt to make that formal record easier to navigate: start with a question, inspect the data, then open the original source.")}</p></div>
+      <div className="politics-journey" aria-label={t("Explore political records")}>
+        <a href="#politics" onClick={() => setTab('debates')}><strong>{t("01 · What was said")}</strong><span>{t("Full speeches, replies and searchable transcripts")}</span></a>
+        <a href="#budget-comparison"><strong>{t("02 · What was proposed")}</strong><span>{t("Budget frames and language comparisons")}</span></a>
+        <a href="#politics" onClick={() => setTab('votes')}><strong>{t("03 · How they voted")}</strong><span>{t("Party votes, exact proposals and cited documents")}</span></a>
+        <a href="#data-explorer"><strong>{t("04 · Explore the people and speeches")}</strong><span>{t("Find a politician, read their words and follow the discussion")}</span></a>
       </div>
-      <nav className="politics-tabs" aria-label="Political analysis views">
+      <nav className="politics-tabs" aria-label={t("Political analysis views")}>
         {[
           ['votes', 'Votes & decisions'],
           ['debates', 'Speech archive'],
@@ -100,35 +95,34 @@ export default function PoliticsLab() {
         ))}
       </nav>
       {error && <p role="alert">{error}</p>}
-      {!data && !error && <p>Loading political observatory…</p>}
+      {!data && !error && <p>{t("Loading political observatory…")}</p>}
       {data && (
         <>
           <div className="politics-kpis">
             <div>
               <strong>{count(data.parliament.imported_speeches)}</strong>
-              <span>party-leader debate speeches</span>
+              <span>{t("party-leader debate speeches")}</span>
             </div>
             <div>
               <strong>{count(data.parliament.issue_speeches)}</strong>
-              <span>separately indexed issue speeches</span>
+              <span>{t("separately indexed issue speeches")}</span>
             </div>
             <div>
               <strong>
                 {count(data.sessions.reduce((n, s) => n + s.votes, 0))}
               </strong>
-              <span>imported roll calls · 2024/25–2025/26</span>
+              <span>{t("imported roll calls · 2024/25–2025/26")}</span>
             </div>
             <div>
               <strong>{count(data.law_pools.v2.provisions)}</strong>
-              <span>v2 statute provisions · snapshot corpus</span>
+              <span>{t("v2 statute provisions · snapshot corpus")}</span>
             </div>
           </div>
           {tab === 'votes' && (
             <>
               <div className="politics-controls">
                 <label>
-                  Voting session
-                  <select
+                  {t("Voting session\n                  ")}<select
                     value={session}
                     onChange={(e) => setSession(e.target.value)}
                   >
@@ -139,11 +133,7 @@ export default function PoliticsLab() {
                 </label>
               </div>
               <p className="evidence-note">
-                Roll calls cover two imported sessions. Decisions without a roll
-                call and unimported years are not counted as abstentions. Votes
-                refer to committee points, not automatically to each law or
-                motion cited in them.
-              </p>
+                {t("Roll calls cover two imported sessions. Decisions without a roll\n                call and unimported years are not counted as abstentions. Votes\n                refer to committee points, not automatically to each law or\n                motion cited in them.\n              ")}</p>
               {active && (
                 <SessionAnalysis key={active.path} path={active.path} />
               )}
@@ -153,84 +143,51 @@ export default function PoliticsLab() {
           {tab === 'meaning' && <LawLibrary />}
           {tab === 'data' && (
             <section className="politics-card">
-              <h3>One source trail, explicit evidence levels.</h3>
+              <h3>{t("One source trail, explicit evidence levels.")}</h3>
               <p>
-                The charts read a versioned gold model with keyed facts,
-                dimensions and documented measures. Original parliamentary
-                exports remain available for audit; decision details and law
-                provisions load separately when selected. The source catalog
-                records file sizes and SHA-256 checksums.
-              </p>
+                {t("The charts read a versioned gold model with keyed facts,\n                dimensions and documented measures. Original parliamentary\n                exports remain available for audit; decision details and law\n                provisions load separately when selected. The source catalog\n                records file sizes and SHA-256 checksums.\n              ")}</p>
               <div className="data-downloads">
                 <a href={GOLD_ROOT + 'semantic-model.json'} download>
-                  Download gold semantic model
-                </a>
+                  {t("Download gold semantic model\n                ")}</a>
                 <a href={ROOT + 'catalog.json'} download>
-                  Download complete data catalog
-                </a>
+                  {t("Download complete data catalog\n                ")}</a>
                 <a href={ROOT + 'parliament/manifest.json'} download>
-                  Parliament export manifest
-                </a>
+                  {t("Parliament export manifest\n                ")}</a>
                 <a href={ROOT + 'laws/index.json'} download>
-                  Law snapshot index
-                </a>
+                  {t("Law snapshot index\n                ")}</a>
               </div>
-              <h4>Measures that are useful now</h4>
+              <h4>{t("Measures that are useful now")}</h4>
               <ul>
                 <li>
-                  Party agreement with paired denominators, internal vote
-                  cohesion and recorded attendance.
-                </li>
+                  {t("Party agreement with paired denominators, internal vote\n                  cohesion and recorded attendance.\n                ")}</li>
                 <li>
-                  Exact vote distributions, proposal citations and reservations
-                  by committee and session.
-                </li>
+                  {t("Exact vote distributions, proposal citations and reservations\n                  by committee and session.\n                ")}</li>
                 <li>
-                  Debate volume and topic shares; semantic links as discovery
-                  candidates.
-                </li>
+                  {t("Debate volume and topic shares; semantic links as discovery\n                  candidates.\n                ")}</li>
                 <li>
-                  Source coverage, snapshot versions and readiness of reviewed
-                  legal comparisons.
-                </li>
+                  {t("Source coverage, snapshot versions and readiness of reviewed\n                  legal comparisons.\n                ")}</li>
               </ul>
-              <h4>Measures that need more evidence</h4>
+              <h4>{t("Measures that need more evidence")}</h4>
               <p>
-                A party's tightening/loosening profile needs a reviewed link to
-                an exact before/after legal provision, the governed actor,
-                version dates and annotated slots. Vote-to-direction joins and
-                independent annotation agreement remain missing. We do not
-                convert semantic similarity or lexical counts into a political
-                honesty score.
-              </p>
+                {t("A party's tightening/loosening profile needs a reviewed link to\n                an exact before/after legal provision, the governed actor,\n                version dates and annotated slots. Vote-to-direction joins and\n                independent annotation agreement remain missing. We do not\n                convert semantic similarity or lexical counts into a political\n                honesty score.\n              ")}</p>
               <p>
-                Snapshot pool v1: {count(data.law_pools.v1.provisions)}{' '}
-                provisions in {count(data.law_pools.v1.documents)} parsed
-                documents. v2: {count(data.law_pools.v2.provisions)} provisions
-                in {count(data.law_pools.v2.documents)} parsed documents. The
-                broader v2 source pool contains unparsed documents; these counts
-                describe parsed provision snapshots.
-              </p>
+                {t("Snapshot pool v1: ")}{count(data.law_pools.v1.provisions)}{' '}
+                {t("provisions in ")}{count(data.law_pools.v1.documents)} {t("parsed\n                documents. v2: ")}{count(data.law_pools.v2.provisions)} {t("provisions\n                in ")}{count(data.law_pools.v2.documents)} {t("parsed documents. The\n                broader v2 source pool contains unparsed documents; these counts\n                describe parsed provision snapshots.\n              ")}</p>
               <p>
-                Independent project using Swedish Parliament public data. Not
-                affiliated with Parliament. Original source text is retained in
-                Swedish.
-              </p>
+                {t("Independent project using Swedish Parliament public data. Not\n                affiliated with Parliament. Original source text is retained in\n                Swedish.\n              ")}</p>
               <a
                 href="https://github.com/korv9/partiledardebatt-analys"
                 target="_blank"
                 rel="noreferrer"
               >
-                Debate project ↗
-              </a>{' '}
+                {t("Debate project ↗\n              ")}</a>{' '}
               ·{' '}
               <a
                 href="https://github.com/korv9/allegoria"
                 target="_blank"
                 rel="noreferrer"
               >
-                Allegoria & meaningquality ↗
-              </a>
+                {t("Allegoria & meaningquality ↗\n              ")}</a>
             </section>
           )}
         </>

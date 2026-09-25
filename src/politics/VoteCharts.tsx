@@ -1,3 +1,4 @@
+import { l, t } from '../i18n'
 import { PARTIES, partyStats, type Decision } from './data'
 
 export default function VoteCharts({
@@ -14,23 +15,21 @@ export default function VoteCharts({
   return (
     <div className="politics-grid">
       <section className="politics-card">
-        <p className="eyebrow">01 / Recorded positions</p>
-        <h4>How do parties vote?</h4>
+        <p className="eyebrow">{t("01 / Recorded positions")}</p>
+        <h4>{t("How do parties vote?")}</h4>
         <p>
-          The most common cast vote in each party, per roll call. Yes means
-          support for the committee proposal, which may itself reject a bill.
-        </p>
+          {t("The most common cast vote in each party, per roll call. Yes means\n          support for the committee proposal, which may itself reject a bill.\n        ")}</p>
         <div className="vote-key">
-          <span>● Yes</span>
-          <span>● No</span>
-          <span>● Abstain</span>
+          <span>{t("● Yes")}</span>
+          <span>{t("● No")}</span>
+          <span>{t("● Abstain")}</span>
         </div>
         {stats.map((s) => (
           <button
             className="vote-stack-row"
             key={s.party}
             onClick={() => onParty(s.party)}
-            aria-label={`${s.party}: ${s.yes} yes, ${s.no} no, ${s.abstain} abstain, ${s.rows} roll calls`}
+            aria-label={l(`${s.party}: ${s.yes} yes, ${s.no} no, ${s.abstain} abstain, ${s.rows} roll calls`, `${s.party}: ${s.yes} ja, ${s.no} nej, ${s.abstain} avstod, ${s.rows} voteringar`)}
           >
             <b>{s.party}</b>
             <span className="vote-stack">
@@ -46,30 +45,24 @@ export default function VoteCharts({
           </button>
         ))}
         <small>
-          Unclassified or tied positions remain outside the three coloured
-          categories. Select a party to inspect decisions.
-        </small>
+          {t("Unclassified or tied positions remain outside the three coloured\n          categories. Select a party to inspect decisions.\n        ")}</small>
       </section>
       <section className="politics-card">
-        <p className="eyebrow">02 / Voting together</p>
-        <h4>Where do parties agree?</h4>
+        <p className="eyebrow">{t("02 / Voting together")}</p>
+        <h4>{t("Where do parties agree?")}</h4>
         <p>
-          Same yes/no position divided by roll calls where both parties have a
-          yes/no position. Abstentions are excluded; this is not ideological
-          distance.
-        </p>
+          {t("Same yes/no position divided by roll calls where both parties have a\n          yes/no position. Abstentions are excluded; this is not ideological\n          distance.\n        ")}</p>
         <div
           className="agreement-scroll"
           tabIndex={0}
-          aria-label="Party agreement matrix"
+          aria-label={t("Party agreement matrix")}
         >
           <table className="agreement-matrix">
             <caption>
-              Agreement percentage · select a cell to see the denominator
-            </caption>
+              {t("Agreement percentage · select a cell to see the denominator\n            ")}</caption>
             <thead>
               <tr>
-                <th scope="col">Party</th>
+                <th scope="col">{t("Party")}</th>
                 {PARTIES.map((p) => (
                   <th scope="col" key={p}>
                     {p}
@@ -101,7 +94,7 @@ export default function VoteCharts({
                       >
                         <details>
                           <summary
-                            aria-label={`${a} and ${b}: ${pct == null ? 'unavailable' : pct.toFixed(0) + '%'}, ${paired.length} comparable roll calls`}
+                            aria-label={l(`${a} and ${b}: ${pct == null ? 'unavailable' : pct.toFixed(0) + '%'}, ${paired.length} comparable roll calls`, `${a} och ${b}: ${pct == null ? 'saknas' : pct.toFixed(0) + '%'}, ${paired.length} jämförbara voteringar`)}
                           >
                             {pct == null ? '—' : pct.toFixed(0)}
                           </summary>
@@ -119,21 +112,18 @@ export default function VoteCharts({
         </div>
       </section>
       <section className="politics-card">
-        <p className="eyebrow">03 / Internal agreement</p>
-        <h4>How unified are the recorded votes?</h4>
+        <p className="eyebrow">{t("03 / Internal agreement")}</p>
+        <h4>{t("How unified are the recorded votes?")}</h4>
         <p>
-          Sum of each roll call's largest party vote group ÷ all cast party
-          votes. Attendance is cast votes ÷ cast plus recorded absences; pairing
-          arrangements are not known.
-        </p>
+          {t("Sum of each roll call's largest party vote group ÷ all cast party\n          votes. Attendance is cast votes ÷ cast plus recorded absences; pairing\n          arrangements are not known.\n        ")}</p>
         {stats.map((s) => (
           <div className="cohesion-row" key={s.party}>
             <b>{s.party}</b>
             <span className="metric-track">
               <i style={{ width: `${s.cohesion ?? 0}%` }} />
             </span>
-            <span>{s.cohesion?.toFixed(1) ?? '—'}% cohesion</span>
-            <span>{s.attendance?.toFixed(1) ?? '—'}% attendance</span>
+            <span>{s.cohesion?.toFixed(1) ?? '—'}{t("% cohesion")}</span>
+            <span>{s.attendance?.toFixed(1) ?? '—'}{t("% attendance")}</span>
           </div>
         ))}
       </section>

@@ -1,3 +1,4 @@
+import { t } from './i18n'
 export type LanguageRow = {
   corpus: string
   method: string
@@ -46,60 +47,48 @@ export default function BudgetLanguage({
   )
   return (
     <section className="language-audit">
-      <h4>What counts as “talking about” an area?</h4>
+      <h4>{t("What counts as “talking about” an area?")}</h4>
       <p>
-        A zero is no detected match, not silence or lack of support. Short
-        party-leader debates, a small vocabulary and exact word forms can all
-        create zeros. Issue debates cover a different agenda and are shown
-        separately.
-      </p>
+        {t("A zero is no detected match, not silence or lack of support. Short\n        party-leader debates, a small vocabulary and exact word forms can all\n        create zeros. Issue debates cover a different agenda and are shown\n        separately.\n      ")}</p>
       <div className="budget-controls">
         <label>
-          Speech corpus
-          <select value={corpus} onChange={(e) => setCorpus(e.target.value)}>
-            <option value="leaders">Party-leader debates</option>
-            <option value="issues">Issue debates</option>
+          {t("Speech corpus\n          ")}<select value={corpus} onChange={(e) => setCorpus(e.target.value)}>
+            <option value="leaders">{t("Party-leader debates")}</option>
+            <option value="issues">{t("Issue debates")}</option>
           </select>
         </label>
         <label>
-          Language method
-          <select value={method} onChange={(e) => setMethod(e.target.value)}>
-            <option value="exact">Exact keyword baseline</option>
-            <option value="stem">Swedish stemming · exploratory NLP</option>
+          {t("Language method\n          ")}<select value={method} onChange={(e) => setMethod(e.target.value)}>
+            <option value="exact">{t("Exact keyword baseline")}</option>
+            <option value="stem">{t("Swedish stemming · exploratory NLP")}</option>
           </select>
         </label>
       </div>
       <p>
         <strong>
-          {coverage.reduce((n, r) => n + r.zero_areas, 0)} of{' '}
-          {coverage.length * 27} party–area cells have no matches.
-        </strong>{' '}
+          {coverage.reduce((n, r) => n + r.zero_areas, 0)} {t("of")}{' '}
+          {coverage.length * 27} {t("party–area cells have no matches.\n        ")}</strong>{' '}
         {coverage.reduce((n, r) => n + r.speeches, 0).toLocaleString('en-GB')}{' '}
-        eligible speeches;{' '}
+        {t("eligible speeches;")}{' '}
         {coverage.reduce((n, r) => n + r.hits, 0).toLocaleString('en-GB')}{' '}
-        area-assigned hits. All charts below use this corpus and method.
-      </p>
+        {t("area-assigned hits. All charts below use this corpus and method.\n      ")}</p>
       <p className="evidence-note">
-        The comparison uses the whole parliamentary session, including speeches
-        after the budget proposal. It describes topic attention, not what caused
-        a budget decision. Neither matching method detects support, opposition
-        or references to another party.
-      </p>
+        {t("The comparison uses the whole parliamentary session, including speeches\n        after the budget proposal. It describes topic attention, not what caused\n        a budget decision. Neither matching method detects support, opposition\n        or references to another party.\n      ")}</p>
       <details>
-        <summary>Inspect coverage and matching words</summary>
+        <summary>{t("Inspect coverage and matching words")}</summary>
         <div
           className="coverage-scroll"
           tabIndex={0}
-          aria-label="Language coverage table"
+          aria-label={t("Language coverage table")}
         >
           <table>
             <thead>
               <tr>
-                <th>Party</th>
-                <th>Speeches</th>
-                <th>With any match</th>
-                <th>Total hits</th>
-                <th>Zero areas / 27</th>
+                <th>{t("Party")}</th>
+                <th>{t("Speeches")}</th>
+                <th>{t("With any match")}</th>
+                <th>{t("Total hits")}</th>
+                <th>{t("Zero areas / 27")}</th>
               </tr>
             </thead>
             <tbody>
@@ -116,7 +105,7 @@ export default function BudgetLanguage({
           </table>
         </div>
         <p>
-          Dictionary for the selected area:{' '}
+          {t("Dictionary for the selected area:")}{' '}
           {data.lexicon
             .filter((r) => Number(r.expenditure_area) === area)
             .map((r) => r.keyword)
@@ -133,32 +122,20 @@ export default function BudgetLanguage({
           )
           .map((r) => (
             <p key={r.party}>
-              <b>{r.party}</b>: {r.occurrences} matches ·{' '}
+              <b>{r.party}</b>: {r.occurrences} {t("matches ·")}{' '}
               {r.forms.length
                 ? r.forms.map(([w, n]) => `${w} (${n})`).join(', ')
-                : 'No matching word forms'}
-              {r.forms.length === 8 ? ' · top 8 forms' : ''}
+                : t('No matching word forms')}
+              {r.forms.length === 8 ? t(' · top 8 forms') : ''}
             </p>
           ))}
         <p>
-          Stemming groups some inflected Swedish forms. It can also merge
-          unrelated words and does not resolve synonyms, compounds, context or
-          policy stance. It is a sensitivity check, not a validated semantic
-          classifier. Shares use all area-assigned hits within that party and
-          session; they are not a percentage of all speech.
-        </p>
+          {t("Stemming groups some inflected Swedish forms. It can also merge\n          unrelated words and does not resolve synonyms, compounds, context or\n          policy stance. It is a sensitivity check, not a validated semantic\n          classifier. Shares use all area-assigned hits within that party and\n          session; they are not a percentage of all speech.\n        ")}</p>
       </details>
       <details>
-        <summary>How could semantic NLP improve this?</summary>
+        <summary>{t("How could semantic NLP improve this?")}</summary>
         <p>
-          Next: split speeches into passages, retrieve candidate expenditure
-          areas with multilingual embeddings, then review multi-label
-          classifications against a hand-labelled Swedish sample. Keep an
-          “unclassified” category, report precision and recall per area, and
-          distinguish the speaker's proposal from criticism or quotations. Match
-          time windows to budget submission dates. More matches alone do not
-          demonstrate better results.
-        </p>
+          {t("Next: split speeches into passages, retrieve candidate expenditure\n          areas with multilingual embeddings, then review multi-label\n          classifications against a hand-labelled Swedish sample. Keep an\n          “unclassified” category, report precision and recall per area, and\n          distinguish the speaker's proposal from criticism or quotations. Match\n          time windows to budget submission dates. More matches alone do not\n          demonstrate better results.\n        ")}</p>
       </details>
     </section>
   )

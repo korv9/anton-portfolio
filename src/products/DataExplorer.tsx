@@ -1,3 +1,4 @@
+import { t } from '../i18n'
 import { useEffect, useMemo, useState } from 'react'
 
 type Row = Record<string, unknown>
@@ -58,24 +59,24 @@ export default function DataExplorer({ initialDataset = 'fact_budget_frame', sec
   ), [rows, query, filters])
   const pageCount = Math.max(1, Math.ceil(visible.length / 25))
   return <section className="report data-explorer" id={sectionId}>
-    <p className="eyebrow">Open data desk</p><h2>Inspect the records behind the charts.</h2>
-    <p className="report-intro">Search every row in the imported datasets, including budget proposals and decisions without a recorded roll call. Downloads contain the full selected table. Coverage is limited to the imported snapshots.</p>
-    <div className="dataset-presets" aria-label="Popular datasets">{[
+    <p className="eyebrow">{t("Open data desk")}</p><h2>{t("Inspect the records behind the charts.")}</h2>
+    <p className="report-intro">{t("Search every row in the imported datasets, including budget proposals and decisions without a recorded roll call. Downloads contain the full selected table. Coverage is limited to the imported snapshots.")}</p>
+    <div className="dataset-presets" aria-label={t("Popular datasets")}>{[
       ['fact_budget_frame', 'All budget proposals'], ['fact_decision_point', 'All decision points'],
       ['fact_budget_outturn', 'Annual spending outcomes'], ['fact_party_vote', 'Party votes'],
       ['drugcomb_metrics', 'DrugComb evaluations'],
     ].map(([id, title]) => <button key={id} aria-pressed={selected === id} onClick={() => setSelected(id)}>{title}</button>)}</div>
-    <div className="explorer-controls"><label>Dataset<select value={selected} onChange={(e) => setSelected(e.target.value)}>
-      {['politics', 'jobs', 'allegoria', 'drugcomb'].map((product) => <optgroup label={product} key={product}>{datasets.filter((d) => d.product === product).map((d) => <option value={d.id} key={d.id}>{d.label} · {d.rows.toLocaleString('en-GB')} rows</option>)}</optgroup>)}
-    </select></label><label>Search all columns<input type="search" value={query} onChange={(e) => { setQuery(e.target.value); setPage(0) }} placeholder="Try a decision title, party or document ID" /></label></div>
-    <div className="explorer-facets">{facets.filter((key) => columns.includes(key)).map((key) => <label key={key}>{labels[key]}<select value={filters[key] ?? ''} onChange={(e) => { setFilters({ ...filters, [key]: e.target.value }); setPage(0) }}><option value="">All</option>{[...new Set(rows.map((row) => String(row[key])))].sort((a, b) => a.localeCompare(b, undefined, { numeric: true })).map((value) => <option key={value}>{value}</option>)}</select></label>)}</div>
-    {dataset && <div className="dataset-context"><p><strong>{dataset.grain ?? 'Published upstream analysis table'}</strong><br />{dataset.limitations || (dataset.product === 'drugcomb' ? 'Reported upstream results; no training run is performed by this website.' : 'Source rows retain their original definitions and coverage.')}</p><div><a href={dataset.path} download>Download full JSON</a>{dataset.csv && <a href={dataset.csv} download>Original CSV</a>}<a href="/data/gold/semantic-model.json" download>Definitions & relationships</a></div></div>}
+    <div className="explorer-controls"><label>{t("Dataset")}<select value={selected} onChange={(e) => setSelected(e.target.value)}>
+      {['politics', 'jobs', 'allegoria', 'drugcomb'].map((product) => <optgroup label={product} key={product}>{datasets.filter((d) => d.product === product).map((d) => <option value={d.id} key={d.id}>{d.label} · {d.rows.toLocaleString('en-GB')} {t("rows")}</option>)}</optgroup>)}
+    </select></label><label>{t("Search all columns")}<input type="search" value={query} onChange={(e) => { setQuery(e.target.value); setPage(0) }} placeholder={t("Try a decision title, party or document ID")} /></label></div>
+    <div className="explorer-facets">{facets.filter((key) => columns.includes(key)).map((key) => <label key={key}>{t(labels[key])}<select value={filters[key] ?? ''} onChange={(e) => { setFilters({ ...filters, [key]: e.target.value }); setPage(0) }}><option value="">{t("All")}</option>{[...new Set(rows.map((row) => String(row[key])))].sort((a, b) => a.localeCompare(b, undefined, { numeric: true })).map((value) => <option key={value}>{value}</option>)}</select></label>)}</div>
+    {dataset && <div className="dataset-context"><p><strong>{dataset.grain ?? 'Published upstream analysis table'}</strong><br />{dataset.limitations || (dataset.product === 'drugcomb' ? 'Reported upstream results; no training run is performed by this website.' : 'Source rows retain their original definitions and coverage.')}</p><div><a href={dataset.path} download>{t("Download full JSON")}</a>{dataset.csv && <a href={dataset.csv} download>{t("Original CSV")}</a>}<a href="/data/gold/semantic-model.json" download>{t("Definitions & relationships")}</a></div></div>}
     {error && <p role="alert">{error}</p>}
-    {loading ? <p role="status">Loading selected records…</p> : <>
-      <p aria-live="polite">{visible.length.toLocaleString('en-GB')} matching rows of {rows.length.toLocaleString('en-GB')}. “—” means missing or not applicable.</p>
-      <div className="data-table-scroll" tabIndex={0} aria-label="Dataset table, scroll horizontally"><table><caption>{dataset?.label}</caption><thead><tr>{columns.map((column) => <th scope="col" key={column}>{column.replace(/_/g, ' ')}</th>)}</tr></thead><tbody>{visible.slice(page * 25, page * 25 + 25).map((row, index) => <tr key={page * 25 + index}>{columns.map((column) => <td key={column}>{typeof row[column] === 'string' && /^https?:\/\//.test(String(row[column])) ? <a href={String(row[column])} target="_blank" rel="noreferrer">Source ↗</a> : display(row[column])}</td>)}</tr>)}</tbody></table></div>
-      {!visible.length && <p>No rows match these filters.</p>}
-      <div className="table-pagination"><button disabled={page === 0} onClick={() => setPage(page - 1)}>Previous</button><span>Page {page + 1} of {pageCount}</span><button disabled={page + 1 >= pageCount} onClick={() => setPage(page + 1)}>Next</button></div>
+    {loading ? <p role="status">{t("Loading selected records…")}</p> : <>
+      <p aria-live="polite">{visible.length.toLocaleString('en-GB')} {t("matching rows of ")}{rows.length.toLocaleString('en-GB')}{t(". “—” means missing or not applicable.")}</p>
+      <div className="data-table-scroll" tabIndex={0} aria-label={t("Dataset table, scroll horizontally")}><table><caption>{dataset?.label}</caption><thead><tr>{columns.map((column) => <th scope="col" key={column}>{column.replace(/_/g, ' ')}</th>)}</tr></thead><tbody>{visible.slice(page * 25, page * 25 + 25).map((row, index) => <tr key={page * 25 + index}>{columns.map((column) => <td key={column}>{typeof row[column] === 'string' && /^https?:\/\//.test(String(row[column])) ? <a href={String(row[column])} target="_blank" rel="noreferrer">{t("Source ↗")}</a> : display(row[column])}</td>)}</tr>)}</tbody></table></div>
+      {!visible.length && <p>{t("No rows match these filters.")}</p>}
+      <div className="table-pagination"><button disabled={page === 0} onClick={() => setPage(page - 1)}>{t("Previous")}</button><span>{t("Page ")}{page + 1} {t("of ")}{pageCount}</span><button disabled={page + 1 >= pageCount} onClick={() => setPage(page + 1)}>{t("Next")}</button></div>
     </>}
   </section>
 }

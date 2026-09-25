@@ -1,3 +1,4 @@
+import { currentLocale, t } from './i18n'
 type Row = {
   actor: string
   expenditure_area: number
@@ -7,7 +8,7 @@ type Row = {
 }
 const parties = ['C', 'KD', 'L', 'M', 'MP', 'S', 'SD', 'V']
 const money = (n: number) =>
-  `${n < 0 ? '−' : n > 0 ? '+' : ''}${(Math.abs(n) / 1000).toLocaleString('en-GB', { maximumFractionDigits: 2 })} bn SEK`
+  `${n < 0 ? '−' : n > 0 ? '+' : ''}${(Math.abs(n) / 1000).toLocaleString(currentLocale() === 'sv' ? 'sv-SE' : 'en-GB', { maximumFractionDigits: 2 })} ${currentLocale() === 'sv' ? 'mdkr' : 'bn SEK'}`
 export default function BudgetOverview({
   rows,
   nameOf,
@@ -22,15 +23,12 @@ export default function BudgetOverview({
     .reduce((n, r) => n + r.amount_msek, 0)
   return (
     <section className="budget-overview">
-      <p className="eyebrow">The budget in plain numbers</p>
-      <h4>What would each proposal change?</h4>
+      <p className="eyebrow">{t("The budget in plain numbers")}</p>
+      <h4>{t("What would each proposal change?")}</h4>
       <p>
-        Government expenditure frames total{' '}
-        {(gov / 1000).toLocaleString('en-GB', { maximumFractionDigits: 1 })}{' '}
-        billion SEK. Each card compares a party's proposal with the same year's
-        government proposal—not with last year's spending. These are proposed
-        expenditure frames, not actual spending or the full fiscal balance.
-      </p>
+        {t("Government expenditure frames total")}{' '}
+        {(gov / 1000).toLocaleString(currentLocale() === 'sv' ? 'sv-SE' : 'en-GB', { maximumFractionDigits: 1 })}{' '}
+        {t("billion SEK. Each card compares a party's proposal with the same year's\n        government proposal—not with last year's spending. These are proposed\n        expenditure frames, not actual spending or the full fiscal balance.\n      ")}</p>
       <div className="budget-overview-grid">
         {parties.map((p) => {
           const own = rows.filter((r) => r.actor === p)
@@ -51,14 +49,13 @@ export default function BudgetOverview({
                 <>
                   <strong className="budget-net">{money(delta)}</strong>
                   <p>
-                    Net difference ·{' '}
-                    {(total / 1000).toLocaleString('en-GB', {
+                    {t("Net difference ·")}{' '}
+                    {(total / 1000).toLocaleString(currentLocale() === 'sv' ? 'sv-SE' : 'en-GB', {
                       maximumFractionDigits: 1,
                     })}{' '}
-                    bn SEK total
-                  </p>
+                    {t("bn SEK total\n                  ")}</p>
                   <div>
-                    <b>Largest increases</b>
+                    <b>{t("Largest increases")}</b>
                     {up.length ? (
                       up.map((r) => (
                         <button
@@ -70,11 +67,11 @@ export default function BudgetOverview({
                         </button>
                       ))
                     ) : (
-                      <p>No increases in these frames.</p>
+                      <p>{t("No increases in these frames.")}</p>
                     )}
                   </div>
                   <div>
-                    <b>Largest reductions</b>
+                    <b>{t("Largest reductions")}</b>
                     {down.length ? (
                       down.map((r) => (
                         <button
@@ -86,17 +83,15 @@ export default function BudgetOverview({
                         </button>
                       ))
                     ) : (
-                      <p>No reductions in these frames.</p>
+                      <p>{t("No reductions in these frames.")}</p>
                     )}
                   </div>
                   <a href={own[0].source_url} target="_blank" rel="noreferrer">
-                    Read budget table ↗
-                  </a>
+                    {t("Read budget table ↗\n                  ")}</a>
                 </>
               ) : (
                 <p>
-                  No separate complete party proposal in this export. The
-                  collective government frame is not assigned to {p}.
+                  {t("No separate complete party proposal in this export. The\n                  collective government frame is not assigned to ")}{p}.
                 </p>
               )}
             </article>
