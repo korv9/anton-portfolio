@@ -8,6 +8,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import re
 import sqlite3
 import zipfile
 from datetime import datetime, timezone
@@ -25,19 +26,46 @@ KINDS = {
 }
 
 
+# Chamber business and other debate forms that are outside the issue-debate selection.
+# Used only when the source states no chamber activity, where the section heading is the
+# only thing left to judge by.
+NOT_AN_ISSUE = re.compile(
+    r'^(v[äa]lkomstord|h[äa]lsningsanf|parentation|meddelande|val av|val\b|anm[äa]lan|'
+    r'bordl[äa]ggning|justering|avs[äa]gelse|fr[åa]gestund|svar p[åa] fr[åa]ga|'
+    r'interpellation|skriftlig|ledighet|upprop|[åa]lderspresident|avslutning|'
+    r'[åa]terupptaget sammantr[äa]de|[åa]terrapportering|information fr[åa]n regeringen)',
+    re.IGNORECASE)
+
+
 def issue_kind(row: dict) -> str | None:
+    """Which issue-debate category a speech belongs to, or None to leave it out.
+
+    Before 2003/04 the archives carry no kammaraktivitet at all, and 2013/14 writes a bare
+    dash. Matching that field alone therefore selected almost nothing for those years: 93
+    speeches were imported from the 12,370 in the 1993/94 archive. Where the field is
+    absent the section heading is the only evidence available, so the rule inverts — keep
+    the speech unless its heading names chamber business or a debate form out of scope.
+
+    The fallback applies only when the field is absent. Where the source does classify the
+    sitting, that classification is trusted, because a blank in an otherwise populated year
+    means something different: in 2020/21 most blanks are party-leader debates, which
+    belong to the separate leaders corpus and must not be mixed in here.
+    """
     activity = (row.get('kammaraktivitet') or '').strip().casefold()
-    heading = (row.get('avsnittsrubrik') or '').strip().casefold()
-    if 'partiledardebatt' in activity or 'partiledardebatt' in heading:
+    heading = (row.get('avsnittsrubrik') or '').strip()
+    folded = heading.casefold()
+    if 'partiledardebatt' in activity or 'partiledardebatt' in folded:
         return None
-    if heading.startswith('meddelande'):
+    if folded.startswith('meddelande'):
         return None
     if activity in KINDS:
         return activity
-    if heading.startswith('särskild debatt'):
+    if folded.startswith('särskild debatt'):
         return 'särskild debatt'
-    if heading.startswith('aktuell debatt'):
+    if folded.startswith('aktuell debatt'):
         return 'aktuell debatt'
+    if activity in ('', '-') and heading and not NOT_AN_ISSUE.match(heading):
+        return 'ärendedebatt (oklassad källa)'
     return None
 
 
