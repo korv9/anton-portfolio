@@ -108,7 +108,22 @@ Measured 2026-09-25.
 | Share of the 1 GB Pages limit | 64% | **15%** |
 | Start-page bundle | 433.5 KiB | **332.6 KiB** |
 
-The remaining bulk is the 74 MB speech index under `discovery/`. It is a candidate for
-Parquet rather than object storage, because the site filters it rather than reading it one
-document at a time, and that change would also lift the current one-year-at-a-time search
-limit.
+The speech index under `discovery/` was the remaining bulk: 140 MB of JSON, one file per
+session. It is now Parquet, one part per session under `parquet/speech_cards/` (39 MB, the
+same 256,498 rows byte for byte once parsed), served from object storage like the other
+Parquet marts; `discovery/index.json` stays on the site and lists the parts. JSON served by
+the site fell from 221.6 MB to 82.5 MB. The parts are committed until the first upload
+verifies them, then offloaded (`upload.py --verify-only --offload`).
+
+## Moving the bucket to a custom domain
+
+r2.dev is rate-limited; the first CI run hit its 429s. To serve from a domain instead:
+
+1. In Cloudflare, R2 → the `anton-portfolio` bucket → Settings → Custom Domains → Connect
+   Domain, and choose a subdomain of a zone on the same account (for example
+   `data.<your-domain>`). Cloudflare creates the DNS record and certificate.
+2. Add the site's origin to the bucket's CORS policy (`platform/publish/r2-cors.json`).
+3. Set the repository variable or secret `R2_PUBLIC_BASE` to `https://data.<your-domain>/`
+   and add it to the refresh workflows' environment; locally, export it.
+4. `npm run data:catalog`, commit `delivery.json` and `catalog.json`. No component changes.
+5. Disable the r2.dev URL in the bucket settings once the site no longer uses it.

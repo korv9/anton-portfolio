@@ -1,4 +1,5 @@
-import { fetchData, resolveDataUrl } from '../dataSource'
+import { fetchData } from '../dataSource'
+import { readParquet } from '../parquet'
 
 export type Indicator = {
   indicator_key: string
@@ -87,24 +88,6 @@ export async function fetchJson<T>(path: string): Promise<T> {
   return response.json()
 }
 
-/**
- * Bytes of a delivered Parquet part. Object storage first, as the delivery manifest says;
- * the site's own copy when that fails, which is the case in development and between an
- * export and its first upload.
- */
-async function parquetBytes(path: string): Promise<ArrayBuffer> {
-  const remote = await resolveDataUrl(path)
-  try {
-    const response = await fetch(remote)
-    if (response.ok) return response.arrayBuffer()
-  } catch {
-    /* fall through to the local copy */
-  }
-  const local = await fetch('data/' + path)
-  if (!local.ok) throw new Error(`${path}: HTTP ${local.status}`)
-  return local.arrayBuffer()
-}
-
 /** Parquet DATE columns arrive as Date objects; the charts want 'YYYY-MM-DD'. */
 function isoDate(value: unknown) {
   return value instanceof Date
@@ -120,17 +103,15 @@ export function loadSourceRows(source: string): Promise<IndicatorRow[]> {
     const path = `parquet/welfare_indicator/source=${source}/part-0.parquet`
     cache.set(
       source,
-      Promise.all([parquetBytes(path), import('hyparquet')]).then(
-        async ([buffer, { parquetReadObjects }]) => {
-          const rows = await parquetReadObjects({ file: buffer })
-          return rows.map((row) => ({
+      readParquet(path).then(
+        (rows) =>
+          rows.map((row) => ({
             ...row,
             start_date: isoDate(row.start_date),
             end_date: isoDate(row.end_date),
             reference_year: Number(row.reference_year),
             value: Number(row.value),
-          })) as IndicatorRow[]
-        },
+          })) as IndicatorRow[],
       ),
     )
     cache.get(source)!.catch(() => cache.delete(source))
