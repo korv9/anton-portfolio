@@ -1,0 +1,83 @@
+{
+ "exported_at": "2026-09-26T12:20:00+00:00",
+ "github_run": {
+  "id": null,
+  "sha": null,
+  "workflow": null
+ },
+ "dbt": {
+  "invocation_id": "b097f095-e7c8-49af-b66f-f2f1abdc8f37",
+  "command": "build",
+  "generated_at": "2026-09-26T12:17:08.476929Z",
+  "dbt_version": "1.12.4",
+  "elapsed_seconds": 22.5,
+  "nodes": {
+   "model": 40,
+   "seed": 9,
+   "test": 124
+  },
+  "tests": {
+   "pass": 124,
+   "fail": 0,
+   "error": 0,
+   "warn": 0,
+   "skipped": 0
+  }
+ },
+ "sources": [
+  {
+   "source_key": "scb",
+   "fetched_at": "2026-09-26T11:17:57+00:00",
+   "content_changed_at": "2026-09-26T11:17:57+00:00",
+   "files": 14,
+   "bytes": 30159131
+  },
+  {
+   "source_key": "fk",
+   "fetched_at": "2026-09-26T11:22:04+00:00",
+   "content_changed_at": "2026-09-26T11:22:04+00:00",
+   "files": 8,
+   "bytes": 198332467
+  },
+  {
+   "source_key": "fohm",
+   "fetched_at": "2026-09-26T11:18:40+00:00",
+   "content_changed_at": "2026-09-26T11:18:40+00:00",
+   "files": 12,
+   "bytes": 10604285
+  },
+  {
+   "source_key": "ess",
+   "fetched_at": "2026-09-26T11:37:51+00:00",
+   "content_changed_at": "2026-09-26T11:37:51+00:00",
+   "files": 12,
+   "bytes": 78224383
+  },
+  {
+   "source_key": "kolada",
+   "fetched_at": "2026-09-26T11:39:27+00:00",
+   "content_changed_at": "2026-09-26T11:39:27+00:00",
+   "files": 239,
+   "bytes": 253681231
+  }
+ ],
+ "rows": {
+  "fct_indicator": 1271081,
+  "fct_labour_force": 269004,
+  "fct_population": 54288,
+  "fct_sick_pay_rate": 707616,
+  "fct_sick_leave_cases": 231858,
+  "fct_health_survey": 33041,
+  "fct_social_survey_country": 42322,
+  "fct_social_survey_region": 1176,
+  "fct_kolada": 208668,
+  "mart_county_year_overview": 441
+ },
+ "parquet_rows": {
+  "scb": 131906,
+  "fk": 906284,
+  "fohm": 33041,
+  "ess": 2786,
+  "kolada": 197064
+ }
+}

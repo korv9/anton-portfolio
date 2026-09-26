@@ -95,7 +95,7 @@ Hänger regional arbetslöshet ihop med sjukskrivning och upplevd hälsa? Beskri
 ```sql
 select region_name, year, unemployment_rate_pct, unemployment_rate_moe,
        sick_pay_rate_days, stress_cases_per_1000, serious_mental_strain_pct
-from main_gold.mart_county_year_overview
+from gold.mart_county_year_overview
 where year = 2024
 order by unemployment_rate_pct desc;
 ```
@@ -104,9 +104,9 @@ Alla mått inom ett område för ett län, oavsett källa:
 
 ```sql
 select i.indicator_name, i.source_key, p.period_label, f.value, f.ci_low, f.ci_high
-from main_gold.fct_indicator f
-join main_gold.dim_indicator i using (indicator_key)
-join main_gold.dim_period p using (period_key)
+from gold.fct_indicator f
+join gold.dim_indicator i using (indicator_key)
+join gold.dim_period p using (period_key)
 where i.domain = 'mental_halsa' and f.region_code = '01' and f.sex_key = 'T'
 order by i.indicator_name, p.start_date;
 ```
