@@ -26,9 +26,13 @@ function LawText({ law }: { law: Law }) {
   return (
     <div className="law-text">
       <h5>{law.title}</h5>
-      <p>{law.version} {t("· snapshot, not verified as the law on a debate date.")}</p>
+      <p>
+        {law.version}{' '}
+        {t('· snapshot, not verified as the law on a debate date.')}
+      </p>
       <label>
-        {t("Search provisions\n        ")}<input value={query} onChange={(e) => setQuery(e.target.value)} />
+        {t('Search provisions\n        ')}
+        <input value={query} onChange={(e) => setQuery(e.target.value)} />
       </label>
       {error && <p role="alert">{error}</p>}
       {data
@@ -44,9 +48,11 @@ function LawText({ law }: { law: Law }) {
               target="_blank"
               rel="noreferrer"
             >
-              {t("Statute source ↗\n            ")}</a>
+              {t('Statute source ↗\n            ')}
+            </a>
             <small className="source-hash">
-              {t("Source SHA-256: ")}{p.source_sha256}
+              {t('Source SHA-256: ')}
+              {p.source_sha256}
             </small>
           </details>
         ))}
@@ -68,40 +74,51 @@ export default function LawLibrary() {
   const selected = matching.find((l) => l.id === lawId)
   return (
     <section className="meaning-lab">
-      <h3>{t("Law texts & source evidence")}</h3>
+      <h3>{t('Law texts & source evidence')}</h3>
       <p>
-        {t("Read the source snapshots and inspect the limits of proposed-law\n        comparisons.\n      ")}</p>
+        {t(
+          'Read the source snapshots and inspect the limits of proposed-law\n        comparisons.\n      ',
+        )}
+      </p>
       <section className="politics-card law-browser">
-        <h4>{t("Read the source law")}</h4>
+        <h4>{t('Read the source law')}</h4>
         <p>
-          {t("Browse both available statute provision pools, with source hashes,\n          snapshot versions and original text. Overlapping pools must not be\n          added together as unique laws.\n        ")}</p>
+          {t(
+            'Browse both available statute provision pools, with source hashes,\n          snapshot versions and original text. Overlapping pools must not be\n          added together as unique laws.\n        ',
+          )}
+        </p>
         <div className="politics-controls">
           <label>
-            {t("Corpus pool\n            ")}<select
+            {t('Corpus pool\n            ')}
+            <select
               value={pool}
               onChange={(e) => {
                 setPool(e.target.value)
                 setLawId('')
               }}
             >
-              <option value="v1">{t("v1 · frozen corpus")}</option>
-              <option value="v2">{t("v2 · expanded pool")}</option>
+              <option value="v1">{t('v1 · frozen corpus')}</option>
+              <option value="v2">{t('v2 · expanded pool')}</option>
             </select>
           </label>
           <label>
-            {t("Search laws\n            ")}<input
+            {t('Search laws\n            ')}
+            <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder={t("e.g. anställning, miljö")}
+              placeholder={t('e.g. anställning, miljö')}
             />
           </label>
           <label>
-            {t("Law snapshot\n            ")}<select
+            {t('Law snapshot\n            ')}
+            <select
               value={selected?.id ?? ''}
               onChange={(e) => setLawId(e.target.value)}
             >
               <option value="">
-                {t("Select from ")}{count(matching.length)} {t("snapshots\n              ")}</option>
+                {t('Select from ')}
+                {count(matching.length)} {t('snapshots\n              ')}
+              </option>
               {matching.map((l) => (
                 <option key={l.id} value={l.id}>
                   {l.title}

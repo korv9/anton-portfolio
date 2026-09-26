@@ -10,5 +10,8 @@ export default defineConfig({
   root: here,
   base: './',
   plugins: [react()],
-  build: { outDir: fileURLToPath(new URL('../dist', import.meta.url)), emptyOutDir: true },
+  build: {
+    outDir: fileURLToPath(new URL('../dist', import.meta.url)),
+    emptyOutDir: true,
+  },
 })

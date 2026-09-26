@@ -63,11 +63,15 @@ function Transcript({ debate }: { debate: Debate }) {
     <div className="archive-transcript">
       <h4>{debate.debate_title}</h4>
       <p>
-        {debate.debate_date} · {speeches.length} {t("imported speeches. Reply flags\n        describe the source classification, not who is replying to whom.\n      ")}</p>
+        {debate.debate_date} · {speeches.length}{' '}
+        {t(
+          'imported speeches. Reply flags\n        describe the source classification, not who is replying to whom.\n      ',
+        )}
+      </p>
       {error && <p role="alert">{error}</p>}
       <div
         className="archive-bars"
-        aria-label={t("Speech and reply counts per party")}
+        aria-label={t('Speech and reply counts per party')}
       >
         {counts.map((c) => (
           <div key={c.party}>
@@ -76,37 +80,43 @@ function Transcript({ debate }: { debate: Debate }) {
               <i style={{ width: `${(c.speeches / max) * 100}%` }} />
             </span>
             <span>
-              {c.speeches} {t("speeches · ")}{c.replies} {t("replies\n            ")}</span>
+              {c.speeches} {t('speeches · ')}
+              {c.replies} {t('replies\n            ')}
+            </span>
           </div>
         ))}
       </div>
       <div className="politics-controls">
         <label>
-          {t("Transcript party\n          ")}<select
+          {t('Transcript party\n          ')}
+          <select
             value={party}
             onChange={(e) => {
               setParty(e.target.value)
               setLimit(15)
             }}
           >
-            <option value="All">{t("All")}</option>
+            <option value="All">{t('All')}</option>
             {[...new Set(speeches.map((s) => s.party))].sort().map((p) => (
               <option key={p}>{p}</option>
             ))}
           </select>
         </label>
         <label>
-          {t("Search this transcript\n          ")}<input
+          {t('Search this transcript\n          ')}
+          <input
             value={query}
             onChange={(e) => {
               setQuery(e.target.value)
               setLimit(15)
             }}
-            placeholder={t("Search source text or speaker")}
+            placeholder={t('Search source text or speaker')}
           />
         </label>
       </div>
-      <p>{matches.length} {t("matches in this transcript.")}</p>
+      <p>
+        {matches.length} {t('matches in this transcript.')}
+      </p>
       {matches.slice(0, limit).map((s) => (
         <details className="speech-record" key={s.speech_id}>
           <summary>
@@ -117,12 +127,14 @@ function Transcript({ debate }: { debate: Debate }) {
             {s.speech_text}
           </p>
           <a href={s.source_url} target="_blank" rel="noreferrer">
-            {t("Read parliamentary source ↗\n          ")}</a>
+            {t('Read parliamentary source ↗\n          ')}
+          </a>
         </details>
       ))}
       {matches.length > limit && (
         <button className="archive-more" onClick={() => setLimit(limit + 15)}>
-          {t("Show 15 more speeches\n        ")}</button>
+          {t('Show 15 more speeches\n        ')}
+        </button>
       )}
     </div>
   )
@@ -165,13 +177,17 @@ export default function DebateArchive() {
   )
   return (
     <section className="politics-card debate-archive">
-      <p className="eyebrow">{t("Read the debate in context")}</p>
-      <h3>{t("Speeches, replies and the surrounding discussion.")}</h3>
+      <p className="eyebrow">{t('Read the debate in context')}</p>
+      <h3>{t('Speeches, replies and the surrounding discussion.')}</h3>
       <p>
-        {t("Full source text from the imported metadata selection. Issue debates\n        form a separate archive and are not included in the party-leader UMAP\n        model. Older categorisation is incomplete; counts are coverage, not all\n        political discussion.\n      ")}</p>
+        {t(
+          'Full source text from the imported metadata selection. Issue debates\n        form a separate archive and are not included in the party-leader UMAP\n        model. Older categorisation is incomplete; counts are coverage, not all\n        political discussion.\n      ',
+        )}
+      </p>
       <div className="politics-controls">
         <label>
-          {t("Archive\n          ")}<select
+          {t('Archive\n          ')}
+          <select
             value={kind}
             onChange={(e) => {
               setKind(e.target.value)
@@ -180,12 +196,13 @@ export default function DebateArchive() {
               setLimit(30)
             }}
           >
-            <option value="leaders">{t("Party-leader debates")}</option>
-            <option value="issues">{t("Issue debates")}</option>
+            <option value="leaders">{t('Party-leader debates')}</option>
+            <option value="issues">{t('Issue debates')}</option>
           </select>
         </label>
         <label>
-          {t("Debate session\n          ")}<select
+          {t('Debate session\n          ')}
+          <select
             value={session}
             onChange={(e) => {
               setSession(e.target.value)
@@ -199,13 +216,14 @@ export default function DebateArchive() {
           </select>
         </label>
         <label>
-          {t("Find a debate\n          ")}<input
+          {t('Find a debate\n          ')}
+          <input
             value={query}
             onChange={(e) => {
               setQuery(e.target.value)
               setLimit(30)
             }}
-            placeholder={t("Search debate titles")}
+            placeholder={t('Search debate titles')}
           />
         </label>
       </div>
@@ -213,7 +231,7 @@ export default function DebateArchive() {
         <p role="alert">{debates.error || issues.error || issueIndex.error}</p>
       )}
       <p>
-        {count(matches.length)} {t("matching")}{' '}
+        {count(matches.length)} {t('matching')}{' '}
         {t(kind === 'leaders' ? 'protocols' : 'debate sections')}.
       </p>
       <div className="decision-layout">
@@ -226,19 +244,21 @@ export default function DebateArchive() {
             >
               <strong>{d.debate_title}</strong>
               <small>
-                {d.debate_date} · {d.speech_count} {t("speeches · ")}{d.reply_count}{' '}
-                {t("replies\n              ")}</small>
+                {d.debate_date} · {d.speech_count} {t('speeches · ')}
+                {d.reply_count} {t('replies\n              ')}
+              </small>
             </button>
           ))}
           {matches.length > limit && (
             <button onClick={() => setLimit(limit + 30)}>
-              {t("Show 30 more sections\n            ")}</button>
+              {t('Show 30 more sections\n            ')}
+            </button>
           )}
         </div>
         {active ? (
           <Transcript key={active.section_id || active.path} debate={active} />
         ) : (
-          <p>{t("Select a debate to load its full transcript.")}</p>
+          <p>{t('Select a debate to load its full transcript.')}</p>
         )}
       </div>
     </section>

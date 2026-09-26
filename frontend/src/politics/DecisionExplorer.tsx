@@ -1,6 +1,11 @@
 import { t } from '../i18n'
 import { useState } from 'react'
-import { positionFromVotes, useData, type Decision, type PartyVote } from './data'
+import {
+  positionFromVotes,
+  useData,
+  type Decision,
+  type PartyVote,
+} from './data'
 
 type Detail = {
   point: { proposal_text: string; source_url: string } | null
@@ -25,22 +30,27 @@ type Detail = {
 function DecisionDetail({ decision }: { decision: Decision }) {
   const { data, error } = useData<Detail>(decision.path)
   if (error) return <p role="alert">{error}</p>
-  if (!data) return <p>{t("Loading source evidence…")}</p>
+  if (!data) return <p>{t('Loading source evidence…')}</p>
   return (
     <div className="decision-detail">
       <h5>{decision.heading || decision.title}</h5>
       <p>
-        {decision.designation} {t("· point ")}{decision.point} · {decision.date}
+        {decision.designation} {t('· point ')}
+        {decision.point} · {decision.date}
       </p>
       {data.point ? (
         <>
           <blockquote lang="sv">{data.point.proposal_text}</blockquote>
           <a href={data.point.source_url} target="_blank" rel="noreferrer">
-            {t("Read the exact committee proposal ↗\n          ")}</a>
+            {t('Read the exact committee proposal ↗\n          ')}
+          </a>
         </>
       ) : (
         <p>
-          {t("Exact proposal text is missing in this export. Read the source before\n          interpreting the vote.\n        ")}</p>
+          {t(
+            'Exact proposal text is missing in this export. Read the source before\n          interpreting the vote.\n        ',
+          )}
+        </p>
       )}
       <div className="decision-party-grid">
         {data.parties.map((p) => (
@@ -49,13 +59,19 @@ function DecisionDetail({ decision }: { decision: Decision }) {
               {p.party} · {positionFromVotes(p)}
             </strong>
             <span>
-              {p.yes_votes} {t("yes / ")}{p.no_votes} {t("no / ")}{p.abstain_votes} {t("abstain /")}{' '}
-              {p.absent_votes} {t("absent\n            ")}</span>
+              {p.yes_votes} {t('yes / ')}
+              {p.no_votes} {t('no / ')}
+              {p.abstain_votes} {t('abstain /')} {p.absent_votes}{' '}
+              {t('absent\n            ')}
+            </span>
           </div>
         ))}
       </div>
       <details>
-        <summary>{t("Named member votes (")}{data.members.length})</summary>
+        <summary>
+          {t('Named member votes (')}
+          {data.members.length})
+        </summary>
         <div className="member-votes">
           {data.members.map((m, i) => (
             <p key={i}>
@@ -65,9 +81,15 @@ function DecisionDetail({ decision }: { decision: Decision }) {
         </div>
       </details>
       <details>
-        <summary>{t("Explicit document citations (")}{data.citations.length})</summary>
+        <summary>
+          {t('Explicit document citations (')}
+          {data.citations.length})
+        </summary>
         <p>
-          {t("A citation means the proposal is considered here; it does not\n          establish support.\n        ")}</p>
+          {t(
+            'A citation means the proposal is considered here; it does not\n          establish support.\n        ',
+          )}
+        </p>
         {data.citations.map((c, i) => (
           <p key={i}>
             <a href={c.document_url} target="_blank" rel="noreferrer">
@@ -77,7 +99,10 @@ function DecisionDetail({ decision }: { decision: Decision }) {
         ))}
       </details>
       <details>
-        <summary>{t("Reservations (")}{data.reservations.length})</summary>
+        <summary>
+          {t('Reservations (')}
+          {data.reservations.length})
+        </summary>
         {data.reservations.map((r, i) => (
           <p key={i}>
             {r.party} · {r.reservation_number} · {r.heading}
@@ -86,14 +111,18 @@ function DecisionDetail({ decision }: { decision: Decision }) {
       </details>
       <details>
         <summary>
-          {t("Related earlier debate passages (")}{data.speech_links.length})
+          {t('Related earlier debate passages (')}
+          {data.speech_links.length})
         </summary>
         <p>
-          {t("Semantic search candidates, not evidence of consistency or\n          contradiction. Similarity ≥ 0.60; selected earlier speeches from the\n          same party.\n        ")}</p>
+          {t(
+            'Semantic search candidates, not evidence of consistency or\n          contradiction. Similarity ≥ 0.60; selected earlier speeches from the\n          same party.\n        ',
+          )}
+        </p>
         {data.speech_links.map((s, i) => (
           <article key={i}>
             <strong>
-              {s.speaker} · {s.party} {t("· similarity")}{' '}
+              {s.speaker} · {s.party} {t('· similarity')}{' '}
               {s.cosine_similarity.toFixed(2)}
             </strong>
             <blockquote lang="sv">{s.speech_excerpt}</blockquote>
@@ -103,12 +132,16 @@ function DecisionDetail({ decision }: { decision: Decision }) {
                 : t('No same-member vote established.')}
             </p>
             <a href={s.speech_url} target="_blank" rel="noreferrer">
-              {t("Read the speech ↗\n            ")}</a>
+              {t('Read the speech ↗\n            ')}
+            </a>
           </article>
         ))}
       </details>
       <p className="evidence-note">
-        {t("Vote → enacted law → versioned provision → reviewed slot change is not\n        yet established. No tightening/loosening party score is assigned.\n      ")}</p>
+        {t(
+          'Vote → enacted law → versioned provision → reviewed slot change is not\n        yet established. No tightening/loosening party score is assigned.\n      ',
+        )}
+      </p>
     </div>
   )
 }
@@ -137,33 +170,40 @@ export default function DecisionExplorer({
   const active = matches.find((d) => d.id === selected)
   return (
     <section className="politics-card decision-explorer">
-      <p className="eyebrow">{t("03 / Follow the evidence")}</p>
-      <h4>{t("What did they actually vote on?")}</h4>
+      <p className="eyebrow">{t('03 / Follow the evidence')}</p>
+      <h4>{t('What did they actually vote on?')}</h4>
       <div className="politics-controls">
         <label>
-          {t("Search decisions\n          ")}<input
+          {t('Search decisions\n          ')}
+          <input
             value={query}
             onChange={(e) => {
               setQuery(e.target.value)
               setLimit(20)
             }}
-            placeholder={t("e.g. klimat, skatt, arbetsrätt")}
+            placeholder={t('e.g. klimat, skatt, arbetsrätt')}
           />
         </label>
         <label>
-          {party}{t("'s position\n          ")}<select
+          {party}
+          {t("'s position\n          ")}
+          <select
             value={position}
             onChange={(e) => setPosition(e.target.value)}
           >
-            <option value="All">{t("All positions")}</option>
-            <option value="Ja">{t("Yes to committee proposal")}</option>
-            <option value="Nej">{t("No to committee proposal")}</option>
-            <option value="Avstår">{t("Abstain")}</option>
+            <option value="All">{t('All positions')}</option>
+            <option value="Ja">{t('Yes to committee proposal')}</option>
+            <option value="Nej">{t('No to committee proposal')}</option>
+            <option value="Avstår">{t('Abstain')}</option>
           </select>
         </label>
       </div>
       <p>
-        {matches.length} {t("matching roll calls. Original source text stays in\n        Swedish.\n      ")}</p>
+        {matches.length}{' '}
+        {t(
+          'matching roll calls. Original source text stays in\n        Swedish.\n      ',
+        )}
+      </p>
       <div className="decision-layout">
         <div className="decision-list">
           {matches.slice(0, limit).map((d) => (
@@ -173,7 +213,8 @@ export default function DecisionExplorer({
               onClick={() => setSelected(d.id)}
             >
               <small>
-                {d.designation} {t("· point ")}{d.point} · {d.date}
+                {d.designation} {t('· point ')}
+                {d.point} · {d.date}
               </small>
               <strong>{d.heading || d.title}</strong>
               <span>
@@ -184,16 +225,21 @@ export default function DecisionExplorer({
             </button>
           ))}
           {matches.length > limit && (
-            <button onClick={() => setLimit(limit + 20)}>{t("Show 20 more")}</button>
+            <button onClick={() => setLimit(limit + 20)}>
+              {t('Show 20 more')}
+            </button>
           )}
         </div>
         {active ? (
           <DecisionDetail key={active.id} decision={active} />
         ) : (
           <div className="decision-detail">
-            <h5>{t("Select a decision")}</h5>
+            <h5>{t('Select a decision')}</h5>
             <p>
-              {t("Inspect the exact proposal, all eight parties, named votes,\n              reservations, cited documents and related speeches.\n            ")}</p>
+              {t(
+                'Inspect the exact proposal, all eight parties, named votes,\n              reservations, cited documents and related speeches.\n            ',
+              )}
+            </p>
           </div>
         )}
       </div>

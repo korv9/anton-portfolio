@@ -48,13 +48,13 @@ Do not net tightening and loosening into one score. Do not equate a yes vote wit
 
 ## Data architecture
 
-- `public/data/politics/parliament/`: every file from the upstream frontend export, preserved verbatim (debates, issue debates, activities, votes, policy documents, laws, budgets, model outputs).
-- `public/data/politics/decisions/<session>/index.json`: lightweight roll-call index and party aggregates. Each roll call has a separate detail JSON including members, point text, citations, reservations and retrieval candidates.
-- `public/data/politics/laws/`: two independently browsable Allegoria provision pools, sharded by document. v1: 1,952 provisions / 50 documents; v2: 18,836 / 466. Overlap exists; 516 is a snapshot count, not distinct laws. The broader v2 source pool has 496 documents, of which 30 lack parsed provisions.
-- `public/data/politics/catalog.json`: source Git revisions, file sizes and SHA-256 checksums. 3,819 indexed files, about 557 MB. Data is fetched per selected view/document rather than loaded as one bundle.
-- `data/allegoria/`: source snapshots and draft annotated corpora for offline work. Not served by Vite's public directory.
-- `packages/meaningquality/`: actual standalone Python engine, copied from Allegoria, with its specification and documentation. No dependency on a model service. It consumes structured annotations, not arbitrary raw speech.
-- `src/politics/`: data loader/types, voting measures, decision explorer, transcript archive, law/engine browser, and legislative excerpt comparisons.
+- `frontend/public/data/politics/parliament/`: every file from the upstream frontend export, preserved verbatim (debates, issue debates, activities, votes, policy documents, laws, budgets, model outputs).
+- `frontend/public/data/politics/decisions/<session>/index.json`: lightweight roll-call index and party aggregates. Each roll call has a separate detail JSON including members, point text, citations, reservations and retrieval candidates.
+- `frontend/public/data/politics/laws/`: two independently browsable Allegoria provision pools, sharded by document. v1: 1,952 provisions / 50 documents; v2: 18,836 / 466. Overlap exists; 516 is a snapshot count, not distinct laws. The broader v2 source pool has 496 documents, of which 30 lack parsed provisions.
+- `frontend/public/data/politics/catalog.json`: source Git revisions, file sizes and SHA-256 checksums. 3,819 indexed files, about 557 MB. Data is fetched per selected view/document rather than loaded as one bundle.
+- `platform/sources/allegoria/`: source snapshots and draft annotated corpora for offline work. Not served by Vite's public directory.
+- `platform/packages/meaningquality/`: actual standalone Python engine, copied from Allegoria, with its specification and documentation. No dependency on a model service. It consumes structured annotations, not arbitrary raw speech.
+- `frontend/src/politics/`: data loader/types, voting measures, decision explorer, transcript archive, law/engine browser, and legislative excerpt comparisons.
 
 Join votes by `vote_id`, point evidence by `point_id`, and legal provisions by document plus provision identifier and version. Do not join by title similarity. Existing semantic links expose same-member status separately from party-level matches. Law snapshots are not verified historical versions for every speech date.
 
@@ -64,9 +64,9 @@ All available frontend exports and the parsed Allegoria corpora are included. Th
 
 ## Budget correction
 
-Upstream selected the last matching expenditure-frame table, which was a later forecast year for 2022/23–2025/26. `scripts/politics_budget.py` now selects the exact following budget year before using the upstream parser. Example: 2025/26 health/social care GOV = 127,707 million SEK; S = 133,393 (GOV + 5,686). The S share is 8.4934%, not the old 7.8% based on the 2028 table.
+Upstream selected the last matching expenditure-frame table, which was a later forecast year for 2022/23–2025/26. `platform/legacy/politics_budget.py` now selects the exact following budget year before using the upstream parser. Example: 2025/26 health/social care GOV = 127,707 million SEK; S = 133,393 (GOV + 5,686). The S share is 8.4934%, not the old 7.8% based on the 2028 table.
 
-Corrected active reports are in `public/data/debates/budgets/`. Originals remain under the Parliament snapshot for audit and must not be used as corrected reports. In particular, any upstream budget execution joins need their own year-alignment review before visualisation. See `year-selection-audit.json`. The 2017/18 and 2018/19 incomplete imports remain excluded from percentage charts; four further attempted sessions have no imported comparison table. Missing separate party frames are never inferred from GOV.
+Corrected active reports are in `frontend/public/data/debates/budgets/`. Originals remain under the Parliament snapshot for audit and must not be used as corrected reports. In particular, any upstream budget execution joins need their own year-alignment review before visualisation. See `year-selection-audit.json`. The 2017/18 and 2018/19 incomplete imports remain excluded from percentage charts; four further attempted sessions have no imported comparison table. Missing separate party frames are never inferred from GOV.
 
 ## Remaining evidence gaps
 
@@ -90,8 +90,8 @@ npm run test:e2e
 Offline regeneration needs Python with PyYAML, DuckDB and pandas, plus the local source exports and vote SQLite database:
 
 ```powershell
-python scripts/build-politics.py --parliament ../partiledardebatt --allegoria .research/allegoria-current --local-corpus ../allegoria
-python scripts/validate-politics.py
+python platform/legacy/build_politics.py --parliament ../partiledardebatt --allegoria .research/allegoria-current --local-corpus ../allegoria
+python platform/legacy/validate_politics.py
 $env:PYTHONPATH = 'packages'
 python -m meaningquality selftest
 python -m pytest tests/python -q

@@ -143,9 +143,15 @@
   height: 0.8rem;
   display: inline-block;
 }
-.committee-comparison .selected { background: #bc4d3b; }
-.committee-comparison .other { background: #8ba89b; }
-.committee-comparison-rows { display: grid; }
+.committee-comparison .selected {
+  background: #bc4d3b;
+}
+.committee-comparison .other {
+  background: #8ba89b;
+}
+.committee-comparison-rows {
+  display: grid;
+}
 .committee-comparison-row {
   display: grid;
   grid-template-columns: 2.5rem minmax(0, 1fr) 8rem;
@@ -160,12 +166,31 @@
   cursor: pointer;
   text-align: left;
 }
-.committee-comparison-row:hover, .committee-comparison-row:focus-visible { background: #f5f8f4; }
-.committee-pair, .committee-pair-values { display: grid; gap: 0.35rem; }
-.committee-track { height: 0.75rem; background: #eef1ec; }
-.committee-track i { display: block; height: 100%; }
-.committee-pair-values { font-size: 0.75rem; line-height: 0.95rem; }
-.committee-pair-values small { font-size: 0.7rem; font-weight: 400; }
+.committee-comparison-row:hover,
+.committee-comparison-row:focus-visible {
+  background: #f5f8f4;
+}
+.committee-pair,
+.committee-pair-values {
+  display: grid;
+  gap: 0.35rem;
+}
+.committee-track {
+  height: 0.75rem;
+  background: #eef1ec;
+}
+.committee-track i {
+  display: block;
+  height: 100%;
+}
+.committee-pair-values {
+  font-size: 0.75rem;
+  line-height: 0.95rem;
+}
+.committee-pair-values small {
+  font-size: 0.7rem;
+  font-weight: 400;
+}
 .vote-key {
   display: flex;
   gap: 1rem;
@@ -430,9 +455,16 @@
   .politics-controls input {
     min-width: 0;
   }
-  .committee-comparison-row { grid-template-columns: 2rem minmax(0, 1fr) 6.7rem; gap: 0.4rem; }
-  .committee-pair-values { font-size: 0.68rem; }
-  .committee-pair-values small { font-size: 0.61rem; }
+  .committee-comparison-row {
+    grid-template-columns: 2rem minmax(0, 1fr) 6.7rem;
+    gap: 0.4rem;
+  }
+  .committee-pair-values {
+    font-size: 0.68rem;
+  }
+  .committee-pair-values small {
+    font-size: 0.61rem;
+  }
   .vote-stack-row {
     grid-template-columns: 22px 1fr 84px;
     font-size: 0.64rem;
