@@ -54,7 +54,12 @@ One subject at a time, never a rewrite: bronze reads what the legacy script read
 reproduces its output in SQL, `publish/export_politics.py` serialises it, and `--check`
 must find the result byte-identical to the delivered file before the script is deleted.
 CI keeps running that check afterwards (`npm run politics:check`). Budget context was
-first; decision votes, speeches and the language map follow.
+first, roll-call votes second; speeches and the language map follow.
+
+Files that `build_gold.py` used to write keep their entries in `gold/semantic-model.json`:
+the export registers them with the same function build_gold uses (`lib/gold_contract.py`),
+and build_gold carries those entries forward (`DBT_TABLES`, `DBT_PATHS`). Run build_gold
+before the politics build, since dbt reads the fact tables it writes.
 
 ## Subjects
 
@@ -62,7 +67,7 @@ first; decision votes, speeches and the language map follow.
 |---|---|---|---|
 | Jobs | JobTech | `models/*/jobs` | `ingest/jobtech/` |
 | Welfare | SCB (AKU, population), Försäkringskassan, Folkhälsomyndigheten, ESS, Kolada | `models/*/welfare`, `models/gold/shared` | [docs/welfare-data-model.md](../docs/welfare-data-model.md) |
-| Politics | Riksdagen, Statskontoret | Budget context in `models/*/politics`; votes, speeches and language still in `legacy/` | [docs/political-observatory.md](../docs/political-observatory.md) |
+| Politics | Riksdagen, Statskontoret | Budget context and roll-call votes in `models/*/politics`; speeches and language still in `legacy/` | [docs/political-observatory.md](../docs/political-observatory.md) |
 
 ## Adding a source
 

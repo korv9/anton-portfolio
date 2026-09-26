@@ -97,6 +97,11 @@ def fetch(relative: str) -> bytes:
             retry_after = error.headers.get("Retry-After", "") if error.headers else ""
             wait = float(retry_after) if retry_after.isdigit() else random.uniform(1, 2 ** attempt)
             time.sleep(min(wait, 60))
+        except (urllib.error.URLError, TimeoutError, ConnectionError):
+            # A timed-out TLS handshake or a reset connection is as transient as a 503.
+            if attempt == RETRIES - 1:
+                raise
+            time.sleep(min(random.uniform(1, 2 ** attempt), 60))
     raise RuntimeError(f"Unreachable: {relative}")
 
 

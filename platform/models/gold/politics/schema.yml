@@ -25,3 +25,22 @@ models:
           - accepted_values:
               arguments:
                 values: [complete, partial, not_imported]
+  - name: mart_vote_decisions
+    description: Roll calls in site order with their point and party positions; delivered per session.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [slug, file_order]
+    columns:
+      - name: point_id
+        data_tests: [not_null, unique]
+  - name: mart_party_session_vote
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [session, party]
+  - name: mart_party_agreement
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [session, party_a, party_b]

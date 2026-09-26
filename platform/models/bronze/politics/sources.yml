@@ -27,6 +27,12 @@ sources:
         description: Reservations entered against a committee point.
       - name: fact_speech_vote_candidate
         description: Semantic speech-to-vote candidates; discovery aids, not stances.
+      - name: decision_index
+        description: Per-session index of roll-call decisions, one object per decision, in site order.
+        meta:
+          external_location: >-
+            read_json_objects('{{ env_var('PORTFOLIO_DELIVERY', '../frontend/public/data') }}/politics/decisions/*/index.json',
+            format = 'array', filename = true)
       - name: budget_coverage
         description: Which sessions' budget comparison tables were found, and which were not.
         meta:
