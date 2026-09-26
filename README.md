@@ -52,7 +52,7 @@ The engine has no validated vote-to-direction pairs yet. Party-level tightening/
 
 ## Welfare: how Sweden is doing
 
-Five public sources — SCB's labour force survey and population, Försäkringskassan's sick-leave statistics, Folkhälsomyndigheten's public health survey, the European Social Survey and Kolada — in one star schema with shared keys for region, period, sex and age. See [the welfare data model](docs/welfare-data-model.md).
+Five public sources — SCB's labour force survey and population, Försäkringskassan's sick-leave statistics, Folkhälsomyndigheten's public health survey, the European Social Survey and Kolada — in one star schema with shared keys for region, period, sex and age. See [the welfare data model](docs/welfare-data-model.md) and [the analysis guide](docs/analysis-guide.md): which table for which purpose, and how each measure may be aggregated.
 
 ```bash
 pip install -r platform/requirements.txt

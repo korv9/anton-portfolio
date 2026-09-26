@@ -34,6 +34,17 @@ RAW = Path(os.environ.get("PORTFOLIO_RAW", ROOT / "warehouse/raw"))
 RUN_RESULTS = ROOT / "platform/target/run_results.json"
 OUT = PUBLIC / "welfare"
 PARQUET = PUBLIC / "parquet/welfare_indicator"
+# Analyst datasets: the star schema and the serving marts, one Parquet file per table, served
+# from object storage and described in welfare/datasets.json. Gold only: respondent-level
+# ESS data (silver) is never exported.
+DATASETS = PUBLIC / "parquet/welfare"
+STAR = ("dim_date", "dim_period", "dim_region", "dim_sex", "dim_age_group", "dim_indicator",
+        "dim_source", "dim_diagnosis", "dim_country", "fct_indicator", "fct_labour_force",
+        "fct_population", "fct_sick_pay_rate", "fct_sick_leave_cases", "fct_health_survey",
+        "fct_social_survey_country", "fct_social_survey_region", "fct_kolada")
+SERVING = ("mart_county_year_panel", "mart_municipality_year_panel", "mart_national_month",
+           "mart_ess_country_round", "mart_county_year_features", "mart_county_year_overview")
+MANIFEST_JSON = ROOT / "platform/target/manifest.json"
 SOURCES = ("scb", "fk", "fohm", "ess", "kolada")
 
 
@@ -105,6 +116,41 @@ def fetch_log() -> list[dict]:
             "bytes": sum(line["bytes"] for line in latest.values()),
         })
     return summary
+
+
+def export_datasets(connection) -> list[dict]:
+    """One Parquet file per star-schema and serving table, and welfare/datasets.json: each
+    table's role, grain, description, row count and columns with their descriptions, taken
+    from the dbt manifest so the documentation analysts read is the one dbt tests against."""
+    nodes = {}
+    if MANIFEST_JSON.exists():
+        manifest = json.loads(MANIFEST_JSON.read_text(encoding="utf-8"))
+        nodes = {node["name"]: node for node in manifest["nodes"].values()
+                 if node["resource_type"] == "model"}
+    if DATASETS.exists():
+        shutil.rmtree(DATASETS)
+    DATASETS.mkdir(parents=True)
+    entries = []
+    for role, tables in (("star_schema", STAR), ("serving", SERVING)):
+        for table in tables:
+            target = DATASETS / f"{table}.parquet"
+            connection.execute(f"copy (select * from gold.{table} order by all) to '{target.as_posix()}' "
+                               "(format parquet, compression zstd, row_group_size 100000)")
+            columns = connection.execute(f"describe gold.{table}").fetchall()
+            node = nodes.get(table, {})
+            documented = node.get("columns", {})
+            entries.append({
+                "table": table,
+                "role": role,
+                "path": f"parquet/welfare/{table}.parquet",
+                "rows": connection.execute(f"select count(*) from gold.{table}").fetchone()[0],
+                "description": " ".join((node.get("description") or "").split()),
+                "columns": [{"name": name, "type": kind,
+                             "description": " ".join((documented.get(name, {}).get("description") or "").split())}
+                            for name, kind, *_ in columns],
+            })
+    write_json(OUT / "datasets.json", entries, indent=1)
+    return entries
 
 
 def main() -> None:
@@ -197,10 +243,14 @@ def main() -> None:
                 join gold.dim_region as r using (region_code)
                 join gold.dim_period as p using (period_key)
                 where i.source_key = '{source}'
-                order by f.indicator_key, r.region_level, f.region_code, p.start_date
+                -- A total order, so an unchanged warehouse exports byte-identical files.
+                order by f.indicator_key, r.region_level, f.region_code, p.start_date,
+                         f.period_key, f.sex_key, f.age_group_key
             ) to '{target.as_posix()}' (format parquet, compression snappy, row_group_size 50000)""")
         parquet_rows[source] = connection.execute(
             f"select count(*) from read_parquet('{target.as_posix()}')").fetchone()[0]
+
+    datasets = export_datasets(connection)
 
     run = {
         "exported_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
@@ -210,6 +260,7 @@ def main() -> None:
         "sources": fetch_log(),
         "rows": row_counts,
         "parquet_rows": parquet_rows,
+        "datasets": {entry["table"]: entry["rows"] for entry in datasets},
     }
     write_json(OUT / "run.json", run, indent=1)
     print(f"welfare: {len(indicators)} indicators, {len(headlines)} headlines, "

@@ -8,6 +8,9 @@ miljömässiga mått); `dim_indicator.welfare_dimension` anger vilken grupp ett 
 Allt är beskrivande. Modellen visar samvariation mellan regioner och över tid, aldrig
 orsakssamband.
 
+Vilken tabell som passar vilket syfte, hur varje mått får aggregeras och hur data läses från
+Power BI, Databricks eller Python står i [analysguiden](analysis-guide.md).
+
 ## Källor
 
 | Källa | Vad | Nivå | Period |

@@ -9,6 +9,7 @@ select
     try_cast(pspwght as double) as post_stratification_weight,
     try_cast(dweight as double) as design_weight,
     try_cast(anweight as double) as analysis_weight,
+    try_cast(pweight as double) as population_weight,
     try_cast(gndr as integer) as gender_code,
     try_cast(agea as integer) as age,
     region as region_code,

@@ -78,6 +78,7 @@ jobs:
           mkdir -p "$PORTFOLIO_RAW"
           dbt parse --profiles-dir .
           dbt compile --profiles-dir .
+          python publish/validate_semantic_layer.py
       # Politics subjects that have left legacy/ build from committed deliveries, so CI can
       # rebuild them and prove the output is byte-identical to what the site serves.
       - name: Politics in dbt, reconciled with the delivery

@@ -24,3 +24,6 @@ platform/logs/
 ml/.venv/
 ml/runs/
 ml/.cache/
+
+# Analyst Parquet exports: written and uploaded by the refresh, never committed.
+frontend/public/data/parquet/welfare/

@@ -52,9 +52,11 @@ select
     survey_mode,
     respondents,
     round(effective_n, 1) as effective_n,
-    mean_value,
-    mean_value - 1.96 * sqrt(greatest(mean_square - mean_value * mean_value, 0) / effective_n) as ci_low,
-    mean_value + 1.96 * sqrt(greatest(mean_square - mean_value * mean_value, 0) / effective_n) as ci_high,
-    share_high_pct
+    -- Rounded to six decimals: parallel float sums differ in the last bits from run to run,
+    -- and the daily refresh commits only when a delivered value changes.
+    round(mean_value, 6) as mean_value,
+    round(mean_value - 1.96 * sqrt(greatest(mean_square - mean_value * mean_value, 0) / effective_n), 6) as ci_low,
+    round(mean_value + 1.96 * sqrt(greatest(mean_square - mean_value * mean_value, 0) / effective_n), 6) as ci_high,
+    round(share_high_pct, 6) as share_high_pct
 from stats
 {% endmacro %}

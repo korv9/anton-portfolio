@@ -42,6 +42,8 @@ models:
         +tags: [politics]
       welfare:
         +tags: [welfare]
+        serving:
+          +tags: [welfare, serving]
       shared:
         +tags: [welfare]
 
@@ -73,3 +75,6 @@ seeds:
         +column_types: {higher_is_better: boolean}
       ess_countries:
         +column_types: {is_nordic: boolean, is_eu27: boolean}
+      indicator_aggregation:
+        +column_types: {indicator_key: varchar, measure_type: varchar, time_rule: varchar, space_rule: varchar,
+                        weight_indicator: varchar, components: varchar, aggregation_note: varchar}
