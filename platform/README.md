@@ -20,10 +20,10 @@ in the warehouse.
 
 | | |
 |---|---|
-| `ingest/` | Fetch to `warehouse/raw/`. One package per source, plus provenance |
+| `ingest/` | Fetch to `warehouse/raw/`. One package per source, plus provenance. `run_welfare.py` runs the five welfare sources and their build |
 | `models/` | dbt: `bronze/`, `silver/`, `gold/`, each namespaced per subject area |
 | `publish/` | Delivery: catalogue, Parquet export, upload to object storage |
-| `lib/` | Shared paths, JSON, hashing, and resolution of delivered files |
+| `lib/` | Shared paths, JSON, hashing, delivered-file resolution; `rawstore` (fetch with provenance) and `pxweb` (SCB and Folkhälsomyndigheten tables) |
 | `legacy/` | Build and validate scripts not yet migrated into `models/` and `tests/` |
 | `sources/` | Pinned upstream snapshots that cannot be re-fetched |
 | `packages/` | The Allegoria meaningquality engine, vendored |
@@ -47,6 +47,14 @@ python -m pytest platform/tests -q
 
 The warehouse lives in `warehouse/` and is gitignored: `raw/` for bronze,
 `portfolio.duckdb` for silver and gold.
+
+## Subjects
+
+| Subject | Sources | Models | Documentation |
+|---|---|---|---|
+| Jobs | JobTech | `models/*/jobs` | `ingest/jobtech/` |
+| Welfare | SCB (AKU, population), Försäkringskassan, Folkhälsomyndigheten, ESS, Kolada | `models/*/welfare`, `models/gold/shared` | [docs/welfare-data-model.md](../docs/welfare-data-model.md) |
+| Politics | Riksdagen, Statskontoret | still `legacy/` | [docs/political-observatory.md](../docs/political-observatory.md) |
 
 ## Adding a source
 

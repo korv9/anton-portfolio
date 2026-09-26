@@ -15,7 +15,10 @@
     "data:catalog": "python platform/publish/build_catalog.py",
     "data:parquet": "python platform/publish/build_parquet.py",
     "data:upload": "python platform/publish/upload.py",
-    "data:check": "python platform/legacy/validate_gold.py && python platform/legacy/validate_budget_context.py && python platform/legacy/validate_products.py && python platform/legacy/validate_politics.py"
+    "data:check": "python platform/legacy/validate_gold.py && python platform/legacy/validate_budget_context.py && python platform/legacy/validate_products.py && python platform/legacy/validate_politics.py",
+    "welfare:fetch": "python platform/ingest/run_welfare.py --skip-build",
+    "welfare:build": "python platform/ingest/run_welfare.py --skip-fetch",
+    "welfare": "python platform/ingest/run_welfare.py"
   },
   "dependencies": {
     "@fontsource-variable/dm-sans": "^5.3.0",

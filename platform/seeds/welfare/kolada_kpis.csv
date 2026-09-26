@@ -1,0 +1,14 @@
+kpi_id,domain,welfare_dimension,higher_is_better
+N03937,jobb,ekonomisk,false
+N02267,jobb,ekonomisk,true
+N00938,arbetsliv,social,false
+N00957,arbetsliv,social,false
+N00906,ekonomi,ekonomisk,true
+N31807,ekonomi,ekonomisk,false
+N01452,mental_halsa,social,false
+U01473,mental_halsa,social,true
+U01413,tillit_varderingar,social,false
+N05403,politik,social,true
+N07403,trygghet,social,false
+N15428,utbildning,social,true
+N01951,befolkning,,
