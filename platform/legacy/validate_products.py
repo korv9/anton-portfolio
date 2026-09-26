@@ -1,8 +1,12 @@
 """Check published product data against pinned upstream exports."""
 import csv
-import hashlib
+import sys
 import json
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "lib"))
+# Line-ending-normalised, so a hash taken on a Windows checkout matches on Linux and in CI.
+from common import sha_of  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
 PUBLIC = ROOT / "frontend/public"
@@ -16,7 +20,7 @@ def main():
     assert len({row["id"] for row in datasets}) == len(datasets) == 22
     for dataset in datasets:
         path = PUBLIC / dataset["csv"].lstrip("/")
-        assert hashlib.sha256(path.read_bytes()).hexdigest() == dataset["sha256"], path
+        assert sha_of(path.read_bytes()) == dataset["sha256"], path
         with path.open(encoding="utf-8-sig", newline="") as handle:
             original = list(csv.DictReader(handle))
         records = json.loads((PUBLIC / dataset["path"].lstrip("/")).read_text(encoding="utf-8"))

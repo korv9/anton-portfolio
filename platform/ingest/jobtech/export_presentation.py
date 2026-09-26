@@ -4,16 +4,16 @@ Reads data/history.duckdb (the 2022-2025 archive build) and writes tidy,
 web-ready CSVs plus a single Excel workbook to data/presentation/. All column
 names and labels are in English.
 
-Unlike scripts/export_analytics.py (which emits wide Power BI star-schema CSVs
+Unlike platform/ingest/jobtech/export_analytics.py (which emits wide Power BI star-schema CSVs
 with technical/NULL columns), this produces flat tables you can publish or open
 directly. CSVs are plain UTF-8 (no BOM) so they load cleanly on a website / in
 JavaScript CSV parsers; the accompanying .xlsx carries the same data for Excel
 users (it stores Swedish characters in region names natively, no encoding caveat).
 
-    python scripts/export_presentation.py
+    python platform/ingest/jobtech/export_presentation.py
 
 Optional:
-    python scripts/export_presentation.py --database data/history.duckdb \
+    python platform/ingest/jobtech/export_presentation.py --database data/history.duckdb \
         --output data/presentation --top 15
 """
 import argparse

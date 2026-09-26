@@ -128,7 +128,9 @@ def build() -> dict:
         if path in (DELIVERY, PUBLIC / "offloaded.json"):
             continue
         relative = path.relative_to(PUBLIC).as_posix()
-        content = path.read_bytes()
+        # CRLF is normalised for both size and hash, so a Windows and a Linux checkout of the
+        # same tree produce the same catalogue.
+        content = path.read_bytes().replace(b"\r\n", b"\n")
         fmt = classify(relative)
         entry = {
             "path": relative,
@@ -138,7 +140,7 @@ def build() -> dict:
             "rows": row_count(path, fmt),
             "schema_version": SCHEMA_VERSION,
             "partition": partition_of(relative),
-            "sha256": hashlib.sha256(content.replace(b"\r\n", b"\n")).hexdigest(),
+            "sha256": hashlib.sha256(content).hexdigest(),
         }
         files.append(entry)
 
