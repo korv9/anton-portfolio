@@ -16,6 +16,23 @@
     "data": "#data-explorer"
   },
   {
+    "id": "welfare",
+    "title": "How is Sweden doing?",
+    "status": "Live data · refreshed daily",
+    "question": "Do jobs, sick leave, health and trust move together across Sweden?",
+    "description": "Five public sources — SCB, Försäkringskassan, Folkhälsomyndigheten, the European Social Survey and Kolada — ingested daily into a tested dbt star schema with shared keys for region, period, sex and age, and explored in the browser.",
+    "skills": [
+      "dbt",
+      "DuckDB",
+      "Star schema",
+      "Scheduled pipelines",
+      "Parquet"
+    ],
+    "href": "#sweden",
+    "source": "https://github.com/korv9/anton-portfolio/tree/main/platform",
+    "data": "#status"
+  },
+  {
     "id": "jobs",
     "title": "Swedish Job Market Analytics",
     "status": "Published data snapshot",

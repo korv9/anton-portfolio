@@ -1,0 +1,318 @@
+/* Welfare page, its explorer, and the pipeline status page. */
+
+.welfare-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+}
+.welfare-links a {
+  color: var(--teal);
+  font-weight: 700;
+}
+.welfare-section h2 {
+  font-size: clamp(1.6rem, 3vw, 2.4rem);
+  max-width: 900px;
+  margin: 0.3rem 0 1.25rem;
+}
+.welfare-note {
+  max-width: 760px;
+  color: var(--muted);
+}
+.welfare-domains {
+  margin-bottom: 1.5rem;
+}
+
+.welfare-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.75rem;
+}
+.welfare-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 1rem 1.1rem;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+}
+.welfare-tile h3 {
+  font-size: 0.9rem;
+  line-height: 1.3;
+  margin: 0;
+  min-height: 2.3em;
+}
+.welfare-tile strong {
+  font:
+    800 1.9rem/1.1 'Manrope Variable',
+    sans-serif;
+  color: var(--ink);
+}
+.tile-period,
+.tile-ci,
+.welfare-tile small {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+.tile-change {
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+/* Text stays in ink tokens; the arrow and wording carry direction, not colour alone. */
+.tile-change.better {
+  color: #1d6b43;
+}
+.tile-change.worse {
+  color: #a3321a;
+}
+.tile-change.flat {
+  color: var(--muted);
+}
+
+.welfare-year {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.5rem 0 1rem;
+  font-weight: 700;
+}
+.table-scroll {
+  overflow-x: auto;
+}
+.welfare-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.86rem;
+  font-variant-numeric: tabular-nums;
+}
+.welfare-table th,
+.welfare-table td {
+  text-align: left;
+  padding: 0.45rem 0.6rem;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+.welfare-table thead th {
+  font-size: 0.78rem;
+  vertical-align: bottom;
+}
+.welfare-table thead th button {
+  all: unset;
+  cursor: pointer;
+  font-weight: 800;
+}
+.welfare-table thead th button:focus-visible {
+  outline: 2px solid var(--teal);
+}
+.welfare-table thead small {
+  display: block;
+  font-weight: 400;
+  color: var(--muted);
+}
+.welfare-table td {
+  position: relative;
+  min-width: 120px;
+}
+.cell-bar {
+  position: absolute;
+  left: 0.6rem;
+  top: 0.35rem;
+  bottom: 0.35rem;
+  max-width: calc(100% - 1.2rem);
+  background: #d9ece8;
+  border-radius: 0 4px 4px 0;
+}
+.cell-value {
+  position: relative;
+  padding-left: 0.35rem;
+}
+.missing {
+  color: var(--muted);
+}
+.welfare-table.compact td {
+  min-width: 0;
+}
+.welfare-table caption {
+  text-align: left;
+  font-weight: 800;
+  margin-bottom: 0.4rem;
+}
+
+.welfare-explorer .slicers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: end;
+  margin-bottom: 1rem;
+}
+.slicers label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+.slicers label.wide select {
+  min-width: min(420px, 80vw);
+}
+.region-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+.region-chip {
+  border: 1px solid var(--line);
+  background: white;
+  border-radius: 999px;
+  padding: 0.3rem 0.7rem;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.multi-chart {
+  margin: 0;
+}
+.multi-chart .chart-wrap {
+  position: relative;
+  overflow-x: auto;
+}
+.multi-chart svg {
+  width: 100%;
+  min-width: 620px;
+  height: auto;
+  display: block;
+  touch-action: pan-y;
+}
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1rem;
+  list-style: none;
+  padding: 0;
+  margin: 0 0 0.5rem;
+  font-size: 0.82rem;
+}
+.legend-swatch {
+  display: inline-block;
+  width: 12px;
+  height: 3px;
+  border-radius: 2px;
+  margin-right: 0.4rem;
+  vertical-align: middle;
+}
+.crosshair {
+  stroke: var(--muted);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+}
+.chart-tooltip {
+  position: absolute;
+  top: 0;
+  margin: 0 0.5rem;
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 0.45rem 0.6rem;
+  font-size: 0.78rem;
+  pointer-events: none;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 8%);
+}
+.chart-tooltip small {
+  color: var(--muted);
+}
+.explorer-foot {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 2rem;
+  margin-top: 1.25rem;
+}
+.explorer-source p {
+  font-size: 0.85rem;
+  margin: 0 0 0.5rem;
+}
+.download-button {
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: white;
+  padding: 0.5rem 0.8rem;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.status-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  align-items: center;
+}
+.status-summary dl {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem 2rem;
+  margin: 0;
+}
+.status-summary dt,
+.status-list dt {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+.status-summary dd,
+.status-list dd {
+  margin: 0;
+  font-weight: 700;
+}
+.status-badge {
+  display: inline-block;
+  padding: 0.25rem 0.6rem;
+  border-radius: 3px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  border: 1px solid currentColor;
+}
+.status-badge.ok {
+  color: #1d6b43;
+}
+.status-badge.stale {
+  color: #8a5a00;
+}
+.status-badge.failing {
+  color: #a3321a;
+}
+.status-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+  max-width: 1440px;
+  margin: auto;
+  padding: 0 clamp(1rem, 6vw, 6rem) clamp(3rem, 5vw, 5rem);
+  border-top: 1px solid var(--line);
+}
+/* The global .report centres itself with auto margins; inside the grid it must not. */
+.status-grid > .report {
+  margin: 0;
+  padding: 2rem 0 0;
+  border-top: none;
+  align-self: start;
+}
+.status-list {
+  display: grid;
+  gap: 0.6rem;
+}
+.status-list code {
+  font-size: 0.8rem;
+}
+
+@media (max-width: 760px) {
+  .explorer-foot {
+    grid-template-columns: 1fr;
+  }
+  .chart-tooltip {
+    position: static;
+    transform: none;
+    margin-top: 0.5rem;
+    white-space: normal;
+  }
+}

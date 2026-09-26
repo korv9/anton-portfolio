@@ -1,4 +1,4 @@
-import { currentLocale, setLocale, t, type Locale } from './i18n'
+import { currentLocale, l, setLocale, t, type Locale } from './i18n'
 import { fetchData } from './dataSource'
 import TimeSeriesChart from './charts/TimeSeriesChart'
 import { yearSpan } from './charts/scales'
@@ -22,6 +22,8 @@ const SpeechBrowser = lazy(() => import('./politics/SpeechBrowser'))
 const BudgetLab = lazy(() => import('./BudgetLab'))
 const BudgetOutturn = lazy(() => import('./BudgetOutturn'))
 const PoliticsLab = lazy(() => import('./politics/PoliticsLab'))
+const WelfarePage = lazy(() => import('./welfare/WelfarePage'))
+const StatusPage = lazy(() => import('./status/StatusPage'))
 
 type UmapPoint = {
   chunk_id: string
@@ -295,6 +297,8 @@ function pageFromHash(hash: string) {
   if (hash === '#rfc-drift') return 'allegoria'
   if (hash === '#thesis') return 'thesis'
   if (hash === '#homie') return 'homie'
+  if (hash === '#sweden') return 'welfare'
+  if (hash === '#status') return 'status'
   return 'home'
 }
 
@@ -535,12 +539,15 @@ function App() {
           <a href="#job-market" onClick={() => setMenuOpen(false)}>
             {t('Job market')}
           </a>
+          <a href="#sweden" onClick={() => setMenuOpen(false)}>
+            {l('Sweden', 'Sverige')}
+          </a>
           <a href="#drugcomb" onClick={() => setMenuOpen(false)}>
             {t('DrugComb')}
           </a>
           <a
             className="nav-cv"
-            href="/Anton_Ernstsson_CV_Data_Engineer.pdf"
+            href="Anton_Ernstsson_CV_Data_Engineer.pdf"
             download
           >
             {t('Download CV')}
@@ -578,7 +585,7 @@ function App() {
                     <a href="mailto:anton.ernstson@gmail.com">
                       {t('Email me')}
                     </a>
-                    <a href="/Anton_Ernstsson_CV_Data_Engineer.pdf" download>
+                    <a href="Anton_Ernstsson_CV_Data_Engineer.pdf" download>
                       {t('Download CV')}
                     </a>
                   </div>
@@ -1235,6 +1242,16 @@ function App() {
                 />
               </div>
             </div>
+          )}
+          {page === 'welfare' && (
+            <Suspense fallback={<div className="loading">{t('Loading…')}</div>}>
+              <WelfarePage />
+            </Suspense>
+          )}
+          {page === 'status' && (
+            <Suspense fallback={<div className="loading">{t('Loading…')}</div>}>
+              <StatusPage />
+            </Suspense>
           )}
           {page === 'allegoria' && (
             <div className="project-page">

@@ -1,8 +1,8 @@
 {
  "schema_version": 1,
- "run_id": "131403c09f1d3f67",
+ "run_id": "1bdaffa69934e97e",
  "bases": {
-  "json": "/data/",
+  "json": "data/",
   "parquet": "https://pub-9867b18896ba49e4a0b4a3d2f39c0385.r2.dev/",
   "shard": "https://pub-9867b18896ba49e4a0b4a3d2f39c0385.r2.dev/"
  },
@@ -17,6 +17,13 @@
   "fact_member_vote": [
    "parquet/fact_member_vote/session=2024-25/part-0.parquet",
    "parquet/fact_member_vote/session=2025-26/part-0.parquet"
+  ],
+  "welfare_indicator": [
+   "parquet/welfare_indicator/source=ess/part-0.parquet",
+   "parquet/welfare_indicator/source=fk/part-0.parquet",
+   "parquet/welfare_indicator/source=fohm/part-0.parquet",
+   "parquet/welfare_indicator/source=kolada/part-0.parquet",
+   "parquet/welfare_indicator/source=scb/part-0.parquet"
   ]
  }
 }

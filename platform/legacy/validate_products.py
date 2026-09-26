@@ -14,8 +14,9 @@ PUBLIC = ROOT / "frontend/public"
 
 def main():
     catalog = json.loads((PUBLIC / "data/products/catalog.json").read_text(encoding="utf-8"))
-    assert {row["id"] for row in catalog} == {"politics", "jobs", "drugcomb", "allegoria", "thesis", "homie"}
-    assert len(catalog) == 6
+    assert {row["id"] for row in catalog} == {"politics", "welfare", "jobs", "drugcomb", "allegoria",
+                                               "thesis", "homie"}
+    assert len(catalog) == 7
     datasets = json.loads((PUBLIC / "data/products/datasets.json").read_text(encoding="utf-8"))
     assert len({row["id"] for row in datasets}) == len(datasets) == 22
     for dataset in datasets:
@@ -46,7 +47,7 @@ def main():
     for figure in ('an_01_zip_distribution', 'an_02_replicate_agreement', 'ml_06_enrichment', 'ml_07_calibration'):
         assert (PUBLIC / f'data/products/drugcomb/figures/{figure}.png').is_file()
         assert (PUBLIC / f'data/products/drugcomb/figures/{figure}.svg').is_file()
-    print('Verified six project contracts, 22 DrugComb tables, evaluation splits and figure links.')
+    print('Verified seven project contracts, 22 DrugComb tables, evaluation splits and figure links.')
 
 
 if __name__ == '__main__':
