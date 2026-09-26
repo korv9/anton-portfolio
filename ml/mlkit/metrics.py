@@ -42,6 +42,43 @@ def cluster_bootstrap(
     }
 
 
+def paired_cluster_bootstrap(
+    metric: Callable[[np.ndarray, np.ndarray], float],
+    truth: np.ndarray,
+    first: np.ndarray,
+    second: np.ndarray,
+    groups: np.ndarray,
+    iterations: int = 1000,
+    seed: int = 0,
+) -> dict:
+    """Interval for metric(first) - metric(second) on the same resampled groups.
+
+    Two models scored on one test set are correlated: a hard debate is hard for both. Each
+    model's own interval ignores that, so comparing a difference against one of them is far
+    too strict. Resampling the groups once and scoring both models on the same draw keeps
+    the pairing.
+    """
+    rng = np.random.default_rng(seed)
+    unique = np.unique(groups)
+    index_by_group = {group: np.where(groups == group)[0] for group in unique}
+    values = []
+    for _ in range(iterations):
+        drawn = rng.choice(unique, size=len(unique), replace=True)
+        rows = np.concatenate([index_by_group[group] for group in drawn])
+        try:
+            values.append(metric(truth[rows], first[rows]) - metric(truth[rows], second[rows]))
+        except ValueError:
+            continue
+    if not values:
+        return {"point": None, "low": None, "high": None, "iterations": 0}
+    return {
+        "point": float(metric(truth, first) - metric(truth, second)),
+        "low": float(np.percentile(values, 2.5)),
+        "high": float(np.percentile(values, 97.5)),
+        "iterations": len(values),
+    }
+
+
 def permutation_test(
     metric: Callable[[np.ndarray, np.ndarray], float],
     truth: np.ndarray,
@@ -77,6 +114,10 @@ def permutation_test(
 
 def macro_f1(truth: np.ndarray, predicted: np.ndarray) -> float:
     return float(f1_score(truth, predicted, average="macro", zero_division=0))
+
+
+def auc(truth: np.ndarray, scores: np.ndarray) -> float:
+    return float(roc_auc_score(truth, scores))
 
 
 def mean_pairwise_auc(truth: np.ndarray, scores: np.ndarray, labels: list) -> dict:

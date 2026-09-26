@@ -48,6 +48,13 @@ def _normalise_title(title: str) -> str:
     return re.sub(r"\W+", "", (title or "").lower())[:45]
 
 
+def _normalise_speaker(speaker: str) -> str:
+    """Name without party suffix, title prefix or 'replik', for rows without a person id."""
+    name = re.sub(r"\s*\([^)]*\).*$", "", speaker or "")
+    words = [w for w in name.split() if not re.search(r"(minister|ministe|rådet|talman)", w, re.I)]
+    return " ".join(words).lower()
+
+
 def committee_by_title() -> dict[str, str]:
     """Committee per decision-point title, keeping only titles that map to exactly one.
 
@@ -90,27 +97,30 @@ def issue_passages() -> list[dict]:
             and len(speech.get("speech_text", "")) > 200
         ]
 
-    with ThreadPoolExecutor(max_workers=12) as pool:
+    with ThreadPoolExecutor(max_workers=delivery.workers()) as pool:
         return [row for batch in pool.map(load, sections) for row in batch]
 
 
-def leader_speeches(sessions: list[str] | None = None) -> list[dict]:
-    """Party-leader debate speeches with a party label, for polarization and for applying
-    the policy model. Read from the discovery index, which is already per-session JSON."""
-    manifest = json.loads((PUBLIC / "discovery/index.json").read_text(encoding="utf-8"))
-    wanted = [row for row in manifest if sessions is None or row["session"] in sessions]
-    rows = []
-    for entry in wanted:
-        cards = json.loads((PUBLIC / "discovery" / Path(entry["path"]).name)
-                           .read_text(encoding="utf-8"))
-        rows.extend(
-            {"speech_id": card["speech_id"], "party": card["party"],
-             "speaker": card["speaker"], "session": card["session"],
-             "kind": card["kind"], "excerpt": card["excerpt"], "path": card["path"],
-             "first": card["first"], "last": card["last"], "speech_number": card["speech_number"]}
-            for card in cards if card["party"] and card["party"] != "-"
-        )
-    return rows
+def party_speeches(sessions: list[str] | None = None) -> list[dict]:
+    """Every speech card with a party label, issue debates and party-leader debates alike.
+
+    Read from the speech index the site serves, Parquet with one part per session. Sessions
+    are spelled '2025/26' inside the files; the partition folders use '2025-26', so hive
+    partitioning is off to keep the spelling the rest of the repository uses.
+    """
+    import duckdb
+
+    source = (PUBLIC / "parquet/speech_cards/*/*.parquet").as_posix()
+    query = f"""
+        select speech_id, party, speaker, session, kind, path, first, last, speech_number
+        from read_parquet('{source}', hive_partitioning = false)
+        where party is not null and party not in ('', '-')
+    """
+    rows = duckdb.sql(query).fetchall()
+    columns = ["speech_id", "party", "speaker", "session", "kind", "path", "first", "last",
+               "speech_number"]
+    wanted = set(sessions) if sessions is not None else None
+    return [dict(zip(columns, row)) for row in rows if wanted is None or row[3] in wanted]
 
 
 def speech_texts(cards: list[dict]) -> list[dict]:
@@ -126,8 +136,13 @@ def speech_texts(cards: list[dict]) -> list[dict]:
         for card in by_path[path]:
             speech = speeches.get(card["speech_id"])
             if speech and len(speech.get("speech_text", "")) > 200:
-                out.append({**card, "text": speech["speech_text"]})
+                # The speaker string varies for one person across titles and sessions
+                # ('Statsrådet ULF KRISTERSSON (M) replik', 'Ulf Kristersson'), so the
+                # Riksdag's person id is the grouping key. The name is the fallback.
+                person = (speech.get("person_id") or "").strip()
+                out.append({**card, "text": speech["speech_text"],
+                            "person": person or _normalise_speaker(card["speaker"])})
         return out
 
-    with ThreadPoolExecutor(max_workers=12) as pool:
+    with ThreadPoolExecutor(max_workers=delivery.workers()) as pool:
         return [row for batch in pool.map(load, list(by_path)) for row in batch]

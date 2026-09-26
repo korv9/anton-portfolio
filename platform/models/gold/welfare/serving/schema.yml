@@ -165,7 +165,6 @@ models:
       - name: ongoing_sick_leave_mean
         description: Mean of the twelve month-end stocks of ongoing cases (16+); a stock is never summed.
       - name: fohm_period
-        description: "Four-year span the fohm_* columns pool (e.g. 2021-2024); they sit in the span's last year only."
         description: The four-year span the fohm_* columns pool; they sit in the span's last year.
   - name: mart_municipality_year_panel
     description: Municipalities by year with the Kolada key figures and population.
