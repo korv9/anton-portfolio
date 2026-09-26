@@ -56,7 +56,7 @@ export default function MemberVoteExplorer({
 }: {
   sessionPath: string
 }) {
-  const { data: decisions } = useData<Decision[]>(sessionPath, '/data/gold/')
+  const { data: decisions } = useData<Decision[]>(sessionPath, 'data/gold/')
   const [selected, setSelected] = useState('')
   const [rows, setRows] = useState<Row[] | null>(null)
   const [measured, setMeasured] = useState<Measured | null>(null)

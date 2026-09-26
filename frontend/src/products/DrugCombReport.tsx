@@ -239,10 +239,10 @@ export default function DrugCombReport() {
               </p>
               <div className="product-actions">
                 <a href="#drugcomb-data">{t('Browse all result tables ↓')}</a>
-                <a href="/data/products/drugcomb/REPORT.md" download>
+                <a href="data/products/drugcomb/REPORT.md" download>
                   {t('Full upstream report')}
                 </a>
-                <a href="/data/products/drugcomb/data_manifest.json" download>
+                <a href="data/products/drugcomb/data_manifest.json" download>
                   {t('Input manifest')}
                 </a>
                 <a
@@ -278,12 +278,12 @@ export default function DrugCombReport() {
               ].map(([file, alt]) => (
                 <figure key={file}>
                   <a
-                    href={`/data/products/drugcomb/figures/${file}.svg`}
+                    href={`data/products/drugcomb/figures/${file}.svg`}
                     target="_blank"
                     rel="noreferrer"
                   >
                     <img
-                      src={`/data/products/drugcomb/figures/${file}.png`}
+                      src={`data/products/drugcomb/figures/${file}.png`}
                       alt={t(alt)}
                       loading="lazy"
                     />

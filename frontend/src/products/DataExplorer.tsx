@@ -257,7 +257,7 @@ export default function DataExplorer({
                 {t('Original CSV')}
               </a>
             )}
-            <a href="/data/gold/semantic-model.json" download>
+            <a href="data/gold/semantic-model.json" download>
               {t('Definitions & relationships')}
             </a>
           </div>

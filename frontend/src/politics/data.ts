@@ -75,7 +75,7 @@ export function useGoldData<T>(path: string | null) {
 }
 /** Resolved URL for a logical path, for anchors and downloads rather than fetches. */
 export function useDataUrl(path: string) {
-  const [url, setUrl] = useState('/data/' + path)
+  const [url, setUrl] = useState('data/' + path)
   useEffect(() => {
     let live = true
     resolveDataUrl(path).then((resolved) => {

@@ -29,7 +29,7 @@ SCHEMA_VERSION = 1
 # Base URL per format. Point "shard" at the object-storage prefix once the bucket is live;
 # the site reads these and needs no code change.
 BASES = {
-    "json": "/data/",
+    "json": "data/",
     # Parquet is queried in the browser over range requests, so it lives beside the shards.
     "parquet": "https://pub-9867b18896ba49e4a0b4a3d2f39c0385.r2.dev/",
     # Cloudflare R2, public development URL. Cloudflare rate-limits r2.dev and advises against
