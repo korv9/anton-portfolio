@@ -1,10 +1,18 @@
 """Create lightweight discovery cards; full quotations stay in source shards."""
 import json
+import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "lib"))
+import delivery
+from parties import normalise
 
 ROOT = Path(__file__).resolve().parents[2]
 SOURCE = ROOT / 'frontend/public/data/politics/parliament'
-read = lambda p: json.loads(p.read_text(encoding='utf-8'))['data']
+def read(path):
+    """Shards moved to object storage, so read through delivery rather than from disk."""
+    relative = Path(path).resolve().relative_to((ROOT / "frontend/public/data").resolve()).as_posix()
+    return json.loads(delivery.read_bytes(relative))["data"]
 entries = [('leaders', d) for d in read(SOURCE / 'debates/index.json')]
 for session in read(SOURCE / 'issues/index.json'):
     entries.extend(('issues', {**d, 'session': session['session']}) for d in read(SOURCE / session['index_path']))
@@ -22,7 +30,8 @@ for kind, debate in entries:
         if key in seen:
             continue
         seen.add(key)
-        cards.append({k: speech.get(k, '') for k in ['speech_id', 'speaker', 'party', 'speech_date', 'speech_number', 'is_reply']} | {
+        cards.append({k: speech.get(k, '') for k in ['speech_id', 'speaker', 'speech_date', 'speech_number', 'is_reply']} | {
+            'party': normalise(speech.get('party')),
             'kind': kind, 'session': debate.get('session', ''), 'title': debate['debate_title'],
             'path': path, 'first': debate.get('first_speech_number'), 'last': debate.get('last_speech_number'),
             'excerpt': ' '.join(speech['speech_text'].split())[:260],
