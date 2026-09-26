@@ -20,16 +20,26 @@ models:
     bronze:
       +materialized: view
       +schema: bronze
+      jobs:
+        +tags: [jobs]
+      politics:
+        +tags: [politics]
       welfare:
         +tags: [welfare]
     silver:
       +materialized: view
       +schema: silver
+      jobs:
+        +tags: [jobs]
       welfare:
         +tags: [welfare]
     gold:
       +materialized: table
       +schema: gold
+      jobs:
+        +tags: [jobs]
+      politics:
+        +tags: [politics]
       welfare:
         +tags: [welfare]
       shared:
@@ -39,6 +49,13 @@ models:
 # tag lets it build on its own: `dbt build --select tag:welfare`.
 seeds:
   portfolio:
+    politics:
+      +tags: [politics]
+      +schema: seeds
+      budget_governance:
+        +column_types: {session: varchar, budget_year: integer, government_parties: varchar,
+                        agreement_parties: varchar, agreement_source_url: varchar, adopted: varchar,
+                        alternative_parties: varchar, alternative_source_url: varchar}
     welfare:
       +tags: [welfare]
       +schema: seeds

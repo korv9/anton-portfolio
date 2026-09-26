@@ -29,7 +29,7 @@ in the warehouse.
 | `packages/` | The Allegoria meaningquality engine, vendored |
 | `tests/` | Ingestion and engine tests |
 
-`legacy/` is named for what it is. Those sixteen scripts do the work that `models/` and
+`legacy/` is named for what it is. Those scripts do the work that `models/` and
 `dbt test` will do; keeping them in a directory that says so means the remaining migration
 is visible instead of looking like architecture.
 
@@ -48,13 +48,21 @@ python -m pytest platform/tests -q
 The warehouse lives in `warehouse/` and is gitignored: `raw/` for bronze,
 `portfolio.duckdb` for silver and gold.
 
+## Moving a subject out of legacy/
+
+One subject at a time, never a rewrite: bronze reads what the legacy script read, gold
+reproduces its output in SQL, `publish/export_politics.py` serialises it, and `--check`
+must find the result byte-identical to the delivered file before the script is deleted.
+CI keeps running that check afterwards (`npm run politics:check`). Budget context was
+first; decision votes, speeches and the language map follow.
+
 ## Subjects
 
 | Subject | Sources | Models | Documentation |
 |---|---|---|---|
 | Jobs | JobTech | `models/*/jobs` | `ingest/jobtech/` |
 | Welfare | SCB (AKU, population), Försäkringskassan, Folkhälsomyndigheten, ESS, Kolada | `models/*/welfare`, `models/gold/shared` | [docs/welfare-data-model.md](../docs/welfare-data-model.md) |
-| Politics | Riksdagen, Statskontoret | still `legacy/` | [docs/political-observatory.md](../docs/political-observatory.md) |
+| Politics | Riksdagen, Statskontoret | Budget context in `models/*/politics`; votes, speeches and language still in `legacy/` | [docs/political-observatory.md](../docs/political-observatory.md) |
 
 ## Adding a source
 
