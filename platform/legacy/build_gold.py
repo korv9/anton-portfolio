@@ -357,23 +357,53 @@ def main():
         "budgets": budget, "alignment": budget_alignment, "coverage": budget_coverage,
         "speech_rows": budget_speech, "language": language,
     })
+    # Headline figures are derived from the yearly and junior tables, so a new year of data
+    # moves them without a contract change. Baseline is the first year, comparison the last.
     job_metrics = {row["metric"]: float(row["value"]) for row in jobs_overview}
+    job_years = sorted({row["year"] for row in job_year})
+    baseline_year, comparison_year = job_years[0], job_years[-1]
+    ads_by_role_year = defaultdict(int)
+    for row in job_year:
+        ads_by_role_year[row["role"], row["year"]] += row["ads"]
+    junior_by_role_year = defaultdict(int)
+    for row in job_junior:
+        junior_by_role_year[row["role"], int(row["month"][:4])] += row["junior_ads"]
+
+    def change_pct(before, after):
+        return round(100 * (after - before) / before, 1) if before else None
+
+    software = ("Software Developer", baseline_year), ("Software Developer", comparison_year)
     job_kpis = {
-        "ads_total": job_metrics["Total ads (2022-2025)"],
+        "baseline_year": baseline_year,
+        "comparison_year": comparison_year,
+        "ads_total": sum(row["ads"] for row in job_year),
         "employers_unique": job_metrics["Unique employers"],
-        "software_change_2022_2025_pct": job_metrics["Software Developer 2025 vs 2022 (%)"],
-        "junior_share_pct": job_metrics["Junior share (%)"],
-        "junior_software_2022": job_metrics["Junior developers 2022 (peak)"],
-        "junior_software_2025": job_metrics["Junior developers 2025"],
-        "junior_software_change_pct": job_metrics["Junior developers 2025 vs 2022 (%)"],
+        "software_baseline": ads_by_role_year[software[0]],
+        "software_comparison": ads_by_role_year[software[1]],
+        "software_change_pct": change_pct(ads_by_role_year[software[0]], ads_by_role_year[software[1]]),
+        "junior_share_pct": round(100 * sum(r["junior_ads"] for r in job_junior)
+                                  / sum(r["total_ads"] for r in job_junior), 1),
+        "junior_software_baseline": junior_by_role_year[software[0]],
+        "junior_software_comparison": junior_by_role_year[software[1]],
+        "junior_software_change_pct": change_pct(junior_by_role_year[software[0]],
+                                                 junior_by_role_year[software[1]]),
     }
-    emit("marts/jobs.json", {"monthly": job_month, "yearly": job_year,
+    # Roles ordered by volume, largest first, so the default selection is the largest role.
+    role_totals = defaultdict(int)
+    for row in job_year:
+        role_totals[row["role"]] += row["ads"]
+    emit("marts/jobs.json", {"years": job_years,
+                              "roles": sorted(role_totals, key=lambda role: (-role_totals[role], role)),
+                              "monthly": job_month, "yearly": job_year,
                               "junior": job_junior, "technologies": job_technology,
                               "overview": jobs_overview, "kpis": job_kpis})
+    umap_sessions = []
     for path in sorted(SOURCE.glob("debates/sessions/*/umap.json")):
         slug = path.parent.name
+        umap_sessions.append(slug)
         emit(f"marts/debate/{slug}.json", {"model_id": LEGACY_TOPIC_MODEL, "data": rows(path)})
-    emit("marts/debate/topics.json", {"model_id": LEGACY_TOPIC_MODEL,
+    # The sessions that have a map, so the site offers exactly those.
+    emit("marts/debate/topics.json", {"model_id": LEGACY_TOPIC_MODEL, "sessions": umap_sessions,
                                       "overview": debate_overview, "data": topics[LEGACY_TOPIC_MODEL]})
     emit("marts/rfc-drift.json", rfc)
     gold_overview = {**overview, "sessions": [

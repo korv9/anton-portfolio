@@ -187,7 +187,9 @@ const swedish: Record<string, string> = {
   'Unique ad IDs': 'Unika annons-ID:n',
   'ads in the sample': 'annonser i urvalet',
   'unique employers': 'unika arbetsgivare',
-  'developer ads, 2022–25': 'utvecklarannonser, 2022–25',
+  'developer ads': 'utvecklarannonser',
+  'Junior openings compared with total volume.':
+    'Juniora annonser jämfört med den totala volymen.',
   'junior share': 'andel juniora',
   'Role family': 'Rollgrupp',
   'New ads per month': 'Nya annonser per månad',

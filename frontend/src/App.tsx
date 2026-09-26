@@ -1,5 +1,7 @@
 import { currentLocale, setLocale, t, type Locale } from './i18n'
 import { fetchData } from './dataSource'
+import TimeSeriesChart from './charts/TimeSeriesChart'
+import { yearSpan } from './charts/scales'
 import AboutProfile, { StudyProjects } from './products/AboutProfile'
 import ProductDirectory from './products/ProductDirectory'
 import './products/products.css'
@@ -54,30 +56,26 @@ type Technology = {
   ads_mentioning: number
   share_pct: number
 }
-type DebateOverview = { analyzed_speeches: number; analyzed_segments: number }
+type DebateOverview = {
+  analyzed_speeches: number
+  analyzed_segments: number
+  first_date: string
+  last_date: string
+}
 type JobKpis = {
+  baseline_year: number
+  comparison_year: number
   ads_total: number
   employers_unique: number
-  software_change_2022_2025_pct: number
+  software_baseline: number
+  software_comparison: number
+  software_change_pct: number
   junior_share_pct: number
-  junior_software_2022: number
-  junior_software_2025: number
+  junior_software_baseline: number
+  junior_software_comparison: number
   junior_software_change_pct: number
 }
 
-const sessions = ['2015-16', '2020-21', '2022-23', '2025-26']
-const roles = [
-  'Software Developer',
-  'Data Engineer',
-  'Data Scientist',
-  'Analytics Engineer',
-]
-const roleNames: Record<string, string> = {
-  'Software Developer': 'Software Developer',
-  'Data Engineer': 'Data Engineer',
-  'Data Scientist': 'Data Scientist',
-  'Analytics Engineer': 'Analytics Engineer',
-}
 const topicColors = [
   '#087f7b',
   '#e45b39',
@@ -133,89 +131,26 @@ async function fetchReport(url: string) {
   return response.json()
 }
 
-function LineChart({ rows, role }: { rows: MonthlyAd[]; role: string }) {
-  const data = rows.filter((row) => row.role === role)
-  const width = 900,
-    height = 330
-  const margin = { top: 24, right: 24, bottom: 44, left: 62 }
-  const plotW = width - margin.left - margin.right,
-    plotH = height - margin.top - margin.bottom
-  const max = Math.max(...data.map((row) => row.new_ads))
-  const yMax = Math.ceil(max / 100) * 100 || 10
-  const x = (index: number) =>
-    margin.left + (index / Math.max(data.length - 1, 1)) * plotW
-  const y = (value: number) => margin.top + plotH - (value / yMax) * plotH
-  const points = data
-    .map((row, index) => `${x(index)},${y(row.new_ads)}`)
-    .join(' ')
-  const ticks = [0, 0.25, 0.5, 0.75, 1]
+function JobsChart({ rows, role }: { rows: MonthlyAd[]; role: string }) {
+  const points = rows
+    .filter((row) => row.role === role)
+    .map((row) => ({ date: row.month, value: row.new_ads }))
+  const span = yearSpan(points.map((point) => point.date))
+  const range = span ? `${span.first}–${span.last}` : ''
   return (
-    <div
-      className="chart-wrap"
-      tabIndex={0}
-      aria-label={t('Chart scrolls horizontally on small screens')}
-    >
-      <svg
-        className="line-chart"
-        viewBox={`0 0 ${width} ${height}`}
-        role="img"
-        aria-label={
-          currentLocale() === 'sv'
-            ? `Nya annonser per månad för ${t(roleNames[role])}, 2022 till 2025`
-            : `New ads per month for ${roleNames[role]}, 2022 to 2025`
-        }
-      >
-        {ticks.map((tick) => (
-          <g key={tick}>
-            <line
-              x1={margin.left}
-              x2={width - margin.right}
-              y1={y(yMax * tick)}
-              y2={y(yMax * tick)}
-              className="grid-line"
-            />
-            <text
-              x={margin.left - 12}
-              y={y(yMax * tick) + 4}
-              textAnchor="end"
-              className="axis-label"
-            >
-              {formatNumber(Math.round(yMax * tick))}
-            </text>
-          </g>
-        ))}
-        {['2022', '2023', '2024', '2025'].map((year, index) => (
-          <text
-            key={year}
-            x={margin.left + (index / 3) * plotW}
-            y={height - 12}
-            textAnchor={index === 0 ? 'start' : index === 3 ? 'end' : 'middle'}
-            className="axis-label"
-          >
-            {year}
-          </text>
-        ))}
-        <polyline
-          points={points}
-          fill="none"
-          stroke="#087f7b"
-          strokeWidth="4"
-          strokeLinejoin="round"
-          vectorEffect="non-scaling-stroke"
-        />
-        {data.map((row, index) => (
-          <circle
-            key={row.month}
-            cx={x(index)}
-            cy={y(row.new_ads)}
-            r="4"
-            className="line-point"
-          >
-            <title>{`${row.month.slice(0, 7)}: ${formatNumber(row.new_ads)} ${t('ads')}`}</title>
-          </circle>
-        ))}
-      </svg>
-    </div>
+    <TimeSeriesChart
+      points={points}
+      label={
+        currentLocale() === 'sv'
+          ? `Nya annonser per månad för ${t(role)}, ${range}`
+          : `New ads per month for ${role}, ${range}`
+      }
+      describe={(point) =>
+        `${point.date.slice(0, 7)}: ${formatNumber(point.value)} ${t('ads')}`
+      }
+      formatTick={(value) => formatNumber(value)}
+      scrollHint={t('Chart scrolls horizontally on small screens')}
+    />
   )
 }
 
@@ -416,10 +351,14 @@ function App() {
   const [monthly, setMonthly] = useState<MonthlyAd[]>([])
   const [technologies, setTechnologies] = useState<Technology[]>([])
   const [jobKpis, setJobKpis] = useState<JobKpis | null>(null)
-  const [session, setSession] = useState('2025-26')
+  const [jobYears, setJobYears] = useState<number[]>([])
+  const [roles, setRoles] = useState<string[]>([])
+  const [sessions, setSessions] = useState<string[]>([])
+  // Empty until the topic mart names its sessions; then the latest is chosen.
+  const [session, setSession] = useState('')
   const [party, setParty] = useState('All')
   const [selectedPoint, setSelectedPoint] = useState<UmapPoint | null>(null)
-  const [role, setRole] = useState('Software Developer')
+  const [role, setRole] = useState('')
   const [loading, setLoading] = useState(true)
   const [reportError, setReportError] = useState<string | null>(null)
 
@@ -428,12 +367,19 @@ function App() {
     let active = true
     setLoading(true)
     setReportError(null)
-    Promise.all([
-      fetchReport(`gold/marts/debate/${session}.json`),
-      fetchReport('gold/marts/debate/topics.json'),
-    ])
-      .then(([umapData, topicData]) => {
+    // The topic mart names the sessions that have a map; the latest is shown first.
+    fetchReport('gold/marts/debate/topics.json')
+      .then((topicData) => {
+        const available = topicData.sessions as string[]
+        const chosen = available.includes(session) ? session : available.at(-1)!
+        return fetchReport(`gold/marts/debate/${chosen}.json`).then(
+          (umapData) => [umapData, topicData, available, chosen] as const,
+        )
+      })
+      .then(([umapData, topicData, available, chosen]) => {
         if (!active) return
+        setSessions(available)
+        if (chosen !== session) setSession(chosen)
         setUmap(umapData.data)
         setTopics(topicData.data)
         setDebateOverview(topicData.overview)
@@ -464,6 +410,9 @@ function App() {
         setMonthly(jobsData.monthly as MonthlyAd[])
         setTechnologies(jobsData.technologies as Technology[])
         setJobKpis(jobsData.kpis)
+        setJobYears(jobsData.years as number[])
+        setRoles(jobsData.roles as string[])
+        setRole((current) => current || (jobsData.roles as string[])[0])
       })
       .catch((error: Error) => {
         if (active) setReportError(error.message)
@@ -511,7 +460,7 @@ function App() {
     () =>
       roles.map((item) => ({
         role: item,
-        values: [2022, 2023, 2024, 2025].map((year) =>
+        values: jobYears.map((year) =>
           monthly
             .filter(
               (row) => row.role === item && row.month.startsWith(String(year)),
@@ -519,7 +468,7 @@ function App() {
             .reduce((sum, row) => sum + row.new_ads, 0),
         ),
       })),
-    [monthly],
+    [monthly, roles, jobYears],
   )
   const selectedAnnual = annual.find((item) => item.role === role)?.values ?? []
 
@@ -785,7 +734,11 @@ function App() {
                       title={t('What do party leaders talk about?')}
                       intro="A map of language used in Swedish party leader debates. Nearby dots use similar words; the map does not show political positions."
                       source="Swedish Parliament open data"
-                      period="1993/94–2025/26"
+                      period={
+                        debateOverview
+                          ? `${debateOverview.first_date.slice(0, 4)}–${debateOverview.last_date.slice(0, 4)}`
+                          : '…'
+                      }
                       unit="Text segments"
                     />
                     <a className="report-jump" href="#budget-comparison">
@@ -1105,7 +1058,11 @@ function App() {
                     title={t('What is happening to tech jobs?')}
                     intro="A compact view of ad volume, junior openings and technologies mentioned in Swedish job ads."
                     source="JobTech Historical Ads"
-                    period="2022–2025"
+                    period={
+                      jobYears.length
+                        ? `${jobYears[0]}–${jobYears.at(-1)}`
+                        : '…'
+                    }
                     unit="Unique ad IDs"
                   />
                   <div className="kpis jobs-kpis">
@@ -1124,12 +1081,15 @@ function App() {
                     <div>
                       <strong>
                         {jobKpis
-                          ? formatSignedPercent(
-                              jobKpis.software_change_2022_2025_pct,
-                            )
+                          ? formatSignedPercent(jobKpis.software_change_pct)
                           : '—'}
                       </strong>
-                      <span>{t('developer ads, 2022–25')}</span>
+                      <span>
+                        {t('developer ads')}
+                        {jobKpis
+                          ? `, ${jobKpis.baseline_year}–${String(jobKpis.comparison_year).slice(2)}`
+                          : ''}
+                      </span>
                     </div>
                     <div>
                       <strong>
@@ -1153,7 +1113,7 @@ function App() {
                               className={role === item ? 'active' : ''}
                               onClick={() => setRole(item)}
                             >
-                              {t(roleNames[item])}
+                              {t(item)}
                             </button>
                           ))}
                         </div>
@@ -1162,19 +1122,19 @@ function App() {
                     <div className="job-chart-head">
                       <div>
                         <p className="eyebrow">{t('New ads per month')}</p>
-                        <h3>{t(roleNames[role])}</h3>
+                        <h3>{t(role)}</h3>
                       </div>
                       <div className="year-totals">
                         {selectedAnnual.map((value, index) => (
-                          <span key={index}>
-                            <small>{2022 + index}</small>
+                          <span key={jobYears[index]}>
+                            <small>{jobYears[index]}</small>
                             <strong>{formatNumber(value)}</strong>
                           </span>
                         ))}
                       </div>
                     </div>
                     {monthly.length ? (
-                      <LineChart rows={monthly} role={role} />
+                      <JobsChart rows={monthly} role={role} />
                     ) : reportError ? (
                       <p role="alert">{reportError}</p>
                     ) : (
@@ -1185,13 +1145,17 @@ function App() {
                     <div className="finding">
                       <p className="eyebrow">{t('Main observation')}</p>
                       <h3>
-                        {t('Junior openings fell faster than total volume.')}
+                        {jobKpis &&
+                        jobKpis.junior_software_change_pct <
+                          jobKpis.software_change_pct
+                          ? t('Junior openings fell faster than total volume.')
+                          : t('Junior openings compared with total volume.')}
                       </h3>
                       <p>
                         {jobKpis
                           ? currentLocale() === 'sv'
-                            ? `Juniora mjukvaruannonser minskade från ${formatNumber(jobKpis.junior_software_2022)} år 2022 till ${formatNumber(jobKpis.junior_software_2025)} år 2025: ${formatSignedPercent(jobKpis.junior_software_change_pct)}, jämfört med ${formatSignedPercent(jobKpis.software_change_2022_2025_pct)} för alla mjukvaruannonser.`
-                            : `Junior software ads fell from ${formatNumber(jobKpis.junior_software_2022)} in 2022 to ${formatNumber(jobKpis.junior_software_2025)} in 2025: ${formatSignedPercent(jobKpis.junior_software_change_pct)}, compared with ${formatSignedPercent(jobKpis.software_change_2022_2025_pct)} for all software ads.`
+                            ? `Juniora mjukvaruannonser gick från ${formatNumber(jobKpis.junior_software_baseline)} år ${jobKpis.baseline_year} till ${formatNumber(jobKpis.junior_software_comparison)} år ${jobKpis.comparison_year}: ${formatSignedPercent(jobKpis.junior_software_change_pct)}, jämfört med ${formatSignedPercent(jobKpis.software_change_pct)} för alla mjukvaruannonser.`
+                            : `Junior software ads went from ${formatNumber(jobKpis.junior_software_baseline)} in ${jobKpis.baseline_year} to ${formatNumber(jobKpis.junior_software_comparison)} in ${jobKpis.comparison_year}: ${formatSignedPercent(jobKpis.junior_software_change_pct)}, compared with ${formatSignedPercent(jobKpis.software_change_pct)} for all software ads.`
                           : t('Loading the job-market summary…')}
                       </p>
                     </div>
