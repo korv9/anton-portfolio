@@ -20,9 +20,12 @@ export default function LegislativeEvidence() {
   )
   return (
     <section className="politics-card">
-      <h4>{t("What does the summary leave out?")}</h4>
+      <h4>{t('What does the summary leave out?')}</h4>
       <p>
-        {t("Two source-linked examples compare a political description with proposed\n        legal text. They are not verified enacted amendments or eligible\n        direction measurements. The second extraction interleaves two law-text\n        columns and requires layout review.\n      ")}</p>
+        {t(
+          'Two source-linked examples compare a political description with proposed\n        legal text. They are not verified enacted amendments or eligible\n        direction measurements. The second extraction interleaves two law-text\n        columns and requires layout review.\n      ',
+        )}
+      </p>
       {error && <p role="alert">{error}</p>}
       {data?.data.map((pair) => (
         <details key={pair.pair_id}>
@@ -31,21 +34,29 @@ export default function LegislativeEvidence() {
           </summary>
           <div className="politics-grid">
             <div>
-              <h5>{t("Political description")}</h5>
+              <h5>{t('Political description')}</h5>
               <blockquote lang="sv">{pair.source_excerpt}</blockquote>
               <a href={pair.source_url} target="_blank" rel="noreferrer">
-                {t("Read source ↗\n              ")}</a>
+                {t('Read source ↗\n              ')}
+              </a>
             </div>
             <div>
-              <h5>{t("Proposed law · ")}{pair.proposition_reference}</h5>
+              <h5>
+                {t('Proposed law · ')}
+                {pair.proposition_reference}
+              </h5>
               <p lang="sv" className="source-text legislative-excerpt">
                 {pair.proposal_excerpt}
               </p>
               <a href={pair.proposition_url} target="_blank" rel="noreferrer">
-                {t("Inspect proposal layout ↗\n              ")}</a>
+                {t('Inspect proposal layout ↗\n              ')}
+              </a>
             </div>
           </div>
-          <p>{t("Status: ")}{pair.comparison_status.replaceAll('_', ' ')}</p>
+          <p>
+            {t('Status: ')}
+            {pair.comparison_status.replaceAll('_', ' ')}
+          </p>
           <p lang="sv">{pair.review_note}</p>
         </details>
       ))}

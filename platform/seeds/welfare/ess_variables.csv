@@ -1,0 +1,22 @@
+variable,name_sv,name_en,domain,scale_min,scale_max,higher_is_better,share_threshold,share_direction,share_label
+ppltrst,Tillit till andra människor,Most people can be trusted,tillit_varderingar,0,10,true,7,ge,Andel 7-10
+pplfair,Andra försöker vara schyssta,Most people try to be fair,tillit_varderingar,0,10,true,7,ge,Andel 7-10
+pplhlp,Andra försöker vara hjälpsamma,Most people try to be helpful,tillit_varderingar,0,10,true,7,ge,Andel 7-10
+trstprl,Förtroende för riksdagen,Trust in parliament,tillit_varderingar,0,10,true,7,ge,Andel 7-10
+trstlgl,Förtroende för rättsväsendet,Trust in the legal system,tillit_varderingar,0,10,true,7,ge,Andel 7-10
+trstplc,Förtroende för polisen,Trust in the police,tillit_varderingar,0,10,true,7,ge,Andel 7-10
+trstplt,Förtroende för politiker,Trust in politicians,tillit_varderingar,0,10,true,7,ge,Andel 7-10
+trstprt,Förtroende för politiska partier,Trust in political parties,tillit_varderingar,0,10,true,7,ge,Andel 7-10
+trstep,Förtroende för Europaparlamentet,Trust in the European Parliament,tillit_varderingar,0,10,true,7,ge,Andel 7-10
+trstun,Förtroende för FN,Trust in the United Nations,tillit_varderingar,0,10,true,7,ge,Andel 7-10
+stflife,Nöjd med livet,Satisfaction with life as a whole,mental_halsa,0,10,true,7,ge,Andel 7-10
+happy,Lycklig,How happy are you,mental_halsa,0,10,true,7,ge,Andel 7-10
+stfdem,Nöjd med demokratin,Satisfaction with democracy,politik,0,10,true,7,ge,Andel 7-10
+stfeco,Nöjd med ekonomin,Satisfaction with the economy,ekonomi,0,10,true,7,ge,Andel 7-10
+stfgov,Nöjd med regeringen,Satisfaction with the national government,politik,0,10,true,7,ge,Andel 7-10
+stfedu,Syn på utbildningsväsendet,State of education in the country,utbildning,0,10,true,7,ge,Andel 7-10
+stfhlth,Syn på hälso- och sjukvården,State of health services in the country,halsa,0,10,true,7,ge,Andel 7-10
+health,Självskattad hälsa (1 mycket bra - 5 mycket dålig),Subjective general health,halsa,1,5,false,2,le,Bra eller mycket bra hälsa
+sclmeet,Träffar vänner och släkt (1 aldrig - 7 varje dag),How often socially meet with friends and relatives,tillit_varderingar,1,7,true,5,ge,Träffar vänner minst en gång i veckan
+lrscale,Vänster-högerplacering,Placement on left-right scale,politik,0,10,,7,ge,Placerar sig till höger (7-10)
+imwbcnt,Invandrare gör landet bättre,Immigrants make country a better or worse place to live,tillit_varderingar,0,10,,7,ge,Andel 7-10

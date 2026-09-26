@@ -35,7 +35,7 @@ def write_card(task: str, run_id: str, card: dict) -> Path:
     lines += [f"- {key}: {value}" for key, value in card["data"].items()]
     lines += ["", "## Split", "", card["split"], "", "## Results", "",
               "| Model | Metric | Value | 95% CI |", "|---|---|---|---|"]
-    for row in card["baselines"] + [card["headline"]]:
+    for row in card["baselines"] + card.get("also", []) + [card["headline"]]:
         interval = (f"{row['low']:.3f} – {row['high']:.3f}"
                     if row.get("low") is not None else "—")
         lines.append(f"| {row['name']} | {row['metric']} | {row['value']:.3f} | {interval} |")
@@ -45,7 +45,7 @@ def write_card(task: str, run_id: str, card: dict) -> Path:
               "## Limitations", ""]
     lines += [f"- {item}" for item in card["limitations"]]
     lines += ["", "## Reproducing", "",
-              "```powershell", "python -m mlkit.overnight", "```", ""]
+              "```bash", "cd ml && python -m mlkit.overnight --only " + task, "```", ""]
 
     CARDS.mkdir(parents=True, exist_ok=True)
     path = CARDS / f"{task}.md"
@@ -81,8 +81,13 @@ def write_report(run_dir: Path, results: list[dict], started: str, elapsed: floa
         lines += ["", "## Errors", ""]
         for result in failed:
             lines += [f"### {result['task']}", "", "```", result.get("error", "")[:2000], "```", ""]
-    lines += ["", "Nothing here is published. Promote a passing run with:", "",
-              "```powershell", f"python -m mlkit.promote {run_dir.name}", "```", ""]
+    partial = [r for r in results if r.get("status") == "partial"]
+    if partial:
+        lines += ["", "## Partial", ""]
+        lines += [f"- {r['task']}: {r.get('note', '')}" for r in partial]
+    lines += ["", "Nothing here is published. Promotion is a deliberate, manual step for a "
+              f"passing run (`{run_dir.name}`); see open question 4 in "
+              "docs/plans/ml-layer-plan.md.", ""]
     path = run_dir / "report.md"
     path.write_text("\n".join(lines), encoding="utf-8")
     (run_dir / "results.json").write_text(

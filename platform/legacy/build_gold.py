@@ -10,6 +10,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "lib"))
 
 import common
+import gold_contract
 import delivery
 import csv
 import hashlib
@@ -24,6 +25,9 @@ SOURCE = ROOT / "frontend/public/data"
 GOLD = SOURCE / "gold"
 PARTIES = ("C", "KD", "L", "M", "MP", "S", "SD", "V")
 HISTORICAL_PARTIES = ("NYD",)
+# Built by dbt and delivered by publish/export_politics.py; see main().
+DBT_TABLES = ("mart_party_session_vote", "mart_party_agreement")
+DBT_PATHS = ("marts/votes/", *(f"tables/{name}.json" for name in DBT_TABLES))
 PARTY_NAMES = {
     "C": "Centerpartiet", "KD": "Kristdemokraterna", "L": "Liberalerna",
     "M": "Moderaterna", "MP": "Miljöpartiet", "S": "Socialdemokraterna",
@@ -75,9 +79,9 @@ def source_glob(pattern):
 
 def emit(relative, data):
     path = GOLD / relative
-    payload = (json.dumps(data, ensure_ascii=False, separators=(",", ":"), sort_keys=True) + "\n").encode("utf-8")
-    common.write_bytes_retrying(path, payload)
-    outputs[relative] = {"sha256": hashlib.sha256(payload).hexdigest(), "bytes": len(payload)}
+    content = gold_contract.payload(data)
+    common.write_bytes_retrying(path, content)
+    outputs[relative] = gold_contract.fingerprint(content)
 
 
 def unique(records, fields, label):
@@ -105,24 +109,11 @@ def table(name, records, grain, primary_key, join_columns, source_note, limitati
     unique(records, primary_key, name)
     relative = f"tables/{name}.json"
     emit(relative, records)
-    columns = {}
-    for record in records:
-        for field, value in record.items():
-            kind = ("null" if value is None else "boolean" if isinstance(value, bool)
-                    else "number" if isinstance(value, (int, float)) else "string" if isinstance(value, str)
-                    else "array" if isinstance(value, list) else "object")
-            columns.setdefault(field, set()).add(kind)
-    return {
-        "path": relative, "rows": len(records), "grain": grain,
-        "primary_key": primary_key, "join_columns": join_columns,
-        "columns": {field: sorted(kinds) for field, kinds in columns.items()},
-        "source": source_note, "limitations": limitations,
-        **outputs[relative],
-    }
+    return gold_contract.describe(name, records, grain, primary_key, join_columns, source_note,
+                                  limitations, (GOLD / relative).read_bytes())
 
 
-def percentage(numerator, denominator):
-    return round(100 * numerator / denominator, 4) if denominator else None
+percentage = gold_contract.percentage
 
 
 def main():
@@ -139,6 +130,8 @@ def main():
     proposition_links = rows(SOURCE / "politics/parliament/legislative/proposition-committee-links.json")
     law_mentions = rows(SOURCE / "politics/parliament/laws/mentions.json")
     activities = rows(SOURCE / "politics/parliament/activities/summary.json")
+    # Read for their source hashes: dbt builds the vote marts from these indexes, and the
+    # model's source list must still show when they change.
     decision_indexes = [
         (path.parent.name, rows(path))
         for path in sorted(SOURCE.glob("politics/decisions/*/index.json"))
@@ -337,79 +330,73 @@ def main():
     if any((row["pool"], row["document_id"]) not in {(law["pool"], law["document_id"]) for law in law_dim} for row in provisions):
         raise ValueError("Provision without a law snapshot")
 
-    gold_votes_by_id = defaultdict(list)
-    for row in party_rows:
-        gold_votes_by_id[row["vote_id"]].append(row)
-    vote_marts = []
-    for slug, index in decision_indexes:
-        result = []
-        for decision in index:
-            vote_id = decision["id"]
-            point = point_by_vote[vote_id]
-            parties = [{field: vote[field] for field in ("party", "party_position", "yes_votes", "no_votes", "abstain_votes", "absent_votes")}
-                       for vote in sorted(gold_votes_by_id[vote_id], key=lambda vote: PARTIES.index(vote["party"]))]
-            result.append({**decision, "point_id": point["point_id"], "parties": parties})
-        relative = f"marts/votes/{slug}.json"
-        emit(relative, result)
-        vote_marts.append({"slug": slug, "session": point_by_vote[result[0]["id"]]["session"],
-                           "path": relative, "rows": len(result)})
     emit("marts/budget-report.json", {
         "budgets": budget, "alignment": budget_alignment, "coverage": budget_coverage,
         "speech_rows": budget_speech, "language": language,
     })
+    # Headline figures are derived from the yearly and junior tables, so a new year of data
+    # moves them without a contract change. Baseline is the first year, comparison the last.
     job_metrics = {row["metric"]: float(row["value"]) for row in jobs_overview}
+    job_years = sorted({row["year"] for row in job_year})
+    baseline_year, comparison_year = job_years[0], job_years[-1]
+    ads_by_role_year = defaultdict(int)
+    for row in job_year:
+        ads_by_role_year[row["role"], row["year"]] += row["ads"]
+    junior_by_role_year = defaultdict(int)
+    for row in job_junior:
+        junior_by_role_year[row["role"], int(row["month"][:4])] += row["junior_ads"]
+
+    def change_pct(before, after):
+        return round(100 * (after - before) / before, 1) if before else None
+
+    software = ("Software Developer", baseline_year), ("Software Developer", comparison_year)
     job_kpis = {
-        "ads_total": job_metrics["Total ads (2022-2025)"],
+        "baseline_year": baseline_year,
+        "comparison_year": comparison_year,
+        "ads_total": sum(row["ads"] for row in job_year),
         "employers_unique": job_metrics["Unique employers"],
-        "software_change_2022_2025_pct": job_metrics["Software Developer 2025 vs 2022 (%)"],
-        "junior_share_pct": job_metrics["Junior share (%)"],
-        "junior_software_2022": job_metrics["Junior developers 2022 (peak)"],
-        "junior_software_2025": job_metrics["Junior developers 2025"],
-        "junior_software_change_pct": job_metrics["Junior developers 2025 vs 2022 (%)"],
+        "software_baseline": ads_by_role_year[software[0]],
+        "software_comparison": ads_by_role_year[software[1]],
+        "software_change_pct": change_pct(ads_by_role_year[software[0]], ads_by_role_year[software[1]]),
+        "junior_share_pct": round(100 * sum(r["junior_ads"] for r in job_junior)
+                                  / sum(r["total_ads"] for r in job_junior), 1),
+        "junior_software_baseline": junior_by_role_year[software[0]],
+        "junior_software_comparison": junior_by_role_year[software[1]],
+        "junior_software_change_pct": change_pct(junior_by_role_year[software[0]],
+                                                 junior_by_role_year[software[1]]),
     }
-    emit("marts/jobs.json", {"monthly": job_month, "yearly": job_year,
+    # Roles ordered by volume, largest first, so the default selection is the largest role.
+    role_totals = defaultdict(int)
+    for row in job_year:
+        role_totals[row["role"]] += row["ads"]
+    emit("marts/jobs.json", {"years": job_years,
+                              "roles": sorted(role_totals, key=lambda role: (-role_totals[role], role)),
+                              "monthly": job_month, "yearly": job_year,
                               "junior": job_junior, "technologies": job_technology,
                               "overview": jobs_overview, "kpis": job_kpis})
+    umap_sessions = []
     for path in sorted(SOURCE.glob("debates/sessions/*/umap.json")):
         slug = path.parent.name
+        umap_sessions.append(slug)
         emit(f"marts/debate/{slug}.json", {"model_id": LEGACY_TOPIC_MODEL, "data": rows(path)})
-    emit("marts/debate/topics.json", {"model_id": LEGACY_TOPIC_MODEL,
+    # The sessions that have a map, so the site offers exactly those.
+    emit("marts/debate/topics.json", {"model_id": LEGACY_TOPIC_MODEL, "sessions": umap_sessions,
                                       "overview": debate_overview, "data": topics[LEGACY_TOPIC_MODEL]})
     emit("marts/rfc-drift.json", rfc)
+    # The vote marts themselves are built by dbt (models/gold/politics/mart_vote_decisions).
     gold_overview = {**overview, "sessions": [
-        {**item, "path": next(mart["path"] for mart in vote_marts if mart["slug"] == item["slug"])}
-        for item in overview["sessions"]
+        {**item, "path": f"marts/votes/{item['slug']}.json"} for item in overview["sessions"]
     ], "model_id": MODEL_ID}
     emit("overview.json", gold_overview)
 
-    party_session_metrics = []
-    agreement_metrics = []
-    for mart in vote_marts:
-        session = mart["session"]
-        votes = [row for row in party_rows if row["session"] == session]
-        by_vote = {vote_id: {row["party"]: row for row in group} for vote_id, group in grouped_votes.items() if group[0]["session"] == session}
-        for party in PARTIES:
-            selected = [row for row in votes if row["party"] == party]
-            cast = sum(row["cast_votes"] for row in selected)
-            absent = sum(row["absent_votes"] for row in selected)
-            party_session_metrics.append({
-                "session": session, "party": party, "roll_calls": len(selected),
-                "yes_calls": sum(row["party_position"] == "Ja" for row in selected),
-                "no_calls": sum(row["party_position"] == "Nej" for row in selected),
-                "abstain_calls": sum(row["party_position"] == "Avstår" for row in selected),
-                "cast_member_votes": cast, "recorded_absences": absent,
-                "cohesion_pct": percentage(sum(max(row["yes_votes"], row["no_votes"], row["abstain_votes"]) for row in selected), cast),
-                "recorded_attendance_pct": percentage(cast, cast + absent),
-            })
-            for other in PARTIES:
-                paired = [(group[party], group[other]) for group in by_vote.values()
-                          if group[party]["party_position"] in ("Ja", "Nej") and group[other]["party_position"] in ("Ja", "Nej")]
-                same = sum(a["party_position"] == b["party_position"] for a, b in paired)
-                agreement_metrics.append({"session": session, "party_a": party, "party_b": other,
-                                          "same_position_calls": same, "comparable_calls": len(paired),
-                                          "agreement_pct": percentage(same, len(paired))})
-    model_tables["mart_party_session_vote"] = table("mart_party_session_vote", party_session_metrics, "One session and party", ["session", "party"], ["session", "party"], "Derived from fact_party_vote")
-    model_tables["mart_party_agreement"] = table("mart_party_agreement", agreement_metrics, "One session and ordered party pair", ["session", "party_a", "party_b"], ["session", "party_a", "party_b"], "Derived from comparable Ja/Nej positions", "Not ideological distance; abstentions excluded")
+    # Files that moved to dbt keep their model entries: publish/export_politics.py writes and
+    # registers them, and this build carries its entries forward unchanged.
+    previous = common.read_json(GOLD / "semantic-model.json")
+    for name in DBT_TABLES:
+        model_tables[name] = previous["tables"][name]
+    for relative, fingerprint in previous["materializations"].items():
+        if relative.startswith(DBT_PATHS):
+            outputs[relative] = fingerprint
 
     semantic_model = {
         "model_id": MODEL_ID,

@@ -29,7 +29,10 @@ from common import PUBLIC, load_env
 
 # Cloudflare answers the default urllib agent with an error 1010 challenge.
 AGENT = "anton-portfolio-validator (+https://github.com/korv9/anton-portfolio)"
-RETRIES = 5
+RETRIES = 8
+# Concurrent reads over the public URL. r2.dev is rate-limited per client, and a burst of
+# sixteen workers across 1,436 decision files trips it, most visibly in CI.
+PUBLIC_WORKERS = int(os.environ.get("DELIVERY_WORKERS", "4"))
 
 _manifest = json.loads((PUBLIC / "delivery.json").read_text(encoding="utf-8"))
 BASES = _manifest["bases"]
@@ -89,8 +92,16 @@ def fetch(relative: str) -> bytes:
             retryable = error.code == 429 or 500 <= error.code < 600
             if not retryable or attempt == RETRIES - 1:
                 raise
-            # Full jitter, because every worker backs off from the same rate limit at once.
-            time.sleep(random.uniform(0, 2 ** attempt))
+            # Honour the server's Retry-After; otherwise full jitter, capped at a minute,
+            # because every worker backs off from the same rate limit at once.
+            retry_after = error.headers.get("Retry-After", "") if error.headers else ""
+            wait = float(retry_after) if retry_after.isdigit() else random.uniform(1, 2 ** attempt)
+            time.sleep(min(wait, 60))
+        except (urllib.error.URLError, TimeoutError, ConnectionError):
+            # A timed-out TLS handshake or a reset connection is as transient as a 503.
+            if attempt == RETRIES - 1:
+                raise
+            time.sleep(min(random.uniform(1, 2 ** attempt), 60))
     raise RuntimeError(f"Unreachable: {relative}")
 
 
@@ -104,6 +115,11 @@ def catalogue_paths(pattern: str) -> list[str]:
     catalogue = json.loads((PUBLIC / "catalog.json").read_text(encoding="utf-8"))
     return sorted(entry["path"] for entry in catalogue["files"]
                   if fnmatch(entry["path"], pattern))
+
+
+def workers() -> int:
+    """Threads for reading many delivered files: many with bucket credentials, few without."""
+    return 16 if _bucket_client() else PUBLIC_WORKERS
 
 
 def read_bytes(relative: str) -> bytes:

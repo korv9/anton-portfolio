@@ -1,0 +1,6 @@
+source_key,source_name,publisher,homepage_url,licence,citation
+scb,AKU och befolkningsstatistik,Statistiska centralbyrån (SCB),https://www.scb.se/,CC0 1.0,"Källa: SCB, Arbetskraftsundersökningarna (AKU) och befolkningsstatistik"
+fk,Sjukförsäkringsstatistik,Försäkringskassan,https://www.forsakringskassan.se/statistik-och-analys,Enligt källans villkor,Källa: Försäkringskassan
+fohm,Nationella folkhälsoenkäten (Hälsa på lika villkor),Folkhälsomyndigheten,https://www.folkhalsomyndigheten.se/folkhalsodata,Enligt källans villkor,"Källa: Folkhälsomyndigheten, Nationella folkhälsoenkäten"
+ess,European Social Survey,ESS ERIC,https://ess.sikt.no/,ESS ERIC conditions of use; microdata not redistributed,"European Social Survey European Research Infrastructure (ESS ERIC), ESS rounds 1-11 integrated files"
+kolada,Kolada,RKA (Rådet för främjande av kommunala analyser),https://www.kolada.se/,Enligt källans villkor,"Källa: Kolada, RKA, med respektive ursprungskälla per nyckeltal"

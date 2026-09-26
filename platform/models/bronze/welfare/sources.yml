@@ -1,0 +1,124 @@
+version: 2
+
+# Bronze for the welfare subject: files fetched by platform/ingest/{scb,fohm,fk,ess,kolada},
+# read in place by dbt-duckdb. Each source directory has a _manifest.jsonl recording URL,
+# fetch time and SHA-256 per file; nothing is read here that is not recorded there.
+
+sources:
+  - name: scb
+    description: Statistics Sweden (SCB), PxWeb API v1. AKU labour force survey and population.
+    meta:
+      external_location: >-
+        read_json('{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/scb/{name}/part-*.json',
+        filename = true, maximum_object_size = 500000000)
+    tables:
+      - name: aku_region_year
+        description: NAKUBefolkningLAr. Population 15-74 by county, labour-force status and sex, annual.
+      - name: aku_region_quarter
+        description: NAKUBefolkningLK. As above, quarterly.
+      - name: aku_month
+        description: AKURLBefM. Population 15-74 by labour-force status, series type, sex and age, monthly, national.
+      - name: population_year
+        description: BefolkningNy. Population on 31 December by region and sex, 1968 to last year.
+      - name: population_year_current
+        description: BefolkningCKM. The same for the current publication year, published as a separate table.
+      - name: aku_region_metadata
+        description: Variable metadata of NAKUBefolkningLAr, for AKU's region codes and names.
+        meta:
+          external_location: >-
+            read_json('{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/scb/aku_region_year/metadata.json')
+      - name: population_region_metadata
+        description: Variable metadata of BefolkningNy; its Region variable is the list of region codes and names.
+        meta:
+          external_location: >-
+            read_json('{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/scb/population_year/metadata.json')
+
+  - name: fohm
+    description: >-
+      Folkhälsomyndigheten, Folkhälsodata PxWeb API. Nationella folkhälsoenkäten (Hälsa på lika
+      villkor): shares with 95% confidence intervals and number of responses.
+    meta:
+      external_location: >-
+        read_json('{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/fohm/{name}/part-*.json',
+        filename = true, maximum_object_size = 500000000)
+    tables:
+      - name: hlv1psyxreg
+        description: Mental health by county, sex and pooled four-year period.
+      - name: hlv1psyaald
+        description: Mental health by age group, sex and year, national.
+      - name: hlv1allmxreg
+        description: General health by county, sex and pooled four-year period.
+      - name: hlv1allmaald
+        description: General health by age group, sex and year, national.
+      - name: hlv1socxreg
+        description: Social relations and trust by county, sex and pooled four-year period.
+      - name: hlv1socaald
+        description: Social relations and trust by age group, sex and year, national.
+      - name: metadata
+        description: Variable metadata of every table, for measure labels.
+        meta:
+          external_location: >-
+            read_json('{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/fohm/*/metadata.json',
+            filename = true)
+
+  - name: fk
+    description: >-
+      Försäkringskassan, statistics API (sprstatistikrapportera). Records of dimensions and
+      observations; `rojd` marks a value suppressed for disclosure control.
+    tables:
+      - name: sick_pay_rate
+        description: Sjukpenningtal 2.0 by county, municipality, age group and sex, monthly from 2021.
+        meta:
+          external_location: >-
+            read_json('{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/fk/ohm-sjptal-tvanoll/SJPT2.json.gz',
+            maximum_object_size = 500000000)
+      - name: started_by_diagnosis
+        description: Started sick-leave cases by ICD-10 chapter and sex, monthly, national, from 2006.
+        meta:
+          external_location: >-
+            read_json('{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/fk/sjp-startade-diagnos/SJPStartadeSjukfallDiagnos.json.gz')
+      - name: started_stress
+        description: Started sick-leave cases for stress-related disorders (F43) by county and sex, monthly, from 2006.
+        meta:
+          external_location: >-
+            read_json('{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/fk/sjp-startade-diagnos-f43/SJPStartadeSjukfallF43.json.gz')
+      - name: ongoing_by_age
+        description: Ongoing sick-leave cases by county, age group and sex, monthly, from 1994.
+        meta:
+          external_location: >-
+            read_json('{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/fk/sjp-pagaende-sjukfall-diagnos-alder-langd/SJPPagSjukfallAlder.json.gz')
+      - name: started_by_diagnosis_meta
+        description: Dimension labels of the diagnosis dataset, for ICD-10 chapter names.
+        meta:
+          external_location: >-
+            read_json('{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/fk/sjp-startade-diagnos/meta.json')
+
+  - name: ess
+    description: >-
+      European Social Survey ERIC, rounds 1-11, main integrated files (plus the ESS10
+      self-completion file), selected variables, all countries. Microdata stays in the warehouse.
+    tables:
+      - name: respondents
+        meta:
+          external_location: >-
+            read_csv('{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/ess/*/*.csv.gz',
+            union_by_name = true, all_varchar = true, filename = true)
+
+  - name: kolada
+    description: Kolada (RKA) API v3. Key figures per municipality, county and country.
+    tables:
+      - name: kpi_values
+        description: Data pages; one element per KPI, period and region, with values per sex.
+        meta:
+          external_location: >-
+            read_json('{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/kolada/*/page-*.json',
+            maximum_object_size = 100000000)
+      - name: kpis
+        description: KPI metadata, one file per selected KPI.
+        meta:
+          external_location: >-
+            read_json('{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/kolada/*/kpi.json')
+      - name: municipalities
+        meta:
+          external_location: >-
+            read_json('{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/kolada/municipality.json')

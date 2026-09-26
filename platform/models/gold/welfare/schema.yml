@@ -1,0 +1,278 @@
+version: 2
+
+models:
+  - name: fct_labour_force
+    description: >-
+      AKU labour force survey (SCB). Rate denominator depends on labour_status: employment and participation over population, unemployment over labour force.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [region_code, period_key, sex_key, age_group_key, series_type, labour_status]
+    columns:
+      - name: region_code
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('dim_region'), field: region_code}
+      - name: period_key
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('dim_period'), field: period_key}
+      - name: sex_key
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('dim_sex'), field: sex_key}
+      - name: age_group_key
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('dim_age_group'), field: age_group_key}
+      - name: series_type
+        data_tests: [not_null]
+      - name: labour_status
+        data_tests: [not_null]
+  - name: fct_population
+    description: >-
+      Population on 31 December (SCB). The total over sexes is derived and flagged.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [region_code, period_key, sex_key]
+    columns:
+      - name: region_code
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('dim_region'), field: region_code}
+      - name: period_key
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('dim_period'), field: period_key}
+      - name: sex_key
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('dim_sex'), field: sex_key}
+  - name: fct_sick_pay_rate
+    description: >-
+      Sjukpenningtal 2.0 (Försäkringskassan), monthly from 2021, rolling twelve months.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [region_code, period_key, sex_key, age_group_key]
+    columns:
+      - name: region_code
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('dim_region'), field: region_code}
+      - name: period_key
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('dim_period'), field: period_key}
+      - name: sex_key
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('dim_sex'), field: sex_key}
+      - name: age_group_key
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('dim_age_group'), field: age_group_key}
+  - name: fct_sick_leave_cases
+    description: >-
+      Started and ongoing sick-leave cases (Försäkringskassan). F43 is inside F00-F99; never add them.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [case_type, region_code, period_key, sex_key, age_group_key, diagnosis_code]
+    columns:
+      - name: case_type
+        data_tests: [not_null]
+      - name: region_code
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('dim_region'), field: region_code}
+      - name: period_key
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('dim_period'), field: period_key}
+      - name: sex_key
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('dim_sex'), field: sex_key}
+      - name: age_group_key
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('dim_age_group'), field: age_group_key}
+      - name: diagnosis_code
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('dim_diagnosis'), field: diagnosis_code}
+  - name: fct_health_survey
+    description: >-
+      Nationella folkhälsoenkäten (Folkhälsomyndigheten): share with 95% interval and responses.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [indicator_key, region_code, period_key, sex_key, age_group_key]
+    columns:
+      - name: indicator_key
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('dim_indicator'), field: indicator_key}
+      - name: region_code
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('dim_region'), field: region_code}
+      - name: period_key
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('dim_period'), field: period_key}
+      - name: sex_key
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('dim_sex'), field: sex_key}
+      - name: age_group_key
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('dim_age_group'), field: age_group_key}
+  - name: fct_social_survey_country
+    description: >-
+      European Social Survey, weighted by pspwght, per country and round. Intervals ignore the sampling design and are too narrow.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [indicator_key, country_code, period_key, sex_key, age_group_key]
+    columns:
+      - name: indicator_key
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('dim_indicator'), field: indicator_key}
+      - name: country_code
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('dim_country'), field: country_code}
+      - name: period_key
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('dim_period'), field: period_key}
+      - name: sex_key
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('dim_sex'), field: sex_key}
+      - name: age_group_key
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('dim_age_group'), field: age_group_key}
+  - name: fct_social_survey_region
+    description: >-
+      European Social Survey for Sweden by NUTS2 area, rounds 5 onward.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [indicator_key, region_code, period_key]
+    columns:
+      - name: indicator_key
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('dim_indicator'), field: indicator_key}
+      - name: region_code
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('dim_region'), field: region_code}
+      - name: period_key
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('dim_period'), field: period_key}
+  - name: fct_kolada
+    description: >-
+      Kolada key figures by municipality, county and country.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [indicator_key, region_code, period_key, sex_key]
+    columns:
+      - name: indicator_key
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('dim_indicator'), field: indicator_key}
+      - name: region_code
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('dim_region'), field: region_code}
+      - name: period_key
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('dim_period'), field: period_key}
+      - name: sex_key
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('dim_sex'), field: sex_key}
+  - name: fct_indicator
+    description: >-
+      All headline values on one grain. The table to join across domains.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [indicator_key, region_code, period_key, sex_key, age_group_key]
+    columns:
+      - name: indicator_key
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('dim_indicator'), field: indicator_key}
+      - name: region_code
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('dim_region'), field: region_code}
+      - name: period_key
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('dim_period'), field: period_key}
+      - name: sex_key
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('dim_sex'), field: sex_key}
+      - name: age_group_key
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('dim_age_group'), field: age_group_key}
+  - name: mart_county_year_overview
+    description: >-
+      County by year, indicators side by side. Descriptive co-variation only, not cause and effect.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [region_code, year]

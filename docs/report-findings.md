@@ -4,7 +4,7 @@ The frontend reads the checked-in gold model. No new measurements were inferred 
 
 ## Political budget proposals
 
-`public/data/gold/marts/budget-report.json` contains 1,104 expenditure-area proposal rows in eight parliamentary sessions (2016/17–2025/26). Each proposal amount is the government amount plus a separately reported party deviation, in million SEK. The new budget browser exposes all 27 areas for every imported session and marks incomplete frames. In 2017/18, for example, the government frame has 21 imported areas; neither its total nor a full comparison is shown.
+`frontend/public/data/gold/marts/budget-report.json` contains 1,104 expenditure-area proposal rows in eight parliamentary sessions (2016/17–2025/26). Each proposal amount is the government amount plus a separately reported party deviation, in million SEK. The new budget browser exposes all 27 areas for every imported session and marks incomplete frames. In 2017/18, for example, the government frame has 21 imported areas; neither its total nor a full comparison is shown.
 
 For 2025/26 (budget year 2026), the import has 27 rows each for the collective government frame and the separate proposals from C, MP, S and V. There are no separate M, KD, L or SD frames in that year's FiU1 comparison. The government frame totals 1,543.316 billion SEK. Relative to it, the complete C, MP, S and V proposal totals differ by −5.034, +136.328, +27.227 and +64.959 billion SEK respectively. These are proposed expenditure totals, not actual spending or the complete fiscal balance. The interface derives all figures directly from the selected rows and links to the parliamentary table.
 

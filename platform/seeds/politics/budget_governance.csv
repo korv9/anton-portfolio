@@ -1,0 +1,13 @@
+session,budget_year,government_parties,agreement_parties,agreement_source_url,adopted,alternative_parties,alternative_source_url
+2014/15,2015,S|MP,,,alternative,M|C|L|KD,https://www.regeringen.se/contentassets/c3c8d6e9fa074489a0424e84d87e04f9/budgetprocessen-i-det-finanspolitiska-ramverket-sou-202393.pdf
+2015/16,2016,S|MP,,,government_proposal,,
+2016/17,2017,S|MP,,,government_proposal,,
+2017/18,2018,S|MP,,,government_proposal,,
+2018/19,2019,S|MP,,,alternative,M|KD,https://www.regeringen.se/contentassets/c3c8d6e9fa074489a0424e84d87e04f9/budgetprocessen-i-det-finanspolitiska-ramverket-sou-202393.pdf
+2019/20,2020,S|MP,C|L,https://data.riksdagen.se/dokument/H701FIU2,government_proposal,,
+2020/21,2021,S|MP,C|L,https://data.riksdagen.se/dokument/H801AU1,government_proposal,,
+2021/22,2022,S|MP,,,alternative,M|SD|KD,https://www.regeringen.se/contentassets/c3c8d6e9fa074489a0424e84d87e04f9/budgetprocessen-i-det-finanspolitiska-ramverket-sou-202393.pdf
+2022/23,2023,M|KD|L,SD,https://www.regeringen.se/pressmeddelanden/2026/05/regeringen-och-sverigedemokraterna-presenterar-bokslut-over-tidoavtalet/,government_proposal,,
+2023/24,2024,M|KD|L,SD,https://www.regeringen.se/pressmeddelanden/2026/05/regeringen-och-sverigedemokraterna-presenterar-bokslut-over-tidoavtalet/,government_proposal,,
+2024/25,2025,M|KD|L,SD,https://www.regeringen.se/pressmeddelanden/2026/05/regeringen-och-sverigedemokraterna-presenterar-bokslut-over-tidoavtalet/,government_proposal,,
+2025/26,2026,M|KD|L,SD,https://www.regeringen.se/pressmeddelanden/2026/05/regeringen-och-sverigedemokraterna-presenterar-bokslut-over-tidoavtalet/,government_proposal,,

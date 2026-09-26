@@ -1,0 +1,12 @@
+indicator_key,source_key,source_code,indicator_name,unit,domain,welfare_dimension,higher_is_better,description
+aku_unemployment_rate,scb,ALÖS,Arbetslöshet (AKU),procent av arbetskraften,jobb,ekonomisk,false,"Arbetslösa 15-74 år som andel av arbetskraften, icke säsongrensad. Årsvärden och kvartal per län, månad för riket."
+aku_employment_rate,scb,SYS,Sysselsättningsgrad (AKU),procent av befolkningen,jobb,ekonomisk,true,"Sysselsatta 15-74 år som andel av befolkningen, icke säsongrensad."
+aku_labour_force_participation,scb,IAKR,Arbetskraftstal (AKU),procent av befolkningen,jobb,ekonomisk,true,"Personer i arbetskraften som andel av befolkningen, icke säsongrensad. Endast månad för riket."
+aku_unemployment_rate_sa,scb,ALÖSP/SR_DATA,Arbetslöshet säsongrensad (AKU),procent av arbetskraften,jobb,ekonomisk,false,"Arbetslöshetstal, säsongrensad månadsserie för riket."
+aku_employment_rate_sa,scb,SYSP/SR_DATA,Sysselsättningsgrad säsongrensad (AKU),procent av befolkningen,jobb,ekonomisk,true,"Sysselsättningsgrad, säsongrensad månadsserie för riket."
+scb_population,scb,BE0101N1,Folkmängd,personer,befolkning,,,"Folkmängd den 31 december per region och kön."
+fk_sick_pay_rate,fk,SJPT2,Sjukpenningtal 2.0,dagar per försäkrad,arbetsliv,social,false,"Utbetalda nettodagar med sjuk- och rehabiliteringspenning under de senaste tolv månaderna per sjukpenningförsäkrad."
+fk_started_sick_leave,fk,SJPStartadeSjukfallDiagnos/ALL,Startade sjukfall,antal,arbetsliv,social,false,"Antal startade sjukfall per månad, samtliga diagnoser."
+fk_started_sick_leave_psychiatric,fk,SJPStartadeSjukfallDiagnos/F00-F99,Startade sjukfall psykiatriska diagnoser,antal,mental_halsa,social,false,"Antal startade sjukfall per månad med diagnos i ICD-10 kapitel F00-F99."
+fk_started_sick_leave_stress,fk,SJPStartadeSjukfallF43,Startade sjukfall stressrelaterade diagnoser,antal,mental_halsa,social,false,"Antal startade sjukfall per månad med diagnos F43, reaktion på svår stress och anpassningsstörningar."
+fk_ongoing_sick_leave,fk,SJPPagSjukfallAlder,Pågående sjukfall,antal,arbetsliv,social,false,"Antal pågående sjukfall vid månadens slut."

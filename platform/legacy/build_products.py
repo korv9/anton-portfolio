@@ -1,8 +1,12 @@
 """Build product report contracts from checked-in, pinned CSV exports."""
 import csv
-import hashlib
+import sys
 import json
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "lib"))
+# Line-ending-normalised, so a hash taken on a Windows checkout matches on Linux and in CI.
+from common import sha_of  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
 PUBLIC = ROOT / "frontend/public/data/products"
@@ -37,7 +41,7 @@ def build():
                          "product": "drugcomb", "rows": len(records), "columns": columns,
                          "path": "/data/products/drugcomb/tables/" + target.name,
                          "csv": "/data/products/drugcomb/tables/" + path.name,
-                         "sha256": hashlib.sha256(path.read_bytes()).hexdigest()})
+                         "sha256": sha_of(path.read_bytes())})
     if not tables:
         raise ValueError("DrugComb table exports are missing")
     report = {"source": provenance, "metrics": tables["metrics"], "funnel": tables["data_funnel"],

@@ -69,6 +69,9 @@ def main() -> None:
     parser.add_argument("--force", action="store_true", help="ignore the cache")
     parser.add_argument("--only", nargs="*", help="run only these tasks")
     parser.add_argument("--cpu", action="store_true", help="force CPU")
+    parser.add_argument("--no-transformers", action="store_true",
+                        help="skip KB-BERT fine-tuning (hours per job without a GPU); "
+                             "jobs whose headline needs it report 'partial' and keep their card")
     arguments = parser.parse_args()
 
     if free_gigabytes() < MIN_FREE_GB:
@@ -82,7 +85,8 @@ def main() -> None:
     device = "cpu" if arguments.cpu else device_name()
     cache = {} if arguments.force else completed_keys()
 
-    print(f"run {stamp} · device {device} · {free_gigabytes():.0f} GB free")
+    print(f"run {stamp} · device {device} · {free_gigabytes():.0f} GB free"
+          + (" · transformers skipped" if arguments.no_transformers else ""))
     results, began = [], time.time()
 
     for task, run in JOBS:
@@ -93,7 +97,8 @@ def main() -> None:
         clock = time.time()
         print(f"\n=== {task} ===", flush=True)
         try:
-            result = run(job_dir, device=device, cached=cache, force=arguments.force)
+            result = run(job_dir, device=device, cached=cache, force=arguments.force,
+                         transformers=not arguments.no_transformers)
             result = {"task": task, "status": result.pop("status", "ok"), **result}
         except Exception:
             result = {"task": task, "status": "failed", "error": traceback.format_exc()}

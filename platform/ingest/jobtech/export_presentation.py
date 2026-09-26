@@ -1,19 +1,19 @@
 """Export clean, presentation-ready tables from the historical marts.
 
-Reads data/history.duckdb (the 2022-2025 archive build) and writes tidy,
+Reads the historical archive build (warehouse/jobtech/history.duckdb) and writes tidy,
 web-ready CSVs plus a single Excel workbook to data/presentation/. All column
 names and labels are in English.
 
-Unlike scripts/export_analytics.py (which emits wide Power BI star-schema CSVs
+Unlike platform/ingest/jobtech/export_analytics.py (which emits wide Power BI star-schema CSVs
 with technical/NULL columns), this produces flat tables you can publish or open
 directly. CSVs are plain UTF-8 (no BOM) so they load cleanly on a website / in
 JavaScript CSV parsers; the accompanying .xlsx carries the same data for Excel
 users (it stores Swedish characters in region names natively, no encoding caveat).
 
-    python scripts/export_presentation.py
+    python platform/ingest/jobtech/export_presentation.py
 
 Optional:
-    python scripts/export_presentation.py --database data/history.duckdb \
+    python platform/ingest/jobtech/export_presentation.py --database data/history.duckdb \
         --output data/presentation --top 15
 """
 import argparse
@@ -22,10 +22,11 @@ from pathlib import Path
 
 import duckdb
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]  # platform/
 
 # The analysed cohort. "Other" is retained in the fact for lineage but excluded
-# from every presentation table. Complete archive years are 2022-2025.
+# from every presentation table. The years are the complete archive years in the
+# database unless given; configure() sets them before any table is built.
 FIRST_YEAR, LAST_YEAR = 2022, 2025
 YEARS = f"extract(year from published_at) between {FIRST_YEAR} and {LAST_YEAR}"
 
@@ -38,6 +39,28 @@ ALL_ROLES = ("role_family in ('Data Engineer', 'Analytics Engineer', "
 DATA_ROLES = ("role_family in ('Data Engineer', 'Analytics Engineer', "
               "'Data Scientist') and " + YEARS)
 ROLE_FILTER = ALL_ROLES  # backwards-compatible alias
+
+
+def configure(first_year, last_year):
+    """Point every table's year filter at [first_year, last_year]."""
+    global FIRST_YEAR, LAST_YEAR, YEARS, ALL_ROLES, DATA_ROLES, ROLE_FILTER
+    FIRST_YEAR, LAST_YEAR = first_year, last_year
+    YEARS = f"extract(year from published_at) between {FIRST_YEAR} and {LAST_YEAR}"
+    ALL_ROLES = ("role_family in ('Data Engineer', 'Analytics Engineer', "
+                 "'Data Scientist', 'Software Developer') and " + YEARS)
+    DATA_ROLES = ("role_family in ('Data Engineer', 'Analytics Engineer', "
+                  "'Data Scientist') and " + YEARS)
+    ROLE_FILTER = ALL_ROLES
+
+
+def complete_years(con):
+    """Calendar years whose twelve months are all fully imported."""
+    rows = con.execute("""
+        select year(publication_month) as year
+        from raw.collection_coverage
+        where status = 'complete'
+        group by 1 having count(*) = 12 order by 1""").fetchall()
+    return [row[0] for row in rows]
 
 
 def write_csv(destination, columns, rows):
@@ -60,24 +83,24 @@ def build_tables(con, top):
     # 1. Headline KPIs — one tidy long table of label/value pairs. Framed around
     #    the junior-developer downturn: peak year versus the latest year.
     total = con.execute(
-        f"select count(*) from analytics_marts.fct_job_ads where {ALL_ROLES}").fetchone()[0]
+        f"select count(*) from gold.fct_job_ads where {ALL_ROLES}").fetchone()[0]
     softdev = con.execute(
-        f"select count(*) from analytics_marts.fct_job_ads where {ALL_ROLES} "
+        f"select count(*) from gold.fct_job_ads where {ALL_ROLES} "
         "and role_family = 'Software Developer'").fetchone()[0]
     junior = con.execute(
-        f"select count(*) from analytics_marts.fct_job_ads where {ALL_ROLES} "
+        f"select count(*) from gold.fct_job_ads where {ALL_ROLES} "
         "and seniority = 'junior'").fetchone()[0]
     employers = con.execute(
-        f"select count(distinct employer_id) from analytics_marts.fct_job_ads where {ALL_ROLES}").fetchone()[0]
+        f"select count(distinct employer_id) from gold.fct_job_ads where {ALL_ROLES}").fetchone()[0]
 
     # Per-year software-developer and junior-software-developer counts drive the crash KPIs.
     sd_by_year = dict(con.execute(
         f"select extract(year from published_at)::int, count(*) "
-        f"from analytics_marts.fct_job_ads where {ALL_ROLES} "
+        f"from gold.fct_job_ads where {ALL_ROLES} "
         "and role_family = 'Software Developer' group by 1").fetchall())
     jr_sd_by_year = dict(con.execute(
         f"select extract(year from published_at)::int, count(*) "
-        f"from analytics_marts.fct_job_ads where {ALL_ROLES} "
+        f"from gold.fct_job_ads where {ALL_ROLES} "
         "and role_family = 'Software Developer' and seniority = 'junior' group by 1").fetchall())
 
     def peak_to_last(series):
@@ -111,7 +134,7 @@ def build_tables(con, top):
                role_family as role,
                count(*) as ads,
                count(distinct employer_id) as unique_employers
-        from analytics_marts.fct_job_ads
+        from gold.fct_job_ads
         where {ALL_ROLES}
         group by 1, 2 order by 1, 2
     """)
@@ -123,7 +146,7 @@ def build_tables(con, top):
                role_family as role,
                observed_ads as new_ads,
                unique_employers
-        from analytics_marts.mart_job_trends_monthly
+        from gold.mart_job_trends_monthly
         where is_complete
           and role_family in ('Data Engineer', 'Analytics Engineer',
                               'Data Scientist', 'Software Developer')
@@ -136,7 +159,7 @@ def build_tables(con, top):
         with base as (
             select role_family, extract(year from published_at)::int as year, seniority,
                    count(*) as n
-            from analytics_marts.fct_job_ads where {ALL_ROLES}
+            from gold.fct_job_ads where {ALL_ROLES}
             group by 1, 2, 3
         )
         select role_family as role, year,
@@ -156,7 +179,7 @@ def build_tables(con, top):
                count(*) filter (where seniority = 'junior') as junior_ads,
                count(*) as total_ads,
                round(100.0 * count(*) filter (where seniority = 'junior') / count(*), 1) as junior_share_pct
-        from analytics_marts.fct_job_ads
+        from gold.fct_job_ads
         where {ALL_ROLES}
         group by 1, 2 order by 1, 2
     """)
@@ -172,14 +195,14 @@ def build_tables(con, top):
     cols, rows = q(con, f"""
         with pop as (
             select {cohort} as cohort, count(*) as n
-            from analytics_marts.fct_job_ads where {ALL_ROLES} group by 1
+            from gold.fct_job_ads where {ALL_ROLES} group by 1
         )
         select {fcohort} as cohort,
                b.skill as technology,
                count(distinct b.job_id) as ads_mentioning,
                round(100.0 * count(distinct b.job_id) / p.n, 1) as share_pct
-        from analytics_marts.bridge_job_skills b
-        join analytics_marts.fct_job_ads f using (job_id)
+        from gold.bridge_job_skills b
+        join gold.fct_job_ads f using (job_id)
         join pop p on p.cohort = {fcohort}
         where {ALL_ROLES}
         group by 1, 2, p.n order by 1, 3 desc
@@ -190,15 +213,15 @@ def build_tables(con, top):
     cols, rows = q(con, f"""
         with pop as (
             select {cohort} as cohort, extract(year from published_at)::int as year, count(*) as n
-            from analytics_marts.fct_job_ads where {ALL_ROLES} group by 1, 2
+            from gold.fct_job_ads where {ALL_ROLES} group by 1, 2
         )
         select {fcohort} as cohort,
                b.skill as technology,
                extract(year from f.published_at)::int as year,
                count(distinct f.job_id) as ads_mentioning,
                round(100.0 * count(distinct f.job_id) / p.n, 1) as share_pct
-        from analytics_marts.bridge_job_skills b
-        join analytics_marts.fct_job_ads f using (job_id)
+        from gold.bridge_job_skills b
+        join gold.fct_job_ads f using (job_id)
         join pop p on p.cohort = {fcohort} and p.year = extract(year from f.published_at)::int
         where {ALL_ROLES}
         group by 1, 2, 3, p.n order by 1, 2, 3
@@ -214,7 +237,7 @@ def build_tables(con, top):
                round(100.0 * baseline_skill_ads / nullif(baseline_total_ads, 0), 1) as share_baseline_pct,
                round(100.0 * comparison_skill_ads / nullif(comparison_total_ads, 0), 1) as share_comparison_pct,
                round(share_change_pp, 1) as change_pp
-        from analytics_marts.mart_skill_year_comparison
+        from gold.mart_skill_year_comparison
         where is_complete
         order by role_family, change_pp desc
     """)
@@ -224,8 +247,8 @@ def build_tables(con, top):
     cols, rows = q(con, f"""
         select e.employer_name as employer,
                count(*) as ads
-        from analytics_marts.fct_job_ads f
-        join analytics_marts.dim_employers e using (employer_id)
+        from gold.fct_job_ads f
+        join gold.dim_employers e using (employer_id)
         where {ALL_ROLES}
         group by 1 order by 2 desc, 1 limit ?
     """, [top])
@@ -235,8 +258,8 @@ def build_tables(con, top):
     cols, rows = q(con, f"""
         select l.region as region,
                count(*) as ads
-        from analytics_marts.fct_job_ads f
-        join analytics_marts.dim_locations l using (location_id)
+        from gold.fct_job_ads f
+        join gold.dim_locations l using (location_id)
         where {ALL_ROLES}
         group by 1 order by 2 desc, 1
     """)
@@ -249,7 +272,7 @@ def build_tables(con, top):
                previous_month_ads, previous_year_ads, round(ads_3m_average, 1) as ads_3m_average,
                ads_mom_change, round(100 * ads_mom_pct, 1) as ads_mom_pct,
                ads_yoy_change, round(100 * ads_yoy_pct, 1) as ads_yoy_pct
-        from analytics_marts.mart_job_trends_monthly
+        from gold.mart_job_trends_monthly
         where is_complete and role_family <> 'Other'
         order by role_family, publication_month
     """)
@@ -263,7 +286,7 @@ def build_tables(con, top):
                sufficient_volume,
                round(100 * skill_ads_yoy_pct, 1) as skill_ads_yoy_pct,
                round(share_yoy_pp, 1) as share_yoy_pp
-        from analytics_marts.mart_skill_trends_monthly
+        from gold.mart_skill_trends_monthly
         where is_complete
         order by role_family, skill, publication_month
     """)
@@ -274,13 +297,20 @@ def build_tables(con, top):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--database', default=str(ROOT / 'data' / 'history.duckdb'))
-    parser.add_argument('--output', type=Path, default=ROOT / 'data' / 'presentation')
+    parser.add_argument('--database', default=str(ROOT.parent / 'warehouse/jobtech/history.duckdb'))
+    parser.add_argument('--output', type=Path, default=ROOT.parent / 'warehouse/jobtech/presentation')
+    parser.add_argument('--first-year', type=int, help='Default: first complete archive year')
+    parser.add_argument('--last-year', type=int, help='Default: last complete archive year')
     parser.add_argument('--top', type=int, default=15, help='Row cap for top-N tables')
     args = parser.parse_args()
     args.output.mkdir(parents=True, exist_ok=True)
 
     with duckdb.connect(args.database, read_only=True) as con:
+        years = complete_years(con)
+        if not years:
+            raise SystemExit('No complete archive year in the database')
+        configure(args.first_year or years[0], args.last_year or years[-1])
+        print(f'Years {FIRST_YEAR}-{LAST_YEAR}')
         tables = build_tables(con, args.top)
 
     # Remove stale CSVs from earlier runs so the folder reflects only current tables.

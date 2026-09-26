@@ -1,4 +1,4 @@
-import { t } from '../i18n'
+import { l, t } from '../i18n'
 import { fetchData } from '../dataSource'
 import { useEffect, useState } from 'react'
 type Product = {
@@ -57,11 +57,13 @@ export default function ProductDirectory() {
               )}
               {product.data && (
                 <a href={product.data}>
-                  {t(
-                    product.id === 'politics'
-                      ? 'Read speeches'
-                      : 'Data & methods',
-                  )}{' '}
+                  {product.id === 'welfare'
+                    ? l('Pipeline status', 'Pipelinens status')
+                    : t(
+                        product.id === 'politics'
+                          ? 'Read speeches'
+                          : 'Data & methods',
+                      )}{' '}
                   ↓
                 </a>
               )}

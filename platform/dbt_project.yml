@@ -20,9 +20,61 @@ models:
     bronze:
       +materialized: view
       +schema: bronze
+      jobs:
+        +tags: [jobs]
+      politics:
+        +tags: [politics]
+      welfare:
+        +tags: [welfare]
     silver:
       +materialized: view
       +schema: silver
+      jobs:
+        +tags: [jobs]
+      welfare:
+        +tags: [welfare]
     gold:
       +materialized: table
       +schema: gold
+      jobs:
+        +tags: [jobs]
+      politics:
+        +tags: [politics]
+      welfare:
+        +tags: [welfare]
+        serving:
+          +tags: [welfare, serving]
+      shared:
+        +tags: [welfare]
+
+# The welfare subject builds from files fetched by ingest/{scb,fohm,fk,ess,kolada}; its
+# tag lets it build on its own: `dbt build --select tag:welfare`.
+seeds:
+  portfolio:
+    politics:
+      +tags: [politics]
+      +schema: seeds
+      budget_governance:
+        +column_types: {session: varchar, budget_year: integer, government_parties: varchar,
+                        agreement_parties: varchar, agreement_source_url: varchar, adopted: varchar,
+                        alternative_parties: varchar, alternative_source_url: varchar}
+    welfare:
+      +tags: [welfare]
+      +schema: seeds
+      region_nuts:
+        +column_types: {county_code: varchar, nuts3_code: varchar, nuts2_code: varchar, nuts2_name: varchar}
+      ess_rounds:
+        +column_types: {essround: integer, reference_year: integer, fieldwork_label: varchar}
+      kolada_kpis:
+        +column_types: {kpi_id: varchar, domain: varchar, welfare_dimension: varchar, higher_is_better: boolean}
+      ess_variables:
+        +column_types: {scale_min: integer, scale_max: integer, higher_is_better: boolean, share_threshold: integer}
+      fohm_measures:
+        +column_types: {topic: varchar, measure_code: varchar, domain: varchar, higher_is_better: boolean}
+      indicators:
+        +column_types: {higher_is_better: boolean}
+      ess_countries:
+        +column_types: {is_nordic: boolean, is_eu27: boolean}
+      indicator_aggregation:
+        +column_types: {indicator_key: varchar, measure_type: varchar, time_rule: varchar, space_rule: varchar,
+                        weight_indicator: varchar, components: varchar, aggregation_note: varchar}

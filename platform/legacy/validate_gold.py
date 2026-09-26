@@ -40,7 +40,7 @@ def main():
     require(model["model_id"] == "portfolio-gold-v1", "Unexpected model version")
     require(portable_sha(ROOT / model["builder"]["path"])
             == model["builder"]["sha256"], "Gold builder changed without a rebuild")
-    with ThreadPoolExecutor(max_workers=16) as pool:
+    with ThreadPoolExecutor(max_workers=delivery.workers()) as pool:
         for item, digest in pool.map(source_sha, model["source_files"]):
             require(digest == item["sha256"],
                     f"Source changed without rebuilding gold: {item['path']}")

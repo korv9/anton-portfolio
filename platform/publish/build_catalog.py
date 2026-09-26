@@ -17,6 +17,7 @@ tree rebuilds to byte-identical output.
 """
 import hashlib
 import json
+import os
 import re
 from pathlib import Path
 
@@ -26,15 +27,25 @@ CATALOG = PUBLIC / "catalog.json"
 DELIVERY = PUBLIC / "delivery.json"
 SCHEMA_VERSION = 1
 
-# Base URL per format. Point "shard" at the object-storage prefix once the bucket is live;
-# the site reads these and needs no code change.
+# The bucket's public address. Default: Cloudflare's r2.dev development URL, which
+# Cloudflare rate-limits and advises against in production. Once a custom domain is
+# connected to the bucket, set R2_PUBLIC_BASE (e.g. https://data.example.se/) and rebuild
+# the catalogue; the site reads the result from delivery.json and needs no code change.
+# An empty value, as a workflow passes for an unset variable, counts as unset.
+OBJECT_STORAGE = (os.environ.get("R2_PUBLIC_BASE")
+                  or "https://pub-9867b18896ba49e4a0b4a3d2f39c0385.r2.dev/").rstrip("/") + "/"
+
+# The catalogue keeps offloaded files only while their format's base is remote, so a base
+# that is not an https URL would silently drop every offloaded entry. Refuse it.
+if not OBJECT_STORAGE.startswith("https://"):
+    raise SystemExit(f"R2_PUBLIC_BASE must be an https URL, got {OBJECT_STORAGE!r}")
+
+# Base URL per format.
 BASES = {
-    "json": "/data/",
-    # Parquet is queried in the browser over range requests, so it lives beside the shards.
-    "parquet": "https://pub-9867b18896ba49e4a0b4a3d2f39c0385.r2.dev/",
-    # Cloudflare R2, public development URL. Cloudflare rate-limits r2.dev and advises against
-    # relying on it in production; move this to a custom domain before the site is announced.
-    "shard": "https://pub-9867b18896ba49e4a0b4a3d2f39c0385.r2.dev/",
+    "json": "data/",
+    # Parquet is read in the browser, so it lives beside the shards.
+    "parquet": OBJECT_STORAGE,
+    "shard": OBJECT_STORAGE,
 }
 
 # Directories whose files are addressed one at a time through an index, and are read as whole
@@ -128,7 +139,9 @@ def build() -> dict:
         if path in (DELIVERY, PUBLIC / "offloaded.json"):
             continue
         relative = path.relative_to(PUBLIC).as_posix()
-        content = path.read_bytes()
+        # CRLF is normalised for both size and hash, so a Windows and a Linux checkout of the
+        # same tree produce the same catalogue.
+        content = path.read_bytes().replace(b"\r\n", b"\n")
         fmt = classify(relative)
         entry = {
             "path": relative,
@@ -138,7 +151,7 @@ def build() -> dict:
             "rows": row_count(path, fmt),
             "schema_version": SCHEMA_VERSION,
             "partition": partition_of(relative),
-            "sha256": hashlib.sha256(content.replace(b"\r\n", b"\n")).hexdigest(),
+            "sha256": hashlib.sha256(content).hexdigest(),
         }
         files.append(entry)
 
