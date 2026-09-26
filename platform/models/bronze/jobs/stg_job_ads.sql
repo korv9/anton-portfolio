@@ -1,3 +1,7 @@
+-- A table, not a view: four gold models read it, and re-parsing the payload JSON in each
+-- of them spilled gigabytes of temporary files on a full archive build.
+{{ config(materialized="table") }}
+
 with identified as (
     select * exclude (job_id), job_id as source_record_id,
         case when source_kind = 'historical' and nullif(trim(payload ->> '$.original_id'), '') is not null
