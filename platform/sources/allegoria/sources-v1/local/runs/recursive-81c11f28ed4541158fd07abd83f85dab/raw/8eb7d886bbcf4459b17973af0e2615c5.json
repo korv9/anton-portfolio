@@ -1,0 +1,94 @@
+{
+  "id": "resp_0422cb0b83d22dac016aa43df964cc87d2912795c4204bc687",
+  "object": "response",
+  "created_at": 1789148665,
+  "status": "completed",
+  "background": false,
+  "billing": {
+    "payer": "developer"
+  },
+  "completed_at": 1789148667,
+  "error": null,
+  "frequency_penalty": 0.0,
+  "incomplete_details": null,
+  "instructions": "Skriv om den f\u00f6ljande svenska texten med andra ord p\u00e5 svenska. Svara enbart med den omskrivna texten.",
+  "max_output_tokens": 1800,
+  "max_tool_calls": null,
+  "model": "gpt-5.4-nano-2026-03-17",
+  "moderation": null,
+  "output": [
+    {
+      "id": "msg_0422cb0b83d22dac016aa43dfa61c487d29aefcbfd7865183f",
+      "type": "message",
+      "status": "completed",
+      "content": [
+        {
+          "type": "output_text",
+          "annotations": [],
+          "logprobs": [],
+          "text": "En samtalsledare ska behandla varje deltagare som en egen individ. Uppgiften inneb\u00e4r att bem\u00f6ta deltagaren p\u00e5 ett s\u00e4tt som tar h\u00e4nsyn till deras egen vilja och synpunkter i samtalet, och att visa samma respekt f\u00f6r alla. Deltagarens st\u00e4llning ska bygga p\u00e5 personen sj\u00e4lv, inte p\u00e5 vad den kan vara v\u00e4rd f\u00f6r samtalsledaren. Detta ska g\u00e4lla utan undantag, oavsett om det gynnar samtalsledaren eller inte och oavsett andras \u00f6nskem\u00e5l."
+        }
+      ],
+      "phase": "final_answer",
+      "role": "assistant"
+    }
+  ],
+  "parallel_tool_calls": true,
+  "presence_penalty": 0.0,
+  "previous_response_id": null,
+  "prompt_cache_key": null,
+  "prompt_cache_retention": "24h",
+  "reasoning": {
+    "context": "current_turn",
+    "effort": "none",
+    "mode": "standard",
+    "summary": null
+  },
+  "safety_identifier": null,
+  "service_tier": "default",
+  "store": false,
+  "temperature": 1.0,
+  "text": {
+    "format": {
+      "type": "text"
+    },
+    "verbosity": "medium"
+  },
+  "tool_choice": "auto",
+  "tool_usage": {
+    "image_gen": {
+      "input_tokens": 0,
+      "input_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "output_tokens": 0,
+      "output_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "total_tokens": 0
+    },
+    "web_search": {
+      "num_requests": 0
+    }
+  },
+  "tools": [],
+  "top_logprobs": 0,
+  "top_p": 0.98,
+  "truncation": "disabled",
+  "usage": {
+    "input_tokens": 133,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 118,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 251
+  },
+  "user": null,
+  "metadata": {}
+}

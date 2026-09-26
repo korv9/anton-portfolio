@@ -1,0 +1,94 @@
+{
+  "id": "resp_03e894e5d1486aec016aa43e2265a887d2be499c932a416bc7",
+  "object": "response",
+  "created_at": 1789148706,
+  "status": "completed",
+  "background": false,
+  "billing": {
+    "payer": "developer"
+  },
+  "completed_at": 1789148707,
+  "error": null,
+  "frequency_penalty": 0.0,
+  "incomplete_details": null,
+  "instructions": "\u00c5terge inneh\u00e5llet i den f\u00f6ljande texten med en ny svensk formulering. Svara enbart med din version.",
+  "max_output_tokens": 1800,
+  "max_tool_calls": null,
+  "model": "gpt-5.4-nano-2026-03-17",
+  "moderation": null,
+  "output": [
+    {
+      "id": "msg_03e894e5d1486aec016aa43e22f62887d2a6d9f50a080f8b87",
+      "type": "message",
+      "status": "completed",
+      "content": [
+        {
+          "type": "output_text",
+          "annotations": [],
+          "logprobs": [],
+          "text": "Varje arbetstagare ska under varje 24-timmarsperiod ha minst elva timmars oavbruten vilotid (dygnsvila). Regelverket f\u00e5r fr\u00e5ng\u00e5s endast i undantagsfall som beror p\u00e5 omst\u00e4ndigheter arbetsgivaren inte kunnat f\u00f6rutse. I s\u00e5dana fall ska arbetstagaren ges motsvarande kompensationsledighet.\n\nSom utg\u00e5ngspunkt ska dygnsvilan vara f\u00f6rlagd till tiden mellan kl. 00.00 och 05.00. Om arbetets art, samh\u00e4llsbehov eller andra s\u00e4rskilda sk\u00e4l kr\u00e4ver att arbete utf\u00f6rs under denna tid, f\u00e5r undantag g\u00f6ras. (Lag 2005:165)"
+        }
+      ],
+      "phase": "final_answer",
+      "role": "assistant"
+    }
+  ],
+  "parallel_tool_calls": true,
+  "presence_penalty": 0.0,
+  "previous_response_id": null,
+  "prompt_cache_key": null,
+  "prompt_cache_retention": "24h",
+  "reasoning": {
+    "context": "current_turn",
+    "effort": "none",
+    "mode": "standard",
+    "summary": null
+  },
+  "safety_identifier": null,
+  "service_tier": "default",
+  "store": false,
+  "temperature": 1.0,
+  "text": {
+    "format": {
+      "type": "text"
+    },
+    "verbosity": "medium"
+  },
+  "tool_choice": "auto",
+  "tool_usage": {
+    "image_gen": {
+      "input_tokens": 0,
+      "input_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "output_tokens": 0,
+      "output_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "total_tokens": 0
+    },
+    "web_search": {
+      "num_requests": 0
+    }
+  },
+  "tools": [],
+  "top_logprobs": 0,
+  "top_p": 0.98,
+  "truncation": "disabled",
+  "usage": {
+    "input_tokens": 186,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 152,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 338
+  },
+  "user": null,
+  "metadata": {}
+}

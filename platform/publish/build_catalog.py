@@ -100,11 +100,24 @@ def carried_forward(seen):
     if not CATALOG.is_file():
         return []
     previous = json.loads(CATALOG.read_text(encoding="utf-8"))
+    record = PUBLIC / "offloaded.json"
+    offloaded = set(json.loads(record.read_text(encoding="utf-8"))) if record.is_file() else set()
     remote = {fmt for fmt, base in previous.get("bases", {}).items() if base.startswith("https://")}
-    return [entry for entry in previous["files"]
-            if entry["path"] not in seen
-            and entry["format"] in remote
-            and not (PUBLIC / entry["path"]).is_file()]
+    carried = []
+    for entry in previous["files"]:
+        if entry["path"] in seen or entry["format"] not in remote:
+            continue
+        path = PUBLIC / entry["path"]
+        if path.is_file():
+            continue
+        # A missing file was either offloaded after a verified upload, in which case it
+        # must stay catalogued, or is simply no longer produced by the build, in which case
+        # it must not. The filesystem cannot tell them apart, so the offload step records
+        # what it removed and that record decides.
+        if entry["path"] not in offloaded:
+            continue
+        carried.append(entry)
+    return carried
 
 
 def build() -> dict:
@@ -112,7 +125,7 @@ def build() -> dict:
     for path in sorted(PUBLIC.rglob("*")):
         if not path.is_file() or path == CATALOG:
             continue
-        if path == DELIVERY:
+        if path in (DELIVERY, PUBLIC / "offloaded.json"):
             continue
         relative = path.relative_to(PUBLIC).as_posix()
         content = path.read_bytes()

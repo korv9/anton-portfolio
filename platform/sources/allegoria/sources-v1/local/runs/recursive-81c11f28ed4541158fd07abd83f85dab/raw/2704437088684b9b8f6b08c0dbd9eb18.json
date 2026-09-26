@@ -1,0 +1,94 @@
+{
+  "id": "resp_0756f85a58026945016aa43dfb2cd887d28453b8018ee6032e",
+  "object": "response",
+  "created_at": 1789148667,
+  "status": "completed",
+  "background": false,
+  "billing": {
+    "payer": "developer"
+  },
+  "completed_at": 1789148668,
+  "error": null,
+  "frequency_penalty": 0.0,
+  "incomplete_details": null,
+  "instructions": "\u00c5terge inneh\u00e5llet i den f\u00f6ljande texten med en ny svensk formulering. Svara enbart med din version.",
+  "max_output_tokens": 1800,
+  "max_tool_calls": null,
+  "model": "gpt-5.4-nano-2026-03-17",
+  "moderation": null,
+  "output": [
+    {
+      "id": "msg_0756f85a58026945016aa43dfb8b5087d2b5a04d9598d99ba6",
+      "type": "message",
+      "status": "completed",
+      "content": [
+        {
+          "type": "output_text",
+          "annotations": [],
+          "logprobs": [],
+          "text": "Den imponerande figuren hamnar mellan den \u00f6verdrivna praktkostnaden och den sm\u00e5aktiga upptagenheten vid varje enskild kostnad. Ett gemensamt syfte s\u00e4tter gr\u00e4nserna f\u00f6r arbetet och skapar riktning f\u00f6r insatsen. Omsorgen g\u00e4ller b\u00e5de helhetens kvalitet och hur m\u00e4nniskor engageras, med st\u00e4ndig k\u00e4nsla f\u00f6r r\u00e4tt proportioner. Storheten avg\u00f6rs av sammanhangets v\u00e4rdighet, och det som syns i slutresultatet visar den samlade h\u00e5llningen."
+        }
+      ],
+      "phase": "final_answer",
+      "role": "assistant"
+    }
+  ],
+  "parallel_tool_calls": true,
+  "presence_penalty": 0.0,
+  "previous_response_id": null,
+  "prompt_cache_key": null,
+  "prompt_cache_retention": "24h",
+  "reasoning": {
+    "context": "current_turn",
+    "effort": "none",
+    "mode": "standard",
+    "summary": null
+  },
+  "safety_identifier": null,
+  "service_tier": "default",
+  "store": false,
+  "temperature": 1.0,
+  "text": {
+    "format": {
+      "type": "text"
+    },
+    "verbosity": "medium"
+  },
+  "tool_choice": "auto",
+  "tool_usage": {
+    "image_gen": {
+      "input_tokens": 0,
+      "input_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "output_tokens": 0,
+      "output_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "total_tokens": 0
+    },
+    "web_search": {
+      "num_requests": 0
+    }
+  },
+  "tools": [],
+  "top_logprobs": 0,
+  "top_p": 0.98,
+  "truncation": "disabled",
+  "usage": {
+    "input_tokens": 152,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 113,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 265
+  },
+  "user": null,
+  "metadata": {}
+}

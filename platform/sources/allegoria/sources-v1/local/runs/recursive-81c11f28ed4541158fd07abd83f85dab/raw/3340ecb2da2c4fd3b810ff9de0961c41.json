@@ -1,0 +1,94 @@
+{
+  "id": "resp_078986606f9f052a016aa43e5ce1c087d2acca40e5f5aa487d",
+  "object": "response",
+  "created_at": 1789148764,
+  "status": "completed",
+  "background": false,
+  "billing": {
+    "payer": "developer"
+  },
+  "completed_at": 1789148765,
+  "error": null,
+  "frequency_penalty": 0.0,
+  "incomplete_details": null,
+  "instructions": "\u00c5terge inneh\u00e5llet i den f\u00f6ljande texten med en ny svensk formulering. Svara enbart med din version.",
+  "max_output_tokens": 1800,
+  "max_tool_calls": null,
+  "model": "gpt-5.4-nano-2026-03-17",
+  "moderation": null,
+  "output": [
+    {
+      "id": "msg_078986606f9f052a016aa43e5d3c6c87d282123a2abbd90093",
+      "type": "message",
+      "status": "completed",
+      "content": [
+        {
+          "type": "output_text",
+          "annotations": [],
+          "logprobs": [],
+          "text": "En intygsgivare m\u00e5ste r\u00e4tta sin egen felaktiga uppgift genom att meddela mottagaren en tydlig r\u00e4ttelse. R\u00e4ttelsen ska klart ange vilken uppgift som var oriktig och ange det faktiska f\u00f6rh\u00e5llande som intyget avser. R\u00e4ttelsen h\u00f6r till intygsgivarens eget ansvar f\u00f6r det uttalande som l\u00e4mnats. Detta g\u00e4ller alltid, utan undantag, oavsett om intygsgivaren kan ha egen vinning eller oavsett vad andra \u00f6nskar."
+        }
+      ],
+      "phase": "final_answer",
+      "role": "assistant"
+    }
+  ],
+  "parallel_tool_calls": true,
+  "presence_penalty": 0.0,
+  "previous_response_id": null,
+  "prompt_cache_key": null,
+  "prompt_cache_retention": "24h",
+  "reasoning": {
+    "context": "current_turn",
+    "effort": "none",
+    "mode": "standard",
+    "summary": null
+  },
+  "safety_identifier": null,
+  "service_tier": "default",
+  "store": false,
+  "temperature": 1.0,
+  "text": {
+    "format": {
+      "type": "text"
+    },
+    "verbosity": "medium"
+  },
+  "tool_choice": "auto",
+  "tool_usage": {
+    "image_gen": {
+      "input_tokens": 0,
+      "input_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "output_tokens": 0,
+      "output_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "total_tokens": 0
+    },
+    "web_search": {
+      "num_requests": 0
+    }
+  },
+  "tools": [],
+  "top_logprobs": 0,
+  "top_p": 0.98,
+  "truncation": "disabled",
+  "usage": {
+    "input_tokens": 131,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 115,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 246
+  },
+  "user": null,
+  "metadata": {}
+}

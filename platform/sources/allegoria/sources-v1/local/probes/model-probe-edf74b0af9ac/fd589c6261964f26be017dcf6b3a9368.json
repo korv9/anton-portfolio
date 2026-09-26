@@ -1,0 +1,36 @@
+{
+  "id": "msg_011CexFQ7DgoQHFLgvCcW15c",
+  "container": null,
+  "content": [
+    {
+      "signature": "CAISjgIKjgEIERgCKkADeWLIgLEabPSLobRb7bSXO9kr8oPGSnwRS5wmDN4XAgOGDBF/HFuYPB3QDacKlAUu3mKwzx/wiqkdhTykw0oKMg1jbGF1ZGUtb3B1cy01OAFCCHRoaW5raW5nWiRkMGVkNzIzNC0zMjkwLTRkMGYtOTYyMS0yNTY1MTMyZmIzNjSoAdW8kdUGEgxjvtcTQqIwPLVdE/AaDG+OruGPvjGUE49WlSIwwXxC8PEshj/B7+Qu4U4iDS0fnsMdbR4hxA3piVDc+vVg11r9/Q+4antiw1m262zTKi2NE8GOOhLT7zkoN8g2hnWZv2wFI2phKXzGTxJk2ZbDTVro7CWveRDdkxAgxuIYAQ==",
+      "thinking": "",
+      "type": "thinking"
+    },
+    {
+      "text": "**Brobyggaren och de två somrarna**\n\nI dalen fanns en gammal bro som alla måste gå över för att nå marknaden på andra sidan floden. Brovaktaren, han som höll plankorna hela och räckena raka, krävde en slant av var och en som passerade — en slant för timret, en för spikarna, en för slitet.\n\nMen ibland tvivlade vandraren. \"Är det verkligen så många slantar mitt steg kostar?\" frågade han. Då fanns i dalen en gammal kvinna vid namn Vågen, som bodde i ett hus av grå sten mellan bro och by. Hon lyssnade på båda, vägde timmer mot slant, och hennes ord var det sista ordet. Ingen behövde bära sitt tvivel ensam — Vågen var skyldig att ta emot den som knackade.\n\nDock hade hon en regel, ristad i dörrposten:\n\nNär brovaktaren en gång skrivit ner sitt svar på ett blad och sänt det till vandrarens sista kända härbärge, började tiden rinna. Och när två somrar hade gått över dalen — när löven fallit två gånger och snön smält två gånger — då öppnade Vågen inte längre sin dörr i den saken. Bladet hade blivit gult, minnet grumligt, och räkenskaperna hade sjunkit ner i flodens bottenslam.\n\n\"Det är inte hårdhet\", sade hon till dem som kom för sent. \"Det är barmhärtighet mot dalen. Om varje gammal slant fick väckas ur sin sömn skulle ingen bro någonsin stå färdig, ty brovaktaren måste räkna i evighet i stället för att spika.\"\n\nSå gick vandrarna till hennes hus medan blad ännu satt kvar på grenarna. Och de som dröjde fick bära sitt tvivel vidare över bron, tyst, till marknaden.",
+      "type": "text"
+    }
+  ],
+  "model": "claude-opus-5",
+  "role": "assistant",
+  "stop_details": null,
+  "stop_reason": "end_turn",
+  "stop_sequence": null,
+  "type": "message",
+  "usage": {
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 0,
+    "inference_geo": "global",
+    "input_tokens": 173,
+    "output_tokens": 661,
+    "service_tier": "standard",
+    "output_tokens_details": {
+      "thinking_tokens": 14
+    }
+  }
+}

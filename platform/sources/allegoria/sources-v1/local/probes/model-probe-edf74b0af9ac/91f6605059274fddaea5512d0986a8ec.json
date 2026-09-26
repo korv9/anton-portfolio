@@ -1,0 +1,31 @@
+{
+  "id": "msg_011CexFeo5hi9UtNc58M6R2K",
+  "container": null,
+  "content": [
+    {
+      "text": "{\"slots\":[{\"slot_id\":\"daily_rest\",\"status\":\"present\",\"quote\":\"varje trotjänare i riket skulle unnas elva sammanhängande timmars vila under dygnets tjugofyra timmar\",\"note\":\"Elva sammanhängande timmar per 24-timmarsperiod anges.\"},{\"slot_id\":\"temporary_exception\",\"status\":\"present\",\"quote\":\"Endast om ett oväntat oväder – något som ingen herre kunnat ana i förväg – drog in över gårdarna, fick vilan brytas\",\"note\":\"Avsteg tillåts i undantagsfall.\"},{\"slot_id\":\"unforeseen_event\",\"status\":\"present\",\"quote\":\"ett oväntat oväder – något som ingen herre kunnat ana i förväg\",\"note\":\"Oförutsebar händelse beskrivs som grund för avsteg.\"},{\"slot_id\":\"compensation\",\"status\":\"present\",\"quote\":\"men då skulle trotjänaren sedan få lika många timmars ro tillbaka, som en gäld återbetald i sinom tid\",\"note\":\"Kompensationsvila krävs efteråt.\"},{\"slot_id\":\"night_interval\",\"status\":\"present\",\"quote\":\"från midnatt till den femte timmen på morgonen\",\"note\":\"Intervallet 00–05 anges allegoriskt.\"},{\"slot_id\":\"night_exception\",\"status\":\"present\",\"quote\":\"Endast om själva verkets natur – vare sig det var bagarens ugn som måste heta genom natten, eller folkets trängande behov, eller andra tvingande omständigheter – krävde att någon vakade under dessa mörka timmar, fick undantag göras\",\"note\":\"Villkor för nattarbete anges.\"}]}",
+      "type": "text"
+    }
+  ],
+  "model": "claude-opus-5",
+  "role": "assistant",
+  "stop_details": null,
+  "stop_reason": "end_turn",
+  "stop_sequence": null,
+  "type": "message",
+  "usage": {
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 0,
+    "inference_geo": "global",
+    "input_tokens": 1494,
+    "output_tokens": 560,
+    "service_tier": "standard",
+    "output_tokens_details": {
+      "thinking_tokens": 0
+    }
+  }
+}

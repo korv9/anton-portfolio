@@ -1,0 +1,31 @@
+{
+  "id": "msg_011CexFLMWZZJEwKJqVVKcVk",
+  "container": null,
+  "content": [
+    {
+      "text": "{\"slots\": [{\"slot_id\": \"duty\", \"status\": \"present\", \"quote\": \"Nätmyndigheten ska ta upp en tvist om vilka kostnader som ska debiteras enligt 6, 7 eller 9 §.\", \"note\": \"Uttrycker en plikt för nätmyndigheten att ta upp tvisten.\"}, {\"slot_id\": \"scope\", \"status\": \"present\", \"quote\": \"en tvist om vilka kostnader som ska debiteras enligt 6, 7 eller 9 §\", \"note\": \"Anger att tvisten avgränsas till kostnader enligt specifika paragrafer.\"}, {\"slot_id\": \"exception\", \"status\": \"present\", \"quote\": \"En tvist ska dock inte prövas om ansökan om prövning har kommit in till nätmyndigheten senare än två år efter det att den systemansvariga skickat ett skriftligt ställningstagande till den berörda partens senaste kända adress.\", \"note\": \"Uttrycker ett undantag från huvudregeln om prövning.\"}, {\"slot_id\": \"exception_deadline\", \"status\": \"present\", \"quote\": \"senare än två år efter det att den systemansvariga skickat ett skriftligt ställningstagande till den berörda partens senaste kända adress\", \"note\": \"Anger en tvåårsgräns för när ansökan inte längre kan prövas.\"}, {\"slot_id\": \"deadline_start\", \"status\": \"present\", \"quote\": \"efter det att den systemansvariga skickat ett skriftligt ställningstagande till den berörda partens senaste kända adress\", \"note\": \"Anger startpunkten för tidsfristen, dvs. när ställningstagandet skickades.\"}]}",
+      "type": "text"
+    }
+  ],
+  "model": "claude-sonnet-5",
+  "role": "assistant",
+  "stop_details": null,
+  "stop_reason": "end_turn",
+  "stop_sequence": null,
+  "type": "message",
+  "usage": {
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 0,
+    "inference_geo": "global",
+    "input_tokens": 1144,
+    "output_tokens": 557,
+    "service_tier": "standard",
+    "output_tokens_details": {
+      "thinking_tokens": 0
+    }
+  }
+}

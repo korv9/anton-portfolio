@@ -1,0 +1,31 @@
+{
+  "id": "msg_011CexFg8PaXmNSR7TcYFFBd",
+  "container": null,
+  "content": [
+    {
+      "text": "{\"slots\": [{\"slot_id\": \"duty\", \"status\": \"present\", \"quote\": \"Ingen behövde bära sitt tvivel ensam — Vågen var skyldig att ta emot den som knackade.\", \"note\": \"Texten anger uttryckligen en skyldighet för Vågen att ta emot tvivel/tvister.\"}, {\"slot_id\": \"scope\", \"status\": \"present\", \"quote\": \"en slant för timret, en för spikarna, en för slitet\", \"note\": \"De kostnader som avses specificeras: timmer, spikar och slitage.\"}, {\"slot_id\": \"exception\", \"status\": \"absent\", \"quote\": null, \"note\": \"Ingen särskild undantagsregel från huvudregeln (tidsgränsen) nämns i texten; endast själva tidsgränsen beskrivs som en fast regel utan undantag.\"}, {\"slot_id\": \"exception_deadline\", \"status\": \"present\", \"quote\": \"när två somrar hade gått över dalen — när löven fallit två gånger och snön smält två gånger — då öppnade Vågen inte längre sin dörr i den saken\", \"note\": \"En tydlig tidsgräns om två somrar anges för när prövning inte längre sker.\"}, {\"slot_id\": \"deadline_start\", \"status\": \"present\", \"quote\": \"När brovaktaren en gång skrivit ner sitt svar på ett blad och sänt det till vandrarens sista kända härbärge, började tiden rinna.\", \"note\": \"Tidsgränsen räknas från att brovaktaren skickat sitt skriftliga svar till vandraren.\"}]}",
+      "type": "text"
+    }
+  ],
+  "model": "claude-sonnet-5",
+  "role": "assistant",
+  "stop_details": null,
+  "stop_reason": "end_turn",
+  "stop_sequence": null,
+  "type": "message",
+  "usage": {
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 0,
+    "inference_geo": "global",
+    "input_tokens": 1676,
+    "output_tokens": 524,
+    "service_tier": "standard",
+    "output_tokens_details": {
+      "thinking_tokens": 0
+    }
+  }
+}

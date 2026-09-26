@@ -1,0 +1,101 @@
+{
+  "id": "resp_013d44d41eb23014016aa52eb3f77087d29764cb3857345440",
+  "object": "response",
+  "created_at": 1789210291,
+  "status": "completed",
+  "background": false,
+  "billing": {
+    "payer": "developer"
+  },
+  "completed_at": 1789210292,
+  "error": null,
+  "frequency_penalty": 0.0,
+  "incomplete_details": null,
+  "instructions": "Skriv om den f\u00f6ljande svenska texten med andra ord p\u00e5 svenska. Svara enbart med den omskrivna texten.",
+  "max_output_tokens": 8000,
+  "max_tool_calls": null,
+  "model": "gpt-5.4-mini-2026-03-17",
+  "moderation": null,
+  "output": [
+    {
+      "id": "rs_013d44d41eb23014016aa52eb43f5887d2aeb08aedb6721309",
+      "type": "reasoning",
+      "content": [],
+      "encrypted_content": "gAAAAABqpS60KvU2dyll8AVh522e6BKZebzZdn7B7UMeVH9nXXSrZGsCKfhK2DagV4z8hjO4qEwKPePzkLWSCI1Fw62ixC3SD3gGFXu6Dq1SJAIZFNeU1eRk8Qdb_pVOpQyYvz8uDU36t-9uMzaCHF7emJ5WUOgopvvZMT4Mh5zTJzeBIYMUynCG8I5B4j_LdnVWFTqVljn0hXLZ01LXVfAJOLWrPDxZwF0_oXQWk6QJnSFKnVsBa2N4SoFKx0lW8xTMy3Cz82nAmVXeLDdKwypu__f3iW0i3VvFnnFKOPmnx-e_h0T39LwIhTcESac34J8F3yjM9r6Oy1xiIOwNL08TNT2Gh1SOQbjkFHSO0k_bJKEqYsR4PqDfo06vDAGH2QBiJ-sy06eHAazCC26m0aAjLmeEFJWgjXFm4Tx6VmNyJGj-0_bFP77uy0FHRJnor1rVzADHbJ74FnRROsZn8UQKuroBLPMWpD0stCQeG8QaGIHCcgVzKowCJDxHOR7jEfjNTEwAewdP8tMp1kijGm8OnnWq54APNlPtQSqZX2p1Yw-ffrxiBCa-WlhyhSsJiOUilobtc-hWU1oH7vqPDfURFvaikXdNzuXz1WiI-WAtbop_pB7lU_-jkbp6M5bUxNHFGe274rR02BD_-hODUtDo1FRukQtQTqZSaGm96SRpgqitzUHmowSSWDeDtc6iQ_UAuKr_8zsdL7nd309fHHr_7LwUnAf-4C0UOzdNzvCgy977nfDQJIrWwKD5yzvDabiYFN0wTVBr2jBWNHO81tHOvT1WOmwfU_qq99hFbu7_2bPzmBzSKRZyX-Xq6Yrq4Gp4yqj9MpvAIaDDKqW4ClgwbN_07D-pqBFL103dUL7hDPsPzfeCBYSgVcNjPEq7VyNHyGfpbk4BL353HIhq--lg68Nnn-3VhrqKHKIxXCtjfUYY043s4bgCQbP2OWwYN7-UnioLxobWqo1gHP5ABCyeEbZf4uecZ9ueISmMoxSiexFSTjEYJXr3dVA61p2FnnNAB78TZV_JWeDe763U4aoCgz-dq50ClsuDjUuPIFq--cCmzgvuqgPIlQdyabzr_ypS07siVIG1XRHhmtR-4nRpkVCKT0f6lec0RR2xtALY0upqy_cpmY06XYdSFeIINzhzTxyPny_kDA_V21Q3N7SZH0670coVTynUQkMmG2CnIAoGzjKaIOoaGXiiAnM_DuVvQG1QOfNhl7SFmKCfpGVs64q_WXQj598r8VRaeegyV9miEDD0wUY=",
+      "summary": []
+    },
+    {
+      "id": "msg_013d44d41eb23014016aa52eb44a3887d2947139736dc65e9d",
+      "type": "message",
+      "status": "completed",
+      "content": [
+        {
+          "type": "output_text",
+          "annotations": [],
+          "logprobs": [],
+          "text": "N\u00e4tmyndigheten ska pr\u00f6va en tvist om vilka kostnader som ska tas ut enligt 6, 7 eller 9 \u00a7.\n\nEn tvist f\u00e5r dock inte pr\u00f6vas om en ans\u00f6kan om pr\u00f6vning har kommit in till n\u00e4tmyndigheten senare \u00e4n tv\u00e5 \u00e5r efter det att den systemansvariga har skickat ett skriftligt st\u00e4llningstagande till den ber\u00f6rda partens senaste k\u00e4nda adress."
+        }
+      ],
+      "phase": "final_answer",
+      "role": "assistant"
+    }
+  ],
+  "parallel_tool_calls": true,
+  "presence_penalty": 0.0,
+  "previous_response_id": null,
+  "prompt_cache_key": null,
+  "prompt_cache_retention": "24h",
+  "reasoning": {
+    "context": "current_turn",
+    "effort": "low",
+    "mode": "standard",
+    "summary": null
+  },
+  "safety_identifier": null,
+  "service_tier": "default",
+  "store": false,
+  "temperature": 1.0,
+  "text": {
+    "format": {
+      "type": "text"
+    },
+    "verbosity": "medium"
+  },
+  "tool_choice": "auto",
+  "tool_usage": {
+    "image_gen": {
+      "input_tokens": 0,
+      "input_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "output_tokens": 0,
+      "output_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "total_tokens": 0
+    },
+    "web_search": {
+      "num_requests": 0
+    }
+  },
+  "tools": [],
+  "top_logprobs": 0,
+  "top_p": 0.98,
+  "truncation": "disabled",
+  "usage": {
+    "input_tokens": 127,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 109,
+    "output_tokens_details": {
+      "reasoning_tokens": 11
+    },
+    "total_tokens": 236
+  },
+  "user": null,
+  "metadata": {}
+}

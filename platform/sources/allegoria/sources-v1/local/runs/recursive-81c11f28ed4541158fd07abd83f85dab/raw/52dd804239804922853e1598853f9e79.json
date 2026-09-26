@@ -1,0 +1,94 @@
+{
+  "id": "resp_0c18c91a5d9fec56016aa43e1a058887d29a7f88155beeff7b",
+  "object": "response",
+  "created_at": 1789148698,
+  "status": "completed",
+  "background": false,
+  "billing": {
+    "payer": "developer"
+  },
+  "completed_at": 1789148700,
+  "error": null,
+  "frequency_penalty": 0.0,
+  "incomplete_details": null,
+  "instructions": "F\u00f6rklara den f\u00f6ljande texten p\u00e5 svenska f\u00f6r en l\u00e4sare utan juridisk utbildning. Svara enbart med f\u00f6rklaringen.",
+  "max_output_tokens": 1800,
+  "max_tool_calls": null,
+  "model": "gpt-5.4-nano-2026-03-17",
+  "moderation": null,
+  "output": [
+    {
+      "id": "msg_0c18c91a5d9fec56016aa43e1a964c87d28687378d8fa4b217",
+      "type": "message",
+      "status": "completed",
+      "content": [
+        {
+          "type": "output_text",
+          "annotations": [],
+          "logprobs": [],
+          "text": "Texten beskriver regler f\u00f6r hur mycket vila en arbetstagare ska f\u00e5 under ett dygn:\n\n- **Minst 11 timmars sammanh\u00e4ngande vila per dygn**: Under varje period p\u00e5 **24 timmar** ska man normalt ha **minst 11 timmar i f\u00f6ljd** utan arbete (dygnsvila).\n- **Tillf\u00e4lliga undantag \u00e4r m\u00f6jliga**: Om det finns ett **s\u00e4rskilt sk\u00e4l** som arbetsgivaren **inte kunde f\u00f6rutse**, f\u00e5r man g\u00f6ra avsteg fr\u00e5n 11-timmarsvilan. D\u00e5 m\u00e5ste arbetstagaren i st\u00e4llet f\u00e5 **motsvarande extra vilotid senare** (kompensationsledighet) s\u00e5 att man f\u00e5r igen det som saknades.\n\n- **Vilan ska normalt inneh\u00e5lla tiden mellan midnatt och 05.00**: Dygnsvilan ska normalt omfatta perioden **fr\u00e5n midnatt till klockan fem p\u00e5 morgonen**.\n- **Undantag om arbetet kr\u00e4ver det**: Avsteg f\u00e5r g\u00f6ras om arbetet, med h\u00e4nsyn till **vad det \u00e4r f\u00f6r typ av arbete**, **allm\u00e4nhetens behov** eller **andra s\u00e4rskilda omst\u00e4ndigheter**, m\u00e5ste utf\u00f6ras just **mellan midnatt och 05.00**."
+        }
+      ],
+      "phase": "final_answer",
+      "role": "assistant"
+    }
+  ],
+  "parallel_tool_calls": true,
+  "presence_penalty": 0.0,
+  "previous_response_id": null,
+  "prompt_cache_key": null,
+  "prompt_cache_retention": "24h",
+  "reasoning": {
+    "context": "current_turn",
+    "effort": "none",
+    "mode": "standard",
+    "summary": null
+  },
+  "safety_identifier": null,
+  "service_tier": "default",
+  "store": false,
+  "temperature": 1.0,
+  "text": {
+    "format": {
+      "type": "text"
+    },
+    "verbosity": "medium"
+  },
+  "tool_choice": "auto",
+  "tool_usage": {
+    "image_gen": {
+      "input_tokens": 0,
+      "input_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "output_tokens": 0,
+      "output_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "total_tokens": 0
+    },
+    "web_search": {
+      "num_requests": 0
+    }
+  },
+  "tools": [],
+  "top_logprobs": 0,
+  "top_p": 0.98,
+  "truncation": "disabled",
+  "usage": {
+    "input_tokens": 206,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 276,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 482
+  },
+  "user": null,
+  "metadata": {}
+}

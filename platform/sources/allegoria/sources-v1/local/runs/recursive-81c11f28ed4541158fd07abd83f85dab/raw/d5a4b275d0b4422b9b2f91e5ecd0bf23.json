@@ -1,0 +1,94 @@
+{
+  "id": "resp_0207aa4d2c81b76a016aa43e1efbcc87d28afe3f629e14a2f3",
+  "object": "response",
+  "created_at": 1789148703,
+  "status": "completed",
+  "background": false,
+  "billing": {
+    "payer": "developer"
+  },
+  "completed_at": 1789148705,
+  "error": null,
+  "frequency_penalty": 0.0,
+  "incomplete_details": null,
+  "instructions": "\u00c5terge inneh\u00e5llet i den f\u00f6ljande texten med en ny svensk formulering. Svara enbart med din version.",
+  "max_output_tokens": 1800,
+  "max_tool_calls": null,
+  "model": "gpt-5.4-nano-2026-03-17",
+  "moderation": null,
+  "output": [
+    {
+      "id": "msg_0207aa4d2c81b76a016aa43e20220087d28f6bb148d524e809",
+      "type": "message",
+      "status": "completed",
+      "content": [
+        {
+          "type": "output_text",
+          "annotations": [],
+          "logprobs": [],
+          "text": "Den betydande personen stannar kvar i sp\u00e4nningsf\u00e4ltet mellan p\u00e5kostad \u00f6verdrift och sm\u00e5sint granskning av varje enskild utgift. Ett gemensamt m\u00e5l ramar in arbetet och ger det riktning. Omsorgen str\u00e4cker sig b\u00e5de till helhetens kvalitet och till hur m\u00e4nniskor involveras, utan att tappa blicken f\u00f6r r\u00e4tt proportioner. Det verkliga storheten visar sig i den milj\u00f6 och det sammanhang d\u00e4r den kommer till uttryck, och i slutresultatet syns den samlade attityden."
+        }
+      ],
+      "phase": "final_answer",
+      "role": "assistant"
+    }
+  ],
+  "parallel_tool_calls": true,
+  "presence_penalty": 0.0,
+  "previous_response_id": null,
+  "prompt_cache_key": null,
+  "prompt_cache_retention": "24h",
+  "reasoning": {
+    "context": "current_turn",
+    "effort": "none",
+    "mode": "standard",
+    "summary": null
+  },
+  "safety_identifier": null,
+  "service_tier": "default",
+  "store": false,
+  "temperature": 1.0,
+  "text": {
+    "format": {
+      "type": "text"
+    },
+    "verbosity": "medium"
+  },
+  "tool_choice": "auto",
+  "tool_usage": {
+    "image_gen": {
+      "input_tokens": 0,
+      "input_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "output_tokens": 0,
+      "output_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "total_tokens": 0
+    },
+    "web_search": {
+      "num_requests": 0
+    }
+  },
+  "tools": [],
+  "top_logprobs": 0,
+  "top_p": 0.98,
+  "truncation": "disabled",
+  "usage": {
+    "input_tokens": 147,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 123,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 270
+  },
+  "user": null,
+  "metadata": {}
+}

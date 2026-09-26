@@ -1,0 +1,31 @@
+{
+  "id": "msg_011CexFeLT4pKdT3hhaAeiyp",
+  "container": null,
+  "content": [
+    {
+      "text": "{\"slots\":[{\"slot_id\":\"daily_rest\",\"status\":\"present\",\"quote\":\"varje trotjänare i riket skulle unnas elva sammanhängande timmars vila under dygnets tjugofyra timmar\",\"note\":\"Texten anger en bestämd varaktighet (elva timmar) och beräkningsperiod (dygnets tjugofyra timmar) för dygnsvila.\"},{\"slot_id\":\"temporary_exception\",\"status\":\"present\",\"quote\":\"Endast om ett oväntat oväder – något som ingen herre kunnat ana i förväg – drog in över gårdarna, fick vilan brytas\",\"note\":\"Texten medger ett tillfälligt avsteg från vilan under vissa omständigheter.\"},{\"slot_id\":\"unforeseen_event\",\"status\":\"present\",\"quote\":\"ett oväntat oväder – något som ingen herre kunnat ana i förväg\",\"note\":\"Beskriver en oförutsedd händelse som motiverar avsteg.\"},{\"slot_id\":\"compensation\",\"status\":\"present\",\"quote\":\"skulle trotjänaren sedan få lika många timmars ro tillbaka, som en gäld återbetald i sinom tid\",\"note\":\"Krav på kompensation i form av motsvarande vila anges tydligt.\"},{\"slot_id\":\"night_interval\",\"status\":\"present\",\"quote\":\"den mörkaste stunden av natten, från midnatt till den femte timmen på morgonen\",\"note\":\"Ett specifikt tidsintervall för nattvilan anges.\"},{\"slot_id\":\"night_exception\",\"status\":\"present\",\"quote\":\"Endast om själva verkets natur – vare sig det var bagarens ugn som måste heta genom natten, eller folkets trängande behov, eller andra tvingande omständigheter – krävde att någon vakade under dessa mörka timmar, fick undantag göras\",\"note\":\"Anger villkor för att arbete får ske under nattvilan.\"}]}",
+      "type": "text"
+    }
+  ],
+  "model": "claude-sonnet-5",
+  "role": "assistant",
+  "stop_details": null,
+  "stop_reason": "end_turn",
+  "stop_sequence": null,
+  "type": "message",
+  "usage": {
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 0,
+    "inference_geo": "global",
+    "input_tokens": 1494,
+    "output_tokens": 634,
+    "service_tier": "standard",
+    "output_tokens_details": {
+      "thinking_tokens": 0
+    }
+  }
+}

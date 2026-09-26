@@ -1,0 +1,94 @@
+{
+  "id": "resp_04fdd99eb913d52e016aa43e1cca1487d29876b7e99349e1c2",
+  "object": "response",
+  "created_at": 1789148700,
+  "status": "completed",
+  "background": false,
+  "billing": {
+    "payer": "developer"
+  },
+  "completed_at": 1789148702,
+  "error": null,
+  "frequency_penalty": 0.0,
+  "incomplete_details": null,
+  "instructions": "F\u00f6rklara den f\u00f6ljande texten p\u00e5 svenska f\u00f6r en l\u00e4sare utan juridisk utbildning. Svara enbart med f\u00f6rklaringen.",
+  "max_output_tokens": 1800,
+  "max_tool_calls": null,
+  "model": "gpt-5.4-nano-2026-03-17",
+  "moderation": null,
+  "output": [
+    {
+      "id": "msg_04fdd99eb913d52e016aa43e1d106087d2b4e927634a80b548",
+      "type": "message",
+      "status": "completed",
+      "content": [
+        {
+          "type": "output_text",
+          "annotations": [],
+          "logprobs": [],
+          "text": "Texten handlar om regler f\u00f6r hur mycket vila en arbetstagare ska ha under ett dygn.\n\n- **Minst 11 timmars oavbruten vila varje dygn:** Under en period p\u00e5 **24 timmar** ska man normalt f\u00e5 **minst 11 timmar i f\u00f6ljd** utan att arbeta. Det kallas **dygnsvila**.\n\n- **Undantag kan g\u00f6ras vid of\u00f6rutsedda situationer:** Om det finns ett **s\u00e4rskilt sk\u00e4l** som arbetsgivaren **inte kunde f\u00f6rutse**, f\u00e5r man ibland g\u00f6ra avsteg fr\u00e5n kravet p\u00e5 11 timmars vila. D\u00e5 ska arbetstagaren f\u00e5 **igen den vilan senare**, genom **extra ledighet** (kompensation), s\u00e5 att man sammantaget f\u00e5r motsvarande \u00e5terh\u00e4mtning.\n\n- **Vilan ska oftast ligga tidigt p\u00e5 natten:** Dygnsvilan ska normalt inneh\u00e5lla tiden **mellan midnatt och klockan 05.00**.\n\n- **Det kan g\u00f6ras undantag om jobbet m\u00e5ste utf\u00f6ras just d\u00e5:** Om arbetet m\u00e5ste utf\u00f6ras **mellan midnatt och 05.00** p\u00e5 grund av exempelvis **typen av arbete**, **hur allm\u00e4nheten p\u00e5verkas** eller **andra s\u00e4rskilda omst\u00e4ndigheter**, kan man g\u00f6ra avsteg \u00e4ven fr\u00e5n kravet om att vilan ska omfatta just den perioden."
+        }
+      ],
+      "phase": "final_answer",
+      "role": "assistant"
+    }
+  ],
+  "parallel_tool_calls": true,
+  "presence_penalty": 0.0,
+  "previous_response_id": null,
+  "prompt_cache_key": null,
+  "prompt_cache_retention": "24h",
+  "reasoning": {
+    "context": "current_turn",
+    "effort": "none",
+    "mode": "standard",
+    "summary": null
+  },
+  "safety_identifier": null,
+  "service_tier": "default",
+  "store": false,
+  "temperature": 1.0,
+  "text": {
+    "format": {
+      "type": "text"
+    },
+    "verbosity": "medium"
+  },
+  "tool_choice": "auto",
+  "tool_usage": {
+    "image_gen": {
+      "input_tokens": 0,
+      "input_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "output_tokens": 0,
+      "output_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "total_tokens": 0
+    },
+    "web_search": {
+      "num_requests": 0
+    }
+  },
+  "tools": [],
+  "top_logprobs": 0,
+  "top_p": 0.98,
+  "truncation": "disabled",
+  "usage": {
+    "input_tokens": 312,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 298,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 610
+  },
+  "user": null,
+  "metadata": {}
+}

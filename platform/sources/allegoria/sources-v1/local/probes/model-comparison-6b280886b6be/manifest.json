@@ -1,0 +1,2518 @@
+{
+  "kind": "model_comparison_probe",
+  "experiment_data": false,
+  "at": "2026-09-12T10:55:47.005514+00:00",
+  "writers": [
+    "sonnet-5",
+    "gpt-5-4-mini",
+    "gpt-5-4-nano"
+  ],
+  "readers": [
+    "opus-5",
+    "haiku-4-5",
+    "gpt-5-4-mini",
+    "gpt-5-4-nano"
+  ],
+  "models": {
+    "haiku-4-5": {
+      "name": "haiku-4-5",
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5-20251001",
+      "input_usd_per_million": 1.0,
+      "output_usd_per_million": 5.0,
+      "max_tokens": 8000,
+      "params": {},
+      "verified": "2026-09-12"
+    },
+    "gpt-5-4-mini": {
+      "name": "gpt-5-4-mini",
+      "provider": "openai",
+      "model": "gpt-5.4-mini-2026-03-17",
+      "input_usd_per_million": 0.25,
+      "output_usd_per_million": 2.0,
+      "max_tokens": 8000,
+      "params": {
+        "reasoning_effort": "low"
+      },
+      "verified": "2026-09-12"
+    },
+    "sonnet-5": {
+      "name": "sonnet-5",
+      "provider": "anthropic",
+      "model": "claude-sonnet-5",
+      "input_usd_per_million": 2.0,
+      "output_usd_per_million": 10.0,
+      "max_tokens": 8000,
+      "params": {
+        "effort": "low"
+      },
+      "verified": "2026-09-11"
+    },
+    "gpt-5-4-nano": {
+      "name": "gpt-5-4-nano",
+      "provider": "openai",
+      "model": "gpt-5.4-nano-2026-03-17",
+      "input_usd_per_million": 0.05,
+      "output_usd_per_million": 0.4,
+      "max_tokens": 8000,
+      "params": {
+        "reasoning_effort": "low"
+      },
+      "verified": "2026-09-12"
+    },
+    "opus-5": {
+      "name": "opus-5",
+      "provider": "anthropic",
+      "model": "claude-opus-5",
+      "input_usd_per_million": 5.0,
+      "output_usd_per_million": 25.0,
+      "max_tokens": 8000,
+      "params": {
+        "effort": "medium"
+      },
+      "verified": "2026-09-11"
+    }
+  },
+  "total_usd": 0.2971764,
+  "rows": [
+    {
+      "label": "write:paraphrase:sfs-2026-1281:K10P10",
+      "model": "sonnet-5",
+      "provider": "anthropic",
+      "wire_model": "claude-sonnet-5",
+      "http": 200,
+      "raw": "d14095fa194f4df6a9e42bd1854d51ff",
+      "raw_sha256": "7f7f5044f6a3f7f3d4c7b63dfb7fdd20985a8e61a57db04e166b7d0a40913c88",
+      "seconds": 3.3,
+      "usd": 0.00164,
+      "ok": true,
+      "text": "Nätmyndigheten ska pröva en tvist som rör vilka avgifter som ska tas ut enligt 6, 7 eller 9 §.\n\nEn sådan tvist prövas dock inte om ansökan kommer in till nätmyndigheten mer än två år efter det att den systemansvariga sänt ett skriftligt besked till den berörda partens senast kända adress.",
+      "usage": {
+        "input_tokens": 180,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 128,
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        },
+        "service_tier": "standard",
+        "inference_geo": "global"
+      },
+      "input_tokens": 180,
+      "output_tokens": 128,
+      "passage_id": "sfs-2026-1281:K10P10",
+      "style": "paraphrase",
+      "length_ratio": 0.9
+    },
+    {
+      "label": "write:allegorize:sfs-2026-1281:K10P10",
+      "model": "sonnet-5",
+      "provider": "anthropic",
+      "wire_model": "claude-sonnet-5",
+      "http": 200,
+      "raw": "f5503da5609a45278a59047da25ed3fa",
+      "raw_sha256": "b8b2ae01d1541e6494ac33421587928613d77d234bd1ff485909084990e035ca",
+      "seconds": 8.1,
+      "usd": 0.003246,
+      "ok": true,
+      "text": "I Nätens rike stod en Väktare, vars uppgift var att skipa rätt när tvist uppstod om vad som skäligen kunde krävas av den som vandrade på de gemensamma vägarna – enligt de gamla lagarnas sjätte, sjunde eller nionde paragraf, ristade i sten av tidernas herrar.\n\nMen Väktaren var bunden av ett löfte till Tiden själv. Ty när Herden över systemet en gång sänt ut sitt budskap, förseglat och skrivet, till den sista kända porten där den klagande bodde, började timglaset vändas. Och om den klagande dröjde mer än två vintrar och två somrar innan han knackade på Väktarens dörr, skulle denne vända sig bort och säga: \"Din klagan kommer för sent, ty tystnaden har redan blivit lag.\"",
+      "usage": {
+        "input_tokens": 173,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 290,
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        },
+        "service_tier": "standard",
+        "inference_geo": "global"
+      },
+      "input_tokens": 173,
+      "output_tokens": 290,
+      "passage_id": "sfs-2026-1281:K10P10",
+      "style": "allegorize",
+      "length_ratio": 2.1
+    },
+    {
+      "label": "write:paraphrase:sfs-1982-673:P13",
+      "model": "sonnet-5",
+      "provider": "anthropic",
+      "wire_model": "claude-sonnet-5",
+      "http": 200,
+      "raw": "a2cc78764e2a4c04af468c433aafa967",
+      "raw_sha256": "a6c87f37073eec09b7c7beb90aedfa8ba069396b1537c75cae08ce007d3469db",
+      "seconds": 4.2,
+      "usd": 0.003114,
+      "ok": true,
+      "text": "Samtliga anställda ska erhålla minst elva sammanhängande timmars vila under varje tjugofyratimmarsperiod (dygnsvila). Undantag kan göras för tillfället om det beror på en oförutsedd särskild omständighet som arbetsgivaren inte kunnat förutse, under förutsättning att den anställde får motsvarande kompensationsledighet.\n\nDygnsvilan som varje anställd har rätt till ska omfatta tiden mellan klockan 24.00 och 05.00. Undantag kan göras om verksamhetens karaktär, allmänhetens behov eller andra särskilda skäl kräver att arbete utförs mellan midnatt och klockan fem. Lag (2005:165).",
+      "usage": {
+        "input_tokens": 307,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 250,
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        },
+        "service_tier": "standard",
+        "inference_geo": "global"
+      },
+      "input_tokens": 307,
+      "output_tokens": 250,
+      "passage_id": "sfs-1982-673:P13",
+      "style": "paraphrase",
+      "length_ratio": 0.96
+    },
+    {
+      "label": "write:allegorize:sfs-1982-673:P13",
+      "model": "sonnet-5",
+      "provider": "anthropic",
+      "wire_model": "claude-sonnet-5",
+      "http": 200,
+      "raw": "083bc7f610214841932ea6a4ab813688",
+      "raw_sha256": "0e4d1e9b00c57e0dfe795e3cfc1e18487bec5998066cc3c7073940867ecb7ac2",
+      "seconds": 13.2,
+      "usd": 0.00552,
+      "ok": true,
+      "text": "I den stora trädgården, där alla arbetare vandrade under solens och månens växlingar, hade Väktaren stiftat en helig lag: var och en som brukade jorden skulle unnas elva sammanhängande timmars vila för varje fullbordat dygns möda, så att kroppen kunde läka och själen hämta kraft, likt åkern som måste ligga i träda för att åter bära frukt.\n\nEndast om en oväntad storm drog in över fälten - något som ingen kunde ana i förväg - fick trädgårdsmästaren tillfälligt kalla arbetaren ut i mörkret. Men detta var en skuld som måste återgäldas: för varje stulen vilotimme skulle arbetaren sedan få en motsvarande timme åter, så att jämvikten i det stora kretsloppet aldrig rubbades på allvar.\n\nOch i hjärtat av denna vila låg en helig kärna, timmarna mellan midnattens klocka och den femte timmens gryning, då mörkret är som djupast och tystnaden mest läkande. Denna kärna fick ingen röra, om inte själva arbetets natur - såsom brödets bakning inför morgonen, eller folkets trängande behov - krävde att lyktorna tändes även i den svartaste timmen. Då, och endast då, fick Väktarens lag vika, så att liv och nödvändighet kunde mötas utan att vilans helighet för den skull glömdes bort.",
+      "usage": {
+        "input_tokens": 300,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 492,
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        },
+        "service_tier": "standard",
+        "inference_geo": "global"
+      },
+      "input_tokens": 300,
+      "output_tokens": 492,
+      "passage_id": "sfs-1982-673:P13",
+      "style": "allegorize",
+      "length_ratio": 1.95
+    },
+    {
+      "label": "write:paraphrase:sfs-1977-480:P12",
+      "model": "sonnet-5",
+      "provider": "anthropic",
+      "wire_model": "claude-sonnet-5",
+      "http": 200,
+      "raw": "5b21810e1b40400c9570389ea619f82f",
+      "raw_sha256": "4cbb47572dac6e5231d02aa30446e9c7a2afc1e859fd8b8f9586e7227cec020e",
+      "seconds": 2.6,
+      "usd": 0.001518,
+      "ok": true,
+      "text": "Om inget annat överenskommits ska semestern läggas ut så att arbetstagaren får minst fyra sammanhängande veckors ledighet under perioden juni till augusti. Denna semesterperiod kan även, utan avtal, förläggas till en annan tidpunkt om det finns särskilda skäl för det. Lag (2009:1439).",
+      "usage": {
+        "input_tokens": 164,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 119,
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        },
+        "service_tier": "standard",
+        "inference_geo": "global"
+      },
+      "input_tokens": 164,
+      "output_tokens": 119,
+      "passage_id": "sfs-1977-480:P12",
+      "style": "paraphrase",
+      "length_ratio": 1.03
+    },
+    {
+      "label": "write:allegorize:sfs-1977-480:P12",
+      "model": "sonnet-5",
+      "provider": "anthropic",
+      "wire_model": "claude-sonnet-5",
+      "http": 200,
+      "raw": "f342409c78404b7e9b6e3b95b5188d79",
+      "raw_sha256": "e0e54c28bc96fe507f0a0410a73693f17cc8999fb17d48be047c81564559610d",
+      "seconds": 11.8,
+      "usd": 0.004854,
+      "ok": true,
+      "text": "I den stora Trädgården, där alla arbetare vandrade genom årets alla säsonger, fanns en gammal sedvänja som ingen glömde: när solen stod som högst och ljuset varade längst, skulle var och en få vandra minst fyra veckor genom Sommarens Portar - den tid då jorden själv vilade i värme och överflöd.\n\nOm inte trädgårdsmästaren och arbetaren tillsammans hade stakat ut en annan stig, skulle denna sommarvandring alltid infalla mellan den tid då björkarna grönskade fullast och den tid då de första löven började gulna.\n\nMen Trädgården var vis och visste att livet inte alltid följer solens gång. Ibland kom stormar, sjukdomar i familjen, eller andra tvingande omständigheter som krävde att vilan förlades till en annan årstid - till vinterns tystnad eller höstens guldljus. Då, även utan en överenskommelse mellan parterna, kunde Trädgårdens väktare tillåta att vandringen genom vilans portar sköts till en annan tid, om de särskilda skälen vägde tungt nog.\n\nTy vilan var helig, men dess plats i tiden kunde böjas - så länge sanna skäl bar dess vikt.",
+      "usage": {
+        "input_tokens": 157,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 454,
+        "output_tokens_details": {
+          "thinking_tokens": 21
+        },
+        "service_tier": "standard",
+        "inference_geo": "global"
+      },
+      "input_tokens": 157,
+      "output_tokens": 454,
+      "passage_id": "sfs-1977-480:P12",
+      "style": "allegorize",
+      "length_ratio": 3.79
+    },
+    {
+      "label": "write:paraphrase:sfs-2026-1281:K10P10",
+      "model": "gpt-5-4-mini",
+      "provider": "openai",
+      "wire_model": "gpt-5.4-mini-2026-03-17",
+      "http": 200,
+      "raw": "5a938bfaabce4c6b863366bfda40a7fe",
+      "raw_sha256": "f47b070e1b9c4cf34416557e82be9f4454beefe271fe830c85a935e749fa4948",
+      "seconds": 1.2,
+      "usd": 0.00024975,
+      "ok": true,
+      "text": "Nätmyndigheten ska pröva en tvist om vilka kostnader som ska tas ut enligt 6, 7 eller 9 §.\n\nEn tvist får dock inte prövas om en ansökan om prövning har kommit in till nätmyndigheten senare än två år efter det att den systemansvariga har skickat ett skriftligt ställningstagande till den berörda partens senaste kända adress.",
+      "usage": {
+        "input_tokens": 127,
+        "input_tokens_details": {
+          "cache_write_tokens": 0,
+          "cached_tokens": 0
+        },
+        "output_tokens": 109,
+        "output_tokens_details": {
+          "reasoning_tokens": 11
+        },
+        "total_tokens": 236
+      },
+      "input_tokens": 127,
+      "output_tokens": 109,
+      "passage_id": "sfs-2026-1281:K10P10",
+      "style": "paraphrase",
+      "length_ratio": 1.01
+    },
+    {
+      "label": "write:allegorize:sfs-2026-1281:K10P10",
+      "model": "gpt-5-4-mini",
+      "provider": "openai",
+      "wire_model": "gpt-5.4-mini-2026-03-17",
+      "http": 200,
+      "raw": "ee5913123bd847c089352b7f3d7386ff",
+      "raw_sha256": "eebff11fd427e33621651c98cca76f681f4c7a0c5ba02f4f7c58fd333416edbd",
+      "seconds": 2.4,
+      "usd": 0.0005165,
+      "ok": true,
+      "text": "I rikets vävda hamn fanns en gammal Rådsmästare som kallades Nätväktaren. När två skeppare började tvista om vilka avgifter som rättmätigt skulle läggas på deras last, kunde de gå till honom, och han avgjorde om det var tullen från den tredje kajen, den sjunde porten eller den nionde bryggan som skulle gälla.\n\nMen Nätväktaren öppnade inte alltid sin domsbok. Om den store Vävarens besked redan hade sänts i ett förseglat brev till den adress där den andre senast blivit sedd, och två vintrar hade hunnit passera innan någon bad om prövning, då lades brevet i arkivet och tvisten fick stanna ute i dimman.",
+      "usage": {
+        "input_tokens": 122,
+        "input_tokens_details": {
+          "cache_write_tokens": 0,
+          "cached_tokens": 0
+        },
+        "output_tokens": 243,
+        "output_tokens_details": {
+          "reasoning_tokens": 64
+        },
+        "total_tokens": 365
+      },
+      "input_tokens": 122,
+      "output_tokens": 243,
+      "passage_id": "sfs-2026-1281:K10P10",
+      "style": "allegorize",
+      "length_ratio": 1.89
+    },
+    {
+      "label": "write:paraphrase:sfs-1982-673:P13",
+      "model": "gpt-5-4-mini",
+      "provider": "openai",
+      "wire_model": "gpt-5.4-mini-2026-03-17",
+      "http": 200,
+      "raw": "963462e5512b415cbe64284d11f8ca86",
+      "raw_sha256": "29a74d116e849d4535605d27b75a9aeead9bda94a39e6a4db7e1e929a60315d8",
+      "seconds": 1.5,
+      "usd": 0.00040075,
+      "ok": true,
+      "text": "Alla arbetstagare ska ha minst elva timmars sammanhängande ledighet under varje 24-timmarsperiod (dygnsvila). Tillfälliga avvikelser får göras om det beror på en särskild omständighet som arbetsgivaren inte har kunnat förutse, under förutsättning att arbetstagaren får motsvarande kompensationsledighet.\n\nI den dygnsvila som alla arbetstagare har rätt till ska tiden mellan midnatt och klockan 5 ingå. Avvikelse får göras om arbetets art, allmänhetens behov eller andra särskilda omständigheter kräver att arbetet utförs mellan midnatt och klockan 5. Lag (2005:165).",
+      "usage": {
+        "input_tokens": 203,
+        "input_tokens_details": {
+          "cache_write_tokens": 0,
+          "cached_tokens": 0
+        },
+        "output_tokens": 175,
+        "output_tokens_details": {
+          "reasoning_tokens": 11
+        },
+        "total_tokens": 378
+      },
+      "input_tokens": 203,
+      "output_tokens": 175,
+      "passage_id": "sfs-1982-673:P13",
+      "style": "paraphrase",
+      "length_ratio": 0.94
+    },
+    {
+      "label": "write:allegorize:sfs-1982-673:P13",
+      "model": "gpt-5-4-mini",
+      "provider": "openai",
+      "wire_model": "gpt-5.4-mini-2026-03-17",
+      "http": 200,
+      "raw": "2484b801081e4143a55c5dbdb86bf82e",
+      "raw_sha256": "ddc3d7ead26dbe8a4a4f1388483db7f6a19e34f04fc5f1bf7b4abd198725b5b3",
+      "seconds": 4.0,
+      "usd": 0.0008015,
+      "ok": true,
+      "text": "I ett rike där hantverkare och skördare höll hjulen i gång, fanns en gammal sed: varje själ som arbetade skulle få elva timmar i följd att vila under varje varv av sol och måne. Under denna fridfulla skärva av dygnet skulle även nattens djupaste timme, mellan midnatt och gryningens första andetag, vara som en stilla bädd för alla.\n\nMen ibland inträffade sådant som ingen vävare av dagar kunnat förutse: en plötslig brand i ladan, en storm som bröt broar, eller en nödropets klocka som ringde över landet. Då fick vilans ordning rubbas för en stund, om det verkligen var en oväntad händelse som härskaren över arbetet inte kunnat ana. Ingen fick dock lämnas utan ersättning, ty varje stulen timme av ro skulle återges som en motsvarande stund av återhämtning.\n\nOch om nattens mörker måste brytas för att arbetet i sin natur krävde det, eller om folkets behov kallade även mellan midnatt och femte timmens gryning, då fick lamporna brinna vidare. Ty vissa sysslor, likt fyrar vid havet, måste vaka när andra sover. Men även då skulle det hållas i minnet: vilan är inte ett privilegium, utan en rätt, och nattens stillhet är ett löfte som landet bär för sina arbetare.",
+      "usage": {
+        "input_tokens": 198,
+        "input_tokens_details": {
+          "cache_write_tokens": 0,
+          "cached_tokens": 0
+        },
+        "output_tokens": 376,
+        "output_tokens_details": {
+          "reasoning_tokens": 43
+        },
+        "total_tokens": 574
+      },
+      "input_tokens": 198,
+      "output_tokens": 376,
+      "passage_id": "sfs-1982-673:P13",
+      "style": "allegorize",
+      "length_ratio": 1.94
+    },
+    {
+      "label": "write:paraphrase:sfs-1977-480:P12",
+      "model": "gpt-5-4-mini",
+      "provider": "openai",
+      "wire_model": "gpt-5.4-mini-2026-03-17",
+      "http": 200,
+      "raw": "61766fe8eabe463db6d2632b422e6242",
+      "raw_sha256": "4ec934302d189d06c74a4060b18223c9fc5ec23d5d07d18c05fe5b723d5cea37",
+      "seconds": 1.5,
+      "usd": 0.000212,
+      "ok": true,
+      "text": "Om inget annat har avtalats ska semestern planeras så att arbetstagaren får en sammanhängande ledighetsperiod på minst fyra veckor under juni–augusti. Även utan stöd i avtal får en sådan semesterperiod läggas vid en annan tidpunkt om särskilda skäl talar för det. Lag (2009:1439).",
+      "usage": {
+        "input_tokens": 112,
+        "input_tokens_details": {
+          "cache_write_tokens": 0,
+          "cached_tokens": 0
+        },
+        "output_tokens": 92,
+        "output_tokens_details": {
+          "reasoning_tokens": 10
+        },
+        "total_tokens": 204
+      },
+      "input_tokens": 112,
+      "output_tokens": 92,
+      "passage_id": "sfs-1977-480:P12",
+      "style": "paraphrase",
+      "length_ratio": 1.01
+    },
+    {
+      "label": "write:allegorize:sfs-1977-480:P12",
+      "model": "gpt-5-4-mini",
+      "provider": "openai",
+      "wire_model": "gpt-5.4-mini-2026-03-17",
+      "http": 200,
+      "raw": "2fd267636e194906ac900cf4dbb08680",
+      "raw_sha256": "69c5ddb65ea4df4b75e3de6501e2ec394038f858a5f9ddb75dce8ebc992b234c",
+      "seconds": 2.7,
+      "usd": 0.00050475,
+      "ok": true,
+      "text": "I den stora trädgården, där årets ljus vandrar mellan vår och vinter, fanns en gammal sed: varje arbetare skulle få en vilostund när solen stod som högst och frukterna mogna, så att fyra hela veckor av ljum vind och långa kvällar låg mellan juni och augusti.\n\nHade herren och arbetaren redan kommit överens om något annat, fick deras överenskommelse styra som en väl knuten knut. Men om inga löften fanns, skulle sommarens gröna sal ändå öppnas för den långa ledigheten.\n\nDock hände det ibland att stormar, skördar eller andra särskilda tecken på himlen krävde en annan ordning. Då kunde vilan flyttas till en annan årstid, även utan några skrivna band, när omständigheterna själva visade vägen.",
+      "usage": {
+        "input_tokens": 107,
+        "input_tokens_details": {
+          "cache_write_tokens": 0,
+          "cached_tokens": 0
+        },
+        "output_tokens": 239,
+        "output_tokens_details": {
+          "reasoning_tokens": 46
+        },
+        "total_tokens": 346
+      },
+      "input_tokens": 107,
+      "output_tokens": 239,
+      "passage_id": "sfs-1977-480:P12",
+      "style": "allegorize",
+      "length_ratio": 2.52
+    },
+    {
+      "label": "write:paraphrase:sfs-2026-1281:K10P10",
+      "model": "gpt-5-4-nano",
+      "provider": "openai",
+      "wire_model": "gpt-5.4-nano-2026-03-17",
+      "http": 200,
+      "raw": "2adc1b58bbb94490aeb371d383d65db6",
+      "raw_sha256": "a58f7d3257b191a961367c6d4385a3c00e967964bbccaa9eac001d6e23a4cb34",
+      "seconds": 1.3,
+      "usd": 4.235e-05,
+      "ok": true,
+      "text": "Nätmyndigheten ska behandla en tvist om vilka kostnader som ska tas ut enligt 6, 7 eller 9 §.\n\nTvisten ska dock inte prövas om en ansökan om prövning lämnas in till nätmyndigheten senare än två år efter att den systemansvariga har skickat ett skriftligt besked till den berörda partens senast kända adress.",
+      "usage": {
+        "input_tokens": 127,
+        "input_tokens_details": {
+          "cache_write_tokens": 0,
+          "cached_tokens": 0
+        },
+        "output_tokens": 90,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 217
+      },
+      "input_tokens": 127,
+      "output_tokens": 90,
+      "passage_id": "sfs-2026-1281:K10P10",
+      "style": "paraphrase",
+      "length_ratio": 0.95
+    },
+    {
+      "label": "write:allegorize:sfs-2026-1281:K10P10",
+      "model": "gpt-5-4-nano",
+      "provider": "openai",
+      "wire_model": "gpt-5.4-nano-2026-03-17",
+      "http": 200,
+      "raw": "6593197186f94386bfe201b8c4ab87ef",
+      "raw_sha256": "5eb724553ff9e4e71cbaa63ea40366fa7787de818371f2c66b9336d70e0303df",
+      "seconds": 1.9,
+      "usd": 7.57e-05,
+      "ok": true,
+      "text": "I staden fanns tre olika rådsavgifter, märkta 6, 7 och 9. När två handelsmän bråkade om vilken avgift som borde betalas, sände de bud efter stadens väktare, som skulle avgöra tvisten och visa vilken märkning som rättvisa krävde.\n\nMen väktaren avvisade en sådan dom om budet om prövning kom för sent. Om någon väntade längre än två år efter att den systemkunnige väktaren hade skickat ett skriftligt besked till handelsmannens senast kända boning, skulle dörrarna till rådhuset hållas stängda. Då ansågs frågan ha slocknat, och ingen ny tolkning skulle längre göras av tvisten om avgifterna.",
+      "usage": {
+        "input_tokens": 122,
+        "input_tokens_details": {
+          "cache_write_tokens": 0,
+          "cached_tokens": 0
+        },
+        "output_tokens": 174,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 296
+      },
+      "input_tokens": 122,
+      "output_tokens": 174,
+      "passage_id": "sfs-2026-1281:K10P10",
+      "style": "allegorize",
+      "length_ratio": 1.84
+    },
+    {
+      "label": "write:paraphrase:sfs-1982-673:P13",
+      "model": "gpt-5-4-nano",
+      "provider": "openai",
+      "wire_model": "gpt-5.4-nano-2026-03-17",
+      "http": 200,
+      "raw": "0491a082075f459a9a24688bc6c384e9",
+      "raw_sha256": "5c321e1e1850a3c9401032adecdec6448a950462e0955d300e7ffe4306e2cb48",
+      "seconds": 1.8,
+      "usd": 7.775000000000002e-05,
+      "ok": true,
+      "text": "Varje arbetstagare ska under varje period på tjugofyra timmar få minst elva timmars oavbruten vila (dygnsvila). Om det finns ett särskilt, oförutsebart förhållande som arbetsgivaren inte kunde ta hänsyn till får man tillfälligt göra avsteg, förutsatt att arbetstagaren får motsvarande kompensationsledighet.\n\nDen dygnsvila som arbetstagaren har rätt till ska omfatta tiden från midnatt till klockan 5. Avvikelse får göras om arbetet, med hänsyn till sin art, allmänhetens behov eller andra särskilda omständigheter, måste utföras under tiden mellan midnatt och klockan 5. Lag (2005:165).",
+      "usage": {
+        "input_tokens": 203,
+        "input_tokens_details": {
+          "cache_write_tokens": 0,
+          "cached_tokens": 0
+        },
+        "output_tokens": 169,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 372
+      },
+      "input_tokens": 203,
+      "output_tokens": 169,
+      "passage_id": "sfs-1982-673:P13",
+      "style": "paraphrase",
+      "length_ratio": 0.97
+    },
+    {
+      "label": "write:allegorize:sfs-1982-673:P13",
+      "model": "gpt-5-4-nano",
+      "provider": "openai",
+      "wire_model": "gpt-5.4-nano-2026-03-17",
+      "http": 200,
+      "raw": "52a7165ba06f44c19879d24f9a2b32fd",
+      "raw_sha256": "2d1942773df1a1e8613f98d6ba809dc2de55edcb333fdf284047498fdda57af4",
+      "seconds": 3.4,
+      "usd": 0.00014510000000000003,
+      "ok": true,
+      "text": "I varje dygn går människor vilse mellan väggar av klockslag, men det finns en regel som alla bär i kroppen: efter varje 24-timmars vandring ska minst elva sammanhängande timmar få bli ett eget hem för själen. Den vilan ska vara hel, som om natten själv lade sig som ett lock över all oro.\n\nOm något ovanligt händer—något som ingen kunde ana i förväg, något som tvingar världen att slita trots att viljan stod redo—kan regeln mjukas upp. Då får man röra vid måttet, men aldrig stjäla det utan att betala tillbaka: man ska senare ge tillbaka samma andrum, en motsvarande vilostund som ersätter det som togs.\n\nOch i själva vilans kärna finns ett fönster som alltid ska öppnas: tiden mellan midnatt och klockan fem ska räknas in i den rätt man får. Det är som om natten kräver sin del, som om stillheten mellan de mörka timmarna är nödvändig för att människan ska kunna återvända hel.\n\nMen även här kan undantag komma, som skuggor från verklighetens behov. Om arbetet, genom sin natur, genom hur samhället måste fortsätta, eller genom andra särskilda omständigheter, måste pågå just i dessa timmar—då kan man flytta gränsen. Ändå är principen densamma: även när natten bryts, är det bara för att världen måste, inte för att vilan ska glömmas.",
+      "usage": {
+        "input_tokens": 198,
+        "input_tokens_details": {
+          "cache_write_tokens": 0,
+          "cached_tokens": 0
+        },
+        "output_tokens": 338,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 536
+      },
+      "input_tokens": 198,
+      "output_tokens": 338,
+      "passage_id": "sfs-1982-673:P13",
+      "style": "allegorize",
+      "length_ratio": 2.05
+    },
+    {
+      "label": "write:paraphrase:sfs-1977-480:P12",
+      "model": "gpt-5-4-nano",
+      "provider": "openai",
+      "wire_model": "gpt-5.4-nano-2026-03-17",
+      "http": 200,
+      "raw": "a80a12a228344343b53aa582dfc33170",
+      "raw_sha256": "1781be8ef057994b1b9efbebd6d7bd7a7b565ec63753417bdc8697e9c91d5868",
+      "seconds": 1.5,
+      "usd": 3.8e-05,
+      "ok": true,
+      "text": "Om inget annat har överenskommits ska semesterledigheten ordnas så att arbetstagaren får en ledighetsperiod på minst fyra veckor under perioden juni till och med augusti. Även om det saknas ett avtal kan en sådan semesterperiod flyttas till annan tid om särskilda skäl talar för det. Lag (2009:1439).",
+      "usage": {
+        "input_tokens": 112,
+        "input_tokens_details": {
+          "cache_write_tokens": 0,
+          "cached_tokens": 0
+        },
+        "output_tokens": 81,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 193
+      },
+      "input_tokens": 112,
+      "output_tokens": 81,
+      "passage_id": "sfs-1977-480:P12",
+      "style": "paraphrase",
+      "length_ratio": 1.09
+    },
+    {
+      "label": "write:allegorize:sfs-1977-480:P12",
+      "model": "gpt-5-4-nano",
+      "provider": "openai",
+      "wire_model": "gpt-5.4-nano-2026-03-17",
+      "http": 200,
+      "raw": "396c537c85cb489e93542963cfe8f75e",
+      "raw_sha256": "75c3145c8b53d80ef17543eb2e36783b48f45f64ff24baae85771058f0676d25",
+      "seconds": 1.6,
+      "usd": 5.0150000000000006e-05,
+      "ok": true,
+      "text": "Om inget annat har beslutats, ska den viloperiod som skänks människan ordnas så att hon under sommarens varma stråk, mellan de tre sommarmånaderna, får en sammanhängande fristad på minst fyra veckor. Även om överenskommelsen inte längre räcker som stöd, kan man ändå flytta friden till en annan tid, när särskilda öden kräver det. Så talar lagen om vilans rätt och om nödvändiga undantag.",
+      "usage": {
+        "input_tokens": 107,
+        "input_tokens_details": {
+          "cache_write_tokens": 0,
+          "cached_tokens": 0
+        },
+        "output_tokens": 112,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 219
+      },
+      "input_tokens": 107,
+      "output_tokens": 112,
+      "passage_id": "sfs-1977-480:P12",
+      "style": "allegorize",
+      "length_ratio": 1.41
+    },
+    {
+      "label": "read:source:sfs-2026-1281:K10P10",
+      "model": "opus-5",
+      "provider": "anthropic",
+      "wire_model": "claude-opus-5",
+      "http": 200,
+      "raw": "ff5a2dc3df3c459da2a9eebe4a4e466e",
+      "raw_sha256": "d2e536003a0819c6a6e533e77243d4abcba8870ed3d90b457c377f9bc8bd997c",
+      "seconds": 6.5,
+      "usd": 0.01712,
+      "ok": true,
+      "text": "{\"slots\":[{\"slot_id\":\"duty\",\"status\":\"present\",\"quote\":\"Nätmyndigheten ska ta upp en tvist om vilka kostnader som ska debiteras enligt 6, 7 eller 9 §.\",\"note\":\"\\\"ska ta upp\\\" uttrycker en skyldighet för nätmyndigheten.\"},{\"slot_id\":\"scope\",\"status\":\"present\",\"quote\":\"om vilka kostnader som ska debiteras enligt 6, 7 eller 9 §\",\"note\":\"Avgränsar tvisten till kostnader enligt angivna paragrafer.\"},{\"slot_id\":\"exception\",\"status\":\"present\",\"quote\":\"En tvist ska dock inte prövas om ansökan om prövning har kommit in till nätmyndigheten senare än två år\",\"note\":\"\\\"dock inte\\\" markerar undantag från huvudregeln.\"},{\"slot_id\":\"exception_deadline\",\"status\":\"present\",\"quote\":\"senare än två år efter det att den systemansvariga skickat ett skriftligt ställningstagande\",\"note\":\"Tvåårsfrist anges.\"},{\"slot_id\":\"deadline_start\",\"status\":\"present\",\"quote\":\"efter det att den systemansvariga skickat ett skriftligt ställningstagande till den berörda partens senaste kända adress\",\"note\":\"Fristen räknas från avsändandet av det skriftliga ställningstagandet.\"}]}",
+      "usage": {
+        "input_tokens": 1144,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 456,
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        },
+        "service_tier": "standard",
+        "inference_geo": "global"
+      },
+      "input_tokens": 1144,
+      "output_tokens": 456,
+      "valid": true,
+      "statuses": {
+        "duty": "present",
+        "scope": "present",
+        "exception": "present",
+        "exception_deadline": "present",
+        "deadline_start": "present"
+      },
+      "present": 5,
+      "slots": 5,
+      "kind": "source",
+      "writer": null,
+      "passage_id": "sfs-2026-1281:K10P10"
+    },
+    {
+      "label": "read:source:sfs-1982-673:P13",
+      "model": "opus-5",
+      "provider": "anthropic",
+      "wire_model": "claude-opus-5",
+      "http": 200,
+      "raw": "12226a5b493e43d48e23b781f97e4cc4",
+      "raw_sha256": "f776b4741ab5d50e8fe4fa76630aac1656eb032e96f54557d9040b2d34647144",
+      "seconds": 6.9,
+      "usd": 0.01932,
+      "ok": true,
+      "text": "{\"slots\":[{\"slot_id\":\"daily_rest\",\"status\":\"present\",\"quote\":\"Alla arbetstagare skall ha minst elva timmars sammanhängande ledighet under varje period om tjugofyra timmar\\n(dygnsvila).\",\"note\":\"Anger elva timmar per 24-timmarsperiod.\"},{\"slot_id\":\"temporary_exception\",\"status\":\"present\",\"quote\":\"Avvikelse får göras tillfälligtvis\",\"note\":\"Uttrycklig tillfällig avvikelsemöjlighet.\"},{\"slot_id\":\"unforeseen_event\",\"status\":\"present\",\"quote\":\"om det föranleds av något särskilt förhållande som inte har kunnat förutses av arbetsgivaren\",\"note\":\"Beskriver oförutsedda särskilda förhållanden.\"},{\"slot_id\":\"compensation\",\"status\":\"present\",\"quote\":\"under förutsättning att arbetstagaren ges motsvarande kompensationsledighet\",\"note\":\"Kompensationsledighet är villkor.\"},{\"slot_id\":\"night_interval\",\"status\":\"present\",\"quote\":\"skall tiden mellan midnatt och klockan 5 ingå\",\"note\":\"Intervall midnatt–kl. 5.\"},{\"slot_id\":\"night_exception\",\"status\":\"present\",\"quote\":\"om arbetet med hänsyn till dess art, allmänhetens behov eller andra särskilda omständigheter måste bedrivas mellan midnatt och klockan 5\",\"note\":\"Villkor för nattarbete anges.\"}]}",
+      "usage": {
+        "input_tokens": 1369,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 499,
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        },
+        "service_tier": "standard",
+        "inference_geo": "global"
+      },
+      "input_tokens": 1369,
+      "output_tokens": 499,
+      "valid": true,
+      "statuses": {
+        "daily_rest": "present",
+        "temporary_exception": "present",
+        "unforeseen_event": "present",
+        "compensation": "present",
+        "night_interval": "present",
+        "night_exception": "present"
+      },
+      "present": 6,
+      "slots": 6,
+      "kind": "source",
+      "writer": null,
+      "passage_id": "sfs-1982-673:P13"
+    },
+    {
+      "label": "read:source:sfs-1977-480:P12",
+      "model": "opus-5",
+      "provider": "anthropic",
+      "wire_model": "claude-opus-5",
+      "http": 200,
+      "raw": "f39b4a7b722e41c0bbfa3c7e5341be7b",
+      "raw_sha256": "b1f0efc6e7d1e99d54dd281f5d15ec18e2ae8f72796ae54af339fd3ed971b94d",
+      "seconds": 4.6,
+      "usd": 0.012465,
+      "ok": true,
+      "text": "{\"slots\":[{\"slot_id\":\"agreement\",\"status\":\"present\",\"quote\":\"Om inte annat har avtalats\",\"note\":\"Regeln är dispositiv genom avtal.\"},{\"slot_id\":\"leave_period\",\"status\":\"present\",\"quote\":\"en ledighetsperiod av minst fyra veckor under juni-augusti\",\"note\":\"Anger både längd (minst fyra veckor) och period (juni–augusti).\"},{\"slot_id\":\"exception\",\"status\":\"present\",\"quote\":\"Även utan stöd av avtal får en sådan semesterperiod förläggas till annan tid\",\"note\":\"Undantag från huvudregeln om förläggning juni–augusti.\"},{\"slot_id\":\"special_reasons\",\"status\":\"present\",\"quote\":\"när särskilda skäl föranleder det\",\"note\":\"Villkoret för annan förläggning är särskilda skäl.\"}]}",
+      "usage": {
+        "input_tokens": 1078,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 283,
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        },
+        "service_tier": "standard",
+        "inference_geo": "global"
+      },
+      "input_tokens": 1078,
+      "output_tokens": 283,
+      "valid": true,
+      "statuses": {
+        "agreement": "present",
+        "leave_period": "present",
+        "exception": "present",
+        "special_reasons": "present"
+      },
+      "present": 4,
+      "slots": 4,
+      "kind": "source",
+      "writer": null,
+      "passage_id": "sfs-1977-480:P12"
+    },
+    {
+      "label": "read:allegory:sfs-2026-1281:K10P10",
+      "model": "opus-5",
+      "provider": "anthropic",
+      "wire_model": "claude-opus-5",
+      "http": 200,
+      "raw": "739123c4e0f84783bd0734034ba3c3ef",
+      "raw_sha256": "c0dfc05d6dac4299e5fe5e597d825076ec90feb1567040ed3f85491553e3731e",
+      "seconds": 7.7,
+      "usd": 0.0195,
+      "ok": true,
+      "text": "{\"slots\":[{\"slot_id\":\"duty\",\"status\":\"present\",\"quote\":\"I Nätens rike stod en Väktare, vars uppgift var att skipa rätt när tvist uppstod\",\"note\":\"Väktarens uppgift att avgöra tvister uttrycks direkt.\"},{\"slot_id\":\"scope\",\"status\":\"present\",\"quote\":\"om vad som skäligen kunde krävas av den som vandrade på de gemensamma vägarna – enligt de gamla lagarnas sjätte, sjunde eller nionde paragraf\",\"note\":\"Avgränsning till vissa krav/paragrafer, allegoriskt för kostnader/avgifter; något oklart men textstöd finns.\"},{\"slot_id\":\"exception\",\"status\":\"present\",\"quote\":\"Men Väktaren var bunden av ett löfte till Tiden själv.\",\"note\":\"Undantag införs som begränsar huvudregeln om prövning.\"},{\"slot_id\":\"exception_deadline\",\"status\":\"present\",\"quote\":\"om den klagande dröjde mer än två vintrar och två somrar innan han knackade på Väktarens dörr, skulle denne vända sig bort\",\"note\":\"Tidsgräns (två år) för att klagan ska prövas.\"},{\"slot_id\":\"deadline_start\",\"status\":\"present\",\"quote\":\"när Herden över systemet en gång sänt ut sitt budskap, förseglat och skrivet, till den sista kända porten där den klagande bodde, började timglaset vändas\",\"note\":\"Startpunkt: avsändandet av skriftligt besked till senast kända adress.\"}]}",
+      "usage": {
+        "input_tokens": 1300,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 520,
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        },
+        "service_tier": "standard",
+        "inference_geo": "global"
+      },
+      "input_tokens": 1300,
+      "output_tokens": 520,
+      "valid": true,
+      "statuses": {
+        "duty": "present",
+        "scope": "present",
+        "exception": "present",
+        "exception_deadline": "present",
+        "deadline_start": "present"
+      },
+      "present": 5,
+      "slots": 5,
+      "kind": "allegory",
+      "writer": "sonnet-5",
+      "passage_id": "sfs-2026-1281:K10P10"
+    },
+    {
+      "label": "read:allegory:sfs-1982-673:P13",
+      "model": "opus-5",
+      "provider": "anthropic",
+      "wire_model": "claude-opus-5",
+      "http": 200,
+      "raw": "106fe104fbc54bb0851d1b5239092fd1",
+      "raw_sha256": "63640203bb72173b7455460b54f76c9316000be30ebf48b9686f611db0c78cb4",
+      "seconds": 6.6,
+      "usd": 0.020175,
+      "ok": true,
+      "text": "{\"slots\":[{\"slot_id\":\"daily_rest\",\"status\":\"present\",\"quote\":\"elva sammanhängande timmars vila för varje fullbordat dygns möda\",\"note\":\"Anger varaktighet (elva timmar) och period (per dygn).\"},{\"slot_id\":\"temporary_exception\",\"status\":\"present\",\"quote\":\"fick trädgårdsmästaren tillfälligt kalla arbetaren ut i mörkret\",\"note\":\"Uttryckligt tillfälligt avsteg.\"},{\"slot_id\":\"unforeseen_event\",\"status\":\"present\",\"quote\":\"Endast om en oväntad storm drog in över fälten - något som ingen kunde ana i förväg\",\"note\":\"Oförutsebar händelse beskrivs som grund.\"},{\"slot_id\":\"compensation\",\"status\":\"present\",\"quote\":\"för varje stulen vilotimme skulle arbetaren sedan få en motsvarande timme åter\",\"note\":\"Kompensation krävs som skuld att återgälda.\"},{\"slot_id\":\"night_interval\",\"status\":\"present\",\"quote\":\"timmarna mellan midnattens klocka och den femte timmens gryning\",\"note\":\"Intervall 00-05 anges allegoriskt.\"},{\"slot_id\":\"night_exception\",\"status\":\"present\",\"quote\":\"om inte själva arbetets natur - såsom brödets bakning inför morgonen, eller folkets trängande behov - krävde att lyktorna tändes\",\"note\":\"Villkor för nattarbete anges.\"}]}",
+      "usage": {
+        "input_tokens": 1600,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 487,
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        },
+        "service_tier": "standard",
+        "inference_geo": "global"
+      },
+      "input_tokens": 1600,
+      "output_tokens": 487,
+      "valid": true,
+      "statuses": {
+        "daily_rest": "present",
+        "temporary_exception": "present",
+        "unforeseen_event": "present",
+        "compensation": "present",
+        "night_interval": "present",
+        "night_exception": "present"
+      },
+      "present": 6,
+      "slots": 6,
+      "kind": "allegory",
+      "writer": "sonnet-5",
+      "passage_id": "sfs-1982-673:P13"
+    },
+    {
+      "label": "read:allegory:sfs-1977-480:P12",
+      "model": "opus-5",
+      "provider": "anthropic",
+      "wire_model": "claude-opus-5",
+      "http": 200,
+      "raw": "2dc113bb2bb6470a84517f17d44a5fa1",
+      "raw_sha256": "558aa676365307a29d63a5ded7b6c148cacc63b23ada2870f607bd08a7cd4cf0",
+      "seconds": 6.3,
+      "usd": 0.016515,
+      "ok": true,
+      "text": "{\"slots\":[{\"slot_id\":\"agreement\",\"status\":\"present\",\"quote\":\"Om inte trädgårdsmästaren och arbetaren tillsammans hade stakat ut en annan stig\",\"note\":\"Uttrycker att annan överenskommelse mellan parterna kan avvika från huvudregeln.\"},{\"slot_id\":\"leave_period\",\"status\":\"present\",\"quote\":\"skulle var och en få vandra minst fyra veckor genom Sommarens Portar\",\"note\":\"Längd (minst fyra veckor) och förläggning (sommaren, mellan björkarnas grönska och första gulnande löv) anges.\"},{\"slot_id\":\"exception\",\"status\":\"present\",\"quote\":\"Då, även utan en överenskommelse mellan parterna, kunde Trädgårdens väktare tillåta att vandringen genom vilans portar sköts till en annan tid\",\"note\":\"Undantag från huvudregeln om sommarförläggning utan avtal.\"},{\"slot_id\":\"special_reasons\",\"status\":\"present\",\"quote\":\"om de särskilda skälen vägde tungt nog\",\"note\":\"Villkoret är att särskilda skäl föreligger.\"}]}",
+      "usage": {
+        "input_tokens": 1398,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 381,
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        },
+        "service_tier": "standard",
+        "inference_geo": "global"
+      },
+      "input_tokens": 1398,
+      "output_tokens": 381,
+      "valid": true,
+      "statuses": {
+        "agreement": "present",
+        "leave_period": "present",
+        "exception": "present",
+        "special_reasons": "present"
+      },
+      "present": 4,
+      "slots": 4,
+      "kind": "allegory",
+      "writer": "sonnet-5",
+      "passage_id": "sfs-1977-480:P12"
+    },
+    {
+      "label": "read:allegory:sfs-2026-1281:K10P10",
+      "model": "opus-5",
+      "provider": "anthropic",
+      "wire_model": "claude-opus-5",
+      "http": 200,
+      "raw": "5ec09615af6241a0847f759f9dbe5df1",
+      "raw_sha256": "17c4cc312223b0b9f03348f39b0d70a782d6f0c0a056d0103a0c75391769f271",
+      "seconds": 12.7,
+      "usd": 0.02743,
+      "ok": true,
+      "text": "{\"slots\":[{\"slot_id\":\"duty\",\"status\":\"uncertain\",\"quote\":\"kunde de gå till honom, och han avgjorde om det var tullen från den tredje kajen, den sjunde porten eller den nionde bryggan som skulle gälla\",\"note\":\"Texten beskriver att Nätväktaren avgjorde tvister, men formuleringen är tillåtande ('kunde de gå till honom') snarare än en uttrycklig plikt; att han 'inte alltid' öppnade domsboken antyder dock ett normalfall av prövning.\"},{\"slot_id\":\"scope\",\"status\":\"present\",\"quote\":\"tvista om vilka avgifter som rättmätigt skulle läggas på deras last\",\"note\":\"Prövningen avgränsas till avgifter/tullar som läggs på lasten, dvs. vilken kaj-, port- eller bryggtull som gäller.\"},{\"slot_id\":\"exception\",\"status\":\"present\",\"quote\":\"Men Nätväktaren öppnade inte alltid sin domsbok.\",\"note\":\"Texten inför uttryckligen ett undantag från huvudregeln om prövning, som sedan specificeras med brev och tidsutdräkt.\"},{\"slot_id\":\"exception_deadline\",\"status\":\"present\",\"quote\":\"två vintrar hade hunnit passera innan någon bad om prövning\",\"note\":\"En tidsgräns om två vintrar anges, efter vilken tvisten inte längre prövas.\"},{\"slot_id\":\"deadline_start\",\"status\":\"present\",\"quote\":\"Om den store Vävarens besked redan hade sänts i ett förseglat brev till den adress där den andre senast blivit sedd\",\"note\":\"Utsändandet av det förseglade beskedet är den händelse som tidsfristen räknas från.\"}]}",
+      "usage": {
+        "input_tokens": 1261,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 845,
+        "output_tokens_details": {
+          "thinking_tokens": 259
+        },
+        "service_tier": "standard",
+        "inference_geo": "global"
+      },
+      "input_tokens": 1261,
+      "output_tokens": 845,
+      "valid": true,
+      "statuses": {
+        "duty": "uncertain",
+        "scope": "present",
+        "exception": "present",
+        "exception_deadline": "present",
+        "deadline_start": "present"
+      },
+      "present": 4,
+      "slots": 5,
+      "kind": "allegory",
+      "writer": "gpt-5-4-mini",
+      "passage_id": "sfs-2026-1281:K10P10"
+    },
+    {
+      "label": "read:allegory:sfs-1982-673:P13",
+      "model": "opus-5",
+      "provider": "anthropic",
+      "wire_model": "claude-opus-5",
+      "http": 200,
+      "raw": "0c57d349518248e389d74984fc9e8792",
+      "raw_sha256": "f362d9a055238137a164ad6a18296e3a42b3b3e6904379f6bfffad24ef709700",
+      "seconds": 7.4,
+      "usd": 0.020675,
+      "ok": true,
+      "text": "{\"slots\":[{\"slot_id\":\"daily_rest\",\"status\":\"present\",\"quote\":\"varje själ som arbetade skulle få elva timmar i följd att vila under varje varv av sol och måne\",\"note\":\"Elva sammanhängande timmar per dygn (varv av sol och måne).\"},{\"slot_id\":\"temporary_exception\",\"status\":\"present\",\"quote\":\"Då fick vilans ordning rubbas för en stund\",\"note\":\"Uttrycker tillfälligt avsteg.\"},{\"slot_id\":\"unforeseen_event\",\"status\":\"present\",\"quote\":\"en plötslig brand i ladan, en storm som bröt broar, eller en nödropets klocka som ringde över landet\",\"note\":\"Oförutsedda händelser som arbetsgivaren inte kunnat förutse.\"},{\"slot_id\":\"compensation\",\"status\":\"present\",\"quote\":\"Ingen fick dock lämnas utan ersättning, ty varje stulen timme av ro skulle återges som en motsvarande stund av återhämtning\",\"note\":\"Kompensationsledighet krävs.\"},{\"slot_id\":\"night_interval\",\"status\":\"present\",\"quote\":\"mellan midnatt och gryningens första andetag\",\"note\":\"Nattintervall anges, senare preciserat som midnatt till femte timmen.\"},{\"slot_id\":\"night_exception\",\"status\":\"present\",\"quote\":\"om nattens mörker måste brytas för att arbetet i sin natur krävde det, eller om folkets behov kallade\",\"note\":\"Villkor: arbetets art eller allmänhetens behov.\"}]}",
+      "usage": {
+        "input_tokens": 1590,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 509,
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        },
+        "service_tier": "standard",
+        "inference_geo": "global"
+      },
+      "input_tokens": 1590,
+      "output_tokens": 509,
+      "valid": true,
+      "statuses": {
+        "daily_rest": "present",
+        "temporary_exception": "present",
+        "unforeseen_event": "present",
+        "compensation": "present",
+        "night_interval": "present",
+        "night_exception": "present"
+      },
+      "present": 6,
+      "slots": 6,
+      "kind": "allegory",
+      "writer": "gpt-5-4-mini",
+      "passage_id": "sfs-1982-673:P13"
+    },
+    {
+      "label": "read:allegory:sfs-1977-480:P12",
+      "model": "opus-5",
+      "provider": "anthropic",
+      "wire_model": "claude-opus-5",
+      "http": 200,
+      "raw": "cff7eb98fe014ea0bd1745c4c794a3ee",
+      "raw_sha256": "0f38bb2f20bb42ea9fdf25db0e7b1e1d5e28249778e43405274905306370db72",
+      "seconds": 5.5,
+      "usd": 0.01512,
+      "ok": true,
+      "text": "{\"slots\":[{\"slot_id\":\"agreement\",\"status\":\"present\",\"quote\":\"Hade herren och arbetaren redan kommit överens om något annat, fick deras överenskommelse styra som en väl knuten knut.\",\"note\":\"Texten anger att en befintlig överenskommelse går före huvudregeln.\"},{\"slot_id\":\"leave_period\",\"status\":\"present\",\"quote\":\"fyra hela veckor av ljum vind och långa kvällar låg mellan juni och augusti\",\"note\":\"Både längd (fyra veckor) och förläggning (juni–augusti) anges.\"},{\"slot_id\":\"exception\",\"status\":\"present\",\"quote\":\"Då kunde vilan flyttas till en annan årstid, även utan några skrivna band\",\"note\":\"Undantag från huvudregeln om sommarförläggning beskrivs.\"},{\"slot_id\":\"special_reasons\",\"status\":\"present\",\"quote\":\"stormar, skördar eller andra särskilda tecken på himlen krävde en annan ordning\",\"note\":\"Särskilda omständigheter utgör villkor för annan förläggning.\"}]}",
+      "usage": {
+        "input_tokens": 1244,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 356,
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        },
+        "service_tier": "standard",
+        "inference_geo": "global"
+      },
+      "input_tokens": 1244,
+      "output_tokens": 356,
+      "valid": true,
+      "statuses": {
+        "agreement": "present",
+        "leave_period": "present",
+        "exception": "present",
+        "special_reasons": "present"
+      },
+      "present": 4,
+      "slots": 4,
+      "kind": "allegory",
+      "writer": "gpt-5-4-mini",
+      "passage_id": "sfs-1977-480:P12"
+    },
+    {
+      "label": "read:allegory:sfs-2026-1281:K10P10",
+      "model": "opus-5",
+      "provider": "anthropic",
+      "wire_model": "claude-opus-5",
+      "http": 200,
+      "raw": "44428b1678be44d1b58c397d738eabf1",
+      "raw_sha256": "62b3887d8507f606b34a9d948dad87342beffa5f47b6e6d042e573d05fac57af",
+      "seconds": 6.2,
+      "usd": 0.0161,
+      "ok": true,
+      "text": "{\"slots\":[{\"slot_id\":\"duty\",\"status\":\"present\",\"quote\":\"sände de bud efter stadens väktare, som skulle avgöra tvisten och visa vilken märkning som rättvisa krävde\",\"note\":\"Väktaren åläggs att avgöra tvisten.\"},{\"slot_id\":\"scope\",\"status\":\"present\",\"quote\":\"I staden fanns tre olika rådsavgifter, märkta 6, 7 och 9.\",\"note\":\"Prövningen avser de tre märkta rådsavgifterna.\"},{\"slot_id\":\"exception\",\"status\":\"present\",\"quote\":\"Men väktaren avvisade en sådan dom om budet om prövning kom för sent.\",\"note\":\"Undantag från plikten att pröva vid försening.\"},{\"slot_id\":\"exception_deadline\",\"status\":\"present\",\"quote\":\"Om någon väntade längre än två år\",\"note\":\"Tvåårsgräns anges.\"},{\"slot_id\":\"deadline_start\",\"status\":\"present\",\"quote\":\"efter att den systemkunnige väktaren hade skickat ett skriftligt besked till handelsmannens senast kända boning\",\"note\":\"Fristen räknas från det skriftliga beskedets avsändande.\"}]}",
+      "usage": {
+        "input_tokens": 1260,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 392,
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        },
+        "service_tier": "standard",
+        "inference_geo": "global"
+      },
+      "input_tokens": 1260,
+      "output_tokens": 392,
+      "valid": true,
+      "statuses": {
+        "duty": "present",
+        "scope": "present",
+        "exception": "present",
+        "exception_deadline": "present",
+        "deadline_start": "present"
+      },
+      "present": 5,
+      "slots": 5,
+      "kind": "allegory",
+      "writer": "gpt-5-4-nano",
+      "passage_id": "sfs-2026-1281:K10P10"
+    },
+    {
+      "label": "read:allegory:sfs-1982-673:P13",
+      "model": "opus-5",
+      "provider": "anthropic",
+      "wire_model": "claude-opus-5",
+      "http": 200,
+      "raw": "6f8ec44ba7854f02a2a04c5edd763dfc",
+      "raw_sha256": "bec4fb93cbba10fb3d02dd84c1b4ec8ce9866069b8e6e4449583c5bf4f98fcfd",
+      "seconds": 9.1,
+      "usd": 0.021195,
+      "ok": true,
+      "text": "{\"slots\":[{\"slot_id\":\"daily_rest\",\"status\":\"present\",\"quote\":\"efter varje 24-timmars vandring ska minst elva sammanhängande timmar få bli ett eget hem för själen\",\"note\":\"Anger elva sammanhängande timmar per 24-timmarsperiod.\"},{\"slot_id\":\"temporary_exception\",\"status\":\"present\",\"quote\":\"kan regeln mjukas upp. Då får man röra vid måttet\",\"note\":\"Uttrycker möjlighet till avvikelse.\"},{\"slot_id\":\"unforeseen_event\",\"status\":\"present\",\"quote\":\"något som ingen kunde ana i förväg, något som tvingar världen att slita trots att viljan stod redo\",\"note\":\"Beskriver oförutsedd händelse utanför arbetsgivarens kontroll.\"},{\"slot_id\":\"compensation\",\"status\":\"present\",\"quote\":\"man ska senare ge tillbaka samma andrum, en motsvarande vilostund som ersätter det som togs\",\"note\":\"Kompensationsledighet krävs.\"},{\"slot_id\":\"night_interval\",\"status\":\"present\",\"quote\":\"tiden mellan midnatt och klockan fem ska räknas in i den rätt man får\",\"note\":\"Intervallet 00–05 anges.\"},{\"slot_id\":\"night_exception\",\"status\":\"present\",\"quote\":\"Om arbetet, genom sin natur, genom hur samhället måste fortsätta, eller genom andra särskilda omständigheter, måste pågå just i dessa timmar—då kan man flytta gränsen\",\"note\":\"Villkor för nattarbete anges.\"}]}",
+      "usage": {
+        "input_tokens": 1614,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 525,
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        },
+        "service_tier": "standard",
+        "inference_geo": "global"
+      },
+      "input_tokens": 1614,
+      "output_tokens": 525,
+      "valid": true,
+      "statuses": {
+        "daily_rest": "present",
+        "temporary_exception": "present",
+        "unforeseen_event": "present",
+        "compensation": "present",
+        "night_interval": "present",
+        "night_exception": "present"
+      },
+      "present": 6,
+      "slots": 6,
+      "kind": "allegory",
+      "writer": "gpt-5-4-nano",
+      "passage_id": "sfs-1982-673:P13"
+    },
+    {
+      "label": "read:allegory:sfs-1977-480:P12",
+      "model": "opus-5",
+      "provider": "anthropic",
+      "wire_model": "claude-opus-5",
+      "http": 200,
+      "raw": "64ff3d90dd60404fb37564198c594595",
+      "raw_sha256": "a6bed95ebed7d2f008244868cf5ff89387adc9d65d041a44843109d50ea0a9d3",
+      "seconds": 6.1,
+      "usd": 0.01537,
+      "ok": true,
+      "text": "{\"slots\":[{\"slot_id\":\"agreement\",\"status\":\"present\",\"quote\":\"Om inget annat har beslutats\",\"note\":\"Inledningen villkorar regeln med att inget annat överenskommits/beslutats; även 'Även om överenskommelsen inte längre räcker som stöd' pekar på avtalsanknytning.\"},{\"slot_id\":\"leave_period\",\"status\":\"present\",\"quote\":\"under sommarens varma stråk, mellan de tre sommarmånaderna, får en sammanhängande fristad på minst fyra veckor\",\"note\":\"Anger både längd (minst fyra veckor, sammanhängande) och förläggning (de tre sommarmånaderna).\"},{\"slot_id\":\"exception\",\"status\":\"present\",\"quote\":\"kan man ändå flytta friden till en annan tid\",\"note\":\"Texten anger uttryckligen möjlighet att avvika från huvudregeln, och avslutar med 'nödvändiga undantag'.\"},{\"slot_id\":\"special_reasons\",\"status\":\"present\",\"quote\":\"när särskilda öden kräver det\",\"note\":\"Villkoret för förläggning till annan tid är att särskilda skäl ('öden') kräver det.\"}]}",
+      "usage": {
+        "input_tokens": 1119,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 391,
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        },
+        "service_tier": "standard",
+        "inference_geo": "global"
+      },
+      "input_tokens": 1119,
+      "output_tokens": 391,
+      "valid": true,
+      "statuses": {
+        "agreement": "present",
+        "leave_period": "present",
+        "exception": "present",
+        "special_reasons": "present"
+      },
+      "present": 4,
+      "slots": 4,
+      "kind": "allegory",
+      "writer": "gpt-5-4-nano",
+      "passage_id": "sfs-1977-480:P12"
+    },
+    {
+      "label": "read:source:sfs-2026-1281:K10P10",
+      "model": "haiku-4-5",
+      "provider": "anthropic",
+      "wire_model": "claude-haiku-4-5-20251001",
+      "http": 200,
+      "raw": "cb76359eddef4fc5b1e2ce32fff544d1",
+      "raw_sha256": "10e802f4f7f6e41f939c0fc2e4d51616fcce7b67c5c2fd10689463e7d521b6d0",
+      "seconds": 5.7,
+      "usd": 0.003052,
+      "ok": true,
+      "text": "{\"slots\": [{\"slot_id\": \"duty\", \"status\": \"present\", \"quote\": \"Nätmyndigheten ska ta upp en tvist om vilka kostnader som ska debiteras enligt 6, 7 eller 9 §.\", \"note\": \"Texten uttrycker klart en plikt för Nätmyndigheten att ta upp tvister om kostnadsdebitering.\"}, {\"slot_id\": \"scope\", \"status\": \"present\", \"quote\": \"en tvist om vilka kostnader som ska debiteras enligt 6, 7 eller 9 §\", \"note\": \"Tvistprövningen är avgränsad till kostnader som ska debiteras enligt de angivna paragraferna.\"}, {\"slot_id\": \"exception\", \"status\": \"present\", \"quote\": \"En tvist ska dock inte prövas om ansökan om prövning har kommit in till nätmyndigheten senare än två år efter det att den systemansvariga skickat ett skriftligt ställningstagande till den berörda partens senaste kända adress.\", \"note\": \"Det finns ett undantag som hindrar prövning under vissa förhållanden.\"}, {\"slot_id\": \"exception_deadline\", \"status\": \"present\", \"quote\": \"senare än två år\", \"note\": \"Tvistan prövas inte om ansökan kommer in senare än två år från en viss tidpunkt.\"}, {\"slot_id\": \"deadline_start\", \"status\": \"present\", \"quote\": \"efter det att den systemansvariga skickat ett skriftligt ställningstagande till den berörda partens senaste kända adress\", \"note\": \"Tvåårsgränsen räknas från det att den systemansvariga skickat ett skriftligt ställningstagande.\"}]}",
+      "usage": {
+        "input_tokens": 892,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 432,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "input_tokens": 892,
+      "output_tokens": 432,
+      "valid": true,
+      "statuses": {
+        "duty": "present",
+        "scope": "present",
+        "exception": "present",
+        "exception_deadline": "present",
+        "deadline_start": "present"
+      },
+      "present": 5,
+      "slots": 5,
+      "kind": "source",
+      "writer": null,
+      "passage_id": "sfs-2026-1281:K10P10"
+    },
+    {
+      "label": "read:source:sfs-1982-673:P13",
+      "model": "haiku-4-5",
+      "provider": "anthropic",
+      "wire_model": "claude-haiku-4-5-20251001",
+      "http": 200,
+      "raw": "34df2271460a4a7daa3410e9248b7ddd",
+      "raw_sha256": "95e6d41278a4185b1f8bbfe781accefa6e8e50a4a15fe2f3264bd0d28a6e2a4e",
+      "seconds": 4.9,
+      "usd": 0.003834,
+      "ok": true,
+      "text": "{\"slots\": [{\"slot_id\": \"daily_rest\", \"status\": \"present\", \"quote\": \"Alla arbetstagare skall ha minst elva timmars sammanhängande ledighet under varje period om tjugofyra timmar (dygnsvila).\", \"note\": \"Texten anger både varaktighet (minst elva timmar) och beräkningsperiod (period om tjugofyra timmar).\"}, {\"slot_id\": \"temporary_exception\", \"status\": \"present\", \"quote\": \"Avvikelse får göras tillfälligtvis, om det föranleds av något särskilt förhållande som inte har kunnat förutses av arbetsgivaren\", \"note\": \"Texten uttryckligen tillåter tillfälliga avsteg från dygnsvilan under specificerade förhållanden.\"}, {\"slot_id\": \"unforeseen_event\", \"status\": \"present\", \"quote\": \"något särskilt förhållande som inte har kunnat förutses av arbetsgivaren\", \"note\": \"Texten beskriver att avsteg tillåts när särskilda förhållanden föranleder det och dessa inte kunnat förutses av arbetsgivaren.\"}, {\"slot_id\": \"compensation\", \"status\": \"present\", \"quote\": \"under förutsättning att arbetstagaren ges motsvarande kompensationsledighet\", \"note\": \"Texten föreskriver att kompensationsledighet är ett villkor för tillfälligt avsteg från dygnsvilan.\"}, {\"slot_id\": \"night_interval\", \"status\": \"present\", \"quote\": \"tiden mellan midnatt och klockan 5 ingå\", \"note\": \"Texten anger klart och tydligt att nattvilan måste omfatta tidsintervallet mellan midnatt och klockan 5.\"}, {\"slot_id\": \"night_exception\", \"status\": \"present\", \"quote\": \"Avvikelse får göras, om arbetet med hänsyn till dess art, allmänhetens behov eller andra särskilda omständigheter måste bedrivas mellan midnatt och klockan 5.\", \"note\": \"Texten anger flera villkor (arbetets art, allmänhetens behov, särskilda omständigheter) under vilka arbete får utföras under nattvilan.\"}]}",
+      "usage": {
+        "input_tokens": 1054,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 556,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "input_tokens": 1054,
+      "output_tokens": 556,
+      "valid": false,
+      "invalid_reason": "slot evidence is not a verbatim substring",
+      "kind": "source",
+      "writer": null,
+      "passage_id": "sfs-1982-673:P13"
+    },
+    {
+      "label": "read:source:sfs-1977-480:P12",
+      "model": "haiku-4-5",
+      "provider": "anthropic",
+      "wire_model": "claude-haiku-4-5-20251001",
+      "http": 200,
+      "raw": "bd1e66b7e5d349f4b3ad9dccd7453a02",
+      "raw_sha256": "4787264db319c6fa7719c846dbb776e69430155568b2ab0992929b2271630a10",
+      "seconds": 4.9,
+      "usd": 0.002389,
+      "ok": true,
+      "text": "{\"slots\":[{\"slot_id\":\"agreement\",\"status\":\"present\",\"quote\":\"Om inte annat har avtalats\",\"note\":\"Texten uttryckligen refererar till möjligheten att avtala annorlunda, vilket visar att avtalet är relevant för semesterreglernas tillämpning.\"},{\"slot_id\":\"leave_period\",\"status\":\"present\",\"quote\":\"ska semesterledigheten förläggas så, att arbetstagaren får en ledighetsperiod av minst fyra veckor under juni-augusti\",\"note\":\"Texten anger både längd (minst fyra veckor) och förläggningsperiod (juni-augusti) för semesterperioden.\"},{\"slot_id\":\"exception\",\"status\":\"present\",\"quote\":\"Även utan stöd av avtal får en sådan semesterperiod förläggas till annan tid\",\"note\":\"Texten explicit beskriver ett undantag från huvudregeln genom att tillåta förläggning utan avtalsöverenskommelse under vissa förutsättningar.\"},{\"slot_id\":\"special_reasons\",\"status\":\"present\",\"quote\":\"när särskilda skäl föranleder det\",\"note\":\"Texten anger tydligt att det krävs särskilda skäl för att semesterperioden får förläggas till annan tid än juni-augusti.\"}]}",
+      "usage": {
+        "input_tokens": 844,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 309,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "input_tokens": 844,
+      "output_tokens": 309,
+      "valid": true,
+      "statuses": {
+        "agreement": "present",
+        "leave_period": "present",
+        "exception": "present",
+        "special_reasons": "present"
+      },
+      "present": 4,
+      "slots": 4,
+      "kind": "source",
+      "writer": null,
+      "passage_id": "sfs-1977-480:P12"
+    },
+    {
+      "label": "read:allegory:sfs-2026-1281:K10P10",
+      "model": "haiku-4-5",
+      "provider": "anthropic",
+      "wire_model": "claude-haiku-4-5-20251001",
+      "http": 200,
+      "raw": "f27c1bc261114eb8858edb8dae3f77af",
+      "raw_sha256": "d122d9c426c5d4574eb328ad95e3f4c423e23a33f28ee5fe65f9bfda27035f63",
+      "seconds": 4.2,
+      "usd": 0.003063,
+      "ok": true,
+      "text": "{\"slots\": [{\"slot_id\": \"duty\", \"status\": \"present\", \"quote\": \"Väktare, vars uppgift var att skipa rätt när tvist uppstod\", \"note\": \"Texten uttrycker tydligt att Väktaren har en plikt/uppgift att ta upp tvister som uppstår.\"}, {\"slot_id\": \"scope\", \"status\": \"absent\", \"quote\": null, \"note\": \"Texten nämner inte något om vilka kostnader tvistprövningen avser, utan fokuserar på saklig grund och tidsfrister.\"}, {\"slot_id\": \"exception\", \"status\": \"present\", \"quote\": \"om den klagande dröjde mer än två vintrar och två sommar innan han knackade på Väktarens dörr, skulle denne vända sig bort\", \"note\": \"Texten uttrycker ett undantag där Väktaren vägrar att ta upp tvisten om tidsgränsen överskrids.\"}, {\"slot_id\": \"exception_deadline\", \"status\": \"present\", \"quote\": \"mer än två vintrar och två sommar\", \"note\": \"Texten anger en konkret tidsgräns på två år för när en ansökan kan prövas.\"}, {\"slot_id\": \"deadline_start\", \"status\": \"present\", \"quote\": \"när Herden över systemet en gång sänt ut sitt budskap, förseglat och skrivet, till den sista kända porten där den klagande bodde, började timglaset vändas\", \"note\": \"Texten identifierar utgångspunkten för tidsgränsen: när budskapet sänt ut och nått den klagandes port.\"}]}",
+      "usage": {
+        "input_tokens": 1013,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 410,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "input_tokens": 1013,
+      "output_tokens": 410,
+      "valid": false,
+      "invalid_reason": "slot evidence is not a verbatim substring",
+      "kind": "allegory",
+      "writer": "sonnet-5",
+      "passage_id": "sfs-2026-1281:K10P10"
+    },
+    {
+      "label": "read:allegory:sfs-1982-673:P13",
+      "model": "haiku-4-5",
+      "provider": "anthropic",
+      "wire_model": "claude-haiku-4-5-20251001",
+      "http": 200,
+      "raw": "82bc79b6e89341899acfc45b97f22247",
+      "raw_sha256": "0048a1b534cd9bdf4972f4e77c6db3b7d4265b6246dfd80ac11d91949a27b58e",
+      "seconds": 4.7,
+      "usd": 0.003622,
+      "ok": true,
+      "text": "{\"slots\":[{\"slot_id\":\"daily_rest\",\"status\":\"present\",\"quote\":\"var och en som brukade jorden skulle unnas elva sammanhängande timmars vila för varje fullbordat dygns möda\",\"note\":\"Texten uttryckligen anger elva timmars vila per dygn.\"},{\"slot_id\":\"temporary_exception\",\"status\":\"present\",\"quote\":\"Endast om en oväntad storm drog in över fälten - något som ingen kunde ana i förväg - fick trädgårdsmästaren tillfälligt kalla arbetaren ut i mörkret.\",\"note\":\"Möjlighet till tillfälligt avsteg från vila under oväntade händelser beskrivs tydligt.\"},{\"slot_id\":\"unforeseen_event\",\"status\":\"present\",\"quote\":\"Endast om en oväntad storm drog in över fälten - något som ingen kunde ana i förväg\",\"note\":\"Oväntade stormar anges som exempel på händelser som medger avsteg.\"},{\"slot_id\":\"compensation\",\"status\":\"present\",\"quote\":\"för varje stulen vilotimme skulle arbetaren sedan få en motsvarande timme åter, så att jämvikten i det stora kretsloppet aldrig rubbades på allvar\",\"note\":\"Kompensation för förlorad vila är villkorat krav när avsteg från vila gjorts.\"},{\"slot_id\":\"night_interval\",\"status\":\"present\",\"quote\":\"timmarna mellan midnattens klocka och den femte timmens gryning\",\"note\":\"Nattvila anges explicit från midnatt till klockan fem.\"},{\"slot_id\":\"night_exception\",\"status\":\"present\",\"quote\":\"om inte själva arbetets natur - såsom brödets bakning inför morgonen, eller folkets trängande behov - krävde att lyktorna tändes även i den svartaste timmen\",\"note\":\"Arbete under nattvila tillåts när arbetets natur eller nödvändighet kräver det.\"}]}",
+      "usage": {
+        "input_tokens": 1237,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 477,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "input_tokens": 1237,
+      "output_tokens": 477,
+      "valid": true,
+      "statuses": {
+        "daily_rest": "present",
+        "temporary_exception": "present",
+        "unforeseen_event": "present",
+        "compensation": "present",
+        "night_interval": "present",
+        "night_exception": "present"
+      },
+      "present": 6,
+      "slots": 6,
+      "kind": "allegory",
+      "writer": "sonnet-5",
+      "passage_id": "sfs-1982-673:P13"
+    },
+    {
+      "label": "read:allegory:sfs-1977-480:P12",
+      "model": "haiku-4-5",
+      "provider": "anthropic",
+      "wire_model": "claude-haiku-4-5-20251001",
+      "http": 200,
+      "raw": "c3328ab134684349ad3f8ec957d89930",
+      "raw_sha256": "806e5cc2288cb4a5a476dc37265ef96bd2bccb3a2614ace9386f7f8c3cf6560a",
+      "seconds": 8.0,
+      "usd": 0.003459,
+      "ok": true,
+      "text": "{\"slots\": [{\"slot_id\": \"agreement\", \"status\": \"present\", \"quote\": \"Om inte trädgårdsmästaren och arbetaren tillsammans hade stakat ut en annan stig, skulle denna sommarvandring alltid infalla mellan den tid då björkarna grönskade fullast och den tid då de första löven började gulna.\", \"note\": \"Texten visar att trädgårdsmästare och arbetare tillsammans kan avtala om en annan tidsperiod för semestern, vilket indikerar en avtalsanknuten avgränsning av semesterregeln.\"}, {\"slot_id\": \"leave_period\", \"status\": \"present\", \"quote\": \"när solen stod som högst och ljuset varade längst, skulle var och en få vandra minst fyra veckor genom Sommarens Portar\", \"note\": \"Texten specificerar både längd (minst fyra veckor) och förläggning (sommartid när solen står som högst och ljuset varar längst).\"}, {\"slot_id\": \"exception\", \"status\": \"present\", \"quote\": \"Ibland kom stormar, sjukdomar i familjen, eller andra tvingande omständigheter som krävde att vilan förlades till en annan årstid\", \"note\": \"Texten beskriver undantag från huvudregeln då särskilda omständigheter uppstår som stormar eller sjukdomar i familjen.\"}, {\"slot_id\": \"special_reasons\", \"status\": \"present\", \"quote\": \"Då, även utan en överenskommelse mellan parterna, kunde Trädgårdens väktare tillåta att vandringen genom vilans portar sköts till en annan tid, om de särskilda skälen vägde tungt nog.\", \"note\": \"Texten anger att semesterperioden kan förflyttas till annan tid om särskilda skäl väger tungt nog, utan behov av överenskommelse mellan parterna.\"}]}",
+      "usage": {
+        "input_tokens": 1084,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 475,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "input_tokens": 1084,
+      "output_tokens": 475,
+      "valid": true,
+      "statuses": {
+        "agreement": "present",
+        "leave_period": "present",
+        "exception": "present",
+        "special_reasons": "present"
+      },
+      "present": 4,
+      "slots": 4,
+      "kind": "allegory",
+      "writer": "sonnet-5",
+      "passage_id": "sfs-1977-480:P12"
+    },
+    {
+      "label": "read:allegory:sfs-2026-1281:K10P10",
+      "model": "haiku-4-5",
+      "provider": "anthropic",
+      "wire_model": "claude-haiku-4-5-20251001",
+      "http": 200,
+      "raw": "2db27789cb8e44ddb0f56fa2934e4443",
+      "raw_sha256": "f717a8045cdcae859ae76b84c2ce250fac2fc6da2917d46567e0adac5c289fec",
+      "seconds": 5.0,
+      "usd": 0.003143,
+      "ok": true,
+      "text": "{\"slots\": [{\"slot_id\": \"duty\", \"status\": \"uncertain\", \"quote\": \"kunde de gå till honom, och han avgjorde om det var tullen från den tredje kajen, den sjunde porten eller den nionde bryggan som skulle gälla\", \"note\": \"Texten visar att skeppare kan vädja till Nätväktaren, men det är oklart om detta är en rättighet eller en möjlighet. Det finns ingen uttrycklig formulering av en formell plikt för honom att ta upp tvisten.\"}, {\"slot_id\": \"scope\", \"status\": \"present\", \"quote\": \"vilka avgifter som rättmätigt skulle läggas på deras last\", \"note\": \"Texten anger explicit att tvistprövningen gäller avgifter på last, det vill säga vilken taxa som ska tillämpas.\"}, {\"slot_id\": \"exception\", \"status\": \"present\", \"quote\": \"Men Nätväktaren öppnade inte alltid sin domsbok\", \"note\": \"Texten indikerar uttryckligen att det finns undantag från regeln att tvister kan prövas.\"}, {\"slot_id\": \"exception_deadline\", \"status\": \"present\", \"quote\": \"två vintrar hade hunnit passera innan någon bad om prövning\", \"note\": \"Texten anger att om två vintrar (två år) går innan någon begär prövning, blir tvisten inte prövad.\"}, {\"slot_id\": \"deadline_start\", \"status\": \"present\", \"quote\": \"Om den store Vävarens besked redan hade sänts i ett förseglat brev\", \"note\": \"Tidsgränsen räknas från när beskedet sändes i brev till dess två vintrar har passerat.\"}]}",
+      "usage": {
+        "input_tokens": 983,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 432,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "input_tokens": 983,
+      "output_tokens": 432,
+      "valid": true,
+      "statuses": {
+        "duty": "uncertain",
+        "scope": "present",
+        "exception": "present",
+        "exception_deadline": "present",
+        "deadline_start": "present"
+      },
+      "present": 4,
+      "slots": 5,
+      "kind": "allegory",
+      "writer": "gpt-5-4-mini",
+      "passage_id": "sfs-2026-1281:K10P10"
+    },
+    {
+      "label": "read:allegory:sfs-1982-673:P13",
+      "model": "haiku-4-5",
+      "provider": "anthropic",
+      "wire_model": "claude-haiku-4-5-20251001",
+      "http": 200,
+      "raw": "2a85f07b5e4d4955925505e8b99d39d6",
+      "raw_sha256": "010c44466b6fd685202fe940a19d5c0edd085df6a1993c02775f5cbd5eb5e448",
+      "seconds": 15.1,
+      "usd": 0.00445,
+      "ok": true,
+      "text": "{\"slots\": [{\"slot_id\": \"daily_rest\", \"status\": \"present\", \"quote\": \"varje själ som arbetade skulle få elva timmar i följd att vila under varje varv av sol och måne\", \"note\": \"Texten anger tydligt elva timmar sammanhängande vila per dygn som en etablerad sed.\"}, {\"slot_id\": \"temporary_exception\", \"status\": \"present\", \"quote\": \"Men ibland inträffade sådant som ingen vävare av dagar kunnat förutse... Då fick vilans ordning rubbas för en stund, om det verkligen var en oväntad händelse som härskaren över arbetet inte kunnat ana.\", \"note\": \"Texten beskriver möjligheten för temporär undantag från vilareglerna under specifika omständigheter.\"}, {\"slot_id\": \"unforeseen_event\", \"status\": \"present\", \"quote\": \"en plötslig brand i ladan, en storm som bröt broar, eller en nödropets klocka som ringde över landet\", \"note\": \"Texten ger konkreta exempel på oväntade händelser som kan motivera avsteg från vilareglerna.\"}, {\"slot_id\": \"compensation\", \"status\": \"present\", \"quote\": \"Ingen fick dock lämnas utan ersättning, ty varje stulen timme av ro skulle återges som en motsvarande stund av återhämtning.\", \"note\": \"Texten ställer krav på ersättning eller kompensation när vila reduceras.\"}, {\"slot_id\": \"night_interval\", \"status\": \"present\", \"quote\": \"Under denna fridfulla skärva av dygnet skulle även nattens djupaste timme, mellan midnatt och gryningens första andetag, vara som en stilla bädd för alla.\", \"note\": \"Texten definierar ett nattvaktsintervall specifikt mellan midnatt och gryning, senare preciserat som mellan midnatt och femte timmen.\"}, {\"slot_id\": \"night_exception\", \"status\": \"present\", \"quote\": \"om nattens mörker måste brytas för att arbetet i sin natur krävde det, eller om folkets behov kallade även mellan midnatt och femte timmens gryning, då fick lamporna brinna vidare. Ty vissa sysslor, likt fyrar vid havet, måste vaka när andra sover.\", \"note\": \"Texten beskriver villkor för att arbete får utföras under nattvilan: arbete som är nödvändigt till sin natur eller där folkets behov kräver det, såsom vakningstjänster.\"}]}",
+      "usage": {
+        "input_tokens": 1225,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 645,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "input_tokens": 1225,
+      "output_tokens": 645,
+      "valid": false,
+      "invalid_reason": "slot evidence is not a verbatim substring",
+      "kind": "allegory",
+      "writer": "gpt-5-4-mini",
+      "passage_id": "sfs-1982-673:P13"
+    },
+    {
+      "label": "read:allegory:sfs-1977-480:P12",
+      "model": "haiku-4-5",
+      "provider": "anthropic",
+      "wire_model": "claude-haiku-4-5-20251001",
+      "http": 200,
+      "raw": "8b4fa0c73769495fb1ed15e0bb01ca92",
+      "raw_sha256": "0c4ba33bb26c7c2bd2e8008f56170c0b9a14f66617895637477fea1548225225",
+      "seconds": 3.7,
+      "usd": 0.002755,
+      "ok": true,
+      "text": "{\"slots\": [{\"slot_id\": \"agreement\", \"status\": \"present\", \"quote\": \"hade herren och arbetaren redan kommit överens om något annat, fick deras överenskommelse styra som en väl knuten knut\", \"note\": \"Texten uttryckligen anger att ett avtal mellan arbetsgivare och arbetare styr semesterregleringen.\"}, {\"slot_id\": \"leave_period\", \"status\": \"present\", \"quote\": \"fyra hela veckor av ljum vind och långa kvällar låg mellan juni och augusti\", \"note\": \"Texten specificerar tydligt en fyraveckorsperiod mellan juni och augusti för semestern.\"}, {\"slot_id\": \"exception\", \"status\": \"present\", \"quote\": \"men om inga löften fanns, skulle sommarens gröna sal ändå öppnas för den långa ledigheten\", \"note\": \"Texten anger ett undantag från det avtalsreglerade villkoret, nämligen att semestern ändå ges även utan överenskommelse.\"}, {\"slot_id\": \"special_reasons\", \"status\": \"present\", \"quote\": \"stormar, skördar eller andra särskilda tecken på himlen krävde en annan ordning. Då kunde vilan flyttas till en annan årstid\", \"note\": \"Texten anger att särskilda omständigheter som stormar och skördar kan föranleda att semesterperioden förläggs till annan tid.\"}]}",
+      "usage": {
+        "input_tokens": 970,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 357,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "input_tokens": 970,
+      "output_tokens": 357,
+      "valid": false,
+      "invalid_reason": "slot evidence is not a verbatim substring",
+      "kind": "allegory",
+      "writer": "gpt-5-4-mini",
+      "passage_id": "sfs-1977-480:P12"
+    },
+    {
+      "label": "read:allegory:sfs-2026-1281:K10P10",
+      "model": "haiku-4-5",
+      "provider": "anthropic",
+      "wire_model": "claude-haiku-4-5-20251001",
+      "http": 200,
+      "raw": "20fc27c032654744a13d625958d712fb",
+      "raw_sha256": "cbb718a177dc0b864306852e36852827cb09ae6ca3a955acd71a495a5275d10d",
+      "seconds": 4.5,
+      "usd": 0.00313,
+      "ok": true,
+      "text": "{\"slots\": [{\"slot_id\": \"duty\", \"status\": \"absent\", \"quote\": null, \"note\": \"Texten beskriver vad väktaren gör när en tvist förs till honom, men uttrycker ingen explicit plikt för väktaren att ta upp tvister.\"}, {\"slot_id\": \"scope\", \"status\": \"present\", \"quote\": \"vilken avgift som borde betalas\", \"note\": \"Texten anger tydligt att tvistprövningen avser vilken av de tre rådsavgifterna som är rättvis att betala.\"}, {\"slot_id\": \"exception\", \"status\": \"present\", \"quote\": \"väktaren avvisade en sådan dom om budet om prövning kom för sent\", \"note\": \"Texten uttrycker ett undantag från huvudregeln om att väktaren avgör tvister: han avvisar domstolsprövning om budet kommer för sent.\"}, {\"slot_id\": \"exception_deadline\", \"status\": \"present\", \"quote\": \"Om någon väntade längre än två år efter att den systemkunnige väktaren hade skickat ett skriftligt besked till handelsmannens senast kända boning, skulle dörrarna till rådhuset hållas stängda.\", \"note\": \"En två-årsgräns anges explicit för när ansökan kan prövas innan väktaren vägrar att ta upp fallet.\"}, {\"slot_id\": \"deadline_start\", \"status\": \"present\", \"quote\": \"efter att den systemkunnige väktaren hade skickat ett skriftligt besked till handelsmannens senast kända boning\", \"note\": \"Två år räknas från det att väktaren skickat ett skriftligt besked till handelsmannens senast kända boning.\"}]}",
+      "usage": {
+        "input_tokens": 980,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 430,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "input_tokens": 980,
+      "output_tokens": 430,
+      "valid": true,
+      "statuses": {
+        "duty": "absent",
+        "scope": "present",
+        "exception": "present",
+        "exception_deadline": "present",
+        "deadline_start": "present"
+      },
+      "present": 4,
+      "slots": 5,
+      "kind": "allegory",
+      "writer": "gpt-5-4-nano",
+      "passage_id": "sfs-2026-1281:K10P10"
+    },
+    {
+      "label": "read:allegory:sfs-1982-673:P13",
+      "model": "haiku-4-5",
+      "provider": "anthropic",
+      "wire_model": "claude-haiku-4-5-20251001",
+      "http": 200,
+      "raw": "d011fe07c8d94a78b157d29445ddeb5f",
+      "raw_sha256": "5859b677659075f4aebd887475d21a68f260ea97691be68d950bf1aebaac37cb",
+      "seconds": 5.0,
+      "usd": 0.004008,
+      "ok": true,
+      "text": "{\"slots\": [{\"slot_id\": \"daily_rest\", \"status\": \"present\", \"quote\": \"efter varje 24-timmars vandring ska minst elva sammanhängande timmar få bli ett eget hem för själen\", \"note\": \"Texten anger tydligt att vilans varaktighet är minst elva sammanhängande timmar per 24-timmarsperiod.\"}, {\"slot_id\": \"temporary_exception\", \"status\": \"present\", \"quote\": \"Om något ovanligt händer—något som ingen kunde ana i förväg, något som tvingar världen att slita trots att viljan stod redo—kan regeln mjukas upp\", \"note\": \"Texten beskriver att regeln kan mjukas upp (tillfälliga undantag) under särskilda omständigheter.\"}, {\"slot_id\": \"unforeseen_event\", \"status\": \"present\", \"quote\": \"något som ingen kunde ana i förväg, något som tvingar världen att slita\", \"note\": \"Texten karakteriserar undantagen som oförutsägbara händelser som tvingar världen att slita.\"}, {\"slot_id\": \"compensation\", \"status\": \"present\", \"quote\": \"man ska senare ge tillbaka samma andrum, en motsvarande vilostund som ersätter det som togs\", \"note\": \"Texten uttryckligen föreskriver att avsteg från vilans varaktighet måste kompenseras genom senare vilostund.\"}, {\"slot_id\": \"night_interval\", \"status\": \"present\", \"quote\": \"tiden mellan midnatt och klockan fem ska räknas in i den rätt man får\", \"note\": \"Texten anger klart att intervallet mellan midnatt och klockan fem utgör en del av natvilan som måste inkluderas.\"}, {\"slot_id\": \"night_exception\", \"status\": \"present\", \"quote\": \"Om arbetet, genom sin natur, genom hur samhället måste fortsätta, eller genom andra särskilda omständigheter, måste pågå just i dessa timmar—då kan man flytta gränsen\", \"note\": \"Texten beskriver villkor för när arbete kan förläggas till nattvilan: arbetets natur, samhällets behov eller andra särskilda omständigheter.\"}]}",
+      "usage": {
+        "input_tokens": 1248,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 552,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "input_tokens": 1248,
+      "output_tokens": 552,
+      "valid": true,
+      "statuses": {
+        "daily_rest": "present",
+        "temporary_exception": "present",
+        "unforeseen_event": "present",
+        "compensation": "present",
+        "night_interval": "present",
+        "night_exception": "present"
+      },
+      "present": 6,
+      "slots": 6,
+      "kind": "allegory",
+      "writer": "gpt-5-4-nano",
+      "passage_id": "sfs-1982-673:P13"
+    },
+    {
+      "label": "read:allegory:sfs-1977-480:P12",
+      "model": "haiku-4-5",
+      "provider": "anthropic",
+      "wire_model": "claude-haiku-4-5-20251001",
+      "http": 200,
+      "raw": "ae4b7989f2fe494f827c506742b243ec",
+      "raw_sha256": "4598c17b2a587e6bd4af34e5f295214394538c3d71029f30abd6d639365b02d1",
+      "seconds": 4.8,
+      "usd": 0.002583,
+      "ok": true,
+      "text": "{\"slots\": [{\"slot_id\": \"agreement\", \"status\": \"present\", \"quote\": \"Om inget annat har beslutats\", \"note\": \"Texten anger uttryckligen att regeln gäller 'om inget annat har beslutats', vilket visar att avtalsanknuten avgränsning är möjlig.\"}, {\"slot_id\": \"leave_period\", \"status\": \"present\", \"quote\": \"mellan de tre sommarmånaderna, får en sammanhängande fristad på minst fyra veckor\", \"note\": \"Texten specificerar både förläggning (mellan de tre sommarmånaderna) och längd (minst fyra veckor sammanhängande).\"}, {\"slot_id\": \"exception\", \"status\": \"present\", \"quote\": \"Även om överenskommelsen inte längre räcker som stöd, kan man ändå flytta friden till en annan tid\", \"note\": \"Texten beskriver ett undantag från huvudregeln om sommarsemester genom möjligheten att flytta semesterperioden till annan tid.\"}, {\"slot_id\": \"special_reasons\", \"status\": \"present\", \"quote\": \"när särskilda öden kräver det\", \"note\": \"Texten anger uttryckligen att villkoret för att flytta semesterperioden är att 'särskilda öden kräver det', vilket utgör ett villkor för undantaget.\"}]}",
+      "usage": {
+        "input_tokens": 878,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 341,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "input_tokens": 878,
+      "output_tokens": 341,
+      "valid": true,
+      "statuses": {
+        "agreement": "present",
+        "leave_period": "present",
+        "exception": "present",
+        "special_reasons": "present"
+      },
+      "present": 4,
+      "slots": 4,
+      "kind": "allegory",
+      "writer": "gpt-5-4-nano",
+      "passage_id": "sfs-1977-480:P12"
+    },
+    {
+      "label": "read:source:sfs-2026-1281:K10P10",
+      "model": "gpt-5-4-mini",
+      "provider": "openai",
+      "wire_model": "gpt-5.4-mini-2026-03-17",
+      "http": 200,
+      "raw": "6ea5e1dbc7114db38dde5080ecf57608",
+      "raw_sha256": "34bb0e9940c6cbdc7520a5ca498e99b8fd0cc179e34674b058a12d1689fa8cd5",
+      "seconds": 2.3,
+      "usd": 0.00070475,
+      "ok": true,
+      "text": "{\"slots\":[{\"slot_id\":\"duty\",\"status\":\"present\",\"quote\":\"Nätmyndigheten ska ta upp en tvist\",\"note\":\"Texten uttrycker en skyldighet för nätmyndigheten att ta upp tvisten.\"},{\"slot_id\":\"scope\",\"status\":\"present\",\"quote\":\"om vilka kostnader som ska debiteras enligt 6, 7 eller 9 §\",\"note\":\"Detta avgränsar vilka kostnader tvisten gäller.\"},{\"slot_id\":\"exception\",\"status\":\"present\",\"quote\":\"En tvist ska dock inte prövas\",\"note\":\"Ordet \\\"dock\\\" markerar ett undantag från huvudregeln.\"},{\"slot_id\":\"exception_deadline\",\"status\":\"present\",\"quote\":\"senare än två år\",\"note\":\"Texten anger en tidsgräns för när prövning inte ska ske.\"},{\"slot_id\":\"deadline_start\",\"status\":\"present\",\"quote\":\"efter det att den systemansvariga skickat ett skriftligt ställningstagande till den berörda partens senaste kända adress\",\"note\":\"Detta anger från vilken händelse tvåårsfristen räknas.\"}]}",
+      "usage": {
+        "input_tokens": 571,
+        "input_tokens_details": {
+          "cache_write_tokens": 0,
+          "cached_tokens": 0
+        },
+        "output_tokens": 281,
+        "output_tokens_details": {
+          "reasoning_tokens": 33
+        },
+        "total_tokens": 852
+      },
+      "input_tokens": 571,
+      "output_tokens": 281,
+      "valid": true,
+      "statuses": {
+        "duty": "present",
+        "scope": "present",
+        "exception": "present",
+        "exception_deadline": "present",
+        "deadline_start": "present"
+      },
+      "present": 5,
+      "slots": 5,
+      "kind": "source",
+      "writer": null,
+      "passage_id": "sfs-2026-1281:K10P10"
+    },
+    {
+      "label": "read:source:sfs-1982-673:P13",
+      "model": "gpt-5-4-mini",
+      "provider": "openai",
+      "wire_model": "gpt-5.4-mini-2026-03-17",
+      "http": 200,
+      "raw": "e5aebb132c7c44c7afc3076996eb843a",
+      "raw_sha256": "f56501c5874d7d3f789c122fbbbb73cfb32dc596fc96aed3a0dccac0c8b0e709",
+      "seconds": 2.7,
+      "usd": 0.00099475,
+      "ok": true,
+      "text": "{\"slots\":[{\"slot_id\":\"daily_rest\",\"status\":\"present\",\"quote\":\"Alla arbetstagare skall ha minst elva timmars sammanhängande ledighet under varje period om tjugofyra timmar\",\"note\":\"Texten anger både längd och beräkningsperiod för dygnsvilan.\"},{\"slot_id\":\"temporary_exception\",\"status\":\"present\",\"quote\":\"Avvikelse får göras tillfälligtvis\",\"note\":\"Det finns ett uttryckligt undantag från regeln om dygnsvila.\"},{\"slot_id\":\"unforeseen_event\",\"status\":\"present\",\"quote\":\"om det föranleds av något särskilt förhållande som inte har kunnat förutses av arbetsgivaren\",\"note\":\"Texten beskriver vilka omständigheter som kan motivera avsteg.\"},{\"slot_id\":\"compensation\",\"status\":\"present\",\"quote\":\"under förutsättning att arbetstagaren ges motsvarande kompensationsledighet\",\"note\":\"Avsteget är kopplat till krav på motsvarande kompensationsledighet.\"},{\"slot_id\":\"night_interval\",\"status\":\"present\",\"quote\":\"tiden mellan midnatt och klockan 5 ingå\",\"note\":\"Texten anger ett tydligt nattintervall.\"},{\"slot_id\":\"night_exception\",\"status\":\"present\",\"quote\":\"Avvikelse får göras, om arbetet med hänsyn till dess art, allmänhetens behov eller andra särskilda omständigheter måste bedrivas mellan midnatt och klockan 5.\",\"note\":\"Här anges villkoren för när arbete får utföras under nattintervallet.\"}]}",
+      "usage": {
+        "input_tokens": 699,
+        "input_tokens_details": {
+          "cache_write_tokens": 0,
+          "cached_tokens": 0
+        },
+        "output_tokens": 410,
+        "output_tokens_details": {
+          "reasoning_tokens": 66
+        },
+        "total_tokens": 1109
+      },
+      "input_tokens": 699,
+      "output_tokens": 410,
+      "valid": true,
+      "statuses": {
+        "daily_rest": "present",
+        "temporary_exception": "present",
+        "unforeseen_event": "present",
+        "compensation": "present",
+        "night_interval": "present",
+        "night_exception": "present"
+      },
+      "present": 6,
+      "slots": 6,
+      "kind": "source",
+      "writer": null,
+      "passage_id": "sfs-1982-673:P13"
+    },
+    {
+      "label": "read:source:sfs-1977-480:P12",
+      "model": "gpt-5-4-mini",
+      "provider": "openai",
+      "wire_model": "gpt-5.4-mini-2026-03-17",
+      "http": 200,
+      "raw": "bcdedecadd8d4352a2bf440957d0cb1a",
+      "raw_sha256": "8abec1821d462d144ada33d3818c5208a020388e7279463e5d3f2b335c1dd449",
+      "seconds": 2.2,
+      "usd": 0.0007005,
+      "ok": true,
+      "text": "{\"slots\":[{\"slot_id\":\"agreement\",\"status\":\"present\",\"quote\":\"Om inte annat har avtalats\",\"note\":\"Regeln är uttryckligen avgränsad av avtal.\"},{\"slot_id\":\"leave_period\",\"status\":\"present\",\"quote\":\"en ledighetsperiod av minst fyra veckor under juni-augusti\",\"note\":\"Texten anger både längd och tidsperiod.\"},{\"slot_id\":\"exception\",\"status\":\"present\",\"quote\":\"Även utan stöd av avtal får en sådan semesterperiod förläggas till annan tid\",\"note\":\"Detta anger ett undantag från huvudregeln om sommarförläggning.\"},{\"slot_id\":\"special_reasons\",\"status\":\"present\",\"quote\":\"när särskilda skäl föranleder det\",\"note\":\"Texten anger ett villkor för förläggning till annan tid.\"}]}",
+      "usage": {
+        "input_tokens": 522,
+        "input_tokens_details": {
+          "cache_write_tokens": 0,
+          "cached_tokens": 0
+        },
+        "output_tokens": 285,
+        "output_tokens_details": {
+          "reasoning_tokens": 100
+        },
+        "total_tokens": 807
+      },
+      "input_tokens": 522,
+      "output_tokens": 285,
+      "valid": true,
+      "statuses": {
+        "agreement": "present",
+        "leave_period": "present",
+        "exception": "present",
+        "special_reasons": "present"
+      },
+      "present": 4,
+      "slots": 4,
+      "kind": "source",
+      "writer": null,
+      "passage_id": "sfs-1977-480:P12"
+    },
+    {
+      "label": "read:allegory:sfs-2026-1281:K10P10",
+      "model": "gpt-5-4-mini",
+      "provider": "openai",
+      "wire_model": "gpt-5.4-mini-2026-03-17",
+      "http": 200,
+      "raw": "a767eb3ea5434b829c711360b6ba7e09",
+      "raw_sha256": "5dbf4301e3ff5be7a42b3454afa203e6a7861c8e29680f211b73cea4a28d7cce",
+      "seconds": 3.2,
+      "usd": 0.0010475,
+      "ok": true,
+      "text": "{\"slots\":[{\"slot_id\":\"duty\",\"status\":\"present\",\"quote\":\"vars uppgift var att skipa rätt när tvist uppstod\",\"note\":\"Texten anger uttryckligen att Väktarens uppgift var att skipa rätt vid tvist.\"},{\"slot_id\":\"scope\",\"status\":\"present\",\"quote\":\"om vad som skäligen kunde krävas av den som vandrade på de gemensamma vägarna\",\"note\":\"Detta avgränsar vad tvisten gäller, alltså vilka krav som kunde ställas.\"},{\"slot_id\":\"exception\",\"status\":\"present\",\"quote\":\"om den klagande dröjde mer än två vintrar och två somrar innan han knackade på Väktarens dörr, skulle denne vända sig bort\",\"note\":\"Här anges ett undantag från den annars beskrivna ordningen: sena klagomål avvisas.\"},{\"slot_id\":\"exception_deadline\",\"status\":\"present\",\"quote\":\"mer än två vintrar och två somrar\",\"note\":\"Texten innehåller en tydlig tidsgräns för när klagan blir för sen.\"},{\"slot_id\":\"deadline_start\",\"status\":\"present\",\"quote\":\"när Herden över systemet en gång sänt ut sitt budskap, förseglat och skrivet, till den sista kända porten där den klagande bodde, började timglaset vändas\",\"note\":\"Detta är den händelse från vilken tidsfristen börjar räknas.\"}]}",
+      "usage": {
+        "input_tokens": 678,
+        "input_tokens_details": {
+          "cache_write_tokens": 0,
+          "cached_tokens": 0
+        },
+        "output_tokens": 439,
+        "output_tokens_details": {
+          "reasoning_tokens": 116
+        },
+        "total_tokens": 1117
+      },
+      "input_tokens": 678,
+      "output_tokens": 439,
+      "valid": true,
+      "statuses": {
+        "duty": "present",
+        "scope": "present",
+        "exception": "present",
+        "exception_deadline": "present",
+        "deadline_start": "present"
+      },
+      "present": 5,
+      "slots": 5,
+      "kind": "allegory",
+      "writer": "sonnet-5",
+      "passage_id": "sfs-2026-1281:K10P10"
+    },
+    {
+      "label": "read:allegory:sfs-1982-673:P13",
+      "model": "gpt-5-4-mini",
+      "provider": "openai",
+      "wire_model": "gpt-5.4-mini-2026-03-17",
+      "http": 200,
+      "raw": "183a06a4a6bc46cba076c4a12867e557",
+      "raw_sha256": "7ff6d7c2f4e671f50ff8252502f93a5dcc0099e7347ccdaeaf5e4ff722af0f58",
+      "seconds": 3.3,
+      "usd": 0.00116575,
+      "ok": true,
+      "text": "{\"slots\":[{\"slot_id\":\"daily_rest\",\"status\":\"present\",\"quote\":\"var och en som brukade jorden skulle unnas elva sammanhängande timmars vila för varje fullbordat dygns möda\",\"note\":\"Texten anger både längd och beräkningsperiod för dygnsvilan.\"},{\"slot_id\":\"temporary_exception\",\"status\":\"present\",\"quote\":\"Endast om en oväntad storm drog in över fälten - något som ingen kunde ana i förväg - fick trädgårdsmästaren tillfälligt kalla arbetaren ut i mörkret.\",\"note\":\"Det finns ett uttryckligt tillfälligt avsteg från vilan.\"},{\"slot_id\":\"unforeseen_event\",\"status\":\"present\",\"quote\":\"Endast om en oväntad storm drog in över fälten - något som ingen kunde ana i förväg -\",\"note\":\"Texten beskriver en oväntad storm som utlöser avsteg.\"},{\"slot_id\":\"compensation\",\"status\":\"present\",\"quote\":\"Men detta var en skuld som måste återgäldas: för varje stulen vilotimme skulle arbetaren sedan få en motsvarande timme åter\",\"note\":\"Avsteget är kopplat till återbetalning av förlorad vila.\"},{\"slot_id\":\"night_interval\",\"status\":\"present\",\"quote\":\"timmarna mellan midnattens klocka och den femte timmens gryning\",\"note\":\"Nattvilans intervall anges tydligt.\"},{\"slot_id\":\"night_exception\",\"status\":\"present\",\"quote\":\"om inte själva arbetets natur - såsom brödets bakning inför morgonen, eller folkets trängande behov - krävde att lyktorna tändes även i den svartaste timmen.\",\"note\":\"Arbete under nattvilan tillåts endast vid särskilda behov.\"}]}",
+      "usage": {
+        "input_tokens": 879,
+        "input_tokens_details": {
+          "cache_write_tokens": 0,
+          "cached_tokens": 0
+        },
+        "output_tokens": 473,
+        "output_tokens_details": {
+          "reasoning_tokens": 71
+        },
+        "total_tokens": 1352
+      },
+      "input_tokens": 879,
+      "output_tokens": 473,
+      "valid": true,
+      "statuses": {
+        "daily_rest": "present",
+        "temporary_exception": "present",
+        "unforeseen_event": "present",
+        "compensation": "present",
+        "night_interval": "present",
+        "night_exception": "present"
+      },
+      "present": 6,
+      "slots": 6,
+      "kind": "allegory",
+      "writer": "sonnet-5",
+      "passage_id": "sfs-1982-673:P13"
+    },
+    {
+      "label": "read:allegory:sfs-1977-480:P12",
+      "model": "gpt-5-4-mini",
+      "provider": "openai",
+      "wire_model": "gpt-5.4-mini-2026-03-17",
+      "http": 200,
+      "raw": "6733f3c3fcb14a1e9515b6717cf2f868",
+      "raw_sha256": "54bea3f5e3a65b2f090792287ed9eafb2d1091852c843a31e3c64836e8cc14f6",
+      "seconds": 2.5,
+      "usd": 0.00087725,
+      "ok": true,
+      "text": "{\"slots\":[{\"slot_id\":\"agreement\",\"status\":\"present\",\"quote\":\"Om inte trädgårdsmästaren och arbetaren tillsammans hade stakat ut en annan stig\",\"note\":\"Texten anger att parterna tillsammans kan avtala om en annan förläggning.\"},{\"slot_id\":\"leave_period\",\"status\":\"present\",\"quote\":\"skulle var och en få vandra minst fyra veckor genom Sommarens Portar\",\"note\":\"Här anges både längd och en viss tidsmässig placering för perioden.\"},{\"slot_id\":\"exception\",\"status\":\"present\",\"quote\":\"Ibland kom stormar, sjukdomar i familjen, eller andra tvingande omständigheter som krävde att vilan förlades till en annan årstid\",\"note\":\"Det finns en uttrycklig avvikelse från huvudregeln när särskilda omständigheter inträffar.\"},{\"slot_id\":\"special_reasons\",\"status\":\"present\",\"quote\":\"om de särskilda skälen vägde tungt nog\",\"note\":\"Texten ställer upp ett villkor för att flytta perioden till en annan tid.\"}]}",
+      "usage": {
+        "input_tokens": 741,
+        "input_tokens_details": {
+          "cache_write_tokens": 0,
+          "cached_tokens": 0
+        },
+        "output_tokens": 346,
+        "output_tokens_details": {
+          "reasoning_tokens": 104
+        },
+        "total_tokens": 1087
+      },
+      "input_tokens": 741,
+      "output_tokens": 346,
+      "valid": true,
+      "statuses": {
+        "agreement": "present",
+        "leave_period": "present",
+        "exception": "present",
+        "special_reasons": "present"
+      },
+      "present": 4,
+      "slots": 4,
+      "kind": "allegory",
+      "writer": "sonnet-5",
+      "passage_id": "sfs-1977-480:P12"
+    },
+    {
+      "label": "read:allegory:sfs-2026-1281:K10P10",
+      "model": "gpt-5-4-mini",
+      "provider": "openai",
+      "wire_model": "gpt-5.4-mini-2026-03-17",
+      "http": 200,
+      "raw": "a4e480d5161142b28c70af47e5da5976",
+      "raw_sha256": "c91b5a7b32c159a5401fad9ea5f42e6ad6c39c55990742990ad2c4a41219a112",
+      "seconds": 4.2,
+      "usd": 0.0010335,
+      "ok": true,
+      "text": "{\"slots\":[{\"slot_id\":\"duty\",\"status\":\"absent\",\"quote\":null,\"note\":\"Texten säger att de kunde gå till honom, men inte att de var skyldiga att göra det.\"},{\"slot_id\":\"scope\",\"status\":\"present\",\"quote\":\"om vilka avgifter som rättmätigt skulle läggas på deras last\",\"note\":\"Tvisten gäller uttryckligen avgifter på lasten, alltså vad prövningen avser.\"},{\"slot_id\":\"exception\",\"status\":\"present\",\"quote\":\"Men Nätväktaren öppnade inte alltid sin domsbok.\",\"note\":\"Detta markerar att huvudregeln inte gäller i alla fall.\"},{\"slot_id\":\"exception_deadline\",\"status\":\"present\",\"quote\":\"två vintrar hade hunnit passera innan någon bad om prövning\",\"note\":\"Texten anger en tidsgräns kopplad till när prövning kan begäras.\"},{\"slot_id\":\"deadline_start\",\"status\":\"absent\",\"quote\":null,\"note\":\"Ingen tydlig händelse anges som startpunkt för tidsgränsen.\"}]}",
+      "usage": {
+        "input_tokens": 654,
+        "input_tokens_details": {
+          "cache_write_tokens": 0,
+          "cached_tokens": 0
+        },
+        "output_tokens": 435,
+        "output_tokens_details": {
+          "reasoning_tokens": 199
+        },
+        "total_tokens": 1089
+      },
+      "input_tokens": 654,
+      "output_tokens": 435,
+      "valid": true,
+      "statuses": {
+        "duty": "absent",
+        "scope": "present",
+        "exception": "present",
+        "exception_deadline": "present",
+        "deadline_start": "absent"
+      },
+      "present": 3,
+      "slots": 5,
+      "kind": "allegory",
+      "writer": "gpt-5-4-mini",
+      "passage_id": "sfs-2026-1281:K10P10"
+    },
+    {
+      "label": "read:allegory:sfs-1982-673:P13",
+      "model": "gpt-5-4-mini",
+      "provider": "openai",
+      "wire_model": "gpt-5.4-mini-2026-03-17",
+      "http": 200,
+      "raw": "0a1ba4d0a9984f52ae1219537c2333d6",
+      "raw_sha256": "01804586657c5416c13e751ece07d4c45964e615819ccbdc2e92cd29c0de56ab",
+      "seconds": 3.2,
+      "usd": 0.00120525,
+      "ok": true,
+      "text": "{\"slots\":[{\"slot_id\":\"daily_rest\",\"status\":\"present\",\"quote\":\"varje själ som arbetade skulle få elva timmar i följd att vila under varje varv av sol och måne\",\"note\":\"Texten anger både varaktighet och en återkommande beräkningsperiod.\"},{\"slot_id\":\"temporary_exception\",\"status\":\"present\",\"quote\":\"ibland inträffade sådant som ingen vävare av dagar kunnat förutse: en plötslig brand i ladan, en storm som bröt broar, eller en nödropets klocka som ringde över landet. Då fick vilans ordning rubbas för en stund\",\"note\":\"Det finns uttryckligen en möjlighet att tillfälligt avvika från vilan.\"},{\"slot_id\":\"unforeseen_event\",\"status\":\"present\",\"quote\":\"en plötslig brand i ladan, en storm som bröt broar, eller en nödropets klocka som ringde över landet\",\"note\":\"Texten ger exempel på händelser som medger avsteg.\"},{\"slot_id\":\"compensation\",\"status\":\"present\",\"quote\":\"Ingen fick dock lämnas utan ersättning, ty varje stulen timme av ro skulle återges som en motsvarande stund av återhämtning.\",\"note\":\"Avsteget kopplas uttryckligen till kompensation i form av återhämtningstid.\"},{\"slot_id\":\"night_interval\",\"status\":\"present\",\"quote\":\"mellan midnatt och gryningens första andetag\",\"note\":\"Nattvilans tidsintervall anges direkt.\"},{\"slot_id\":\"night_exception\",\"status\":\"present\",\"quote\":\"om nattens mörker måste brytas för att arbetet i sin natur krävde det, eller om folkets behov kallade även mellan midnatt och femte timmens gryning, då fick lamporna brinna vidare\",\"note\":\"Texten anger villkor då arbete får ske under nattvilan.\"}]}",
+      "usage": {
+        "input_tokens": 861,
+        "input_tokens_details": {
+          "cache_write_tokens": 0,
+          "cached_tokens": 0
+        },
+        "output_tokens": 495,
+        "output_tokens_details": {
+          "reasoning_tokens": 79
+        },
+        "total_tokens": 1356
+      },
+      "input_tokens": 861,
+      "output_tokens": 495,
+      "valid": true,
+      "statuses": {
+        "daily_rest": "present",
+        "temporary_exception": "present",
+        "unforeseen_event": "present",
+        "compensation": "present",
+        "night_interval": "present",
+        "night_exception": "present"
+      },
+      "present": 6,
+      "slots": 6,
+      "kind": "allegory",
+      "writer": "gpt-5-4-mini",
+      "passage_id": "sfs-1982-673:P13"
+    },
+    {
+      "label": "read:allegory:sfs-1977-480:P12",
+      "model": "gpt-5-4-mini",
+      "provider": "openai",
+      "wire_model": "gpt-5.4-mini-2026-03-17",
+      "http": 200,
+      "raw": "59380a0a4f2a41eb93c2a7d726f4d41a",
+      "raw_sha256": "2adfe689088e55f92e5a4073aa4492710721827aa1e889a0b69fef352f74168d",
+      "seconds": 3.1,
+      "usd": 0.00072925,
+      "ok": true,
+      "text": "{\"slots\":[{\"slot_id\":\"agreement\",\"status\":\"present\",\"quote\":\"Hade herren och arbetaren redan kommit överens om något annat, fick deras överenskommelse styra som en väl knuten knut.\",\"note\":\"Texten säger uttryckligen att en överenskommelse kan styra regleringen.\"},{\"slot_id\":\"leave_period\",\"status\":\"present\",\"quote\":\"så att fyra hela veckor av ljum vind och långa kvällar låg mellan juni och augusti.\",\"note\":\"Här anges både längd och att perioden ligger mellan juni och augusti.\"},{\"slot_id\":\"exception\",\"status\":\"present\",\"quote\":\"Dock hände det ibland att stormar, skördar eller andra särskilda tecken på himlen krävde en annan ordning.\",\"note\":\"Detta beskriver ett undantag från huvudregeln.\"},{\"slot_id\":\"special_reasons\",\"status\":\"present\",\"quote\":\"Dock hände det ibland att stormar, skördar eller andra särskilda tecken på himlen krävde en annan ordning.\",\"note\":\"Texten anger villkor/orsaker som kan flytta vilan till en annan årstid.\"}]}",
+      "usage": {
+        "input_tokens": 637,
+        "input_tokens_details": {
+          "cache_write_tokens": 0,
+          "cached_tokens": 0
+        },
+        "output_tokens": 285,
+        "output_tokens_details": {
+          "reasoning_tokens": 32
+        },
+        "total_tokens": 922
+      },
+      "input_tokens": 637,
+      "output_tokens": 285,
+      "valid": true,
+      "statuses": {
+        "agreement": "present",
+        "leave_period": "present",
+        "exception": "present",
+        "special_reasons": "present"
+      },
+      "present": 4,
+      "slots": 4,
+      "kind": "allegory",
+      "writer": "gpt-5-4-mini",
+      "passage_id": "sfs-1977-480:P12"
+    },
+    {
+      "label": "read:allegory:sfs-2026-1281:K10P10",
+      "model": "gpt-5-4-mini",
+      "provider": "openai",
+      "wire_model": "gpt-5.4-mini-2026-03-17",
+      "http": 200,
+      "raw": "89bdeba99013432fb03dd73dd706296a",
+      "raw_sha256": "5ac0c9b78bb31cadff069152d4b6b8b064fcd6264bf242a5ee4c073da58aeaae",
+      "seconds": 2.8,
+      "usd": 0.00099275,
+      "ok": true,
+      "text": "{\"slots\":[{\"slot_id\":\"duty\",\"status\":\"present\",\"quote\":\"\\\"som skulle avgöra tvisten\\\"\",\"note\":\"Texten säger uttryckligen att väktaren skulle avgöra tvisten.\"},{\"slot_id\":\"scope\",\"status\":\"present\",\"quote\":\"\\\"I staden fanns tre olika rådsavgifter, märkta 6, 7 och 9.\\\"\",\"note\":\"Tvisten gäller specifikt dessa avgifter, alltså är sakområdet avgränsat.\"},{\"slot_id\":\"exception\",\"status\":\"present\",\"quote\":\"\\\"Men väktaren avvisade en sådan dom om budet om prövning kom för sent.\\\"\",\"note\":\"Det finns ett uttryckt undantag när prövningsbudet kommer för sent.\"},{\"slot_id\":\"exception_deadline\",\"status\":\"present\",\"quote\":\"\\\"Om någon väntade längre än två år efter att den systemkunnige väktaren hade skickat ett skriftligt besked till handelsmannens senast kända boning\\\"\",\"note\":\"Här anges en tidsgräns för när prövning kan ske.\"},{\"slot_id\":\"deadline_start\",\"status\":\"present\",\"quote\":\"\\\"efter att den systemkunnige väktaren hade skickat ett skriftligt besked till handelsmannens senast kända boning\\\"\",\"note\":\"Tidsfristen räknas från att det skriftliga beskedet skickats.\"}]}",
+      "usage": {
+        "input_tokens": 651,
+        "input_tokens_details": {
+          "cache_write_tokens": 0,
+          "cached_tokens": 0
+        },
+        "output_tokens": 415,
+        "output_tokens_details": {
+          "reasoning_tokens": 109
+        },
+        "total_tokens": 1066
+      },
+      "input_tokens": 651,
+      "output_tokens": 415,
+      "valid": false,
+      "invalid_reason": "slot evidence is not a verbatim substring",
+      "kind": "allegory",
+      "writer": "gpt-5-4-nano",
+      "passage_id": "sfs-2026-1281:K10P10"
+    },
+    {
+      "label": "read:allegory:sfs-1982-673:P13",
+      "model": "gpt-5-4-mini",
+      "provider": "openai",
+      "wire_model": "gpt-5.4-mini-2026-03-17",
+      "http": 200,
+      "raw": "6c65e0f8995443b8a711c7aa8ed0d3c5",
+      "raw_sha256": "15ac66bdc90b683e777ccab9725ccd160915edd8c99b51419232862e7498170f",
+      "seconds": 2.9,
+      "usd": 0.0011135,
+      "ok": true,
+      "text": "{\"slots\":[{\"slot_id\":\"daily_rest\",\"status\":\"present\",\"quote\":\"efter varje 24-timmars vandring ska minst elva sammanhängande timmar få bli ett eget hem för själen\",\"note\":\"Texten anger både varaktighet och att den räknas inom varje 24-timmarsperiod.\"},{\"slot_id\":\"temporary_exception\",\"status\":\"present\",\"quote\":\"kan regeln mjukas upp\",\"note\":\"Det uttrycker att ett tillfälligt avsteg från dygnsvilan är möjligt.\"},{\"slot_id\":\"unforeseen_event\",\"status\":\"present\",\"quote\":\"något ovanligt händer—något som ingen kunde ana i förväg, något som tvingar världen att slita trots att viljan stod redo\",\"note\":\"Detta beskriver de typer av händelser som kan motivera avsteg.\"},{\"slot_id\":\"compensation\",\"status\":\"present\",\"quote\":\"man ska senare ge tillbaka samma andrum, en motsvarande vilostund som ersätter det som togs\",\"note\":\"Texten kräver återbetalning/kompensation av den förlorade vilan.\"},{\"slot_id\":\"night_interval\",\"status\":\"present\",\"quote\":\"tiden mellan midnatt och klockan fem ska räknas in i den rätt man får\",\"note\":\"Här anges det nattliga tidsintervallet uttryckligen.\"},{\"slot_id\":\"night_exception\",\"status\":\"present\",\"quote\":\"Om arbetet, genom sin natur, genom hur samhället måste fortsätta, eller genom andra särskilda omständigheter, måste pågå just i dessa timmar—då kan man flytta gränsen\",\"note\":\"Det finns ett villkor som tillåter arbete under nattvilans timmar.\"}]}",
+      "usage": {
+        "input_tokens": 870,
+        "input_tokens_details": {
+          "cache_write_tokens": 0,
+          "cached_tokens": 0
+        },
+        "output_tokens": 448,
+        "output_tokens_details": {
+          "reasoning_tokens": 75
+        },
+        "total_tokens": 1318
+      },
+      "input_tokens": 870,
+      "output_tokens": 448,
+      "valid": true,
+      "statuses": {
+        "daily_rest": "present",
+        "temporary_exception": "present",
+        "unforeseen_event": "present",
+        "compensation": "present",
+        "night_interval": "present",
+        "night_exception": "present"
+      },
+      "present": 6,
+      "slots": 6,
+      "kind": "allegory",
+      "writer": "gpt-5-4-nano",
+      "passage_id": "sfs-1982-673:P13"
+    },
+    {
+      "label": "read:allegory:sfs-1977-480:P12",
+      "model": "gpt-5-4-mini",
+      "provider": "openai",
+      "wire_model": "gpt-5.4-mini-2026-03-17",
+      "http": 200,
+      "raw": "e693477c77f248df91a386cfff6ac8af",
+      "raw_sha256": "dde902aa25f0e2d480bd96dbce22d0bb870edddc5c4c5614eaeabe01f33bf7c1",
+      "seconds": 2.6,
+      "usd": 0.0007045,
+      "ok": true,
+      "text": "{\"slots\":[{\"slot_id\":\"agreement\",\"status\":\"present\",\"quote\":\"Om inget annat har beslutats\",\"note\":\"Texten anger uttryckligen att något annat kan ha avtalats eller beslutats.\"},{\"slot_id\":\"leave_period\",\"status\":\"present\",\"quote\":\"under sommarens varma stråk, mellan de tre sommarmånaderna, får en sammanhängande fristad på minst fyra veckor\",\"note\":\"Här anges både längden och när perioden ska ligga.\"},{\"slot_id\":\"exception\",\"status\":\"present\",\"quote\":\"Även om överenskommelsen inte längre räcker som stöd, kan man ändå flytta friden till en annan tid\",\"note\":\"Texten beskriver ett undantag från huvudregeln.\"},{\"slot_id\":\"special_reasons\",\"status\":\"present\",\"quote\":\"när särskilda öden kräver det\",\"note\":\"Det finns ett villkor som motiverar att perioden förläggs till annan tid.\"}]}",
+      "usage": {
+        "input_tokens": 554,
+        "input_tokens_details": {
+          "cache_write_tokens": 0,
+          "cached_tokens": 0
+        },
+        "output_tokens": 283,
+        "output_tokens_details": {
+          "reasoning_tokens": 73
+        },
+        "total_tokens": 837
+      },
+      "input_tokens": 554,
+      "output_tokens": 283,
+      "valid": true,
+      "statuses": {
+        "agreement": "present",
+        "leave_period": "present",
+        "exception": "present",
+        "special_reasons": "present"
+      },
+      "present": 4,
+      "slots": 4,
+      "kind": "allegory",
+      "writer": "gpt-5-4-nano",
+      "passage_id": "sfs-1977-480:P12"
+    },
+    {
+      "label": "read:source:sfs-2026-1281:K10P10",
+      "model": "gpt-5-4-nano",
+      "provider": "openai",
+      "wire_model": "gpt-5.4-nano-2026-03-17",
+      "http": 200,
+      "raw": "0ecf5e85a4224ad6aee0380e1a9f4c94",
+      "raw_sha256": "3988ae1d001f4cfc06d3d461ad1a06e92aad438fa534a618d2139dd923bb5495",
+      "seconds": 3.3,
+      "usd": 0.00017695000000000002,
+      "ok": true,
+      "text": "{\"slots\":[{\"slot_id\":\"duty\",\"status\":\"present\",\"quote\":\"Nätmyndigheten ska ta upp en tvist om vilka kostnader som ska debiteras enligt 6, 7 eller 9 §.\",\"note\":\"Texten anger en skyldighet för Nätmyndigheten att ta upp en tvist.\"},{\"slot_id\":\"scope\",\"status\":\"present\",\"quote\":\"om vilka kostnader som ska debiteras enligt 6, 7 eller 9 §.\",\"note\":\"Avgränsningen avser vilka kostnader som ska debiteras enligt angivna paragrafer.\"},{\"slot_id\":\"exception\",\"status\":\"present\",\"quote\":\"En tvist ska dock inte prövas om ansökan om prövning har kommit in till nätmyndigheten senare än två år efter det att den systemansvariga skickat ett skriftligt ställningstagande till den berörda partens senaste kända adress.\",\"note\":\"Det finns ett undantag: tvisten ska inte prövas om ansökan kommer in för sent.\"},{\"slot_id\":\"exception_deadline\",\"status\":\"present\",\"quote\":\"senare än två år efter det att den systemansvariga skickat ett skriftligt ställningstagande\",\"note\":\"Tidsgränsen anges som två år efter det att ett visst skriftligt ställningstagande skickats.\"},{\"slot_id\":\"deadline_start\",\"status\":\"present\",\"quote\":\"den systemansvariga skickat ett skriftligt ställningstagande till den berörda partens senaste kända adress.\",\"note\":\"Tidsgränsen räknas från händelsen då den systemansvariga skickar det skriftliga ställningstagandet.\"}]}",
+      "usage": {
+        "input_tokens": 571,
+        "input_tokens_details": {
+          "cache_write_tokens": 0,
+          "cached_tokens": 0
+        },
+        "output_tokens": 371,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 942
+      },
+      "input_tokens": 571,
+      "output_tokens": 371,
+      "valid": true,
+      "statuses": {
+        "duty": "present",
+        "scope": "present",
+        "exception": "present",
+        "exception_deadline": "present",
+        "deadline_start": "present"
+      },
+      "present": 5,
+      "slots": 5,
+      "kind": "source",
+      "writer": null,
+      "passage_id": "sfs-2026-1281:K10P10"
+    },
+    {
+      "label": "read:source:sfs-1982-673:P13",
+      "model": "gpt-5-4-nano",
+      "provider": "openai",
+      "wire_model": "gpt-5.4-nano-2026-03-17",
+      "http": 200,
+      "raw": "cfda2364a3a64d84927d8113fabab26d",
+      "raw_sha256": "14ec5f36388d744eee9505836cfd3ca8a41c25fd6dde6424e0daca07bf245bfc",
+      "seconds": 3.8,
+      "usd": 0.00021535000000000003,
+      "ok": true,
+      "text": "{\"slots\":[{\"slot_id\":\"daily_rest\",\"status\":\"present\",\"quote\":\"Alla arbetstagare skall ha minst elva timmars sammanhängande ledighet under varje period om tjugofyra timmar (dygnsvila).\",\"note\":\"Texten anger både minsta varaktighet (elva timmar) och beräkningsperiod (tjugofyra timmar/ dygnsvila).\"},{\"slot_id\":\"temporary_exception\",\"status\":\"present\",\"quote\":\"Avvikelse får göras tillfälligtvis, om det föranleds av något särskilt förhållande som inte har kunnat förutses av arbetsgivaren,\",\"note\":\"Det finns uttryckligen en möjlighet till tillfälligt avsteg under angivna förutsättningar.\"},{\"slot_id\":\"unforeseen_event\",\"status\":\"present\",\"quote\":\"som inte har kunnat förutses av arbetsgivaren\",\"note\":\"Den typ av händelse/orsak som medger avsteg är något särskilt förhållande som inte kunnat förutses av arbetsgivaren.\"},{\"slot_id\":\"compensation\",\"status\":\"present\",\"quote\":\"under förutsättning att arbetstagaren ges motsvarande kompensationsledighet.\",\"note\":\"Avsteg anges vara villkorat av att arbetstagaren ges motsvarande kompensationsledighet.\"},{\"slot_id\":\"night_interval\",\"status\":\"present\",\"quote\":\"I den dygnsvila som alla arbetstagare har rätt till skall tiden mellan midnatt och klockan 5 ingå.\",\"note\":\"Nattvilans/ dygnsvilans omfattning anges vara tiden mellan midnatt och klockan 5.\"},{\"slot_id\":\"night_exception\",\"status\":\"present\",\"quote\":\"Avvikelse får göras, om arbetet med hänsyn till dess art, allmänhetens behov eller andra särskilda omständigheter måste bedrivas mellan midnatt och klockan 5.\",\"note\":\"Texten anger att avvikelse får göras om arbete måste bedrivas mellan midnatt och klockan 5 p.g.a. särskilda skäl.\"}]}",
+      "usage": {
+        "input_tokens": 699,
+        "input_tokens_details": {
+          "cache_write_tokens": 0,
+          "cached_tokens": 0
+        },
+        "output_tokens": 451,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 1150
+      },
+      "input_tokens": 699,
+      "output_tokens": 451,
+      "valid": false,
+      "invalid_reason": "slot evidence is not a verbatim substring",
+      "kind": "source",
+      "writer": null,
+      "passage_id": "sfs-1982-673:P13"
+    },
+    {
+      "label": "read:source:sfs-1977-480:P12",
+      "model": "gpt-5-4-nano",
+      "provider": "openai",
+      "wire_model": "gpt-5.4-nano-2026-03-17",
+      "http": 200,
+      "raw": "980eec86340844a3ab141696da93ab3c",
+      "raw_sha256": "1bf2e1ab44124d53b72ee5d6e83eb17b608ae946da639b131343c2653dae29dc",
+      "seconds": 2.3,
+      "usd": 0.0001365,
+      "ok": true,
+      "text": "{\"slots\":[{\"slot_id\":\"agreement\",\"status\":\"present\",\"quote\":\"Om inte annat har avtalats, ska semesterledigheten förläggas så, att arbetstagaren får en ledighetsperiod av minst fyra veckor under juni-augusti.\",\"note\":\"Regeln gäller om inget annat har avtalats, vilket visar en avtalsanknuten avgränsning.\"},{\"slot_id\":\"leave_period\",\"status\":\"present\",\"quote\":\"ska semesterledigheten förläggas så, att arbetstagaren får en ledighetsperiod av minst fyra veckor under juni-augusti.\",\"note\":\"Texten anger både bestämd längd (minst fyra veckor) och förläggning (under juni–augusti).\"},{\"slot_id\":\"exception\",\"status\":\"present\",\"quote\":\"Även utan stöd av avtal får en sådan semesterperiod förläggas till annan tid, när särskilda skäl föranleder det.\",\"note\":\"Det finns en uttrycklig möjlighet att lägga semesterperioden till annan tid trots att inte något avtal finns.\"},{\"slot_id\":\"special_reasons\",\"status\":\"present\",\"quote\":\"när särskilda skäl föranleder det.\",\"note\":\"Undantaget/avvikelsen villkoras av att särskilda skäl föreligger.\"}]}",
+      "usage": {
+        "input_tokens": 522,
+        "input_tokens_details": {
+          "cache_write_tokens": 0,
+          "cached_tokens": 0
+        },
+        "output_tokens": 276,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 798
+      },
+      "input_tokens": 522,
+      "output_tokens": 276,
+      "valid": true,
+      "statuses": {
+        "agreement": "present",
+        "leave_period": "present",
+        "exception": "present",
+        "special_reasons": "present"
+      },
+      "present": 4,
+      "slots": 4,
+      "kind": "source",
+      "writer": null,
+      "passage_id": "sfs-1977-480:P12"
+    },
+    {
+      "label": "read:allegory:sfs-2026-1281:K10P10",
+      "model": "gpt-5-4-nano",
+      "provider": "openai",
+      "wire_model": "gpt-5.4-nano-2026-03-17",
+      "http": 200,
+      "raw": "5fc47a609b2b4684a61bc8120e1f8498",
+      "raw_sha256": "febdef6a6ccb378d78ccaf9fb3520c3693c1fdd12a98580b5b77cf50bb81c1e7",
+      "seconds": 3.8,
+      "usd": 0.00020590000000000002,
+      "ok": true,
+      "text": "{\"slots\":[{\"slot_id\":\"duty\",\"status\":\"present\",\"quote\":\"I Nätens rike stod en Väktare, vars uppgift var att skipa rätt när tvist uppstod om vad som skäligen kunde krävas av den som vandrade på de gemensamma vägarna\",\"note\":\"Texten anger uttryckligen att Väktarens uppgift är att skipa rätt när tvist uppstår.\"},{\"slot_id\":\"scope\",\"status\":\"uncertain\",\"quote\":\"om vad som skäligen kunde krävas av den som vandrade på de gemensamma vägarna\",\"note\":\"Det framgår att tvisten gäller vad som skäligen kan krävas, men ingen tydlig avgränsning av vilka kostnader tvistprövningen avser uttrycks.\"},{\"slot_id\":\"exception\",\"status\":\"present\",\"quote\":\"Och om den klagande dröjde mer än två vintrar och två somrar innan han knackade på Väktarens dörr, skulle denne vända sig bort och säga: \\\"Din klagan kommer för sent, ty tystnaden har redan blivit lag.\\\"\",\"note\":\"Det finns ett undantags-/förlustfall när den klagande dröjer för länge, varpå Väktaren vänder sig bort.\"},{\"slot_id\":\"exception_deadline\",\"status\":\"present\",\"quote\":\"om den klagande dröjde mer än två vintrar och två somrar innan han knackade på Väktarens dörr\",\"note\":\"Tidsgränsen anges: klaganden måste knacka inom två vintrar och två somrar, annars kommer klagan för sent.\"},{\"slot_id\":\"deadline_start\",\"status\":\"uncertain\",\"quote\":\"började timglaset vändas\",\"note\":\"Texten anger att timglaset vänds efter ett budskap, men det framgår inte entydigt att tidsfristen räknas från just denna händelse i formell mening; därför är startpunkten oklar.\"}]}",
+      "usage": {
+        "input_tokens": 678,
+        "input_tokens_details": {
+          "cache_write_tokens": 0,
+          "cached_tokens": 0
+        },
+        "output_tokens": 430,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 1108
+      },
+      "input_tokens": 678,
+      "output_tokens": 430,
+      "valid": true,
+      "statuses": {
+        "duty": "present",
+        "scope": "uncertain",
+        "exception": "present",
+        "exception_deadline": "present",
+        "deadline_start": "uncertain"
+      },
+      "present": 3,
+      "slots": 5,
+      "kind": "allegory",
+      "writer": "sonnet-5",
+      "passage_id": "sfs-2026-1281:K10P10"
+    },
+    {
+      "label": "read:allegory:sfs-1982-673:P13",
+      "model": "gpt-5-4-nano",
+      "provider": "openai",
+      "wire_model": "gpt-5.4-nano-2026-03-17",
+      "http": 200,
+      "raw": "3d6999966cce4600885f6a626c8426e8",
+      "raw_sha256": "3cb301fdfba4c4c91974c31a46ae728b50da0d5576c4f3923ce7354a454f1e75",
+      "seconds": 3.3,
+      "usd": 0.00023275,
+      "ok": true,
+      "text": "{\"slots\":[{\"slot_id\":\"daily_rest\",\"status\":\"present\",\"quote\":\"\\\"var och en som brukade jorden skulle unnas elva sammanhängande timmars vila för varje fullbordat dygns möda\\\"\",\"note\":\"Texten anger en bestämd vilovaraktighet (elva sammanhängande timmar) och beräkningsperiod (för varje fullbordat dygns möda).\"},{\"slot_id\":\"temporary_exception\",\"status\":\"present\",\"quote\":\"\\\"Endast om en oväntad storm drog in över fälten - något som ingen kunde ana i förväg - fick trädgårdsmästaren tillfälligt kalla arbetaren ut i mörkret.\\\"\",\"note\":\"Det finns en uttrycklig möjlighet till tillfälligt avsteg från vilan när en oväntad storm inträffar.\"},{\"slot_id\":\"unforeseen_event\",\"status\":\"present\",\"quote\":\"\\\"Endast om en oväntad storm drog in över fälten - något som ingen kunde ana i förväg\\\"\",\"note\":\"Avsteg medges vid en specifikt oförutsedd händelse: en oväntad storm.\"},{\"slot_id\":\"compensation\",\"status\":\"present\",\"quote\":\"\\\"för varje stulen vilotimme skulle arbetaren sedan få en motsvarande timme åter\\\"\",\"note\":\"Avsteg ska kompenseras genom att arbetaren får motsvarande tid tillbaka.\"},{\"slot_id\":\"night_interval\",\"status\":\"present\",\"quote\":\"\\\"timmarna mellan midnattens klocka och den femte timmens gryning\\\"\",\"note\":\"Nattvilan definieras som ett intervall mellan midnatt och den femte timmens gryning.\"},{\"slot_id\":\"night_exception\",\"status\":\"present\",\"quote\":\"\\\"Denna kärna fick ingen röra, om inte själva arbetets natur - såsom brödets bakning inför morgonen, eller folkets trängande behov - krävde att lyktorna tändes även i den svartaste timmen.\\\"\",\"note\":\"Texten anger villkor för att arbeta under nattintervallet: om arbetets natur eller trängande behov kräver det.\"}]}",
+      "usage": {
+        "input_tokens": 879,
+        "input_tokens_details": {
+          "cache_write_tokens": 0,
+          "cached_tokens": 0
+        },
+        "output_tokens": 472,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 1351
+      },
+      "input_tokens": 879,
+      "output_tokens": 472,
+      "valid": false,
+      "invalid_reason": "slot evidence is not a verbatim substring",
+      "kind": "allegory",
+      "writer": "sonnet-5",
+      "passage_id": "sfs-1982-673:P13"
+    },
+    {
+      "label": "read:allegory:sfs-1977-480:P12",
+      "model": "gpt-5-4-nano",
+      "provider": "openai",
+      "wire_model": "gpt-5.4-nano-2026-03-17",
+      "http": 200,
+      "raw": "c301beea656745e980c1370d0338bcb3",
+      "raw_sha256": "a80594f941c0a116f6b0abc1ea3dbcb3b8faeab14cd47ea0c361dcfb333ed039",
+      "seconds": 4.9,
+      "usd": 0.00028905,
+      "ok": true,
+      "text": "{\"slots\":[{\"slot_id\":\"agreement\",\"status\":\"present\",\"quote\":\"”Om inte trädgårdsmästaren och arbetaren tillsammans hade stakat ut en annan stig, skulle denna sommarvandring alltid infalla mellan den tid då björkarna grönskade fullast och den tid då de första löven började gulna.”\",\"note\":\"Regeln kan frångås om trädgårdsmästaren och arbetaren tillsammans kommer överens om en annan ”stig”.\"},{\"slot_id\":\"leave_period\",\"status\":\"present\",\"quote\":\"”när solen stod som högst och ljuset varade längst, skulle var och en få vandra minst fyra veckor genom Sommarens Portar”\",\"note\":\"Semesterperioden anges med en bestämd längd (minst fyra veckor) och en bestämd förläggning (Sommarens Portar).\"},{\"slot_id\":\"exception\",\"status\":\"present\",\"quote\":\"”Ibland kom stormar, sjukdomar i familjen, eller andra tvingande omständigheter som krävde att vilan förlades till en annan årstid - till vinterns tystnad eller höstens guldljus.”\",\"note\":\"Texten anger situationer (stormar, sjukdomar, tvingande omständigheter) som gör att vilan kan förläggas till annan årstid än huvudregeln.\"},{\"slot_id\":\"special_reasons\",\"status\":\"present\",\"quote\":\"”Då, även utan en överenskommelse mellan parterna, kunde Trädgårdens väktare tillåta att vandringen genom vilans portar sköts till en annan tid, om de särskilda skälen vägde tungt nog.”\",\"note\":\"Det finns ett villkor kopplat till ”särskilda skäl” som avgör om tiden får skjutas till en annan tid.\"}]}",
+      "usage": {
+        "input_tokens": 741,
+        "input_tokens_details": {
+          "cache_write_tokens": 0,
+          "cached_tokens": 0
+        },
+        "output_tokens": 630,
+        "output_tokens_details": {
+          "reasoning_tokens": 225
+        },
+        "total_tokens": 1371
+      },
+      "input_tokens": 741,
+      "output_tokens": 630,
+      "valid": false,
+      "invalid_reason": "slot evidence is not a verbatim substring",
+      "kind": "allegory",
+      "writer": "sonnet-5",
+      "passage_id": "sfs-1977-480:P12"
+    },
+    {
+      "label": "read:allegory:sfs-2026-1281:K10P10",
+      "model": "gpt-5-4-nano",
+      "provider": "openai",
+      "wire_model": "gpt-5.4-nano-2026-03-17",
+      "http": 200,
+      "raw": "2bdc9108752a4990b516fe725c189050",
+      "raw_sha256": "35de9e23f199e4b4eeb54a6622437a0c35574f7eb95cee4c61d35be32d6881d7",
+      "seconds": 3.9,
+      "usd": 0.0002375,
+      "ok": true,
+      "text": "{\"slots\":[{\"slot_id\":\"duty\",\"status\":\"present\",\"quote\":\"När två skeppare började tvista om vilka avgifter som rättmätigt skulle läggas på deras last, kunde de gå till honom, och han avgjorde om det var tullen från den tredje kajen, den sjunde porten eller den nionde bryggan som skulle gälla.\",\"note\":\"Texten beskriver att parter kan vända sig till Nätväktaren och att han avgör tvisten.\"},{\"slot_id\":\"scope\",\"status\":\"present\",\"quote\":\"de tvista om vilka avgifter som rättmätigt skulle läggas på deras last\",\"note\":\"Avgränsningen handlar specifikt om vilka avgifter som ska läggas på lasten.\"},{\"slot_id\":\"exception\",\"status\":\"present\",\"quote\":\"Men Nätväktaren öppnade inte alltid sin domsbok.\",\"note\":\"Det finns ett undantag, eftersom han inte alltid öppnar domsboken för prövning.\"},{\"slot_id\":\"exception_deadline\",\"status\":\"present\",\"quote\":\"och två vintrar hade hunnit passera innan någon bad om prövning, då lades brevet i arkivet och tvisten fick stanna ute i dimman.\",\"note\":\"Texten anger en tidsgräns (två vintrar) innan ansökan/prövning kan ske.\"},{\"slot_id\":\"deadline_start\",\"status\":\"present\",\"quote\":\"Om den store Vävarens besked redan hade sänts i ett förseglat brev till den adress där den andre senast blivit sedd,\",\"note\":\"Tidsgränsen räknas från det att beskedet sänts i ett förseglat brev till angiven adress.\"}]}",
+      "usage": {
+        "input_tokens": 654,
+        "input_tokens_details": {
+          "cache_write_tokens": 0,
+          "cached_tokens": 0
+        },
+        "output_tokens": 512,
+        "output_tokens_details": {
+          "reasoning_tokens": 137
+        },
+        "total_tokens": 1166
+      },
+      "input_tokens": 654,
+      "output_tokens": 512,
+      "valid": true,
+      "statuses": {
+        "duty": "present",
+        "scope": "present",
+        "exception": "present",
+        "exception_deadline": "present",
+        "deadline_start": "present"
+      },
+      "present": 5,
+      "slots": 5,
+      "kind": "allegory",
+      "writer": "gpt-5-4-mini",
+      "passage_id": "sfs-2026-1281:K10P10"
+    },
+    {
+      "label": "read:allegory:sfs-1982-673:P13",
+      "model": "gpt-5-4-nano",
+      "provider": "openai",
+      "wire_model": "gpt-5.4-nano-2026-03-17",
+      "http": 200,
+      "raw": "a9b5d4c44bef4a079121db7120f473dd",
+      "raw_sha256": "110e0c5433bd0820a615c3de403b2896c5d91ffaa64c21324c7c1cee3188f998",
+      "seconds": 3.0,
+      "usd": 0.00021625000000000003,
+      "ok": true,
+      "text": "{\"slots\":[{\"slot_id\":\"daily_rest\",\"status\":\"present\",\"quote\":\"\\\"varje själ som arbetade skulle få elva timmar i följd att vila under varje varv av sol och måne\\\"\",\"note\":\"Texten anger en bestämd dygnsvila: elva timmar i följd under varje sol- och månevarv.\"},{\"slot_id\":\"temporary_exception\",\"status\":\"present\",\"quote\":\"\\\"Men ibland inträffade sådant som ingen vävare av dagar kunnat förutse: ... Då fick vilans ordning rubbas för en stund\\\"\",\"note\":\"Det finns en möjlighet att rubba vilans ordning tillfälligt vid oförutsedda händelser.\"},{\"slot_id\":\"unforeseen_event\",\"status\":\"present\",\"quote\":\"\\\"en plötslig brand i ladan, en storm som bröt broar, eller en nödropets klocka som ringde över landet.\\\"\",\"note\":\"Texten beskriver exempel på oförutsedda händelser som medger avsteg.\"},{\"slot_id\":\"compensation\",\"status\":\"present\",\"quote\":\"\\\"Ingen fick dock lämnas utan ersättning, ty varje stulen timme av ro skulle återges som en motsvarande stund av återhämtning.\\\"\",\"note\":\"Avsteg måste kompenseras genom att stulen vila återges som återhämtning.\"},{\"slot_id\":\"night_interval\",\"status\":\"present\",\"quote\":\"\\\"även nattens djupaste timme, mellan midnatt och gryningens första andetag\\\"\",\"note\":\"Nattvilan omfattar ett angivet intervall mellan midnatt och gryningens första andetag.\"},{\"slot_id\":\"night_exception\",\"status\":\"present\",\"quote\":\"\\\"Och om nattens mörker måste brytas för att arbetet i sin natur krävde det, eller om folkets behov kallade\\\"\",\"note\":\"Arbete får utföras under nattintervallet om det krävs av arbetets natur eller av folkets behov.\"}]}",
+      "usage": {
+        "input_tokens": 861,
+        "input_tokens_details": {
+          "cache_write_tokens": 0,
+          "cached_tokens": 0
+        },
+        "output_tokens": 433,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 1294
+      },
+      "input_tokens": 861,
+      "output_tokens": 433,
+      "valid": false,
+      "invalid_reason": "slot evidence is not a verbatim substring",
+      "kind": "allegory",
+      "writer": "gpt-5-4-mini",
+      "passage_id": "sfs-1982-673:P13"
+    },
+    {
+      "label": "read:allegory:sfs-1977-480:P12",
+      "model": "gpt-5-4-nano",
+      "provider": "openai",
+      "wire_model": "gpt-5.4-nano-2026-03-17",
+      "http": 200,
+      "raw": "f124571f059c47de809b6f9fd949514c",
+      "raw_sha256": "a76c09edfde5ccc46ebcb8fdf7984016fb64c84770cf4e5a614427cd4b40cfeb",
+      "seconds": 2.1,
+      "usd": 0.00013945000000000003,
+      "ok": true,
+      "text": "{\"slots\":[{\"slot_id\":\"agreement\",\"status\":\"present\",\"quote\":\"Hade herren och arbetaren redan kommit överens om något annat, fick deras överenskommelse styra som en väl knuten knut.\",\"note\":\"Texten anger att parternas överenskommelse kan styra om något annat.\"},{\"slot_id\":\"leave_period\",\"status\":\"present\",\"quote\":\"så att fyra hela veckor av ljum vind och långa kvällar låg mellan juni och augusti.\",\"note\":\"Det anges en bestämd längd (fyra veckor) och förläggning (mellan juni och augusti).\"},{\"slot_id\":\"exception\",\"status\":\"present\",\"quote\":\"Dock hände det ibland att stormar, skördar eller andra särskilda tecken på himlen krävde en annan ordning.\",\"note\":\"Texten beskriver när det ibland behövs en annan ordning, vilket fungerar som undantag från standarden.\"},{\"slot_id\":\"special_reasons\",\"status\":\"present\",\"quote\":\"när omständigheterna själva visade vägen.\",\"note\":\"Det finns ett villkor kopplat till särskilda omständigheter (stormar/skördar/tecken på himlen) som motiverar annan tid.\"}]}",
+      "usage": {
+        "input_tokens": 637,
+        "input_tokens_details": {
+          "cache_write_tokens": 0,
+          "cached_tokens": 0
+        },
+        "output_tokens": 269,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 906
+      },
+      "input_tokens": 637,
+      "output_tokens": 269,
+      "valid": true,
+      "statuses": {
+        "agreement": "present",
+        "leave_period": "present",
+        "exception": "present",
+        "special_reasons": "present"
+      },
+      "present": 4,
+      "slots": 4,
+      "kind": "allegory",
+      "writer": "gpt-5-4-mini",
+      "passage_id": "sfs-1977-480:P12"
+    },
+    {
+      "label": "read:allegory:sfs-2026-1281:K10P10",
+      "model": "gpt-5-4-nano",
+      "provider": "openai",
+      "wire_model": "gpt-5.4-nano-2026-03-17",
+      "http": 200,
+      "raw": "242ef55298304ff1839d8d1af14bb0f5",
+      "raw_sha256": "67daeaad29af06c73f3e3ea7d583d5c04871d74d21285839599b4e683e98dc00",
+      "seconds": 3.3,
+      "usd": 0.00022815000000000004,
+      "ok": true,
+      "text": "{\"slots\":[{\"slot_id\":\"duty\",\"status\":\"present\",\"quote\":\"som skulle avgöra tvisten och visa vilken märkning som rättvisa krävde.\",\"note\":\"Texten anger att väktaren ska avgöra tvisten.\"},{\"slot_id\":\"scope\",\"status\":\"present\",\"quote\":\"I staden fanns tre olika rådsavgifter, märkta 6, 7 och 9.\",\"note\":\"Tvistprövningen rör vilka rådsavgifter (märkta 6, 7 och 9) som rättvisa kräver.\"},{\"slot_id\":\"exception\",\"status\":\"present\",\"quote\":\"Men väktaren avvisade en sådan dom om budet om prövning kom för sent.\",\"note\":\"Det finns ett villkor där väktaren inte meddelar dom (om budet om prövning kommer för sent).\"},{\"slot_id\":\"exception_deadline\",\"status\":\"present\",\"quote\":\"Om någon väntade längre än två år efter att den systemkunnige väktaren hade skickat ett skriftligt besked till handelsmannens senast kända boning, skulle dörrarna till rådhuset hållas stängda.\",\"note\":\"Texten anger tidsgränsen (två år) för när prövning inte längre sker.\"},{\"slot_id\":\"deadline_start\",\"status\":\"present\",\"quote\":\"efter att den systemkunnige väktaren hade skickat ett skriftligt besked till handelsmannens senast kända boning\",\"note\":\"Tidsgränsen räknas från att väktaren skickat ett skriftligt besked till handelsmannens senast kända boning.\"}]}",
+      "usage": {
+        "input_tokens": 651,
+        "input_tokens_details": {
+          "cache_write_tokens": 0,
+          "cached_tokens": 0
+        },
+        "output_tokens": 489,
+        "output_tokens_details": {
+          "reasoning_tokens": 131
+        },
+        "total_tokens": 1140
+      },
+      "input_tokens": 651,
+      "output_tokens": 489,
+      "valid": true,
+      "statuses": {
+        "duty": "present",
+        "scope": "present",
+        "exception": "present",
+        "exception_deadline": "present",
+        "deadline_start": "present"
+      },
+      "present": 5,
+      "slots": 5,
+      "kind": "allegory",
+      "writer": "gpt-5-4-nano",
+      "passage_id": "sfs-2026-1281:K10P10"
+    },
+    {
+      "label": "read:allegory:sfs-1982-673:P13",
+      "model": "gpt-5-4-nano",
+      "provider": "openai",
+      "wire_model": "gpt-5.4-nano-2026-03-17",
+      "http": 200,
+      "raw": "91bf0e9fee494e93957121857709e932",
+      "raw_sha256": "856bc67499ca7554cf5f4990ff71a01336e56b3804455a341844a64a25b3f06f",
+      "seconds": 3.0,
+      "usd": 0.00021830000000000002,
+      "ok": true,
+      "text": "{\"slots\":[{\"slot_id\":\"daily_rest\",\"status\":\"present\",\"quote\":\"efter varje 24-timmars vandring ska minst elva sammanhängande timmar få bli ett eget hem för själen.\",\"note\":\"Texten anger en återkommande dygnsviloperiod: minst elva sammanhängande timmar efter 24 timmar.\"},{\"slot_id\":\"temporary_exception\",\"status\":\"present\",\"quote\":\"Om något ovanligt händer—något som ingen kunde ana i förväg, något som tvingar världen att slita trots att viljan stod redo—kan regeln mjukas upp.\",\"note\":\"Det finns uttryckligen möjlighet att mjuka upp regeln vid ovanliga händelser.\"},{\"slot_id\":\"unforeseen_event\",\"status\":\"present\",\"quote\":\"Om något ovanligt händer—något som ingen kunde ana i förväg, något som tvingar världen att slita trots att viljan stod redo—kan regeln mjukas upp.\",\"note\":\"Avsteg medges vid “något ovanligt” som tvingar världen att slita (oförutsett).\"},{\"slot_id\":\"compensation\",\"status\":\"present\",\"quote\":\"man ska senare ge tillbaka samma andrum, en motsvarande vilostund som ersätter det som togs.\",\"note\":\"Kompensation krävs: senare ges tillbaka motsvarande vilostund.\"},{\"slot_id\":\"night_interval\",\"status\":\"present\",\"quote\":\"tiden mellan midnatt och klockan fem ska räknas in i den rätt man får.\",\"note\":\"Nattvilan definieras som tiden mellan midnatt och klockan fem.\"},{\"slot_id\":\"night_exception\",\"status\":\"present\",\"quote\":\"Om arbetet, genom sin natur, genom hur samhället måste fortsätta, eller genom andra särskilda omständigheter, måste pågå just i dessa timmar—då kan man flytta gränsen.\",\"note\":\"Texten anger villkor för avsteg då arbete måste pågå under dessa natt-timmar, då kan gränsen flyttas.\"}]}",
+      "usage": {
+        "input_tokens": 870,
+        "input_tokens_details": {
+          "cache_write_tokens": 0,
+          "cached_tokens": 0
+        },
+        "output_tokens": 437,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 1307
+      },
+      "input_tokens": 870,
+      "output_tokens": 437,
+      "valid": true,
+      "statuses": {
+        "daily_rest": "present",
+        "temporary_exception": "present",
+        "unforeseen_event": "present",
+        "compensation": "present",
+        "night_interval": "present",
+        "night_exception": "present"
+      },
+      "present": 6,
+      "slots": 6,
+      "kind": "allegory",
+      "writer": "gpt-5-4-nano",
+      "passage_id": "sfs-1982-673:P13"
+    },
+    {
+      "label": "read:allegory:sfs-1977-480:P12",
+      "model": "gpt-5-4-nano",
+      "provider": "openai",
+      "wire_model": "gpt-5.4-nano-2026-03-17",
+      "http": 200,
+      "raw": "3ea8a585ab644c1ab2603ac0b222903c",
+      "raw_sha256": "b014b900394609c9b0bab45e7f6e5c024465f894c55a313da62c73a74ca2ec09",
+      "seconds": 2.4,
+      "usd": 0.00013169999999999998,
+      "ok": true,
+      "text": "{\"slots\":[{\"slot_id\":\"agreement\",\"status\":\"present\",\"quote\":\"Om inget annat har beslutats, ska den viloperiod som skänks människan ordnas så att\",\"note\":\"Texten anger en avgränsning som gäller om något annat inte har beslutats.\"},{\"slot_id\":\"leave_period\",\"status\":\"present\",\"quote\":\"mellan de tre sommarmånaderna, får en sammanhängande fristad på minst fyra veckor\",\"note\":\"Semesterperioden anges med både förläggning (mellan tre sommarmånaderna) och längd (minst fyra veckor).\"},{\"slot_id\":\"exception\",\"status\":\"present\",\"quote\":\"Även om överenskommelsen inte längre räcker som stöd, kan man ändå flytta friden till en annan tid, när särskilda öden kräver det.\",\"note\":\"Det finns ett undantags-/möjlighetsfall att flytta perioden trots att överenskommelsen inte räcker.\"},{\"slot_id\":\"special_reasons\",\"status\":\"present\",\"quote\":\"när särskilda öden kräver det\",\"note\":\"Flytt till annan tid framställs som villkorad av särskilda orsaker/öden.\"}]}",
+      "usage": {
+        "input_tokens": 554,
+        "input_tokens_details": {
+          "cache_write_tokens": 0,
+          "cached_tokens": 0
+        },
+        "output_tokens": 260,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 814
+      },
+      "input_tokens": 554,
+      "output_tokens": 260,
+      "valid": true,
+      "statuses": {
+        "agreement": "present",
+        "leave_period": "present",
+        "exception": "present",
+        "special_reasons": "present"
+      },
+      "present": 4,
+      "slots": 4,
+      "kind": "allegory",
+      "writer": "gpt-5-4-nano",
+      "passage_id": "sfs-1977-480:P12"
+    }
+  ]
+}

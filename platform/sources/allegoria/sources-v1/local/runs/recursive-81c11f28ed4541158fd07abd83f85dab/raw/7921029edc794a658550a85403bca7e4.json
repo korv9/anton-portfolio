@@ -1,0 +1,94 @@
+{
+  "id": "resp_097ba26eb951005d016aa43dfd39ec87d29e2114bae5f59814",
+  "object": "response",
+  "created_at": 1789148669,
+  "status": "completed",
+  "background": false,
+  "billing": {
+    "payer": "developer"
+  },
+  "completed_at": 1789148670,
+  "error": null,
+  "frequency_penalty": 0.0,
+  "incomplete_details": null,
+  "instructions": "Skriv om den f\u00f6ljande svenska texten med andra ord p\u00e5 svenska. Svara enbart med den omskrivna texten.",
+  "max_output_tokens": 1800,
+  "max_tool_calls": null,
+  "model": "gpt-5.4-nano-2026-03-17",
+  "moderation": null,
+  "output": [
+    {
+      "id": "msg_097ba26eb951005d016aa43dfd9f6087d2b34e54251d1e4a5a",
+      "type": "message",
+      "status": "completed",
+      "content": [
+        {
+          "type": "output_text",
+          "annotations": [],
+          "logprobs": [],
+          "text": "En moderator ska behandla varje deltagare som en s\u00e4rskild och oers\u00e4ttlig individ. Det inneb\u00e4r att l\u00e5ta deltagarens egna tankar och \u00f6nskem\u00e5l styra hur man lyssnar och hur man svarar under samtalet, samtidigt som man visar samma respekt mot alla andra. Deltagarens v\u00e4rde ska utg\u00e5 fr\u00e5n att personen \u00e4r m\u00e4nniska, inte fr\u00e5n vad hen eventuellt kan bidra med eller vilken betydelse hen har f\u00f6r moderatorn. Detta f\u00f6rh\u00e5llningss\u00e4tt ska h\u00e5llas helt konsekvent, utan n\u00e5gra undantag, oavsett om det passar moderatorn eller inte och oavsett vad andra skulle kunna f\u00f6rv\u00e4nta sig eller \u00f6nska."
+        }
+      ],
+      "phase": "final_answer",
+      "role": "assistant"
+    }
+  ],
+  "parallel_tool_calls": true,
+  "presence_penalty": 0.0,
+  "previous_response_id": null,
+  "prompt_cache_key": null,
+  "prompt_cache_retention": "24h",
+  "reasoning": {
+    "context": "current_turn",
+    "effort": "none",
+    "mode": "standard",
+    "summary": null
+  },
+  "safety_identifier": null,
+  "service_tier": "default",
+  "store": false,
+  "temperature": 1.0,
+  "text": {
+    "format": {
+      "type": "text"
+    },
+    "verbosity": "medium"
+  },
+  "tool_choice": "auto",
+  "tool_usage": {
+    "image_gen": {
+      "input_tokens": 0,
+      "input_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "output_tokens": 0,
+      "output_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "total_tokens": 0
+    },
+    "web_search": {
+      "num_requests": 0
+    }
+  },
+  "tools": [],
+  "top_logprobs": 0,
+  "top_p": 0.98,
+  "truncation": "disabled",
+  "usage": {
+    "input_tokens": 165,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 146,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 311
+  },
+  "user": null,
+  "metadata": {}
+}

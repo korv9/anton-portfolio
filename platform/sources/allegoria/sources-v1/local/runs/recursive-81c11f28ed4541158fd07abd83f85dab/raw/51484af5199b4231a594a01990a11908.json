@@ -1,0 +1,94 @@
+{
+  "id": "resp_0da605f2585479aa016aa43e3ee90c87d29e287e1b15774775",
+  "object": "response",
+  "created_at": 1789148734,
+  "status": "completed",
+  "background": false,
+  "billing": {
+    "payer": "developer"
+  },
+  "completed_at": 1789148736,
+  "error": null,
+  "frequency_penalty": 0.0,
+  "incomplete_details": null,
+  "instructions": "F\u00f6rklara den f\u00f6ljande texten p\u00e5 svenska f\u00f6r en l\u00e4sare utan juridisk utbildning. Svara enbart med f\u00f6rklaringen.",
+  "max_output_tokens": 1800,
+  "max_tool_calls": null,
+  "model": "gpt-5.4-nano-2026-03-17",
+  "moderation": null,
+  "output": [
+    {
+      "id": "msg_0da605f2585479aa016aa43e3f4b8887d2ac57aa236c37a0ce",
+      "type": "message",
+      "status": "completed",
+      "content": [
+        {
+          "type": "output_text",
+          "annotations": [],
+          "logprobs": [],
+          "text": "Om inget annat har avtalats i exempelvis ditt anst\u00e4llningsavtal, ska din semester planeras s\u00e5 att du f\u00e5r en sammanh\u00e4ngande ledighetsperiod p\u00e5 minst fyra veckor under sommarm\u00e5naderna juni till och med augusti.\n\n\u00c4ven om det inte finns n\u00e5got avtal som s\u00e4ger detta, kan semestern i vissa fall \u00e4nd\u00e5 l\u00e4ggas till en annan tid p\u00e5 \u00e5ret, men bara om det finns s\u00e4rskilda sk\u00e4l som motiverar det."
+        }
+      ],
+      "phase": "final_answer",
+      "role": "assistant"
+    }
+  ],
+  "parallel_tool_calls": true,
+  "presence_penalty": 0.0,
+  "previous_response_id": null,
+  "prompt_cache_key": null,
+  "prompt_cache_retention": "24h",
+  "reasoning": {
+    "context": "current_turn",
+    "effort": "none",
+    "mode": "standard",
+    "summary": null
+  },
+  "safety_identifier": null,
+  "service_tier": "default",
+  "store": false,
+  "temperature": 1.0,
+  "text": {
+    "format": {
+      "type": "text"
+    },
+    "verbosity": "medium"
+  },
+  "tool_choice": "auto",
+  "tool_usage": {
+    "image_gen": {
+      "input_tokens": 0,
+      "input_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "output_tokens": 0,
+      "output_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "total_tokens": 0
+    },
+    "web_search": {
+      "num_requests": 0
+    }
+  },
+  "tools": [],
+  "top_logprobs": 0,
+  "top_p": 0.98,
+  "truncation": "disabled",
+  "usage": {
+    "input_tokens": 115,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 102,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 217
+  },
+  "user": null,
+  "metadata": {}
+}

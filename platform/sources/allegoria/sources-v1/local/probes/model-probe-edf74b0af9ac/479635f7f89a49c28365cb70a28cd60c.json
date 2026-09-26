@@ -1,0 +1,31 @@
+{
+  "id": "msg_011CexFMzPNFQ6swEvE5Rtz1",
+  "container": null,
+  "content": [
+    {
+      "text": "{\"slots\": [{\"slot_id\": \"daily_rest\", \"status\": \"present\", \"quote\": \"Alla arbetstagare skall ha minst elva timmars sammanhängande ledighet under varje period om tjugofyra timmar\\n(dygnsvila).\", \"note\": \"Anger både varaktighet (elva timmar) och beräkningsperiod (tjugofyra timmar).\"}, {\"slot_id\": \"temporary_exception\", \"status\": \"present\", \"quote\": \"Avvikelse får göras tillfälligtvis, om det föranleds av något särskilt förhållande som inte har kunnat förutses av arbetsgivaren\", \"note\": \"Texten medger tillfälligt avsteg från dygnsvilan under vissa förutsättningar.\"}, {\"slot_id\": \"unforeseen_event\", \"status\": \"present\", \"quote\": \"något särskilt förhållande som inte har kunnat förutses av arbetsgivaren\", \"note\": \"Beskriver oförutsedda särskilda förhållanden som grund för avsteg.\"}, {\"slot_id\": \"compensation\", \"status\": \"present\", \"quote\": \"under förutsättning att arbetstagaren ges motsvarande kompensationsledighet\", \"note\": \"Kompensationsledighet krävs som villkor för avsteg.\"}, {\"slot_id\": \"night_interval\", \"status\": \"present\", \"quote\": \"tiden mellan midnatt och klockan 5 ingå\", \"note\": \"Anger nattvilans tidsintervall.\"}, {\"slot_id\": \"night_exception\", \"status\": \"present\", \"quote\": \"Avvikelse får göras, om arbetet med hänsyn till dess art, allmänhetens behov eller andra särskilda omständigheter måste bedrivas mellan midnatt och klockan 5.\", \"note\": \"Anger villkor för att arbete får utföras under nattvilan.\"}]}",
+      "type": "text"
+    }
+  ],
+  "model": "claude-sonnet-5",
+  "role": "assistant",
+  "stop_details": null,
+  "stop_reason": "end_turn",
+  "stop_sequence": null,
+  "type": "message",
+  "usage": {
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 0,
+    "inference_geo": "global",
+    "input_tokens": 1369,
+    "output_tokens": 613,
+    "service_tier": "standard",
+    "output_tokens_details": {
+      "thinking_tokens": 0
+    }
+  }
+}

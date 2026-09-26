@@ -97,11 +97,44 @@ def remote_hash(s3, bucket, key):
         return None
 
 
+OFFLOADED = PUBLIC / "offloaded.json"
+
+
+def offload(entries) -> None:
+    """Delete verified local copies and record which paths now live only in storage.
+
+    The catalogue needs to tell two kinds of missing file apart: one that was uploaded and
+    then removed, which must stay catalogued, and one the build simply no longer produces,
+    which must not. Guessing from the filesystem cannot do it — a directory holding an
+    index alongside its shards looks populated either way — so the removal writes down
+    exactly what it took.
+    """
+    freed = removed = 0
+    for entry in entries:
+        path = PUBLIC / entry["path"]
+        if path.is_file():
+            freed += path.stat().st_size
+            path.unlink()
+            removed += 1
+    listing = json.dumps(sorted(entry["path"] for entry in entries), ensure_ascii=False, indent=1)
+    OFFLOADED.write_text(listing + "\n", encoding="utf-8")
+    for directory in sorted((p for p in PUBLIC.rglob("*") if p.is_dir()),
+                            key=lambda p: -len(p.parts)):
+        try:
+            directory.rmdir()
+        except OSError:
+            pass
+    print(f"Offloaded {removed} files, freed {freed / 1048576:.1f} MB. "
+          f"{OFFLOADED.name} records what is now storage-only.")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--dry-run", action="store_true", help="report what would transfer")
     parser.add_argument("--verify-only", action="store_true",
                         help="check every shard is present with a matching hash; upload nothing")
+    parser.add_argument("--offload", action="store_true",
+                        help="after verifying, delete the local copies and record what was offloaded")
     parser.add_argument("--workers", type=int, default=16)
     arguments = parser.parse_args()
 
@@ -126,6 +159,8 @@ def main() -> None:
                 print(f"  {entry['path']}")
             sys.exit(1)
         print(f"VERIFIED: all {len(entries)} shards present with matching hashes.")
+        if arguments.offload:
+            offload(entries)
         return
 
     print(f"{len(stale)} to upload, {len(entries) - len(stale)} already current")

@@ -1,0 +1,37 @@
+{
+  "kind": "provider_check",
+  "experiment_data": false,
+  "at": "2026-09-12T10:49:44.723658+00:00",
+  "model": {
+    "name": "gpt-5-4-mini",
+    "provider": "openai",
+    "model": "gpt-5.4-mini-2026-03-17",
+    "input_usd_per_million": 0.25,
+    "output_usd_per_million": 2.0,
+    "max_tokens": 8000,
+    "params": {
+      "reasoning_effort": "low"
+    },
+    "verified": null
+  },
+  "http_status": 200,
+  "raw_sha256": "f98689912cb50b49809d4e4af296f81dcd9c9a1a7a34f0fe9bc84a6b3cbcf91b",
+  "structured_output_requested": true,
+  "usd": 6.35e-05,
+  "ok": true,
+  "returned_model": "gpt-5.4-mini-2026-03-17",
+  "usage": {
+    "input_tokens": 46,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 26,
+    "output_tokens_details": {
+      "reasoning_tokens": 10
+    },
+    "total_tokens": 72
+  },
+  "text_preview": "{\"answer\":\"OK\"}",
+  "parses_as_json": true
+}

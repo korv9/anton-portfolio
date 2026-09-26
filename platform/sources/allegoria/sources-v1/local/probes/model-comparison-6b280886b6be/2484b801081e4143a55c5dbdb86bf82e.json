@@ -1,0 +1,101 @@
+{
+  "id": "resp_007fd910612ae0f4016aa52eb8f1b487d284d68c3ec224d929",
+  "object": "response",
+  "created_at": 1789210297,
+  "status": "completed",
+  "background": false,
+  "billing": {
+    "payer": "developer"
+  },
+  "completed_at": 1789210300,
+  "error": null,
+  "frequency_penalty": 0.0,
+  "incomplete_details": null,
+  "instructions": "Gestalta den f\u00f6ljande texten som en allegori p\u00e5 svenska. Svara enbart med allegorin.",
+  "max_output_tokens": 8000,
+  "max_tool_calls": null,
+  "model": "gpt-5.4-mini-2026-03-17",
+  "moderation": null,
+  "output": [
+    {
+      "id": "rs_007fd910612ae0f4016aa52eb97f3c87d2aac380a2074574ff",
+      "type": "reasoning",
+      "content": [],
+      "encrypted_content": "gAAAAABqpS68xsCHcXjEqedxLDove_vn3eQRWRVdRol-XBt1kzP6AhKCdh4duYK_BB7KXpd7_6wEFpEx8PQLRQoy5nzb0PKxcj3FHBDNtHF0rxs4rmXKThyCNFOWaxGmKxEczBkhKZAvh1uleLgCcF6y2ybX9xUNxWLqv-xRD0r5GbbQWB9l7EBpVKWd5-JEOvJJvQRObE6FDawvTXhpDcur862d5otNJgDkoigeCR_-AbhWFD9rsRTOwMtaDP4lrqv9WRR1wTMoo4_KwuzjjccDEjNjxxn6Hod3tzM_XsyD7ppLLe_CpO2dGfFf32ns-rZkGtaMkgAwy4KGNLQOueIHruTuw8wD5vKidJMC6E6IEJfz0p9ZqtSJRG59eZ7yA0hASXjXKVisHX5OBLHtd20hZHQdQU7swZ6lDkT0oTbKuOswdKXqdIORmP0FKUI4DcRkUljglzy3a_sDDLgFK7gLaIZknSIYtyPgp_Tfv-Uld5bhGalDoXdgfjbb7q_dDN6oBjHlpa9b8qQl1rxDJy89BdcMNsQ1qP7GSBLFxBJ23MijEhYGSLtO28Kj7X5YyaMe17ITzwjTDzdp2qi14u1--gHKHOOoXnEQitxFdsQKkGNw4BtVOtf5jnZsTvClQVuPlW5e3sGnjb9JQ3eRLZ4tUQKbgFKF_hgSQi2GLMTkQhle-NhTFddbrkN0d9qeajNVPSC0vYfaahf4u2MUTlqOA2WfUPOiaCu85QufdLyU0Ugd7l0S4TKL7M0Mk6aiReC6fnrRC2NtfKIJl63kNQ-AgP9UZiX65JUicjUF6RxCUh0avwN04AUsmX0mu3qVnNuto-aIDkEMIkHfiUZeLx9MuUk_z5mQi6pY7WH9PU0HUlOeQaSBcAJWUzLI9oINGsN_vts85_56NyFnnNGt7t5GG_HxlrGoOnfwVWBZJzvPP7HkG7ZnHeFBJoDr6MEYb20PRyZD2F_QSj64cxJ9LURZaexzbvxo7DLohWAfsp4EEve7yOg8Pycj45VUpcFQsyHlZU5aZCUQSFiAtg3acmEM_CntRhO9kbFZ540bKGYYJfB16YkOxqWi2VaOlGk19vudj-LY6-_tB4fPLohyO_5TjIHEAsKJQNvCI_nMVo9Mq8xfSUg1VvmyJev7D9rwzwQVtb4KtRpBLvFf8eocLTxczsisXoWXMRNY7BlCpqUmr9wGfrmWLsse3ZQMxKl91SQ90FjpeAWU9xBGD933J81kkEEfa38Y2bu4ckYnpoXukgPUkp5PX6PJKmG33EXn9m4Ou4cG8-oEWki1mUQgjlLRNEUXsqStK8T1afivGsojrLFr0sh5LBshM4cbh1BvKaKTtv500CFFYEkG17SeyOnk0R7JWQNKssffrNH00khcRDj1JVBL6AJt5STJ8aFQJUChSQH4p3Bp5sVddVXOZqSH4lllIiOamJBwdQgIZSdUZGnTA1WSF4MO0JDBJPxlMspZaSw1H99de7845hxXlReiRS44aRWNfw==",
+      "summary": []
+    },
+    {
+      "id": "msg_007fd910612ae0f4016aa52eb9caa487d2882656d4cee0cfc8",
+      "type": "message",
+      "status": "completed",
+      "content": [
+        {
+          "type": "output_text",
+          "annotations": [],
+          "logprobs": [],
+          "text": "I ett rike d\u00e4r hantverkare och sk\u00f6rdare h\u00f6ll hjulen i g\u00e5ng, fanns en gammal sed: varje sj\u00e4l som arbetade skulle f\u00e5 elva timmar i f\u00f6ljd att vila under varje varv av sol och m\u00e5ne. Under denna fridfulla sk\u00e4rva av dygnet skulle \u00e4ven nattens djupaste timme, mellan midnatt och gryningens f\u00f6rsta andetag, vara som en stilla b\u00e4dd f\u00f6r alla.\n\nMen ibland intr\u00e4ffade s\u00e5dant som ingen v\u00e4vare av dagar kunnat f\u00f6rutse: en pl\u00f6tslig brand i ladan, en storm som br\u00f6t broar, eller en n\u00f6dropets klocka som ringde \u00f6ver landet. D\u00e5 fick vilans ordning rubbas f\u00f6r en stund, om det verkligen var en ov\u00e4ntad h\u00e4ndelse som h\u00e4rskaren \u00f6ver arbetet inte kunnat ana. Ingen fick dock l\u00e4mnas utan ers\u00e4ttning, ty varje stulen timme av ro skulle \u00e5terges som en motsvarande stund av \u00e5terh\u00e4mtning.\n\nOch om nattens m\u00f6rker m\u00e5ste brytas f\u00f6r att arbetet i sin natur kr\u00e4vde det, eller om folkets behov kallade \u00e4ven mellan midnatt och femte timmens gryning, d\u00e5 fick lamporna brinna vidare. Ty vissa sysslor, likt fyrar vid havet, m\u00e5ste vaka n\u00e4r andra sover. Men \u00e4ven d\u00e5 skulle det h\u00e5llas i minnet: vilan \u00e4r inte ett privilegium, utan en r\u00e4tt, och nattens stillhet \u00e4r ett l\u00f6fte som landet b\u00e4r f\u00f6r sina arbetare."
+        }
+      ],
+      "phase": "final_answer",
+      "role": "assistant"
+    }
+  ],
+  "parallel_tool_calls": true,
+  "presence_penalty": 0.0,
+  "previous_response_id": null,
+  "prompt_cache_key": null,
+  "prompt_cache_retention": "24h",
+  "reasoning": {
+    "context": "current_turn",
+    "effort": "low",
+    "mode": "standard",
+    "summary": null
+  },
+  "safety_identifier": null,
+  "service_tier": "default",
+  "store": false,
+  "temperature": 1.0,
+  "text": {
+    "format": {
+      "type": "text"
+    },
+    "verbosity": "medium"
+  },
+  "tool_choice": "auto",
+  "tool_usage": {
+    "image_gen": {
+      "input_tokens": 0,
+      "input_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "output_tokens": 0,
+      "output_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "total_tokens": 0
+    },
+    "web_search": {
+      "num_requests": 0
+    }
+  },
+  "tools": [],
+  "top_logprobs": 0,
+  "top_p": 0.98,
+  "truncation": "disabled",
+  "usage": {
+    "input_tokens": 198,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 376,
+    "output_tokens_details": {
+      "reasoning_tokens": 43
+    },
+    "total_tokens": 574
+  },
+  "user": null,
+  "metadata": {}
+}

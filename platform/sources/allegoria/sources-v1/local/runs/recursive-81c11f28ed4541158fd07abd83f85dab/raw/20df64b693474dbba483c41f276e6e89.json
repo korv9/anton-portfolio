@@ -1,0 +1,94 @@
+{
+  "id": "resp_0b60465fc1b636a9016aa43dfb60e887d2bd833bd708215bf9",
+  "object": "response",
+  "created_at": 1789148667,
+  "status": "completed",
+  "background": false,
+  "billing": {
+    "payer": "developer"
+  },
+  "completed_at": 1789148668,
+  "error": null,
+  "frequency_penalty": 0.0,
+  "incomplete_details": null,
+  "instructions": "Skriv om den f\u00f6ljande svenska texten med andra ord p\u00e5 svenska. Svara enbart med den omskrivna texten.",
+  "max_output_tokens": 1800,
+  "max_tool_calls": null,
+  "model": "gpt-5.4-nano-2026-03-17",
+  "moderation": null,
+  "output": [
+    {
+      "id": "msg_0b60465fc1b636a9016aa43dfc52a887d2a30401227d0d37d8",
+      "type": "message",
+      "status": "completed",
+      "content": [
+        {
+          "type": "output_text",
+          "annotations": [],
+          "logprobs": [],
+          "text": "N\u00e4tmyndigheten ska avg\u00f6ra en tvist om vilka avgifter som ska tas ut enligt 6, 7 eller 9 \u00a7.\n\nEn s\u00e5dan tvist f\u00e5r dock inte tas upp om den som ans\u00f6ker om pr\u00f6vning l\u00e4mnar in sin beg\u00e4ran till n\u00e4tmyndigheten senare \u00e4n tv\u00e5 \u00e5r efter att den systemansvarige har l\u00e4mnat ett skriftligt besked till den ber\u00f6rda parten p\u00e5 dennes senast k\u00e4nda adress."
+        }
+      ],
+      "phase": "final_answer",
+      "role": "assistant"
+    }
+  ],
+  "parallel_tool_calls": true,
+  "presence_penalty": 0.0,
+  "previous_response_id": null,
+  "prompt_cache_key": null,
+  "prompt_cache_retention": "24h",
+  "reasoning": {
+    "context": "current_turn",
+    "effort": "none",
+    "mode": "standard",
+    "summary": null
+  },
+  "safety_identifier": null,
+  "service_tier": "default",
+  "store": false,
+  "temperature": 1.0,
+  "text": {
+    "format": {
+      "type": "text"
+    },
+    "verbosity": "medium"
+  },
+  "tool_choice": "auto",
+  "tool_usage": {
+    "image_gen": {
+      "input_tokens": 0,
+      "input_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "output_tokens": 0,
+      "output_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "total_tokens": 0
+    },
+    "web_search": {
+      "num_requests": 0
+    }
+  },
+  "tools": [],
+  "top_logprobs": 0,
+  "top_p": 0.98,
+  "truncation": "disabled",
+  "usage": {
+    "input_tokens": 125,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 98,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 223
+  },
+  "user": null,
+  "metadata": {}
+}

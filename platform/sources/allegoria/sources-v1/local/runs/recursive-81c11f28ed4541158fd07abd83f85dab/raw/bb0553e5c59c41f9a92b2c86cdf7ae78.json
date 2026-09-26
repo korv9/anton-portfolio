@@ -1,0 +1,94 @@
+{
+  "id": "resp_0ef1fe887ef00588016aa43e6b5f2887d2be0d71f2bc44478e",
+  "object": "response",
+  "created_at": 1789148779,
+  "status": "completed",
+  "background": false,
+  "billing": {
+    "payer": "developer"
+  },
+  "completed_at": 1789148780,
+  "error": null,
+  "frequency_penalty": 0.0,
+  "incomplete_details": null,
+  "instructions": "\u00c5terge inneh\u00e5llet i den f\u00f6ljande texten med en ny svensk formulering. Svara enbart med din version.",
+  "max_output_tokens": 1800,
+  "max_tool_calls": null,
+  "model": "gpt-5.4-nano-2026-03-17",
+  "moderation": null,
+  "output": [
+    {
+      "id": "msg_0ef1fe887ef00588016aa43e6bf23487d29f4291b85e6283b4",
+      "type": "message",
+      "status": "completed",
+      "content": [
+        {
+          "type": "output_text",
+          "annotations": [],
+          "logprobs": [],
+          "text": "En intygsgivare m\u00e5ste sj\u00e4lv r\u00e4tta en felaktig uppgift genom att skriftligen och p\u00e5 ett tydligt s\u00e4tt meddela mottagaren om \u00e4ndringen. R\u00e4ttelsen ska ange vilken uppgift som tidigare varit oriktig och beskriva det faktiska f\u00f6rh\u00e5llande som intyget avser. Att genomf\u00f6ra en s\u00e5dan r\u00e4ttelse \u00e4r intygsgivarens eget ansvar f\u00f6r det uttalande som l\u00e4mnats. Skyldigheten g\u00e4ller alltid, utan undantag, oavsett om intygsgivaren kan ha egen f\u00f6rdel eller vad andra kan vilja."
+        }
+      ],
+      "phase": "final_answer",
+      "role": "assistant"
+    }
+  ],
+  "parallel_tool_calls": true,
+  "presence_penalty": 0.0,
+  "previous_response_id": null,
+  "prompt_cache_key": null,
+  "prompt_cache_retention": "24h",
+  "reasoning": {
+    "context": "current_turn",
+    "effort": "none",
+    "mode": "standard",
+    "summary": null
+  },
+  "safety_identifier": null,
+  "service_tier": "default",
+  "store": false,
+  "temperature": 1.0,
+  "text": {
+    "format": {
+      "type": "text"
+    },
+    "verbosity": "medium"
+  },
+  "tool_choice": "auto",
+  "tool_usage": {
+    "image_gen": {
+      "input_tokens": 0,
+      "input_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "output_tokens": 0,
+      "output_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "total_tokens": 0
+    },
+    "web_search": {
+      "num_requests": 0
+    }
+  },
+  "tools": [],
+  "top_logprobs": 0,
+  "top_p": 0.98,
+  "truncation": "disabled",
+  "usage": {
+    "input_tokens": 161,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 126,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 287
+  },
+  "user": null,
+  "metadata": {}
+}

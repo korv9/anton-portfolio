@@ -1,0 +1,36 @@
+{
+  "id": "msg_011CexFULiQQj8HYDi6S4c4m",
+  "container": null,
+  "content": [
+    {
+      "signature": "CAIS+QEKjgEIERgCKkAKMN2ImoGhIBykhLkVisiI4r4eKD6ZJQh85GmkdsfCv55H+K5tJ3x7SO6yqZoRYNTAR6Bd/EsmZcveWD4UMyUXMg1jbGF1ZGUtb3B1cy01OAFCCHRoaW5raW5nWiRkMGVkNzIzNC0zMjkwLTRkMGYtOTYyMS0yNTY1MTMyZmIzNjSoAY29kdUGEgwdCEpv5inz3kqn+igaDJkEBPJGSbK9SRV+lSIwOYi8nZBf0s97kjrTNPj3m04/BgOZUfstuaeEpryunxtJbRGBRKQCfd581dlFHg3hKhgb+LLnDTpogSG07V4zhxx/lT/MEzPvdtQYAQ==",
+      "thinking": "",
+      "type": "thinking"
+    },
+    {
+      "text": "Har parterna inte kommit överens om något annat ska semestern läggas ut på ett sådant sätt att arbetstagaren erhåller en sammanhängande ledighet om minst fyra veckor någon gång under perioden juni till augusti. Om det finns särskilda skäl får en sådan semesterperiod placeras vid en annan tidpunkt, även om det saknas avtal om detta. Lag (2009:1439).",
+      "type": "text"
+    }
+  ],
+  "model": "claude-opus-5",
+  "role": "assistant",
+  "stop_details": null,
+  "stop_reason": "end_turn",
+  "stop_sequence": null,
+  "type": "message",
+  "usage": {
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 0,
+    "inference_geo": "global",
+    "input_tokens": 164,
+    "output_tokens": 153,
+    "service_tier": "standard",
+    "output_tokens_details": {
+      "thinking_tokens": 8
+    }
+  }
+}

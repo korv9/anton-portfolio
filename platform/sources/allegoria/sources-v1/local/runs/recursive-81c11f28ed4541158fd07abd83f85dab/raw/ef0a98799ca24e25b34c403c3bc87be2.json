@@ -1,0 +1,94 @@
+{
+  "id": "resp_06ec0a86f035fb41016aa43e053a9c87d2ba01212926a0ea2c",
+  "object": "response",
+  "created_at": 1789148677,
+  "status": "completed",
+  "background": false,
+  "billing": {
+    "payer": "developer"
+  },
+  "completed_at": 1789148677,
+  "error": null,
+  "frequency_penalty": 0.0,
+  "incomplete_details": null,
+  "instructions": "Skriv om den f\u00f6ljande svenska texten med andra ord p\u00e5 svenska. Svara enbart med den omskrivna texten.",
+  "max_output_tokens": 1800,
+  "max_tool_calls": null,
+  "model": "gpt-5.4-nano-2026-03-17",
+  "moderation": null,
+  "output": [
+    {
+      "id": "msg_06ec0a86f035fb41016aa43e057c5087d2b55d4729431d8ee2",
+      "type": "message",
+      "status": "completed",
+      "content": [
+        {
+          "type": "output_text",
+          "annotations": [],
+          "logprobs": [],
+          "text": "Det eftert\u00e4nksamma s\u00e4ttet att handla ligger n\u00e5gonstans mitt emellan den f\u00f6rsiktige som tvekar och den sl\u00f6saktige som tar f\u00f6r givet vad man har. N\u00e4r man ger med omtanke visar man h\u00e4nsyn b\u00e5de mot den som tar emot och mot det liv man lever sida vid sida med andra. Tillg\u00e5ngarna \u00e4r varken n\u00e5got man jagar enbart f\u00f6r att vinna sj\u00e4lv, eller n\u00e5got som saknar betydelse."
+        }
+      ],
+      "phase": "final_answer",
+      "role": "assistant"
+    }
+  ],
+  "parallel_tool_calls": true,
+  "presence_penalty": 0.0,
+  "previous_response_id": null,
+  "prompt_cache_key": null,
+  "prompt_cache_retention": "24h",
+  "reasoning": {
+    "context": "current_turn",
+    "effort": "none",
+    "mode": "standard",
+    "summary": null
+  },
+  "safety_identifier": null,
+  "service_tier": "default",
+  "store": false,
+  "temperature": 1.0,
+  "text": {
+    "format": {
+      "type": "text"
+    },
+    "verbosity": "medium"
+  },
+  "tool_choice": "auto",
+  "tool_usage": {
+    "image_gen": {
+      "input_tokens": 0,
+      "input_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "output_tokens": 0,
+      "output_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "total_tokens": 0
+    },
+    "web_search": {
+      "num_requests": 0
+    }
+  },
+  "tools": [],
+  "top_logprobs": 0,
+  "top_p": 0.98,
+  "truncation": "disabled",
+  "usage": {
+    "input_tokens": 131,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 97,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 228
+  },
+  "user": null,
+  "metadata": {}
+}

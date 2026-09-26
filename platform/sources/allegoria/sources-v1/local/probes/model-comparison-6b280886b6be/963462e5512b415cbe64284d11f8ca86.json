@@ -1,0 +1,101 @@
+{
+  "id": "resp_0c42fbcdff368bd4016aa52eb7aea487d28c7f29262da54549",
+  "object": "response",
+  "created_at": 1789210295,
+  "status": "completed",
+  "background": false,
+  "billing": {
+    "payer": "developer"
+  },
+  "completed_at": 1789210296,
+  "error": null,
+  "frequency_penalty": 0.0,
+  "incomplete_details": null,
+  "instructions": "Skriv om den f\u00f6ljande svenska texten med andra ord p\u00e5 svenska. Svara enbart med den omskrivna texten.",
+  "max_output_tokens": 8000,
+  "max_tool_calls": null,
+  "model": "gpt-5.4-mini-2026-03-17",
+  "moderation": null,
+  "output": [
+    {
+      "id": "rs_0c42fbcdff368bd4016aa52eb7e7b887d29f207392307de749",
+      "type": "reasoning",
+      "content": [],
+      "encrypted_content": "gAAAAABqpS643q22kBV2NXWzVbsvrmV5xPz4lsWNwHT4FTpqpF0TWixmunqE7uJ81DlW_icNNUM96EqKfVhzoMh3jIOgVsaF57Uis0jyFelEQ-UNsaI-LXz4_duhX-aOORKJa46n-xK_rltgfb0eNZOsI9f24EGWZUiP56BJ1J-NxRGHK-35fNef7X6wut1PO0C_pIQCHPdxtImJ4sxLMvT3r-eEIVmuv3CbGBLLhXAe3RcZX43NREJYBmsda58urp0FTGOu5YqmJKwL2vEhxvpgQ7JGBdUXQkwPHL0cyjQI8YeYNapACR7InskhapJpOTsi0uCylDIkbI55l3dYx8IFFZnDQCtPUELQsX5xGPc74pZNGhqt4CtaEXRLKZIh_58iRFcx3iz1upAsiezw1jZDu1LdTANZtpZKgSLqubO2tiyPDDuMmrjIMh3qMaqny1V3xsavsR8a4iDUex4VIaJVu_1evn7iBbvNhjyW8gizSsbc7l73cFGR6EN-G-mBO-uU8E-M8otH3NVa1KpfzQkEVxbzUkCT2lTCMvr0NJ31uCK2ChH6PLfCWNBvctUKW4hQ3i5-pYdrzKJDTOW0TMJhR4e-G_tOnzDAWD_3fd2seiRLG7BXhKAF89_INs8PzoAIVZHnOxblliP34tSqYwyD4S4XM6oAoL1k9J-VGgke4kO-OZzKJrG5z6hjgNTxZrf72Yt_y99nl5rxHmSSqAahk_W22Jn5kBsAWfAc_oxUrmr9lqw9Ff6V-4HKMFyLzzjXuUHYjCO00tdp73Cy_XXdAbaW0wYMaIFGPHkwoaIijWX0sVQfIpUHUy8iz4ChJBPeMvxms-aXLPRAHP9oswY9E4O6QHShqjwpg-N2tq5NYFbSx_P-R62-0I30Z2DVaetiWKvzB5OLVZJshSbv9qIljxPcd-pCO-FQqb08Db8Cf-ZkipNEOtO0Zgj5izGVfoPJttdzQlMWvcywQh-Y0NpggneokmTrLy2m4w4nEPO7dywNmDeJNk5U8lRGuBVj8iH2PxrA8hP_ka3mYnhuaK_dSEDf1ZQwtnl8UjZPL8jit5OUhwRuLPY-vkVDoBwQPH64v42-H6v6jZMm51YCrdvVv1mgpg4o8rbEHaTeDO20sG6ZUQvnyHOhQy7aRaeAzbC0gWAH4ufyE7uZc6huDma8pGKrIH4khoi8fhVuSniEM5cEbh-PwHEjRCwzp84-kcC5fZH1FyGCsCARs53K5te4NAgKnZIw3EcSKxn8y5SzeaxeQVPCh_s=",
+      "summary": []
+    },
+    {
+      "id": "msg_0c42fbcdff368bd4016aa52eb7f81c87d2afee89ee87101d4b",
+      "type": "message",
+      "status": "completed",
+      "content": [
+        {
+          "type": "output_text",
+          "annotations": [],
+          "logprobs": [],
+          "text": "Alla arbetstagare ska ha minst elva timmars sammanh\u00e4ngande ledighet under varje 24-timmarsperiod (dygnsvila). Tillf\u00e4lliga avvikelser f\u00e5r g\u00f6ras om det beror p\u00e5 en s\u00e4rskild omst\u00e4ndighet som arbetsgivaren inte har kunnat f\u00f6rutse, under f\u00f6ruts\u00e4ttning att arbetstagaren f\u00e5r motsvarande kompensationsledighet.\n\nI den dygnsvila som alla arbetstagare har r\u00e4tt till ska tiden mellan midnatt och klockan 5 ing\u00e5. Avvikelse f\u00e5r g\u00f6ras om arbetets art, allm\u00e4nhetens behov eller andra s\u00e4rskilda omst\u00e4ndigheter kr\u00e4ver att arbetet utf\u00f6rs mellan midnatt och klockan 5. Lag (2005:165)."
+        }
+      ],
+      "phase": "final_answer",
+      "role": "assistant"
+    }
+  ],
+  "parallel_tool_calls": true,
+  "presence_penalty": 0.0,
+  "previous_response_id": null,
+  "prompt_cache_key": null,
+  "prompt_cache_retention": "24h",
+  "reasoning": {
+    "context": "current_turn",
+    "effort": "low",
+    "mode": "standard",
+    "summary": null
+  },
+  "safety_identifier": null,
+  "service_tier": "default",
+  "store": false,
+  "temperature": 1.0,
+  "text": {
+    "format": {
+      "type": "text"
+    },
+    "verbosity": "medium"
+  },
+  "tool_choice": "auto",
+  "tool_usage": {
+    "image_gen": {
+      "input_tokens": 0,
+      "input_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "output_tokens": 0,
+      "output_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "total_tokens": 0
+    },
+    "web_search": {
+      "num_requests": 0
+    }
+  },
+  "tools": [],
+  "top_logprobs": 0,
+  "top_p": 0.98,
+  "truncation": "disabled",
+  "usage": {
+    "input_tokens": 203,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 175,
+    "output_tokens_details": {
+      "reasoning_tokens": 11
+    },
+    "total_tokens": 378
+  },
+  "user": null,
+  "metadata": {}
+}

@@ -1,0 +1,101 @@
+{
+  "id": "resp_01e595621bc8572a016aa52ebd0d5087d28844967cfee9a70d",
+  "object": "response",
+  "created_at": 1789210301,
+  "status": "completed",
+  "background": false,
+  "billing": {
+    "payer": "developer"
+  },
+  "completed_at": 1789210302,
+  "error": null,
+  "frequency_penalty": 0.0,
+  "incomplete_details": null,
+  "instructions": "Skriv om den f\u00f6ljande svenska texten med andra ord p\u00e5 svenska. Svara enbart med den omskrivna texten.",
+  "max_output_tokens": 8000,
+  "max_tool_calls": null,
+  "model": "gpt-5.4-mini-2026-03-17",
+  "moderation": null,
+  "output": [
+    {
+      "id": "rs_01e595621bc8572a016aa52ebd962487d291d2ff849e9ea3ef",
+      "type": "reasoning",
+      "content": [],
+      "encrypted_content": "gAAAAABqpS6-B7ZNmxn8pMTQeHBPXTO6RgX1Xp3vuhFRrr8U5K-xnmY7LkxmIGgWD9X3T5G2MD6IKJkAO-FhTVawmqY0T8kRcuimqe6oLz9NE5zUZVwXgsTzE7ePoSRHTSfeExo111eLAheX4BVi_tMCIOrotQ8Gf-yfNnpZm60rZyQGpjxofcgxviOHUX1evX_kAWrO_fwZ0heC6IBWg7N2-_6Id8Tor9bo683-19LSGD6zLBBf5r7CLw-cvj67nJl29I_jqCe6Z-4fgQDFmjdPLENhmwMwF-MVK23MoXnhjBdia9RhjX3-hSutfix1opitjoekl4R0Cv_9ccQ83UM9RSLgBM0dCMOFbVX-ayE87xoDV3_xSO1-YnSsSzQHf-NzvEBJuBF7I2frLD2ZIOtNHd-Y2JFPn9uRPa-iSSA-Dk0IH8OWY_mGpdKFE7EdRTk006iNBK6AZsPjxCD86isV5y5ilvraKNWsrkiCFYRHn_YjoIb8q4T4hce3mHKy9WoiFLmx-OuySIvXGIwkBUXZvpWLGO9HLbkbBmvpkyb49aL38dq1JR1uEeyK0ji6F8tFfr00YltlvZ31N8S870hsKAI1YaFGR9kbel_m-39KeLNj52twjSr20WmXZaZT2XmgWSUUXmECuk4ZRN3SuGju1Ik88kqdu1Mu3-0tkwFh1uG7Ky9admUF2sJqWxM5gGlSypXYo47wJSTt6SJQk5hsMXBgiqvjx9m8Ic24-505QlOz4ytToNT9YeFqQnivkOw2tD5Xkgwudh1CY6KUYb0qKIM1birMzmeE0v3vyw5PpnQJMsAg9SzBcI70mh0S47ZtVYweuqDCh8JJcksl19_D1c62bo_8JGatouoZBEJTd4IiTfyaZPK8CoGFAF8pv5qe5C9_7qS3CxdXxYDOvckp9M7m-r6kMjdiBEKF6spxc9MqmLh3sk8Eq74WCIWZo5qY48wVDfxdVBeFgnVc1G6GaOBSZp-rxKjrWHGlGQ0aKlfwCvIeLG3NL2X08d-TqkRj4i6rwyb6LAD29A9UlXC38GzT_FcjREVp8KE-i7nAAul09wLeH32FAHMG9oqRz5ui0dsb6ocMF1qwbsetdHBA1aiEXoUtqQCJ0RJcxxPNP04MNkm6JeZEY8P473XIq_4xbR41XND4mz1IiLjswj3mJckVtkYLsDmcMHVaE8Z8mB9PC2qbiDV_rodoQyyw6wNGjSCYq-rk8EnbG8038X_N97ZXRWMgFA==",
+      "summary": []
+    },
+    {
+      "id": "msg_01e595621bc8572a016aa52ebda66487d2abcd750771bd57a5",
+      "type": "message",
+      "status": "completed",
+      "content": [
+        {
+          "type": "output_text",
+          "annotations": [],
+          "logprobs": [],
+          "text": "Om inget annat har avtalats ska semestern planeras s\u00e5 att arbetstagaren f\u00e5r en sammanh\u00e4ngande ledighetsperiod p\u00e5 minst fyra veckor under juni\u2013augusti. \u00c4ven utan st\u00f6d i avtal f\u00e5r en s\u00e5dan semesterperiod l\u00e4ggas vid en annan tidpunkt om s\u00e4rskilda sk\u00e4l talar f\u00f6r det. Lag (2009:1439)."
+        }
+      ],
+      "phase": "final_answer",
+      "role": "assistant"
+    }
+  ],
+  "parallel_tool_calls": true,
+  "presence_penalty": 0.0,
+  "previous_response_id": null,
+  "prompt_cache_key": null,
+  "prompt_cache_retention": "24h",
+  "reasoning": {
+    "context": "current_turn",
+    "effort": "low",
+    "mode": "standard",
+    "summary": null
+  },
+  "safety_identifier": null,
+  "service_tier": "default",
+  "store": false,
+  "temperature": 1.0,
+  "text": {
+    "format": {
+      "type": "text"
+    },
+    "verbosity": "medium"
+  },
+  "tool_choice": "auto",
+  "tool_usage": {
+    "image_gen": {
+      "input_tokens": 0,
+      "input_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "output_tokens": 0,
+      "output_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "total_tokens": 0
+    },
+    "web_search": {
+      "num_requests": 0
+    }
+  },
+  "tools": [],
+  "top_logprobs": 0,
+  "top_p": 0.98,
+  "truncation": "disabled",
+  "usage": {
+    "input_tokens": 112,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 92,
+    "output_tokens_details": {
+      "reasoning_tokens": 10
+    },
+    "total_tokens": 204
+  },
+  "user": null,
+  "metadata": {}
+}

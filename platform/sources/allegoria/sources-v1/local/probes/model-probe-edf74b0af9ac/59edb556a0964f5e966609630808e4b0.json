@@ -1,0 +1,31 @@
+{
+  "id": "msg_011CexFfHwGpWsAt5zLshh2u",
+  "container": null,
+  "content": [
+    {
+      "text": "{\"slots\":[{\"slot_id\":\"agreement\",\"status\":\"present\",\"quote\":\"Så länge inte Herden och Fåren tillsammans kommit överens om annat\",\"note\":\"Anger att regeln gäller om inte avtal om annat träffats mellan Herden och Fåren.\"},{\"slot_id\":\"leave_period\",\"status\":\"present\",\"quote\":\"skulle varje Får föras till den gröna Ängen under Sommarens fyra ljusaste månader – juni, juli och augusti – och där få vila minst fyra veckors tid\",\"note\":\"Anger bestämd tidsperiod (juni-augusti) och längd (minst fyra veckor) för vilan/semestern.\"},{\"slot_id\":\"exception\",\"status\":\"present\",\"quote\":\"Men om Ängen låg översvämmad, om Stormar drog fram, eller om andra tungt vägande omständigheter krävde det, då fick Herden – även utan Fårets samtycke – föra det till en annan äng, vid en annan tid på året.\",\"note\":\"Uttrycker ett undantag från huvudregeln om semesterperiodens förläggning.\"},{\"slot_id\":\"special_reasons\",\"status\":\"present\",\"quote\":\"så länge skälen var sanna och tunga nog att bära en sådan förändring\",\"note\":\"Anger villkoret att särskilda, tungt vägande skäl krävs för att flytta perioden till annan tid.\"}]}",
+      "type": "text"
+    }
+  ],
+  "model": "claude-sonnet-5",
+  "role": "assistant",
+  "stop_details": null,
+  "stop_reason": "end_turn",
+  "stop_sequence": null,
+  "type": "message",
+  "usage": {
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 0,
+    "inference_geo": "global",
+    "input_tokens": 1354,
+    "output_tokens": 461,
+    "service_tier": "standard",
+    "output_tokens_details": {
+      "thinking_tokens": 0
+    }
+  }
+}

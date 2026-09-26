@@ -3,11 +3,15 @@ import argparse
 import hashlib
 import json
 import shutil
+import time
 import sqlite3
 import sys
 import subprocess
 from collections import defaultdict
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "lib"))
+import common
 
 ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / 'frontend/public/data/politics'
@@ -17,29 +21,74 @@ def read(path):
     return obj.get('data', obj) if isinstance(obj, dict) else obj
 
 def write(path, data):
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(data, ensure_ascii=False, separators=(',', ':')), encoding='utf-8')
+    payload = json.dumps(data, ensure_ascii=False, separators=(',', ':')).encode('utf-8')
+    common.write_bytes_retrying(path, payload)
 
 def digest(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
+def mirror(source: Path, target: Path) -> int:
+    """Copy a tree, skipping files already identical and retrying transient locks.
+
+    shutil.copytree aborts the whole tree on the first error. On Windows an indexer or
+    editor holding a freshly written file makes the copy fail with EACCES or a mapped
+    section error, and a rebuild that touches thousands of files hits that regularly.
+    Skipping identical files also makes a rerun cheap.
+    """
+    copied = 0
+    for item in source.rglob('*'):
+        if not item.is_file():
+            continue
+        destination = target / item.relative_to(source)
+        if destination.is_file() and destination.stat().st_size == item.stat().st_size                 and digest(destination) == digest(item):
+            continue
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        for attempt in range(5):
+            try:
+                shutil.copy2(item, destination)
+                copied += 1
+                break
+            except OSError:
+                if attempt == 4:
+                    raise
+                time.sleep(0.3 * (attempt + 1))
+    return copied
+
 def build(parliament, allegoria, local_corpus):
     OUT.mkdir(parents=True, exist_ok=True)
     target = OUT / 'parliament'
-    shutil.copytree(parliament / 'portfolio-data', target, dirs_exist_ok=True)
+    print(f'Mirrored {mirror(parliament / "portfolio-data", target)} changed files.')
+    # Allegoria material is refreshed only when the upstream checkout still provides it.
+    # The engine has since been restructured upstream and no longer exposes a
+    # meaningquality package, so the vendored copy under platform/packages is what runs.
+    # It and the corpora under platform/sources are pinned snapshots: re-copying them is an
+    # update, not a requirement, and their absence must not stop a parliament rebuild.
     package = ROOT / 'platform/packages/meaningquality'
-    shutil.copytree(allegoria / 'meaningquality', package, dirs_exist_ok=True, ignore=shutil.ignore_patterns('__pycache__'))
-    shutil.copy2(allegoria / 'DIRECTION.md', package / 'DIRECTION.md')
-    shutil.copytree(allegoria / 'corpus', ROOT / 'platform/sources/allegoria/corpus', dirs_exist_ok=True)
-    shutil.copytree(allegoria / 'data', ROOT / 'platform/sources/allegoria/sources-v1', dirs_exist_ok=True)
-    shutil.copytree(local_corpus / 'data/local/pool_v2', ROOT / 'platform/sources/allegoria/sources-v2', dirs_exist_ok=True)
+    if (allegoria / 'meaningquality').is_dir():
+        shutil.copytree(allegoria / 'meaningquality', package, dirs_exist_ok=True,
+                        ignore=shutil.ignore_patterns('__pycache__'))
+        shutil.copy2(allegoria / 'DIRECTION.md', package / 'DIRECTION.md')
+    else:
+        print(f'Allegoria engine not present at {allegoria}; using the vendored snapshot.')
+    for source, destination in (
+        (allegoria / 'corpus', 'corpus'),
+        (allegoria / 'data', 'sources-v1'),
+        (local_corpus / 'data/local/pool_v2', 'sources-v2'),
+    ):
+        if source.is_dir():
+            shutil.copytree(source, ROOT / 'platform/sources/allegoria' / destination,
+                            dirs_exist_ok=True)
     sys.path.insert(0, str(ROOT / 'platform/packages'))
     import yaml
     from meaningquality import Part, Presence, SlotChange, classify
     from meaningquality.conformance import CASES, run
     passed, total, failures = run()
     assert not failures, failures
-    proposals = yaml.safe_load((allegoria / 'corpus/claims_v3_proposals.yaml').read_text(encoding='utf-8'))
+    # Read the pinned snapshot, falling back to the upstream checkout only if it is absent.
+    corpus = ROOT / 'platform/sources/allegoria/corpus/claims_v3_proposals.yaml'
+    if not corpus.is_file():
+        corpus = allegoria / 'corpus/claims_v3_proposals.yaml'
+    proposals = yaml.safe_load(corpus.read_text(encoding='utf-8'))
     examples = []
     for item in proposals['proposals']:
         part, operation = item['operation'].split('_')
@@ -106,7 +155,7 @@ def build(parliament, allegoria, local_corpus):
                          'citations': len(citations), 'reservations': len(reservations), 'path': f'decisions/{slug}/index.json'})
     database.close()
     from politics_budget import repair_budget
-    budget_audit = repair_budget(parliament, ROOT/'public/data/debates/budgets', write)
+    budget_audit = repair_budget(parliament, ROOT/'frontend/public/data/debates/budgets', write)
     write(OUT/'budget-year-audit.json', budget_audit)
     write(OUT / 'overview.json', {'parliament': read(target / 'overview.json'), 'sessions': sessions,
                                  'law_pools': {pool: {'documents': sum(r['pool']==pool for r in law_index), 'provisions': sum(r['provisions'] for r in law_index if r['pool']==pool)} for pool in ['v1','v2']},

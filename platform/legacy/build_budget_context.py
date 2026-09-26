@@ -11,7 +11,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "lib"))
 
 import json
 from collections import Counter
-from common import GOLD, read_json
+from common import GOLD, ROOT, read_json
 PARTIES = ("C", "KD", "L", "M", "MP", "S", "SD", "V")
 
 

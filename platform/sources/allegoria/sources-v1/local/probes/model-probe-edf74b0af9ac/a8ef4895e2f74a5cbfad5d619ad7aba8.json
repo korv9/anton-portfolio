@@ -1,0 +1,31 @@
+{
+  "id": "msg_011CexFgbuZ11JshUMnf9mGq",
+  "container": null,
+  "content": [
+    {
+      "text": "{\"slots\":[{\"slot_id\":\"duty\",\"status\":\"present\",\"quote\":\"Ingen behövde bära sitt tvivel ensam — Vågen var skyldig att ta emot den som knackade.\",\"note\":\"Vågen har uttrycklig skyldighet att ta emot den som vill pröva tvisten.\"},{\"slot_id\":\"scope\",\"status\":\"present\",\"quote\":\"krävde en slant av var och en som passerade — en slant för timret, en för spikarna, en för slitet\",\"note\":\"Kostnaderna specificeras (timmer, spik, slitage) och det är dessa som vägs: \\\"vägde timmer mot slant\\\".\"},{\"slot_id\":\"exception\",\"status\":\"present\",\"quote\":\"Dock hade hon en regel, ristad i dörrposten:\",\"note\":\"Regeln utgör ett undantag från plikten att ta emot alla: efter två somrar öppnas inte dörren.\"},{\"slot_id\":\"exception_deadline\",\"status\":\"present\",\"quote\":\"när två somrar hade gått över dalen — när löven fallit två gånger och snön smält två gånger — då öppnade Vågen inte längre sin dörr i den saken\",\"note\":\"Tidsgräns på två somrar (två år) för prövning.\"},{\"slot_id\":\"deadline_start\",\"status\":\"present\",\"quote\":\"När brovaktaren en gång skrivit ner sitt svar på ett blad och sänt det till vandrarens sista kända härbärge, började tiden rinna.\",\"note\":\"Fristen räknas från att svaret sänts till sista kända adress.\"}]}",
+      "type": "text"
+    }
+  ],
+  "model": "claude-opus-5",
+  "role": "assistant",
+  "stop_details": null,
+  "stop_reason": "end_turn",
+  "stop_sequence": null,
+  "type": "message",
+  "usage": {
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 0,
+    "inference_geo": "global",
+    "input_tokens": 1676,
+    "output_tokens": 513,
+    "service_tier": "standard",
+    "output_tokens_details": {
+      "thinking_tokens": 0
+    }
+  }
+}

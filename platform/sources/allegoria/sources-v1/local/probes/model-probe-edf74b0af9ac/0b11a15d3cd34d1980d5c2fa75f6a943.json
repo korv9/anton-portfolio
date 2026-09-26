@@ -1,0 +1,31 @@
+{
+  "id": "msg_011CexFVgCxWhrTxzE36zfoJ",
+  "container": null,
+  "content": [
+    {
+      "text": "{\"slots\":[{\"slot_id\":\"agreement\",\"status\":\"present\",\"quote\":\"Om inte annat har avtalats\",\"note\":\"Regeln gäller endast i avsaknad av avtal.\"},{\"slot_id\":\"leave_period\",\"status\":\"present\",\"quote\":\"en ledighetsperiod av minst fyra veckor under juni-augusti\",\"note\":\"Längd (minst fyra veckor) och förläggning (juni–augusti) anges.\"},{\"slot_id\":\"exception\",\"status\":\"present\",\"quote\":\"Även utan stöd av avtal får en sådan semesterperiod förläggas till annan tid\",\"note\":\"Undantag från huvudregeln om förläggning.\"},{\"slot_id\":\"special_reasons\",\"status\":\"present\",\"quote\":\"när särskilda skäl föranleder det\",\"note\":\"Villkoret är att särskilda skäl föreligger.\"}]}",
+      "type": "text"
+    }
+  ],
+  "model": "claude-opus-5",
+  "role": "assistant",
+  "stop_details": null,
+  "stop_reason": "end_turn",
+  "stop_sequence": null,
+  "type": "message",
+  "usage": {
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 0,
+    "inference_geo": "global",
+    "input_tokens": 1078,
+    "output_tokens": 281,
+    "service_tier": "standard",
+    "output_tokens_details": {
+      "thinking_tokens": 0
+    }
+  }
+}

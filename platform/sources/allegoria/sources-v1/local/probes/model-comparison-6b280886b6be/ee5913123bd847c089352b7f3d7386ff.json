@@ -1,0 +1,101 @@
+{
+  "id": "resp_0cf3d69f13d3d6df016aa52eb508b087d2a4c38c9f59dafd10",
+  "object": "response",
+  "created_at": 1789210293,
+  "status": "completed",
+  "background": false,
+  "billing": {
+    "payer": "developer"
+  },
+  "completed_at": 1789210295,
+  "error": null,
+  "frequency_penalty": 0.0,
+  "incomplete_details": null,
+  "instructions": "Gestalta den f\u00f6ljande texten som en allegori p\u00e5 svenska. Svara enbart med allegorin.",
+  "max_output_tokens": 8000,
+  "max_tool_calls": null,
+  "model": "gpt-5.4-mini-2026-03-17",
+  "moderation": null,
+  "output": [
+    {
+      "id": "rs_0cf3d69f13d3d6df016aa52eb5637087d2a13a6a46275836ee",
+      "type": "reasoning",
+      "content": [],
+      "encrypted_content": "gAAAAABqpS6317lNjBjYg48RZ5yk1cKwmEEh3yE6PM4oa69JrtgXNhgodK3LOoUkcCG-9UlNncr8Vl8bUtt5MEWv-UMyZNBs1BgoWSV0UgqxCdq0GTHH0GW2fmKBwcP523ir5IJD0kaQ9rbvIoC1RMq0m5Al0tBbC7MPuR7BeaA06-ADwOvMFxOi37ZgBtcTquHf-JIoqL2KujOUcEtDNI7dAzB90Wye5Ifw7sCc1aOxooZ7f7bRrOeBK_GzvEwh9ouww4LHLaopaBVvLa1-7oGby3ipsEcL9tdUszx_sxydVfmnfA8_u_tyXEdxrWbSagsqvHJNOBskDNFNKWguV9NVsOfjZmwsjD40pbgIqN1vPRh8eZyt_R4RAu8E-APJKaIKImUbVvRvz7ZtqimDagFxDePnDclM4aonOvBnGdUcxfO_1BQfO0Mn1NIRHvm9XYfuO6N1fq8qmxw9WHMpDSNIUPy6SZcKIhWxJSl9wwrwj9e3IgY4lhukKRF640d3VhgB1RrRQig50QZfpfBrf0sB_agElS8QTnKm22dx4Gt-bp6yaS7zU4X-pbneYU0h4d6N8Wn-jWOGkwLPtRCAFx6iTUS1RPkZYI7S7EVhNh12ipakve0JWGbliLM2QCdF3Ju-XLNm2BRG5PQjxASugz2LFFaqFoyCHTbc88y5Sm1jIEGb0ZTVzfe6K1rkQLYUieqqDz6QHEGDQeKTjOWD7HbwRi4PFCOkFFbYek7gp_pZA8oFMqWVNcpkNQEfunE2UJ4ikGM7xG7loeYcEvDHLHT6RYQkoHxdgAnGmq6HFEN3tyuDTJzQT2MYXfz6Dh_lAbF_V3Z1fsCOVFB9sb4H2820qOA2vNbNRXWYS-qeqfsZnAAllp192_xEl-tGpKDjpEyU0NKnSKQn_1qxGeWkdJ_B1GDcXLNWNLmwt9sAN0nBdJAou_WjtCgyplShg7REOMe3IvT8slM2gBUoVadai0Tn_p4co9Hz41svKWBhgLCja2lroDCPaxr0abQ0eUD3ocCBxc2-u6CIK9I87dllUDwf-8pxQH3NuEiXWyw8oGq6IXbbkQzWP54RpFTNvSNXxX4glHZKmsuQ1wHk7BdVFzdHqCWZSnyX6Bk4d0N1pohWA7S1XaUoVLta0fvgx5nda0isw9z5l-tKdWl9b5l5T52unANI7TcRTkto3F2VG9EJz4Co-BQRzMJe_u4IS4k1acmSUbyo3YRRN63Ihjt48MZritERVfbj9mpNaf3c15lviX8jjpB8Ojf5GHtncN3u87oeWaslacTkG1ycU5pntKe2_VdNH70f57nklM_E9I3zyO6i4bqONtNzzTICrJynbE85Vw5BKKj2D1vzlvpf3-kLHfKMwveXNI60O7zMBezHx2_1ZQFUB-AzMtyr3reSffjaYKIjktP7ZTemlfU1_ohR-3wUVcJsmBZqiWwYqK3uIq3dc2WE87cUn-1AxwtTlm2jm_Oaj0ilZw4hORm7aHZr2yw_9HrHbqwLY65WdAQpHqgilh7zOjDtr3OCdzevwyJiICKsEHcfAAhwUMA7SReBwMGvGyFTyzbIqDWfjtDZ8ClgGoHdt9oM89nY9t3CcOCMbvjd3_OETlnRezbE2ddKmrX0s_fABg==",
+      "summary": []
+    },
+    {
+      "id": "msg_0cf3d69f13d3d6df016aa52eb5d08087d299d1de076cf41e6d",
+      "type": "message",
+      "status": "completed",
+      "content": [
+        {
+          "type": "output_text",
+          "annotations": [],
+          "logprobs": [],
+          "text": "I rikets v\u00e4vda hamn fanns en gammal R\u00e5dsm\u00e4stare som kallades N\u00e4tv\u00e4ktaren. N\u00e4r tv\u00e5 skeppare b\u00f6rjade tvista om vilka avgifter som r\u00e4ttm\u00e4tigt skulle l\u00e4ggas p\u00e5 deras last, kunde de g\u00e5 till honom, och han avgjorde om det var tullen fr\u00e5n den tredje kajen, den sjunde porten eller den nionde bryggan som skulle g\u00e4lla.\n\nMen N\u00e4tv\u00e4ktaren \u00f6ppnade inte alltid sin domsbok. Om den store V\u00e4varens besked redan hade s\u00e4nts i ett f\u00f6rseglat brev till den adress d\u00e4r den andre senast blivit sedd, och tv\u00e5 vintrar hade hunnit passera innan n\u00e5gon bad om pr\u00f6vning, d\u00e5 lades brevet i arkivet och tvisten fick stanna ute i dimman."
+        }
+      ],
+      "phase": "final_answer",
+      "role": "assistant"
+    }
+  ],
+  "parallel_tool_calls": true,
+  "presence_penalty": 0.0,
+  "previous_response_id": null,
+  "prompt_cache_key": null,
+  "prompt_cache_retention": "24h",
+  "reasoning": {
+    "context": "current_turn",
+    "effort": "low",
+    "mode": "standard",
+    "summary": null
+  },
+  "safety_identifier": null,
+  "service_tier": "default",
+  "store": false,
+  "temperature": 1.0,
+  "text": {
+    "format": {
+      "type": "text"
+    },
+    "verbosity": "medium"
+  },
+  "tool_choice": "auto",
+  "tool_usage": {
+    "image_gen": {
+      "input_tokens": 0,
+      "input_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "output_tokens": 0,
+      "output_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "total_tokens": 0
+    },
+    "web_search": {
+      "num_requests": 0
+    }
+  },
+  "tools": [],
+  "top_logprobs": 0,
+  "top_p": 0.98,
+  "truncation": "disabled",
+  "usage": {
+    "input_tokens": 122,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 243,
+    "output_tokens_details": {
+      "reasoning_tokens": 64
+    },
+    "total_tokens": 365
+  },
+  "user": null,
+  "metadata": {}
+}

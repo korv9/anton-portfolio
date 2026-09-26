@@ -1,0 +1,31 @@
+{
+  "id": "msg_011CexFh9TMNfs42nA5fdPF1",
+  "container": null,
+  "content": [
+    {
+      "text": "{\"slots\":[{\"slot_id\":\"daily_rest\",\"status\":\"present\",\"quote\":\"av de tjugofyra vågorna skall elva alltid rulla in i en obruten följd över den vita sandstranden, där Arbetaren sover\",\"note\":\"Anger elva av tjugofyra timmar (vågor) som en sammanhängande vilotid, dvs en bestämd varaktighet och beräkningsperiod.\"},{\"slot_id\":\"temporary_exception\",\"status\":\"present\",\"quote\":\"Herren över ön, en gammal redare, hade rätt att en enstaka gång låta vågorna störas\",\"note\":\"Uttrycker en möjlighet till enstaka, tillfälligt avsteg från vilan.\"},{\"slot_id\":\"unforeseen_event\",\"status\":\"present\",\"quote\":\"men endast om en storm kom som ingen sjökarta hade förutsagt, ingen väderglas anat\",\"note\":\"Beskriver ett oförutsett händelseförlopp (oväntad storm) som villkor för avsteg.\"},{\"slot_id\":\"compensation\",\"status\":\"present\",\"quote\":\"stal han då en våg ur Arbetarens elva, måste han lämna tillbaka en likadan våg dagen därpå, lika bred, lika lång, lika stilla\",\"note\":\"Kräver att en förlorad vilostund kompenseras med en likadan dagen efter.\"},{\"slot_id\":\"night_interval\",\"status\":\"present\",\"quote\":\"de som rullar in mellan midnatt och den timme då himlen börjar gråna\",\"note\":\"Anger ett tidsintervall (midnatt till gryning) som utgör nattens vilotid.\"},{\"slot_id\":\"night_exception\",\"status\":\"present\",\"quote\":\"Men så fanns det de som måste vaka just när världen sover: den som håller lågan i fyren brinnande, den som ror den sjuke över sundet, den som bakar brödet innan hamnen vaknar. För dem, och endast för dem, fick de mörkblå vågorna vika\",\"note\":\"Anger särskilda yrken/uppgifter som villkor för att arbeta under nattvilan.\"}]}",
+      "type": "text"
+    }
+  ],
+  "model": "claude-sonnet-5",
+  "role": "assistant",
+  "stop_details": null,
+  "stop_reason": "end_turn",
+  "stop_sequence": null,
+  "type": "message",
+  "usage": {
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 0,
+    "inference_geo": "global",
+    "input_tokens": 1738,
+    "output_tokens": 697,
+    "service_tier": "standard",
+    "output_tokens_details": {
+      "thinking_tokens": 0
+    }
+  }
+}

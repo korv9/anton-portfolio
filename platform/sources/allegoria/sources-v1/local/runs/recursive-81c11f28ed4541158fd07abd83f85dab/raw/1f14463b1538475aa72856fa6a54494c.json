@@ -1,0 +1,8 @@
+{
+  "error": {
+    "message": "Rate limit reached for gpt-5.4-nano-2026-03-17 (for limit gpt-5.4-nano) in organization org-lzLdxaYJLaFV5OLdRWiPW3LH on requests per min (RPM): Limit 10, Used 10, Requested 1. Please try again in 6s. Visit https://platform.openai.com/account/rate-limits to learn more. You can increase your rate limit by adding a payment method to your account at https://platform.openai.com/account/billing.",
+    "type": "requests",
+    "param": null,
+    "code": "rate_limit_exceeded"
+  }
+}

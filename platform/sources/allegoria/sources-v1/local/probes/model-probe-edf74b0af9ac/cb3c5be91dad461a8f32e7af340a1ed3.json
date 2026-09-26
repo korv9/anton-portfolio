@@ -1,0 +1,31 @@
+{
+  "id": "msg_011CexFiN2RY56jUagdFzJ5P",
+  "container": null,
+  "content": [
+    {
+      "text": "{\"slots\":[{\"slot_id\":\"agreement\",\"status\":\"present\",\"quote\":\"Det stod fritt för björnen och skogsrådet att komma överens om annat — ville björnen hellre slumra i regnets tid, och rådet gick med på det, då var saken avgjord mellan dem.\",\"note\":\"Texten beskriver att björnen och skogsrådet kan avtala om en annan förläggning av vilan, en avtalsbaserad avgränsning av regeln.\"},{\"slot_id\":\"leave_period\",\"status\":\"present\",\"quote\":\"varje björn skulle få sin lya, och i lyan skulle han få sova fyra hela månvarv medan snön låg tyngst\",\"note\":\"Texten anger en bestämd längd (fyra månvarv) och en förläggning (den djupaste kölden) för viloperioden, analogt med semesterperiod.\"},{\"slot_id\":\"exception\",\"status\":\"present\",\"quote\":\"Endast om något ovanligt inträffade — om floden svällde in i lyan, om elden gick genom snåren, om skogen självt stod i fara — fick rådet väcka björnen\",\"note\":\"Här anges ett tydligt undantag från huvudregeln om sömn, kopplat till ovanliga händelser.\"},{\"slot_id\":\"special_reasons\",\"status\":\"present\",\"quote\":\"Men fanns ingen sådan överenskommelse, då gällde ordningen: sömnen skulle ligga i den djupaste kölden, då marken ändå var stängd och intet arbete fanns att uträtta.\",\"note\":\"Detta anger ett villkor (avsaknad av överenskommelse) för att standardordningen med bestämd tid ska gälla, vilket indirekt pekar på ett villkor för alternativ förläggning.\"}]}",
+      "type": "text"
+    }
+  ],
+  "model": "claude-sonnet-5",
+  "role": "assistant",
+  "stop_details": null,
+  "stop_reason": "end_turn",
+  "stop_sequence": null,
+  "type": "message",
+  "usage": {
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 0,
+    "inference_geo": "global",
+    "input_tokens": 1385,
+    "output_tokens": 581,
+    "service_tier": "standard",
+    "output_tokens_details": {
+      "thinking_tokens": 0
+    }
+  }
+}

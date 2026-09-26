@@ -1,0 +1,101 @@
+{
+  "id": "resp_0ab08e7cb3645528016aa52ebe6e2c87d2a1b65ed61f544455",
+  "object": "response",
+  "created_at": 1789210302,
+  "status": "completed",
+  "background": false,
+  "billing": {
+    "payer": "developer"
+  },
+  "completed_at": 1789210304,
+  "error": null,
+  "frequency_penalty": 0.0,
+  "incomplete_details": null,
+  "instructions": "Gestalta den f\u00f6ljande texten som en allegori p\u00e5 svenska. Svara enbart med allegorin.",
+  "max_output_tokens": 8000,
+  "max_tool_calls": null,
+  "model": "gpt-5.4-mini-2026-03-17",
+  "moderation": null,
+  "output": [
+    {
+      "id": "rs_0ab08e7cb3645528016aa52ebef1ec87d2a617a1ac43559f74",
+      "type": "reasoning",
+      "content": [],
+      "encrypted_content": "gAAAAABqpS7AlN5Sg_eYYMz0Zo4NXw35r1Y8I9k0I___0wCsT9NVAckKRBgzzc8B7dPlbmlNRw1F_wLyMJQtdrtWbjky8rG13alHQTbwKCbh7jt2S-s0Lg8FKlmJ2gXQt_x0q4OnJyIpYzbnwTzSxw3_m-V4S0-Lg3MdDKpdr4SpW0il4Sa8xXWxwq_Ab5vIensEkrP92s-1erRdsQdpPTUheQuvf6_K0qDR6-xvzU79xoK1-mZmdlOymjoyuCMQ8y1dc8MWZvroQYa4OyOs-QBFZDi_OKtdQ-TtdfyUIt9QgCOwJ2NnXi1cHI50myDhFvJ5nIfCODPCmKj5t7MnDhekH6RnNNHEd4QAawaNjCodWQZwBYMfldi9AUYzGOPhy9xSgLQ8egcmvDPQvbyrV-ky1yf-9ualrzHFSph7JTJ97pt-E4Zib76RnLIXfJ9oK2ifsrvsJXxK7MKnuvyA7TOtTlzi8Ba4dLA8UUnxTrUnqNJDRYf0HQxB9ObUaFUIVfwA8aoBAsAQ6q-jNmKOa_6nKG54Jr6Y6DewY_1Ar8BnDoWGpP6BPuZktHX94P_E6rv9KkSuJXAX_FkEwtrCdyNHBwP4yPFkMz-q7S5o-Cl6RuoD4wND7PeXRcKg3UuU09dMOli4AH-jIcU5Nyh7pGDQSFCEKB3f9w_xQc2oIWuw_BfbhRVJ3v51480ViNC1BRxkcbV3gl52VaC7-D8P3OfhXAvwPDgYw0yXnDvHcsFCndcY_6G8CtTBqRH_yeBKoMGw-yfSxqwkr2DrFhTLMiRLZnb1nCD15PUlUWseSZ5DnZsQcBNDfCGI5ZgbnSxxq8gjrCHxE7v9gKmflxL7i2U0XWcxaZ1KDjpWY1M9ON58DrAFCCg7MPgydj92502oDywKp4y-AmUIlIAYickSyd1thexJtmbGL87D1vsSa1u2YAKFO2ODmL7Bqlpt05Ri4bJI7kehFk8oXKTOyA23404NgGZauqL2bNMT7WttuElPXEz0RQxXM7GbcU248_eGj4ds04tvPUe_pxZSSnwEu5BJlIhxrq5JeFToVqxrwFycl0vUBQ9DnNXtKnrE69NgKRp5iPpQNlCPwc0llMnF3h6BBEN7rgS0mW0r-E19cm-zUOqYzNRIQchjR4m9cb9H7tS5duDWysn16nAlHOWbZeeKi4QieSmNmCTRWCP1-Qqp2hAVj6IMsdpuCpSLH9o4JIMd8IM1oZJgFeXUSiw9pMOARww8x32KRbe7h15sFbBYkb5npxbzfeCSq867diQOAfgZLNz9tAnvEWwfbeXxIR0b2tBqXWsgLTlNa6d8HyzTE0E2A06h7S5zbxKqqEfmSBq_GVkMZ1Rqt02vGJ80HK6GJGHLTHUUbzeteHC0x7LzmzNFgl4zDKzoR4VWbggWlZK0HZpPXGcI6Iqqhv4qEeWMIdBB2oaPwvG1pqDVhdM2XVOMWOIEMegfZWyY4EZrKRLnL1OzoR9fTPQ9e1Jkb1HH1H40R8CdvA==",
+      "summary": []
+    },
+    {
+      "id": "msg_0ab08e7cb3645528016aa52ebf478887d29f4fb92d43ad8122",
+      "type": "message",
+      "status": "completed",
+      "content": [
+        {
+          "type": "output_text",
+          "annotations": [],
+          "logprobs": [],
+          "text": "I den stora tr\u00e4dg\u00e5rden, d\u00e4r \u00e5rets ljus vandrar mellan v\u00e5r och vinter, fanns en gammal sed: varje arbetare skulle f\u00e5 en vilostund n\u00e4r solen stod som h\u00f6gst och frukterna mogna, s\u00e5 att fyra hela veckor av ljum vind och l\u00e5nga kv\u00e4llar l\u00e5g mellan juni och augusti.\n\nHade herren och arbetaren redan kommit \u00f6verens om n\u00e5got annat, fick deras \u00f6verenskommelse styra som en v\u00e4l knuten knut. Men om inga l\u00f6ften fanns, skulle sommarens gr\u00f6na sal \u00e4nd\u00e5 \u00f6ppnas f\u00f6r den l\u00e5nga ledigheten.\n\nDock h\u00e4nde det ibland att stormar, sk\u00f6rdar eller andra s\u00e4rskilda tecken p\u00e5 himlen kr\u00e4vde en annan ordning. D\u00e5 kunde vilan flyttas till en annan \u00e5rstid, \u00e4ven utan n\u00e5gra skrivna band, n\u00e4r omst\u00e4ndigheterna sj\u00e4lva visade v\u00e4gen."
+        }
+      ],
+      "phase": "final_answer",
+      "role": "assistant"
+    }
+  ],
+  "parallel_tool_calls": true,
+  "presence_penalty": 0.0,
+  "previous_response_id": null,
+  "prompt_cache_key": null,
+  "prompt_cache_retention": "24h",
+  "reasoning": {
+    "context": "current_turn",
+    "effort": "low",
+    "mode": "standard",
+    "summary": null
+  },
+  "safety_identifier": null,
+  "service_tier": "default",
+  "store": false,
+  "temperature": 1.0,
+  "text": {
+    "format": {
+      "type": "text"
+    },
+    "verbosity": "medium"
+  },
+  "tool_choice": "auto",
+  "tool_usage": {
+    "image_gen": {
+      "input_tokens": 0,
+      "input_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "output_tokens": 0,
+      "output_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "total_tokens": 0
+    },
+    "web_search": {
+      "num_requests": 0
+    }
+  },
+  "tools": [],
+  "top_logprobs": 0,
+  "top_p": 0.98,
+  "truncation": "disabled",
+  "usage": {
+    "input_tokens": 107,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 239,
+    "output_tokens_details": {
+      "reasoning_tokens": 46
+    },
+    "total_tokens": 346
+  },
+  "user": null,
+  "metadata": {}
+}

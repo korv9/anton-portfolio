@@ -1,0 +1,36 @@
+{
+  "id": "msg_011CexFSUC4cbTrA6fTv58ay",
+  "container": null,
+  "content": [
+    {
+      "signature": "CAISjgIKjgEIERgCKkADeWLIgLEabPSLobRb7bSXO9kr8oPGSnwRS5wmDN4XAgOGDBF/HFuYPB3QDacKlAUu3mKwzx/wiqkdhTykw0oKMg1jbGF1ZGUtb3B1cy01OAFCCHRoaW5raW5nWiRkMGVkNzIzNC0zMjkwLTRkMGYtOTYyMS0yNTY1MTMyZmIzNjSoAfW8kdUGEgw7fBEs3NGm43bp30YaDEuMQJGMTCZWtubIFSIwonM4II9MQKzq+3qe0CMmJUseYgnSgtYbK9LkTa5F6AedOWdSWupm5mOO0/i8XX7OKi23JoQvP+/anGNXgWE+dK4LgcTpHukCzHoghPvcBvyuwfW00LsH7+URKz4CnuIYAQ==",
+      "thinking": "",
+      "type": "thinking"
+    },
+    {
+      "text": "**Fyrvaktarens lag**\n\nI en avlägsen skärgård låg ön Dygnet, och runt den gick tjugofyra vågor i en evig ring. På ön stod ett fyrtorn, och i tornet bodde en fyrvaktare som hette Arbetaren.\n\nÖns urgamla stadga löd: av de tjugofyra vågorna skall elva alltid rulla in i en obruten följd över den vita sandstranden, där Arbetaren sover. Ingen må dela den strömmen i två, ty en sömn som klyvs är ingen sömn, utan bara två väntan.\n\nHerren över ön, en gammal redare, hade rätt att en enstaka gång låta vågorna störas — men endast om en storm kom som ingen sjökarta hade förutsagt, ingen väderglas anat. Och stal han då en våg ur Arbetarens elva, måste han lämna tillbaka en likadan våg dagen därpå, lika bred, lika lång, lika stilla. Skulden fick aldrig skrivas bort; havet glömmer ingenting.\n\nI mitten av de elva vågorna fanns fem som var mörkblå — de som rullar in mellan midnatt och den timme då himlen börjar gråna. Dessa fem var öns heligaste vatten, och stadgan bjöd att de alltid skulle ingå i Arbetarens ström.\n\nMen så fanns det de som måste vaka just när världen sover: den som håller lågan i fyren brinnande, den som ror den sjuke över sundet, den som bakar brödet innan hamnen vaknar. För dem, och endast för dem, fick de mörkblå vågorna vika — inte för vinstens skull, utan för att någon annans natt skulle bli trygg.\n\nSå stod det skrivet på öns sten, hugget år 2005.",
+      "type": "text"
+    }
+  ],
+  "model": "claude-opus-5",
+  "role": "assistant",
+  "stop_details": null,
+  "stop_reason": "end_turn",
+  "stop_sequence": null,
+  "type": "message",
+  "usage": {
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 0,
+    "inference_geo": "global",
+    "input_tokens": 300,
+    "output_tokens": 632,
+    "service_tier": "standard",
+    "output_tokens_details": {
+      "thinking_tokens": 14
+    }
+  }
+}

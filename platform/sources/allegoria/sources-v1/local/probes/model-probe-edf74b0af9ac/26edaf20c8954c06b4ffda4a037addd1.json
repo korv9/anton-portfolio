@@ -1,0 +1,31 @@
+{
+  "id": "msg_011CexFKfDtKBGuatJqJvP47",
+  "container": null,
+  "content": [
+    {
+      "text": "I den gamla Vattenkvarnens rike fanns en Vägvakt som vakade över de kanaler genom vilka böndernas grödor och pengar strömmade. När en bonde och Kvarnens herre tvistade om hur mycket vatten som skulle betalas för att driva hjulen, kunde de vända sig till Vägvakten för att få rättvisa skipad.\n\nMen Vägvakten hade en gammal lag ristad i sin port: om Kvarnens herre en gång sänt ett brev, förseglat med sitt märke, till bondens sista kända gård, och däri förklarat sin ståndpunkt om vattnets pris - då hade bonden endast två vintrar på sig att knacka på Vägvaktens dörr. Lät han den tredje vintern komma och gå utan att söka rätt, då var tvisten för alltid begravd under snön, och Vägvakten skulle inte längre öppna sin port för den saken, hur rättmätig den än en gång kunde ha varit.",
+      "type": "text"
+    }
+  ],
+  "model": "claude-sonnet-5",
+  "role": "assistant",
+  "stop_details": null,
+  "stop_reason": "end_turn",
+  "stop_sequence": null,
+  "type": "message",
+  "usage": {
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 0,
+    "inference_geo": "global",
+    "input_tokens": 173,
+    "output_tokens": 339,
+    "service_tier": "standard",
+    "output_tokens_details": {
+      "thinking_tokens": 0
+    }
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "id": "msg_011CexFhjJ5ZFSsuUzvrLkHk",
+  "container": null,
+  "content": [
+    {
+      "text": "{\"slots\":[{\"slot_id\":\"daily_rest\",\"status\":\"present\",\"quote\":\"av de tjugofyra vågorna skall elva alltid rulla in i en obruten följd över den vita sandstranden, där Arbetaren sover\",\"note\":\"Elva av tjugofyra timmar, obruten – varaktighet och period anges allegoriskt.\"},{\"slot_id\":\"temporary_exception\",\"status\":\"present\",\"quote\":\"hade rätt att en enstaka gång låta vågorna störas\",\"note\":\"Enstaka tillfälligt avsteg tillåts.\"},{\"slot_id\":\"unforeseen_event\",\"status\":\"present\",\"quote\":\"men endast om en storm kom som ingen sjökarta hade förutsagt, ingen väderglas anat\",\"note\":\"Oförutsedd händelse beskrivs.\"},{\"slot_id\":\"compensation\",\"status\":\"present\",\"quote\":\"måste han lämna tillbaka en likadan våg dagen därpå, lika bred, lika lång, lika stilla\",\"note\":\"Kompensation krävs som villkor.\"},{\"slot_id\":\"night_interval\",\"status\":\"present\",\"quote\":\"de som rullar in mellan midnatt och den timme då himlen börjar gråna\",\"note\":\"Nattintervall anges, fem timmar från midnatt till gryning.\"},{\"slot_id\":\"night_exception\",\"status\":\"present\",\"quote\":\"För dem, och endast för dem, fick de mörkblå vågorna vika — inte för vinstens skull, utan för att någon annans natt skulle bli trygg\",\"note\":\"Villkor: endast nödvändiga nattyrken, ej vinstsyfte.\"}]}",
+      "type": "text"
+    }
+  ],
+  "model": "claude-opus-5",
+  "role": "assistant",
+  "stop_details": null,
+  "stop_reason": "end_turn",
+  "stop_sequence": null,
+  "type": "message",
+  "usage": {
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 0,
+    "inference_geo": "global",
+    "input_tokens": 1738,
+    "output_tokens": 538,
+    "service_tier": "standard",
+    "output_tokens_details": {
+      "thinking_tokens": 0
+    }
+  }
+}

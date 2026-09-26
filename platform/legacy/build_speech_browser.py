@@ -4,6 +4,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "lib"))
+import common
 import delivery
 from parties import normalise
 
@@ -43,7 +44,8 @@ manifest = []
 for session in sorted({s['session'] for s in cards}, reverse=True):
     rows = [s for s in cards if s['session'] == session]
     filename = 'speeches-' + session.replace('/', '-') + '.json'
-    (directory / filename).write_text(json.dumps(rows, ensure_ascii=False, separators=(',', ':')) + '\n', encoding='utf-8', newline='\n')
+    payload = json.dumps(rows, ensure_ascii=False, separators=(',', ':')) + "\n"
+    common.write_bytes_retrying(directory / filename, payload.encode('utf-8'))
     manifest.append({'session': session, 'count': len(rows), 'path': filename})
-(directory / 'index.json').write_text(json.dumps(manifest) + '\n', encoding='utf-8', newline='\n')
+common.write_bytes_retrying(directory / 'index.json', (json.dumps(manifest) + "\n").encode('utf-8'))
 print(f'Built {len(cards)} speech cards from {len(cache)} source files; full text loaded on selection.')

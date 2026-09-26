@@ -1,0 +1,37 @@
+{
+  "kind": "provider_check",
+  "experiment_data": false,
+  "at": "2026-09-12T10:49:41.611995+00:00",
+  "model": {
+    "name": "gpt-5-4-nano",
+    "provider": "openai",
+    "model": "gpt-5.4-nano-2026-03-17",
+    "input_usd_per_million": 0.05,
+    "output_usd_per_million": 0.4,
+    "max_tokens": 8000,
+    "params": {
+      "reasoning_effort": "low"
+    },
+    "verified": null
+  },
+  "http_status": 200,
+  "raw_sha256": "e9e16319a44e99d4680e614f21ac7443d7654ee5fef7ac1172baa0670ad058ef",
+  "structured_output_requested": true,
+  "usd": 7.9e-06,
+  "ok": true,
+  "returned_model": "gpt-5.4-nano-2026-03-17",
+  "usage": {
+    "input_tokens": 46,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 14,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 60
+  },
+  "text_preview": "{\"answer\":\"OK\"}",
+  "parses_as_json": true
+}

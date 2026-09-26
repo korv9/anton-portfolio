@@ -1,0 +1,36 @@
+{
+  "id": "msg_011CexFdUbfi55rQ884PF6br",
+  "container": null,
+  "content": [
+    {
+      "signature": "CAIStQcKjgEIERgCKkD/zu4rd+mVz28IdGujZVhayWNBR54hxZxzoILNbq0hSswNhfqZfNolvB3GSViYaspBK8/kJbS1eBJXbJPJ6XKmMg1jbGF1ZGUtb3B1cy01OAFCCHRoaW5raW5nWiRkMGVkNzIzNC0zMjkwLTRkMGYtOTYyMS0yNTY1MTMyZmIzNjSoAY2+kdUGEgz/02e3BafvLaVzleMaDMIo7t2kjK21qXxKJSIwSh4gxCB2p8OIgd/ta0vBbYFoRBXjhFo4vcR6NSnayXiboRVvURKmMCYnNgfzg7nqKtMFNRPjfHIxzwr1E54ID3iE9Eur6z/E5y2C1MxzfKNfOO83vVfoXwnS27NqviHaMmNsQjFEXgWzLVeKvoOZpcI90Y9YBCyHLonTStUVYlduewyMsAo6JPNawC85pj4lCtFDIHmtmNhJgoSy4m414ZX1P1zfHS5iwHytHYWVES9bb6vCQ248SdKxxBO+O7SPEr/cH/D66wljpDJnP/GDTRan0B9t7ash05l6+KjgtBQW/8MA5/A+oHHroDvvXvEvtJwSAwgaKR9tnf/PTG9WRFrEGzI0tQbpqzPW60D12NYlz45H7/t+M/sh6jK9Q71921M0SJIpfxbCLNAy/Sbeoh6++sYslsMVTM+xpZ4RyrpZqCOnDVrC0QjoQLvRNa1/q8NGh4gDzroO+9Juk8t7WzHIfcxxwSLhko+KYxhlTP73ucvnfA7UENnqA19zmP4wwcT1SYFyBKG5Dx8b1swBovm06To8f0Zm5fToCOp2bH8Nqbey+Fggv5F9euuJWskmeOJfiGDPUpcBjbYYkYTxXOGwinJgA7GTlgHuMLHt3+YQZJHCePX32HkFkleli29diBIcf9b+5tJ6oGnKnMXN2Cmb8WYRs1FYjfd6w0QBW7KRJV5DbjaydCRDK9lNLa1hpJ/3zgMYazaAgEZxr4c8m0ZZd4VpGPUl/HmOoomZQlY1/mJ+QL+w1v2NuSxzmQg6h/nwBA78OqNzQOpq7I/E9OrPXw8AwLCBCPbwN5MZTpCzHpwzb5O2I/AK/cniAv8wDS9wny6xOmw8Hjk6Ab+rUmJnE6MlrskRfLXq6yKK7pXsRYRi33GeSJX6eYi5JyA0vgXXZru7RdDTgutKFGIPEL0Ht8c6PS8a7jJqjwFr/PdFUMcYMDsZUo4iuKY+0Yl5Qud672tzqHRghZrfbwp0Gsce71feglwavVtKeD+vAlg5REciBCst6FaKBPRqW//n7VOpWsThGAE=",
+      "thinking": "",
+      "type": "thinking"
+    },
+    {
+      "text": "{\"slots\":[{\"slot_id\":\"duty\",\"status\":\"uncertain\",\"quote\":\"kunde de vända sig till Vägvakten för att få rättvisa skipad\",\"note\":\"Texten uttrycker en möjlighet att vända sig till Vägvakten snarare än en uttrycklig plikt att pröva tvisten; plikten antyds bara indirekt av att porten annars skulle öppnas.\"},{\"slot_id\":\"scope\",\"status\":\"present\",\"quote\":\"tvistade om hur mycket vatten som skulle betalas för att driva hjulen\",\"note\":\"Tvistprövningen avgränsas till priset/betalningen för vattnet, vilket upprepas som \\\"sin ståndpunkt om vattnets pris\\\".\"},{\"slot_id\":\"exception\",\"status\":\"present\",\"quote\":\"Men Vägvakten hade en gammal lag ristad i sin port: om Kvarnens herre en gång sänt ett brev, förseglat med sitt märke, till bondens sista kända gård, och däri förklarat sin ståndpunkt om vattnets pris - då hade bonden endast två vintrar på sig att knacka på Vägvaktens dörr\",\"note\":\"Undantag från huvudregeln om fri tillgång till prövning: en begränsning inträder när brev sänts.\"},{\"slot_id\":\"exception_deadline\",\"status\":\"present\",\"quote\":\"då hade bonden endast två vintrar på sig att knacka på Vägvaktens dörr\",\"note\":\"Tidsgränsen är två vintrar; därefter öppnas inte porten.\"},{\"slot_id\":\"deadline_start\",\"status\":\"present\",\"quote\":\"om Kvarnens herre en gång sänt ett brev, förseglat med sitt märke, till bondens sista kända gård\",\"note\":\"Fristen räknas från att det förseglade brevet sänts till bondens sista kända gård.\"}]}",
+      "type": "text"
+    }
+  ],
+  "model": "claude-opus-5",
+  "role": "assistant",
+  "stop_details": null,
+  "stop_reason": "end_turn",
+  "stop_sequence": null,
+  "type": "message",
+  "usage": {
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 0,
+    "inference_geo": "global",
+    "input_tokens": 1346,
+    "output_tokens": 884,
+    "service_tier": "standard",
+    "output_tokens_details": {
+      "thinking_tokens": 265
+    }
+  }
+}

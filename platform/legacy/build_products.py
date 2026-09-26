@@ -19,10 +19,10 @@ def typed(value):
 
 
 def build():
-    catalog = json.loads((ROOT / "products/catalog.json").read_text(encoding="utf-8"))
+    catalog = json.loads((ROOT / "platform/products/catalog.json").read_text(encoding="utf-8"))
     PUBLIC.mkdir(parents=True, exist_ok=True)
     (PUBLIC / "catalog.json").write_text(json.dumps(catalog, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    provenance = json.loads((ROOT / "products/drugcomb/source.json").read_text(encoding="utf-8"))
+    provenance = json.loads((ROOT / "platform/products/drugcomb/source.json").read_text(encoding="utf-8"))
     datasets = []
     tables = {}
     for path in sorted((PUBLIC / "drugcomb/tables").glob("*.csv")):

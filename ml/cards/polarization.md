@@ -1,6 +1,6 @@
 # How distinguishable party language is, by session
 
-Task `polarization` · run `20260925-2334` · gate **FAILED**
+Task `polarization` · run `20260926-0937` · gate **passed**
 
 ## What the label means
 
@@ -8,9 +8,9 @@ The label is the speaker's party. The measure is how well a classifier separates
 
 ## Data
 
-- sessions measured: 29
+- sessions measured: 31
 - sessions also measured with KB-BERT: 5
-- TF-IDF and KB-BERT correlation across those sessions: 0.68
+- TF-IDF and KB-BERT correlation across those sessions: 0.98
 - passages per session: equal per party, minimum 25 per party to qualify
 - source: Party-leader debates, Swedish Parliament open data
 - seeds per session: 3
@@ -23,14 +23,14 @@ Grouped by speaker: no speaker appears in both folds, so the classifier cannot w
 
 | Model | Metric | Value | 95% CI |
 |---|---|---|---|
-| Permutation null (shuffled parties) | macro-F1 | 0.077 | — |
-| Mean pairwise AUC | AUC | 0.671 | 0.428 – 0.943 |
+| Permutation null (shuffled parties) | macro-F1 | 0.111 | — |
+| Mean pairwise AUC | AUC | 0.680 | 0.455 – 0.789 |
 
 ## Gate
 
 Beat the permutation null in 80% of sessions, mean AUC > 0.60.
 
-Outcome: **failed**. 
+Outcome: **passed**. 
 
 ## Limitations
 

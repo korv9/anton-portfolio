@@ -1,0 +1,78 @@
+{
+  "schema_version": 2,
+  "run_id": "recursive-81c11f28ed4541158fd07abd83f85dab",
+  "status": "partial",
+  "started_at": "2026-09-11T17:44:10.273934+00:00",
+  "finished_at": "2026-09-11T17:56:45.758672+00:00",
+  "generations": 10,
+  "experiment_type": "exploratory_recursive",
+  "preregistered": false,
+  "human_review": "pending",
+  "design_sha256": "9ba894f0dce3cea2d7866b5db143b0dac212aca0d2225b90a51fdb0a76dce14f",
+  "code": {
+    "git_sha": "35a2169a8865a7996e890954fec3cbed1d3e22e7",
+    "working_tree_dirty": true,
+    "files": {
+      "corpus/law_probe_v1.yaml": "2bc9f60983519056dbc22c31b555c4040606f06b03a9cbacd5f1f8a01a23bfbe",
+      "predictions/2026-09-11-generation-one.md": "2e5e1c0ca4f1d6568d4f58e974044be35334c2ac64926c36fff67d093ce606d5",
+      "prompts/generation_one.yaml": "0eb6d581bc42c815aa938728528b85ac453f4191c5c114e7f44a955a10f4a727",
+      "prompts/read_slots.txt": "a91522215a9bd1cf898d1a249901535a3d68492881142bf6a3ad9dc4448d38ea",
+      "simulacria/__init__.py": "7ae88d668437cd0ced799c10b97609ce5a19fb6e1e06d932ddf8ad1b0354acd7",
+      "simulacria/analysis.py": "2d3abbdea4e9867580be506f78bb25012c65fbe2f8d0e7c978b75c485e3922e4",
+      "simulacria/generation_one.py": "1cbc10602509caa55c7cd43befc50c998be650f28a3d910f0770baa75004dd30",
+      "simulacria/generation_report.py": "fa4e01ce1133e42baaa87783468887bc6b1bcda4867f01e42cd8f64197630989",
+      "simulacria/measurement/__init__.py": "4c17df9a9752f82969220fb7bd3dc2784c3773221d96c9f5b4a0ffbebd2bf331",
+      "simulacria/measurement/quote_audit.py": "25d4f7416cb7f126e6b7be89aa57de8032b339efc0f3532a24a85c923557b595",
+      "simulacria/measurement/slot_reading.py": "2c0bc1df38a1534ba3e3f25e84787928f9036c64625f589eba36ede2ac8416ad",
+      "simulacria/measurement/source_slots.py": "260b62521b591b9a77b19e5319db6fa299e5d4b0b5a8b7f1aeb988e67af9506a",
+      "simulacria/openai_io.py": "ed4b485dea8cdb23b692b0edfc3d8c25617abe962f7defc5f83c18f82fe51c9a",
+      "simulacria/recursive_plan.py": "e0f6e6f99fa7b2e49652dd0b32f5502acdd45bf4905fdaa71795ed32d41923c4",
+      "simulacria/recursive_run.py": "b8ce3f69444c969f6618ea483d064662630d171f13789e171a41991f56221225",
+      "simulacria/selection/__init__.py": "0ede0bd71e9f13a8e03440bc3ea640d0d33339158379b557f4ecf179eefbd5a6",
+      "simulacria/selection/axis.py": "b329bc7357408bec28585b2265cd625066aeb77be41637b5f0de664bd77122fc",
+      "simulacria/selection/axis_view.py": "5968dc39efc58b693157250592f779709b0b2369d05e0e82a8e870169d6692c7",
+      "simulacria/selection/determinacy.py": "acb49b52b867a337ad94f28bcf3878944ce420c22b3606a97a178b29901da40e",
+      "simulacria/selection/highlight.py": "2d5fed88dccf983be6c2cb4b81a66e17a45f8039323dc6d516573dfa651a318e",
+      "simulacria/selection/inspect.py": "fa7b6dc0073d6ed783a945af663532b96a591fba85d4ace4013fe61eda5a6e79",
+      "simulacria/selection/markers.py": "6cd609a8d03757e60fb2b38550b109fd3fcaaca271862718ea324d2a0b45a16a",
+      "simulacria/selection/pools.py": "937f686ede14023a571d2a884ef2bd4fc850cdc1d8c6e8d8dfdd9770d558143b",
+      "simulacria/selection/shortlist.py": "466d2bc72a85cbdc14c6203405896fd77b295b8c1a8bdbe4aa5f5afd5ecee867",
+      "simulacria/selection/table_build.py": "7a640e81066f9f8197a57ace4fc779132b7346da7c34f3c9cdaf0873fe31353e",
+      "simulacria/selection/tables.py": "8ca9e5d94b7bd05e3030d943ce48c1d0a5996a2aab86b2262f9f1efac3c7ce02"
+    }
+  },
+  "transformer_model": "gpt-5.4-nano-2026-03-17",
+  "extractor_model": "gpt-5.4-mini-2026-03-17",
+  "sampling": {
+    "reasoning_effort": "none",
+    "temperature": "provider_default"
+  },
+  "planned_transformations": 840,
+  "planned_readings": 873,
+  "cost_limit_usd": 15,
+  "prices_usd_per_million": {
+    "gpt-5.4-nano-2026-03-17": [
+      0.2,
+      1.25
+    ],
+    "gpt-5.4-mini-2026-03-17": [
+      0.75,
+      4.5
+    ]
+  },
+  "price_date": "2026-09-11",
+  "shuffle_seed": 20260911,
+  "reserved_usd": 0.9927626499999999,
+  "usage_cost_estimate_usd": 0.0681623,
+  "limitations": [
+    "one transformer",
+    "draft source slots",
+    "no human agreement",
+    "no validated direction",
+    "no committed preregistration",
+    "philosophy uses paraphrase only",
+    "no independent repeated chains"
+  ],
+  "completed_transformations": 35,
+  "completed_readings": 45
+}

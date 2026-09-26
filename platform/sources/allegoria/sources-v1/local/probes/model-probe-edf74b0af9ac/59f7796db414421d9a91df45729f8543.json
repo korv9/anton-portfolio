@@ -1,0 +1,36 @@
+{
+  "id": "msg_011CexFPkYitrK1saD6JhNBF",
+  "container": null,
+  "content": [
+    {
+      "signature": "CAISiAIKjgEIERgCKkDWla3NEszq0/iJH2ITbfMU3s9ENkld6Yc4yBoM+rv49dMQfWp5W5TiaYxmzbg+0NXQiKiqFtAErcRFZDd2F3PhMg1jbGF1ZGUtb3B1cy01OAFCCHRoaW5raW5nWiRkMGVkNzIzNC0zMjkwLTRkMGYtOTYyMS0yNTY1MTMyZmIzNjSoAdC8kdUGEgxonCeqUaQnTjF1jP8aDN7wIvvYLDpSWy9t1iIwNhDDq2jl7CfP/jHtEXasrGgYXWzx1nH/kardwDsYUfeltxomRLvF9K2v/6KBqa6mKidWXY9RYU0hs5pQFn9pELT0PFerDBs7mklA0V4mu9BKVtIR8ZYPF1MYAQ==",
+      "thinking": "",
+      "type": "thinking"
+    },
+    {
+      "text": "Frågor om vilka kostnader som får debiteras enligt 6, 7 eller 9 § avgörs av nätmyndigheten, som ska handlägga sådana tvister.\n\nNågon prövning sker dock inte om ansökan har inkommit till nätmyndigheten mer än två år efter den tidpunkt då den systemansvariga sände ett skriftligt ställningstagande till den adress som senast var känd för den part saken gäller.",
+      "type": "text"
+    }
+  ],
+  "model": "claude-opus-5",
+  "role": "assistant",
+  "stop_details": null,
+  "stop_reason": "end_turn",
+  "stop_sequence": null,
+  "type": "message",
+  "usage": {
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 0,
+    "inference_geo": "global",
+    "input_tokens": 180,
+    "output_tokens": 162,
+    "service_tier": "standard",
+    "output_tokens_details": {
+      "thinking_tokens": 11
+    }
+  }
+}

@@ -1,0 +1,94 @@
+{
+  "id": "resp_090acbf50c0d0d73016aa43e7051f887d2bb3ce0fcb0e6da18",
+  "object": "response",
+  "created_at": 1789148784,
+  "status": "completed",
+  "background": false,
+  "billing": {
+    "payer": "developer"
+  },
+  "completed_at": 1789148785,
+  "error": null,
+  "frequency_penalty": 0.0,
+  "incomplete_details": null,
+  "instructions": "\u00c5terge den f\u00f6ljande texten som en svensk f\u00f6rklaring riktad till en lekman. Svara enbart med f\u00f6rklaringen.",
+  "max_output_tokens": 1800,
+  "max_tool_calls": null,
+  "model": "gpt-5.4-nano-2026-03-17",
+  "moderation": null,
+  "output": [
+    {
+      "id": "msg_090acbf50c0d0d73016aa43e7097e487d2a68c5d1236bec837",
+      "type": "message",
+      "status": "completed",
+      "content": [
+        {
+          "type": "output_text",
+          "annotations": [],
+          "logprobs": [],
+          "text": "N\u00e4tmyndigheten ska kunna pr\u00f6va en tvist om vilka avgifter som ska tas ut enligt vissa best\u00e4mmelser (6, 7 eller 9 \u00a7).\n\nMen myndigheten f\u00e5r inte pr\u00f6va tvisten om n\u00e5gon ans\u00f6ker om pr\u00f6vning f\u00f6r sent. Ans\u00f6kan m\u00e5ste ha kommit in inom tv\u00e5 \u00e5r fr\u00e5n det att den systemansvariga skickade ett skriftligt svar (st\u00e4llningstagande) till den ber\u00f6rda parten p\u00e5 den senast k\u00e4nda adressen."
+        }
+      ],
+      "phase": "final_answer",
+      "role": "assistant"
+    }
+  ],
+  "parallel_tool_calls": true,
+  "presence_penalty": 0.0,
+  "previous_response_id": null,
+  "prompt_cache_key": null,
+  "prompt_cache_retention": "24h",
+  "reasoning": {
+    "context": "current_turn",
+    "effort": "none",
+    "mode": "standard",
+    "summary": null
+  },
+  "safety_identifier": null,
+  "service_tier": "default",
+  "store": false,
+  "temperature": 1.0,
+  "text": {
+    "format": {
+      "type": "text"
+    },
+    "verbosity": "medium"
+  },
+  "tool_choice": "auto",
+  "tool_usage": {
+    "image_gen": {
+      "input_tokens": 0,
+      "input_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "output_tokens": 0,
+      "output_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "total_tokens": 0
+    },
+    "web_search": {
+      "num_requests": 0
+    }
+  },
+  "tools": [],
+  "top_logprobs": 0,
+  "top_p": 0.98,
+  "truncation": "disabled",
+  "usage": {
+    "input_tokens": 130,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 108,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 238
+  },
+  "user": null,
+  "metadata": {}
+}

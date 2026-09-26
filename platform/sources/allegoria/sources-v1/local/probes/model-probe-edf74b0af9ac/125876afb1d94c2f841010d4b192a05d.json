@@ -1,0 +1,31 @@
+{
+  "id": "msg_011CexFNf1Kxo5vcQpUESkdb",
+  "container": null,
+  "content": [
+    {
+      "text": "I den stora Trädgården, där alla arbetare vandrade under Solens vakande öga, fanns en gammal sedvänja som ingen kunde bryta utan skäl.\n\nSå länge inte Herden och Fåren tillsammans kommit överens om annat, skulle varje Får föras till den gröna Ängen under Sommarens fyra ljusaste månader – juni, juli och augusti – och där få vila minst fyra veckors tid, fritt från Herdens stav och plikternas ok.\n\nMen om Ängen låg översvämmad, om Stormar drog fram, eller om andra tungt vägande omständigheter krävde det, då fick Herden – även utan Fårets samtycke – föra det till en annan äng, vid en annan tid på året. Ty Lagen kände till att Trädgårdens ordning ibland måste böja sig för Nödvändighetens vind, så länge skälen var sanna och tunga nog att bära en sådan förändring.\n\nOch så stod det skrivet, år tvåtusennio, i den nionde månadens trettionde dag, att detta skulle vara Trädgårdens lag för alla kommande skördar.",
+      "type": "text"
+    }
+  ],
+  "model": "claude-sonnet-5",
+  "role": "assistant",
+  "stop_details": null,
+  "stop_reason": "end_turn",
+  "stop_sequence": null,
+  "type": "message",
+  "usage": {
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 0,
+    "inference_geo": "global",
+    "input_tokens": 157,
+    "output_tokens": 388,
+    "service_tier": "standard",
+    "output_tokens_details": {
+      "thinking_tokens": 0
+    }
+  }
+}

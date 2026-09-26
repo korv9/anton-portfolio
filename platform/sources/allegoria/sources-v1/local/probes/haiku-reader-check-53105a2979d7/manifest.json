@@ -1,0 +1,245 @@
+{
+  "kind": "reader_check",
+  "experiment_data": false,
+  "at": "2026-09-11T21:53:26.175902+00:00",
+  "reader": "claude-haiku-4-5-20251001",
+  "script_sha256": "4cec04fcf25b929e29837099cd1bc208d5067d416523564465a189b308cfef6b",
+  "script": "\"\"\"Live check of the new reader through the pipeline's own request path. Not experiment data.\"\"\"\n\nimport json\nimport sys\nfrom datetime import UTC, datetime\nfrom hashlib import sha256\nfrom pathlib import Path\nfrom uuid import uuid4\n\nROOT = Path(r\"C:\\Users\\46762\\VSCODE\\allegoria\")\nsys.path.insert(0, str(ROOT))\n\nfrom simulacria.anthropic_io import (  # noqa: E402\n    EXTRACTOR,\n    UnusableResponse,\n    api_key,\n    billed_cost,\n    post_response,\n    request_payload,\n    response_text,\n    with_schema,\n)\nfrom simulacria.measurement.slot_reading import reading_input, validate_reading  # noqa: E402\nfrom simulacria.measurement.source_slots import load_source_slots  # noqa: E402\nfrom simulacria.recursive_plan import reading_format  # noqa: E402\n\nPROBE = ROOT / \"data/local/probes/model-probe-edf74b0af9ac\"\nkey = api_key(ROOT)\nsources = {s[\"passage_id\"]: s for s in load_source_slots(ROOT / \"corpus/law_probe_v1.yaml\", ROOT)}\nreader = (ROOT / \"prompts/read_slots.txt\").read_text(encoding=\"utf-8\")\nprobe = json.loads((PROBE / \"manifest.json\").read_text(encoding=\"utf-8\"))\nout = ROOT / \"data/local/probes\" / (\"haiku-reader-check-\" + uuid4().hex[:12])\nout.mkdir(parents=True)\n\ncases = [(\"source\", pid, s[\"text\"]) for pid, s in sources.items()]\ncases += [\n    (f\"allegory-by:{r['model_requested']}\", r[\"label\"].split(\":\", 2)[2], r[\"text\"])\n    for r in probe[\"rows\"]\n    if r[\"label\"].startswith(\"transform:allegorize\") and r.get(\"text\")\n]\nopus = {\n    (f\"allegory-by:{r['writer']}\", r[\"label\"].split(\":\")[-1]): r.get(\"statuses\")\n    for r in probe[\"allegory_readings\"]\n    if r[\"model_requested\"] == \"claude-opus-5\"\n}\n\nrows, total = [], 0.0\nfor kind, pid, text in cases:\n    slots = sources[pid][\"slots\"]\n    payload = with_schema(\n        request_payload(EXTRACTOR, reader, reading_input(text, slots)), reading_format(slots)\n    )\n    status, raw = post_response(payload, key)\n    name = uuid4().hex\n    (out / f\"{name}.json\").write_bytes(raw)\n    cost = billed_cost(raw, EXTRACTOR)\n    total += cost\n    row = {\"kind\": kind, \"passage_id\": pid, \"http\": status, \"raw\": name, \"usd\": cost}\n    if status == 200:\n        try:\n            answer, response = response_text(raw, EXTRACTOR)\n            row[\"usage\"] = response[\"usage\"]\n            got = validate_reading(answer, text, slots)\n            row[\"valid\"] = True\n            row[\"statuses\"] = {s[\"slot_id\"]: s[\"status\"] for s in got}\n        except UnusableResponse as error:\n            row.update(valid=False, reason=error.reason)\n        except (ValueError, KeyError, TypeError) as error:\n            row.update(valid=False, reason=type(error).__name__ + \": \" + str(error)[:160])\n    row[\"opus_statuses\"] = opus.get((kind, pid))\n    rows.append(row)\n    agree = \"\"\n    if row.get(\"statuses\") and row[\"opus_statuses\"]:\n        diff = {k: (v, row[\"opus_statuses\"].get(k)) for k, v in row[\"statuses\"].items()\n                if v != row[\"opus_statuses\"].get(k)}\n        agree = \"agrees with Opus\" if not diff else f\"DIFFERS from Opus (haiku, opus): {diff}\"\n    present = sum(v == \"present\" for v in (row.get(\"statuses\") or {}).values())\n    print(f\"{kind:<28} {pid:<22} http={status} valid={row.get('valid')} \"\n          f\"present={present}/{len(slots)} ${cost:.4f} out={row.get('usage', {}).get('output_tokens')} \"\n          f\"{row.get('reason', '')} {agree}\")\n\n(out / \"manifest.json\").write_text(\n    json.dumps(\n        {\n            \"kind\": \"reader_check\",\n            \"experiment_data\": False,\n            \"at\": datetime.now(UTC).isoformat(),\n            \"reader\": EXTRACTOR,\n            \"script_sha256\": sha256(Path(__file__).read_bytes()).hexdigest(),\n            \"script\": Path(__file__).read_text(encoding=\"utf-8\"),\n            \"total_usd\": total,\n            \"rows\": rows,\n        },\n        ensure_ascii=False,\n        indent=2,\n    ),\n    encoding=\"utf-8\",\n)\nprint(f\"total ${total:.4f} -> {out}\")\n",
+  "total_usd": 0.031819999999999994,
+  "rows": [
+    {
+      "kind": "source",
+      "passage_id": "sfs-2026-1281:K10P10",
+      "http": 200,
+      "raw": "46c96c952e74476f984db98f5f1ee827",
+      "usd": 0.003002,
+      "usage": {
+        "input_tokens": 892,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 422,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "valid": true,
+      "statuses": {
+        "duty": "present",
+        "scope": "present",
+        "exception": "present",
+        "exception_deadline": "present",
+        "deadline_start": "present"
+      },
+      "opus_statuses": null
+    },
+    {
+      "kind": "source",
+      "passage_id": "sfs-1982-673:P13",
+      "http": 200,
+      "raw": "0043874374c1482b948352cf1f7b4992",
+      "usd": 0.003624,
+      "usage": {
+        "input_tokens": 1054,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 514,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "valid": false,
+      "reason": "ValueError: slot evidence is not a verbatim substring",
+      "opus_statuses": null
+    },
+    {
+      "kind": "source",
+      "passage_id": "sfs-1977-480:P12",
+      "http": 200,
+      "raw": "4d1bb2f1330a41938f875d327e23d67e",
+      "usd": 0.002464,
+      "usage": {
+        "input_tokens": 844,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 324,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "valid": true,
+      "statuses": {
+        "agreement": "present",
+        "leave_period": "present",
+        "exception": "present",
+        "special_reasons": "present"
+      },
+      "opus_statuses": null
+    },
+    {
+      "kind": "allegory-by:claude-sonnet-5",
+      "passage_id": "sfs-2026-1281:K10P10",
+      "http": 200,
+      "raw": "0c22d232a85f47b4bcfd9acfa61915fd",
+      "usd": 0.003578,
+      "usage": {
+        "input_tokens": 1053,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 505,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "valid": true,
+      "statuses": {
+        "duty": "present",
+        "scope": "present",
+        "exception": "present",
+        "exception_deadline": "present",
+        "deadline_start": "present"
+      },
+      "opus_statuses": null
+    },
+    {
+      "kind": "allegory-by:claude-sonnet-5",
+      "passage_id": "sfs-1982-673:P13",
+      "http": 200,
+      "raw": "0c6080370b4a4ea0a6da45233e25581e",
+      "usd": 0.004101,
+      "usage": {
+        "input_tokens": 1161,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 588,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "valid": true,
+      "statuses": {
+        "daily_rest": "present",
+        "temporary_exception": "present",
+        "unforeseen_event": "present",
+        "compensation": "present",
+        "night_interval": "present",
+        "night_exception": "present"
+      },
+      "opus_statuses": null
+    },
+    {
+      "kind": "allegory-by:claude-sonnet-5",
+      "passage_id": "sfs-1977-480:P12",
+      "http": 200,
+      "raw": "c8fb4313dfa6487696b4977a21c1d2a1",
+      "usd": 0.003274,
+      "usage": {
+        "input_tokens": 1064,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 442,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "valid": true,
+      "statuses": {
+        "agreement": "present",
+        "leave_period": "present",
+        "exception": "present",
+        "special_reasons": "present"
+      },
+      "opus_statuses": null
+    },
+    {
+      "kind": "allegory-by:claude-opus-5",
+      "passage_id": "sfs-2026-1281:K10P10",
+      "http": 200,
+      "raw": "b644f67013684690a0cfb93d1cf2b86e",
+      "usd": 0.003967,
+      "usage": {
+        "input_tokens": 1302,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 533,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "valid": false,
+      "reason": "ValueError: slot evidence is not a verbatim substring",
+      "opus_statuses": null
+    },
+    {
+      "kind": "allegory-by:claude-opus-5",
+      "passage_id": "sfs-1982-673:P13",
+      "http": 200,
+      "raw": "a7184bb8a5174319b41f7f8a0bdbbf8c",
+      "usd": 0.004446,
+      "usage": {
+        "input_tokens": 1346,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 620,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "valid": true,
+      "statuses": {
+        "daily_rest": "present",
+        "temporary_exception": "present",
+        "unforeseen_event": "present",
+        "compensation": "present",
+        "night_interval": "present",
+        "night_exception": "present"
+      },
+      "opus_statuses": null
+    },
+    {
+      "kind": "allegory-by:claude-opus-5",
+      "passage_id": "sfs-1977-480:P12",
+      "http": 200,
+      "raw": "13ec202a7b604fe1841a8600ccd9aa34",
+      "usd": 0.003364,
+      "usage": {
+        "input_tokens": 1084,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 456,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "valid": false,
+      "reason": "ValueError: slot evidence is not a verbatim substring",
+      "opus_statuses": null
+    }
+  ]
+}

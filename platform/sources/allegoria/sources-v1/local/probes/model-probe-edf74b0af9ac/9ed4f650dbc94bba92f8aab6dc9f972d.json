@@ -1,0 +1,31 @@
+{
+  "id": "msg_011CexFcyg8P8LAa77Y5sG4D",
+  "container": null,
+  "content": [
+    {
+      "text": "{\"slots\":[{\"slot_id\":\"duty\",\"status\":\"present\",\"quote\":\"kunde de vända sig till Vägvakten för att få rättvisa skipad\",\"note\":\"Texten beskriver att parterna kan vända sig till Vägvakten för att få tvisten avgjord, vilket uttrycker en plikt/möjlighet till prövning.\"},{\"slot_id\":\"scope\",\"status\":\"present\",\"quote\":\"tvistade om hur mycket vatten som skulle betalas för att driva hjulen\",\"note\":\"Tvisten avgränsas specifikt till frågan om betalning för vattnet som driver kvarnens hjul.\"},{\"slot_id\":\"exception\",\"status\":\"present\",\"quote\":\"Lät han den tredje vintern komma och gå utan att söka rätt, då var tvisten för alltid begravd under snön, och Vägvakten skulle inte längre öppna sin port för den saken\",\"note\":\"Detta utgör ett undantag från huvudregeln om att tvister kan prövas - om tidsfristen passerats stängs möjligheten till prövning.\"},{\"slot_id\":\"exception_deadline\",\"status\":\"present\",\"quote\":\"hade bonden endast två vintrar på sig att knacka på Vägvaktens dörr\",\"note\":\"En konkret tidsgräns (två vintrar) anges för när ansökan måste göras.\"},{\"slot_id\":\"deadline_start\",\"status\":\"present\",\"quote\":\"om Kvarnens herre en gång sänt ett brev, förseglat med sitt märke, till bondens sista kända gård, och däri förklarat sin ståndpunkt om vattnets pris\",\"note\":\"Tidsfristen räknas från den händelse då Kvarnens herre skickat det förseglade brevet med sin ståndpunkt.\"}]}",
+      "type": "text"
+    }
+  ],
+  "model": "claude-sonnet-5",
+  "role": "assistant",
+  "stop_details": null,
+  "stop_reason": "end_turn",
+  "stop_sequence": null,
+  "type": "message",
+  "usage": {
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 0,
+    "inference_geo": "global",
+    "input_tokens": 1346,
+    "output_tokens": 583,
+    "service_tier": "standard",
+    "output_tokens_details": {
+      "thinking_tokens": 0
+    }
+  }
+}

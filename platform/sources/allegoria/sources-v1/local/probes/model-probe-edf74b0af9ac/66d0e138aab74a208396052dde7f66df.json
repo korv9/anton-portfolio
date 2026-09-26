@@ -1,0 +1,31 @@
+{
+  "id": "msg_011CexFiuKMi354HVuubJuMi",
+  "container": null,
+  "content": [
+    {
+      "text": "{\"slots\":[{\"slot_id\":\"agreement\",\"status\":\"present\",\"quote\":\"Det stod fritt för björnen och skogsrådet att komma överens om annat\",\"note\":\"Texten anger uttryckligen att parterna kan avtala om annan ordning.\"},{\"slot_id\":\"leave_period\",\"status\":\"present\",\"quote\":\"i lyan skulle han få sova fyra hela månvarv medan snön låg tyngst\",\"note\":\"Både längd (fyra månvarv) och förläggning (djupaste kölden) anges.\"},{\"slot_id\":\"exception\",\"status\":\"present\",\"quote\":\"Endast om något ovanligt inträffade — om floden svällde in i lyan, om elden gick genom snåren, om skogen självt stod i fara — fick rådet väcka björnen\",\"note\":\"Undantag från huvudregeln vid ovanliga händelser.\"},{\"slot_id\":\"special_reasons\",\"status\":\"present\",\"quote\":\"Sov senare. Nu behöver vi dig.\",\"note\":\"Vid ovanliga omständigheter förskjuts sömnen till annan tid.\"}]}",
+      "type": "text"
+    }
+  ],
+  "model": "claude-opus-5",
+  "role": "assistant",
+  "stop_details": null,
+  "stop_reason": "end_turn",
+  "stop_sequence": null,
+  "type": "message",
+  "usage": {
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 0,
+    "inference_geo": "global",
+    "input_tokens": 1385,
+    "output_tokens": 357,
+    "service_tier": "standard",
+    "output_tokens_details": {
+      "thinking_tokens": 0
+    }
+  }
+}

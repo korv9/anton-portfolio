@@ -30,9 +30,10 @@ KINDS = {
 # Used only when the source states no chamber activity, where the section heading is the
 # only thing left to judge by.
 NOT_AN_ISSUE = re.compile(
-    r'^(v[äa]lkomstord|h[äa]lsningsanf|parentation|meddelande|val av|val\b|anm[äa]lan|'
+    r'^(v[äa]lkomst|h[äa]lsning|parentation|meddelande|val av|val\b|anm[äa]lan|'
     r'bordl[äa]ggning|justering|avs[äa]gelse|fr[åa]gestund|svar p[åa] fr[åa]ga|'
     r'interpellation|skriftlig|ledighet|upprop|[åa]lderspresident|avslutning|'
+    r'inledning|riksm[öo]tets [öo]ppnande|[öo]ppnande|prot[oa]koll|'
     r'[åa]terupptaget sammantr[äa]de|[åa]terrapportering|information fr[åa]n regeringen)',
     re.IGNORECASE)
 
@@ -46,10 +47,13 @@ def issue_kind(row: dict) -> str | None:
     absent the section heading is the only evidence available, so the rule inverts — keep
     the speech unless its heading names chamber business or a debate form out of scope.
 
-    The fallback applies only when the field is absent. Where the source does classify the
-    sitting, that classification is trusted, because a blank in an otherwise populated year
-    means something different: in 2020/21 most blanks are party-leader debates, which
-    belong to the separate leaders corpus and must not be mixed in here.
+    The fallback fires per speech, wherever the field is blank or a bare dash. Deciding it
+    per archive instead was tried and is wrong: 2013/14 records a dash for 5,991 speeches
+    while classifying the rest, and those 5,991 are ordinary committee matters — Hälsovård,
+    Utgiftsramar, Järnvägspolitiska frågor.
+
+    What keeps this from sweeping in chamber business is the exclusion list, not the scope.
+    Party-leader debates are removed first and by name, so they stay in their own corpus.
     """
     activity = (row.get('kammaraktivitet') or '').strip().casefold()
     heading = (row.get('avsnittsrubrik') or '').strip()

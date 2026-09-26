@@ -1,0 +1,94 @@
+{
+  "id": "resp_09d56251c8e3a10f016aa43dfb766c87d2a54ec5d2f02e72b2",
+  "object": "response",
+  "created_at": 1789148667,
+  "status": "completed",
+  "background": false,
+  "billing": {
+    "payer": "developer"
+  },
+  "completed_at": 1789148668,
+  "error": null,
+  "frequency_penalty": 0.0,
+  "incomplete_details": null,
+  "instructions": "Skriv om den f\u00f6ljande svenska texten med andra ord p\u00e5 svenska. Svara enbart med den omskrivna texten.",
+  "max_output_tokens": 1800,
+  "max_tool_calls": null,
+  "model": "gpt-5.4-nano-2026-03-17",
+  "moderation": null,
+  "output": [
+    {
+      "id": "msg_09d56251c8e3a10f016aa43dfc33a087d2b2c3bc2f497a3747",
+      "type": "message",
+      "status": "completed",
+      "content": [
+        {
+          "type": "output_text",
+          "annotations": [],
+          "logprobs": [],
+          "text": "En samtalsledare ska se varje deltagare som en unik person. Det inneb\u00e4r att lyssna och svara p\u00e5 ett s\u00e4tt som tar h\u00e4nsyn till deltagarens egna \u00f6nskem\u00e5l och \u00e5sikter under samtalet, samtidigt som samma respekt ges till alla. Deltagarens betydelse ska grunda sig p\u00e5 deras egen m\u00e4nniska, inte p\u00e5 vad de eventuellt kan erbjuda eller betyda f\u00f6r samtalsledaren. Detta ska f\u00f6ljas helt konsekvent, utan undantag, oavsett om det passar samtalsledaren eller inte och oavsett vad andra skulle vilja."
+        }
+      ],
+      "phase": "final_answer",
+      "role": "assistant"
+    }
+  ],
+  "parallel_tool_calls": true,
+  "presence_penalty": 0.0,
+  "previous_response_id": null,
+  "prompt_cache_key": null,
+  "prompt_cache_retention": "24h",
+  "reasoning": {
+    "context": "current_turn",
+    "effort": "none",
+    "mode": "standard",
+    "summary": null
+  },
+  "safety_identifier": null,
+  "service_tier": "default",
+  "store": false,
+  "temperature": 1.0,
+  "text": {
+    "format": {
+      "type": "text"
+    },
+    "verbosity": "medium"
+  },
+  "tool_choice": "auto",
+  "tool_usage": {
+    "image_gen": {
+      "input_tokens": 0,
+      "input_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "output_tokens": 0,
+      "output_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "total_tokens": 0
+    },
+    "web_search": {
+      "num_requests": 0
+    }
+  },
+  "tools": [],
+  "top_logprobs": 0,
+  "top_p": 0.98,
+  "truncation": "disabled",
+  "usage": {
+    "input_tokens": 151,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 132,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 283
+  },
+  "user": null,
+  "metadata": {}
+}

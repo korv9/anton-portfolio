@@ -1,0 +1,94 @@
+{
+  "id": "resp_06eba376de95205a016aa43e7718b087d29ff974d440b07a8d",
+  "object": "response",
+  "created_at": 1789148791,
+  "status": "completed",
+  "background": false,
+  "billing": {
+    "payer": "developer"
+  },
+  "completed_at": 1789148792,
+  "error": null,
+  "frequency_penalty": 0.0,
+  "incomplete_details": null,
+  "instructions": "\u00c5terge den f\u00f6ljande texten som en svensk f\u00f6rklaring riktad till en lekman. Svara enbart med f\u00f6rklaringen.",
+  "max_output_tokens": 1800,
+  "max_tool_calls": null,
+  "model": "gpt-5.4-nano-2026-03-17",
+  "moderation": null,
+  "output": [
+    {
+      "id": "msg_06eba376de95205a016aa43e77913887d2bafd6598e3745def",
+      "type": "message",
+      "status": "completed",
+      "content": [
+        {
+          "type": "output_text",
+          "annotations": [],
+          "logprobs": [],
+          "text": "N\u00e4tmyndigheten ska kunna ta st\u00e4llning i en tvist om vilka avgifter som ska tas ut enligt vissa regler.  \n\nMen myndigheten f\u00e5r bara pr\u00f6va tvisten om n\u00e5gon beg\u00e4r pr\u00f6vning i tid. Ans\u00f6kan m\u00e5ste ha skickats in senast inom tv\u00e5 \u00e5r fr\u00e5n att den som ansvarar f\u00f6r eln\u00e4tets system (systemansvarig) skickade ett skriftligt svar/st\u00e4llningstagande till den ber\u00f6rda parten p\u00e5 den adress som var k\u00e4nd senast."
+        }
+      ],
+      "phase": "final_answer",
+      "role": "assistant"
+    }
+  ],
+  "parallel_tool_calls": true,
+  "presence_penalty": 0.0,
+  "previous_response_id": null,
+  "prompt_cache_key": null,
+  "prompt_cache_retention": "24h",
+  "reasoning": {
+    "context": "current_turn",
+    "effort": "none",
+    "mode": "standard",
+    "summary": null
+  },
+  "safety_identifier": null,
+  "service_tier": "default",
+  "store": false,
+  "temperature": 1.0,
+  "text": {
+    "format": {
+      "type": "text"
+    },
+    "verbosity": "medium"
+  },
+  "tool_choice": "auto",
+  "tool_usage": {
+    "image_gen": {
+      "input_tokens": 0,
+      "input_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "output_tokens": 0,
+      "output_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "total_tokens": 0
+    },
+    "web_search": {
+      "num_requests": 0
+    }
+  },
+  "tools": [],
+  "top_logprobs": 0,
+  "top_p": 0.98,
+  "truncation": "disabled",
+  "usage": {
+    "input_tokens": 144,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 110,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 254
+  },
+  "user": null,
+  "metadata": {}
+}

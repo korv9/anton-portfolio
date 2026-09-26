@@ -1,0 +1,94 @@
+{
+  "id": "resp_06ecdfc7af056cc3016aa52ec612f087d2abded3b4c5691565",
+  "object": "response",
+  "created_at": 1789210310,
+  "status": "completed",
+  "background": false,
+  "billing": {
+    "payer": "developer"
+  },
+  "completed_at": 1789210313,
+  "error": null,
+  "frequency_penalty": 0.0,
+  "incomplete_details": null,
+  "instructions": "Gestalta den f\u00f6ljande texten som en allegori p\u00e5 svenska. Svara enbart med allegorin.",
+  "max_output_tokens": 8000,
+  "max_tool_calls": null,
+  "model": "gpt-5.4-nano-2026-03-17",
+  "moderation": null,
+  "output": [
+    {
+      "id": "msg_06ecdfc7af056cc3016aa52ec642b487d28c3de18309961131",
+      "type": "message",
+      "status": "completed",
+      "content": [
+        {
+          "type": "output_text",
+          "annotations": [],
+          "logprobs": [],
+          "text": "I varje dygn g\u00e5r m\u00e4nniskor vilse mellan v\u00e4ggar av klockslag, men det finns en regel som alla b\u00e4r i kroppen: efter varje 24-timmars vandring ska minst elva sammanh\u00e4ngande timmar f\u00e5 bli ett eget hem f\u00f6r sj\u00e4len. Den vilan ska vara hel, som om natten sj\u00e4lv lade sig som ett lock \u00f6ver all oro.\n\nOm n\u00e5got ovanligt h\u00e4nder\u2014n\u00e5got som ingen kunde ana i f\u00f6rv\u00e4g, n\u00e5got som tvingar v\u00e4rlden att slita trots att viljan stod redo\u2014kan regeln mjukas upp. D\u00e5 f\u00e5r man r\u00f6ra vid m\u00e5ttet, men aldrig stj\u00e4la det utan att betala tillbaka: man ska senare ge tillbaka samma andrum, en motsvarande vilostund som ers\u00e4tter det som togs.\n\nOch i sj\u00e4lva vilans k\u00e4rna finns ett f\u00f6nster som alltid ska \u00f6ppnas: tiden mellan midnatt och klockan fem ska r\u00e4knas in i den r\u00e4tt man f\u00e5r. Det \u00e4r som om natten kr\u00e4ver sin del, som om stillheten mellan de m\u00f6rka timmarna \u00e4r n\u00f6dv\u00e4ndig f\u00f6r att m\u00e4nniskan ska kunna \u00e5terv\u00e4nda hel.\n\nMen \u00e4ven h\u00e4r kan undantag komma, som skuggor fr\u00e5n verklighetens behov. Om arbetet, genom sin natur, genom hur samh\u00e4llet m\u00e5ste forts\u00e4tta, eller genom andra s\u00e4rskilda omst\u00e4ndigheter, m\u00e5ste p\u00e5g\u00e5 just i dessa timmar\u2014d\u00e5 kan man flytta gr\u00e4nsen. \u00c4nd\u00e5 \u00e4r principen densamma: \u00e4ven n\u00e4r natten bryts, \u00e4r det bara f\u00f6r att v\u00e4rlden m\u00e5ste, inte f\u00f6r att vilan ska gl\u00f6mmas."
+        }
+      ],
+      "phase": "final_answer",
+      "role": "assistant"
+    }
+  ],
+  "parallel_tool_calls": true,
+  "presence_penalty": 0.0,
+  "previous_response_id": null,
+  "prompt_cache_key": null,
+  "prompt_cache_retention": "24h",
+  "reasoning": {
+    "context": "current_turn",
+    "effort": "low",
+    "mode": "standard",
+    "summary": null
+  },
+  "safety_identifier": null,
+  "service_tier": "default",
+  "store": false,
+  "temperature": 1.0,
+  "text": {
+    "format": {
+      "type": "text"
+    },
+    "verbosity": "medium"
+  },
+  "tool_choice": "auto",
+  "tool_usage": {
+    "image_gen": {
+      "input_tokens": 0,
+      "input_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "output_tokens": 0,
+      "output_tokens_details": {
+        "image_tokens": 0,
+        "text_tokens": 0
+      },
+      "total_tokens": 0
+    },
+    "web_search": {
+      "num_requests": 0
+    }
+  },
+  "tools": [],
+  "top_logprobs": 0,
+  "top_p": 0.98,
+  "truncation": "disabled",
+  "usage": {
+    "input_tokens": 198,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 338,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 536
+  },
+  "user": null,
+  "metadata": {}
+}
