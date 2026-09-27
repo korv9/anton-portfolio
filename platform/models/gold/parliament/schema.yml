@@ -1,0 +1,77 @@
+version: 2
+
+models:
+  - name: dim_government
+    description: Governments since 1991, from seeds/parliament/governments.csv with a source per row.
+    columns:
+      - name: government_key
+        data_tests: [unique, not_null]
+  - name: dim_committee
+    columns:
+      - name: committee_key
+        data_tests: [unique, not_null]
+  - name: dim_issue
+    columns:
+      - name: issue_key
+        data_tests: [unique, not_null]
+  - name: dim_parliament_session
+    description: Riksmöten with roll calls, the election each followed and the government at its first roll call.
+    columns:
+      - name: session
+        data_tests: [unique, not_null]
+      - name: government_key
+        data_tests: [not_null]
+  - name: fct_roll_call
+    description: >-
+      Every roll call since 1993/94. Grain: session x roll_call_id (vote id, plus ':motiv' for
+      a roll call on the reasons for a decision rather than the decision itself).
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [session, roll_call_id]
+    columns:
+      - name: committee_key
+        data_tests:
+          - relationships: {arguments: {to: ref('dim_committee'), field: committee_key}, config: {severity: warn}}
+      - name: government_key
+        description: The government on the roll call's date. NULL where the source gives no date.
+        data_tests:
+          - not_null: {config: {where: "vote_date is not null"}}
+  - name: fct_party_roll_call
+    description: Each party's members' votes and position on each roll call, with the party's role that day.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [session, roll_call_id, party]
+  - name: mart_party_session_record
+    description: Attendance, unity, winning side and voting with the government, per party and riksmöte (decisions only).
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [session, party]
+  - name: mart_party_pair_session
+    description: Share of decisions on which two parties took the same position, per riksmöte.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [session, party_a, party_b]
+  - name: fct_election
+    description: >-
+      Riksdag election results, Sweden, 1973 to the latest election. SCB where it has published,
+      Valmyndigheten otherwise. Ny demokrati's votes (1991, 1994) are inside OTHER in SCB's tables;
+      its seats are its own row.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [election_year, party]
+  - name: fct_election_municipality
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [municipality_code, election_year, party]
+  - name: fct_party_poll
+    description: SCB's party preference survey (PSU) with its margin of error.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [survey_month, party]

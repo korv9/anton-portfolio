@@ -22,6 +22,8 @@ models:
       +schema: bronze
       jobs:
         +tags: [jobs]
+      parliament:
+        +tags: [parliament]
       politics:
         +tags: [politics]
       welfare:
@@ -31,6 +33,8 @@ models:
       +schema: silver
       jobs:
         +tags: [jobs]
+      parliament:
+        +tags: [parliament]
       welfare:
         +tags: [welfare]
     gold:
@@ -38,6 +42,8 @@ models:
       +schema: gold
       jobs:
         +tags: [jobs]
+      parliament:
+        +tags: [parliament]
       politics:
         +tags: [politics]
       welfare:
@@ -58,6 +64,20 @@ seeds:
         +column_types: {session: varchar, budget_year: integer, government_parties: varchar,
                         agreement_parties: varchar, agreement_source_url: varchar, adopted: varchar,
                         alternative_parties: varchar, alternative_source_url: varchar}
+    parliament:
+      +tags: [parliament]
+      +schema: seeds
+      governments:
+        +column_types: {government_key: varchar, government_name: varchar, prime_minister: varchar,
+                        prime_minister_party: varchar, government_parties: varchar,
+                        start_date: date, end_date: date, agreement_name: varchar,
+                        agreement_parties: varchar, status_note: varchar, source_url: varchar}
+      committees:
+        +column_types: {committee_key: varchar, committee_code: varchar, committee_name: varchar,
+                        issue_key: varchar, active_note: varchar}
+      issues:
+        +column_types: {issue_key: varchar, issue_name_sv: varchar, issue_name_en: varchar,
+                        expenditure_areas: varchar, welfare_indicators: varchar, summary_sv: varchar}
     welfare:
       +tags: [welfare]
       +schema: seeds

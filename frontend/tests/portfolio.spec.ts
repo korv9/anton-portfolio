@@ -21,6 +21,10 @@ test('home introduces Anton and routes to each project', async ({
     .getByRole('link', { name: 'Politics' })
     .click()
   await expect(page.getByRole('heading', { level: 1 })).toContainText(
+    'Politics right now',
+  )
+  await page.goto('/#politics')
+  await expect(page.getByRole('heading', { level: 1 })).toContainText(
     'Swedish politics',
   )
   await expect(page.locator('.page-tabs a')).toHaveCount(5)
@@ -62,6 +66,8 @@ test('navigation, responsive layout and accessibility', async ({ page }) => {
   for (const route of [
     '/',
     '/#politics',
+    '/#now',
+    '/#issue-arbete',
     '/#budget-comparison',
     '/#drugcomb',
     '/#sweden',

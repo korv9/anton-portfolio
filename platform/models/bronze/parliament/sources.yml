@@ -1,0 +1,43 @@
+version: 2
+
+# Bronze for the parliament subject: files fetched by platform/ingest/riksdagen/history_ingest.py
+# and platform/ingest/elections/elections_ingest.py, read in place. Each source directory has a
+# _manifest.jsonl with URL, fetch time and SHA-256 per file. Roll-call CSVs are read directly in
+# stg_riksdagen_votes, because their read options need braces that external_location cannot hold.
+
+sources:
+  - name: riksdagen
+    description: Riksdagen open data (data.riksdagen.se).
+    tables:
+      - name: reports
+        description: Committee reports (betänkanden) per session, one file per listing page.
+        meta:
+          external_location: >-
+            read_json_objects('{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/riksdagen/reports/*.json',
+            filename = true, maximum_object_size = 200000000)
+
+  - name: scb_elections
+    description: Statistics Sweden (SCB), PxWeb API v1. Riksdag elections and the party preference survey (PSU).
+    meta:
+      external_location: >-
+        read_json('{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/scb/{name}/part-*.json',
+        filename = true, maximum_object_size = 500000000)
+    tables:
+      - name: election_country
+        description: ME0104T3 with region eliminated. Votes and share of valid votes per party, Sweden.
+      - name: election_municipality
+        description: ME0104T3 per municipality.
+      - name: election_seats
+        description: Riksdagsmandat, seats per party, whole country (VR00).
+      - name: psu
+        description: Vid10, "if there were an election today", share, changes and margin of error.
+
+  - name: val
+    description: Valmyndigheten, the official results site (resultat.val.se), national Riksdag result.
+    tables:
+      - name: riksdag_result
+        description: One file per election, final (S) or preliminary (P) count.
+        meta:
+          external_location: >-
+            read_json('{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/val/*/RD_*.json',
+            filename = true, maximum_object_size = 200000000)

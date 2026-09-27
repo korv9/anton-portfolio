@@ -67,6 +67,7 @@ before the politics build, since dbt reads the fact tables it writes.
 |---|---|---|---|
 | Jobs | JobTech | `models/*/jobs` | `ingest/jobtech/` |
 | Welfare | SCB (AKU, population), Försäkringskassan, Folkhälsomyndigheten, ESS, Kolada | `models/*/welfare`, `models/gold/shared` | [docs/welfare-data-model.md](../docs/welfare-data-model.md) |
+| Parliament | Riksdagen (roll calls, reports, news), SCB (elections, PSU), Valmyndigheten | `models/*/parliament`, `seeds/parliament` | [docs/parliament-data-model.md](../docs/parliament-data-model.md) |
 | Politics | Riksdagen, Statskontoret | Budget context and roll-call votes in `models/*/politics`; speeches and language still in `legacy/` | [docs/political-observatory.md](../docs/political-observatory.md) |
 
 ## Adding a source

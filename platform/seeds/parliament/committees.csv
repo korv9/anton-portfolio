@@ -1,0 +1,25 @@
+committee_key,committee_code,committee_name,issue_key,active_note
+au,AU,Arbetsmarknadsutskottet,arbete,
+bou,BoU,Bostadsutskottet,bostad,Till 2006
+cu,CU,Civilutskottet,bostad,
+fiu,FiU,Finansutskottet,ekonomi,
+föu,FöU,Försvarsutskottet,forsvar,
+jou,JoU,Jordbruksutskottet,miljo,Till 2006
+juu,JuU,Justitieutskottet,rattsvasende,
+ku,KU,Konstitutionsutskottet,demokrati,
+kru,KrU,Kulturutskottet,kultur,
+lu,LU,Lagutskottet,bostad,Till 2006
+mju,MJU,Miljö- och jordbruksutskottet,miljo,Från 2006
+nu,NU,Näringsutskottet,naringsliv,
+sfu,SfU,Socialförsäkringsutskottet,socialforsakring,
+sku,SkU,Skatteutskottet,skatt,
+sou,SoU,Socialutskottet,vard,
+tu,TU,Trafikutskottet,trafik,
+ubu,UbU,Utbildningsutskottet,utbildning,
+uu,UU,Utrikesutskottet,utrikes,
+uföu,UFöU,Sammansatta utrikes- och försvarsutskottet,forsvar,Sammansatt utskott
+kuu,KUU,Sammansatta konstitutions- och utrikesutskottet,demokrati,Sammansatt utskott
+jusou,JuSoU,Sammansatta justitie- och socialutskottet,rattsvasende,Sammansatt utskott
+umju,UMJU,Sammansatta utrikes- och miljö- och jordbruksutskottet,miljo,Sammansatt utskott
+ckru,CKrU,Sammansatta civil- och kulturutskottet,kultur,Sammansatt utskott
+misstr,misstr,Misstroendeförklaring,demokrati,Omröstning om misstroende

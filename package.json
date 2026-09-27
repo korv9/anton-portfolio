@@ -13,14 +13,17 @@
     "format:check": "prettier --check frontend/src frontend/tests frontend/*.ts",
     "data:build": "python platform/legacy/build_gold.py && npm run politics:build && python platform/legacy/build_products.py && python platform/legacy/build_speech_browser.py && python platform/publish/build_catalog.py",
     "politics:build": "cd platform && dbt build --profiles-dir . --select +tag:politics --target-path target/politics && cd .. && python platform/publish/export_politics.py",
-    "politics:check": "cd platform && dbt build --profiles-dir . --select +tag:politics --target-path target/politics && cd .. && python platform/publish/export_politics.py --check",
+    "politics:check": "cd platform && dbt build --profiles-dir . --select +tag:politics --exclude tag:parliament --target-path target/politics && cd .. && python platform/publish/export_politics.py --check",
     "data:catalog": "python platform/publish/build_catalog.py",
     "data:parquet": "python platform/publish/build_parquet.py",
     "data:upload": "python platform/publish/upload.py",
     "data:check": "python platform/legacy/validate_gold.py && python platform/legacy/validate_budget_context.py && python platform/legacy/validate_products.py && python platform/legacy/validate_politics.py",
     "welfare:fetch": "python platform/ingest/run_welfare.py --skip-build",
     "welfare:build": "python platform/ingest/run_welfare.py --skip-fetch",
-    "welfare": "python platform/ingest/run_welfare.py"
+    "welfare": "python platform/ingest/run_welfare.py",
+    "parliament:fetch": "python platform/ingest/run_parliament.py --skip-build",
+    "parliament:build": "python platform/ingest/run_parliament.py --skip-fetch",
+    "parliament": "python platform/ingest/run_parliament.py && python platform/publish/export_parliament.py"
   },
   "dependencies": {
     "@fontsource-variable/dm-sans": "^5.3.0",
