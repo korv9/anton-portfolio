@@ -13,7 +13,7 @@ test('home introduces Anton and routes to each project', async ({
   )
   await expect(page.locator('.about-profile')).toContainText('Fora')
   await expect(page.locator('.about-profile')).toContainText('Avtalat')
-  await expect(page.locator('.product-cards > article')).toHaveCount(6)
+  await expect(page.locator('.product-cards > article')).toHaveCount(7)
   await expect(page.locator('#job-market')).toHaveCount(0)
   if (isMobile) await page.getByRole('button', { name: 'Menu' }).click()
   await page
@@ -64,6 +64,8 @@ test('navigation, responsive layout and accessibility', async ({ page }) => {
     '/#politics',
     '/#budget-comparison',
     '/#drugcomb',
+    '/#sweden',
+    '/#status',
   ]) {
     await page.goto(route)
     for (const width of [320, 375, 768, 1280]) {

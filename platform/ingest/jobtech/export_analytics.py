@@ -8,7 +8,7 @@ from pathlib import Path
 
 import duckdb
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]  # platform/
 
 
 def export_table(con, sql, destination):
@@ -30,7 +30,7 @@ def main():
     args = parser.parse_args()
     args.output.mkdir(parents=True, exist_ok=True)
     with duckdb.connect(args.database, read_only=True) as con:
-        missing = con.execute('''select count(*) from analytics_marts.mart_job_trends_monthly
+        missing = con.execute('''select count(*) from gold.mart_job_trends_monthly
             where not is_complete''').fetchone()[0]
         if missing:
             raise ValueError(f'{missing} role-months have incomplete archive coverage; export aborted')
@@ -38,11 +38,11 @@ def main():
         if versions != {hashlib.sha256((ROOT/'seeds/role_patterns.csv').read_bytes()).hexdigest()}:
             raise ValueError('Candidate rules changed; reprocess archives before publishing analysis')
         tables = {
-            'Jobs': 'select * from analytics_marts.mart_job_trends_monthly order by publication_month, role_family',
-            'Skills': 'select * from analytics_marts.mart_skill_trends_monthly order by publication_month, role_family, skill',
-            'Comparison': 'select * from analytics_marts.mart_skill_year_comparison order by role_family, skill',
-            'Roles': 'select distinct role_family from analytics_marts.mart_job_trends_monthly order by 1',
-            'Months': 'select distinct publication_month from analytics_marts.mart_job_trends_monthly order by 1'
+            'Jobs': 'select * from gold.mart_job_trends_monthly order by publication_month, role_family',
+            'Skills': 'select * from gold.mart_skill_trends_monthly order by publication_month, role_family, skill',
+            'Comparison': 'select * from gold.mart_skill_year_comparison order by role_family, skill',
+            'Roles': 'select distinct role_family from gold.mart_job_trends_monthly order by 1',
+            'Months': 'select distinct publication_month from gold.mart_job_trends_monthly order by 1'
         }
         manifest = {'database': str(Path(args.database).resolve()),
                     'generated_at': datetime.now(timezone.utc).isoformat(), 'tables': {}}
@@ -53,32 +53,32 @@ def main():
         export_table(con, '''select job_id, title, occupation, occupation_field_id, role_family,
             classification_basis, role_match_count, published_at,
             left(description, 600) as description_excerpt
-            from analytics_intermediate.int_job_ads_enriched
+            from silver.int_job_ads_enriched
             qualify row_number() over (partition by role_family, classification_basis order by md5(job_id)) <= 12
             order by role_family, classification_basis, job_id''', review/'role_review.csv')
         export_table(con, '''select s.skill, j.job_id, j.title,
             regexp_extract(lower(j.description), '.{0,100}' || p.pattern || '.{0,100}', 0) as match_context
-            from analytics_marts.bridge_job_skills s
-            join analytics_intermediate.int_job_ads_enriched j using(job_id)
+            from gold.bridge_job_skills s
+            join silver.int_job_ads_enriched j using(job_id)
             join analytics.technology_patterns p using(skill)
             where j.role_family <> 'Other'
             qualify row_number() over (partition by skill order by md5(job_id)) <= 8
             order by skill, job_id''', review/'skill_review.csv')
         export_table(con, '''select md5(lower(title) || coalesce(employer_id,'') || description) as content_key,
             count(*) as ad_count, min(published_at) as first_publication, max(published_at) as last_publication
-            from analytics_intermediate.int_job_ads_enriched
+            from silver.int_job_ads_enriched
             where role_family <> 'Other'
             group by 1 having count(*) > 1 order by ad_count desc''', review/'possible_reposts.csv')
         quality = {
             'raw_versions': con.execute('select count(*) from raw.job_ads').fetchone()[0],
-            'unique_ads': con.execute('select count(*) from analytics_marts.fct_job_ads').fetchone()[0],
-            'role_counts': con.execute('select role_family,count(*) from analytics_marts.fct_job_ads group by 1 order by 1').fetchall(),
-            'classification_counts': con.execute('select classification_basis,count(*) from analytics_marts.fct_job_ads group by 1 order by 1').fetchall(),
-            'year_role_counts': con.execute('''select year(published_at),role_family,count(*) from analytics_marts.fct_job_ads
+            'unique_ads': con.execute('select count(*) from gold.fct_job_ads').fetchone()[0],
+            'role_counts': con.execute('select role_family,count(*) from gold.fct_job_ads group by 1 order by 1').fetchall(),
+            'classification_counts': con.execute('select classification_basis,count(*) from gold.fct_job_ads group by 1 order by 1').fetchall(),
+            'year_role_counts': con.execute('''select year(published_at),role_family,count(*) from gold.fct_job_ads
                 where role_family <> 'Other' group by 1,2 order by 1,2''').fetchall(),
             'coverage': con.execute('select publication_month,status,source_rows,candidate_rows from raw.collection_coverage order by 1').fetchall(),
-            'missing_descriptions': con.execute("select count(*) from analytics_intermediate.int_job_ads_enriched where description='' and role_family <> 'Other'").fetchone()[0],
-            'duplicate_original_ids': con.execute('''select count(*) from (select original_id from analytics_staging.stg_job_ads
+            'missing_descriptions': con.execute("select count(*) from silver.int_job_ads_enriched where description='' and role_family <> 'Other'").fetchone()[0],
+            'duplicate_original_ids': con.execute('''select count(*) from (select original_id from bronze.stg_job_ads
                 where original_id is not null group by 1 having count(*) > 1)''').fetchone()[0]
         }
         (review/'summary.json').write_text(json.dumps(quality, indent=2, default=str), encoding='utf-8')

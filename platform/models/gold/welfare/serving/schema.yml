@@ -1,0 +1,304 @@
+version: 2
+
+# Serving layer: tables shaped for a purpose, built only from gold facts and their
+# aggregation rules (dim_indicator.measure_type, time_rule, space_rule).
+
+models:
+  - name: mart_county_year_panel
+    description: >-
+      Counties and the country by calendar year, one column per measure, each aggregated by
+      its rule. For regression, correlation and maps. Carries numerators and denominators
+      (unemployed and labour force, sick-pay days and insured) so regions combine correctly.
+      County-level associations describe counties, not individuals.
+    # Semantic layer over counties only: the country row is excluded from every measure, so
+    # grouping by NUTS2 area or summing all counties gives correct totals and rates.
+    semantic_model:
+      enabled: true
+      name: county_year
+    primary_entity: county_year
+    agg_time_dimension: year_start
+    metrics:
+      - name: county_population
+        description: Population on 31 December, summed over the selected counties. Per year only.
+        type: simple
+        agg: sum
+        expr: case when not is_country then population end
+        non_additive_dimension:
+          name: year_start
+          window_agg: max
+      - name: county_unemployed_thousands
+        type: simple
+        agg: sum
+        expr: case when not is_country then unemployed_thousands end
+        non_additive_dimension:
+          name: year_start
+          window_agg: max
+      - name: county_labour_force_thousands
+        type: simple
+        agg: sum
+        expr: case when not is_country then labour_force_thousands end
+        non_additive_dimension:
+          name: year_start
+          window_agg: max
+      - name: county_unemployment_rate
+        description: Summed unemployed over summed labour force of the selected counties.
+        type: ratio
+        numerator: county_unemployed_thousands
+        denominator: county_labour_force_thousands
+      - name: county_stress_cases_started
+        description: Started F43 cases; a flow, adds over counties and years.
+        type: simple
+        agg: sum
+        expr: case when not is_country then stress_cases_started end
+      - name: county_stress_cases_per_inhabitant
+        type: ratio
+        numerator: county_stress_cases_started
+        denominator: county_population
+      - name: county_sick_pay_days
+        type: simple
+        agg: sum
+        expr: case when not is_country then sick_pay_days end
+        non_additive_dimension:
+          name: year_start
+          window_agg: max
+      - name: county_insured_persons
+        type: simple
+        agg: sum
+        expr: case when not is_country then insured_persons end
+        non_additive_dimension:
+          name: year_start
+          window_agg: max
+      - name: county_sick_pay_rate
+        description: Summed sick-pay days over summed insured persons of the selected counties.
+        type: ratio
+        numerator: county_sick_pay_days
+        denominator: county_insured_persons
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [region_code, year]
+    columns:
+      - name: fohm_hard_to_trust_pct
+        description: "Folkhälsomyndigheten: finds it hard to trust others, 16-84, per cent, pooled."
+      - name: fohm_good_health_pct
+        description: "Folkhälsomyndigheten: good or very good self-rated health, 16-84, per cent, pooled."
+      - name: fohm_good_wellbeing_pct
+        description: "Folkhälsomyndigheten: good mental wellbeing, 16-84, per cent, pooled."
+      - name: fohm_serious_mental_strain_pct
+        description: "Folkhälsomyndigheten: serious mental strain, 16-84, per cent, pooled over fohm_period."
+      - name: eligible_vocational_programme_pct
+        description: "Kolada N15428: year-9 pupils eligible for vocational upper-secondary programmes, per cent."
+      - name: low_trust_pct
+        description: "Kolada U01413: inhabitants 16-84 lacking trust in others, per cent."
+      - name: good_wellbeing_pct
+        description: "Kolada U01473: inhabitants 16-84 with good mental wellbeing, per cent."
+      - name: serious_mental_strain_pct
+        description: "Kolada N01452: inhabitants 16-84 with serious mental strain, per cent (FoHM survey via Kolada)."
+      - name: turnout_riksdag_pct
+        description: "Kolada N05403: turnout in the latest Riksdag election, per cent (changes in election years)."
+      - name: violent_crime_per_100k
+        description: "Kolada N07403: reported violent crime per 100,000 inhabitants (where the crime happened)."
+      - name: social_assistance_pct
+        description: "Kolada N31807: inhabitants receiving social assistance during the year, per cent."
+      - name: median_earned_income_sek
+        description: "Kolada N00906: median earned income 20-64, SEK. A median: never average across regions."
+      - name: ill_health_days
+        description: "Kolada N00957: ohälsotal, days."
+      - name: sick_pay_rate_1_days
+        description: "Kolada N00938: sjukpenningtal 1.0, 16-64, days per registered insured."
+      - name: employment_rate_20_64_pct
+        description: "Kolada N02267: employment rate 20-64 (register based)."
+      - name: open_unemployment_18_65_pct
+        description: "Kolada N03937: openly unemployed, share of population 18-65 (Arbetsförmedlingen register, not AKU)."
+      - name: ongoing_sick_leave_per_1000
+        description: "ongoing_sick_leave_mean per 1,000 inhabitants (all ages)."
+      - name: stress_cases_per_1000
+        description: "stress_cases_started per 1,000 inhabitants (all ages)."
+      - name: insured_persons
+        description: "Denominator of sick_pay_rate_days: persons insured for sick pay in December."
+      - name: sick_pay_days
+        description: "Numerator of sick_pay_rate_days (rate x insured); sum over regions, then divide."
+      - name: labour_force_thousands
+        description: "AKU labour force (employed + unemployed), thousands; denominator for combining regions."
+      - name: unemployed_thousands
+        description: "AKU unemployed, thousands; numerator for combining regions."
+      - name: employment_rate_pct
+        description: "AKU employment rate, 15-74, per cent of the population, published annual figure."
+      - name: unemployment_rate_moe
+        description: "95% margin of error of unemployment_rate_pct, percentage points."
+      - name: population_is_perturbed
+        description: "True for years published under SCB's cell key method (small per-cell noise)."
+      - name: population
+        description: "SCB population on 31 December (stock: add counties, never years)."
+      - name: year
+        description: "Calendar year."
+      - name: is_country
+        description: "True for the country row (00); exclude it when aggregating counties."
+      - name: region_code
+        description: "SCB region code: 00 the country, two digits a county."
+        entity:
+          type: foreign
+          name: region
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('dim_region'), field: region_code}
+      - name: year_start
+        description: "1 January of the year; the semantic layer's time dimension."
+        granularity: year
+        dimension:
+          type: time
+      - name: nuts2_code
+        description: "NUTS2 area (riksområde) of the county."
+        dimension:
+          type: categorical
+      - name: region_name
+        description: "Region name."
+        dimension:
+          type: categorical
+      - name: unemployment_rate_pct
+        description: AKU, 15-74, SCB's published annual rate; margin in unemployment_rate_moe.
+      - name: sick_pay_rate_days
+        description: FK sjukpenningtal 2.0 in December (a rolling twelve-month measure), from 2021.
+      - name: stress_cases_started
+        description: Started F43 cases in the year; NULL unless all twelve months are published.
+      - name: ongoing_sick_leave_mean
+        description: Mean of the twelve month-end stocks of ongoing cases (16+); a stock is never summed.
+      - name: fohm_period
+        description: The four-year span the fohm_* columns pool; they sit in the span's last year.
+  - name: mart_municipality_year_panel
+    description: Municipalities by year with the Kolada key figures and population.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [municipality_code, year]
+  - name: mart_national_month
+    description: >-
+      Sweden by month for time-series work: AKU (adjusted, unadjusted, trend), sick-pay rate
+      and components, started cases with rolling twelve-month sums, psychiatric share, and
+      ongoing cases.
+    # Semantic layer: one grain (the country, one month), so every metric below aggregates
+    # over time by its rule and nothing can be double counted.
+    semantic_model:
+      enabled: true
+      name: sweden_month
+    agg_time_dimension: month_start
+    columns:
+      - name: psychiatric_share_of_started_12m_pct
+        description: "Psychiatric share of started cases over twelve months, formed from the two sums, per cent."
+      - name: started_psychiatric_12m
+        description: "started_psychiatric over the twelve months to this one."
+      - name: started_cases_12m
+        description: "started_cases over the twelve months to this one; NULL unless all twelve are published."
+      - name: ongoing_cases
+        description: "Ongoing sick-leave cases at month end, 16+ (stock)."
+      - name: started_stress
+        description: "Started cases with F43 in the month (flow); inside started_psychiatric."
+      - name: started_psychiatric
+        description: "Started cases with ICD-10 F00-F99 in the month (flow)."
+      - name: started_cases
+        description: "Started sick-leave cases in the month, all diagnoses (flow)."
+      - name: sick_pay_days
+        description: "Numerator of sick_pay_rate_days."
+      - name: sick_pay_rate_days
+        description: "FK sjukpenningtal 2.0 (rolling twelve months), 15-69."
+      - name: labour_force_thousands
+        description: "AKU labour force 15-74, unadjusted, thousands."
+      - name: unemployed_thousands
+        description: "AKU unemployed 15-74, unadjusted, thousands."
+      - name: unemployment_rate_trend
+        description: "AKU unemployment rate 15-74, seasonally adjusted and smoothed (trend), per cent."
+      - name: employment_rate_sa
+        description: "AKU employment rate 15-74, seasonally adjusted, per cent."
+      - name: unemployment_rate_sa
+        description: "AKU unemployment rate 15-74, seasonally adjusted, per cent."
+      - name: period_key
+        description: "Month, YYYY-MM."
+        data_tests: [not_null, unique]
+        entity:
+          type: primary
+          name: sweden_month
+      - name: month_start
+        description: "First day of the month."
+        granularity: month
+        dimension:
+          type: time
+    metrics:
+      - name: started_sick_leave_cases
+        description: Started sick-leave cases, all diagnoses. A flow; adds over months.
+        type: simple
+        agg: sum
+        expr: started_cases
+      - name: started_psychiatric_sick_leave_cases
+        description: Started cases with an ICD-10 F diagnosis. A flow.
+        type: simple
+        agg: sum
+        expr: started_psychiatric
+      - name: psychiatric_share_of_started
+        description: Psychiatric cases over all started cases, formed after summing both.
+        type: ratio
+        numerator: started_psychiatric_sick_leave_cases
+        denominator: started_sick_leave_cases
+      - name: ongoing_sick_leave_cases
+        description: Ongoing cases at month end. A stock; over a longer period, the last month.
+        type: simple
+        agg: sum
+        expr: ongoing_cases
+        non_additive_dimension:
+          name: month_start
+          window_agg: max
+      - name: sick_pay_days_rolling_12m
+        description: Net sick-pay days over the preceding twelve months; a rolling stock.
+        type: simple
+        agg: sum
+        expr: sick_pay_days
+        non_additive_dimension:
+          name: month_start
+          window_agg: max
+      - name: insured_persons
+        description: Persons insured for sick pay at month end; a stock.
+        type: simple
+        agg: sum
+        expr: insured_persons
+        non_additive_dimension:
+          name: month_start
+          window_agg: max
+      - name: sick_pay_rate
+        description: Sjukpenningtal 2.0 at the end of the period (for a year, December).
+        type: ratio
+        numerator: sick_pay_days_rolling_12m
+        denominator: insured_persons
+      - name: unemployed_thousands_mean
+        description: Mean of monthly unemployed levels (unadjusted, 15-74).
+        type: simple
+        agg: average
+        expr: unemployed_thousands
+      - name: labour_force_thousands_mean
+        description: Mean of monthly labour-force levels (unadjusted, 15-74).
+        type: simple
+        agg: average
+        expr: labour_force_thousands
+      - name: unemployment_rate
+        description: >-
+          Mean unemployed over mean labour force: SCB's rule for a longer period, within
+          0.07 points of the published annual rate. A share (multiply by 100 for per cent).
+        type: ratio
+        numerator: unemployed_thousands_mean
+        denominator: labour_force_thousands_mean
+  - name: mart_ess_country_round
+    description: >-
+      ESS weighted means per country and round, plus pooled NORDIC and EU27 groups computed
+      from respondents with the analysis weight. Compare rounds within a country only with
+      survey_mode in view (ESS10 self-completion).
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [unit_code, period_key]
+  - name: mart_county_year_features
+    description: >-
+      Model features per county and year: value, one- and two-year lags, one-year change and
+      gap to the country. Backward-looking only; no imputation.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [region_code, year]

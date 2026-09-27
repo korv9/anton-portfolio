@@ -1,6 +1,6 @@
 """Upload document shards to object storage, then verify what landed.
 
-Reads public/data/catalog.json and uploads every entry whose format is "shard". Files whose
+Reads frontend/public/data/catalog.json and uploads every entry whose format is "shard". Files whose
 remote hash already matches are skipped, so a rerun transfers only what changed.
 
 Nothing is deleted locally. Removing the shards from the repository is a separate, manual
@@ -18,9 +18,9 @@ Cloudflare's own REST API, and is not used here.
 S3_API_ENDPOINT is optional. Set it to override the endpoint derived from the account id.
 
 Usage:
-    python scripts/upload-shards.py --dry-run      # what would transfer
-    python scripts/upload-shards.py                # upload changed shards
-    python scripts/upload-shards.py --verify-only  # confirm every shard is present and correct
+    python platform/publish/upload.py --dry-run      # what would transfer
+    python platform/publish/upload.py                # upload changed shards
+    python platform/publish/upload.py --verify-only  # confirm every shard is present and correct
 """
 import sys
 from pathlib import Path

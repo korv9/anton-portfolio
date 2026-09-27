@@ -1,0 +1,1713 @@
+[
+ {
+  "table": "dim_date",
+  "role": "star_schema",
+  "path": "parquet/welfare/dim_date.parquet",
+  "rows": 23011,
+  "description": "Calendar, one row per day 1968-2030. Also the semantic layer's time spine.",
+  "columns": [
+   {
+    "name": "date_day",
+    "type": "DATE",
+    "description": ""
+   },
+   {
+    "name": "year",
+    "type": "BIGINT",
+    "description": ""
+   },
+   {
+    "name": "quarter",
+    "type": "BIGINT",
+    "description": ""
+   },
+   {
+    "name": "month",
+    "type": "BIGINT",
+    "description": ""
+   },
+   {
+    "name": "year_month",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "year_quarter",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "month_name_sv",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "iso_day_of_week",
+    "type": "BIGINT",
+    "description": ""
+   },
+   {
+    "name": "is_month_start",
+    "type": "BOOLEAN",
+    "description": ""
+   },
+   {
+    "name": "is_month_end",
+    "type": "BOOLEAN",
+    "description": ""
+   }
+  ]
+ },
+ {
+  "table": "dim_period",
+  "role": "star_schema",
+  "path": "parquet/welfare/dim_period.parquet",
+  "rows": 553,
+  "description": "Reporting periods: year (2024), quarter (2024-Q1), month (2024-03), pooled_years (2021-2024, Folkhälsomyndigheten's county results) and survey_round (ESS11). start_date and end_date join dim_date; reference_year aligns periods of different types.",
+  "columns": [
+   {
+    "name": "period_key",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "period_type",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "start_date",
+    "type": "DATE",
+    "description": ""
+   },
+   {
+    "name": "end_date",
+    "type": "DATE",
+    "description": ""
+   },
+   {
+    "name": "reference_year",
+    "type": "INTEGER",
+    "description": ""
+   },
+   {
+    "name": "period_label",
+    "type": "VARCHAR",
+    "description": ""
+   }
+  ]
+ },
+ {
+  "table": "dim_region",
+  "role": "star_schema",
+  "path": "parquet/welfare/dim_region.parquet",
+  "rows": 321,
+  "description": "Swedish regions on SCB codes: country 00, counties (2 digits), municipalities (4 digits), AKU's aggregate 0050 and the eight NUTS2 areas used by ESS.",
+  "columns": [
+   {
+    "name": "region_code",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "region_name",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "region_level",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "county_code",
+    "type": "VARCHAR",
+    "description": "The county a county or municipality belongs to; NULL for other levels."
+   },
+   {
+    "name": "county_name",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "nuts2_code",
+    "type": "VARCHAR",
+    "description": "NUTS2 area of a county or municipality, and of a NUTS2 row itself."
+   },
+   {
+    "name": "nuts2_name",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "kolada_region_id",
+    "type": "VARCHAR",
+    "description": "Kolada's id for the same region (0000, 00LL, KKKK)."
+   }
+  ]
+ },
+ {
+  "table": "dim_sex",
+  "role": "star_schema",
+  "path": "parquet/welfare/dim_sex.parquet",
+  "rows": 3,
+  "description": "",
+  "columns": [
+   {
+    "name": "sex_key",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "name_sv",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "name_en",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "sort_order",
+    "type": "INTEGER",
+    "description": ""
+   }
+  ]
+ },
+ {
+  "table": "dim_age_group",
+  "role": "star_schema",
+  "path": "parquet/welfare/dim_age_group.parquet",
+  "rows": 43,
+  "description": "Age bands as sources publish them. Bands from different sources overlap and are compared only like with like.",
+  "columns": [
+   {
+    "name": "age_group_key",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "age_min",
+    "type": "INTEGER",
+    "description": ""
+   },
+   {
+    "name": "age_max",
+    "type": "INTEGER",
+    "description": ""
+   },
+   {
+    "name": "age_group_label",
+    "type": "VARCHAR",
+    "description": ""
+   }
+  ]
+ },
+ {
+  "table": "dim_indicator",
+  "role": "star_schema",
+  "path": "parquet/welfare/dim_indicator.parquet",
+  "rows": 80,
+  "description": "Every indicator in fct_indicator, with unit, welfare domain and direction.",
+  "columns": [
+   {
+    "name": "indicator_key",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "source_key",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "source_code",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "indicator_name",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "unit",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "domain",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "welfare_dimension",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "higher_is_better",
+    "type": "BOOLEAN",
+    "description": ""
+   },
+   {
+    "name": "description",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "measure_type",
+    "type": "VARCHAR",
+    "description": "count_flow (add over time and space), count_stock (add over space, not time), rate and share (non-additive: recompute from components or weight), mean_score (survey mean), median (not aggregable)."
+   },
+   {
+    "name": "time_rule",
+    "type": "VARCHAR",
+    "description": "How values over periods combine into a longer period."
+   },
+   {
+    "name": "space_rule",
+    "type": "VARCHAR",
+    "description": "How values over regions, sexes or ages combine."
+   },
+   {
+    "name": "weight_indicator",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "components",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "aggregation_note",
+    "type": "VARCHAR",
+    "description": ""
+   }
+  ]
+ },
+ {
+  "table": "dim_source",
+  "role": "star_schema",
+  "path": "parquet/welfare/dim_source.parquet",
+  "rows": 5,
+  "description": "",
+  "columns": [
+   {
+    "name": "source_key",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "source_name",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "publisher",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "homepage_url",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "licence",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "citation",
+    "type": "VARCHAR",
+    "description": ""
+   }
+  ]
+ },
+ {
+  "table": "dim_diagnosis",
+  "role": "star_schema",
+  "path": "parquet/welfare/dim_diagnosis.parquet",
+  "rows": 22,
+  "description": "ICD-10 chapters as grouped by Försäkringskassan, plus F43 inside F00-F99.",
+  "columns": [
+   {
+    "name": "diagnosis_code",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "diagnosis_label",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "parent_diagnosis_code",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "is_psychiatric",
+    "type": "BOOLEAN",
+    "description": ""
+   }
+  ]
+ },
+ {
+  "table": "dim_country",
+  "role": "star_schema",
+  "path": "parquet/welfare/dim_country.parquet",
+  "rows": 39,
+  "description": "ESS participating countries.",
+  "columns": [
+   {
+    "name": "country_code",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "country_name_sv",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "country_name_en",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "is_nordic",
+    "type": "BOOLEAN",
+    "description": ""
+   },
+   {
+    "name": "is_eu27",
+    "type": "BOOLEAN",
+    "description": ""
+   }
+  ]
+ },
+ {
+  "table": "fct_indicator",
+  "role": "star_schema",
+  "path": "parquet/welfare/fct_indicator.parquet",
+  "rows": 1271081,
+  "description": "All headline values on one grain. The table to join across domains.",
+  "columns": [
+   {
+    "name": "indicator_key",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "region_code",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "period_key",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "sex_key",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "age_group_key",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "value",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "ci_low",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "ci_high",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "sample_size",
+    "type": "DOUBLE",
+    "description": ""
+   }
+  ]
+ },
+ {
+  "table": "fct_labour_force",
+  "role": "star_schema",
+  "path": "parquet/welfare/fct_labour_force.parquet",
+  "rows": 269004,
+  "description": "AKU labour force survey (SCB). Rate denominator depends on labour_status: employment and participation over population, unemployment over labour force.",
+  "columns": [
+   {
+    "name": "region_code",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "period_key",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "sex_key",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "age_group_key",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "series_type",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "labour_status",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "persons_thousands",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "persons_thousands_moe",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "rate_pct",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "rate_pct_moe",
+    "type": "DOUBLE",
+    "description": ""
+   }
+  ]
+ },
+ {
+  "table": "fct_population",
+  "role": "star_schema",
+  "path": "parquet/welfare/fct_population.parquet",
+  "rows": 54288,
+  "description": "Population on 31 December (SCB). The total over sexes is derived and flagged.",
+  "columns": [
+   {
+    "name": "region_code",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "period_key",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "period_end",
+    "type": "DATE",
+    "description": ""
+   },
+   {
+    "name": "sex_key",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "population",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "is_derived_total",
+    "type": "BOOLEAN",
+    "description": ""
+   },
+   {
+    "name": "is_perturbed",
+    "type": "BOOLEAN",
+    "description": ""
+   }
+  ]
+ },
+ {
+  "table": "fct_sick_pay_rate",
+  "role": "star_schema",
+  "path": "parquet/welfare/fct_sick_pay_rate.parquet",
+  "rows": 707616,
+  "description": "Sjukpenningtal 2.0 (Försäkringskassan), monthly from 2021, rolling twelve months.",
+  "columns": [
+   {
+    "name": "region_code",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "period_key",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "period_start",
+    "type": "DATE",
+    "description": ""
+   },
+   {
+    "name": "sex_key",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "age_group_key",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "sick_pay_rate",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "sick_pay_rate_suppressed",
+    "type": "BOOLEAN",
+    "description": ""
+   },
+   {
+    "name": "insured_persons",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "insured_persons_suppressed",
+    "type": "BOOLEAN",
+    "description": ""
+   },
+   {
+    "name": "sick_pay_days",
+    "type": "DOUBLE",
+    "description": ""
+   }
+  ]
+ },
+ {
+  "table": "fct_sick_leave_cases",
+  "role": "star_schema",
+  "path": "parquet/welfare/fct_sick_leave_cases.parquet",
+  "rows": 231858,
+  "description": "Started and ongoing sick-leave cases (Försäkringskassan). F43 is inside F00-F99; never add them.",
+  "columns": [
+   {
+    "name": "case_type",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "region_code",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "period_key",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "period_start",
+    "type": "DATE",
+    "description": ""
+   },
+   {
+    "name": "sex_key",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "age_group_key",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "diagnosis_code",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "cases",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "cases_suppressed",
+    "type": "BOOLEAN",
+    "description": ""
+   },
+   {
+    "name": "yoy_change_pct",
+    "type": "DOUBLE",
+    "description": ""
+   }
+  ]
+ },
+ {
+  "table": "fct_health_survey",
+  "role": "star_schema",
+  "path": "parquet/welfare/fct_health_survey.parquet",
+  "rows": 33041,
+  "description": "Nationella folkhälsoenkäten (Folkhälsomyndigheten): share with 95% interval and responses.",
+  "columns": [
+   {
+    "name": "indicator_key",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "region_code",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "period_key",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "sex_key",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "age_group_key",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "share_pct",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "ci_low_pct",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "ci_high_pct",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "responses",
+    "type": "DOUBLE",
+    "description": ""
+   }
+  ]
+ },
+ {
+  "table": "fct_social_survey_country",
+  "role": "star_schema",
+  "path": "parquet/welfare/fct_social_survey_country.parquet",
+  "rows": 42322,
+  "description": "European Social Survey, weighted by pspwght, per country and round. Intervals ignore the sampling design and are too narrow.",
+  "columns": [
+   {
+    "name": "indicator_key",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "country_code",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "period_key",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "sex_key",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "age_group_key",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "survey_mode",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "respondents",
+    "type": "BIGINT",
+    "description": ""
+   },
+   {
+    "name": "effective_n",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "mean_value",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "ci_low",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "ci_high",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "share_high_pct",
+    "type": "DOUBLE",
+    "description": ""
+   }
+  ]
+ },
+ {
+  "table": "fct_social_survey_region",
+  "role": "star_schema",
+  "path": "parquet/welfare/fct_social_survey_region.parquet",
+  "rows": 1176,
+  "description": "European Social Survey for Sweden by NUTS2 area, rounds 5 onward.",
+  "columns": [
+   {
+    "name": "indicator_key",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "region_code",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "period_key",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "survey_mode",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "respondents",
+    "type": "BIGINT",
+    "description": ""
+   },
+   {
+    "name": "effective_n",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "mean_value",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "ci_low",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "ci_high",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "share_high_pct",
+    "type": "DOUBLE",
+    "description": ""
+   }
+  ]
+ },
+ {
+  "table": "fct_kolada",
+  "role": "star_schema",
+  "path": "parquet/welfare/fct_kolada.parquet",
+  "rows": 208668,
+  "description": "Kolada key figures by municipality, county and country.",
+  "columns": [
+   {
+    "name": "indicator_key",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "region_code",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "period_key",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "sex_key",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "value",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "value_status",
+    "type": "VARCHAR",
+    "description": ""
+   }
+  ]
+ },
+ {
+  "table": "mart_county_year_panel",
+  "role": "serving",
+  "path": "parquet/welfare/mart_county_year_panel.parquet",
+  "rows": 462,
+  "description": "Counties and the country by calendar year, one column per measure, each aggregated by its rule. For regression, correlation and maps. Carries numerators and denominators (unemployed and labour force, sick-pay days and insured) so regions combine correctly. County-level associations describe counties, not individuals.",
+  "columns": [
+   {
+    "name": "region_code",
+    "type": "VARCHAR",
+    "description": "SCB region code: 00 the country, two digits a county."
+   },
+   {
+    "name": "region_name",
+    "type": "VARCHAR",
+    "description": "Region name."
+   },
+   {
+    "name": "is_country",
+    "type": "BOOLEAN",
+    "description": "True for the country row (00); exclude it when aggregating counties."
+   },
+   {
+    "name": "nuts2_code",
+    "type": "VARCHAR",
+    "description": "NUTS2 area (riksområde) of the county."
+   },
+   {
+    "name": "year",
+    "type": "INTEGER",
+    "description": "Calendar year."
+   },
+   {
+    "name": "year_start",
+    "type": "DATE",
+    "description": "1 January of the year; the semantic layer's time dimension."
+   },
+   {
+    "name": "population",
+    "type": "DOUBLE",
+    "description": "SCB population on 31 December (stock: add counties, never years)."
+   },
+   {
+    "name": "population_is_perturbed",
+    "type": "BOOLEAN",
+    "description": "True for years published under SCB's cell key method (small per-cell noise)."
+   },
+   {
+    "name": "unemployment_rate_pct",
+    "type": "DOUBLE",
+    "description": "AKU, 15-74, SCB's published annual rate; margin in unemployment_rate_moe."
+   },
+   {
+    "name": "unemployment_rate_moe",
+    "type": "DOUBLE",
+    "description": "95% margin of error of unemployment_rate_pct, percentage points."
+   },
+   {
+    "name": "employment_rate_pct",
+    "type": "DOUBLE",
+    "description": "AKU employment rate, 15-74, per cent of the population, published annual figure."
+   },
+   {
+    "name": "unemployed_thousands",
+    "type": "DOUBLE",
+    "description": "AKU unemployed, thousands; numerator for combining regions."
+   },
+   {
+    "name": "labour_force_thousands",
+    "type": "DOUBLE",
+    "description": "AKU labour force (employed + unemployed), thousands; denominator for combining regions."
+   },
+   {
+    "name": "sick_pay_rate_days",
+    "type": "DOUBLE",
+    "description": "FK sjukpenningtal 2.0 in December (a rolling twelve-month measure), from 2021."
+   },
+   {
+    "name": "sick_pay_days",
+    "type": "DOUBLE",
+    "description": "Numerator of sick_pay_rate_days (rate x insured); sum over regions, then divide."
+   },
+   {
+    "name": "insured_persons",
+    "type": "DOUBLE",
+    "description": "Denominator of sick_pay_rate_days: persons insured for sick pay in December."
+   },
+   {
+    "name": "stress_cases_started",
+    "type": "DOUBLE",
+    "description": "Started F43 cases in the year; NULL unless all twelve months are published."
+   },
+   {
+    "name": "stress_cases_per_1000",
+    "type": "DOUBLE",
+    "description": "stress_cases_started per 1,000 inhabitants (all ages)."
+   },
+   {
+    "name": "ongoing_sick_leave_mean",
+    "type": "DOUBLE",
+    "description": "Mean of the twelve month-end stocks of ongoing cases (16+); a stock is never summed."
+   },
+   {
+    "name": "ongoing_sick_leave_per_1000",
+    "type": "DOUBLE",
+    "description": "ongoing_sick_leave_mean per 1,000 inhabitants (all ages)."
+   },
+   {
+    "name": "open_unemployment_18_65_pct",
+    "type": "DOUBLE",
+    "description": "Kolada N03937: openly unemployed, share of population 18-65 (Arbetsförmedlingen register, not AKU)."
+   },
+   {
+    "name": "employment_rate_20_64_pct",
+    "type": "DOUBLE",
+    "description": "Kolada N02267: employment rate 20-64 (register based)."
+   },
+   {
+    "name": "sick_pay_rate_1_days",
+    "type": "DOUBLE",
+    "description": "Kolada N00938: sjukpenningtal 1.0, 16-64, days per registered insured."
+   },
+   {
+    "name": "ill_health_days",
+    "type": "DOUBLE",
+    "description": "Kolada N00957: ohälsotal, days."
+   },
+   {
+    "name": "median_earned_income_sek",
+    "type": "DOUBLE",
+    "description": "Kolada N00906: median earned income 20-64, SEK. A median: never average across regions."
+   },
+   {
+    "name": "social_assistance_pct",
+    "type": "DOUBLE",
+    "description": "Kolada N31807: inhabitants receiving social assistance during the year, per cent."
+   },
+   {
+    "name": "violent_crime_per_100k",
+    "type": "DOUBLE",
+    "description": "Kolada N07403: reported violent crime per 100,000 inhabitants (where the crime happened)."
+   },
+   {
+    "name": "turnout_riksdag_pct",
+    "type": "DOUBLE",
+    "description": "Kolada N05403: turnout in the latest Riksdag election, per cent (changes in election years)."
+   },
+   {
+    "name": "serious_mental_strain_pct",
+    "type": "DOUBLE",
+    "description": "Kolada N01452: inhabitants 16-84 with serious mental strain, per cent (FoHM survey via Kolada)."
+   },
+   {
+    "name": "good_wellbeing_pct",
+    "type": "DOUBLE",
+    "description": "Kolada U01473: inhabitants 16-84 with good mental wellbeing, per cent."
+   },
+   {
+    "name": "low_trust_pct",
+    "type": "DOUBLE",
+    "description": "Kolada U01413: inhabitants 16-84 lacking trust in others, per cent."
+   },
+   {
+    "name": "eligible_vocational_programme_pct",
+    "type": "DOUBLE",
+    "description": "Kolada N15428: year-9 pupils eligible for vocational upper-secondary programmes, per cent."
+   },
+   {
+    "name": "fohm_period",
+    "type": "VARCHAR",
+    "description": "The four-year span the fohm_* columns pool; they sit in the span's last year."
+   },
+   {
+    "name": "fohm_serious_mental_strain_pct",
+    "type": "DOUBLE",
+    "description": "Folkhälsomyndigheten: serious mental strain, 16-84, per cent, pooled over fohm_period."
+   },
+   {
+    "name": "fohm_good_wellbeing_pct",
+    "type": "DOUBLE",
+    "description": "Folkhälsomyndigheten: good mental wellbeing, 16-84, per cent, pooled."
+   },
+   {
+    "name": "fohm_good_health_pct",
+    "type": "DOUBLE",
+    "description": "Folkhälsomyndigheten: good or very good self-rated health, 16-84, per cent, pooled."
+   },
+   {
+    "name": "fohm_hard_to_trust_pct",
+    "type": "DOUBLE",
+    "description": "Folkhälsomyndigheten: finds it hard to trust others, 16-84, per cent, pooled."
+   }
+  ]
+ },
+ {
+  "table": "mart_municipality_year_panel",
+  "role": "serving",
+  "path": "parquet/welfare/mart_municipality_year_panel.parquet",
+  "rows": 10730,
+  "description": "Municipalities by year with the Kolada key figures and population.",
+  "columns": [
+   {
+    "name": "municipality_code",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "municipality_name",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "county_code",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "county_name",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "nuts2_code",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "year",
+    "type": "INTEGER",
+    "description": ""
+   },
+   {
+    "name": "population",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "open_unemployment_18_65_pct",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "employment_rate_20_64_pct",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "sick_pay_rate_1_days",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "ill_health_days",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "median_earned_income_sek",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "social_assistance_pct",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "turnout_riksdag_pct",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "serious_mental_strain_pct",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "good_wellbeing_pct",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "low_trust_pct",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "eligible_vocational_programme_pct",
+    "type": "DOUBLE",
+    "description": ""
+   }
+  ]
+ },
+ {
+  "table": "mart_national_month",
+  "role": "serving",
+  "path": "parquet/welfare/mart_national_month.parquet",
+  "rows": 382,
+  "description": "Sweden by month for time-series work: AKU (adjusted, unadjusted, trend), sick-pay rate and components, started cases with rolling twelve-month sums, psychiatric share, and ongoing cases.",
+  "columns": [
+   {
+    "name": "month_start",
+    "type": "DATE",
+    "description": "First day of the month."
+   },
+   {
+    "name": "period_key",
+    "type": "VARCHAR",
+    "description": "Month, YYYY-MM."
+   },
+   {
+    "name": "unemployment_rate_sa",
+    "type": "DOUBLE",
+    "description": "AKU unemployment rate 15-74, seasonally adjusted, per cent."
+   },
+   {
+    "name": "employment_rate_sa",
+    "type": "DOUBLE",
+    "description": "AKU employment rate 15-74, seasonally adjusted, per cent."
+   },
+   {
+    "name": "unemployment_rate",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "unemployment_rate_trend",
+    "type": "DOUBLE",
+    "description": "AKU unemployment rate 15-74, seasonally adjusted and smoothed (trend), per cent."
+   },
+   {
+    "name": "unemployed_thousands",
+    "type": "DOUBLE",
+    "description": "AKU unemployed 15-74, unadjusted, thousands."
+   },
+   {
+    "name": "labour_force_thousands",
+    "type": "DOUBLE",
+    "description": "AKU labour force 15-74, unadjusted, thousands."
+   },
+   {
+    "name": "sick_pay_rate_days",
+    "type": "DOUBLE",
+    "description": "FK sjukpenningtal 2.0 (rolling twelve months), 15-69."
+   },
+   {
+    "name": "sick_pay_days",
+    "type": "DOUBLE",
+    "description": "Numerator of sick_pay_rate_days."
+   },
+   {
+    "name": "insured_persons",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "started_cases",
+    "type": "DOUBLE",
+    "description": "Started sick-leave cases in the month, all diagnoses (flow)."
+   },
+   {
+    "name": "started_psychiatric",
+    "type": "DOUBLE",
+    "description": "Started cases with ICD-10 F00-F99 in the month (flow)."
+   },
+   {
+    "name": "started_stress",
+    "type": "DOUBLE",
+    "description": "Started cases with F43 in the month (flow); inside started_psychiatric."
+   },
+   {
+    "name": "ongoing_cases",
+    "type": "DOUBLE",
+    "description": "Ongoing sick-leave cases at month end, 16+ (stock)."
+   },
+   {
+    "name": "started_cases_12m",
+    "type": "DOUBLE",
+    "description": "started_cases over the twelve months to this one; NULL unless all twelve are published."
+   },
+   {
+    "name": "started_psychiatric_12m",
+    "type": "DOUBLE",
+    "description": "started_psychiatric over the twelve months to this one."
+   },
+   {
+    "name": "psychiatric_share_of_started_12m_pct",
+    "type": "DOUBLE",
+    "description": "Psychiatric share of started cases over twelve months, formed from the two sums, per cent."
+   }
+  ]
+ },
+ {
+  "table": "mart_ess_country_round",
+  "role": "serving",
+  "path": "parquet/welfare/mart_ess_country_round.parquet",
+  "rows": 311,
+  "description": "ESS weighted means per country and round, plus pooled NORDIC and EU27 groups computed from respondents with the analysis weight. Compare rounds within a country only with survey_mode in view (ESS10 self-completion).",
+  "columns": [
+   {
+    "name": "unit_type",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "unit_code",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "period_key",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "survey_mode",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "countries_in_unit",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "respondents",
+    "type": "BIGINT",
+    "description": ""
+   },
+   {
+    "name": "ppltrst_mean",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "trstprl_mean",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "trstplt_mean",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "trstplc_mean",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "trstlgl_mean",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "stflife_mean",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "happy_mean",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "stfdem_mean",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "stfeco_mean",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "health_mean",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "sclmeet_mean",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "imwbcnt_mean",
+    "type": "DOUBLE",
+    "description": ""
+   }
+  ]
+ },
+ {
+  "table": "mart_county_year_features",
+  "role": "serving",
+  "path": "parquet/welfare/mart_county_year_features.parquet",
+  "rows": 441,
+  "description": "Model features per county and year: value, one- and two-year lags, one-year change and gap to the country. Backward-looking only; no imputation.",
+  "columns": [
+   {
+    "name": "region_code",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "region_name",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "year",
+    "type": "INTEGER",
+    "description": ""
+   },
+   {
+    "name": "population",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "unemployment_rate_pct",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "unemployment_rate_pct_lag1",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "unemployment_rate_pct_lag2",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "unemployment_rate_pct_change_1y",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "unemployment_rate_pct_gap_to_country",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "employment_rate_pct",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "employment_rate_pct_lag1",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "employment_rate_pct_lag2",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "employment_rate_pct_change_1y",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "employment_rate_pct_gap_to_country",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "sick_pay_rate_days",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "sick_pay_rate_days_lag1",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "sick_pay_rate_days_lag2",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "sick_pay_rate_days_change_1y",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "sick_pay_rate_days_gap_to_country",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "stress_cases_per_1000",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "stress_cases_per_1000_lag1",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "stress_cases_per_1000_lag2",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "stress_cases_per_1000_change_1y",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "stress_cases_per_1000_gap_to_country",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "ongoing_sick_leave_per_1000",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "ongoing_sick_leave_per_1000_lag1",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "ongoing_sick_leave_per_1000_lag2",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "ongoing_sick_leave_per_1000_change_1y",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "ongoing_sick_leave_per_1000_gap_to_country",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "open_unemployment_18_65_pct",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "open_unemployment_18_65_pct_lag1",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "open_unemployment_18_65_pct_lag2",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "open_unemployment_18_65_pct_change_1y",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "open_unemployment_18_65_pct_gap_to_country",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "social_assistance_pct",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "social_assistance_pct_lag1",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "social_assistance_pct_lag2",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "social_assistance_pct_change_1y",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "social_assistance_pct_gap_to_country",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "median_earned_income_sek",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "median_earned_income_sek_lag1",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "median_earned_income_sek_lag2",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "median_earned_income_sek_change_1y",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "median_earned_income_sek_gap_to_country",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "serious_mental_strain_pct",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "serious_mental_strain_pct_lag1",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "serious_mental_strain_pct_lag2",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "serious_mental_strain_pct_change_1y",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "serious_mental_strain_pct_gap_to_country",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "low_trust_pct",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "low_trust_pct_lag1",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "low_trust_pct_lag2",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "low_trust_pct_change_1y",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "low_trust_pct_gap_to_country",
+    "type": "DOUBLE",
+    "description": ""
+   }
+  ]
+ },
+ {
+  "table": "mart_county_year_overview",
+  "role": "serving",
+  "path": "parquet/welfare/mart_county_year_overview.parquet",
+  "rows": 441,
+  "description": "County by year, indicators side by side. Descriptive co-variation only, not cause and effect.",
+  "columns": [
+   {
+    "name": "region_code",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "region_name",
+    "type": "VARCHAR",
+    "description": ""
+   },
+   {
+    "name": "year",
+    "type": "INTEGER",
+    "description": ""
+   },
+   {
+    "name": "unemployment_rate_pct",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "unemployment_rate_moe",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "sick_pay_rate_days",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "stress_cases_per_1000",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "serious_mental_strain_pct",
+    "type": "DOUBLE",
+    "description": ""
+   },
+   {
+    "name": "population",
+    "type": "DOUBLE",
+    "description": ""
+   }
+  ]
+ }
+]

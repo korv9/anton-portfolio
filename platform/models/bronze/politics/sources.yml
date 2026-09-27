@@ -1,0 +1,40 @@
+version: 2
+
+# Politics bronze during the migration from platform/legacy/. The upstream Riksdagen exports
+# that build_gold.py integrates exist only on the author's machine, so bronze here is the
+# committed gold delivery those scripts produced: unchanged rows, read in place. As each
+# subject moves into dbt, its source moves back to the raw fetch.
+
+sources:
+  - name: politics_delivery
+    description: Committed gold tables under frontend/public/data/gold/tables.
+    # Read as raw JSON objects; staging declares every column's type. Inference would read
+    # roll-call ids as UUIDs and print them in lower case, which no longer matches the source.
+    meta:
+      external_location: >-
+        read_json_objects('{{ env_var('PORTFOLIO_DELIVERY', '../frontend/public/data') }}/gold/tables/{name}.json',
+        format = 'array')
+    tables:
+      - name: fact_budget_frame
+        description: Expenditure-area frame per session and actor (government or party).
+      - name: fact_decision_point
+        description: Committee report points with their roll-call id.
+      - name: fact_party_vote
+        description: Party vote totals per roll call.
+      - name: fact_point_citation
+        description: Documents a committee point explicitly cites.
+      - name: fact_point_reservation
+        description: Reservations entered against a committee point.
+      - name: fact_speech_vote_candidate
+        description: Semantic speech-to-vote candidates; discovery aids, not stances.
+      - name: decision_index
+        description: Per-session index of roll-call decisions, one object per decision, in site order.
+        meta:
+          external_location: >-
+            read_json_objects('{{ env_var('PORTFOLIO_DELIVERY', '../frontend/public/data') }}/politics/decisions/*/index.json',
+            format = 'array', filename = true)
+      - name: budget_coverage
+        description: Which sessions' budget comparison tables were found, and which were not.
+        meta:
+          external_location: >-
+            read_json('{{ env_var('PORTFOLIO_DELIVERY', '../frontend/public/data') }}/debates/budgets/coverage.json')

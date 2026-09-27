@@ -1,0 +1,88 @@
+name: Refresh welfare data
+
+# Daily: fetch the five welfare sources, build and test the warehouse, export the site's
+# JSON and the Parquet the browser filters, upload to R2, and commit the delivery files
+# when they changed. The run record (welfare/run.json) is also written to R2 on every run,
+# so the status page shows when the pipeline last checked, not only when data last moved.
+# Sources publish monthly or quarterly; a daily check keeps the lag under a day.
+
+on:
+  schedule:
+    - cron: '37 4 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: data-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      DBT_SEND_ANONYMOUS_USAGE_STATS: 'false'
+      PORTFOLIO_DB: ${{ github.workspace }}/warehouse/portfolio.duckdb
+      PORTFOLIO_RAW: ${{ github.workspace }}/warehouse/raw
+      R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+      R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      R2_BUCKET: ${{ secrets.R2_BUCKET }}
+      # The bucket's public address once a custom domain is connected; empty keeps r2.dev.
+      R2_PUBLIC_BASE: ${{ vars.R2_PUBLIC_BASE }}
+    outputs:
+      changed: ${{ steps.commit.outputs.changed }}
+    steps:
+      - name: Require R2 credentials
+        run: |
+          for name in R2_ACCOUNT_ID R2_ACCESS_KEY_ID R2_SECRET_ACCESS_KEY R2_BUCKET; do
+            [ -n "${!name}" ] || { echo "::error::Secret $name is not set"; exit 1; }
+          done
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: platform/requirements.txt
+      - run: pip install -r platform/requirements.txt
+      - name: Fetch, build and test
+        run: python platform/ingest/run_welfare.py
+      - name: Export delivery files
+        run: python platform/publish/export_welfare.py
+      - name: Upload to R2 and verify
+        run: |
+          npm run data:catalog
+          python platform/publish/upload.py
+          python platform/publish/upload.py --verify-only --offload
+          npm run data:catalog
+      - name: Publish the run record
+        run: python platform/publish/publish_status.py
+      - name: Data contracts
+        run: npm run data:check
+      - name: Commit changed delivery files
+        id: commit
+        run: |
+          git config user.name 'data-refresh[bot]'
+          git config user.email 'data-refresh@users.noreply.github.com'
+          git add frontend/public/data
+          # run.json changes on every run; commit only when something else did.
+          if git diff --cached --quiet -- . ':(exclude)frontend/public/data/welfare/run.json' \
+               ':(exclude)frontend/public/data/catalog.json' ':(exclude)frontend/public/data/delivery.json'; then
+            echo "No data changes."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            git commit -m "data: refresh welfare sources (run ${GITHUB_RUN_ID})"
+            git push
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+  deploy:
+    needs: refresh
+    if: needs.refresh.outputs.changed == 'true'
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    uses: ./.github/workflows/deploy.yml

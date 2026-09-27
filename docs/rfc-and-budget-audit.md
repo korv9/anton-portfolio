@@ -39,6 +39,6 @@ The implemented Swedish Snowball stemming is a transparent exploratory baseline.
 
 ## Reproduce
 
-`python -m pip install snowballstemmer==3.1.1` then `python scripts/build-report-audits.py`. This uses local public snapshots, no model downloads or live API. The workspace installation lives in `.research/nlp`; static exports run without Python. Inputs/outputs are identified in `public/data/reports/manifest.json`.
+`python -m pip install snowballstemmer==3.1.1` then `python platform/legacy/build_report_audits.py`. This uses local public snapshots, no model downloads or live API. The workspace installation lives in `.research/nlp`; static exports run without Python. Inputs/outputs are identified in `frontend/public/data/reports/manifest.json`.
 
 `npm run build`, `npm run test:e2e`, and with `PYTHONPATH=packages`, `python -m pytest tests/python -q`. Tests cover denominators, observed RFC counts, engine rules, mobile and desktop controls, sources, and automated accessibility.

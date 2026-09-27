@@ -3,7 +3,7 @@ import csv
 from pathlib import Path
 import re
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]  # platform/
 RULES = list(csv.DictReader((ROOT / 'seeds/role_patterns.csv').open(encoding='utf-8')))
 
 

@@ -195,7 +195,12 @@ export default function PoliticsLab() {
               {active && (
                 <SessionAnalysis key={active.path} path={active.path} />
               )}
-              {active && <MemberVoteExplorer key={'mv' + active.path} sessionPath={active.path} />}
+              {active && (
+                <MemberVoteExplorer
+                  key={'mv' + active.path}
+                  sessionPath={active.path}
+                />
+              )}
             </>
           )}
           {tab === 'debates' && <DebateArchive />}

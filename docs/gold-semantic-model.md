@@ -1,21 +1,21 @@
 # Gold semantic model
 
-The portfolio serves a **static, versioned gold layer** at `public/data/gold/`. It is rebuilt from the checked-in Parliament, budget, language, JobTech, Allegoria and RFC exports with `python scripts/build-gold.py`. It requires no live API or database. `semantic-model.json` is the machine-readable contract: table paths, row counts, observed column types, grains, primary keys, relationships, metric definitions, source hashes and output hashes.
+The portfolio serves a **static, versioned gold layer** at `frontend/public/data/gold/`. It is rebuilt from the checked-in Parliament, budget, language, JobTech, Allegoria and RFC exports with `python platform/legacy/build_gold.py`. It requires no live API or database. `semantic-model.json` is the machine-readable contract: table paths, row counts, observed column types, grains, primary keys, relationships, metric definitions, source hashes and output hashes.
 
 ## Layers and ownership
 
 | Layer | Location | Role |
 | --- | --- | --- |
-| Source / bronze | `public/data/politics/parliament/`, `data/allegoria/` | Original exported snapshots and offline law documents; keep for audit. |
-| Curated / silver | `public/data/politics/decisions/`, `public/data/politics/laws/`, `public/data/debates/budgets/`, `public/data/reports/`, `public/data/jobs/` | Parsed, corrected or indexed material. The exact-year budget correction lives here. |
-| Gold facts and dimensions | `public/data/gold/tables/` | One explicit grain and key per table. No double-counting the source partitions or v1/v2 law overlap. |
-| Gold presentation marts | `public/data/gold/marts/` | Small, stable JSON contracts consumed by the site; document and transcript details remain lazy-loaded from their curated source shards. |
+| Source / bronze | `frontend/public/data/politics/parliament/`, `platform/sources/allegoria/` | Original exported snapshots and offline law documents; keep for audit. |
+| Curated / silver | `frontend/public/data/politics/decisions/`, `frontend/public/data/politics/laws/`, `frontend/public/data/debates/budgets/`, `frontend/public/data/reports/`, `frontend/public/data/jobs/` | Parsed, corrected or indexed material. The exact-year budget correction lives here. |
+| Gold facts and dimensions | `frontend/public/data/gold/tables/` | One explicit grain and key per table. No double-counting the source partitions or v1/v2 law overlap. |
+| Gold presentation marts | `frontend/public/data/gold/marts/` | Small, stable JSON contracts consumed by the site; document and transcript details remain lazy-loaded from their curated source shards. |
 
 **Build order:** regenerate upstream political and report exports when sources change, then run the gold builder and validator. A source hash mismatch causes validation to fail until gold is rebuilt. Gold JSON is committed so the static site builds without Python in its deployment environment.
 
 ```powershell
-python scripts/build-gold.py
-python scripts/validate-gold.py
+python platform/legacy/build_gold.py
+python platform/legacy/validate_gold.py
 npm run build
 npm run test:e2e
 ```

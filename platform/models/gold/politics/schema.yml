@@ -1,0 +1,46 @@
+version: 2
+
+models:
+  - name: mart_budget_context
+    description: >-
+      One row per budget year: governing and agreement parties, the adopted proposal, the
+      completeness of imported expenditure frames, and the exact FiU1 point 2 roll call.
+      Delivered as gold/marts/budget-context.json by platform/publish/export_politics.py,
+      which also reconciles it byte for byte against the committed delivery.
+    columns:
+      - name: budget_year
+        data_tests: [not_null, unique]
+      - name: session
+        data_tests: [not_null, unique]
+      - name: decision_document
+        description: The session's FiU1 report; the parsed comparison table, else the first candidate tried.
+        data_tests: [not_null]
+      - name: adopted
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [government_proposal, alternative]
+      - name: frame_status
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [complete, partial, not_imported]
+  - name: mart_vote_decisions
+    description: Roll calls in site order with their point and party positions; delivered per session.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [slug, file_order]
+    columns:
+      - name: point_id
+        data_tests: [not_null, unique]
+  - name: mart_party_session_vote
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [session, party]
+  - name: mart_party_agreement
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [session, party_a, party_b]

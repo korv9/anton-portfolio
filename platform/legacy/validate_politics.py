@@ -43,7 +43,7 @@ total = 0
 for index in sorted((DATA / 'decisions').glob('*/index.json')):
     decisions = read(index)
     assert len({d['id'] for d in decisions}) == len(decisions)
-    with ThreadPoolExecutor(max_workers=16) as pool:
+    with ThreadPoolExecutor(max_workers=delivery.workers()) as pool:
         details = pool.map(lambda d: json.loads(delivery.read_bytes('politics/' + d['path'])), decisions)
     for decision, detail in zip(decisions, details):
         assert {p['party'] for p in detail['parties']} == {'C','KD','L','M','MP','S','SD','V'}

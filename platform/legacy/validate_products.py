@@ -1,8 +1,12 @@
 """Check published product data against pinned upstream exports."""
 import csv
-import hashlib
+import sys
 import json
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "lib"))
+# Line-ending-normalised, so a hash taken on a Windows checkout matches on Linux and in CI.
+from common import sha_of  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
 PUBLIC = ROOT / "frontend/public"
@@ -10,13 +14,14 @@ PUBLIC = ROOT / "frontend/public"
 
 def main():
     catalog = json.loads((PUBLIC / "data/products/catalog.json").read_text(encoding="utf-8"))
-    assert {row["id"] for row in catalog} == {"politics", "jobs", "drugcomb", "allegoria", "thesis", "homie"}
-    assert len(catalog) == 6
+    assert {row["id"] for row in catalog} == {"politics", "welfare", "jobs", "drugcomb", "allegoria",
+                                               "thesis", "homie"}
+    assert len(catalog) == 7
     datasets = json.loads((PUBLIC / "data/products/datasets.json").read_text(encoding="utf-8"))
     assert len({row["id"] for row in datasets}) == len(datasets) == 22
     for dataset in datasets:
         path = PUBLIC / dataset["csv"].lstrip("/")
-        assert hashlib.sha256(path.read_bytes()).hexdigest() == dataset["sha256"], path
+        assert sha_of(path.read_bytes()) == dataset["sha256"], path
         with path.open(encoding="utf-8-sig", newline="") as handle:
             original = list(csv.DictReader(handle))
         records = json.loads((PUBLIC / dataset["path"].lstrip("/")).read_text(encoding="utf-8"))
@@ -42,7 +47,7 @@ def main():
     for figure in ('an_01_zip_distribution', 'an_02_replicate_agreement', 'ml_06_enrichment', 'ml_07_calibration'):
         assert (PUBLIC / f'data/products/drugcomb/figures/{figure}.png').is_file()
         assert (PUBLIC / f'data/products/drugcomb/figures/{figure}.svg').is_file()
-    print('Verified six project contracts, 22 DrugComb tables, evaluation splits and figure links.')
+    print('Verified seven project contracts, 22 DrugComb tables, evaluation splits and figure links.')
 
 
 if __name__ == '__main__':

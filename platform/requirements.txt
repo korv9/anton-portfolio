@@ -1,7 +1,16 @@
-# Versions verified with Python 3.12. Transitive dependencies are resolved by pip.
+# Versions verified with Python 3.11 and 3.12. Transitive dependencies are resolved by pip.
+# The DrugComb pipeline under products/drugcomb/pipeline has its own environment.
 dbt-core==1.12.4
 dbt-duckdb==1.11.0
 duckdb==1.5.5
 requests==2.34.2
 pytest==9.1.1
 matplotlib==3.11.1
+pandas==3.0.6            # ingest (budget, outturn, votes, policy), legacy builders
+pyarrow==25.0.1          # publish/build_parquet.py
+PyYAML==6.0.1            # legacy/build_politics.py, packages/meaningquality
+snowballstemmer==3.1.1   # legacy/build_report_audits.py (Swedish stemming)
+boto3==1.43.103          # publish/upload.py, lib/delivery.py (R2 is S3-compatible)
+openpyxl==3.1.5          # ingest/jobtech/export_presentation.py
+jsonschema==4.26.0       # ingest/jobtech/validate_powerbi.py
+dbt-semantic-interfaces==0.10.5  # publish/validate_semantic_layer.py (MetricFlow's validator)

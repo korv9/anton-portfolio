@@ -7,6 +7,14 @@ A note on baselines. The plan named the existing exact and Swedish-stem keyword 
 baselines. They predict *expenditure area*, a different label space with 27 values, so
 comparing them here would be comparing scores on different problems. The honest baselines
 are the majority class and TF-IDF with logistic regression, and the card says so.
+
+The gate compares KB-BERT and TF-IDF on the same resampled debates (a paired cluster
+bootstrap of the difference). Each model's own interval is the wrong yardstick for a
+difference: both models find the same debates hard, so their errors are correlated.
+
+KB-BERT needs a GPU in practice (about nine hours on four CPU cores). With --no-transformers
+the baselines still run and are reported, the status is 'partial', and the card is left as
+the last complete run wrote it.
 """
 from __future__ import annotations
 
@@ -81,7 +89,7 @@ def _finetune(train_text, train_y, test_text, labels, job_dir: Path, device: str
             loss.backward()
             optimiser.step()
             optimiser.zero_grad()
-            total += float(loss)
+            total += loss.item()
             if step % 100 == 0:
                 print(f"    epoch {epoch + 1} step {step}/{len(loader)} loss {total / (step + 1):.3f}",
                       flush=True)
@@ -97,7 +105,8 @@ def _finetune(train_text, train_y, test_text, labels, job_dir: Path, device: str
     return np.array([labels[i] for i in predictions]), str(torch_device)
 
 
-def run(job_dir: Path, device: str, cached: dict, force: bool) -> dict:
+def run(job_dir: Path, device: str, cached: dict, force: bool,
+        transformers: bool = True) -> dict:
     rows = data.issue_passages()
     texts = np.array([r["text"] for r in rows], dtype=object)
     targets = np.array([r["committee"] for r in rows])
@@ -105,8 +114,9 @@ def run(job_dir: Path, device: str, cached: dict, force: bool) -> dict:
     sessions = np.array([r["session"] for r in rows])
     labels = sorted(set(targets.tolist()))
 
-    inputs = {"rows": len(rows), "labels": len(labels), "model": MODEL, "epochs": EPOCHS,
-              "holdout": HOLDOUT_SESSION}
+    inputs = {"rows": len(rows), "labels": len(labels), "epochs": EPOCHS,
+              "model": MODEL if transformers else None, "holdout": HOLDOUT_SESSION,
+              "gate": "paired"}
     key = hashlib.sha256(json.dumps(inputs, sort_keys=True).encode()).hexdigest()[:16]
     if not force and key in cached:
         print(f"  cached, skipping ({cached[key].parent.name})", flush=True)
@@ -129,17 +139,41 @@ def run(job_dir: Path, device: str, cached: dict, force: bool) -> dict:
     print(f"  tf-idf macro-F1 {tfidf_score['point']:.3f} "
           f"[{tfidf_score['low']:.3f}, {tfidf_score['high']:.3f}]", flush=True)
 
+    baselines = {
+        "majority": {"name": "Majority class", "metric": "macro-F1",
+                     "value": majority_score["point"], "low": majority_score["low"],
+                     "high": majority_score["high"]},
+        "tfidf": {"name": "TF-IDF + LR", "metric": "macro-F1", "value": tfidf_score["point"],
+                  "low": tfidf_score["low"], "high": tfidf_score["high"]},
+    }
+    if not transformers:
+        return {
+            "key": key, "inputs": inputs, "status": "partial",
+            "headline": None, "best_baseline": baselines["tfidf"],
+            "note": "KB-BERT not run (--no-transformers). Baselines only; the card is left "
+                    "as the last complete run wrote it.",
+            "data": {"training passages": len(split.train), "holdout passages": len(split.test),
+                     "committees": len(labels),
+                     "debate sections": len(set(sections.tolist()))},
+            "baselines": baselines,
+        }
+
     predicted, used_device = _finetune(train_text, train_y, test_text, labels, job_dir, device)
     bert_score = metrics.cluster_bootstrap(metrics.macro_f1, test_y, predicted, test_groups)
     print(f"  KB-BERT macro-F1 {bert_score['point']:.3f} "
           f"[{bert_score['low']:.3f}, {bert_score['high']:.3f}]", flush=True)
 
-    # Gate: beat TF-IDF by more than the width of TF-IDF's own interval.
-    margin = tfidf_score["high"] - tfidf_score["low"]
-    passed = bool(bert_score["point"] - tfidf_score["point"] > margin)
+    # Gate: the paired difference must be above zero across its whole 95% interval.
+    difference = metrics.paired_cluster_bootstrap(
+        metrics.macro_f1, test_y, predicted, tfidf, test_groups)
+    passed = bool(difference["low"] is not None and difference["low"] > 0)
+    detail = (f"KB-BERT minus TF-IDF: {difference['point']:+.3f} macro-F1, paired 95% "
+              f"interval {difference['low']:+.3f} to {difference['high']:+.3f}.")
+    print(f"  {detail}", flush=True)
 
     (job_dir / "predictions.json").write_text(json.dumps({
         "holdout": HOLDOUT_SESSION,
+        "difference": difference,
         "per_committee": {
             label: int((predicted == label).sum()) for label in labels},
     }, ensure_ascii=False, indent=1), encoding="utf-8")
@@ -154,11 +188,10 @@ def run(job_dir: Path, device: str, cached: dict, force: bool) -> dict:
                           "value": tfidf_score["point"], "low": tfidf_score["low"],
                           "high": tfidf_score["high"]},
         "gate": {
-            "rule": "KB-BERT macro-F1 must exceed TF-IDF by more than the width of the "
-                    "TF-IDF 95% interval.",
+            "rule": "KB-BERT macro-F1 minus TF-IDF macro-F1, on the same resampled debates, "
+                    "must have a 95% interval entirely above zero.",
             "passed": passed,
-            "detail": f"Difference {bert_score['point'] - tfidf_score['point']:.3f} against a "
-                      f"required margin of {margin:.3f}.",
+            "detail": detail,
         },
         "card": {
             "purpose": "Policy area of a debate passage, learned from committee labels",
@@ -180,19 +213,14 @@ def run(job_dir: Path, device: str, cached: dict, force: bool) -> dict:
                 f"{HOLDOUT_SESSION}. Asserted that no debate section appears on both sides. "
                 "Intervals are a cluster bootstrap over debate sections, because speeches "
                 "within a debate are not independent.",
-            "baselines": [
-                {"name": "Majority class", "metric": "macro-F1",
-                 "value": majority_score["point"], "low": majority_score["low"],
-                 "high": majority_score["high"]},
-                {"name": "TF-IDF + LR", "metric": "macro-F1", "value": tfidf_score["point"],
-                 "low": tfidf_score["low"], "high": tfidf_score["high"]},
-            ],
+            "baselines": [baselines["majority"], baselines["tfidf"]],
             "headline": {"name": "KB-BERT", "metric": "macro-F1", "value": bert_score["point"],
                          "low": bert_score["low"], "high": bert_score["high"]},
             "gate": {
-                "rule": "KB-BERT must exceed TF-IDF by more than the width of the TF-IDF "
-                        "95% interval.",
+                "rule": "The paired 95% interval of KB-BERT minus TF-IDF macro-F1 must lie "
+                        "entirely above zero.",
                 "passed": passed,
+                "detail": detail,
             },
             "limitations": [
                 "Committee is a proxy for policy area, not a measurement of it.",

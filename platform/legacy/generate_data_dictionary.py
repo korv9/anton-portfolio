@@ -81,9 +81,9 @@ SPECS = [
     ("Metadatadokument: rapportmanifest", "reports/manifest.json", "object", "Ett exportmanifest", "ingen observationsnyckel"),
     ("Metadatadokument: äldre debattöversikt", "debates/overview.json", "object", "En genererad översikt", "ingen observationsnyckel"),
     ("Budgetlexikon · källa", "data/budget/keywords.csv", "csv", "Utgiftsområde × sökord", "expenditure_area + keyword"),
-    ("Allegoria: v1 bronze", "data/allegoria/sources-v1/bronze/sfs/*.json", "object", "Ett källsnapshot av lagtext", "document_snapshot_id"),
-    ("Allegoria: v2 bronze", "data/allegoria/sources-v2/bronze/*.json", "object", "Ett källsnapshot av lagtext", "document_snapshot_id"),
-    ("Allegoria: v2 urvalsmanifest", "data/allegoria/sources-v2/document_ids.json", "object", "Ett urvalsmanifest", "ingen observationsnyckel"),
+    ("Allegoria: v1 bronze", "platform/sources/allegoria/sources-v1/bronze/sfs/*.json", "object", "Ett källsnapshot av lagtext", "document_snapshot_id"),
+    ("Allegoria: v2 bronze", "platform/sources/allegoria/sources-v2/bronze/*.json", "object", "Ett källsnapshot av lagtext", "document_snapshot_id"),
+    ("Allegoria: v2 urvalsmanifest", "platform/sources/allegoria/sources-v2/document_ids.json", "object", "Ett urvalsmanifest", "ingen observationsnyckel"),
 ]
 
 
@@ -103,7 +103,7 @@ def rows_for(path: Path, shape: str):
 
 
 def matching(pattern):
-    paths = sorted((ROOT if pattern.startswith("data/") else PUB).glob(pattern))
+    paths = sorted((ROOT if pattern.startswith("platform/") else PUB).glob(pattern))
     if pattern in ("politics/parliament/issues/*/*.json",):
         paths = [p for p in paths if p.name != "index.json"]
     if pattern == "politics/decisions/*/*.json":
@@ -125,7 +125,7 @@ def main():
         "- `reports/`: RFC-mätning och två separata textkorpusars budgetordträffar.",
         "- `jobs/`: fem aggregerade CSV-tabeller. Inga annonsrader finns i detta repo.",
         "- `gold/`: materialiserat semantiskt lager; räknas inte som nya källobservationer. Se `docs/gold-semantic-model.md` för dess schema och mått.",
-        "- `data/allegoria/` utanför `public/` innehåller källsnapshotfiler och utkastannotationer; dessa är inte färdiga politiska riktningsmått. `data/budget/` innehåller lexikonets källa.", "",
+        "- `platform/sources/allegoria/` innehåller källsnapshotfiler och utkastannotationer; dessa är inte färdiga politiska riktningsmått. `platform/sources/budget/` innehåller lexikonets källa.", "",
         "**Nyckelnotation:** `+` anger sammansatt nyckel, `→` en kontrollerad referens, och ordet *kandidat* betyder att kopplingen inte är ett fastslaget sakförhållande.", "",
         "## Datatabeller, källsnapshot och metadata: observerade kolumner", "",
     ]
@@ -159,7 +159,7 @@ def main():
         summary.append((title,count,len(paths)))
         lines.extend([
             f"### {title}", "",
-            f"- **Sökväg:** `{pattern if pattern.startswith('data/') else 'public/data/' + pattern}` ({len(paths)} fil{'er' if len(paths) != 1 else ''}; {count:,} {'rad' if count == 1 else 'rader'}).".replace(",", " "),
+            f"- **Sökväg:** `{pattern if pattern.startswith('platform/') else 'frontend/public/data/' + pattern}` ({len(paths)} fil{'er' if len(paths) != 1 else ''}; {count:,} {'rad' if count == 1 else 'rader'}).".replace(",", " "),
             f"- **Kornighet:** {grain}. **Nyckel/referens:** `{key}`.",
             f"- **Kolumner ({len(columns)}):** " + ", ".join(f"`{column}`" for column in columns) + ".",
             "",
@@ -201,14 +201,14 @@ def main():
         "7. Den aktiva budgetrapporten läser `debates/budgets/summary.json`, där rätt budgetår valts. Den oförändrade upstreamkopian och `politics/parliament/budgets/execution.json` måste årskontrolleras innan deras förslag–utfall-differenser används.",
         "8. `data/budget/keywords.csv` är källlexikonet till språkrapportens lexikonposter. Koppla på `expenditure_area + keyword`; betrakta inte lexikonrader som observerade anföranden.",
         "", "## Övriga metadata och filformat", "",
-        "- `public/data/politics/catalog.json`: källrevisioner, filstorlek och SHA-256 per fil; inte en observationstabell.",
-        "- `public/data/politics/overview.json` och `politics/parliament/overview.json`: globala räknare och metodmetadata.",
-        "- `public/data/reports/manifest.json`: hash för indata/utdata till rapportexporterna.",
-        "- `public/data/politics/meaning.json`: motortest och **utkast** till politiska annotationer; inte validerad parti-KPI.",
-        "- `public/data/politics/parliament/manifest.json`: filregister. JSON- och CSV-varianter av samma `summary`, `topics` osv. är samma tabell i två format.",
-        "- `public/data/debates/budgets/coverage.json` och `year-selection-audit.json`: importtäckning och reparation av tabellår.",
-        "- `public/data/reports/rfc-drift.json` har dessutom `matched_changes: []`; inga verkliga kravpar klarade den strikta matchningen. Syntetiska `scenarios` är motorexempel.",
-        "- `data/allegoria/sources-v1/source/` och `sources-v2/source/` är rå XML/RFC-källdokument, inte relationella tabeller. `sources-v2/failures.json` är en lista med strängar, och `data/allegoria/corpus/*.yaml` är motor-/annotationskonfigurationer. Bronze-snapshot och de publika lagbestämmelserna är olika nivåer av samma källmaterial.",
+        "- `frontend/public/data/politics/catalog.json`: källrevisioner, filstorlek och SHA-256 per fil; inte en observationstabell.",
+        "- `frontend/public/data/politics/overview.json` och `politics/parliament/overview.json`: globala räknare och metodmetadata.",
+        "- `frontend/public/data/reports/manifest.json`: hash för indata/utdata till rapportexporterna.",
+        "- `frontend/public/data/politics/meaning.json`: motortest och **utkast** till politiska annotationer; inte validerad parti-KPI.",
+        "- `frontend/public/data/politics/parliament/manifest.json`: filregister. JSON- och CSV-varianter av samma `summary`, `topics` osv. är samma tabell i två format.",
+        "- `frontend/public/data/debates/budgets/coverage.json` och `year-selection-audit.json`: importtäckning och reparation av tabellår.",
+        "- `frontend/public/data/reports/rfc-drift.json` har dessutom `matched_changes: []`; inga verkliga kravpar klarade den strikta matchningen. Syntetiska `scenarios` är motorexempel.",
+        "- `platform/sources/allegoria/sources-v1/source/` och `sources-v2/source/` är rå XML/RFC-källdokument, inte relationella tabeller. `sources-v2/failures.json` är en lista med strängar, och `platform/sources/allegoria/corpus/*.yaml` är motor-/annotationskonfigurationer. Bronze-snapshot och de publika lagbestämmelserna är olika nivåer av samma källmaterial.",
         "", "## Källor och begränsningar", "",
         "[Sveriges riksdag](https://www.riksdagen.se/sv/sa-fungerar-riksdagen/arbetet-i-riksdagen/debatter-och-beslut-i-kammaren/beslut-om-arenden/) för vad en votering avser; [Statskontoret](https://www.statskontoret.se/analys-och-statistik/oppna-data/arsutfall/om-oppna-data-for-arsutfall/) för årsutfallets budget- och utfallsfält. Katalogen beskriver **det som levereras i detta repo**, inte all data hos källmyndigheterna. Se också `docs/rfc-and-budget-audit.md` för urvalet av debattkorpus och ordstamning.",
     ])

@@ -1,0 +1,22 @@
+county_code,nuts3_code,nuts2_code,nuts2_name
+01,SE110,SE11,Stockholm
+03,SE121,SE12,Östra Mellansverige
+04,SE122,SE12,Östra Mellansverige
+05,SE123,SE12,Östra Mellansverige
+18,SE124,SE12,Östra Mellansverige
+19,SE125,SE12,Östra Mellansverige
+06,SE211,SE21,Småland med öarna
+07,SE212,SE21,Småland med öarna
+08,SE213,SE21,Småland med öarna
+09,SE214,SE21,Småland med öarna
+10,SE221,SE22,Sydsverige
+12,SE224,SE22,Sydsverige
+13,SE231,SE23,Västsverige
+14,SE232,SE23,Västsverige
+17,SE311,SE31,Norra Mellansverige
+20,SE312,SE31,Norra Mellansverige
+21,SE313,SE31,Norra Mellansverige
+22,SE321,SE32,Mellersta Norrland
+23,SE322,SE32,Mellersta Norrland
+24,SE331,SE33,Övre Norrland
+25,SE332,SE33,Övre Norrland

@@ -1,0 +1,25 @@
+indicator_key,measure_type,time_rule,space_rule,weight_indicator,components,aggregation_note
+aku_unemployment_rate,rate,recompute_from_components,recompute_from_components,,unemployed / (employed + unemployed) in fct_labour_force,"Never average rates. Sum the levels (persons_thousands) over regions, sexes or months, then divide. SCB's own annual and county figures are published; prefer them over recomputing."
+aku_employment_rate,rate,recompute_from_components,recompute_from_components,,employed / population in fct_labour_force,Sum levels then divide; prefer published annual and county figures.
+aku_labour_force_participation,rate,recompute_from_components,recompute_from_components,,labour_force / population in fct_labour_force,Sum levels then divide.
+aku_unemployment_rate_sa,rate,not_aggregable,not_aggregable,,,Seasonally adjusted monthly series: for annual values use the unadjusted series; a mean of adjusted months is not an official figure.
+aku_employment_rate_sa,rate,not_aggregable,not_aggregable,,,As above.
+scb_population,count_stock,end_of_period,sum,,,"Population on 31 December: add regions, never add years. Years under the cell key method carry small per-cell noise."
+fk_sick_pay_rate,rate,end_of_period,recompute_from_components,,sick_pay_days / insured_persons in fct_sick_pay_rate,"Rolling twelve months: December is the calendar year, and months must not be averaged or added. Across regions, ages or sexes, sum sick_pay_days and insured_persons, then divide."
+fk_started_sick_leave,count_flow,sum,sum,,,Started cases are a flow: add months and regions. Suppressed counts are NULL; a sum over them is a lower bound.
+fk_started_sick_leave_psychiatric,count_flow,sum,sum,,,Flow; F00-F99. National only.
+fk_started_sick_leave_stress,count_flow,sum,sum,,,Flow; F43 by county. Inside F00-F99; never add to it.
+fk_ongoing_sick_leave,count_stock,mean_of_periods,sum,,,"A stock at month end: add regions and ages, never months. For a year, average the months or take December."
+kolada_N03937,share,not_aggregable,population_weighted_mean,scb_population,,Kolada publishes county and national values; use them. A population-weighted mean of municipalities approximates them (the denominator is ages 18-65).
+kolada_N02267,share,not_aggregable,population_weighted_mean,scb_population,,Prefer published county and national values.
+kolada_N00938,rate,not_aggregable,population_weighted_mean,scb_population,,"Sick-pay days per insured, annual. Prefer published county and national values; the insured population is the right weight and is not in Kolada."
+kolada_N00957,rate,not_aggregable,population_weighted_mean,scb_population,,Ill-health days per insured. Prefer published values.
+kolada_N00906,median,not_aggregable,not_aggregable,,,"A median cannot be aggregated from medians: use Kolada's county and national values, never a mean of municipal medians."
+kolada_N31807,share,not_aggregable,population_weighted_mean,scb_population,,Prefer published values.
+kolada_N01452,share,not_aggregable,population_weighted_mean,scb_population,,"Survey estimate (Folkhälsomyndigheten) republished per municipality; small municipalities have wide intervals, and a weighted mean does not narrow them."
+kolada_U01473,share,not_aggregable,population_weighted_mean,scb_population,,As above.
+kolada_U01413,share,not_aggregable,population_weighted_mean,scb_population,,As above.
+kolada_N05403,share,not_aggregable,population_weighted_mean,scb_population,,Turnout among those entitled to vote; population is only an approximate weight. Election years only.
+kolada_N07403,rate,not_aggregable,not_aggregable,,,"Reported crime is counted where it happened, not where people live: a population-weighted mean of municipalities misses the published county value by 15% on average (up to 86%). Use Kolada's county and national values."
+kolada_N15428,share,not_aggregable,not_aggregable,,,Share of year-9 pupils; the pupil count is not in the model. Use published county and national values.
+kolada_N01951,count_stock,end_of_period,sum,,,Inhabitants; same as scb_population.

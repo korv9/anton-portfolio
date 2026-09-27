@@ -10,7 +10,7 @@
     ],
     "path": "/data/products/drugcomb/tables/data_funnel.json",
     "csv": "/data/products/drugcomb/tables/data_funnel.csv",
-    "sha256": "e183f76590ad8d228f6eb1a8e75fe469a045271ef166d5912bfa7ffcb086e36c"
+    "sha256": "f4b0027ace0779a1ed3127a49cb9f29f5234a70187e2dc301feedeff21e17906"
   },
   {
     "id": "drugcomb_data_quality",
@@ -24,7 +24,7 @@
     ],
     "path": "/data/products/drugcomb/tables/data_quality.json",
     "csv": "/data/products/drugcomb/tables/data_quality.csv",
-    "sha256": "a1b6a349f64bda3b7c70c874ba0d0816daacc414317c071247b958c0e0f72162"
+    "sha256": "cc0db4d037810ade40cb804616a8671fad0ab968967594608b5531f44168d833"
   },
   {
     "id": "drugcomb_entity_resolution",
@@ -39,7 +39,7 @@
     ],
     "path": "/data/products/drugcomb/tables/entity_resolution.json",
     "csv": "/data/products/drugcomb/tables/entity_resolution.csv",
-    "sha256": "ff29faf5d79e6c973deb435941dcd0ba431b8a6ecd76b48a9e676a468324eea1"
+    "sha256": "8807aa74d39aed6413dc0ab3b12bf5cd9a2aaf61c9c4d836e04ec815a455c512"
   },
   {
     "id": "drugcomb_eval_boosting_rounds",
@@ -53,7 +53,7 @@
     ],
     "path": "/data/products/drugcomb/tables/eval_boosting_rounds.json",
     "csv": "/data/products/drugcomb/tables/eval_boosting_rounds.csv",
-    "sha256": "fff19b4c551fc07a6091a17844bf6fe030cad6d5bfd973d9844f6957aa87fbdf"
+    "sha256": "9519b70d9da7819c2f837f7fe17ba7b21db27f57efd8045859b4016a969782f8"
   },
   {
     "id": "drugcomb_eval_by_study",
@@ -70,7 +70,7 @@
     ],
     "path": "/data/products/drugcomb/tables/eval_by_study.json",
     "csv": "/data/products/drugcomb/tables/eval_by_study.csv",
-    "sha256": "a9c96e5ccea957ce69952fef7e3bda03f154e748e8ed4436e15fa5e40fbe6f42"
+    "sha256": "49b2f475f1371b473bb0f7968c220a09d445f2220ea86646d26ffede9a04e94f"
   },
   {
     "id": "drugcomb_eval_calibration",
@@ -88,7 +88,7 @@
     ],
     "path": "/data/products/drugcomb/tables/eval_calibration.json",
     "csv": "/data/products/drugcomb/tables/eval_calibration.csv",
-    "sha256": "99d99a16008450ef3e63c5c8943306759fef409f101e3c5870741fcfa3b28f9d"
+    "sha256": "0ac4be7fa4b7a8eba18610b905dd359e44d10866c00ad1d9d61dbe4bcafdd2af"
   },
   {
     "id": "drugcomb_eval_enrichment",
@@ -105,7 +105,7 @@
     ],
     "path": "/data/products/drugcomb/tables/eval_enrichment.json",
     "csv": "/data/products/drugcomb/tables/eval_enrichment.csv",
-    "sha256": "525d60754d6641c13cd0c2e9b889c30c0b827679fcd9b3ff610205e731293502"
+    "sha256": "98d9a250bab012a1250f257c31e0a48426a84a86b34f2db841647e9ffe2183b0"
   },
   {
     "id": "drugcomb_eval_learning_curve",
@@ -120,7 +120,7 @@
     ],
     "path": "/data/products/drugcomb/tables/eval_learning_curve.json",
     "csv": "/data/products/drugcomb/tables/eval_learning_curve.csv",
-    "sha256": "e2e4a40d1df8c8bde8c90f981ffd9d197de571af072103e6649b695cec1cf9c5"
+    "sha256": "a1fdeb99f32de8a03fe5255605b7e2284e70c2570cc68ef3f30a9ed616a1e23a"
   },
   {
     "id": "drugcomb_eval_y_scramble",
@@ -134,7 +134,7 @@
     ],
     "path": "/data/products/drugcomb/tables/eval_y_scramble.json",
     "csv": "/data/products/drugcomb/tables/eval_y_scramble.csv",
-    "sha256": "42629a219440fbb6a24ed8601ed63617945d0babe02b95cc945e197a161405ca"
+    "sha256": "6d52555d0760096b258084d4a7750d04ffde9bad0fd9522a203203a6b7b0c7a2"
   },
   {
     "id": "drugcomb_feature_importance_family",
@@ -149,7 +149,7 @@
     ],
     "path": "/data/products/drugcomb/tables/feature_importance_family.json",
     "csv": "/data/products/drugcomb/tables/feature_importance_family.csv",
-    "sha256": "e49ba6817cc36d0d69cba00966a0993ed52849e199c4434d719f0ff68535a423"
+    "sha256": "55ed32cf0b8858af93ef1291618ed4b3acfa8a4a72b4a05f87096abec2515353"
   },
   {
     "id": "drugcomb_feature_importance_top",
@@ -165,7 +165,7 @@
     ],
     "path": "/data/products/drugcomb/tables/feature_importance_top.json",
     "csv": "/data/products/drugcomb/tables/feature_importance_top.csv",
-    "sha256": "2984fd150d0ab526923119a99219467d283537cc11ba41e81acb0ff8f26ea436"
+    "sha256": "228a53e32d4769b0c399367325e7d08143064ef3d81d16b48bc11f3256e302b6"
   },
   {
     "id": "drugcomb_metrics",
@@ -191,7 +191,7 @@
     ],
     "path": "/data/products/drugcomb/tables/metrics.json",
     "csv": "/data/products/drugcomb/tables/metrics.csv",
-    "sha256": "fbdf585bfde306f040781362c915d90baa7e3e0a9f293d5d32891962414a927b"
+    "sha256": "cd2965247ba8b4c061595815afe0751fd7430d28d6e8da7ba9dc95b9f44b8ff0"
   },
   {
     "id": "drugcomb_metrics_by_fold",
@@ -212,7 +212,7 @@
     ],
     "path": "/data/products/drugcomb/tables/metrics_by_fold.json",
     "csv": "/data/products/drugcomb/tables/metrics_by_fold.csv",
-    "sha256": "3a63e252dbbdea63ed92d07f98468fcd5a3f6d4dc8c5d1875dfba676364f81eb"
+    "sha256": "54aca6f860cbe236934cdfd2543a92e1f0001a3377b4668c648cd18b55caa05c"
   },
   {
     "id": "drugcomb_rna_pca_explained_variance",
@@ -225,7 +225,7 @@
     ],
     "path": "/data/products/drugcomb/tables/rna_pca_explained_variance.json",
     "csv": "/data/products/drugcomb/tables/rna_pca_explained_variance.csv",
-    "sha256": "b587164ffae13bda7cd368d038ac0f2a071b6a028752efb858d18f4a8f0fc0b5"
+    "sha256": "d13dc903fd7e88a5a1dc187ad041418e92fbd3bb5aa7b1e52ddaf783744ba345"
   },
   {
     "id": "drugcomb_sql_drug_profile",
@@ -242,7 +242,7 @@
     ],
     "path": "/data/products/drugcomb/tables/sql_drug_profile.json",
     "csv": "/data/products/drugcomb/tables/sql_drug_profile.csv",
-    "sha256": "dcf06c8928537634883a703c1cf9d3ea8467a910b3cbf3eab8ad80f25fb0aa84"
+    "sha256": "8df0566038c714b8be738217710b7fc4b7fba46176ccc76f179bb7a27d48149d"
   },
   {
     "id": "drugcomb_sql_kpi_overview",
@@ -263,7 +263,7 @@
     ],
     "path": "/data/products/drugcomb/tables/sql_kpi_overview.json",
     "csv": "/data/products/drugcomb/tables/sql_kpi_overview.csv",
-    "sha256": "64953b0e0232a01314e427deac0c6b14b3926112ced5098dfc72a35cb56426d0"
+    "sha256": "bad5fd2ab7321d340cfd0f7e08ac8b18d5fd830cf2358bb03d02d80108554e78"
   },
   {
     "id": "drugcomb_sql_score_concordance",
@@ -276,7 +276,7 @@
     ],
     "path": "/data/products/drugcomb/tables/sql_score_concordance.json",
     "csv": "/data/products/drugcomb/tables/sql_score_concordance.csv",
-    "sha256": "2fc3599de086486f8b96260ea44f10ca1f6e4bd28c89272cbd4e5eb580b463ea"
+    "sha256": "5d369e0914c8dd03da18af78d5315b2d5011bcc6feb66e0899a1d05f78ad85c4"
   },
   {
     "id": "drugcomb_sql_screen_coverage",
@@ -291,7 +291,7 @@
     ],
     "path": "/data/products/drugcomb/tables/sql_screen_coverage.json",
     "csv": "/data/products/drugcomb/tables/sql_screen_coverage.csv",
-    "sha256": "d059784fabf380016b863fc7bc873c1d81de874e4c4791353510f17b6e471a48"
+    "sha256": "1a2e57384520871b2ccd4770e14df6d93748aee6c356e0035a8ad27639ab46c0"
   },
   {
     "id": "drugcomb_sql_study_overview",
@@ -312,7 +312,7 @@
     ],
     "path": "/data/products/drugcomb/tables/sql_study_overview.json",
     "csv": "/data/products/drugcomb/tables/sql_study_overview.csv",
-    "sha256": "b7932a290845402f716d2ff0b047aa7adc8bc1a6c2b725ece429218008357714"
+    "sha256": "4fde22eb8827b17ee1208df7b7a4404102d9743b2a7146f24c01d579295c999a"
   },
   {
     "id": "drugcomb_sql_synergy_by_lineage",
@@ -331,7 +331,7 @@
     ],
     "path": "/data/products/drugcomb/tables/sql_synergy_by_lineage.json",
     "csv": "/data/products/drugcomb/tables/sql_synergy_by_lineage.csv",
-    "sha256": "a2b8a43d64985ff299b18243fe2dd615b844f090941c445ad848049399fe4ed3"
+    "sha256": "08b98d614e4bc5629b20eed65bb5b76b3bf44ac9f1b4c9a385f779a26b03f2d6"
   },
   {
     "id": "drugcomb_sql_top_synergistic_pairs",
@@ -347,7 +347,7 @@
     ],
     "path": "/data/products/drugcomb/tables/sql_top_synergistic_pairs.json",
     "csv": "/data/products/drugcomb/tables/sql_top_synergistic_pairs.csv",
-    "sha256": "96f2a253ece0c68138f8d55dc00bf76d860a2ea78ab2c92ed9474a4e5f81f30b"
+    "sha256": "bcfa09686d817f34ba701bb0216749b83a8a9390f57e06f5a8d319af61b8b1cc"
   },
   {
     "id": "drugcomb_study_readout",
@@ -361,6 +361,6 @@
     ],
     "path": "/data/products/drugcomb/tables/study_readout.json",
     "csv": "/data/products/drugcomb/tables/study_readout.csv",
-    "sha256": "6c124fbcfba376489b41545663697e24c625b209b6e493166f3b63a73cd149f4"
+    "sha256": "54a6cb44b8049bb9982aac27d96669ea4b06f3cdba14a7343d0154944dbd6c30"
   }
 ]

@@ -38,7 +38,7 @@ test('the delivery manifest drives resolution and JSON stays on the site', async
   expect(manifest.ok()).toBeTruthy()
   const { bases, shard_prefixes } = await manifest.json()
   expect(bases.shard).toMatch(/^https:\/\//)
-  expect(bases.json).toBe('/data/')
+  expect(bases.json).toBe('data/')
   expect(shard_prefixes.length).toBeGreaterThan(0)
 
   const goldRequests: string[] = []

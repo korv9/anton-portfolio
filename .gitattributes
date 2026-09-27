@@ -1,10 +1,24 @@
-public/data/gold/** text eol=lf
-scripts/build-gold.py text eol=lf
-scripts/validate-gold.py text eol=lf
-public/data/products/**/*.csv text eol=lf
-public/data/products/**/*.json text eol=lf
-scripts/build-products.py text eol=lf
-scripts/validate-products.py text eol=lf
+# Delivered data whose hashes are catalogued: checked out byte for byte as committed.
+frontend/public/data/gold/** text eol=lf
+frontend/public/data/products/**/*.csv text eol=lf
+frontend/public/data/products/**/*.json text eol=lf
+frontend/public/data/discovery/** text eol=lf
 # Preserve the generated upstream Matplotlib SVGs verbatim.
-public/data/products/drugcomb/figures/*.svg -whitespace
-public/data/discovery/** text eol=lf
+frontend/public/data/products/drugcomb/figures/*.svg -whitespace
+
+# Source, configuration and documentation: LF everywhere, whatever the editor's platform.
+frontend/src/** text eol=lf
+frontend/tests/** text eol=lf
+frontend/*.ts text eol=lf
+frontend/*.json text eol=lf
+frontend/*.html text eol=lf
+platform/**/*.py text eol=lf
+platform/**/*.sql text eol=lf
+platform/**/*.yml text eol=lf
+platform/seeds/** text eol=lf
+ml/**/*.py text eol=lf
+docs/** text eol=lf
+.github/** text eol=lf
+/*.md text eol=lf
+/*.json text eol=lf
+/.git* text eol=lf

@@ -1,0 +1,132 @@
+version: 2
+
+# Conformed dimensions. Every welfare fact joins them on the same keys, so a question can
+# cross sources: region_code (SCB), period_key, sex_key, age_group_key, indicator_key.
+
+models:
+  - name: dim_date
+    description: Calendar, one row per day 1968-2030. Also the semantic layer's time spine.
+    time_spine:
+      standard_granularity_column: date_day
+    columns:
+      - name: date_day
+        granularity: day
+        data_tests: [not_null, unique]
+
+  - name: dim_period
+    description: >-
+      Reporting periods: year (2024), quarter (2024-Q1), month (2024-03), pooled_years
+      (2021-2024, Folkhälsomyndigheten's county results) and survey_round (ESS11).
+      start_date and end_date join dim_date; reference_year aligns periods of different types.
+    columns:
+      - name: period_key
+        data_tests: [not_null, unique]
+      - name: period_type
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [year, quarter, month, pooled_years, survey_round]
+      - name: start_date
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('dim_date'), field: date_day}
+      - name: end_date
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('dim_date'), field: date_day}
+      - name: reference_year
+        data_tests: [not_null]
+
+  - name: dim_region
+    description: >-
+      Swedish regions on SCB codes: country 00, counties (2 digits), municipalities
+      (4 digits), AKU's aggregate 0050 and the eight NUTS2 areas used by ESS.
+    columns:
+      - name: region_code
+        data_tests: [not_null, unique]
+      - name: region_level
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [country, county, municipality, aggregate, nuts2]
+      - name: county_code
+        description: The county a county or municipality belongs to; NULL for other levels.
+      - name: nuts2_code
+        description: NUTS2 area of a county or municipality, and of a NUTS2 row itself.
+      - name: kolada_region_id
+        description: Kolada's id for the same region (0000, 00LL, KKKK).
+
+  - name: dim_sex
+    columns:
+      - name: sex_key
+        data_tests: [not_null, unique]
+
+  - name: dim_age_group
+    description: Age bands as sources publish them. Bands from different sources overlap and are compared only like with like.
+    columns:
+      - name: age_group_key
+        data_tests: [not_null, unique]
+
+  - name: dim_country
+    description: ESS participating countries.
+    columns:
+      - name: country_code
+        data_tests: [not_null, unique]
+
+  - name: dim_source
+    columns:
+      - name: source_key
+        data_tests: [not_null, unique]
+
+  - name: dim_diagnosis
+    description: ICD-10 chapters as grouped by Försäkringskassan, plus F43 inside F00-F99.
+    columns:
+      - name: diagnosis_code
+        data_tests: [not_null, unique]
+
+  - name: dim_indicator
+    description: Every indicator in fct_indicator, with unit, welfare domain and direction.
+    columns:
+      - name: indicator_key
+        data_tests: [not_null, unique]
+      - name: source_key
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('dim_source'), field: source_key}
+      - name: domain
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [jobb, arbetsliv, ekonomi, politik, mental_halsa, halsa,
+                         tillit_varderingar, trygghet, utbildning, befolkning]
+      - name: measure_type
+        description: >-
+          count_flow (add over time and space), count_stock (add over space, not time),
+          rate and share (non-additive: recompute from components or weight), mean_score
+          (survey mean), median (not aggregable).
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [count_flow, count_stock, rate, share, mean_score, median]
+      - name: time_rule
+        description: How values over periods combine into a longer period.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [sum, mean_of_periods, end_of_period, recompute_from_components, not_aggregable]
+      - name: space_rule
+        description: How values over regions, sexes or ages combine.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [sum, recompute_from_components, population_weighted_mean,
+                         recompute_from_microdata, not_aggregable]

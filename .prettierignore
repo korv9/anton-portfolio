@@ -4,4 +4,7 @@ package-lock.json
 test-results
 playwright-report
 .research
-public/data
+frontend/public/data
+warehouse
+platform
+ml

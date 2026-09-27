@@ -21,7 +21,7 @@ type Delivery = {
 }
 
 const FALLBACK: Delivery = {
-  bases: { json: '/data/', parquet: '/data/', shard: '/data/' },
+  bases: { json: 'data/', parquet: 'data/', shard: 'data/' },
   shardPrefixes: [],
   parquetDatasets: {},
 }
@@ -30,7 +30,7 @@ let pending: Promise<Delivery> | null = null
 
 function load(): Promise<Delivery> {
   if (!pending)
-    pending = fetch('/data/delivery.json')
+    pending = fetch('data/delivery.json')
       .then((response) => {
         if (!response.ok) throw new Error('No delivery manifest')
         return response.json()
@@ -78,6 +78,12 @@ export async function parquetParts(dataset: string): Promise<string[]> {
   const delivery = await load()
   const parts = delivery.parquetDatasets[dataset] ?? []
   return Promise.all(parts.map((part) => resolveDataUrl(part)))
+}
+
+/** URL of a path in object storage, for files outside the catalogue such as run status. */
+export async function objectStorageUrl(path: string): Promise<string> {
+  const delivery = await load()
+  return delivery.bases.shard + logical(path)
 }
 
 /** Test seam: forget the cached manifest so the next resolve refetches it. */

@@ -1,6 +1,7 @@
 import { currentLocale, t } from '../i18n'
 import { useEffect, useRef, useState } from 'react'
 import { PARTIES, useData } from './data'
+import { readParquet } from '../parquet'
 
 type Card = {
   speech_id: string
@@ -119,10 +120,22 @@ export default function SpeechBrowser() {
   )
   const [party, setParty] = useState('All')
   const [session, setSession] = useState('2025/26')
-  const { data, error } = useData<Card[]>(
-    manifest.data?.find((s) => s.session === session)?.path ?? null,
-    'discovery/',
-  )
+  // One session's cards, read from its Parquet part (object storage, else the site's copy).
+  const part = manifest.data?.find((s) => s.session === session)?.path ?? null
+  const [data, setData] = useState<Card[] | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  useEffect(() => {
+    if (!part) return
+    let live = true
+    setData(null)
+    setError(null)
+    readParquet(part)
+      .then((rows) => live && setData(rows as Card[]))
+      .catch((reason: Error) => live && setError(reason.message))
+    return () => {
+      live = false
+    }
+  }, [part])
   const [kind, setKind] = useState('All')
   const [query, setQuery] = useState('')
   const [limit, setLimit] = useState(12)

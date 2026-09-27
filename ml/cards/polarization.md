@@ -1,6 +1,6 @@
 # How distinguishable party language is, by session
 
-Task `polarization` · run `20260926-0937` · gate **passed**
+Task `polarization` · run `20260927-1416` · gate **passed**
 
 ## What the label means
 
@@ -8,40 +8,49 @@ The label is the speaker's party. The measure is how well a classifier separates
 
 ## Data
 
-- sessions measured: 31
-- sessions also measured with KB-BERT: 5
-- TF-IDF and KB-BERT correlation across those sessions: 0.98
+- sessions measured: 33
+- sessions also measured with KB-BERT: not run: this run used --no-transformers (no GPU)
+- TF-IDF and KB-BERT correlation across those sessions: not computed
 - passages per session: equal per party, minimum 25 per party to qualify
-- source: Party-leader debates, Swedish Parliament open data
+- per-session AUC range: 0.599 to 0.697
+- trend: +0.0007 AUC per session (OLS standard error 0.0005, too small: neighbouring sessions share members and issues)
+- same seven parties throughout (S, M, C, L, KD, V, MP): mean AUC 0.635 before 2010/11 and 0.641 from it; trend +0.0002 per session
+- same seven parties, compared only within the same debate: mean AUC 0.678 before 2010/11 and 0.717 from it; trend +0.0022 per session
+- all parties, same eras: 0.638 before 2010/11 and 0.661 from it
+- speech cards with a party: 254,820 (244,725 issue debates, 10,095 party-leader debates)
+- source: Issue and party-leader debates, Swedish Parliament open data
 - seeds per session: 3
 
 ## Split
 
-Grouped by speaker: no speaker appears in both folds, so the classifier cannot win by recognising an individual. Each session is measured three times with different balanced samples and the spread is reported.
+Party names and abbreviations are masked in the text first, so the label cannot be read off self-references. Grouped by person (the Riksdag's person id): no member appears in both folds, so the classifier cannot win by recognising an individual. Each session is measured three times with different balanced samples. The headline is the mean over sessions; the per-session range is in Data, not an interval.
 
 ## Results
 
 | Model | Metric | Value | 95% CI |
 |---|---|---|---|
-| Permutation null (shuffled parties) | macro-F1 | 0.111 | — |
-| Mean pairwise AUC | AUC | 0.680 | 0.455 – 0.789 |
+| Permutation null (shuffled parties) | macro-F1 | 0.125 | — |
+| Mean pairwise AUC | AUC | 0.649 | — |
 
 ## Gate
 
 Beat the permutation null in 80% of sessions, mean AUC > 0.60.
 
-Outcome: **passed**. 
+Outcome: **passed**. 33 of 33 sessions significant; mean AUC 0.649.
 
 ## Limitations
 
-- Separability is not polarization. A rising line may mean parties changed subject rather than changed position.
+- Separability is not polarization. A rising line may mean parties changed subject rather than changed position. The within-debate measure holds the matter fixed, but not the angle each party takes on it.
+- Issue debates dominate the corpus. Who speaks in them follows committee seats, so a party's sample leans towards its committee members' subjects.
+- The all-party mean rises when a party with a distinct vocabulary enters (SD from 2010/11, NyD in 1993/94). Read change over time from the seven-party measure, which holds the cast fixed.
 - Governing parties are listed per session so the role effect can be read alongside the trend; being in office changes register regardless of position.
 - Coverage differs by session. Older sessions have fewer speeches and coarser categorisation, so early points rest on less evidence.
 - Equal passages per party removes volume effects but discards data from parties that spoke most.
+- Masking removes party names but not other giveaways, such as the names of party leaders or ministers, so some label leakage may remain.
 - No per-speaker output. The measure is defined only in aggregate.
 
 ## Reproducing
 
-```powershell
-python -m mlkit.overnight
+```bash
+cd ml && python -m mlkit.overnight --only polarization
 ```

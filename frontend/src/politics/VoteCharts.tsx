@@ -15,21 +15,27 @@ export default function VoteCharts({
   return (
     <div className="politics-grid">
       <section className="politics-card">
-        <p className="eyebrow">{t("01 / Recorded positions")}</p>
-        <h4>{t("How do parties vote?")}</h4>
+        <p className="eyebrow">{t('01 / Recorded positions')}</p>
+        <h4>{t('How do parties vote?')}</h4>
         <p>
-          {t("The most common cast vote in each party, per roll call. Yes means\n          support for the committee proposal, which may itself reject a bill.\n        ")}</p>
+          {t(
+            'The most common cast vote in each party, per roll call. Yes means\n          support for the committee proposal, which may itself reject a bill.\n        ',
+          )}
+        </p>
         <div className="vote-key">
-          <span>{t("● Yes")}</span>
-          <span>{t("● No")}</span>
-          <span>{t("● Abstain")}</span>
+          <span>{t('● Yes')}</span>
+          <span>{t('● No')}</span>
+          <span>{t('● Abstain')}</span>
         </div>
         {stats.map((s) => (
           <button
             className="vote-stack-row"
             key={s.party}
             onClick={() => onParty(s.party)}
-            aria-label={l(`${s.party}: ${s.yes} yes, ${s.no} no, ${s.abstain} abstain, ${s.rows} roll calls`, `${s.party}: ${s.yes} ja, ${s.no} nej, ${s.abstain} avstod, ${s.rows} voteringar`)}
+            aria-label={l(
+              `${s.party}: ${s.yes} yes, ${s.no} no, ${s.abstain} abstain, ${s.rows} roll calls`,
+              `${s.party}: ${s.yes} ja, ${s.no} nej, ${s.abstain} avstod, ${s.rows} voteringar`,
+            )}
           >
             <b>{s.party}</b>
             <span className="vote-stack">
@@ -45,24 +51,33 @@ export default function VoteCharts({
           </button>
         ))}
         <small>
-          {t("Unclassified or tied positions remain outside the three coloured\n          categories. Select a party to inspect decisions.\n        ")}</small>
+          {t(
+            'Unclassified or tied positions remain outside the three coloured\n          categories. Select a party to inspect decisions.\n        ',
+          )}
+        </small>
       </section>
       <section className="politics-card">
-        <p className="eyebrow">{t("02 / Voting together")}</p>
-        <h4>{t("Where do parties agree?")}</h4>
+        <p className="eyebrow">{t('02 / Voting together')}</p>
+        <h4>{t('Where do parties agree?')}</h4>
         <p>
-          {t("Same yes/no position divided by roll calls where both parties have a\n          yes/no position. Abstentions are excluded; this is not ideological\n          distance.\n        ")}</p>
+          {t(
+            'Same yes/no position divided by roll calls where both parties have a\n          yes/no position. Abstentions are excluded; this is not ideological\n          distance.\n        ',
+          )}
+        </p>
         <div
           className="agreement-scroll"
           tabIndex={0}
-          aria-label={t("Party agreement matrix")}
+          aria-label={t('Party agreement matrix')}
         >
           <table className="agreement-matrix">
             <caption>
-              {t("Agreement percentage · select a cell to see the denominator\n            ")}</caption>
+              {t(
+                'Agreement percentage · select a cell to see the denominator\n            ',
+              )}
+            </caption>
             <thead>
               <tr>
-                <th scope="col">{t("Party")}</th>
+                <th scope="col">{t('Party')}</th>
                 {PARTIES.map((p) => (
                   <th scope="col" key={p}>
                     {p}
@@ -94,7 +109,10 @@ export default function VoteCharts({
                       >
                         <details>
                           <summary
-                            aria-label={l(`${a} and ${b}: ${pct == null ? 'unavailable' : pct.toFixed(0) + '%'}, ${paired.length} comparable roll calls`, `${a} och ${b}: ${pct == null ? 'saknas' : pct.toFixed(0) + '%'}, ${paired.length} jämförbara voteringar`)}
+                            aria-label={l(
+                              `${a} and ${b}: ${pct == null ? 'unavailable' : pct.toFixed(0) + '%'}, ${paired.length} comparable roll calls`,
+                              `${a} och ${b}: ${pct == null ? 'saknas' : pct.toFixed(0) + '%'}, ${paired.length} jämförbara voteringar`,
+                            )}
                           >
                             {pct == null ? '—' : pct.toFixed(0)}
                           </summary>
