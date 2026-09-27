@@ -18,7 +18,7 @@ test('home introduces Anton and routes to each project', async ({
   if (isMobile) await page.getByRole('button', { name: 'Menu' }).click()
   await page
     .getByRole('navigation', { name: 'Main navigation' })
-    .getByRole('link', { name: 'Politics' })
+    .getByRole('link', { name: 'Charts & analyses' })
     .click()
   await expect(page.getByRole('heading', { level: 1 })).toContainText(
     'Politics right now',
@@ -133,6 +133,7 @@ test('budget proposals and annual outcomes are separate navigable reports', asyn
   )
   await budget.getByText('View all 27 expenditure areas').click()
   await expect(budget.locator('.budget-ledger-all tbody tr')).toHaveCount(27)
+  await page.locator('.topic-tabs a[href="#budget-outturn"]').click()
   await expect(page.locator('#budget-outturn')).toContainText('1997–2025')
   await page.getByLabel('Annual account year').selectOption('2024')
   await expect(

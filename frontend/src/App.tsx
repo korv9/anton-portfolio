@@ -1,3 +1,4 @@
+import TopicNav from './TopicNav'
 import { currentLocale, l, setLocale, t, type Locale } from './i18n'
 import { fetchData } from './dataSource'
 import TimeSeriesChart from './charts/TimeSeriesChart'
@@ -302,9 +303,9 @@ function pageFromHash(hash: string) {
   if (hash === '#rfc-drift') return 'allegoria'
   if (hash === '#thesis') return 'thesis'
   if (hash === '#homie') return 'homie'
-  if (hash === '#sweden') return 'welfare'
+  if (hash === '#sweden' || hash.startsWith('#sweden-')) return 'welfare'
   if (hash === '#status') return 'status'
-  if (hash === '#analysis') return 'analysis'
+  if (hash === '#analysis' || hash.startsWith('#analysis-')) return 'analysis'
   if (hash === '#now' || hash.startsWith('#now-')) return 'now'
   if (hash.startsWith('#issue-')) return 'issue'
   return 'home'
@@ -353,21 +354,6 @@ function App() {
     requestAnimationFrame(() => {
       if (page === 'home' && hash === '#projects')
         document.getElementById('projects')?.scrollIntoView({ block: 'start' })
-      else if (
-        ['#budget-outturn', '#budget-proposals', '#budget-explore'].includes(
-          hash,
-        )
-      )
-        document
-          .getElementById(hash.slice(1))
-          ?.scrollIntoView({ block: 'start' })
-      else if (
-        hash.startsWith('#now-') &&
-        document.getElementById(hash.slice(1))
-      )
-        document
-          .getElementById(hash.slice(1))
-          ?.scrollIntoView({ block: 'start' })
       else window.scrollTo({ top: 0, behavior: 'auto' })
     })
   }, [hash, page])
@@ -558,19 +544,7 @@ function App() {
             {t('Projects')}
           </a>
           <a href="#now" onClick={() => setMenuOpen(false)}>
-            {t('Politics')}
-          </a>
-          <a href="#job-market" onClick={() => setMenuOpen(false)}>
-            {t('Job market')}
-          </a>
-          <a href="#sweden" onClick={() => setMenuOpen(false)}>
-            {l('Sweden', 'Sverige')}
-          </a>
-          <a href="#analysis" onClick={() => setMenuOpen(false)}>
-            {l('Analyses', 'Analyser')}
-          </a>
-          <a href="#drugcomb" onClick={() => setMenuOpen(false)}>
-            {t('DrugComb')}
+            {l('Charts & analyses', 'Grafer & analyser')}
           </a>
           <a
             className="nav-cv"
@@ -582,6 +556,52 @@ function App() {
         </nav>
       </header>
       <main id="main">
+        {[
+          'now',
+          'politics',
+          'jobs',
+          'welfare',
+          'analysis',
+          'drugcomb',
+          'issue',
+        ].includes(page) && (
+          <div className="analysis-hub">
+            <p className="eyebrow">
+              {l('Charts & analyses', 'Grafer & analyser')}
+            </p>
+            <TopicNav
+              label={l('Choose a subject', 'Välj ämne')}
+              active={
+                page === 'politics' && politicsView === 'budgets'
+                  ? '#budget-comparison'
+                  : ['now', 'politics', 'issue'].includes(page)
+                    ? '#now'
+                    : page === 'jobs'
+                      ? '#job-market'
+                      : page === 'welfare'
+                        ? '#sweden'
+                        : page === 'analysis'
+                          ? '#analysis'
+                          : '#drugcomb'
+              }
+              items={[
+                ['#now', 'Politics', 'Politik'],
+                ['#budget-comparison', 'Budget', 'Budget'],
+                ['#job-market', 'Job market', 'Arbetsmarknad'],
+                ['#sweden', 'Welfare', 'Välfärd'],
+                ['#analysis', 'Statistical analyses', 'Statistiska analyser'],
+                ['#drugcomb', 'Drug research', 'Läkemedelsforskning'],
+              ]}
+            />
+            <p className="topic-hint">
+              {l(
+                'Choose a subject, then a view. Only the selected content is shown.',
+                'Välj ett ämne och sedan en vy. Bara det valda innehållet visas.',
+              )}
+            </p>
+          </div>
+        )}
+
         <Suspense
           fallback={
             <div className="loading" role="status">
@@ -705,11 +725,20 @@ function App() {
                 <p className="eyebrow">
                   {t('Personal research · Swedish politics')}
                 </p>
-                <h1>{t('Swedish politics, in the records.')}</h1>
+                <h1>
+                  {politicsView === 'budgets'
+                    ? l('Compare budgets', 'Jämför budgetar')
+                    : t('Swedish politics, in the records.')}
+                </h1>
                 <p>
-                  {t(
-                    'Speeches, proposed spending and formal decisions in one place. I built this to make it easier to follow what politicians actually do and check the original sources.',
-                  )}
+                  {politicsView === 'budgets'
+                    ? l(
+                        'Choose proposals, comparisons or actual spending. Adjust the chart to the year and party you want to examine.',
+                        'Välj förslag, jämförelser eller faktiskt utfall. Anpassa grafen efter år och parti du vill undersöka.',
+                      )
+                    : t(
+                        'Speeches, proposed spending and formal decisions in one place. I built this to make it easier to follow what politicians actually do and check the original sources.',
+                      )}
                 </p>
                 <p className="welfare-links">
                   <a href="#now">
@@ -720,54 +749,70 @@ function App() {
                   </a>
                 </p>
               </div>
-              <nav
-                className="page-tabs"
-                aria-label={t('Politics report views')}
-              >
-                <a
-                  href="#politics"
-                  aria-current={
-                    politicsView === 'overview' ? 'page' : undefined
-                  }
+              {politicsView !== 'budgets' && (
+                <nav
+                  className="page-tabs"
+                  aria-label={t('Politics report views')}
                 >
-                  {t('Decisions')}
-                </a>
-                <a
-                  href="#data-explorer"
-                  aria-current={
-                    politicsView === 'speeches' ? 'page' : undefined
-                  }
-                >
-                  {t('Speeches')}
-                </a>
-                <a
-                  href="#budget-comparison"
-                  aria-current={politicsView === 'budgets' ? 'page' : undefined}
-                >
-                  {t('Budgets')}
-                </a>
-                <a
-                  href="#debates"
-                  aria-current={
-                    politicsView === 'language' ? 'page' : undefined
-                  }
-                >
-                  {t('Language map')}
-                </a>
-                <a
-                  href="#raw-data"
-                  aria-current={politicsView === 'data' ? 'page' : undefined}
-                >
-                  {t('Data & methods')}
-                </a>
-              </nav>
+                  <a
+                    href="#politics"
+                    aria-current={
+                      politicsView === 'overview' ? 'page' : undefined
+                    }
+                  >
+                    {t('Decisions')}
+                  </a>
+                  <a
+                    href="#data-explorer"
+                    aria-current={
+                      politicsView === 'speeches' ? 'page' : undefined
+                    }
+                  >
+                    {t('Speeches')}
+                  </a>
+                  <a href="#budget-comparison">{t('Budgets')}</a>
+                  <a
+                    href="#debates"
+                    aria-current={
+                      politicsView === 'language' ? 'page' : undefined
+                    }
+                  >
+                    {t('Language map')}
+                  </a>
+                  <a
+                    href="#raw-data"
+                    aria-current={politicsView === 'data' ? 'page' : undefined}
+                  >
+                    {t('Data & methods')}
+                  </a>
+                </nav>
+              )}
               <div className="reports" id="reports">
                 {politicsView === 'overview' && <PoliticsLab />}
                 {politicsView === 'speeches' && <SpeechBrowser />}
                 {politicsView === 'budgets' && (
                   <>
-                    <BudgetLab />
-                    <BudgetOutturn />
+                    <TopicNav
+                      active={
+                        hash === '#budget-comparison'
+                          ? '#budget-proposals'
+                          : hash
+                      }
+                      items={[
+                        ['#budget-proposals', '1. Proposals', '1. Förslag'],
+                        ['#budget-explore', '2. Compare', '2. Jämför'],
+                        ['#budget-outturn', '3. Outcomes', '3. Utfall'],
+                      ]}
+                    />
+                    {hash === '#budget-outturn' ? (
+                      <BudgetOutturn />
+                    ) : (
+                      <BudgetLab
+                        view={
+                          hash === '#budget-explore' ? 'explore' : 'proposals'
+                        }
+                      />
+                    )}
                   </>
                 )}
                 {politicsView === 'language' && (
@@ -1282,12 +1327,12 @@ function App() {
           )}
           {page === 'welfare' && (
             <Suspense fallback={<div className="loading">{t('Loading…')}</div>}>
-              <WelfarePage />
+              <WelfarePage view={hash} />
             </Suspense>
           )}
           {page === 'now' && (
             <Suspense fallback={<div className="loading">{t('Loading…')}</div>}>
-              <NowPage />
+              <NowPage view={hash} />
             </Suspense>
           )}
           {page === 'issue' && (
@@ -1297,7 +1342,7 @@ function App() {
           )}
           {page === 'analysis' && (
             <Suspense fallback={<div className="loading">{t('Loading…')}</div>}>
-              <AnalysisPage />
+              <AnalysisPage view={hash} />
             </Suspense>
           )}
           {page === 'status' && (

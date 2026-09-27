@@ -65,7 +65,7 @@ test('decisions and law provisions are readable without leaving the site', async
   await expect(full).not.toContainText('dokumentstatus')
   expect(context.pages()).toHaveLength(1)
   await expect(page).toHaveURL(/#now-decisions$/)
-  await page.getByText('Read laws on this page', { exact: true }).click()
+  await page.locator('.topic-tabs a[href="#now-laws"]').click()
   await page.getByLabel('Law snapshot').selectOption('sfs-1976-580')
   await page.locator('.law-text summary').first().click()
   await expect(page.locator('.law-text .source-text')).toBeVisible()
@@ -79,7 +79,7 @@ test('three budget views retain filters, signed bars and all source rows', async
   page,
 }) => {
   await page.goto('/#budget-comparison')
-  await expect(page.locator('[data-testid^="budget-chart-"]')).toHaveCount(3)
+  await expect(page.locator('[data-testid^="budget-chart-"]')).toHaveCount(1)
   const proposals = page.getByTestId('budget-chart-proposals')
   await expect(proposals.locator('.comparison-bar-row')).toHaveCount(7)
   await proposals
@@ -93,6 +93,8 @@ test('three budget views retain filters, signed bars and all source rows', async
     .getByRole('combobox', { name: 'View', exact: true })
     .selectOption('amount')
   await expect(proposals.locator('.comparison-track.amount')).toHaveCount(27)
+  await page.locator('.topic-tabs a[href="#budget-explore"]').click()
+  await expect(page.locator('[data-testid^="budget-chart-"]')).toHaveCount(1)
   const explore = page.getByTestId('budget-chart-explore')
   for (const mode of [
     'scatter',
@@ -112,6 +114,8 @@ test('three budget views retain filters, signed bars and all source rows', async
     'ALL',
   )
   await expect(explore.locator('.budget-trend')).toHaveCount(1)
+  await page.locator('.topic-tabs a[href="#budget-outturn"]').click()
+  await expect(page.locator('[data-testid^="budget-chart-"]')).toHaveCount(1)
   const outturn = page.getByTestId('budget-chart-outturn')
   await outturn
     .getByRole('combobox', { name: 'View', exact: true })

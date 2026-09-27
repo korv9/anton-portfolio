@@ -4,7 +4,7 @@ import AxeBuilder from '@axe-core/playwright'
 test('budget corpus and NLP choices update all comparison data', async ({
   page,
 }) => {
-  await page.goto('/#budget-comparison')
+  await page.goto('/#budget-explore')
   const budget = page.locator('#budget-comparison')
   await budget
     .getByText('All party proposals and their largest changes')
