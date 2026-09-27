@@ -24,6 +24,7 @@ const BudgetOutturn = lazy(() => import('./BudgetOutturn'))
 const PoliticsLab = lazy(() => import('./politics/PoliticsLab'))
 const WelfarePage = lazy(() => import('./welfare/WelfarePage'))
 const StatusPage = lazy(() => import('./status/StatusPage'))
+const AnalysisPage = lazy(() => import('./analysis/AnalysisPage'))
 
 type UmapPoint = {
   chunk_id: string
@@ -299,6 +300,7 @@ function pageFromHash(hash: string) {
   if (hash === '#homie') return 'homie'
   if (hash === '#sweden') return 'welfare'
   if (hash === '#status') return 'status'
+  if (hash === '#analysis') return 'analysis'
   return 'home'
 }
 
@@ -541,6 +543,9 @@ function App() {
           </a>
           <a href="#sweden" onClick={() => setMenuOpen(false)}>
             {l('Sweden', 'Sverige')}
+          </a>
+          <a href="#analysis" onClick={() => setMenuOpen(false)}>
+            {l('Analyses', 'Analyser')}
           </a>
           <a href="#drugcomb" onClick={() => setMenuOpen(false)}>
             {t('DrugComb')}
@@ -1246,6 +1251,11 @@ function App() {
           {page === 'welfare' && (
             <Suspense fallback={<div className="loading">{t('Loading…')}</div>}>
               <WelfarePage />
+            </Suspense>
+          )}
+          {page === 'analysis' && (
+            <Suspense fallback={<div className="loading">{t('Loading…')}</div>}>
+              <AnalysisPage />
             </Suspense>
           )}
           {page === 'status' && (

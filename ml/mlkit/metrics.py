@@ -120,6 +120,39 @@ def auc(truth: np.ndarray, scores: np.ndarray) -> float:
     return float(roc_auc_score(truth, scores))
 
 
+def within_group_pairwise_auc(truth: np.ndarray, scores: np.ndarray, labels: list,
+                              groups: np.ndarray, min_comparisons: int = 50) -> dict:
+    """Mean pairwise AUC counting only comparisons between rows of the same group.
+
+    AUC is the probability that a row of party B scores higher for B than a row of party A.
+    Restricting those comparisons to rows from the same debate holds the subject fixed:
+    within one debate every party talks about the same matter, so words that merely mark
+    the subject cannot separate them. What separation remains is how, not what, they say.
+    Comparisons are pooled over debates, so a debate counts in proportion to its pairs.
+    """
+    pairs = []
+    for i, left in enumerate(labels):
+        for right in labels[i + 1:]:
+            column = labels.index(right)
+            concordant, total = 0.0, 0
+            for group in np.unique(groups):
+                in_group = groups == group
+                low = np.sort(scores[in_group & (truth == left), column])
+                high = scores[in_group & (truth == right), column]
+                if not len(low) or not len(high):
+                    continue
+                below = np.searchsorted(low, high, side="left")
+                ties = np.searchsorted(low, high, side="right") - below
+                concordant += float(below.sum() + 0.5 * ties.sum())
+                total += len(low) * len(high)
+            if total >= min_comparisons:
+                pairs.append({"pair": f"{left}-{right}", "auc": concordant / total,
+                              "comparisons": total})
+    if not pairs:
+        return {"mean_auc": None, "pairs": []}
+    return {"mean_auc": float(np.mean([p["auc"] for p in pairs])), "pairs": pairs}
+
+
 def mean_pairwise_auc(truth: np.ndarray, scores: np.ndarray, labels: list) -> dict:
     """Mean one-versus-one AUC across every party pair.
 

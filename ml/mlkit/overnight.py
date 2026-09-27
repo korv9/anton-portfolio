@@ -7,7 +7,7 @@ nothing does nothing. A job that fails is recorded and the queue continues, beca
 a whole night to one traceback is the failure mode worth designing against.
 
 Nothing here publishes. Output lands in ml/runs/<run_id>/ and reaches the site only through
-an explicit promote.
+an explicit `python -m mlkit.promote <run_id>`.
 """
 from __future__ import annotations
 

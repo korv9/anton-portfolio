@@ -85,9 +85,8 @@ def write_report(run_dir: Path, results: list[dict], started: str, elapsed: floa
     if partial:
         lines += ["", "## Partial", ""]
         lines += [f"- {r['task']}: {r.get('note', '')}" for r in partial]
-    lines += ["", "Nothing here is published. Promotion is a deliberate, manual step for a "
-              f"passing run (`{run_dir.name}`); see open question 4 in "
-              "docs/plans/ml-layer-plan.md.", ""]
+    lines += ["", "Nothing here is published. Publish the passing tasks of this run with:", "",
+              "```bash", f"python -m mlkit.promote {run_dir.name}", "```", ""]
     path = run_dir / "report.md"
     path.write_text("\n".join(lines), encoding="utf-8")
     (run_dir / "results.json").write_text(

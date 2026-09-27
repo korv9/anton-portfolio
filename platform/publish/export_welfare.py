@@ -5,6 +5,9 @@ JSON, served by the site, for first paint:
     welfare/regions.json        dim_region
     welfare/county-year.json    mart_county_year_overview
     welfare/headlines.json      latest national value per indicator and the one before it
+    welfare/panel-county-year.json   mart_county_year_panel, the analysis page's county scatter
+    welfare/national-month.json      mart_national_month, Sweden month by month
+    welfare/ess-countries.json       mart_ess_country_round for Sweden, the Nordics and EU-27
     welfare/run.json            when each source was fetched, row counts and dbt test results
 
 Parquet, served from object storage, for filtering in the browser:
@@ -223,6 +226,19 @@ def main() -> None:
     write_json(OUT / "regions.json", clean(regions))
     write_json(OUT / "county-year.json", clean(county_year))
     write_json(OUT / "headlines.json", clean(headlines))
+    # Small serving marts as JSON for the analysis page, so it renders without object
+    # storage. Every column is already aggregated by its rule in dbt.
+    write_json(OUT / "panel-county-year.json", clean(records(connection, """
+        select * exclude (year_start) from gold.mart_county_year_panel
+        order by year, region_code""")))
+    write_json(OUT / "national-month.json", clean(records(connection, """
+        select * exclude (period_key) from gold.mart_national_month order by month_start""")))
+    write_json(OUT / "ess-countries.json", clean(records(connection, """
+        select m.*, r.reference_year
+        from gold.mart_ess_country_round as m
+        join gold.dim_period as r using (period_key)
+        where m.unit_code in ('SE', 'NORDIC', 'EU27', 'NO', 'DK', 'FI', 'DE')
+        order by m.unit_code, r.reference_year""")))
 
     if PARQUET.exists():
         shutil.rmtree(PARQUET)

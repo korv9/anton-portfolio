@@ -140,7 +140,9 @@ def speech_texts(cards: list[dict]) -> list[dict]:
                 # ('Statsrådet ULF KRISTERSSON (M) replik', 'Ulf Kristersson'), so the
                 # Riksdag's person id is the grouping key. The name is the fallback.
                 person = (speech.get("person_id") or "").strip()
+                # A debate is one section of a protocol: the shard plus its first speech.
                 out.append({**card, "text": speech["speech_text"],
+                            "debate": f"{card['path']}#{card['first']}",
                             "person": person or _normalise_speaker(card["speaker"])})
         return out
 

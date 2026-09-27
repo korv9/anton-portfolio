@@ -11,8 +11,12 @@ stand alone:
                 with its own vocabulary adds easy pairs and lifts the all-party mean
                 without the established parties moving; SD from 2010 and NyD in 1993/94
                 are the cases here
-  topic         not controlled. Parties that talk about different things separate more
-                easily; the card says so rather than implying otherwise
+  topic         AUC counting only comparisons within the same debate, where every party
+                talks about the same matter, so subject words cannot separate them
+
+Party names are masked before training. Members name their own party constantly ('vi
+socialdemokrater', 'Moderaterna anser', '(M)'), so without masking the classifier reads the
+label off the text: in 2020/21 that alone was worth 0.09 AUC.
 
 Speeches from issue debates and party-leader debates are both used. Folds are grouped by the
 Riksdag's person id: the speaker string varies for one person across titles and sessions, so
@@ -26,6 +30,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from collections import Counter
 from pathlib import Path
 
@@ -42,6 +47,17 @@ BERT_MAX_LEN = 256
 BERT_BATCH = 16
 BERT_EPOCHS = 2
 MIN_PER_PARTY = 25
+# Party names, members' nouns and abbreviations, historical names included. Words that mark
+# government or opposition are left in: that is the role effect, reported separately.
+PARTY_NAMES = re.compile(
+    r"\b(socialdemokrat\w*|sossar\w*|moderat\w*|centerpartis?t?\w*|centern\w*|"
+    r"liberal\w*|folkpartis?t?\w*|kristdemokrat\w*|vänsterpartis?t?\w*|vänstern\w*|"
+    r"miljöpartis?t?\w*|sverigedemokrat\w*|ny\s+demokrati\w*|"
+    r"s|m|c|l|kd|v|mp|sd|fp|nyd)\b", re.IGNORECASE)
+
+
+def _mask_party_names(rows: list[dict]) -> list[dict]:
+    return [{**row, "text": PARTY_NAMES.sub(" ", row["text"])} for row in rows]
 # In the Riksdag every session measured, so a trend over them is not a change of cast.
 CORE_PARTIES = {"S", "M", "C", "L", "KD", "V", "MP"}
 SD_ENTRY = "2010/11"
@@ -116,7 +132,12 @@ def _session_auc(rows: list[dict], seed: int = 0) -> dict | None:
     predicted = np.array([order[i] for i in scores.argmax(1)])
     permuted = metrics.permutation_test(
         metrics.macro_f1, parties[split.test], predicted, iterations=300, seed=seed)
+    debates = np.array([r["debate"] for r in rows])
+    within = metrics.within_group_pairwise_auc(
+        parties[split.test], scores, order, debates[split.test])
     return {"mean_auc": pairwise["mean_auc"], "pairs": pairwise["pairs"],
+            "within_debate_auc": within["mean_auc"],
+            "within_debate_comparisons": sum(p["comparisons"] for p in within["pairs"]),
             "permutation": permuted, "passages": len(rows), "parties": labels}
 
 
@@ -204,7 +225,8 @@ def run(job_dir: Path, device: str, cached: dict, force: bool,
     kinds = Counter(c["kind"] for c in cards)
     inputs = {"sessions": len(sessions), "cards": len(cards),
               "bert": BERT_SESSIONS if transformers else [], "group": "person_id",
-              "core": sorted(CORE_PARTIES)}
+              "core": sorted(CORE_PARTIES), "topic": "within-debate",
+              "masked": "party-names"}
     key = hashlib.sha256(json.dumps(inputs, sort_keys=True).encode()).hexdigest()[:16]
     if not force and key in cached:
         print(f"  cached, skipping ({cached[key].parent.name})", flush=True)
@@ -212,8 +234,8 @@ def run(job_dir: Path, device: str, cached: dict, force: bool,
 
     per_session, seeds, texts = {}, [0, 1, 2], {}
     for session in sessions:
-        subset = texts[session] = data.speech_texts(
-            [c for c in cards if c["session"] == session])
+        subset = texts[session] = _mask_party_names(data.speech_texts(
+            [c for c in cards if c["session"] == session]))
         if len(subset) < MIN_PER_PARTY * 2:
             continue
         runs = [r for r in (_session_auc(subset, seed) for seed in seeds) if r]
@@ -236,11 +258,18 @@ def run(job_dir: Path, device: str, cached: dict, force: bool,
                                          seed) for seed in seeds) if r]
         if core:
             per_session[session]["core_auc"] = float(np.mean([r["mean_auc"] for r in core]))
+            within = [r["within_debate_auc"] for r in core if r["within_debate_auc"] is not None]
+            if within:
+                per_session[session]["core_within_debate_auc"] = float(np.mean(within))
+                per_session[session]["core_within_debate_comparisons"] = \
+                    core[0]["within_debate_comparisons"]
             per_session[session]["core_passages"] = core[0]["passages"]
         print(f"  {session}: AUC {per_session[session]['mean_auc']:.3f} "
               f"(p={per_session[session]['permutation_p']:.3f}, "
               f"{per_session[session]['passages']} passages; seven parties "
-              f"{per_session[session].get('core_auc', float('nan')):.3f})", flush=True)
+              f"{per_session[session].get('core_auc', float('nan')):.3f}, within debates "
+              f"{per_session[session].get('core_within_debate_auc', float('nan')):.3f})",
+              flush=True)
 
     if not per_session:
         raise RuntimeError("No session had enough balanced passages")
@@ -271,6 +300,9 @@ def run(job_dir: Path, device: str, cached: dict, force: bool,
     core_ordered = [s for s in ordered if "core_auc" in per_session[s]]
     core_values = [per_session[s]["core_auc"] for s in core_ordered]
     core_trend, core_trend_se = _trend(core_values)
+    topic_ordered = [s for s in ordered if "core_within_debate_auc" in per_session[s]]
+    topic_values = [per_session[s]["core_within_debate_auc"] for s in topic_ordered]
+    topic_trend, _ = _trend(topic_values)
 
     def era_mean(sessions, field):
         before = [per_session[s][field] for s in sessions if s < SD_ENTRY]
@@ -280,9 +312,11 @@ def run(job_dir: Path, device: str, cached: dict, force: bool,
 
     all_before, all_after = era_mean(ordered, "mean_auc")
     core_before, core_after = era_mean(core_ordered, "core_auc")
+    topic_before, topic_after = era_mean(topic_ordered, "core_within_debate_auc")
     print(f"  all parties: {all_before:.3f} before {SD_ENTRY}, {all_after:.3f} from it, "
           f"trend {trend:+.4f}; seven parties: {core_before:.3f}, {core_after:.3f}, "
-          f"trend {core_trend:+.4f}", flush=True)
+          f"trend {core_trend:+.4f}; seven parties within debates: {topic_before:.3f}, "
+          f"{topic_after:.3f}, trend {topic_trend:+.4f}", flush=True)
     headline = float(np.mean(values))
     spread = f"{min(values):.3f} to {max(values):.3f}"
     bert_note = ("not run: this run used --no-transformers (no GPU)" if not transformers
@@ -294,7 +328,9 @@ def run(job_dir: Path, device: str, cached: dict, force: bool,
                     "trend": trend, "trend_se": trend_se,
                     "core_parties": sorted(CORE_PARTIES), "core_trend": core_trend,
                     "core_trend_se": core_trend_se,
-                    "eras": {"all": [all_before, all_after], "core": [core_before, core_after]}},
+                    "topic_trend": topic_trend,
+                    "eras": {"all": [all_before, all_after], "core": [core_before, core_after],
+                             "core_within_debate": [topic_before, topic_after]}},
                    ensure_ascii=False, indent=1), encoding="utf-8")
 
     # Gate: separability must be distinguishable from the permutation floor in most sessions.
@@ -337,6 +373,9 @@ def run(job_dir: Path, device: str, cached: dict, force: bool,
                 "same seven parties throughout (S, M, C, L, KD, V, MP)":
                     f"mean AUC {core_before:.3f} before {SD_ENTRY} and {core_after:.3f} from "
                     f"it; trend {core_trend:+.4f} per session",
+                "same seven parties, compared only within the same debate":
+                    f"mean AUC {topic_before:.3f} before {SD_ENTRY} and {topic_after:.3f} "
+                    f"from it; trend {topic_trend:+.4f} per session",
                 "all parties, same eras":
                     f"{all_before:.3f} before {SD_ENTRY} and {all_after:.3f} from it",
                 "speech cards with a party":
@@ -346,7 +385,8 @@ def run(job_dir: Path, device: str, cached: dict, force: bool,
                 "seeds per session": len(seeds),
             },
             "split":
-                "Grouped by person (the Riksdag's person id): no member appears in both folds, "
+                "Party names and abbreviations are masked in the text first, so the label "
+                "cannot be read off self-references. Grouped by person (the Riksdag's person id): no member appears in both folds, "
                 "so the classifier cannot win by recognising an individual. Each session is "
                 "measured three times with different balanced samples. The headline is the "
                 "mean over sessions; the per-session range is in Data, not an interval.",
@@ -362,7 +402,8 @@ def run(job_dir: Path, device: str, cached: dict, force: bool,
                                f"mean AUC {headline:.3f}."},
             "limitations": [
                 "Separability is not polarization. A rising line may mean parties changed "
-                "subject rather than changed position; topic is not controlled.",
+                "subject rather than changed position. The within-debate measure holds the "
+                "matter fixed, but not the angle each party takes on it.",
                 "Issue debates dominate the corpus. Who speaks in them follows committee "
                 "seats, so a party's sample leans towards its committee members' subjects.",
                 "The all-party mean rises when a party with a distinct vocabulary enters "
@@ -374,6 +415,8 @@ def run(job_dir: Path, device: str, cached: dict, force: bool,
                 "categorisation, so early points rest on less evidence.",
                 "Equal passages per party removes volume effects but discards data from "
                 "parties that spoke most.",
+                "Masking removes party names but not other giveaways, such as the names of "
+                "party leaders or ministers, so some label leakage may remain.",
                 "No per-speaker output. The measure is defined only in aggregate.",
             ],
         },

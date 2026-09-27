@@ -32,6 +32,8 @@ type Props = {
   format: (value: number) => string
   /** Colour index per series key, so a series keeps its colour when others are removed. */
   colorOf: (key: string) => number
+  /** Fixed bottom of the y axis, for measures whose floor is not zero (AUC: 0.5). */
+  yFrom?: number
 }
 
 const WIDTH = 900
@@ -49,6 +51,7 @@ export default function MultiLineChart({
   label,
   format,
   colorOf,
+  yFrom,
 }: Props) {
   const svg = useRef<SVGSVGElement>(null)
   const [hover, setHover] = useState<number | null>(null)
@@ -65,7 +68,7 @@ export default function MultiLineChart({
     const max = Math.max(...values)
     const min = Math.min(...values)
     // Zero baseline unless the series live in a narrow band well above it.
-    const from = min > 0 && min > max * 0.6 ? Math.floor(min) : 0
+    const from = yFrom ?? (min > 0 && min > max * 0.6 ? Math.floor(min) : 0)
     const ticks = niceTicks(max - from).map((tick) => tick + from)
     const times = all.map((p) => time(p.date))
     const t0 = Math.min(...times)
@@ -85,7 +88,7 @@ export default function MultiLineChart({
     for (let year = firstYear; year <= lastYear; year += step) years.push(year)
     const dates = [...new Set(all.map((p) => p.date))].sort()
     return { x, y, ticks, years, dates }
-  }, [series, plotW, plotH])
+  }, [series, plotW, plotH, yFrom])
 
   if (!series.length || !dates.length) return null
 

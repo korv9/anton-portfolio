@@ -1,0 +1,83 @@
+/* Analysis page: county scatter, model register. Charts reuse the welfare chart styles. */
+
+.analysis-page .slicers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: end;
+  margin-bottom: 1rem;
+}
+.analysis-stat {
+  margin: 0 0 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+.analysis-stat span {
+  color: var(--muted);
+}
+.axis-title {
+  font-size: 13px;
+  font-weight: 700;
+  fill: var(--muted);
+}
+.scatter-dot {
+  cursor: pointer;
+  outline: none;
+}
+.scatter-dot:focus-visible circle:last-of-type {
+  stroke: var(--ink);
+}
+.scatter-reference {
+  font-weight: 800;
+}
+.analysis-table {
+  margin-top: 0.75rem;
+}
+.analysis-table summary {
+  cursor: pointer;
+  font-weight: 700;
+  color: var(--teal);
+}
+.analysis-eras {
+  max-width: 560px;
+  margin: 1rem 0;
+}
+.model-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+}
+.model-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 1.1rem;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+}
+.model-card h3 {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.35;
+}
+.model-card .status-badge {
+  align-self: flex-start;
+  margin: 0;
+}
+.model-card td small {
+  color: var(--muted);
+}
+.model-foot {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: auto 0 0;
+  font-size: 0.8rem;
+}
+.model-foot a {
+  color: var(--teal);
+  font-weight: 700;
+}
+.scatter-chart svg {
+  min-width: 0;
+}
