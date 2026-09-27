@@ -1,3 +1,5 @@
+{{ config(tags=["parliament"]) }}
+
 -- The long history is built from Riksdagen's roll-call files; the detailed evidence layer of
 -- recent sessions was built independently from the same files. Every party result that layer
 -- delivers must have an identical row here: the same yes, no, abstain and absent counts.
