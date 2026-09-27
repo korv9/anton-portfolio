@@ -7,6 +7,10 @@ stand alone:
   permutation   shuffled party labels, to show what the floor actually is
   role          the governing parties are listed per session, since being in office
                 changes the register regardless of position
+  composition   the same seven parties throughout (S, M, C, L, KD, V, MP). A new party
+                with its own vocabulary adds easy pairs and lifts the all-party mean
+                without the established parties moving; SD from 2010 and NyD in 1993/94
+                are the cases here
   topic         not controlled. Parties that talk about different things separate more
                 easily; the card says so rather than implying otherwise
 
@@ -38,6 +42,17 @@ BERT_MAX_LEN = 256
 BERT_BATCH = 16
 BERT_EPOCHS = 2
 MIN_PER_PARTY = 25
+# In the Riksdag every session measured, so a trend over them is not a change of cast.
+CORE_PARTIES = {"S", "M", "C", "L", "KD", "V", "MP"}
+SD_ENTRY = "2010/11"
+
+
+def _trend(values: list[float]) -> tuple[float, float | None]:
+    """OLS slope per session and its standard error (too small: sessions are correlated)."""
+    if len(values) < 3:
+        return 0.0, None
+    (slope, _), covariance = np.polyfit(range(len(values)), values, 1, cov=True)
+    return float(slope), float(np.sqrt(covariance[0, 0]))
 # Governing parties for most of each session (October to September), for the role
 # control. Source: Regeringskansliet. 2021/22: S with MP until 30 November 2021, S alone after.
 GOVERNMENT = {
@@ -188,7 +203,8 @@ def run(job_dir: Path, device: str, cached: dict, force: bool,
     sessions = sorted({c["session"] for c in cards})
     kinds = Counter(c["kind"] for c in cards)
     inputs = {"sessions": len(sessions), "cards": len(cards),
-              "bert": BERT_SESSIONS if transformers else [], "group": "person_id"}
+              "bert": BERT_SESSIONS if transformers else [], "group": "person_id",
+              "core": sorted(CORE_PARTIES)}
     key = hashlib.sha256(json.dumps(inputs, sort_keys=True).encode()).hexdigest()[:16]
     if not force and key in cached:
         print(f"  cached, skipping ({cached[key].parent.name})", flush=True)
@@ -216,9 +232,15 @@ def run(job_dir: Path, device: str, cached: dict, force: bool,
             "governing_parties": sorted(governing),
             "pairs": runs[0]["pairs"],
         }
+        core = [r for r in (_session_auc([row for row in subset if row["party"] in CORE_PARTIES],
+                                         seed) for seed in seeds) if r]
+        if core:
+            per_session[session]["core_auc"] = float(np.mean([r["mean_auc"] for r in core]))
+            per_session[session]["core_passages"] = core[0]["passages"]
         print(f"  {session}: AUC {per_session[session]['mean_auc']:.3f} "
               f"(p={per_session[session]['permutation_p']:.3f}, "
-              f"{per_session[session]['passages']} passages)", flush=True)
+              f"{per_session[session]['passages']} passages; seven parties "
+              f"{per_session[session].get('core_auc', float('nan')):.3f})", flush=True)
 
     if not per_session:
         raise RuntimeError("No session had enough balanced passages")
@@ -244,13 +266,23 @@ def run(job_dir: Path, device: str, cached: dict, force: bool,
 
     ordered = sorted(per_session)
     values = [per_session[s]["mean_auc"] for s in ordered]
-    if len(values) > 2:
-        # Slope per session with its standard error. Sessions are consecutive years, so this
-        # is a descriptive trend, not a test: neighbouring sessions share speakers and issues.
-        (trend, _), covariance = np.polyfit(range(len(values)), values, 1, cov=True)
-        trend, trend_se = float(trend), float(np.sqrt(covariance[0, 0]))
-    else:
-        trend, trend_se = 0.0, None
+    # Descriptive trends, not tests: neighbouring sessions share speakers and issues.
+    trend, trend_se = _trend(values)
+    core_ordered = [s for s in ordered if "core_auc" in per_session[s]]
+    core_values = [per_session[s]["core_auc"] for s in core_ordered]
+    core_trend, core_trend_se = _trend(core_values)
+
+    def era_mean(sessions, field):
+        before = [per_session[s][field] for s in sessions if s < SD_ENTRY]
+        after = [per_session[s][field] for s in sessions if s >= SD_ENTRY]
+        return (float(np.mean(before)) if before else None,
+                float(np.mean(after)) if after else None)
+
+    all_before, all_after = era_mean(ordered, "mean_auc")
+    core_before, core_after = era_mean(core_ordered, "core_auc")
+    print(f"  all parties: {all_before:.3f} before {SD_ENTRY}, {all_after:.3f} from it, "
+          f"trend {trend:+.4f}; seven parties: {core_before:.3f}, {core_after:.3f}, "
+          f"trend {core_trend:+.4f}", flush=True)
     headline = float(np.mean(values))
     spread = f"{min(values):.3f} to {max(values):.3f}"
     bert_note = ("not run: this run used --no-transformers (no GPU)" if not transformers
@@ -259,7 +291,10 @@ def run(job_dir: Path, device: str, cached: dict, force: bool,
 
     (job_dir / "per_session.json").write_text(
         json.dumps({"tfidf": per_session, "bert": bert, "agreement": agreement,
-                    "trend": trend, "trend_se": trend_se},
+                    "trend": trend, "trend_se": trend_se,
+                    "core_parties": sorted(CORE_PARTIES), "core_trend": core_trend,
+                    "core_trend_se": core_trend_se,
+                    "eras": {"all": [all_before, all_after], "core": [core_before, core_after]}},
                    ensure_ascii=False, indent=1), encoding="utf-8")
 
     # Gate: separability must be distinguishable from the permutation floor in most sessions.
@@ -299,6 +334,11 @@ def run(job_dir: Path, device: str, cached: dict, force: bool,
                 "trend": f"{trend:+.4f} AUC per session"
                          + (f" (OLS standard error {trend_se:.4f}, too small: neighbouring "
                             "sessions share members and issues)" if trend_se else ""),
+                "same seven parties throughout (S, M, C, L, KD, V, MP)":
+                    f"mean AUC {core_before:.3f} before {SD_ENTRY} and {core_after:.3f} from "
+                    f"it; trend {core_trend:+.4f} per session",
+                "all parties, same eras":
+                    f"{all_before:.3f} before {SD_ENTRY} and {all_after:.3f} from it",
                 "speech cards with a party":
                     f"{len(cards):,} ({kinds.get('issues', 0):,} issue debates, "
                     f"{kinds.get('leaders', 0):,} party-leader debates)",
@@ -325,6 +365,9 @@ def run(job_dir: Path, device: str, cached: dict, force: bool,
                 "subject rather than changed position; topic is not controlled.",
                 "Issue debates dominate the corpus. Who speaks in them follows committee "
                 "seats, so a party's sample leans towards its committee members' subjects.",
+                "The all-party mean rises when a party with a distinct vocabulary enters "
+                "(SD from 2010/11, NyD in 1993/94). Read change over time from the seven-"
+                "party measure, which holds the cast fixed.",
                 "Governing parties are listed per session so the role effect can be read "
                 "alongside the trend; being in office changes register regardless of position.",
                 "Coverage differs by session. Older sessions have fewer speeches and coarser "
