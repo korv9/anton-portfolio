@@ -1,6 +1,6 @@
 # How distinguishable party language is, by session
 
-Task `polarization` · run `20260926-2115` · gate **passed**
+Task `polarization` · run `20260927-1158` · gate **passed**
 
 ## What the label means
 
@@ -14,6 +14,8 @@ The label is the speaker's party. The measure is how well a classifier separates
 - passages per session: equal per party, minimum 25 per party to qualify
 - per-session AUC range: 0.671 to 0.744
 - trend: +0.0016 AUC per session (OLS standard error 0.0003, too small: neighbouring sessions share members and issues)
+- same seven parties throughout (S, M, C, L, KD, V, MP): mean AUC 0.690 before 2010/11 and 0.715 from it; trend +0.0014 per session
+- all parties, same eras: 0.694 before 2010/11 and 0.727 from it
 - speech cards with a party: 254,820 (244,725 issue debates, 10,095 party-leader debates)
 - source: Issue and party-leader debates, Swedish Parliament open data
 - seeds per session: 3
@@ -39,6 +41,7 @@ Outcome: **passed**. 33 of 33 sessions significant; mean AUC 0.710.
 
 - Separability is not polarization. A rising line may mean parties changed subject rather than changed position; topic is not controlled.
 - Issue debates dominate the corpus. Who speaks in them follows committee seats, so a party's sample leans towards its committee members' subjects.
+- The all-party mean rises when a party with a distinct vocabulary enters (SD from 2010/11, NyD in 1993/94). Read change over time from the seven-party measure, which holds the cast fixed.
 - Governing parties are listed per session so the role effect can be read alongside the trend; being in office changes register regardless of position.
 - Coverage differs by session. Older sessions have fewer speeches and coarser categorisation, so early points rest on less evidence.
 - Equal passages per party removes volume effects but discards data from parties that spoke most.
