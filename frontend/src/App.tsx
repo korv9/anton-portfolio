@@ -25,6 +25,8 @@ const PoliticsLab = lazy(() => import('./politics/PoliticsLab'))
 const WelfarePage = lazy(() => import('./welfare/WelfarePage'))
 const StatusPage = lazy(() => import('./status/StatusPage'))
 const AnalysisPage = lazy(() => import('./analysis/AnalysisPage'))
+const NowPage = lazy(() => import('./parliament/NowPage'))
+const IssuePage = lazy(() => import('./parliament/IssuePage'))
 
 type UmapPoint = {
   chunk_id: string
@@ -301,6 +303,8 @@ function pageFromHash(hash: string) {
   if (hash === '#sweden') return 'welfare'
   if (hash === '#status') return 'status'
   if (hash === '#analysis') return 'analysis'
+  if (hash === '#now' || hash.startsWith('#now-')) return 'now'
+  if (hash.startsWith('#issue-')) return 'issue'
   return 'home'
 }
 
@@ -345,6 +349,13 @@ function App() {
       else if (hash === '#budget-outturn')
         document
           .getElementById('budget-outturn')
+          ?.scrollIntoView({ block: 'start' })
+      else if (
+        hash.startsWith('#now-') &&
+        document.getElementById(hash.slice(1))
+      )
+        document
+          .getElementById(hash.slice(1))
           ?.scrollIntoView({ block: 'start' })
       else window.scrollTo({ top: 0, behavior: 'auto' })
     })
@@ -535,7 +546,7 @@ function App() {
           <a href="#projects" onClick={() => setMenuOpen(false)}>
             {t('Projects')}
           </a>
-          <a href="#politics" onClick={() => setMenuOpen(false)}>
+          <a href="#now" onClick={() => setMenuOpen(false)}>
             {t('Politics')}
           </a>
           <a href="#job-market" onClick={() => setMenuOpen(false)}>
@@ -686,6 +697,14 @@ function App() {
                   {t(
                     'Speeches, proposed spending and formal decisions in one place. I built this to make it easier to follow what politicians actually do and check the original sources.',
                   )}
+                </p>
+                <p className="welfare-links">
+                  <a href="#now">
+                    {l(
+                      '← Start with where things stand now',
+                      '← Börja med läget just nu',
+                    )}
+                  </a>
                 </p>
               </div>
               <nav
@@ -1251,6 +1270,16 @@ function App() {
           {page === 'welfare' && (
             <Suspense fallback={<div className="loading">{t('Loading…')}</div>}>
               <WelfarePage />
+            </Suspense>
+          )}
+          {page === 'now' && (
+            <Suspense fallback={<div className="loading">{t('Loading…')}</div>}>
+              <NowPage />
+            </Suspense>
+          )}
+          {page === 'issue' && (
+            <Suspense fallback={<div className="loading">{t('Loading…')}</div>}>
+              <IssuePage issueKey={hash.slice('#issue-'.length)} />
             </Suspense>
           )}
           {page === 'analysis' && (

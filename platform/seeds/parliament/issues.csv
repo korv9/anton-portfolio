@@ -1,0 +1,16 @@
+issue_key,issue_name_sv,issue_name_en,expenditure_areas,welfare_indicators,summary_sv
+arbete,Arbete och integration,Jobs and integration,13|14,aku_unemployment_rate|aku_employment_rate,"Arbetsmarknadspolitik, arbetsrätt, jämställdhet och integration."
+bostad,Bostäder och civilrätt,Housing and civil law,18,,"Bostadspolitik, samhällsplanering, konsumentfrågor och civilrätt."
+demokrati,Demokrati och konstitution,Democracy and the constitution,1,kolada_N05403|ess_trstprl|ess_stfdem,"Grundlagarna, valsystemet, granskningen av regeringen och misstroendeförklaringar."
+ekonomi,Ekonomi och statsbudget,Economy and the budget,2|25|26|27,kolada_N00906|kolada_N31807,"Statsbudgetens ramar, finanspolitiken, kommunernas ekonomi och avgiften till EU."
+forsvar,Försvar och krisberedskap,Defence and preparedness,6,,Militärt och civilt försvar och samhällets krisberedskap.
+kultur,Kultur och medier,Culture and media,17,,"Kultur, medier, idrott, trossamfund och folkbildning."
+miljo,Miljö och jordbruk,Environment and agriculture,20|23,,"Klimat, miljö, jordbruk, skogsbruk, fiske och livsmedel."
+naringsliv,Näringsliv och energi,Business and energy,19|21|24,,"Näringspolitik, energi, regional utveckling och statliga bolag."
+rattsvasende,Rättsväsende och brottsbekämpning,Justice and crime,4,kolada_N07403,"Polis, domstolar, kriminalvård, straffrätt och brottsbekämpning."
+skatt,Skatter,Taxes,3,,"Skatter, tullar och Skatteverkets och Tullverkets verksamhet."
+socialforsakring,Socialförsäkringar och migration,Social insurance and migration,8|10|11|12,kolada_N00938|kolada_N00957,"Sjukförsäkring, pensioner, barnbidrag och föräldraförsäkring, samt migration."
+trafik,Trafik och infrastruktur,Transport and infrastructure,22,,"Vägar, järnvägar, luft- och sjöfart, post och telekommunikation."
+utbildning,Utbildning och forskning,Education and research,15|16,kolada_N15428,"Skola, högskola, forskning och studiestöd."
+utrikes,Utrikes och bistånd,Foreign affairs and aid,5|7,,"Utrikespolitik, EU, handel och internationellt bistånd."
+vard,Vård och omsorg,Health and social care,9,kolada_N01452|fk_started_sick_leave_psychiatric,"Hälso- och sjukvård, äldreomsorg, socialtjänst och folkhälsa."

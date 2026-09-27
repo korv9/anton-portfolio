@@ -1,8 +1,9 @@
-name: Refresh welfare data
+name: Refresh public data
 
-# Daily: fetch the five welfare sources, build and test the warehouse, export the site's
-# JSON and the Parquet the browser filters, upload to R2, and commit the delivery files
-# when they changed. The run record (welfare/run.json) is also written to R2 on every run,
+# Daily: fetch the five welfare sources and the parliament sources (Riksdagen roll calls and
+# government-formation news, SCB elections and party preference survey, Valmyndigheten),
+# build and test the warehouse, export the site's JSON and the Parquet the browser filters,
+# upload to R2, and commit the delivery files when they changed. The run record (welfare/run.json) is also written to R2 on every run,
 # so the status page shows when the pipeline last checked, not only when data last moved.
 # Sources publish monthly or quarterly; a daily check keeps the lag under a day.
 
@@ -49,8 +50,20 @@ jobs:
       - run: pip install -r platform/requirements.txt
       - name: Fetch, build and test
         run: python platform/ingest/run_welfare.py
+      # Closed sessions' roll calls never change; keep them between runs instead of
+      # downloading 300 MB of history every day. The two open sessions are always refetched.
+      - name: Restore Riksdagen history
+        uses: actions/cache@v4
+        with:
+          path: warehouse/raw/riksdagen/votes
+          key: riksdagen-votes-${{ github.run_id }}
+          restore-keys: riksdagen-votes-
+      - name: Fetch, build and test parliament
+        run: python platform/ingest/run_parliament.py
       - name: Export delivery files
-        run: python platform/publish/export_welfare.py
+        run: |
+          python platform/publish/export_welfare.py
+          python platform/publish/export_parliament.py
       - name: Upload to R2 and verify
         run: |
           npm run data:catalog
@@ -73,7 +86,7 @@ jobs:
             echo "No data changes."
             echo "changed=false" >> "$GITHUB_OUTPUT"
           else
-            git commit -m "data: refresh welfare sources (run ${GITHUB_RUN_ID})"
+            git commit -m "data: refresh public sources (run ${GITHUB_RUN_ID})"
             git push
             echo "changed=true" >> "$GITHUB_OUTPUT"
           fi

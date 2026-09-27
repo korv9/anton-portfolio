@@ -1,0 +1,632 @@
+{
+ "generated_at": "2026-09-27T15:38+00:00",
+ "election": {
+  "year": 2026,
+  "election_date": "2026-09-13",
+  "count_status": "slutlig",
+  "last_updated": "19 september 2026 14:53:03",
+  "majority": 175,
+  "source": "Valmyndigheten",
+  "parties": [
+   {
+    "party": "S",
+    "name": "Socialdemokraterna",
+    "votes": 1895989.0,
+    "share_pct": 28.02,
+    "seats": 99,
+    "previous_share_pct": 30.3,
+    "previous_seats": 107
+   },
+   {
+    "party": "M",
+    "name": "Moderaterna",
+    "votes": 1343448.0,
+    "share_pct": 19.85,
+    "seats": 70,
+    "previous_share_pct": 19.1,
+    "previous_seats": 68
+   },
+   {
+    "party": "SD",
+    "name": "Sverigedemokraterna",
+    "votes": 1183248.0,
+    "share_pct": 17.48,
+    "seats": 62,
+    "previous_share_pct": 20.5,
+    "previous_seats": 73
+   },
+   {
+    "party": "V",
+    "name": "Vänsterpartiet",
+    "votes": 568781.0,
+    "share_pct": 8.4,
+    "seats": 30,
+    "previous_share_pct": 6.7,
+    "previous_seats": 24
+   },
+   {
+    "party": "C",
+    "name": "Centerpartiet",
+    "votes": 475780.0,
+    "share_pct": 7.03,
+    "seats": 25,
+    "previous_share_pct": 6.7,
+    "previous_seats": 24
+   },
+   {
+    "party": "KD",
+    "name": "Kristdemokraterna",
+    "votes": 417490.0,
+    "share_pct": 6.17,
+    "seats": 22,
+    "previous_share_pct": 5.3,
+    "previous_seats": 19
+   },
+   {
+    "party": "MP",
+    "name": "Miljöpartiet",
+    "votes": 414307.0,
+    "share_pct": 6.12,
+    "seats": 22,
+    "previous_share_pct": 5.1,
+    "previous_seats": 18
+   },
+   {
+    "party": "L",
+    "name": "Liberalerna",
+    "votes": 361187.0,
+    "share_pct": 5.34,
+    "seats": 19,
+    "previous_share_pct": 4.6,
+    "previous_seats": 16
+   },
+   {
+    "party": "OTHER",
+    "name": "Övriga partier",
+    "votes": 107199.0,
+    "share_pct": 1.58,
+    "seats": 0,
+    "previous_share_pct": 1.5,
+    "previous_seats": 0
+   }
+  ]
+ },
+ "government": {
+  "government_key": "kristersson",
+  "government_name": "Regeringen Kristersson",
+  "prime_minister": "Ulf Kristersson",
+  "prime_minister_party": "M",
+  "government_parties": [
+   "M",
+   "KD",
+   "L"
+  ],
+  "start_date": "2022-10-18",
+  "end_date": null,
+  "agreement_name": "Tidöavtalet",
+  "agreement_parties": [
+   "SD"
+  ],
+  "status_note": "Övergångsregering sedan 2026-09-17: statsministern har begärt sitt entledigande och regeringen sitter kvar tills en ny regering har tillträtt",
+  "source_url": "https://www.regeringen.se/artiklar/2026/09/statsministern-leder-en-overgangsregering/",
+  "is_current": true
+ },
+ "formation_news": [
+  {
+   "date": "2026-09-24 15:03",
+   "title": "Upprop, talmansval och riksmötets öppnande",
+   "summary": "Nästa vecka samlas den nya riksdagen och inleder arbetsåret. Måndagen den 28 september är det upprop för ledamöterna. Därefter är det talmansval och anmälan av gruppledare. Samma dag inleds även den allmänna motionstiden. Dagen efter, tisdagen den 29 september, äger riksmötets öppnande rum. Båda dagarnas händelser går att följa på riksdagens webbplats och i sociala medier."
+  },
+  {
+   "date": "2026-09-19 21:40",
+   "title": "Den nya riksdagen efter valet",
+   "summary": "Den 13 september var det val i Sverige. Det slutliga valresultatet är fastställt och nu är det klart hur riksdagens 349 platser, mandat, ska fördelas mellan de åtta partier som fick minst fyra procent av rösterna vid riksdagsvalet 2026."
+  },
+  {
+   "date": "2026-09-18 15:41",
+   "title": "Talmannen ger sonderingsuppdrag till Magdalena Andersson (S)",
+   "summary": "Talman Andreas Norlén har i dag, efter samtal med företrädare för riksdagspartierna och en överläggning med de vice talmännen, gett Magdalena Andersson (S) i uppdrag att sondera förutsättningarna för att bilda regering."
+  },
+  {
+   "date": "2026-09-17 19:57",
+   "title": "Talmannen träffar partiföreträdare",
+   "summary": "Riksdagens talman Andreas Norlén samråder fredagen den 18 september med partiföreträdare. Detta är ett led i processen för att ta fram förslag till ny statsminister."
+  },
+  {
+   "date": "2026-09-17 14:41",
+   "title": "Talmannen inleder process för regeringsbildning",
+   "summary": "Riksdagens talman Andreas Norlén inleder processen med att ta fram förslag till ny statsminister."
+  }
+ ],
+ "poll": {
+  "survey_month": "2026-05-01",
+  "parties": [
+   {
+    "survey_month": "2026-05-01",
+    "party": "S",
+    "share_pct": 33.9,
+    "margin_of_error_pp": 1.2,
+    "change_since_last_survey_pp": null
+   },
+   {
+    "survey_month": "2026-05-01",
+    "party": "M",
+    "share_pct": 17.3,
+    "margin_of_error_pp": 1.0,
+    "change_since_last_survey_pp": null
+   },
+   {
+    "survey_month": "2026-05-01",
+    "party": "SD",
+    "share_pct": 18.3,
+    "margin_of_error_pp": 0.9,
+    "change_since_last_survey_pp": null
+   },
+   {
+    "survey_month": "2026-05-01",
+    "party": "V",
+    "share_pct": 8.6,
+    "margin_of_error_pp": 0.8,
+    "change_since_last_survey_pp": null
+   },
+   {
+    "survey_month": "2026-05-01",
+    "party": "C",
+    "share_pct": 6.1,
+    "margin_of_error_pp": 0.6,
+    "change_since_last_survey_pp": null
+   },
+   {
+    "survey_month": "2026-05-01",
+    "party": "KD",
+    "share_pct": 4.5,
+    "margin_of_error_pp": 0.6,
+    "change_since_last_survey_pp": null
+   },
+   {
+    "survey_month": "2026-05-01",
+    "party": "MP",
+    "share_pct": 6.6,
+    "margin_of_error_pp": 0.7,
+    "change_since_last_survey_pp": null
+   },
+   {
+    "survey_month": "2026-05-01",
+    "party": "L",
+    "share_pct": 2.5,
+    "margin_of_error_pp": 0.5,
+    "change_since_last_survey_pp": null
+   },
+   {
+    "survey_month": "2026-05-01",
+    "party": "OTHER",
+    "share_pct": 2.0,
+    "margin_of_error_pp": 0.5,
+    "change_since_last_survey_pp": null
+   }
+  ]
+ },
+ "latest_session": "2025/26",
+ "latest_decisions": [
+  {
+   "session": "2025/26",
+   "roll_call_id": "8EA8F8A3-AD25-4C70-87D5-62ED1D8EC8DD",
+   "vote_date": "2026-08-13",
+   "designation": "JuU41",
+   "point": "1",
+   "committee_code": "JuU",
+   "committee_name": "Justitieutskottet",
+   "issue_key": "rattsvasende",
+   "title": "Reglerna skärps för unga brottslingar (JuU41)",
+   "report_url": "https://data.riksdagen.se/dokument/HD01JuU41",
+   "yes": 343,
+   "no": 4,
+   "abstain": 0,
+   "absent": 2,
+   "outcome": "yes",
+   "government_won": true,
+   "party_positions": {
+    "KD": "yes",
+    "C": "yes",
+    "S": "yes",
+    "M": "yes",
+    "L": "yes",
+    "V": "yes",
+    "MP": "yes",
+    "SD": "yes"
+   }
+  },
+  {
+   "session": "2025/26",
+   "roll_call_id": "AE49887E-8CF5-4594-9C95-C7CBFE483180",
+   "vote_date": "2026-08-13",
+   "designation": "JuU41",
+   "point": "2",
+   "committee_code": "JuU",
+   "committee_name": "Justitieutskottet",
+   "issue_key": "rattsvasende",
+   "title": "Reglerna skärps för unga brottslingar (JuU41)",
+   "report_url": "https://data.riksdagen.se/dokument/HD01JuU41",
+   "yes": 281,
+   "no": 66,
+   "abstain": 0,
+   "absent": 2,
+   "outcome": "yes",
+   "government_won": true,
+   "party_positions": {
+    "M": "yes",
+    "S": "yes",
+    "V": "no",
+    "MP": "no",
+    "L": "yes",
+    "SD": "yes",
+    "C": "no",
+    "KD": "yes"
+   }
+  },
+  {
+   "session": "2025/26",
+   "roll_call_id": "9BD72659-C4FA-4ED9-B454-0433E008B146",
+   "vote_date": "2026-08-13",
+   "designation": "JuU41",
+   "point": "4",
+   "committee_code": "JuU",
+   "committee_name": "Justitieutskottet",
+   "issue_key": "rattsvasende",
+   "title": "Reglerna skärps för unga brottslingar (JuU41)",
+   "report_url": "https://data.riksdagen.se/dokument/HD01JuU41",
+   "yes": 281,
+   "no": 66,
+   "abstain": 0,
+   "absent": 2,
+   "outcome": "yes",
+   "government_won": true,
+   "party_positions": {
+    "M": "yes",
+    "S": "yes",
+    "V": "no",
+    "MP": "no",
+    "L": "yes",
+    "SD": "yes",
+    "C": "no",
+    "KD": "yes"
+   }
+  },
+  {
+   "session": "2025/26",
+   "roll_call_id": "A3DA22A3-5CB8-4EBC-8895-5F4C45A7F4FB",
+   "vote_date": "2026-08-13",
+   "designation": "JuU41",
+   "point": "5",
+   "committee_code": "JuU",
+   "committee_name": "Justitieutskottet",
+   "issue_key": "rattsvasende",
+   "title": "Reglerna skärps för unga brottslingar (JuU41)",
+   "report_url": "https://data.riksdagen.se/dokument/HD01JuU41",
+   "yes": 280,
+   "no": 66,
+   "abstain": 0,
+   "absent": 3,
+   "outcome": "yes",
+   "government_won": true,
+   "party_positions": {
+    "V": "no",
+    "L": "yes",
+    "M": "yes",
+    "SD": "yes",
+    "C": "no",
+    "MP": "no",
+    "KD": "yes",
+    "S": "yes"
+   }
+  },
+  {
+   "session": "2025/26",
+   "roll_call_id": "B2595DDF-343A-4612-B2F1-F0845AAC61C9",
+   "vote_date": "2026-08-13",
+   "designation": "JuU48",
+   "point": "1",
+   "committee_code": "JuU",
+   "committee_name": "Justitieutskottet",
+   "issue_key": "rattsvasende",
+   "title": "Ett nytt straffrättsligt påföljdssystem ska införas (JuU48)",
+   "report_url": "https://data.riksdagen.se/dokument/HD01JuU48",
+   "yes": 176,
+   "no": 171,
+   "abstain": 0,
+   "absent": 2,
+   "outcome": "yes",
+   "government_won": true,
+   "party_positions": {
+    "L": "yes",
+    "KD": "yes",
+    "V": "no",
+    "MP": "no",
+    "S": "no",
+    "C": "no",
+    "SD": "yes",
+    "M": "yes"
+   }
+  },
+  {
+   "session": "2025/26",
+   "roll_call_id": "A232E23A-3700-4EEE-8AB5-C92F1041CC4D",
+   "vote_date": "2026-08-13",
+   "designation": "JuU48",
+   "point": "2",
+   "committee_code": "JuU",
+   "committee_name": "Justitieutskottet",
+   "issue_key": "rattsvasende",
+   "title": "Ett nytt straffrättsligt påföljdssystem ska införas (JuU48)",
+   "report_url": "https://data.riksdagen.se/dokument/HD01JuU48",
+   "yes": 304,
+   "no": 42,
+   "abstain": 0,
+   "absent": 3,
+   "outcome": "yes",
+   "government_won": true,
+   "party_positions": {
+    "KD": "yes",
+    "C": "yes",
+    "S": "yes",
+    "M": "yes",
+    "L": "yes",
+    "V": "no",
+    "MP": "no",
+    "SD": "yes"
+   }
+  },
+  {
+   "session": "2025/26",
+   "roll_call_id": "F6A9329B-E3E9-4EC0-AFFC-72DE373AFFE7",
+   "vote_date": "2026-08-13",
+   "designation": "SfU37",
+   "point": "1",
+   "committee_code": "SfU",
+   "committee_name": "Socialförsäkringsutskottet",
+   "issue_key": "socialforsakring",
+   "title": "Skärpta villkor för anhöriginvandring (SfU37)",
+   "report_url": "https://data.riksdagen.se/dokument/HD01SfU37",
+   "yes": 176,
+   "no": 129,
+   "abstain": 42,
+   "absent": 2,
+   "outcome": "yes",
+   "government_won": true,
+   "party_positions": {
+    "C": "no",
+    "KD": "yes",
+    "L": "yes",
+    "MP": "abstain",
+    "V": "abstain",
+    "S": "no",
+    "SD": "yes",
+    "M": "yes"
+   }
+  },
+  {
+   "session": "2025/26",
+   "roll_call_id": "C043BF26-FD9B-47EA-9AD5-A98B64888898",
+   "vote_date": "2026-08-13",
+   "designation": "SfU37",
+   "point": "2",
+   "committee_code": "SfU",
+   "committee_name": "Socialförsäkringsutskottet",
+   "issue_key": "socialforsakring",
+   "title": "Skärpta villkor för anhöriginvandring (SfU37)",
+   "report_url": "https://data.riksdagen.se/dokument/HD01SfU37",
+   "yes": 176,
+   "no": 171,
+   "abstain": 0,
+   "absent": 2,
+   "outcome": "yes",
+   "government_won": true,
+   "party_positions": {
+    "S": "no",
+    "C": "no",
+    "SD": "yes",
+    "KD": "yes",
+    "L": "yes",
+    "MP": "no",
+    "V": "no",
+    "M": "yes"
+   }
+  },
+  {
+   "session": "2025/26",
+   "roll_call_id": "9039B400-8645-4B8E-989E-1F4BA8806C60",
+   "vote_date": "2026-08-13",
+   "designation": "SfU37",
+   "point": "3",
+   "committee_code": "SfU",
+   "committee_name": "Socialförsäkringsutskottet",
+   "issue_key": "socialforsakring",
+   "title": "Skärpta villkor för anhöriginvandring (SfU37)",
+   "report_url": "https://data.riksdagen.se/dokument/HD01SfU37",
+   "yes": 176,
+   "no": 171,
+   "abstain": 0,
+   "absent": 2,
+   "outcome": "yes",
+   "government_won": true,
+   "party_positions": {
+    "M": "yes",
+    "S": "no",
+    "V": "no",
+    "MP": "no",
+    "L": "yes",
+    "SD": "yes",
+    "C": "no",
+    "KD": "yes"
+   }
+  },
+  {
+   "session": "2025/26",
+   "roll_call_id": "A8D2258A-D08E-406D-A22A-C209250791CD",
+   "vote_date": "2026-08-13",
+   "designation": "SfU37",
+   "point": "4",
+   "committee_code": "SfU",
+   "committee_name": "Socialförsäkringsutskottet",
+   "issue_key": "socialforsakring",
+   "title": "Skärpta villkor för anhöriginvandring (SfU37)",
+   "report_url": "https://data.riksdagen.se/dokument/HD01SfU37",
+   "yes": 176,
+   "no": 171,
+   "abstain": 0,
+   "absent": 2,
+   "outcome": "yes",
+   "government_won": true,
+   "party_positions": {
+    "SD": "yes",
+    "C": "no",
+    "KD": "yes",
+    "M": "yes",
+    "S": "no",
+    "V": "no",
+    "MP": "no",
+    "L": "yes"
+   }
+  },
+  {
+   "session": "2025/26",
+   "roll_call_id": "A0ACDA38-74ED-4918-9CE5-19BCCB09AE8A",
+   "vote_date": "2026-08-13",
+   "designation": "SfU37",
+   "point": "6",
+   "committee_code": "SfU",
+   "committee_name": "Socialförsäkringsutskottet",
+   "issue_key": "socialforsakring",
+   "title": "Skärpta villkor för anhöriginvandring (SfU37)",
+   "report_url": "https://data.riksdagen.se/dokument/HD01SfU37",
+   "yes": 176,
+   "no": 171,
+   "abstain": 0,
+   "absent": 2,
+   "outcome": "yes",
+   "government_won": true,
+   "party_positions": {
+    "M": "yes",
+    "C": "no",
+    "S": "no",
+    "KD": "yes",
+    "SD": "yes",
+    "MP": "no",
+    "V": "no",
+    "L": "yes"
+   }
+  },
+  {
+   "session": "2025/26",
+   "roll_call_id": "75557818-17F8-4C9F-82A9-36A046F03B8F",
+   "vote_date": "2026-08-13",
+   "designation": "SfU37",
+   "point": "7",
+   "committee_code": "SfU",
+   "committee_name": "Socialförsäkringsutskottet",
+   "issue_key": "socialforsakring",
+   "title": "Skärpta villkor för anhöriginvandring (SfU37)",
+   "report_url": "https://data.riksdagen.se/dokument/HD01SfU37",
+   "yes": 281,
+   "no": 65,
+   "abstain": 1,
+   "absent": 2,
+   "outcome": "yes",
+   "government_won": true,
+   "party_positions": {
+    "S": "yes",
+    "C": "no",
+    "SD": "yes",
+    "KD": "yes",
+    "L": "yes",
+    "MP": "no",
+    "V": "no",
+    "M": "yes"
+   }
+  },
+  {
+   "session": "2025/26",
+   "roll_call_id": "4285216E-DAAB-451F-AF36-EBD28C8AD6FD",
+   "vote_date": "2026-08-13",
+   "designation": "SfU37",
+   "point": "8",
+   "committee_code": "SfU",
+   "committee_name": "Socialförsäkringsutskottet",
+   "issue_key": "socialforsakring",
+   "title": "Skärpta villkor för anhöriginvandring (SfU37)",
+   "report_url": "https://data.riksdagen.se/dokument/HD01SfU37",
+   "yes": 176,
+   "no": 171,
+   "abstain": 0,
+   "absent": 2,
+   "outcome": "yes",
+   "government_won": true,
+   "party_positions": {
+    "KD": "yes",
+    "C": "no",
+    "S": "no",
+    "M": "yes",
+    "L": "yes",
+    "V": "no",
+    "MP": "no",
+    "SD": "yes"
+   }
+  },
+  {
+   "session": "2025/26",
+   "roll_call_id": "A0E58D9F-D3DF-4CAF-BDEC-7E8DB9B0519D",
+   "vote_date": "2026-08-13",
+   "designation": "SfU37",
+   "point": "9",
+   "committee_code": "SfU",
+   "committee_name": "Socialförsäkringsutskottet",
+   "issue_key": "socialforsakring",
+   "title": "Skärpta villkor för anhöriginvandring (SfU37)",
+   "report_url": "https://data.riksdagen.se/dokument/HD01SfU37",
+   "yes": 282,
+   "no": 65,
+   "abstain": 0,
+   "absent": 2,
+   "outcome": "yes",
+   "government_won": true,
+   "party_positions": {
+    "KD": "yes",
+    "C": "no",
+    "S": "yes",
+    "M": "yes",
+    "SD": "yes",
+    "L": "yes",
+    "V": "no",
+    "MP": "no"
+   }
+  },
+  {
+   "session": "2025/26",
+   "roll_call_id": "32BDF094-4F76-47A2-8DCC-7F1C2A00D7C4",
+   "vote_date": "2026-08-13",
+   "designation": "SfU37",
+   "point": "12",
+   "committee_code": "SfU",
+   "committee_name": "Socialförsäkringsutskottet",
+   "issue_key": "socialforsakring",
+   "title": "Skärpta villkor för anhöriginvandring (SfU37)",
+   "report_url": "https://data.riksdagen.se/dokument/HD01SfU37",
+   "yes": 176,
+   "no": 171,
+   "abstain": 0,
+   "absent": 2,
+   "outcome": "yes",
+   "government_won": true,
+   "party_positions": {
+    "C": "no",
+    "M": "yes",
+    "SD": "yes",
+    "L": "yes",
+    "V": "no",
+    "MP": "no",
+    "S": "no",
+    "KD": "yes"
+   }
+  }
+ ]
+}

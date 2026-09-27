@@ -20,7 +20,10 @@
     "data:check": "python platform/legacy/validate_gold.py && python platform/legacy/validate_budget_context.py && python platform/legacy/validate_products.py && python platform/legacy/validate_politics.py",
     "welfare:fetch": "python platform/ingest/run_welfare.py --skip-build",
     "welfare:build": "python platform/ingest/run_welfare.py --skip-fetch",
-    "welfare": "python platform/ingest/run_welfare.py"
+    "welfare": "python platform/ingest/run_welfare.py",
+    "parliament:fetch": "python platform/ingest/run_parliament.py --skip-build",
+    "parliament:build": "python platform/ingest/run_parliament.py --skip-fetch",
+    "parliament": "python platform/ingest/run_parliament.py && python platform/publish/export_parliament.py"
   },
   "dependencies": {
     "@fontsource-variable/dm-sans": "^5.3.0",
