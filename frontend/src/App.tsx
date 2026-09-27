@@ -289,6 +289,8 @@ function pageFromHash(hash: string) {
       '#politics-laws',
       '#data-explorer',
       '#budget-comparison',
+      '#budget-proposals',
+      '#budget-explore',
       '#budget-outturn',
       '#debates',
       '#raw-data',
@@ -335,7 +337,12 @@ function App() {
   const politicsView =
     hash === '#data-explorer'
       ? 'speeches'
-      : ['#budget-comparison', '#budget-outturn'].includes(hash)
+      : [
+            '#budget-comparison',
+            '#budget-proposals',
+            '#budget-explore',
+            '#budget-outturn',
+          ].includes(hash)
         ? 'budgets'
         : hash === '#debates'
           ? 'language'
@@ -346,9 +353,13 @@ function App() {
     requestAnimationFrame(() => {
       if (page === 'home' && hash === '#projects')
         document.getElementById('projects')?.scrollIntoView({ block: 'start' })
-      else if (hash === '#budget-outturn')
+      else if (
+        ['#budget-outturn', '#budget-proposals', '#budget-explore'].includes(
+          hash,
+        )
+      )
         document
-          .getElementById('budget-outturn')
+          .getElementById(hash.slice(1))
           ?.scrollIntoView({ block: 'start' })
       else if (
         hash.startsWith('#now-') &&
@@ -687,7 +698,9 @@ function App() {
             </>
           )}
           {page === 'politics' && (
-            <div className="project-page politics-page">
+            <div
+              className={`project-page politics-page ${politicsView === 'budgets' ? 'budget-page' : ''}`}
+            >
               <div className="page-lead" id="politics-page">
                 <p className="eyebrow">
                   {t('Personal research · Swedish politics')}

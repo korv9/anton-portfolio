@@ -57,6 +57,8 @@ test('an issue page joins decisions, parties, budget, statistics and debate', as
   await expect(page.getByTestId('issue-summary').locator('li')).not.toHaveCount(
     0,
   )
+  await expect(page.locator('.decision-list > li')).toHaveCount(5)
+  await page.getByRole('button', { name: 'Show all 8 decisions' }).click()
   await expect(page.locator('.decision-list > li')).toHaveCount(8)
   await expect(
     page.locator('section[aria-labelledby="issue-parties"] tbody tr'),

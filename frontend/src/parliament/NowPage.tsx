@@ -2,6 +2,9 @@ import { useEffect, useMemo, useState } from 'react'
 import { l } from '../i18n'
 import MultiLineChart, { type Series } from '../charts/MultiLineChart'
 import SeatBar from './SeatBar'
+import { DecisionDetail } from '../politics/DecisionExplorer'
+import LawLibrary from '../politics/LawLibrary'
+import '../politics/politics.css'
 import PartyPicker, { usePartySlots } from './PartyPicker'
 import {
   PARTY_NAMES,
@@ -88,44 +91,86 @@ export function Positions({
 }
 
 export function DecisionList({ decisions }: { decisions: Decision[] }) {
+  const [selected, setSelected] = useState<string | null>(null)
+  const [showAll, setShowAll] = useState(false)
   return (
-    <ol className="decision-list">
-      {decisions.map((d) => (
-        <li key={d.roll_call_id}>
-          <div className="decision-head">
-            <span className="decision-date">{day(d.vote_date)}</span>
-            <span className="decision-ref">
-              {d.designation} p. {d.point}
-            </span>
-            <span className={`decision-outcome ${d.outcome}`}>
-              {d.outcome === 'yes'
-                ? l('Adopted', 'Bifall')
-                : d.outcome === 'no'
-                  ? l('Rejected', 'Avslag')
-                  : l('Tie', 'Lika')}{' '}
-              {d.yes}–{d.no}
-            </span>
-            {d.government_won != null && (
-              <span className="decision-gov">
-                {d.government_won
-                  ? l('government side won', 'regeringssidan vann')
-                  : l('government side lost', 'regeringssidan förlorade')}
+    <>
+      <ol className="decision-list">
+        {(showAll ? decisions : decisions.slice(0, 5)).map((d) => (
+          <li key={d.roll_call_id}>
+            <div className="decision-head">
+              <span className="decision-date">{day(d.vote_date)}</span>
+              <span className="decision-ref">
+                {d.designation} p. {d.point}
               </span>
+              <span className={`decision-outcome ${d.outcome}`}>
+                {d.outcome === 'yes'
+                  ? l('Adopted', 'Bifall')
+                  : d.outcome === 'no'
+                    ? l('Rejected', 'Avslag')
+                    : l('Tie', 'Lika')}{' '}
+                {d.yes}–{d.no}
+              </span>
+              {d.government_won != null && (
+                <span className="decision-gov">
+                  {d.government_won
+                    ? l('government side won', 'regeringssidan vann')
+                    : l('government side lost', 'regeringssidan förlorade')}
+                </span>
+              )}
+            </div>
+            <button
+              type="button"
+              className="decision-title decision-read"
+              aria-expanded={selected === d.roll_call_id}
+              aria-controls={`decision-${d.roll_call_id}`}
+              onClick={() =>
+                setSelected(selected === d.roll_call_id ? null : d.roll_call_id)
+              }
+            >
+              {d.title ?? d.designation}{' '}
+              <span>
+                {selected === d.roll_call_id
+                  ? l('Close text ↑', 'Stäng text ↑')
+                  : l('Read decision ↓', 'Läs beslut ↓')}
+              </span>
+            </button>
+            {selected === d.roll_call_id && (
+              <div
+                id={`decision-${d.roll_call_id}`}
+                className="inline-decision"
+              >
+                <DecisionDetail
+                  decision={{
+                    path: `decisions/${d.session.replace('/', '-')}/${d.roll_call_id}.json`,
+                    heading: `${d.designation} · ${l('Point', 'Punkt')} ${d.point}`,
+                    title: d.title ?? d.designation,
+                    designation: d.designation,
+                    point: Number(d.point),
+                    date: d.vote_date,
+                  }}
+                />
+              </div>
             )}
-          </div>
-          <p className="decision-title">
-            {d.report_url ? (
-              <a href={d.report_url} target="_blank" rel="noreferrer">
-                {d.title ?? d.designation} ↗
-              </a>
-            ) : (
-              (d.title ?? d.designation)
-            )}
-          </p>
-          {d.party_positions && <Positions positions={d.party_positions} />}
-        </li>
-      ))}
-    </ol>
+            {d.party_positions && <Positions positions={d.party_positions} />}
+          </li>
+        ))}
+      </ol>
+      {decisions.length > 5 && (
+        <button
+          type="button"
+          className="compact-toggle"
+          onClick={() => setShowAll(!showAll)}
+        >
+          {showAll
+            ? l('Show fewer decisions', 'Visa färre beslut')
+            : l(
+                `Show all ${decisions.length} decisions`,
+                `Visa alla ${decisions.length} beslut`,
+              )}
+        </button>
+      )}
+    </>
   )
 }
 
@@ -437,6 +482,10 @@ export default function NowPage() {
             {l('Latest decisions', 'Senaste besluten')}
           </a>
           <a href="#now-issues">{l('Issues', 'Sakfrågor')}</a>
+          <a href="#now-laws">{l('Read laws', 'Läs lagar')}</a>
+          <a href="#budget-comparison">
+            {l('Compare budgets', 'Jämför budgetar')}
+          </a>
           <a href="#politics">{l('In depth →', 'Fördjupning →')}</a>
         </nav>
       </div>
@@ -667,6 +716,14 @@ export default function NowPage() {
         </section>
       )}
 
+      <section className="report welfare-section" id="now-laws">
+        <details className="inline-law-library">
+          <summary>
+            {l('Read laws on this page', 'Läs lagarna direkt på sidan')}
+          </summary>
+          <LawLibrary />
+        </details>
+      </section>
       <section className="report welfare-section" aria-labelledby="now-depth">
         <p className="eyebrow">{l('In depth', 'Fördjupning')}</p>
         <h2 id="now-depth">{l('The full records', 'Hela underlaget')}</h2>

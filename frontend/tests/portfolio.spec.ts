@@ -100,7 +100,7 @@ test('budget proposals and annual outcomes are separate navigable reports', asyn
   const budget = page.locator('#budget-comparison')
   await expect(budget.locator('.budget-ledger-summary')).toContainText('2026')
   await expect(budget.locator('.budget-ledger-summary')).toContainText('27/27')
-  await expect(budget.locator('.budget-ledger-bar')).toHaveCount(7)
+  await expect(budget.locator('.comparison-bar-row')).toHaveCount(7)
   await expect(budget.locator('.budget-vote')).toHaveCount(8)
   await expect(budget.locator('.budget-year-context')).toContainText(
     'Budget agreement with SD',
@@ -112,7 +112,7 @@ test('budget proposals and annual outcomes are separate navigable reports', asyn
   await expect(budget.locator('.budget-ledger-summary')).toContainText(
     'Incomplete',
   )
-  await expect(budget.locator('.budget-ledger-bar')).toHaveCount(0)
+  await expect(budget.locator('.comparison-bar-row')).toHaveCount(0)
   await budget
     .getByRole('combobox', { name: 'Budget year', exact: true })
     .selectOption('2021/22')

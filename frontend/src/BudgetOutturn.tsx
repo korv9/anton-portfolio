@@ -1,7 +1,8 @@
-import { currentLocale, t } from './i18n'
+import { currentLocale, l, t } from './i18n'
 import { fetchData } from './dataSource'
 import { useEffect, useState } from 'react'
 import { nameOf } from './BudgetLab'
+import BudgetBars from './charts/BudgetBars'
 
 type Row = {
   budget_year: number
@@ -24,6 +25,8 @@ export default function BudgetOutturn() {
   const [rows, setRows] = useState<Row[]>([])
   const [year, setYear] = useState(2025)
   const [area, setArea] = useState(9)
+  const [mode, setMode] = useState<'difference' | 'amount'>('difference')
+  const [areaCount, setAreaCount] = useState(8)
   const [error, setError] = useState(false)
   useEffect(() => {
     fetchData('gold/tables/fact_budget_outturn.json')
@@ -42,24 +45,30 @@ export default function BudgetOutturn() {
     .sort((a, b) => a.expenditure_area - b.expenditure_area)
   const focused = annual.find((row) => row.expenditure_area === area)
   const top = [...annual]
-    .sort(
-      (a, b) =>
-        Math.abs(b.outturn_msek - b.approved_budget_msek) -
-        Math.abs(a.outturn_msek - a.approved_budget_msek),
+    .sort((a, b) =>
+      mode === 'amount'
+        ? b.outturn_msek - a.outturn_msek
+        : Math.abs(b.outturn_msek - b.approved_budget_msek) -
+          Math.abs(a.outturn_msek - a.approved_budget_msek),
     )
-    .slice(0, 8)
-  const max = Math.max(
-    1,
-    ...top.map((row) => Math.abs(row.outturn_msek - row.approved_budget_msek)),
-  )
+    .slice(0, areaCount)
   const approved = annual.reduce(
     (sum, row) => sum + row.approved_budget_msek,
     0,
   )
   const actual = annual.reduce((sum, row) => sum + row.outturn_msek, 0)
   return (
-    <section className="report outturn-report" id="budget-outturn">
-      <p className="eyebrow">{t('Annual accounts / a different question')}</p>
+    <section
+      className="report outturn-report"
+      id="budget-outturn"
+      data-testid="budget-chart-outturn"
+    >
+      <p className="eyebrow">
+        {l(
+          '03 / Approved budget and actual spending',
+          '03 / Beslutad budget och faktiskt utfall',
+        )}
+      </p>
       <h2>{t('What was budgeted, and what was spent?')}</h2>
       <p>
         {t(
@@ -74,17 +83,51 @@ export default function BudgetOutturn() {
       )}
       {rows.length > 0 && (
         <>
-          <label className="outturn-year">
-            {t('Annual account year')}
-            <select
-              value={year}
-              onChange={(e) => setYear(Number(e.target.value))}
-            >
-              {years.map((value) => (
-                <option key={value}>{value}</option>
-              ))}
-            </select>
-          </label>
+          <div className="budget-controls">
+            <label className="outturn-year">
+              {t('Annual account year')}
+              <select
+                value={year}
+                onChange={(e) => setYear(Number(e.target.value))}
+              >
+                {years.map((value) => (
+                  <option key={value}>{value}</option>
+                ))}
+              </select>
+            </label>
+            <label>
+              {l('View', 'Visa')}
+              <select
+                value={mode}
+                onChange={(e) =>
+                  setMode(e.target.value as 'difference' | 'amount')
+                }
+              >
+                <option value="difference">
+                  {l(
+                    'Difference vs approved budget',
+                    'Skillnad mot beslutad budget',
+                  )}
+                </option>
+                <option value="amount">
+                  {l(
+                    'Budget and outcome side by side',
+                    'Budget och utfall sida vid sida',
+                  )}
+                </option>
+              </select>
+            </label>
+            <label>
+              {l('Areas', 'Områden')}
+              <select
+                value={areaCount}
+                onChange={(e) => setAreaCount(Number(e.target.value))}
+              >
+                <option value={8}>{l('Largest 8', 'De 8 största')}</option>
+                <option value={27}>{l('All 27', 'Alla 27')}</option>
+              </select>
+            </label>
+          </div>
           <div className="budget-ledger-summary">
             <div>
               <strong>{bn(approved)}</strong>
@@ -109,7 +152,9 @@ export default function BudgetOutturn() {
             </div>
           </div>
           <p>
-            {t('Largest differences in ')}
+            {mode === 'difference'
+              ? t('Largest differences in ')
+              : l('Largest spending areas in ', 'Största utgiftsområdena ')}
             {year}
             {t(
               '. Select an area to inspect its figures; the full 27-area table is below.',
@@ -117,30 +162,23 @@ export default function BudgetOutturn() {
           </p>
           <div className="budget-ledger-layout">
             <div>
-              {top.map((row) => {
-                const difference = row.outturn_msek - row.approved_budget_msek
-                return (
-                  <button
-                    className="budget-ledger-bar"
-                    key={row.expenditure_area}
-                    aria-pressed={area === row.expenditure_area}
-                    onClick={() => setArea(row.expenditure_area)}
-                  >
-                    <span>
-                      <b>
-                        {row.expenditure_area}. {nameOf(row.expenditure_area)}
-                      </b>
-                      <strong>{signed(difference)}</strong>
-                    </span>
-                    <i
-                      className={difference < 0 ? 'negative' : ''}
-                      style={{
-                        width: `${Math.max(1, (Math.abs(difference) / max) * 100)}%`,
-                      }}
-                    />
-                  </button>
-                )
-              })}
+              <BudgetBars
+                rows={top.map((row) => ({
+                  area: row.expenditure_area,
+                  label: nameOf(row.expenditure_area),
+                  value: row.outturn_msek,
+                  reference: row.approved_budget_msek,
+                }))}
+                mode={mode}
+                selected={area}
+                onSelect={setArea}
+                label={l(
+                  'Approved budget compared with actual expenditure',
+                  'Beslutad budget jämförd med faktiskt utfall',
+                )}
+                valueLabel={l('Outturn', 'Utfall')}
+                referenceLabel={l('Approved', 'Beslutat')}
+              />
             </div>
             <aside className="budget-ledger-detail">
               {focused && (
