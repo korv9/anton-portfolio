@@ -5,6 +5,7 @@
  */
 import { Suspense, lazy, useEffect, useRef } from 'react'
 import { l } from '../i18n'
+import { PartyLogo, RIKSDAG_PARTIES, partyName } from '../parties/identity'
 import type { Route } from '../router'
 import { THEMES, deepDiveOf, themeByPath, type ThemeKey } from './nav'
 import './politik.css'
@@ -81,6 +82,31 @@ export default function PoliticsProduct({ route }: { route: Route }) {
               </li>
             ))}
           </ol>
+        </nav>
+        <nav
+          className="politik-party-rail"
+          aria-label={l('Explore a party', 'Utforska ett parti')}
+        >
+          <p>{l('Parties', 'Partier')}</p>
+          <ul>
+            {RIKSDAG_PARTIES.map((party) => {
+              const href = `#parties-${party.toLowerCase()}`
+              const current = route.path === href
+              return (
+                <li key={party}>
+                  <a
+                    href={href}
+                    aria-label={partyName(party)}
+                    aria-current={current ? 'page' : undefined}
+                    title={partyName(party)}
+                  >
+                    <PartyLogo party={party} size={34} decorative={false} />
+                    <span>{party}</span>
+                  </a>
+                </li>
+              )
+            })}
+          </ul>
         </nav>
       </aside>
       <div className="politik-main">

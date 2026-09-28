@@ -32,7 +32,25 @@ test('every theme answers one question with one chart, a table and its sources',
     await expect(page.locator('.theme-sources a').first()).toBeVisible()
     await expect(page.locator('.theme-deep a').first()).toBeVisible()
   }
+
   expect(errors).toEqual([])
+})
+
+test('the party rail opens each party profile and marks the selected party', async ({
+  page,
+}) => {
+  await page.goto('/#politik')
+  const rail = page.getByRole('navigation', { name: 'Explore a party' })
+  await expect(rail.getByRole('link')).toHaveCount(8)
+  await rail.getByRole('link', { name: 'Social Democrats' }).click()
+  await expect(page).toHaveURL(/#parties-s$/)
+  await expect(
+    page
+      .getByRole('navigation', { name: 'Explore a party' })
+      .getByRole('link', {
+        name: 'Social Democrats',
+      }),
+  ).toHaveAttribute('aria-current', 'page')
 })
 
 test('the view builder offers valid choices and keeps them in a shareable address', async ({

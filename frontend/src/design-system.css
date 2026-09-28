@@ -291,7 +291,13 @@ body .chart-guidance {
   margin-top: 12px;
 }
 body .politik-side {
-  background: #f0f2ee;
+  background:
+    radial-gradient(
+      circle at 15% 8%,
+      rgba(114, 197, 216, 0.15),
+      transparent 28%
+    ),
+    #edf2f6;
 }
 body .politik-nav a {
   padding: 12px 10px;
@@ -315,18 +321,31 @@ body .theme-why {
   line-height: 1.6;
 }
 body .theme-kpis {
-  background: #eef2ed;
+  background: transparent;
   border-top: 0;
   padding: 20px;
   margin-bottom: 24px;
   gap: 18px;
 }
 body .theme-kpis > div {
-  padding: 0;
+  padding: 18px;
+  border: 1px solid #d9e1e6;
+  background: rgba(255, 255, 255, 0.88);
+  border-radius: 10px !important;
+  box-shadow: 0 8px 22px rgba(32, 55, 72, 0.08) !important;
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease;
+}
+body .theme-kpis > div:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 28px rgba(32, 55, 72, 0.13) !important;
 }
 body .theme-figure {
-  background: #fff;
-  border: 1px solid #dedfd9;
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid #d9e1e6;
+  border-radius: 12px !important;
+  box-shadow: 0 12px 32px rgba(32, 55, 72, 0.1) !important;
   padding: clamp(16px, 2.4vw, 28px);
 }
 body .theme-takeaway {
@@ -341,6 +360,27 @@ body .theme-filters {
 }
 body .theme-meaning {
   margin-top: 30px;
+  padding: 24px;
+  border: 1px solid #d9e1e6;
+  border-radius: 10px !important;
+  background: linear-gradient(135deg, #f8fbfc, #eef5f6);
+  box-shadow: 0 8px 22px rgba(32, 55, 72, 0.07) !important;
+}
+body .politik-main {
+  background:
+    radial-gradient(circle at 95% 0%, rgba(52, 199, 218, 0.1), transparent 28%),
+    linear-gradient(180deg, #f7fafc 0, var(--page) 34rem);
+}
+body .theme-panel svg polyline,
+body .theme-panel svg path,
+body .theme-panel svg polygon {
+  transition:
+    opacity 180ms ease,
+    filter 180ms ease;
+}
+body .theme-panel svg:hover polyline,
+body .theme-panel svg:hover path {
+  filter: drop-shadow(0 3px 4px rgba(25, 74, 88, 0.18));
 }
 @media (max-width: 600px) {
   body .project-page {
@@ -367,6 +407,9 @@ body .theme-meaning {
   body .theme-kpis > div {
     border-bottom: 1px solid #d4dcd4;
     padding-bottom: 14px;
+  }
+  body .theme-kpis > div:hover {
+    transform: none;
   }
 }
 
