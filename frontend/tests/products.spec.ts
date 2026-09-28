@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from './test'
 
 test('project reports keep their data and downloads on their own pages', async ({
   page,

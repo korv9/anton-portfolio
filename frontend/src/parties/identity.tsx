@@ -1,14 +1,26 @@
 /**
- * Each party's colour and logo, used everywhere a party is shown.
+ * partyMeta: each party's colour, logo and chart style, the one place a party's look is set.
  *
- * `color` is the party colour as Swedish media and Wikipedia draw it. `line` is the same hue,
- * darkened where needed to reach 3:1 against the page, for lines, text and small marks (and
- * for V, darker still so it does not read as S). `ink` is the text colour to put on `color`.
+ * `color` is the party colour as Swedish media and Valmyndigheten draw it (checked against the
+ * parties' current logos in public/logos/parties/). `line` is the same hue, darkened where
+ * needed to reach 3:1 against the page, for lines and small marks; for V it is darker still so
+ * it does not read as S. `textColor` is the text to put on `color` (dark on SD's yellow).
+ *
+ * Colour is never the only cue: every party also has a `marker` and a `lineStyle`, chosen so
+ * the parties that share a hue differ in both (S/V red, M/KD/L blue, C/MP green), and SD's
+ * yellow line gets a dark `casing` so it stays visible on a light page. Charts put the party's
+ * letters at the end of each line; logos go in pickers, table headers and summaries, never
+ * on data points.
+ *
  * The logos are the parties' current marks as Riksdagen shows them on "Ledamöter och
- * partier" (media.riksdagen.se), saved under public/logos/parties/.
+ * partier" (media.riksdagen.se), stored locally as WebP.
  */
 import { l } from '../i18n'
 import './parties.css'
+
+export type Marker =
+  'circle' | 'square' | 'diamond' | 'triangle' | 'triangle-down'
+export type LineStyle = 'solid' | 'dashed' | 'dotted'
 
 export type PartyIdentity = {
   code: string
@@ -16,10 +28,15 @@ export type PartyIdentity = {
   nameEn: string
   color: string
   line: string
+  /** Text colour on `color`. */
   ink: string
   logo: string | null
   website: string | null
   founded: number | null
+  marker: Marker
+  lineStyle: LineStyle
+  /** A dark outline under the line, for light colours (SD). */
+  casing?: string
 }
 
 const logo = (code: string) => `logos/parties/${code}.webp`
@@ -35,6 +52,8 @@ export const PARTY_IDENTITY: Record<string, PartyIdentity> = {
     logo: logo('S'),
     website: 'https://www.socialdemokraterna.se',
     founded: 1889,
+    marker: 'circle',
+    lineStyle: 'solid',
   },
   M: {
     code: 'M',
@@ -46,17 +65,22 @@ export const PARTY_IDENTITY: Record<string, PartyIdentity> = {
     logo: logo('M'),
     website: 'https://moderaterna.se',
     founded: 1904,
+    marker: 'diamond',
+    lineStyle: 'solid',
   },
   SD: {
     code: 'SD',
     name: 'Sverigedemokraterna',
     nameEn: 'Sweden Democrats',
     color: '#DDDD00',
-    line: '#898900',
+    line: '#D4C600',
     ink: '#16201f',
     logo: logo('SD'),
     website: 'https://sd.se',
     founded: 1988,
+    marker: 'triangle',
+    lineStyle: 'solid',
+    casing: '#5c5200',
   },
   V: {
     code: 'V',
@@ -68,6 +92,8 @@ export const PARTY_IDENTITY: Record<string, PartyIdentity> = {
     logo: logo('V'),
     website: 'https://www.vansterpartiet.se',
     founded: 1917,
+    marker: 'square',
+    lineStyle: 'dashed',
   },
   C: {
     code: 'C',
@@ -79,6 +105,8 @@ export const PARTY_IDENTITY: Record<string, PartyIdentity> = {
     logo: logo('C'),
     website: 'https://www.centerpartiet.se',
     founded: 1913,
+    marker: 'circle',
+    lineStyle: 'solid',
   },
   KD: {
     code: 'KD',
@@ -90,6 +118,8 @@ export const PARTY_IDENTITY: Record<string, PartyIdentity> = {
     logo: logo('KD'),
     website: 'https://kristdemokraterna.se',
     founded: 1964,
+    marker: 'triangle-down',
+    lineStyle: 'dashed',
   },
   MP: {
     code: 'MP',
@@ -101,6 +131,8 @@ export const PARTY_IDENTITY: Record<string, PartyIdentity> = {
     logo: logo('MP'),
     website: 'https://www.mp.se',
     founded: 1981,
+    marker: 'triangle',
+    lineStyle: 'dashed',
   },
   L: {
     code: 'L',
@@ -112,6 +144,8 @@ export const PARTY_IDENTITY: Record<string, PartyIdentity> = {
     logo: logo('L'),
     website: 'https://www.liberalerna.se',
     founded: 1934,
+    marker: 'square',
+    lineStyle: 'dotted',
   },
   NYD: {
     code: 'NYD',
@@ -123,6 +157,8 @@ export const PARTY_IDENTITY: Record<string, PartyIdentity> = {
     logo: null,
     website: null,
     founded: 1991,
+    marker: 'circle',
+    lineStyle: 'dotted',
   },
   OTHER: {
     code: 'OTHER',
@@ -134,11 +170,16 @@ export const PARTY_IDENTITY: Record<string, PartyIdentity> = {
     logo: null,
     website: null,
     founded: null,
+    marker: 'circle',
+    lineStyle: 'dotted',
   },
 }
 
 /** The eight parties in the Riksdag. */
 export const RIKSDAG_PARTIES = ['S', 'SD', 'M', 'V', 'C', 'KD', 'MP', 'L']
+
+/** The central party configuration (alias of PARTY_IDENTITY). */
+export const partyMeta = PARTY_IDENTITY
 
 const FALLBACK = PARTY_IDENTITY.OTHER
 export const identity = (code: string) => PARTY_IDENTITY[code] ?? FALLBACK
@@ -146,6 +187,9 @@ export const identity = (code: string) => PARTY_IDENTITY[code] ?? FALLBACK
 export const partyLine = (code: string) => identity(code).line
 /** The party colour, for filled areas; put `identity(code).ink` on it. */
 export const partyFill = (code: string) => identity(code).color
+/** SVG stroke-dasharray for a party's line style. */
+export const partyDash = (code: string) =>
+  ({ solid: undefined, dashed: '7 4', dotted: '2 4' })[identity(code).lineStyle]
 export const partyName = (code: string) => {
   const p = identity(code)
   return l(p.nameEn, p.name)
@@ -156,10 +200,13 @@ export function PartyLogo({
   party,
   size = 20,
   className,
+  decorative = true,
 }: {
   party: string
   size?: number
   className?: string
+  /** True where the party's name is written next to the logo; otherwise the logo is named. */
+  decorative?: boolean
 }) {
   const p = identity(party)
   const cls = className ? `party-logo ${className}` : 'party-logo'
@@ -168,7 +215,7 @@ export function PartyLogo({
       <img
         className={cls}
         src={p.logo}
-        alt=""
+        alt={decorative ? '' : l(`${p.nameEn} logo`, `${p.name}s logotyp`)}
         width={size}
         height={size}
         loading="lazy"
@@ -201,9 +248,12 @@ export function PartyTag({
   size?: number
 }) {
   return (
-    <span className="party-tag" title={partyName(party)}>
+    <span className="party-tag">
       <PartyLogo party={party} size={size} />
-      <span>{party === 'OTHER' ? l('Other', 'Övr.') : party}</span>
+      <abbr title={partyName(party)}>
+        {party === 'OTHER' ? l('Other', 'Övr.') : party}
+      </abbr>
+      <span className="visually-hidden"> ({partyName(party)})</span>
     </span>
   )
 }

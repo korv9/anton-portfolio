@@ -43,7 +43,6 @@ export default function PartyPicker({
             className={on ? 'party-chip on' : 'party-chip'}
             aria-pressed={on}
             title={partyName(party)}
-            style={on ? { borderColor: partyLine(party) } : undefined}
             onClick={() => toggle(party)}
           >
             <PartyLogo party={party} size={18} />

@@ -1,18 +1,27 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from './test'
 
-test('politics now: election, seat calculator, government, decisions and history', async ({
+test('politics now: seats, majority, government, decisions and history', async ({
   page,
 }) => {
+  // The old address leads to the first theme.
   await page.goto('/#now')
+  await expect(page).toHaveURL(/#politik$/)
   await expect(
-    page.getByRole('heading', { name: 'Politics right now' }),
+    page.getByRole('heading', { level: 1, name: 'Who holds power right now?' }),
   ).toBeVisible()
-  // A plain-language summary written from the data.
+  await expect(page.locator('.theme-kpis > div')).toHaveCount(3)
+  await expect(page.locator('.seat-chart-seg')).not.toHaveCount(0)
+  await expect(page.locator('.theme-takeaway')).toContainText('175')
+  await page.getByRole('tab', { name: 'Table' }).click()
+  expect(
+    await page.locator('.theme-table tbody tr').count(),
+  ).toBeGreaterThanOrEqual(8)
+
+  // The seat calculator adds up any parties against the 175-seat line.
+  await page.getByRole('link', { name: /Count the seats yourself/ }).click()
   await expect(page.getByTestId('plain-summary').locator('li')).not.toHaveCount(
     0,
   )
-
-  // The seat calculator adds up any parties against the 175-seat line.
   const sum = page.getByTestId('seat-sum')
   await expect(sum).toContainText('Click parties')
   const chips = page.locator('.seat-bar .party-chip')
@@ -22,20 +31,27 @@ test('politics now: election, seat calculator, government, decisions and history
   await expect(page.locator('.seat-segment.chosen')).toHaveCount(2)
 
   // The government, with its status and the formation news, and the latest decisions.
-  await page.locator('.topic-tabs a[href="#now-government"]').click()
+  await page.goto('/#now-government')
   await expect(page.locator('.government-facts')).toContainText(
     'Prime minister',
   )
-  await page.locator('.topic-tabs a[href="#now-decisions"]').click()
+  await expect(
+    page.getByRole('navigation', { name: 'Politics' }).getByRole('link', {
+      name: /Where things stand/,
+    }),
+  ).toHaveAttribute('aria-current', 'true')
+  await page.goto('/#now-decisions')
   await expect(page.locator('.decision-list > li').first()).toBeVisible()
   await expect(page.locator('.decision-list .positions').first()).toContainText(
     /Yes|No/,
   )
 
-  // History: elections and polls, party record, and the agreement matrix for any session.
-  await page.locator('.topic-tabs a[href="#now-votes"]').click()
+  // History: party record, and the agreement matrix for any session.
+  await page.goto('/#now-votes')
   const record = page.locator('section[aria-labelledby="politics-record"]')
-  await expect(record.locator('.multi-chart polyline')).toHaveCount(5)
+  await expect(
+    record.locator('.multi-chart polyline:not(.casing)'),
+  ).toHaveCount(5)
   await record.locator('select').first().selectOption('attendance_pct')
   await expect(record.locator('.multi-chart polyline').first()).toBeVisible()
   const matrix = page.getByTestId('agreement-matrix')
@@ -45,7 +61,7 @@ test('politics now: election, seat calculator, government, decisions and history
   await expect(matrix).toContainText('NYD')
 
   // Every issue links to its own page.
-  await page.locator('.topic-tabs a[href="#now-issues"]').click()
+  await page.goto('/#now-issues')
   await expect(page.locator('.issue-card')).toHaveCount(15)
   await page.locator('.issue-card', { hasText: 'Arbete' }).click()
   await expect(page).toHaveURL(/#issue-arbete/)

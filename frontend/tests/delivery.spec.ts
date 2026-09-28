@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from './test'
 
 /**
  * Shards are served from object storage, JSON contracts from the site. These tests watch the

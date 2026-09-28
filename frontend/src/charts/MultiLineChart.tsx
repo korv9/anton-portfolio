@@ -1,5 +1,7 @@
 import { useMemo, useRef, useState } from 'react'
 import { linearScale, niceTicks } from './scales'
+import { identity, partyDash } from '../parties/identity'
+import { MarkerShape, spreadLabels } from './marks'
 
 /**
  * Categorical series colours, in fixed order and never cycled: a sixth series is not
@@ -24,7 +26,13 @@ export type SeriesPoint = {
   low?: number | null
   high?: number | null
 }
-export type Series = { key: string; name: string; points: SeriesPoint[] }
+export type Series = {
+  key: string
+  name: string
+  points: SeriesPoint[]
+  /** A party code: the line then takes the party's marker, line style and an end label. */
+  party?: string
+}
 
 type Props = {
   series: Series[]
@@ -39,7 +47,7 @@ type Props = {
 
 const WIDTH = 900
 const HEIGHT = 340
-const MARGIN = { top: 20, right: 24, bottom: 40, left: 64 }
+const BASE_MARGIN = { top: 20, right: 24, bottom: 40, left: 64 }
 const time = (date: string) => Date.parse(date)
 
 /**
@@ -60,6 +68,9 @@ export default function MultiLineChart({
     return typeof color === 'string' ? color : SERIES_COLORS[color]
   }
   const [hover, setHover] = useState<number | null>(null)
+  // Party lines are labelled at their end, so the plot leaves room on the right.
+  const labelled = series.some((s) => s.party)
+  const MARGIN = labelled ? { ...BASE_MARGIN, right: 56 } : BASE_MARGIN
   const plotW = WIDTH - MARGIN.left - MARGIN.right
   const plotH = HEIGHT - MARGIN.top - MARGIN.bottom
 
@@ -93,7 +104,7 @@ export default function MultiLineChart({
     for (let year = firstYear; year <= lastYear; year += step) years.push(year)
     const dates = [...new Set(all.map((p) => p.date))].sort()
     return { x, y, ticks, years, dates }
-  }, [series, plotW, plotH, yFrom])
+  }, [series, plotW, plotH, yFrom, MARGIN.left, MARGIN.top])
 
   if (!series.length || !dates.length) return null
 
@@ -116,10 +127,36 @@ export default function MultiLineChart({
       <ul className="chart-legend" aria-label="Series">
         {series.map((s) => (
           <li key={s.key}>
-            <span
-              className="legend-swatch"
-              style={{ background: paint(s.key) }}
-            />
+            {s.party ? (
+              <svg
+                className="legend-line"
+                width="28"
+                height="12"
+                aria-hidden="true"
+              >
+                <line
+                  x1="1"
+                  x2="27"
+                  y1="6"
+                  y2="6"
+                  stroke={paint(s.key)}
+                  strokeWidth="2"
+                  strokeDasharray={partyDash(s.party)}
+                />
+                <MarkerShape
+                  shape={identity(s.party).marker}
+                  x={14}
+                  y={6}
+                  size={3.5}
+                  fill={paint(s.key)}
+                />
+              </svg>
+            ) : (
+              <span
+                className="legend-swatch"
+                style={{ background: paint(s.key) }}
+              />
+            )}
             {s.name}
           </li>
         ))}
@@ -179,34 +216,95 @@ export default function MultiLineChart({
                     .map((p) => `${x(time(p.date))},${y(p.low!)}`)
                     .join(' ')
                 : null
+            const line = s.points
+              .map((p) => `${x(time(p.date))},${y(p.value)}`)
+              .join(' ')
             return (
               <g key={s.key}>
                 {band && <polygon points={band} fill={color} opacity={0.12} />}
+                {s.party && identity(s.party).casing && (
+                  <polyline
+                    className="casing"
+                    points={line}
+                    fill="none"
+                    stroke={identity(s.party).casing}
+                    strokeWidth={4}
+                    strokeLinejoin="round"
+                    strokeDasharray={partyDash(s.party)}
+                  />
+                )}
                 <polyline
-                  points={s.points
-                    .map((p) => `${x(time(p.date))},${y(p.value)}`)
-                    .join(' ')}
+                  points={line}
                   fill="none"
                   stroke={color}
                   strokeWidth={2}
                   strokeLinejoin="round"
+                  strokeDasharray={s.party ? partyDash(s.party) : undefined}
                   vectorEffect="non-scaling-stroke"
                 />
                 {s.points.length < 40 &&
-                  s.points.map((p) => (
-                    <circle
-                      key={p.date}
-                      cx={x(time(p.date))}
-                      cy={y(p.value)}
-                      r={4}
-                      fill={color}
-                      stroke="#fbfaf6"
-                      strokeWidth={2}
-                    />
-                  ))}
+                  s.points.map((p) =>
+                    s.party ? (
+                      <MarkerShape
+                        key={p.date}
+                        shape={identity(s.party).marker}
+                        x={x(time(p.date))}
+                        y={y(p.value)}
+                        size={3.5}
+                        fill={color}
+                        stroke={identity(s.party).casing ?? '#ffffff'}
+                      />
+                    ) : (
+                      <circle
+                        className="round"
+                        key={p.date}
+                        cx={x(time(p.date))}
+                        cy={y(p.value)}
+                        r={4}
+                        fill={color}
+                        stroke="#ffffff"
+                        strokeWidth={2}
+                      />
+                    ),
+                  )}
               </g>
             )
           })}
+          {labelled &&
+            spreadLabels(
+              series
+                .filter((s) => s.party && s.points.length)
+                .map((s) => {
+                  const last = s.points.at(-1)!
+                  return {
+                    key: s.key,
+                    party: s.party!,
+                    x: x(time(last.date)),
+                    y: y(last.value),
+                  }
+                }),
+              14,
+              MARGIN.top + 6,
+              MARGIN.top + plotH,
+            ).map((label) => (
+              <g key={`label-${label.key}`} className="end-label">
+                <MarkerShape
+                  shape={identity(label.party).marker}
+                  x={label.x}
+                  y={label.y}
+                  size={4}
+                  fill={paint(label.key)}
+                  stroke={identity(label.party).casing ?? '#ffffff'}
+                />
+                <text
+                  x={label.x + 10}
+                  y={label.labelY + 4}
+                  className="end-label-text"
+                >
+                  {label.party}
+                </text>
+              </g>
+            ))}
           {hoverDate && (
             <line
               x1={hoverX}

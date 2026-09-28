@@ -103,6 +103,8 @@ export type Sessions = {
   sessions: {
     session: string
     start_year: number
+    first_vote?: string
+    last_vote?: string
     roll_calls: number
     election_year: number
     government_name: string

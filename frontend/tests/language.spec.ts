@@ -1,16 +1,23 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from './test'
 import AxeBuilder from '@axe-core/playwright'
+
+test.use({ language: null })
+
+test('Swedish is the default language', async ({ page }) => {
+  await page.goto('/#politik')
+  await expect(page.locator('html')).toHaveAttribute('lang', 'sv')
+  await expect(
+    page.getByRole('heading', { level: 1, name: 'Vem har makten just nu?' }),
+  ).toBeVisible()
+})
 
 test('language choice persists across project pages and keeps data controls stable', async ({
   page,
-  isMobile,
 }) => {
   await page.goto('/#start')
   await page.getByRole('button', { name: 'SV', exact: true }).click()
   await expect(page.locator('html')).toHaveAttribute('lang', 'sv')
-  await expect(page.getByRole('heading', { level: 1 })).toContainText(
-    'Dataingenjör',
-  )
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('rådata')
   await expect(
     page.getByRole('button', { name: 'SV', exact: true }),
   ).toHaveAttribute('aria-pressed', 'true')
@@ -48,7 +55,6 @@ test('language choice persists across project pages and keeps data controls stab
     .analyze()
   expect(accessibility.violations).toEqual([])
 
-  if (isMobile) await page.getByRole('button', { name: 'Meny' }).click()
   await page.getByRole('button', { name: 'EN', exact: true }).click()
   await expect(page.locator('html')).toHaveAttribute('lang', 'en')
   await expect(

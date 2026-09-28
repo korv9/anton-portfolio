@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from './test'
 import AxeBuilder from '@axe-core/playwright'
 
 test('political evidence remains traceable across votes, speeches and laws', async ({

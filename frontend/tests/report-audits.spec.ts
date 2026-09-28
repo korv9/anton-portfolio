@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from './test'
 import AxeBuilder from '@axe-core/playwright'
 
 test('budget corpus and NLP choices update all comparison data', async ({

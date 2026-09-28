@@ -222,6 +222,7 @@ function OverTime({
 
   const electionSeries: Series[] = electionSlots.picked.map((party) => ({
     key: party,
+    party,
     name: `${partyLabel(party)} (${l('election', 'val')})`,
     points: elections.results
       .filter((r) => r.party === party && r.share_pct != null)
@@ -233,6 +234,7 @@ function OverTime({
   }))
   const pollSeries: Series[] = electionSlots.picked.map((party) => ({
     key: party,
+    party,
     name: `${partyLabel(party)} (PSU)`,
     points: polls
       .filter((p) => p.party === party && p.survey_month >= '1994-01-01')
@@ -244,6 +246,7 @@ function OverTime({
   }))
   const recordSeries: Series[] = recordSlots.picked.map((party) => ({
     key: party,
+    party,
     name: partyLabel(party),
     points: sessions.party_record
       .filter((r) => r.party === party && r[measure] != null)
@@ -444,7 +447,14 @@ function OverTime({
   )
 }
 
-export default function NowPage({ view }: { view: string }) {
+export default function NowPage({
+  view,
+  embedded = false,
+}: {
+  view: string
+  /** Inside the politics product, which has its own heading and navigation. */
+  embedded?: boolean
+}) {
   const [now, setNow] = useState<Now | null>(null)
   const [elections, setElections] = useState<Elections | null>(null)
   const [sessions, setSessions] = useState<Sessions | null>(null)
@@ -477,37 +487,39 @@ export default function NowPage({ view }: { view: string }) {
   const lines = useMemo(() => (now ? summary(now) : []), [now])
   return (
     <div className="project-page welfare-page politics-now">
-      <div className="page-lead">
-        <p className="eyebrow">{l('Swedish politics', 'Svensk politik')}</p>
-        <h1>{l('Politics right now', 'Politiken just nu')}</h1>
-        <p>
-          {l(
-            'The election, the government, the polls and what the Riksdag decides, in one place and from the official sources: Valmyndigheten, SCB, the Riksdag and the Government Offices. Updated from the sources; everything links back to them.',
-            'Valet, regeringen, opinionen och vad riksdagen beslutar, samlat på ett ställe och från de officiella källorna: Valmyndigheten, SCB, riksdagen och Regeringskansliet. Uppdateras från källorna; allt länkar tillbaka till dem.',
-          )}
-        </p>
-        <TopicNav
-          active={view === '#now' ? '#now-election' : view}
-          items={[
-            ['#now-election', 'Election result', 'Valresultat'],
-            ['#now-government', 'Government', 'Regeringen'],
-            ['#now-news', 'News', 'Nyheter'],
-            ['#now-decisions', 'Decisions', 'Beslut'],
-            ['#now-history', 'Opinion over time', 'Opinion över tid'],
-            ['#now-votes', 'Voting history', 'Rösthistorik'],
-            ['#now-issues', 'Issues', 'Sakfrågor'],
-            ['#now-laws', 'Laws', 'Lagar'],
-            ['#now-studies', 'Studies', 'Utredningar'],
-            ['#now-depth', 'Sources & details', 'Källor & fördjupning'],
-          ]}
-        />
-      </div>
+      {!embedded && (
+        <div className="page-lead">
+          <p className="eyebrow">{l('Swedish politics', 'Svensk politik')}</p>
+          <h1>{l('Politics right now', 'Politiken just nu')}</h1>
+          <p>
+            {l(
+              'The election, the government, the polls and what the Riksdag decides, in one place and from the official sources: Valmyndigheten, SCB, the Riksdag and the Government Offices. Updated from the sources; everything links back to them.',
+              'Valet, regeringen, opinionen och vad riksdagen beslutar, samlat på ett ställe och från de officiella källorna: Valmyndigheten, SCB, riksdagen och Regeringskansliet. Uppdateras från källorna; allt länkar tillbaka till dem.',
+            )}
+          </p>
+          <TopicNav
+            active={view === '#now' ? '#now-election' : view}
+            items={[
+              ['#now-election', 'Election result', 'Valresultat'],
+              ['#now-government', 'Government', 'Regeringen'],
+              ['#now-news', 'News', 'Nyheter'],
+              ['#now-decisions', 'Decisions', 'Beslut'],
+              ['#now-history', 'Opinion over time', 'Opinion över tid'],
+              ['#now-votes', 'Voting history', 'Rösthistorik'],
+              ['#now-issues', 'Issues', 'Sakfrågor'],
+              ['#now-laws', 'Laws', 'Lagar'],
+              ['#now-studies', 'Studies', 'Utredningar'],
+              ['#now-depth', 'Sources & details', 'Källor & fördjupning'],
+            ]}
+          />
+        </div>
+      )}
       {error && <p role="alert">{error}</p>}
       {!now && !error && (
         <div className="loading">{l('Loading…', 'Laddar…')}</div>
       )}
 
-      {now && ['#now', '#now-election'].includes(view) && (
+      {now && ['#now', '#now-election', '#now-seats'].includes(view) && (
         <section
           className="report welfare-section now-summary"
           aria-label={l('Summary', 'Sammanfattning')}
@@ -521,7 +533,7 @@ export default function NowPage({ view }: { view: string }) {
         </section>
       )}
 
-      {now && ['#now', '#now-election'].includes(view) && (
+      {now && ['#now', '#now-election', '#now-seats'].includes(view) && (
         <section
           className="report welfare-section"
           aria-labelledby="now-election-heading"

@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from './test'
 
 test('welfare page shows headlines, the county comparison and a working explorer', async ({
   page,

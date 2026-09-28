@@ -29,7 +29,7 @@ export default function TimeSeriesChart({
   describe,
   formatTick = String,
   scrollHint,
-  color = '#087f7b',
+  color = '#1a1a1a',
 }: Props) {
   const plotW = WIDTH - MARGIN.left - MARGIN.right
   const plotH = HEIGHT - MARGIN.top - MARGIN.bottom

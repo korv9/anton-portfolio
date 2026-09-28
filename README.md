@@ -2,7 +2,7 @@
 
 English-language React/TypeScript portfolio with a static Swedish political observatory, thesis case study and job-market report. No backend or live API is required. Hosted on Cloudflare (Workers static assets) at https://antonernstsson.com (see [hosting](docs/deploy.md)).
 
-The home page is Anton's profile and project directory. Each main project opens on its own hash-routed page: `/#politics`, `/#job-market`, `/#drugcomb`, `/#rfc-drift`, `/#thesis` and `/#homie`. Within politics, the tabs open decisions, speeches, budget proposals, a provisional language map and technical data. `/#budget-outturn` leads directly to the annual approved-versus-spent view. These routes work on static hosting without server-side rewrites.
+The home page is Anton's profile: a short presentation, about, experience, skills, selected projects and contact. The politics product, *Svensk politik i siffror*, opens at `/#politik` with seven themes, each one question answered by one chart, and every detailed view as a deep dive; the other projects open on their own pages (`/#job-market`, `/#sweden`, `/#drugcomb`, `/#rfc-drift`, `/#thesis`, `/#homie`). See [site structure and design](docs/site-structure.md). These hash routes work on static hosting without server-side rewrites.
 
 See [report findings and coverage](docs/report-findings.md) for the budget, language and annual-account definitions and their limits.
 
@@ -13,7 +13,7 @@ npm ci
 npm run dev
 ```
 
-Open http://127.0.0.1:5173. The political dashboard starts at `/#politics`.
+Open http://127.0.0.1:5173. The politics product starts at `/#politik`.
 
 ```powershell
 npm run build
@@ -54,7 +54,7 @@ The engine has no validated vote-to-direction pairs yet. Party-level tightening/
 
 Five public sources — SCB's labour force survey and population, Försäkringskassan's sick-leave statistics, Folkhälsomyndigheten's public health survey, the European Social Survey and Kolada — in one star schema with shared keys for region, period, sex and age. See [the welfare data model](docs/welfare-data-model.md) and [the analysis guide](docs/analysis-guide.md): which table for which purpose, and how each measure may be aggregated.
 
-The politics hub (`#now`) puts the latest election, the government and its formation, the polls and the Riksdag's latest decisions on one page, with every roll call since 1993/94, every election since 1973 and SCB's party preference survey since 1972, and a page per policy issue that joins decisions, party votes, budget outturn, welfare statistics and debate. See [the parliament data model](docs/parliament-data-model.md).
+The politics product (`#politik`) puts the latest election, the government and its formation, the polls and the Riksdag's latest decisions on one page, with every roll call since 1993/94, every election since 1973 and SCB's party preference survey since 1972, and a page per policy issue that joins decisions, party votes, budget outturn, welfare statistics and debate. See [the parliament data model](docs/parliament-data-model.md).
 
 The job market (`#job-market`) covers every job ad on Arbetsförmedlingen since 2020, not only IT: ads per month and occupation field, every occupation group year by year with the change on the same months a year earlier, counties, and conditions (employment type, working hours, required experience). The IT report on software and data roles is `#job-market-tech`. See [the job market](docs/job-market.md).
 

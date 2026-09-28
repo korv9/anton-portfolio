@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from './test'
 
 test('decisions and law provisions are readable without leaving the site', async ({
   page,
@@ -65,7 +65,7 @@ test('decisions and law provisions are readable without leaving the site', async
   await expect(full).not.toContainText('dokumentstatus')
   expect(context.pages()).toHaveLength(1)
   await expect(page).toHaveURL(/#now-decisions$/)
-  await page.locator('.topic-tabs a[href="#now-laws"]').click()
+  await page.goto('/#now-laws')
   await page.getByLabel('Law snapshot').selectOption('sfs-1976-580')
   await page.locator('.law-text summary').first().click()
   await expect(page.locator('.law-text .source-text')).toBeVisible()

@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from './test'
 
 type Item = { parties: string[]; topics: string[]; url: string }
 

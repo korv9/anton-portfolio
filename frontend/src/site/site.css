@@ -1,0 +1,167 @@
+/* The site frame: header, footer, project bar. */
+
+.site-bar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 0 clamp(1rem, 4vw, 2.5rem);
+  background: var(--page);
+  border-bottom: 1px solid var(--line);
+}
+.wordmark {
+  text-decoration: none;
+}
+.site-bar .wordmark-name {
+  width: auto;
+  height: auto;
+  background: none;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+  display: inline-block;
+  white-space: nowrap;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1;
+}
+.site-nav {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+.site-nav ul {
+  display: flex;
+  gap: 1.75rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.site-nav a {
+  font-size: 0.9375rem;
+  text-decoration: none;
+  color: var(--muted);
+}
+.site-nav a:hover,
+.site-nav a[aria-current] {
+  color: var(--ink);
+}
+.site-nav a[aria-current] {
+  text-decoration: underline;
+  text-underline-offset: 0.4em;
+}
+.site-cv {
+  color: var(--ink) !important;
+  font-weight: 500;
+}
+.site-bar .language-switch {
+  display: inline-flex;
+  border: 1px solid var(--line-strong);
+  padding: 0;
+  background: transparent;
+}
+.site-bar .language-switch button {
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  padding: 0.35rem 0.55rem;
+  min-height: 32px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.site-bar .language-switch button[aria-pressed='true'] {
+  background: var(--ink);
+  color: #fff;
+}
+.site-menu-button {
+  display: none;
+  border: 1px solid var(--line-strong);
+  background: transparent;
+  min-height: 40px;
+  padding: 0 0.9rem;
+  cursor: pointer;
+}
+.site-foot {
+  border-top: 1px solid var(--line);
+  padding: 2rem 0 3rem;
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+.site-foot-inner {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+.project-bar {
+  padding-top: 1.25rem;
+  padding-bottom: 0.25rem;
+  font-size: 0.9375rem;
+}
+.project-bar a {
+  text-decoration: none;
+  color: var(--muted);
+}
+.project-bar a:hover {
+  color: var(--ink);
+  text-decoration: underline;
+}
+
+@media (max-width: 860px) {
+  .site-menu-button {
+    display: inline-block;
+  }
+  .site-nav {
+    display: none;
+    position: absolute;
+    top: 64px;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem clamp(1rem, 4vw, 2.5rem) 1.5rem;
+    background: var(--page);
+    border-bottom: 1px solid var(--line);
+  }
+  .site-nav.open {
+    display: flex;
+  }
+  .site-nav ul {
+    flex-direction: column;
+    gap: 0;
+    width: 100%;
+  }
+  .site-nav li {
+    border-bottom: 1px solid var(--line);
+  }
+  .site-nav a {
+    display: block;
+    padding: 0.85rem 0;
+    font-size: 1.0625rem;
+  }
+}
+
+/* Visual order: name, navigation, language, menu button (the language stays visible on phones). */
+.site-bar .wordmark {
+  margin-right: auto;
+}
+.site-bar .site-nav {
+  order: 2;
+}
+.site-bar .language-switch {
+  order: 3;
+}
+.site-bar .site-menu-button {
+  order: 4;
+}
+@media (max-width: 860px) {
+  .site-bar {
+    gap: 0.75rem;
+  }
+}

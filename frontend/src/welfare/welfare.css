@@ -44,7 +44,7 @@
 }
 .welfare-tile strong {
   font:
-    800 1.9rem/1.1 'Manrope Variable',
+    800 1.9rem/1.1 var(--font),
     sans-serif;
   color: var(--ink);
 }
@@ -60,10 +60,10 @@
 }
 /* Text stays in ink tokens; the arrow and wording carry direction, not colour alone. */
 .tile-change.better {
-  color: #1d6b43;
+  color: #1a1a1a;
 }
 .tile-change.worse {
-  color: #a3321a;
+  color: #5c5c5c;
 }
 .tile-change.flat {
   color: var(--muted);
@@ -273,13 +273,13 @@
   border: 1px solid currentColor;
 }
 .status-badge.ok {
-  color: #1d6b43;
+  color: #1a1a1a;
 }
 .status-badge.stale {
   color: #8a5a00;
 }
 .status-badge.failing {
-  color: #a3321a;
+  color: #5c5c5c;
 }
 .status-grid {
   display: grid;

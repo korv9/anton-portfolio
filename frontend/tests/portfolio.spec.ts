@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from './test'
 import AxeBuilder from '@axe-core/playwright'
 
 test('home introduces Anton and routes to each project', async ({
@@ -9,25 +9,41 @@ test('home introduces Anton and routes to each project', async ({
   page.on('pageerror', (e) => errors.push(e.message))
   await page.goto('/')
   await expect(page.getByRole('heading', { level: 1 })).toContainText(
-    'Data Engineer',
+    'raw data',
   )
-  await expect(page.locator('.about-profile')).toContainText('Fora')
-  await expect(page.locator('.about-profile')).toContainText('Avtalat')
-  await expect(page.locator('.product-cards > article')).toHaveCount(7)
+  // In reading order: about, experience, skills, projects, contact.
+  const ids = await page
+    .locator('.home > section')
+    .evaluateAll((sections) => sections.map((s) => s.id))
+  expect(ids).toEqual([
+    'start',
+    'om-mig',
+    'erfarenhet',
+    'kompetenser',
+    'projekt',
+    'kontakt',
+  ])
+  await expect(page.locator('#erfarenhet')).toContainText('Fora')
+  await expect(page.locator('#erfarenhet')).toContainText('Avtalat')
+  await expect(page.locator('.hp-project')).toHaveCount(4)
+  await expect(page.locator('.hp-lead')).toContainText('Swedish politics')
+  const more = page.locator('#kompetenser .skills-more')
+  await expect(more).toHaveCount(0)
+  await page.getByRole('button', { name: 'Show more' }).click()
+  await expect(more).toHaveCount(5)
   await expect(page.locator('#job-market')).toHaveCount(0)
   if (isMobile) await page.getByRole('button', { name: 'Menu' }).click()
   await page
     .getByRole('navigation', { name: 'Main navigation' })
-    .getByRole('link', { name: 'Charts & analyses' })
+    .getByRole('link', { name: 'Politics' })
     .click()
   await expect(page.getByRole('heading', { level: 1 })).toContainText(
-    'Politics right now',
+    'Who holds power right now?',
   )
   await page.goto('/#politics')
   await expect(page.getByRole('heading', { level: 1 })).toContainText(
-    'Swedish politics',
+    'Roll calls in detail',
   )
-  await expect(page.locator('.page-tabs a')).toHaveCount(5)
   await page.goto('/#job-market-tech')
   await expect(page.locator('#job-market')).toBeVisible()
   // The IT report's total, from the file the page reads: it changes when a new archive year
@@ -79,12 +95,18 @@ test('language map and job chart retain useful controls', async ({ page }) => {
 test('navigation, responsive layout and accessibility', async ({ page }) => {
   await page.goto('/')
   await expect(
-    page.getByRole('link', { name: 'Download CV' }).first(),
+    page.getByRole('link', { name: /Download CV/ }).first(),
   ).toHaveAttribute('download', '')
   for (const route of [
     '/',
     '/#politics',
     '/#now',
+    '/#politik-valjarna',
+    '/#politik-roster',
+    '/#politik-budget',
+    '/#politik-tal',
+    '/#politik-utforska',
+    '/#politik-kallor',
     '/#issue-arbete',
     '/#budget-comparison',
     '/#drugcomb',

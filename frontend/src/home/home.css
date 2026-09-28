@@ -1,0 +1,229 @@
+.home-hero {
+  padding-block: clamp(5rem, 14vw, 11rem) clamp(4rem, 9vw, 7rem);
+}
+.home-hero-title {
+  margin: 1.25rem 0 1.5rem;
+  font-size: clamp(2.5rem, 6.4vw, 5.5rem);
+  line-height: 1.02;
+  letter-spacing: -0.035em;
+  max-width: 17ch;
+}
+.home-hero-lede {
+  margin: 0 0 2.5rem;
+  font-size: clamp(1.125rem, 1.8vw, 1.375rem);
+  color: #3c3c3c;
+  max-width: 44ch;
+}
+.home-hero-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+.home-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 9fr);
+  gap: 2rem;
+}
+
+/* Experience */
+.timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--ink);
+}
+.timeline-row {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 9fr);
+  gap: 2rem;
+  padding: 2rem 0;
+  border-bottom: 1px solid var(--line);
+}
+.timeline-org {
+  margin: 0 0 0.35rem;
+  font-size: 1.375rem;
+  font-weight: 700;
+}
+.timeline-when .ds-small {
+  margin: 0;
+}
+.timeline-did {
+  margin: 0 0 1.5rem;
+  padding-left: 1.1rem;
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  max-width: 62ch;
+}
+.timeline-did li + li {
+  margin-top: 0.4rem;
+}
+.timeline-facts {
+  margin: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+.timeline-facts > div {
+  display: grid;
+  grid-template-columns: 7rem minmax(0, 1fr);
+  gap: 1rem;
+}
+.timeline-facts dt {
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+.timeline-facts dd {
+  margin: 0;
+  line-height: 1.5;
+}
+.home-education {
+  margin-top: 1.5rem;
+}
+
+/* Skills */
+.skills {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  border-top: 1px solid var(--ink);
+}
+.skills-group {
+  padding: 1.25rem 1.5rem 1.5rem 0;
+  border-bottom: 1px solid var(--line);
+}
+.skills-group h3 {
+  margin: 0 0 0.6rem;
+  font-size: 1rem;
+}
+.skills-top {
+  margin: 0;
+  font-size: 1.0625rem;
+  line-height: 1.55;
+}
+.skills-more {
+  margin: 0.6rem 0 0;
+}
+.skills-toggle {
+  margin-top: 1.5rem;
+}
+
+/* Projects */
+.hp-project {
+  border-top: 1px solid var(--ink);
+  padding-top: 1.5rem;
+}
+.hp-lead {
+  margin-bottom: 4rem;
+}
+.hp-lead-title {
+  margin: 0.75rem 0 2rem;
+  font-size: clamp(2rem, 4.6vw, 3.75rem);
+  line-height: 1.04;
+  letter-spacing: -0.03em;
+}
+.hp-lead-title a,
+.hp-title a {
+  text-decoration: none;
+}
+.hp-lead-title a:hover,
+.hp-title a:hover {
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+}
+.hp-lead .hp-facts {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.5rem 3rem;
+}
+.hp-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 3rem 2rem;
+}
+.hp-title {
+  margin: 0 0 1.25rem;
+  font-size: 1.375rem;
+  line-height: 1.2;
+}
+.hp-facts {
+  margin: 0;
+  display: grid;
+  gap: 1rem;
+}
+.hp-facts dt {
+  font-size: 0.8125rem;
+  color: var(--muted);
+  margin-bottom: 0.25rem;
+}
+.hp-facts dd {
+  margin: 0;
+  line-height: 1.55;
+}
+.hp-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  margin: 1.5rem 0 0;
+}
+.more-projects {
+  margin-top: 4rem;
+}
+.more-projects summary {
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 1.0625rem;
+  padding: 0.75rem 0;
+}
+.more-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  gap: 0.25rem 2rem;
+  padding: 1rem 0;
+  text-decoration: none;
+}
+.more-row span {
+  color: #3c3c3c;
+  line-height: 1.5;
+}
+.more-row:hover strong {
+  text-decoration: underline;
+}
+.anchor-alias {
+  position: relative;
+  top: -64px;
+}
+
+/* Contact */
+.contact-list {
+  margin: 1.5rem 0 1rem;
+}
+.contact-list a {
+  display: block;
+  padding: 0.9rem 0;
+  font-size: 1.125rem;
+  text-decoration: none;
+}
+.contact-list a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 900px) {
+  .hp-grid {
+    grid-template-columns: 1fr;
+  }
+  .hp-lead .hp-facts {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 760px) {
+  .home-columns,
+  .timeline-row,
+  .more-row {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  .home-columns > div:empty {
+    display: none;
+  }
+  .timeline-facts > div {
+    grid-template-columns: 1fr;
+    gap: 0.2rem;
+  }
+}

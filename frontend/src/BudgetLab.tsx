@@ -1,5 +1,5 @@
 import { currentLocale, l, t } from './i18n'
-import { fetchData } from './dataSource'
+import { load } from './parliament/data'
 import BudgetLedger from './BudgetLedger'
 import BudgetOverview from './BudgetOverview'
 import BudgetLanguage, { type Language } from './BudgetLanguage'
@@ -180,7 +180,7 @@ function ScatterChart({
           }
           style={
             allParties
-              ? { fill: partyColors[row.party] ?? '#007a75' }
+              ? { fill: partyColors[row.party] ?? '#1a1a1a' }
               : undefined
           }
           tabIndex={0}
@@ -619,12 +619,12 @@ function TrendChart({
   const series = [
     {
       key: 'budget_share_pct' as const,
-      color: '#006864',
+      color: '#1a1a1a',
       label: 'Budget share',
     },
     {
       key: 'speech_attention_pct' as const,
-      color: '#d64b2b',
+      color: '#8a8a8a',
       label: 'Keyword share',
     },
   ]
@@ -782,11 +782,14 @@ export default function BudgetLab({
   const [method, setMethod] = useState('exact')
 
   useEffect(() => {
-    fetchData('gold/marts/budget-report.json')
-      .then((response) => {
-        if (!response.ok) throw new Error('Budget report unavailable')
-        return response.json()
-      })
+    // Shared with the budget and speech themes, so the file is fetched once per visit.
+    load<{
+      language: Language
+      budgets: BudgetRow[]
+      alignment: AlignmentRow[]
+      coverage: BudgetCoverage
+      speech_rows: SpeechRow[]
+    }>('gold/marts/budget-report.json')
       .then((report) => {
         setLanguage(report.language)
         setBudgets(report.budgets)
