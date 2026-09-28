@@ -229,11 +229,14 @@ function selfEmployedRate(birthYear: number, rules: TaxRules) {
   return contributions(12, birthYear, standard, bands) / 12
 }
 
-/** The tax for the year, without the derived measures (wedge, marginal rate). */
-function computeTax(
+/**
+ * The tax for the year, without the derived measures (wedge, marginal rate). The rules are
+ * the year's own unless others are given, as the comparison of years does (history.ts).
+ */
+export function computeTax(
   input: TaxInput,
+  rules: TaxRules = RULES[input.year],
 ): Omit<TaxResult, 'marginalRate' | 'taxWedge'> {
-  const rules = RULES[input.year]
   if (!rules) throw new Error(`No tax rules for ${input.year}`)
   // "Fyllt 66 år vid årets ingång": born at least 67 years before the income year. The ages
   // for the higher allowance and the higher in-work credit have not always been the same.

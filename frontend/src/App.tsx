@@ -309,7 +309,7 @@ function pageFromHash(hash: string) {
   if (hash === '#analysis' || hash.startsWith('#analysis-')) return 'analysis'
   if (hash === '#now' || hash.startsWith('#now-')) return 'now'
   if (hash.startsWith('#issue-')) return 'issue'
-  if (hash === '#taxes') return 'taxes'
+  if (hash === '#taxes' || hash.startsWith('#taxes-')) return 'taxes'
   return 'home'
 }
 
@@ -1348,7 +1348,7 @@ function App() {
           )}
           {page === 'taxes' && (
             <Suspense fallback={<div className="loading">{t('Loading…')}</div>}>
-              <TaxesPage />
+              <TaxesPage view={hash} />
             </Suspense>
           )}
           {page === 'analysis' && (

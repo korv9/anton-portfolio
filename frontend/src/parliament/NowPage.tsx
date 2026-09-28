@@ -1,4 +1,5 @@
 import TopicNav from '../TopicNav'
+import StudiesView, { StudyLinks } from './Studies'
 import { useEffect, useMemo, useState } from 'react'
 import { l } from '../i18n'
 import MultiLineChart, { type Series } from '../charts/MultiLineChart'
@@ -154,6 +155,7 @@ export function DecisionList({ decisions }: { decisions: Decision[] }) {
               </div>
             )}
             {d.party_positions && <Positions positions={d.party_positions} />}
+            <StudyLinks studies={d.studies} />
           </li>
         ))}
       </ol>
@@ -482,6 +484,7 @@ export default function NowPage({ view }: { view: string }) {
             ['#now-votes', 'Voting history', 'Rösthistorik'],
             ['#now-issues', 'Issues', 'Sakfrågor'],
             ['#now-laws', 'Laws', 'Lagar'],
+            ['#now-studies', 'Studies', 'Utredningar'],
             ['#now-depth', 'Sources & details', 'Källor & fördjupning'],
           ]}
         />
@@ -719,6 +722,8 @@ export default function NowPage({ view }: { view: string }) {
           </div>
         </section>
       )}
+
+      {view === '#now-studies' && <StudiesView />}
 
       {view === '#now-laws' && (
         <section className="report welfare-section" id="now-laws">

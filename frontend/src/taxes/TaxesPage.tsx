@@ -3,6 +3,10 @@ import { l } from '../i18n'
 import MultiLineChart, { type Series } from '../charts/MultiLineChart'
 import { fetchJson } from '../welfare/data'
 import TaxCalculator, { type Municipalities } from './TaxCalculator'
+import TopicNav from '../TopicNav'
+import { DecisionTimeline, LastChanged, type Decisions } from './Decisions'
+import YourDecisions from './YourDecisions'
+import Household from './Household'
 import type { TaxInput, TaxResult } from './calculator'
 import '../welfare/welfare.css'
 import '../parliament/parliament.css'
@@ -118,13 +122,14 @@ function RankBars({
   )
 }
 
-export default function TaxesPage() {
+export default function TaxesPage({ view = '#taxes' }: { view?: string }) {
   const [sweden, setSweden] = useState<Sweden | null>(null)
   const [countries, setCountries] = useState<Countries | null>(null)
   const [wedge, setWedge] = useState<Wedge | null>(null)
   const [municipalities, setMunicipalities] = useState<Municipalities | null>(
     null,
   )
+  const [decisions, setDecisions] = useState<Decisions | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [compareType, setCompareType] = useState('_T')
   const [household, setHousehold] = useState('S_C0')
@@ -140,8 +145,10 @@ export default function TaxesPage() {
       fetchJson<Countries>('taxes/countries.json'),
       fetchJson<Wedge>('taxes/wedge.json'),
       fetchJson<Municipalities>('taxes/municipalities.json'),
+      fetchJson<Decisions>('taxes/decisions.json'),
     ])
-      .then(([s, c, w, m]) => {
+      .then(([s, c, w, m, d]) => {
+        setDecisions(d)
         setSweden(s)
         setCountries(c)
         setWedge(w)
@@ -328,7 +335,8 @@ export default function TaxesPage() {
       }))
   }, [countries, compareYear, compareType, countryBy])
 
-  const loading = !sweden || !countries || !wedge || !municipalities
+  const loading =
+    !sweden || !countries || !wedge || !municipalities || !decisions
 
   return (
     <div className="project-page welfare-page taxes-page">
@@ -346,33 +354,21 @@ export default function TaxesPage() {
             'Alla slags skatter, över sextio år och mot de andra OECD-länderna, och en räknare som ger din egen skatt på kronan enligt Skatteverkets regler: lön, pension, ersättningar, egen firma, kapital, ISK och villa, med vad arbetsgivaren betalar ovanpå.',
           )}
         </p>
-        <nav
-          className="welfare-links"
-          aria-label={l('On this page', 'På sidan')}
-        >
-          <a
-            href="#taxes"
-            onClick={(e) => {
-              e.preventDefault()
-              document.getElementById('tax-calculator')?.scrollIntoView()
-            }}
-          >
-            {l('Calculator', 'Räknaren')}
-          </a>
-          <a href="#issue-skatt">
-            {l(
-              'Tax votes in the Riksdag →',
-              'Skatteomröstningar i riksdagen →',
-            )}
-          </a>
-        </nav>
+        <TopicNav
+          active={view}
+          items={[
+            ['#taxes', 'Overview', 'Översikt'],
+            ['#taxes-calculator', 'Your tax', 'Din skatt'],
+            ['#taxes-decisions', 'Decisions', 'Beslut'],
+          ]}
+        />
       </div>
       {error && <p role="alert">{error}</p>}
       {loading && !error && (
         <div className="loading">{l('Loading…', 'Laddar…')}</div>
       )}
 
-      {summary.length > 0 && (
+      {view === '#taxes' && summary.length > 0 && (
         <section
           className="report welfare-section now-summary"
           aria-label={l('Summary', 'Sammanfattning')}
@@ -386,7 +382,7 @@ export default function TaxesPage() {
         </section>
       )}
 
-      {sweden && swedenLatest && (
+      {view === '#taxes' && sweden && swedenLatest && (
         <section
           className="report welfare-section"
           aria-labelledby="tax-sweden"
@@ -432,7 +428,7 @@ export default function TaxesPage() {
         </section>
       )}
 
-      {countries && compareYear && (
+      {view === '#taxes' && countries && compareYear && (
         <section
           className="report welfare-section"
           aria-labelledby="tax-countries"
@@ -480,7 +476,7 @@ export default function TaxesPage() {
         </section>
       )}
 
-      {municipalities && (
+      {view === '#taxes-calculator' && municipalities && (
         <section
           className="report welfare-section"
           aria-labelledby="tax-calculator-heading"
@@ -494,7 +490,70 @@ export default function TaxesPage() {
         </section>
       )}
 
-      {wedge && (
+      {view === '#taxes-calculator' && decisions && mine && (
+        <section
+          className="report welfare-section"
+          aria-labelledby="tax-your-decisions"
+        >
+          <p className="eyebrow">{l('Decisions and you', 'Besluten och du')}</p>
+          <h2 id="tax-your-decisions">
+            {l(
+              'How the decisions since 2016 changed your tax',
+              'Så har besluten sedan 2016 ändrat din skatt',
+            )}
+          </h2>
+          <YourDecisions input={mine.input} decisions={decisions} />
+        </section>
+      )}
+
+      {view === '#taxes-calculator' && decisions && (
+        <section
+          className="report welfare-section"
+          aria-labelledby="tax-household"
+        >
+          <p className="eyebrow">{l('What you buy', 'Det du köper')}</p>
+          <h2 id="tax-household">
+            {l(
+              'VAT and fuel tax: an estimate for your household',
+              'Moms och bränsleskatt: en uppskattning för ditt hushåll',
+            )}
+          </h2>
+          <Household decisions={decisions} />
+        </section>
+      )}
+
+      {view === '#taxes-decisions' && decisions && (
+        <>
+          <section
+            className="report welfare-section"
+            aria-labelledby="tax-last-changed"
+          >
+            <p className="eyebrow">{l('Decisions', 'Beslut')}</p>
+            <h2 id="tax-last-changed">
+              {l(
+                'When each tax last changed',
+                'När varje skatt ändrades senast',
+              )}
+            </h2>
+            <LastChanged data={decisions} />
+          </section>
+          <section
+            className="report welfare-section"
+            aria-labelledby="tax-decisions"
+          >
+            <h2 id="tax-decisions">
+              {l(
+                'Every tax decision since 2016: who voted how, and the studies behind it',
+                'Varje skattebeslut sedan 2016: hur partierna röstade, och utredningarna bakom',
+              )}
+            </h2>
+            <DecisionTimeline data={decisions} />
+            <p className="welfare-note">{decisions.method}</p>
+          </section>
+        </>
+      )}
+
+      {view === '#taxes' && wedge && (
         <section className="report welfare-section" aria-labelledby="tax-wedge">
           <p className="eyebrow">
             {l('Tax on a salary', 'Skatt på en lön')} · {wedge.year}
