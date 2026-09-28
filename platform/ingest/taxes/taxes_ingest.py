@@ -39,6 +39,17 @@ WITHHOLDING_TABLES = "88320397-5c32-4c16-ae79-d36d95b17b95"
 FIRST_TABLE_YEAR = 2016
 PAGE = 500
 
+SCB_HUT = "https://api.scb.se/OV0104/v1/doris/sv/ssd/HE/HE0201/HE0201D/HUThush"
+# SCB, Hushållens utgifter (HUT) 2021: spending per household type and group of goods and
+# services, kronor per household. The latest survey; the VAT estimate on the site uses it.
+HUT_QUERY = {
+    "query": [
+        {"code": "ContentsCode", "selection": {"filter": "item", "values": ["0000043B"]}},
+        {"code": "Tid", "selection": {"filter": "item", "values": ["2021"]}},
+    ],
+    "response": {"format": "json"},
+}
+
 SKATTEVERKET = "https://www.skatteverket.se"
 # Skatteverket's "Belopp och procent" for private persons, one page per income year: the
 # amounts behind the rules in frontend/src/taxes/rules.ts that are not in the withholding
@@ -98,6 +109,10 @@ def main() -> None:
 
     rates = rowstore_pages(http, MUNICIPAL_RATES, "municipal_rates/part", {})
     print(f"skatteverket/municipal_rates: {rates:,} parish-year rows", flush=True)
+
+    rawstore.fetch(http, "scb", "hut/hushallstyp-2021.json", SCB_HUT, method="POST",
+                   body=HUT_QUERY)
+    print("scb/hut: household spending 2021", flush=True)
 
     for year, path in AMOUNTS_PAGES.items():
         rawstore.fetch(http, "skatteverket", f"amounts/{year}.html", SKATTEVERKET + path,

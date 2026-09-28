@@ -1,0 +1,5 @@
+household_type,name_sv,name_en
+E90,Alla hushåll,All households
+200,Ensamstående utan barn,Single without children
+240,Sammanboende utan barn,Couple without children
+250,Sammanboende med barn,Couple with children

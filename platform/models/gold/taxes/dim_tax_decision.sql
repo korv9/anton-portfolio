@@ -19,6 +19,11 @@ select
     split_part(d.report, ':', 1) as report_session,
     split_part(d.report, ':', 2) as report_designation,
     d.origin,
+    -- For a tax on motor fuel: the change per litre, excluding VAT, and the months of the
+    -- year it applied (for a temporary change), as the bill states them.
+    d.petrol_sek_per_litre,
+    d.diesel_sek_per_litre,
+    d.months,
     d.source_url
 from {{ ref('tax_decisions') }} as d
 left join {{ ref('fct_bill') }} as b on b.bill = d.bill

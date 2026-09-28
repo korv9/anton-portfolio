@@ -95,7 +95,14 @@ seeds:
         +column_types: {decision_key: varchar, in_force: date, component: varchar,
                         direction: varchar, title_sv: varchar, title_en: varchar,
                         bill: varchar, bill_section: varchar, report: varchar,
-                        origin: varchar, source_url: varchar}
+                        origin: varchar, source_url: varchar,
+                        petrol_sek_per_litre: double, diesel_sek_per_litre: double,
+                        months: integer}
+      vat_spending_groups:
+        +column_types: {spending_group: varchar, name_sv: varchar, name_en: varchar,
+                        vat_rate: double, note_sv: varchar}
+      household_types:
+        +column_types: {household_type: varchar, name_sv: varchar, name_en: varchar}
     welfare:
       +tags: [welfare]
       +schema: seeds

@@ -14,3 +14,11 @@ sources:
           external_location: >-
             read_json('{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/skatteverket/municipal_rates/part-*.json',
             maximum_object_size = 50000000)
+  - name: scb_household_spending
+    description: SCB, Hushållens utgifter (HUT) 2021, spending per household type and group.
+    tables:
+      - name: hut
+        meta:
+          external_location: >-
+            read_json_objects('{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/scb/hut/hushallstyp-*.json',
+            maximum_object_size = 50000000)

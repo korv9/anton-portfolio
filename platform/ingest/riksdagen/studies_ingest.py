@@ -5,8 +5,9 @@
 
 Stored under warehouse/raw/riksdagen/studies/ with provenance:
 
-    sou/<year>-<page>.json          Statens offentliga utredningar published that year
-    ds/<year>-<page>.json           Departementsserien published that year
+    sou/<year>-<page>.json          Statens offentliga utredningar published that year, 1995 on
+    ds/<year>-<page>.json           Departementsserien published that year, 1995 on
+    rir/<year>-<page>.json          Riksrevisionen's audit reports (granskningsrapporter)
     propositions/<rm>-<page>.json   the session's government bills (propositioner)
     preparation/<rm>.jsonl.gz       one line per bill: the committee reports it was dealt
                                     with in, and the studies it cites as its preparation
@@ -39,6 +40,8 @@ import rawstore  # noqa: E402
 SOURCE = "riksdagen"
 API = "https://data.riksdagen.se"
 FIRST_YEAR = 2006
+# Bills since 2006 cite studies published years before; the series are listed from here.
+FIRST_STUDY_YEAR = 1995
 
 SOU = re.compile(r"\bSOU\s?(\d{4}):\s?(\d{1,3})\b")
 DS = re.compile(r"\bDs\s?(\d{4}):\s?(\d{1,3})\b")
@@ -143,7 +146,11 @@ def listing(http, doc_type: str, period: str, target: str) -> list[dict]:
                                         "utformat": "json", "sort": "datum", "sortorder": "asc"})
         url = f"{API}/dokumentlista/?{query}"
         path = rawstore.fetch(http, SOURCE, f"studies/{target}-{page:02d}.json", url, pause=0.3)
-        result = json.loads(path.read_text(encoding="utf-8-sig"))["dokumentlista"]
+        body = path.read_text(encoding="utf-8-sig").strip()
+        # A session that has just opened can answer with an empty body instead of an empty list.
+        if not body:
+            return documents
+        result = json.loads(body)["dokumentlista"]
         rows = result.get("dokument") or []
         documents.extend(rows if isinstance(rows, list) else [rows])
         if page >= int(result.get("@sidor") or 1):
@@ -226,10 +233,16 @@ def main() -> None:
 
     if not arguments.session:
         this_year = date.today().year
-        for year in range(FIRST_YEAR, this_year + 1):
+        for year in range(FIRST_STUDY_YEAR, this_year + 1):
+            stored = rawstore.RAW / SOURCE / f"studies/sou/{year}-01.json"
+            # A past year's series is complete; the last two years are read again.
+            if stored.is_file() and year < this_year - 1:
+                continue
             sou = listing(http, "sou", str(year), f"sou/{year}")
             ds = listing(http, "ds", str(year), f"ds/{year}")
-            print(f"{year}: {len(sou)} SOU, {len(ds)} Ds", flush=True)
+            # Riksrevisionen's audit reports, which the government answers in a bill.
+            rir = listing(http, "rir", str(year), f"rir/{year}")
+            print(f"{year}: {len(sou)} SOU, {len(ds)} Ds, {len(rir)} RiR", flush=True)
 
     for session in sessions:
         known = stored_preparation(session)

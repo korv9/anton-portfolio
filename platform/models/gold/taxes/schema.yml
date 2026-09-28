@@ -56,3 +56,9 @@ models:
       - unique_combination:
           arguments:
             columns: [decision_key, study_key]
+  - name: fct_household_vat
+    description: Estimated VAT per household type and spending group (SCB HUT and VAT rates).
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [household_type, year, spending_group]

@@ -97,3 +97,10 @@ models:
       - unique_combination:
           arguments:
             columns: [bill, study_key]
+    columns:
+      - name: study_key
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_study')
+                field: study_key

@@ -13,6 +13,10 @@ JSON under frontend/public/data/parliament/:
     issues.json     per policy issue: its committees, decisions per session, how often the
                     government won, the latest decisions, the budget outturn of its expenditure
                     areas, the welfare indicators that describe it, and who debated it
+    studies.json    the latest government studies (SOU, Ds, Riksrevisionen) and the bills that
+                    rest on them, studies per year, and laws recently decided with their studies
+
+Every decision listed in now.json and issues.json carries the studies its bill rests on.
 
 Parquet under frontend/public/data/parquet/parliament_roll_calls/part-0.parquet: every roll
 call since 1993/94, for browsing and filtering in the browser.
@@ -46,6 +50,98 @@ PARTY_NAMES = {
     "V": "Vänsterpartiet", "C": "Centerpartiet", "KD": "Kristdemokraterna",
     "MP": "Miljöpartiet", "L": "Liberalerna", "NYD": "Ny demokrati", "OTHER": "Övriga partier",
 }
+
+
+# Budget bills and spring fiscal bills name hundreds of studies across all their proposals;
+# linking them to one decision says nothing, so decisions on them list no studies.
+OMNIBUS_BILLS = ("1", "100")
+
+
+def study_links(connection) -> dict[tuple[str, str], list[dict]]:
+    """The studies behind each committee report, through the bills the report dealt with."""
+    links = defaultdict(list)
+    for session, designation, kind, study, title, url in connection.execute(f"""
+            select r.report_session, r.designation, s.kind, s.designation, s.title, s.source_url
+            from gold.fct_bill_report as r
+            join gold.fct_bill as b using (bill)
+            join gold.fct_bill_study as bs using (bill)
+            join gold.dim_study as s using (study_key)
+            where b.number not in {OMNIBUS_BILLS}
+            order by r.report_session, r.designation, s.kind desc, s.designation""").fetchall():
+        entries = links[(session, designation)]
+        if len(entries) < 8 and not any(e["designation"] == study for e in entries):
+            entries.append({"kind": kind, "designation": study, "title": title, "url": url})
+    return links
+
+
+def studies_page(connection) -> dict:
+    """The latest studies with the bills that rest on them, and the laws recently decided."""
+    decided = """
+        select r.bill, min(v.vote_date) as decided
+        from gold.fct_bill_report as r
+        join gold.fct_roll_call as v
+            on v.session = r.report_session and v.designation = r.designation
+        group by r.bill"""
+    latest = records(connection, """
+        select study_key as key, kind, designation, title, inquiry, published, source_url as url
+        from gold.dim_study
+        where kind in ('sou', 'ds', 'rir') and published is not null and title is not null
+        order by published desc, kind, number desc
+        limit 300""")
+    bills = defaultdict(list)
+    for row in records(connection, f"""
+            with decided as ({decided})
+            select bs.study_key, b.bill, b.title, b.bill_date, b.source_url as url, d.decided
+            from gold.fct_bill_study as bs
+            join gold.fct_bill as b using (bill)
+            left join decided as d using (bill)
+            where bs.study_key in (select unnest(?))
+            order by b.bill_date""", [[s["key"] for s in latest]]):
+        bills[row.pop("study_key")].append(row)
+    for study in latest:
+        study["bills"] = bills.get(study["key"], [])
+
+    per_year = records(connection, """
+        select s.year, s.kind, count(*) as published,
+               count(*) filter (where exists (select 1 from gold.fct_bill_study as b
+                                              where b.study_key = s.study_key)) as cited
+        from gold.dim_study as s
+        where s.kind in ('sou', 'ds', 'rir') and s.year >= 2006 and s.title is not null
+        group by all order by s.year, s.kind""")
+
+    laws = records(connection, f"""
+        with decided as ({decided})
+        select b.bill, b.title, b.department, b.source_url as url, d.decided
+        from gold.fct_bill as b
+        join decided as d using (bill)
+        where b.number not in {OMNIBUS_BILLS} and b.studies > 0
+        order by d.decided desc, b.bill desc
+        limit 60""")
+    studies_of = defaultdict(list)
+    for row in records(connection, """
+            select bs.bill, s.kind, s.designation, s.title, s.source_url as url
+            from gold.fct_bill_study as bs join gold.dim_study as s using (study_key)
+            where bs.bill in (select unnest(?))
+            order by s.kind desc, s.designation""", [[law["bill"] for law in laws]]):
+        studies_of[row.pop("bill")].append(row)
+    for law in laws:
+        law["studies"] = studies_of.get(law["bill"], [])
+
+    return {
+        "generated_at": datetime.now(timezone.utc).isoformat(timespec="minutes"),
+        "latest": latest,
+        "per_year": per_year,
+        "recent_laws": laws,
+        "kinds": {
+            "sou": ["Government inquiry report (SOU)", "Statens offentliga utredningar (SOU)"],
+            "ds": ["Ministry report (Ds)", "Departementsserien (Ds)"],
+            "rir": ["Audit report (Riksrevisionen)", "Granskningsrapport (Riksrevisionen)"],
+            "pm": ["Ministry memorandum", "Promemoria från departementet"],
+        },
+        "method": ("A bill's studies are those its section 'Ärendet och dess beredning' names: "
+                   "the inquiry, departmental report or memorandum the proposal rests on. "
+                   "Read from the bill's text; each link keeps the sentence that makes it."),
+    }
 
 
 def records(connection, sql: str, parameters=None) -> list[dict]:
@@ -160,8 +256,10 @@ def main() -> None:
     positions = defaultdict(dict)
     for row in latest_positions:
         positions[row["roll_call_id"]][row["party"]] = row["position"]
+    links = study_links(connection)
     for decision in latest_decisions:
         decision["party_positions"] = positions.get(decision["roll_call_id"], {})
+        decision["studies"] = links.get((decision["session"], decision["designation"]), [])
 
     now = {
         "generated_at": datetime.now(timezone.utc).isoformat(timespec="minutes"),
@@ -299,6 +397,7 @@ def main() -> None:
         by_roll_call[row["roll_call_id"]][row["party"]] = row["position"]
     for row in recent:
         row["party_positions"] = by_roll_call.get(row["roll_call_id"], {})
+        row["studies"] = links.get((row["session"], row["designation"]), [])
 
     grouped = defaultdict(lambda: defaultdict(list))
     for name, rows in (("per_session", per_session), ("parties", party_issue),
@@ -318,6 +417,8 @@ def main() -> None:
                              "series": [{"year": r["year"], "value": r["value"]}
                                         for r in welfare_by_key[indicator]]}
                             for indicator in issue["welfare_indicators"] if welfare_by_key.get(indicator)]
+    write_json(OUT / "studies.json", studies_page(connection))
+
     write_json(OUT / "issues.json", {
         "issues": issues,
         "speech_link_coverage": round(speech_coverage, 3),

@@ -1,5 +1,6 @@
--- Government studies: Statens offentliga utredningar (SOU) and Departementsserien (Ds), one
--- row per report. A report published in several parts is kept as its main document. The
+-- Government studies: Statens offentliga utredningar (SOU), Departementsserien (Ds) and
+-- Riksrevisionen's audit reports (RiR), one row per report. A report published in several
+-- parts is kept as its main document, or its first part when there is no main one. The
 -- listing's title is sometimes only the series and number ("sou 2026 56"); the notice text
 -- then carries the real title and the inquiry that wrote it.
 with pages as (
@@ -27,7 +28,8 @@ select
     kind,
     cast(year_text as integer) as year,
     cast(number_text as integer) as number,
-    upper(kind) || ' ' || year_text || ':' || number_text as designation,
+    case kind when 'rir' then 'RiR' when 'ds' then 'Ds' else upper(kind) end
+        || ' ' || year_text || ':' || number_text as designation,
     document_id,
     case
         when regexp_matches(listed_title, '^(sou|ds) \d{4} \d+\s*$', 'i')
@@ -40,5 +42,6 @@ select
     published,
     'https://data.riksdagen.se/dokument/' || document_id as source_url
 from parsed
-where part is null and number_text ~ '^\d+$'
-qualify row_number() over (partition by kind, year_text, number_text order by published) = 1
+where number_text ~ '^\d+$'
+qualify row_number() over (partition by kind, year_text, number_text
+                           order by part nulls first, published) = 1
