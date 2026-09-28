@@ -1,0 +1,27 @@
+version: 2
+
+# The whole job market: counts of every ad in JobTech's historical archives from 2020, made by
+# platform/ingest/jobtech/ingest_market.py. No ad is kept, only counts per month, occupation
+# group and county, and per month, occupation field and conditions of employment.
+
+sources:
+  - name: jobtech_market
+    description: Ad counts per archive (one file per archive year or quarter).
+    tables:
+      - name: ads
+        description: Ads and vacancies per publication month, occupation field, occupation group and county.
+        meta:
+          external_location: >-
+            read_parquet('{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/jobtech/market/ads_*.parquet',
+            filename = true)
+      - name: conditions
+        description: Ads and vacancies per publication month and occupation field, by employment type, working hours and required experience.
+        meta:
+          external_location: >-
+            read_parquet('{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/jobtech/market/conditions_*.parquet',
+            filename = true)
+      - name: manifests
+        description: One record per archive counted, with its source URL and SHA-256.
+        meta:
+          external_location: >-
+            read_json('{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/jobtech/market/manifest_*.json')
