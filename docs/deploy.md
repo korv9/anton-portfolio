@@ -9,26 +9,17 @@ Cloudflare builds the site itself from this repository (Workers Builds): every p
 is published, including the data commits the refresh workflows make, and every other branch and
 pull request gets a preview URL on `workers.dev`. No workflow here deploys.
 
-## Branches and sites: dev and main
+## Branches: main and a preview per pull request
 
-Two Workers build from the same repository, one per branch:
+`main` is production. New work never lands there directly:
 
-| Branch | Worker | Address |
-|---|---|---|
-| `main` | `anton-portfolio`: production, what visitors see | `antonernstsson.com`, `www.antonernstsson.com`, `anton-portfolio.anton-ernstson.workers.dev` |
-| `dev` | `anton-portfolio-dev`: everything new lands here first | `anton-portfolio-dev.anton-ernstson.workers.dev` (and `dev.antonernstsson.com` if connected) |
-
-The dev Worker uses the same `wrangler.toml` with the deploy command
-`npx wrangler deploy --name anton-portfolio-dev`, so nothing in the repository differs between
-the two.
-
-1. Work happens on a feature branch, with a pull request into `dev`; CI must be green.
-2. Merged into `dev`, the change is on the dev site.
-3. When `dev` is ready, a pull request from `dev` into `main` releases it. Only the owner
-   approves that merge.
-4. The data refreshes commit to `main` (fresh data goes live directly). After a release, or
-   when `main` has data commits `dev` lacks, `main` is merged into `dev` so the two do not
-   drift.
+1. Work happens on a feature branch, with a pull request into `main`; CI must be green.
+2. Cloudflare builds the branch as a preview (`npx wrangler versions upload`) and comments
+   the link on the pull request. The preview's address has a stable alias per branch,
+   `<branch>-anton-portfolio.anton-ernstson.workers.dev` (slashes become dashes), which
+   `r2-cors.json` allows for the working branch so the preview can read the data.
+3. The owner looks at the preview and approves the merge; merged, it is live.
+4. The data refreshes commit to `main` directly (fresh data goes live without review).
 
 ## In the repository
 
@@ -37,7 +28,7 @@ the two.
 | `wrangler.toml` | Worker name, and `dist/` as its static assets |
 | `.node-version` | Node 22 for Cloudflare's build image |
 | `frontend/public/_headers` | Security headers; long cache for hashed assets, short for data |
-| `platform/publish/r2-cors.json` | Origins allowed to read the bucket: the domain, `www`, local dev |
+| `platform/publish/r2-cors.json` | Origins allowed to read the bucket: the domain, `www`, `workers.dev`, the branch preview, local dev |
 | `frontend/index.html` | Canonical URL `https://antonernstsson.com/` |
 
 The site uses relative paths (`base: './'` and hash routing), so it works at the domain root,
@@ -59,8 +50,8 @@ on `workers.dev` and in previews without configuration.
    also allowed in `r2-cors.json`. Check under Settings → Build that the production branch is
    `main`.
 
-   And once for dev: project name `anton-portfolio-dev`, production branch `dev`, build
-   command `npm run build`, deploy command `npx wrangler deploy --name anton-portfolio-dev`.
+   Under Settings → Build, turn on builds for non-production branches, so every pull request
+   gets its preview link.
 3. **Domain on the site.** The Worker → Settings → Domains & Routes → Add → Custom domain:
    `antonernstsson.com`, and `www.antonernstsson.com`. To send `www` to the bare domain, add a
    redirect rule: Rules → Redirect Rules → hostname equals `www.antonernstsson.com` → dynamic
