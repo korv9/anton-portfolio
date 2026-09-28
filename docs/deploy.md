@@ -9,6 +9,22 @@ Cloudflare builds the site itself from this repository (Workers Builds): every p
 is published, including the data commits the refresh workflows make, and every other branch and
 pull request gets a preview URL on `workers.dev`. No workflow here deploys.
 
+## Branches: dev and main
+
+| Branch | Role | Address |
+|---|---|---|
+| `main` | Production: what visitors see | `antonernstsson.com` (and `anton-portfolio.anton-ernstson.workers.dev`) |
+| `dev` | Everything new lands here first, to be checked before it goes live | `dev-anton-portfolio.anton-ernstson.workers.dev` (Cloudflare's preview alias for the branch) |
+
+1. Work happens on a feature branch, with a pull request into `dev`. CI must be green; the
+   pull request gets its own preview URL from Cloudflare.
+2. Merged into `dev`, the change is on the `dev` preview address.
+3. When `dev` is ready, a pull request from `dev` into `main` releases it. Only the owner
+   approves that merge.
+4. The data refreshes commit to `main` (fresh data goes live directly). After a release, or
+   when `main` has data commits `dev` lacks, `main` is merged into `dev` so the two do not
+   drift.
+
 ## In the repository
 
 | File | Purpose |
