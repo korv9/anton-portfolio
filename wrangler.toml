@@ -1,0 +1,5 @@
+# Cloudflare Pages project settings, read when Cloudflare builds the site from this repository
+# (docs/deploy.md). Build command, set in the Pages dashboard: npm run build
+name = "anton-portfolio"
+pages_build_output_dir = "dist"
+compatibility_date = "2026-09-01"

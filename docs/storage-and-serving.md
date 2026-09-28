@@ -82,7 +82,7 @@ because the move was made as an ordinary commit rather than a history rewrite.
 Two things about the public development URL. Cloudflare rate-limits `r2.dev` and advises
 against relying on it once the site is announced, so move `BASES["shard"]` to a custom domain
 before then. It does honour the bucket CORS policy: a request carrying
-`Origin: https://korv9.github.io` comes back with that exact origin, not a wildcard.
+`Origin: https://antonernstsson.com` comes back with that exact origin, not a wildcard.
 
 ## How the validators handle remote files
 
@@ -105,7 +105,7 @@ Measured 2026-09-25.
 | `frontend/public/data/` files | 4,004 | **536** |
 | `frontend/public/data/` size | 652 MB | **158 MB** |
 | `dist/` | 655 MB | **157 MB** |
-| Share of the 1 GB Pages limit | 64% | **15%** |
+| Files per deployment (Cloudflare Pages allows 20,000) | 4,004 | **536** |
 | Start-page bundle | 433.5 KiB | **332.6 KiB** |
 
 The speech index under `discovery/` was the remaining bulk: 140 MB of JSON, one file per
@@ -120,10 +120,10 @@ verifies them, then offloaded (`upload.py --verify-only --offload`).
 r2.dev is rate-limited; the first CI run hit its 429s. To serve from a domain instead:
 
 1. In Cloudflare, R2 → the `anton-portfolio` bucket → Settings → Custom Domains → Connect
-   Domain, and choose a subdomain of a zone on the same account (for example
-   `data.<your-domain>`). Cloudflare creates the DNS record and certificate.
+   Domain, and choose a subdomain of a zone on the same account: `data.antonernstsson.com`
+   (see [deploy.md](deploy.md)). Cloudflare creates the DNS record and certificate.
 2. Add the site's origin to the bucket's CORS policy (`platform/publish/r2-cors.json`).
-3. Set the repository variable or secret `R2_PUBLIC_BASE` to `https://data.<your-domain>/`
+3. Set the repository variable or secret `R2_PUBLIC_BASE` to `https://data.antonernstsson.com/`
    and add it to the refresh workflows' environment; locally, export it.
 4. `npm run data:catalog`, commit `delivery.json` and `catalog.json`. No component changes.
 5. Disable the r2.dev URL in the bucket settings once the site no longer uses it.

@@ -20,6 +20,7 @@ test('document shards load from object storage, not from the site', async ({
       shardRequests.push(url)
   })
 
+  const { bases } = await (await page.request.get('/data/delivery.json')).json()
   await page.goto('/#data-explorer')
   await page
     .getByRole('button', { name: /Read full speech/ })
@@ -28,7 +29,9 @@ test('document shards load from object storage, not from the site', async ({
   await expect(page.locator('.speech-reader h4')).toBeVisible()
 
   expect(shardRequests.length).toBeGreaterThan(0)
-  for (const url of shardRequests) expect(url).toContain('.r2.dev/')
+  // From the bucket's public address, whichever it is (r2.dev or a custom domain).
+  for (const url of shardRequests)
+    expect(url.startsWith(bases.shard)).toBeTruthy()
 })
 
 test('the delivery manifest drives resolution and JSON stays on the site', async ({
@@ -48,5 +51,6 @@ test('the delivery manifest drives resolution and JSON stays on the site', async
   await page.goto('/#politics')
   await expect(page.locator('.politics-kpis')).toBeVisible()
   expect(goldRequests.length).toBeGreaterThan(0)
-  for (const url of goldRequests) expect(url).not.toContain('.r2.dev/')
+  for (const url of goldRequests)
+    expect(url.startsWith(bases.shard)).toBeFalsy()
 })
