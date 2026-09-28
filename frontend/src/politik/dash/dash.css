@@ -1,0 +1,611 @@
+/*
+ * The dashboard: everything on one screen on a desktop (header, six key figures, what to watch,
+ * six cards in a 3 × 2 grid), scrolling naturally on smaller screens. Motion: cards and
+ * figures rise in one after another, bars grow, lines draw, and a party change glides.
+ */
+
+.politik-main:has(.dash) {
+  padding: 1rem 1.25rem 1rem;
+}
+.dash {
+  --gap: 0.75rem;
+  display: grid;
+  grid-template-rows: auto auto auto minmax(0, 1fr) auto;
+  gap: var(--gap);
+  height: calc(100vh - 64px - 2rem);
+  min-height: 640px;
+}
+.dash-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 1rem;
+}
+.dash-head h1 {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1.5rem;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+.dash-sub {
+  margin: 0.25rem 0 0;
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+.dash-focus {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.2rem 0.3rem 0.2rem 0.5rem;
+  border: 2px solid;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  animation: dash-pop 260ms cubic-bezier(0.2, 0.8, 0.2, 1.2);
+}
+.dash-focus button {
+  border: 0;
+  background: none;
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 0.25rem;
+  color: var(--muted);
+}
+.dash-partylink {
+  font-size: 0.875rem;
+  white-space: nowrap;
+}
+
+/* Key figures */
+.dash-kpis {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: var(--gap);
+  margin: 0;
+}
+.dash-kpi {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  padding: 0.65rem 0.8rem 0.6rem;
+  animation: dash-rise 520ms cubic-bezier(0.2, 0.7, 0.1, 1) both;
+  animation-delay: calc(var(--i) * 45ms);
+  transition:
+    border-color 160ms,
+    transform 160ms;
+}
+.dash-kpi:hover {
+  border-color: var(--ink);
+  transform: translateY(-2px);
+}
+.dash-kpi dt {
+  font-size: 0.75rem;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.dash-kpi dd {
+  margin: 0.2rem 0 0;
+  font-size: clamp(1.25rem, 2vw, 1.75rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+.dash-kpi p {
+  margin: 0.15rem 0 0;
+  font-size: 0.6875rem;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* What to keep an eye on */
+.dash-attention {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.25rem 1rem;
+  align-items: baseline;
+  padding: 0.55rem 0.8rem;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--ink);
+  animation: dash-rise 520ms cubic-bezier(0.2, 0.7, 0.1, 1) both;
+  animation-delay: 280ms;
+}
+.dash-attention h2 {
+  margin: 0;
+  font-size: 0.8125rem;
+  white-space: nowrap;
+}
+.dash-attention ul {
+  margin: 0;
+  padding-left: 1rem;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+}
+.dash-attention li {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Cards */
+.dash-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  gap: var(--gap);
+  min-height: 0;
+}
+.dash-card {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  padding: 0.7rem 0.85rem 0.6rem;
+  animation: dash-rise 560ms cubic-bezier(0.2, 0.7, 0.1, 1) both;
+  animation-delay: calc(340ms + var(--i) * 70ms);
+  transition:
+    border-color 160ms,
+    transform 200ms;
+}
+.dash-card:hover {
+  border-color: var(--ink);
+  transform: translateY(-2px);
+}
+.dash-card header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.75rem;
+}
+.dash-card h2 {
+  margin: 0;
+  font-size: 0.9375rem;
+  line-height: 1.25;
+}
+.dash-card header a {
+  font-size: 0.75rem;
+  white-space: nowrap;
+  color: var(--muted);
+  text-decoration: none;
+}
+.dash-card header a:hover {
+  color: var(--ink);
+  text-decoration: underline;
+}
+.dash-meta {
+  margin: 0.1rem 0 0.5rem;
+  font-size: 0.6875rem;
+  color: var(--muted);
+}
+.dash-body {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+}
+.dash-empty {
+  font-size: 0.8125rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+.dash-foot {
+  margin: 0;
+  font-size: 0.6875rem;
+  color: var(--muted);
+}
+
+/* Seats */
+.dash-seats {
+  position: relative;
+  height: 58%;
+  min-height: 56px;
+  background: #f1f0ec;
+}
+.dash-seat {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border: 0;
+  border-right: 2px solid var(--paper);
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.1;
+  overflow: hidden;
+  cursor: pointer;
+  transform-origin: bottom;
+  animation: dash-grow-y 600ms cubic-bezier(0.2, 0.7, 0.1, 1) both;
+  animation-delay: calc(420ms + var(--i) * 50ms);
+  transition:
+    opacity 250ms,
+    filter 250ms;
+}
+.dash-seat b {
+  font-size: 0.8125rem;
+}
+.dash-seat small {
+  font-size: 0.6875rem;
+}
+.dash-seat:hover {
+  filter: brightness(1.08);
+}
+.dash-seat.dim {
+  opacity: 0.25;
+}
+.dash-majority {
+  position: absolute;
+  top: -6px;
+  bottom: -6px;
+  border-left: 2px solid var(--ink);
+  pointer-events: none;
+}
+.dash-blocs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+  margin: 0.75rem 0 0;
+}
+.dash-blocs dt {
+  font-size: 0.6875rem;
+  color: var(--muted);
+}
+.dash-blocs dd {
+  margin: 0.1rem 0 0;
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+/* Bars */
+.dash-bars {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.2rem;
+  height: 100%;
+  align-content: start;
+  overflow: hidden;
+}
+.dash-bars li {
+  display: grid;
+  grid-template-columns: minmax(0, 42%) minmax(0, 1fr) 4.2rem;
+  gap: 0.5rem;
+  align-items: center;
+  font-size: 0.75rem;
+  min-height: 18px;
+  animation: dash-rise 420ms cubic-bezier(0.2, 0.7, 0.1, 1) both;
+  animation-delay: calc(500ms + var(--i) * 40ms);
+}
+.dash-bar-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.dash-bar-track {
+  position: relative;
+  height: 12px;
+  background: #f1f0ec;
+}
+.dash-bars.diverging .dash-bar-track::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: -3px;
+  bottom: -3px;
+  border-left: 1px solid var(--ink);
+}
+.dash-bar-track i {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  transform-origin: left;
+  animation: dash-grow-x 700ms cubic-bezier(0.2, 0.7, 0.1, 1) both;
+  animation-delay: calc(560ms + var(--i) * 45ms);
+  transition:
+    width 500ms cubic-bezier(0.2, 0.7, 0.1, 1),
+    left 500ms cubic-bezier(0.2, 0.7, 0.1, 1),
+    background-color 300ms;
+}
+.dash-bar-track i.neg {
+  transform-origin: right;
+}
+.dash-bar-value {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* Lines */
+.mini-lines {
+  position: absolute;
+  inset: 0;
+}
+.mini-lines svg {
+  display: block;
+  overflow: visible;
+}
+.mini-grid {
+  stroke: var(--line);
+  stroke-width: 1;
+}
+.mini-axis {
+  font-size: 10px;
+  fill: var(--muted);
+}
+.mini-end {
+  font-size: 10px;
+  font-weight: 700;
+  fill: var(--ink);
+}
+.mini-series {
+  transition: opacity 300ms;
+}
+.mini-series.dim {
+  opacity: 0.15;
+}
+.mini-draw {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: dash-draw 1400ms cubic-bezier(0.4, 0, 0.2, 1) 500ms forwards;
+}
+.mini-fade {
+  opacity: 0;
+  animation: dash-fade 900ms ease 700ms forwards;
+}
+.mini-cross {
+  stroke: var(--ink);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+}
+.mini-tip {
+  position: absolute;
+  top: 0;
+  z-index: 3;
+  display: grid;
+  gap: 0.1rem;
+  padding: 0.4rem 0.5rem;
+  background: var(--ink);
+  color: #fff;
+  font-size: 0.6875rem;
+  pointer-events: none;
+  white-space: nowrap;
+}
+.mini-tip span {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  opacity: 0.8;
+}
+.mini-tip span.on {
+  opacity: 1;
+  font-weight: 700;
+}
+.mini-tip i {
+  width: 8px;
+  height: 8px;
+}
+
+/* News */
+.dash-news {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
+}
+.dash-news li {
+  display: grid;
+  grid-template-columns: 5.2rem minmax(0, 1fr) auto;
+  gap: 0.5rem;
+  align-items: baseline;
+  padding: 0.3rem 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 0.75rem;
+  animation: dash-rise 420ms cubic-bezier(0.2, 0.7, 0.1, 1) both;
+  animation-delay: calc(700ms + var(--i) * 50ms);
+}
+.dash-news time {
+  color: var(--muted);
+  white-space: nowrap;
+}
+.dash-news a {
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.dash-news a:hover {
+  text-decoration: underline;
+}
+.dash-news-parties {
+  display: flex;
+  gap: 2px;
+}
+
+/* The party list in the side column */
+.politik-parties {
+  margin-top: 1.5rem;
+}
+.politik-parties h2 {
+  margin: 0 0 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+}
+.politik-parties ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 2px;
+}
+.politik-parties a {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.35rem 0.5rem;
+  font-size: 0.8125rem;
+  text-decoration: none;
+  color: var(--ink);
+  border-left: 3px solid transparent;
+  transition:
+    background-color 160ms,
+    border-color 160ms,
+    padding-left 200ms;
+}
+.politik-parties a:hover {
+  background: #f1f0ec;
+  border-left-color: var(--party);
+  padding-left: 0.75rem;
+}
+.politik-parties a[aria-current] {
+  background: var(--paper);
+  border-left-color: var(--party);
+  font-weight: 700;
+  padding-left: 0.75rem;
+}
+.politik-parties a .party-code {
+  flex: none;
+  width: 1.9rem;
+  font-weight: 700;
+}
+.politik-parties a .party-name-full {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+.politik-parties a[aria-current] .party-name-full {
+  color: var(--ink);
+}
+.politik-parties .all {
+  color: var(--muted);
+}
+
+@keyframes dash-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+@keyframes dash-fade {
+  to {
+    opacity: 1;
+  }
+}
+@keyframes dash-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes dash-grow-x {
+  from {
+    transform: scaleX(0);
+  }
+}
+@keyframes dash-grow-y {
+  from {
+    transform: scaleY(0);
+  }
+}
+@keyframes dash-pop {
+  from {
+    transform: scale(0.85);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dash *,
+  .dash {
+    animation: none !important;
+  }
+  .mini-draw {
+    stroke-dashoffset: 0;
+  }
+  .mini-fade {
+    opacity: 1;
+  }
+}
+
+/* Smaller screens: the same cards, stacked, and the page scrolls. */
+@media (max-width: 1180px), (max-height: 700px) {
+  .dash {
+    height: auto;
+    min-height: 0;
+  }
+  .dash-kpis {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .dash-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: none;
+    grid-auto-rows: 250px;
+  }
+}
+@media (max-width: 960px) {
+  .politik-parties {
+    margin: 0;
+    padding: 0.25rem 1rem 0.6rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .politik-parties h2 {
+    display: none;
+  }
+  .politik-parties ul {
+    display: flex;
+    width: max-content;
+    gap: 0.25rem;
+  }
+  .politik-parties a {
+    border-left: 0;
+    border-bottom: 3px solid transparent;
+    padding: 0.3rem 0.5rem;
+  }
+  .politik-parties a:hover,
+  .politik-parties a[aria-current] {
+    padding-left: 0.5rem;
+    border-bottom-color: var(--party);
+  }
+  .politik-parties a .party-name-full {
+    display: none;
+  }
+  .politik-parties a .party-code {
+    width: auto;
+  }
+}
+@media (max-width: 700px) {
+  .dash-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .dash-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .dash-attention {
+    grid-template-columns: 1fr;
+  }
+  .dash-attention li {
+    white-space: normal;
+  }
+  .dash-head {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .dash-head h1 {
+    flex-wrap: wrap;
+  }
+}

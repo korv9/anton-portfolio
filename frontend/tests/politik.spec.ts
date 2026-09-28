@@ -2,7 +2,6 @@ import { test, expect } from './test'
 import AxeBuilder from '@axe-core/playwright'
 
 const THEMES: [string, string][] = [
-  ['#politik', 'Who holds power right now?'],
   ['#politik-valjarna', 'Which parties do voters support?'],
   ['#politik-roster', 'How often do the parties vote alike?'],
   ['#politik-budget', 'What do the parties want to spend money on?'],
@@ -33,6 +32,41 @@ test('every theme answers one question with one chart, a table and its sources',
     await expect(page.locator('.theme-deep a').first()).toBeVisible()
   }
   expect(errors).toEqual([])
+})
+
+test('the dashboard fits one screen and focuses on the party chosen at the side', async ({
+  page,
+  isMobile,
+}) => {
+  await page.goto('/#politik')
+  await expect(page.locator('.dash-kpi')).toHaveCount(6)
+  await expect(page.locator('.dash-card')).toHaveCount(6)
+  await expect(page.locator('.dash-attention li')).not.toHaveCount(0)
+  if (!isMobile) {
+    await page.setViewportSize({ width: 1440, height: 900 })
+    // Everything on one screen: the page does not scroll.
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollHeight - innerHeight,
+      ),
+    ).toBeLessThanOrEqual(120)
+  }
+  const parties = page.getByRole('navigation', { name: 'Parties' })
+  await expect(parties.getByRole('link')).toHaveCount(8)
+  await parties.getByRole('link', { name: /^SD/ }).click()
+  await expect(page).toHaveURL(/#politik\?parti=SD$/)
+  await expect(page.locator('.dash-focus')).toContainText('Sweden Democrats')
+  await expect(page.locator('.dash-card h2').nth(2)).toContainText('SD')
+  await expect(parties.getByRole('link', { name: /^SD/ })).toHaveAttribute(
+    'aria-current',
+    'true',
+  )
+  // A seat segment is a party button too.
+  await page.getByRole('button', { name: /^Moderates:/ }).click()
+  await expect(page).toHaveURL(/parti=M$/)
+  await page.getByRole('button', { name: 'Show all parties' }).click()
+  await expect(page.locator('.dash-focus')).toHaveCount(0)
+  await expect(page).toHaveURL(/#politik$/)
 })
 
 test('the view builder offers valid choices and keeps them in a shareable address', async ({

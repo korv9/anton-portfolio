@@ -165,3 +165,10 @@ a {
     scroll-behavior: auto !important;
   }
 }
+
+/* Clip sideways overflow without making main a scroll container, so sticky elements follow
+   the window. */
+main {
+  overflow: visible;
+  overflow-x: clip;
+}
