@@ -2,8 +2,10 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { readdirSync, readFileSync } from 'node:fs'
 import {
+  basicAllowance,
   calculate,
   employerContributions,
+  inWorkTaxCredit,
   EMPTY_INPUT,
   type TaxInput,
 } from '../../src/taxes/calculator.ts'
@@ -106,6 +108,53 @@ test('the worked examples of SKV 433 section 7.5.2', () => {
   // Low incomes: total tax 2 062 kr on 28 000 and 4 445 kr on 55 000.
   assert.equal(calculate({ ...base, salary: 28_000 }).totalTax, 2_062)
   assert.equal(calculate({ ...base, salary: 55_000 }).totalTax, 4_445)
+})
+
+test('2006-2015: the worked examples of SKV 433 for 2010 and 2013', () => {
+  // [year, income, allowance, at 65 or over], from each year's worked examples.
+  const cases: [number, number, number, boolean][] = [
+    [2010, 120_000, 32_700, false],
+    [2010, 324_000, 13_500, false],
+    [2010, 180_000, 38_200, true],
+    [2010, 100_000, 39_600, true],
+    [2010, 340_000, 23_000, true],
+    [2013, 120_000, 34_100, false],
+    [2013, 324_000, 15_800, false],
+    [2013, 180_000, 58_500, true],
+    [2013, 100_000, 51_100, true],
+    [2013, 340_000, 46_900, true],
+  ]
+  for (const [year, income, expected, senior] of cases)
+    assert.equal(
+      basicAllowance(income, RULES[year], senior),
+      expected,
+      `${year} allowance on ${income}${senior ? ' at 65+' : ''}`,
+    )
+  // In-work tax credit at a municipal rate of 31.80 % (table 33) with the example's allowance.
+  const credit = (year: number, salary: number, senior = false) =>
+    inWorkTaxCredit(
+      salary,
+      basicAllowance(salary, RULES[year], senior),
+      31.8,
+      RULES[year],
+      senior,
+    )
+  assert.equal(credit(2010, 90_000), 8_463)
+  assert.equal(credit(2010, 240_000), 16_501)
+  assert.equal(credit(2010, 90_000, true), 18_000)
+  assert.equal(credit(2013, 90_000), 8_727)
+  assert.equal(credit(2013, 240_000), 16_572)
+  // 2006: no credit; the property tax had no cap before 2008.
+  assert.equal(credit(2006, 240_000), 0)
+  assert.equal(
+    calculate({
+      ...EMPTY_INPUT,
+      year: 2007,
+      birthYear: 1970,
+      propertyAssessedValue: 3_000_000,
+    }).propertyFee,
+    30_000,
+  )
 })
 
 test('employer contributions by age, with the 2026 youth reduction', () => {

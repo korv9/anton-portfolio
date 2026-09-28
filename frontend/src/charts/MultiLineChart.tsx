@@ -30,8 +30,9 @@ type Props = {
   series: Series[]
   label: string
   format: (value: number) => string
-  /** Colour index per series key, so a series keeps its colour when others are removed. */
-  colorOf: (key: string) => number
+  /** Colour index per series key, so a series keeps its colour when others are removed; or
+   * the colour itself, for series with their own (a party's colour). */
+  colorOf: (key: string) => number | string
   /** Fixed bottom of the y axis, for measures whose floor is not zero (AUC: 0.5). */
   yFrom?: number
 }
@@ -54,6 +55,10 @@ export default function MultiLineChart({
   yFrom,
 }: Props) {
   const svg = useRef<SVGSVGElement>(null)
+  const paint = (key: string) => {
+    const color = colorOf(key)
+    return typeof color === 'string' ? color : SERIES_COLORS[color]
+  }
   const [hover, setHover] = useState<number | null>(null)
   const plotW = WIDTH - MARGIN.left - MARGIN.right
   const plotH = HEIGHT - MARGIN.top - MARGIN.bottom
@@ -113,7 +118,7 @@ export default function MultiLineChart({
           <li key={s.key}>
             <span
               className="legend-swatch"
-              style={{ background: SERIES_COLORS[colorOf(s.key)] }}
+              style={{ background: paint(s.key) }}
             />
             {s.name}
           </li>
@@ -159,7 +164,7 @@ export default function MultiLineChart({
             </text>
           ))}
           {series.map((s) => {
-            const color = SERIES_COLORS[colorOf(s.key)]
+            const color = paint(s.key)
             const banded = s.points.filter(
               (p) => p.low != null && p.high != null,
             )
@@ -230,7 +235,7 @@ export default function MultiLineChart({
                 <div key={s.key}>
                   <span
                     className="legend-swatch"
-                    style={{ background: SERIES_COLORS[colorOf(s.key)] }}
+                    style={{ background: paint(s.key) }}
                   />
                   <strong>{format(point.value)}</strong> {s.name}
                   <small> · {point.label}</small>

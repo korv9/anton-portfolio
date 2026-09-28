@@ -44,22 +44,29 @@ The site's tax page (`#taxes`) has three parts, each from an official source.
 
 **A new income year.** Add its entry to `rules.ts` from Skatteverket's SKV 433 and *Belopp och procentsatser*. Then run `npm run taxes`, which fetches the new year's tables, and run `npm run test:unit`. The test fails until the rules match the tables.
 
-## Every year since 2016
+## Every year since 2006
 
 The rules are data per income year (`frontend/src/taxes/rules.ts`): the basic allowance, the
 higher allowance and the in-work credit as piecewise schedules in price base amounts, the state
 tax brackets, the ages for older people, the reductions each year had, and the amounts the
 tables do not show (ISK, property fee, social contributions by birth year and month, VAT).
 Every year from 2016 matches Skatteverket's monthly withholding tables to the krona
-(`frontend/tests/unit/tax-calculator.test.ts`). The sources per year:
+(`frontend/tests/unit/tax-calculator.test.ts`). There are no tables as open data before 2016,
+so 2006–2015 are tested against the worked examples in SKV 433 for 2010 and 2013 (allowances
+and in-work credit). The sources per year:
 
 | Years | Source |
 |---|---|
+| 2006 | No in-work credit, no higher allowance at 65; state property tax 1 % without a cap |
+| 2007–2010 | The bills for each step of the in-work credit and the pensioners' allowance (prop. 2006/07:1, 2007/08:22, 2008/09:38, 2008/09:39, 2009/10:29, 2009/10:42); at 65 or over in 2007–2008 the credit less the basic allowance, as for younger people |
+| 2011–2015 | The budget bills, and SKV 433 2013 |
 | 2016, 2020–2026 | Skatteverket, Teknisk beskrivning SKV 433 |
 | 2017 | 2016's rules with 2017's amounts, confirmed by the tables |
 | 2018 | Prop. 2017/18:1 (förhöjt grundavdrag), SKV 433 bilaga 3 2018 (in-work credit) |
 | 2019 | Bet. 2018/19:FiU1, reservation 5 (M, KD): the law text adopted |
-| All years | Skatteverket, Belopp och procent; Kommunal fastighetsavgift 2008, 2016–2026 |
+| All years | Skatteverket, Belopp och procent (2006–2026); Kommunal fastighetsavgift 2008–2026 |
+
+Not modelled before 2016: the wealth tax (abolished 2007), and ISK before it began in 2012.
 
 The tables up to 2019 rounded municipal tax and fees to the nearest krona; up to 2017 they
 assumed 1.2 points of burial and church fee. The temporary work income reduction of 2021–2022
@@ -68,7 +75,7 @@ assumed 1.2 points of burial and church fee. The temporary work income reduction
 ## Decisions and you
 
 `platform/seeds/taxes/tax_decisions.csv` names each Riksdag decision that changed a tax since
-2016: the part of the rules it changed, the bill and section, the committee report, and whether
+2007: the part of the rules it changed, the bill and section, the committee report, and whether
 it came from the government, the committee's own proposal or a reservation. dbt ties each to
 the first substantive roll call of its report (`fct_tax_decision_vote`) and to the studies its
 proposal was prepared in (`fct_tax_decision_study`). Fuel decisions carry the change per litre

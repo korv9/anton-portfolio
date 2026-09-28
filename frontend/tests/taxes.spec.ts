@@ -34,9 +34,9 @@ test('taxes: Sweden by type, other countries, and a calculator that responds', a
   await page.locator('[data-field="iskCapital"]').fill('1000000')
   await expect(page.locator('.tax-lines')).toContainText('capital income')
 
-  // What the decisions since 2016 did to this tax, year by year, tied to the decisions.
+  // What the decisions since 2006 did to this tax, year by year, tied to the decisions.
   const changes = page.getByTestId('tax-changes')
-  await expect(changes.locator('tbody tr')).toHaveCount(10)
+  await expect(changes.locator('tbody tr')).toHaveCount(20)
   await expect(changes).toContainText('In-work tax credit')
   // VAT for a household, and the fuel decisions for the litres entered.
   await expect(

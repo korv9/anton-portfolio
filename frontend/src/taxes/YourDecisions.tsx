@@ -31,8 +31,8 @@ export default function YourDecisions({
     return (
       <p className="welfare-note">
         {l(
-          'Enter an income above to see how the decisions since 2016 changed your tax.',
-          'Fyll i en inkomst ovan för att se hur besluten sedan 2016 har ändrat din skatt.',
+          'Enter an income above to see how the decisions since 2006 changed your tax.',
+          'Fyll i en inkomst ovan för att se hur besluten sedan 2006 har ändrat din skatt.',
         )}
       </p>
     )

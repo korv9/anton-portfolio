@@ -6,7 +6,6 @@ import {
   PARTY_NAMES,
   PARTY_ORDER,
   load,
-  partyLabel,
   percent,
   sessionDate,
   type Issue,
@@ -14,6 +13,7 @@ import {
 } from './data'
 import '../welfare/welfare.css'
 import './parliament.css'
+import { PartyName, PartyTag, partyLine } from '../parties/identity'
 
 const number = (value: number, digits = 0) =>
   value.toLocaleString('sv-SE', {
@@ -201,7 +201,9 @@ export default function IssuePage({ issueKey }: { issueKey: string }) {
                   .filter(Boolean)
                   .map((p) => (
                     <tr key={p!.party}>
-                      <td>{PARTY_NAMES[p!.party] ?? p!.party}</td>
+                      <td>
+                        <PartyName party={p!.party} />
+                      </td>
                       <td>{p!.decisions}</td>
                       <td>
                         <span
@@ -307,10 +309,15 @@ export default function IssuePage({ issueKey }: { issueKey: string }) {
           <ul className="speech-bars">
             {speechTotals.map((row) => (
               <li key={row.party}>
-                <span className="speech-party">{partyLabel(row.party)}</span>
+                <span className="speech-party">
+                  <PartyTag party={row.party} />
+                </span>
                 <span
                   className="speech-bar"
-                  style={{ width: `${(row.speeches / speechMax) * 100}%` }}
+                  style={{
+                    width: `${(row.speeches / speechMax) * 100}%`,
+                    background: partyLine(row.party),
+                  }}
                 />
                 <span className="speech-count">{row.speeches}</span>
               </li>

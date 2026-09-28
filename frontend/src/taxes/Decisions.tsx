@@ -1,5 +1,6 @@
 import { l } from '../i18n'
-import { PARTY_ORDER, partyLabel } from '../parliament/data'
+import { PARTY_ORDER } from '../parliament/data'
+import { PartyTag } from '../parties/identity'
 
 export type DecisionStudy = {
   kind: 'sou' | 'ds' | 'rir' | 'pm'
@@ -81,7 +82,7 @@ function Votes({ vote }: { vote: NonNullable<TaxDecision['vote']> }) {
             key={party}
             className={`position ${stance === 'for' ? 'yes' : stance === 'against' ? 'no' : 'abstain'}`}
           >
-            <strong>{partyLabel(party)}</strong>{' '}
+            <PartyTag party={party} />{' '}
             {stance === 'for'
               ? l('for', 'för')
               : stance === 'against'

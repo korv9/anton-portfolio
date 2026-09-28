@@ -1,4 +1,5 @@
 import { l, t } from '../i18n'
+import { PartyTag } from '../parties/identity'
 import { PARTIES, partyStats, type Decision } from './data'
 
 export default function VoteCharts({
@@ -37,7 +38,9 @@ export default function VoteCharts({
               `${s.party}: ${s.yes} ja, ${s.no} nej, ${s.abstain} avstod, ${s.rows} voteringar`,
             )}
           >
-            <b>{s.party}</b>
+            <b>
+              <PartyTag party={s.party} />
+            </b>
             <span className="vote-stack">
               <i style={{ width: `${s.rows ? (s.yes / s.rows) * 100 : 0}%` }} />
               <i style={{ width: `${s.rows ? (s.no / s.rows) * 100 : 0}%` }} />
@@ -80,7 +83,7 @@ export default function VoteCharts({
                 <th scope="col">{t('Party')}</th>
                 {PARTIES.map((p) => (
                   <th scope="col" key={p}>
-                    {p}
+                    <PartyTag party={p} />
                   </th>
                 ))}
               </tr>
@@ -88,7 +91,9 @@ export default function VoteCharts({
             <tbody>
               {PARTIES.map((a) => (
                 <tr key={a}>
-                  <th scope="row">{a}</th>
+                  <th scope="row">
+                    <PartyTag party={a} />
+                  </th>
                   {PARTIES.map((b) => {
                     const paired = decisions
                       .map((d) => [

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { l } from '../i18n'
+import { PartyLogo, identity } from '../parties/identity'
 import { PARTY_NAMES, partyLabel, type PartyResult } from './data'
 
 type Props = {
@@ -56,11 +57,15 @@ export default function SeatBar({ parties, majority, initial = [] }: Props) {
               className={
                 chosen.includes(party.party)
                   ? 'seat-segment chosen'
-                  : 'seat-segment'
+                  : chosen.length > 0
+                    ? 'seat-segment faded'
+                    : 'seat-segment'
               }
               style={{
                 left: `${left}%`,
                 width: `${(party.seats / TOTAL) * 100}%`,
+                background: identity(party.party).color,
+                color: identity(party.party).ink,
               }}
               title={`${PARTY_NAMES[party.party] ?? party.party}: ${party.seats}`}
             >
@@ -97,8 +102,14 @@ export default function SeatBar({ parties, majority, initial = [] }: Props) {
               chosen.includes(party.party) ? 'party-chip on' : 'party-chip'
             }
             aria-pressed={chosen.includes(party.party)}
+            style={
+              chosen.includes(party.party)
+                ? { borderColor: identity(party.party).line }
+                : undefined
+            }
             onClick={() => toggle(party.party)}
           >
+            <PartyLogo party={party.party} size={18} />
             {partyLabel(party.party)} · {party.seats}
           </button>
         ))}

@@ -101,3 +101,26 @@ proposal). Each link keeps the sentence that makes it.
 The site shows the latest studies and what they led to on `#now-studies`, and the studies
 behind every decision it lists. Budget and spring bills are left out of that per-decision
 link, since they name hundreds.
+
+## Parties: colours, logos and the party page
+
+`frontend/src/parties/identity.tsx` holds each party's identity, used everywhere a party is
+shown (seat bar, party pickers and charts, vote lists, tables, BudgetLab):
+
+- `color`: the party colour as Swedish media and Wikipedia draw it (S #E8112D, M #52BDEC,
+  SD #DDDD00, V #DA291C, C #009933, KD #000077, MP #83CF39, L #006AB3), for filled areas;
+- `line`: the same hue darkened to at least 3:1 against the page, for lines, text and small
+  marks (V darker still, so it does not read as S);
+- `ink`: the text colour on `color`;
+- `logo`: the party's current mark as Riksdagen shows it on *Ledamöter och partier*
+  (media.riksdagen.se, 240 px WebP), in `frontend/public/logos/parties/`.
+
+Because every party has its own colour, charts of parties are no longer limited to five
+series.
+
+`#parties` shows a card per party, sorted by the latest election. `#parties-<code>` gathers
+what the other pages have on one party, from the same files: `now.json` (result, poll, role),
+`elections.json` and `polls.json` (support over time), `sessions.json` (governments it sat
+in or supported, voting record, agreement with each other party in the latest session),
+`issues.json` (record per issue, speeches) and `taxes/decisions.json` (its vote on each tax
+decision).

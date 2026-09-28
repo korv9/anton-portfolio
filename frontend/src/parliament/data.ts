@@ -107,6 +107,7 @@ export type Sessions = {
     election_year: number
     government_name: string
     government_parties: string[]
+    agreement_parties?: string[] | null
   }[]
   party_record: SessionRecord[]
   party_pairs: {

@@ -5,6 +5,7 @@ import BudgetOverview from './BudgetOverview'
 import BudgetLanguage, { type Language } from './BudgetLanguage'
 import { useEffect, useMemo, useState } from 'react'
 import './budget.css'
+import { partyLine } from './parties/identity'
 
 type BudgetRow = {
   session: string
@@ -91,16 +92,9 @@ const number = (value: number) =>
   new Intl.NumberFormat(currentLocale() === 'sv' ? 'sv-SE' : 'en-GB').format(
     value,
   )
-const partyColors: Record<string, string> = {
-  C: '#006b52',
-  KD: '#415990',
-  L: '#3264a6',
-  M: '#335d89',
-  MP: '#35701d',
-  S: '#bd392d',
-  SD: '#806300',
-  V: '#a32265',
-}
+const partyColors: Record<string, string> = Object.fromEntries(
+  allPartyCodes.map((code) => [code, partyLine(code)]),
+)
 
 function ScatterChart({
   rows,

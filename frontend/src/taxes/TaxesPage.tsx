@@ -498,8 +498,8 @@ export default function TaxesPage({ view = '#taxes' }: { view?: string }) {
           <p className="eyebrow">{l('Decisions and you', 'Besluten och du')}</p>
           <h2 id="tax-your-decisions">
             {l(
-              'How the decisions since 2016 changed your tax',
-              'Så har besluten sedan 2016 ändrat din skatt',
+              'How the decisions since 2006 changed your tax',
+              'Så har besluten sedan 2006 ändrat din skatt',
             )}
           </h2>
           <YourDecisions input={mine.input} decisions={decisions} />
@@ -543,8 +543,8 @@ export default function TaxesPage({ view = '#taxes' }: { view?: string }) {
           >
             <h2 id="tax-decisions">
               {l(
-                'Every tax decision since 2016: who voted how, and the studies behind it',
-                'Varje skattebeslut sedan 2016: hur partierna röstade, och utredningarna bakom',
+                'Every tax decision since 2007: who voted how, and the studies behind it',
+                'Varje skattebeslut sedan 2007: hur partierna röstade, och utredningarna bakom',
               )}
             </h2>
             <DecisionTimeline data={decisions} />
