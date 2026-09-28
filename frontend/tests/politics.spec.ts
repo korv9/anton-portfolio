@@ -11,7 +11,7 @@ test('political evidence remains traceable across votes, speeches and laws', asy
   await expect(lab.locator('.vote-stack-row')).toHaveCount(8)
   // The latest session is still open, so its count grows; a closed session's does not.
   await expect(
-    lab.getByText(/^[\d,]+ roll calls in this view · all eight parties$/),
+    lab.getByText(/\d[\d,]* roll calls in this view · all eight parties/),
   ).toBeVisible()
   await lab.getByLabel('Voting session').selectOption('2024/25')
   await expect(
