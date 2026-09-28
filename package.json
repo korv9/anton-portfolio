@@ -9,6 +9,7 @@
     "preview": "vite preview --config frontend/vite.config.ts --host 127.0.0.1",
     "check": "tsc -b frontend",
     "test:e2e": "playwright test --config frontend/playwright.config.ts",
+    "test:unit": "node --test frontend/tests/unit/*.test.ts",
     "format": "prettier --write frontend/src frontend/tests frontend/*.ts",
     "format:check": "prettier --check frontend/src frontend/tests frontend/*.ts",
     "data:build": "python platform/legacy/build_gold.py && npm run politics:build && python platform/legacy/build_products.py && python platform/legacy/build_speech_browser.py && python platform/publish/build_catalog.py",
@@ -23,7 +24,8 @@
     "welfare": "python platform/ingest/run_welfare.py",
     "parliament:fetch": "python platform/ingest/run_parliament.py --skip-build",
     "parliament:build": "python platform/ingest/run_parliament.py --skip-fetch",
-    "parliament": "python platform/ingest/run_parliament.py && python platform/publish/export_parliament.py"
+    "parliament": "python platform/ingest/run_parliament.py && python platform/publish/export_parliament.py",
+    "taxes": "python platform/ingest/run_taxes.py && python platform/publish/export_taxes.py"
   },
   "dependencies": {
     "@fontsource-variable/dm-sans": "^5.3.0",

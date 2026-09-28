@@ -1,0 +1,29 @@
+version: 2
+
+models:
+  - name: fct_tax_revenue
+    description: Tax revenue per country, year and tax type (OECD Revenue Statistics), share of GDP and national currency.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [country_code, year, tax_code]
+  - name: fct_tax_wedge
+    description: Labour taxation per country, year, household type and wage level (OECD Taxing Wages).
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [country_code, year, household_type, wage_level, spouse_wage_level]
+  - name: fct_municipal_tax_rate
+    description: Local income tax, burial and church fee rates per parish and year (Skatteverket).
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [year, parish_code, parish_name]
+  - name: dim_tax_type
+    columns:
+      - name: tax_code
+        data_tests: [unique, not_null]
+  - name: dim_tax_country
+    columns:
+      - name: country_code
+        data_tests: [unique, not_null]

@@ -1,0 +1,16 @@
+version: 2
+
+# Bronze for the tax subject: files fetched by platform/ingest/taxes/taxes_ingest.py. The OECD
+# files are CSV and read directly in their staging models; Skatteverket's rowstore pages are
+# JSON sources.
+
+sources:
+  - name: skatteverket
+    description: Skatteverket open data (rowstore).
+    tables:
+      - name: municipal_rates
+        description: Municipal and regional tax, burial fee and church fee per parish and year.
+        meta:
+          external_location: >-
+            read_json('{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/skatteverket/municipal_rates/part-*.json',
+            maximum_object_size = 50000000)

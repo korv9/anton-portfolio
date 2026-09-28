@@ -1,6 +1,6 @@
 name: Refresh public data
 
-# Daily: fetch the five welfare sources and the parliament sources (Riksdagen roll calls and
+# Daily: fetch the five welfare sources, the tax sources (OECD, Skatteverket) and the parliament sources (Riksdagen roll calls and
 # government-formation news, SCB elections and party preference survey, Valmyndigheten),
 # build and test the warehouse, export the site's JSON and the Parquet the browser filters,
 # upload to R2, and commit the delivery files when they changed. The run record (welfare/run.json) is also written to R2 on every run,
@@ -60,10 +60,13 @@ jobs:
           restore-keys: riksdagen-votes-
       - name: Fetch, build and test parliament
         run: python platform/ingest/run_parliament.py
+      - name: Fetch, build and test taxes
+        run: python platform/ingest/run_taxes.py
       - name: Export delivery files
         run: |
           python platform/publish/export_welfare.py
           python platform/publish/export_parliament.py
+          python platform/publish/export_taxes.py
       - name: Upload to R2 and verify
         run: |
           npm run data:catalog

@@ -26,6 +26,8 @@ models:
         +tags: [parliament]
       politics:
         +tags: [politics]
+      taxes:
+        +tags: [taxes]
       welfare:
         +tags: [welfare]
     silver:
@@ -46,6 +48,8 @@ models:
         +tags: [parliament]
       politics:
         +tags: [politics]
+      taxes:
+        +tags: [taxes]
       welfare:
         +tags: [welfare]
         serving:
@@ -78,6 +82,15 @@ seeds:
       issues:
         +column_types: {issue_key: varchar, issue_name_sv: varchar, issue_name_en: varchar,
                         expenditure_areas: varchar, welfare_indicators: varchar, summary_sv: varchar}
+    taxes:
+      +tags: [taxes]
+      +schema: seeds
+      tax_countries:
+        +column_types: {country_code: varchar, name_sv: varchar, name_en: varchar,
+                        is_nordic: boolean, is_eu: boolean}
+      tax_types:
+        +column_types: {tax_code: varchar, name_sv: varchar, name_en: varchar,
+                        parent_code: varchar, is_headline: boolean, note_sv: varchar}
     welfare:
       +tags: [welfare]
       +schema: seeds

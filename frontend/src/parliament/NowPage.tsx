@@ -712,6 +712,14 @@ export default function NowPage() {
             </a>
           </li>
           <li>
+            <a href="#taxes">
+              {l(
+                'Taxes: what Sweden collects, and a calculator for yours',
+                'Skatter: vad Sverige tar in, och en räknare för din skatt',
+              )}
+            </a>
+          </li>
+          <li>
             <a href="#sweden">
               {l(
                 'How Sweden is doing: welfare data',

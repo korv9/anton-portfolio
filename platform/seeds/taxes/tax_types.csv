@@ -1,0 +1,24 @@
+tax_code,name_sv,name_en,parent_code,is_headline,note_sv
+_T,Skatter totalt,Total tax revenue,,true,Alla skatter och socialavgifter till offentlig sektor
+T_1000,Skatter på inkomst och vinst,"Taxes on income, profits and capital gains",_T,true,
+T_1100,Inkomstskatt för privatpersoner,Personal income tax,T_1000,true,"Kommunal och statlig inkomstskatt, skatt på kapital"
+T_1110,Skatt på inkomst,Tax on personal income,T_1100,false,
+T_1120,Skatt på kapitalvinster,Tax on personal capital gains,T_1100,false,
+T_1200,Bolagsskatt,Corporate income tax,T_1000,true,
+T_2000,Socialavgifter,Social security contributions,_T,true,
+T_2100,Socialavgifter från anställda,Employee social security contributions,T_2000,true,Allmän pensionsavgift
+T_2200,Arbetsgivaravgifter,Employer social security contributions,T_2000,true,
+T_2300,Egenavgifter,Self-employed contributions,T_2000,false,
+T_3000,Löneskatter,Taxes on payroll and workforce,_T,true,Allmän löneavgift och särskild löneskatt
+T_4000,Skatter på egendom,Taxes on property,_T,true,
+T_4100,Fastighetsskatt och fastighetsavgift,Recurrent taxes on immovable property,T_4000,true,
+T_4200,Förmögenhetsskatt,Net wealth tax,T_4000,false,Avskaffad i Sverige 2007
+T_4300,Arvs- och gåvoskatt,"Estate, inheritance and gift taxes",T_4000,false,Avskaffad i Sverige 2005
+T_4400,Stämpelskatt m.m.,Taxes on financial and capital transactions,T_4000,false,
+T_5000,Skatter på varor och tjänster,Taxes on goods and services,_T,true,
+T_5111,Moms,Value added tax (VAT),T_5000,true,
+T_5121,Punktskatter,Excise duties,T_5000,true,"Energi, alkohol, tobak m.m."
+T_5123,Tullar,Customs and import duties,T_5000,false,
+T_5126,Skatter på vissa tjänster,Taxes on specific services,T_5000,false,
+T_5200,Fordonsskatt m.m.,Taxes on use of goods,T_5000,false,
+T_6000,Övriga skatter,Other taxes,_T,true,
