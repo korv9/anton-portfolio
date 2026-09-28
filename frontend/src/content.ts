@@ -6,7 +6,7 @@ export const profile: {
 } = {
   linkedin: 'https://www.linkedin.com/in/anton-ernstsson',
   email: 'anton.ernstson@gmail.com',
-  cv: './Anton_Ernstsson_CV_Data_Engineer.pdf',
+  cv: 'cv/Anton_Ernstsson_CV_Data_Engineer.pdf',
 }
 
 export const sources = {

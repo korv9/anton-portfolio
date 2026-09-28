@@ -1,327 +1,367 @@
 /**
- * The start page, in reading order: a short presentation, about me, experience, skills,
- * selected projects and contact. Large sections, thin rules, one grid.
+ * The start page as one document with two columns. The left column stays put: who Anton is,
+ * the role in one line, a table of contents that follows the reader, the three CVs and how to
+ * get in touch. The right column is read top to bottom: overview, about, experience, projects,
+ * skills, education, contact. Nothing sits behind a toggle; a recruiter should have the whole
+ * picture in ten seconds and the detail a scroll away.
  */
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { l } from '../i18n'
 import { profile } from '../content'
 import {
+  CVS,
   EDUCATION,
   EXPERIENCE,
-  FEATURED,
-  MORE_PROJECTS,
+  FACTS,
+  FLAGSHIP,
+  LANGUAGES,
+  PROJECTS,
   SKILLS,
   type Bilingual,
+  type Project,
 } from './content'
 import './home.css'
 
 const b = (text: Bilingual) => l(text.en, text.sv)
 
-function Presentation() {
-  return (
-    <section
-      className="home-hero ds-container"
-      id="start"
-      aria-labelledby="hero-title"
-    >
-      <p className="ds-label">
-        {l('Data engineer · Stockholm', 'Data engineer · Stockholm')}
-      </p>
-      <h1 id="hero-title" className="home-hero-title">
-        {l(
-          'I build the whole path from raw data to something people understand.',
-          'Jag bygger hela vägen från rådata till något människor förstår.',
-        )}
-      </h1>
-      <p className="home-hero-lede">
-        {l(
-          'Anton Ernstsson — data engineering, analytics and applied AI.',
-          'Anton Ernstsson – data engineering, analys och tillämpad AI.',
-        )}
-      </p>
-      <div className="home-hero-links">
-        <a className="ds-button" href="#politik">
-          {l('See the politics product', 'Se politikprodukten')}
-        </a>
-        <a className="ds-button secondary" href="#projekt">
-          {l('All projects', 'Alla projekt')}
-        </a>
-      </div>
-    </section>
-  )
+const TOC: [string, string, string][] = [
+  ['start', 'Overview', 'Översikt'],
+  ['om-mig', 'About', 'Om mig'],
+  ['erfarenhet', 'Experience', 'Erfarenhet'],
+  ['projekt', 'Projects', 'Projekt'],
+  ['kompetenser', 'Skills', 'Kompetenser'],
+  ['utbildning', 'Education', 'Utbildning'],
+  ['kontakt', 'Contact', 'Kontakt'],
+]
+
+/** The section currently being read: the last one whose top has passed a third of the view. */
+function useActiveSection(ids: string[]) {
+  const [active, setActive] = useState(ids[0])
+  useEffect(() => {
+    const update = () => {
+      const line = window.innerHeight * 0.33
+      let current = ids[0]
+      for (const id of ids) {
+        const el = document.getElementById(id)
+        if (el && el.getBoundingClientRect().top <= line) current = id
+      }
+      // At the very bottom the last section is current even if it is short.
+      if (
+        window.innerHeight + window.scrollY >=
+        document.documentElement.scrollHeight - 4
+      )
+        current = ids.at(-1)!
+      setActive(current)
+    }
+    update()
+    window.addEventListener('scroll', update, { passive: true })
+    window.addEventListener('resize', update)
+    return () => {
+      window.removeEventListener('scroll', update)
+      window.removeEventListener('resize', update)
+    }
+  }, [ids.join()])
+  return active
 }
 
-function About() {
+function Sidebar({ active }: { active: string }) {
   return (
-    <section
-      className="ds-section ds-container"
-      id="om-mig"
-      aria-labelledby="about-title"
-    >
-      <div className="ds-section-head">
-        <p className="ds-label">{l('About me', 'Om mig')}</p>
-        <h2 id="about-title" className="ds-h2">
+    <aside className="cv-side">
+      <div className="cv-id">
+        <h1 className="cv-name">Anton Ernstsson</h1>
+        <p className="cv-role">
           {l(
-            'I like understanding how the pieces fit together.',
-            'Jag gillar att förstå hur delarna hänger ihop.',
+            'Data Engineer · Analytics Engineer · Applied AI',
+            'Data Engineer · Analytics Engineer · Tillämpad AI',
           )}
-        </h2>
-      </div>
-      <div className="home-columns">
-        <div />
-        <div>
-          <p className="ds-body">
-            {l(
-              'I’m Anton, a data engineer in Stockholm. I work with data engineering, analytics and AI/ML, and what I enjoy most is building the whole flow: collecting data, transforming it into something reliable, and then analysing and showing it so that it can be used.',
-              'Jag heter Anton och är data engineer i Stockholm. Jag arbetar med data engineering, analys och AI/ML, och det jag tycker allra mest om är att bygga hela flödet: samla in data, göra om den till något pålitligt, och sedan analysera och visa den så att den går att använda.',
-            )}
-          </p>
-          <p className="ds-body">
-            {l(
-              'This portfolio shows both sides: the technical work behind each project, and how the data can be made understandable to someone who has never seen it before.',
-              'Den här portfolion visar båda sidorna: det tekniska arbetet bakom varje projekt, och hur datan kan göras begriplig för någon som aldrig sett den förut.',
-            )}
-          </p>
-        </div>
-      </div>
-    </section>
-  )
-}
-
-function Experience() {
-  return (
-    <section
-      className="ds-section ds-container"
-      id="erfarenhet"
-      aria-labelledby="experience-title"
-    >
-      <div className="ds-section-head">
-        <p className="ds-label">{l('Experience', 'Erfarenhet')}</p>
-        <h2 id="experience-title" className="ds-h2">
-          {l(
-            'From source systems to reports people use.',
-            'Från källsystem till rapporter som används.',
-          )}
-        </h2>
-      </div>
-      <ol className="timeline">
-        {EXPERIENCE.map((job) => (
-          <li key={job.org} className="timeline-row">
-            <div className="timeline-when">
-              <p className="timeline-org">{job.org}</p>
-              <p className="ds-small">{b(job.role)}</p>
-              <p className="ds-small">{b(job.period)}</p>
-            </div>
-            <div className="timeline-what">
-              <h3 className="visually-hidden">
-                {l('What I did', 'Vad jag gjorde')}
-              </h3>
-              <ul className="timeline-did">
-                {job.did.map((item) => (
-                  <li key={item.sv}>{b(item)}</li>
-                ))}
-              </ul>
-              <dl className="timeline-facts">
-                <div>
-                  <dt>{l('Result', 'Resultat')}</dt>
-                  <dd>{b(job.effect)}</dd>
-                </div>
-                <div>
-                  <dt>{l('Technology', 'Teknik')}</dt>
-                  <dd>{job.tech.join(' · ')}</dd>
-                </div>
-              </dl>
-            </div>
-          </li>
-        ))}
-      </ol>
-      <p className="ds-small home-education">
-        {l('Education', 'Utbildning')}: {b(EDUCATION)}
-      </p>
-    </section>
-  )
-}
-
-function Skills() {
-  const [open, setOpen] = useState(false)
-  return (
-    <section
-      className="ds-section ds-container"
-      id="kompetenser"
-      aria-labelledby="skills-title"
-    >
-      <div className="ds-section-head">
-        <p className="ds-label">
-          {l('Technical skills', 'Tekniska kompetenser')}
         </p>
-        <h2 id="skills-title" className="ds-h2">
-          {l('What I work with.', 'Det jag arbetar med.')}
-        </h2>
+        <p className="cv-pitch">
+          {l(
+            'I build the whole path from raw data to something people understand: pipelines, models, analysis and the interface on top.',
+            'Jag bygger hela vägen från rådata till något människor förstår: pipelines, modeller, analys och gränssnittet ovanpå.',
+          )}
+        </p>
+        <p className="cv-status">
+          <span className="cv-dot round" aria-hidden="true" />
+          {l(
+            'Open to junior roles · Stockholm',
+            'Söker junior roll · Stockholm',
+          )}
+        </p>
       </div>
-      <div className="skills" id="skills-list">
-        {SKILLS.map((group) => (
-          <div key={group.group.sv} className="skills-group">
-            <h3>{b(group.group)}</h3>
-            <p className="skills-top">{group.top.join(' · ')}</p>
-            {open && (
-              <p className="skills-more ds-small">{group.more.join(' · ')}</p>
-            )}
-          </div>
-        ))}
-      </div>
-      <button
-        type="button"
-        className="ds-button secondary skills-toggle"
-        aria-expanded={open}
-        aria-controls="skills-list"
-        onClick={() => setOpen(!open)}
-      >
-        {open ? l('Show fewer', 'Visa färre') : l('Show more', 'Visa fler')}
-      </button>
-    </section>
-  )
-}
 
-function Projects() {
-  const [lead, ...rest] = FEATURED
-  return (
-    <section
-      className="ds-section ds-container"
-      id="projekt"
-      aria-labelledby="projects-title"
-    >
-      <span id="projects" className="anchor-alias" />
-      <div className="ds-section-head">
-        <p className="ds-label">{l('Selected projects', 'Utvalda projekt')}</p>
-        <h2 id="projects-title" className="ds-h2">
-          {l('Questions I wanted answered.', 'Frågor jag ville ha svar på.')}
-        </h2>
-      </div>
-      <article
-        className="hp-project hp-lead"
-        aria-labelledby={`project-${lead.id}`}
-      >
-        <p className="ds-label">{l('Featured', 'I fokus')}</p>
-        <h3 id={`project-${lead.id}`} className="hp-lead-title">
-          <a href={lead.href}>{b(lead.title)}</a>
-        </h3>
-        <ProjectFacts project={lead} />
-      </article>
-      <div className="hp-grid">
-        {rest.map((project) => (
-          <article
-            key={project.id}
-            className="hp-project"
-            aria-labelledby={`project-${project.id}`}
-          >
-            <h3 id={`project-${project.id}`} className="hp-title">
-              <a href={project.href}>{b(project.title)}</a>
-            </h3>
-            <ProjectFacts project={project} />
-          </article>
-        ))}
-      </div>
-      <details className="more-projects">
-        <summary>{l('More projects', 'Fler projekt')}</summary>
-        <ul className="ds-rule-list">
-          {MORE_PROJECTS.map((p) => (
-            <li key={p.title.sv}>
+      <nav className="cv-toc" aria-label={l('Contents', 'Innehåll')}>
+        <ol>
+          {TOC.map(([id, en, sv], index) => (
+            <li key={id}>
               <a
-                href={p.href}
-                className="more-row"
-                {...(p.href.startsWith('http')
-                  ? { target: '_blank', rel: 'noreferrer' }
-                  : {})}
+                href={`#${id}`}
+                aria-current={active === id ? 'location' : undefined}
               >
-                <strong>
-                  {b(p.title)}
-                  {p.href.startsWith('http') ? ' ↗' : ''}
-                </strong>
-                <span>{b(p.about)}</span>
+                <span className="cv-toc-no">
+                  {String(index + 1).padStart(2, '0')}
+                </span>
+                <span className="cv-toc-line" aria-hidden="true" />
+                {l(en, sv)}
+              </a>
+            </li>
+          ))}
+        </ol>
+      </nav>
+
+      <div className="cv-side-foot">
+        <p className="cv-label">{l('CV by role', 'CV per roll')}</p>
+        <ul className="cv-downloads">
+          {CVS.map((cv) => (
+            <li key={cv.file}>
+              <a href={cv.file} download>
+                <span>{b(cv.role)}</span>
+                <small>PDF ↓</small>
               </a>
             </li>
           ))}
         </ul>
-      </details>
+        <ul className="cv-links">
+          {profile.email && (
+            <li>
+              <a href={`mailto:${profile.email}`}>{l('Email', 'Mejl')}</a>
+            </li>
+          )}
+          {profile.linkedin && (
+            <li>
+              <a href={profile.linkedin} target="_blank" rel="noreferrer">
+                LinkedIn ↗
+              </a>
+            </li>
+          )}
+          <li>
+            <a href="https://github.com/korv9" target="_blank" rel="noreferrer">
+              GitHub ↗
+            </a>
+          </li>
+        </ul>
+      </div>
+    </aside>
+  )
+}
+
+function Section({
+  id,
+  index,
+  title,
+  children,
+}: {
+  id: string
+  index: number
+  title: string
+  children: React.ReactNode
+}) {
+  return (
+    <section className="cv-section" id={id} aria-labelledby={`${id}-title`}>
+      <h2 className="cv-section-title" id={`${id}-title`}>
+        <span className="cv-section-no">{String(index).padStart(2, '0')}</span>
+        {title}
+      </h2>
+      {children}
     </section>
   )
 }
 
-function ProjectFacts({ project }: { project: (typeof FEATURED)[number] }) {
+function Tags({ items }: { items: string[] }) {
+  if (!items.length) return null
   return (
-    <>
-      <dl className="hp-facts">
-        <div>
-          <dt>{l('Problem', 'Problemet')}</dt>
-          <dd>{b(project.problem)}</dd>
-        </div>
-        <div>
-          <dt>{l('What I built', 'Vad jag byggde')}</dt>
-          <dd>{b(project.built)}</dd>
-        </div>
-        <div>
-          <dt>{l('Result', 'Resultatet')}</dt>
-          <dd>{b(project.result)}</dd>
-        </div>
-        <div>
-          <dt>{l('Technology', 'Teknik')}</dt>
-          <dd>{project.tech.join(' · ')}</dd>
-        </div>
-      </dl>
-      <p className="hp-links">
-        <a className="ds-link" href={project.href}>
-          {b(project.hrefLabel)} →
-        </a>
-        {project.code && (
-          <a
-            className="ds-link"
-            href={project.code}
-            target="_blank"
-            rel="noreferrer"
-          >
-            {l('Code on GitHub', 'Koden på GitHub')} ↗
-          </a>
-        )}
-      </p>
-    </>
+    <ul className="cv-tags" aria-label={l('Technology', 'Teknik')}>
+      {items.map((item) => (
+        <li key={item}>{item}</li>
+      ))}
+    </ul>
   )
 }
 
-function Contact() {
+function ProjectRow({ project }: { project: Project }) {
+  const external = project.href.startsWith('http')
   return (
-    <section
-      className="ds-section ds-container"
-      id="kontakt"
-      aria-labelledby="contact-title"
-    >
-      <div className="ds-section-head">
-        <p className="ds-label">{l('Contact', 'Kontakt')}</p>
-        <h2 id="contact-title" className="ds-h2">
-          {l(
-            'Looking for a junior data role.',
-            'Jag söker en junior roll inom data.',
-          )}
-        </h2>
-      </div>
-      <div className="home-columns">
-        <div />
-        <div>
-          <p className="ds-body">
+    <li className="cv-project">
+      <a
+        className="cv-project-link"
+        href={project.href}
+        {...(external ? { target: '_blank', rel: 'noreferrer' } : {})}
+      >
+        <span className="cv-project-kind">{b(project.kind)}</span>
+        <h3>
+          {b(project.title)}
+          <span className="cv-arrow" aria-hidden="true">
+            {external ? '↗' : '→'}
+          </span>
+        </h3>
+        <p>{b(project.summary)}</p>
+        <p className="cv-result">{b(project.result)}</p>
+      </a>
+      <Tags items={project.tech} />
+    </li>
+  )
+}
+
+export default function HomePage() {
+  const active = useActiveSection(TOC.map(([id]) => id))
+  return (
+    <div className="cv-layout">
+      <Sidebar active={active} />
+      <div className="cv-main">
+        <Section id="start" index={1} title={l('Overview', 'Översikt')}>
+          <p className="cv-lede">
             {l(
-              'In data engineering or analytics engineering, where I can contribute with Python, SQL and data modelling, keep learning, and work close to the people who use the results.',
-              'Inom data engineering eller analytics engineering, där jag kan bidra med Python, SQL och datamodellering, fortsätta lära mig och arbeta nära dem som använder resultatet.',
+              'Junior data engineer with two data internships behind me, most recently at Avtalat, and a portfolio of end-to-end projects: from API ingestion and dbt models to machine learning and the dashboards people use.',
+              'Junior data engineer med två datapraktiker i bagaget, senast på Avtalat, och en portfolio med projekt från början till slut: från API-inläsning och dbt-modeller till maskininlärning och dashboards som används.',
             )}
           </p>
-          <ul className="contact-list ds-rule-list">
+          <dl className="cv-facts">
+            {FACTS.map((fact, i) => (
+              <div key={fact.value + i} style={{ ['--i' as string]: i }}>
+                <dt>{b(fact.label)}</dt>
+                <dd>{fact.value}</dd>
+              </div>
+            ))}
+          </dl>
+          <div className="cv-fit">
+            <p className="cv-label">
+              {l(
+                'Which role are you hiring for?',
+                'Vilken roll rekryterar du till?',
+              )}
+            </p>
+            <ul>
+              {CVS.map((cv) => (
+                <li key={cv.file}>
+                  <a href={cv.file} download>
+                    <strong>{b(cv.role)}</strong>
+                    <span>{b(cv.focus)}</span>
+                    <small>{l('Download CV', 'Ladda ned CV')} ↓</small>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </Section>
+
+        <Section id="om-mig" index={2} title={l('About', 'Om mig')}>
+          <div className="cv-prose">
+            <p>
+              {l(
+                'I’m Anton, a data engineer in Stockholm. What I enjoy most is building the whole flow: getting data out of a source system, making it reliable, and turning it into something a person can read and act on.',
+                'Jag heter Anton och är data engineer i Stockholm. Det jag tycker allra mest om är att bygga hela flödet: få ut data ur ett källsystem, göra den pålitlig och göra om den till något en människa kan läsa och agera på.',
+              )}
+            </p>
+            <p>
+              {l(
+                'At Fora and Avtalat I built lakehouse pipelines in Azure Databricks, star schemas for reporting, Power BI models and an NLP analysis of 21,000 incidents. I work closely with the people who use the results and care about data quality, GDPR and being able to trace every number back to its source.',
+                'På Fora och Avtalat byggde jag lakehouse-pipelines i Azure Databricks, stjärnscheman för rapportering, Power BI-modeller och en NLP-analys av 21 000 incidenter. Jag arbetar nära dem som använder resultatet och bryr mig om datakvalitet, GDPR och att varje siffra går att spåra till sin källa.',
+              )}
+            </p>
+            <p>
+              {l(
+                'This site is itself a project: open data, tested models and the interface, built and run by me.',
+                'Den här sajten är själv ett projekt: öppna data, testade modeller och gränssnittet, byggda och drivna av mig.',
+              )}
+            </p>
+          </div>
+        </Section>
+
+        <Section
+          id="erfarenhet"
+          index={3}
+          title={l('Experience', 'Erfarenhet')}
+        >
+          <ol className="cv-timeline">
+            {EXPERIENCE.map((job) => (
+              <li key={job.org} className="cv-job">
+                <p className="cv-when">{b(job.period)}</p>
+                <div>
+                  <h3>
+                    {b(job.role)} <span className="cv-at">· {job.org}</span>
+                  </h3>
+                  <p className="cv-kind">{b(job.kind)}</p>
+                  <ul className="cv-did">
+                    {job.did.map((item) => (
+                      <li key={item.sv}>{b(item)}</li>
+                    ))}
+                  </ul>
+                  <Tags items={job.tech} />
+                </div>
+              </li>
+            ))}
+          </ol>
+        </Section>
+
+        <Section id="projekt" index={4} title={l('Projects', 'Projekt')}>
+          <span id="projects" className="anchor-alias" />
+          <a className="cv-flagship" href={FLAGSHIP.href}>
+            <span className="cv-project-kind">{b(FLAGSHIP.kind)}</span>
+            <h3>
+              {b(FLAGSHIP.title)}
+              <span className="cv-arrow" aria-hidden="true">
+                →
+              </span>
+            </h3>
+            <p>{b(FLAGSHIP.summary)}</p>
+            <p className="cv-result">{b(FLAGSHIP.result)}</p>
+            <span className="cv-flagship-cta">
+              {l('Open the dashboard', 'Öppna dashboarden')} →
+            </span>
+          </a>
+          <Tags items={FLAGSHIP.tech} />
+          <ul className="cv-projects">
+            {PROJECTS.map((project) => (
+              <ProjectRow key={project.id} project={project} />
+            ))}
+          </ul>
+        </Section>
+
+        <Section id="kompetenser" index={5} title={l('Skills', 'Kompetenser')}>
+          <dl className="cv-skills">
+            {SKILLS.map((group) => (
+              <div key={group.group.sv}>
+                <dt>{b(group.group)}</dt>
+                <dd>
+                  <Tags items={group.items} />
+                </dd>
+              </div>
+            ))}
+          </dl>
+        </Section>
+
+        <Section id="utbildning" index={6} title={l('Education', 'Utbildning')}>
+          <div className="cv-job">
+            <p className="cv-when">{EDUCATION.period}</p>
+            <div>
+              <h3>{b(EDUCATION.title)}</h3>
+              <p className="cv-kind">{b(EDUCATION.about)}</p>
+              <p className="cv-kind">{b(LANGUAGES)}</p>
+            </div>
+          </div>
+        </Section>
+
+        <Section id="kontakt" index={7} title={l('Contact', 'Kontakt')}>
+          <p className="cv-lede">
+            {l(
+              'Looking for a junior role in data engineering, analytics engineering or applied AI. The quickest way is email.',
+              'Jag söker en junior roll inom data engineering, analytics engineering eller tillämpad AI. Snabbast når du mig på mejl.',
+            )}
+          </p>
+          <ul className="cv-contact">
             {profile.email && (
               <li>
-                <a href={`mailto:${profile.email}`}>{profile.email}</a>
+                <a href={`mailto:${profile.email}`}>
+                  <small>{l('Email', 'Mejl')}</small>
+                  {profile.email}
+                </a>
               </li>
             )}
             {profile.linkedin && (
               <li>
                 <a href={profile.linkedin} target="_blank" rel="noreferrer">
-                  LinkedIn ↗
+                  <small>LinkedIn</small>
+                  linkedin.com/in/anton-ernstsson ↗
                 </a>
               </li>
             )}
@@ -331,38 +371,13 @@ function Contact() {
                 target="_blank"
                 rel="noreferrer"
               >
-                GitHub ↗
+                <small>GitHub</small>
+                github.com/korv9 ↗
               </a>
             </li>
-            {profile.cv && (
-              <li>
-                <a href={profile.cv} download>
-                  {l('Download CV (PDF)', 'Ladda ned CV (PDF)')}
-                </a>
-              </li>
-            )}
           </ul>
-          <p className="ds-small">
-            {l(
-              'Stockholm · Swedish and English',
-              'Stockholm · svenska och engelska',
-            )}
-          </p>
-        </div>
+        </Section>
       </div>
-    </section>
-  )
-}
-
-export default function HomePage() {
-  return (
-    <div className="home">
-      <Presentation />
-      <About />
-      <Experience />
-      <Skills />
-      <Projects />
-      <Contact />
     </div>
   )
 }

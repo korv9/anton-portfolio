@@ -8,29 +8,45 @@ test('home introduces Anton and routes to each project', async ({
   const errors: string[] = []
   page.on('pageerror', (e) => errors.push(e.message))
   await page.goto('/')
-  await expect(page.getByRole('heading', { level: 1 })).toContainText(
-    'raw data',
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+    'Anton Ernstsson',
   )
-  // In reading order: about, experience, skills, projects, contact.
+  // One page, in reading order, with a table of contents that names every section.
   const ids = await page
-    .locator('.home > section')
+    .locator('.cv-main > section')
     .evaluateAll((sections) => sections.map((s) => s.id))
   expect(ids).toEqual([
     'start',
     'om-mig',
     'erfarenhet',
-    'kompetenser',
     'projekt',
+    'kompetenser',
+    'utbildning',
     'kontakt',
   ])
+  const toc = page.getByRole('navigation', { name: 'Contents' })
+  await expect(toc.getByRole('link')).toHaveCount(7)
+  // The overview answers the ten-second questions: facts and a CV for each kind of role.
+  await expect(page.locator('.cv-facts > div')).toHaveCount(4)
+  await expect(page.locator('.cv-fit a[download]')).toHaveCount(3)
+  for (const href of await page
+    .locator('.cv-fit a[download]')
+    .evaluateAll((links) => links.map((a) => a.getAttribute('href')))) {
+    expect((await page.request.get(`/${href}`)).status(), href!).toBe(200)
+  }
   await expect(page.locator('#erfarenhet')).toContainText('Fora')
   await expect(page.locator('#erfarenhet')).toContainText('Avtalat')
-  await expect(page.locator('.hp-project')).toHaveCount(4)
-  await expect(page.locator('.hp-lead')).toContainText('Swedish politics')
-  const more = page.locator('#kompetenser .skills-more')
-  await expect(more).toHaveCount(0)
-  await page.getByRole('button', { name: 'Show more' }).click()
-  await expect(more).toHaveCount(5)
+  await expect(page.locator('.cv-flagship')).toContainText('Swedish politics')
+  expect(await page.locator('.cv-project').count()).toBeGreaterThanOrEqual(6)
+  // Every skill is visible: nothing behind a toggle.
+  await expect(page.locator('#kompetenser .cv-skills > div')).toHaveCount(6)
+  await expect(page.getByRole('button', { name: 'Show more' })).toHaveCount(0)
+  // The contents follow the reader.
+  await toc.getByRole('link', { name: /Skills/ }).click()
+  await expect(toc.getByRole('link', { name: /Skills/ })).toHaveAttribute(
+    'aria-current',
+    'location',
+  )
   await expect(page.locator('#job-market')).toHaveCount(0)
   if (isMobile) await page.getByRole('button', { name: 'Menu' }).click()
   await page
@@ -93,6 +109,8 @@ test('language map and job chart retain useful controls', async ({ page }) => {
 })
 
 test('navigation, responsive layout and accessibility', async ({ page }) => {
+  // Contrast is checked on the settled page, not halfway through an entrance animation.
+  await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.goto('/')
   await expect(
     page.getByRole('link', { name: /Download CV/ }).first(),

@@ -1,6 +1,7 @@
 /*
  * The design system, loaded after every other stylesheet so it wins where older page styles
- * disagree: Helvetica everywhere, tabular figures, near-black on warm white, thin rules,
+ * disagree: Geist everywhere (Geist Mono for figures and labels), tabular figures, near-black
+ * on warm white, thin rules,
  * square corners, no shadows, no blur. Colour carries meaning only: in the politics product it
  * means a party, and everything else stays neutral.
  */
@@ -31,8 +32,13 @@ h1,
 h2,
 h3,
 h4 {
-  letter-spacing: -0.02em;
-  font-weight: 700;
+  letter-spacing: -0.025em;
+  font-weight: 600;
+}
+code,
+kbd,
+.mono {
+  font-family: var(--font-mono) !important;
 }
 
 /* Square corners and no decoration; round marks stay round where they are data or logos. */

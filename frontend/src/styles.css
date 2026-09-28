@@ -1,20 +1,32 @@
 /* Tokens: see design-system.css for the full system, loaded last. */
 :root {
-  color: #151515;
-  background: #faf9f6;
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  color: #111214;
+  background: #fafaf9;
+  font-family: 'Geist Variable', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-synthesis: none;
   font-variant-numeric: tabular-nums;
-  --font: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  --ink: #151515;
-  --muted: #5e5e5e;
+  /* Type: Geist for text, Geist Mono for figures and labels. */
+  --font: 'Geist Variable', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --font-mono:
+    'Geist Mono Variable', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  /* Scale: five sizes, used everywhere. */
+  --fs-xs: 0.75rem;
+  --fs-sm: 0.875rem;
+  --fs-md: 1rem;
+  --fs-lg: 1.25rem;
+  --fs-xl: clamp(1.75rem, 3vw, 2.25rem);
+  /* Colour: near-black on warm white; colour itself only ever means a party. */
+  --ink: #111214;
+  --ink-2: #3a3c40;
+  --muted: #62656b;
   --paper: #ffffff;
-  --page: #faf9f6;
-  --line: #e2e0da;
-  --line-strong: #c9c6be;
-  --teal: #151515;
+  --page: #fafaf9;
+  --wash: #f2f2f0;
+  --line: #e4e4e1;
+  --line-strong: #cbcbc6;
+  --teal: #111214;
   --orange: #8a8a8a;
-  --focus: #151515;
+  --focus: #111214;
 }
 * {
   box-sizing: border-box;

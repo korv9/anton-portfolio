@@ -4,7 +4,6 @@ import { profile } from '../content'
 
 const LINKS: [string, string, string][] = [
   ['#om-mig', 'About', 'Om mig'],
-  ['#erfarenhet', 'Experience', 'Erfarenhet'],
   ['#projekt', 'Projects', 'Projekt'],
   ['#politik', 'Politics', 'Politik'],
   ['#kontakt', 'Contact', 'Kontakt'],

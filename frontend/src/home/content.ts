@@ -1,71 +1,131 @@
 /**
- * The start page's words, in one place. Facts come from the CV
- * (public/Anton_Ernstsson_CV_Data_Engineer.pdf) and the project catalogue; nothing here is a
- * number that is not in those sources.
+ * The start page's words, in one place. Every fact comes from Anton's three CVs
+ * (public/cv/*.pdf: Data Engineer, Data Scientist / Applied AI, Python / AI Platform) or the
+ * project catalogue; nothing here is a number that is not in those sources.
  */
 export type Bilingual = { sv: string; en: string }
 const t = (sv: string, en: string): Bilingual => ({ sv, en })
 
+/** The three CVs, one per kind of role, so a recruiter opens the one that fits. */
+export const CVS: { role: Bilingual; focus: Bilingual; file: string }[] = [
+  {
+    role: t(
+      'Data Engineer / Analytics Engineer',
+      'Data Engineer / Analytics Engineer',
+    ),
+    focus: t(
+      'Pipelines, lakehouse, dbt, Power BI',
+      'Pipelines, lakehouse, dbt, Power BI',
+    ),
+    file: 'cv/Anton_Ernstsson_CV_Data_Engineer.pdf',
+  },
+  {
+    role: t('Data Scientist / Applied AI', 'Data Scientist / Applied AI'),
+    focus: t(
+      'ML, NLP, klustring, modellutvärdering',
+      'ML, NLP, clustering, model evaluation',
+    ),
+    file: 'cv/Anton_Ernstsson_CV_Data_Scientist_Applied_AI.pdf',
+  },
+  {
+    role: t(
+      'Python-utvecklare / AI-plattform',
+      'Python Developer / AI Platform',
+    ),
+    focus: t('FastAPI, API:er, RAG, CI/CD', 'FastAPI, APIs, RAG, CI/CD'),
+    file: 'cv/Anton_Ernstsson_CV_Python_Backend_AI_Platform.pdf',
+  },
+]
+
+/** The four facts a recruiter should see first. */
+export const FACTS: { value: string; label: Bilingual }[] = [
+  {
+    value: '2',
+    label: t(
+      'LIA-praktiker med data: Avtalat och Fora',
+      'data internships: Avtalat and Fora',
+    ),
+  },
+  {
+    value: '80 000+',
+    label: t(
+      'poster in i ett lakehouse i Azure Databricks (Fora)',
+      'records into an Azure Databricks lakehouse (Fora)',
+    ),
+  },
+  {
+    value: '21 000+',
+    label: t(
+      'incidenter analyserade med NLP, 72 möjliga problemposter (Avtalat)',
+      'incidents analysed with NLP, 72 potential problem records (Avtalat)',
+    ),
+  },
+  {
+    value: '2026',
+    label: t(
+      'examen som AI-utvecklare, JENSEN (400 YH-poäng)',
+      'graduated AI Developer, JENSEN (400 YH credits)',
+    ),
+  },
+]
+
 export const EXPERIENCE: {
   org: string
   role: Bilingual
+  kind: Bilingual
   period: Bilingual
   did: Bilingual[]
-  effect: Bilingual
   tech: string[]
 }[] = [
   {
     org: 'Avtalat',
-    role: t(
-      'Analytics Engineer · LIA-praktik',
-      'Analytics Engineer · LIA internship',
-    ),
+    role: t('Analytics Engineer', 'Analytics Engineer'),
+    kind: t('LIA-praktik', 'LIA internship'),
     period: t('jan–jun 2026', 'Jan–Jun 2026'),
     did: [
       t(
-        'Byggde ut en ETL-pipeline för Freshservice i Azure Databricks så att den klarar fler instanser och fler analyser.',
-        'Extended a Freshservice ETL pipeline in Azure Databricks to support more instances and analytical use cases.',
+        'Byggde en GDPR-anpassad NLP-lösning som klustrade 21 000+ produktionsincidenter och hittade 72 möjliga oregistrerade problemposter (examensarbete).',
+        'Built a GDPR-compliant NLP solution that clustered 21,000+ production incidents and identified 72 potential unregistered problem records (degree project).',
       ),
       t(
-        'Byggde Power BI-rapporter och semantiska modeller med DirectQuery och DAX.',
-        'Built Power BI reports and semantic models with DirectQuery and DAX.',
+        'Byggde Power BI-rapporter och semantiska modeller med DirectQuery och DAX, som ersatte manuell rapportering med självbetjäning.',
+        'Built Power BI reports and semantic models with DirectQuery and DAX, replacing manual reporting with self-service analytics.',
       ),
       t(
-        'Gjorde en reproducerbar NLP-analys av över 21 000 incidenter, med bedömning av datakvalitet, GDPR och anonymisering.',
-        'Developed a reproducible NLP analysis of 21,000+ incidents, assessing data quality with attention to GDPR and anonymisation.',
+        'Byggde ut en Freshservice-pipeline i Azure Databricks med PySpark och Spark SQL för fler instanser och analyser.',
+        'Extended a Freshservice ETL pipeline in Azure Databricks with PySpark and Spark SQL for more instances and analytical use cases.',
       ),
     ],
-    effect: t(
-      'Manuell rapportering ersattes av självbetjäning: verksamheten kan själv ta fram sina siffror.',
-      'Manual reporting was replaced with self-service analytics: the business can get its own numbers.',
-    ),
     tech: [
       'Azure Databricks',
       'PySpark',
       'Spark SQL',
       'Power BI',
       'DAX',
-      'NLP',
+      'sentence-transformers',
+      'HDBSCAN',
+      'MLflow',
     ],
   },
   {
     org: 'Fora',
-    role: t('Data Engineer · LIA-praktik', 'Data Engineer · LIA internship'),
+    role: t('Data Engineer', 'Data Engineer'),
+    kind: t('LIA-praktik', 'LIA internship'),
     period: t('nov 2025–jan 2026', 'Nov 2025–Jan 2026'),
     did: [
       t(
-        'Byggde pipelines i Python, PySpark och Spark SQL som läser in över 80 000 Freshservice-poster från ett REST-API till ett lakehouse i Azure Databricks.',
+        'Byggde pipelines i Python, PySpark och Spark SQL som läser in 80 000+ Freshservice-poster från ett REST-API till ett lakehouse i Azure Databricks.',
         'Built Python, PySpark and Spark SQL pipelines ingesting 80,000+ Freshservice records from a REST API into an Azure Databricks lakehouse.',
       ),
       t(
-        'Införde inkrementell bearbetning i Bronze-, Silver- och Gold-lager med validering, skydd mot att NULL skriver över data och felhantering.',
-        'Implemented incremental Bronze, Silver and Gold processing with validation, NULL-overwrite protection and error handling.',
+        'Inkrementell bearbetning i Bronze, Silver och Gold med validering, skydd mot NULL-överskrivning och felhantering.',
+        'Incremental Bronze, Silver and Gold processing with validation, NULL-overwrite protection and error handling.',
+      ),
+      t(
+        'Modellerade ett stjärnschema i Gold-lagret med hashade surrogatnycklar för semantiska modeller och ITSM-rapportering, i en reglerad pensions- och försäkringsmiljö.',
+        'Modelled a Gold-layer star schema with hashed surrogate keys for semantic models and ITSM reporting, in a regulated pension and insurance environment.',
       ),
     ],
-    effect: t(
-      'En stjärnmodell i Gold-lagret med hashade surrogatnycklar blev grunden för semantiska modeller och rapportering av IT-ärenden.',
-      'A Gold-layer star schema with hashed surrogate keys became the basis for semantic models and IT service reporting.',
-    ),
     tech: [
       'Python',
       'PySpark',
@@ -75,61 +135,116 @@ export const EXPERIENCE: {
       'REST API',
     ],
   },
+  {
+    org: 'Delicato',
+    role: t('Maskinoperatör', 'Machine Operator'),
+    kind: t('Tidigare erfarenhet', 'Earlier experience'),
+    period: t('2022–2025', '2022–2025'),
+    did: [
+      t(
+        'Produktion, kvalitetskontroll och teknisk felsökning. Vice ordförande i den lokala fackklubben.',
+        'Production, quality control and technical troubleshooting. Vice-chair of the local union club.',
+      ),
+    ],
+    tech: [],
+  },
 ]
 
-export const EDUCATION = t(
-  'AI-utvecklare, JENSEN Yrkeshögskola, 2024–2026 (400 YH-poäng). Dessförinnan maskinoperatör på Delicato 2022–2025.',
-  'AI Developer, JENSEN Yrkeshögskola, 2024–2026 (400 YH credits). Before that, machine operator at Delicato 2022–2025.',
+export const EDUCATION = {
+  title: t(
+    'AI-utvecklare, JENSEN Yrkeshögskola',
+    'AI Developer, JENSEN Yrkeshögskola',
+  ),
+  period: '2024–2026',
+  about: t(
+    'Yrkeshögskoleutbildning, 400 YH-poäng, två år på heltid. Examen juni 2026.',
+    'Higher Vocational Education, 400 credits, two years full-time. Graduated June 2026.',
+  ),
+}
+
+export const LANGUAGES = t(
+  'Svenska (modersmål) · Engelska (flytande)',
+  'Swedish (native) · English (fluent)',
 )
 
-export const SKILLS: { group: Bilingual; top: string[]; more: string[] }[] = [
+/** Skills by function, most used first; everything is shown, nothing hidden behind a toggle. */
+export const SKILLS: { group: Bilingual; items: string[] }[] = [
   {
     group: t('Data engineering', 'Data engineering'),
-    top: ['Python', 'SQL', 'PySpark', 'Databricks', 'dbt Core'],
-    more: [
+    items: [
+      'Python',
+      'SQL',
+      'PySpark',
       'Spark SQL',
+      'Azure Databricks',
       'Delta Lake',
+      'dbt Core',
       'DuckDB',
       'ETL/ELT',
       'REST API',
+    ],
+  },
+  {
+    group: t('Modellering och arkitektur', 'Modelling and architecture'),
+    items: [
       'Lakehouse',
       'Medallion',
       'Stjärnschema',
       'Inkrementella pipelines',
+      'Semantiska modeller',
     ],
   },
   {
-    group: t('Analytics och BI', 'Analytics and BI'),
-    top: ['Power BI', 'DAX', 'Semantiska modeller'],
-    more: ['DirectQuery', 'pandas', 'KPI-utveckling', 'Parquet'],
+    group: t('Analys och BI', 'Analytics and BI'),
+    items: [
+      'Power BI',
+      'DAX',
+      'DirectQuery',
+      'pandas',
+      'KPI-utveckling',
+      'Statistisk analys',
+    ],
   },
   {
-    group: t('AI och maskininlärning', 'AI and machine learning'),
-    top: ['NLP', 'sentence-transformers', 'Klustring'],
-    more: ['UMAP', 'HDBSCAN', 'MLflow', 'LightGBM', 'Modellutvärdering', 'RAG'],
+    group: t('Maskininlärning och AI', 'Machine learning and AI'),
+    items: [
+      'scikit-learn',
+      'XGBoost',
+      'NLP',
+      'sentence-transformers',
+      'UMAP',
+      'HDBSCAN',
+      'RAG',
+      'LLM-API:er',
+      'TensorFlow',
+      'MLflow',
+    ],
   },
   {
-    group: t('Frontend och fullstack', 'Frontend and full stack'),
-    top: ['React', 'TypeScript', 'FastAPI'],
-    more: [
+    group: t('Backend och frontend', 'Backend and frontend'),
+    items: [
+      'FastAPI',
+      'Flask',
       'PostgreSQL',
       'SQLAlchemy',
       'Alembic',
-      'Flask',
-      'Vite',
-      'Tillgänglighet (WCAG)',
+      'Pydantic',
+      'React',
+      'TypeScript',
     ],
   },
   {
-    group: t('Cloud och verktyg', 'Cloud and tools'),
-    top: ['Azure', 'Git', 'GitHub Actions'],
-    more: [
+    group: t('Kvalitet och leverans', 'Quality and delivery'),
+    items: [
+      'pytest',
+      'Datavalidering',
+      'DQX',
+      'Git',
+      'GitHub Actions',
       'Azure DevOps',
       'CI/CD',
-      'pytest',
-      'DQX',
       'Docker Compose',
-      'Cloudflare R2',
+      'GDPR och anonymisering',
     ],
   },
 ]
@@ -137,154 +252,191 @@ export const SKILLS: { group: Bilingual; top: string[]; more: string[] }[] = [
 export type Project = {
   id: string
   title: Bilingual
-  problem: Bilingual
-  built: Bilingual
+  kind: Bilingual
+  summary: Bilingual
+  /** What it shows, in one line: the result. */
   result: Bilingual
   tech: string[]
   href: string
-  hrefLabel: Bilingual
   code?: string
 }
 
-export const FEATURED: Project[] = [
+/** The flagship: the largest and most complete project. */
+export const FLAGSHIP: Project = {
+  id: 'politics',
+  title: t('Svensk politik i siffror', 'Swedish politics in numbers'),
+  kind: t(
+    'Dataprodukt · uppdateras från källorna',
+    'Data product · refreshed from the sources',
+  ),
+  summary: t(
+    'Val, opinion, voteringar, budgetförslag, tal och nyheter från riksdagen, SCB, Valmyndigheten och Regeringskansliet, samlade i en produkt: inläsning, testade dbt-modeller, Parquet och en webbplats där varje fråga besvaras med en graf.',
+    'Elections, polls, roll calls, budget proposals, speeches and news from the Riksdag, SCB, Valmyndigheten and the Government Offices in one product: ingestion, tested dbt models, Parquet and a site where each question is answered with one chart.',
+  ),
+  result: t(
+    'Voteringar sedan 1993/94 och tal, budget och opinion går att följa parti för parti, med källan ett klick bort.',
+    'Roll calls since 1993/94, speeches, budgets and polls can be followed party by party, with the source one click away.',
+  ),
+  tech: [
+    'Python',
+    'dbt',
+    'DuckDB',
+    'Parquet',
+    'Cloudflare R2',
+    'React',
+    'TypeScript',
+    'NLP',
+  ],
+  href: '#politik',
+  code: 'https://github.com/korv9/anton-portfolio',
+}
+
+export const PROJECTS: Project[] = [
   {
-    id: 'politics',
-    title: t('Svensk politik i siffror', 'Swedish politics in numbers'),
-    problem: t(
-      'Det är svårt att följa vad politikerna säger, vad de vill lägga pengar på och hur de sedan röstar. Uppgifterna finns, men utspridda i olika källor och format.',
-      'It is hard to follow what politicians say, what they want to spend on and how they then vote. The data exists, but spread over sources and formats.',
+    id: 'thesis',
+    title: t(
+      'NLP-klustring av IT-incidenter',
+      'NLP clustering of IT incidents',
     ),
-    built: t(
-      'En sammanhållen produkt ovanpå öppna data från riksdagen, SCB, Valmyndigheten och Regeringskansliet: inläsning, testade dbt-modeller och en webbplats där varje fråga besvaras med en graf.',
-      'One product on open data from the Riksdag, SCB, Valmyndigheten and the Government Offices: ingestion, tested dbt models and a site where each question is answered with one chart.',
+    kind: t('Examensarbete · Avtalat', 'Degree project · Avtalat'),
+    summary: t(
+      'Oövervakad NLP-pipeline på 21 000+ riktiga produktionsincidenter, med datakvalitet enligt ISO/IEC 25012 och intervjuer med verksamheten.',
+      'Unsupervised NLP pipeline on 21,000+ real production incidents, with ISO/IEC 25012 data quality and stakeholder interviews.',
     ),
     result: t(
-      'Voteringar sedan 1993/94, anföranden, budgetförslag, opinionsmätningar och valresultat går att följa parti för parti, med källan ett klick bort.',
-      'Roll calls since 1993/94, speeches, budget proposals, polls and election results can be followed party by party, with the source one click away.',
+      '72 möjliga problemposter; bättre klusterkvalitet än K-means.',
+      '72 potential problem records; better cluster quality than K-means.',
     ),
-    tech: ['Python', 'dbt', 'DuckDB', 'Parquet', 'React', 'TypeScript', 'NLP'],
-    href: '#politik',
-    hrefLabel: t('Öppna produkten', 'Open the product'),
-    code: 'https://github.com/korv9/anton-portfolio',
+    tech: [
+      'Python',
+      'sentence-transformers',
+      'UMAP',
+      'HDBSCAN',
+      'MLflow',
+      'Databricks',
+    ],
+    href: '#thesis',
   },
   {
     id: 'jobs',
     title: t('Arbetsmarknaden i jobbannonser', 'The job market in job ads'),
-    problem: t(
-      'Hur förändras efterfrågan på olika yrken, och vilka kompetenser efterfrågas?',
-      'How does demand for occupations change, and which skills are asked for?',
-    ),
-    built: t(
-      'En pipeline som läser JobTechs annonsarkiv sedan 2020 och bygger en stjärnmodell med tester för korn, referensintegritet och fullständiga månader.',
-      'A pipeline reading JobTech’s ad archive since 2020 into a star schema tested for grain, referential integrity and complete months.',
+    kind: t('Analytics engineering', 'Analytics engineering'),
+    summary: t(
+      'Pipeline för svenska jobbannonser: Python för API och arkiv, dbt Core för SQL, tester och dokumentation.',
+      'Pipeline for Swedish job ads: Python for API and archive ingestion, dbt Core for SQL, tests and documentation.',
     ),
     result: t(
-      'Annonser per yrke, län och anställningsvillkor över tid, med tydliga definitioner och nedladdningsbara tabeller.',
-      'Ads by occupation, county and conditions over time, with clear definitions and downloadable tables.',
+      'Stjärnschema med inkrementell faktatabell, tester för korn, referensintegritet och fullständiga månader, CI i GitHub Actions.',
+      'Star schema with an incremental fact table, tests for grain, referential integrity and complete months, CI in GitHub Actions.',
     ),
-    tech: ['Python', 'dbt Core', 'DuckDB', 'GitHub Actions'],
+    tech: ['Python', 'SQL', 'dbt Core', 'DuckDB', 'GitHub Actions'],
     href: '#job-market',
-    hrefLabel: t('Se analysen', 'See the analysis'),
     code: 'https://github.com/korv9/swedish-job-market-analytics',
   },
   {
     id: 'welfare',
     title: t('Hur mår Sverige?', 'How is Sweden doing?'),
-    problem: t(
-      'Följs jobb, sjukskrivningar, hälsa och förtroende åt i olika delar av landet?',
-      'Do jobs, sick leave, health and trust move together across Sweden?',
-    ),
-    built: t(
-      'Fem offentliga källor – SCB, Försäkringskassan, Folkhälsomyndigheten, European Social Survey och Kolada – i en testad dbt-stjärnmodell med gemensamma nycklar för region, period, kön och ålder.',
-      'Five public sources – SCB, Försäkringskassan, the Public Health Agency, the European Social Survey and Kolada – in a tested dbt star schema with shared keys for region, period, sex and age.',
+    kind: t('Datalager och analys', 'Data warehouse and analysis'),
+    summary: t(
+      'Fem offentliga källor (SCB, Försäkringskassan, Folkhälsomyndigheten, ESS, Kolada) i en testad dbt-stjärnmodell med gemensamma nycklar.',
+      'Five public sources (SCB, Försäkringskassan, the Public Health Agency, ESS, Kolada) in a tested dbt star schema with shared keys.',
     ),
     result: t(
-      'Län och kommuner kan jämföras sida vid sida i webbläsaren, med en statussida för varje källa och körning.',
-      'Counties and municipalities side by side in the browser, with a status page for every source and run.',
+      'Län och kommuner sida vid sida, med en statussida för varje källa och körning.',
+      'Counties and municipalities side by side, with a status page for every source and run.',
     ),
     tech: ['dbt', 'DuckDB', 'Stjärnschema', 'Parquet'],
     href: '#sweden',
-    hrefLabel: t('Se analysen', 'See the analysis'),
   },
   {
     id: 'drugcomb',
-    title: t(
-      'DrugComb: förutsäga läkemedelssynergi',
-      'DrugComb: predicting drug synergy',
-    ),
-    problem: t(
-      'Fungerar en modell som förutsäger synergi mellan läkemedel även på par, läkemedel och cellinjer den inte sett?',
-      'Does a model predicting drug synergy still work on pairs, drugs and cell lines it has not seen?',
-    ),
-    built: t(
-      'Matchning av läkemedel och cellinjer, ett DuckDB-lager och utvärdering med fyra olika sätt att dela upp datan.',
-      'Drug and cell-line entity resolution, a DuckDB warehouse and evaluation under four cross-validation strategies.',
+    title: t('Förutsäga läkemedelssynergi', 'Drug synergy prediction'),
+    kind: t('Multimodal maskininlärning', 'Multimodal machine learning'),
+    summary: t(
+      'Molekylfingeravtryck, RNA-uttryck och cellinjedata kombinerade för att förutsäga synergi, med skydd mot dataläckage.',
+      'Drug fingerprints, RNA expression and cell-line data combined to predict synergy, with leakage prevention.',
     ),
     result: t(
-      'Resultaten redovisas per uppdelning, så att det syns hur mycket träffsäkerheten sjunker på okänd data.',
-      'Results are reported per split, showing how much accuracy drops on unfamiliar data.',
+      'Ensemblemetoder och djupinlärning jämförda under fyra sätt att dela upp datan.',
+      'Ensemble methods and deep learning compared under four cross-validation strategies.',
     ),
-    tech: ['Python', 'DuckDB', 'LightGBM', 'Modellutvärdering'],
+    tech: ['Python', 'scikit-learn', 'LightGBM', 'TensorFlow', 'DuckDB'],
     href: '#drugcomb',
-    hrefLabel: t('Se resultaten', 'See the results'),
     code: 'https://github.com/korv9/DrugComb-Synergy-Prediction',
   },
-]
-
-export const MORE_PROJECTS: {
-  title: Bilingual
-  about: Bilingual
-  href: string
-}[] = [
   {
+    id: 'allegoria',
     title: t(
-      'Examensarbete: NLP-klustring av IT-ärenden',
-      'Degree project: NLP clustering of IT incidents',
+      'Semantisk drift i svensk lagstiftning',
+      'Semantic drift in Swedish legislation',
     ),
-    about: t(
-      'Datakvalitet enligt ISO/IEC 25012, inbäddningar och klustring för att hitta granskningskandidater.',
-      'Data quality to ISO/IEC 25012, embeddings and clustering to find review candidates.',
+    kind: t('Lakehouse och AI-utvärdering', 'Lakehouse and AI evaluation'),
+    summary: t(
+      '50 källdokument från riksdagens API omvandlade till 1 952 strukturerade bestämmelser med oföränderliga ögonblicksbilder och spårbarhet.',
+      '50 source documents from the Riksdag API transformed into 1,952 structured provisions with immutable snapshots and traceability.',
     ),
-    href: '#thesis',
-  },
-  {
-    title: t('Allegoria / RFC-drift', 'Allegoria / RFC drift'),
-    about: t(
-      'Vad händer med innebörden när ett krav går från MUST till SHOULD? Pågående.',
-      'What changes when a requirement goes from MUST to SHOULD? In progress.',
+    result: t(
+      'Ett reproducerbart ramverk som mäter hur innebörden förskjuts vid upprepade LLM-omskrivningar.',
+      'A reproducible framework measuring meaning shifts across repeated LLM transformations.',
     ),
+    tech: [
+      'Python',
+      'PySpark',
+      'Delta Lake',
+      'Unity Catalog',
+      'DuckDB',
+      'pytest',
+    ],
     href: '#rfc-drift',
+    code: 'https://github.com/korv9/allegoria',
   },
   {
+    id: 'homie',
     title: t('Homie API', 'Homie API'),
-    about: t(
-      'FastAPI och PostgreSQL med autentisering och ett tydligt API-kontrakt. Pågående.',
-      'FastAPI and PostgreSQL with authentication and an explicit API contract. In progress.',
+    kind: t('Python-backend · pågående', 'Python backend · in progress'),
+    summary: t(
+      'FastAPI- och PostgreSQL-tjänst med autentisering, migreringar och ett OpenAPI-kontrakt för en separat frontend.',
+      'FastAPI and PostgreSQL service with authentication, migrations and an OpenAPI contract for a separate frontend.',
     ),
+    result: t(
+      'pytest, Ruff, GitHub Actions, Dockerfile i flera steg och Docker Compose.',
+      'pytest, Ruff, GitHub Actions, a multi-stage Dockerfile and Docker Compose.',
+    ),
+    tech: ['FastAPI', 'PostgreSQL', 'SQLAlchemy', 'Alembic', 'Docker Compose'],
     href: '#homie',
+    code: 'https://github.com/korv9/homie-api',
   },
   {
+    id: 'rag',
     title: t('RAG-baserad studieassistent', 'RAG learning assistant'),
-    about: t(
-      'Studieprojekt: inläsning av kursmaterial, sökning, chatt och quizgenerering.',
-      'Study project: course-material ingestion, retrieval, chat and quiz generation.',
+    kind: t('Tillämpad generativ AI', 'Applied generative AI'),
+    summary: t(
+      'Flask-backend som läser in dokument, skapar inbäddningar och ger förankrade svar, semantisk sökning och quiz.',
+      'Flask backend ingesting documents, creating embeddings and giving grounded answers, semantic search and quizzes.',
     ),
+    result: t(
+      'Integrerad med Vertex AI, Google Cloud Storage och ett React-gränssnitt.',
+      'Integrated with Vertex AI, Google Cloud Storage and a React interface.',
+    ),
+    tech: ['Python', 'Flask', 'Vertex AI', 'RAG', 'React'],
     href: 'https://github.com/theazero/anton-portfolio',
   },
   {
-    title: t('Pumpdiagnostik (MIMII)', 'Pump diagnostics (MIMII)'),
-    about: t(
-      'Studieprojekt: ljudklassificering med mel-spektrogram och ett faltningsnätverk.',
-      'Study project: audio classification with Mel spectrograms and a convolutional network.',
+    id: 'mimii',
+    title: t(
+      'Avvikelser i industripumpar',
+      'Industrial pump anomaly detection',
     ),
-    href: 'https://github.com/theazero/anton-portfolio',
-  },
-  {
-    title: t('in1 · AI Playground', 'in1 · AI Playground'),
-    about: t(
-      'Studieprojekt: flera språkmodeller, modulär API-routning, autentisering och promptloggning.',
-      'Study project: multiple language models, modular API routing, authentication and prompt tracking.',
+    kind: t('Djupinlärning på MIMII', 'Deep learning on MIMII'),
+    summary: t(
+      'Pumpljud omvandlade till mel-spektrogram och en CNN-klassificerare för att hitta avvikande ljud.',
+      'Pump audio turned into Mel spectrograms and a CNN classifier to detect anomalous sounds.',
     ),
+    result: t(
+      'Utvärderad med ROC-AUC och förväxlingsmatris; överanpassning styrd med dropout och L2.',
+      'Evaluated with ROC-AUC and a confusion matrix; overfitting controlled with dropout and L2.',
+    ),
+    tech: ['Python', 'TensorFlow', 'CNN', 'librosa'],
     href: 'https://github.com/theazero/anton-portfolio',
   },
 ]

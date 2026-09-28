@@ -6,15 +6,22 @@ click away and remembered.
 
 ## Start page
 
-In reading order: a short presentation, about me, experience (Avtalat, Fora), technical skills
-(five groups, the most important first, the rest under "Visa fler"), selected projects (the
-politics product first and largest, then three more, with further projects under "Fler
-projekt") and contact. The words live in `frontend/src/home/content.ts`; facts come from the CV
-and the project catalogue.
+One page in two columns, built so a recruiter has the picture in ten seconds:
+
+- **Left, fixed:** name, role, one sentence on what Anton does, availability, a table of
+  contents (01 Översikt … 07 Kontakt) that marks the section being read, the three CVs (Data
+  Engineer, Data Scientist / Applied AI, Python / AI Platform, in `public/cv/`) and links.
+- **Right, read top to bottom:** Översikt (four facts from the CVs and "which role are you
+  hiring for?" with the matching CV), Om mig, Erfarenhet (Avtalat, Fora, Delicato), Projekt (the
+  politics product first, then every other project; nothing hidden), Kompetenser (six groups,
+  all visible), Utbildning, Kontakt.
+- On a phone the left column dissolves into the page and the contents become a sticky bar.
+
+The words live in `frontend/src/home/content.ts`; every fact comes from the CVs.
 
 A short name intro plays once per session when the start page is opened directly (never on a
-deep link): the name drawn as an outline, filled, then moved into the header's wordmark. Click,
-Enter or Escape skips it; with reduced motion it is a short fade. `frontend/src/site/Intro.tsx`.
+deep link). Click, Enter or Escape skips it; with reduced motion it is a short fade.
+`frontend/src/site/Intro.tsx`.
 
 ## The politics product
 
@@ -70,8 +77,9 @@ the projects.
 
 ## Design system
 
-`frontend/src/design-system.css`, loaded last: Helvetica (`"Helvetica Neue", Helvetica, Arial,
-sans-serif`) with tabular figures everywhere, near-black on warm white, thin grey rules, square
+`frontend/src/design-system.css`, loaded last, with tokens in `styles.css`: Geist for text and
+Geist Mono for figures and labels (self-hosted), five type sizes (`--fs-xs` … `--fs-xl`), tabular
+figures everywhere, near-black on warm white, thin grey rules, square
 corners, no shadows, gradients or blur. Colour carries meaning only: in the politics product it
 means a party; navigation, buttons, issue areas and budget areas stay neutral.
 
