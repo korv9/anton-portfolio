@@ -323,3 +323,90 @@
 .study-outcome > span {
   display: block;
 }
+
+/* News */
+.news-list {
+  list-style: none;
+  margin: 0 0 0.5rem;
+  padding: 0;
+  display: grid;
+  gap: 0.9rem;
+}
+.news-item {
+  display: grid;
+  gap: 0.25rem;
+  padding-left: 0.8rem;
+  border-left: 3px solid var(--line);
+  min-width: 0;
+}
+.news-item.source-svt {
+  border-left-color: #1e1e1e;
+}
+.news-item.source-ekot {
+  border-left-color: #b8003e;
+}
+.news-item.source-regeringen {
+  border-left-color: #1a4d8f;
+}
+.news-meta {
+  display: flex;
+  gap: 0.6rem;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+.news-source {
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ink);
+}
+.news-title {
+  font-weight: 700;
+  color: var(--ink);
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+.news-title:hover,
+.news-title:focus-visible {
+  text-decoration: underline;
+}
+.news-summary {
+  margin: 0;
+  font-size: 0.88rem;
+  color: #3f4b48;
+  overflow-wrap: anywhere;
+}
+.news-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.6rem;
+  align-items: center;
+  font-size: 0.78rem;
+}
+.news-party {
+  color: inherit;
+  text-decoration: none;
+}
+.news-topic {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0.05rem 0.5rem;
+  color: var(--muted);
+}
+.news-list.compact {
+  gap: 0.6rem;
+}
+.news-count {
+  color: var(--muted);
+  font-weight: 600;
+}
+.news-slicers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: end;
+  margin-bottom: 0.5rem;
+}
+.news-day + .news-day {
+  margin-top: 0.5rem;
+}

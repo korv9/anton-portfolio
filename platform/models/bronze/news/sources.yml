@@ -1,0 +1,22 @@
+version: 2
+
+# News headlines on Swedish politics: SVT, Sveriges Radio Ekot and the Government's own feed,
+# collected every few hours by platform/ingest/news/news_ingest.py into a monthly archive. Only
+# headline, the feed's own summary, time and link are kept; the article stays with its publisher.
+
+sources:
+  - name: news
+    description: The news archive (warehouse/raw/news), kept on R2 between runs.
+    tables:
+      - name: items
+        description: One line per item a feed has published, with when it was first and last seen.
+        meta:
+          external_location: >-
+            read_json('{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/news/items-*.jsonl',
+            format = 'newline_delimited')
+      - name: fetches
+        description: One line per fetch of a feed, with its status, SHA-256 and items read.
+        meta:
+          external_location: >-
+            read_json('{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/news/_manifest.jsonl',
+            format = 'newline_delimited', union_by_name = true)

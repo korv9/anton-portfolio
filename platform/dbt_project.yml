@@ -24,6 +24,8 @@ models:
         +tags: [jobs]
       market:
         +tags: [market]
+      news:
+        +tags: [news]
       parliament:
         +tags: [parliament]
       politics:
@@ -48,6 +50,8 @@ models:
         +tags: [jobs]
       market:
         +tags: [market]
+      news:
+        +tags: [news]
       parliament:
         +tags: [parliament]
       politics:
@@ -65,6 +69,13 @@ models:
 # tag lets it build on its own: `dbt build --select tag:welfare`.
 seeds:
   portfolio:
+    news:
+      +tags: [news]
+      +schema: seeds
+      news_party_terms:
+        +column_types: {party: varchar, pattern: varchar}
+      news_topics:
+        +column_types: {topic: varchar, name_sv: varchar, name_en: varchar, pattern: varchar}
     politics:
       +tags: [politics]
       +schema: seeds

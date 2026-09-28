@@ -1,5 +1,6 @@
 import TopicNav from '../TopicNav'
 import StudiesView, { StudyLinks } from './Studies'
+import NewsView, { NewsList, useNews } from './News'
 import { useEffect, useMemo, useState } from 'react'
 import { l } from '../i18n'
 import MultiLineChart, { type Series } from '../charts/MultiLineChart'
@@ -490,6 +491,7 @@ export default function NowPage({ view }: { view: string }) {
           items={[
             ['#now-election', 'Election result', 'Valresultat'],
             ['#now-government', 'Government', 'Regeringen'],
+            ['#now-news', 'News', 'Nyheter'],
             ['#now-decisions', 'Decisions', 'Beslut'],
             ['#now-history', 'Opinion over time', 'Opinion över tid'],
             ['#now-votes', 'Voting history', 'Rösthistorik'],
@@ -645,6 +647,7 @@ export default function NowPage({ view }: { view: string }) {
               </a>
             </p>
           )}
+          <FormationNews />
           {now.formation_news.length > 0 && (
             <>
               <h3 className="analysis-subhead">
@@ -737,6 +740,7 @@ export default function NowPage({ view }: { view: string }) {
       )}
 
       {view === '#now-studies' && <StudiesView />}
+      {view === '#now-news' && <NewsView />}
 
       {view === '#now-laws' && (
         <section className="report welfare-section" id="now-laws">
@@ -813,5 +817,31 @@ export default function NowPage({ view }: { view: string }) {
         </section>
       )}
     </div>
+  )
+}
+
+/** The latest news on forming a government, from SVT, Ekot and the Government. */
+function FormationNews() {
+  const { news } = useNews()
+  if (!news) return null
+  const items = news.items
+    .filter((i) => i.topics.includes('regeringsbildning'))
+    .slice(0, 8)
+  if (items.length === 0) return null
+  return (
+    <>
+      <h3 className="analysis-subhead">
+        {l(
+          'In the news: forming a government',
+          'I nyheterna: regeringsbildningen',
+        )}
+      </h3>
+      <NewsList news={news} items={items} compact />
+      <p>
+        <a href="#now-news">
+          {l('All political news →', 'Alla politiska nyheter →')}
+        </a>
+      </p>
+    </>
   )
 }
