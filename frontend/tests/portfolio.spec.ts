@@ -30,7 +30,16 @@ test('home introduces Anton and routes to each project', async ({
   await expect(page.locator('.page-tabs a')).toHaveCount(5)
   await page.goto('/#job-market-tech')
   await expect(page.locator('#job-market')).toBeVisible()
-  await expect(page.getByText('35,726', { exact: true })).toBeVisible()
+  // The IT report's total, from the file the page reads: it changes when a new archive year
+  // is added, and the page must show whatever the file says.
+  const jobs = await (
+    await page.request.get('/data/gold/marts/jobs.json')
+  ).json()
+  await expect(
+    page.getByText(jobs.kpis.ads_total.toLocaleString('en-GB'), {
+      exact: true,
+    }),
+  ).toBeVisible()
   await page.goto('/#drugcomb')
   await expect(page.locator('#drugcomb')).toContainText('396,498')
   await page.goto('/#rfc-drift')
@@ -55,7 +64,16 @@ test('language map and job chart retain useful controls', async ({ page }) => {
   await page.goto('/#job-market-tech')
   await page.getByRole('button', { name: 'Data Engineer', exact: true }).click()
   await expect(page.locator('.job-chart-head')).toContainText('Data Engineer')
-  await expect(page.locator('.year-totals')).toContainText('628')
+  const jobs = await (
+    await page.request.get('/data/gold/marts/jobs.json')
+  ).json()
+  const first = jobs.yearly.find(
+    (row: { role: string; year: number }) =>
+      row.role === 'Data Engineer' && row.year === jobs.years[0],
+  )
+  await expect(page.locator('.year-totals')).toContainText(
+    first.ads.toLocaleString('en-GB'),
+  )
 })
 
 test('navigation, responsive layout and accessibility', async ({ page }) => {
