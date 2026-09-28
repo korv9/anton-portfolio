@@ -17,10 +17,11 @@ test('every theme answers one question with one chart, a table and its sources',
   for (const [path, question] of THEMES) {
     await page.goto(`/${path}`)
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(question)
-    const kpis = await page.locator('.theme-kpis > div').count()
-    expect(kpis, path).toBeGreaterThan(0)
-    expect(kpis, path).toBeLessThanOrEqual(3)
+    // The question shows while the data loads; count the figures once the chart is there.
     await expect(page.locator('.theme-figure')).toHaveCount(1)
+    await expect(page.locator('.theme-kpis > div').first()).toBeVisible()
+    const kpis = await page.locator('.theme-kpis > div').count()
+    expect(kpis, path).toBeLessThanOrEqual(3)
     await expect(
       page.getByRole('heading', { name: 'What does this mean?' }),
     ).toBeVisible()
