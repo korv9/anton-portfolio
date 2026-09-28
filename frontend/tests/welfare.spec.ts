@@ -23,8 +23,14 @@ test('welfare page shows headlines, the county comparison and a working explorer
   })
   await explorer.locator('.slicers select').nth(0).selectOption('jobb')
   await explorer.locator('.slicers select').nth(2).selectOption('county')
-  await expect(explorer.locator('.region-chip')).toHaveCount(3)
-  await expect(explorer.locator('.multi-chart polyline')).toHaveCount(3)
+  // Another source's Parquet loads from object storage after the switch; give it the same
+  // time as the first load, not the default five seconds.
+  await expect(explorer.locator('.region-chip')).toHaveCount(3, {
+    timeout: 15000,
+  })
+  await expect(explorer.locator('.multi-chart polyline')).toHaveCount(3, {
+    timeout: 15000,
+  })
   await explorer.locator('.region-chip').first().click()
   await expect(explorer.locator('.multi-chart polyline')).toHaveCount(2)
   await expect(explorer.locator('.download-button')).toContainText('CSV')
