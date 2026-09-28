@@ -10,3 +10,6 @@ preview_urls = true
 
 [assets]
 directory = "./dist"
+
+# Branch previews (`npx wrangler preview`, run by Workers Builds for pull requests); empty is enough.
+[previews]

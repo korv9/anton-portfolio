@@ -14,10 +14,10 @@ pull request gets a preview URL on `workers.dev`. No workflow here deploys.
 `main` is production. New work never lands there directly:
 
 1. Work happens on a feature branch, with a pull request into `main`; CI must be green.
-2. Cloudflare builds the branch as a preview (`npx wrangler versions upload`) and comments
-   the link on the pull request. The preview's address has a stable alias per branch,
-   `<branch>-anton-portfolio.anton-ernstson.workers.dev` (slashes become dashes), which
-   `r2-cors.json` allows for the working branch so the preview can read the data.
+2. Cloudflare builds the branch as a preview (`npx wrangler preview`, which needs the
+   `[previews]` block in `wrangler.toml`) and comments the link on the pull request. The
+   preview's address stays the same for a branch; `r2-cors.json` allows the working branch's
+   so the preview can read the data.
 3. The owner looks at the preview and approves the merge; merged, it is live.
 4. The data refreshes commit to `main` directly (fresh data goes live without review).
 
@@ -43,7 +43,7 @@ on `workers.dev` and in previews without configuration.
    - project name `anton-portfolio` (must match `name` in `wrangler.toml`)
    - build command `npm run build`
    - deploy command `npx wrangler deploy`
-   - preview command `npx wrangler versions upload` (or the default)
+   - preview command: the default, `npx wrangler preview`
    - path `/`, API token: create new
 
    The build publishes to `https://anton-portfolio.anton-ernstson.workers.dev`, which is
