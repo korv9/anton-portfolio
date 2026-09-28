@@ -82,3 +82,128 @@
   columns: 2;
   font-size: 0.85rem;
 }
+
+body .market-kpis {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  margin: 0;
+  gap: 24px;
+}
+.market-kpis > div {
+  border-left: 2px solid #d7e3dc;
+  padding-left: 18px;
+}
+.market-kpis dt {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #53615b;
+  margin-bottom: 12px;
+}
+.market-kpis dd {
+  font-size: clamp(1.8rem, 3.4vw, 2.7rem);
+  letter-spacing: -0.04em;
+  line-height: 1.1;
+  margin: 0 0 10px;
+  font-weight: 600;
+}
+.market-kpis dd.market-date {
+  font-size: clamp(1.25rem, 2.4vw, 1.9rem);
+  letter-spacing: -0.02em;
+}
+.market-kpis small {
+  font-size: 0.76rem;
+  color: #53615b;
+  line-height: 1.5;
+  display: block;
+}
+.market-summary-details {
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid #e0e4de;
+}
+.market-summary-details summary,
+.market-field-picker summary {
+  cursor: pointer;
+  font-size: 0.86rem;
+  font-weight: 600;
+  padding: 8px 0;
+}
+.market-chart-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 16px;
+  background: #f3f5f1;
+  margin-top: 22px;
+}
+.market-chart-toolbar label {
+  display: grid;
+  gap: 7px;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+.market-chart-toolbar select {
+  max-width: 100%;
+  background: #fff;
+  border: 1px solid #aebdb4;
+  min-height: 42px;
+  padding: 8px 12px;
+  color: #172b24;
+}
+.market-chart-toolbar > span {
+  font-size: 0.78rem;
+  color: #53615b;
+  padding-bottom: 10px;
+}
+.market-field-picker {
+  margin-top: 14px;
+  border-bottom: 1px solid #e0e4de;
+  padding-bottom: 10px;
+}
+.market-field-picker summary span {
+  margin-left: 8px;
+  color: #53615b;
+  font-weight: 400;
+}
+.market-field-picker .party-picker {
+  margin-top: 12px;
+}
+.market-field-picker .party-chip {
+  min-height: 38px;
+}
+.market-reading-note {
+  border-left: 3px solid #668573;
+  background: #f3f5f1;
+  padding: 12px 16px;
+  font-size: 0.86rem;
+  line-height: 1.6;
+  margin-top: 22px;
+}
+@media (max-width: 650px) {
+  body .market-kpis {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .market-kpis > div {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px 12px;
+    align-items: baseline;
+  }
+  .market-kpis dt {
+    margin: 0;
+  }
+  .market-kpis dd,
+  .market-kpis dd.market-date {
+    font-size: 1.65rem;
+    margin: 0;
+  }
+  .market-kpis small {
+    grid-column: 1 / -1;
+  }
+  .market-chart-toolbar {
+    padding: 12px;
+  }
+}

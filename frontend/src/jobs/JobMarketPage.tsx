@@ -256,25 +256,57 @@ function Overview({ data }: { data: Market }) {
     .filter((f) => f.change != null && f.before >= 5000)
     .sort((a, b) => b.change! - a.change!)
   const [picked, setPicked] = useState<string[]>(['all'])
+  const [metric, setMetric] = useState('ads')
+  const [slots, setSlots] = useState<Record<string, number>>({ all: 0 })
+  const toggleField = (id: string) => {
+    if (!picked.includes(id)) {
+      const used = picked.map((key) => slots[key])
+      setSlots((current) => ({
+        ...current,
+        [id]: SERIES_COLORS.findIndex((_, index) => !used.includes(index)),
+      }))
+    }
+    toggle(id)
+  }
   const toggle = (id: string) =>
     setPicked((current) =>
       current.includes(id)
-        ? current.filter((p) => p !== id)
+        ? current.length > 1
+          ? current.filter((p) => p !== id)
+          : current
         : current.length < MAX_SERIES
           ? [...current, id]
           : current,
     )
+  const baselineMonth = (data.monthly[picked[0]] ?? []).find(
+    ([month, ads]) =>
+      ads > 0 &&
+      picked.every((id) =>
+        (data.monthly[id] ?? []).some(([m, value]) => m === month && value > 0),
+      ),
+  )?.[0]
   const series: Series[] = picked.map((id) => ({
     key: id,
     name:
       id === 'all'
         ? l('All occupations', 'Alla yrken')
         : fieldName(data.fields.find((f) => f.id === id)!.name),
-    points: (data.monthly[id] ?? []).map(([m, ads]) => ({
-      date: `${m}-01`,
-      label: monthLabel(m),
-      value: ads,
-    })),
+    points: (data.monthly[id] ?? [])
+      .filter(
+        ([m]) =>
+          metric !== 'index' || (baselineMonth != null && m >= baselineMonth),
+      )
+      .map(([m, ads]) => ({
+        date: `${m}-01`,
+        label: monthLabel(m),
+        value:
+          metric === 'index'
+            ? (ads /
+                (data.monthly[id].find(([m]) => m === baselineMonth)?.[1] ??
+                  1)) *
+              100
+            : ads,
+      })),
   }))
   const maxFull = Math.max(...ranking.map((f) => f.full))
 
@@ -285,28 +317,68 @@ function Overview({ data }: { data: Market }) {
         aria-label={l('In short', 'I korthet')}
       >
         <p className="eyebrow">{l('In short', 'I korthet')}</p>
-        <ul className="plain-summary" data-testid="market-summary">
-          <li>
+        <dl className="market-kpis">
+          <div>
+            <dt>
+              {l('Ads', 'Annonser')} · {lastFull}
+            </dt>
+            <dd>{number(yearTotal(data, 'all', lastFull))}</dd>
+            <small>{l('Latest complete year', 'Senaste hela året')}</small>
+          </div>
+          <div>
+            <dt>
+              {l('Change', 'Förändring')} · {latest}
+            </dt>
+            <dd>{signedPct(ytdChange)}</dd>
+            <small>
+              {ytdLabel(data.ytd_months)} ·{' '}
+              {l(
+                'vs the same months last year',
+                'mot samma månader året innan',
+              )}
+            </small>
+          </div>
+          <div>
+            <dt>{l('Coverage through', 'Data till och med')}</dt>
+            <dd className="market-date">{monthLabel(data.last_month)}</dd>
+            <small>
+              {l(
+                'Source: Arbetsförmedlingen / JobTech',
+                'Källa: Arbetsförmedlingen / JobTech',
+              )}
+            </small>
+          </div>
+        </dl>
+        <details className="market-summary-details">
+          <summary>
             {l(
-              `${number(yearTotal(data, 'all', lastFull))} job ads were published in ${lastFull}; the most since 2020 was ${number(peak[1])} in ${peak[0]}.`,
-              `${number(yearTotal(data, 'all', lastFull))} jobbannonser publicerades ${lastFull}; flest sedan 2020 var det ${peak[0]} med ${number(peak[1])}.`,
+              'Read the market summary',
+              'Läs sammanfattningen av marknadsläget',
             )}
-          </li>
-          {latest > lastFull && (
+          </summary>
+          <ul className="plain-summary" data-testid="market-summary">
             <li>
               {l(
-                `${ytdLabel(data.ytd_months)} ${latest}: ${number(ytdNow)} ads, ${signedPct(ytdChange)} on the same months of ${latest - 1}.`,
-                `${ytdLabel(data.ytd_months)} ${latest}: ${number(ytdNow)} annonser, ${signedPct(ytdChange)} mot samma månader ${latest - 1}.`,
+                `${number(yearTotal(data, 'all', lastFull))} job ads were published in ${lastFull}; the most since 2020 was ${number(peak[1])} in ${peak[0]}.`,
+                `${number(yearTotal(data, 'all', lastFull))} jobbannonser publicerades ${lastFull}; flest sedan 2020 var det ${peak[0]} med ${number(peak[1])}.`,
               )}
             </li>
-          )}
-          <li>
-            {l(
-              `Most ads are in ${fieldName(ranking[0].name)} (${number(ranking[0].full)} in ${lastFull}). Compared with the same months a year earlier, ${fieldName(rising[0].name)} grew most (${signedPct(rising[0].change)}) and ${fieldName(rising.at(-1)!.name)} fell most (${signedPct(rising.at(-1)!.change)}).`,
-              `Flest annonser finns inom ${fieldName(ranking[0].name)} (${number(ranking[0].full)} år ${lastFull}). Jämfört med samma månader året innan ökade ${fieldName(rising[0].name)} mest (${signedPct(rising[0].change)}) och ${fieldName(rising.at(-1)!.name)} minskade mest (${signedPct(rising.at(-1)!.change)}).`,
+            {latest > lastFull && (
+              <li>
+                {l(
+                  `${ytdLabel(data.ytd_months)} ${latest}: ${number(ytdNow)} ads, ${signedPct(ytdChange)} on the same months of ${latest - 1}.`,
+                  `${ytdLabel(data.ytd_months)} ${latest}: ${number(ytdNow)} annonser, ${signedPct(ytdChange)} mot samma månader ${latest - 1}.`,
+                )}
+              </li>
             )}
-          </li>
-        </ul>
+            <li>
+              {l(
+                `Most ads are in ${fieldName(ranking[0].name)} (${number(ranking[0].full)} in ${lastFull}). Compared with the same months a year earlier, ${fieldName(rising[0].name)} grew most (${signedPct(rising[0].change)}) and ${fieldName(rising.at(-1)!.name)} fell most (${signedPct(rising.at(-1)!.change)}).`,
+                `Flest annonser finns inom ${fieldName(ranking[0].name)} (${number(ranking[0].full)} år ${lastFull}). Jämfört med samma månader året innan ökade ${fieldName(rising[0].name)} mest (${signedPct(rising[0].change)}) och ${fieldName(rising.at(-1)!.name)} minskade mest (${signedPct(rising.at(-1)!.change)}).`,
+              )}
+            </li>
+          </ul>
+        </details>
       </section>
 
       <section
@@ -319,39 +391,93 @@ function Overview({ data }: { data: Market }) {
         <h2 id="market-monthly">
           {l('Ads per month since 2020', 'Annonser per månad sedan 2020')}
         </h2>
-        <div
-          className="party-picker"
-          role="group"
-          aria-label={l('Fields', 'Områden')}
-        >
-          {[{ id: 'all', name: '' }, ...ranking].map((f) => (
-            <button
-              key={f.id}
-              type="button"
-              className={picked.includes(f.id) ? 'party-chip on' : 'party-chip'}
-              aria-pressed={picked.includes(f.id)}
-              disabled={!picked.includes(f.id) && picked.length >= MAX_SERIES}
-              onClick={() => toggle(f.id)}
+        <div className="market-chart-toolbar">
+          <label>
+            {l('Measure', 'Mått')}
+            <select
+              aria-label={l('Measure', 'Mått')}
+              value={metric}
+              onChange={(event) => setMetric(event.target.value)}
             >
-              {picked.includes(f.id) && (
-                <span
-                  className="legend-swatch"
-                  style={{ background: SERIES_COLORS[picked.indexOf(f.id)] }}
-                />
-              )}
-              {f.id === 'all'
-                ? l('All occupations', 'Alla yrken')
-                : fieldName(f.name)}
-            </button>
-          ))}
-          <small>{l('Up to five at a time.', 'Högst fem åt gången.')}</small>
+              <option value="ads">
+                {l('Number of ads', 'Antal annonser')}
+              </option>
+              <option value="index">
+                {l(
+                  'Compare development · index 100',
+                  'Jämför utveckling · index 100',
+                )}
+              </option>
+            </select>
+          </label>
+          <span>
+            {metric === 'ads'
+              ? l(
+                  'Monthly volume · zero baseline',
+                  'Månadsvolym · nollbaserad skala',
+                )
+              : `${l('Index', 'Index')}: ${baselineMonth ? monthLabel(baselineMonth) : '–'} = 100`}
+          </span>
         </div>
+        <details className="market-field-picker">
+          <summary>
+            {l('Choose occupation fields', 'Välj yrkesområden')}{' '}
+            <span>{picked.length}/5</span>
+          </summary>
+          <div
+            className="party-picker"
+            role="group"
+            aria-label={l('Fields', 'Områden')}
+          >
+            {[{ id: 'all', name: '' }, ...ranking].map((f) => (
+              <button
+                key={f.id}
+                type="button"
+                className={
+                  picked.includes(f.id) ? 'party-chip on' : 'party-chip'
+                }
+                aria-pressed={picked.includes(f.id)}
+                disabled={!picked.includes(f.id) && picked.length >= MAX_SERIES}
+                onClick={() => toggleField(f.id)}
+              >
+                {picked.includes(f.id) && (
+                  <span
+                    className="legend-swatch"
+                    style={{ background: SERIES_COLORS[slots[f.id]] }}
+                  />
+                )}
+                {f.id === 'all'
+                  ? l('All occupations', 'Alla yrken')
+                  : fieldName(f.name)}
+              </button>
+            ))}
+            <small>{l('Up to five at a time.', 'Högst fem åt gången.')}</small>
+          </div>
+        </details>
         <MultiLineChart
           series={series}
-          label={l('New job ads per month', 'Nya jobbannonser per månad')}
+          label={
+            metric === 'index'
+              ? l(
+                  'Job ads, indexed development',
+                  'Jobbannonser, indexerad utveckling',
+                )
+              : l('New job ads per month', 'Nya jobbannonser per månad')
+          }
           format={number}
-          colorOf={(key) => picked.indexOf(key)}
+          colorOf={(key) => slots[key]}
         />
+        <p className="market-reading-note">
+          {metric === 'index'
+            ? l(
+                '100 is the common starting month. Compare relative development, not the size of the fields. Monthly values are not seasonally adjusted.',
+                '100 är den gemensamma startmånaden. Jämför relativ utveckling, inte områdenas storlek. Månadsvärdena är inte säsongsrensade.',
+              )
+            : l(
+                'Ads measure advertised demand, not hires. Monthly peaks may reflect seasonality; compare the same month across years.',
+                'Annonser mäter annonserad efterfrågan, inte anställningar. Månadstoppar kan spegla säsong; jämför samma månad mellan år.',
+              )}
+        </p>
         <p className="welfare-note">
           {l(
             `By the month the ad was published. Up to ${monthLabel(data.last_month)}.`,

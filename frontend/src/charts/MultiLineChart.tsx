@@ -1,4 +1,5 @@
-import { useMemo, useRef, useState } from 'react'
+import { l } from '../i18n'
+import { useEffect, useId, useMemo, useRef, useState } from 'react'
 import { linearScale, niceTicks } from './scales'
 import { identity, partyDash } from '../parties/identity'
 import { MarkerShape, spreadLabels } from './marks'
@@ -45,15 +46,13 @@ type Props = {
   yFrom?: number
 }
 
-const WIDTH = 900
-const HEIGHT = 340
 const BASE_MARGIN = { top: 20, right: 24, bottom: 40, left: 64 }
 const time = (date: string) => Date.parse(date)
 
 /**
  * Up to five series on a true time axis, with each point's confidence interval as a band
  * where the source publishes one. Hovering shows every series at the nearest period.
- * The y axis starts at zero unless the data are all far from it (survey means on 0-10).
+ * The y axis includes zero and negative values unless the caller explicitly supplies a floor.
  */
 export default function MultiLineChart({
   series,
@@ -63,6 +62,20 @@ export default function MultiLineChart({
   yFrom,
 }: Props) {
   const svg = useRef<SVGSVGElement>(null)
+  const container = useRef<HTMLElement>(null)
+  const hintId = useId()
+  const [width, setWidth] = useState(900)
+  const hasPoints = series.some((item) => item.points.length > 0)
+  useEffect(() => {
+    if (!container.current) return
+    const observer = new ResizeObserver(([entry]) =>
+      setWidth(Math.max(300, Math.min(1100, entry.contentRect.width))),
+    )
+    observer.observe(container.current)
+    return () => observer.disconnect()
+  }, [hasPoints])
+  const WIDTH = width
+  const HEIGHT = width < 540 ? 300 : 360
   const paint = (key: string) => {
     const color = colorOf(key)
     return typeof color === 'string' ? color : SERIES_COLORS[color]
@@ -83,8 +96,8 @@ export default function MultiLineChart({
     ])
     const max = Math.max(...values)
     const min = Math.min(...values)
-    // Zero baseline unless the series live in a narrow band well above it.
-    const from = yFrom ?? (min > 0 && min > max * 0.6 ? Math.floor(min) : 0)
+    // Keep a consistent baseline across filters; include negative observations.
+    const from = yFrom ?? Math.min(0, Math.floor(min))
     const ticks = niceTicks(max - from).map((tick) => tick + from)
     const times = all.map((p) => time(p.date))
     const t0 = Math.min(...times)
@@ -99,12 +112,17 @@ export default function MultiLineChart({
     )
     const firstYear = new Date(t0).getUTCFullYear()
     const lastYear = new Date(t1).getUTCFullYear()
-    const step = Math.max(1, Math.ceil((lastYear - firstYear + 1) / 10))
+    const step = Math.max(
+      1,
+      Math.ceil((lastYear - firstYear + 1) / (width < 540 ? 4 : 8)),
+    )
     const years: number[] = []
-    for (let year = firstYear; year <= lastYear; year += step) years.push(year)
+    for (let year = firstYear; year <= lastYear; year += step) {
+      if (Date.UTC(year, 0, 1) >= t0) years.push(year)
+    }
     const dates = [...new Set(all.map((p) => p.date))].sort()
     return { x, y, ticks, years, dates }
-  }, [series, plotW, plotH, yFrom, MARGIN.left, MARGIN.top])
+  }, [series, plotW, plotH, yFrom, MARGIN.left, MARGIN.top, width])
 
   if (!series.length || !dates.length) return null
 
@@ -119,12 +137,13 @@ export default function MultiLineChart({
     })
     setHover(nearest)
   }
-  const hoverDate = hover === null ? null : dates[hover]
+  const hoverDate =
+    hover === null ? null : dates[Math.min(hover, dates.length - 1)]
   const hoverX = hoverDate ? x(time(hoverDate)) : 0
 
   return (
-    <figure className="multi-chart">
-      <ul className="chart-legend" aria-label="Series">
+    <figure className="multi-chart" ref={container}>
+      <ul className="chart-legend" aria-label={l('Series', 'Serier')}>
         {series.map((s) => (
           <li key={s.key}>
             {s.party ? (
@@ -167,8 +186,34 @@ export default function MultiLineChart({
           viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
           role="img"
           aria-label={label}
+          aria-describedby={hintId}
+          tabIndex={0}
+          onFocus={() => setHover(dates.length - 1)}
+          onKeyDown={(event) => {
+            if (
+              !['ArrowLeft', 'ArrowRight', 'Home', 'End', 'Escape'].includes(
+                event.key,
+              )
+            )
+              return
+            event.preventDefault()
+            if (event.key === 'Escape') setHover(null)
+            else if (event.key === 'Home') setHover(0)
+            else if (event.key === 'End') setHover(dates.length - 1)
+            else
+              setHover((current) =>
+                Math.max(
+                  0,
+                  Math.min(
+                    dates.length - 1,
+                    (current ?? dates.length - 1) +
+                      (event.key === 'ArrowLeft' ? -1 : 1),
+                  ),
+                ),
+              )
+          }}
+          onPointerDown={onMove}
           onPointerMove={onMove}
-          onPointerLeave={() => setHover(null)}
         >
           {ticks.map((tick) => (
             <g key={tick}>
@@ -316,17 +361,7 @@ export default function MultiLineChart({
           )}
         </svg>
         {hoverDate && (
-          <div
-            className="chart-tooltip"
-            // Anchored left of the crosshair in the right third, so it never overflows.
-            style={
-              hoverX > WIDTH * 0.66
-                ? { right: `${100 - (hoverX / WIDTH) * 100}%` }
-                : { left: `${(hoverX / WIDTH) * 100}%` }
-            }
-            data-side={hoverX > WIDTH * 0.66 ? 'left' : 'right'}
-            role="status"
-          >
+          <div className="chart-tooltip" role="status">
             {series.map((s) => {
               const point = s.points.find((p) => p.date === hoverDate)
               return point ? (
@@ -343,6 +378,12 @@ export default function MultiLineChart({
           </div>
         )}
       </div>
+      <figcaption className="chart-guidance" id={hintId}>
+        {l(
+          'Point to or tap a period for exact values. Use the arrow keys when the chart is focused.',
+          'Peka eller tryck på en tidpunkt för exakta värden. Använd piltangenterna när grafen är markerad.',
+        )}
+      </figcaption>
     </figure>
   )
 }
