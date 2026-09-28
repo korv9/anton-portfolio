@@ -50,12 +50,15 @@ jobs:
       - run: pip install -r platform/requirements.txt
       - name: Fetch, build and test
         run: python platform/ingest/run_welfare.py
-      # Closed sessions' roll calls never change; keep them between runs instead of
-      # downloading 300 MB of history every day. The two open sessions are always refetched.
+      # Closed sessions' roll calls and bills never change; keep them between runs instead of
+      # downloading 300 MB of history and 4 000 bills every day. The two open sessions are
+      # always refetched.
       - name: Restore Riksdagen history
         uses: actions/cache@v4
         with:
-          path: warehouse/raw/riksdagen/votes
+          path: |
+            warehouse/raw/riksdagen/votes
+            warehouse/raw/riksdagen/studies
           key: riksdagen-votes-${{ github.run_id }}
           restore-keys: riksdagen-votes-
       - name: Fetch, build and test parliament
@@ -67,6 +70,7 @@ jobs:
           python platform/publish/export_welfare.py
           python platform/publish/export_parliament.py
           python platform/publish/export_taxes.py
+          python platform/publish/export_schema.py
       - name: Upload to R2 and verify
         run: |
           npm run data:catalog

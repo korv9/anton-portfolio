@@ -83,3 +83,21 @@ model.
 npm run parliament          # fetch, dbt build (tag:parliament), export
 npm run parliament:build    # build from the files already fetched
 ```
+
+## Government studies
+
+`platform/ingest/riksdagen/studies_ingest.py` fetches the SOU and Ds series (from 1995) and
+Riksrevisionen's audit reports, and reads every government bill since 2006/07: its committee
+reports and the studies its section "Ärendet och dess beredning" names (in a budget bill, per
+proposal). Each link keeps the sentence that makes it.
+
+| Table | Grain |
+|---|---|
+| `dim_study` | a study: SOU, Ds, RiR, or a ministry memorandum a bill names |
+| `fct_bill` | a government bill |
+| `fct_bill_report` | a bill and a committee report it was dealt with in |
+| `fct_bill_study` | a bill and a study it names as preparation, with the sentence |
+
+The site shows the latest studies and what they led to on `#now-studies`, and the studies
+behind every decision it lists. Budget and spring bills are left out of that per-decision
+link, since they name hundreds.

@@ -6,7 +6,8 @@
 
 Sources: Riksdagen (roll calls and committee reports since 1993/94, government-formation
 news), SCB (elections 1973-2022, the party preference survey) and Valmyndigheten (the latest
-election). The build is `dbt build --select tag:parliament`, with the delivered party votes of
+election), and government studies (SOU, Ds, Riksrevisionen) with the preparation of every
+bill since 2006/07. The build is `dbt build --select tag:parliament`, with the delivered party votes of
 recent sessions it is reconciled against.
 """
 from __future__ import annotations
@@ -35,6 +36,7 @@ def main() -> None:
     if not arguments.skip_fetch:
         run([sys.executable, "ingest/riksdagen/history_ingest.py"])
         run([sys.executable, "ingest/elections/elections_ingest.py"])
+        run([sys.executable, "ingest/riksdagen/studies_ingest.py"])
     if not arguments.skip_build:
         run([sys.executable, "-m", "dbt.cli.main", "build", "--profiles-dir", ".",
              "--select", "tag:parliament", "stg_party_vote", "--target-path", "target/parliament"])
