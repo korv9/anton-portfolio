@@ -209,6 +209,8 @@ def main() -> None:
             "fuel": ["Tax on petrol and diesel", "Skatt på bensin och diesel"],
             "vat": ["VAT", "Moms"],
             "corporate": ["Corporate tax", "Bolagsskatt"],
+            "property": ["Property tax and fee", "Fastighetsskatt och fastighetsavgift"],
+            "wealth": ["Wealth tax", "Förmögenhetsskatt"],
         },
         "method": ("Each decision is named from the budget bill's chapter on taxes, a separate "
                    "bill, or the enacted law text in the committee report. Party positions "

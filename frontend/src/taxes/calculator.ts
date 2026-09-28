@@ -160,8 +160,12 @@ export function inWorkTaxCredit(
   const ai = roundDown100(workIncome)
   if (ai <= 0) return 0
   const { young, phaseOut, senior: seniorSchedule } = rules.inWorkCredit
-  if (senior) return clamp0(floor(evaluate(seniorSchedule, ai, rules.pbb)))
   const ki = municipalRate / 100
+  if (senior && rules.inWorkCredit.seniorLessAllowance)
+    return clamp0(
+      floor((evaluate(seniorSchedule, ai, rules.pbb) - allowance) * ki),
+    )
+  if (senior) return clamp0(floor(evaluate(seniorSchedule, ai, rules.pbb)))
   let credit = (evaluate(young, ai, rules.pbb) - allowance) * ki
   if (phaseOut && ai > phaseOut.fromPbb * rules.pbb)
     credit -= phaseOut.rate * (ai - phaseOut.fromPbb * rules.pbb)

@@ -63,11 +63,13 @@ export type TaxRules = {
   raisedAllowance: Schedule | null
   /** Jobbskatteavdrag. Under the senior age: (schedule - basic allowance) x municipal rate,
    * less a phase-out share of work income above a threshold where there is one. At or over
-   * it: the schedule itself. */
+   * it: the schedule itself, or in 2007 and 2008 (`seniorLessAllowance`) the schedule less
+   * the basic allowance times the municipal rate, as for younger people. */
   inWorkCredit: {
     young: Schedule
     phaseOut: { fromPbb: number; rate: number } | null
     senior: Schedule
+    seniorLessAllowance?: boolean
   }
   /** Skattereduktion för sjuk- och aktivitetsersättning, from 2018. `share`: the schedule
    * times the municipal rate. `lessAllowance`: the schedule less the basic allowance, but at
@@ -123,7 +125,8 @@ const schedule = (
   pieces: pieces.map(([to, base, rate, over]) => ({ to, base, rate, over })),
 })
 
-/** The ordinary basic allowance has kept its shape since 2011; only the price base amount moves. */
+/** The ordinary basic allowance has kept its shape through every year here; only the price
+ * base amount moves. */
 const BASIC_ALLOWANCE = schedule('pbb', [
   [0.99, 0.423, 0, 0],
   [2.72, 0.423, 0.2, 0.99],
@@ -265,7 +268,8 @@ const skv433 = (year: number, url: string) => ({
   url,
 })
 
-/** Jobbskatteavdrag at 65 or over, in kronor, unchanged from 2014 to 2022. */
+/** Jobbskatteavdrag at 65 or over, in kronor, 2016 to 2022: the 2009 schedule with the
+ * phase-out above 600 000 kr added in 2016. */
 const SENIOR_CREDIT_2014 = schedule('kr', [
   [100_000, 0, 0.2, 0],
   [300_000, 15_000, 0.05, 0],
@@ -273,7 +277,7 @@ const SENIOR_CREDIT_2014 = schedule('kr', [
   [null, 30_000, -0.03, 600_000],
 ])
 
-/** Jobbskatteavdrag under 65, 2016 to 2018 (SKV 433 2016 and 2018, bilaga 3). */
+/** Jobbskatteavdrag under 65, 2014 to 2018 (SKV 433 2016 and 2018, bilaga 3). */
 const YOUNG_CREDIT_2016 = schedule('pbb', [
   [0.91, 0, 1, 0],
   [2.94, 0.91, 0.332, 0.91],
@@ -319,6 +323,271 @@ const Y2016: PersonalRules = {
       2016,
       'https://web.archive.org/web/2017/https://skatteverket.se/download/18.3810a01c150939e893fd09a/1450188269972/43326.pdf',
     ),
+  ],
+}
+
+/*
+ * 2006 to 2015. There are no withholding tables as open data before 2016, so these years are
+ * tested against the worked examples in SKV 433 for 2010 and 2013. Senior age 65 throughout;
+ * no public service fee, sickness or earned income reduction.
+ */
+const riksdagen = (label: string, id: string) => ({
+  label,
+  url: `https://data.riksdagen.se/dokument/${id}`,
+})
+
+/** No jobbskatteavdrag, as in 2006. */
+const NO_CREDIT = schedule('pbb', [[null, 0, 0, 0]])
+
+/** Jobbskatteavdrag at 65 or over, in kronor, 2009 to 2015: no phase-out yet. */
+const SENIOR_CREDIT_2009 = schedule('kr', [
+  [100_000, 0, 0.2, 0],
+  [300_000, 15_000, 0.05, 0],
+  [null, 30_000, 0, 0],
+])
+
+/** Jobbskatteavdrag under 65, 2010 to 2013 (prop. 2009/10:42; SKV 433 2010 and 2013). */
+const YOUNG_CREDIT_2010 = schedule('pbb', [
+  [0.91, 0, 1, 0],
+  [2.72, 0.91, 0.304, 0.91],
+  [7.0, 1.461, 0.095, 2.72],
+  [null, 1.868, 0, 0],
+])
+
+const stateTax = (lower: number, upper: number) => ({
+  brackets: [
+    { threshold: lower, rate: 0.2 },
+    { threshold: upper, rate: 0.05 },
+  ],
+})
+
+const Y2006: PersonalRules = {
+  year: 2006,
+  pbb: 39_700,
+  ibb: 44_500,
+  seniorAge: { allowance: 65, credit: 65 },
+  state: stateTax(306_000, 460_600),
+  basicAllowance: BASIC_ALLOWANCE,
+  raisedAllowance: null,
+  inWorkCredit: { young: NO_CREDIT, phaseOut: null, senior: NO_CREDIT },
+  sicknessReduction: null,
+  pensionFee: { rate: 0.07, floorPbb: 0.423, ceilingIbb: 8.07 },
+  publicService: null,
+  earnedIncomeReduction: null,
+  temporaryWorkReduction: null,
+  sources: [],
+}
+
+const Y2007: PersonalRules = {
+  ...Y2006,
+  year: 2007,
+  pbb: 40_300,
+  ibb: 45_900,
+  state: stateTax(316_700, 476_700),
+  // Under 65 as enacted by prop. 2006/07:1; at 65 and over as for younger people, on a
+  // larger schedule (the basic allowance is deducted in both).
+  inWorkCredit: {
+    young: schedule('pbb', [
+      [0.79, 0, 1, 0],
+      [2.72, 0.79, 0.2, 0.79],
+      [null, 1.176, 0, 0],
+    ]),
+    phaseOut: null,
+    senior: schedule('pbb', [
+      [1.59, 0, 1, 0],
+      [2.72, 1.59, 0.2, 1.59],
+      [null, 1.816, 0, 0],
+    ]),
+    seniorLessAllowance: true,
+  },
+  sources: [
+    riksdagen('Prop. 2006/07:1, budgetpropositionen för 2007', 'GU031'),
+  ],
+}
+
+const Y2008: PersonalRules = {
+  ...Y2007,
+  year: 2008,
+  pbb: 41_000,
+  ibb: 48_000,
+  state: stateTax(328_800, 495_000),
+  inWorkCredit: {
+    young: schedule('pbb', [
+      [0.91, 0, 1, 0],
+      [2.72, 0.91, 0.2, 0.91],
+      [7.0, 1.272, 0.033, 2.72],
+      [null, 1.413, 0, 0],
+    ]),
+    phaseOut: null,
+    senior: schedule('pbb', [
+      [1.79, 0, 1, 0],
+      [2.72, 1.79, 0.2, 1.79],
+      [7.0, 1.976, 0.033, 2.72],
+      [null, 2.117, 0, 0],
+    ]),
+    seniorLessAllowance: true,
+  },
+  sources: [
+    riksdagen('Prop. 2007/08:22, ett förstärkt jobbskatteavdrag', 'GV0322'),
+  ],
+}
+
+const Y2009: PersonalRules = {
+  ...Y2008,
+  year: 2009,
+  pbb: 42_800,
+  ibb: 50_900,
+  state: stateTax(367_600, 526_200),
+  raisedAllowance: schedule('pbb', [
+    [0.99, 0.425, 0, 0],
+    [2.72, 0.623, -0.2, 0],
+    [2.94, 0.078, 0, 0],
+    [3.11, 0.372, -0.1, 0],
+    [7.88, 0.061, 0, 0],
+    [8.49, 0.849, -0.1, 0],
+    [null, 0, 0, 0],
+  ]),
+  inWorkCredit: {
+    young: schedule('pbb', [
+      [0.91, 0, 1, 0],
+      [2.72, 0.91, 0.25, 0.91],
+      [7.0, 1.363, 0.065, 2.72],
+      [null, 1.642, 0, 0],
+    ]),
+    phaseOut: null,
+    senior: SENIOR_CREDIT_2009,
+  },
+  sources: [
+    riksdagen('Prop. 2008/09:39, sänkt skatt på förvärvsinkomster', 'GW0339'),
+    riksdagen('Prop. 2008/09:38, sänkt skatt för pensionärer', 'GW0338'),
+  ],
+}
+
+const Y2010: PersonalRules = {
+  ...Y2009,
+  year: 2010,
+  pbb: 42_400,
+  ibb: 51_100,
+  state: stateTax(372_100, 532_700),
+  raisedAllowance: schedule('pbb', [
+    [0.99, 0.5094, 0, 0],
+    [2.72, 0.7074, -0.2, 0],
+    [3.11, 0.1624, 0, 0],
+    [3.9, -0.1486, 0.1, 0],
+    [7.88, 0.2219, 0.005, 0],
+    [9.1568, 1.0099, -0.095, 0],
+    [null, 0.14, 0, 0],
+  ]),
+  inWorkCredit: {
+    young: YOUNG_CREDIT_2010,
+    phaseOut: null,
+    senior: SENIOR_CREDIT_2009,
+  },
+  sources: [
+    riksdagen(
+      'Prop. 2009/10:42, ett ytterligare förstärkt jobbskatteavdrag',
+      'GX0342',
+    ),
+    riksdagen(
+      'Prop. 2009/10:29, ytterligare sänkt skatt för pensionärer',
+      'GX0329',
+    ),
+  ],
+}
+
+const RAISED_2011 = schedule('pbb', [
+  [0.98, 0.557, 0, 0],
+  [0.99, 0.459, 0.1, 0],
+  [2.72, 0.657, -0.1, 0],
+  [3.11, 0.112, 0.1, 0],
+  [3.85, -0.199, 0.2, 0],
+  [4.8, 0.186, 0.1, 0],
+  [7.88, 0.619, 0.01, 0],
+  [12.21, 1.407, -0.09, 0],
+  [null, 0.307, 0, 0],
+])
+
+const Y2011: PersonalRules = {
+  ...Y2010,
+  year: 2011,
+  pbb: 42_800,
+  ibb: 52_100,
+  state: stateTax(383_000, 548_300),
+  raisedAllowance: RAISED_2011,
+  sources: [
+    riksdagen('Prop. 2010/11:1, budgetpropositionen för 2011', 'GY031'),
+  ],
+}
+
+const Y2012: PersonalRules = {
+  ...Y2011,
+  year: 2012,
+  pbb: 44_000,
+  ibb: 54_600,
+  state: stateTax(401_100, 574_300),
+  sources: [
+    riksdagen('Prop. 2011/12:1, budgetpropositionen för 2012', 'GZ031'),
+  ],
+}
+
+const Y2013: PersonalRules = {
+  ...Y2012,
+  year: 2013,
+  pbb: 44_500,
+  ibb: 56_600,
+  state: stateTax(413_200, 591_600),
+  raisedAllowance: schedule('pbb', [
+    [0.99, 0.567, 0, 0],
+    [1.01, 0.785, -0.2, 0],
+    [2.72, 0.674, -0.09, 0],
+    [3.11, 0.129, 0.11, 0],
+    [3.75, -0.182, 0.21, 0],
+    [4.77, 0.233, 0.1, 0],
+    [7.88, 0.66, 0.01, 0],
+    [12.12, 1.448, -0.09, 0],
+    [null, 0.357, 0, 0],
+  ]),
+  sources: [
+    riksdagen('Prop. 2012/13:1, budgetpropositionen för 2013', 'H0031'),
+  ],
+}
+
+const Y2014: PersonalRules = {
+  ...Y2013,
+  year: 2014,
+  pbb: 44_400,
+  ibb: 56_900,
+  state: stateTax(420_800, 602_600),
+  raisedAllowance: schedule('pbb', [
+    [0.99, 0.682, 0, 0],
+    [1.105, 0.88, -0.2, 0],
+    [2.72, 0.753, -0.085, 0],
+    [3.11, 0.208, 0.115, 0],
+    [3.69, -0.103, 0.215, 0],
+    [4.785, 0.322, 0.1, 0],
+    [7.88, 0.753, 0.01, 0],
+    [12.43, 1.541, -0.09, 0],
+    [null, 0.422, 0, 0],
+  ]),
+  inWorkCredit: {
+    young: YOUNG_CREDIT_2016,
+    phaseOut: null,
+    senior: SENIOR_CREDIT_2009,
+  },
+  sources: [
+    riksdagen('Prop. 2013/14:1, budgetpropositionen för 2014', 'H1031'),
+  ],
+}
+
+const Y2015: PersonalRules = {
+  ...Y2014,
+  year: 2015,
+  pbb: 44_500,
+  ibb: 58_100,
+  state: stateTax(430_200, 616_100),
+  raisedAllowance: Y2016.raisedAllowance,
+  sources: [
+    riksdagen('Prop. 2014/15:1, budgetpropositionen för 2015', 'H2031'),
   ],
 }
 
@@ -727,6 +996,17 @@ const VAT_2012: OtherRules['vat'] = [
 /** Kommunal fastighetsavgift, the cap for a small house (Skatteverket, "Kommunal
  * fastighetsavgift kalenderåren 2008 och 2016-2026"). */
 const PROPERTY_FEE_CAP: Record<number, number> = {
+  // Before 2008 the state property tax, 1 % of the assessed value, had no cap.
+  2006: Infinity,
+  2007: Infinity,
+  2008: 6_000,
+  2009: 6_362,
+  2010: 6_387,
+  2011: 6_512,
+  2012: 6_825,
+  2013: 7_075,
+  2014: 7_112,
+  2015: 7_262,
   2016: 7_412,
   2017: 7_687,
   2018: 7_812,
@@ -740,9 +1020,13 @@ const PROPERTY_FEE_CAP: Record<number, number> = {
 }
 
 /** Statslåneräntan at 30 November the year before, per cent (Skatteverket, "Belopp och
- * procent"): the ISK deemed income is this plus 0.75 points (2016-2017) or 1 point (from 2018),
- * at least 1.25 %. */
+ * procent"): the ISK deemed income is this (2012-2015, the first years of the account), plus
+ * 0.75 points (2016-2017), or plus 1 point and at least 1.25 % (from 2018). */
 const STATE_LOAN_RATE: Record<number, number> = {
+  2012: 1.65,
+  2013: 1.49,
+  2014: 2.09,
+  2015: 0.9,
   2016: 0.65,
   2017: 0.27,
   2018: 0.49,
@@ -760,6 +1044,46 @@ const CONTRIBUTIONS: Record<
   number,
   { employer: ContributionBand[]; selfEmployed: ContributionBand[] }
 > = {
+  // 2006: the special payroll tax (16.16 %) for those born 1937 or earlier, and with the
+  // old-age pension contribution for those born 1938-1940.
+  2006: {
+    employer: [band(null, 1937, 0.1616), band(1938, 1940, 0.2637)],
+    selfEmployed: [band(null, 1937, 0.1616), band(1938, 1940, 0.2637)],
+  },
+  // 18-24-year-olds: 22.71 % from 1 July 2007.
+  2007: {
+    employer: [
+      band(null, 1937, 0.2426),
+      band(1938, 1941, 0.1021),
+      band(1983, 1988, 0.2271, 6),
+    ],
+    selfEmployed: [band(null, 1937, 0.2426), band(1938, 1941, 0.1021)],
+  },
+  2008: {
+    employer: [
+      band(null, 1937, 0),
+      band(1938, 1942, 0.1021),
+      band(1983, 1989, 0.2131),
+    ],
+    selfEmployed: [band(null, 1937, 0), band(1938, 1942, 0.1021)],
+  },
+  // Under 26 at the start of the year: 15.49 % from 2009; from May 2015 for those born 1990
+  // or later, at 25.46 %.
+  ...Object.fromEntries(
+    [2009, 2010, 2011, 2012, 2013, 2014, 2015].map((year) => [
+      year,
+      {
+        employer: [
+          band(null, 1937, 0),
+          band(1938, year - 66, 0.1021),
+          ...(year < 2015
+            ? [band(year - 26, null, 0.1549)]
+            : [band(1989, null, 0.1549, 4), band(1990, null, 0.2546, 8)]),
+        ],
+        selfEmployed: [band(null, 1937, 0), band(1938, year - 66, 0.1021)],
+      },
+    ]),
+  ),
   // Older people paid the special payroll tax (6.15 %), those born 1938 on also the old-age
   // pension contribution; young people's lower rate ended on 1 June 2016.
   2016: {
@@ -846,25 +1170,70 @@ const CONTRIBUTIONS: Record<
 const AMOUNTS_URL =
   'https://www.skatteverket.se/privat/skatter/beloppochprocent.4.3a2a542410ab40a421c80006358.html'
 
+/** VAT before 2012: restaurants and catering at 25 %. */
+const VAT_2006: OtherRules['vat'] = [
+  {
+    rate: 25,
+    examples: [
+      'Most goods and services, restaurants',
+      'De flesta varor och tjänster, restaurang',
+    ],
+  },
+  {
+    rate: 12,
+    examples: ['Food, hotels', 'Livsmedel, hotell'],
+  },
+  VAT_2012[2],
+]
+
+/** The ISK deemed rate: none before the account began in 2012. */
+function iskRate(year: number) {
+  if (year < 2012) return 0
+  if (year < 2016) return STATE_LOAN_RATE[year] / 100
+  if (year < 2018) return (STATE_LOAN_RATE[year] + 0.75) / 100
+  return Math.max(STATE_LOAN_RATE[year] + 1, 1.25) / 100
+}
+
+/** Arbetsgivaravgifter and egenavgifter, the standard rates. */
+function standardRates(year: number) {
+  if (year <= 2006) return { employer: 0.3228, selfEmployed: 0.3071 }
+  if (year <= 2008) return { employer: 0.3242, selfEmployed: 0.3071 }
+  if (year <= 2010) return { employer: 0.3142, selfEmployed: 0.2971 }
+  return { employer: 0.3142, selfEmployed: 0.2897 }
+}
+
 function otherRules(year: number): OtherRules {
-  const margin = year < 2018 ? 0.75 : 1
+  const standard = standardRates(year)
   return {
     capital: RULES_2026.capital,
-    isk: {
-      deemedRate: Math.max(STATE_LOAN_RATE[year] + margin, 1.25) / 100,
-      taxFree: year >= 2025 ? 150_000 : 0,
+    isk: { deemedRate: iskRate(year), taxFree: year >= 2025 ? 150_000 : 0 },
+    propertyFee: {
+      cap: PROPERTY_FEE_CAP[year],
+      rate: year < 2008 ? 0.01 : 0.0075,
     },
-    propertyFee: { cap: PROPERTY_FEE_CAP[year], rate: 0.0075 },
-    employer: { standard: 0.3142, bands: CONTRIBUTIONS[year].employer },
+    employer: {
+      standard: standard.employer,
+      bands: CONTRIBUTIONS[year].employer,
+    },
     selfEmployed: {
-      standard: 0.2897,
+      standard: standard.selfEmployed,
       bands: CONTRIBUTIONS[year].selfEmployed,
     },
-    vat: VAT_2012,
+    vat: year < 2012 ? VAT_2006 : VAT_2012,
   }
 }
 
 const HISTORY: TaxRules[] = [
+  Y2006,
+  Y2007,
+  Y2008,
+  Y2009,
+  Y2010,
+  Y2011,
+  Y2012,
+  Y2013,
+  Y2014,
+  Y2015,
   Y2016,
   Y2017,
   Y2018,
