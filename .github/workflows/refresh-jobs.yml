@@ -7,7 +7,7 @@ name: Refresh job-market data
 #    rebuilds jobs/market.json;
 #  - checks whether a year newer than the IT report's data has appeared; only then does it
 #    rebuild that report from every archive (several GB, so it does not run otherwise).
-# Cloudflare Pages publishes the site from the commit this makes to main (docs/deploy.md).
+# Cloudflare publishes the site from the commit this makes to main (docs/deploy.md).
 
 on:
   schedule:

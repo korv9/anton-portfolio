@@ -6,7 +6,7 @@ name: Refresh public data
 # upload to R2, and commit the delivery files when they changed. The run record (welfare/run.json) is also written to R2 on every run,
 # so the status page shows when the pipeline last checked, not only when data last moved.
 # Sources publish monthly or quarterly; a daily check keeps the lag under a day.
-# Cloudflare Pages builds and publishes the site from every push to main, this commit included
+# Cloudflare builds and publishes the site from every push to main, this commit included
 # (docs/deploy.md), so the workflow does not deploy itself.
 
 on:

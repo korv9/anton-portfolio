@@ -3,7 +3,6 @@
     "AllowedOrigins": [
       "https://antonernstsson.com",
       "https://www.antonernstsson.com",
-      "https://anton-portfolio.pages.dev",
       "http://127.0.0.1:5173",
       "http://localhost:5173"
     ],
