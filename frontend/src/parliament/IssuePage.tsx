@@ -116,6 +116,16 @@ export default function IssuePage({ issueKey }: { issueKey: string }) {
         </p>
         <h1>{issue.issue_name_sv}</h1>
         <p>{issue.summary_sv}</p>
+        {issue.issue_key === 'skatt' && (
+          <p className="welfare-links">
+            <a href="#taxes">
+              {l(
+                'What Sweden collects in tax, and your own tax →',
+                'Vad Sverige tar in i skatt, och din egen skatt →',
+              )}
+            </a>
+          </p>
+        )}
       </div>
 
       <section

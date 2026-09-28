@@ -1,0 +1,41 @@
+country_code,name_sv,name_en,is_nordic,is_eu
+AUS,Australien,Australia,false,false
+AUT,Österrike,Austria,false,true
+BEL,Belgien,Belgium,false,true
+CAN,Kanada,Canada,false,false
+CHE,Schweiz,Switzerland,false,false
+CHL,Chile,Chile,false,false
+COL,Colombia,Colombia,false,false
+CRI,Costa Rica,Costa Rica,false,false
+CZE,Tjeckien,Czechia,false,true
+DEU,Tyskland,Germany,false,true
+DNK,Danmark,Denmark,true,true
+ESP,Spanien,Spain,false,true
+EST,Estland,Estonia,false,true
+FIN,Finland,Finland,true,true
+FRA,Frankrike,France,false,true
+GBR,Storbritannien,United Kingdom,false,false
+GRC,Grekland,Greece,false,true
+HUN,Ungern,Hungary,false,true
+IRL,Irland,Ireland,false,true
+ISL,Island,Iceland,true,false
+ISR,Israel,Israel,false,false
+ITA,Italien,Italy,false,true
+JPN,Japan,Japan,false,false
+KOR,Sydkorea,Korea,false,false
+LTU,Litauen,Lithuania,false,true
+LUX,Luxemburg,Luxembourg,false,true
+LVA,Lettland,Latvia,false,true
+MEX,Mexiko,Mexico,false,false
+NLD,Nederländerna,Netherlands,false,true
+NOR,Norge,Norway,true,false
+NZL,Nya Zeeland,New Zealand,false,false
+POL,Polen,Poland,false,true
+PRT,Portugal,Portugal,false,true
+SVK,Slovakien,Slovak Republic,false,true
+SVN,Slovenien,Slovenia,false,true
+SWE,Sverige,Sweden,true,true
+TUR,Turkiet,Türkiye,false,false
+USA,USA,United States,false,false
+OECD_REP,OECD-snitt,OECD average,false,false
+EU22OECD,EU-länder i OECD (snitt),EU members of the OECD (average),false,false

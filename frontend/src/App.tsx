@@ -28,6 +28,7 @@ const StatusPage = lazy(() => import('./status/StatusPage'))
 const AnalysisPage = lazy(() => import('./analysis/AnalysisPage'))
 const NowPage = lazy(() => import('./parliament/NowPage'))
 const IssuePage = lazy(() => import('./parliament/IssuePage'))
+const TaxesPage = lazy(() => import('./taxes/TaxesPage'))
 
 type UmapPoint = {
   chunk_id: string
@@ -308,6 +309,7 @@ function pageFromHash(hash: string) {
   if (hash === '#analysis' || hash.startsWith('#analysis-')) return 'analysis'
   if (hash === '#now' || hash.startsWith('#now-')) return 'now'
   if (hash.startsWith('#issue-')) return 'issue'
+  if (hash === '#taxes') return 'taxes'
   return 'home'
 }
 
@@ -564,6 +566,7 @@ function App() {
           'analysis',
           'drugcomb',
           'issue',
+          'taxes',
         ].includes(page) && (
           <div className="analysis-hub">
             <p className="eyebrow">
@@ -582,11 +585,14 @@ function App() {
                         ? '#sweden'
                         : page === 'analysis'
                           ? '#analysis'
-                          : '#drugcomb'
+                          : page === 'taxes'
+                            ? '#taxes'
+                            : '#drugcomb'
               }
               items={[
                 ['#now', 'Politics', 'Politik'],
                 ['#budget-comparison', 'Budget', 'Budget'],
+                ['#taxes', 'Taxes', 'Skatter'],
                 ['#job-market', 'Job market', 'Arbetsmarknad'],
                 ['#sweden', 'Welfare', 'Välfärd'],
                 ['#analysis', 'Statistical analyses', 'Statistiska analyser'],
@@ -1338,6 +1344,11 @@ function App() {
           {page === 'issue' && (
             <Suspense fallback={<div className="loading">{t('Loading…')}</div>}>
               <IssuePage issueKey={hash.slice('#issue-'.length)} />
+            </Suspense>
+          )}
+          {page === 'taxes' && (
+            <Suspense fallback={<div className="loading">{t('Loading…')}</div>}>
+              <TaxesPage />
             </Suspense>
           )}
           {page === 'analysis' && (
