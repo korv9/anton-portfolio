@@ -3,6 +3,10 @@
 # There is no Worker script, only static assets; _headers in dist/ sets response headers.
 name = "anton-portfolio"
 compatibility_date = "2026-09-01"
+# The site answers on anton-portfolio.anton-ernstson.workers.dev as well as its domain, and every
+# pull request gets a preview URL there.
+workers_dev = true
+preview_urls = true
 
 [assets]
 directory = "./dist"
