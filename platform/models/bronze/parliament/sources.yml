@@ -15,6 +15,15 @@ sources:
           external_location: >-
             read_json_objects('{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/riksdagen/reports/*.json',
             filename = true, maximum_object_size = 200000000)
+      - name: studies
+        description: >-
+          Statens offentliga utredningar (SOU) and Departementsserien (Ds) per year, one file
+          per listing page (platform/ingest/riksdagen/studies_ingest.py).
+        meta:
+          external_location: >-
+            read_json_objects(['{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/riksdagen/studies/sou/*.json',
+            '{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/riksdagen/studies/ds/*.json'],
+            filename = true, maximum_object_size = 200000000)
 
   - name: scb_elections
     description: Statistics Sweden (SCB), PxWeb API v1. Riksdag elections and the party preference survey (PSU).

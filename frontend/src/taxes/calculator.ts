@@ -11,7 +11,12 @@
  * activity compensation and the earned-income reduction are set off against municipal tax;
  * capital income is taxed at 30 %, and a capital deficit reduces the remaining tax.
  */
-import { RULES, type Schedule, type TaxRules } from './rules.ts'
+import {
+  RULES,
+  type ContributionBand,
+  type Schedule,
+  type TaxRules,
+} from './rules.ts'
 
 export type TaxInput = {
   year: number
@@ -70,6 +75,8 @@ export type TaxResult = {
   sicknessCompensationReduction: number
   earnedIncomeReduction: number
   capitalDeficitReduction: number
+  /** Tillfällig skattereduktion för arbetsinkomster, 2021 and 2022. */
+  temporaryWorkReduction: number
   /** The tax the person pays for the year. */
   totalTax: number
   /** Everything received, less the tax: salary, pensions, benefits, business, capital. */
@@ -177,43 +184,49 @@ export function sicknessReduction(
   return floor(Math.max((value - allowance) * ki, reduction.minShare * ul * ki))
 }
 
-export function employerRate(birthYear: number, rules: TaxRules) {
-  const { reduced, standard } = rules.employer
-  if (birthYear < reduced.bornFrom) return 0
-  if (birthYear <= reduced.bornTo) return reduced.rate
-  return standard
+/**
+ * Social contributions on an annual amount for someone born in a given year: the bands that
+ * apply, for their months and up to their monthly cap, and the standard rate for the rest.
+ */
+function contributions(
+  amount: number,
+  birthYear: number,
+  standard: number,
+  bands: ContributionBand[],
+) {
+  const monthly = amount / 12
+  let months = 0
+  let total = 0
+  for (const b of bands) {
+    if (b.bornFrom !== null && birthYear < b.bornFrom) continue
+    if (b.bornTo !== null && birthYear > b.bornTo) continue
+    const part = Math.min(monthly, b.monthlyCap ?? Infinity)
+    total += b.months * (part * b.rate + (monthly - part) * standard)
+    months += b.months
+  }
+  return total + Math.max(12 - months, 0) * monthly * standard
 }
 
-/** Employer contributions on an annual salary, with the youth reduction where it applies. */
+/** The employer contribution rate on the first krona of pay, averaged over the year. */
+export function employerRate(birthYear: number, rules: TaxRules) {
+  const { standard, bands } = rules.employer
+  return contributions(12, birthYear, standard, bands) / 12
+}
+
+/** Employer contributions on an annual salary, with the reductions that apply. */
 export function employerContributions(
   salary: number,
   birthYear: number,
   rules: TaxRules,
 ) {
-  const rate = employerRate(birthYear, rules)
-  const youth = rules.employer.youth
-  if (
-    !youth ||
-    birthYear < youth.bornFrom ||
-    birthYear > youth.bornTo ||
-    rate !== rules.employer.standard
-  )
-    return floor(salary * rate)
-  const monthly = salary / 12
-  const reducedPart = Math.min(monthly, youth.monthlyCap)
-  const youthMonths = youth.months
-  const fullMonths = 12 - youthMonths
-  return floor(
-    fullMonths * monthly * rate +
-      youthMonths * (reducedPart * youth.rate + (monthly - reducedPart) * rate),
-  )
+  const { standard, bands } = rules.employer
+  return floor(contributions(salary, birthYear, standard, bands))
 }
 
+/** The self-employment contribution rate for the year, averaged over its months. */
 function selfEmployedRate(birthYear: number, rules: TaxRules) {
-  const { reduced, standard } = rules.selfEmployed
-  if (birthYear < reduced.bornFrom) return 0
-  if (birthYear <= reduced.bornTo) return reduced.rate
-  return standard
+  const { standard, bands } = rules.selfEmployed
+  return contributions(12, birthYear, standard, bands) / 12
 }
 
 /** The tax for the year, without the derived measures (wedge, marginal rate). */
@@ -357,6 +370,30 @@ function computeTax(
     municipalLeft + stateLeft + capitalTax + propertyFee,
   )
 
+  // The temporary reduction for work income (2021-2022) comes after every other reduction and
+  // is set against what is left of income tax and the property fee (SFS 2021:930, 6-7 §§).
+  const temporary = rules.temporaryWorkReduction
+    ? clamp0(
+        floor(
+          evaluate(
+            rules.temporaryWorkReduction,
+            input.salary + businessIncome,
+            rules.pbb,
+          ),
+        ),
+      )
+    : 0
+  const temporaryWorkReduction = Math.min(
+    temporary,
+    clamp0(
+      municipalLeft +
+        stateLeft +
+        capitalTax +
+        propertyFee -
+        capitalDeficitReduction,
+    ),
+  )
+
   const totalTax =
     municipalTax +
     stateTax +
@@ -370,7 +407,8 @@ function computeTax(
     inWorkTaxCreditUsed -
     sicknessUsed -
     earnedIncomeReduction -
-    capitalDeficitReduction
+    capitalDeficitReduction -
+    temporaryWorkReduction
 
   const gross =
     input.salary +
@@ -402,6 +440,7 @@ function computeTax(
     sicknessCompensationReduction: sicknessUsed,
     earnedIncomeReduction,
     capitalDeficitReduction,
+    temporaryWorkReduction,
     totalTax,
     netIncome: gross - totalTax - selfEmploymentContributions,
     averageRate: gross > 0 ? (100 * totalTax) / gross : 0,

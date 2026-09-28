@@ -63,23 +63,28 @@ def plain(text: str) -> str:
     return re.sub(r"(\w)- ([a-zåäö])", r"\1\2", text).strip()
 
 
-def preparation_sections(text: str) -> str:
-    """Every 'Ärendet och dess beredning' section, skipping table-of-contents entries.
+def preparation_sections(text: str) -> list[tuple[str, str]]:
+    """Every 'Ärendet och dess beredning' section with its number, skipping the contents.
 
-    An ordinary bill has one; a budget bill has one per proposal in its tax chapters.
+    An ordinary bill has one; a budget bill has one per proposal in its tax chapters,
+    numbered like "12.1.1", so a study can be tied to the proposal it prepared.
     """
     sections = []
-    for match in re.finditer(re.escape(HEADING), text):
+    for match in re.finditer(r"(?:(\d{1,2}(?:\.\d{1,2}){0,3})\s+)?" + re.escape(HEADING), text):
         following = text[match.end():match.end() + 40]
         if "...." in following or "…" in following:
             continue
-        body = text[match.start():match.start() + 8000]
+        start = match.start() + (len(match.group(0)) - len(HEADING))
+        body = text[start:start + 8000]
         # The next numbered heading ends the section, e.g. "4 Bakgrund" or "12.3.2 Skälen".
         end = re.search(r"\s\d{1,2}(?:\.\d{1,2}){0,3}\s+(?:Bakgrund|Gällande|Nuvarande|"
                         r"Överväganden|Förslag|Skälen|Konsekvenser|Ikraftträdande|"
                         r"Författningskommentar|Proposition|Regeringens)", body[len(HEADING):])
-        sections.append(body[:len(HEADING) + end.start()] if end else body[:4000])
-    return " ".join(sections)
+        # The number of the proposal the section belongs to: "12.1.1" belongs to "12.1".
+        number = match.group(1) or ""
+        proposal = number.rsplit(".", 1)[0] if number.count(".") >= 1 else number
+        sections.append((proposal, body[:len(HEADING) + end.start()] if end else body[:4000]))
+    return sections
 
 
 def references(text: str, *, whole_document: bool) -> list[dict]:
@@ -160,13 +165,18 @@ def preparation(http, document: dict) -> dict:
     status = json.loads(response.content.decode("utf-8-sig"))["dokumentstatus"]
     head = status["dokument"]
     text = plain(head.get("html") or "")
-    section = preparation_sections(text)
-    cited = references(section, whole_document=False) if section else []
+    sections = preparation_sections(text)
+    section = " ".join(body for _, body in sections)
+    cited = []
+    for proposal, body in sections:
+        for item in references(body, whole_document=False):
+            if (item["kind"], item["key"].lower()) not in {(c["kind"], c["key"].lower()) for c in cited}:
+                cited.append({**item, "section": proposal})
     # A budget bill also prepares proposals outside any such section; a bill without the
     # section is read the same way.
     if not section or head.get("beteckning") in {"1", "100"}:
         keys = {(item["kind"], item["key"].lower()) for item in cited}
-        cited += [item for item in references(text, whole_document=True)
+        cited += [{**item, "section": ""} for item in references(text, whole_document=True)
                   if (item["kind"], item["key"].lower()) not in keys]
     reports = [
         {"report_id": ref.get("ref_dok_id") or "", "session": ref.get("ref_dok_rm") or "",
@@ -207,6 +217,8 @@ def main() -> None:
     parser.add_argument("--session", action="append", help="e.g. 2024/25; default: every session")
     parser.add_argument("--refetch-closed", action="store_true",
                         help="also re-read bills of sessions that closed more than a year ago")
+    parser.add_argument("--reread", action="append", default=[],
+                        help="bill numbers to read again in every session, e.g. 1 for budget bills")
     arguments = parser.parse_args()
     http = rawstore.session()
     sessions = arguments.session or sessions_until_now()
@@ -222,7 +234,8 @@ def main() -> None:
     for session in sessions:
         known = stored_preparation(session)
         closed = session not in open_sessions
-        if known and closed and not arguments.session and not arguments.refetch_closed:
+        if (known and closed and not arguments.session and not arguments.refetch_closed
+                and not arguments.reread):
             continue
         bills = listing(http, "prop", session, f"propositions/{code(session)}")
         records: dict[str, dict] = {}
@@ -230,7 +243,7 @@ def main() -> None:
         for bill in bills:
             previous = known.get(bill["dok_id"])
             # A bill's text does not change; its committee report is added once it is dealt with.
-            if previous and previous["reports"]:
+            if previous and previous["reports"] and bill.get("beteckning") not in arguments.reread:
                 records[bill["dok_id"]] = previous
             else:
                 pending.append(bill)

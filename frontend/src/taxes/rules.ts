@@ -28,6 +28,27 @@ export type Piece = {
 }
 export type Schedule = { unit: 'pbb' | 'kr'; pieces: Piece[] }
 
+/**
+ * A social contribution rate for people born in a range of years (open at either end), for
+ * some months of the year, on pay up to a monthly cap; pay above the cap, and the months not
+ * covered, pay the standard rate.
+ */
+export type ContributionBand = {
+  bornFrom: number | null
+  bornTo: number | null
+  rate: number
+  months: number
+  monthlyCap: number | null
+}
+
+const band = (
+  bornFrom: number | null,
+  bornTo: number | null,
+  rate: number,
+  months = 12,
+  monthlyCap: number | null = null,
+): ContributionBand => ({ bornFrom, bornTo, rate, months, monthlyCap })
+
 export type TaxRules = {
   year: number
   /** Prisbasbelopp and inkomstbasbelopp. */
@@ -68,6 +89,9 @@ export type TaxRules = {
     max: number
     against: 'municipal' | 'all'
   } | null
+  /** Tillfällig skattereduktion för arbetsinkomster, 2021 and 2022 (SFS 2021:930): a schedule
+   * in kronor of work income, set off last, in the final tax only (not in the tables). */
+  temporaryWorkReduction: Schedule | null
   /** Tax on capital income, and the reduction for a capital deficit. */
   capital: {
     rate: number
@@ -81,23 +105,11 @@ export type TaxRules = {
   isk: { deemedRate: number; taxFree: number }
   /** Kommunal fastighetsavgift for a småhus. */
   propertyFee: { cap: number; rate: number }
-  employer: {
-    standard: number
-    /** Born in these years: only the old-age pension contribution. */
-    reduced: { bornFrom: number; bornTo: number; rate: number }
-    /** Temporary lower rate for young employees, on pay up to a monthly cap, for some months. */
-    youth: {
-      bornFrom: number
-      bornTo: number
-      rate: number
-      monthlyCap: number
-      months: number
-    } | null
-  }
-  selfEmployed: {
-    standard: number
-    reduced: { bornFrom: number; bornTo: number; rate: number }
-  }
+  /** Arbetsgivaravgifter: the standard rate, and the rates for people born in some years,
+   * for some months of the year, on pay up to a monthly cap. */
+  employer: { standard: number; bands: ContributionBand[] }
+  /** Egenavgifter for a sole proprietor, the same way (no caps). */
+  selfEmployed: { standard: number; bands: ContributionBand[] }
   vat: { rate: number; examples: [string, string] }[]
   sources: { label: string; url: string }[]
 }
@@ -173,6 +185,7 @@ const RULES_2026: TaxRules = {
     max: 1_500,
     against: 'municipal',
   },
+  temporaryWorkReduction: null,
   capital: {
     rate: 0.3,
     deficitRate: 0.3,
@@ -184,18 +197,16 @@ const RULES_2026: TaxRules = {
   propertyFee: { cap: 10_425, rate: 0.0075 },
   employer: {
     standard: 0.3142,
-    reduced: { bornFrom: 1938, bornTo: 1958, rate: 0.1021 },
-    youth: {
-      bornFrom: 2003,
-      bornTo: 2007,
-      rate: 0.2081,
-      monthlyCap: 25_000,
-      months: 9,
-    },
+    bands: [
+      band(null, 1937, 0),
+      band(1938, 1958, 0.1021),
+      // The lower rate for 19-23-year-olds from 1 April 2026: nine months of the year.
+      band(2003, 2007, 0.2081, 9, 25_000),
+    ],
   },
   selfEmployed: {
     standard: 0.2897,
-    reduced: { bornFrom: 1938, bornTo: 1958, rate: 0.1021 },
+    bands: [band(null, 1937, 0), band(1938, 1958, 0.1021)],
   },
   vat: [
     {
@@ -204,13 +215,16 @@ const RULES_2026: TaxRules = {
     },
     {
       rate: 12,
-      examples: ['Restaurants, some repairs', 'Restaurang, vissa reparationer'],
+      examples: [
+        'Restaurants, hotels (food until 1 April 2026)',
+        'Restaurang, hotell (livsmedel till 1 april 2026)',
+      ],
     },
     {
       rate: 6,
       examples: [
-        'Books, newspapers, passenger transport',
-        'Böcker, tidningar, persontransporter',
+        'Food from 1 April 2026, books, newspapers, passenger transport',
+        'Livsmedel från 1 april 2026, böcker, tidningar, persontransporter',
       ],
     },
   ],
@@ -238,15 +252,13 @@ const RULES_2026: TaxRules = {
  * Past years. The personal income tax (allowances, credits, state tax, fees) follows each
  * year's SKV 433 and is tested against that year's withholding tables; see HISTORY below.
  */
-/** What a past year shares with 2026 until its own amounts are filled in below. */
-const OTHER_2026 = {
-  capital: RULES_2026.capital,
-  isk: RULES_2026.isk,
-  propertyFee: RULES_2026.propertyFee,
-  employer: RULES_2026.employer,
-  selfEmployed: RULES_2026.selfEmployed,
-  vat: RULES_2026.vat,
-}
+/** The rules that the withholding tables do not show: capital, ISK, property fee, social
+ * contributions and VAT. They are added to each past year below, from OTHER. */
+type OtherRules = Pick<
+  TaxRules,
+  'capital' | 'isk' | 'propertyFee' | 'employer' | 'selfEmployed' | 'vat'
+>
+type PersonalRules = Omit<TaxRules, keyof OtherRules>
 
 const skv433 = (year: number, url: string) => ({
   label: `Skatteverket, Teknisk beskrivning SKV 433 (${year})`,
@@ -269,7 +281,7 @@ const YOUNG_CREDIT_2016 = schedule('pbb', [
   [null, 2.155, 0, 0],
 ])
 
-const Y2016: TaxRules = {
+const Y2016: PersonalRules = {
   year: 2016,
   pbb: 44_300,
   ibb: 59_300,
@@ -301,7 +313,7 @@ const Y2016: TaxRules = {
   pensionFee: { rate: 0.07, floorPbb: 0.423, ceilingIbb: 8.07 },
   publicService: null,
   earnedIncomeReduction: null,
-  ...OTHER_2026,
+  temporaryWorkReduction: null,
   sources: [
     skv433(
       2016,
@@ -319,7 +331,7 @@ const SICKNESS_2018 = {
   ]),
 }
 
-const Y2017: TaxRules = {
+const Y2017: PersonalRules = {
   ...Y2016,
   year: 2017,
   pbb: 44_800,
@@ -339,7 +351,7 @@ const Y2017: TaxRules = {
   ],
 }
 
-const Y2018: TaxRules = {
+const Y2018: PersonalRules = {
   ...Y2016,
   year: 2018,
   pbb: 45_500,
@@ -377,7 +389,7 @@ const Y2018: TaxRules = {
   ],
 }
 
-const Y2019: TaxRules = {
+const Y2019: PersonalRules = {
   ...Y2018,
   year: 2019,
   pbb: 46_500,
@@ -423,7 +435,7 @@ const Y2019: TaxRules = {
   ],
 }
 
-const Y2020: TaxRules = {
+const Y2020: PersonalRules = {
   year: 2020,
   pbb: 47_300,
   ibb: 66_800,
@@ -459,7 +471,7 @@ const Y2020: TaxRules = {
   pensionFee: { rate: 0.07, floorPbb: 0.423, ceilingIbb: 8.07 },
   publicService: { rate: 0.01, capIbb: 2.092 },
   earnedIncomeReduction: null,
-  ...OTHER_2026,
+  temporaryWorkReduction: null,
   sources: [
     skv433(
       2020,
@@ -468,7 +480,16 @@ const Y2020: TaxRules = {
   ],
 }
 
-const Y2021: TaxRules = {
+/** Lag (2021:930) om tillfällig skattereduktion för arbetsinkomster, 4 §. */
+const TEMPORARY_WORK_REDUCTION = schedule('kr', [
+  [60_000, 0, 0, 0],
+  [240_000, 0, 0.0125, 60_000],
+  [300_000, 2_250, 0, 0],
+  [500_000, 2_250, -0.01125, 300_000],
+  [null, 0, 0, 0],
+])
+
+const Y2021: PersonalRules = {
   ...Y2020,
   year: 2021,
   pbb: 47_600,
@@ -496,6 +517,7 @@ const Y2021: TaxRules = {
     max: 1_500,
     against: 'all',
   },
+  temporaryWorkReduction: TEMPORARY_WORK_REDUCTION,
   sources: [
     skv433(
       2021,
@@ -532,7 +554,7 @@ const SICKNESS_2022 = {
   minShare: 0.045,
 }
 
-const Y2022: TaxRules = {
+const Y2022: PersonalRules = {
   ...Y2021,
   year: 2022,
   pbb: 48_300,
@@ -566,8 +588,9 @@ const Y2022: TaxRules = {
   ],
 }
 
-const Y2023: TaxRules = {
+const Y2023: PersonalRules = {
   ...Y2022,
+  temporaryWorkReduction: null,
   year: 2023,
   pbb: 52_500,
   ibb: 74_300,
@@ -592,7 +615,7 @@ const Y2023: TaxRules = {
   ],
 }
 
-const Y2024: TaxRules = {
+const Y2024: PersonalRules = {
   ...Y2023,
   year: 2024,
   pbb: 57_300,
@@ -639,7 +662,7 @@ const Y2024: TaxRules = {
   ],
 }
 
-const Y2025: TaxRules = {
+const Y2025: PersonalRules = {
   ...Y2024,
   year: 2025,
   pbb: 58_800,
@@ -682,6 +705,165 @@ const Y2025: TaxRules = {
   ],
 }
 
+/** VAT rates: food and restaurants at 12 % since 2012, until food drops to 6 % in April 2026. */
+const VAT_2012: OtherRules['vat'] = [
+  {
+    rate: 25,
+    examples: ['Most goods and services', 'De flesta varor och tjänster'],
+  },
+  {
+    rate: 12,
+    examples: ['Food, restaurants, hotels', 'Livsmedel, restaurang, hotell'],
+  },
+  {
+    rate: 6,
+    examples: [
+      'Books, newspapers, passenger transport',
+      'Böcker, tidningar, persontransporter',
+    ],
+  },
+]
+
+/** Kommunal fastighetsavgift, the cap for a small house (Skatteverket, "Kommunal
+ * fastighetsavgift kalenderåren 2008 och 2016-2026"). */
+const PROPERTY_FEE_CAP: Record<number, number> = {
+  2016: 7_412,
+  2017: 7_687,
+  2018: 7_812,
+  2019: 8_049,
+  2020: 8_349,
+  2021: 8_524,
+  2022: 8_874,
+  2023: 9_287,
+  2024: 9_525,
+  2025: 10_074,
+}
+
+/** Statslåneräntan at 30 November the year before, per cent (Skatteverket, "Belopp och
+ * procent"): the ISK deemed income is this plus 0.75 points (2016-2017) or 1 point (from 2018),
+ * at least 1.25 %. */
+const STATE_LOAN_RATE: Record<number, number> = {
+  2016: 0.65,
+  2017: 0.27,
+  2018: 0.49,
+  2019: 0.51,
+  2020: -0.09,
+  2021: -0.1,
+  2022: 0.23,
+  2023: 1.94,
+  2024: 2.62,
+  2025: 1.96,
+}
+
+/** Employer and self-employment contribution bands per year (Skatteverket, "Belopp och procent"). */
+const CONTRIBUTIONS: Record<
+  number,
+  { employer: ContributionBand[]; selfEmployed: ContributionBand[] }
+> = {
+  // Older people paid the special payroll tax (6.15 %), those born 1938 on also the old-age
+  // pension contribution; young people's lower rate ended on 1 June 2016.
+  2016: {
+    employer: [
+      band(null, 1937, 0.0615),
+      band(1938, 1950, 0.1636),
+      band(1991, null, 0.2546, 5),
+    ],
+    selfEmployed: [band(null, 1937, 0.0615), band(1938, 1950, 0.1636)],
+  },
+  2017: {
+    employer: [band(null, 1937, 0.0615), band(1938, 1951, 0.1636)],
+    selfEmployed: [band(null, 1937, 0.0615), band(1938, 1951, 0.1636)],
+  },
+  2018: {
+    employer: [band(null, 1937, 0.0615), band(1938, 1952, 0.1636)],
+    selfEmployed: [band(null, 1937, 0.0615), band(1938, 1952, 0.1636)],
+  },
+  // The special payroll tax for older people ended on 1 July 2019; the lower rate for
+  // 15-18-year-olds began on 1 August.
+  2019: {
+    employer: [
+      band(null, 1937, 0.0615, 6),
+      band(null, 1937, 0, 6),
+      band(1938, 1953, 0.1636, 6),
+      band(1938, 1953, 0.1021, 6),
+      band(2001, 2003, 0.1021, 5, 25_000),
+    ],
+    selfEmployed: [
+      band(null, 1937, 0.0615, 6),
+      band(null, 1937, 0, 6),
+      band(1938, 1953, 0.1636, 6),
+      band(1938, 1953, 0.1021, 6),
+    ],
+  },
+  2020: {
+    employer: [
+      band(null, 1937, 0),
+      band(1938, 1954, 0.1021),
+      band(2002, 2004, 0.1021, 12, 25_000),
+    ],
+    selfEmployed: [band(null, 1937, 0), band(1938, 1954, 0.1021)],
+  },
+  // 19-23-year-olds: the old-age pension contribution only, in June-August 2021.
+  2021: {
+    employer: [
+      band(null, 1937, 0),
+      band(1938, 1955, 0.1021),
+      band(2003, 2005, 0.1021, 12, 25_000),
+      band(1998, 2002, 0.1021, 3, 25_000),
+    ],
+    selfEmployed: [band(null, 1937, 0), band(1938, 1955, 0.1021)],
+  },
+  // 19-23-year-olds: 19.73 % from January 2022 to March 2023, 10.21 % in June-August 2022.
+  2022: {
+    employer: [
+      band(null, 1937, 0),
+      band(1938, 1956, 0.1021),
+      band(2004, 2006, 0.1021, 12, 25_000),
+      band(1999, 2003, 0.1973, 9, 25_000),
+      band(1999, 2003, 0.1021, 3, 25_000),
+    ],
+    selfEmployed: [band(null, 1937, 0), band(1938, 1956, 0.1021)],
+  },
+  2023: {
+    employer: [
+      band(null, 1937, 0),
+      band(1938, 1956, 0.1021),
+      band(2005, 2007, 0.1021, 12, 25_000),
+      band(2000, 2004, 0.1973, 3, 25_000),
+    ],
+    selfEmployed: [band(null, 1937, 0), band(1938, 1956, 0.1021)],
+  },
+  2024: {
+    employer: [band(null, 1937, 0), band(1938, 1957, 0.1021)],
+    selfEmployed: [band(null, 1937, 0), band(1938, 1957, 0.1021)],
+  },
+  2025: {
+    employer: [band(null, 1937, 0), band(1938, 1958, 0.1021)],
+    selfEmployed: [band(null, 1937, 0), band(1938, 1958, 0.1021)],
+  },
+}
+
+const AMOUNTS_URL =
+  'https://www.skatteverket.se/privat/skatter/beloppochprocent.4.3a2a542410ab40a421c80006358.html'
+
+function otherRules(year: number): OtherRules {
+  const margin = year < 2018 ? 0.75 : 1
+  return {
+    capital: RULES_2026.capital,
+    isk: {
+      deemedRate: Math.max(STATE_LOAN_RATE[year] + margin, 1.25) / 100,
+      taxFree: year >= 2025 ? 150_000 : 0,
+    },
+    propertyFee: { cap: PROPERTY_FEE_CAP[year], rate: 0.0075 },
+    employer: { standard: 0.3142, bands: CONTRIBUTIONS[year].employer },
+    selfEmployed: {
+      standard: 0.2897,
+      bands: CONTRIBUTIONS[year].selfEmployed,
+    },
+    vat: VAT_2012,
+  }
+}
+
 const HISTORY: TaxRules[] = [
   Y2016,
   Y2017,
@@ -693,7 +875,17 @@ const HISTORY: TaxRules[] = [
   Y2023,
   Y2024,
   Y2025,
-]
+].map((rules) => ({
+  ...rules,
+  ...otherRules(rules.year),
+  sources: [
+    ...rules.sources,
+    {
+      label: `Skatteverket, Belopp och procent inkomstår ${rules.year}`,
+      url: AMOUNTS_URL,
+    },
+  ],
+}))
 
 export const RULES: Record<number, TaxRules> = Object.fromEntries(
   [...HISTORY, RULES_2026].map((rules) => [rules.year, rules]),

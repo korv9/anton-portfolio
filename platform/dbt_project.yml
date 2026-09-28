@@ -91,6 +91,11 @@ seeds:
       tax_types:
         +column_types: {tax_code: varchar, name_sv: varchar, name_en: varchar,
                         parent_code: varchar, is_headline: boolean, note_sv: varchar}
+      tax_decisions:
+        +column_types: {decision_key: varchar, in_force: date, component: varchar,
+                        direction: varchar, title_sv: varchar, title_en: varchar,
+                        bill: varchar, bill_section: varchar, report: varchar,
+                        origin: varchar, source_url: varchar}
     welfare:
       +tags: [welfare]
       +schema: seeds

@@ -76,7 +76,10 @@ for (const year of fixtureYears) {
           nearestRounding: NEAREST_ROUNDING(year),
           [field]: annual,
         })
-        const monthly = Math.floor(result.totalTax / 12)
+        // The temporary reduction for work income (2021-2022) is given in the final tax only.
+        const monthly = Math.floor(
+          (result.totalTax + result.temporaryWorkReduction) / 12,
+        )
         checked++
         if (monthly !== expected)
           misses.push(
@@ -125,6 +128,31 @@ test('employer contributions by age, with the 2026 youth reduction', () => {
   assert.equal(
     employerContributions(360_000, 2005, rules),
     Math.floor(3 * 30_000 * 0.3142 + 9 * (25_000 * 0.2081 + 5_000 * 0.3142)),
+  )
+})
+
+test('the temporary reduction for work income, 2021 and 2022 (SFS 2021:930)', () => {
+  const base = { ...EMPTY_INPUT, year: 2022, birthYear: 1985 }
+  // 1.25 % of work income above 60 000, 2 250 from 240 000 to 300 000, then tapering to 500 000.
+  assert.equal(
+    calculate({ ...base, salary: 200_000 }).temporaryWorkReduction,
+    1_750,
+  )
+  assert.equal(
+    calculate({ ...base, salary: 280_000 }).temporaryWorkReduction,
+    2_250,
+  )
+  assert.equal(
+    calculate({ ...base, salary: 400_000 }).temporaryWorkReduction,
+    1_125,
+  )
+  assert.equal(
+    calculate({ ...base, salary: 600_000 }).temporaryWorkReduction,
+    0,
+  )
+  assert.equal(
+    calculate({ ...base, year: 2023, salary: 280_000 }).temporaryWorkReduction,
+    0,
   )
 })
 

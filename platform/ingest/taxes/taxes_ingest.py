@@ -39,6 +39,34 @@ WITHHOLDING_TABLES = "88320397-5c32-4c16-ae79-d36d95b17b95"
 FIRST_TABLE_YEAR = 2016
 PAGE = 500
 
+SKATTEVERKET = "https://www.skatteverket.se"
+# Skatteverket's "Belopp och procent" for private persons, one page per income year: the
+# amounts behind the rules in frontend/src/taxes/rules.ts that are not in the withholding
+# tables (employer and self-employment contributions, property fee, ISK, VAT, state loan rate).
+AMOUNTS_PAGES = {
+    2006: "/privat/skatter/beloppochprocent/tidigarear/2006.4.dfe345a107ebcc9baf800010641.html",
+    2007: "/privat/skatter/beloppochprocent/tidigarear/2007.4.7459477810df5bccdd4800032404.html",
+    2008: "/privat/skatter/beloppochprocent/tidigarear/2008.4.19b9f599116a9e8ef3680001800.html",
+    2009: "/privat/skatter/beloppochprocent/tidigarear/2009.4.6d02084411db6e252fe80007428.html",
+    2010: "/privat/skatter/beloppochprocent/tidigarear/2010.4.76a43be412206334b89800047590.html",
+    2011: "/privat/skatter/beloppochprocent/tidigarear/2011.4.6eb1f7eb12c507b23b780005839.html",
+    2012: "/privat/skatter/beloppochprocent/tidigarear/2012.4.5fc8c94513259a4ba1d800031879.html",
+    2013: "/privat/skatter/beloppochprocent/tidigarear/2013.4.2b543913a42158acf800010110.html",
+    2014: "/privat/skatter/beloppochprocent/tidigarear/2014.4.46ae6b26141980f1e2d4366.html",
+    2015: "/privat/skatter/beloppochprocent/tidigarear/2015.4.3f4496fd14864cc5ac9c64b.html",
+    2016: "/privat/skatter/beloppochprocent/tidigarear/2016.4.3810a01c150939e893f737e.html",
+    2017: "/privat/skatter/beloppochprocent/2017.4.5c1163881590be297b524b9.html",
+    2018: "/privat/skatter/beloppochprocent/2018.4.4a4d586616058d860bcf48.html",
+    2019: "/privat/skatter/beloppochprocent/2019.4.309a41aa1672ad0c837788f.html",
+    2020: "/privat/skatter/beloppochprocent/2020.4.7eada0316ed67d728238ec.html",
+    2021: "/privat/skatter/beloppochprocent/2021.4.5b35a6251761e6914204479.html",
+    2022: "/privat/skatter/beloppochprocent/2022.4.339cd9fe17d1714c0774742.html",
+    2023: "/privat/skatter/beloppochprocent/2023.4.1997e70d1848dabbac91bc9.html",
+    2024: "/privat/skatter/beloppochprocent/2024.4.7da1d2e118be03f8e4f4a88.html",
+    2025: "/privat/skatter/beloppochprocent/2025.4.262c54c219391f2e96342eb.html",
+    2026: "/privat/skatter/beloppochprocent/2026.4.1522bf3f19aea8075ba21.html",
+}
+
 
 def rowstore_pages(http, dataset: str, target: str, filters: dict) -> int:
     """Every page of a rowstore query, one file per page, stale pages removed."""
@@ -70,6 +98,11 @@ def main() -> None:
 
     rates = rowstore_pages(http, MUNICIPAL_RATES, "municipal_rates/part", {})
     print(f"skatteverket/municipal_rates: {rates:,} parish-year rows", flush=True)
+
+    for year, path in AMOUNTS_PAGES.items():
+        rawstore.fetch(http, "skatteverket", f"amounts/{year}.html", SKATTEVERKET + path,
+                       pause=0.3)
+    print(f"skatteverket/amounts: {len(AMOUNTS_PAGES)} years", flush=True)
 
     # Every year Skatteverket publishes tables for, 2016 on: the calculator is tested
     # against each year's rules. A past year's tables do not change once stored.

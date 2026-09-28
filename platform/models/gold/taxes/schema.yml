@@ -27,3 +27,32 @@ models:
     columns:
       - name: country_code
         data_tests: [unique, not_null]
+  - name: dim_tax_decision
+    description: Riksdag decisions that changed taxes from 2016, with bill, report and origin.
+    columns:
+      - name: decision_key
+        data_tests: [unique, not_null]
+      - name: direction
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [lower, higher]
+      - name: origin
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [government, committee, reservation]
+      - name: bill_title
+        description: Empty only for decisions taken on the committee's proposal or a reservation.
+  - name: fct_tax_decision_vote
+    description: Each party's vote on each tax decision, in the first substantive roll call of its report.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [decision_key, party]
+  - name: fct_tax_decision_study
+    description: The studies a tax decision's bill names as its preparation.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [decision_key, study_key]
