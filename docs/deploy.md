@@ -33,9 +33,8 @@ on `workers.dev` and in previews without configuration.
    - preview command `npx wrangler versions upload` (or the default)
    - path `/`, API token: create new
 
-   The first build publishes to `https://anton-portfolio.<account>.workers.dev`. To let that
-   address read the R2 shards too, add it to `r2-cors.json`; the domain alone is enough once
-   it is connected.
+   The build publishes to `https://anton-portfolio.anton-ernstson.workers.dev`, which is
+   also allowed in `r2-cors.json`.
 3. **Domain on the site.** The Worker → Settings → Domains & Routes → Add → Custom domain:
    `antonernstsson.com`, and `www.antonernstsson.com`. To send `www` to the bare domain, add a
    redirect rule: Rules → Redirect Rules → hostname equals `www.antonernstsson.com` → dynamic
