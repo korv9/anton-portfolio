@@ -1,6 +1,6 @@
 # Anton Ernstsson — data portfolio
 
-English-language React/TypeScript portfolio with a static Swedish political observatory, thesis case study and job-market report. No backend or live API is required. Hosted on Cloudflare Pages at https://antonernstsson.com (see [hosting](docs/deploy.md)).
+English-language React/TypeScript portfolio with a static Swedish political observatory, thesis case study and job-market report. No backend or live API is required. Hosted on Cloudflare (Workers static assets) at https://antonernstsson.com (see [hosting](docs/deploy.md)).
 
 The home page is Anton's profile and project directory. Each main project opens on its own hash-routed page: `/#politics`, `/#job-market`, `/#drugcomb`, `/#rfc-drift`, `/#thesis` and `/#homie`. Within politics, the tabs open decisions, speeches, budget proposals, a provisional language map and technical data. `/#budget-outturn` leads directly to the annual approved-versus-spent view. These routes work on static hosting without server-side rewrites.
 
@@ -22,7 +22,7 @@ python platform/legacy/validate_politics.py
 python platform/legacy/validate_gold.py
 ```
 
-The browser tests require Playwright Chromium. `dist/` is the static output. Paths are relative and routing is by hash, so it works at the domain root, on `pages.dev` and in preview deployments.
+The browser tests require Playwright Chromium. `dist/` is the static output. Paths are relative and routing is by hash, so it works at the domain root, on `workers.dev` and in preview deployments.
 
 ## Latest report update
 
@@ -91,4 +91,4 @@ After changing a source export, run `python platform/legacy/build_gold.py` and `
 
 ## Review status
 
-The source repository is https://github.com/korv9/anton-portfolio. Cloudflare Pages builds and publishes it from `main` (see [hosting](docs/deploy.md)). Earlier `docs/review.md` and `docs/sources.md` describe previous portfolio passes; `docs/political-observatory.md` is the current political integration record.
+The source repository is https://github.com/korv9/anton-portfolio. Cloudflare builds and publishes it from `main` (see [hosting](docs/deploy.md)). Earlier `docs/review.md` and `docs/sources.md` describe previous portfolio passes; `docs/political-observatory.md` is the current political integration record.

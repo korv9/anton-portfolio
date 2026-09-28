@@ -2,7 +2,7 @@ name: Refresh political news
 
 # Every three hours: read the SVT, Ekot and Government feeds, add new items to the news archive
 # on R2 (the feeds hold only the last day or so, so the archive is built by reading often),
-# tag them by party and topic, and commit parliament/news.json when it changed. Cloudflare Pages
+# tag them by party and topic, and commit parliament/news.json when it changed. Cloudflare
 # publishes the site from that commit (docs/deploy.md).
 
 on:

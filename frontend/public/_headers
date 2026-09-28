@@ -1,4 +1,4 @@
-# Response headers on Cloudflare Pages (https://developers.cloudflare.com/pages/configuration/headers/).
+# Response headers for the static site on Cloudflare (https://developers.cloudflare.com/workers/static-assets/headers/).
 
 /*
   X-Content-Type-Options: nosniff

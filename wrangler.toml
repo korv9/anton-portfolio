@@ -1,5 +1,8 @@
-# Cloudflare Pages project settings, read when Cloudflare builds the site from this repository
-# (docs/deploy.md). Build command, set in the Pages dashboard: npm run build
+# Cloudflare Workers project serving the static site (docs/deploy.md). Cloudflare builds it from
+# this repository: build command `npm run build`, deploy command `npx wrangler deploy`.
+# There is no Worker script, only static assets; _headers in dist/ sets response headers.
 name = "anton-portfolio"
-pages_build_output_dir = "dist"
 compatibility_date = "2026-09-01"
+
+[assets]
+directory = "./dist"

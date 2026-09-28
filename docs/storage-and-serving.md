@@ -105,7 +105,7 @@ Measured 2026-09-25.
 | `frontend/public/data/` files | 4,004 | **536** |
 | `frontend/public/data/` size | 652 MB | **158 MB** |
 | `dist/` | 655 MB | **157 MB** |
-| Files per deployment (Cloudflare Pages allows 20,000) | 4,004 | **536** |
+| Files per deployment (Cloudflare allows 20,000) | 4,004 | **536** |
 | Start-page bundle | 433.5 KiB | **332.6 KiB** |
 
 The speech index under `discovery/` was the remaining bulk: 140 MB of JSON, one file per
