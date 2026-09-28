@@ -29,7 +29,13 @@ others are still read, and the next run tries again.
    collection started. With `--sync` the archive lives on R2 (`raw/news/`) between runs.
 2. **Tag** — dbt, tag `news` (`platform/models/{bronze,gold}/news`):
    - parties by the way newsrooms write them, case-sensitive: "(S)", "S-ledaren", "SD:s",
-     "Vänsterpartiet" (`seeds/news/news_party_terms.csv`);
+     "Vänsterpartiet", "Tidöpartierna" (`seeds/news/news_party_terms.csv`);
+   - parties by the full name of a politician in office now, for news that names a minister
+     without the party ("Ebba Busch", "socialminister Jakob Forssmed"). The names come from
+     Riksdagen's person list (`platform/ingest/news/people_ingest.py`, members serving,
+     ministers, Speakers, MEPs). A name two people share is left out, and so is an ordinary
+     member with one of the thirty most common Swedish surnames ("Johan Andersson" in the
+     news is more often someone else); ministers and Speakers always count;
    - topics by keyword: forming a government and the site's 15 policy issues
      (`seeds/news/news_topics.csv`);
    - political: from the Government, naming a party, about forming a government, or using the
@@ -50,4 +56,6 @@ python platform/publish/export_news.py
 
 - Keyword tagging: an item can name a party without being about it (an analysis naming five
   parties is tagged with all five), and a topic word can match in passing.
-- No history before collection started; the feeds cannot be read backwards.
+- No history before collection started; the feeds cannot be read backwards. Until the
+  archive is 30 days old, the count by each party covers the time since collection started,
+  and the page says so.

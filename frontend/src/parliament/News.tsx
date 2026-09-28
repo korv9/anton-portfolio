@@ -21,6 +21,7 @@ export type NewsItem = {
 export type News = {
   generated_at: string
   days: number
+  collected_since: string | null
   sources: Record<
     string,
     {
@@ -71,6 +72,28 @@ const dayLabel = (key: string) =>
     day: 'numeric',
     month: 'long',
   })
+
+/** What the numbers cover: the archive is younger than 30 days until collection has run that long. */
+function countsNote(news: News, shown: number) {
+  const since = news.collected_since
+  const young = since && Date.now() - Date.parse(since) < 30 * 86_400_000
+  const start = since
+    ? new Date(since).toLocaleDateString(l('en-GB', 'sv-SE'), {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      })
+    : ''
+  return young
+    ? l(
+        `${shown} items. Collection started on ${start}; the feeds cannot be read backwards, so the number by each party counts the items naming it since then.`,
+        `${shown} nyheter. Insamlingen startade ${start}; flödena går inte att läsa bakåt, så siffran vid varje parti räknar nyheterna som nämnt partiet sedan dess.`,
+      )
+    : l(
+        `${shown} items in the last ${news.days} days. The number by each party is items naming it in the last 30 days.`,
+        `${shown} nyheter de senaste ${news.days} dagarna. Siffran vid varje parti är nyheter som nämner partiet de senaste 30 dagarna.`,
+      )
+}
 
 /** A list of news items, newest first. */
 export function NewsList({
@@ -237,12 +260,7 @@ export default function NewsView() {
           />
         </label>
       </div>
-      <p className="welfare-note">
-        {l(
-          `${filtered.length} items in the last ${news.days} days. The number by each party is items naming it in the last 30 days.`,
-          `${filtered.length} nyheter de senaste ${news.days} dagarna. Siffran vid varje parti är nyheter som nämner partiet de senaste 30 dagarna.`,
-        )}
-      </p>
+      <p className="welfare-note">{countsNote(news, filtered.length)}</p>
       {days.map(([key, items]) => (
         <div key={key} className="news-day">
           <h3 className="analysis-subhead">{dayLabel(key)}</h3>
@@ -266,7 +284,7 @@ export default function NewsView() {
         <p>
           {l(
             news.method,
-            'Rubriker och flödenas egna ingresser från SVT Nyheter, Sveriges Radio Ekot och Regeringskansliet, hämtade med några timmars mellanrum; varje nyhet länkar till artikeln, som ligger kvar hos sin utgivare. Nyheterna märks med de partier de nämner, så som redaktionerna skriver dem ("(S)", "SD:s", "Vänsterpartiet"), och ämnen efter nyckelord; en nyhet kan nämna ett parti utan att handla om det.',
+            'Rubriker och flödenas egna ingresser från SVT Nyheter, Sveriges Radio Ekot och Regeringskansliet, hämtade med några timmars mellanrum; varje nyhet länkar till artikeln, som ligger kvar hos sin utgivare. Nyheterna märks med de partier de nämner, så som redaktionerna skriver dem ("(S)", "SD:s", "Vänsterpartiet", "Tidöpartierna"), eller med fullständigt namn på en minister, talman eller ledamot i tjänst (riksdagens personlista), och ämnen efter nyckelord; en nyhet kan nämna ett parti utan att handla om det.',
           )}
         </p>
         <ul>

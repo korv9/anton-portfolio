@@ -14,7 +14,7 @@ models:
       - name: url
         data_tests: [not_null]
   - name: fct_news_item_party
-    description: Each party a news item names.
+    description: Each party a news item names, by a party term or by the full name of a politician in office (via).
     data_tests:
       - unique_combination:
           arguments:
@@ -31,6 +31,11 @@ models:
               arguments:
                 to: ref('fct_news_item')
                 field: item_id
+      - name: via
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [name, term]
   - name: fct_news_item_topic
     description: Each topic a news item is about.
     data_tests:

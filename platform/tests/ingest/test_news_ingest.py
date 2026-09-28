@@ -6,6 +6,7 @@ from unittest import mock
 
 import news_ingest
 from news_ingest import clean, iso, merge, parse
+from people_ingest import in_office
 
 RSS = b"""<?xml version="1.0"?><rss version="2.0"><channel><title>Nyheter</title>
 <item><title>Riksdagen v&#228;ljer ny talman</title><link>https://example.se/a</link>
@@ -53,6 +54,15 @@ class NewsIngestTests(unittest.TestCase):
             self.assertEqual(rows[0]["first_seen"], "2026-09-28T06:00:00+00:00")
             self.assertEqual(rows[0]["last_seen"], "2026-09-28T09:00:00+00:00")
             self.assertEqual(rows[0]["title"], "Riksdagen har valt talman")
+
+    def test_people_in_office(self):
+        self.assertTrue(in_office({"status": "Socialminister", "parti": "KD"}))
+        self.assertTrue(in_office({"status": "Tjänstgörande riksdagsledamot", "parti": "S"}))
+        self.assertTrue(in_office({"status": "Talman", "parti": "M"}))
+        self.assertFalse(in_office({"status": "Tidigare riksdagsledamot", "parti": "S"}))
+        self.assertFalse(in_office({"status": "Avliden  2021-07-31", "parti": "M"}))
+        self.assertFalse(in_office({"status": "Tillgänglig ersättare", "parti": "V"}))
+        self.assertFalse(in_office({"status": "Tjänstgörande riksdagsledamot", "parti": "-"}))
 
 
 if __name__ == "__main__":

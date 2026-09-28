@@ -52,6 +52,8 @@ def main() -> None:
         join gold.fct_news_item as n using (item_id)
         where n.is_political and n.published_at >= now() - interval 30 day
         group by 1""").fetchall())
+    collected_since = connection.execute(
+        "select min(first_seen) from gold.fct_news_item").fetchone()[0]
     status = {}
     for source, last_fetch, last_success, last_status, last_error, fetches, failed in \
             connection.execute("select * from gold.mart_news_fetch_status").fetchall():
@@ -63,6 +65,8 @@ def main() -> None:
     write_json(OUT, {
         "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "days": DAYS,
+        # The archive starts when collection started: the feeds cannot be read backwards.
+        "collected_since": collected_since and collected_since.astimezone(timezone.utc).isoformat(),
         "sources": status,
         "topics": topics,
         "party_counts_30d": party_counts,
@@ -70,8 +74,10 @@ def main() -> None:
         "method": ("Headlines and the feeds' own summaries from SVT Nyheter, Sveriges Radio Ekot "
                    "and the Government Offices, collected every few hours; each links to the "
                    "article, which stays with its publisher. Items are tagged with the parties "
-                   "they name, the way newsrooms write them ('(S)', 'SD:s', 'Vänsterpartiet'), "
-                   "and topics by keyword; an item can name a party without being about it."),
+                   "they name, the way newsrooms write them ('(S)', 'SD:s', 'Vänsterpartiet', "
+                   "'Tidöpartierna'), or by the full name of a minister, Speaker or member in "
+                   "office (Riksdagen's person list), and topics by keyword; an item can name "
+                   "a party without being about it."),
     })
     print(f"news: {len(items)} political items in {DAYS} days; parties {party_counts}")
 

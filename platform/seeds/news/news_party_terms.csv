@@ -29,3 +29,7 @@ L,\(L\)
 L,\bL(:s|-ledaren|-ledare|-toppen|-topp)\b
 L,\bLiberalerna(s)?\b
 L,\bliberalernas?\b
+M,[Tt]idöparti
+SD,[Tt]idöparti
+KD,[Tt]idöparti
+L,[Tt]idöparti
