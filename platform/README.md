@@ -66,6 +66,7 @@ before the politics build, since dbt reads the fact tables it writes.
 | Subject | Sources | Models | Documentation |
 |---|---|---|---|
 | Jobs (IT report) | JobTech | `models/*/jobs` | `ingest/jobtech/` |
+| News | SVT, Sveriges Radio Ekot, Regeringskansliet (feeds) | `models/*/news`, `seeds/news` | [docs/news.md](../docs/news.md) |
 | Job market (all occupations) | JobTech, every archive from 2020 | `models/*/market` | [docs/job-market.md](../docs/job-market.md) |
 | Welfare | SCB (AKU, population), Försäkringskassan, Folkhälsomyndigheten, ESS, Kolada | `models/*/welfare`, `models/gold/shared` | [docs/welfare-data-model.md](../docs/welfare-data-model.md) |
 | Parliament | Riksdagen (roll calls, reports, news), SCB (elections, PSU), Valmyndigheten | `models/*/parliament`, `seeds/parliament` | [docs/parliament-data-model.md](../docs/parliament-data-model.md) |

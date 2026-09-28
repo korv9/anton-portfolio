@@ -1,0 +1,1 @@
+{"columns":["party","pattern"],"rows":[["S","\\(S\\)"],["S","\\bS(:s|-ledaren|-ledare|-toppen|-topp|-regeringen)\\b"],["S","[Ss]ocialdemokrat"],["M","\\(M\\)"],["M","\\bM(:s|-ledaren|-ledare|-toppen|-topp)\\b"],["M","\\b[Mm]oderater(na|nas)?\\b"],["M","\\b[Mm]oderatledare"],["SD","\\(SD\\)"]]}

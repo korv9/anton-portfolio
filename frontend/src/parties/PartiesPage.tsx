@@ -29,6 +29,7 @@ import {
 import '../welfare/welfare.css'
 import '../parliament/parliament.css'
 import './parties.css'
+import { NewsList, useNews } from '../parliament/News'
 
 type Poll = { survey_month: string; party: string; share_pct: number }
 type Data = {
@@ -691,6 +692,8 @@ function PartyDetail({ data, party }: { data: Data; party: string }) {
         </p>
       </section>
 
+      <PartyNews party={party} />
+
       {recent.length > 0 && (
         <section
           className="report welfare-section"
@@ -732,5 +735,34 @@ function PartyDetail({ data, party }: { data: Data; party: string }) {
         </section>
       )}
     </>
+  )
+}
+
+/** The latest news naming the party. */
+function PartyNews({ party }: { party: string }) {
+  const { news } = useNews()
+  if (!news) return null
+  const items = news.items.filter((i) => i.parties.includes(party)).slice(0, 8)
+  return (
+    <section className="report welfare-section" aria-labelledby="party-news">
+      <p className="eyebrow">{l('In the news', 'I nyheterna')}</p>
+      <h2 id="party-news">
+        {l(
+          `${partyName(party)} in the news`,
+          `${partyName(party)} i nyheterna`,
+        )}
+      </h2>
+      <div data-testid="party-news">
+        <NewsList news={news} items={items} />
+      </div>
+      <p>
+        <a href="#now-news">
+          {l(
+            'All political news from SVT, Ekot and the Government →',
+            'Alla politiska nyheter från SVT, Ekot och Regeringen →',
+          )}
+        </a>
+      </p>
+    </section>
   )
 }

@@ -1,0 +1,17 @@
+topic,name_sv,name_en,pattern
+regeringsbildning,Regeringsbildningen,Forming a government,regeringsbildning|sondering|talman|statsministeromröstning|statsministerkandidat|regeringsfrågan|regeringspussel|regeringsförhandling|regeringsunderlag|förtroendeomröstning|misstroende
+arbete,Arbete och integration,Work and integration,arbetslös|arbetsmarknad|\bjobb|integration|a-kassa|arbetsförmedling
+bostad,Bostäder och civilrätt,Housing and civil law,bostad|bostäder|hyres|bolån|\bhyra\b
+demokrati,Demokrati och konstitution,Democracy and the constitution,grundlag|\bdemokrati|valresultat|valdeltagande|valmyndigheten|yttrandefrihet|\bvalet\b
+ekonomi,Ekonomi och statsbudget,Economy and the budget,statsbudget|budget|finansminister|inflation|riksbank|styrränta|\bränta|lågkonjunktur|ekonomi
+forsvar,Försvar och krisberedskap,Defence and preparedness,försvar|\bnato\b|militär|beredskap|totalförsvar
+kultur,Kultur och medier,Culture and media,kultur|public service|\bmedie|bibliotek
+miljo,Miljö och jordbruk,Environment and farming,klimat|\bmiljö\b|miljön\b|miljöpolitik|miljömål|miljöminister|miljöfråg|utsläpp|jordbruk|\bskog|bönder|lantbruk
+naringsliv,Näringsliv och energi,Business and energy,energi|kärnkraft|elpris|vindkraft|näringsliv|\bvarsel|konkurs
+rattsvasende,Rättsväsende och brottsbekämpning,Justice and crime,polis|gäng|skjutning|skottlossning|\bbrott|straff|domstol|åklagare|fängelse|häkta|dömd|\bmord
+skatt,Skatter,Taxes,skatt|\bmoms\b|jobbskatteavdrag
+socialforsakring,Socialförsäkringar och migration,Social insurance and migration,migration|asyl|uppehållstillstånd|migrationsverket|sjukförsäkring|pension|försäkringskassan|föräldraförsäkring|medborgarskap
+trafik,Trafik och infrastruktur,Transport and infrastructure,trafik|järnväg|\btåg|infrastruktur|trafikverket|\bflyg
+utbildning,Utbildning och forskning,Education and research,\bskola|skolan|elever|lärare|universitet|högskola|forskning|utbildning|förskola
+utrikes,Utrikes och bistånd,Foreign affairs and aid,\beu\b|ukraina|ryssland|israel|gaza|\busa\b|bistånd|utrikesminister|\bfn\b|kosovo
+vard,Vård och omsorg,Health and care,\bvård|sjukhus|äldreomsorg|hälso|sjukvård|läkare|sjuksköterska|\bregionerna?\b

@@ -1,0 +1,56 @@
+version: 2
+
+models:
+  - name: fct_news_item
+    description: News items (SVT, Ekot, the Government) with the parties and topics they concern, and whether they are political.
+    columns:
+      - name: item_id
+        data_tests: [not_null, unique]
+      - name: source
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [svt, ekot, regeringen]
+      - name: url
+        data_tests: [not_null]
+  - name: fct_news_item_party
+    description: Each party a news item names, by a party term or by the full name of a politician in office (via).
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [item_id, party]
+    columns:
+      - name: party
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [S, M, SD, V, C, KD, MP, L]
+      - name: item_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('fct_news_item')
+                field: item_id
+      - name: via
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [name, term]
+  - name: fct_news_item_topic
+    description: Each topic a news item is about.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [item_id, topic]
+    columns:
+      - name: topic
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('news_topics')
+                field: topic
+  - name: mart_news_fetch_status
+    description: The latest fetch of each news source and when it last succeeded.
+    columns:
+      - name: source
+        data_tests: [not_null, unique]
