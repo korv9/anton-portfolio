@@ -35,6 +35,8 @@ TAXING_WAGES = (f"{OECD},DSD_TAX_WAGES_COMP@DF_TW_COMP,2.1/all"
 ROWSTORE = "https://skatteverket.entryscape.net/rowstore/dataset"
 MUNICIPAL_RATES = "c67b320b-ffee-4876-b073-dd9236cd2a99"
 WITHHOLDING_TABLES = "88320397-5c32-4c16-ae79-d36d95b17b95"
+# The first year of the withholding tables in Skatteverket's open data.
+FIRST_TABLE_YEAR = 2016
 PAGE = 500
 
 
@@ -69,10 +71,16 @@ def main() -> None:
     rates = rowstore_pages(http, MUNICIPAL_RATES, "municipal_rates/part", {})
     print(f"skatteverket/municipal_rates: {rates:,} parish-year rows", flush=True)
 
-    year = date.today().year
-    tables = rowstore_pages(http, WITHHOLDING_TABLES, f"withholding/{year}",
-                            {"år": str(year), "antal dgr": "30B"})
-    print(f"skatteverket/withholding {year}: {tables:,} rows", flush=True)
+    # Every year Skatteverket publishes tables for, 2016 on: the calculator is tested
+    # against each year's rules. A past year's tables do not change once stored.
+    this_year = date.today().year
+    for year in range(FIRST_TABLE_YEAR, this_year + 1):
+        stored = sorted((rawstore.RAW / "skatteverket" / "withholding").glob(f"{year}-*.json"))
+        if stored and year < this_year:
+            continue
+        tables = rowstore_pages(http, WITHHOLDING_TABLES, f"withholding/{year}",
+                                {"år": str(year), "antal dgr": "30B"})
+        print(f"skatteverket/withholding {year}: {tables:,} rows", flush=True)
 
 
 if __name__ == "__main__":

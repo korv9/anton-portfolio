@@ -11,7 +11,7 @@
  * activity compensation and the earned-income reduction are set off against municipal tax;
  * capital income is taxed at 30 %, and a capital deficit reduces the remaining tax.
  */
-import { RULES, type TaxRules } from './rules.ts'
+import { RULES, type Schedule, type TaxRules } from './rules.ts'
 
 export type TaxInput = {
   year: number
@@ -40,6 +40,11 @@ export type TaxInput = {
   propertyAssessedValue: number
   /** Houses built 2012 or later pay no property fee for their first 15 years. */
   propertyFeeExempt: boolean
+  /**
+   * Reproduce the withholding tables up to 2019, which rounded municipal tax and the fees to
+   * the nearest krona (SKV 433 2018, bilaga 3). Only the tests use it.
+   */
+  nearestRounding?: boolean
 }
 
 export type TaxLine = { key: string; amount: number }
@@ -105,6 +110,8 @@ export const EMPTY_INPUT: Omit<TaxInput, 'year' | 'birthYear'> = {
  * product (200 000 x 1,16 % = 2 320) into 2 319,999... and losing a krona.
  */
 const floor = (value: number) => Math.floor(value + 1e-7)
+/** Nearest krona, 50 öre going down. */
+const roundHalfDown = (value: number) => Math.ceil(value - 0.5 - 1e-7)
 const clamp0 = (value: number) => Math.max(0, value)
 const roundUp100 = (value: number) => Math.ceil(value / 100) * 100
 const roundDown100 = (value: number) => floor(value / 100) * 100
@@ -115,32 +122,23 @@ const roundHalfDown100 = (value: number) => {
   return (hundreds - lower > 0.5 + 1e-9 ? lower + 1 : lower) * 100
 }
 
-/** Grundavdrag, plus förhöjt grundavdrag at 66, for a fastställd förvärvsinkomst (FFI). */
+/** The value of a piecewise-linear schedule at x (kronor). */
+export function evaluate(schedule: Schedule, x: number, pbb: number) {
+  const unit = schedule.unit === 'pbb' ? pbb : 1
+  const piece =
+    schedule.pieces.find((p) => p.to === null || x <= p.to * unit) ??
+    schedule.pieces[schedule.pieces.length - 1]
+  return piece.base * unit + piece.rate * (x - piece.over * unit)
+}
+
+/** Grundavdrag, plus förhöjt grundavdrag at the senior age, for a fastställd förvärvsinkomst. */
 export function basicAllowance(ffi: number, rules: TaxRules, senior: boolean) {
   if (ffi <= 0) return 0
-  const p = rules.pbb
-  let ordinary: number
-  if (ffi <= 0.99 * p) ordinary = 0.423 * p
-  else if (ffi <= 2.72 * p) ordinary = 0.423 * p + 0.2 * (ffi - 0.99 * p)
-  else if (ffi <= 3.11 * p) ordinary = 0.77 * p
-  else if (ffi <= 7.88 * p) ordinary = 0.77 * p - 0.1 * (ffi - 3.11 * p)
-  else ordinary = 0.293 * p
-
-  let raised = 0
-  if (senior) {
-    if (ffi <= 0.91 * p) raised = 0.687 * p
-    else if (ffi <= 1.11 * p) raised = 0.885 * p - 0.2 * ffi
-    else if (ffi <= 1.965 * p) raised = 0.6 * p + 0.057 * ffi
-    else if (ffi <= 2.72 * p) raised = 0.333 * p + 0.1949 * ffi
-    else if (ffi <= 3.11 * p) raised = 0.3949 * ffi - 0.212 * p
-    else if (ffi <= 3.24 * p) raised = 0.4949 * ffi - 0.523 * p
-    else if (ffi <= 5.0 * p) raised = 0.356 * ffi - 0.073 * p
-    else if (ffi <= 7.88 * p) raised = 0.017 * p + 0.338 * ffi
-    else if (ffi <= 8.08 * p) raised = 0.703 * p + 0.251 * ffi
-    else if (ffi <= 11.16 * p) raised = 2.732 * p
-    else if (ffi <= 12.84 * p) raised = 9.651 * p - 0.62 * ffi
-    else raised = 1.691 * p
-  }
+  const ordinary = evaluate(rules.basicAllowance, ffi, rules.pbb)
+  const raised =
+    senior && rules.raisedAllowance
+      ? evaluate(rules.raisedAllowance, ffi, rules.pbb)
+      : 0
   return Math.min(roundUp100(ordinary + raised), ffi)
 }
 
@@ -154,19 +152,13 @@ export function inWorkTaxCredit(
 ) {
   const ai = roundDown100(workIncome)
   if (ai <= 0) return 0
-  const p = rules.pbb
-  if (senior) {
-    if (ai <= 1.75 * p) return floor(0.22 * ai)
-    if (ai <= 5.24 * p) return floor(0.2635 * p + 0.07 * ai)
-    return floor(0.6293 * p)
-  }
+  const { young, phaseOut, senior: seniorSchedule } = rules.inWorkCredit
+  if (senior) return clamp0(floor(evaluate(seniorSchedule, ai, rules.pbb)))
   const ki = municipalRate / 100
-  let base: number
-  if (ai <= 0.91 * p) base = ai
-  else if (ai <= 3.24 * p) base = 0.91 * p + 0.3874 * (ai - 0.91 * p)
-  else if (ai <= 8.08 * p) base = 1.813 * p + 0.251 * (ai - 3.24 * p)
-  else base = 3.027 * p
-  return clamp0(floor((base - allowance) * ki))
+  let credit = (evaluate(young, ai, rules.pbb) - allowance) * ki
+  if (phaseOut && ai > phaseOut.fromPbb * rules.pbb)
+    credit -= phaseOut.rate * (ai - phaseOut.fromPbb * rules.pbb)
+  return clamp0(floor(credit))
 }
 
 /** Skattereduktion för sjuk- och aktivitetsersättning, before it is limited by the tax. */
@@ -176,15 +168,13 @@ export function sicknessReduction(
   municipalRate: number,
   rules: TaxRules,
 ) {
+  const reduction = rules.sicknessReduction
   const ul = roundDown100(compensation)
-  if (ul <= 0) return 0
-  const p = rules.pbb
+  if (!reduction || ul <= 0) return 0
   const ki = municipalRate / 100
-  let base: number
-  if (ul <= 0.91 * p) base = ul
-  else if (ul <= 3.24 * p) base = 0.91 * p + 0.3874 * (ul - 0.91 * p)
-  else base = 1.813 * p + 0.251 * (ul - 3.24 * p)
-  return floor(Math.max((base - allowance) * ki, 0.045 * ul * ki))
+  const value = evaluate(reduction.schedule, ul, rules.pbb)
+  if (reduction.mode === 'share') return floor(value * ki)
+  return floor(Math.max((value - allowance) * ki, reduction.minShare * ul * ki))
 }
 
 export function employerRate(birthYear: number, rules: TaxRules) {
@@ -232,8 +222,11 @@ function computeTax(
 ): Omit<TaxResult, 'marginalRate' | 'taxWedge'> {
   const rules = RULES[input.year]
   if (!rules) throw new Error(`No tax rules for ${input.year}`)
-  // "Fyllt 66 år vid årets ingång": born at least 67 years before the income year.
-  const isSenior = input.birthYear <= input.year - 67
+  // "Fyllt 66 år vid årets ingång": born at least 67 years before the income year. The ages
+  // for the higher allowance and the higher in-work credit have not always been the same.
+  const isSenior = input.birthYear <= input.year - 1 - rules.seniorAge.allowance
+  const isCreditSenior =
+    input.birthYear <= input.year - 1 - rules.seniorAge.credit
   const bornBefore1938 = input.birthYear < 1938
 
   // Business profit carries the contributions it pays for: the base U solves U = P - r U.
@@ -252,18 +245,22 @@ function computeTax(
   const allowance = basicAllowance(earnedIncome, rules, isSenior)
   const taxable = clamp0(earnedIncome - allowance)
 
-  const excess = taxable - rules.state.threshold
-  const stateTax =
-    excess >= rules.state.minExcess ? floor(excess * rules.state.rate) : 0
-  const municipalTax = floor((taxable * input.municipalRate) / 100)
-  const burialFee = floor((taxable * input.burialRate) / 100)
-  const churchFee = floor((taxable * input.churchRate) / 100)
+  const stateTax = floor(
+    rules.state.brackets.reduce(
+      (sum, b) => sum + clamp0(taxable - b.threshold) * b.rate,
+      0,
+    ),
+  )
+  // Each rounded down to whole kronor; the tables up to 2019 rounded each to the nearest
+  // krona instead, 50 öre going down.
+  const round = input.nearestRounding ? roundHalfDown : floor
+  const municipalTax = round((taxable * input.municipalRate) / 100)
+  const burialFee = round((taxable * input.burialRate) / 100)
+  const churchFee = round((taxable * input.churchRate) / 100)
+  const ps = rules.publicService
   const publicServiceFee =
-    input.birthYear <= input.year - 19
-      ? floor(
-          Math.min(taxable, rules.publicService.capIbb * rules.ibb) *
-            rules.publicService.rate,
-        )
+    ps && input.birthYear <= input.year - 19
+      ? floor(Math.min(taxable, ps.capIbb * rules.ibb) * ps.rate)
       : 0
 
   // Allmän pensionsavgift: on pension-qualifying income, not on pensions or sickness compensation.
@@ -284,11 +281,11 @@ function computeTax(
     allowance,
     input.municipalRate,
     rules,
-    isSenior,
+    isCreditSenior,
   )
   const inWorkTaxCreditUsed = Math.min(credit, municipalLeft)
   municipalLeft -= inWorkTaxCreditUsed
-  const sickness = isSenior
+  const sickness = isCreditSenior
     ? 0
     : sicknessReduction(
         input.sicknessCompensation,
@@ -299,17 +296,26 @@ function computeTax(
   const sicknessUsed = Math.min(sickness, municipalLeft)
   municipalLeft -= sicknessUsed
   const eir = rules.earnedIncomeReduction
-  const earnedIncomeReductionFull =
-    taxable <= eir.from
+  const earnedIncomeReductionFull = !eir
+    ? 0
+    : taxable <= eir.from
       ? 0
       : taxable >= eir.to
         ? eir.max
         : floor((taxable - eir.from) * eir.rate)
+  // Against municipal tax only (2022 on), or against what is left of the tax and fees (2021).
+  const taxLeft =
+    municipalLeft +
+    clamp0(stateTax - clamp0(pensionFeeReduction - municipalTax)) +
+    burialFee +
+    churchFee +
+    pensionFee +
+    publicServiceFee
   const earnedIncomeReduction = Math.min(
     earnedIncomeReductionFull,
-    municipalLeft,
+    eir?.against === 'all' ? taxLeft : municipalLeft,
   )
-  municipalLeft -= earnedIncomeReduction
+  municipalLeft -= Math.min(earnedIncomeReduction, municipalLeft)
 
   // Capital: 30 % on a surplus; a deficit reduces the tax that remains.
   const gainsNet = input.capitalGains - input.capitalLosses

@@ -59,8 +59,13 @@ def check_dbt() -> None:
         raise SystemExit(f"Refusing to export: {failed}")
 
 
+# Tables kept for past years: the tables differ only in the tax rate, so five spread over
+# the range test every rule; the latest year keeps all of them.
+PAST_YEAR_TABLES = {29, 32, 35, 38, 42}
+
+
 def withholding_fixture() -> None:
-    """Skatteverket's monthly withholding tables of the fetched year, compact."""
+    """Skatteverket's monthly withholding tables for every fetched year, compact."""
     pages = sorted((RAW / "skatteverket/withholding").glob("*-*.json"))
     by_year = defaultdict(list)
     for page in pages:
@@ -71,7 +76,10 @@ def withholding_fixture() -> None:
                 [int(r["tabellnr"]), int(r["inkomst fr.o.m."]),
                  int(r["inkomst t.o.m."]) if r["inkomst t.o.m."] else None]
                 + [int(r[f"kolumn {i}"]) if r[f"kolumn {i}"] != "" else None for i in range(1, 7)])
+    latest = max(by_year, default=0)
     for year, table in by_year.items():
+        if year != latest:
+            table = [row for row in table if row[0] in PAST_YEAR_TABLES]
         table.sort()
         payload = {"year": year,
                    "source": "Skatteverket, skattetabeller (rowstore "
