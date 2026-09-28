@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from './test'
 import AxeBuilder from '@axe-core/playwright'
 
 test('political evidence remains traceable across votes, speeches and laws', async ({
@@ -9,8 +9,9 @@ test('political evidence remains traceable across votes, speeches and laws', asy
   await page.goto('/#politics')
   const lab = page.locator('#politics')
   await expect(lab.locator('.vote-stack-row')).toHaveCount(8)
+  // The latest session is still open, so its count grows; a closed session's does not.
   await expect(
-    lab.getByText('787 roll calls in this view · all eight parties'),
+    lab.getByText(/\d[\d,]* roll calls in this view · all eight parties/),
   ).toBeVisible()
   await lab.getByLabel('Voting session').selectOption('2024/25')
   await expect(

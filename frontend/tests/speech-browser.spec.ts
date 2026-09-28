@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from './test'
 
 test('visitors find a speaker, read full speeches and move through a debate', async ({
   page,

@@ -1,27 +1,36 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from './test'
 
-test('subject and view navigation isolates content and supports back and direct links', async ({
+test('one politics navigation isolates content and supports back and direct links', async ({
   page,
 }) => {
   await page.goto('/#now-decisions')
-  const subjects = page.getByRole('navigation', { name: 'Choose a subject' })
+  const politics = page.getByRole('navigation', { name: 'Politics' })
+  await expect(politics.getByRole('link')).toHaveCount(7)
   await expect(
-    subjects.getByRole('link', { name: 'Politics', exact: true }),
-  ).toHaveAttribute('aria-current', 'page')
+    politics.getByRole('link', { name: /Where things stand/ }),
+  ).toHaveAttribute('aria-current', 'true')
+  // Only one navigation for politics: the older subject and view menus are gone.
+  await expect(
+    page.getByRole('navigation', { name: 'Choose a subject' }),
+  ).toHaveCount(0)
   await expect(page.locator('.decision-read')).toHaveCount(5)
-  await expect(page.locator('.seat-bar')).toHaveCount(0)
-  await page.locator('.topic-tabs a[href="#now-government"]').click()
-  await expect(page.locator('.government-facts')).toBeVisible()
+  await expect(page.locator('.seat-chart')).toHaveCount(0)
+  await politics.getByRole('link', { name: /Where things stand/ }).click()
+  await expect(page.locator('.seat-chart')).toBeVisible()
   await expect(page.locator('.decision-read')).toHaveCount(0)
+  await expect(
+    politics.getByRole('link', { name: /Where things stand/ }),
+  ).toHaveAttribute('aria-current', 'page')
   await page.goBack()
   await expect(page.locator('.decision-read')).toHaveCount(5)
-  await expect(
-    page.locator('.topic-tabs a[href="#now-decisions"]'),
-  ).toHaveAttribute('aria-current', 'page')
-  await subjects.getByRole('link', { name: 'Welfare', exact: true }).click()
+  await page.goto('/#sweden')
   await expect(page.locator('.welfare-tile').first()).toBeVisible()
   await expect(page.locator('.welfare-explorer')).toHaveCount(0)
   await expect(page.locator('.decision-read')).toHaveCount(0)
+  await expect(page.locator('.project-bar a')).toHaveAttribute(
+    'href',
+    '#projekt',
+  )
   await page.goto('/#analysis-europe')
   await expect(
     page.locator('section[aria-labelledby="analysis-europe"]'),

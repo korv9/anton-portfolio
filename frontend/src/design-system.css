@@ -1,0 +1,167 @@
+/*
+ * The design system, loaded after every other stylesheet so it wins where older page styles
+ * disagree: Helvetica everywhere, tabular figures, near-black on warm white, thin rules,
+ * square corners, no shadows, no blur. Colour carries meaning only: in the politics product it
+ * means a party, and everything else stays neutral.
+ */
+
+html,
+body,
+button,
+input,
+select,
+textarea,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+svg text,
+table {
+  font-family: var(--font) !important;
+  font-variant-numeric: tabular-nums;
+}
+body {
+  background: var(--page);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+}
+h1,
+h2,
+h3,
+h4 {
+  letter-spacing: -0.02em;
+  font-weight: 700;
+}
+
+/* Square corners and no decoration; round marks stay round where they are data or logos. */
+*:not(.party-logo):not(.round):not(circle) {
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+.party-logo {
+  border-radius: 3px;
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus) !important;
+  outline-offset: 2px;
+}
+
+.eyebrow {
+  color: var(--muted) !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.08em !important;
+}
+a {
+  color: inherit;
+}
+
+/* ---------- Shared building blocks ---------- */
+
+.ds-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-inline: clamp(1rem, 5vw, 4rem);
+}
+.ds-section {
+  padding-block: clamp(4rem, 9vw, 8rem);
+  border-top: 1px solid var(--line);
+  scroll-margin-top: 64px;
+}
+.ds-section-head {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 9fr);
+  gap: 2rem;
+  align-items: baseline;
+  margin-bottom: clamp(2rem, 4vw, 3.5rem);
+}
+.ds-label {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--muted);
+  letter-spacing: 0.02em;
+}
+.ds-h2 {
+  margin: 0;
+  font-size: clamp(1.75rem, 3.4vw, 2.75rem);
+  line-height: 1.1;
+  font-weight: 700;
+  max-width: 22ch;
+}
+.ds-body {
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  max-width: 62ch;
+  margin: 0 0 1rem;
+}
+.ds-small {
+  font-size: 0.875rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+.ds-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  padding: 0.6rem 1.1rem;
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: #fff;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+}
+.ds-button.secondary {
+  background: transparent;
+  color: var(--ink);
+}
+.ds-button:hover {
+  background: #333;
+  color: #fff;
+}
+.ds-button.secondary:hover {
+  background: var(--ink);
+}
+.ds-link {
+  font-weight: 500;
+  text-underline-offset: 0.25em;
+}
+.ds-rule-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--line);
+}
+.ds-rule-list > li {
+  border-bottom: 1px solid var(--line);
+}
+.visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+@media (max-width: 760px) {
+  .ds-section-head {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

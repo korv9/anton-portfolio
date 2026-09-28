@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from './test'
 
 test('parties: a card per party in its colour, and each party’s own page', async ({
   page,

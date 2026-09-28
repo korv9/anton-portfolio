@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from './test'
 
 test('analysis page: county scatter, monthly series, Europe and the models', async ({
   page,

@@ -1,17 +1,20 @@
-@import '@fontsource-variable/dm-sans';
-@import '@fontsource-variable/manrope';
-
+/* Tokens: see design-system.css for the full system, loaded last. */
 :root {
-  color: #16201f;
-  background: #f3f1ea;
-  font-family: 'DM Sans Variable', sans-serif;
+  color: #151515;
+  background: #faf9f6;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-synthesis: none;
-  --ink: #16201f;
-  --muted: #66706d;
-  --paper: #fbfaf6;
-  --line: #d6d5ce;
-  --teal: #006864;
-  --orange: #d64b2b;
+  font-variant-numeric: tabular-nums;
+  --font: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --ink: #151515;
+  --muted: #5e5e5e;
+  --paper: #ffffff;
+  --page: #faf9f6;
+  --line: #e2e0da;
+  --line-strong: #c9c6be;
+  --teal: #151515;
+  --orange: #8a8a8a;
+  --focus: #151515;
 }
 * {
   box-sizing: border-box;
@@ -22,7 +25,7 @@ html {
 body {
   margin: 0;
   min-width: 320px;
-  background: #f3f1ea;
+  background: var(--page);
 }
 button,
 select {
@@ -39,7 +42,7 @@ p {
 h1,
 h2,
 h3 {
-  font-family: 'Manrope Variable', sans-serif;
+  font-family: var(--font);
   letter-spacing: -0.04em;
   margin: 0;
 }
@@ -62,11 +65,10 @@ h3 {
   align-items: center;
   justify-content: space-between;
   border-bottom: 1px solid var(--line);
-  background: rgba(243, 241, 234, 0.94);
+  background: var(--page);
   position: sticky;
   top: 0;
   z-index: 20;
-  backdrop-filter: blur(12px);
 }
 .wordmark {
   display: flex;
@@ -288,7 +290,7 @@ main {
   display: flex;
   justify-content: space-between;
   padding: 0.9rem 1rem;
-  font: 700 0.7rem/1 'DM Sans Variable';
+  font: 700 0.7rem/1 var(--font);
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: var(--muted);
@@ -399,7 +401,7 @@ main {
   display: block;
 }
 .thesis-kpis strong {
-  font: 750 clamp(1.5rem, 2.5vw, 2.3rem)/1 'Manrope Variable';
+  font: 750 clamp(1.5rem, 2.5vw, 2.3rem)/1 var(--font);
   letter-spacing: -0.04em;
 }
 .thesis-kpis span {
@@ -491,7 +493,7 @@ main {
   max-width: 1060px;
 }
 .report-number {
-  font: 800 0.8rem/1 'DM Sans Variable';
+  font: 800 0.8rem/1 var(--font);
   padding-top: 0.4rem;
   color: var(--muted);
   letter-spacing: 0.12em;
@@ -552,7 +554,7 @@ main {
 }
 .kpis strong {
   display: block;
-  font: 750 clamp(1.65rem, 2.5vw, 2.5rem)/1 'Manrope Variable';
+  font: 750 clamp(1.65rem, 2.5vw, 2.5rem)/1 var(--font);
   letter-spacing: -0.05em;
 }
 .kpis span {
@@ -964,15 +966,6 @@ select {
   color: #6dd2c7;
   font-weight: 700;
 }
-footer {
-  background: #101817;
-  color: #93a09d;
-  border-top: 1px solid #33413e;
-  padding: 1.4rem clamp(1rem, 6vw, 6rem);
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.78rem;
-}
 button:focus-visible,
 a:focus-visible,
 select:focus-visible,
@@ -1210,7 +1203,7 @@ summary:focus-visible {
   background: #f8faf6;
   padding: 1rem;
   margin: 0.5rem 0;
-  border-left: 3px solid #087f7b;
+  border-left: 3px solid #1a1a1a;
 }
 .inline-decision blockquote {
   white-space: pre-wrap;

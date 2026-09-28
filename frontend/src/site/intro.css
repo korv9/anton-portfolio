@@ -1,0 +1,77 @@
+.intro-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  padding: 0 clamp(1rem, 5vw, 4rem);
+  background: #000;
+  color: #fff;
+  cursor: pointer;
+  transition: background-color 360ms ease 160ms;
+}
+.intro-screen.leaving {
+  background-color: transparent;
+  pointer-events: none;
+}
+.intro-name {
+  margin: 0;
+  font-family: var(--font);
+  font-weight: 700;
+  font-size: clamp(3.5rem, 18vw, 15rem);
+  line-height: 0.92;
+  letter-spacing: -0.045em;
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 0.25em;
+  transition:
+    transform 480ms cubic-bezier(0.7, 0, 0.2, 1),
+    color 200ms;
+  will-change: transform;
+}
+.intro-screen.leaving .intro-name {
+  color: var(--ink);
+}
+.intro-word {
+  display: inline-flex;
+  overflow: hidden;
+  padding-bottom: 0.06em;
+}
+.intro-letter {
+  display: inline-block;
+  color: transparent;
+  -webkit-text-stroke: 1.5px #fff;
+  transform: translateY(105%);
+  animation:
+    intro-rise 620ms cubic-bezier(0.2, 0.7, 0.1, 1) forwards,
+    intro-fill 420ms ease 780ms forwards;
+}
+.intro-screen.leaving .intro-letter {
+  -webkit-text-stroke-color: transparent;
+}
+@keyframes intro-rise {
+  to {
+    transform: translateY(0);
+  }
+}
+@keyframes intro-fill {
+  to {
+    color: #fff;
+    -webkit-text-stroke-color: transparent;
+  }
+}
+
+/* Reduced motion: the name simply appears, then the screen fades quickly. */
+.intro-screen.reduced .intro-letter {
+  animation: none !important;
+  transform: none;
+  color: #fff;
+  -webkit-text-stroke: 0;
+}
+.intro-screen.reduced {
+  transition: opacity 250ms ease !important;
+}
+.intro-screen.reduced.leaving {
+  opacity: 0;
+  background-color: #000;
+}

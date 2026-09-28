@@ -5,7 +5,7 @@
 .politics-lab h2 {
   max-width: 920px;
   font:
-    750 clamp(2.4rem, 5vw, 4.6rem)/1.05 'Manrope Variable',
+    750 clamp(2.4rem, 5vw, 4.6rem)/1.05 var(--font),
     sans-serif;
   letter-spacing: -0.055em;
 }
@@ -38,9 +38,9 @@
   font-weight: 650;
 }
 .politics-tabs button[aria-pressed='true'] {
-  background: #006864;
+  background: #1a1a1a;
   color: white;
-  border-color: #006864;
+  border-color: #1a1a1a;
 }
 .politics-kpis {
   display: grid;
@@ -56,7 +56,7 @@
 .politics-kpis strong {
   display: block;
   font:
-    750 clamp(1.7rem, 3vw, 2.8rem)/1.2 'Manrope Variable',
+    750 clamp(1.7rem, 3vw, 2.8rem)/1.2 var(--font),
     sans-serif;
   letter-spacing: -0.04em;
 }
@@ -102,7 +102,7 @@
 }
 .politics-card h4 {
   font:
-    750 1.6rem/1.15 'Manrope Variable',
+    750 1.6rem/1.15 var(--font),
     sans-serif;
   letter-spacing: -0.03em;
   margin: 0.4rem 0 0.8rem;
@@ -116,7 +116,7 @@
   font-size: 0.7rem;
 }
 .politics-card a {
-  color: #006864;
+  color: #1a1a1a;
   font-weight: 650;
   overflow-wrap: anywhere;
 }
@@ -197,7 +197,7 @@
   font-size: 0.75rem;
 }
 .vote-key span:nth-child(1) {
-  color: #006864;
+  color: #1a1a1a;
 }
 .vote-key span:nth-child(2) {
   color: #ba462b;
@@ -226,7 +226,7 @@
   background: #f0f1eb;
 }
 .vote-stack i {
-  background: #006864;
+  background: #1a1a1a;
 }
 .vote-stack i:nth-child(2) {
   background: #c6553b;
@@ -289,7 +289,7 @@
   cursor: pointer;
 }
 .decision-list button[aria-pressed='true'] {
-  box-shadow: inset 4px 0 #006864;
+  box-shadow: inset 4px 0 #1a1a1a;
   background: #e3efe7;
 }
 .decision-list button span {
@@ -310,7 +310,7 @@
 .draft-example blockquote {
   margin: 1rem 0;
   padding: 0.8rem 1rem;
-  border-left: 3px solid #006864;
+  border-left: 3px solid #1a1a1a;
   background: white;
   white-space: pre-wrap;
   max-height: 300px;
@@ -367,7 +367,7 @@
 }
 .meaning-lab h3 {
   font:
-    750 clamp(1.9rem, 3vw, 3rem)/1.1 'Manrope Variable',
+    750 clamp(1.9rem, 3vw, 3rem)/1.1 var(--font),
     sans-serif;
   letter-spacing: -0.04em;
 }
@@ -389,7 +389,7 @@
 }
 .engine-result > strong {
   display: block;
-  color: #006864;
+  color: #1a1a1a;
   font-size: 2rem;
 }
 .evidence-chain {
@@ -402,7 +402,7 @@
 }
 .evidence-chain b {
   display: block;
-  color: #006864;
+  color: #1a1a1a;
   margin-top: 0.2rem;
 }
 .law-browser {

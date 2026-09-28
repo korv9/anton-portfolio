@@ -59,7 +59,7 @@
   display: block;
 }
 .budget-summary strong {
-  font: 750 clamp(1.5rem, 2.4vw, 2.2rem)/1 'Manrope Variable';
+  font: 750 clamp(1.5rem, 2.4vw, 2.2rem)/1 var(--font);
   letter-spacing: -0.04em;
 }
 .budget-summary span {
@@ -122,10 +122,10 @@
   margin-left: 0.45rem;
 }
 .party-area-head i.budget-key {
-  background: #006864;
+  background: #1a1a1a;
 }
 .party-area-head i.keyword-key {
-  background: #d64b2b;
+  background: #8a8a8a;
 }
 .party-area-rows {
   display: grid;
@@ -157,10 +157,10 @@
   min-width: 1px;
 }
 .party-area-bars .budget-bar {
-  background: #006864;
+  background: #1a1a1a;
 }
 .party-area-bars .keyword-bar {
-  background: #d64b2b;
+  background: #8a8a8a;
 }
 .party-area-comparison p {
   color: var(--muted);
@@ -226,7 +226,7 @@
   height: 12px;
   display: block;
   border-left: 1px solid #65746d;
-  background: linear-gradient(90deg, #f8eeeb 0 50%, #eaf3ef 50% 100%);
+  background: #f0efeb;
 }
 .correlation-track i {
   position: absolute;
@@ -235,10 +235,10 @@
   display: block;
 }
 .correlation-track i.positive {
-  background: #007a75;
+  background: #1a1a1a;
 }
 .correlation-track i.negative {
-  background: #d64b2b;
+  background: #8a8a8a;
 }
 .budget-panel {
   min-width: 0;
@@ -254,7 +254,7 @@
   letter-spacing: 0.1em;
 }
 .panel-heading h4 {
-  font-family: 'Manrope Variable', sans-serif;
+  font-family: var(--font);
   font-size: clamp(1.3rem, 1.9vw, 1.9rem);
   line-height: 1.12;
   letter-spacing: -0.035em;
@@ -285,7 +285,7 @@
   font-weight: 700;
 }
 .budget-dot {
-  fill: #007a75;
+  fill: #1a1a1a;
   stroke: #fff;
   stroke-width: 1.5;
   opacity: 0.8;
@@ -299,7 +299,7 @@
   outline: none;
 }
 .budget-dot.selected {
-  fill: #d64b2b;
+  fill: #8a8a8a;
   stroke: #172321;
   stroke-width: 2.5;
   opacity: 1;
@@ -370,7 +370,7 @@
   display: block;
   height: 11px;
   border-left: 1px solid #67736d;
-  background: linear-gradient(90deg, #f8eeeb 0 50%, #eaf3ef 50% 100%);
+  background: #f0efeb;
 }
 .difference-track i {
   display: block;
@@ -379,10 +379,10 @@
   top: 0;
 }
 .difference-track i.positive {
-  background: #007a75;
+  background: #1a1a1a;
 }
 .difference-track i.negative {
-  background: #d64b2b;
+  background: #8a8a8a;
 }
 .heatmap-legend {
   display: flex;
@@ -396,7 +396,12 @@
 .heatmap-legend i {
   width: 85px;
   height: 8px;
-  background: linear-gradient(90deg, #d64b2b, #f6f5ef, #007a75);
+  background: linear-gradient(
+    90deg,
+    #8a8a8a,
+    #f6f5ef,
+    #1a1a1a
+  ); /* data legend: diverging scale */
 }
 .heatmap-scroll {
   overflow-x: auto;
@@ -423,7 +428,7 @@
   border: 0;
   border-radius: 2px;
   font:
-    600 0.68rem/1.25 'DM Sans Variable',
+    600 0.68rem/1.25 var(--font),
     sans-serif;
   cursor: pointer;
   min-height: 31px;
@@ -483,10 +488,10 @@
   display: inline-block;
   width: 14px;
   height: 3px;
-  background: #006864;
+  background: #1a1a1a;
 }
 .trend-key span:last-child i {
-  background: #d64b2b;
+  background: #8a8a8a;
 }
 .budget-empty {
   border: 1px solid var(--line);
@@ -668,7 +673,7 @@
 }
 .budget-net {
   font-size: 1.4rem;
-  color: #006864;
+  color: #1a1a1a;
 }
 .budget-overview-grid article > div {
   margin: 1.2rem 0;
@@ -752,7 +757,7 @@
 }
 .rfc-example {
   padding: 1rem;
-  border-left: 3px solid #006864;
+  border-left: 3px solid #1a1a1a;
   margin-top: 1rem;
   background: #f3f7f0;
 }
@@ -765,7 +770,7 @@
   margin: 1.2rem 0;
   padding: clamp(1rem, 2vw, 1.5rem);
   border: 1px solid #cbd9d0;
-  border-left: 4px solid #006864;
+  border-left: 4px solid #1a1a1a;
   background: #f5f8f3;
   border-radius: 0.45rem;
 }
@@ -1012,7 +1017,7 @@
   position: absolute;
   height: 8px;
   top: 5px;
-  background: #087f7b;
+  background: #1a1a1a;
 }
 .comparison-track i.negative {
   background: #b35031;

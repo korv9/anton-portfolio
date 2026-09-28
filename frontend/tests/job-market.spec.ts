@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from './test'
 
 test('job market: every occupation since 2020, by field, occupation, county and conditions', async ({
   page,

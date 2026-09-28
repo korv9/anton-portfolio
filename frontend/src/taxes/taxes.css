@@ -50,7 +50,7 @@
   color: var(--ink);
 }
 .rank-bars li.highlight .rank-bar {
-  background: #008f82;
+  background: #1a1a1a;
 }
 
 .tax-calculator {
@@ -121,7 +121,7 @@
 .tax-headline dd {
   margin: 0.2rem 0 0;
   font:
-    800 1.5rem/1.15 'Manrope Variable',
+    800 1.5rem/1.15 var(--font),
     sans-serif;
   font-variant-numeric: tabular-nums;
 }
@@ -131,7 +131,7 @@
   white-space: nowrap;
 }
 .tax-lines tr.reduction td {
-  color: #1d6b43;
+  color: #1a1a1a;
 }
 .tax-lines tr.total td {
   font-weight: 800;
@@ -164,7 +164,7 @@
 }
 .tax-direction.lower,
 td.lower {
-  color: #1d6b43;
+  color: #1a1a1a;
 }
 .tax-direction.higher,
 td.higher {
