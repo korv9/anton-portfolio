@@ -31,6 +31,7 @@ test('every theme answers one question with one chart, a table and its sources',
     await expect(page.locator('.theme-sources a').first()).toBeVisible()
     await expect(page.locator('.theme-deep a').first()).toBeVisible()
   }
+
   expect(errors).toEqual([])
 })
 
@@ -53,20 +54,34 @@ test('the dashboard fits one screen and focuses on the party chosen at the side'
   }
   const parties = page.getByRole('navigation', { name: 'Parties' })
   await expect(parties.getByRole('link')).toHaveCount(8)
-  await parties.getByRole('link', { name: /^SD/ }).click()
+  await parties.getByRole('link', { name: 'Sweden Democrats' }).click()
   await expect(page).toHaveURL(/#politik\?parti=SD$/)
   await expect(page.locator('.dash-focus')).toContainText('Sweden Democrats')
   await expect(page.locator('.dash-card h2').nth(2)).toContainText('SD')
-  await expect(parties.getByRole('link', { name: /^SD/ })).toHaveAttribute(
-    'aria-current',
-    'true',
-  )
+  await expect(
+    parties.getByRole('link', { name: 'Sweden Democrats' }),
+  ).toHaveAttribute('aria-current', 'true')
   // A seat segment is a party button too.
   await page.getByRole('button', { name: /^Moderates:/ }).click()
   await expect(page).toHaveURL(/parti=M$/)
   await page.getByRole('button', { name: 'Show all parties' }).click()
   await expect(page.locator('.dash-focus')).toHaveCount(0)
   await expect(page).toHaveURL(/#politik$/)
+})
+
+test('the party rail marks the party whose profile is open', async ({
+  page,
+}) => {
+  await page.goto('/#parties-s')
+  const rail = page.getByRole('navigation', { name: 'Parties' })
+  await expect(rail.getByRole('link')).toHaveCount(8)
+  await expect(
+    rail.getByRole('link', { name: 'Social Democrats' }),
+  ).toHaveAttribute('aria-current', 'true')
+  // From the dashboard focused on a party, its full profile is one click away.
+  await page.goto('/#politik?parti=S')
+  await page.getByRole('link', { name: /Everything about S/ }).click()
+  await expect(page).toHaveURL(/#parties-s$/)
 })
 
 test('the view builder offers valid choices and keeps them in a shareable address', async ({

@@ -5,12 +5,7 @@
  */
 import { Suspense, lazy, useEffect, useRef } from 'react'
 import { l } from '../i18n'
-import {
-  PartyLogo,
-  RIKSDAG_PARTIES,
-  identity,
-  partyName,
-} from '../parties/identity'
+import { PartyLogo, RIKSDAG_PARTIES, partyName } from '../parties/identity'
 import type { Route } from '../router'
 import { THEMES, deepDiveOf, themeByPath, type ThemeKey } from './nav'
 import './politik.css'
@@ -92,29 +87,31 @@ export default function PoliticsProduct({ route }: { route: Route }) {
             ))}
           </ol>
         </nav>
-        <nav className="politik-parties" aria-label={l('Parties', 'Partier')}>
-          <h2>{l('Parties', 'Partier')}</h2>
+        <nav
+          className="politik-party-rail"
+          aria-label={l('Parties', 'Partier')}
+        >
+          <p>{l('Parties', 'Partier')}</p>
           <ul>
-            {RIKSDAG_PARTIES.map((code) => (
-              <li key={code}>
-                <a
-                  href={`#politik?parti=${code}`}
-                  style={{ ['--party' as string]: identity(code).line }}
-                  aria-current={party === code ? 'true' : undefined}
-                >
-                  <PartyLogo party={code} size={20} />
-                  <span className="party-code">{code}</span>
-                  <span className="party-name-full">{partyName(code)}</span>
-                </a>
-              </li>
-            ))}
-            {party && (
-              <li>
-                <a href="#politik" className="all">
-                  {l('← All parties', '← Alla partier')}
-                </a>
-              </li>
-            )}
+            {RIKSDAG_PARTIES.map((code) => {
+              // A party is current when the dashboard is focused on it or its profile is open.
+              const current =
+                party === code ||
+                route.path === `#parties-${code.toLowerCase()}`
+              return (
+                <li key={code}>
+                  <a
+                    href={`#politik?parti=${code}`}
+                    aria-label={partyName(code)}
+                    aria-current={current ? 'true' : undefined}
+                    title={partyName(code)}
+                  >
+                    <PartyLogo party={code} size={34} decorative={false} />
+                    <span>{code}</span>
+                  </a>
+                </li>
+              )
+            })}
           </ul>
         </nav>
       </aside>

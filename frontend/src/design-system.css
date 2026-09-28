@@ -172,3 +172,281 @@ main {
   overflow: visible;
   overflow-x: clip;
 }
+
+/* Editorial report surfaces: a quiet frame, a clear reading order and generous charts. */
+body .project-page {
+  max-width: 1200px;
+  margin-inline: auto;
+  padding: 32px 24px 64px;
+}
+body .project-page .page-lead {
+  padding: 20px 8px 0;
+  margin-bottom: 28px;
+}
+body .project-page .page-lead > p:not(.eyebrow) {
+  max-width: 72ch;
+  font-size: 1.06rem;
+  color: #4e5b60;
+}
+body .project-page .page-lead h1 {
+  max-width: 24ch;
+  font-size: clamp(2.15rem, 4vw, 3.4rem);
+  line-height: 1.08;
+}
+body .project-page > .report,
+body .project-page > .reports > .report {
+  padding: 28px 32px;
+  margin: 0 0 20px;
+  background: #fff;
+  border: 1px solid #dedfd9;
+}
+body .topic-tabs {
+  gap: 0;
+  border-bottom: 1px solid #cbd0cd;
+  padding: 0;
+  margin-top: 28px;
+}
+body .topic-tabs a {
+  background: transparent;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  padding: 13px 18px;
+  font-weight: 500;
+  color: #53615d;
+  min-height: 46px;
+}
+body .topic-tabs a[aria-current='page'] {
+  color: #172b24;
+  border-bottom-color: #172b24;
+  background: #edf1ed;
+  font-weight: 700;
+}
+body .topic-tabs a:hover {
+  background: #edf1ed;
+  color: #172b24;
+}
+body .project-page h2 {
+  font-size: clamp(1.35rem, 2.3vw, 1.9rem);
+  line-height: 1.25;
+  margin-top: 8px;
+}
+body .project-page .eyebrow {
+  font-size: 0.73rem;
+  letter-spacing: 0.12em !important;
+}
+body .welfare-table {
+  font-size: 0.88rem;
+}
+body .welfare-table td,
+body .welfare-table th {
+  padding-block: 12px;
+}
+body .welfare-table thead {
+  background: #f4f5f1;
+}
+body .welfare-table tbody tr:hover {
+  background: #f7f8f5;
+}
+body .welfare-table .cell-bar {
+  background: #dce9e5;
+}
+body .multi-chart {
+  padding-top: 16px;
+}
+body .multi-chart > .chart-wrap > svg {
+  min-width: 0;
+  width: 100%;
+  overflow: visible;
+  touch-action: pan-y;
+}
+body .multi-chart .grid-line {
+  stroke: #e3e8e5;
+  stroke-dasharray: 3 5;
+}
+body .multi-chart .axis-label {
+  fill: #52615b;
+  font-size: 12px;
+}
+body .multi-chart .chart-legend {
+  gap: 10px 22px;
+  margin-bottom: 18px;
+  font-size: 0.85rem;
+}
+body .multi-chart .legend-line {
+  min-width: 28px;
+  width: 28px;
+}
+body .multi-chart .chart-tooltip {
+  position: static;
+  transform: none;
+  max-width: none;
+  width: 100%;
+  margin-top: 10px;
+  padding: 12px 16px;
+  border: 1px solid #d4ddd7;
+  background: #f3f6f2;
+  color: #172b24;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+  font-size: 0.85rem;
+}
+body .chart-guidance {
+  font-size: 0.75rem;
+  color: #59675f;
+  line-height: 1.5;
+  margin-top: 12px;
+}
+body .politik-side {
+  background:
+    radial-gradient(
+      circle at 15% 8%,
+      rgba(114, 197, 216, 0.15),
+      transparent 28%
+    ),
+    #edf2f6;
+}
+body .politik-nav a {
+  padding: 12px 10px;
+}
+body .politik-nav a[aria-current] {
+  background: #192820;
+  color: #fff;
+}
+body .politik-nav a[aria-current] .politik-nav-no {
+  color: #c5d1c9;
+}
+body .theme-head {
+  margin-bottom: 24px;
+}
+body .theme-question {
+  font-size: clamp(2rem, 3.8vw, 3rem);
+  max-width: 24ch;
+}
+body .theme-why {
+  font-size: 1.06rem;
+  line-height: 1.6;
+}
+body .theme-kpis {
+  background: transparent;
+  border-top: 0;
+  padding: 20px;
+  margin-bottom: 24px;
+  gap: 18px;
+}
+body .theme-kpis > div {
+  padding: 18px;
+  border: 1px solid #d9e1e6;
+  background: rgba(255, 255, 255, 0.88);
+  border-radius: 10px !important;
+  box-shadow: 0 8px 22px rgba(32, 55, 72, 0.08) !important;
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease;
+}
+body .theme-kpis > div:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 28px rgba(32, 55, 72, 0.13) !important;
+}
+body .theme-figure {
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid #d9e1e6;
+  border-radius: 12px !important;
+  box-shadow: 0 12px 32px rgba(32, 55, 72, 0.1) !important;
+  padding: clamp(16px, 2.4vw, 28px);
+}
+body .theme-takeaway {
+  background: #f1f4ef;
+  padding: 16px;
+  border-left: 3px solid #53695c;
+  line-height: 1.6;
+}
+body .theme-filters {
+  border-block: 1px solid #e3e6df;
+  padding-block: 16px;
+}
+body .theme-meaning {
+  margin-top: 30px;
+  padding: 24px;
+  border: 1px solid #d9e1e6;
+  border-radius: 10px !important;
+  background: linear-gradient(135deg, #f8fbfc, #eef5f6);
+  box-shadow: 0 8px 22px rgba(32, 55, 72, 0.07) !important;
+}
+body .politik-main {
+  background:
+    radial-gradient(circle at 95% 0%, rgba(52, 199, 218, 0.1), transparent 28%),
+    linear-gradient(180deg, #f7fafc 0, var(--page) 34rem);
+}
+body .theme-panel svg polyline,
+body .theme-panel svg path,
+body .theme-panel svg polygon {
+  transition:
+    opacity 180ms ease,
+    filter 180ms ease;
+}
+body .theme-panel svg:hover polyline,
+body .theme-panel svg:hover path {
+  filter: drop-shadow(0 3px 4px rgba(25, 74, 88, 0.18));
+}
+@media (max-width: 600px) {
+  body .project-page {
+    padding: 16px 16px 40px;
+  }
+  body .project-page .page-lead {
+    padding: 8px 0 0;
+  }
+  body .project-page > .report,
+  body .project-page > .reports > .report {
+    padding: 20px 14px;
+  }
+  body .topic-tabs a {
+    padding: 12px;
+    font-size: 0.84rem;
+  }
+  body .multi-chart .axis-label {
+    font-size: 11px;
+  }
+  body .theme-kpis {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  body .theme-kpis > div {
+    border-bottom: 1px solid #d4dcd4;
+    padding-bottom: 14px;
+  }
+  body .theme-kpis > div:hover {
+    transform: none;
+  }
+}
+
+body .multi-chart .chart-tooltip {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  margin-inline: 0;
+}
+body .multi-chart .chart-wrap {
+  padding-inline: 0;
+}
+@media (min-width: 900px) {
+  body .job-market-page .page-lead {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px 48px;
+    align-items: center;
+  }
+  body .job-market-page .page-lead > .eyebrow,
+  body .job-market-page .page-lead > .topic-tabs {
+    grid-column: 1 / -1;
+  }
+  body .job-market-page .page-lead h1 {
+    margin: 0;
+    font-size: 2.85rem;
+  }
+  body .job-market-page .page-lead > p {
+    margin: 0;
+  }
+  body .job-market-page .page-lead > .topic-tabs {
+    margin-top: 12px;
+  }
+}

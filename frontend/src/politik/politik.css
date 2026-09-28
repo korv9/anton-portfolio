@@ -11,6 +11,76 @@
   border-right: 1px solid var(--line);
   padding: 1.5rem 1.25rem 1.5rem clamp(1rem, 2.5vw, 2rem);
 }
+.politik-party-rail {
+  top: auto !important;
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+}
+.politik-party-rail > p {
+  margin: 0 0 0.75rem;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.politik-party-rail ul {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.55rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.politik-party-rail a {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 52px;
+  padding: 0.4rem;
+  border: 1px solid transparent;
+  background: rgba(255, 255, 255, 0.62);
+  text-decoration: none;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease;
+}
+.politik-party-rail a:hover,
+.politik-party-rail a:focus-visible,
+.politik-party-rail a[aria-current] {
+  z-index: 1;
+  transform: translateY(-3px);
+  border-color: var(--line-strong);
+  background: #fff;
+}
+.politik-party-rail a[aria-current]::after {
+  content: '';
+  position: absolute;
+  right: 5px;
+  bottom: 5px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ink);
+}
+.politik-party-rail .party-logo {
+  object-fit: contain;
+  transition: transform 180ms ease;
+}
+.politik-party-rail a:hover .party-logo,
+.politik-party-rail a:focus-visible .party-logo {
+  transform: scale(1.08);
+}
+.politik-party-rail a > span {
+  position: absolute;
+  bottom: 2px;
+  right: 4px;
+  color: var(--muted);
+  font-size: 0.58rem;
+  font-weight: 700;
+}
 .politik-side {
   position: sticky;
   top: 64px;
@@ -112,6 +182,30 @@
   flex-direction: column-reverse;
   justify-content: flex-end;
   gap: 0.35rem;
+}
+.theme-kpis > div,
+.theme-figure,
+.theme-meaning,
+.theme-further {
+  animation: politik-card-in 420ms cubic-bezier(0.2, 0.75, 0.25, 1) both;
+}
+.theme-kpis > div:nth-child(2) {
+  animation-delay: 55ms;
+}
+.theme-kpis > div:nth-child(3) {
+  animation-delay: 110ms;
+}
+.theme-figure {
+  animation-delay: 130ms;
+}
+.theme-meaning {
+  animation-delay: 180ms;
+}
+@keyframes politik-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
 }
 .theme-kpis dd {
   margin: 0;
@@ -376,6 +470,18 @@
   overflow: hidden;
   border-right: 2px solid var(--page);
   line-height: 1.1;
+  transform-origin: left center;
+  animation: seat-grow 520ms cubic-bezier(0.2, 0.8, 0.25, 1) both;
+  transition: filter 160ms ease;
+}
+.seat-chart-seg:hover {
+  filter: brightness(1.08) saturate(1.08);
+}
+@keyframes seat-grow {
+  from {
+    opacity: 0;
+    transform: scaleX(0.15);
+  }
 }
 .seat-chart-seg b {
   font-size: 0.875rem;
@@ -696,7 +802,7 @@
     overflow: visible;
   }
   .politik-brand {
-    margin: 0 1rem 0.5rem;
+    display: none;
   }
   .politik-brand span,
   .politik-brand small {
@@ -728,8 +834,36 @@
   .politik-nav-no {
     display: none;
   }
+  .politik-party-rail {
+    margin: 0;
+    padding: 0.55rem 1rem;
+    border-top: 1px solid var(--line);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .politik-party-rail::-webkit-scrollbar {
+    display: none;
+  }
+  .politik-party-rail > p {
+    display: none;
+  }
+  .politik-party-rail ul {
+    display: flex;
+    width: max-content;
+  }
+  .politik-party-rail a {
+    width: 48px;
+    min-height: 44px;
+    padding: 0.3rem;
+  }
+  .politik-party-rail .party-logo {
+    width: 28px;
+    height: 28px;
+  }
   .politik-main {
-    padding-top: 2rem;
+    /* The product menu is sticky in the flow (main clips rather than hides overflow), so the
+       first heading already starts below it. */
+    padding-top: 1.5rem;
   }
   .theme-meaning,
   .theme-further {
@@ -738,6 +872,19 @@
   }
   .theme-deep {
     grid-column: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .theme-kpis > div,
+  .theme-figure,
+  .theme-meaning,
+  .theme-further,
+  .seat-chart-seg {
+    animation: none;
+  }
+  .politik-party-rail a,
+  .politik-party-rail .party-logo {
+    transition: none;
   }
 }
 @media (max-width: 600px) {
@@ -802,4 +949,23 @@
 .politik .party-chip.on .party-logo {
   opacity: 1;
   filter: none;
+}
+
+/* The party tiles share the narrower side column with the theme menu: four per row, shrinking
+   to fit. */
+@media (min-width: 961px) {
+  .politik-party-rail ul {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.35rem;
+  }
+  .politik-party-rail a {
+    min-width: 0;
+    min-height: 46px;
+    padding: 0.3rem;
+  }
+  .politik-party-rail .party-logo {
+    width: 100%;
+    max-width: 30px;
+    height: auto;
+  }
 }
