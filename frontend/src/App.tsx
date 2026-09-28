@@ -29,6 +29,7 @@ const AnalysisPage = lazy(() => import('./analysis/AnalysisPage'))
 const NowPage = lazy(() => import('./parliament/NowPage'))
 const IssuePage = lazy(() => import('./parliament/IssuePage'))
 const TaxesPage = lazy(() => import('./taxes/TaxesPage'))
+const DataModelPage = lazy(() => import('./datamodel/DataModelPage'))
 
 type UmapPoint = {
   chunk_id: string
@@ -309,7 +310,9 @@ function pageFromHash(hash: string) {
   if (hash === '#analysis' || hash.startsWith('#analysis-')) return 'analysis'
   if (hash === '#now' || hash.startsWith('#now-')) return 'now'
   if (hash.startsWith('#issue-')) return 'issue'
-  if (hash === '#taxes') return 'taxes'
+  if (hash === '#taxes' || hash.startsWith('#taxes-')) return 'taxes'
+  if (hash === '#data-model' || hash.startsWith('#data-model-'))
+    return 'datamodel'
   return 'home'
 }
 
@@ -567,6 +570,7 @@ function App() {
           'drugcomb',
           'issue',
           'taxes',
+          'datamodel',
         ].includes(page) && (
           <div className="analysis-hub">
             <p className="eyebrow">
@@ -587,7 +591,9 @@ function App() {
                           ? '#analysis'
                           : page === 'taxes'
                             ? '#taxes'
-                            : '#drugcomb'
+                            : page === 'datamodel'
+                              ? '#data-model'
+                              : '#drugcomb'
               }
               items={[
                 ['#now', 'Politics', 'Politik'],
@@ -597,6 +603,7 @@ function App() {
                 ['#sweden', 'Welfare', 'Välfärd'],
                 ['#analysis', 'Statistical analyses', 'Statistiska analyser'],
                 ['#drugcomb', 'Drug research', 'Läkemedelsforskning'],
+                ['#data-model', 'Data model', 'Datamodell'],
               ]}
             />
             <p className="topic-hint">
@@ -1348,7 +1355,12 @@ function App() {
           )}
           {page === 'taxes' && (
             <Suspense fallback={<div className="loading">{t('Loading…')}</div>}>
-              <TaxesPage />
+              <TaxesPage view={hash} />
+            </Suspense>
+          )}
+          {page === 'datamodel' && (
+            <Suspense fallback={<div className="loading">{t('Loading…')}</div>}>
+              <DataModelPage view={hash} />
             </Suspense>
           )}
           {page === 'analysis' && (

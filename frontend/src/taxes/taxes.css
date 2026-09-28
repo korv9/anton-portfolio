@@ -158,3 +158,43 @@
     grid-template-columns: 8rem 1fr 5.5rem;
   }
 }
+.tax-direction {
+  font-weight: 700;
+  font-size: 0.8rem;
+}
+.tax-direction.lower,
+td.lower {
+  color: #1d6b43;
+}
+.tax-direction.higher,
+td.higher {
+  color: #9c2f1f;
+}
+.tax-decision-source {
+  margin: 0.2rem 0;
+  font-size: 0.85rem;
+}
+.tax-year-count {
+  font-weight: 400;
+  font-size: 0.85rem;
+  color: var(--muted, #666);
+}
+.change-parts {
+  margin: 0;
+  padding-left: 1rem;
+  font-size: 0.9rem;
+}
+.change-parts li + li {
+  margin-top: 0.2rem;
+}
+.muted {
+  color: var(--muted, #666);
+}
+.lead-figure {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+.tax-changes td:nth-child(2) {
+  white-space: nowrap;
+  font-weight: 700;
+}

@@ -48,6 +48,15 @@ export type Decision = {
   outcome: 'yes' | 'no' | 'tie'
   government_won: boolean | null
   party_positions?: Record<string, string>
+  /** The studies the bill behind the decision rests on. */
+  studies?: StudyLink[]
+}
+/** A government study (SOU, Ds, Riksrevisionen) or ministry memorandum, as a link. */
+export type StudyLink = {
+  kind: 'sou' | 'ds' | 'rir' | 'pm'
+  designation: string
+  title: string | null
+  url: string
 }
 export type Now = {
   generated_at: string

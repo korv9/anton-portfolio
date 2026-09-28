@@ -75,3 +75,32 @@ models:
       - unique_combination:
           arguments:
             columns: [survey_month, party]
+  - name: dim_study
+    description: Government studies (SOU, Ds) and the ministry memoranda bills name as preparation.
+    columns:
+      - name: study_key
+        data_tests: [unique, not_null]
+  - name: fct_bill
+    description: Government bills since 2006/07.
+    columns:
+      - name: bill
+        data_tests: [unique, not_null]
+  - name: fct_bill_report
+    description: The committee reports each bill was dealt with in.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [bill, report]
+  - name: fct_bill_study
+    description: The studies each bill names in its preparation, with the sentence that names them.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [bill, study_key]
+    columns:
+      - name: study_key
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_study')
+                field: study_key

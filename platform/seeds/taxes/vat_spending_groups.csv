@@ -1,0 +1,13 @@
+spending_group,name_sv,name_en,vat_rate,note_sv
+212,Livsmedel,Food,12,6 procent från 1 april 2026
+215,Alkoholfria drycker,Soft drinks,12,6 procent från 1 april 2026
+222,Alkoholhaltiga drycker,Alcoholic drinks,25,
+225,Tobak,Tobacco,25,
+232,Kläder,Clothing,25,
+235,Skor,Shoes,25,
+250,"Inventarier, hushållsutrustning och underhåll","Furniture, household goods and maintenance",25,
+270,Transport,Transport,25,"Mest bilar, drivmedel och service; kollektivtrafik har 6 procent"
+280,Information och kommunikation,Information and communication,25,
+290,"Rekreation, sport och kultur","Recreation, sport and culture",25,"Böcker, evenemang och idrott har 6 procent"
+310,Restauranger och hotell,Restaurants and hotels,12,
+330,Personlig vård och diverse varor och tjänster,Personal care and other goods and services,25,

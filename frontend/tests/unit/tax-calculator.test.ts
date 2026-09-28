@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { readFileSync } from 'node:fs'
+import { readdirSync, readFileSync } from 'node:fs'
 import {
   calculate,
   employerContributions,
@@ -9,55 +9,88 @@ import {
 } from '../../src/taxes/calculator.ts'
 import { RULES } from '../../src/taxes/rules.ts'
 
-const fixture = JSON.parse(
-  readFileSync(
-    new URL('../fixtures/skattetabeller-2026.json', import.meta.url),
-    'utf8',
-  ),
-) as { rows: (number | null)[][] }
+const fixtureYears = readdirSync(new URL('../fixtures/', import.meta.url))
+  .map((name) => /^skattetabeller-(\d{4})\.json$/.exec(name)?.[1])
+  .filter((year): year is string => Boolean(year))
+  .map(Number)
+  .sort()
 
-/** What each column of the tables covers: the income, and a birth year of that kind. */
-const COLUMNS: Record<number, [keyof TaxInput, number]> = {
-  1: ['salary', 1990], // pay, under 66
-  2: ['pension', 1950], // pension, 66 or over
-  3: ['salary', 1955], // pay, 66 or over
-  4: ['sicknessCompensation', 1990], // sickness and activity compensation, under 66
-  5: ['benefits', 1990], // other pension-qualifying benefits, under 66
-  6: ['pension', 1965], // pension, under 66
+function fixture(year: number) {
+  return JSON.parse(
+    readFileSync(
+      new URL(`../fixtures/skattetabeller-${year}.json`, import.meta.url),
+      'utf8',
+    ),
+  ) as { rows: (number | null)[][] }
 }
 
-test('matches every row and column of Skatteverket’s 2026 monthly withholding tables', () => {
-  let checked = 0
-  const misses: string[] = []
-  for (const [table, , to, ...columns] of fixture.rows as number[][]) {
-    if (to == null) continue
-    // As SKV 433 section 7.1: the top of the band times 12, rounded down to whole hundreds.
-    const annual = Math.floor((to * 12) / 100) * 100
-    for (let column = 1; column <= 6; column++) {
-      const expected = columns[column - 1]
-      if (expected == null) continue
-      const [field, birthYear] = COLUMNS[column]
-      const result = calculate({
-        ...EMPTY_INPUT,
-        year: 2026,
-        birthYear,
-        // The tables' rate includes 1.16 points for burial and church fees.
-        municipalRate: table - 1.16,
-        burialRate: 1.16,
-        churchRate: 0,
-        [field]: annual,
-      })
-      const monthly = Math.floor(result.totalTax / 12)
-      checked++
-      if (monthly !== expected)
-        misses.push(
-          `table ${table}, column ${column}, ${to} kr: ${monthly} != ${expected}`,
-        )
-    }
+/**
+ * What each column of a year's tables covers: the income, and a birth year of that kind
+ * (SKV 433 section 3). Column 4 was pay to people born before 1938 until the reduction for
+ * sickness and activity compensation took the column in 2018.
+ */
+function columns(year: number): Record<number, [keyof TaxInput, number]> {
+  const rules = RULES[year]
+  const young = year - 30
+  const senior =
+    year - 1 - Math.max(rules.seniorAge.allowance, rules.seniorAge.credit) - 5
+  return {
+    1: ['salary', young],
+    2: ['pension', senior],
+    3: ['salary', senior],
+    4: rules.sicknessReduction
+      ? ['sicknessCompensation', young]
+      : ['salary', 1935],
+    5: ['benefits', young],
+    6: ['pension', young],
   }
-  assert.ok(checked > 40_000, `only ${checked} cases`)
-  assert.deepEqual(misses.slice(0, 10), [])
-})
+}
+
+/** Burial and church fees assumed in the tables' rates, in percentage points (SKV 433 7.3). */
+const TABLE_FEES = (year: number) => (year <= 2017 ? 1.2 : 1.16)
+/** Until 2019 the tables rounded municipal tax and fees to the nearest krona. */
+const NEAREST_ROUNDING = (year: number) => year <= 2018
+
+for (const year of fixtureYears) {
+  test(`matches Skatteverket’s ${year} monthly withholding tables`, () => {
+    assert.ok(RULES[year], `no rules for ${year}`)
+    const spec = columns(year)
+    const fees = TABLE_FEES(year)
+    let checked = 0
+    const misses: string[] = []
+    for (const [table, , to, ...cells] of fixture(year).rows as number[][]) {
+      if (to == null) continue
+      // As SKV 433 section 7.1: the top of the band times 12, rounded down to whole hundreds.
+      const annual = Math.floor((to * 12) / 100) * 100
+      for (let column = 1; column <= 6; column++) {
+        const expected = cells[column - 1]
+        if (expected == null) continue
+        const [field, birthYear] = spec[column]
+        const result = calculate({
+          ...EMPTY_INPUT,
+          year,
+          birthYear,
+          municipalRate: table - fees,
+          burialRate: fees,
+          churchRate: 0,
+          nearestRounding: NEAREST_ROUNDING(year),
+          [field]: annual,
+        })
+        // The temporary reduction for work income (2021-2022) is given in the final tax only.
+        const monthly = Math.floor(
+          (result.totalTax + result.temporaryWorkReduction) / 12,
+        )
+        checked++
+        if (monthly !== expected)
+          misses.push(
+            `table ${table}, column ${column}, ${to} kr: ${monthly} != ${expected}`,
+          )
+      }
+    }
+    assert.ok(checked > 10_000, `only ${checked} cases`)
+    assert.deepEqual(misses.slice(0, 10), [], `${misses.length} misses`)
+  })
+}
 
 test('the worked examples of SKV 433 section 7.5.2', () => {
   const base = {
@@ -95,6 +128,31 @@ test('employer contributions by age, with the 2026 youth reduction', () => {
   assert.equal(
     employerContributions(360_000, 2005, rules),
     Math.floor(3 * 30_000 * 0.3142 + 9 * (25_000 * 0.2081 + 5_000 * 0.3142)),
+  )
+})
+
+test('the temporary reduction for work income, 2021 and 2022 (SFS 2021:930)', () => {
+  const base = { ...EMPTY_INPUT, year: 2022, birthYear: 1985 }
+  // 1.25 % of work income above 60 000, 2 250 from 240 000 to 300 000, then tapering to 500 000.
+  assert.equal(
+    calculate({ ...base, salary: 200_000 }).temporaryWorkReduction,
+    1_750,
+  )
+  assert.equal(
+    calculate({ ...base, salary: 280_000 }).temporaryWorkReduction,
+    2_250,
+  )
+  assert.equal(
+    calculate({ ...base, salary: 400_000 }).temporaryWorkReduction,
+    1_125,
+  )
+  assert.equal(
+    calculate({ ...base, salary: 600_000 }).temporaryWorkReduction,
+    0,
+  )
+  assert.equal(
+    calculate({ ...base, year: 2023, salary: 280_000 }).temporaryWorkReduction,
+    0,
   )
 })
 

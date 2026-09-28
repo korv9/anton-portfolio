@@ -1,6 +1,6 @@
 {
  "schema_version": 1,
- "run_id": "5fa289d50b570175",
+ "run_id": "463eb62ce24f8e64",
  "bases": {
   "json": "data/",
   "parquet": "https://pub-9867b18896ba49e4a0b4a3d2f39c0385.r2.dev/",
@@ -55,6 +55,32 @@
    "parquet/speech_cards/session=2023-24/part-0.parquet",
    "parquet/speech_cards/session=2024-25/part-0.parquet",
    "parquet/speech_cards/session=2025-26/part-0.parquet"
+  ],
+  "welfare": [
+   "parquet/welfare/dim_age_group.parquet",
+   "parquet/welfare/dim_country.parquet",
+   "parquet/welfare/dim_date.parquet",
+   "parquet/welfare/dim_diagnosis.parquet",
+   "parquet/welfare/dim_indicator.parquet",
+   "parquet/welfare/dim_period.parquet",
+   "parquet/welfare/dim_region.parquet",
+   "parquet/welfare/dim_sex.parquet",
+   "parquet/welfare/dim_source.parquet",
+   "parquet/welfare/fct_health_survey.parquet",
+   "parquet/welfare/fct_indicator.parquet",
+   "parquet/welfare/fct_kolada.parquet",
+   "parquet/welfare/fct_labour_force.parquet",
+   "parquet/welfare/fct_population.parquet",
+   "parquet/welfare/fct_sick_leave_cases.parquet",
+   "parquet/welfare/fct_sick_pay_rate.parquet",
+   "parquet/welfare/fct_social_survey_country.parquet",
+   "parquet/welfare/fct_social_survey_region.parquet",
+   "parquet/welfare/mart_county_year_features.parquet",
+   "parquet/welfare/mart_county_year_overview.parquet",
+   "parquet/welfare/mart_county_year_panel.parquet",
+   "parquet/welfare/mart_ess_country_round.parquet",
+   "parquet/welfare/mart_municipality_year_panel.parquet",
+   "parquet/welfare/mart_national_month.parquet"
   ],
   "welfare_indicator": [
    "parquet/welfare_indicator/source=ess/part-0.parquet",

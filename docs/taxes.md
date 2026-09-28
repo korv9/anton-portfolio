@@ -44,6 +44,46 @@ The site's tax page (`#taxes`) has three parts, each from an official source.
 
 **A new income year.** Add its entry to `rules.ts` from Skatteverket's SKV 433 and *Belopp och procentsatser*. Then run `npm run taxes`, which fetches the new year's tables, and run `npm run test:unit`. The test fails until the rules match the tables.
 
+## Every year since 2016
+
+The rules are data per income year (`frontend/src/taxes/rules.ts`): the basic allowance, the
+higher allowance and the in-work credit as piecewise schedules in price base amounts, the state
+tax brackets, the ages for older people, the reductions each year had, and the amounts the
+tables do not show (ISK, property fee, social contributions by birth year and month, VAT).
+Every year from 2016 matches Skatteverket's monthly withholding tables to the krona
+(`frontend/tests/unit/tax-calculator.test.ts`). The sources per year:
+
+| Years | Source |
+|---|---|
+| 2016, 2020–2026 | Skatteverket, Teknisk beskrivning SKV 433 |
+| 2017 | 2016's rules with 2017's amounts, confirmed by the tables |
+| 2018 | Prop. 2017/18:1 (förhöjt grundavdrag), SKV 433 bilaga 3 2018 (in-work credit) |
+| 2019 | Bet. 2018/19:FiU1, reservation 5 (M, KD): the law text adopted |
+| All years | Skatteverket, Belopp och procent; Kommunal fastighetsavgift 2008, 2016–2026 |
+
+The tables up to 2019 rounded municipal tax and fees to the nearest krona; up to 2017 they
+assumed 1.2 points of burial and church fee. The temporary work income reduction of 2021–2022
+(SFS 2021:930) is given in the final tax only, so the calculator has it and the tables do not.
+
+## Decisions and you
+
+`platform/seeds/taxes/tax_decisions.csv` names each Riksdag decision that changed a tax since
+2016: the part of the rules it changed, the bill and section, the committee report, and whether
+it came from the government, the committee's own proposal or a reservation. dbt ties each to
+the first substantive roll call of its report (`fct_tax_decision_vote`) and to the studies its
+proposal was prepared in (`fct_tax_decision_study`). Fuel decisions carry the change per litre
+and the months it applied, from each bill.
+
+On `#taxes-calculator`, `history.ts` works out the same person's tax under every year's rules:
+the same age, the same real income (moved with the price base amount). A year's change is the
+tax with that year's rules less the tax with last year's rules moved as the law moves them
+without a decision (prices; the state tax threshold prices plus two points). Each part of the
+rules is then put back as it was, which splits the change by the decision that made it.
+
+The household estimate uses SCB's household budget survey (HUT 2021): spending per group, prices
+including VAT, VAT = spending × rate / (100 + rate), only groups with one clear rate. It is a
+floor. The 2026 food VAT cut assumes full pass-through.
+
 ## Reading the comparisons
 
 - The **tax wedge** is income tax plus employee and employer contributions, less cash benefits, as a share of labour cost.

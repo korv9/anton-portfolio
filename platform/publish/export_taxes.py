@@ -9,6 +9,10 @@ JSON under frontend/public/data/taxes/:
     wedge.json          labour taxation by country (OECD Taxing Wages): the latest year for four
                         household types and three wage levels, and the tax wedge over time
     municipalities.json the latest year's local income tax, burial and church fee per parish
+    decisions.json      Riksdag decisions that changed taxes since 2016: what, from when, the
+                        bill and report, how each party voted, and the studies behind them
+    household.json      an estimate of the VAT a household pays, per household type and group
+                        of spending (SCB HUT)
 
 Test fixture: frontend/tests/fixtures/skattetabeller-<year>.json, Skatteverket's monthly
 withholding tables, which the calculator is tested against.
@@ -59,8 +63,13 @@ def check_dbt() -> None:
         raise SystemExit(f"Refusing to export: {failed}")
 
 
+# Tables kept for past years: the tables differ only in the tax rate, so five spread over
+# the range test every rule; the latest year keeps all of them.
+PAST_YEAR_TABLES = {29, 32, 35, 38, 42}
+
+
 def withholding_fixture() -> None:
-    """Skatteverket's monthly withholding tables of the fetched year, compact."""
+    """Skatteverket's monthly withholding tables for every fetched year, compact."""
     pages = sorted((RAW / "skatteverket/withholding").glob("*-*.json"))
     by_year = defaultdict(list)
     for page in pages:
@@ -71,7 +80,10 @@ def withholding_fixture() -> None:
                 [int(r["tabellnr"]), int(r["inkomst fr.o.m."]),
                  int(r["inkomst t.o.m."]) if r["inkomst t.o.m."] else None]
                 + [int(r[f"kolumn {i}"]) if r[f"kolumn {i}"] != "" else None for i in range(1, 7)])
+    latest = max(by_year, default=0)
     for year, table in by_year.items():
+        if year != latest:
+            table = [row for row in table if row[0] in PAST_YEAR_TABLES]
         table.sort()
         payload = {"year": year,
                    "source": "Skatteverket, skattetabeller (rowstore "
@@ -149,8 +161,90 @@ def main() -> None:
         "source": "Skatteverket, skattesatser per kommun och församling",
     })
 
+    decisions = records(connection, """
+        select decision_key as key, in_force, in_force_year as year, component, direction,
+               title_sv, title_en, bill, bill_title, bill_section, bill_date, department,
+               report, origin, source_url, petrol_sek_per_litre, diesel_sek_per_litre, months
+        from gold.dim_tax_decision order by in_force, decision_key""")
+    votes = defaultdict(dict)
+    for row in records(connection, """
+            select decision_key, session, point, vote_date, outcome, government_won, party,
+                   position, role
+            from gold.fct_tax_decision_vote order by decision_key, party"""):
+        vote = votes[row["decision_key"]]
+        vote.update({k: row[k] for k in ("session", "point", "vote_date", "outcome",
+                                         "government_won")})
+        vote.setdefault("parties", {})[row["party"]] = [row["position"], row["role"]]
+    studies = defaultdict(list)
+    for row in records(connection, """
+            select d.decision_key, s.kind, s.designation, s.title, s.source_url as url
+            from gold.fct_tax_decision_study as d join gold.dim_study as s using (study_key)
+            order by d.decision_key, s.kind desc, s.designation"""):
+        studies[row.pop("decision_key")].append(row)
+    for decision in decisions:
+        decision["components"] = decision.pop("component").split("|")
+        decision["vote"] = votes.get(decision["key"])
+        decision["studies"] = studies.get(decision["key"], [])
+        decision["in_force"] = str(decision["in_force"])
+        decision["bill_date"] = decision["bill_date"] and str(decision["bill_date"])
+        if decision["vote"]:
+            decision["vote"]["vote_date"] = str(decision["vote"]["vote_date"])
+    write_json(OUT / "decisions.json", {
+        "decisions": decisions,
+        "components": {
+            "in_work_credit": ["In-work tax credit", "Jobbskatteavdrag"],
+            "raised_allowance": ["Higher basic allowance at 65/66", "Förhöjt grundavdrag"],
+            "state_tax": ["State income tax", "Statlig inkomstskatt"],
+            "public_service": ["Public service fee", "Public service-avgift"],
+            "sickness_reduction": ["Sickness and activity compensation",
+                                   "Sjuk- och aktivitetsersättning"],
+            "earned_income_reduction": ["Earned income reduction",
+                                        "Skattereduktion för förvärvsinkomst"],
+            "temporary_work_reduction": ["Temporary work income reduction",
+                                         "Tillfällig skattereduktion för arbetsinkomst"],
+            "senior_age": ["Age limits for older people", "Åldersgränser för äldre"],
+            "isk": ["Investment savings account (ISK)", "Investeringssparkonto (ISK)"],
+            "capital": ["Capital income", "Kapitalinkomst"],
+            "employer": ["Employer contributions", "Arbetsgivaravgifter"],
+            "fuel": ["Tax on petrol and diesel", "Skatt på bensin och diesel"],
+            "vat": ["VAT", "Moms"],
+            "corporate": ["Corporate tax", "Bolagsskatt"],
+        },
+        "method": ("Each decision is named from the budget bill's chapter on taxes, a separate "
+                   "bill, or the enacted law text in the committee report. Party positions "
+                   "are from the first substantive roll call of that report; for a budget "
+                   "framework report (FiU1) that vote settles the whole budget, taxes "
+                   "included."),
+    })
+
+    household = defaultdict(lambda: {"groups": []})
+    hut_year = None
+    for row in records(connection, """
+            select household_type, household_sv, household_en, year, spending_group, name_sv,
+                   name_en, vat_rate, sek_per_household, vat_sek, note_sv
+            from gold.fct_household_vat where sek_per_household is not null
+            order by household_type, spending_group"""):
+        entry = household[row["household_type"]]
+        entry.update({"key": row["household_type"], "name": [row["household_en"],
+                                                             row["household_sv"]]})
+        hut_year = row["year"]
+        entry["groups"].append({"group": row["spending_group"],
+                                "name": [row["name_en"], row["name_sv"]],
+                                "vat_rate": row["vat_rate"],
+                                "spending": round(row["sek_per_household"]),
+                                "vat": round(row["vat_sek"]), "note": row["note_sv"]})
+    write_json(OUT / "household.json", {
+        "year": hut_year,
+        "households": list(household.values()),
+        "method": ("Spending per household (SCB, Hushållens utgifter) is in prices including "
+                   "VAT; the VAT in it is spending x rate / (1 + rate). Only groups with one "
+                   "clear rate are counted: rent, health care, insurance, interest and fees "
+                   "carry no VAT or a mix, so the estimate is a floor."),
+        "source": "SCB, Hushållens utgifter (HUT) 2021, tabell HUThush",
+    })
+
     withholding_fixture()
-    print(f"taxes: {len(types)} tax types, {len(countries)} countries, wedge {latest}, "
+    print(f"taxes: {len(decisions)} decisions, {len(types)} tax types, {len(countries)} countries, wedge {latest}, "
           f"rates {rate_year} ({len(municipalities)} municipalities)")
 
 

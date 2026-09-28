@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-09-27T15:38+00:00",
+ "generated_at": "2026-09-28T06:33+00:00",
  "election": {
   "year": 2026,
   "election_date": "2026-09-13",
@@ -226,15 +226,65 @@
    "outcome": "yes",
    "government_won": true,
    "party_positions": {
-    "KD": "yes",
     "C": "yes",
-    "S": "yes",
     "M": "yes",
+    "S": "yes",
+    "SD": "yes",
     "L": "yes",
     "V": "yes",
     "MP": "yes",
-    "SD": "yes"
-   }
+    "KD": "yes"
+   },
+   "studies": [
+    {
+     "kind": "sou",
+     "designation": "SOU 2014:3",
+     "title": "Boende utanför det egna hemmet - placeringsformer för barn och unga",
+     "url": "https://data.riksdagen.se/dokument/H2B33"
+    },
+    {
+     "kind": "sou",
+     "designation": "SOU 2015:71",
+     "title": "Barns och ungas rätt vid tvångsvård (del A)",
+     "url": "https://data.riksdagen.se/dokument/H3B371"
+    },
+    {
+     "kind": "sou",
+     "designation": "SOU 2023:40",
+     "title": "Förbättrade möjligheter för barn att utkräva sina rättigheter enligt barnkonventionen",
+     "url": "https://data.riksdagen.se/dokument/HBB340"
+    },
+    {
+     "kind": "sou",
+     "designation": "SOU 2023:66",
+     "title": "För barn och unga i samhällsvård",
+     "url": "https://data.riksdagen.se/dokument/HBB366"
+    },
+    {
+     "kind": "sou",
+     "designation": "SOU 2024:39",
+     "title": "Skärpta regler om ungdomsövervakning  och straffreduktion för unga",
+     "url": "https://data.riksdagen.se/dokument/HCB339"
+    },
+    {
+     "kind": "sou",
+     "designation": "SOU 2025:11",
+     "title": "Straffbarhetsåldern",
+     "url": "https://data.riksdagen.se/dokument/HDB311"
+    },
+    {
+     "kind": "pm",
+     "designation": "Promemoria S2026/00342",
+     "title": "Promemoria S2026/00342",
+     "url": "https://data.riksdagen.se/dokument/HD03295"
+    },
+    {
+     "kind": "ds",
+     "designation": "Ds 2024:30",
+     "title": "En lag om insatser inom socialtjänsten till vårdnadshavare, barn och unga när samtycke saknas",
+     "url": "https://data.riksdagen.se/dokument/HCB430"
+    }
+   ]
   },
   {
    "session": "2025/26",
@@ -255,14 +305,64 @@
    "government_won": true,
    "party_positions": {
     "M": "yes",
-    "S": "yes",
-    "V": "no",
-    "MP": "no",
-    "L": "yes",
-    "SD": "yes",
     "C": "no",
-    "KD": "yes"
-   }
+    "V": "no",
+    "SD": "yes",
+    "S": "yes",
+    "L": "yes",
+    "KD": "yes",
+    "MP": "no"
+   },
+   "studies": [
+    {
+     "kind": "sou",
+     "designation": "SOU 2014:3",
+     "title": "Boende utanför det egna hemmet - placeringsformer för barn och unga",
+     "url": "https://data.riksdagen.se/dokument/H2B33"
+    },
+    {
+     "kind": "sou",
+     "designation": "SOU 2015:71",
+     "title": "Barns och ungas rätt vid tvångsvård (del A)",
+     "url": "https://data.riksdagen.se/dokument/H3B371"
+    },
+    {
+     "kind": "sou",
+     "designation": "SOU 2023:40",
+     "title": "Förbättrade möjligheter för barn att utkräva sina rättigheter enligt barnkonventionen",
+     "url": "https://data.riksdagen.se/dokument/HBB340"
+    },
+    {
+     "kind": "sou",
+     "designation": "SOU 2023:66",
+     "title": "För barn och unga i samhällsvård",
+     "url": "https://data.riksdagen.se/dokument/HBB366"
+    },
+    {
+     "kind": "sou",
+     "designation": "SOU 2024:39",
+     "title": "Skärpta regler om ungdomsövervakning  och straffreduktion för unga",
+     "url": "https://data.riksdagen.se/dokument/HCB339"
+    },
+    {
+     "kind": "sou",
+     "designation": "SOU 2025:11",
+     "title": "Straffbarhetsåldern",
+     "url": "https://data.riksdagen.se/dokument/HDB311"
+    },
+    {
+     "kind": "pm",
+     "designation": "Promemoria S2026/00342",
+     "title": "Promemoria S2026/00342",
+     "url": "https://data.riksdagen.se/dokument/HD03295"
+    },
+    {
+     "kind": "ds",
+     "designation": "Ds 2024:30",
+     "title": "En lag om insatser inom socialtjänsten till vårdnadshavare, barn och unga när samtycke saknas",
+     "url": "https://data.riksdagen.se/dokument/HCB430"
+    }
+   ]
   },
   {
    "session": "2025/26",
@@ -283,14 +383,64 @@
    "government_won": true,
    "party_positions": {
     "M": "yes",
-    "S": "yes",
-    "V": "no",
-    "MP": "no",
-    "L": "yes",
-    "SD": "yes",
     "C": "no",
-    "KD": "yes"
-   }
+    "V": "no",
+    "SD": "yes",
+    "S": "yes",
+    "L": "yes",
+    "KD": "yes",
+    "MP": "no"
+   },
+   "studies": [
+    {
+     "kind": "sou",
+     "designation": "SOU 2014:3",
+     "title": "Boende utanför det egna hemmet - placeringsformer för barn och unga",
+     "url": "https://data.riksdagen.se/dokument/H2B33"
+    },
+    {
+     "kind": "sou",
+     "designation": "SOU 2015:71",
+     "title": "Barns och ungas rätt vid tvångsvård (del A)",
+     "url": "https://data.riksdagen.se/dokument/H3B371"
+    },
+    {
+     "kind": "sou",
+     "designation": "SOU 2023:40",
+     "title": "Förbättrade möjligheter för barn att utkräva sina rättigheter enligt barnkonventionen",
+     "url": "https://data.riksdagen.se/dokument/HBB340"
+    },
+    {
+     "kind": "sou",
+     "designation": "SOU 2023:66",
+     "title": "För barn och unga i samhällsvård",
+     "url": "https://data.riksdagen.se/dokument/HBB366"
+    },
+    {
+     "kind": "sou",
+     "designation": "SOU 2024:39",
+     "title": "Skärpta regler om ungdomsövervakning  och straffreduktion för unga",
+     "url": "https://data.riksdagen.se/dokument/HCB339"
+    },
+    {
+     "kind": "sou",
+     "designation": "SOU 2025:11",
+     "title": "Straffbarhetsåldern",
+     "url": "https://data.riksdagen.se/dokument/HDB311"
+    },
+    {
+     "kind": "pm",
+     "designation": "Promemoria S2026/00342",
+     "title": "Promemoria S2026/00342",
+     "url": "https://data.riksdagen.se/dokument/HD03295"
+    },
+    {
+     "kind": "ds",
+     "designation": "Ds 2024:30",
+     "title": "En lag om insatser inom socialtjänsten till vårdnadshavare, barn och unga när samtycke saknas",
+     "url": "https://data.riksdagen.se/dokument/HCB430"
+    }
+   ]
   },
   {
    "session": "2025/26",
@@ -310,15 +460,65 @@
    "outcome": "yes",
    "government_won": true,
    "party_positions": {
-    "V": "no",
-    "L": "yes",
     "M": "yes",
-    "SD": "yes",
     "C": "no",
-    "MP": "no",
+    "SD": "yes",
+    "S": "yes",
     "KD": "yes",
-    "S": "yes"
-   }
+    "MP": "no",
+    "V": "no",
+    "L": "yes"
+   },
+   "studies": [
+    {
+     "kind": "sou",
+     "designation": "SOU 2014:3",
+     "title": "Boende utanför det egna hemmet - placeringsformer för barn och unga",
+     "url": "https://data.riksdagen.se/dokument/H2B33"
+    },
+    {
+     "kind": "sou",
+     "designation": "SOU 2015:71",
+     "title": "Barns och ungas rätt vid tvångsvård (del A)",
+     "url": "https://data.riksdagen.se/dokument/H3B371"
+    },
+    {
+     "kind": "sou",
+     "designation": "SOU 2023:40",
+     "title": "Förbättrade möjligheter för barn att utkräva sina rättigheter enligt barnkonventionen",
+     "url": "https://data.riksdagen.se/dokument/HBB340"
+    },
+    {
+     "kind": "sou",
+     "designation": "SOU 2023:66",
+     "title": "För barn och unga i samhällsvård",
+     "url": "https://data.riksdagen.se/dokument/HBB366"
+    },
+    {
+     "kind": "sou",
+     "designation": "SOU 2024:39",
+     "title": "Skärpta regler om ungdomsövervakning  och straffreduktion för unga",
+     "url": "https://data.riksdagen.se/dokument/HCB339"
+    },
+    {
+     "kind": "sou",
+     "designation": "SOU 2025:11",
+     "title": "Straffbarhetsåldern",
+     "url": "https://data.riksdagen.se/dokument/HDB311"
+    },
+    {
+     "kind": "pm",
+     "designation": "Promemoria S2026/00342",
+     "title": "Promemoria S2026/00342",
+     "url": "https://data.riksdagen.se/dokument/HD03295"
+    },
+    {
+     "kind": "ds",
+     "designation": "Ds 2024:30",
+     "title": "En lag om insatser inom socialtjänsten till vårdnadshavare, barn och unga när samtycke saknas",
+     "url": "https://data.riksdagen.se/dokument/HCB430"
+    }
+   ]
   },
   {
    "session": "2025/26",
@@ -338,15 +538,23 @@
    "outcome": "yes",
    "government_won": true,
    "party_positions": {
+    "S": "no",
+    "SD": "yes",
+    "M": "yes",
     "L": "yes",
+    "C": "no",
     "KD": "yes",
     "V": "no",
-    "MP": "no",
-    "S": "no",
-    "C": "no",
-    "SD": "yes",
-    "M": "yes"
-   }
+    "MP": "no"
+   },
+   "studies": [
+    {
+     "kind": "sou",
+     "designation": "SOU 2025:66",
+     "title": "En straffreform",
+     "url": "https://data.riksdagen.se/dokument/HDB366"
+    }
+   ]
   },
   {
    "session": "2025/26",
@@ -366,15 +574,23 @@
    "outcome": "yes",
    "government_won": true,
    "party_positions": {
-    "KD": "yes",
-    "C": "yes",
-    "S": "yes",
-    "M": "yes",
     "L": "yes",
     "V": "no",
     "MP": "no",
+    "KD": "yes",
+    "C": "yes",
+    "M": "yes",
+    "S": "yes",
     "SD": "yes"
-   }
+   },
+   "studies": [
+    {
+     "kind": "sou",
+     "designation": "SOU 2025:66",
+     "title": "En straffreform",
+     "url": "https://data.riksdagen.se/dokument/HDB366"
+    }
+   ]
   },
   {
    "session": "2025/26",
@@ -394,15 +610,29 @@
    "outcome": "yes",
    "government_won": true,
    "party_positions": {
+    "SD": "yes",
+    "M": "yes",
     "C": "no",
     "KD": "yes",
-    "L": "yes",
     "MP": "abstain",
     "V": "abstain",
     "S": "no",
-    "SD": "yes",
-    "M": "yes"
-   }
+    "L": "yes"
+   },
+   "studies": [
+    {
+     "kind": "sou",
+     "designation": "SOU 2025:95",
+     "title": "Skärpta villkor för anhöriginvandring",
+     "url": "https://data.riksdagen.se/dokument/HDB395"
+    },
+    {
+     "kind": "pm",
+     "designation": "Promemoria Ju2025/02715",
+     "title": "Promemoria Ju2025/02715",
+     "url": "https://data.riksdagen.se/dokument/HD03301"
+    }
+   ]
   },
   {
    "session": "2025/26",
@@ -422,15 +652,29 @@
    "outcome": "yes",
    "government_won": true,
    "party_positions": {
+    "M": "yes",
+    "L": "yes",
     "S": "no",
-    "C": "no",
     "SD": "yes",
     "KD": "yes",
-    "L": "yes",
     "MP": "no",
     "V": "no",
-    "M": "yes"
-   }
+    "C": "no"
+   },
+   "studies": [
+    {
+     "kind": "sou",
+     "designation": "SOU 2025:95",
+     "title": "Skärpta villkor för anhöriginvandring",
+     "url": "https://data.riksdagen.se/dokument/HDB395"
+    },
+    {
+     "kind": "pm",
+     "designation": "Promemoria Ju2025/02715",
+     "title": "Promemoria Ju2025/02715",
+     "url": "https://data.riksdagen.se/dokument/HD03301"
+    }
+   ]
   },
   {
    "session": "2025/26",
@@ -451,14 +695,28 @@
    "government_won": true,
    "party_positions": {
     "M": "yes",
-    "S": "no",
-    "V": "no",
-    "MP": "no",
-    "L": "yes",
-    "SD": "yes",
     "C": "no",
-    "KD": "yes"
-   }
+    "V": "no",
+    "SD": "yes",
+    "S": "no",
+    "L": "yes",
+    "KD": "yes",
+    "MP": "no"
+   },
+   "studies": [
+    {
+     "kind": "sou",
+     "designation": "SOU 2025:95",
+     "title": "Skärpta villkor för anhöriginvandring",
+     "url": "https://data.riksdagen.se/dokument/HDB395"
+    },
+    {
+     "kind": "pm",
+     "designation": "Promemoria Ju2025/02715",
+     "title": "Promemoria Ju2025/02715",
+     "url": "https://data.riksdagen.se/dokument/HD03301"
+    }
+   ]
   },
   {
    "session": "2025/26",
@@ -479,14 +737,28 @@
    "government_won": true,
    "party_positions": {
     "SD": "yes",
-    "C": "no",
+    "S": "no",
+    "MP": "no",
+    "L": "yes",
     "KD": "yes",
     "M": "yes",
-    "S": "no",
-    "V": "no",
-    "MP": "no",
-    "L": "yes"
-   }
+    "C": "no",
+    "V": "no"
+   },
+   "studies": [
+    {
+     "kind": "sou",
+     "designation": "SOU 2025:95",
+     "title": "Skärpta villkor för anhöriginvandring",
+     "url": "https://data.riksdagen.se/dokument/HDB395"
+    },
+    {
+     "kind": "pm",
+     "designation": "Promemoria Ju2025/02715",
+     "title": "Promemoria Ju2025/02715",
+     "url": "https://data.riksdagen.se/dokument/HD03301"
+    }
+   ]
   },
   {
    "session": "2025/26",
@@ -506,15 +778,29 @@
    "outcome": "yes",
    "government_won": true,
    "party_positions": {
-    "M": "yes",
+    "SD": "yes",
+    "V": "no",
+    "KD": "yes",
     "C": "no",
     "S": "no",
-    "KD": "yes",
-    "SD": "yes",
     "MP": "no",
-    "V": "no",
+    "M": "yes",
     "L": "yes"
-   }
+   },
+   "studies": [
+    {
+     "kind": "sou",
+     "designation": "SOU 2025:95",
+     "title": "Skärpta villkor för anhöriginvandring",
+     "url": "https://data.riksdagen.se/dokument/HDB395"
+    },
+    {
+     "kind": "pm",
+     "designation": "Promemoria Ju2025/02715",
+     "title": "Promemoria Ju2025/02715",
+     "url": "https://data.riksdagen.se/dokument/HD03301"
+    }
+   ]
   },
   {
    "session": "2025/26",
@@ -534,15 +820,29 @@
    "outcome": "yes",
    "government_won": true,
    "party_positions": {
-    "S": "yes",
-    "C": "no",
-    "SD": "yes",
     "KD": "yes",
-    "L": "yes",
     "MP": "no",
     "V": "no",
-    "M": "yes"
-   }
+    "C": "no",
+    "M": "yes",
+    "L": "yes",
+    "S": "yes",
+    "SD": "yes"
+   },
+   "studies": [
+    {
+     "kind": "sou",
+     "designation": "SOU 2025:95",
+     "title": "Skärpta villkor för anhöriginvandring",
+     "url": "https://data.riksdagen.se/dokument/HDB395"
+    },
+    {
+     "kind": "pm",
+     "designation": "Promemoria Ju2025/02715",
+     "title": "Promemoria Ju2025/02715",
+     "url": "https://data.riksdagen.se/dokument/HD03301"
+    }
+   ]
   },
   {
    "session": "2025/26",
@@ -562,15 +862,29 @@
    "outcome": "yes",
    "government_won": true,
    "party_positions": {
-    "KD": "yes",
-    "C": "no",
-    "S": "no",
-    "M": "yes",
     "L": "yes",
     "V": "no",
     "MP": "no",
+    "KD": "yes",
+    "C": "no",
+    "M": "yes",
+    "S": "no",
     "SD": "yes"
-   }
+   },
+   "studies": [
+    {
+     "kind": "sou",
+     "designation": "SOU 2025:95",
+     "title": "Skärpta villkor för anhöriginvandring",
+     "url": "https://data.riksdagen.se/dokument/HDB395"
+    },
+    {
+     "kind": "pm",
+     "designation": "Promemoria Ju2025/02715",
+     "title": "Promemoria Ju2025/02715",
+     "url": "https://data.riksdagen.se/dokument/HD03301"
+    }
+   ]
   },
   {
    "session": "2025/26",
@@ -590,15 +904,29 @@
    "outcome": "yes",
    "government_won": true,
    "party_positions": {
-    "KD": "yes",
     "C": "no",
-    "S": "yes",
     "M": "yes",
     "SD": "yes",
-    "L": "yes",
+    "KD": "yes",
     "V": "no",
+    "S": "yes",
+    "L": "yes",
     "MP": "no"
-   }
+   },
+   "studies": [
+    {
+     "kind": "sou",
+     "designation": "SOU 2025:95",
+     "title": "Skärpta villkor för anhöriginvandring",
+     "url": "https://data.riksdagen.se/dokument/HDB395"
+    },
+    {
+     "kind": "pm",
+     "designation": "Promemoria Ju2025/02715",
+     "title": "Promemoria Ju2025/02715",
+     "url": "https://data.riksdagen.se/dokument/HD03301"
+    }
+   ]
   },
   {
    "session": "2025/26",
@@ -618,15 +946,29 @@
    "outcome": "yes",
    "government_won": true,
    "party_positions": {
-    "C": "no",
-    "M": "yes",
-    "SD": "yes",
-    "L": "yes",
+    "S": "no",
+    "KD": "yes",
     "V": "no",
     "MP": "no",
-    "S": "no",
-    "KD": "yes"
-   }
+    "M": "yes",
+    "SD": "yes",
+    "C": "no",
+    "L": "yes"
+   },
+   "studies": [
+    {
+     "kind": "sou",
+     "designation": "SOU 2025:95",
+     "title": "Skärpta villkor för anhöriginvandring",
+     "url": "https://data.riksdagen.se/dokument/HDB395"
+    },
+    {
+     "kind": "pm",
+     "designation": "Promemoria Ju2025/02715",
+     "title": "Promemoria Ju2025/02715",
+     "url": "https://data.riksdagen.se/dokument/HD03301"
+    }
+   ]
   }
  ]
 }
