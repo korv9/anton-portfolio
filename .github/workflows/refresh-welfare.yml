@@ -6,6 +6,8 @@ name: Refresh public data
 # upload to R2, and commit the delivery files when they changed. The run record (welfare/run.json) is also written to R2 on every run,
 # so the status page shows when the pipeline last checked, not only when data last moved.
 # Sources publish monthly or quarterly; a daily check keeps the lag under a day.
+# Cloudflare Pages builds and publishes the site from every push to main, this commit included
+# (docs/deploy.md), so the workflow does not deploy itself.
 
 on:
   schedule:
@@ -33,8 +35,6 @@ jobs:
       R2_BUCKET: ${{ secrets.R2_BUCKET }}
       # The bucket's public address once a custom domain is connected; empty keeps r2.dev.
       R2_PUBLIC_BASE: ${{ vars.R2_PUBLIC_BASE }}
-    outputs:
-      changed: ${{ steps.commit.outputs.changed }}
     steps:
       - name: Require R2 credentials
         run: |
@@ -97,12 +97,3 @@ jobs:
             git push
             echo "changed=true" >> "$GITHUB_OUTPUT"
           fi
-
-  deploy:
-    needs: refresh
-    if: needs.refresh.outputs.changed == 'true'
-    permissions:
-      contents: read
-      pages: write
-      id-token: write
-    uses: ./.github/workflows/deploy.yml

@@ -1,12 +1,21 @@
 [
   {
     "AllowedOrigins": [
-      "https://korv9.github.io",
+      "https://antonernstsson.com",
+      "https://www.antonernstsson.com",
+      "https://anton-portfolio.pages.dev",
       "http://127.0.0.1:5173",
       "http://localhost:5173"
     ],
-    "AllowedMethods": ["GET", "HEAD"],
-    "AllowedHeaders": ["range", "if-match", "if-none-match"],
+    "AllowedMethods": [
+      "GET",
+      "HEAD"
+    ],
+    "AllowedHeaders": [
+      "range",
+      "if-match",
+      "if-none-match"
+    ],
     "ExposeHeaders": [
       "content-length",
       "content-range",
