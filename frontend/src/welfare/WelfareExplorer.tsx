@@ -48,7 +48,10 @@ export default function WelfareExplorer({
 }) {
   const [domain, setDomain] = useState('mental_halsa')
   const [indicatorKey, setIndicatorKey] = useState('')
-  const [rows, setRows] = useState<IndicatorRow[] | null>(null)
+  const [loaded, setLoaded] = useState<{
+    key: string
+    rows: IndicatorRow[]
+  } | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [level, setLevel] = useState('')
   const [selected, setSelected] = useState<string[]>([])
@@ -62,24 +65,47 @@ export default function WelfareExplorer({
   const indicator =
     indicators.find((i) => i.indicator_key === indicatorKey) ?? inDomain[0]
 
-  // Load the indicator's source; the parsed file is cached per source.
+  // Load the indicator's source; the parsed file is cached per source. The rows are kept
+  // with the key they belong to, so a render between an indicator switch and its load never
+  // shows the previous indicator's rows, and the defaults are set together with the data so
+  // no later effect can overwrite a choice made after the data arrived.
   useEffect(() => {
     if (!indicator) return
     let live = true
-    setRows(null)
     setError(null)
     loadSourceRows(indicator.source_key)
       .then((all) => {
-        if (live)
-          setRows(
-            all.filter((row) => row.indicator_key === indicator.indicator_key),
-          )
+        if (!live) return
+        const mine = all.filter(
+          (row) => row.indicator_key === indicator.indicator_key,
+        )
+        const levels = [...new Set(mine.map((r) => r.region_level))].sort(
+          byOrder(Object.keys(LEVELS)),
+        )
+        // Defaults: the broadest geography, the country.
+        const firstLevel = levels.includes('country') ? 'country' : levels[0]
+        setLoaded({ key: indicator.indicator_key, rows: mine })
+        setLevel(firstLevel ?? '')
+        setSelected(
+          [
+            ...new Set(
+              mine
+                .filter((r) => r.region_level === firstLevel)
+                .map((r) => r.region_code),
+            ),
+          ]
+            .sort()
+            .slice(0, firstLevel === 'country' ? 1 : 3),
+        )
       })
       .catch((reason: Error) => live && setError(reason.message))
     return () => {
       live = false
     }
   }, [indicator?.indicator_key, indicator?.source_key])
+
+  const rows =
+    loaded && loaded.key === indicator?.indicator_key ? loaded.rows : null
 
   const options = useMemo(() => {
     const data = rows ?? []
@@ -88,21 +114,6 @@ export default function WelfareExplorer({
     )
     return { levels }
   }, [rows])
-
-  // Defaults whenever the indicator's data arrive: the broadest geography, the country.
-  useEffect(() => {
-    if (!rows?.length) return
-    const firstLevel = options.levels.includes('country')
-      ? 'country'
-      : options.levels[0]
-    setLevel(firstLevel)
-    const inLevel = rows.filter((r) => r.region_level === firstLevel)
-    setSelected(
-      [...new Set(inLevel.map((r) => r.region_code))]
-        .sort()
-        .slice(0, firstLevel === 'country' ? 1 : 3),
-    )
-  }, [rows, options.levels])
 
   const levelRows = (rows ?? []).filter((r) => r.region_level === level)
   const regionChoices = [...new Set(levelRows.map((r) => r.region_code))]
