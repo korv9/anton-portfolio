@@ -853,3 +853,225 @@
     font-size: 0.72rem;
   }
 }
+
+/* Three full-width comparison views; source details stay available below each. */
+.compact-budget {
+  margin-top: 1rem;
+  padding-top: 1.2rem;
+}
+.compact-budget .budget-lab-head h3 {
+  font-size: clamp(1.65rem, 3vw, 2.4rem);
+}
+.budget-view-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin: 1rem 0;
+}
+.budget-view-nav a {
+  padding: 0.5rem 0.8rem;
+  background: #e8efeb;
+  border: 1px solid #cbd7cf;
+  font-weight: 700;
+}
+.budget-explore {
+  border: 1px solid var(--line, #d7dbd5);
+  padding: 1.25rem;
+  margin-top: 1.25rem;
+  background: var(--white, #fff);
+}
+.budget-explore > h4 {
+  font-size: 1.5rem;
+  margin: 0.3rem 0 1rem;
+}
+.budget-controls {
+  flex-wrap: wrap;
+  align-items: end;
+}
+.budget-controls label {
+  min-width: 0;
+  flex: 1 1 150px;
+}
+.budget-controls select {
+  width: 100%;
+  max-width: 100%;
+  min-height: 40px;
+}
+.single-budget-chart {
+  display: block;
+}
+.single-budget-chart > .budget-panel {
+  width: 100%;
+  margin: 0;
+  border: 0;
+  padding: 0.75rem 0;
+}
+.single-budget-chart .panel-heading > span {
+  display: none;
+}
+.single-budget-chart .budget-scatter {
+  display: block;
+  max-height: 480px;
+  width: 100%;
+}
+.single-budget-chart .budget-trend {
+  width: 100%;
+  min-height: 260px;
+  max-height: 420px;
+}
+.single-budget-chart .party-area-rows {
+  grid-template-columns: 1fr;
+}
+.compact-budget .budget-ledger {
+  margin-top: 1rem;
+  padding: 1.25rem;
+}
+.budget-ledger-layout {
+  grid-template-columns: minmax(0, 1fr) 250px;
+  gap: 1.25rem;
+}
+.budget-ledger-detail {
+  align-self: start;
+  min-width: 0;
+}
+.budget-year-context summary {
+  cursor: pointer;
+  font-weight: 700;
+  padding: 0.5rem 0;
+}
+.budget-ledger-summary {
+  margin: 1rem 0;
+}
+.budget-ledger-summary > div {
+  padding: 0.7rem;
+}
+.budget-ledger-summary strong {
+  font-size: 1.5rem;
+}
+.outturn-report {
+  padding-top: 1.5rem;
+}
+.outturn-report > h2 {
+  font-size: clamp(1.5rem, 3vw, 2.25rem);
+}
+#budget-proposals,
+#budget-explore,
+#budget-outturn {
+  scroll-margin-top: 95px;
+}
+.comparison-scale {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.72rem;
+  color: var(--muted);
+  padding: 0.2rem 0.5rem;
+  gap: 0.5rem;
+}
+.comparison-bar-row {
+  display: block;
+  width: 100%;
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid transparent;
+  border-bottom-color: #e0e5df;
+  padding: 0.6rem 0.5rem;
+  cursor: pointer;
+  text-align: left;
+}
+.comparison-bar-row:hover,
+.comparison-bar-row[aria-pressed='true'] {
+  background: #edf4ef;
+  border-color: #b0c6bb;
+}
+.comparison-bar-label {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.83rem;
+  margin-bottom: 0.35rem;
+}
+.comparison-bar-label strong {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.comparison-track {
+  display: block;
+  position: relative;
+  height: 18px;
+  background: #edf0eb;
+}
+.comparison-track.difference::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  height: 100%;
+  border-left: 1px solid #6c7871;
+}
+.comparison-track i {
+  display: block;
+  position: absolute;
+  height: 8px;
+  top: 5px;
+  background: #087f7b;
+}
+.comparison-track i.negative {
+  background: #b35031;
+}
+.comparison-track.amount {
+  height: 22px;
+}
+.comparison-track.amount i {
+  top: 12px;
+}
+.comparison-track.amount i.reference {
+  top: 2px;
+  background: #727e87;
+}
+.comparison-values {
+  display: block;
+  font-size: 0.7rem;
+  color: #59675f;
+  margin-top: 0.2rem;
+}
+@media (max-width: 760px) {
+  .budget-ledger-layout {
+    grid-template-columns: 1fr;
+  }
+  .budget-explore,
+  .compact-budget .budget-ledger {
+    padding: 0.8rem;
+  }
+  .budget-ledger-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .comparison-bar-label {
+    font-size: 0.78rem;
+    gap: 0.5rem;
+  }
+  .single-budget-chart .budget-trend {
+    min-height: 180px;
+  }
+}
+
+.budget-page > .page-lead {
+  padding-top: 1.2rem;
+  padding-bottom: 1rem;
+}
+.budget-page > .page-lead h1 {
+  font-size: clamp(1.7rem, 3vw, 2.4rem);
+  margin-bottom: 0.5rem;
+}
+.budget-page > .page-lead > p {
+  max-width: 900px;
+  font-size: 0.95rem;
+  margin: 0.5rem 0;
+}
+.budget-page .reports {
+  padding-top: 0;
+}
+
+@media (max-width: 760px) {
+  .budget-controls label {
+    flex-basis: 130px;
+  }
+}

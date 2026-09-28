@@ -1,4 +1,5 @@
-import { t } from '../i18n'
+import { l, t } from '../i18n'
+import DocumentReader from './DocumentReader'
 import { useData } from './data'
 
 type Pair = {
@@ -48,9 +49,10 @@ export default function LegislativeEvidence() {
               <p lang="sv" className="source-text legislative-excerpt">
                 {pair.proposal_excerpt}
               </p>
-              <a href={pair.proposition_url} target="_blank" rel="noreferrer">
-                {t('Inspect proposal layout ↗\n              ')}
-              </a>
+              <DocumentReader
+                url={pair.proposition_url}
+                title={l('Read the full proposed law', 'Läs hela lagförslaget')}
+              />
             </div>
           </div>
           <p>

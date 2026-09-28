@@ -25,19 +25,23 @@ test('analysis page: county scatter, monthly series, Europe and the models', asy
   await expect(counties.locator('.chart-tooltip')).toBeVisible()
 
   // Month-by-month series switch without a second axis.
+  await page.locator('.topic-tabs a[href="#analysis-months"]').click()
   const months = page.locator('section[aria-labelledby="analysis-months"]')
   await expect(months.locator('polyline')).toHaveCount(3)
   await months.locator('select').selectOption('sick_pay')
   await expect(months.locator('polyline')).toHaveCount(1)
 
   // Sweden and its neighbours in the European Social Survey.
+  await page.locator('.topic-tabs a[href="#analysis-europe"]').click()
   const europe = page.locator('section[aria-labelledby="analysis-europe"]')
   await expect(europe.locator('polyline')).toHaveCount(5)
 
   // The promoted polarization result, and every model with its verdict.
+  await page.locator('.topic-tabs a[href="#analysis-parties"]').click()
   const parties = page.locator('section[aria-labelledby="analysis-parties"]')
   await expect(parties.locator('polyline')).toHaveCount(3)
   await expect(parties.locator('.analysis-eras tbody tr')).toHaveCount(3)
+  await page.locator('.topic-tabs a[href="#analysis-models"]').click()
   await expect(page.locator('.model-card')).toHaveCount(3)
   await expect(
     page.locator('.model-card .status-badge.failing'),

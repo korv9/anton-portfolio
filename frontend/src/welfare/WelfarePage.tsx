@@ -1,3 +1,4 @@
+import TopicNav from '../TopicNav'
 import { Suspense, lazy, useEffect, useMemo, useState } from 'react'
 import { l } from '../i18n'
 import {
@@ -61,7 +62,7 @@ function change(headline: Headline, indicator: Indicator) {
   }
 }
 
-export default function WelfarePage() {
+export default function WelfarePage({ view }: { view: string }) {
   const [indicators, setIndicators] = useState<Indicator[]>([])
   const [headlines, setHeadlines] = useState<Headline[]>([])
   const [counties, setCounties] = useState<CountyYear[]>([])
@@ -153,172 +154,190 @@ export default function WelfarePage() {
       </div>
       {error && <p role="alert">{error}</p>}
 
-      <section
-        className="report welfare-section"
-        aria-labelledby="welfare-headlines"
-      >
-        <p className="eyebrow">
-          {l('Latest national values', 'Senaste värden för riket')}
-        </p>
-        <h2 id="welfare-headlines">{l('Headline indicators', 'Nyckeltal')}</h2>
-        <div className="segmented welfare-domains" role="tablist">
-          {domains.map((key) => (
-            <button
-              key={key}
-              role="tab"
-              aria-selected={domain === key}
-              className={domain === key ? 'active' : ''}
-              onClick={() => setDomain(key)}
-            >
-              {l(...DOMAINS[key])}
-            </button>
-          ))}
-        </div>
-        <div className="welfare-tiles">
-          {tiles.map((headline) => {
-            const indicator = byKey.get(headline.indicator_key)!
-            const delta = change(headline, indicator)
-            return (
-              <article key={headline.indicator_key} className="welfare-tile">
-                <h3>{indicator.indicator_name}</h3>
-                <strong>{formatValue(headline.value, indicator.unit)}</strong>
-                <span className="tile-period">
-                  {headline.period_label}
-                  {headline.age_group_key !== 'ALL' &&
-                    ` · ${headline.age_group_key}`}
-                </span>
-                {headline.ci_low != null && headline.ci_high != null && (
-                  <span className="tile-ci">
-                    95 %: {formatValue(headline.ci_low, indicator.unit)}–
-                    {formatValue(headline.ci_high, indicator.unit)}
-                  </span>
-                )}
-                {delta && (
-                  <span className={`tile-change ${delta.tone}`}>
-                    {delta.text}
-                  </span>
-                )}
-                <small>{indicator.source_name}</small>
-              </article>
-            )
-          })}
-        </div>
-      </section>
-
-      <section
-        className="report welfare-section"
-        aria-labelledby="welfare-counties"
-      >
-        <p className="eyebrow">
-          {l('Counties side by side', 'Länen sida vid sida')}
-        </p>
-        <h2 id="welfare-counties">
-          {l(
-            'Do unemployment, sick leave and mental strain move together?',
-            'Följs arbetslöshet, sjukskrivning och psykisk påfrestning åt?',
-          )}
-        </h2>
-        <p className="welfare-note">
-          {l(
-            'Co-variation between counties, not cause and effect: counties differ in age structure, industry and much else these columns omit. Unemployment carries a margin of error of about ±1-2 points per county.',
-            'Samvariation mellan län, inte orsak och verkan: länen skiljer sig i åldersstruktur, näringsliv och mycket annat som kolumnerna inte visar. Arbetslösheten har en felmarginal på ungefär ±1–2 procentenheter per län.',
-          )}
-        </p>
-        <label className="welfare-year">
-          {l('Year', 'År')}{' '}
-          <select
-            value={year ?? ''}
-            onChange={(event) => setYear(Number(event.target.value))}
-          >
-            {years.map((item) => (
-              <option key={item} value={item}>
-                {item}
-              </option>
+      <TopicNav
+        active={view}
+        items={[
+          ['#sweden', 'Key indicators', 'Nyckeltal'],
+          ['#sweden-counties', 'Compare counties', 'Jämför län'],
+          ['#sweden-explorer', 'Explore indicators', 'Utforska indikatorer'],
+        ]}
+      />
+      {view === '#sweden' && (
+        <section
+          className="report welfare-section"
+          aria-labelledby="welfare-headlines"
+        >
+          <p className="eyebrow">
+            {l('Latest national values', 'Senaste värden för riket')}
+          </p>
+          <h2 id="welfare-headlines">
+            {l('Headline indicators', 'Nyckeltal')}
+          </h2>
+          <div className="segmented welfare-domains" role="tablist">
+            {domains.map((key) => (
+              <button
+                key={key}
+                role="tab"
+                aria-selected={domain === key}
+                className={domain === key ? 'active' : ''}
+                onClick={() => setDomain(key)}
+              >
+                {l(...DOMAINS[key])}
+              </button>
             ))}
-          </select>
-        </label>
-        <div className="table-scroll">
-          <table className="welfare-table">
-            <thead>
-              <tr>
-                <th scope="col">{l('County', 'Län')}</th>
-                {COUNTY_COLUMNS.map((column) => (
-                  <th
-                    scope="col"
-                    key={column.key}
-                    aria-sort={sortKey === column.key ? 'descending' : 'none'}
-                  >
-                    <button onClick={() => setSortKey(column.key)}>
-                      {l(...column.label)}
-                      {sortKey === column.key ? ' ↓' : ''}
-                    </button>
-                    <small>{l(...column.note)}</small>
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((row) => (
-                <tr key={row.region_code}>
-                  <th scope="row">{row.region_name}</th>
-                  {COUNTY_COLUMNS.map((column) => {
-                    const value = row[column.key] as number | null
-                    const [low, high] = extremes[column.key]
-                    const share =
-                      value == null || high === low
-                        ? 0
-                        : (value - low) / (high - low)
-                    return (
-                      <td key={column.key}>
-                        {value == null ? (
-                          <span className="missing">–</span>
-                        ) : (
-                          <>
-                            <span
-                              className="cell-bar"
-                              style={{ width: `${8 + share * 92}%` }}
-                            />
-                            <span className="cell-value">
-                              {value.toLocaleString(undefined, {
-                                maximumFractionDigits: 2,
-                              })}
-                              {column.key === 'unemployment_rate_pct' &&
-                              row.unemployment_rate_moe != null
-                                ? ` ±${row.unemployment_rate_moe}`
-                                : ''}
-                            </span>
-                          </>
-                        )}
-                      </td>
-                    )
-                  })}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
+          </div>
+          <div className="welfare-tiles">
+            {tiles.map((headline) => {
+              const indicator = byKey.get(headline.indicator_key)!
+              const delta = change(headline, indicator)
+              return (
+                <article key={headline.indicator_key} className="welfare-tile">
+                  <h3>{indicator.indicator_name}</h3>
+                  <strong>{formatValue(headline.value, indicator.unit)}</strong>
+                  <span className="tile-period">
+                    {headline.period_label}
+                    {headline.age_group_key !== 'ALL' &&
+                      ` · ${headline.age_group_key}`}
+                  </span>
+                  {headline.ci_low != null && headline.ci_high != null && (
+                    <span className="tile-ci">
+                      95 %: {formatValue(headline.ci_low, indicator.unit)}–
+                      {formatValue(headline.ci_high, indicator.unit)}
+                    </span>
+                  )}
+                  {delta && (
+                    <span className={`tile-change ${delta.tone}`}>
+                      {delta.text}
+                    </span>
+                  )}
+                  <small>{indicator.source_name}</small>
+                </article>
+              )
+            })}
+          </div>
+        </section>
+      )}
 
-      <section
-        className="report welfare-section"
-        aria-labelledby="welfare-explorer"
-      >
-        <p className="eyebrow">
-          {l('Explore every indicator', 'Utforska alla indikatorer')}
-        </p>
-        <h2 id="welfare-explorer">
-          {l('Build your own view', 'Bygg din egen vy')}
-        </h2>
-        {indicators.length ? (
-          <Suspense
-            fallback={<div className="loading">{l('Loading…', 'Laddar…')}</div>}
-          >
-            <WelfareExplorer indicators={indicators} />
-          </Suspense>
-        ) : (
-          <div className="loading">{l('Loading…', 'Laddar…')}</div>
-        )}
-      </section>
+      {view === '#sweden-counties' && (
+        <section
+          className="report welfare-section"
+          aria-labelledby="welfare-counties"
+        >
+          <p className="eyebrow">
+            {l('Counties side by side', 'Länen sida vid sida')}
+          </p>
+          <h2 id="welfare-counties">
+            {l(
+              'Do unemployment, sick leave and mental strain move together?',
+              'Följs arbetslöshet, sjukskrivning och psykisk påfrestning åt?',
+            )}
+          </h2>
+          <p className="welfare-note">
+            {l(
+              'Co-variation between counties, not cause and effect: counties differ in age structure, industry and much else these columns omit. Unemployment carries a margin of error of about ±1-2 points per county.',
+              'Samvariation mellan län, inte orsak och verkan: länen skiljer sig i åldersstruktur, näringsliv och mycket annat som kolumnerna inte visar. Arbetslösheten har en felmarginal på ungefär ±1–2 procentenheter per län.',
+            )}
+          </p>
+          <label className="welfare-year">
+            {l('Year', 'År')}{' '}
+            <select
+              value={year ?? ''}
+              onChange={(event) => setYear(Number(event.target.value))}
+            >
+              {years.map((item) => (
+                <option key={item} value={item}>
+                  {item}
+                </option>
+              ))}
+            </select>
+          </label>
+          <div className="table-scroll">
+            <table className="welfare-table">
+              <thead>
+                <tr>
+                  <th scope="col">{l('County', 'Län')}</th>
+                  {COUNTY_COLUMNS.map((column) => (
+                    <th
+                      scope="col"
+                      key={column.key}
+                      aria-sort={sortKey === column.key ? 'descending' : 'none'}
+                    >
+                      <button onClick={() => setSortKey(column.key)}>
+                        {l(...column.label)}
+                        {sortKey === column.key ? ' ↓' : ''}
+                      </button>
+                      <small>{l(...column.note)}</small>
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((row) => (
+                  <tr key={row.region_code}>
+                    <th scope="row">{row.region_name}</th>
+                    {COUNTY_COLUMNS.map((column) => {
+                      const value = row[column.key] as number | null
+                      const [low, high] = extremes[column.key]
+                      const share =
+                        value == null || high === low
+                          ? 0
+                          : (value - low) / (high - low)
+                      return (
+                        <td key={column.key}>
+                          {value == null ? (
+                            <span className="missing">–</span>
+                          ) : (
+                            <>
+                              <span
+                                className="cell-bar"
+                                style={{ width: `${8 + share * 92}%` }}
+                              />
+                              <span className="cell-value">
+                                {value.toLocaleString(undefined, {
+                                  maximumFractionDigits: 2,
+                                })}
+                                {column.key === 'unemployment_rate_pct' &&
+                                row.unemployment_rate_moe != null
+                                  ? ` ±${row.unemployment_rate_moe}`
+                                  : ''}
+                              </span>
+                            </>
+                          )}
+                        </td>
+                      )
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )}
+
+      {view === '#sweden-explorer' && (
+        <section
+          className="report welfare-section"
+          aria-labelledby="welfare-explorer"
+        >
+          <p className="eyebrow">
+            {l('Explore every indicator', 'Utforska alla indikatorer')}
+          </p>
+          <h2 id="welfare-explorer">
+            {l('Build your own view', 'Bygg din egen vy')}
+          </h2>
+          {indicators.length ? (
+            <Suspense
+              fallback={
+                <div className="loading">{l('Loading…', 'Laddar…')}</div>
+              }
+            >
+              <WelfareExplorer indicators={indicators} />
+            </Suspense>
+          ) : (
+            <div className="loading">{l('Loading…', 'Laddar…')}</div>
+          )}
+        </section>
+      )}
     </div>
   )
 }

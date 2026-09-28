@@ -26,9 +26,13 @@ test('language choice persists across project pages and keeps data controls stab
 
   await page.goto('/#budget-comparison')
   await expect(
-    page.getByRole('heading', { name: 'Vad innehåller budgetförslagen?' }),
+    page.getByRole('heading', {
+      name: 'Jämför förslag, prioriteringar och utfall',
+    }),
   ).toBeVisible()
-  await expect(page.locator('.budget-ledger')).toContainText('Budgetförslag')
+  await expect(page.locator('.budget-ledger')).toContainText(
+    'Partiernas förslag',
+  )
   await page.goto('/#drugcomb')
   await expect(
     page.getByRole('heading', { name: 'Håller prediktionen för något nytt?' }),

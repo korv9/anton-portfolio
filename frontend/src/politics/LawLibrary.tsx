@@ -1,4 +1,4 @@
-import { t } from '../i18n'
+import { l, t } from '../i18n'
 import { useState } from 'react'
 import { count, useData } from './data'
 import LegislativeEvidence from './LegislativeEvidence'
@@ -35,10 +35,24 @@ function LawText({ law }: { law: Law }) {
         <input value={query} onChange={(e) => setQuery(e.target.value)} />
       </label>
       {error && <p role="alert">{error}</p>}
+      {!data && !error && (
+        <p role="status">{l('Loading law text…', 'Laddar lagtext…')}</p>
+      )}
+      {data &&
+        !data.some((p) =>
+          p.text.toLowerCase().includes(query.toLowerCase()),
+        ) && (
+          <p>
+            {l(
+              'No provisions match your search.',
+              'Inga paragrafer matchar sökningen.',
+            )}
+          </p>
+        )}
       {data
         ?.filter((p) => p.text.toLowerCase().includes(query.toLowerCase()))
         .map((p) => (
-          <details key={p.provision_id}>
+          <details key={p.provision_id} open={query ? true : undefined}>
             <summary>{p.label || p.provision_id}</summary>
             <p lang="sv" className="source-text">
               {p.text}

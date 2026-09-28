@@ -1,3 +1,4 @@
+import TopicNav from '../TopicNav'
 import { useEffect, useMemo, useState } from 'react'
 import { l } from '../i18n'
 import MultiLineChart, { type Series } from '../charts/MultiLineChart'
@@ -730,7 +731,7 @@ function ModelRegister({ models }: { models: ModelCard[] }) {
   )
 }
 
-export default function AnalysisPage() {
+export default function AnalysisPage({ view }: { view: string }) {
   const [panel, setPanel] = useState<PanelRow[]>([])
   const [months, setMonths] = useState<MonthRow[]>([])
   const [ess, setEss] = useState<EssRow[]>([])
@@ -783,15 +784,34 @@ export default function AnalysisPage() {
           </a>
         </p>
       </div>
+      <TopicNav
+        active={view === '#analysis' ? '#analysis-counties' : view}
+        items={[
+          ['#analysis-counties', 'Counties', 'Län'],
+          ['#analysis-months', 'Sweden over time', 'Sverige över tid'],
+          ['#analysis-europe', 'Europe', 'Europa'],
+          ['#analysis-parties', 'Party language', 'Partiernas språk'],
+          ['#analysis-models', 'Model evaluation', 'Modellutvärdering'],
+        ]}
+      />
       {error && <p role="alert">{error}</p>}
       {!error && !panel.length && (
         <div className="loading">{l('Loading…', 'Laddar…')}</div>
       )}
-      {panel.length > 0 && <CountySection panel={panel} />}
-      {months.length > 0 && <MonthSection months={months} />}
-      {ess.length > 0 && <EuropeSection ess={ess} />}
-      {polarization && <PolarizationSection data={polarization} />}
-      {models.length > 0 && <ModelRegister models={models} />}
+      {['#analysis', '#analysis-counties'].includes(view) &&
+        panel.length > 0 && <CountySection panel={panel} />}
+      {view === '#analysis-months' && months.length > 0 && (
+        <MonthSection months={months} />
+      )}
+      {view === '#analysis-europe' && ess.length > 0 && (
+        <EuropeSection ess={ess} />
+      )}
+      {view === '#analysis-parties' && polarization && (
+        <PolarizationSection data={polarization} />
+      )}
+      {view === '#analysis-models' && models.length > 0 && (
+        <ModelRegister models={models} />
+      )}
     </div>
   )
 }

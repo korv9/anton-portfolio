@@ -1,4 +1,5 @@
-import { t } from '../i18n'
+import { l, t } from '../i18n'
+import DocumentReader from './DocumentReader'
 import { useState } from 'react'
 import {
   positionFromVotes,
@@ -27,7 +28,14 @@ type Detail = {
     speaker_vote: string | null
   }[]
 }
-function DecisionDetail({ decision }: { decision: Decision }) {
+export function DecisionDetail({
+  decision,
+}: {
+  decision: Pick<
+    Decision,
+    'path' | 'heading' | 'title' | 'designation' | 'point' | 'date'
+  >
+}) {
   const { data, error } = useData<Detail>(decision.path)
   if (error) return <p role="alert">{error}</p>
   if (!data) return <p>{t('Loading source evidence…')}</p>
@@ -41,9 +49,10 @@ function DecisionDetail({ decision }: { decision: Decision }) {
       {data.point ? (
         <>
           <blockquote lang="sv">{data.point.proposal_text}</blockquote>
-          <a href={data.point.source_url} target="_blank" rel="noreferrer">
-            {t('Read the exact committee proposal ↗\n          ')}
-          </a>
+          <DocumentReader
+            url={data.point.source_url}
+            title={l('Full document', 'Hela dokumentet')}
+          />
         </>
       ) : (
         <p>
@@ -91,11 +100,12 @@ function DecisionDetail({ decision }: { decision: Decision }) {
           )}
         </p>
         {data.citations.map((c, i) => (
-          <p key={i}>
-            <a href={c.document_url} target="_blank" rel="noreferrer">
-              {c.document_reference} · {c.document_title} ↗
-            </a>
-          </p>
+          <div key={i}>
+            <DocumentReader
+              url={c.document_url}
+              title={`${c.document_reference} · ${c.document_title}`}
+            />
+          </div>
         ))}
       </details>
       <details>

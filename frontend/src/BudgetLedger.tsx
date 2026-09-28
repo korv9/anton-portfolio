@@ -1,5 +1,7 @@
 import { currentLocale, l, t } from './i18n'
 import { fetchData } from './dataSource'
+import BudgetBars from './charts/BudgetBars'
+import DocumentReader from './politics/DocumentReader'
 import { useEffect, useMemo, useState } from 'react'
 
 export type BudgetLine = {
@@ -56,6 +58,8 @@ export default function BudgetLedger({
   const [year, setYear] = useState('2025/26')
   const [actor, setActor] = useState('S')
   const [selectedArea, setSelectedArea] = useState(9)
+  const [mode, setMode] = useState<'difference' | 'amount'>('difference')
+  const [areaCount, setAreaCount] = useState(7)
   const [context, setContext] = useState<BudgetContextYear[]>([])
   useEffect(() => {
     fetchData('gold/marts/budget-context.json')
@@ -78,6 +82,7 @@ export default function BudgetLedger({
     a === 'GOV' ? -1 : b === 'GOV' ? 1 : a.localeCompare(b),
   )
   const chosen = actors.includes(actor) ? actor : 'GOV'
+  const chartMode = chosen === 'GOV' ? 'amount' : mode
   const own = inYear.filter((row) => row.actor === chosen)
   const government = new Map(
     inYear
@@ -104,19 +109,11 @@ export default function BudgetLedger({
   const top = [...display]
     .filter((item) => item.row)
     .sort((a, b) =>
-      chosen === 'GOV'
+      chartMode === 'amount'
         ? (b.row?.amount_msek ?? 0) - (a.row?.amount_msek ?? 0)
         : Math.abs(b.difference ?? 0) - Math.abs(a.difference ?? 0),
     )
-    .slice(0, 7)
-  const max = Math.max(
-    1,
-    ...top.map((item) =>
-      chosen === 'GOV'
-        ? (item.row?.amount_msek ?? 0)
-        : Math.abs(item.difference ?? 0),
-    ),
-  )
+    .slice(0, areaCount)
   const focus = display.find((item) => item.area === selectedArea)
   const total = own.reduce((sum, row) => sum + row.amount_msek, 0)
   const govTotal = [...government.values()].reduce(
@@ -128,11 +125,14 @@ export default function BudgetLedger({
       className="budget-ledger"
       aria-label={t('Browse budget proposals')}
     >
-      <p className="eyebrow">{t('Budget proposals / the money')}</p>
+      <p className="eyebrow">
+        {l('01 / Party proposals', '01 / Partiernas förslag')}
+      </p>
       <h4>{t('Choose a year and see each proposed spending frame.')}</h4>
       <p>
-        {t(
-          "All amounts below are proposed expenditure by area for the selected budget year. “Difference” means compared with the government's proposal for that same year. It is not a change from the previous year, actual spending or a measure of a party's support in a vote.",
+        {l(
+          'Compare the selected proposal with the government proposal for the same year.',
+          'Jämför valt förslag med regeringens förslag för samma budgetår.',
         )}
       </p>
       <div className="budget-controls">
@@ -174,9 +174,40 @@ export default function BudgetLedger({
             )}
           </select>
         </label>
+        <label>
+          {l('View', 'Visa')}
+          <select
+            value={chartMode}
+            onChange={(e) => setMode(e.target.value as 'difference' | 'amount')}
+            disabled={chosen === 'GOV'}
+          >
+            <option value="difference">
+              {l('Difference vs government', 'Skillnad mot regeringen')}
+            </option>
+            <option value="amount">
+              {l('Amounts side by side', 'Belopp sida vid sida')}
+            </option>
+          </select>
+        </label>
+        <label>
+          {l('Areas', 'Områden')}
+          <select
+            value={areaCount}
+            onChange={(e) => setAreaCount(Number(e.target.value))}
+          >
+            <option value={7}>{l('Largest 7', 'De 7 största')}</option>
+            <option value={27}>{l('All 27', 'Alla 27')}</option>
+          </select>
+        </label>
       </div>
       {selectedContext && (
-        <div className="budget-year-context">
+        <details className="budget-year-context">
+          <summary>
+            {l(
+              'Government, adopted proposal and recorded votes',
+              'Regering, antaget förslag och registrerade röster',
+            )}
+          </summary>
           <div className="budget-context-top">
             <div>
               <span className="eyebrow">
@@ -215,24 +246,14 @@ export default function BudgetLedger({
                   'Regeringens förslag antogs. Beloppen nedan är föreslagna ramar; senare ändringar och utfall är separata.',
                 )}
           </p>
-          <a
-            href={selectedContext.comparison_source_url}
-            target="_blank"
-            rel="noreferrer"
-          >
-            {l(
-              'Read budget alternatives in FiU1 ↗',
-              'Läs budgetalternativen i FiU1 ↗',
-            )}
-          </a>
-          {' · '}
-          <a
-            href={selectedContext.adoption_source_url}
-            target="_blank"
-            rel="noreferrer"
-          >
-            {l('Decision source ↗', 'Källa till beslutet ↗')}
-          </a>
+          <DocumentReader
+            url={selectedContext.comparison_source_url}
+            title={l('Budget alternatives in FiU1', 'Budgetalternativ i FiU1')}
+          />
+          <DocumentReader
+            url={selectedContext.adoption_source_url}
+            title={l('Read the budget decision', 'Läs budgetbeslutet')}
+          />
           {selectedContext.agreement_source_url && (
             <>
               {' '}
@@ -364,7 +385,7 @@ export default function BudgetLedger({
               )}
             </p>
           )}
-        </div>
+        </details>
       )}
       <div className="budget-ledger-summary">
         <div>
@@ -423,36 +444,30 @@ export default function BudgetLedger({
         <div>
           <p className="eyebrow">
             {t(
-              chosen === 'GOV'
+              chartMode === 'amount'
                 ? 'Largest spending areas'
                 : 'Largest differences, either direction',
             )}
           </p>
-          {top.map(({ area, row, difference }) => (
-            <button
-              key={area}
-              className="budget-ledger-bar"
-              aria-pressed={selectedArea === area}
-              onClick={() => setSelectedArea(area)}
-            >
-              <span>
-                <b>{nameOf(area)}</b>
-                <strong>
-                  {chosen === 'GOV'
-                    ? money(row!.amount_msek)
-                    : signed(difference ?? 0)}
-                </strong>
-              </span>
-              <i
-                className={
-                  difference != null && difference < 0 ? 'negative' : ''
-                }
-                style={{
-                  width: `${Math.max(1, ((chosen === 'GOV' ? row!.amount_msek : Math.abs(difference ?? 0)) / max) * 100)}%`,
-                }}
-              />
-            </button>
-          ))}
+          <BudgetBars
+            rows={top.map((item) => ({
+              area: item.area,
+              label: nameOf(item.area),
+              value: item.row!.amount_msek,
+              reference: item.gov?.amount_msek ?? null,
+            }))}
+            mode={chosen === 'GOV' ? 'amount' : mode}
+            selected={selectedArea}
+            onSelect={setSelectedArea}
+            label={l(
+              'Proposed expenditure by area',
+              'Föreslagna utgifter per område',
+            )}
+            valueLabel={
+              chosen === 'GOV' ? l('Government', 'Regeringen') : chosen
+            }
+            referenceLabel={l('Government', 'Regeringen')}
+          />
         </div>
         <aside className="budget-ledger-detail">
           <p className="eyebrow">
@@ -474,15 +489,26 @@ export default function BudgetLedger({
                     : ` · ${signed(focus.difference ?? 0)} relative to government`
                   : ''}
               </p>
-              <a href={focus.row.source_url} target="_blank" rel="noreferrer">
-                {t('Read the parliamentary comparison table ↗')}
-              </a>
+              <DocumentReader
+                url={focus.row.source_url}
+                title={l('Budget document', 'Budgetdokument')}
+              />
             </>
           ) : (
             <p>{t('This proposal has no imported row for this area.')}</p>
           )}
         </aside>
       </div>
+      <details className="budget-method">
+        <summary>
+          {l('How to read the comparison', 'Så läser du jämförelsen')}
+        </summary>
+        <p>
+          {t(
+            "All amounts below are proposed expenditure by area for the selected budget year. “Difference” means compared with the government's proposal for that same year. It is not a change from the previous year, actual spending or a measure of a party's support in a vote.",
+          )}
+        </p>
+      </details>
       <details className="budget-ledger-all">
         <summary>
           {t('View all 27 expenditure areas and source amounts')}

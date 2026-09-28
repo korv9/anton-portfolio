@@ -11,9 +11,11 @@ test('welfare page shows headlines, the county comparison and a working explorer
   await expect(page.locator('.welfare-tile strong').first()).toContainText('%')
 
   // Every county, each with an unemployment figure for the default year.
+  await page.locator('.topic-tabs a[href="#sweden-counties"]').click()
   await expect(page.locator('.welfare-table tbody tr')).toHaveCount(21)
 
   // The explorer reads Parquet in the browser and draws the selection.
+  await page.locator('.topic-tabs a[href="#sweden-explorer"]').click()
   const explorer = page.locator('.welfare-explorer')
   await explorer.scrollIntoViewIfNeeded()
   await expect(explorer.locator('.multi-chart polyline').first()).toBeVisible({

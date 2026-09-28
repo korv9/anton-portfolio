@@ -22,15 +22,18 @@ test('politics now: election, seat calculator, government, decisions and history
   await expect(page.locator('.seat-segment.chosen')).toHaveCount(2)
 
   // The government, with its status and the formation news, and the latest decisions.
+  await page.locator('.topic-tabs a[href="#now-government"]').click()
   await expect(page.locator('.government-facts')).toContainText(
     'Prime minister',
   )
+  await page.locator('.topic-tabs a[href="#now-decisions"]').click()
   await expect(page.locator('.decision-list > li').first()).toBeVisible()
   await expect(page.locator('.decision-list .positions').first()).toContainText(
     /Yes|No/,
   )
 
   // History: elections and polls, party record, and the agreement matrix for any session.
+  await page.locator('.topic-tabs a[href="#now-votes"]').click()
   const record = page.locator('section[aria-labelledby="politics-record"]')
   await expect(record.locator('.multi-chart polyline')).toHaveCount(5)
   await record.locator('select').first().selectOption('attendance_pct')
@@ -42,6 +45,7 @@ test('politics now: election, seat calculator, government, decisions and history
   await expect(matrix).toContainText('NYD')
 
   // Every issue links to its own page.
+  await page.locator('.topic-tabs a[href="#now-issues"]').click()
   await expect(page.locator('.issue-card')).toHaveCount(15)
   await page.locator('.issue-card', { hasText: 'Arbete' }).click()
   await expect(page).toHaveURL(/#issue-arbete/)
@@ -57,6 +61,8 @@ test('an issue page joins decisions, parties, budget, statistics and debate', as
   await expect(page.getByTestId('issue-summary').locator('li')).not.toHaveCount(
     0,
   )
+  await expect(page.locator('.decision-list > li')).toHaveCount(5)
+  await page.getByRole('button', { name: 'Show all 8 decisions' }).click()
   await expect(page.locator('.decision-list > li')).toHaveCount(8)
   await expect(
     page.locator('section[aria-labelledby="issue-parties"] tbody tr'),

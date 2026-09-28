@@ -4,12 +4,15 @@ import AxeBuilder from '@axe-core/playwright'
 test('budget corpus and NLP choices update all comparison data', async ({
   page,
 }) => {
-  await page.goto('/#budget-comparison')
+  await page.goto('/#budget-explore')
   const budget = page.locator('#budget-comparison')
   await budget
-    .getByText('Compare the separate party proposals at a glance')
+    .getByText('All party proposals and their largest changes')
     .click()
-  await budget.getByText('Explore speech keywords beside budget shares').click()
+  await budget
+    .getByText('Debate selection, matching words and coverage')
+    .click()
+  await budget.getByLabel('Chart', { exact: true }).selectOption('parties')
   await expect(budget.locator('.budget-overview-grid article')).toHaveCount(8)
   await expect(budget.locator('.language-audit')).toContainText('98 of 216')
   await budget.getByLabel('Speech corpus').selectOption('issues')

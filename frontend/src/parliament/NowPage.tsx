@@ -1,7 +1,11 @@
+import TopicNav from '../TopicNav'
 import { useEffect, useMemo, useState } from 'react'
 import { l } from '../i18n'
 import MultiLineChart, { type Series } from '../charts/MultiLineChart'
 import SeatBar from './SeatBar'
+import { DecisionDetail } from '../politics/DecisionExplorer'
+import LawLibrary from '../politics/LawLibrary'
+import '../politics/politics.css'
 import PartyPicker, { usePartySlots } from './PartyPicker'
 import {
   PARTY_NAMES,
@@ -88,44 +92,86 @@ export function Positions({
 }
 
 export function DecisionList({ decisions }: { decisions: Decision[] }) {
+  const [selected, setSelected] = useState<string | null>(null)
+  const [showAll, setShowAll] = useState(false)
   return (
-    <ol className="decision-list">
-      {decisions.map((d) => (
-        <li key={d.roll_call_id}>
-          <div className="decision-head">
-            <span className="decision-date">{day(d.vote_date)}</span>
-            <span className="decision-ref">
-              {d.designation} p. {d.point}
-            </span>
-            <span className={`decision-outcome ${d.outcome}`}>
-              {d.outcome === 'yes'
-                ? l('Adopted', 'Bifall')
-                : d.outcome === 'no'
-                  ? l('Rejected', 'Avslag')
-                  : l('Tie', 'Lika')}{' '}
-              {d.yes}–{d.no}
-            </span>
-            {d.government_won != null && (
-              <span className="decision-gov">
-                {d.government_won
-                  ? l('government side won', 'regeringssidan vann')
-                  : l('government side lost', 'regeringssidan förlorade')}
+    <>
+      <ol className="decision-list">
+        {(showAll ? decisions : decisions.slice(0, 5)).map((d) => (
+          <li key={d.roll_call_id}>
+            <div className="decision-head">
+              <span className="decision-date">{day(d.vote_date)}</span>
+              <span className="decision-ref">
+                {d.designation} p. {d.point}
               </span>
+              <span className={`decision-outcome ${d.outcome}`}>
+                {d.outcome === 'yes'
+                  ? l('Adopted', 'Bifall')
+                  : d.outcome === 'no'
+                    ? l('Rejected', 'Avslag')
+                    : l('Tie', 'Lika')}{' '}
+                {d.yes}–{d.no}
+              </span>
+              {d.government_won != null && (
+                <span className="decision-gov">
+                  {d.government_won
+                    ? l('government side won', 'regeringssidan vann')
+                    : l('government side lost', 'regeringssidan förlorade')}
+                </span>
+              )}
+            </div>
+            <button
+              type="button"
+              className="decision-title decision-read"
+              aria-expanded={selected === d.roll_call_id}
+              aria-controls={`decision-${d.roll_call_id}`}
+              onClick={() =>
+                setSelected(selected === d.roll_call_id ? null : d.roll_call_id)
+              }
+            >
+              {d.title ?? d.designation}{' '}
+              <span>
+                {selected === d.roll_call_id
+                  ? l('Close text ↑', 'Stäng text ↑')
+                  : l('Read decision ↓', 'Läs beslut ↓')}
+              </span>
+            </button>
+            {selected === d.roll_call_id && (
+              <div
+                id={`decision-${d.roll_call_id}`}
+                className="inline-decision"
+              >
+                <DecisionDetail
+                  decision={{
+                    path: `decisions/${d.session.replace('/', '-')}/${d.roll_call_id}.json`,
+                    heading: `${d.designation} · ${l('Point', 'Punkt')} ${d.point}`,
+                    title: d.title ?? d.designation,
+                    designation: d.designation,
+                    point: Number(d.point),
+                    date: d.vote_date,
+                  }}
+                />
+              </div>
             )}
-          </div>
-          <p className="decision-title">
-            {d.report_url ? (
-              <a href={d.report_url} target="_blank" rel="noreferrer">
-                {d.title ?? d.designation} ↗
-              </a>
-            ) : (
-              (d.title ?? d.designation)
-            )}
-          </p>
-          {d.party_positions && <Positions positions={d.party_positions} />}
-        </li>
-      ))}
-    </ol>
+            {d.party_positions && <Positions positions={d.party_positions} />}
+          </li>
+        ))}
+      </ol>
+      {decisions.length > 5 && (
+        <button
+          type="button"
+          className="compact-toggle"
+          onClick={() => setShowAll(!showAll)}
+        >
+          {showAll
+            ? l('Show fewer decisions', 'Visa färre beslut')
+            : l(
+                `Show all ${decisions.length} decisions`,
+                `Visa alla ${decisions.length} beslut`,
+              )}
+        </button>
+      )}
+    </>
   )
 }
 
@@ -144,10 +190,12 @@ const RECORD_MEASURES: { key: keyof SessionRecord; label: [string, string] }[] =
   ]
 
 function OverTime({
+  view,
   elections,
   sessions,
   polls,
 }: {
+  view: string
   elections: Elections
   sessions: Sessions
   polls: { survey_month: string; party: string; share_pct: number }[]
@@ -211,171 +259,178 @@ function OverTime({
 
   return (
     <>
-      <section
-        className="report welfare-section"
-        aria-labelledby="politics-elections"
-      >
-        <p className="eyebrow">{l('Elections and polls', 'Val och opinion')}</p>
-        <h2 id="politics-elections">
-          {l(
-            'Support for the parties since 1973',
-            'Partiernas stöd sedan 1973',
-          )}
-        </h2>
-        <PartyPicker
-          parties={PARTY_ORDER.filter((p) => p !== 'NYD')}
-          {...electionSlots}
-        />
-        <MultiLineChart
-          series={electionSeries}
-          label={l('Election results by party', 'Valresultat per parti')}
-          format={(v) => percent(v, 1)}
-          colorOf={electionSlots.colorOf}
-        />
-        <h3 className="analysis-subhead">
-          {l(
-            'Between elections: SCB’s party preference survey',
-            'Mellan valen: SCB:s partisympatiundersökning (PSU)',
-          )}
-        </h3>
-        <MultiLineChart
-          series={pollSeries}
-          label={l('PSU by party', 'PSU per parti')}
-          format={(v) => percent(v, 1)}
-          colorOf={electionSlots.colorOf}
-        />
-        <p className="welfare-note">
-          {l(
-            'Elections: SCB 1973–2022, Valmyndigheten for 2026. PSU is a sample survey every May and November; SCB’s margins of error are around ±1 point for the largest parties. Ny demokrati (1991–1994) is not shown: SCB publishes its seats but counts its votes among other parties.',
-            'Val: SCB 1973–2022, Valmyndigheten för 2026. PSU är en urvalsundersökning varje maj och november; SCB:s felmarginal är omkring ±1 procentenhet för de största partierna. Ny demokrati (1991–1994) visas inte: SCB redovisar partiets mandat men räknar dess röster bland övriga partier.',
-          )}
-        </p>
-      </section>
+      {view === '#now-history' && (
+        <section
+          className="report welfare-section"
+          aria-labelledby="politics-elections"
+        >
+          <p className="eyebrow">
+            {l('Elections and polls', 'Val och opinion')}
+          </p>
+          <h2 id="politics-elections">
+            {l(
+              'Support for the parties since 1973',
+              'Partiernas stöd sedan 1973',
+            )}
+          </h2>
+          <PartyPicker
+            parties={PARTY_ORDER.filter((p) => p !== 'NYD')}
+            {...electionSlots}
+          />
+          <MultiLineChart
+            series={electionSeries}
+            label={l('Election results by party', 'Valresultat per parti')}
+            format={(v) => percent(v, 1)}
+            colorOf={electionSlots.colorOf}
+          />
+          <h3 className="analysis-subhead">
+            {l(
+              'Between elections: SCB’s party preference survey',
+              'Mellan valen: SCB:s partisympatiundersökning (PSU)',
+            )}
+          </h3>
+          <MultiLineChart
+            series={pollSeries}
+            label={l('PSU by party', 'PSU per parti')}
+            format={(v) => percent(v, 1)}
+            colorOf={electionSlots.colorOf}
+          />
+          <p className="welfare-note">
+            {l(
+              'Elections: SCB 1973–2022, Valmyndigheten for 2026. PSU is a sample survey every May and November; SCB’s margins of error are around ±1 point for the largest parties. Ny demokrati (1991–1994) is not shown: SCB publishes its seats but counts its votes among other parties.',
+              'Val: SCB 1973–2022, Valmyndigheten för 2026. PSU är en urvalsundersökning varje maj och november; SCB:s felmarginal är omkring ±1 procentenhet för de största partierna. Ny demokrati (1991–1994) visas inte: SCB redovisar partiets mandat men räknar dess röster bland övriga partier.',
+            )}
+          </p>
+        </section>
+      )}
 
-      <section
-        className="report welfare-section"
-        aria-labelledby="politics-record"
-      >
-        <p className="eyebrow">
-          {l('The Riksdag since 1993', 'Riksdagen sedan 1993')}
-        </p>
-        <h2 id="politics-record">
-          {l(
-            'How the parties have voted, session by session',
-            'Hur partierna har röstat, riksmöte för riksmöte',
-          )}
-        </h2>
-        <div className="slicers">
-          <label className="wide">
-            {l('Measure', 'Mått')}
-            <select
-              value={measure}
-              onChange={(e) =>
-                setMeasure(e.target.value as keyof SessionRecord)
-              }
-            >
-              {RECORD_MEASURES.map((m) => (
-                <option key={m.key} value={m.key}>
-                  {l(...m.label)}
-                </option>
-              ))}
-            </select>
-          </label>
-        </div>
-        <PartyPicker
-          parties={PARTY_ORDER.filter((p) => p !== 'OTHER')}
-          {...recordSlots}
-        />
-        <MultiLineChart
-          series={recordSeries}
-          label={l(...RECORD_MEASURES.find((m) => m.key === measure)!.label)}
-          format={(v) => percent(v, 0)}
-          colorOf={recordSlots.colorOf}
-        />
-        <p className="welfare-note">
-          {l(
-            'Every roll call on a decision since 1993/94 (22,000+), from the Riksdag’s own files. A party’s position is what most of its present members voted. “Voted with the government” compares it with the prime minister’s party. The tooltip says whether the party was in government, in a written agreement with it, or in opposition.',
-            'Varje votering om ett beslut sedan 1993/94 (över 22 000), ur riksdagens egna filer. Ett partis ståndpunkt är vad flest av dess närvarande ledamöter röstade. ”Röstade som regeringen” jämför med statsministerns parti. Verktygstipset visar om partiet satt i regeringen, hade ett skriftligt avtal med den eller var i opposition.',
-          )}
-        </p>
-
-        <h3 className="analysis-subhead">
-          {l('Which parties vote alike?', 'Vilka partier röstar lika?')}
-        </h3>
-        <div className="slicers">
-          <label>
-            {l('Session', 'Riksmöte')}
-            <select
-              value={pairSession}
-              onChange={(e) => setPairSession(e.target.value)}
-            >
-              {sessionList.map((s) => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
-              ))}
-            </select>
-          </label>
-          {session && (
-            <p className="welfare-note pair-context">
-              {session.government_name} ({session.government_parties.join(', ')}
-              ) · {session.roll_calls} {l('roll calls', 'voteringar')}
-            </p>
-          )}
-        </div>
-        <div className="table-scroll">
-          <table
-            className="welfare-table compact agreement-matrix"
-            data-testid="agreement-matrix"
-          >
-            <caption>
-              {l(
-                'Share of decisions on which two parties took the same position',
-                'Andel beslut där två partier tog samma ståndpunkt',
-              )}
-            </caption>
-            <thead>
-              <tr>
-                <th />
-                {pairParties.map((p) => (
-                  <th key={p} scope="col">
-                    {partyLabel(p)}
-                  </th>
+      {view === '#now-votes' && (
+        <section
+          className="report welfare-section"
+          aria-labelledby="politics-record"
+        >
+          <p className="eyebrow">
+            {l('The Riksdag since 1993', 'Riksdagen sedan 1993')}
+          </p>
+          <h2 id="politics-record">
+            {l(
+              'How the parties have voted, session by session',
+              'Hur partierna har röstat, riksmöte för riksmöte',
+            )}
+          </h2>
+          <div className="slicers">
+            <label className="wide">
+              {l('Measure', 'Mått')}
+              <select
+                value={measure}
+                onChange={(e) =>
+                  setMeasure(e.target.value as keyof SessionRecord)
+                }
+              >
+                {RECORD_MEASURES.map((m) => (
+                  <option key={m.key} value={m.key}>
+                    {l(...m.label)}
+                  </option>
                 ))}
-              </tr>
-            </thead>
-            <tbody>
-              {pairParties.map((a) => (
-                <tr key={a}>
-                  <th scope="row">{partyLabel(a)}</th>
-                  {pairParties.map((b) => {
-                    const value = a === b ? null : agreement(a, b)
-                    return (
-                      <td
-                        key={b}
-                        style={
-                          value != null
-                            ? {
-                                background: `rgba(0, 143, 130, ${(value / 100) ** 2 * 0.55})`,
-                              }
-                            : undefined
-                        }
-                      >
-                        {value != null ? Math.round(value) : ''}
-                      </td>
-                    )
-                  })}
+              </select>
+            </label>
+          </div>
+          <PartyPicker
+            parties={PARTY_ORDER.filter((p) => p !== 'OTHER')}
+            {...recordSlots}
+          />
+          <MultiLineChart
+            series={recordSeries}
+            label={l(...RECORD_MEASURES.find((m) => m.key === measure)!.label)}
+            format={(v) => percent(v, 0)}
+            colorOf={recordSlots.colorOf}
+          />
+          <p className="welfare-note">
+            {l(
+              'Every roll call on a decision since 1993/94 (22,000+), from the Riksdag’s own files. A party’s position is what most of its present members voted. “Voted with the government” compares it with the prime minister’s party. The tooltip says whether the party was in government, in a written agreement with it, or in opposition.',
+              'Varje votering om ett beslut sedan 1993/94 (över 22 000), ur riksdagens egna filer. Ett partis ståndpunkt är vad flest av dess närvarande ledamöter röstade. ”Röstade som regeringen” jämför med statsministerns parti. Verktygstipset visar om partiet satt i regeringen, hade ett skriftligt avtal med den eller var i opposition.',
+            )}
+          </p>
+
+          <h3 className="analysis-subhead">
+            {l('Which parties vote alike?', 'Vilka partier röstar lika?')}
+          </h3>
+          <div className="slicers">
+            <label>
+              {l('Session', 'Riksmöte')}
+              <select
+                value={pairSession}
+                onChange={(e) => setPairSession(e.target.value)}
+              >
+                {sessionList.map((s) => (
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
+                ))}
+              </select>
+            </label>
+            {session && (
+              <p className="welfare-note pair-context">
+                {session.government_name} (
+                {session.government_parties.join(', ')}) · {session.roll_calls}{' '}
+                {l('roll calls', 'voteringar')}
+              </p>
+            )}
+          </div>
+          <div className="table-scroll">
+            <table
+              className="welfare-table compact agreement-matrix"
+              data-testid="agreement-matrix"
+            >
+              <caption>
+                {l(
+                  'Share of decisions on which two parties took the same position',
+                  'Andel beslut där två partier tog samma ståndpunkt',
+                )}
+              </caption>
+              <thead>
+                <tr>
+                  <th />
+                  {pairParties.map((p) => (
+                    <th key={p} scope="col">
+                      {partyLabel(p)}
+                    </th>
+                  ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
+              </thead>
+              <tbody>
+                {pairParties.map((a) => (
+                  <tr key={a}>
+                    <th scope="row">{partyLabel(a)}</th>
+                    {pairParties.map((b) => {
+                      const value = a === b ? null : agreement(a, b)
+                      return (
+                        <td
+                          key={b}
+                          style={
+                            value != null
+                              ? {
+                                  background: `rgba(0, 143, 130, ${(value / 100) ** 2 * 0.55})`,
+                                }
+                              : undefined
+                          }
+                        >
+                          {value != null ? Math.round(value) : ''}
+                        </td>
+                      )
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )}
     </>
   )
 }
 
-export default function NowPage() {
+export default function NowPage({ view }: { view: string }) {
   const [now, setNow] = useState<Now | null>(null)
   const [elections, setElections] = useState<Elections | null>(null)
   const [sessions, setSessions] = useState<Sessions | null>(null)
@@ -406,16 +461,6 @@ export default function NowPage() {
   }, [])
 
   const lines = useMemo(() => (now ? summary(now) : []), [now])
-  // A link straight to a section (#now-issues) lands before the data; scroll once it is there.
-  useEffect(() => {
-    if (!issues) return
-    const target = window.location.hash.slice(1)
-    if (target.startsWith('now-'))
-      requestAnimationFrame(() =>
-        document.getElementById(target)?.scrollIntoView({ block: 'start' }),
-      )
-  }, [issues])
-
   return (
     <div className="project-page welfare-page politics-now">
       <div className="page-lead">
@@ -427,25 +472,26 @@ export default function NowPage() {
             'Valet, regeringen, opinionen och vad riksdagen beslutar, samlat på ett ställe och från de officiella källorna: Valmyndigheten, SCB, riksdagen och Regeringskansliet. Uppdateras från källorna; allt länkar tillbaka till dem.',
           )}
         </p>
-        <nav
-          className="welfare-links"
-          aria-label={l('On this page', 'På sidan')}
-        >
-          <a href="#now-election">{l('Election', 'Valet')}</a>
-          <a href="#now-government">{l('Government', 'Regeringen')}</a>
-          <a href="#now-decisions">
-            {l('Latest decisions', 'Senaste besluten')}
-          </a>
-          <a href="#now-issues">{l('Issues', 'Sakfrågor')}</a>
-          <a href="#politics">{l('In depth →', 'Fördjupning →')}</a>
-        </nav>
+        <TopicNav
+          active={view === '#now' ? '#now-election' : view}
+          items={[
+            ['#now-election', 'Election result', 'Valresultat'],
+            ['#now-government', 'Government', 'Regeringen'],
+            ['#now-decisions', 'Decisions', 'Beslut'],
+            ['#now-history', 'Opinion over time', 'Opinion över tid'],
+            ['#now-votes', 'Voting history', 'Rösthistorik'],
+            ['#now-issues', 'Issues', 'Sakfrågor'],
+            ['#now-laws', 'Laws', 'Lagar'],
+            ['#now-depth', 'Sources & details', 'Källor & fördjupning'],
+          ]}
+        />
       </div>
       {error && <p role="alert">{error}</p>}
       {!now && !error && (
         <div className="loading">{l('Loading…', 'Laddar…')}</div>
       )}
 
-      {now && (
+      {now && ['#now', '#now-election'].includes(view) && (
         <section
           className="report welfare-section now-summary"
           aria-label={l('Summary', 'Sammanfattning')}
@@ -459,7 +505,7 @@ export default function NowPage() {
         </section>
       )}
 
-      {now && (
+      {now && ['#now', '#now-election'].includes(view) && (
         <section
           className="report welfare-section"
           aria-labelledby="now-election-heading"
@@ -537,7 +583,7 @@ export default function NowPage() {
         </section>
       )}
 
-      {now && (
+      {now && view === '#now-government' && (
         <section
           className="report welfare-section"
           aria-labelledby="now-government-heading"
@@ -607,7 +653,7 @@ export default function NowPage() {
         </section>
       )}
 
-      {now && (
+      {now && view === '#now-decisions' && (
         <section
           className="report welfare-section"
           aria-labelledby="now-decisions-heading"
@@ -626,11 +672,18 @@ export default function NowPage() {
         </section>
       )}
 
-      {elections && sessions && (
-        <OverTime elections={elections} sessions={sessions} polls={polls} />
-      )}
+      {['#now-history', '#now-votes'].includes(view) &&
+        elections &&
+        sessions && (
+          <OverTime
+            view={view}
+            elections={elections}
+            sessions={sessions}
+            polls={polls}
+          />
+        )}
 
-      {issues && (
+      {view === '#now-issues' && issues && (
         <section
           className="report welfare-section"
           aria-labelledby="now-issues-heading"
@@ -667,68 +720,80 @@ export default function NowPage() {
         </section>
       )}
 
-      <section className="report welfare-section" aria-labelledby="now-depth">
-        <p className="eyebrow">{l('In depth', 'Fördjupning')}</p>
-        <h2 id="now-depth">{l('The full records', 'Hela underlaget')}</h2>
-        <ul className="depth-links">
-          <li>
-            <a href="#politics">
-              {l(
-                'From words to decisions: debates, votes and laws',
-                'Från ord till beslut: debatter, voteringar och lagar',
-              )}
-            </a>
-          </li>
-          <li>
-            <a href="#politics-votes">
-              {l(
-                'Every member’s vote, recent sessions',
-                'Varje ledamots röst, senaste riksmötena',
-              )}
-            </a>
-          </li>
-          <li>
-            <a href="#budget-comparison">
-              {l(
-                'The budget: government and party proposals',
-                'Budgeten: regeringens och partiernas förslag',
-              )}
-            </a>
-          </li>
-          <li>
-            <a href="#budget-outturn">
-              {l(
-                'What was budgeted, and what was spent',
-                'Vad som budgeterades, och vad som användes',
-              )}
-            </a>
-          </li>
-          <li>
-            <a href="#debates">
-              {l(
-                'Search 250,000 speeches since 1993',
-                'Sök bland 250 000 tal sedan 1993',
-              )}
-            </a>
-          </li>
-          <li>
-            <a href="#taxes">
-              {l(
-                'Taxes: what Sweden collects, and a calculator for yours',
-                'Skatter: vad Sverige tar in, och en räknare för din skatt',
-              )}
-            </a>
-          </li>
-          <li>
-            <a href="#sweden">
-              {l(
-                'How Sweden is doing: welfare data',
-                'Hur mår Sverige: välfärdsdata',
-              )}
-            </a>
-          </li>
-        </ul>
-      </section>
+      {view === '#now-laws' && (
+        <section className="report welfare-section" id="now-laws">
+          <details className="inline-law-library" open>
+            <summary>
+              {l('Read laws on this page', 'Läs lagarna direkt på sidan')}
+            </summary>
+            <LawLibrary />
+          </details>
+        </section>
+      )}
+      {view === '#now-depth' && (
+        <section className="report welfare-section" aria-labelledby="now-depth">
+          <p className="eyebrow">{l('In depth', 'Fördjupning')}</p>
+          <h2 id="now-depth">{l('The full records', 'Hela underlaget')}</h2>
+          <ul className="depth-links">
+            <li>
+              <a href="#politics">
+                {l(
+                  'From words to decisions: debates, votes and laws',
+                  'Från ord till beslut: debatter, voteringar och lagar',
+                )}
+              </a>
+            </li>
+            <li>
+              <a href="#politics-votes">
+                {l(
+                  'Every member’s vote, recent sessions',
+                  'Varje ledamots röst, senaste riksmötena',
+                )}
+              </a>
+            </li>
+            <li>
+              <a href="#budget-comparison">
+                {l(
+                  'The budget: government and party proposals',
+                  'Budgeten: regeringens och partiernas förslag',
+                )}
+              </a>
+            </li>
+            <li>
+              <a href="#budget-outturn">
+                {l(
+                  'What was budgeted, and what was spent',
+                  'Vad som budgeterades, och vad som användes',
+                )}
+              </a>
+            </li>
+            <li>
+              <a href="#debates">
+                {l(
+                  'Search 250,000 speeches since 1993',
+                  'Sök bland 250 000 tal sedan 1993',
+                )}
+              </a>
+            </li>
+            <li>
+              <a href="#taxes">
+                {l(
+                  'Taxes: what Sweden collects, and a calculator for yours',
+                  'Skatter: vad Sverige tar in, och en räknare för din skatt',
+                )}
+              </a>
+            </li>
+            <li>
+              <a href="#sweden">
+                {l(
+                  'How Sweden is doing: welfare data',
+                  'Hur mår Sverige: välfärdsdata',
+                )}
+              </a>
+            </li>
+          </ul>
+        </section>
+      )}
     </div>
   )
 }
