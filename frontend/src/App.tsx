@@ -31,6 +31,7 @@ const IssuePage = lazy(() => import('./parliament/IssuePage'))
 const TaxesPage = lazy(() => import('./taxes/TaxesPage'))
 const DataModelPage = lazy(() => import('./datamodel/DataModelPage'))
 const PartiesPage = lazy(() => import('./parties/PartiesPage'))
+const JobMarketPage = lazy(() => import('./jobs/JobMarketPage'))
 
 type UmapPoint = {
   chunk_id: string
@@ -301,7 +302,11 @@ function pageFromHash(hash: string) {
     ].includes(hash)
   )
     return 'politics'
-  if (['#job-market', '#job-data'].includes(hash)) return 'jobs'
+  if (
+    ['#job-market', '#job-data'].includes(hash) ||
+    hash.startsWith('#job-market-')
+  )
+    return 'jobs'
   if (['#drugcomb', '#drugcomb-data'].includes(hash)) return 'drugcomb'
   if (hash === '#rfc-drift') return 'allegoria'
   if (hash === '#thesis') return 'thesis'
@@ -1147,182 +1152,207 @@ function App() {
               </div>
             </div>
           )}
-          {page === 'jobs' && (
-            <div className="project-page">
-              <div className="page-lead">
-                <p className="eyebrow">{t('Swedish Job Market Analytics')}</p>
-                <h1>{t('Swedish job market.')}</h1>
-                <p>
-                  {t(
-                    'Historical job-ad data, with clear definitions and a view of how software and data roles changed.',
-                  )}
-                </p>
-              </div>
-              <div className="reports">
-                <article className="report" id="job-market">
-                  <ReportHeader
-                    number="02"
-                    eyebrow="Labour market & technology"
-                    title={t('What is happening to tech jobs?')}
-                    intro="A compact view of ad volume, junior openings and technologies mentioned in Swedish job ads."
-                    source="JobTech Historical Ads"
-                    period={
-                      jobYears.length
-                        ? `${jobYears[0]}–${jobYears.at(-1)}`
-                        : '…'
-                    }
-                    unit="Unique ad IDs"
+          {page === 'jobs' &&
+            !['#job-market-tech', '#job-data'].includes(hash) && (
+              <Suspense
+                fallback={<div className="loading">{t('Loading…')}</div>}
+              >
+                <JobMarketPage view={hash} />
+              </Suspense>
+            )}
+          {page === 'jobs' &&
+            ['#job-market-tech', '#job-data'].includes(hash) && (
+              <div className="project-page">
+                <div className="page-lead">
+                  <p className="eyebrow">{t('Swedish Job Market Analytics')}</p>
+                  <h1>{t('Swedish job market.')}</h1>
+                  <p>
+                    {t(
+                      'Historical job-ad data, with clear definitions and a view of how software and data roles changed.',
+                    )}
+                  </p>
+                  <TopicNav
+                    active="#job-market-tech"
+                    items={[
+                      ['#job-market', 'Overview', 'Översikt'],
+                      ['#job-market-occupations', 'Occupations', 'Yrken'],
+                      ['#job-market-regions', 'Counties', 'Län'],
+                      ['#job-market-conditions', 'Conditions', 'Villkor'],
+                      ['#job-market-tech', 'IT report', 'IT-rapport'],
+                    ]}
                   />
-                  <div className="kpis jobs-kpis">
-                    <div>
-                      <strong>
-                        {jobKpis ? formatNumber(jobKpis.ads_total) : '—'}
-                      </strong>
-                      <span>{t('ads in the sample')}</span>
-                    </div>
-                    <div>
-                      <strong>
-                        {jobKpis ? formatNumber(jobKpis.employers_unique) : '—'}
-                      </strong>
-                      <span>{t('unique employers')}</span>
-                    </div>
-                    <div>
-                      <strong>
-                        {jobKpis
-                          ? formatSignedPercent(jobKpis.software_change_pct)
-                          : '—'}
-                      </strong>
-                      <span>
-                        {t('developer ads')}
-                        {jobKpis
-                          ? `, ${jobKpis.baseline_year}–${String(jobKpis.comparison_year).slice(2)}`
-                          : ''}
-                      </span>
-                    </div>
-                    <div>
-                      <strong>
-                        {jobKpis
-                          ? `${jobKpis.junior_share_pct.toFixed(1)}%`
-                          : '—'}
-                      </strong>
-                      <span>{t('junior share')}</span>
-                    </div>
-                  </div>
-                  <div className="viz-shell">
-                    <div className="viz-toolbar">
+                </div>
+                <div className="reports">
+                  <article className="report" id="job-market">
+                    <ReportHeader
+                      number="02"
+                      eyebrow="Labour market & technology"
+                      title={t('What is happening to tech jobs?')}
+                      intro="A compact view of ad volume, junior openings and technologies mentioned in Swedish job ads."
+                      source="JobTech Historical Ads"
+                      period={
+                        jobYears.length
+                          ? `${jobYears[0]}–${jobYears.at(-1)}`
+                          : '…'
+                      }
+                      unit="Unique ad IDs"
+                    />
+                    <div className="kpis jobs-kpis">
                       <div>
-                        <span className="control-label">
-                          {t('Role family')}
+                        <strong>
+                          {jobKpis ? formatNumber(jobKpis.ads_total) : '—'}
+                        </strong>
+                        <span>{t('ads in the sample')}</span>
+                      </div>
+                      <div>
+                        <strong>
+                          {jobKpis
+                            ? formatNumber(jobKpis.employers_unique)
+                            : '—'}
+                        </strong>
+                        <span>{t('unique employers')}</span>
+                      </div>
+                      <div>
+                        <strong>
+                          {jobKpis
+                            ? formatSignedPercent(jobKpis.software_change_pct)
+                            : '—'}
+                        </strong>
+                        <span>
+                          {t('developer ads')}
+                          {jobKpis
+                            ? `, ${jobKpis.baseline_year}–${String(jobKpis.comparison_year).slice(2)}`
+                            : ''}
                         </span>
-                        <div className="role-tabs">
-                          {roles.map((item) => (
-                            <button
-                              key={item}
-                              className={role === item ? 'active' : ''}
-                              onClick={() => setRole(item)}
-                            >
-                              {t(item)}
-                            </button>
+                      </div>
+                      <div>
+                        <strong>
+                          {jobKpis
+                            ? `${jobKpis.junior_share_pct.toFixed(1)}%`
+                            : '—'}
+                        </strong>
+                        <span>{t('junior share')}</span>
+                      </div>
+                    </div>
+                    <div className="viz-shell">
+                      <div className="viz-toolbar">
+                        <div>
+                          <span className="control-label">
+                            {t('Role family')}
+                          </span>
+                          <div className="role-tabs">
+                            {roles.map((item) => (
+                              <button
+                                key={item}
+                                className={role === item ? 'active' : ''}
+                                onClick={() => setRole(item)}
+                              >
+                                {t(item)}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="job-chart-head">
+                        <div>
+                          <p className="eyebrow">{t('New ads per month')}</p>
+                          <h3>{t(role)}</h3>
+                        </div>
+                        <div className="year-totals">
+                          {selectedAnnual.map((value, index) => (
+                            <span key={jobYears[index]}>
+                              <small>{jobYears[index]}</small>
+                              <strong>{formatNumber(value)}</strong>
+                            </span>
                           ))}
                         </div>
                       </div>
+                      {monthly.length ? (
+                        <JobsChart rows={monthly} role={role} />
+                      ) : reportError ? (
+                        <p role="alert">{reportError}</p>
+                      ) : (
+                        <div className="loading">
+                          {t('Loading report data…')}
+                        </div>
+                      )}
                     </div>
-                    <div className="job-chart-head">
-                      <div>
-                        <p className="eyebrow">{t('New ads per month')}</p>
-                        <h3>{t(role)}</h3>
+                    <div className="reading-grid compact-reading">
+                      <div className="finding">
+                        <p className="eyebrow">{t('Main observation')}</p>
+                        <h3>
+                          {jobKpis &&
+                          jobKpis.junior_software_change_pct <
+                            jobKpis.software_change_pct
+                            ? t(
+                                'Junior openings fell faster than total volume.',
+                              )
+                            : t('Junior openings compared with total volume.')}
+                        </h3>
+                        <p>
+                          {jobKpis
+                            ? currentLocale() === 'sv'
+                              ? `Juniora mjukvaruannonser gick från ${formatNumber(jobKpis.junior_software_baseline)} år ${jobKpis.baseline_year} till ${formatNumber(jobKpis.junior_software_comparison)} år ${jobKpis.comparison_year}: ${formatSignedPercent(jobKpis.junior_software_change_pct)}, jämfört med ${formatSignedPercent(jobKpis.software_change_pct)} för alla mjukvaruannonser.`
+                              : `Junior software ads went from ${formatNumber(jobKpis.junior_software_baseline)} in ${jobKpis.baseline_year} to ${formatNumber(jobKpis.junior_software_comparison)} in ${jobKpis.comparison_year}: ${formatSignedPercent(jobKpis.junior_software_change_pct)}, compared with ${formatSignedPercent(jobKpis.software_change_pct)} for all software ads.`
+                            : t('Loading the job-market summary…')}
+                        </p>
                       </div>
-                      <div className="year-totals">
-                        {selectedAnnual.map((value, index) => (
-                          <span key={jobYears[index]}>
-                            <small>{jobYears[index]}</small>
-                            <strong>{formatNumber(value)}</strong>
-                          </span>
+                      <div className="tech-bars">
+                        <p className="eyebrow">
+                          {t('Most mentioned in data ads')}
+                        </p>
+                        {topTech.slice(0, 7).map((tech) => (
+                          <div key={tech.technology}>
+                            <span>{tech.technology}</span>
+                            <span className="bar">
+                              <i
+                                style={{
+                                  width: `${(tech.share_pct / topTech[0].share_pct) * 100}%`,
+                                }}
+                              />
+                            </span>
+                            <strong>
+                              {tech.share_pct.toLocaleString(
+                                currentLocale() === 'sv' ? 'sv-SE' : 'en-GB',
+                                { maximumFractionDigits: 1 },
+                              )}
+                              %
+                            </strong>
+                          </div>
                         ))}
                       </div>
                     </div>
-                    {monthly.length ? (
-                      <JobsChart rows={monthly} role={role} />
-                    ) : reportError ? (
-                      <p role="alert">{reportError}</p>
-                    ) : (
-                      <div className="loading">{t('Loading report data…')}</div>
-                    )}
-                  </div>
-                  <div className="reading-grid compact-reading">
-                    <div className="finding">
-                      <p className="eyebrow">{t('Main observation')}</p>
-                      <h3>
-                        {jobKpis &&
-                        jobKpis.junior_software_change_pct <
-                          jobKpis.software_change_pct
-                          ? t('Junior openings fell faster than total volume.')
-                          : t('Junior openings compared with total volume.')}
-                      </h3>
-                      <p>
-                        {jobKpis
-                          ? currentLocale() === 'sv'
-                            ? `Juniora mjukvaruannonser gick från ${formatNumber(jobKpis.junior_software_baseline)} år ${jobKpis.baseline_year} till ${formatNumber(jobKpis.junior_software_comparison)} år ${jobKpis.comparison_year}: ${formatSignedPercent(jobKpis.junior_software_change_pct)}, jämfört med ${formatSignedPercent(jobKpis.software_change_pct)} för alla mjukvaruannonser.`
-                            : `Junior software ads went from ${formatNumber(jobKpis.junior_software_baseline)} in ${jobKpis.baseline_year} to ${formatNumber(jobKpis.junior_software_comparison)} in ${jobKpis.comparison_year}: ${formatSignedPercent(jobKpis.junior_software_change_pct)}, compared with ${formatSignedPercent(jobKpis.software_change_pct)} for all software ads.`
-                          : t('Loading the job-market summary…')}
-                      </p>
-                    </div>
-                    <div className="tech-bars">
-                      <p className="eyebrow">
-                        {t('Most mentioned in data ads')}
-                      </p>
-                      {topTech.slice(0, 7).map((tech) => (
-                        <div key={tech.technology}>
-                          <span>{tech.technology}</span>
-                          <span className="bar">
-                            <i
-                              style={{
-                                width: `${(tech.share_pct / topTech[0].share_pct) * 100}%`,
-                              }}
-                            />
-                          </span>
-                          <strong>
-                            {tech.share_pct.toLocaleString(
-                              currentLocale() === 'sv' ? 'sv-SE' : 'en-GB',
-                              { maximumFractionDigits: 1 },
-                            )}
-                            %
-                          </strong>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  <details className="method">
-                    <summary>{t('Definitions & limitations')}</summary>
-                    <div>
-                      <p>
-                        {t(
-                          'Documented text rules define role families and detect technology mentions. A mention may be optional or negated.',
-                        )}
-                      </p>
-                      <p>
-                        {t(
-                          'An ad is not a hire. The archive may not cover every Swedish vacancy, and title-based seniority is an approximation.',
-                        )}
-                      </p>
-                      <a
-                        href="https://github.com/korv9/swedish-job-market-analytics"
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        {t('Code and methodology on GitHub ↗')}
-                      </a>
-                    </div>
-                  </details>
-                </article>
+                    <details className="method">
+                      <summary>{t('Definitions & limitations')}</summary>
+                      <div>
+                        <p>
+                          {t(
+                            'Documented text rules define role families and detect technology mentions. A mention may be optional or negated.',
+                          )}
+                        </p>
+                        <p>
+                          {t(
+                            'An ad is not a hire. The archive may not cover every Swedish vacancy, and title-based seniority is an approximation.',
+                          )}
+                        </p>
+                        <a
+                          href="https://github.com/korv9/swedish-job-market-analytics"
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          {t('Code and methodology on GitHub ↗')}
+                        </a>
+                      </div>
+                    </details>
+                  </article>
+                </div>
+                <ProjectDataDisclosure
+                  title={t('Job ad tables and definitions')}
+                  initialDataset="fact_job_month_role"
+                  sectionId="job-data"
+                />
               </div>
-              <ProjectDataDisclosure
-                title={t('Job ad tables and definitions')}
-                initialDataset="fact_job_month_role"
-                sectionId="job-data"
-              />
-            </div>
-          )}
+            )}
           {page === 'drugcomb' && (
             <div className="project-page">
               <div className="page-lead">

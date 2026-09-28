@@ -1,8 +1,12 @@
 name: Refresh job-market data
 
-# JobTech publishes one archive per year, some months after the year ends. Monthly, this
-# checks whether a year newer than the site's data has appeared; only then does it rebuild
-# the report from every archive (several GB, so it does not run otherwise).
+# JobTech publishes one archive per year, some months after the year ends, and one per
+# quarter for the current year. Monthly, this:
+#  - counts every ad in any archive from 2020 that is new or changed (the whole job market,
+#    ingest_market.py; the counts are cached, so unchanged archives are not downloaded) and
+#    rebuilds jobs/market.json;
+#  - checks whether a year newer than the IT report's data has appeared; only then does it
+#    rebuild that report from every archive (several GB, so it does not run otherwise).
 
 on:
   schedule:
@@ -37,6 +41,24 @@ jobs:
           cache: pip
           cache-dependency-path: platform/requirements.txt
       - run: pip install -r platform/requirements.txt
+      - name: Restore the whole-market counts
+        uses: actions/cache/restore@v4
+        with:
+          path: warehouse/raw/jobtech/market
+          key: jobtech-market-${{ github.run_id }}
+          restore-keys: jobtech-market-
+      - name: Count new or changed archives (whole job market)
+        run: |
+          python platform/ingest/jobtech/ingest_market.py
+          cd platform
+          dbt build --profiles-dir . --select tag:market
+          cd ..
+          python platform/publish/export_market.py
+      - name: Save the whole-market counts
+        uses: actions/cache/save@v4
+        with:
+          path: warehouse/raw/jobtech/market
+          key: jobtech-market-${{ github.run_id }}
       - name: Is there a newer archive year?
         id: check
         run: |
@@ -54,7 +76,6 @@ jobs:
           npm run data:check
       - name: Commit changed delivery files
         id: commit
-        if: steps.check.outputs.run == 'true'
         run: |
           git config user.name 'data-refresh[bot]'
           git config user.email 'data-refresh@users.noreply.github.com'
@@ -62,7 +83,7 @@ jobs:
           if git diff --cached --quiet; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
           else
-            git commit -m "data: rebuild job market from JobTech archives (run ${GITHUB_RUN_ID})"
+            git commit -m "data: refresh job market from JobTech archives (run ${GITHUB_RUN_ID})"
             git push
             echo "changed=true" >> "$GITHUB_OUTPUT"
           fi

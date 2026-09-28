@@ -1,0 +1,66 @@
+version: 2
+
+# The whole job market since 2020, from counts of every ad in JobTech's archives
+# (platform/ingest/jobtech/ingest_market.py). An ad is not a hire, and one ad can seek several
+# people: vacancies counts an ad without a number as one.
+
+models:
+  - name: dim_market_field
+    description: Occupation fields (yrkesområden), with their latest label.
+    columns:
+      - name: field_id
+        data_tests: [not_null, unique]
+      - name: field
+        data_tests: [not_null]
+  - name: dim_market_occupation_group
+    description: Occupation groups (SSYK 4) as the ads name them, each in its occupation field.
+    columns:
+      - name: group_id
+        data_tests: [not_null, unique]
+      - name: occupation_group
+        data_tests: [not_null]
+      - name: field_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_market_field')
+                field: field_id
+  - name: mart_market_field_monthly
+    description: New ads and vacancies per month and occupation field; field_id 'all' is the whole market.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [month, field_id]
+    columns:
+      - name: ads
+        data_tests: [not_null]
+  - name: mart_market_occupation_yearly
+    description: Ads per occupation group and year, in full and over the months the latest year covers (ads_ytd), with the year before over the same months.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [year, group_id]
+    columns:
+      - name: group_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_market_occupation_group')
+                field: group_id
+  - name: mart_market_region_yearly
+    description: Ads per county, occupation field and year; field_id 'all' is every field together.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [year, region, field_id]
+  - name: mart_market_conditions_yearly
+    description: Ads per occupation field and year by employment type, working hours and required experience; field_id 'all' is every field together.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [year, field_id, employment_type, working_hours, experience_required]
+  - name: mart_market_archives
+    description: The archives counted, with their source URL, SHA-256 and number of ads.
+    columns:
+      - name: archive
+        data_tests: [not_null, unique]

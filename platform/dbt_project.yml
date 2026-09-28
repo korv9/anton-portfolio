@@ -22,6 +22,8 @@ models:
       +schema: bronze
       jobs:
         +tags: [jobs]
+      market:
+        +tags: [market]
       parliament:
         +tags: [parliament]
       politics:
@@ -44,6 +46,8 @@ models:
       +schema: gold
       jobs:
         +tags: [jobs]
+      market:
+        +tags: [market]
       parliament:
         +tags: [parliament]
       politics:

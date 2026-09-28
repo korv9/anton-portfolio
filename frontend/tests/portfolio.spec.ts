@@ -28,7 +28,7 @@ test('home introduces Anton and routes to each project', async ({
     'Swedish politics',
   )
   await expect(page.locator('.page-tabs a')).toHaveCount(5)
-  await page.goto('/#job-market')
+  await page.goto('/#job-market-tech')
   await expect(page.locator('#job-market')).toBeVisible()
   await expect(page.getByText('35,726', { exact: true })).toBeVisible()
   await page.goto('/#drugcomb')
@@ -52,7 +52,7 @@ test('language map and job chart retain useful controls', async ({ page }) => {
   await expect(page.locator('.umap-guide')).toContainText(
     'not agreement or a political position',
   )
-  await page.goto('/#job-market')
+  await page.goto('/#job-market-tech')
   await page.getByRole('button', { name: 'Data Engineer', exact: true }).click()
   await expect(page.locator('.job-chart-head')).toContainText('Data Engineer')
   await expect(page.locator('.year-totals')).toContainText('628')
