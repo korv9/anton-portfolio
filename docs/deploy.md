@@ -9,6 +9,22 @@ Cloudflare builds the site itself from this repository (Workers Builds): every p
 is published, including the data commits the refresh workflows make, and every other branch and
 pull request gets a preview URL on `workers.dev`. No workflow here deploys.
 
+## Branches: dev and main
+
+| Branch | Role | Address |
+|---|---|---|
+| `main` | Production: what visitors see | `antonernstsson.com` (and `anton-portfolio.anton-ernstson.workers.dev`) |
+| `dev` | Everything new lands here first, to be checked before it goes live | `dev-anton-portfolio.anton-ernstson.workers.dev` (Cloudflare's preview alias for the branch) |
+
+1. Work happens on a feature branch, with a pull request into `dev`. CI must be green; the
+   pull request gets its own preview URL from Cloudflare.
+2. Merged into `dev`, the change is on the `dev` preview address.
+3. When `dev` is ready, a pull request from `dev` into `main` releases it. Only the owner
+   approves that merge.
+4. The data refreshes commit to `main` (fresh data goes live directly). After a release, or
+   when `main` has data commits `dev` lacks, `main` is merged into `dev` so the two do not
+   drift.
+
 ## In the repository
 
 | File | Purpose |
@@ -48,7 +64,11 @@ on `workers.dev` and in previews without configuration.
      (Settings → Secrets and variables → Actions → Variables) and run `npm run data:catalog`
      with it exported, so `delivery.json` points at the domain; commit it;
    - once the site reads from the domain, turn off the bucket's `r2.dev` URL.
-5. **Refresh secrets.** Settings → Secrets and variables → Actions → Secrets:
+5. **Scheduled refreshes.** The schedules in `refresh-welfare.yml` (daily), `refresh-news.yml`
+   (every three hours) and `refresh-jobs.yml` (monthly) are commented out until the secrets
+   below are set; uncomment the `schedule:` lines to switch them on. They can be run by hand
+   from the Actions tab meanwhile.
+6. **Refresh secrets.** Settings → Secrets and variables → Actions → Secrets:
    `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET` (an R2 API token
    with read and write on the bucket). Without them the daily refresh stops at its first step
    and the news collection does nothing.

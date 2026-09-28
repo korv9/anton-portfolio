@@ -10,8 +10,10 @@ name: Refresh public data
 # (docs/deploy.md), so the workflow does not deploy itself.
 
 on:
-  schedule:
-    - cron: '37 4 * * *'
+  # Paused until the R2 secrets are set and the daily updates are switched on (docs/deploy.md).
+  # To resume, uncomment the two lines below. Runs by hand (workflow_dispatch) still work.
+  # schedule:
+  #   - cron: '37 4 * * *'
   workflow_dispatch:
 
 permissions:
