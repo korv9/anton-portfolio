@@ -36,7 +36,8 @@ test('taxes: Sweden by type, other countries, and a calculator that responds', a
 
   // What the decisions since 2006 did to this tax, year by year, tied to the decisions.
   const changes = page.getByTestId('tax-changes')
-  await expect(changes.locator('tbody tr')).toHaveCount(20)
+  // One row per year after the first (2007-2026 today); a new year's rules add a row.
+  expect(await changes.locator('tbody tr').count()).toBeGreaterThanOrEqual(20)
   await expect(changes).toContainText('In-work tax credit')
   // VAT for a household, and the fuel decisions for the litres entered.
   await expect(

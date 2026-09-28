@@ -9,16 +9,21 @@ Cloudflare builds the site itself from this repository (Workers Builds): every p
 is published, including the data commits the refresh workflows make, and every other branch and
 pull request gets a preview URL on `workers.dev`. No workflow here deploys.
 
-## Branches: dev and main
+## Branches and sites: dev and main
 
-| Branch | Role | Address |
+Two Workers build from the same repository, one per branch:
+
+| Branch | Worker | Address |
 |---|---|---|
-| `main` | Production: what visitors see | `antonernstsson.com` (and `anton-portfolio.anton-ernstson.workers.dev`) |
-| `dev` | Everything new lands here first, to be checked before it goes live | `dev-anton-portfolio.anton-ernstson.workers.dev` (Cloudflare's preview alias for the branch) |
+| `main` | `anton-portfolio`: production, what visitors see | `antonernstsson.com`, `www.antonernstsson.com`, `anton-portfolio.anton-ernstson.workers.dev` |
+| `dev` | `anton-portfolio-dev`: everything new lands here first | `anton-portfolio-dev.anton-ernstson.workers.dev` (and `dev.antonernstsson.com` if connected) |
 
-1. Work happens on a feature branch, with a pull request into `dev`. CI must be green; the
-   pull request gets its own preview URL from Cloudflare.
-2. Merged into `dev`, the change is on the `dev` preview address.
+The dev Worker uses the same `wrangler.toml` with the deploy command
+`npx wrangler deploy --name anton-portfolio-dev`, so nothing in the repository differs between
+the two.
+
+1. Work happens on a feature branch, with a pull request into `dev`; CI must be green.
+2. Merged into `dev`, the change is on the dev site.
 3. When `dev` is ready, a pull request from `dev` into `main` releases it. Only the owner
    approves that merge.
 4. The data refreshes commit to `main` (fresh data goes live directly). After a release, or
@@ -42,7 +47,8 @@ on `workers.dev` and in previews without configuration.
 
 1. **Domain.** Cloudflare → Domain Registration → register `antonernstsson.com`. Its DNS is
    then on Cloudflare, which the custom domains below need.
-2. **Worker.** Workers & Pages → Create → Import a repository → `korv9/anton-portfolio`:
+2. **Workers.** Workers & Pages → Create → Import a repository → `korv9/anton-portfolio`, once
+   for production:
    - project name `anton-portfolio` (must match `name` in `wrangler.toml`)
    - build command `npm run build`
    - deploy command `npx wrangler deploy`
@@ -50,7 +56,11 @@ on `workers.dev` and in previews without configuration.
    - path `/`, API token: create new
 
    The build publishes to `https://anton-portfolio.anton-ernstson.workers.dev`, which is
-   also allowed in `r2-cors.json`.
+   also allowed in `r2-cors.json`. Check under Settings → Build that the production branch is
+   `main`.
+
+   And once for dev: project name `anton-portfolio-dev`, production branch `dev`, build
+   command `npm run build`, deploy command `npx wrangler deploy --name anton-portfolio-dev`.
 3. **Domain on the site.** The Worker → Settings → Domains & Routes → Add → Custom domain:
    `antonernstsson.com`, and `www.antonernstsson.com`. To send `www` to the bare domain, add a
    redirect rule: Rules → Redirect Rules → hostname equals `www.antonernstsson.com` → dynamic
