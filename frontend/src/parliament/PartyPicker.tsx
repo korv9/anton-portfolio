@@ -1,44 +1,33 @@
 import { useState } from 'react'
 import { l } from '../i18n'
-import { MAX_SERIES, SERIES_COLORS } from '../charts/MultiLineChart'
-import { PARTY_NAMES, partyLabel } from './data'
+import { PartyLogo, partyLine, partyName } from '../parties/identity'
+import { partyLabel } from './data'
 
 /**
- * Up to five parties at a time, each keeping its colour slot for as long as it is picked:
- * colour follows the party, not its position in the list, so removing one never repaints
- * the others.
+ * The parties picked for a chart. Each is drawn in its own colour, so any number can be shown
+ * and removing one never repaints the others.
  */
 export function usePartySlots(initial: string[]) {
-  const [slots, setSlots] = useState<Record<string, number>>(() =>
-    Object.fromEntries(initial.slice(0, MAX_SERIES).map((p, i) => [p, i])),
-  )
-  const picked = Object.keys(slots)
+  const [picked, setPicked] = useState<string[]>(initial)
   const toggle = (party: string) =>
-    setSlots((current) => {
-      if (party in current) {
-        const next = { ...current }
-        delete next[party]
-        return next
-      }
-      const used = new Set(Object.values(current))
-      const free = [...Array(MAX_SERIES).keys()].find((i) => !used.has(i))
-      return free === undefined ? current : { ...current, [party]: free }
-    })
-  return { picked, toggle, colorOf: (party: string) => slots[party] ?? 0 }
+    setPicked((current) =>
+      current.includes(party)
+        ? current.filter((p) => p !== party)
+        : [...current, party],
+    )
+  return { picked, toggle, colorOf: partyLine }
 }
 
 export default function PartyPicker({
   parties,
   picked,
   toggle,
-  colorOf,
 }: {
   parties: string[]
   picked: string[]
   toggle: (party: string) => void
-  colorOf: (party: string) => number
+  colorOf?: (party: string) => string
 }) {
-  const full = picked.length >= MAX_SERIES
   return (
     <div
       className="party-picker"
@@ -53,21 +42,15 @@ export default function PartyPicker({
             type="button"
             className={on ? 'party-chip on' : 'party-chip'}
             aria-pressed={on}
-            disabled={!on && full}
-            title={PARTY_NAMES[party] ?? party}
+            title={partyName(party)}
+            style={on ? { borderColor: partyLine(party) } : undefined}
             onClick={() => toggle(party)}
           >
-            {on && (
-              <span
-                className="legend-swatch"
-                style={{ background: SERIES_COLORS[colorOf(party)] }}
-              />
-            )}
+            <PartyLogo party={party} size={18} />
             {partyLabel(party)}
           </button>
         )
       })}
-      <small>{l('Up to five at a time.', 'Högst fem åt gången.')}</small>
     </div>
   )
 }

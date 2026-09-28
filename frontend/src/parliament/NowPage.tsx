@@ -9,7 +9,6 @@ import LawLibrary from '../politics/LawLibrary'
 import '../politics/politics.css'
 import PartyPicker, { usePartySlots } from './PartyPicker'
 import {
-  PARTY_NAMES,
   PARTY_ORDER,
   load,
   partyLabel,
@@ -24,6 +23,7 @@ import {
 } from './data'
 import '../welfare/welfare.css'
 import './parliament.css'
+import { PartyName, PartyTag } from '../parties/identity'
 
 const month = (iso: string) =>
   new Date(iso).toLocaleDateString('sv-SE', { month: 'long', year: 'numeric' })
@@ -84,7 +84,7 @@ export function Positions({
     >
       {PARTY_ORDER.filter((p) => positions[p]).map((party) => (
         <li key={party} className={`position ${positions[party]}`}>
-          <strong>{partyLabel(party)}</strong>{' '}
+          <PartyTag party={party} />{' '}
           {l(...(POSITION[positions[party]] ?? ['', '']))}
         </li>
       ))}
@@ -202,7 +202,16 @@ function OverTime({
   sessions: Sessions
   polls: { survey_month: string; party: string; share_pct: number }[]
 }) {
-  const electionSlots = usePartySlots(['S', 'M', 'SD', 'V', 'C'])
+  const electionSlots = usePartySlots([
+    'S',
+    'M',
+    'SD',
+    'V',
+    'C',
+    'KD',
+    'MP',
+    'L',
+  ])
   const recordSlots = usePartySlots(['S', 'M', 'SD', 'C', 'L'])
   const [measure, setMeasure] = useState<keyof SessionRecord>(
     'with_government_pct',
@@ -395,7 +404,7 @@ function OverTime({
                   <th />
                   {pairParties.map((p) => (
                     <th key={p} scope="col">
-                      {partyLabel(p)}
+                      <PartyTag party={p} />
                     </th>
                   ))}
                 </tr>
@@ -403,7 +412,9 @@ function OverTime({
               <tbody>
                 {pairParties.map((a) => (
                   <tr key={a}>
-                    <th scope="row">{partyLabel(a)}</th>
+                    <th scope="row">
+                      <PartyTag party={a} />
+                    </th>
                     {pairParties.map((b) => {
                       const value = a === b ? null : agreement(a, b)
                       return (
@@ -545,7 +556,9 @@ export default function NowPage({ view }: { view: string }) {
                   const poll = now.poll.parties.find((q) => q.party === p.party)
                   return (
                     <tr key={p.party}>
-                      <td>{PARTY_NAMES[p.party] ?? p.name}</td>
+                      <td>
+                        <PartyName party={p.party} />
+                      </td>
                       <td>{percent(p.share_pct, 2)}</td>
                       <td>
                         {p.previous_share_pct != null && p.share_pct != null

@@ -1,0 +1,233 @@
+/* Party logos, tags and names, used wherever a party is shown. */
+.party-logo {
+  display: inline-block;
+  flex: none;
+  object-fit: contain;
+  vertical-align: middle;
+}
+.party-logo-text {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-weight: 800;
+  line-height: 1;
+}
+.party-tag,
+.party-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+a.party-name {
+  color: inherit;
+  text-decoration: none;
+}
+a.party-name:hover span,
+a.party-name:focus-visible span {
+  text-decoration: underline;
+}
+
+/* The party page: a card per party in its colour, and the party's own page. */
+.party-cards {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 1rem;
+}
+.party-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.7rem;
+  min-height: 220px;
+  height: 100%;
+  box-sizing: border-box;
+  padding: 1.1rem;
+  border-radius: 14px;
+  text-decoration: none;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.12);
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+.party-card:hover,
+.party-card:focus-visible {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgb(0 0 0 / 0.18);
+}
+.party-card:focus-visible {
+  outline: 3px solid var(--ink);
+  outline-offset: 3px;
+}
+.party-card-logo,
+.party-hero-logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  border-radius: 50%;
+  padding: 8px;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.15);
+}
+.party-card-name {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+}
+.party-card-name strong {
+  font-size: 1.15rem;
+  line-height: 1.2;
+}
+.party-card-name small {
+  font-weight: 800;
+  opacity: 0.85;
+}
+.party-card-facts {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  font-size: 0.86rem;
+}
+.party-card-role {
+  margin-top: 0.3rem;
+  align-self: flex-start;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  padding: 0.1rem 0.6rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+.party-hero-wrap {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 0 clamp(1rem, 6vw, 6rem);
+}
+.party-hero {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 1.5rem;
+  border-radius: 16px;
+}
+.party-hero h2 {
+  margin: 0.1rem 0 0.3rem;
+  font-size: clamp(1.6rem, 5vw, 2.4rem);
+  color: inherit;
+}
+.party-hero p {
+  margin: 0;
+}
+.party-hero .eyebrow {
+  color: inherit;
+  opacity: 0.9;
+}
+.party-facts {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 0.75rem;
+}
+.party-facts li {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.75rem;
+  background: var(--paper);
+  border-radius: 10px;
+}
+.party-facts strong {
+  font-size: 1.5rem;
+  font-variant-numeric: tabular-nums;
+}
+.party-facts span {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+.party-governments {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+.party-governments li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+.party-government-mark {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  border: 2px solid;
+  flex: none;
+}
+.party-pairs {
+  list-style: none;
+  margin: 0 0 0.5rem;
+  padding: 0;
+  display: grid;
+  gap: 0.4rem;
+}
+.party-pairs li {
+  display: grid;
+  grid-template-columns: 4.5rem 1fr 3.5rem;
+  align-items: center;
+  gap: 0.6rem;
+}
+.party-pairs a {
+  color: inherit;
+  text-decoration: none;
+}
+.party-pair-track {
+  height: 14px;
+  background: var(--paper);
+  border-radius: 7px;
+  overflow: hidden;
+}
+.party-pair-bar {
+  display: block;
+  height: 100%;
+  border-radius: 7px;
+}
+.party-pair-value {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.party-tax-votes {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.45rem;
+}
+.party-tax-votes li {
+  display: grid;
+  grid-template-columns: 6.5rem 1fr;
+  gap: 0.6rem;
+  align-items: baseline;
+  min-width: 0;
+}
+.party-tax-votes li > span:last-child {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 560px) {
+  .party-hero {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .party-tax-votes li {
+    grid-template-columns: 5.5rem 1fr;
+  }
+}

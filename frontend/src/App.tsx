@@ -30,6 +30,7 @@ const NowPage = lazy(() => import('./parliament/NowPage'))
 const IssuePage = lazy(() => import('./parliament/IssuePage'))
 const TaxesPage = lazy(() => import('./taxes/TaxesPage'))
 const DataModelPage = lazy(() => import('./datamodel/DataModelPage'))
+const PartiesPage = lazy(() => import('./parties/PartiesPage'))
 
 type UmapPoint = {
   chunk_id: string
@@ -313,6 +314,7 @@ function pageFromHash(hash: string) {
   if (hash === '#taxes' || hash.startsWith('#taxes-')) return 'taxes'
   if (hash === '#data-model' || hash.startsWith('#data-model-'))
     return 'datamodel'
+  if (hash === '#parties' || hash.startsWith('#parties-')) return 'parties'
   return 'home'
 }
 
@@ -571,6 +573,7 @@ function App() {
           'issue',
           'taxes',
           'datamodel',
+          'parties',
         ].includes(page) && (
           <div className="analysis-hub">
             <p className="eyebrow">
@@ -593,10 +596,13 @@ function App() {
                             ? '#taxes'
                             : page === 'datamodel'
                               ? '#data-model'
-                              : '#drugcomb'
+                              : page === 'parties'
+                                ? '#parties'
+                                : '#drugcomb'
               }
               items={[
                 ['#now', 'Politics', 'Politik'],
+                ['#parties', 'Parties', 'Partier'],
                 ['#budget-comparison', 'Budget', 'Budget'],
                 ['#taxes', 'Taxes', 'Skatter'],
                 ['#job-market', 'Job market', 'Arbetsmarknad'],
@@ -1356,6 +1362,11 @@ function App() {
           {page === 'taxes' && (
             <Suspense fallback={<div className="loading">{t('Loading…')}</div>}>
               <TaxesPage view={hash} />
+            </Suspense>
+          )}
+          {page === 'parties' && (
+            <Suspense fallback={<div className="loading">{t('Loading…')}</div>}>
+              <PartiesPage view={hash} />
             </Suspense>
           )}
           {page === 'datamodel' && (

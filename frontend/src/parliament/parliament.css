@@ -48,11 +48,12 @@
   color: var(--ink);
   white-space: nowrap;
   overflow: hidden;
-  transition: left 0.25s ease;
+  transition:
+    left 0.25s ease,
+    opacity 0.2s ease;
 }
-.seat-segment.chosen {
-  background: #008f82;
-  color: white;
+.seat-segment.faded {
+  opacity: 0.28;
 }
 .seat-majority {
   position: absolute;
@@ -94,6 +95,7 @@
 }
 .party-chip.on {
   border-color: var(--ink);
+  box-shadow: inset 0 0 0 1px currentColor;
 }
 .party-chip:disabled {
   opacity: 0.45;
