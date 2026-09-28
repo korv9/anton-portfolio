@@ -2,14 +2,14 @@
 
 .politik {
   display: grid;
-  grid-template-columns: 250px minmax(0, 1fr);
-  max-width: 1360px;
+  grid-template-columns: 230px minmax(0, 1fr);
+  max-width: 1600px;
   margin: 0 auto;
   min-height: calc(100vh - 64px);
 }
 .politik-side {
   border-right: 1px solid var(--line);
-  padding: 2.5rem 1.5rem 2rem clamp(1rem, 3vw, 2.5rem);
+  padding: 1.5rem 1.25rem 1.5rem clamp(1rem, 2.5vw, 2rem);
 }
 .politik-party-rail {
   top: auto !important;
@@ -81,14 +81,18 @@
   font-size: 0.58rem;
   font-weight: 700;
 }
-.politik-side > * {
+.politik-side {
   position: sticky;
-  top: 88px;
+  top: 64px;
+  align-self: start;
+  max-height: calc(100vh - 64px);
+  overflow-y: auto;
+  scrollbar-width: thin;
 }
 .politik-brand {
   display: block;
   text-decoration: none;
-  margin-bottom: 2rem;
+  margin-bottom: 1.25rem;
 }
 .politik-brand span,
 .politik-brand small {
@@ -101,9 +105,7 @@
   font-weight: 400;
   color: var(--muted);
 }
-.politik-nav {
-  top: 170px;
-}
+
 .politik-nav ol {
   list-style: none;
   margin: 0;
@@ -117,8 +119,8 @@
   display: grid;
   grid-template-columns: 1.4rem 1fr;
   gap: 0.25rem;
-  padding: 0.75rem 0;
-  font-size: 0.9375rem;
+  padding: 0.5rem 0;
+  font-size: 0.875rem;
   line-height: 1.35;
   text-decoration: none;
   color: var(--muted);
@@ -795,8 +797,9 @@
     z-index: 15;
     background: var(--page);
   }
-  .politik-side > * {
-    position: static;
+  .politik-side {
+    max-height: none;
+    overflow: visible;
   }
   .politik-brand {
     display: none;
@@ -858,9 +861,9 @@
     height: 28px;
   }
   .politik-main {
-    /* The sticky product menu sits below the 64 px site header. Reserve that
-       offset so the first heading never starts underneath the menu. */
-    padding-top: 6rem;
+    /* The product menu is sticky in the flow (main clips rather than hides overflow), so the
+       first heading already starts below it. */
+    padding-top: 1.5rem;
   }
   .theme-meaning,
   .theme-further {
@@ -946,4 +949,23 @@
 .politik .party-chip.on .party-logo {
   opacity: 1;
   filter: none;
+}
+
+/* The party tiles share the narrower side column with the theme menu: four per row, shrinking
+   to fit. */
+@media (min-width: 961px) {
+  .politik-party-rail ul {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.35rem;
+  }
+  .politik-party-rail a {
+    min-width: 0;
+    min-height: 46px;
+    padding: 0.3rem;
+  }
+  .politik-party-rail .party-logo {
+    width: 100%;
+    max-width: 30px;
+    height: auto;
+  }
 }

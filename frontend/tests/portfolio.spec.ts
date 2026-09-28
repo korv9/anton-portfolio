@@ -38,7 +38,7 @@ test('home introduces Anton and routes to each project', async ({
     .getByRole('link', { name: 'Politics' })
     .click()
   await expect(page.getByRole('heading', { level: 1 })).toContainText(
-    'Who holds power right now?',
+    'Where things stand',
   )
   await page.goto('/#politics')
   await expect(page.getByRole('heading', { level: 1 })).toContainText(
@@ -73,7 +73,7 @@ test('language map and job chart retain useful controls', async ({ page }) => {
   await page.getByRole('button', { name: '2022/23' }).click()
   await expect(page.locator('.point-detail')).toContainText('Selected segment')
   await page.locator('.viz-toolbar select').selectOption('MP')
-  expect(await page.locator('.umap-point').count()).toBeGreaterThan(0)
+  await expect(page.locator('.umap-point').first()).toBeVisible()
   await expect(page.locator('.umap-guide')).toContainText(
     'not agreement or a political position',
   )

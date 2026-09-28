@@ -2,7 +2,6 @@ import { test, expect } from './test'
 import AxeBuilder from '@axe-core/playwright'
 
 const THEMES: [string, string][] = [
-  ['#politik', 'Who holds power right now?'],
   ['#politik-valjarna', 'Which parties do voters support?'],
   ['#politik-roster', 'How often do the parties vote alike?'],
   ['#politik-budget', 'What do the parties want to spend money on?'],
@@ -36,21 +35,53 @@ test('every theme answers one question with one chart, a table and its sources',
   expect(errors).toEqual([])
 })
 
-test('the party rail opens each party profile and marks the selected party', async ({
+test('the dashboard fits one screen and focuses on the party chosen at the side', async ({
   page,
+  isMobile,
 }) => {
   await page.goto('/#politik')
-  const rail = page.getByRole('navigation', { name: 'Explore a party' })
-  await expect(rail.getByRole('link')).toHaveCount(8)
-  await rail.getByRole('link', { name: 'Social Democrats' }).click()
-  await expect(page).toHaveURL(/#parties-s$/)
+  await expect(page.locator('.dash-kpi')).toHaveCount(6)
+  await expect(page.locator('.dash-card')).toHaveCount(6)
+  await expect(page.locator('.dash-attention li')).not.toHaveCount(0)
+  if (!isMobile) {
+    await page.setViewportSize({ width: 1440, height: 900 })
+    // Everything on one screen: the page does not scroll.
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollHeight - innerHeight,
+      ),
+    ).toBeLessThanOrEqual(120)
+  }
+  const parties = page.getByRole('navigation', { name: 'Parties' })
+  await expect(parties.getByRole('link')).toHaveCount(8)
+  await parties.getByRole('link', { name: 'Sweden Democrats' }).click()
+  await expect(page).toHaveURL(/#politik\?parti=SD$/)
+  await expect(page.locator('.dash-focus')).toContainText('Sweden Democrats')
+  await expect(page.locator('.dash-card h2').nth(2)).toContainText('SD')
   await expect(
-    page
-      .getByRole('navigation', { name: 'Explore a party' })
-      .getByRole('link', {
-        name: 'Social Democrats',
-      }),
-  ).toHaveAttribute('aria-current', 'page')
+    parties.getByRole('link', { name: 'Sweden Democrats' }),
+  ).toHaveAttribute('aria-current', 'true')
+  // A seat segment is a party button too.
+  await page.getByRole('button', { name: /^Moderates:/ }).click()
+  await expect(page).toHaveURL(/parti=M$/)
+  await page.getByRole('button', { name: 'Show all parties' }).click()
+  await expect(page.locator('.dash-focus')).toHaveCount(0)
+  await expect(page).toHaveURL(/#politik$/)
+})
+
+test('the party rail marks the party whose profile is open', async ({
+  page,
+}) => {
+  await page.goto('/#parties-s')
+  const rail = page.getByRole('navigation', { name: 'Parties' })
+  await expect(rail.getByRole('link')).toHaveCount(8)
+  await expect(
+    rail.getByRole('link', { name: 'Social Democrats' }),
+  ).toHaveAttribute('aria-current', 'true')
+  // From the dashboard focused on a party, its full profile is one click away.
+  await page.goto('/#politik?parti=S')
+  await page.getByRole('link', { name: /Everything about S/ }).click()
+  await expect(page).toHaveURL(/#parties-s$/)
 })
 
 test('the view builder offers valid choices and keeps them in a shareable address', async ({

@@ -166,6 +166,13 @@ a {
   }
 }
 
+/* Clip sideways overflow without making main a scroll container, so sticky elements follow
+   the window. */
+main {
+  overflow: visible;
+  overflow-x: clip;
+}
+
 /* Editorial report surfaces: a quiet frame, a clear reading order and generous charts. */
 body .project-page {
   max-width: 1200px;

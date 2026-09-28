@@ -22,7 +22,7 @@ One navigation with seven themes (a sidebar, a horizontal menu on small screens)
 
 | Theme | Address | Main chart |
 |---|---|---|
-| Läget just nu | `#politik` | Seats in the Riksdag, the governing side and the 175 majority line |
+| Läget just nu | `#politik` | A one-screen dashboard (below) |
 | Vad väljarna tycker | `#politik-valjarna` | Support in SCB's PSU (or election results) over time |
 | Hur partierna röstar | `#politik-roster` | How often a party votes like each other party, per session |
 | Vad partierna vill lägga pengar på | `#politik-budget` | A party's budget compared with the government's, per expenditure area |
@@ -30,7 +30,17 @@ One navigation with seven themes (a sidebar, a horizontal menu on small screens)
 | Utforska själv | `#politik-utforska` | Every detailed view, grouped |
 | Källor och metod | `#politik-kallor` | Sources, update dates, definitions, method, limitations, raw tables |
 
-Every theme follows one template (`frontend/src/politik/ThemeLayout.tsx`): a question, why it
+### The dashboard
+
+`#politik` is a dashboard that fits one desktop screen: six key figures, three lines on what to
+keep an eye on, and six cards (seats, polls, who a party votes like, its budget compared with the
+government's, what it talks about most, the news). The parties are listed at the side of every
+politics page; choosing one focuses every card on it, and the choice is kept in the address
+(`#politik?parti=SD`). Figures count up, bars grow, lines draw and cards rise in one after
+another; a new party glides into place. With reduced motion nothing moves.
+`frontend/src/politik/dash/`.
+
+Every other theme follows one template (`frontend/src/politik/ThemeLayout.tsx`): a question, why it
 matters, at most three key figures, one chart, the main result in a sentence, "Vad betyder det
 här?", the Graf / Tabell / Källor switch, and Fördjupa links. Themes whose data allows it have
 "Bygg egen vy": a panel from the right offering only valid combinations (period, parties, issue

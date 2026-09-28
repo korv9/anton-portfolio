@@ -14,9 +14,9 @@ test('one politics navigation isolates content and supports back and direct link
     page.getByRole('navigation', { name: 'Choose a subject' }),
   ).toHaveCount(0)
   await expect(page.locator('.decision-read')).toHaveCount(5)
-  await expect(page.locator('.seat-chart')).toHaveCount(0)
+  await expect(page.locator('.dash-seats')).toHaveCount(0)
   await politics.getByRole('link', { name: /Where things stand/ }).click()
-  await expect(page.locator('.seat-chart')).toBeVisible()
+  await expect(page.locator('.dash-seats')).toBeVisible()
   await expect(page.locator('.decision-read')).toHaveCount(0)
   await expect(
     politics.getByRole('link', { name: /Where things stand/ }),

@@ -9,8 +9,9 @@ import { PartyLogo, RIKSDAG_PARTIES, partyName } from '../parties/identity'
 import type { Route } from '../router'
 import { THEMES, deepDiveOf, themeByPath, type ThemeKey } from './nav'
 import './politik.css'
+import './dash/dash.css'
 
-const LageTheme = lazy(() => import('./themes/LageTheme'))
+const Dashboard = lazy(() => import('./dash/Dashboard'))
 const ValjarnaTheme = lazy(() => import('./themes/ValjarnaTheme'))
 const RosterTheme = lazy(() => import('./themes/RosterTheme'))
 const BudgetTheme = lazy(() => import('./themes/BudgetTheme'))
@@ -22,7 +23,7 @@ const DeepDive = lazy(() => import('./DeepDive'))
 function ThemeView({ theme, route }: { theme: ThemeKey; route: Route }) {
   switch (theme) {
     case 'lage':
-      return <LageTheme />
+      return <Dashboard route={route} />
     case 'valjarna':
       return <ValjarnaTheme route={route} />
     case 'roster':
@@ -43,6 +44,9 @@ export default function PoliticsProduct({ route }: { route: Route }) {
   const dive = theme ? null : deepDiveOf(route.path)
   const active: ThemeKey = theme?.key ?? dive?.dive.parent ?? 'utforska'
   const nav = useRef<HTMLElement>(null)
+  const party = RIKSDAG_PARTIES.includes(route.params.get('parti') ?? '')
+    ? route.params.get('parti')
+    : null
   // Keep the active item in view in the horizontal menu on small screens, scrolling only the
   // menu itself (scrollIntoView would also move the page).
   useEffect(() => {
@@ -85,23 +89,25 @@ export default function PoliticsProduct({ route }: { route: Route }) {
         </nav>
         <nav
           className="politik-party-rail"
-          aria-label={l('Explore a party', 'Utforska ett parti')}
+          aria-label={l('Parties', 'Partier')}
         >
           <p>{l('Parties', 'Partier')}</p>
           <ul>
-            {RIKSDAG_PARTIES.map((party) => {
-              const href = `#parties-${party.toLowerCase()}`
-              const current = route.path === href
+            {RIKSDAG_PARTIES.map((code) => {
+              // A party is current when the dashboard is focused on it or its profile is open.
+              const current =
+                party === code ||
+                route.path === `#parties-${code.toLowerCase()}`
               return (
-                <li key={party}>
+                <li key={code}>
                   <a
-                    href={href}
-                    aria-label={partyName(party)}
-                    aria-current={current ? 'page' : undefined}
-                    title={partyName(party)}
+                    href={`#politik?parti=${code}`}
+                    aria-label={partyName(code)}
+                    aria-current={current ? 'true' : undefined}
+                    title={partyName(code)}
                   >
-                    <PartyLogo party={party} size={34} decorative={false} />
-                    <span>{party}</span>
+                    <PartyLogo party={code} size={34} decorative={false} />
+                    <span>{code}</span>
                   </a>
                 </li>
               )
