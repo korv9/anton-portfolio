@@ -298,7 +298,7 @@
 .site-map-group h3 {
   margin: 0 0 0.3rem;
   font-family: var(--font-mono) !important;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 500;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -330,7 +330,7 @@
 .site-map-group small {
   margin-top: -0.1rem;
   padding-bottom: 0.2rem;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   color: var(--muted);
 }
 /* The many detailed politics views run in two columns. */
@@ -378,4 +378,147 @@
   .site-map-col {
     animation: none;
   }
+}
+
+/* ---------- Type that follows the screen ----------
+ * 16px on phones, growing with the window to 18px on a large screen, so text and the
+ * rem-sized layout scale together instead of staying small on a wide monitor. */
+html {
+  font-size: clamp(16px, 0.35vw + 12.6px, 18px);
+}
+
+/* ---------- The site sidebar (wide screens) ---------- */
+
+/* Set by width in CSS as well as in JS, so a resized window never shows the grid half a frame. */
+@media (min-width: 1024px) {
+  .site-shell.has-side {
+    display: grid;
+    grid-template-columns: var(--side-width, 17rem) minmax(0, 1fr);
+    align-items: start;
+  }
+}
+@media (max-width: 1023px) {
+  .site-side {
+    display: none !important;
+  }
+}
+.site-content {
+  min-width: 0;
+}
+.site-side {
+  position: sticky;
+  top: 64px;
+  height: calc(100vh - 64px);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 1.25rem 1rem 1.5rem;
+  border-right: 1px solid var(--line);
+  background:
+    radial-gradient(
+      circle at 15% 4%,
+      rgba(114, 197, 216, 0.14),
+      transparent 30%
+    ),
+    #eef2f5;
+}
+.site-side-list,
+.site-side-list ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.site-side-section {
+  border-bottom: 1px solid rgba(25, 40, 32, 0.08);
+  padding: 0.35rem 0;
+}
+.site-side-head {
+  display: block;
+  padding: 0.55rem 0.65rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  color: var(--ink);
+  transition: background 150ms ease;
+}
+.site-side-head:hover {
+  background: rgba(25, 40, 32, 0.06);
+}
+.site-side-section:not(.open) .site-side-head {
+  font-weight: 500;
+  color: var(--ink-2, #3b4a42);
+}
+.site-side-section.open .site-side-head {
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+.site-side-head[aria-current] {
+  background: #192820;
+  color: #fff !important;
+}
+.site-side-list ul a {
+  display: block;
+  padding: 0.5rem 0.65rem 0.5rem 1rem;
+  font-size: 0.9375rem;
+  text-decoration: none;
+  color: var(--ink);
+  border-left: 2px solid transparent;
+}
+.site-side-list ul a:hover {
+  background: rgba(25, 40, 32, 0.06);
+}
+.site-side-list ul a[aria-current] {
+  background: #192820;
+  color: #fff;
+}
+.site-side-contact {
+  margin: auto 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1rem;
+  padding: 0 0.65rem;
+  font-size: 0.8125rem;
+}
+.site-side-contact a {
+  color: var(--muted);
+  text-decoration: none;
+}
+.site-side-contact a:hover {
+  color: var(--ink);
+  text-decoration: underline;
+}
+
+/* A product's navigation docked in the sidebar: it drops its own frame. */
+.site-side .politik-side {
+  position: static;
+  max-height: none;
+  overflow: visible;
+  padding: 0;
+  border: 0;
+  background: none;
+}
+.site-side .politik-brand {
+  display: none;
+}
+.site-side .politik-nav a {
+  font-size: 0.9375rem;
+}
+.politik.docked {
+  grid-template-columns: minmax(0, 1fr);
+  max-width: none;
+}
+
+/* Text for screen readers only. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
 }

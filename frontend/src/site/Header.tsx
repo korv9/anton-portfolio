@@ -7,11 +7,10 @@ const SiteMap = lazy(() => import('./SiteMap'))
 
 const LINKS: [string, string, string][] = [
   ['#projekt', 'Projects', 'Projekt'],
-  ['#erfarenhet', 'Experience', 'Erfarenhet'],
-  ['#teknik', 'Tech stack', 'Tech stack'],
   ['#politik', 'Politics', 'Politik'],
   ['#jobb', 'Job market', 'Jobbmarknad'],
   ['#tallman', 'taLLMan', 'taLLMan'],
+  ['#technical', 'Technical', 'Technical'],
 ]
 
 export default function Header({
@@ -103,6 +102,7 @@ export default function Header({
               <a
                 href={href}
                 aria-current={
+                  href === path ||
                   (href === '#politik' && inPolitics) ||
                   (href === '#jobb' && inJobs) ||
                   (href === '#tallman' && inTallman)

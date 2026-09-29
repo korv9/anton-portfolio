@@ -45,7 +45,7 @@
   margin: 0.2rem 0 0;
 }
 .party-cards dt {
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   color: var(--muted);
 }
 .party-cards dd {
@@ -118,7 +118,7 @@
 }
 .party-members small {
   color: var(--muted);
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
 }
 .party-members .party-member-role {
   color: var(--ink-2);

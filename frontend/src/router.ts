@@ -9,6 +9,8 @@ import { useEffect, useState } from 'react'
 
 export type Page =
   | 'home'
+  | 'projects'
+  | 'technical'
   | 'politik'
   | 'jobs'
   | 'welfare'
@@ -41,6 +43,7 @@ export const REDIRECTS: Record<string, string> = {
   '#kontakt': '#start',
   '#kompetenser': '#teknik',
   '#projects': '#projekt',
+  '#tech': '#technical',
 }
 
 const POLITICS_PREFIXES = [
@@ -74,6 +77,8 @@ export function pageOf(path: string): Page {
   if (path === '#thesis') return 'thesis'
   if (path === '#homie') return 'homie'
   if (path === '#sweden' || path.startsWith('#sweden-')) return 'welfare'
+  if (path === '#projekt') return 'projects'
+  if (path === '#technical' || path === '#teknisk') return 'technical'
   if (path === '#status') return 'status'
   if (path === '#tallman') return 'tallman'
   if (path === '#analysis' || path.startsWith('#analysis-')) return 'analysis'

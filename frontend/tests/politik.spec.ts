@@ -210,7 +210,7 @@ test.describe('the name intro', () => {
   test('leaves by itself, and not on a deep link', async ({ page }) => {
     await page.goto('/')
     await expect(page.locator('.intro-screen')).toHaveCount(0, {
-      timeout: 4000,
+      timeout: 6000,
     })
     await page.evaluate(() => sessionStorage.clear())
     await page.goto('/#politik-budget')

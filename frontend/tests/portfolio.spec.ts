@@ -28,21 +28,35 @@ test('home introduces Anton and routes to each project', async ({
     .evaluateAll((links) => links.map((a) => a.getAttribute('href')))) {
     expect((await page.request.get(`/${href}`)).status(), href!).toBe(200)
   }
-  // Experience and the stack side by side, both visible without scrolling on a desktop.
+  // A note that the site is still being built.
+  await expect(page.locator('.home-notice')).toContainText('still being built')
+  // Experience and the stack further down.
   await expect(page.locator('#erfarenhet .cv-job')).toHaveCount(4)
   await expect(page.locator('#erfarenhet')).toContainText('Fora')
   await expect(page.locator('#erfarenhet')).toContainText('Avtalat')
   await expect(page.locator('#teknik .cv-stack > div')).toHaveCount(5)
-  if (!isMobile) {
-    for (const id of ['#erfarenhet', '#teknik', '.cv-flagship']) {
-      const box = await page.locator(id).boundingBox()
-      expect(box!.y, id).toBeLessThan(900)
-    }
-  }
-  // The politics product leads the projects; the rest are tiles.
+  // The profile as a live bar chart: a click grows a bar and opens what is behind it.
+  const live = page.locator('.live')
+  const bar = live.locator('.live-col.stack .live-fill').first()
+  await bar.click()
+  await expect(bar).toHaveAttribute('aria-expanded', 'true')
+  const detail = live.locator('.live-detail:not([hidden])')
+  await expect(detail).toContainText('Python')
+  await page.keyboard.press('Escape')
+  await expect(live.locator('.live-detail:not([hidden])')).toHaveCount(0)
+  // The politics product leads; three AI projects, and a link to all of them.
   await expect(page.locator('.cv-flagship')).toContainText('Swedish politics')
   await expect(page.locator('.cv-pipeline li')).toHaveCount(5)
-  expect(await page.locator('.cv-project').count()).toBeGreaterThanOrEqual(6)
+  await expect(page.locator('.cv-project')).toHaveCount(3)
+  await page.locator('.home-more').click()
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+    'What I have built',
+  )
+  expect(await page.locator('.cv-project').count()).toBeGreaterThanOrEqual(10)
+  await page.getByRole('button', { name: /AI and ML/ }).click()
+  await expect(page.locator('.cv-area')).toHaveCount(1)
+  await expect(page.locator('.cv-flagship')).toHaveCount(0)
+  await page.goto('/')
   await expect(page.getByRole('button', { name: 'Show more' })).toHaveCount(0)
   await expect(page.locator('#job-market')).toHaveCount(0)
   // The contents menu lists everything on the site, on every screen size.
@@ -59,6 +73,10 @@ test('home introduces Anton and routes to each project', async ({
   await expect(
     contents.getByRole('link', { name: 'Issue debates' }),
   ).toBeVisible()
+  // Contrast is checked once the menu has finished opening.
+  await contents.evaluate((el) =>
+    Promise.all(el.getAnimations({ subtree: true }).map((a) => a.finished)),
+  )
   const results = await new AxeBuilder({ page }).include('#site-map').analyze()
   expect(results.violations.map((v) => v.id)).toEqual([])
   await contents.getByRole('link', { name: 'Overview' }).first().click()
@@ -76,6 +94,32 @@ test('home introduces Anton and routes to each project', async ({
       'Overview',
     )
   }
+  if (!isMobile) {
+    // One sidebar for the whole site; in politics it holds the politics navigation.
+    const side = page.getByRole('navigation', { name: 'All pages' })
+    await expect(side).toBeVisible()
+    await page.goto('/#politik')
+    await expect(
+      side.getByRole('navigation', { name: 'Politics' }),
+    ).toBeVisible()
+    await side.getByRole('link', { name: 'Technical' }).click()
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+      'How it all works',
+    )
+  }
+  // Technical: the architecture, with the numbers read from the dbt export.
+  await page.goto('/#technical')
+  const schema = await (
+    await page.request.get('/data/schema/models.json')
+  ).json()
+  await expect(page.locator('.tech-kpis')).toContainText(
+    schema.tests.toLocaleString('en-GB'),
+  )
+  await expect(
+    page.locator('#tech-layers .tech-table:not(.heat) tbody tr'),
+  ).toHaveCount(5)
+  expect(await page.locator('#tech-model tbody tr').count()).toBeGreaterThan(10)
+  await expect(page.locator('#tech-rag .tech-steps li')).toHaveCount(6)
   await page.goto('/#politics')
   await expect(page.getByRole('heading', { level: 1 })).toContainText(
     'Roll calls in detail',
@@ -158,6 +202,8 @@ test('navigation, responsive layout and accessibility', async ({ page }) => {
     '/#drugcomb',
     '/#sweden',
     '/#status',
+    '/#projekt',
+    '/#technical',
   ]) {
     await page.goto(route)
     for (const width of [320, 375, 768, 1280]) {

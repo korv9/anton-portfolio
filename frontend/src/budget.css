@@ -27,7 +27,7 @@
 .budget-controls label,
 .trend-controls label {
   color: var(--muted);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 750;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -82,7 +82,7 @@
 .budget-party-status span {
   border: 1px solid #d2ddd6;
   padding: 0.3rem 0.48rem;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   background: #f0f8f3;
 }
 .budget-party-status span.unavailable {
@@ -93,7 +93,7 @@
 .budget-party-status p {
   margin: 0.4rem 0 0;
   color: var(--muted);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
 }
 .party-area-comparison {
   border: 1px solid #d3e3dc;
@@ -113,7 +113,7 @@
   align-items: center;
   gap: 0.35rem;
   color: var(--muted);
-  font-size: 0.69rem;
+  font-size: 0.75rem;
 }
 .party-area-head i {
   width: 13px;
@@ -138,7 +138,7 @@
   grid-template-columns: 24px minmax(70px, 1fr) 100px;
   gap: 0.65rem;
   align-items: center;
-  font-size: 0.74rem;
+  font-size: 0.75rem;
 }
 .party-area-row > span {
   text-align: right;
@@ -164,7 +164,7 @@
 }
 .party-area-comparison p {
   color: var(--muted);
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   margin: 0;
 }
 .budget-panels {
@@ -216,7 +216,7 @@
   grid-template-columns: 54px 1fr 38px;
   align-items: center;
   gap: 0.5rem;
-  font-size: 0.72rem;
+  font-size: 0.75rem;
 }
 .correlation-row strong {
   text-align: right;
@@ -248,7 +248,7 @@
 }
 .panel-heading > span {
   color: var(--teal);
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   text-transform: uppercase;
   font-weight: 800;
   letter-spacing: 0.1em;
@@ -277,11 +277,11 @@
 }
 .budget-axis {
   fill: #66746d;
-  font-size: 11px;
+  font-size: 0.75rem;
 }
 .budget-axis-title {
   fill: #485a52;
-  font-size: 11px;
+  font-size: 0.75rem;
   font-weight: 700;
 }
 .budget-dot {
@@ -308,7 +308,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0.6rem;
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   margin: 0.6rem 0;
 }
 .party-legend span {
@@ -391,7 +391,7 @@
   gap: 0.45rem;
   margin-bottom: 0.65rem;
   color: var(--muted);
-  font-size: 0.7rem;
+  font-size: 0.75rem;
 }
 .heatmap-legend i {
   width: 85px;
@@ -414,7 +414,7 @@
 }
 .heatmap-heading {
   color: var(--muted);
-  font-size: 0.66rem;
+  font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   font-weight: 800;
@@ -460,7 +460,7 @@
 }
 .budget-small {
   color: var(--muted);
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   margin-bottom: 0;
 }
 .trend-controls {
@@ -477,7 +477,7 @@
   display: flex;
   gap: 0.9rem;
   flex-wrap: wrap;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
 }
 .trend-key span {
   display: flex;
@@ -525,13 +525,13 @@
   width: 100%;
   min-width: 580px;
   border-collapse: collapse;
-  font-size: 0.73rem;
+  font-size: 0.75rem;
   font-variant-numeric: tabular-nums;
 }
 .coverage-scroll caption {
   text-align: left;
   color: var(--muted);
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   padding: 0.4rem 0;
 }
 .coverage-scroll th,
@@ -628,7 +628,7 @@
   }
   .difference-row {
     grid-template-columns: minmax(90px, 1fr) minmax(78px, 0.8fr) 54px;
-    font-size: 0.66rem;
+    font-size: 0.75rem;
     gap: 0.3rem;
   }
   .trend-controls {
@@ -679,7 +679,7 @@
   margin: 1.2rem 0;
 }
 .budget-overview-grid article > div > b {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   text-transform: uppercase;
 }
 .budget-overview-grid button {
@@ -855,7 +855,7 @@
   .rfc-bar {
     grid-template-columns: 8rem 1fr 4rem;
     gap: 0.4rem;
-    font-size: 0.72rem;
+    font-size: 0.75rem;
   }
 }
 
@@ -967,7 +967,7 @@
 .comparison-scale {
   display: flex;
   justify-content: space-between;
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   color: var(--muted);
   padding: 0.2rem 0.5rem;
   gap: 0.5rem;
@@ -1034,7 +1034,7 @@
 }
 .comparison-values {
   display: block;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   color: #59675f;
   margin-top: 0.2rem;
 }

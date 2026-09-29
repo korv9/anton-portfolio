@@ -5,6 +5,8 @@
  * deep dives under "Utforska själv", so their addresses keep working.
  */
 import { Suspense, lazy, useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
+import { useDock } from '../site/dock'
 import { l } from '../i18n'
 import type { Route } from '../router'
 import { fieldName, useMarket, type Market } from './data'
@@ -45,37 +47,43 @@ export default function JobsProduct({ route }: { route: Route }) {
       {l('Loading…', 'Laddar…')}
     </p>
   )
+  // On a wide screen the navigation sits in the site sidebar (see site/dock.ts).
+  const dock = useDock()
+  const Side = dock ? 'div' : 'aside'
+  const side = (
+    <Side className="politik-side">
+      <a className="politik-brand" href="#jobb">
+        <span>{l('The job market', 'Jobbmarknaden')}</span>
+        <small>{l('in numbers', 'i siffror')}</small>
+      </a>
+      <nav
+        ref={nav}
+        className="politik-nav"
+        aria-label={l('Job market', 'Jobbmarknad')}
+      >
+        <ol>
+          {JOB_THEMES.map((t, index) => (
+            <li key={t.key}>
+              <a
+                href={withFields(t.path, selected)}
+                aria-current={
+                  t.key === active ? (theme ? 'page' : 'true') : undefined
+                }
+              >
+                <span className="politik-nav-no" aria-hidden="true">
+                  {index + 1}
+                </span>
+                {l(t.en, t.sv)}
+              </a>
+            </li>
+          ))}
+        </ol>
+      </nav>
+    </Side>
+  )
   return (
-    <div className="politik jobb" id="jobb">
-      <aside className="politik-side">
-        <a className="politik-brand" href="#jobb">
-          <span>{l('The job market', 'Jobbmarknaden')}</span>
-          <small>{l('in numbers', 'i siffror')}</small>
-        </a>
-        <nav
-          ref={nav}
-          className="politik-nav"
-          aria-label={l('Job market', 'Jobbmarknad')}
-        >
-          <ol>
-            {JOB_THEMES.map((t, index) => (
-              <li key={t.key}>
-                <a
-                  href={withFields(t.path, selected)}
-                  aria-current={
-                    t.key === active ? (theme ? 'page' : 'true') : undefined
-                  }
-                >
-                  <span className="politik-nav-no" aria-hidden="true">
-                    {index + 1}
-                  </span>
-                  {l(t.en, t.sv)}
-                </a>
-              </li>
-            ))}
-          </ol>
-        </nav>
-      </aside>
+    <div className={dock ? 'politik jobb docked' : 'politik jobb'} id="jobb">
+      {dock ? createPortal(side, dock) : side}
       <div className="politik-body">
         {theme && data && <FieldBar route={route} data={data} />}
         <div className="politik-main">

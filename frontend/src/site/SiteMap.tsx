@@ -153,6 +153,11 @@ function columns(): Column[] {
           en: 'About the site',
           sv: 'Om sajten',
           items: [
+            {
+              href: '#technical',
+              en: 'Technical: the architecture',
+              sv: 'Technical: arkitekturen',
+            },
             { href: '#data-model', en: 'Data model', sv: 'Datamodell' },
             { href: '#status', en: 'Pipeline status', sv: 'Pipelinestatus' },
             {

@@ -70,7 +70,7 @@
 }
 .politik-nav-heading {
   display: block;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -476,7 +476,7 @@
 /* ---------- Line charts in the product ---------- */
 
 .politik .multi-chart .end-label-text {
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 700;
   fill: var(--ink);
 }
@@ -908,7 +908,7 @@
 .politik-slicer-label {
   margin: 0;
   color: var(--muted);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -940,7 +940,7 @@
   right: 3px;
   bottom: 1px;
   color: var(--muted);
-  font-size: 0.58rem;
+  font-size: 0.75rem;
   font-weight: 700;
 }
 .politik-slicer button[aria-pressed]:hover {
