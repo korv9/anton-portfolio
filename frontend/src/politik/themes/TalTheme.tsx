@@ -6,7 +6,6 @@
 import { useEffect, useState } from 'react'
 import { l } from '../../i18n'
 import MultiLineChart from '../../charts/MultiLineChart'
-import PartyPicker from '../../parliament/PartyPicker'
 import { sessionDate } from '../../parliament/data'
 import {
   PartyTag,
@@ -18,12 +17,14 @@ import type { Route } from '../../router'
 import ThemeLayout from '../ThemeLayout'
 import BuilderPanel, { Choice, Field } from '../BuilderPanel'
 import { Select, num, pct } from '../controls'
-import { listParam, useViewParams } from '../useViewParams'
+import { useViewParams } from '../useViewParams'
+import { shownParties, useParties } from '../partySelection'
+import Bars from '../Bars'
 import { areaNames, loadBudgetReport, type BudgetReport } from './BudgetTheme'
 
 const DEFAULTS = {
   omrade: '',
-  partier: RIKSDAG_PARTIES.join(','),
+  diagram: 'stapel',
   kalla: 'issues',
   metod: 'stem',
   fran: '2014',
@@ -34,6 +35,7 @@ export default function TalTheme({ route }: { route: Route }) {
   const [error, setError] = useState<string | null>(null)
   const [building, setBuilding] = useState(false)
   const [view, setView, reset] = useViewParams(route, DEFAULTS)
+  const { selected } = useParties(route)
   useEffect(() => {
     loadBudgetReport()
       .then(setReport)
@@ -65,16 +67,8 @@ export default function TalTheme({ route }: { route: Route }) {
     ? Number(view.omrade)
     : [...areas].sort((a, b) => spread(b) - spread(a))[0]
   const areaName = names.get(area) ?? String(area)
-  const picked = listParam(view.partier).filter((p) =>
-    RIKSDAG_PARTIES.includes(p),
-  )
-  const toggle = (p: string) =>
-    setView({
-      partier: (picked.includes(p)
-        ? picked.filter((x) => x !== p)
-        : [...picked, p]
-      ).join(','),
-    })
+  const picked = shownParties(selected)
+  const lines = view.diagram === 'linje'
   const series = picked.map((party) => ({
     key: party,
     party,
@@ -96,6 +90,14 @@ export default function TalTheme({ route }: { route: Route }) {
         RIKSDAG_PARTIES.includes(r.party),
     )
     .sort((a, b) => b.keyword_share_pct - a.keyword_share_pct)
+  const latestBars = latestByParty
+    .filter((r) => picked.includes(r.party))
+    .map((r) => ({
+      key: r.party,
+      party: r.party,
+      label: `${r.party} · ${partyName(r.party)}`,
+      value: r.keyword_share_pct,
+    }))
   const most = latestByParty[0]
   const least = latestByParty.at(-1)
   const coverage = (report?.language.coverage ?? []).filter(
@@ -125,7 +127,18 @@ export default function TalTheme({ route }: { route: Route }) {
         options={areaOptions}
         onChange={(omrade) => setView({ omrade })}
       />
-      <PartyPicker parties={RIKSDAG_PARTIES} picked={picked} toggle={toggle} />
+      <Select
+        label={l('Chart', 'Diagram')}
+        value={lines ? 'linje' : 'stapel'}
+        options={[
+          {
+            value: 'stapel',
+            label: l('Latest session, bars', 'Senaste riksmötet, staplar'),
+          },
+          { value: 'linje', label: l('Over time, lines', 'Över tid, linjer') },
+        ]}
+        onChange={(diagram) => setView({ diagram })}
+      />
     </>
   )
   const table = (
@@ -210,12 +223,28 @@ export default function TalTheme({ route }: { route: Route }) {
           `How much the parties talk about ${areaName}`,
           `Hur mycket partierna pratar om ${areaName}`,
         )}
-        chartMeta={l(
-          `Per cent of each party’s issue words · ${corpusName} · ${sessions[0] ?? ''}–${latest}`,
-          `Procent av partiets ämnesord · ${corpusName} · ${sessions[0] ?? ''}–${latest}`,
-        )}
+        chartMeta={
+          lines
+            ? l(
+                `Per cent of each party’s issue words · ${corpusName} · ${sessions[0] ?? ''}–${latest}`,
+                `Procent av partiets ämnesord · ${corpusName} · ${sessions[0] ?? ''}–${latest}`,
+              )
+            : l(
+                `Per cent of each party’s issue words · ${corpusName} · ${latest}`,
+                `Procent av partiets ämnesord · ${corpusName} · ${latest}`,
+              )
+        }
         chart={
-          picked.length ? (
+          !lines ? (
+            <Bars
+              bars={latestBars}
+              format={(v) => pct(v)}
+              description={l(
+                `Share of speech about ${areaName}, ${latest}: ${latestBars.map((b) => `${b.key} ${pct(b.value)}`).join(', ')}`,
+                `Andel av talet om ${areaName}, ${latest}: ${latestBars.map((b) => `${b.key} ${pct(b.value)}`).join(', ')}`,
+              )}
+            />
+          ) : picked.length ? (
             <MultiLineChart
               series={series}
               label={l(
@@ -306,13 +335,6 @@ export default function TalTheme({ route }: { route: Route }) {
             onChange={(omrade) => setView({ omrade })}
           />
         </Field>
-        <Field label={l('Parties', 'Partier')}>
-          <PartyPicker
-            parties={RIKSDAG_PARTIES}
-            picked={picked}
-            toggle={toggle}
-          />
-        </Field>
         <Field label={l('Period', 'Tidsperiod')}>
           <Choice
             name="fran"
@@ -367,13 +389,34 @@ export default function TalTheme({ route }: { route: Route }) {
             onChange={(metod) => setView({ metod })}
           />
         </Field>
-        <Field label={l('Chart type', 'Graftyp')}>
-          <p className="ds-small">
-            {l(
-              'Lines: one share per party and session.',
-              'Linjer: en andel per parti och riksmöte.',
-            )}
-          </p>
+        <Field
+          label={l('Chart type', 'Graftyp')}
+          hint={l(
+            'Parties are chosen in the bar at the top.',
+            'Partier väljs i raden högst upp.',
+          )}
+        >
+          <Choice
+            name="diagram"
+            value={lines ? 'linje' : 'stapel'}
+            options={[
+              {
+                value: 'stapel',
+                label: l(
+                  'Bars: the latest session',
+                  'Staplar: senaste riksmötet',
+                ),
+              },
+              {
+                value: 'linje',
+                label: l(
+                  'Lines: one share per session',
+                  'Linjer: en andel per riksmöte',
+                ),
+              },
+            ]}
+            onChange={(diagram) => setView({ diagram })}
+          />
         </Field>
       </BuilderPanel>
     </>

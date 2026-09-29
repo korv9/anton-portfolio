@@ -3,10 +3,10 @@ import { currentLocale, l, setLocale, type Locale } from '../i18n'
 import { profile } from '../content'
 
 const LINKS: [string, string, string][] = [
-  ['#om-mig', 'About', 'Om mig'],
   ['#projekt', 'Projects', 'Projekt'],
+  ['#erfarenhet', 'Experience', 'Erfarenhet'],
+  ['#teknik', 'Tech stack', 'Tech stack'],
   ['#politik', 'Politics', 'Politik'],
-  ['#kontakt', 'Contact', 'Kontakt'],
 ]
 
 export default function Header({

@@ -1,8 +1,10 @@
 /**
- * Läget just nu, as one screen: key figures, what to keep an eye on, and six cards (seats,
- * polls, who votes alike, budget, what the party talks about, news). Choosing a party in the
- * side list focuses every card on it; the choice is kept in the address (`#politik?parti=S`).
- * Everything comes from the published data files; nothing here is estimated.
+ * Läget just nu, as one screen. The budget comes first: what the parties want to spend money
+ * on is where priorities show in kronor. Around it: key figures, the latest survey, who votes
+ * alike, what the parties talk about and the seats. Every card follows the parties chosen in
+ * the party bar, and any number of parties can be compared side by side. Slicers above the
+ * cards (budget year, number of areas, order, measure, survey comparison) are kept in the
+ * address like the parties. Everything comes from the published data files.
  */
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { l } from '../../i18n'
@@ -16,15 +18,19 @@ import {
 } from '../../parties/identity'
 import type { Route } from '../../router'
 import { useViewParams } from '../useViewParams'
+import { shownParties, useParties, withParties } from '../partySelection'
 import {
   areaNames,
+  budgetBasis,
   loadBudgetReport,
   type BudgetReport,
+  type BudgetRow,
 } from '../themes/BudgetTheme'
-import { dayName, monthName, num, pct, signed } from '../controls'
+import { Select, dayName, monthName, num, pct, signed } from '../controls'
 import { CountUp } from './motion'
-import MiniLines from './MiniLines'
 import DashBars from './DashBars'
+import GroupedBars from './GroupedBars'
+import Heatmap from './Heatmap'
 import './dash.css'
 
 type PollRow = {
@@ -34,24 +40,32 @@ type PollRow = {
   margin_of_error_pp: number | null
 }
 
+const SLICERS = {
+  ar: '',
+  omraden: '8',
+  ordning: 'storst',
+  matt: 'mnkr',
+  jmf: 'forra',
+}
+
 function Card({
   title,
   meta,
   href,
   index,
   children,
-  wide = false,
+  className = '',
 }: {
   title: string
   meta: string
   href: string
   index: number
   children: ReactNode
-  wide?: boolean
+  className?: string
 }) {
   return (
     <section
-      className={wide ? 'dash-card wide' : 'dash-card'}
+      className={`dash-card ${className}`}
       style={{ ['--i' as string]: index }}
       aria-label={title}
     >
@@ -73,19 +87,17 @@ function Kpi({
   format,
   sub,
   index,
-  tone,
 }: {
   label: string
   value: number
   format: (v: number) => string
   sub?: string
   index: number
-  tone?: string
 }) {
   return (
     <div className="dash-kpi" style={{ ['--i' as string]: index }}>
       <dt>{label}</dt>
-      <dd style={tone ? { color: tone } : undefined}>
+      <dd>
         <CountUp value={value} format={format} />
       </dd>
       {sub && <p>{sub}</p>}
@@ -94,7 +106,8 @@ function Kpi({
 }
 
 export default function Dashboard({ route }: { route: Route }) {
-  const [view, setView] = useViewParams(route, { parti: '' })
+  const [view, setView] = useViewParams(route, SLICERS)
+  const { selected, toggle } = useParties(route)
   const [now, setNow] = useState<Now | null>(null)
   const [polls, setPolls] = useState<PollRow[] | null>(null)
   const [sessions, setSessions] = useState<Sessions | null>(null)
@@ -119,8 +132,9 @@ export default function Dashboard({ route }: { route: Route }) {
       .catch(() => {})
   }, [])
 
-  const chosen = RIKSDAG_PARTIES.includes(view.parti) ? view.parti : null
-  const choose = (party: string | null) => setView({ parti: party ?? '' })
+  const chosen = shownParties(selected, [])
+  const single = chosen.length === 1 ? chosen[0] : null
+  const shown = shownParties(selected)
 
   // ---- Seats and government ----
   const seated = now?.election.parties.filter((p) => p.seats > 0) ?? []
@@ -134,9 +148,59 @@ export default function Dashboard({ route }: { route: Route }) {
     .filter((p) => side.includes(p.party))
     .reduce((s, p) => s + p.seats, 0)
   const majority = now?.election.majority ?? 175
-  // Party-specific cards follow the chosen party, or the largest party until one is chosen.
-  const focus = chosen ?? largest?.party ?? 'S'
-  const focusResult = seated.find((p) => p.party === focus)
+
+  // ---- Budget: grouped bars, one per party, for the areas that differ most ----
+  const budgetRows = report?.budgets ?? []
+  const names = useMemo(() => areaNames(budgetRows), [budgetRows])
+  const years = [...new Set(budgetRows.map((r) => r.budget_year))].sort(
+    (a, b) => b - a,
+  )
+  const year = years.includes(Number(view.ar))
+    ? Number(view.ar)
+    : (years[0] ?? 0)
+  const yearRows = budgetRows.filter((r) => r.budget_year === year)
+  const budgetParties = RIKSDAG_PARTIES.filter((p) =>
+    yearRows.some((r) => r.actor === p),
+  )
+  // Parties in or supporting the government table no budget of their own: when none of the
+  // chosen parties has one, the card shows the opposition's budgets instead of nothing.
+  const chosenBudgets = chosen.filter((p) => budgetParties.includes(p))
+  const budgetShown = chosenBudgets.length ? chosenBudgets : budgetParties
+  const noBudget = chosen.filter((p) => !budgetParties.includes(p))
+  const percent = view.matt === 'procent'
+  const valueOf = (r: BudgetRow) =>
+    percent
+      ? r.government_amount_msek
+        ? (r.deviation_msek / r.government_amount_msek) * 100
+        : 0
+      : r.deviation_msek
+  const budgetFormat = percent ? (v: number) => `${signed(v, 1)} %` : signed
+  const cell = (area: number, party: string) => {
+    const r = yearRows.find(
+      (x) => x.actor === party && x.expenditure_area === area,
+    )
+    return r ? valueOf(r) : null
+  }
+  const areas = [...new Set(yearRows.map((r) => r.expenditure_area))]
+  const reach = (area: number) =>
+    Math.max(0, ...budgetShown.map((p) => Math.abs(cell(area, p) ?? 0)))
+  const total = (area: number) =>
+    budgetShown.reduce((s, p) => s + (cell(area, p) ?? 0), 0)
+  const ranked = [...areas]
+    .filter((a) => reach(a) > 0)
+    .sort((a, b) => reach(b) - reach(a))
+  const limit = view.omraden === 'alla' ? ranked.length : Number(view.omraden)
+  const budgetAreas = ranked
+    .slice(0, limit || 8)
+    .sort((a, b) =>
+      view.ordning === 'nummer'
+        ? a - b
+        : view.ordning === 'satsning'
+          ? total(b) - total(a)
+          : reach(b) - reach(a),
+    )
+  const basis = budgetBasis(report, year)
+  const net = basis.net
 
   // ---- Polls ----
   const months = useMemo(
@@ -147,20 +211,28 @@ export default function Dashboard({ route }: { route: Route }) {
   const prevMonth = months.at(-2) ?? ''
   const pollOf = (party: string, month: string) =>
     polls?.find((p) => p.party === party && p.survey_month === month)
-  const pollSeries = useMemo(
-    () =>
-      RIKSDAG_PARTIES.map((party) => ({
-        party,
-        points: (polls ?? [])
-          .filter((p) => p.party === party && p.survey_month >= '2014-01-01')
-          .map((p) => ({
-            date: p.survey_month,
-            value: p.share_pct,
-            label: monthName(p.survey_month),
-          })),
-      })),
-    [polls],
-  )
+  const vsElection = view.jmf === 'valet'
+  const baseline = (party: string) =>
+    vsElection
+      ? seated.find((s) => s.party === party)?.share_pct
+      : pollOf(party, prevMonth)?.share_pct
+  const pollBars = shown
+    .map((party) => {
+      const value = pollOf(party, latestMonth)?.share_pct
+      const before = baseline(party)
+      return value == null
+        ? null
+        : {
+            key: party,
+            label: `${party} · ${partyName(party)}`,
+            value,
+            party,
+            ref: before ?? null,
+            note: before != null ? ` ${signed(value - before, 1)}` : undefined,
+          }
+    })
+    .filter((b): b is NonNullable<typeof b> => b != null)
+    .sort((a, b) => b.value - a.value)
   const movers = RIKSDAG_PARTIES.map((party) => {
     const a = pollOf(party, latestMonth)
     const b = pollOf(party, prevMonth)
@@ -169,68 +241,50 @@ export default function Dashboard({ route }: { route: Route }) {
   const mover = [...movers].sort(
     (a, b) => Math.abs(b.change) - Math.abs(a.change),
   )[0]
-  const focusPoll = pollOf(focus, latestMonth)
-  const focusPrev = pollOf(focus, prevMonth)
 
   // ---- Votes ----
   const lastSession = sessions?.sessions.at(-1)
   const pairs =
     sessions?.party_pairs.filter((p) => p.session === lastSession?.session) ??
     []
-  const alike = RIKSDAG_PARTIES.filter((p) => p !== focus)
-    .map((p) => ({
-      party: p,
-      value: pairs.find(
-        (x) =>
-          (x.party_a === focus && x.party_b === p) ||
-          (x.party_a === p && x.party_b === focus),
-      )?.agreement_pct,
-    }))
-    .filter((x): x is { party: string; value: number } => x.value != null)
-    .sort((a, b) => b.value - a.value)
-  const record = sessions?.party_record.find(
-    (r) => r.session === lastSession?.session && r.party === focus,
-  )
+  const agreement = (a: string, b: string) =>
+    a === b
+      ? null
+      : pairs.find(
+          (x) =>
+            (x.party_a === a && x.party_b === b) ||
+            (x.party_a === b && x.party_b === a),
+        )?.agreement_pct
+  const alike = single
+    ? RIKSDAG_PARTIES.filter((p) => p !== single)
+        .map((p) => ({ party: p, value: agreement(single, p) }))
+        .filter((x): x is { party: string; value: number } => x.value != null)
+        .sort((a, b) => b.value - a.value)
+    : []
+  const recordOf = (party: string) =>
+    sessions?.party_record.find(
+      (r) => r.session === lastSession?.session && r.party === party,
+    )
   const govWon = sessions?.government_record.at(-1)
 
-  // ---- Budget: the latest year in which the party tabled its own budget ----
-  const budgetRows = report?.budgets ?? []
-  const names = useMemo(() => areaNames(budgetRows), [budgetRows])
-  const budgetYear = Math.max(
-    0,
-    ...budgetRows.filter((r) => r.actor === focus).map((r) => r.budget_year),
-  )
-  const partyBudget = budgetRows
-    .filter(
-      (r) =>
-        r.actor === focus &&
-        r.budget_year === budgetYear &&
-        r.deviation_msek !== 0,
-    )
-    .sort((a, b) => b.deviation_msek - a.deviation_msek)
-  const budgetShown =
-    partyBudget.length > 8
-      ? [...partyBudget.slice(0, 4), ...partyBudget.slice(-4)]
-      : partyBudget
-  const budgetNet = budgetRows
-    .filter((r) => r.actor === focus && r.budget_year === budgetYear)
-    .reduce((s, r) => s + r.deviation_msek, 0)
-
-  // ---- Talk: the areas the party talks about most, latest session ----
+  // ---- Talk: the areas the parties talk about most, latest session ----
   const talkRows = (report?.language.rows ?? []).filter(
     (r) => r.corpus === 'issues' && r.method === 'stem',
   )
   const talkSession =
     [...new Set(talkRows.map((r) => r.session))].sort().at(-1) ?? ''
-  const talkTop = talkRows
-    .filter((r) => r.session === talkSession && r.party === focus)
-    .sort((a, b) => b.keyword_share_pct - a.keyword_share_pct)
-    .slice(0, 6)
-
-  // ---- News ----
-  const newsItems = (news?.items ?? [])
-    .filter((i) => !chosen || i.parties.includes(chosen))
-    .slice(0, 6)
+  const talkNow = talkRows.filter((r) => r.session === talkSession)
+  const talkOf = (area: number, party: string) =>
+    talkNow.find((r) => r.expenditure_area === area && r.party === party)
+      ?.keyword_share_pct
+  const talkAreas = [...new Set(talkNow.map((r) => r.expenditure_area))]
+    .map((area) => ({
+      area,
+      top: Math.max(0, ...shown.map((p) => talkOf(area, p) ?? 0)),
+    }))
+    .sort((a, b) => b.top - a.top)
+    .slice(0, single ? 7 : 5)
+    .map((a) => a.area)
 
   // ---- What to keep an eye on ----
   const attention: string[] = []
@@ -238,21 +292,18 @@ export default function Dashboard({ route }: { route: Route }) {
     attention.push(
       `${gov.government_name}: ${gov.status_note.charAt(0).toLowerCase()}${gov.status_note.slice(1)}.`,
     )
-  if (now?.formation_news[0])
+  const headline = (news?.items ?? []).find(
+    (i) => !chosen.length || i.parties.some((p) => chosen.includes(p)),
+  )
+  if (headline)
     attention.push(
-      l(
-        `Latest (${dayName(now.formation_news[0].date)}): ${now.formation_news[0].title}.`,
-        `Senast (${dayName(now.formation_news[0].date)}): ${now.formation_news[0].title}.`,
-      ),
+      `${l('News', 'Nyhet')} ${dayName(headline.published_at)}: ${headline.title}`,
     )
-  if (chosen && focusPoll && focusPrev)
+  else if (now?.formation_news[0])
     attention.push(
-      l(
-        `${partyName(focus)} has ${pct(focusPoll.share_pct)} in SCB’s survey of ${monthName(latestMonth)}, ${signed(focusPoll.share_pct - focusPrev.share_pct, 1)} points since ${monthName(prevMonth)}.`,
-        `${partyName(focus)} har ${pct(focusPoll.share_pct)} i SCB:s mätning ${monthName(latestMonth)}, ${signed(focusPoll.share_pct - focusPrev.share_pct, 1)} procentenheter sedan ${monthName(prevMonth)}.`,
-      ),
+      `${l('Latest', 'Senast')} (${dayName(now.formation_news[0].date)}): ${now.formation_news[0].title}.`,
     )
-  else if (mover)
+  if (mover && !chosen.length)
     attention.push(
       l(
         `Biggest shift in SCB’s latest survey: ${partyName(mover.party)}, ${signed(mover.change, 1)} points (${monthName(latestMonth)}).`,
@@ -273,193 +324,500 @@ export default function Dashboard({ route }: { route: Route }) {
       </p>
     )
 
-  const p = identity(focus)
   let seatOffset = 0
   const seatOrder = [
     ...seated.filter((s) => gov?.government_parties.includes(s.party)),
     ...seated.filter((s) => gov?.agreement_parties?.includes(s.party)),
     ...seated.filter((s) => !side.includes(s.party)),
   ]
+  const focusResult = single ? seated.find((p) => p.party === single) : null
+  const focusPoll = single ? pollOf(single, latestMonth) : null
+  const focusPrev = single ? pollOf(single, prevMonth) : null
+  const focusRecord = single ? recordOf(single) : null
+
+  const partiesLabel = chosen.length
+    ? chosen.join(', ')
+    : l('all parties', 'alla partier')
 
   return (
-    <div className="dash" data-party={chosen ?? undefined}>
+    <div className="dash" data-parties={chosen.join(',') || undefined}>
       <header className="dash-head">
         <div>
           <h1>
             {l('Where things stand', 'Läget just nu')}
-            {chosen && (
-              <span className="dash-focus" style={{ borderColor: p.line }}>
-                <PartyLogo party={focus} size={20} />
-                {partyName(focus)}
-                <button
-                  type="button"
-                  onClick={() => choose(null)}
-                  aria-label={l('Show all parties', 'Visa alla partier')}
-                >
-                  ×
-                </button>
+            {chosen.length > 0 && (
+              <span className="dash-focus">
+                {chosen.map((p) => (
+                  <PartyLogo key={p} party={p} size={18} />
+                ))}
+                {single ? partyName(single) : chosen.join(' · ')}
               </span>
             )}
           </h1>
           <p className="dash-sub">
             {l('Updated', 'Uppdaterad')} {dayName(now.generated_at)} ·{' '}
-            {chosen
+            {chosen.length
               ? l(
-                  'Every card shows the chosen party.',
-                  'Alla kort visar valt parti.',
+                  'Every card compares the chosen parties.',
+                  'Alla kort jämför valda partier.',
                 )
               : l(
-                  'Choose a party on the left to focus every card on it.',
-                  'Välj ett parti till vänster så visar alla kort det partiet.',
+                  'Choose parties in the bar above to compare them.',
+                  'Välj partier i raden ovanför för att jämföra dem.',
                 )}
+            {single && (
+              <>
+                {' · '}
+                <a
+                  className="dash-partylink"
+                  href={`#parties-${single.toLowerCase()}`}
+                >
+                  {l(`Everything about ${single}`, `Allt om ${single}`)} →
+                </a>
+              </>
+            )}
           </p>
         </div>
-        {chosen && (
-          <a
-            className="dash-partylink"
-            href={`#parties-${focus.toLowerCase()}`}
-          >
-            {l(`Everything about ${focus}`, `Allt om ${focus}`)} →
-          </a>
-        )}
+        <div className="dash-slicers" aria-label={l('Filters', 'Filter')}>
+          <Select
+            label={l('Budget year', 'Budgetår')}
+            value={String(year)}
+            options={years.map((y) => ({ value: String(y), label: String(y) }))}
+            onChange={(ar) => setView({ ar })}
+          />
+          <Select
+            label={l('Areas', 'Områden')}
+            value={view.omraden}
+            options={[
+              { value: '5', label: l('Top 5', 'Topp 5') },
+              { value: '8', label: l('Top 8', 'Topp 8') },
+              { value: '12', label: l('Top 12', 'Topp 12') },
+              { value: 'alla', label: l('All', 'Alla') },
+            ]}
+            onChange={(omraden) => setView({ omraden })}
+          />
+          <Select
+            label={l('Order', 'Sortering')}
+            value={view.ordning}
+            options={[
+              {
+                value: 'storst',
+                label: l('Largest difference', 'Störst skillnad'),
+              },
+              {
+                value: 'satsning',
+                label: l('Most added', 'Mest satsat'),
+              },
+              { value: 'nummer', label: l('Area number', 'Områdesnummer') },
+            ]}
+            onChange={(ordning) => setView({ ordning })}
+          />
+          <Select
+            label={l('Measure', 'Mått')}
+            value={percent ? 'procent' : 'mnkr'}
+            options={[
+              { value: 'mnkr', label: l('SEK m', 'Mnkr') },
+              {
+                value: 'procent',
+                label: l('% of the budget', '% av budgeten'),
+              },
+            ]}
+            onChange={(matt) => setView({ matt })}
+          />
+          <Select
+            label={l('Survey against', 'Mätning mot')}
+            value={vsElection ? 'valet' : 'forra'}
+            options={[
+              {
+                value: 'forra',
+                label: l('Previous survey', 'Förra mätningen'),
+              },
+              {
+                value: 'valet',
+                label: l(
+                  `Election ${now.election.year}`,
+                  `Valet ${now.election.year}`,
+                ),
+              },
+            ]}
+            onChange={(jmf) => setView({ jmf })}
+          />
+        </div>
       </header>
 
-      <dl className="dash-kpis">
-        {chosen ? (
-          <>
-            <Kpi
-              index={0}
-              label={l('Seats', 'Mandat')}
-              value={focusResult?.seats ?? 0}
-              format={(v) => num(v)}
-              sub={
-                focusResult?.previous_seats != null
-                  ? `${signed(focusResult.seats - focusResult.previous_seats)} ${l('since last election', 'sedan förra valet')}`
-                  : undefined
-              }
-            />
-            <Kpi
-              index={1}
-              label={l('Election result', 'Valresultat')}
-              value={focusResult?.share_pct ?? 0}
-              format={(v) => pct(v, 1)}
-              sub={`${l('election', 'valet')} ${now.election.year}`}
-            />
-            <Kpi
-              index={2}
-              label={l('Latest survey (PSU)', 'Senaste mätning (PSU)')}
-              value={focusPoll?.share_pct ?? 0}
-              format={(v) => pct(v, 1)}
-              sub={
-                focusPoll && focusPrev
-                  ? `${signed(focusPoll.share_pct - focusPrev.share_pct, 1)} p.e. · ${monthName(latestMonth)}`
-                  : undefined
-              }
-            />
-            <Kpi
-              index={3}
-              label={l('Voted with the government', 'Röstade som regeringen')}
-              value={record?.with_government_pct ?? 0}
-              format={(v) => pct(v, 0)}
-              sub={lastSession?.session}
-            />
-            <Kpi
-              index={4}
-              label={l('Party unity', 'Partiets enighet')}
-              value={record?.cohesion_pct ?? 0}
-              format={(v) => pct(v, 1)}
-              sub={lastSession?.session}
-            />
-            <Kpi
-              index={5}
-              label={l('In the news, 30 days', 'I nyheterna, 30 dagar')}
-              value={news?.party_counts_30d[focus] ?? 0}
-              format={(v) => num(v)}
-              sub={l('items naming the party', 'nyheter som nämner partiet')}
-            />
-          </>
-        ) : (
-          <>
-            <Kpi
-              index={0}
-              label={l('Largest party', 'Största parti')}
-              value={largest?.seats ?? 0}
-              format={(v) => `${largest?.party} ${num(v)}`}
-              sub={l('seats', 'mandat')}
-            />
-            <Kpi
-              index={1}
-              label={l('Governing side', 'Regeringssidan')}
-              value={sideSeats}
-              format={(v) => `${num(v)} / 349`}
-              sub={side.join(', ')}
-            />
-            <Kpi
-              index={2}
-              label={l('Needed for a majority', 'Krävs för majoritet')}
-              value={majority}
-              format={(v) => num(v)}
-              sub={
-                sideSeats < majority
-                  ? l(
-                      `${majority - sideSeats} short`,
-                      `${majority - sideSeats} mandat saknas`,
-                    )
-                  : undefined
-              }
-            />
-            <Kpi
-              index={3}
-              label={l('Largest in the survey', 'Störst i mätningen')}
-              value={pollOf(largest?.party ?? 'S', latestMonth)?.share_pct ?? 0}
-              format={(v) => `${largest?.party} ${pct(v, 1)}`}
-              sub={`PSU ${monthName(latestMonth)}`}
-            />
-            <Kpi
-              index={4}
-              label={l('Roll calls', 'Voteringar')}
-              value={lastSession?.roll_calls ?? 0}
-              format={(v) => num(v)}
-              sub={lastSession?.session}
-            />
-            <Kpi
-              index={5}
-              label={l('Government won', 'Regeringen vann')}
-              value={govWon?.government_won_pct ?? 0}
-              format={(v) => pct(v, 0)}
-              sub={l(
-                `of decisions ${govWon?.session ?? ''}`,
-                `av besluten ${govWon?.session ?? ''}`,
-              )}
-            />
-          </>
-        )}
-      </dl>
-
-      <section className="dash-attention" aria-labelledby="dash-attention">
-        <h2 id="dash-attention">
-          {l('Worth keeping an eye on', 'Att hålla koll på')}
-        </h2>
-        <ul>
-          {attention.slice(0, 3).map((line) => (
-            <li key={line}>{line}</li>
-          ))}
+      {chosen.length > 1 ? (
+        <ul
+          className="dash-compare"
+          aria-label={l('The chosen parties', 'Valda partier')}
+        >
+          {chosen.map((party, i) => {
+            const result = seated.find((s) => s.party === party)
+            const poll = pollOf(party, latestMonth)
+            const before = baseline(party)
+            const rec = recordOf(party)
+            return (
+              <li
+                key={party}
+                style={{
+                  ['--i' as string]: i,
+                  borderTopColor: identity(party).color,
+                }}
+              >
+                <p>
+                  <PartyLogo party={party} size={18} />
+                  <b>{partyName(party)}</b>
+                </p>
+                <dl>
+                  <div>
+                    <dt>{l('Seats', 'Mandat')}</dt>
+                    <dd>{result ? num(result.seats) : '–'}</dd>
+                  </div>
+                  <div>
+                    <dt>PSU</dt>
+                    <dd>
+                      {poll ? pct(poll.share_pct) : '–'}
+                      {poll && before != null && (
+                        <small> {signed(poll.share_pct - before, 1)}</small>
+                      )}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>{l('With gov.', 'Som reg.')}</dt>
+                    <dd>
+                      {rec?.with_government_pct != null
+                        ? pct(rec.with_government_pct, 0)
+                        : '–'}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>{l('Budget, total', 'Budget, totalt')}</dt>
+                    <dd>
+                      {budgetParties.includes(party) ? signed(net(party)) : '–'}
+                    </dd>
+                  </div>
+                </dl>
+              </li>
+            )
+          })}
         </ul>
-      </section>
+      ) : (
+        <dl className="dash-kpis">
+          {single ? (
+            <>
+              <Kpi
+                index={0}
+                label={l('Seats', 'Mandat')}
+                value={focusResult?.seats ?? 0}
+                format={(v) => num(v)}
+                sub={
+                  focusResult?.previous_seats != null
+                    ? `${signed(focusResult.seats - focusResult.previous_seats)} ${l('since last election', 'sedan förra valet')}`
+                    : undefined
+                }
+              />
+              <Kpi
+                index={1}
+                label={l('Election result', 'Valresultat')}
+                value={focusResult?.share_pct ?? 0}
+                format={(v) => pct(v, 1)}
+                sub={`${l('election', 'valet')} ${now.election.year}`}
+              />
+              <Kpi
+                index={2}
+                label={l('Latest survey (PSU)', 'Senaste mätning (PSU)')}
+                value={focusPoll?.share_pct ?? 0}
+                format={(v) => pct(v, 1)}
+                sub={
+                  focusPoll && focusPrev
+                    ? `${signed(focusPoll.share_pct - focusPrev.share_pct, 1)} p.e. · ${monthName(latestMonth)}`
+                    : undefined
+                }
+              />
+              <Kpi
+                index={3}
+                label={l('Voted with the government', 'Röstade som regeringen')}
+                value={focusRecord?.with_government_pct ?? 0}
+                format={(v) => pct(v, 0)}
+                sub={lastSession?.session}
+              />
+              <Kpi
+                index={4}
+                label={l('Budget in total', 'Budget totalt')}
+                value={budgetParties.includes(single!) ? net(single!) : 0}
+                format={(v) =>
+                  budgetParties.includes(single!) ? signed(v) : '–'
+                }
+                sub={
+                  budgetParties.includes(single!)
+                    ? `${l('SEK m', 'mnkr')}, ${basis.short.toLowerCase()} ${year}`
+                    : l('no budget of its own', 'ingen egen budget')
+                }
+              />
+              <Kpi
+                index={5}
+                label={l('In the news, 30 days', 'I nyheterna, 30 dagar')}
+                value={news?.party_counts_30d[single!] ?? 0}
+                format={(v) => num(v)}
+                sub={l('items naming the party', 'nyheter som nämner partiet')}
+              />
+            </>
+          ) : (
+            <>
+              <Kpi
+                index={0}
+                label={l('Largest party', 'Största parti')}
+                value={largest?.seats ?? 0}
+                format={(v) => `${largest?.party} ${num(v)}`}
+                sub={l('seats', 'mandat')}
+              />
+              <Kpi
+                index={1}
+                label={l('Governing side', 'Regeringssidan')}
+                value={sideSeats}
+                format={(v) => `${num(v)} / 349`}
+                sub={side.join(', ')}
+              />
+              <Kpi
+                index={2}
+                label={l('Needed for a majority', 'Krävs för majoritet')}
+                value={majority}
+                format={(v) => num(v)}
+                sub={
+                  sideSeats < majority
+                    ? l(
+                        `${majority - sideSeats} short`,
+                        `${majority - sideSeats} mandat saknas`,
+                      )
+                    : undefined
+                }
+              />
+              <Kpi
+                index={3}
+                label={l('Largest in the survey', 'Störst i mätningen')}
+                value={pollBars[0]?.value ?? 0}
+                format={(v) => `${pollBars[0]?.party ?? ''} ${pct(v, 1)}`}
+                sub={`PSU ${monthName(latestMonth)}`}
+              />
+              <Kpi
+                index={4}
+                label={l('Roll calls', 'Voteringar')}
+                value={lastSession?.roll_calls ?? 0}
+                format={(v) => num(v)}
+                sub={lastSession?.session}
+              />
+              <Kpi
+                index={5}
+                label={l('Government won', 'Regeringen vann')}
+                value={govWon?.government_won_pct ?? 0}
+                format={(v) => pct(v, 0)}
+                sub={l(
+                  `of decisions ${govWon?.session ?? ''}`,
+                  `av besluten ${govWon?.session ?? ''}`,
+                )}
+              />
+            </>
+          )}
+        </dl>
+      )}
+
+      {attention.length > 0 && (
+        <section className="dash-attention" aria-labelledby="dash-attention">
+          <h2 id="dash-attention">
+            {l('Worth keeping an eye on', 'Att hålla koll på')}
+          </h2>
+          <ul>
+            {attention.slice(0, 2).map((line) => (
+              <li key={line}>{line}</li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <div className="dash-grid">
         <Card
           index={0}
+          className="dash-budget"
+          title={l(
+            'What the parties want to spend money on',
+            'Vad partierna vill lägga pengar på',
+          )}
+          meta={l(
+            `${percent ? 'Per cent' : 'SEK m'} ${basis.long}`,
+            `${percent ? 'Procent' : 'Mnkr'} ${basis.long}`,
+          )}
+          href={withParties('#politik-budget', chosen)}
+        >
+          {report && noBudget.length > 0 && (
+            <p className="dash-empty dash-note">
+              {l(
+                `${noBudget.join(', ')}: no budget of their own in ${year}. Parties in or supporting the government do not table one${chosenBudgets.length ? '' : ', so the opposition’s budgets are shown'}.`,
+                `${noBudget.join(', ')}: ingen egen budget ${year}. Partier i eller som stöder regeringen lägger ingen${chosenBudgets.length ? '' : ', så oppositionens budgetar visas'}.`,
+              )}
+            </p>
+          )}
+          {!report ? (
+            <p className="dash-empty">{l('Loading…', 'Laddar…')}</p>
+          ) : budgetShown.length ? (
+            <>
+              <ul className="dash-legend" aria-hidden="true">
+                {budgetShown.map((p) => (
+                  <li key={p}>
+                    <i
+                      style={{
+                        background: identity(p).color,
+                        outline: identity(p).casing
+                          ? `1px solid ${identity(p).casing}`
+                          : undefined,
+                      }}
+                    />
+                    {p}
+                    <small>
+                      {l('total', 'totalt')} {signed(net(p))}
+                    </small>
+                  </li>
+                ))}
+              </ul>
+              <GroupedBars
+                groups={budgetAreas.map((area) => ({
+                  key: String(area),
+                  label: names.get(area) ?? String(area),
+                  values: budgetShown.map((party) => ({
+                    party,
+                    value: cell(area, party),
+                  })),
+                }))}
+                format={budgetFormat}
+                label={l(
+                  `Difference per area, ${basis.long}: ${budgetShown.join(', ')}`,
+                  `Skillnad per område, ${basis.long}: ${budgetShown.join(', ')}`,
+                )}
+              />
+            </>
+          ) : null}
+        </Card>
+
+        <Card
+          index={1}
+          title={l('What voters think', 'Vad väljarna tycker')}
+          meta={l(
+            `SCB PSU ${monthName(latestMonth)} · tick: ${vsElection ? `election ${now.election.year}` : monthName(prevMonth)}`,
+            `SCB:s PSU ${monthName(latestMonth)} · streck: ${vsElection ? `valet ${now.election.year}` : monthName(prevMonth)}`,
+          )}
+          href={withParties('#politik-valjarna', chosen)}
+        >
+          {polls ? (
+            <DashBars
+              bars={pollBars}
+              format={(v) => pct(v, 1)}
+              label={l(
+                `Support in the latest survey, ${partiesLabel}`,
+                `Stöd i senaste mätningen, ${partiesLabel}`,
+              )}
+            />
+          ) : (
+            <p className="dash-empty">{l('Loading…', 'Laddar…')}</p>
+          )}
+        </Card>
+
+        <Card
+          index={2}
+          title={
+            single
+              ? l(`Who ${single} votes like`, `Vilka ${single} röstar som`)
+              : l('Who votes alike', 'Vilka som röstar lika')
+          }
+          meta={l(
+            `Share of roll calls with the same position · ${lastSession?.session ?? ''}`,
+            `Andel voteringar med samma ståndpunkt · ${lastSession?.session ?? ''}`,
+          )}
+          href={withParties('#politik-roster', chosen)}
+        >
+          {single ? (
+            <DashBars
+              bars={alike.map((a) => ({
+                key: a.party,
+                label: `${a.party} · ${partyName(a.party)}`,
+                value: a.value,
+                party: a.party,
+              }))}
+              format={(v) => pct(v, 0)}
+              max={100}
+              label={l(
+                `How often ${partyName(single)} voted like each party`,
+                `Hur ofta ${partyName(single)} röstade som varje parti`,
+              )}
+            />
+          ) : sessions ? (
+            <Heatmap
+              rows={shown.map((p) => ({ key: p, label: partyName(p) }))}
+              rowHeader="party"
+              parties={shown}
+              value={agreement}
+              format={(v) => num(v)}
+              caption={l(
+                `Per cent of roll calls ${lastSession?.session ?? ''} on which two parties voted alike`,
+                `Procent av voteringarna ${lastSession?.session ?? ''} där två partier röstade lika`,
+              )}
+            />
+          ) : (
+            <p className="dash-empty">{l('Loading…', 'Laddar…')}</p>
+          )}
+        </Card>
+
+        <Card
+          index={3}
+          title={l('What the parties talk about', 'Vad partierna pratar om')}
+          meta={l(
+            `Share of issue words · all issue debates · ${talkSession}`,
+            `Andel av ämnesorden · alla sakdebatter · ${talkSession}`,
+          )}
+          href={withParties('#politik-tal', chosen)}
+        >
+          {!report ? (
+            <p className="dash-empty">{l('Loading…', 'Laddar…')}</p>
+          ) : single ? (
+            <DashBars
+              bars={talkAreas.map((area) => ({
+                key: String(area),
+                label: names.get(area) ?? String(area),
+                value: talkOf(area, single) ?? 0,
+                tone: 'neutral' as const,
+              }))}
+              format={(v) => pct(v, 1)}
+              label={l(
+                `What ${partyName(single)} talks about most`,
+                `Vad ${partyName(single)} pratar mest om`,
+              )}
+            />
+          ) : (
+            <Heatmap
+              rows={talkAreas.map((area) => ({
+                key: String(area),
+                label: names.get(area) ?? String(area),
+              }))}
+              parties={shown}
+              value={(area, party) => talkOf(Number(area), party)}
+              format={(v) => num(v, 0)}
+              caption={l(
+                `Per cent of each party’s issue words per area, ${talkSession}`,
+                `Procent av varje partis ämnesord per område, ${talkSession}`,
+              )}
+            />
+          )}
+        </Card>
+
+        <Card
+          index={4}
           title={l('Seats in the Riksdag', 'Mandat i riksdagen')}
           meta={l(
-            `Election ${now.election.year} · line at ${majority}`,
-            `Valet ${now.election.year} · linjen vid ${majority}`,
+            `Election ${now.election.year} · line at ${majority} · click a party to choose it`,
+            `Valet ${now.election.year} · linjen vid ${majority} · klicka för att välja parti`,
           )}
           href="#now-seats"
         >
           <div
             className="dash-seats"
-            role="img"
+            role="group"
             aria-label={seated.map((s) => `${s.party} ${s.seats}`).join(', ')}
           >
             {seatOrder.map((s, i) => {
@@ -471,7 +829,9 @@ export default function Dashboard({ route }: { route: Route }) {
                   type="button"
                   key={s.party}
                   className={
-                    chosen && chosen !== s.party ? 'dash-seat dim' : 'dash-seat'
+                    chosen.length && !chosen.includes(s.party)
+                      ? 'dash-seat dim'
+                      : 'dash-seat'
                   }
                   style={{
                     left: `${left}%`,
@@ -482,9 +842,9 @@ export default function Dashboard({ route }: { route: Route }) {
                     outlineOffset: -1,
                     ['--i' as string]: i,
                   }}
-                  onClick={() => choose(chosen === s.party ? null : s.party)}
+                  onClick={() => toggle(s.party)}
                   aria-label={`${partyName(s.party)}: ${s.seats} ${l('seats', 'mandat')}`}
-                  aria-pressed={chosen === s.party}
+                  aria-pressed={chosen.includes(s.party)}
                 >
                   <b>{s.party}</b>
                   <small>{s.seats}</small>
@@ -511,186 +871,24 @@ export default function Dashboard({ route }: { route: Route }) {
                 {sideSeats} {l('seats', 'mandat')}
               </dd>
             </div>
+            {chosen.length > 0 && (
+              <div>
+                <dt>{l('Chosen parties', 'Valda partier')}</dt>
+                <dd>
+                  {seated
+                    .filter((s) => chosen.includes(s.party))
+                    .reduce((sum, s) => sum + s.seats, 0)}{' '}
+                  {l('seats', 'mandat')}
+                </dd>
+              </div>
+            )}
           </dl>
-        </Card>
-
-        <Card
-          index={1}
-          title={l('What voters think', 'Vad väljarna tycker')}
-          meta={l(
-            `SCB PSU, per cent · 2014–${latestMonth.slice(0, 4)}`,
-            `SCB:s PSU, procent · 2014–${latestMonth.slice(0, 4)}`,
-          )}
-          href={`#politik-valjarna${chosen ? `?partier=${chosen}` : ''}`}
-        >
-          {polls ? (
-            <MiniLines
-              series={pollSeries}
-              focus={chosen}
-              format={(v) => `${num(v)} %`}
-              label={l(
-                'Support per party over time',
-                'Stöd per parti över tid',
-              )}
-            />
-          ) : (
-            <p className="dash-empty">{l('Loading…', 'Laddar…')}</p>
-          )}
-        </Card>
-
-        <Card
-          index={2}
-          title={l(`Who ${focus} votes like`, `Vilka ${focus} röstar som`)}
-          meta={l(
-            `Share of roll calls with the same position · ${lastSession?.session ?? ''}`,
-            `Andel voteringar med samma ståndpunkt · ${lastSession?.session ?? ''}`,
-          )}
-          href={`#politik-roster?parti=${focus}`}
-        >
-          <DashBars
-            bars={alike.map((a) => ({
-              key: a.party,
-              label: `${a.party} · ${partyName(a.party)}`,
-              value: a.value,
-              party: a.party,
-            }))}
-            format={(v) => pct(v, 0)}
-            max={100}
-            label={l(
-              `How often ${partyName(focus)} voted like each party`,
-              `Hur ofta ${partyName(focus)} röstade som varje parti`,
-            )}
-          />
-        </Card>
-
-        <Card
-          index={3}
-          title={l(
-            `${focus}’s budget compared with the government`,
-            `${focus}:s budget jämfört med regeringen`,
-          )}
-          meta={
-            budgetYear
-              ? l(
-                  `SEK m, largest differences · budget year ${budgetYear} · net ${signed(budgetNet)}`,
-                  `Mnkr, största skillnaderna · budgetåret ${budgetYear} · netto ${signed(budgetNet)}`,
-                )
-              : l(
-                  'No budget of its own in the data',
-                  'Ingen egen budget i datan',
-                )
-          }
-          href={`#politik-budget?parti=${focus}${budgetYear ? `&ar=${budgetYear}` : ''}`}
-        >
-          {budgetShown.length ? (
-            <DashBars
-              bars={budgetShown.map((r) => ({
-                key: String(r.expenditure_area),
-                label:
-                  names.get(r.expenditure_area) ?? String(r.expenditure_area),
-                value: r.deviation_msek,
-                party: focus,
-              }))}
-              format={(v) => signed(v)}
-              label={l(
-                'Difference from the government per area',
-                'Skillnad mot regeringen per område',
-              )}
-            />
-          ) : (
-            <p className="dash-empty">
-              {report
-                ? l(
-                    `${partyName(focus)} has not tabled an alternative budget in the years covered: it has been in or supporting government.`,
-                    `${partyName(focus)} har inte lagt någon egen budget under åren i datan: partiet har suttit i eller stött regeringen.`,
-                  )
-                : l('Loading…', 'Laddar…')}
-            </p>
-          )}
-        </Card>
-
-        <Card
-          index={4}
-          title={l(
-            `What ${focus} talks about most`,
-            `Vad ${focus} pratar mest om`,
-          )}
-          meta={l(
-            `Share of issue words · all issue debates · ${talkSession}`,
-            `Andel av ämnesorden · alla sakdebatter · ${talkSession}`,
-          )}
-          href={`#politik-tal${chosen ? `?partier=${chosen}` : ''}`}
-        >
-          {talkTop.length ? (
-            <DashBars
-              bars={talkTop.map((r) => ({
-                key: String(r.expenditure_area),
-                label:
-                  names.get(r.expenditure_area) ?? String(r.expenditure_area),
-                value: r.keyword_share_pct,
-                tone: 'neutral',
-              }))}
-              format={(v) => pct(v, 1)}
-              label={l(
-                'Share of issue words per area',
-                'Andel ämnesord per område',
-              )}
-            />
-          ) : (
-            <p className="dash-empty">{l('Loading…', 'Laddar…')}</p>
-          )}
-        </Card>
-
-        <Card
-          index={5}
-          title={
-            chosen
-              ? l(`${focus} in the news`, `${focus} i nyheterna`)
-              : l('Latest political news', 'Senaste politiska nyheterna')
-          }
-          meta={l(
-            'SVT, Ekot and the Government Offices',
-            'SVT, Ekot och Regeringskansliet',
-          )}
-          href="#now-news"
-        >
-          <ol className="dash-news">
-            {newsItems.map((item, i) => (
-              <li key={item.id} style={{ ['--i' as string]: i }}>
-                <time dateTime={item.published_at}>
-                  {new Date(item.published_at).toLocaleString('sv-SE', {
-                    day: 'numeric',
-                    month: 'short',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  })}
-                </time>
-                <a href={item.url} target="_blank" rel="noopener noreferrer">
-                  {item.title}
-                </a>
-                <span className="dash-news-parties">
-                  {item.parties.slice(0, 4).map((code) => (
-                    <PartyLogo
-                      key={code}
-                      party={code}
-                      size={14}
-                      decorative={false}
-                    />
-                  ))}
-                </span>
-              </li>
-            ))}
-            {news && newsItems.length === 0 && (
-              <li className="dash-empty">
-                {l('No items yet.', 'Inga nyheter ännu.')}
-              </li>
-            )}
-          </ol>
         </Card>
       </div>
       <p className="dash-foot">
         {l('Sources', 'Källor')}: Valmyndigheten, SCB,{' '}
         {l('the Riksdag', 'riksdagen')}, Regeringskansliet, SVT, Ekot ·{' '}
+        <a href="#now-news">{l('All news', 'Alla nyheter')}</a> ·{' '}
         <a href="#politik-kallor">
           {l('Sources and method', 'Källor och metod')}
         </a>

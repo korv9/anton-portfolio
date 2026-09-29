@@ -1,22 +1,18 @@
 /**
- * The start page as one document with two columns. The left column stays put: who Anton is,
- * the role in one line, a table of contents that follows the reader, the three CVs and how to
- * get in touch. The right column is read top to bottom: overview, about, experience, projects,
- * skills, education, contact. Nothing sits behind a toggle; a recruiter should have the whole
- * picture in ten seconds and the detail a scroll away.
+ * The start page, kept to what a recruiter needs: the left column stays put with the name, the
+ * role, three sentences, the CVs and contact links; the right column is the evidence, read top
+ * to bottom: projects, experience and the tech stack with what each part is used for.
  */
 import { useEffect, useState } from 'react'
 import { l } from '../i18n'
 import { profile } from '../content'
 import {
   CVS,
-  EDUCATION,
   EXPERIENCE,
-  FACTS,
   FLAGSHIP,
-  LANGUAGES,
+  PITCH,
   PROJECTS,
-  SKILLS,
+  STACK,
   type Bilingual,
   type Project,
 } from './content'
@@ -25,13 +21,9 @@ import './home.css'
 const b = (text: Bilingual) => l(text.en, text.sv)
 
 const TOC: [string, string, string][] = [
-  ['start', 'Overview', 'Översikt'],
-  ['om-mig', 'About', 'Om mig'],
-  ['erfarenhet', 'Experience', 'Erfarenhet'],
   ['projekt', 'Projects', 'Projekt'],
-  ['kompetenser', 'Skills', 'Kompetenser'],
-  ['utbildning', 'Education', 'Utbildning'],
-  ['kontakt', 'Contact', 'Kontakt'],
+  ['erfarenhet', 'Experience', 'Erfarenhet'],
+  ['teknik', 'Tech stack', 'Tech stack'],
 ]
 
 /** The section currently being read: the last one whose top has passed a third of the view. */
@@ -75,19 +67,7 @@ function Sidebar({ active }: { active: string }) {
             'Data Engineer · Analytics Engineer · Tillämpad AI',
           )}
         </p>
-        <p className="cv-pitch">
-          {l(
-            'I build the whole path from raw data to something people understand: pipelines, models, analysis and the interface on top.',
-            'Jag bygger hela vägen från rådata till något människor förstår: pipelines, modeller, analys och gränssnittet ovanpå.',
-          )}
-        </p>
-        <p className="cv-status">
-          <span className="cv-dot round" aria-hidden="true" />
-          {l(
-            'Open to junior roles · Stockholm',
-            'Söker junior roll · Stockholm',
-          )}
-        </p>
+        <p className="cv-pitch">{b(PITCH)}</p>
       </div>
 
       <nav className="cv-toc" aria-label={l('Contents', 'Innehåll')}>
@@ -208,92 +188,7 @@ export default function HomePage() {
     <div className="cv-layout">
       <Sidebar active={active} />
       <div className="cv-main">
-        <Section id="start" index={1} title={l('Overview', 'Översikt')}>
-          <p className="cv-lede">
-            {l(
-              'Junior data engineer with two data internships behind me, most recently at Avtalat, and a portfolio of end-to-end projects: from API ingestion and dbt models to machine learning and the dashboards people use.',
-              'Junior data engineer med två datapraktiker i bagaget, senast på Avtalat, och en portfolio med projekt från början till slut: från API-inläsning och dbt-modeller till maskininlärning och dashboards som används.',
-            )}
-          </p>
-          <dl className="cv-facts">
-            {FACTS.map((fact, i) => (
-              <div key={fact.value + i} style={{ ['--i' as string]: i }}>
-                <dt>{b(fact.label)}</dt>
-                <dd>{fact.value}</dd>
-              </div>
-            ))}
-          </dl>
-          <div className="cv-fit">
-            <p className="cv-label">
-              {l(
-                'Which role are you hiring for?',
-                'Vilken roll rekryterar du till?',
-              )}
-            </p>
-            <ul>
-              {CVS.map((cv) => (
-                <li key={cv.file}>
-                  <a href={cv.file} download>
-                    <strong>{b(cv.role)}</strong>
-                    <span>{b(cv.focus)}</span>
-                    <small>{l('Download CV', 'Ladda ned CV')} ↓</small>
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </Section>
-
-        <Section id="om-mig" index={2} title={l('About', 'Om mig')}>
-          <div className="cv-prose">
-            <p>
-              {l(
-                'I’m Anton, a data engineer in Stockholm. What I enjoy most is building the whole flow: getting data out of a source system, making it reliable, and turning it into something a person can read and act on.',
-                'Jag heter Anton och är data engineer i Stockholm. Det jag tycker allra mest om är att bygga hela flödet: få ut data ur ett källsystem, göra den pålitlig och göra om den till något en människa kan läsa och agera på.',
-              )}
-            </p>
-            <p>
-              {l(
-                'At Fora and Avtalat I built lakehouse pipelines in Azure Databricks, star schemas for reporting, Power BI models and an NLP analysis of 21,000 incidents. I work closely with the people who use the results and care about data quality, GDPR and being able to trace every number back to its source.',
-                'På Fora och Avtalat byggde jag lakehouse-pipelines i Azure Databricks, stjärnscheman för rapportering, Power BI-modeller och en NLP-analys av 21 000 incidenter. Jag arbetar nära dem som använder resultatet och bryr mig om datakvalitet, GDPR och att varje siffra går att spåra till sin källa.',
-              )}
-            </p>
-            <p>
-              {l(
-                'This site is itself a project: open data, tested models and the interface, built and run by me.',
-                'Den här sajten är själv ett projekt: öppna data, testade modeller och gränssnittet, byggda och drivna av mig.',
-              )}
-            </p>
-          </div>
-        </Section>
-
-        <Section
-          id="erfarenhet"
-          index={3}
-          title={l('Experience', 'Erfarenhet')}
-        >
-          <ol className="cv-timeline">
-            {EXPERIENCE.map((job) => (
-              <li key={job.org} className="cv-job">
-                <p className="cv-when">{b(job.period)}</p>
-                <div>
-                  <h3>
-                    {b(job.role)} <span className="cv-at">· {job.org}</span>
-                  </h3>
-                  <p className="cv-kind">{b(job.kind)}</p>
-                  <ul className="cv-did">
-                    {job.did.map((item) => (
-                      <li key={item.sv}>{b(item)}</li>
-                    ))}
-                  </ul>
-                  <Tags items={job.tech} />
-                </div>
-              </li>
-            ))}
-          </ol>
-        </Section>
-
-        <Section id="projekt" index={4} title={l('Projects', 'Projekt')}>
+        <Section id="projekt" index={1} title={l('Projects', 'Projekt')}>
           <span id="projects" className="anchor-alias" />
           <a className="cv-flagship" href={FLAGSHIP.href}>
             <span className="cv-project-kind">{b(FLAGSHIP.kind)}</span>
@@ -317,65 +212,44 @@ export default function HomePage() {
           </ul>
         </Section>
 
-        <Section id="kompetenser" index={5} title={l('Skills', 'Kompetenser')}>
+        <Section
+          id="erfarenhet"
+          index={2}
+          title={l('Experience', 'Erfarenhet')}
+        >
+          <ol className="cv-timeline">
+            {EXPERIENCE.map((job) => (
+              <li key={job.org} className="cv-job">
+                <p className="cv-when">{b(job.period)}</p>
+                <div>
+                  <h3>
+                    {b(job.role)} <span className="cv-at">· {job.org}</span>
+                  </h3>
+                  <p className="cv-kind">{b(job.kind)}</p>
+                  <ul className="cv-did">
+                    {job.did.map((item) => (
+                      <li key={item.sv}>{b(item)}</li>
+                    ))}
+                  </ul>
+                  <Tags items={job.tech} />
+                </div>
+              </li>
+            ))}
+          </ol>
+        </Section>
+
+        <Section id="teknik" index={3} title={l('Tech stack', 'Tech stack')}>
           <dl className="cv-skills">
-            {SKILLS.map((group) => (
+            {STACK.map((group) => (
               <div key={group.group.sv}>
                 <dt>{b(group.group)}</dt>
                 <dd>
+                  <p className="cv-use">{b(group.use)}</p>
                   <Tags items={group.items} />
                 </dd>
               </div>
             ))}
           </dl>
-        </Section>
-
-        <Section id="utbildning" index={6} title={l('Education', 'Utbildning')}>
-          <div className="cv-job">
-            <p className="cv-when">{EDUCATION.period}</p>
-            <div>
-              <h3>{b(EDUCATION.title)}</h3>
-              <p className="cv-kind">{b(EDUCATION.about)}</p>
-              <p className="cv-kind">{b(LANGUAGES)}</p>
-            </div>
-          </div>
-        </Section>
-
-        <Section id="kontakt" index={7} title={l('Contact', 'Kontakt')}>
-          <p className="cv-lede">
-            {l(
-              'Looking for a junior role in data engineering, analytics engineering or applied AI. The quickest way is email.',
-              'Jag söker en junior roll inom data engineering, analytics engineering eller tillämpad AI. Snabbast når du mig på mejl.',
-            )}
-          </p>
-          <ul className="cv-contact">
-            {profile.email && (
-              <li>
-                <a href={`mailto:${profile.email}`}>
-                  <small>{l('Email', 'Mejl')}</small>
-                  {profile.email}
-                </a>
-              </li>
-            )}
-            {profile.linkedin && (
-              <li>
-                <a href={profile.linkedin} target="_blank" rel="noreferrer">
-                  <small>LinkedIn</small>
-                  linkedin.com/in/anton-ernstsson ↗
-                </a>
-              </li>
-            )}
-            <li>
-              <a
-                href="https://github.com/korv9"
-                target="_blank"
-                rel="noreferrer"
-              >
-                <small>GitHub</small>
-                github.com/korv9 ↗
-              </a>
-            </li>
-          </ul>
         </Section>
       </div>
     </div>

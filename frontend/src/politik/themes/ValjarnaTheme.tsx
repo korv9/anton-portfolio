@@ -5,7 +5,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { l } from '../../i18n'
 import MultiLineChart, { type Series } from '../../charts/MultiLineChart'
-import PartyPicker from '../../parliament/PartyPicker'
 import { load, type Elections } from '../../parliament/data'
 import {
   PartyTag,
@@ -17,7 +16,9 @@ import type { Route } from '../../router'
 import ThemeLayout from '../ThemeLayout'
 import BuilderPanel, { Choice, Field } from '../BuilderPanel'
 import { Select, monthName, num, pct, signed } from '../controls'
-import { listParam, useViewParams } from '../useViewParams'
+import { useViewParams } from '../useViewParams'
+import { shownParties, useParties } from '../partySelection'
+import Bars from '../Bars'
 
 type PollRow = {
   survey_month: string
@@ -28,7 +29,7 @@ type PollRow = {
 
 const PERIODS = ['1973', '1994', '2006', '2014', '2022']
 const DEFAULTS = {
-  partier: RIKSDAG_PARTIES.join(','),
+  diagram: 'stapel',
   fran: '2006',
   matt: 'psu',
   osakerhet: '0',
@@ -40,6 +41,7 @@ export default function ValjarnaTheme({ route }: { route: Route }) {
   const [error, setError] = useState<string | null>(null)
   const [building, setBuilding] = useState(false)
   const [view, setView, reset] = useViewParams(route, DEFAULTS)
+  const { selected } = useParties(route)
   useEffect(() => {
     Promise.all([
       load<{ polls: PollRow[] }>('parliament/polls.json'),
@@ -52,16 +54,8 @@ export default function ValjarnaTheme({ route }: { route: Route }) {
       .catch((e: Error) => setError(e.message))
   }, [])
 
-  const picked = listParam(view.partier).filter((p) =>
-    RIKSDAG_PARTIES.includes(p),
-  )
-  const toggle = (party: string) =>
-    setView({
-      partier: (picked.includes(party)
-        ? picked.filter((p) => p !== party)
-        : [...picked, party]
-      ).join(','),
-    })
+  const picked = shownParties(selected)
+  const lines = view.diagram === 'linje'
   const from = `${view.fran}-01-01`
   const measure = view.matt === 'val' ? 'val' : 'psu'
   const showBand = view.osakerhet === '1' && measure === 'psu'
@@ -130,6 +124,30 @@ export default function ValjarnaTheme({ route }: { route: Route }) {
   const mover = [...moves].sort(
     (a, b) => Math.abs(b.change) - Math.abs(a.change),
   )[0]
+  // Bars: the latest value per party, with the change since the one before.
+  const latestBars = series
+    .map((s) => {
+      const last = s.points.at(-1)
+      const before = s.points.at(-2)
+      return last
+        ? {
+            key: s.key,
+            party: s.key,
+            label: `${s.key} · ${partyName(s.key)}`,
+            value: last.value,
+            note: before
+              ? `${signed(last.value - before.value, 1)} ${l('since', 'sedan')} ${measure === 'psu' ? monthName(before.date) : before.date.slice(0, 4)}`
+              : undefined,
+            when: last.date,
+          }
+        : null
+    })
+    .filter((b): b is NonNullable<typeof b> => b != null)
+    .sort((a, b) => b.value - a.value)
+  const latestWhen = latestBars
+    .map((b) => b.when)
+    .sort()
+    .at(-1)
   const firstShown = series
     .flatMap((s) => s.points)
     .map((p) => p.date)
@@ -155,7 +173,15 @@ export default function ValjarnaTheme({ route }: { route: Route }) {
         options={periodOptions}
         onChange={(fran) => setView({ fran })}
       />
-      <PartyPicker parties={RIKSDAG_PARTIES} picked={picked} toggle={toggle} />
+      <Select
+        label={l('Chart', 'Diagram')}
+        value={lines ? 'linje' : 'stapel'}
+        options={[
+          { value: 'stapel', label: l('Latest, bars', 'Senaste, staplar') },
+          { value: 'linje', label: l('Over time, lines', 'Över tid, linjer') },
+        ]}
+        onChange={(diagram) => setView({ diagram })}
+      />
     </>
   )
 
@@ -243,19 +269,42 @@ export default function ValjarnaTheme({ route }: { route: Route }) {
         }
         filters={filters}
         chartTitle={
-          measure === 'psu'
-            ? l(
-                'Support in SCB’s party preference survey',
-                'Stöd i SCB:s partisympatiundersökning',
-              )
-            : l('Result in Riksdag elections', 'Resultat i riksdagsvalen')
+          !lines
+            ? measure === 'psu'
+              ? l(
+                  `Support in SCB’s latest survey`,
+                  `Stöd i SCB:s senaste mätning`,
+                )
+              : l('Result in the latest election', 'Resultat i senaste valet')
+            : measure === 'psu'
+              ? l(
+                  'Support in SCB’s party preference survey',
+                  'Stöd i SCB:s partisympatiundersökning',
+                )
+              : l('Result in Riksdag elections', 'Resultat i riksdagsvalen')
         }
-        chartMeta={l(
-          `Per cent of voters · ${firstShown ? (measure === 'psu' ? monthName(firstShown) : firstShown.slice(0, 4)) : ''}–${lastShown ? (measure === 'psu' ? monthName(lastShown) : lastShown.slice(0, 4)) : ''}`,
-          `Procent av väljarna · ${firstShown ? (measure === 'psu' ? monthName(firstShown) : firstShown.slice(0, 4)) : ''}–${lastShown ? (measure === 'psu' ? monthName(lastShown) : lastShown.slice(0, 4)) : ''}`,
-        )}
+        chartMeta={
+          !lines
+            ? l(
+                `Per cent of voters · ${latestWhen ? (measure === 'psu' ? monthName(latestWhen) : latestWhen.slice(0, 4)) : ''} · change since the one before`,
+                `Procent av väljarna · ${latestWhen ? (measure === 'psu' ? monthName(latestWhen) : latestWhen.slice(0, 4)) : ''} · förändring sedan föregående`,
+              )
+            : l(
+                `Per cent of voters · ${firstShown ? (measure === 'psu' ? monthName(firstShown) : firstShown.slice(0, 4)) : ''}–${lastShown ? (measure === 'psu' ? monthName(lastShown) : lastShown.slice(0, 4)) : ''}`,
+                `Procent av väljarna · ${firstShown ? (measure === 'psu' ? monthName(firstShown) : firstShown.slice(0, 4)) : ''}–${lastShown ? (measure === 'psu' ? monthName(lastShown) : lastShown.slice(0, 4)) : ''}`,
+              )
+        }
         chart={
-          picked.length ? (
+          !lines ? (
+            <Bars
+              bars={latestBars}
+              format={(v) => pct(v)}
+              description={l(
+                `Latest support per party: ${latestBars.map((b) => `${b.key} ${pct(b.value)}`).join(', ')}`,
+                `Senaste stöd per parti: ${latestBars.map((b) => `${b.key} ${pct(b.value)}`).join(', ')}`,
+              )}
+            />
+          ) : picked.length ? (
             <MultiLineChart
               series={series}
               label={l(
@@ -361,13 +410,6 @@ export default function ValjarnaTheme({ route }: { route: Route }) {
             onChange={(fran) => setView({ fran })}
           />
         </Field>
-        <Field label={l('Parties', 'Partier')}>
-          <PartyPicker
-            parties={RIKSDAG_PARTIES}
-            picked={picked}
-            toggle={toggle}
-          />
-        </Field>
         <Field
           label={l('Uncertainty in the result', 'Osäkerhet i resultatet')}
           hint={l(
@@ -388,13 +430,28 @@ export default function ValjarnaTheme({ route }: { route: Route }) {
             onChange={(osakerhet) => setView({ osakerhet })}
           />
         </Field>
-        <Field label={l('Chart type', 'Graftyp')}>
-          <p className="ds-small">
-            {l(
-              'A line chart: the data are shares over time. The table tab shows the same numbers.',
-              'Linjediagram: datan är andelar över tid. Fliken Tabell visar samma siffror.',
-            )}
-          </p>
+        <Field
+          label={l('Chart type', 'Graftyp')}
+          hint={l(
+            'Bars compare the parties at the latest survey; lines show how support has moved. Parties are chosen in the bar at the top.',
+            'Staplar jämför partierna i senaste mätningen; linjer visar hur stödet har rört sig. Partier väljs i raden högst upp.',
+          )}
+        >
+          <Choice
+            name="diagram"
+            value={lines ? 'linje' : 'stapel'}
+            options={[
+              {
+                value: 'stapel',
+                label: l('Bars: the latest value', 'Staplar: senaste värdet'),
+              },
+              {
+                value: 'linje',
+                label: l('Lines: over time', 'Linjer: över tid'),
+              },
+            ]}
+            onChange={(diagram) => setView({ diagram })}
+          />
         </Field>
       </BuilderPanel>
     </>

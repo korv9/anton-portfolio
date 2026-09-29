@@ -11,6 +11,8 @@ export type Bar = {
   value: number
   /** A party code: the bar is drawn in the party's colour, with its letters in the label. */
   party?: string
+  /** A short note after the value, e.g. the change since an earlier value. */
+  note?: string
 }
 
 export default function Bars({
@@ -48,7 +50,10 @@ export default function Bars({
                   }}
                 />
               </span>
-              <span className="bars-value">{format(bar.value)}</span>
+              <span className="bars-value">
+                {format(bar.value)}
+                {bar.note && <small>{bar.note}</small>}
+              </span>
             </li>
           )
         })}

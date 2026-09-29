@@ -11,7 +11,7 @@ test('politics now: seats, majority, government, decisions and history', async (
   ).toBeVisible()
   await expect(page.locator('.dash-kpi')).toHaveCount(6)
   await expect(page.locator('.dash-seat')).not.toHaveCount(0)
-  await expect(page.locator('.dash-card')).toHaveCount(6)
+  await expect(page.locator('.dash-card')).toHaveCount(5)
 
   // The seat calculator adds up any parties against the 175-seat line.
   await page.getByRole('link', { name: 'More: Seats in the Riksdag' }).click()

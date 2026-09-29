@@ -37,37 +37,11 @@ export const CVS: { role: Bilingual; focus: Bilingual; file: string }[] = [
   },
 ]
 
-/** The four facts a recruiter should see first. */
-export const FACTS: { value: string; label: Bilingual }[] = [
-  {
-    value: '2',
-    label: t(
-      'LIA-praktiker med data: Avtalat och Fora',
-      'data internships: Avtalat and Fora',
-    ),
-  },
-  {
-    value: '80 000+',
-    label: t(
-      'poster in i ett lakehouse i Azure Databricks (Fora)',
-      'records into an Azure Databricks lakehouse (Fora)',
-    ),
-  },
-  {
-    value: '21 000+',
-    label: t(
-      'incidenter analyserade med NLP, 72 möjliga problemposter (Avtalat)',
-      'incidents analysed with NLP, 72 potential problem records (Avtalat)',
-    ),
-  },
-  {
-    value: '2026',
-    label: t(
-      'examen som AI-utvecklare, JENSEN (400 YH-poäng)',
-      'graduated AI Developer, JENSEN (400 YH credits)',
-    ),
-  },
-]
+/** Who Anton is, in three sentences at most. */
+export const PITCH = t(
+  'Junior data engineer i Stockholm, utbildad AI-utvecklare vid JENSEN (2026). Jag bygger pipelines, datamodeller och analyser i Python, SQL, dbt och Azure Databricks, senast under praktik på Avtalat och Fora. Jag söker en junior roll inom data engineering, analytics engineering eller tillämpad AI.',
+  'Junior data engineer in Stockholm, trained as an AI developer at JENSEN (2026). I build pipelines, data models and analyses in Python, SQL, dbt and Azure Databricks, most recently as an intern at Avtalat and Fora. I am looking for a junior role in data engineering, analytics engineering or applied AI.',
+)
 
 export const EXPERIENCE: {
   org: string
@@ -150,69 +124,43 @@ export const EXPERIENCE: {
   },
 ]
 
-export const EDUCATION = {
-  title: t(
-    'AI-utvecklare, JENSEN Yrkeshögskola',
-    'AI Developer, JENSEN Yrkeshögskola',
-  ),
-  period: '2024–2026',
-  about: t(
-    'Yrkeshögskoleutbildning, 400 YH-poäng, två år på heltid. Examen juni 2026.',
-    'Higher Vocational Education, 400 credits, two years full-time. Graduated June 2026.',
-  ),
-}
-
-export const LANGUAGES = t(
-  'Svenska (modersmål) · Engelska (flytande)',
-  'Swedish (native) · English (fluent)',
-)
-
-/** Skills by function, most used first; everything is shown, nothing hidden behind a toggle. */
-export const SKILLS: { group: Bilingual; items: string[] }[] = [
+/** The tech stack by what it is used for: one line on the use, then the tools, most used first. */
+export const STACK: { group: Bilingual; use: Bilingual; items: string[] }[] = [
   {
     group: t('Data engineering', 'Data engineering'),
+    use: t(
+      'Hämta data från API:er och filer och göra den pålitlig i lager: Bronze, Silver, Gold.',
+      'Pulling data from APIs and files and making it reliable in layers: Bronze, Silver, Gold.',
+    ),
     items: [
       'Python',
       'SQL',
       'PySpark',
-      'Spark SQL',
       'Azure Databricks',
       'Delta Lake',
       'dbt Core',
       'DuckDB',
-      'ETL/ELT',
       'REST API',
     ],
   },
   {
-    group: t('Modellering och arkitektur', 'Modelling and architecture'),
-    items: [
-      'Lakehouse',
-      'Medallion',
-      'Stjärnschema',
-      'Inkrementella pipelines',
-      'Semantiska modeller',
-    ],
-  },
-  {
-    group: t('Analys och BI', 'Analytics and BI'),
-    items: [
-      'Power BI',
-      'DAX',
-      'DirectQuery',
-      'pandas',
-      'KPI-utveckling',
-      'Statistisk analys',
-    ],
+    group: t('Modellering och BI', 'Modelling and BI'),
+    use: t(
+      'Stjärnscheman och semantiska modeller som rapporter och dashboards byggs på.',
+      'Star schemas and semantic models that reports and dashboards are built on.',
+    ),
+    items: ['Stjärnschema', 'Power BI', 'DAX', 'DirectQuery', 'pandas'],
   },
   {
     group: t('Maskininlärning och AI', 'Machine learning and AI'),
+    use: t(
+      'Klustra och klassificera text, bygga RAG-lösningar och utvärdera modeller.',
+      'Clustering and classifying text, building RAG solutions and evaluating models.',
+    ),
     items: [
       'scikit-learn',
       'XGBoost',
-      'NLP',
       'sentence-transformers',
-      'UMAP',
       'HDBSCAN',
       'RAG',
       'LLM-API:er',
@@ -221,30 +169,27 @@ export const SKILLS: { group: Bilingual; items: string[] }[] = [
     ],
   },
   {
-    group: t('Backend och frontend', 'Backend and frontend'),
-    items: [
-      'FastAPI',
-      'Flask',
-      'PostgreSQL',
-      'SQLAlchemy',
-      'Alembic',
-      'Pydantic',
-      'React',
-      'TypeScript',
-    ],
+    group: t('Backend och webb', 'Backend and web'),
+    use: t(
+      'API:er och gränssnitt ovanpå datan, som den här sajten.',
+      'APIs and interfaces on top of the data, like this site.',
+    ),
+    items: ['FastAPI', 'PostgreSQL', 'SQLAlchemy', 'React', 'TypeScript'],
   },
   {
-    group: t('Kvalitet och leverans', 'Quality and delivery'),
+    group: t('Kvalitet och drift', 'Quality and delivery'),
+    use: t(
+      'Tester, datavalidering och automatiska körningar, så att siffrorna går att lita på.',
+      'Tests, data validation and automated runs, so the numbers can be trusted.',
+    ),
     items: [
       'pytest',
       'Datavalidering',
-      'DQX',
       'Git',
       'GitHub Actions',
       'Azure DevOps',
-      'CI/CD',
       'Docker Compose',
-      'GDPR och anonymisering',
+      'GDPR',
     ],
   },
 ]

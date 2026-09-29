@@ -6,7 +6,17 @@ The government column represents the **submitted collective proposal**. It must 
 
 For budget years **2015, 2019 and 2022**, the submitted government proposal was not the adopted frame. The adopted alternatives were the Alliance (M/C/L/KD), M/KD, and M/SD/KD respectively. Therefore a chart of the government's proposal for those years cannot be titled “the adopted budget.” This exception list is supported by the [government's review of the budget process](https://www.regeringen.se/contentassets/c3c8d6e9fa074489a0424e84d87e04f9/budgetprocessen-i-det-finanspolitiska-ramverket-sou-202393.pdf) and the linked FiU1 decisions.
 
-The site has complete numeric 27-area government frames for 2017, 2020 and 2023–2026; 2018 and 2019 have partial extracted tables, which the report deliberately withholds from charts pending column validation. The 2015, 2016, 2021 and 2022 comparison documents are linked, but their numeric tables were not imported: the locally saved HTML is incomplete or uses another table layout. These are real coverage gaps, not zero proposals. The original source is available through each year's FiU1 link. A future repair should fetch the relevant official tables afresh, parse every area and proposal column, and reconcile totals against FiU1 before adding numbers.
+The site has complete numeric 27-area frames for 2017–2020 and 2023–2026. They are parsed by `platform/ingest/riksdagen/budget_ingest.py` and refreshed with `python platform/legacy/politics_budget.py`. The parser:
+
+- reads the table for the exact budget year, not the later planning years that FiU1 also tabulates;
+- joins a table that runs over a page break (2018 and 2019);
+- repairs figures the HTML export split over two cells ("+4" and "769" for +4 769).
+
+It refuses a year unless every column adds up to the committee's printed total within rounding (at most 13 SEK m over 27 areas). Earlier imports of 2018 and 2019 lacked 6 and 3 areas and had 30 and 11 misplaced party figures; these years are now complete and reconciled.
+
+The 2015, 2016, 2021 and 2022 comparison documents are linked, but their numeric tables were not imported: the locally saved HTML is incomplete or uses another table layout. These are real coverage gaps, not zero proposals.
+
+`frontend/public/data/debates/budgets/coverage.json` records, per report, the committee's own totals (`totals_msek`: the government's sum and each party's net difference) and how the chamber decided the frames (`frame_decision`, from riksdagen's document status). A party's net is shown from that printed total, since summing the rounded area figures can differ by a few SEK m. The site describes the comparison as "against the budget the Riksdag adopted (the government's proposal)" only for years where the committee's proposal won the vote; otherwise as against the government's proposal.
 
 The exact imported chain currently exists for two years: **FiU1 budget frame point 2 → vote ID → eight party positions**, for budget years 2025 and 2026. The site also lists explicitly cited propositions/motions and reservations at that point. A citation does not mean a party endorsed the document. Only one candidate speech was retrieved for the 2025 point and none for the 2026 point; that similarity is a discovery link, not an exact speech-to-motion relationship or evidence of why anyone voted No. Older FiU1 decisions are linked as documents, but historic member-level votes are not yet imported. [Riksdag: budget 2025](https://data.riksdagen.se/dokument/HC01FiU1), [Riksdag: budget 2026](https://data.riksdagen.se/dokument/HD01FiU1).
 

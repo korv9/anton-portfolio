@@ -35,14 +35,17 @@ test('every theme answers one question with one chart, a table and its sources',
   expect(errors).toEqual([])
 })
 
-test('the dashboard fits one screen and focuses on the party chosen at the side', async ({
+test('the dashboard fits one screen and compares the parties chosen in the party bar', async ({
   page,
   isMobile,
 }) => {
   await page.goto('/#politik')
   await expect(page.locator('.dash-kpi')).toHaveCount(6)
-  await expect(page.locator('.dash-card')).toHaveCount(6)
-  await expect(page.locator('.dash-attention li')).not.toHaveCount(0)
+  await expect(page.locator('.dash-card')).toHaveCount(5)
+  // The budget comes first, as grouped bars for every party with a budget of its own.
+  await expect(page.locator('.dash-card').first()).toHaveClass(/dash-budget/)
+  await expect(page.locator('.dash-budget .grouped > li').first()).toBeVisible()
+  expect(await page.locator('.dash-budget .grouped > li').count()).toBe(8)
   if (!isMobile) {
     await page.setViewportSize({ width: 1440, height: 900 })
     // Everything on one screen: the page does not scroll.
@@ -52,60 +55,72 @@ test('the dashboard fits one screen and focuses on the party chosen at the side'
       ),
     ).toBeLessThanOrEqual(120)
   }
-  const parties = page.getByRole('navigation', { name: 'Parties' })
-  await expect(parties.getByRole('link')).toHaveCount(8)
-  await parties.getByRole('link', { name: 'Sweden Democrats' }).click()
-  await expect(page).toHaveURL(/#politik\?parti=SD$/)
-  await expect(page.locator('.dash-focus')).toContainText('Sweden Democrats')
-  await expect(page.locator('.dash-card h2').nth(2)).toContainText('SD')
+  // The budget is compared with the budget the Riksdag adopted, and says so.
+  await expect(page.locator('.dash-budget .dash-meta')).toContainText(
+    'that the Riksdag adopted',
+  )
+  // Slicers: more areas, kept in the address.
+  await page.getByLabel('Areas').selectOption('12')
+  await expect(page).toHaveURL(/omraden=12/)
+  expect(await page.locator('.dash-budget .grouped > li').count()).toBe(12)
+
+  // The party bar: any number of parties, compared side by side.
+  const bar = page.getByRole('group', { name: 'Parties' })
+  await expect(bar.getByRole('button', { pressed: false })).toHaveCount(8)
+  await bar.getByRole('button', { name: 'Social Democrats' }).click()
+  await expect(page).toHaveURL(/partier=S(&|$)/)
+  await expect(page.locator('.dash-focus')).toContainText('Social Democrats')
+  await expect(page.locator('.dash-card h2').nth(2)).toContainText('S')
+  await bar.getByRole('button', { name: 'Left Party' }).click()
+  await expect(page).toHaveURL(/partier=S%2CV/)
+  await expect(page.locator('.dash-compare > li')).toHaveCount(2)
   await expect(
-    parties.getByRole('link', { name: 'Sweden Democrats' }),
-  ).toHaveAttribute('aria-current', 'true')
-  // A seat segment is a party button too.
+    page.locator('.dash-budget .grouped > li').first().locator('.grouped-row'),
+  ).toHaveCount(2)
+  // A seat segment toggles its party too.
   await page.getByRole('button', { name: /^Moderates:/ }).click()
-  await expect(page).toHaveURL(/parti=M$/)
-  await page.getByRole('button', { name: 'Show all parties' }).click()
-  await expect(page.locator('.dash-focus')).toHaveCount(0)
-  await expect(page).toHaveURL(/#politik$/)
+  await expect(page).toHaveURL(/partier=S%2CV%2CM/)
+  await expect(page.locator('.dash-compare > li')).toHaveCount(3)
+  // The choice follows the reader to the other pages.
+  await page
+    .getByRole('navigation', { name: 'Politics' })
+    .getByRole('link', { name: /What voters think/ })
+    .click()
+  await expect(page).toHaveURL(
+    /#politik-valjarna\?partier=S%2CV%2CM|#politik-valjarna\?partier=S,V,M/,
+  )
+  await expect(page.locator('.bars-list li')).toHaveCount(3)
+  await page.getByRole('button', { name: 'Show all' }).click()
+  await expect(page.locator('.bars-list li')).toHaveCount(8)
+  await expect(bar.getByRole('button', { pressed: true })).toHaveCount(0)
 })
 
-test('the party rail marks the party whose profile is open', async ({
-  page,
-}) => {
-  await page.goto('/#parties-s')
-  const rail = page.getByRole('navigation', { name: 'Parties' })
-  await expect(rail.getByRole('link')).toHaveCount(8)
-  await expect(
-    rail.getByRole('link', { name: 'Social Democrats' }),
-  ).toHaveAttribute('aria-current', 'true')
-  // From the dashboard focused on a party, its full profile is one click away.
-  await page.goto('/#politik?parti=S')
+test('one party chosen links to its full profile', async ({ page }) => {
+  await page.goto('/#politik?partier=S')
   await page.getByRole('link', { name: /Everything about S/ }).click()
-  await expect(page).toHaveURL(/#parties-s$/)
+  await expect(page).toHaveURL(/#parties-s(\?|$)/)
 })
 
 test('the view builder offers valid choices and keeps them in a shareable address', async ({
   page,
 }) => {
   await page.goto('/#politik-valjarna')
-  await expect(page.locator('.multi-chart polyline:not(.casing)')).toHaveCount(
-    8,
-  )
-  // Party letters stand at the end of each line.
-  await expect(page.locator('.end-label-text')).toHaveCount(8)
+  // Bars by default: the latest survey, one bar per party.
+  await expect(page.locator('.bars-list li')).toHaveCount(8)
   await page.getByRole('button', { name: 'Build your own view' }).click()
   const panel = page.getByRole('dialog', { name: /Build your own view/ })
   await expect(panel).toBeVisible()
   await panel.getByLabel('Election results').check()
-  await panel.getByRole('button', { name: /^SD/ }).click()
+  await panel.getByLabel('Lines: over time').check()
   await panel.getByRole('button', { name: 'Show the view' }).click()
   await expect(panel).toBeHidden()
   await expect(page).toHaveURL(/matt=val/)
-  await expect(page).toHaveURL(/partier=S%2CM%2CV/)
+  await expect(page).toHaveURL(/diagram=linje/)
   await expect(page.locator('.theme-chart-title')).toHaveText(
     'Result in Riksdag elections',
   )
-  await expect(page.locator('.end-label-text')).toHaveCount(7)
+  // Party letters stand at the end of each line.
+  await expect(page.locator('.end-label-text')).toHaveCount(8)
   // The address alone restores the view.
   await page.reload()
   await expect(page.locator('.theme-chart-title')).toHaveText(
@@ -115,17 +130,18 @@ test('the view builder offers valid choices and keeps them in a shareable addres
   await page.keyboard.press('Escape')
   await expect(page.getByRole('dialog')).toBeHidden()
 
-  await page.goto('/#politik-budget')
-  await page.getByRole('radio', { name: /^V/ }).click()
-  await expect(page).toHaveURL(/parti=V/)
+  await page.goto('/#politik-budget?partier=V')
   await expect(page.locator('.theme-chart-title')).toContainText('Left Party')
   expect(await page.locator('.bars-list li').count()).toBeGreaterThan(20)
   await page.getByRole('button', { name: 'Build your own view' }).click()
   await page.getByLabel('One area, every party').check()
-  await page.getByLabel('Per cent of the government’s proposal').check()
+  await page.getByLabel('Per cent of the budget for the area').check()
   await page.getByRole('button', { name: 'Show the view' }).click()
   await expect(page).toHaveURL(/jamfor=omrade/)
   await expect(page.locator('.theme-chart-meta')).toContainText('Per cent')
+
+  await page.goto('/#politik-budget?partier=S,V')
+  await expect(page.locator('.theme .grouped > li').first()).toBeVisible()
 
   await page.goto('/#politik-roster?matt=enighet&partier=S,M')
   await expect(page.locator('.theme-chart-title')).toContainText('Party unity')

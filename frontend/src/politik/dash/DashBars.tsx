@@ -12,6 +12,10 @@ export type DashBar = {
   party?: string
   /** Colour for a bar that is not a party (neutral by default). */
   tone?: 'neutral' | 'muted'
+  /** An earlier value, drawn as a tick on the track (e.g. the previous survey). */
+  ref?: number | null
+  /** A short note after the value, e.g. the change since the earlier value. */
+  note?: string
 }
 
 export default function DashBars({
@@ -60,8 +64,17 @@ export default function DashBars({
                   outlineOffset: -1,
                 }}
               />
+              {bar.ref != null && !diverging && (
+                <b
+                  className="dash-bar-ref"
+                  style={{ left: `${(bar.ref / max) * 100}%` }}
+                />
+              )}
             </span>
-            <span className="dash-bar-value">{format(bar.value)}</span>
+            <span className="dash-bar-value">
+              {format(bar.value)}
+              {bar.note && <small>{bar.note}</small>}
+            </span>
           </li>
         )
       })}

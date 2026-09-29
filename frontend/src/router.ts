@@ -34,7 +34,10 @@ export const REDIRECTS: Record<string, string> = {
   '#now': '#politik',
   '#now-election': '#politik',
   '#politics-page': '#politik',
-  '#about': '#om-mig',
+  '#about': '#start',
+  '#om-mig': '#start',
+  '#kontakt': '#start',
+  '#kompetenser': '#teknik',
   '#projects': '#projekt',
 }
 

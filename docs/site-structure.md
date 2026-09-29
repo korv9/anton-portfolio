@@ -6,16 +6,17 @@ click away and remembered.
 
 ## Start page
 
-One page in two columns, built so a recruiter has the picture in ten seconds:
+Only what a recruiter needs, in two columns:
 
-- **Left, fixed:** name, role, one sentence on what Anton does, availability, a table of
-  contents (01 Översikt … 07 Kontakt) that marks the section being read, the three CVs (Data
-  Engineer, Data Scientist / Applied AI, Python / AI Platform, in `public/cv/`) and links.
-- **Right, read top to bottom:** Översikt (four facts from the CVs and "which role are you
-  hiring for?" with the matching CV), Om mig, Erfarenhet (Avtalat, Fora, Delicato), Projekt (the
-  politics product first, then every other project; nothing hidden), Kompetenser (six groups,
-  all visible), Utbildning, Kontakt.
+- **Left, fixed:** name, role, at most three sentences on who Anton is and what he is looking
+  for, a table of contents (01 Projekt, 02 Erfarenhet, 03 Tech stack) that marks the section
+  being read, the three CVs (Data Engineer, Data Scientist / Applied AI, Python / AI Platform, in
+  `public/cv/`) and contact links.
+- **Right, read top to bottom:** Projekt (the politics product first, then every other project),
+  Erfarenhet (Avtalat, Fora, Delicato) and Tech stack (five groups, each with one line on what it
+  is used for, then the tools).
 - On a phone the left column dissolves into the page and the contents become a sticky bar.
+  Older addresses (`#om-mig`, `#kontakt`, `#kompetenser`) lead to the start or the stack.
 
 The words live in `frontend/src/home/content.ts`; every fact comes from the CVs.
 
@@ -30,29 +31,41 @@ One navigation with seven themes (a sidebar, a horizontal menu on small screens)
 | Theme | Address | Main chart |
 |---|---|---|
 | Läget just nu | `#politik` | A one-screen dashboard (below) |
-| Vad väljarna tycker | `#politik-valjarna` | Support in SCB's PSU (or election results) over time |
+| Vad väljarna tycker | `#politik-valjarna` | Support in SCB's latest PSU (or election) as bars; over time as lines on request |
 | Hur partierna röstar | `#politik-roster` | How often a party votes like each other party, per session |
-| Vad partierna vill lägga pengar på | `#politik-budget` | A party's budget compared with the government's, per expenditure area |
-| Vad politikerna pratar om | `#politik-tal` | Share of each party's issue words about one area, per session |
+| Vad partierna vill lägga pengar på | `#politik-budget` | The chosen parties' budgets compared with the government's, per expenditure area (grouped bars) |
+| Vad politikerna pratar om | `#politik-tal` | Share of each party's issue words about one area, latest session as bars; over time as lines |
 | Utforska själv | `#politik-utforska` | Every detailed view, grouped |
 | Källor och metod | `#politik-kallor` | Sources, update dates, definitions, method, limitations, raw tables |
 
+### The party bar
+
+One row of party buttons sits above every politics page, like a slicer. Any number of parties
+can be chosen; every chart then shows those parties side by side, and none chosen means all
+parties. The choice is kept in the address (`#politik-budget?partier=S,V`) and in the session,
+so it follows the reader from page to page, and "Visa alla" clears it.
+`frontend/src/politik/partySelection.ts`.
+
 ### The dashboard
 
-`#politik` is a dashboard that fits one desktop screen: six key figures, three lines on what to
-keep an eye on, and six cards (seats, polls, who a party votes like, its budget compared with the
-government's, what it talks about most, the news). The parties are listed at the side of every
-politics page; choosing one focuses every card on it, and the choice is kept in the address
-(`#politik?parti=SD`). Figures count up, bars grow, lines draw and cards rise in one after
-another; a new party glides into place. With reduced motion nothing moves.
-`frontend/src/politik/dash/`.
+`#politik` fits one desktop screen. The budget comes first and largest: what the parties want
+to spend compared with the government, as grouped bars per expenditure area, one bar per party.
+Slicers above the cards choose the budget year, how many areas (top 5, 8, 12 or all), the order
+(largest difference, most added, area number), the measure (SEK m or per cent of the
+government's proposal) and what the latest survey is compared with (the previous survey or the
+election); they are kept in the address like the parties. Around the budget: key figures (for
+several parties, one comparison tile each), the latest survey as bars with a tick for the
+comparison, who votes alike as a heat table (bars for one party), what the parties talk about as
+a heat table, and the seats, where a click chooses a party. Figures count up, bars grow and cards
+rise in one after another; with reduced motion nothing moves. `frontend/src/politik/dash/`.
 
 Every other theme follows one template (`frontend/src/politik/ThemeLayout.tsx`): a question, why it
 matters, at most three key figures, one chart, the main result in a sentence, "Vad betyder det
 här?", the Graf / Tabell / Källor switch, and Fördjupa links. Themes whose data allows it have
 "Bygg egen vy": a panel from the right offering only valid combinations (period, parties, issue
-area, measure, normalisation, comparison); the choices are kept in the address, e.g.
-`#politik-budget?parti=V&matt=procent`, so a view can be shared.
+area, measure, normalisation, comparison, chart type); the choices are kept in the address,
+e.g. `#politik-budget?partier=V&matt=procent`, so a view can be shared. Parties are chosen in
+the party bar, not per theme.
 
 ### Where the earlier views went
 

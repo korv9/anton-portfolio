@@ -11,26 +11,21 @@ test('home introduces Anton and routes to each project', async ({
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
     'Anton Ernstsson',
   )
-  // One page, in reading order, with a table of contents that names every section.
+  // Name, role and at most three sentences; then the evidence: projects, experience, stack.
+  const pitch = (await page.locator('.cv-pitch').textContent()) ?? ''
+  expect(
+    pitch.split(/[.!?](\s|$)/).filter((x) => x.trim()).length,
+  ).toBeLessThanOrEqual(3)
   const ids = await page
     .locator('.cv-main > section')
     .evaluateAll((sections) => sections.map((s) => s.id))
-  expect(ids).toEqual([
-    'start',
-    'om-mig',
-    'erfarenhet',
-    'projekt',
-    'kompetenser',
-    'utbildning',
-    'kontakt',
-  ])
+  expect(ids).toEqual(['projekt', 'erfarenhet', 'teknik'])
   const toc = page.getByRole('navigation', { name: 'Contents' })
-  await expect(toc.getByRole('link')).toHaveCount(7)
-  // The overview answers the ten-second questions: facts and a CV for each kind of role.
-  await expect(page.locator('.cv-facts > div')).toHaveCount(4)
-  await expect(page.locator('.cv-fit a[download]')).toHaveCount(3)
+  await expect(toc.getByRole('link')).toHaveCount(3)
+  // A CV for each kind of role, all served.
+  await expect(page.locator('.cv-downloads a[download]')).toHaveCount(3)
   for (const href of await page
-    .locator('.cv-fit a[download]')
+    .locator('.cv-downloads a[download]')
     .evaluateAll((links) => links.map((a) => a.getAttribute('href')))) {
     expect((await page.request.get(`/${href}`)).status(), href!).toBe(200)
   }
@@ -38,12 +33,13 @@ test('home introduces Anton and routes to each project', async ({
   await expect(page.locator('#erfarenhet')).toContainText('Avtalat')
   await expect(page.locator('.cv-flagship')).toContainText('Swedish politics')
   expect(await page.locator('.cv-project').count()).toBeGreaterThanOrEqual(6)
-  // Every skill is visible: nothing behind a toggle.
-  await expect(page.locator('#kompetenser .cv-skills > div')).toHaveCount(6)
+  // The stack is explained: every group says what it is used for.
+  await expect(page.locator('#teknik .cv-skills > div')).toHaveCount(5)
+  await expect(page.locator('#teknik .cv-use')).toHaveCount(5)
   await expect(page.getByRole('button', { name: 'Show more' })).toHaveCount(0)
   // The contents follow the reader.
-  await toc.getByRole('link', { name: /Skills/ }).click()
-  await expect(toc.getByRole('link', { name: /Skills/ })).toHaveAttribute(
+  await toc.getByRole('link', { name: /Tech stack/ }).click()
+  await expect(toc.getByRole('link', { name: /Tech stack/ })).toHaveAttribute(
     'aria-current',
     'location',
   )
@@ -112,9 +108,10 @@ test('navigation, responsive layout and accessibility', async ({ page }) => {
   // Contrast is checked on the settled page, not halfway through an entrance animation.
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.goto('/')
-  await expect(
-    page.getByRole('link', { name: /Download CV/ }).first(),
-  ).toHaveAttribute('download', '')
+  await expect(page.locator('.cv-downloads a').first()).toHaveAttribute(
+    'download',
+    '',
+  )
   for (const route of [
     '/',
     '/#politics',
@@ -166,11 +163,15 @@ test('budget proposals and annual outcomes are separate navigable reports', asyn
   await budget
     .getByRole('combobox', { name: 'Budget year', exact: true })
     .selectOption('2017/18')
-  await expect(budget.locator('.budget-ledger-summary')).toContainText('21/27')
+  // 2018 runs over a page break in the source; all 27 areas are read and reconcile with the
+  // committee's own total (1 000 515 SEK m).
+  await expect(budget.locator('.budget-ledger-summary')).toContainText('27/27')
   await expect(budget.locator('.budget-ledger-summary')).toContainText(
+    '1,000.5 bn SEK',
+  )
+  await expect(budget.locator('.budget-ledger-summary')).not.toContainText(
     'Incomplete',
   )
-  await expect(budget.locator('.comparison-bar-row')).toHaveCount(0)
   await budget
     .getByRole('combobox', { name: 'Budget year', exact: true })
     .selectOption('2021/22')
