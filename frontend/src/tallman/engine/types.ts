@@ -1,5 +1,5 @@
 /**
- * The shapes Herr taLLMan passes around: the index built by platform/tallman/build_index.py,
+ * The shapes taLLMan passes around: the index built by platform/tallman/build_index.py,
  * the passages a retriever returns, the claims a model (or the offline extractor) makes and
  * the verdict the Allegoria layer gives each claim.
  *

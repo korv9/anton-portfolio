@@ -1,5 +1,5 @@
 /**
- * Fills the Vectorize index behind Herr taLLMan by calling the Worker's reindex route slice by
+ * Fills the Vectorize index behind taLLMan by calling the Worker's reindex route slice by
  * slice (docs/tallman.md). Needs the site URL and the ADMIN_TOKEN secret in the environment:
  *
  *   TALLMAN_URL=https://anton-portfolio.anton-ernstson.workers.dev ADMIN_TOKEN=… node scripts/tallman-reindex.mjs

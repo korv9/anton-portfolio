@@ -1,5 +1,5 @@
 /**
- * Herr taLLMan's engine without network: Swedish numbers, entities, Allegoria's six labels,
+ * taLLMan's engine without network: Swedish numbers, entities, Allegoria's six labels,
  * certainty, and a whole question through the lexical retriever over the real index with a
  * stub shard.
  */

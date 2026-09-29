@@ -192,16 +192,19 @@ test('explore and sources reach every detailed view and the raw tables', async (
 test.describe('the name intro', () => {
   test.use({ intro: true })
 
-  test('shows once per session and can be skipped', async ({ page }) => {
+  test('shows every time the site opens on the start page and can be skipped', async ({
+    page,
+  }) => {
     await page.goto('/')
     const intro = page.locator('.intro-screen')
     await expect(intro).toBeVisible()
     await expect(intro).toContainText('Ernstsson')
     await page.keyboard.press('Escape')
     await expect(intro).toHaveCount(0)
-    await page.reload()
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
-    await expect(intro).toHaveCount(0)
+    // Opening the site again shows it again.
+    await page.reload()
+    await expect(intro).toBeVisible()
   })
 
   test('leaves by itself, and not on a deep link', async ({ page }) => {

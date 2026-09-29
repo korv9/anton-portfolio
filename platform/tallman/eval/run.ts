@@ -1,5 +1,5 @@
 /**
- * Runs the test questions through Herr taLLMan and measures two things:
+ * Runs the test questions through taLLMan and measures two things:
  *
  * - retrieval: did the expected passages (or debates) come back? (recall per question)
  * - source support: of the claims made, how many did Allegoria find supported

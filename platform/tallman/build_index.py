@@ -1,4 +1,4 @@
-"""Build the search index Herr taLLMan answers from.
+"""Build the search index taLLMan answers from.
 
 Two kinds of evidence, both from data already published by the site:
 

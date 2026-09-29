@@ -1,7 +1,7 @@
 {
  "schema_version": 1,
  "reviewed": false,
- "note": "Testfrågor för Herr taLLMan. Förväntade källor är satta utifrån indexet (platform/tallman/build_index.py) när koden skrevs och är inte granskade av en människa ännu: sätt reviewed till true per fråga när du har kontrollerat den. sources = passage-id som ska hämtas; debates = ord som ska finnas i titeln på en hämtad debatt; insufficient = frågan ska inte få några stödda påståenden; changeWithoutAnnotation = inget påstående om förändring över tid får vara stött utan granskad annotering.",
+ "note": "Testfrågor för taLLMan. Förväntade källor är satta utifrån indexet (platform/tallman/build_index.py) när koden skrevs och är inte granskade av en människa ännu: sätt reviewed till true per fråga när du har kontrollerat den. sources = passage-id som ska hämtas; debates = ord som ska finnas i titeln på en hämtad debatt; insufficient = frågan ska inte få några stödda påståenden; changeWithoutAnnotation = inget påstående om förändring över tid får vara stött utan granskad annotering.",
  "questions": [
   {
    "id": "budget-1",

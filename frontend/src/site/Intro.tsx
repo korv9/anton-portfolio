@@ -1,23 +1,24 @@
 /**
  * The opening: the name, very large in white on black, first drawn as an outline and then
  * filled, word by word; after about 1.5 seconds it shrinks into the header's wordmark and the
- * portfolio is there underneath. Shown once per session and only on the start page, so a
- * shared link opens straight on its content. A click, Enter or Escape skips it; with reduced
- * motion it is a short fade.
+ * portfolio is there underneath. Shown every time the site opens on the start page; a shared
+ * link to another page opens straight on its content. A click, Enter or Escape skips it; with
+ * reduced motion it is a short fade. Setting `ae-intro-seen` in sessionStorage skips it too
+ * (the browser tests do, so they start on the content).
  */
 import { useEffect, useRef, useState } from 'react'
 import './intro.css'
 
-const KEY = 'ae-intro-seen'
+const SKIP = 'ae-intro-seen'
 const NAME = ['Anton', 'Ernstsson']
 
 function shouldShow() {
   const hash = window.location.hash
   if (hash && !['#start', '#'].includes(hash)) return false
   try {
-    return sessionStorage.getItem(KEY) !== '1'
+    return sessionStorage.getItem(SKIP) !== '1'
   } catch {
-    return false
+    return true
   }
 }
 
@@ -29,15 +30,6 @@ export default function Intro() {
   const reduced =
     typeof window !== 'undefined' &&
     window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
-
-  useEffect(() => {
-    if (phase === 'gone') return
-    try {
-      sessionStorage.setItem(KEY, '1')
-    } catch {
-      /* Private browsing can block storage; the intro then simply shows once per load. */
-    }
-  }, [phase])
 
   // Leave: move the name onto the header wordmark (FLIP), then remove the overlay.
   const leave = (fast = false) => {
