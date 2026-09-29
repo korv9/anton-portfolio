@@ -11,8 +11,10 @@ import type { Route } from '../../router'
 import ThemeLayout from '../ThemeLayout'
 import BuilderPanel, { Choice, Field } from '../BuilderPanel'
 import Bars from '../Bars'
-import { PartyChoice, Select, num, signed } from '../controls'
+import { Select, num, signed } from '../controls'
 import { useViewParams } from '../useViewParams'
+import { shownParties, useParties } from '../partySelection'
+import GroupedBars from '../dash/GroupedBars'
 
 export type BudgetRow = {
   actor: string
@@ -71,7 +73,6 @@ export function areaNames(rows: BudgetRow[]) {
 
 const DEFAULTS = {
   ar: '',
-  parti: '',
   matt: 'mnkr',
   jamfor: 'parti',
   omrade: '',
@@ -84,6 +85,7 @@ export default function BudgetTheme({ route }: { route: Route }) {
   const [error, setError] = useState<string | null>(null)
   const [building, setBuilding] = useState(false)
   const [view, setView, reset] = useViewParams(route, DEFAULTS)
+  const { selected } = useParties(route)
   useEffect(() => {
     loadBudgetReport()
       .then(setReport)
@@ -102,12 +104,12 @@ export default function BudgetTheme({ route }: { route: Route }) {
   const parties = [
     ...new Set(yearRows.filter((r) => r.actor !== 'GOV').map((r) => r.actor)),
   ].sort()
-  const party = parties.includes(view.parti)
-    ? view.parti
-    : parties.includes('S')
-      ? 'S'
-      : parties[0]
+  // The parties chosen in the party bar that tabled a budget this year; S until one is chosen.
+  const compared = shownParties(selected, []).filter((p) => parties.includes(p))
+  const party = compared[0] ?? (parties.includes('S') ? 'S' : parties[0])
   const byArea = view.jamfor === 'omrade'
+  const multi = !byArea && compared.length > 1
+  const inView = multi ? compared : [party]
   const percent = view.matt === 'procent'
   const value = (r: BudgetRow) =>
     percent
@@ -133,11 +135,30 @@ export default function BudgetTheme({ route }: { route: Route }) {
   const govParties = gov ? l('the government', 'regeringen') : ''
 
   const partyRows = yearRows
-    .filter((r) => r.actor === party)
+    .filter((r) => inView.includes(r.actor))
     .sort((a, b) => value(b) - value(a))
   const areaRows = yearRows
-    .filter((r) => r.actor !== 'GOV' && r.expenditure_area === area)
+    .filter(
+      (r) =>
+        r.actor !== 'GOV' &&
+        r.expenditure_area === area &&
+        (!compared.length || compared.includes(r.actor)),
+    )
     .sort((a, b) => value(b) - value(a))
+  const cell = (a: number, p: string) => {
+    const r = yearRows.find((x) => x.actor === p && x.expenditure_area === a)
+    return r ? value(r) : null
+  }
+  const reach = (a: number) =>
+    Math.max(0, ...compared.map((p) => Math.abs(cell(a, p) ?? 0)))
+  const netOf = (p: string) =>
+    yearRows
+      .filter((r) => r.actor === p)
+      .reduce((sum, r) => sum + r.deviation_msek, 0)
+  const topOf = (p: string) =>
+    yearRows
+      .filter((r) => r.actor === p)
+      .sort((a, b) => b.deviation_msek - a.deviation_msek)[0]
   const shown = byArea ? areaRows : partyRows
   const netTotal = partyRows.reduce((sum, r) => sum + r.deviation_msek, 0)
   const top = shown[0]
@@ -145,7 +166,9 @@ export default function BudgetTheme({ route }: { route: Route }) {
   const label = (r: BudgetRow) =>
     byArea
       ? `${r.actor} · ${partyName(r.actor)}`
-      : `${r.expenditure_area}. ${names.get(r.expenditure_area)}`
+      : multi
+        ? `${r.actor} · ${r.expenditure_area}. ${names.get(r.expenditure_area)}`
+        : `${r.expenditure_area}. ${names.get(r.expenditure_area)}`
 
   const yearOptions = years.map((y) => ({ value: String(y), label: String(y) }))
   const areaOptions = areas.map((a) => ({
@@ -168,11 +191,17 @@ export default function BudgetTheme({ route }: { route: Route }) {
           onChange={(omrade) => setView({ omrade })}
         />
       ) : (
-        <PartyChoice
-          parties={parties}
-          value={party}
-          onChange={(parti) => setView({ parti })}
-        />
+        <p className="theme-filter-note">
+          {compared.length
+            ? l(
+                `Showing ${compared.join(', ')}. Choose parties in the bar above.`,
+                `Visar ${compared.join(', ')}. Välj partier i raden ovanför.`,
+              )
+            : l(
+                `Showing ${party}. Choose one or more parties in the bar above to compare.`,
+                `Visar ${party}. Välj ett eller flera partier i raden ovanför för att jämföra.`,
+              )}
+        </p>
       )}
     </>
   )
@@ -220,73 +249,81 @@ export default function BudgetTheme({ route }: { route: Route }) {
 
   const kpis = !report
     ? []
-    : byArea
-      ? [
-          ...(gov
-            ? [
-                {
-                  value: `${num(gov.government_amount_msek)} ${l('SEK m', 'mnkr')}`,
-                  label: l(
-                    `the government’s proposal for ${names.get(area)}`,
-                    `regeringens förslag för ${names.get(area)}`,
-                  ),
-                },
-              ]
-            : []),
-          ...(top && top.deviation_msek > 0
-            ? [
-                {
-                  value: format(value(top)),
-                  label: l(
-                    `${partyName(top.actor)} wants the most more`,
-                    `${partyName(top.actor)} vill lägga mest mer`,
-                  ),
-                },
-              ]
-            : []),
-          ...(bottom && bottom.deviation_msek < 0
-            ? [
-                {
-                  value: format(value(bottom)),
-                  label: l(
-                    `${partyName(bottom.actor)} wants the most less`,
-                    `${partyName(bottom.actor)} vill lägga mest mindre`,
-                  ),
-                },
-              ]
-            : []),
-        ]
-      : [
-          {
-            value: mnkr(netTotal),
-            label: l(
-              `net difference from ${govParties} across all areas`,
-              `sammanlagd skillnad mot ${govParties} över alla områden`,
-            ),
-          },
-          ...(top && top.deviation_msek > 0
-            ? [
-                {
-                  value: format(value(top)),
-                  label: l(
-                    `most more: ${names.get(top.expenditure_area)}`,
-                    `mest mer: ${names.get(top.expenditure_area)}`,
-                  ),
-                },
-              ]
-            : []),
-          ...(bottom && bottom.deviation_msek < 0
-            ? [
-                {
-                  value: format(value(bottom)),
-                  label: l(
-                    `most less: ${names.get(bottom.expenditure_area)}`,
-                    `mest mindre: ${names.get(bottom.expenditure_area)}`,
-                  ),
-                },
-              ]
-            : []),
-        ]
+    : multi
+      ? compared.slice(0, 3).map((p) => ({
+          value: mnkr(netOf(p)),
+          label: l(
+            `${partyName(p)}: net difference from the government`,
+            `${partyName(p)}: sammanlagd skillnad mot regeringen`,
+          ),
+        }))
+      : byArea
+        ? [
+            ...(gov
+              ? [
+                  {
+                    value: `${num(gov.government_amount_msek)} ${l('SEK m', 'mnkr')}`,
+                    label: l(
+                      `the government’s proposal for ${names.get(area)}`,
+                      `regeringens förslag för ${names.get(area)}`,
+                    ),
+                  },
+                ]
+              : []),
+            ...(top && top.deviation_msek > 0
+              ? [
+                  {
+                    value: format(value(top)),
+                    label: l(
+                      `${partyName(top.actor)} wants the most more`,
+                      `${partyName(top.actor)} vill lägga mest mer`,
+                    ),
+                  },
+                ]
+              : []),
+            ...(bottom && bottom.deviation_msek < 0
+              ? [
+                  {
+                    value: format(value(bottom)),
+                    label: l(
+                      `${partyName(bottom.actor)} wants the most less`,
+                      `${partyName(bottom.actor)} vill lägga mest mindre`,
+                    ),
+                  },
+                ]
+              : []),
+          ]
+        : [
+            {
+              value: mnkr(netTotal),
+              label: l(
+                `net difference from ${govParties} across all areas`,
+                `sammanlagd skillnad mot ${govParties} över alla områden`,
+              ),
+            },
+            ...(top && top.deviation_msek > 0
+              ? [
+                  {
+                    value: format(value(top)),
+                    label: l(
+                      `most more: ${names.get(top.expenditure_area)}`,
+                      `mest mer: ${names.get(top.expenditure_area)}`,
+                    ),
+                  },
+                ]
+              : []),
+            ...(bottom && bottom.deviation_msek < 0
+              ? [
+                  {
+                    value: format(value(bottom)),
+                    label: l(
+                      `most less: ${names.get(bottom.expenditure_area)}`,
+                      `mest mindre: ${names.get(bottom.expenditure_area)}`,
+                    ),
+                  },
+                ]
+              : []),
+          ]
 
   return (
     <>
@@ -309,42 +346,78 @@ export default function BudgetTheme({ route }: { route: Route }) {
                 `What the parties propose for ${names.get(area)}, compared with the government`,
                 `Vad partierna föreslår för ${names.get(area)}, jämfört med regeringen`,
               )
-            : l(
-                `Where ${partyName(party)} wants more or less than the government`,
-                `Var ${partyName(party)} vill lägga mer eller mindre än regeringen`,
-              )
+            : multi
+              ? l(
+                  `Where ${compared.join(', ')} want more or less than the government`,
+                  `Var ${compared.join(', ')} vill lägga mer eller mindre än regeringen`,
+                )
+              : l(
+                  `Where ${partyName(party)} wants more or less than the government`,
+                  `Var ${partyName(party)} vill lägga mer eller mindre än regeringen`,
+                )
         }
         chartMeta={l(
           `${percent ? 'Per cent of the government’s proposal' : 'SEK million'} · budget year ${year}`,
           `${percent ? 'Procent av regeringens förslag' : 'Miljoner kronor'} · budgetåret ${year}`,
         )}
         chart={
-          <Bars
-            bars={shown.map((r) => ({
-              key: `${r.actor}-${r.expenditure_area}`,
-              label: label(r),
-              value: value(r),
-              party: r.actor,
-            }))}
-            format={format}
-            description={l(
-              `Difference from the government’s budget, ${year}: ${shown.map((r) => `${label(r)} ${format(value(r))}`).join('; ')}`,
-              `Skillnad mot regeringens budget ${year}: ${shown.map((r) => `${label(r)} ${format(value(r))}`).join('; ')}`,
-            )}
-          />
+          multi ? (
+            <GroupedBars
+              groups={[...areas]
+                .sort((a, b) => reach(b) - reach(a))
+                .map((a) => ({
+                  key: String(a),
+                  label: `${a}. ${names.get(a)}`,
+                  values: compared.map((p) => ({
+                    party: p,
+                    value: cell(a, p),
+                  })),
+                }))}
+              format={format}
+              label={l(
+                `Difference from the government’s budget per area, ${year}: ${compared.join(', ')}`,
+                `Skillnad mot regeringens budget per område ${year}: ${compared.join(', ')}`,
+              )}
+            />
+          ) : (
+            <Bars
+              bars={shown.map((r) => ({
+                key: `${r.actor}-${r.expenditure_area}`,
+                label: label(r),
+                value: value(r),
+                party: r.actor,
+              }))}
+              format={format}
+              description={l(
+                `Difference from the government’s budget, ${year}: ${shown.map((r) => `${label(r)} ${format(value(r))}`).join('; ')}`,
+                `Skillnad mot regeringens budget ${year}: ${shown.map((r) => `${label(r)} ${format(value(r))}`).join('; ')}`,
+              )}
+            />
+          )
         }
         takeaway={
-          top && bottom
-            ? byArea
-              ? l(
-                  `For ${names.get(area)}, ${partyName(top.actor)} proposes ${format(value(top))} and ${partyName(bottom.actor)} ${format(value(bottom))} compared with the government.`,
-                  `För ${names.get(area)} föreslår ${partyName(top.actor)} ${format(value(top))} och ${partyName(bottom.actor)} ${format(value(bottom))} jämfört med regeringen.`,
+          multi
+            ? compared
+                .map((p) => topOf(p))
+                .filter(Boolean)
+                .map((r) =>
+                  l(
+                    `${partyName(r.actor)} adds most to ${names.get(r.expenditure_area)}.`,
+                    `${partyName(r.actor)} lägger mest extra på ${names.get(r.expenditure_area)}.`,
+                  ),
                 )
-              : l(
-                  `${partyName(party)} wants the most extra money for ${names.get(top.expenditure_area)} and the largest cut in ${names.get(bottom.expenditure_area)}.`,
-                  `${partyName(party)} vill lägga mest extra pengar på ${names.get(top.expenditure_area)} och göra störst neddragning inom ${names.get(bottom.expenditure_area)}.`,
-                )
-            : ''
+                .join(' ')
+            : top && bottom
+              ? byArea
+                ? l(
+                    `For ${names.get(area)}, ${partyName(top.actor)} proposes ${format(value(top))} and ${partyName(bottom.actor)} ${format(value(bottom))} compared with the government.`,
+                    `För ${names.get(area)} föreslår ${partyName(top.actor)} ${format(value(top))} och ${partyName(bottom.actor)} ${format(value(bottom))} jämfört med regeringen.`,
+                  )
+                : l(
+                    `${partyName(party)} wants the most extra money for ${names.get(top.expenditure_area)} and the largest cut in ${names.get(bottom.expenditure_area)}.`,
+                    `${partyName(party)} vill lägga mest extra pengar på ${names.get(top.expenditure_area)} och göra störst neddragning inom ${names.get(bottom.expenditure_area)}.`,
+                  )
+              : ''
         }
         meaning={
           <>
@@ -449,15 +522,7 @@ export default function BudgetTheme({ route }: { route: Route }) {
               onChange={(omrade) => setView({ omrade })}
             />
           </Field>
-        ) : (
-          <Field label={l('Party', 'Parti')}>
-            <PartyChoice
-              parties={parties}
-              value={party}
-              onChange={(parti) => setView({ parti })}
-            />
-          </Field>
-        )}
+        ) : null}
         <Field
           label={l('Normalisation', 'Normalisering')}
           hint={l(

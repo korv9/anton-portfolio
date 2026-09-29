@@ -26,10 +26,13 @@ export function useViewParams<T extends Record<string, string>>(
     // Defaults are literals per theme; only the route changes between calls.
     [route.path, route.params.toString()],
   )
-  const reset = useCallback(
-    () => setHashParams(route.path, new URLSearchParams()),
-    [route.path],
-  )
+  // Resetting a view keeps the parties: they are chosen once for the whole product.
+  const reset = useCallback(() => {
+    const kept = new URLSearchParams()
+    const parties = route.params.get('partier')
+    if (parties) kept.set('partier', parties)
+    setHashParams(route.path, kept)
+  }, [route.path, route.params.toString()])
   return [values, set, reset]
 }
 

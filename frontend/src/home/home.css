@@ -44,32 +44,9 @@
   margin: 1rem 0 0;
   font-size: var(--fs-sm);
   line-height: 1.6;
-  color: var(--muted);
-  max-width: 34ch;
-}
-.cv-status {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin: 1rem 0 0;
-  font-family: var(--font-mono) !important;
-  font-size: var(--fs-xs);
   color: var(--ink-2);
+  max-width: 36ch;
 }
-.cv-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50% !important;
-  background: #1f8a4c;
-  box-shadow: 0 0 0 3px rgba(31, 138, 76, 0.15) !important;
-  animation: cv-pulse 2.4s ease-in-out infinite;
-}
-@keyframes cv-pulse {
-  50% {
-    box-shadow: 0 0 0 6px rgba(31, 138, 76, 0) !important;
-  }
-}
-
 /* Table of contents: a line that grows for the section being read. */
 .cv-toc ol {
   list-style: none;
@@ -194,97 +171,6 @@
   font-weight: 400;
   color: var(--muted);
 }
-.cv-lede {
-  margin: 0 0 2rem;
-  font-size: var(--fs-lg);
-  line-height: 1.55;
-  letter-spacing: -0.01em;
-  color: var(--ink);
-  max-width: 60ch;
-}
-.cv-prose p {
-  margin: 0 0 1rem;
-  font-size: var(--fs-md);
-  line-height: 1.7;
-  color: var(--ink-2);
-  max-width: 64ch;
-}
-
-/* Facts: four figures in a strip. */
-.cv-facts {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  margin: 0 0 2rem;
-  border-top: 1px solid var(--ink);
-  border-bottom: 1px solid var(--line);
-}
-.cv-facts > div {
-  display: flex;
-  flex-direction: column-reverse;
-  justify-content: flex-end;
-  gap: 0.4rem;
-  padding: 1rem 1rem 1.1rem 0;
-  animation: cv-rise 600ms cubic-bezier(0.2, 0.7, 0.1, 1) both;
-  animation-delay: calc(120ms + var(--i) * 70ms);
-}
-.cv-facts > div + div {
-  padding-left: 1rem;
-  border-left: 1px solid var(--line);
-}
-.cv-facts dd {
-  margin: 0;
-  font-family: var(--font-mono) !important;
-  font-size: var(--fs-xl);
-  font-weight: 500;
-  letter-spacing: -0.03em;
-  line-height: 1;
-}
-.cv-facts dt {
-  font-size: var(--fs-xs);
-  line-height: 1.45;
-  color: var(--muted);
-}
-
-/* Which role: three CVs as choices. */
-.cv-fit ul {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.75rem;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-.cv-fit a {
-  display: grid;
-  gap: 0.3rem;
-  height: 100%;
-  padding: 1rem;
-  background: var(--paper);
-  border: 1px solid var(--line);
-  text-decoration: none;
-  transition:
-    border-color 160ms,
-    transform 200ms cubic-bezier(0.2, 0.7, 0.1, 1);
-}
-.cv-fit a:hover {
-  border-color: var(--ink);
-  transform: translateY(-2px);
-}
-.cv-fit strong {
-  font-size: var(--fs-sm);
-  font-weight: 600;
-}
-.cv-fit span {
-  font-size: var(--fs-xs);
-  color: var(--muted);
-  line-height: 1.45;
-}
-.cv-fit small {
-  margin-top: 0.4rem;
-  font-family: var(--font-mono) !important;
-  font-size: var(--fs-xs);
-}
-
 /* Experience and education. */
 .cv-timeline {
   list-style: none;
@@ -479,7 +365,7 @@
   font-weight: 500;
 }
 
-/* Skills: every group visible. */
+/* Tech stack: every group visible, with a line on what it is used for. */
 .cv-skills {
   margin: 0;
   border-top: 1px solid var(--line);
@@ -499,34 +385,13 @@
 .cv-skills dd {
   margin: 0;
 }
+.cv-use {
+  margin: 0 0 0.5rem;
+  font-size: var(--fs-sm);
+  line-height: 1.5;
+  color: var(--ink-2);
+}
 
-/* Contact. */
-.cv-contact {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  border-top: 1px solid var(--line);
-}
-.cv-contact a {
-  display: grid;
-  grid-template-columns: 9rem minmax(0, 1fr);
-  gap: 1.5rem;
-  padding: 0.9rem 0;
-  border-bottom: 1px solid var(--line);
-  font-size: var(--fs-md);
-  text-decoration: none;
-  transition: padding-left 180ms;
-}
-.cv-contact a:hover {
-  padding-left: 0.4rem;
-}
-.cv-contact small {
-  font-family: var(--font-mono) !important;
-  font-size: var(--fs-xs);
-  color: var(--muted);
-  text-transform: uppercase;
-  padding-top: 0.2rem;
-}
 .anchor-alias {
   position: relative;
   top: -88px;
@@ -536,12 +401,6 @@
   from {
     opacity: 0;
     transform: translateY(8px);
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .cv-facts > div,
-  .cv-dot {
-    animation: none !important;
   }
 }
 
@@ -597,16 +456,6 @@
   .cv-section {
     scroll-margin-top: 120px;
   }
-  .cv-facts {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-  .cv-facts > div:nth-child(3) {
-    padding-left: 0;
-    border-left: 0;
-  }
-  .cv-facts > div:nth-child(n + 3) {
-    border-top: 1px solid var(--line);
-  }
 }
 @media (max-width: 1000px) {
   /* The side column dissolves into the page, so the contents bar can stay stuck to the top
@@ -630,7 +479,6 @@
   }
 }
 @media (max-width: 700px) {
-  .cv-fit ul,
   .cv-projects {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -639,26 +487,19 @@
     border-left: 0;
   }
   .cv-job,
-  .cv-skills > div,
-  .cv-contact a {
+  .cv-skills > div {
     grid-template-columns: minmax(0, 1fr);
     gap: 0.35rem;
-  }
-  .cv-lede {
-    font-size: 1.125rem;
   }
 }
 
 /* Mono labels: tighter word spacing, so short phrases read as one label. */
-.cv-status,
 .cv-label,
 .cv-toc-no,
 .cv-when,
 .cv-project-kind,
-.cv-fit small,
 .cv-flagship-cta,
 .cv-downloads small,
-.cv-contact small,
 .cv-tags li {
   word-spacing: -0.25em;
 }
