@@ -15,7 +15,15 @@ import { Board, Card, Cards, Empty, Kpi, Kpis } from '../board/Board'
 import Columns, { ColumnMultiples } from '../board/Columns'
 import Heatmap from '../dash/Heatmap'
 import { debateHref } from './DebateView'
-import { loadDebateIndex, totalFor, type DebateIndex } from './data'
+import {
+  loadDebateIndex,
+  loadSpeeches,
+  totalFor,
+  type DebateIndex,
+  type Speech,
+} from './data'
+import DebateTimeline from './DebateTimeline'
+import './debatter.css'
 
 const DEFAULTS = { debatt: '', fran: '2014' }
 
@@ -24,11 +32,30 @@ export default function Partiledardebatter({ route }: { route: Route }) {
   const { selected } = useParties(route)
   const [index, setIndex] = useState<DebateIndex | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [speeches, setSpeeches] = useState<Speech[] | null>(null)
+  const [speechError, setSpeechError] = useState(false)
   useEffect(() => {
     loadDebateIndex()
       .then(setIndex)
       .catch((e: Error) => setError(e.message))
   }, [])
+  // The chosen debate's speeches, for the timeline.
+  const chosenPath = index
+    ? (index.leaders.find((d) => d.id === view.debatt) ?? index.leaders.at(-1))
+        ?.path
+    : undefined
+  useEffect(() => {
+    if (!chosenPath) return
+    let live = true
+    setSpeeches(null)
+    setSpeechError(false)
+    loadSpeeches(chosenPath)
+      .then((s) => live && setSpeeches(s))
+      .catch(() => live && setSpeechError(true))
+    return () => {
+      live = false
+    }
+  }, [chosenPath])
   if (error)
     return (
       <p role="alert" className="theme-error">
@@ -134,6 +161,36 @@ export default function Partiledardebatter({ route }: { route: Route }) {
         <Card
           index={0}
           wide
+          title={l(
+            'Who spoke when, and about what',
+            'Vem som talade när, och om vad',
+          )}
+          meta={l(
+            `${dayName(debate.date)} · one lane per party, each block a speech as long as its words · the issue areas are read from the words`,
+            `${dayName(debate.date)} · en rad per parti, varje block ett inlägg lika långt som sina ord · ämnena läses ur orden`,
+          )}
+        >
+          {speeches ? (
+            <DebateTimeline
+              speeches={speeches}
+              issues={index.issues}
+              parties={parties}
+            />
+          ) : speechError ? (
+            <p className="dash-empty">
+              {l(
+                'The speeches could not be loaded.',
+                'Anförandena kunde inte hämtas.',
+              )}
+            </p>
+          ) : (
+            <Empty />
+          )}
+        </Card>
+
+        <Card
+          index={1}
+          wide
           title={l('The debates over time', 'Debatterna över tid')}
           meta={l(
             'Darker: speeches · lighter: replies and answers · click a column to choose the debate',
@@ -166,7 +223,7 @@ export default function Partiledardebatter({ route }: { route: Route }) {
         </Card>
 
         <Card
-          index={1}
+          index={2}
           title={l('Who replies to whom', 'Vem replikerar på vem')}
           meta={l(
             `Rows reply to columns · replies and answers, ${dayName(debate.date)}`,
@@ -189,7 +246,7 @@ export default function Partiledardebatter({ route }: { route: Route }) {
         </Card>
 
         <Card
-          index={2}
+          index={3}
           title={l('Each party’s part', 'Varje partis del')}
           meta={l(
             'Darker: speeches · lighter: replies and answers',
@@ -220,7 +277,7 @@ export default function Partiledardebatter({ route }: { route: Route }) {
         </Card>
 
         <Card
-          index={3}
+          index={4}
           wide
           title={l('Each party over time', 'Varje parti över tid')}
           meta={l(
@@ -247,7 +304,7 @@ export default function Partiledardebatter({ route }: { route: Route }) {
         </Card>
 
         <Card
-          index={4}
+          index={5}
           wide
           title={l('All party-leader debates', 'Alla partiledardebatter')}
           meta={l('Newest first', 'Nyast först')}

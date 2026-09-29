@@ -1053,6 +1053,7 @@
   border: 2px solid color-mix(in srgb, var(--party, #888) 45%, #fff);
   background: color-mix(in srgb, var(--party, #888) 7%, #fff);
   box-shadow: inset 0 -4px 0 var(--party, #888);
+  border-radius: 6px;
 }
 .politik-slicer button[aria-pressed] > span {
   right: 5px;

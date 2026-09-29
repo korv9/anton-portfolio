@@ -337,7 +337,7 @@ export default function SkatterTheme({ route }: { route: Route }) {
                       c.country_code === 'SWE' ? null : (
                         <span
                           key={c.country_code}
-                          className={`tax-dot${c.is_nordic ? ' nordic' : ''}${hover === c.country_code ? ' hover' : ''}`}
+                          className={`round tax-dot${c.is_nordic ? ' nordic' : ''}${hover === c.country_code ? ' hover' : ''}`}
                           style={{ left: at(v) }}
                           title={`${name(c)} ${pct(v)}`}
                           onMouseEnter={() => setHover(c.country_code)}
@@ -346,7 +346,10 @@ export default function SkatterTheme({ route }: { route: Route }) {
                       ),
                     )}
                     {swe != null && (
-                      <span className="tax-dot swe" style={{ left: at(swe) }}>
+                      <span
+                        className="round tax-dot swe"
+                        style={{ left: at(swe) }}
+                      >
                         <b>{pct(swe)}</b>
                       </span>
                     )}
@@ -360,9 +363,10 @@ export default function SkatterTheme({ route }: { route: Route }) {
             })}
           </ol>
           <p className="tax-legend">
-            <span className="tax-dot swe" /> {l('Sweden', 'Sverige')}
-            <span className="tax-dot nordic" /> {l('Nordic', 'Norden')}
-            <span className="tax-dot" /> {l('Other countries', 'Övriga länder')}
+            <span className="round tax-dot swe" /> {l('Sweden', 'Sverige')}
+            <span className="round tax-dot nordic" /> {l('Nordic', 'Norden')}
+            <span className="round tax-dot" />{' '}
+            {l('Other countries', 'Övriga länder')}
             <span className="tax-avg" /> {groupLabel}
             {hover && (
               <strong className="tax-hover">

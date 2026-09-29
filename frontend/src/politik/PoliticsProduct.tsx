@@ -184,6 +184,7 @@ function PartySlicer({ route }: { route: Route }) {
               aria-pressed={selected.includes(code)}
               aria-label={partyName(code)}
               title={partyName(code)}
+              className="round"
               style={{ ['--party' as string]: partyFill(code) }}
               onClick={() => toggle(code)}
             >

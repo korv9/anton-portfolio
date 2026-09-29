@@ -120,7 +120,7 @@ export default function HomePage() {
           <i />
         </div>
         <p className="home-eyebrow">
-          <span className="home-dot" aria-hidden="true" />
+          <span className="home-dot round" aria-hidden="true" />
           {l(
             'Stockholm · open to junior roles',
             'Stockholm · öppen för juniora roller',
