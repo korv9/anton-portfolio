@@ -151,6 +151,13 @@ def main() -> None:
         states = list(pool.map(state, entries))
 
     stale = [entry for entry, remote in states if remote != entry["sha256"]]
+    # A file that was offloaded lives only in storage; it cannot be uploaded again from here.
+    absent = [entry for entry in stale if not (PUBLIC / entry["path"]).is_file()]
+    if absent and not arguments.verify_only:
+        print(f"{len(absent)} out-of-date files are not on disk and are left as they are:")
+        for entry in absent[:10]:
+            print(f"  {entry['path']}")
+        stale = [entry for entry in stale if entry not in absent]
 
     if arguments.verify_only:
         if stale:
