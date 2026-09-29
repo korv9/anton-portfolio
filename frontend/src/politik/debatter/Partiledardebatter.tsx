@@ -1,0 +1,299 @@
+/**
+ * Partiledardebatter: every party-leader debate since 1993/94. How the debates have changed
+ * (speeches and replies per debate), who replies to whom in the chosen debate, each party's
+ * part in it, and each party's replies across debates as small column charts. Every debate
+ * opens replik för replik.
+ */
+import { useEffect, useState } from 'react'
+import { l } from '../../i18n'
+import { partyName } from '../../parties/identity'
+import type { Route } from '../../router'
+import { shownParties, useParties } from '../partySelection'
+import { useViewParams } from '../useViewParams'
+import { Select, dayName, num } from '../controls'
+import { Board, Card, Cards, Empty, Kpi, Kpis } from '../board/Board'
+import Columns, { ColumnMultiples } from '../board/Columns'
+import Heatmap from '../dash/Heatmap'
+import { debateHref } from './DebateView'
+import { loadDebateIndex, totalFor, type DebateIndex } from './data'
+
+const DEFAULTS = { debatt: '', fran: '2014' }
+
+export default function Partiledardebatter({ route }: { route: Route }) {
+  const [view, setView] = useViewParams(route, DEFAULTS)
+  const { selected } = useParties(route)
+  const [index, setIndex] = useState<DebateIndex | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  useEffect(() => {
+    loadDebateIndex()
+      .then(setIndex)
+      .catch((e: Error) => setError(e.message))
+  }, [])
+  if (error)
+    return (
+      <p role="alert" className="theme-error">
+        {error}
+      </p>
+    )
+  if (!index) return <Empty />
+
+  const all = index.leaders
+  const debate = all.find((d) => d.id === view.debatt) ?? all.at(-1)!
+  const since = all.filter(
+    (d) => Number(d.date.slice(0, 4)) >= Number(view.fran),
+  )
+  const parties = shownParties(selected)
+  const present = parties.filter((p) => debate.parties[p])
+  const label = (d: (typeof all)[number]) =>
+    d.date.slice(2, 7).replace('-', '/')
+
+  const given = present.map((p) => ({
+    party: p,
+    n: Object.values(debate.replied_to[p] ?? {}).reduce((s, v) => s + v, 0),
+  }))
+  const received = present.map((p) => ({
+    party: p,
+    n: present.reduce((s, q) => s + (debate.replied_to[q]?.[p] ?? 0), 0),
+  }))
+  const topGiven = [...given].sort((a, b) => b.n - a.n)[0]
+  const topReceived = [...received].sort((a, b) => b.n - a.n)[0]
+  const years = [...new Set(all.map((d) => d.date.slice(0, 4)))]
+
+  return (
+    <Board
+      title={l('Party-leader debates', 'Partiledardebatter')}
+      sub={l(
+        `${all.length} party-leader debates since ${all[0].date.slice(0, 4)}. The chosen debate: ${dayName(debate.date)}.`,
+        `${all.length} partiledardebatter sedan ${all[0].date.slice(0, 4)}. Vald debatt: ${dayName(debate.date)}.`,
+      )}
+      slicers={
+        <>
+          <Select
+            label={l('Debate', 'Debatt')}
+            value={debate.id}
+            options={[...all]
+              .reverse()
+              .map((d) => ({ value: d.id, label: `${d.date} · ${d.session}` }))}
+            onChange={(debatt) => setView({ debatt })}
+          />
+          <Select
+            label={l('Over time from', 'Över tid från')}
+            value={view.fran}
+            options={years
+              .filter((y) => Number(y) % 2 === 0 || y === years[0])
+              .map((y) => ({ value: y, label: y }))}
+            onChange={(fran) => setView({ fran })}
+          />
+        </>
+      }
+    >
+      <Kpis>
+        <Kpi
+          index={0}
+          label={l('Speeches and replies', 'Anföranden och repliker')}
+          value={debate.speeches}
+          format={(v) => num(v)}
+          sub={dayName(debate.date)}
+        />
+        <Kpi
+          index={1}
+          label={l('Of which replies', 'Varav repliker')}
+          value={debate.replies}
+          format={(v) => num(v)}
+        />
+        <Kpi
+          index={2}
+          label={l('Replies most', 'Replikerar mest')}
+          value={topGiven?.n ?? 0}
+          format={(v) => `${topGiven?.party ?? ''} ${num(v)}`}
+          sub={topGiven ? partyName(topGiven.party) : undefined}
+        />
+        <Kpi
+          index={3}
+          label={l('Replied to most', 'Får flest repliker')}
+          value={topReceived?.n ?? 0}
+          format={(v) => `${topReceived?.party ?? ''} ${num(v)}`}
+          sub={topReceived ? partyName(topReceived.party) : undefined}
+        />
+      </Kpis>
+
+      <p className="board-cta">
+        <a
+          className="board-button"
+          href={debateHref('partiledare', debate.session, debate.id)}
+        >
+          {l(
+            'Read the debate reply by reply',
+            'Läs debatten replik för replik',
+          )}{' '}
+          →
+        </a>
+      </p>
+
+      <Cards>
+        <Card
+          index={0}
+          wide
+          title={l('The debates over time', 'Debatterna över tid')}
+          meta={l(
+            'Darker: speeches · lighter: replies and answers · click a column to choose the debate',
+            'Mörkare: anföranden · ljusare: repliker och svar · klicka på en kolumn för att välja debatten',
+          )}
+        >
+          <Columns
+            categories={since.map(label)}
+            series={[
+              {
+                key: 'a',
+                label: l('Speeches', 'Anföranden'),
+                values: since.map((d) => d.speeches - d.replies),
+              },
+              {
+                key: 'r',
+                label: l('Replies', 'Repliker'),
+                values: since.map((d) => d.replies),
+              },
+            ]}
+            stacked
+            highlight={since.findIndex((d) => d.id === debate.id)}
+            onPick={(i) => setView({ debatt: since[i].id })}
+            format={(v) => num(v)}
+            label={l(
+              'Speeches and replies per party-leader debate',
+              'Anföranden och repliker per partiledardebatt',
+            )}
+          />
+        </Card>
+
+        <Card
+          index={1}
+          title={l('Who replies to whom', 'Vem replikerar på vem')}
+          meta={l(
+            `Rows reply to columns · replies and answers, ${dayName(debate.date)}`,
+            `Raden replikerar på kolumnen · repliker och svar, ${dayName(debate.date)}`,
+          )}
+        >
+          <Heatmap
+            rows={present.map((p) => ({ key: p, label: partyName(p) }))}
+            rowHeader="party"
+            parties={present}
+            value={(row, col) =>
+              row === col ? null : (debate.replied_to[row]?.[col] ?? 0)
+            }
+            format={(v) => num(v)}
+            caption={l(
+              'Replies from the row party to the column party',
+              'Repliker från radens parti till kolumnens parti',
+            )}
+          />
+        </Card>
+
+        <Card
+          index={2}
+          title={l('Each party’s part', 'Varje partis del')}
+          meta={l(
+            'Darker: speeches · lighter: replies and answers',
+            'Mörkare: anföranden · ljusare: repliker och svar',
+          )}
+        >
+          <Columns
+            categories={present}
+            series={[
+              {
+                key: 'a',
+                label: l('Speeches', 'Anföranden'),
+                values: present.map((p) => debate.parties[p][0]),
+              },
+              {
+                key: 'r',
+                label: l('Replies', 'Repliker'),
+                values: present.map((p) => debate.parties[p][1]),
+              },
+            ]}
+            stacked
+            format={(v) => num(v)}
+            label={l(
+              'Speeches and replies per party',
+              'Anföranden och repliker per parti',
+            )}
+          />
+        </Card>
+
+        <Card
+          index={3}
+          wide
+          title={l('Each party over time', 'Varje parti över tid')}
+          meta={l(
+            'Speeches and replies per debate, one chart per party on the same scale',
+            'Anföranden och repliker per debatt, ett diagram per parti på samma skala',
+          )}
+        >
+          <ColumnMultiples
+            categories={since.map(label)}
+            series={parties.map((p) => ({
+              key: p,
+              label: partyName(p),
+              party: p,
+              values: since.map((d) =>
+                d.parties[p] ? totalFor(d.parties, p) : null,
+              ),
+            }))}
+            format={(v) => num(v)}
+            label={l(
+              'Speeches and replies per debate',
+              'Anföranden och repliker per debatt',
+            )}
+          />
+        </Card>
+
+        <Card
+          index={4}
+          wide
+          title={l('All party-leader debates', 'Alla partiledardebatter')}
+          meta={l('Newest first', 'Nyast först')}
+        >
+          <div
+            className="board-table-wrap"
+            tabIndex={0}
+            role="region"
+            aria-label={l(
+              'Table of all party-leader debates',
+              'Tabell över alla partiledardebatter',
+            )}
+          >
+            <table className="board-table">
+              <thead>
+                <tr>
+                  <th scope="col">{l('Date', 'Datum')}</th>
+                  <th scope="col">{l('Session', 'Riksmöte')}</th>
+                  <th scope="col" className="num">
+                    {l('Speeches', 'Inlägg')}
+                  </th>
+                  <th scope="col" className="num">
+                    {l('Replies', 'Repliker')}
+                  </th>
+                  <th scope="col">{l('Read', 'Läs')}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[...all].reverse().map((d) => (
+                  <tr key={d.id}>
+                    <td>{dayName(d.date)}</td>
+                    <td>{d.session}</td>
+                    <td className="num">{num(d.speeches)}</td>
+                    <td className="num">{num(d.replies)}</td>
+                    <td>
+                      <a href={debateHref('partiledare', d.session, d.id)}>
+                        {l('Reply by reply', 'Replik för replik')} →
+                      </a>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Card>
+      </Cards>
+    </Board>
+  )
+}

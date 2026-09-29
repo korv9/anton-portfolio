@@ -127,3 +127,27 @@ are the parties' current marks as Riksdagen publishes them, stored locally as We
 ## Herr taLLMan
 
 `#tallman`: a source-critical chat about the Riksdag. It answers in claims that Allegoria checks against their sources. The code is in `frontend/src/tallman/` and the Worker in `worker/`; setup is in [tallman.md](tallman.md).
+
+## Politics: the sidebar
+
+The politics sidebar is in groups:
+
+- **Översikt** (`#politik`).
+- **Budget** (`#politik-budget`). The detailed builder view is at `#politik-budget-detalj`.
+- **Debatter:**
+  - **Sakdebatter** (`#politik-sakdebatter`);
+  - **Partiledardebatter** (`#politik-partiledardebatter`);
+  - **Vad de pratar om** (`#politik-tal`).
+- **Mer:** voters, votes, explore, sources.
+
+Budget and the two debate pages are scrolling dashboards in `frontend/src/politik/board/`: key figures, column charts (`Columns.tsx`, grouped, stacked or one small chart per party) and bars.
+
+One debate opens at `#politik-debatt?typ=sak|partiledare&riksmote=…&id=…`. It shows:
+- the order of speaking as a strip;
+- speeches and replies per party;
+- every exchange replik för replik, with who answers whom;
+- what the debate was about.
+
+**How debates are linked to issues** (`platform/publish/export_debates.py`, written to `politics/parliament/debate-stats/`):
+- An issue debate whose title matches a Riksdag decision gets the committee report, each party's position on every decision point, and the committee's issue area. The decision files cover 2024/25 and later.
+- Other debates, and each speech, get issue areas from word matches against the expenditure-area lexicon. These are marked with a dashed border.

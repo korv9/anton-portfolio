@@ -7,7 +7,7 @@ test('politics now: seats, majority, government, decisions and history', async (
   await page.goto('/#now')
   await expect(page).toHaveURL(/#politik$/)
   await expect(
-    page.getByRole('heading', { level: 1, name: /Where things stand/ }),
+    page.getByRole('heading', { level: 1, name: /Overview/ }),
   ).toBeVisible()
   await expect(page.locator('.dash-kpi')).toHaveCount(6)
   await expect(page.locator('.dash-seat')).not.toHaveCount(0)
@@ -34,7 +34,7 @@ test('politics now: seats, majority, government, decisions and history', async (
   )
   await expect(
     page.getByRole('navigation', { name: 'Politics' }).getByRole('link', {
-      name: /Where things stand/,
+      name: /Overview/,
     }),
   ).toHaveAttribute('aria-current', 'true')
   await page.goto('/#now-decisions')

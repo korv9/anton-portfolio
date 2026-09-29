@@ -344,7 +344,7 @@ export default function Dashboard({ route }: { route: Route }) {
       <header className="dash-head">
         <div>
           <h1>
-            {l('Where things stand', 'Läget just nu')}
+            {l('Overview', 'Översikt')}
             {chosen.length > 0 && (
               <span className="dash-focus">
                 {chosen.map((p) => (

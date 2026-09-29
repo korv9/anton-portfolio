@@ -34,6 +34,7 @@ export type Route = {
 export const REDIRECTS: Record<string, string> = {
   '#now': '#politik',
   '#now-election': '#politik',
+  '#politik-debatter': '#politik-sakdebatter',
   '#politics-page': '#politik',
   '#about': '#start',
   '#om-mig': '#start',

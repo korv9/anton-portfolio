@@ -5,9 +5,9 @@ test('one politics navigation isolates content and supports back and direct link
 }) => {
   await page.goto('/#now-decisions')
   const politics = page.getByRole('navigation', { name: 'Politics' })
-  await expect(politics.getByRole('link')).toHaveCount(7)
+  await expect(politics.getByRole('link')).toHaveCount(9)
   await expect(
-    politics.getByRole('link', { name: /Where things stand/ }),
+    politics.getByRole('link', { name: /Overview/ }),
   ).toHaveAttribute('aria-current', 'true')
   // Only one navigation for politics: the older subject and view menus are gone.
   await expect(
@@ -15,11 +15,11 @@ test('one politics navigation isolates content and supports back and direct link
   ).toHaveCount(0)
   await expect(page.locator('.decision-read')).toHaveCount(5)
   await expect(page.locator('.dash-seats')).toHaveCount(0)
-  await politics.getByRole('link', { name: /Where things stand/ }).click()
+  await politics.getByRole('link', { name: /Overview/ }).click()
   await expect(page.locator('.dash-seats')).toBeVisible()
   await expect(page.locator('.decision-read')).toHaveCount(0)
   await expect(
-    politics.getByRole('link', { name: /Where things stand/ }),
+    politics.getByRole('link', { name: /Overview/ }),
   ).toHaveAttribute('aria-current', 'page')
   await page.goBack()
   await expect(page.locator('.decision-read')).toHaveCount(5)

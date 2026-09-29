@@ -1,56 +1,115 @@
 /**
- * The politics product's one navigation: seven themes, and where every older, more detailed
- * view now lives as a deep dive under one of them.
+ * The politics product's navigation: Översikt, Budget, Debatter (sakdebatter, partiledardebatter,
+ * what they talk about) and Mer, and where every older, more detailed view lives as a deep
+ * dive under one of them.
  */
 export type ThemeKey =
-  'lage' | 'valjarna' | 'roster' | 'budget' | 'tal' | 'utforska' | 'kallor'
+  | 'lage'
+  | 'budget'
+  | 'sakdebatter'
+  | 'partiledare'
+  | 'tal'
+  | 'valjarna'
+  | 'roster'
+  | 'utforska'
+  | 'kallor'
 
-export type Theme = { key: ThemeKey; path: string; sv: string; en: string }
+/** Where a theme sits in the sidebar: on its own, under Debatter, or under Mer. */
+export type NavGroup = 'main' | 'debatter' | 'mer'
+
+export type Theme = {
+  key: ThemeKey
+  path: string
+  sv: string
+  en: string
+  group: NavGroup
+}
 
 export const THEMES: Theme[] = [
   {
     key: 'lage',
     path: '#politik',
-    sv: 'Läget just nu',
-    en: 'Where things stand',
+    sv: 'Översikt',
+    en: 'Overview',
+    group: 'main',
+  },
+  {
+    key: 'budget',
+    path: '#politik-budget',
+    sv: 'Budget',
+    en: 'Budget',
+    group: 'main',
+  },
+  {
+    key: 'sakdebatter',
+    path: '#politik-sakdebatter',
+    sv: 'Sakdebatter',
+    en: 'Issue debates',
+    group: 'debatter',
+  },
+  {
+    key: 'partiledare',
+    path: '#politik-partiledardebatter',
+    sv: 'Partiledardebatter',
+    en: 'Party-leader debates',
+    group: 'debatter',
+  },
+  {
+    key: 'tal',
+    path: '#politik-tal',
+    sv: 'Vad de pratar om',
+    en: 'What they talk about',
+    group: 'debatter',
   },
   {
     key: 'valjarna',
     path: '#politik-valjarna',
     sv: 'Vad väljarna tycker',
     en: 'What voters think',
+    group: 'mer',
   },
   {
     key: 'roster',
     path: '#politik-roster',
     sv: 'Hur partierna röstar',
     en: 'How the parties vote',
-  },
-  {
-    key: 'budget',
-    path: '#politik-budget',
-    sv: 'Vad partierna vill lägga pengar på',
-    en: 'What the parties want to spend on',
-  },
-  {
-    key: 'tal',
-    path: '#politik-tal',
-    sv: 'Vad politikerna pratar om',
-    en: 'What politicians talk about',
+    group: 'mer',
   },
   {
     key: 'utforska',
     path: '#politik-utforska',
     sv: 'Utforska själv',
     en: 'Explore for yourself',
+    group: 'mer',
   },
   {
     key: 'kallor',
     path: '#politik-kallor',
     sv: 'Källor och metod',
     en: 'Sources and method',
+    group: 'mer',
   },
 ]
+
+export const NAV_GROUPS: { key: NavGroup; sv: string; en: string }[] = [
+  { key: 'main', sv: '', en: '' },
+  { key: 'debatter', sv: 'Debatter', en: 'Debates' },
+  { key: 'mer', sv: 'Mer', en: 'More' },
+]
+
+/**
+ * Views inside a theme that are not in the navigation: one debate, and the budget builder.
+ * The theme they belong to is highlighted.
+ */
+export function subViewOf(
+  path: string,
+  params: URLSearchParams,
+): ThemeKey | null {
+  if (path === '#politik-debatt')
+    return params.get('typ') === 'partiledare' ? 'partiledare' : 'sakdebatter'
+  if (path === '#politik-budget-detalj') return 'budget'
+  return null
+}
 
 export type DeepDive = {
   /** The theme it belongs to, highlighted in the navigation. */
@@ -196,14 +255,14 @@ export const DEEP_DIVES: Record<string, DeepDive> = {
     aboutEn: 'What Sweden collects, tax decisions and a calculator for yours.',
   },
   '#debates': {
-    parent: 'tal',
+    parent: 'partiledare',
     sv: 'Språkkartan över partiledardebatter',
     en: 'Language map of party-leader debates',
     aboutSv: 'Liknande politiska tal hamnar nära varandra på en karta (UMAP).',
     aboutEn: 'Similar political speeches sit close together on a map (UMAP).',
   },
   '#data-explorer': {
-    parent: 'tal',
+    parent: 'sakdebatter',
     sv: 'Sök bland talen',
     en: 'Search the speeches',
     aboutSv: 'Hitta en politiker, läs hela anföranden och följ debatten.',

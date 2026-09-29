@@ -51,7 +51,7 @@ test('home introduces Anton and routes to each project', async ({
     .getByRole('link', { name: 'Politics' })
     .click()
   await expect(page.getByRole('heading', { level: 1 })).toContainText(
-    'Where things stand',
+    'Overview',
   )
   await page.goto('/#politics')
   await expect(page.getByRole('heading', { level: 1 })).toContainText(
@@ -120,6 +120,8 @@ test('navigation, responsive layout and accessibility', async ({ page }) => {
     '/#politik-valjarna',
     '/#politik-roster',
     '/#politik-budget',
+    '/#politik-sakdebatter',
+    '/#politik-partiledardebatter',
     '/#politik-tal',
     '/#politik-utforska',
     '/#politik-kallor',

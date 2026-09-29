@@ -1,14 +1,22 @@
 /**
- * Svensk politik i siffror: the politics product. One navigation with seven themes (a sidebar
- * on wide screens, a horizontal menu on small ones); each theme is one question answered by
- * one chart, and every older detailed view opens as a deep dive under its theme.
+ * Svensk politik i siffror: the politics product. A sidebar in groups (a horizontal menu on
+ * small screens): Översikt, Budget, Debatter with sakdebatter and partiledardebatter, and Mer.
+ * The main pages are dashboards; every older detailed view opens as a deep dive under its
+ * theme, and one debate opens replik för replik under Debatter.
  */
 import { Suspense, lazy, useEffect, useRef } from 'react'
 import { l } from '../i18n'
 import { PartyLogo, RIKSDAG_PARTIES, partyName } from '../parties/identity'
 import { carryParties, useParties, withParties } from './partySelection'
 import type { Route } from '../router'
-import { THEMES, deepDiveOf, themeByPath, type ThemeKey } from './nav'
+import {
+  NAV_GROUPS,
+  THEMES,
+  deepDiveOf,
+  subViewOf,
+  themeByPath,
+  type ThemeKey,
+} from './nav'
 import './politik.css'
 import './dash/dash.css'
 
@@ -16,6 +24,10 @@ const Dashboard = lazy(() => import('./dash/Dashboard'))
 const ValjarnaTheme = lazy(() => import('./themes/ValjarnaTheme'))
 const RosterTheme = lazy(() => import('./themes/RosterTheme'))
 const BudgetTheme = lazy(() => import('./themes/BudgetTheme'))
+const BudgetBoard = lazy(() => import('./budget/BudgetBoard'))
+const Sakdebatter = lazy(() => import('./debatter/Sakdebatter'))
+const Partiledardebatter = lazy(() => import('./debatter/Partiledardebatter'))
+const DebateView = lazy(() => import('./debatter/DebateView'))
 const TalTheme = lazy(() => import('./themes/TalTheme'))
 const UtforskaTheme = lazy(() => import('./themes/UtforskaTheme'))
 const KallorTheme = lazy(() => import('./themes/KallorTheme'))
@@ -30,7 +42,11 @@ function ThemeView({ theme, route }: { theme: ThemeKey; route: Route }) {
     case 'roster':
       return <RosterTheme route={route} />
     case 'budget':
-      return <BudgetTheme route={route} />
+      return <BudgetBoard route={route} />
+    case 'sakdebatter':
+      return <Sakdebatter route={route} />
+    case 'partiledare':
+      return <Partiledardebatter route={route} />
     case 'tal':
       return <TalTheme route={route} />
     case 'utforska':
@@ -42,8 +58,9 @@ function ThemeView({ theme, route }: { theme: ThemeKey; route: Route }) {
 
 export default function PoliticsProduct({ route }: { route: Route }) {
   const theme = themeByPath(route.path)
-  const dive = theme ? null : deepDiveOf(route.path)
-  const active: ThemeKey = theme?.key ?? dive?.dive.parent ?? 'utforska'
+  const sub = theme ? null : subViewOf(route.path, route.params)
+  const dive = theme || sub ? null : deepDiveOf(route.path)
+  const active: ThemeKey = theme?.key ?? sub ?? dive?.dive.parent ?? 'utforska'
   const nav = useRef<HTMLElement>(null)
   const { selected } = useParties(route)
   // Moving between pages keeps the parties chosen earlier in the session.
@@ -71,21 +88,34 @@ export default function PoliticsProduct({ route }: { route: Route }) {
           aria-label={l('Politics', 'Politik')}
         >
           <ol>
-            {THEMES.map((t, index) => (
-              <li key={t.key}>
-                <a
-                  href={withParties(t.path, selected)}
-                  aria-current={
-                    t.key === active ? (theme ? 'page' : 'true') : undefined
-                  }
+            {NAV_GROUPS.map((group) => {
+              const items = THEMES.filter((t) => t.group === group.key).map(
+                (t) => (
+                  <li key={t.key}>
+                    <a
+                      href={withParties(t.path, selected)}
+                      aria-current={
+                        t.key === active ? (theme ? 'page' : 'true') : undefined
+                      }
+                    >
+                      {l(t.en, t.sv)}
+                    </a>
+                  </li>
+                ),
+              )
+              if (group.key === 'main') return items
+              return (
+                <li
+                  key={group.key}
+                  className={`politik-nav-group ${group.key}`}
                 >
-                  <span className="politik-nav-no" aria-hidden="true">
-                    {index + 1}
+                  <span className="politik-nav-heading" aria-hidden="true">
+                    {l(group.en, group.sv)}
                   </span>
-                  {l(t.en, t.sv)}
-                </a>
-              </li>
-            ))}
+                  <ol aria-label={l(group.en, group.sv)}>{items}</ol>
+                </li>
+              )
+            })}
           </ol>
         </nav>
       </aside>
@@ -101,6 +131,10 @@ export default function PoliticsProduct({ route }: { route: Route }) {
           >
             {theme ? (
               <ThemeView theme={theme.key} route={route} />
+            ) : route.path === '#politik-debatt' ? (
+              <DebateView route={route} />
+            ) : route.path === '#politik-budget-detalj' ? (
+              <BudgetTheme route={route} />
             ) : (
               <DeepDive path={route.path} />
             )}

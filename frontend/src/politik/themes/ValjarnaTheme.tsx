@@ -5,6 +5,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { l } from '../../i18n'
 import MultiLineChart, { type Series } from '../../charts/MultiLineChart'
+import { SeriesColumns } from '../board/Columns'
+import '../board/board.css'
 import { load, type Elections } from '../../parliament/data'
 import {
   PartyTag,
@@ -56,6 +58,8 @@ export default function ValjarnaTheme({ route }: { route: Route }) {
 
   const picked = shownParties(selected)
   const lines = view.diagram === 'linje'
+  const columns = view.diagram === 'kolumn'
+  const overTime = lines || columns
   const from = `${view.fran}-01-01`
   const measure = view.matt === 'val' ? 'val' : 'psu'
   const showBand = view.osakerhet === '1' && measure === 'psu'
@@ -175,9 +179,13 @@ export default function ValjarnaTheme({ route }: { route: Route }) {
       />
       <Select
         label={l('Chart', 'Diagram')}
-        value={lines ? 'linje' : 'stapel'}
+        value={view.diagram}
         options={[
           { value: 'stapel', label: l('Latest, bars', 'Senaste, staplar') },
+          {
+            value: 'kolumn',
+            label: l('Over time, columns', 'Över tid, kolumner'),
+          },
           { value: 'linje', label: l('Over time, lines', 'Över tid, linjer') },
         ]}
         onChange={(diagram) => setView({ diagram })}
@@ -269,7 +277,7 @@ export default function ValjarnaTheme({ route }: { route: Route }) {
         }
         filters={filters}
         chartTitle={
-          !lines
+          !overTime
             ? measure === 'psu'
               ? l(
                   `Support in SCB’s latest survey`,
@@ -284,7 +292,7 @@ export default function ValjarnaTheme({ route }: { route: Route }) {
               : l('Result in Riksdag elections', 'Resultat i riksdagsvalen')
         }
         chartMeta={
-          !lines
+          !overTime
             ? l(
                 `Per cent of voters · ${latestWhen ? (measure === 'psu' ? monthName(latestWhen) : latestWhen.slice(0, 4)) : ''} · change since the one before`,
                 `Procent av väljarna · ${latestWhen ? (measure === 'psu' ? monthName(latestWhen) : latestWhen.slice(0, 4)) : ''} · förändring sedan föregående`,
@@ -295,7 +303,7 @@ export default function ValjarnaTheme({ route }: { route: Route }) {
               )
         }
         chart={
-          !lines ? (
+          !overTime ? (
             <Bars
               bars={latestBars}
               format={(v) => pct(v)}
@@ -303,6 +311,16 @@ export default function ValjarnaTheme({ route }: { route: Route }) {
                 `Latest support per party: ${latestBars.map((b) => `${b.key} ${pct(b.value)}`).join(', ')}`,
                 `Senaste stöd per parti: ${latestBars.map((b) => `${b.key} ${pct(b.value)}`).join(', ')}`,
               )}
+            />
+          ) : picked.length && columns ? (
+            <SeriesColumns
+              series={series}
+              label={l(
+                'Support per party over time',
+                'Stöd per parti över tid',
+              )}
+              format={(v) => pct(v, 0)}
+              tick={(d) => (measure === 'psu' ? d.slice(2, 7) : d.slice(0, 4))}
             />
           ) : picked.length ? (
             <MultiLineChart
@@ -433,17 +451,24 @@ export default function ValjarnaTheme({ route }: { route: Route }) {
         <Field
           label={l('Chart type', 'Graftyp')}
           hint={l(
-            'Bars compare the parties at the latest survey; lines show how support has moved. Parties are chosen in the bar at the top.',
-            'Staplar jämför partierna i senaste mätningen; linjer visar hur stödet har rört sig. Partier väljs i raden högst upp.',
+            'Bars compare the parties at the latest survey; columns and lines show how support has moved. Parties are chosen in the bar at the top.',
+            'Staplar jämför partierna i senaste mätningen; kolumner och linjer visar hur stödet har rört sig. Partier väljs i raden högst upp.',
           )}
         >
           <Choice
             name="diagram"
-            value={lines ? 'linje' : 'stapel'}
+            value={view.diagram}
             options={[
               {
                 value: 'stapel',
                 label: l('Bars: the latest value', 'Staplar: senaste värdet'),
+              },
+              {
+                value: 'kolumn',
+                label: l(
+                  'Columns: over time, one chart per party',
+                  'Kolumner: över tid, ett diagram per parti',
+                ),
               },
               {
                 value: 'linje',
