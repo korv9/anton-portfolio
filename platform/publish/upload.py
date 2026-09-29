@@ -164,6 +164,15 @@ def main() -> None:
         stale = [entry for entry in stale if entry not in absent]
 
     if arguments.verify_only:
+        # Files built elsewhere (the welfare refresh writes its Parquet and uploads it itself)
+        # are catalogued but never in this checkout; report them, and fail only on files this
+        # checkout holds. Before an offload every file must be verified.
+        if absent and not arguments.offload:
+            print(f"NOT CHECKED: {len(absent)} catalogued files are not in this checkout "
+                  "and are published by the job that builds them:")
+            for entry in absent[:10]:
+                print(f"  {entry['path']}")
+            stale = [entry for entry in stale if entry not in absent]
         if stale:
             print(f"INCOMPLETE: {len(stale)} shards missing or out of date. Do not remove local files.")
             for entry in stale[:10]:
