@@ -19,6 +19,7 @@ export type Page =
   | 'homie'
   | 'datamodel'
   | 'status'
+  | 'tallman'
 
 export type Route = {
   /** The full hash, e.g. `#politik-valjarna?partier=S`. */
@@ -73,6 +74,7 @@ export function pageOf(path: string): Page {
   if (path === '#homie') return 'homie'
   if (path === '#sweden' || path.startsWith('#sweden-')) return 'welfare'
   if (path === '#status') return 'status'
+  if (path === '#tallman') return 'tallman'
   if (path === '#analysis' || path.startsWith('#analysis-')) return 'analysis'
   if (path === '#data-model' || path.startsWith('#data-model-'))
     return 'datamodel'

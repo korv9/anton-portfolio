@@ -263,6 +263,21 @@ export const FLAGSHIP: Project = {
 
 export const PROJECTS: Project[] = [
   {
+    id: 'tallman',
+    title: t('Herr taLLMan', 'Herr taLLMan'),
+    kind: t('RAG med källkontroll', 'RAG with source checking'),
+    summary: t(
+      'En chatt om riksdagen som svarar i påståenden, vart och ett kontrollerat mot sina källor.',
+      'A chat about the Riksdag that answers in claims, each checked against its sources.',
+    ),
+    result: t(
+      'Varje påstående får en etikett (belagt, beräknat, tolkning …) och hela spåret kan granskas.',
+      'Every claim gets a label (supported, computed, interpretation …) and the whole trace can be reviewed.',
+    ),
+    tech: ['TypeScript', 'BM25', 'Claude API', 'Workers AI', 'Vectorize'],
+    href: '#tallman',
+  },
+  {
     id: 'thesis',
     title: t(
       'NLP-klustring av IT-incidenter',

@@ -9,6 +9,7 @@ import './site/site.css'
 // Everything but the start page loads on navigation, so the start page ships none of it.
 const PoliticsProduct = lazy(() => import('./politik/PoliticsProduct'))
 const JobsProduct = lazy(() => import('./jobb/JobsProduct'))
+const TallmanPage = lazy(() => import('./tallman/TallmanPage'))
 const WelfarePage = lazy(() => import('./welfare/WelfarePage'))
 const AnalysisPage = lazy(() => import('./analysis/AnalysisPage'))
 const StatusPage = lazy(() => import('./status/StatusPage'))
@@ -62,7 +63,10 @@ export default function App() {
         back="#sweden"
         label={l('How is Sweden doing?', 'Hur mår Sverige?')}
       />
-    ) : page !== 'home' && page !== 'politik' && page !== 'jobs' ? (
+    ) : page !== 'home' &&
+      page !== 'politik' &&
+      page !== 'jobs' &&
+      page !== 'tallman' ? (
       <ProjectBar />
     ) : null
 
@@ -76,6 +80,7 @@ export default function App() {
         path={path}
         inPolitics={page === 'politik'}
         inJobs={page === 'jobs'}
+        inTallman={page === 'tallman'}
         onLanguage={setLanguage}
       />
       <main id="main" tabIndex={-1} key={language}>
@@ -90,6 +95,7 @@ export default function App() {
           {page === 'home' && <HomePage />}
           {page === 'politik' && <PoliticsProduct route={route} />}
           {page === 'jobs' && <JobsProduct route={route} />}
+          {page === 'tallman' && <TallmanPage />}
           {page === 'welfare' && <WelfarePage view={path} />}
           {page === 'analysis' && <AnalysisPage view={path} />}
           {page === 'status' && <StatusPage />}
