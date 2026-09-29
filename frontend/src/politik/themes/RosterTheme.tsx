@@ -5,19 +5,15 @@
  */
 import { useEffect, useState } from 'react'
 import { l } from '../../i18n'
-import MultiLineChart from '../../charts/MultiLineChart'
+import { SeriesColumns } from '../board/Columns'
+import '../board/board.css'
 import {
   load,
   sessionDate,
   type SessionRecord,
   type Sessions,
 } from '../../parliament/data'
-import {
-  PartyTag,
-  RIKSDAG_PARTIES,
-  partyLine,
-  partyName,
-} from '../../parties/identity'
+import { PartyTag, RIKSDAG_PARTIES, partyName } from '../../parties/identity'
 import type { Route } from '../../router'
 import ThemeLayout from '../ThemeLayout'
 import BuilderPanel, { Choice, Field } from '../BuilderPanel'
@@ -289,11 +285,11 @@ export default function RosterTheme({ route }: { route: Route }) {
         }
         chart={
           record ? (
-            <MultiLineChart
+            <SeriesColumns
               series={recordSeries}
               label={l(record.en, record.sv)}
               format={(v) => pct(v, 0)}
-              colorOf={partyLine}
+              tick={(d) => d.slice(2, 4)}
             />
           ) : (
             <Bars
@@ -314,8 +310,8 @@ export default function RosterTheme({ route }: { route: Route }) {
         takeaway={
           record
             ? l(
-                'Each line is one party; the label at the end shows the latest session.',
-                'Varje linje är ett parti; bokstäverna vid slutet visar det senaste riksmötet.',
+                'One chart per party on the same scale; each column is one session.',
+                'Ett diagram per parti på samma skala; varje kolumn är ett riksmöte.',
               )
             : others[0]
               ? l(

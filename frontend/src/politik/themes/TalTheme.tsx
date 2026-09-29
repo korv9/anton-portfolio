@@ -6,6 +6,8 @@
 import { useEffect, useState } from 'react'
 import { l } from '../../i18n'
 import MultiLineChart from '../../charts/MultiLineChart'
+import { SeriesColumns } from '../board/Columns'
+import '../board/board.css'
 import { sessionDate } from '../../parliament/data'
 import {
   PartyTag,
@@ -69,6 +71,8 @@ export default function TalTheme({ route }: { route: Route }) {
   const areaName = names.get(area) ?? String(area)
   const picked = shownParties(selected)
   const lines = view.diagram === 'linje'
+  const columns = view.diagram === 'kolumn'
+  const overTime = lines || columns
   const series = picked.map((party) => ({
     key: party,
     party,
@@ -129,11 +133,15 @@ export default function TalTheme({ route }: { route: Route }) {
       />
       <Select
         label={l('Chart', 'Diagram')}
-        value={lines ? 'linje' : 'stapel'}
+        value={view.diagram}
         options={[
           {
             value: 'stapel',
             label: l('Latest session, bars', 'Senaste riksmötet, staplar'),
+          },
+          {
+            value: 'kolumn',
+            label: l('Over time, columns', 'Över tid, kolumner'),
           },
           { value: 'linje', label: l('Over time, lines', 'Över tid, linjer') },
         ]}
@@ -224,7 +232,7 @@ export default function TalTheme({ route }: { route: Route }) {
           `Hur mycket partierna pratar om ${areaName}`,
         )}
         chartMeta={
-          lines
+          overTime
             ? l(
                 `Per cent of each party’s issue words · ${corpusName} · ${sessions[0] ?? ''}–${latest}`,
                 `Procent av partiets ämnesord · ${corpusName} · ${sessions[0] ?? ''}–${latest}`,
@@ -235,7 +243,7 @@ export default function TalTheme({ route }: { route: Route }) {
               )
         }
         chart={
-          !lines ? (
+          !overTime ? (
             <Bars
               bars={latestBars}
               format={(v) => pct(v)}
@@ -243,6 +251,16 @@ export default function TalTheme({ route }: { route: Route }) {
                 `Share of speech about ${areaName}, ${latest}: ${latestBars.map((b) => `${b.key} ${pct(b.value)}`).join(', ')}`,
                 `Andel av talet om ${areaName}, ${latest}: ${latestBars.map((b) => `${b.key} ${pct(b.value)}`).join(', ')}`,
               )}
+            />
+          ) : picked.length && columns ? (
+            <SeriesColumns
+              series={series}
+              label={l(
+                `Share of speech about ${areaName}`,
+                `Andel av talet om ${areaName}`,
+              )}
+              format={(v) => pct(v, 0)}
+              tick={(d) => d.slice(2, 4)}
             />
           ) : picked.length ? (
             <MultiLineChart
@@ -398,13 +416,20 @@ export default function TalTheme({ route }: { route: Route }) {
         >
           <Choice
             name="diagram"
-            value={lines ? 'linje' : 'stapel'}
+            value={view.diagram}
             options={[
               {
                 value: 'stapel',
                 label: l(
                   'Bars: the latest session',
                   'Staplar: senaste riksmötet',
+                ),
+              },
+              {
+                value: 'kolumn',
+                label: l(
+                  'Columns: one chart per party',
+                  'Kolumner: ett diagram per parti',
                 ),
               },
               {

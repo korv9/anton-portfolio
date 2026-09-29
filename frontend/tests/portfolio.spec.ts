@@ -11,38 +11,39 @@ test('home introduces Anton and routes to each project', async ({
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
     'Anton Ernstsson',
   )
-  // Name, role and at most three sentences; then the evidence: projects, experience, stack.
+  // A short profile: at most two sentences, and the contact actions on one row.
   const pitch = (await page.locator('.cv-pitch').textContent()) ?? ''
   expect(
     pitch.split(/[.!?](\s|$)/).filter((x) => x.trim()).length,
-  ).toBeLessThanOrEqual(3)
-  const ids = await page
-    .locator('.cv-main > section')
-    .evaluateAll((sections) => sections.map((s) => s.id))
-  expect(ids).toEqual(['projekt', 'erfarenhet', 'teknik'])
-  const toc = page.getByRole('navigation', { name: 'Contents' })
-  await expect(toc.getByRole('link')).toHaveCount(3)
+  ).toBeLessThanOrEqual(2)
+  await expect(page.getByRole('link', { name: /Download CV/ })).toHaveAttribute(
+    'download',
+    '',
+  )
   // A CV for each kind of role, all served.
-  await expect(page.locator('.cv-downloads a[download]')).toHaveCount(3)
+  await page.locator('.cv-more-cvs summary').click()
+  await expect(page.locator('.cv-more-cvs a[download]')).toHaveCount(3)
   for (const href of await page
-    .locator('.cv-downloads a[download]')
+    .locator('.cv-more-cvs a[download]')
     .evaluateAll((links) => links.map((a) => a.getAttribute('href')))) {
     expect((await page.request.get(`/${href}`)).status(), href!).toBe(200)
   }
+  // Experience and the stack side by side, both visible without scrolling on a desktop.
+  await expect(page.locator('#erfarenhet .cv-job')).toHaveCount(4)
   await expect(page.locator('#erfarenhet')).toContainText('Fora')
   await expect(page.locator('#erfarenhet')).toContainText('Avtalat')
+  await expect(page.locator('#teknik .cv-stack > div')).toHaveCount(5)
+  if (!isMobile) {
+    for (const id of ['#erfarenhet', '#teknik', '.cv-flagship']) {
+      const box = await page.locator(id).boundingBox()
+      expect(box!.y, id).toBeLessThan(900)
+    }
+  }
+  // The politics product leads the projects; the rest are tiles.
   await expect(page.locator('.cv-flagship')).toContainText('Swedish politics')
+  await expect(page.locator('.cv-pipeline li')).toHaveCount(5)
   expect(await page.locator('.cv-project').count()).toBeGreaterThanOrEqual(6)
-  // The stack is explained: every group says what it is used for.
-  await expect(page.locator('#teknik .cv-skills > div')).toHaveCount(5)
-  await expect(page.locator('#teknik .cv-use')).toHaveCount(5)
   await expect(page.getByRole('button', { name: 'Show more' })).toHaveCount(0)
-  // The contents follow the reader.
-  await toc.getByRole('link', { name: /Tech stack/ }).click()
-  await expect(toc.getByRole('link', { name: /Tech stack/ })).toHaveAttribute(
-    'aria-current',
-    'location',
-  )
   await expect(page.locator('#job-market')).toHaveCount(0)
   if (isMobile) await page.getByRole('button', { name: 'Menu' }).click()
   await page
@@ -50,7 +51,7 @@ test('home introduces Anton and routes to each project', async ({
     .getByRole('link', { name: 'Politics' })
     .click()
   await expect(page.getByRole('heading', { level: 1 })).toContainText(
-    'Where things stand',
+    'Overview',
   )
   await page.goto('/#politics')
   await expect(page.getByRole('heading', { level: 1 })).toContainText(
@@ -108,7 +109,7 @@ test('navigation, responsive layout and accessibility', async ({ page }) => {
   // Contrast is checked on the settled page, not halfway through an entrance animation.
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.goto('/')
-  await expect(page.locator('.cv-downloads a').first()).toHaveAttribute(
+  await expect(page.getByRole('link', { name: /Download CV/ })).toHaveAttribute(
     'download',
     '',
   )
@@ -119,9 +120,16 @@ test('navigation, responsive layout and accessibility', async ({ page }) => {
     '/#politik-valjarna',
     '/#politik-roster',
     '/#politik-budget',
+    '/#politik-sakdebatter',
+    '/#politik-partier',
+    '/#politik-partier?partier=M',
+    '/#politik-partiledardebatter',
     '/#politik-tal',
     '/#politik-utforska',
     '/#politik-kallor',
+    '/#jobb',
+    '/#jobb-yrken',
+    '/#jobb-lan',
     '/#issue-arbete',
     '/#budget-comparison',
     '/#drugcomb',

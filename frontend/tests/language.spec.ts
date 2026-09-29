@@ -7,7 +7,7 @@ test('Swedish is the default language', async ({ page }) => {
   await page.goto('/#politik')
   await expect(page.locator('html')).toHaveAttribute('lang', 'sv')
   await expect(
-    page.getByRole('heading', { level: 1, name: /Läget just nu/ }),
+    page.getByRole('heading', { level: 1, name: /Översikt/ }),
   ).toBeVisible()
 })
 

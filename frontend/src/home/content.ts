@@ -37,17 +37,30 @@ export const CVS: { role: Bilingual; focus: Bilingual; file: string }[] = [
   },
 ]
 
-/** Who Anton is, in three sentences at most. */
+/** Who Anton is, in two short sentences. */
 export const PITCH = t(
-  'Junior data engineer i Stockholm, utbildad AI-utvecklare vid JENSEN (2026). Jag bygger pipelines, datamodeller och analyser i Python, SQL, dbt och Azure Databricks, senast under praktik på Avtalat och Fora. Jag söker en junior roll inom data engineering, analytics engineering eller tillämpad AI.',
-  'Junior data engineer in Stockholm, trained as an AI developer at JENSEN (2026). I build pipelines, data models and analyses in Python, SQL, dbt and Azure Databricks, most recently as an intern at Avtalat and Fora. I am looking for a junior role in data engineering, analytics engineering or applied AI.',
+  'Junior data engineer i Stockholm som bygger hela vägen från rådata till dashboards: pipelines, datamodeller och analys. Söker en junior roll inom data engineering, analytics engineering eller tillämpad AI.',
+  'Junior data engineer in Stockholm who builds the whole path from raw data to dashboards: pipelines, data models and analysis. Looking for a junior role in data engineering, analytics engineering or applied AI.',
 )
+
+/** The education, shown with the experience. */
+export const EDUCATION = {
+  org: 'JENSEN YH',
+  role: t('AI-utvecklare', 'AI Developer'),
+  period: t('2024–2026', '2024–2026'),
+  short: t(
+    'Yrkeshögskola, 400 YH-poäng, två år på heltid. Examen juni 2026.',
+    'Higher vocational education, 400 credits, two years full time. Graduated June 2026.',
+  ),
+}
 
 export const EXPERIENCE: {
   org: string
   role: Bilingual
   kind: Bilingual
   period: Bilingual
+  /** What it was, in one line: the start page shows only this. */
+  short: Bilingual
   did: Bilingual[]
   tech: string[]
 }[] = [
@@ -56,6 +69,10 @@ export const EXPERIENCE: {
     role: t('Analytics Engineer', 'Analytics Engineer'),
     kind: t('LIA-praktik', 'LIA internship'),
     period: t('jan–jun 2026', 'Jan–Jun 2026'),
+    short: t(
+      'NLP-klustring av 21 000+ incidenter (examensarbete), Power BI-modeller och Databricks-pipelines.',
+      'NLP clustering of 21,000+ incidents (degree project), Power BI models and Databricks pipelines.',
+    ),
     did: [
       t(
         'Byggde en GDPR-anpassad NLP-lösning som klustrade 21 000+ produktionsincidenter och hittade 72 möjliga oregistrerade problemposter (examensarbete).',
@@ -86,6 +103,10 @@ export const EXPERIENCE: {
     role: t('Data Engineer', 'Data Engineer'),
     kind: t('LIA-praktik', 'LIA internship'),
     period: t('nov 2025–jan 2026', 'Nov 2025–Jan 2026'),
+    short: t(
+      'Lakehouse-pipelines i Azure Databricks: 80 000+ poster från REST-API, stjärnschema i Gold-lagret.',
+      'Lakehouse pipelines in Azure Databricks: 80,000+ records from a REST API, a star schema in Gold.',
+    ),
     did: [
       t(
         'Byggde pipelines i Python, PySpark och Spark SQL som läser in 80 000+ Freshservice-poster från ett REST-API till ett lakehouse i Azure Databricks.',
@@ -114,6 +135,10 @@ export const EXPERIENCE: {
     role: t('Maskinoperatör', 'Machine Operator'),
     kind: t('Tidigare erfarenhet', 'Earlier experience'),
     period: t('2022–2025', '2022–2025'),
+    short: t(
+      'Produktion, kvalitetskontroll och felsökning; vice ordförande i fackklubben.',
+      'Production, quality control and troubleshooting; union club vice-chair.',
+    ),
     did: [
       t(
         'Produktion, kvalitetskontroll och teknisk felsökning. Vice ordförande i den lokala fackklubben.',
@@ -238,6 +263,21 @@ export const FLAGSHIP: Project = {
 
 export const PROJECTS: Project[] = [
   {
+    id: 'tallman',
+    title: t('Herr taLLMan', 'Herr taLLMan'),
+    kind: t('RAG med källkontroll', 'RAG with source checking'),
+    summary: t(
+      'En chatt om riksdagen som svarar i påståenden, vart och ett kontrollerat mot sina källor.',
+      'A chat about the Riksdag that answers in claims, each checked against its sources.',
+    ),
+    result: t(
+      'Varje påstående får en etikett (belagt, beräknat, tolkning …) och hela spåret kan granskas.',
+      'Every claim gets a label (supported, computed, interpretation …) and the whole trace can be reviewed.',
+    ),
+    tech: ['TypeScript', 'BM25', 'Claude API', 'Workers AI', 'Vectorize'],
+    href: '#tallman',
+  },
+  {
     id: 'thesis',
     title: t(
       'NLP-klustring av IT-incidenter',
@@ -275,7 +315,7 @@ export const PROJECTS: Project[] = [
       'Star schema with an incremental fact table, tests for grain, referential integrity and complete months, CI in GitHub Actions.',
     ),
     tech: ['Python', 'SQL', 'dbt Core', 'DuckDB', 'GitHub Actions'],
-    href: '#job-market',
+    href: '#jobb',
     code: 'https://github.com/korv9/swedish-job-market-analytics',
   },
   {

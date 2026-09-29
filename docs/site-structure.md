@@ -6,17 +6,16 @@ click away and remembered.
 
 ## Start page
 
-Only what a recruiter needs, in two columns:
+One screen for a recruiter:
 
-- **Left, fixed:** name, role, at most three sentences on who Anton is and what he is looking
-  for, a table of contents (01 Projekt, 02 Erfarenhet, 03 Tech stack) that marks the section
-  being read, the three CVs (Data Engineer, Data Scientist / Applied AI, Python / AI Platform, in
-  `public/cv/`) and contact links.
-- **Right, read top to bottom:** Projekt (the politics product first, then every other project),
-  Erfarenhet (Avtalat, Fora, Delicato) and Tech stack (five groups, each with one line on what it
-  is used for, then the tools).
-- On a phone the left column dissolves into the page and the contents become a sticky bar.
-  Older addresses (`#om-mig`, `#kontakt`, `#kompetenser`) lead to the start or the stack.
+- **Header:** name, role, two sentences, and the actions on one row (Download CV, email, LinkedIn, GitHub, and "CV per roll" for the three role-specific CVs in `public/cv/`).
+- **Experience and tech stack side by side:**
+  - experience: one line per job, plus the education;
+  - tech stack: five groups of tools as small squares.
+- **Projects:**
+  - the politics product first, as a dark card with the pipeline that built it (sources → Python ingestion → dbt + DuckDB, tested → Parquet in R2 → React dashboard);
+  - every other project as a tile with one line.
+- **Phone:** the page stacks into one column.
 
 The words live in `frontend/src/home/content.ts`; every fact comes from the CVs.
 
@@ -88,6 +87,26 @@ The subject menu that sat above every analysis page ("Grafer & analyser") is gon
 its own navigation, and the other projects (job market, welfare, DrugComb, …) have a link back to
 the projects.
 
+## The job-market product
+
+*Jobbmarknaden i siffror* is built like the politics product, from `jobs/market.json`: every ad in Arbetsförmedlingen's historical archives since 2020, by month, occupation field, occupation group (SSYK 4) and county. `frontend/src/jobb/`.
+
+- **Navigation:** seven themes in the side menu.
+
+| Theme | Address | Main chart |
+|---|---|---|
+| Läget just nu | `#jobb` | A one-screen dashboard: key figures, ads per month (the large card), fields and occupations that grow, counties, terms |
+| Hur utvecklas annonserna? | `#jobb-trender` | New ads per month as columns, or one small chart per field |
+| Vilka yrken växer? | `#jobb-yrken` | Occupations growing or falling the most, or with the most ads |
+| Var finns jobben? | `#jobb-lan` | Share of ads per county, with a county × year heat table |
+| Vilka villkor? | `#jobb-villkor` | Employment type, working hours and experience required |
+| Utforska själv | `#jobb-utforska` | The earlier views (`#job-market`, `#job-market-occupations`, …), which keep their addresses |
+| Källor och metod | `#jobb-kallor` | The archives counted, with their SHA-256, and the method |
+
+- **Field bar:** the occupation fields sit above every page, like the party bar. Any number can be chosen; every chart then answers for them, and none chosen means the whole market. The choice is kept in the address (`?omraden=id,id`) and in the session.
+- **Comparisons:** the latest year is partial, so changes always compare the same months of the year before.
+- **Growth list:** growth is only ranked for occupations that had at least the chosen number of ads a year earlier (25, 100 or 500), so a small occupation cannot top the list on a few ads.
+
 ## Design system
 
 `frontend/src/design-system.css`, loaded last, with tokens in `styles.css`: Geist for text and
@@ -104,3 +123,44 @@ line charts write the party's letters at the end of each line, and the parties t
 differ in marker and line style (S/V red, M/KD/L blue, C/MP green); SD's yellow line has a dark
 casing. Logos appear in pickers, table headers and summaries, never on data points. The logos
 are the parties' current marks as Riksdagen publishes them, stored locally as WebP.
+
+## Herr taLLMan
+
+`#tallman`: a source-critical chat about the Riksdag. It answers in claims that Allegoria checks against their sources. The code is in `frontend/src/tallman/` and the Worker in `worker/`; setup is in [tallman.md](tallman.md).
+
+## Politics: the sidebar
+
+The politics sidebar is in groups:
+
+- **Översikt** (`#politik`).
+- **Budget** (`#politik-budget`). The detailed builder view is at `#politik-budget-detalj`.
+- **Partier** (`#politik-partier`): a card per party. Choosing one (a card, or the party bar) opens its dashboard:
+  - key figures;
+  - party leader and ministers;
+  - Riksdag elections since 1973 and the latest surveys;
+  - the municipal councils: gained, kept or lost seats per municipality, seats per county, where the party is strongest;
+  - the Riksdag group: age, gender, constituencies, every member;
+  - how it votes and with whom;
+  - its budget motions;
+  - its part in the party-leader debates and their topics.
+
+  Members and councils come from `platform/publish/export_party_profiles.py` (`npm run politics:parties`), written to `politics/parties/`:
+  - the Riksdag's list of people;
+  - Valmyndigheten's municipal council results per municipality. The latest election may be partly preliminary; the page says how many municipalities are.
+- **Debatter:**
+  - **Sakdebatter** (`#politik-sakdebatter`);
+  - **Partiledardebatter** (`#politik-partiledardebatter`);
+  - **Vad de pratar om** (`#politik-tal`).
+- **Mer:** voters, votes, explore, sources.
+
+Budget and the two debate pages are scrolling dashboards in `frontend/src/politik/board/`: key figures, column charts (`Columns.tsx`, grouped, stacked or one small chart per party) and bars.
+
+One debate opens at `#politik-debatt?typ=sak|partiledare&riksmote=…&id=…`. It shows:
+- the order of speaking as a strip;
+- speeches and replies per party;
+- every exchange replik för replik, with who answers whom;
+- what the debate was about.
+
+**How debates are linked to issues** (`platform/publish/export_debates.py`, written to `politics/parliament/debate-stats/`):
+- An issue debate whose title matches a Riksdag decision gets the committee report, each party's position on every decision point, and the committee's issue area. The decision files cover 2024/25 and later.
+- Other debates, and each speech, get issue areas from word matches against the expenditure-area lexicon. These are marked with a dashed border.

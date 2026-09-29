@@ -46,9 +46,7 @@
   border-bottom: 1px solid var(--line);
 }
 .politik-nav a {
-  display: grid;
-  grid-template-columns: 1.4rem 1fr;
-  gap: 0.25rem;
+  display: block;
   padding: 0.5rem 0;
   font-size: 0.875rem;
   line-height: 1.35;
@@ -62,11 +60,35 @@
   color: var(--ink);
   font-weight: 700;
 }
-.politik-nav-no {
-  font-size: 0.8125rem;
+.politik-nav a[aria-current] {
+  box-shadow: inset 3px 0 0 var(--ink);
+  padding-left: 0.6rem;
+}
+/* A group: a small heading, its items indented under it. */
+.politik-nav-group {
+  padding: 0.7rem 0 0.2rem;
+}
+.politik-nav-heading {
+  display: block;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   color: var(--muted);
-  font-weight: 400;
-  padding-top: 0.1rem;
+}
+.politik-nav .politik-nav-group ol {
+  border-top: 0;
+  margin-top: 0.3rem;
+}
+.politik-nav .politik-nav-group li {
+  border-bottom: 0;
+}
+.politik-nav .politik-nav-group a {
+  padding: 0.35rem 0 0.35rem 0.75rem;
+  border-left: 1px solid var(--line);
+}
+.politik-nav .politik-nav-group a[aria-current] {
+  box-shadow: inset 3px 0 0 var(--ink);
 }
 .politik-main {
   min-width: 0;
@@ -761,8 +783,20 @@
   .politik-nav a[aria-current] {
     border-bottom-color: var(--ink);
   }
-  .politik-nav-no {
+  /* One row: groups dissolve into it, their headings hidden. */
+  .politik-nav-group,
+  .politik-nav .politik-nav-group ol {
+    display: contents;
+  }
+  .politik-nav-heading {
     display: none;
+  }
+  .politik-nav .politik-nav-group a,
+  .politik-nav a[aria-current],
+  .politik-nav .politik-nav-group a[aria-current] {
+    padding: 0.7rem 0.9rem;
+    border-left: 0;
+    box-shadow: none;
   }
   .politik-main {
     /* The product menu is sticky in the flow (main clips rather than hides overflow), so the
@@ -975,6 +1009,11 @@
     height: 44px;
     padding-block: 0;
     line-height: 44px;
+  }
+  .politik-nav .politik-nav-group a,
+  .politik-nav a[aria-current],
+  .politik-nav .politik-nav-group a[aria-current] {
+    padding-block: 0;
   }
   .politik-slicer {
     top: 109px;

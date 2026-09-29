@@ -1,0 +1,5 @@
+{
+  "schema_version": 1,
+  "note": "Reviewed notes on how a rule changed over time (skärpning, lättnad, oförändrat). Herr taLLMan only states a change over time when an annotation here covers the claim's sources; entries need reviewed_by and reviewed_at. Empty until a person has reviewed one; see docs/tallman.md.",
+  "annotations": []
+}

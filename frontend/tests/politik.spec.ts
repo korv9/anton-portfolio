@@ -4,7 +4,7 @@ import AxeBuilder from '@axe-core/playwright'
 const THEMES: [string, string][] = [
   ['#politik-valjarna', 'Which parties do voters support?'],
   ['#politik-roster', 'How often do the parties vote alike?'],
-  ['#politik-budget', 'What do the parties want to spend money on?'],
+  ['#politik-budget-detalj', 'What do the parties want to spend money on?'],
   ['#politik-tal', 'What do politicians talk about?'],
 ]
 
@@ -130,7 +130,7 @@ test('the view builder offers valid choices and keeps them in a shareable addres
   await page.keyboard.press('Escape')
   await expect(page.getByRole('dialog')).toBeHidden()
 
-  await page.goto('/#politik-budget?partier=V')
+  await page.goto('/#politik-budget-detalj?partier=V')
   await expect(page.locator('.theme-chart-title')).toContainText('Left Party')
   expect(await page.locator('.bars-list li').count()).toBeGreaterThan(20)
   await page.getByRole('button', { name: 'Build your own view' }).click()
@@ -140,12 +140,13 @@ test('the view builder offers valid choices and keeps them in a shareable addres
   await expect(page).toHaveURL(/jamfor=omrade/)
   await expect(page.locator('.theme-chart-meta')).toContainText('Per cent')
 
-  await page.goto('/#politik-budget?partier=S,V')
+  await page.goto('/#politik-budget-detalj?partier=S,V')
   await expect(page.locator('.theme .grouped > li').first()).toBeVisible()
 
   await page.goto('/#politik-roster?matt=enighet&partier=S,M')
   await expect(page.locator('.theme-chart-title')).toContainText('Party unity')
-  await expect(page.locator('.end-label-text')).toHaveCount(2)
+  // Over time as columns, one small chart per party.
+  await expect(page.locator('.column-multiples > li')).toHaveCount(2)
 })
 
 test('the chart, table and sources switch works with the keyboard', async ({

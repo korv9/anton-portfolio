@@ -19,6 +19,7 @@ export type Page =
   | 'homie'
   | 'datamodel'
   | 'status'
+  | 'tallman'
 
 export type Route = {
   /** The full hash, e.g. `#politik-valjarna?partier=S`. */
@@ -33,6 +34,7 @@ export type Route = {
 export const REDIRECTS: Record<string, string> = {
   '#now': '#politik',
   '#now-election': '#politik',
+  '#politik-debatter': '#politik-sakdebatter',
   '#politics-page': '#politik',
   '#about': '#start',
   '#om-mig': '#start',
@@ -62,8 +64,9 @@ export function isPoliticsPath(path: string) {
 export function pageOf(path: string): Page {
   if (isPoliticsPath(path)) return 'politik'
   if (
-    ['#job-market', '#job-data'].includes(path) ||
-    path.startsWith('#job-market-')
+    ['#job-market', '#job-data', '#jobb'].includes(path) ||
+    path.startsWith('#job-market-') ||
+    path.startsWith('#jobb-')
   )
     return 'jobs'
   if (['#drugcomb', '#drugcomb-data'].includes(path)) return 'drugcomb'
@@ -72,6 +75,7 @@ export function pageOf(path: string): Page {
   if (path === '#homie') return 'homie'
   if (path === '#sweden' || path.startsWith('#sweden-')) return 'welfare'
   if (path === '#status') return 'status'
+  if (path === '#tallman') return 'tallman'
   if (path === '#analysis' || path.startsWith('#analysis-')) return 'analysis'
   if (path === '#data-model' || path.startsWith('#data-model-'))
     return 'datamodel'
