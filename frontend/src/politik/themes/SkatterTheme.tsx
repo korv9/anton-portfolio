@@ -395,7 +395,11 @@ export default function SkatterTheme({ route }: { route: Route }) {
               </li>
             ))}
           </ul>
-          <ol className="tax-mix">
+          <ol
+            className="tax-mix"
+            tabIndex={0}
+            aria-label={l('Tax mix per country', 'Skattemix per land')}
+          >
             {mixRows.map((row) => (
               <li
                 key={row.country.country_code}

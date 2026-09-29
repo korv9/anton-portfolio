@@ -16,6 +16,7 @@ import Columns, { ColumnMultiples } from '../board/Columns'
 import Heatmap from '../dash/Heatmap'
 import { debateHref } from './DebateView'
 import {
+  issuesIn,
   loadDebateIndex,
   loadSpeeches,
   totalFor,
@@ -23,6 +24,7 @@ import {
   type Speech,
 } from './data'
 import DebateTimeline from './DebateTimeline'
+import TopicBars from './TopicBars'
 import './debatter.css'
 
 const DEFAULTS = { debatt: '', fran: '2014' }
@@ -34,16 +36,34 @@ export default function Partiledardebatter({ route }: { route: Route }) {
   const [error, setError] = useState<string | null>(null)
   const [speeches, setSpeeches] = useState<Speech[] | null>(null)
   const [speechError, setSpeechError] = useState(false)
+  const [earlier, setEarlier] = useState<Speech[] | null>(null)
   useEffect(() => {
     loadDebateIndex()
       .then(setIndex)
       .catch((e: Error) => setError(e.message))
   }, [])
   // The chosen debate's speeches, for the timeline.
-  const chosenPath = index
-    ? (index.leaders.find((d) => d.id === view.debatt) ?? index.leaders.at(-1))
-        ?.path
-    : undefined
+  const chosenAt = index
+    ? Math.max(
+        0,
+        index.leaders.findIndex((d) => d.id === view.debatt) === -1
+          ? index.leaders.length - 1
+          : index.leaders.findIndex((d) => d.id === view.debatt),
+      )
+    : -1
+  const chosenPath = index?.leaders[chosenAt]?.path
+  const earlierPath = index?.leaders[chosenAt - 1]?.path
+  useEffect(() => {
+    setEarlier(null)
+    if (!earlierPath) return
+    let live = true
+    loadSpeeches(earlierPath)
+      .then((s) => live && setEarlier(s))
+      .catch(() => undefined)
+    return () => {
+      live = false
+    }
+  }, [earlierPath])
   useEffect(() => {
     if (!chosenPath) return
     let live = true
@@ -85,6 +105,45 @@ export default function Partiledardebatter({ route }: { route: Route }) {
   const topGiven = [...given].sort((a, b) => b.n - a.n)[0]
   const topReceived = [...received].sort((a, b) => b.n - a.n)[0]
   const years = [...new Set(all.map((d) => d.date.slice(0, 4)))]
+  const earlierDebate = all[all.indexOf(debate) - 1]
+
+  // What each party talked about: the share of its words in speeches whose words point to each
+  // issue area, in this debate and in the one before.
+  const topicShare = (list: Speech[] | null) => {
+    const out = new Map<string, number>()
+    if (!list) return out
+    const totals = new Map<string, number>()
+    for (const sp of list) {
+      if (!sp.party) continue
+      const words =
+        (sp as Speech & { word_count?: number }).word_count ??
+        sp.speech_text.split(/\s+/).length
+      totals.set(sp.party, (totals.get(sp.party) ?? 0) + words)
+      const [issue] = issuesIn(sp.speech_text, index.issues, 1, 2)
+      if (issue)
+        out.set(
+          `${issue}|${sp.party}`,
+          (out.get(`${issue}|${sp.party}`) ?? 0) + words,
+        )
+    }
+    for (const [key, words] of out)
+      out.set(key, (words / (totals.get(key.split('|')[1]) ?? 1)) * 100)
+    return out
+  }
+  const nowTopics = topicShare(speeches)
+  const earlierTopics = topicShare(earlier)
+  const topicRows = index.issues
+    .map((issue) => ({
+      key: issue.key,
+      label: l(issue.en, issue.sv),
+      weight: parties.reduce(
+        (s, p) => s + (nowTopics.get(`${issue.key}|${p}`) ?? 0),
+        0,
+      ),
+    }))
+    .filter((r) => r.weight > 0)
+    .sort((a, b) => b.weight - a.weight)
+    .slice(0, 8)
 
   return (
     <Board
@@ -162,6 +221,45 @@ export default function Partiledardebatter({ route }: { route: Route }) {
           index={0}
           wide
           title={l(
+            'What the parties talked about, compared with the debate before',
+            'Vad partierna pratade om, jämfört med debatten innan',
+          )}
+          meta={l(
+            `Share of each party's words in ${dayName(debate.date)}, by issue area read from the words${earlierDebate ? ` · dashed frame: ${dayName(earlierDebate.date)}` : ''}`,
+            `Andel av partiets ord ${dayName(debate.date)}, per sakområde som orden pekar på${earlierDebate ? ` · streckad ram: ${dayName(earlierDebate.date)}` : ''}`,
+          )}
+        >
+          {speeches ? (
+            <TopicBars
+              rows={topicRows}
+              parties={present}
+              value={(row, p) => nowTopics.get(`${row}|${p}`) ?? null}
+              previous={
+                earlier
+                  ? (row, p) => earlierTopics.get(`${row}|${p}`) ?? null
+                  : undefined
+              }
+              previousLabel={
+                earlierDebate ? dayName(earlierDebate.date) : undefined
+              }
+              unit={l('% of words', '% av orden')}
+            />
+          ) : speechError ? (
+            <p className="dash-empty">
+              {l(
+                'The speeches could not be loaded.',
+                'Anförandena kunde inte hämtas.',
+              )}
+            </p>
+          ) : (
+            <Empty />
+          )}
+        </Card>
+
+        <Card
+          index={1}
+          wide
+          title={l(
             'Who spoke when, and about what',
             'Vem som talade när, och om vad',
           )}
@@ -189,7 +287,7 @@ export default function Partiledardebatter({ route }: { route: Route }) {
         </Card>
 
         <Card
-          index={1}
+          index={2}
           wide
           title={l('The debates over time', 'Debatterna över tid')}
           meta={l(
@@ -223,7 +321,7 @@ export default function Partiledardebatter({ route }: { route: Route }) {
         </Card>
 
         <Card
-          index={2}
+          index={3}
           title={l('Who replies to whom', 'Vem replikerar på vem')}
           meta={l(
             `Rows reply to columns · replies and answers, ${dayName(debate.date)}`,
@@ -246,7 +344,7 @@ export default function Partiledardebatter({ route }: { route: Route }) {
         </Card>
 
         <Card
-          index={3}
+          index={4}
           title={l('Each party’s part', 'Varje partis del')}
           meta={l(
             'Darker: speeches · lighter: replies and answers',
@@ -277,7 +375,7 @@ export default function Partiledardebatter({ route }: { route: Route }) {
         </Card>
 
         <Card
-          index={4}
+          index={5}
           wide
           title={l('Each party over time', 'Varje parti över tid')}
           meta={l(
@@ -304,7 +402,7 @@ export default function Partiledardebatter({ route }: { route: Route }) {
         </Card>
 
         <Card
-          index={5}
+          index={6}
           wide
           title={l('All party-leader debates', 'Alla partiledardebatter')}
           meta={l('Newest first', 'Nyast först')}

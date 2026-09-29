@@ -196,6 +196,8 @@ test('navigation, responsive layout and accessibility', async ({ page }) => {
     '/#politik-tal',
     '/#politik-utforska',
     '/#politik-kallor',
+    '/#politik-skatter',
+    '/#politik-utredningar',
     '/#jobb',
     '/#jobb-yrken',
     '/#jobb-lan',

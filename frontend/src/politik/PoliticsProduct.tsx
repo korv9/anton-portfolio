@@ -33,6 +33,7 @@ const RosterTheme = lazy(() => import('./themes/RosterTheme'))
 const BudgetTheme = lazy(() => import('./themes/BudgetTheme'))
 const BudgetBoard = lazy(() => import('./budget/BudgetBoard'))
 const SkatterTheme = lazy(() => import('./themes/SkatterTheme'))
+const UtredningarTheme = lazy(() => import('./themes/UtredningarTheme'))
 const Partier = lazy(() => import('./partier/Partier'))
 const Sakdebatter = lazy(() => import('./debatter/Sakdebatter'))
 const Partiledardebatter = lazy(() => import('./debatter/Partiledardebatter'))
@@ -54,6 +55,8 @@ function ThemeView({ theme, route }: { theme: ThemeKey; route: Route }) {
       return <BudgetBoard route={route} />
     case 'skatter':
       return <SkatterTheme route={route} />
+    case 'utredningar':
+      return <UtredningarTheme route={route} />
     case 'partier':
       return <Partier route={route} />
     case 'sakdebatter':
