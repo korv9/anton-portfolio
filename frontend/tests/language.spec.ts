@@ -42,7 +42,7 @@ test('language choice persists across project pages and keeps data controls stab
   )
   await page.goto('/#drugcomb')
   await expect(
-    page.getByRole('heading', { name: 'Håller prediktionen för något nytt?' }),
+    page.getByRole('heading', { name: 'Håller förutsägelsen på något nytt?' }),
   ).toBeVisible()
   await page.setViewportSize({ width: 320, height: 900 })
   expect(
