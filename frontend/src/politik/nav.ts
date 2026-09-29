@@ -6,6 +6,8 @@
 export type ThemeKey =
   | 'lage'
   | 'budget'
+  | 'skatter'
+  | 'utredningar'
   | 'partier'
   | 'sakdebatter'
   | 'partiledare'
@@ -39,6 +41,20 @@ export const THEMES: Theme[] = [
     path: '#politik-budget',
     sv: 'Budget',
     en: 'Budget',
+    group: 'main',
+  },
+  {
+    key: 'skatter',
+    path: '#politik-skatter',
+    sv: 'Skatter',
+    en: 'Taxes',
+    group: 'main',
+  },
+  {
+    key: 'utredningar',
+    path: '#politik-utredningar',
+    sv: 'Utredningar (SOU)',
+    en: 'Studies (SOU)',
     group: 'main',
   },
   {
@@ -180,7 +196,7 @@ export const DEEP_DIVES: Record<string, DeepDive> = {
     aboutEn: 'Read the laws on the page.',
   },
   '#now-studies': {
-    parent: 'lage',
+    parent: 'utredningar',
     sv: 'Utredningar',
     en: 'Government studies',
     aboutSv: 'Statliga utredningar och vilka lagar de ledde till.',
@@ -255,7 +271,7 @@ export const DEEP_DIVES: Record<string, DeepDive> = {
     aboutEn: 'What was budgeted and what was actually spent.',
   },
   '#taxes': {
-    parent: 'budget',
+    parent: 'skatter',
     sv: 'Skatter',
     en: 'Taxes',
     aboutSv:

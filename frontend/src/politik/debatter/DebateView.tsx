@@ -4,7 +4,7 @@
  * the issue areas its words point to), and every exchange in order: the speech, then each
  * reply and answer, with who answers whom.
  */
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { l } from '../../i18n'
 import {
   PartyLogo,
@@ -32,6 +32,7 @@ import {
   type Speech,
   type Turn,
 } from './data'
+import './debatter.css'
 
 const excerpt = (text: string, length = 320) => {
   const clean = text.replace(/^(herr|fru) talman!\s*/i, '').replace(/\s+/g, ' ')
@@ -88,43 +89,83 @@ function Position({ value }: { value: string | undefined }) {
   return <span className={`position ${value ? cls : ''}`}>{value ?? '–'}</span>
 }
 
+/**
+ * One turn as a chat bubble from the party's logo: the opening speaker and their answers on the
+ * left, the replies to them on the right, so an exchange reads like a conversation.
+ */
 function TurnView({ turn, index }: { turn: Turn; index: DebateIndex }) {
   const s = turn.speech
   const topics =
     turn.kind === 'anförande' ? issuesIn(s.speech_text, index.issues, 3) : []
+  const known = !!s.party && RIKSDAG_PARTIES.includes(s.party)
+  const side = turn.kind === 'replik' ? 'right' : 'left'
   return (
-    <article className={`turn ${turn.kind}`} id={`tal-${s.speech_number}`}>
-      <header>
-        <span className="turn-no">{s.speech_number}</span>
-        {s.party && RIKSDAG_PARTIES.includes(s.party) && (
-          <PartyLogo party={s.party} size={18} />
+    <article
+      className={`turn ${turn.kind} ${side}`}
+      id={`tal-${s.speech_number}`}
+      style={{
+        ['--party' as string]: known ? identity(s.party!).color : '#9a9a9a',
+      }}
+    >
+      <div className="turn-avatar round" aria-hidden="true">
+        {known ? (
+          <PartyLogo party={s.party!} size={30} />
+        ) : (
+          <span>{speakerName(s.speaker).slice(0, 1)}</span>
         )}
-        <b>{speakerName(s.speaker)}</b>
-        {s.party && RIKSDAG_PARTIES.includes(s.party) && (
-          <span className="turn-party">{s.party}</span>
+      </div>
+      <div className="turn-bubble round">
+        <header>
+          <span className="turn-no">{s.speech_number}</span>
+          <b>{speakerName(s.speaker)}</b>
+          {known && <span className="turn-party">{s.party}</span>}
+          <span className="turn-kind">
+            {turn.kind === 'anförande'
+              ? l('Speech', 'Anförande')
+              : turn.kind === 'replik'
+                ? `${l('Reply to', 'Replik till')} ${speakerName(turn.to?.speaker ?? '')}`
+                : `${l('Answers', 'Svar till')} ${speakerName(turn.to?.speaker ?? '')}`}
+          </span>
+        </header>
+        <p>{excerpt(s.speech_text)}</p>
+        <details>
+          <summary>{l('Read it all', 'Läs hela')}</summary>
+          {s.speech_text.split(/\n+/).map((para, i) => (
+            <p key={i}>{para}</p>
+          ))}
+          <a href={s.source_url} target="_blank" rel="noreferrer">
+            {l('The protocol at riksdagen.se', 'Protokollet på riksdagen.se')} ↗
+          </a>
+        </details>
+        {topics.length > 0 && (
+          <IssueChips keys={topics} via="ord" index={index} />
         )}
-        <span className="turn-kind">
-          {turn.kind === 'anförande'
-            ? l('Speech', 'Anförande')
-            : turn.kind === 'replik'
-              ? `${l('Reply to', 'Replik till')} ${speakerName(turn.to?.speaker ?? '')}`
-              : `${l('Answers', 'Svar till')} ${speakerName(turn.to?.speaker ?? '')}`}
-        </span>
-      </header>
-      <p>{excerpt(s.speech_text)}</p>
-      <details>
-        <summary>{l('Read it all', 'Läs hela')}</summary>
-        {s.speech_text.split(/\n+/).map((para, i) => (
-          <p key={i}>{para}</p>
-        ))}
-        <a href={s.source_url} target="_blank" rel="noreferrer">
-          {l('The protocol at riksdagen.se', 'Protokollet på riksdagen.se')} ↗
-        </a>
-      </details>
-      {topics.length > 0 && (
-        <IssueChips keys={topics} via="ord" index={index} />
-      )}
+      </div>
     </article>
+  )
+}
+
+/** Someone is about to speak: three dots in their party's colour. */
+function Typing({ turn }: { turn: Turn }) {
+  const s = turn.speech
+  const known = !!s.party && RIKSDAG_PARTIES.includes(s.party)
+  return (
+    <div
+      className={`turn typing ${turn.kind === 'replik' ? 'right' : 'left'}`}
+      style={{
+        ['--party' as string]: known ? identity(s.party!).color : '#9a9a9a',
+      }}
+      aria-hidden="true"
+    >
+      <div className="turn-avatar round">
+        {known && <PartyLogo party={s.party!} size={30} />}
+      </div>
+      <div className="turn-bubble round">
+        <i className="round" />
+        <i className="round" />
+        <i className="round" />
+      </div>
+    </div>
   )
 }
 
@@ -137,6 +178,22 @@ export default function DebateView({ route }: { route: Route }) {
   const [debate, setDebate] = useState<IssueDebate | LeaderDebate | null>(null)
   const [speeches, setSpeeches] = useState<Speech[] | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [step, setStep] = useState<number | null>(null)
+  const [paused, setPaused] = useState(false)
+  const total = useRef(0)
+  // While playing, the next turn appears after a pause long enough to read the dots.
+  useEffect(() => {
+    if (step == null || paused || step >= total.current) return
+    const timer = window.setTimeout(() => {
+      setStep((c) => (c == null ? c : c + 1))
+      requestAnimationFrame(() =>
+        document
+          .querySelector('.exchanges .turn:last-of-type')
+          ?.scrollIntoView({ block: 'nearest', behavior: 'smooth' }),
+      )
+    }, 1700)
+    return () => window.clearTimeout(timer)
+  }, [step, paused])
 
   useEffect(() => {
     setDebate(null)
@@ -196,6 +253,12 @@ export default function DebateView({ route }: { route: Route }) {
       (t) => t.speech.party && selected.includes(t.speech.party),
     )
   const shownRounds = rounds.filter(involved)
+  // Play the debate: the turns appear one after another, each announced by typing dots.
+  const sequence = shownRounds.flatMap((r) => [r.opening, ...r.replies])
+  const order = new Map(sequence.map((t, i) => [t, i]))
+  total.current = sequence.length
+  const shown = (t: Turn) => step == null || (order.get(t) ?? 0) < step
+  const next = step != null && step < sequence.length ? sequence[step] : null
   const issueDebate = 'issues' in debate ? debate : null
   const leaderTopics =
     !issueDebate && speeches
@@ -486,22 +549,74 @@ export default function DebateView({ route }: { route: Route }) {
           {!speeches ? (
             <Empty />
           ) : (
-            <ol className="exchanges">
-              {shownRounds.map((round) => (
-                <li key={round.opening.speech.speech_id}>
-                  <TurnView turn={round.opening} index={index} />
-                  {round.replies.length > 0 && (
-                    <ol className="replies">
-                      {round.replies.map((turn) => (
-                        <li key={turn.speech.speech_id}>
-                          <TurnView turn={turn} index={index} />
-                        </li>
-                      ))}
-                    </ol>
-                  )}
-                </li>
-              ))}
-            </ol>
+            <>
+              <div className="debate-play">
+                <button
+                  type="button"
+                  className="board-button"
+                  onClick={() =>
+                    setStep((current) =>
+                      current == null || current >= sequence.length ? 1 : null,
+                    )
+                  }
+                >
+                  {step == null || step >= sequence.length
+                    ? `▶ ${l('Play the debate', 'Spela upp debatten')}`
+                    : `■ ${l('Show everything', 'Visa allt')}`}
+                </button>
+                {step != null && step < sequence.length && (
+                  <>
+                    <button type="button" onClick={() => setPaused((p) => !p)}>
+                      {paused
+                        ? `▶ ${l('Resume', 'Fortsätt')}`
+                        : `❚❚ ${l('Pause', 'Pausa')}`}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setStep((c) => Math.min((c ?? 0) + 1, sequence.length))
+                      }
+                    >
+                      {l('Next', 'Nästa')} →
+                    </button>
+                    <span className="debate-play-count">
+                      {step} / {sequence.length}
+                    </span>
+                  </>
+                )}
+              </div>
+              <ol className="exchanges">
+                {shownRounds.map((round) => {
+                  const turns = [round.opening, ...round.replies]
+                  const visible = turns.filter((t) => shown(t))
+                  if (!visible.length && !(next && turns.includes(next)))
+                    return null
+                  return (
+                    <li key={round.opening.speech.speech_id}>
+                      {shown(round.opening) && (
+                        <TurnView turn={round.opening} index={index} />
+                      )}
+                      {next === round.opening && <Typing turn={next} />}
+                      {round.replies.length > 0 && (
+                        <ol className="replies">
+                          {round.replies.map((turn) =>
+                            shown(turn) ? (
+                              <li key={turn.speech.speech_id}>
+                                <TurnView turn={turn} index={index} />
+                              </li>
+                            ) : next === turn ? (
+                              <li key={turn.speech.speech_id}>
+                                <Typing turn={turn} />
+                              </li>
+                            ) : null,
+                          )}
+                        </ol>
+                      )}
+                    </li>
+                  )
+                })}
+              </ol>
+            </>
           )}
         </Card>
       </Cards>

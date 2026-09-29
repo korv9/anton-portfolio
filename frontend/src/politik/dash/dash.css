@@ -14,7 +14,7 @@
   grid-template-rows: auto auto auto minmax(0, 1fr) auto;
   gap: var(--gap);
   /* The window below the site header and the party bar. */
-  height: calc(100vh - 64px - 63px - 2rem);
+  height: calc(100vh - 64px - 76px - 2rem);
   min-height: 640px;
 }
 .dash-head {
@@ -694,5 +694,63 @@
   }
   .dash-head h1 {
     flex-wrap: wrap;
+  }
+}
+
+/* One screen on a desktop: the charts grow to fill their cards instead of leaving space. */
+@media (min-width: 1600px) and (min-height: 950px) {
+  .dash-card h2 {
+    font-size: 1.0625rem;
+  }
+  .dash-meta,
+  .dash-card header a {
+    font-size: 0.8125rem;
+  }
+  .dash-bars {
+    grid-auto-rows: minmax(16px, 2.6rem);
+    align-content: space-evenly;
+  }
+  .dash-bars li {
+    font-size: 0.875rem;
+  }
+  .dash-bar-track {
+    height: clamp(12px, 1.6vh, 22px);
+  }
+  .grouped-label {
+    font-size: 0.875rem;
+  }
+  .grouped-track {
+    height: clamp(10px, 1.3vh, 18px);
+  }
+  .grouped-value {
+    font-size: 0.8125rem;
+  }
+  .dash-heat {
+    height: 100%;
+    font-size: 0.8125rem;
+  }
+  .dash-heat td {
+    height: auto;
+    min-height: 1.3rem;
+  }
+  .dash-seat b {
+    font-size: 1rem;
+  }
+  .dash-seat small {
+    font-size: 0.8125rem;
+  }
+  .dash-blocs dd {
+    font-size: 0.9375rem;
+  }
+  .dash-legend {
+    font-size: 0.8125rem;
+  }
+}
+
+/* The one-screen overview on a laptop-height screen keeps the base type size, so every card
+   fits without clipping; taller screens get the larger type and charts above. */
+@media (min-width: 1181px) and (max-height: 949px) {
+  html:has(.dash) {
+    font-size: 16px;
   }
 }

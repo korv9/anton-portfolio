@@ -226,3 +226,75 @@ test.describe('the name intro', () => {
     })
   })
 })
+
+test('taxes: every kind of tax, Sweden against the other countries', async ({
+  page,
+}) => {
+  await page.goto('/#politik-skatter')
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+    'How do Sweden’s taxes compare?',
+  )
+  const data = await (
+    await page.request.get('/data/taxes/countries.json')
+  ).json()
+  // One strip per kind of tax, and one row per kind in the table.
+  await expect(page.locator('.tax-strip')).toHaveCount(data.types.length)
+  await expect(page.locator('.tax-table tbody tr')).toHaveCount(
+    data.types.length,
+  )
+  // The mix lists countries, not the published averages.
+  await expect(page.locator('.tax-mix li.swe')).toHaveCount(1)
+  await expect(page.locator('.tax-mix')).not.toContainText('OECD average')
+  // Choosing a tax follows it over time, kept in the address.
+  await page.getByRole('button', { name: 'Value added tax (VAT)' }).click()
+  await expect(page).toHaveURL(/skatt=T_5111/)
+  await expect(page.locator('.board-card h2').nth(2)).toContainText('VAT')
+  await page.getByLabel('Compare with').selectOption('nordic')
+  await expect(page.locator('.tax-mix li')).toHaveCount(5)
+})
+
+test('studies: the studies before the laws, each readable in depth', async ({
+  page,
+}) => {
+  await page.goto('/#politik-utredningar')
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+    'The studies before the laws',
+  )
+  const data = await (
+    await page.request.get('/data/parliament/studies.json')
+  ).json()
+  const sou = data.latest.filter((s: { kind: string }) => s.kind === 'sou')
+  await expect(page.locator('.study-list li')).toHaveCount(
+    Math.min(sou.length, 80),
+  )
+  // Choosing a study opens it in the reading panel, kept in the address.
+  const second = page.locator('.study-list button').nth(1)
+  const title = (await second.locator('b').textContent()) ?? ''
+  await second.click()
+  await expect(page).toHaveURL(/vald=/)
+  await expect(page.locator('.study-detail h3')).toHaveText(title)
+  // A study that led to a law shows the chain to the decision.
+  await page.getByLabel('Led to').selectOption('lag')
+  await expect(page.locator('.study-chain li').first()).toBeVisible()
+  await expect(page.locator('.law-chains > li').first()).toBeVisible()
+})
+
+test('the budget says whose budget it is', async ({ page }) => {
+  await page.goto('/#politik-budget')
+  const id = page.locator('.budget-id')
+  await expect(id).toContainText('The budget for')
+  await expect(id).toContainText('Proposed by')
+  await expect(id).toContainText('The Riksdag adopted')
+  await expect(id.locator('.budget-id-votes li')).toHaveCount(8)
+})
+
+test('issue debates compare what the parties talk about with the year before', async ({
+  page,
+}) => {
+  await page.goto('/#politik-sakdebatter')
+  const chart = page.locator('.topic-bars')
+  await expect(chart.locator('.topic-groups > li')).toHaveCount(8)
+  await expect(chart.locator('.topic-col')).toHaveCount(64)
+  await expect(chart.locator('.topic-prev').first()).toBeVisible()
+  await expect(page.getByText('Debates per month')).toHaveCount(0)
+})

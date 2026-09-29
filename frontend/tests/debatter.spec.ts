@@ -76,6 +76,11 @@ test('party-leader debates: over time, who replies to whom, reply by reply', asy
   )
   await expect(page.locator('.dash-heat')).toBeVisible()
   await expect(page.locator('.column-multiples > li')).toHaveCount(8)
+  // Who spoke when: a lane per party, the debate in three parts.
+  await expect(page.locator('.timeline-lane')).toHaveCount(8)
+  await expect(page.locator('.timeline-parts > li')).toHaveCount(3)
+  await page.locator('.timeline-block').first().hover()
+  await expect(page.locator('.timeline-detail')).toContainText('words')
   const scan = await new AxeBuilder({ page }).analyze()
   expect(scan.violations.map((v) => v.id)).toEqual([])
   await page
@@ -87,4 +92,12 @@ test('party-leader debates: over time, who replies to whom, reply by reply', asy
   await expect(page.locator('.exchanges > li').first()).toBeVisible()
   await expect(page.locator('.turn.replik').first()).toContainText('Reply to')
   await expect(page.locator('.turn.svar').first()).toContainText('Answers')
+  // Played back, the turns appear one at a time, each announced by typing dots.
+  await page.getByRole('button', { name: /Play the debate/ }).click()
+  await expect(page.locator('.exchanges .turn:not(.typing)')).toHaveCount(1)
+  await expect(page.locator('.turn.typing')).toHaveCount(1)
+  await page.getByRole('button', { name: /Next/ }).click()
+  await expect(page.locator('.exchanges .turn:not(.typing)')).toHaveCount(2)
+  await page.getByRole('button', { name: /Show everything/ }).click()
+  await expect(page.locator('.turn.typing')).toHaveCount(0)
 })

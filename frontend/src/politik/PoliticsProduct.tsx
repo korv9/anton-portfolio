@@ -8,7 +8,12 @@ import { Suspense, lazy, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { useDock } from '../site/dock'
 import { l } from '../i18n'
-import { PartyLogo, RIKSDAG_PARTIES, partyName } from '../parties/identity'
+import {
+  PartyLogo,
+  RIKSDAG_PARTIES,
+  partyFill,
+  partyName,
+} from '../parties/identity'
 import { carryParties, useParties, withParties } from './partySelection'
 import type { Route } from '../router'
 import {
@@ -27,6 +32,8 @@ const ValjarnaTheme = lazy(() => import('./themes/ValjarnaTheme'))
 const RosterTheme = lazy(() => import('./themes/RosterTheme'))
 const BudgetTheme = lazy(() => import('./themes/BudgetTheme'))
 const BudgetBoard = lazy(() => import('./budget/BudgetBoard'))
+const SkatterTheme = lazy(() => import('./themes/SkatterTheme'))
+const UtredningarTheme = lazy(() => import('./themes/UtredningarTheme'))
 const Partier = lazy(() => import('./partier/Partier'))
 const Sakdebatter = lazy(() => import('./debatter/Sakdebatter'))
 const Partiledardebatter = lazy(() => import('./debatter/Partiledardebatter'))
@@ -46,6 +53,10 @@ function ThemeView({ theme, route }: { theme: ThemeKey; route: Route }) {
       return <RosterTheme route={route} />
     case 'budget':
       return <BudgetBoard route={route} />
+    case 'skatter':
+      return <SkatterTheme route={route} />
+    case 'utredningar':
+      return <UtredningarTheme route={route} />
     case 'partier':
       return <Partier route={route} />
     case 'sakdebatter':
@@ -86,8 +97,8 @@ export default function PoliticsProduct({ route }: { route: Route }) {
   const side = (
     <Side className="politik-side">
       <a className="politik-brand" href="#politik">
-        <span>{l('Swedish politics', 'Svensk politik')}</span>
-        <small>{l('in numbers', 'i siffror')}</small>
+        <span>Political</span>
+        <small>Observatory</small>
       </a>
       <nav
         ref={nav}
@@ -176,9 +187,11 @@ function PartySlicer({ route }: { route: Route }) {
               aria-pressed={selected.includes(code)}
               aria-label={partyName(code)}
               title={partyName(code)}
+              className="round"
+              style={{ ['--party' as string]: partyFill(code) }}
               onClick={() => toggle(code)}
             >
-              <PartyLogo party={code} size={26} />
+              <PartyLogo party={code} size={32} />
               <span aria-hidden="true">{code}</span>
             </button>
           </li>

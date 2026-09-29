@@ -119,7 +119,7 @@ function barsOf(): Bar[] {
     {
       id: 'politics',
       kind: 'project',
-      label: l('Politics', 'Politik'),
+      label: 'Political Observatory',
       top: String(FLAGSHIP.tech.length),
       title: b(FLAGSHIP.title),
       body: (
@@ -207,7 +207,7 @@ export default function LiveChart() {
           {l('My profile, live', 'Min profil, live')}
         </h2>
         <p className="live-status">
-          <span className="home-dot" aria-hidden="true" /> Live
+          <span className="home-dot round" aria-hidden="true" /> Live
         </p>
         <ul className="live-legend" aria-label={l('Legend', 'Förklaring')}>
           {KINDS.map((k) => (

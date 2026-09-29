@@ -78,8 +78,8 @@ function columns(): Column[] {
     },
     {
       key: 'politik',
-      en: 'Swedish politics in numbers',
-      sv: 'Svensk politik i siffror',
+      en: 'Political Observatory',
+      sv: 'Political Observatory',
       lead: [
         'The flagship: elections, budgets, votes and debates.',
         'Huvudprojektet: val, budget, voteringar och debatter.',
