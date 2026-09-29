@@ -46,6 +46,10 @@ def client():
     except ImportError:
         sys.exit("boto3 is required: pip install boto3")
     load_env()
+    # A value pasted into a settings page often brings a space or a line break along.
+    for name in ("R2_ACCOUNT_ID", "R2_ACCESS_KEY_ID", "R2_SECRET_ACCESS_KEY", "R2_BUCKET", "S3_API_ENDPOINT"):
+        if name in os.environ:
+            os.environ[name] = os.environ[name].strip()
     missing = [name for name in ("R2_ACCOUNT_ID", "R2_ACCESS_KEY_ID", "R2_SECRET_ACCESS_KEY", "R2_BUCKET")
                if not os.environ.get(name)]
     if missing:
