@@ -55,6 +55,10 @@ test('the dashboard fits one screen and compares the parties chosen in the party
       ),
     ).toBeLessThanOrEqual(120)
   }
+  // The budget is compared with the budget the Riksdag adopted, and says so.
+  await expect(page.locator('.dash-budget .dash-meta')).toContainText(
+    'that the Riksdag adopted',
+  )
   // Slicers: more areas, kept in the address.
   await page.getByLabel('Areas').selectOption('12')
   await expect(page).toHaveURL(/omraden=12/)
@@ -131,7 +135,7 @@ test('the view builder offers valid choices and keeps them in a shareable addres
   expect(await page.locator('.bars-list li').count()).toBeGreaterThan(20)
   await page.getByRole('button', { name: 'Build your own view' }).click()
   await page.getByLabel('One area, every party').check()
-  await page.getByLabel('Per cent of the government’s proposal').check()
+  await page.getByLabel('Per cent of the budget for the area').check()
   await page.getByRole('button', { name: 'Show the view' }).click()
   await expect(page).toHaveURL(/jamfor=omrade/)
   await expect(page.locator('.theme-chart-meta')).toContainText('Per cent')

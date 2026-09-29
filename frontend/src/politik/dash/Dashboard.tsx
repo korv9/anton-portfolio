@@ -21,6 +21,7 @@ import { useViewParams } from '../useViewParams'
 import { shownParties, useParties, withParties } from '../partySelection'
 import {
   areaNames,
+  budgetBasis,
   loadBudgetReport,
   type BudgetReport,
   type BudgetRow,
@@ -198,10 +199,8 @@ export default function Dashboard({ route }: { route: Route }) {
           ? total(b) - total(a)
           : reach(b) - reach(a),
     )
-  const net = (party: string) =>
-    yearRows
-      .filter((r) => r.actor === party)
-      .reduce((s, r) => s + r.deviation_msek, 0)
+  const basis = budgetBasis(report, year)
+  const net = basis.net
 
   // ---- Polls ----
   const months = useMemo(
@@ -420,7 +419,7 @@ export default function Dashboard({ route }: { route: Route }) {
               { value: 'mnkr', label: l('SEK m', 'Mnkr') },
               {
                 value: 'procent',
-                label: l('% of government', '% av regeringens'),
+                label: l('% of the budget', '% av budgeten'),
               },
             ]}
             onChange={(matt) => setView({ matt })}
@@ -491,7 +490,7 @@ export default function Dashboard({ route }: { route: Route }) {
                     </dd>
                   </div>
                   <div>
-                    <dt>{l('Budget net', 'Budget netto')}</dt>
+                    <dt>{l('Budget, total', 'Budget, totalt')}</dt>
                     <dd>
                       {budgetParties.includes(party) ? signed(net(party)) : '–'}
                     </dd>
@@ -543,17 +542,14 @@ export default function Dashboard({ route }: { route: Route }) {
               />
               <Kpi
                 index={4}
-                label={l(
-                  'Budget against the government',
-                  'Budget mot regeringen',
-                )}
+                label={l('Budget in total', 'Budget totalt')}
                 value={budgetParties.includes(single!) ? net(single!) : 0}
                 format={(v) =>
                   budgetParties.includes(single!) ? signed(v) : '–'
                 }
                 sub={
                   budgetParties.includes(single!)
-                    ? l(`SEK m, ${year}`, `mnkr, ${year}`)
+                    ? `${l('SEK m', 'mnkr')}, ${basis.short.toLowerCase()} ${year}`
                     : l('no budget of its own', 'ingen egen budget')
                 }
               />
@@ -646,8 +642,8 @@ export default function Dashboard({ route }: { route: Route }) {
             'Vad partierna vill lägga pengar på',
           )}
           meta={l(
-            `${percent ? 'Per cent of the government’s proposal' : 'SEK m against the government’s budget'} · budget year ${year} · ${budgetShown.join(', ') || '–'}`,
-            `${percent ? 'Procent av regeringens förslag' : 'Mnkr mot regeringens budget'} · budgetåret ${year} · ${budgetShown.join(', ') || '–'}`,
+            `${percent ? 'Per cent' : 'SEK m'} ${basis.long}`,
+            `${percent ? 'Procent' : 'Mnkr'} ${basis.long}`,
           )}
           href={withParties('#politik-budget', chosen)}
         >
@@ -676,7 +672,7 @@ export default function Dashboard({ route }: { route: Route }) {
                     />
                     {p}
                     <small>
-                      {l('net', 'netto')} {signed(net(p))}
+                      {l('total', 'totalt')} {signed(net(p))}
                     </small>
                   </li>
                 ))}
@@ -692,8 +688,8 @@ export default function Dashboard({ route }: { route: Route }) {
                 }))}
                 format={budgetFormat}
                 label={l(
-                  `Difference from the government per area, ${year}: ${budgetShown.join(', ')}`,
-                  `Skillnad mot regeringen per område, ${year}: ${budgetShown.join(', ')}`,
+                  `Difference per area, ${basis.long}: ${budgetShown.join(', ')}`,
+                  `Skillnad per område, ${basis.long}: ${budgetShown.join(', ')}`,
                 )}
               />
             </>

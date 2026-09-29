@@ -31,7 +31,7 @@ test('project reports keep their data and downloads on their own pages', async (
   await expect(page.locator('#job-data tbody tr')).toHaveCount(25)
   await page.goto('/#raw-data')
   const politicsData = page.locator('#raw-data')
-  await expect(politicsData).toContainText('1,104 matching rows of 1,104')
+  await expect(politicsData).toContainText('1,161 matching rows of 1,161')
   await politicsData
     .getByRole('button', { name: 'All decision points' })
     .click()

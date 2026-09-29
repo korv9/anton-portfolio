@@ -28,9 +28,24 @@ export type BudgetRow = {
   session: string
   source_url: string
 }
+export type BudgetDocument = {
+  session: string
+  document_id: string
+  source_url: string
+  rows: number
+  /** The committee's own totals over all areas: GOV is the government's sum, a party its net
+   * difference. Summing the rounded area figures can be off by a few million kronor. */
+  totals_msek?: Record<string, number>
+  /** How the Riksdag decided the frames: "utskottet" backs the government's proposal. */
+  frame_decision?: {
+    winner: string
+    reservation_parties: string[]
+    vote_url?: string
+  } | null
+}
 export type BudgetReport = {
   budgets: BudgetRow[]
-  coverage: { generated_at: string; note: string }
+  coverage: { generated_at: string; note: string; documents: BudgetDocument[] }
   language: {
     definition: string
     rows: {
@@ -69,6 +84,47 @@ export function areaNames(rows: BudgetRow[]) {
       })
   }
   return new Map([...names].map(([k, v]) => [k, v.name]))
+}
+
+/**
+ * What the parties' figures are measured against in a budget year. The Finance Committee
+ * compares every party with the government's proposal; in every year but one here the
+ * Riksdag adopted that proposal, so it is the budget that was decided.
+ */
+export function budgetBasis(report: BudgetReport | null, year: number) {
+  const session = `${year - 1}/${String(year).slice(2)}`
+  const document = report?.coverage.documents?.find(
+    (d) => d.session === session,
+  )
+  const decision = document?.frame_decision
+  const adopted = decision ? decision.winner === 'utskottet' : null
+  const instead = decision?.reservation_parties ?? []
+  const long =
+    adopted === true
+      ? l(
+          `against the budget for ${year} that the Riksdag adopted (the government’s proposal)`,
+          `mot budgeten för ${year} som riksdagen beslutade (regeringens förslag)`,
+        )
+      : adopted === false
+        ? l(
+            `against the government’s proposal for ${year}; the Riksdag adopted ${instead.join(' and ')}’s budget instead`,
+            `mot regeringens förslag för ${year}; riksdagen beslutade i stället ${instead.join(' och ')}:s budget`,
+          )
+        : l(
+            `against the government’s proposal for ${year}`,
+            `mot regeringens förslag för ${year}`,
+          )
+  const short =
+    adopted === true
+      ? l('Against the adopted budget', 'Mot beslutad budget')
+      : l('Against the government’s proposal', 'Mot regeringens förslag')
+  /** A party's net difference: the committee's printed total, else the sum of the areas. */
+  const net = (party: string) =>
+    document?.totals_msek?.[party] ??
+    (report?.budgets ?? [])
+      .filter((r) => r.budget_year === year && r.actor === party)
+      .reduce((sum, r) => sum + r.deviation_msek, 0)
+  return { adopted, long, short, net, source: document?.source_url }
 }
 
 const DEFAULTS = {
@@ -132,7 +188,15 @@ export default function BudgetTheme({ route }: { route: Route }) {
   const gov = yearRows.find(
     (r) => r.actor === 'GOV' && r.expenditure_area === area,
   )
-  const govParties = gov ? l('the government', 'regeringen') : ''
+  const basis = budgetBasis(report, year)
+  // What a difference is measured against, in running text.
+  const against =
+    basis.adopted === false
+      ? l('the government’s proposal', 'regeringens förslag')
+      : l('the adopted budget', 'den beslutade budgeten')
+  const notAdopted = (report?.coverage.documents ?? [])
+    .filter((d) => d.frame_decision && d.frame_decision.winner !== 'utskottet')
+    .map((d) => `20${d.session.slice(5)}`)
 
   const partyRows = yearRows
     .filter((r) => inView.includes(r.actor))
@@ -151,16 +215,13 @@ export default function BudgetTheme({ route }: { route: Route }) {
   }
   const reach = (a: number) =>
     Math.max(0, ...compared.map((p) => Math.abs(cell(a, p) ?? 0)))
-  const netOf = (p: string) =>
-    yearRows
-      .filter((r) => r.actor === p)
-      .reduce((sum, r) => sum + r.deviation_msek, 0)
+  const netOf = basis.net
   const topOf = (p: string) =>
     yearRows
       .filter((r) => r.actor === p)
       .sort((a, b) => b.deviation_msek - a.deviation_msek)[0]
   const shown = byArea ? areaRows : partyRows
-  const netTotal = partyRows.reduce((sum, r) => sum + r.deviation_msek, 0)
+  const netTotal = basis.net(party)
   const top = shown[0]
   const bottom = shown.at(-1)
   const label = (r: BudgetRow) =>
@@ -253,8 +314,8 @@ export default function BudgetTheme({ route }: { route: Route }) {
       ? compared.slice(0, 3).map((p) => ({
           value: mnkr(netOf(p)),
           label: l(
-            `${partyName(p)}: net difference from the government`,
-            `${partyName(p)}: sammanlagd skillnad mot regeringen`,
+            `${partyName(p)}: in total, ${against}`,
+            `${partyName(p)}: totalt mot ${against}`,
           ),
         }))
       : byArea
@@ -264,8 +325,8 @@ export default function BudgetTheme({ route }: { route: Route }) {
                   {
                     value: `${num(gov.government_amount_msek)} ${l('SEK m', 'mnkr')}`,
                     label: l(
-                      `the government’s proposal for ${names.get(area)}`,
-                      `regeringens förslag för ${names.get(area)}`,
+                      `${basis.adopted === false ? 'the government’s proposal' : 'the adopted budget'} for ${names.get(area)}`,
+                      `${basis.adopted === false ? 'regeringens förslag' : 'beslutad budget'} för ${names.get(area)}`,
                     ),
                   },
                 ]
@@ -297,8 +358,8 @@ export default function BudgetTheme({ route }: { route: Route }) {
             {
               value: mnkr(netTotal),
               label: l(
-                `net difference from ${govParties} across all areas`,
-                `sammanlagd skillnad mot ${govParties} över alla områden`,
+                `in total across all areas, ${basis.long}`,
+                `totalt över alla områden, ${basis.long}`,
               ),
             },
             ...(top && top.deviation_msek > 0
@@ -343,22 +404,22 @@ export default function BudgetTheme({ route }: { route: Route }) {
         chartTitle={
           byArea
             ? l(
-                `What the parties propose for ${names.get(area)}, compared with the government`,
-                `Vad partierna föreslår för ${names.get(area)}, jämfört med regeringen`,
+                `What the parties propose for ${names.get(area)}, compared with ${against}`,
+                `Vad partierna föreslår för ${names.get(area)}, jämfört med ${against}`,
               )
             : multi
               ? l(
-                  `Where ${compared.join(', ')} want more or less than the government`,
-                  `Var ${compared.join(', ')} vill lägga mer eller mindre än regeringen`,
+                  `Where ${compared.join(', ')} want more or less than ${against}`,
+                  `Var ${compared.join(', ')} vill lägga mer eller mindre än ${against}`,
                 )
               : l(
-                  `Where ${partyName(party)} wants more or less than the government`,
-                  `Var ${partyName(party)} vill lägga mer eller mindre än regeringen`,
+                  `Where ${partyName(party)} wants more or less than ${against}`,
+                  `Var ${partyName(party)} vill lägga mer eller mindre än ${against}`,
                 )
         }
         chartMeta={l(
-          `${percent ? 'Per cent of the government’s proposal' : 'SEK million'} · budget year ${year}`,
-          `${percent ? 'Procent av regeringens förslag' : 'Miljoner kronor'} · budgetåret ${year}`,
+          `${percent ? 'Per cent' : 'SEK million'}, ${basis.long}`,
+          `${percent ? 'Procent' : 'Miljoner kronor'}, ${basis.long}`,
         )}
         chart={
           multi ? (
@@ -375,8 +436,8 @@ export default function BudgetTheme({ route }: { route: Route }) {
                 }))}
               format={format}
               label={l(
-                `Difference from the government’s budget per area, ${year}: ${compared.join(', ')}`,
-                `Skillnad mot regeringens budget per område ${year}: ${compared.join(', ')}`,
+                `Difference per area, ${basis.long}: ${compared.join(', ')}`,
+                `Skillnad per område, ${basis.long}: ${compared.join(', ')}`,
               )}
             />
           ) : (
@@ -389,8 +450,8 @@ export default function BudgetTheme({ route }: { route: Route }) {
               }))}
               format={format}
               description={l(
-                `Difference from the government’s budget, ${year}: ${shown.map((r) => `${label(r)} ${format(value(r))}`).join('; ')}`,
-                `Skillnad mot regeringens budget ${year}: ${shown.map((r) => `${label(r)} ${format(value(r))}`).join('; ')}`,
+                `Difference ${basis.long}: ${shown.map((r) => `${label(r)} ${format(value(r))}`).join('; ')}`,
+                `Skillnad ${basis.long}: ${shown.map((r) => `${label(r)} ${format(value(r))}`).join('; ')}`,
               )}
             />
           )
@@ -410,8 +471,8 @@ export default function BudgetTheme({ route }: { route: Route }) {
             : top && bottom
               ? byArea
                 ? l(
-                    `For ${names.get(area)}, ${partyName(top.actor)} proposes ${format(value(top))} and ${partyName(bottom.actor)} ${format(value(bottom))} compared with the government.`,
-                    `För ${names.get(area)} föreslår ${partyName(top.actor)} ${format(value(top))} och ${partyName(bottom.actor)} ${format(value(bottom))} jämfört med regeringen.`,
+                    `For ${names.get(area)}, ${partyName(top.actor)} proposes ${format(value(top))} and ${partyName(bottom.actor)} ${format(value(bottom))} compared with ${against}.`,
+                    `För ${names.get(area)} föreslår ${partyName(top.actor)} ${format(value(top))} och ${partyName(bottom.actor)} ${format(value(bottom))} jämfört med ${against}.`,
                   )
                 : l(
                     `${partyName(party)} wants the most extra money for ${names.get(top.expenditure_area)} and the largest cut in ${names.get(bottom.expenditure_area)}.`,
@@ -423,14 +484,24 @@ export default function BudgetTheme({ route }: { route: Route }) {
           <>
             <p>
               {l(
-                'A bar to the right means the party wants to spend more than the government in that area; to the left, less. Zero means the same as the government.',
-                'En stapel åt höger betyder att partiet vill lägga mer än regeringen på området; åt vänster mindre. Noll betyder samma som regeringen.',
+                'A bar to the right means the party wants to spend more than the budget in that area; to the left, less. Zero means the same amount.',
+                'En stapel åt höger betyder att partiet vill lägga mer än budgeten på området; åt vänster mindre. Noll betyder samma belopp.',
               )}
             </p>
             <p>
               {l(
-                'Government parties and their support party do not table alternative budgets, so they are not shown. A proposal is not a decision: the Riksdag adopts one budget, usually the government’s.',
-                'Regeringspartierna och deras stödparti lägger inga egna budgetförslag, så de visas inte. Ett förslag är inte ett beslut: riksdagen antar en budget, oftast regeringens.',
+                'The Finance Committee compares every party’s budget with the government’s proposal, and that is the comparison shown. The Riksdag adopted the government’s proposal in every year here',
+                'Finansutskottet jämför varje partis budget med regeringens förslag, och det är den jämförelsen som visas. Riksdagen antog regeringens förslag alla år här',
+              )}
+              {notAdopted.length
+                ? l(
+                    ` except ${notAdopted.join(', ')}, when an opposition budget won the vote.`,
+                    ` utom ${notAdopted.join(', ')}, då ett oppositionsförslag vann omröstningen.`,
+                  )
+                : '.'}{' '}
+              {l(
+                'So the difference is, in practice, the difference from the budget that was decided. Government parties and their support party do not table budgets of their own, so they are not shown.',
+                'Skillnaden är alltså i praktiken skillnaden mot den budget som beslutades. Regeringspartierna och deras stödparti lägger inga egna budgetar, så de visas inte.',
               )}
             </p>
           </>
@@ -538,8 +609,8 @@ export default function BudgetTheme({ route }: { route: Route }) {
               {
                 value: 'procent',
                 label: l(
-                  'Per cent of the government’s proposal',
-                  'Procent av regeringens förslag',
+                  'Per cent of the budget for the area',
+                  'Procent av budgeten för området',
                 ),
               },
             ]}
@@ -549,8 +620,8 @@ export default function BudgetTheme({ route }: { route: Route }) {
         <Field label={l('Chart type', 'Graftyp')}>
           <p className="ds-small">
             {l(
-              'Bars around zero: each value is a difference from the government.',
-              'Staplar kring noll: varje värde är en skillnad mot regeringen.',
+              'Bars around zero: each value is a difference from the budget.',
+              'Staplar kring noll: varje värde är en skillnad mot budgeten.',
             )}
           </p>
         </Field>

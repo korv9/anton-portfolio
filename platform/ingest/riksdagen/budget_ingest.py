@@ -68,42 +68,142 @@ def number(value: str) -> int | None:
     return int(match.group()) if match else None
 
 
-def budget_table(html: str) -> tuple[list[str], list[list[str]]]:
+AREA = re.compile(r"\d{1,2}")
+# Rounding each of 27 areas to whole millions moves a sum by at most 13.5.
+ROUNDING_TOLERANCE_MSEK = 13
+
+
+def _figures(cells: list[str], expected: int) -> list[str]:
+    """The figures of one table row, repaired where the HTML export split them: an empty
+    extra cell, or a number broken over two cells ("+4", "769" for +4 769). Only applied when
+    the row has more cells than columns, so a row that reads cleanly is left as it is."""
+    values = list(cells)
+    if len(values) > expected:
+        values = [value for value in values if value != ""]
+    while len(values) > expected:
+        for i in range(len(values) - 1):
+            if (re.fullmatch(r"[+−–-]?\d{1,3}", values[i])
+                    and re.fullmatch(r"\d{3}", values[i + 1])):
+                values[i:i + 2] = [f"{values[i]} {values[i + 1]}"]
+                break
+        else:
+            break
+    return values[:expected]
+
+
+def _table_at(html: str, position: int) -> tuple[list[list[str]], int, int] | None:
+    start_match = re.search(r"<table\b", html[position:], flags=re.I)
+    if not start_match:
+        return None
+    start = position + start_match.start()
+    end_match = re.search(r"</table\s*>", html[start:], flags=re.I)
+    if not end_match:
+        return None
+    parser = TableParser()
+    parser.feed(html[start:start + end_match.end()])
+    return parser.rows, start, start + end_match.end()
+
+
+def _is_total(row: list[str]) -> bool:
+    label = next((cell for cell in row if cell), "").casefold()
+    return label.startswith(("summa utgiftsområden", "summa utgifter"))
+
+
+def budget_table(html: str, budget_year: int | None = None) -> tuple[list[str], list[list[str]], list[str] | None]:
+    """The committee's comparison of the government's and the parties' expenditure frames:
+    the party columns, one row per expenditure area and the total row as printed.
+
+    The report also tabulates the two years after the budget year, so only the table for the
+    budget year is read (its last mention; the first is the contents list). A table that runs
+    over a page break continues in the next HTML table, sometimes shifted one column; the rows
+    are joined until all areas are read or the table's source note is reached."""
+    year = str(budget_year) if budget_year else r"20\d{2}"
     titles = list(re.finditer(
-        r"Regeringens och (?:motionärernas|oppositionspartiernas) förslag till utgiftsramar(?:\s+för)?\s+20\d{2}",
+        rf"Regeringens och (?:motionärernas|oppositionspartiernas) förslag till utgiftsramar(?:\s+för)?\s+{year}\b",
         html,
         flags=re.I,
     ))
     if not titles:
         raise ValueError("Hittade ingen jämförelsetabell för utgiftsramar")
-    start_match = re.search(r"<table\b", html[titles[-1].end():], flags=re.I)
-    start = titles[-1].end() + start_match.start() if start_match else -1
-    end_match = re.search(r"</table\s*>", html[start:], flags=re.I) if start >= 0 else None
-    end = start + end_match.end() if end_match else -1
-    if start < 0 or end < 0:
+    first = _table_at(html, titles[-1].end())
+    if first is None:
         raise ValueError("Jämförelsetabellen saknar komplett HTML-tabell")
-    parser = TableParser()
-    parser.feed(html[start:end])
+    rows, _, end = first
     header_index = next(
-        (i for i, row in enumerate(parser.rows) if any(cell.upper() in PARTIES for cell in row)),
+        (i for i, row in enumerate(rows) if any(cell.upper() in PARTIES for cell in row)),
         None,
     )
     if header_index is None:
         raise ValueError("Kunde inte identifiera partikolumner")
-    header = parser.rows[header_index]
     parties = [cell.upper().replace("FP", "L").replace("KDS", "KD")
-               for cell in header if cell.upper() in PARTIES]
-    data = [row for row in parser.rows[header_index + 1:]
-            if len(row) >= 3 and re.fullmatch(r"\d{1,2}", row[0])]
+               for cell in rows[header_index] if cell.upper() in PARTIES]
+    width = 3 + len(parties)
+    data: list[list[str]] = []
+    total: list[str] | None = None
+
+    def take(table_rows: list[list[str]]) -> None:
+        nonlocal total
+        for row in table_rows:
+            # A continuation table may start one column to the right.
+            if len(row) > 1 and not row[0] and AREA.fullmatch(row[1]):
+                row = row[1:]
+            if AREA.fullmatch(row[0]) and len(row) >= 3:
+                if all(existing[0] != row[0] for existing in data):
+                    data.append(row[:2] + _figures(row[2:], width - 2))
+            elif (data and len(row) > 1 and not row[0] and row[1]
+                  and not any(row[2:]) and not AREA.fullmatch(row[1])):
+                # The rest of an area name that wrapped onto the next line.
+                data[-1][1] = f"{data[-1][1]} {row[1]}"
+            elif _is_total(row) and total is None:
+                label = next(i for i, cell in enumerate(row) if cell)
+                total = [row[label], *_figures(row[label + 1:], width - 2)]
+
+    take(rows[header_index + 1:])
+    position = end
+    for _ in range(2):
+        if len(data) >= 27 or total is not None:
+            break
+        following = _table_at(html, position)
+        if following is None:
+            break
+        between = re.sub(r"<[^>]+>", " ", html[position:following[1]])
+        if re.search(r"Källor?:|Tabell\s+\d", between):
+            break
+        take(following[0])
+        position = following[2]
     if len(data) < 20:
         raise ValueError(f"Bara {len(data)} utgiftsområden kunde läsas")
-    return parties, data
+    return parties, data, total
+
+
+def budget_totals(html: str, session: str) -> dict[str, int]:
+    """The committee's own sum over all expenditure areas: the government's total and each
+    party's net difference from it. Summing the rounded area figures can be off by a few
+    million kronor, so the published total is kept as printed."""
+    parties, _, total = budget_table(html, int("20" + session.split("/")[1]))
+    if total is None:
+        return {}
+    values = [value for value in (number(cell) for cell in total[1:]) if value is not None]
+    if len(values) < 1 + len(parties):
+        return {}
+    return {"GOV": values[0], **dict(zip(parties, values[1:1 + len(parties)]))}
 
 
 def parse_document(html: str, session: str, document_id: str, source_url: str) -> list[dict]:
-    parties, rows = budget_table(html)
-    output = []
     budget_year = int("20" + session.split("/")[1])
+    parties, rows, total = budget_table(html, budget_year)
+    if len(rows) != 27:
+        raise ValueError(f"{len(rows)} av 27 utgiftsområden kunde läsas")
+    if total is not None:
+        # Every column must add up to the committee's own total, or a figure was misread.
+        printed = [number(cell) for cell in total[1:]]
+        for column, (label, expected) in enumerate(zip(["GOV", *parties], printed)):
+            if expected is None:
+                continue
+            read = sum(number(row[2 + column]) or 0 for row in rows)
+            if abs(read - expected) > ROUNDING_TOLERANCE_MSEK:
+                raise ValueError(f"{label}: områdena summerar till {read}, tabellen säger {expected}")
+    output = []
     for row in rows:
         area = int(row[0])
         government = number(row[2])
@@ -175,7 +275,8 @@ def main() -> None:
                 rows = parse_document(path.read_text(encoding="utf-8-sig"), session, document_id, url)
                 frames.extend(rows)
                 documents.append({"session": session, "document_id": document_id, "source_url": url,
-                                  "rows": len(rows)})
+                                  "rows": len(rows),
+                                  "totals_msek": budget_totals(path.read_text(encoding="utf-8-sig"), session)})
                 print(f"{session} {document_id}: {len(rows)} budgetrader", flush=True)
                 break
             except Exception as exc:
