@@ -8,6 +8,7 @@ export type ThemeKey =
   | 'budget'
   | 'skatter'
   | 'utredningar'
+  | 'nyheter'
   | 'partier'
   | 'sakdebatter'
   | 'partiledare'
@@ -55,6 +56,13 @@ export const THEMES: Theme[] = [
     path: '#politik-utredningar',
     sv: 'Utredningar (SOU)',
     en: 'Studies (SOU)',
+    group: 'main',
+  },
+  {
+    key: 'nyheter',
+    path: '#politik-nyheter',
+    sv: 'Nyheter',
+    en: 'News',
     group: 'main',
   },
   {
@@ -166,7 +174,7 @@ export const DEEP_DIVES: Record<string, DeepDive> = {
       'Who governs, with whose support, and the latest on forming a government.',
   },
   '#now-news': {
-    parent: 'lage',
+    parent: 'nyheter',
     sv: 'Politiska nyheter',
     en: 'Political news',
     aboutSv:

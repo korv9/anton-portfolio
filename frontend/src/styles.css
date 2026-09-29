@@ -27,6 +27,36 @@
   --teal: #111214;
   --orange: #8a8a8a;
   --focus: #111214;
+  /* The accent: dark green for what is chosen or current (a page, a tab, a filter). */
+  --accent: #192820;
+  --accent-2: #2c4a3b;
+  --on-accent: #ffffff;
+  /* Cool washes for selected rows, read-outs and the sidebar. */
+  --select: #eef3f6;
+  --wash-cool: #f4f6f7;
+  --side: #eef2f5;
+  /* Meaning, never decoration: information, a fall or a no, a note. */
+  --info: #1f5f8b;
+  --negative: #a3412f;
+  --note-bg: #fbf6e6;
+  --note-line: #c7a64a;
+  /* Type roles: one size per job, on every page. */
+  --fs-display: clamp(2.2rem, 5vw, 3.6rem);
+  --fs-page-title: 1.6rem;
+  --fs-section-title: clamp(1.4rem, 2.6vw, 2rem);
+  --fs-card-title: 1.0625rem;
+  --fs-body: 0.9375rem;
+  --fs-meta: 0.8125rem;
+  --fs-label: 0.75rem;
+  /* Space and cards. */
+  --sp-1: 0.25rem;
+  --sp-2: 0.5rem;
+  --sp-3: 0.75rem;
+  --sp-4: 1rem;
+  --sp-5: 1.5rem;
+  --sp-6: 2.5rem;
+  --card-pad: 0.9rem 1.05rem 1rem;
+  --card-gap: 0.9rem;
 }
 * {
   box-sizing: border-box;

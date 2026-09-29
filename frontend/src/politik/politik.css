@@ -1116,7 +1116,7 @@
   .politik .theme .theme-question {
     margin: 0 0 0.3rem;
     max-width: none;
-    font-size: 1.6rem;
+    font-size: var(--fs-page-title);
     line-height: 1.15;
   }
   .politik .theme .theme-why {

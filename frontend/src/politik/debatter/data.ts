@@ -4,6 +4,12 @@
  */
 import { fetchData } from '../../dataSource'
 import { load } from '../../parliament/data'
+import {
+  issueScores,
+  lexiconReady,
+  setIssueLexicon,
+  type Lexicon,
+} from './lexicon.ts'
 
 export type PartyCounts = Record<string, [speeches: number, replies: number]>
 
@@ -154,10 +160,27 @@ export function exchanges(speeches: Speech[]): Exchange[] {
   return out
 }
 
+let lexiconPending: Promise<void> | null = null
+
 /**
- * Issue areas whose keywords the text mentions, most mentioned first (word matches). A word
- * counts when it is the keyword or the keyword with a short ending ("polisen", "skolorna"), and
- * an area needs `minHits` mentions, so one passing word does not tag a speech.
+ * The learned issue lexicon (platform/nlp/issue_lexicon.py): per issue area the stems that set
+ * it apart, learned from debates whose committee is known. Loaded once; until it is, issuesIn
+ * falls back to the hand-written keywords.
+ */
+export function loadIssueLexicon(): Promise<void> {
+  lexiconPending ??= load<Lexicon>('politics/parliament/issue-lexicon.json')
+    .then(setIssueLexicon)
+    .catch(() => {
+      lexiconPending = null
+    })
+  return lexiconPending
+}
+
+/**
+ * Issue areas a text is about, strongest first. With the learned lexicon: the areas scoring at
+ * least half of the strongest, among `issues`. Before it has loaded: the hand-written keywords,
+ * where an area needs `minHits` mentions. A keyword counts when it is the word or the word with
+ * a short ending ("polisen", "skolorna").
  */
 export function issuesIn(
   text: string,
@@ -165,6 +188,17 @@ export function issuesIn(
   limit = 3,
   minHits = 1,
 ): string[] {
+  if (lexiconReady()) {
+    const scores = issueScores(text)
+    const top = Math.max(0, ...scores.values())
+    if (!top) return []
+    const allowed = new Set(issues.map((i) => i.key))
+    return [...scores.entries()]
+      .filter(([key, v]) => allowed.has(key) && v >= top / 2)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, limit)
+      .map(([key]) => key)
+  }
   const words = text.toLowerCase().match(/[a-zåäöéü-]+/g) ?? []
   const matches = (w: string, k: string) =>
     w === k || (w.startsWith(k) && w.length - k.length <= 4 && k.length >= 4)

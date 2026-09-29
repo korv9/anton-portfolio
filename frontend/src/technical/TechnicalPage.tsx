@@ -43,6 +43,16 @@ type Metric = {
   prevalence_synergy: number
 }
 
+type LexiconEval = {
+  train_speeches: number
+  test_speeches: number
+  old_accuracy: number
+  new_accuracy: number
+  old_coverage: number
+  new_coverage: number
+  per_area: Record<string, { speeches: number; old: number; new: number }>
+}
+
 const T = (en: string, sv: string) => l(en, sv)
 const LAYERS: Node['layer'][] = ['source', 'seed', 'bronze', 'silver', 'gold']
 const LAYER_NAME: Record<Node['layer'], [string, string]> = {
@@ -301,11 +311,17 @@ function testsOf(n: Node) {
 export default function TechnicalPage() {
   const [schema, setSchema] = useState<Schema | null>(null)
   const [metrics, setMetrics] = useState<Metric[] | null>(null)
+  const [lexicon, setLexicon] = useState<LexiconEval | null>(null)
   const [error, setError] = useState<string | null>(null)
   useEffect(() => {
     fetchJson<Schema>('schema/models.json')
       .then(setSchema)
       .catch((e: Error) => setError(e.message))
+    fetchJson<{ evaluation: LexiconEval }>(
+      'politics/parliament/issue-lexicon.json',
+    )
+      .then((l) => setLexicon(l.evaluation))
+      .catch(() => setLexicon(null))
     fetchJson<Metric[]>('products/drugcomb/tables/metrics.json')
       .then(setMetrics)
       .catch(() => setMetrics([]))
@@ -793,16 +809,6 @@ export default function TechnicalPage() {
                     ],
                   ],
                   [
-                    '#rfc-drift',
-                    ['Meaning drift', 'Betydelseförskjutning'],
-                    ['LLM evaluation', 'LLM-utvärdering'],
-                    'DuckDB lakehouse, pytest',
-                    [
-                      'Meaning shift across repeated LLM rewrites of 1,952 provisions',
-                      'Förskjutning i innebörd vid upprepade LLM-omskrivningar av 1 952 bestämmelser',
-                    ],
-                  ],
-                  [
                     '#tallman',
                     ['Question answering', 'Frågesvar'],
                     ['RAG with verification', 'RAG med verifiering'],
@@ -839,6 +845,53 @@ export default function TechnicalPage() {
             </tbody>
           </table>
         </div>
+
+        {lexicon && (
+          <>
+            <h3>
+              {T(
+                'Issue areas in speeches: a learned lexicon instead of hand-written keywords',
+                'Sakområden i anföranden: en inlärd ordlista i stället för handskrivna nyckelord',
+              )}
+            </h3>
+            <p className="tech-lead">
+              {T(
+                `Debates linked to a committee decision have a known issue area, so every speech in them is a labelled example (distant supervision, no language model). A log-odds lexicon over Snowball stems learned from ${fmt(lexicon.train_speeches)} speeches in 2024/25 was tested on ${fmt(lexicon.test_speeches)} speeches in 2025/26 it had not seen: ${fmt(lexicon.new_accuracy * 100, 0)} % right against ${fmt(lexicon.old_accuracy * 100, 0)} % for the hand-written keywords, and ${fmt(lexicon.new_coverage * 100, 0)} % of speeches labelled against ${fmt(lexicon.old_coverage * 100, 0)} %.`,
+                `Debatter som är kopplade till ett utskottsbeslut har ett känt sakområde, så varje anförande i dem är ett märkt exempel (distant supervision, ingen språkmodell). En log-odds-ordlista över Snowball-stammar, inlärd från ${fmt(lexicon.train_speeches)} anföranden 2024/25, testades på ${fmt(lexicon.test_speeches)} anföranden 2025/26 som den inte sett: ${fmt(lexicon.new_accuracy * 100, 0)} % rätt mot ${fmt(lexicon.old_accuracy * 100, 0)} % för de handskrivna nyckelorden, och ${fmt(lexicon.new_coverage * 100, 0)} % av anförandena får ett område mot ${fmt(lexicon.old_coverage * 100, 0)} %.`,
+              )}
+            </p>
+            <div className="tech-table-wrap">
+              <table className="tech-table numeric">
+                <thead>
+                  <tr>
+                    <th scope="col">{T('Issue area', 'Sakområde')}</th>
+                    <th scope="col">{T('Test speeches', 'Testanföranden')}</th>
+                    <th scope="col">{T('Keywords', 'Nyckelord')}</th>
+                    <th scope="col">
+                      {T('Learned lexicon', 'Inlärd ordlista')}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {Object.entries(lexicon.per_area)
+                    .sort((a, b) => b[1].speeches - a[1].speeches)
+                    .map(([area, v]) => (
+                      <tr key={area}>
+                        <th scope="row" className="mono">
+                          {area}
+                        </th>
+                        <td>{fmt(v.speeches)}</td>
+                        <td>{fmt(v.old * 100, 0)} %</td>
+                        <td>
+                          <b>{fmt(v.new * 100, 0)} %</b>
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </div>
+          </>
+        )}
 
         {ml && (
           <>

@@ -47,27 +47,3 @@ test('budget corpus and NLP choices update all comparison data', async ({
     .analyze()
   expect(results.violations).toEqual([])
 })
-
-test('RFC report separates observed profiles from synthetic direction', async ({
-  page,
-}) => {
-  await page.goto('/#rfc-drift')
-  const report = page.locator('#rfc-drift')
-  await expect(report.locator('.rfc-version')).toHaveCount(2)
-  await expect(report.locator('.rfc-version').first()).toContainText(
-    '78 extracted statements',
-  )
-  await expect(report.locator('.engine-result')).toContainText('loosening')
-  await report.getByLabel('Requirement change').selectOption('1')
-  await expect(report.locator('.engine-result')).toContainText('tightening')
-  await report.getByLabel('Requirement change').selectOption('2')
-  await expect(report.locator('.engine-result')).toContainText('neutral')
-  await expect(report).toContainText('0 matched keyword changes')
-  await expect(report).toContainText('Synthetic example')
-  await report.getByText('Method, sources & limitations').click()
-  const results = await new AxeBuilder({ page })
-    .include('#rfc-drift')
-    .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
-    .analyze()
-  expect(results.violations).toEqual([])
-})

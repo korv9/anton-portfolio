@@ -316,7 +316,7 @@ body .politik-nav a {
   padding: 12px 10px;
 }
 body .politik-nav a[aria-current] {
-  background: #192820;
+  background: var(--accent);
   color: #fff;
 }
 body .politik-nav a[aria-current] .politik-nav-no {

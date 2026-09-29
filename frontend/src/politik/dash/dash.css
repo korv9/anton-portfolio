@@ -28,7 +28,7 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  font-size: 1.5rem;
+  font-size: var(--fs-page-title);
   line-height: 1.1;
   letter-spacing: -0.02em;
 }
@@ -172,7 +172,7 @@
 }
 .dash-card h2 {
   margin: 0;
-  font-size: 0.9375rem;
+  font-size: var(--fs-card-title);
   line-height: 1.25;
 }
 .dash-card header a {
@@ -187,7 +187,7 @@
 }
 .dash-meta {
   margin: 0.1rem 0 0.5rem;
-  font-size: 0.75rem;
+  font-size: var(--fs-meta);
   color: var(--muted);
 }
 .dash-body {

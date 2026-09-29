@@ -298,3 +298,66 @@ test('issue debates compare what the parties talk about with the year before', a
   await expect(chart.locator('.topic-prev').first()).toBeVisible()
   await expect(page.getByText('Debates per month')).toHaveCount(0)
 })
+
+test('news: the headlines, and the week in summary with its sources', async ({
+  page,
+}) => {
+  const news = await (
+    await page.request.get('/data/parliament/news.json')
+  ).json()
+  const [first, second] = news.items
+  // A summary as summarize_news.py writes it, citing two real headlines.
+  await page.route('**/parliament/news-summaries.json', (route) =>
+    route.fulfill({
+      json: {
+        generated_at: '2026-09-28T15:00:00+00:00',
+        model: 'claude-sonnet-5-5',
+        period: { from: '2026-09-21', to: '2026-09-28', days: 7 },
+        items_considered: 2,
+        headline: 'A week of government formation',
+        summary: 'Test summary.',
+        themes: [
+          {
+            title: 'Government formation',
+            text: 'Test theme.',
+            parties: first.parties.slice(0, 1),
+            item_ids: [first.id, second.id],
+          },
+        ],
+        by_party: [],
+        method: 'test',
+      },
+    }),
+  )
+  await page.goto('/#politik-nyheter')
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+    'Political news',
+  )
+  await expect(page.locator('.news-summary-headline')).toHaveText(
+    'A week of government formation',
+  )
+  await expect(page.locator('.news-cites a')).toHaveCount(2)
+  await expect(page.locator('.news-cites a').first()).toHaveAttribute(
+    'href',
+    first.url,
+  )
+  await expect(page.locator('.news-feed > li')).toHaveCount(
+    Math.min(news.items.length, 60),
+  )
+  // A topic filters the feed and is kept in the address.
+  await page.locator('.news-topics button').first().click()
+  await expect(page).toHaveURL(/amne=/)
+  expect(await page.locator('.news-feed > li').count()).toBeLessThan(
+    Math.min(news.items.length, 60),
+  )
+})
+
+test('news without a summary says how it is made', async ({ page }) => {
+  await page.route('**/parliament/news-summaries.json', (route) =>
+    route.fulfill({ status: 404, body: '' }),
+  )
+  await page.goto('/#politik-nyheter')
+  await expect(page.locator('.news-summary-missing')).toContainText(
+    'summarize_news.py',
+  )
+})

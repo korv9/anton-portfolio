@@ -16,13 +16,11 @@ const WelfarePage = lazy(() => import('./welfare/WelfarePage'))
 const AnalysisPage = lazy(() => import('./analysis/AnalysisPage'))
 const ProjectsPage = lazy(() => import('./projects/ProjectsPage'))
 const TechnicalPage = lazy(() => import('./technical/TechnicalPage'))
+const DesignPage = lazy(() => import('./technical/DesignPage'))
 const StatusPage = lazy(() => import('./status/StatusPage'))
 const DataModelPage = lazy(() => import('./datamodel/DataModelPage'))
 const DrugCombPage = lazy(() =>
   import('./products/CaseStudies').then((m) => ({ default: m.DrugCombPage })),
-)
-const AllegoriaPage = lazy(() =>
-  import('./products/CaseStudies').then((m) => ({ default: m.AllegoriaPage })),
 )
 const ThesisPage = lazy(() =>
   import('./products/CaseStudies').then((m) => ({ default: m.ThesisPage })),
@@ -72,6 +70,7 @@ export default function App() {
     ) : page !== 'home' &&
       page !== 'projects' &&
       page !== 'technical' &&
+      page !== 'design' &&
       page !== 'politik' &&
       page !== 'jobs' &&
       page !== 'tallman' ? (
@@ -107,6 +106,7 @@ export default function App() {
                 {page === 'home' && <HomePage />}
                 {page === 'projects' && <ProjectsPage />}
                 {page === 'technical' && <TechnicalPage />}
+                {page === 'design' && <DesignPage />}
                 {page === 'politik' && <PoliticsProduct route={route} />}
                 {page === 'jobs' && <JobsProduct route={route} />}
                 {page === 'tallman' && <TallmanPage />}
@@ -115,7 +115,6 @@ export default function App() {
                 {page === 'status' && <StatusPage />}
                 {page === 'datamodel' && <DataModelPage view={path} />}
                 {page === 'drugcomb' && <DrugCombPage />}
-                {page === 'allegoria' && <AllegoriaPage />}
                 {page === 'thesis' && <ThesisPage />}
                 {page === 'homie' && <HomiePage />}
               </Suspense>

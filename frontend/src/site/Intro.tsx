@@ -1,9 +1,9 @@
 /**
- * The opening, as a small data story: a white bar chart on black, one bar per letter of the
+ * The opening, as a small data story: a black bar chart on white, one bar per letter of the
  * name, whose bars and little value labels move up and down like a live feed. Then the bars fall
  * one by one, and as each falls its letter of "Anton Ernstsson" drops into its place. Software,
- * Data and AI rise in underneath; then the name shrinks into the header's wordmark and the
- * portfolio is there underneath. The values are decoration, not data. Shown every time the site opens on the start page; a shared
+ * Data and AI rise in underneath; then the white screen fades and slides down, and the
+ * portfolio is there underneath. Black on white, centred on every screen. The values are decoration, not data. Shown every time the site opens on the start page; a shared
  * link to another page opens straight on its content. A click, Enter or Escape skips it; with
  * reduced motion it is a short fade. Setting `ae-intro-seen` in sessionStorage skips it too
  * (the browser tests do, so they start on the content).
@@ -49,19 +49,10 @@ export default function Intro() {
     typeof window !== 'undefined' &&
     window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
 
-  // Leave: move the name onto the header wordmark (FLIP), then remove the overlay.
+  // Leave: the white screen fades and slides down, and the start page is there underneath.
   const leave = (fast = false) => {
     setPhase((current) => (current === 'in' ? 'leave' : current))
-    const el = name.current
-    const target = document.querySelector('.wordmark-name')
-    if (el && target && !reduced && !fast) {
-      const from = el.getBoundingClientRect()
-      const to = target.getBoundingClientRect()
-      const scale = to.height / from.height
-      el.style.transformOrigin = 'top left'
-      el.style.transform = `translate(${to.left - from.left}px, ${to.top - from.top}px) scale(${Math.max(scale, 0.05)})`
-    }
-    window.setTimeout(() => setPhase('gone'), fast ? 160 : reduced ? 250 : 520)
+    window.setTimeout(() => setPhase('gone'), fast ? 220 : reduced ? 250 : 750)
   }
 
   useEffect(() => {

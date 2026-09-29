@@ -23,11 +23,11 @@
   cursor: pointer;
 }
 .study-list button:hover {
-  background: #f4f6f7;
+  background: var(--wash-cool);
 }
 .study-list button[aria-pressed='true'] {
   border-left-color: var(--ink);
-  background: #eef3f6;
+  background: var(--select);
 }
 .study-list b {
   font-size: 0.875rem;
@@ -44,7 +44,7 @@
   font-family: var(--font-mono) !important;
   font-size: 0.75rem;
   color: #fff;
-  background: #1f5f8b;
+  background: var(--info);
 }
 .study-kind.ds {
   background: #2c7a4b;
@@ -144,18 +144,18 @@
 .law-studies button,
 .law-studies a {
   padding: 0.2rem 0.45rem;
-  border: 1px solid #1f5f8b;
-  background: #eef3f6;
+  border: 1px solid var(--info);
+  background: var(--select);
   font: inherit;
   font-family: var(--font-mono) !important;
   font-size: 0.75rem;
-  color: #1f5f8b;
+  color: var(--info);
   text-decoration: none;
   cursor: pointer;
 }
 .law-studies button:hover,
 .law-studies a:hover {
-  background: #1f5f8b;
+  background: var(--info);
   color: #fff;
 }
 .law-arrow {

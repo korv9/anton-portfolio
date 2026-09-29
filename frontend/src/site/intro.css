@@ -4,19 +4,26 @@
   z-index: 1000;
   display: flex;
   align-items: center;
+  justify-content: center;
   padding: 0 clamp(1rem, 5vw, 4rem);
-  background: #000;
-  color: #fff;
+  background: #fff;
+  color: #111;
   cursor: pointer;
-  transition: background-color 360ms ease 160ms;
+  transition:
+    opacity 700ms cubic-bezier(0.4, 0, 0.2, 1),
+    transform 700ms cubic-bezier(0.4, 0, 0.2, 1);
 }
+/* Leaving: the whole screen fades and slides down onto the start page. */
 .intro-screen.leaving {
-  background-color: transparent;
+  opacity: 0;
+  transform: translateY(8vh);
   pointer-events: none;
 }
 .intro-stack {
   display: grid;
+  justify-items: center;
   gap: clamp(0.8rem, 2.4vw, 1.6rem);
+  text-align: center;
 }
 .intro-name {
   margin: 0;
@@ -28,14 +35,8 @@
   letter-spacing: -0.045em;
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
   column-gap: 0.25em;
-  transition:
-    transform 480ms cubic-bezier(0.7, 0, 0.2, 1),
-    color 200ms;
-  will-change: transform;
-}
-.intro-screen.leaving .intro-name {
-  color: var(--ink);
 }
 /* One slot per letter: a white bar with its moving value, then the letter that replaces it. */
 .intro-word {
@@ -52,7 +53,7 @@
   right: 12%;
   bottom: 0.14em;
   height: calc(var(--h) * var(--k));
-  background: #fff;
+  background: #111;
   transform-origin: bottom;
   transition: height 170ms linear;
   animation: intro-bar-fall 460ms cubic-bezier(0.55, 0, 0.9, 0.45) forwards;
@@ -69,12 +70,12 @@
   font-size: clamp(0.625rem, 1.1vw, 0.875rem);
   font-weight: 500;
   letter-spacing: 0;
-  color: #b9b9b9;
+  color: #6b6b6b;
   font-variant-numeric: tabular-nums;
 }
 .intro-glyph {
   display: inline-block;
-  color: #fff;
+  color: #111;
   opacity: 0;
   transform: translateY(-0.7em);
   animation: intro-drop 520ms cubic-bezier(0.3, 1.45, 0.5, 1) forwards;
@@ -97,6 +98,7 @@
 .intro-fields {
   margin: 0;
   display: flex;
+  justify-content: center;
   flex-wrap: wrap;
   gap: 0.35em 1.4em;
   font-family: var(--font-mono);
@@ -112,7 +114,7 @@
   position: relative;
   display: inline-block;
   padding-bottom: 0.18em;
-  color: #fff;
+  color: #111;
   opacity: 0;
   transform: translateY(0.6em);
   filter: blur(6px);
@@ -126,7 +128,7 @@
   right: 0;
   bottom: 0;
   height: 2px;
-  background: #fff;
+  background: #111;
   transform: scaleX(0);
   transform-origin: left;
   animation: intro-underline 420ms cubic-bezier(0.6, 0, 0.2, 1)
@@ -177,7 +179,7 @@
 }
 .intro-screen.reduced.leaving {
   opacity: 0;
-  background-color: #000;
+  transform: none;
 }
 
 /* Wide screens: the name on one line; narrow ones wrap it, with lower bars. */

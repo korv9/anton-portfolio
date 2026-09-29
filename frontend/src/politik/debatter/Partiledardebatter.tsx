@@ -18,6 +18,7 @@ import { debateHref } from './DebateView'
 import {
   issuesIn,
   loadDebateIndex,
+  loadIssueLexicon,
   loadSpeeches,
   totalFor,
   type DebateIndex,
@@ -37,6 +38,11 @@ export default function Partiledardebatter({ route }: { route: Route }) {
   const [speeches, setSpeeches] = useState<Speech[] | null>(null)
   const [speechError, setSpeechError] = useState(false)
   const [earlier, setEarlier] = useState<Speech[] | null>(null)
+  // The learned issue lexicon; the topic charts wait for it so they classify once.
+  const [lexicon, setLexicon] = useState(false)
+  useEffect(() => {
+    loadIssueLexicon().then(() => setLexicon(true))
+  }, [])
   useEffect(() => {
     loadDebateIndex()
       .then(setIndex)
@@ -130,8 +136,8 @@ export default function Partiledardebatter({ route }: { route: Route }) {
       out.set(key, (words / (totals.get(key.split('|')[1]) ?? 1)) * 100)
     return out
   }
-  const nowTopics = topicShare(speeches)
-  const earlierTopics = topicShare(earlier)
+  const nowTopics = topicShare(lexicon ? speeches : null)
+  const earlierTopics = topicShare(lexicon ? earlier : null)
   const topicRows = index.issues
     .map((issue) => ({
       key: issue.key,
@@ -229,7 +235,7 @@ export default function Partiledardebatter({ route }: { route: Route }) {
             `Andel av partiets ord ${dayName(debate.date)}, per sakområde som orden pekar på${earlierDebate ? ` · streckad ram: ${dayName(earlierDebate.date)}` : ''}`,
           )}
         >
-          {speeches ? (
+          {speeches && lexicon ? (
             <TopicBars
               rows={topicRows}
               parties={present}
@@ -268,7 +274,7 @@ export default function Partiledardebatter({ route }: { route: Route }) {
             `${dayName(debate.date)} · en rad per parti, varje block ett inlägg lika långt som sina ord · ämnena läses ur orden`,
           )}
         >
-          {speeches ? (
+          {speeches && lexicon ? (
             <DebateTimeline
               speeches={speeches}
               issues={index.issues}
