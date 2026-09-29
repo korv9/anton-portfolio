@@ -6,17 +6,16 @@ click away and remembered.
 
 ## Start page
 
-Only what a recruiter needs, in two columns:
+One screen for a recruiter:
 
-- **Left, fixed:** name, role, at most three sentences on who Anton is and what he is looking
-  for, a table of contents (01 Projekt, 02 Erfarenhet, 03 Tech stack) that marks the section
-  being read, the three CVs (Data Engineer, Data Scientist / Applied AI, Python / AI Platform, in
-  `public/cv/`) and contact links.
-- **Right, read top to bottom:** Projekt (the politics product first, then every other project),
-  Erfarenhet (Avtalat, Fora, Delicato) and Tech stack (five groups, each with one line on what it
-  is used for, then the tools).
-- On a phone the left column dissolves into the page and the contents become a sticky bar.
-  Older addresses (`#om-mig`, `#kontakt`, `#kompetenser`) lead to the start or the stack.
+- **Header:** name, role, two sentences, and the actions on one row (Download CV, email, LinkedIn, GitHub, and "CV per roll" for the three role-specific CVs in `public/cv/`).
+- **Experience and tech stack side by side:**
+  - experience: one line per job, plus the education;
+  - tech stack: five groups of tools as small squares.
+- **Projects:**
+  - the politics product first, as a dark card with the pipeline that built it (sources → Python ingestion → dbt + DuckDB, tested → Parquet in R2 → React dashboard);
+  - every other project as a tile with one line.
+- **Phone:** the page stacks into one column.
 
 The words live in `frontend/src/home/content.ts`; every fact comes from the CVs.
 
