@@ -50,6 +50,15 @@ test('language choice persists across project pages and keeps data controls stab
       () => document.documentElement.scrollWidth <= innerWidth,
     ),
   ).toBe(true)
+  // Contrast is checked on the settled page, not halfway through the cards fading in.
+  await page.evaluate(() =>
+    Promise.all(
+      document
+        .getAnimations()
+        .filter((a) => a.effect?.getTiming().iterations !== Infinity)
+        .map((a) => a.finished),
+    ),
+  )
   const accessibility = await new AxeBuilder({ page })
     .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
     .analyze()
