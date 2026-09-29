@@ -22,6 +22,7 @@ import {
   exchanges,
   issuesIn,
   loadDebateIndex,
+  loadIssueLexicon,
   loadSession,
   loadSpeeches,
   speakerName,
@@ -179,6 +180,10 @@ export default function DebateView({ route }: { route: Route }) {
   const [speeches, setSpeeches] = useState<Speech[] | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [step, setStep] = useState<number | null>(null)
+  const [, setLexicon] = useState(false)
+  useEffect(() => {
+    loadIssueLexicon().then(() => setLexicon(true))
+  }, [])
   const [paused, setPaused] = useState(false)
   const total = useRef(0)
   // While playing, the next turn appears after a pause long enough to read the dots.
