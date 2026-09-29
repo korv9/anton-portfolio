@@ -264,7 +264,7 @@ export const FLAGSHIP: Project = {
 export const PROJECTS: Project[] = [
   {
     id: 'tallman',
-    title: t('Herr taLLMan', 'Herr taLLMan'),
+    title: t('taLLMan', 'taLLMan'),
     kind: t('RAG med källkontroll', 'RAG with source checking'),
     summary: t(
       'En chatt om riksdagen som svarar i påståenden, vart och ett kontrollerat mot sina källor.',

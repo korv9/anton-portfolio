@@ -1,7 +1,7 @@
 # Cloudflare Workers project serving the site (docs/deploy.md). Cloudflare builds it from this
 # repository: build command `npm run build`, deploy command `npx wrangler deploy`.
 # Static assets are served as before; the Worker (worker/index.ts) only runs for /api/*, which
-# is Herr taLLMan's API (docs/tallman.md). _headers in dist/ sets response headers.
+# is taLLMan's API (docs/tallman.md). _headers in dist/ sets response headers.
 name = "anton-portfolio"
 main = "worker/index.ts"
 compatibility_date = "2026-09-01"

@@ -1,5 +1,5 @@
 /**
- * Herr taLLMan: a source-critical chat about the Riksdag. Every answer is a list of claims,
+ * taLLMan: a source-critical chat about the Riksdag. Every answer is a list of claims,
  * each with its sources one click away and a label from Allegoria saying how well the sources
  * carry it. "Granska svaret" opens the whole trace: what was retrieved, what was claimed,
  * how each claim was judged, by which model, on which data.
@@ -122,7 +122,7 @@ export default function TallmanPage() {
             'Källkritisk chatt · riksdagen',
           )}
         </p>
-        <h1>Herr taLLMan</h1>
+        <h1>taLLMan</h1>
         <p className="tallman-intro">
           {l(
             'Ask about budgets, votes, surveys and debates. Every answer is broken into claims; Allegoria checks each one against its sources and says how well they carry it.',

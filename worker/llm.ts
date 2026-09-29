@@ -1,5 +1,5 @@
 /**
- * The language model behind Herr taLLMan: Claude through the official Anthropic SDK. It gets
+ * The language model behind taLLMan: Claude through the official Anthropic SDK. It gets
  * the retrieved passages and returns claims as JSON that matches CLAIMS_SCHEMA; Allegoria
  * checks them afterwards, so the model never has the last word.
  *

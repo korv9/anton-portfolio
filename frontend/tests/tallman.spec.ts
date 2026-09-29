@@ -1,13 +1,11 @@
 import { test, expect } from './test'
 import AxeBuilder from '@axe-core/playwright'
 
-test('Herr taLLMan answers with checked claims, sources and a trace', async ({
+test('taLLMan answers with checked claims, sources and a trace', async ({
   page,
 }) => {
   await page.goto('/#tallman')
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-    'Herr taLLMan',
-  )
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('taLLMan')
   // No Worker behind the dev server: the engine runs in the browser, without a model.
   await expect(page.locator('.tallman-engine')).toContainText('in your browser')
 

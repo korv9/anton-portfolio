@@ -8,7 +8,7 @@ const LINKS: [string, string, string][] = [
   ['#teknik', 'Tech stack', 'Tech stack'],
   ['#politik', 'Politics', 'Politik'],
   ['#jobb', 'Job market', 'Jobbmarknad'],
-  ['#tallman', 'Herr taLLMan', 'Herr taLLMan'],
+  ['#tallman', 'taLLMan', 'taLLMan'],
 ]
 
 export default function Header({

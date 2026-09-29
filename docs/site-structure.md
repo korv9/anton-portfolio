@@ -124,7 +124,7 @@ differ in marker and line style (S/V red, M/KD/L blue, C/MP green); SD's yellow 
 casing. Logos appear in pickers, table headers and summaries, never on data points. The logos
 are the parties' current marks as Riksdagen publishes them, stored locally as WebP.
 
-## Herr taLLMan
+## taLLMan
 
 `#tallman`: a source-critical chat about the Riksdag. It answers in claims that Allegoria checks against their sources. The code is in `frontend/src/tallman/` and the Worker in `worker/`; setup is in [tallman.md](tallman.md).
 

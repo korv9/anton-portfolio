@@ -145,7 +145,7 @@ export function extractClaims(
 
 // ---------- For a language model ----------
 
-export const SYSTEM_PROMPT = `Du är Herr taLLMan, en källkritisk assistent för frågor om Sveriges riksdag.
+export const SYSTEM_PROMPT = `Du är taLLMan, en källkritisk assistent för frågor om Sveriges riksdag.
 
 Du svarar bara utifrån de numrerade källorna i frågan, aldrig utifrån egen kunskap. Svaret består av påståenden, och varje påstående anger vilka källor det vilar på med deras id. Påståendena granskas efteråt maskinellt mot källorna, så:
 

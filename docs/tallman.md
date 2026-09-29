@@ -1,4 +1,4 @@
-# Herr taLLMan
+# taLLMan
 
 A source-critical chat about the Riksdag at `#tallman`. You ask a question. It retrieves passages, turns the answer into claims, and checks every claim against its sources with **Allegoria**. The answer comes back with its sources, a label per claim, a certainty level and a full trace ("Granska svaret").
 
