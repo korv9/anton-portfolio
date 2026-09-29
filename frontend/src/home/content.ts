@@ -364,33 +364,6 @@ export const PROJECTS: Project[] = [
     code: 'https://github.com/korv9/DrugComb-Synergy-Prediction',
   },
   {
-    id: 'allegoria',
-    area: 'ai',
-    title: t(
-      'Semantisk drift i svensk lagstiftning',
-      'Semantic drift in Swedish legislation',
-    ),
-    kind: t('Lakehouse och AI-utvärdering', 'Lakehouse and AI evaluation'),
-    summary: t(
-      '50 källdokument från riksdagens API omvandlade till 1 952 strukturerade bestämmelser med oföränderliga ögonblicksbilder och spårbarhet.',
-      '50 source documents from the Riksdag API transformed into 1,952 structured provisions with immutable snapshots and traceability.',
-    ),
-    result: t(
-      'Ett reproducerbart ramverk som mäter hur innebörden förskjuts vid upprepade LLM-omskrivningar.',
-      'A reproducible framework measuring meaning shifts across repeated LLM transformations.',
-    ),
-    tech: [
-      'Python',
-      'PySpark',
-      'Delta Lake',
-      'Unity Catalog',
-      'DuckDB',
-      'pytest',
-    ],
-    href: '#rfc-drift',
-    code: 'https://github.com/korv9/allegoria',
-  },
-  {
     id: 'homie',
     area: 'data',
     title: t('Homie API', 'Homie API'),

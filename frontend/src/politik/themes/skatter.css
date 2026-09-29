@@ -19,7 +19,7 @@
   border-bottom: 2px solid var(--ink);
 }
 .tax-strip.chosen {
-  background: #eef3f6;
+  background: var(--select);
 }
 .tax-strip-name {
   padding: 0.3rem 0;
@@ -68,9 +68,9 @@
   width: 1.05rem;
   height: 1.05rem;
   margin: -0.525rem 0 0 -0.525rem;
-  background: #16181b;
+  background: var(--ink);
   border: 2px solid #fff;
-  box-shadow: 0 0 0 1px #16181b;
+  box-shadow: 0 0 0 1px var(--ink);
   z-index: 3;
 }
 .tax-dot.swe b {
@@ -164,7 +164,7 @@
 }
 .tax-mix li.swe {
   font-weight: 700;
-  background: #eef3f6;
+  background: var(--select);
 }
 .tax-mix-name {
   overflow: hidden;
@@ -204,10 +204,10 @@
   text-align: left;
 }
 .tax-table .up {
-  color: #1f5f8b;
+  color: var(--info);
 }
 .tax-table .down {
-  color: #a3412f;
+  color: var(--negative);
 }
 
 @media (max-width: 700px) {

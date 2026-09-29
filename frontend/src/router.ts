@@ -11,12 +11,12 @@ export type Page =
   | 'home'
   | 'projects'
   | 'technical'
+  | 'design'
   | 'politik'
   | 'jobs'
   | 'welfare'
   | 'analysis'
   | 'drugcomb'
-  | 'allegoria'
   | 'thesis'
   | 'homie'
   | 'datamodel'
@@ -43,6 +43,8 @@ export const REDIRECTS: Record<string, string> = {
   '#kontakt': '#start',
   '#kompetenser': '#teknik',
   '#projects': '#projekt',
+  // The semantic-drift report is withdrawn while it is reworked.
+  '#rfc-drift': '#projekt',
   '#tech': '#technical',
 }
 
@@ -73,11 +75,11 @@ export function pageOf(path: string): Page {
   )
     return 'jobs'
   if (['#drugcomb', '#drugcomb-data'].includes(path)) return 'drugcomb'
-  if (path === '#rfc-drift') return 'allegoria'
   if (path === '#thesis') return 'thesis'
   if (path === '#homie') return 'homie'
   if (path === '#sweden' || path.startsWith('#sweden-')) return 'welfare'
   if (path === '#projekt') return 'projects'
+  if (path === '#design') return 'design'
   if (path === '#technical' || path === '#teknisk') return 'technical'
   if (path === '#status') return 'status'
   if (path === '#tallman') return 'tallman'

@@ -54,7 +54,7 @@ test('home introduces Anton and routes to each project', async ({
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
     'What I have built',
   )
-  expect(await page.locator('.cv-project').count()).toBeGreaterThanOrEqual(10)
+  expect(await page.locator('.cv-project').count()).toBeGreaterThanOrEqual(9)
   await page.getByRole('button', { name: /AI and ML/ }).click()
   await expect(page.locator('.cv-area')).toHaveCount(1)
   await expect(page.locator('.cv-flagship')).toHaveCount(0)
@@ -122,6 +122,10 @@ test('home introduces Anton and routes to each project', async ({
   ).toHaveCount(5)
   expect(await page.locator('#tech-model tbody tr').count()).toBeGreaterThan(10)
   await expect(page.locator('#tech-rag .tech-steps li')).toHaveCount(6)
+  // The design system: every token resolved from the stylesheet the site runs on.
+  await page.goto('/#design')
+  await expect(page.locator('.ds-swatches li code').first()).toHaveText(/^#/)
+  await expect(page.locator('.ds-parties li')).toHaveCount(8)
   await page.goto('/#politics')
   await expect(page.getByRole('heading', { level: 1 })).toContainText(
     'Roll calls in detail',
@@ -140,8 +144,6 @@ test('home introduces Anton and routes to each project', async ({
   ).toBeVisible()
   await page.goto('/#drugcomb')
   await expect(page.locator('#drugcomb')).toContainText('396,498')
-  await page.goto('/#rfc-drift')
-  await expect(page.locator('#rfc-drift')).toBeVisible()
   await page.goto('/#thesis')
   await expect(page.locator('#thesis')).toContainText('review candidates')
   await page.goto('/#homie')
@@ -198,6 +200,8 @@ test('navigation, responsive layout and accessibility', async ({ page }) => {
     '/#politik-kallor',
     '/#politik-skatter',
     '/#politik-utredningar',
+    '/#politik-nyheter',
+    '/#design',
     '/#jobb',
     '/#jobb-yrken',
     '/#jobb-lan',

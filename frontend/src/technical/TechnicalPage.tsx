@@ -793,16 +793,6 @@ export default function TechnicalPage() {
                     ],
                   ],
                   [
-                    '#rfc-drift',
-                    ['Meaning drift', 'Betydelseförskjutning'],
-                    ['LLM evaluation', 'LLM-utvärdering'],
-                    'DuckDB lakehouse, pytest',
-                    [
-                      'Meaning shift across repeated LLM rewrites of 1,952 provisions',
-                      'Förskjutning i innebörd vid upprepade LLM-omskrivningar av 1 952 bestämmelser',
-                    ],
-                  ],
-                  [
                     '#tallman',
                     ['Question answering', 'Frågesvar'],
                     ['RAG with verification', 'RAG med verifiering'],

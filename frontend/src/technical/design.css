@@ -1,0 +1,163 @@
+/* The design system page: swatches, type roles, space, components. */
+
+.design .tech-section > h3 {
+  margin: 1.8rem 0 0.7rem;
+  font-size: var(--fs-card-title);
+}
+.ds-principles {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--card-gap);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ds-principles li {
+  display: grid;
+  gap: 0.35rem;
+  align-content: start;
+  padding: var(--card-pad);
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--accent);
+  background: var(--paper);
+}
+.ds-principles span {
+  font-family: var(--font-mono) !important;
+  font-size: var(--fs-label);
+  color: var(--muted);
+}
+.ds-principles b {
+  font-size: var(--fs-card-title);
+}
+.ds-principles p {
+  margin: 0;
+  font-size: var(--fs-body);
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+.ds-swatches,
+.ds-parties {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+  gap: var(--sp-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ds-swatches li,
+.ds-parties li {
+  display: grid;
+  gap: 0.2rem;
+  padding: var(--sp-3);
+  border: 1px solid var(--line);
+  background: var(--paper);
+}
+.ds-swatches i,
+.ds-parties i {
+  display: block;
+  height: 3rem;
+  margin-bottom: 0.3rem;
+  border: 1px solid var(--line);
+}
+.ds-parties i {
+  height: 0.8rem;
+}
+.ds-swatches b,
+.ds-parties b {
+  font-family: var(--font-mono) !important;
+  font-size: var(--fs-meta);
+}
+.ds-swatches small,
+.ds-parties small {
+  font-size: var(--fs-label);
+  color: var(--muted);
+}
+.ds-swatches code,
+.ds-parties code,
+.ds-type code,
+.ds-space code {
+  font-family: var(--font-mono) !important;
+  font-size: var(--fs-label);
+  color: var(--ink-2);
+}
+.ds-type {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--ink);
+}
+.ds-type li {
+  display: grid;
+  grid-template-columns: 16rem minmax(0, 1fr);
+  gap: var(--sp-4);
+  align-items: baseline;
+  padding: var(--sp-3) 0;
+  border-bottom: 1px solid var(--line);
+}
+.ds-type span {
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+.ds-space {
+  display: grid;
+  gap: var(--sp-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ds-space li {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+.ds-space i {
+  display: block;
+  height: 1rem;
+  background: var(--accent);
+}
+.ds-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-3);
+  margin: var(--card-gap) 0;
+}
+.ds-toggle {
+  min-height: 38px;
+  padding: 0 0.9rem;
+  border: 1px solid var(--line-strong);
+  background: var(--paper);
+  font: inherit;
+  font-size: var(--fs-body);
+  cursor: pointer;
+}
+.ds-toggle[aria-pressed='true'] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
+}
+.ds-notice {
+  margin: 0 !important;
+}
+.ds-body {
+  margin: 0;
+  font-size: var(--fs-body);
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+@media (max-width: 900px) {
+  .ds-principles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .ds-type li {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.2rem;
+  }
+}
+@media (max-width: 520px) {
+  .ds-principles {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

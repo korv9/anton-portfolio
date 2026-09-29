@@ -422,7 +422,7 @@ html {
       rgba(114, 197, 216, 0.14),
       transparent 30%
     ),
-    #eef2f5;
+    var(--side);
 }
 .site-side-list,
 .site-side-list ul {
@@ -463,7 +463,7 @@ html {
   background: rgba(25, 40, 32, 0.06);
 }
 .site-side-head[aria-current] {
-  background: #192820;
+  background: var(--accent);
   color: #fff !important;
 }
 .site-side-head[aria-current]::after {
@@ -486,7 +486,7 @@ html {
   color: var(--ink);
 }
 .site-side-list ul a[aria-current] {
-  background: #192820;
+  background: var(--accent);
   color: #fff;
   font-weight: 600;
 }
@@ -545,7 +545,7 @@ html {
 .site-side .politik-nav a[aria-current],
 .site-side .politik-nav .politik-nav-group a[aria-current] {
   padding-left: 1rem;
-  background: #192820;
+  background: var(--accent);
   color: #fff;
   font-weight: 600;
   box-shadow: none;

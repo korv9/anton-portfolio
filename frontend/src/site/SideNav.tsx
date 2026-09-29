@@ -53,9 +53,10 @@ function sections(): Section[] {
       en: 'Technical',
       sv: 'Technical',
       href: '#technical',
-      pages: ['technical', 'datamodel', 'status'],
+      pages: ['technical', 'design', 'datamodel', 'status'],
       items: [
         { href: '#technical', en: 'Architecture', sv: 'Arkitektur' },
+        { href: '#design', en: 'Design system', sv: 'Designsystem' },
         { href: '#data-model', en: 'Data model', sv: 'Datamodell' },
         { href: '#status', en: 'Pipeline status', sv: 'Pipelinestatus' },
       ],
@@ -81,13 +82,8 @@ function sections(): Section[] {
       en: 'AI and machine learning',
       sv: 'AI och maskininlärning',
       href: '#tallman',
-      pages: ['tallman', 'thesis', 'drugcomb', 'allegoria'],
-      items: [
-        project('tallman'),
-        project('thesis'),
-        project('drugcomb'),
-        project('allegoria'),
-      ],
+      pages: ['tallman', 'thesis', 'drugcomb'],
+      items: [project('tallman'), project('thesis'), project('drugcomb')],
     },
     {
       key: 'data',

@@ -52,12 +52,12 @@
   margin-top: clamp(2.5rem, 5vw, 4rem);
   scroll-margin-top: 80px;
 }
-.tech-section h2 {
+.tech-section > h2 {
   margin: 0 0 0.9rem;
-  font-size: clamp(1.4rem, 2.6vw, 2rem);
+  font-size: var(--fs-section-title);
   letter-spacing: -0.03em;
 }
-.tech-section h3 {
+.tech-section > h3 {
   margin: 2rem 0 0.7rem;
   font-size: 1.125rem;
 }
@@ -73,7 +73,7 @@
   font-family: var(--font-mono) !important;
   font-size: 0.85em;
   padding: 0.05rem 0.3rem;
-  background: #eef1f3;
+  background: var(--wash-cool);
 }
 
 /* Data flow: a row of connected steps. */
@@ -98,7 +98,7 @@
   animation-delay: calc(var(--i) * 70ms);
 }
 .tech-flow li:nth-child(n + 3):nth-child(-n + 6) {
-  background: #2c4a3b;
+  background: var(--accent-2);
 }
 .tech-flow b {
   font-size: var(--fs-sm);
@@ -180,7 +180,7 @@
   width: calc(var(--w) * 5rem);
   height: 0.55rem;
   margin-right: 0.5rem;
-  background: #2c4a3b;
+  background: var(--accent-2);
   vertical-align: middle;
 }
 .tech-layer {

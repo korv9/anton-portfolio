@@ -110,7 +110,7 @@
   min-height: 2.6rem;
   margin-top: 0.6rem;
   padding: 0.6rem 0.8rem;
-  background: #f4f6f7;
+  background: var(--wash-cool);
   font-size: 0.875rem;
 }
 
@@ -360,7 +360,7 @@
   min-height: 2.4rem;
   margin: 0.7rem 0 0;
   padding: 0.55rem 0.8rem;
-  background: #f4f6f7;
+  background: var(--wash-cool);
   font-size: 0.875rem;
 }
 @media (max-width: 900px) {

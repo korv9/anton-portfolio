@@ -158,6 +158,7 @@ function columns(): Column[] {
               en: 'Technical: the architecture',
               sv: 'Technical: arkitekturen',
             },
+            { href: '#design', en: 'Design system', sv: 'Designsystem' },
             { href: '#data-model', en: 'Data model', sv: 'Datamodell' },
             { href: '#status', en: 'Pipeline status', sv: 'Pipelinestatus' },
             {
