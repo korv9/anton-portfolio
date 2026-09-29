@@ -14,10 +14,13 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    # The R2 credentials are secrets of the anton-portfolio environment.
+    environment: anton-portfolio
     env:
       R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
       R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
-      R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      # Either name for the secret key; the environment holds it as R2_SECRET_ACCESS_KEY_ID.
+      R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY || secrets.R2_SECRET_ACCESS_KEY_ID }}
       R2_BUCKET: ${{ secrets.R2_BUCKET }}
     steps:
       - uses: actions/checkout@v4
