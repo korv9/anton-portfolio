@@ -5,7 +5,7 @@ test('one politics navigation isolates content and supports back and direct link
 }) => {
   await page.goto('/#now-decisions')
   const politics = page.getByRole('navigation', { name: 'Politics' })
-  await expect(politics.getByRole('link')).toHaveCount(9)
+  await expect(politics.getByRole('link')).toHaveCount(10)
   await expect(
     politics.getByRole('link', { name: /Overview/ }),
   ).toHaveAttribute('aria-current', 'true')

@@ -134,6 +134,19 @@ The politics sidebar is in groups:
 
 - **Översikt** (`#politik`).
 - **Budget** (`#politik-budget`). The detailed builder view is at `#politik-budget-detalj`.
+- **Partier** (`#politik-partier`): a card per party. Choosing one (a card, or the party bar) opens its dashboard:
+  - key figures;
+  - party leader and ministers;
+  - Riksdag elections since 1973 and the latest surveys;
+  - the municipal councils: gained, kept or lost seats per municipality, seats per county, where the party is strongest;
+  - the Riksdag group: age, gender, constituencies, every member;
+  - how it votes and with whom;
+  - its budget motions;
+  - its part in the party-leader debates and their topics.
+
+  Members and councils come from `platform/publish/export_party_profiles.py` (`npm run politics:parties`), written to `politics/parties/`:
+  - the Riksdag's list of people;
+  - Valmyndigheten's municipal council results per municipality. The latest election may be partly preliminary; the page says how many municipalities are.
 - **Debatter:**
   - **Sakdebatter** (`#politik-sakdebatter`);
   - **Partiledardebatter** (`#politik-partiledardebatter`);

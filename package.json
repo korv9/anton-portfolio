@@ -15,6 +15,7 @@
     "data:build": "python platform/legacy/build_gold.py && npm run politics:build && python platform/legacy/build_products.py && python platform/legacy/build_speech_browser.py && python platform/publish/export_debates.py && python platform/publish/build_catalog.py",
     "politics:build": "cd platform && dbt build --profiles-dir . --select +tag:politics --target-path target/politics && cd .. && python platform/publish/export_politics.py",
     "politics:check": "cd platform && dbt build --profiles-dir . --select +tag:politics --exclude tag:parliament --target-path target/politics && cd .. && python platform/publish/export_politics.py --check",
+    "politics:parties": "python platform/publish/export_party_profiles.py",
     "politics:debates": "python platform/publish/export_debates.py",
     "tallman:index": "python platform/tallman/build_index.py",
     "tallman:eval": "node platform/tallman/eval/run.ts",

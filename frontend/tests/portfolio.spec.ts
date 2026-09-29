@@ -121,6 +121,8 @@ test('navigation, responsive layout and accessibility', async ({ page }) => {
     '/#politik-roster',
     '/#politik-budget',
     '/#politik-sakdebatter',
+    '/#politik-partier',
+    '/#politik-partier?partier=M',
     '/#politik-partiledardebatter',
     '/#politik-tal',
     '/#politik-utforska',

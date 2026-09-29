@@ -6,6 +6,7 @@
 export type ThemeKey =
   | 'lage'
   | 'budget'
+  | 'partier'
   | 'sakdebatter'
   | 'partiledare'
   | 'tal'
@@ -38,6 +39,13 @@ export const THEMES: Theme[] = [
     path: '#politik-budget',
     sv: 'Budget',
     en: 'Budget',
+    group: 'main',
+  },
+  {
+    key: 'partier',
+    path: '#politik-partier',
+    sv: 'Partier',
+    en: 'Parties',
     group: 'main',
   },
   {
@@ -269,7 +277,7 @@ export const DEEP_DIVES: Record<string, DeepDive> = {
     aboutEn: 'Find a politician, read full speeches and follow the debate.',
   },
   '#parties': {
-    parent: 'utforska',
+    parent: 'partier',
     sv: 'Partierna',
     en: 'The parties',
     aboutSv: 'En sida per parti med historik, röster, budget och nyheter.',

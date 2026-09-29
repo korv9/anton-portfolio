@@ -25,6 +25,7 @@ const ValjarnaTheme = lazy(() => import('./themes/ValjarnaTheme'))
 const RosterTheme = lazy(() => import('./themes/RosterTheme'))
 const BudgetTheme = lazy(() => import('./themes/BudgetTheme'))
 const BudgetBoard = lazy(() => import('./budget/BudgetBoard'))
+const Partier = lazy(() => import('./partier/Partier'))
 const Sakdebatter = lazy(() => import('./debatter/Sakdebatter'))
 const Partiledardebatter = lazy(() => import('./debatter/Partiledardebatter'))
 const DebateView = lazy(() => import('./debatter/DebateView'))
@@ -43,6 +44,8 @@ function ThemeView({ theme, route }: { theme: ThemeKey; route: Route }) {
       return <RosterTheme route={route} />
     case 'budget':
       return <BudgetBoard route={route} />
+    case 'partier':
+      return <Partier route={route} />
     case 'sakdebatter':
       return <Sakdebatter route={route} />
     case 'partiledare':
