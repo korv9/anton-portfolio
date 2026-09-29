@@ -1,6 +1,7 @@
 /**
  * The opening: the name, very large in white on black, first drawn as an outline and then
- * filled, word by word; after about 1.5 seconds it shrinks into the header's wordmark and the
+ * filled, word by word, with Software, Data and AI rising in one after another underneath; after
+ * about two seconds the name shrinks into the header's wordmark and the
  * portfolio is there underneath. Shown every time the site opens on the start page; a shared
  * link to another page opens straight on its content. A click, Enter or Escape skips it; with
  * reduced motion it is a short fade. Setting `ae-intro-seen` in sessionStorage skips it too
@@ -11,6 +12,8 @@ import './intro.css'
 
 const SKIP = 'ae-intro-seen'
 const NAME = ['Anton', 'Ernstsson']
+/** What he works with, rising in one after another under the name. */
+const FIELDS = ['Software', 'Data', 'AI']
 
 function shouldShow() {
   const hash = window.location.hash
@@ -49,7 +52,7 @@ export default function Intro() {
   useEffect(() => {
     if (phase !== 'in') return
     document.body.style.overflow = 'hidden'
-    const timer = window.setTimeout(() => leave(), reduced ? 700 : 1500)
+    const timer = window.setTimeout(() => leave(), reduced ? 900 : 2300)
     const onKey = (event: KeyboardEvent) => {
       if (event.key === 'Enter' || event.key === 'Escape') {
         event.preventDefault()
@@ -72,21 +75,34 @@ export default function Intro() {
       aria-hidden="true"
       onClick={() => leave(true)}
     >
-      <p className="intro-name" ref={name}>
-        {NAME.map((word, w) => (
-          <span className="intro-word" key={word}>
-            {[...word].map((letter, i) => (
-              <span
-                className="intro-letter"
-                key={i}
-                style={{ animationDelay: `${(w * word.length + i) * 28}ms` }}
-              >
-                {letter}
-              </span>
-            ))}
-          </span>
-        ))}
-      </p>
+      <div className="intro-stack">
+        <p className="intro-name" ref={name}>
+          {NAME.map((word, w) => (
+            <span className="intro-word" key={word}>
+              {[...word].map((letter, i) => (
+                <span
+                  className="intro-letter"
+                  key={i}
+                  style={{ animationDelay: `${(w * word.length + i) * 28}ms` }}
+                >
+                  {letter}
+                </span>
+              ))}
+            </span>
+          ))}
+        </p>
+        <p className="intro-fields">
+          {FIELDS.map((field, i) => (
+            <span
+              className="intro-field"
+              key={field}
+              style={{ ['--d' as string]: `${900 + i * 260}ms` }}
+            >
+              {field}
+            </span>
+          ))}
+        </p>
+      </div>
     </div>
   )
 }

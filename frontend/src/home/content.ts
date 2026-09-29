@@ -39,8 +39,8 @@ export const CVS: { role: Bilingual; focus: Bilingual; file: string }[] = [
 
 /** Who Anton is, in two short sentences. */
 export const PITCH = t(
-  'Junior data engineer i Stockholm som bygger hela vägen från rådata till dashboards: pipelines, datamodeller och analys. Söker en junior roll inom data engineering, analytics engineering eller tillämpad AI.',
-  'Junior data engineer in Stockholm who builds the whole path from raw data to dashboards: pipelines, data models and analysis. Looking for a junior role in data engineering, analytics engineering or applied AI.',
+  'Utvecklare i Stockholm som bygger hela vägen från rådata till färdig produkt: pipelines, datamodeller, webbapplikationer och AI. Söker en junior roll inom mjukvaruutveckling, data engineering eller tillämpad AI.',
+  'Developer in Stockholm who builds the whole path from raw data to a finished product: pipelines, data models, web applications and AI. Looking for a junior role in software development, data engineering or applied AI.',
 )
 
 /** The education, shown with the experience. */
@@ -227,8 +227,14 @@ export type Project = {
   /** What it shows, in one line: the result. */
   result: Bilingual
   tech: string[]
+  /** Where the project opens: a page on this site, or its repository. Empty: no public page. */
   href: string
-  code?: string
+  /** Source code; several repositories for a project split into parts. */
+  code?: string | string[]
+  /** AI and machine learning, or data engineering and software. */
+  area: 'ai' | 'data'
+  /** A group project: say so, and what was his part. */
+  team?: Bilingual
 }
 
 /** The flagship: the largest and most complete project. */
@@ -259,11 +265,13 @@ export const FLAGSHIP: Project = {
   ],
   href: '#politik',
   code: 'https://github.com/korv9/anton-portfolio',
+  area: 'data',
 }
 
 export const PROJECTS: Project[] = [
   {
     id: 'tallman',
+    area: 'ai',
     title: t('taLLMan', 'taLLMan'),
     kind: t('RAG med källkontroll', 'RAG with source checking'),
     summary: t(
@@ -276,9 +284,11 @@ export const PROJECTS: Project[] = [
     ),
     tech: ['TypeScript', 'BM25', 'Claude API', 'Workers AI', 'Vectorize'],
     href: '#tallman',
+    code: 'https://github.com/korv9/anton-portfolio/tree/main/frontend/src/tallman',
   },
   {
     id: 'thesis',
+    area: 'ai',
     title: t(
       'NLP-klustring av IT-incidenter',
       'NLP clustering of IT incidents',
@@ -304,6 +314,7 @@ export const PROJECTS: Project[] = [
   },
   {
     id: 'jobs',
+    area: 'data',
     title: t('Arbetsmarknaden i jobbannonser', 'The job market in job ads'),
     kind: t('Analytics engineering', 'Analytics engineering'),
     summary: t(
@@ -320,6 +331,7 @@ export const PROJECTS: Project[] = [
   },
   {
     id: 'welfare',
+    area: 'data',
     title: t('Hur mår Sverige?', 'How is Sweden doing?'),
     kind: t('Datalager och analys', 'Data warehouse and analysis'),
     summary: t(
@@ -332,9 +344,11 @@ export const PROJECTS: Project[] = [
     ),
     tech: ['dbt', 'DuckDB', 'Stjärnschema', 'Parquet'],
     href: '#sweden',
+    code: 'https://github.com/korv9/anton-portfolio/tree/main/platform',
   },
   {
     id: 'drugcomb',
+    area: 'ai',
     title: t('Förutsäga läkemedelssynergi', 'Drug synergy prediction'),
     kind: t('Multimodal maskininlärning', 'Multimodal machine learning'),
     summary: t(
@@ -351,6 +365,7 @@ export const PROJECTS: Project[] = [
   },
   {
     id: 'allegoria',
+    area: 'ai',
     title: t(
       'Semantisk drift i svensk lagstiftning',
       'Semantic drift in Swedish legislation',
@@ -377,6 +392,7 @@ export const PROJECTS: Project[] = [
   },
   {
     id: 'homie',
+    area: 'data',
     title: t('Homie API', 'Homie API'),
     kind: t('Python-backend · pågående', 'Python backend · in progress'),
     summary: t(
@@ -393,6 +409,7 @@ export const PROJECTS: Project[] = [
   },
   {
     id: 'rag',
+    area: 'ai',
     title: t('RAG-baserad studieassistent', 'RAG learning assistant'),
     kind: t('Tillämpad generativ AI', 'Applied generative AI'),
     summary: t(
@@ -404,10 +421,12 @@ export const PROJECTS: Project[] = [
       'Integrated with Vertex AI, Google Cloud Storage and a React interface.',
     ),
     tech: ['Python', 'Flask', 'Vertex AI', 'RAG', 'React'],
-    href: 'https://github.com/theazero/anton-portfolio',
+    // The repository is not public, so the tile links nowhere.
+    href: '',
   },
   {
     id: 'mimii',
+    area: 'ai',
     title: t(
       'Avvikelser i industripumpar',
       'Industrial pump anomaly detection',
@@ -421,7 +440,47 @@ export const PROJECTS: Project[] = [
       'Utvärderad med ROC-AUC och förväxlingsmatris; överanpassning styrd med dropout och L2.',
       'Evaluated with ROC-AUC and a confusion matrix; overfitting controlled with dropout and L2.',
     ),
-    tech: ['Python', 'TensorFlow', 'CNN', 'librosa'],
-    href: 'https://github.com/theazero/anton-portfolio',
+    tech: ['Python', 'TensorFlow', 'Keras', 'CNN', 'librosa'],
+    href: 'https://github.com/korv9/MIMII-pump-diagnostics',
+    code: 'https://github.com/korv9/MIMII-pump-diagnostics',
+  },
+  {
+    id: 'in1',
+    area: 'ai',
+    title: t(
+      'in1: en app för många AI-modeller',
+      'in1: one app for many AI models',
+    ),
+    kind: t(
+      'Fullstack med AI-API:er · grupprojekt',
+      'Full stack with AI APIs · group project',
+    ),
+    summary: t(
+      'En plattform där användaren väljer vilken AI-modell som passar uppgiften, med OpenAI, Gemini och Hugging Face bakom samma gränssnitt, promptvy och prenumerationer.',
+      'A platform where the user picks the AI model that fits the task, with OpenAI, Gemini and Hugging Face behind one interface, a prompt view and subscriptions.',
+    ),
+    result: t(
+      'Jag byggde datamodellen och prenumerationerna: modeller och relationer i MySQL, CRUD-endpoints i Flask, kopplingen i React och Cypress-tester för inloggning och prenumeration.',
+      'I built the data model and subscriptions: models and relations in MySQL, CRUD endpoints in Flask, the React wiring and Cypress tests for login and subscription.',
+    ),
+    tech: [
+      'Flask',
+      'MySQL',
+      'React',
+      'Vite',
+      'OpenAI',
+      'Gemini',
+      'Hugging Face',
+      'Cypress',
+    ],
+    href: 'https://github.com/leiyese/in1-backend',
+    code: [
+      'https://github.com/leiyese/in1-backend',
+      'https://github.com/leiyese/in1-frontend',
+    ],
+    team: t(
+      'Grupprojekt med tre utvecklare',
+      'Group project with three developers',
+    ),
   },
 ]

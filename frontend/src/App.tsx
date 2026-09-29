@@ -34,8 +34,8 @@ export default function App() {
     document.documentElement.lang = language
     document.title =
       language === 'sv'
-        ? 'Anton Ernstsson · Data engineer'
-        : 'Anton Ernstsson · Data engineer'
+        ? 'Anton Ernstsson · Software developer, data och AI'
+        : 'Anton Ernstsson · Software developer, data and AI'
   }, [language])
 
   // A new address scrolls to its section on the start page, or to the top elsewhere. Changing

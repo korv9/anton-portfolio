@@ -45,14 +45,37 @@ test('home introduces Anton and routes to each project', async ({
   expect(await page.locator('.cv-project').count()).toBeGreaterThanOrEqual(6)
   await expect(page.getByRole('button', { name: 'Show more' })).toHaveCount(0)
   await expect(page.locator('#job-market')).toHaveCount(0)
-  if (isMobile) await page.getByRole('button', { name: 'Menu' }).click()
-  await page
-    .getByRole('navigation', { name: 'Main navigation' })
-    .getByRole('link', { name: 'Politics' })
-    .click()
+  // The contents menu lists everything on the site, on every screen size.
+  await page.getByRole('button', { name: 'Contents' }).click()
+  const contents = page.getByRole('dialog', { name: 'Contents' })
+  await expect(contents).toBeVisible()
+  for (const heading of [
+    'About me',
+    'Swedish politics in numbers',
+    'AI and machine learning',
+    'Data and software',
+  ])
+    await expect(contents.getByRole('heading', { name: heading })).toBeVisible()
+  await expect(
+    contents.getByRole('link', { name: 'Issue debates' }),
+  ).toBeVisible()
+  const results = await new AxeBuilder({ page }).include('#site-map').analyze()
+  expect(results.violations.map((v) => v.id)).toEqual([])
+  await contents.getByRole('link', { name: 'Overview' }).first().click()
+  await expect(contents).toHaveCount(0)
   await expect(page.getByRole('heading', { level: 1 })).toContainText(
     'Overview',
   )
+  if (!isMobile) {
+    await page.goto('/#start')
+    await page
+      .getByRole('navigation', { name: 'Main navigation' })
+      .getByRole('link', { name: 'Politics' })
+      .click()
+    await expect(page.getByRole('heading', { level: 1 })).toContainText(
+      'Overview',
+    )
+  }
   await page.goto('/#politics')
   await expect(page.getByRole('heading', { level: 1 })).toContainText(
     'Roll calls in detail',

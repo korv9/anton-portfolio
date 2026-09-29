@@ -15,6 +15,7 @@ import {
   PROJECTS,
   STACK,
   type Bilingual,
+  type Project,
 } from './content'
 import './home.css'
 
@@ -29,6 +30,62 @@ const PIPELINE: [string, string][] = [
   ['React dashboard', 'React-dashboard'],
 ]
 
+const AREAS = [
+  { key: 'ai', en: 'AI and machine learning', sv: 'AI och maskininlärning' },
+  { key: 'data', en: 'Data and software', sv: 'Data och mjukvara' },
+] as const
+
+const repoName = (url: string) => url.replace('https://github.com/', '')
+
+/**
+ * One project: what it is, what came of it and the tools, with the page and the code as
+ * separate links. A project without a public page or repository says so.
+ */
+function ProjectTile({ project }: { project: Project }) {
+  const external = project.href.startsWith('http')
+  const code = project.code
+    ? Array.isArray(project.code)
+      ? project.code
+      : [project.code]
+    : []
+  return (
+    <li className={`cv-project${project.area === 'ai' ? ' ai' : ''}`}>
+      <span className="cv-kind">{b(project.kind)}</span>
+      <h3>
+        {project.href ? (
+          <a
+            href={project.href}
+            {...(external ? { target: '_blank', rel: 'noreferrer' } : {})}
+          >
+            {b(project.title)}{' '}
+            <span aria-hidden="true">{external ? '↗' : '→'}</span>
+          </a>
+        ) : (
+          b(project.title)
+        )}
+      </h3>
+      {project.area === 'ai' && <p>{b(project.summary)}</p>}
+      <p className="cv-project-result">{b(project.result)}</p>
+      <ul className="cv-chips" aria-label={l('Tools', 'Verktyg')}>
+        {project.tech.map((item) => (
+          <li key={item}>{item}</li>
+        ))}
+      </ul>
+      <p className="cv-project-links">
+        {project.team && <span>{b(project.team)}</span>}
+        {code.map((url) => (
+          <a key={url} href={url} target="_blank" rel="noreferrer">
+            {code.length > 1 ? repoName(url) : l('Code', 'Kod')} ↗
+          </a>
+        ))}
+        {!project.href && !code.length && (
+          <span>{l('Code not public', 'Koden är inte publik')}</span>
+        )}
+      </p>
+    </li>
+  )
+}
+
 export default function HomePage() {
   return (
     <div className="cv">
@@ -37,8 +94,8 @@ export default function HomePage() {
           <h1 className="cv-name">Anton Ernstsson</h1>
           <p className="cv-role">
             {l(
-              'Data Engineer · Analytics Engineer · Applied AI',
-              'Data Engineer · Analytics Engineer · Tillämpad AI',
+              'Software Developer · Data Engineer · Analytics Engineer · Applied AI',
+              'Software Developer · Data Engineer · Analytics Engineer · Tillämpad AI',
             )}
           </p>
           <p className="cv-pitch">{b(PITCH)}</p>
@@ -173,23 +230,22 @@ export default function HomePage() {
             {l('Open the dashboard', 'Öppna dashboarden')} →
           </span>
         </a>
-        <ul className="cv-tiles">
-          {PROJECTS.map((project) => {
-            const external = project.href.startsWith('http')
-            return (
-              <li key={project.id} className="cv-project">
-                <a
-                  href={project.href}
-                  {...(external ? { target: '_blank', rel: 'noreferrer' } : {})}
-                >
-                  <span className="cv-kind">{b(project.kind)}</span>
-                  <h3>{b(project.title)}</h3>
-                  <p>{b(project.result)}</p>
-                </a>
-              </li>
-            )
-          })}
-        </ul>
+        {AREAS.map((area) => (
+          <section
+            key={area.key}
+            className={`cv-area ${area.key}`}
+            aria-labelledby={`cv-area-${area.key}`}
+          >
+            <h3 className="cv-area-title" id={`cv-area-${area.key}`}>
+              {l(area.en, area.sv)}
+            </h3>
+            <ul className="cv-tiles">
+              {PROJECTS.filter((p) => p.area === area.key).map((project) => (
+                <ProjectTile key={project.id} project={project} />
+              ))}
+            </ul>
+          </section>
+        ))}
       </section>
     </div>
   )
