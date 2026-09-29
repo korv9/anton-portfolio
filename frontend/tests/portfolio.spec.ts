@@ -45,7 +45,9 @@ test('home introduces Anton and routes to each project', async ({
   await page.keyboard.press('Escape')
   await expect(live.locator('.live-detail:not([hidden])')).toHaveCount(0)
   // The politics product leads; three AI projects, and a link to all of them.
-  await expect(page.locator('.cv-flagship')).toContainText('Swedish politics')
+  await expect(page.locator('.cv-flagship')).toContainText(
+    'Political Observatory',
+  )
   await expect(page.locator('.cv-pipeline li')).toHaveCount(5)
   await expect(page.locator('.cv-project')).toHaveCount(3)
   await page.locator('.home-more').click()
@@ -65,7 +67,7 @@ test('home introduces Anton and routes to each project', async ({
   await expect(contents).toBeVisible()
   for (const heading of [
     'About me',
-    'Swedish politics in numbers',
+    'Political Observatory',
     'AI and machine learning',
     'Data and software',
   ])
@@ -88,7 +90,7 @@ test('home introduces Anton and routes to each project', async ({
     await page.goto('/#start')
     await page
       .getByRole('navigation', { name: 'Main navigation' })
-      .getByRole('link', { name: 'Politics' })
+      .getByRole('link', { name: 'Political Observatory' })
       .click()
     await expect(page.getByRole('heading', { level: 1 })).toContainText(
       'Overview',

@@ -62,8 +62,8 @@ function sections(): Section[] {
     },
     {
       key: 'politik',
-      en: 'Swedish politics in numbers',
-      sv: 'Svensk politik i siffror',
+      en: 'Political Observatory',
+      sv: 'Political Observatory',
       href: '#politik',
       pages: ['politik'],
       dock: true,

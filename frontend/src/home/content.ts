@@ -240,7 +240,7 @@ export type Project = {
 /** The flagship: the largest and most complete project. */
 export const FLAGSHIP: Project = {
   id: 'politics',
-  title: t('Svensk politik i siffror', 'Swedish politics in numbers'),
+  title: t('Political Observatory', 'Political Observatory'),
   kind: t(
     'Dataprodukt · uppdateras från källorna',
     'Data product · refreshed from the sources',

@@ -226,3 +226,29 @@ test.describe('the name intro', () => {
     })
   })
 })
+
+test('taxes: every kind of tax, Sweden against the other countries', async ({
+  page,
+}) => {
+  await page.goto('/#politik-skatter')
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+    'How do Sweden’s taxes compare?',
+  )
+  const data = await (
+    await page.request.get('/data/taxes/countries.json')
+  ).json()
+  // One strip per kind of tax, and one row per kind in the table.
+  await expect(page.locator('.tax-strip')).toHaveCount(data.types.length)
+  await expect(page.locator('.tax-table tbody tr')).toHaveCount(
+    data.types.length,
+  )
+  // The mix lists countries, not the published averages.
+  await expect(page.locator('.tax-mix li.swe')).toHaveCount(1)
+  await expect(page.locator('.tax-mix')).not.toContainText('OECD average')
+  // Choosing a tax follows it over time, kept in the address.
+  await page.getByRole('button', { name: 'Value added tax (VAT)' }).click()
+  await expect(page).toHaveURL(/skatt=T_5111/)
+  await expect(page.locator('.board-card h2').nth(2)).toContainText('VAT')
+  await page.getByLabel('Compare with').selectOption('nordic')
+  await expect(page.locator('.tax-mix li')).toHaveCount(5)
+})

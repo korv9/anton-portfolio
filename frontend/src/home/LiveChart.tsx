@@ -119,7 +119,7 @@ function barsOf(): Bar[] {
     {
       id: 'politics',
       kind: 'project',
-      label: l('Politics', 'Politik'),
+      label: 'Political Observatory',
       top: String(FLAGSHIP.tech.length),
       title: b(FLAGSHIP.title),
       body: (

@@ -6,6 +6,7 @@
 export type ThemeKey =
   | 'lage'
   | 'budget'
+  | 'skatter'
   | 'partier'
   | 'sakdebatter'
   | 'partiledare'
@@ -39,6 +40,13 @@ export const THEMES: Theme[] = [
     path: '#politik-budget',
     sv: 'Budget',
     en: 'Budget',
+    group: 'main',
+  },
+  {
+    key: 'skatter',
+    path: '#politik-skatter',
+    sv: 'Skatter',
+    en: 'Taxes',
     group: 'main',
   },
   {
@@ -255,7 +263,7 @@ export const DEEP_DIVES: Record<string, DeepDive> = {
     aboutEn: 'What was budgeted and what was actually spent.',
   },
   '#taxes': {
-    parent: 'budget',
+    parent: 'skatter',
     sv: 'Skatter',
     en: 'Taxes',
     aboutSv:

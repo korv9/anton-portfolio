@@ -7,7 +7,7 @@ const SiteMap = lazy(() => import('./SiteMap'))
 
 const LINKS: [string, string, string][] = [
   ['#projekt', 'Projects', 'Projekt'],
-  ['#politik', 'Politics', 'Politik'],
+  ['#politik', 'Political Observatory', 'Political Observatory'],
   ['#jobb', 'Job market', 'Jobbmarknad'],
   ['#tallman', 'taLLMan', 'taLLMan'],
   ['#technical', 'Technical', 'Technical'],
