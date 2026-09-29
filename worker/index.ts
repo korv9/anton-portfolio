@@ -86,7 +86,9 @@ const json = (body: unknown, status = 200) =>
     },
   })
 
-const apiKey = (env: Env) => env.ANTHROPIC_API_KEY || env.LLM_API_KEY
+// A key pasted into the dashboard often brings a space or a line break along.
+const apiKey = (env: Env) =>
+  (env.ANTHROPIC_API_KEY || env.LLM_API_KEY || '').trim() || undefined
 
 function retrieverFor(env: Env, index: TallmanIndex): Retriever {
   const lexical = new LexicalRetriever(
