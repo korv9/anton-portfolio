@@ -1,14 +1,16 @@
-import { useEffect, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useState } from 'react'
 import { currentLocale, l, setLocale, type Locale } from '../i18n'
 import { profile } from '../content'
 
+// The contents menu loads the first time it is opened.
+const SiteMap = lazy(() => import('./SiteMap'))
+
 const LINKS: [string, string, string][] = [
   ['#projekt', 'Projects', 'Projekt'],
-  ['#erfarenhet', 'Experience', 'Erfarenhet'],
-  ['#teknik', 'Tech stack', 'Tech stack'],
   ['#politik', 'Politics', 'Politik'],
   ['#jobb', 'Job market', 'Jobbmarknad'],
   ['#tallman', 'taLLMan', 'taLLMan'],
+  ['#technical', 'Technical', 'Technical'],
 ]
 
 export default function Header({
@@ -25,7 +27,12 @@ export default function Header({
   onLanguage: (next: Locale) => void
 }) {
   const [open, setOpen] = useState(false)
-  useEffect(() => setOpen(false), [path])
+  const [contents, setContents] = useState(false)
+  useEffect(() => {
+    setOpen(false)
+    setContents(false)
+  }, [path])
+  const closeContents = useCallback(() => setContents(false), [])
   const language = currentLocale()
   const change = (next: Locale) => {
     setLocale(next)
@@ -64,13 +71,26 @@ export default function Header({
       </div>
       <button
         type="button"
-        className="site-menu-button"
-        aria-expanded={open}
-        aria-controls="site-nav"
-        onClick={() => setOpen(!open)}
+        className="site-contents-button"
+        aria-expanded={contents}
+        aria-haspopup="dialog"
+        onClick={() => {
+          setOpen(false)
+          setContents(true)
+        }}
       >
-        {open ? l('Close', 'Stäng') : l('Menu', 'Meny')}
+        <span className="site-contents-icon" aria-hidden="true">
+          <i />
+          <i />
+          <i />
+        </span>
+        {l('Contents', 'Innehåll')}
       </button>
+      {contents && (
+        <Suspense fallback={null}>
+          <SiteMap onClose={closeContents} />
+        </Suspense>
+      )}
       <nav
         id="site-nav"
         className={open ? 'site-nav open' : 'site-nav'}
@@ -82,6 +102,7 @@ export default function Header({
               <a
                 href={href}
                 aria-current={
+                  href === path ||
                   (href === '#politik' && inPolitics) ||
                   (href === '#jobb' && inJobs) ||
                   (href === '#tallman' && inTallman)

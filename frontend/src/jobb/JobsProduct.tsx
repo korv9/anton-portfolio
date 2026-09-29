@@ -5,6 +5,8 @@
  * deep dives under "Utforska själv", so their addresses keep working.
  */
 import { Suspense, lazy, useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
+import { useDock } from '../site/dock'
 import { l } from '../i18n'
 import type { Route } from '../router'
 import { fieldName, useMarket, type Market } from './data'
@@ -18,53 +20,8 @@ const Themes = lazy(() => import('./themes'))
 const JobMarketPage = lazy(() => import('../jobs/JobMarketPage'))
 const TechReport = lazy(() => import('../jobs/TechReport'))
 
-export type JobsTheme =
-  'lage' | 'trender' | 'yrken' | 'lan' | 'villkor' | 'utforska' | 'kallor'
-
-export const JOB_THEMES: {
-  key: JobsTheme
-  path: string
-  sv: string
-  en: string
-}[] = [
-  { key: 'lage', path: '#jobb', sv: 'Läget just nu', en: 'Where things stand' },
-  {
-    key: 'trender',
-    path: '#jobb-trender',
-    sv: 'Hur utvecklas annonserna?',
-    en: 'How are ads developing?',
-  },
-  {
-    key: 'yrken',
-    path: '#jobb-yrken',
-    sv: 'Vilka yrken växer?',
-    en: 'Which occupations grow?',
-  },
-  {
-    key: 'lan',
-    path: '#jobb-lan',
-    sv: 'Var finns jobben?',
-    en: 'Where are the jobs?',
-  },
-  {
-    key: 'villkor',
-    path: '#jobb-villkor',
-    sv: 'Vilka villkor?',
-    en: 'On what terms?',
-  },
-  {
-    key: 'utforska',
-    path: '#jobb-utforska',
-    sv: 'Utforska själv',
-    en: 'Explore for yourself',
-  },
-  {
-    key: 'kallor',
-    path: '#jobb-kallor',
-    sv: 'Källor och metod',
-    en: 'Sources and method',
-  },
-]
+import { JOB_THEMES, type JobsTheme } from './nav'
+export { JOB_THEMES, type JobsTheme }
 
 export type ThemeProps = { route: Route; data: Market; fields: string[] }
 
@@ -90,37 +47,43 @@ export default function JobsProduct({ route }: { route: Route }) {
       {l('Loading…', 'Laddar…')}
     </p>
   )
+  // On a wide screen the navigation sits in the site sidebar (see site/dock.ts).
+  const dock = useDock()
+  const Side = dock ? 'div' : 'aside'
+  const side = (
+    <Side className="politik-side">
+      <a className="politik-brand" href="#jobb">
+        <span>{l('The job market', 'Jobbmarknaden')}</span>
+        <small>{l('in numbers', 'i siffror')}</small>
+      </a>
+      <nav
+        ref={nav}
+        className="politik-nav"
+        aria-label={l('Job market', 'Jobbmarknad')}
+      >
+        <ol>
+          {JOB_THEMES.map((t, index) => (
+            <li key={t.key}>
+              <a
+                href={withFields(t.path, selected)}
+                aria-current={
+                  t.key === active ? (theme ? 'page' : 'true') : undefined
+                }
+              >
+                <span className="politik-nav-no" aria-hidden="true">
+                  {index + 1}
+                </span>
+                {l(t.en, t.sv)}
+              </a>
+            </li>
+          ))}
+        </ol>
+      </nav>
+    </Side>
+  )
   return (
-    <div className="politik jobb" id="jobb">
-      <aside className="politik-side">
-        <a className="politik-brand" href="#jobb">
-          <span>{l('The job market', 'Jobbmarknaden')}</span>
-          <small>{l('in numbers', 'i siffror')}</small>
-        </a>
-        <nav
-          ref={nav}
-          className="politik-nav"
-          aria-label={l('Job market', 'Jobbmarknad')}
-        >
-          <ol>
-            {JOB_THEMES.map((t, index) => (
-              <li key={t.key}>
-                <a
-                  href={withFields(t.path, selected)}
-                  aria-current={
-                    t.key === active ? (theme ? 'page' : 'true') : undefined
-                  }
-                >
-                  <span className="politik-nav-no" aria-hidden="true">
-                    {index + 1}
-                  </span>
-                  {l(t.en, t.sv)}
-                </a>
-              </li>
-            ))}
-          </ol>
-        </nav>
-      </aside>
+    <div className={dock ? 'politik jobb docked' : 'politik jobb'} id="jobb">
+      {dock ? createPortal(side, dock) : side}
       <div className="politik-body">
         {theme && data && <FieldBar route={route} data={data} />}
         <div className="politik-main">

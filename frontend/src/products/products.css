@@ -32,7 +32,7 @@
   align-items: center;
   gap: 0.8rem;
   color: var(--muted);
-  font-size: 0.73rem;
+  font-size: 0.75rem;
   margin-bottom: 1.4rem;
 }
 .product-status > span {
@@ -62,7 +62,7 @@
   color: #28524a;
   border-radius: 3px;
   padding: 0.3rem 0.5rem;
-  font-size: 0.72rem;
+  font-size: 0.75rem;
 }
 .product-actions {
   display: flex;
@@ -162,7 +162,7 @@
 .research-bar small {
   display: block;
   margin-top: 0.4rem;
-  font-size: 0.74rem;
+  font-size: 0.75rem;
   color: #58625e;
   line-height: 1.5;
 }
@@ -408,7 +408,7 @@
   color: var(--muted);
 }
 .speech-card small {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
 }
 .speech-card b {
   font-size: 0.8rem;

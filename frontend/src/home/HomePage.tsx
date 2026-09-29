@@ -1,8 +1,8 @@
 /**
- * The start page, read in one screen: who Anton is in two sentences, then experience and the
- * tech stack side by side, then the politics product (the project that shows what he can do,
- * from sources to dashboard) and the other projects as small tiles. Every detail is one click
- * further in.
+ * The start page, airy on purpose: who Anton is in two sentences, the platform behind the site
+ * in four real numbers (read from the dbt schema export), the politics product, three chosen
+ * projects with a link to all of them, then experience and the stack. Sections rise into view
+ * as the reader scrolls.
  */
 import { l } from '../i18n'
 import { profile } from '../content'
@@ -16,6 +16,11 @@ import {
   STACK,
   type Bilingual,
 } from './content'
+import { useEffect, useRef, useState } from 'react'
+import { fetchJson } from '../welfare/data'
+import ProjectTile from '../projects/ProjectTile'
+import LiveChart from './LiveChart'
+import { countUp, useReveal } from './reveal'
 import './home.css'
 
 const b = (text: Bilingual) => l(text.en, text.sv)
@@ -29,26 +34,115 @@ const PIPELINE: [string, string][] = [
   ['React dashboard', 'React-dashboard'],
 ]
 
-export default function HomePage() {
+type Stat = { value: number; decimals?: number; en: string; sv: string }
+
+/** Four numbers about the platform, read from the dbt schema export the Technical page uses. */
+function useStats(): Stat[] | null {
+  const [stats, setStats] = useState<Stat[] | null>(null)
+  useEffect(() => {
+    type Schema = {
+      tests: number
+      layers: Record<string, number>
+      nodes: { kind: string; rows: number | null }[]
+    }
+    fetchJson<Schema>('schema/models.json')
+      .then((schema) =>
+        setStats([
+          {
+            value: schema.nodes.filter((n) => n.kind === 'model').length,
+            en: 'dbt models',
+            sv: 'dbt-modeller',
+          },
+          { value: schema.tests, en: 'data tests', sv: 'datatester' },
+          {
+            value: schema.layers.source ?? 0,
+            en: 'source tables from agencies',
+            sv: 'källtabeller från myndigheter',
+          },
+          {
+            value:
+              schema.nodes.reduce((sum, n) => sum + (n.rows ?? 0), 0) / 1e6,
+            decimals: 1,
+            en: 'million rows in the warehouse',
+            sv: 'miljoner rader i lagret',
+          },
+        ]),
+      )
+      .catch(() => setStats(null))
+  }, [])
+  return stats
+}
+
+function StatValue({ stat }: { stat: Stat }) {
+  const el = useRef<HTMLElement>(null)
+  useEffect(() => {
+    const node = el.current
+    if (!node) return
+    const locale = l('en-GB', 'sv-SE')
+    const run = () => countUp(node, stat.value, locale, stat.decimals ?? 0)
+    if (!('IntersectionObserver' in window)) return run()
+    const observer = new IntersectionObserver((entries) => {
+      if (!entries.some((e) => e.isIntersecting)) return
+      observer.disconnect()
+      run()
+    })
+    observer.observe(node)
+    return () => observer.disconnect()
+  }, [stat])
   return (
-    <div className="cv">
-      <header className="cv-hero" id="start">
-        <div>
-          <h1 className="cv-name">Anton Ernstsson</h1>
-          <p className="cv-role">
-            {l(
-              'Data Engineer · Analytics Engineer · Applied AI',
-              'Data Engineer · Analytics Engineer · Tillämpad AI',
-            )}
-          </p>
-          <p className="cv-pitch">{b(PITCH)}</p>
+    <strong ref={el}>
+      {stat.value.toLocaleString(l('en-GB', 'sv-SE'), {
+        maximumFractionDigits: stat.decimals ?? 0,
+      })}
+    </strong>
+  )
+}
+
+const HIGHLIGHTS = ['tallman', 'drugcomb', 'thesis']
+
+export default function HomePage() {
+  const stats = useStats()
+  const root = useReveal<HTMLDivElement>([stats])
+  return (
+    <div className="cv home" ref={root}>
+      <p className="home-notice" role="note">
+        <span aria-hidden="true">⚒</span>
+        {l(
+          'This site is still being built. I am a developer and data engineer, not a frontend designer or UX person, so some parts may look a little messy for now.',
+          'Sajten byggs fortfarande. Jag är utvecklare och data engineer, inte frontend-designer eller UX:are, så vissa delar kan se lite röriga ut just nu.',
+        )}
+      </p>
+
+      <header className="home-hero" id="start">
+        <div className="home-hero-bg" aria-hidden="true">
+          <i />
+          <i />
+          <i />
         </div>
+        <p className="home-eyebrow">
+          <span className="home-dot" aria-hidden="true" />
+          {l(
+            'Stockholm · open to junior roles',
+            'Stockholm · öppen för juniora roller',
+          )}
+        </p>
+        <h1 className="cv-name">Anton Ernstsson</h1>
+        <p className="cv-role">
+          {l(
+            'Software Developer · Data Engineer · Analytics Engineer · Applied AI',
+            'Software Developer · Data Engineer · Analytics Engineer · Tillämpad AI',
+          )}
+        </p>
+        <p className="cv-pitch">{b(PITCH)}</p>
         <nav
           className="cv-actions"
           aria-label={l('Contact and CV', 'Kontakt och CV')}
         >
           <a className="cv-button primary" href={CVS[0].file} download>
             {l('Download CV', 'Ladda ned CV')} ↓
+          </a>
+          <a className="cv-button" href="#projekt">
+            {l('See the projects', 'Se projekten')} →
           </a>
           {profile.email && (
             <a className="cv-button" href={`mailto:${profile.email}`}>
@@ -88,7 +182,82 @@ export default function HomePage() {
         </nav>
       </header>
 
-      <div className="cv-overview">
+      <LiveChart />
+
+      {stats && (
+        <section
+          className="home-stats reveal"
+          aria-label={l('The platform in numbers', 'Plattformen i siffror')}
+        >
+          <ul>
+            {stats.map((stat, i) => (
+              <li key={stat.sv} style={{ ['--i' as string]: i }}>
+                <StatValue stat={stat} />
+                <span>{l(stat.en, stat.sv)}</span>
+              </li>
+            ))}
+          </ul>
+          <a href="#technical">
+            {l(
+              'How it all fits together: Technical',
+              'Hur allt hänger ihop: Technical',
+            )}{' '}
+            →
+          </a>
+        </section>
+      )}
+
+      <section className="home-section reveal" aria-labelledby="flagship-title">
+        <h2 className="home-section-title" id="flagship-title">
+          {l('The main project', 'Huvudprojektet')}
+        </h2>
+        <a className="cv-flagship" href={FLAGSHIP.href}>
+          <div>
+            <span className="cv-kind">{b(FLAGSHIP.kind)}</span>
+            <h3>
+              {b(FLAGSHIP.title)} <span aria-hidden="true">→</span>
+            </h3>
+            <p>{b(FLAGSHIP.result)}</p>
+          </div>
+          <ol
+            className="cv-pipeline"
+            aria-label={l('How it is built', 'Hur den är byggd')}
+          >
+            {PIPELINE.map(([en, sv], i) => (
+              <li key={en} style={{ ['--i' as string]: i }}>
+                {l(en, sv)}
+              </li>
+            ))}
+          </ol>
+          <span className="cv-flagship-cta">
+            {l('Open the dashboard', 'Öppna dashboarden')} →
+          </span>
+        </a>
+      </section>
+
+      <section className="home-section reveal" aria-labelledby="picked-title">
+        <div className="home-section-head">
+          <h2 className="home-section-title" id="picked-title">
+            {l('AI projects', 'AI-projekt')}
+          </h2>
+          <a className="home-more" href="#projekt">
+            {l(
+              `All ${PROJECTS.length + 1} projects`,
+              `Alla ${PROJECTS.length + 1} projekt`,
+            )}{' '}
+            →
+          </a>
+        </div>
+        <ul className="cv-tiles">
+          {HIGHLIGHTS.map((id) => PROJECTS.find((p) => p.id === id)!).map(
+            (project) => (
+              <ProjectTile key={project.id} project={project} />
+            ),
+          )}
+        </ul>
+      </section>
+
+      <div className="cv-overview reveal">
         <section
           className="cv-panel"
           id="erfarenhet"
@@ -141,56 +310,6 @@ export default function HomePage() {
           </dl>
         </section>
       </div>
-
-      <section
-        className="cv-projects-section"
-        id="projekt"
-        aria-labelledby="projekt-title"
-      >
-        <span id="projects" className="anchor-alias" />
-        <h2 className="cv-panel-title" id="projekt-title">
-          {l('Projects', 'Projekt')}
-        </h2>
-        <a className="cv-flagship" href={FLAGSHIP.href}>
-          <div>
-            <span className="cv-kind">{b(FLAGSHIP.kind)}</span>
-            <h3>
-              {b(FLAGSHIP.title)} <span aria-hidden="true">→</span>
-            </h3>
-            <p>{b(FLAGSHIP.result)}</p>
-          </div>
-          <ol
-            className="cv-pipeline"
-            aria-label={l('How it is built', 'Hur den är byggd')}
-          >
-            {PIPELINE.map(([en, sv], i) => (
-              <li key={en} style={{ ['--i' as string]: i }}>
-                {l(en, sv)}
-              </li>
-            ))}
-          </ol>
-          <span className="cv-flagship-cta">
-            {l('Open the dashboard', 'Öppna dashboarden')} →
-          </span>
-        </a>
-        <ul className="cv-tiles">
-          {PROJECTS.map((project) => {
-            const external = project.href.startsWith('http')
-            return (
-              <li key={project.id} className="cv-project">
-                <a
-                  href={project.href}
-                  {...(external ? { target: '_blank', rel: 'noreferrer' } : {})}
-                >
-                  <span className="cv-kind">{b(project.kind)}</span>
-                  <h3>{b(project.title)}</h3>
-                  <p>{b(project.result)}</p>
-                </a>
-              </li>
-            )
-          })}
-        </ul>
-      </section>
     </div>
   )
 }

@@ -102,7 +102,7 @@
   font-weight: 400;
   letter-spacing: 0;
   line-height: 1.3;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   color: var(--muted);
   white-space: nowrap;
   overflow: hidden;
@@ -187,7 +187,7 @@
 }
 .dash-meta {
   margin: 0.1rem 0 0.5rem;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   color: var(--muted);
 }
 .dash-body {
@@ -203,7 +203,7 @@
 }
 .dash-foot {
   margin: 0;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   color: var(--muted);
 }
 
@@ -239,7 +239,7 @@
   font-size: 0.8125rem;
 }
 .dash-seat small {
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
 }
 .dash-seat:hover {
   filter: brightness(1.08);
@@ -261,7 +261,7 @@
   margin: 0.75rem 0 0;
 }
 .dash-blocs dt {
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   color: var(--muted);
 }
 .dash-blocs dd {
@@ -415,7 +415,7 @@
   height: 8px;
 }
 .grouped.many .grouped-value {
-  font-size: 0.625rem;
+  font-size: 0.75rem;
   line-height: 1;
 }
 .grouped.diverging .grouped-track::after {
@@ -444,7 +444,7 @@
   display: flex;
   justify-content: flex-end;
   gap: 0.35rem;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   line-height: 1.1;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
@@ -485,7 +485,7 @@
   margin: 0;
 }
 .dash-compare dt {
-  font-size: 0.625rem;
+  font-size: 0.75rem;
   color: var(--muted);
   white-space: nowrap;
 }
@@ -496,7 +496,7 @@
   white-space: nowrap;
 }
 .dash-compare dd small {
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 500;
   color: var(--muted);
 }
@@ -514,7 +514,7 @@
   margin: 0;
 }
 .dash-slicers .theme-select span {
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   color: var(--muted);
 }
 .dash-slicers select {
@@ -537,7 +537,7 @@
 .dash-bar-value small {
   margin-left: 0.3rem;
   color: var(--muted);
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
 }
 
 /* Heat tables: who votes alike, what the parties talk about */
@@ -546,7 +546,7 @@
   border-collapse: separate;
   border-spacing: 2px;
   table-layout: fixed;
-  font-size: 0.65rem;
+  font-size: 0.75rem;
 }
 .dash-heat thead th {
   font-weight: 700;

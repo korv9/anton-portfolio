@@ -5,6 +5,8 @@
  * theme, and one debate opens replik för replik under Debatter.
  */
 import { Suspense, lazy, useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
+import { useDock } from '../site/dock'
 import { l } from '../i18n'
 import { PartyLogo, RIKSDAG_PARTIES, partyName } from '../parties/identity'
 import { carryParties, useParties, withParties } from './partySelection'
@@ -78,50 +80,53 @@ export default function PoliticsProduct({ route }: { route: Route }) {
       item.offsetLeft - (menu.clientWidth - item.offsetWidth) / 2
   }, [active])
 
-  return (
-    <div className="politik" id="politik">
-      <aside className="politik-side">
-        <a className="politik-brand" href="#politik">
-          <span>{l('Swedish politics', 'Svensk politik')}</span>
-          <small>{l('in numbers', 'i siffror')}</small>
-        </a>
-        <nav
-          ref={nav}
-          className="politik-nav"
-          aria-label={l('Politics', 'Politik')}
-        >
-          <ol>
-            {NAV_GROUPS.map((group) => {
-              const items = THEMES.filter((t) => t.group === group.key).map(
-                (t) => (
-                  <li key={t.key}>
-                    <a
-                      href={withParties(t.path, selected)}
-                      aria-current={
-                        t.key === active ? (theme ? 'page' : 'true') : undefined
-                      }
-                    >
-                      {l(t.en, t.sv)}
-                    </a>
-                  </li>
-                ),
-              )
-              if (group.key === 'main') return items
-              return (
-                <li
-                  key={group.key}
-                  className={`politik-nav-group ${group.key}`}
-                >
-                  <span className="politik-nav-heading" aria-hidden="true">
-                    {l(group.en, group.sv)}
-                  </span>
-                  <ol aria-label={l(group.en, group.sv)}>{items}</ol>
+  // On a wide screen the navigation sits in the site sidebar (see site/dock.ts).
+  const dock = useDock()
+  const Side = dock ? 'div' : 'aside'
+  const side = (
+    <Side className="politik-side">
+      <a className="politik-brand" href="#politik">
+        <span>{l('Swedish politics', 'Svensk politik')}</span>
+        <small>{l('in numbers', 'i siffror')}</small>
+      </a>
+      <nav
+        ref={nav}
+        className="politik-nav"
+        aria-label={l('Politics', 'Politik')}
+      >
+        <ol>
+          {NAV_GROUPS.map((group) => {
+            const items = THEMES.filter((t) => t.group === group.key).map(
+              (t) => (
+                <li key={t.key}>
+                  <a
+                    href={withParties(t.path, selected)}
+                    aria-current={
+                      t.key === active ? (theme ? 'page' : 'true') : undefined
+                    }
+                  >
+                    {l(t.en, t.sv)}
+                  </a>
                 </li>
-              )
-            })}
-          </ol>
-        </nav>
-      </aside>
+              ),
+            )
+            if (group.key === 'main') return items
+            return (
+              <li key={group.key} className={`politik-nav-group ${group.key}`}>
+                <span className="politik-nav-heading" aria-hidden="true">
+                  {l(group.en, group.sv)}
+                </span>
+                <ol aria-label={l(group.en, group.sv)}>{items}</ol>
+              </li>
+            )
+          })}
+        </ol>
+      </nav>
+    </Side>
+  )
+  return (
+    <div className={dock ? 'politik docked' : 'politik'} id="politik">
+      {dock ? createPortal(side, dock) : side}
       <div className="politik-body">
         <PartySlicer route={route} />
         <div className="politik-main">

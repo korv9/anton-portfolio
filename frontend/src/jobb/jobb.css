@@ -65,7 +65,7 @@
 }
 .jobb-axis {
   fill: var(--muted);
-  font-size: 11px;
+  font-size: 0.75rem;
 }
 .jobb-takeaway {
   margin: 0.4rem 0 0;

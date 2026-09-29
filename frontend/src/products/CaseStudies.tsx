@@ -11,11 +11,22 @@ export function DrugCombPage() {
   return (
     <div className="project-page">
       <div className="page-lead">
-        <p className="eyebrow">{t('DrugComb Synergy Prediction')}</p>
-        <h1>{t('DrugComb Synergy Prediction.')}</h1>
+        <p className="eyebrow">
+          {l(
+            'Machine learning · DrugComb synergy prediction',
+            'Maskininlärning · förutsäga läkemedelssynergi',
+          )}
+        </p>
+        <h1>
+          {l(
+            'Which drugs work better together?',
+            'Vilka läkemedel fungerar bättre tillsammans?',
+          )}
+        </h1>
         <p>
-          {t(
-            'Experimental results from cleaned measurements through evaluation on unfamiliar pairs, drugs and cell lines.',
+          {l(
+            'A data pipeline and model that predict which drug pairs kill more cancer cells together than alone, tested honestly on drugs and cell lines it has never seen.',
+            'En datapipeline och modell som förutsäger vilka läkemedelspar som dödar fler cancerceller tillsammans än var för sig, ärligt prövad på läkemedel och cellinjer den aldrig sett.',
           )}
         </p>
       </div>
