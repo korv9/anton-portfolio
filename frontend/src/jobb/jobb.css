@@ -1,0 +1,142 @@
+/* The job-market product: the politics shell and dashboard, with a bar of field names in place
+   of party logos, and its own column chart and small multiples. */
+
+.jobb-slicer ul {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+  min-width: 0;
+  flex: 1;
+}
+.jobb-slicer ul::-webkit-scrollbar {
+  display: none;
+}
+.jobb-slicer button[aria-pressed] {
+  width: auto;
+  height: 34px;
+  padding: 0 0.7rem;
+  white-space: nowrap;
+  font-size: 0.8125rem;
+  color: var(--ink-2);
+}
+.jobb-slicer button[aria-pressed='true'] {
+  background: var(--ink);
+  border: 1px solid var(--ink);
+  color: #fff;
+  transform: none;
+}
+.jobb-slicer.active button[aria-pressed='false'] {
+  color: var(--muted);
+}
+@media (max-width: 960px) {
+  .jobb-slicer button[aria-pressed] {
+    width: auto;
+    height: 34px;
+  }
+}
+
+/* Columns per month */
+.jobb-columns {
+  width: 100%;
+  height: calc(100% - 2rem);
+  min-height: 180px;
+}
+.jobb-columns svg {
+  display: block;
+}
+.jobb-columns rect {
+  fill: #8e939b;
+  transition: fill 160ms;
+}
+.jobb-columns rect.recent {
+  fill: #2a78d6;
+}
+.jobb-columns .jobb-hit {
+  fill: transparent;
+  cursor: default;
+}
+.jobb-col:hover rect:not(.jobb-hit) {
+  fill: var(--ink);
+}
+.jobb-grid {
+  stroke: var(--line);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+.jobb-axis {
+  fill: var(--muted);
+  font-size: 11px;
+}
+.jobb-takeaway {
+  margin: 0.4rem 0 0;
+  font-size: 0.8125rem;
+}
+
+/* Small multiples: one mini chart per field */
+.jobb-multiples {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 1rem 1.25rem;
+}
+.jobb-multiple {
+  margin: 0;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--line);
+  animation: dash-rise 480ms cubic-bezier(0.2, 0.7, 0.1, 1) both;
+  animation-delay: calc(var(--i) * 50ms);
+}
+.jobb-multiple figcaption {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.8125rem;
+  margin-bottom: 0.3rem;
+}
+.jobb-multiple figcaption b {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.jobb-multiple figcaption span {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.jobb-multiple figcaption small {
+  color: var(--muted);
+}
+.jobb-multiple svg {
+  display: block;
+  width: 100%;
+  height: 64px;
+}
+.jobb-line {
+  fill: none;
+  stroke: #2a78d6;
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+}
+.jobb-area {
+  fill: rgba(42, 120, 214, 0.12);
+}
+.jobb-note {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+.jobb-heat {
+  table-layout: auto;
+}
+.jobb-heat td {
+  padding: 0 0.35rem;
+  height: 1.5rem;
+}
+.jobb-heat tbody th {
+  width: auto;
+  max-width: 16rem;
+}
+@media (prefers-reduced-motion: reduce) {
+  .jobb-multiple {
+    animation: none;
+  }
+}

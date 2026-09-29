@@ -88,6 +88,26 @@ The subject menu that sat above every analysis page ("Grafer & analyser") is gon
 its own navigation, and the other projects (job market, welfare, DrugComb, …) have a link back to
 the projects.
 
+## The job-market product
+
+*Jobbmarknaden i siffror* is built like the politics product, from `jobs/market.json`: every ad in Arbetsförmedlingen's historical archives since 2020, by month, occupation field, occupation group (SSYK 4) and county. `frontend/src/jobb/`.
+
+- **Navigation:** seven themes in the side menu.
+
+| Theme | Address | Main chart |
+|---|---|---|
+| Läget just nu | `#jobb` | A one-screen dashboard: key figures, ads per month (the large card), fields and occupations that grow, counties, terms |
+| Hur utvecklas annonserna? | `#jobb-trender` | New ads per month as columns, or one small chart per field |
+| Vilka yrken växer? | `#jobb-yrken` | Occupations growing or falling the most, or with the most ads |
+| Var finns jobben? | `#jobb-lan` | Share of ads per county, with a county × year heat table |
+| Vilka villkor? | `#jobb-villkor` | Employment type, working hours and experience required |
+| Utforska själv | `#jobb-utforska` | The earlier views (`#job-market`, `#job-market-occupations`, …), which keep their addresses |
+| Källor och metod | `#jobb-kallor` | The archives counted, with their SHA-256, and the method |
+
+- **Field bar:** the occupation fields sit above every page, like the party bar. Any number can be chosen; every chart then answers for them, and none chosen means the whole market. The choice is kept in the address (`?omraden=id,id`) and in the session.
+- **Comparisons:** the latest year is partial, so changes always compare the same months of the year before.
+- **Growth list:** growth is only ranked for occupations that had at least the chosen number of ads a year earlier (25, 100 or 500), so a small occupation cannot top the list on a few ads.
+
 ## Design system
 
 `frontend/src/design-system.css`, loaded last, with tokens in `styles.css`: Geist for text and

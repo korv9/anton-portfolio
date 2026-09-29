@@ -7,15 +7,18 @@ const LINKS: [string, string, string][] = [
   ['#erfarenhet', 'Experience', 'Erfarenhet'],
   ['#teknik', 'Tech stack', 'Tech stack'],
   ['#politik', 'Politics', 'Politik'],
+  ['#jobb', 'Job market', 'Jobbmarknad'],
 ]
 
 export default function Header({
   path,
   inPolitics,
+  inJobs = false,
   onLanguage,
 }: {
   path: string
   inPolitics: boolean
+  inJobs?: boolean
   onLanguage: (next: Locale) => void
 }) {
   const [open, setOpen] = useState(false)
@@ -76,7 +79,10 @@ export default function Header({
               <a
                 href={href}
                 aria-current={
-                  href === '#politik' && inPolitics ? 'true' : undefined
+                  (href === '#politik' && inPolitics) ||
+                  (href === '#jobb' && inJobs)
+                    ? 'true'
+                    : undefined
                 }
                 onClick={() => setOpen(false)}
               >

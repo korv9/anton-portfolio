@@ -62,8 +62,9 @@ export function isPoliticsPath(path: string) {
 export function pageOf(path: string): Page {
   if (isPoliticsPath(path)) return 'politik'
   if (
-    ['#job-market', '#job-data'].includes(path) ||
-    path.startsWith('#job-market-')
+    ['#job-market', '#job-data', '#jobb'].includes(path) ||
+    path.startsWith('#job-market-') ||
+    path.startsWith('#jobb-')
   )
     return 'jobs'
   if (['#drugcomb', '#drugcomb-data'].includes(path)) return 'drugcomb'

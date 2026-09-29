@@ -275,7 +275,7 @@ export const PROJECTS: Project[] = [
       'Star schema with an incremental fact table, tests for grain, referential integrity and complete months, CI in GitHub Actions.',
     ),
     tech: ['Python', 'SQL', 'dbt Core', 'DuckDB', 'GitHub Actions'],
-    href: '#job-market',
+    href: '#jobb',
     code: 'https://github.com/korv9/swedish-job-market-analytics',
   },
   {

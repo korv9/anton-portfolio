@@ -100,7 +100,7 @@ function Kpi({
       <dd>
         <CountUp value={value} format={format} />
       </dd>
-      {sub && <p>{sub}</p>}
+      {sub && <dd className="dash-kpi-sub">{sub}</dd>}
     </div>
   )
 }
