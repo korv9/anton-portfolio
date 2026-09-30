@@ -35,15 +35,23 @@ test('home introduces Anton and routes to each project', async ({
   await expect(page.locator('#erfarenhet')).toContainText('Fora')
   await expect(page.locator('#erfarenhet')).toContainText('Avtalat')
   await expect(page.locator('#teknik .cv-stack > div')).toHaveCount(5)
-  // The profile as a live bar chart: a click grows a bar and opens what is behind it.
-  const live = page.locator('.live')
-  const bar = live.locator('.live-col.stack .live-fill').first()
+  // The hero is one diverging bar chart: who I am rises, what I have done hangs below the
+  // line. A bar opens what is behind it in place of the name; Escape brings the name back.
+  const hero = page.locator('.hero')
+  await expect(hero.locator('.hero-up .hero-col.stack')).toHaveCount(5)
+  await expect(hero.locator('.hero-down .hero-col.work')).toHaveCount(3)
+  const bar = hero.locator('.hero-col.stack .hero-bar').first()
   await bar.click()
   await expect(bar).toHaveAttribute('aria-expanded', 'true')
-  const detail = live.locator('.live-detail:not([hidden])')
-  await expect(detail).toContainText('Python')
+  await expect(hero.locator('.hero-detail')).toContainText('Python')
   await page.keyboard.press('Escape')
-  await expect(live.locator('.live-detail:not([hidden])')).toHaveCount(0)
+  await expect(hero.locator('.hero-detail')).toHaveCount(0)
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+    'Anton Ernstsson',
+  )
+  await hero.locator('.hero-col.work .hero-bar').first().click()
+  await expect(hero.locator('.hero-detail h2')).toContainText('Avtalat')
+  await page.keyboard.press('Escape')
   // The politics product leads; three AI projects, and a link to all of them.
   await expect(page.locator('.cv-flagship')).toContainText(
     'Political Observatory',

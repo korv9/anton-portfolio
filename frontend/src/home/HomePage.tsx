@@ -5,13 +5,10 @@
  * as the reader scrolls.
  */
 import { l } from '../i18n'
-import { profile } from '../content'
 import {
-  CVS,
   EDUCATION,
   EXPERIENCE,
   FLAGSHIP,
-  PITCH,
   PROJECTS,
   STACK,
   type Bilingual,
@@ -19,7 +16,7 @@ import {
 import { useEffect, useRef, useState } from 'react'
 import { fetchJson } from '../welfare/data'
 import ProjectTile from '../projects/ProjectTile'
-import LiveChart from './LiveChart'
+import HeroChart from './HeroChart'
 import { countUp, useReveal } from './reveal'
 import './home.css'
 
@@ -113,76 +110,7 @@ export default function HomePage() {
         )}
       </p>
 
-      <header className="home-hero" id="start">
-        <div className="home-hero-bg" aria-hidden="true">
-          <i />
-          <i />
-          <i />
-        </div>
-        <p className="home-eyebrow">
-          <span className="home-dot round" aria-hidden="true" />
-          {l(
-            'Stockholm · open to junior roles',
-            'Stockholm · öppen för juniora roller',
-          )}
-        </p>
-        <h1 className="cv-name">Anton Ernstsson</h1>
-        <p className="cv-role">
-          {l(
-            'Software Developer · Data Engineer · Analytics Engineer · Applied AI',
-            'Software Developer · Data Engineer · Analytics Engineer · Tillämpad AI',
-          )}
-        </p>
-        <p className="cv-pitch">{b(PITCH)}</p>
-        <nav
-          className="cv-actions"
-          aria-label={l('Contact and CV', 'Kontakt och CV')}
-        >
-          <a className="cv-button primary" href={CVS[0].file} download>
-            {l('Download CV', 'Ladda ned CV')} ↓
-          </a>
-          <a className="cv-button" href="#projekt">
-            {l('See the projects', 'Se projekten')} →
-          </a>
-          {profile.email && (
-            <a className="cv-button" href={`mailto:${profile.email}`}>
-              {l('Email', 'Mejl')}
-            </a>
-          )}
-          {profile.linkedin && (
-            <a
-              className="cv-button"
-              href={profile.linkedin}
-              target="_blank"
-              rel="noreferrer"
-            >
-              LinkedIn ↗
-            </a>
-          )}
-          <a
-            className="cv-button"
-            href="https://github.com/korv9"
-            target="_blank"
-            rel="noreferrer"
-          >
-            GitHub ↗
-          </a>
-          <details className="cv-more-cvs">
-            <summary>{l('CV by role', 'CV per roll')}</summary>
-            <ul>
-              {CVS.map((cv) => (
-                <li key={cv.file}>
-                  <a href={cv.file} download>
-                    {b(cv.role)} ↓
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </details>
-        </nav>
-      </header>
-
-      <LiveChart />
+      <HeroChart />
 
       {stats && (
         <section

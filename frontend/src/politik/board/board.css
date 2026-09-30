@@ -489,3 +489,11 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* In a table, the party markers stay on one line; the table scrolls sideways instead. */
+.board-table .party-dots {
+  flex-wrap: nowrap;
+}
+.board-table td:has(.party-dots) {
+  min-width: max-content;
+}
