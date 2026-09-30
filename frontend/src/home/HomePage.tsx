@@ -16,7 +16,7 @@ import {
 import { useEffect, useRef, useState } from 'react'
 import { fetchJson } from '../welfare/data'
 import ProjectTile from '../projects/ProjectTile'
-import HeroChart from './HeroChart'
+import HeroFlow from './HeroFlow'
 import { countUp, useReveal } from './reveal'
 import './home.css'
 
@@ -110,7 +110,7 @@ export default function HomePage() {
         )}
       </p>
 
-      <HeroChart />
+      <HeroFlow />
 
       {stats && (
         <section

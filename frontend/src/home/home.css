@@ -774,301 +774,287 @@
   padding-left: 0;
 }
 
-@keyframes hero-detail-in {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-}
-
 /* ======================================================================
- * The hero as one bar chart around a centre line (HeroChart.tsx):
- * who I am rising above the line, what I have done hanging below it,
- * the name and pitch over the chart, each bar a button.
+ * The hero as one flow chart (HeroFlow.tsx): every line leaves Anton and
+ * ends in about me, experience or the tech stack. Each end is a button.
+ * Colours validated for colour-blind readers (dataviz validator, all pairs).
  * ==================================================================== */
 
-.hero {
-  position: relative;
-  min-height: min(92vh, 880px);
-  margin-bottom: var(--sp-5);
-  border: 1px solid var(--line);
-  background:
-    linear-gradient(rgba(25, 40, 32, 0.035) 1px, transparent 1px) 0 0 / 100%
-      44px,
-    var(--paper);
-  overflow: hidden;
-  scroll-margin-top: 80px;
-  --me: var(--accent);
-  --stack: var(--accent-2);
-  --work: var(--info);
-  --edu: #a8834a;
-  --project: var(--ink);
-}
-.hero-chart {
-  display: contents;
-}
-/* One grid: the name (or the opened bar) beside the rising bars, the axis, the hanging bars,
-   then the hint and the legend. The upper row grows with the panel, so nothing is cut off. */
-@media (min-width: 761px) {
-  .hero {
-    display: grid;
-    grid-template-columns: minmax(0, 44%) minmax(0, 1fr);
-    grid-template-rows: minmax(22rem, auto) auto minmax(15rem, 34vh) auto;
-    grid-template-areas:
-      'panel up'
-      'axis axis'
-      'down down'
-      'hint legend';
-    column-gap: var(--sp-4);
-    padding: var(--sp-5) var(--sp-5) var(--sp-3);
-  }
-  .hero-panel {
-    grid-area: panel;
-    align-self: center;
-  }
-  .hero-up {
-    grid-area: up;
-    padding-top: 1.4rem;
-  }
-  .hero-axis {
-    grid-area: axis;
-  }
-  .hero-down {
-    grid-area: down;
-    padding-bottom: 1.4rem;
-  }
-  .hero-hint {
-    grid-area: hint;
-    align-self: end;
-  }
-  .hero-legend {
-    grid-area: legend;
-    justify-self: end;
-    align-self: end;
-  }
-}
-.hero-up,
-.hero-down {
-  display: flex;
-  gap: 0.4rem;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  min-height: 0;
-}
-.hero-col {
-  flex: 1 1 0;
-  min-width: 0;
+.flow {
+  --about: #c8413b;
+  --work: #1f78b4;
+  --stack: #b8860b;
+  --row: 2.35rem;
+  --ends: 14rem;
   display: grid;
-  transition:
-    opacity 300ms,
-    flex-grow 400ms;
+  grid-template-columns: minmax(17rem, 34%) minmax(0, 1fr);
+  grid-template-areas:
+    'panel chart'
+    'note note';
+  column-gap: var(--sp-5);
+  row-gap: var(--sp-3);
+  margin-bottom: var(--sp-5);
+  padding: var(--sp-5) var(--sp-5) var(--sp-4);
+  border: 1px solid var(--line);
+  background: var(--paper);
+  scroll-margin-top: 80px;
 }
-.hero-up .hero-col {
-  grid-template-rows: minmax(0, 1fr) 1.7rem;
+.flow .is-about {
+  --c: var(--about);
 }
-.hero-down .hero-col {
-  grid-template-rows: 1.7rem minmax(0, 1fr);
-}
-.hero-col.dim {
-  opacity: 0.32;
-}
-.hero-col.open {
-  flex-grow: 1.6;
-}
-.hero-bar {
-  position: relative;
-  width: 100%;
-  height: calc(var(--h) + var(--lift, 0%));
-  padding: 0;
-  border: 0;
-  background: var(--c);
-  cursor: pointer;
-  transition:
-    height 1.4s cubic-bezier(0.45, 0, 0.2, 1),
-    filter 200ms;
-  animation: hero-grow 900ms cubic-bezier(0.2, 0.7, 0.1, 1) both;
-  animation-delay: calc(200ms + var(--i) * 45ms);
-}
-.hero-up .hero-bar {
-  align-self: end;
-  transform-origin: bottom;
-}
-.hero-down .hero-bar {
-  grid-row: 2;
-  align-self: start;
-  transform-origin: top;
-}
-.hero-down .hero-label {
-  grid-row: 1;
-}
-.hero-col:hover .hero-bar,
-.hero-bar:focus-visible {
-  --lift: 7%;
-  transition:
-    height 320ms cubic-bezier(0.2, 0.7, 0.1, 1),
-    filter 200ms;
-  filter: brightness(1.2);
-}
-.hero-bar:focus-visible {
-  outline: 3px solid #72c5d8;
-  outline-offset: 2px;
-}
-.hero-col.open .hero-bar {
-  --lift: 10%;
-  box-shadow:
-    0 0 0 3px var(--paper),
-    0 0 0 5px var(--c);
-}
-@keyframes hero-grow {
-  from {
-    transform: scaleY(0);
-  }
-}
-.hero-figure {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  font-family: var(--font-mono) !important;
-  font-size: var(--fs-label);
-  color: var(--ink-2);
-  white-space: nowrap;
-}
-.hero-up .hero-figure {
-  bottom: 100%;
-  margin-bottom: 0.25rem;
-}
-.hero-down .hero-figure {
-  top: 100%;
-  margin-top: 0.25rem;
-}
-.hero-label {
-  align-self: center;
-  overflow: hidden;
-  font-size: var(--fs-label);
-  font-weight: 600;
-  line-height: 1.2;
-  text-align: center;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  color: var(--ink);
-}
-.hero-axis {
-  display: flex;
-  justify-content: space-between;
-  padding: 0.15rem 0;
-  border-top: 2px solid var(--ink);
-  font-family: var(--font-mono) !important;
-  font-size: var(--fs-label);
-  color: var(--muted);
-}
-.hero-col.me {
-  --c: var(--me);
-}
-.hero-col.stack {
-  --c: var(--stack);
-}
-.hero-col.work {
+.flow .is-work {
   --c: var(--work);
 }
-.hero-col.edu {
-  --c: var(--edu);
-}
-.hero-col.project {
-  --c: var(--project);
+.flow .is-stack {
+  --c: var(--stack);
 }
 
-.hero-intro .cv-name {
+.flow-panel {
+  grid-area: panel;
+  align-self: center;
+  scroll-margin-top: 80px;
+}
+.flow-panel .cv-name {
   margin: 0;
-  font-size: clamp(2.4rem, 5vw, 4.2rem);
+  font-size: clamp(2.3rem, 4.4vw, 3.9rem);
   line-height: 0.98;
   letter-spacing: -0.045em;
   animation: home-rise 800ms 80ms cubic-bezier(0.2, 0.7, 0.1, 1) both;
 }
-.hero-intro .cv-role {
+.flow-intro .cv-role {
   margin: 0.7rem 0 0;
   font-size: var(--fs-card-title);
   font-weight: 500;
   color: var(--ink-2);
 }
-.hero-intro .cv-pitch {
+.flow-intro .cv-pitch {
   margin: 0.7rem 0 0;
-  max-width: 54ch;
   font-size: var(--fs-body);
   line-height: 1.55;
   color: var(--ink-2);
 }
-.hero-intro .cv-actions {
+.flow-intro .cv-actions {
   justify-content: flex-start;
   max-width: none;
   margin-top: var(--sp-4);
 }
-.hero-intro .cv-more-cvs ul {
+.flow-intro .cv-more-cvs ul {
   left: 0;
   right: auto;
 }
-.hero-detail {
-  padding: var(--sp-4) var(--sp-4) var(--sp-3);
+
+.flow-chart {
+  grid-area: chart;
+  position: relative;
+  align-self: center;
+  height: calc(var(--rows) * var(--row));
+}
+.flow-lines {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: calc(100% - var(--ends));
+  height: 100%;
+  overflow: visible;
+}
+.flow-line,
+.flow-run {
+  fill: none;
+  stroke: var(--c);
+  vector-effect: non-scaling-stroke;
+}
+.flow-line {
+  stroke-width: 1.6;
+  opacity: 0.5;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  cursor: pointer;
+  animation: flow-draw 1.5s cubic-bezier(0.3, 0.6, 0.2, 1) forwards;
+  animation-delay: calc(150ms + var(--i) * 14ms);
+  transition:
+    opacity 250ms,
+    stroke-width 250ms;
+}
+.flow-line.on {
+  opacity: 0.95;
+  stroke-width: 2.2;
+}
+.flow-line.off {
+  opacity: 0.1;
+}
+.flow-run {
+  stroke-width: 2.8;
+  stroke-dasharray: 0.07 0.93;
+  stroke-linecap: round;
+  pointer-events: none;
+  animation: flow-run 1.8s linear infinite;
+}
+@keyframes flow-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes flow-run {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+.flow-origin {
+  position: absolute;
+  left: -6px;
+  top: calc(50% - 6px);
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--ink);
+  box-shadow: 0 0 0 4px var(--paper);
+}
+
+.flow-ends {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: var(--ends);
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.flow-ends > li {
+  position: absolute;
+  top: calc(var(--r) * var(--row));
+  left: 0;
+  right: 0;
+  height: var(--row);
+  display: flex;
+  align-items: center;
+}
+.flow-head {
+  gap: 0.5rem;
+  font-size: var(--fs-meta);
+}
+.flow-head b {
+  font-size: var(--fs-card-title);
+}
+.flow-head b::before {
+  content: '';
+  display: inline-block;
+  width: 0.75rem;
+  height: 0.75rem;
+  margin-right: 0.4rem;
+  background: var(--c);
+}
+.flow-head span {
+  font-family: var(--font-mono) !important;
+  color: var(--muted);
+}
+.flow-end button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  height: calc(var(--row) - 4px);
+  padding: 0 0.6rem;
+  border: 0;
+  border-left: 3px solid var(--c);
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--fs-meta);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background 200ms,
+    padding 200ms;
+}
+.flow-end button:hover,
+.flow-end button:focus-visible,
+.flow-end.open button {
+  background: color-mix(in srgb, var(--c) 12%, var(--paper));
+  padding-left: 0.9rem;
+}
+.flow-end.open button {
+  border-left-width: 6px;
+  font-weight: 700;
+}
+.flow-end button:focus-visible {
+  outline: 3px solid #72c5d8;
+  outline-offset: 1px;
+}
+.flow-label {
+  overflow: hidden;
+  font-weight: 600;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.flow-count {
+  margin-left: auto;
+  font-family: var(--font-mono) !important;
+  font-size: var(--fs-label);
+  color: var(--muted);
+  white-space: nowrap;
+}
+.flow.has-focus .flow-end:not(.open) button:not(:hover):not(:focus-visible) {
+  color: var(--ink-2);
+}
+
+.flow-detail {
+  margin-top: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4) var(--sp-2);
   border: 1px solid var(--line-strong);
   border-left: 5px solid var(--c);
-  background: rgba(255, 255, 255, 0.96);
-  animation: hero-detail-in 380ms cubic-bezier(0.2, 0.7, 0.1, 1) both;
+  background: var(--paper);
+  animation: flow-detail-in 380ms cubic-bezier(0.2, 0.7, 0.1, 1) both;
 }
-.hero-detail.me {
-  --c: var(--me);
+@keyframes flow-detail-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
 }
-.hero-detail.stack {
-  --c: var(--stack);
-}
-.hero-detail.work {
-  --c: var(--work);
-}
-.hero-detail.edu {
-  --c: var(--edu);
-}
-.hero-detail.project {
-  --c: var(--project);
-}
-.hero-detail-head {
+.flow-detail-head {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
-.hero-kind {
+.flow-kind {
   font-size: var(--fs-label);
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--muted);
 }
-.hero-close {
+.flow-close {
   width: 2rem;
   height: 2rem;
   border: 1px solid var(--line-strong);
   background: var(--paper);
   cursor: pointer;
 }
-.hero-detail h2 {
+.flow-detail h2 {
   margin: 0.3rem 0 0.5rem;
   font-size: var(--fs-section-title);
   line-height: 1.15;
   letter-spacing: -0.02em;
 }
-.hero-detail p,
-.hero-list {
+.flow-detail p,
+.flow-list {
   margin: 0 0 0.6rem;
   font-size: var(--fs-body);
   line-height: 1.55;
 }
-.hero-list {
+.flow-list {
   padding-left: 1.1rem;
 }
-.hero-meta {
+.flow-meta {
   font-family: var(--font-mono) !important;
   font-size: var(--fs-label) !important;
   color: var(--muted);
 }
-.hero-chips {
+.flow-chips {
   display: flex;
   flex-wrap: wrap;
   gap: 0.3rem;
@@ -1076,132 +1062,52 @@
   padding: 0;
   list-style: none;
 }
-.hero-chips li {
+.flow-chips li {
   padding: 0.15rem 0.45rem;
   border: 1px solid var(--line);
   font-family: var(--font-mono) !important;
   font-size: var(--fs-label);
 }
-.hero-links {
+.flow-links {
   display: flex;
   flex-wrap: wrap;
   gap: 0.3rem 1rem;
   font-weight: 600;
 }
-.hero-hint {
+.flow-note {
+  grid-area: note;
   margin: 0;
   font-size: var(--fs-meta);
   color: var(--muted);
 }
-.hero-legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.2rem 0.9rem;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  font-size: var(--fs-meta);
-}
-.hero-legend li::before {
-  content: '';
-  display: inline-block;
-  width: 0.7rem;
-  height: 0.7rem;
-  margin-right: 0.35rem;
-  vertical-align: -0.05rem;
-  background: var(--c);
-}
-.hero-legend .me {
-  --c: var(--me);
-}
-.hero-legend .stack {
-  --c: var(--stack);
-}
-.hero-legend .work {
-  --c: var(--work);
-}
-.hero-legend .edu {
-  --c: var(--edu);
-}
-.hero-legend .project {
-  --c: var(--project);
-}
 
-/* Phones: the name first, then the chart, then what a bar opens. */
+/* Phones: the name first, then the chart, narrower ends; what an end opens scrolls into view. */
 @media (max-width: 760px) {
-  .hero {
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
+  .flow {
+    --row: 2.75rem;
+    --ends: 10.5rem;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'panel'
+      'chart'
+      'note';
+    padding: var(--sp-4) var(--sp-3);
+    row-gap: var(--sp-4);
   }
-  .hero-panel {
-    order: 1;
-    padding: var(--sp-4);
+  .flow-chart {
+    margin-left: 8px;
   }
-  .hero-chart {
-    display: grid;
-    grid-template-rows: minmax(0, 1fr) auto minmax(0, 1fr);
-    order: 2;
-    height: 62vh;
-    min-height: 380px;
-    padding: var(--sp-3) var(--sp-2) var(--sp-3);
-  }
-  .hero-up,
-  .hero-down {
-    gap: 3px;
-  }
-  .hero-up .hero-col {
-    grid-template-rows: minmax(0, 1fr) 4.2rem;
-  }
-  .hero-down .hero-col {
-    grid-template-rows: 4.2rem minmax(0, 1fr);
-  }
-  .hero-label {
-    writing-mode: vertical-rl;
-    transform: rotate(180deg);
-    align-self: stretch;
-    justify-self: center;
-    text-align: left;
-    font-weight: 500;
-  }
-  .hero-down .hero-label {
-    transform: none;
-    text-align: left;
-  }
-  .hero-figure {
-    display: none;
-  }
-  .hero-hint,
-  .hero-legend {
-    order: 3;
-    padding: var(--sp-2) var(--sp-4) 0;
-  }
-  .hero-legend {
-    padding-bottom: var(--sp-4);
+  .flow-head b {
+    font-size: var(--fs-body);
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .hero-bar,
-  .hero-intro .cv-name,
-  .hero-detail {
+  .flow-line {
     animation: none;
-    transition: none;
+    stroke-dashoffset: 0;
   }
-}
-.hero-panel {
-  scroll-margin-top: 80px;
-}
-/* On a phone the bars are narrow: the whole column, label included, opens the bar. */
-@media (max-width: 760px) {
-  .hero-col {
-    position: relative;
-  }
-  .hero-bar {
-    position: static;
-  }
-  .hero-bar::after {
-    content: '';
-    position: absolute;
-    inset: 0;
+  .flow-panel .cv-name,
+  .flow-detail {
+    animation: none;
   }
 }

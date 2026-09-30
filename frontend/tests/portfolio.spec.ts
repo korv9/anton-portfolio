@@ -35,22 +35,22 @@ test('home introduces Anton and routes to each project', async ({
   await expect(page.locator('#erfarenhet')).toContainText('Fora')
   await expect(page.locator('#erfarenhet')).toContainText('Avtalat')
   await expect(page.locator('#teknik .cv-stack > div')).toHaveCount(5)
-  // The hero is one diverging bar chart: who I am rises, what I have done hangs below the
-  // line. A bar opens what is behind it in place of the name; Escape brings the name back.
-  const hero = page.locator('.hero')
-  await expect(hero.locator('.hero-up .hero-col.stack')).toHaveCount(5)
-  await expect(hero.locator('.hero-down .hero-col.work')).toHaveCount(3)
-  const bar = hero.locator('.hero-col.stack .hero-bar').first()
-  await bar.click()
-  await expect(bar).toHaveAttribute('aria-expanded', 'true')
-  await expect(hero.locator('.hero-detail')).toContainText('Python')
+  // The hero is one flow chart: every line leaves Anton and ends in about me, experience or
+  // the stack. An end opens what is behind it in place of the pitch; Escape closes it.
+  const hero = page.locator('.flow')
+  await expect(hero.locator('.flow-head')).toHaveCount(3)
+  await expect(hero.locator('.flow-end.is-stack')).toHaveCount(5)
+  await expect(hero.locator('.flow-end.is-work')).toHaveCount(4)
+  const end = hero.locator('.flow-end.is-stack button').first()
+  await end.click()
+  await expect(end).toHaveAttribute('aria-expanded', 'true')
+  await expect(hero.locator('.flow-detail')).toContainText('Python')
+  await expect(hero.locator('.flow-line.on').first()).toBeAttached()
   await page.keyboard.press('Escape')
-  await expect(hero.locator('.hero-detail')).toHaveCount(0)
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-    'Anton Ernstsson',
-  )
-  await hero.locator('.hero-col.work .hero-bar').first().click()
-  await expect(hero.locator('.hero-detail h2')).toContainText('Avtalat')
+  await expect(hero.locator('.flow-detail')).toHaveCount(0)
+  await expect(page.locator('.cv-pitch')).toBeVisible()
+  await hero.locator('.flow-end.is-work button').first().click()
+  await expect(hero.locator('.flow-detail h2')).toContainText('Avtalat')
   await page.keyboard.press('Escape')
   // The politics product leads; three AI projects, and a link to all of them.
   await expect(page.locator('.cv-flagship')).toContainText(
