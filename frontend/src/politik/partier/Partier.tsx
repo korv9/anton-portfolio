@@ -19,6 +19,7 @@ import {
   identity,
   partyName,
 } from '../../parties/identity'
+import SeatAlluvial from '../features/SeatAlluvial'
 import type { Route } from '../../router'
 import { useParties, withParties } from '../partySelection'
 import { dayName, monthName, num, pct, signed } from '../controls'
@@ -163,6 +164,7 @@ export default function Partier({ route }: { route: Route }) {
             )
       }
     >
+      <SeatAlluvial party={party} />
       <ul
         className={party ? 'party-cards compact' : 'party-cards'}
         aria-label={l('Parties', 'Partier')}

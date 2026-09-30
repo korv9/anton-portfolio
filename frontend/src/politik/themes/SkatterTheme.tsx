@@ -8,6 +8,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { l } from '../../i18n'
 import MultiLineChart from '../../charts/MultiLineChart'
 import { fetchJson } from '../../welfare/data'
+import TaxBubbles from '../features/TaxBubbles'
 import type { Route } from '../../router'
 import { Board, Card, Cards, Empty, Kpi, Kpis } from '../board/Board'
 import { Select, num, pct } from '../controls'
@@ -246,6 +247,7 @@ export default function SkatterTheme({ route }: { route: Route }) {
         </>
       }
     >
+      <TaxBubbles />
       <Kpis>
         <Kpi
           index={0}

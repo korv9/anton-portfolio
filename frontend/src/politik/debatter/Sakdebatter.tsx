@@ -15,6 +15,7 @@ import Columns from '../board/Columns'
 import DashBars from '../dash/DashBars'
 import { IssueChips, debateHref } from './DebateView'
 import TopicBars from './TopicBars'
+import DebateLeaderboard from '../features/DebateLeaderboard'
 import './debatter.css'
 import {
   loadDebateIndex,
@@ -181,6 +182,13 @@ export default function Sakdebatter({ route }: { route: Route }) {
         </>
       }
     >
+      {debates && (
+        <DebateLeaderboard
+          debates={debates}
+          session={current.session}
+          preferred={selected[0]}
+        />
+      )}
       <Kpis>
         <Kpi
           index={0}

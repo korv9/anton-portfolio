@@ -7,6 +7,7 @@
 import { useEffect, useState } from 'react'
 import { currentLocale, l } from '../i18n'
 import { fetchData } from '../dataSource'
+import CalibrationScatter from './CalibrationScatter'
 import { Card, Cards, Empty, Kpi, Kpis } from '../politik/board/Board'
 import Columns from '../politik/board/Columns'
 import DashBars from '../politik/dash/DashBars'
@@ -190,6 +191,14 @@ export default function DrugCombReport() {
 
   return (
     <article className="report drugcomb-board" id="drugcomb">
+      <CalibrationScatter
+        points={
+          (tables.calibration ?? []) as Parameters<
+            typeof CalibrationScatter
+          >[0]['points']
+        }
+        splits={SPLITS}
+      />
       <section className="dc-explain" aria-labelledby="dc-question">
         <h2 id="dc-question">
           {l(

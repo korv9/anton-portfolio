@@ -12,6 +12,7 @@ import { Select } from '../politik/controls'
 import DashBars from '../politik/dash/DashBars'
 import { CountUp } from '../politik/dash/motion'
 import { MonthColumns } from './charts'
+import Treemap from './Treemap'
 import {
   change,
   conditionsOf,
@@ -203,224 +204,235 @@ export default function Dashboard({
   ]
 
   return (
-    <div className="dash jobb-dash">
-      <header className="dash-head">
-        <div>
-          <h1>{l('The job market now', 'Läget på jobbmarknaden')}</h1>
-          <p className="dash-sub">
-            {l('Job ads in', 'Jobbannonser')} {period} · {scope} ·{' '}
-            {l(
-              `updated to ${monthShort(data.last_month)}`,
-              `till och med ${monthShort(data.last_month)}`,
-            )}
-          </p>
-        </div>
-        <div className="dash-slicers" aria-label={l('Filters', 'Filter')}>
-          <Select
-            label={l('Months shown', 'Månader')}
-            value={view.period}
-            options={[
-              { value: '24', label: l('Last 24', 'Senaste 24') },
-              { value: '36', label: l('Last 36', 'Senaste 36') },
-              { value: 'alla', label: l('Since 2020', 'Sedan 2020') },
-            ]}
-            onChange={(period) => setView({ period })}
-          />
-          <Select
-            label={l('Smallest occupation', 'Minsta yrke')}
-            value={view.minsta}
-            options={['25', '100', '500'].map((v) => ({
-              value: v,
-              label: l(`${v}+ ads`, `${v}+ annonser`),
-            }))}
-            onChange={(minsta) => setView({ minsta })}
-          />
-        </div>
-      </header>
-
-      <dl className="dash-kpis">
-        <Kpi
-          index={0}
-          label={l('Job ads', 'Jobbannonser')}
-          value={now}
-          format={number}
-          sub={period}
-        />
-        <Kpi
-          index={1}
-          label={l('Against a year ago', 'Mot i fjol')}
-          value={change(now, before) ?? 0}
-          format={(v) => signedPct(v)}
-          sub={l(`same months ${previous}`, `samma månader ${previous}`)}
-        />
-        <Kpi
-          index={2}
-          label={
-            fields.length
-              ? l('Share of all ads', 'Andel av alla annonser')
-              : l('Largest field', 'Största område')
-          }
-          value={fields.length ? pctOf(now, all) : (largest?.now ?? 0)}
-          format={(v) => (fields.length ? share(v, 1) : number(v))}
-          sub={fields.length ? String(latest) : largest?.name}
-        />
-        <Kpi
-          index={3}
-          label={l('Most ads', 'Flest annonser')}
-          value={top?.ytd[String(latest)] ?? 0}
-          format={number}
-          sub={top?.name}
-        />
-        <Kpi
-          index={4}
-          label={l('Largest county', 'Största län')}
-          value={pctOf(counties[0]?.ads ?? 0, countyTotal)}
-          format={(v) => share(v)}
-          sub={counties[0]?.region}
-        />
-        <Kpi
-          index={5}
-          label={l('Full time', 'Heltid')}
-          value={fullTime(cNow)}
-          format={(v) => share(v)}
-          sub={l('of ads stating hours', 'av annonser med arbetstid')}
-        />
-      </dl>
-
-      <div className="dash-grid">
-        <Card
-          index={0}
-          className="dash-budget"
-          title={l(
-            'How ads develop, month by month',
-            'Hur annonserna utvecklas, månad för månad',
-          )}
-          meta={l(
-            `New ads per month · ${scope} · ${latest} darker`,
-            `Nya annonser per månad · ${scope} · ${latest} mörkare`,
-          )}
-          href={withFields('#jobb-trender', fields)}
-        >
-          <MonthColumns
-            months={shown}
-            highlight={`${latest}-01`}
-            label={l(
-              `New job ads per month, ${scope}: ${number(now)} in ${period}, ${signedPct(change(now, before))} against the same months of ${previous}`,
-              `Nya jobbannonser per månad, ${scope}: ${number(now)} ${period}, ${signedPct(change(now, before))} mot samma månader ${previous}`,
-            )}
-          />
-          <p className="jobb-takeaway">
-            {l(
-              `${number(now)} ads in ${period}: ${signedPct(change(now, before))} against the same months of ${previous}.`,
-              `${number(now)} annonser ${period}: ${signedPct(change(now, before))} mot samma månader ${previous}.`,
-            )}
-          </p>
-        </Card>
-
-        <Card
-          index={1}
-          title={l('Which fields grow', 'Vilka områden växer')}
-          meta={l(
-            `Change against the same months of ${previous}`,
-            `Förändring mot samma månader ${previous}`,
-          )}
-          href={withFields('#jobb-trender', fields)}
-        >
-          <DashBars
-            bars={fieldBars.map((f) => ({
-              key: f.id,
-              label: f.name,
-              value: f.change ?? 0,
-              tone: 'neutral' as const,
-            }))}
-            format={(v) => signedPct(v)}
-            label={l(
-              'Change in ads per field',
-              'Förändring i annonser per område',
-            )}
-          />
-        </Card>
-
-        <Card
-          index={2}
-          title={l('Occupations growing the most', 'Yrken som växer mest')}
-          meta={l(
-            `Occupations with ${floor}+ ads a year ago · ${period}`,
-            `Yrken med minst ${floor} annonser i fjol · ${period}`,
-          )}
-          href={withFields('#jobb-yrken', fields)}
-        >
-          {growers.length ? (
-            <DashBars
-              bars={growers.map((o) => ({
-                key: o.id,
-                label: o.name,
-                value: o.change,
-                tone: 'neutral' as const,
-                note: ` ${number(o.now)}`,
-              }))}
-              format={(v) => signedPct(v)}
-              label={l('Occupations growing the most', 'Yrken som växer mest')}
-            />
-          ) : (
-            <p className="dash-empty">
+    <>
+      <Treemap data={data} fields={fields} />
+      <div className="dash jobb-dash">
+        <header className="dash-head">
+          <div>
+            <h1>{l('The job market now', 'Läget på jobbmarknaden')}</h1>
+            <p className="dash-sub">
+              {l('Job ads in', 'Jobbannonser')} {period} · {scope} ·{' '}
               {l(
-                'No occupation this large in the chosen fields.',
-                'Inget så stort yrke i valda områden.',
+                `updated to ${monthShort(data.last_month)}`,
+                `till och med ${monthShort(data.last_month)}`,
               )}
             </p>
-          )}
-        </Card>
+          </div>
+          <div className="dash-slicers" aria-label={l('Filters', 'Filter')}>
+            <Select
+              label={l('Months shown', 'Månader')}
+              value={view.period}
+              options={[
+                { value: '24', label: l('Last 24', 'Senaste 24') },
+                { value: '36', label: l('Last 36', 'Senaste 36') },
+                { value: 'alla', label: l('Since 2020', 'Sedan 2020') },
+              ]}
+              onChange={(period) => setView({ period })}
+            />
+            <Select
+              label={l('Smallest occupation', 'Minsta yrke')}
+              value={view.minsta}
+              options={['25', '100', '500'].map((v) => ({
+                value: v,
+                label: l(`${v}+ ads`, `${v}+ annonser`),
+              }))}
+              onChange={(minsta) => setView({ minsta })}
+            />
+          </div>
+        </header>
 
-        <Card
-          index={3}
-          title={l('Where the jobs are', 'Var jobben finns')}
-          meta={l(
-            `Share of ads per county · ${period}`,
-            `Andel av annonserna per län · ${period}`,
-          )}
-          href={withFields('#jobb-lan', fields)}
-        >
-          <DashBars
-            bars={counties.slice(0, 6).map((c) => ({
-              key: c.region,
-              label: c.region,
-              value: pctOf(c.ads, countyTotal),
-              tone: 'neutral' as const,
-            }))}
-            format={(v) => share(v, 1)}
-            label={l('Share of ads per county', 'Andel av annonserna per län')}
+        <dl className="dash-kpis">
+          <Kpi
+            index={0}
+            label={l('Job ads', 'Jobbannonser')}
+            value={now}
+            format={number}
+            sub={period}
           />
-        </Card>
-
-        <Card
-          index={4}
-          title={l('On what terms', 'På vilka villkor')}
-          meta={l(
-            `Share of ads ${latest} · tick: ${previous}`,
-            `Andel av annonserna ${latest} · streck: ${previous}`,
-          )}
-          href={withFields('#jobb-villkor', fields)}
-        >
-          <DashBars
-            bars={conditionBars.map((c) => ({
-              ...c,
-              tone: 'neutral' as const,
-            }))}
+          <Kpi
+            index={1}
+            label={l('Against a year ago', 'Mot i fjol')}
+            value={change(now, before) ?? 0}
+            format={(v) => signedPct(v)}
+            sub={l(`same months ${previous}`, `samma månader ${previous}`)}
+          />
+          <Kpi
+            index={2}
+            label={
+              fields.length
+                ? l('Share of all ads', 'Andel av alla annonser')
+                : l('Largest field', 'Största område')
+            }
+            value={fields.length ? pctOf(now, all) : (largest?.now ?? 0)}
+            format={(v) => (fields.length ? share(v, 1) : number(v))}
+            sub={fields.length ? String(latest) : largest?.name}
+          />
+          <Kpi
+            index={3}
+            label={l('Most ads', 'Flest annonser')}
+            value={top?.ytd[String(latest)] ?? 0}
+            format={number}
+            sub={top?.name}
+          />
+          <Kpi
+            index={4}
+            label={l('Largest county', 'Största län')}
+            value={pctOf(counties[0]?.ads ?? 0, countyTotal)}
             format={(v) => share(v)}
-            max={100}
-            label={l('Terms of employment', 'Anställningsvillkor')}
+            sub={counties[0]?.region}
           />
-        </Card>
+          <Kpi
+            index={5}
+            label={l('Full time', 'Heltid')}
+            value={fullTime(cNow)}
+            format={(v) => share(v)}
+            sub={l('of ads stating hours', 'av annonser med arbetstid')}
+          />
+        </dl>
+
+        <div className="dash-grid">
+          <Card
+            index={0}
+            className="dash-budget"
+            title={l(
+              'How ads develop, month by month',
+              'Hur annonserna utvecklas, månad för månad',
+            )}
+            meta={l(
+              `New ads per month · ${scope} · ${latest} darker`,
+              `Nya annonser per månad · ${scope} · ${latest} mörkare`,
+            )}
+            href={withFields('#jobb-trender', fields)}
+          >
+            <MonthColumns
+              months={shown}
+              highlight={`${latest}-01`}
+              label={l(
+                `New job ads per month, ${scope}: ${number(now)} in ${period}, ${signedPct(change(now, before))} against the same months of ${previous}`,
+                `Nya jobbannonser per månad, ${scope}: ${number(now)} ${period}, ${signedPct(change(now, before))} mot samma månader ${previous}`,
+              )}
+            />
+            <p className="jobb-takeaway">
+              {l(
+                `${number(now)} ads in ${period}: ${signedPct(change(now, before))} against the same months of ${previous}.`,
+                `${number(now)} annonser ${period}: ${signedPct(change(now, before))} mot samma månader ${previous}.`,
+              )}
+            </p>
+          </Card>
+
+          <Card
+            index={1}
+            title={l('Which fields grow', 'Vilka områden växer')}
+            meta={l(
+              `Change against the same months of ${previous}`,
+              `Förändring mot samma månader ${previous}`,
+            )}
+            href={withFields('#jobb-trender', fields)}
+          >
+            <DashBars
+              bars={fieldBars.map((f) => ({
+                key: f.id,
+                label: f.name,
+                value: f.change ?? 0,
+                tone: 'neutral' as const,
+              }))}
+              format={(v) => signedPct(v)}
+              label={l(
+                'Change in ads per field',
+                'Förändring i annonser per område',
+              )}
+            />
+          </Card>
+
+          <Card
+            index={2}
+            title={l('Occupations growing the most', 'Yrken som växer mest')}
+            meta={l(
+              `Occupations with ${floor}+ ads a year ago · ${period}`,
+              `Yrken med minst ${floor} annonser i fjol · ${period}`,
+            )}
+            href={withFields('#jobb-yrken', fields)}
+          >
+            {growers.length ? (
+              <DashBars
+                bars={growers.map((o) => ({
+                  key: o.id,
+                  label: o.name,
+                  value: o.change,
+                  tone: 'neutral' as const,
+                  note: ` ${number(o.now)}`,
+                }))}
+                format={(v) => signedPct(v)}
+                label={l(
+                  'Occupations growing the most',
+                  'Yrken som växer mest',
+                )}
+              />
+            ) : (
+              <p className="dash-empty">
+                {l(
+                  'No occupation this large in the chosen fields.',
+                  'Inget så stort yrke i valda områden.',
+                )}
+              </p>
+            )}
+          </Card>
+
+          <Card
+            index={3}
+            title={l('Where the jobs are', 'Var jobben finns')}
+            meta={l(
+              `Share of ads per county · ${period}`,
+              `Andel av annonserna per län · ${period}`,
+            )}
+            href={withFields('#jobb-lan', fields)}
+          >
+            <DashBars
+              bars={counties.slice(0, 6).map((c) => ({
+                key: c.region,
+                label: c.region,
+                value: pctOf(c.ads, countyTotal),
+                tone: 'neutral' as const,
+              }))}
+              format={(v) => share(v, 1)}
+              label={l(
+                'Share of ads per county',
+                'Andel av annonserna per län',
+              )}
+            />
+          </Card>
+
+          <Card
+            index={4}
+            title={l('On what terms', 'På vilka villkor')}
+            meta={l(
+              `Share of ads ${latest} · tick: ${previous}`,
+              `Andel av annonserna ${latest} · streck: ${previous}`,
+            )}
+            href={withFields('#jobb-villkor', fields)}
+          >
+            <DashBars
+              bars={conditionBars.map((c) => ({
+                ...c,
+                tone: 'neutral' as const,
+              }))}
+              format={(v) => share(v)}
+              max={100}
+              label={l('Terms of employment', 'Anställningsvillkor')}
+            />
+          </Card>
+        </div>
+        <p className="dash-foot">
+          {l('Source', 'Källa')}: Arbetsförmedlingen, JobTech ·{' '}
+          {l(
+            'An ad is not a hire; an ad without a number of vacancies counts as one.',
+            'En annons är inte en anställning; en annons utan antal platser räknas som en.',
+          )}{' '}
+          <a href="#jobb-kallor">
+            {l('Sources and method', 'Källor och metod')}
+          </a>
+        </p>
       </div>
-      <p className="dash-foot">
-        {l('Source', 'Källa')}: Arbetsförmedlingen, JobTech ·{' '}
-        {l(
-          'An ad is not a hire; an ad without a number of vacancies counts as one.',
-          'En annons är inte en anställning; en annons utan antal platser räknas som en.',
-        )}{' '}
-        <a href="#jobb-kallor">{l('Sources and method', 'Källor och metod')}</a>
-      </p>
-    </div>
+    </>
   )
 }

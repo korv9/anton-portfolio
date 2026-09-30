@@ -12,11 +12,15 @@ test('the job market is a product like politics: one screen, a field bar, one qu
   await expect(page.locator('.dash-kpi')).toHaveCount(6)
   await expect(page.locator('.dash-card')).toHaveCount(5)
   await expect(page.locator('.jobb-columns rect.recent').first()).toBeVisible()
+  // The treemap opens the page; the dashboard under it still fits one screen.
+  await expect(page.locator('#treemap')).toBeVisible()
   if (!isMobile) {
     await page.setViewportSize({ width: 1440, height: 900 })
     expect(
       await page.evaluate(
-        () => document.documentElement.scrollHeight - innerHeight,
+        () =>
+          document.querySelector('.jobb-dash')!.getBoundingClientRect().height -
+          innerHeight,
       ),
     ).toBeLessThanOrEqual(120)
   }

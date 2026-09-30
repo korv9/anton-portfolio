@@ -14,6 +14,7 @@ import { Board, Card, Cards, Empty, Kpi, Kpis } from '../board/Board'
 import Columns, { ColumnMultiples } from '../board/Columns'
 import DashBars from '../dash/DashBars'
 import BudgetIdentity from './BudgetIdentity'
+import BudgetFlow from '../features/BudgetFlow'
 import GroupedBars from '../dash/GroupedBars'
 import {
   areaNames,
@@ -153,6 +154,13 @@ export default function BudgetBoard({ route }: { route: Route }) {
       }
     >
       <BudgetIdentity year={year} />
+      <BudgetFlow
+        rows={rows}
+        year={year}
+        parties={withBudget}
+        names={names}
+        preferred={selected.find((p) => withBudget.includes(p))}
+      />
 
       <Kpis>
         <Kpi
