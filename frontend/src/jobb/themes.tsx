@@ -93,20 +93,6 @@ function Trender({ route, data, fields }: ThemeProps) {
         'Nya annonser är den tidigaste signalen om var arbetsgivare vill anställa, långt innan statistiken om sysselsättning kommer.',
       )}
       kpis={[
-        {
-          value: number(now),
-          label: l(
-            `ads in ${period}, ${scope}`,
-            `annonser ${period}, ${scope}`,
-          ),
-        },
-        {
-          value: signedPct(change(now, before)),
-          label: l(
-            `against the same months of ${previous}`,
-            `mot samma månader ${previous}`,
-          ),
-        },
         ...(peak
           ? [
               {
@@ -258,17 +244,6 @@ function Yrken({ route, data, fields }: ThemeProps) {
         'Områdena döljer stora skillnader: inom samma område kan vissa yrken annonsera mer medan andra krymper.',
       )}
       kpis={[
-        ...(byChange[0]
-          ? [
-              {
-                value: signedPct(byChange[0].change),
-                label: l(
-                  `${byChange[0].name}, the most growth`,
-                  `${byChange[0].name}, störst ökning`,
-                ),
-              },
-            ]
-          : []),
         ...(byChange.at(-1)
           ? [
               {
@@ -433,6 +408,9 @@ function Lan({ route, data, fields }: ThemeProps) {
     }))
     .sort((a, b) => b.ads - a.ads)
   const top3 = rows.slice(0, 3).reduce((s, c) => s + c.ads, 0)
+  const grew = rows
+    .filter((c) => c.change != null && c.region !== 'Okänt län')
+    .sort((a, b) => (b.change ?? 0) - (a.change ?? 0))[0]
   const label = ytd ? period : String(year)
   return (
     <ThemeLayout
@@ -442,25 +420,21 @@ function Lan({ route, data, fields }: ThemeProps) {
         'De flesta annonserna finns i de tre storstadslänen, men ökningen finns inte alltid där.',
       )}
       kpis={[
-        ...(rows[0]
-          ? [
-              {
-                value: share(pctOf(rows[0].ads, total), 1),
-                label: l(
-                  `of the ads in ${rows[0].region}`,
-                  `av annonserna i ${rows[0].region}`,
-                ),
-              },
-            ]
-          : []),
         {
           value: share(pctOf(top3, total)),
           label: l('in the three largest counties', 'i de tre största länen'),
         },
-        {
-          value: number(total),
-          label: l(`ads with a county, ${label}`, `annonser med län, ${label}`),
-        },
+        ...(grew
+          ? [
+              {
+                value: signedPct(grew.change),
+                label: l(
+                  `${grew.region}, the best change on ${year - 1}`,
+                  `${grew.region}, bäst utveckling mot ${year - 1}`,
+                ),
+              },
+            ]
+          : []),
       ]}
       filters={
         <Select
@@ -592,13 +566,6 @@ function Villkor({ route, data, fields }: ThemeProps) {
         'Antalet annonser säger hur mycket arbetsgivare anställer; villkoren säger vilka slags jobb det är.',
       )}
       kpis={[
-        {
-          value: share(fullTime),
-          label: l(
-            'full time, of ads stating hours',
-            'heltid, av annonser med arbetstid',
-          ),
-        },
         {
           value: share(regular),
           label: l('regular employment', 'vanlig anställning'),

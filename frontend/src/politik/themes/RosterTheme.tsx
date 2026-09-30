@@ -19,7 +19,7 @@ import ThemeLayout from '../ThemeLayout'
 import VoteWaffle from '../features/VoteWaffle'
 import BuilderPanel, { Choice, Field } from '../BuilderPanel'
 import Bars from '../Bars'
-import { Select, num, pct } from '../controls'
+import { Select, pct } from '../controls'
 import { useViewParams } from '../useViewParams'
 import { shownParties, useParties } from '../partySelection'
 
@@ -241,13 +241,6 @@ export default function RosterTheme({ route }: { route: Route }) {
         kpis={
           info && closest && furthest
             ? [
-                {
-                  value: num(info.roll_calls),
-                  label: l(
-                    `roll calls in ${session}`,
-                    `voteringar under riksmötet ${session}`,
-                  ),
-                },
                 {
                   value: pct(closest.agreement_pct, 0),
                   label: l(

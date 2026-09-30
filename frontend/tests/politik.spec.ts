@@ -40,7 +40,7 @@ test('the dashboard fits one screen and compares the parties chosen in the party
   isMobile,
 }) => {
   await page.goto('/#politik')
-  await expect(page.locator('.dash-kpi')).toHaveCount(6)
+  await expect(page.locator('.dash-kpi')).toHaveCount(4)
   await expect(page.locator('.dash-card')).toHaveCount(5)
   // The budget comes first, as grouped bars for every party with a budget of its own.
   await expect(page.locator('.dash-card').first()).toHaveClass(/dash-budget/)
@@ -48,12 +48,17 @@ test('the dashboard fits one screen and compares the parties chosen in the party
   expect(await page.locator('.dash-budget .grouped > li').count()).toBe(8)
   if (!isMobile) {
     await page.setViewportSize({ width: 1440, height: 900 })
-    // Everything on one screen: the page does not scroll.
+    // The dashboard fits one screen; the link to the next chapter follows it.
     expect(
       await page.evaluate(
-        () => document.documentElement.scrollHeight - innerHeight,
+        () =>
+          document.querySelector('.dash')!.getBoundingClientRect().height -
+          innerHeight,
       ),
     ).toBeLessThanOrEqual(120)
+    await expect(page.locator('.politik-next-link')).toContainText(
+      'Which parties hold power',
+    )
   }
   // The budget is compared with the budget the Riksdag adopted, and says so.
   await expect(page.locator('.dash-budget .dash-meta')).toContainText(

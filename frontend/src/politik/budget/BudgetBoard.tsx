@@ -9,10 +9,9 @@ import { RIKSDAG_PARTIES, identity, partyName } from '../../parties/identity'
 import type { Route } from '../../router'
 import { shownParties, useParties } from '../partySelection'
 import { useViewParams } from '../useViewParams'
-import { Select, num, signed } from '../controls'
+import { Select, signed } from '../controls'
 import { Board, Card, Cards, Empty, Kpi, Kpis } from '../board/Board'
 import Columns, { ColumnMultiples } from '../board/Columns'
-import DashBars from '../dash/DashBars'
 import BudgetIdentity from './BudgetIdentity'
 import BudgetFlow from '../features/BudgetFlow'
 import GroupedBars from '../dash/GroupedBars'
@@ -25,7 +24,6 @@ import {
 } from '../themes/BudgetTheme'
 
 const DEFAULTS = { ar: '', matt: 'mnkr', omraden: '10' }
-const bn = (msek: number) => `${num(msek / 1000, 0)} ${l('bn', 'mdkr')}`
 
 export default function BudgetBoard({ route }: { route: Route }) {
   const [view, setView] = useViewParams(route, DEFAULTS)
@@ -96,10 +94,6 @@ export default function BudgetBoard({ route }: { route: Route }) {
     .sort((a, b) => reach(b) - reach(a))
     .slice(0, limit)
   const most = [...withBudget].sort((a, b) => net(b) - net(a))
-  const govAreas = yearRows
-    .filter((r) => r.actor === 'GOV')
-    .sort((a, b) => b.amount_msek - a.amount_msek)
-    .slice(0, 10)
   // Every year's totals, per party, for the columns over time.
   const byYear = (p: string) =>
     years.map((y) =>
@@ -163,20 +157,6 @@ export default function BudgetBoard({ route }: { route: Route }) {
       />
 
       <Kpis>
-        <Kpi
-          index={0}
-          label={l('The government’s budget', 'Regeringens budget')}
-          value={govTotal}
-          format={bn}
-          sub={`${l('all areas', 'alla områden')}, ${year}`}
-        />
-        <Kpi
-          index={1}
-          label={l('Budget motions', 'Budgetmotioner')}
-          value={withBudget.length}
-          format={(v) => num(v)}
-          sub={withBudget.join(', ')}
-        />
         {most[0] && (
           <Kpi
             index={2}
@@ -195,12 +175,6 @@ export default function BudgetBoard({ route }: { route: Route }) {
             sub={l('SEK m in total', 'mnkr totalt')}
           />
         )}
-        <Kpi
-          index={4}
-          label={l('Expenditure areas', 'Utgiftsområden')}
-          value={areas.length}
-          format={(v) => num(v)}
-        />
       </Kpis>
 
       <Cards>
@@ -227,35 +201,6 @@ export default function BudgetBoard({ route }: { route: Route }) {
             label={l(
               `Each party’s net difference, ${year}`,
               `Varje partis nettoskillnad, ${year}`,
-            )}
-          />
-        </Card>
-
-        <Card
-          index={1}
-          title={l(
-            'What the government’s budget spends most on',
-            'Vad regeringens budget lägger mest på',
-          )}
-          meta={l(
-            `Ten largest areas, ${year}`,
-            `De tio största områdena, ${year}`,
-          )}
-          href="#budget-outturn"
-          more={l('Budget and outturn', 'Budget och utfall')}
-        >
-          <DashBars
-            bars={govAreas.map((r) => ({
-              key: String(r.expenditure_area),
-              label:
-                names.get(r.expenditure_area) ?? String(r.expenditure_area),
-              value: r.amount_msek,
-              tone: 'neutral' as const,
-            }))}
-            format={bn}
-            label={l(
-              'The government’s budget per area',
-              'Regeringens budget per område',
             )}
           />
         </Card>

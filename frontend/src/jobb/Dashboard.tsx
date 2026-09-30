@@ -116,26 +116,9 @@ export default function Dashboard({
   // ---- Ads now and a year ago, the same months ----
   const now = yearAds(data, fields, latest)
   const before = yearAds(data, fields, previous)
-  const all = yearAds(data, [], latest)
   const monthly = monthlyAds(data, fields)
   const shown =
     view.period === 'alla' ? monthly : monthly.slice(-Number(view.period))
-
-  // ---- Fields: change against the same months last year ----
-  const fieldRows = data.fields
-    .filter((f) => !fields.length || fields.includes(f.id))
-    .map((f) => {
-      const a = yearAds(data, [f.id], latest)
-      const b = yearAds(data, [f.id], previous)
-      return { id: f.id, name: fieldName(f.name), now: a, change: change(a, b) }
-    })
-    .filter((f) => f.change != null && f.now > 0)
-    .sort((a, b) => (b.change ?? 0) - (a.change ?? 0))
-  const largest = [...fieldRows].sort((a, b) => b.now - a.now)[0]
-  const fieldBars =
-    fieldRows.length > 10
-      ? [...fieldRows.slice(0, 5), ...fieldRows.slice(-5)]
-      : fieldRows
 
   // ---- Occupations that grow the most, with a floor so tiny groups do not top the list ----
   const floor = Number(view.minsta)
@@ -243,31 +226,6 @@ export default function Dashboard({
 
         <dl className="dash-kpis">
           <Kpi
-            index={0}
-            label={l('Job ads', 'Jobbannonser')}
-            value={now}
-            format={number}
-            sub={period}
-          />
-          <Kpi
-            index={1}
-            label={l('Against a year ago', 'Mot i fjol')}
-            value={change(now, before) ?? 0}
-            format={(v) => signedPct(v)}
-            sub={l(`same months ${previous}`, `samma månader ${previous}`)}
-          />
-          <Kpi
-            index={2}
-            label={
-              fields.length
-                ? l('Share of all ads', 'Andel av alla annonser')
-                : l('Largest field', 'Största område')
-            }
-            value={fields.length ? pctOf(now, all) : (largest?.now ?? 0)}
-            format={(v) => (fields.length ? share(v, 1) : number(v))}
-            sub={fields.length ? String(latest) : largest?.name}
-          />
-          <Kpi
             index={3}
             label={l('Most ads', 'Flest annonser')}
             value={top?.ytd[String(latest)] ?? 0}
@@ -318,30 +276,6 @@ export default function Dashboard({
                 `${number(now)} annonser ${period}: ${signedPct(change(now, before))} mot samma månader ${previous}.`,
               )}
             </p>
-          </Card>
-
-          <Card
-            index={1}
-            title={l('Which fields grow', 'Vilka områden växer')}
-            meta={l(
-              `Change against the same months of ${previous}`,
-              `Förändring mot samma månader ${previous}`,
-            )}
-            href={withFields('#jobb-trender', fields)}
-          >
-            <DashBars
-              bars={fieldBars.map((f) => ({
-                key: f.id,
-                label: f.name,
-                value: f.change ?? 0,
-                tone: 'neutral' as const,
-              }))}
-              format={(v) => signedPct(v)}
-              label={l(
-                'Change in ads per field',
-                'Förändring i annonser per område',
-              )}
-            />
           </Card>
 
           <Card

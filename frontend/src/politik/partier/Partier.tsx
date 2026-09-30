@@ -22,7 +22,7 @@ import {
 import SeatAlluvial from '../features/SeatAlluvial'
 import type { Route } from '../../router'
 import { useParties, withParties } from '../partySelection'
-import { dayName, monthName, num, pct, signed } from '../controls'
+import { dayName, num, pct, signed } from '../controls'
 import { Board, Card, Cards, Empty, Kpi, Kpis } from '../board/Board'
 import Columns from '../board/Columns'
 import DashBars from '../dash/DashBars'
@@ -223,7 +223,7 @@ export default function Partier({ route }: { route: Route }) {
 }
 
 function PartyDashboard({ party, shared }: { party: string; shared: Shared }) {
-  const { index, now, elections, polls, sessions } = shared
+  const { index, now, sessions } = shared
   const [profile, setProfile] = useState<Profile | null>(null)
   const [report, setReport] = useState<BudgetReport | null>(null)
   const [debates, setDebates] = useState<DebateIndex | null>(null)
@@ -247,20 +247,7 @@ function PartyDashboard({ party, shared }: { party: string; shared: Shared }) {
 
   const s = index.parties[party]
   const result = now.election.parties.find((r) => r.party === party)
-  const months = [...new Set(polls.map((p) => p.survey_month))].sort()
-  const own = (m: string) =>
-    polls.find((p) => p.party === party && p.survey_month === m)?.share_pct ??
-    null
-  const latest = months.at(-1) ?? ''
-  const previous = months.at(-2) ?? ''
-  const history = elections.results
-    .filter((r) => r.party === party)
-    .sort((a, b) => a.election_year - b.election_year)
   const lastSessions = sessions.sessions.slice(-8).map((x) => x.session)
-  const record = (session: string) =>
-    sessions.party_record.find(
-      (r) => r.party === party && r.session === session,
-    )
   const latestSession = lastSessions.at(-1) ?? ''
   const alike = RIKSDAG_PARTIES.filter((p) => p !== party)
     .map((p) => ({
@@ -298,14 +285,8 @@ function PartyDashboard({ party, shared }: { party: string; shared: Shared }) {
   const councilYear = index.sources.councils.election
   const preliminary = index.sources.councils.counts['preliminär'] ?? 0
 
-  // Members: age groups and constituencies.
+  // Members per constituency.
   const members = profile?.members ?? []
-  const thisYear = Number(index.sources.members.as_of.slice(0, 4))
-  const ages = ['–29', '30–39', '40–49', '50–59', '60+']
-  const ageGroup = (born: number) => {
-    const age = thisYear - born
-    return age < 30 ? 0 : age < 40 ? 1 : age < 50 ? 2 : age < 60 ? 3 : 4
-  }
   const constituencies = Object.entries(
     members.reduce<Record<string, number>>((acc, m) => {
       acc[m.constituency] = (acc[m.constituency] ?? 0) + 1
@@ -356,17 +337,6 @@ function PartyDashboard({ party, shared }: { party: string; shared: Shared }) {
           format={(v) => pct(v)}
         />
         <Kpi
-          index={2}
-          label={l('Latest survey', 'Senaste mätningen')}
-          value={own(latest) ?? 0}
-          format={(v) => pct(v)}
-          sub={
-            own(latest) != null && own(previous) != null
-              ? `${signed(own(latest)! - own(previous)!, 1)} · ${monthName(latest)}`
-              : undefined
-          }
-        />
-        <Kpi
           index={3}
           label={l('Council seats', 'Mandat i kommunerna')}
           value={s.council_seats}
@@ -408,63 +378,6 @@ function PartyDashboard({ party, shared }: { party: string; shared: Shared }) {
       )}
 
       <Cards>
-        <Card
-          index={0}
-          wide
-          title={l('Riksdag elections since 1973', 'Riksdagsval sedan 1973')}
-          meta={l(
-            'Per cent of the votes · the latest election outlined',
-            'Procent av rösterna · senaste valet markerat',
-          )}
-          href="#now-history"
-          more={l('Every election', 'Alla val')}
-        >
-          <Columns
-            categories={history.map((r) => String(r.election_year))}
-            series={[
-              {
-                key: party,
-                label: partyName(party),
-                party,
-                values: history.map((r) => r.share_pct),
-              },
-            ]}
-            highlight={history.length - 1}
-            format={(v) => `${num(v)} %`}
-            label={l(
-              `${partyName(party)} in Riksdag elections`,
-              `${partyName(party)} i riksdagsvalen`,
-            )}
-          />
-        </Card>
-
-        <Card
-          index={1}
-          title={l('The latest surveys', 'De senaste mätningarna')}
-          meta={l(
-            'SCB’s party preference survey, per cent',
-            'SCB:s partisympatiundersökning, procent',
-          )}
-          href={`#politik-valjarna?partier=${party}`}
-        >
-          <Columns
-            categories={months.slice(-10).map((m) => m.slice(2, 7))}
-            series={[
-              {
-                key: party,
-                label: partyName(party),
-                party,
-                values: months.slice(-10).map(own),
-              },
-            ]}
-            format={(v) => `${num(v)} %`}
-            label={l(
-              'Support in the latest surveys',
-              'Stöd i de senaste mätningarna',
-            )}
-          />
-        </Card>
-
         <Card
           index={2}
           title={l('In the municipal councils', 'I kommunfullmäktige')}
@@ -554,57 +467,6 @@ function PartyDashboard({ party, shared }: { party: string; shared: Shared }) {
         </Card>
 
         <Card
-          index={5}
-          title={l('The Riksdag group', 'Riksdagsgruppen')}
-          meta={l(
-            `${s.members} members · ${s.women} women, ${s.members - s.women} men · by age`,
-            `${s.members} ledamöter · ${s.women} kvinnor, ${s.members - s.women} män · efter ålder`,
-          )}
-        >
-          {profile ? (
-            <Columns
-              categories={ages}
-              series={[
-                {
-                  key: 'k',
-                  label: l('Women', 'Kvinnor'),
-                  values: ages.map(
-                    (_, i) =>
-                      members.filter(
-                        (m) =>
-                          m.born &&
-                          ageGroup(m.born) === i &&
-                          m.gender === 'kvinna',
-                      ).length,
-                  ),
-                },
-                {
-                  key: 'm',
-                  label: l('Men', 'Män'),
-                  values: ages.map(
-                    (_, i) =>
-                      members.filter(
-                        (m) =>
-                          m.born &&
-                          ageGroup(m.born) === i &&
-                          m.gender !== 'kvinna',
-                      ).length,
-                  ),
-                },
-              ]}
-              stacked
-              format={(v) => num(v)}
-              label={l(
-                'Members by age and gender',
-                'Ledamöter efter ålder och kön',
-              )}
-            />
-          ) : (
-            <Empty />
-          )}
-        </Card>
-
-        <Card
           index={6}
           title={l('Members per constituency', 'Ledamöter per valkrets')}
           meta={l(
@@ -626,46 +488,6 @@ function PartyDashboard({ party, shared }: { party: string; shared: Shared }) {
           ) : (
             <Empty />
           )}
-        </Card>
-
-        <Card
-          index={7}
-          title={l('How the party votes', 'Hur partiet röstar')}
-          meta={l(
-            'Per cent of roll calls per session · darkest: with the government, then unity, lightest: attendance',
-            'Procent av voteringarna per riksmöte · mörkast: som regeringen, sedan enighet, ljusast: närvaro',
-          )}
-          href={`#politik-roster?partier=${party}`}
-        >
-          <Columns
-            categories={lastSessions.map((x) => x.slice(2))}
-            series={[
-              {
-                key: 'g',
-                label: l('With the government', 'Som regeringen'),
-                values: lastSessions.map(
-                  (x) => record(x)?.with_government_pct ?? null,
-                ),
-              },
-              {
-                key: 'c',
-                label: l('Unity', 'Enighet'),
-                values: lastSessions.map(
-                  (x) => record(x)?.cohesion_pct ?? null,
-                ),
-              },
-              {
-                key: 'a',
-                label: l('Attendance', 'Närvaro'),
-                values: lastSessions.map(
-                  (x) => record(x)?.attendance_pct ?? null,
-                ),
-              },
-            ]}
-            format={(v) => `${num(v)} %`}
-            domain={[0, 100]}
-            label={l('Voting record per session', 'Röstmönster per riksmöte')}
-          />
         </Card>
 
         <Card

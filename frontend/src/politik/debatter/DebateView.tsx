@@ -16,7 +16,6 @@ import type { Route } from '../../router'
 import { useParties, withParties } from '../partySelection'
 import { dayName, num } from '../controls'
 import { Board, Card, Cards, Empty, Kpi, Kpis } from '../board/Board'
-import Columns from '../board/Columns'
 import DashBars from '../dash/DashBars'
 import {
   exchanges,
@@ -308,23 +307,6 @@ export default function DebateView({ route }: { route: Route }) {
     >
       <Kpis>
         <Kpi
-          index={0}
-          label={l('Speeches and replies', 'Anföranden och repliker')}
-          value={debate.speeches}
-          format={(v) => num(v)}
-        />
-        <Kpi
-          index={1}
-          label={l('Of which replies', 'Varav repliker')}
-          value={debate.replies}
-          format={(v) => num(v)}
-          sub={
-            debate.speeches
-              ? `${num((debate.replies / debate.speeches) * 100)} %`
-              : undefined
-          }
-        />
-        <Kpi
           index={2}
           label={l('Parties speaking', 'Partier som talade')}
           value={parties.length}
@@ -446,40 +428,6 @@ export default function DebateView({ route }: { route: Route }) {
           ) : (
             <Empty />
           )}
-        </Card>
-
-        <Card
-          index={1}
-          title={l(
-            'Speeches and replies per party',
-            'Anföranden och repliker per parti',
-          )}
-          meta={l(
-            'Darker: speeches · lighter: replies and answers',
-            'Mörkare: anföranden · ljusare: repliker och svar',
-          )}
-        >
-          <Columns
-            categories={parties}
-            series={[
-              {
-                key: 'a',
-                label: l('Speeches', 'Anföranden'),
-                values: parties.map((p) => debate.parties[p][0]),
-              },
-              {
-                key: 'r',
-                label: l('Replies', 'Repliker'),
-                values: parties.map((p) => debate.parties[p][1]),
-              },
-            ]}
-            stacked
-            format={(v) => num(v)}
-            label={l(
-              'Speeches and replies per party',
-              'Anföranden och repliker per parti',
-            )}
-          />
         </Card>
 
         <Card

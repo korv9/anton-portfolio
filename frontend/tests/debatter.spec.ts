@@ -21,8 +21,10 @@ test('the politics sidebar has Overview, Budget and Debates with their sub-pages
     'aria-current',
     'page',
   )
-  await expect(page.locator('.board-kpis .dash-kpi')).toHaveCount(5)
-  await expect(page.locator('.board-card')).toHaveCount(4)
+  // Only the figures the flow chart does not already say: who adds and who cuts most.
+  await expect(page.locator('.board-kpis .dash-kpi')).toHaveCount(2)
+  await expect(page.locator('.board-card')).toHaveCount(3)
+  await expect(page.locator('#budgetflode')).toBeVisible()
   await expect(page.locator('.columns svg').first()).toBeVisible()
   await expect(page.locator('.board-card .grouped > li').first()).toBeVisible()
   // The old address for the whole debate section leads to the issue debates.
@@ -39,7 +41,9 @@ test('issue debates: a dashboard per riksmöte and a debate with its decision', 
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
     'Issue debates',
   )
-  await expect(page.locator('.board-kpis .dash-kpi')).toHaveCount(5)
+  // The leaderboard carries the counts per party; the key figures say what it does not.
+  await expect(page.locator('#topplista')).toBeVisible()
+  await expect(page.locator('.board-kpis .dash-kpi')).toHaveCount(2)
   await expect(page.locator('.board-table tbody tr').first()).toBeVisible()
   // The party bar narrows the list to debates the party took part in.
   const before = await page.locator('.board-table tbody tr').count()
@@ -75,7 +79,10 @@ test('party-leader debates: over time, who replies to whom, reply by reply', asy
     'Party-leader debates',
   )
   await expect(page.locator('.dash-heat')).toBeVisible()
-  await expect(page.locator('.column-multiples > li')).toHaveCount(8)
+  // The page ends with the next chapter of the story.
+  await expect(page.locator('.politik-next-link')).toContainText(
+    'What do politicians talk about',
+  )
   // Who spoke when: a lane per party, the debate in three parts.
   await expect(page.locator('.timeline-lane')).toHaveCount(8)
   await expect(page.locator('.timeline-parts > li')).toHaveCount(3)

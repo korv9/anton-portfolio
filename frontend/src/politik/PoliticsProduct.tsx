@@ -19,6 +19,8 @@ import type { Route } from '../router'
 import {
   NAV_GROUPS,
   THEMES,
+  chapterOf,
+  neighbours,
   deepDiveOf,
   subViewOf,
   themeByPath,
@@ -128,6 +130,7 @@ export default function PoliticsProduct({ route }: { route: Route }) {
             return (
               <li key={group.key} className={`politik-nav-group ${group.key}`}>
                 <span className="politik-nav-heading" aria-hidden="true">
+                  {group.n && <b>{group.n}</b>}
                   {l(group.en, group.sv)}
                 </span>
                 <ol aria-label={l(group.en, group.sv)}>{items}</ol>
@@ -152,7 +155,10 @@ export default function PoliticsProduct({ route }: { route: Route }) {
             }
           >
             {theme ? (
-              <ThemeView theme={theme.key} route={route} />
+              <>
+                <ThemeView theme={theme.key} route={route} />
+                <NextPage theme={theme.key} selected={selected} />
+              </>
             ) : route.path === '#politik-debatt' ? (
               <DebateView route={route} />
             ) : route.path === '#politik-budget-detalj' ? (
@@ -225,5 +231,53 @@ function PartySlicer({ route }: { route: Route }) {
         )}
       </p>
     </div>
+  )
+}
+
+/**
+ * The end of every page: where it sits in the story, and the question the next page answers,
+ * as a link, so the pages read in order like chapters.
+ */
+function NextPage({
+  theme,
+  selected,
+}: {
+  theme: ThemeKey
+  selected: string[]
+}) {
+  const { previous, next } = neighbours(theme)
+  if (!next && !previous) return null
+  const chapter = (t: (typeof THEMES)[number]) => {
+    const c = chapterOf(t)
+    return c.n
+      ? `${l('Chapter', 'Kapitel')} ${c.n} · ${l(c.en, c.sv)}`
+      : l(t.en, t.sv)
+  }
+  return (
+    <nav
+      className="politik-next"
+      aria-label={l('Next in the story', 'Nästa i berättelsen')}
+    >
+      {previous && (
+        <a
+          className="politik-prev-link"
+          href={withParties(previous.path, selected)}
+        >
+          <small>← {chapter(previous)}</small>
+          <span>{l(previous.en, previous.sv)}</span>
+        </a>
+      )}
+      {next && (
+        <a
+          className="politik-next-link"
+          href={withParties(next.path, selected)}
+        >
+          <small>
+            {l('Next', 'Nästa')}: {chapter(next)}
+          </small>
+          <span>{l(next.question.en, next.question.sv)} →</span>
+        </a>
+      )}
+    </nav>
   )
 }

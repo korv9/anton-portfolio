@@ -264,13 +264,6 @@ export default function SkatterTheme({ route }: { route: Route }) {
           sub={l('highest first', 'högst först')}
         />
         <Kpi
-          index={2}
-          label={l('Average', 'Snitt')}
-          value={avgTotal}
-          format={(v) => pct(v)}
-          sub={groupLabel}
-        />
-        <Kpi
           index={3}
           label={l('Sweden against the average', 'Sverige mot snittet')}
           value={sweTotal - avgTotal}

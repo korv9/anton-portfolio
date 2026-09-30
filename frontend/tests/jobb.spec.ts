@@ -9,8 +9,9 @@ test('the job market is a product like politics: one screen, a field bar, one qu
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
     'The job market now',
   )
-  await expect(page.locator('.dash-kpi')).toHaveCount(6)
-  await expect(page.locator('.dash-card')).toHaveCount(5)
+  // The treemap says the totals and which fields grow; the key figures say the rest.
+  await expect(page.locator('.dash-kpi')).toHaveCount(3)
+  await expect(page.locator('.dash-card')).toHaveCount(4)
   await expect(page.locator('.jobb-columns rect.recent').first()).toBeVisible()
   // The treemap opens the page; the dashboard under it still fits one screen.
   await expect(page.locator('#treemap')).toBeVisible()
@@ -75,7 +76,7 @@ test('the job market is a product like politics: one screen, a field bar, one qu
 test('the job-market dashboard is accessible', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.goto('/#jobb')
-  await expect(page.locator('.dash-card')).toHaveCount(5)
+  await expect(page.locator('.dash-card')).toHaveCount(4)
   const results = await new AxeBuilder({ page })
     .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
     .analyze()

@@ -575,21 +575,14 @@ export default function Dashboard({ route }: { route: Route }) {
                 label={l('Governing side', 'Regeringssidan')}
                 value={sideSeats}
                 format={(v) => `${num(v)} / 349`}
-                sub={side.join(', ')}
-              />
-              <Kpi
-                index={2}
-                label={l('Needed for a majority', 'Krävs för majoritet')}
-                value={majority}
-                format={(v) => num(v)}
-                sub={
+                sub={`${side.join(', ')} · ${
                   sideSeats < majority
                     ? l(
-                        `${majority - sideSeats} short`,
-                        `${majority - sideSeats} mandat saknas`,
+                        `${majority - sideSeats} short of ${majority}`,
+                        `${majority - sideSeats} från ${majority}`,
                       )
-                    : undefined
-                }
+                    : l(`majority (${majority})`, `majoritet (${majority})`)
+                }`}
               />
               <Kpi
                 index={3}
@@ -599,20 +592,13 @@ export default function Dashboard({ route }: { route: Route }) {
                 sub={`PSU ${monthName(latestMonth)}`}
               />
               <Kpi
-                index={4}
-                label={l('Roll calls', 'Voteringar')}
-                value={lastSession?.roll_calls ?? 0}
-                format={(v) => num(v)}
-                sub={lastSession?.session}
-              />
-              <Kpi
                 index={5}
                 label={l('Government won', 'Regeringen vann')}
                 value={govWon?.government_won_pct ?? 0}
                 format={(v) => pct(v, 0)}
                 sub={l(
-                  `of decisions ${govWon?.session ?? ''}`,
-                  `av besluten ${govWon?.session ?? ''}`,
+                  `of ${num(lastSession?.roll_calls ?? 0)} roll calls ${govWon?.session ?? ''}`,
+                  `av ${num(lastSession?.roll_calls ?? 0)} voteringar ${govWon?.session ?? ''}`,
                 )}
               />
             </>

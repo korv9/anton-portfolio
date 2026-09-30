@@ -249,13 +249,6 @@ export default function ValjarnaTheme({ route }: { route: Route }) {
         kpis={
           leader && latest
             ? [
-                {
-                  value: pct(leader.share_pct),
-                  label: l(
-                    `${partyName(leader.party)}, largest in ${monthName(latest)}`,
-                    `${partyName(leader.party)}, störst i ${monthName(latest)}`,
-                  ),
-                },
                 ...(mover && previous
                   ? [
                       {

@@ -9,7 +9,8 @@ test('politics now: seats, majority, government, decisions and history', async (
   await expect(
     page.getByRole('heading', { level: 1, name: /Overview/ }),
   ).toBeVisible()
-  await expect(page.locator('.dash-kpi')).toHaveCount(6)
+  // One key figure per chapter of the story.
+  await expect(page.locator('.dash-kpi')).toHaveCount(4)
   await expect(page.locator('.dash-seat')).not.toHaveCount(0)
   await expect(page.locator('.dash-card')).toHaveCount(5)
 

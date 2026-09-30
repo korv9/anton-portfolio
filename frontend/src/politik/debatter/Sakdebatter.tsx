@@ -9,7 +9,7 @@ import { RIKSDAG_PARTIES, identity, partyName } from '../../parties/identity'
 import type { Route } from '../../router'
 import { shownParties, useParties } from '../partySelection'
 import { useViewParams } from '../useViewParams'
-import { Select, dayName, num, pct } from '../controls'
+import { Select, dayName, num } from '../controls'
 import { Board, Card, Cards, Empty, Kpi, Kpis } from '../board/Board'
 import Columns from '../board/Columns'
 import DashBars from '../dash/DashBars'
@@ -26,7 +26,6 @@ import {
 } from './data'
 
 const DEFAULTS = { riksmote: '', omrade: '', sok: '' }
-const short = (session: string) => session.slice(2, 4) + '/' + session.slice(-2)
 
 export default function Sakdebatter({ route }: { route: Route }) {
   const [view, setView] = useViewParams(route, DEFAULTS)
@@ -84,8 +83,6 @@ export default function Sakdebatter({ route }: { route: Route }) {
     const issue = index.issues.find((i) => i.key === key)
     return issue ? l(issue.en, issue.sv) : key
   }
-  const speeches = filtered.reduce((s, d) => s + d.speeches, 0)
-  const replies = filtered.reduce((s, d) => s + d.replies, 0)
   const linked = filtered.filter((d) => d.decision)
 
   // What each party talked about: the share of its speeches and replies that were in debates
@@ -198,25 +195,6 @@ export default function Sakdebatter({ route }: { route: Route }) {
           sub={current.session}
         />
         <Kpi
-          index={1}
-          label={l('Speeches and replies', 'Anföranden och repliker')}
-          value={speeches}
-          format={(v) => num(v)}
-        />
-        <Kpi
-          index={2}
-          label={l('Share replies', 'Andel repliker')}
-          value={speeches ? (replies / speeches) * 100 : 0}
-          format={(v) => pct(v, 0)}
-        />
-        <Kpi
-          index={3}
-          label={l('Per debate', 'Per debatt')}
-          value={filtered.length ? speeches / filtered.length : 0}
-          format={(v) => num(v, 1)}
-          sub={l('speeches and replies', 'anföranden och repliker')}
-        />
-        <Kpi
           index={4}
           label={l('Linked to a decision', 'Kopplade till beslut')}
           value={linked.length}
@@ -257,30 +235,6 @@ export default function Sakdebatter({ route }: { route: Route }) {
         </Card>
 
         <Card
-          index={1}
-          title={l('Every riksmöte', 'Alla riksmöten')}
-          meta={l(
-            'Issue debates per riksmöte · click a column to choose it',
-            'Sakdebatter per riksmöte · klicka på en kolumn för att välja det',
-          )}
-        >
-          <Columns
-            categories={sessions.map((s) => short(s.session))}
-            series={[
-              {
-                key: 'n',
-                label: l('Debates', 'Debatter'),
-                values: sessions.map((s) => s.debates),
-              },
-            ]}
-            highlight={sessions.findIndex((s) => s.session === current.session)}
-            onPick={(i) => setView({ riksmote: sessions[i].session })}
-            format={(v) => num(v)}
-            label={l('Issue debates per riksmöte', 'Sakdebatter per riksmöte')}
-          />
-        </Card>
-
-        <Card
           index={2}
           title={l('Issue areas debated', 'Sakområden som debatterades')}
           meta={l(
@@ -298,48 +252,6 @@ export default function Sakdebatter({ route }: { route: Route }) {
               }))}
               format={(v) => num(v)}
               label={l('Debates per issue area', 'Debatter per sakområde')}
-            />
-          ) : (
-            <Empty />
-          )}
-        </Card>
-
-        <Card
-          index={3}
-          title={l(
-            'Who speaks and who replies',
-            'Vem talar och vem replikerar',
-          )}
-          meta={l(
-            'Darker: speeches · lighter: replies and answers',
-            'Mörkare: anföranden · ljusare: repliker och svar',
-          )}
-        >
-          {debates ? (
-            <Columns
-              categories={parties}
-              series={[
-                {
-                  key: 'a',
-                  label: l('Speeches', 'Anföranden'),
-                  values: parties.map((p) =>
-                    filtered.reduce((s, d) => s + (d.parties[p]?.[0] ?? 0), 0),
-                  ),
-                },
-                {
-                  key: 'r',
-                  label: l('Replies', 'Repliker'),
-                  values: parties.map((p) =>
-                    filtered.reduce((s, d) => s + (d.parties[p]?.[1] ?? 0), 0),
-                  ),
-                },
-              ]}
-              stacked
-              format={(v) => num(v)}
-              label={l(
-                'Speeches and replies per party',
-                'Anföranden och repliker per parti',
-              )}
             />
           ) : (
             <Empty />
