@@ -102,6 +102,7 @@ test('debate leaderboard: one party lit up in every column', async ({
   page,
 }) => {
   await page.goto('/#politik-sakdebatter')
+  await page.locator('.sak-deeper > summary').click()
   const f = await feature(page, 'topplista')
   await expect(f.locator('.leaderboard-col')).toHaveCount(5)
   await f.locator('.leaderboard-col').first().locator('button').first().click()

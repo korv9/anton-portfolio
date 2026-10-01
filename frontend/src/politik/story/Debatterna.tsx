@@ -480,7 +480,7 @@ function TermList({
 }
 
 /** Topic shares per riksmöte as lines, named at their ends. */
-function AgendaLines({
+export function AgendaLines({
   agenda,
   shown,
   name,
@@ -574,7 +574,10 @@ function AgendaLines({
             style={{ fill: 'var(--ink)' }}
           >
             <tspan style={{ fill: ink[e.i % ink.length] }}>■ </tspan>
-            {name(e.k)} {num(agenda.at(-1)!.shares[e.k] ?? 0, 1)}
+            {name(e.k).length > 26
+              ? `${name(e.k).slice(0, 25)}…`
+              : name(e.k)}{' '}
+            {num(agenda.at(-1)!.shares[e.k] ?? 0, 1)}
           </text>
         ))}
       </svg>

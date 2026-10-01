@@ -255,15 +255,25 @@ test('the budget says whose budget it is', async ({ page }) => {
   await expect(id.locator('.budget-id-votes li')).toHaveCount(8)
 })
 
-test('issue debates compare what the parties talk about with the year before', async ({
+test('issue debates: the chosen party is the object, in shares and against the others', async ({
   page,
 }) => {
-  await page.goto('/#politik-sakdebatter')
-  const chart = page.locator('.topic-bars')
-  await expect(chart.locator('.topic-groups > li')).toHaveCount(8)
-  await expect(chart.locator('.topic-col')).toHaveCount(64)
-  await expect(chart.locator('.topic-prev').first()).toBeVisible()
-  await expect(page.getByText('Debates per month')).toHaveCount(0)
+  await page.goto('/#politik-sakdebatter?partier=MP')
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+    'Green Party — issue debates',
+  )
+  await expect(page.locator('.sak .story-kpis > div')).toHaveCount(4)
+  await expect(page.locator('.sak-standout-text')).toContainText('%')
+  await expect(page.locator('.sak-diverge li').first()).toBeVisible()
+  await expect(page.locator('.story-terms')).toHaveCount(2)
+  // Period and topic live in the address.
+  const filters = page.getByRole('group', { name: 'Filters' })
+  await filters.getByRole('combobox', { name: 'From' }).selectOption('2024')
+  await expect(page).toHaveURL(/from=2024/)
+  await filters.getByRole('combobox', { name: 'Topic' }).selectOption('miljo')
+  await expect(page).toHaveURL(/amne=miljo/)
+  // The riksmöte explorer is closed until asked for.
+  await expect(page.locator('#topplista')).toBeHidden()
 })
 
 test('news: the headlines, and the week in summary with its sources', async ({

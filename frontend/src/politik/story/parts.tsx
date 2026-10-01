@@ -194,6 +194,7 @@ export function Heatmap({
   rowLabel = (r) => r,
   colLabel = (c) => c,
   title,
+  shade = (v) => v,
 }: {
   rows: string[]
   cols: string[]
@@ -205,6 +206,8 @@ export function Heatmap({
   rowLabel?: (r: string) => ReactNode
   colLabel?: (c: string) => ReactNode
   title?: (row: string, col: string, v: number) => string
+  /** The value the shade follows, when it is not the value itself (e.g. its size). */
+  shade?: (v: number) => number
 }) {
   return (
     <div
@@ -233,7 +236,10 @@ export function Heatmap({
                 const t =
                   v == null
                     ? 0
-                    : Math.max(0, Math.min(1, (v - min) / (max - min || 1)))
+                    : Math.max(
+                        0,
+                        Math.min(1, (shade(v) - min) / (max - min || 1)),
+                      )
                 return (
                   <td
                     key={c}

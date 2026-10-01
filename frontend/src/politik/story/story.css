@@ -870,3 +870,81 @@
     transition: none;
   }
 }
+
+/* The issue-debate analysis (SakAnalys.tsx). */
+.sak .story-hero h1 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+}
+.sak .story-filters {
+  align-items: flex-end;
+  margin-top: var(--sp-4);
+}
+.sak .story-filters .story-meta {
+  margin: 0;
+}
+.sak .story-kpis .story-kpi dd {
+  font-size: clamp(1.25rem, 2.6vw, 2rem);
+}
+.sak-standout {
+  padding: var(--sp-4) 0;
+}
+.sak-standout .story-kicker {
+  margin-bottom: 0.4rem;
+}
+.sak-standout-text {
+  max-width: 50rem;
+  margin: 0;
+  font-size: clamp(1.1rem, 2vw, 1.4rem);
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+}
+.sak .story-section h2:not(.story-kicker) {
+  font-size: clamp(1.35rem, 2.6vw, 1.9rem);
+}
+.sak-diff small {
+  color: var(--muted);
+}
+.sak-diverge li {
+  grid-template-columns: minmax(7rem, 14rem) minmax(0, 1fr) 7.5rem;
+}
+.story-bars li.picked .story-bar-label {
+  font-weight: 700;
+}
+.sak-deeper {
+  margin-top: var(--sp-5);
+  border-top: 3px solid var(--ink);
+  padding-top: var(--sp-3);
+}
+.sak-deeper > summary {
+  cursor: pointer;
+  font-size: var(--fs-card-title);
+  font-weight: 700;
+  padding: var(--sp-2) 0 var(--sp-3);
+}
+.sak-deeper[open] > summary {
+  margin-bottom: var(--sp-3);
+}
+.story-bars li:has(> button) {
+  display: block;
+}
+.sak .story-kpis .story-kpi dd {
+  font-size: clamp(1.1rem, 2vw, 1.55rem);
+  overflow-wrap: anywhere;
+  line-height: 1.15;
+}
+.sak .story-kpis .story-kpi dd.story-kpi-note,
+.story-kpis .story-kpi dd.story-kpi-note {
+  font-size: var(--fs-label);
+  font-weight: 400;
+  letter-spacing: 0;
+  line-height: 1.4;
+  color: var(--muted);
+}
+.story-section h2.story-kicker,
+.sak .story-section h2.story-kicker {
+  font-size: var(--fs-label);
+  letter-spacing: 0.1em;
+}

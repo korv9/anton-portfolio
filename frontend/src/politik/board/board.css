@@ -17,7 +17,8 @@
   gap: 1rem;
   flex-wrap: wrap;
 }
-.board-head h1 {
+.board-head h1,
+.board-head h2.board-title-2 {
   margin: 0;
   font-size: var(--fs-page-title);
   line-height: 1.15;
