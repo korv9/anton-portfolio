@@ -35,58 +35,16 @@ test('every theme answers one question with one chart, a table and its sources',
   expect(errors).toEqual([])
 })
 
-test('the dashboard fits one screen and compares the parties chosen in the party bar', async ({
+test('the party bar follows the reader from the story to the other pages', async ({
   page,
-  isMobile,
 }) => {
   await page.goto('/#politik')
-  await expect(page.locator('.dash-kpi')).toHaveCount(4)
-  await expect(page.locator('.dash-card')).toHaveCount(5)
-  // The budget comes first, as grouped bars for every party with a budget of its own.
-  await expect(page.locator('.dash-card').first()).toHaveClass(/dash-budget/)
-  await expect(page.locator('.dash-budget .grouped > li').first()).toBeVisible()
-  expect(await page.locator('.dash-budget .grouped > li').count()).toBe(8)
-  if (!isMobile) {
-    await page.setViewportSize({ width: 1440, height: 900 })
-    // The dashboard fits one screen; the link to the next chapter follows it.
-    expect(
-      await page.evaluate(
-        () =>
-          document.querySelector('.dash')!.getBoundingClientRect().height -
-          innerHeight,
-      ),
-    ).toBeLessThanOrEqual(120)
-    await expect(page.locator('.politik-next-link')).toContainText(
-      'Which parties hold power',
-    )
-  }
-  // The budget is compared with the budget the Riksdag adopted, and says so.
-  await expect(page.locator('.dash-budget .dash-meta')).toContainText(
-    'that the Riksdag adopted',
-  )
-  // Slicers: more areas, kept in the address.
-  await page.getByLabel('Areas').selectOption('12')
-  await expect(page).toHaveURL(/omraden=12/)
-  expect(await page.locator('.dash-budget .grouped > li').count()).toBe(12)
-
-  // The party bar: any number of parties, compared side by side.
   const bar = page.getByRole('group', { name: 'Parties' })
   await expect(bar.getByRole('button', { pressed: false })).toHaveCount(8)
   await bar.getByRole('button', { name: 'Social Democrats' }).click()
-  await expect(page).toHaveURL(/partier=S(&|$)/)
-  await expect(page.locator('.dash-focus')).toContainText('Social Democrats')
-  await expect(page.locator('.dash-card h2').nth(2)).toContainText('S')
   await bar.getByRole('button', { name: 'Left Party' }).click()
-  await expect(page).toHaveURL(/partier=S%2CV/)
-  await expect(page.locator('.dash-compare > li')).toHaveCount(2)
-  await expect(
-    page.locator('.dash-budget .grouped > li').first().locator('.grouped-row'),
-  ).toHaveCount(2)
-  // A seat segment toggles its party too.
-  await page.getByRole('button', { name: /^Moderates:/ }).click()
-  await expect(page).toHaveURL(/partier=S%2CV%2CM/)
-  await expect(page.locator('.dash-compare > li')).toHaveCount(3)
-  // The choice follows the reader to the other pages.
+  await bar.getByRole('button', { name: 'Moderates' }).click()
+  await expect(page).toHaveURL(/partier=S%2CV%2CM|partier=S,V,M/)
   await page
     .getByRole('navigation', { name: 'Politics' })
     .getByRole('link', { name: /What voters think/ })
@@ -100,10 +58,14 @@ test('the dashboard fits one screen and compares the parties chosen in the party
   await expect(bar.getByRole('button', { pressed: true })).toHaveCount(0)
 })
 
-test('one party chosen links to its full profile', async ({ page }) => {
-  await page.goto('/#politik?partier=S')
-  await page.getByRole('link', { name: /Everything about S/ }).click()
-  await expect(page).toHaveURL(/#parties-s(\?|$)/)
+test('one party chosen in the story links to its full profile', async ({
+  page,
+}) => {
+  await page.goto('/#politik?parti=S')
+  await page
+    .getByRole('link', { name: /Everything about Social Democrats/ })
+    .click()
+  await expect(page).toHaveURL(/#politik-partier\?partier=S/)
 })
 
 test('the view builder offers valid choices and keeps them in a shareable address', async ({

@@ -92,7 +92,7 @@ test('home introduces Anton and routes to each project', async ({
   await contents.getByRole('link', { name: 'Overview' }).first().click()
   await expect(contents).toHaveCount(0)
   await expect(page.getByRole('heading', { level: 1 })).toContainText(
-    'Overview',
+    'Swedish politics through data',
   )
   if (!isMobile) {
     await page.goto('/#start')
@@ -101,7 +101,7 @@ test('home introduces Anton and routes to each project', async ({
       .getByRole('link', { name: 'Political Observatory' })
       .click()
     await expect(page.getByRole('heading', { level: 1 })).toContainText(
-      'Overview',
+      'Swedish politics through data',
     )
   }
   if (!isMobile) {

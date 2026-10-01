@@ -3,19 +3,20 @@ import { test, expect } from './test'
 test('politics now: seats, majority, government, decisions and history', async ({
   page,
 }) => {
-  // The old address leads to the dashboard.
+  // The old address leads to the story.
   await page.goto('/#now')
   await expect(page).toHaveURL(/#politik$/)
   await expect(
-    page.getByRole('heading', { level: 1, name: /Overview/ }),
+    page.getByRole('heading', {
+      level: 1,
+      name: /Swedish politics through data/,
+    }),
   ).toBeVisible()
-  // One key figure per chapter of the story.
-  await expect(page.locator('.dash-kpi')).toHaveCount(4)
-  await expect(page.locator('.dash-seat')).not.toHaveCount(0)
-  await expect(page.locator('.dash-card')).toHaveCount(5)
+  await expect(page.locator('.story-hero .story-kpi')).toHaveCount(4)
+  await expect(page.locator('.story-seatbar-track > span')).toHaveCount(8)
 
   // The seat calculator adds up any parties against the 175-seat line.
-  await page.getByRole('link', { name: 'More: Seats in the Riksdag' }).click()
+  await page.getByRole('link', { name: /Count seats yourself/ }).click()
   await expect(page).toHaveURL(/#now-seats$/)
   await expect(page.getByTestId('plain-summary').locator('li')).not.toHaveCount(
     0,

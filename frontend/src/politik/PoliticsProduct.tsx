@@ -29,7 +29,7 @@ import {
 import './politik.css'
 import './dash/dash.css'
 
-const Dashboard = lazy(() => import('./dash/Dashboard'))
+const Story = lazy(() => import('./story/Story'))
 const ValjarnaTheme = lazy(() => import('./themes/ValjarnaTheme'))
 const RosterTheme = lazy(() => import('./themes/RosterTheme'))
 const BudgetTheme = lazy(() => import('./themes/BudgetTheme'))
@@ -49,7 +49,7 @@ const DeepDive = lazy(() => import('./DeepDive'))
 function ThemeView({ theme, route }: { theme: ThemeKey; route: Route }) {
   switch (theme) {
     case 'lage':
-      return <Dashboard route={route} />
+      return <Story route={route} />
     case 'valjarna':
       return <ValjarnaTheme route={route} />
     case 'roster':
