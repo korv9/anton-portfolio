@@ -52,9 +52,10 @@ function columns(): Column[] {
           en: 'The start page',
           sv: 'Startsidan',
           items: [
-            { href: '#start', en: 'Profile', sv: 'Profil' },
+            { href: '#work', en: 'Selected work', sv: 'Utvalda projekt' },
+            { href: '#om-mig', en: 'About me', sv: 'Om mig' },
             { href: '#erfarenhet', en: 'Experience', sv: 'Erfarenhet' },
-            { href: '#teknik', en: 'Tech stack', sv: 'Tech stack' },
+            { href: '#teknik', en: 'Tools', sv: 'Verktyg' },
             { href: '#projekt', en: 'All projects', sv: 'Alla projekt' },
           ],
         },

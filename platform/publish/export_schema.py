@@ -8,6 +8,7 @@ JSON under frontend/public/data/schema/:
                          reads from and what reads from it, the keys that link it to other
                          tables (relationships tests), row count and its SQL
     samples/<name>.json  a few example rows of each table, strings shortened
+    summary.json         the start page's four figures: models, tests, source tables, rows
 
 Reads the dbt manifest (the newest under platform/target/) and the warehouse. Views in
 bronze read raw files on demand, so they are sampled but not counted.
@@ -71,6 +72,20 @@ def subject(node: dict) -> str:
         return tags[0]
     parts = Path(node.get("original_file_path", "")).parts
     return parts[2] if len(parts) > 3 else "shared"
+
+
+def tests_total(manifest: dict) -> int:
+    return sum(1 for n in manifest["nodes"].values() if n["resource_type"] == "test")
+
+
+def summary(nodes: list[dict], layers: dict, tests: int) -> dict:
+    """The four figures the start page shows, so it need not load the whole schema."""
+    return {
+        "models": sum(1 for n in nodes if n["kind"] == "model"),
+        "tests": tests,
+        "sources": layers.get("source", 0),
+        "rows": sum(n.get("rows") or 0 for n in nodes),
+    }
 
 
 def main() -> None:
@@ -205,11 +220,12 @@ def main() -> None:
         "generated_from": "dbt manifest and the DuckDB warehouse",
         "dbt_version": m["metadata"].get("dbt_version"),
         "layers": layers,
-        "tests": sum(1 for n in m["nodes"].values() if n["resource_type"] == "test"),
+        "tests": tests_total(m),
         "links": [link for link in links if link["from"] in all_nodes],
         "edges": edges,
         "nodes": nodes,
     })
+    write_json(OUT / "summary.json", summary(nodes, layers, tests_total(m)))
     print(f"schema: {len(nodes)} tables ({layers}), {len(links)} links, "
           f"{sum(1 for n in nodes if n['has_sample'])} with example rows")
 

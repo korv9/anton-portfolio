@@ -302,7 +302,13 @@ function layout(nodes: Node[]) {
 const still = () =>
   !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
 
-export default function HeroFlow() {
+/**
+ * On its own the chart is a hero (the name, the pitch, the contacts). Given `children` it is
+ * embedded in a section (About me on the start page): the children take the pitch's place and
+ * the section's heading stands above it.
+ */
+export default function HeroFlow({ children }: { children?: ReactNode } = {}) {
+  const embedded = children !== undefined
   const nodes = useMemo(nodesOf, [])
   const { rows, height, paths } = useMemo(() => layout(nodes), [nodes])
   const [open, setOpen] = useState<string | null>(null)
@@ -332,6 +338,8 @@ export default function HeroFlow() {
   }, [open])
 
   const chosen = nodes.find((n) => n.id === open) ?? null
+  const Root = embedded ? 'div' : 'header'
+  const Heading = embedded ? 'h3' : 'h2'
   const focus = hover ?? open
   const running = focus ?? pulse
   const count = (part: Part) =>
@@ -339,9 +347,9 @@ export default function HeroFlow() {
   const total = PARTS.reduce((s, p) => s + count(p.part), 0)
 
   return (
-    <header
-      className={`flow${focus ? ' has-focus' : ''}`}
-      id="start"
+    <Root
+      className={`flow${embedded ? ' is-embedded' : ''}${focus ? ' has-focus' : ''}`}
+      id={embedded ? undefined : 'start'}
       style={{ '--rows': rows.length } as CSSProperties}
     >
       <div
@@ -350,14 +358,18 @@ export default function HeroFlow() {
         ref={panel}
         aria-live="polite"
       >
-        <p className="home-eyebrow">
-          <span className="home-dot round" aria-hidden="true" />
-          {l(
-            'Stockholm · open to junior roles',
-            'Stockholm · öppen för juniora roller',
-          )}
-        </p>
-        <h1 className="cv-name">Anton Ernstsson</h1>
+        {!embedded && (
+          <>
+            <p className="home-eyebrow">
+              <span className="home-dot round" aria-hidden="true" />
+              {l(
+                'Stockholm · open to junior roles',
+                'Stockholm · öppen för juniora roller',
+              )}
+            </p>
+            <h1 className="cv-name">Anton Ernstsson</h1>
+          </>
+        )}
         {chosen ? (
           <article className={`flow-detail is-${chosen.part}`}>
             <div className="flow-detail-head">
@@ -376,19 +388,25 @@ export default function HeroFlow() {
                 ✕
               </button>
             </div>
-            <h2>{chosen.title}</h2>
+            <Heading>{chosen.title}</Heading>
             {chosen.body}
           </article>
         ) : (
           <div className="flow-intro">
-            <p className="cv-role">
-              {l(
-                'Software Developer · Data Engineer · Analytics Engineer · Applied AI',
-                'Software Developer · Data Engineer · Analytics Engineer · Tillämpad AI',
-              )}
-            </p>
-            <p className="cv-pitch">{b(PITCH)}</p>
-            <Contact />
+            {embedded ? (
+              children
+            ) : (
+              <>
+                <p className="cv-role">
+                  {l(
+                    'Software Developer · Data Engineer · Analytics Engineer · Applied AI',
+                    'Software Developer · Data Engineer · Analytics Engineer · Tillämpad AI',
+                  )}
+                </p>
+                <p className="cv-pitch">{b(PITCH)}</p>
+                <Contact />
+              </>
+            )}
           </div>
         )}
       </div>
@@ -477,6 +495,6 @@ export default function HeroFlow() {
           `Varje linje är en riktig sak: en mening, en roll, ett CV, en arbetsuppgift eller ett verktyg, ${total} totalt. Procenten är varje dels andel av linjerna. Öppna vilken ände som helst.`,
         )}
       </p>
-    </header>
+    </Root>
   )
 }

@@ -11,54 +11,92 @@ test('home introduces Anton and routes to each project', async ({
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
     'Anton Ernstsson',
   )
-  // A short profile: at most two sentences, and the contact actions on one row.
-  const pitch = (await page.locator('.cv-pitch').textContent()) ?? ''
+  // The hero: a title line, at most two sentences, two calls to action and the CV.
+  await expect(page.locator('.pf-roles')).toContainText('Data Engineer')
+  const line = (await page.locator('.pf-line').textContent()) ?? ''
   expect(
-    pitch.split(/[.!?](\s|$)/).filter((x) => x.trim()).length,
+    line.split(/[.!?](\s|$)/).filter((x) => x.trim()).length,
   ).toBeLessThanOrEqual(2)
   await expect(page.getByRole('link', { name: /Download CV/ })).toHaveAttribute(
     'download',
     '',
   )
+  await expect(page.locator('.home-notice')).toHaveCount(0)
+  // A short menu for the portfolio itself; projects are reached through Selected work.
+  if (!isMobile)
+    await expect(
+      page
+        .getByRole('navigation', { name: 'Main navigation' })
+        .getByRole('link'),
+    ).toHaveText(['Work', 'About', 'Experience', 'Contact', 'CV'])
+  await page
+    .locator('.pf-hero')
+    .getByRole('link', { name: /View projects/ })
+    .click()
+  await expect(page).toHaveURL(/#work$/)
+  await expect(page.locator('#work-title')).toBeInViewport()
+  // Selected work: three projects, each with one preview and a way in.
+  const work = page.locator('#work .pf-project')
+  await expect(work).toHaveCount(3)
+  await expect(work.nth(0)).toContainText('Political Observatory')
+  await expect(work.nth(1)).toContainText('How is Sweden doing?')
+  await expect(work.nth(2)).toContainText('Degree project')
+  for (const img of await page.locator('#work .pf-preview img').all()) {
+    await img.scrollIntoViewIfNeeded()
+    await expect(img).toHaveAttribute('alt', /.{20,}/)
+    await expect
+      .poll(() => img.evaluate((el: HTMLImageElement) => el.naturalWidth))
+      .toBeGreaterThan(0)
+  }
+  // The platform's figures come from the small summary, not the whole schema.
+  const summary = await (
+    await page.request.get('/data/schema/summary.json')
+  ).json()
+  await expect(page.locator('.pf-figures dd').first()).toHaveText(
+    String(summary.models),
+  )
+  await expect(page.locator('.pf-thesis-bars li')).toHaveCount(2)
+  await expect(
+    work.nth(2).getByRole('link', { name: /View case study/ }),
+  ).toHaveAttribute('href', '#thesis')
+  // About: three short paragraphs beside the flow chart. An end opens what is behind it in
+  // place of the text; Escape closes it.
+  const about = page.locator('#om-mig')
+  await expect(about.locator('.pf-about p')).toHaveCount(3)
+  const flow = about.locator('.flow')
+  await expect(flow.locator('.flow-head')).toHaveCount(3)
+  await expect(flow.locator('.flow-end.is-stack')).toHaveCount(5)
+  await expect(flow.locator('.flow-end.is-work')).toHaveCount(4)
+  const end = flow.locator('.flow-end.is-stack button').first()
+  await end.click()
+  await expect(end).toHaveAttribute('aria-expanded', 'true')
+  await expect(flow.locator('.flow-detail')).toContainText('Python')
+  await page.keyboard.press('Escape')
+  await expect(flow.locator('.flow-detail')).toHaveCount(0)
+  await expect(about.locator('.pf-about')).toBeVisible()
+  await flow.locator('.flow-end.is-work button').first().click()
+  await expect(flow.locator('.flow-detail h3')).toContainText('Avtalat')
+  await page.keyboard.press('Escape')
+  // Experience as a timeline, the tools in groups, the smaller work and the contact.
+  await expect(page.locator('#erfarenhet .pf-timeline > li')).toHaveCount(4)
+  await expect(page.locator('#erfarenhet')).toContainText('Fora')
+  await expect(page.locator('#erfarenhet')).toContainText('Avtalat')
+  await expect(page.locator('#teknik .pf-skill')).toHaveCount(5)
+  await expect(page.locator('#mer .pf-other > li')).toHaveCount(2)
+  await expect(page.locator('#kontakt a[href^="mailto:"]')).toBeVisible()
   // A CV for each kind of role, all served.
-  await page.locator('.cv-more-cvs summary').click()
-  await expect(page.locator('.cv-more-cvs a[download]')).toHaveCount(3)
+  await expect(page.locator('.pf-cvs a[download]')).toHaveCount(3)
   for (const href of await page
-    .locator('.cv-more-cvs a[download]')
+    .locator('.pf-cvs a[download]')
     .evaluateAll((links) => links.map((a) => a.getAttribute('href')))) {
     expect((await page.request.get(`/${href}`)).status(), href!).toBe(200)
   }
-  // A note that the site is still being built.
-  await expect(page.locator('.home-notice')).toContainText('still being built')
-  // Experience and the stack further down.
-  await expect(page.locator('#erfarenhet .cv-job')).toHaveCount(4)
-  await expect(page.locator('#erfarenhet')).toContainText('Fora')
-  await expect(page.locator('#erfarenhet')).toContainText('Avtalat')
-  await expect(page.locator('#teknik .cv-stack > div')).toHaveCount(5)
-  // The hero is one flow chart: every line leaves Anton and ends in about me, experience or
-  // the stack. An end opens what is behind it in place of the pitch; Escape closes it.
-  const hero = page.locator('.flow')
-  await expect(hero.locator('.flow-head')).toHaveCount(3)
-  await expect(hero.locator('.flow-end.is-stack')).toHaveCount(5)
-  await expect(hero.locator('.flow-end.is-work')).toHaveCount(4)
-  const end = hero.locator('.flow-end.is-stack button').first()
-  await end.click()
-  await expect(end).toHaveAttribute('aria-expanded', 'true')
-  await expect(hero.locator('.flow-detail')).toContainText('Python')
-  await expect(hero.locator('.flow-line.on').first()).toBeAttached()
-  await page.keyboard.press('Escape')
-  await expect(hero.locator('.flow-detail')).toHaveCount(0)
-  await expect(page.locator('.cv-pitch')).toBeVisible()
-  await hero.locator('.flow-end.is-work button').first().click()
-  await expect(hero.locator('.flow-detail h2')).toContainText('Avtalat')
-  await page.keyboard.press('Escape')
-  // The politics product leads; three AI projects, and a link to all of them.
-  await expect(page.locator('.cv-flagship')).toContainText(
-    'Political Observatory',
-  )
-  await expect(page.locator('.cv-pipeline li')).toHaveCount(5)
-  await expect(page.locator('.cv-project')).toHaveCount(3)
-  await page.locator('.home-more').click()
+  // The old addresses for about and contact lead to their sections.
+  await page.goto('/#about')
+  await expect(page).toHaveURL(/#om-mig$/)
+  await expect(page.locator('#om-mig-title')).toBeInViewport()
+  await page.goto('/')
+  await page.locator('.pf-more a').click()
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
     'What I have built',
   )
@@ -95,20 +133,21 @@ test('home introduces Anton and routes to each project', async ({
     'Swedish politics through data',
   )
   if (!isMobile) {
-    await page.goto('/#start')
+    // From a project, the short menu leads back to the portfolio's sections.
+    await page.goto('/#politik')
     await page
       .getByRole('navigation', { name: 'Main navigation' })
-      .getByRole('link', { name: 'Political Observatory' })
+      .getByRole('link', { name: 'Experience' })
       .click()
-    await expect(page.getByRole('heading', { level: 1 })).toContainText(
-      'Swedish politics through data',
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+      'Anton Ernstsson',
     )
-  }
-  if (!isMobile) {
-    // One sidebar for the whole site; in politics it holds the politics navigation.
+    await expect(page.locator('#erfarenhet-title')).toBeInViewport()
+    // The start page has no sidebar; the projects do, and in politics it holds its navigation.
     const side = page.getByRole('navigation', { name: 'All pages' })
-    await expect(side).toBeVisible()
+    await expect(side).toHaveCount(0)
     await page.goto('/#politik')
+    await expect(side).toBeVisible()
     await expect(
       side.getByRole('navigation', { name: 'Politics' }),
     ).toBeVisible()

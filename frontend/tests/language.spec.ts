@@ -17,7 +17,7 @@ test('language choice persists across project pages and keeps data controls stab
   await page.goto('/#start')
   await page.getByRole('button', { name: 'SV', exact: true }).click()
   await expect(page.locator('html')).toHaveAttribute('lang', 'sv')
-  await expect(page.locator('.cv-role')).toContainText('Tillämpad AI')
+  await expect(page.locator('.pf-roles')).toContainText('Tillämpad AI')
   await expect(
     page.getByRole('button', { name: 'SV', exact: true }),
   ).toHaveAttribute('aria-pressed', 'true')

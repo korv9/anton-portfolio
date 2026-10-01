@@ -5,25 +5,19 @@ import { profile } from '../content'
 // The contents menu loads the first time it is opened.
 const SiteMap = lazy(() => import('./SiteMap'))
 
+// The portfolio's own sections; projects are reached through Selected work, not the menu.
 const LINKS: [string, string, string][] = [
-  ['#projekt', 'Projects', 'Projekt'],
-  ['#politik', 'Political Observatory', 'Political Observatory'],
-  ['#jobb', 'Job market', 'Jobbmarknad'],
-  ['#tallman', 'taLLMan', 'taLLMan'],
-  ['#technical', 'Technical', 'Technical'],
+  ['#work', 'Work', 'Projekt'],
+  ['#om-mig', 'About', 'Om mig'],
+  ['#erfarenhet', 'Experience', 'Erfarenhet'],
+  ['#kontakt', 'Contact', 'Kontakt'],
 ]
 
 export default function Header({
   path,
-  inPolitics,
-  inJobs = false,
-  inTallman = false,
   onLanguage,
 }: {
   path: string
-  inPolitics: boolean
-  inJobs?: boolean
-  inTallman?: boolean
   onLanguage: (next: Locale) => void
 }) {
   const [open, setOpen] = useState(false)
@@ -101,14 +95,7 @@ export default function Header({
             <li key={href}>
               <a
                 href={href}
-                aria-current={
-                  href === path ||
-                  (href === '#politik' && inPolitics) ||
-                  (href === '#jobb' && inJobs) ||
-                  (href === '#tallman' && inTallman)
-                    ? 'true'
-                    : undefined
-                }
+                aria-current={href === path ? 'true' : undefined}
                 onClick={() => setOpen(false)}
               >
                 {l(en, sv)}
