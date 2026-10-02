@@ -770,324 +770,344 @@
   }
 }
 
-/* ---------- The profile as a live bar chart (LiveChart.tsx) ---------- */
+.page-hero .page-lead {
+  padding-left: 0;
+}
 
-.live {
-  margin-top: clamp(2rem, 5vw, 3.5rem);
-  --work: #1f3b57;
-  --edu: #a8834a;
-  --stack: var(--accent-2);
-  --project: var(--ink);
+/* ======================================================================
+ * The hero as one flow chart (HeroFlow.tsx): every line leaves Anton and
+ * ends in about me, experience or the tech stack. Each end is a button.
+ * Colours validated for colour-blind readers (dataviz validator, all pairs).
+ * ==================================================================== */
+
+.flow {
+  --about: #c8413b;
+  --work: #1f78b4;
+  --stack: #b8860b;
+  --row: 2.35rem;
+  --ends: 14rem;
+  display: grid;
+  grid-template-columns: minmax(17rem, 34%) minmax(0, 1fr);
+  grid-template-areas:
+    'panel chart'
+    'note note';
+  column-gap: var(--sp-5);
+  row-gap: var(--sp-3);
+  margin-bottom: var(--sp-5);
+  padding: var(--sp-5) var(--sp-5) var(--sp-4);
+  border: 1px solid var(--line);
+  background: var(--paper);
+  scroll-margin-top: 80px;
 }
-.live-head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.5rem 1.25rem;
+.flow .is-about {
+  --c: var(--about);
 }
-.live-head .home-section-title {
-  margin: 0;
-}
-.live-status {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  margin: 0;
-  padding: 0.2rem 0.55rem;
-  border: 1px solid var(--line-strong);
-  font-family: var(--font-mono) !important;
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-.live-legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.3rem 1rem;
-  margin: 0 0 0 auto;
-  padding: 0;
-  list-style: none;
-  font-size: var(--fs-sm);
-  color: var(--ink-2);
-}
-.live-legend li::before {
-  content: '';
-  display: inline-block;
-  width: 0.7rem;
-  height: 0.7rem;
-  margin-right: 0.4rem;
-  vertical-align: -0.05rem;
-  background: var(--c);
-}
-.live-legend .work,
-.live-col.work {
+.flow .is-work {
   --c: var(--work);
 }
-.live-legend .edu,
-.live-col.edu {
-  --c: var(--edu);
-}
-.live-legend .stack,
-.live-col.stack {
+.flow .is-stack {
   --c: var(--stack);
 }
-.live-legend .project,
-.live-col.project {
-  --c: var(--project);
+
+.flow-panel {
+  grid-area: panel;
+  align-self: center;
+  scroll-margin-top: 80px;
 }
-.live-hint {
-  margin: 0.5rem 0 1rem;
-  font-size: var(--fs-sm);
-  color: var(--muted);
+.flow-panel .cv-name {
+  margin: 0;
+  font-size: clamp(2.3rem, 4.4vw, 3.9rem);
+  line-height: 0.98;
+  letter-spacing: -0.045em;
+  animation: home-rise 800ms 80ms cubic-bezier(0.2, 0.7, 0.1, 1) both;
 }
-.live-scroll {
+.flow-intro .cv-role {
+  margin: 0.7rem 0 0;
+  font-size: var(--fs-card-title);
+  font-weight: 500;
+  color: var(--ink-2);
+}
+.flow-intro .cv-pitch {
+  margin: 0.7rem 0 0;
+  font-size: var(--fs-body);
+  line-height: 1.55;
+  color: var(--ink-2);
+}
+.flow-intro .cv-actions {
+  justify-content: flex-start;
+  max-width: none;
+  margin-top: var(--sp-4);
+}
+.flow-intro .cv-more-cvs ul {
+  left: 0;
+  right: auto;
+}
+
+.flow-chart {
+  grid-area: chart;
   position: relative;
-  overflow: hidden;
-  padding: 1rem 1rem 0.25rem;
-  border: 1px solid var(--line);
-  background:
-    repeating-linear-gradient(
-        to top,
-        transparent 0 calc(25% - 1px),
-        rgba(25, 40, 32, 0.07) calc(25% - 1px) 25%
-      )
-      0 1rem / 100% calc(100% - 3.4rem) no-repeat,
-    var(--paper);
-  scrollbar-width: thin;
+  align-self: center;
+  height: calc(var(--rows) * var(--row));
 }
-.live-bars {
-  display: flex;
-  align-items: stretch;
-  gap: 0.45rem;
-  height: clamp(340px, 52vh, 500px);
-  min-width: 100%;
+.flow-lines {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: calc(100% - var(--ends));
+  height: 100%;
+  overflow: visible;
+}
+.flow-line,
+.flow-run {
+  fill: none;
+  stroke: var(--c);
+  vector-effect: non-scaling-stroke;
+}
+.flow-line {
+  stroke-width: 1.6;
+  opacity: 0.5;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  cursor: pointer;
+  animation: flow-draw 1.5s cubic-bezier(0.3, 0.6, 0.2, 1) forwards;
+  animation-delay: calc(150ms + var(--i) * 14ms);
+  transition:
+    opacity 250ms,
+    stroke-width 250ms;
+}
+.flow-line.on {
+  opacity: 0.95;
+  stroke-width: 2.2;
+}
+.flow-line.off {
+  opacity: 0.1;
+}
+.flow-run {
+  stroke-width: 2.8;
+  stroke-dasharray: 0.07 0.93;
+  stroke-linecap: round;
+  pointer-events: none;
+  animation: flow-run 1.8s linear infinite;
+}
+@keyframes flow-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes flow-run {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+.flow-origin {
+  position: absolute;
+  left: -6px;
+  top: calc(50% - 6px);
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--ink);
+  box-shadow: 0 0 0 4px var(--paper);
+}
+
+.flow-ends {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: var(--ends);
+  height: 100%;
   margin: 0;
   padding: 0;
   list-style: none;
 }
-.live-col {
-  position: relative;
+.flow-ends > li {
+  position: absolute;
+  top: calc(var(--r) * var(--row));
+  left: 0;
+  right: 0;
+  height: var(--row);
   display: flex;
-  flex-direction: column;
-  flex: 1 1 0;
-  min-width: 0;
-  transition:
-    flex-grow 600ms cubic-bezier(0.2, 0.7, 0.1, 1),
-    min-width 600ms cubic-bezier(0.2, 0.7, 0.1, 1),
-    opacity 300ms;
+  align-items: center;
 }
-.live-track {
-  position: relative;
-  flex: 1;
-  display: flex;
-  align-items: flex-end;
+.flow-head {
+  gap: 0.5rem;
+  font-size: var(--fs-meta);
 }
-.live-fill {
-  position: relative;
-  width: 100%;
-  height: calc(var(--h) + var(--lift, 0%));
-  padding: 0;
-  border: 0;
+.flow-head b {
+  font-size: var(--fs-card-title);
+}
+.flow-head b::before {
+  content: '';
+  display: inline-block;
+  width: 0.75rem;
+  height: 0.75rem;
+  margin-right: 0.4rem;
   background: var(--c);
+}
+.flow-head span {
+  font-family: var(--font-mono) !important;
+  color: var(--muted);
+}
+.flow-end button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  height: calc(var(--row) - 4px);
+  padding: 0 0.6rem;
+  border: 0;
+  border-left: 3px solid var(--c);
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--fs-meta);
+  text-align: left;
   cursor: pointer;
   transition:
-    height 1.4s cubic-bezier(0.45, 0, 0.2, 1),
-    filter 200ms;
-  animation: live-grow 900ms cubic-bezier(0.2, 0.7, 0.1, 1) both;
-  animation-delay: calc(var(--i) * 60ms);
-  transform-origin: bottom;
+    background 200ms,
+    padding 200ms;
 }
-@keyframes live-grow {
-  from {
-    transform: scaleY(0);
-  }
+.flow-end button:hover,
+.flow-end button:focus-visible,
+.flow-end.open button {
+  background: color-mix(in srgb, var(--c) 12%, var(--paper));
+  padding-left: 0.9rem;
 }
-.live-col:hover .live-fill,
-.live-fill:focus-visible {
-  --lift: 8%;
-  transition:
-    height 320ms cubic-bezier(0.2, 0.7, 0.1, 1),
-    filter 200ms;
-  filter: brightness(1.18);
+.flow-end.open button {
+  border-left-width: 6px;
+  font-weight: 700;
 }
-.live-fill:focus-visible {
+.flow-end button:focus-visible {
   outline: 3px solid #72c5d8;
-  outline-offset: 2px;
+  outline-offset: 1px;
 }
-.live-top {
-  position: absolute;
-  bottom: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  margin-bottom: 0.3rem;
+.flow-label {
+  overflow: hidden;
+  font-weight: 600;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.flow-count {
+  margin-left: auto;
   font-family: var(--font-mono) !important;
-  font-size: 0.75rem;
-  color: var(--ink-2);
+  font-size: var(--fs-label);
+  color: var(--muted);
   white-space: nowrap;
 }
-.live-label {
-  height: 2.6rem;
-  overflow-wrap: anywhere;
-  padding-top: 0.45rem;
-  overflow: hidden;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  line-height: 1.2;
-  text-align: center;
-  text-overflow: ellipsis;
-  color: var(--ink);
+.flow.has-focus .flow-end:not(.open) button:not(:hover):not(:focus-visible) {
+  color: var(--ink-2);
 }
 
-/* One bar open: it takes the width and the full height, the others step back. */
-.live.has-open .live-col {
-  flex-grow: 0.3;
-  opacity: 0.55;
+.flow-detail {
+  margin-top: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4) var(--sp-2);
+  border: 1px solid var(--line-strong);
+  border-left: 5px solid var(--c);
+  background: var(--paper);
+  animation: flow-detail-in 380ms cubic-bezier(0.2, 0.7, 0.1, 1) both;
 }
-.live.has-open .live-col.open {
-  flex-grow: 8;
-  opacity: 1;
-}
-.live.has-open .live-col:not(.open) .live-label,
-.live.has-open .live-col:not(.open) .live-top {
-  visibility: hidden;
-}
-.live-col.open .live-fill {
-  height: 100%;
-  transition: height 600ms cubic-bezier(0.2, 0.7, 0.1, 1);
-  cursor: zoom-out;
-}
-.live-col.open .live-top {
-  opacity: 0;
-}
-.live-detail {
-  position: absolute;
-  inset: 0;
-  overflow-y: auto;
-  padding: 1.1rem 1.25rem 1.25rem;
-  color: #fff;
-  font-size: var(--fs-sm);
-  line-height: 1.55;
-  animation: live-detail-in 420ms 240ms cubic-bezier(0.2, 0.7, 0.1, 1) both;
-  scrollbar-width: thin;
-}
-.live-detail[hidden] {
-  display: none;
-}
-@keyframes live-detail-in {
+@keyframes flow-detail-in {
   from {
     opacity: 0;
     transform: translateY(12px);
   }
 }
-.live-detail-head {
+.flow-detail-head {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  gap: 1rem;
+  align-items: center;
 }
-.live-detail h3 {
-  margin: 0 0 0.5rem;
-  font-size: clamp(1.15rem, 2vw, 1.45rem);
-  letter-spacing: -0.02em;
+.flow-kind {
+  font-size: var(--fs-label);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
 }
-.live-close {
-  flex: none;
+.flow-close {
   width: 2rem;
   height: 2rem;
-  border: 1px solid rgba(255, 255, 255, 0.45);
-  background: transparent;
-  color: #fff;
+  border: 1px solid var(--line-strong);
+  background: var(--paper);
   cursor: pointer;
 }
-.live-close:hover {
-  background: #fff;
-  color: var(--c);
+.flow-detail h2 {
+  margin: 0.3rem 0 0.5rem;
+  font-size: var(--fs-section-title);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
 }
-.live-detail p {
+.flow-detail p,
+.flow-list {
   margin: 0 0 0.6rem;
+  font-size: var(--fs-body);
+  line-height: 1.55;
 }
-.live-meta {
-  font-family: var(--font-mono) !important;
-  font-size: 0.75rem;
-  letter-spacing: 0.04em;
-  opacity: 0.85;
-}
-.live-list {
-  margin: 0 0 0.8rem;
+.flow-list {
   padding-left: 1.1rem;
 }
-.live-list li + li {
-  margin-top: 0.35rem;
+.flow-meta {
+  font-family: var(--font-mono) !important;
+  font-size: var(--fs-label) !important;
+  color: var(--muted);
 }
-.live-list.links {
-  padding: 0;
-  list-style: none;
-}
-.live-list small {
-  opacity: 0.8;
-}
-.live-chips {
+.flow-chips {
   display: flex;
   flex-wrap: wrap;
   gap: 0.3rem;
-  margin: 0 0 0.8rem;
+  margin: 0 0 0.6rem;
   padding: 0;
   list-style: none;
 }
-.live-chips li {
-  padding: 0.2rem 0.45rem;
-  border: 1px solid rgba(255, 255, 255, 0.4);
+.flow-chips li {
+  padding: 0.15rem 0.45rem;
+  border: 1px solid var(--line);
   font-family: var(--font-mono) !important;
-  font-size: 0.75rem;
+  font-size: var(--fs-label);
 }
-.live-detail a {
-  color: #fff;
-  text-underline-offset: 0.2em;
-}
-.live-links {
+.flow-links {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.4rem 1.2rem;
+  gap: 0.3rem 1rem;
   font-weight: 600;
 }
+.flow-note {
+  grid-area: note;
+  margin: 0;
+  font-size: var(--fs-meta);
+  color: var(--muted);
+}
+
+/* Phones: the name first, then the chart, narrower ends; what an end opens scrolls into view. */
+@media (max-width: 760px) {
+  .flow {
+    --row: 2.75rem;
+    --ends: 10.5rem;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'panel'
+      'chart'
+      'note';
+    padding: var(--sp-4) var(--sp-3);
+    row-gap: var(--sp-4);
+  }
+  .flow-chart {
+    margin-left: 8px;
+  }
+  .flow-head b {
+    font-size: var(--fs-body);
+  }
+}
 @media (prefers-reduced-motion: reduce) {
-  .live-fill,
-  .live-detail {
+  .flow-line {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+  .flow-panel .cv-name,
+  .flow-detail {
     animation: none;
   }
-  .live-fill,
-  .live-col {
-    transition: none;
-  }
-}
-
-/* Narrow screens: the labels stand on end so every bar fits without scrolling. */
-@media (max-width: 700px) {
-  .live-bars {
-    gap: 0.25rem;
-    height: clamp(300px, 60vh, 420px);
-  }
-  .live-scroll {
-    padding: 1rem 0.5rem 0.25rem;
-  }
-  .live-label {
-    height: 6.2rem;
-    writing-mode: vertical-rl;
-    transform: rotate(180deg);
-    text-align: left;
-    font-size: 0.75rem;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    align-self: center;
-  }
-  .live-top {
-    font-size: 0.6875rem;
-  }
-  .live-detail {
-    padding: 0.8rem;
-  }
-}
-
-.page-hero .page-lead {
-  padding-left: 0;
 }

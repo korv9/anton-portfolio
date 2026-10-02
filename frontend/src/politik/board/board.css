@@ -17,7 +17,8 @@
   gap: 1rem;
   flex-wrap: wrap;
 }
-.board-head h1 {
+.board-head h1,
+.board-head h2.board-title-2 {
   margin: 0;
   font-size: var(--fs-page-title);
   line-height: 1.15;
@@ -488,4 +489,12 @@
   .budget-id {
     grid-template-columns: minmax(0, 1fr);
   }
+}
+
+/* In a table, the party markers stay on one line; the table scrolls sideways instead. */
+.board-table .party-dots {
+  flex-wrap: nowrap;
+}
+.board-table td:has(.party-dots) {
+  min-width: max-content;
 }

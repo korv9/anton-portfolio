@@ -12,18 +12,22 @@ export function Board({
   title,
   sub,
   slicers,
+  level = 1,
   children,
 }: {
   title: ReactNode
   sub?: ReactNode
   slicers?: ReactNode
+  /** The heading level: 2 when the board sits under a page's own heading. */
+  level?: 1 | 2
   children: ReactNode
 }) {
+  const H = level === 1 ? 'h1' : 'h2'
   return (
     <div className="board">
       <header className="board-head">
         <div>
-          <h1>{title}</h1>
+          <H className={level === 2 ? 'board-title-2' : undefined}>{title}</H>
           {sub && <p className="board-sub">{sub}</p>}
         </div>
         {slicers && (

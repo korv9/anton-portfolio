@@ -17,11 +17,12 @@ test('the parties: a card each, and a dashboard for the chosen party', async ({
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
     'Centre Party',
   )
-  await expect(page.locator('.board-kpis .dash-kpi')).toHaveCount(6)
+  await expect(page.locator('.board-kpis .dash-kpi')).toHaveCount(5)
   await expect(page.locator('.board-kpis')).toContainText('/ 290')
   await expect(page.locator('.party-members li')).not.toHaveCount(0)
-  await expect(page.locator('.board-card').first()).toContainText(
-    'Riksdag elections',
+  // The seats chart follows the chosen party through every election.
+  await expect(page.locator('#mandat .alluvial-readout')).toContainText(
+    'Centre Party',
   )
   const scan = await new AxeBuilder({ page }).analyze()
   expect(scan.violations.map((v) => v.id)).toEqual([])

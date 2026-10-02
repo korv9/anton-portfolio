@@ -1,0 +1,349 @@
+/* The politics feature charts (one per page). The frame is charts/feature/feature.css. */
+
+/* Waffles: one per party, a hundred squares each. */
+.waffles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr));
+  gap: var(--sp-3) var(--sp-4);
+  margin-top: var(--sp-3);
+}
+.waffle {
+  margin: 0;
+  animation: feature-rise 420ms cubic-bezier(0.2, 0.7, 0.1, 1) both;
+  animation-delay: calc(var(--i) * 40ms);
+}
+.waffle figcaption {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.4rem;
+  font-size: var(--fs-meta);
+  font-weight: 600;
+}
+.waffle figcaption span {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.waffle figcaption b {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}
+.waffle-grid {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 2px;
+}
+.waffle-grid span {
+  aspect-ratio: 1;
+  opacity: 0.28;
+  transition: opacity 250ms;
+}
+.waffle-grid span.on {
+  opacity: 1;
+}
+.waffle-grid:hover span {
+  opacity: 0.55;
+}
+.waffle-grid:hover span.on {
+  opacity: 1;
+}
+.waffle figcaption b {
+  white-space: nowrap;
+}
+
+/* Poll trend with names at the line ends. */
+.trend {
+  position: relative;
+  width: 100%;
+}
+.trend svg {
+  display: block;
+  overflow: visible;
+}
+.trend-grid line {
+  stroke: var(--line);
+}
+.trend-grid text,
+.trend-year {
+  font-size: 11px;
+  fill: var(--muted);
+}
+.trend-party path {
+  fill: none;
+  stroke: var(--c);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  transition: opacity 250ms;
+}
+.trend-election {
+  fill: var(--paper);
+  stroke: var(--c);
+  stroke-width: 1.5;
+}
+.trend-party.faded,
+.trend-end.faded {
+  opacity: 0.15;
+}
+.trend-end {
+  cursor: default;
+  transition: opacity 250ms;
+}
+.trend-end line {
+  stroke: var(--c);
+}
+.trend-end text {
+  font-size: 12px;
+  fill: var(--ink);
+}
+.trend-name {
+  font-weight: 600;
+}
+.trend-value {
+  fill: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+}
+.trend-cross {
+  stroke: var(--ink);
+  stroke-dasharray: 3 3;
+}
+.trend-tip {
+  transform: translate(-50%, 0);
+  display: grid;
+  grid-template-columns: repeat(2, auto);
+  gap: 0.1rem 0.8rem;
+}
+.trend-tip b {
+  grid-column: 1 / -1;
+}
+.trend-tip span::before {
+  content: '';
+  display: inline-block;
+  width: 0.55rem;
+  height: 0.55rem;
+  margin-right: 0.3rem;
+  background: var(--c);
+}
+
+/* Alluvial: seats election to election. */
+.alluvial {
+  position: relative;
+  width: 100%;
+}
+.alluvial svg {
+  display: block;
+  overflow: visible;
+}
+.alluvial-ribbon {
+  opacity: 0.32;
+  transition: opacity 250ms;
+}
+.alluvial-block {
+  transition: opacity 250ms;
+}
+.alluvial-ribbon.on {
+  opacity: 0.75;
+}
+.alluvial-ribbon.off,
+.alluvial-block.off,
+.alluvial-label.off {
+  opacity: 0.12;
+}
+.alluvial-year {
+  font-size: 11px;
+  fill: var(--muted);
+}
+.alluvial-label {
+  font-size: 12px;
+  fill: var(--ink);
+  transition: opacity 250ms;
+}
+.alluvial-readout {
+  margin: 0.5rem 0 0;
+  font-size: var(--fs-meta);
+  font-variant-numeric: tabular-nums;
+}
+.alluvial-swatch {
+  display: inline-block;
+  width: 0.7rem;
+  height: 0.7rem;
+  margin-right: 0.35rem;
+  vertical-align: -0.05rem;
+}
+
+/* Budget flow: the government's total into the expenditure areas. */
+.budgetflow {
+  position: relative;
+  width: 100%;
+}
+.budgetflow svg {
+  display: block;
+  overflow: visible;
+}
+.budgetflow-band {
+  opacity: 0.6;
+  transition: opacity 250ms;
+}
+.budgetflow-band.on {
+  opacity: 0.95;
+}
+.budgetflow-band.off,
+.budgetflow-label.off {
+  opacity: 0.18;
+}
+.budgetflow-source {
+  fill: var(--ink);
+}
+.budgetflow-total {
+  font-size: 13px;
+  fill: var(--ink);
+}
+.budgetflow-label {
+  transition: opacity 250ms;
+}
+.budgetflow-label line {
+  stroke: var(--line-strong);
+}
+.budgetflow-label text {
+  font-size: 11.5px;
+  fill: var(--ink);
+}
+.budgetflow-num {
+  fill: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Tax bubbles in bands. */
+.taxbands {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3) 12px;
+  width: 100%;
+}
+.taxband {
+  border-top: 3px solid var(--c);
+  padding-top: 0.4rem;
+}
+.taxband h3 {
+  margin: 0;
+  font-size: var(--fs-meta);
+  line-height: 1.25;
+  min-height: 2.5em;
+}
+.taxband p {
+  margin: 0 0 0.4rem;
+  font-size: var(--fs-label);
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.taxband svg {
+  display: block;
+  overflow: visible;
+}
+.taxbubble circle {
+  fill: var(--c);
+  fill-opacity: 0.85;
+  transition: fill-opacity 200ms;
+}
+.taxbubble text {
+  font-size: 11px;
+  font-weight: 600;
+  fill: #111;
+  pointer-events: none;
+}
+.taxbubble-num {
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+}
+.taxbubble.off circle {
+  fill-opacity: 0.25;
+}
+.taxbubble:not(.off) circle:hover {
+  fill-opacity: 1;
+  stroke: var(--ink);
+  stroke-width: 1.5;
+}
+
+/* Leaderboard: one ranked column per measure. */
+.leaderboard-scroll {
+  overflow-x: auto;
+}
+.leaderboard {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(var(--cols), minmax(6.5rem, 1fr));
+  gap: 0 3%;
+  min-width: calc(var(--cols) * 7rem);
+}
+.leaderboard-col h3 {
+  height: 2.6rem;
+  overflow: hidden;
+  margin: 0 0 0.4rem;
+  font-size: var(--fs-label);
+  font-weight: 700;
+  line-height: 1.3;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+.leaderboard ol {
+  position: relative;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.leaderboard li {
+  height: var(--row);
+  transition: opacity 200ms;
+}
+.leaderboard li.off {
+  opacity: 0.3;
+}
+.leaderboard li button {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  width: 100%;
+  height: calc(var(--row) - 4px);
+  padding: 0 0.4rem;
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--c);
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--fs-meta);
+  cursor: pointer;
+}
+.leaderboard li.on button {
+  border-color: var(--ink);
+  border-left-color: var(--c);
+  background: color-mix(in srgb, var(--c) 14%, var(--paper));
+  font-weight: 700;
+}
+.leaderboard-rank {
+  width: 1.1rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.leaderboard-value {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}
+.leaderboard-path {
+  position: absolute;
+  left: 0;
+  top: calc(2.6rem + 0.4rem - 2px);
+  width: 100%;
+  height: calc(var(--row) * 8);
+  overflow: visible;
+  pointer-events: none;
+}
+.leaderboard-path line {
+  stroke-width: 3;
+}
+@media (max-width: 640px) {
+  .leaderboard-code {
+    display: none;
+  }
+}

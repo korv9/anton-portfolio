@@ -12,7 +12,6 @@ import { shownParties, useParties } from '../partySelection'
 import { useViewParams } from '../useViewParams'
 import { Select, dayName, num } from '../controls'
 import { Board, Card, Cards, Empty, Kpi, Kpis } from '../board/Board'
-import Columns, { ColumnMultiples } from '../board/Columns'
 import Heatmap from '../dash/Heatmap'
 import { debateHref } from './DebateView'
 import {
@@ -20,7 +19,6 @@ import {
   loadDebateIndex,
   loadIssueLexicon,
   loadSpeeches,
-  totalFor,
   type DebateIndex,
   type Speech,
 } from './data'
@@ -28,7 +26,7 @@ import DebateTimeline from './DebateTimeline'
 import TopicBars from './TopicBars'
 import './debatter.css'
 
-const DEFAULTS = { debatt: '', fran: '2014' }
+const DEFAULTS = { debatt: '' }
 
 export default function Partiledardebatter({ route }: { route: Route }) {
   const [view, setView] = useViewParams(route, DEFAULTS)
@@ -92,13 +90,8 @@ export default function Partiledardebatter({ route }: { route: Route }) {
 
   const all = index.leaders
   const debate = all.find((d) => d.id === view.debatt) ?? all.at(-1)!
-  const since = all.filter(
-    (d) => Number(d.date.slice(0, 4)) >= Number(view.fran),
-  )
   const parties = shownParties(selected)
   const present = parties.filter((p) => debate.parties[p])
-  const label = (d: (typeof all)[number]) =>
-    d.date.slice(2, 7).replace('-', '/')
 
   const given = present.map((p) => ({
     party: p,
@@ -110,7 +103,6 @@ export default function Partiledardebatter({ route }: { route: Route }) {
   }))
   const topGiven = [...given].sort((a, b) => b.n - a.n)[0]
   const topReceived = [...received].sort((a, b) => b.n - a.n)[0]
-  const years = [...new Set(all.map((d) => d.date.slice(0, 4)))]
   const earlierDebate = all[all.indexOf(debate) - 1]
 
   // What each party talked about: the share of its words in speeches whose words point to each
@@ -168,31 +160,10 @@ export default function Partiledardebatter({ route }: { route: Route }) {
               .map((d) => ({ value: d.id, label: `${d.date} · ${d.session}` }))}
             onChange={(debatt) => setView({ debatt })}
           />
-          <Select
-            label={l('Over time from', 'Över tid från')}
-            value={view.fran}
-            options={years
-              .filter((y) => Number(y) % 2 === 0 || y === years[0])
-              .map((y) => ({ value: y, label: y }))}
-            onChange={(fran) => setView({ fran })}
-          />
         </>
       }
     >
       <Kpis>
-        <Kpi
-          index={0}
-          label={l('Speeches and replies', 'Anföranden och repliker')}
-          value={debate.speeches}
-          format={(v) => num(v)}
-          sub={dayName(debate.date)}
-        />
-        <Kpi
-          index={1}
-          label={l('Of which replies', 'Varav repliker')}
-          value={debate.replies}
-          format={(v) => num(v)}
-        />
         <Kpi
           index={2}
           label={l('Replies most', 'Replikerar mest')}
@@ -293,40 +264,6 @@ export default function Partiledardebatter({ route }: { route: Route }) {
         </Card>
 
         <Card
-          index={2}
-          wide
-          title={l('The debates over time', 'Debatterna över tid')}
-          meta={l(
-            'Darker: speeches · lighter: replies and answers · click a column to choose the debate',
-            'Mörkare: anföranden · ljusare: repliker och svar · klicka på en kolumn för att välja debatten',
-          )}
-        >
-          <Columns
-            categories={since.map(label)}
-            series={[
-              {
-                key: 'a',
-                label: l('Speeches', 'Anföranden'),
-                values: since.map((d) => d.speeches - d.replies),
-              },
-              {
-                key: 'r',
-                label: l('Replies', 'Repliker'),
-                values: since.map((d) => d.replies),
-              },
-            ]}
-            stacked
-            highlight={since.findIndex((d) => d.id === debate.id)}
-            onPick={(i) => setView({ debatt: since[i].id })}
-            format={(v) => num(v)}
-            label={l(
-              'Speeches and replies per party-leader debate',
-              'Anföranden och repliker per partiledardebatt',
-            )}
-          />
-        </Card>
-
-        <Card
           index={3}
           title={l('Who replies to whom', 'Vem replikerar på vem')}
           meta={l(
@@ -345,64 +282,6 @@ export default function Partiledardebatter({ route }: { route: Route }) {
             caption={l(
               'Replies from the row party to the column party',
               'Repliker från radens parti till kolumnens parti',
-            )}
-          />
-        </Card>
-
-        <Card
-          index={4}
-          title={l('Each party’s part', 'Varje partis del')}
-          meta={l(
-            'Darker: speeches · lighter: replies and answers',
-            'Mörkare: anföranden · ljusare: repliker och svar',
-          )}
-        >
-          <Columns
-            categories={present}
-            series={[
-              {
-                key: 'a',
-                label: l('Speeches', 'Anföranden'),
-                values: present.map((p) => debate.parties[p][0]),
-              },
-              {
-                key: 'r',
-                label: l('Replies', 'Repliker'),
-                values: present.map((p) => debate.parties[p][1]),
-              },
-            ]}
-            stacked
-            format={(v) => num(v)}
-            label={l(
-              'Speeches and replies per party',
-              'Anföranden och repliker per parti',
-            )}
-          />
-        </Card>
-
-        <Card
-          index={5}
-          wide
-          title={l('Each party over time', 'Varje parti över tid')}
-          meta={l(
-            'Speeches and replies per debate, one chart per party on the same scale',
-            'Anföranden och repliker per debatt, ett diagram per parti på samma skala',
-          )}
-        >
-          <ColumnMultiples
-            categories={since.map(label)}
-            series={parties.map((p) => ({
-              key: p,
-              label: partyName(p),
-              party: p,
-              values: since.map((d) =>
-                d.parties[p] ? totalFor(d.parties, p) : null,
-              ),
-            }))}
-            format={(v) => num(v)}
-            label={l(
-              'Speeches and replies per debate',
-              'Anföranden och repliker per debatt',
             )}
           />
         </Card>

@@ -457,3 +457,194 @@ export const PROJECTS: Project[] = [
     ),
   },
 ]
+
+/**
+ * The start page in one place: the hero, the work it shows, and the short About. Every fact is
+ * from the CVs or a project page on the site; the start page is generated from this.
+ */
+export const HERO = {
+  roles: t(
+    'Data Engineer · Analytics Engineer · Tillämpad AI',
+    'Data Engineer · Analytics Engineer · Applied AI',
+  ),
+  line: t(
+    'Jag bygger dataprodukter, analyssystem och AI-tillämpningar: från pipelines och datamodeller till interaktiv analys och gränssnittet ovanpå.',
+    'I build data products, analytics systems and AI applications: from pipelines and data models to interactive analysis and the interface on top.',
+  ),
+}
+
+export type WorkItem = {
+  slug: string
+  title: Bilingual
+  kind: Bilingual
+  description: Bilingual
+  /** The problem it solves, in one line (selected work). */
+  problem?: Bilingual
+  /** Three to five, the ones that matter for this project. */
+  tech: string[]
+  /** One static preview from the project itself; none: the snippet draws its own figure. */
+  image?: { src: string; alt: Bilingual; width: number; height: number }
+  href: string
+  cta: Bilingual
+  code?: string
+  /** Selected work gets a large snippet; other work a small card. */
+  featured: boolean
+}
+
+export const WORK: WorkItem[] = [
+  {
+    slug: 'politics',
+    title: t('Political Observatory', 'Political Observatory'),
+    kind: t(
+      'Politisk analys · dataprodukt',
+      'Political analytics · data product',
+    ),
+    description: t(
+      'Interaktiv analys av riksdagens voteringar, debatter och budgetar, från offentliga källor till testade modeller och en graf per fråga.',
+      'Interactive analysis of the Riksdag’s votes, debates and budgets, from public sources to tested models and one chart per question.',
+    ),
+    problem: t(
+      'Politisk data ligger utspridd hos flera myndigheter och är svår att jämföra parti för parti.',
+      'Political data is spread across agencies and hard to compare party by party.',
+    ),
+    tech: ['Python', 'dbt', 'DuckDB', 'Parquet', 'React'],
+    image: {
+      src: 'previews/politics.webp',
+      alt: t(
+        'Heatmap över röstlikhet: andelen voteringar där två riksdagspartier hade samma ståndpunkt, parti mot parti, från 26 till 100 procent.',
+        'Heatmap of voting similarity: the share of roll calls where two Riksdag parties took the same position, party against party, from 26 to 100 per cent.',
+      ),
+      width: 1200,
+      height: 800,
+    },
+    href: '#politik',
+    cta: t('Utforska Political Observatory', 'Explore Political Observatory'),
+    code: 'https://github.com/korv9/anton-portfolio',
+    featured: true,
+  },
+  {
+    slug: 'welfare',
+    title: t('Hur mår Sverige?', 'How is Sweden doing?'),
+    kind: t(
+      'Analytics engineering · datalager',
+      'Analytics engineering · data warehouse',
+    ),
+    description: t(
+      'Fem offentliga källor i en testad dbt-stjärnmodell, så att län och kommuner kan jämföras sida vid sida.',
+      'Five public sources in a tested dbt star schema, so counties and municipalities can be compared side by side.',
+    ),
+    problem: t(
+      'SCB, Försäkringskassan, Folkhälsomyndigheten, ESS och Kolada använder olika nycklar och nivåer.',
+      'SCB, Försäkringskassan, the Public Health Agency, ESS and Kolada use different keys and levels.',
+    ),
+    tech: ['dbt', 'DuckDB', 'SQL', 'Star schema', 'Parquet'],
+    image: {
+      src: 'previews/welfare.webp',
+      alt: t(
+        'Arbetslöshet 2005–2025 i nio län, ett litet linjediagram per län mot snittet för alla län, på samma axel.',
+        'Unemployment 2005–2025 in nine counties, one small line chart per county against the average of all counties, on the same axis.',
+      ),
+      width: 1200,
+      height: 800,
+    },
+    href: '#sweden',
+    cta: t('Utforska datalagret', 'Explore the warehouse'),
+    code: 'https://github.com/korv9/anton-portfolio/tree/main/platform',
+    featured: true,
+  },
+  {
+    slug: 'thesis',
+    title: t('Mönster i IT-incidenter', 'Patterns in IT incidents'),
+    kind: t(
+      'Examensarbete · Avtalat · 2026',
+      'Degree project · Avtalat · 2026',
+    ),
+    description: t(
+      'Oövervakad NLP på 21 000+ riktiga produktionsincidenter: liknande incidenter grupperas så att verksamheten kan granska dem som möjliga problemposter.',
+      'Unsupervised NLP on 21,000+ real production incidents: similar incidents are grouped so the business can review them as possible problem records.',
+    ),
+    problem: t(
+      'Återkommande fel gömmer sig i tusentals fritextincidenter som ingen hinner läsa.',
+      'Recurring faults hide in thousands of free-text incidents nobody has time to read.',
+    ),
+    tech: ['Python', 'sentence-transformers', 'UMAP', 'HDBSCAN', 'Databricks'],
+    href: '#thesis',
+    cta: t('Läs fallstudien', 'View case study'),
+    featured: true,
+  },
+  {
+    slug: 'drugcomb',
+    title: t('Läkemedelssynergi', 'Drug synergy prediction'),
+    kind: t('Maskininlärning', 'Machine learning'),
+    description: t(
+      'Molekylfingeravtryck, RNA-uttryck och cellinjedata kombinerade för att förutsäga synergi, med skydd mot dataläckage.',
+      'Fingerprints, RNA expression and cell-line data combined to predict synergy, with leakage prevention.',
+    ),
+    tech: ['Python', 'scikit-learn', 'LightGBM', 'TensorFlow'],
+    href: '#drugcomb',
+    cta: t('Öppna projektet', 'Open project'),
+    code: 'https://github.com/korv9/DrugComb-Synergy-Prediction',
+    featured: false,
+  },
+  {
+    slug: 'homie',
+    title: t('Homie API', 'Homie API'),
+    kind: t('Python-backend · pågående', 'Python backend · in progress'),
+    description: t(
+      'FastAPI- och PostgreSQL-tjänst med autentisering, migreringar och ett OpenAPI-kontrakt.',
+      'FastAPI and PostgreSQL service with authentication, migrations and an OpenAPI contract.',
+    ),
+    tech: ['FastAPI', 'PostgreSQL', 'SQLAlchemy', 'Docker Compose'],
+    href: '#homie',
+    cta: t('Öppna projektet', 'Open project'),
+    code: 'https://github.com/korv9/homie-api',
+    featured: false,
+  },
+]
+
+/** The degree project in three steps, with the figures from its case study. */
+export const THESIS_STEPS: { title: Bilingual; body: Bilingual }[] = [
+  {
+    title: t('Datakvalitet först', 'Data quality first'),
+    body: t(
+      'Utvalda dimensioner i ISO/IEC 25012 bedömdes, och personuppgifter maskerades med Presidio, innan någon modell kördes.',
+      'Selected ISO/IEC 25012 dimensions were assessed, and personal data masked with Presidio, before any model ran.',
+    ),
+  },
+  {
+    title: t('Text blir grupper', 'Text becomes groups'),
+    body: t(
+      'Flerspråkiga meningsinbäddningar, UMAP ned till 10 dimensioner och HDBSCAN hittade 121 kluster.',
+      'Multilingual sentence embeddings, UMAP down to 10 dimensions and HDBSCAN found 121 clusters.',
+    ),
+  },
+  {
+    title: t('Grupper blir granskning', 'Groups become review'),
+    body: t(
+      '72 kluster saknade koppling till en befintlig problempost: kandidater för granskning, inte bevisade grundorsaker.',
+      '72 clusters lacked a link to an existing problem record: candidates for review, not proven root causes.',
+    ),
+  },
+]
+
+/** Silhouette per method, as reported in the case study. */
+export const THESIS_SILHOUETTE = [
+  { method: 'HDBSCAN', value: 0.706 },
+  { method: 'K-means', value: 0.534 },
+]
+
+/** About, short: what kind of work, not every tool. */
+export const ABOUT: Bilingual[] = [
+  t(
+    'Jag bygger data- och AI-produkter hela vägen: hämtar data från källan, gör den pålitlig med tester och modeller, och bygger gränssnittet där någon faktiskt använder den.',
+    'I build data and AI products end to end: pulling data from the source, making it reliable with tests and models, and building the interface where someone actually uses it.',
+  ),
+  t(
+    'Det jag gillar mest är att göra komplex data begriplig, att en fråga ska kunna besvaras med en graf och källan ett klick bort.',
+    'What I like most is making complex data understandable: a question answered with one chart, and the source one click away.',
+  ),
+  t(
+    'Jag har praktiserat som data engineer på Fora och analytics engineer på Avtalat, och tog examen som AI-utvecklare vid JENSEN YH i juni 2026.',
+    'I have interned as a data engineer at Fora and an analytics engineer at Avtalat, and graduated as an AI developer from JENSEN YH in June 2026.',
+  ),
+]

@@ -38,9 +38,8 @@ export const REDIRECTS: Record<string, string> = {
   '#now-election': '#politik',
   '#politik-debatter': '#politik-sakdebatter',
   '#politics-page': '#politik',
-  '#about': '#start',
-  '#om-mig': '#start',
-  '#kontakt': '#start',
+  '#about': '#om-mig',
+  '#contact': '#kontakt',
   '#kompetenser': '#teknik',
   '#projects': '#projekt',
   // The semantic-drift report is withdrawn while it is reworked.

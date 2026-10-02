@@ -56,6 +56,8 @@ export default function App() {
   }, [route.path, route.page])
 
   const { page, path } = route
+  // The start page is a portfolio with its own short menu; the sidebar is for the projects.
+  const side = wide && page !== 'home'
   const back =
     page === 'datamodel' || page === 'status' ? (
       <ProjectBar
@@ -83,16 +85,10 @@ export default function App() {
         {l('Skip to content', 'Hoppa till innehåll')}
       </a>
       <Intro />
-      <Header
-        path={path}
-        inPolitics={page === 'politik'}
-        inJobs={page === 'jobs'}
-        inTallman={page === 'tallman'}
-        onLanguage={setLanguage}
-      />
-      <DockContext.Provider value={wide ? dock : null}>
-        <div className={wide ? 'site-shell has-side' : 'site-shell'}>
-          {wide && <SideNav route={route} onDock={setDock} />}
+      <Header path={path} onLanguage={setLanguage} />
+      <DockContext.Provider value={side ? dock : null}>
+        <div className={side ? 'site-shell has-side' : 'site-shell'}>
+          {side && <SideNav route={route} onDock={setDock} />}
           <div className="site-content">
             <main id="main" tabIndex={-1} key={language}>
               {back}

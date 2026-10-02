@@ -19,6 +19,8 @@ type Props = {
   question: string
   why: string
   kpis: Kpi[]
+  /** The page's feature chart, shown first, above the key figures. */
+  feature?: ReactNode
   /** Quick filters above the chart: period, party, issue. At most two or three. */
   filters?: ReactNode
   chartTitle: string
@@ -78,6 +80,7 @@ export default function ThemeLayout(props: Props) {
         </p>
       ) : (
         <>
+          {props.feature}
           {props.kpis.length > 0 && (
             <dl className="theme-kpis">
               {props.kpis.slice(0, 3).map((kpi) => (

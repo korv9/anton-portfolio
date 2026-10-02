@@ -21,6 +21,7 @@ import { Select, monthName, num, pct, signed } from '../controls'
 import { useViewParams } from '../useViewParams'
 import { shownParties, useParties } from '../partySelection'
 import Bars from '../Bars'
+import PollTrend from '../features/PollTrend'
 
 type PollRow = {
   survey_month: string
@@ -244,16 +245,10 @@ export default function ValjarnaTheme({ route }: { route: Route }) {
         )}
         loading={!loaded && !error}
         error={error}
+        feature={<PollTrend selected={selected} />}
         kpis={
           leader && latest
             ? [
-                {
-                  value: pct(leader.share_pct),
-                  label: l(
-                    `${partyName(leader.party)}, largest in ${monthName(latest)}`,
-                    `${partyName(leader.party)}, störst i ${monthName(latest)}`,
-                  ),
-                },
                 ...(mover && previous
                   ? [
                       {

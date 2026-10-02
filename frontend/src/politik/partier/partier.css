@@ -139,3 +139,10 @@
     animation: none;
   }
 }
+/* Phones: one card per row, so the figures have room. */
+@media (max-width: 480px) {
+  .party-cards,
+  .party-cards.compact {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

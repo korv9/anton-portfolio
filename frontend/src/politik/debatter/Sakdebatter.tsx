@@ -9,12 +9,13 @@ import { RIKSDAG_PARTIES, identity, partyName } from '../../parties/identity'
 import type { Route } from '../../router'
 import { shownParties, useParties } from '../partySelection'
 import { useViewParams } from '../useViewParams'
-import { Select, dayName, num, pct } from '../controls'
+import { Select, dayName, num } from '../controls'
 import { Board, Card, Cards, Empty, Kpi, Kpis } from '../board/Board'
 import Columns from '../board/Columns'
 import DashBars from '../dash/DashBars'
 import { IssueChips, debateHref } from './DebateView'
-import TopicBars from './TopicBars'
+import DebateLeaderboard from '../features/DebateLeaderboard'
+import SakAnalys from './SakAnalys'
 import './debatter.css'
 import {
   loadDebateIndex,
@@ -25,14 +26,33 @@ import {
 } from './data'
 
 const DEFAULTS = { riksmote: '', omrade: '', sok: '' }
-const short = (session: string) => session.slice(2, 4) + '/' + session.slice(-2)
 
+/**
+ * The page: the analysis of the chosen party (or the Riksdag) first, then the riksmöte-level
+ * explorer (leaderboard, the votes on the debated reports, every debate) behind "Fördjupa".
+ */
 export default function Sakdebatter({ route }: { route: Route }) {
+  return (
+    <>
+      <SakAnalys route={route} />
+      <details className="sak-deeper" id="fordjupa">
+        <summary>
+          {l(
+            'Go deeper: the debates riksmöte by riksmöte — leaderboard, votes on the reports and every debate',
+            'Fördjupa analysen: debatterna riksmöte för riksmöte — topplista, röster på betänkandena och alla debatter',
+          )}
+        </summary>
+        <Explorer route={route} />
+      </details>
+    </>
+  )
+}
+
+function Explorer({ route }: { route: Route }) {
   const [view, setView] = useViewParams(route, DEFAULTS)
   const { selected } = useParties(route)
   const [index, setIndex] = useState<DebateIndex | null>(null)
   const [debates, setDebates] = useState<IssueDebate[] | null>(null)
-  const [before, setBefore] = useState<IssueDebate[] | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [query, setQuery] = useState(view.sok)
 
@@ -44,9 +64,6 @@ export default function Sakdebatter({ route }: { route: Route }) {
   const sessions = index?.sessions ?? []
   const current =
     sessions.find((s) => s.session === view.riksmote) ?? sessions.at(-1)
-  const previous = current
-    ? sessions[sessions.findIndex((s) => s.session === current.session) - 1]
-    : undefined
   useEffect(() => {
     if (!current) return
     setDebates(null)
@@ -54,14 +71,6 @@ export default function Sakdebatter({ route }: { route: Route }) {
       .then((f) => setDebates(f.debates))
       .catch((e: Error) => setError(e.message))
   }, [current?.path])
-  // The riksmöte before, to compare what the parties talked about.
-  useEffect(() => {
-    setBefore(null)
-    if (!previous) return
-    loadSession(previous.path)
-      .then((f) => setBefore(f.debates))
-      .catch(() => setBefore(null))
-  }, [previous?.path])
 
   if (error)
     return (
@@ -83,41 +92,8 @@ export default function Sakdebatter({ route }: { route: Route }) {
     const issue = index.issues.find((i) => i.key === key)
     return issue ? l(issue.en, issue.sv) : key
   }
-  const speeches = filtered.reduce((s, d) => s + d.speeches, 0)
-  const replies = filtered.reduce((s, d) => s + d.replies, 0)
   const linked = filtered.filter((d) => d.decision)
 
-  // What each party talked about: the share of its speeches and replies that were in debates
-  // on each issue area, this riksmöte and the one before.
-  const shareOf = (list: IssueDebate[] | null) => {
-    const out = new Map<string, number>()
-    if (!list) return out
-    for (const p of RIKSDAG_PARTIES) {
-      const all = list.reduce((s, d) => s + totalFor(d.parties, p), 0)
-      if (!all) continue
-      for (const issue of index.issues) {
-        const n = list
-          .filter((d) => d.issues.includes(issue.key))
-          .reduce((s, d) => s + totalFor(d.parties, p), 0)
-        out.set(`${issue.key}|${p}`, (n / all) * 100)
-      }
-    }
-    return out
-  }
-  const nowShare = shareOf(debates)
-  const beforeShare = shareOf(before)
-  const topicRows = index.issues
-    .map((issue) => ({
-      key: issue.key,
-      label: l(issue.en, issue.sv),
-      weight: RIKSDAG_PARTIES.reduce(
-        (s, p) => s + (nowShare.get(`${issue.key}|${p}`) ?? 0),
-        0,
-      ),
-    }))
-    .filter((r) => r.weight > 0)
-    .sort((a, b) => b.weight - a.weight)
-    .slice(0, 8)
   // Issue areas, by number of debates.
   const areaCounts = index.issues
     .map((issue) => ({
@@ -139,7 +115,11 @@ export default function Sakdebatter({ route }: { route: Route }) {
 
   return (
     <Board
-      title={l('Issue debates', 'Sakdebatter')}
+      level={2}
+      title={l(
+        `The debates of ${current.session}`,
+        `Debatterna under ${current.session}`,
+      )}
       sub={l(
         `Debates on committee reports in riksmötet ${current.session}. Choose parties in the bar above to see the debates they take part in.`,
         `Debatter om utskottens betänkanden under riksmötet ${current.session}. Välj partier i raden ovanför för att se debatterna de deltar i.`,
@@ -181,6 +161,13 @@ export default function Sakdebatter({ route }: { route: Route }) {
         </>
       }
     >
+      {debates && (
+        <DebateLeaderboard
+          debates={debates}
+          session={current.session}
+          preferred={selected[0]}
+        />
+      )}
       <Kpis>
         <Kpi
           index={0}
@@ -188,25 +175,6 @@ export default function Sakdebatter({ route }: { route: Route }) {
           value={filtered.length}
           format={(v) => num(v)}
           sub={current.session}
-        />
-        <Kpi
-          index={1}
-          label={l('Speeches and replies', 'Anföranden och repliker')}
-          value={speeches}
-          format={(v) => num(v)}
-        />
-        <Kpi
-          index={2}
-          label={l('Share replies', 'Andel repliker')}
-          value={speeches ? (replies / speeches) * 100 : 0}
-          format={(v) => pct(v, 0)}
-        />
-        <Kpi
-          index={3}
-          label={l('Per debate', 'Per debatt')}
-          value={filtered.length ? speeches / filtered.length : 0}
-          format={(v) => num(v, 1)}
-          sub={l('speeches and replies', 'anföranden och repliker')}
         />
         <Kpi
           index={4}
@@ -218,60 +186,6 @@ export default function Sakdebatter({ route }: { route: Route }) {
       </Kpis>
 
       <Cards>
-        <Card
-          index={0}
-          wide
-          title={l(
-            'What the parties talk about, compared with the year before',
-            'Vad partierna pratar om, jämfört med året innan',
-          )}
-          meta={l(
-            `Share of each party's speeches and replies in debates on each issue area, riksmötet ${current.session}${previous ? ` · dashed frame: ${previous.session}` : ''}`,
-            `Andel av partiets anföranden och repliker i debatter om varje sakområde, riksmötet ${current.session}${previous ? ` · streckad ram: ${previous.session}` : ''}`,
-          )}
-        >
-          {debates ? (
-            <TopicBars
-              rows={topicRows}
-              parties={parties}
-              value={(row, p) => nowShare.get(`${row}|${p}`) ?? null}
-              previous={
-                before
-                  ? (row, p) => beforeShare.get(`${row}|${p}`) ?? null
-                  : undefined
-              }
-              previousLabel={previous?.session}
-              unit="%"
-            />
-          ) : (
-            <Empty />
-          )}
-        </Card>
-
-        <Card
-          index={1}
-          title={l('Every riksmöte', 'Alla riksmöten')}
-          meta={l(
-            'Issue debates per riksmöte · click a column to choose it',
-            'Sakdebatter per riksmöte · klicka på en kolumn för att välja det',
-          )}
-        >
-          <Columns
-            categories={sessions.map((s) => short(s.session))}
-            series={[
-              {
-                key: 'n',
-                label: l('Debates', 'Debatter'),
-                values: sessions.map((s) => s.debates),
-              },
-            ]}
-            highlight={sessions.findIndex((s) => s.session === current.session)}
-            onPick={(i) => setView({ riksmote: sessions[i].session })}
-            format={(v) => num(v)}
-            label={l('Issue debates per riksmöte', 'Sakdebatter per riksmöte')}
-          />
-        </Card>
-
         <Card
           index={2}
           title={l('Issue areas debated', 'Sakområden som debatterades')}
@@ -290,48 +204,6 @@ export default function Sakdebatter({ route }: { route: Route }) {
               }))}
               format={(v) => num(v)}
               label={l('Debates per issue area', 'Debatter per sakområde')}
-            />
-          ) : (
-            <Empty />
-          )}
-        </Card>
-
-        <Card
-          index={3}
-          title={l(
-            'Who speaks and who replies',
-            'Vem talar och vem replikerar',
-          )}
-          meta={l(
-            'Darker: speeches · lighter: replies and answers',
-            'Mörkare: anföranden · ljusare: repliker och svar',
-          )}
-        >
-          {debates ? (
-            <Columns
-              categories={parties}
-              series={[
-                {
-                  key: 'a',
-                  label: l('Speeches', 'Anföranden'),
-                  values: parties.map((p) =>
-                    filtered.reduce((s, d) => s + (d.parties[p]?.[0] ?? 0), 0),
-                  ),
-                },
-                {
-                  key: 'r',
-                  label: l('Replies', 'Repliker'),
-                  values: parties.map((p) =>
-                    filtered.reduce((s, d) => s + (d.parties[p]?.[1] ?? 0), 0),
-                  ),
-                },
-              ]}
-              stacked
-              format={(v) => num(v)}
-              label={l(
-                'Speeches and replies per party',
-                'Anföranden och repliker per parti',
-              )}
             />
           ) : (
             <Empty />

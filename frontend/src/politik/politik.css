@@ -1218,3 +1218,71 @@
     font-size: 0.875rem;
   }
 }
+
+/* The chapter number before each group in the sidebar. */
+.politik-nav-heading b {
+  display: inline-grid;
+  place-items: center;
+  width: 1.2rem;
+  height: 1.2rem;
+  margin-right: 0.4rem;
+  background: var(--ink);
+  color: var(--paper);
+  font-size: 0.7rem;
+}
+
+/* The end of every page: the page before, and the question the next one answers. */
+.politik-next {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  gap: var(--sp-3);
+  margin-top: var(--sp-5);
+  padding-top: var(--sp-4);
+  border-top: 3px solid var(--ink);
+}
+.politik-next a {
+  display: grid;
+  gap: 0.25rem;
+  padding: var(--sp-3) var(--sp-4);
+  border: 1px solid var(--line);
+  background: var(--paper);
+  color: var(--ink);
+  text-decoration: none;
+  transition:
+    border-color 200ms,
+    transform 200ms;
+}
+.politik-next a:hover,
+.politik-next a:focus-visible {
+  border-color: var(--ink);
+  transform: translateY(-2px);
+}
+.politik-next small {
+  font-size: var(--fs-label);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.politik-next span {
+  font-size: var(--fs-card-title);
+  font-weight: 600;
+  line-height: 1.3;
+}
+.politik-next-link {
+  grid-column: 2;
+  text-align: right;
+}
+.politik-next-link span {
+  font-size: var(--fs-section-title);
+  letter-spacing: -0.01em;
+}
+@media (max-width: 700px) {
+  .politik-next {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .politik-next-link {
+    grid-column: 1;
+    grid-row: 1;
+  }
+}

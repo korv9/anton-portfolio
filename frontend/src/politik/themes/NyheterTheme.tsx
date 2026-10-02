@@ -113,9 +113,6 @@ export default function NyheterTheme({ route }: { route: Route }) {
     }))
     .filter((t) => t.n > 0)
     .sort((a, b) => b.n - a.n)
-  const sourcesOk = Object.values(news.sources).filter(
-    (s) => s.last_status === 200,
-  ).length
 
   const cite = (ids: string[]) =>
     ids
@@ -173,13 +170,6 @@ export default function NyheterTheme({ route }: { route: Route }) {
     >
       <Kpis>
         <Kpi
-          index={0}
-          label={l('Headlines', 'Rubriker')}
-          value={news.items.length}
-          format={(v) => num(v)}
-          sub={l(`last ${news.days} days`, `senaste ${news.days} dagarna`)}
-        />
-        <Kpi
           index={1}
           label={l('This week', 'Den här veckan')}
           value={thisWeek}
@@ -192,13 +182,6 @@ export default function NyheterTheme({ route }: { route: Route }) {
           value={counts[0]?.n ?? 0}
           format={(v) => `${counts[0]?.party ?? ''} ${num(v)}`}
           sub={l('last 30 days', 'senaste 30 dagarna')}
-        />
-        <Kpi
-          index={3}
-          label={l('Sources read', 'Källor lästa')}
-          value={sourcesOk}
-          format={(v) => `${num(v)} / ${Object.keys(news.sources).length}`}
-          sub={l('at the last fetch', 'vid senaste hämtningen')}
         />
       </Kpis>
 
