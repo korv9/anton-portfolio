@@ -772,7 +772,7 @@
   border: 1px solid #cbd9d0;
   border-left: 4px solid #1a1a1a;
   background: #f5f8f3;
-  border-radius: 0.45rem;
+  border-radius: 0;
 }
 .budget-context-top {
   display: grid;
@@ -809,7 +809,7 @@
   margin-top: 0.65rem;
 }
 .budget-vote {
-  border-radius: 0.35rem;
+  border-radius: 0;
   background: white;
   border: 1px solid #cbd9d0;
   padding: 0.35rem 0.55rem;

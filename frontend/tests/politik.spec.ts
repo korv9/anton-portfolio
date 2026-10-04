@@ -141,22 +141,24 @@ test('explore and sources reach every detailed view and the raw tables', async (
   expect(results.violations).toEqual([])
 })
 
-test.describe('the name intro', () => {
+test.describe('the freestanding name header', () => {
   test.use({ intro: true })
 
-  test('shows once per session and can be skipped', async ({ page }) => {
+  test('is immediately visible on a first visit and after reload', async ({
+    page,
+  }) => {
     await page.goto('/')
     const intro = page.locator('.intro-screen')
-    await expect(intro).toBeVisible()
-    await expect(intro).toContainText('Ernstsson')
-    await page.keyboard.press('Escape')
+    await expect(page.locator('.site-name-heading')).toContainText(
+      'ANTON ERNSTSSON',
+    )
     await expect(intro).toHaveCount(0)
     await page.reload()
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
     await expect(intro).toHaveCount(0)
   })
 
-  test('leaves by itself, and not on a deep link', async ({ page }) => {
+  test('does not block a direct project link', async ({ page }) => {
     await page.goto('/')
     await expect(page.locator('.intro-screen')).toHaveCount(0, {
       timeout: 4000,
@@ -166,10 +168,10 @@ test.describe('the name intro', () => {
     await expect(page.locator('.intro-screen')).toHaveCount(0)
   })
 
-  test('is a short fade with reduced motion', async ({ page }) => {
+  test('is immediately available with reduced motion', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' })
     await page.goto('/')
-    await expect(page.locator('.intro-screen.reduced')).toBeVisible()
+    await expect(page.locator('.site-name-heading')).toBeVisible()
     await expect(page.locator('.intro-screen')).toHaveCount(0, {
       timeout: 1500,
     })

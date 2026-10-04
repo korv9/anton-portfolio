@@ -169,6 +169,7 @@ export default function JobMarketPage({ view }: { view: string }) {
             ['#job-market-regions', 'Counties', 'Län'],
             ['#job-market-conditions', 'Conditions', 'Villkor'],
             ['#job-market-tech', 'IT report', 'IT-rapport'],
+            ['#job-market-clusters', 'Semantic clusters', 'Semantiska kluster'],
           ]}
         />
       </div>

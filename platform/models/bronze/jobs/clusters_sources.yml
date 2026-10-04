@@ -1,0 +1,19 @@
+version: 2
+sources:
+  - name: jobs_ml
+    schema: raw
+    config:
+      enabled: "{{ var('job_clusters_enabled', false) }}"
+    tables:
+      - name: job_cluster_assignments
+        columns:
+          - name: job_id
+            data_tests:
+              - not_null:
+                  config:
+                    enabled: "{{ var('job_clusters_enabled', false) }}"
+              - unique:
+                  config:
+                    enabled: "{{ var('job_clusters_enabled', false) }}"
+      - name: job_cluster_profiles
+      - name: job_cluster_runs

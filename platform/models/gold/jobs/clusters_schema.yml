@@ -1,0 +1,25 @@
+version: 2
+models:
+  - name: mart_job_clusters
+    columns:
+      - name: job_id
+        data_tests:
+          - unique
+          - not_null
+          - relationships:
+              arguments: {to: ref('fct_job_ads'), field: job_id}
+      - name: cluster_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('dim_job_clusters'), field: cluster_id}
+      - name: umap_x
+        data_tests: [not_null]
+      - name: umap_y
+        data_tests: [not_null]
+      - name: cluster_probability
+        data_tests: [not_null]
+  - name: dim_job_clusters
+    columns:
+      - name: cluster_id
+        data_tests: [unique, not_null]

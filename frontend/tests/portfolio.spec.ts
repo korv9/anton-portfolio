@@ -1,41 +1,39 @@
 import { test, expect } from './test'
 import AxeBuilder from '@axe-core/playwright'
 
-test('home introduces Anton and routes to each project', async ({
-  page,
-  isMobile,
-}) => {
+test('home introduces Anton and routes to each project', async ({ page }) => {
   const errors: string[] = []
   page.on('pageerror', (e) => errors.push(e.message))
   await page.goto('/')
   await expect(page.getByRole('heading', { level: 1 })).toContainText(
-    'raw data',
+    'ERNSTSSON',
   )
-  // In reading order: about, experience, skills, projects, contact.
-  const ids = await page
-    .locator('.home > section')
-    .evaluateAll((sections) => sections.map((s) => s.id))
-  expect(ids).toEqual([
-    'start',
-    'om-mig',
-    'erfarenhet',
-    'kompetenser',
-    'projekt',
-    'kontakt',
-  ])
+  await expect(page.locator('#orbit-detail')).toBeHidden()
+  await page.getByRole('button', { name: 'Experience', exact: true }).click()
   await expect(page.locator('#erfarenhet')).toContainText('Fora')
   await expect(page.locator('#erfarenhet')).toContainText('Avtalat')
-  await expect(page.locator('.hp-project')).toHaveCount(4)
-  await expect(page.locator('.hp-lead')).toContainText('Swedish politics')
+  await page.getByRole('button', { name: 'Projects', exact: true }).click()
+  await expect(page.locator('.ds-project-row')).toHaveCount(4)
+  await expect(page.locator('.ds-project-row').first()).toContainText(
+    'Swedish politics',
+  )
+  await page.getByRole('button', { name: 'Skills', exact: true }).click()
   const more = page.locator('#kompetenser .skills-more')
   await expect(more).toHaveCount(0)
   await page.getByRole('button', { name: 'Show more' }).click()
   await expect(more).toHaveCount(5)
   await expect(page.locator('#job-market')).toHaveCount(0)
-  if (isMobile) await page.getByRole('button', { name: 'Menu' }).click()
+  await page.getByRole('button', { name: 'Education', exact: true }).click()
+  await expect(page.locator('#utbildning')).toContainText('JENSEN')
+  await page.getByRole('link', { name: 'Close', exact: false }).click()
+  await expect(page.locator('#orbit-detail')).toBeHidden()
+  await page.getByRole('button', { name: 'Projects', exact: true }).focus()
+  await page.keyboard.press('Enter')
   await page
-    .getByRole('navigation', { name: 'Main navigation' })
-    .getByRole('link', { name: 'Politics' })
+    .locator('.ds-project-row')
+    .first()
+    .getByRole('link')
+    .first()
     .click()
   await expect(page.getByRole('heading', { level: 1 })).toContainText(
     'Who holds power right now?',

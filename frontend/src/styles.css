@@ -1,20 +1,7 @@
 /* Tokens: see design-system.css for the full system, loaded last. */
 :root {
-  color: #151515;
-  background: #faf9f6;
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-synthesis: none;
   font-variant-numeric: tabular-nums;
-  --font: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  --ink: #151515;
-  --muted: #5e5e5e;
-  --paper: #ffffff;
-  --page: #faf9f6;
-  --line: #e2e0da;
-  --line-strong: #c9c6be;
-  --teal: #151515;
-  --orange: #8a8a8a;
-  --focus: #151515;
 }
 * {
   box-sizing: border-box;
@@ -189,7 +176,7 @@ main {
 .stack-list span {
   border: 1px solid #c9cdc6;
   background: rgba(255, 255, 255, 0.45);
-  border-radius: 999px;
+  border-radius: 0;
   padding: 0.42rem 0.72rem;
   font-size: 0.76rem;
   font-weight: 700;
@@ -205,7 +192,7 @@ main {
   align-self: center;
   background: var(--paper);
   border: 1px solid var(--line);
-  box-shadow: 14px 14px 0 #dcd9cf;
+  box-shadow: none;
 }
 .profile-board > section {
   padding: 1.25rem 1.4rem;
@@ -283,7 +270,7 @@ main {
 .index-card {
   background: var(--paper);
   border: 1px solid var(--line);
-  box-shadow: 14px 14px 0 #dcd9cf;
+  box-shadow: none;
 }
 .index-head,
 .index-foot {
@@ -1302,7 +1289,7 @@ button.decision-read {
   margin: 30px auto 0;
   padding: 22px 24px;
   border: 1px solid #d9e2e6;
-  border-radius: 16px;
+  border-radius: 0;
   background: #f5f8fa;
 }
 .topic-tabs {
@@ -1317,7 +1304,7 @@ button.decision-read {
   min-height: 44px;
   padding: 9px 16px;
   border: 1px solid #c4d1d8;
-  border-radius: 8px;
+  border-radius: 0;
   background: #fff;
   color: #233b4b;
   text-decoration: none;
@@ -1331,7 +1318,7 @@ button.decision-read {
   background: #173f52;
   color: #fff;
   border-color: #173f52;
-  box-shadow: inset 0 -3px 0 #69c4bc;
+  box-shadow: none;
 }
 .topic-tabs a:focus-visible {
   outline: 3px solid #198cba;

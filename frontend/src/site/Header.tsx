@@ -1,26 +1,12 @@
-import { useEffect, useState } from 'react'
 import { currentLocale, l, setLocale, type Locale } from '../i18n'
-import { profile } from '../content'
-
-const LINKS: [string, string, string][] = [
-  ['#om-mig', 'About', 'Om mig'],
-  ['#erfarenhet', 'Experience', 'Erfarenhet'],
-  ['#projekt', 'Projects', 'Projekt'],
-  ['#politik', 'Politics', 'Politik'],
-  ['#kontakt', 'Contact', 'Kontakt'],
-]
 
 export default function Header({
-  path,
-  inPolitics,
+  home,
   onLanguage,
 }: {
-  path: string
-  inPolitics: boolean
+  home: boolean
   onLanguage: (next: Locale) => void
 }) {
-  const [open, setOpen] = useState(false)
-  useEffect(() => setOpen(false), [path])
   const language = currentLocale()
   const change = (next: Locale) => {
     setLocale(next)
@@ -28,13 +14,36 @@ export default function Header({
   }
   return (
     <header className="site-bar">
-      <a
-        className="wordmark"
-        href="#start"
-        aria-label={l('Anton Ernstsson, home', 'Anton Ernstsson, startsida')}
-      >
-        <span className="wordmark-name">Anton Ernstsson</span>
-      </a>
+      {home ? (
+        <h1 className="site-name-heading">
+          <a
+            className="wordmark"
+            href="#start"
+            aria-label={l(
+              'Anton Ernstsson, home',
+              'Anton Ernstsson, startsida',
+            )}
+          >
+            <span className="wordmark-name">ANTON ERNSTSSON</span>
+          </a>
+        </h1>
+      ) : (
+        <div className="site-name-heading">
+          <a
+            className="wordmark"
+            href="#start"
+            aria-label={l(
+              'Anton Ernstsson, home',
+              'Anton Ernstsson, startsida',
+            )}
+          >
+            <span className="wordmark-name">ANTON ERNSTSSON</span>
+          </a>
+        </div>
+      )}
+      <span className="site-location">
+        <i aria-hidden="true" /> {l('Stockholm, Sweden', 'Stockholm, Sverige')}
+      </span>
       <div
         className="language-switch"
         role="group"
@@ -57,43 +66,6 @@ export default function Header({
           EN
         </button>
       </div>
-      <button
-        type="button"
-        className="site-menu-button"
-        aria-expanded={open}
-        aria-controls="site-nav"
-        onClick={() => setOpen(!open)}
-      >
-        {open ? l('Close', 'Stäng') : l('Menu', 'Meny')}
-      </button>
-      <nav
-        id="site-nav"
-        className={open ? 'site-nav open' : 'site-nav'}
-        aria-label={l('Main navigation', 'Huvudnavigering')}
-      >
-        <ul>
-          {LINKS.map(([href, en, sv]) => (
-            <li key={href}>
-              <a
-                href={href}
-                aria-current={
-                  href === '#politik' && inPolitics ? 'true' : undefined
-                }
-                onClick={() => setOpen(false)}
-              >
-                {l(en, sv)}
-              </a>
-            </li>
-          ))}
-          {profile.cv && (
-            <li>
-              <a href={profile.cv} download className="site-cv">
-                CV
-              </a>
-            </li>
-          )}
-        </ul>
-      </nav>
     </header>
   )
 }

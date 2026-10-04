@@ -51,7 +51,7 @@
 .politik-party-rail a:focus-visible,
 .politik-party-rail a[aria-current] {
   z-index: 1;
-  transform: translateY(-3px);
+  transform: none;
   border-color: var(--line-strong);
   background: #fff;
 }

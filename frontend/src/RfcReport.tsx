@@ -1,4 +1,4 @@
-import { t } from './i18n'
+import { l, t } from './i18n'
 import { fetchData } from './dataSource'
 import { useEffect, useState } from 'react'
 
@@ -50,6 +50,12 @@ export default function RfcReport() {
                   'RFC 2965 (2000) → RFC 6265 (2011). Share of statements extracted\n                by the heuristic reader, grouped by their first requirement\n                keyword.\n              ',
                 )}
               </p>
+              <p className="ds-small">
+                {l(
+                  'Each bar is one complete document profile (100%). Counts are shown alongside the shares.',
+                  'Varje stapel visar hela dokumentets profil (100 %). Antal visas tillsammans med andelar.',
+                )}
+              </p>
               {data.versions.map((v) => (
                 <div className="rfc-version" key={v.rfc}>
                   <h4>
@@ -59,21 +65,44 @@ export default function RfcReport() {
                       {v.requirements} {t('extracted statements')}
                     </small>
                   </h4>
-                  {[
-                    ['binding', 'MUST / binding'],
-                    ['weak', 'SHOULD / recommended'],
-                    ['absent', 'MAY / optional'],
-                  ].map(([key, label]) => (
-                    <div className="rfc-bar" key={key}>
-                      <span>{label}</span>
-                      <span className="metric-track">
-                        <i style={{ width: `${v.shares_pct[key]}%` }} />
-                      </span>
-                      <strong>
-                        {v.shares_pct[key]}% <small>({v.counts[key]})</small>
-                      </strong>
-                    </div>
-                  ))}
+                  <div className="composition-stack" aria-hidden="true">
+                    {['binding', 'weak', 'absent'].map((key, index) => (
+                      <i
+                        key={key}
+                        style={{
+                          flex: v.counts[key],
+                          background: ['#4e79a7', '#887ec8', '#b48a32'][index],
+                        }}
+                      />
+                    ))}
+                  </div>
+                  <p className="composition-scale">
+                    0 <span>100%</span>
+                  </p>
+                  <dl className="composition-legend">
+                    {[
+                      ['binding', 'MUST / binding'],
+                      ['weak', 'SHOULD / recommended'],
+                      ['absent', 'MAY / optional'],
+                    ].map(([key, label], index) => (
+                      <div key={key}>
+                        <dt>
+                          <i
+                            style={{
+                              background: ['#4e79a7', '#887ec8', '#b48a32'][
+                                index
+                              ],
+                            }}
+                            aria-hidden="true"
+                          />
+                          {label}
+                        </dt>
+                        <dd>
+                          {v.shares_pct[key]}% <span>({v.counts[key]})</span>
+                        </dd>
+                      </div>
+                    ))}
+                  </dl>
                 </div>
               ))}
               <p className="evidence-note">

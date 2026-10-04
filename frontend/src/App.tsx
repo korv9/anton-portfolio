@@ -1,7 +1,6 @@
 import { Suspense, lazy, useEffect, useState } from 'react'
 import { currentLocale, l, type Locale } from './i18n'
 import { useRoute } from './router'
-import Intro from './site/Intro'
 import Header, { Footer, ProjectBar } from './site/Header'
 import HomePage from './home/HomePage'
 import './site/site.css'
@@ -41,9 +40,10 @@ export default function App() {
   // A new address scrolls to its section on the start page, or to the top elsewhere. Changing
   // only a view's filters (the query) keeps the reader where they are.
   useEffect(() => {
+    if (route.page === 'home' && route.path !== '#start') return
     requestAnimationFrame(() => {
       const target =
-        route.page === 'home' && route.path !== '#start'
+        route.path === '#job-market-clusters'
           ? document.getElementById(route.path.slice(1))
           : null
       if (target) target.scrollIntoView({ block: 'start' })
@@ -63,21 +63,18 @@ export default function App() {
         back="#sweden"
         label={l('How is Sweden doing?', 'Hur mår Sverige?')}
       />
-    ) : page !== 'home' && page !== 'politik' ? (
+    ) : page !== 'home' ? (
       <ProjectBar />
     ) : null
 
   return (
-    <>
+    <div
+      className={`site-shell${page === 'home' ? ' home-shell' : ' project-shell'}`}
+    >
       <a className="skip-link" href="#main">
         {l('Skip to content', 'Hoppa till innehåll')}
       </a>
-      <Intro />
-      <Header
-        path={path}
-        inPolitics={page === 'politik'}
-        onLanguage={setLanguage}
-      />
+      <Header home={page === 'home'} onLanguage={setLanguage} />
       <main id="main" tabIndex={-1} key={language}>
         {back}
         <Suspense
@@ -87,11 +84,13 @@ export default function App() {
             </p>
           }
         >
-          {page === 'home' && <HomePage />}
+          {page === 'home' && <HomePage path={path} />}
           {page === 'politik' && <PoliticsProduct route={route} />}
           {page === 'jobs' &&
-            (['#job-market-tech', '#job-data'].includes(path) ? (
-              <TechReport />
+            (['#job-market-tech', '#job-market-clusters', '#job-data'].includes(
+              path,
+            ) ? (
+              <TechReport clustering={path === '#job-market-clusters'} />
             ) : (
               <JobMarketPage view={path} />
             ))}
@@ -106,6 +105,6 @@ export default function App() {
         </Suspense>
       </main>
       <Footer />
-    </>
+    </div>
   )
 }
