@@ -30,7 +30,7 @@ function seeded(seed: number) {
   }
 }
 
-type Thread = { d: string; branches: string[] }
+type Thread = { d: string; branches: string[]; end: [number, number] }
 
 /** One thread: a jittered walk outwards from the rim, with a few short offshoots. */
 function thread(angle: number, length: number, rand: () => number): Thread {
@@ -62,7 +62,11 @@ function thread(angle: number, length: number, rand: () => number): Thread {
     ]
     branches.push(`M ${fmt(at)} L ${fmt(mid)} L ${fmt(end)}`)
   }
-  return { d: `M ${pts.map(fmt).join(' L ')}`, branches }
+  return {
+    d: `M ${pts.map(fmt).join(' L ')}`,
+    branches,
+    end: pts[pts.length - 1],
+  }
 }
 
 function useAxes(): Axis[] {
@@ -117,6 +121,47 @@ export default function EclipseRadar({ onChoose }: { onChoose: () => void }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [axes])
 
+  // Threads from the same job or project are joined, like a constellation across the disc.
+  const links = useMemo(() => {
+    const byUse = new Map<string, { axis: number; end: [number, number] }[]>()
+    axes.forEach((axis, i) =>
+      axis.uses.forEach((use, k) => {
+        const list = byUse.get(use) ?? []
+        list.push({ axis: i, end: drawn[i].threads[k + 1].end })
+        byUse.set(use, list)
+      }),
+    )
+    return [...byUse.entries()].flatMap(([use, stars]) =>
+      stars.slice(1).map((b, k) => {
+        const a = stars[k]
+        const mid: [number, number] = [
+          (a.end[0] + b.end[0]) / 2,
+          (a.end[1] + b.end[1]) / 2,
+        ]
+        const pull: [number, number] = [
+          C + (mid[0] - C) * 0.6,
+          C + (mid[1] - C) * 0.6,
+        ]
+        return {
+          use,
+          axes: [a.axis, b.axis],
+          d: `M ${fmt(a.end)} Q ${fmt(pull)} ${fmt(b.end)}`,
+        }
+      }),
+    )
+  }, [axes, drawn])
+
+  // Stars in the outer band, placed by the same seeded generator, so they never move.
+  const stars = useMemo(() => {
+    const rand = seeded(101)
+    return Array.from({ length: 28 }, () => {
+      const r = REACH + 8 + rand() * (DISC - REACH - 24)
+      const [x, y] = polar(r, rand() * Math.PI * 2)
+      return { x, y, s: 1.5 + rand() * 3, delay: rand() * 6 }
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [axes])
+
   useEffect(() => {
     const node = root.current
     if (!node || !('IntersectionObserver' in window)) return setOn(true)
@@ -138,7 +183,23 @@ export default function EclipseRadar({ onChoose }: { onChoose: () => void }) {
     const mid = (idx[0] + idx[idx.length - 1]) / 2
     return { group, offset: ((mid / n) * 100 + 100) % 100 }
   })
-  const ring = 268
+  const step = (Math.PI * 2) / n
+  const groupSpans = [...new Set(axes.map((a) => a.group))].map((group) => {
+    const idx = axes.flatMap((a, i) => (a.group === group ? [i] : []))
+    const a0 = angleOf(idx[0]) - step / 2 + 0.04
+    const a1 = angleOf(idx[idx.length - 1]) + step / 2 - 0.04
+    const from = polar(276, a0)
+    const to = polar(276, a1)
+    const large = a1 - a0 > Math.PI ? 1 : 0
+    return {
+      group,
+      from,
+      to,
+      gap: polar(276, a1 + 0.04),
+      d: `M ${fmt(from)} A 276 276 0 ${large} 1 ${fmt(to)}`,
+    }
+  })
+  const ring = 266
   const ringPath = `M ${C} ${C - ring} A ${ring} ${ring} 0 1 1 ${C - 0.01} ${C - ring}`
   const active = hover === null ? null : axes[hover]
   const total = axes.reduce((s, a) => s + a.value, 0)
@@ -197,7 +258,96 @@ export default function EclipseRadar({ onChoose }: { onChoose: () => void }) {
             return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} />
           })}
         </g>
+        <g className="eclipse-ticks">
+          {Array.from({ length: 120 }, (_, k) => {
+            const a = (k / 120) * Math.PI * 2
+            const long = k % 10 === 0
+            const [x1, y1] = polar(DISC - 1, a)
+            const [x2, y2] = polar(DISC - (long ? 11 : 5), a)
+            return (
+              <line
+                key={k}
+                x1={x1}
+                y1={y1}
+                x2={x2}
+                y2={y2}
+                className={long ? 'is-long' : undefined}
+              />
+            )
+          })}
+        </g>
+        <g className="eclipse-band">
+          {groupSpans.map((g) => (
+            <g key={g.group}>
+              <path d={g.d} />
+            </g>
+          ))}
+        </g>
+        <g className="eclipse-numerals">
+          {Array.from({ length: max }, (_, v) => (
+            <text
+              key={v}
+              x={C - 7}
+              y={C - RIM - (v + 1) * unit + 3}
+              textAnchor="end"
+            >
+              {['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'][v]}
+            </text>
+          ))}
+        </g>
+        <g className="eclipse-glyphs">
+          {groupSpans.map((g, k) => {
+            const [x, y] = g.gap
+            return (
+              <g
+                key={g.group}
+                transform={`translate(${x.toFixed(1)} ${y.toFixed(1)})`}
+              >
+                <circle r={7} />
+                {k % 5 === 0 && <circle r={2} className="is-fill" />}
+                {k % 5 === 1 && (
+                  <path
+                    d="M -3 -6 A 6 6 0 1 0 -3 6 A 4.5 4.5 0 1 1 -3 -6 Z"
+                    className="is-fill"
+                  />
+                )}
+                {k % 5 === 2 && (
+                  <path
+                    d="M 0 -5 L 1.2 -1.2 L 5 0 L 1.2 1.2 L 0 5 L -1.2 1.2 L -5 0 L -1.2 -1.2 Z"
+                    className="is-fill"
+                  />
+                )}
+                {k % 5 === 3 && (
+                  <path d="M 0 -7 A 7 7 0 0 1 0 7 Z" className="is-fill" />
+                )}
+                {k % 5 === 4 && <circle r={3.5} />}
+              </g>
+            )
+          })}
+        </g>
+        <circle className="eclipse-corona" cx={C} cy={C} r={RIM + 11} />
+        <g className="eclipse-stars">
+          {stars.map((st, k) => (
+            <path
+              key={k}
+              style={{ ['--d' as string]: `${st.delay.toFixed(2)}s` }}
+              d={`M ${st.x.toFixed(1)} ${(st.y - st.s).toFixed(1)} L ${(st.x + st.s * 0.25).toFixed(1)} ${(st.y - st.s * 0.25).toFixed(1)} L ${(st.x + st.s).toFixed(1)} ${st.y.toFixed(1)} L ${(st.x + st.s * 0.25).toFixed(1)} ${(st.y + st.s * 0.25).toFixed(1)} L ${st.x.toFixed(1)} ${(st.y + st.s).toFixed(1)} L ${(st.x - st.s * 0.25).toFixed(1)} ${(st.y + st.s * 0.25).toFixed(1)} L ${(st.x - st.s).toFixed(1)} ${st.y.toFixed(1)} L ${(st.x - st.s * 0.25).toFixed(1)} ${(st.y - st.s * 0.25).toFixed(1)} Z`}
+            />
+          ))}
+        </g>
         <circle className="eclipse-orbit" cx={C} cy={C} r={DISC - 10} />
+        <g className="eclipse-satellite is-slow">
+          <circle cx={C} cy={C - (DISC - 10)} r={4} />
+        </g>
+        <circle
+          className="eclipse-orbit is-inner"
+          cx={C}
+          cy={C}
+          r={REACH + 6}
+        />
+        <g className="eclipse-satellite is-fast">
+          <circle cx={C} cy={C + REACH + 6} r={2.6} />
+        </g>
         <text className="eclipse-inscription">
           {groups.map((g) => (
             <textPath
@@ -216,6 +366,21 @@ export default function EclipseRadar({ onChoose }: { onChoose: () => void }) {
           points={drawn.map((d) => fmt(d.tip)).join(' ')}
         />
 
+        <g className="eclipse-links">
+          {links.map((link, k) => (
+            <path
+              key={k}
+              d={link.d}
+              pathLength={1}
+              style={{ ['--k' as string]: k }}
+              className={
+                hover !== null && link.axes.includes(hover)
+                  ? 'is-active'
+                  : undefined
+              }
+            />
+          ))}
+        </g>
         <g className="eclipse-threads" filter={`url(#${id}-chalk)`}>
           {drawn.map((d, i) => (
             <g
@@ -242,6 +407,15 @@ export default function EclipseRadar({ onChoose }: { onChoose: () => void }) {
                 cy={d.tip[1]}
                 r={2.6}
               />
+              {d.threads.slice(1).map((t, k) => (
+                <circle
+                  key={k}
+                  className="eclipse-node"
+                  cx={t.end[0]}
+                  cy={t.end[1]}
+                  r={3.2}
+                />
+              ))}
             </g>
           ))}
           <circle className="eclipse-rim" cx={C} cy={C} r={RIM} />
@@ -254,8 +428,8 @@ export default function EclipseRadar({ onChoose }: { onChoose: () => void }) {
           const cos = Math.cos(a)
           const anchor =
             Math.abs(cos) < 0.06 ? 'middle' : cos > 0 ? 'start' : 'end'
-          const step = Math.PI / n
-          const hit = `M ${fmt(polar(RIM, a - step))} L ${fmt(polar(DISC + 60, a - step))} A ${DISC + 60} ${DISC + 60} 0 0 1 ${fmt(polar(DISC + 60, a + step))} L ${fmt(polar(RIM, a + step))} Z`
+          const half = Math.PI / n
+          const hit = `M ${fmt(polar(RIM, a - half))} L ${fmt(polar(DISC + 60, a - half))} A ${DISC + 60} ${DISC + 60} 0 0 1 ${fmt(polar(DISC + 60, a + half))} L ${fmt(polar(RIM, a + half))} Z`
           return (
             <g
               key={axis.skill}
@@ -293,8 +467,8 @@ export default function EclipseRadar({ onChoose }: { onChoose: () => void }) {
           </>
         ) : (
           l(
-            `Every thread is one real thing: a skill, or a job or project that uses it. ${total} threads. Point at a skill.`,
-            `Varje tråd är en riktig sak: en kompetens, eller ett jobb eller projekt där den används. ${total} trådar. Peka på en kompetens.`,
+            `Every thread is one real thing: a skill, or a job or project that uses it (${total} in all). Rings I–${['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'][max - 1]} count them; faint arcs join threads from the same job or project. Point at a skill.`,
+            `Varje tråd är en riktig sak: en kompetens, eller ett jobb eller projekt där den används (${total} totalt). Ringarna I–${['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'][max - 1]} räknar dem; tunna bågar binder ihop trådar från samma jobb eller projekt. Peka på en kompetens.`,
           )
         )}
       </p>

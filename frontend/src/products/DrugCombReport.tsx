@@ -13,6 +13,7 @@ import Columns from '../politik/board/Columns'
 import DashBars from '../politik/dash/DashBars'
 import '../politik/dash/dash.css'
 import './drugcomb.css'
+import BodyMap, { type Lineage } from './BodyMap'
 
 type Metric = {
   scheme: string
@@ -40,11 +41,7 @@ type Report = {
     share_with_structures: number
     share_with_rna: number
   }
-  lineages: {
-    lineage: string
-    combinations: number
-    share_synergistic: number
-  }[]
+  lineages: Lineage[]
 }
 type Tables = {
   quality: { check: string; passed: string; detail: string | null }[]
@@ -302,6 +299,22 @@ export default function DrugCombReport() {
           />
         )}
       </Kpis>
+
+      <section className="dc-body" aria-labelledby="dc-body-title">
+        <h2 id="dc-body-title">
+          {l(
+            'Where the cancer cells come from',
+            'Var cancercellerna kommer ifrån',
+          )}
+        </h2>
+        <p className="dc-note">
+          {l(
+            'Every screened cell line has a tissue of origin. Point at one to read it.',
+            'Varje testad cellinje har en ursprungsvävnad. Peka på en för att läsa den.',
+          )}
+        </p>
+        <BodyMap lineages={report.lineages} />
+      </section>
 
       <Cards>
         <Card
@@ -647,38 +660,6 @@ export default function DrugCombReport() {
           ) : (
             <Empty />
           )}
-        </Card>
-
-        <Card
-          index={9}
-          title={l(
-            'Synergy differs between tissue types',
-            'Synergi skiljer sig mellan vävnadstyper',
-          )}
-          meta={l(
-            'Share of measurements with ZIP > 10',
-            'Andel mätningar med ZIP > 10',
-          )}
-        >
-          <DashBars
-            bars={[...report.lineages]
-              .sort((a, b) => b.share_synergistic - a.share_synergistic)
-              .map((r) => ({
-                key: r.lineage,
-                label: r.lineage,
-                value: r.share_synergistic * 100,
-                tone: 'neutral' as const,
-                note: ` ${num(r.combinations)}`,
-              }))}
-            format={(v) => `${num(v, 1)} %`}
-            label={l('Synergy by lineage', 'Synergi per vävnadstyp')}
-          />
-          <p className="dc-note">
-            {l(
-              'Differences also reflect which drugs and studies each tissue was tested with; this is not a treatment comparison.',
-              'Skillnaderna speglar också vilka läkemedel och studier varje vävnad testades med; det här är ingen jämförelse av behandlingar.',
-            )}
-          </p>
         </Card>
 
         <Card
