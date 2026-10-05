@@ -9,6 +9,15 @@ test('home introduces Anton and routes to each project', async ({ page }) => {
     'ERNSTSSON',
   )
   await expect(page.locator('#orbit-detail')).toBeHidden()
+  // The eclipse radar: one bundle of threads per headline skill, one thread per piece of
+  // evidence; pointing at a skill names where it is used, choosing it opens the skills.
+  const radar = page.locator('.eclipse')
+  await expect(radar.locator('.eclipse-axis')).toHaveCount(17)
+  await radar.locator('.eclipse-label', { hasText: 'Databricks' }).hover()
+  await expect(radar.locator('.eclipse-caption')).toContainText('Avtalat')
+  await radar.locator('.eclipse-label', { hasText: 'Databricks' }).click()
+  await expect(page.locator('#kompetenser')).toBeVisible()
+  await page.getByRole('link', { name: 'Close', exact: false }).click()
   await page.getByRole('button', { name: 'Experience', exact: true }).click()
   await expect(page.locator('#erfarenhet')).toContainText('Fora')
   await expect(page.locator('#erfarenhet')).toContainText('Avtalat')

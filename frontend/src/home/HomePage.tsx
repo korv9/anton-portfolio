@@ -13,6 +13,8 @@ import {
   type Bilingual,
 } from './orbitContent'
 import './home.css'
+import './eclipse.css'
+import EclipseRadar from './EclipseRadar'
 import { ProjectRow, Tag } from '../ui/Editorial'
 import ClusterPreview from '../jobs/ClusterPreview'
 import PoliticsPreview from './PoliticsPreview'
@@ -507,20 +509,6 @@ const AREAS = [
   { id: 'kontakt', en: 'Contact', sv: 'Kontakt', color: '#c77561' },
 ]
 
-const point = (radius: number, angle: number) => [
-  300 + radius * Math.cos(angle),
-  300 + radius * Math.sin(angle),
-]
-function sector(index: number) {
-  const start = -Math.PI / 2 + (index * Math.PI * 2) / 5 + 0.025
-  const end = start + (Math.PI * 2) / 5 - 0.05
-  const a = point(94, start),
-    b = point(232, start),
-    c = point(232, end),
-    d = point(94, end)
-  return `M ${a} L ${b} A 232 232 0 0 1 ${c} L ${d} A 94 94 0 0 0 ${a} Z`
-}
-
 export default function HomePage({ path }: { path: string }) {
   const active = AREAS.find((area) => `#${area.id}` === path)
   useEffect(() => {
@@ -543,62 +531,11 @@ export default function HomePage({ path }: { path: string }) {
         <div className="portfolio-orbit">
           <p className="orbit-instruction">
             {l(
-              'One circle. My work, background and ideas.',
-              'En cirkel. Mitt arbete, min bakgrund och mina idéer.',
+              'What I work with, drawn out of the dark.',
+              'Det jag arbetar med, utdraget ur mörkret.',
             )}
           </p>
-          <svg className="orbit-chart" viewBox="0 0 600 600" aria-hidden="true">
-            {[94, 140, 186, 232].map((r) => (
-              <circle
-                key={r}
-                cx="300"
-                cy="300"
-                r={r}
-                fill="none"
-                stroke="currentColor"
-                opacity=".12"
-              />
-            ))}
-            {AREAS.map((area, i) => {
-              const label = point(
-                174,
-                -Math.PI / 2 + ((i + 0.5) * Math.PI * 2) / 5,
-              )
-              return (
-                <g
-                  key={area.id}
-                  className={`orbit-segment ${active?.id === area.id ? 'is-active' : ''}`}
-                  onClick={() => select(area.id)}
-                >
-                  <path d={sector(i)} fill={area.color} stroke={area.color} />
-                  <text
-                    x={label[0]}
-                    y={label[1]}
-                    textAnchor="middle"
-                    dominantBaseline="middle"
-                  >
-                    {l(area.en, area.sv)}
-                  </text>
-                </g>
-              )
-            })}
-            <text
-              x="300"
-              y="290"
-              textAnchor="middle"
-              className="orbit-center-title"
-            >
-              {l('Explore', 'Utforska')}
-            </text>
-            <text
-              x="300"
-              y="317"
-              textAnchor="middle"
-              className="orbit-center-hint"
-            >
-              {l('Choose a colour', 'Välj en färg')}
-            </text>
-          </svg>
+          <EclipseRadar onChoose={() => select('kompetenser')} />
           <nav
             className="orbit-legend"
             aria-label={l('Explore my portfolio', 'Utforska min portfolio')}

@@ -1,0 +1,251 @@
+/*
+ * The eclipse radar (EclipseRadar.tsx): white chalk on a black disc. The threads grow out of the
+ * rim once the disc is in view, the radar shape opens behind them, and the rim keeps burning.
+ * With reduced motion everything is simply drawn.
+ */
+
+.eclipse {
+  --eclipse-ink: #f4f1ea;
+  width: 100%;
+  max-width: max(300px, min(640px, 74vh));
+  margin: 0 auto;
+}
+.eclipse-chart {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.eclipse-grid circle,
+.eclipse-grid line {
+  fill: none;
+  stroke: var(--eclipse-ink);
+  stroke-width: 0.6;
+  opacity: 0.07;
+}
+.eclipse-grid circle {
+  stroke-dasharray: 2 5;
+}
+.eclipse-orbit {
+  fill: none;
+  stroke: var(--eclipse-ink);
+  stroke-width: 0.8;
+  stroke-dasharray: 1 9;
+  opacity: 0.25;
+  transform-origin: 400px 400px;
+  transform-box: view-box;
+}
+.eclipse-inscription {
+  fill: var(--eclipse-ink);
+  font-family: var(--font-mono) !important;
+  font-size: 10.5px;
+  letter-spacing: 0.32em;
+  opacity: 0.42;
+}
+
+.eclipse-shape {
+  fill: var(--eclipse-ink);
+  fill-opacity: 0.07;
+  stroke: var(--eclipse-ink);
+  stroke-width: 0.9;
+  stroke-opacity: 0.45;
+  stroke-linejoin: round;
+  transform-origin: 400px 400px;
+  transform-box: view-box;
+}
+
+.eclipse-thread,
+.eclipse-branch {
+  fill: none;
+  stroke: var(--eclipse-ink);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1;
+  transition:
+    stroke-width 200ms,
+    opacity 200ms;
+}
+.eclipse-thread {
+  stroke-width: 1.7;
+  opacity: 0.9;
+}
+.eclipse-branch {
+  stroke-width: 1.1;
+  opacity: 0.75;
+}
+.eclipse-tip {
+  fill: var(--eclipse-ink);
+}
+.eclipse-rim {
+  fill: none;
+  stroke: var(--eclipse-ink);
+  stroke-width: 3.2;
+}
+
+.eclipse-axis {
+  transition: opacity 220ms;
+}
+.eclipse.has-focus .eclipse-axis:not(.is-active) {
+  opacity: 0.22;
+}
+.eclipse-axis.is-active .eclipse-thread {
+  stroke-width: 2.4;
+  opacity: 1;
+}
+
+.eclipse-label {
+  cursor: pointer;
+}
+.eclipse-hit {
+  fill: transparent;
+}
+.eclipse-label text {
+  fill: var(--ink-2);
+  font-size: 13px;
+  transition: fill 160ms;
+}
+.eclipse-label.is-active text {
+  fill: var(--ink);
+  font-weight: 600;
+}
+
+.eclipse-caption {
+  min-height: 3em;
+  margin: 0.75rem auto 0;
+  max-width: 34rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  text-align: center;
+}
+.eclipse-caption b {
+  color: var(--ink);
+}
+/* For screen readers: the skills and where they are used, as a list. */
+.eclipse-list {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ---------- Motion ---------- */
+
+.eclipse-thread,
+.eclipse-branch {
+  stroke-dashoffset: 1;
+}
+.eclipse-shape,
+.eclipse-tip {
+  opacity: 0;
+}
+.eclipse.is-on .eclipse-thread {
+  animation: eclipse-grow 1.9s cubic-bezier(0.2, 0.7, 0.1, 1)
+    calc(var(--i) * 70ms + var(--j) * 110ms + 200ms) both;
+}
+.eclipse.is-on .eclipse-branch {
+  animation: eclipse-grow 1.1s cubic-bezier(0.2, 0.7, 0.1, 1)
+    calc(var(--i) * 70ms + var(--j) * 110ms + 1300ms) both;
+}
+.eclipse.is-on .eclipse-tip {
+  animation: eclipse-fade 600ms ease calc(var(--i) * 70ms + 1600ms) both;
+}
+.eclipse.is-on .eclipse-shape {
+  animation: eclipse-open 2.2s cubic-bezier(0.2, 0.7, 0.1, 1) 700ms both;
+}
+.eclipse.is-on .eclipse-rim {
+  animation: eclipse-burn 4.5s ease-in-out infinite alternate;
+}
+.eclipse.is-on .eclipse-orbit {
+  animation: eclipse-turn 140s linear infinite;
+}
+.eclipse.is-on .eclipse-threads {
+  animation: eclipse-breathe 6s ease-in-out 3s infinite alternate;
+}
+
+@keyframes eclipse-grow {
+  from {
+    stroke-dashoffset: 1;
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.9;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes eclipse-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes eclipse-open {
+  from {
+    opacity: 0;
+    transform: scale(0.3) rotate(-12deg);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) rotate(0);
+  }
+}
+@keyframes eclipse-burn {
+  from {
+    stroke-width: 2.6;
+    opacity: 0.8;
+  }
+  to {
+    stroke-width: 3.8;
+    opacity: 1;
+  }
+}
+@keyframes eclipse-turn {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes eclipse-breathe {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0.82;
+  }
+}
+
+@media (max-width: 640px) {
+  .eclipse {
+    padding: 0 9%;
+  }
+  .eclipse-label text {
+    font-size: 21px;
+  }
+  .eclipse-inscription {
+    font-size: 15px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .eclipse .eclipse-thread,
+  .eclipse .eclipse-branch {
+    stroke-dashoffset: 0;
+    animation: none !important;
+  }
+  .eclipse .eclipse-shape,
+  .eclipse .eclipse-tip {
+    opacity: 1;
+    animation: none !important;
+  }
+  .eclipse .eclipse-rim,
+  .eclipse .eclipse-orbit,
+  .eclipse .eclipse-threads {
+    animation: none !important;
+  }
+}

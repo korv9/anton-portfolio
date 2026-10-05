@@ -1277,45 +1277,6 @@
   color: var(--muted);
   margin: 12px 0 0;
 }
-.orbit-chart {
-  display: block;
-  width: 100%;
-  max-height: 52vh;
-  min-height: 300px;
-  color: #667078;
-  overflow: visible;
-}
-.orbit-segment {
-  cursor: pointer;
-}
-.orbit-segment path {
-  fill-opacity: 0.23;
-  stroke-width: 1;
-  transition:
-    fill-opacity 0.25s,
-    transform 0.3s;
-  transform-origin: 300px 300px;
-}
-.orbit-segment:hover path,
-.orbit-segment.is-active path {
-  fill-opacity: 0.52;
-  transform: scale(1.035);
-}
-.orbit-segment text {
-  fill: #252c36;
-  font-size: 15px;
-  font-weight: 550;
-  pointer-events: none;
-}
-.orbit-center-title {
-  font-size: 24px;
-  fill: var(--ink);
-  font-weight: 650;
-}
-.orbit-center-hint {
-  font-size: 12px;
-  fill: #555;
-}
 .orbit-legend {
   display: flex;
   justify-content: center;
@@ -1413,14 +1374,8 @@
   .portfolio-explorer.has-selection {
     grid-template-columns: 1fr;
   }
-  .orbit-chart {
-    max-height: 52vh;
-  }
 }
 @media (prefers-reduced-motion: reduce) {
-  .orbit-segment path {
-    transition: none;
-  }
   .orbit-detail {
     animation: none;
   }
