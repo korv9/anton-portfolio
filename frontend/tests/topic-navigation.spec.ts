@@ -27,9 +27,8 @@ test('one politics navigation isolates content and supports back and direct link
   await expect(page.locator('.welfare-tile').first()).toBeVisible()
   await expect(page.locator('.welfare-explorer')).toHaveCount(0)
   await expect(page.locator('.decision-read')).toHaveCount(0)
-  await expect(page.locator('.project-bar a')).toHaveAttribute(
-    'href',
-    '#projekt',
+  await expect(page.locator('.project-context')).toContainText(
+    'How is Sweden doing?',
   )
   await page.goto('/#analysis-europe')
   await expect(

@@ -42,11 +42,13 @@ export const REDIRECTS: Record<string, string> = {
   '#now-election': '#politik',
   '#politik-debatter': '#politik-sakdebatter',
   '#politics-page': '#politik',
-  '#about': '#start',
-  '#om-mig': '#start',
+  '#about': '#om-mig',
   '#projects': '#projekt',
   // The semantic-drift report is withdrawn while it is reworked.
-  '#contact': '#kontakt',
+  '#contact': '#om-mig',
+  '#kontakt': '#om-mig',
+  '#utbildning': '#om-mig',
+  '#experience': '#erfarenhet',
   '#work': '#projekt',
   '#teknik': '#kompetenser',
   '#tech': '#technical',
@@ -91,7 +93,8 @@ export function pageOf(path: string): Page {
   if (path === '#tallman') return 'tallman'
   if (path === '#analysis' || path.startsWith('#analysis-')) return 'analysis'
   if (path === '#er' || path === '#er-diagram') return 'er'
-  if (path === '#symbolic-atlas') return 'symbolic'
+  if (path === '#symbolic-atlas' || path.startsWith('#symbolic-'))
+    return 'symbolic'
   if (path === '#data-model' || path.startsWith('#data-model-'))
     return 'datamodel'
   return 'home'

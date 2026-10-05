@@ -1,5 +1,5 @@
 import { l } from '../i18n'
-import type { Bilingual, Project } from '../home/content'
+import type { Bilingual, ProjectEntry } from './projectRegistry'
 
 const b = (text: Bilingual) => l(text.en, text.sv)
 
@@ -9,7 +9,7 @@ const repoName = (url: string) => url.replace('https://github.com/', '')
  * One project: what it is, what came of it and the tools, with the page and the code as
  * separate links. A project without a public page or repository says so.
  */
-export default function ProjectTile({ project }: { project: Project }) {
+export default function ProjectTile({ project }: { project: ProjectEntry }) {
   const external = project.href.startsWith('http')
   const code = project.code
     ? Array.isArray(project.code)
@@ -17,8 +17,8 @@ export default function ProjectTile({ project }: { project: Project }) {
       : [project.code]
     : []
   return (
-    <li className={`cv-project${project.area === 'ai' ? ' ai' : ''}`}>
-      <span className="cv-kind">{b(project.kind)}</span>
+    <li className={`cv-project${project.category === 'ai' ? ' ai' : ''}`}>
+      <span className="cv-kind">{b(project.descriptor)}</span>
       <h3>
         {project.href ? (
           <a
@@ -32,7 +32,7 @@ export default function ProjectTile({ project }: { project: Project }) {
           b(project.title)
         )}
       </h3>
-      {project.area === 'ai' && <p>{b(project.summary)}</p>}
+      {project.category === 'ai' && <p>{b(project.summary)}</p>}
       <p className="cv-project-result">{b(project.result)}</p>
       <ul className="cv-chips" aria-label={l('Tools', 'Verktyg')}>
         {project.tech.map((item) => (

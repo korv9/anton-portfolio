@@ -8,43 +8,27 @@ test('home introduces Anton and routes to each project', async ({ page }) => {
   await expect(page.getByRole('heading', { level: 1 })).toContainText(
     'ERNSTSSON',
   )
-  await expect(page.locator('#orbit-detail')).toBeHidden()
-  // The eclipse radar: one bundle of threads per headline skill, one thread per piece of
-  // evidence; pointing at a skill names where it is used, choosing it opens the skills.
+  // Everything a recruiter needs is on the page, in order: projects, experience, tech, about.
+  const order = await page.evaluate(() =>
+    ['projekt', 'erfarenhet', 'kompetenser', 'om-mig'].map(
+      (id) => document.getElementById(id)!.getBoundingClientRect().top,
+    ),
+  )
+  expect([...order].sort((a, b) => a - b)).toEqual(order)
+  await expect(page.locator('#projekt .ds-project-row')).toHaveCount(5)
+  await expect(page.locator('.ds-project-row').first()).toContainText(
+    'Swedish politics',
+  )
+  await expect(page.locator('#erfarenhet')).toContainText('Fora')
+  await expect(page.locator('#erfarenhet')).toContainText('Avtalat')
+  await expect(page.locator('#om-mig')).toContainText('JENSEN')
+  await expect(page.locator('#kompetenser .skills-more')).toHaveCount(5)
+  // The eclipse radar is the tech stack's picture: one bundle of threads per headline skill.
   const radar = page.locator('.eclipse')
   await expect(radar.locator('.eclipse-axis')).toHaveCount(17)
   await radar.locator('.eclipse-label', { hasText: 'Databricks' }).hover()
   await expect(radar.locator('.eclipse-caption')).toContainText('Avtalat')
-  await radar.locator('.eclipse-label', { hasText: 'Databricks' }).click()
-  await expect(page.locator('#kompetenser')).toBeVisible()
-  await page.getByRole('button', { name: 'Close', exact: false }).click()
-  await expect(page.locator('#orbit-detail')).toBeHidden()
-  await expect(page.locator('.orbit-legend').getByRole('button')).toHaveCount(3)
-  // Topics open in place: the address and the scroll position stay as they were.
-  const experience = page.getByRole('button', {
-    name: 'Experience',
-    exact: true,
-  })
-  await experience.scrollIntoViewIfNeeded()
-  const before = await page.evaluate(() => window.scrollY)
-  await experience.click()
-  await expect(page.locator('#erfarenhet')).toContainText('Fora')
-  await expect(page.locator('#erfarenhet')).toContainText('Avtalat')
-  await expect(page.locator('#erfarenhet')).toContainText('JENSEN')
-  expect(await page.evaluate(() => window.scrollY)).toBe(before)
-  expect(new URL(page.url()).hash).toBe('')
-  await page.getByRole('button', { name: 'Projects', exact: true }).click()
-  await expect(page.locator('.ds-project-row')).toHaveCount(5)
-  await expect(page.locator('.ds-project-row').first()).toContainText(
-    'Swedish politics',
-  )
-  await page.getByRole('button', { name: 'Tech stack', exact: true }).click()
-  await expect(page.locator('#kompetenser .skills-more')).toHaveCount(5)
   await expect(page.locator('#job-market')).toHaveCount(0)
-  await page.getByRole('button', { name: 'Tech stack', exact: true }).click()
-  await expect(page.locator('#orbit-detail')).toBeHidden()
-  await page.getByRole('button', { name: 'Projects', exact: true }).focus()
-  await page.keyboard.press('Enter')
   await page
     .locator('.ds-project-row')
     .first()
