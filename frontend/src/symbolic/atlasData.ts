@@ -9,7 +9,11 @@ import type {
   AtlasPoint,
   AtlasPreview,
   AtlasSummary,
+  BookCenteredPoint,
+  ClusterFile,
   ExperimentComparison,
+  ResearchHistory,
+  ReviewedCluster,
   SymbolProfile,
 } from './atlasTypes'
 
@@ -89,3 +93,42 @@ export async function loadExperimentComparison(): Promise<ExperimentComparison |
     return null
   }
 }
+
+/** The book-centred coordinates of the same points, or null when not published. */
+export async function loadBookCenteredAtlas(): Promise<
+  BookCenteredPoint[] | null
+> {
+  try {
+    const rows = await readParquet('symbolic/book-centered-atlas.parquet')
+    return rows.map((r) => ({
+      occurrence_id: String(r.occurrence_id),
+      x: n(r.x),
+      y: n(r.y),
+      cluster_id: n(r.cluster_id),
+      cluster_probability: n(r.cluster_probability),
+      is_noise: Boolean(r.is_noise),
+    }))
+  } catch {
+    return null
+  }
+}
+
+async function optional<T>(path: string): Promise<T | null> {
+  try {
+    return await json<T>(path)
+  } catch {
+    return null
+  }
+}
+
+export const loadBookCenteredClusters = () =>
+  optional<ClusterFile>('symbolic/book-centered-clusters.json')
+
+/** Only clusters a person has reviewed; an empty list is a valid state. */
+export const loadReviewedClusters = () =>
+  optional<{ experiment: string; clusters: ReviewedCluster[] }>(
+    'symbolic/reviewed-clusters.json',
+  )
+
+export const loadResearchHistory = () =>
+  optional<ResearchHistory>('symbolic/research-history.json')

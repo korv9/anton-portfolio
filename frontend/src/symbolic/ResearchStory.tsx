@@ -1,0 +1,158 @@
+/**
+ * The investigation as it happened, step by step, with the numbers each step produced
+ * (research-history.json): the question, the baseline, the book effect it showed, book-centring,
+ * the paratext found and cleaned, and the human review that alone may name a cluster. The
+ * emphasis is on book dominance, cross-book structure and review; cluster-quality diagnostics
+ * live under Method.
+ */
+import { l } from '../i18n'
+import type { ResearchHistory, StepMetrics } from './atlasTypes'
+
+const pct = (v: number | null | undefined) =>
+  v == null
+    ? '–'
+    : `${(v * 100).toLocaleString(l('en-GB', 'sv-SE'), { maximumFractionDigits: 0 })} %`
+
+function Metrics({ m }: { m: StepMetrics | null | undefined }) {
+  if (!m) return null
+  return (
+    <dl className="research-metrics">
+      <div>
+        <dt>{l('Largest book in a cluster', 'Största bok i ett kluster')}</dt>
+        <dd>{pct(m.mean_largest_book_share)}</dd>
+      </div>
+      <div>
+        <dt>{l('Cross-book clusters', 'Kluster över flera böcker')}</dt>
+        <dd>
+          {m.cross_book_cluster_count} / {m.clusters}
+        </dd>
+      </div>
+      <div>
+        <dt>{l('Passages in them', 'Ställen i dem')}</dt>
+        <dd>{pct(m.cross_book_occurrence_share)}</dd>
+      </div>
+    </dl>
+  )
+}
+
+export default function ResearchStory({
+  history,
+}: {
+  history: ResearchHistory
+}) {
+  const [v1, v2, v3] = history.steps
+  const before = history.paratext_clusters.book_centered?.before
+  const baselineBefore = history.paratext_clusters.baseline?.before
+  const c = history.cleaning
+  const r = history.review
+  const steps: {
+    tag: [string, string]
+    title: [string, string]
+    body: [string, string]
+    metrics?: StepMetrics | null
+  }[] = [
+    {
+      tag: ['Question', 'Fråga'],
+      title: [
+        'Can symbolic meaning emerge without predefined categories?',
+        'Kan symbolisk mening träda fram utan förbestämda kategorier?',
+      ],
+      body: [
+        'Every use of twenty symbol words in ten books is embedded by its surrounding sentences and grouped without labels.',
+        'Varje förekomst av tjugo symbolord i tio böcker bäddas in efter meningarna runt den och grupperas utan etiketter.',
+      ],
+    },
+    {
+      tag: ['Baseline · v1', 'Utgångsläge · v1'],
+      title: ['Strong clusters appeared.', 'Tydliga kluster uppstod.'],
+      body: [
+        'The embeddings separate the passages into well-defined groups.',
+        'Inbäddningarna delar upp ställena i väl avgränsade grupper.',
+      ],
+      metrics: v1?.metrics,
+    },
+    {
+      tag: ['Problem', 'Problem'],
+      title: [
+        'The clusters mostly followed books and translators.',
+        'Klustren följde mest böcker och översättare.',
+      ],
+      body: [
+        `On average ${pct(v1?.metrics?.mean_largest_book_share)} of a cluster came from a single book: the map grouped style and translation, not meaning.`,
+        `I snitt kom ${pct(v1?.metrics?.mean_largest_book_share)} av ett kluster från en enda bok: kartan grupperade stil och översättning, inte betydelse.`,
+      ],
+    },
+    {
+      tag: ['Deconfounding · v2', 'Avkoppling · v2'],
+      title: [
+        'Book-centring reduced book dominance.',
+        'Bokcentrering minskade bokdominansen.',
+      ],
+      body: [
+        'Each book’s mean embedding is subtracted, removing what all its passages share.',
+        'Varje boks medelinbäddning dras ifrån, så att det alla dess ställen delar försvinner.',
+      ],
+      metrics: v2?.metrics,
+    },
+    {
+      tag: ['Cleaning · v3', 'Rensning · v3'],
+      title: [
+        'Paratext was a second confounder.',
+        'Paratext var en andra störfaktor.',
+      ],
+      body: [
+        `Reading the clusters showed some were glossaries and indexes, not stories (${before?.suspected_paratext_clusters ?? 0} in the book-centred run, ${baselineBefore?.suspected_paratext_clusters ?? 0} in the baseline). Contents, glossaries, indexes, notes and footnotes are now removed before extraction${c ? `: ${c.old_occurrence_count ?? '–'} → ${c.new_occurrence_count} occurrences, ${c.documents_affected} of ${c.documents.length} books changed` : ''}. Afterwards no cluster reads as paratext.`,
+        `När klustren lästes visade sig några vara ordlistor och register, inte berättelser (${before?.suspected_paratext_clusters ?? 0} i den bokcentrerade körningen, ${baselineBefore?.suspected_paratext_clusters ?? 0} i utgångsläget). Innehållsförteckningar, ordlistor, register, noter och fotnoter tas nu bort före extraktionen${c ? `: ${c.old_occurrence_count ?? '–'} → ${c.new_occurrence_count} förekomster, ${c.documents_affected} av ${c.documents.length} böcker ändrades` : ''}. Efteråt läses inget kluster som paratext.`,
+      ],
+      metrics: v3?.metrics,
+    },
+    {
+      tag: ['Review', 'Granskning'],
+      title: [
+        'Cross-book clusters are read by a person.',
+        'Kluster över flera böcker läses av en människa.',
+      ],
+      body: [
+        `${r.candidate_cluster_count} of ${r.cluster_count} clusters pass the audit (spread over books, firm membership, no paratext) and are ranked for review; ${r.warning_cluster_count} are book-bound or weak and ${r.rejected_by_flags_count} are set aside as too small or paratext. The ranking says what is worth reading, not what anything means.`,
+        `${r.candidate_cluster_count} av ${r.cluster_count} kluster klarar granskningen av data (spridda över böcker, stabilt medlemskap, ingen paratext) och rangordnas för läsning; ${r.warning_cluster_count} är bokbundna eller svaga och ${r.rejected_by_flags_count} läggs åt sidan som för små eller paratext. Rangordningen säger vad som är värt att läsa, inte vad något betyder.`,
+      ],
+    },
+    {
+      tag: ['Result', 'Resultat'],
+      title: [
+        'Only reviewed clusters receive semantic labels.',
+        'Bara granskade kluster får semantiska namn.',
+      ],
+      body: r.reviewed_cluster_count
+        ? [
+            `${r.reviewed_cluster_count} clusters have been reviewed and named by a person; every other cluster stays a number.`,
+            `${r.reviewed_cluster_count} kluster har granskats och namngetts av en människa; alla andra förblir nummer.`,
+          ]
+        : [
+            'No reviewed semantic clusters yet. Until a person has read the passages, every cluster stays a number.',
+            'Inga granskade semantiska kluster ännu. Tills en människa har läst ställena förblir varje kluster ett nummer.',
+          ],
+    },
+  ]
+  return (
+    <section
+      className="atlas-section research ds-container"
+      id="symbolic-findings"
+      aria-labelledby="symbolic-findings-title"
+    >
+      <h2 id="symbolic-findings-title">
+        {l('How the investigation went', 'Hur undersökningen gick')}
+      </h2>
+      <ol className="research-steps">
+        {steps.map((s) => (
+          <li key={s.tag[0]}>
+            <p className="research-tag">{l(...s.tag)}</p>
+            <h3>{l(...s.title)}</h3>
+            <p>{l(...s.body)}</p>
+            <Metrics m={s.metrics} />
+          </li>
+        ))}
+      </ol>
+    </section>
+  )
+}

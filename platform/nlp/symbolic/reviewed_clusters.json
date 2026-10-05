@@ -1,0 +1,5 @@
+{
+  "experiment": "book_centered",
+  "_how_to": "Edited by hand only. Run `npm run symbolic:review`, read review/representative_passages.parquet for a cluster, then add an entry keyed by its cluster id with the fingerprint from review/cluster_candidates.parquet. Status: unreviewed | candidate | reviewed | rejected. Only reviewed entries with a label, description and confidence (low | medium | high) are published; notes never are. See docs/symbolic-atlas.md.",
+  "clusters": {}
+}

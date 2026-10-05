@@ -45,7 +45,7 @@ test('the deconfounding experiments are compared under the atlas', async ({
   const comparison = await (
     await page.request.get('/data/symbolic/experiment-comparison.json')
   ).json()
-  const table = page.locator('.atlas-table')
+  const table = page.locator('#symbolic-experiments .atlas-table')
   await expect(table.locator('tbody tr')).toHaveCount(
     comparison.experiments.length,
   )
@@ -54,4 +54,68 @@ test('the deconfounding experiments are compared under the atlas', async ({
     (r: { experiment: string }) => r.experiment === 'book_centered',
   )
   await expect(table).toContainText(String(centred.cross_book_cluster_count))
+})
+
+test('the cross-book view mutes book-bound clusters and opens a cluster for review', async ({
+  page,
+}) => {
+  const clusters = await (
+    await page.request.get('/data/symbolic/book-centered-clusters.json')
+  ).json()
+  const top = clusters.clusters
+    .filter((c: { review_class: string }) => c.review_class === 'candidate')
+    .sort(
+      (
+        a: { review_priority_score: number },
+        b: { review_priority_score: number },
+      ) => b.review_priority_score - a.review_priority_score,
+    )[0]
+  await page.goto('/#symbolic-atlas')
+  await page.getByRole('button', { name: 'Cross-book', exact: true }).click()
+  await expect(page).toHaveURL(/view=cross-book/)
+  await page
+    .locator('.atlas-select select')
+    .selectOption(String(top.cluster_id))
+  const panel = page.locator('.stage-side.is-right')
+  // Unreviewed clusters are numbered, never named.
+  await expect(panel).toContainText(`Cluster ${top.cluster_id}`)
+  await expect(panel).toContainText('Not reviewed')
+  await expect(panel).toContainText(String(top.book_count))
+  await expect(panel.locator('.cluster-passages li').first()).toBeVisible()
+  // The diverse representatives come from different books.
+  const books = await panel.locator('.cluster-passages small').allTextContents()
+  expect(new Set(books.map((b) => b.split(' · ')[1])).size).toBeGreaterThan(1)
+})
+
+test('the reviewed view shows only human-reviewed clusters, and says when there are none', async ({
+  page,
+}) => {
+  const reviewed = await (
+    await page.request.get('/data/symbolic/reviewed-clusters.json')
+  ).json()
+  await page.goto('/#symbolic-atlas?view=reviewed')
+  if (reviewed.clusters.length === 0) {
+    await expect(page.locator('.atlas-empty')).toHaveText(
+      'No reviewed semantic clusters yet.',
+    )
+    // Nothing is lit: no unreviewed cluster stands in for a reviewed one.
+    await expect(page.locator('.atlas-status')).toContainText(/^0 of /)
+  } else await expect(page.locator('.atlas-empty')).toHaveCount(0)
+})
+
+test('the investigation is told step by step with its numbers', async ({
+  page,
+}) => {
+  const history = await (
+    await page.request.get('/data/symbolic/research-history.json')
+  ).json()
+  await page.goto('/#symbolic-findings')
+  const steps = page.locator('.research-steps > li')
+  await expect(steps).toHaveCount(7)
+  await expect(steps.nth(1)).toContainText('Baseline')
+  await expect(steps.nth(4)).toContainText('Paratext')
+  await expect(steps.nth(4)).toContainText(
+    String(history.steps[2].metrics.cross_book_cluster_count),
+  )
+  await expect(page.locator('#symbolic-method')).toContainText('Diagnostics')
 })

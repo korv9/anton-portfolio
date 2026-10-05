@@ -2,7 +2,12 @@
  * Symbolic Atlas: can recurring symbolic meanings be found in myth, folklore and literature
  * without deciding the meanings first? Every occurrence of twenty symbol words in ten public-
  * domain books is placed on a map by the similarity of its surrounding sentences (sentence
- * embeddings, UMAP) and grouped by HDBSCAN. Clusters are numbered, never named.
+ * embeddings, UMAP) and grouped by HDBSCAN. Clusters are numbered; only a cluster a person has
+ * reviewed (reviewed-clusters.json) is ever named.
+ *
+ * Three views of the same points: Baseline (the original embeddings), Cross-book (each book's
+ * mean removed, book-bound clusters muted, cross-book candidates and reviewed clusters brought
+ * forward) and Reviewed (only clusters a person has read and named).
  *
  * The pipeline is platform/ingest/symbolic → dbt (bronze, silver, gold) → platform/nlp/symbolic
  * → platform/publish/symbolic; docs/symbolic-atlas.md describes it and its limits.
@@ -12,8 +17,10 @@ import { l } from '../i18n'
 import type { Route } from '../router'
 import { useViewParams } from '../politik/useViewParams'
 import { Stage, StageBlock, StageFacts } from '../ui/Stage'
-import AtlasCanvas from './AtlasCanvas'
+import AtlasCanvas, { type MapLabel, type Paint } from './AtlasCanvas'
+import ClusterPanel, { clusterTitle } from './ClusterPanel'
 import ExperimentTable from './ExperimentTable'
+import ResearchStory from './ResearchStory'
 import { ProjectNav } from '../projects/ProjectNav'
 import {
   AtlasFiltersPanel,
@@ -22,19 +29,62 @@ import {
   type AtlasFilters,
 } from './AtlasSidebar'
 import {
+  clusterColour,
   loadAtlasPoints,
   loadAtlasSummary,
+  loadBookCenteredAtlas,
+  loadBookCenteredClusters,
+  loadResearchHistory,
+  loadReviewedClusters,
   loadSymbolProfiles,
 } from './atlasData'
-import type { AtlasPoint, AtlasSummary, SymbolProfile } from './atlasTypes'
+import type {
+  AtlasPoint,
+  AtlasSummary,
+  BookCenteredPoint,
+  ClusterInfo,
+  ResearchHistory,
+  ReviewedCluster,
+  SymbolProfile,
+} from './atlasTypes'
 import './symbolic.css'
 
-const DEFAULTS: AtlasFilters = {
+type View = 'baseline' | 'cross-book' | 'reviewed'
+const VIEWS: { key: View; name: [string, string]; hint: [string, string] }[] = [
+  {
+    key: 'baseline',
+    name: ['Baseline', 'Utgångsläge'],
+    hint: [
+      'The original embeddings: clusters largely follow books.',
+      'De ursprungliga inbäddningarna: klustren följer till stor del böckerna.',
+    ],
+  },
+  {
+    key: 'cross-book',
+    name: ['Cross-book', 'Över böcker'],
+    hint: [
+      'Each book’s mean removed. Book-bound clusters are muted; clusters spread over several books stand out.',
+      'Varje boks medelvärde borttaget. Bokbundna kluster tonas ned; kluster som sprids över flera böcker framträder.',
+    ],
+  },
+  {
+    key: 'reviewed',
+    name: ['Reviewed', 'Granskade'],
+    hint: [
+      'Only clusters a person has read and named.',
+      'Bara kluster som en människa har läst och namngett.',
+    ],
+  },
+]
+const DEFAULTS: AtlasFilters & { view: string } = {
   symbol: '',
   tradition: '',
   cluster: '',
   noise: '1',
+  view: 'baseline',
 }
+const MUTED = 'rgba(170, 165, 158, 0.32)'
+const NOISE = 'rgba(150, 146, 140, 0.16)'
 const num = (v: number, d = 0) =>
   v.toLocaleString(l('en-GB', 'sv-SE'), {
     minimumFractionDigits: d,
@@ -50,6 +100,16 @@ export default function SymbolicAtlasPage({ route }: { route: Route }) {
   const [picked, setPicked] = useState<AtlasPoint | null>(null)
   const [pinned, setPinned] = useState(0)
   const [filters, setFilters] = useViewParams(route, DEFAULTS)
+  const [centred, setCentred] = useState<BookCenteredPoint[] | null>(null)
+  const [clusterInfo, setClusterInfo] = useState<ClusterInfo[]>([])
+  const [reviewed, setReviewed] = useState<ReviewedCluster[]>([])
+  const [history, setHistory] = useState<ResearchHistory | null>(null)
+  const view: View = (
+    ['cross-book', 'reviewed'].includes(filters.view)
+      ? filters.view
+      : 'baseline'
+  ) as View
+  const bookView = view !== 'baseline' && centred !== null
 
   useEffect(() => {
     let live = true
@@ -61,6 +121,19 @@ export default function SymbolicAtlasPage({ route }: { route: Route }) {
         setProfiles(pr)
       })
       .catch(() => live && setFailed(true))
+    // The review layer is optional: without it the page is the baseline atlas.
+    Promise.all([
+      loadBookCenteredAtlas(),
+      loadBookCenteredClusters(),
+      loadReviewedClusters(),
+      loadResearchHistory(),
+    ]).then(([bc, info, rev, hist]) => {
+      if (!live) return
+      setCentred(bc)
+      setClusterInfo(info?.clusters ?? [])
+      setReviewed(rev?.clusters ?? [])
+      setHistory(hist)
+    })
     return () => {
       live = false
     }
@@ -101,18 +174,74 @@ export default function SymbolicAtlasPage({ route }: { route: Route }) {
     }
   }, [route.path, loaded])
 
-  const shown = useMemo(
-    () => (points ?? []).filter((p) => filters.noise !== '0' || !p.is_noise),
-    [points, filters.noise],
+  const byId = useMemo(
+    () => new Map((points ?? []).map((p) => [p.occurrence_id, p])),
+    [points],
   )
+  // The book-centred views move the same points to their book-centred place and cluster.
+  const mapped = useMemo(() => {
+    if (!bookView || !centred) return points ?? []
+    return centred.flatMap((c) => {
+      const p = byId.get(c.occurrence_id)
+      return p ? [{ ...p, ...c }] : []
+    })
+  }, [bookView, centred, points, byId])
+  const shown = useMemo(
+    () => mapped.filter((p) => filters.noise !== '0' || !p.is_noise),
+    [mapped, filters.noise],
+  )
+  const infoById = useMemo(
+    () => new Map(clusterInfo.map((c) => [c.cluster_id, c])),
+    [clusterInfo],
+  )
+  const reviewedById = useMemo(
+    () => new Map(reviewed.map((r) => [r.cluster_id, r])),
+    [reviewed],
+  )
+  const selectedCluster =
+    bookView && filters.cluster !== '' ? Number(filters.cluster) : null
+  // Background muted, cross-book candidates visible, reviewed strongest, the chosen one on top.
+  const paint = useMemo(() => {
+    if (!bookView) return undefined
+    return (p: AtlasPoint): Paint => {
+      if (p.is_noise) return { fill: NOISE, r: 1.2, layer: 0 }
+      if (p.cluster_id === selectedCluster)
+        return { fill: clusterColour(p.cluster_id, 1), r: 3, layer: 4 }
+      if (reviewedById.has(p.cluster_id))
+        return { fill: clusterColour(p.cluster_id, 1), r: 2.8, layer: 3 }
+      const info = infoById.get(p.cluster_id)
+      if (view === 'cross-book' && info?.review_class === 'candidate')
+        return { fill: clusterColour(p.cluster_id, 0.8), r: 2.1, layer: 2 }
+      return { fill: MUTED, r: 1.5, layer: 1 }
+    }
+  }, [bookView, selectedCluster, reviewedById, infoById, view])
+  const labels = useMemo((): MapLabel[] => {
+    if (!bookView) return []
+    return reviewed.flatMap((r) => {
+      const own = mapped.filter((p) => p.cluster_id === r.cluster_id)
+      if (!own.length) return []
+      const x = own.reduce((t, p) => t + p.x, 0) / own.length
+      const y = own.reduce((t, p) => t + p.y, 0) / own.length
+      return [{ x, y, text: r.label }]
+    })
+  }, [bookView, reviewed, mapped])
   const isLit = useMemo(() => {
     const { symbol, tradition, cluster } = filters
-    if (!symbol && !tradition && !cluster) return null
+    const onlyReviewed = view === 'reviewed' && bookView
+    if (!symbol && !tradition && !cluster && !onlyReviewed) return null
     return (p: AtlasPoint) =>
+      (!onlyReviewed || reviewedById.has(p.cluster_id)) &&
       (!symbol || p.symbol_id === symbol) &&
       (!tradition || p.tradition === tradition) &&
       (!cluster || p.cluster_id === Number(cluster))
-  }, [filters.symbol, filters.tradition, filters.cluster])
+  }, [
+    filters.symbol,
+    filters.tradition,
+    filters.cluster,
+    view,
+    bookView,
+    reviewedById,
+  ])
   const litCount = isLit ? shown.filter(isLit).length : shown.length
 
   if (failed)
@@ -146,14 +275,57 @@ export default function SymbolicAtlasPage({ route }: { route: Route }) {
         )}
         figure={
           <div className="atlas-figure">
+            {centred && (
+              <div className="atlas-views">
+                <div
+                  className="atlas-chips"
+                  role="group"
+                  aria-label={l('View', 'Vy')}
+                >
+                  {VIEWS.map((v) => (
+                    <button
+                      key={v.key}
+                      type="button"
+                      aria-pressed={view === v.key}
+                      onClick={() => {
+                        setPicked(null)
+                        setFilters({ view: v.key, cluster: '' })
+                      }}
+                    >
+                      {l(...v.name)}
+                    </button>
+                  ))}
+                </div>
+                <p className="atlas-view-hint">
+                  {l(...VIEWS.find((v) => v.key === view)!.hint)}
+                </p>
+                {view === 'reviewed' && reviewed.length === 0 && (
+                  <p className="atlas-empty" role="status">
+                    {l(
+                      'No reviewed semantic clusters yet.',
+                      'Inga granskade semantiska kluster ännu.',
+                    )}
+                  </p>
+                )}
+              </div>
+            )}
             <AtlasCanvas
               points={shown}
               isLit={isLit}
               selected={picked?.occurrence_id ?? null}
               onPinned={setPinned}
+              paint={paint}
+              labels={labels}
+              clusterName={
+                bookView
+                  ? (c) => clusterTitle(c, reviewedById.get(c))
+                  : undefined
+              }
               onPick={(p) => {
                 setPicked(p)
-                setFilters({ symbol: p.symbol_id })
+                if (bookView && !p.is_noise)
+                  setFilters({ cluster: String(p.cluster_id) })
+                else setFilters({ symbol: p.symbol_id })
               }}
             />
             <p className="atlas-status" aria-live="polite">
@@ -181,12 +353,35 @@ export default function SymbolicAtlasPage({ route }: { route: Route }) {
               summary={summary}
               filters={filters}
               set={setFilters}
+              clusters={
+                bookView
+                  ? clusterInfo.map((c) => ({
+                      id: c.cluster_id,
+                      size: c.occurrence_count,
+                      name: clusterTitle(
+                        c.cluster_id,
+                        reviewedById.get(c.cluster_id),
+                      ),
+                    }))
+                  : undefined
+              }
             />
           </>
         }
         right={
           <>
-            {picked && (
+            {selectedCluster !== null && infoById.get(selectedCluster) && (
+              <ClusterPanel
+                info={infoById.get(selectedCluster)!}
+                reviewed={reviewedById.get(selectedCluster)}
+                passages={byId}
+                onClose={() => {
+                  setPicked(null)
+                  setFilters({ cluster: '' })
+                }}
+              />
+            )}
+            {selectedCluster === null && picked && (
               <StageBlock title={l('The chosen passage', 'Det valda stället')}>
                 <p className="atlas-quote">{picked.context}</p>
                 <StageFacts
@@ -207,7 +402,7 @@ export default function SymbolicAtlasPage({ route }: { route: Route }) {
                 />
               </StageBlock>
             )}
-            {filters.symbol ? (
+            {selectedCluster !== null ? null : filters.symbol ? (
               <SymbolPanel
                 symbol={filters.symbol}
                 summary={summary}
@@ -221,21 +416,49 @@ export default function SymbolicAtlasPage({ route }: { route: Route }) {
                   rows={[
                     [l('Books', 'Böcker'), num(summary.document_count)],
                     [l('Symbols', 'Symboler'), num(summary.symbol_count)],
-                    [
-                      l('Occurrences found', 'Förekomster'),
-                      num(summary.occurrence_count),
-                    ],
                     [l('On the map', 'På kartan'), num(summary.point_count)],
-                    [l('Clusters', 'Kluster'), num(summary.cluster_count)],
-                    [l('Noise', 'Brus'), pct(summary.noise_share)],
-                    [
-                      l('Trustworthiness', 'Trovärdighet'),
-                      num(ev.trustworthiness, 2),
-                    ],
-                    [
-                      l('Silhouette', 'Silhuett'),
-                      ev.silhouette == null ? '–' : num(ev.silhouette, 2),
-                    ],
+                    ...(history?.steps[2]?.metrics && history.steps[0]?.metrics
+                      ? ([
+                          [
+                            l(
+                              'Largest book, baseline',
+                              'Största bok, utgångsläge',
+                            ),
+                            pct(
+                              history.steps[0].metrics.mean_largest_book_share,
+                            ),
+                          ],
+                          [
+                            l(
+                              'Largest book, book-centred',
+                              'Största bok, bokcentrerad',
+                            ),
+                            pct(
+                              history.steps[2].metrics.mean_largest_book_share,
+                            ),
+                          ],
+                          [
+                            l(
+                              'Cross-book clusters',
+                              'Kluster över flera böcker',
+                            ),
+                            `${history.steps[2].metrics.cross_book_cluster_count} / ${history.steps[2].metrics.clusters}`,
+                          ],
+                          [
+                            l('Reviewed clusters', 'Granskade kluster'),
+                            num(history.review.reviewed_cluster_count),
+                          ],
+                        ] as [string, string][])
+                      : ([
+                          [
+                            l('Clusters', 'Kluster'),
+                            num(summary.cluster_count),
+                          ],
+                          [
+                            l('Largest book', 'Största bok'),
+                            pct(ev.composition.largest_book_share ?? 0),
+                          ],
+                        ] as [string, string][])),
                   ]}
                 />
               </StageBlock>
@@ -243,25 +466,32 @@ export default function SymbolicAtlasPage({ route }: { route: Route }) {
           </>
         }
       />
-      <section
-        className="atlas-section ds-container"
-        id="symbolic-findings"
-        aria-labelledby="symbolic-findings-title"
-      >
-        <h2 id="symbolic-findings-title">{l('Findings', 'Fynd')}</h2>
-        <p>
-          {l(
-            `On average ${pct(ev.composition.largest_book_share ?? 0)} of a cluster comes from one book, and ${pct(ev.composition.largest_symbol_share ?? 0)} from one symbol. So far the map groups passages more by a book's style and translation than by what a symbol means. That is a finding, not a failure, and the next thing to work on.`,
-            `I genomsnitt kommer ${pct(ev.composition.largest_book_share ?? 0)} av ett kluster från en och samma bok, och ${pct(ev.composition.largest_symbol_share ?? 0)} från en och samma symbol. Än så länge grupperar kartan ställen mer efter bokens stil och översättning än efter vad en symbol betyder. Det är ett resultat, inte ett misslyckande, och nästa sak att arbeta med.`,
-          )}
-        </p>
-        <p>
-          <a href="#symbolic-experiments">
-            {l('How far that can be reduced', 'Hur mycket det går att minska')}{' '}
-            →
-          </a>
-        </p>
-      </section>
+      {history ? (
+        <ResearchStory history={history} />
+      ) : (
+        <section
+          className="atlas-section ds-container"
+          id="symbolic-findings"
+          aria-labelledby="symbolic-findings-title"
+        >
+          <h2 id="symbolic-findings-title">{l('Findings', 'Fynd')}</h2>
+          <p>
+            {l(
+              `On average ${pct(ev.composition.largest_book_share ?? 0)} of a cluster comes from one book, and ${pct(ev.composition.largest_symbol_share ?? 0)} from one symbol. So far the map groups passages more by a book's style and translation than by what a symbol means. That is a finding, not a failure, and the next thing to work on.`,
+              `I genomsnitt kommer ${pct(ev.composition.largest_book_share ?? 0)} av ett kluster från en och samma bok, och ${pct(ev.composition.largest_symbol_share ?? 0)} från en och samma symbol. Än så länge grupperar kartan ställen mer efter bokens stil och översättning än efter vad en symbol betyder. Det är ett resultat, inte ett misslyckande, och nästa sak att arbeta med.`,
+            )}
+          </p>
+          <p>
+            <a href="#symbolic-experiments">
+              {l(
+                'How far that can be reduced',
+                'Hur mycket det går att minska',
+              )}{' '}
+              →
+            </a>
+          </p>
+        </section>
+      )}
       <ExperimentTable />
       <section
         className="atlas-section ds-container"
@@ -277,10 +507,68 @@ export default function SymbolicAtlasPage({ route }: { route: Route }) {
         </p>
         <p>
           {l(
-            'Matching is by word list, so a context is not yet a symbolic meaning; clusters are exploratory, numbered and unnamed, and UMAP bends distances.',
-            'Matchningen sker med en ordlista, så ett sammanhang är ännu inte en symbolisk betydelse; klustren är utforskande, numrerade och namnlösa, och UMAP förvränger avstånd.',
+            'Before extraction, contents, glossaries, indexes, notes, bibliographies and footnotes are removed by explicit rules, and each removal is recorded. Matching is by word list, so a context is not yet a symbolic meaning; clusters are exploratory and numbered, a name comes only from a person’s review, and UMAP bends distances.',
+            'Före extraktionen tas innehållsförteckningar, ordlistor, register, noter, litteraturlistor och fotnoter bort med uttryckliga regler, och varje borttagning registreras. Matchningen sker med en ordlista, så ett sammanhang är ännu inte en symbolisk betydelse; klustren är utforskande och numrerade, ett namn kommer bara från en människas granskning, och UMAP förvränger avstånd.',
           )}
         </p>
+        <h3>{l('Diagnostics', 'Diagnostik')}</h3>
+        <p className="atlas-note">
+          {l(
+            'How well the map and the clusters hold together. These describe structure, not meaning.',
+            'Hur väl kartan och klustren håller ihop. De beskriver struktur, inte betydelse.',
+          )}
+        </p>
+        <div className="atlas-table-wrap">
+          <table className="atlas-table">
+            <thead>
+              <tr>
+                <th scope="col">{l('Run', 'Körning')}</th>
+                <th scope="col">{l('Trustworthiness', 'Trovärdighet')}</th>
+                <th scope="col">{l('Silhouette', 'Silhuett')}</th>
+                <th scope="col">{l('Noise', 'Brus')}</th>
+                <th scope="col">
+                  {l('Median membership', 'Medianmedlemskap')}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {(history?.steps ?? [])
+                .filter((st) => st.metrics)
+                .map((st) => (
+                  <tr key={st.id}>
+                    <th scope="row">
+                      {st.id} · {st.name}
+                    </th>
+                    <td>{num(st.metrics!.trustworthiness, 2)}</td>
+                    <td>
+                      {st.metrics!.silhouette == null
+                        ? '–'
+                        : num(st.metrics!.silhouette, 2)}
+                    </td>
+                    <td>{pct(st.metrics!.noise_share)}</td>
+                    <td>
+                      {st.metrics!.median_membership == null
+                        ? '–'
+                        : num(st.metrics!.median_membership, 2)}
+                    </td>
+                  </tr>
+                ))}
+              {!history && (
+                <tr>
+                  <th scope="row">{l('Baseline', 'Utgångsläge')}</th>
+                  <td>{num(ev.trustworthiness, 2)}</td>
+                  <td>{ev.silhouette == null ? '–' : num(ev.silhouette, 2)}</td>
+                  <td>{pct(summary.noise_share)}</td>
+                  <td>
+                    {ev.membership_probability
+                      ? num(ev.membership_probability.median, 2)
+                      : '–'}
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
         <p>
           <a
             href="https://github.com/korv9/anton-portfolio/blob/main/docs/symbolic-atlas.md"
