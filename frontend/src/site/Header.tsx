@@ -4,8 +4,8 @@
  * project's own views (the politics themes, the job-market themes, the atlas sections) live
  * inside the project, under this header, never in it.
  *
- * The header is large and editorial on the start page and compact and sticky elsewhere, so
- * project content starts high on the screen. Project lists come from projects/projectRegistry.ts.
+ * The header is the same on every page: the name large, the navigation under it. Project lists
+ * come from projects/projectRegistry.ts.
  */
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
 import { currentLocale, l, setLocale, type Locale } from '../i18n'
@@ -156,7 +156,7 @@ export default function Header({
   const Name = home ? 'h1' : 'div'
   const close = () => setMobileOpen(false)
   return (
-    <header className={`site-bar${home ? ' is-home' : ' is-compact'}`}>
+    <header className="site-bar">
       <Name className="site-name-heading">
         <a
           className="wordmark"

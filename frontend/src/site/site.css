@@ -1,10 +1,10 @@
 /*
- * The site frame (site/Header.tsx): one header everywhere, large and editorial on the start
- * page, compact and sticky on every other page; the breadcrumb, a project's own navigation,
+ * The site frame (site/Header.tsx): one header everywhere, the name as large on a project page
+ * as on the start page; the breadcrumb, a project's own navigation,
  * the previous / next project and the footer.
  */
 .site-shell {
-  --header-h: 64px;
+  --header-h: 0px;
   width: calc(100% - 40px);
   max-width: none;
   margin: 20px auto;
@@ -13,7 +13,7 @@
 .home-shell {
   max-width: none;
 }
-/* Anchored sections land below the sticky header. */
+/* Anchored sections keep a little air above them. */
 .site-shell main [id] {
   scroll-margin-top: calc(var(--header-h) + 16px);
 }
@@ -47,7 +47,7 @@
   text-transform: uppercase;
   line-height: 1;
 }
-.site-bar.is-home {
+.site-bar {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto auto;
   grid-template-areas:
@@ -56,31 +56,20 @@
   gap: 18px 28px;
   padding-block: 20px 12px;
 }
-.site-bar.is-home .site-name-heading {
+.site-bar .site-name-heading {
   grid-area: name;
 }
-.site-bar.is-home .wordmark-name {
+.site-bar .wordmark-name {
   font-size: 6.2vw;
   font-weight: 750;
   letter-spacing: -0.065em;
   word-spacing: 0.14em;
 }
-.site-bar.is-home .global-nav {
+.site-bar .global-nav {
   grid-area: nav;
 }
-.site-bar.is-home .language-switch {
+.site-bar .language-switch {
   grid-area: lang;
-}
-.site-bar.is-compact {
-  position: sticky;
-  top: 0;
-  height: var(--header-h);
-  border-bottom: 1px solid var(--line);
-}
-.site-bar.is-compact .wordmark-name {
-  font-size: 1rem;
-  font-weight: 750;
-  letter-spacing: 0.02em;
 }
 
 .global-nav {
@@ -257,16 +246,16 @@
   .site-menu-button {
     display: inline-block;
   }
-  .site-bar.is-home {
+  .site-bar {
     grid-template-columns: minmax(0, 1fr) auto auto;
     grid-template-areas:
       'name name name'
       '. lang menu';
   }
-  .site-bar.is-home .wordmark-name {
+  .site-bar .wordmark-name {
     font-size: 8.5vw;
   }
-  .site-bar.is-home .site-menu-button {
+  .site-bar .site-menu-button {
     grid-area: menu;
   }
 }
@@ -278,9 +267,6 @@
   .site-bar {
     gap: 8px;
     padding-inline: 12px;
-  }
-  .site-bar.is-compact .wordmark-name {
-    font-size: 0.85rem;
   }
   .site-bar .language-switch button {
     padding-inline: 5px;

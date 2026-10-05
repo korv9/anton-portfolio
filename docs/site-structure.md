@@ -15,8 +15,7 @@ Every page has the same header with four global destinations, and the name links
 | **About** | `#om-mig`, about, education and contact on the start page |
 | **CV ▾** | A menu with the three role-specific CVs in `public/cv/` (download) |
 
-- **Start page:** the header is large and editorial (the name as the page's `h1`).
-- **Every other page:** the header is compact (64 px, `--header-h`) and sticky, so project content starts high on the screen.
+- **Every page:** the header looks the same, the name large across the top and the navigation under it. On the start page the name is the page's `h1`. The header scrolls away with the page; the politics side menu and slicer stick to the top of the screen.
 - **Active state:** `aria-current` marks Projects on every project page and on `#alla-projekt`, Experience and About on their sections. A project's own views (politics themes, job-market themes, atlas sections) never become global destinations.
 - **Menus:** disclosure buttons (`aria-expanded`, `aria-controls`); Escape closes and returns focus, as do a click outside and tabbing out.
 - **Phone (below 860 px):** the global links are replaced by one Menu button that opens the same content in one panel: selected projects, all projects, Experience, About, the CVs. A new address closes it.
