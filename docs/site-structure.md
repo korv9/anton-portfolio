@@ -60,17 +60,20 @@ Everything else (DrugComb, taLLMan, Allegoria, DiVA, Homie, RAG, MIMII, IN1) is 
 
 In the order a recruiter reads it (`frontend/src/home/HomePage.tsx`):
 
-1. **Hero** (`#start`): role, one sentence, and links to the projects, the CV, GitHub, LinkedIn and email.
-2. **Selected projects** (`#projekt`): one row per selected project with number, descriptor, summary, four tech tags and a small live preview, then a link to all projects.
-3. **Experience** (`#erfarenhet`): one row per job; a click opens what was done and with what.
-4. **Tech stack** (`#kompetenser`): the eclipse radar as the picture (hover shows which projects use a tool) beside the tool groups.
-5. **About** (`#om-mig`): about, education and contact.
+1. **Hero** (`#start`): one slim row with role, one sentence, and links to the projects, the CV, GitHub, LinkedIn and email.
+2. **First screen, two columns:**
+   - **left, Selected projects** (`#projekt`): one card per selected project with number, descriptor, summary and four tech tags, over its own live chart as a faded backdrop (stronger on hover), then a link to all projects;
+   - **right, Experience** (`#erfarenhet`): one row per job, where a click opens what was done and with what, and the **education** under it.
+3. **Tech stack** (`#kompetenser`): the eclipse radar as the picture (hover shows which projects use a tool) beside the tool groups.
+4. **About** (`#om-mig`): about and contact.
 
-Everything is on the page; nothing hides behind the radar. On a phone the page is one column.
+Everything is on the page; nothing hides behind the radar. On a phone (and below 900 px) the two columns stack: projects, then experience and education.
 The words live in `frontend/src/home/content.ts` and `orbitContent.ts`; every fact comes from the CVs.
 
 A short name intro plays once per session when the start page is opened directly (never on a
-deep link). Click, Enter or Escape skips it; with reduced motion it is a short fade.
+deep link): organic clusters grown as branching filaments, with thin veins from each point to
+its cluster's core, travel into the name, whose points are then stitched together by veins of
+their own. Click, Enter or Escape skips it; with reduced motion it is a short fade.
 `frontend/src/site/Intro.tsx`.
 
 ## Projects page

@@ -1,7 +1,9 @@
 /**
- * The start page, in the order a recruiter reads it: who (hero), selected projects, experience,
- * tech stack and about. Everything is on the page; the eclipse radar is the tech stack's
- * picture, not a door to it. Projects come from projects/projectRegistry.ts.
+ * The start page, in the order a recruiter reads it: who (hero), then the selected projects on
+ * the left, each over its own chart as a backdrop, beside the experience and education on the
+ * right, so both are on the first screen; then the tech stack and about. Everything is on the
+ * page; the eclipse radar is the tech stack's picture, not a door to it. Projects come from
+ * projects/projectRegistry.ts.
  */
 import { useEffect, useState, type ReactNode } from 'react'
 import { l } from '../i18n'
@@ -41,7 +43,7 @@ function Hero() {
       <div className="home-hero-copy">
         <h2 id="home-role" className="home-hero-role">
           {l('Data engineer / developer', 'Data engineer / utvecklare')}
-          <br />
+          {' · '}
           {l('Stockholm, Sweden', 'Stockholm, Sverige')}
         </h2>
         <p className="home-hero-lede">
@@ -79,11 +81,11 @@ function Hero() {
 function SelectedProjects() {
   return (
     <section
-      className="home-projects ds-section ds-container"
+      className="home-projects"
       id="projekt"
       aria-labelledby="projects-title"
     >
-      <h2 id="projects-title" className="ds-h2">
+      <h2 id="projects-title" className="home-first-title">
         {l('Selected projects', 'Utvalda projekt')}
       </h2>
       {FLAGSHIPS.map((project) => (
@@ -119,11 +121,11 @@ function Experience() {
   const [expanded, setExpanded] = useState<string[]>([])
   return (
     <section
-      className="ds-section ds-container"
+      className="home-experience"
       id="erfarenhet"
       aria-labelledby="experience-title"
     >
-      <h2 id="experience-title" className="ds-h2">
+      <h2 id="experience-title" className="home-first-title">
         {l('Experience', 'Erfarenhet')}
       </h2>
       <ol className="timeline">
@@ -171,6 +173,10 @@ function Experience() {
           </li>
         ))}
       </ol>
+      <div className="home-education">
+        <h3 className="home-first-title">{l('Education', 'Utbildning')}</h3>
+        <p>{b(EDUCATION)}</p>
+      </div>
     </section>
   )
 }
@@ -226,8 +232,6 @@ function About() {
           ))}
         </div>
         <div>
-          <p className="ds-label">{l('Education', 'Utbildning')}</p>
-          <p>{b(EDUCATION)}</p>
           <p className="ds-label">{l('Contact', 'Kontakt')}</p>
           <p className="home-about-links">
             {profile.email && (
@@ -262,8 +266,10 @@ export default function HomePage({ path }: { path: string }) {
   return (
     <div className="home home-orbit">
       <Hero />
-      <SelectedProjects />
-      <Experience />
+      <div className="home-first ds-container">
+        <SelectedProjects />
+        <Experience />
+      </div>
       <TechStack />
       <About />
     </div>
