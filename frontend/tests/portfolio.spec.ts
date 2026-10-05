@@ -69,8 +69,17 @@ test('home introduces Anton and routes to each project', async ({ page }) => {
   await expect(page.locator('#rfc-drift')).toBeVisible()
   await page.goto('/#thesis')
   await expect(page.locator('#thesis')).toContainText('review candidates')
+  await expect(page.getByRole('heading', { level: 1 })).toContainText(
+    '72 to review',
+  )
   await page.goto('/#homie')
   await expect(page.locator('#homie')).toBeVisible()
+  await expect(page.locator('#homie-stage .homie-stub')).toHaveCount(4)
+  // DiVA: the pipeline is in place; until a harvest has run the page says so.
+  await page.goto('/#diva')
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+    'What Swedish students write about',
+  )
   expect(errors).toEqual([])
 })
 

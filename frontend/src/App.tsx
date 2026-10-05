@@ -26,6 +26,7 @@ const AllegoriaPage = lazy(() =>
 const ThesisPage = lazy(() =>
   import('./products/CaseStudies').then((m) => ({ default: m.ThesisPage })),
 )
+const DivaPage = lazy(() => import('./diva/DivaPage'))
 const HomiePage = lazy(() =>
   import('./products/CaseStudies').then((m) => ({ default: m.HomiePage })),
 )
@@ -110,6 +111,7 @@ export default function App() {
           {page === 'allegoria' && <AllegoriaPage />}
           {page === 'thesis' && <ThesisPage />}
           {page === 'homie' && <HomiePage />}
+          {page === 'diva' && <DivaPage />}
         </Suspense>
       </main>
       <Footer />

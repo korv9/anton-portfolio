@@ -19,6 +19,27 @@ test('project reports keep their data and downloads on their own pages', async (
   await expect(body.locator('.body-table tbody tr')).toHaveCount(13)
   await expect(body.locator('.body-table')).toContainText('Bone')
   await expect(body.locator('.body-table')).toContainText('23.1 %')
+  // The decision tree trained on the screens, and the drugs in clusters, as dashboards.
+  const tree = await (
+    await page.request.get('/data/products/drugcomb/tree.json')
+  ).json()
+  const stageTree = page.locator('#dc-tree')
+  await expect(stageTree.locator('.dtree-leaf')).toHaveCount(
+    tree.metrics.leaves,
+  )
+  await expect(stageTree).toContainText(String(tree.metrics.roc_auc))
+  await stageTree.locator('.dtree-leaf').first().hover({ force: true })
+  await expect(stageTree.locator('.dtree-caption li').first()).toBeVisible()
+  const sky = await (
+    await page.request.get('/data/products/drugcomb/drug-clusters.json')
+  ).json()
+  const stageSky = page.locator('#dc-sky')
+  await expect(stageSky.locator('.dsky-star')).toHaveCount(sky.drugs.length)
+  await stageSky.locator('.dsky-legend button').first().click()
+  await expect(stageSky.locator('.dsky-legend button').first()).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  )
   await expect(report.locator('.dc-checks li.ok')).toHaveCount(10)
   // Choosing a test split changes what the model relies on.
   const card = report.locator('.board-card', {

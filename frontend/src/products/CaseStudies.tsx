@@ -1,6 +1,10 @@
 /** Project pages that are a single report: DrugComb, Allegoria, the degree project and Homie. */
 import { lazy } from 'react'
 import { l, t } from '../i18n'
+import { Stage, StageBlock, StageFacts, StageTools } from '../ui/Stage'
+import ThesisSieve from './ThesisSieve'
+import HomieFlow from './HomieFlow'
+import './mlviz.css'
 
 const RfcReport = lazy(() => import('../RfcReport'))
 const DrugCombReport = lazy(() => import('./DrugCombReport'))
@@ -64,17 +68,114 @@ export function AllegoriaPage() {
 export function ThesisPage() {
   return (
     <div className="project-page">
-      <div className="page-lead">
-        <p className="eyebrow">
-          {l('Degree project · Avtalat', 'Examensarbete · Avtalat')}
-        </p>
-        <h1>{t('Finding useful review candidates in incident data.')}</h1>
-        <p>
-          {t(
-            'My principal case study in data quality, privacy-aware NLP and clustering. Internal source records are not published.',
-          )}
-        </p>
-      </div>
+      <Stage
+        id="thesis-stage"
+        level={1}
+        kicker={l(
+          'Degree project · Avtalat · 2026',
+          'Examensarbete · Avtalat · 2026',
+        )}
+        title={l(
+          'From 21,000 incidents to 72 to review',
+          'Från 21 000 incidenter till 72 att granska',
+        )}
+        lead={l(
+          'Unsupervised NLP groups similar incident texts; groups without a link to an existing problem record become candidates for review, not proven root causes.',
+          'Oövervakad NLP grupperar liknande incidenttexter; grupper utan koppling till en befintlig problempost blir kandidater för granskning, inte bevisade grundorsaker.',
+        )}
+        figure={<ThesisSieve />}
+        left={
+          <>
+            <StageBlock title={l('Data', 'Data')}>
+              <StageFacts
+                rows={[
+                  [
+                    l('Production incidents', 'Produktionsincidenter'),
+                    '21,000+',
+                  ],
+                  [l('Data quality', 'Datakvalitet'), 'ISO/IEC 25012'],
+                  [
+                    l('Personal data', 'Personuppgifter'),
+                    l('masked (Presidio)', 'maskerade (Presidio)'),
+                  ],
+                ]}
+              />
+              <p>
+                {l(
+                  'Internal records: no incident text or raw data is published.',
+                  'Interna poster: ingen incidenttext eller rådata publiceras.',
+                )}
+              </p>
+            </StageBlock>
+            <StageBlock title={l('Pipeline', 'Pipeline')}>
+              <ol className="stage-steps">
+                <li>{l('Quality assessment', 'Kvalitetsbedömning')}</li>
+                <li>
+                  {l('PII masking with Presidio', 'PII-maskning med Presidio')}
+                </li>
+                <li>
+                  {l(
+                    'Multilingual sentence embeddings',
+                    'Flerspråkiga meningsinbäddningar',
+                  )}
+                </li>
+                <li>
+                  {l('UMAP to 10 dimensions', 'UMAP till 10 dimensioner')}
+                </li>
+                <li>HDBSCAN</li>
+                <li>{l('Tracked in MLflow', 'Spårat i MLflow')}</li>
+              </ol>
+            </StageBlock>
+          </>
+        }
+        right={
+          <>
+            <StageBlock title={l('Results', 'Resultat')}>
+              <StageFacts
+                rows={[
+                  [l('Clusters', 'Kluster'), '121'],
+                  [l('Review candidates', 'Granskningskandidater'), '72'],
+                ]}
+              />
+            </StageBlock>
+            <StageBlock title={l('Silhouette', 'Silhuett')}>
+              {[
+                ['HDBSCAN', 0.706],
+                ['K-means', 0.534],
+              ].map(([m, v]) => (
+                <div key={m as string}>
+                  {m}
+                  <div className="stage-bar">
+                    <span>
+                      <i style={{ width: `${(v as number) * 100}%` }} />
+                    </span>
+                    <b>{(v as number).toFixed(3)}</b>
+                  </div>
+                </div>
+              ))}
+              <p>
+                {l(
+                  'Internal separation only: business validation is still needed. Which clusters are candidates is not shown; they are spread evenly in the figure.',
+                  'Bara intern separation: verksamhetens validering behövs fortfarande. Vilka kluster som är kandidater visas inte; de är jämnt spridda i figuren.',
+                )}
+              </p>
+            </StageBlock>
+            <StageBlock title={l('Tools', 'Verktyg')}>
+              <StageTools
+                items={[
+                  'Python',
+                  'Azure Databricks',
+                  'sentence-transformers',
+                  'UMAP',
+                  'HDBSCAN',
+                  'Presidio',
+                  'MLflow',
+                ]}
+              />
+            </StageBlock>
+          </>
+        }
+      />
       <div className="featured-projects">
         <div className="project-grid">
           <article className="thesis-card" id="thesis">
@@ -162,15 +263,88 @@ export function ThesisPage() {
 export function HomiePage() {
   return (
     <div className="project-page">
-      <div className="page-lead">
-        <p className="eyebrow">{t('Homie API · work in progress')}</p>
-        <h1>{t('From household events to understandable analytics.')}</h1>
-        <p>
-          {t(
-            'The API contract and data design are here for inspection. Several endpoints remain documented stubs.',
-          )}
-        </p>
-      </div>
+      <Stage
+        id="homie-stage"
+        level={1}
+        kicker={l('Homie API · work in progress', 'Homie API · pågående')}
+        title={l(
+          'A backend for household events',
+          'En backend för hushållets händelser',
+        )}
+        lead={l(
+          'Chore completions are stored as immutable events and aggregated into weekly workload, fairness and cadence. The contract is explicit; several routes are still documented stubs.',
+          'Utförda sysslor sparas som oföränderliga händelser och aggregeras till veckobelastning, rättvisa och rytm. Kontraktet är tydligt; flera rutter är fortfarande dokumenterade stubbar.',
+        )}
+        figure={<HomieFlow />}
+        left={
+          <>
+            <StageBlock title={l('Design', 'Design')}>
+              <ol className="stage-steps">
+                <li>
+                  {l(
+                    'Record immutable events',
+                    'Spara oföränderliga händelser',
+                  )}
+                </li>
+                <li>
+                  {l(
+                    'Enrich with household, task, member',
+                    'Berika med hushåll, uppgift, medlem',
+                  )}
+                </li>
+                <li>{l('Aggregate in SQL views', 'Aggregera i SQL-vyer')}</li>
+                <li>
+                  {l(
+                    'Serve typed FastAPI contracts',
+                    'Servera typade FastAPI-kontrakt',
+                  )}
+                </li>
+              </ol>
+            </StageBlock>
+            <StageBlock title={l('Status', 'Status')}>
+              <StageFacts
+                rows={[
+                  [l('Implemented route groups', 'Klara ruttgrupper'), '3'],
+                  [l('Documented stubs', 'Dokumenterade stubbar'), '4'],
+                ]}
+              />
+              <p>
+                {l(
+                  'Stub routes return documented previews; no real household data is shown.',
+                  'Stubbrutter returnerar dokumenterade förhandsvisningar; ingen riktig hushållsdata visas.',
+                )}
+              </p>
+            </StageBlock>
+          </>
+        }
+        right={
+          <>
+            <StageBlock title={l('Quality', 'Kvalitet')}>
+              <StageTools
+                items={[
+                  'pytest',
+                  'Ruff',
+                  'GitHub Actions',
+                  'Docker (multi-stage)',
+                  'Docker Compose',
+                ]}
+              />
+            </StageBlock>
+            <StageBlock title={l('Stack', 'Stack')}>
+              <StageTools
+                items={[
+                  'Python',
+                  'FastAPI',
+                  'PostgreSQL',
+                  'SQLAlchemy',
+                  'Alembic',
+                  'OpenAPI',
+                ]}
+              />
+            </StageBlock>
+          </>
+        }
+      />
       <div className="reports">
         <HomieProject />
       </div>
