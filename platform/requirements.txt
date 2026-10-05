@@ -14,3 +14,4 @@ boto3==1.43.103          # publish/upload.py, lib/delivery.py (R2 is S3-compatib
 openpyxl==3.1.5          # ingest/jobtech/export_presentation.py
 jsonschema==4.26.0       # ingest/jobtech/validate_powerbi.py
 dbt-semantic-interfaces==0.10.5  # publish/validate_semantic_layer.py (MetricFlow's validator)
+scikit-learn==1.9.1      # publish/drugcomb_ml.py, publish/diva_clusters.py

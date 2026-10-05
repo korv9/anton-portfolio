@@ -135,7 +135,7 @@ body .project-page {
   border: 1px solid var(--ink);
   border-radius: 0;
   background: var(--ink);
-  color: var(--paper);
+  color: var(--on-accent);
   font-size: 0.9375rem;
   text-decoration: none;
   cursor: pointer;
@@ -353,7 +353,7 @@ body .politik-nav a {
 }
 body .politik-nav a[aria-current] {
   background: var(--ink);
-  color: var(--paper);
+  color: var(--on-accent);
 }
 body .politik-nav a[aria-current] .politik-nav-no {
   color: var(--paper);

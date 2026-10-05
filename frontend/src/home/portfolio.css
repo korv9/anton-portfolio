@@ -70,11 +70,11 @@
 }
 .pf-button:hover {
   background: var(--ink);
-  color: var(--page);
+  color: var(--on-accent);
 }
 .pf-button.primary {
   background: var(--ink);
-  color: var(--page);
+  color: var(--on-accent);
 }
 .pf-button.primary:hover {
   background: var(--ink-2);

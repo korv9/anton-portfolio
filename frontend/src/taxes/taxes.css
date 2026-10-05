@@ -92,7 +92,7 @@
   padding: 0.4rem 0.5rem;
   border: 1px solid var(--line);
   border-radius: 4px;
-  background: white;
+  background: var(--paper);
   width: 100%;
   box-sizing: border-box;
 }
@@ -131,7 +131,7 @@
   white-space: nowrap;
 }
 .tax-lines tr.reduction td {
-  color: #1a1a1a;
+  color: var(--ink);
 }
 .tax-lines tr.total td {
   font-weight: 800;
@@ -164,11 +164,11 @@
 }
 .tax-direction.lower,
 td.lower {
-  color: #1a1a1a;
+  color: var(--ink);
 }
 .tax-direction.higher,
 td.higher {
-  color: #9c2f1f;
+  color: var(--ink);
 }
 .tax-decision-source {
   margin: 0.2rem 0;

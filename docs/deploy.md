@@ -73,6 +73,13 @@ on `workers.dev` and in previews without configuration.
    `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET` (an R2 API token
    with read and write on the bucket). Without them the daily refresh stops at its first step
    and the news collection does nothing.
+7. **The warehouse in R2.** Actions → *Build and store the warehouse* → Run workflow. It
+   fetches every public source, builds the DuckDB warehouse with dbt and stores it in the
+   bucket with all its raw files (`platform/publish/warehouse_store.py`):
+   `warehouse/portfolio.duckdb.gz`, `warehouse/manifest.json` (built when, from which commit,
+   SHA-256, rows per schema) and `warehouse/raw/`. Later runs start from the stored raw files.
+   Fetch the warehouse anywhere with `python platform/publish/warehouse_store.py pull`. The
+   bucket is public, so the warehouse can be downloaded by anyone; it holds only open data.
 
 ## Limits
 

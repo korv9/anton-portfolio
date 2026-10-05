@@ -1,0 +1,368 @@
+/*
+ * The decision tree (DecisionTree.tsx) and the drug constellation (DrugConstellation.tsx): chalk on
+ * black, warm gold for synergy. Motion is light; with reduced motion the tree has no moving points.
+ */
+
+.dtree svg,
+.dsky svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.dtree-ground,
+.dsky-ground {
+  fill: #070708;
+}
+.dtree-level {
+  stroke: #f1ece2;
+  stroke-width: 0.5;
+  stroke-dasharray: 2 8;
+  opacity: 0.15;
+}
+.dtree-branch {
+  fill: none;
+  stroke: #f1ece2;
+  stroke-linecap: round;
+  opacity: 0.32;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: dtree-grow 1.4s cubic-bezier(0.2, 0.7, 0.1, 1)
+    calc(var(--d) * 0.35s) both;
+  transition: opacity 200ms;
+}
+.dtree.has-focus .dtree-branch {
+  opacity: 0.1;
+}
+.dtree.has-focus .dtree-branch.is-on {
+  opacity: 0.85;
+}
+.dtree-motes circle {
+  fill: #f1ece2;
+  opacity: 0.7;
+}
+.dtree-motes circle.is-gold {
+  fill: #ffd98a;
+  opacity: 1;
+}
+.dtree-node circle {
+  fill: #070708;
+  stroke: #f1ece2;
+  stroke-width: 1.4;
+}
+.dtree-node .dtree-halo {
+  fill: none;
+  stroke-width: 0.6;
+  stroke-dasharray: 1 3;
+  opacity: 0.6;
+}
+.dtree-node text {
+  fill: #f1ece2;
+  font-family: var(--font-mono) !important;
+  font-size: 11px;
+  opacity: 0.8;
+}
+.dtree-node .dtree-thr {
+  font-size: 10px;
+  opacity: 0.65;
+}
+.dtree-node.is-on text {
+  opacity: 1;
+  font-weight: 600;
+}
+.dtree-node,
+.dtree-leaf {
+  cursor: default;
+}
+.dtree-leaf-core {
+  fill: #070708;
+  stroke: #ffd98a;
+  stroke-width: 1.4;
+}
+.dtree-leaf.is-on .dtree-leaf-core {
+  stroke-width: 2.6;
+}
+.dtree-share {
+  fill: #ffd98a;
+  font-family: var(--font-mono) !important;
+  font-size: 12px;
+  font-weight: 600;
+}
+.dtree-n,
+.dtree-foot,
+.dtree-root-label {
+  fill: #f1ece2;
+  font-family: var(--font-mono) !important;
+  font-size: 10px;
+  opacity: 0.6;
+}
+.dtree-root-label {
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  opacity: 0.85;
+}
+.dtree-caption {
+  min-height: 4.5rem;
+  margin-top: 0.75rem;
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+.dtree-caption ol {
+  margin: 0 0 0.3rem;
+  padding-left: 1.2rem;
+}
+.dtree-caption p {
+  margin: 0;
+  opacity: 0.8;
+}
+
+.dsky-grid circle,
+.dsky-grid line {
+  fill: none;
+  stroke: #f1ece2;
+  stroke-width: 0.5;
+  stroke-dasharray: 1 6;
+  opacity: 0.18;
+}
+.dsky-line {
+  stroke-width: 0.9;
+}
+.dsky-star {
+  transition: opacity 200ms;
+}
+.dsky-star circle:not(.dsky-hit) {
+  animation: dsky-twinkle 4s ease-in-out calc(var(--k) * -97ms) infinite
+    alternate;
+}
+.dsky-hit {
+  fill: transparent;
+}
+.dsky-spike {
+  stroke-width: 0.6;
+  opacity: 0.6;
+}
+.dsky-label {
+  font-family: var(--font-mono) !important;
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+}
+.dsky-tip circle {
+  fill: none;
+  stroke: #f1ece2;
+  stroke-width: 1;
+}
+.dsky-tip text {
+  fill: #f1ece2;
+  font-size: 13px;
+  font-weight: 600;
+}
+.dsky-tip .dsky-tip-meta {
+  font-family: var(--font-mono) !important;
+  font-size: 10.5px;
+  font-weight: 400;
+  opacity: 0.75;
+}
+.dsky-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.75rem;
+}
+.dsky-legend button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.6rem;
+  border: 1px solid rgba(241, 236, 226, 0.25);
+  background: transparent;
+  color: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+.dsky-legend button[aria-pressed='true'] {
+  border-color: #f1ece2;
+}
+.dsky-legend i {
+  width: 0.6rem;
+  height: 0.6rem;
+}
+
+@keyframes dtree-grow {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes dsky-twinkle {
+  from {
+    opacity: 0.55;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dtree-branch {
+    stroke-dashoffset: 0;
+    animation: none;
+  }
+  .dsky-star circle {
+    animation: none !important;
+  }
+}
+
+.diva-label {
+  cursor: default;
+  transition: opacity 200ms;
+}
+.diva-label text {
+  font-family: var(--font-mono) !important;
+  font-size: 13px;
+  font-weight: 600;
+  paint-order: stroke;
+  stroke: #070708;
+  stroke-width: 4px;
+}
+.diva-empty {
+  aspect-ratio: 1000 / 640;
+  background:
+    radial-gradient(
+      circle at 50% 50%,
+      rgba(241, 236, 226, 0.08),
+      transparent 60%
+    ),
+    repeating-radial-gradient(
+      circle at 50% 50%,
+      transparent 0 38px,
+      rgba(241, 236, 226, 0.06) 38px 39px
+    ),
+    #070708;
+}
+
+.sieve svg {
+  display: block;
+  width: 100%;
+  max-height: 78vh;
+  margin: 0 auto;
+}
+.sieve-ring {
+  fill: none;
+  stroke: #f1ece2;
+  stroke-width: 0.6;
+  stroke-dasharray: 1 6;
+  opacity: 0.25;
+}
+.sieve-thread {
+  fill: none;
+  stroke: #f1ece2;
+  stroke-width: 0.4;
+  opacity: 0;
+  animation: sieve-in 1.2s ease calc(var(--i) * 6ms) both;
+}
+.sieve-incident {
+  fill: #f1ece2;
+  opacity: 0.7;
+}
+.sieve-cluster circle {
+  fill: #070708;
+  stroke: #f1ece2;
+  stroke-width: 1;
+  opacity: 0.7;
+}
+.sieve-candidate circle {
+  fill: #ffd98a;
+}
+.sieve-pull {
+  stroke: #ffd98a;
+  stroke-width: 0.8;
+  opacity: 0;
+  animation: sieve-pull 1s ease calc(1.4s + var(--i) * 10ms) both;
+}
+.sieve-core {
+  fill: none;
+  stroke: #ffd98a;
+  stroke-width: 1.2;
+}
+.sieve-big {
+  fill: #ffd98a;
+  font-size: 64px;
+  font-weight: 600;
+  letter-spacing: -0.04em;
+}
+.sieve-small {
+  fill: #f1ece2;
+  font-family: var(--font-mono) !important;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  opacity: 0.75;
+}
+@keyframes sieve-in {
+  to {
+    opacity: 0.18;
+  }
+}
+@keyframes sieve-pull {
+  to {
+    opacity: 0.7;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sieve-thread {
+    animation: none;
+    opacity: 0.18;
+  }
+  .sieve-pull {
+    animation: none;
+    opacity: 0.7;
+  }
+}
+
+.homie-event {
+  fill: none;
+  stroke: #f1ece2;
+  stroke-width: 0.7;
+  stroke-dasharray: 2 10;
+  opacity: 0.35;
+  animation: homie-flow 6s linear calc(var(--i) * -0.6s) infinite;
+}
+.homie-core {
+  fill: #ffd98a;
+  font-size: 18px;
+  font-weight: 600;
+}
+.homie-spoke {
+  stroke: #f1ece2;
+  stroke-width: 0.8;
+  opacity: 0.35;
+}
+.homie-view {
+  fill: #070708;
+  stroke: #ffd98a;
+  stroke-width: 1.2;
+}
+.homie-done circle {
+  fill: #f1ece2;
+}
+.homie-stub circle {
+  fill: #070708;
+  stroke: #f1ece2;
+  stroke-width: 1.2;
+  stroke-dasharray: 3 3;
+}
+.homie-done text,
+.homie-stub text {
+  fill: #f1ece2;
+  font-size: 14px;
+}
+.homie-stub text {
+  opacity: 0.65;
+}
+@keyframes homie-flow {
+  to {
+    stroke-dashoffset: -120;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .homie-event {
+    animation: none;
+  }
+}

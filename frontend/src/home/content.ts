@@ -270,6 +270,35 @@ export const FLAGSHIP: Project = {
 
 export const PROJECTS: Project[] = [
   {
+    id: 'symbolic-atlas',
+    area: 'ai',
+    title: t('Symbolic Atlas', 'Symbolic Atlas'),
+    kind: t(
+      'Oövervakad NLP · experimentell',
+      'Unsupervised NLP · experimental',
+    ),
+    summary: t(
+      'Kan symbolisk mening träda fram ur datan utan att kategorierna bestäms först? Symbolord i tio fria böcker om myter och folksagor, placerade efter sitt sammanhang.',
+      'Can symbolic meaning emerge from the data without defining the categories first? Symbol words in ten public-domain books of myth and folklore, placed by their context.',
+    ),
+    result: t(
+      'En interaktiv karta med numrerade kluster; utvärderingen visar att klustren än så länge följer böckerna mer än symbolerna.',
+      'An interactive map with numbered clusters; the evaluation shows the clusters so far follow the books more than the symbols.',
+    ),
+    tech: [
+      'Python',
+      'NLP',
+      'Sentence Transformers',
+      'UMAP',
+      'HDBSCAN',
+      'dbt',
+      'DuckDB',
+      'React',
+    ],
+    href: '#symbolic-atlas',
+    code: 'https://github.com/korv9/anton-portfolio/blob/main/docs/symbolic-atlas.md',
+  },
+  {
     id: 'tallman',
     area: 'ai',
     title: t('taLLMan', 'taLLMan'),

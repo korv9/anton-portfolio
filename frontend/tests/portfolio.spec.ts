@@ -9,23 +9,39 @@ test('home introduces Anton and routes to each project', async ({ page }) => {
     'ERNSTSSON',
   )
   await expect(page.locator('#orbit-detail')).toBeHidden()
-  await page.getByRole('button', { name: 'Experience', exact: true }).click()
+  // The eclipse radar: one bundle of threads per headline skill, one thread per piece of
+  // evidence; pointing at a skill names where it is used, choosing it opens the skills.
+  const radar = page.locator('.eclipse')
+  await expect(radar.locator('.eclipse-axis')).toHaveCount(17)
+  await radar.locator('.eclipse-label', { hasText: 'Databricks' }).hover()
+  await expect(radar.locator('.eclipse-caption')).toContainText('Avtalat')
+  await radar.locator('.eclipse-label', { hasText: 'Databricks' }).click()
+  await expect(page.locator('#kompetenser')).toBeVisible()
+  await page.getByRole('button', { name: 'Close', exact: false }).click()
+  await expect(page.locator('#orbit-detail')).toBeHidden()
+  await expect(page.locator('.orbit-legend').getByRole('button')).toHaveCount(3)
+  // Topics open in place: the address and the scroll position stay as they were.
+  const experience = page.getByRole('button', {
+    name: 'Experience',
+    exact: true,
+  })
+  await experience.scrollIntoViewIfNeeded()
+  const before = await page.evaluate(() => window.scrollY)
+  await experience.click()
   await expect(page.locator('#erfarenhet')).toContainText('Fora')
   await expect(page.locator('#erfarenhet')).toContainText('Avtalat')
+  await expect(page.locator('#erfarenhet')).toContainText('JENSEN')
+  expect(await page.evaluate(() => window.scrollY)).toBe(before)
+  expect(new URL(page.url()).hash).toBe('')
   await page.getByRole('button', { name: 'Projects', exact: true }).click()
-  await expect(page.locator('.ds-project-row')).toHaveCount(4)
+  await expect(page.locator('.ds-project-row')).toHaveCount(5)
   await expect(page.locator('.ds-project-row').first()).toContainText(
     'Swedish politics',
   )
-  await page.getByRole('button', { name: 'Skills', exact: true }).click()
-  const more = page.locator('#kompetenser .skills-more')
-  await expect(more).toHaveCount(0)
-  await page.getByRole('button', { name: 'Show more' }).click()
-  await expect(more).toHaveCount(5)
+  await page.getByRole('button', { name: 'Tech stack', exact: true }).click()
+  await expect(page.locator('#kompetenser .skills-more')).toHaveCount(5)
   await expect(page.locator('#job-market')).toHaveCount(0)
-  await page.getByRole('button', { name: 'Education', exact: true }).click()
-  await expect(page.locator('#utbildning')).toContainText('JENSEN')
-  await page.getByRole('link', { name: 'Close', exact: false }).click()
+  await page.getByRole('button', { name: 'Tech stack', exact: true }).click()
   await expect(page.locator('#orbit-detail')).toBeHidden()
   await page.getByRole('button', { name: 'Projects', exact: true }).focus()
   await page.keyboard.press('Enter')
@@ -60,8 +76,17 @@ test('home introduces Anton and routes to each project', async ({ page }) => {
   await expect(page.locator('#rfc-drift')).toBeVisible()
   await page.goto('/#thesis')
   await expect(page.locator('#thesis')).toContainText('review candidates')
+  await expect(page.getByRole('heading', { level: 1 })).toContainText(
+    '72 to review',
+  )
   await page.goto('/#homie')
   await expect(page.locator('#homie')).toBeVisible()
+  await expect(page.locator('#homie-stage .homie-stub')).toHaveCount(4)
+  // DiVA: the pipeline is in place; until a harvest has run the page says so.
+  await page.goto('/#diva')
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+    'What Swedish students write about',
+  )
   expect(errors).toEqual([])
 })
 
@@ -181,4 +206,32 @@ test('budget proposals and annual outcomes are separate navigable reports', asyn
   await expect(
     page.locator('#budget-outturn .budget-ledger-all summary'),
   ).toContainText('2024')
+})
+
+test('the ER diagram shows the areas, a diagram per area and a table’s keys', async ({
+  page,
+}) => {
+  await page.goto('/#er')
+  await expect(
+    page.getByRole('heading', { level: 1, name: 'How the data connects' }),
+  ).toBeVisible()
+  await page.locator('.er-ov-node', { hasText: 'Parliament' }).click()
+  await expect(page).toHaveURL(/omrade=parliament/)
+  const box = page.locator('.er-box', { hasText: 'fct_roll_call' }).first()
+  await expect(box).toBeVisible()
+  await box.click()
+  await expect(page.locator('.stage-side.is-right')).toContainText(
+    'session + roll_call_id',
+  )
+  const axe = await new AxeBuilder({ page }).include('#er').analyze()
+  expect(axe.violations).toEqual([])
+  await expect(page.locator('.stage-side.is-right')).toContainText(
+    'dim_parliament_session',
+  )
+  // A link in the panel to a table in another area opens that area.
+  await page
+    .locator('.stage-side.is-right .er-link', { hasText: 'dim_date' })
+    .first()
+    .click()
+  await expect(page).toHaveURL(/omrade=shared/)
 })

@@ -1,0 +1,72 @@
+name: Build and store the warehouse
+
+# Builds the whole DuckDB warehouse from the public sources and stores it in R2, together with
+# every raw file it was built from (platform/publish/warehouse_store.py). Run by hand; nothing is
+# committed. A run starts from the raw files already stored, so closed parliamentary sessions
+# and archives that have not changed are not downloaded again.
+#
+# Afterwards the bucket holds warehouse/portfolio.duckdb.gz, warehouse/manifest.json and
+# warehouse/raw/. Fetch them anywhere with:
+#     python platform/publish/warehouse_store.py pull
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: data-refresh
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    # The R2 credentials are secrets of the anton-portfolio environment.
+    environment: anton-portfolio
+    env:
+      DBT_SEND_ANONYMOUS_USAGE_STATS: 'false'
+      PORTFOLIO_DB: ${{ github.workspace }}/warehouse/portfolio.duckdb
+      PORTFOLIO_RAW: ${{ github.workspace }}/warehouse/raw
+      R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+      R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY || secrets.R2_SECRET_ACCESS_KEY_ID }}
+      R2_BUCKET: ${{ secrets.R2_BUCKET }}
+    steps:
+      - name: Require R2 credentials
+        run: |
+          for name in R2_ACCOUNT_ID R2_ACCESS_KEY_ID R2_SECRET_ACCESS_KEY R2_BUCKET; do
+            if [ -z "${!name}" ]; then echo "::error::$name is not set (docs/deploy.md)"; exit 1; fi
+          done
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: platform/requirements.txt
+      - run: pip install -r platform/requirements.txt
+      - name: Start from the stored raw files
+        run: python platform/publish/warehouse_store.py pull --only raw
+      - name: Welfare (SCB, FoHM, Försäkringskassan, ESS, Kolada)
+        run: python platform/ingest/run_welfare.py
+      - name: Parliament (roll calls, bills, studies, elections)
+        run: python platform/ingest/run_parliament.py
+      - name: Taxes
+        run: python platform/ingest/run_taxes.py
+      - name: Job market (JobTech archives, counted)
+        run: |
+          python platform/ingest/jobtech/ingest_market.py
+          cd platform && dbt build --profiles-dir . --select tag:market
+      - name: News (archive on R2, tagged)
+        run: |
+          python platform/ingest/news/news_ingest.py --sync --months 3
+          python platform/ingest/news/people_ingest.py
+          cd platform && dbt build --profiles-dir . --select tag:news
+      - name: Politics
+        working-directory: platform
+        run: dbt build --profiles-dir . --select +tag:politics --target-path target/politics
+      - name: Store the warehouse and raw files in R2
+        run: |
+          python platform/publish/warehouse_store.py push
+          python platform/publish/warehouse_store.py status

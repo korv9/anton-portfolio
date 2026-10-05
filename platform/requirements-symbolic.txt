@@ -1,0 +1,10 @@
+# The Symbolic Atlas's ML stage (platform/nlp/symbolic/pipeline.py), kept out of
+# requirements.txt so CI does not download PyTorch. Install on top of requirements.txt:
+#
+#     pip install torch --index-url https://download.pytorch.org/whl/cpu
+#     pip install -r platform/requirements-symbolic.txt
+#
+# HDBSCAN comes from scikit-learn (requirements.txt). huggingface-hub wants a newer click
+# than dbt's semantic interfaces; both libraries work, only their command lines disagree.
+sentence-transformers==6.1.0
+umap-learn==0.5.12

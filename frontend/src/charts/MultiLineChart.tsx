@@ -297,7 +297,7 @@ export default function MultiLineChart({
                         y={y(p.value)}
                         size={3.5}
                         fill={color}
-                        stroke={identity(s.party).casing ?? '#ffffff'}
+                        stroke={identity(s.party).casing ?? 'var(--page)'}
                       />
                     ) : (
                       <circle
@@ -307,7 +307,7 @@ export default function MultiLineChart({
                         cy={y(p.value)}
                         r={4}
                         fill={color}
-                        stroke="#ffffff"
+                        stroke="var(--page)"
                         strokeWidth={2}
                       />
                     ),
@@ -339,7 +339,7 @@ export default function MultiLineChart({
                   y={label.y}
                   size={4}
                   fill={paint(label.key)}
-                  stroke={identity(label.party).casing ?? '#ffffff'}
+                  stroke={identity(label.party).casing ?? 'var(--page)'}
                 />
                 <text
                   x={label.x + 10}

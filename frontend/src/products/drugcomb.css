@@ -52,7 +52,7 @@
   width: 1.3rem;
   height: 1.3rem;
   background: var(--ink);
-  color: #fff;
+  color: var(--on-accent);
   font-size: 0.75rem;
   font-weight: 700;
 }
@@ -79,7 +79,7 @@
   font-weight: 700;
 }
 .dc-checks li.fail > span:first-child {
-  color: #b3261e;
+  color: var(--ink);
 }
 .dc-checks small {
   color: var(--muted);
@@ -101,7 +101,7 @@
 .dc-split button[aria-pressed='true'] {
   background: var(--ink);
   border-color: var(--ink);
-  color: #fff;
+  color: var(--on-accent);
 }
 .dc-scramble {
   display: grid;

@@ -1,5 +1,5 @@
 /**
- * The start page: presentation, experience, selected projects, skills and contact.
+ * The start page: presentation and a circle with three topics, experience, projects and tech stack.
  */
 import { useEffect, useState } from 'react'
 import { l } from '../i18n'
@@ -8,15 +8,17 @@ import {
   EDUCATION,
   EXPERIENCE,
   FEATURED,
-  MORE_PROJECTS,
   SKILLS,
   type Bilingual,
 } from './orbitContent'
 import './home.css'
+import './eclipse.css'
+import EclipseRadar from './EclipseRadar'
 import { ProjectRow, Tag } from '../ui/Editorial'
 import ClusterPreview from '../jobs/ClusterPreview'
 import PoliticsPreview from './PoliticsPreview'
 import { MethodPreview, SwedenPreview } from './ProjectPreviews'
+import SymbolicPreview from '../symbolic/SymbolicPreview'
 
 const b = (text: Bilingual) => l(text.en, text.sv)
 
@@ -35,8 +37,8 @@ function Presentation() {
         </h2>
         <p className="home-hero-lede">
           {l(
-            'I build data products, pipelines and analytical tools that make complex data useful. Working with Python, cloud infrastructure and open data, with an interest in finding structure in complex systems.',
-            'Jag bygger dataprodukter, pipelines och analysverktyg som gör komplex data användbar. Med Python, molninfrastruktur och öppna data hittar jag struktur i komplexa system.',
+            'I build data products, pipelines and analytical tools.',
+            'Jag bygger dataprodukter, pipelines och analysverktyg.',
           )}
         </p>
         <div className="home-intro-links">
@@ -65,35 +67,16 @@ function Presentation() {
 }
 
 function Experience() {
-  const [expanded, setExpanded] = useState<string[]>(['Avtalat'])
+  const [expanded, setExpanded] = useState<string[]>([])
   return (
     <section
       className="ds-section ds-container"
       id="erfarenhet"
       aria-labelledby="experience-title"
     >
-      <div className="ds-section-head">
-        <p className="ds-label">
-          <span className="ds-number">02 / </span>
-          {l('Work & internships', 'Arbete & praktik')}
-        </p>
-        <h2 id="experience-title" className="ds-h2">
-          {l('Experience', 'Erfarenhet')}
-        </h2>
-      </div>
-      <p className="experience-hint">
-        {l(
-          'Explore each role · click a bar for details',
-          'Utforska rollerna · klicka på en stapel för detaljer',
-        )}
-      </p>
-      <p className="experience-scale">
-        {l(
-          'Period length · calendar months',
-          'Periodens längd · kalendermånader',
-        )}{' '}
-        <span>0 — 6</span>
-      </p>
+      <h2 id="experience-title" className="ds-h2">
+        {l('Experience', 'Erfarenhet')}
+      </h2>
       <ol className="timeline">
         {EXPERIENCE.map((job) => (
           <li key={job.org} className="timeline-row">
@@ -118,112 +101,51 @@ function Experience() {
                 </span>
               </span>
               <span className="timeline-role">{b(job.role)}</span>
-              <span className="experience-bar-track" aria-hidden="true">
-                <span
-                  className={`experience-bar-fill ${job.org === 'Fora' ? 'experience-bar-fora' : ''}`}
-                />
-              </span>
-              <span className="experience-bar-value">
-                {job.org === 'Avtalat' ? 6 : 3}{' '}
-                {l('calendar months', 'kalendermånader')}
-              </span>
             </button>
             <div
               className="timeline-what"
               id={`experience-${job.org}`}
               hidden={!expanded.includes(job.org)}
             >
-              <div className="timeline-result">
-                <p className="ds-label">{l('Result', 'Resultat')}</p>
-                <p>{b(job.effect)}</p>
-              </div>
-              <p className="ds-label timeline-work-label">
-                {l('What I did', 'Vad jag gjorde')}
-              </p>
+              <p>{b(job.effect)}</p>
               <ul className="timeline-did">
                 {job.did.map((item) => (
                   <li key={item.sv}>{b(item)}</li>
                 ))}
               </ul>
-              <dl className="timeline-facts">
-                <div>
-                  <dt>{l('Technology', 'Teknik')}</dt>
-                  <dd className="home-tags">
-                    {job.tech.map((tech) => (
-                      <Tag key={tech}>{tech}</Tag>
-                    ))}
-                  </dd>
-                </div>
-              </dl>
+              <p className="home-tags">
+                {job.tech.map((tech) => (
+                  <Tag key={tech}>{tech}</Tag>
+                ))}
+              </p>
             </div>
           </li>
         ))}
       </ol>
-    </section>
-  )
-}
-
-function Education() {
-  return (
-    <section
-      className="home-education-panel ds-container"
-      id="utbildning"
-      aria-labelledby="education-title"
-    >
-      <div>
-        <p className="ds-label">
-          04 / {l('Learning & development', 'Lärande & utveckling')}
-        </p>
-        <h2 id="education-title">{l('Education', 'Utbildning')}</h2>
-        <p className="education-period">
-          2024 — 2026 <span>400 {l('YH credits', 'YH-poäng')}</span>
-        </p>
-      </div>
-      <div className="education-copy">
-        <h3>{l('AI Developer', 'AI-utvecklare')}</h3>
-        <p className="education-school">JENSEN Yrkeshögskola</p>
-        <p>{b(EDUCATION)}</p>
-      </div>
+      <p className="ds-small education-line">{b(EDUCATION)}</p>
     </section>
   )
 }
 
 function Skills() {
-  const [open, setOpen] = useState(false)
   return (
     <section
       className="ds-section ds-container"
       id="kompetenser"
       aria-labelledby="skills-title"
     >
-      <div className="ds-section-head">
-        <p className="ds-label">
-          {l('Technical skills', 'Tekniska kompetenser')}
-        </p>
-        <h2 id="skills-title" className="ds-h2">
-          {l('What I work with.', 'Det jag arbetar med.')}
-        </h2>
-      </div>
+      <h2 id="skills-title" className="ds-h2">
+        Tech stack
+      </h2>
       <div className="skills" id="skills-list">
         {SKILLS.map((group) => (
           <div key={group.group.sv} className="skills-group">
             <h3>{b(group.group)}</h3>
             <p className="skills-top">{group.top.join(' · ')}</p>
-            {open && (
-              <p className="skills-more ds-small">{group.more.join(' · ')}</p>
-            )}
+            <p className="skills-more ds-small">{group.more.join(' · ')}</p>
           </div>
         ))}
       </div>
-      <button
-        type="button"
-        className="ds-button secondary skills-toggle"
-        aria-expanded={open}
-        aria-controls="skills-list"
-        onClick={() => setOpen(!open)}
-      >
-        {open ? l('Show fewer', 'Visa färre') : l('Show more', 'Visa fler')}
-      </button>
     </section>
   )
 }
@@ -272,6 +194,25 @@ function Projects() {
       hrefLabel: { en: 'Read the case study', sv: 'Läs fallstudien' },
     },
     FEATURED.find((project) => project.id === 'welfare')!,
+    {
+      id: 'symbolic-atlas',
+      title: { en: 'Symbolic Atlas', sv: 'Symbolic Atlas' },
+      problem: {
+        en: 'Can symbolic meaning emerge from the data without defining the categories first?',
+        sv: 'Kan symbolisk mening träda fram ur datan utan att kategorierna bestäms först?',
+      },
+      built: {
+        en: 'Ten public-domain books, symbol words in context, sentence embeddings, UMAP and HDBSCAN, built in dbt and DuckDB.',
+        sv: 'Tio fria böcker, symbolord i sitt sammanhang, meningsinbäddningar, UMAP och HDBSCAN, byggt i dbt och DuckDB.',
+      },
+      result: {
+        en: 'An interactive map of every use, filterable by symbol, tradition and cluster.',
+        sv: 'En interaktiv karta över varje förekomst, filtrerbar efter symbol, tradition och kluster.',
+      },
+      tech: ['NLP', 'Embeddings', 'UMAP', 'HDBSCAN', 'dbt'],
+      href: '#symbolic-atlas',
+      hrefLabel: { en: 'Open the atlas', sv: 'Öppna atlasen' },
+    },
   ]
   const descriptions = [
     l(
@@ -290,6 +231,10 @@ function Projects() {
       'Jobs, health and trust across Sweden, explored through five public data sources.',
       'Jobb, hälsa och förtroende i Sverige, utforskade genom fem offentliga datakällor.',
     ),
+    l(
+      'An unsupervised exploration of recurring symbolic meaning in mythology, folklore and literature.',
+      'En oövervakad utforskning av återkommande symbolisk mening i mytologi, folksagor och litteratur.',
+    ),
   ]
   return (
     <section
@@ -298,21 +243,9 @@ function Projects() {
       aria-labelledby="projects-title"
     >
       <span id="projects" className="anchor-alias" />
-      <div className="ds-section-head">
-        <p className="ds-label">
-          <span className="ds-number">03 / </span>
-          {l('Data & analysis', 'Data & analys')}
-        </p>
-        <h2 id="projects-title" className="ds-h2">
-          {l('Featured projects', 'Utvalda projekt')}
-        </h2>
-      </div>
-      <p className="experience-hint">
-        {l(
-          'Explore the charts · open a project to dive deeper',
-          'Utforska graferna · öppna ett projekt för att se mer',
-        )}
-      </p>
+      <h2 id="projects-title" className="ds-h2">
+        {l('Projects', 'Projekt')}
+      </h2>
       {selected.map((project, index) => (
         <ProjectRow
           backgroundPreview
@@ -328,8 +261,10 @@ function Projects() {
               <ClusterPreview />
             ) : index === 2 ? (
               <MethodPreview />
-            ) : (
+            ) : index === 3 ? (
               <SwedenPreview />
+            ) : (
+              <SymbolicPreview />
             )
           }
         >
@@ -339,10 +274,6 @@ function Projects() {
               <Tag key={tech}>{tech}</Tag>
             ))}
           </div>
-          <details className="home-project-details">
-            <summary>{l('Project details', 'Om projektet')}</summary>
-            <ProjectFacts project={project} />
-          </details>
         </ProjectRow>
       ))}
       <p>
@@ -350,151 +281,6 @@ function Projects() {
           {l('Browse all projects', 'Se alla projekt')} →
         </a>
       </p>
-      <details className="more-projects">
-        <summary>{l('More projects', 'Fler projekt')}</summary>
-        <ul className="ds-rule-list">
-          {FEATURED.slice(2)
-            .filter((p) => p.id !== 'welfare')
-            .map((p) => (
-              <li key={p.id}>
-                <a href={p.href} className="more-row">
-                  <strong>{b(p.title)}</strong>
-                  <span>{b(p.problem)}</span>
-                </a>
-              </li>
-            ))}
-          {MORE_PROJECTS.filter(
-            (p) => !['#thesis', '#rfc-drift'].includes(p.href),
-          ).map((p) => (
-            <li key={p.title.sv}>
-              <a
-                href={p.href}
-                className="more-row"
-                {...(p.href.startsWith('http')
-                  ? { target: '_blank', rel: 'noreferrer' }
-                  : {})}
-              >
-                <strong>
-                  {b(p.title)}
-                  {p.href.startsWith('http') ? ' ↗' : ''}
-                </strong>
-                <span>{b(p.about)}</span>
-              </a>
-            </li>
-          ))}
-        </ul>
-      </details>
-    </section>
-  )
-}
-
-function ProjectFacts({ project }: { project: (typeof FEATURED)[number] }) {
-  return (
-    <>
-      <dl className="hp-facts">
-        <div>
-          <dt>{l('Problem', 'Problemet')}</dt>
-          <dd>{b(project.problem)}</dd>
-        </div>
-        <div>
-          <dt>{l('What I built', 'Vad jag byggde')}</dt>
-          <dd>{b(project.built)}</dd>
-        </div>
-        <div>
-          <dt>{l('Result', 'Resultatet')}</dt>
-          <dd>{b(project.result)}</dd>
-        </div>
-        <div>
-          <dt>{l('Technology', 'Teknik')}</dt>
-          <dd className="home-tags">
-            {project.tech.map((tech) => (
-              <Tag key={tech}>{tech}</Tag>
-            ))}
-          </dd>
-        </div>
-      </dl>
-      <p className="hp-links">
-        <a className="ds-link" href={project.href}>
-          {b(project.hrefLabel)} →
-        </a>
-        {project.code && (
-          <a
-            className="ds-link"
-            href={project.code}
-            target="_blank"
-            rel="noreferrer"
-          >
-            {l('Code on GitHub', 'Koden på GitHub')} ↗
-          </a>
-        )}
-      </p>
-    </>
-  )
-}
-
-function Contact() {
-  return (
-    <section
-      className="ds-section ds-container"
-      id="kontakt"
-      aria-labelledby="contact-title"
-    >
-      <div className="ds-section-head">
-        <p className="ds-label">{l('Contact', 'Kontakt')}</p>
-        <h2 id="contact-title" className="ds-h2">
-          {l(
-            'Looking for a junior data role.',
-            'Jag söker en junior roll inom data.',
-          )}
-        </h2>
-      </div>
-      <div className="home-columns">
-        <div />
-        <div>
-          <p className="ds-body">
-            {l(
-              'In data engineering or analytics engineering, where I can contribute with Python, SQL and data modelling, keep learning, and work close to the people who use the results.',
-              'Inom data engineering eller analytics engineering, där jag kan bidra med Python, SQL och datamodellering, fortsätta lära mig och arbeta nära dem som använder resultatet.',
-            )}
-          </p>
-          <ul className="contact-list ds-rule-list">
-            {profile.email && (
-              <li>
-                <a href={`mailto:${profile.email}`}>{profile.email}</a>
-              </li>
-            )}
-            {profile.linkedin && (
-              <li>
-                <a href={profile.linkedin} target="_blank" rel="noreferrer">
-                  LinkedIn ↗
-                </a>
-              </li>
-            )}
-            <li>
-              <a
-                href="https://github.com/korv9"
-                target="_blank"
-                rel="noreferrer"
-              >
-                GitHub ↗
-              </a>
-            </li>
-            {profile.cv && (
-              <li>
-                <a href={profile.cv} download>
-                  {l('Download CV (PDF)', 'Ladda ned CV (PDF)')}
-                </a>
-              </li>
-            )}
-          </ul>
-          <p className="ds-small">
-            {l(
-              'Stockholm · Swedish and English',
-              'Stockholm · svenska och engelska',
-            )}
-          </p>
-        </div>
-      </div>
     </section>
   )
 }
@@ -502,103 +288,29 @@ function Contact() {
 const AREAS = [
   { id: 'erfarenhet', en: 'Experience', sv: 'Erfarenhet', color: '#4e79a7' },
   { id: 'projekt', en: 'Projects', sv: 'Projekt', color: '#887ec8' },
-  { id: 'utbildning', en: 'Education', sv: 'Utbildning', color: '#b48a32' },
-  { id: 'kompetenser', en: 'Skills', sv: 'Kompetenser', color: '#559266' },
-  { id: 'kontakt', en: 'Contact', sv: 'Kontakt', color: '#c77561' },
+  { id: 'kompetenser', en: 'Tech stack', sv: 'Tech stack', color: '#559266' },
 ]
 
-const point = (radius: number, angle: number) => [
-  300 + radius * Math.cos(angle),
-  300 + radius * Math.sin(angle),
-]
-function sector(index: number) {
-  const start = -Math.PI / 2 + (index * Math.PI * 2) / 5 + 0.025
-  const end = start + (Math.PI * 2) / 5 - 0.05
-  const a = point(94, start),
-    b = point(232, start),
-    c = point(232, end),
-    d = point(94, end)
-  return `M ${a} L ${b} A 232 232 0 0 1 ${c} L ${d} A 94 94 0 0 0 ${a} Z`
-}
+const areaOf = (path: string) =>
+  AREAS.find((area) => `#${area.id}` === path)?.id ?? null
 
 export default function HomePage({ path }: { path: string }) {
-  const active = AREAS.find((area) => `#${area.id}` === path)
+  // The topic opens beside the circle (under it on narrow screens) without touching the address,
+  // so the page never jumps. A link from elsewhere to #erfarenhet etc. still opens its topic.
+  const [open, setOpen] = useState<string | null>(() => areaOf(path))
   useEffect(() => {
-    if (!active) return
-    const frame = requestAnimationFrame(() => {
-      const panel = document.getElementById('orbit-detail')
-      panel?.focus({ preventScroll: true })
-      if (window.matchMedia('(max-width: 900px)').matches)
-        panel?.scrollIntoView({ block: 'start' })
-    })
-    return () => cancelAnimationFrame(frame)
-  }, [active?.id])
-  const select = (id: string) => {
-    window.location.hash = id
-  }
+    const id = areaOf(path)
+    if (id) setOpen(id)
+  }, [path])
+  const active = AREAS.find((area) => area.id === open)
+  const select = (id: string) =>
+    setOpen((current) => (current === id ? null : id))
   return (
     <div className="home home-orbit">
       <Presentation />
       <div className={`portfolio-explorer ${active ? 'has-selection' : ''}`}>
         <div className="portfolio-orbit">
-          <p className="orbit-instruction">
-            {l(
-              'One circle. My work, background and ideas.',
-              'En cirkel. Mitt arbete, min bakgrund och mina idéer.',
-            )}
-          </p>
-          <svg className="orbit-chart" viewBox="0 0 600 600" aria-hidden="true">
-            {[94, 140, 186, 232].map((r) => (
-              <circle
-                key={r}
-                cx="300"
-                cy="300"
-                r={r}
-                fill="none"
-                stroke="currentColor"
-                opacity=".12"
-              />
-            ))}
-            {AREAS.map((area, i) => {
-              const label = point(
-                174,
-                -Math.PI / 2 + ((i + 0.5) * Math.PI * 2) / 5,
-              )
-              return (
-                <g
-                  key={area.id}
-                  className={`orbit-segment ${active?.id === area.id ? 'is-active' : ''}`}
-                  onClick={() => select(area.id)}
-                >
-                  <path d={sector(i)} fill={area.color} stroke={area.color} />
-                  <text
-                    x={label[0]}
-                    y={label[1]}
-                    textAnchor="middle"
-                    dominantBaseline="middle"
-                  >
-                    {l(area.en, area.sv)}
-                  </text>
-                </g>
-              )
-            })}
-            <text
-              x="300"
-              y="290"
-              textAnchor="middle"
-              className="orbit-center-title"
-            >
-              {l('Explore', 'Utforska')}
-            </text>
-            <text
-              x="300"
-              y="317"
-              textAnchor="middle"
-              className="orbit-center-hint"
-            >
-              {l('Choose a colour', 'Välj en färg')}
-            </text>
-          </svg>
+          <EclipseRadar onChoose={() => setOpen('kompetenser')} />
           <nav
             className="orbit-legend"
             aria-label={l('Explore my portfolio', 'Utforska min portfolio')}
@@ -619,7 +331,6 @@ export default function HomePage({ path }: { path: string }) {
         </div>
         <div
           id="orbit-detail"
-          tabIndex={-1}
           role="region"
           aria-label={active ? l(active.en, active.sv) : undefined}
           className="orbit-detail"
@@ -628,14 +339,16 @@ export default function HomePage({ path }: { path: string }) {
         >
           {active && (
             <>
-              <a className="orbit-close" href="#start">
+              <button
+                type="button"
+                className="orbit-close"
+                onClick={() => setOpen(null)}
+              >
                 {l('Close', 'Stäng')} ×
-              </a>
+              </button>
               {active.id === 'erfarenhet' && <Experience />}
               {active.id === 'projekt' && <Projects />}
-              {active.id === 'utbildning' && <Education />}
               {active.id === 'kompetenser' && <Skills />}
-              {active.id === 'kontakt' && <Contact />}
             </>
           )}
         </div>

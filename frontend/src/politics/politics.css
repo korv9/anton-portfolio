@@ -26,10 +26,10 @@
 .meaning-lab select,
 .law-text input {
   border: 1px solid #a9b9b0;
-  background: white;
+  background: var(--paper);
   padding: 0.7rem 0.9rem;
   border-radius: 4px;
-  color: #172321;
+  color: var(--ink);
   font: inherit;
   max-width: 100%;
 }
@@ -46,7 +46,7 @@
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   border: 1px solid #ccdad2;
-  background: #edf4ef;
+  background: var(--wash);
   margin-bottom: 1.5rem;
 }
 .politics-kpis > div {
@@ -61,7 +61,7 @@
   letter-spacing: -0.04em;
 }
 .politics-kpis span {
-  color: #50645a;
+  color: var(--ink-2);
   font-size: 0.75rem;
 }
 .politics-controls {
@@ -96,7 +96,7 @@
 }
 .politics-card {
   min-width: 0;
-  background: white;
+  background: var(--paper);
   border: 1px solid var(--line);
   padding: 1.5rem;
 }
@@ -108,15 +108,15 @@
   margin: 0.4rem 0 0.8rem;
 }
 .politics-card p {
-  color: #52645a;
+  color: var(--ink-2);
   font-size: 0.85rem;
 }
 .politics-card small {
-  color: #53635b;
+  color: var(--ink-2);
   font-size: 0.75rem;
 }
 .politics-card a {
-  color: #1a1a1a;
+  color: var(--ink);
   font-weight: 650;
   overflow-wrap: anywhere;
 }
@@ -168,7 +168,7 @@
 }
 .committee-comparison-row:hover,
 .committee-comparison-row:focus-visible {
-  background: #f5f8f4;
+  background: var(--wash);
 }
 .committee-pair,
 .committee-pair-values {
@@ -177,7 +177,7 @@
 }
 .committee-track {
   height: 0.75rem;
-  background: #eef1ec;
+  background: var(--wash);
 }
 .committee-track i {
   display: block;
@@ -197,13 +197,13 @@
   font-size: 0.75rem;
 }
 .vote-key span:nth-child(1) {
-  color: #1a1a1a;
+  color: var(--ink);
 }
 .vote-key span:nth-child(2) {
-  color: #ba462b;
+  color: var(--ink-2);
 }
 .vote-key span:nth-child(3) {
-  color: #65655b;
+  color: var(--ink-2);
 }
 .vote-stack-row {
   width: 100%;
@@ -211,19 +211,19 @@
   grid-template-columns: 25px 1fr 105px;
   gap: 0.7rem;
   align-items: center;
-  background: white;
+  background: var(--paper);
   border: 0;
   border-bottom: 1px solid #e4e9e4;
   padding: 0.8rem 0;
   font-size: 0.75rem;
   cursor: pointer;
   text-align: left;
-  color: #172321;
+  color: var(--ink);
 }
 .vote-stack {
   display: flex;
   height: 17px;
-  background: #f0f1eb;
+  background: var(--wash);
 }
 .vote-stack i {
   background: #1a1a1a;
@@ -248,13 +248,13 @@
   font-size: 0.75rem;
   text-align: left;
   padding: 0.6rem 0;
-  color: #52645a;
+  color: var(--ink-2);
 }
 .agreement-matrix td,
 .agreement-matrix th {
   padding: 0.35rem;
   text-align: center;
-  color: #172321;
+  color: var(--ink);
 }
 .agreement-matrix summary {
   list-style: none;
@@ -284,13 +284,13 @@
   padding: 1rem;
   border: 0;
   border-bottom: 1px solid #dfe5de;
-  background: #f5f7f2;
-  color: #172321;
+  background: var(--wash);
+  color: var(--ink);
   cursor: pointer;
 }
 .decision-list button[aria-pressed='true'] {
   box-shadow: inset 4px 0 #1a1a1a;
-  background: #e3efe7;
+  background: var(--wash);
 }
 .decision-list button span {
   font-size: 0.75rem;
@@ -298,7 +298,7 @@
 .decision-detail {
   min-width: 0;
   padding: 1rem;
-  background: #f8faf6;
+  background: var(--wash);
   border: 1px solid #e0e6dc;
 }
 .decision-detail h5,
@@ -311,7 +311,7 @@
   margin: 1rem 0;
   padding: 0.8rem 1rem;
   border-left: 3px solid #1a1a1a;
-  background: white;
+  background: var(--paper);
   white-space: pre-wrap;
   max-height: 300px;
   overflow: auto;
@@ -325,13 +325,13 @@
 }
 .decision-party-grid > div {
   padding: 0.6rem;
-  background: white;
+  background: var(--paper);
   border: 1px solid #dde6dc;
 }
 .decision-party-grid span {
   display: block;
   font-size: 0.75rem;
-  color: #52645a;
+  color: var(--ink-2);
   margin-top: 0.3rem;
 }
 .decision-detail details,
@@ -356,11 +356,11 @@
   gap: 0.5rem;
 }
 .evidence-note {
-  background: #f5f1e5;
+  background: var(--wash);
   border-left: 3px solid #b19a5e;
   padding: 0.8rem 1rem;
   font-size: 0.78rem;
-  color: #59533e !important;
+  color: var(--ink-2) !important;
 }
 .meaning-lab {
   margin-top: 2rem;
@@ -373,23 +373,23 @@
 }
 .meaning-lab > p {
   max-width: 900px;
-  color: #52645a;
+  color: var(--ink-2);
 }
 .engine-result {
   padding: 1.5rem;
   margin: 1.2rem 0;
   border: 1px solid #cbded3;
-  background: #edf6ef;
+  background: var(--wash);
 }
 .engine-result > span {
-  color: #52645a;
+  color: var(--ink-2);
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.07em;
 }
 .engine-result > strong {
   display: block;
-  color: #1a1a1a;
+  color: var(--ink);
   font-size: 2rem;
 }
 .evidence-chain {
@@ -402,7 +402,7 @@
 }
 .evidence-chain b {
   display: block;
-  color: #1a1a1a;
+  color: var(--ink);
   margin-top: 0.2rem;
 }
 .law-browser {

@@ -1,0 +1,63 @@
+name: Harvest DiVA theses and cluster their topics
+
+# Student theses from DiVA (diva-portal.org) over OAI-PMH, then topic clusters for the site
+# (platform/ingest/diva/harvest.py, platform/publish/diva_clusters.py). Runs by hand only; the
+# harvested months are cached between runs, so a later run only fetches new months. The cluster
+# file is committed to the branch the run was started on.
+
+on:
+  workflow_dispatch:
+    inputs:
+      from:
+        description: First month (YYYY-MM)
+        default: '2023-01'
+      to:
+        description: Last month (YYYY-MM)
+        default: '2025-12'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: data-refresh
+  cancel-in-progress: false
+
+jobs:
+  harvest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: platform/requirements.txt
+      - run: pip install -r platform/requirements.txt
+      - name: Restore harvested months
+        uses: actions/cache/restore@v4
+        with:
+          path: warehouse/raw/diva
+          key: diva-${{ github.run_id }}
+          restore-keys: diva-
+      - name: Harvest
+        run: python platform/ingest/diva/harvest.py --from "${{ inputs.from }}" --to "${{ inputs.to }}"
+      - name: Save harvested months
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: warehouse/raw/diva
+          key: diva-${{ github.run_id }}
+      - name: Cluster
+        run: python platform/publish/diva_clusters.py
+      - name: Commit the clusters
+        run: |
+          git config user.name 'data-refresh[bot]'
+          git config user.email 'data-refresh@users.noreply.github.com'
+          git add frontend/public/data/diva
+          if git diff --cached --quiet; then
+            echo "No change"
+          else
+            git commit -m "data: DiVA thesis topic clusters (run ${GITHUB_RUN_ID})"
+            git push
+          fi

@@ -29,7 +29,13 @@
     "parliament:fetch": "python platform/ingest/run_parliament.py --skip-build",
     "parliament:build": "python platform/ingest/run_parliament.py --skip-fetch",
     "parliament": "python platform/ingest/run_parliament.py && python platform/publish/export_parliament.py",
-    "taxes": "python platform/ingest/run_taxes.py && python platform/publish/export_taxes.py"
+    "taxes": "python platform/ingest/run_taxes.py && python platform/publish/export_taxes.py",
+    "symbolic:ingest": "python platform/ingest/symbolic/ingest_corpus.py",
+    "symbolic:silver": "cd platform && dbt build --profiles-dir . --select tag:symbolic --exclude path:models/gold/symbolic",
+    "symbolic:gold": "cd platform && dbt build --profiles-dir . --select path:models/gold/symbolic",
+    "symbolic:ml": "python platform/nlp/symbolic/pipeline.py",
+    "symbolic:publish": "python platform/publish/symbolic/export_symbolic.py",
+    "symbolic:build": "npm run symbolic:ingest && npm run symbolic:silver && npm run symbolic:ml && npm run symbolic:gold && npm run symbolic:publish"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.129.0",

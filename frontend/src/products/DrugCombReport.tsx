@@ -13,6 +13,46 @@ import Columns from '../politik/board/Columns'
 import DashBars from '../politik/dash/DashBars'
 import '../politik/dash/dash.css'
 import './drugcomb.css'
+import BodyMap, { type Lineage } from './BodyMap'
+import DecisionTree, { leavesOf, type TreeNode } from './DecisionTree'
+import DrugConstellation, {
+  type DrugCluster,
+  type DrugPoint,
+} from './DrugConstellation'
+import { Stage, StageBlock, StageFacts, StageTools } from '../ui/Stage'
+import './mlviz.css'
+import '../politik/modell/modell.css'
+
+type TreeFile = {
+  tree: TreeNode
+  metrics: {
+    train_measurements: number
+    test_measurements: number
+    test_pairs: number
+    base_rate: number
+    roc_auc: number
+    average_precision: number
+    leaves: number
+    depth: number
+  }
+  importance: {
+    feature: string
+    label: { en: string; sv: string }
+    gain: number
+  }[]
+  method: {
+    measurements: number
+    dropped_invalid_zip: number
+    tissue_matched_share: number
+  }
+}
+type ClusterFile = {
+  k: number
+  silhouette: Record<string, number>
+  tissues: string[]
+  drugs: DrugPoint[]
+  clusters: DrugCluster[]
+}
 
 type Metric = {
   scheme: string
@@ -35,16 +75,13 @@ type Report = {
     drugs: number
     cell_lines: number
     lineages: number
+    mean_zip: number
     share_synergistic: number
     share_antagonistic: number
     share_with_structures: number
     share_with_rna: number
   }
-  lineages: {
-    lineage: string
-    combinations: number
-    share_synergistic: number
-  }[]
+  lineages: Lineage[]
 }
 type Tables = {
   quality: { check: string; passed: string; detail: string | null }[]
@@ -140,6 +177,11 @@ export default function DrugCombReport() {
   const [tables, setTables] = useState<Partial<Tables>>({})
   const [split, setSplit] = useState('random')
   const [error, setError] = useState(false)
+  const [treeFile, setTreeFile] = useState<TreeFile | null>(null)
+  const [sky, setSky] = useState<ClusterFile | null>(null)
+  // Slicers: a tissue on the body, a leaf in the tree.
+  const [tissue, setTissue] = useState('')
+  const [leaf, setLeaf] = useState('')
   useEffect(() => {
     fetchData('products/drugcomb/report.json')
       .then((r) => {
@@ -148,6 +190,14 @@ export default function DrugCombReport() {
       })
       .then(setReport)
       .catch(() => setError(true))
+    fetchData('products/drugcomb/tree.json')
+      .then((r) => (r.ok ? r.json() : null))
+      .then(setTreeFile)
+      .catch(() => {})
+    fetchData('products/drugcomb/drug-clusters.json')
+      .then((r) => (r.ok ? r.json() : null))
+      .then(setSky)
+      .catch(() => {})
     for (const [key, file] of Object.entries(TABLES))
       fetchData(`products/drugcomb/tables/${file}.json`)
         .then((r) => (r.ok ? r.json() : null))
@@ -191,6 +241,345 @@ export default function DrugCombReport() {
 
   return (
     <article className="report drugcomb-board" id="drugcomb">
+      <Stage
+        id="dc-body"
+        kicker={l('DrugComb · 01 · the data', 'DrugComb · 01 · datan')}
+        title={l(
+          'Where the cancer cells come from',
+          'Var cancercellerna kommer ifrån',
+        )}
+        lead={l(
+          'Every screened cell line has a tissue of origin. Point at one to read it.',
+          'Varje testad cellinje har en ursprungsvävnad. Peka på en för att läsa den.',
+        )}
+        figure={
+          <BodyMap lineages={report.lineages} highlight={tissue || null} />
+        }
+        left={
+          <>
+            <StageBlock title={l('Slicer', 'Filter')}>
+              <label className="modell-select">
+                <span>{l('Tissue', 'Vävnad')}</span>
+                <select
+                  value={tissue}
+                  onChange={(e) => setTissue(e.target.value)}
+                >
+                  <option value="">{l('All tissues', 'Alla vävnader')}</option>
+                  {[...report.lineages]
+                    .sort((a, b) => b.combinations - a.combinations)
+                    .map((t) => (
+                      <option key={t.lineage} value={t.lineage}>
+                        {t.lineage}
+                      </option>
+                    ))}
+                </select>
+              </label>
+            </StageBlock>
+            <StageBlock title={l('Data', 'Data')}>
+              <StageFacts
+                rows={[
+                  [l('Measurements', 'Mätningar'), num(o.combinations)],
+                  [l('Drug pairs', 'Läkemedelspar'), num(o.drug_pairs)],
+                  [l('Drugs', 'Läkemedel'), num(o.drugs)],
+                  [l('Cell lines', 'Cellinjer'), num(o.cell_lines)],
+                  [l('Tissue types', 'Vävnadstyper'), num(o.lineages)],
+                ]}
+              />
+            </StageBlock>
+            <StageBlock title={l('Sources', 'Källor')}>
+              <p>
+                {l(
+                  'DrugCombDB screens, joined with DepMap 24Q4 for each cell line’s tissue and gene expression. Every file is checked against its SHA-256 in the data manifest.',
+                  'Försök från DrugCombDB, kopplade till DepMap 24Q4 för varje cellinjes vävnad och genuttryck. Varje fil kontrolleras mot sin SHA-256 i datamanifestet.',
+                )}
+              </p>
+            </StageBlock>
+            <StageBlock title={l('Pipeline', 'Pipeline')}>
+              <ol className="stage-steps">
+                {[
+                  ['Raw screens and DepMap', 'Rådata och DepMap'],
+                  [
+                    'Match drug and cell names',
+                    'Matcha namn på läkemedel och celler',
+                  ],
+                  ['Star schema in DuckDB', 'Stjärnschema i DuckDB'],
+                  ['10 data-quality tests', '10 datakvalitetstester'],
+                  ['LightGBM and baselines', 'LightGBM och baslinjer'],
+                  ['Four test splits', 'Fyra testuppdelningar'],
+                ].map(([en, sv]) => (
+                  <li key={en}>{l(en, sv)}</li>
+                ))}
+              </ol>
+            </StageBlock>
+          </>
+        }
+        right={
+          <>
+            <StageBlock title={l('Synergy', 'Synergi')}>
+              <StageFacts
+                rows={[
+                  [
+                    l('Synergistic (ZIP > 10)', 'Synergistiska (ZIP > 10)'),
+                    pct(o.share_synergistic),
+                  ],
+                  [
+                    l('Antagonistic (ZIP < −10)', 'Motverkande (ZIP < −10)'),
+                    pct(o.share_antagonistic),
+                  ],
+                  [l('Mean ZIP', 'Medel-ZIP'), num(o.mean_zip, 2)],
+                ]}
+              />
+            </StageBlock>
+            <StageBlock title={l('Model (LightGBM)', 'Modell (LightGBM)')}>
+              <StageFacts
+                rows={SPLITS.map(([id, en, sv]) => [
+                  l(en, sv),
+                  num(metric(id, 'lgbm_all')?.pearson ?? 0, 2),
+                ])}
+              />
+              <p>
+                {l(
+                  'Pearson correlation between predicted and measured ZIP, per test split.',
+                  'Pearson-korrelation mellan förutsagd och uppmätt ZIP, per testuppdelning.',
+                )}
+              </p>
+            </StageBlock>
+            <StageBlock title={l('Tools', 'Verktyg')}>
+              <StageTools
+                items={[
+                  'Python',
+                  'DuckDB',
+                  'pandas',
+                  'LightGBM',
+                  'scikit-learn',
+                  'RDKit',
+                  'React',
+                  'SVG',
+                ]}
+              />
+            </StageBlock>
+          </>
+        }
+      />
+
+      {treeFile && (
+        <Stage
+          id="dc-tree"
+          kicker={l(
+            'DrugComb · 02 · a model you can read',
+            'DrugComb · 02 · en modell man kan läsa',
+          )}
+          title={l(
+            'How a decision tree decides',
+            'Så bestämmer ett beslutsträd',
+          )}
+          lead={l(
+            'A tree asks one yes-or-no question at a time and sends each measurement left or right until it lands in a leaf. LightGBM adds hundreds of trees like this one; this single tree shows the idea.',
+            'Ett träd ställer en ja-eller-nej-fråga i taget och skickar varje mätning åt vänster eller höger tills den hamnar i ett löv. LightGBM lägger ihop hundratals sådana träd; det här enda trädet visar idén.',
+          )}
+          figure={
+            <DecisionTree
+              root={treeFile.tree}
+              highlight={leaf === '' ? null : Number(leaf)}
+            />
+          }
+          left={
+            <>
+              <StageBlock title={l('Slicer', 'Filter')}>
+                <label className="modell-select">
+                  <span>{l('Follow a leaf', 'Följ ett löv')}</span>
+                  <select
+                    value={leaf}
+                    onChange={(e) => setLeaf(e.target.value)}
+                  >
+                    <option value="">{l('None', 'Inget')}</option>
+                    {leavesOf(treeFile.tree)
+                      .map((n, i) => ({ n, i }))
+                      .sort((a, b) => b.n.share - a.n.share)
+                      .map(({ n, i }) => (
+                        <option key={n.id} value={n.id}>
+                          {l('Leaf', 'Löv')} {i + 1} · {pct(n.share)} ·{' '}
+                          {num(n.n)}
+                        </option>
+                      ))}
+                  </select>
+                </label>
+              </StageBlock>
+              <StageBlock title={l('Question', 'Fråga')}>
+                <p>
+                  {l(
+                    'Is a drug pair on a cell line synergistic (ZIP > 10)?',
+                    'Är ett läkemedelspar på en cellinje synergistiskt (ZIP > 10)?',
+                  )}
+                </p>
+              </StageBlock>
+              <StageBlock title={l('Split', 'Uppdelning')}>
+                <StageFacts
+                  rows={[
+                    [
+                      l('Training', 'Träning'),
+                      num(treeFile.metrics.train_measurements),
+                    ],
+                    [
+                      l('Test', 'Test'),
+                      num(treeFile.metrics.test_measurements),
+                    ],
+                    [
+                      l('Unseen test pairs', 'Osedda testpar'),
+                      num(treeFile.metrics.test_pairs),
+                    ],
+                  ]}
+                />
+                <p>
+                  {l(
+                    'Split by drug pair, so every test pair is new to the tree. Features are computed from the training pairs only.',
+                    'Uppdelat per läkemedelspar, så varje testpar är nytt för trädet. Egenskaperna räknas bara från träningsparen.',
+                  )}
+                </p>
+              </StageBlock>
+              <StageBlock title={l('Features', 'Egenskaper')}>
+                <p>
+                  {l(
+                    'Each drug’s mean ZIP (the stronger and the weaker of the pair), the cell line’s mean ZIP and its tissue.',
+                    'Varje läkemedels medel-ZIP (det starkare och det svagare i paret), cellinjens medel-ZIP och dess vävnad.',
+                  )}
+                </p>
+                <p>
+                  {l(
+                    `${num(treeFile.method.dropped_invalid_zip)} measurements with an impossible |ZIP| > 100 left out.`,
+                    `${num(treeFile.method.dropped_invalid_zip)} mätningar med omöjligt |ZIP| > 100 utelämnade.`,
+                  )}
+                </p>
+              </StageBlock>
+            </>
+          }
+          right={
+            <>
+              <StageBlock title={l('On unseen pairs', 'På osedda par')}>
+                <StageFacts
+                  rows={[
+                    ['ROC AUC', num(treeFile.metrics.roc_auc, 3)],
+                    [
+                      l('Average precision', 'Genomsnittlig precision'),
+                      num(treeFile.metrics.average_precision, 3),
+                    ],
+                    [
+                      l('Base rate', 'Basnivå'),
+                      pct(treeFile.metrics.base_rate),
+                    ],
+                    [
+                      l('Leaves · depth', 'Löv · djup'),
+                      `${treeFile.metrics.leaves} · ${treeFile.metrics.depth}`,
+                    ],
+                  ]}
+                />
+                <p>
+                  {l(
+                    'AUC 0.5 is guessing; average precision is compared with the base rate.',
+                    'AUC 0,5 är gissning; genomsnittlig precision jämförs med basnivån.',
+                  )}
+                </p>
+              </StageBlock>
+              <StageBlock title={l('What it splits on', 'Vad den delar på')}>
+                {treeFile.importance.map((f) => (
+                  <div key={f.feature}>
+                    {l(f.label.en, f.label.sv)}
+                    <div className="stage-bar">
+                      <span>
+                        <i style={{ width: `${f.gain * 100}%` }} />
+                      </span>
+                      <b>{num(f.gain * 100, 0)} %</b>
+                    </div>
+                  </div>
+                ))}
+              </StageBlock>
+              <StageBlock title={l('Tools', 'Verktyg')}>
+                <StageTools
+                  items={[
+                    'scikit-learn',
+                    'pandas',
+                    'GroupShuffleSplit',
+                    'SVG animateMotion',
+                  ]}
+                />
+              </StageBlock>
+            </>
+          }
+        />
+      )}
+
+      {sky && (
+        <Stage
+          id="dc-sky"
+          kicker={l('DrugComb · 03 · clustering', 'DrugComb · 03 · klustring')}
+          title={l('Drugs that behave alike', 'Läkemedel som beter sig lika')}
+          lead={l(
+            'Each star is a drug, placed by where it is synergistic. Drugs that cluster together are joined like a constellation. Choose a cluster to see it alone.',
+            'Varje stjärna är ett läkemedel, placerat efter var det är synergistiskt. Läkemedel i samma kluster binds ihop som en stjärnbild. Välj ett kluster för att se det ensamt.',
+          )}
+          figure={
+            <DrugConstellation drugs={sky.drugs} clusters={sky.clusters} />
+          }
+          left={
+            <>
+              <StageBlock title={l('Method', 'Metod')}>
+                <StageFacts
+                  rows={[
+                    [l('Drugs', 'Läkemedel'), num(sky.drugs.length)],
+                    [
+                      l('Profile', 'Profil'),
+                      `${sky.tissues.length} ${l('tissues', 'vävnader')}`,
+                    ],
+                    [l('Clusters (k)', 'Kluster (k)'), String(sky.k)],
+                  ]}
+                />
+                <p>
+                  {l(
+                    'Drugs with at least 300 measurements, each described by its mean ZIP in every tissue, standardised. k-means for k = 3–8; the k with the best silhouette is kept. The map is the first two principal components, distances compressed (asinh) so far drugs fit.',
+                    'Läkemedel med minst 300 mätningar, var och ett beskrivet av sitt medel-ZIP i varje vävnad, standardiserat. k-means för k = 3–8; det k med bäst silhuett behålls. Kartan är de två första principalkomponenterna, med avstånden komprimerade (asinh) så att avlägsna läkemedel får plats.',
+                  )}
+                </p>
+              </StageBlock>
+              <StageBlock title={l('Silhouette by k', 'Silhuett per k')}>
+                {Object.entries(sky.silhouette).map(([k, v]) => (
+                  <div key={k} className="stage-bar">
+                    <span>
+                      <i
+                        style={{
+                          width: `${Math.max(v, 0) * 100}%`,
+                          opacity: Number(k) === sky.k ? 1 : 0.45,
+                        }}
+                      />
+                    </span>
+                    <b>
+                      k={k} {num(v, 2)}
+                    </b>
+                  </div>
+                ))}
+              </StageBlock>
+            </>
+          }
+          right={
+            <StageBlock title={l('The clusters', 'Klustren')}>
+              {sky.clusters.map((c) => (
+                <p key={c.id}>
+                  <b>
+                    {['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'][c.id]} ·{' '}
+                    {c.size} {l('drugs', 'läkemedel')}
+                  </b>
+                  <br />
+                  {l('Highest ZIP in', 'Högst ZIP i')}{' '}
+                  {c.highest
+                    .map((h) => `${h.tissue} (${num(h.zip, 1)})`)
+                    .join(', ')}
+                  . {l('E.g.', 'T.ex.')} {c.examples.slice(0, 3).join(', ')}.
+                </p>
+              ))}
+            </StageBlock>
+          }
+        />
+      )}
+
       <CalibrationScatter
         points={
           (tables.calibration ?? []) as Parameters<
@@ -647,38 +1036,6 @@ export default function DrugCombReport() {
           ) : (
             <Empty />
           )}
-        </Card>
-
-        <Card
-          index={9}
-          title={l(
-            'Synergy differs between tissue types',
-            'Synergi skiljer sig mellan vävnadstyper',
-          )}
-          meta={l(
-            'Share of measurements with ZIP > 10',
-            'Andel mätningar med ZIP > 10',
-          )}
-        >
-          <DashBars
-            bars={[...report.lineages]
-              .sort((a, b) => b.share_synergistic - a.share_synergistic)
-              .map((r) => ({
-                key: r.lineage,
-                label: r.lineage,
-                value: r.share_synergistic * 100,
-                tone: 'neutral' as const,
-                note: ` ${num(r.combinations)}`,
-              }))}
-            format={(v) => `${num(v, 1)} %`}
-            label={l('Synergy by lineage', 'Synergi per vävnadstyp')}
-          />
-          <p className="dc-note">
-            {l(
-              'Differences also reflect which drugs and studies each tissue was tested with; this is not a treatment comparison.',
-              'Skillnaderna speglar också vilka läkemedel och studier varje vävnad testades med; det här är ingen jämförelse av behandlingar.',
-            )}
-          </p>
         </Card>
 
         <Card

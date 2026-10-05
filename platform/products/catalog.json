@@ -108,5 +108,25 @@
     "href": "#homie",
     "source": "https://github.com/korv9/homie-api",
     "data": null
+  },
+  {
+    "id": "symbolic-atlas",
+    "title": "Symbolic Atlas",
+    "status": "Experimental",
+    "question": "Can recurring symbolic meanings emerge without predefined categories?",
+    "description": "Twenty symbol words in ten public-domain books of myth, folklore and literature, each use placed on a map by the sentences around it (sentence embeddings, UMAP) and grouped by HDBSCAN. Clusters are numbered, never named.",
+    "skills": [
+      "Python",
+      "NLP",
+      "Sentence Transformers",
+      "UMAP",
+      "HDBSCAN",
+      "DuckDB",
+      "dbt",
+      "React"
+    ],
+    "href": "#symbolic-atlas",
+    "source": "https://github.com/korv9/anton-portfolio/blob/main/docs/symbolic-atlas.md",
+    "data": "#symbolic-atlas"
   }
 ]

@@ -75,7 +75,7 @@
   padding: 0 1.1rem;
   border: 1px solid var(--ink);
   background: var(--ink);
-  color: #fff;
+  color: var(--on-accent);
   font: inherit;
   font-size: var(--fs-sm);
   font-weight: 500;
@@ -201,7 +201,7 @@
 }
 .tallman-chip.direct {
   background: var(--ink);
-  color: #fff;
+  color: var(--on-accent);
 }
 .tallman-chip.computed,
 .tallman-chip.summary {

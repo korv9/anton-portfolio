@@ -1,5 +1,6 @@
 import TopicNav from '../TopicNav'
 import CountyMultiples from './CountyMultiples'
+import { Stage, StageBlock, StageFacts, StageTools } from '../ui/Stage'
 import { Suspense, lazy, useEffect, useMemo, useState } from 'react'
 import { l } from '../i18n'
 import {
@@ -163,7 +164,90 @@ export default function WelfarePage({ view }: { view: string }) {
           ['#sweden-explorer', 'Explore indicators', 'Utforska indikatorer'],
         ]}
       />
-      {view === '#sweden' && <CountyMultiples rows={counties} />}
+      {view === '#sweden' && (
+        <Stage
+          id="sweden-stage"
+          dark={false}
+          kicker={l(
+            'How is Sweden doing? · counties',
+            'Hur mår Sverige? · länen',
+          )}
+          title={l('Every county on the same axis', 'Varje län på samma axel')}
+          figure={<CountyMultiples rows={counties} />}
+          left={
+            <>
+              <StageBlock title={l('Sources', 'Källor')}>
+                <StageTools
+                  items={[
+                    'SCB',
+                    'Försäkringskassan',
+                    'Folkhälsomyndigheten',
+                    'ESS',
+                    'Kolada',
+                  ]}
+                />
+                <p>
+                  {l(
+                    'Five public sources joined on shared keys for region, period, sex and age.',
+                    'Fem öppna källor kopplade på gemensamma nycklar för region, period, kön och ålder.',
+                  )}
+                </p>
+              </StageBlock>
+              <StageBlock title={l('Coverage', 'Täckning')}>
+                <StageFacts
+                  rows={[
+                    [l('Indicators', 'Indikatorer'), String(indicators.length)],
+                    [
+                      l('Counties', 'Län'),
+                      String(new Set(counties.map((r) => r.region_code)).size),
+                    ],
+                    [
+                      l('Years', 'År'),
+                      years.length
+                        ? `${years[0]}–${years[years.length - 1]}`
+                        : '–',
+                    ],
+                  ]}
+                />
+              </StageBlock>
+            </>
+          }
+          right={
+            <>
+              <StageBlock title={l('Model', 'Modell')}>
+                <ol className="stage-steps">
+                  <li>
+                    {l(
+                      'Python ingestion per source',
+                      'Inläsning i Python per källa',
+                    )}
+                  </li>
+                  <li>
+                    {l('dbt staging and tests', 'dbt-staging och tester')}
+                  </li>
+                  <li>{l('Star schema in DuckDB', 'Stjärnschema i DuckDB')}</li>
+                  <li>
+                    {l(
+                      'Parquet and JSON to the site',
+                      'Parquet och JSON till sajten',
+                    )}
+                  </li>
+                </ol>
+                <p>
+                  <a href="#status">
+                    {l('Pipeline status →', 'Pipelinens status →')}
+                  </a>
+                </p>
+              </StageBlock>
+              <StageBlock title={l('Tools', 'Verktyg')}>
+                <StageTools
+                  items={['Python', 'dbt', 'DuckDB', 'SQL', 'Parquet', 'React']}
+                />
+              </StageBlock>
+            </>
+          }
+        />
+      )}
       {view === '#sweden' && (
         <section
           className="report welfare-section"

@@ -1,0 +1,252 @@
+/*
+ * The DrugComb body chart (BodyMap.tsx): chalk-white lines on black like an old energy chart.
+ * The outline draws itself, the field lines flow, the tissues light up one by one; with reduced
+ * motion it is simply drawn.
+ */
+
+.body-map {
+  --body-ink: #f1ece2;
+  margin: 0 0 var(--sp-6, 2.5rem);
+}
+.body-map svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  background: #070708;
+}
+.body-ground {
+  fill: #070708;
+}
+.body-title,
+.body-sub {
+  fill: var(--body-ink);
+  font-family: var(--font-mono) !important;
+  letter-spacing: 0.18em;
+}
+.body-title {
+  font-size: 15px;
+  font-weight: 600;
+}
+.body-sub {
+  font-size: 10px;
+  opacity: 0.6;
+}
+
+.body-field ellipse {
+  fill: none;
+  stroke: var(--body-ink);
+  stroke-width: 0.8;
+  stroke-dasharray: 3 7;
+  opacity: 0.16;
+}
+.body-halo circle {
+  fill: none;
+  stroke: var(--body-ink);
+  stroke-width: 0.7;
+  stroke-dasharray: 1 4;
+  opacity: 0.3;
+}
+.body-outline,
+.body-head {
+  fill: none;
+  stroke: var(--body-ink);
+  stroke-width: 1.4;
+  stroke-dasharray: 1;
+  opacity: 0.85;
+}
+.body-outline-dots {
+  fill: none;
+  stroke: var(--body-ink);
+  stroke-width: 2.2;
+  stroke-dasharray: 0.5 9;
+  stroke-linecap: round;
+  transform: scale(0.96);
+  transform-origin: 450px 400px;
+  transform-box: view-box;
+  opacity: 0.35;
+}
+.body-spine {
+  stroke: var(--body-ink);
+  stroke-width: 0.8;
+  stroke-dasharray: 2 4;
+  opacity: 0.5;
+}
+.body-helix {
+  fill: none;
+  stroke: var(--body-ink);
+  stroke-width: 1;
+  stroke-dasharray: 1;
+  opacity: 0.6;
+}
+
+.body-node {
+  cursor: default;
+  transition: opacity 200ms;
+}
+.body-map.has-focus .body-node:not(.is-active) {
+  opacity: 0.25;
+}
+.body-leader {
+  fill: none;
+  stroke: var(--body-ink);
+  stroke-width: 1.1;
+  stroke-dasharray: 3 3;
+  stroke-opacity: 0.6;
+}
+.body-ring {
+  fill: none;
+  stroke: var(--body-ink);
+  stroke-width: 0.8;
+  opacity: 0.35;
+}
+.body-core {
+  fill: #070708;
+  stroke: var(--body-ink);
+  stroke-width: 1.2;
+}
+.body-arc {
+  fill: none;
+  stroke: #ffe9b8;
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+.body-index {
+  fill: var(--body-ink);
+  font-family: var(--font-mono) !important;
+  font-size: 9px;
+  text-anchor: middle;
+}
+.body-label-name {
+  fill: var(--body-ink);
+  font-family: var(--font-mono) !important;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+}
+.body-label-meta {
+  fill: var(--body-ink);
+  font-size: 11px;
+  opacity: 0.65;
+}
+.body-node.is-active .body-leader {
+  stroke-opacity: 1;
+}
+.body-node.is-active .body-core {
+  stroke-width: 2;
+}
+
+.body-caption {
+  margin: 0.75rem 0 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+.body-table {
+  margin-top: 0.5rem;
+}
+.body-table summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+/* ---------- Motion ---------- */
+
+.body-outline,
+.body-head,
+.body-helix {
+  stroke-dashoffset: 1;
+}
+.body-node > circle,
+.body-node > .body-arc,
+.body-node > .body-index,
+.body-lead,
+.body-label {
+  opacity: 0;
+}
+.body-map.is-on .body-outline,
+.body-map.is-on .body-head {
+  animation: body-draw 2.4s cubic-bezier(0.3, 0.6, 0.2, 1) both;
+}
+.body-map.is-on .body-helix {
+  animation: body-draw 2s ease 1.2s both;
+}
+.body-map.is-on .body-field ellipse {
+  animation: body-flow 22s linear calc(var(--k) * -3s) infinite;
+}
+.body-map.is-on .body-node > circle,
+.body-map.is-on .body-node > .body-index {
+  animation: body-fade 500ms ease calc(1.6s + var(--i) * 110ms) both;
+}
+.body-map.is-on .body-node > .body-arc {
+  animation:
+    body-fade 500ms ease calc(1.9s + var(--i) * 110ms) both,
+    body-pulse 3.2s ease-in-out calc(3.5s + var(--i) * 200ms) infinite alternate;
+}
+.body-map.is-on .body-lead {
+  animation: body-fade 900ms ease calc(2s + var(--i) * 110ms) both;
+}
+.body-map.is-on .body-label {
+  animation: body-fade 600ms ease calc(2.3s + var(--i) * 110ms) both;
+}
+@keyframes body-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes body-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes body-flow {
+  to {
+    stroke-dashoffset: -200;
+  }
+}
+@keyframes body-pulse {
+  from {
+    opacity: 0.7;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Narrow screens: the numbers on the body and the table carry the names. */
+@media (max-width: 700px) {
+  .body-label,
+  .body-lead {
+    display: none;
+  }
+  .body-index {
+    font-size: 14px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .body-map .body-outline,
+  .body-map .body-head,
+  .body-map .body-helix {
+    stroke-dashoffset: 0;
+    animation: none !important;
+  }
+  .body-map .body-lead {
+    opacity: 1;
+    animation: none !important;
+  }
+  .body-map .body-node > circle,
+  .body-map .body-node > .body-arc,
+  .body-map .body-node > .body-index,
+  .body-map .body-label {
+    opacity: 1;
+    animation: none !important;
+  }
+  .body-map .body-field ellipse {
+    animation: none !important;
+  }
+}

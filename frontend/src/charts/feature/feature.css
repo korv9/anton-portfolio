@@ -112,7 +112,7 @@
 }
 .feature-pick button[aria-pressed='true'] {
   background: var(--ink);
-  color: var(--paper);
+  color: var(--on-accent);
 }
 .feature-pick button:focus-visible,
 .feature svg :focus-visible {

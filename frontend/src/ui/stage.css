@@ -1,0 +1,221 @@
+/*
+ * The project dashboard frame (Stage.tsx): figure across the middle at nearly the full height of
+ * the screen, technical panels at the sides in small type. Dark by default, like a chart room.
+ */
+
+.stage {
+  --stage-ink: #f1ece2;
+  --stage-muted: rgba(241, 236, 226, 0.62);
+  --stage-rule: rgba(241, 236, 226, 0.16);
+  display: grid;
+  grid-template-columns: minmax(13rem, 1fr) minmax(0, 3.2fr) minmax(13rem, 1fr);
+  grid-template-areas:
+    'head head head'
+    'left figure right';
+  gap: 1.25rem clamp(1rem, 2vw, 2rem);
+  align-items: start;
+  min-height: calc(100vh - 72px);
+  margin: 0 calc(50% - 50vw) 2.5rem;
+  padding: clamp(1.25rem, 3vw, 2.5rem) clamp(1rem, 3vw, 2.5rem);
+  color: var(--ink);
+  background: var(--page);
+}
+.stage.is-dark {
+  color: var(--stage-ink);
+  background: #070708;
+}
+.stage-head {
+  grid-area: head;
+  max-width: 54rem;
+}
+.stage-kicker {
+  margin: 0 0 0.4rem;
+  font-family: var(--font-mono) !important;
+  font-size: 0.75rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+.stage-head h1,
+.stage-head h2 {
+  margin: 0;
+  font-size: clamp(1.7rem, 3.4vw, 2.6rem);
+  line-height: 1.05;
+  letter-spacing: -0.035em;
+}
+.stage.is-dark .stage-head h1,
+.stage-head h2 {
+  color: var(--stage-ink);
+}
+.stage-lead {
+  max-width: 44rem;
+  margin: 0.6rem 0 0;
+  font-size: 1rem;
+  line-height: 1.5;
+  opacity: 0.78;
+}
+.stage-figure {
+  grid-area: figure;
+  min-width: 0;
+}
+.stage-side {
+  display: grid;
+  gap: 1.4rem;
+  min-width: 0;
+  font-size: 0.85rem;
+  line-height: 1.45;
+}
+.stage-side.is-left {
+  grid-area: left;
+}
+.stage-side.is-right {
+  grid-area: right;
+}
+.stage-block h3 {
+  margin: 0 0 0.5rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid var(--stage-rule);
+  font-family: var(--font-mono) !important;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.stage:not(.is-dark) .stage-block h3 {
+  border-bottom-color: var(--line);
+}
+.stage-block p {
+  margin: 0 0 0.5rem;
+}
+.stage.is-dark .stage-block p,
+.stage.is-dark .stage-facts dt {
+  color: var(--stage-muted);
+}
+.stage-facts {
+  display: grid;
+  gap: 0.45rem;
+  margin: 0;
+}
+.stage-facts div {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+.stage-facts dd {
+  margin: 0;
+  font-family: var(--font-mono) !important;
+  font-weight: 600;
+  text-align: right;
+}
+.stage-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem 0.4rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-family: var(--font-mono) !important;
+  font-size: 0.75rem;
+}
+.stage-tools li {
+  padding: 0.1rem 0.45rem;
+  border: 1px solid var(--stage-rule);
+}
+.stage:not(.is-dark) .stage-tools li {
+  border-color: var(--line);
+}
+.stage ol.stage-steps {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: step;
+}
+.stage ol.stage-steps li {
+  counter-increment: step;
+}
+.stage ol.stage-steps li::before {
+  content: counter(step, decimal-leading-zero) '  ';
+  font-family: var(--font-mono) !important;
+  opacity: 0.55;
+}
+.stage-bar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.5rem;
+  align-items: center;
+  margin: 0.25rem 0;
+}
+.stage-bar span:first-child {
+  position: relative;
+  height: 6px;
+  background: var(--stage-rule);
+}
+.stage-bar i {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: currentColor;
+}
+.stage-bar b {
+  font-family: var(--font-mono) !important;
+  font-size: 0.78rem;
+  text-align: right;
+}
+.stage a {
+  color: inherit;
+}
+.stage details summary {
+  cursor: pointer;
+}
+.stage.is-dark .board-table {
+  color: var(--stage-ink);
+}
+
+@media (max-width: 1100px) {
+  .stage {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas:
+      'head head'
+      'figure figure'
+      'left right';
+    min-height: 0;
+  }
+}
+@media (max-width: 640px) {
+  .stage {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'head'
+      'figure'
+      'left'
+      'right';
+  }
+}
+
+/* Captions and notes inside a dark stage use the stage's own muted ink, not the page's. */
+.stage.is-dark .body-caption,
+.stage.is-dark .dc-note,
+.stage.is-dark .board-table th,
+.stage.is-dark .board-table td {
+  color: var(--stage-muted);
+}
+.stage.is-dark .board-table td:first-child {
+  color: var(--stage-ink);
+}
+
+/* Inside the politics product the stage sits in the content column beside its menu. */
+.politik-body .stage {
+  margin: 0 0 2rem;
+  grid-template-columns: minmax(11rem, 1fr) minmax(0, 2.6fr) minmax(11rem, 1fr);
+}
+@media (max-width: 1100px) {
+  .politik-body .stage {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+}
+@media (max-width: 640px) {
+  .politik-body .stage {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

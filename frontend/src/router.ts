@@ -20,7 +20,10 @@ export type Page =
   | 'drugcomb'
   | 'thesis'
   | 'homie'
+  | 'diva'
   | 'datamodel'
+  | 'er'
+  | 'symbolic'
   | 'status'
   | 'tallman'
 
@@ -78,6 +81,7 @@ export function pageOf(path: string): Page {
   if (['#drugcomb', '#drugcomb-data'].includes(path)) return 'drugcomb'
   if (path === '#thesis') return 'thesis'
   if (path === '#homie') return 'homie'
+  if (path === '#diva') return 'diva'
   if (path === '#sweden' || path.startsWith('#sweden-')) return 'welfare'
   if (path === '#alla-projekt') return 'projects'
   if (path === '#rfc-drift') return 'allegoria'
@@ -86,6 +90,8 @@ export function pageOf(path: string): Page {
   if (path === '#status') return 'status'
   if (path === '#tallman') return 'tallman'
   if (path === '#analysis' || path.startsWith('#analysis-')) return 'analysis'
+  if (path === '#er' || path === '#er-diagram') return 'er'
+  if (path === '#symbolic-atlas') return 'symbolic'
   if (path === '#data-model' || path.startsWith('#data-model-'))
     return 'datamodel'
   return 'home'

@@ -3,6 +3,7 @@ import { currentLocale, l, type Locale } from './i18n'
 import { useRoute } from './router'
 import Header, { Footer, ProjectBar } from './site/Header'
 import HomePage from './home/HomePage'
+import Intro from './site/Intro'
 import './site/site.css'
 
 // Everything but the start page loads on navigation, so the start page ships none of it.
@@ -17,6 +18,8 @@ const WelfarePage = lazy(() => import('./welfare/WelfarePage'))
 const AnalysisPage = lazy(() => import('./analysis/AnalysisPage'))
 const StatusPage = lazy(() => import('./status/StatusPage'))
 const DataModelPage = lazy(() => import('./datamodel/DataModelPage'))
+const ErPage = lazy(() => import('./datamodel/ErPage'))
+const SymbolicAtlasPage = lazy(() => import('./symbolic/SymbolicAtlasPage'))
 const DrugCombPage = lazy(() =>
   import('./products/CaseStudies').then((m) => ({ default: m.DrugCombPage })),
 )
@@ -26,6 +29,7 @@ const AllegoriaPage = lazy(() =>
 const ThesisPage = lazy(() =>
   import('./products/CaseStudies').then((m) => ({ default: m.ThesisPage })),
 )
+const DivaPage = lazy(() => import('./diva/DivaPage'))
 const HomiePage = lazy(() =>
   import('./products/CaseStudies').then((m) => ({ default: m.HomiePage })),
 )
@@ -75,6 +79,7 @@ export default function App() {
     <div
       className={`site-shell${page === 'home' ? ' home-shell' : ' project-shell'}`}
     >
+      <Intro />
       <a className="skip-link" href="#main">
         {l('Skip to content', 'Hoppa till innehåll')}
       </a>
@@ -106,10 +111,13 @@ export default function App() {
           {page === 'analysis' && <AnalysisPage view={path} />}
           {page === 'status' && <StatusPage />}
           {page === 'datamodel' && <DataModelPage view={path} />}
+          {page === 'er' && <ErPage route={route} />}
+          {page === 'symbolic' && <SymbolicAtlasPage route={route} />}
           {page === 'drugcomb' && <DrugCombPage />}
           {page === 'allegoria' && <AllegoriaPage />}
           {page === 'thesis' && <ThesisPage />}
           {page === 'homie' && <HomiePage />}
+          {page === 'diva' && <DivaPage />}
         </Suspense>
       </main>
       <Footer />

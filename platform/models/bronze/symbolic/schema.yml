@@ -1,0 +1,13 @@
+version: 2
+
+models:
+  - name: stg_symbolic_documents
+    description: One row per corpus book, its text as fetched and the SHA-256 of that fetch.
+    columns:
+      - name: document_id
+        tests: [unique, not_null]
+      - name: raw_text
+        tests: [not_null]
+      - name: source_hash
+        description: SHA-256 of the bytes Gutenberg served (warehouse/raw/symbolic/_manifest.jsonl).
+        tests: [not_null]

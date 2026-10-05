@@ -1,0 +1,247 @@
+/* The ER diagram page (ErPage.tsx): boxes and crow's-foot lines on the dark stage. */
+.er-page .stage {
+  grid-template-columns: minmax(0, 1fr) minmax(15rem, 19rem);
+  grid-template-areas:
+    'head head'
+    'figure right'
+    'left left';
+}
+/* The diagram takes the width; the facts, legend and method run in a row under it. */
+.er-page .stage-side.is-left {
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  align-items: start;
+}
+.er-figure {
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
+}
+.er-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+.er-tabs button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 36px;
+  padding: 0.3rem 0.8rem;
+  border: 1px solid var(--stage-rule);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--stage-ink);
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+.er-tabs button[aria-pressed='true'] {
+  background: var(--stage-ink);
+  color: #070708;
+}
+.er-tabs i {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}
+.er-scroll {
+  overflow: auto;
+  max-height: 78vh;
+  border: 1px solid var(--stage-rule);
+  border-radius: 4px;
+  background: radial-gradient(
+      circle,
+      rgba(241, 236, 226, 0.07) 1px,
+      transparent 1px
+    )
+    0 0 / 18px 18px;
+}
+.er-svg {
+  display: block;
+  max-width: none;
+  font-family: var(--font-mono);
+}
+.er-rel path {
+  fill: none;
+  stroke: rgba(241, 236, 226, 0.45);
+  stroke-width: 1.2;
+  transition:
+    opacity 0.2s,
+    stroke 0.2s;
+}
+.er-rel path.is-tested {
+  stroke-dasharray: 4 4;
+}
+.er-rel.is-dim {
+  opacity: 0.12;
+}
+.er-rel.is-lit path {
+  stroke: #f1ece2;
+  stroke-width: 1.6;
+}
+.er-box {
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.er-box:focus {
+  outline: none;
+}
+.er-box:focus-visible .er-card,
+.er-box.is-on .er-card {
+  stroke: #f1ece2;
+  stroke-width: 2;
+}
+.er-box.is-dim {
+  opacity: 0.3;
+}
+.er-box.is-ghost {
+  opacity: 0.55;
+}
+.er-box.is-ghost .er-card {
+  stroke-dasharray: 3 3;
+}
+.er-card {
+  fill: #121214;
+  stroke: rgba(241, 236, 226, 0.28);
+}
+.er-name {
+  fill: #0b0b0c;
+  font-size: 11.5px;
+  font-weight: 700;
+}
+.er-kind {
+  fill: rgba(11, 11, 12, 0.6);
+  font-size: 9.5px;
+  text-transform: uppercase;
+}
+.er-mark {
+  font-size: 9px;
+  font-weight: 700;
+  fill: rgba(241, 236, 226, 0.55);
+}
+.er-mark.is-pk {
+  fill: #f3d9a4;
+}
+.er-mark.is-fk {
+  fill: #a9cbe8;
+}
+.er-col {
+  fill: #f1ece2;
+  font-size: 11px;
+}
+.er-more {
+  fill: rgba(241, 236, 226, 0.5);
+  font-size: 10px;
+}
+.er-overview {
+  width: 100%;
+  height: auto;
+  font-family: var(--font-mono);
+}
+.er-ov-link line {
+  stroke: rgba(241, 236, 226, 0.3);
+}
+.er-ov-link text {
+  fill: rgba(241, 236, 226, 0.75);
+  font-size: 12px;
+}
+.er-ov-code-link {
+  stroke: rgba(241, 236, 226, 0.25);
+  stroke-dasharray: 3 5;
+}
+.er-ov-code rect {
+  fill: #070708;
+  stroke: rgba(241, 236, 226, 0.5);
+  stroke-dasharray: 3 3;
+}
+.er-ov-code text {
+  fill: #f1ece2;
+  font-size: 12px;
+}
+.er-ov-node {
+  cursor: pointer;
+}
+.er-ov-node rect:first-child {
+  fill: #121214;
+  stroke-width: 1.2;
+}
+.er-ov-node:hover rect:first-child,
+.er-ov-node:focus-visible rect:first-child {
+  stroke-width: 2.5;
+}
+.er-ov-node:focus {
+  outline: none;
+}
+.er-ov-name {
+  fill: #f1ece2;
+  font-size: 15px;
+  font-weight: 700;
+}
+.er-ov-meta {
+  fill: rgba(241, 236, 226, 0.7);
+  font-size: 11.5px;
+}
+.er-legend {
+  width: 100%;
+  max-width: 260px;
+  font-family: var(--font-mono);
+}
+.er-legend text {
+  fill: var(--stage-muted);
+  font-size: 11px;
+}
+.er-rels,
+.er-columns {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.35rem;
+}
+.er-rels li span {
+  display: block;
+  color: var(--stage-muted);
+  font-size: 0.78rem;
+}
+.er-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--stage-ink);
+  font: inherit;
+  font-family: var(--font-mono);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.er-columns li {
+  display: grid;
+  grid-template-columns: 2.4rem minmax(0, 1fr) auto;
+  gap: 0.4rem;
+  align-items: baseline;
+}
+.er-columns code,
+.er-rels code {
+  overflow-wrap: anywhere;
+  color: var(--stage-ink);
+}
+.er-col-mark {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: #f3d9a4;
+}
+.er-col-type {
+  color: var(--stage-muted);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+}
+@media (max-width: 1100px) {
+  .er-page .stage {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'head'
+      'figure'
+      'right'
+      'left';
+  }
+}
