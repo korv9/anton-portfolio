@@ -1451,3 +1451,170 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* ---------- First screen: projects left over their charts, experience and education right ---------- */
+.home-first {
+  display: grid;
+  grid-template-columns: minmax(0, 1.8fr) minmax(260px, 1fr);
+  gap: clamp(24px, 3vw, 48px);
+  align-items: start;
+  padding-block: 8px 56px;
+}
+.home-first-title {
+  margin: 0 0 12px;
+  color: var(--muted);
+  font: 500 11px var(--font-mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.home-first .home-projects .ds-project-row {
+  position: relative;
+  isolation: isolate;
+  display: block;
+  min-height: 150px;
+  margin: 0;
+  padding: 18px 20px 18px 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 0;
+  overflow: hidden;
+}
+.home-first .home-projects .ds-project-row:last-of-type {
+  border-bottom: 1px solid var(--line);
+}
+/* The chart sits behind the words, fading in from the left so the text stays readable. */
+.home-first .home-projects .ds-project-preview {
+  position: absolute;
+  inset: 8px 0 8px 34%;
+  z-index: -1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  opacity: 0.55;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 38%);
+  mask-image: linear-gradient(90deg, transparent, #000 38%);
+  transition: opacity 200ms ease;
+}
+.home-first .home-projects .ds-project-row:hover .ds-project-preview,
+.home-first .home-projects .ds-project-row:focus-within .ds-project-preview {
+  opacity: 0.85;
+}
+.home-first .ds-project-preview > * {
+  width: 100%;
+  max-height: 100%;
+}
+.home-first .ds-project-preview svg,
+.home-first .ds-project-preview canvas {
+  max-height: 134px;
+}
+.home-first .home-projects .ds-number {
+  margin: 0 0 6px;
+  padding: 0;
+  color: var(--muted);
+  font-size: 10px;
+}
+.home-first .ds-project-copy {
+  position: relative;
+  max-width: 56%;
+}
+.home-first .home-projects .ds-project-row h3 {
+  margin: 0 0 6px;
+  font-size: clamp(20px, 1.8vw, 26px);
+}
+.home-first .home-project-kind {
+  margin: 0 0 6px;
+}
+.home-first .home-project-description {
+  margin: 0 0 10px;
+  font-size: 14px;
+  line-height: 1.45;
+}
+.home-first .home-projects > p:last-child {
+  margin: 14px 0 0;
+  font-size: 13px;
+}
+.home-first .timeline {
+  border-top: 1px solid var(--line);
+}
+.home-first .timeline-row {
+  display: block;
+  padding: 16px 0;
+}
+.home-first .timeline-org {
+  font-size: clamp(20px, 1.8vw, 26px);
+}
+.home-first .timeline-period,
+.home-first .timeline-role {
+  font-size: 13px;
+}
+.home-first .timeline-what {
+  margin-top: 12px;
+  font-size: 14px;
+}
+.home-education {
+  margin-top: 32px;
+}
+.home-education p {
+  margin: 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  font-size: 14px;
+  line-height: 1.55;
+}
+@media (max-width: 900px) {
+  .home-first {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 760px) {
+  .home-first .home-projects .ds-project-preview {
+    inset: 8px 0 8px 20%;
+    opacity: 0.3;
+  }
+  .home-first .ds-project-copy {
+    max-width: 100%;
+  }
+}
+/* A slim hero: who, in one line, with the links beside it, so the work is on the first screen. */
+.home .home-hero {
+  min-height: 0;
+  padding-block: 4px 12px;
+}
+.home .home-hero-copy {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px 32px;
+}
+.home .home-hero-role {
+  margin: 0;
+  font-size: clamp(16px, 1.3vw, 19px);
+}
+.home .home-hero-lede {
+  max-width: none;
+  font-size: 14px;
+  color: var(--muted);
+}
+.home .home-intro-links {
+  max-width: none;
+  margin: 0 0 0 auto;
+}
+.home .home-intro-contact {
+  margin: 0;
+  column-gap: 18px;
+}
+.home .home-intro-links a {
+  min-height: 32px;
+  font-size: 13px;
+}
+@media (max-width: 760px) {
+  .home .home-intro-links {
+    margin: 0;
+  }
+}
+.home-first .home-projects .ds-project-row h3 a {
+  justify-content: flex-start;
+}
