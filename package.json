@@ -30,6 +30,7 @@
     "parliament:build": "python platform/ingest/run_parliament.py --skip-fetch",
     "parliament": "python platform/ingest/run_parliament.py && python platform/publish/export_parliament.py",
     "taxes": "python platform/ingest/run_taxes.py && python platform/publish/export_taxes.py",
+    "architecture:build": "python platform/architecture/build_graph.py",
     "symbolic:ingest": "python platform/ingest/symbolic/ingest_corpus.py",
     "symbolic:silver": "cd platform && dbt build --profiles-dir . --select tag:symbolic --exclude path:models/gold/symbolic",
     "symbolic:gold": "cd platform && dbt build --profiles-dir . --select path:models/gold/symbolic",

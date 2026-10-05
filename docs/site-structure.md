@@ -52,6 +52,7 @@ Everything else (DrugComb, taLLMan, Allegoria, DiVA, Homie, RAG, MIMII, IN1) is 
 ### Route types
 
 - **Global destinations:** `#start`, `#projekt`, `#erfarenhet`, `#kompetenser`, `#om-mig`, `#alla-projekt`.
+- **Platform map:** `#data-constellation` (Data Constellation, [data-constellation.md](data-constellation.md)), linked from the Projects menu, the hero and the footer; its breadcrumb reads "Projects / Technical / Data Constellation".
 - **Project destinations:** each registry entry's address.
 - **Deep dives:** the views inside a project (`#politik-*`, `#jobb-*`, `#now-*`, `#symbolic-*`, …).
 - **Legacy redirects** (`frontend/src/router.ts`): `#about`, `#contact`, `#kontakt` and `#utbildning` go to `#om-mig`; `#experience` to `#erfarenhet`; `#projects` to `#projekt`. Every earlier project address still opens its page.
