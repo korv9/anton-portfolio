@@ -13,6 +13,7 @@ import type { Route } from '../router'
 import { useViewParams } from '../politik/useViewParams'
 import { Stage, StageBlock, StageFacts } from '../ui/Stage'
 import AtlasCanvas from './AtlasCanvas'
+import ExperimentTable from './ExperimentTable'
 import {
   AtlasFiltersPanel,
   SymbolPanel,
@@ -229,6 +230,7 @@ export default function SymbolicAtlasPage({ route }: { route: Route }) {
           </>
         }
       />
+      <ExperimentTable />
     </div>
   )
 }

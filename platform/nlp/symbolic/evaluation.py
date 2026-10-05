@@ -64,6 +64,89 @@ def composition(labels: np.ndarray, documents: list[str], symbols: list[str]) ->
             "largest_symbol_share": round(float(np.mean(symbol)), 3)}
 
 
+# A cluster counts as cross-book when it draws on at least this many books and no single
+# book holds more than this share of it.
+CROSS_BOOK_MIN_BOOKS = 3
+CROSS_BOOK_MAX_SHARE = 0.5
+
+
+def normalized_entropy(counts: list[int], categories: int) -> float:
+    """Shannon entropy of the counts divided by log(categories), from 0 to 1.
+
+    `categories` is the number of possible values in the whole experiment (e.g. ten books), not
+    only those present in the cluster, so 1.0 means spread evenly over every book in the corpus
+    and clusters of different make-up are comparable. One category gives 0.
+    """
+    total = sum(counts)
+    if categories <= 1 or total == 0:
+        return 0.0
+    p = np.asarray([c for c in counts if c], dtype=float) / total
+    return float(-(p * np.log(p)).sum() / np.log(categories))
+
+
+def is_cross_book(book_count: int, largest_book_share: float) -> bool:
+    return book_count >= CROSS_BOOK_MIN_BOOKS and largest_book_share <= CROSS_BOOK_MAX_SHARE
+
+
+def cluster_composition(labels: np.ndarray, books: list[str], traditions: list[str],
+                        symbols: list[str]) -> list[dict]:
+    """One row per non-noise cluster: counts, largest share and normalised entropy of its
+    books, traditions and symbols, and whether it is a cross-book cluster."""
+    from collections import Counter
+
+    n_books, n_trad, n_sym = len(set(books)), len(set(traditions)), len(set(symbols))
+    rows = []
+    for c in sorted(set(int(x) for x in labels) - {-1}):
+        idx = np.flatnonzero(labels == c)
+        row = {"cluster_id": c, "occurrence_count": int(len(idx))}
+        for name, values, total in (("book", books, n_books), ("tradition", traditions, n_trad),
+                                    ("symbol", symbols, n_sym)):
+            counts = Counter(values[i] for i in idx)
+            top, top_n = counts.most_common(1)[0]
+            row[f"{name}_count"] = len(counts)
+            row[f"largest_{name}"] = top
+            row[f"largest_{name}_share"] = round(top_n / len(idx), 4)
+            row[f"{name}_entropy"] = round(normalized_entropy(list(counts.values()), total), 4)
+        row["cross_book_cluster"] = is_cross_book(row["book_count"], row["largest_book_share"])
+        rows.append(row)
+    return rows
+
+
+def composition_summary(rows: list[dict], occurrences: int) -> dict:
+    """Experiment-level means of the cluster composition, both per cluster (each cluster
+    counts once) and per occurrence (each cluster weighted by its size)."""
+    out: dict = {}
+    sizes = np.asarray([r["occurrence_count"] for r in rows], dtype=float)
+    for key in ("largest_book_share", "largest_tradition_share", "largest_symbol_share",
+                "book_entropy", "tradition_entropy", "symbol_entropy"):
+        values = np.asarray([r[key] for r in rows], dtype=float)
+        out[f"mean_{key}"] = round(float(values.mean()), 4) if len(rows) else None
+        out[f"weighted_mean_{key}"] = round(float((values * sizes).sum() / sizes.sum()), 4) if len(rows) else None
+    for n in (2, 3, 4):
+        out[f"clusters_with_{n}plus_books"] = sum(r["book_count"] >= n for r in rows)
+    for n in (2, 3):
+        out[f"clusters_with_{n}plus_traditions"] = sum(r["tradition_count"] >= n for r in rows)
+    cross = [r for r in rows if r["cross_book_cluster"]]
+    out["cross_book_cluster_count"] = len(cross)
+    out["cross_book_occurrence_share"] = round(sum(r["occurrence_count"] for r in cross) / occurrences, 4) \
+        if occurrences else 0.0
+    out["cross_book_rule"] = {"min_books": CROSS_BOOK_MIN_BOOKS, "max_largest_book_share": CROSS_BOOK_MAX_SHARE}
+    return out
+
+
+def representatives(space: np.ndarray, labels: np.ndarray, top: int = 7) -> list[tuple[int, int, int, float]]:
+    """For each non-noise cluster, its `top` members nearest the cluster's centroid in the
+    clustering space: (cluster_id, rank, row index, distance). Ties break by row index."""
+    out = []
+    for c in sorted(set(int(x) for x in labels) - {-1}):
+        idx = np.flatnonzero(labels == c)
+        centroid = space[idx].mean(axis=0)
+        dist = np.linalg.norm(space[idx] - centroid, axis=1)
+        order = np.lexsort((idx, dist))[:top]
+        out += [(c, rank + 1, int(idx[j]), round(float(dist[j]), 5)) for rank, j in enumerate(order)]
+    return out
+
+
 def summary(metrics: dict) -> str:
     p = metrics["membership_probability"] or {}
     return (f"{metrics['occurrences']} occurrences, {metrics['clusters']} clusters, "

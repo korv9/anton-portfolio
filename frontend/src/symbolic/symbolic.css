@@ -143,3 +143,42 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+.atlas-experiments {
+  margin: 0 auto 3rem;
+  color: var(--ink);
+}
+.atlas-experiments h2 {
+  margin: 0 0 0.6rem;
+  font-size: clamp(1.4rem, 2.6vw, 2rem);
+}
+.atlas-experiments p {
+  max-width: 48rem;
+  color: var(--muted);
+}
+.atlas-table-wrap {
+  overflow-x: auto;
+}
+.atlas-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+.atlas-table th,
+.atlas-table td {
+  padding: 0.55rem 0.7rem;
+  border-bottom: 1px solid var(--line);
+  text-align: right;
+  white-space: nowrap;
+}
+.atlas-table th:first-child,
+.atlas-table thead th:first-child {
+  text-align: left;
+}
+.atlas-table thead th {
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 0.78rem;
+}
+.atlas-note {
+  font-size: 0.85rem;
+}

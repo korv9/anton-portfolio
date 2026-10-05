@@ -39,17 +39,27 @@ PER_PAIR = 30
 MIN_OCCURRENCES = 500
 
 
-def load(database: Path = DATABASE, per_pair: int = PER_PAIR) -> list[tuple[str, str, str, str]]:
+# The one sample definition, shared with experiments.py so every experiment maps the same points.
+SAMPLE_STRATEGY = (f"at most {PER_PAIR} occurrences per document and symbol, the lowest occurrence ids "
+                   "(a hash), ordered by occurrence id")
+
+
+def sample(database: Path = DATABASE, per_pair: int = PER_PAIR,
+           columns: str = "occurrence_id, context, document_id, symbol_id") -> list[tuple]:
     import duckdb
 
     con = duckdb.connect(str(database), read_only=True)
     try:
         return con.execute(
-            "select occurrence_id, context, document_id, symbol_id from silver.int_symbol_occurrences "
+            f"select {columns} from silver.int_symbol_occurrences "
             "qualify row_number() over (partition by document_id, symbol_id order by occurrence_id) <= ? "
             "order by occurrence_id", [per_pair]).fetchall()
     finally:
         con.close()
+
+
+def load(database: Path = DATABASE, per_pair: int = PER_PAIR) -> list[tuple[str, str, str, str]]:
+    return sample(database, per_pair)
 
 
 def check_size(n: int, minimum: int = MIN_OCCURRENCES) -> None:

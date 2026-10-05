@@ -12,6 +12,9 @@ Writes under frontend/public/data/symbolic/:
     symbol-profiles.parquet per symbol and cluster: count, share, mean probability
     preview.json            every tenth point (by id): x, y and cluster only, for the small
                             picture on the start page
+    experiment-comparison.json  one row per deconfounding experiment (nlp/symbolic/experiments.py)
+    cross-book-clusters.json    the clusters that draw on several books, with their
+                            representative occurrence ids; both only when the experiments have run
 
 The three files are registered in the delivery catalogue (catalog.json, delivery.json) with the
 same rules as publish/build_catalog.py, touching no other entry: Parquet goes to object storage,
@@ -80,6 +83,34 @@ def register(paths: list[Path]) -> None:
     bc.DELIVERY.write_text(json.dumps(delivery, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
 
 
+def experiment_files() -> list[Path]:
+    """The small experiment summaries, when experiments.py has run. No embedding, no text."""
+    import pyarrow.parquet as pq
+
+    folder = FEATURES / "experiments"
+    if not (folder / "comparison.json").is_file():
+        return []
+    comparison = json.loads((folder / "comparison.json").read_text(encoding="utf-8"))
+    (OUT / "experiment-comparison.json").write_text(
+        json.dumps(comparison, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
+    cross = []
+    for row in comparison["experiments"]:
+        name = row["experiment"]
+        composition = pq.read_table(folder / name / "cluster_composition.parquet").to_pylist()
+        reps = pq.read_table(folder / name / "cluster_representatives.parquet").to_pylist()
+        for c in composition:
+            if not c["cross_book_cluster"]:
+                continue
+            cross.append({k: c[k] for k in ("experiment", "cluster_id", "book_count", "tradition_count",
+                                             "occurrence_count", "largest_book_share",
+                                             "largest_tradition_share", "largest_symbol")}
+                         | {"representative_occurrence_ids": [r["occurrence_id"] for r in reps
+                                                              if r["cluster_id"] == c["cluster_id"]]})
+    (OUT / "cross-book-clusters.json").write_text(
+        json.dumps(cross, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
+    return [OUT / "experiment-comparison.json", OUT / "cross-book-clusters.json"]
+
+
 def main() -> int:
     import duckdb
     import pyarrow as pa
@@ -143,7 +174,7 @@ def main() -> int:
     (OUT / "preview.json").write_text(json.dumps({"columns": ["x", "y", "cluster_id"], "points": preview},
                                                  separators=(",", ":")) + "\n", encoding="utf-8")
     register([OUT / "atlas.parquet", OUT / "summary.json", OUT / "symbol-profiles.parquet",
-              OUT / "preview.json"])
+              OUT / "preview.json", *experiment_files()])
     size = (OUT / "atlas.parquet").stat().st_size
     print(f"{atlas.num_rows} points, {metrics['clusters']} clusters, atlas.parquet {size / 1e3:.0f} kB")
     return 0
