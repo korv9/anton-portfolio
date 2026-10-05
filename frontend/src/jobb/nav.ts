@@ -1,6 +1,13 @@
 /** The job-market product's themes, shared by its navigation and the site's contents menu. */
 export type JobsTheme =
-  'lage' | 'trender' | 'yrken' | 'lan' | 'villkor' | 'utforska' | 'kallor'
+  | 'lage'
+  | 'trender'
+  | 'yrken'
+  | 'lan'
+  | 'villkor'
+  | 'kluster'
+  | 'utforska'
+  | 'kallor'
 
 export const JOB_THEMES: {
   key: JobsTheme
@@ -32,6 +39,12 @@ export const JOB_THEMES: {
     path: '#jobb-villkor',
     sv: 'Vilka villkor?',
     en: 'On what terms?',
+  },
+  {
+    key: 'kluster',
+    path: '#jobb-kluster',
+    sv: 'Vilka grupper bildar annonserna?',
+    en: 'What groups do the ads form?',
   },
   {
     key: 'utforska',

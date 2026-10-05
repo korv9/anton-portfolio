@@ -1,6 +1,6 @@
 /**
  * Jobbmarknaden i siffror: the job-market product, built like the politics product. One
- * navigation with seven themes, a bar of occupation fields above every page (the field
+ * navigation with eight themes, a bar of occupation fields above every page (the field
  * bar, like the party bar) and one question per theme. The earlier job-market views open as
  * deep dives under "Utforska själv", so their addresses keep working.
  */
@@ -19,6 +19,7 @@ const Dashboard = lazy(() => import('./Dashboard'))
 const Themes = lazy(() => import('./themes'))
 const JobMarketPage = lazy(() => import('../jobs/JobMarketPage'))
 const TechReport = lazy(() => import('../jobs/TechReport'))
+const ClusteringSection = lazy(() => import('../jobs/ClusteringSection'))
 
 import { JOB_THEMES, type JobsTheme } from './nav'
 export { JOB_THEMES, type JobsTheme }
@@ -85,7 +86,9 @@ export default function JobsProduct({ route }: { route: Route }) {
     <div className={dock ? 'politik jobb docked' : 'politik jobb'} id="jobb">
       {dock ? createPortal(side, dock) : side}
       <div className="politik-body">
-        {theme && data && <FieldBar route={route} data={data} />}
+        {theme && theme.key !== 'kluster' && data && (
+          <FieldBar route={route} data={data} />
+        )}
         <div className="politik-main">
           {error && (
             <p role="alert" className="theme-error">
@@ -99,6 +102,9 @@ export default function JobsProduct({ route }: { route: Route }) {
               ) : (
                 <JobMarketPage view={route.path} />
               )
+            ) : theme.key === 'kluster' ? (
+              // The semantic clusters of IT ads have their own data; the field bar does not apply.
+              <ClusteringSection initialOpen />
             ) : !data ? (
               !error && loading
             ) : theme.key === 'lage' ? (
