@@ -121,6 +121,8 @@ The tax page (`#taxes`) shows what Sweden collects per tax type since 1965 again
 
 The data model page (`#data-model`) shows every table in the warehouse: its layer, columns, tests, what it reads from and what reads from it, the keys that join them, its SQL and example rows (`platform/publish/export_schema.py`).
 
+The ER diagram (`#er`) draws every relation between the gold tables and the seeds they point at, by subject area. Primary keys and foreign keys are checked in the warehouse: a relation is drawn when a table holds another table's whole key and at least 90 % of its values exist there, and the measured coverage is shown. Tables not built locally take their keys from dbt's tests (`platform/publish/export_er.py`, after `dbt parse`).
+
 ```bash
 pip install -r platform/requirements.txt
 npm run welfare          # fetch all five sources, then dbt build and test

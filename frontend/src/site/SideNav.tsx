@@ -55,11 +55,12 @@ function sections(): Section[] {
       en: 'Technical',
       sv: 'Technical',
       href: '#technical',
-      pages: ['technical', 'design', 'datamodel', 'status'],
+      pages: ['technical', 'design', 'datamodel', 'er', 'status'],
       items: [
         { href: '#technical', en: 'Architecture', sv: 'Arkitektur' },
         { href: '#design', en: 'Design system', sv: 'Designsystem' },
         { href: '#data-model', en: 'Data model', sv: 'Datamodell' },
+        { href: '#er', en: 'ER diagram', sv: 'ER-diagram' },
         { href: '#status', en: 'Pipeline status', sv: 'Pipelinestatus' },
       ],
     },

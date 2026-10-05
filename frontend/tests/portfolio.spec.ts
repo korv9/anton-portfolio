@@ -207,3 +207,31 @@ test('budget proposals and annual outcomes are separate navigable reports', asyn
     page.locator('#budget-outturn .budget-ledger-all summary'),
   ).toContainText('2024')
 })
+
+test('the ER diagram shows the areas, a diagram per area and a table’s keys', async ({
+  page,
+}) => {
+  await page.goto('/#er')
+  await expect(
+    page.getByRole('heading', { level: 1, name: 'How the data connects' }),
+  ).toBeVisible()
+  await page.locator('.er-ov-node', { hasText: 'Parliament' }).click()
+  await expect(page).toHaveURL(/omrade=parliament/)
+  const box = page.locator('.er-box', { hasText: 'fct_roll_call' }).first()
+  await expect(box).toBeVisible()
+  await box.click()
+  await expect(page.locator('.stage-side.is-right')).toContainText(
+    'session + roll_call_id',
+  )
+  const axe = await new AxeBuilder({ page }).include('#er').analyze()
+  expect(axe.violations).toEqual([])
+  await expect(page.locator('.stage-side.is-right')).toContainText(
+    'dim_parliament_session',
+  )
+  // A link in the panel to a table in another area opens that area.
+  await page
+    .locator('.stage-side.is-right .er-link', { hasText: 'dim_date' })
+    .first()
+    .click()
+  await expect(page).toHaveURL(/omrade=shared/)
+})

@@ -429,6 +429,15 @@ export default function DataModelPage({ view }: { view: string }) {
             'Allt på webbplatsen kommer från ett datalager byggt med dbt och DuckDB. Här är varje tabell i det: vad den läser från, vad som läser från den, nycklarna som kopplar ihop dem, testerna som vaktar dem, SQL-koden och exempelrader.',
           )}
         </p>
+        <p>
+          <a href="#er">
+            {l(
+              'See every relation as an ER diagram',
+              'Se alla relationer som ER-diagram',
+            )}{' '}
+            →
+          </a>
+        </p>
       </div>
       {error && <p role="alert">{error}</p>}
       {!schema && !error && (

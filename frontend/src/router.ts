@@ -22,6 +22,7 @@ export type Page =
   | 'homie'
   | 'diva'
   | 'datamodel'
+  | 'er'
   | 'status'
   | 'tallman'
 
@@ -88,6 +89,7 @@ export function pageOf(path: string): Page {
   if (path === '#status') return 'status'
   if (path === '#tallman') return 'tallman'
   if (path === '#analysis' || path.startsWith('#analysis-')) return 'analysis'
+  if (path === '#er' || path === '#er-diagram') return 'er'
   if (path === '#data-model' || path.startsWith('#data-model-'))
     return 'datamodel'
   return 'home'
