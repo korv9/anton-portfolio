@@ -81,3 +81,27 @@ export type AtlasPreview = {
   columns: ['x', 'y', 'cluster_id']
   points: [number, number, number][]
 }
+
+/** One row per deconfounding experiment (platform/nlp/symbolic/experiments.py). */
+export type ExperimentRow = {
+  experiment: string
+  occurrences: number
+  clusters: number
+  noise_share: number
+  trustworthiness: number
+  silhouette: number | null
+  median_membership: number | null
+  mean_largest_book_share: number
+  mean_largest_tradition_share: number
+  mean_largest_symbol_share: number
+  mean_book_entropy: number
+  mean_tradition_entropy: number
+  mean_symbol_entropy: number
+  cross_book_cluster_count: number
+  cross_book_occurrence_share: number
+}
+
+export type ExperimentComparison = {
+  sample_sha256: string
+  experiments: ExperimentRow[]
+}

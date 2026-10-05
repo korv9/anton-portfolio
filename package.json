@@ -35,6 +35,7 @@
     "symbolic:gold": "cd platform && dbt build --profiles-dir . --select path:models/gold/symbolic",
     "symbolic:ml": "python platform/nlp/symbolic/pipeline.py",
     "symbolic:publish": "python platform/publish/symbolic/export_symbolic.py",
+    "symbolic:experiments": "python platform/nlp/symbolic/experiments.py",
     "symbolic:build": "npm run symbolic:ingest && npm run symbolic:silver && npm run symbolic:ml && npm run symbolic:gold && npm run symbolic:publish"
   },
   "dependencies": {

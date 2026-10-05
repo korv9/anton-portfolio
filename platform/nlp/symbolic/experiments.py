@@ -1,0 +1,162 @@
+"""Deconfounding experiments on the Symbolic Atlas: are the clusters about symbols, or books?
+
+    python platform/nlp/symbolic/experiments.py
+
+The baseline clusters follow books (style, era, translator) far more than symbols. This runs
+the same occurrence sample through four variants and measures how book-, tradition- and
+symbol-bound the clusters are in each:
+
+    baseline              original contexts                       (the published atlas)
+    masked                the matched word replaced by [SYMBOL]
+    book_centered         original embeddings minus their book's mean, re-normalised
+    masked_book_centered  both
+
+Embeddings are computed twice, not four times: original contexts serve baseline and
+book_centered, masked contexts serve masked and masked_book_centered. Each variant then gets
+its own UMAP map, 10-D UMAP space and HDBSCAN clusters with the pipeline's parameters.
+
+Writes warehouse/features/symbolic/experiments/<name>/ (atlas_projection.parquet,
+evaluation.json, run.json, cluster_composition.parquet, cluster_representatives.parquet) and
+experiments/comparison.json and .parquet, one row per experiment. The root-level artefacts of
+pipeline.py, which the site's atlas is built from, are not touched.
+"""
+from __future__ import annotations
+
+import hashlib
+import json
+import sys
+import time
+from datetime import datetime, timezone
+from pathlib import Path
+
+import numpy as np
+
+HERE = Path(__file__).resolve().parent
+sys.path.insert(0, str(HERE))
+
+import clustering  # noqa: E402
+import embeddings  # noqa: E402
+import evaluation  # noqa: E402
+import pipeline  # noqa: E402
+from transforms import center_by_document, mask_symbol  # noqa: E402
+
+OUT = pipeline.FEATURES / "experiments"
+TOP_REPRESENTATIVES = 7
+EXPERIMENTS = {
+    "baseline": {"masking": False, "centering": False},
+    "masked": {"masking": True, "centering": False},
+    "book_centered": {"masking": False, "centering": True},
+    "masked_book_centered": {"masking": True, "centering": True},
+}
+COLUMNS = "occurrence_id, context, document_id, symbol_id, tradition, matched_term"
+
+
+def sample_hash(ids: list[str]) -> str:
+    """SHA-256 of the ordered occurrence ids: equal in every run.json means the same sample."""
+    return hashlib.sha256("\n".join(ids).encode()).hexdigest()
+
+
+def load_sample(database: Path = pipeline.DATABASE) -> dict:
+    rows = pipeline.sample(database, columns=COLUMNS)
+    pipeline.check_size(len(rows))
+    keys = ["ids", "contexts", "documents", "symbols", "traditions", "terms"]
+    return dict(zip(keys, (list(col) for col in zip(*rows))))
+
+
+def inputs(data: dict, masking: bool) -> list[str]:
+    if not masking:
+        return data["contexts"]
+    return [mask_symbol(c, t) for c, t in zip(data["contexts"], data["terms"])]
+
+
+def write_parquet(path: Path, rows: list[dict]) -> None:
+    import pyarrow as pa
+    import pyarrow.parquet as pq
+
+    pq.write_table(pa.Table.from_pylist(rows), path)
+
+
+def run_experiment(name: str, config: dict, data: dict, vectors: np.ndarray, texts: list[str],
+                   sample_id: str) -> dict:
+    started = time.monotonic()
+    space_in = center_by_document(vectors, data["documents"]) if config["centering"] else vectors
+    layout = clustering.reduce(space_in, clustering.MAP)
+    space = clustering.reduce(space_in, clustering.SPACE)
+    labels, probabilities = clustering.cluster(space)
+    metrics = evaluation.evaluate(space_in, layout, space, labels, probabilities)
+    metrics["composition"] = evaluation.composition(labels, data["documents"], data["symbols"])
+    rows = evaluation.cluster_composition(labels, data["documents"], data["traditions"], data["symbols"])
+    metrics.update(evaluation.composition_summary(rows, len(labels)))
+
+    folder = OUT / name
+    folder.mkdir(parents=True, exist_ok=True)
+    pipeline.write_projection(folder / "atlas_projection.parquet", data["ids"], layout, labels, probabilities)
+    write_parquet(folder / "cluster_composition.parquet", [{"experiment": name, **r} for r in rows])
+    write_parquet(folder / "cluster_representatives.parquet", [
+        {"experiment": name, "cluster_id": c, "rank": rank, "occurrence_id": data["ids"][i],
+         "distance_to_centroid": d, "document_id": data["documents"][i], "symbol_id": data["symbols"][i],
+         "tradition": data["traditions"][i], "context": texts[i]}
+        for c, rank, i, d in evaluation.representatives(space, labels, TOP_REPRESENTATIVES)])
+    (folder / "evaluation.json").write_text(json.dumps(metrics, indent=2) + "\n", encoding="utf-8")
+    run = {
+        "experiment_name": name,
+        "embedding_model": embeddings.MODEL,
+        "sample_size": len(data["ids"]),
+        "sample_strategy": pipeline.SAMPLE_STRATEGY,
+        "sample_sha256": sample_id,
+        "masking_enabled": config["masking"],
+        "mask_token": "[SYMBOL]" if config["masking"] else None,
+        "document_centering_enabled": config["centering"],
+        "normalization": "L2 after document centering" if config["centering"] else "L2 (sentence-transformers)",
+        "umap_map": clustering.MAP,
+        "umap_cluster_space": clustering.SPACE,
+        "hdbscan": clustering.HDBSCAN,
+        "representatives_per_cluster": TOP_REPRESENTATIVES,
+        "timestamp": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "runtime_seconds": round(time.monotonic() - started, 1),
+    }
+    (folder / "run.json").write_text(json.dumps(run, indent=2) + "\n", encoding="utf-8")
+    return metrics
+
+
+def comparison_row(name: str, m: dict) -> dict:
+    keys = ["mean_largest_book_share", "mean_largest_tradition_share", "mean_largest_symbol_share",
+            "mean_book_entropy", "mean_tradition_entropy", "mean_symbol_entropy",
+            "weighted_mean_largest_book_share", "weighted_mean_largest_tradition_share",
+            "weighted_mean_largest_symbol_share", "clusters_with_2plus_books",
+            "clusters_with_3plus_books", "clusters_with_4plus_books", "clusters_with_2plus_traditions",
+            "clusters_with_3plus_traditions", "cross_book_cluster_count", "cross_book_occurrence_share"]
+    return {"experiment": name, "occurrences": m["occurrences"], "clusters": m["clusters"],
+            "noise_share": m["noise_share"], "trustworthiness": m["trustworthiness"],
+            "silhouette": m["silhouette"],
+            "median_membership": (m["membership_probability"] or {}).get("median"),
+            **{k: m[k] for k in keys}}
+
+
+def main(names: list[str] | None = None) -> int:
+    data = load_sample()
+    sample_id = sample_hash(data["ids"])
+    print(f"Sample: {len(data['ids'])} occurrences, sha256 {sample_id[:12]}…", flush=True)
+    cache: dict[bool, tuple[np.ndarray, list[str]]] = {}
+    rows = []
+    for name in names or list(EXPERIMENTS):
+        config = EXPERIMENTS[name]
+        if config["masking"] not in cache:
+            texts = inputs(data, config["masking"])
+            print(f"Embedding {'masked' if config['masking'] else 'original'} contexts …", flush=True)
+            cache[config["masking"]] = (embeddings.embed(texts), texts)
+        vectors, texts = cache[config["masking"]]
+        print(f"{name}: UMAP and HDBSCAN …", flush=True)
+        metrics = run_experiment(name, config, data, vectors, texts, sample_id)
+        rows.append(comparison_row(name, metrics))
+        print(f"  {evaluation.summary(metrics)}; cross-book clusters {metrics['cross_book_cluster_count']}",
+              flush=True)
+    OUT.mkdir(parents=True, exist_ok=True)
+    (OUT / "comparison.json").write_text(json.dumps({"sample_sha256": sample_id, "experiments": rows},
+                                                    indent=2) + "\n", encoding="utf-8")
+    write_parquet(OUT / "comparison.parquet", rows)
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:] or None))

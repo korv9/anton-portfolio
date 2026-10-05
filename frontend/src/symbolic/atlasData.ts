@@ -9,6 +9,7 @@ import type {
   AtlasPoint,
   AtlasPreview,
   AtlasSummary,
+  ExperimentComparison,
   SymbolProfile,
 } from './atlasTypes'
 
@@ -76,4 +77,15 @@ export const TRADITION: Record<string, [string, string]> = {
   'european-folklore': ['European folklore', 'Europeisk folksaga'],
   celtic: ['Celtic', 'Keltisk'],
   'christian-literary': ['Christian, literary', 'Kristen, litterär'],
+}
+
+/** The experiment comparison, or null when the experiments have not been published. */
+export async function loadExperimentComparison(): Promise<ExperimentComparison | null> {
+  try {
+    return await json<ExperimentComparison>(
+      'symbolic/experiment-comparison.json',
+    )
+  } catch {
+    return null
+  }
 }

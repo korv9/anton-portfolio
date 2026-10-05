@@ -37,3 +37,21 @@ test('a filtered atlas address opens with its filter', async ({ page }) => {
     page.getByRole('button', { name: 'raven', exact: true }),
   ).toHaveAttribute('aria-pressed', 'true')
 })
+
+test('the deconfounding experiments are compared under the atlas', async ({
+  page,
+}) => {
+  await page.goto('/#symbolic-atlas')
+  const comparison = await (
+    await page.request.get('/data/symbolic/experiment-comparison.json')
+  ).json()
+  const table = page.locator('.atlas-table')
+  await expect(table.locator('tbody tr')).toHaveCount(
+    comparison.experiments.length,
+  )
+  await expect(table).toContainText('Book-centred')
+  const centred = comparison.experiments.find(
+    (r: { experiment: string }) => r.experiment === 'book_centered',
+  )
+  await expect(table).toContainText(String(centred.cross_book_cluster_count))
+})
