@@ -43,6 +43,7 @@ const Partiledardebatter = lazy(() => import('./debatter/Partiledardebatter'))
 const DebateView = lazy(() => import('./debatter/DebateView'))
 const TalTheme = lazy(() => import('./themes/TalTheme'))
 const UtforskaTheme = lazy(() => import('./themes/UtforskaTheme'))
+const ModellTheme = lazy(() => import('./modell/ModellTheme'))
 const KallorTheme = lazy(() => import('./themes/KallorTheme'))
 const DeepDive = lazy(() => import('./DeepDive'))
 
@@ -70,6 +71,8 @@ function ThemeView({ theme, route }: { theme: ThemeKey; route: Route }) {
       return <Partiledardebatter route={route} />
     case 'tal':
       return <TalTheme route={route} />
+    case 'modell':
+      return <ModellTheme route={route} />
     case 'utforska':
       return <UtforskaTheme />
     case 'kallor':

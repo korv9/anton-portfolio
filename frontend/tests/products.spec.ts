@@ -23,12 +23,20 @@ test('project reports keep their data and downloads on their own pages', async (
   const tree = await (
     await page.request.get('/data/products/drugcomb/tree.json')
   ).json()
+  // Slicers: a tissue lights up on the body, a leaf's path in the tree.
+  await page
+    .locator('#dc-body')
+    .getByRole('combobox', { name: 'Tissue' })
+    .selectOption('Bone')
+  await expect(body.locator('.body-caption')).toContainText('Bone')
   const stageTree = page.locator('#dc-tree')
   await expect(stageTree.locator('.dtree-leaf')).toHaveCount(
     tree.metrics.leaves,
   )
   await expect(stageTree).toContainText(String(tree.metrics.roc_auc))
-  await stageTree.locator('.dtree-leaf').first().hover({ force: true })
+  await stageTree
+    .getByRole('combobox', { name: 'Follow a leaf' })
+    .selectOption({ index: 1 })
   await expect(stageTree.locator('.dtree-caption li').first()).toBeVisible()
   const sky = await (
     await page.request.get('/data/products/drugcomb/drug-clusters.json')

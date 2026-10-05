@@ -1,0 +1,117 @@
+/* The model page (ModellTheme.tsx): rays from the chosen party, the learning curve, slicers. */
+.modell-figure {
+  display: grid;
+  gap: 0.75rem;
+}
+.modell-slicers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  justify-content: center;
+}
+.modell-slicers button {
+  min-width: 2.6rem;
+  padding: 0.35rem 0.6rem;
+  border: 1px solid rgba(241, 236, 226, 0.3);
+  background: transparent;
+  color: #f1ece2;
+  font-family: var(--font-mono) !important;
+  font-weight: 600;
+  cursor: pointer;
+}
+.modell-slicers button[aria-pressed='true'] {
+  border-color: var(--c);
+  box-shadow: inset 0 -3px 0 var(--c) !important;
+}
+.modell-rays,
+.modell-curve {
+  display: block;
+  width: 100%;
+  max-height: 62vh;
+  height: auto;
+}
+.modell-curve {
+  max-height: 22vh;
+}
+.modell-ray {
+  animation: modell-in 700ms ease calc(var(--i) * 70ms) both;
+}
+.modell-node {
+  fill: #f1ece2;
+  font-family: var(--font-mono) !important;
+  font-size: 13px;
+  font-weight: 600;
+}
+.modell-share,
+.modell-axis {
+  fill: #f1ece2;
+  font-family: var(--font-mono) !important;
+  font-size: 12px;
+  opacity: 0.75;
+}
+.modell-centre {
+  fill: #070708;
+  font-size: 22px;
+  font-weight: 700;
+}
+.modell-base {
+  stroke: #f1ece2;
+  stroke-dasharray: 3 4;
+  opacity: 0.5;
+}
+.modell-line {
+  fill: none;
+  stroke-width: 2.4;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: dtree-grow 1.6s ease both;
+}
+.modell-note {
+  margin: 0;
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+.modell-select {
+  display: grid;
+  gap: 0.25rem;
+  margin-bottom: 0.6rem;
+}
+.modell-select span {
+  font-size: 0.75rem;
+  opacity: 0.7;
+}
+.modell-select select {
+  padding: 0.35rem;
+  background: #070708;
+  color: #f1ece2;
+  border: 1px solid rgba(241, 236, 226, 0.3);
+}
+.modell-cttee {
+  transition: opacity 200ms;
+}
+.modell-cttee.is-dim {
+  opacity: 0.3;
+}
+.modell-cttee small {
+  opacity: 0.6;
+}
+.modell-all {
+  margin: 0 0 2rem;
+}
+@keyframes modell-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .modell-ray {
+    animation: none;
+  }
+  .modell-line {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+}

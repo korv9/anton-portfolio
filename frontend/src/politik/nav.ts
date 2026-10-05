@@ -17,6 +17,7 @@ export type ThemeKey =
   | 'tal'
   | 'valjarna'
   | 'roster'
+  | 'modell'
   | 'utforska'
   | 'kallor'
 
@@ -154,6 +155,17 @@ export const THEMES: Theme[] = [
     question: {
       sv: 'Vad skriver medierna om partierna just nu?',
       en: 'What are the media saying about the parties now?',
+    },
+  },
+  {
+    key: 'modell',
+    path: '#politik-modell',
+    sv: 'Modellen',
+    en: 'The model',
+    group: 'mer',
+    question: {
+      sv: 'Kan en modell lära sig hur ett parti röstar?',
+      en: 'Can a model learn how a party votes?',
     },
   },
   {

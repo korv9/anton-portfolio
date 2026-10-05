@@ -7,7 +7,7 @@ export function MarkerShape({
   y,
   size = 5,
   fill,
-  stroke = '#ffffff',
+  stroke = 'var(--page)',
 }: {
   shape: Marker
   x: number

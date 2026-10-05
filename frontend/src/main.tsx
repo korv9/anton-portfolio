@@ -7,6 +7,7 @@ import './styles.css'
 import './pages.css'
 import './products/products.css'
 import './design-system.css'
+import './dark.css'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

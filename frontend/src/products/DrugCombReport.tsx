@@ -14,13 +14,14 @@ import DashBars from '../politik/dash/DashBars'
 import '../politik/dash/dash.css'
 import './drugcomb.css'
 import BodyMap, { type Lineage } from './BodyMap'
-import DecisionTree, { type TreeNode } from './DecisionTree'
+import DecisionTree, { leavesOf, type TreeNode } from './DecisionTree'
 import DrugConstellation, {
   type DrugCluster,
   type DrugPoint,
 } from './DrugConstellation'
 import { Stage, StageBlock, StageFacts, StageTools } from '../ui/Stage'
 import './mlviz.css'
+import '../politik/modell/modell.css'
 
 type TreeFile = {
   tree: TreeNode
@@ -178,6 +179,9 @@ export default function DrugCombReport() {
   const [error, setError] = useState(false)
   const [treeFile, setTreeFile] = useState<TreeFile | null>(null)
   const [sky, setSky] = useState<ClusterFile | null>(null)
+  // Slicers: a tissue on the body, a leaf in the tree.
+  const [tissue, setTissue] = useState('')
+  const [leaf, setLeaf] = useState('')
   useEffect(() => {
     fetchData('products/drugcomb/report.json')
       .then((r) => {
@@ -248,9 +252,29 @@ export default function DrugCombReport() {
           'Every screened cell line has a tissue of origin. Point at one to read it.',
           'Varje testad cellinje har en ursprungsvävnad. Peka på en för att läsa den.',
         )}
-        figure={<BodyMap lineages={report.lineages} />}
+        figure={
+          <BodyMap lineages={report.lineages} highlight={tissue || null} />
+        }
         left={
           <>
+            <StageBlock title={l('Slicer', 'Filter')}>
+              <label className="modell-select">
+                <span>{l('Tissue', 'Vävnad')}</span>
+                <select
+                  value={tissue}
+                  onChange={(e) => setTissue(e.target.value)}
+                >
+                  <option value="">{l('All tissues', 'Alla vävnader')}</option>
+                  {[...report.lineages]
+                    .sort((a, b) => b.combinations - a.combinations)
+                    .map((t) => (
+                      <option key={t.lineage} value={t.lineage}>
+                        {t.lineage}
+                      </option>
+                    ))}
+                </select>
+              </label>
+            </StageBlock>
             <StageBlock title={l('Data', 'Data')}>
               <StageFacts
                 rows={[
@@ -353,9 +377,34 @@ export default function DrugCombReport() {
             'A tree asks one yes-or-no question at a time and sends each measurement left or right until it lands in a leaf. LightGBM adds hundreds of trees like this one; this single tree shows the idea.',
             'Ett träd ställer en ja-eller-nej-fråga i taget och skickar varje mätning åt vänster eller höger tills den hamnar i ett löv. LightGBM lägger ihop hundratals sådana träd; det här enda trädet visar idén.',
           )}
-          figure={<DecisionTree root={treeFile.tree} />}
+          figure={
+            <DecisionTree
+              root={treeFile.tree}
+              highlight={leaf === '' ? null : Number(leaf)}
+            />
+          }
           left={
             <>
+              <StageBlock title={l('Slicer', 'Filter')}>
+                <label className="modell-select">
+                  <span>{l('Follow a leaf', 'Följ ett löv')}</span>
+                  <select
+                    value={leaf}
+                    onChange={(e) => setLeaf(e.target.value)}
+                  >
+                    <option value="">{l('None', 'Inget')}</option>
+                    {leavesOf(treeFile.tree)
+                      .map((n, i) => ({ n, i }))
+                      .sort((a, b) => b.n.share - a.n.share)
+                      .map(({ n, i }) => (
+                        <option key={n.id} value={n.id}>
+                          {l('Leaf', 'Löv')} {i + 1} · {pct(n.share)} ·{' '}
+                          {num(n.n)}
+                        </option>
+                      ))}
+                  </select>
+                </label>
+              </StageBlock>
               <StageBlock title={l('Question', 'Fråga')}>
                 <p>
                   {l(

@@ -109,9 +109,17 @@ const still = () =>
   typeof window !== 'undefined' &&
   !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
 
-export default function DecisionTree({ root }: { root: TreeNode }) {
+export default function DecisionTree({
+  root,
+  highlight = null,
+}: {
+  root: TreeNode
+  /** A node chosen with a slicer outside the chart; pointing still takes over. */
+  highlight?: number | null
+}) {
   const nodes = useMemo(() => place(root), [root])
-  const [focus, setFocus] = useState<number | null>(null)
+  const [hovered, setFocus] = useState<number | null>(null)
+  const focus = hovered ?? highlight
   const total = root.n
   const leaves = nodes.filter((n) => !n.children)
   const maxShare = Math.max(...leaves.map((n) => n.share))
@@ -302,4 +310,13 @@ export default function DecisionTree({ root }: { root: TreeNode }) {
       </div>
     </div>
   )
+}
+
+/** The leaves of a tree, left to right, for a slicer that picks one. */
+export function leavesOf(root: TreeNode): TreeNode[] {
+  const out: TreeNode[] = []
+  const walk = (n: TreeNode) =>
+    n.children ? n.children.forEach(walk) : out.push(n)
+  walk(root)
+  return out
 }

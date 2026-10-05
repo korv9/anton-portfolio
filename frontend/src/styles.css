@@ -1,7 +1,7 @@
 /* Tokens: see design-system.css for the full system, loaded last. */
 :root {
-  color: #111214;
-  background: #fafaf9;
+  color: var(--ink);
+  background: var(--paper);
   font-family: 'Geist Variable', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-synthesis: none;
   font-variant-numeric: tabular-nums;
@@ -95,7 +95,7 @@ h3 {
   z-index: 100;
   padding: 0.8rem 1rem;
   background: var(--ink);
-  color: white;
+  color: var(--on-accent);
 }
 .skip-link:focus {
   top: 1rem;
@@ -125,7 +125,7 @@ h3 {
   height: 36px;
   border-radius: 50%;
   background: var(--ink);
-  color: white;
+  color: var(--on-accent);
   font-weight: 800;
   font-size: 0.78rem;
   letter-spacing: 0.08em;
@@ -168,7 +168,7 @@ h3 {
 }
 .language-switch button[aria-pressed='true'] {
   background: var(--ink);
-  color: white;
+  color: var(--on-accent);
 }
 .language-switch button:focus-visible {
   outline: 2px solid var(--teal);
@@ -219,7 +219,7 @@ main {
 .lede {
   max-width: 670px;
   font-size: clamp(1.08rem, 1.7vw, 1.38rem);
-  color: #4f5956;
+  color: var(--ink-2);
   margin: 2rem 0;
 }
 .stack-list {
@@ -235,7 +235,7 @@ main {
   padding: 0.42rem 0.72rem;
   font-size: 0.76rem;
   font-weight: 700;
-  color: #3f4b48;
+  color: var(--ink-2);
 }
 .profile-home {
   align-items: stretch;
@@ -353,7 +353,7 @@ main {
   text-decoration: none;
 }
 .index-card > a:hover {
-  background: #f4faf8;
+  background: var(--wash);
 }
 .index-card strong {
   display: block;
@@ -426,7 +426,7 @@ main {
   max-width: 800px;
 }
 .thesis-card > p {
-  color: #52605c;
+  color: var(--ink-2);
   max-width: 780px;
 }
 .thesis-kpis {
@@ -469,7 +469,7 @@ main {
 }
 .thesis-findings p {
   margin: 0;
-  color: #5b6562;
+  color: var(--ink-2);
   font-size: 0.82rem;
   line-height: 1.55;
 }
@@ -497,7 +497,7 @@ main {
 }
 .project-side > a:hover {
   border-color: var(--teal);
-  background: #f4faf8;
+  background: var(--wash);
 }
 .project-side span {
   color: var(--muted);
@@ -512,7 +512,7 @@ main {
   line-height: 1.15;
 }
 .project-side p {
-  color: #64706c;
+  color: var(--ink-2);
   font-size: 0.86rem;
 }
 .project-side > a > strong {
@@ -547,7 +547,7 @@ main {
 .report-intro {
   font-size: 1.08rem;
   max-width: 720px;
-  color: #53605c;
+  color: var(--ink-2);
 }
 .report-jump {
   display: inline-block;
@@ -585,7 +585,7 @@ main {
   grid-template-columns: repeat(4, 1fr);
   border: 1px solid var(--line);
   margin: 2rem 0 0.8rem;
-  background: #f7f5ef;
+  background: var(--wash);
 }
 .kpis div {
   padding: 1.3rem 1.5rem;
@@ -607,7 +607,7 @@ main {
 }
 .viz-shell {
   border: 1px solid var(--line);
-  background: white;
+  background: var(--paper);
 }
 .viz-toolbar {
   display: flex;
@@ -616,7 +616,7 @@ main {
   gap: 1rem;
   padding: 1rem 1.2rem;
   border-bottom: 1px solid var(--line);
-  background: #faf9f5;
+  background: var(--wash);
 }
 .control-label {
   display: block;
@@ -631,7 +631,7 @@ main {
 .segmented button,
 .role-tabs button {
   border: 1px solid var(--line);
-  background: white;
+  background: var(--paper);
   padding: 0.48rem 0.68rem;
   border-radius: 3px;
   cursor: pointer;
@@ -640,14 +640,14 @@ main {
 .segmented button.active,
 .role-tabs button.active {
   background: var(--ink);
-  color: white;
+  color: var(--on-accent);
   border-color: var(--ink);
 }
 select {
   min-width: 120px;
   padding: 0.5rem 2rem 0.5rem 0.6rem;
   border: 1px solid var(--line);
-  background: white;
+  background: var(--paper);
   border-radius: 3px;
   color: var(--ink);
 }
@@ -656,7 +656,7 @@ select {
   justify-content: space-between;
   gap: 2rem;
   padding: 1rem 1.2rem;
-  background: #f3f7f5;
+  background: var(--wash);
   border-bottom: 1px solid var(--line);
 }
 .umap-guide > div {
@@ -697,7 +697,7 @@ select {
   padding: 0.75rem 1.2rem;
   border-bottom: 1px solid var(--line);
   font-size: 0.75rem;
-  color: #505b58;
+  color: var(--ink-2);
 }
 .topic-legend span {
   display: flex;
@@ -727,7 +727,7 @@ select {
 }
 .umap-point {
   cursor: pointer;
-  stroke: white;
+  stroke: var(--page);
   stroke-width: 1;
   transition:
     r 0.12s,
@@ -750,7 +750,7 @@ select {
 .point-detail {
   border-left: 1px solid var(--line);
   padding: 2rem 1.5rem;
-  background: #fbfaf6;
+  background: var(--wash);
 }
 .point-detail h3 {
   font-size: 1.55rem;
@@ -818,7 +818,7 @@ select {
 .bar {
   display: block;
   height: 7px;
-  background: #ebe8df;
+  background: var(--wash);
   margin-top: 0.35rem;
 }
 .bar i {
@@ -838,7 +838,7 @@ select {
 .method > div {
   max-width: 860px;
   padding: 0 0 1.5rem;
-  color: #4f5956;
+  color: var(--ink-2);
 }
 .job-chart-head {
   padding: 1.5rem 1.5rem 0;
@@ -881,7 +881,7 @@ select {
   font-size: 0.75rem;
 }
 .line-point {
-  fill: white;
+  fill: var(--page);
   stroke: var(--teal);
   stroke-width: 3;
 }
@@ -927,7 +927,7 @@ select {
 }
 .log-list p,
 .about > div:last-child > p {
-  color: #53605c;
+  color: var(--ink-2);
   max-width: 760px;
 }
 .log-list summary {
@@ -1238,11 +1238,11 @@ summary:focus-visible {
   max-height: 65vh;
   overflow: auto;
   padding: 1rem;
-  background: #fafaf6;
+  background: var(--wash);
   border: 1px solid #dde2da;
 }
 .inline-decision {
-  background: #f8faf6;
+  background: var(--wash);
   padding: 1rem;
   margin: 0.5rem 0;
   border-left: 3px solid #1a1a1a;
@@ -1252,7 +1252,7 @@ summary:focus-visible {
   margin: 0.75rem 0;
   padding: 1rem;
   line-height: 1.7;
-  background: white;
+  background: var(--paper);
 }
 button.decision-read {
   display: flex;
@@ -1271,14 +1271,14 @@ button.decision-read {
   cursor: pointer;
 }
 .decision-read > span {
-  color: #08716d;
+  color: var(--ink-2);
   font-size: 0.78rem;
   white-space: nowrap;
 }
 .compact-toggle {
   padding: 0.6rem 1rem;
   margin-top: 0.7rem;
-  background: #edf3ee;
+  background: var(--wash);
   border: 1px solid #bdccc2;
   cursor: pointer;
 }
@@ -1345,7 +1345,7 @@ button.decision-read {
   padding: 22px 24px;
   border: 1px solid #d9e2e6;
   border-radius: 0;
-  background: #f5f8fa;
+  background: var(--wash);
 }
 .topic-tabs {
   display: flex;
@@ -1360,14 +1360,14 @@ button.decision-read {
   padding: 9px 16px;
   border: 1px solid #c4d1d8;
   border-radius: 0;
-  background: #fff;
-  color: #233b4b;
+  background: var(--paper);
+  color: var(--ink);
   text-decoration: none;
   font-size: 0.875rem;
   font-weight: 600;
 }
 .topic-tabs a:hover {
-  background: #e5edf2;
+  background: var(--wash);
 }
 .topic-tabs a[aria-current='page'] {
   background: #173f52;
@@ -1381,7 +1381,7 @@ button.decision-read {
 }
 .topic-hint {
   font-size: 0.8125rem;
-  color: #526775;
+  color: var(--ink-2);
   margin: 0;
 }
 .analysis-hub + .project-page .page-lead {

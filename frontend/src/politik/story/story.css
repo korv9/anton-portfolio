@@ -563,7 +563,7 @@
 }
 .story-chips button[aria-pressed='true'] {
   background: var(--ink);
-  color: var(--paper);
+  color: var(--on-accent);
   border-color: var(--ink);
 }
 .story-agenda-wrap {

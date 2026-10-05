@@ -338,3 +338,30 @@ test('news without a summary says how it is made', async ({ page }) => {
     'summarize_news.py',
   )
 })
+
+test('the model: gradient boosting per party, with party and committee slicers', async ({
+  page,
+}) => {
+  const boost = await (
+    await page.request.get('/data/politics/parliament/boost.json')
+  ).json()
+  await page.goto('/#politik-modell?parti=C')
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+    'Can a model learn how a party votes?',
+  )
+  const c = boost.parties.find((p: { party: string }) => p.party === 'C')
+  await expect(page.locator('#modell')).toContainText(
+    `${(c.accuracy * 100).toFixed(1)} %`,
+  )
+  await expect(page.locator('.modell-ray')).toHaveCount(8)
+  await page
+    .locator('.modell-slicers')
+    .getByRole('button', { name: 'SD' })
+    .click()
+  await expect(page).toHaveURL(/parti=SD/)
+  await page
+    .getByRole('combobox', { name: 'Committee' })
+    .selectOption({ index: 1 })
+  await expect(page).toHaveURL(/utskott=/)
+  await expect(page.locator('.modell-cttee.is-dim').first()).toBeAttached()
+})

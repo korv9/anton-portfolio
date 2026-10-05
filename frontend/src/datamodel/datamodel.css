@@ -62,27 +62,27 @@ button.dm-layer[aria-pressed='true'] {
 .dm-layer.source,
 .dm-dot.source,
 .dm-chip.source {
-  background: #e9e5f5;
+  background: var(--wash);
 }
 .dm-layer.seed,
 .dm-dot.seed,
 .dm-chip.seed {
-  background: #eef0e2;
+  background: var(--wash);
 }
 .dm-layer.bronze,
 .dm-dot.bronze,
 .dm-chip.bronze {
-  background: #f3e2d3;
+  background: var(--wash);
 }
 .dm-layer.silver,
 .dm-dot.silver,
 .dm-chip.silver {
-  background: #e3e7ec;
+  background: var(--wash);
 }
 .dm-layer.gold,
 .dm-dot.gold,
 .dm-chip.gold {
-  background: #f5e8b8;
+  background: var(--wash);
 }
 .dm-browser {
   display: grid;
@@ -107,7 +107,7 @@ button.dm-layer[aria-pressed='true'] {
   font-size: 0.85rem;
 }
 .dm-table-list li[aria-current='true'] {
-  background: #f5e8b8;
+  background: var(--wash);
 }
 .dm-table-list a {
   display: flex;

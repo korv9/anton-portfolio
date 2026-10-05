@@ -22,7 +22,7 @@
 .jobb-slicer button[aria-pressed='true'] {
   background: var(--ink);
   border: 1px solid var(--ink);
-  color: #fff;
+  color: var(--on-accent);
   transform: none;
 }
 .jobb-slicer.active button[aria-pressed='false'] {

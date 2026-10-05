@@ -108,10 +108,18 @@ const num = (v: number, d = 0) =>
     maximumFractionDigits: d,
   })
 
-export default function BodyMap({ lineages }: { lineages: Lineage[] }) {
+export default function BodyMap({
+  lineages,
+  highlight = null,
+}: {
+  lineages: Lineage[]
+  /** A tissue chosen with a slicer outside the chart; pointing still takes over. */
+  highlight?: string | null
+}) {
   const root = useRef<HTMLDivElement>(null)
   const [on, setOn] = useState(false)
-  const [focus, setFocus] = useState<string | null>(null)
+  const [hovered, setFocus] = useState<string | null>(null)
+  const focus = hovered ?? highlight
 
   useEffect(() => {
     const node = root.current

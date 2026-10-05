@@ -359,7 +359,7 @@
 .position.yes {
   background: var(--ink);
   border-color: var(--ink);
-  color: #fff;
+  color: var(--on-accent);
 }
 .position.no {
   border-color: var(--ink);
@@ -389,7 +389,7 @@
   min-height: 38px;
   padding: 0 0.9rem;
   background: var(--ink);
-  color: #fff;
+  color: var(--on-accent);
   font-size: 0.875rem;
   font-weight: 500;
   text-decoration: none;
@@ -471,7 +471,7 @@
 .budget-id-votes li.yes {
   background: var(--ink);
   border-color: var(--ink);
-  color: #fff;
+  color: var(--on-accent);
 }
 .budget-id-votes li.yes small {
   color: #d5d8dc;

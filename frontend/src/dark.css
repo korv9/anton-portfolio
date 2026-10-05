@@ -1,0 +1,54 @@
+/*
+ * The site on black. Loaded after every other stylesheet: the colour tokens get their dark
+ * values here, so every page that uses them follows. Colour still only means a party.
+ */
+:root {
+  color: #f1ece2;
+  background: #070708;
+  color-scheme: dark;
+  --ink: #f1ece2;
+  --ink-2: #d2ccc1;
+  --muted: #a8a297;
+  --paper: #101012;
+  --page: #070708;
+  --wash: #17171a;
+  --line: #2b2b30;
+  --line-strong: #46464d;
+  --teal: #f1ece2;
+  --orange: #a8a297;
+  --focus: #ffd98a;
+  --accent: #f1ece2;
+  --accent-2: #d8d2c6;
+  --on-accent: #070708;
+  --select: #1b2026;
+  --wash-cool: #131518;
+  --side: #0c0d0f;
+  --info: #8bbde3;
+  --negative: #ec8a74;
+  --note-bg: #1d190d;
+  --note-line: #c7a64a;
+}
+html,
+body,
+#root {
+  background: #070708;
+  color: #f1ece2;
+}
+a {
+  color: inherit;
+}
+img {
+  color-scheme: light;
+}
+input,
+select,
+textarea,
+button {
+  color: inherit;
+}
+input,
+select,
+textarea {
+  background: #101012;
+  border-color: #46464d;
+}

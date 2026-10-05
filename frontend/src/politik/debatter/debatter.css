@@ -164,7 +164,7 @@
   height: 2.6rem;
   border: 2px solid var(--party);
   border-radius: 50% !important;
-  background: #fff;
+  background: var(--paper);
   overflow: hidden;
   font-weight: 700;
 }
@@ -172,9 +172,9 @@
   position: relative;
   min-width: 0;
   padding: 0.65rem 0.85rem 0.6rem;
-  border: 1px solid color-mix(in srgb, var(--party) 40%, #fff);
+  border: 1px solid color-mix(in srgb, var(--party) 40%, var(--paper));
   border-radius: 16px 16px 16px 4px !important;
-  background: color-mix(in srgb, var(--party) 14%, #fff);
+  background: color-mix(in srgb, var(--party) 14%, var(--paper));
 }
 .turn.right .turn-bubble {
   border-radius: 16px 16px 4px 16px !important;

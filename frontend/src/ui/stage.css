@@ -203,3 +203,19 @@
 .stage.is-dark .board-table td:first-child {
   color: var(--stage-ink);
 }
+
+/* Inside the politics product the stage sits in the content column beside its menu. */
+.politik-body .stage {
+  margin: 0 0 2rem;
+  grid-template-columns: minmax(11rem, 1fr) minmax(0, 2.6fr) minmax(11rem, 1fr);
+}
+@media (max-width: 1100px) {
+  .politik-body .stage {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+}
+@media (max-width: 640px) {
+  .politik-body .stage {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

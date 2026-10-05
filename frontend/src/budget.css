@@ -43,7 +43,7 @@
 .budget-summary {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  background: #ecf3f0;
+  background: var(--wash);
   border: 1px solid #d3e3dc;
   margin: 1.5rem 0;
 }
@@ -63,7 +63,7 @@
   letter-spacing: -0.04em;
 }
 .budget-summary span {
-  color: #596b64;
+  color: var(--ink-2);
   font-size: 0.76rem;
   margin-top: 0.3rem;
 }
@@ -83,11 +83,11 @@
   border: 1px solid #d2ddd6;
   padding: 0.3rem 0.48rem;
   font-size: 0.75rem;
-  background: #f0f8f3;
+  background: var(--wash);
 }
 .budget-party-status span.unavailable {
-  color: #5c6661;
-  background: #f3f3ef;
+  color: var(--ink-2);
+  background: var(--wash);
   border-color: #dddeda;
 }
 .budget-party-status p {
@@ -97,7 +97,7 @@
 }
 .party-area-comparison {
   border: 1px solid #d3e3dc;
-  background: #f8fbf9;
+  background: var(--wash);
   padding: 1rem 1.2rem;
   margin-bottom: 1.5rem;
 }
@@ -226,7 +226,7 @@
   height: 12px;
   display: block;
   border-left: 1px solid #65746d;
-  background: #f0efeb;
+  background: var(--wash);
 }
 .correlation-track i {
   position: absolute;
@@ -243,7 +243,7 @@
 .budget-panel {
   min-width: 0;
   border: 1px solid var(--line);
-  background: white;
+  background: var(--paper);
   padding: 1.25rem;
 }
 .panel-heading > span {
@@ -286,7 +286,7 @@
 }
 .budget-dot {
   fill: #1a1a1a;
-  stroke: #fff;
+  stroke: var(--page);
   stroke-width: 1.5;
   opacity: 0.8;
   cursor: pointer;
@@ -333,7 +333,7 @@
   color: var(--ink);
 }
 .budget-selection span {
-  color: #5d6964;
+  color: var(--ink-2);
 }
 .difference-bars {
   margin-top: 1.5rem;
@@ -342,7 +342,7 @@
   width: 100%;
   border: 0;
   border-bottom: 1px solid #e9ebe6;
-  background: white;
+  background: var(--paper);
   display: grid;
   grid-template-columns: minmax(130px, 1.1fr) minmax(120px, 1fr) 65px;
   gap: 0.6rem;
@@ -354,7 +354,7 @@
 }
 .difference-row:hover,
 .difference-row:focus-visible {
-  background: #f3f7f5;
+  background: var(--wash);
 }
 .difference-row strong {
   text-align: right;
@@ -370,7 +370,7 @@
   display: block;
   height: 11px;
   border-left: 1px solid #67736d;
-  background: #f0efeb;
+  background: var(--wash);
 }
 .difference-track i {
   display: block;
@@ -434,8 +434,8 @@
   min-height: 31px;
 }
 .heatmap-label {
-  background: #f4f4ef;
-  color: #36433e;
+  background: var(--wash);
+  color: var(--ink);
   text-align: left;
   padding: 0.25rem 0.4rem;
 }
@@ -449,7 +449,7 @@
 .heatmap-cell.missing {
   display: grid;
   place-items: center;
-  background: #f4f4ef;
+  background: var(--wash);
   color: var(--muted);
   cursor: default;
 }
@@ -544,14 +544,14 @@
   text-align: left;
 }
 .coverage-scroll tr.current {
-  background: #f0f7f3;
+  background: var(--wash);
 }
 .coverage-scroll td.complete {
-  color: #126447;
+  color: var(--ink-2);
   font-weight: 750;
 }
 .coverage-scroll td.partial {
-  color: #9b4a18;
+  color: var(--ink-2);
   font-weight: 750;
 }
 .coverage-scroll td.absent {
@@ -565,7 +565,7 @@
 .budget-method > div {
   max-width: 860px;
   padding: 0 0 1.3rem;
-  color: #53605c;
+  color: var(--ink-2);
   font-size: 0.86rem;
 }
 .budget-method a {
@@ -645,7 +645,7 @@
   margin: 2rem 0;
   padding: 1.5rem;
   border: 1px solid #cbd9d0;
-  background: #f4f7f1;
+  background: var(--wash);
 }
 .budget-overview h4,
 .language-audit h4 {
@@ -658,7 +658,7 @@
   gap: 1rem;
 }
 .budget-overview-grid article {
-  background: white;
+  background: var(--paper);
   padding: 1rem;
   border: 1px solid #dbe3d9;
   min-width: 0;
@@ -673,7 +673,7 @@
 }
 .budget-net {
   font-size: 1.4rem;
-  color: #1a1a1a;
+  color: var(--ink);
 }
 .budget-overview-grid article > div {
   margin: 1.2rem 0;
@@ -693,7 +693,7 @@
   text-align: left;
   padding: 0.7rem 0;
   cursor: pointer;
-  color: #172321;
+  color: var(--ink);
   font: inherit;
   font-size: 0.78rem;
 }
@@ -752,14 +752,14 @@
   font: inherit;
   padding: 0.6rem;
   border: 1px solid #a9b9b0;
-  background: white;
-  color: #172321;
+  background: var(--paper);
+  color: var(--ink);
 }
 .rfc-example {
   padding: 1rem;
   border-left: 3px solid #1a1a1a;
   margin-top: 1rem;
-  background: #f3f7f0;
+  background: var(--wash);
 }
 @media (max-width: 1050px) {
   .budget-overview-grid {
@@ -771,7 +771,7 @@
   padding: clamp(1rem, 2vw, 1.5rem);
   border: 1px solid #cbd9d0;
   border-left: 4px solid #1a1a1a;
-  background: #f5f8f3;
+  background: var(--wash);
   border-radius: 0;
 }
 .budget-context-top {
@@ -792,7 +792,7 @@
 }
 .budget-context-gap {
   padding: 0.7rem;
-  background: #fff1db;
+  background: var(--wash);
 }
 .budget-context-note {
   font-size: 0.85rem;
@@ -810,7 +810,7 @@
 }
 .budget-vote {
   border-radius: 0;
-  background: white;
+  background: var(--paper);
   border: 1px solid #cbd9d0;
   padding: 0.35rem 0.55rem;
   font-size: 0.85rem;
@@ -820,7 +820,7 @@
 }
 .budget-vote small {
   margin-left: 0.25rem;
-  color: #596960;
+  color: var(--ink-2);
 }
 .budget-vote-ja {
   border-color: #78ab89;
@@ -875,7 +875,7 @@
 }
 .budget-view-nav a {
   padding: 0.5rem 0.8rem;
-  background: #e8efeb;
+  background: var(--wash);
   border: 1px solid #cbd7cf;
   font-weight: 700;
 }
@@ -883,7 +883,7 @@
   border: 1px solid var(--line, #d7dbd5);
   padding: 1.25rem;
   margin-top: 1.25rem;
-  background: var(--white, #fff);
+  background: var(--paper);
 }
 .budget-explore > h4 {
   font-size: 1.5rem;
@@ -985,7 +985,7 @@
 }
 .comparison-bar-row:hover,
 .comparison-bar-row[aria-pressed='true'] {
-  background: #edf4ef;
+  background: var(--wash);
   border-color: #b0c6bb;
 }
 .comparison-bar-label {
@@ -1003,7 +1003,7 @@
   display: block;
   position: relative;
   height: 18px;
-  background: #edf0eb;
+  background: var(--wash);
 }
 .comparison-track.difference::after {
   content: '';
@@ -1035,7 +1035,7 @@
 .comparison-values {
   display: block;
   font-size: 0.75rem;
-  color: #59675f;
+  color: var(--ink-2);
   margin-top: 0.2rem;
 }
 @media (max-width: 760px) {

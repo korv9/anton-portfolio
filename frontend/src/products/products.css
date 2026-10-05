@@ -58,8 +58,8 @@
   margin: auto 0 1.2rem;
 }
 .product-skills li {
-  background: #e7eeea;
-  color: #28524a;
+  background: var(--wash);
+  color: var(--ink-2);
   border-radius: 3px;
   padding: 0.3rem 0.5rem;
   font-size: 0.75rem;
@@ -133,7 +133,7 @@
   width: 100%;
   padding: 0.65rem;
   border: 1px solid var(--line);
-  background: white;
+  background: var(--paper);
   color: var(--ink);
 }
 .research-bars {
@@ -150,7 +150,7 @@
 }
 .research-track {
   height: 10px;
-  background: #e3e8e4;
+  background: var(--wash);
   border-radius: 2px;
   overflow: hidden;
 }
@@ -163,7 +163,7 @@
   display: block;
   margin-top: 0.4rem;
   font-size: 0.75rem;
-  color: #58625e;
+  color: var(--ink-2);
   line-height: 1.5;
 }
 .lineage-grid {
@@ -201,7 +201,7 @@
 .pipeline-strip li {
   padding: 1.3rem;
   border-right: 1px solid var(--line);
-  background: #e8eeea;
+  background: var(--wash);
 }
 .pipeline-strip strong,
 .pipeline-strip span {
@@ -229,7 +229,7 @@
 .dataset-presets button[aria-pressed='true'] {
   background: var(--teal);
   border-color: var(--teal);
-  color: white;
+  color: var(--on-accent);
 }
 .explorer-controls {
   display: grid;
@@ -251,7 +251,7 @@
   min-width: 0;
   padding: 0.7rem;
   color: var(--ink);
-  background: white;
+  background: var(--paper);
   border: 1px solid var(--line);
   font: inherit;
 }
@@ -301,8 +301,8 @@
 .data-table-scroll th {
   position: sticky;
   top: 0;
-  background: #e7ede8;
-  color: #243e34;
+  background: var(--wash);
+  color: var(--ink);
   z-index: 1;
   text-align: left;
   white-space: nowrap;
@@ -317,7 +317,7 @@
   overflow-wrap: anywhere;
 }
 .data-table-scroll tr:nth-child(even) {
-  background: #f1f3ed;
+  background: var(--wash);
 }
 .table-pagination {
   display: flex;
@@ -387,7 +387,7 @@
 }
 .speech-card[aria-pressed='true'] {
   border: 2px solid var(--teal);
-  background: #eaf1ed;
+  background: var(--wash);
 }
 .speech-card strong,
 .speech-card span,
@@ -441,7 +441,7 @@
 }
 .speaker-order button {
   text-align: left;
-  background: white;
+  background: var(--paper);
   color: var(--ink);
   border: 1px solid var(--line);
   padding: 0.7rem;
