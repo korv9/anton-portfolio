@@ -159,25 +159,33 @@ test('explore and sources reach every detailed view and the raw tables', async (
 test.describe('the freestanding name header', () => {
   test.use({ intro: true })
 
-  test('is immediately visible on a first visit and after reload', async ({
+  test('opens with the cluster intro once, then the start page', async ({
     page,
   }) => {
     await page.goto('/')
     const intro = page.locator('.intro-screen')
+    await expect(intro.locator('canvas')).toBeVisible()
+    await expect(intro).toHaveCount(0, { timeout: 8000 })
     await expect(page.locator('.site-name-heading')).toContainText(
       'ANTON ERNSTSSON',
     )
-    await expect(intro).toHaveCount(0)
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
-    // Reload keeps the freestanding header without an intro overlay.
+    // Once per visit: a reload goes straight to the content.
     await page.reload()
     await expect(intro).toHaveCount(0)
+  })
+
+  test('is skipped with Escape', async ({ page }) => {
+    await page.goto('/')
+    await expect(page.locator('.intro-screen')).toBeVisible()
+    await page.keyboard.press('Escape')
+    await expect(page.locator('.intro-screen')).toHaveCount(0)
   })
 
   test('does not block a direct project link', async ({ page }) => {
     await page.goto('/')
     await expect(page.locator('.intro-screen')).toHaveCount(0, {
-      timeout: 6000,
+      timeout: 8000,
     })
     await page.evaluate(() => sessionStorage.clear())
     await page.goto('/#politik-budget')

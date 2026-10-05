@@ -3,6 +3,7 @@ import { currentLocale, l, type Locale } from './i18n'
 import { useRoute } from './router'
 import Header, { Footer, ProjectBar } from './site/Header'
 import HomePage from './home/HomePage'
+import Intro from './site/Intro'
 import './site/site.css'
 
 // Everything but the start page loads on navigation, so the start page ships none of it.
@@ -76,6 +77,7 @@ export default function App() {
     <div
       className={`site-shell${page === 'home' ? ' home-shell' : ' project-shell'}`}
     >
+      <Intro />
       <a className="skip-link" href="#main">
         {l('Skip to content', 'Hoppa till innehåll')}
       </a>
