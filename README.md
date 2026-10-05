@@ -8,6 +8,12 @@ See [report findings and coverage](docs/report-findings.md) for the budget, lang
 
 ## Run locally
 
+The portfolio now uses a [Swiss Data Editorial design system](docs/design-system.md).
+The new tech advertisement explorer opens at `/#job-market-clusters`: local multilingual
+embeddings → higher-dimensional UMAP → HDBSCAN, with a separate real-coordinate 2D map,
+cluster profiles and a role cross-tab. See [selection, diagnostics and reproduction](docs/job-market-clustering.md).
+Existing all-occupation and IT reports remain available at their original addresses.
+
 ```powershell
 npm ci
 npm run dev

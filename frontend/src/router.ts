@@ -16,6 +16,7 @@ export type Page =
   | 'jobs'
   | 'welfare'
   | 'analysis'
+  | 'allegoria'
   | 'drugcomb'
   | 'thesis'
   | 'homie'
@@ -38,12 +39,13 @@ export const REDIRECTS: Record<string, string> = {
   '#now-election': '#politik',
   '#politik-debatter': '#politik-sakdebatter',
   '#politics-page': '#politik',
-  '#about': '#om-mig',
-  '#contact': '#kontakt',
-  '#kompetenser': '#teknik',
+  '#about': '#start',
+  '#om-mig': '#start',
   '#projects': '#projekt',
   // The semantic-drift report is withdrawn while it is reworked.
-  '#rfc-drift': '#projekt',
+  '#contact': '#kontakt',
+  '#work': '#projekt',
+  '#teknik': '#kompetenser',
   '#tech': '#technical',
 }
 
@@ -77,7 +79,8 @@ export function pageOf(path: string): Page {
   if (path === '#thesis') return 'thesis'
   if (path === '#homie') return 'homie'
   if (path === '#sweden' || path.startsWith('#sweden-')) return 'welfare'
-  if (path === '#projekt') return 'projects'
+  if (path === '#alla-projekt') return 'projects'
+  if (path === '#rfc-drift') return 'allegoria'
   if (path === '#design') return 'design'
   if (path === '#technical' || path === '#teknisk') return 'technical'
   if (path === '#status') return 'status'

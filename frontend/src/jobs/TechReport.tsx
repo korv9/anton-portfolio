@@ -10,6 +10,7 @@ import TimeSeriesChart from '../charts/TimeSeriesChart'
 import { yearSpan } from '../charts/scales'
 import ReportHeader from '../site/ReportHeader'
 import ProjectDataDisclosure from '../products/ProjectDataDisclosure'
+import ClusteringSection from './ClusteringSection'
 
 type MonthlyAd = {
   month: string
@@ -74,7 +75,11 @@ function JobsChart({ rows, role }: { rows: MonthlyAd[]; role: string }) {
   )
 }
 
-export default function TechReport() {
+export default function TechReport({
+  clustering = false,
+}: {
+  clustering?: boolean
+}) {
   const [monthly, setMonthly] = useState<MonthlyAd[]>([])
   const [technologies, setTechnologies] = useState<Technology[]>([])
   const [jobKpis, setJobKpis] = useState<JobKpis | null>(null)
@@ -105,6 +110,7 @@ export default function TechReport() {
   }, [])
   const topTech = technologies
     .filter((tech) => tech.cohort === 'Data roles')
+    .sort((a, b) => b.share_pct - a.share_pct)
     .slice(0, 10)
   const annual = useMemo(
     () =>
@@ -133,13 +139,14 @@ export default function TechReport() {
           )}
         </p>
         <TopicNav
-          active="#job-market-tech"
+          active={clustering ? '#job-market-clusters' : '#job-market-tech'}
           items={[
             ['#job-market', 'Overview', 'Översikt'],
             ['#job-market-occupations', 'Occupations', 'Yrken'],
             ['#job-market-regions', 'Counties', 'Län'],
             ['#job-market-conditions', 'Conditions', 'Villkor'],
             ['#job-market-tech', 'IT report', 'IT-rapport'],
+            ['#job-market-clusters', 'Semantic clusters', 'Semantiska kluster'],
           ]}
         />
       </div>
@@ -243,13 +250,18 @@ export default function TechReport() {
             </div>
             <div className="tech-bars">
               <p className="eyebrow">{t('Most mentioned in data ads')}</p>
+              <p className="ds-small">
+                {currentLocale() === 'sv'
+                  ? 'Andel annonser · skala 0–100 %. En annons kan nämna flera tekniker.'
+                  : 'Share of ads · scale 0–100%. One ad can mention several technologies.'}
+              </p>
               {topTech.slice(0, 7).map((tech) => (
                 <div key={tech.technology}>
                   <span>{tech.technology}</span>
                   <span className="bar">
                     <i
                       style={{
-                        width: `${(tech.share_pct / topTech[0].share_pct) * 100}%`,
+                        width: `${tech.share_pct}%`,
                       }}
                     />
                   </span>
@@ -288,6 +300,7 @@ export default function TechReport() {
           </details>
         </article>
       </div>
+      <ClusteringSection initialOpen={clustering} />
       <ProjectDataDisclosure
         title={t('Job ad tables and definitions')}
         initialDataset="fact_job_month_role"

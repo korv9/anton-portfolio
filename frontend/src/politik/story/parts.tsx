@@ -248,8 +248,13 @@ export function Heatmap({
                       v == null
                         ? undefined
                         : {
-                            background: `rgba(17, 18, 20, ${0.04 + t * 0.86})`,
-                            color: t > 0.5 ? '#fff' : 'var(--ink)',
+                            background: `rgb(${Array(3)
+                              .fill(Math.round(245 - t * 220))
+                              .join(', ')})`,
+                            color:
+                              Math.round(245 - t * 220) <= 118
+                                ? '#fff'
+                                : '#0a0a0a',
                           }
                     }
                   >

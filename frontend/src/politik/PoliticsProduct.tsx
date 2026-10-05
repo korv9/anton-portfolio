@@ -116,7 +116,7 @@ export default function PoliticsProduct({ route }: { route: Route }) {
               (t) => (
                 <li key={t.key}>
                   <a
-                    href={withParties(t.path, selected)}
+                    href={`./${withParties(t.path, selected)}`}
                     aria-current={
                       t.key === active ? (theme ? 'page' : 'true') : undefined
                     }

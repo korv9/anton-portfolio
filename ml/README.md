@@ -12,6 +12,19 @@ The design is in [docs/plans/ml-layer-plan.md](../docs/plans/ml-layer-plan.md).
 
 ## Running
 
+The separate `jobs/` package provides the unsupervised tech-advertisement pipeline. From
+the repository root, run `ml/.venv/Scripts/python.exe -m ml.jobs.pipeline`.
+It reads the existing enriched DuckDB ads and skill bridge, caches local multilingual
+embeddings and hands validated results to dbt as raw ML sources. See
+[job-market clustering](../docs/job-market-clustering.md) for source coverage, model choice,
+parameter controls, evaluation and delivery. It does not upload or promote automatically.
+For a resumable offline parameter search, run `python -m ml.jobs.sweep`; use `--review`
+to inspect shortlisted profiles and two additional seeds. The measured 417-candidate
+search and selected defaults are recorded in [sweep findings](../docs/job-clustering-sweep.md).
+The current default adds cleaned text, title/technology feature models and three-fit
+consensus. Run `python -m ml.jobs.feature_experiment` for its ablations; see
+[ensemble findings](../docs/job-clustering-ensemble.md) for the measured comparison and limitations.
+
 ```bash
 python -m venv ml/.venv && ml/.venv/bin/pip install -r ml/requirements.txt
 cd ml

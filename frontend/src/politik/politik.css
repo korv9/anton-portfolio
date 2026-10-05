@@ -11,7 +11,77 @@
   border-right: 1px solid var(--line);
   padding: 1.5rem 1.25rem 1.5rem clamp(1rem, 2.5vw, 2rem);
 }
-.politik-side {
+.politik-party-rail {
+  top: auto !important;
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+}
+.politik-party-rail > p {
+  margin: 0 0 0.75rem;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.politik-party-rail ul {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.55rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.politik-party-rail a {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 52px;
+  padding: 0.4rem;
+  border: 1px solid transparent;
+  background: rgba(255, 255, 255, 0.62);
+  text-decoration: none;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease;
+}
+.politik-party-rail a:hover,
+.politik-party-rail a:focus-visible,
+.politik-party-rail a[aria-current] {
+  z-index: 1;
+  transform: none;
+  border-color: var(--line-strong);
+  background: #fff;
+}
+.politik-party-rail a[aria-current]::after {
+  content: '';
+  position: absolute;
+  right: 5px;
+  bottom: 5px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ink);
+}
+.politik-party-rail .party-logo {
+  object-fit: contain;
+  transition: transform 180ms ease;
+}
+.politik-party-rail a:hover .party-logo,
+.politik-party-rail a:focus-visible .party-logo {
+  transform: scale(1.08);
+}
+.politik-party-rail a > span {
+  position: absolute;
+  bottom: 2px;
+  right: 4px;
+  color: var(--muted);
+  font-size: 0.58rem;
+  font-weight: 700;
+}
+.politik-side > * {
   position: sticky;
   top: 64px;
   align-self: start;
