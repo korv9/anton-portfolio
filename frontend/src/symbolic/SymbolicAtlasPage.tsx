@@ -14,6 +14,7 @@ import { useViewParams } from '../politik/useViewParams'
 import { Stage, StageBlock, StageFacts } from '../ui/Stage'
 import AtlasCanvas from './AtlasCanvas'
 import ExperimentTable from './ExperimentTable'
+import { ProjectNav } from '../projects/ProjectNav'
 import {
   AtlasFiltersPanel,
   SymbolPanel,
@@ -65,6 +66,41 @@ export default function SymbolicAtlasPage({ route }: { route: Route }) {
     }
   }, [])
 
+  // A section address (#symbolic-findings, -experiments, -method) scrolls to its section once
+  // the page has rendered it; the experiment table loads on its own, so wait a few frames.
+  const loaded = summary !== null && points !== null
+  useEffect(() => {
+    if (!loaded || route.path === '#symbolic-atlas') return
+    let tries = 0
+    let frame = 0
+    let timers: number[] = []
+    let touched = false
+    const stop = () => (touched = true)
+    const events = ['wheel', 'touchstart', 'keydown', 'mousedown']
+    events.forEach((e) => window.addEventListener(e, stop, { passive: true }))
+    const go = () => {
+      const target = document.getElementById(route.path.slice(1))
+      if (!target) {
+        if (tries++ < 60) frame = requestAnimationFrame(go)
+        return
+      }
+      const land = () => {
+        if (!touched)
+          target.scrollIntoView({ block: 'start', behavior: 'instant' })
+      }
+      land()
+      // The map sizes itself after the first paint and pushes the sections down; land again
+      // a few times while that settles, unless the reader has started to move.
+      timers = [300, 700, 1200].map((ms) => window.setTimeout(land, ms))
+    }
+    frame = requestAnimationFrame(go)
+    return () => {
+      cancelAnimationFrame(frame)
+      timers.forEach((t) => window.clearTimeout(t))
+      events.forEach((e) => window.removeEventListener(e, stop))
+    }
+  }, [route.path, loaded])
+
   const shown = useMemo(
     () => (points ?? []).filter((p) => filters.noise !== '0' || !p.is_noise),
     [points, filters.noise],
@@ -95,6 +131,7 @@ export default function SymbolicAtlasPage({ route }: { route: Route }) {
   const ev = summary.evaluation
   return (
     <div className="symbolic-page">
+      <ProjectNav route={route} />
       <Stage
         id="symbolic-atlas"
         level={1}
@@ -203,34 +240,61 @@ export default function SymbolicAtlasPage({ route }: { route: Route }) {
                 />
               </StageBlock>
             )}
-            <StageBlock
-              title={l('What the clusters follow', 'Vad klustren följer')}
-            >
-              <p>
-                {l(
-                  `On average ${pct(ev.composition.largest_book_share ?? 0)} of a cluster comes from one book, and ${pct(ev.composition.largest_symbol_share ?? 0)} from one symbol. So far the map groups passages more by a book's style and translation than by what a symbol means. That is a finding, not a failure, and the next thing to work on.`,
-                  `I genomsnitt kommer ${pct(ev.composition.largest_book_share ?? 0)} av ett kluster från en och samma bok, och ${pct(ev.composition.largest_symbol_share ?? 0)} från en och samma symbol. Än så länge grupperar kartan ställen mer efter bokens stil och översättning än efter vad en symbol betyder. Det är ett resultat, inte ett misslyckande, och nästa sak att arbeta med.`,
-                )}
-              </p>
-            </StageBlock>
-            <StageBlock title={l('Method', 'Metod')}>
-              <p>
-                {l(
-                  `Ten Project Gutenberg books. Each use of a symbol word is cut out with the sentence before and after, embedded with ${summary.run.embedding_model.split('/')[1]} on the CPU, laid out with UMAP (cosine) and clustered with HDBSCAN in a 10-dimensional UMAP space. At most ${summary.run.sample.per_document_and_symbol} uses per book and symbol are mapped.`,
-                  `Tio böcker från Project Gutenberg. Varje förekomst av ett symbolord klipps ut med meningen före och efter, bäddas in med ${summary.run.embedding_model.split('/')[1]} på processorn, läggs ut med UMAP (cosinus) och klustras med HDBSCAN i ett tiodimensionellt UMAP-rum. Högst ${summary.run.sample.per_document_and_symbol} förekomster per bok och symbol visas.`,
-                )}
-              </p>
-              <p>
-                {l(
-                  'Matching is by word list, so a context is not yet a symbolic meaning; clusters are exploratory, numbered and unnamed, and UMAP bends distances.',
-                  'Matchningen sker med en ordlista, så ett sammanhang är ännu inte en symbolisk betydelse; klustren är utforskande, numrerade och namnlösa, och UMAP förvränger avstånd.',
-                )}
-              </p>
-            </StageBlock>
           </>
         }
       />
+      <section
+        className="atlas-section ds-container"
+        id="symbolic-findings"
+        aria-labelledby="symbolic-findings-title"
+      >
+        <h2 id="symbolic-findings-title">{l('Findings', 'Fynd')}</h2>
+        <p>
+          {l(
+            `On average ${pct(ev.composition.largest_book_share ?? 0)} of a cluster comes from one book, and ${pct(ev.composition.largest_symbol_share ?? 0)} from one symbol. So far the map groups passages more by a book's style and translation than by what a symbol means. That is a finding, not a failure, and the next thing to work on.`,
+            `I genomsnitt kommer ${pct(ev.composition.largest_book_share ?? 0)} av ett kluster från en och samma bok, och ${pct(ev.composition.largest_symbol_share ?? 0)} från en och samma symbol. Än så länge grupperar kartan ställen mer efter bokens stil och översättning än efter vad en symbol betyder. Det är ett resultat, inte ett misslyckande, och nästa sak att arbeta med.`,
+          )}
+        </p>
+        <p>
+          <a href="#symbolic-experiments">
+            {l('How far that can be reduced', 'Hur mycket det går att minska')}{' '}
+            →
+          </a>
+        </p>
+      </section>
       <ExperimentTable />
+      <section
+        className="atlas-section ds-container"
+        id="symbolic-method"
+        aria-labelledby="symbolic-method-title"
+      >
+        <h2 id="symbolic-method-title">{l('Method', 'Metod')}</h2>
+        <p>
+          {l(
+            `Ten Project Gutenberg books. Each use of a symbol word is cut out with the sentence before and after, embedded with ${summary.run.embedding_model.split('/')[1]} on the CPU, laid out with UMAP (cosine) and clustered with HDBSCAN in a 10-dimensional UMAP space. At most ${summary.run.sample.per_document_and_symbol} uses per book and symbol are mapped.`,
+            `Tio böcker från Project Gutenberg. Varje förekomst av ett symbolord klipps ut med meningen före och efter, bäddas in med ${summary.run.embedding_model.split('/')[1]} på processorn, läggs ut med UMAP (cosinus) och klustras med HDBSCAN i ett tiodimensionellt UMAP-rum. Högst ${summary.run.sample.per_document_and_symbol} förekomster per bok och symbol visas.`,
+          )}
+        </p>
+        <p>
+          {l(
+            'Matching is by word list, so a context is not yet a symbolic meaning; clusters are exploratory, numbered and unnamed, and UMAP bends distances.',
+            'Matchningen sker med en ordlista, så ett sammanhang är ännu inte en symbolisk betydelse; klustren är utforskande, numrerade och namnlösa, och UMAP förvränger avstånd.',
+          )}
+        </p>
+        <p>
+          <a
+            href="https://github.com/korv9/anton-portfolio/blob/main/docs/symbolic-atlas.md"
+            target="_blank"
+            rel="noreferrer"
+          >
+            {l(
+              'Full method and limitations',
+              'Hela metoden och begränsningarna',
+            )}{' '}
+            ↗
+          </a>
+        </p>
+      </section>
     </div>
   )
 }

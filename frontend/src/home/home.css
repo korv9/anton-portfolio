@@ -1373,9 +1373,6 @@
 .orbit-detail .home-education-panel::before {
   display: none;
 }
-.home-shell .site-foot {
-  display: none;
-}
 @media (max-width: 900px) {
   .home-orbit .home-hero-copy {
     grid-template-columns: 1fr;
@@ -1400,5 +1397,57 @@
     max-height: 62vh;
     overflow-y: auto;
     scrollbar-gutter: stable;
+  }
+}
+
+/* The start page's sections (HomePage.tsx): selected projects, tech stack with the radar, about. */
+.home-project-kind {
+  margin: 0 0 0.3rem;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.home-tech-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  gap: 2rem;
+  align-items: center;
+}
+.home-tech-grid .skills {
+  display: grid;
+  gap: 1.2rem;
+}
+.home-tech-grid .skills-group h3 {
+  margin: 0 0 0.3rem;
+  font-size: 1rem;
+}
+.home-tech-grid .skills-top {
+  margin: 0;
+  color: var(--ink);
+}
+.home-tech-grid .skills-more {
+  margin: 0.2rem 0 0;
+  color: var(--muted);
+}
+.home-about-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: 2.5rem;
+  max-width: 72rem;
+}
+.home-about-grid p {
+  line-height: 1.6;
+}
+.home-about-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.2rem;
+}
+@media (max-width: 900px) {
+  .home-tech-grid,
+  .home-about-grid {
+    grid-template-columns: minmax(0, 1fr);
   }
 }

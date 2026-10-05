@@ -250,7 +250,6 @@ test('home loads only preview and stays within mobile width', async ({
   await page.screenshot({
     path: `test-results/editorial-home-${isMobile ? 'mobile' : 'desktop'}.png`,
   })
-  await page.getByRole('button', { name: 'Projects', exact: true }).click()
   await page.locator('#projekt').scrollIntoViewIfNeeded()
   await page.screenshot({
     path: `test-results/editorial-projects-${isMobile ? 'mobile' : 'desktop'}.png`,

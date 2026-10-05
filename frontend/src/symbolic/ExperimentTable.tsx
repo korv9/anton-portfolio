@@ -38,6 +38,7 @@ export default function ExperimentTable() {
   return (
     <section
       className="atlas-experiments ds-container"
+      id="symbolic-experiments"
       aria-labelledby="atlas-exp-title"
     >
       <h2 id="atlas-exp-title">

@@ -1,7 +1,7 @@
 import { Suspense, lazy, useEffect, useState } from 'react'
 import { currentLocale, l, type Locale } from './i18n'
 import { useRoute } from './router'
-import Header, { Footer, ProjectBar } from './site/Header'
+import Header, { Footer, ProjectContext, ProjectPager } from './site/Header'
 import HomePage from './home/HomePage'
 import Intro from './site/Intro'
 import './site/site.css'
@@ -50,8 +50,11 @@ export default function App() {
   useEffect(() => {
     if (route.page === 'home' && route.path !== '#start') return
     requestAnimationFrame(() => {
+      // A section address (#symbolic-method, #job-market-clusters) scrolls to that section;
+      // a page address to the top.
       const target =
-        route.path === '#job-market-clusters'
+        route.path === '#job-market-clusters' ||
+        (route.page === 'symbolic' && route.path !== '#symbolic-atlas')
           ? document.getElementById(route.path.slice(1))
           : null
       if (target) target.scrollIntoView({ block: 'start' })
@@ -60,21 +63,6 @@ export default function App() {
   }, [route.path, route.page])
 
   const { page, path } = route
-  const back =
-    page === 'datamodel' || page === 'status' ? (
-      <ProjectBar
-        back="#politik-kallor"
-        label={l('Sources and method', 'Källor och metod')}
-      />
-    ) : page === 'analysis' ? (
-      <ProjectBar
-        back="#sweden"
-        label={l('How is Sweden doing?', 'Hur mår Sverige?')}
-      />
-    ) : page !== 'home' ? (
-      <ProjectBar />
-    ) : null
-
   return (
     <div
       className={`site-shell${page === 'home' ? ' home-shell' : ' project-shell'}`}
@@ -83,9 +71,9 @@ export default function App() {
       <a className="skip-link" href="#main">
         {l('Skip to content', 'Hoppa till innehåll')}
       </a>
-      <Header home={page === 'home'} onLanguage={setLanguage} />
+      <Header route={route} onLanguage={setLanguage} />
       <main id="main" tabIndex={-1} key={language}>
-        {back}
+        <ProjectContext route={route} />
         <Suspense
           fallback={
             <p className="theme-loading ds-container" role="status">
@@ -119,6 +107,7 @@ export default function App() {
           {page === 'homie' && <HomiePage />}
           {page === 'diva' && <DivaPage />}
         </Suspense>
+        <ProjectPager route={route} />
       </main>
       <Footer />
     </div>

@@ -1,0 +1,515 @@
+/**
+ * Every project on the site, once. The header's project menu, the start page's selected work,
+ * the projects page, the footer, the breadcrumb on a project page and its previous / next links
+ * are all generated from this list, so a project's name, order, category and address live here
+ * only.
+ *
+ * Flagship projects carry a number and are listed in their order; the rest are other work.
+ * Every flagship is described in the same grammar: question, what was built, result, key tech.
+ * Facts come from the CVs and the project pages; nothing here is new.
+ */
+import type { Page, Route } from '../router'
+
+export type Bilingual = { sv: string; en: string }
+const t = (sv: string, en: string): Bilingual => ({ sv, en })
+
+export type ProjectStatus = 'live' | 'experimental' | 'in-progress' | 'study'
+
+export type ProjectNavItem = { href: string; label: Bilingual }
+
+export type ProjectEntry = {
+  id: string
+  /** '01'–'05' for flagship projects, in display order. */
+  number?: string
+  title: Bilingual
+  /** A few words under the title in menus: the kind of work. */
+  descriptor: Bilingual
+  /** One sentence: what the project is. */
+  summary: Bilingual
+  /** The question or problem it starts from. */
+  question: Bilingual
+  /** What was built. */
+  built: Bilingual
+  /** What it shows or achieved. */
+  result: Bilingual
+  tech: string[]
+  /** Where it opens: a page on this site, an outside repository, or '' for no public page. */
+  href: string
+  category: 'ai' | 'data'
+  status: ProjectStatus
+  featured: boolean
+  code?: string | string[]
+  /** A group project: say so. */
+  team?: Bilingual
+  /** The pages of the site that belong to this project (for the breadcrumb and active state). */
+  pages?: Page[]
+  /** Addresses of this project that the router gives a page shared with others. */
+  paths?: (path: string) => boolean
+  /** The project's own navigation, shown inside the project only. */
+  nav?: ProjectNavItem[]
+}
+
+export const PROJECTS: ProjectEntry[] = [
+  {
+    id: 'politics',
+    number: '01',
+    title: t('Svensk politik i siffror', 'Swedish politics in numbers'),
+    descriptor: t(
+      'Öppna data · analytics engineering',
+      'Public data · analytics engineering',
+    ),
+    summary: t(
+      'Ett öppet dataprojekt om riksdagen, politikerna och hur Sverige röstar.',
+      'An open data project exploring parliamentary data, politicians and how Sweden votes.',
+    ),
+    question: t(
+      'Det är svårt att följa vad politikerna säger, vad de vill lägga pengar på och hur de sedan röstar. Uppgifterna finns, men utspridda i olika källor och format.',
+      'It is hard to follow what politicians say, what they want to spend on and how they then vote. The data exists, but spread over sources and formats.',
+    ),
+    built: t(
+      'En sammanhållen produkt ovanpå öppna data från riksdagen, SCB, Valmyndigheten och Regeringskansliet: inläsning, testade dbt-modeller och en webbplats där varje fråga besvaras med en graf.',
+      'One product on open data from the Riksdag, SCB, Valmyndigheten and the Government Offices: ingestion, tested dbt models and a site where each question is answered with one chart.',
+    ),
+    result: t(
+      'Voteringar sedan 1993/94, anföranden, budgetförslag, opinionsmätningar och valresultat går att följa parti för parti, med källan ett klick bort.',
+      'Roll calls since 1993/94, speeches, budget proposals, polls and election results can be followed party by party, with the source one click away.',
+    ),
+    tech: [
+      'Python',
+      'dbt',
+      'DuckDB',
+      'Parquet',
+      'Cloudflare R2',
+      'React',
+      'TypeScript',
+      'NLP',
+    ],
+    href: '#politik',
+    category: 'data',
+    status: 'live',
+    featured: true,
+    code: 'https://github.com/korv9/anton-portfolio',
+    pages: ['politik'],
+  },
+  {
+    id: 'jobs',
+    number: '02',
+    title: t('Arbetsmarknaden i jobbannonser', 'The job market in job ads'),
+    descriptor: t(
+      'Data engineering · maskininlärning',
+      'Data engineering · machine learning',
+    ),
+    summary: t(
+      'Den svenska arbetsmarknaden genom öppna jobbdata, språkmodeller och klustring.',
+      'The Swedish job market through open job data, language models and clustering.',
+    ),
+    question: t(
+      'Hur förändras efterfrågan på olika yrken, och vilka kompetenser efterfrågas?',
+      'How does demand for occupations change, and which skills are asked for?',
+    ),
+    built: t(
+      'En pipeline som läser JobTechs annonsarkiv sedan 2020 och bygger en stjärnmodell med tester för korn, referensintegritet och fullständiga månader, plus semantisk klustring av IT-annonser.',
+      'A pipeline reading JobTech’s ad archive since 2020 into a star schema tested for grain, referential integrity and complete months, plus semantic clustering of IT ads.',
+    ),
+    result: t(
+      'Annonser per yrke, län och anställningsvillkor över tid, med tydliga definitioner och nedladdningsbara tabeller.',
+      'Ads by occupation, county and conditions over time, with clear definitions and downloadable tables.',
+    ),
+    tech: ['Python', 'dbt Core', 'DuckDB', 'UMAP', 'HDBSCAN', 'GitHub Actions'],
+    href: '#jobb',
+    category: 'data',
+    status: 'live',
+    featured: true,
+    code: 'https://github.com/korv9/swedish-job-market-analytics',
+    pages: ['jobs'],
+  },
+  {
+    id: 'symbolic-atlas',
+    number: '03',
+    title: t('Symbolic Atlas', 'Symbolic Atlas'),
+    descriptor: t('NLP · oövervakad inlärning', 'NLP · unsupervised learning'),
+    summary: t(
+      'En oövervakad utforskning av återkommande symbolisk mening i mytologi, folksagor och litteratur.',
+      'An unsupervised exploration of recurring symbolic meaning in mythology, folklore and literature.',
+    ),
+    question: t(
+      'Kan symbolisk mening träda fram ur datan utan att kategorierna bestäms först?',
+      'Can symbolic meaning emerge from the data without defining the categories first?',
+    ),
+    built: t(
+      'Tio fria böcker, symbolord i sitt sammanhang, meningsinbäddningar, UMAP och HDBSCAN, byggt i dbt och DuckDB, med experiment som skiljer symbol från bok.',
+      'Ten public-domain books, symbol words in context, sentence embeddings, UMAP and HDBSCAN, built in dbt and DuckDB, with experiments separating symbol from book.',
+    ),
+    result: t(
+      'En interaktiv karta med numrerade kluster; experimenten visar att klustren följer böckerna mer än symbolerna och hur mycket det går att minska.',
+      'An interactive map with numbered clusters; the experiments show the clusters follow books more than symbols, and how far that can be reduced.',
+    ),
+    tech: [
+      'Python',
+      'NLP',
+      'Sentence Transformers',
+      'UMAP',
+      'HDBSCAN',
+      'dbt',
+      'DuckDB',
+    ],
+    href: '#symbolic-atlas',
+    category: 'ai',
+    status: 'experimental',
+    featured: true,
+    code: 'https://github.com/korv9/anton-portfolio/blob/main/docs/symbolic-atlas.md',
+    pages: ['symbolic'],
+    nav: [
+      { href: '#symbolic-atlas', label: t('Atlas', 'Atlas') },
+      { href: '#symbolic-findings', label: t('Fynd', 'Findings') },
+      { href: '#symbolic-experiments', label: t('Experiment', 'Experiments') },
+      { href: '#symbolic-method', label: t('Metod', 'Method') },
+    ],
+  },
+  {
+    id: 'welfare',
+    number: '04',
+    title: t('Hur mår Sverige?', 'How is Sweden doing?'),
+    descriptor: t('dbt · offentliga data', 'dbt · public data'),
+    summary: t(
+      'Jobb, hälsa och förtroende i Sverige, utforskade genom fem offentliga datakällor.',
+      'Jobs, health and trust across Sweden, explored through five public data sources.',
+    ),
+    question: t(
+      'Följs jobb, sjukskrivningar, hälsa och förtroende åt i olika delar av landet?',
+      'Do jobs, sick leave, health and trust move together across Sweden?',
+    ),
+    built: t(
+      'Fem offentliga källor – SCB, Försäkringskassan, Folkhälsomyndigheten, European Social Survey och Kolada – i en testad dbt-stjärnmodell med gemensamma nycklar för region, period, kön och ålder.',
+      'Five public sources – SCB, Försäkringskassan, the Public Health Agency, the European Social Survey and Kolada – in a tested dbt star schema with shared keys for region, period, sex and age.',
+    ),
+    result: t(
+      'Län och kommuner kan jämföras sida vid sida i webbläsaren, med en statussida för varje källa och körning.',
+      'Counties and municipalities side by side in the browser, with a status page for every source and run.',
+    ),
+    tech: ['dbt', 'DuckDB', 'Star schema', 'Parquet'],
+    href: '#sweden',
+    category: 'data',
+    status: 'live',
+    featured: true,
+    code: 'https://github.com/korv9/anton-portfolio/tree/main/platform',
+    pages: ['welfare', 'analysis'],
+  },
+  {
+    id: 'thesis',
+    number: '05',
+    title: t(
+      'Examensarbete: NLP-klustring av IT-incidenter',
+      'Degree project: NLP clustering of IT incidents',
+    ),
+    descriptor: t('NLP · klustring · Avtalat', 'NLP · clustering · Avtalat'),
+    summary: t(
+      'Hitta grupper av relaterade incidenter i IT-servicedata för manuell granskning.',
+      'Finding groups of related incidents in IT service data for manual review.',
+    ),
+    question: t(
+      'Liknande incidenter kan dela ett problem innan någon kopplar ihop dem.',
+      'Similar incidents may share a problem before anyone links them.',
+    ),
+    built: t(
+      'Ett reproducerbart flöde för datakvalitet enligt ISO/IEC 25012, anonymisering, inbäddningar och klustring i Azure Databricks, på 21 000+ riktiga produktionsincidenter.',
+      'A reproducible workflow for ISO/IEC 25012 data quality, anonymisation, embeddings and clustering in Azure Databricks, on 21,000+ real production incidents.',
+    ),
+    result: t(
+      '72 möjliga problemposter och bättre klusterkvalitet än K-means. Interna källposter är inte offentliga.',
+      '72 potential problem records and better cluster quality than K-means. Internal source records are not public.',
+    ),
+    tech: [
+      'Python',
+      'Databricks',
+      'sentence-transformers',
+      'UMAP',
+      'HDBSCAN',
+      'MLflow',
+    ],
+    href: '#thesis',
+    category: 'ai',
+    status: 'live',
+    featured: true,
+    pages: ['thesis'],
+  },
+  {
+    id: 'drugcomb',
+    title: t(
+      'DrugComb: förutsäga läkemedelssynergi',
+      'DrugComb: predicting drug synergy',
+    ),
+    descriptor: t('Multimodal maskininlärning', 'Multimodal machine learning'),
+    summary: t(
+      'Molekylfingeravtryck, RNA-uttryck och cellinjedata kombinerade för att förutsäga synergi, med skydd mot dataläckage.',
+      'Drug fingerprints, RNA expression and cell-line data combined to predict synergy, with leakage prevention.',
+    ),
+    question: t(
+      'Fungerar en modell som förutsäger synergi mellan läkemedel även på par, läkemedel och cellinjer den inte sett?',
+      'Does a model predicting drug synergy still work on pairs, drugs and cell lines it has not seen?',
+    ),
+    built: t(
+      'Matchning av läkemedel och cellinjer, ett DuckDB-lager och utvärdering med fyra olika sätt att dela upp datan.',
+      'Drug and cell-line entity resolution, a DuckDB warehouse and evaluation under four cross-validation strategies.',
+    ),
+    result: t(
+      'Ensemblemetoder och djupinlärning jämförda under fyra sätt att dela upp datan.',
+      'Ensemble methods and deep learning compared under four cross-validation strategies.',
+    ),
+    tech: ['Python', 'scikit-learn', 'LightGBM', 'TensorFlow', 'DuckDB'],
+    href: '#drugcomb',
+    category: 'ai',
+    status: 'live',
+    featured: false,
+    code: 'https://github.com/korv9/DrugComb-Synergy-Prediction',
+    pages: ['drugcomb'],
+  },
+  {
+    id: 'tallman',
+    title: t('taLLMan', 'taLLMan'),
+    descriptor: t('RAG med källkontroll', 'RAG with source checking'),
+    summary: t(
+      'En chatt om riksdagen som svarar i påståenden, vart och ett kontrollerat mot sina källor.',
+      'A chat about the Riksdag that answers in claims, each checked against its sources.',
+    ),
+    question: t(
+      'Kan en chatt om riksdagen visa vilka av dess påståenden som faktiskt har stöd i källorna?',
+      'Can a chat about the Riksdag show which of its claims the sources actually support?',
+    ),
+    built: t(
+      'Sökning med BM25 och vektorer, ett svar i påståenden och en kontroll av varje påstående mot källan.',
+      'BM25 and vector retrieval, an answer in claims, and a check of every claim against its source.',
+    ),
+    result: t(
+      'Varje påstående får en etikett (belagt, beräknat, tolkning …) och hela spåret kan granskas.',
+      'Every claim gets a label (supported, computed, interpretation …) and the whole trace can be reviewed.',
+    ),
+    tech: ['TypeScript', 'BM25', 'Claude API', 'Workers AI', 'Vectorize'],
+    href: '#tallman',
+    category: 'ai',
+    status: 'experimental',
+    featured: false,
+    code: 'https://github.com/korv9/anton-portfolio/tree/main/frontend/src/tallman',
+    pages: ['tallman'],
+  },
+  {
+    id: 'allegoria',
+    title: t('Allegoria / RFC-drift', 'Allegoria / RFC drift'),
+    descriptor: t('NLP · pågående', 'NLP · in progress'),
+    summary: t(
+      'Vad händer med innebörden när ett krav går från MUST till SHOULD?',
+      'What changes when a requirement goes from MUST to SHOULD?',
+    ),
+    question: t(
+      'Vad händer med innebörden när ett krav går från MUST till SHOULD?',
+      'What changes when a requirement goes from MUST to SHOULD?',
+    ),
+    built: t('Pågående.', 'In progress.'),
+    result: t('Pågående.', 'In progress.'),
+    tech: ['Python', 'NLP'],
+    href: '#rfc-drift',
+    category: 'ai',
+    status: 'in-progress',
+    featured: false,
+    pages: ['allegoria'],
+  },
+  {
+    id: 'diva',
+    title: t('Uppsatser i DiVA', 'Theses in DiVA'),
+    descriptor: t('Ämnesklustring', 'Topic clustering'),
+    summary: t(
+      'Svenska studentuppsatser från DiVA i ämneskluster, varje kluster namngivet av sina egna ord.',
+      'Swedish student theses from DiVA in topic clusters, each cluster named by its own words.',
+    ),
+    question: t(
+      'Vilka ämnen skriver svenska studenter om, och hur grupperar de sig?',
+      'What do Swedish students write about, and how do the topics group?',
+    ),
+    built: t(
+      'Inläsning via OAI-PMH, TF-IDF, SVD och K-means med klassbaserad TF-IDF för klustrens ord.',
+      'Harvesting through OAI-PMH, TF-IDF, SVD and K-means with class-based TF-IDF for the clusters’ words.',
+    ),
+    result: t(
+      'En karta över uppsatserna per kluster när inläsningen har körts.',
+      'A map of the theses by cluster once the harvest has run.',
+    ),
+    tech: ['Python', 'OAI-PMH', 'scikit-learn', 'GitHub Actions'],
+    href: '#diva',
+    category: 'ai',
+    status: 'experimental',
+    featured: false,
+    pages: ['diva'],
+  },
+  {
+    id: 'homie',
+    title: t('Homie API', 'Homie API'),
+    descriptor: t('Python-backend · pågående', 'Python backend · in progress'),
+    summary: t(
+      'FastAPI- och PostgreSQL-tjänst med autentisering, migreringar och ett OpenAPI-kontrakt för en separat frontend.',
+      'FastAPI and PostgreSQL service with authentication, migrations and an OpenAPI contract for a separate frontend.',
+    ),
+    question: t(
+      'Ett backend-API som en separat frontend kan lita på.',
+      'A backend API a separate frontend can rely on.',
+    ),
+    built: t(
+      'FastAPI- och PostgreSQL-tjänst med autentisering, migreringar och ett OpenAPI-kontrakt.',
+      'FastAPI and PostgreSQL service with authentication, migrations and an OpenAPI contract.',
+    ),
+    result: t(
+      'pytest, Ruff, GitHub Actions, Dockerfile i flera steg och Docker Compose.',
+      'pytest, Ruff, GitHub Actions, a multi-stage Dockerfile and Docker Compose.',
+    ),
+    tech: ['FastAPI', 'PostgreSQL', 'SQLAlchemy', 'Alembic', 'Docker Compose'],
+    href: '#homie',
+    category: 'data',
+    status: 'in-progress',
+    featured: false,
+    code: 'https://github.com/korv9/homie-api',
+    pages: ['homie'],
+  },
+  {
+    id: 'rag',
+    title: t('RAG-baserad studieassistent', 'RAG learning assistant'),
+    descriptor: t(
+      'Tillämpad generativ AI · studieprojekt',
+      'Applied generative AI · study project',
+    ),
+    summary: t(
+      'Flask-backend som läser in dokument, skapar inbäddningar och ger förankrade svar, semantisk sökning och quiz.',
+      'Flask backend ingesting documents, creating embeddings and giving grounded answers, semantic search and quizzes.',
+    ),
+    question: t(
+      'Hjälp att studera ur eget kursmaterial.',
+      'Help studying from one’s own course material.',
+    ),
+    built: t(
+      'Inläsning av dokument, inbäddningar, förankrade svar, semantisk sökning och quiz.',
+      'Document ingestion, embeddings, grounded answers, semantic search and quizzes.',
+    ),
+    result: t(
+      'Integrerad med Vertex AI, Google Cloud Storage och ett React-gränssnitt.',
+      'Integrated with Vertex AI, Google Cloud Storage and a React interface.',
+    ),
+    tech: ['Python', 'Flask', 'Vertex AI', 'RAG', 'React'],
+    // The repository is not public, so the project links nowhere.
+    href: '',
+    category: 'ai',
+    status: 'study',
+    featured: false,
+  },
+  {
+    id: 'mimii',
+    title: t(
+      'Avvikelser i industripumpar',
+      'Industrial pump anomaly detection',
+    ),
+    descriptor: t(
+      'Djupinlärning på MIMII · studieprojekt',
+      'Deep learning on MIMII · study project',
+    ),
+    summary: t(
+      'Pumpljud omvandlade till mel-spektrogram och en CNN-klassificerare för att hitta avvikande ljud.',
+      'Pump audio turned into Mel spectrograms and a CNN classifier to detect anomalous sounds.',
+    ),
+    question: t(
+      'Kan avvikande pumpljud hittas automatiskt?',
+      'Can anomalous pump sounds be found automatically?',
+    ),
+    built: t(
+      'Mel-spektrogram och en CNN-klassificerare.',
+      'Mel spectrograms and a CNN classifier.',
+    ),
+    result: t(
+      'Utvärderad med ROC-AUC och förväxlingsmatris; överanpassning styrd med dropout och L2.',
+      'Evaluated with ROC-AUC and a confusion matrix; overfitting controlled with dropout and L2.',
+    ),
+    tech: ['Python', 'TensorFlow', 'Keras', 'CNN', 'librosa'],
+    href: 'https://github.com/korv9/MIMII-pump-diagnostics',
+    category: 'ai',
+    status: 'study',
+    featured: false,
+    code: 'https://github.com/korv9/MIMII-pump-diagnostics',
+  },
+  {
+    id: 'in1',
+    title: t(
+      'in1: en app för många AI-modeller',
+      'in1: one app for many AI models',
+    ),
+    descriptor: t(
+      'Fullstack med AI-API:er · grupprojekt',
+      'Full stack with AI APIs · group project',
+    ),
+    summary: t(
+      'En plattform där användaren väljer vilken AI-modell som passar uppgiften, med OpenAI, Gemini och Hugging Face bakom samma gränssnitt.',
+      'A platform where the user picks the AI model that fits the task, with OpenAI, Gemini and Hugging Face behind one interface.',
+    ),
+    question: t(
+      'Rätt AI-modell för uppgiften, bakom ett gränssnitt.',
+      'The right AI model for the task, behind one interface.',
+    ),
+    built: t(
+      'Jag byggde datamodellen och prenumerationerna: modeller och relationer i MySQL, CRUD-endpoints i Flask, kopplingen i React och Cypress-tester.',
+      'I built the data model and subscriptions: models and relations in MySQL, CRUD endpoints in Flask, the React wiring and Cypress tests.',
+    ),
+    result: t(
+      'Promptvy och prenumerationer, testade för inloggning och prenumeration.',
+      'A prompt view and subscriptions, tested for login and subscription.',
+    ),
+    tech: [
+      'Flask',
+      'MySQL',
+      'React',
+      'Vite',
+      'OpenAI',
+      'Gemini',
+      'Hugging Face',
+      'Cypress',
+    ],
+    href: 'https://github.com/leiyese/in1-backend',
+    category: 'ai',
+    status: 'study',
+    featured: false,
+    code: [
+      'https://github.com/leiyese/in1-backend',
+      'https://github.com/leiyese/in1-frontend',
+    ],
+    team: t(
+      'Grupprojekt med tre utvecklare',
+      'Group project with three developers',
+    ),
+  },
+]
+
+/** The flagship projects, in their numbered order. */
+export const FLAGSHIPS = PROJECTS.filter((p) => p.featured).sort((a, b) =>
+  (a.number ?? '').localeCompare(b.number ?? ''),
+)
+
+/** Everything else, in registry order. */
+export const OTHER_WORK = PROJECTS.filter((p) => !p.featured)
+
+export const projectById = (id: string) => PROJECTS.find((p) => p.id === id)
+
+/** The project a route belongs to, if any. */
+export function projectForRoute(
+  route: Pick<Route, 'page' | 'path'>,
+): ProjectEntry | undefined {
+  return PROJECTS.find(
+    (p) => p.pages?.includes(route.page) || (p.paths && p.paths(route.path)),
+  )
+}
+
+/** The flagship before and after this one; none at either end (the list does not wrap). */
+export function neighbours(id: string): {
+  previous?: ProjectEntry
+  next?: ProjectEntry
+} {
+  const i = FLAGSHIPS.findIndex((p) => p.id === id)
+  if (i < 0) return {}
+  return { previous: FLAGSHIPS[i - 1], next: FLAGSHIPS[i + 1] }
+}
+
+/** Is this an address on this site (rather than an outside repository)? */
+export const isInternal = (href: string) => href.startsWith('#')

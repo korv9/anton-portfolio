@@ -7,7 +7,8 @@
  */
 import { useEffect, useId, useMemo, useRef, useState } from 'react'
 import { l } from '../i18n'
-import { EXPERIENCE, FEATURED, MORE_PROJECTS, SKILLS } from './orbitContent'
+import { EXPERIENCE, SKILLS } from './orbitContent'
+import { PROJECTS } from '../projects/projectRegistry'
 import { skillAxes, type Axis } from './radar'
 
 const C = 400
@@ -76,13 +77,9 @@ function useAxes(): Axis[] {
         name: j.org,
         text: [...j.tech, ...j.did.map((d) => d.en), j.effect.en].join(' · '),
       })),
-      ...FEATURED.map((p) => ({
+      ...PROJECTS.map((p) => ({
         name: l(p.title.en, p.title.sv),
         text: [...p.tech, p.built.en].join(' · '),
-      })),
-      ...MORE_PROJECTS.map((p) => ({
-        name: l(p.title.en, p.title.sv),
-        text: p.about.en,
       })),
     ]
     return skillAxes(

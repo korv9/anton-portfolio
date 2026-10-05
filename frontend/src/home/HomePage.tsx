@@ -1,16 +1,13 @@
 /**
- * The start page: presentation and a circle with three topics, experience, projects and tech stack.
+ * The start page, in the order a recruiter reads it: who (hero), selected projects, experience,
+ * tech stack and about. Everything is on the page; the eclipse radar is the tech stack's
+ * picture, not a door to it. Projects come from projects/projectRegistry.ts.
  */
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { l } from '../i18n'
 import { profile } from '../content'
-import {
-  EDUCATION,
-  EXPERIENCE,
-  FEATURED,
-  SKILLS,
-  type Bilingual,
-} from './orbitContent'
+import { ABOUT } from './content'
+import { EDUCATION, EXPERIENCE, SKILLS, type Bilingual } from './orbitContent'
 import './home.css'
 import './eclipse.css'
 import EclipseRadar from './EclipseRadar'
@@ -19,10 +16,22 @@ import ClusterPreview from '../jobs/ClusterPreview'
 import PoliticsPreview from './PoliticsPreview'
 import { MethodPreview, SwedenPreview } from './ProjectPreviews'
 import SymbolicPreview from '../symbolic/SymbolicPreview'
+import { FLAGSHIPS } from '../projects/projectRegistry'
 
 const b = (text: Bilingual) => l(text.en, text.sv)
 
-function Presentation() {
+/** The sections a global address points at; the header's links scroll to them. */
+const SECTIONS = ['#projekt', '#erfarenhet', '#kompetenser', '#om-mig']
+
+const PREVIEWS: Record<string, ReactNode> = {
+  politics: <PoliticsPreview />,
+  jobs: <ClusterPreview />,
+  'symbolic-atlas': <SymbolicPreview />,
+  welfare: <SwedenPreview />,
+  thesis: <MethodPreview />,
+}
+
+function Hero() {
   return (
     <section
       className="home-hero ds-container"
@@ -43,25 +52,65 @@ function Presentation() {
         </p>
         <div className="home-intro-links">
           <div className="home-intro-contact">
-            {profile.email && (
-              <a href={`mailto:${profile.email}`}>{l('Email', 'E-post')} ↗</a>
-            )}
-            {profile.linkedin && (
-              <a href={profile.linkedin} target="_blank" rel="noreferrer">
-                LinkedIn ↗
-              </a>
-            )}
-            <a href="https://github.com/korv9" target="_blank" rel="noreferrer">
-              GitHub ↗
-            </a>
+            <a href="#projekt">{l('Projects', 'Projekt')} ↓</a>
             {profile.cv && (
               <a href={profile.cv} download>
                 {l('Download CV (PDF)', 'Ladda ned CV (PDF)')} ↓
               </a>
             )}
+            <a href="https://github.com/korv9" target="_blank" rel="noreferrer">
+              GitHub ↗
+            </a>
+            {profile.linkedin && (
+              <a href={profile.linkedin} target="_blank" rel="noreferrer">
+                LinkedIn ↗
+              </a>
+            )}
+            {profile.email && (
+              <a href={`mailto:${profile.email}`}>{l('Email', 'E-post')} ↗</a>
+            )}
           </div>
         </div>
       </div>
+    </section>
+  )
+}
+
+function SelectedProjects() {
+  return (
+    <section
+      className="home-projects ds-section ds-container"
+      id="projekt"
+      aria-labelledby="projects-title"
+    >
+      <h2 id="projects-title" className="ds-h2">
+        {l('Selected projects', 'Utvalda projekt')}
+      </h2>
+      {FLAGSHIPS.map((project) => (
+        <ProjectRow
+          backgroundPreview
+          key={project.id}
+          id={project.id}
+          number={project.number ?? ''}
+          title={b(project.title)}
+          href={project.href}
+          preview={PREVIEWS[project.id] ?? null}
+        >
+          <p className="home-project-kind">{b(project.descriptor)}</p>
+          <p className="home-project-description">{b(project.summary)}</p>
+          <div className="home-tags">
+            {project.tech.slice(0, 4).map((tech) => (
+              <Tag key={tech}>{tech}</Tag>
+            ))}
+          </div>
+        </ProjectRow>
+      ))}
+      <p>
+        <a href="#alla-projekt">
+          {l('All projects and other work', 'Alla projekt och övriga arbeten')}{' '}
+          →
+        </a>
+      </p>
     </section>
   )
 }
@@ -122,237 +171,101 @@ function Experience() {
           </li>
         ))}
       </ol>
-      <p className="ds-small education-line">{b(EDUCATION)}</p>
     </section>
   )
 }
 
-function Skills() {
+function TechStack() {
   return (
     <section
-      className="ds-section ds-container"
+      className="ds-section ds-container home-tech"
       id="kompetenser"
       aria-labelledby="skills-title"
     >
       <h2 id="skills-title" className="ds-h2">
         Tech stack
       </h2>
-      <div className="skills" id="skills-list">
-        {SKILLS.map((group) => (
-          <div key={group.group.sv} className="skills-group">
-            <h3>{b(group.group)}</h3>
-            <p className="skills-top">{group.top.join(' · ')}</p>
-            <p className="skills-more ds-small">{group.more.join(' · ')}</p>
-          </div>
-        ))}
+      <div className="home-tech-grid">
+        <div className="home-tech-radar">
+          <EclipseRadar
+            onChoose={() =>
+              document
+                .getElementById('skills-list')
+                ?.scrollIntoView({ block: 'nearest' })
+            }
+          />
+        </div>
+        <div className="skills" id="skills-list">
+          {SKILLS.map((group) => (
+            <div key={group.group.sv} className="skills-group">
+              <h3>{b(group.group)}</h3>
+              <p className="skills-top">{group.top.join(' · ')}</p>
+              <p className="skills-more ds-small">{group.more.join(' · ')}</p>
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   )
 }
 
-function Projects() {
-  const selected = [
-    FEATURED[0],
-    {
-      ...FEATURED[1],
-      title: {
-        en: 'Swedish tech job market',
-        sv: 'Svenska IT-arbetsmarknaden',
-      },
-      problem: {
-        en: 'Do semantic groups of advertisements match the role categories we normally use?',
-        sv: 'Stämmer semantiska grupper av annonser med de rollkategorier vi brukar använda?',
-      },
-      built: {
-        en: 'Local multilingual embeddings, UMAP and HDBSCAN on selected JobTech software and data advertisements, joined back to the existing DuckDB and dbt models.',
-        sv: 'Lokala flerspråkiga inbäddningar, UMAP och HDBSCAN på utvalda mjukvaru- och dataannonser från JobTech, kopplade till befintliga DuckDB- och dbt-modeller.',
-      },
-      result: {
-        en: 'Explore the real semantic map by cluster, existing role, seniority or publication year, with diagnostics and automatic cluster profiles.',
-        sv: 'Utforska den verkliga semantiska kartan efter kluster, befintlig roll, senioritet eller publiceringsår, med diagnostik och automatiska klusterprofiler.',
-      },
-      href: '#job-market-clusters',
-      tech: ['Python', 'DuckDB', 'dbt', 'UMAP', 'HDBSCAN', 'React'],
-    },
-    {
-      id: 'thesis',
-      title: { en: 'ITSM / Machine Learning', sv: 'ITSM / Maskininlärning' },
-      problem: {
-        en: 'Similar incidents may share a problem before anyone links them.',
-        sv: 'Liknande incidenter kan dela ett problem innan någon kopplar ihop dem.',
-      },
-      built: {
-        en: 'A reproducible workflow for data quality, anonymisation, embeddings and clustering in Azure Databricks.',
-        sv: 'Ett reproducerbart flöde för datakvalitet, anonymisering, inbäddningar och klustring i Azure Databricks.',
-      },
-      result: {
-        en: 'Groups of incidents become candidates for manual review. Internal source records and coordinates are not public.',
-        sv: 'Grupper av incidenter blir kandidater för manuell granskning. Interna källposter och koordinater är inte offentliga.',
-      },
-      tech: ['Python', 'Databricks', 'NLP', 'UMAP', 'HDBSCAN'],
-      href: '#thesis',
-      hrefLabel: { en: 'Read the case study', sv: 'Läs fallstudien' },
-    },
-    FEATURED.find((project) => project.id === 'welfare')!,
-    {
-      id: 'symbolic-atlas',
-      title: { en: 'Symbolic Atlas', sv: 'Symbolic Atlas' },
-      problem: {
-        en: 'Can symbolic meaning emerge from the data without defining the categories first?',
-        sv: 'Kan symbolisk mening träda fram ur datan utan att kategorierna bestäms först?',
-      },
-      built: {
-        en: 'Ten public-domain books, symbol words in context, sentence embeddings, UMAP and HDBSCAN, built in dbt and DuckDB.',
-        sv: 'Tio fria böcker, symbolord i sitt sammanhang, meningsinbäddningar, UMAP och HDBSCAN, byggt i dbt och DuckDB.',
-      },
-      result: {
-        en: 'An interactive map of every use, filterable by symbol, tradition and cluster.',
-        sv: 'En interaktiv karta över varje förekomst, filtrerbar efter symbol, tradition och kluster.',
-      },
-      tech: ['NLP', 'Embeddings', 'UMAP', 'HDBSCAN', 'dbt'],
-      href: '#symbolic-atlas',
-      hrefLabel: { en: 'Open the atlas', sv: 'Öppna atlasen' },
-    },
-  ]
-  const descriptions = [
-    l(
-      'An open data project exploring parliamentary data, politicians and how Sweden votes.',
-      'Ett öppet dataprojekt om riksdagen, politikerna och hur Sverige röstar.',
-    ),
-    l(
-      'The Swedish tech job market through open job data, language models and clustering.',
-      'Den svenska IT-arbetsmarknaden genom öppna jobbdata, språkmodeller och klustring.',
-    ),
-    l(
-      'Finding groups of related incidents in IT service data for manual review.',
-      'Hitta grupper av relaterade incidenter i IT-servicedata för manuell granskning.',
-    ),
-    l(
-      'Jobs, health and trust across Sweden, explored through five public data sources.',
-      'Jobb, hälsa och förtroende i Sverige, utforskade genom fem offentliga datakällor.',
-    ),
-    l(
-      'An unsupervised exploration of recurring symbolic meaning in mythology, folklore and literature.',
-      'En oövervakad utforskning av återkommande symbolisk mening i mytologi, folksagor och litteratur.',
-    ),
-  ]
+function About() {
   return (
     <section
-      className="home-projects ds-section ds-container"
-      id="projekt"
-      aria-labelledby="projects-title"
+      className="ds-section ds-container home-about"
+      id="om-mig"
+      aria-labelledby="about-title"
     >
-      <span id="projects" className="anchor-alias" />
-      <h2 id="projects-title" className="ds-h2">
-        {l('Projects', 'Projekt')}
+      <h2 id="about-title" className="ds-h2">
+        {l('About', 'Om mig')}
       </h2>
-      {selected.map((project, index) => (
-        <ProjectRow
-          backgroundPreview
-          key={project.id}
-          id={project.id}
-          number={String(index + 1).padStart(2, '0')}
-          title={b(project.title)}
-          href={project.href}
-          preview={
-            index === 0 ? (
-              <PoliticsPreview />
-            ) : index === 1 ? (
-              <ClusterPreview />
-            ) : index === 2 ? (
-              <MethodPreview />
-            ) : index === 3 ? (
-              <SwedenPreview />
-            ) : (
-              <SymbolicPreview />
-            )
-          }
-        >
-          <p className="home-project-description">{descriptions[index]}</p>
-          <div className="home-tags">
-            {project.tech.slice(0, 4).map((tech) => (
-              <Tag key={tech}>{tech}</Tag>
-            ))}
-          </div>
-        </ProjectRow>
-      ))}
-      <p>
-        <a href="#alla-projekt">
-          {l('Browse all projects', 'Se alla projekt')} →
-        </a>
-      </p>
+      <div className="home-about-grid">
+        <div>
+          {ABOUT.map((text) => (
+            <p key={text.sv}>{b(text)}</p>
+          ))}
+        </div>
+        <div>
+          <p className="ds-label">{l('Education', 'Utbildning')}</p>
+          <p>{b(EDUCATION)}</p>
+          <p className="ds-label">{l('Contact', 'Kontakt')}</p>
+          <p className="home-about-links">
+            {profile.email && (
+              <a href={`mailto:${profile.email}`}>{profile.email}</a>
+            )}
+            {profile.linkedin && (
+              <a href={profile.linkedin} target="_blank" rel="noreferrer">
+                LinkedIn ↗
+              </a>
+            )}
+            <a href="https://github.com/korv9" target="_blank" rel="noreferrer">
+              GitHub ↗
+            </a>
+          </p>
+        </div>
+      </div>
     </section>
   )
 }
 
-const AREAS = [
-  { id: 'erfarenhet', en: 'Experience', sv: 'Erfarenhet', color: '#4e79a7' },
-  { id: 'projekt', en: 'Projects', sv: 'Projekt', color: '#887ec8' },
-  { id: 'kompetenser', en: 'Tech stack', sv: 'Tech stack', color: '#559266' },
-]
-
-const areaOf = (path: string) =>
-  AREAS.find((area) => `#${area.id}` === path)?.id ?? null
-
 export default function HomePage({ path }: { path: string }) {
-  // The topic opens beside the circle (under it on narrow screens) without touching the address,
-  // so the page never jumps. A link from elsewhere to #erfarenhet etc. still opens its topic.
-  const [open, setOpen] = useState<string | null>(() => areaOf(path))
+  // A section address (from the header, the footer or a shared link) scrolls to its section.
   useEffect(() => {
-    const id = areaOf(path)
-    if (id) setOpen(id)
+    if (!SECTIONS.includes(path)) return
+    const frame = requestAnimationFrame(() =>
+      document
+        .getElementById(path.slice(1))
+        ?.scrollIntoView({ block: 'start' }),
+    )
+    return () => cancelAnimationFrame(frame)
   }, [path])
-  const active = AREAS.find((area) => area.id === open)
-  const select = (id: string) =>
-    setOpen((current) => (current === id ? null : id))
   return (
     <div className="home home-orbit">
-      <Presentation />
-      <div className={`portfolio-explorer ${active ? 'has-selection' : ''}`}>
-        <div className="portfolio-orbit">
-          <EclipseRadar onChoose={() => setOpen('kompetenser')} />
-          <nav
-            className="orbit-legend"
-            aria-label={l('Explore my portfolio', 'Utforska min portfolio')}
-          >
-            {AREAS.map((area) => (
-              <button
-                key={area.id}
-                type="button"
-                aria-expanded={active?.id === area.id}
-                aria-controls="orbit-detail"
-                onClick={() => select(area.id)}
-              >
-                <i style={{ backgroundColor: area.color }} aria-hidden="true" />
-                {l(area.en, area.sv)}
-              </button>
-            ))}
-          </nav>
-        </div>
-        <div
-          id="orbit-detail"
-          role="region"
-          aria-label={active ? l(active.en, active.sv) : undefined}
-          className="orbit-detail"
-          hidden={!active}
-          style={{ borderColor: active?.color }}
-        >
-          {active && (
-            <>
-              <button
-                type="button"
-                className="orbit-close"
-                onClick={() => setOpen(null)}
-              >
-                {l('Close', 'Stäng')} ×
-              </button>
-              {active.id === 'erfarenhet' && <Experience />}
-              {active.id === 'projekt' && <Projects />}
-              {active.id === 'kompetenser' && <Skills />}
-            </>
-          )}
-        </div>
-      </div>
+      <Hero />
+      <SelectedProjects />
+      <Experience />
+      <TechStack />
+      <About />
     </div>
   )
 }

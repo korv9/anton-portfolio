@@ -4,24 +4,81 @@ The site has two parts: the portfolio (the start page and one page per project) 
 politics product, *Svensk politik i siffror*. Swedish is the default language; English is one
 click away and remembered.
 
+## Navigation
+
+Every page has the same header with four global destinations, and the name links home:
+
+| Destination | What it is |
+|---|---|
+| **Projects ▾** | A menu: the five selected projects with number and one-line descriptor, then "View all projects" (`#alla-projekt`) |
+| **Experience** | `#erfarenhet`, the experience section on the start page |
+| **About** | `#om-mig`, about, education and contact on the start page |
+| **CV ▾** | A menu with the three role-specific CVs in `public/cv/` (download) |
+
+- **Every page:** the header looks the same, the name large across the top and the navigation under it. On the start page the name is the page's `h1`. The header scrolls away with the page; the politics side menu and slicer stick to the top of the screen.
+- **Active state:** `aria-current` marks Projects on every project page and on `#alla-projekt`, Experience and About on their sections. A project's own views (politics themes, job-market themes, atlas sections) never become global destinations.
+- **Menus:** disclosure buttons (`aria-expanded`, `aria-controls`); Escape closes and returns focus, as do a click outside and tabbing out.
+- **Phone (below 860 px):** the global links are replaced by one Menu button that opens the same content in one panel: selected projects, all projects, Experience, About, the CVs. A new address closes it.
+
+`frontend/src/site/Header.tsx`.
+
+### One project registry
+
+`frontend/src/projects/projectRegistry.ts` is the one list of projects. Each entry has an id,
+title, descriptor, summary, question / built / result, tech, address, category (AI or data),
+status, whether it is featured, and the routes that belong to it. Everything that lists projects
+reads from it: the header menu, the start page's selected projects, the projects page, the
+breadcrumb, previous / next and the footer. The tech-stack radar takes its evidence from it too.
+
+Selected projects, in this order:
+
+| # | Project | Address |
+|---|---|---|
+| 01 | Swedish politics in numbers | `#politik` |
+| 02 | Job market in numbers | `#jobb` (the earlier `#job-market*` views belong to it) |
+| 03 | Symbolic Atlas | `#symbolic-atlas` |
+| 04 | How is Sweden doing? | `#sweden` (and `#analysis`) |
+| 05 | Degree project | `#thesis` |
+
+Everything else (DrugComb, taLLMan, Allegoria, DiVA, Homie, RAG, MIMII, IN1) is other work.
+
+### Project pages
+
+- **Breadcrumb** at the top: "Projects / <project>"; the supporting pages (architecture, data model, ER diagram, pipeline status, design system) read "Projects / Technical / <page>".
+- **Previous / next** at the bottom of a selected project's page, in registry order; the first has no previous and the last no next. Other work has no pager.
+- **Project sub-navigation** inside a project, under the header. The Symbolic Atlas has Atlas / Findings / Experiments / Method as anchors (`#symbolic-atlas`, `#symbolic-findings`, `#symbolic-experiments`, `#symbolic-method`); the politics and job-market products keep their own side menus. `frontend/src/projects/ProjectNav.tsx`.
+- **Footer** on every page: Projects (the selected projects and All projects), Profile (Experience, About, CV, LinkedIn, GitHub) and Under the hood (architecture, data model, ER diagram).
+
+### Route types
+
+- **Global destinations:** `#start`, `#projekt`, `#erfarenhet`, `#kompetenser`, `#om-mig`, `#alla-projekt`.
+- **Project destinations:** each registry entry's address.
+- **Deep dives:** the views inside a project (`#politik-*`, `#jobb-*`, `#now-*`, `#symbolic-*`, …).
+- **Legacy redirects** (`frontend/src/router.ts`): `#about`, `#contact`, `#kontakt` and `#utbildning` go to `#om-mig`; `#experience` to `#erfarenhet`; `#projects` to `#projekt`. Every earlier project address still opens its page.
+
 ## Start page
 
-One screen for a recruiter:
+In the order a recruiter reads it (`frontend/src/home/HomePage.tsx`):
 
-- **Header:** name, role, two sentences, and the actions on one row (Download CV, email, LinkedIn, GitHub, and "CV per roll" for the three role-specific CVs in `public/cv/`).
-- **Experience and tech stack side by side:**
-  - experience: one line per job, plus the education;
-  - tech stack: five groups of tools as small squares.
-- **Projects:**
-  - the politics product first, as a dark card with the pipeline that built it (sources → Python ingestion → dbt + DuckDB, tested → Parquet in R2 → React dashboard);
-  - every other project as a tile with one line.
-- **Phone:** the page stacks into one column.
+1. **Hero** (`#start`): role, one sentence, and links to the projects, the CV, GitHub, LinkedIn and email.
+2. **Selected projects** (`#projekt`): one row per selected project with number, descriptor, summary, four tech tags and a small live preview, then a link to all projects.
+3. **Experience** (`#erfarenhet`): one row per job; a click opens what was done and with what.
+4. **Tech stack** (`#kompetenser`): the eclipse radar as the picture (hover shows which projects use a tool) beside the tool groups.
+5. **About** (`#om-mig`): about, education and contact.
 
-The words live in `frontend/src/home/content.ts`; every fact comes from the CVs.
+Everything is on the page; nothing hides behind the radar. On a phone the page is one column.
+The words live in `frontend/src/home/content.ts` and `orbitContent.ts`; every fact comes from the CVs.
 
 A short name intro plays once per session when the start page is opened directly (never on a
 deep link). Click, Enter or Escape skips it; with reduced motion it is a short fade.
 `frontend/src/site/Intro.tsx`.
+
+## Projects page
+
+`#alla-projekt` (`frontend/src/projects/ProjectsPage.tsx`) has two tiers:
+
+- **Selected work:** the five selected projects as a numbered list, each with its question, what was built, the result and the tech.
+- **Other work:** the remaining projects as tiles, filterable by All / AI / Data.
 
 ## The politics product
 
@@ -81,11 +138,9 @@ belong to (`frontend/src/politik/nav.ts`):
 | `#debates` (language map), `#data-explorer` (speech archive) | Deep dives under Vad politikerna pratar om |
 | `#parties`, `#parties-<code>`, `#now-depth` | Utforska själv |
 | `#raw-data` | Källor och metod |
-| `#about`, `#projects` | Redirect to `#om-mig`, `#projekt` |
 
 The subject menu that sat above every analysis page ("Grafer & analyser") is gone: politics has
-its own navigation, and the other projects (job market, welfare, DrugComb, …) have a link back to
-the projects.
+its own navigation, and every project page has the breadcrumb back to the projects.
 
 ## The job-market product
 
