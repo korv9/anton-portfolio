@@ -81,6 +81,7 @@ function sample(
   width: number,
   height: number,
   step: number,
+  jitter = 0.7,
 ) {
   const canvas = document.createElement('canvas')
   canvas.width = width
@@ -105,8 +106,8 @@ function sample(
     for (let x = 0; x < width; x += step)
       if (data[(y * width + x) * 4 + 3] > 140)
         out.push([
-          x + (Math.random() - 0.5) * step * 0.7,
-          y + (Math.random() - 0.5) * step * 0.7,
+          x + (Math.random() - 0.5) * step * jitter,
+          y + (Math.random() - 0.5) * step * jitter,
         ])
   return out
 }
@@ -211,13 +212,14 @@ function build(
   const narrow = width < 720
   const nameLines = narrow ? ['ANTON', 'ERNSTSSON'] : [NAME]
   const font = (s: number) => `800 ${s}px Helvetica, Arial, sans-serif`
-  const fieldFont = (s: number) => `700 ${s}px Helvetica, Arial, sans-serif`
+  const fieldFont = (s: number) => `800 ${s}px Helvetica, Arial, sans-serif`
   const nameSize = fit(nameLines, font, 160, width * 0.86)
   const step = Math.max(4, Math.round(nameSize / 15))
   const nameY = height * 0.44
   const name = sample(nameLines, font, nameSize, nameY, width, height, step)
-  const fieldSize = fit([FIELDS], fieldFont, nameSize * 0.42, width * 0.8)
-  const fieldStep = Math.max(3, Math.round(fieldSize / 10))
+  // The fields are smaller than the name, so they are sampled denser and nudged less to stay legible.
+  const fieldSize = fit([FIELDS], fieldFont, nameSize * 0.5, width * 0.84)
+  const fieldStep = Math.max(2, Math.round(fieldSize / 15))
   const blockBottom = nameY + (nameLines.length * nameSize * 1.05) / 2
   const fields = sample(
     [FIELDS],
@@ -227,6 +229,7 @@ function build(
     width,
     height,
     fieldStep,
+    0.35,
   )
   // Six clusters spread over the screen, each grown as filaments in its own colour.
   const reach = Math.min(width, height) * 0.17
@@ -292,7 +295,7 @@ function build(
           fieldLinks2[i],
           FIELDS_AT,
           FIELDS_FORM,
-          fieldStep,
+          fieldStep * 1.7,
         ),
       ),
     ],

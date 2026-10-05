@@ -47,13 +47,16 @@
   text-transform: uppercase;
   line-height: 1;
 }
+/* The first column is exactly as wide as the name, so the navigation under it starts under
+   the A and ends under the last N. */
 .site-bar {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto;
+  grid-template-columns: max-content minmax(0, 1fr) auto;
   grid-template-areas:
-    'name name name'
-    '. nav lang';
-  gap: 18px 28px;
+    'name . .'
+    'nav . lang';
+  align-items: center;
+  gap: 10px 28px;
   padding-block: 20px 12px;
 }
 .site-bar .site-name-heading {
@@ -67,6 +70,20 @@
 }
 .site-bar .global-nav {
   grid-area: nav;
+  justify-content: space-between;
+  padding-left: 0.04em;
+}
+.site-bar .global-nav .nav-item {
+  min-height: 44px;
+  padding: 0;
+  color: var(--ink);
+  font-size: clamp(17px, 1.55vw, 26px);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+.site-bar .global-nav .nav-item:hover,
+.site-bar .global-nav .nav-item[aria-expanded='true'] {
+  color: var(--muted);
 }
 .site-bar .language-switch {
   grid-area: lang;
