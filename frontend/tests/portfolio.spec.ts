@@ -34,7 +34,7 @@ test('home introduces Anton and routes to each project', async ({ page }) => {
   expect(await page.evaluate(() => window.scrollY)).toBe(before)
   expect(new URL(page.url()).hash).toBe('')
   await page.getByRole('button', { name: 'Projects', exact: true }).click()
-  await expect(page.locator('.ds-project-row')).toHaveCount(4)
+  await expect(page.locator('.ds-project-row')).toHaveCount(5)
   await expect(page.locator('.ds-project-row').first()).toContainText(
     'Swedish politics',
   )

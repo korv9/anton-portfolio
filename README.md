@@ -121,6 +121,8 @@ The tax page (`#taxes`) shows what Sweden collects per tax type since 1965 again
 
 The data model page (`#data-model`) shows every table in the warehouse: its layer, columns, tests, what it reads from and what reads from it, the keys that join them, its SQL and example rows (`platform/publish/export_schema.py`).
 
+The Symbolic Atlas (`#symbolic-atlas`) is an experimental subject: symbol words in ten public-domain books of myth, folklore and literature, placed by their context with sentence embeddings, UMAP and HDBSCAN, built through the same raw → dbt → ML → gold → delivery path as the rest (`docs/symbolic-atlas.md`, `npm run symbolic:build`).
+
 The ER diagram (`#er`) draws every relation between the gold tables and the seeds they point at, by subject area. Primary keys and foreign keys are checked in the warehouse: a relation is drawn when a table holds another table's whole key and at least 90 % of its values exist there, and the measured coverage is shown. Tables not built locally take their keys from dbt's tests (`platform/publish/export_er.py`, after `dbt parse`).
 
 The warehouse itself and the raw files it is built from are kept in R2 under `warehouse/`, stored by the *Build and store the warehouse* workflow; `python platform/publish/warehouse_store.py pull` fetches them (docs/deploy.md).

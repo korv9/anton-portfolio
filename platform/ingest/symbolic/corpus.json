@@ -1,0 +1,15 @@
+{
+  "note": "A small hand-picked corpus of public-domain texts from Project Gutenberg. Every id was checked against the Title and Author lines of the Gutenberg file on 2026-10-05.",
+  "documents": [
+    {"id": "elder-younger-eddas", "gutenberg_id": 14726, "title": "The Elder Eddas of Saemund Sigfusson; and the Younger Eddas of Snorre Sturleson", "author": "Sæmundur fróði; Snorri Sturluson (tr. Benjamin Thorpe, I. A. Blackwell)", "tradition": "norse", "language": "en"},
+    {"id": "myths-of-the-norsemen", "gutenberg_id": 28497, "title": "Myths of the Norsemen: From the Eddas and Sagas", "author": "H. A. Guerber", "tradition": "norse", "language": "en"},
+    {"id": "kalevala", "gutenberg_id": 5186, "title": "Kalevala: the Epic Poem of Finland", "author": "Elias Lönnrot (tr. John Martin Crawford)", "tradition": "finnish", "language": "en"},
+    {"id": "hesiod-homeric-hymns", "gutenberg_id": 348, "title": "Hesiod, the Homeric Hymns, and Homerica", "author": "Hesiod (tr. Hugh G. Evelyn-White)", "tradition": "greek", "language": "en"},
+    {"id": "odyssey", "gutenberg_id": 1727, "title": "The Odyssey", "author": "Homer (tr. Samuel Butler)", "tradition": "greek", "language": "en"},
+    {"id": "bulfinch-mythology", "gutenberg_id": 4928, "title": "Bulfinch's Mythology", "author": "Thomas Bulfinch", "tradition": "classical", "language": "en"},
+    {"id": "grimms-fairy-tales", "gutenberg_id": 2591, "title": "Grimms' Fairy Tales", "author": "Jacob Grimm and Wilhelm Grimm", "tradition": "european-folklore", "language": "en"},
+    {"id": "andersens-fairy-tales", "gutenberg_id": 1597, "title": "Andersen's Fairy Tales", "author": "H. C. Andersen", "tradition": "european-folklore", "language": "en"},
+    {"id": "celtic-fairy-tales", "gutenberg_id": 7885, "title": "Celtic Fairy Tales", "author": "Joseph Jacobs (ed.)", "tradition": "celtic", "language": "en"},
+    {"id": "paradise-lost", "gutenberg_id": 26, "title": "Paradise Lost", "author": "John Milton", "tradition": "christian-literary", "language": "en"}
+  ]
+}

@@ -18,6 +18,7 @@ import { ProjectRow, Tag } from '../ui/Editorial'
 import ClusterPreview from '../jobs/ClusterPreview'
 import PoliticsPreview from './PoliticsPreview'
 import { MethodPreview, SwedenPreview } from './ProjectPreviews'
+import SymbolicPreview from '../symbolic/SymbolicPreview'
 
 const b = (text: Bilingual) => l(text.en, text.sv)
 
@@ -193,6 +194,25 @@ function Projects() {
       hrefLabel: { en: 'Read the case study', sv: 'Läs fallstudien' },
     },
     FEATURED.find((project) => project.id === 'welfare')!,
+    {
+      id: 'symbolic-atlas',
+      title: { en: 'Symbolic Atlas', sv: 'Symbolic Atlas' },
+      problem: {
+        en: 'Can symbolic meaning emerge from the data without defining the categories first?',
+        sv: 'Kan symbolisk mening träda fram ur datan utan att kategorierna bestäms först?',
+      },
+      built: {
+        en: 'Ten public-domain books, symbol words in context, sentence embeddings, UMAP and HDBSCAN, built in dbt and DuckDB.',
+        sv: 'Tio fria böcker, symbolord i sitt sammanhang, meningsinbäddningar, UMAP och HDBSCAN, byggt i dbt och DuckDB.',
+      },
+      result: {
+        en: 'An interactive map of every use, filterable by symbol, tradition and cluster.',
+        sv: 'En interaktiv karta över varje förekomst, filtrerbar efter symbol, tradition och kluster.',
+      },
+      tech: ['NLP', 'Embeddings', 'UMAP', 'HDBSCAN', 'dbt'],
+      href: '#symbolic-atlas',
+      hrefLabel: { en: 'Open the atlas', sv: 'Öppna atlasen' },
+    },
   ]
   const descriptions = [
     l(
@@ -210,6 +230,10 @@ function Projects() {
     l(
       'Jobs, health and trust across Sweden, explored through five public data sources.',
       'Jobb, hälsa och förtroende i Sverige, utforskade genom fem offentliga datakällor.',
+    ),
+    l(
+      'An unsupervised exploration of recurring symbolic meaning in mythology, folklore and literature.',
+      'En oövervakad utforskning av återkommande symbolisk mening i mytologi, folksagor och litteratur.',
     ),
   ]
   return (
@@ -237,8 +261,10 @@ function Projects() {
               <ClusterPreview />
             ) : index === 2 ? (
               <MethodPreview />
-            ) : (
+            ) : index === 3 ? (
               <SwedenPreview />
+            ) : (
+              <SymbolicPreview />
             )
           }
         >

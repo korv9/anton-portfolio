@@ -1,0 +1,34 @@
+version: 2
+
+# The Symbolic Atlas corpus: public-domain books from Project Gutenberg, fetched by
+# platform/ingest/symbolic/ingest_corpus.py into warehouse/raw/symbolic exactly as served.
+
+sources:
+  - name: symbolic
+    description: Gutenberg plain-text files, their corpus metadata and the fetch log.
+    tables:
+      - name: texts
+        description: One row per book file, its whole text as fetched.
+        meta:
+          external_location: >-
+            read_text('{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/symbolic/gutenberg/*.txt')
+      - name: corpus
+        description: The curated corpus (platform/ingest/symbolic/corpus.json) as stored with the texts.
+        meta:
+          external_location: >-
+            read_json('{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/symbolic/corpus.json')
+      - name: fetches
+        description: One line per fetch with URL, time, SHA-256 and size (lib/rawstore.py).
+        meta:
+          external_location: >-
+            read_json('{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/symbolic/_manifest.jsonl',
+            format = 'newline_delimited', union_by_name = true)
+
+  - name: symbolic_features
+    description: The ML stage's output (platform/nlp/symbolic/pipeline.py), a local artefact under warehouse/features.
+    tables:
+      - name: atlas_projection
+        description: One row per sampled occurrence, its UMAP map position and HDBSCAN cluster (-1 is noise).
+        meta:
+          external_location: >-
+            read_parquet('{{ env_var('PORTFOLIO_FEATURES', '../warehouse/features') }}/symbolic/atlas_projection.parquet')

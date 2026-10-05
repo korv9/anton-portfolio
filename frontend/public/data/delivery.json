@@ -1,6 +1,6 @@
 {
  "schema_version": 1,
- "run_id": "463eb62ce24f8e64",
+ "run_id": "cb0732b918cd1012",
  "bases": {
   "json": "data/",
   "parquet": "https://pub-9867b18896ba49e4a0b4a3d2f39c0385.r2.dev/",
@@ -14,6 +14,9 @@
   "politics/laws/v2/"
  ],
  "parquet_datasets": {
+  "atlas.parquet": [
+   "symbolic/atlas.parquet"
+  ],
   "fact_member_vote": [
    "parquet/fact_member_vote/session=2024-25/part-0.parquet",
    "parquet/fact_member_vote/session=2025-26/part-0.parquet"
@@ -55,6 +58,9 @@
    "parquet/speech_cards/session=2023-24/part-0.parquet",
    "parquet/speech_cards/session=2024-25/part-0.parquet",
    "parquet/speech_cards/session=2025-26/part-0.parquet"
+  ],
+  "symbol-profiles.parquet": [
+   "symbolic/symbol-profiles.parquet"
   ],
   "welfare": [
    "parquet/welfare/dim_age_group.parquet",

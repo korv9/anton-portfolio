@@ -30,6 +30,8 @@ models:
         +tags: [parliament]
       politics:
         +tags: [politics]
+      symbolic:
+        +tags: [symbolic]
       taxes:
         +tags: [taxes]
       welfare:
@@ -41,6 +43,8 @@ models:
         +tags: [jobs]
       parliament:
         +tags: [parliament]
+      symbolic:
+        +tags: [symbolic]
       welfare:
         +tags: [welfare]
     gold:
@@ -56,6 +60,8 @@ models:
         +tags: [parliament]
       politics:
         +tags: [politics]
+      symbolic:
+        +tags: [symbolic]
       taxes:
         +tags: [taxes]
       welfare:
@@ -69,6 +75,10 @@ models:
 # tag lets it build on its own: `dbt build --select tag:welfare`.
 seeds:
   portfolio:
+    symbolic:
+      +tags: [symbolic]
+      +schema: seeds
+      +column_types: {symbol_id: varchar}
     news:
       +tags: [news]
       +schema: seeds
