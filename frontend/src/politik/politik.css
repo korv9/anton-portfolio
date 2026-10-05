@@ -2,14 +2,14 @@
 
 .politik {
   display: grid;
-  grid-template-columns: 250px minmax(0, 1fr);
-  max-width: 1360px;
+  grid-template-columns: 230px minmax(0, 1fr);
+  max-width: 1600px;
   margin: 0 auto;
   min-height: calc(100vh - 64px);
 }
 .politik-side {
   border-right: 1px solid var(--line);
-  padding: 2.5rem 1.5rem 2rem clamp(1rem, 3vw, 2.5rem);
+  padding: 1.5rem 1.25rem 1.5rem clamp(1rem, 2.5vw, 2rem);
 }
 .politik-party-rail {
   top: auto !important;
@@ -83,12 +83,16 @@
 }
 .politik-side > * {
   position: sticky;
-  top: 88px;
+  top: 64px;
+  align-self: start;
+  max-height: calc(100vh - 64px);
+  overflow-y: auto;
+  scrollbar-width: thin;
 }
 .politik-brand {
   display: block;
   text-decoration: none;
-  margin-bottom: 2rem;
+  margin-bottom: 1.25rem;
 }
 .politik-brand span,
 .politik-brand small {
@@ -101,9 +105,7 @@
   font-weight: 400;
   color: var(--muted);
 }
-.politik-nav {
-  top: 170px;
-}
+
 .politik-nav ol {
   list-style: none;
   margin: 0;
@@ -114,11 +116,9 @@
   border-bottom: 1px solid var(--line);
 }
 .politik-nav a {
-  display: grid;
-  grid-template-columns: 1.4rem 1fr;
-  gap: 0.25rem;
-  padding: 0.75rem 0;
-  font-size: 0.9375rem;
+  display: block;
+  padding: 0.5rem 0;
+  font-size: 0.875rem;
   line-height: 1.35;
   text-decoration: none;
   color: var(--muted);
@@ -130,11 +130,35 @@
   color: var(--ink);
   font-weight: 700;
 }
-.politik-nav-no {
-  font-size: 0.8125rem;
+.politik-nav a[aria-current] {
+  box-shadow: inset 3px 0 0 var(--ink);
+  padding-left: 0.6rem;
+}
+/* A group: a small heading, its items indented under it. */
+.politik-nav-group {
+  padding: 0.7rem 0 0.2rem;
+}
+.politik-nav-heading {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   color: var(--muted);
-  font-weight: 400;
-  padding-top: 0.1rem;
+}
+.politik-nav .politik-nav-group ol {
+  border-top: 0;
+  margin-top: 0.3rem;
+}
+.politik-nav .politik-nav-group li {
+  border-bottom: 0;
+}
+.politik-nav .politik-nav-group a {
+  padding: 0.35rem 0 0.35rem 0.75rem;
+  border-left: 1px solid var(--line);
+}
+.politik-nav .politik-nav-group a[aria-current] {
+  box-shadow: inset 3px 0 0 var(--ink);
 }
 .politik-main {
   min-width: 0;
@@ -522,7 +546,7 @@
 /* ---------- Line charts in the product ---------- */
 
 .politik .multi-chart .end-label-text {
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 700;
   fill: var(--ink);
 }
@@ -795,8 +819,9 @@
     z-index: 15;
     background: var(--page);
   }
-  .politik-side > * {
-    position: static;
+  .politik-side {
+    max-height: none;
+    overflow: visible;
   }
   .politik-brand {
     display: none;
@@ -828,39 +853,25 @@
   .politik-nav a[aria-current] {
     border-bottom-color: var(--ink);
   }
-  .politik-nav-no {
+  /* One row: groups dissolve into it, their headings hidden. */
+  .politik-nav-group,
+  .politik-nav .politik-nav-group ol {
+    display: contents;
+  }
+  .politik-nav-heading {
     display: none;
   }
-  .politik-party-rail {
-    margin: 0;
-    padding: 0.55rem 1rem;
-    border-top: 1px solid var(--line);
-    overflow-x: auto;
-    scrollbar-width: none;
-  }
-  .politik-party-rail::-webkit-scrollbar {
-    display: none;
-  }
-  .politik-party-rail > p {
-    display: none;
-  }
-  .politik-party-rail ul {
-    display: flex;
-    width: max-content;
-  }
-  .politik-party-rail a {
-    width: 48px;
-    min-height: 44px;
-    padding: 0.3rem;
-  }
-  .politik-party-rail .party-logo {
-    width: 28px;
-    height: 28px;
+  .politik-nav .politik-nav-group a,
+  .politik-nav a[aria-current],
+  .politik-nav .politik-nav-group a[aria-current] {
+    padding: 0.7rem 0.9rem;
+    border-left: 0;
+    box-shadow: none;
   }
   .politik-main {
-    /* The sticky product menu sits below the 64 px site header. Reserve that
-       offset so the first heading never starts underneath the menu. */
-    padding-top: 6rem;
+    /* The product menu is sticky in the flow (main clips rather than hides overflow), so the
+       first heading already starts below it. */
+    padding-top: 1.5rem;
   }
   .theme-meaning,
   .theme-further {
@@ -879,8 +890,8 @@
   .seat-chart-seg {
     animation: none;
   }
-  .politik-party-rail a,
-  .politik-party-rail .party-logo {
+  .politik-slicer button,
+  .politik-slicer .party-logo {
     transition: none;
   }
 }
@@ -946,4 +957,402 @@
 .politik .party-chip.on .party-logo {
   opacity: 1;
   filter: none;
+}
+
+/* ---------- The party bar: one slicer for the whole product ---------- */
+
+.politik-body {
+  min-width: 0;
+}
+.politik-slicer {
+  position: sticky;
+  top: 64px;
+  z-index: 14;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem 1rem;
+  padding: 0.6rem clamp(1rem, 4vw, 4rem);
+  background: rgba(250, 250, 249, 0.96);
+  border-bottom: 1px solid var(--line);
+}
+.politik-slicer-label {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.politik-slicer ul {
+  display: flex;
+  gap: 0.3rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.politik-slicer button[aria-pressed] {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 50px;
+  height: 46px;
+  padding: 0;
+  border: 1px solid var(--line);
+  background: #fff;
+  cursor: pointer;
+  transition:
+    transform 140ms ease,
+    border-color 140ms ease,
+    opacity 140ms ease;
+}
+.politik-slicer button[aria-pressed] > span {
+  position: absolute;
+  right: 3px;
+  bottom: 1px;
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+.politik-slicer button[aria-pressed]:hover {
+  transform: translateY(-2px);
+  border-color: var(--line-strong);
+}
+.politik-slicer button[aria-pressed='true'] {
+  border: 2px solid var(--ink);
+  transform: translateY(-2px);
+}
+.politik-slicer button[aria-pressed='true'] > span {
+  color: var(--ink);
+}
+/* When some parties are chosen, the others step back. */
+.politik-slicer.active button[aria-pressed='false'] .party-logo {
+  opacity: 0.4;
+  filter: grayscale(1);
+}
+.politik-slicer .party-logo {
+  transition:
+    opacity 140ms ease,
+    filter 140ms ease;
+}
+.politik-slicer-state {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 0 0 0 auto;
+  color: var(--muted);
+  font-size: 0.8125rem;
+  white-space: nowrap;
+}
+.politik-slicer.active .politik-slicer-state {
+  color: var(--ink);
+  font-weight: 600;
+}
+.politik-slicer-state button {
+  min-height: 32px;
+  padding: 0 0.7rem;
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: #fff;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+.politik-slicer-state button:hover {
+  background: #333;
+}
+@media (max-width: 1180px) {
+  .politik-slicer-label {
+    display: none;
+  }
+  .politik-slicer-state > span {
+    display: none;
+  }
+}
+@media (max-width: 960px) {
+  /* Theme menu and party bar stack as one sticky header: the menu has a fixed height so the
+     party bar can sit right below it. */
+  .politik-side {
+    padding: 0;
+    height: 45px;
+  }
+  .politik-nav a {
+    height: 44px;
+    padding-block: 0;
+    line-height: 44px;
+  }
+  .politik-nav .politik-nav-group a,
+  .politik-nav a[aria-current],
+  .politik-nav .politik-nav-group a[aria-current] {
+    padding-block: 0;
+  }
+  .politik-slicer {
+    top: 109px;
+    padding: 0.45rem 1rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .politik-slicer::-webkit-scrollbar {
+    display: none;
+  }
+  .politik-slicer button[aria-pressed] {
+    width: 44px;
+    height: 42px;
+  }
+  .politik-slicer .party-logo {
+    width: 24px;
+    height: 24px;
+  }
+}
+.theme-filter-note {
+  align-self: center;
+  margin: 0;
+  max-width: 44ch;
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+.bars-value small {
+  display: block;
+  color: var(--muted);
+  font-size: 0.75em;
+}
+
+/* The party bar as filters: larger buttons in each party's colour, a clear chosen state. */
+.politik-slicer button[aria-pressed] {
+  width: 64px;
+  height: 56px;
+  border: 2px solid color-mix(in srgb, var(--party, #888) 45%, #fff);
+  background: color-mix(in srgb, var(--party, #888) 7%, #fff);
+  box-shadow: inset 0 -4px 0 var(--party, #888);
+  border-radius: 6px;
+}
+.politik-slicer button[aria-pressed] > span {
+  right: 5px;
+  bottom: 6px;
+  color: color-mix(in srgb, var(--party, #444) 70%, #000);
+  font-size: 0.8125rem;
+}
+.politik-slicer button[aria-pressed]:hover {
+  border-color: var(--party, #888);
+  background: color-mix(in srgb, var(--party, #888) 16%, #fff);
+}
+.politik-slicer button[aria-pressed='true'] {
+  border: 3px solid var(--party, var(--ink));
+  background: color-mix(in srgb, var(--party, #888) 24%, #fff);
+  box-shadow:
+    inset 0 -6px 0 var(--party, #888),
+    0 6px 14px -8px var(--party, #888);
+}
+.politik-slicer button[aria-pressed='true']::after {
+  content: '✓';
+  position: absolute;
+  top: 2px;
+  left: 4px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: color-mix(in srgb, var(--party, #444) 70%, #000);
+}
+.politik-slicer ul {
+  gap: 0.45rem;
+}
+@media (max-width: 960px) {
+  .politik-slicer button[aria-pressed] {
+    width: 48px;
+    height: 46px;
+  }
+  .politik-slicer .party-logo {
+    width: 26px;
+    height: 26px;
+  }
+}
+
+/* ---------- The "More" pages as dashboards: everything in view on a desktop ----------
+   A compact heading with the key figures beside it, the chart on the left and what it means
+   on the right; Sources and Explore become a grid of cards. */
+@media (min-width: 1181px) {
+  .politik-main:has(> .theme) {
+    padding: 1.25rem 1.5rem 2rem;
+  }
+  .politik .theme {
+    max-width: none;
+    display: grid;
+    grid-template-columns: minmax(0, 2.1fr) minmax(0, 1fr);
+    gap: 0.9rem;
+    align-items: start;
+  }
+  .politik .theme > .theme-head {
+    grid-column: 1 / -1;
+    margin: 0;
+  }
+  .politik .theme .theme-question {
+    margin: 0 0 0.3rem;
+    max-width: none;
+    font-size: var(--fs-page-title);
+    line-height: 1.15;
+  }
+  .politik .theme .theme-why {
+    max-width: 90ch;
+    font-size: 0.9375rem;
+    color: var(--muted);
+  }
+  .politik .theme > .theme-kpis {
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin: 0;
+    border: 0;
+  }
+  .politik .theme > .theme-kpis > div {
+    padding: 0.7rem 0.9rem;
+    border: 1px solid var(--line);
+    background: var(--paper);
+  }
+  .politik .theme .theme-kpis dd {
+    font-size: 1.6rem;
+  }
+  .politik .theme > .theme-figure,
+  .politik .theme > .theme-meaning,
+  .politik .theme > .theme-further,
+  .politik .theme > .sources-block,
+  .politik .theme > .explore-group,
+  .politik .theme > .explore-parties {
+    margin: 0;
+    padding: 1rem 1.1rem;
+    border: 1px solid var(--line);
+    background: var(--paper);
+  }
+  .politik .theme > .theme-figure {
+    grid-column: 1;
+    grid-row: span 2;
+  }
+  .politik .theme > .theme-meaning,
+  .politik .theme > .theme-further {
+    grid-column: 2;
+  }
+  .politik .theme > .theme-meaning,
+  .politik .theme > .theme-further {
+    display: block;
+  }
+  .politik .theme .theme-meaning h2 {
+    margin: 0 0 0.5rem;
+    font-size: 1.0625rem;
+  }
+  .politik .theme .theme-meaning p {
+    margin: 0 0 0.6rem;
+    line-height: 1.5;
+  }
+  .politik .theme .bars-list li {
+    padding: 0.15rem 0;
+  }
+  .politik .theme .theme-filters {
+    margin-bottom: 0.6rem;
+  }
+  .politik .theme .theme-meaning,
+  .politik .theme .theme-meaning p,
+  .politik .theme .theme-meaning li {
+    font-size: 0.9375rem;
+  }
+  .politik .theme .theme-figure-head {
+    margin-bottom: 0.8rem;
+  }
+  .politik .theme .theme-chart-title {
+    font-size: 1.0625rem;
+  }
+  /* Sources and Explore: their sections as cards, three to a row. */
+  .politik .theme:has(> .sources-block),
+  .politik .theme:has(> .explore-group) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .politik .theme > .sources-block:first-of-type,
+  .politik .theme > .explore-parties {
+    grid-column: 1 / -1;
+  }
+  .politik .theme > .sources-block .theme-chart-title,
+  .politik .theme > .explore-group .theme-chart-title,
+  .politik .theme > .explore-parties .theme-chart-title {
+    margin-top: 0;
+  }
+  .politik .theme > .explore-parties ul {
+    grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
+  }
+  .politik .theme > .explore-group .explore-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.15rem;
+    padding: 0.55rem 0;
+  }
+  .politik .theme > .explore-group .explore-row span {
+    font-size: 0.875rem;
+  }
+  .politik .theme .definitions,
+  .politik .theme .limits,
+  .politik .theme .sources-block p {
+    font-size: 0.875rem;
+  }
+}
+
+/* The chapter number before each group in the sidebar. */
+.politik-nav-heading b {
+  display: inline-grid;
+  place-items: center;
+  width: 1.2rem;
+  height: 1.2rem;
+  margin-right: 0.4rem;
+  background: var(--ink);
+  color: var(--paper);
+  font-size: 0.7rem;
+}
+
+/* The end of every page: the page before, and the question the next one answers. */
+.politik-next {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  gap: var(--sp-3);
+  margin-top: var(--sp-5);
+  padding-top: var(--sp-4);
+  border-top: 3px solid var(--ink);
+}
+.politik-next a {
+  display: grid;
+  gap: 0.25rem;
+  padding: var(--sp-3) var(--sp-4);
+  border: 1px solid var(--line);
+  background: var(--paper);
+  color: var(--ink);
+  text-decoration: none;
+  transition:
+    border-color 200ms,
+    transform 200ms;
+}
+.politik-next a:hover,
+.politik-next a:focus-visible {
+  border-color: var(--ink);
+  transform: translateY(-2px);
+}
+.politik-next small {
+  font-size: var(--fs-label);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.politik-next span {
+  font-size: var(--fs-card-title);
+  font-weight: 600;
+  line-height: 1.3;
+}
+.politik-next-link {
+  grid-column: 2;
+  text-align: right;
+}
+.politik-next-link span {
+  font-size: var(--fs-section-title);
+  letter-spacing: -0.01em;
+}
+@media (max-width: 700px) {
+  .politik-next {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .politik-next-link {
+    grid-column: 1;
+    grid-row: 1;
+  }
 }

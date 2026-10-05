@@ -379,4 +379,10 @@
   color: var(--ink);
 }
 
-.project-shell .seat-chart-seg > small { color: var(--ink); }
+.project-shell .seat-chart-seg > small {
+  color: var(--ink);
+}
+
+.project-shell button[style*='--party'] > span[aria-hidden='true'] {
+  color: var(--ink);
+}

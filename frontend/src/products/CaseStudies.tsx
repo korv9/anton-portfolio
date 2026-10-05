@@ -1,6 +1,6 @@
 /** Project pages that are a single report: DrugComb, Allegoria, the degree project and Homie. */
 import { lazy } from 'react'
-import { t } from '../i18n'
+import { l, t } from '../i18n'
 
 const RfcReport = lazy(() => import('../RfcReport'))
 const DrugCombReport = lazy(() => import('./DrugCombReport'))
@@ -11,11 +11,22 @@ export function DrugCombPage() {
   return (
     <div className="project-page">
       <div className="page-lead">
-        <p className="eyebrow">{t('DrugComb Synergy Prediction')}</p>
-        <h1>{t('DrugComb Synergy Prediction.')}</h1>
+        <p className="eyebrow">
+          {l(
+            'Machine learning · DrugComb synergy prediction',
+            'Maskininlärning · förutsäga läkemedelssynergi',
+          )}
+        </p>
+        <h1>
+          {l(
+            'Which drugs work better together?',
+            'Vilka läkemedel fungerar bättre tillsammans?',
+          )}
+        </h1>
         <p>
-          {t(
-            'Experimental results from cleaned measurements through evaluation on unfamiliar pairs, drugs and cell lines.',
+          {l(
+            'A data pipeline and model that predict which drug pairs kill more cancer cells together than alone, tested honestly on drugs and cell lines it has never seen.',
+            'En datapipeline och modell som förutsäger vilka läkemedelspar som dödar fler cancerceller tillsammans än var för sig, ärligt prövad på läkemedel och cellinjer den aldrig sett.',
           )}
         </p>
       </div>
@@ -54,7 +65,9 @@ export function ThesisPage() {
   return (
     <div className="project-page">
       <div className="page-lead">
-        <p className="eyebrow">{t('Degree project · Fora')}</p>
+        <p className="eyebrow">
+          {l('Degree project · Avtalat', 'Examensarbete · Avtalat')}
+        </p>
         <h1>{t('Finding useful review candidates in incident data.')}</h1>
         <p>
           {t(
@@ -66,7 +79,12 @@ export function ThesisPage() {
         <div className="project-grid">
           <article className="thesis-card" id="thesis">
             <div className="project-card-head">
-              <span>{t('Degree project · Fora · 2026')}</span>
+              <span>
+                {l(
+                  'Degree project · Avtalat · 2026',
+                  'Examensarbete · Avtalat · 2026',
+                )}
+              </span>
               <strong>{t('Primary case study')}</strong>
             </div>
             <h3>{t('Finding review candidates in incident data')}</h3>
@@ -77,8 +95,10 @@ export function ThesisPage() {
             </p>
             <div className="thesis-kpis">
               <div>
-                <strong>16,811</strong>
-                <span>{t('anonymised incidents')}</span>
+                <strong>21,000+</strong>
+                <span>
+                  {l('production incidents', 'produktionsincidenter')}
+                </span>
               </div>
               <div>
                 <strong>121</strong>

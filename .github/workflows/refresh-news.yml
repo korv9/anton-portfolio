@@ -31,6 +31,7 @@ jobs:
       R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
       R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
       R2_BUCKET: ${{ secrets.R2_BUCKET }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
     steps:
       # Without the bucket the archive cannot outlive the run, so there is nothing to do.
       - name: Require R2 credentials
@@ -60,6 +61,13 @@ jobs:
           dbt build --profiles-dir . --select tag:news
           cd ..
           python platform/publish/export_news.py
+      # The week's summary, written by Claude from the headlines and grounded in them. Runs only
+      # when the ANTHROPIC_API_KEY secret is set; without it the page shows the headlines alone.
+      - name: Summarise the week's news
+        if: steps.creds.outputs.ok == 'true' && env.ANTHROPIC_API_KEY != ''
+        run: |
+          pip install anthropic
+          python platform/publish/summarize_news.py --days 7
       - name: Commit the news when it changed
         if: steps.creds.outputs.ok == 'true'
         run: |
@@ -75,7 +83,7 @@ jobs:
           sys.exit(0 if before == after else 1)"; then
             echo "No new news."
           else
-            git add frontend/public/data/parliament/news.json
+            git add frontend/public/data/parliament/news.json frontend/public/data/parliament/news-summaries.json 2>/dev/null || git add frontend/public/data/parliament/news.json
             git commit -m "data: political news (run ${GITHUB_RUN_ID})"
             git pull --rebase origin main
             git push

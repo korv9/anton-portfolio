@@ -57,7 +57,13 @@ export type Summary = {
   parameter_sweep?: {
     candidate_count: number
     diagnostic_sample_size: number
-    seed_stability: { seed: number; ari_common_assigned: number | null; common_assigned_share: number; cluster_count: number; noise_share: number }[]
+    seed_stability: {
+      seed: number
+      ari_common_assigned: number | null
+      common_assigned_share: number
+      cluster_count: number
+      noise_share: number
+    }[]
   } | null
   config: { model: string; dimensions?: number; assignment_method?: string }
   feature_ensemble?: {
@@ -65,7 +71,12 @@ export type Summary = {
     weights: Record<string, number>
     assignment_method: string
     candidate_count?: number
-    consensus_window_stability?: { seeds: number[]; ari_all_including_noise: number; ari_common_assigned: number | null; common_assigned_share: number }[]
+    consensus_window_stability?: {
+      seeds: number[]
+      ari_all_including_noise: number
+      ari_common_assigned: number | null
+      common_assigned_share: number
+    }[]
   } | null
   shards: string[]
   clusters: Cluster[]

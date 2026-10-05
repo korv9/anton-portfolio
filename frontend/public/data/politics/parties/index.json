@@ -1,0 +1,238 @@
+{
+ "schema_version": 1,
+ "generated_at": "2026-09-29T12:36:55+00:00",
+ "sources": {
+  "members": {
+   "url": "https://data.riksdagen.se/personlista/?utformat=json&rdlstatus=tjanst",
+   "as_of": "2026-09-29",
+   "note": "Elected members with a current seat, those on leave (e.g. ministers) included, substitutes not."
+  },
+  "councils": {
+   "url": "https://resultat.val.se/val2026/slutligt/KF",
+   "election": "2026",
+   "municipalities": 290,
+   "counts": {
+    "slutlig": 232,
+    "preliminär": 58
+   },
+   "note": "Seats in each municipal council; seats_before is the election before."
+  }
+ },
+ "parties": {
+  "S": {
+   "members": 99,
+   "on_leave": 1,
+   "women": 47,
+   "leaders": [
+    {
+     "name": "Magdalena Andersson",
+     "post": "Partiledare"
+    }
+   ],
+   "ministers": [],
+   "council_seats": 3504,
+   "council_seats_before": 3771,
+   "council_municipalities": 290,
+   "council_largest": 192
+  },
+  "SD": {
+   "members": 62,
+   "on_leave": 0,
+   "women": 16,
+   "leaders": [
+    {
+     "name": "Jimmie Åkesson",
+     "post": "Partiledare"
+    }
+   ],
+   "ministers": [],
+   "council_seats": 1953,
+   "council_seats_before": 2091,
+   "council_municipalities": 290,
+   "council_largest": 22
+  },
+  "M": {
+   "members": 70,
+   "on_leave": 15,
+   "women": 32,
+   "leaders": [
+    {
+     "name": "Ulf Kristersson",
+     "post": "Partiledare"
+    }
+   ],
+   "ministers": [
+    {
+     "name": "Carl-Oskar Bohlin",
+     "post": "Minister för civilt försvar"
+    },
+    {
+     "name": "Maria Malmer Stenergard",
+     "post": "Utrikesminister"
+    },
+    {
+     "name": "Benjamin Dousa",
+     "post": "Bistånds- och utrikeshandelsminister"
+    },
+    {
+     "name": "Gunnar Strömmer",
+     "post": "Justitieminister"
+    },
+    {
+     "name": "Jessica Rosencrantz",
+     "post": "EU-minister"
+    },
+    {
+     "name": "Johan Forssell",
+     "post": "Migrationsminister"
+    },
+    {
+     "name": "Niklas Wykman",
+     "post": "Finansmarknadsminister"
+    },
+    {
+     "name": "Parisa Liljestrand",
+     "post": "Kulturminister"
+    },
+    {
+     "name": "Ulf Kristersson",
+     "post": "Statsminister"
+    },
+    {
+     "name": "Pål Jonson",
+     "post": "Försvarsminister"
+    },
+    {
+     "name": "Camilla Waltersson Grönvall",
+     "post": "Socialtjänstminister"
+    },
+    {
+     "name": "Elisabeth Svantesson",
+     "post": "Finansminister"
+    }
+   ],
+   "council_seats": 2777,
+   "council_seats_before": 2584,
+   "council_municipalities": 286,
+   "council_largest": 68
+  },
+  "V": {
+   "members": 30,
+   "on_leave": 0,
+   "women": 20,
+   "leaders": [
+    {
+     "name": "Nooshi Dadgostar",
+     "post": "Partiledare"
+    }
+   ],
+   "ministers": [],
+   "council_seats": 842,
+   "council_seats_before": 806,
+   "council_municipalities": 279,
+   "council_largest": 1
+  },
+  "C": {
+   "members": 25,
+   "on_leave": 0,
+   "women": 16,
+   "leaders": [
+    {
+     "name": "Elisabeth Thand Ringqvist",
+     "post": "Partiledare"
+    }
+   ],
+   "ministers": [],
+   "council_seats": 1136,
+   "council_seats_before": 1213,
+   "council_municipalities": 282,
+   "council_largest": 11
+  },
+  "KD": {
+   "members": 22,
+   "on_leave": 3,
+   "women": 8,
+   "leaders": [
+    {
+     "name": "Ebba Busch",
+     "post": "Partiledare"
+    }
+   ],
+   "ministers": [
+    {
+     "name": "Elisabet Lann",
+     "post": "Sjukvårdsminister"
+    },
+    {
+     "name": "Jakob Forssmed",
+     "post": "Socialminister"
+    },
+    {
+     "name": "Ebba Busch",
+     "post": "Energi- och näringsminister"
+    }
+   ],
+   "council_seats": 789,
+   "council_seats_before": 755,
+   "council_municipalities": 267,
+   "council_largest": 4
+  },
+  "MP": {
+   "members": 22,
+   "on_leave": 0,
+   "women": 12,
+   "leaders": [
+    {
+     "name": "Daniel Helldén",
+     "post": "Språkrör"
+    },
+    {
+     "name": "Amanda Lind",
+     "post": "Språkrör"
+    }
+   ],
+   "ministers": [],
+   "council_seats": 490,
+   "council_seats_before": 309,
+   "council_municipalities": 216,
+   "council_largest": 1
+  },
+  "L": {
+   "members": 19,
+   "on_leave": 5,
+   "women": 10,
+   "leaders": [
+    {
+     "name": "Simona Mohamsson",
+     "post": "Partiledare"
+    }
+   ],
+   "ministers": [
+    {
+     "name": "Simona Mohamsson",
+     "post": "Utbildnings- och integrationsminister"
+    },
+    {
+     "name": "Lotta Edholm",
+     "post": "Gymnasie-, högskole- och forskningsminister"
+    },
+    {
+     "name": "Romina Pourmokhtari",
+     "post": "Klimat- och miljöminister"
+    },
+    {
+     "name": "Johan Britz",
+     "post": "Arbetsmarknadsminister"
+    },
+    {
+     "name": "Nina Larsson",
+     "post": "Jämställdhetsminister"
+    }
+   ],
+   "council_seats": 395,
+   "council_seats_before": 509,
+   "council_municipalities": 172,
+   "council_largest": 3
+  }
+ }
+}

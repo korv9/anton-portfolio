@@ -11,7 +11,7 @@ import {
   MORE_PROJECTS,
   SKILLS,
   type Bilingual,
-} from './content'
+} from './orbitContent'
 import './home.css'
 import { ProjectRow, Tag } from '../ui/Editorial'
 import ClusterPreview from '../jobs/ClusterPreview'
@@ -345,6 +345,11 @@ function Projects() {
           </details>
         </ProjectRow>
       ))}
+      <p>
+        <a href="#alla-projekt">
+          {l('Browse all projects', 'Se alla projekt')} →
+        </a>
+      </p>
       <details className="more-projects">
         <summary>{l('More projects', 'Fler projekt')}</summary>
         <ul className="ds-rule-list">

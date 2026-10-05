@@ -1,0 +1,38 @@
+name: Publish to R2
+
+# Uploads every catalogued file that is served from object storage (document shards and
+# Parquet datasets) whose copy in the bucket is missing or out of date, then verifies that
+# all of them are present with matching hashes. Started by hand from the Actions tab.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    # The R2 credentials are secrets of the anton-portfolio environment.
+    environment: anton-portfolio
+    env:
+      R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+      R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      # Either name for the secret key; the environment holds it as R2_SECRET_ACCESS_KEY_ID.
+      R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY || secrets.R2_SECRET_ACCESS_KEY_ID }}
+      R2_BUCKET: ${{ secrets.R2_BUCKET }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: platform/requirements.txt
+      - run: pip install -r platform/requirements.txt
+      - name: What would transfer
+        run: python platform/publish/upload.py --dry-run
+      - name: Upload
+        run: python platform/publish/upload.py
+      - name: Verify every file in the bucket
+        run: python platform/publish/upload.py --verify-only

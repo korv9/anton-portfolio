@@ -1,0 +1,264 @@
+{
+ "schema_version": 1,
+ "reviewed": false,
+ "note": "Testfrågor för taLLMan. Förväntade källor är satta utifrån indexet (platform/tallman/build_index.py) när koden skrevs och är inte granskade av en människa ännu: sätt reviewed till true per fråga när du har kontrollerat den. sources = passage-id som ska hämtas; debates = ord som ska finnas i titeln på en hämtad debatt; insufficient = frågan ska inte få några stödda påståenden; changeWithoutAnnotation = inget påstående om förändring över tid får vara stött utan granskad annotering.",
+ "questions": [
+  {
+   "id": "budget-1",
+   "category": "budget",
+   "question": "Hur mycket avvek Socialdemokraternas budgetmotion för 2026 från regeringens förslag?",
+   "expect": {
+    "sources": [
+     "dp:budget:2026:S"
+    ]
+   },
+   "reviewed": false
+  },
+  {
+   "id": "budget-2",
+   "category": "budget",
+   "question": "Hur skilde sig Centerpartiets och Miljöpartiets budgetmotioner för 2025?",
+   "expect": {
+    "sources": [
+     "dp:budget:2025:C",
+     "dp:budget:2025:MP"
+    ]
+   },
+   "reviewed": false
+  },
+  {
+   "id": "budget-3",
+   "category": "budget",
+   "question": "Vad ville Vänsterpartiet lägga på migration i budgeten 2026?",
+   "expect": {
+    "sources": [
+     "dp:budget:2026:V:8"
+    ]
+   },
+   "reviewed": false
+  },
+  {
+   "id": "budget-4",
+   "category": "budget",
+   "question": "Hur mycket ville Kristdemokraterna ändra budgeten för 2019?",
+   "expect": {
+    "sources": [
+     "dp:budget:2019:KD"
+    ]
+   },
+   "reviewed": false
+  },
+  {
+   "id": "budget-5",
+   "category": "budget",
+   "question": "Hur stor var Sverigedemokraternas budgetavvikelse 2020?",
+   "expect": {
+    "sources": [
+     "dp:budget:2020:SD"
+    ]
+   },
+   "reviewed": false
+  },
+  {
+   "id": "rost-1",
+   "category": "voteringar",
+   "question": "Hur ofta röstade SD och M lika under riksmötet 2024/25?",
+   "expect": {
+    "sources": [
+     "dp:rost:2024/25:M-SD"
+    ]
+   },
+   "reviewed": false
+  },
+  {
+   "id": "rost-2",
+   "category": "voteringar",
+   "question": "Hur ofta röstade S och V lika 2023/24?",
+   "expect": {
+    "sources": [
+     "dp:rost:2023/24:S-V"
+    ]
+   },
+   "reviewed": false
+  },
+  {
+   "id": "rost-3",
+   "category": "voteringar",
+   "question": "Hur ofta röstade Centerpartiet med regeringen 2024/25?",
+   "expect": {
+    "sources": [
+     "dp:parti:2024/25:C"
+    ]
+   },
+   "reviewed": false
+  },
+  {
+   "id": "rost-4",
+   "category": "voteringar",
+   "question": "Hur hög var Liberalernas närvaro i voteringarna 2022/23?",
+   "expect": {
+    "sources": [
+     "dp:parti:2022/23:L"
+    ]
+   },
+   "reviewed": false
+  },
+  {
+   "id": "rost-5",
+   "category": "voteringar",
+   "question": "Röstade Miljöpartiet och Kristdemokraterna ofta lika 2025/26?",
+   "expect": {
+    "sources": [
+     "dp:rost:2025/26:KD-MP"
+    ]
+   },
+   "reviewed": false
+  },
+  {
+   "id": "opinion-1",
+   "category": "opinion och val",
+   "question": "Vilket stöd har Liberalerna i SCB:s senaste mätning?",
+   "expect": {
+    "sources": [
+     "dp:psu:2026-05:L"
+    ]
+   },
+   "reviewed": false
+  },
+  {
+   "id": "opinion-2",
+   "category": "opinion och val",
+   "question": "Hur stort stöd hade Sverigedemokraterna i SCB:s mätning 2024?",
+   "expect": {
+    "sources": [
+     "dp:psu:2024-05:SD"
+    ]
+   },
+   "reviewed": false
+  },
+  {
+   "id": "val-1",
+   "category": "opinion och val",
+   "question": "Hur många mandat fick Centerpartiet i valet 2026?",
+   "expect": {
+    "sources": [
+     "dp:val:2026:C"
+    ]
+   },
+   "reviewed": false
+  },
+  {
+   "id": "val-2",
+   "category": "opinion och val",
+   "question": "Hur stor andel av rösterna fick Moderaterna i riksdagsvalet?",
+   "expect": {
+    "sources": [
+     "dp:val:2026:M"
+    ]
+   },
+   "reviewed": false
+  },
+  {
+   "id": "debatt-1",
+   "category": "debatter",
+   "question": "Vad sa Vänsterpartiet om straffbarhetsåldern?",
+   "expect": {
+    "debates": [
+     "lagöverträdare"
+    ]
+   },
+   "reviewed": false
+  },
+  {
+   "id": "debatt-2",
+   "category": "debatter",
+   "question": "Vad sades i debatten om ny kärnkraft?",
+   "expect": {
+    "debates": [
+     "kärnkraft"
+    ]
+   },
+   "reviewed": false
+  },
+  {
+   "id": "debatt-3",
+   "category": "debatter",
+   "question": "Vad sa Miljöpartiet om friskolorna?",
+   "expect": {
+    "debates": [
+     "friskole"
+    ]
+   },
+   "reviewed": false
+  },
+  {
+   "id": "debatt-4",
+   "category": "debatter",
+   "question": "Hur argumenterade partierna i debatten om statens budget 2026?",
+   "expect": {
+    "debates": [
+     "Statens budget 2026"
+    ]
+   },
+   "reviewed": false
+  },
+  {
+   "id": "debatt-5",
+   "category": "debatter",
+   "question": "Vad sades om den nya vapenlagen i riksdagen?",
+   "expect": {
+    "debates": [
+     "vapen"
+    ]
+   },
+   "reviewed": false
+  },
+  {
+   "id": "debatt-6",
+   "category": "debatter",
+   "question": "Vad sa Socialdemokraterna om pensionerna?",
+   "expect": {
+    "debates": [
+     "pension"
+    ]
+   },
+   "reviewed": false
+  },
+  {
+   "id": "inget-1",
+   "category": "otillräckligt underlag",
+   "question": "Vilket stöd hade Piratpartiet i valet 2026?",
+   "expect": {
+    "insufficient": true
+   },
+   "reviewed": false
+  },
+  {
+   "id": "inget-2",
+   "category": "otillräckligt underlag",
+   "question": "Vad beslutar riksdagen om budgeten 2030?",
+   "expect": {
+    "insufficient": true
+   },
+   "reviewed": false
+  },
+  {
+   "id": "forandring-1",
+   "category": "förändring över tid",
+   "question": "Har regeringen skärpt migrationspolitiken?",
+   "expect": {
+    "changeWithoutAnnotation": true
+   },
+   "reviewed": false
+  },
+  {
+   "id": "forandring-2",
+   "category": "förändring över tid",
+   "question": "Har Sverigedemokraterna mildrat sin syn på EU?",
+   "expect": {
+    "changeWithoutAnnotation": true
+   },
+   "reviewed": false
+  }
+ ]
+}

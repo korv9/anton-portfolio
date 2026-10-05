@@ -1,0 +1,500 @@
+/*
+ * Politics dashboards that scroll: heading and slicers, key figures, and a grid of cards whose
+ * height follows their content. Column charts and the debate reader live here too.
+ */
+
+.politik-main:has(.board) {
+  padding: 1rem 1.25rem 2.5rem;
+}
+.board {
+  display: grid;
+  gap: 0.75rem;
+}
+.board-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.board-head h1,
+.board-head h2.board-title-2 {
+  margin: 0;
+  font-size: var(--fs-page-title);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+.board-sub {
+  margin: 0.25rem 0 0;
+  max-width: 70ch;
+  font-size: var(--fs-meta);
+  line-height: 1.45;
+  color: var(--muted);
+}
+.board-slicers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+.board-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0.75rem;
+  margin: 0;
+}
+.board-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+.board-card {
+  min-width: 0;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  padding: var(--card-pad);
+  animation: dash-rise 520ms cubic-bezier(0.2, 0.7, 0.1, 1) both;
+  animation-delay: calc(200ms + var(--i) * 60ms);
+}
+.board-card.wide {
+  grid-column: 1 / -1;
+}
+.board-card header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+}
+.board-card h2 {
+  margin: 0;
+  font-size: var(--fs-card-title);
+  line-height: 1.3;
+}
+.board-card header a {
+  font-size: 0.8125rem;
+  white-space: nowrap;
+}
+.board-body {
+  margin-top: 0.5rem;
+  min-width: 0;
+}
+.board-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.8rem;
+  margin: 0 0 0.35rem;
+  padding: 0;
+  list-style: none;
+  font-size: 0.75rem;
+}
+.board-legend i {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-right: 0.3rem;
+  vertical-align: -1px;
+}
+
+/* Columns */
+.columns {
+  position: relative;
+  width: 100%;
+}
+.columns svg {
+  display: block;
+  overflow: visible;
+}
+.columns-grid {
+  stroke: var(--line);
+}
+.columns-zero {
+  stroke: var(--ink-2);
+}
+.columns-axis {
+  font-size: 0.75rem;
+  fill: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.columns-hit {
+  fill: transparent;
+}
+.columns-cat:hover .columns-hit {
+  fill: rgba(0, 0, 0, 0.04);
+}
+.columns-cat.pickable {
+  cursor: pointer;
+}
+.columns-highlight {
+  fill: none;
+  stroke: var(--ink);
+  stroke-dasharray: 3 3;
+}
+.columns-bar {
+  transform-box: fill-box;
+  transform-origin: bottom;
+  animation: columns-grow 520ms cubic-bezier(0.2, 0.7, 0.1, 1) both;
+  animation-delay: calc(var(--i) * 12ms);
+}
+@keyframes columns-grow {
+  from {
+    transform: scaleY(0);
+  }
+}
+.column-multiples {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.6rem 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.column-multiples p {
+  margin: 0 0 0.1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.column-multiples i {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-right: 0.35rem;
+  vertical-align: -1px;
+}
+
+/* Lists of debates */
+.board-table-wrap {
+  overflow-x: auto;
+  max-height: 520px;
+  overflow-y: auto;
+}
+.board-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+}
+.board-table th,
+.board-table td {
+  padding: 0.4rem 0.5rem;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+}
+.board-table th {
+  position: sticky;
+  top: 0;
+  background: var(--paper);
+  font-size: 0.75rem;
+  color: var(--ink-2);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.board-table td.num,
+.board-table th.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.board-table tr:hover td {
+  background: var(--page);
+}
+.board-search {
+  display: grid;
+  gap: 0.2rem;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+.board-search input {
+  min-height: 34px;
+  padding: 0 0.5rem;
+  border: 1px solid var(--line-strong);
+  background: var(--paper);
+  font: inherit;
+  font-size: 0.8125rem;
+  color: var(--ink);
+}
+.party-dots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem;
+}
+.party-dots abbr {
+  display: inline-block;
+  min-width: 1.6rem;
+  padding: 0 0.2rem;
+  border-bottom: 3px solid;
+  font-size: 0.75rem;
+  text-align: center;
+  text-decoration: none;
+}
+.issue-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.issue-chips li,
+.issue-chips a {
+  font-size: 0.75rem;
+}
+.issue-chips li {
+  padding: 0.05rem 0.35rem;
+  border: 1px solid var(--line-strong);
+  white-space: nowrap;
+}
+.issue-chips li.word {
+  border-style: dashed;
+}
+
+@media (max-width: 900px) {
+  .board-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .board-slicers {
+    justify-content: flex-start;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .columns-bar,
+  .board-card {
+    animation: none;
+  }
+}
+
+/* The debate reader */
+.speech-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.speech-strip a {
+  display: block;
+  width: 12px;
+  height: 14px;
+}
+.speech-strip li.main a {
+  height: 30px;
+}
+.speech-strip li.dim a {
+  opacity: 0.2;
+}
+.speech-strip a:hover,
+.speech-strip a:focus-visible {
+  transform: translateY(-2px);
+}
+.exchanges,
+.replies {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.5rem;
+}
+.exchanges > li {
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid var(--line);
+}
+.replies {
+  margin: 0.5rem 0 0 1.25rem;
+  padding-left: 0.8rem;
+  border-left: 2px solid var(--line-strong);
+}
+.turn header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.2rem 0.45rem;
+  font-size: 0.8125rem;
+}
+.turn-no {
+  min-width: 1.8rem;
+  font-family: var(--font-mono) !important;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+.turn-party {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+.turn-kind {
+  margin-left: auto;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+.turn.replik .turn-kind::before {
+  content: '→ ';
+}
+.turn.svar .turn-kind::before {
+  content: '↩ ';
+}
+.turn p {
+  margin: 0.25rem 0 0;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+.turn details {
+  margin-top: 0.2rem;
+  font-size: 0.75rem;
+}
+.turn details summary {
+  cursor: pointer;
+  color: var(--muted);
+}
+.turn .issue-chips {
+  margin-top: 0.35rem;
+}
+.position {
+  display: inline-block;
+  min-width: 2.6rem;
+  padding: 0 0.25rem;
+  border: 1px solid var(--line-strong);
+  font-size: 0.75rem;
+  text-align: center;
+}
+.position.yes {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: #fff;
+}
+.position.no {
+  border-color: var(--ink);
+}
+.position.abstain {
+  border-style: dashed;
+}
+.decision-table {
+  margin-top: 0.6rem;
+  max-height: 320px;
+}
+.board-cta {
+  margin: 0;
+}
+.link-button {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.board-button {
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  padding: 0 0.9rem;
+  background: var(--ink);
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none;
+}
+.board-button:hover {
+  background: #333;
+}
+
+.decision-table td:first-child {
+  min-width: 14rem;
+}
+
+/* Whose budget: year, proposer, adoption and votes, in one band above the figures. */
+.budget-id {
+  display: grid;
+  grid-template-columns: minmax(10rem, auto) repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  margin-bottom: 0.9rem;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--ink);
+}
+.budget-id > div,
+.budget-id > p {
+  display: grid;
+  align-content: start;
+  gap: 0.3rem;
+  margin: 0;
+  padding: 0.75rem 0.95rem;
+  background: var(--paper);
+}
+.budget-id small {
+  font-size: 0.8125rem;
+  color: var(--muted);
+  line-height: 1.4;
+}
+.budget-id-year strong {
+  font-size: 2.2rem;
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+.budget-id-year > span,
+.budget-id-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.budget-id-parties {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.8rem;
+  font-size: 1rem;
+  font-weight: 700;
+}
+.budget-id-parties > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+.budget-id-votes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.budget-id-votes li {
+  padding: 0.2rem 0.45rem;
+  border: 1px solid var(--line-strong);
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+.budget-id-votes li small {
+  font-weight: 400;
+}
+.budget-id-votes li.yes {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: #fff;
+}
+.budget-id-votes li.yes small {
+  color: #d5d8dc;
+}
+.budget-id-votes li.no {
+  border-color: var(--negative);
+  color: var(--negative);
+}
+@media (max-width: 1100px) {
+  .budget-id {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 600px) {
+  .budget-id {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* In a table, the party markers stay on one line; the table scrolls sideways instead. */
+.board-table .party-dots {
+  flex-wrap: nowrap;
+}
+.board-table td:has(.party-dots) {
+  min-width: max-content;
+}

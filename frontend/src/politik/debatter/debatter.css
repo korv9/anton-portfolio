@@ -1,0 +1,389 @@
+/* The debates: a timeline per party, and replies as a conversation of chat bubbles. */
+
+/* ---------- Timeline ---------- */
+.timeline-parts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.6rem;
+  margin: 0 0 0.9rem 6.2rem;
+  padding: 0;
+  list-style: none;
+}
+.timeline-parts li {
+  display: grid;
+  gap: 0.15rem;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--ink);
+  font-size: 0.8125rem;
+}
+.timeline-part-name {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.timeline-parts b small {
+  font-weight: 400;
+  color: var(--muted);
+}
+.timeline-topics {
+  color: var(--ink-2);
+}
+.timeline-grid {
+  position: relative;
+  display: grid;
+  gap: 4px;
+}
+.timeline-lane {
+  display: grid;
+  grid-template-columns: 6.2rem minmax(0, 1fr) 3.4rem;
+  align-items: center;
+}
+.timeline-lane-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8125rem;
+}
+.timeline-track {
+  position: relative;
+  height: 1.6rem;
+  /* The beginning, middle and end of the debate, marked in every lane. */
+  background:
+    linear-gradient(
+      to right,
+      transparent calc(33.333% - 1px),
+      var(--line-strong) calc(33.333% - 1px) 33.333%,
+      transparent 33.333% calc(66.666% - 1px),
+      var(--line-strong) calc(66.666% - 1px) 66.666%,
+      transparent 66.666%
+    ),
+    #f4f4f1;
+}
+.timeline-block {
+  position: absolute;
+  top: 2px;
+  bottom: 2px;
+  padding: 0;
+  border: 0;
+  cursor: pointer;
+  transition:
+    transform 150ms,
+    box-shadow 150ms;
+  animation: timeline-in 500ms cubic-bezier(0.2, 0.7, 0.1, 1) both;
+}
+.timeline-block.reply {
+  top: 6px;
+  bottom: 6px;
+  opacity: 0.8;
+}
+.timeline-block:hover,
+.timeline-block:focus-visible,
+.timeline-block.active {
+  transform: scaleY(1.35);
+  opacity: 1;
+  box-shadow: 0 0 0 2px var(--ink);
+  z-index: 2;
+}
+@keyframes timeline-in {
+  from {
+    transform: scaleX(0);
+    opacity: 0;
+  }
+}
+.timeline-lane-total {
+  font-size: 0.75rem;
+  color: var(--muted);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.timeline-axis {
+  display: flex;
+  justify-content: space-between;
+  margin: 0.5rem 3.4rem 0 6.2rem;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+.timeline-detail {
+  min-height: 2.6rem;
+  margin-top: 0.6rem;
+  padding: 0.6rem 0.8rem;
+  background: var(--wash-cool);
+  font-size: 0.875rem;
+}
+
+/* ---------- Reply by reply as a conversation ---------- */
+.debate-play {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+.debate-play button:not(.board-button) {
+  min-height: 36px;
+  padding: 0 0.8rem;
+  border: 1px solid var(--line-strong);
+  background: var(--paper);
+  font: inherit;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+.debate-play-count {
+  font-size: 0.8125rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.exchanges > li {
+  padding: 0.8rem 0 1rem;
+}
+.exchanges .replies {
+  margin: 0.4rem 0 0;
+  padding: 0;
+  border: 0;
+  gap: 0.5rem;
+}
+.turn {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.6rem;
+  max-width: min(46rem, 88%);
+  animation: bubble-in 380ms cubic-bezier(0.2, 0.7, 0.1, 1) both;
+}
+.turn.right {
+  flex-direction: row-reverse;
+  margin-left: auto;
+}
+.turn-avatar {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 2.6rem;
+  height: 2.6rem;
+  border: 2px solid var(--party);
+  border-radius: 50% !important;
+  background: #fff;
+  overflow: hidden;
+  font-weight: 700;
+}
+.turn-bubble {
+  position: relative;
+  min-width: 0;
+  padding: 0.65rem 0.85rem 0.6rem;
+  border: 1px solid color-mix(in srgb, var(--party) 40%, #fff);
+  border-radius: 16px 16px 16px 4px !important;
+  background: color-mix(in srgb, var(--party) 14%, #fff);
+}
+.turn.right .turn-bubble {
+  border-radius: 16px 16px 4px 16px !important;
+}
+.turn.anförande .turn-bubble {
+  border-width: 2px;
+  border-color: var(--party);
+}
+.turn-bubble header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.2rem 0.45rem;
+  font-size: 0.875rem;
+}
+.turn-bubble p {
+  margin: 0.3rem 0 0;
+  font-size: 0.875rem;
+  line-height: 1.55;
+  color: var(--ink);
+}
+.turn-bubble .turn-kind {
+  margin-left: auto;
+}
+.turn.typing .turn-bubble {
+  display: inline-flex;
+  gap: 0.3rem;
+  padding: 0.8rem 1rem;
+}
+.turn.typing .turn-bubble i {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50% !important;
+  background: var(--party);
+  animation: typing-dot 1s infinite ease-in-out;
+}
+.turn.typing .turn-bubble i:nth-child(2) {
+  animation-delay: 150ms;
+}
+.turn.typing .turn-bubble i:nth-child(3) {
+  animation-delay: 300ms;
+}
+@keyframes typing-dot {
+  0%,
+  60%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.5;
+  }
+  30% {
+    transform: translateY(-5px);
+    opacity: 1;
+  }
+}
+@keyframes bubble-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.97);
+  }
+}
+@media (max-width: 700px) {
+  .turn {
+    max-width: 100%;
+  }
+  .turn-avatar {
+    width: 2.1rem;
+    height: 2.1rem;
+  }
+  .timeline-parts {
+    grid-template-columns: minmax(0, 1fr);
+    margin-left: 0;
+  }
+  .timeline-lane {
+    grid-template-columns: 3.6rem minmax(0, 1fr) 2.6rem;
+  }
+  .timeline-axis {
+    margin: 0.5rem 2.6rem 0 3.6rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .turn,
+  .timeline-block,
+  .turn.typing .turn-bubble i {
+    animation: none;
+  }
+}
+
+/* ---------- What the parties talk about: party-coloured columns per issue area ---------- */
+.topic-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem 0.9rem;
+  margin: 0 0 0.8rem;
+  padding: 0;
+  list-style: none;
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+.topic-legend i {
+  display: inline-block;
+  width: 0.75rem;
+  height: 0.75rem;
+  margin-right: 0.35rem;
+  vertical-align: -0.08rem;
+}
+.topic-legend-prev {
+  font-weight: 400;
+  color: var(--muted);
+}
+.topic-legend-prev i {
+  border: 1.5px dashed var(--ink);
+}
+.topic-scroll {
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+.topic-groups {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: 0.8rem;
+  min-height: 17rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.topic-groups > li {
+  display: grid;
+  grid-template-rows: minmax(12rem, 1fr) auto;
+  gap: 0.4rem;
+}
+.topic-columns {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  border-bottom: 1px solid var(--ink);
+  background: repeating-linear-gradient(
+    to top,
+    transparent 0 calc(25% - 1px),
+    rgba(25, 40, 32, 0.07) calc(25% - 1px) 25%
+  );
+}
+.topic-col {
+  position: relative;
+  flex: 1;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+  cursor: default;
+  transition: opacity 150ms;
+}
+.topic-col.dim {
+  opacity: 0.35;
+}
+.topic-col i {
+  display: block;
+  width: 100%;
+  min-height: 1px;
+  animation: topic-grow 700ms cubic-bezier(0.2, 0.7, 0.1, 1) both;
+  animation-delay: calc(var(--i) * 40ms);
+  transform-origin: bottom;
+  transition: height 500ms cubic-bezier(0.2, 0.7, 0.1, 1);
+}
+.topic-prev {
+  position: absolute;
+  left: -1px;
+  right: -1px;
+  bottom: 0;
+  border: 1.5px dashed var(--ink);
+  border-bottom: 0;
+  pointer-events: none;
+}
+.topic-col:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+.topic-label {
+  font-size: 0.8125rem;
+  line-height: 1.25;
+  text-align: center;
+}
+.topic-readout {
+  min-height: 2.4rem;
+  margin: 0.7rem 0 0;
+  padding: 0.55rem 0.8rem;
+  background: var(--wash-cool);
+  font-size: 0.875rem;
+}
+@media (max-width: 900px) {
+  .topic-groups {
+    grid-auto-columns: minmax(calc(var(--n) * 0.8rem + 1rem), 1fr);
+  }
+}
+@keyframes topic-grow {
+  from {
+    transform: scaleY(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .topic-col i {
+    animation: none;
+  }
+}
+
+/* On a party-tinted bubble the quiet grey is too faint: labels there use the second ink. */
+.turn-bubble .turn-no,
+.turn-bubble .turn-party,
+.turn-bubble .turn-kind,
+.turn-bubble details summary,
+.turn-bubble .issue-chips a {
+  color: var(--ink-2);
+}

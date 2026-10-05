@@ -1,39 +1,4 @@
-/** Controls shared by the politics themes: one party, a select, and number formats. */
-import { l } from '../i18n'
-import { PartyLogo, partyName } from '../parties/identity'
-
-/** One party at a time, as a row of logo chips (radio buttons). */
-export function PartyChoice({
-  parties,
-  value,
-  onChange,
-  label = l('Party', 'Parti'),
-}: {
-  parties: string[]
-  value: string
-  onChange: (party: string) => void
-  label?: string
-}) {
-  return (
-    <div className="party-picker" role="radiogroup" aria-label={label}>
-      {parties.map((party) => (
-        <button
-          key={party}
-          type="button"
-          role="radio"
-          aria-checked={value === party}
-          className={value === party ? 'party-chip on' : 'party-chip'}
-          title={partyName(party)}
-          onClick={() => onChange(party)}
-        >
-          <PartyLogo party={party} size={18} />
-          {party}
-          <span className="visually-hidden"> ({partyName(party)})</span>
-        </button>
-      ))}
-    </div>
-  )
-}
+/** Controls shared by the politics themes: a select and number formats. */
 
 export function Select({
   label,

@@ -7,7 +7,7 @@ test('Swedish is the default language', async ({ page }) => {
   await page.goto('/#politik')
   await expect(page.locator('html')).toHaveAttribute('lang', 'sv')
   await expect(
-    page.getByRole('heading', { level: 1, name: 'Vem har makten just nu?' }),
+    page.getByRole('heading', { level: 1, name: /Svensk politik genom data/ }),
   ).toBeVisible()
 })
 
@@ -44,7 +44,7 @@ test('language choice persists across project pages and keeps data controls stab
   )
   await page.goto('/#drugcomb')
   await expect(
-    page.getByRole('heading', { name: 'Håller prediktionen för något nytt?' }),
+    page.getByRole('heading', { name: 'Håller förutsägelsen på något nytt?' }),
   ).toBeVisible()
   await page.setViewportSize({ width: 320, height: 900 })
   expect(
@@ -52,6 +52,15 @@ test('language choice persists across project pages and keeps data controls stab
       () => document.documentElement.scrollWidth <= innerWidth,
     ),
   ).toBe(true)
+  // Contrast is checked on the settled page, not halfway through the cards fading in.
+  await page.evaluate(() =>
+    Promise.all(
+      document
+        .getAnimations()
+        .filter((a) => a.effect?.getTiming().iterations !== Infinity)
+        .map((a) => a.finished),
+    ),
+  )
   const accessibility = await new AxeBuilder({ page })
     .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
     .analyze()

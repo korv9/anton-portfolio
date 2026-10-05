@@ -9,16 +9,20 @@ import { useEffect, useState } from 'react'
 
 export type Page =
   | 'home'
+  | 'projects'
+  | 'technical'
+  | 'design'
   | 'politik'
   | 'jobs'
   | 'welfare'
   | 'analysis'
-  | 'drugcomb'
   | 'allegoria'
+  | 'drugcomb'
   | 'thesis'
   | 'homie'
   | 'datamodel'
   | 'status'
+  | 'tallman'
 
 export type Route = {
   /** The full hash, e.g. `#politik-valjarna?partier=S`. */
@@ -33,10 +37,16 @@ export type Route = {
 export const REDIRECTS: Record<string, string> = {
   '#now': '#politik',
   '#now-election': '#politik',
+  '#politik-debatter': '#politik-sakdebatter',
   '#politics-page': '#politik',
   '#about': '#start',
   '#om-mig': '#start',
   '#projects': '#projekt',
+  // The semantic-drift report is withdrawn while it is reworked.
+  '#contact': '#kontakt',
+  '#work': '#projekt',
+  '#teknik': '#kompetenser',
+  '#tech': '#technical',
 }
 
 const POLITICS_PREFIXES = [
@@ -60,16 +70,21 @@ export function isPoliticsPath(path: string) {
 export function pageOf(path: string): Page {
   if (isPoliticsPath(path)) return 'politik'
   if (
-    ['#job-market', '#job-data'].includes(path) ||
-    path.startsWith('#job-market-')
+    ['#job-market', '#job-data', '#jobb'].includes(path) ||
+    path.startsWith('#job-market-') ||
+    path.startsWith('#jobb-')
   )
     return 'jobs'
   if (['#drugcomb', '#drugcomb-data'].includes(path)) return 'drugcomb'
-  if (path === '#rfc-drift') return 'allegoria'
   if (path === '#thesis') return 'thesis'
   if (path === '#homie') return 'homie'
   if (path === '#sweden' || path.startsWith('#sweden-')) return 'welfare'
+  if (path === '#alla-projekt') return 'projects'
+  if (path === '#rfc-drift') return 'allegoria'
+  if (path === '#design') return 'design'
+  if (path === '#technical' || path === '#teknisk') return 'technical'
   if (path === '#status') return 'status'
+  if (path === '#tallman') return 'tallman'
   if (path === '#analysis' || path.startsWith('#analysis-')) return 'analysis'
   if (path === '#data-model' || path.startsWith('#data-model-'))
     return 'datamodel'

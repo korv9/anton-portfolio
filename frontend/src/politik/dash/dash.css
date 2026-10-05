@@ -1,0 +1,767 @@
+/*
+ * The dashboard: everything on one screen on a desktop (header with slicers, key figures, what
+ * to watch, and the cards: the budget large on the left, four cards on the right), scrolling
+ * naturally on smaller screens. Motion: cards and figures rise in one after another, bars
+ * grow, and a change of parties glides.
+ */
+
+.politik-main:has(.dash) {
+  padding: 1rem 1.25rem 1rem;
+}
+.dash {
+  --gap: 0.75rem;
+  display: grid;
+  grid-template-rows: auto auto auto minmax(0, 1fr) auto;
+  gap: var(--gap);
+  /* The window below the site header and the party bar. */
+  height: calc(100vh - 64px - 76px - 2rem);
+  min-height: 640px;
+}
+.dash-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 1rem;
+}
+.dash-head h1 {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: var(--fs-page-title);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+.dash-sub {
+  margin: 0.25rem 0 0;
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+.dash-focus {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.2rem 0.3rem 0.2rem 0.5rem;
+  border: 2px solid;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  animation: dash-pop 260ms cubic-bezier(0.2, 0.8, 0.2, 1.2);
+}
+.dash-focus button {
+  border: 0;
+  background: none;
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 0.25rem;
+  color: var(--muted);
+}
+.dash-partylink {
+  font-size: 0.875rem;
+  white-space: nowrap;
+}
+
+/* Key figures */
+.dash-kpis {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: var(--gap);
+  margin: 0;
+}
+.dash-kpi {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  padding: 0.45rem 0.75rem 0.45rem;
+  animation: dash-rise 520ms cubic-bezier(0.2, 0.7, 0.1, 1) both;
+  animation-delay: calc(var(--i) * 45ms);
+  transition:
+    border-color 160ms,
+    transform 160ms;
+}
+.dash-kpi:hover {
+  border-color: var(--ink);
+  transform: translateY(-2px);
+}
+.dash-kpi dt {
+  font-size: 0.75rem;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.dash-kpi dd {
+  margin: 0.2rem 0 0;
+  font-size: clamp(1.15rem, 1.7vw, 1.5rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+.dash-kpi .dash-kpi-sub {
+  margin: 0.15rem 0 0;
+  font-weight: 400;
+  letter-spacing: 0;
+  line-height: 1.3;
+  font-size: 0.75rem;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* What to keep an eye on */
+.dash-attention {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.25rem 1rem;
+  align-items: baseline;
+  padding: 0.55rem 0.8rem;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--ink);
+  animation: dash-rise 520ms cubic-bezier(0.2, 0.7, 0.1, 1) both;
+  animation-delay: 280ms;
+}
+.dash-attention h2 {
+  margin: 0;
+  font-size: 0.8125rem;
+  white-space: nowrap;
+}
+.dash-attention ul {
+  margin: 0;
+  padding-left: 1rem;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+}
+.dash-attention li {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Cards */
+.dash-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.9fr) repeat(2, minmax(0, 1fr));
+  grid-template-rows: minmax(0, 1.2fr) minmax(0, 0.8fr);
+  gap: var(--gap);
+  min-height: 0;
+}
+.dash-card {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  padding: 0.7rem 0.85rem 0.6rem;
+  animation: dash-rise 560ms cubic-bezier(0.2, 0.7, 0.1, 1) both;
+  animation-delay: calc(340ms + var(--i) * 70ms);
+  transition:
+    border-color 160ms,
+    transform 200ms;
+}
+.dash-card:hover {
+  border-color: var(--ink);
+  transform: translateY(-2px);
+}
+.dash-card header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.75rem;
+}
+.dash-card h2 {
+  margin: 0;
+  font-size: var(--fs-card-title);
+  line-height: 1.25;
+}
+.dash-card header a {
+  font-size: 0.75rem;
+  white-space: nowrap;
+  color: var(--muted);
+  text-decoration: none;
+}
+.dash-card header a:hover {
+  color: var(--ink);
+  text-decoration: underline;
+}
+.dash-meta {
+  margin: 0.1rem 0 0.5rem;
+  font-size: var(--fs-meta);
+  color: var(--muted);
+}
+.dash-body {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  overflow: hidden;
+}
+.dash-empty {
+  font-size: 0.8125rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+.dash-foot {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+/* Seats */
+.dash-seats {
+  position: relative;
+  height: 58%;
+  min-height: 56px;
+  background: #f1f0ec;
+}
+.dash-seat {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border: 0;
+  border-right: 2px solid var(--paper);
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.1;
+  overflow: hidden;
+  cursor: pointer;
+  transform-origin: bottom;
+  animation: dash-grow-y 600ms cubic-bezier(0.2, 0.7, 0.1, 1) both;
+  animation-delay: calc(420ms + var(--i) * 50ms);
+  transition:
+    opacity 250ms,
+    filter 250ms;
+}
+.dash-seat b {
+  font-size: 0.8125rem;
+}
+.dash-seat small {
+  font-size: 0.75rem;
+}
+.dash-seat:hover {
+  filter: brightness(1.08);
+}
+.dash-seat.dim {
+  opacity: 0.25;
+}
+.dash-majority {
+  position: absolute;
+  top: -6px;
+  bottom: -6px;
+  border-left: 2px solid var(--ink);
+  pointer-events: none;
+}
+.dash-blocs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+  margin: 0.75rem 0 0;
+}
+.dash-blocs dt {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+.dash-blocs dd {
+  margin: 0.1rem 0 0;
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+/* Bars */
+.dash-bars {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.1rem;
+  height: 100%;
+  align-content: start;
+  overflow: hidden;
+}
+.dash-bars li {
+  display: grid;
+  grid-template-columns: minmax(0, 40%) minmax(0, 1fr) 5.4rem;
+  gap: 0.5rem;
+  align-items: center;
+  font-size: 0.75rem;
+  min-height: 16px;
+  animation: dash-rise 420ms cubic-bezier(0.2, 0.7, 0.1, 1) both;
+  animation-delay: calc(500ms + var(--i) * 40ms);
+}
+.dash-bar-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.dash-bar-track {
+  position: relative;
+  height: 12px;
+  background: #f1f0ec;
+}
+.dash-bars.diverging .dash-bar-track::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: -3px;
+  bottom: -3px;
+  border-left: 1px solid var(--ink);
+}
+.dash-bar-track i {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  transform-origin: left;
+  animation: dash-grow-x 700ms cubic-bezier(0.2, 0.7, 0.1, 1) both;
+  animation-delay: calc(560ms + var(--i) * 45ms);
+  transition:
+    width 500ms cubic-bezier(0.2, 0.7, 0.1, 1),
+    left 500ms cubic-bezier(0.2, 0.7, 0.1, 1),
+    background-color 300ms;
+}
+.dash-bar-track i.neg {
+  transform-origin: right;
+}
+.dash-bar-value {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* The budget: the largest card, spanning both rows on the left. */
+.dash-budget {
+  grid-row: 1 / span 2;
+}
+.dash-budget .dash-body {
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+.dash-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 1rem;
+  margin: 0 0 0.6rem;
+  padding: 0;
+  list-style: none;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+.dash-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+.dash-legend i {
+  width: 10px;
+  height: 10px;
+}
+.dash-legend small {
+  font-weight: 400;
+  color: var(--muted);
+}
+.dash-note {
+  margin: 0 0 0.5rem;
+  font-size: 0.75rem;
+}
+.grouped {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.3rem;
+}
+.grouped > li {
+  display: grid;
+  grid-template-columns: minmax(0, 34%) minmax(0, 1fr);
+  gap: 0.75rem;
+  align-items: center;
+  padding-bottom: 0.3rem;
+  border-bottom: 1px solid var(--line);
+  animation: dash-rise 420ms cubic-bezier(0.2, 0.7, 0.1, 1) both;
+  animation-delay: calc(420ms + var(--i) * 35ms);
+}
+.grouped > li:last-child {
+  border-bottom: 0;
+}
+.grouped-label {
+  font-size: 0.8125rem;
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.grouped-bars {
+  display: grid;
+  gap: 1px;
+}
+.grouped-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 5.6rem;
+  gap: 0.5rem;
+  align-items: center;
+}
+.grouped-track {
+  position: relative;
+  height: 12px;
+  background: #f1f0ec;
+}
+.grouped.many .grouped-track {
+  height: 8px;
+}
+.grouped.many .grouped-value {
+  font-size: 0.75rem;
+  line-height: 1;
+}
+.grouped.diverging .grouped-track::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: -2px;
+  bottom: -2px;
+  border-left: 1px solid var(--ink);
+}
+.grouped-track i {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  transform-origin: left;
+  animation: dash-grow-x 700ms cubic-bezier(0.2, 0.7, 0.1, 1) both;
+  animation-delay: calc(480ms + var(--i) * 35ms);
+  transition:
+    width 500ms cubic-bezier(0.2, 0.7, 0.1, 1),
+    left 500ms cubic-bezier(0.2, 0.7, 0.1, 1);
+}
+.grouped-track i.neg {
+  transform-origin: right;
+}
+.grouped-value {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.grouped-value b {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+/* Comparison tiles, one per chosen party */
+.dash-compare {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: var(--gap);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.dash-compare > li {
+  padding: 0.5rem 0.7rem 0.55rem;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-top: 3px solid;
+  animation: dash-rise 480ms cubic-bezier(0.2, 0.7, 0.1, 1) both;
+  animation-delay: calc(var(--i) * 45ms);
+}
+.dash-compare p {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0 0 0.35rem;
+  font-size: 0.8125rem;
+}
+.dash-compare dl {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.35rem;
+  margin: 0;
+}
+.dash-compare dt {
+  font-size: 0.75rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.dash-compare dd {
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.dash-compare dd small {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+/* Slicers in the header */
+.dash-slicers {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: flex-end;
+  gap: 0.4rem;
+}
+.dash-slicers .theme-select {
+  display: grid;
+  gap: 0.15rem;
+  margin: 0;
+}
+.dash-slicers .theme-select span {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+.dash-slicers select {
+  min-height: 32px;
+  width: auto;
+  max-width: 11rem;
+  padding: 0.2rem 1.4rem 0.2rem 0.45rem;
+  font-size: 0.8125rem;
+}
+
+/* A tick for an earlier value on a bar (the previous survey) */
+.dash-bar-ref {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  width: 2px;
+  margin-left: -1px;
+  background: var(--ink);
+}
+.dash-bar-value small {
+  margin-left: 0.3rem;
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+/* Heat tables: who votes alike, what the parties talk about */
+.dash-heat {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 2px;
+  table-layout: fixed;
+  font-size: 0.75rem;
+}
+.dash-heat thead th {
+  font-weight: 700;
+  padding: 0 0 0.15rem;
+  text-align: center;
+}
+.dash-heat thead td,
+.dash-heat tbody th {
+  width: 34%;
+}
+.dash-heat:has(tbody th .heat-party) thead td,
+.dash-heat:has(tbody th .heat-party) tbody th {
+  width: 2.2rem;
+}
+.heat-party {
+  display: inline-block;
+  padding-bottom: 1px;
+  border-bottom: 3px solid;
+  font-weight: 700;
+  text-decoration: none;
+}
+.dash-heat tbody th {
+  padding-right: 0.35rem;
+  font-weight: 400;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.dash-heat td {
+  height: 1.05rem;
+  padding: 0;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  transition: background-color 300ms;
+}
+.dash-heat td.empty {
+  background: #f6f5f2;
+}
+.dash-heat tbody tr {
+  animation: dash-rise 420ms cubic-bezier(0.2, 0.7, 0.1, 1) both;
+  animation-delay: calc(560ms + var(--i) * 40ms);
+}
+
+@keyframes dash-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+@keyframes dash-fade {
+  to {
+    opacity: 1;
+  }
+}
+@keyframes dash-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes dash-grow-x {
+  from {
+    transform: scaleX(0);
+  }
+}
+@keyframes dash-grow-y {
+  from {
+    transform: scaleY(0);
+  }
+}
+@keyframes dash-pop {
+  from {
+    transform: scale(0.85);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dash *,
+  .dash {
+    animation: none !important;
+  }
+}
+
+/* Smaller screens: the same cards, stacked, and the page scrolls. */
+@media (max-width: 1180px), (max-height: 700px) {
+  .dash {
+    height: auto;
+    min-height: 0;
+  }
+  .dash-kpis {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .dash-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: none;
+    grid-auto-rows: minmax(250px, auto);
+  }
+  .dash-body {
+    overflow: visible;
+  }
+  .dash-seats {
+    height: 90px;
+  }
+  .dash-budget {
+    grid-row: auto;
+    grid-column: 1 / -1;
+    max-height: none;
+  }
+  .dash-head {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .dash-slicers {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+}
+@media (max-width: 700px) {
+  .grouped > li {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.3rem;
+  }
+  .dash-slicers .theme-select {
+    flex: 1 1 40%;
+  }
+  .dash-slicers select {
+    width: 100%;
+  }
+  .dash-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .dash-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .dash-attention {
+    grid-template-columns: 1fr;
+  }
+  .dash-attention li {
+    white-space: normal;
+  }
+  .dash-head {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .dash-head h1 {
+    flex-wrap: wrap;
+  }
+}
+
+/* One screen on a desktop: the charts grow to fill their cards instead of leaving space. */
+@media (min-width: 1600px) and (min-height: 950px) {
+  .dash-card h2 {
+    font-size: 1.0625rem;
+  }
+  .dash-meta,
+  .dash-card header a {
+    font-size: 0.8125rem;
+  }
+  .dash-bars {
+    grid-auto-rows: minmax(16px, 2.6rem);
+    align-content: space-evenly;
+  }
+  .dash-bars li {
+    font-size: 0.875rem;
+  }
+  .dash-bar-track {
+    height: clamp(12px, 1.6vh, 22px);
+  }
+  .grouped-label {
+    font-size: 0.875rem;
+  }
+  .grouped-track {
+    height: clamp(10px, 1.3vh, 18px);
+  }
+  .grouped-value {
+    font-size: 0.8125rem;
+  }
+  .dash-heat {
+    height: 100%;
+    font-size: 0.8125rem;
+  }
+  .dash-heat td {
+    height: auto;
+    min-height: 1.3rem;
+  }
+  .dash-seat b {
+    font-size: 1rem;
+  }
+  .dash-seat small {
+    font-size: 0.8125rem;
+  }
+  .dash-blocs dd {
+    font-size: 0.9375rem;
+  }
+  .dash-legend {
+    font-size: 0.8125rem;
+  }
+}
+
+/* The one-screen overview on a laptop-height screen keeps the base type size, so every card
+   fits without clipping; taller screens get the larger type and charts above. */
+@media (min-width: 1181px) and (max-height: 949px) {
+  html:has(.dash) {
+    font-size: 16px;
+  }
+}
+/* The overview's four key figures, one per chapter, share the row. */
+@media (min-width: 1181px) {
+  .dash-kpis:has(> :nth-child(4):last-child) {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+@media (min-width: 1181px) {
+  .dash-kpis:has(> :nth-child(3):last-child) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}

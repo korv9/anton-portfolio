@@ -3,22 +3,21 @@ import { test, expect } from './test'
 test('politics now: seats, majority, government, decisions and history', async ({
   page,
 }) => {
-  // The old address leads to the first theme.
+  // The old address leads to the story.
   await page.goto('/#now')
   await expect(page).toHaveURL(/#politik$/)
   await expect(
-    page.getByRole('heading', { level: 1, name: 'Who holds power right now?' }),
+    page.getByRole('heading', {
+      level: 1,
+      name: /Swedish politics through data/,
+    }),
   ).toBeVisible()
-  await expect(page.locator('.theme-kpis > div')).toHaveCount(3)
-  await expect(page.locator('.seat-chart-seg')).not.toHaveCount(0)
-  await expect(page.locator('.theme-takeaway')).toContainText('175')
-  await page.getByRole('tab', { name: 'Table' }).click()
-  expect(
-    await page.locator('.theme-table tbody tr').count(),
-  ).toBeGreaterThanOrEqual(8)
+  await expect(page.locator('.story-hero .story-kpi')).toHaveCount(4)
+  await expect(page.locator('.story-seatbar-track > span')).toHaveCount(8)
 
   // The seat calculator adds up any parties against the 175-seat line.
-  await page.getByRole('link', { name: /Count the seats yourself/ }).click()
+  await page.getByRole('link', { name: /Count seats yourself/ }).click()
+  await expect(page).toHaveURL(/#now-seats$/)
   await expect(page.getByTestId('plain-summary').locator('li')).not.toHaveCount(
     0,
   )
@@ -37,7 +36,7 @@ test('politics now: seats, majority, government, decisions and history', async (
   )
   await expect(
     page.getByRole('navigation', { name: 'Politics' }).getByRole('link', {
-      name: /Where things stand/,
+      name: /Overview/,
     }),
   ).toHaveAttribute('aria-current', 'true')
   await page.goto('/#now-decisions')

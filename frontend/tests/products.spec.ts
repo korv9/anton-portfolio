@@ -8,10 +8,18 @@ test('project reports keep their data and downloads on their own pages', async (
   await page.goto('/#drugcomb')
   const report = page.locator('#drugcomb')
   await expect(report).toContainText('396,498')
-  await expect(report.locator('[role="img"]')).toHaveCount(4)
-  const before = await report.locator('.research-bars').first().innerText()
-  await report.getByLabel('Feature set / model').selectOption('history_ridge')
-  await expect(report.locator('.research-bars').first()).not.toHaveText(before)
+  // Report cards: the question in plain words, key figures, one card per result.
+  await expect(report.locator('.dc-explain h3')).toHaveCount(3)
+  await expect(report.locator('.dash-kpi')).toHaveCount(6)
+  await expect(report.locator('.board-card')).toHaveCount(11)
+  await expect(report.locator('.dc-checks li.ok')).toHaveCount(10)
+  // Choosing a test split changes what the model relies on.
+  const card = report.locator('.board-card', {
+    hasText: 'What the model relies on',
+  })
+  const before = await card.locator('.dash-bars').innerText()
+  await card.getByRole('button', { name: 'New cell line' }).click()
+  await expect(card.locator('.dash-bars')).not.toHaveText(before)
   await page.goto('/#drugcomb-data')
   const drugData = page.locator('#drugcomb-data')
   await expect(
@@ -31,7 +39,7 @@ test('project reports keep their data and downloads on their own pages', async (
   await expect(page.locator('#job-data tbody tr')).toHaveCount(25)
   await page.goto('/#raw-data')
   const politicsData = page.locator('#raw-data')
-  await expect(politicsData).toContainText('1,104 matching rows of 1,104')
+  await expect(politicsData).toContainText('1,161 matching rows of 1,161')
   await politicsData
     .getByRole('button', { name: 'All decision points' })
     .click()

@@ -1,4 +1,5 @@
 import TopicNav from '../TopicNav'
+import CountyMultiples from './CountyMultiples'
 import { Suspense, lazy, useEffect, useMemo, useState } from 'react'
 import { l } from '../i18n'
 import {
@@ -162,6 +163,7 @@ export default function WelfarePage({ view }: { view: string }) {
           ['#sweden-explorer', 'Explore indicators', 'Utforska indikatorer'],
         ]}
       />
+      {view === '#sweden' && <CountyMultiples rows={counties} />}
       {view === '#sweden' && (
         <section
           className="report welfare-section"

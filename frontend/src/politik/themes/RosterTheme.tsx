@@ -5,26 +5,23 @@
  */
 import { useEffect, useState } from 'react'
 import { l } from '../../i18n'
-import MultiLineChart from '../../charts/MultiLineChart'
-import PartyPicker from '../../parliament/PartyPicker'
+import { SeriesColumns } from '../board/Columns'
+import '../board/board.css'
 import {
   load,
   sessionDate,
   type SessionRecord,
   type Sessions,
 } from '../../parliament/data'
-import {
-  PartyTag,
-  RIKSDAG_PARTIES,
-  partyLine,
-  partyName,
-} from '../../parties/identity'
+import { PartyTag, RIKSDAG_PARTIES, partyName } from '../../parties/identity'
 import type { Route } from '../../router'
 import ThemeLayout from '../ThemeLayout'
+import VoteWaffle from '../features/VoteWaffle'
 import BuilderPanel, { Choice, Field } from '../BuilderPanel'
 import Bars from '../Bars'
-import { PartyChoice, Select, num, pct } from '../controls'
-import { listParam, useViewParams } from '../useViewParams'
+import { Select, pct } from '../controls'
+import { useViewParams } from '../useViewParams'
+import { shownParties, useParties } from '../partySelection'
 
 type Measure = 'lika' | 'regeringen' | 'enighet' | 'narvaro' | 'vinnande'
 const RECORD: Record<
@@ -45,10 +42,8 @@ const RECORD: Record<
   },
 }
 const DEFAULTS = {
-  parti: 'S',
   riksmote: '',
   matt: 'lika',
-  partier: 'S,M,SD,C,V',
   fran: '2006',
 }
 
@@ -57,6 +52,7 @@ export default function RosterTheme({ route }: { route: Route }) {
   const [error, setError] = useState<string | null>(null)
   const [building, setBuilding] = useState(false)
   const [view, setView, reset] = useViewParams(route, DEFAULTS)
+  const { selected } = useParties(route)
   useEffect(() => {
     load<Sessions>('parliament/sessions.json')
       .then(setData)
@@ -73,7 +69,8 @@ export default function RosterTheme({ route }: { route: Route }) {
   const present = RIKSDAG_PARTIES.filter((p) =>
     pairs.some((pair) => pair.party_a === p || pair.party_b === p),
   )
-  const party = present.includes(view.parti) ? view.parti : (present[0] ?? 'S')
+  // The first party chosen in the party bar, or S until one is chosen.
+  const party = selected.find((p) => present.includes(p)) ?? present[0] ?? 'S'
   const agreement = (a: string, b: string) =>
     pairs.find(
       (p) =>
@@ -95,16 +92,7 @@ export default function RosterTheme({ route }: { route: Route }) {
   const closest = allPairs[0]
   const furthest = allPairs.at(-1)
 
-  const picked = listParam(view.partier).filter((p) =>
-    RIKSDAG_PARTIES.includes(p),
-  )
-  const toggle = (p: string) =>
-    setView({
-      partier: (picked.includes(p)
-        ? picked.filter((x) => x !== p)
-        : [...picked, p]
-      ).join(','),
-    })
+  const picked = shownParties(selected, ['S', 'M', 'SD', 'C', 'V'])
   const record = measure !== 'lika' ? RECORD[measure] : null
   const recordSeries = record
     ? picked.map((p) => ({
@@ -138,14 +126,26 @@ export default function RosterTheme({ route }: { route: Route }) {
           options={sessionOptions}
           onChange={(riksmote) => setView({ riksmote })}
         />
-        <PartyChoice
-          parties={present}
-          value={party}
-          onChange={(parti) => setView({ parti })}
-        />
+        <p className="theme-filter-note">
+          {l(
+            `Showing ${party}. The first party chosen in the bar above is compared with the rest.`,
+            `Visar ${party}. Det första partiet du väljer i raden ovanför jämförs med de andra.`,
+          )}
+        </p>
       </>
     ) : (
-      <PartyPicker parties={RIKSDAG_PARTIES} picked={picked} toggle={toggle} />
+      <Select
+        label={l('Period', 'Tidsperiod')}
+        value={view.fran}
+        options={['1993', '2006', '2014', '2022'].map((y) => ({
+          value: y,
+          label:
+            y === '1993'
+              ? l('All sessions', 'Alla riksmöten')
+              : l(`Since ${y}`, `Sedan ${y}`),
+        }))}
+        onChange={(fran) => setView({ fran })}
+      />
     )
 
   const matrix = (
@@ -237,16 +237,10 @@ export default function RosterTheme({ route }: { route: Route }) {
         )}
         loading={!data && !error}
         error={error}
+        feature={<VoteWaffle />}
         kpis={
           info && closest && furthest
             ? [
-                {
-                  value: num(info.roll_calls),
-                  label: l(
-                    `roll calls in ${session}`,
-                    `voteringar under riksmötet ${session}`,
-                  ),
-                },
                 {
                   value: pct(closest.agreement_pct, 0),
                   label: l(
@@ -286,11 +280,11 @@ export default function RosterTheme({ route }: { route: Route }) {
         }
         chart={
           record ? (
-            <MultiLineChart
+            <SeriesColumns
               series={recordSeries}
               label={l(record.en, record.sv)}
               format={(v) => pct(v, 0)}
-              colorOf={partyLine}
+              tick={(d) => d.slice(2, 4)}
             />
           ) : (
             <Bars
@@ -311,8 +305,8 @@ export default function RosterTheme({ route }: { route: Route }) {
         takeaway={
           record
             ? l(
-                'Each line is one party; the label at the end shows the latest session.',
-                'Varje linje är ett parti; bokstäverna vid slutet visar det senaste riksmötet.',
+                'One chart per party on the same scale; each column is one session.',
+                'Ett diagram per parti på samma skala; varje kolumn är ett riksmöte.',
               )
             : others[0]
               ? l(
@@ -409,13 +403,6 @@ export default function RosterTheme({ route }: { route: Route }) {
                 onChange={(riksmote) => setView({ riksmote })}
               />
             </Field>
-            <Field label={l('Compare with', 'Jämför utifrån')}>
-              <PartyChoice
-                parties={present}
-                value={party}
-                onChange={(parti) => setView({ parti })}
-              />
-            </Field>
           </>
         ) : (
           <>
@@ -431,13 +418,6 @@ export default function RosterTheme({ route }: { route: Route }) {
                       : l(`Since ${y}`, `Sedan ${y}`),
                 }))}
                 onChange={(fran) => setView({ fran })}
-              />
-            </Field>
-            <Field label={l('Parties', 'Partier')}>
-              <PartyPicker
-                parties={RIKSDAG_PARTIES}
-                picked={picked}
-                toggle={toggle}
               />
             </Field>
           </>

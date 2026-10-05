@@ -36,7 +36,7 @@ test('home introduces Anton and routes to each project', async ({ page }) => {
     .first()
     .click()
   await expect(page.getByRole('heading', { level: 1 })).toContainText(
-    'Who holds power right now?',
+    'Swedish politics through data',
   )
   await page.goto('/#politics')
   await expect(page.getByRole('heading', { level: 1 })).toContainText(
@@ -146,11 +146,15 @@ test('budget proposals and annual outcomes are separate navigable reports', asyn
   await budget
     .getByRole('combobox', { name: 'Budget year', exact: true })
     .selectOption('2017/18')
-  await expect(budget.locator('.budget-ledger-summary')).toContainText('21/27')
+  // 2018 runs over a page break in the source; all 27 areas are read and reconcile with the
+  // committee's own total (1 000 515 SEK m).
+  await expect(budget.locator('.budget-ledger-summary')).toContainText('27/27')
   await expect(budget.locator('.budget-ledger-summary')).toContainText(
+    '1,000.5 bn SEK',
+  )
+  await expect(budget.locator('.budget-ledger-summary')).not.toContainText(
     'Incomplete',
   )
-  await expect(budget.locator('.comparison-bar-row')).toHaveCount(0)
   await budget
     .getByRole('combobox', { name: 'Budget year', exact: true })
     .selectOption('2021/22')

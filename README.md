@@ -56,6 +56,55 @@ The current reporting contract is the [gold semantic model](docs/gold-semantic-m
 
 The engine has no validated vote-to-direction pairs yet. Party-level tightening/loosening charts require versioned legal comparisons and reviewed annotations. Tests of engine rules do not validate political interpretations.
 
+### Political analytics: the story page (`#politik`)
+
+**Purpose.** One vertical data story that a visitor can scroll to understand what the Riksdag
+data says, in nine sections: Sweden now, power, decisions, the dividing lines, the parties, the
+debates, the members, advanced analysis, and how it is built. Every section answers one
+question with a chart and a sentence generated from the data, and links to the detailed pages.
+Everything is descriptive: how often parties vote alike, how far they split, what they talk
+about. Nothing grades a party.
+
+**Data and pipeline.** Riksdagen's open data (roll calls, member votes, protocols), SCB and
+Valmyndigheten → Python ingestion → Parquet in Cloudflare R2 → dbt + DuckDB → derived metrics →
+React. Two derived layers:
+
+- `platform/publish/politics_story.py` reads the decision details, debate shards and issue
+  lexicon through the delivery and writes `politics/parliament/story.json` (≈ 0.8 MB): member
+  vote statistics, per party-leader debate words / topics / tf-idf keywords, the issue-debate
+  agenda per riksmöte, and terms that grew or fell per 10,000 words. Tested in
+  `platform/tests/python/test_politics_story.py`.
+- `frontend/src/politik/analytics/` is the single metrics layer for the roll calls
+  (`metrics.ts`, typed in `types.ts`, loaded and memoised in `load.ts`). Charts consume its
+  output and never recompute a metric. Tested in `frontend/tests/unit/metrics.test.ts`.
+
+**Definitions.**
+
+| Metric | Definition |
+|---|---|
+| Party position | The vote most of the party's members cast in a roll call, as Riksdagen reports it. |
+| Party cohesion | Cast votes (yes, no, abstain) by the party's members that match the party position, of all their cast votes. |
+| Party similarity | Of the roll calls where both parties had a position, the share where it was the same. |
+| Polarisation (roll call) | 1 − (members in the largest group of parties with the same position) / (members of all parties with a position). 0 when all parties agree, about 0.5 at an even split. |
+| Polarisation (area) | The mean polarisation of the roll calls prepared by that committee. |
+| Close vote | A roll call where \|yes − no\| / (yes + no) < 10 %. |
+| Topic share | The learned issue lexicon (log-odds with an informative Dirichlet prior, about two thirds right on held-out speeches) applied to the words; each topic's share of the scored words. |
+| Distinctive words | tf-idf per party and party-leader debate: term frequency per 10,000 words × log(documents / documents with the term); names left out. |
+| Term growth | Per 10,000 words in the issue debates, the latest riksmöte against the three before; ratio smoothed by +0.5 per 10,000 words; stems in at least 25 speeches. |
+| Member deviation | Cast votes that differ from the party position, of the cast votes where the party had one. Absence and deviation are not opposition by themselves. |
+| Voting map | PCA of the parties' positions over the roll calls (yes 1, no −1, abstain 0), centred per roll call. |
+
+**Data quality.** Before any metric, `cleanVotes` drops duplicate decision points, roll calls
+where no party had a position, and roll calls with fewer than 100 cast votes, and the page
+reports how many of each it found. Members who changed party are compared with the party they
+belonged to at each vote.
+
+**Design decisions.** Heavy text processing runs once in Python and ships as compact JSON;
+vote metrics are cheap enough to compute in the browser from the per-session indexes, so they
+stay transparent and testable. Party colours and logos come from one config
+(`parties/identity.tsx`). Every chart has a text alternative, a table or labelled values, and
+never relies on colour alone. The party, debate and member chosen are kept in the address.
+
 ## Welfare: how Sweden is doing
 
 Five public sources — SCB's labour force survey and population, Försäkringskassan's sick-leave statistics, Folkhälsomyndigheten's public health survey, the European Social Survey and Kolada — in one star schema with shared keys for region, period, sex and age. See [the welfare data model](docs/welfare-data-model.md) and [the analysis guide](docs/analysis-guide.md): which table for which purpose, and how each measure may be aggregated.

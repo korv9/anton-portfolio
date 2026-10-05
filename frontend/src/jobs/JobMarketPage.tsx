@@ -54,7 +54,7 @@ export type Market = {
 }
 
 /** English names for the occupation fields (Arbetsförmedlingen's taxonomy). */
-const FIELD_EN: Record<string, string> = {
+export const FIELD_EN: Record<string, string> = {
   'Administration, ekonomi, juridik': 'Administration, finance, law',
   'Bygg och anläggning': 'Construction',
   'Chefer och verksamhetsledare': 'Managers',
@@ -79,14 +79,14 @@ const FIELD_EN: Record<string, string> = {
 }
 const fieldName = (name: string) => l(FIELD_EN[name] ?? name, name)
 
-const EMPLOYMENT_EN: Record<string, string> = {
+export const EMPLOYMENT_EN: Record<string, string> = {
   'Vanlig anställning': 'Regular employment',
   Behovsanställning: 'On-call employment',
   'Sommarjobb / feriejobb': 'Summer job',
   'Arbete utomlands': 'Work abroad',
   Okänd: 'Not stated',
 }
-const HOURS_EN: Record<string, string> = {
+export const HOURS_EN: Record<string, string> = {
   Heltid: 'Full time',
   Deltid: 'Part time',
   Okänd: 'Not stated',

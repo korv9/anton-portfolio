@@ -1,0 +1,697 @@
+{
+ "summary": {
+  "mode": "extraktiv, utan språkmodell",
+  "retriever": "lexikal (BM25)",
+  "run_at": "2026-09-29T10:48:25.351Z",
+  "index_generated_at": "2026-09-29T10:33:55+00:00",
+  "questions": 24,
+  "reviewed_questions": 0,
+  "passed": 24,
+  "retrieval_recall": 1,
+  "claims": 63,
+  "supported_share": 1,
+  "interpretation_share": 0,
+  "unsupported_share": 0
+ },
+ "rows": [
+  {
+   "id": "budget-1",
+   "category": "budget",
+   "question": "Hur mycket avvek Socialdemokraternas budgetmotion för 2026 från regeringens förslag?",
+   "reviewed": false,
+   "recall": 1,
+   "claims": 5,
+   "supported": 5,
+   "interpretation": 0,
+   "unsupported": 0,
+   "pass": true,
+   "certainty": "Hög",
+   "stats": "14 källor hämtade · 5 påståenden kontrollerade · 5 direkt stödda",
+   "retrieved": [
+    "dp:budget:2026:S",
+    "dp:budget:2026:S:4",
+    "dp:budget:2026:S:8",
+    "dp:budget:2026:S:21",
+    "dp:budget:2026:S:24",
+    "dp:budget:2026:S:5",
+    "tal:HD0939-2#35",
+    "tal:HD0939-2#9",
+    "tal:HD0939-79#23",
+    "tal:HD0939-79#3",
+    "tal:HD0987-37#11",
+    "tal:HD09135-76#11",
+    "tal:HD0939-71#1",
+    "tal:HD09135-76#16"
+   ],
+   "labels": [
+    "direct",
+    "direct",
+    "direct",
+    "direct",
+    "direct"
+   ]
+  },
+  {
+   "id": "budget-2",
+   "category": "budget",
+   "question": "Hur skilde sig Centerpartiets och Miljöpartiets budgetmotioner för 2025?",
+   "reviewed": false,
+   "recall": 1,
+   "claims": 7,
+   "supported": 7,
+   "interpretation": 0,
+   "unsupported": 0,
+   "pass": true,
+   "certainty": "Hög",
+   "stats": "14 källor hämtade · 7 påståenden kontrollerade · 5 direkt stödda · 2 beräknade",
+   "retrieved": [
+    "dp:budget:2025:C",
+    "dp:budget:2025:MP",
+    "dp:budget:2025:C:4",
+    "dp:budget:2025:MP:4",
+    "dp:budget:2025:C:8",
+    "dp:budget:2025:MP:8",
+    "tal:HC0946-35#8",
+    "tal:HC0946-36#31",
+    "tal:HC0946-36#14",
+    "tal:HC0946-35#6",
+    "tal:HC0946-54#3",
+    "tal:HC0946-56#2",
+    "tal:HC0946-58#1",
+    "tal:HC0946-58#12"
+   ],
+   "labels": [
+    "direct",
+    "direct",
+    "direct",
+    "direct",
+    "direct",
+    "computed",
+    "computed"
+   ]
+  },
+  {
+   "id": "budget-3",
+   "category": "budget",
+   "question": "Vad ville Vänsterpartiet lägga på migration i budgeten 2026?",
+   "reviewed": false,
+   "recall": 1,
+   "claims": 5,
+   "supported": 5,
+   "interpretation": 0,
+   "unsupported": 0,
+   "pass": true,
+   "certainty": "Hög",
+   "stats": "14 källor hämtade · 5 påståenden kontrollerade · 5 direkt stödda",
+   "retrieved": [
+    "dp:budget:2026:V",
+    "dp:budget:2026:V:8",
+    "dp:budget:2026:V:4",
+    "dp:budget:2026:V:21",
+    "dp:budget:2026:V:24",
+    "dp:budget:2026:V:5",
+    "tal:HD09135-67#19",
+    "tal:HD09134-71#3",
+    "tal:HD0945-151#20",
+    "tal:HD0945-159#0",
+    "tal:HD09135-20#24",
+    "tal:HD09135-20#3",
+    "tal:HD09134-71#6",
+    "tal:HD0945-153#0"
+   ],
+   "labels": [
+    "direct",
+    "direct",
+    "direct",
+    "direct",
+    "direct"
+   ]
+  },
+  {
+   "id": "budget-4",
+   "category": "budget",
+   "question": "Hur mycket ville Kristdemokraterna ändra budgeten för 2019?",
+   "reviewed": false,
+   "recall": 1,
+   "claims": 1,
+   "supported": 1,
+   "interpretation": 0,
+   "unsupported": 0,
+   "pass": true,
+   "certainty": "Hög",
+   "stats": "1 källa hämtad · 1 påstående kontrollerat · 1 direkt stött",
+   "retrieved": [
+    "dp:budget:2019:KD"
+   ],
+   "labels": [
+    "direct"
+   ]
+  },
+  {
+   "id": "budget-5",
+   "category": "budget",
+   "question": "Hur stor var Sverigedemokraternas budgetavvikelse 2020?",
+   "reviewed": false,
+   "recall": 1,
+   "claims": 1,
+   "supported": 1,
+   "interpretation": 0,
+   "unsupported": 0,
+   "pass": true,
+   "certainty": "Hög",
+   "stats": "1 källa hämtad · 1 påstående kontrollerat · 1 direkt stött",
+   "retrieved": [
+    "dp:budget:2020:SD"
+   ],
+   "labels": [
+    "direct"
+   ]
+  },
+  {
+   "id": "rost-1",
+   "category": "voteringar",
+   "question": "Hur ofta röstade SD och M lika under riksmötet 2024/25?",
+   "reviewed": false,
+   "recall": 1,
+   "claims": 1,
+   "supported": 1,
+   "interpretation": 0,
+   "unsupported": 0,
+   "pass": true,
+   "certainty": "Hög",
+   "stats": "3 källor hämtade · 1 påstående kontrollerat · 1 beräknat",
+   "retrieved": [
+    "dp:rost:2024/25:M-SD",
+    "tal:HC0910-1#7",
+    "tal:HC0910-1#4"
+   ],
+   "labels": [
+    "computed"
+   ]
+  },
+  {
+   "id": "rost-2",
+   "category": "voteringar",
+   "question": "Hur ofta röstade S och V lika 2023/24?",
+   "reviewed": false,
+   "recall": 1,
+   "claims": 1,
+   "supported": 1,
+   "interpretation": 0,
+   "unsupported": 0,
+   "pass": true,
+   "certainty": "Hög",
+   "stats": "1 källa hämtad · 1 påstående kontrollerat · 1 beräknat",
+   "retrieved": [
+    "dp:rost:2023/24:S-V"
+   ],
+   "labels": [
+    "computed"
+   ]
+  },
+  {
+   "id": "rost-3",
+   "category": "voteringar",
+   "question": "Hur ofta röstade Centerpartiet med regeringen 2024/25?",
+   "reviewed": false,
+   "recall": 1,
+   "claims": 5,
+   "supported": 5,
+   "interpretation": 0,
+   "unsupported": 0,
+   "pass": true,
+   "certainty": "Hög",
+   "stats": "12 källor hämtade · 5 påståenden kontrollerade · 5 beräknade",
+   "retrieved": [
+    "dp:parti:2024/25:C",
+    "dp:rost:2024/25:C-L",
+    "dp:rost:2024/25:C-M",
+    "dp:rost:2024/25:C-S",
+    "dp:rost:2024/25:C-V",
+    "dp:rost:2024/25:C-KD",
+    "tal:HC09129-18#0",
+    "tal:HC09129-7#7",
+    "tal:HC0913-23#13",
+    "tal:HC0913-23#4",
+    "tal:HC09129-7#4",
+    "tal:HC09129-18#7"
+   ],
+   "labels": [
+    "computed",
+    "computed",
+    "computed",
+    "computed",
+    "computed"
+   ]
+  },
+  {
+   "id": "rost-4",
+   "category": "voteringar",
+   "question": "Hur hög var Liberalernas närvaro i voteringarna 2022/23?",
+   "reviewed": false,
+   "recall": 1,
+   "claims": 5,
+   "supported": 5,
+   "interpretation": 0,
+   "unsupported": 0,
+   "pass": true,
+   "certainty": "Hög",
+   "stats": "13 källor hämtade · 5 påståenden kontrollerade · 5 beräknade",
+   "retrieved": [
+    "dp:parti:2022/23:L",
+    "dp:rost:2022/23:C-L",
+    "dp:rost:2022/23:L-M",
+    "dp:rost:2022/23:L-S",
+    "dp:rost:2022/23:L-V",
+    "dp:rost:2022/23:KD-L",
+    "tal:HA0922-8#1",
+    "tal:HA0922-8#9",
+    "tal:HA09127-30#1",
+    "tal:HA09127-30#9",
+    "tal:HA09127-32#0",
+    "tal:HA0983-30#5",
+    "tal:HA0983-30#1"
+   ],
+   "labels": [
+    "computed",
+    "computed",
+    "computed",
+    "computed",
+    "computed"
+   ]
+  },
+  {
+   "id": "rost-5",
+   "category": "voteringar",
+   "question": "Röstade Miljöpartiet och Kristdemokraterna ofta lika 2025/26?",
+   "reviewed": false,
+   "recall": 1,
+   "claims": 1,
+   "supported": 1,
+   "interpretation": 0,
+   "unsupported": 0,
+   "pass": true,
+   "certainty": "Hög",
+   "stats": "9 källor hämtade · 1 påstående kontrollerat · 1 beräknat",
+   "retrieved": [
+    "dp:rost:2025/26:KD-MP",
+    "tal:HD0922-6#6",
+    "tal:HD09113-81#0",
+    "tal:HD09113-86#2",
+    "tal:HD09113-77#14",
+    "tal:HD09113-96#3",
+    "tal:HD09113-86#0",
+    "tal:HD09129-6#6",
+    "tal:HD09113-94#4"
+   ],
+   "labels": [
+    "computed"
+   ]
+  },
+  {
+   "id": "opinion-1",
+   "category": "opinion och val",
+   "question": "Vilket stöd har Liberalerna i SCB:s senaste mätning?",
+   "reviewed": false,
+   "recall": 1,
+   "claims": 1,
+   "supported": 1,
+   "interpretation": 0,
+   "unsupported": 0,
+   "pass": true,
+   "certainty": "Hög",
+   "stats": "9 källor hämtade · 1 påstående kontrollerat · 1 direkt stött",
+   "retrieved": [
+    "dp:psu:2026-05:L",
+    "tal:HB0955-1#0",
+    "tal:HB09130-44#6",
+    "tal:HB09130-52#0",
+    "tal:HB09130-44#0",
+    "tal:HB0949-64#7",
+    "tal:HB0955-1#9",
+    "tal:HB0955-9#7",
+    "tal:HB0955-13#1"
+   ],
+   "labels": [
+    "direct"
+   ]
+  },
+  {
+   "id": "opinion-2",
+   "category": "opinion och val",
+   "question": "Hur stort stöd hade Sverigedemokraterna i SCB:s mätning 2024?",
+   "reviewed": false,
+   "recall": 1,
+   "claims": 1,
+   "supported": 1,
+   "interpretation": 0,
+   "unsupported": 0,
+   "pass": true,
+   "certainty": "Hög",
+   "stats": "7 källor hämtade · 1 påstående kontrollerat · 1 direkt stött",
+   "retrieved": [
+    "dp:psu:2024-05:SD",
+    "tal:HB0987-76#7",
+    "tal:HB09134-3#11",
+    "tal:HB0987-76#4",
+    "tal:HC0910-3#1",
+    "tal:HB09134-3#0",
+    "tal:HC0910-3#3"
+   ],
+   "labels": [
+    "direct"
+   ]
+  },
+  {
+   "id": "val-1",
+   "category": "opinion och val",
+   "question": "Hur många mandat fick Centerpartiet i valet 2026?",
+   "reviewed": false,
+   "recall": 1,
+   "claims": 1,
+   "supported": 1,
+   "interpretation": 0,
+   "unsupported": 0,
+   "pass": true,
+   "certainty": "Hög",
+   "stats": "9 källor hämtade · 1 påstående kontrollerat · 1 direkt stött",
+   "retrieved": [
+    "dp:val:2026:C",
+    "tal:HD0939-95#10",
+    "tal:HD0939-50#2",
+    "tal:HD0939-38#21",
+    "tal:HD0939-42#2",
+    "tal:HD0939-95#9",
+    "tal:HD0939-38#13",
+    "tal:HD0939-46#0",
+    "tal:HD0964-25#0"
+   ],
+   "labels": [
+    "direct"
+   ]
+  },
+  {
+   "id": "val-2",
+   "category": "opinion och val",
+   "question": "Hur stor andel av rösterna fick Moderaterna i riksdagsvalet?",
+   "reviewed": false,
+   "recall": 1,
+   "claims": 1,
+   "supported": 1,
+   "interpretation": 0,
+   "unsupported": 0,
+   "pass": true,
+   "certainty": "Hög",
+   "stats": "9 källor hämtade · 1 påstående kontrollerat · 1 direkt stött",
+   "retrieved": [
+    "dp:val:2026:M",
+    "tal:HA0993-13#2",
+    "tal:HA0993-15#2",
+    "tal:HC0986-94#13",
+    "tal:HC0986-94#2",
+    "tal:HA0993-15#0",
+    "tal:HA0993-13#0",
+    "tal:HC0986-96#3",
+    "tal:HA0993-11#10"
+   ],
+   "labels": [
+    "direct"
+   ]
+  },
+  {
+   "id": "debatt-1",
+   "category": "debatter",
+   "question": "Vad sa Vänsterpartiet om straffbarhetsåldern?",
+   "reviewed": false,
+   "recall": 1,
+   "claims": 1,
+   "supported": 1,
+   "interpretation": 0,
+   "unsupported": 0,
+   "pass": true,
+   "certainty": "Hög",
+   "stats": "8 källor hämtade · 1 påstående kontrollerat · 1 direkt stött",
+   "retrieved": [
+    "tal:HD09157-2#0",
+    "tal:HD09157-2#11",
+    "tal:HA0964-28#0",
+    "tal:HA0964-41#1",
+    "tal:HA0964-43#0",
+    "tal:HD09157-13#0",
+    "tal:HA0964-41#2",
+    "tal:HD09157-15#0"
+   ],
+   "labels": [
+    "direct"
+   ]
+  },
+  {
+   "id": "debatt-2",
+   "category": "debatter",
+   "question": "Vad sades i debatten om ny kärnkraft?",
+   "reviewed": false,
+   "recall": 1,
+   "claims": 3,
+   "supported": 3,
+   "interpretation": 0,
+   "unsupported": 0,
+   "pass": true,
+   "certainty": "Hög",
+   "stats": "8 källor hämtade · 3 påståenden kontrollerade · 3 direkt stödda",
+   "retrieved": [
+    "tal:HC09120-47#1",
+    "tal:HB0937-6#13",
+    "tal:HC09120-85#31",
+    "tal:HB0937-23#27",
+    "tal:HB0937-42#0",
+    "tal:HC09120-61#10",
+    "tal:HD09137-139#14",
+    "tal:HB0937-12#2"
+   ],
+   "labels": [
+    "direct",
+    "direct",
+    "direct"
+   ]
+  },
+  {
+   "id": "debatt-3",
+   "category": "debatter",
+   "question": "Vad sa Miljöpartiet om friskolorna?",
+   "reviewed": false,
+   "recall": 1,
+   "claims": 1,
+   "supported": 1,
+   "interpretation": 0,
+   "unsupported": 0,
+   "pass": true,
+   "certainty": "Hög",
+   "stats": "8 källor hämtade · 1 påstående kontrollerat · 1 direkt stött",
+   "retrieved": [
+    "tal:HA09116-23#2",
+    "tal:HD09157-120#9",
+    "tal:HD09122-34#0",
+    "tal:HA09116-27#11",
+    "tal:HD09122-38#2",
+    "tal:HD09157-120#21",
+    "tal:HD09122-34#3",
+    "tal:HA09116-23#0"
+   ],
+   "labels": [
+    "direct"
+   ]
+  },
+  {
+   "id": "debatt-4",
+   "category": "debatter",
+   "question": "Hur argumenterade partierna i debatten om statens budget 2026?",
+   "reviewed": false,
+   "recall": 1,
+   "claims": 9,
+   "supported": 9,
+   "interpretation": 0,
+   "unsupported": 0,
+   "pass": true,
+   "certainty": "Hög",
+   "stats": "14 källor hämtade · 9 påståenden kontrollerade · 8 direkt stödda · 1 beräknat",
+   "retrieved": [
+    "dp:budget:2026:C",
+    "dp:budget:2026:S",
+    "dp:budget:2026:V",
+    "dp:budget:2026:MP",
+    "dp:budget:2026:S:4",
+    "dp:budget:2026:V:4",
+    "tal:HD0939-2#35",
+    "tal:HD0987-40#0",
+    "tal:HD0939-79#3",
+    "tal:HD09135-76#1",
+    "tal:HD0939-71#2",
+    "tal:HD0939-2#13",
+    "tal:HD0939-79#17",
+    "tal:HD0987-36#10"
+   ],
+   "labels": [
+    "direct",
+    "direct",
+    "direct",
+    "direct",
+    "direct",
+    "computed",
+    "direct",
+    "direct",
+    "direct"
+   ]
+  },
+  {
+   "id": "debatt-5",
+   "category": "debatter",
+   "question": "Vad sades om den nya vapenlagen i riksdagen?",
+   "reviewed": false,
+   "recall": 1,
+   "claims": 3,
+   "supported": 3,
+   "interpretation": 0,
+   "unsupported": 0,
+   "pass": true,
+   "certainty": "Hög",
+   "stats": "8 källor hämtade · 3 påståenden kontrollerade · 3 direkt stödda",
+   "retrieved": [
+    "tal:HD09113-27#9",
+    "tal:HD09113-27#16",
+    "tal:HD09113-22#3",
+    "tal:HD09113-1#8",
+    "tal:HD09113-10#17",
+    "tal:HD09113-24#5",
+    "tal:HD09113-33#0",
+    "tal:HD09113-10#11"
+   ],
+   "labels": [
+    "direct",
+    "direct",
+    "direct"
+   ]
+  },
+  {
+   "id": "debatt-6",
+   "category": "debatter",
+   "question": "Vad sa Socialdemokraterna om pensionerna?",
+   "reviewed": false,
+   "recall": 1,
+   "claims": 2,
+   "supported": 2,
+   "interpretation": 0,
+   "unsupported": 0,
+   "pass": true,
+   "certainty": "Hög",
+   "stats": "8 källor hämtade · 2 påståenden kontrollerade · 2 direkt stödda",
+   "retrieved": [
+    "tal:HA0964-20#0",
+    "tal:HD0957-1#3",
+    "tal:HA0964-16#7",
+    "tal:HA0964-16#3",
+    "tal:HD09143-42#9",
+    "tal:HD09143-42#7",
+    "tal:HD0957-1#8",
+    "tal:HA0964-22#0"
+   ],
+   "labels": [
+    "direct",
+    "direct"
+   ]
+  },
+  {
+   "id": "inget-1",
+   "category": "otillräckligt underlag",
+   "question": "Vilket stöd hade Piratpartiet i valet 2026?",
+   "reviewed": false,
+   "recall": null,
+   "claims": 0,
+   "supported": 0,
+   "interpretation": 0,
+   "unsupported": 0,
+   "pass": true,
+   "certainty": "Låg",
+   "stats": "0 källor hämtade · 0 påståenden kontrollerade",
+   "retrieved": [],
+   "labels": []
+  },
+  {
+   "id": "inget-2",
+   "category": "otillräckligt underlag",
+   "question": "Vad beslutar riksdagen om budgeten 2030?",
+   "reviewed": false,
+   "recall": null,
+   "claims": 0,
+   "supported": 0,
+   "interpretation": 0,
+   "unsupported": 0,
+   "pass": true,
+   "certainty": "Låg",
+   "stats": "0 källor hämtade · 0 påståenden kontrollerade",
+   "retrieved": [],
+   "labels": []
+  },
+  {
+   "id": "forandring-1",
+   "category": "förändring över tid",
+   "question": "Har regeringen skärpt migrationspolitiken?",
+   "reviewed": false,
+   "recall": null,
+   "claims": 3,
+   "supported": 3,
+   "interpretation": 0,
+   "unsupported": 0,
+   "pass": true,
+   "certainty": "Medel",
+   "stats": "8 källor hämtade · 3 påståenden kontrollerade · 3 direkt stödda",
+   "retrieved": [
+    "tal:HD0945-142#16",
+    "tal:HB0967-6#0",
+    "tal:HA09127-70#1",
+    "tal:HD0945-131#3",
+    "tal:HD0945-188#15",
+    "tal:HD0945-146#1",
+    "tal:HB0967-1#2",
+    "tal:HA09127-69#14"
+   ],
+   "labels": [
+    "direct",
+    "direct",
+    "direct"
+   ]
+  },
+  {
+   "id": "forandring-2",
+   "category": "förändring över tid",
+   "question": "Har Sverigedemokraterna mildrat sin syn på EU?",
+   "reviewed": false,
+   "recall": null,
+   "claims": 5,
+   "supported": 5,
+   "interpretation": 0,
+   "unsupported": 0,
+   "pass": true,
+   "certainty": "Medel",
+   "stats": "10 källor hämtade · 5 påståenden kontrollerade · 5 direkt stödda",
+   "retrieved": [
+    "dp:budget:2019:SD",
+    "dp:budget:2020:SD",
+    "dp:budget:2018:SD",
+    "dp:budget:2017:SD",
+    "dp:val:2026:SD",
+    "dp:psu:2023-05:SD",
+    "tal:HA09127-67#10",
+    "tal:HC09118-79#0",
+    "tal:HA09127-67#1",
+    "tal:HC09118-79#11"
+   ],
+   "labels": [
+    "direct",
+    "direct",
+    "direct",
+    "direct",
+    "direct"
+   ]
+  }
+ ]
+}

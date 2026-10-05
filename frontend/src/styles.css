@@ -1,7 +1,62 @@
 /* Tokens: see design-system.css for the full system, loaded last. */
 :root {
+  color: #111214;
+  background: #fafaf9;
+  font-family: 'Geist Variable', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-synthesis: none;
   font-variant-numeric: tabular-nums;
+  /* Type: Geist for text, Geist Mono for figures and labels. */
+  --font: 'Geist Variable', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --font-mono:
+    'Geist Mono Variable', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  /* Scale: five sizes, used everywhere. */
+  --fs-xs: 0.75rem;
+  --fs-sm: 0.875rem;
+  --fs-md: 1rem;
+  --fs-lg: 1.25rem;
+  --fs-xl: clamp(1.75rem, 3vw, 2.25rem);
+  /* Colour: near-black on warm white; colour itself only ever means a party. */
+  --ink: #111214;
+  --ink-2: #3a3c40;
+  --muted: #62656b;
+  --paper: #ffffff;
+  --page: #fafaf9;
+  --wash: #f2f2f0;
+  --line: #e4e4e1;
+  --line-strong: #cbcbc6;
+  --teal: #111214;
+  --orange: #8a8a8a;
+  --focus: #111214;
+  /* The accent: dark green for what is chosen or current (a page, a tab, a filter). */
+  --accent: #192820;
+  --accent-2: #2c4a3b;
+  --on-accent: #ffffff;
+  /* Cool washes for selected rows, read-outs and the sidebar. */
+  --select: #eef3f6;
+  --wash-cool: #f4f6f7;
+  --side: #eef2f5;
+  /* Meaning, never decoration: information, a fall or a no, a note. */
+  --info: #1f5f8b;
+  --negative: #a3412f;
+  --note-bg: #fbf6e6;
+  --note-line: #c7a64a;
+  /* Type roles: one size per job, on every page. */
+  --fs-display: clamp(2.2rem, 5vw, 3.6rem);
+  --fs-page-title: 1.6rem;
+  --fs-section-title: clamp(1.4rem, 2.6vw, 2rem);
+  --fs-card-title: 1.0625rem;
+  --fs-body: 0.9375rem;
+  --fs-meta: 0.8125rem;
+  --fs-label: 0.75rem;
+  /* Space and cards. */
+  --sp-1: 0.25rem;
+  --sp-2: 0.5rem;
+  --sp-3: 0.75rem;
+  --sp-4: 1rem;
+  --sp-5: 1.5rem;
+  --sp-6: 2.5rem;
+  --card-pad: 0.9rem 1.05rem 1rem;
+  --card-gap: 0.9rem;
 }
 * {
   box-sizing: border-box;
@@ -106,7 +161,7 @@ h3 {
   padding: 0.34rem 0.48rem;
   background: transparent;
   color: var(--muted);
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 800;
   letter-spacing: 0.04em;
   cursor: pointer;
@@ -152,7 +207,7 @@ main {
   margin: 0 0 1rem;
   text-transform: uppercase;
   letter-spacing: 0.14em;
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 800;
   color: var(--teal);
 }
@@ -212,7 +267,7 @@ main {
 }
 .profile-rows time {
   color: var(--muted);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   padding-top: 0.12rem;
 }
 .profile-rows strong,
@@ -236,7 +291,7 @@ main {
   color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  font-size: 0.62rem;
+  font-size: 0.75rem;
   margin-bottom: 0.2rem;
 }
 .stack-groups span {
@@ -358,7 +413,7 @@ main {
   color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 0.09em;
-  font-size: 0.67rem;
+  font-size: 0.75rem;
   font-weight: 750;
 }
 .project-card-head strong {
@@ -393,7 +448,7 @@ main {
 }
 .thesis-kpis span {
   color: var(--muted);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   margin-top: 0.35rem;
 }
 .thesis-findings {
@@ -410,7 +465,7 @@ main {
 .thesis-findings > div > span {
   color: var(--teal);
   font-weight: 800;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
 }
 .thesis-findings p {
   margin: 0;
@@ -448,7 +503,7 @@ main {
   color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  font-size: 0.65rem;
+  font-size: 0.75rem;
   font-weight: 750;
 }
 .project-side h3 {
@@ -516,7 +571,7 @@ main {
 .control-label {
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  font-size: 0.67rem;
+  font-size: 0.75rem;
   font-weight: 800;
   color: var(--muted);
 }
@@ -628,7 +683,7 @@ select {
   color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  font-size: 0.6rem;
+  font-size: 0.75rem;
   font-weight: 800;
 }
 .umap-guide dd {
@@ -641,7 +696,7 @@ select {
   gap: 0.5rem 1.1rem;
   padding: 0.75rem 1.2rem;
   border-bottom: 1px solid var(--line);
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   color: #505b58;
 }
 .topic-legend span {
@@ -719,7 +774,7 @@ select {
   margin-top: 1.3rem;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  font-size: 0.62rem;
+  font-size: 0.75rem;
   font-weight: 800;
 }
 .point-detail a,
@@ -808,7 +863,7 @@ select {
 }
 .year-totals small {
   color: var(--muted);
-  font-size: 0.65rem;
+  font-size: 0.75rem;
 }
 .chart-wrap {
   padding: 0.5rem 1rem 1rem;
@@ -823,7 +878,7 @@ select {
 }
 .axis-label {
   fill: #68716e;
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 .line-point {
   fill: white;
@@ -861,7 +916,7 @@ select {
 }
 .log-list article > span {
   color: var(--muted);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   font-weight: 700;
@@ -1308,7 +1363,7 @@ button.decision-read {
   background: #fff;
   color: #233b4b;
   text-decoration: none;
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 600;
 }
 .topic-tabs a:hover {
@@ -1325,7 +1380,7 @@ button.decision-read {
   outline-offset: 3px;
 }
 .topic-hint {
-  font-size: 13px;
+  font-size: 0.8125rem;
   color: #526775;
   margin: 0;
 }
