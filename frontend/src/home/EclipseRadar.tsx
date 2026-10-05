@@ -466,10 +466,7 @@ export default function EclipseRadar({ onChoose }: { onChoose: () => void }) {
               : l('in the CV', 'i CV:t')}
           </>
         ) : (
-          l(
-            `Every thread is one real thing: a skill, or a job or project that uses it (${total} in all). Rings I–${['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'][max - 1]} count them; faint arcs join threads from the same job or project. Point at a skill.`,
-            `Varje tråd är en riktig sak: en kompetens, eller ett jobb eller projekt där den används (${total} totalt). Ringarna I–${['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'][max - 1]} räknar dem; tunna bågar binder ihop trådar från samma jobb eller projekt. Peka på en kompetens.`,
-          )
+          l('Point at a skill.', 'Peka på en kompetens.')
         )}
       </p>
       <ul className="eclipse-list">
