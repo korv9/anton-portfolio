@@ -12,6 +12,7 @@ import { balanceWord, partyTotals, yearlyShare } from './logic'
 import type { PoliticsData, SimilarityRow } from './politicsTypes'
 import { ArticleLink, fmtDate, Kind, pick, Source, SPEECH } from './shared'
 import type { AiActData, Milestone } from './types'
+import { CHART_MILESTONES } from './TimeSeries'
 
 const PARTIES = ['S', 'M', 'SD', 'C', 'V', 'KD', 'L', 'MP']
 const pct = (v: number, digits = 1) =>
@@ -55,15 +56,6 @@ export function Politics({ data }: { data: AiActData }) {
 }
 
 // ------------------------------------------------------------------ share over time
-
-const CHART_MILESTONES = new Set([
-  'document-52021pc0206',
-  'document-32024r1689',
-  'prohibitions-and-literacy',
-  'gpai-governance-penalties',
-  'document-32026r1744',
-  'general-application',
-])
 
 function ShareOverTime({
   politics,

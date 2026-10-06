@@ -1,0 +1,6 @@
+series_id,domain,label_en,label_sv,numerator_en,numerator_sv,denominator_en,denominator_sv,source_model,route,sort_order
+riksdag_ai,politics,Riksdag speeches mentioning AI,Riksdagsanföranden som nämner AI,speeches mentioning AI,anföranden som nämner AI,speeches,anföranden,mart_ai_politics_monthly,ai-act-politics,1
+riksdag_ai_act,politics,Riksdag speeches naming the AI Act,Riksdagsanföranden som nämner AI-förordningen,speeches naming the Act,anföranden som nämner förordningen,speeches,anföranden,mart_ai_politics_monthly,ai-act-politics,2
+jobs_ai_any,jobs,Job ads mentioning AI,Jobbannonser som nämner AI,ads mentioning AI,annonser som nämner AI,ads,annonser,mart_job_ai_governance_terms,ai-act-jobs,3
+jobs_ai_act,jobs,Job ads naming the AI Act,Jobbannonser som nämner AI-förordningen,ads naming the Act,annonser som nämner förordningen,ads,annonser,mart_job_ai_governance_terms,ai-act-jobs,4
+jobs_ai_governance,jobs,Job ads mentioning AI governance,Jobbannonser som nämner AI-styrning,ads mentioning AI governance,annonser som nämner AI-styrning,ads,annonser,mart_job_ai_governance_terms,ai-act-jobs,5

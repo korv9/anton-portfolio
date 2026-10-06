@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { fetchData } from '../dataSource'
 import type { AiActData } from './types'
 import type { PoliticsData, SimilarityRow } from './politicsTypes'
+import type { JobsData, Signals } from './jobsTypes'
 
 let pending: Promise<AiActData> | null = null
 const texts: Partial<Record<'en' | 'sv', Promise<Record<string, string>>>> = {}
@@ -112,4 +113,34 @@ export function loadSimilarity(): Promise<SimilarityRow[]> {
   if (!similarity)
     similarity = json<SimilarityRow[]>('ai-act/politics/similarity.json')
   return similarity
+}
+
+let jobs: Promise<JobsData> | null = null
+let signals: Promise<Signals> | null = null
+
+export function loadJobs(): Promise<JobsData> {
+  if (!jobs)
+    jobs = Promise.all([
+      json<JobsData['summary']>('ai-act/jobs/summary.json'),
+      json<JobsData['monthly']>('ai-act/jobs/monthly.json'),
+      json<JobsData['fields']>('ai-act/jobs/fields.json'),
+      json<JobsData['examples']>('ai-act/jobs/examples.json'),
+    ]).then(([summary, monthly, fields, examples]) => ({
+      summary,
+      monthly,
+      fields,
+      examples,
+    }))
+  jobs.catch(() => {
+    jobs = null
+  })
+  return jobs
+}
+
+export function loadSignals(): Promise<Signals> {
+  if (!signals) signals = json<Signals>('ai-act/signals.json')
+  signals.catch(() => {
+    signals = null
+  })
+  return signals
 }

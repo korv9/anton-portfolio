@@ -4,7 +4,7 @@
  * under models/{bronze,silver,gold}/eu_ai_act, platform/publish/eu_ai_act/export_ai_act.py).
  *
  * Views: overview, what applies today, timeline, roles, risk classes, obligations, the startup
- * navigator, changes and sources, plus an article reader (#ai-act-article?a=6). Filters and the
+ * navigator, the Riksdag, job ads, the AI governance timeline, changes and sources, plus an article reader (#ai-act-article?a=6). Filters and the
  * navigator's answers live in the address, so any view can be shared. Every statement drawn from
  * the Act links to its article; interpretations are marked as such.
  */
@@ -17,7 +17,9 @@ import { ArticleView } from './ArticleView'
 import { useAiAct } from './data'
 import { isoToday } from './logic'
 import { NavigatorView } from './Navigator'
+import { Jobs } from './Jobs'
 import { Politics } from './Politics'
+import { Signals } from './Signals'
 import { DISCLAIMER, fmtDate } from './shared'
 import {
   Changes,
@@ -91,6 +93,20 @@ const VIEWS: Record<
       'Hur har det svenska politiska språket om AI förändrats medan AI-förordningen växt fram?',
     ],
   },
+  '#ai-act-jobs': {
+    title: ['In the job ads', 'I jobbannonserna'],
+    question: [
+      'How often do Swedish job ads talk about AI governance, compliance and model risk?',
+      'Hur ofta talar svenska jobbannonser om AI-styrning, regelefterlevnad och modellrisk?',
+    ],
+  },
+  '#ai-act-signals': {
+    title: ['AI governance timeline', 'Tidslinje för AI-styrning'],
+    question: [
+      'How do the Act, the Riksdag and the job market line up in time?',
+      'Hur ligger förordningen, riksdagen och arbetsmarknaden i tid?',
+    ],
+  },
   '#ai-act-changes': {
     title: ['Changes', 'Ändringar'],
     question: ['What has changed, and when?', 'Vad har ändrats, och när?'],
@@ -111,7 +127,14 @@ const VIEWS: Record<
   },
 }
 
-const DEFAULTS = { actor: '', risk: '', kind: '', svar: '', a: '' }
+const DEFAULTS = {
+  actor: '',
+  risk: '',
+  kind: '',
+  svar: '',
+  a: '',
+  term: 'ai_any',
+}
 
 export default function AiActProduct({ route }: { route: Route }) {
   const { data, error } = useAiAct()
@@ -186,6 +209,14 @@ export default function AiActProduct({ route }: { route: Route }) {
               />
             )}
             {path === '#ai-act-politics' && <Politics data={data} />}
+            {path === '#ai-act-jobs' && (
+              <Jobs
+                data={data}
+                term={params.term}
+                setTerm={(term) => set({ term })}
+              />
+            )}
+            {path === '#ai-act-signals' && <Signals data={data} />}
             {path === '#ai-act-changes' && (
               <Changes
                 data={data}

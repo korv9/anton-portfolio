@@ -155,7 +155,8 @@ affected; latest official change, application date, next milestone, latest guida
 snapshot sized for a screenshot with "copy as text"), today (every article by chapter with its
 status on the reader's date), timeline, roles, risk classes, obligations (role × topic matrix
 and a filterable list), the **startup navigator**, changes (with "what changed this month")
-the Riksdag and AI (`#ai-act-politics`) and sources. `#ai-act-article?a=<n>` opens an article with its official text in the reader's
+the Riksdag and AI (`#ai-act-politics`), job ads (`#ai-act-jobs`), the AI governance timeline
+(`#ai-act-signals`) and sources. `#ai-act-article?a=<n>` opens an article with its official text in the reader's
 language. The reader's date decides what applies; `?idag=YYYY-MM-DD` previews another day.
 
 The navigator's rules live in `platform/publish/eu_ai_act/navigator.json` and are checked
@@ -167,6 +168,13 @@ involve* and never classifies anyone.
 `#ai-act-politics` reads every Riksdag speech since 2016/17 against the Act: how often AI comes up,
 with which words, by which party, and which speeches sit closest to which articles by semantic
 similarity. See [ai-politics.md](ai-politics.md).
+
+## Job ads and the AI governance timeline
+
+`#ai-act-jobs` counts AI governance, compliance and model-risk words in every job ad since 2020
+([ai-jobs.md](ai-jobs.md)). `#ai-act-signals` puts the Act's milestones, the Riksdag series and the
+job-ad series on one time axis, each in its own panel ([ai-governance-timeline.md](ai-governance-timeline.md)).
+Both state under the chart that temporal overlap does not prove causation.
 
 ## Limitations
 

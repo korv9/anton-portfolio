@@ -141,3 +141,26 @@ test('the Riksdag view shows AI over time with the Act’s milestones and its me
   const axe = await new AxeBuilder({ page }).include('.aiact').analyze()
   expect(axe.violations).toEqual([])
 })
+
+test('job ads and the AI governance timeline sit on the Act’s milestones', async ({
+  page,
+}) => {
+  await page.goto('/#ai-act-jobs')
+  await expect(
+    page.getByRole('heading', { level: 1, name: 'In the job ads' }),
+  ).toBeVisible()
+  await expect(page.locator('.aa-line').first()).toBeAttached()
+  await expect(page.locator('.aa-caveat').first()).toContainText(
+    'does not prove causation',
+  )
+  await page.getByRole('button', { name: 'The AI Act by name' }).click()
+  await expect(page).toHaveURL(/term=ai_act/)
+  const axe = await new AxeBuilder({ page }).include('.aiact').analyze()
+  expect(axe.violations).toEqual([])
+
+  await page.goto('/#ai-act-signals')
+  await expect(page.locator('.aa-panel')).toHaveCount(5)
+  await expect(page.locator('.aa-milestone-tag').first()).toBeVisible()
+  const axe2 = await new AxeBuilder({ page }).include('.aiact').analyze()
+  expect(axe2.violations).toEqual([])
+})

@@ -42,6 +42,7 @@ DBT_FOLDER_DOMAIN = {
     "job_ai_governance": "ai_act",  # AI governance words in job ads, read against the Act
     "philosophy": "philosophy",
     "concepts": "concepts",  # four corpora read against one set of curated concepts
+    "cross_domain": "ai_act",  # the AI governance timeline: Riksdag and job ads by month
     "shared": "shared",
     "": "jobs",  # seeds at the root of seeds/: the job-ad role and technology patterns
 }
@@ -175,6 +176,8 @@ PUBLISHERS = [
     ]},
     {"path": "platform/publish/philosophy/export_philosophy.py", "domain": "philosophy",
      "outputs": [{"pattern": "philosophy/*.json"}]},
+    {"path": "platform/publish/cross_domain/export_ai_governance_timeline.py", "domain": "ai_act",
+     "outputs": [{"pattern": "ai-act/signals.json", "inputs": ["mart_ai_governance_timeline"]}]},
     {"path": "platform/publish/concepts/export_concepts.py", "domain": "concepts",
      "outputs": [{"pattern": "concepts/*.json"}]},
     {"path": "platform/publish/job_ai_governance/export_job_ai_governance.py", "domain": "ai_act",

@@ -64,6 +64,8 @@ models:
     gold:
       +materialized: table
       +schema: gold
+      cross_domain:
+        +tags: [cross_domain]
       concepts:
         +tags: [concepts]
       philosophy:
@@ -99,6 +101,11 @@ models:
 # tag lets it build on its own: `dbt build --select tag:welfare`.
 seeds:
   portfolio:
+    cross_domain:
+      +tags: [cross_domain]
+      +schema: seeds
+      ai_governance_series:
+        +column_types: {sort_order: integer}
     concepts:
       +tags: [concepts]
       +schema: seeds

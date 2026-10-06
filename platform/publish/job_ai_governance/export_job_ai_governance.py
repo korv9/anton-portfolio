@@ -46,6 +46,8 @@ def dump(name: str, payload) -> Path:
 
 
 def main() -> int:
+    # The bronze views read warehouse/raw by a path relative to platform/, where dbt runs.
+    os.chdir(ROOT / "platform")
     con = duckdb.connect(str(DATABASE), read_only=True)
     OUT.mkdir(parents=True, exist_ok=True)
     terms = rows(con, """select term_id, family, label_en, label_sv, pattern, case_sensitive, description_en

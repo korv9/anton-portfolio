@@ -77,6 +77,7 @@ before the politics build, since dbt reads the fact tables it writes.
 | Philosophy Atlas | Project Gutenberg (thirteen works, translators recorded) | `models/*/philosophy`, `seeds/philosophy`, `nlp/philosophy`, `publish/philosophy` | [docs/philosophy-atlas.md](../docs/philosophy-atlas.md) |
 | Concept layer | The four corpora above (myth, philosophy, Riksdag, AI Act), by sample | `models/*/concepts`, `seeds/concepts`, `nlp/concepts`, `publish/concepts` | [docs/concept-layer.md](../docs/concept-layer.md), [docs/concept-constellation.md](../docs/concept-constellation.md) |
 | AI governance in job ads | JobTech historical archives (counted, no ads kept) | `models/*/job_ai_governance`, `seeds/job_ai_governance`, `publish/job_ai_governance` | [docs/ai-jobs.md](../docs/ai-jobs.md) |
+| AI governance timeline | The Riksdag and job-ad marts above, by month | `models/gold/cross_domain`, `seeds/cross_domain`, `publish/cross_domain` | [docs/ai-governance-timeline.md](../docs/ai-governance-timeline.md) |
 | Politics | Riksdagen, Statskontoret | Budget context and roll-call votes in `models/*/politics`; speeches and language still in `legacy/` | [docs/political-observatory.md](../docs/political-observatory.md) |
 
 ## Adding a source

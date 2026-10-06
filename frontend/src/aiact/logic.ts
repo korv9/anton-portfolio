@@ -197,3 +197,24 @@ export function balanceWord(
   if (balance < -0.15) return 'b'
   return 'even'
 }
+
+/** Per year: the sum of numerators over the sum of denominators (never an average of months). */
+export function yearlyFromMonths(
+  rows: { month: string; numerator: number; denominator: number }[],
+): { year: string; numerator: number; denominator: number; share: number }[] {
+  const by = new Map<string, { numerator: number; denominator: number }>()
+  for (const r of rows) {
+    const y = r.month.slice(0, 4)
+    const cur = by.get(y) ?? { numerator: 0, denominator: 0 }
+    cur.numerator += r.numerator
+    cur.denominator += r.denominator
+    by.set(y, cur)
+  }
+  return [...by.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([year, v]) => ({
+      year,
+      ...v,
+      share: v.denominator ? v.numerator / v.denominator : 0,
+    }))
+}
