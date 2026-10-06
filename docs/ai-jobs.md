@@ -66,9 +66,26 @@ averages of monthly shares.
 - The occupation fields where the term is most common in the latest year.
 - Example ads, and the dictionary with the archives' sizes and hashes.
 
-## Results
+## Results (6 October 2026)
 
-_Filled in from the complete run; see below._
+Eight archives (2020 to 2026-Q2), **4,925,716 ads** from January 2020 to July 2026.
+
+| Share of all ads | 2020 | 2021 | 2022 | 2023 | 2024 | 2025 | 2026 |
+|---|---|---|---|---|---|---|---|
+| AI (any mention) | 0.77 % | 0.94 % | 0.80 % | 0.73 % | 1.18 % | 1.97 % | 2.80 % |
+| The AI Act by name | 0 | 0 | 1 ad | 3 ads | 0.003 % | 0.016 % | 0.033 % |
+| AI governance | 0 | 0 | 0 | 0.001 % | 0.002 % | 0.007 % | 0.016 % |
+| Responsible / trustworthy AI | 0.001 % | 0.001 % | 0.001 % | 0.001 % | 0.004 % | 0.014 % | 0.034 % |
+| MLOps | 0.003 % | 0.006 % | 0.007 % | 0.006 % | 0.017 % | 0.036 % | 0.056 % |
+| Compliance | 0.45 % | 0.51 % | 0.51 % | 0.52 % | 0.83 % | 1.25 % | 1.33 % |
+| Privacy and data protection | 2.19 % | 3.21 % | 3.45 % | 3.34 % | 3.73 % | 4.85 % | 5.39 % |
+
+- Mentions of AI were flat at under 1 % of ads until 2023, then rose to 2.8 % in 2026. In 2025,
+  11 % of Data/IT ads mentioned AI.
+- The Act by name is rare: 1 ad in 2022, 3 in 2023, 25 in 2024, 95 in 2025 and 95 in the first
+  seven months of 2026. The governance terms are rarer still and rise from 2024.
+- The broad terms (compliance, privacy) rise too. Privacy matches include GDPR notices about
+  how the employer handles applications, so their level says little about the job itself.
 
 ## Limitations
 

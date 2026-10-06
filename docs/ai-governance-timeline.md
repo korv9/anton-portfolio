@@ -57,6 +57,18 @@ It cannot separate the Act's effect from everything else that happened at the sa
 all, generative AI was launched publicly in late 2022, a few months before both the Riksdag and
 the job ads begin to rise. The page says so under the panels.
 
-## Results
+## Results (6 October 2026)
 
-_Filled in from the complete run; see below._
+- **Riksdag:** the share of speeches mentioning AI stayed under 0.4 % a year until 2022, then
+  rose to 0.65 % (2023), 0.97 % (2024), 1.12 % (2025) and 1.65 % (2026, to August). Speeches
+  naming the Act are few (26 in all): the first in June 2023, a cluster of three-speech months
+  around its publication in 2024, and the largest month, five speeches, in May 2026, while the
+  amending regulation was negotiated.
+- **Job ads:** the share mentioning AI was flat at 0.7–0.9 % from 2020 to 2023, then rose to
+  1.2 %, 2.0 % and 2.8 % (2024–2026). Ads naming the Act appear from 2024 (25), 2025 (95) and
+  2026 (95 to July).
+- **Together:** both series rise from 2023. That follows the public launch of generative AI
+  (November 2022) and also the Act's negotiation, publication and first application dates.
+  The data cannot separate the two. What it does show is that ads *naming* the Act appear
+  only after its publication and grow as its first obligations apply. That is still temporal
+  overlap, not evidence that the Act changed hiring.
