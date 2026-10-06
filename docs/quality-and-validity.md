@@ -177,17 +177,16 @@ diagnostics never block a build.
 
 There are 41 checks across seven products, built on 259 existing dbt tests:
 
-- 34 pass;
-- 1 fails;
+- 35 pass;
 - 4 are not measured;
 - 2 are not applicable.
 
 There are 14 analyses with 27 diagnostics: 6 supported, 12 warning, 9 insufficient evidence.
 
-- **Fail.** `politics_keys_and_relations`: 4 roll calls have a committee key that does not
-  exist (`''` three times in 2025/26, `'p'` once in 1994/95). The key is taken from the start of
-  the item designation. The failure is published, not hidden; the fix belongs in the parliament
-  models.
+- **Fixed.** `politics_keys_and_relations` failed in the first run: 4 roll calls had a
+  committee key that does not exist (`''` three times in 2025/26, `'p'` once in 1994/95),
+  because their designations (`0604-1`, `p19`) name no committee. They now go to the committee
+  `ovrigt` (Övriga omröstningar), which has no policy issue, and the check passes.
 - **Not measured.** These are all real gaps:
   - Symbolic occurrence sample review (no sample reviewed yet);
   - Riksdag vote totals against member votes;

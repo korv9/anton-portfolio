@@ -27,7 +27,9 @@ select
     -- A few roll calls carry no date in the source; the report's decision date stands in.
     coalesce(r.vote_date, rep.decision_date) as vote_date,
     r.vote_date is null as vote_date_from_report,
-    lower(regexp_extract(r.designation, '^([A-Za-zÅÄÖåäö]+)', 1)) as committee_key,
+    -- The committee is the designation's leading letters (FiU12 -> fiu). A few designations
+    -- name no committee ('0604-1', 'p19'); those roll calls go to 'ovrigt'.
+    coalesce(c.committee_key, 'ovrigt') as committee_key,
     rep.title as report_title, rep.headline as report_headline, rep.document_id,
     rep.source_url as report_url,
     case when r.yes > r.no then 'yes' when r.no > r.yes then 'no' else 'tie' end as outcome,
@@ -35,5 +37,7 @@ select
     -- Three roll calls in the source list fewer than 349 members.
     r.members = 349 as is_complete
 from roll_calls as r
+left join {{ ref('committees') }} as c
+    on c.committee_key = lower(regexp_extract(r.designation, '^([A-Za-zÅÄÖåäö]+)', 1))
 left join {{ ref('stg_riksdagen_reports') }} as rep
     on rep.session = r.session and lower(rep.designation) = lower(r.designation)
