@@ -90,10 +90,12 @@ jobs:
         run: |
           pip install torch --index-url https://download.pytorch.org/whl/cpu
           pip install -r platform/requirements-symbolic.txt
+      # assert_concept_link_targets_exist checks links into philosophy, Riksdag and job-ad
+      # models; it runs in the concept-layer step, once all of them are built.
       - name: Riksdag speeches and AI (dictionary, similarity to the Act)
         run: |
           python platform/ingest/riksdagen/ingest_speeches.py
-          (cd platform && dbt build --profiles-dir . --select tag:ai_politics --exclude mart_ai_act_speech_similarity)
+          (cd platform && dbt build --profiles-dir . --select tag:ai_politics --exclude mart_ai_act_speech_similarity assert_concept_link_targets_exist)
           if [ "$ML" = always ] || [ ! -f warehouse/features/ai_politics/run.json ]; then
             python platform/nlp/ai_politics/similarity.py
           fi
@@ -109,15 +111,15 @@ jobs:
       - name: Philosophy Atlas (Gutenberg corpus, embeddings, maps, tensions)
         run: |
           python platform/ingest/philosophy/ingest_corpus.py
-          (cd platform && dbt build --profiles-dir . --select tag:philosophy --exclude path:models/gold/philosophy)
+          (cd platform && dbt build --profiles-dir . --select tag:philosophy --exclude path:models/gold/philosophy assert_concept_link_targets_exist)
           if [ "$ML" = always ] || [ ! -f warehouse/features/philosophy/run.json ]; then
             python platform/nlp/philosophy/pipeline.py
           fi
-          cd platform && dbt build --profiles-dir . --select path:models/gold/philosophy
+          cd platform && dbt build --profiles-dir . --select path:models/gold/philosophy --exclude assert_concept_link_targets_exist
       - name: AI governance in job ads (JobTech archives, counted)
         run: |
           python platform/ingest/jobtech/ingest_governance_terms.py
-          cd platform && dbt build --profiles-dir . --select tag:job_ai_governance
+          cd platform && dbt build --profiles-dir . --select tag:job_ai_governance --exclude assert_concept_link_targets_exist
       - name: Concept layer (four corpora, curated concepts)
         run: |
           if [ "$ML" = always ] || [ ! -f warehouse/features/concepts/run.json ]; then
