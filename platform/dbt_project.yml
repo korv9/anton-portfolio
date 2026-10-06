@@ -64,6 +64,8 @@ models:
     gold:
       +materialized: table
       +schema: gold
+      concepts:
+        +tags: [concepts]
       philosophy:
         +tags: [philosophy]
       job_ai_governance:
@@ -97,6 +99,15 @@ models:
 # tag lets it build on its own: `dbt build --select tag:welfare`.
 seeds:
   portfolio:
+    concepts:
+      +tags: [concepts]
+      +schema: seeds
+      concepts:
+        +column_types: {sort_order: integer}
+      concept_links:
+        +column_types: {note: varchar}
+      cluster_concept_reviews:
+        +column_types: {concept_source: varchar, cluster_variant: varchar, fingerprint: varchar, concept_id: varchar, reviewer: varchar, reviewed_at: date, note: varchar}
     philosophy:
       +tags: [philosophy]
       +schema: seeds

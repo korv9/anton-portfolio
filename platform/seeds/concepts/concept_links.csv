@@ -1,0 +1,32 @@
+concept_id,kind,target_id,note
+autonomy,philosophy_tension,autonomy_paternalism,The tension's first pole is self-government.
+care,philosophy_tension,autonomy_paternalism,The tension's second pole is care that decides for others.
+freedom,philosophy_tension,freedom_control,
+control,philosophy_tension,freedom_control,
+order,philosophy_tension,order_chaos,
+chaos,philosophy_tension,order_chaos,
+equality,philosophy_tension,equality_hierarchy,
+power,philosophy_tension,equality_hierarchy,The tension's second pole is hierarchy; power is the nearest concept.
+duty,philosophy_tension,duty_consequence,
+harm,philosophy_tension,duty_consequence,The tension's second pole weighs consequences; harm is the nearest concept.
+truth,philosophy_tension,truth_utility,
+privacy,philosophy_tension,privacy_transparency,
+transparency,philosophy_tension,privacy_transparency,
+innovation,philosophy_tension,innovation_safety,
+safety,philosophy_tension,innovation_safety,
+risk,philosophy_tension,progress_precaution,The tension's second pole is precaution against risk.
+innovation,riksdag_framing,innovation,
+safety,riksdag_framing,safety,"Swedish säkerhet covers both safety and security."
+risk,riksdag_framing,risk,
+privacy,riksdag_framing,privacy,
+transparency,riksdag_framing,transparency,
+responsibility,riksdag_framing,responsibility,
+control,riksdag_framing,human_oversight,Human oversight is control of AI systems by people.
+risk,ai_act_view,ai-act-risk,The Act sorts AI systems by risk.
+transparency,ai_act_view,ai-act-obligations,Article 50 sets transparency obligations.
+control,ai_act_view,ai-act-obligations,Article 14 requires human oversight of high-risk systems.
+risk,job_term,risk_management,
+risk,job_term,model_risk,
+safety,job_term,ai_safety,
+privacy,job_term,privacy,
+responsibility,job_term,responsible_ai,

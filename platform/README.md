@@ -75,6 +75,7 @@ before the politics build, since dbt reads the fact tables it writes.
 | EU AI Act | EU Publications Office (Cellar / EUR-Lex), European Commission | `models/*/eu_ai_act`, `seeds/eu_ai_act`, `publish/eu_ai_act` | [docs/ai-act.md](../docs/ai-act.md) |
 | The Riksdag and AI | Riksdagen (every speech since 2016/17), the AI Act's Swedish text | `models/*/ai_politics`, `seeds/ai_politics`, `nlp/ai_politics`, `nlp/text`, `publish/ai_politics` | [docs/ai-politics.md](../docs/ai-politics.md) |
 | Philosophy Atlas | Project Gutenberg (thirteen works, translators recorded) | `models/*/philosophy`, `seeds/philosophy`, `nlp/philosophy`, `publish/philosophy` | [docs/philosophy-atlas.md](../docs/philosophy-atlas.md) |
+| Concept layer | The four corpora above (myth, philosophy, Riksdag, AI Act), by sample | `models/*/concepts`, `seeds/concepts`, `nlp/concepts`, `publish/concepts` | [docs/concept-layer.md](../docs/concept-layer.md), [docs/concept-constellation.md](../docs/concept-constellation.md) |
 | AI governance in job ads | JobTech historical archives (counted, no ads kept) | `models/*/job_ai_governance`, `seeds/job_ai_governance`, `publish/job_ai_governance` | [docs/ai-jobs.md](../docs/ai-jobs.md) |
 | Politics | Riksdagen, Statskontoret | Budget context and roll-call votes in `models/*/politics`; speeches and language still in `legacy/` | [docs/political-observatory.md](../docs/political-observatory.md) |
 

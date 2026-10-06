@@ -51,7 +51,11 @@
     "symbolic:clean": "python platform/nlp/symbolic/cleaning_report.py --snapshot && npm run symbolic:silver && python platform/nlp/symbolic/cleaning_report.py",
     "symbolic:review": "python platform/nlp/symbolic/rank_clusters.py book_centered",
     "symbolic:research": "npm run symbolic:clean && npm run symbolic:experiments && npm run symbolic:ml && npm run symbolic:gold && npm run symbolic:review && npm run symbolic:publish",
-    "symbolic:build": "npm run symbolic:ingest && npm run symbolic:silver && npm run symbolic:ml && npm run symbolic:gold && npm run symbolic:publish"
+    "symbolic:build": "npm run symbolic:ingest && npm run symbolic:silver && npm run symbolic:ml && npm run symbolic:gold && npm run symbolic:publish",
+    "concepts:build": "python platform/nlp/concepts/build.py",
+    "concepts:dbt": "cd platform && dbt build --profiles-dir . --select tag:concepts",
+    "concepts:publish": "python platform/publish/concepts/export_concepts.py",
+    "concepts": "npm run concepts:build && npm run concepts:dbt && npm run concepts:publish"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.129.0",

@@ -1,0 +1,9 @@
+concept_a,concept_b,tension_id,note
+freedom,control,freedom_control,"Each concept is one pole of the Philosophy Atlas tension, or the nearest concept to it."
+privacy,transparency,privacy_transparency,"Each concept is one pole of the Philosophy Atlas tension, or the nearest concept to it."
+innovation,safety,innovation_safety,"Each concept is one pole of the Philosophy Atlas tension, or the nearest concept to it."
+order,chaos,order_chaos,"Each concept is one pole of the Philosophy Atlas tension, or the nearest concept to it."
+duty,harm,duty_consequence,"Each concept is one pole of the Philosophy Atlas tension, or the nearest concept to it."
+equality,power,equality_hierarchy,"Each concept is one pole of the Philosophy Atlas tension, or the nearest concept to it."
+autonomy,care,autonomy_paternalism,"Each concept is one pole of the Philosophy Atlas tension, or the nearest concept to it."
+truth,innovation,truth_utility,"Each concept is one pole of the Philosophy Atlas tension, or the nearest concept to it."
