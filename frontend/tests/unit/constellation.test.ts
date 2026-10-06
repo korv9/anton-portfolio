@@ -78,7 +78,7 @@ test('Symbolic Atlas traces back to Project Gutenberg through the warehouse', ()
     'dbt:stg_symbolic_documents',
     'dbt:int_symbol_occurrences',
     'dbt:mart_symbol_atlas',
-    'out:symbolic/atlas.parquet',
+    'out:symbolic/v4/atlas.parquet',
   ])
     assert.ok(up.has(id), id)
 })

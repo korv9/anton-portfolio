@@ -33,7 +33,7 @@ export const loadAtlasPreview = () =>
   json<AtlasPreview>('symbolic/preview.json')
 
 export async function loadAtlasPoints(): Promise<AtlasPoint[]> {
-  const rows = await readParquet('symbolic/atlas.parquet')
+  const rows = await readParquet('symbolic/v4/atlas.parquet')
   return rows.map((r) => ({
     occurrence_id: String(r.occurrence_id),
     symbol_id: String(r.symbol_id),
@@ -51,7 +51,7 @@ export async function loadAtlasPoints(): Promise<AtlasPoint[]> {
 }
 
 export async function loadSymbolProfiles(): Promise<SymbolProfile[]> {
-  const rows = await readParquet('symbolic/symbol-profiles.parquet')
+  const rows = await readParquet('symbolic/v4/symbol-profiles.parquet')
   return rows.map((r) => ({
     symbol_id: String(r.symbol_id),
     cluster_id: n(r.cluster_id),
@@ -125,7 +125,7 @@ export async function loadBookCenteredAtlas(): Promise<
   BookCenteredPoint[] | null
 > {
   try {
-    const rows = await readParquet('symbolic/book-centered-atlas.parquet')
+    const rows = await readParquet('symbolic/v4/book-centered-atlas.parquet')
     return rows.map((r) => ({
       occurrence_id: String(r.occurrence_id),
       x: n(r.x),

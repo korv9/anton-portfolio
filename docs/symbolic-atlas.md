@@ -155,9 +155,10 @@ the embedding model reads sentences.
 
 `platform/nlp/symbolic/pipeline.py`:
 
-1. **Sample.** At most 30 occurrences per book and symbol, chosen by occurrence id (a hash), so
-   a long book or a common word does not fill the map: 4,804 of 12,712 occurrences after the
-   paratext cleaning (4,869 of 13,168 before).
+1. **Sample.** At most 15 occurrences per book and symbol (30 in v1–v3), chosen by occurrence
+   id (a hash), so a long book or a common word does not fill the map, leaving out passages
+   another book reprints (`duplicate_of` in silver). v4: 21,898 of 72,926 occurrences, 436
+   marked as reprints. The pilot: 4,804 of 12,712 after the paratext cleaning.
 2. **Embed.** `sentence-transformers/all-MiniLM-L6-v2`, 384 dimensions, normalised, on the CPU.
    No text leaves the machine. The vectors stay in `warehouse/features/` and are never delivered.
 3. **Map.** UMAP to 2 dimensions: cosine, `n_neighbors` 15, `min_dist` 0.1, `random_state` 42.
@@ -501,6 +502,61 @@ The review layer is optional: without its files the page is the baseline atlas.
 
 The map's view spans the 0.2–99.8 percentiles of the coordinates; the few points outside it
 are drawn as rings at the edge, and the page says how many. No coordinate is changed.
+
+## v4: the expanded corpus (run 2026-10-06)
+
+The experiment changes one thing: the corpus, from 10 to 101 books. The symbols, the
+extraction, the cleaning, the embedding model and the UMAP and HDBSCAN settings are those of
+v3. Two consequences of a larger corpus are handled and stated: the sample cap went from 30 to
+15 passages per book and symbol (so 101 books give 21,898 points, not 50,000), and passages one
+book reprints from another are left out. The v3 results are archived in
+`experiments/history/v3-pilot/` and stay in the research history.
+
+Book-centred (the cross-book view), v3 pilot against v4:
+
+| Measure | v3 (10 books) | v4 (101 books) |
+|---|---|---|
+| Passages mapped | 4,804 | 21,898 |
+| Clusters | 59 | 114 |
+| Noise | 36 % | 52 % |
+| Largest book's share of a cluster | 58 % | 36 % |
+| Clusters over several books | 25 | 87 |
+| Passages in them | 32 % | 44 % |
+| Silhouette (10-D) | 0.53 | 0.31 |
+| Trustworthiness (2-D) | 0.83 | 0.74 |
+
+Baseline (no centring), v4: 130 clusters, 49 % noise, largest book 50 % (69 % in v3).
+
+**What the clusters follow** (`platform/nlp/symbolic/validity.py`, adjusted mutual information
+between the cluster labels and each property, 0 = chance):
+
+| Property | Baseline | Book-centred |
+|---|---|---|
+| Symbol | 0.13 | 0.20 |
+| Book | 0.49 | 0.20 |
+| English voice (translator or compiler) | 0.45 | 0.18 |
+| Tradition | 0.40 | 0.16 |
+| Genre | 0.40 | 0.15 |
+| Period | 0.24 | 0.09 |
+| Source type | 0.21 | 0.08 |
+
+Book pairs, book-centred (mean similarity of two books' spread over the clusters, 0–1): 0.27
+for pairs that share nothing, 0.31 for the same source type or period, 0.34 for the same
+tradition, 0.35 for the same genre, 0.36 for the same English voice (14 pairs).
+
+Reading these honestly:
+
+- With more books, a cluster is less often one book: the largest book's share fell from 58 % to
+  36 %, and most clusters now span several books.
+- Without centring the map still follows the book (AMI 0.49) far more than the symbol (0.13).
+  Book-centring brings symbol and book level (0.20 each); it does not make symbol dominant.
+- The structure is weaker: half the points are noise and the silhouette fell from 0.53 to 0.31.
+  A wider corpus is more varied, and the parameters were not retuned, by design.
+- Shared genre, tradition and English voice still make books more alike than books sharing
+  nothing. The voice test rests on 14 pairs and is the least certain.
+- No v4 cluster has been reviewed. The five v3 labels were written for v3's clusters and do not
+  carry over (`reviews.py` matches them by fingerprint); 61 v4 clusters are ranked for review.
+- Not measured: literal against symbolic use of a word; that needs a hand-labelled sample.
 
 ## Limitations
 

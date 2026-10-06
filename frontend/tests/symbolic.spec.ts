@@ -20,10 +20,12 @@ test('the Symbolic Atlas maps real occurrences and filters by symbol and traditi
   await expect(page).toHaveURL(/symbol=snake/)
   const snake = summary.symbols.find((s: { id: string }) => s.id === 'snake')
   await expect(page.locator('.stage-side.is-right')).toContainText(
-    String(snake.occurrences),
+    snake.occurrences.toLocaleString('en-GB'),
   )
-  await page.getByRole('button', { name: 'Norse', exact: true }).click()
-  await expect(page).toHaveURL(/tradition=norse/)
+  await page
+    .getByRole('button', { name: 'Norse and Germanic', exact: true })
+    .click()
+  await expect(page).toHaveURL(/tradition=norse-germanic/)
   await expect(page.locator('.atlas-status')).toContainText('match the filters')
   const axe = await new AxeBuilder({ page })
     .include('#symbolic-atlas')
@@ -115,11 +117,42 @@ test('the investigation is told step by step with its numbers', async ({
   ).json()
   await page.goto('/#symbolic-findings')
   const steps = page.locator('.research-steps > li')
-  await expect(steps).toHaveCount(7)
+  await expect(steps).toHaveCount(8)
   await expect(steps.nth(1)).toContainText('Baseline')
   await expect(steps.nth(4)).toContainText('Paratext')
   await expect(steps.nth(4)).toContainText(
     String(history.steps[2].metrics.cross_book_cluster_count),
   )
+  // The expanded corpus is its own step, with the number of books it grew to.
+  await expect(steps.nth(5)).toContainText('Corpus expansion · v4')
+  await expect(steps.nth(5)).toContainText(
+    `${history.steps[3].documents} books`,
+  )
+  await expect(page.locator('#symbolic-validity')).toContainText(
+    'What the clusters follow',
+  )
   await expect(page.locator('#symbolic-method')).toContainText('Diagnostics')
+})
+
+test('the corpus explorer lists every book and filters by tradition', async ({
+  page,
+}) => {
+  const summary = await (
+    await page.request.get('/data/symbolic/summary.json')
+  ).json()
+  await page.goto('/#symbolic-atlas')
+  const rows = page.locator('.corpus-table tbody tr')
+  await expect(rows).toHaveCount(summary.document_count)
+  await page
+    .locator('.corpus-filters')
+    .getByLabel('Tradition')
+    .selectOption('east-asian')
+  await expect(page).toHaveURL(/korpus=east-asian/)
+  const eastAsian = summary.documents.filter(
+    (d: { tradition: string }) => d.tradition === 'east-asian',
+  ).length
+  await expect(rows).toHaveCount(eastAsian)
+  await expect(page.locator('.corpus-count')).toContainText(
+    `${eastAsian} of ${summary.document_count} books`,
+  )
 })
