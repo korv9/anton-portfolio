@@ -53,6 +53,13 @@
   text-decoration: none;
   color: var(--muted);
 }
+.politik-nav-no {
+  display: inline-block;
+  min-width: 1.6em;
+  color: var(--subtle);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+}
 .politik-nav a:hover {
   color: var(--ink);
 }

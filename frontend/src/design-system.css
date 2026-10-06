@@ -466,7 +466,7 @@ body .theme-meaning {
 }
 .cluster-size-bars button:hover,
 .cluster-size-bars button[aria-pressed='true'] {
-  background: #4e79a712;
+  background: color-mix(in srgb, var(--ink) 7%, transparent);
 }
 .cluster-size-bars strong {
   text-align: right;
@@ -474,7 +474,7 @@ body .theme-meaning {
 }
 .cluster-size-track {
   height: 18px;
-  background: #4e79a708;
+  background: color-mix(in srgb, var(--ink) 5%, transparent);
 }
 .cluster-size-track i {
   display: block;

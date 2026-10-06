@@ -240,7 +240,7 @@
   margin-top: 2.2rem;
   padding: 1.4rem 1.5rem 1.1rem;
   border: 1px solid var(--aa-ink);
-  background: #0e0e0d;
+  background: var(--paper-strong);
 }
 .aa-snapshot h2 {
   margin: 0;

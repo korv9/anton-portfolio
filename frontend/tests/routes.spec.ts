@@ -72,6 +72,8 @@ test('every internal link opens a page', async ({ page, isMobile }) => {
   for (const start of START_PAGES) {
     await page.goto(start)
     await page.waitForLoadState('networkidle')
+    // The page's own links, not only the header's, before collecting.
+    await page.locator('main a[href^="#"]').first().waitFor()
     for (const href of await linksOn(page)) links.add(href)
   }
   expect(links.size).toBeGreaterThan(30)
@@ -84,6 +86,8 @@ test('every internal link opens a page', async ({ page, isMobile }) => {
     await page.$$eval('[id]', (els) => els.map((el) => `#${el.id}`)),
   )
   const broken: string[] = []
+  const unplaced: string[] = []
+  const untitled: string[] = []
   for (const href of [...links].sort()) {
     if (homeIds.has(href)) continue
     // Start each from a blank page, so the previous page cannot linger in the check.
@@ -92,7 +96,18 @@ test('every internal link opens a page', async ({ page, isMobile }) => {
     await page.locator('main, .site-shell').first().waitFor()
     // The homepage fell back in: the address names no page.
     if (await page.locator(HOME).count()) broken.push(href)
+    // The breadcrumb names where the page sits, not just "Projects".
+    const crumbs = page.locator('.project-context li')
+    if (
+      (await crumbs.count()) < 2 &&
+      !(await page.locator('.project-context [aria-current]').count())
+    )
+      unplaced.push(href)
+    // The tab names the page, not just the site.
+    if (!/^.+ · Anton Ernstsson$/.test(await page.title())) untitled.push(href)
   }
+  expect(untitled, 'pages without their own title').toEqual([])
+  expect(unplaced, 'pages whose breadcrumb stops at Projects').toEqual([])
   expect(broken, 'links that fall back to the homepage').toEqual([])
   expect(errors).toEqual([])
 })

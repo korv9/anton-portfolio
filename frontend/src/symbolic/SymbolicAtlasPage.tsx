@@ -303,25 +303,27 @@ export default function SymbolicAtlasPage({ route }: { route: Route }) {
                 <p className="atlas-view-hint">
                   {l(...VIEWS.find((v) => v.key === view)!.hint)}
                 </p>
-                <ul
-                  className="atlas-key"
-                  aria-label={l('Key', 'Teckenförklaring')}
-                >
-                  <li>
-                    <i style={{ background: MUTED }} />
-                    {l('Other clusters', 'Övriga kluster')}
-                  </li>
-                  {view === 'cross-book' && (
+                {view !== 'baseline' && (
+                  <ul
+                    className="atlas-key"
+                    aria-label={l('Key', 'Teckenförklaring')}
+                  >
                     <li>
-                      <i style={{ background: CANDIDATE }} />
-                      {l('Cross-book candidate', 'Kandidat över böcker')}
+                      <i style={{ background: MUTED }} />
+                      {l('Other clusters', 'Övriga kluster')}
                     </li>
-                  )}
-                  <li>
-                    <i style={{ background: REVIEWED }} />
-                    {l('Reviewed and named', 'Granskat och namngivet')}
-                  </li>
-                </ul>
+                    {view === 'cross-book' && (
+                      <li>
+                        <i style={{ background: CANDIDATE }} />
+                        {l('Cross-book candidate', 'Kandidat över böcker')}
+                      </li>
+                    )}
+                    <li>
+                      <i style={{ background: REVIEWED }} />
+                      {l('Reviewed and named', 'Granskat och namngivet')}
+                    </li>
+                  </ul>
+                )}
                 {view === 'reviewed' && reviewed.length === 0 && (
                   <p className="atlas-empty" role="status">
                     {l(

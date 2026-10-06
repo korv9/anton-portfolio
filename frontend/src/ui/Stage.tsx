@@ -3,8 +3,11 @@
  * details in narrow panels on either side. Narrower screens put the figure first and the panels
  * under it. Used on every project page, so each opens on one simple, striking chart.
  */
-import type { ReactNode } from 'react'
+import { createContext, useContext, type ReactNode } from 'react'
 import './stage.css'
+
+// The stage's heading level, so a side panel's block headings sit one level under it.
+const StageLevel = createContext<1 | 2>(2)
 
 export function Stage({
   id,
@@ -30,20 +33,22 @@ export function Stage({
 }) {
   const Heading = level === 1 ? 'h1' : 'h2'
   return (
-    <section
-      className={`stage${dark ? ' is-dark plate' : ''}`}
-      id={id}
-      aria-labelledby={`${id}-title`}
-    >
-      <header className="stage-head">
-        <p className="stage-kicker">{kicker}</p>
-        <Heading id={`${id}-title`}>{title}</Heading>
-        {lead && <p className="stage-lead">{lead}</p>}
-      </header>
-      <aside className="stage-side is-left">{left}</aside>
-      <div className="stage-figure">{figure}</div>
-      <aside className="stage-side is-right">{right}</aside>
-    </section>
+    <StageLevel.Provider value={level}>
+      <section
+        className={`stage${dark ? ' is-dark plate' : ''}`}
+        id={id}
+        aria-labelledby={`${id}-title`}
+      >
+        <header className="stage-head">
+          <p className="stage-kicker">{kicker}</p>
+          <Heading id={`${id}-title`}>{title}</Heading>
+          {lead && <p className="stage-lead">{lead}</p>}
+        </header>
+        <aside className="stage-side is-left">{left}</aside>
+        <div className="stage-figure">{figure}</div>
+        <aside className="stage-side is-right">{right}</aside>
+      </section>
+    </StageLevel.Provider>
   )
 }
 
@@ -55,9 +60,10 @@ export function StageBlock({
   title: string
   children: ReactNode
 }) {
+  const Heading = useContext(StageLevel) === 1 ? 'h2' : 'h3'
   return (
     <div className="stage-block">
-      <h3>{title}</h3>
+      <Heading className="stage-block-title">{title}</Heading>
       {children}
     </div>
   )

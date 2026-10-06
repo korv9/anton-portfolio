@@ -147,6 +147,33 @@
   --note-line: #c7a64a;
   --teal: #f2efe9;
   --orange: #a8a49b;
+  /* Component aliases of the tokens, declared again here so they resolve to the plate's
+     values: a custom property set on an outer element keeps the outer value. */
+  --aa-accent-soft: color-mix(in srgb, var(--info) 14%, transparent);
+  --aa-accent: var(--info);
+  --aa-faint: var(--subtle);
+  --aa-ink: var(--ink);
+  --aa-muted: var(--muted);
+  --aa-panel: color-mix(in srgb, var(--paper-strong) 55%, transparent);
+  --aa-rule: var(--line);
+  --body-ink: var(--ink);
+  --c-ink: var(--ink);
+  --c-muted: var(--muted);
+  --c-rule: var(--line);
+  --cc-ink: var(--ink);
+  --cc-muted: var(--muted);
+  --cc-prominent: color-mix(in srgb, var(--ink) 45%, transparent);
+  --cc-rule: var(--line);
+  --ph-ink: var(--ink);
+  --ph-muted: var(--muted);
+  --ph-rule: var(--line);
+  --q-ink: var(--ink);
+  --q-muted: var(--muted);
+  --q-rule: var(--line);
+  --q-soft: color-mix(in srgb, var(--ink) 5%, transparent);
+  --stage-ink: var(--ink);
+  --stage-muted: var(--muted);
+  --stage-rule: var(--line);
   background: var(--page);
   color: var(--ink);
 }

@@ -71,7 +71,7 @@
 .stage-side.is-right {
   grid-area: right;
 }
-.stage-block h3 {
+.stage-block-title {
   margin: 0 0 0.5rem;
   padding-bottom: 0.35rem;
   border-bottom: 1px solid var(--stage-rule);
@@ -81,7 +81,7 @@
   letter-spacing: 0.16em;
   text-transform: uppercase;
 }
-.stage:not(.is-dark) .stage-block h3 {
+.stage:not(.is-dark) .stage-block-title {
   border-bottom-color: var(--line);
 }
 .stage-block p {

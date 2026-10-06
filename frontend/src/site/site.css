@@ -304,6 +304,13 @@
   padding-block: 14px;
   border-bottom: 1px solid var(--line);
 }
+@media (max-width: 860px) {
+  /* A phone: the name, then the language switch and the menu button, on one row. */
+  .project-shell .site-bar {
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    grid-template-areas: 'name lang menu';
+  }
+}
 .project-shell .site-bar .wordmark-name {
   font-size: clamp(22px, 2.1vw, 30px);
   letter-spacing: -0.045em;
@@ -539,13 +546,13 @@
   border-radius: 0;
 }
 .project-shell .politik-nav a[aria-current] {
-  background: #887ec817;
+  background: var(--wash);
 }
 .project-shell .politik-nav a:hover {
-  background: #887ec80d;
+  background: color-mix(in srgb, var(--ink) 4%, transparent);
 }
 .project-shell .welfare-tile {
-  background: #1b202666;
+  background: var(--paper);
   border: 0;
   border-top: 2px solid var(--data-blue);
   border-radius: 0;
@@ -561,4 +568,13 @@
 
 .project-shell button[style*='--party'] > span[aria-hidden='true'] {
   color: var(--ink);
+}
+
+/* A page that failed to draw (PageBoundary). */
+.page-failed {
+  max-width: var(--measure);
+  padding-block: 3rem 4rem;
+}
+.page-failed h1 {
+  font-size: var(--h2);
 }

@@ -27,11 +27,11 @@ export const STYLE: Record<
   seed: { colour: '#8d877d', r: 2.4, name: ['Seed', 'Seed'] },
   bronze: { colour: '#b88d5c', r: 2.2, name: ['Bronze', 'Brons'] },
   silver: { colour: '#c9cbd0', r: 2.6, name: ['Silver', 'Silver'] },
-  ml: { colour: '#a8c0f0', r: 5, name: ['ML', 'ML'] },
-  gold: { colour: '#f0c96e', r: 3.6, name: ['Gold', 'Guld'] },
-  delivery: { colour: '#8fd4c4', r: 3.2, name: ['Delivery', 'Leverans'] },
+  ml: { colour: '#d9d4ca', r: 5, name: ['ML', 'ML'] },
+  gold: { colour: '#d8b86a', r: 3.6, name: ['Gold', 'Guld'] },
+  delivery: { colour: '#a8a49b', r: 3.2, name: ['Delivery', 'Leverans'] },
   frontend: { colour: '#fff3d6', r: 8, name: ['Product', 'Produkt'] },
-  shared: { colour: '#d7a7cf', r: 6, name: ['Shared', 'Gemensamt'] },
+  shared: { colour: '#c9c2b6', r: 6, name: ['Shared', 'Gemensamt'] },
 }
 
 const STAGE_NAMES: Record<string, [string, string]> = {
@@ -345,7 +345,7 @@ export default function ConstellationCanvas({
           e.type === 'delivery' || e.type === 'frontend-consumption'
         const alpha = !on ? 0.025 : strong ? 0.75 : path || focus ? 0.22 : 0.09
         ctx.strokeStyle = accent
-          ? `rgba(143, 212, 196, ${alpha})`
+          ? `rgba(216, 184, 106, ${alpha})`
           : `rgba(241, 236, 226, ${alpha})`
         ctx.lineWidth = strong ? 1.2 : 0.7
         ctx.setLineDash(

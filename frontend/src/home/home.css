@@ -422,7 +422,7 @@
   position: relative;
   margin-top: 8px;
   height: 35px;
-  background: #887ec81a;
+  background: color-mix(in srgb, var(--ink) 7%, transparent);
 }
 .sweden-preview-track i {
   display: block;

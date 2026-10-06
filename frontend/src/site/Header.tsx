@@ -282,6 +282,17 @@ const TECHNICAL: Partial<Record<Route['page'], Bilingual>> = {
   datamodel: { en: 'Data model', sv: 'Datamodell' },
   er: { en: 'ER diagram', sv: 'ER-diagram' },
   status: { en: 'Pipeline status', sv: 'Pipelinestatus' },
+  quality: { en: 'Quality and validity', sv: 'Kvalitet och validitet' },
+}
+
+/** The page's own name for the document title, or null on the homepage. */
+export function pageTitle(route: Route): string | null {
+  if (route.page === 'home') return null
+  if (route.page === 'projects') return l('Projects', 'Projekt')
+  const project = projectForRoute(route)
+  if (project) return b(project.title)
+  const technical = TECHNICAL[route.page]
+  return technical ? b(technical) : l('Technical', 'Teknik')
 }
 
 export function ProjectContext({ route }: { route: Route }) {
@@ -295,7 +306,11 @@ export function ProjectContext({ route }: { route: Route }) {
     >
       <ol>
         <li>
-          <a href="#alla-projekt">{l('Projects', 'Projekt')}</a>
+          {route.page === 'projects' ? (
+            <span aria-current="page">{l('Projects', 'Projekt')}</span>
+          ) : (
+            <a href="#alla-projekt">{l('Projects', 'Projekt')}</a>
+          )}
         </li>
         {project && (
           <li>

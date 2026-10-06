@@ -420,10 +420,10 @@ the review artefacts and never become public labels. Unreviewed clusters are "Cl
 
 The page has three views of the same points (`?view=`):
 
-- **Baseline**: the published atlas, coloured by cluster.
+- **Baseline**: the published atlas, coloured by cluster in muted hues on the dark plate.
 - **Cross-book**: the book-centred map. Noise is faint, book-bound and rejected clusters are
-  muted grey, cross-book candidates are in colour, reviewed clusters strongest and labelled on
-  the map, the chosen cluster on top. Choosing a cluster (a point or the cluster list) opens its
+  grey, cross-book candidates stone, reviewed clusters off-white and labelled on the map, the
+  chosen cluster on top; a key beside the map names the three tones. Choosing a cluster (a point or the cluster list) opens its
   panel: name if reviewed, number, review status and audit class, passages, books, traditions,
   symbols, largest book share, book entropy, mean membership, top symbols and traditions and
   representative passages one book at a time; for reviewed clusters also the description,
