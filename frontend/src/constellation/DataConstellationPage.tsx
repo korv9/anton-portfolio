@@ -27,6 +27,10 @@ import {
   type Mode,
   type NodeType,
 } from './graph'
+import { useQuality } from '../quality/data'
+import { cellOf, cellText, nodesOfCheck, nodeStatuses } from '../quality/logic'
+import { QualityLegend, StatusMark } from '../quality/QualityPanel'
+import type { QualityData } from '../quality/types'
 import './constellation.css'
 
 const DEFAULTS = { view: 'platform', domain: '', node: '', hide: '' }
@@ -55,6 +59,14 @@ const MODES: { key: Mode; name: [string, string]; hint: [string, string] }[] = [
       'Välj en nod: allt den byggs av och allt som byggs av den lyser upp.',
     ],
   },
+  {
+    key: 'quality',
+    name: ['Quality', 'Kvalitet'],
+    hint: [
+      'Products and models with registered quality checks carry a small mark: their weakest measured result. Choose one to see its checks and validity.',
+      'Produkter och modeller med registrerade kvalitetskontroller har en liten markering: deras svagaste uppmätta resultat. Välj en för att se dess kontroller och validitet.',
+    ],
+  },
 ]
 const LAYER_TYPES: NodeType[] = [
   'source',
@@ -77,6 +89,11 @@ export default function DataConstellationPage({ route }: { route: Route }) {
   const [failed, setFailed] = useState(false)
   const [query, setQuery] = useState('')
   const [params, set] = useViewParams(route, DEFAULTS)
+  const { data: quality } = useQuality()
+  const marks = useMemo(
+    () => (quality ? nodeStatuses(quality.checks) : null),
+    [quality],
+  )
   const mode = (
     MODES.some((m) => m.key === params.view) ? params.view : 'platform'
   ) as Mode
@@ -316,6 +333,7 @@ export default function DataConstellationPage({ route }: { route: Route }) {
               path={path}
               selected={selected}
               hiddenLayers={hidden}
+              marks={marks}
               onSelect={select}
             />
           </div>
@@ -327,6 +345,7 @@ export default function DataConstellationPage({ route }: { route: Route }) {
                 mode={mode}
                 byId={byId}
                 lineage={path?.size ?? 0}
+                quality={quality}
                 onSelect={select}
               />
             ) : (
@@ -334,6 +353,20 @@ export default function DataConstellationPage({ route }: { route: Route }) {
             )}
           </aside>
         </div>
+        {mode === 'quality' && (
+          <div className="constellation-quality-legend">
+            <QualityLegend />
+            <p className="constellation-muted">
+              {l(
+                'Quality asks whether the data is correct. Validity asks whether the analysis answers the question it claims to answer. Both matter.',
+                'Kvalitet frågar om datan är korrekt. Validitet frågar om analysen besvarar den fråga den säger sig besvara. Båda spelar roll.',
+              )}{' '}
+              <a href="#quality">
+                {l('Quality & validity →', 'Kvalitet och validitet →')}
+              </a>
+            </p>
+          </div>
+        )}
         <p className="constellation-legend">
           {l(
             'Solid line: data built from data. Teal: a published file and the product that reads it. Dashed: a key that joins two tables. Dotted: shared infrastructure. Faded markers are models switched off by default.',
@@ -396,6 +429,7 @@ function Detail({
   mode,
   byId,
   lineage,
+  quality,
   onSelect,
 }: {
   node: GraphNode
@@ -403,6 +437,7 @@ function Detail({
   mode: Mode
   byId: Map<string, GraphNode>
   lineage: number
+  quality: QualityData | null
   onSelect: (id: string | null) => void
 }) {
   const { up, down } = neighbours(graph, node.id)
@@ -531,6 +566,7 @@ function Detail({
           </ul>
         </>
       )}
+      {quality && <NodeQuality node={node} quality={quality} />}
       {mode === 'model' && node.columns && node.columns.length > 0 && (
         <>
           <h4>
@@ -752,5 +788,75 @@ function Editorial({ graph }: { graph: Graph }) {
         </p>
       </div>
     </section>
+  )
+}
+
+/** The quality checks and validity analyses registered for a node, if any. */
+function NodeQuality({
+  node,
+  quality,
+}: {
+  node: GraphNode
+  quality: QualityData
+}) {
+  const checks = quality.checks.filter((c) => nodesOfCheck(c).includes(node.id))
+  const product = node.id.startsWith('app:') ? node.id.slice(4) : null
+  const analyses = product
+    ? quality.validity.filter((a) => a.product_id === product)
+    : []
+  if (!checks.length && !analyses.length) return null
+  const dims = quality.summary.dimensions.filter((d) =>
+    checks.some((c) => c.dimension === d.id),
+  )
+  const main = analyses[0]
+  return (
+    <div className="constellation-quality">
+      <h4>{l('Quality', 'Kvalitet')}</h4>
+      <dl className="constellation-meta">
+        {dims.map((d) => {
+          const cell = cellOf(checks.filter((c) => c.dimension === d.id))!
+          return (
+            <div key={d.id}>
+              <dt>{l(d.label_en, d.label_sv)}</dt>
+              <dd>
+                <StatusMark status={cell.status} />{' '}
+                <small className="constellation-muted">
+                  {cellText(cell, l)}
+                </small>
+              </dd>
+            </div>
+          )
+        })}
+      </dl>
+      {main && (
+        <>
+          <h4>{l('Validity', 'Validitet')}</h4>
+          <dl className="constellation-meta">
+            <div>
+              <dt>{l('Target construct', 'Avsett begrepp')}</dt>
+              <dd>{main.target_construct}</dd>
+            </div>
+            <div>
+              <dt>{l('Known limitation', 'Känd begränsning')}</dt>
+              <dd>
+                <StatusMark status={main.analysis_status} validity />{' '}
+                {l(
+                  main.conclusion_en,
+                  main.conclusion_sv ?? main.conclusion_en,
+                )}
+              </dd>
+            </div>
+          </dl>
+        </>
+      )}
+      <p>
+        <a
+          className="constellation-cta"
+          href={`#quality${product ? `?produkt=${product}` : ''}`}
+        >
+          {l('View quality & validity →', 'Visa kvalitet och validitet →')}
+        </a>
+      </p>
+    </div>
   )
 }

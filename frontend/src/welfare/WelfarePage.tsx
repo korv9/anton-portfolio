@@ -3,6 +3,7 @@ import CountyMultiples from './CountyMultiples'
 import { Stage, StageBlock, StageFacts, StageTools } from '../ui/Stage'
 import { Suspense, lazy, useEffect, useMemo, useState } from 'react'
 import { l } from '../i18n'
+import { ProductQuality } from '../quality/QualityPanel'
 import {
   DOMAINS,
   fetchJson,
@@ -423,6 +424,11 @@ export default function WelfarePage({ view }: { view: string }) {
             <div className="loading">{l('Loading…', 'Laddar…')}</div>
           )}
         </section>
+      )}
+      {view === '#sweden' && (
+        <div className="report">
+          <ProductQuality product="welfare" />
+        </div>
       )}
     </div>
   )

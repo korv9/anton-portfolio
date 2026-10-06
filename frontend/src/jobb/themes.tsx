@@ -4,6 +4,7 @@
  * the fields chosen in the field bar.
  */
 import { l } from '../i18n'
+import { ProductQuality } from '../quality/QualityPanel'
 import ThemeLayout from '../politik/ThemeLayout'
 import Bars from '../politik/Bars'
 import { Select } from '../politik/controls'
@@ -774,6 +775,7 @@ function Kallor({ data }: { data: Market }) {
           )}
         </p>
       </section>
+      <ProductQuality product="jobs" />
     </article>
   )
 }

@@ -4,6 +4,7 @@
  */
 import { useMemo, useState } from 'react'
 import { l } from '../i18n'
+import { ProductQuality } from '../quality/QualityPanel'
 import {
   articleOrder,
   articleStatus,
@@ -1128,6 +1129,7 @@ export function Sources({ data }: View) {
           </a>
         </p>
       </section>
+      <ProductQuality product="ai_act" />
     </>
   )
 }

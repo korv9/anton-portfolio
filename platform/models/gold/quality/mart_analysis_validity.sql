@@ -6,6 +6,8 @@ select
     analysis_id,
     product_id,
     kind,
+    analysis_order,
+    diagnostic_order,
     question_en,
     question_sv,
     target_construct,

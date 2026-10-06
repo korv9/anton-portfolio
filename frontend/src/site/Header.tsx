@@ -393,6 +393,11 @@ export function Footer() {
               <a href="#data-constellation">Data Constellation</a>
             </li>
             <li>
+              <a href="#quality">
+                {l('Quality & validity', 'Kvalitet och validitet')}
+              </a>
+            </li>
+            <li>
               <a href="#technical">{l('Architecture', 'Arkitektur')}</a>
             </li>
             <li>

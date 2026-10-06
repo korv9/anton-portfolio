@@ -455,3 +455,14 @@
     width: 100%;
   }
 }
+
+/* Quality view */
+.constellation-quality-legend {
+  margin-top: 0.6rem;
+}
+.constellation-quality-legend .q-legend {
+  margin-bottom: 0.3rem;
+}
+.constellation-quality h4 {
+  margin-top: 1rem;
+}

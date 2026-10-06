@@ -8,6 +8,7 @@ import { num } from '../controls'
 import type { DataQuality, StoryData } from '../analytics/types'
 import { MIN_CAST } from '../analytics/metrics'
 import { Section } from './parts'
+import { ProductQuality } from '../../quality/QualityPanel'
 
 const STEPS: [string, string, string, string][] = [
   [
@@ -166,6 +167,7 @@ export default function OmDatan({
           </dl>
         </div>
       </div>
+      <ProductQuality product="politics" />
     </Section>
   )
 }

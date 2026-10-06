@@ -179,9 +179,9 @@ def evaluate_check(check: dict, products: dict, manifest: dict | None, outcomes:
 
 def evaluate_validity(validity_registry: dict, evaluated_at: str) -> tuple[list[dict], list[dict]]:
     rows, history = [], []
-    for a in validity_registry["analyses"]:
+    for analysis_order, a in enumerate(validity_registry["analyses"]):
         statuses = []
-        for d in a["diagnostics"]:
+        for diagnostic_order, d in enumerate(a["diagnostics"]):
             value, details = None, {}
             if d.get("function"):
                 try:
@@ -196,6 +196,7 @@ def evaluate_validity(validity_registry: dict, evaluated_at: str) -> tuple[list[
             statuses.append(status)
             rows.append({
                 "analysis_id": a["id"], "product_id": a["product"], "kind": a["kind"],
+                "analysis_order": analysis_order, "diagnostic_order": diagnostic_order,
                 "question_en": a["question_en"], "question_sv": a.get("question_sv"),
                 "target_construct": a["target_construct"], "proxy_measure": a["proxy_measure"],
                 "diagnostic_id": d["id"], "diagnostic": d.get("label_en", d["id"]),

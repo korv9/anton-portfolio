@@ -28,6 +28,7 @@ export type Page =
   | 'aiact'
   | 'philosophy'
   | 'concepts'
+  | 'quality'
   | 'status'
   | 'tallman'
 
@@ -99,6 +100,7 @@ export function pageOf(path: string): Page {
   if (path === '#er' || path === '#er-diagram') return 'er'
   if (path === '#data-constellation') return 'constellation'
   if (path === '#ai-act' || path.startsWith('#ai-act-')) return 'aiact'
+  if (path === '#quality' || path.startsWith('#quality-')) return 'quality'
   if (path.startsWith('#concept-') || path.startsWith('#concepts-'))
     return 'concepts'
   if (path === '#philosophy-atlas' || path.startsWith('#philosophy-'))

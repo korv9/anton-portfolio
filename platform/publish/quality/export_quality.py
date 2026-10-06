@@ -59,7 +59,7 @@ def main() -> int:
                           order by product_id, dimension, quality_check_id""")
     summary_rows = rows(con, "select * from gold.mart_product_quality_summary order by product_id, dimension")
     validity_summary = rows(con, "select * from gold.mart_product_validity_summary order by product_id, kind")
-    diagnostics = rows(con, "select * from gold.mart_analysis_validity order by product_id, analysis_id")
+    diagnostics = rows(con, "select * from gold.mart_analysis_validity order by analysis_order, diagnostic_order")
     confounders = rows(con, "select * exclude (content_type) from gold.mart_analysis_confounders")
     history = rows(con, "select * from gold.mart_validity_history order by analysis_id, metric, experiment, run_label")
 

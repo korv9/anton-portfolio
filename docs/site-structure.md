@@ -41,6 +41,8 @@ Selected projects, in this order:
 | 05 | How is Sweden doing? | `#sweden` (and `#analysis`) |
 | 06 | Degree project | `#thesis` |
 
+Supporting technical page: Quality & Validity (`#quality`, [quality-and-validity.md](quality-and-validity.md)), linked from the footer (Under the hood), Data Constellation and each product's *Quality & validity* section.
+
 Experimental, not featured: Philosophy Atlas (`#philosophy-atlas`, [philosophy-atlas.md](philosophy-atlas.md)) and Concept Constellation (`#concept-constellation`, concept pages `#concept-<id>`, [concept-constellation.md](concept-constellation.md)).
 
 Everything else (DrugComb, taLLMan, Allegoria, DiVA, Homie, RAG, MIMII, IN1) is other work.

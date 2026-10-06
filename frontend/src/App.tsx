@@ -24,6 +24,7 @@ const AiActProduct = lazy(() => import('./aiact/AiActProduct'))
 const PhilosophyAtlasPage = lazy(
   () => import('./philosophy/PhilosophyAtlasPage'),
 )
+const QualityPage = lazy(() => import('./quality/QualityPage'))
 const ConceptConstellationPage = lazy(
   () => import('./concepts/ConceptConstellationPage'),
 )
@@ -66,6 +67,7 @@ export default function App() {
         route.path === '#job-market-clusters' ||
         (route.page === 'symbolic' && route.path !== '#symbolic-atlas') ||
         (route.page === 'philosophy' && route.path !== '#philosophy-atlas') ||
+        (route.page === 'quality' && route.path !== '#quality') ||
         route.path === '#concepts-profiles' ||
         route.path === '#concepts-method'
           ? document.getElementById(route.path.slice(1))
@@ -118,6 +120,7 @@ export default function App() {
           {page === 'aiact' && <AiActProduct route={route} />}
           {page === 'philosophy' && <PhilosophyAtlasPage route={route} />}
           {page === 'concepts' && <ConceptConstellationPage route={route} />}
+          {page === 'quality' && <QualityPage route={route} />}
           {page === 'drugcomb' && <DrugCombPage />}
           {page === 'allegoria' && <AllegoriaPage />}
           {page === 'thesis' && <ThesisPage />}
