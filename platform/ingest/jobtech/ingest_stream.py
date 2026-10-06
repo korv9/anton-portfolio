@@ -6,7 +6,7 @@
 The archives (ingest_market.py) come once a quarter, months after the period they cover.
 JobStream (https://jobstream.api.jobtechdev.se, open, no key) returns every ad created,
 changed or removed in a time window, in the archives' shape. Each run asks for everything since
-the previous run, in windows of at most a day, so nothing between two runs is missed.
+the previous run, in windows of at most six hours, so nothing between two runs is missed.
 Under warehouse/raw/jobtech/:
 
     stream/raw/<window>.json.gz       each answer as served, with its provenance line
@@ -35,6 +35,7 @@ import argparse
 import hashlib
 import json
 import sys
+import time
 from collections import defaultdict
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
@@ -56,7 +57,10 @@ MARKET = rawstore.RAW / SOURCE / "market"
 STATE = STREAM / "state.json"
 # JobStream reads and writes times as Swedish local time, without an offset.
 LOCAL = ZoneInfo("Europe/Stockholm")
-WINDOW = timedelta(days=1)
+# A day of changes is about 30 MB of JSON; six hours keeps each answer small enough that a
+# dropped connection costs little and is retried.
+WINDOW = timedelta(hours=6)
+ATTEMPTS = 4
 STAMP = "%Y-%m-%dT%H:%M:%S"
 
 AD_SCHEMA = pa.schema([
@@ -103,11 +107,23 @@ def known_ids() -> set[str]:
 def fetch_window(http, start: datetime, end: datetime) -> list[dict]:
     url = (f"{STREAM_URL}?date={start.strftime(STAMP)}"
            f"&updated-before-date={end.strftime(STAMP)}")
-    response = http.get(url, timeout=900)
-    response.raise_for_status()
-    rawstore.store(SOURCE, f"stream/raw/{start:%Y-%m-%dT%H%M}.json.gz", response.content,
-                   url=url)
-    return response.json()
+    for attempt in range(1, ATTEMPTS + 1):
+        response = http.get(url, timeout=900)
+        response.raise_for_status()
+        try:
+            # An answer cut off in transit is not valid JSON: ask again rather than store it.
+            items = json.loads(response.content)
+        except json.JSONDecodeError as error:
+            if attempt == ATTEMPTS:
+                raise
+            print(f"  answer cut off ({error.msg} at {error.pos:,} bytes), attempt {attempt} "
+                  f"of {ATTEMPTS}; retrying", flush=True)
+            time.sleep(10 * attempt)
+            continue
+        rawstore.store(SOURCE, f"stream/raw/{start:%Y-%m-%dT%H%M}.json.gz", response.content,
+                       url=url)
+        return items
+    raise AssertionError("unreachable")
 
 
 def recount(complete_from: date, last_day: date) -> dict:

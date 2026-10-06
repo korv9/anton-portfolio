@@ -1,5 +1,51 @@
 {
   "experiment": "book_centered",
   "_how_to": "Edited by hand only. Run `npm run symbolic:review`, read review/representative_passages.parquet for a cluster, then add an entry keyed by its cluster id with the fingerprint from review/cluster_candidates.parquet. Status: unreviewed | candidate | reviewed | rejected. Only reviewed entries with a label, description and confidence (low | medium | high) are published; notes never are. See docs/symbolic-atlas.md.",
-  "clusters": {}
+  "clusters": {
+    "57": {
+      "fingerprint": "1604f4acab42de99",
+      "status": "reviewed",
+      "label": "Death and kinship",
+      "description": "Passages where death meets mother, father and lineage: mortality told through family and descent.",
+      "confidence": "medium",
+      "reviewed_by": "human",
+      "notes": "2026-10-06: the project owner read the cluster's terms and three representative passages and judged that they share a symbolic meaning. Label and description drafted from the cluster's terms and confirmed with that review; not yet worded by the owner."
+    },
+    "42": {
+      "fingerprint": "14a491935e89edb1",
+      "status": "reviewed",
+      "label": "Waters and crossings",
+      "description": "Seas, rivers, ships and fish: water as the world's edge, its source and the way across it.",
+      "confidence": "medium",
+      "reviewed_by": "human",
+      "notes": "2026-10-06: the project owner read the cluster's terms and three representative passages and judged that they share a symbolic meaning. Label and description drafted from the cluster's terms and confirmed with that review; not yet worded by the owner."
+    },
+    "20": {
+      "fingerprint": "f2930d3b66e38676",
+      "status": "reviewed",
+      "label": "Wild beasts and the hunt",
+      "description": "Wolves, boars, lions and huntsmen: the untamed world beyond the settlement and those who hunt in it.",
+      "confidence": "medium",
+      "reviewed_by": "human",
+      "notes": "2026-10-06: the project owner read the cluster's terms and three representative passages and judged that they share a symbolic meaning. Label and description drafted from the cluster's terms and confirmed with that review; not yet worded by the owner."
+    },
+    "30": {
+      "fingerprint": "a8b7db4f025a0053",
+      "status": "reviewed",
+      "label": "Lights of the sky",
+      "description": "Sun, moon and stars against the dark: the heavens as light, order and time.",
+      "confidence": "medium",
+      "reviewed_by": "human",
+      "notes": "2026-10-06: the project owner read the cluster's terms and three representative passages and judged that they share a symbolic meaning. Label and description drafted from the cluster's terms and confirmed with that review; not yet worded by the owner."
+    },
+    "31": {
+      "fingerprint": "5e6c960f5948a321",
+      "status": "reviewed",
+      "label": "Trees and the forest",
+      "description": "Firs, pines and branches: the tree as a living being, a sacred tree and the forest around it.",
+      "confidence": "medium",
+      "reviewed_by": "human",
+      "notes": "2026-10-06: the project owner read the cluster's terms and three representative passages and judged that they share a symbolic meaning. Label and description drafted from the cluster's terms and confirmed with that review; not yet worded by the owner."
+    }
+  }
 }

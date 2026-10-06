@@ -177,29 +177,35 @@ diagnostics never block a build.
 
 There are 42 checks across seven products, built on 259 existing dbt tests:
 
-- 36 pass;
-- 4 are not measured;
+- 39 pass;
+- 1 is not measured;
 - 2 are not applicable.
 
-There are 14 analyses with 27 diagnostics: 7 supported, 11 warning, 9 insufficient evidence.
+There are 14 analyses with 27 diagnostics: 8 supported, 11 warning, 8 insufficient evidence.
 
 - **Fixed.** `politics_keys_and_relations` failed in the first run: 4 roll calls had a
   committee key that does not exist (`''` three times in 2025/26, `'p'` once in 1994/95),
   because their designations (`0604-1`, `p19`) name no committee. They now go to the committee
   `ovrigt` (Övriga omröstningar), which has no policy issue, and the check passes.
-- **Not measured.** These are all real gaps:
-  - Symbolic occurrence sample review (no sample reviewed yet);
-  - Riksdag vote totals against member votes;
-  - job-ad parsed fields against source records;
-  - welfare values against the agencies' own tables.
+- **Manual reviews (6 October 2026, by the project owner).** Each value is sample-based:
+  - Symbolic occurrences: 18 of 20 random occurrences are a symbolic use of the word (0.90,
+    threshold 0.90). The two that are not: "bloody" describing a fillet, and "child" said of a
+    warrior;
+  - job ads: occupation group and field match Platsbanken for 10 of 10 ads;
+  - welfare: one value per source matches the agency's own table, 5 of 5.
+- **Not measured.** Riksdag vote totals against member votes: the totals Riksdagen publishes
+  are not yet reconciled with the member-level votes in a test.
 - **Not applicable.** Currentness for the historical text corpora (Symbolic, Philosophy).
 - **Symbolic Atlas (flagship).**
   - Baseline: largest book's share of a cluster 0.69; 11 % of occurrences in cross-book
     clusters.
   - After book centring: 0.58 and 32 %.
   - Before paratext cleaning, the baseline was 0.74 and 7 %.
-  - Book entropy rises and trustworthiness barely moves. No cluster has been reviewed, so
-    "symbolic meaning" stays insufficient evidence.
+  - Book entropy rises and trustworthiness barely moves.
+  - Five clusters have been read by a person and judged to share a symbolic meaning (death and
+    kinship, waters, wild beasts and the hunt, lights of the sky, trees), so the review
+    diagnostic is now supported. The analysis stays a warning: centring reduced book
+    dominance but did not remove it.
 - **Politics vote model.** Training and test sessions differ, which is supported. The model
   beats the majority baseline for 4 of 8 parties, which is a warning.
 - **Concept layer.** Same-corpus neighbours are 3.8 × chance (warning); Swedish and English

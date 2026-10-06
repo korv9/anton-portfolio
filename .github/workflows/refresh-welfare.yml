@@ -96,6 +96,14 @@ jobs:
             echo "changed=false" >> "$GITHUB_OUTPUT"
           else
             git commit -m "data: refresh public sources (run ${GITHUB_RUN_ID})"
-            git push
+            # main may have moved during the run (a merge, another refresh): put this commit on
+            # top of it and push, a few times if needed.
+            pushed=false
+            for attempt in 1 2 3; do
+              if git pull --rebase origin main && git push origin HEAD:main; then pushed=true; break; fi
+              git rebase --abort 2>/dev/null || true
+              sleep $((attempt * 15))
+            done
+            "$pushed"
             echo "changed=true" >> "$GITHUB_OUTPUT"
           fi

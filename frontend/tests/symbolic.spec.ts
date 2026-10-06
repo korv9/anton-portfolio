@@ -62,8 +62,12 @@ test('the cross-book view mutes book-bound clusters and opens a cluster for revi
   const clusters = await (
     await page.request.get('/data/symbolic/book-centered-clusters.json')
   ).json()
+  // The highest-ranked candidate no person has reviewed yet.
   const top = clusters.clusters
-    .filter((c: { review_class: string }) => c.review_class === 'candidate')
+    .filter(
+      (c: { review_class: string; review_status: string }) =>
+        c.review_class === 'candidate' && c.review_status !== 'reviewed',
+    )
     .sort(
       (
         a: { review_priority_score: number },
