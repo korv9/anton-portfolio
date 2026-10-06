@@ -12,15 +12,16 @@ import {
   projectForRoute,
 } from '../../src/projects/projectRegistry.ts'
 
-test('five flagships, numbered 01–05 in order', () => {
+test('six flagships, numbered 01–06 in order', () => {
   assert.deepEqual(
     FLAGSHIPS.map((p) => [p.number, p.id]),
     [
       ['01', 'politics'],
-      ['02', 'jobs'],
-      ['03', 'symbolic-atlas'],
-      ['04', 'welfare'],
-      ['05', 'thesis'],
+      ['02', 'ai-act'],
+      ['03', 'jobs'],
+      ['04', 'symbolic-atlas'],
+      ['05', 'welfare'],
+      ['06', 'thesis'],
     ],
   )
   assert.ok(OTHER_WORK.every((p) => !p.number && !p.featured))
@@ -48,7 +49,8 @@ test('every flagship has the same grammar filled in', () => {
 
 test('previous and next follow the flagship order without wrapping', () => {
   assert.deepEqual(neighbours('politics').previous, undefined)
-  assert.equal(neighbours('politics').next?.id, 'jobs')
+  assert.equal(neighbours('politics').next?.id, 'ai-act')
+  assert.equal(neighbours('jobs').previous?.id, 'ai-act')
   assert.equal(neighbours('symbolic-atlas').previous?.id, 'jobs')
   assert.equal(neighbours('symbolic-atlas').next?.id, 'welfare')
   assert.equal(neighbours('thesis').next, undefined)
@@ -63,6 +65,10 @@ test('a route finds its project, including sub-views', () => {
   assert.equal(
     projectForRoute({ page: 'symbolic', path: '#symbolic-method' })?.id,
     'symbolic-atlas',
+  )
+  assert.equal(
+    projectForRoute({ page: 'aiact', path: '#ai-act-obligations' })?.id,
+    'ai-act',
   )
   assert.equal(
     projectForRoute({ page: 'analysis', path: '#analysis-europe' })?.id,

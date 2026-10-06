@@ -1,0 +1,32 @@
+version: 2
+
+models:
+  - name: stg_job_gov_totals
+    description: Ads per month and occupation field (denominator).
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [month, field_id]
+    columns:
+      - name: ads
+        data_tests: [not_null]
+  - name: stg_job_gov_terms
+    description: Ads matching each term per month and occupation field.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [month, field_id, term_id]
+    columns:
+      - name: term_id
+        data_tests:
+          - relationships:
+              arguments: {to: ref('job_ai_governance_terms'), field: term_id}
+  - name: stg_job_gov_examples
+    description: Example ads per term for reviewing the dictionary.
+  - name: stg_job_gov_manifests
+    description: One row per counted archive with provenance and the dictionary's SHA-256.
+    columns:
+      - name: archive
+        data_tests: [unique, not_null]
+      - name: sha256
+        data_tests: [not_null]

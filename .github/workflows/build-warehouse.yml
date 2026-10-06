@@ -5,12 +5,21 @@ name: Build and store the warehouse
 # committed. A run starts from the raw files already stored, so closed parliamentary sessions
 # and archives that have not changed are not downloaded again.
 #
-# Afterwards the bucket holds warehouse/portfolio.duckdb.gz, warehouse/manifest.json and
-# warehouse/raw/. Fetch them anywhere with:
+# Afterwards the bucket holds warehouse/portfolio.duckdb.gz, warehouse/manifest.json,
+# warehouse/raw/ and warehouse/features/ (the ML stages' outputs). Fetch them anywhere with:
 #     python platform/publish/warehouse_store.py pull
 
 on:
   workflow_dispatch:
+    inputs:
+      ml:
+        description: >-
+          ML stages (embeddings, maps, concept layer): 'missing' runs a stage only when its
+          stored output is absent, 'always' reruns every stage. Seeds are fixed, so a rerun on
+          the same inputs gives the same results.
+        type: choice
+        options: [missing, always]
+        default: missing
 
 permissions:
   contents: read
@@ -22,13 +31,17 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    # The first run counts every JobTech archive for the AI governance terms (about 90 minutes);
+    # later runs skip unchanged archives.
+    timeout-minutes: 300
     # The R2 credentials are secrets of the anton-portfolio environment.
     environment: anton-portfolio
     env:
       DBT_SEND_ANONYMOUS_USAGE_STATS: 'false'
       PORTFOLIO_DB: ${{ github.workspace }}/warehouse/portfolio.duckdb
       PORTFOLIO_RAW: ${{ github.workspace }}/warehouse/raw
+      PORTFOLIO_FEATURES: ${{ github.workspace }}/warehouse/features
+      ML: ${{ inputs.ml || 'missing' }}
       R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
       R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
       R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY || secrets.R2_SECRET_ACCESS_KEY_ID }}
@@ -46,8 +59,10 @@ jobs:
           cache: pip
           cache-dependency-path: platform/requirements.txt
       - run: pip install -r platform/requirements.txt
-      - name: Start from the stored raw files
-        run: python platform/publish/warehouse_store.py pull --only raw
+      - name: Start from the stored raw files and ML outputs
+        run: |
+          python platform/publish/warehouse_store.py pull --only raw
+          python platform/publish/warehouse_store.py pull --only features
       - name: Welfare (SCB, FoHM, Försäkringskassan, ESS, Kolada)
         run: python platform/ingest/run_welfare.py
       - name: Parliament (roll calls, bills, studies, elections)
@@ -66,7 +81,52 @@ jobs:
       - name: Politics
         working-directory: platform
         run: dbt build --profiles-dir . --select +tag:politics --target-path target/politics
-      - name: Store the warehouse and raw files in R2
+      - name: EU AI Act (Cellar, Commission guidance)
+        run: |
+          python platform/ingest/eu_ai_act/run.py
+          cd platform && dbt build --profiles-dir . --select tag:ai_act
+      - name: ML dependencies (CPU PyTorch, sentence-transformers, UMAP)
+        run: |
+          pip install torch --index-url https://download.pytorch.org/whl/cpu
+          pip install -r platform/requirements-symbolic.txt
+      - name: Riksdag speeches and AI (dictionary, similarity to the Act)
+        run: |
+          python platform/ingest/riksdagen/ingest_speeches.py
+          (cd platform && dbt build --profiles-dir . --select tag:ai_politics --exclude mart_ai_act_speech_similarity)
+          if [ "$ML" = always ] || [ ! -f warehouse/features/ai_politics/run.json ]; then
+            python platform/nlp/ai_politics/similarity.py
+          fi
+          cd platform && dbt build --profiles-dir . --select mart_ai_act_speech_similarity
+      - name: Symbolic Atlas (Gutenberg corpus, embeddings, map)
+        run: |
+          python platform/ingest/symbolic/ingest_corpus.py
+          (cd platform && dbt build --profiles-dir . --select tag:symbolic --exclude path:models/gold/symbolic)
+          if [ "$ML" = always ] || [ ! -f warehouse/features/symbolic/run.json ]; then
+            python platform/nlp/symbolic/pipeline.py
+          fi
+          cd platform && dbt build --profiles-dir . --select path:models/gold/symbolic
+      - name: Philosophy Atlas (Gutenberg corpus, embeddings, maps, tensions)
+        run: |
+          python platform/ingest/philosophy/ingest_corpus.py
+          (cd platform && dbt build --profiles-dir . --select tag:philosophy --exclude path:models/gold/philosophy)
+          if [ "$ML" = always ] || [ ! -f warehouse/features/philosophy/run.json ]; then
+            python platform/nlp/philosophy/pipeline.py
+          fi
+          cd platform && dbt build --profiles-dir . --select path:models/gold/philosophy
+      - name: AI governance in job ads (JobTech archives, counted)
+        run: |
+          python platform/ingest/jobtech/ingest_governance_terms.py
+          cd platform && dbt build --profiles-dir . --select tag:job_ai_governance
+      - name: Concept layer (four corpora, curated concepts)
+        run: |
+          if [ "$ML" = always ] || [ ! -f warehouse/features/concepts/run.json ]; then
+            python platform/nlp/concepts/build.py
+          fi
+          cd platform && dbt build --profiles-dir . --select tag:concepts
+      - name: AI governance timeline (cross-domain)
+        working-directory: platform
+        run: dbt build --profiles-dir . --select tag:cross_domain
+      - name: Store the warehouse, raw files and ML outputs in R2
         run: |
           python platform/publish/warehouse_store.py push
           python platform/publish/warehouse_store.py status

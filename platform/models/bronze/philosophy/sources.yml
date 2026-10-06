@@ -1,0 +1,42 @@
+version: 2
+
+# The Philosophy Atlas corpus: public-domain philosophy in English translation from Project
+# Gutenberg, fetched by platform/ingest/philosophy/ingest_corpus.py into warehouse/raw/philosophy.
+
+sources:
+  - name: philosophy
+    description: Gutenberg plain-text files, the curated corpus metadata and the fetch log.
+    tables:
+      - name: texts
+        meta:
+          external_location: >-
+            read_text('{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/philosophy/gutenberg/*.txt')
+      - name: corpus
+        meta:
+          external_location: >-
+            read_json('{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/philosophy/corpus.json', union_by_name = true)
+      - name: fetches
+        meta:
+          external_location: >-
+            read_json('{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/philosophy/_manifest.jsonl',
+            format = 'newline_delimited', union_by_name = true)
+
+  - name: philosophy_features
+    description: The ML stage's output (platform/nlp/philosophy/pipeline.py) under warehouse/features.
+    tables:
+      - name: atlas
+        meta:
+          external_location: >-
+            read_parquet('{{ env_var('PORTFOLIO_FEATURES', '../warehouse/features') }}/philosophy/atlas.parquet')
+      - name: clusters
+        meta:
+          external_location: >-
+            read_parquet('{{ env_var('PORTFOLIO_FEATURES', '../warehouse/features') }}/philosophy/clusters.parquet')
+      - name: tensions
+        meta:
+          external_location: >-
+            read_parquet('{{ env_var('PORTFOLIO_FEATURES', '../warehouse/features') }}/philosophy/tension_scores.parquet')
+      - name: run
+        meta:
+          external_location: >-
+            read_json('{{ env_var('PORTFOLIO_FEATURES', '../warehouse/features') }}/philosophy/run.json')

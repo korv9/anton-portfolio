@@ -1,0 +1,56 @@
+version: 2
+
+models:
+  - name: dim_philosophy_document
+    description: The works with author, year, tradition and translator as first-class metadata.
+    columns:
+      - name: document_id
+        data_tests: [unique, not_null]
+      - name: passages
+        data_tests: [not_null]
+  - name: dim_tension
+    description: Analytical tensions with the anchor sentence of each pole (interpretation).
+    columns:
+      - name: tension_id
+        data_tests: [unique, not_null]
+  - name: mart_philosophy_atlas
+    description: Passage × map variant with position and cluster (derived).
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [variant, passage_id]
+    columns:
+      - name: variant
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [baseline, author_centered]
+  - name: mart_philosophy_clusters
+    description: Clusters with composition, representatives, distinctive words and review status.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [variant, cluster_id]
+    columns:
+      - name: review_status
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [unreviewed, candidate, reviewed, rejected]
+      - name: largest_work_share
+        data_tests:
+          - between:
+              arguments: {min: 0, max: 1}
+  - name: mart_philosophy_tensions
+    description: Work × tension, distribution of positions along the lens (derived).
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [tension_id, document_id]
+    columns:
+      - name: tension_id
+        data_tests:
+          - relationships:
+              arguments: {to: ref('dim_tension'), field: tension_id}
+  - name: mart_philosophy_tension_poles
+    description: The passages nearest each pole of each tension.

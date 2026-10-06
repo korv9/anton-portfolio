@@ -428,11 +428,30 @@
   .constellation-editorial {
     grid-template-columns: minmax(0, 1fr);
   }
-  /* The map keeps a readable width and scrolls sideways; the details follow below it. */
+  /* The map stands upright and runs edge to edge (ConstellationCanvas: UPRIGHT_BELOW); the
+     details follow below it. */
+  /* To the edges of main (which clips at the site margin), past the container's padding. */
   .constellation-scroll {
-    overflow-x: auto;
+    width: calc(100% + 2 * var(--gutter));
+    margin-inline: calc(-1 * var(--gutter));
+    border-inline: 0;
   }
-  .constellation-scroll .constellation-frame {
-    width: 900px;
+  /* One swipeable row of layer chips instead of four wrapped rows. */
+  .constellation-layers {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    margin-inline: calc(-1 * var(--gutter));
+    padding-inline: var(--gutter);
+  }
+  .constellation-layers button {
+    flex: none;
+  }
+  .constellation-toolbar {
+    gap: 0.6rem;
+  }
+  .constellation-search,
+  .constellation-search input {
+    width: 100%;
   }
 }

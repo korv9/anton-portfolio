@@ -23,7 +23,8 @@ in the warehouse.
 | `ingest/` | Fetch to `warehouse/raw/`. One package per source, plus provenance. `run_welfare.py` runs the five welfare sources and their build |
 | `models/` | dbt: `bronze/`, `silver/`, `gold/`, each namespaced per subject area |
 | `publish/` | Delivery: catalogue, Parquet export, upload to object storage |
-| `lib/` | Shared paths, JSON, hashing, delivered-file resolution; `rawstore` (fetch with provenance) and `pxweb` (SCB and Folkhälsomyndigheten tables) |
+| `lib/` | Shared paths, JSON, hashing, delivered-file resolution; `rawstore` (fetch with provenance, and `store_version` for sources that change in place) and `pxweb` (SCB and Folkhälsomyndigheten tables) |
+| `legal/` | EU legal acts: Cellar queries and links (`cellar.py`), parsing Official Journal and consolidated XHTML into articles, recitals and annexes, and comparing versions (`parse.py`). Written for any EU act, used by the AI Act |
 | `legacy/` | Build and validate scripts not yet migrated into `models/` and `tests/` |
 | `sources/` | Pinned upstream snapshots that cannot be re-fetched |
 | `packages/` | The Allegoria meaningquality engine, vendored |
@@ -71,6 +72,12 @@ before the politics build, since dbt reads the fact tables it writes.
 | Welfare | SCB (AKU, population), Försäkringskassan, Folkhälsomyndigheten, ESS, Kolada | `models/*/welfare`, `models/gold/shared` | [docs/welfare-data-model.md](../docs/welfare-data-model.md) |
 | Parliament | Riksdagen (roll calls, reports, news), SCB (elections, PSU), Valmyndigheten | `models/*/parliament`, `seeds/parliament` | [docs/parliament-data-model.md](../docs/parliament-data-model.md) |
 | Taxes | OECD (Revenue Statistics, Taxing Wages), Skatteverket (rates, tax tables) | `models/*/taxes`, `seeds/taxes`, `frontend/src/taxes` | [docs/taxes.md](../docs/taxes.md) |
+| EU AI Act | EU Publications Office (Cellar / EUR-Lex), European Commission | `models/*/eu_ai_act`, `seeds/eu_ai_act`, `publish/eu_ai_act` | [docs/ai-act.md](../docs/ai-act.md) |
+| The Riksdag and AI | Riksdagen (every speech since 2016/17), the AI Act's Swedish text | `models/*/ai_politics`, `seeds/ai_politics`, `nlp/ai_politics`, `nlp/text`, `publish/ai_politics` | [docs/ai-politics.md](../docs/ai-politics.md) |
+| Philosophy Atlas | Project Gutenberg (thirteen works, translators recorded) | `models/*/philosophy`, `seeds/philosophy`, `nlp/philosophy`, `publish/philosophy` | [docs/philosophy-atlas.md](../docs/philosophy-atlas.md) |
+| Concept layer | The four corpora above (myth, philosophy, Riksdag, AI Act), by sample | `models/*/concepts`, `seeds/concepts`, `nlp/concepts`, `publish/concepts` | [docs/concept-layer.md](../docs/concept-layer.md), [docs/concept-constellation.md](../docs/concept-constellation.md) |
+| AI governance in job ads | JobTech historical archives (counted, no ads kept) | `models/*/job_ai_governance`, `seeds/job_ai_governance`, `publish/job_ai_governance` | [docs/ai-jobs.md](../docs/ai-jobs.md) |
+| AI governance timeline | The Riksdag and job-ad marts above, by month | `models/gold/cross_domain`, `seeds/cross_domain`, `publish/cross_domain` | [docs/ai-governance-timeline.md](../docs/ai-governance-timeline.md) |
 | Politics | Riksdagen, Statskontoret | Budget context and roll-call votes in `models/*/politics`; speeches and language still in `legacy/` | [docs/political-observatory.md](../docs/political-observatory.md) |
 
 ## Adding a source

@@ -1,0 +1,68 @@
+version: 2
+
+models:
+  - name: fact_ai_speech
+    description: One row per speech, whether it mentions AI and whether it names the AI Act; the denominator for every share.
+    columns:
+      - name: speech_id
+        data_tests: [unique, not_null]
+  - name: mart_ai_politics_monthly
+    description: Month × all speeches, AI speeches and AI Act speeches, shares and a three-month rolling share.
+    columns:
+      - name: month
+        data_tests: [unique, not_null]
+      - name: ai_share
+        data_tests:
+          - not_null
+          - between:
+              arguments: {min: 0, max: 1}
+  - name: mart_ai_politics_party_year
+    description: Party × year, share of speeches mentioning AI.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [party, year]
+  - name: mart_ai_politics_concepts
+    description: Party (or ALL) × period × concept among AI speeches.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [party, period, concept_id]
+    columns:
+      - name: share
+        data_tests:
+          - between:
+              arguments: {min: 0, max: 1}
+  - name: mart_ai_politics_framing
+    description: Framing pairs per party and phase, with a balance only from ten speeches.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [pair_id, party, period]
+    columns:
+      - name: balance
+        data_tests:
+          - between:
+              arguments: {min: -1, max: 1}
+  - name: mart_ai_politics_examples
+    description: Example AI paragraphs per concept (newest first) and every paragraph naming the AI Act.
+    columns:
+      - name: source_url
+        data_tests: [not_null]
+  - name: mart_ai_act_speech_similarity
+    description: Per AI Act article, the closest Riksdag AI paragraphs by multilingual embeddings (semantic similarity, derived).
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [article_number, rank]
+    columns:
+      - name: similarity
+        data_tests:
+          - not_null
+          - between:
+              arguments: {min: -1, max: 1}
+      - name: model
+        description: One model for both sides; a test checks there is only one.
+        data_tests: [not_null]
+      - name: speech_url
+        data_tests: [not_null]

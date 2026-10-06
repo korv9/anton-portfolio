@@ -54,6 +54,10 @@ const KIND_NAMES: [string, string][] = [
 
 const PAD_X = 28
 const PAD_TOP = 34
+/** Below this width the map stands upright: stages run top to bottom, domains become columns. */
+export const UPRIGHT_BELOW = 700
+const PAD_SIDE_UPRIGHT = 30
+const PAD_TOP_UPRIGHT = 30
 const PAD_BOTTOM = 12
 const HIT = 11
 
@@ -144,7 +148,14 @@ export default function ConstellationCanvas({
   const canvas = useRef<HTMLCanvasElement>(null)
   const [width, setWidth] = useState(0)
   const [hover, setHover] = useState<Placed | null>(null)
-  const height = Math.max(520, Math.round(width * 0.62))
+  const upright = width > 0 && width < UPRIGHT_BELOW
+  // Upright, the map fills about a screen: tall enough for nine stages to breathe.
+  const height = upright
+    ? Math.max(
+        640,
+        Math.round(Math.min(window.innerHeight * 1.15, width * 2.1)),
+      )
+    : Math.max(520, Math.round(width * 0.62))
 
   useEffect(() => {
     const el = frame.current
@@ -156,10 +167,17 @@ export default function ConstellationCanvas({
     return () => observer.disconnect()
   }, [])
 
-  const px = (n: { x: number; y: number }): [number, number] => [
-    PAD_X + n.x * (width - PAD_X * 2),
-    PAD_TOP + n.y * (height - PAD_TOP - PAD_BOTTOM),
-  ]
+  // Upright, the layout's axes swap: its x (stage) runs down the screen, its y (domain) across.
+  const px = (n: { x: number; y: number }): [number, number] =>
+    upright
+      ? [
+          PAD_SIDE_UPRIGHT + n.y * (width - PAD_SIDE_UPRIGHT - 8),
+          PAD_TOP_UPRIGHT + n.x * (height - PAD_TOP_UPRIGHT - PAD_BOTTOM),
+        ]
+      : [
+          PAD_X + n.x * (width - PAD_X * 2),
+          PAD_TOP + n.y * (height - PAD_TOP - PAD_BOTTOM),
+        ]
   const visible = useMemo(
     () => [...placed.values()].filter((n) => !hiddenLayers.has(n.type)),
     [placed, hiddenLayers],
@@ -176,36 +194,87 @@ export default function ConstellationCanvas({
     ctx.clearRect(0, 0, width, height)
     const lanes = [...graph.domains].sort((a, b) => a.lane - b.lane)
     const laneH = (height - PAD_TOP - PAD_BOTTOM) / lanes.length
-
-    // Domain lanes: a faint name behind each, a hairline between them.
-    ctx.textAlign = 'left'
-    lanes.forEach((d, i) => {
-      const y = PAD_TOP + i * laneH
-      if (i > 0) {
-        ctx.strokeStyle = 'rgba(241, 236, 226, 0.05)'
-        ctx.lineWidth = 1
-        ctx.beginPath()
-        ctx.moveTo(PAD_X, y)
-        ctx.lineTo(width - PAD_X, y)
-        ctx.stroke()
-      }
-      const dim = focus && !focus.has(`app:${d.id}`) && d.id !== 'shared'
-      ctx.fillStyle = `rgba(241, 236, 226, ${dim ? 0.08 : 0.32})`
-      ctx.font = '600 11px "Geist Mono", ui-monospace, monospace'
-      ctx.fillText(d.label.toUpperCase(), PAD_X + 2, y + 16)
-    })
-    // Stage names along the top.
     const stages =
       mode === 'model'
         ? KIND_NAMES
         : graph.layers.map((s) => STAGE_NAMES[s] ?? [s, s])
-    ctx.font = '500 10px "Geist Mono", ui-monospace, monospace'
-    ctx.textAlign = 'center'
-    ctx.fillStyle = 'rgba(241, 236, 226, 0.45)'
-    stages.forEach((s, i) => {
-      const x = PAD_X + ((i + 0.5) / stages.length) * (width - PAD_X * 2)
-      ctx.fillText(l(...s).toUpperCase(), x, 16)
-    })
+
+    if (upright) {
+      // Domain columns with their names on top; stage names up the left edge.
+      const laneW = (width - PAD_SIDE_UPRIGHT - 8) / lanes.length
+      ctx.textAlign = 'center'
+      ctx.font = '600 9px "Geist Mono", ui-monospace, monospace'
+      lanes.forEach((d, i) => {
+        const x = PAD_SIDE_UPRIGHT + i * laneW
+        if (i > 0) {
+          ctx.strokeStyle = 'rgba(241, 236, 226, 0.06)'
+          ctx.lineWidth = 1
+          ctx.beginPath()
+          ctx.moveTo(x, PAD_TOP_UPRIGHT - 6)
+          ctx.lineTo(x, height - PAD_BOTTOM)
+          ctx.stroke()
+        }
+        const dim = focus && !focus.has(`app:${d.id}`) && d.id !== 'shared'
+        ctx.fillStyle = `rgba(241, 236, 226, ${dim ? 0.12 : 0.55})`
+        const words = d.label.toUpperCase().split(' ')
+        words
+          .slice(0, 2)
+          .forEach((w, j) => ctx.fillText(w, x + laneW / 2, 11 + j * 10))
+      })
+      ctx.save()
+      ctx.font = '500 9px "Geist Mono", ui-monospace, monospace'
+      ctx.fillStyle = 'rgba(241, 236, 226, 0.62)'
+      stages.forEach((s, i) => {
+        const y =
+          PAD_TOP_UPRIGHT +
+          ((i + 0.5) / stages.length) * (height - PAD_TOP_UPRIGHT - PAD_BOTTOM)
+        ctx.save()
+        ctx.translate(11, y)
+        ctx.rotate(-Math.PI / 2)
+        ctx.fillText(l(...s).toUpperCase(), 0, 0)
+        ctx.restore()
+        if (i > 0) {
+          const line =
+            PAD_TOP_UPRIGHT +
+            (i / stages.length) * (height - PAD_TOP_UPRIGHT - PAD_BOTTOM)
+          ctx.strokeStyle = 'rgba(241, 236, 226, 0.03)'
+          ctx.beginPath()
+          ctx.moveTo(PAD_SIDE_UPRIGHT, line)
+          ctx.lineTo(width - 8, line)
+          ctx.stroke()
+        }
+      })
+      ctx.restore()
+    }
+
+    // Domain lanes: a faint name behind each, a hairline between them.
+    ctx.textAlign = 'left'
+    if (!upright)
+      lanes.forEach((d, i) => {
+        const y = PAD_TOP + i * laneH
+        if (i > 0) {
+          ctx.strokeStyle = 'rgba(241, 236, 226, 0.05)'
+          ctx.lineWidth = 1
+          ctx.beginPath()
+          ctx.moveTo(PAD_X, y)
+          ctx.lineTo(width - PAD_X, y)
+          ctx.stroke()
+        }
+        const dim = focus && !focus.has(`app:${d.id}`) && d.id !== 'shared'
+        ctx.fillStyle = `rgba(241, 236, 226, ${dim ? 0.08 : 0.32})`
+        ctx.font = '600 11px "Geist Mono", ui-monospace, monospace'
+        ctx.fillText(d.label.toUpperCase(), PAD_X + 2, y + 16)
+      })
+    // Stage names along the top.
+    if (!upright) {
+      ctx.font = '500 10px "Geist Mono", ui-monospace, monospace'
+      ctx.textAlign = 'center'
+      ctx.fillStyle = 'rgba(241, 236, 226, 0.45)'
+      stages.forEach((s, i) => {
+        const x = PAD_X + ((i + 0.5) / stages.length) * (width - PAD_X * 2)
+        ctx.fillText(l(...s).toUpperCase(), x, 16)
+      })
+    }
 
     const lit = (id: string) =>
       (!path || path.has(id)) && (!focus || focus.has(id))
@@ -245,7 +314,9 @@ export default function ConstellationCanvas({
         ctx.moveTo(x1, y1)
         // A slight curve keeps parallel lines apart without hiding their direction.
         const mx = (x1 + x2) / 2
-        ctx.quadraticCurveTo(mx, (y1 + y2) / 2 - (x2 - x1) * 0.06, x2, y2)
+        const my = (y1 + y2) / 2
+        if (upright) ctx.quadraticCurveTo(mx - (y2 - y1) * 0.06, my, x2, y2)
+        else ctx.quadraticCurveTo(mx, my - (x2 - x1) * 0.06, x2, y2)
         ctx.stroke()
       }
     }
@@ -281,24 +352,69 @@ export default function ConstellationCanvas({
         n.type === 'shared' ||
         n.type === 'ml' ||
         (mode === 'model' && n.kind === 'fact' && !!focus)
+      // On a selected path, label the models and stages, and the files only on short paths.
+      // Upright, columns are narrow: only products, the selection and short paths get names.
+      const pathLabel =
+        !!path &&
+        path.size < (upright ? 16 : 40) &&
+        n.type !== 'seed' &&
+        (n.type !== 'delivery' || path.size <= 12)
       const label =
-        n.id === selected || (on && (landmark || (!!path && path.size < 40)))
-      if (label && width > 640) {
+        n.id === selected ||
+        (on && ((upright ? n.type === 'frontend' : landmark) || pathLabel))
+      if (label) {
         ctx.font =
           n.type === 'frontend'
-            ? '600 12px Geist, Helvetica, Arial, sans-serif'
-            : '400 10.5px Geist, Helvetica, Arial, sans-serif'
+            ? `600 ${upright ? 10.5 : 12}px Geist, Helvetica, Arial, sans-serif`
+            : `400 ${upright ? 9.5 : 10.5}px Geist, Helvetica, Arial, sans-serif`
         ctx.fillStyle = on
           ? 'rgba(241, 236, 226, 0.85)'
           : 'rgba(241, 236, 226, 0.2)'
-        const text = n.label.length > 34 ? n.label.slice(0, 33) + '…' : n.label
-        const right = x > width - 170
-        ctx.textAlign = right ? 'right' : 'left'
-        ctx.fillText(text, x + (right ? -1 : 1) * (style.r + 6), y + 3.5)
-        ctx.textAlign = 'left'
+        const max = upright ? 22 : 34
+        const text =
+          n.label.length > max ? n.label.slice(0, max - 1) + '…' : n.label
+        if (upright && n.type === 'frontend') {
+          // Products sit side by side at the bottom: name centred above, at most two lines.
+          const words = n.label.split(' ')
+          const lines: string[] = []
+          const limit = Math.max(8, Math.floor(width / lanes.length / 6))
+          for (const w of words) {
+            const last = lines[lines.length - 1]
+            if (last && (last + ' ' + w).length <= limit)
+              lines[lines.length - 1] = `${last} ${w}`
+            else lines.push(w)
+          }
+          const shown2 = lines.slice(0, 2)
+          if (lines.length > 2) shown2[1] += '…'
+          ctx.textAlign = 'center'
+          shown2.forEach((line, j) =>
+            ctx.fillText(
+              line,
+              x,
+              y - style.r - 8 - (shown2.length - 1 - j) * 12,
+            ),
+          )
+          ctx.textAlign = 'left'
+        } else {
+          const right = x > width - (upright ? width / 2 : 170)
+          ctx.textAlign = right ? 'right' : 'left'
+          ctx.fillText(text, x + (right ? -1 : 1) * (style.r + 6), y + 3.5)
+          ctx.textAlign = 'left'
+        }
       }
     }
-  }, [graph, placed, visible, mode, focus, path, selected, width, height])
+  }, [
+    graph,
+    placed,
+    visible,
+    mode,
+    focus,
+    path,
+    selected,
+    width,
+    height,
+    upright,
+  ])
 
   const nearest = (e: React.MouseEvent): Placed | null => {
     const box = canvas.current!.getBoundingClientRect()

@@ -50,8 +50,10 @@ NODE_TYPES = {"source", "ingestion", "raw", "seed", "bronze", "silver", "ml", "g
               "frontend", "shared"}
 EDGE_TYPES = {"lineage", "relationship", "delivery", "frontend-consumption", "infrastructure"}
 MAX_COLUMNS = 40
-DATA_PATH = re.compile(r"""[`'"]((?:symbolic|jobs|welfare|taxes|politics|parliament|debates|gold|ml|products|"""
-                       r"""schema|parquet|discovery|reports)/[A-Za-z0-9_./${}\-]*)""")
+# A data path in frontend code starts with one of the delivery's top-level folders.
+DATA_TOPS = ["ai-act", "philosophy", "concepts", "symbolic", "jobs", "welfare", "taxes", "politics", "parliament", "debates",
+             "gold", "ml", "products", "schema", "parquet", "discovery", "reports"]
+DATA_PATH = re.compile(r"""[`'"]((?:""" + "|".join(map(re.escape, DATA_TOPS)) + r""")/[A-Za-z0-9_./${}\-]*)""")
 
 
 # ---------------------------------------------------------------------------- helpers
@@ -167,8 +169,11 @@ def build(manifest: dict, er: dict, files: list[str], frontend_paths=code_paths)
         for r in i["raw"]:
             raw_producer[r] = nid
         folder = ROOT / i["path"]
-        if any("rawstore" in f.read_text(encoding="utf-8") for f in folder.glob("*.py")):
+        sources = [f.read_text(encoding="utf-8") for f in folder.glob("*.py")]
+        if any("rawstore" in text for text in sources):
             edge(nid, "infra:rawstore", "infrastructure")
+        if any("from legal" in text for text in sources):
+            edge(nid, "infra:legal", "infrastructure")
     ml_raw = {r: f"ml:{m['id']}" for m in registry.ML for r in m.get("raw", [])}
     ml_layer = {f"ml:{m['id']}": m.get("layer", "ml") for m in registry.ML}
 
@@ -211,6 +216,11 @@ def build(manifest: dict, er: dict, files: list[str], frontend_paths=code_paths)
              columns=columns[:MAX_COLUMNS], column_count=len(columns), enabled=enabled)
         names.add(n["name"])
     for n, _ in dbt_nodes:
+        # A dbt Python model that parses with the shared legal parser runs on it.
+        source_file = PLATFORM / n["original_file_path"]
+        if source_file.suffix == ".py" and source_file.is_file() and \
+                "from legal" in source_file.read_text(encoding="utf-8"):
+            edge(f"dbt:{n['name']}", "infra:legal", "infrastructure")
         for dep in n.get("depends_on", {}).get("nodes", []):
             kind, _, *rest = dep.split(".")
             if kind in ("model", "seed"):

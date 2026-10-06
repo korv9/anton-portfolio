@@ -1,0 +1,25 @@
+version: 2
+
+sources:
+  - name: ai_politics_features
+    description: >-
+      The similarity stage's output (platform/nlp/ai_politics/similarity.py), a local artefact under
+      warehouse/features: the AI Act's Swedish passages and the nearest pairs between them and the
+      Riksdag's AI paragraphs, by multilingual sentence embeddings.
+    tables:
+      - name: act_passages
+        meta:
+          external_location: >-
+            read_parquet('{{ env_var('PORTFOLIO_FEATURES', '../warehouse/features') }}/ai_politics/act_passages.parquet')
+      - name: article_to_speech
+        meta:
+          external_location: >-
+            read_parquet('{{ env_var('PORTFOLIO_FEATURES', '../warehouse/features') }}/ai_politics/article_to_speech.parquet')
+      - name: speech_to_act
+        meta:
+          external_location: >-
+            read_parquet('{{ env_var('PORTFOLIO_FEATURES', '../warehouse/features') }}/ai_politics/speech_to_act.parquet')
+      - name: run
+        meta:
+          external_location: >-
+            read_json('{{ env_var('PORTFOLIO_FEATURES', '../warehouse/features') }}/ai_politics/run.json')

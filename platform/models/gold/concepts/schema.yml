@@ -1,0 +1,147 @@
+version: 2
+
+models:
+  - name: dim_concept
+    description: Curated concepts with an anchor sentence per language (interpretation).
+    columns:
+      - name: concept_id
+        data_tests: [unique, not_null]
+      - name: status
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [curated, reviewed, candidate]
+  - name: dim_corpus
+    description: The four corpora and the size of their sample.
+    columns:
+      - name: corpus_id
+        data_tests: [unique, not_null]
+      - name: chunks
+        data_tests:
+          - between:
+              arguments: {min: 1, max: 1000}
+  - name: dim_text_chunk
+    description: Sampled chunks with full provenance.
+    columns:
+      - name: chunk_id
+        data_tests: [unique, not_null]
+      - name: corpus_id
+        data_tests:
+          - relationships:
+              arguments: {to: ref('dim_corpus'), field: corpus_id}
+      - name: source_url
+        data_tests: [not_null]
+      - name: source_version
+        data_tests: [not_null]
+      - name: retrieved_at
+        data_tests: [not_null]
+      - name: language
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [en, sv]
+  - name: fact_concept_alignment
+    description: Chunk × concept similarity, rank and within-corpus z-score (derived).
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [chunk_id, concept_id]
+    columns:
+      - name: concept_id
+        data_tests:
+          - relationships:
+              arguments: {to: ref('dim_concept'), field: concept_id}
+      - name: chunk_id
+        data_tests:
+          - relationships:
+              arguments: {to: ref('dim_text_chunk'), field: chunk_id}
+      - name: similarity
+        data_tests:
+          - between:
+              arguments: {min: -1, max: 1}
+      - name: rank
+        data_tests:
+          - between:
+              arguments: {min: 1, max: 28}
+  - name: fact_cross_domain_similarity
+    description: Best representative pair per concept and corpus pair, with a random-pair baseline.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [concept_id, corpus_a, corpus_b]
+    columns:
+      - name: chunk_a
+        data_tests:
+          - relationships:
+              arguments: {to: ref('dim_text_chunk'), field: chunk_id}
+      - name: chunk_b
+        data_tests:
+          - relationships:
+              arguments: {to: ref('dim_text_chunk'), field: chunk_id}
+  - name: bridge_cluster_concept
+    description: Reviewed links between atlas clusters and concepts; empty until a person reviews.
+    columns:
+      - name: concept_id
+        data_tests:
+          - relationships:
+              arguments: {to: ref('dim_concept'), field: concept_id}
+      - name: reviewer
+        data_tests: [not_null]
+  - name: mart_concept_relations
+    description: Concept × concept relations with an explicit relation type.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [concept_a, concept_b, relation_type]
+    columns:
+      - name: relation_type
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [semantic_similarity, shared_tension]
+      - name: concept_a
+        data_tests:
+          - relationships:
+              arguments: {to: ref('dim_concept'), field: concept_id}
+      - name: concept_b
+        data_tests:
+          - relationships:
+              arguments: {to: ref('dim_concept'), field: concept_id}
+  - name: mart_concept_profiles
+    description: Concept × corpus rank-1 and top-3 shares against chance (derived).
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [corpus_id, concept_id]
+    columns:
+      - name: rank1_share
+        data_tests:
+          - between:
+              arguments: {min: 0, max: 1}
+  - name: mart_concept_passages
+    description: Representative chunks per concept and corpus, with provenance.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [concept_id, corpus_id, representative_rank]
+    columns:
+      - name: representative_rank
+        data_tests:
+          - between:
+              arguments: {min: 1, max: 8}
+  - name: mart_concept_links
+    description: Editorial links from a concept to measures elsewhere on the site (interpretation).
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [concept_id, kind, target_id]
+    columns:
+      - name: concept_id
+        data_tests:
+          - relationships:
+              arguments: {to: ref('dim_concept'), field: concept_id}
+      - name: kind
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [philosophy_tension, riksdag_framing, ai_act_view, job_term]

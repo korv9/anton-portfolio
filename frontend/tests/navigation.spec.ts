@@ -2,6 +2,7 @@ import { test, expect } from './test'
 
 const FLAGSHIPS = [
   'Swedish politics in numbers',
+  'EU AI Act Observatory',
   'The job market in job ads',
   'Symbolic Atlas',
   'How is Sweden doing?',
@@ -75,15 +76,15 @@ test('a project page says where it is and leads to the neighbouring projects', a
   await expect(crumb).toContainText('Projects')
   await expect(crumb).toContainText('Symbolic Atlas')
   const pager = page.locator('.project-pager')
-  await expect(pager.locator('.pager-previous')).toContainText(FLAGSHIPS[1])
-  await expect(pager.locator('.pager-next')).toContainText(FLAGSHIPS[3])
+  await expect(pager.locator('.pager-previous')).toContainText(FLAGSHIPS[2])
+  await expect(pager.locator('.pager-next')).toContainText(FLAGSHIPS[4])
   // The ends of the list have one side only.
   await page.goto('/#politik')
   await expect(page.locator('.pager-previous')).toHaveCount(0)
   await expect(page.locator('.pager-next')).toContainText(FLAGSHIPS[1])
   await page.goto('/#thesis')
   await expect(page.locator('.pager-next')).toHaveCount(0)
-  await expect(page.locator('.pager-previous')).toContainText(FLAGSHIPS[3])
+  await expect(page.locator('.pager-previous')).toContainText(FLAGSHIPS[4])
   // Other work has the breadcrumb but no pager.
   await page.goto('/#drugcomb')
   await expect(page.locator('.project-context')).toContainText('DrugComb')

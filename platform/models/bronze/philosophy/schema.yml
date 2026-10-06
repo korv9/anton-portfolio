@@ -1,0 +1,14 @@
+version: 2
+
+models:
+  - name: stg_philosophy_documents
+    description: One row per work with its metadata (translator first-class) and the SHA-256 of the fetch.
+    columns:
+      - name: document_id
+        data_tests: [unique, not_null]
+      - name: author
+        data_tests: [not_null]
+      - name: source_hash
+        data_tests: [not_null]
+      - name: text_start
+        description: Where the author's own text begins (a line matched in full); null only when the file starts with it.

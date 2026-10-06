@@ -27,6 +27,9 @@ DOMAINS = [
     {"id": "shared", "label": "Shared platform", "lane": 2},
     {"id": "welfare", "label": "Sweden", "lane": 3},
     {"id": "symbolic", "label": "Symbolic Atlas", "lane": 4},
+    {"id": "ai_act", "label": "EU AI Act", "lane": 5},
+    {"id": "philosophy", "label": "Philosophy Atlas", "lane": 6},
+    {"id": "concepts", "label": "Concept layer", "lane": 7},
 ]
 
 DBT_FOLDER_DOMAIN = {
@@ -34,6 +37,12 @@ DBT_FOLDER_DOMAIN = {
     "jobs": "jobs", "market": "jobs",
     "welfare": "welfare",
     "symbolic": "symbolic",
+    "eu_ai_act": "ai_act",
+    "ai_politics": "ai_act",
+    "job_ai_governance": "ai_act",  # AI governance words in job ads, read against the Act
+    "philosophy": "philosophy",
+    "concepts": "concepts",  # four corpora read against one set of curated concepts
+    "cross_domain": "ai_act",  # the AI governance timeline: Riksdag and job ads by month
     "shared": "shared",
     "": "jobs",  # seeds at the root of seeds/: the job-ad role and technology patterns
 }
@@ -65,12 +74,18 @@ ORIGINS = [
     {"id": "ess", "label": "European Social Survey", "domain": "welfare", "url": "https://ess.sikt.no",
      "description": "ESS rounds 1–11, integrated files."},
     {"id": "gutenberg", "label": "Project Gutenberg", "domain": "symbolic", "url": "https://www.gutenberg.org",
-     "description": "Ten public-domain books of myth, folklore and literature."},
+     "description": "Ten public-domain books of myth, folklore and literature, and thirteen works of philosophy."},
+    {"id": "publications-office", "label": "EU Publications Office (EUR-Lex)", "domain": "ai_act",
+     "url": "https://publications.europa.eu/webapi/rdf/sparql",
+     "description": "Cellar, the repository behind EUR-Lex: the AI Act's text in English and Swedish, its consolidated versions, amending acts, corrigenda and related documents."},
+    {"id": "european-commission", "label": "European Commission", "domain": "ai_act",
+     "url": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai",
+     "description": "The Commission's AI Act pages: guidelines, codes of practice, templates and the AI Act Service Desk."},
 ]
 
 INGESTION = [
     {"id": "riksdagen", "path": "platform/ingest/riksdagen", "domain": "politics",
-     "origins": ["riksdagen"], "raw": ["riksdagen", "politics_delivery"],
+     "origins": ["riksdagen"], "raw": ["riksdagen", "politics_delivery", "riksdagen_speeches"],
      "description": "Votes, decision points, documents, studies and budgets from Riksdagen."},
     {"id": "elections", "path": "platform/ingest/elections", "domain": "politics",
      "origins": ["scb", "valmyndigheten", "riksdagen"], "raw": ["scb_elections", "val"],
@@ -82,7 +97,7 @@ INGESTION = [
      "origins": ["skatteverket", "scb", "oecd"], "raw": ["skatteverket", "scb_household_spending"],
      "description": "Tax rates, household spending and international tax comparisons."},
     {"id": "jobtech", "path": "platform/ingest/jobtech", "domain": "jobs",
-     "origins": ["arbetsformedlingen"], "raw": ["jobtech", "jobtech_market"],
+     "origins": ["arbetsformedlingen"], "raw": ["jobtech", "jobtech_market", "jobtech_governance"],
      "description": "Job ads from the JobSearch API and ad counts from every historical archive."},
     {"id": "scb", "path": "platform/ingest/scb", "domain": "welfare",
      "origins": ["scb"], "raw": ["scb"], "description": "Labour force survey and population."},
@@ -97,6 +112,12 @@ INGESTION = [
     {"id": "symbolic", "path": "platform/ingest/symbolic", "domain": "symbolic",
      "origins": ["gutenberg"], "raw": ["symbolic"],
      "description": "The Gutenberg corpus, every fetch logged with URL, time and SHA-256."},
+    {"id": "philosophy", "path": "platform/ingest/philosophy", "domain": "philosophy",
+     "origins": ["gutenberg"], "raw": ["philosophy"],
+     "description": "Thirteen public-domain works of philosophy, with translators, every fetch logged."},
+    {"id": "eu_ai_act", "path": "platform/ingest/eu_ai_act", "domain": "ai_act",
+     "origins": ["publications-office", "european-commission"], "raw": ["eu_ai_act"],
+     "description": "The AI Act and every related act from Cellar, and the Commission's guidance pages; texts kept per CELEX number and language, changing pages kept per version."},
 ]
 
 ML = [
@@ -107,6 +128,19 @@ ML = [
      "path": "platform/nlp/symbolic/rank_clusters.py", "domain": "symbolic",
      "inputs": ["int_symbol_occurrences", "int_symbolic_documents"],
      "description": "Baseline, masked and book-centred runs (experiments.py) and the ranking of clusters for human review."},
+    {"id": "philosophy-pipeline", "label": "Philosophy embeddings, maps, tensions",
+     "path": "platform/nlp/philosophy/pipeline.py", "domain": "philosophy",
+     "inputs": ["int_philosophy_passages"], "raw": ["philosophy_features"],
+     "description": "Balanced sample, multilingual embeddings, raw and work-centred UMAP + HDBSCAN, dominance metrics and tension scores."},
+    {"id": "concept-layer", "label": "Concept layer across four corpora",
+     "path": "platform/nlp/concepts/build.py", "domain": "concepts",
+     "inputs": ["int_symbol_occurrences", "int_philosophy_passages", "int_riksdag_speeches", "int_ai_act_provisions"],
+     "raw": ["concept_features"],
+     "description": "Balanced chunks from myth, philosophy, Riksdag speeches and the AI Act, one multilingual model, alignment to curated concepts, cross-corpus pairs and dominance metrics."},
+    {"id": "ai-politics-similarity", "label": "AI Act ↔ Riksdag similarity",
+     "path": "platform/nlp/ai_politics/similarity.py", "domain": "ai_act",
+     "inputs": ["int_ai_act_provisions", "int_ai_speech_paragraphs"], "raw": ["ai_politics_features"],
+     "description": "Multilingual sentence embeddings of the Act's Swedish passages and the Riksdag's AI paragraphs; nearest pairs and a chance baseline, read back by gold."},
     # It reads a gold table (the skills bridge), so it sits beside gold, and its results
     # re-enter the warehouse as raw tables that gold marts read.
     {"id": "job-clusters", "label": "Job-ad clustering", "path": "ml/jobs/pipeline.py", "domain": "jobs",
@@ -128,6 +162,26 @@ PUBLISHERS = [
         {"pattern": "symbolic/research-history.json", "inputs": ["ml:symbolic-review"]},
         {"pattern": "symbolic/experiment-comparison.json", "inputs": ["ml:symbolic-review"]},
     ]},
+    {"path": "platform/publish/eu_ai_act/export_ai_act.py", "domain": "ai_act", "outputs": [
+        {"pattern": "ai-act/article-text-*.json", "inputs": ["dim_ai_act_article", "dim_ai_act_annex"]},
+        {"pattern": "ai-act/obligations.json", "inputs": ["mart_ai_act_obligations"]},
+        {"pattern": "ai-act/timeline.json", "inputs": ["mart_ai_act_timeline"]},
+        {"pattern": "ai-act/changes.json", "inputs": ["mart_ai_act_changes"]},
+        {"pattern": "ai-act/navigator.json", "inputs": ["mart_ai_act_obligations", "dim_ai_act_actor", "dim_ai_act_risk_class"]},
+        {"pattern": "ai-act/*.json"},
+    ]},
+    {"path": "platform/publish/ai_politics/export_ai_politics.py", "domain": "ai_act", "outputs": [
+        {"pattern": "ai-act/politics/similarity.json", "inputs": ["mart_ai_act_speech_similarity"]},
+        {"pattern": "ai-act/politics/*.json"},
+    ]},
+    {"path": "platform/publish/philosophy/export_philosophy.py", "domain": "philosophy",
+     "outputs": [{"pattern": "philosophy/*.json"}]},
+    {"path": "platform/publish/cross_domain/export_ai_governance_timeline.py", "domain": "ai_act",
+     "outputs": [{"pattern": "ai-act/signals.json", "inputs": ["mart_ai_governance_timeline"]}]},
+    {"path": "platform/publish/concepts/export_concepts.py", "domain": "concepts",
+     "outputs": [{"pattern": "concepts/*.json"}]},
+    {"path": "platform/publish/job_ai_governance/export_job_ai_governance.py", "domain": "ai_act",
+     "outputs": [{"pattern": "ai-act/jobs/*.json"}]},
     {"path": "platform/publish/export_market.py", "domain": "jobs", "outputs": [{"pattern": "jobs/market.json"}]},
     {"path": "platform/ingest/jobtech/export_presentation.py", "domain": "jobs",
      "outputs": [{"pattern": "jobs/*.csv"}]},
@@ -182,6 +236,15 @@ PRODUCTS = [
     {"id": "symbolic", "label": "Symbolic Atlas", "href": "#symbolic-atlas", "domain": "symbolic",
      "frontend": ["frontend/src/symbolic"],
      "description": "Unsupervised map of symbol words in myth and literature, with human review."},
+    {"id": "ai_act", "label": "EU AI Act Observatory", "href": "#ai-act", "domain": "ai_act",
+     "frontend": ["frontend/src/aiact"],
+     "description": "Articles, obligations, actors, application dates and changes of the AI Act, from official EU sources."},
+    {"id": "philosophy", "label": "Philosophy Atlas", "href": "#philosophy-atlas", "domain": "philosophy",
+     "frontend": ["frontend/src/philosophy"],
+     "description": "Semantic atlas of public-domain philosophy with dominance metrics and tension lenses."},
+    {"id": "concepts", "label": "Concept Constellation", "href": "#concept-constellation", "domain": "concepts",
+     "frontend": ["frontend/src/concepts"],
+     "description": "Curated concepts read across myth, philosophy, Riksdag speeches and the AI Act, with typed relations."},
 ]
 
 SHARED = [
@@ -189,6 +252,8 @@ SHARED = [
      "description": "Immutable raw landing: every fetch stored with URL, time and SHA-256 under warehouse/raw."},
     {"id": "warehouse", "label": "dbt + DuckDB", "path": "platform/dbt_project.yml",
      "description": "One DuckDB warehouse; dbt builds bronze views, silver and gold tables, with tests."},
+    {"id": "legal", "label": "EU legal parser", "path": "platform/legal/parse.py",
+     "description": "Parses EU acts (Official Journal or consolidated XHTML) into articles, recitals and annexes and compares versions; written for any EU act."},
     {"id": "catalog", "label": "Delivery catalogue", "path": "platform/publish/build_catalog.py",
      "description": "catalog.json and delivery.json: every published file with its hash, format and where it is served from."},
     {"id": "r2", "label": "Cloudflare R2", "path": "platform/publish/upload.py",

@@ -10,7 +10,7 @@ Every page has the same header with four global destinations, and the name links
 
 | Destination | What it is |
 |---|---|
-| **Projects ▾** | A menu: the five selected projects with number and one-line descriptor, then "View all projects" (`#alla-projekt`) |
+| **Projects ▾** | A menu: the six selected projects with number and one-line descriptor, then "View all projects" (`#alla-projekt`) |
 | **Experience** | `#erfarenhet`, the experience section on the start page |
 | **About** | `#om-mig`, about, education and contact on the start page |
 | **CV ▾** | A menu with the three role-specific CVs in `public/cv/` (download) |
@@ -35,10 +35,13 @@ Selected projects, in this order:
 | # | Project | Address |
 |---|---|---|
 | 01 | Swedish politics in numbers | `#politik` |
-| 02 | Job market in numbers | `#jobb` (the earlier `#job-market*` views belong to it) |
-| 03 | Symbolic Atlas | `#symbolic-atlas` |
-| 04 | How is Sweden doing? | `#sweden` (and `#analysis`) |
-| 05 | Degree project | `#thesis` |
+| 02 | EU AI Act Observatory | `#ai-act` and its views `#ai-act-*` ([ai-act.md](ai-act.md)) |
+| 03 | Job market in numbers | `#jobb` (the earlier `#job-market*` views belong to it) |
+| 04 | Symbolic Atlas | `#symbolic-atlas` |
+| 05 | How is Sweden doing? | `#sweden` (and `#analysis`) |
+| 06 | Degree project | `#thesis` |
+
+Experimental, not featured: Philosophy Atlas (`#philosophy-atlas`, [philosophy-atlas.md](philosophy-atlas.md)) and Concept Constellation (`#concept-constellation`, concept pages `#concept-<id>`, [concept-constellation.md](concept-constellation.md)).
 
 Everything else (DrugComb, taLLMan, Allegoria, DiVA, Homie, RAG, MIMII, IN1) is other work.
 
@@ -46,7 +49,7 @@ Everything else (DrugComb, taLLMan, Allegoria, DiVA, Homie, RAG, MIMII, IN1) is 
 
 - **Breadcrumb** at the top: "Projects / <project>"; the supporting pages (architecture, data model, ER diagram, pipeline status, design system) read "Projects / Technical / <page>".
 - **Previous / next** at the bottom of a selected project's page, in registry order; the first has no previous and the last no next. Other work has no pager.
-- **Project sub-navigation** inside a project, under the header. The Symbolic Atlas has Atlas / Findings / Experiments / Method as anchors (`#symbolic-atlas`, `#symbolic-findings`, `#symbolic-experiments`, `#symbolic-method`); the politics and job-market products keep their own side menus. `frontend/src/projects/ProjectNav.tsx`.
+- **Project sub-navigation** inside a project, under the header. The Symbolic Atlas has Atlas / Findings / Experiments / Method as anchors (`#symbolic-atlas`, `#symbolic-findings`, `#symbolic-experiments`, `#symbolic-method`); the EU AI Act Observatory has Overview / Today / Timeline / Who does it apply to? / Risk classes / Obligations / Startup navigator / In the Riksdag / Changes / Sources as pages (`#ai-act`, `#ai-act-today`, …), plus an article reader at `#ai-act-article?a=<number>`; the politics and job-market products keep their own side menus. `frontend/src/projects/ProjectNav.tsx`.
 - **Footer** on every page: Projects (the selected projects and All projects), Profile (Experience, About, CV, LinkedIn, GitHub) and Under the hood (architecture, data model, ER diagram).
 
 ### Route types
@@ -54,7 +57,7 @@ Everything else (DrugComb, taLLMan, Allegoria, DiVA, Homie, RAG, MIMII, IN1) is 
 - **Global destinations:** `#start`, `#projekt`, `#erfarenhet`, `#kompetenser`, `#om-mig`, `#alla-projekt`.
 - **Platform map:** `#data-constellation` (Data Constellation, [data-constellation.md](data-constellation.md)), linked from the Projects menu, the hero and the footer; its breadcrumb reads "Projects / Technical / Data Constellation".
 - **Project destinations:** each registry entry's address.
-- **Deep dives:** the views inside a project (`#politik-*`, `#jobb-*`, `#now-*`, `#symbolic-*`, …).
+- **Deep dives:** the views inside a project (`#politik-*`, `#jobb-*`, `#now-*`, `#symbolic-*`, `#ai-act-*`, …).
 - **Legacy redirects** (`frontend/src/router.ts`): `#about`, `#contact`, `#kontakt` and `#utbildning` go to `#om-mig`; `#experience` to `#erfarenhet`; `#projects` to `#projekt`. Every earlier project address still opens its page.
 
 ## Start page

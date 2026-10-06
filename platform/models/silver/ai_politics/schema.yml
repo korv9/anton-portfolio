@@ -1,0 +1,35 @@
+version: 2
+
+models:
+  - name: int_riksdag_speeches
+    description: Every speech with a normalised party (null for the chair and speakers without a party).
+    columns:
+      - name: speech_id
+        data_tests: [unique, not_null]
+      - name: party
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [S, M, SD, C, V, KD, L, MP]
+  - name: int_ai_speech_paragraphs
+    description: Paragraphs passing the AI gate, with the framing concepts found in them (dictionary matches).
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [speech_id, paragraph]
+    columns:
+      - name: speech_id
+        data_tests:
+          - relationships:
+              arguments: {to: ref('int_riksdag_speeches'), field: speech_id}
+  - name: int_ai_speech_concepts
+    description: Speech × concept, counted when the concept occurs in one of the speech's AI paragraphs.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [speech_id, concept_id]
+    columns:
+      - name: concept_id
+        data_tests:
+          - relationships:
+              arguments: {to: ref('ai_politics_concepts'), field: concept_id}

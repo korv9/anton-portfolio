@@ -1,0 +1,30 @@
+version: 2
+
+# AI governance and compliance words in job ads, counted by
+# platform/ingest/jobtech/ingest_governance_terms.py from JobTech's historical archives into
+# warehouse/raw/jobtech/governance. No ad text is kept beyond short, masked example windows.
+
+sources:
+  - name: jobtech_governance
+    description: Ad counts per month and occupation field, and per term, from every archive since 2020.
+    tables:
+      - name: totals
+        description: Ads per publication month and occupation field (the denominator).
+        meta:
+          external_location: >-
+            read_parquet('{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/jobtech/governance/totals_*.parquet', filename = true)
+      - name: terms
+        description: Ads matching each term per publication month and occupation field.
+        meta:
+          external_location: >-
+            read_parquet('{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/jobtech/governance/terms_*.parquet', filename = true)
+      - name: examples
+        description: Up to eight example ads per term and archive, for reviewing the dictionary.
+        meta:
+          external_location: >-
+            read_parquet('{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/jobtech/governance/examples_*.parquet', filename = true, union_by_name = true)
+      - name: manifests
+        description: One per archive with source URL, SHA-256, the dictionary's SHA-256 and counts.
+        meta:
+          external_location: >-
+            read_json('{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/jobtech/governance/manifest_*.json', union_by_name = true)

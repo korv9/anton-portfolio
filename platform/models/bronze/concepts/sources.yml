@@ -1,0 +1,28 @@
+version: 2
+
+# The shared concept layer's output (platform/nlp/concepts/build.py) under warehouse/features.
+
+sources:
+  - name: concept_features
+    description: Chunks from four corpora read against the curated concepts with one multilingual model.
+    tables:
+      - name: chunks
+        description: The sampled chunks, each with corpus, document, location, source URL, source version and retrieval time.
+        meta:
+          external_location: >-
+            read_parquet('{{ env_var('PORTFOLIO_FEATURES', '../warehouse/features') }}/concepts/chunks.parquet')
+      - name: alignment
+        description: Chunk × concept similarity, rank within the chunk and z-score within the corpus.
+        meta:
+          external_location: >-
+            read_parquet('{{ env_var('PORTFOLIO_FEATURES', '../warehouse/features') }}/concepts/alignment.parquet')
+      - name: concept_similarity
+        description: Concept × concept similarity of the anchor sentences, in English and in Swedish.
+        meta:
+          external_location: >-
+            read_parquet('{{ env_var('PORTFOLIO_FEATURES', '../warehouse/features') }}/concepts/concept_similarity.parquet')
+      - name: cross_pairs
+        description: Per concept and corpus pair, the most similar pair of representative chunks and the random-pair baseline.
+        meta:
+          external_location: >-
+            read_parquet('{{ env_var('PORTFOLIO_FEATURES', '../warehouse/features') }}/concepts/cross_pairs.parquet')

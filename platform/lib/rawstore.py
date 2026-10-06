@@ -50,7 +50,8 @@ def stored_sha(path: Path) -> str | None:
 
 
 def store(source: str, relative: str, payload: bytes, *, url: str, method: str = "GET",
-          body: object | None = None) -> Path:
+          body: object | None = None, headers: dict | None = None,
+          logical_path: str | None = None) -> Path:
     """Write a payload under raw/<source>/<relative> and append its provenance line.
 
     The file is replaced only when its content changed. The manifest line is appended on
@@ -74,19 +75,50 @@ def store(source: str, relative: str, payload: bytes, *, url: str, method: str =
         "bytes": len(payload),
         "changed": changed,
     }
+    if headers:
+        record["headers"] = headers
+    if logical_path:
+        record["logical_path"] = logical_path
     with (RAW / source / "_manifest.jsonl").open("a", encoding="utf-8") as manifest:
         manifest.write(json.dumps(record, ensure_ascii=False) + "\n")
     return path
 
 
 def fetch(http: requests.Session, source: str, relative: str, url: str, *, method: str = "GET",
-          body: object | None = None, pause: float = 0.0, timeout: int = 300) -> Path:
-    """Fetch a URL and store it. `pause` spaces requests out for rate-limited APIs."""
+          body: object | None = None, pause: float = 0.0, timeout: int = 300,
+          headers: dict | None = None, versioned: bool = False) -> Path:
+    """Fetch a URL and store it. `pause` spaces requests out for rate-limited APIs.
+
+    `headers` are sent and recorded (content negotiation: format, language). With `versioned`
+    every distinct payload is kept (see store_version) instead of replacing the file.
+    """
     if method == "POST":
-        response = http.post(url, json=body, timeout=timeout)
+        response = http.post(url, json=body, timeout=timeout, headers=headers)
     else:
-        response = http.get(url, timeout=timeout)
+        response = http.get(url, timeout=timeout, headers=headers)
     response.raise_for_status()
     if pause:
         time.sleep(pause)
-    return store(source, relative, response.content, url=url, method=method, body=body)
+    save = store_version if versioned else store
+    return save(source, relative, response.content, url=url, method=method, body=body,
+                headers=headers)
+
+
+def version_path(relative: str, digest: str) -> str:
+    """`guidance/page.html` and a hash -> `guidance/page@<first 12 hex>.html`."""
+    path = Path(relative)
+    return str(path.with_name(f"{path.stem}@{digest[:12]}{path.suffix}")).replace("\\", "/")
+
+
+def store_version(source: str, relative: str, payload: bytes, *, url: str, method: str = "GET",
+                  body: object | None = None, headers: dict | None = None) -> Path:
+    """Keep every distinct version of a payload: stored as `<stem>@<sha12><suffix>`.
+
+    For sources that change in place (web pages, query answers), where the history is the
+    point: a refetch with the same bytes writes nothing new, a change adds a file and never
+    replaces an older one. The manifest line names the versioned path and the logical one.
+    """
+    digest = sha256(payload)
+    relative_version = version_path(relative, digest)
+    return store(source, relative_version, payload, url=url, method=method, body=body,
+                 headers=headers, logical_path=relative)

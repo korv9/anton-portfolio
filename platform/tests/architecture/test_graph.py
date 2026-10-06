@@ -162,3 +162,12 @@ def test_committed_graph_is_valid_and_traceable():
     assert "src:scb" in ancestors("app:welfare")
     for product in ("app:politics", "app:jobs", "app:welfare", "app:symbolic"):
         assert up.get(product), f"{product} consumes nothing"
+
+
+def test_ai_act_product_traces_to_official_sources_and_the_riksdag():
+    graph = json.loads((ROOT / "frontend/public/data/architecture/graph.json").read_text(encoding="utf-8"))
+    edges = graph["edges"]
+    reads = {e["source"] for e in edges if e["target"] == "app:ai_act" and e["type"] == "frontend-consumption"}
+    assert "out:ai-act/obligations.json" in reads and "out:ai-act/politics/*.json" in reads
+    assert any(e["source"] == "raw:riksdagen_speeches" for e in edges)
+    assert any(e["target"] == "infra:legal" for e in edges)

@@ -1,0 +1,22 @@
+version: 2
+
+models:
+  - name: mart_ai_governance_timeline
+    description: Month × series of AI in the Riksdag and in job ads, for one timeline with the AI Act's milestones (derived; temporal overlap only).
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [series_id, month]
+    columns:
+      - name: series_id
+        data_tests:
+          - relationships:
+              arguments: {to: ref('ai_governance_series'), field: series_id}
+      - name: share
+        data_tests:
+          - between:
+              arguments: {min: 0, max: 1}
+      - name: share_rolling_3m
+        data_tests:
+          - between:
+              arguments: {min: 0, max: 1}

@@ -1,5 +1,5 @@
 """Storing the warehouse in R2: a round trip through an in-memory bucket. The warehouse comes back
-byte for byte, raw files are uploaded once and only again when they change, and a damaged copy
+byte for byte, raw files and the ML stages' outputs are uploaded once and only again when they change, and a damaged copy
 in the bucket is refused instead of replacing the local warehouse."""
 import gzip
 import json
@@ -81,15 +81,19 @@ def store(tmp_path, monkeypatch):
     (raw / "scb/a.json").write_text('{"a": 1}')
     (raw / "scb/_manifest.jsonl").write_text('{"url": "https://example.org"}\n')
     monkeypatch.setattr(ws, "DATABASE", db)
+    features = tmp_path / "features"
+    (features / "concepts").mkdir(parents=True)
+    (features / "concepts/run.json").write_text('{"model": "m"}')
     monkeypatch.setattr(ws, "RAW", raw)
+    monkeypatch.setattr(ws, "FEATURES", features)
     return Bucket(), db, raw
 
 
 def test_round_trip_restores_the_warehouse_and_raw_files(store):
     s3, db, raw = store
     original = db.read_bytes()
-    files, sent, _ = ws.push_raw(s3, "b")
-    manifest = ws.push_db(s3, "b", files)
+    files, sent, _ = ws.push_tree(s3, "b", "raw")
+    manifest = ws.push_db(s3, "b", {"raw": files})
     assert (files, sent) == (2, 2)
     assert manifest["rows_per_schema"] == {"gold": 5}
     assert gzip.decompress(s3.objects[ws.DB_KEY][0]) == original
@@ -98,24 +102,24 @@ def test_round_trip_restores_the_warehouse_and_raw_files(store):
     db.unlink()
     (raw / "scb/a.json").unlink()
     assert ws.pull_db(s3, "b")
-    assert ws.pull_raw(s3, "b") == 1
+    assert ws.pull_tree(s3, "b", "raw") == 1
     assert db.read_bytes() == original
     assert (raw / "scb/a.json").read_text() == '{"a": 1}'
 
 
 def test_unchanged_raw_files_are_not_uploaded_again(store):
     s3, _, raw = store
-    ws.push_raw(s3, "b")
+    ws.push_tree(s3, "b", "raw")
     before = s3.uploads
-    assert ws.push_raw(s3, "b")[1] == 0
+    assert ws.push_tree(s3, "b", "raw")[1] == 0
     (raw / "scb/a.json").write_text('{"a": 2}')
-    assert ws.push_raw(s3, "b")[1] == 1
+    assert ws.push_tree(s3, "b", "raw")[1] == 1
     assert s3.uploads == before + 1
 
 
 def test_a_damaged_stored_copy_does_not_replace_the_local_warehouse(store):
     s3, db, _ = store
-    ws.push_db(s3, "b", None)
+    ws.push_db(s3, "b", {})
     body, meta = s3.objects[ws.DB_KEY]
     s3.objects[ws.DB_KEY] = (gzip.compress(b"not the warehouse"), meta)
     original = db.read_bytes()
@@ -127,4 +131,16 @@ def test_a_damaged_stored_copy_does_not_replace_the_local_warehouse(store):
 def test_nothing_stored_yet_is_not_an_error(store):
     s3, _, _ = store
     assert ws.pull_db(s3, "b") is False
-    assert ws.pull_raw(s3, "b") == 0
+    assert ws.pull_tree(s3, "b", "raw") == 0
+    assert ws.pull_tree(s3, "b", "features") == 0
+
+
+def test_ml_outputs_are_stored_under_their_own_prefix_and_come_back(store, tmp_path):
+    s3, _, _ = store
+    files, sent, _ = ws.push_tree(s3, "b", "features")
+    assert (files, sent) == (1, 1)
+    assert ws.FEATURES_PREFIX + "concepts/run.json" in s3.objects
+    assert not any(k.startswith(ws.RAW_PREFIX) for k in s3.objects)
+    (tmp_path / "features/concepts/run.json").unlink()
+    assert ws.pull_tree(s3, "b", "features") == 1
+    assert (tmp_path / "features/concepts/run.json").read_text() == '{"model": "m"}'

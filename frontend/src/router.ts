@@ -25,6 +25,9 @@ export type Page =
   | 'er'
   | 'symbolic'
   | 'constellation'
+  | 'aiact'
+  | 'philosophy'
+  | 'concepts'
   | 'status'
   | 'tallman'
 
@@ -95,6 +98,11 @@ export function pageOf(path: string): Page {
   if (path === '#analysis' || path.startsWith('#analysis-')) return 'analysis'
   if (path === '#er' || path === '#er-diagram') return 'er'
   if (path === '#data-constellation') return 'constellation'
+  if (path === '#ai-act' || path.startsWith('#ai-act-')) return 'aiact'
+  if (path.startsWith('#concept-') || path.startsWith('#concepts-'))
+    return 'concepts'
+  if (path === '#philosophy-atlas' || path.startsWith('#philosophy-'))
+    return 'philosophy'
   if (path === '#symbolic-atlas' || path.startsWith('#symbolic-'))
     return 'symbolic'
   if (path === '#data-model' || path.startsWith('#data-model-'))

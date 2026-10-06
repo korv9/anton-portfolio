@@ -1,0 +1,45 @@
+version: 2
+
+models:
+  - name: stg_ai_act_fetches
+    description: One row per stored AI Act source file with its first and last fetch, URL and SHA-256.
+    columns:
+      - name: path
+        data_tests: [unique, not_null]
+      - name: sha256
+        data_tests: [not_null]
+      - name: url
+        data_tests: [not_null]
+  - name: stg_ai_act_texts
+    description: One row per act text (CELEX number × language) as served by the Publications Office.
+    columns:
+      - name: path
+        data_tests: [unique, not_null]
+      - name: celex
+        data_tests: [not_null]
+      - name: language
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [en, sv]
+      - name: source_hash
+        description: SHA-256 of the bytes Cellar served (warehouse/raw/eu_ai_act/_manifest.jsonl).
+        data_tests: [not_null]
+      - name: source_url
+        data_tests: [not_null]
+  - name: stg_ai_act_related
+    description: Every distinct Cellar answer on related documents; is_latest marks the one silver reads.
+    columns:
+      - name: path
+        data_tests: [unique, not_null]
+      - name: source_hash
+        data_tests: [not_null]
+  - name: stg_ai_act_guidance_pages
+    description: Every stored version of each Commission guidance page.
+    columns:
+      - name: path
+        data_tests: [unique, not_null]
+      - name: guidance_id
+        data_tests: [not_null]
+      - name: source_url
+        data_tests: [not_null]

@@ -15,7 +15,7 @@ test('home introduces Anton and routes to each project', async ({ page }) => {
     ),
   )
   expect([...order].sort((a, b) => a - b)).toEqual(order)
-  await expect(page.locator('#projekt .ds-project-row')).toHaveCount(5)
+  await expect(page.locator('#projekt .ds-project-row')).toHaveCount(6)
   await expect(page.locator('.ds-project-row').first()).toContainText(
     'Swedish politics',
   )

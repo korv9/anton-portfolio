@@ -19,7 +19,7 @@ export type ProjectNavItem = { href: string; label: Bilingual }
 
 export type ProjectEntry = {
   id: string
-  /** '01'–'05' for flagship projects, in display order. */
+  /** '01'–'06' for flagship projects, in display order. */
   number?: string
   title: Bilingual
   /** A few words under the title in menus: the kind of work. */
@@ -92,8 +92,71 @@ export const PROJECTS: ProjectEntry[] = [
     pages: ['politik'],
   },
   {
-    id: 'jobs',
+    id: 'ai-act',
     number: '02',
+    title: t('EU AI Act Observatory', 'EU AI Act Observatory'),
+    descriptor: t(
+      'Juridisk datamodellering · officiella källor',
+      'Legal data modelling · official sources',
+    ),
+    summary: t(
+      'Vad EU:s AI-förordning faktiskt innebär för den som bygger eller använder AI, byggt på officiella EU-källor.',
+      'What the EU AI Act actually means for organisations building or deploying AI, built from official EU sources.',
+    ),
+    question: t(
+      'Vad innebär EU AI Act faktiskt för organisationer som bygger eller använder AI?',
+      'What does the EU AI Act actually mean for organisations building or deploying AI?',
+    ),
+    built: t(
+      'En källspårbar karta över artiklar, skyldigheter, aktörer, tillämpningsdatum och ändringar: lagtexten hämtas från EU:s publikationsbyrå på engelska och svenska, versioneras, tolkas till artiklar i dbt och jämförs mellan 2024 års text och den gällande konsoliderade texten.',
+      'A source-traceable map of articles, obligations, actors, application dates and regulatory changes: the text is fetched from the EU Publications Office in English and Swedish, versioned, parsed into articles in dbt and compared between the 2024 text and the current consolidated text.',
+    ),
+    result: t(
+      'Vad som gäller i dag och härnäst, vem som ska göra vad med lagtexten ett klick bort, en navigator för startups och en ändringslogg; ett test kontrollerar att varje citat finns ordagrant i lagen.',
+      'What applies today and next, who must do what with the legal text one click away, a startup navigator and a changelog; a test checks that every quote appears verbatim in the Act.',
+    ),
+    tech: [
+      'Python',
+      'dbt',
+      'DuckDB',
+      'Legal data modelling',
+      'NLP',
+      'Source traceability',
+      'React',
+    ],
+    href: '#ai-act',
+    category: 'data',
+    status: 'live',
+    featured: true,
+    code: 'https://github.com/korv9/anton-portfolio/blob/main/docs/ai-act.md',
+    pages: ['aiact'],
+    nav: [
+      { href: '#ai-act', label: t('Översikt', 'Overview') },
+      { href: '#ai-act-today', label: t('I dag', 'Today') },
+      { href: '#ai-act-timeline', label: t('Tidslinje', 'Timeline') },
+      {
+        href: '#ai-act-roles',
+        label: t('Vem berörs?', 'Who does it apply to?'),
+      },
+      { href: '#ai-act-risk', label: t('Riskklasser', 'Risk classes') },
+      { href: '#ai-act-obligations', label: t('Skyldigheter', 'Obligations') },
+      {
+        href: '#ai-act-startups',
+        label: t('Startup-navigator', 'Startup navigator'),
+      },
+      { href: '#ai-act-politics', label: t('I riksdagen', 'In the Riksdag') },
+      { href: '#ai-act-jobs', label: t('I jobbannonserna', 'In job ads') },
+      {
+        href: '#ai-act-signals',
+        label: t('Tidslinje: lag, politik, jobb', 'Law, politics, jobs'),
+      },
+      { href: '#ai-act-changes', label: t('Ändringar', 'Changes') },
+      { href: '#ai-act-sources', label: t('Källor', 'Sources') },
+    ],
+  },
+  {
+    id: 'jobs',
+    number: '03',
     title: t('Arbetsmarknaden i jobbannonser', 'The job market in job ads'),
     descriptor: t(
       'Data engineering · maskininlärning',
@@ -125,7 +188,7 @@ export const PROJECTS: ProjectEntry[] = [
   },
   {
     id: 'symbolic-atlas',
-    number: '03',
+    number: '04',
     title: t('Symbolic Atlas', 'Symbolic Atlas'),
     descriptor: t('NLP · oövervakad inlärning', 'NLP · unsupervised learning'),
     summary: t(
@@ -168,7 +231,7 @@ export const PROJECTS: ProjectEntry[] = [
   },
   {
     id: 'welfare',
-    number: '04',
+    number: '05',
     title: t('Hur mår Sverige?', 'How is Sweden doing?'),
     descriptor: t('dbt · offentliga data', 'dbt · public data'),
     summary: t(
@@ -197,7 +260,7 @@ export const PROJECTS: ProjectEntry[] = [
   },
   {
     id: 'thesis',
-    number: '05',
+    number: '06',
     title: t(
       'Examensarbete: NLP-klustring av IT-incidenter',
       'Degree project: NLP clustering of IT incidents',
@@ -232,6 +295,86 @@ export const PROJECTS: ProjectEntry[] = [
     status: 'live',
     featured: true,
     pages: ['thesis'],
+  },
+  {
+    id: 'philosophy-atlas',
+    title: t('Philosophy Atlas', 'Philosophy Atlas'),
+    descriptor: t('NLP · semantisk utforskning', 'NLP · semantic exploration'),
+    summary: t(
+      'En semantisk atlas över fri filosofi med inbäddningar, klustring och mänskligt granskade begrepp.',
+      'A semantic atlas of public-domain philosophy using embeddings, clustering and human-reviewed concepts.',
+    ),
+    question: t(
+      'Hur organiserar återkommande moraliska och filosofiska spänningar texter över tänkare och traditioner?',
+      'How do recurring moral and philosophical tensions organise texts across thinkers and traditions?',
+    ),
+    built: t(
+      'Tretton verk från Platon till Nietzsche, rensade från översättares inledningar och noter, indelade i passager, inbäddade med en flerspråkig modell, kartlagda med UMAP och HDBSCAN och lästa genom spänningar som frihet ↔ kontroll.',
+      'Thirteen works from Plato to Nietzsche, stripped of translators’ introductions and notes, cut into passages, embedded with a multilingual model, mapped with UMAP and HDBSCAN and read through tensions such as freedom ↔ control.',
+    ),
+    result: t(
+      'Den råa kartan följer verken mer än idéerna; centrering per verk ökar antalet tvärgående grupper från 6 till 19. Inga grupper namnges utan granskning.',
+      'The raw map follows the works more than the ideas; centring per work raises the groups across works from 6 to 19. No group is named without review.',
+    ),
+    tech: [
+      'Python',
+      'Sentence Transformers',
+      'UMAP',
+      'HDBSCAN',
+      'dbt',
+      'DuckDB',
+    ],
+    href: '#philosophy-atlas',
+    category: 'ai',
+    status: 'experimental',
+    featured: false,
+    code: 'https://github.com/korv9/anton-portfolio/blob/main/docs/philosophy-atlas.md',
+    pages: ['philosophy'],
+    nav: [
+      { href: '#philosophy-atlas', label: t('Karta', 'Map') },
+      { href: '#philosophy-groups', label: t('Grupper', 'Groups') },
+      { href: '#philosophy-tensions', label: t('Spänningar', 'Tensions') },
+      { href: '#philosophy-works', label: t('Korpus', 'Corpus') },
+      { href: '#philosophy-method', label: t('Metod', 'Method') },
+    ],
+  },
+  {
+    id: 'concept-constellation',
+    title: t('Concept Constellation', 'Concept Constellation'),
+    descriptor: t('NLP · betydelseatlas', 'NLP · meaning atlas'),
+    summary: t(
+      'Samma idéer genom myter, filosofi, riksdagstal och AI-förordningen, med en modell och redaktionellt valda begrepp.',
+      'The same ideas across myth, philosophy, Riksdag speeches and the AI Act, with one model and editorially chosen concepts.',
+    ),
+    question: t(
+      'Var dyker samma idéer upp när de rör sig från berättelser till filosofi, politik och lag?',
+      'Where do the same ideas appear as they move from stories to philosophy, politics and law?',
+    ),
+    built: t(
+      'Ett balanserat urval ur fyra korpusar med full härkomst, inbäddat med en flerspråkig modell och läst mot 28 begrepp med ankarmeningar på svenska och engelska; varje relation har en uttalad typ.',
+      'A balanced sample of four corpora with full provenance, embedded with one multilingual model and read against 28 concepts with anchor sentences in Swedish and English; every relation has a stated type.',
+    ),
+    result: t(
+      'Korpusarna skiljer sig mer än deras ämnen (94 % av grannarna i samma korpus), så de jämförs bara genom begreppen: död och natur i myterna, omsorg och ansvar i riksdagen, säkerhet och transparens i lagen.',
+      'The corpora differ more than their subjects do (94 % of neighbours in the same corpus), so they are compared only through the concepts: death and nature in myth, care and responsibility in the Riksdag, safety and transparency in the law.',
+    ),
+    tech: ['Python', 'Sentence Transformers', 'dbt', 'DuckDB', 'React'],
+    href: '#concept-constellation',
+    category: 'ai',
+    status: 'experimental',
+    featured: false,
+    code: 'https://github.com/korv9/anton-portfolio/blob/main/docs/concept-constellation.md',
+    pages: ['concepts'],
+    nav: [
+      {
+        href: '#concept-constellation',
+        label: t('Konstellation', 'Constellation'),
+      },
+      { href: '#concepts-profiles', label: t('Profiler', 'Profiles') },
+      { href: '#concept-autonomy', label: t('Autonomi', 'Autonomy') },
+      { href: '#concept-risk', label: t('Risk', 'Risk') },
+      { href: '#concepts-method', label: t('Metod', 'Method') },
+    ],
   },
   {
     id: 'drugcomb',

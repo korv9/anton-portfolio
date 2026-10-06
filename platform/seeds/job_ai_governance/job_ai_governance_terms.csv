@@ -1,0 +1,14 @@
+term_id,family,label_en,label_sv,pattern,case_sensitive,description_en,sort_order
+ai_any,context,AI (any mention),AI (alla omnämnanden),\bAI\b|(?i:artificiell(?:a)? intelligens|artificial intelligence|maskininlärning|machine learning),true,Any mention of AI or machine learning: the context the governance terms sit in.,0
+ai_act,regulation,The AI Act by name,AI-förordningen vid namn,\bEU AI Act\b|\bAI Act\b|AI-förordning\w*|AI-akten|(?i:förordning\w* om artificiell intelligens),true,Names the EU AI Act.,1
+ai_governance,ai_governance,AI governance,AI-styrning,(?i:\bAI[- ]governance|AI-styrning|styrning av AI),true,AI governance.,2
+responsible_ai,ai_governance,Responsible / trustworthy AI,Ansvarsfull / tillförlitlig AI,(?i:responsible AI|ansvarsfull\w* AI|trustworthy AI|tillförlitlig\w* AI|ethical AI|etisk\w* AI|AI[- ]ethics|AI-etik),true,"Responsible, trustworthy or ethical AI.",3
+ai_compliance,ai_governance,AI compliance,AI-regelefterlevnad,(?i:AI[- ]compliance|AI-regelefterlevnad|regelefterlevnad (?:för|inom) AI),true,Compliance specifically for AI.,4
+ai_safety,ai_governance,AI safety,AI-säkerhet,(?i:AI[- ]safety|AI-säkerhet),true,AI safety (Swedish AI-säkerhet also covers AI security).,5
+model_risk,ml_operations,Model risk,Modellrisk,(?i:model risk|modellrisk\w*),true,"Model risk management, common in banking.",6
+model_monitoring,ml_operations,Model monitoring,Modellövervakning,(?i:model monitoring|modellövervakning|monitoring of (?:ML|AI) models),true,Monitoring models in production.,7
+mlops,ml_operations,MLOps,MLOps,(?i:\bMLOps\b|\bML Ops\b),true,Machine-learning operations.,8
+data_governance,data,Data governance,Datastyrning,(?i:data governance|datastyrning|data-governance),true,Data governance.,9
+privacy,data,Privacy and data protection,Integritet och dataskydd,\bGDPR\b|(?i:dataskydd\w*|data protection|dataskyddsförordning\w*),true,"GDPR, data protection.",10
+compliance,general,Compliance,Regelefterlevnad,(?i:\bcompliance\b|regelefterlevnad),true,"Compliance in general, not only for AI.",11
+risk_management,general,Risk management,Riskhantering,(?i:risk management|riskhantering),true,Risk management in general.,12
