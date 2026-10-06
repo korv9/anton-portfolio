@@ -1,0 +1,368 @@
+/* Concept Constellation: the Philosophy Atlas's archival tone, neutral ink, and three relation
+   hues (validated for colour-vision deficiency on the dark surface; see docs). Each relation
+   type also has its own stroke pattern, so colour is never the only cue. */
+.concepts {
+  --cc-ink: #f0e9dc;
+  --cc-muted: rgba(240, 233, 220, 0.66);
+  --cc-rule: rgba(240, 233, 220, 0.14);
+  --cc-semantic: #3987e5;
+  --cc-tension: #d95926;
+  --cc-reference: #199e70;
+  --cc-prominent: rgba(240, 233, 220, 0.45);
+  color: var(--cc-ink);
+}
+.concepts a {
+  color: inherit;
+}
+.cc-hero {
+  padding-block: 1.6rem 1.2rem;
+}
+.cc-hero h1,
+.cc-section h2 {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-weight: 400;
+}
+.cc-hero h1 {
+  margin: 0 0 0.5rem;
+  font-size: clamp(34px, 4.6vw, 64px);
+  letter-spacing: -0.02em;
+}
+.cc-kicker {
+  margin: 0 0 0.4rem;
+  color: var(--cc-muted);
+  font: 500 11px var(--font-mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.cc-question {
+  max-width: 52ch;
+  margin: 0;
+  font-family: Georgia, serif;
+  font-size: clamp(18px, 1.6vw, 23px);
+  font-style: italic;
+}
+.cc-lede,
+.cc-hint {
+  max-width: 72ch;
+  color: var(--cc-muted);
+  line-height: 1.5;
+}
+.cc-lede {
+  margin: 1rem 0 0;
+}
+.cc-hint {
+  margin: 0.4rem 0 0.8rem;
+  font-size: 0.92rem;
+}
+.cc-muted {
+  color: var(--cc-muted);
+}
+.cc-body {
+  padding-block: 1rem 3rem;
+}
+.cc-section {
+  margin-top: 2.2rem;
+}
+.cc-section h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.6rem;
+}
+.cc-section h3 {
+  margin: 1rem 0 0.4rem;
+  font-size: 1rem;
+}
+.cc-kind {
+  display: inline-block;
+  padding: 0 0.4em;
+  border: 1px solid var(--cc-rule);
+  border-radius: 3px;
+  color: var(--cc-muted);
+  font: 500 10px/1.6 var(--font-mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  vertical-align: 0.1em;
+}
+.cc-kind-source {
+  border-color: rgba(240, 233, 220, 0.5);
+  color: var(--cc-ink);
+}
+.cc-kind-interpretation {
+  border-style: dashed;
+}
+.cc-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-bottom: 0.6rem;
+}
+.cc-chips button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 34px;
+  padding: 0.2rem 0.85rem;
+  border: 1px solid var(--cc-rule);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--cc-muted);
+  cursor: pointer;
+}
+.cc-chips button[aria-pressed='true'] {
+  border-color: var(--cc-ink);
+  color: var(--cc-ink);
+}
+.cc-swatch {
+  display: inline-block;
+  width: 22px;
+  height: 0;
+  border-top: 2px solid var(--cc-prominent);
+  vertical-align: middle;
+}
+.cc-swatch.cc-rel-semantic_similarity {
+  border-top-color: var(--cc-semantic);
+}
+.cc-swatch.cc-rel-shared_tension {
+  border-top: 2px dashed var(--cc-tension);
+}
+.cc-swatch.cc-rel-documented_reference {
+  border-top: 2px dotted var(--cc-reference);
+}
+.cc-swatch.cc-rel-temporal_overlap {
+  border-top: 2px dashed var(--cc-muted);
+}
+.cc-stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  gap: 1.4rem;
+  align-items: start;
+}
+@media (max-width: 860px) {
+  .cc-stage {
+    grid-template-columns: 1fr;
+  }
+}
+.cc-map {
+  margin: 0;
+}
+.cc-map svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+.cc-line {
+  fill: none;
+  stroke: var(--cc-prominent);
+  stroke-linecap: round;
+  transition: opacity 0.2s;
+}
+.cc-line.cc-rel-semantic_similarity {
+  stroke: var(--cc-semantic);
+}
+.cc-line.cc-rel-shared_tension {
+  stroke: var(--cc-tension);
+  stroke-dasharray: 1.2 0.9;
+}
+.cc-line.cc-rel-documented_reference {
+  stroke: var(--cc-reference);
+  stroke-width: 0.6;
+  stroke-dasharray: 0.2 0.8;
+}
+.cc-line.is-faded,
+.cc-node.is-faded {
+  opacity: 0.18;
+}
+.cc-corpus circle {
+  fill: #0b0b0a;
+  stroke: var(--cc-rule);
+  stroke-width: 0.3;
+}
+.cc-corpus text {
+  fill: var(--cc-ink);
+  font-size: 1.7px;
+  font-weight: 600;
+}
+.cc-corpus .cc-corpus-sub {
+  fill: var(--cc-muted);
+  font-size: 1.3px;
+  font-weight: 400;
+}
+.cc-node circle {
+  fill: var(--cc-ink);
+}
+.cc-node text {
+  fill: var(--cc-ink);
+  font-size: 2.6px;
+}
+.cc-node a {
+  cursor: pointer;
+}
+.cc-node a:focus-visible circle,
+.cc-node.is-selected circle {
+  stroke: var(--cc-ink);
+  stroke-width: 0.6;
+  fill: #0b0b0a;
+}
+.cc-node.is-selected text {
+  font-weight: 700;
+}
+.cc-panel {
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--cc-rule);
+  border-radius: 6px;
+}
+.cc-panel h3 {
+  margin: 0.2rem 0 0.4rem;
+  font-family: Georgia, serif;
+  font-size: 1.5rem;
+  font-weight: 400;
+}
+.cc-legend {
+  display: grid;
+  gap: 0.7rem;
+  margin: 0 0 0.8rem;
+  padding: 0;
+  list-style: none;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+.cc-legend li {
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  gap: 0.5rem;
+  align-items: start;
+}
+.cc-legend .cc-swatch {
+  margin-top: 0.6em;
+}
+.cc-families {
+  display: grid;
+  gap: 0.3rem;
+  margin: 1rem 0 0;
+  padding: 0;
+  list-style: none;
+  color: var(--cc-muted);
+  font-size: 0.9rem;
+}
+.cc-families b {
+  color: var(--cc-ink);
+  font-weight: 600;
+}
+.cc-bars {
+  margin: 0.6rem 0;
+}
+.cc-bars figcaption {
+  margin-bottom: 0.5rem;
+  color: var(--cc-muted);
+  font-size: 0.88rem;
+}
+.cc-bar {
+  display: grid;
+  grid-template-columns: minmax(7rem, 11rem) 1fr 7rem;
+  gap: 0.6rem;
+  align-items: center;
+  margin: 0.3rem 0;
+  font-size: 0.9rem;
+}
+.cc-bar-track {
+  position: relative;
+  height: 12px;
+}
+.cc-bar-track i {
+  display: block;
+  height: 100%;
+  border-radius: 0 4px 4px 0;
+  background: var(--cc-ink);
+}
+.cc-chance {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  width: 2px;
+  background: var(--cc-muted);
+}
+.cc-bar-value small {
+  color: var(--cc-muted);
+}
+.cc-more {
+  font-weight: 600;
+}
+.cc-table-wrap {
+  overflow-x: auto;
+}
+.cc-table {
+  width: 100%;
+  max-width: 760px;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+.cc-table th,
+.cc-table td {
+  padding: 0.3rem 0.6rem;
+  border-bottom: 1px solid var(--cc-rule);
+  text-align: left;
+}
+.cc-table td {
+  background: rgba(57, 135, 229, calc(0.04 + var(--v, 0) * 0.36));
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+.cc-table thead th:not(:first-child) {
+  text-align: right;
+}
+.cc-method {
+  max-width: 76ch;
+  padding-left: 1.1rem;
+  line-height: 1.55;
+}
+.cc-method li + li {
+  margin-top: 0.5rem;
+}
+.cc-columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.2rem;
+}
+.cc-column h3 {
+  margin-top: 0;
+  color: var(--cc-muted);
+  font: 500 11px var(--font-mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.concepts blockquote {
+  margin: 0 0 1rem;
+  padding-left: 0.8rem;
+  border-left: 2px solid var(--cc-rule);
+  font-family: Georgia, serif;
+  line-height: 1.5;
+}
+.concepts blockquote p {
+  margin: 0 0 0.3rem;
+}
+.concepts blockquote footer {
+  font-family: var(--font-sans, inherit);
+  font-size: 0.82rem;
+}
+.cc-pairs {
+  display: grid;
+  gap: 1.2rem;
+  padding: 0;
+  list-style: none;
+}
+.cc-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+@media (max-width: 700px) {
+  .cc-pair {
+    grid-template-columns: 1fr;
+  }
+}
+.cc-links {
+  display: grid;
+  gap: 0.4rem;
+  padding: 0;
+  list-style: none;
+}

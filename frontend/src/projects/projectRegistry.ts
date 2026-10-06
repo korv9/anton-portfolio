@@ -334,6 +334,44 @@ export const PROJECTS: ProjectEntry[] = [
     ],
   },
   {
+    id: 'concept-constellation',
+    title: t('Concept Constellation', 'Concept Constellation'),
+    descriptor: t('NLP · betydelseatlas', 'NLP · meaning atlas'),
+    summary: t(
+      'Samma idéer genom myter, filosofi, riksdagstal och AI-förordningen, med en modell och redaktionellt valda begrepp.',
+      'The same ideas across myth, philosophy, Riksdag speeches and the AI Act, with one model and editorially chosen concepts.',
+    ),
+    question: t(
+      'Var dyker samma idéer upp när de rör sig från berättelser till filosofi, politik och lag?',
+      'Where do the same ideas appear as they move from stories to philosophy, politics and law?',
+    ),
+    built: t(
+      'Ett balanserat urval ur fyra korpusar med full härkomst, inbäddat med en flerspråkig modell och läst mot 28 begrepp med ankarmeningar på svenska och engelska; varje relation har en uttalad typ.',
+      'A balanced sample of four corpora with full provenance, embedded with one multilingual model and read against 28 concepts with anchor sentences in Swedish and English; every relation has a stated type.',
+    ),
+    result: t(
+      'Korpusarna skiljer sig mer än deras ämnen (94 % av grannarna i samma korpus), så de jämförs bara genom begreppen: död och natur i myterna, omsorg och ansvar i riksdagen, säkerhet och transparens i lagen.',
+      'The corpora differ more than their subjects do (94 % of neighbours in the same corpus), so they are compared only through the concepts: death and nature in myth, care and responsibility in the Riksdag, safety and transparency in the law.',
+    ),
+    tech: ['Python', 'Sentence Transformers', 'dbt', 'DuckDB', 'React'],
+    href: '#concept-constellation',
+    category: 'ai',
+    status: 'experimental',
+    featured: false,
+    code: 'https://github.com/korv9/anton-portfolio/blob/main/docs/concept-constellation.md',
+    pages: ['concepts'],
+    nav: [
+      {
+        href: '#concept-constellation',
+        label: t('Konstellation', 'Constellation'),
+      },
+      { href: '#concepts-profiles', label: t('Profiler', 'Profiles') },
+      { href: '#concept-autonomy', label: t('Autonomi', 'Autonomy') },
+      { href: '#concept-risk', label: t('Risk', 'Risk') },
+      { href: '#concepts-method', label: t('Metod', 'Method') },
+    ],
+  },
+  {
     id: 'drugcomb',
     title: t(
       'DrugComb: förutsäga läkemedelssynergi',

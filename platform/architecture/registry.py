@@ -29,6 +29,7 @@ DOMAINS = [
     {"id": "symbolic", "label": "Symbolic Atlas", "lane": 4},
     {"id": "ai_act", "label": "EU AI Act", "lane": 5},
     {"id": "philosophy", "label": "Philosophy Atlas", "lane": 6},
+    {"id": "concepts", "label": "Concept layer", "lane": 7},
 ]
 
 DBT_FOLDER_DOMAIN = {
@@ -39,7 +40,8 @@ DBT_FOLDER_DOMAIN = {
     "eu_ai_act": "ai_act",
     "ai_politics": "ai_act",
     "job_ai_governance": "ai_act",  # AI governance words in job ads, read against the Act
-    "philosophy": "philosophy",  # the Riksdag's language about AI, read against the Act
+    "philosophy": "philosophy",
+    "concepts": "concepts",  # four corpora read against one set of curated concepts
     "shared": "shared",
     "": "jobs",  # seeds at the root of seeds/: the job-ad role and technology patterns
 }
@@ -129,6 +131,11 @@ ML = [
      "path": "platform/nlp/philosophy/pipeline.py", "domain": "philosophy",
      "inputs": ["int_philosophy_passages"], "raw": ["philosophy_features"],
      "description": "Balanced sample, multilingual embeddings, raw and work-centred UMAP + HDBSCAN, dominance metrics and tension scores."},
+    {"id": "concept-layer", "label": "Concept layer across four corpora",
+     "path": "platform/nlp/concepts/build.py", "domain": "concepts",
+     "inputs": ["int_symbol_occurrences", "int_philosophy_passages", "int_riksdag_speeches", "int_ai_act_provisions"],
+     "raw": ["concept_features"],
+     "description": "Balanced chunks from myth, philosophy, Riksdag speeches and the AI Act, one multilingual model, alignment to curated concepts, cross-corpus pairs and dominance metrics."},
     {"id": "ai-politics-similarity", "label": "AI Act ↔ Riksdag similarity",
      "path": "platform/nlp/ai_politics/similarity.py", "domain": "ai_act",
      "inputs": ["int_ai_act_provisions", "int_ai_speech_paragraphs"], "raw": ["ai_politics_features"],
@@ -168,6 +175,8 @@ PUBLISHERS = [
     ]},
     {"path": "platform/publish/philosophy/export_philosophy.py", "domain": "philosophy",
      "outputs": [{"pattern": "philosophy/*.json"}]},
+    {"path": "platform/publish/concepts/export_concepts.py", "domain": "concepts",
+     "outputs": [{"pattern": "concepts/*.json"}]},
     {"path": "platform/publish/job_ai_governance/export_job_ai_governance.py", "domain": "ai_act",
      "outputs": [{"pattern": "ai-act/jobs/*.json"}]},
     {"path": "platform/publish/export_market.py", "domain": "jobs", "outputs": [{"pattern": "jobs/market.json"}]},
@@ -230,6 +239,9 @@ PRODUCTS = [
     {"id": "philosophy", "label": "Philosophy Atlas", "href": "#philosophy-atlas", "domain": "philosophy",
      "frontend": ["frontend/src/philosophy"],
      "description": "Semantic atlas of public-domain philosophy with dominance metrics and tension lenses."},
+    {"id": "concepts", "label": "Concept Constellation", "href": "#concept-constellation", "domain": "concepts",
+     "frontend": ["frontend/src/concepts"],
+     "description": "Curated concepts read across myth, philosophy, Riksdag speeches and the AI Act, with typed relations."},
 ]
 
 SHARED = [
