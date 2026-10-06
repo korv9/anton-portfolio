@@ -382,7 +382,8 @@ def symbolic_reviewed_clusters() -> Diagnostic | None:
     reviews = _json(ROOT / "platform/nlp/symbolic/reviewed_clusters.json")
     if reviews is None:
         return None
-    clusters = reviews.get("clusters", [])
+    # Keyed by cluster id, as reviews.py reads it.
+    clusters = list(reviews.get("clusters", {}).values())
     reviewed = [c for c in clusters if c.get("status") == "reviewed"]
     return Diagnostic(len(reviewed), {"review_entries": len(clusters)})
 

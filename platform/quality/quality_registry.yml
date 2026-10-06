@@ -72,6 +72,18 @@ checks:
     severity: warning
     source: human review of a random sample
     reason: No sample has been reviewed yet.
+    review:
+      sample_size: 20
+      valid: 18
+      reviewed_at: "2026-10-06"
+      reviewer_role: project owner
+      notes: >-
+        A reservoir sample of 20 of 12,712 occurrences (seed 2026), each read in its sentence.
+        Not a symbolic use: "bloody" describing a fillet in a line about Discord's hair of
+        vipers, and "child" in "not of a child of nursery age", said of a warrior. Sentences
+        naming several symbols (sun, moon and stars; serpents and wolf) are counted once per
+        symbol as intended; "earth" in "an emblem of the stars, or of the fruitfulness of the
+        earth" is not among the corpus's symbols.
   - id: symbolic_corpus_coverage
     product: symbolic
     dataset: silver.int_symbolic_documents
@@ -260,11 +272,24 @@ checks:
     product: jobs
     dataset: gold.mart_market_field_monthly
     dimension: accuracy
-    description: Parsed publication dates and occupation fields compared with the source records for a sample of ads.
-    method: not_measured
-    reason: The ingest keeps counts, not ads, so no parsed field is compared with its source record yet.
+    description: For a sample of ads, the occupation group and field stored from the source record compared with the ad as Platsbanken shows it.
+    method: manual_review
+    measure: sample_accuracy
+    numerator: sampled ads whose stored occupation group and field match Platsbanken
+    denominator: sampled ads
+    threshold: 0.95
     severity: warning
-    source: JobTech historical archives
+    source: Platsbanken (arbetsformedlingen.se), the published ad
+    reason: No sample has been reviewed yet.
+    review:
+      sample_size: 10
+      valid: 10
+      reviewed_at: "2026-10-06"
+      reviewer_role: project owner
+      notes: >-
+        Ten ads published on 2026-10-06, drawn at random (seed 2026) from JobTech's stream as
+        stored by ingest_stream.py, each opened on Platsbanken; occupation group and field
+        matched for all ten.
   - id: jobs_archive_reconciliation
     product: jobs
     dataset: gold.mart_market_archives
@@ -392,16 +417,31 @@ checks:
     product: welfare
     dataset: models/*/welfare
     dimension: accuracy
-    description: Stored values compared with the agencies' own published tables.
-    method: not_measured
-    reason: No value is compared with an independent copy of the agencies' tables; the reconciliation tests check internal sums, which is consistency.
+    description: Stored values compared with the agencies' own published tables, for a sample of one value per source.
+    method: manual_review
+    measure: sample_accuracy
+    numerator: sampled values that match the agency's published table
+    denominator: sampled values
+    threshold: 0.95
+    reason: No value has been compared with the agencies' own tables yet; the reconciliation tests check internal sums, which is consistency.
+    review:
+      sample_size: 5
+      valid: 5
+      reviewed_at: "2026-10-06"
+      reviewer_role: project owner
+      notes: >-
+        One value per source, looked up in the agency's own table: ESS left-right placement
+        (Sweden, ESS4, 45-64), Försäkringskassan sickness rate 2.0 (Herrljunga, March 2025,
+        50-54), FoHM lacking emotional support (Västernorrland, 2021-2024), Kolada open
+        unemployment 18-65 (Hallstahammar, 2023, women), SCB AKU employment rate (Sweden,
+        February 2026, men 15-19). All five matched.
     severity: warning
     source: SCB, Försäkringskassan, FoHM, Kolada, ESS
   - id: welfare_currentness
     product: welfare
     dataset: warehouse/raw/{scb,fk,fohm,kolada,ess}
     dimension: currentness
-    description: Days since the oldest of the five welfare sources was last fetched. Scheduled refreshes are paused.
+    description: Days since the oldest of the five welfare sources was last fetched. They are refreshed each morning.
     method: python
     function: welfare_currentness
     measure: days_since_oldest_source_fetch

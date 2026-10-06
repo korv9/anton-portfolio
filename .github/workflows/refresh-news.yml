@@ -85,6 +85,13 @@ jobs:
           else
             git add frontend/public/data/parliament/news.json frontend/public/data/parliament/news-summaries.json 2>/dev/null || git add frontend/public/data/parliament/news.json
             git commit -m "data: political news (run ${GITHUB_RUN_ID})"
-            git pull --rebase origin main
-            git push
+            # main may have moved during the run (a merge, another refresh): put this commit on
+            # top of it and push, a few times if needed.
+            pushed=false
+            for attempt in 1 2 3; do
+              if git pull --rebase origin main && git push origin HEAD:main; then pushed=true; break; fi
+              git rebase --abort 2>/dev/null || true
+              sleep $((attempt * 15))
+            done
+            "$pushed"
           fi

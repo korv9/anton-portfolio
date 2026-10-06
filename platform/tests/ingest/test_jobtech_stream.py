@@ -73,3 +73,23 @@ def test_a_month_counts_once_the_stream_covers_it_from_its_first_day(dirs, monke
     run([[], [ad("x", "2026-12-01")]], "2026-12-01T12:00", monkeypatch)
     rows = pq.read_table(market / "ads_stream.parquet").to_pylist()
     assert [(r["publication_month"], r["ads"]) for r in rows] == [("2026-12", 1)]
+
+
+def test_an_answer_cut_off_in_transit_is_fetched_again_not_stored(dirs, monkeypatch):
+    """JobStream once sent 29 MB of a day's changes and the connection dropped mid-answer."""
+    stored = []
+    monkeypatch.setattr(st.rawstore, "store", lambda *a, **k: stored.append(a[2]))
+    monkeypatch.setattr(st.time, "sleep", lambda s: None)
+
+    class Response:
+        def __init__(self, body):
+            self.content = body
+
+        def raise_for_status(self):
+            pass
+
+    answers = iter([b'[{"id": "1", "headline": "cut', b'[{"id": "1"}]'])
+    http = mock.Mock(get=lambda url, timeout: Response(next(answers)))
+    items = st.fetch_window(http, datetime(2026, 11, 2), datetime(2026, 11, 2, 6))
+    assert items == [{"id": "1"}]
+    assert stored == [b'[{"id": "1"}]']
