@@ -28,6 +28,7 @@ DOMAINS = [
     {"id": "welfare", "label": "Sweden", "lane": 3},
     {"id": "symbolic", "label": "Symbolic Atlas", "lane": 4},
     {"id": "ai_act", "label": "EU AI Act", "lane": 5},
+    {"id": "philosophy", "label": "Philosophy Atlas", "lane": 6},
 ]
 
 DBT_FOLDER_DOMAIN = {
@@ -36,7 +37,9 @@ DBT_FOLDER_DOMAIN = {
     "welfare": "welfare",
     "symbolic": "symbolic",
     "eu_ai_act": "ai_act",
-    "ai_politics": "ai_act",  # the Riksdag's language about AI, read against the Act
+    "ai_politics": "ai_act",
+    "job_ai_governance": "ai_act",  # AI governance words in job ads, read against the Act
+    "philosophy": "philosophy",  # the Riksdag's language about AI, read against the Act
     "shared": "shared",
     "": "jobs",  # seeds at the root of seeds/: the job-ad role and technology patterns
 }
@@ -68,7 +71,7 @@ ORIGINS = [
     {"id": "ess", "label": "European Social Survey", "domain": "welfare", "url": "https://ess.sikt.no",
      "description": "ESS rounds 1–11, integrated files."},
     {"id": "gutenberg", "label": "Project Gutenberg", "domain": "symbolic", "url": "https://www.gutenberg.org",
-     "description": "Ten public-domain books of myth, folklore and literature."},
+     "description": "Ten public-domain books of myth, folklore and literature, and thirteen works of philosophy."},
     {"id": "publications-office", "label": "EU Publications Office (EUR-Lex)", "domain": "ai_act",
      "url": "https://publications.europa.eu/webapi/rdf/sparql",
      "description": "Cellar, the repository behind EUR-Lex: the AI Act's text in English and Swedish, its consolidated versions, amending acts, corrigenda and related documents."},
@@ -91,7 +94,7 @@ INGESTION = [
      "origins": ["skatteverket", "scb", "oecd"], "raw": ["skatteverket", "scb_household_spending"],
      "description": "Tax rates, household spending and international tax comparisons."},
     {"id": "jobtech", "path": "platform/ingest/jobtech", "domain": "jobs",
-     "origins": ["arbetsformedlingen"], "raw": ["jobtech", "jobtech_market"],
+     "origins": ["arbetsformedlingen"], "raw": ["jobtech", "jobtech_market", "jobtech_governance"],
      "description": "Job ads from the JobSearch API and ad counts from every historical archive."},
     {"id": "scb", "path": "platform/ingest/scb", "domain": "welfare",
      "origins": ["scb"], "raw": ["scb"], "description": "Labour force survey and population."},
@@ -106,6 +109,9 @@ INGESTION = [
     {"id": "symbolic", "path": "platform/ingest/symbolic", "domain": "symbolic",
      "origins": ["gutenberg"], "raw": ["symbolic"],
      "description": "The Gutenberg corpus, every fetch logged with URL, time and SHA-256."},
+    {"id": "philosophy", "path": "platform/ingest/philosophy", "domain": "philosophy",
+     "origins": ["gutenberg"], "raw": ["philosophy"],
+     "description": "Thirteen public-domain works of philosophy, with translators, every fetch logged."},
     {"id": "eu_ai_act", "path": "platform/ingest/eu_ai_act", "domain": "ai_act",
      "origins": ["publications-office", "european-commission"], "raw": ["eu_ai_act"],
      "description": "The AI Act and every related act from Cellar, and the Commission's guidance pages; texts kept per CELEX number and language, changing pages kept per version."},
@@ -119,6 +125,10 @@ ML = [
      "path": "platform/nlp/symbolic/rank_clusters.py", "domain": "symbolic",
      "inputs": ["int_symbol_occurrences", "int_symbolic_documents"],
      "description": "Baseline, masked and book-centred runs (experiments.py) and the ranking of clusters for human review."},
+    {"id": "philosophy-pipeline", "label": "Philosophy embeddings, maps, tensions",
+     "path": "platform/nlp/philosophy/pipeline.py", "domain": "philosophy",
+     "inputs": ["int_philosophy_passages"], "raw": ["philosophy_features"],
+     "description": "Balanced sample, multilingual embeddings, raw and work-centred UMAP + HDBSCAN, dominance metrics and tension scores."},
     {"id": "ai-politics-similarity", "label": "AI Act ↔ Riksdag similarity",
      "path": "platform/nlp/ai_politics/similarity.py", "domain": "ai_act",
      "inputs": ["int_ai_act_provisions", "int_ai_speech_paragraphs"], "raw": ["ai_politics_features"],
@@ -156,6 +166,10 @@ PUBLISHERS = [
         {"pattern": "ai-act/politics/similarity.json", "inputs": ["mart_ai_act_speech_similarity"]},
         {"pattern": "ai-act/politics/*.json"},
     ]},
+    {"path": "platform/publish/philosophy/export_philosophy.py", "domain": "philosophy",
+     "outputs": [{"pattern": "philosophy/*.json"}]},
+    {"path": "platform/publish/job_ai_governance/export_job_ai_governance.py", "domain": "ai_act",
+     "outputs": [{"pattern": "ai-act/jobs/*.json"}]},
     {"path": "platform/publish/export_market.py", "domain": "jobs", "outputs": [{"pattern": "jobs/market.json"}]},
     {"path": "platform/ingest/jobtech/export_presentation.py", "domain": "jobs",
      "outputs": [{"pattern": "jobs/*.csv"}]},
@@ -213,6 +227,9 @@ PRODUCTS = [
     {"id": "ai_act", "label": "EU AI Act Observatory", "href": "#ai-act", "domain": "ai_act",
      "frontend": ["frontend/src/aiact"],
      "description": "Articles, obligations, actors, application dates and changes of the AI Act, from official EU sources."},
+    {"id": "philosophy", "label": "Philosophy Atlas", "href": "#philosophy-atlas", "domain": "philosophy",
+     "frontend": ["frontend/src/philosophy"],
+     "description": "Semantic atlas of public-domain philosophy with dominance metrics and tension lenses."},
 ]
 
 SHARED = [

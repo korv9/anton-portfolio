@@ -20,6 +20,10 @@ models:
     bronze:
       +materialized: view
       +schema: bronze
+      philosophy:
+        +tags: [philosophy]
+      job_ai_governance:
+        +tags: [job_ai_governance]
       ai_politics:
         +tags: [ai_politics]
       eu_ai_act:
@@ -43,6 +47,8 @@ models:
     silver:
       +materialized: view
       +schema: silver
+      philosophy:
+        +tags: [philosophy]
       ai_politics:
         +tags: [ai_politics]
       eu_ai_act:
@@ -58,6 +64,10 @@ models:
     gold:
       +materialized: table
       +schema: gold
+      philosophy:
+        +tags: [philosophy]
+      job_ai_governance:
+        +tags: [job_ai_governance]
       ai_politics:
         +tags: [ai_politics]
       eu_ai_act:
@@ -87,6 +97,16 @@ models:
 # tag lets it build on its own: `dbt build --select tag:welfare`.
 seeds:
   portfolio:
+    philosophy:
+      +tags: [philosophy]
+      +schema: seeds
+      tensions:
+        +column_types: {sort_order: integer}
+    job_ai_governance:
+      +tags: [job_ai_governance]
+      +schema: seeds
+      job_ai_governance_terms:
+        +column_types: {case_sensitive: boolean, sort_order: integer}
     ai_politics:
       +tags: [ai_politics]
       +schema: seeds

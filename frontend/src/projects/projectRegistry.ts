@@ -292,6 +292,48 @@ export const PROJECTS: ProjectEntry[] = [
     pages: ['thesis'],
   },
   {
+    id: 'philosophy-atlas',
+    title: t('Philosophy Atlas', 'Philosophy Atlas'),
+    descriptor: t('NLP · semantisk utforskning', 'NLP · semantic exploration'),
+    summary: t(
+      'En semantisk atlas över fri filosofi med inbäddningar, klustring och mänskligt granskade begrepp.',
+      'A semantic atlas of public-domain philosophy using embeddings, clustering and human-reviewed concepts.',
+    ),
+    question: t(
+      'Hur organiserar återkommande moraliska och filosofiska spänningar texter över tänkare och traditioner?',
+      'How do recurring moral and philosophical tensions organise texts across thinkers and traditions?',
+    ),
+    built: t(
+      'Tretton verk från Platon till Nietzsche, rensade från översättares inledningar och noter, indelade i passager, inbäddade med en flerspråkig modell, kartlagda med UMAP och HDBSCAN och lästa genom spänningar som frihet ↔ kontroll.',
+      'Thirteen works from Plato to Nietzsche, stripped of translators’ introductions and notes, cut into passages, embedded with a multilingual model, mapped with UMAP and HDBSCAN and read through tensions such as freedom ↔ control.',
+    ),
+    result: t(
+      'Den råa kartan följer verken mer än idéerna; centrering per verk ökar antalet tvärgående grupper från 6 till 19. Inga grupper namnges utan granskning.',
+      'The raw map follows the works more than the ideas; centring per work raises the groups across works from 6 to 19. No group is named without review.',
+    ),
+    tech: [
+      'Python',
+      'Sentence Transformers',
+      'UMAP',
+      'HDBSCAN',
+      'dbt',
+      'DuckDB',
+    ],
+    href: '#philosophy-atlas',
+    category: 'ai',
+    status: 'experimental',
+    featured: false,
+    code: 'https://github.com/korv9/anton-portfolio/blob/main/docs/philosophy-atlas.md',
+    pages: ['philosophy'],
+    nav: [
+      { href: '#philosophy-atlas', label: t('Karta', 'Map') },
+      { href: '#philosophy-groups', label: t('Grupper', 'Groups') },
+      { href: '#philosophy-tensions', label: t('Spänningar', 'Tensions') },
+      { href: '#philosophy-works', label: t('Korpus', 'Corpus') },
+      { href: '#philosophy-method', label: t('Metod', 'Method') },
+    ],
+  },
+  {
     id: 'drugcomb',
     title: t(
       'DrugComb: förutsäga läkemedelssynergi',

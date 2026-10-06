@@ -1,0 +1,227 @@
+{
+ "note": "A small, deliberate corpus of public-domain philosophy in English translation from Project Gutenberg: one work per thinker, spread over ethics, political philosophy, epistemology and existential thought. Ids, titles, authors and translators were checked against the Title, Author and Translator lines of each Gutenberg file on 2026-10-06; where the file names no translator, `translator` is null and `translator_note` says so. `year` is the approximate date of composition or first publication (negative: BCE). `text_start` / `text_end` mark where the work's own text begins and ends (a line matched in full, the n-th occurrence), so translators' and editors' introductions, biographies, analyses and notes are left out; platform/nlp/philosophy/passages.py own_text.",
+ "documents": [
+  {
+   "id": "plato-republic",
+   "gutenberg_id": 1497,
+   "title": "The Republic",
+   "author": "Plato",
+   "year": -375,
+   "period": "ancient",
+   "tradition": "classical-greek",
+   "area": "political",
+   "original_language": "grc",
+   "translator": "Benjamin Jowett",
+   "genre": "dialogue",
+   "text_start": {
+    "line": "PERSONS OF THE DIALOGUE\\.",
+    "occurrence": 2
+   }
+  },
+  {
+   "id": "aristotle-ethics",
+   "gutenberg_id": 8438,
+   "title": "The Nicomachean Ethics of Aristotle",
+   "author": "Aristotle",
+   "year": -340,
+   "period": "ancient",
+   "tradition": "classical-greek",
+   "area": "ethics",
+   "original_language": "grc",
+   "translator": null,
+   "translator_note": "The Gutenberg file (introduction by J. A. Smith) names no translator.",
+   "genre": "treatise",
+   "text_start": {
+    "line": "BOOK I",
+    "occurrence": 2
+   },
+   "text_end": {
+    "line": "BOOK I"
+   }
+  },
+  {
+   "id": "epictetus-discourses",
+   "gutenberg_id": 10661,
+   "title": "A Selection from the Discourses of Epictetus with the Encheiridion",
+   "author": "Epictetus",
+   "year": 108,
+   "period": "ancient",
+   "tradition": "stoic",
+   "area": "ethics",
+   "original_language": "grc",
+   "translator": "George Long",
+   "genre": "discourse",
+   "text_start": {
+    "line": "A SELECTION FROM THE DISCOURSES OF EPICTETUS\\.?",
+    "occurrence": 2
+   }
+  },
+  {
+   "id": "marcus-meditations",
+   "gutenberg_id": 2680,
+   "title": "Meditations",
+   "author": "Marcus Aurelius",
+   "year": 180,
+   "period": "ancient",
+   "tradition": "stoic",
+   "area": "ethics",
+   "original_language": "grc",
+   "translator": null,
+   "translator_note": "The Gutenberg file lists eight English translations in its introduction but does not say which one it reproduces.",
+   "genre": "notebook",
+   "text_start": {
+    "line": "HIS FIRST BOOK"
+   },
+   "text_end": {
+    "line": "APPENDIX"
+   }
+  },
+  {
+   "id": "hobbes-leviathan",
+   "gutenberg_id": 3207,
+   "title": "Leviathan",
+   "author": "Thomas Hobbes",
+   "year": 1651,
+   "period": "early-modern",
+   "tradition": "social-contract",
+   "area": "political",
+   "original_language": "en",
+   "translator": null,
+   "genre": "treatise",
+   "text_start": {
+    "line": "THE INTRODUCTION"
+   }
+  },
+  {
+   "id": "spinoza-ethics",
+   "gutenberg_id": 3800,
+   "title": "Ethics",
+   "author": "Benedictus de Spinoza",
+   "year": 1677,
+   "period": "early-modern",
+   "tradition": "rationalist",
+   "area": "ethics",
+   "original_language": "la",
+   "translator": "R. H. M. Elwes",
+   "genre": "treatise",
+   "text_start": {
+    "line": "PART I\\. CONCERNING GOD\\."
+   }
+  },
+  {
+   "id": "locke-second-treatise",
+   "gutenberg_id": 7370,
+   "title": "Second Treatise of Government",
+   "author": "John Locke",
+   "year": 1689,
+   "period": "early-modern",
+   "tradition": "social-contract",
+   "area": "political",
+   "original_language": "en",
+   "translator": null,
+   "genre": "treatise",
+   "text_start": {
+    "line": "PREFACE"
+   }
+  },
+  {
+   "id": "hume-enquiry",
+   "gutenberg_id": 9662,
+   "title": "An Enquiry Concerning Human Understanding",
+   "author": "David Hume",
+   "year": 1748,
+   "period": "early-modern",
+   "tradition": "empiricist",
+   "area": "epistemology",
+   "original_language": "en",
+   "translator": null,
+   "genre": "essay",
+   "text_start": {
+    "line": "SECTION I\\."
+   }
+  },
+  {
+   "id": "rousseau-social-contract",
+   "gutenberg_id": 46333,
+   "title": "The Social Contract & Discourses",
+   "author": "Jean-Jacques Rousseau",
+   "year": 1762,
+   "period": "enlightenment",
+   "tradition": "social-contract",
+   "area": "political",
+   "original_language": "fr",
+   "translator": "G. D. H. Cole",
+   "genre": "treatise",
+   "text_start": {
+    "line": "BOOK I",
+    "occurrence": 2
+   }
+  },
+  {
+   "id": "kant-groundwork",
+   "gutenberg_id": 5682,
+   "title": "Fundamental Principles of the Metaphysic of Morals",
+   "author": "Immanuel Kant",
+   "year": 1785,
+   "period": "enlightenment",
+   "tradition": "german-idealist",
+   "area": "ethics",
+   "original_language": "de",
+   "translator": "Thomas Kingsmill Abbott",
+   "genre": "treatise",
+   "text_start": {
+    "line": "PREFACE"
+   }
+  },
+  {
+   "id": "mill-liberty",
+   "gutenberg_id": 34901,
+   "title": "On Liberty",
+   "author": "John Stuart Mill",
+   "year": 1859,
+   "period": "nineteenth-century",
+   "tradition": "liberal-utilitarian",
+   "area": "political",
+   "original_language": "en",
+   "translator": null,
+   "genre": "essay",
+   "text_start": {
+    "line": "CHAPTER I\\.",
+    "occurrence": 2
+   }
+  },
+  {
+   "id": "kierkegaard-selections",
+   "gutenberg_id": 60333,
+   "title": "Selections from the Writings of Kierkegaard",
+   "author": "Søren Kierkegaard",
+   "year": 1845,
+   "period": "nineteenth-century",
+   "tradition": "existentialist",
+   "area": "existential",
+   "original_language": "da",
+   "translator": "Lee M. Hollander",
+   "genre": "selection",
+   "text_start": {
+    "line": "DIAPSALMATA(?:\\[1\\])?\\.?",
+    "occurrence": 2
+   }
+  },
+  {
+   "id": "nietzsche-beyond",
+   "gutenberg_id": 4363,
+   "title": "Beyond Good and Evil",
+   "author": "Friedrich Wilhelm Nietzsche",
+   "year": 1886,
+   "period": "nineteenth-century",
+   "tradition": "existentialist",
+   "area": "ethics",
+   "original_language": "de",
+   "translator": "Helen Zimmern",
+   "genre": "aphorisms",
+   "text_start": {
+    "line": "PREFACE"
+   }
+  }
+ ]
+}

@@ -2,7 +2,7 @@
 
     python platform/nlp/ai_politics/similarity.py
 
-Two sets of passages, embedded with one multilingual model (nlp/text/embeddings.py):
+Two sets of passages, embedded with one multilingual model (nlp/text/vectors.py):
 
 - the AI Act: every paragraph of every article of the current consolidated text, in the official
   Swedish version (int_ai_act_provisions), leaving out Articles 102–110, which only amend other
@@ -33,7 +33,7 @@ import pandas as pd
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / "platform" / "nlp" / "text"))
 
-from embeddings import MULTILINGUAL, embed, top_k  # noqa: E402
+from vectors import MULTILINGUAL, embed, top_k  # noqa: E402
 
 DATABASE = Path(os.environ.get("PORTFOLIO_DB", ROOT / "warehouse/portfolio.duckdb"))
 OUT = Path(os.environ.get("PORTFOLIO_FEATURES", ROOT / "warehouse/features")) / "ai_politics"

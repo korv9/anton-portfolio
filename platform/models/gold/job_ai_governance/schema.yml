@@ -1,0 +1,23 @@
+version: 2
+
+models:
+  - name: mart_job_ai_governance_terms
+    description: Month × term × occupation field with denominators, rolling share and year-on-year change.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [month, field_id, term_id]
+    columns:
+      - name: share
+        data_tests:
+          - not_null
+          - between:
+              arguments: {min: 0, max: 1}
+      - name: ads
+        data_tests: [not_null]
+  - name: mart_job_ai_governance_yearly
+    description: Year × term × field.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [year, field_id, term_id]

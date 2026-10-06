@@ -84,7 +84,7 @@ empty below ten such speeches.
 
 `platform/nlp/ai_politics/similarity.py` embeds, with one multilingual model
 (`sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`, shared in
-`platform/nlp/text/embeddings.py`):
+`platform/nlp/text/vectors.py`):
 
 - every paragraph of the current consolidated AI Act in its **official Swedish version**
   (1,077 passages; Articles 102–110, which only amend other acts, are left out);

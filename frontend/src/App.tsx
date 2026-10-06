@@ -21,6 +21,9 @@ const DataModelPage = lazy(() => import('./datamodel/DataModelPage'))
 const ErPage = lazy(() => import('./datamodel/ErPage'))
 const SymbolicAtlasPage = lazy(() => import('./symbolic/SymbolicAtlasPage'))
 const AiActProduct = lazy(() => import('./aiact/AiActProduct'))
+const PhilosophyAtlasPage = lazy(
+  () => import('./philosophy/PhilosophyAtlasPage'),
+)
 const DataConstellationPage = lazy(
   () => import('./constellation/DataConstellationPage'),
 )
@@ -58,7 +61,8 @@ export default function App() {
       // a page address to the top.
       const target =
         route.path === '#job-market-clusters' ||
-        (route.page === 'symbolic' && route.path !== '#symbolic-atlas')
+        (route.page === 'symbolic' && route.path !== '#symbolic-atlas') ||
+        (route.page === 'philosophy' && route.path !== '#philosophy-atlas')
           ? document.getElementById(route.path.slice(1))
           : null
       if (target) target.scrollIntoView({ block: 'start' })
@@ -107,6 +111,7 @@ export default function App() {
           {page === 'symbolic' && <SymbolicAtlasPage route={route} />}
           {page === 'constellation' && <DataConstellationPage route={route} />}
           {page === 'aiact' && <AiActProduct route={route} />}
+          {page === 'philosophy' && <PhilosophyAtlasPage route={route} />}
           {page === 'drugcomb' && <DrugCombPage />}
           {page === 'allegoria' && <AllegoriaPage />}
           {page === 'thesis' && <ThesisPage />}

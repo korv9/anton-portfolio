@@ -1,0 +1,10 @@
+version: 2
+
+models:
+  - name: int_philosophy_passages
+    description: Each work's own text, cleaned and cut into passages of about 60–220 words.
+    columns:
+      - name: passage_id
+        data_tests: [unique, not_null]
+      - name: text
+        data_tests: [not_null]

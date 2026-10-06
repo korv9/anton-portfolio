@@ -89,6 +89,9 @@ class Cleaned:
     clean_char_count: int
     removals: list[Removal] = field(default_factory=list)
     warnings: list[str] = field(default_factory=list)
+    # The cleaned body before white space is collapsed: paragraphs and line breaks intact, for
+    # corpora that are cut into passages (the Philosophy Atlas) rather than symbol contexts.
+    structured: str = ""
 
     @property
     def removed_char_count(self) -> int:
@@ -334,7 +337,8 @@ def clean_document(text: str, metadata: dict | None = None, check: bool = True) 
     body, sections = remove_sections(body)
     clean = collapse(body)
     baseline = collapse(strip_gutenberg_boilerplate(raw))
-    result = Cleaned(clean, len(collapse(raw)), len(baseline), len(clean), notes + sections)
+    result = Cleaned(clean, len(collapse(raw)), len(baseline), len(clean), notes + sections,
+                     structured=body.strip())
     share = result.removed_share
     words = len(clean.split())
     if share > WARN_REMOVED_SHARE:

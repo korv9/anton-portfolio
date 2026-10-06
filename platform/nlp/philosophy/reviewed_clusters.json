@@ -1,0 +1,4 @@
+{
+ "note": "Human reviews of Philosophy Atlas clusters, keyed by fingerprint (nlp/philosophy/pipeline.py). status: candidate | reviewed | rejected; label and description are written by a person after reading the representative passages. Nothing here is generated. Empty until someone reviews.",
+ "clusters": []
+}
