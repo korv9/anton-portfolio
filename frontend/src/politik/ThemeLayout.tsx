@@ -145,7 +145,7 @@ export default function ThemeLayout(props: Props) {
                       <li key={source.name}>
                         {source.url ? (
                           <a href={source.url} target="_blank" rel="noreferrer">
-                            {source.name} ↗
+                            {source.name}
                           </a>
                         ) : (
                           source.name
@@ -195,7 +195,7 @@ export default function ThemeLayout(props: Props) {
                 <ul>
                   {props.deepLinks.map((link) => (
                     <li key={link.href}>
-                      <a href={link.href}>{link.label} →</a>
+                      <a href={link.href}>{link.label}</a>
                     </li>
                   ))}
                 </ul>

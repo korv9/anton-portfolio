@@ -145,13 +145,13 @@ export default function WelfarePage({ view }: { view: string }) {
           )}
         </p>
         <p className="welfare-links">
-          <a href="#status">{l('Pipeline status →', 'Pipelinens status →')}</a>
+          <a href="#status">{l('Pipeline status', 'Pipelinens status')}</a>
           <a
             href="https://github.com/korv9/anton-portfolio/blob/main/docs/welfare-data-model.md"
             target="_blank"
             rel="noreferrer"
           >
-            {l('Data model and caveats ↗', 'Datamodell och förbehåll ↗')}
+            {l('Data model and caveats', 'Datamodell och förbehåll')}
           </a>
         </p>
       </div>
@@ -236,7 +236,7 @@ export default function WelfarePage({ view }: { view: string }) {
                 </ol>
                 <p>
                   <a href="#status">
-                    {l('Pipeline status →', 'Pipelinens status →')}
+                    {l('Pipeline status', 'Pipelinens status')}
                   </a>
                 </p>
               </StageBlock>

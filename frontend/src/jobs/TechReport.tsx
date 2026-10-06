@@ -294,7 +294,7 @@ export default function TechReport({
                 target="_blank"
                 rel="noreferrer"
               >
-                {t('Code and methodology on GitHub ↗')}
+                {t('Code and methodology on GitHub')}
               </a>
             </div>
           </details>

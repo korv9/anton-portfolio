@@ -628,8 +628,8 @@ function PartyDetail({ data, party }: { data: Data; party: string }) {
           <p>
             <a href="#taxes-decisions">
               {l(
-                'All tax decisions, with every party’s vote and the studies behind them →',
-                'Alla skattebeslut, med alla partiers röster och utredningarna bakom →',
+                'All tax decisions, with every party’s vote and the studies behind them',
+                'Alla skattebeslut, med alla partiers röster och utredningarna bakom',
               )}
             </a>
           </p>
@@ -758,8 +758,8 @@ function PartyNews({ party }: { party: string }) {
       <p>
         <a href="#now-news">
           {l(
-            'All political news from SVT, Ekot and the Government →',
-            'Alla politiska nyheter från SVT, Ekot och Regeringen →',
+            'All political news from SVT, Ekot and the Government',
+            'Alla politiska nyheter från SVT, Ekot och Regeringen',
           )}
         </a>
       </p>

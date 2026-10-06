@@ -40,7 +40,7 @@ export function Section({
           <span>{l('Go deeper', 'Fördjupa')}</span>
           {deeper.map((d) => (
             <a key={d.href} href={d.href}>
-              {d.label} →
+              {d.label}
             </a>
           ))}
         </nav>

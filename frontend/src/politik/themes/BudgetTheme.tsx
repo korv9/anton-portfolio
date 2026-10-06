@@ -299,7 +299,7 @@ export default function BudgetTheme({ route }: { route: Route }) {
             </td>
             <td>
               <a href={r.source_url} target="_blank" rel="noreferrer">
-                {l('Report', 'Betänkande')} ↗
+                {l('Report', 'Betänkande')}
               </a>
             </td>
           </tr>

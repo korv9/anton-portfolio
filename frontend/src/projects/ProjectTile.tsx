@@ -25,8 +25,7 @@ export default function ProjectTile({ project }: { project: ProjectEntry }) {
             href={project.href}
             {...(external ? { target: '_blank', rel: 'noreferrer' } : {})}
           >
-            {b(project.title)}{' '}
-            <span aria-hidden="true">{external ? '↗' : '→'}</span>
+            {b(project.title)}
           </a>
         ) : (
           b(project.title)
@@ -43,7 +42,7 @@ export default function ProjectTile({ project }: { project: ProjectEntry }) {
         {project.team && <span>{b(project.team)}</span>}
         {code.map((url) => (
           <a key={url} href={url} target="_blank" rel="noreferrer">
-            {code.length > 1 ? repoName(url) : l('Code', 'Kod')} ↗
+            {code.length > 1 ? repoName(url) : l('Code', 'Kod')}
           </a>
         ))}
         {!project.href && !code.length && (

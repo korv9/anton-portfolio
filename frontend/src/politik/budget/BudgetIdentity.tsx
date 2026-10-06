@@ -87,7 +87,7 @@ export default function BudgetIdentity({ year }: { year: number }) {
                         target="_blank"
                         rel="noreferrer"
                       >
-                        {l('agreement', 'överenskommelsen')} ↗
+                        {l('agreement', 'överenskommelsen')}
                       </a>
                     </>
                   )}
@@ -117,7 +117,7 @@ export default function BudgetIdentity({ year }: { year: number }) {
                     target="_blank"
                     rel="noreferrer"
                   >
-                    {l('the decision', 'beslutet')} ↗
+                    {l('the decision', 'beslutet')}
                   </a>
                 </>
               )}

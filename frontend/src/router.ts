@@ -52,7 +52,7 @@ export const REDIRECTS: Record<string, string> = {
   // The semantic-drift report is withdrawn while it is reworked.
   '#contact': '#om-mig',
   '#kontakt': '#om-mig',
-  '#utbildning': '#om-mig',
+  '#utbildning': '#erfarenhet',
   '#experience': '#erfarenhet',
   '#work': '#projekt',
   '#teknik': '#kompetenser',

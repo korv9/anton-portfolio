@@ -100,7 +100,7 @@ export function Card({
     >
       <header>
         <h2>{title}</h2>
-        {href && <a href={href}>{more ?? l('More', 'Mer')} →</a>}
+        {href && <a href={href}>{more ?? l('More', 'Mer')}</a>}
       </header>
       {meta && <p className="dash-meta">{meta}</p>}
       <div className="board-body">{children}</div>

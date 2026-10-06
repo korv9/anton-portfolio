@@ -487,8 +487,7 @@ export default function SymbolicAtlasPage({ route }: { route: Route }) {
               {l(
                 'How far that can be reduced',
                 'Hur mycket det går att minska',
-              )}{' '}
-              →
+              )}
             </a>
           </p>
         </section>
@@ -589,8 +588,7 @@ export default function SymbolicAtlasPage({ route }: { route: Route }) {
             {l(
               'Full method and limitations',
               'Hela metoden och begränsningarna',
-            )}{' '}
-            ↗
+            )}
           </a>
         </p>
       </section>

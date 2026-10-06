@@ -362,7 +362,7 @@ export default function DataConstellationPage({ route }: { route: Route }) {
                 'Kvalitet frågar om datan är korrekt. Validitet frågar om analysen besvarar den fråga den säger sig besvara. Båda spelar roll.',
               )}{' '}
               <a href="#quality">
-                {l('Quality & validity →', 'Kvalitet och validitet →')}
+                {l('Quality & validity', 'Kvalitet och validitet')}
               </a>
             </p>
           </div>
@@ -477,14 +477,14 @@ function Detail({
       {node.type === 'frontend' && node.href && (
         <p>
           <a className="constellation-cta" href={node.href}>
-            {l(`Explore ${node.label}`, `Utforska ${node.label}`)} →
+            {l(`Explore ${node.label}`, `Utforska ${node.label}`)}
           </a>
         </p>
       )}
       {node.url && (
         <p>
           <a href={node.url} target="_blank" rel="noreferrer">
-            {node.url.replace(/^https?:\/\//, '')} ↗
+            {node.url.replace(/^https?:\/\//, '')}
           </a>
         </p>
       )}
@@ -854,7 +854,7 @@ function NodeQuality({
           className="constellation-cta"
           href={`#quality${product ? `?produkt=${product}` : ''}`}
         >
-          {l('View quality & validity →', 'Visa kvalitet och validitet →')}
+          {l('View quality & validity', 'Visa kvalitet och validitet')}
         </a>
       </p>
     </div>

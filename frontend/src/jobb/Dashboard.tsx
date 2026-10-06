@@ -55,7 +55,7 @@ function Card({
       <header>
         <h2>{title}</h2>
         <a href={href} aria-label={l(`More: ${title}`, `Mer: ${title}`)}>
-          {l('More', 'Mer')} →
+          {l('More', 'Mer')}
         </a>
       </header>
       <p className="dash-meta">{meta}</p>

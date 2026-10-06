@@ -301,7 +301,7 @@ export default function DataExplorer({
                             target="_blank"
                             rel="noreferrer"
                           >
-                            {t('Source ↗')}
+                            {t('Source')}
                           </a>
                         ) : (
                           display(row[column])

@@ -143,7 +143,7 @@ export default function KallorTheme() {
                 <tr key={s.name}>
                   <th scope="row">
                     <a href={s.url} target="_blank" rel="noreferrer">
-                      {s.name} ↗
+                      {s.name}
                     </a>
                   </th>
                   <td>{l(...s.what)}</td>
@@ -336,7 +336,7 @@ export default function KallorTheme() {
               target="_blank"
               rel="noreferrer"
             >
-              <strong>{l('Code on GitHub', 'Koden på GitHub')} ↗</strong>
+              <strong>{l('Code on GitHub', 'Koden på GitHub')}</strong>
               <span>
                 {l(
                   'Ingestion, dbt models and the site.',

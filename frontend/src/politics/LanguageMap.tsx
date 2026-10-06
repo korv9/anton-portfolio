@@ -266,7 +266,7 @@ export default function LanguageMap() {
         unit="Text segments"
       />
       <a className="report-jump" href="#budget-comparison">
-        {t('Explore debate × budget charts ↓')}
+        {t('Explore debate × budget charts')}
       </a>
       <div className="kpis">
         <div>
@@ -447,7 +447,7 @@ export default function LanguageMap() {
                   target="_blank"
                   rel="noreferrer"
                 >
-                  {t('Open parliamentary source ↗')}
+                  {t('Open parliamentary source')}
                 </a>
               </>
             ) : (
@@ -527,7 +527,7 @@ export default function LanguageMap() {
             target="_blank"
             rel="noreferrer"
           >
-            {t('Code and documentation on GitHub ↗')}
+            {t('Code and documentation on GitHub')}
           </a>
         </div>
       </details>

@@ -819,7 +819,7 @@ export default function ErPage({ route }: { route: Route }) {
               </p>
               <p>
                 <a href="#data-model">
-                  {l('Lineage and example rows', 'Härkomst och exempelrader')} →
+                  {l('Lineage and example rows', 'Härkomst och exempelrader')}
                 </a>
               </p>
             </StageBlock>

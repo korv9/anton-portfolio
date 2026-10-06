@@ -655,7 +655,7 @@ export default function NowPage({
                 target="_blank"
                 rel="noreferrer"
               >
-                {l('Source ↗', 'Källa ↗')}
+                {l('Source', 'Källa')}
               </a>
             </p>
           )}
@@ -851,7 +851,7 @@ function FormationNews() {
       <NewsList news={news} items={items} compact />
       <p>
         <a href="#now-news">
-          {l('All political news →', 'Alla politiska nyheter →')}
+          {l('All political news', 'Alla politiska nyheter')}
         </a>
       </p>
     </>

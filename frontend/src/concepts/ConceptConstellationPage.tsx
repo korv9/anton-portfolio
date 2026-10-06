@@ -463,8 +463,7 @@ function ConceptCard({ concept, data }: { concept: Concept; data: Data }) {
           {l(
             `Open ${concept.label_en}`,
             `Öppna ${concept.label_sv.toLowerCase()}`,
-          )}{' '}
-          →
+          )}
         </a>
       </p>
     </>

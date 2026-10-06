@@ -12,7 +12,7 @@ export const swedishReports: Record<string, string> = {
     ', reduceras med UMAP och klustras med HDBSCAN. Kartan visar ett deterministiskt urval om högst 400 segment per riksmöte.',
   'Two-dimensional distance is approximate. Labels are machine-generated keywords, not manual coding. Clusters describe language patterns, not political positions. Labels have not been manually validated, and the model will be retrained before making stronger comparisons.':
     'Avstånd i två dimensioner är ungefärliga. Etiketterna är maskingenererade nyckelord, inte manuell kodning. Klustren beskriver språkmönster, inte politiska ståndpunkter. Etiketterna har inte validerats manuellt och modellen ska tränas om innan starkare jämförelser görs.',
-  'Code and documentation on GitHub ↗': 'Kod och dokumentation på GitHub ↗',
+  'Code and documentation on GitHub': 'Kod och dokumentation på GitHub',
   'Job ad tables and definitions': 'Annonstabeller och definitioner',
   'Result tables and downloads': 'Resultattabeller och nedladdningar',
   'Chart scrolls horizontally on small screens':
@@ -195,7 +195,7 @@ export const swedishReports: Record<string, string> = {
     'i denna diskussion. Närliggande tal följer riksdagens ordning; det visar inte vem som svarade vem.',
   'Previous speech': 'Föregående tal',
   'Next speech': 'Nästa tal',
-  'Read this speech at the Swedish Parliament ↗': 'Läs talet hos riksdagen ↗',
+  'Read this speech at the Swedish Parliament': 'Läs talet hos riksdagen',
   'Other speakers in this discussion (': 'Andra talare i diskussionen (',
   'Explore Swedish politics': 'Utforska svensk politik',
   'What did they actually say?': 'Vad sa de egentligen?',
@@ -223,7 +223,7 @@ export const swedishReports: Record<string, string> = {
     'Sökningen omfattar namn, debattitlar och inledande utdrag inom valt riksmöte. Öppna ett tal för att läsa hela texten.',
   'Loading speeches…': 'Läser in tal…',
   'speeches found · newest first': 'tal hittade · nyast först',
-  'Read full speech →': 'Läs hela talet →',
+  'Read full speech': 'Läs hela talet',
   'No speeches match. Try another year, party or search term.':
     'Inga tal matchar. Prova ett annat år, parti eller sökord.',
   'Show more speeches': 'Visa fler tal',
@@ -308,7 +308,7 @@ export const swedishReports: Record<string, string> = {
   'Government amount': 'Regeringens belopp',
   amount: 'belopp',
   Difference: 'Skillnad',
-  'Riksdagen ↗': 'Riksdagen ↗',
+  Riksdagen: 'Riksdagen',
   'Annual accounts / a different question': 'Årsutfall / en annan fråga',
   'What was budgeted, and what was spent?':
     'Vad budgeterades och vad användes?',
@@ -332,7 +332,7 @@ export const swedishReports: Record<string, string> = {
   'Reported amendments:': 'Redovisade ändringar:',
   '. This field is shown separately and is not added to the difference above.':
     '. Detta fält visas separat och läggs inte till skillnaden ovan.',
-  'Annual accounts source ↗': 'Källa för årsutfall ↗',
+  'Annual accounts source': 'Källa för årsutfall',
   'Read all 27 areas for': 'Läs alla 27 områden för',
   'Annual account table, scroll horizontally':
     'Tabell över årsutfall, skrolla i sidled',
@@ -518,8 +518,8 @@ export const swedishReports: Record<string, string> = {
   'Still stubbed': 'Fortfarande stubbar',
   'Household, task, completion and analytics routes return documented previews or synthetic fixtures. Stub writes do not persist changes. No real household metrics are presented here.':
     'Rutter för hushåll, uppgifter, slutföranden och analys returnerar dokumenterade förhandsvyer eller syntetiska testdata. Skrivningar till stubbarna sparas inte. Inga verkliga hushållsmått presenteras här.',
-  'Source & implementation status ↗': 'Källkod och implementeringsstatus ↗',
-  'OpenAPI contract ↗': 'OpenAPI-kontrakt ↗',
+  'Source & implementation status': 'Källkod och implementeringsstatus',
+  'OpenAPI contract': 'OpenAPI-kontrakt',
   'Open data desk': 'Öppet databord',
   'Inspect the records behind the charts.':
     'Granska posterna bakom diagrammen.',
@@ -539,7 +539,7 @@ export const swedishReports: Record<string, string> = {
   '. “—” means missing or not applicable.':
     '. ”—” betyder saknat eller inte tillämpligt.',
   'Dataset table, scroll horizontally': 'Datatabell, skrolla i sidled',
-  'Source ↗': 'Källa ↗',
+  Source: 'Källa',
   'No rows match these filters.': 'Inga rader matchar filtren.',
   Previous: 'Föregående',
   Page: 'Sida',

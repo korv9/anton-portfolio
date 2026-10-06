@@ -17,15 +17,23 @@ test('home introduces Anton and routes to each project', async ({
   await expect(
     page.locator('.home-hero-actions a', { hasText: 'CV' }),
   ).toBeInViewport()
-  // On a laptop, selected work and experience start on the first screen too; on a phone
-  // they follow the hero in that order.
-  await expect(page.locator('#projekt')).toBeInViewport()
-  if (!isMobile) await expect(page.locator('#erfarenhet')).toBeInViewport()
-  // Then, in order: projects, experience, the core stack, about, under the hood.
+  // Everything about the job comes before the projects: on a laptop experience, education
+  // and the core stack start on the first screen; on a phone they follow the hero.
+  await expect(page.locator('#erfarenhet')).toBeInViewport()
+  if (!isMobile) {
+    await expect(page.locator('#utbildning')).toBeInViewport()
+    await expect(page.locator('#kompetenser')).toBeInViewport()
+  }
+  // Then, in order: experience, education, the core stack, projects, about, under the hood.
   const order = await page.evaluate(() =>
-    ['projekt', 'erfarenhet', 'kompetenser', 'om-mig', 'under-huven'].map(
-      (id) => document.getElementById(id)!.getBoundingClientRect().top,
-    ),
+    [
+      'erfarenhet',
+      'utbildning',
+      'kompetenser',
+      'projekt',
+      'om-mig',
+      'under-huven',
+    ].map((id) => document.getElementById(id)!.getBoundingClientRect().top),
   )
   expect([...order].sort((a, b) => a - b)).toEqual(order)
   await expect(page.locator('#projekt .ds-project-row')).toHaveCount(5)
@@ -36,7 +44,12 @@ test('home introduces Anton and routes to each project', async ({
   await expect(page.locator('#erfarenhet')).toContainText('Fora')
   await expect(page.locator('#erfarenhet')).toContainText('Avtalat')
   await expect(page.locator('.home-job-impact').first()).toBeVisible()
-  await expect(page.locator('#erfarenhet')).toContainText('JENSEN')
+  await expect(page.locator('#utbildning')).toContainText('JENSEN')
+  // The header and its navigation stay on screen while the page scrolls.
+  await page.locator('#under-huven').scrollIntoViewIfNeeded()
+  await expect(page.locator('.site-bar')).toBeInViewport()
+  await expect(page.locator('.site-bar .wordmark')).toBeVisible()
+  await page.evaluate(() => window.scrollTo(0, 0))
   // A short stack first; the full one a click away.
   await expect(
     page.locator('#kompetenser .home-stack-groups > div'),

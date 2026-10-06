@@ -177,7 +177,7 @@ export default function StatusPage() {
                       target="_blank"
                       rel="noreferrer"
                     >
-                      #{run.github_run.id} ↗
+                      #{run.github_run.id}
                     </a>
                   </dd>
                 </div>
@@ -333,7 +333,7 @@ export default function StatusPage() {
                   target="_blank"
                   rel="noreferrer"
                 >
-                  {l('All workflow runs ↗', 'Alla körningar ↗')}
+                  {l('All workflow runs', 'Alla körningar')}
                 </a>
               </p>
             </section>

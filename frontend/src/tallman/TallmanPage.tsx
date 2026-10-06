@@ -278,7 +278,7 @@ function AnswerView({ answer }: { answer: Answer }) {
                   <b>{p.title}</b> · {sourceName(p)}{' '}
                   {p.url && (
                     <a href={p.url} target="_blank" rel="noreferrer">
-                      {l('original', 'originalet')} ↗
+                      {l('original', 'originalet')}
                     </a>
                   )}
                   {p.href && (

@@ -721,7 +721,7 @@ function ModelRegister({ models }: { models: ModelCard[] }) {
             <p className="model-foot">
               <code>{model.run_id}</code>
               <a href={model.card_url} target="_blank" rel="noreferrer">
-                {l('Model card ↗', 'Modellkort ↗')}
+                {l('Model card', 'Modellkort')}
               </a>
             </p>
           </article>
@@ -774,13 +774,13 @@ export default function AnalysisPage({ view }: { view: string }) {
           )}
         </p>
         <p className="welfare-links">
-          <a href="#sweden">{l('Sweden overview →', 'Översikt Sverige →')}</a>
+          <a href="#sweden">{l('Sweden overview', 'Översikt Sverige')}</a>
           <a
             href="https://github.com/korv9/anton-portfolio/blob/main/docs/analysis-guide.md"
             target="_blank"
             rel="noreferrer"
           >
-            {l('Analysis guide ↗', 'Analysguide ↗')}
+            {l('Analysis guide', 'Analysguide')}
           </a>
         </p>
       </div>

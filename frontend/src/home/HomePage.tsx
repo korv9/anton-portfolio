@@ -1,8 +1,9 @@
 /**
  * The start page: a fast, recruiter-facing summary. Simple first, depth on demand.
  *
- * Order: hero (role, one-line pitch, core tools, CV) → selected work beside experience and
- * education → core stack → about → under the hood (the technical deep dives). Projects come
+ * Order: hero (role, one-line pitch, core tools, CV); experience beside education and the core
+ * stack, so everything about the job is on the first screen; then the selected work, about,
+ * and under the hood (the technical deep dives). Projects come
  * from projects/projectRegistry.ts (HOME_PROJECTS, each with a plain-language line);
  * experience, education and the stack from home/orbitContent.ts. Methods, metrics and
  * research live on the project pages; the platform pages (Data Constellation, Quality &
@@ -108,7 +109,7 @@ function Hero() {
       </p>
       <div className="home-hero-actions">
         <a className="home-cta is-primary" href="#projekt">
-          {l('View projects', 'Se projekten')} ↓
+          {l('View projects', 'Se projekten')}
         </a>
         {profile.cv && (
           <a className="home-cta" href={profile.cv} download>
@@ -117,11 +118,11 @@ function Hero() {
         )}
         <span className="home-hero-links">
           <a href="https://github.com/korv9" target="_blank" rel="noreferrer">
-            GitHub ↗
+            GitHub
           </a>
           {profile.linkedin && (
             <a href={profile.linkedin} target="_blank" rel="noreferrer">
-              LinkedIn ↗
+              LinkedIn
             </a>
           )}
           {profile.email && (
@@ -161,7 +162,7 @@ function SelectedWork() {
             tabIndex={-1}
             aria-hidden="true"
           >
-            {l('View project', 'Visa projektet')} →
+            {l('View project', 'Visa projektet')}
           </a>
         </ProjectRow>
       ))}
@@ -171,7 +172,6 @@ function SelectedWork() {
 
 function Experience() {
   const [open, setOpen] = useState<string[]>([])
-  const thesis = PROJECTS.find((p) => p.id === 'thesis')
   return (
     <section
       className="home-experience"
@@ -224,21 +224,33 @@ function Experience() {
           )
         })}
       </ol>
-      <div className="home-education">
-        <h2 className="home-first-title">{l('Education', 'Utbildning')}</h2>
-        {EDUCATION.map((e) => (
-          <p key={e.school} className="home-edu">
-            <b>{b(e.title)}</b> · {e.school} · {e.period}
-            <small>{b(e.note)}</small>
-          </p>
-        ))}
-        {thesis && (
-          <p className="home-edu-thesis">
-            <a href={thesis.href}>{b(thesis.title)} →</a>
-          </p>
-        )}
-        <p className="home-earlier">{b(EARLIER)}</p>
-      </div>
+    </section>
+  )
+}
+
+function Education() {
+  const thesis = PROJECTS.find((p) => p.id === 'thesis')
+  return (
+    <section
+      className="home-education"
+      id="utbildning"
+      aria-labelledby="education-title"
+    >
+      <h2 id="education-title" className="home-first-title">
+        {l('Education', 'Utbildning')}
+      </h2>
+      {EDUCATION.map((e) => (
+        <p key={e.school} className="home-edu">
+          <b>{b(e.title)}</b> · {e.school} · {e.period}
+          <small>{b(e.note)}</small>
+        </p>
+      ))}
+      {thesis && (
+        <p className="home-edu-thesis">
+          <a href={thesis.href}>{b(thesis.title)}</a>
+        </p>
+      )}
+      <p className="home-earlier">{b(EARLIER)}</p>
     </section>
   )
 }
@@ -246,7 +258,7 @@ function Experience() {
 function CoreStack() {
   return (
     <section
-      className="ds-container home-stack"
+      className="home-stack"
       id="kompetenser"
       aria-labelledby="skills-title"
     >
@@ -304,11 +316,11 @@ function About() {
           )}
           {profile.linkedin && (
             <a href={profile.linkedin} target="_blank" rel="noreferrer">
-              LinkedIn ↗
+              LinkedIn
             </a>
           )}
           <a href="https://github.com/korv9" target="_blank" rel="noreferrer">
-            GitHub ↗
+            GitHub
           </a>
         </p>
       </div>
@@ -357,7 +369,7 @@ function UnderTheHood() {
         {DEEP_DIVES.map((d) => (
           <li key={d.href}>
             <a href={d.href}>
-              <b>{b(d.title)} →</b>
+              <b>{b(d.title)}</b>
               <span>{b(d.line)}</span>
             </a>
           </li>
@@ -381,11 +393,16 @@ export default function HomePage({ path }: { path: string }) {
   return (
     <div className="home home-orbit">
       <Hero />
-      <div className="home-first ds-container">
-        <SelectedWork />
+      <div className="home-profile ds-container">
         <Experience />
+        <div className="home-profile-side">
+          <Education />
+          <CoreStack />
+        </div>
       </div>
-      <CoreStack />
+      <div className="home-work ds-container">
+        <SelectedWork />
+      </div>
       <About />
       <UnderTheHood />
     </div>

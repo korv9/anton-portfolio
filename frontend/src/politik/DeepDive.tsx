@@ -83,7 +83,7 @@ export default function DeepDive({ path }: { path: string }) {
         <p className="ds-label">
           {parent && (
             <>
-              <a href={parent.path}>← {l(parent.en, parent.sv)}</a>
+              <a href={parent.path}>{l(parent.en, parent.sv)}</a>
               {' · '}
             </>
           )}

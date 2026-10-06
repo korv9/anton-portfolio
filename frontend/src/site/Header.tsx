@@ -114,14 +114,13 @@ function ProjectList({ onPick }: { onPick: () => void }) {
         ))}
       </ol>
       <a className="nav-all" href="#alla-projekt" onClick={onPick}>
-        {l('View all projects', 'Se alla projekt')} →
+        {l('View all projects', 'Se alla projekt')}
       </a>
       <a className="nav-all" href="#data-constellation" onClick={onPick}>
         {l(
           'Data Constellation: how the platform fits together',
           'Data Constellation: hur plattformen hänger ihop',
-        )}{' '}
-        →
+        )}
       </a>
     </>
   )
@@ -162,8 +161,34 @@ export default function Header({
   }
   const Name = home ? 'h1' : 'div'
   const close = () => setMobileOpen(false)
+  // The header stays on screen. Once the page scrolls it folds to one slim row (the name and
+  // the navigation side by side); it unfolds at the very top. The gap between the two
+  // thresholds keeps it from flickering when its own change of height moves the page.
+  const bar = useRef<HTMLElement>(null)
+  const [compact, setCompact] = useState(false)
+  useEffect(() => {
+    const onScroll = () =>
+      setCompact((was) => (was ? window.scrollY > 8 : window.scrollY > 120))
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+  // Sticky elements further down (a product's sidebar, anchored sections) sit under it.
+  useEffect(() => {
+    const el = bar.current
+    if (!el || typeof ResizeObserver === 'undefined') return
+    const root = document.documentElement
+    const observer = new ResizeObserver(() =>
+      root.style.setProperty('--header-h', `${el.offsetHeight}px`),
+    )
+    observer.observe(el)
+    return () => {
+      observer.disconnect()
+      root.style.removeProperty('--header-h')
+    }
+  }, [])
   return (
-    <header className="site-bar">
+    <header ref={bar} className={`site-bar${compact ? ' is-compact' : ''}`}>
       <Name className="site-name-heading">
         <a
           className="wordmark"
@@ -315,11 +340,7 @@ export function ProjectPager({ route }: { route: Route }) {
             ? l('Previous project', 'Föregående projekt')
             : l('Next project', 'Nästa projekt')}
         </small>
-        <span>
-          {dir === 'previous' && '← '}
-          {b(p.title)}
-          {dir === 'next' && ' →'}
-        </span>
+        <span>{b(p.title)}</span>
       </a>
     ) : (
       <span />
@@ -371,7 +392,7 @@ export function Footer() {
             {profile.linkedin && (
               <li>
                 <a href={profile.linkedin} target="_blank" rel="noreferrer">
-                  LinkedIn ↗
+                  LinkedIn
                 </a>
               </li>
             )}
@@ -381,7 +402,7 @@ export function Footer() {
                 target="_blank"
                 rel="noreferrer"
               >
-                GitHub ↗
+                GitHub
               </a>
             </li>
           </ul>

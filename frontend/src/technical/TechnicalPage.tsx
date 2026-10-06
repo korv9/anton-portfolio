@@ -744,8 +744,7 @@ export default function TechnicalPage() {
               {T(
                 'Every table, column, test and SQL in the data model explorer',
                 'Varje tabell, kolumn, test och SQL i datamodellsutforskaren',
-              )}{' '}
-              →
+              )}
             </a>
           </p>
         </section>
@@ -1002,13 +1001,13 @@ export default function TechnicalPage() {
           </table>
         </div>
         <p className="tech-more">
-          <a href="#status">{T('Pipeline status', 'Pipelinestatus')} →</a>
+          <a href="#status">{T('Pipeline status', 'Pipelinestatus')}</a>
           <a
             href="https://github.com/korv9/anton-portfolio"
             target="_blank"
             rel="noreferrer"
           >
-            {T('Source code on GitHub', 'Källkoden på GitHub')} ↗
+            {T('Source code on GitHub', 'Källkoden på GitHub')}
           </a>
         </p>
       </section>

@@ -103,7 +103,7 @@ export function Source({
 }) {
   return (
     <a className="aa-source" href={href} target="_blank" rel="noreferrer">
-      {children ?? l('Official source', 'Officiell källa')} ↗
+      {children ?? l('Official source', 'Officiell källa')}
     </a>
   )
 }

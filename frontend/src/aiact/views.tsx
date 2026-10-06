@@ -53,7 +53,7 @@ export function Overview({ data, today }: View) {
               `Förordning (EU) 2024/1689 ställer krav på AI-system och AI-modeller för allmänna ändamål på EU-marknaden, efter risk: ${counts.articles} artiklar och ${counts.annexes} bilagor i den gällande konsoliderade texten.`,
             )}
           </p>
-          <a href="#ai-act-risk">{l('Risk classes →', 'Riskklasser →')}</a>
+          <a href="#ai-act-risk">{l('Risk classes', 'Riskklasser')}</a>
         </article>
         <article className="aa-card">
           <p className="aa-kicker">{l('Applies now', 'Gäller nu')}</p>
@@ -67,7 +67,7 @@ export function Overview({ data, today }: View) {
             </>
           )}
           <a href="#ai-act-today">
-            {l('What applies today →', 'Vad gäller i dag →')}
+            {l('What applies today', 'Vad gäller i dag')}
           </a>
         </article>
         <article className="aa-card">
@@ -92,7 +92,7 @@ export function Overview({ data, today }: View) {
                 `${upcoming.length - 1} datum till fram till 2030.`,
               )}
           </p>
-          <a href="#ai-act-timeline">{l('Timeline →', 'Tidslinje →')}</a>
+          <a href="#ai-act-timeline">{l('Timeline', 'Tidslinje')}</a>
         </article>
         <article className="aa-card">
           <p className="aa-kicker">{l('Who is affected', 'Vem berörs')}</p>
@@ -109,7 +109,7 @@ export function Overview({ data, today }: View) {
               `${counts.obligations} skyldigheter är kopplade till artikeln som anger dem.`,
             )}
           </p>
-          <a href="#ai-act-roles">{l('Roles →', 'Roller →')}</a>
+          <a href="#ai-act-roles">{l('Roles', 'Roller')}</a>
         </article>
       </section>
 
@@ -199,9 +199,7 @@ function AmendmentNote({ data }: { data: AiActData }) {
           `The Act has been amended. ${shortTitle('amendment', amending.celex, amending.title)}, adopted ${fmtDate(amending.published_at)}, changed or added ${counts.articles_changed} articles. This site reads the consolidated text of ${fmtDate(data.summary.current_version.published_at)} and compares it with the text published in 2024.`,
           `Lagen har ändrats. ${shortTitle('amendment', amending.celex, amending.title)}, antagen ${fmtDate(amending.published_at)}, ändrade eller lade till ${counts.articles_changed} artiklar. Sajten läser den konsoliderade texten från ${fmtDate(data.summary.current_version.published_at)} och jämför den med texten som publicerades 2024.`,
         )}{' '}
-        <a href="#ai-act-changes">
-          {l('What changed →', 'Vad som ändrades →')}
-        </a>
+        <a href="#ai-act-changes">{l('What changed', 'Vad som ändrades')}</a>
       </p>
     </aside>
   )
@@ -490,8 +488,8 @@ export function Roles({ data }: View) {
                           {' · '}
                           <a href={`#ai-act-obligations?actor=${a.actor_id}`}>
                             {l(
-                              `${n} mapped obligations →`,
-                              `${n} kartlagda skyldigheter →`,
+                              `${n} mapped obligations`,
+                              `${n} kartlagda skyldigheter`,
                             )}
                           </a>
                         </>
@@ -546,10 +544,7 @@ export function Risk({ data }: View) {
                   <>
                     {' · '}
                     <a href={`#ai-act-obligations?risk=${r.risk_class_id}`}>
-                      {l(
-                        `${n.length} obligations →`,
-                        `${n.length} skyldigheter →`,
-                      )}
+                      {l(`${n.length} obligations`, `${n.length} skyldigheter`)}
                     </a>
                   </>
                 )}
@@ -1123,8 +1118,8 @@ export function Sources({ data }: View) {
             rel="noreferrer"
           >
             {l(
-              'Method and data model (docs/ai-act.md) ↗',
-              'Metod och datamodell (docs/ai-act.md) ↗',
+              'Method and data model (docs/ai-act.md)',
+              'Metod och datamodell (docs/ai-act.md)',
             )}
           </a>
         </p>

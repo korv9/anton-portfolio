@@ -431,7 +431,7 @@ export default function WelfareExplorer({
                   target="_blank"
                   rel="noreferrer"
                 >
-                  {indicator.citation} ↗
+                  {indicator.citation}
                 </a>
               </p>
               <button className="download-button" onClick={download}>

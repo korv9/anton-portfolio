@@ -223,7 +223,7 @@ export default function DesignPage() {
         </Kpis>
         <div className="ds-row">
           <a className="board-button" href="#design">
-            {l('Primary button', 'Primärknapp')} →
+            {l('Primary button', 'Primärknapp')}
           </a>
           <button type="button" className="ds-toggle" aria-pressed="true">
             {l('Chosen', 'Vald')}

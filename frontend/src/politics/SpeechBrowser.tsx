@@ -88,7 +88,7 @@ function Reader({ card }: { card: Card }) {
             {speech.speech_text}
           </p>
           <a href={speech.source_url} target="_blank" rel="noreferrer">
-            {t('Read this speech at the Swedish Parliament ↗')}
+            {t('Read this speech at the Swedish Parliament')}
           </a>
           <details>
             <summary>
@@ -280,7 +280,7 @@ export default function SpeechBrowser() {
                     <strong>{s.speaker}</strong>
                     <span lang="sv">{s.title}</span>
                     <p lang="sv">{s.excerpt}…</p>
-                    <b>{t('Read full speech →')}</b>
+                    <b>{t('Read full speech')}</b>
                   </button>
                 ))}
               </div>

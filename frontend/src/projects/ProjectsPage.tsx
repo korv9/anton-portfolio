@@ -57,7 +57,7 @@ export default function ProjectsPage() {
                 <p className="cv-kind">{b(p.descriptor)}</p>
                 <h3>
                   <a href={p.href}>
-                    {b(p.title)} <span aria-hidden="true">→</span>
+                    {b(p.title)} <span aria-hidden="true"></span>
                   </a>
                 </h3>
                 <dl className="selected-facts">

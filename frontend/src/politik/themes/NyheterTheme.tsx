@@ -223,7 +223,7 @@ export default function NyheterTheme({ route }: { route: Route }) {
                       {cite(t.item_ids).map((i) => (
                         <li key={i.id}>
                           <a href={i.url} target="_blank" rel="noreferrer">
-                            {SOURCES[i.source]}: {i.title} ↗
+                            {SOURCES[i.source]}: {i.title}
                           </a>
                         </li>
                       ))}
@@ -332,7 +332,7 @@ export default function NyheterTheme({ route }: { route: Route }) {
                 </span>
                 <div>
                   <a href={i.url} target="_blank" rel="noreferrer">
-                    <b>{i.title}</b> ↗
+                    <b>{i.title}</b>
                   </a>
                   {i.summary && <p>{i.summary}</p>}
                   <p className="news-tags">

@@ -757,7 +757,7 @@ function Kallor({ data }: { data: Market }) {
               <tr key={a.archive}>
                 <th scope="row">
                   <a href={a.source_url} target="_blank" rel="noreferrer">
-                    {a.archive} ↗
+                    {a.archive}
                   </a>
                 </th>
                 <td>{number(a.ads)}</td>

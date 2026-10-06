@@ -60,7 +60,7 @@ Everything else (DrugComb, taLLMan, Allegoria, DiVA, Homie, RAG, MIMII, IN1) is 
 - **Platform map:** `#data-constellation` (Data Constellation, [data-constellation.md](data-constellation.md)), linked from the Projects menu, the start page's Under the hood section and the footer; its breadcrumb reads "Projects / Technical / Data Constellation".
 - **Project destinations:** each registry entry's address.
 - **Deep dives:** the views inside a project (`#politik-*`, `#jobb-*`, `#now-*`, `#symbolic-*`, `#ai-act-*`, …).
-- **Legacy redirects** (`frontend/src/router.ts`): `#about`, `#contact`, `#kontakt` and `#utbildning` go to `#om-mig`; `#experience` to `#erfarenhet`; `#projects` to `#projekt`. Every earlier project address still opens its page.
+- **Legacy redirects** (`frontend/src/router.ts`): `#about`, `#contact`, `#kontakt` go to `#om-mig`; `#experience` and `#utbildning` to `#erfarenhet`; `#projects` to `#projekt`. Every earlier project address still opens its page.
 
 ## Start page
 
@@ -73,21 +73,26 @@ In the order a recruiter reads it (`frontend/src/home/HomePage.tsx`):
 1. **Hero** (`#start`): the role (Data Engineer · Analytics Engineer · Applied AI), one
    sentence on what I build, the core tools on one line, then *View projects*, *Download CV
    (PDF)*, GitHub, LinkedIn and email.
-2. **First screen, two columns:**
-   - **left, Selected work** (`#projekt`): the five projects in `HOME_PROJECTS` (registry
-     entries with a `home` field), numbered 01–05, each with one plain-language line, its
-     tech and a link. Each row's live chart is a faded backdrop that loads only when the row
-     comes into view (`LazyPreview`), and never at 760 px or below;
-   - **right, Experience** (`#erfarenhet`): one entry per job with company, role, period and
-     impact visible; *What I did* opens the details and tools. **Education** sits under it,
-     with the thesis and earlier work.
-3. **Core stack** (`#kompetenser`): five groups (Data, Platform, Analytics, AI/ML, Web); the
-   full technical stack is behind a disclosure.
+2. **First screen, everything about the job, two columns:**
+   - **left, Experience** (`#erfarenhet`): one entry per job with company, role, period and
+     impact visible; *What I did* opens the details and tools;
+   - **right, Education** (`#utbildning`, with the thesis and earlier work) and the **Core
+     stack** (`#kompetenser`): five groups (Data, Platform, Analytics, AI/ML, Web), the full
+     technical stack behind a disclosure.
+3. **Selected work** (`#projekt`): the five projects in `HOME_PROJECTS` (registry entries with
+   a `home` field), numbered 01–05, each with one plain-language line, its tech and a link.
+   Each row's live chart is a faded backdrop that loads only when the row comes into view
+   (`LazyPreview`), and never at 760 px or below.
 4. **About** (`#om-mig`): two sentences and contact.
 5. **Under the hood** (`#under-huven`): links to Data Constellation, Quality & Validity and
    All projects. None of these appear in the first screen.
 
-On a phone (and below 900 px) the two columns stack: projects, then experience and education.
+The header and its navigation stay on screen on every page (`position: sticky`); once the page
+scrolls the header folds to one slim row with the name beside the navigation, and its height is
+published as `--header-h` so sticky elements below it (a product's sidebar) sit under it.
+Links carry no arrows.
+
+On a phone (and below 900 px) the two columns stack: experience, then education and the core stack.
 The words live in `frontend/src/home/content.ts`, `orbitContent.ts` and the `home` lines in
 `projects/projectRegistry.ts`; every fact comes from the CVs.
 

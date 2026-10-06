@@ -679,7 +679,7 @@ function Works({ works }: { works: Work[] }) {
                   />{' '}
                   {w.author}, <em>{w.title}</em>{' '}
                   <a href={w.source_url} target="_blank" rel="noreferrer">
-                    Gutenberg ↗
+                    Gutenberg
                   </a>
                 </td>
                 <td>
@@ -754,7 +754,7 @@ function Method({ summary }: { summary: Summary }) {
           target="_blank"
           rel="noreferrer"
         >
-          docs/philosophy-atlas.md ↗
+          docs/philosophy-atlas.md
         </a>
       </p>
     </section>

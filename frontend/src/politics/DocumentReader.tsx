@@ -190,7 +190,7 @@ export default function DocumentReader({
           )}
           <small>
             <a href={url} target="_blank" rel="noreferrer">
-              {l('Original source ↗', 'Originalkälla ↗')}
+              {l('Original source', 'Originalkälla')}
             </a>
           </small>
         </div>

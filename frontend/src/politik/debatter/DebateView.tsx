@@ -134,7 +134,7 @@ function TurnView({ turn, index }: { turn: Turn; index: DebateIndex }) {
             <p key={i}>{para}</p>
           ))}
           <a href={s.source_url} target="_blank" rel="noreferrer">
-            {l('The protocol at riksdagen.se', 'Protokollet på riksdagen.se')} ↗
+            {l('The protocol at riksdagen.se', 'Protokollet på riksdagen.se')}
           </a>
         </details>
         {topics.length > 0 && (
@@ -290,7 +290,7 @@ export default function DebateView({ route }: { route: Route }) {
       sub={
         <>
           <a href={withParties(back, selected)}>
-            ←{' '}
+            {' '}
             {kind === 'partiledare'
               ? l('Party-leader debates', 'Partiledardebatter')
               : l('Issue debates', 'Sakdebatter')}
