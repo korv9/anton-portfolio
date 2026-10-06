@@ -38,9 +38,9 @@
   font-weight: 650;
 }
 .politics-tabs button[aria-pressed='true'] {
-  background: var(--paper);
-  color: white;
-  border-color: var(--line);
+  background: var(--accent);
+  color: var(--on-accent);
+  border-color: var(--accent);
 }
 .politics-kpis {
   display: grid;
