@@ -69,14 +69,14 @@
 .year-bar-track {
   height: 10px;
   background: var(--paper);
-  border-radius: 5px;
+  border-radius: var(--radius);
   overflow: hidden;
 }
 .year-bar {
   display: block;
   height: 100%;
-  background: #1a1a1a;
-  border-radius: 5px;
+  background: var(--paper);
+  border-radius: var(--radius);
 }
 .job-market-page .method ul {
   columns: 2;

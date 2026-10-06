@@ -165,7 +165,7 @@
 .region-chip {
   border: 1px solid var(--line);
   background: var(--paper);
-  border-radius: 999px;
+  border-radius: var(--radius);
   padding: 0.3rem 0.7rem;
   cursor: pointer;
   font-size: 0.8rem;
@@ -218,7 +218,6 @@
   font-size: 0.78rem;
   pointer-events: none;
   white-space: nowrap;
-  box-shadow: 0 2px 8px rgb(0 0 0 / 8%);
 }
 .chart-tooltip small {
   color: var(--muted);

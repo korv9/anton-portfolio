@@ -33,13 +33,29 @@ def test_sampling_is_capped_per_book_and_symbol_and_deterministic(tmp_path):
     con.execute("create schema silver")
     con.execute("""create table silver.int_symbol_occurrences as
         select md5(i::varchar) as occurrence_id, 'context ' || i as context,
-               'doc' || (i % 2) as document_id, 'sym' || (i % 3) as symbol_id
+               'doc' || (i % 2) as document_id, 'sym' || (i % 3) as symbol_id,
+               null::varchar as duplicate_of
         from range(120) t(i)""")
     con.close()
     first = pipeline.load(db, per_pair=5)
     assert len(first) == 2 * 3 * 5
     assert first == pipeline.load(db, per_pair=5)
     assert [r[0] for r in first] == sorted(r[0] for r in first)
+
+
+def test_sampling_leaves_out_passages_another_book_reprints(tmp_path):
+    db = tmp_path / "w.duckdb"
+    con = duckdb.connect(str(db))
+    con.execute("create schema silver")
+    con.execute("""create table silver.int_symbol_occurrences as
+        select md5(i::varchar) as occurrence_id, 'context ' || i as context,
+               'doc' || (i % 2) as document_id, 'sym' as symbol_id,
+               case when i % 2 = 1 and i < 20 then 'doc0' end as duplicate_of
+        from range(40) t(i)""")
+    con.close()
+    sample = pipeline.load(db, per_pair=100)
+    assert len(sample) == 40 - 10
+    assert all(int(r[1].split()[1]) % 2 == 0 or int(r[1].split()[1]) >= 20 for r in sample)
 
 
 def test_projection_has_the_columns_the_gold_model_reads(tmp_path):

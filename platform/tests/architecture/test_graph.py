@@ -69,13 +69,13 @@ def manifest():
 
 
 def small_graph():
-    files = ["symbolic/atlas.parquet", "symbolic/summary.json"]
+    files = ["symbolic/v4/atlas.parquet", "symbolic/summary.json"]
     er = {"tables": [{"id": "mart_symbol_atlas", "kind": "mart", "pk": ["occurrence_id"], "rows": 10,
                       "columns": [{"name": "occurrence_id"}]}],
           "relations": [{"from": "mart_symbol_atlas", "to": "symbols", "from_cols": ["symbol_id"],
                          "to_cols": ["symbol_id"], "cardinality": "many-to-one", "basis": ["tested"]}]}
     def frontend(paths):
-        return {"symbolic/atlas.parquet"} if "frontend/src/symbolic" in paths else set()
+        return {"symbolic/v4/atlas.parquet"} if "frontend/src/symbolic" in paths else set()
     return bg.build(manifest(), er, files, frontend_paths=frontend)
 
 
@@ -103,11 +103,11 @@ def test_relationships_are_their_own_edge_type():
 def test_delivery_and_frontend_consumption():
     g = small_graph()
     nodes = ids(g)
-    assert nodes["out:symbolic/atlas.parquet"]["files"] == 1
-    assert {"source": "dbt:mart_symbol_atlas", "target": "out:symbolic/atlas.parquet"}.items() <= next(
-        e for e in g["edges"] if e["target"] == "out:symbolic/atlas.parquet" and e["type"] == "delivery").items()
+    assert nodes["out:symbolic/v4/atlas.parquet"]["files"] == 1
+    assert {"source": "dbt:mart_symbol_atlas", "target": "out:symbolic/v4/atlas.parquet"}.items() <= next(
+        e for e in g["edges"] if e["target"] == "out:symbolic/v4/atlas.parquet" and e["type"] == "delivery").items()
     consumed = {(e["source"], e["target"]) for e in g["edges"] if e["type"] == "frontend-consumption"}
-    assert consumed == {("out:symbolic/atlas.parquet", "app:symbolic")}
+    assert consumed == {("out:symbolic/v4/atlas.parquet", "app:symbolic")}
     assert nodes["dbt:mart_symbol_atlas"]["keys"] == ["occurrence_id"] and nodes["dbt:mart_symbol_atlas"]["kind"] == "mart"
 
 

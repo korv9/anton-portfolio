@@ -1,63 +1,4 @@
-/* Tokens: see design-system.css for the full system, loaded last. */
-:root {
-  color: var(--ink);
-  background: var(--paper);
-  font-family: 'Geist Variable', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  font-synthesis: none;
-  font-variant-numeric: tabular-nums;
-  /* Type: Geist for text, Geist Mono for figures and labels. */
-  --font: 'Geist Variable', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  --font-mono:
-    'Geist Mono Variable', ui-monospace, 'SFMono-Regular', Menlo, monospace;
-  /* Scale: five sizes, used everywhere. */
-  --fs-xs: 0.75rem;
-  --fs-sm: 0.875rem;
-  --fs-md: 1rem;
-  --fs-lg: 1.25rem;
-  --fs-xl: clamp(1.75rem, 3vw, 2.25rem);
-  /* Colour: near-black on warm white; colour itself only ever means a party. */
-  --ink: #111214;
-  --ink-2: #3a3c40;
-  --muted: #62656b;
-  --paper: #ffffff;
-  --page: #fafaf9;
-  --wash: #f2f2f0;
-  --line: #e4e4e1;
-  --line-strong: #cbcbc6;
-  --teal: #111214;
-  --orange: #8a8a8a;
-  --focus: #111214;
-  /* The accent: dark green for what is chosen or current (a page, a tab, a filter). */
-  --accent: #192820;
-  --accent-2: #2c4a3b;
-  --on-accent: #ffffff;
-  /* Cool washes for selected rows, read-outs and the sidebar. */
-  --select: #eef3f6;
-  --wash-cool: #f4f6f7;
-  --side: #eef2f5;
-  /* Meaning, never decoration: information, a fall or a no, a note. */
-  --info: #1f5f8b;
-  --negative: #a3412f;
-  --note-bg: #fbf6e6;
-  --note-line: #c7a64a;
-  /* Type roles: one size per job, on every page. */
-  --fs-display: clamp(2.2rem, 5vw, 3.6rem);
-  --fs-page-title: 1.6rem;
-  --fs-section-title: clamp(1.4rem, 2.6vw, 2rem);
-  --fs-card-title: 1.0625rem;
-  --fs-body: 0.9375rem;
-  --fs-meta: 0.8125rem;
-  --fs-label: 0.75rem;
-  /* Space and cards. */
-  --sp-1: 0.25rem;
-  --sp-2: 0.5rem;
-  --sp-3: 0.75rem;
-  --sp-4: 1rem;
-  --sp-5: 1.5rem;
-  --sp-6: 2.5rem;
-  --card-pad: 0.9rem 1.05rem 1rem;
-  --card-gap: 0.9rem;
-}
+/* Base styles. Tokens live in tokens.css. */
 * {
   box-sizing: border-box;
 }
@@ -100,18 +41,6 @@ h3 {
 .skip-link:focus {
   top: 1rem;
 }
-.site-header {
-  height: 72px;
-  padding: 0 clamp(1rem, 4vw, 4.5rem);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-bottom: 1px solid var(--line);
-  background: var(--page);
-  position: sticky;
-  top: 0;
-  z-index: 20;
-}
 .wordmark {
   display: flex;
   align-items: center;
@@ -141,17 +70,10 @@ h3 {
   order: 1;
   margin-left: auto;
 }
-.header-actions {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  order: 2;
-  margin-left: 1rem;
-}
 .language-switch {
   display: inline-flex;
   border: 1px solid var(--line);
-  border-radius: 5px;
+  border-radius: var(--radius);
   padding: 2px;
   background: var(--paper);
 }
@@ -180,16 +102,6 @@ h3 {
 .nav a:hover {
   color: var(--teal);
 }
-.nav-cv {
-  border: 1px solid var(--ink);
-  padding: 0.58rem 0.85rem;
-  border-radius: 3px;
-}
-.menu-button {
-  display: none;
-  border: 0;
-  background: none;
-}
 main {
   overflow: hidden;
 }
@@ -215,161 +127,6 @@ main {
   font-size: clamp(2.8rem, 5.4vw, 5.8rem);
   line-height: 0.98;
   max-width: 900px;
-}
-.lede {
-  max-width: 670px;
-  font-size: clamp(1.08rem, 1.7vw, 1.38rem);
-  color: var(--ink-2);
-  margin: 2rem 0;
-}
-.stack-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin: 0 0 1.8rem;
-}
-.stack-list span {
-  border: 1px solid #c9cdc6;
-  background: rgba(255, 255, 255, 0.45);
-  border-radius: 0;
-  padding: 0.42rem 0.72rem;
-  font-size: 0.76rem;
-  font-weight: 700;
-  color: var(--ink-2);
-}
-.profile-home {
-  align-items: stretch;
-}
-.profile-home .intro-copy {
-  align-self: center;
-}
-.profile-board {
-  align-self: center;
-  background: var(--paper);
-  border: 1px solid var(--line);
-  box-shadow: none;
-}
-.profile-board > section {
-  padding: 1.25rem 1.4rem;
-  border-bottom: 1px solid var(--line);
-}
-.profile-board > section:last-child {
-  border: 0;
-}
-.profile-board .eyebrow {
-  margin-bottom: 0.8rem;
-}
-.profile-rows > div {
-  display: grid;
-  grid-template-columns: 72px 1fr;
-  gap: 1rem;
-  padding: 0.58rem 0;
-}
-.profile-rows time {
-  color: var(--muted);
-  font-size: 0.75rem;
-  padding-top: 0.12rem;
-}
-.profile-rows strong,
-.profile-rows small {
-  display: block;
-}
-.profile-rows small {
-  color: var(--muted);
-  margin-top: 0.12rem;
-}
-.stack-groups {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.9rem 1.4rem;
-}
-.stack-groups small,
-.stack-groups span {
-  display: block;
-}
-.stack-groups small {
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  font-size: 0.75rem;
-  margin-bottom: 0.2rem;
-}
-.stack-groups span {
-  font-size: 0.84rem;
-  font-weight: 650;
-}
-.profile-links {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 1.2rem;
-  font-size: 0.8rem;
-}
-.profile-links a {
-  color: var(--teal);
-  font-weight: 800;
-}
-.profile-links span {
-  margin-left: auto;
-  color: var(--muted);
-}
-.intro-links {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1.5rem;
-  font-weight: 700;
-}
-.intro-links a:first-child {
-  color: var(--teal);
-}
-.index-card {
-  background: var(--paper);
-  border: 1px solid var(--line);
-  box-shadow: none;
-}
-.index-head,
-.index-foot {
-  display: flex;
-  justify-content: space-between;
-  padding: 0.9rem 1rem;
-  font: 700 0.7rem/1 var(--font);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--muted);
-}
-.index-head {
-  border-bottom: 1px solid var(--line);
-}
-.index-foot {
-  border-top: 1px solid var(--line);
-}
-.index-card > a {
-  display: grid;
-  grid-template-columns: 42px 1fr 90px;
-  align-items: center;
-  gap: 1rem;
-  padding: 1.45rem 1rem;
-  border-bottom: 1px solid var(--line);
-  text-decoration: none;
-}
-.index-card > a:hover {
-  background: var(--wash);
-}
-.index-card strong {
-  display: block;
-  font-size: 1.05rem;
-  margin-bottom: 0.35rem;
-}
-.index-card small {
-  color: var(--muted);
-}
-.index-card svg {
-  width: 100%;
-}
-.index-no {
-  color: var(--teal);
-  font-size: 0.75rem;
-  font-weight: 800;
 }
 .reports {
   background: var(--paper);
@@ -778,8 +535,7 @@ select {
   font-weight: 800;
 }
 .point-detail a,
-.method a,
-.log-list a {
+.method a {
   color: var(--teal);
   font-weight: 700;
   font-size: 0.88rem;
@@ -910,35 +666,9 @@ select {
   font-size: clamp(2rem, 4vw, 4rem);
   line-height: 1.05;
 }
-.log-list article {
-  border-top: 1px solid var(--line);
-  padding: 1.5rem 0 2rem;
-}
-.log-list article > span {
-  color: var(--muted);
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  font-weight: 700;
-}
-.log-list h3 {
-  font-size: 1.5rem;
-  margin: 0.65rem 0;
-}
-.log-list p,
 .about > div:last-child > p {
   color: var(--ink-2);
   max-width: 760px;
-}
-.log-list summary {
-  cursor: pointer;
-  font-weight: 700;
-}
-.inline-links,
-.about-links {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1.4rem;
 }
 .about {
   background: var(--ink);
@@ -951,11 +681,6 @@ select {
 }
 .about .eyebrow {
   color: #6dd2c7;
-}
-.about-note {
-  margin-top: 1.5rem;
-  max-width: 460px;
-  color: #9fb0ab;
 }
 .about > div:last-child > p {
   color: #c9d0cd;
@@ -987,27 +712,6 @@ select {
   font-size: 0.86rem;
   line-height: 1.5;
 }
-.bio-facts {
-  margin: 2rem 0;
-  border-top: 1px solid #42504d;
-}
-.bio-facts div {
-  display: grid;
-  grid-template-columns: 110px 1fr;
-  gap: 1rem;
-  padding: 0.85rem 0;
-  border-bottom: 1px solid #42504d;
-}
-.bio-facts dt {
-  color: #9aaba6;
-}
-.bio-facts dd {
-  margin: 0;
-}
-.about-links a {
-  color: #6dd2c7;
-  font-weight: 700;
-}
 button:focus-visible,
 a:focus-visible,
 select:focus-visible,
@@ -1022,16 +726,10 @@ summary:focus-visible {
     gap: 0.7rem;
     font-size: 0.82rem;
   }
-  .header-actions {
-    margin-left: 0.6rem;
-  }
   .intro {
     grid-template-columns: 1fr;
     min-height: auto;
     padding-top: 6rem;
-  }
-  .index-card {
-    max-width: 680px;
   }
   .umap-layout,
   .project-log,
@@ -1069,15 +767,6 @@ summary:focus-visible {
   }
 }
 @media (max-width: 680px) {
-  .site-header {
-    height: 62px;
-  }
-  .header-actions {
-    margin-left: auto;
-  }
-  .menu-button {
-    display: block;
-  }
   .nav {
     display: none;
     position: absolute;
@@ -1104,12 +793,6 @@ summary:focus-visible {
   .intro h1 {
     font-size: clamp(2.8rem, 14vw, 4.5rem);
   }
-  .index-card > a {
-    grid-template-columns: 34px 1fr;
-  }
-  .index-card svg {
-    display: none;
-  }
   .report {
     padding-top: 5rem;
   }
@@ -1126,13 +809,6 @@ summary:focus-visible {
   }
   .source-strip {
     grid-template-columns: 1fr;
-  }
-  .stack-groups {
-    grid-template-columns: 1fr;
-  }
-  .profile-links span {
-    width: 100%;
-    margin: 0;
   }
   .thesis-kpis {
     grid-template-columns: 1fr 1fr;
@@ -1245,7 +921,7 @@ summary:focus-visible {
   background: var(--wash);
   padding: 1rem;
   margin: 0.5rem 0;
-  border-left: 3px solid #1a1a1a;
+  border-left: 3px solid var(--line);
 }
 .inline-decision blockquote {
   white-space: pre-wrap;
@@ -1339,14 +1015,6 @@ button.decision-read {
 }
 
 /* Shared report navigation: subjects first, one selected view below. */
-.analysis-hub {
-  max-width: 1200px;
-  margin: 30px auto 0;
-  padding: 22px 24px;
-  border: 1px solid #d9e2e6;
-  border-radius: 0;
-  background: var(--wash);
-}
 .topic-tabs {
   display: flex;
   flex-wrap: wrap;
@@ -1371,7 +1039,7 @@ button.decision-read {
 }
 .topic-tabs a[aria-current='page'] {
   background: #173f52;
-  color: #fff;
+  color: var(--ink);
   border-color: #173f52;
   box-shadow: none;
 }
@@ -1379,19 +1047,7 @@ button.decision-read {
   outline: 3px solid #198cba;
   outline-offset: 3px;
 }
-.topic-hint {
-  font-size: 0.8125rem;
-  color: var(--ink-2);
-  margin: 0;
-}
-.analysis-hub + .project-page .page-lead {
-  padding-top: 28px;
-}
 @media (max-width: 600px) {
-  .analysis-hub {
-    margin: 16px 16px 0;
-    padding: 16px;
-  }
   .topic-tabs {
     gap: 6px;
   }
@@ -1399,21 +1055,8 @@ button.decision-read {
     padding: 8px 12px;
   }
 }
-
-.analysis-hub ~ .project-page {
-  padding-top: 20px;
-}
-.analysis-hub ~ .project-page .page-lead {
-  padding-top: 12px;
-  padding-bottom: 0;
-  margin-bottom: 20px;
-}
-.analysis-hub ~ .project-page > .topic-tabs,
 .reports > .topic-tabs {
   max-width: 1320px;
   margin: 16px auto;
   padding: 0 clamp(1rem, 6vw, 6rem);
-}
-.analysis-hub ~ .project-page .page-lead h1 {
-  font-size: clamp(2rem, 4vw, 3rem);
 }

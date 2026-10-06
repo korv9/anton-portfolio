@@ -32,7 +32,7 @@ test('a product traces back to its source and links to itself', async ({
   await expect(panel.locator('.constellation-node-title')).toHaveText(
     'Symbolic Atlas',
   )
-  await expect(panel).toContainText('symbolic/atlas.parquet')
+  await expect(panel).toContainText('symbolic/v4/atlas.parquet')
   await expect(
     panel.getByRole('link', { name: /Explore Symbolic Atlas/ }),
   ).toHaveAttribute('href', '#symbolic-atlas')
@@ -51,7 +51,7 @@ test('a gold mart shows what feeds it, what it feeds and where its code lives', 
     'platform/models/gold/symbolic/mart_symbol_atlas.sql',
   )
   await expect(panel).toContainText('int_symbol_occurrences')
-  await expect(panel).toContainText('symbolic/atlas.parquet')
+  await expect(panel).toContainText('symbolic/v4/atlas.parquet')
 })
 
 test('the data model view shows tables and their joins', async ({ page }) => {

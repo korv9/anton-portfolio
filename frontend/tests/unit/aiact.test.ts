@@ -22,6 +22,7 @@ import type {
   Navigator,
   Obligation,
   Actor,
+  Answer,
 } from '../../src/aiact/types.ts'
 
 const read = <T>(name: string): T =>
@@ -148,4 +149,44 @@ test('the obligation matrix counts by actor and topic', () => {
     0,
   )
   assert.equal(total, obligations.length)
+})
+
+test('every navigator branch is reachable and points only to things that exist', () => {
+  const riskClasses = read<{ risk_class_id: string }[]>('risk-classes.json')
+  const classIds = new Set(riskClasses.map((r) => r.risk_class_id))
+  const actorIds = new Set(actors.map((a) => a.actor_id))
+  const obligationIds = new Set(obligations.map((o) => o.obligation_id))
+  const articleNumbers = new Set(articles.map((a) => a.article_number))
+  let branches = 0
+  for (const q of navigator.questions) {
+    // The answers that make the question appear, then each of its own answers in turn.
+    const conditions = q.show_if ?? {}
+    const any = Object.entries(q.show_if_any ?? {})[0]
+    const base: Record<string, Answer> = { ...conditions }
+    if (any) base[any[0]] = any[1]
+    assert.ok(isShown(q, base), `${q.id} can be reached`)
+    for (const a of q.articles)
+      assert.ok(articleNumbers.has(a), `${q.id}: ${a}`)
+    for (const answer of ['yes', 'no', 'unsure'] as Answer[]) {
+      const result = navigatorResult(
+        navigator,
+        { ...base, [q.id]: answer },
+        obligations,
+      )
+      branches++
+      assert.ok(result.answered >= 1, `${q.id}=${answer} counts as answered`)
+      for (const r of result.roles) assert.ok(actorIds.has(r), `role ${r}`)
+      for (const c of result.riskClasses)
+        assert.ok(classIds.has(c), `${q.id}=${answer}: class ${c}`)
+      for (const a of result.articles)
+        assert.ok(articleNumbers.has(a), `${q.id}=${answer}: article ${a}`)
+      const effect = q.effects[answer]
+      for (const o of [
+        ...(effect?.obligations ?? []),
+        ...Object.values(effect?.obligations_by_role ?? {}).flat(),
+      ])
+        assert.ok(obligationIds.has(o), `${q.id}=${answer}: obligation ${o}`)
+    }
+  }
+  assert.equal(branches, navigator.questions.length * 3)
 })

@@ -170,7 +170,7 @@
   background: rgba(25, 40, 32, var(--heat, 0));
 }
 .tech-table.heat td.hot {
-  color: #fff;
+  color: var(--ink);
 }
 .tech-table td.num {
   white-space: nowrap;

@@ -50,7 +50,7 @@
   color: var(--ink);
 }
 .rank-bars li.highlight .rank-bar {
-  background: #1a1a1a;
+  background: var(--paper);
 }
 
 .tax-calculator {
@@ -177,7 +177,7 @@ td.higher {
 .tax-year-count {
   font-weight: 400;
   font-size: 0.85rem;
-  color: var(--muted, #666);
+  color: var(--muted, var(--muted));
 }
 .change-parts {
   margin: 0;
@@ -188,7 +188,7 @@ td.higher {
   margin-top: 0.2rem;
 }
 .muted {
-  color: var(--muted, #666);
+  color: var(--muted, var(--muted));
 }
 .lead-figure {
   font-size: 1.1rem;

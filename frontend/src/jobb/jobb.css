@@ -15,15 +15,28 @@
   width: auto;
   height: 34px;
   padding: 0 0.7rem;
+  border: 1px solid var(--line-strong);
+  background: transparent;
+  box-shadow: none;
+  transform: none;
   white-space: nowrap;
   font-size: 0.8125rem;
   color: var(--ink-2);
 }
+.jobb-slicer button[aria-pressed]:hover {
+  border-color: var(--ink);
+  background: transparent;
+  transform: none;
+}
 .jobb-slicer button[aria-pressed='true'] {
   background: var(--ink);
   border: 1px solid var(--ink);
+  box-shadow: none;
   color: var(--on-accent);
   transform: none;
+}
+.jobb-slicer button[aria-pressed='true']::after {
+  content: none;
 }
 .jobb-slicer.active button[aria-pressed='false'] {
   color: var(--muted);

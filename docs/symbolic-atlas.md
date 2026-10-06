@@ -84,24 +84,52 @@ Parquet files; the site reads them from R2 and falls back to its own copy until 
 
 ## Corpus
 
-Ten books from Project Gutenberg (`platform/ingest/symbolic/corpus.json`). Each id was checked
-against the Title and Author lines of the Gutenberg file.
+**v4: 101 books** in twelve tradition groups (`platform/ingest/symbolic/corpus.json`, one
+document per line). v1–v3 used the ten books marked `pilot`.
 
-| Book | Gutenberg | Tradition |
-|---|---|---|
-| The Elder Eddas and the Younger Eddas (Thorpe, Blackwell) | 14726 | Norse |
-| Myths of the Norsemen (Guerber) | 28497 | Norse |
-| Kalevala (Crawford) | 5186 | Finnish |
-| Hesiod, the Homeric Hymns and Homerica (Evelyn-White) | 348 | Greek |
-| The Odyssey (Butler) | 1727 | Greek |
-| Bulfinch's Mythology | 4928 | Classical |
-| Grimms' Fairy Tales | 2591 | European folklore |
-| Andersen's Fairy Tales | 1597 | European folklore |
-| Celtic Fairy Tales (Jacobs) | 7885 | Celtic |
-| Paradise Lost (Milton) | 26 | Christian, literary |
+How the books were chosen and checked:
 
-Every book is an English translation or English original, so "tradition" is partly also
-"translator".
+1. **From the catalogue, not from memory.** Candidates were searched per tradition in Project
+   Gutenberg's catalogue (`pg_catalog.csv`), preferring complete, independent works: one
+   translation per work, no anthology that reprints another chosen book, single files only
+   (so Ovid is Howard's complete blank-verse edition and Malory is volume 1).
+2. **Against Gutenberg's own record.** For every book the Gutenberg RDF record gave the title,
+   the creators with their roles (author, translator, editor, compiler), the language and the
+   rights. All 101 are English and "Public domain in the USA." Title, author, translator and
+   editor in `corpus.json` come from that record; tradition, culture, region, genre, source
+   type and period are curated.
+3. **Against the files.** `platform/ingest/symbolic/audit_corpus.py` (after the ingest) checks
+   the fields, that each file's own header names the same title in English, the length (at
+   least 5,000 words), and duplicated text between books: the share of one book's eight-word
+   shingles found in another. It writes `corpus_audit.json` and stops on a duplicate.
+   *Sakoontala* (12169) was dropped because 52 % of it is reprinted in *Hindu Literature*
+   (13268). Smaller overlaps remain (27 % of the *Mabinogion* is in Bulfinch's *Age of
+   Chivalry*, 22 % of *Serbian Folk-lore* in *Hero Tales of the Serbians*); they are handled
+   per passage (below).
+
+| Tradition group | Books |
+|---|---|
+| Greek and Roman | 13 |
+| Norse and Germanic | 10 |
+| Celtic and Arthurian | 10 |
+| East Asian | 10 |
+| Indigenous North American | 10 |
+| European folklore | 10 |
+| Slavic and Eastern European | 9 |
+| Christian and Biblical | 9 |
+| South Asian | 8 |
+| Egyptian and Ancient Near East | 6 |
+| Finnish and Baltic | 3 |
+| Middle Eastern and Persian | 3 |
+
+Source types: 42 translations, 33 folklore collections, 17 retellings, 8 literary works and
+one work written in English (Malory). Finnish/Baltic and Middle Eastern/Persian stay small:
+Gutenberg has few complete, independent English texts for them, and the corpus does not pad a
+group with weak sources to reach a quota.
+
+Every book is read in English. Many are translations or retellings by nineteenth-century
+English writers, so "tradition" is partly also "translator"; the validity checks below test
+that directly.
 
 ## Symbol vocabulary
 
@@ -127,9 +155,10 @@ the embedding model reads sentences.
 
 `platform/nlp/symbolic/pipeline.py`:
 
-1. **Sample.** At most 30 occurrences per book and symbol, chosen by occurrence id (a hash), so
-   a long book or a common word does not fill the map: 4,804 of 12,712 occurrences after the
-   paratext cleaning (4,869 of 13,168 before).
+1. **Sample.** At most 15 occurrences per book and symbol (30 in v1–v3), chosen by occurrence
+   id (a hash), so a long book or a common word does not fill the map, leaving out passages
+   another book reprints (`duplicate_of` in silver). v4: 21,898 of 72,926 occurrences, 436
+   marked as reprints. The pilot: 4,804 of 12,712 after the paratext cleaning.
 2. **Embed.** `sentence-transformers/all-MiniLM-L6-v2`, 384 dimensions, normalised, on the CPU.
    No text leaves the machine. The vectors stay in `warehouse/features/` and are never delivered.
 3. **Map.** UMAP to 2 dimensions: cosine, `n_neighbors` 15, `min_dist` 0.1, `random_state` 42.
@@ -420,10 +449,10 @@ the review artefacts and never become public labels. Unreviewed clusters are "Cl
 
 The page has three views of the same points (`?view=`):
 
-- **Baseline**: the published atlas, coloured by cluster.
+- **Baseline**: the published atlas, coloured by cluster in muted hues on the dark plate.
 - **Cross-book**: the book-centred map. Noise is faint, book-bound and rejected clusters are
-  muted grey, cross-book candidates are in colour, reviewed clusters strongest and labelled on
-  the map, the chosen cluster on top. Choosing a cluster (a point or the cluster list) opens its
+  grey, cross-book candidates stone, reviewed clusters off-white and labelled on the map, the
+  chosen cluster on top; a key beside the map names the three tones. Choosing a cluster (a point or the cluster list) opens its
   panel: name if reviewed, number, review status and audit class, passages, books, traditions,
   symbols, largest book share, book entropy, mean membership, top symbols and traditions and
   representative passages one book at a time; for reviewed clusters also the description,
@@ -474,6 +503,61 @@ The review layer is optional: without its files the page is the baseline atlas.
 The map's view spans the 0.2–99.8 percentiles of the coordinates; the few points outside it
 are drawn as rings at the edge, and the page says how many. No coordinate is changed.
 
+## v4: the expanded corpus (run 2026-10-06)
+
+The experiment changes one thing: the corpus, from 10 to 101 books. The symbols, the
+extraction, the cleaning, the embedding model and the UMAP and HDBSCAN settings are those of
+v3. Two consequences of a larger corpus are handled and stated: the sample cap went from 30 to
+15 passages per book and symbol (so 101 books give 21,898 points, not 50,000), and passages one
+book reprints from another are left out. The v3 results are archived in
+`experiments/history/v3-pilot/` and stay in the research history.
+
+Book-centred (the cross-book view), v3 pilot against v4:
+
+| Measure | v3 (10 books) | v4 (101 books) |
+|---|---|---|
+| Passages mapped | 4,804 | 21,898 |
+| Clusters | 59 | 114 |
+| Noise | 36 % | 52 % |
+| Largest book's share of a cluster | 58 % | 36 % |
+| Clusters over several books | 25 | 87 |
+| Passages in them | 32 % | 44 % |
+| Silhouette (10-D) | 0.53 | 0.31 |
+| Trustworthiness (2-D) | 0.83 | 0.74 |
+
+Baseline (no centring), v4: 130 clusters, 49 % noise, largest book 50 % (69 % in v3).
+
+**What the clusters follow** (`platform/nlp/symbolic/validity.py`, adjusted mutual information
+between the cluster labels and each property, 0 = chance):
+
+| Property | Baseline | Book-centred |
+|---|---|---|
+| Symbol | 0.13 | 0.20 |
+| Book | 0.49 | 0.20 |
+| English voice (translator or compiler) | 0.45 | 0.18 |
+| Tradition | 0.40 | 0.16 |
+| Genre | 0.40 | 0.15 |
+| Period | 0.24 | 0.09 |
+| Source type | 0.21 | 0.08 |
+
+Book pairs, book-centred (mean similarity of two books' spread over the clusters, 0–1): 0.27
+for pairs that share nothing, 0.31 for the same source type or period, 0.34 for the same
+tradition, 0.35 for the same genre, 0.36 for the same English voice (14 pairs).
+
+Reading these honestly:
+
+- With more books, a cluster is less often one book: the largest book's share fell from 58 % to
+  36 %, and most clusters now span several books.
+- Without centring the map still follows the book (AMI 0.49) far more than the symbol (0.13).
+  Book-centring brings symbol and book level (0.20 each); it does not make symbol dominant.
+- The structure is weaker: half the points are noise and the silhouette fell from 0.53 to 0.31.
+  A wider corpus is more varied, and the parameters were not retuned, by design.
+- Shared genre, tradition and English voice still make books more alike than books sharing
+  nothing. The voice test rests on 14 pairs and is the least certain.
+- No v4 cluster has been reviewed. The five v3 labels were written for v3's clusters and do not
+  carry over (`reviews.py` matches them by fingerprint); 61 v4 clusters are ranked for review.
+- Not measured: literal against symbolic use of a word; that needs a hand-labelled sample.
+
 ## Limitations
 
 - Symbol matching is lexicon-based: "fire" in "fire-sword" and "gate" as a door both count, and
@@ -485,7 +569,9 @@ are drawn as rings at the edge, and the page says how many. No coordinate is cha
   narrative may go; the audit records every removal so either can be checked.
 - The review priority is a heuristic for where to spend a reader's time, not a measure of
   meaning, and its weights are a choice.
-- The corpus is ten English books chosen by hand; another selection gives another map.
+- The corpus is 101 English books chosen from one archive; another selection gives another
+  map, and Gutenberg's holdings over-represent nineteenth-century English translators and
+  collectors.
 - UMAP distorts the high-dimensional geometry; distances between far-apart groups on the map
   mean little.
 - HDBSCAN leaves many points as noise by design.

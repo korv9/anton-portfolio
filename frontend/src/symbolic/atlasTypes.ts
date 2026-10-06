@@ -43,6 +43,13 @@ export type AtlasDocument = {
   gutenberg_id: number
   source_url: string
   points: number
+  translator?: string | null
+  culture?: string
+  region?: string
+  genre?: string
+  source_type?: string
+  period?: string
+  pilot?: boolean
 }
 
 export type AtlasSummary = {
@@ -190,14 +197,35 @@ type ParatextCount = {
   suspected_paratext_occurrence_share: number
 }
 
+/** What the clusters follow (platform/nlp/symbolic/validity.py). */
+export type ValidityRun = {
+  points: number
+  clustered: number
+  english_voices: number
+  /** Adjusted mutual information between cluster and each property, 0 = chance. */
+  association_ami: Record<string, number>
+  book_pairs: {
+    books: number
+    min_points: number
+    mean_similarity: Record<string, { pairs: number; mean: number }>
+  }
+}
+export type Validity = {
+  method: string
+  not_measured: Record<string, string>
+  experiments: Record<string, ValidityRun>
+}
+
 /** The investigation step by step (research-history.json). */
 export type ResearchHistory = {
   steps: {
-    id: 'v1' | 'v2' | 'v3'
+    id: 'v1' | 'v2' | 'v3' | 'v4'
     name: string
     metrics: StepMetrics | null
     baseline_metrics?: StepMetrics | null
+    documents?: number
   }[]
+  validity?: Validity | null
   cleaning: {
     old_occurrence_count: number | null
     new_occurrence_count: number

@@ -5,7 +5,8 @@
 1. Read silver.int_symbol_occurrences from the warehouse.
 2. Take a deterministic sample: at most PER_PAIR occurrences per book and symbol, chosen by
    occurrence id (a hash, so the choice is fixed and unrelated to position in the book). A
-   long book or a common word would otherwise fill the map.
+   long book or a common word would otherwise fill the map. Passages another book also
+   contains (silver marks them duplicate_of) are left out, so a reprint is not a shared cluster.
 3. Embed each context (embeddings.py), lay the points out and cluster them (clustering.py),
    and measure the result (evaluation.py).
 4. Write under warehouse/features/symbolic/: occurrence_embeddings.parquet (local only),
@@ -13,7 +14,9 @@
    run.json (model, parameters, counts, time).
 
 Stops with an error when there are fewer than MIN_OCCURRENCES occurrences: clusters of a
-handful of points would mean nothing.
+handful of points would mean nothing. With --if-stale it does nothing when the sample (its
+occurrence ids, hashed into run.json) is the one the last run mapped, so the scheduled build
+re-maps only after the corpus, the cleaning or the sampling changed.
 """
 from __future__ import annotations
 
@@ -35,13 +38,13 @@ import evaluation  # noqa: E402
 ROOT = HERE.parents[2]
 DATABASE = Path(os.environ.get("PORTFOLIO_DB", ROOT / "warehouse/portfolio.duckdb"))
 FEATURES = Path(os.environ.get("PORTFOLIO_FEATURES", ROOT / "warehouse/features")) / "symbolic"
-PER_PAIR = 30
+PER_PAIR = 15
 MIN_OCCURRENCES = 500
 
 
 # The one sample definition, shared with experiments.py so every experiment maps the same points.
 SAMPLE_STRATEGY = (f"at most {PER_PAIR} occurrences per document and symbol, the lowest occurrence ids "
-                   "(a hash), ordered by occurrence id")
+                   "(a hash), ordered by occurrence id, leaving out passages another book also contains")
 
 
 def sample(database: Path = DATABASE, per_pair: int = PER_PAIR,
@@ -51,7 +54,7 @@ def sample(database: Path = DATABASE, per_pair: int = PER_PAIR,
     con = duckdb.connect(str(database), read_only=True)
     try:
         return con.execute(
-            f"select {columns} from silver.int_symbol_occurrences "
+            f"select {columns} from silver.int_symbol_occurrences where duplicate_of is null "
             "qualify row_number() over (partition by document_id, symbol_id order by occurrence_id) <= ? "
             "order by occurrence_id", [per_pair]).fetchall()
     finally:
@@ -82,10 +85,22 @@ def write_projection(path: Path, ids, layout, labels, probabilities) -> None:
     }), path)
 
 
-def main() -> int:
+def sample_sha256(ids: list[str]) -> str:
+    import hashlib
+
+    return hashlib.sha256("\n".join(ids).encode()).hexdigest()
+
+
+def main(if_stale: bool = False) -> int:
     rows = load()
     check_size(len(rows))
     ids = [r[0] for r in rows]
+    digest = sample_sha256(ids)
+    previous = FEATURES / "run.json"
+    if if_stale and previous.is_file():
+        if json.loads(previous.read_text(encoding="utf-8")).get("sample_sha256") == digest:
+            print("The sample is unchanged since the last run; the map stands.")
+            return 0
     started = datetime.now(timezone.utc)
     print(f"Embedding {len(ids)} contexts with {embeddings.MODEL} …", flush=True)
     vectors = embeddings.embed([r[1] for r in rows])
@@ -109,6 +124,7 @@ def main() -> int:
         "umap_cluster_space": clustering.SPACE,
         "hdbscan": clustering.HDBSCAN,
         "occurrences": len(ids),
+        "sample_sha256": digest,
         "clusters": metrics["clusters"],
         "noise_share": metrics["noise_share"],
     }
@@ -118,4 +134,4 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    sys.exit(main(if_stale="--if-stale" in sys.argv))

@@ -153,11 +153,11 @@ ML = [
 # Patterns are relative to frontend/public/data.
 PUBLISHERS = [
     {"path": "platform/publish/symbolic/export_symbolic.py", "domain": "symbolic", "outputs": [
-        {"pattern": "symbolic/atlas.parquet", "inputs": ["mart_symbol_atlas"]},
-        {"pattern": "symbolic/symbol-profiles.parquet", "inputs": ["mart_symbol_profiles"]},
+        {"pattern": "symbolic/v4/atlas.parquet", "inputs": ["mart_symbol_atlas"]},
+        {"pattern": "symbolic/v4/symbol-profiles.parquet", "inputs": ["mart_symbol_profiles"]},
         {"pattern": "symbolic/summary.json", "inputs": ["mart_symbol_atlas", "int_symbolic_documents"]},
         {"pattern": "symbolic/preview.json", "inputs": ["mart_symbol_atlas"]},
-        {"pattern": "symbolic/book-centered-*", "inputs": ["ml:symbolic-review"]},
+        {"pattern": "symbolic/**book-centered-*", "inputs": ["ml:symbolic-review"]},
         {"pattern": "symbolic/cross-book-clusters.json", "inputs": ["ml:symbolic-review"]},
         {"pattern": "symbolic/reviewed-clusters.json", "inputs": ["ml:symbolic-review"]},
         {"pattern": "symbolic/research-history.json", "inputs": ["ml:symbolic-review"]},

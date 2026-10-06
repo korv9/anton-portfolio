@@ -27,11 +27,11 @@ export const STYLE: Record<
   seed: { colour: '#8d877d', r: 2.4, name: ['Seed', 'Seed'] },
   bronze: { colour: '#b88d5c', r: 2.2, name: ['Bronze', 'Brons'] },
   silver: { colour: '#c9cbd0', r: 2.6, name: ['Silver', 'Silver'] },
-  ml: { colour: '#a8c0f0', r: 5, name: ['ML', 'ML'] },
-  gold: { colour: '#f0c96e', r: 3.6, name: ['Gold', 'Guld'] },
-  delivery: { colour: '#8fd4c4', r: 3.2, name: ['Delivery', 'Leverans'] },
+  ml: { colour: '#d9d4ca', r: 5, name: ['ML', 'ML'] },
+  gold: { colour: '#d8b86a', r: 3.6, name: ['Gold', 'Guld'] },
+  delivery: { colour: '#a8a49b', r: 3.2, name: ['Delivery', 'Leverans'] },
   frontend: { colour: '#fff3d6', r: 8, name: ['Product', 'Produkt'] },
-  shared: { colour: '#d7a7cf', r: 6, name: ['Shared', 'Gemensamt'] },
+  shared: { colour: '#c9c2b6', r: 6, name: ['Shared', 'Gemensamt'] },
 }
 
 const STAGE_NAMES: Record<string, [string, string]> = {
@@ -248,7 +248,7 @@ export default function ConstellationCanvas({
       // Domain columns with their names on top; stage names up the left edge.
       const laneW = (width - PAD_SIDE_UPRIGHT - 8) / lanes.length
       ctx.textAlign = 'center'
-      ctx.font = '600 9px "Geist Mono", ui-monospace, monospace'
+      ctx.font = '600 9px ui-monospace, Menlo, monospace'
       lanes.forEach((d, i) => {
         const x = PAD_SIDE_UPRIGHT + i * laneW
         if (i > 0) {
@@ -267,7 +267,7 @@ export default function ConstellationCanvas({
           .forEach((w, j) => ctx.fillText(w, x + laneW / 2, 11 + j * 10))
       })
       ctx.save()
-      ctx.font = '500 9px "Geist Mono", ui-monospace, monospace'
+      ctx.font = '500 9px ui-monospace, Menlo, monospace'
       ctx.fillStyle = 'rgba(241, 236, 226, 0.62)'
       stages.forEach((s, i) => {
         const y =
@@ -307,12 +307,12 @@ export default function ConstellationCanvas({
         }
         const dim = focus && !focus.has(`app:${d.id}`) && d.id !== 'shared'
         ctx.fillStyle = `rgba(241, 236, 226, ${dim ? 0.08 : 0.32})`
-        ctx.font = '600 11px "Geist Mono", ui-monospace, monospace'
+        ctx.font = '600 11px ui-monospace, Menlo, monospace'
         ctx.fillText(d.label.toUpperCase(), PAD_X + 2, y + 16)
       })
     // Stage names along the top.
     if (!upright) {
-      ctx.font = '500 10px "Geist Mono", ui-monospace, monospace'
+      ctx.font = '500 10px ui-monospace, Menlo, monospace'
       ctx.textAlign = 'center'
       ctx.fillStyle = 'rgba(241, 236, 226, 0.45)'
       stages.forEach((s, i) => {
@@ -345,7 +345,7 @@ export default function ConstellationCanvas({
           e.type === 'delivery' || e.type === 'frontend-consumption'
         const alpha = !on ? 0.025 : strong ? 0.75 : path || focus ? 0.22 : 0.09
         ctx.strokeStyle = accent
-          ? `rgba(143, 212, 196, ${alpha})`
+          ? `rgba(216, 184, 106, ${alpha})`
           : `rgba(241, 236, 226, ${alpha})`
         ctx.lineWidth = strong ? 1.2 : 0.7
         ctx.setLineDash(
@@ -413,8 +413,8 @@ export default function ConstellationCanvas({
       if (label) {
         ctx.font =
           n.type === 'frontend'
-            ? `600 ${upright ? 10.5 : 12}px Geist, Helvetica, Arial, sans-serif`
-            : `400 ${upright ? 9.5 : 10.5}px Geist, Helvetica, Arial, sans-serif`
+            ? `600 ${upright ? 10.5 : 12}px Manrope, Helvetica, Arial, sans-serif`
+            : `400 ${upright ? 9.5 : 10.5}px Manrope, Helvetica, Arial, sans-serif`
         ctx.fillStyle = on
           ? 'rgba(241, 236, 226, 0.85)'
           : 'rgba(241, 236, 226, 0.2)'

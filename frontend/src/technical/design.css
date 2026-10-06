@@ -124,20 +124,6 @@
   gap: var(--sp-3);
   margin: var(--card-gap) 0;
 }
-.ds-toggle {
-  min-height: 38px;
-  padding: 0 0.9rem;
-  border: 1px solid var(--line-strong);
-  background: var(--paper);
-  font: inherit;
-  font-size: var(--fs-body);
-  cursor: pointer;
-}
-.ds-toggle[aria-pressed='true'] {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: var(--on-accent);
-}
 .ds-notice {
   margin: 0 !important;
 }

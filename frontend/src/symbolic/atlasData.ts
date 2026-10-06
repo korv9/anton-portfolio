@@ -33,7 +33,7 @@ export const loadAtlasPreview = () =>
   json<AtlasPreview>('symbolic/preview.json')
 
 export async function loadAtlasPoints(): Promise<AtlasPoint[]> {
-  const rows = await readParquet('symbolic/atlas.parquet')
+  const rows = await readParquet('symbolic/v4/atlas.parquet')
   return rows.map((r) => ({
     occurrence_id: String(r.occurrence_id),
     symbol_id: String(r.symbol_id),
@@ -51,7 +51,7 @@ export async function loadAtlasPoints(): Promise<AtlasPoint[]> {
 }
 
 export async function loadSymbolProfiles(): Promise<SymbolProfile[]> {
-  const rows = await readParquet('symbolic/symbol-profiles.parquet')
+  const rows = await readParquet('symbolic/v4/symbol-profiles.parquet')
   return rows.map((r) => ({
     symbol_id: String(r.symbol_id),
     cluster_id: n(r.cluster_id),
@@ -64,21 +64,47 @@ export async function loadSymbolProfiles(): Promise<SymbolProfile[]> {
 /**
  * A colour per cluster. There are dozens of clusters and none has a name, so no legend can
  * list them: hues are spread by the golden angle so neighbouring ids differ, and identity is
- * read from the tooltip and the cluster filter. Noise is a muted grey.
+ * read from the tooltip and the cluster filter. The hues are muted, so the map reads as one
+ * field on the dark plate with clusters as tonal regions rather than a rainbow. Noise is grey.
  */
 export function clusterColour(cluster: number, alpha = 1): string {
   if (cluster < 0) return `rgba(150, 146, 140, ${alpha * 0.55})`
   const hue = (cluster * 137.508) % 360
   const light = cluster % 2 ? 72 : 64
-  return `hsla(${hue.toFixed(1)}, 55%, ${light}%, ${alpha})`
+  return `hsla(${hue.toFixed(1)}, 24%, ${light}%, ${alpha})`
 }
 
 export const TRADITION: Record<string, [string, string]> = {
+  // The v4 tradition groups (platform/ingest/symbolic/corpus.json).
+  'greek-roman': ['Greek and Roman', 'Grekisk och romersk'],
+  'norse-germanic': ['Norse and Germanic', 'Nordisk och germansk'],
+  'celtic-arthurian': ['Celtic and Arthurian', 'Keltisk och arturisk'],
+  'slavic-eastern-european': [
+    'Slavic and Eastern European',
+    'Slavisk och östeuropeisk',
+  ],
+  'finnish-baltic': ['Finnish and Baltic', 'Finsk och baltisk'],
+  'middle-eastern-persian': [
+    'Middle Eastern and Persian',
+    'Mellanöstern och persisk',
+  ],
+  'south-asian': ['South Asian', 'Sydasiatisk'],
+  'east-asian': ['East Asian', 'Östasiatisk'],
+  'indigenous-north-american': [
+    'Indigenous North American',
+    'Nordamerikansk ursprungsbefolkning',
+  ],
+  'european-folklore': ['European folklore', 'Europeisk folksaga'],
+  'christian-biblical': ['Christian and Biblical', 'Kristen och biblisk'],
+  'egyptian-near-eastern': [
+    'Egyptian and Ancient Near East',
+    'Egyptisk och forntida Främre Orienten',
+  ],
+  // The v1–v3 pilot's labels, for the research history.
   norse: ['Norse', 'Nordisk'],
   finnish: ['Finnish', 'Finsk'],
   greek: ['Greek', 'Grekisk'],
   classical: ['Classical', 'Klassisk'],
-  'european-folklore': ['European folklore', 'Europeisk folksaga'],
   celtic: ['Celtic', 'Keltisk'],
   'christian-literary': ['Christian, literary', 'Kristen, litterär'],
 }
@@ -99,7 +125,7 @@ export async function loadBookCenteredAtlas(): Promise<
   BookCenteredPoint[] | null
 > {
   try {
-    const rows = await readParquet('symbolic/book-centered-atlas.parquet')
+    const rows = await readParquet('symbolic/v4/book-centered-atlas.parquet')
     return rows.map((r) => ({
       occurrence_id: String(r.occurrence_id),
       x: n(r.x),

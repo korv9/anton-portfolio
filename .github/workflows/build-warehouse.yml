@@ -103,9 +103,13 @@ jobs:
       - name: Symbolic Atlas (Gutenberg corpus, embeddings, map)
         run: |
           python platform/ingest/symbolic/ingest_corpus.py
+          python platform/ingest/symbolic/audit_corpus.py
           (cd platform && dbt build --profiles-dir . --select tag:symbolic --exclude path:models/gold/symbolic)
-          if [ "$ML" = always ] || [ ! -f warehouse/features/symbolic/run.json ]; then
+          # Re-map when forced, or when the sample changed (a new corpus, cleaning or sampling).
+          if [ "$ML" = always ]; then
             python platform/nlp/symbolic/pipeline.py
+          else
+            python platform/nlp/symbolic/pipeline.py --if-stale
           fi
           cd platform && dbt build --profiles-dir . --select path:models/gold/symbolic
       - name: Philosophy Atlas (Gutenberg corpus, embeddings, maps, tensions)

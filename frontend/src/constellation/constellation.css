@@ -1,8 +1,8 @@
 /* Data Constellation (DataConstellationPage.tsx): a scientific star chart, not a dashboard. */
 .constellation {
-  --c-ink: #f1ece2;
-  --c-muted: rgba(241, 236, 226, 0.6);
-  --c-rule: rgba(241, 236, 226, 0.14);
+  --c-ink: var(--ink);
+  --c-muted: var(--muted);
+  --c-rule: var(--line);
   color: var(--c-ink);
 }
 .constellation-hero {
@@ -74,7 +74,7 @@
   min-height: 32px;
   padding: 0.2rem 0.7rem;
   border: 1px solid var(--c-rule);
-  border-radius: 999px;
+  border-radius: var(--radius);
   background: transparent;
   color: var(--c-ink);
   font: inherit;
@@ -83,7 +83,7 @@
 }
 .constellation-chips button[aria-pressed='true'] {
   background: var(--c-ink);
-  color: #070708;
+  color: var(--on-accent);
 }
 .constellation-layers {
   margin-top: 0.6rem;
@@ -109,7 +109,7 @@
   padding: 0.2rem 0.5rem;
   border: 1px solid var(--c-rule);
   border-radius: 4px;
-  background: #0b0b0d;
+  background: var(--page);
   color: var(--c-ink);
   font: inherit;
   font-size: 0.85rem;
@@ -126,7 +126,7 @@
   margin: 0;
   padding: 0.3rem;
   border: 1px solid var(--c-rule);
-  background: #0b0b0d;
+  background: var(--page);
   list-style: none;
 }
 .constellation-results button,
@@ -154,7 +154,7 @@
 .constellation-links button:hover,
 .constellation-products button:hover,
 .constellation-fallback button:hover {
-  background: rgba(241, 236, 226, 0.06);
+  background: color-mix(in srgb, var(--ink) 6%, transparent);
 }
 .constellation-hint,
 .constellation-legend,
@@ -179,7 +179,7 @@
       rgba(120, 110, 160, 0.06),
       transparent 70%
     ),
-    #050506;
+    var(--page);
 }
 .constellation-frame {
   position: relative;
@@ -303,7 +303,7 @@
 }
 .constellation-cta:hover {
   background: var(--c-ink);
-  color: #070708;
+  color: var(--on-accent);
 }
 
 /* A marker per node type: shape as well as colour. */
@@ -352,7 +352,7 @@
   width: 10px;
   height: 10px;
   box-shadow:
-    0 0 0 2px rgba(7, 7, 8, 1),
+    0 0 0 2px color-mix(in srgb, var(--ink) 100%, transparent),
     0 0 0 3px currentColor;
 }
 

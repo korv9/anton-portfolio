@@ -681,8 +681,6 @@ export const HOME_PROJECTS = PROJECTS.filter((p) => p.home)
 export const OTHER_WORK = PROJECTS.filter((p) => !p.featured && !p.research)
 export const RESEARCH = PROJECTS.filter((p) => !p.featured && p.research)
 
-export const projectById = (id: string) => PROJECTS.find((p) => p.id === id)
-
 /** The project a route belongs to, if any. */
 export function projectForRoute(
   route: Pick<Route, 'page' | 'path'>,
@@ -701,6 +699,3 @@ export function neighbours(id: string): {
   if (i < 0) return {}
   return { previous: FLAGSHIPS[i - 1], next: FLAGSHIPS[i + 1] }
 }
-
-/** Is this an address on this site (rather than an outside repository)? */
-export const isInternal = (href: string) => href.startsWith('#')

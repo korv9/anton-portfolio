@@ -69,7 +69,7 @@
   height: 1.05rem;
   margin: -0.525rem 0 0 -0.525rem;
   background: var(--ink);
-  border: 2px solid #fff;
+  border: 2px solid var(--line-strong);
   box-shadow: 0 0 0 1px var(--ink);
   z-index: 3;
 }

@@ -2,13 +2,13 @@
    hues (validated for colour-vision deficiency on the dark surface; see docs). Each relation
    type also has its own stroke pattern, so colour is never the only cue. */
 .concepts {
-  --cc-ink: #f0e9dc;
-  --cc-muted: rgba(240, 233, 220, 0.66);
-  --cc-rule: rgba(240, 233, 220, 0.14);
+  --cc-ink: var(--ink);
+  --cc-muted: var(--muted);
+  --cc-rule: var(--line);
   --cc-semantic: #3987e5;
   --cc-tension: #d95926;
   --cc-reference: #199e70;
-  --cc-prominent: rgba(240, 233, 220, 0.45);
+  --cc-prominent: color-mix(in srgb, var(--ink) 45%, transparent);
   color: var(--cc-ink);
 }
 .concepts a {
@@ -19,7 +19,6 @@
 }
 .cc-hero h1,
 .cc-section h2 {
-  font-family: Georgia, 'Times New Roman', serif;
   font-weight: 400;
 }
 .cc-hero h1 {
@@ -37,7 +36,6 @@
 .cc-question {
   max-width: 52ch;
   margin: 0;
-  font-family: Georgia, serif;
   font-size: clamp(18px, 1.6vw, 23px);
   font-style: italic;
 }
@@ -83,7 +81,7 @@
   vertical-align: 0.1em;
 }
 .cc-kind-source {
-  border-color: rgba(240, 233, 220, 0.5);
+  border-color: color-mix(in srgb, var(--ink) 50%, transparent);
   color: var(--cc-ink);
 }
 .cc-kind-interpretation {
@@ -102,7 +100,7 @@
   min-height: 34px;
   padding: 0.2rem 0.85rem;
   border: 1px solid var(--cc-rule);
-  border-radius: 999px;
+  border-radius: var(--radius);
   background: transparent;
   color: var(--cc-muted);
   cursor: pointer;
@@ -173,7 +171,7 @@
   opacity: 0.18;
 }
 .cc-corpus circle {
-  fill: #0b0b0a;
+  fill: var(--on-accent);
   stroke: var(--cc-rule);
   stroke-width: 0.3;
 }
@@ -201,7 +199,7 @@
 .cc-node.is-selected circle {
   stroke: var(--cc-ink);
   stroke-width: 0.6;
-  fill: #0b0b0a;
+  fill: var(--on-accent);
 }
 .cc-node.is-selected text {
   font-weight: 700;
@@ -209,11 +207,10 @@
 .cc-panel {
   padding: 1rem 1.1rem;
   border: 1px solid var(--cc-rule);
-  border-radius: 6px;
+  border-radius: var(--radius);
 }
 .cc-panel h3 {
   margin: 0.2rem 0 0.4rem;
-  font-family: Georgia, serif;
   font-size: 1.5rem;
   font-weight: 400;
 }
@@ -334,7 +331,6 @@
   margin: 0 0 1rem;
   padding-left: 0.8rem;
   border-left: 2px solid var(--cc-rule);
-  font-family: Georgia, serif;
   line-height: 1.5;
 }
 .concepts blockquote p {

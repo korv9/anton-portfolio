@@ -316,7 +316,7 @@ export default function DataConstellationPage({ route }: { route: Route }) {
           ))}
         </div>
 
-        <div className="constellation-body">
+        <div className="constellation-body plate">
           <div
             className="constellation-scroll"
             tabIndex={0}

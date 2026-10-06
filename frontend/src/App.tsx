@@ -1,9 +1,15 @@
 import { Suspense, lazy, useEffect, useState } from 'react'
 import { currentLocale, l, type Locale } from './i18n'
 import { useRoute } from './router'
-import Header, { Footer, ProjectContext, ProjectPager } from './site/Header'
+import Header, {
+  Footer,
+  pageTitle,
+  ProjectContext,
+  ProjectPager,
+} from './site/Header'
 import HomePage from './home/HomePage'
 import Intro from './site/Intro'
+import { PageBoundary } from './site/PageBoundary'
 import './site/site.css'
 
 // Everything but the start page loads on navigation, so the start page ships none of it.
@@ -50,11 +56,14 @@ export default function App() {
   const [language, setLanguage] = useState<Locale>(currentLocale)
   useEffect(() => {
     document.documentElement.lang = language
-    document.title =
-      language === 'sv'
-        ? 'Anton Ernstsson · Data engineer'
-        : 'Anton Ernstsson · Data engineer'
   }, [language])
+  // Each page names itself in the tab and the history: "<page> · Anton Ernstsson".
+  useEffect(() => {
+    const name = pageTitle(route)
+    document.title = name
+      ? `${name} · Anton Ernstsson`
+      : l('Anton Ernstsson · Data engineer', 'Anton Ernstsson · Data engineer')
+  }, [route.path, route.page, language])
 
   // A new address scrolls to its section on the start page, or to the top elsewhere. Changing
   // only a view's filters (the query) keeps the reader where they are.
@@ -89,44 +98,50 @@ export default function App() {
       <Header route={route} onLanguage={setLanguage} />
       <main id="main" tabIndex={-1} key={language}>
         <ProjectContext route={route} />
-        <Suspense
-          fallback={
-            <p className="theme-loading ds-container" role="status">
-              {l('Loading…', 'Laddar…')}
-            </p>
-          }
-        >
-          {page === 'home' && <HomePage path={path} />}
-          {page === 'projects' && <ProjectsPage />}
-          {page === 'technical' && <TechnicalPage />}
-          {page === 'design' && <DesignPage />}
-          {page === 'tallman' && <TallmanPage />}
-          {page === 'politik' && <PoliticsProduct route={route} />}
-          {page === 'jobs' &&
-            (['#job-market-tech', '#job-market-clusters', '#job-data'].includes(
-              path,
-            ) ? (
-              <TechReport clustering={path === '#job-market-clusters'} />
-            ) : (
-              <JobsProduct route={route} />
-            ))}
-          {page === 'welfare' && <WelfarePage view={path} />}
-          {page === 'analysis' && <AnalysisPage view={path} />}
-          {page === 'status' && <StatusPage />}
-          {page === 'datamodel' && <DataModelPage view={path} />}
-          {page === 'er' && <ErPage route={route} />}
-          {page === 'symbolic' && <SymbolicAtlasPage route={route} />}
-          {page === 'constellation' && <DataConstellationPage route={route} />}
-          {page === 'aiact' && <AiActProduct route={route} />}
-          {page === 'philosophy' && <PhilosophyAtlasPage route={route} />}
-          {page === 'concepts' && <ConceptConstellationPage route={route} />}
-          {page === 'quality' && <QualityPage route={route} />}
-          {page === 'drugcomb' && <DrugCombPage />}
-          {page === 'allegoria' && <AllegoriaPage />}
-          {page === 'thesis' && <ThesisPage />}
-          {page === 'homie' && <HomiePage />}
-          {page === 'diva' && <DivaPage />}
-        </Suspense>
+        <PageBoundary key={page}>
+          <Suspense
+            fallback={
+              <p className="theme-loading ds-container" role="status">
+                {l('Loading…', 'Laddar…')}
+              </p>
+            }
+          >
+            {page === 'home' && <HomePage path={path} />}
+            {page === 'projects' && <ProjectsPage />}
+            {page === 'technical' && <TechnicalPage />}
+            {page === 'design' && <DesignPage />}
+            {page === 'tallman' && <TallmanPage />}
+            {page === 'politik' && <PoliticsProduct route={route} />}
+            {page === 'jobs' &&
+              ([
+                '#job-market-tech',
+                '#job-market-clusters',
+                '#job-data',
+              ].includes(path) ? (
+                <TechReport clustering={path === '#job-market-clusters'} />
+              ) : (
+                <JobsProduct route={route} />
+              ))}
+            {page === 'welfare' && <WelfarePage view={path} />}
+            {page === 'analysis' && <AnalysisPage view={path} />}
+            {page === 'status' && <StatusPage />}
+            {page === 'datamodel' && <DataModelPage view={path} />}
+            {page === 'er' && <ErPage route={route} />}
+            {page === 'symbolic' && <SymbolicAtlasPage route={route} />}
+            {page === 'constellation' && (
+              <DataConstellationPage route={route} />
+            )}
+            {page === 'aiact' && <AiActProduct route={route} />}
+            {page === 'philosophy' && <PhilosophyAtlasPage route={route} />}
+            {page === 'concepts' && <ConceptConstellationPage route={route} />}
+            {page === 'quality' && <QualityPage route={route} />}
+            {page === 'drugcomb' && <DrugCombPage />}
+            {page === 'allegoria' && <AllegoriaPage />}
+            {page === 'thesis' && <ThesisPage />}
+            {page === 'homie' && <HomiePage />}
+            {page === 'diva' && <DivaPage />}
+          </Suspense>
+        </PageBoundary>
         <ProjectPager route={route} />
       </main>
       <Footer />

@@ -195,11 +195,15 @@ its own navigation, and every project page has the breadcrumb back to the projec
 
 ## Design system
 
-`frontend/src/design-system.css`, loaded last, with tokens in `styles.css`: Geist for text and
-Geist Mono for figures and labels (self-hosted), five type sizes (`--fs-xs` … `--fs-xl`), tabular
-figures everywhere, near-black on warm white, thin grey rules, square
-corners, no shadows, gradients or blur. Colour carries meaning only: in the politics product it
-means a party; navigation, buttons, issue areas and budget areas stay neutral.
+Tokens, type, colour, plates, buttons and states are described in
+[design-system.md](design-system.md); `frontend/src/tokens.css` defines them. Colour carries
+meaning only: in the politics product it means a party; navigation, buttons, issue areas and
+budget areas stay neutral.
+
+Every page names itself in the browser tab ("<page> · Anton Ernstsson"), and the breadcrumb
+always ends at the page. `frontend/tests/routes.spec.ts` opens every internal link the site
+shows and fails if one falls back to the homepage, has no title or stops the breadcrumb at
+"Projects".
 
 ### Parties
 

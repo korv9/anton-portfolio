@@ -1,7 +1,7 @@
 /**
  * Symbolic Atlas: can recurring symbolic meanings be found in myth, folklore and literature
- * without deciding the meanings first? Every occurrence of twenty symbol words in ten public-
- * domain books is placed on a map by the similarity of its surrounding sentences (sentence
+ * without deciding the meanings first? Every occurrence of twenty symbol words in a corpus of
+ * public-domain books (platform/ingest/symbolic/corpus.json) is placed on a map by the similarity of its surrounding sentences (sentence
  * embeddings, UMAP) and grouped by HDBSCAN. Clusters are numbered; only a cluster a person has
  * reviewed (reviewed-clusters.json) is ever named.
  *
@@ -20,6 +20,7 @@ import { useViewParams } from '../politik/useViewParams'
 import { Stage, StageBlock, StageFacts } from '../ui/Stage'
 import AtlasCanvas, { type MapLabel, type Paint } from './AtlasCanvas'
 import ClusterPanel, { clusterTitle } from './ClusterPanel'
+import CorpusExplorer from './CorpusExplorer'
 import ExperimentTable from './ExperimentTable'
 import ResearchStory from './ResearchStory'
 import { ProjectNav } from '../projects/ProjectNav'
@@ -30,7 +31,6 @@ import {
   type AtlasFilters,
 } from './AtlasSidebar'
 import {
-  clusterColour,
   loadAtlasPoints,
   loadAtlasSummary,
   loadBookCenteredAtlas,
@@ -77,15 +77,25 @@ const VIEWS: { key: View; name: [string, string]; hint: [string, string] }[] = [
     ],
   },
 ]
-const DEFAULTS: AtlasFilters & { view: string } = {
+const DEFAULTS: AtlasFilters & {
+  view: string
+  korpus: string
+  kalla: string
+} = {
+  korpus: '',
+  kalla: '',
   symbol: '',
   tradition: '',
   cluster: '',
   noise: '1',
   view: 'baseline',
 }
-const MUTED = 'rgba(170, 165, 158, 0.32)'
-const NOISE = 'rgba(150, 146, 140, 0.16)'
+// The book views' palette: unreviewed clusters grey, cross-book candidates stone, reviewed
+// clusters and the chosen one off-white.
+const MUTED = 'rgba(138, 138, 141, 0.34)'
+const NOISE = 'rgba(138, 138, 141, 0.16)'
+const CANDIDATE = 'rgba(201, 194, 182, 0.85)'
+const REVIEWED = '#f2efe9'
 const num = (v: number, d = 0) =>
   v.toLocaleString(l('en-GB', 'sv-SE'), {
     minimumFractionDigits: d,
@@ -207,12 +217,12 @@ export default function SymbolicAtlasPage({ route }: { route: Route }) {
     return (p: AtlasPoint): Paint => {
       if (p.is_noise) return { fill: NOISE, r: 1.2, layer: 0 }
       if (p.cluster_id === selectedCluster)
-        return { fill: clusterColour(p.cluster_id, 1), r: 3, layer: 4 }
+        return { fill: REVIEWED, r: 3.2, layer: 4 }
       if (reviewedById.has(p.cluster_id))
-        return { fill: clusterColour(p.cluster_id, 1), r: 2.8, layer: 3 }
+        return { fill: REVIEWED, r: 2.6, layer: 3 }
       const info = infoById.get(p.cluster_id)
       if (view === 'cross-book' && info?.review_class === 'candidate')
-        return { fill: clusterColour(p.cluster_id, 0.8), r: 2.1, layer: 2 }
+        return { fill: CANDIDATE, r: 2.1, layer: 2 }
       return { fill: MUTED, r: 1.5, layer: 1 }
     }
   }, [bookView, selectedCluster, reviewedById, infoById, view])
@@ -300,6 +310,27 @@ export default function SymbolicAtlasPage({ route }: { route: Route }) {
                 <p className="atlas-view-hint">
                   {l(...VIEWS.find((v) => v.key === view)!.hint)}
                 </p>
+                {view !== 'baseline' && (
+                  <ul
+                    className="atlas-key"
+                    aria-label={l('Key', 'Teckenförklaring')}
+                  >
+                    <li>
+                      <i style={{ background: MUTED }} />
+                      {l('Other clusters', 'Övriga kluster')}
+                    </li>
+                    {view === 'cross-book' && (
+                      <li>
+                        <i style={{ background: CANDIDATE }} />
+                        {l('Cross-book candidate', 'Kandidat över böcker')}
+                      </li>
+                    )}
+                    <li>
+                      <i style={{ background: REVIEWED }} />
+                      {l('Reviewed and named', 'Granskat och namngivet')}
+                    </li>
+                  </ul>
+                )}
                 {view === 'reviewed' && reviewed.length === 0 && (
                   <p className="atlas-empty" role="status">
                     {l(
@@ -505,14 +536,33 @@ export default function SymbolicAtlasPage({ route }: { route: Route }) {
       </div>
       <section
         className="atlas-section ds-container"
+        id="symbolic-corpus"
+        aria-labelledby="symbolic-corpus-title"
+      >
+        <h2 id="symbolic-corpus-title">{l('Corpus', 'Korpus')}</h2>
+        <p>
+          {l(
+            `${summary.document_count} public-domain books from Project Gutenberg in English, chosen per tradition from the Gutenberg catalogue and checked against each book’s Gutenberg record (title, creators, language, rights) and against each other for duplicated text. Many are translations or retellings by nineteenth-century English writers, so a voice can belong to a translator rather than a tradition.`,
+            `${summary.document_count} fria böcker från Project Gutenberg på engelska, valda per tradition ur Gutenbergs katalog och kontrollerade mot varje boks post hos Gutenberg (titel, upphovspersoner, språk, rättigheter) och mot varandra för dubblerad text. Många är översättningar eller återberättelser av engelska 1800-talsförfattare, så en röst kan tillhöra en översättare snarare än en tradition.`,
+          )}
+        </p>
+        <CorpusExplorer
+          documents={summary.documents}
+          tradition={filters.korpus}
+          sourceType={filters.kalla}
+          onFilter={(next) => setFilters(next)}
+        />
+      </section>
+      <section
+        className="atlas-section ds-container"
         id="symbolic-method"
         aria-labelledby="symbolic-method-title"
       >
         <h2 id="symbolic-method-title">{l('Method', 'Metod')}</h2>
         <p>
           {l(
-            `Ten Project Gutenberg books. Each use of a symbol word is cut out with the sentence before and after, embedded with ${summary.run.embedding_model.split('/')[1]} on the CPU, laid out with UMAP (cosine) and clustered with HDBSCAN in a 10-dimensional UMAP space. At most ${summary.run.sample.per_document_and_symbol} uses per book and symbol are mapped.`,
-            `Tio böcker från Project Gutenberg. Varje förekomst av ett symbolord klipps ut med meningen före och efter, bäddas in med ${summary.run.embedding_model.split('/')[1]} på processorn, läggs ut med UMAP (cosinus) och klustras med HDBSCAN i ett tiodimensionellt UMAP-rum. Högst ${summary.run.sample.per_document_and_symbol} förekomster per bok och symbol visas.`,
+            `${summary.document_count} Project Gutenberg books. Each use of a symbol word is cut out with the sentence before and after, embedded with ${summary.run.embedding_model.split('/')[1]} on the CPU, laid out with UMAP (cosine) and clustered with HDBSCAN in a 10-dimensional UMAP space. At most ${summary.run.sample.per_document_and_symbol} uses per book and symbol are mapped.`,
+            `${summary.document_count} böcker från Project Gutenberg. Varje förekomst av ett symbolord klipps ut med meningen före och efter, bäddas in med ${summary.run.embedding_model.split('/')[1]} på processorn, läggs ut med UMAP (cosinus) och klustras med HDBSCAN i ett tiodimensionellt UMAP-rum. Högst ${summary.run.sample.per_document_and_symbol} förekomster per bok och symbol visas.`,
           )}
         </p>
         <p>

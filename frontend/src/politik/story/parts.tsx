@@ -36,7 +36,10 @@ export function Section({
       </header>
       {children}
       {deeper && deeper.length > 0 && (
-        <nav className="story-deeper" aria-label={l('Go deeper', 'Fördjupa')}>
+        <nav
+          className="story-deeper"
+          aria-label={`${l('Go deeper', 'Fördjupa')}: ${question}`}
+        >
           <span>{l('Go deeper', 'Fördjupa')}</span>
           {deeper.map((d) => (
             <a key={d.href} href={d.href}>

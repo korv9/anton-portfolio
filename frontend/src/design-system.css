@@ -1,41 +1,4 @@
 /* Swiss Data Editorial. Tokens and shared surfaces, after legacy styles. */
-@font-face {
-  font-family: 'Manrope';
-  src: url('/fonts/manrope-variable.ttf') format('truetype');
-  font-style: normal;
-  font-weight: 200 800;
-  font-display: swap;
-}
-:root {
-  --font: 'Manrope', 'Helvetica Neue', Arial, sans-serif;
-  --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
-  --page: #faf8f3;
-  --paper: #f2efe7;
-  --ink: #0a0a0a;
-  --muted: #62625d;
-  --subtle: #94948e;
-  --line: #d0cbc1;
-  --line-strong: #8e8a80;
-  --focus: #111111;
-  --teal: #2a9d8f;
-  --display-xl: clamp(4rem, 9vw, 8rem);
-  --display-l: clamp(3rem, 6vw, 6rem);
-  --h1: clamp(2.5rem, 5vw, 4.5rem);
-  --h2: clamp(2rem, 4vw, 3.25rem);
-  --h3: clamp(1.4rem, 2vw, 2rem);
-  --body-large: 1.125rem;
-  --body: 1rem;
-  --small: 0.875rem;
-  --caption: 0.75rem;
-  --gutter: clamp(20px, 3vw, 44px);
-  --content-width: 1440px;
-  --data-blue: #4e79a7;
-  --data-green: #59a14f;
-  --data-ochre: #e3a83a;
-  --data-rust: #d4715a;
-  --data-purple: #887ec8;
-  --data-teal: #2a9d8f;
-}
 html,
 body,
 button,
@@ -78,16 +41,6 @@ body .project-page {
   max-width: var(--content-width);
   margin-inline: auto;
   padding-inline: var(--gutter);
-}
-.ds-section {
-  padding-block: clamp(4rem, 8vw, 7rem);
-  border-top: 1px solid var(--line);
-  scroll-margin-top: 80px;
-}
-.ds-grid {
-  display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-  gap: 2rem;
 }
 .ds-section-head {
   display: grid;
@@ -145,7 +98,7 @@ body .project-page {
   color: var(--ink);
 }
 .ds-button:hover {
-  background: #333;
+  background: var(--wash);
   color: var(--paper);
 }
 .ds-button.secondary:hover {
@@ -513,7 +466,7 @@ body .theme-meaning {
 }
 .cluster-size-bars button:hover,
 .cluster-size-bars button[aria-pressed='true'] {
-  background: #4e79a712;
+  background: color-mix(in srgb, var(--ink) 7%, transparent);
 }
 .cluster-size-bars strong {
   text-align: right;
@@ -521,7 +474,7 @@ body .theme-meaning {
 }
 .cluster-size-track {
   height: 18px;
-  background: #4e79a708;
+  background: color-mix(in srgb, var(--ink) 5%, transparent);
 }
 .cluster-size-track i {
   display: block;

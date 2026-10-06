@@ -104,16 +104,5 @@ export function relationsOf(
     }))
 }
 
-/** The corpus where a concept is most often a chunk's closest, or null below chance. */
-export function strongestCorpus(
-  profiles: Profile[],
-  concept: string,
-): string | null {
-  const best = profileOf(profiles, concept).sort(
-    (a, b) => b.rank1_share - a.rank1_share,
-  )[0]
-  return best && best.rank1_share > best.rank1_chance ? best.corpus_id : null
-}
-
 export const pct = (v: number, digits = 0) =>
   `${(v * 100).toFixed(digits).replace('.', ',')} %`

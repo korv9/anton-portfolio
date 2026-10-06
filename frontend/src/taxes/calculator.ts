@@ -211,12 +211,6 @@ function contributions(
   return total + Math.max(12 - months, 0) * monthly * standard
 }
 
-/** The employer contribution rate on the first krona of pay, averaged over the year. */
-export function employerRate(birthYear: number, rules: TaxRules) {
-  const { standard, bands } = rules.employer
-  return contributions(12, birthYear, standard, bands) / 12
-}
-
 /** Employer contributions on an annual salary, with the reductions that apply. */
 export function employerContributions(
   salary: number,
