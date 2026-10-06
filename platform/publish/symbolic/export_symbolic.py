@@ -70,6 +70,10 @@ def excerpt(context: str, term: str, limit: int = EXCERPT) -> str:
     return piece
 
 
+def is_atlas_parquet(path: str) -> bool:
+    return path.startswith("symbolic/") and path.endswith(".parquet")
+
+
 def register(paths: list[Path]) -> None:
     """Add or update these files in catalog.json and delivery.json, leaving every other entry."""
     import hashlib
@@ -80,14 +84,15 @@ def register(paths: list[Path]) -> None:
     catalog = json.loads(bc.CATALOG.read_text(encoding="utf-8"))
     delivery = json.loads(bc.DELIVERY.read_text(encoding="utf-8"))
     current = {path.relative_to(bc.PUBLIC).as_posix() for path in paths}
-    # Parquet of an earlier atlas version leaves the catalogue; its copy in storage stays for
-    # the site that still reads it.
-    entries = {e["path"]: e for e in catalog["files"]
-               if not (e["path"].startswith("symbolic/") and e["path"].endswith(".parquet")
-                       and e["path"] not in current)}
-    for name, parts in list(delivery["parquet_datasets"].items()):
-        if any(p.startswith("symbolic/") and p not in current for p in parts):
-            del delivery["parquet_datasets"][name]
+    entries = {e["path"]: e for e in catalog["files"]}
+    # A new atlas version replaces the old one's Parquet in the catalogue (its copy in storage
+    # stays for the site that still reads it). Only a call that registers atlas Parquet does
+    # this: other exporters (quality) register their own files through here too.
+    if any(is_atlas_parquet(p) for p in current):
+        entries = {k: e for k, e in entries.items() if not is_atlas_parquet(k) or k in current}
+        for name, parts in list(delivery["parquet_datasets"].items()):
+            if any(is_atlas_parquet(p) and p not in current for p in parts):
+                del delivery["parquet_datasets"][name]
     for path in paths:
         relative = path.relative_to(bc.PUBLIC).as_posix()
         content = path.read_bytes().replace(b"\r\n", b"\n")

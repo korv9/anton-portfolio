@@ -62,3 +62,38 @@ def test_book_pairs_group_by_what_the_books_share():
     out = validity.book_pairs(rows)["mean_similarity"]
     assert out["same_english_voice"] == {"pairs": 1, "mean": 1.0}
     assert out["same_tradition"]["pairs"] == 3
+
+
+def test_only_a_new_atlas_version_replaces_atlas_parquet_in_the_catalogue(tmp_path, monkeypatch):
+    sys.path.insert(0, str(ROOT / "platform" / "publish"))
+    sys.path.insert(0, str(ROOT / "platform" / "publish" / "symbolic"))
+    import build_catalog as bc
+    import export_symbolic
+
+    public = tmp_path / "data"
+    (public / "symbolic/v4").mkdir(parents=True)
+    (public / "quality").mkdir()
+    monkeypatch.setattr(bc, "PUBLIC", public)
+    monkeypatch.setattr(bc, "CATALOG", public / "catalog.json")
+    monkeypatch.setattr(bc, "DELIVERY", public / "delivery.json")
+    monkeypatch.setattr(bc, "row_count", lambda path, fmt: None)
+    old = {"path": "symbolic/v3/atlas.parquet", "format": "parquet", "sha256": "x"}
+    (public / "catalog.json").write_text(json.dumps({"files": [old]}))
+    (public / "delivery.json").write_text(json.dumps(
+        {"parquet_datasets": {"atlas.parquet": ["symbolic/v3/atlas.parquet"]}}))
+    quality = public / "quality/summary.json"
+    quality.write_text("{}")
+    atlas = public / "symbolic/v4/atlas.parquet"
+    atlas.write_bytes(b"PAR1")
+
+    def paths():
+        return {e["path"] for e in json.loads((public / "catalog.json").read_text())["files"]}
+
+    export_symbolic.register([quality])  # another exporter: the atlas stays
+    assert paths() == {"symbolic/v3/atlas.parquet", "quality/summary.json"}
+    export_symbolic.register([atlas])  # a new version replaces the old one
+    assert paths() == {"symbolic/v4/atlas.parquet", "quality/summary.json"}
+    delivery = json.loads((public / "delivery.json").read_text())
+    assert delivery["parquet_datasets"]["atlas.parquet"] == ["symbolic/v4/atlas.parquet"]
+    export_symbolic.register([quality])
+    assert "symbolic/v4/atlas.parquet" in paths()
