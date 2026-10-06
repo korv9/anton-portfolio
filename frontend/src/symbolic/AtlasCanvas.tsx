@@ -5,11 +5,18 @@
  * few thousand SVG circles would make hovering sluggish.
  *
  * Hover shows the symbol, book, cluster and a short excerpt; a click picks the point.
+ *
+ * A view can replace the cluster colouring with its own `paint` (the cross-book view mutes
+ * book-bound clusters and brings reviewed ones forward) and put `labels` on the map; labels
+ * are only ever the names of clusters a person has reviewed.
  */
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { l } from '../i18n'
 import { TRADITION, clusterColour } from './atlasData'
 import type { AtlasPoint } from './atlasTypes'
+
+export type Paint = { fill: string; r: number; layer: number }
+export type MapLabel = { x: number; y: number; text: string }
 
 const PAD = 18
 const ASPECT = 0.68
@@ -21,8 +28,17 @@ export default function AtlasCanvas({
   selected,
   onPick,
   onPinned,
+  paint,
+  labels = [],
+  clusterName,
 }: {
   points: AtlasPoint[]
+  /** A view's own colour, size and drawing order per point; default is by cluster. */
+  paint?: (p: AtlasPoint) => Paint
+  /** Text placed at map coordinates (reviewed cluster names). */
+  labels?: MapLabel[]
+  /** How the tooltip names a cluster; default "Cluster n". */
+  clusterName?: (cluster: number) => string
   /** Whether a point matches the current filters; null when nothing is filtered. */
   isLit: ((p: AtlasPoint) => boolean) | null
   selected: string | null
@@ -39,6 +55,7 @@ export default function AtlasCanvas({
     y: number
   } | null>(null)
   const height = Math.round(width * ASPECT)
+  const toPx = useRef<(x: number, y: number) => [number, number]>(() => [0, 0])
 
   useEffect(() => {
     const el = frame.current
@@ -68,6 +85,10 @@ export default function AtlasCanvas({
     const oy = (height - (y1 - y0) * scale) / 2
     const clamp = (v: number, lo: number, hi: number) =>
       Math.min(hi, Math.max(lo, v))
+    toPx.current = (x: number, y: number) => [
+      ox + (x - x0) * scale,
+      oy + (y1 - y) * scale,
+    ]
     return points.map((p) => {
       const px = ox + (p.x - x0) * scale
       const py = oy + (y1 - p.y) * scale
@@ -93,27 +114,45 @@ export default function AtlasCanvas({
     const lit = placed.filter((d) => !isLit || isLit(d.p))
     const dim = isLit ? placed.filter((d) => !isLit(d.p)) : []
     for (const d of dim) {
-      ctx.fillStyle = clusterColour(d.p.cluster_id, 0.12)
+      ctx.fillStyle = paint
+        ? 'rgba(150, 146, 140, 0.1)'
+        : clusterColour(d.p.cluster_id, 0.12)
       ctx.beginPath()
-      ctx.arc(d.px, d.py, 1.6, 0, Math.PI * 2)
+      ctx.arc(d.px, d.py, 1.4, 0, Math.PI * 2)
       ctx.fill()
     }
-    for (const d of lit) {
+    const styled = lit.map((d) => {
+      if (paint) return { d, ...paint(d.p) }
       const r = d.p.is_noise ? 1.7 : 1.9 + d.p.cluster_probability * 1.4
-      const colour = clusterColour(
+      const fill = clusterColour(
         d.p.cluster_id,
         d.p.is_noise ? 0.7 : 0.55 + 0.4 * d.p.cluster_probability,
       )
+      return { d, fill, r, layer: d.p.is_noise ? 0 : 1 }
+    })
+    // Muted layers first, so the clusters a view brings forward are drawn on top.
+    styled.sort((a, b) => a.layer - b.layer)
+    for (const { d, fill, r } of styled) {
       ctx.beginPath()
       ctx.arc(d.px, d.py, d.pinned ? 3 : r, 0, Math.PI * 2)
       if (d.pinned) {
-        ctx.strokeStyle = colour
+        ctx.strokeStyle = fill
         ctx.lineWidth = 1.2
         ctx.stroke()
       } else {
-        ctx.fillStyle = colour
+        ctx.fillStyle = fill
         ctx.fill()
       }
+    }
+    ctx.font = '600 12px Geist, Helvetica, Arial, sans-serif'
+    ctx.textAlign = 'center'
+    for (const label of labels) {
+      const [lx, ly] = toPx.current(label.x, label.y)
+      ctx.lineWidth = 4
+      ctx.strokeStyle = 'rgba(7, 7, 8, 0.85)'
+      ctx.strokeText(label.text, lx, ly - 8)
+      ctx.fillStyle = '#f1ece2'
+      ctx.fillText(label.text, lx, ly - 8)
     }
     const sel = placed.find((d) => d.p.occurrence_id === selected)
     if (sel) {
@@ -123,7 +162,7 @@ export default function AtlasCanvas({
       ctx.arc(sel.px, sel.py, 7, 0, Math.PI * 2)
       ctx.stroke()
     }
-  }, [placed, isLit, selected, width, height])
+  }, [placed, isLit, selected, width, height, paint, labels])
 
   const nearest = (x: number, y: number) => {
     let best: (typeof placed)[number] | null = null
@@ -179,10 +218,12 @@ export default function AtlasCanvas({
           <span>
             {hover.p.is_noise
               ? l('Noise (no cluster)', 'Brus (inget kluster)')
-              : l(
-                  `Cluster ${hover.p.cluster_id}`,
-                  `Kluster ${hover.p.cluster_id}`,
-                )}
+              : clusterName
+                ? clusterName(hover.p.cluster_id)
+                : l(
+                    `Cluster ${hover.p.cluster_id}`,
+                    `Kluster ${hover.p.cluster_id}`,
+                  )}
           </span>
           <em>
             {hover.p.context.length > 150

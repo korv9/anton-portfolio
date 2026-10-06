@@ -116,6 +116,13 @@ function ProjectList({ onPick }: { onPick: () => void }) {
       <a className="nav-all" href="#alla-projekt" onClick={onPick}>
         {l('View all projects', 'Se alla projekt')} →
       </a>
+      <a className="nav-all" href="#data-constellation" onClick={onPick}>
+        {l(
+          'Data Constellation: how the platform fits together',
+          'Data Constellation: hur plattformen hänger ihop',
+        )}{' '}
+        →
+      </a>
     </>
   )
 }
@@ -245,6 +252,7 @@ export default function Header({
  */
 const TECHNICAL: Partial<Record<Route['page'], Bilingual>> = {
   technical: { en: 'Architecture', sv: 'Arkitektur' },
+  constellation: { en: 'Data Constellation', sv: 'Data Constellation' },
   design: { en: 'Design system', sv: 'Designsystem' },
   datamodel: { en: 'Data model', sv: 'Datamodell' },
   er: { en: 'ER diagram', sv: 'ER-diagram' },
@@ -381,6 +389,9 @@ export function Footer() {
         <div>
           <p className="foot-label">{l('Under the hood', 'Under huven')}</p>
           <ul>
+            <li>
+              <a href="#data-constellation">Data Constellation</a>
+            </li>
             <li>
               <a href="#technical">{l('Architecture', 'Arkitektur')}</a>
             </li>

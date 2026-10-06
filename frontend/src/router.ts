@@ -24,6 +24,7 @@ export type Page =
   | 'datamodel'
   | 'er'
   | 'symbolic'
+  | 'constellation'
   | 'status'
   | 'tallman'
 
@@ -93,6 +94,7 @@ export function pageOf(path: string): Page {
   if (path === '#tallman') return 'tallman'
   if (path === '#analysis' || path.startsWith('#analysis-')) return 'analysis'
   if (path === '#er' || path === '#er-diagram') return 'er'
+  if (path === '#data-constellation') return 'constellation'
   if (path === '#symbolic-atlas' || path.startsWith('#symbolic-'))
     return 'symbolic'
   if (path === '#data-model' || path.startsWith('#data-model-'))

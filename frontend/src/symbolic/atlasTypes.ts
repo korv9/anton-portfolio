@@ -105,3 +105,123 @@ export type ExperimentComparison = {
   sample_sha256: string
   experiments: ExperimentRow[]
 }
+
+/** The book-centred map of the same points (book-centered-atlas.parquet). */
+export type BookCenteredPoint = {
+  occurrence_id: string
+  x: number
+  y: number
+  cluster_id: number
+  cluster_probability: number
+  is_noise: boolean
+}
+
+/**
+ * One book-centred cluster (book-centered-clusters.json). review_class is the automatic audit
+ * (candidate, warning, reject); review_status says whether a person has read it. Neither names
+ * it: only a reviewed cluster in reviewed-clusters.json has a label.
+ */
+export type ClusterInfo = {
+  cluster_id: number
+  cluster_fingerprint: string
+  occurrence_count: number
+  book_count: number
+  tradition_count: number
+  symbol_count: number
+  largest_book: string
+  largest_book_share: number
+  largest_tradition: string
+  largest_tradition_share: number
+  largest_symbol: string
+  largest_symbol_share: number
+  book_entropy: number
+  tradition_entropy: number
+  symbol_entropy: number
+  avg_membership_probability: number
+  cross_book_cluster: boolean
+  suspected_paratext: boolean
+  book_dominated: boolean
+  too_small: boolean
+  low_membership: boolean
+  review_class: 'candidate' | 'warning' | 'reject'
+  review_status: 'unreviewed' | 'candidate' | 'reviewed' | 'rejected'
+  review_priority_score: number
+  top_symbols: { symbol_id: string; share: number }[]
+  top_traditions: { tradition: string; share: number }[]
+  representatives: { centroid: string[]; diverse: string[] }
+}
+
+export type ClusterFile = {
+  experiment: string
+  note: string
+  clusters: ClusterInfo[]
+}
+
+/** A cluster a person has reviewed (reviewed-clusters.json). Written by hand, never generated. */
+export type ReviewedCluster = {
+  cluster_id: number
+  fingerprint: string
+  label: string
+  description: string
+  interpretation: string | null
+  confidence: 'low' | 'medium' | 'high'
+  book_count: number
+  tradition_count: number
+  symbol_count: number
+  representative_occurrence_ids: string[]
+}
+
+export type StepMetrics = {
+  occurrences: number
+  clusters: number
+  noise_share: number
+  mean_largest_book_share: number
+  mean_book_entropy: number
+  cross_book_cluster_count: number
+  cross_book_occurrence_share: number
+  silhouette: number | null
+  trustworthiness: number
+  median_membership: number | null
+}
+
+type ParatextCount = {
+  clusters: number
+  suspected_paratext_clusters: number
+  suspected_paratext_occurrence_share: number
+}
+
+/** The investigation step by step (research-history.json). */
+export type ResearchHistory = {
+  steps: {
+    id: 'v1' | 'v2' | 'v3'
+    name: string
+    metrics: StepMetrics | null
+    baseline_metrics?: StepMetrics | null
+  }[]
+  cleaning: {
+    old_occurrence_count: number | null
+    new_occurrence_count: number
+    removed_occurrences: number | null
+    documents_affected: number
+    documents: {
+      document_id: string
+      removed_share: number
+      sections_removed: string[]
+      footnote_blocks_removed: number
+    }[]
+  } | null
+  paratext_clusters: Record<
+    string,
+    { before: ParatextCount; after: ParatextCount }
+  >
+  review: {
+    cluster_count: number
+    candidate_cluster_count: number
+    warning_cluster_count: number
+    rejected_by_flags_count: number
+    reviewed_cluster_count: number
+    rejected_cluster_count: number
+    suspected_paratext_count: number
+    cross_book_cluster_count: number
+  }
+}

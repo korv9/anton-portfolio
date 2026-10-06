@@ -65,7 +65,7 @@ test('the job market is a product like politics: one screen, a field bar, one qu
 
   // The earlier views live on under "Explore for yourself".
   await page.goto('/#jobb-utforska')
-  await expect(page.locator('.explore-row')).toHaveCount(5)
+  await expect(page.locator('.explore-row')).toHaveCount(6)
   await page.locator('.explore-row[href="#job-market-occupations"]').click()
   await expect(page.getByTestId('market-occupations')).toBeVisible()
   await expect(

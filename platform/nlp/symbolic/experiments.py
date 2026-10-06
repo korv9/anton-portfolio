@@ -16,9 +16,15 @@ book_centered, masked contexts serve masked and masked_book_centered. Each varia
 its own UMAP map, 10-D UMAP space and HDBSCAN clusters with the pipeline's parameters.
 
 Writes warehouse/features/symbolic/experiments/<name>/ (atlas_projection.parquet,
-evaluation.json, run.json, cluster_composition.parquet, cluster_representatives.parquet) and
+cluster_space.parquet (the 10-D clustering space, local only), evaluation.json, run.json,
+cluster_composition.parquet, cluster_representatives.parquet) and
 experiments/comparison.json and .parquet, one row per experiment. The root-level artefacts of
 pipeline.py, which the site's atlas is built from, are not touched.
+
+    python platform/nlp/symbolic/experiments.py --archive v2-before-cleaning [names…]
+
+first copies the current results to experiments/history/<label>/, so a rerun (after a change
+to the cleaning, say) never overwrites the results it is compared with.
 """
 from __future__ import annotations
 
@@ -41,7 +47,7 @@ import pipeline  # noqa: E402
 from transforms import center_by_document, mask_symbol  # noqa: E402
 
 OUT = pipeline.FEATURES / "experiments"
-TOP_REPRESENTATIVES = 7
+TOP_REPRESENTATIVES = 15
 EXPERIMENTS = {
     "baseline": {"masking": False, "centering": False},
     "masked": {"masking": True, "centering": False},
@@ -76,6 +82,17 @@ def write_parquet(path: Path, rows: list[dict]) -> None:
     pq.write_table(pa.Table.from_pylist(rows), path)
 
 
+def write_space(path: Path, ids: list[str], space: np.ndarray) -> None:
+    """The 10-D UMAP space HDBSCAN clustered, for review (rank_clusters.py). Local only: it is a
+    reduction of the embeddings and is never delivered to the site."""
+    import pyarrow as pa
+    import pyarrow.parquet as pq
+
+    pq.write_table(pa.table({"occurrence_id": pa.array(ids, pa.string()),
+                             "space": pa.FixedSizeListArray.from_arrays(
+                                 pa.array(space.reshape(-1), pa.float32()), space.shape[1])}), path)
+
+
 def run_experiment(name: str, config: dict, data: dict, vectors: np.ndarray, texts: list[str],
                    sample_id: str) -> dict:
     started = time.monotonic()
@@ -91,6 +108,7 @@ def run_experiment(name: str, config: dict, data: dict, vectors: np.ndarray, tex
     folder = OUT / name
     folder.mkdir(parents=True, exist_ok=True)
     pipeline.write_projection(folder / "atlas_projection.parquet", data["ids"], layout, labels, probabilities)
+    write_space(folder / "cluster_space.parquet", data["ids"], space)
     write_parquet(folder / "cluster_composition.parquet", [{"experiment": name, **r} for r in rows])
     write_parquet(folder / "cluster_representatives.parquet", [
         {"experiment": name, "cluster_id": c, "rank": rank, "occurrence_id": data["ids"][i],
@@ -133,6 +151,21 @@ def comparison_row(name: str, m: dict) -> dict:
             **{k: m[k] for k in keys}}
 
 
+def archive(label: str) -> Path:
+    """Copy the current experiment results (not earlier archives) to experiments/history/<label>/."""
+    import shutil
+
+    target = OUT / "history" / label
+    if target.exists():
+        raise SystemExit(f"{target} exists; choose another label")
+    target.mkdir(parents=True)
+    for item in OUT.iterdir():
+        if item.name == "history":
+            continue
+        (shutil.copytree if item.is_dir() else shutil.copy2)(item, target / item.name)
+    return target
+
+
 def main(names: list[str] | None = None) -> int:
     data = load_sample()
     sample_id = sample_hash(data["ids"])
@@ -159,4 +192,8 @@ def main(names: list[str] | None = None) -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main(sys.argv[1:] or None))
+    args = sys.argv[1:]
+    if args[:1] == ["--archive"]:
+        print(f"Archived to {archive(args[1])}")
+        args = args[2:]
+    sys.exit(main(args or None))

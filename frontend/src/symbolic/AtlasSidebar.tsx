@@ -24,11 +24,23 @@ export function AtlasFiltersPanel({
   summary,
   filters,
   set,
+  clusters,
 }: {
   summary: AtlasSummary
   filters: AtlasFilters
   set: (changes: Partial<AtlasFilters>) => void
+  /** The clusters of the view, when not the baseline's (the book-centred run). */
+  clusters?: { id: number; size: number; name: string }[]
 }) {
+  const options =
+    clusters ??
+    summary.clusters
+      .filter((c) => c >= 0)
+      .map((c) => ({
+        id: c,
+        size: summary.evaluation.cluster_sizes[String(c)],
+        name: l(`Cluster ${c}`, `Kluster ${c}`),
+      }))
   return (
     <>
       <StageBlock title={l('Symbol', 'Symbol')}>
@@ -79,14 +91,11 @@ export function AtlasFiltersPanel({
             onChange={(e) => set({ cluster: e.target.value })}
           >
             <option value="">{l('All clusters', 'Alla kluster')}</option>
-            {summary.clusters
-              .filter((c) => c >= 0)
-              .map((c) => (
-                <option key={c} value={String(c)}>
-                  {l(`Cluster ${c}`, `Kluster ${c}`)} (
-                  {summary.evaluation.cluster_sizes[String(c)]})
-                </option>
-              ))}
+            {options.map((c) => (
+              <option key={c.id} value={String(c.id)}>
+                {c.name} ({c.size})
+              </option>
+            ))}
           </select>
         </label>
         <label className="atlas-check">

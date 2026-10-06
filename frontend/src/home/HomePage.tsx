@@ -55,6 +55,7 @@ function Hero() {
         <div className="home-intro-links">
           <div className="home-intro-contact">
             <a href="#projekt">{l('Projects', 'Projekt')} ↓</a>
+            <a href="#data-constellation">Data Constellation →</a>
             {profile.cv && (
               <a href={profile.cv} download>
                 {l('Download CV (PDF)', 'Ladda ned CV (PDF)')} ↓

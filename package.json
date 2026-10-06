@@ -30,12 +30,16 @@
     "parliament:build": "python platform/ingest/run_parliament.py --skip-fetch",
     "parliament": "python platform/ingest/run_parliament.py && python platform/publish/export_parliament.py",
     "taxes": "python platform/ingest/run_taxes.py && python platform/publish/export_taxes.py",
+    "architecture:build": "python platform/architecture/build_graph.py",
     "symbolic:ingest": "python platform/ingest/symbolic/ingest_corpus.py",
     "symbolic:silver": "cd platform && dbt build --profiles-dir . --select tag:symbolic --exclude path:models/gold/symbolic",
     "symbolic:gold": "cd platform && dbt build --profiles-dir . --select path:models/gold/symbolic",
     "symbolic:ml": "python platform/nlp/symbolic/pipeline.py",
     "symbolic:publish": "python platform/publish/symbolic/export_symbolic.py",
     "symbolic:experiments": "python platform/nlp/symbolic/experiments.py",
+    "symbolic:clean": "python platform/nlp/symbolic/cleaning_report.py --snapshot && npm run symbolic:silver && python platform/nlp/symbolic/cleaning_report.py",
+    "symbolic:review": "python platform/nlp/symbolic/rank_clusters.py book_centered",
+    "symbolic:research": "npm run symbolic:clean && npm run symbolic:experiments && npm run symbolic:ml && npm run symbolic:gold && npm run symbolic:review && npm run symbolic:publish",
     "symbolic:build": "npm run symbolic:ingest && npm run symbolic:silver && npm run symbolic:ml && npm run symbolic:gold && npm run symbolic:publish"
   },
   "dependencies": {

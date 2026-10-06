@@ -182,3 +182,128 @@
 .atlas-note {
   font-size: 0.85rem;
 }
+
+/* Views: Baseline, Cross-book, Reviewed. */
+.atlas-views {
+  display: grid;
+  gap: 0.35rem;
+}
+.atlas-view-hint,
+.atlas-empty {
+  margin: 0;
+  color: var(--stage-muted);
+  font-size: 0.82rem;
+}
+.atlas-empty {
+  color: var(--stage-ink);
+  font-weight: 600;
+}
+
+/* A chosen book-centred cluster (ClusterPanel.tsx). */
+.cluster-status {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin: 0 0 0.6rem;
+}
+.cluster-status span {
+  padding: 0.1rem 0.5rem;
+  border: 1px solid var(--stage-rule);
+  border-radius: 999px;
+  font-size: 0.75rem;
+}
+.cluster-status [data-status='reviewed'] {
+  border-color: var(--stage-ink);
+  color: var(--stage-ink);
+}
+.cluster-reviewed h4 {
+  margin: 0.6rem 0 0.2rem;
+  font-size: 0.8rem;
+}
+.cluster-reviewed p {
+  margin: 0 0 0.4rem;
+  font-size: 0.85rem;
+}
+.cluster-close {
+  margin-top: 0.6rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--stage-muted);
+  font: inherit;
+  font-size: 0.8rem;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.cluster-passages {
+  display: grid;
+  gap: 0.7rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.cluster-passages q {
+  display: block;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  font-style: italic;
+}
+.cluster-passages small {
+  display: block;
+  margin-top: 0.2rem;
+  color: var(--stage-muted);
+  font-size: 0.72rem;
+}
+
+/* The investigation step by step (ResearchStory.tsx). */
+.research-steps {
+  display: grid;
+  gap: 0;
+  margin: 1rem 0 0;
+  padding: 0;
+  list-style: none;
+  border-left: 1px solid var(--line);
+}
+.research-steps li {
+  position: relative;
+  padding: 0 0 1.4rem 1.4rem;
+}
+.research-steps li::before {
+  content: '';
+  position: absolute;
+  top: 0.35rem;
+  left: -4px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--ink);
+}
+.research-tag {
+  margin: 0;
+  color: var(--muted);
+  font: 500 11px var(--font-mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.research-steps h3 {
+  margin: 0.2rem 0 0.3rem;
+  font-size: clamp(18px, 1.6vw, 22px);
+}
+.research-steps p {
+  max-width: 70ch;
+  margin: 0;
+}
+.research-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.6rem;
+  margin: 0.6rem 0 0;
+}
+.research-metrics dt {
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+.research-metrics dd {
+  margin: 0;
+  font: 600 1.05rem var(--font-mono);
+}

@@ -693,6 +693,13 @@ function Utforska() {
       'Anställningsform, arbetstid och erfarenhet per område.',
     ],
     [
+      '#jobb-kluster',
+      'Semantic clusters of IT ads',
+      'Semantiska kluster i IT-annonser',
+      'Groups found in the ad texts by embeddings, UMAP and HDBSCAN, compared with job titles.',
+      'Grupper som embeddings, UMAP och HDBSCAN hittar i annonstexterna, jämförda med jobbtitlarna.',
+    ],
+    [
       '#job-market-tech',
       'Tech in data and IT ads',
       'Teknik i data- och IT-annonser',

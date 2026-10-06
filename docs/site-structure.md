@@ -52,6 +52,7 @@ Everything else (DrugComb, taLLMan, Allegoria, DiVA, Homie, RAG, MIMII, IN1) is 
 ### Route types
 
 - **Global destinations:** `#start`, `#projekt`, `#erfarenhet`, `#kompetenser`, `#om-mig`, `#alla-projekt`.
+- **Platform map:** `#data-constellation` (Data Constellation, [data-constellation.md](data-constellation.md)), linked from the Projects menu, the hero and the footer; its breadcrumb reads "Projects / Technical / Data Constellation".
 - **Project destinations:** each registry entry's address.
 - **Deep dives:** the views inside a project (`#politik-*`, `#jobb-*`, `#now-*`, `#symbolic-*`, …).
 - **Legacy redirects** (`frontend/src/router.ts`): `#about`, `#contact`, `#kontakt` and `#utbildning` go to `#om-mig`; `#experience` to `#erfarenhet`; `#projects` to `#projekt`. Every earlier project address still opens its page.
@@ -149,7 +150,7 @@ its own navigation, and every project page has the breadcrumb back to the projec
 
 *Jobbmarknaden i siffror* is built like the politics product, from `jobs/market.json`: every ad in Arbetsförmedlingen's historical archives since 2020, by month, occupation field, occupation group (SSYK 4) and county. `frontend/src/jobb/`.
 
-- **Navigation:** seven themes in the side menu.
+- **Navigation:** eight themes in the side menu.
 
 | Theme | Address | Main chart |
 |---|---|---|
@@ -158,6 +159,7 @@ its own navigation, and every project page has the breadcrumb back to the projec
 | Vilka yrken växer? | `#jobb-yrken` | Occupations growing or falling the most, or with the most ads |
 | Var finns jobben? | `#jobb-lan` | Share of ads per county, with a county × year heat table |
 | Vilka villkor? | `#jobb-villkor` | Employment type, working hours and experience required |
+| Vilka grupper bildar annonserna? | `#jobb-kluster` | The semantic clustering of IT ads (embeddings, UMAP, HDBSCAN) compared with job titles; also at `#job-market-clusters`. The field bar does not apply |
 | Utforska själv | `#jobb-utforska` | The earlier views (`#job-market`, `#job-market-occupations`, …), which keep their addresses |
 | Källor och metod | `#jobb-kallor` | The archives counted, with their SHA-256, and the method |
 

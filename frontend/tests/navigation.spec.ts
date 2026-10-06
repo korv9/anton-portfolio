@@ -142,3 +142,20 @@ test('old addresses still land in the right place', async ({ page }) => {
     'The job market in job ads',
   )
 })
+
+test('the job-ad clustering is a theme of the job-market product', async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(isMobile, 'the product menu is the docked sidebar on desktop')
+  await page.goto('/#jobb')
+  await page
+    .getByRole('navigation', { name: /^(Job market|Jobbmarknad)$/ })
+    .getByRole('link', {
+      name: /What groups do the ads form|Vilka grupper bildar annonserna/,
+    })
+    .click()
+  await expect(page).toHaveURL(/#jobb-kluster/)
+  await expect(page.locator('#job-market-clusters')).toBeVisible()
+  await expect(page.locator('#job-market-clusters')).toContainText('HDBSCAN')
+})
