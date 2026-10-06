@@ -1,33 +1,57 @@
 import { test, expect } from './test'
 import AxeBuilder from '@axe-core/playwright'
 
-test('home introduces Anton and routes to each project', async ({ page }) => {
+test('home introduces Anton and routes to each project', async ({
+  page,
+  isMobile,
+}) => {
   const errors: string[] = []
   page.on('pageerror', (e) => errors.push(e.message))
   await page.goto('/')
   await expect(page.getByRole('heading', { level: 1 })).toContainText(
     'ERNSTSSON',
   )
-  // Everything a recruiter needs is on the page, in order: projects, experience, tech, about.
+  // The role, the pitch and the CV are on the first screen, as plain text.
+  await expect(page.locator('.home-hero-role')).toContainText('Data Engineer')
+  await expect(page.locator('.home-hero-role')).toBeInViewport()
+  await expect(
+    page.locator('.home-hero-actions a', { hasText: 'CV' }),
+  ).toBeInViewport()
+  // On a laptop, selected work and experience start on the first screen too; on a phone
+  // they follow the hero in that order.
+  await expect(page.locator('#projekt')).toBeInViewport()
+  if (!isMobile) await expect(page.locator('#erfarenhet')).toBeInViewport()
+  // Then, in order: projects, experience, the core stack, about, under the hood.
   const order = await page.evaluate(() =>
-    ['projekt', 'erfarenhet', 'kompetenser', 'om-mig'].map(
+    ['projekt', 'erfarenhet', 'kompetenser', 'om-mig', 'under-huven'].map(
       (id) => document.getElementById(id)!.getBoundingClientRect().top,
     ),
   )
   expect([...order].sort((a, b) => a - b)).toEqual(order)
-  await expect(page.locator('#projekt .ds-project-row')).toHaveCount(6)
+  await expect(page.locator('#projekt .ds-project-row')).toHaveCount(5)
   await expect(page.locator('.ds-project-row').first()).toContainText(
     'Swedish politics',
   )
+  // Experience: company, role, period and impact visible without a click.
   await expect(page.locator('#erfarenhet')).toContainText('Fora')
   await expect(page.locator('#erfarenhet')).toContainText('Avtalat')
-  await expect(page.locator('#om-mig')).toContainText('JENSEN')
+  await expect(page.locator('.home-job-impact').first()).toBeVisible()
+  await expect(page.locator('#erfarenhet')).toContainText('JENSEN')
+  // A short stack first; the full one a click away.
+  await expect(
+    page.locator('#kompetenser .home-stack-groups > div'),
+  ).toHaveCount(5)
+  await expect(page.locator('#kompetenser .skills-more').first()).toBeHidden()
+  await page.locator('#kompetenser summary').click()
   await expect(page.locator('#kompetenser .skills-more')).toHaveCount(5)
-  // The eclipse radar is the tech stack's picture: one bundle of threads per headline skill.
-  const radar = page.locator('.eclipse')
-  await expect(radar.locator('.eclipse-axis')).toHaveCount(17)
-  await radar.locator('.eclipse-label', { hasText: 'Databricks' }).hover()
-  await expect(radar.locator('.eclipse-caption')).toContainText('Avtalat')
+  // Technical depth is linked at the bottom, not in the first screen.
+  await expect(
+    page.locator('#under-huven a[href="#data-constellation"]'),
+  ).toHaveCount(1)
+  await expect(page.locator('#under-huven a[href="#quality"]')).toHaveCount(1)
+  await expect(
+    page.locator('.home-hero a[href="#data-constellation"]'),
+  ).toHaveCount(0)
   await expect(page.locator('#job-market')).toHaveCount(0)
   await page
     .locator('.ds-project-row')

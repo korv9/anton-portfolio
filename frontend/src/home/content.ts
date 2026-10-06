@@ -37,7 +37,7 @@ export const CVS: { role: Bilingual; focus: Bilingual; file: string }[] = [
   },
 ]
 
-/** About, short: what kind of work, not every tool. */
+/** About, short: what kind of work, not every tool. Experience and education are shown beside it. */
 export const ABOUT: Bilingual[] = [
   t(
     'Jag bygger data- och AI-produkter hela vägen: hämtar data från källan, gör den pålitlig med tester och modeller, och bygger gränssnittet där någon faktiskt använder den.',
@@ -46,9 +46,5 @@ export const ABOUT: Bilingual[] = [
   t(
     'Det jag gillar mest är att göra komplex data begriplig, att en fråga ska kunna besvaras med en graf och källan ett klick bort.',
     'What I like most is making complex data understandable: a question answered with one chart, and the source one click away.',
-  ),
-  t(
-    'Jag har praktiserat som data engineer på Fora och analytics engineer på Avtalat, och tog examen som AI-utvecklare vid JENSEN YH i juni 2026.',
-    'I have interned as a data engineer at Fora and an analytics engineer at Avtalat, and graduated as an AI developer from JENSEN YH in June 2026.',
   ),
 ]

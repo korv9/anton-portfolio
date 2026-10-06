@@ -28,12 +28,15 @@ const COLOURS = [
 ]
 const INK = [242, 240, 236]
 
-/** Milliseconds: clusters drift, the name forms, the fields form, the screen leaves. */
-const DRIFT = 1400
-const FORM = 1600
-const FIELDS_AT = DRIFT + 1600
-const FIELDS_FORM = 1100
-const LEAVE_AT = FIELDS_AT + FIELDS_FORM + 1700
+/**
+ * Milliseconds: clusters drift, the name forms, the fields form, the screen leaves. Kept to
+ * about two seconds so the opening never stands between a visitor and the content.
+ */
+const DRIFT = 350
+const FORM = 800
+const FIELDS_AT = DRIFT + 700
+const FIELDS_FORM = 500
+const LEAVE_AT = FIELDS_AT + FIELDS_FORM + 450
 
 type Branch = { nodes: [number, number][]; rgb: number[] }
 
