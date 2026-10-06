@@ -626,7 +626,7 @@ export function Obligations({
                         <button
                           type="button"
                           style={{
-                            ['--v' as string]: String(0.18 + (0.62 * n) / max),
+                            ['--v' as string]: String(0.12 + (0.33 * n) / max),
                           }}
                           aria-pressed={actor === a.actor_id && type === t}
                           aria-label={`${l(a.label_en, a.label_sv)}, ${requirementLabel(t)}: ${n}`}

@@ -7,4 +7,4 @@ where applies_from not between date '2024-08-01' and date '2030-12-31'
 union all
 select 'milestone:' || milestone_id, date
 from {{ ref('mart_ai_act_timeline') }}
-where date not between date '2024-07-12' and date '2030-12-31'
+where date not between date '2021-01-01' and date '2030-12-31'

@@ -36,6 +36,7 @@ DBT_FOLDER_DOMAIN = {
     "welfare": "welfare",
     "symbolic": "symbolic",
     "eu_ai_act": "ai_act",
+    "ai_politics": "ai_act",  # the Riksdag's language about AI, read against the Act
     "shared": "shared",
     "": "jobs",  # seeds at the root of seeds/: the job-ad role and technology patterns
 }
@@ -78,7 +79,7 @@ ORIGINS = [
 
 INGESTION = [
     {"id": "riksdagen", "path": "platform/ingest/riksdagen", "domain": "politics",
-     "origins": ["riksdagen"], "raw": ["riksdagen", "politics_delivery"],
+     "origins": ["riksdagen"], "raw": ["riksdagen", "politics_delivery", "riksdagen_speeches"],
      "description": "Votes, decision points, documents, studies and budgets from Riksdagen."},
     {"id": "elections", "path": "platform/ingest/elections", "domain": "politics",
      "origins": ["scb", "valmyndigheten", "riksdagen"], "raw": ["scb_elections", "val"],
@@ -118,6 +119,10 @@ ML = [
      "path": "platform/nlp/symbolic/rank_clusters.py", "domain": "symbolic",
      "inputs": ["int_symbol_occurrences", "int_symbolic_documents"],
      "description": "Baseline, masked and book-centred runs (experiments.py) and the ranking of clusters for human review."},
+    {"id": "ai-politics-similarity", "label": "AI Act ↔ Riksdag similarity",
+     "path": "platform/nlp/ai_politics/similarity.py", "domain": "ai_act",
+     "inputs": ["int_ai_act_provisions", "int_ai_speech_paragraphs"], "raw": ["ai_politics_features"],
+     "description": "Multilingual sentence embeddings of the Act's Swedish passages and the Riksdag's AI paragraphs; nearest pairs and a chance baseline, read back by gold."},
     # It reads a gold table (the skills bridge), so it sits beside gold, and its results
     # re-enter the warehouse as raw tables that gold marts read.
     {"id": "job-clusters", "label": "Job-ad clustering", "path": "ml/jobs/pipeline.py", "domain": "jobs",
@@ -146,6 +151,10 @@ PUBLISHERS = [
         {"pattern": "ai-act/changes.json", "inputs": ["mart_ai_act_changes"]},
         {"pattern": "ai-act/navigator.json", "inputs": ["mart_ai_act_obligations", "dim_ai_act_actor", "dim_ai_act_risk_class"]},
         {"pattern": "ai-act/*.json"},
+    ]},
+    {"path": "platform/publish/ai_politics/export_ai_politics.py", "domain": "ai_act", "outputs": [
+        {"pattern": "ai-act/politics/similarity.json", "inputs": ["mart_ai_act_speech_similarity"]},
+        {"pattern": "ai-act/politics/*.json"},
     ]},
     {"path": "platform/publish/export_market.py", "domain": "jobs", "outputs": [{"pattern": "jobs/market.json"}]},
     {"path": "platform/ingest/jobtech/export_presentation.py", "domain": "jobs",

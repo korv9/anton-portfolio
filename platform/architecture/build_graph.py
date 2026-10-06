@@ -50,8 +50,10 @@ NODE_TYPES = {"source", "ingestion", "raw", "seed", "bronze", "silver", "ml", "g
               "frontend", "shared"}
 EDGE_TYPES = {"lineage", "relationship", "delivery", "frontend-consumption", "infrastructure"}
 MAX_COLUMNS = 40
-DATA_PATH = re.compile(r"""[`'"]((?:symbolic|jobs|welfare|taxes|politics|parliament|debates|gold|ml|products|"""
-                       r"""schema|parquet|discovery|reports)/[A-Za-z0-9_./${}\-]*)""")
+# A data path in frontend code starts with one of the delivery's top-level folders.
+DATA_TOPS = ["ai-act", "symbolic", "jobs", "welfare", "taxes", "politics", "parliament", "debates",
+             "gold", "ml", "products", "schema", "parquet", "discovery", "reports"]
+DATA_PATH = re.compile(r"""[`'"]((?:""" + "|".join(map(re.escape, DATA_TOPS)) + r""")/[A-Za-z0-9_./${}\-]*)""")
 
 
 # ---------------------------------------------------------------------------- helpers

@@ -42,7 +42,7 @@ publisher or product needs one registry entry.
 | Shared platform | `models/gold/shared` (date, period, region, indicator … dimensions), SCB, and the infrastructure |
 | Sweden | dbt folder `welfare` |
 | Symbolic Atlas | dbt folder `symbolic` |
-| EU AI Act | dbt folder `eu_ai_act` (models and seeds); the Publications Office and the Commission as sources |
+| EU AI Act | dbt folders `eu_ai_act` and `ai_politics` (the Riksdag's speeches read against the Act); the Publications Office and the Commission as sources |
 
 Smaller standalone projects (DrugComb, DiVA, Homie, taLLMan) are not in the map: they do not
 run on the dbt warehouse.

@@ -11,7 +11,7 @@ models:
           - not_null
           - accepted_values:
               arguments:
-                values: [regulation, consolidated_version, amending_regulation, corrigendum, regulation_based_on, decision_based_on, legislative_proposal, commission_document, parliament_resolution, other]
+                values: [regulation, consolidated_version, amending_regulation, corrigendum, original_proposal, regulation_based_on, decision_based_on, legislative_proposal, commission_document, parliament_resolution, other]
       - name: source_url
         data_tests: [not_null]
   - name: int_ai_act_provisions

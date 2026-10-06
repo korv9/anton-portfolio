@@ -20,6 +20,8 @@ models:
     bronze:
       +materialized: view
       +schema: bronze
+      ai_politics:
+        +tags: [ai_politics]
       eu_ai_act:
         +tags: [ai_act]
       jobs:
@@ -41,6 +43,8 @@ models:
     silver:
       +materialized: view
       +schema: silver
+      ai_politics:
+        +tags: [ai_politics]
       eu_ai_act:
         +tags: [ai_act]
       jobs:
@@ -54,6 +58,8 @@ models:
     gold:
       +materialized: table
       +schema: gold
+      ai_politics:
+        +tags: [ai_politics]
       eu_ai_act:
         +tags: [ai_act]
       jobs:
@@ -81,6 +87,11 @@ models:
 # tag lets it build on its own: `dbt build --select tag:welfare`.
 seeds:
   portfolio:
+    ai_politics:
+      +tags: [ai_politics]
+      +schema: seeds
+      ai_politics_concepts:
+        +column_types: {case_sensitive: boolean, sort_order: integer}
     eu_ai_act:
       +tags: [ai_act]
       +schema: seeds

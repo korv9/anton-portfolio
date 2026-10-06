@@ -73,6 +73,7 @@ before the politics build, since dbt reads the fact tables it writes.
 | Parliament | Riksdagen (roll calls, reports, news), SCB (elections, PSU), Valmyndigheten | `models/*/parliament`, `seeds/parliament` | [docs/parliament-data-model.md](../docs/parliament-data-model.md) |
 | Taxes | OECD (Revenue Statistics, Taxing Wages), Skatteverket (rates, tax tables) | `models/*/taxes`, `seeds/taxes`, `frontend/src/taxes` | [docs/taxes.md](../docs/taxes.md) |
 | EU AI Act | EU Publications Office (Cellar / EUR-Lex), European Commission | `models/*/eu_ai_act`, `seeds/eu_ai_act`, `publish/eu_ai_act` | [docs/ai-act.md](../docs/ai-act.md) |
+| The Riksdag and AI | Riksdagen (every speech since 2016/17), the AI Act's Swedish text | `models/*/ai_politics`, `seeds/ai_politics`, `nlp/ai_politics`, `nlp/text`, `publish/ai_politics` | [docs/ai-politics.md](../docs/ai-politics.md) |
 | Politics | Riksdagen, Statskontoret | Budget context and roll-call votes in `models/*/politics`; speeches and language still in `legacy/` | [docs/political-observatory.md](../docs/political-observatory.md) |
 
 ## Adding a source

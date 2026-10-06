@@ -1,0 +1,4 @@
+pair_id,concept_a,concept_b,label_en,label_sv
+innovation_safety,innovation,safety,Innovation vs safety/security,Innovation mot säkerhet
+privacy_security,privacy,security,Privacy vs security,Integritet mot säkerhetspolitik
+regulation_competitiveness,regulation,competitiveness,Regulation vs competitiveness,Reglering mot konkurrenskraft

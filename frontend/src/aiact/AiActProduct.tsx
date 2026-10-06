@@ -17,6 +17,7 @@ import { ArticleView } from './ArticleView'
 import { useAiAct } from './data'
 import { isoToday } from './logic'
 import { NavigatorView } from './Navigator'
+import { Politics } from './Politics'
 import { DISCLAIMER, fmtDate } from './shared'
 import {
   Changes,
@@ -81,6 +82,13 @@ const VIEWS: Record<
     question: [
       'Which parts of the Act might matter for what you build?',
       'Vilka delar av lagen kan vara relevanta för det ni bygger?',
+    ],
+  },
+  '#ai-act-politics': {
+    title: ['The Riksdag and AI', 'Riksdagen och AI'],
+    question: [
+      'How has Swedish political language about AI changed as the AI Act developed?',
+      'Hur har det svenska politiska språket om AI förändrats medan AI-förordningen växt fram?',
     ],
   },
   '#ai-act-changes': {
@@ -177,6 +185,7 @@ export default function AiActProduct({ route }: { route: Route }) {
                 setEncoded={(svar) => set({ svar })}
               />
             )}
+            {path === '#ai-act-politics' && <Politics data={data} />}
             {path === '#ai-act-changes' && (
               <Changes
                 data={data}

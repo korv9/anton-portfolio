@@ -18,6 +18,7 @@ document_events as (
             when 'corrigendum' then 'corrigendum'
             when 'consolidated_version' then 'consolidated_version'
             when 'legislative_proposal' then 'proposal'
+            when 'original_proposal' then 'proposal'
             when 'regulation_based_on' then 'implementing_act'
             when 'decision_based_on' then 'implementing_act'
             when 'commission_document' then 'commission_report'
@@ -33,7 +34,7 @@ document_events as (
         'Cellar' as basis
     from docs
     where document_type in ('amending_regulation', 'corrigendum', 'consolidated_version',
-                            'legislative_proposal', 'regulation_based_on', 'decision_based_on',
+                            'legislative_proposal', 'original_proposal', 'regulation_based_on', 'decision_based_on',
                             'commission_document')
 ),
 

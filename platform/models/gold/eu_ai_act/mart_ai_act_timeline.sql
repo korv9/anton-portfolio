@@ -28,11 +28,13 @@ documents as (
         published_at as date,
         'document' as kind,
         case document_type
+            when 'original_proposal' then 'The Commission proposes the AI Act'
             when 'regulation' then 'Published in the Official Journal'
             when 'amending_regulation' then 'Amending regulation adopted'
             when 'consolidated_version' then 'New consolidated text'
         end as title_en,
         case document_type
+            when 'original_proposal' then 'Kommissionen föreslår AI-förordningen'
             when 'regulation' then 'Publicerad i Europeiska unionens officiella tidning'
             when 'amending_regulation' then 'Ändringsförordning antagen'
             when 'consolidated_version' then 'Ny konsoliderad text'
@@ -46,7 +48,7 @@ documents as (
         source_url,
         'Cellar' as origin
     from {{ ref('dim_ai_act_document') }}
-    where document_type in ('regulation', 'amending_regulation')
+    where document_type in ('original_proposal', 'regulation', 'amending_regulation')
        or (document_type = 'consolidated_version' and published_at > (
             select min(published_at) from {{ ref('dim_ai_act_document') }}
             where document_type = 'consolidated_version'))

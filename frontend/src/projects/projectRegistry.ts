@@ -144,6 +144,7 @@ export const PROJECTS: ProjectEntry[] = [
         href: '#ai-act-startups',
         label: t('Startup-navigator', 'Startup navigator'),
       },
+      { href: '#ai-act-politics', label: t('I riksdagen', 'In the Riksdag') },
       { href: '#ai-act-changes', label: t('Ändringar', 'Changes') },
       { href: '#ai-act-sources', label: t('Källor', 'Sources') },
     ],

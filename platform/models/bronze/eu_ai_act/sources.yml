@@ -14,10 +14,10 @@ sources:
           external_location: >-
             read_text('{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/eu_ai_act/acts/*.xhtml')
       - name: related
-        description: Every distinct answer of Cellar's SPARQL endpoint on the documents related to the act.
+        description: Every distinct answer of Cellar's SPARQL endpoint on the documents related to the act (related@…) and on the proposal it adopts (origin@…).
         meta:
           external_location: >-
-            read_text('{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/eu_ai_act/cellar/related@*.json')
+            read_text('{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/eu_ai_act/cellar/*@*.json')
       - name: text_attempts
         description: Every text the last ingest asked Cellar for, and whether Cellar had it.
         meta:

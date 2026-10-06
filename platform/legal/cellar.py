@@ -25,6 +25,7 @@ RELATIONS = {
     "resource_legal_proposes_to_amend_resource_legal": "proposes_to_amend",
     "act_consolidated_consolidates_resource_legal": "consolidates",
     "resource_legal_based_on_resource_legal": "based_on",
+    "resource_legal_adopts_resource_legal": "adopts",
 }
 
 RELATED_QUERY = """
@@ -43,6 +44,28 @@ SELECT DISTINCT ?celex ?relation ?date ?title WHERE {{
 }}
 ORDER BY ?date ?celex
 """
+
+
+# Documents the act itself points to: the proposal it adopts (its legislative origin).
+ORIGIN_QUERY = """
+PREFIX cdm: <http://publications.europa.eu/ontology/cdm#>
+SELECT DISTINCT ?celex ?relation ?date ?title WHERE {{
+  ?act cdm:resource_legal_id_celex "{celex}"^^<http://www.w3.org/2001/XMLSchema#string> .
+  ?act ?relation ?other .
+  ?other cdm:resource_legal_id_celex ?celex .
+  VALUES ?relation {{ cdm:resource_legal_adopts_resource_legal }}
+  OPTIONAL {{ ?other cdm:work_date_document ?date }}
+  OPTIONAL {{
+    ?expression cdm:expression_belongs_to_work ?other ;
+                cdm:expression_uses_language <http://publications.europa.eu/resource/authority/language/ENG> ;
+                cdm:expression_title ?title
+  }}
+}}
+"""
+
+
+def origin_query(celex: str) -> str:
+    return ORIGIN_QUERY.format(celex=celex)
 
 
 def related_query(celex: str) -> str:

@@ -75,16 +75,24 @@ const TYPE_LABEL: Record<string, [string, string, string]> = {
 /** Marks what kind of content a block is: official text, derived or interpretation. */
 export function Kind({
   type,
+  label,
 }: {
   type: 'source' | 'derived' | 'interpretation'
+  /** A more precise name for the source, e.g. a speech rather than legal text. */
+  label?: [string, string]
 }) {
   const [en, sv, hint] = TYPE_LABEL[type]
   return (
     <span className={`aa-kind aa-kind-${type}`} title={hint}>
-      {l(en, sv)}
+      {l(...(label ?? [en, sv]))}
     </span>
   )
 }
+
+export const SPEECH: [string, string] = [
+  'Speech, verbatim',
+  'Anförande, ordagrant',
+]
 
 export function Source({
   href,

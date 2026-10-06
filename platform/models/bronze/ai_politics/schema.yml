@@ -1,0 +1,13 @@
+version: 2
+
+models:
+  - name: stg_riksdag_speeches
+    description: Every Riksdag speech from Riksdagen's per-session archives, text as plain paragraphs.
+    columns:
+      - name: speech_id
+        data_tests: [unique, not_null]
+      - name: source_url
+        data_tests: [not_null]
+      - name: archive_hash
+        description: SHA-256 of the archive as fetched (warehouse/raw/riksdagen/_manifest.jsonl).
+        data_tests: [not_null]

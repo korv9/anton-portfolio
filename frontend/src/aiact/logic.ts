@@ -152,3 +152,48 @@ export function obligationMatrix(obligations: Obligation[]) {
   }
   return matrix
 }
+
+/** Party totals over the whole period from party × year rows: speeches, AI speeches, share. */
+export function partyTotals(
+  rows: { party: string; speeches: number; ai_speeches: number }[],
+) {
+  const totals = new Map<string, { speeches: number; ai: number }>()
+  for (const r of rows) {
+    const t = totals.get(r.party) ?? { speeches: 0, ai: 0 }
+    t.speeches += r.speeches
+    t.ai += r.ai_speeches
+    totals.set(r.party, t)
+  }
+  return [...totals.entries()]
+    .map(([party, t]) => ({ party, ...t, share: t.ai / t.speeches }))
+    .sort((a, b) => b.share - a.share)
+}
+
+/** Yearly share from monthly rows (sums, not an average of monthly shares). */
+export function yearlyShare(
+  rows: { month: string; speeches: number; ai_speeches: number }[],
+) {
+  const years = new Map<string, { speeches: number; ai: number }>()
+  for (const r of rows) {
+    const y = r.month.slice(0, 4)
+    const t = years.get(y) ?? { speeches: 0, ai: 0 }
+    t.speeches += r.speeches
+    t.ai += r.ai_speeches
+    years.set(y, t)
+  }
+  return [...years.entries()].map(([year, t]) => ({
+    year,
+    ...t,
+    share: t.ai / t.speeches,
+  }))
+}
+
+/** Words for a framing balance: which side the party's AI speeches lean to, or too few. */
+export function balanceWord(
+  balance: number | null,
+): 'a' | 'b' | 'even' | 'few' {
+  if (balance == null) return 'few'
+  if (balance > 0.15) return 'a'
+  if (balance < -0.15) return 'b'
+  return 'even'
+}

@@ -117,3 +117,27 @@ test('the observatory works on a phone without sideways scrolling', async ({
     expect(overflow, path).toBeLessThanOrEqual(1)
   }
 })
+
+test('the Riksdag view shows AI over time with the Act’s milestones and its method', async ({
+  page,
+}) => {
+  await page.goto('/#ai-act-politics')
+  await expect(
+    page.getByRole('heading', { level: 1, name: 'The Riksdag and AI' }),
+  ).toBeVisible()
+  await expect(page.locator('.aa-line-plot svg')).toBeVisible()
+  await expect(page.locator('.aa-milestone-key li').first()).toContainText(
+    'Commission proposes',
+  )
+  await expect(page.locator('.aa-caveat')).toContainText(
+    'does not prove causation',
+  )
+  await expect(page.locator('.aa-dictionary code').first()).toBeVisible()
+  await expect(
+    page.locator('.aa-excerpt').first().locator('.aa-kind'),
+  ).toHaveText('Speech, verbatim')
+  await page.getByRole('button', { name: 'Open the comparison' }).click()
+  await expect(page.locator('.aa-sim li').first()).toContainText('similarity')
+  const axe = await new AxeBuilder({ page }).include('.aiact').analyze()
+  expect(axe.violations).toEqual([])
+})

@@ -35,7 +35,7 @@ def document_type(celex: str, relation: str) -> str:
     if re.match(r"^3\d{4}D", celex):
         return "decision_based_on"
     if re.match(r"^5\d{4}PC", celex):
-        return "legislative_proposal"
+        return "original_proposal" if relation == "adopts" else "legislative_proposal"
     if re.match(r"^5\d{4}DC", celex):
         return "commission_document"
     if re.match(r"^5\d{4}IP", celex):
@@ -49,9 +49,12 @@ def model(dbt, session):
     from legal.cellar import eurlex_url, parse_related
 
     related = dbt.ref("stg_ai_act_related").df()
-    latest = related[related["is_latest"]].iloc[0]
+    latest = related[related["is_latest"] & (related["query"] == "related")].iloc[0]
     rows = [r for r in parse_related(json.loads(latest["answer_json"]))
             if r["relation"] != "consolidates" or r["celex"].startswith(CONSOLIDATED)]
+    origin = related[related["is_latest"] & (related["query"] == "origin")]
+    if len(origin):
+        rows += parse_related(json.loads(origin.iloc[0]["answer_json"]))
 
     texts = dbt.ref("stg_ai_act_texts").df()
     languages = texts.groupby("celex")["language"].apply(lambda s: ",".join(sorted(s))).to_dict()

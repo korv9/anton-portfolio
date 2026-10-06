@@ -1,0 +1,20 @@
+version: 2
+
+# The Riksdag's speeches, fetched by platform/ingest/riksdagen/ingest_speeches.py into
+# warehouse/raw/riksdagen/speeches: one zip archive per riksmöte, exactly as served.
+
+sources:
+  - name: riksdagen_speeches
+    description: Riksdagen's speech archives (anföranden), one per session, and their fetch log.
+    tables:
+      - name: archives
+        description: Each archive as bytes (read_blob); bronze opens the zip.
+        meta:
+          external_location: >-
+            read_blob('{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/riksdagen/speeches/anforande-*.json.zip')
+      - name: fetches
+        description: The Riksdagen fetch log (lib/rawstore.py) with URL, time and SHA-256 per file.
+        meta:
+          external_location: >-
+            read_json('{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/riksdagen/_manifest.jsonl',
+            format = 'newline_delimited', union_by_name = true)

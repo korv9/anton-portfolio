@@ -2,7 +2,8 @@
 
     python platform/ingest/eu_ai_act/ingest_cellar.py
 
-1. Asks Cellar's SPARQL endpoint which documents amend, correct, consolidate, propose to
+1. Asks Cellar's SPARQL endpoint for the proposal the act adopts (cellar/origin@<sha12>.json)
+   and which documents amend, correct, consolidate, propose to
    amend or are based on Regulation (EU) 2024/1689, and keeps the answer as it came, one file
    per distinct answer (cellar/related@<sha12>.json): a new amendment or corrigendum shows up
    as a new version, and older answers stay.
@@ -37,14 +38,18 @@ SOURCE = "eu_ai_act"
 PAUSE = 2.0
 
 
-def related(http) -> list[dict]:
-    query = cellar.related_query(CELEX)
-    response = http.get(cellar.SPARQL, params={"query": query}, timeout=120,
-                        headers={"Accept": "application/sparql-results+json"})
+def ask(http, query: str, relative: str) -> list[dict]:
+    headers = {"Accept": "application/sparql-results+json"}
+    response = http.get(cellar.SPARQL, params={"query": query}, timeout=120, headers=headers)
     response.raise_for_status()
-    rawstore.store_version(SOURCE, "cellar/related.json", response.content,
-                           url=response.url, headers={"Accept": "application/sparql-results+json"})
+    rawstore.store_version(SOURCE, relative, response.content, url=response.url, headers=headers)
     return cellar.parse_related(response.json())
+
+
+def related(http) -> list[dict]:
+    """Documents pointing to the act, and the proposal the act adopts (cellar/origin@…)."""
+    ask(http, cellar.origin_query(CELEX), "cellar/origin.json")
+    return ask(http, cellar.related_query(CELEX), "cellar/related.json")
 
 
 def wanted_texts(rows: list[dict]) -> list[tuple[str, str]]:

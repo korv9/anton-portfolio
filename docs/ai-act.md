@@ -155,12 +155,18 @@ affected; latest official change, application date, next milestone, latest guida
 snapshot sized for a screenshot with "copy as text"), today (every article by chapter with its
 status on the reader's date), timeline, roles, risk classes, obligations (role × topic matrix
 and a filterable list), the **startup navigator**, changes (with "what changed this month")
-and sources. `#ai-act-article?a=<n>` opens an article with its official text in the reader's
+the Riksdag and AI (`#ai-act-politics`) and sources. `#ai-act-article?a=<n>` opens an article with its official text in the reader's
 language. The reader's date decides what applies; `?idag=YYYY-MM-DD` previews another day.
 
 The navigator's rules live in `platform/publish/eu_ai_act/navigator.json` and are checked
 against the obligations and articles when published. Its result says what a scenario *may
 involve* and never classifies anyone.
+
+## The Riksdag and AI
+
+`#ai-act-politics` reads every Riksdag speech since 2016/17 against the Act: how often AI comes up,
+with which words, by which party, and which speeches sit closest to which articles by semantic
+similarity. See [ai-politics.md](ai-politics.md).
 
 ## Limitations
 
