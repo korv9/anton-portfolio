@@ -38,6 +38,13 @@ export type ProjectEntry = {
   category: 'ai' | 'data'
   status: ProjectStatus
   featured: boolean
+  /**
+   * On the start page: one line a recruiter understands without the method, and the few tools
+   * that prove it. Only projects with this field appear there, in registry order.
+   */
+  home?: { line: Bilingual; tech: string[] }
+  /** Exploratory research: listed under Research & experiments, apart from other work. */
+  research?: boolean
   code?: string | string[]
   /** A group project: say so. */
   team?: Bilingual
@@ -88,6 +95,13 @@ export const PROJECTS: ProjectEntry[] = [
     category: 'data',
     status: 'live',
     featured: true,
+    home: {
+      line: t(
+        'Byggde en pipeline och en analysprodukt av riksdagens öppna data: tal, voteringar, budget och val.',
+        'Built a pipeline and analytical product from Sweden’s open parliamentary data: speeches, votes, budgets and elections.',
+      ),
+      tech: ['Python', 'dbt', 'DuckDB', 'React'],
+    },
     code: 'https://github.com/korv9/anton-portfolio',
     pages: ['politik'],
   },
@@ -128,6 +142,13 @@ export const PROJECTS: ProjectEntry[] = [
     category: 'data',
     status: 'live',
     featured: true,
+    home: {
+      line: t(
+        'Gjorde om EU:s AI-förordning från officiella källor till en sökbar karta över skyldigheter, roller och datum.',
+        'Turned the EU AI Act, from official sources, into a searchable map of obligations, roles and dates.',
+      ),
+      tech: ['Python', 'dbt', 'DuckDB', 'NLP'],
+    },
     code: 'https://github.com/korv9/anton-portfolio/blob/main/docs/ai-act.md',
     pages: ['aiact'],
     nav: [
@@ -183,6 +204,13 @@ export const PROJECTS: ProjectEntry[] = [
     category: 'data',
     status: 'live',
     featured: true,
+    home: {
+      line: t(
+        'Räknade och analyserade nästan fem miljoner svenska jobbannonser för att visa vad arbetsgivare efterfrågar.',
+        'Counted and analysed nearly five million Swedish job ads to show what employers ask for.',
+      ),
+      tech: ['Python', 'dbt', 'DuckDB', 'GitHub Actions'],
+    },
     code: 'https://github.com/korv9/swedish-job-market-analytics',
     pages: ['jobs'],
   },
@@ -220,6 +248,13 @@ export const PROJECTS: ProjectEntry[] = [
     category: 'ai',
     status: 'experimental',
     featured: true,
+    home: {
+      line: t(
+        'Kartlade tusentals textavsnitt ur myter och folksagor för att hitta återkommande mönster utan fördefinierade kategorier.',
+        'Mapped thousands of passages from myths and folk tales to find recurring patterns without predefined categories.',
+      ),
+      tech: ['Python', 'NLP', 'UMAP', 'HDBSCAN'],
+    },
     code: 'https://github.com/korv9/anton-portfolio/blob/main/docs/symbolic-atlas.md',
     pages: ['symbolic'],
     nav: [
@@ -255,6 +290,13 @@ export const PROJECTS: ProjectEntry[] = [
     category: 'data',
     status: 'live',
     featured: true,
+    home: {
+      line: t(
+        'Samlade fem offentliga källor i en gemensam datamodell för att följa jobb, hälsa och tillit i Sveriges län.',
+        'Combined five public sources in one data model to follow jobs, health and trust across Sweden’s counties.',
+      ),
+      tech: ['dbt', 'DuckDB', 'Star schema', 'Parquet'],
+    },
     code: 'https://github.com/korv9/anton-portfolio/tree/main/platform',
     pages: ['welfare', 'analysis'],
   },
@@ -328,6 +370,7 @@ export const PROJECTS: ProjectEntry[] = [
     category: 'ai',
     status: 'experimental',
     featured: false,
+    research: true,
     code: 'https://github.com/korv9/anton-portfolio/blob/main/docs/philosophy-atlas.md',
     pages: ['philosophy'],
     nav: [
@@ -363,6 +406,7 @@ export const PROJECTS: ProjectEntry[] = [
     category: 'ai',
     status: 'experimental',
     featured: false,
+    research: true,
     code: 'https://github.com/korv9/anton-portfolio/blob/main/docs/concept-constellation.md',
     pages: ['concepts'],
     nav: [
@@ -454,6 +498,7 @@ export const PROJECTS: ProjectEntry[] = [
     category: 'ai',
     status: 'in-progress',
     featured: false,
+    research: true,
     pages: ['allegoria'],
   },
   {
@@ -631,7 +676,10 @@ export const FLAGSHIPS = PROJECTS.filter((p) => p.featured).sort((a, b) =>
 )
 
 /** Everything else, in registry order. */
-export const OTHER_WORK = PROJECTS.filter((p) => !p.featured)
+/** The start page's selected work: projects with a recruiter line, in registry order. */
+export const HOME_PROJECTS = PROJECTS.filter((p) => p.home)
+export const OTHER_WORK = PROJECTS.filter((p) => !p.featured && !p.research)
+export const RESEARCH = PROJECTS.filter((p) => !p.featured && p.research)
 
 export const projectById = (id: string) => PROJECTS.find((p) => p.id === id)
 

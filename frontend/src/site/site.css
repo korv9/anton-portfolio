@@ -3,8 +3,12 @@
  * as on the start page; the breadcrumb, a project's own navigation,
  * the previous / next project and the footer.
  */
-.site-shell {
+:root {
   --header-h: 0px;
+  /* Scrolling to an element (a link to a section, focus moving) stops below the header. */
+  scroll-padding-top: calc(var(--header-h) + 8px);
+}
+.site-shell {
   width: calc(100% - 40px);
   max-width: none;
   margin: 20px auto;
@@ -19,8 +23,10 @@
 }
 
 /* ---------- Header ---------- */
+/* The header and its navigation stay on screen while the page scrolls. */
 .site-bar {
-  position: relative;
+  position: sticky;
+  top: 0;
   z-index: 40;
   display: flex;
   align-items: center;
@@ -288,6 +294,33 @@
   .site-bar .language-switch button {
     padding-inline: 5px;
     font-size: 10px;
+  }
+}
+/* Scrolled: one slim row, the name small beside the navigation. */
+.site-bar.is-compact {
+  grid-template-columns: max-content minmax(0, 1fr) auto;
+  grid-template-areas: 'name nav lang';
+  padding-block: 8px;
+  border-bottom: 1px solid var(--line);
+}
+.site-bar.is-compact .wordmark-name {
+  font-size: clamp(18px, 1.6vw, 24px);
+  letter-spacing: -0.04em;
+}
+.site-bar.is-compact .global-nav {
+  justify-content: flex-start;
+  gap: clamp(16px, 2.4vw, 40px);
+}
+.site-bar.is-compact .global-nav .nav-item {
+  font-size: clamp(15px, 1.1vw, 18px);
+}
+@media (max-width: 860px) {
+  .site-bar.is-compact {
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    grid-template-areas: 'name lang menu';
+  }
+  .site-bar.is-compact .wordmark-name {
+    font-size: 20px;
   }
 }
 /* The intro's tests and old styles still look for a location line; there is none now. */

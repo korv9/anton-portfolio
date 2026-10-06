@@ -188,8 +188,7 @@ export default function Partiledardebatter({ route }: { route: Route }) {
           {l(
             'Read the debate reply by reply',
             'Läs debatten replik för replik',
-          )}{' '}
-          →
+          )}
         </a>
       </p>
 
@@ -324,7 +323,7 @@ export default function Partiledardebatter({ route }: { route: Route }) {
                     <td className="num">{num(d.replies)}</td>
                     <td>
                       <a href={debateHref('partiledare', d.session, d.id)}>
-                        {l('Reply by reply', 'Replik för replik')} →
+                        {l('Reply by reply', 'Replik för replik')}
                       </a>
                     </td>
                   </tr>

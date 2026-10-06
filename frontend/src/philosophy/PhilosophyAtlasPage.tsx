@@ -8,6 +8,7 @@
  */
 import { useEffect, useMemo, useState } from 'react'
 import { l } from '../i18n'
+import { ProductQuality } from '../quality/QualityPanel'
 import type { Route } from '../router'
 import { fetchData } from '../dataSource'
 import { ProjectNav } from '../projects/ProjectNav'
@@ -383,6 +384,7 @@ export default function PhilosophyAtlasPage({ route }: { route: Route }) {
           onChange={(id) => set({ spanning: id })}
         />
         <Works works={works} />
+        <ProductQuality product="philosophy" />
         <Method summary={summary} />
       </div>
     </div>
@@ -677,7 +679,7 @@ function Works({ works }: { works: Work[] }) {
                   />{' '}
                   {w.author}, <em>{w.title}</em>{' '}
                   <a href={w.source_url} target="_blank" rel="noreferrer">
-                    Gutenberg ↗
+                    Gutenberg
                   </a>
                 </td>
                 <td>
@@ -752,7 +754,7 @@ function Method({ summary }: { summary: Summary }) {
           target="_blank"
           rel="noreferrer"
         >
-          docs/philosophy-atlas.md ↗
+          docs/philosophy-atlas.md
         </a>
       </p>
     </section>

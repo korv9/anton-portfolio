@@ -226,7 +226,7 @@ export default function Story({ route }: { route: Route }) {
                       ?.scrollIntoView({ behavior: 'smooth' })
                   }}
                 >
-                  {l('Explore it below', 'Utforska den nedan')} ↓
+                  {l('Explore it below', 'Utforska den nedan')}
                 </a>
               </li>
             )}

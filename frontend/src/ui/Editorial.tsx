@@ -82,12 +82,7 @@ export function ProjectRow({
       <p className="ds-number">{number}</p>
       <div className="ds-project-copy">
         <h3 id={`project-${id}`}>
-          <a href={href}>
-            {title}
-            <span className="ds-project-arrow" aria-hidden="true">
-              ⟶
-            </span>
-          </a>
+          <a href={href}>{title}</a>
         </h3>
         {children}
       </div>

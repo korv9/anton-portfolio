@@ -32,18 +32,29 @@ PARTIES = {"S", "M", "SD", "V", "C", "KD", "MP", "L"}
 LEFT_OUT = ("Tidigare", "Avliden", "Inga uppdrag", "Status saknas", "Tillgänglig ersättare")
 
 
+def field(person: dict, key: str) -> str:
+    """One field as text. A person listed twice comes back with every field as a list of the
+    same values (Tobias Smedberg, October 2026); take the first."""
+    value = person.get(key) or ""
+    if isinstance(value, list):
+        value = value[0] if value else ""
+    return str(value).strip()
+
+
 def in_office(person: dict) -> bool:
-    status = (person.get("status") or "").strip()
-    return bool(status) and not status.startswith(LEFT_OUT) and person.get("parti") in PARTIES
+    status = field(person, "status")
+    return bool(status) and not status.startswith(LEFT_OUT) and field(person, "parti") in PARTIES
 
 
 def main() -> None:
     response = session().get(URL, timeout=180)
     response.raise_for_status()
     people = response.json()["personlista"]["person"]
+    unique = {
+        (f"{field(p, 'tilltalsnamn')} {field(p, 'efternamn')}", field(p, "parti")):
+            field(p, "status") for p in people if in_office(p)}
     current = sorted(
-        ({"name": f"{p['tilltalsnamn'].strip()} {p['efternamn'].strip()}", "party": p["parti"],
-          "role": p["status"].strip()} for p in people if in_office(p)),
+        ({"name": name, "party": party, "role": role} for (name, party), role in unique.items()),
         key=lambda p: p["name"])
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps({

@@ -3,7 +3,6 @@ import { l } from '../i18n'
 import { jsonData } from '../jobs/clusterData'
 import { VisualizationFrame } from '../ui/Editorial'
 
-/** A workflow illustration, not invented incident assignments or model scores. */
 export function MethodPreview() {
   return (
     <VisualizationFrame

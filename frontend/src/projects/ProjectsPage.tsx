@@ -7,7 +7,12 @@ import { useState } from 'react'
 import { l } from '../i18n'
 import { useReveal } from '../home/reveal'
 import ProjectTile from './ProjectTile'
-import { FLAGSHIPS, OTHER_WORK, type Bilingual } from './projectRegistry'
+import {
+  FLAGSHIPS,
+  OTHER_WORK,
+  RESEARCH,
+  type Bilingual,
+} from './projectRegistry'
 import '../home/home.css'
 import './projects.css'
 
@@ -32,8 +37,8 @@ export default function ProjectsPage() {
         <h1>{l('What I have built', 'Det jag har byggt')}</h1>
         <p className="page-lead">
           {l(
-            'From raw public data to finished products: pipelines, data models, machine learning and web apps. Five selected projects first, then other work.',
-            'Från rå offentlig data till färdiga produkter: pipelines, datamodeller, maskininlärning och webbappar. Fem utvalda projekt först, sedan övriga arbeten.',
+            'From raw public data to finished products: pipelines, data models, machine learning and web apps. Selected projects first, then other work, then research and experiments.',
+            'Från rå offentlig data till färdiga produkter: pipelines, datamodeller, maskininlärning och webbappar. Utvalda projekt först, sedan övriga arbeten, sist forskning och experiment.',
           )}
         </p>
       </header>
@@ -52,7 +57,7 @@ export default function ProjectsPage() {
                 <p className="cv-kind">{b(p.descriptor)}</p>
                 <h3>
                   <a href={p.href}>
-                    {b(p.title)} <span aria-hidden="true">→</span>
+                    {b(p.title)} <span aria-hidden="true"></span>
                   </a>
                 </h3>
                 <dl className="selected-facts">
@@ -108,6 +113,23 @@ export default function ProjectsPage() {
         </div>
         <ul className="cv-tiles">
           {other.map((project) => (
+            <ProjectTile key={project.id} project={project} />
+          ))}
+        </ul>
+      </section>
+
+      <section className="other-work" aria-labelledby="research-title">
+        <h2 className="cv-area-title" id="research-title">
+          {l('Research & experiments', 'Forskning och experiment')}
+        </h2>
+        <p className="page-lead">
+          {l(
+            'Exploratory work on meaning in text: open questions, documented limits, nothing presented as finished.',
+            'Utforskande arbete om betydelse i text: öppna frågor, dokumenterade begränsningar, inget presenterat som färdigt.',
+          )}
+        </p>
+        <ul className="cv-tiles">
+          {RESEARCH.map((project) => (
             <ProjectTile key={project.id} project={project} />
           ))}
         </ul>

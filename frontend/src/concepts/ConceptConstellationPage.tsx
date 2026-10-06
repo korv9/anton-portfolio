@@ -7,6 +7,7 @@
  */
 import { useEffect, useState } from 'react'
 import { l } from '../i18n'
+import { ProductQuality } from '../quality/QualityPanel'
 import type { Route } from '../router'
 import { fetchData } from '../dataSource'
 import { ProjectNav } from '../projects/ProjectNav'
@@ -380,6 +381,7 @@ function Constellation({ route, data }: { route: Route; data: Data }) {
 
         <Profiles summary={summary} profiles={profiles} />
 
+        <ProductQuality product="concepts" />
         <section
           id="concepts-method"
           className="cc-section"
@@ -461,8 +463,7 @@ function ConceptCard({ concept, data }: { concept: Concept; data: Data }) {
           {l(
             `Open ${concept.label_en}`,
             `Öppna ${concept.label_sv.toLowerCase()}`,
-          )}{' '}
-          →
+          )}
         </a>
       </p>
     </>

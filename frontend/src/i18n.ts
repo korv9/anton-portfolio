@@ -146,7 +146,7 @@ const swedish: Record<string, string> = {
     'En karta över språket i svenska partiledardebatter. Punkter nära varandra använder liknande ord; kartan visar inte politiska ståndpunkter.',
   'Swedish Parliament open data': 'Riksdagens öppna data',
   'Text segments': 'Textsegment',
-  'Explore debate × budget charts ↓': 'Utforska debatt och budget i diagram ↓',
+  'Explore debate × budget charts': 'Utforska debatt och budget i diagram',
   'speeches analysed': 'analyserade tal',
   'text segments': 'textsegment',
   'topic clusters': 'ämneskluster',
@@ -169,7 +169,7 @@ const swedish: Record<string, string> = {
   'Loading report data…': 'Läser in rapportdata…',
   'Selected segment': 'Valt segment',
   'Original Swedish excerpt': 'Utdrag på originalspråket svenska',
-  'Open parliamentary source ↗': 'Öppna källan hos riksdagen ↗',
+  'Open parliamentary source': 'Öppna källan hos riksdagen',
   'Select a dot on the map.': 'Välj en punkt på kartan.',
   'Main observation': 'Viktig observation',
   'Method & limitations': 'Metod och begränsningar',
@@ -202,7 +202,7 @@ const swedish: Record<string, string> = {
     'Dokumenterade textregler definierar rollgrupper och hittar teknikomnämnanden. Ett omnämnande kan vara valfritt eller negerat.',
   'An ad is not a hire. The archive may not cover every Swedish vacancy, and title-based seniority is an approximation.':
     'En annons är inte en anställning. Arkivet täcker kanske inte alla svenska lediga tjänster, och senioritet utifrån jobbtiteln är en uppskattning.',
-  'Code and methodology on GitHub ↗': 'Kod och metod på GitHub ↗',
+  'Code and methodology on GitHub': 'Kod och metod på GitHub',
   'Experimental results from cleaned measurements through evaluation on unfamiliar pairs, drugs and cell lines.':
     'Experimentella resultat från rensade mätningar till utvärdering på tidigare okända par, läkemedel och cellinjer.',
   'Allegoria · work in progress': 'Allegoria · pågående projekt',

@@ -51,14 +51,14 @@ export default function HomieProject() {
           target="_blank"
           rel="noreferrer"
         >
-          {t('Source & implementation status ↗')}
+          {t('Source & implementation status')}
         </a>
         <a
           href="https://github.com/korv9/homie-api/blob/3c6da1ae24869107bd4b5f0fad10f0f7ed2de1af/openapi.json"
           target="_blank"
           rel="noreferrer"
         >
-          {t('OpenAPI contract ↗')}
+          {t('OpenAPI contract')}
         </a>
       </div>
     </article>

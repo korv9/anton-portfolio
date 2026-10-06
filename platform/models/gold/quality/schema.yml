@@ -1,0 +1,74 @@
+version: 2
+
+models:
+  - name: dim_quality_product
+    columns:
+      - name: product_id
+        data_tests: [unique, not_null]
+  - name: mart_quality_checks
+    description: One data-quality check result per row.
+    columns:
+      - name: quality_check_id
+        data_tests: [unique, not_null]
+      - name: product_id
+        data_tests:
+          - relationships:
+              arguments: {to: ref('dim_quality_product'), field: product_id}
+      - name: dimension
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [accuracy, completeness, consistency, credibility, currentness, traceability]
+      - name: status
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [pass, warning, fail, not_measured, not_applicable]
+      - name: severity
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [info, warning, error]
+      - name: method
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [dbt_test, python, manual_review, not_measured, not_applicable]
+  - name: mart_analysis_validity
+    description: One analytical validity diagnostic per row.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [analysis_id, diagnostic_id]
+    columns:
+      - name: product_id
+        data_tests:
+          - relationships:
+              arguments: {to: ref('dim_quality_product'), field: product_id}
+      - name: status
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [supported, warning, insufficient_evidence, invalidated, not_evaluated]
+      - name: kind
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [construct_validity, confounding, representativeness, ml_data_quality]
+      - name: interpretation
+        data_tests: [not_null]
+  - name: mart_product_quality_summary
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [product_id, dimension]
+  - name: mart_product_validity_summary
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [product_id, kind]
+  - name: mart_analysis_confounders
+    columns:
+      - name: remaining_risk
+        data_tests: [not_null]

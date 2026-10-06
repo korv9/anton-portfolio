@@ -49,7 +49,7 @@ export function ArticleView({
           'No such article in the current text.',
           'Ingen sådan artikel i den gällande texten.',
         )}{' '}
-        <a href="#ai-act-today">{l('All articles →', 'Alla artiklar →')}</a>
+        <a href="#ai-act-today">{l('All articles', 'Alla artiklar')}</a>
       </p>
     )
   const index = data.articles.indexOf(article)

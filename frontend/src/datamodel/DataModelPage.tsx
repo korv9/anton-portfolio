@@ -434,8 +434,7 @@ export default function DataModelPage({ view }: { view: string }) {
             {l(
               'See every relation as an ER diagram',
               'Se alla relationer som ER-diagram',
-            )}{' '}
-            →
+            )}
           </a>
         </p>
       </div>

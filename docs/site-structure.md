@@ -41,6 +41,8 @@ Selected projects, in this order:
 | 05 | How is Sweden doing? | `#sweden` (and `#analysis`) |
 | 06 | Degree project | `#thesis` |
 
+Supporting technical page: Quality & Validity (`#quality`, [quality-and-validity.md](quality-and-validity.md)), linked from the footer (Under the hood), Data Constellation and each product's *Quality & validity* section.
+
 Experimental, not featured: Philosophy Atlas (`#philosophy-atlas`, [philosophy-atlas.md](philosophy-atlas.md)) and Concept Constellation (`#concept-constellation`, concept pages `#concept-<id>`, [concept-constellation.md](concept-constellation.md)).
 
 Everything else (DrugComb, taLLMan, Allegoria, DiVA, Homie, RAG, MIMII, IN1) is other work.
@@ -55,37 +57,58 @@ Everything else (DrugComb, taLLMan, Allegoria, DiVA, Homie, RAG, MIMII, IN1) is 
 ### Route types
 
 - **Global destinations:** `#start`, `#projekt`, `#erfarenhet`, `#kompetenser`, `#om-mig`, `#alla-projekt`.
-- **Platform map:** `#data-constellation` (Data Constellation, [data-constellation.md](data-constellation.md)), linked from the Projects menu, the hero and the footer; its breadcrumb reads "Projects / Technical / Data Constellation".
+- **Platform map:** `#data-constellation` (Data Constellation, [data-constellation.md](data-constellation.md)), linked from the Projects menu, the start page's Under the hood section and the footer; its breadcrumb reads "Projects / Technical / Data Constellation".
 - **Project destinations:** each registry entry's address.
 - **Deep dives:** the views inside a project (`#politik-*`, `#jobb-*`, `#now-*`, `#symbolic-*`, `#ai-act-*`, …).
-- **Legacy redirects** (`frontend/src/router.ts`): `#about`, `#contact`, `#kontakt` and `#utbildning` go to `#om-mig`; `#experience` to `#erfarenhet`; `#projects` to `#projekt`. Every earlier project address still opens its page.
+- **Legacy redirects** (`frontend/src/router.ts`): `#about`, `#contact`, `#kontakt` go to `#om-mig`; `#experience` and `#utbildning` to `#erfarenhet`; `#projects` to `#projekt`. Every earlier project address still opens its page.
 
 ## Start page
 
+Simple first, depth on demand. The start page is a recruiter-facing summary; the project pages
+carry the depth, and the technical pages (Data Constellation, Quality & Validity) the platform
+detail. The start page is deliberately plainer than the project pages.
+
 In the order a recruiter reads it (`frontend/src/home/HomePage.tsx`):
 
-1. **Hero** (`#start`): one slim row with role, one sentence, and links to the projects, the CV, GitHub, LinkedIn and email.
-2. **First screen, two columns:**
-   - **left, Selected projects** (`#projekt`): one card per selected project with number, descriptor, summary and four tech tags, over its own live chart as a faded backdrop (stronger on hover), then a link to all projects;
-   - **right, Experience** (`#erfarenhet`): one row per job, where a click opens what was done and with what, and the **education** under it.
-3. **Tech stack** (`#kompetenser`): the eclipse radar as the picture (hover shows which projects use a tool) beside the tool groups.
-4. **About** (`#om-mig`): about and contact.
+1. **Hero** (`#start`): the role (Data Engineer · Analytics Engineer · Applied AI), one
+   sentence on what I build, the core tools on one line, then *View projects*, *Download CV
+   (PDF)*, GitHub, LinkedIn and email.
+2. **First screen, everything about the job, two columns:**
+   - **left, Experience** (`#erfarenhet`): one entry per job with company, role, period and
+     impact visible; *What I did* opens the details and tools;
+   - **right, Education** (`#utbildning`, with the thesis and earlier work) and the **Core
+     stack** (`#kompetenser`): five groups (Data, Platform, Analytics, AI/ML, Web), the full
+     technical stack behind a disclosure.
+3. **Selected work** (`#projekt`): the five projects in `HOME_PROJECTS` (registry entries with
+   a `home` field), numbered 01–05, each with one plain-language line, its tech and a link.
+   Each row's live chart is a faded backdrop that loads only when the row comes into view
+   (`LazyPreview`), and never at 760 px or below.
+4. **About** (`#om-mig`): two sentences and contact.
+5. **Under the hood** (`#under-huven`): links to Data Constellation, Quality & Validity and
+   All projects. None of these appear in the first screen.
 
-Everything is on the page; nothing hides behind the radar. On a phone (and below 900 px) the two columns stack: projects, then experience and education.
-The words live in `frontend/src/home/content.ts` and `orbitContent.ts`; every fact comes from the CVs.
+The header and its navigation stay on screen on every page (`position: sticky`); once the page
+scrolls the header folds to one slim row with the name beside the navigation, and its height is
+published as `--header-h` so sticky elements below it (a product's sidebar) sit under it.
+Links carry no arrows.
 
-A short name intro plays once per session when the start page is opened directly (never on a
-deep link): organic clusters grown as branching filaments, with thin veins from each point to
-its cluster's core, travel into the name, whose points are then stitched together by veins of
-their own. Click, Enter or Escape skips it; with reduced motion it is a short fade.
-`frontend/src/site/Intro.tsx`.
+On a phone (and below 900 px) the two columns stack: experience, then education and the core stack.
+The words live in `frontend/src/home/content.ts`, `orbitContent.ts` and the `home` lines in
+`projects/projectRegistry.ts`; every fact comes from the CVs.
+
+A short name intro (about two seconds) plays once per session when the start page is opened
+directly, never on a deep link. Click, Enter or Escape skips it; with reduced motion it is
+skipped. `frontend/src/site/Intro.tsx`.
 
 ## Projects page
 
-`#alla-projekt` (`frontend/src/projects/ProjectsPage.tsx`) has two tiers:
+`#alla-projekt` (`frontend/src/projects/ProjectsPage.tsx`) has three tiers:
 
-- **Selected work:** the five selected projects as a numbered list, each with its question, what was built, the result and the tech.
+- **Selected work:** the selected projects as a numbered list, each with its question, what was
+  built, the result and the tech.
 - **Other work:** the remaining projects as tiles, filterable by All / AI / Data.
+- **Research & experiments:** exploratory work (registry entries with `research: true`:
+  Philosophy Atlas, Concept Constellation, Allegoria), kept off the start page.
 
 ## The politics product
 

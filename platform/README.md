@@ -78,6 +78,7 @@ before the politics build, since dbt reads the fact tables it writes.
 | Concept layer | The four corpora above (myth, philosophy, Riksdag, AI Act), by sample | `models/*/concepts`, `seeds/concepts`, `nlp/concepts`, `publish/concepts` | [docs/concept-layer.md](../docs/concept-layer.md), [docs/concept-constellation.md](../docs/concept-constellation.md) |
 | AI governance in job ads | JobTech historical archives (counted, no ads kept) | `models/*/job_ai_governance`, `seeds/job_ai_governance`, `publish/job_ai_governance` | [docs/ai-jobs.md](../docs/ai-jobs.md) |
 | AI governance timeline | The Riksdag and job-ad marts above, by month | `models/gold/cross_domain`, `seeds/cross_domain`, `publish/cross_domain` | [docs/ai-governance-timeline.md](../docs/ai-governance-timeline.md) |
+| Quality & validity | Every product's checks and analyses | `quality/`, `models/gold/quality`, `publish/quality` | [docs/quality-and-validity.md](../docs/quality-and-validity.md) |
 | Politics | Riksdagen, Statskontoret | Budget context and roll-call votes in `models/*/politics`; speeches and language still in `legacy/` | [docs/political-observatory.md](../docs/political-observatory.md) |
 
 ## Adding a source

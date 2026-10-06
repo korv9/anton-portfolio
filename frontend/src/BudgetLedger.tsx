@@ -263,7 +263,7 @@ export default function BudgetLedger({
                 target="_blank"
                 rel="noreferrer"
               >
-                {l('Agreement source ↗', 'Källa till överenskommelsen ↗')}
+                {l('Agreement source', 'Källa till överenskommelsen')}
               </a>
             </>
           )}
@@ -335,7 +335,7 @@ export default function BudgetLedger({
                         {doc.type === 'mot'
                           ? l('Motion', 'Motion')
                           : l('Proposition', 'Proposition')}{' '}
-                        {doc.reference} ↗
+                        {doc.reference}
                       </a>
                     ))}
                   </div>
@@ -363,7 +363,7 @@ export default function BudgetLedger({
                         target="_blank"
                         rel="noreferrer"
                       >
-                        {speech.party} ↗
+                        {speech.party}
                       </a>
                     ))}
                   </div>
@@ -542,7 +542,7 @@ export default function BudgetLedger({
                   <td>
                     {row && (
                       <a href={row.source_url} target="_blank" rel="noreferrer">
-                        {t('Riksdagen ↗')}
+                        {t('Riksdagen')}
                       </a>
                     )}
                   </td>

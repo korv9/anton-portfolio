@@ -80,7 +80,7 @@ export type Graph = {
   dbt_version?: string
 }
 
-export type Mode = 'platform' | 'model' | 'lineage'
+export type Mode = 'platform' | 'model' | 'lineage' | 'quality'
 
 /** Edges that carry data forward; the ones lineage highlighting follows. */
 export const FLOW: EdgeType[] = ['lineage', 'delivery', 'frontend-consumption']
@@ -107,6 +107,7 @@ const SHARED_PLACE: Record<string, [number, number]> = {
   'infra:warehouse': [4, -0.45],
   'infra:catalog': [6.8, -0.45],
   'infra:r2': [7.7, 0.45],
+  'infra:quality': [6.2, 0.45],
 }
 
 /** In the data-model view, tables are grouped by kind from left to right. */

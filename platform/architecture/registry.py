@@ -42,6 +42,7 @@ DBT_FOLDER_DOMAIN = {
     "job_ai_governance": "ai_act",  # AI governance words in job ads, read against the Act
     "philosophy": "philosophy",
     "concepts": "concepts",  # four corpora read against one set of curated concepts
+    "quality": "shared",  # quality checks and validity diagnostics across every product
     "cross_domain": "ai_act",  # the AI governance timeline: Riksdag and job ads by month
     "shared": "shared",
     "": "jobs",  # seeds at the root of seeds/: the job-ad role and technology patterns
@@ -178,6 +179,8 @@ PUBLISHERS = [
      "outputs": [{"pattern": "philosophy/*.json"}]},
     {"path": "platform/publish/cross_domain/export_ai_governance_timeline.py", "domain": "ai_act",
      "outputs": [{"pattern": "ai-act/signals.json", "inputs": ["mart_ai_governance_timeline"]}]},
+    {"path": "platform/publish/quality/export_quality.py", "domain": "shared",
+     "outputs": [{"pattern": "quality/*.json", "inputs": ["mart_quality_checks", "mart_analysis_validity"]}]},
     {"path": "platform/publish/concepts/export_concepts.py", "domain": "concepts",
      "outputs": [{"pattern": "concepts/*.json"}]},
     {"path": "platform/publish/job_ai_governance/export_job_ai_governance.py", "domain": "ai_act",
@@ -248,6 +251,8 @@ PRODUCTS = [
 ]
 
 SHARED = [
+    {"id": "quality", "label": "Quality & validity", "path": "platform/quality/evaluate.py",
+     "description": "Registered data-quality checks (ISO/IEC 25012-inspired) and analytical validity diagnostics for every product, in one result schema."},
     {"id": "rawstore", "label": "rawstore", "path": "platform/lib/rawstore.py",
      "description": "Immutable raw landing: every fetch stored with URL, time and SHA-256 under warehouse/raw."},
     {"id": "warehouse", "label": "dbt + DuckDB", "path": "platform/dbt_project.yml",

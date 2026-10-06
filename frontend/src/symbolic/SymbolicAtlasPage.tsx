@@ -14,6 +14,7 @@
  */
 import { useEffect, useMemo, useState } from 'react'
 import { l } from '../i18n'
+import { ProductQuality } from '../quality/QualityPanel'
 import type { Route } from '../router'
 import { useViewParams } from '../politik/useViewParams'
 import { Stage, StageBlock, StageFacts } from '../ui/Stage'
@@ -486,13 +487,22 @@ export default function SymbolicAtlasPage({ route }: { route: Route }) {
               {l(
                 'How far that can be reduced',
                 'Hur mycket det går att minska',
-              )}{' '}
-              →
+              )}
             </a>
           </p>
         </section>
       )}
       <ExperimentTable />
+      <div className="ds-container">
+        <ProductQuality
+          product="symbolic"
+          id="symbolic-quality"
+          intro={[
+            'Data quality answers “Did I build the dataset correctly?” Analytical validity answers “Does the model measure symbolic structure, or something else?” The two are checked separately.',
+            'Datakvalitet svarar på ”Byggde jag datasetet rätt?” Analytisk validitet svarar på ”Mäter modellen symbolisk struktur, eller något annat?” De två kontrolleras separat.',
+          ]}
+        />
+      </div>
       <section
         className="atlas-section ds-container"
         id="symbolic-method"
@@ -578,8 +588,7 @@ export default function SymbolicAtlasPage({ route }: { route: Route }) {
             {l(
               'Full method and limitations',
               'Hela metoden och begränsningarna',
-            )}{' '}
-            ↗
+            )}
           </a>
         </p>
       </section>

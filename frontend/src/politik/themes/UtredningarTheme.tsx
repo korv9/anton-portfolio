@@ -335,7 +335,7 @@ export default function UtredningarTheme({ route }: { route: Route }) {
                           : l('Bill', 'Proposition')}
                       </span>
                       <a href={b.url} target="_blank" rel="noreferrer">
-                        Prop. {b.bill} {b.title} ↗
+                        Prop. {b.bill} {b.title}
                       </a>
                       <small>
                         {b.bill_date ? dayName(b.bill_date) : ''}
@@ -357,8 +357,7 @@ export default function UtredningarTheme({ route }: { route: Route }) {
                   {l(
                     'Read the study at riksdagen.se',
                     'Läs utredningen på riksdagen.se',
-                  )}{' '}
-                  ↗
+                  )}
                 </a>
               </p>
             </article>

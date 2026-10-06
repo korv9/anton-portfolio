@@ -127,7 +127,6 @@ export default function ClusterPreview({
             'JobTech · UMAP · Sample of real advertisements',
             'JobTech · UMAP · Urval av verkliga annonser',
           )}{' '}
-          →
         </span>
       )}
     </a>

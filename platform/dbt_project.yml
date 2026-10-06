@@ -64,6 +64,8 @@ models:
     gold:
       +materialized: table
       +schema: gold
+      quality:
+        +tags: [quality]
       cross_domain:
         +tags: [cross_domain]
       concepts:

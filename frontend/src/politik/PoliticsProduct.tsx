@@ -266,7 +266,7 @@ function NextPage({
           className="politik-prev-link"
           href={withParties(previous.path, selected)}
         >
-          <small>← {chapter(previous)}</small>
+          <small>{chapter(previous)}</small>
           <span>{l(previous.en, previous.sv)}</span>
         </a>
       )}
@@ -278,7 +278,7 @@ function NextPage({
           <small>
             {l('Next', 'Nästa')}: {chapter(next)}
           </small>
-          <span>{l(next.question.en, next.question.sv)} →</span>
+          <span>{l(next.question.en, next.question.sv)}</span>
         </a>
       )}
     </nav>

@@ -499,7 +499,7 @@ export default function SkatterTheme({ route }: { route: Route }) {
               target="_blank"
               rel="noreferrer"
             >
-              {data.source} ↗
+              {data.source}
             </a>
           </p>
         </Card>

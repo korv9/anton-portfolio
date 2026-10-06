@@ -1115,10 +1115,7 @@ export default function DrugCombReport() {
           </p>
           <div className="product-actions">
             <a href="#drugcomb-data">
-              {l(
-                'Browse all result tables ↓',
-                'Bläddra i alla resultattabeller ↓',
-              )}
+              {l('Browse all result tables', 'Bläddra i alla resultattabeller')}
             </a>
             <a href="data/products/drugcomb/REPORT.md" download>
               {l('Full upstream report', 'Hela rapporten')}
@@ -1132,8 +1129,8 @@ export default function DrugCombReport() {
               rel="noreferrer"
             >
               {l(
-                'Source code at this revision ↗',
-                'Källkoden i den här versionen ↗',
+                'Source code at this revision',
+                'Källkoden i den här versionen',
               )}
             </a>
           </div>

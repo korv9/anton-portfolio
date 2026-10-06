@@ -430,7 +430,7 @@ export default function TaxCalculator({
             <span key={source.url}>
               {index > 0 && ' · '}
               <a href={source.url} target="_blank" rel="noreferrer">
-                {source.label} ↗
+                {source.label}
               </a>
             </span>
           ))}

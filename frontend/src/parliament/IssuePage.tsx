@@ -69,7 +69,7 @@ export default function IssuePage({ issueKey }: { issueKey: string }) {
     return (
       <div className="project-page">
         <p>{l('No such issue.', 'Sakfrågan finns inte.')}</p>
-        <a href="#now-issues">{l('All issues →', 'Alla sakfrågor →')}</a>
+        <a href="#now-issues">{l('All issues', 'Alla sakfrågor')}</a>
       </div>
     )
 
@@ -120,8 +120,8 @@ export default function IssuePage({ issueKey }: { issueKey: string }) {
           <p className="welfare-links">
             <a href="#taxes">
               {l(
-                'What Sweden collects in tax, and your own tax →',
-                'Vad Sverige tar in i skatt, och din egen skatt →',
+                'What Sweden collects in tax, and your own tax',
+                'Vad Sverige tar in i skatt, och din egen skatt',
               )}
             </a>
           </p>
@@ -244,7 +244,7 @@ export default function IssuePage({ issueKey }: { issueKey: string }) {
               `Utfall för utgiftsområde ${issue.expenditure_areas.join(', ')} (Statskontoret), löpande priser.`,
             )}{' '}
             <a href="#budget-outturn">
-              {l('Budget in depth →', 'Budgeten i detalj →')}
+              {l('Budget in depth', 'Budgeten i detalj')}
             </a>
           </p>
         </section>
@@ -289,9 +289,7 @@ export default function IssuePage({ issueKey }: { issueKey: string }) {
               'Sweden as a whole, annual. Read side by side with the decisions, not as their effect: many things move these figures.',
               'Hela riket, per år. Läs dem bredvid besluten, inte som deras effekt: många saker påverkar siffrorna.',
             )}{' '}
-            <a href="#sweden">
-              {l('All welfare data →', 'All välfärdsdata →')}
-            </a>
+            <a href="#sweden">{l('All welfare data', 'All välfärdsdata')}</a>
           </p>
         </section>
       )}
@@ -328,7 +326,7 @@ export default function IssuePage({ issueKey }: { issueKey: string }) {
               `Speeches in debates on the issue’s committee reports. About ${Math.round(issues.speech_link_coverage * 100)} % of issue-debate speeches can be linked to a report by title; the rest are not counted here.`,
               `Tal i debatter om frågans betänkanden. Omkring ${Math.round(issues.speech_link_coverage * 100)} % av talen i sakdebatter kan kopplas till ett betänkande via rubriken; övriga räknas inte här.`,
             )}{' '}
-            <a href="#debates">{l('Read the speeches →', 'Läs talen →')}</a>
+            <a href="#debates">{l('Read the speeches', 'Läs talen')}</a>
           </p>
         </section>
       )}

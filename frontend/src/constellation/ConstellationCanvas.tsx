@@ -123,6 +123,48 @@ function shape(
   }
 }
 
+/**
+ * A quality status as a small glyph in the site's ink, never a traffic-light colour:
+ * filled dot pass, triangle warning, cross fail, hollow dot not measured, dash not applicable.
+ */
+function drawMark(
+  ctx: CanvasRenderingContext2D,
+  status: string,
+  x: number,
+  y: number,
+) {
+  const r = 3.2
+  ctx.save()
+  ctx.strokeStyle = 'rgba(241, 236, 226, 0.95)'
+  ctx.fillStyle = 'rgba(241, 236, 226, 0.95)'
+  ctx.lineWidth = 1.3
+  ctx.beginPath()
+  if (status === 'pass') {
+    ctx.arc(x, y, r, 0, Math.PI * 2)
+    ctx.fill()
+  } else if (status === 'warning') {
+    ctx.moveTo(x, y - r - 0.6)
+    ctx.lineTo(x + r + 0.6, y + r)
+    ctx.lineTo(x - r - 0.6, y + r)
+    ctx.closePath()
+    ctx.stroke()
+  } else if (status === 'fail') {
+    ctx.moveTo(x - r, y - r)
+    ctx.lineTo(x + r, y + r)
+    ctx.moveTo(x + r, y - r)
+    ctx.lineTo(x - r, y + r)
+    ctx.stroke()
+  } else if (status === 'not_measured') {
+    ctx.arc(x, y, r, 0, Math.PI * 2)
+    ctx.stroke()
+  } else {
+    ctx.moveTo(x - r, y)
+    ctx.lineTo(x + r, y)
+    ctx.stroke()
+  }
+  ctx.restore()
+}
+
 export default function ConstellationCanvas({
   graph,
   placed,
@@ -131,6 +173,7 @@ export default function ConstellationCanvas({
   path,
   selected,
   hiddenLayers,
+  marks,
   onSelect,
 }: {
   graph: Graph
@@ -142,6 +185,8 @@ export default function ConstellationCanvas({
   path: Set<string> | null
   selected: string | null
   hiddenLayers: Set<string>
+  /** Quality view: node id -> quality status, drawn as a small mark beside the node. */
+  marks?: Map<string, string> | null
   onSelect: (id: string | null) => void
 }) {
   const frame = useRef<HTMLDivElement>(null)
@@ -328,7 +373,8 @@ export default function ConstellationCanvas({
       const [x, y] = px(n)
       const on = lit(n.id)
       const style = STYLE[n.type]
-      ctx.globalAlpha = on ? (n.enabled === false ? 0.45 : 1) : 0.12
+      const quiet = mode === 'quality' && !!marks && !marks.has(n.id)
+      ctx.globalAlpha = on ? (n.enabled === false || quiet ? 0.3 : 1) : 0.12
       if (
         on &&
         (n.type === 'frontend' || n.type === 'source' || n.id === selected)
@@ -346,6 +392,8 @@ export default function ConstellationCanvas({
       )
       ctx.shadowBlur = 0
       ctx.globalAlpha = 1
+      const mark = mode === 'quality' ? marks?.get(n.id) : undefined
+      if (mark) drawMark(ctx, mark, x + style.r + 5, y - style.r - 3)
       const landmark =
         n.type === 'source' ||
         n.type === 'frontend' ||
@@ -414,6 +462,7 @@ export default function ConstellationCanvas({
     width,
     height,
     upright,
+    marks,
   ])
 
   const nearest = (e: React.MouseEvent): Placed | null => {

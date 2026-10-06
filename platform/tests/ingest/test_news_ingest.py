@@ -63,6 +63,9 @@ class NewsIngestTests(unittest.TestCase):
         self.assertFalse(in_office({"status": "Avliden  2021-07-31", "parti": "M"}))
         self.assertFalse(in_office({"status": "Tillgänglig ersättare", "parti": "V"}))
         self.assertFalse(in_office({"status": "Tjänstgörande riksdagsledamot", "parti": "-"}))
+        # A person listed twice comes back with every field as a list.
+        self.assertTrue(in_office({"status": ["Tjänstgörande riksdagsledamot"] * 2,
+                                   "parti": ["V", "V"]}))
 
 
 if __name__ == "__main__":

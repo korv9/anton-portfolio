@@ -77,10 +77,67 @@ export const EXPERIENCE: {
   },
 ]
 
-export const EDUCATION = t(
-  'AI-utvecklare, JENSEN Yrkeshögskola, 2024–2026 (400 YH-poäng). Dessförinnan maskinoperatör på Delicato 2022–2025.',
-  'AI Developer, JENSEN Yrkeshögskola, 2024–2026 (400 YH credits). Before that, machine operator at Delicato 2022–2025.',
+/** Education, as the CV states it. */
+export const EDUCATION: {
+  title: Bilingual
+  school: string
+  period: string
+  note: Bilingual
+}[] = [
+  {
+    title: t('AI-utvecklare', 'AI Developer'),
+    school: 'JENSEN Yrkeshögskola',
+    period: '2024–2026',
+    note: t(
+      '400 YH-poäng, examen juni 2026',
+      '400 YH credits, graduated June 2026',
+    ),
+  },
+]
+
+/** Earlier work, not in the target field: one line. */
+export const EARLIER = t(
+  'Dessförinnan maskinoperatör på Delicato 2022–2025.',
+  'Before that, machine operator at Delicato 2022–2025.',
 )
+
+/**
+ * The start page's short stack: the target role's tools first, in a few groups. Every tool is
+ * in the CVs; the full list (SKILLS) stays one click away. Web is education and projects, not
+ * professional work, and says so.
+ */
+export const CORE_STACK: {
+  group: Bilingual
+  tools: (string | Bilingual)[]
+  note?: Bilingual
+}[] = [
+  {
+    group: t('Data', 'Data'),
+    tools: ['Python', 'SQL', 'PySpark', 'dbt', 'DuckDB'],
+  },
+  {
+    group: t('Plattform', 'Platform'),
+    tools: ['Databricks', 'Azure', 'Lakehouse', 'CI/CD'],
+  },
+  {
+    group: t('Analys', 'Analytics'),
+    tools: ['Power BI', 'DAX', t('Datamodellering', 'Data modelling')],
+  },
+  {
+    group: t('AI / ML', 'AI / ML'),
+    tools: [
+      'scikit-learn',
+      'TensorFlow',
+      'Embeddings',
+      t('Klustring', 'Clustering'),
+    ],
+  },
+  {
+    group: t('Webb', 'Web'),
+    tools: ['React', 'TypeScript'],
+    note: t('utbildning och projekt', 'education and projects'),
+  },
+]
 
 export const SKILLS: { group: Bilingual; top: string[]; more: string[] }[] = [
   {

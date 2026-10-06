@@ -1,0 +1,408 @@
+# Analytical validity: does an analysis measure what it claims to? Kept apart from data
+# quality (quality_registry.yml): correct data can still support an invalid conclusion.
+#
+# Each analysis states its question, the construct it is after, the proxy it actually measures,
+# its kind (construct_validity, confounding, representativeness, ml_data_quality) and one or more
+# diagnostics. A diagnostic is computed from an existing artefact by a function in
+# platform/quality/measures.py (never copied here by hand), or is qualitative (no function).
+#
+# A diagnostic's status comes from `rule` when it has a value:
+#   {metric_below: x, then: s1, otherwise: s2}  or  {metric_above: x, then: s1, otherwise: s2}
+# or is given as `status` for qualitative findings. Statuses: supported, warning,
+# insufficient_evidence, invalidated, not_evaluated. `interpretation` is a person's reading of
+# the result (content type: interpretation); values are derived.
+#
+# Confounders: analysis × confounder with diagnostic, effect, mitigation and remaining risk.
+
+analyses:
+  # ------------------------------------------------------------------ Symbolic Atlas (flagship)
+  - id: symbolic_atlas_clustering
+    product: symbolic
+    kind: confounding
+    question_en: Do the clusters reflect symbolic meaning, or which book a passage comes from?
+    question_sv: Speglar klustren symbolisk betydelse, eller vilken bok en passage kommer från?
+    target_construct: recurring symbolic semantic structure across documents
+    proxy_measure: sentence embeddings of each symbol's context, UMAP and HDBSCAN clusters
+    source: warehouse/features/symbolic/experiments/comparison.json
+    diagnostics:
+      - id: baseline_largest_book_share
+        experiment: baseline
+        function: symbolic_experiment_metric
+        args: {experiment: baseline, metric: mean_largest_book_share}
+        label_en: Largest book's share of a cluster (mean)
+        rule: {metric_below: 0.5, then: supported, otherwise: warning}
+        interpretation_en: The baseline map groups passages largely by book; most clusters are dominated by one text, its translator and style.
+      - id: baseline_cross_book_share
+        experiment: baseline
+        function: symbolic_experiment_metric
+        args: {experiment: baseline, metric: cross_book_occurrence_share}
+        label_en: Occurrences in clusters drawn from several books
+        rule: {metric_above: 0.5, then: supported, otherwise: warning}
+        interpretation_en: Few occurrences sit in clusters that span books, the pattern a symbolic structure across documents would need.
+      - id: book_centered_largest_book_share
+        experiment: book_centered
+        function: symbolic_experiment_metric
+        args: {experiment: book_centered, metric: mean_largest_book_share}
+        label_en: Largest book's share of a cluster (mean)
+        rule: {metric_below: 0.5, then: supported, otherwise: warning}
+        interpretation_en: Subtracting each book's mean vector lowers book dominance, but most clusters are still led by one book.
+      - id: book_centered_cross_book_share
+        experiment: book_centered
+        function: symbolic_experiment_metric
+        args: {experiment: book_centered, metric: cross_book_occurrence_share}
+        label_en: Occurrences in clusters drawn from several books
+        rule: {metric_above: 0.5, then: supported, otherwise: warning}
+        interpretation_en: About three times as many occurrences sit in cross-book clusters as in the baseline, still a minority.
+      - id: book_entropy_change
+        experiment: book_centered
+        function: symbolic_experiment_change
+        args: {metric: mean_book_entropy, before: baseline, after: book_centered}
+        label_en: Change in book entropy of clusters (book-centred minus baseline)
+        rule: {metric_above: 0.0, then: supported, otherwise: warning}
+        interpretation_en: Clusters mix books more evenly after centring. This shows the confounder was reduced, not that the remaining clusters are symbolic.
+      - id: trustworthiness_change
+        experiment: book_centered
+        function: symbolic_experiment_change
+        args: {metric: trustworthiness, before: baseline, after: book_centered}
+        label_en: Change in map trustworthiness (book-centred minus baseline)
+        rule: {metric_above: -0.05, then: supported, otherwise: warning}
+        interpretation_en: The 2-D map keeps about as much of the neighbourhood structure after centring; the improvement did not cost the map its fidelity.
+      - id: reviewed_clusters
+        function: symbolic_reviewed_clusters
+        label_en: Clusters reviewed by a person
+        rule: {metric_above: 0, then: supported, otherwise: insufficient_evidence}
+        interpretation_en: Whether a cluster is about a symbolic meaning is a judgement a person has to make by reading it; until then no cluster is named.
+    conclusion_en: Book centring reduced document identity as a confounder substantially but did not remove it, and reduced book dependence does not show that the remaining clusters are symbolic.
+    conclusion_sv: Bokcentrering minskade dokumentidentiteten som störfaktor tydligt men tog inte bort den, och mindre bokberoende visar inte att de återstående klustren är symboliska.
+    history:
+      function: symbolic_cleaning_history
+  - id: symbolic_corpus_representativeness
+    product: symbolic
+    kind: representativeness
+    question_en: Do these texts represent the world's myth and folklore?
+    question_sv: Representerar texterna världens myter och folksagor?
+    target_construct: symbolic language of myth and folklore in general
+    proxy_measure: a hand-picked corpus of public-domain English texts and translations
+    source: platform/ingest/symbolic/corpus.json
+    diagnostics:
+      - id: corpus_size
+        function: symbolic_corpus_size
+        label_en: Books and traditions in the corpus
+        status: insufficient_evidence
+        interpretation_en: A small, English-language, mostly European selection; findings describe these texts, not folklore as a whole.
+    conclusion_en: The atlas describes its own corpus. It cannot speak for folklore as a whole.
+    conclusion_sv: Atlasen beskriver sin egen korpus. Den kan inte tala för folksagor i allmänhet.
+
+  # ------------------------------------------------------------------ Politics
+  - id: politics_polarisation_index
+    product: politics
+    kind: construct_validity
+    question_en: Does the roll-call division index measure political polarisation?
+    question_sv: Mäter delningsindexet för voteringar politisk polarisering?
+    target_construct: political polarisation
+    proxy_measure: per roll call, 1 − the largest same-position bloc's share of members voting, averaged per policy area
+    source: frontend/src/politik/story/Skiljelinjerna.tsx
+    diagnostics:
+      - id: definition
+        label_en: What the index counts
+        status: warning
+        interpretation_en: It measures how the parties divided on the items that reached a recorded vote. That is division in voting, not polarisation of opinion or ideology, and which items reach a roll call is itself a political choice.
+    conclusion_en: A descriptive measure of division in recorded votes, not of polarisation.
+    conclusion_sv: Ett beskrivande mått på delning i voteringar, inte på polarisering.
+  - id: politics_vote_model
+    product: politics
+    kind: ml_data_quality
+    question_en: Can a party's vote be predicted from the other parties' positions, and does the evaluation hold up?
+    question_sv: Kan ett partis röst förutsägas från de andra partiernas ståndpunkter, och håller utvärderingen?
+    target_construct: how predictable a party's vote is from the rest of the chamber
+    proxy_measure: gradient boosting trained on one riksmöte and tested on the next, against always guessing the majority
+    source: frontend/public/data/politics/parliament/boost.json
+    diagnostics:
+      - id: split_integrity
+        function: politics_split_integrity
+        label_en: Train and test sessions are different
+        rule: {metric_above: 0.5, then: supported, otherwise: invalidated}
+        interpretation_en: Training and testing on different sessions keeps the same roll call from appearing on both sides.
+      - id: parties_beating_baseline
+        function: politics_parties_beating_baseline
+        label_en: Share of parties where the model beats always guessing the majority
+        rule: {metric_above: 0.75, then: supported, otherwise: warning}
+        interpretation_en: For parties that nearly always vote yes, the majority guess is already right and the model adds nothing; for some it does worse. Predictability is not agreement, coalition or polarisation.
+    conclusion_en: The evaluation is sound, but accuracy above the majority baseline is the measure, and it holds for only some parties.
+    conclusion_sv: Utvärderingen är sund, men träffsäkerhet över majoritetsgissningen är måttet, och den gäller bara för vissa partier.
+  - id: politics_speech_representativeness
+    product: politics
+    kind: representativeness
+    question_en: Do Riksdag speeches represent political opinion?
+    question_sv: Representerar riksdagsanföranden politiska åsikter?
+    target_construct: what parties and politicians think about an issue
+    proxy_measure: what is said in the chamber
+    source: docs/ai-politics.md
+    diagnostics:
+      - id: scope
+        label_en: What the corpus covers
+        status: insufficient_evidence
+        interpretation_en: Chamber speeches are a formal, agenda-driven genre; they leave out committee work, media and everything not said in the chamber.
+    conclusion_en: Speeches show the chamber's language, not opinion in general.
+    conclusion_sv: Anförandena visar språket i kammaren, inte åsikter i allmänhet.
+  - id: riksdag_ai_act_similarity
+    product: politics
+    kind: construct_validity
+    question_en: Does semantic similarity between speeches and the AI Act show that the debate responded to the Act?
+    question_sv: Visar semantisk likhet mellan anföranden och AI-förordningen att debatten svarade på förordningen?
+    target_construct: influence of the Act on the debate
+    proxy_measure: cosine similarity of multilingual sentence embeddings, above a random-pair baseline
+    source: warehouse/features/ai_politics/run.json
+    diagnostics:
+      - id: chance_p95
+        function: ai_politics_baseline
+        label_en: 95th percentile of similarity for random speech–article pairs
+        status: insufficient_evidence
+        interpretation_en: Pairs above chance use related language. Related language is not influence, and the measure cannot tell the two apart.
+    conclusion_en: Semantic similarity, nothing more; influence is not measured.
+    conclusion_sv: Semantisk likhet, inget mer; påverkan mäts inte.
+
+  # ------------------------------------------------------------------ Job market
+  - id: jobs_demand_proxy
+    product: jobs
+    kind: representativeness
+    question_en: Do job ads measure labour-market demand?
+    question_sv: Mäter jobbannonser efterfrågan på arbetsmarknaden?
+    target_construct: labour-market demand
+    proxy_measure: ads published on Arbetsförmedlingen's platform
+    source: gold.mart_market_field_monthly
+    diagnostics:
+      - id: occupation_mix_shift
+        function: jobs_occupation_mix_shift
+        label_en: Size of the change in Data/IT's share of all ads, first to latest full year (percentage points)
+        rule: {metric_below: 1.0, then: supported, otherwise: warning}
+        interpretation_en: A term's share can move because the mix of occupations moved. Data/IT's share of ads has barely changed, so the rise of AI terms is not explained by more IT ads; mix shifts within fields are not measured.
+      - id: coverage
+        label_en: What the ads cover
+        status: insufficient_evidence
+        interpretation_en: Many jobs are filled without an ad on this platform (recruiters, networks, internal moves); job ads are a proxy for demand, not the labour market itself.
+    conclusion_en: Job ads are a proxy for demand on one platform, not the labour market.
+    conclusion_sv: Jobbannonser är en indikator på efterfrågan på en plattform, inte arbetsmarknaden.
+  - id: jobs_skill_mentions
+    product: jobs
+    kind: construct_validity
+    question_en: Does a term's frequency in ads measure employers' demand for the skill?
+    question_sv: Mäter en terms frekvens i annonser arbetsgivares efterfrågan på kompetensen?
+    target_construct: employer demand for a skill
+    proxy_measure: share of ads whose headline or description matches the term's pattern
+    source: docs/ai-jobs.md
+    diagnostics:
+      - id: duplicates_within_archive
+        function: jobs_duplicate_share
+        label_en: Repeated ad ids within an archive (removed before counting)
+        rule: {metric_below: 0.01, then: supported, otherwise: warning}
+        interpretation_en: Republished ads with the same id are counted once; near-identical ads with new ids (templates, chains) are not detected.
+      - id: boilerplate
+        label_en: Boilerplate and template text
+        status: warning
+        interpretation_en: Privacy and GDPR terms often come from a standard notice about how applications are handled, not from the job; no sample of matches has been reviewed.
+    conclusion_en: Term shares describe the words in ads. Without a reviewed sample they are a weak proxy for skill demand.
+    conclusion_sv: Termandelar beskriver orden i annonserna. Utan ett granskat urval är de en svag indikator på kompetensefterfrågan.
+
+  # ------------------------------------------------------------------ Welfare
+  - id: welfare_composite
+    product: welfare
+    kind: construct_validity
+    question_en: Do these indicators measure how Sweden is doing?
+    question_sv: Mäter indikatorerna hur Sverige mår?
+    target_construct: societal wellbeing
+    proxy_measure: employment, sick leave, health and trust indicators from official sources
+    source: docs/welfare (gold welfare models)
+    diagnostics:
+      - id: partial_proxies
+        label_en: Indicators as proxies
+        status: insufficient_evidence
+        interpretation_en: Each indicator is a partial proxy; together they are not a single objective measure of wellbeing, and no index combines them.
+    conclusion_en: A set of partial indicators, shown side by side, not a measure of wellbeing.
+    conclusion_sv: En uppsättning delindikatorer, visade sida vid sida, inte ett mått på välbefinnande.
+
+  # ------------------------------------------------------------------ EU AI Act
+  - id: ai_act_navigator
+    product: ai_act
+    kind: construct_validity
+    question_en: Does the startup navigator determine which rules apply?
+    question_sv: Avgör startup-navigatorn vilka regler som gäller?
+    target_construct: potential regulatory relevance of a scenario
+    proxy_measure: editorial scenario rules linking answers to articles and obligations
+    source: platform/publish/eu_ai_act/navigator.json
+    diagnostics:
+      - id: rules_reference_known_provisions
+        function: ai_act_navigator_references
+        label_en: Navigator references that point at an existing article or obligation
+        rule: {metric_above: 0.999, then: supported, otherwise: invalidated}
+        interpretation_en: The rules only point at provisions that exist in the current text. That makes them traceable; it does not make them a legal classification.
+      - id: legal_applicability
+        label_en: Legal applicability
+        status: insufficient_evidence
+        interpretation_en: The navigator identifies potentially relevant rules; it does not determine legal applicability, which depends on facts, annexes, delegated acts, standards and national law.
+    conclusion_en: Traceable pointers to possibly relevant rules, not a legal classification.
+    conclusion_sv: Spårbara hänvisningar till möjligen relevanta regler, inte en juridisk klassificering.
+  - id: ai_act_obligation_topics
+    product: ai_act
+    kind: construct_validity
+    question_en: Are obligations assigned to the right topic (for example transparency)?
+    question_sv: Är skyldigheterna tilldelade rätt ämne (till exempel transparens)?
+    target_construct: the topic of an obligation
+    proxy_measure: a curated assignment in seeds/eu_ai_act/ai_act_obligations.csv, each with a verbatim quote
+    source: seeds/eu_ai_act/ai_act_obligations.csv
+    diagnostics:
+      - id: independent_review
+        label_en: Independent review of the topic assignments
+        status: insufficient_evidence
+        interpretation_en: The quotes are checked against the official text; the topic each obligation is filed under is one editor's reading and has not been reviewed by a second person.
+    conclusion_en: Quotes are verified; topics are an unreviewed editorial reading.
+    conclusion_sv: Citaten är verifierade; ämnena är en ogranskad redaktionell läsning.
+  - id: ai_governance_timeline
+    product: ai_act
+    kind: confounding
+    question_en: Did the AI Act change how often AI is discussed in the Riksdag and in job ads?
+    question_sv: Ändrade AI-förordningen hur ofta AI diskuteras i riksdagen och i jobbannonser?
+    target_construct: effect of the Act on political and labour-market language
+    proxy_measure: monthly shares on one time axis with the Act's milestones
+    source: gold.mart_ai_governance_timeline
+    diagnostics:
+      - id: rise_after_generative_ai
+        function: timeline_rise_after_2022
+        label_en: Ratio of the AI share in job ads, 2025 to 2022
+        status: insufficient_evidence
+        interpretation_en: The rise starts after the public launch of generative AI (November 2022), which overlaps with the Act's negotiation; the data cannot separate the two. Temporal overlap does not prove causation.
+    conclusion_en: Temporal overlap only.
+    conclusion_sv: Endast samtidighet.
+
+  # ------------------------------------------------------------------ Philosophy Atlas
+  - id: philosophy_work_dominance
+    product: philosophy
+    kind: confounding
+    question_en: Do the groups follow ideas, or works and translators?
+    question_sv: Följer grupperna idéer, eller verk och översättare?
+    target_construct: recurring philosophical ideas across works
+    proxy_measure: multilingual sentence embeddings of passages, UMAP and HDBSCAN, raw and centred per work
+    source: warehouse/features/philosophy/run.json
+    diagnostics:
+      - id: raw_same_work
+        experiment: baseline
+        function: philosophy_neighbour_metric
+        args: {variant: baseline, metric: same_work_neighbours, chance: same_work_chance}
+        label_en: Nearest neighbours from the same work, over chance (raw map)
+        rule: {metric_below: 2.0, then: supported, otherwise: warning}
+        interpretation_en: Passages sit next to passages of their own work far more often than chance.
+      - id: centred_same_work
+        experiment: author_centered
+        function: philosophy_neighbour_metric
+        args: {variant: author_centered, metric: same_work_neighbours, chance: same_work_chance}
+        label_en: Nearest neighbours from the same work, over chance (centred per work)
+        rule: {metric_below: 2.0, then: supported, otherwise: warning}
+        interpretation_en: Centring lowers the effect but the work still shapes the space.
+      - id: centred_same_translator
+        experiment: author_centered
+        function: philosophy_neighbour_metric
+        args: {variant: author_centered, metric: same_translator_neighbours, chance: same_translator_chance}
+        label_en: Nearest neighbours with the same translator, over chance (centred per work)
+        rule: {metric_below: 2.0, then: supported, otherwise: warning}
+        interpretation_en: The translator's English remains a confounder alongside the work.
+    conclusion_en: Centring reduces work and translator dominance; neither is removed, and no group is named without review.
+    conclusion_sv: Centrering minskar verkens och översättarnas dominans; ingen av dem försvinner, och ingen grupp namnges utan granskning.
+
+  # ------------------------------------------------------------------ Concept layer
+  - id: concepts_corpus_dominance
+    product: concepts
+    kind: confounding
+    question_en: Is corpus identity driving the shared space?
+    question_sv: Är det korpusen som styr det gemensamma rummet?
+    target_construct: shared concept usage across corpora
+    proxy_measure: similarity of chunks to curated anchor sentences in one multilingual model
+    source: warehouse/features/concepts/run.json
+    diagnostics:
+      - id: same_corpus_neighbours
+        function: concepts_metric
+        args: {metric: same_corpus_neighbours, chance: same_corpus_chance}
+        label_en: Nearest neighbours from the same corpus, over chance
+        rule: {metric_below: 1.5, then: supported, otherwise: warning}
+        interpretation_en: The corpora differ far more than their subjects do, so chunks are compared only through the concepts (rank within a chunk), never on one map.
+      - id: anchor_agreement
+        function: concepts_metric
+        args: {metric: anchor_agreement_sv_en}
+        label_en: Swedish anchors whose nearest English anchor is the same concept
+        rule: {metric_above: 0.9, then: supported, otherwise: warning}
+        interpretation_en: The Swedish and English anchor sentences say the same thing to the model, so language alone does not move a concept.
+    conclusion_en: Language is handled; corpus identity dominates, which is why the layer compares corpora only through ranks.
+    conclusion_sv: Språket är hanterat; korpusen dominerar, därför jämförs korpusarna bara genom rangordning.
+
+confounders:
+  - analysis: symbolic_atlas_clustering
+    confounder: "book / translator / style"
+    diagnostic: "mean largest book share; cross-book occurrence share"
+    effect: "baseline clusters are mostly single-book"
+    mitigation: "subtract each book's mean vector (book_centered); paratext cleaning"
+    remaining_risk: "most clusters are still led by one book"
+  - analysis: symbolic_atlas_clustering
+    confounder: "the symbol word itself"
+    diagnostic: "masked experiment"
+    effect: "clusters can form around the word rather than its context"
+    mitigation: "mask the matched word ([SYMBOL]) in a separate experiment"
+    remaining_risk: "small; masking changes little"
+  - analysis: symbolic_atlas_clustering
+    confounder: "paratext (prefaces, notes, licences)"
+    diagnostic: "clusters flagged as paratext before and after cleaning"
+    effect: "clusters of editorial text"
+    mitigation: "cleaning module with an audit"
+    remaining_risk: "residual notes in some books"
+  - analysis: philosophy_work_dominance
+    confounder: "work / author"
+    diagnostic: "same-work neighbours over chance"
+    effect: "passages group by work"
+    mitigation: "centring per work"
+    remaining_risk: "work still shapes the space"
+  - analysis: philosophy_work_dominance
+    confounder: "translator"
+    diagnostic: "same-translator neighbours over chance"
+    effect: "translations group by translator's English"
+    mitigation: "centring per work"
+    remaining_risk: "remains above chance"
+  - analysis: concepts_corpus_dominance
+    confounder: "corpus (genre, period, language)"
+    diagnostic: "same-corpus neighbours over chance"
+    effect: "chunks group by corpus"
+    mitigation: "compare only through concept ranks within a chunk and z-scores within a corpus"
+    remaining_risk: "anchor wording favours some genres"
+  - analysis: politics_vote_model
+    confounder: "party size and government position"
+    diagnostic: "accuracy against the majority baseline per party"
+    effect: "governing parties are trivially predictable"
+    mitigation: "report the baseline beside every accuracy"
+    remaining_risk: "aggregate accuracy flatters the model"
+  - analysis: politics_polarisation_index
+    confounder: "agenda selection"
+    diagnostic: "none"
+    effect: "only items that reach a roll call are measured"
+    mitigation: "stated with the measure"
+    remaining_risk: "unmeasured"
+  - analysis: jobs_skill_mentions
+    confounder: "occupation mix"
+    diagnostic: "Data/IT share of ads over time"
+    effect: "a term's share moves with the mix"
+    mitigation: "shares per occupation field"
+    remaining_risk: "within-field mix"
+  - analysis: jobs_skill_mentions
+    confounder: "terminology drift"
+    diagnostic: "none"
+    effect: "new words for the same skill are missed"
+    mitigation: "patterns in both languages with variants"
+    remaining_risk: "unmeasured"
+  - analysis: jobs_skill_mentions
+    confounder: "copy-pasted templates"
+    diagnostic: "duplicate ids within an archive"
+    effect: "boilerplate inflates counts"
+    mitigation: "duplicate ids counted once"
+    remaining_risk: "templates with new ids"
+  - analysis: ai_governance_timeline
+    confounder: "launch of generative AI (Nov 2022)"
+    diagnostic: "timing of the rise"
+    effect: "rise coincides with both"
+    mitigation: "stated under every chart"
+    remaining_risk: "cannot be separated with this data"

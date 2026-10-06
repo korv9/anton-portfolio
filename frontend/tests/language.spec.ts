@@ -18,7 +18,7 @@ test('language choice persists across project pages and keeps data controls stab
   await page.getByRole('button', { name: 'SV', exact: true }).click()
   await expect(page.locator('html')).toHaveAttribute('lang', 'sv')
   await expect(page.locator('.home-hero-lede')).toContainText(
-    'Jag bygger dataprodukter',
+    'Jag bygger datapipelines',
   )
   await expect(
     page.getByRole('button', { name: 'SV', exact: true }),

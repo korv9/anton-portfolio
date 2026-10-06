@@ -204,7 +204,7 @@ export default function BudgetOutturn() {
                     )}
                   </p>
                   <a href={focused.source_url} target="_blank" rel="noreferrer">
-                    {t('Annual accounts source ↗')}
+                    {t('Annual accounts source')}
                   </a>
                 </>
               )}

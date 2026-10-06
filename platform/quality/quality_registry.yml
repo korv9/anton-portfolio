@@ -1,0 +1,577 @@
+# Data-quality requirements: one entry per check. Read by platform/quality/evaluate.py.
+#
+# Fields:
+#   id           unique, snake_case
+#   product      a product id from `products` below
+#   dataset      the table, file or artefact the check is about
+#   dimension    an ISO/IEC 25012 characteristic in platform/quality/dimensions.py
+#   description  what the requirement says, in plain language
+#   method       dbt_test | python | manual_review | not_measured | not_applicable
+#   measure      the measure's name; for numeric measures also numerator and denominator
+#   threshold    the pass level; `warn_at` the level below which (or above, for <=) it fails
+#   comparator   >= (default), <= or ==
+#   severity     info | warning | error  (how much a failure matters, separate from status)
+#   source       what the check is checked against
+#   dbt          for dbt_test: which dbt tests make up the check (names, or folder + kinds)
+#   function     for python: the function in platform/quality/measures.py
+#   reason       for not_measured / not_applicable: why
+#   gate         true: a failure fails CI (structural checks only)
+#
+# Nothing here is a score. A check is pass, warning, fail, not_measured or not_applicable, with
+# the value and its numerator and denominator when there is one.
+
+products:
+  - {id: politics, project: politics, label_en: Swedish politics in numbers, label_sv: Svensk politik i siffror}
+  - {id: jobs, project: jobs, label_en: Job market in numbers, label_sv: Arbetsmarknaden i siffror}
+  - {id: welfare, project: welfare, label_en: 'How is Sweden doing?', label_sv: 'Hur mår Sverige?'}
+  - {id: symbolic, project: symbolic-atlas, label_en: Symbolic Atlas, label_sv: Symbolic Atlas}
+  - {id: ai_act, project: ai-act, label_en: EU AI Act Observatory, label_sv: EU AI Act Observatory}
+  - {id: philosophy, project: philosophy-atlas, label_en: Philosophy Atlas, label_sv: Philosophy Atlas}
+  - {id: concepts, project: concept-constellation, label_en: Concept Constellation, label_sv: Concept Constellation}
+
+checks:
+  # ------------------------------------------------------------------ Symbolic Atlas
+  - id: symbolic_match_alignment
+    product: symbolic
+    dataset: silver.int_symbol_occurrences
+    dimension: accuracy
+    description: Every extracted occurrence points at the matched word in the cleaned text (the characters at its offsets are the matched term).
+    method: python
+    function: symbolic_match_alignment
+    measure: aligned_occurrence_share
+    numerator: occurrences whose text at char_start:char_end equals the matched term
+    denominator: occurrences
+    threshold: 1.0
+    severity: error
+    gate: true
+    source: silver.int_symbolic_documents.clean_text
+  - id: symbolic_alias_match
+    product: symbolic
+    dataset: silver.int_symbol_occurrences
+    dimension: accuracy
+    description: Every occurrence's matched term is a listed alias of its symbol, so a match stands for the intended lexical form.
+    method: python
+    function: symbolic_alias_match
+    measure: alias_match_share
+    numerator: occurrences whose matched term is an alias of their symbol
+    denominator: occurrences
+    threshold: 1.0
+    severity: error
+    gate: true
+    source: seeds/symbolic/symbol_aliases.csv
+  - id: symbolic_occurrence_sample_review
+    product: symbolic
+    dataset: silver.int_symbol_occurrences
+    dimension: accuracy
+    description: A random sample of occurrences read by a person, to see how many use the word in the symbolic sense intended (a lexical match can be literal, idiomatic or a name).
+    method: manual_review
+    measure: sample_accuracy
+    numerator: reviewed occurrences judged a valid symbolic use
+    denominator: reviewed occurrences
+    threshold: 0.9
+    severity: warning
+    source: human review of a random sample
+    reason: No sample has been reviewed yet.
+  - id: symbolic_corpus_coverage
+    product: symbolic
+    dataset: silver.int_symbolic_documents
+    dimension: completeness
+    description: Every book in the curated corpus is fetched, cleaned and present.
+    method: python
+    function: symbolic_corpus_coverage
+    measure: corpus_coverage_ratio
+    numerator: corpus books present after cleaning
+    denominator: books in platform/ingest/symbolic/corpus.json
+    threshold: 1.0
+    severity: error
+    gate: true
+    source: platform/ingest/symbolic/corpus.json
+  - id: symbolic_symbol_coverage
+    product: symbolic
+    dataset: silver.int_symbol_occurrences
+    dimension: completeness
+    description: Every symbol in the dictionary is found at least once in the corpus.
+    method: python
+    function: symbolic_symbol_coverage
+    measure: symbols_with_occurrences_ratio
+    numerator: symbols with at least one occurrence
+    denominator: symbols in seeds/symbolic/symbols.csv
+    threshold: 1.0
+    warn_at: 0.9
+    severity: warning
+    source: seeds/symbolic/symbols.csv
+  - id: symbolic_keys_and_relations
+    product: symbolic
+    dataset: silver.int_symbol_occurrences, gold.mart_symbol_atlas
+    dimension: consistency
+    description: Occurrence and document ids are unique and every occurrence points at a known document and symbol.
+    method: dbt_test
+    dbt: {folder: symbolic, kinds: [unique, relationships, unique_combination]}
+    measure: passing_test_share
+    numerator: passing dbt tests
+    denominator: dbt tests in the check
+    threshold: 1.0
+    severity: error
+    gate: true
+    source: dbt tests in models/*/symbolic
+  - id: symbolic_shared_sample
+    product: symbolic
+    dataset: warehouse/features/symbolic/experiments
+    dimension: consistency
+    description: Every deconfounding experiment runs on the same sample (same SHA-256 of the sampled occurrence ids), so their metrics are comparable.
+    method: python
+    function: symbolic_shared_sample
+    measure: experiments_on_shared_sample_ratio
+    numerator: experiments whose run.json sample hash equals the comparison's
+    denominator: experiments
+    threshold: 1.0
+    severity: error
+    source: experiments/*/run.json, experiments/comparison.json
+  - id: symbolic_source_provenance
+    product: symbolic
+    dataset: silver.int_symbolic_documents
+    dimension: traceability
+    description: Each document's text hash equals the hash recorded when the file was fetched.
+    method: python
+    function: symbolic_source_provenance
+    measure: hash_match_ratio
+    numerator: documents whose source_hash equals the fetch log's SHA-256
+    denominator: documents
+    threshold: 1.0
+    severity: error
+    source: warehouse/raw/symbolic/_manifest.jsonl
+  - id: symbolic_source_credibility
+    product: symbolic
+    dataset: warehouse/raw/symbolic
+    dimension: credibility
+    description: Every text comes from Project Gutenberg, checked against the title and author lines of the Gutenberg file.
+    method: python
+    function: symbolic_source_credibility
+    measure: official_source_ratio
+    numerator: fetched files served by gutenberg.org
+    denominator: fetched files
+    threshold: 1.0
+    severity: warning
+    source: warehouse/raw/symbolic/_manifest.jsonl
+  - id: symbolic_currentness
+    product: symbolic
+    dataset: silver.int_symbolic_documents
+    dimension: currentness
+    description: Freshness of a corpus of historical public-domain texts.
+    method: not_applicable
+    reason: The corpus is historical; the texts do not go out of date. Only the fetch time is kept, for provenance.
+    severity: info
+    source: none
+
+  # ------------------------------------------------------------------ Politics
+  - id: politics_election_reconciliation
+    product: politics
+    dataset: gold.fct_election
+    dimension: accuracy
+    description: Election results from Valmyndigheten agree with SCB's published results, and the seats add up to the Riksdag's 349.
+    method: dbt_test
+    dbt: {names: [assert_valmyndigheten_matches_scb, assert_election_seats_fill_the_riksdag]}
+    measure: passing_test_share
+    numerator: passing reconciliation tests
+    denominator: reconciliation tests
+    threshold: 1.0
+    severity: error
+    gate: true
+    source: Valmyndigheten and SCB (two official sources)
+  - id: politics_vote_count_accuracy
+    product: politics
+    dataset: gold.fct_member_vote
+    dimension: accuracy
+    description: Per roll call, the votes counted from members agree with the totals Riksdagen publishes.
+    method: not_measured
+    reason: The member-level votes and Riksdagen's published totals are not yet reconciled in a test.
+    severity: warning
+    source: Riksdagen voteringar
+  - id: politics_roll_call_completeness
+    product: politics
+    dataset: gold.fct_roll_call
+    dimension: completeness
+    description: Every roll call lists every member of the chamber, and polls cover each month's parties.
+    method: dbt_test
+    dbt: {names: [assert_roll_calls_list_every_member, assert_psu_shares_sum_to_100]}
+    measure: passing_test_share
+    numerator: passing tests
+    denominator: tests
+    threshold: 1.0
+    severity: error
+    gate: true
+    source: Riksdagen voteringar, SCB PSU
+  - id: politics_session_coverage
+    product: politics
+    dataset: gold.fct_roll_call
+    dimension: completeness
+    description: Every riksmöte from the first in the data to the latest has roll calls, so no session is missing.
+    method: python
+    function: politics_session_coverage
+    measure: sessions_with_roll_calls_ratio
+    numerator: sessions with at least one roll call
+    denominator: sessions between the first and the latest
+    threshold: 1.0
+    severity: warning
+    source: gold.fct_roll_call
+  - id: politics_keys_and_relations
+    product: politics
+    dataset: models/*/parliament
+    dimension: consistency
+    description: Grain and key tests on the parliament models (unique keys, unique grain, valid references).
+    method: dbt_test
+    dbt: {folder: parliament, kinds: [unique, unique_combination, relationships, not_null]}
+    measure: passing_test_share
+    numerator: passing dbt tests
+    denominator: dbt tests in the check
+    threshold: 1.0
+    severity: error
+    gate: true
+    source: dbt tests in models/*/parliament
+  - id: politics_currentness
+    product: politics
+    dataset: warehouse/raw/riksdagen
+    dimension: currentness
+    description: Days since Riksdagen's open data was last fetched. Scheduled refreshes are paused, so this is expected to age.
+    method: python
+    function: politics_currentness
+    measure: days_since_last_fetch
+    threshold: 14
+    warn_at: 60
+    comparator: "<="
+    severity: warning
+    source: warehouse/raw/riksdagen/_manifest.jsonl
+  - id: politics_source_credibility
+    product: politics
+    dataset: warehouse/raw/riksdagen, warehouse/raw/val
+    dimension: credibility
+    description: Every fetched file comes from Riksdagen, Valmyndigheten or SCB.
+    method: python
+    function: politics_source_credibility
+    measure: official_source_ratio
+    numerator: files from an official host
+    denominator: fetched files
+    threshold: 1.0
+    severity: warning
+    source: rawstore fetch logs
+
+  # ------------------------------------------------------------------ Job market
+  - id: jobs_parsed_field_accuracy
+    product: jobs
+    dataset: gold.mart_market_field_monthly
+    dimension: accuracy
+    description: Parsed publication dates and occupation fields compared with the source records for a sample of ads.
+    method: not_measured
+    reason: The ingest keeps counts, not ads, so no parsed field is compared with its source record yet.
+    severity: warning
+    source: JobTech historical archives
+  - id: jobs_archive_reconciliation
+    product: jobs
+    dataset: gold.mart_market_archives
+    dimension: consistency
+    description: Two independent counts of the same archives (the market ingest and the AI-governance ingest) find the same number of distinct ads.
+    method: python
+    function: jobs_archive_reconciliation
+    measure: archives_with_equal_counts_ratio
+    numerator: archives counted to the same number of ads by both ingests
+    denominator: archives counted by both
+    threshold: 1.0
+    severity: error
+    gate: true
+    source: gold.mart_market_archives, raw/jobtech/governance manifests
+  - id: jobs_month_coverage
+    product: jobs
+    dataset: gold.mart_market_field_monthly
+    dimension: completeness
+    description: Every month from the first to the latest has ads, so no month is missing.
+    method: python
+    function: jobs_month_coverage
+    measure: months_with_ads_ratio
+    numerator: months with ads
+    denominator: months between the first and the latest
+    threshold: 1.0
+    severity: warning
+    source: gold.mart_market_field_monthly
+  - id: jobs_keys_and_relations
+    product: jobs
+    dataset: models/*/market
+    dimension: consistency
+    description: Grain and key tests on the market models (one row per month and field, valid field and occupation-group references).
+    method: dbt_test
+    dbt: {folder: market, kinds: [unique, unique_combination, relationships, not_null]}
+    measure: passing_test_share
+    numerator: passing dbt tests
+    denominator: dbt tests in the check
+    threshold: 1.0
+    severity: error
+    gate: true
+    source: dbt tests in models/*/market
+  - id: jobs_currentness
+    product: jobs
+    dataset: gold.mart_market_field_monthly
+    dimension: currentness
+    description: Months between the latest month with ads and today. JobTech publishes quarterly archives for the current year.
+    method: python
+    function: jobs_currentness
+    measure: months_since_latest_data
+    threshold: 4
+    warn_at: 7
+    comparator: "<="
+    severity: warning
+    source: gold.mart_market_field_monthly
+  - id: jobs_source_credibility
+    product: jobs
+    dataset: gold.mart_market_archives
+    dimension: credibility
+    description: Every archive comes from Arbetsförmedlingen's open data (data.arbetsformedlingen.se) and is counted with its SHA-256.
+    method: python
+    function: jobs_source_credibility
+    measure: official_source_ratio
+    numerator: archives from data.arbetsformedlingen.se with a SHA-256
+    denominator: archives
+    threshold: 1.0
+    severity: warning
+    source: gold.mart_market_archives
+
+  # ------------------------------------------------------------------ Welfare
+  - id: welfare_reconciliation
+    product: welfare
+    dataset: models/*/welfare
+    dimension: consistency
+    description: Published parts add up to published wholes (population by sex to totals, regional counts to the country, sick-pay rate recomputed from its parts, annual means of months).
+    method: dbt_test
+    dbt: {names: [assert_population_totals, assert_additive_counts_sum_to_country, assert_sick_pay_rate_recomputes_from_components, assert_aku_annual_is_mean_of_months, assert_rates_in_range, assert_ess_one_mode_per_country_round]}
+    measure: passing_test_share
+    numerator: passing reconciliation tests
+    denominator: reconciliation tests
+    threshold: 1.0
+    severity: error
+    gate: true
+    source: SCB, Försäkringskassan, FoHM, ESS
+  - id: welfare_expected_periods
+    product: welfare
+    dataset: gold.fct_labour_force
+    dimension: completeness
+    description: The labour-force survey has its expected latest year.
+    method: dbt_test
+    dbt: {names: [assert_aku_published_2025]}
+    measure: passing_test_share
+    numerator: passing tests
+    denominator: tests
+    threshold: 1.0
+    severity: warning
+    source: SCB AKU
+  - id: welfare_keys
+    product: welfare
+    dataset: models/*/welfare
+    dimension: consistency
+    description: Region, period, sex and age keys are present and every fact row is unique on its grain.
+    method: dbt_test
+    dbt: {folder: welfare, kinds: [unique, unique_combination, relationships, not_null]}
+    measure: passing_test_share
+    numerator: passing dbt tests
+    denominator: dbt tests in the check
+    threshold: 1.0
+    severity: error
+    gate: true
+    source: dbt tests in models/*/welfare
+  - id: welfare_accuracy
+    product: welfare
+    dataset: models/*/welfare
+    dimension: accuracy
+    description: Stored values compared with the agencies' own published tables.
+    method: not_measured
+    reason: No value is compared with an independent copy of the agencies' tables; the reconciliation tests check internal sums, which is consistency.
+    severity: warning
+    source: SCB, Försäkringskassan, FoHM, Kolada, ESS
+  - id: welfare_currentness
+    product: welfare
+    dataset: warehouse/raw/{scb,fk,fohm,kolada,ess}
+    dimension: currentness
+    description: Days since the oldest of the five welfare sources was last fetched. Scheduled refreshes are paused.
+    method: python
+    function: welfare_currentness
+    measure: days_since_oldest_source_fetch
+    threshold: 14
+    warn_at: 60
+    comparator: "<="
+    severity: warning
+    source: rawstore fetch logs
+  - id: welfare_source_credibility
+    product: welfare
+    dataset: warehouse/raw/{scb,fk,fohm,kolada,ess}
+    dimension: credibility
+    description: Every fetched file comes from the agency's or survey's own open-data service.
+    method: python
+    function: welfare_source_credibility
+    measure: official_source_ratio
+    numerator: files from an official host
+    denominator: fetched files
+    threshold: 1.0
+    severity: warning
+    source: rawstore fetch logs
+
+  # ------------------------------------------------------------------ EU AI Act
+  - id: ai_act_quotes_in_text
+    product: ai_act
+    dataset: gold.mart_ai_act_obligations, seeds/eu_ai_act
+    dimension: accuracy
+    description: Every quoted obligation, milestone and application rule appears verbatim in the current official text.
+    method: dbt_test
+    dbt: {names: [assert_ai_act_quotes_in_current_text]}
+    measure: passing_test_share
+    numerator: passing tests
+    denominator: tests
+    threshold: 1.0
+    severity: error
+    gate: true
+    source: the Act's consolidated text from Cellar
+  - id: ai_act_structure_matches_official
+    product: ai_act
+    dataset: silver.int_ai_act_provisions
+    dimension: accuracy
+    description: The parsed Official Journal text has the Regulation's published structure, 113 articles numbered 1 to 113, 180 recitals and 13 annexes, in both languages.
+    method: python
+    function: ai_act_structure
+    measure: structure_parts_matching_ratio
+    numerator: structure counts (articles, article numbers, recitals, annexes, per language) equal to the published structure
+    denominator: structure counts checked
+    threshold: 1.0
+    severity: error
+    gate: true
+    source: Regulation (EU) 2024/1689 as published in the Official Journal (32024R1689)
+  - id: ai_act_dates_valid
+    product: ai_act
+    dataset: gold.mart_ai_act_timeline
+    dimension: accuracy
+    description: Application dates and milestones fall within the Act's life and follow the rules quoted from Article 113.
+    method: dbt_test
+    dbt: {names: [assert_ai_act_dates_valid]}
+    measure: passing_test_share
+    numerator: passing tests
+    denominator: tests
+    threshold: 1.0
+    severity: error
+    source: Article 113
+  - id: ai_act_article_coverage
+    product: ai_act
+    dataset: gold.dim_ai_act_article
+    dimension: completeness
+    description: Every article of the current consolidated text is in the article dimension with its English and Swedish text.
+    method: python
+    function: ai_act_article_coverage
+    measure: articles_with_both_texts_ratio
+    numerator: articles with English and Swedish text
+    denominator: articles in the current consolidated version
+    threshold: 1.0
+    severity: error
+    source: silver.int_ai_act_provisions
+  - id: ai_act_keys_and_relations
+    product: ai_act
+    dataset: models/*/eu_ai_act
+    dimension: consistency
+    description: Article → obligation → actor and article → guidance relations are valid, keys unique, and exactly one version is current.
+    method: dbt_test
+    dbt: {folder: eu_ai_act, kinds: [unique, unique_combination, relationships, not_null, accepted_values, singular]}
+    measure: passing_test_share
+    numerator: passing dbt tests
+    denominator: dbt tests in the check
+    threshold: 1.0
+    severity: error
+    gate: true
+    source: dbt tests in models/*/eu_ai_act
+  - id: ai_act_currentness
+    product: ai_act
+    dataset: warehouse/raw/eu_ai_act
+    dimension: currentness
+    description: Days since the Act and its related documents were last fetched from Cellar.
+    method: python
+    function: ai_act_currentness
+    measure: days_since_last_fetch
+    threshold: 14
+    warn_at: 45
+    comparator: "<="
+    severity: warning
+    source: warehouse/raw/eu_ai_act/_manifest.jsonl
+  - id: ai_act_sources_official
+    product: ai_act
+    dataset: gold.dim_ai_act_document, gold.dim_ai_act_guidance
+    dimension: credibility
+    description: Every document and guidance page links to an official EU address (EUR-Lex, the Publications Office, the Commission).
+    method: dbt_test
+    dbt: {names: [assert_ai_act_sources_are_official]}
+    measure: passing_test_share
+    numerator: passing tests
+    denominator: tests
+    threshold: 1.0
+    severity: error
+    gate: true
+    source: dbt test on source URLs
+
+  # ------------------------------------------------------------------ Philosophy Atlas
+  - id: philosophy_keys_and_relations
+    product: philosophy
+    dataset: models/*/philosophy
+    dimension: consistency
+    description: Passage and work keys are unique and every passage belongs to a known work.
+    method: dbt_test
+    dbt: {folder: philosophy, kinds: [unique, unique_combination, relationships, not_null, accepted_values, between]}
+    measure: passing_test_share
+    numerator: passing dbt tests
+    denominator: dbt tests in the check
+    threshold: 1.0
+    severity: error
+    gate: true
+    source: dbt tests in models/*/philosophy
+  - id: philosophy_translator_metadata
+    product: philosophy
+    dataset: gold.dim_philosophy_document
+    dimension: completeness
+    description: Every translated work names its translator, or says why it cannot.
+    method: python
+    function: philosophy_translator_metadata
+    measure: works_with_translator_or_note_ratio
+    numerator: translated works with a translator or a translator note
+    denominator: translated works
+    threshold: 1.0
+    severity: warning
+    source: platform/ingest/philosophy/corpus.json
+  - id: philosophy_currentness
+    product: philosophy
+    dataset: gold.dim_philosophy_document
+    dimension: currentness
+    description: Freshness of a corpus of historical public-domain texts.
+    method: not_applicable
+    reason: Historical texts do not go out of date.
+    severity: info
+    source: none
+
+  # ------------------------------------------------------------------ Concept layer
+  - id: concepts_chunk_provenance
+    product: concepts
+    dataset: gold.dim_text_chunk
+    dimension: traceability
+    description: Every chunk read by the concept layer carries a source URL, the source version and the retrieval time.
+    method: python
+    function: concepts_chunk_provenance
+    measure: chunks_with_full_provenance_ratio
+    numerator: chunks with source_url, source_version and retrieved_at
+    denominator: chunks
+    threshold: 1.0
+    severity: error
+    gate: true
+    source: gold.dim_text_chunk
+  - id: concepts_keys_and_relations
+    product: concepts
+    dataset: models/*/concepts
+    dimension: consistency
+    description: Chunk and concept keys, alignment grain and relation types are valid.
+    method: dbt_test
+    dbt: {folder: concepts, kinds: [unique, unique_combination, relationships, not_null, accepted_values, between, singular]}
+    measure: passing_test_share
+    numerator: passing dbt tests
+    denominator: dbt tests in the check
+    threshold: 1.0
+    severity: error
+    gate: true
+    source: dbt tests in models/*/concepts

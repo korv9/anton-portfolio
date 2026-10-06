@@ -141,3 +141,7 @@ unit tests (`frontend/tests/unit/constellation.test.ts`) check the result.
 - Row counts come from the ER export and exist only for tables built in the local warehouse.
 - The map shows the architecture, not run state: whether a build last succeeded is on the
   status page.
+
+## Quality view
+
+`#data-constellation?view=quality` keeps the platform layout and adds a small mark beside each product and model that has registered quality checks: its weakest measured result (● pass, △ warning, × fail, ○ not measured, – not applicable). The marks use the site's ink, never traffic-light colours, and the legend names every mark. Choosing a node shows its checks by dimension and, for a product, its main validity analysis, with a link to `#quality`. See [quality-and-validity.md](quality-and-validity.md).

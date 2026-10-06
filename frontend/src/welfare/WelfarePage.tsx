@@ -3,6 +3,7 @@ import CountyMultiples from './CountyMultiples'
 import { Stage, StageBlock, StageFacts, StageTools } from '../ui/Stage'
 import { Suspense, lazy, useEffect, useMemo, useState } from 'react'
 import { l } from '../i18n'
+import { ProductQuality } from '../quality/QualityPanel'
 import {
   DOMAINS,
   fetchJson,
@@ -144,13 +145,13 @@ export default function WelfarePage({ view }: { view: string }) {
           )}
         </p>
         <p className="welfare-links">
-          <a href="#status">{l('Pipeline status →', 'Pipelinens status →')}</a>
+          <a href="#status">{l('Pipeline status', 'Pipelinens status')}</a>
           <a
             href="https://github.com/korv9/anton-portfolio/blob/main/docs/welfare-data-model.md"
             target="_blank"
             rel="noreferrer"
           >
-            {l('Data model and caveats ↗', 'Datamodell och förbehåll ↗')}
+            {l('Data model and caveats', 'Datamodell och förbehåll')}
           </a>
         </p>
       </div>
@@ -235,7 +236,7 @@ export default function WelfarePage({ view }: { view: string }) {
                 </ol>
                 <p>
                   <a href="#status">
-                    {l('Pipeline status →', 'Pipelinens status →')}
+                    {l('Pipeline status', 'Pipelinens status')}
                   </a>
                 </p>
               </StageBlock>
@@ -423,6 +424,11 @@ export default function WelfarePage({ view }: { view: string }) {
             <div className="loading">{l('Loading…', 'Laddar…')}</div>
           )}
         </section>
+      )}
+      {view === '#sweden' && (
+        <div className="report">
+          <ProductQuality product="welfare" />
+        </div>
       )}
     </div>
   )

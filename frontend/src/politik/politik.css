@@ -814,8 +814,9 @@
     border-right: 0;
     border-bottom: 1px solid var(--line);
     padding: 1rem 0 0;
-    position: sticky;
-    top: var(--header-h, 0px);
+    /* The site header is already fixed on screen; a second fixed bar would leave a phone
+       little room, so the product's menu scrolls with the page here. */
+    position: relative;
     z-index: 15;
     background: var(--page);
   }
