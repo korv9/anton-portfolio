@@ -103,6 +103,7 @@ export function hash01(text: string): number {
  */
 const SHARED_PLACE: Record<string, [number, number]> = {
   'infra:rawstore': [1.6, -0.45],
+  'infra:legal': [3.6, 0.45],
   'infra:warehouse': [4, -0.45],
   'infra:catalog': [6.8, -0.45],
   'infra:r2': [7.7, 0.45],

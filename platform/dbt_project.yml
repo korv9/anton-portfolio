@@ -20,6 +20,8 @@ models:
     bronze:
       +materialized: view
       +schema: bronze
+      eu_ai_act:
+        +tags: [ai_act]
       jobs:
         +tags: [jobs]
       market:
@@ -39,6 +41,8 @@ models:
     silver:
       +materialized: view
       +schema: silver
+      eu_ai_act:
+        +tags: [ai_act]
       jobs:
         +tags: [jobs]
       parliament:
@@ -50,6 +54,8 @@ models:
     gold:
       +materialized: table
       +schema: gold
+      eu_ai_act:
+        +tags: [ai_act]
       jobs:
         +tags: [jobs]
       market:
@@ -75,6 +81,19 @@ models:
 # tag lets it build on its own: `dbt build --select tag:welfare`.
 seeds:
   portfolio:
+    eu_ai_act:
+      +tags: [ai_act]
+      +schema: seeds
+      ai_act_application_rules:
+        +column_types: {chapter: varchar, section: varchar, article_from: integer, article_to: integer, applies_from: date, applies_from_second: date, partial: boolean, priority: integer, source_article: varchar}
+      ai_act_obligations:
+        +column_types: {article: varchar, paragraph: varchar}
+      ai_act_milestones:
+        +column_types: {date: date, source_article: varchar, affected_articles: varchar, affected_actors: varchar}
+      ai_act_actors:
+        +column_types: {definition_point: varchar, sort_order: integer}
+      ai_act_risk_classes:
+        +column_types: {source_article: varchar, sort_order: integer}
     symbolic:
       +tags: [symbolic]
       +schema: seeds

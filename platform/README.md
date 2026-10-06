@@ -23,7 +23,8 @@ in the warehouse.
 | `ingest/` | Fetch to `warehouse/raw/`. One package per source, plus provenance. `run_welfare.py` runs the five welfare sources and their build |
 | `models/` | dbt: `bronze/`, `silver/`, `gold/`, each namespaced per subject area |
 | `publish/` | Delivery: catalogue, Parquet export, upload to object storage |
-| `lib/` | Shared paths, JSON, hashing, delivered-file resolution; `rawstore` (fetch with provenance) and `pxweb` (SCB and Folkhälsomyndigheten tables) |
+| `lib/` | Shared paths, JSON, hashing, delivered-file resolution; `rawstore` (fetch with provenance, and `store_version` for sources that change in place) and `pxweb` (SCB and Folkhälsomyndigheten tables) |
+| `legal/` | EU legal acts: Cellar queries and links (`cellar.py`), parsing Official Journal and consolidated XHTML into articles, recitals and annexes, and comparing versions (`parse.py`). Written for any EU act, used by the AI Act |
 | `legacy/` | Build and validate scripts not yet migrated into `models/` and `tests/` |
 | `sources/` | Pinned upstream snapshots that cannot be re-fetched |
 | `packages/` | The Allegoria meaningquality engine, vendored |
@@ -71,6 +72,7 @@ before the politics build, since dbt reads the fact tables it writes.
 | Welfare | SCB (AKU, population), Försäkringskassan, Folkhälsomyndigheten, ESS, Kolada | `models/*/welfare`, `models/gold/shared` | [docs/welfare-data-model.md](../docs/welfare-data-model.md) |
 | Parliament | Riksdagen (roll calls, reports, news), SCB (elections, PSU), Valmyndigheten | `models/*/parliament`, `seeds/parliament` | [docs/parliament-data-model.md](../docs/parliament-data-model.md) |
 | Taxes | OECD (Revenue Statistics, Taxing Wages), Skatteverket (rates, tax tables) | `models/*/taxes`, `seeds/taxes`, `frontend/src/taxes` | [docs/taxes.md](../docs/taxes.md) |
+| EU AI Act | EU Publications Office (Cellar / EUR-Lex), European Commission | `models/*/eu_ai_act`, `seeds/eu_ai_act`, `publish/eu_ai_act` | [docs/ai-act.md](../docs/ai-act.md) |
 | Politics | Riksdagen, Statskontoret | Budget context and roll-call votes in `models/*/politics`; speeches and language still in `legacy/` | [docs/political-observatory.md](../docs/political-observatory.md) |
 
 ## Adding a source

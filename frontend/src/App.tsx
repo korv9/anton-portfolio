@@ -20,6 +20,7 @@ const StatusPage = lazy(() => import('./status/StatusPage'))
 const DataModelPage = lazy(() => import('./datamodel/DataModelPage'))
 const ErPage = lazy(() => import('./datamodel/ErPage'))
 const SymbolicAtlasPage = lazy(() => import('./symbolic/SymbolicAtlasPage'))
+const AiActProduct = lazy(() => import('./aiact/AiActProduct'))
 const DataConstellationPage = lazy(
   () => import('./constellation/DataConstellationPage'),
 )
@@ -105,6 +106,7 @@ export default function App() {
           {page === 'er' && <ErPage route={route} />}
           {page === 'symbolic' && <SymbolicAtlasPage route={route} />}
           {page === 'constellation' && <DataConstellationPage route={route} />}
+          {page === 'aiact' && <AiActProduct route={route} />}
           {page === 'drugcomb' && <DrugCombPage />}
           {page === 'allegoria' && <AllegoriaPage />}
           {page === 'thesis' && <ThesisPage />}

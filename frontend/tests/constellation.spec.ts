@@ -12,7 +12,7 @@ test('the constellation shows sources, platform and products at a glance', async
     }),
   ).toBeVisible()
   await expect(page.locator('.constellation-canvas')).toBeVisible()
-  await expect(page.locator('.constellation-products li')).toHaveCount(4)
+  await expect(page.locator('.constellation-products li')).toHaveCount(5)
   await expect(page.locator('.project-context')).toContainText(
     'Data Constellation',
   )

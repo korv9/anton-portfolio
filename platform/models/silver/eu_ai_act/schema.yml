@@ -1,0 +1,55 @@
+version: 2
+
+models:
+  - name: int_ai_act_documents
+    description: Every document of the AI Act's family from Cellar's latest answer, with regulation versions' validity.
+    columns:
+      - name: document_id
+        data_tests: [unique, not_null]
+      - name: document_type
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [regulation, consolidated_version, amending_regulation, corrigendum, regulation_based_on, decision_based_on, legislative_proposal, commission_document, parliament_resolution, other]
+      - name: source_url
+        data_tests: [not_null]
+  - name: int_ai_act_provisions
+    description: Every article, recital and annex of every fetched version and language, parsed by platform/legal/parse.py.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [version_celex, language, provision_id]
+    columns:
+      - name: provision_id
+        data_tests: [not_null]
+      - name: text
+        data_tests: [not_null]
+      - name: source_hash
+        data_tests: [not_null]
+  - name: int_ai_act_definitions
+    description: Article 3's defined terms in the current English text, verbatim.
+    columns:
+      - name: point
+        data_tests: [unique, not_null]
+      - name: term
+        data_tests: [not_null]
+  - name: int_ai_act_provision_changes
+    description: Provision by provision, how the current consolidated text differs from the Official Journal text.
+    columns:
+      - name: provision_id
+        data_tests: [unique, not_null]
+      - name: change_type
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [inserted, deleted, amended, unchanged, text_differs]
+  - name: int_ai_act_guidance
+    description: Commission guidance pages with title and publication date read from the page.
+    columns:
+      - name: guidance_id
+        data_tests: [unique, not_null]
+      - name: title
+        data_tests: [not_null]
+  - name: int_ai_act_article_actors
+    description: Article × actor mentions and "shall" sentences in the current English text (derived by pattern).

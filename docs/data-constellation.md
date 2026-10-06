@@ -42,6 +42,7 @@ publisher or product needs one registry entry.
 | Shared platform | `models/gold/shared` (date, period, region, indicator … dimensions), SCB, and the infrastructure |
 | Sweden | dbt folder `welfare` |
 | Symbolic Atlas | dbt folder `symbolic` |
+| EU AI Act | dbt folder `eu_ai_act` (models and seeds); the Publications Office and the Commission as sources |
 
 Smaller standalone projects (DrugComb, DiVA, Homie, taLLMan) are not in the map: they do not
 run on the dbt warehouse.
@@ -58,7 +59,7 @@ run on the dbt warehouse.
 | ml | `ml:<id>` | analytical stages outside dbt (embeddings, clustering, experiments) | four-pointed star |
 | delivery | `out:<pattern>` | a set of published files under `frontend/public/data` | hollow square |
 | frontend | `app:<id>` | a product | large planet |
-| shared | `infra:<id>` | rawstore, dbt + DuckDB, the delivery catalogue, Cloudflare R2 | double ring |
+| shared | `infra:<id>` | rawstore, the EU legal parser, dbt + DuckDB, the delivery catalogue, Cloudflare R2 | double ring |
 
 Models dbt switches off by default (the job-ad clustering marts, enabled by a dbt variable) are
 included, marked `enabled: false` and drawn faded.
@@ -71,7 +72,7 @@ included, marked `enabled: false` and drawn faded.
 | `delivery` | a published file written from a table (or ML output) by a publisher (`via`) | accent line |
 | `frontend-consumption` | a product reads a published file | accent line |
 | `relationship` | a key joins two tables (cardinality, basis) | dashed, Data model view only |
-| `infrastructure` | a stage runs on shared infrastructure | dotted, only on a selected path |
+| `infrastructure` | a stage runs on shared infrastructure (an ingester that stores through rawstore, a dbt Python model or ingester that imports `platform/legal`) | dotted, only on a selected path |
 
 Physical lineage, logical relationships and product consumption are separate edge types and
 are never drawn the same way: a join is not a build step.

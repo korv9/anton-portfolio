@@ -1,0 +1,12 @@
+actor_id,official_term,definition_point,actor_group,label_en,label_sv,match_pattern,sort_order
+provider,provider,3,operator,Provider,Leverantör,\bproviders?\b,1
+deployer,deployer,4,operator,Deployer,Tillhandahållare (användare),\bdeployers?\b,2
+gpai_provider,provider of a general-purpose AI model,3,operator,Provider of a general-purpose AI model,Leverantör av AI-modell för allmänna ändamål,\bproviders? of (?:a )?general-purpose AI models?\b,3
+downstream_provider,downstream provider,68,operator,Downstream provider,Leverantör i senare led,\bdownstream providers?\b,4
+authorised_representative,authorised representative,5,operator,Authorised representative,Ombud,\bauthorised representatives?\b,5
+importer,importer,6,operator,Importer,Importör,\bimporters?\b,6
+distributor,distributor,7,operator,Distributor,Distributör,\bdistributors?\b,7
+notified_body,notified body,22,body,Notified body,Anmält organ,\bnotified bod(?:y|ies)\b,8
+market_surveillance_authority,market surveillance authority,26,authority,Market surveillance authority,Marknadskontrollmyndighet,\bmarket surveillance authorit(?:y|ies)\b,9
+national_competent_authority,national competent authority,48,authority,National competent authority,Nationell behörig myndighet,\bnational competent authorit(?:y|ies)\b,10
+ai_office,AI Office,47,authority,AI Office,AI-byrån,\bAI Office\b,11

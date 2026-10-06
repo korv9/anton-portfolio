@@ -1,0 +1,130 @@
+version: 2
+
+models:
+  - name: dim_ai_act_document
+    description: The AI Act's documents from Cellar; one regulation version is current.
+    columns:
+      - name: document_id
+        data_tests: [unique, not_null]
+      - name: source_url
+        data_tests: [not_null]
+      - name: published_at
+        data_tests: [not_null]
+  - name: dim_ai_act_guidance
+    description: Commission guidance, codes of practice and templates, read from the Commission's pages.
+    columns:
+      - name: guidance_id
+        data_tests: [unique, not_null]
+      - name: source_url
+        data_tests: [not_null]
+  - name: dim_ai_act_article
+    description: The articles of the current consolidated text, English and Swedish, with change status and application date.
+    columns:
+      - name: article_id
+        data_tests: [unique, not_null]
+      - name: article_number
+        data_tests: [unique, not_null]
+      - name: title_en
+        data_tests: [not_null]
+      - name: text_en
+        data_tests: [not_null]
+      - name: text_sv
+        data_tests: [not_null]
+      - name: applies_from
+        description: From Article 113 via seeds/eu_ai_act/ai_act_application_rules.csv.
+        data_tests: [not_null]
+      - name: source_url
+        data_tests: [not_null]
+      - name: change_type
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [inserted, amended, unchanged, text_differs]
+  - name: dim_ai_act_annex
+    description: The annexes of the current consolidated text.
+    columns:
+      - name: annex_id
+        data_tests: [unique, not_null]
+  - name: dim_ai_act_recital
+    description: The recitals of the Official Journal text.
+    columns:
+      - name: recital_id
+        data_tests: [unique, not_null]
+  - name: dim_ai_act_actor
+    description: The Act's actors under their official terms with the Article 3 definition verbatim.
+    columns:
+      - name: actor_id
+        data_tests: [unique, not_null]
+      - name: definition
+        description: Verbatim from Article 3; every actor of the seed must find its definition.
+        data_tests: [not_null]
+  - name: dim_ai_act_risk_class
+    description: The risk classes and the sentence each rests on.
+    columns:
+      - name: risk_class_id
+        data_tests: [unique, not_null]
+  - name: bridge_ai_act_article_actor
+    description: Article × actor mentions and "shall" sentences (derived).
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [article_number, actor_id]
+    columns:
+      - name: article_number
+        data_tests:
+          - relationships:
+              arguments: {to: ref('dim_ai_act_article'), field: article_number}
+      - name: actor_id
+        data_tests:
+          - relationships:
+              arguments: {to: ref('dim_ai_act_actor'), field: actor_id}
+  - name: bridge_ai_act_article_reference
+    description: Article → article cross-references (derived by pattern).
+  - name: bridge_ai_act_article_guidance
+    description: Article × Commission guidance (curated list).
+    columns:
+      - name: article_number
+        data_tests:
+          - relationships:
+              arguments: {to: ref('dim_ai_act_article'), field: article_number}
+  - name: mart_ai_act_obligations
+    description: Actor × obligation × article with the verbatim sentence, our classification and a plain-language summary.
+    columns:
+      - name: obligation_id
+        data_tests: [unique, not_null]
+      - name: actor_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('dim_ai_act_actor'), field: actor_id}
+      - name: article_number
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('dim_ai_act_article'), field: article_number}
+      - name: source_quote
+        data_tests: [not_null]
+      - name: applies_from
+        data_tests: [not_null]
+      - name: source_url
+        data_tests: [not_null]
+  - name: mart_ai_act_timeline
+    description: Application dates and deadlines from the Act and the dates of the documents that made it.
+    columns:
+      - name: milestone_id
+        data_tests: [unique, not_null]
+      - name: date
+        data_tests: [not_null]
+      - name: source_url
+        data_tests: [not_null]
+  - name: mart_ai_act_changes
+    description: Documents, guidance and article-level changes, each with its official source.
+    columns:
+      - name: change_id
+        data_tests: [unique, not_null]
+      - name: change_date
+        data_tests: [not_null]
+      - name: change_kind
+        data_tests: [not_null]
+      - name: source_url
+        data_tests: [not_null]

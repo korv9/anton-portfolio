@@ -27,6 +27,7 @@ DOMAINS = [
     {"id": "shared", "label": "Shared platform", "lane": 2},
     {"id": "welfare", "label": "Sweden", "lane": 3},
     {"id": "symbolic", "label": "Symbolic Atlas", "lane": 4},
+    {"id": "ai_act", "label": "EU AI Act", "lane": 5},
 ]
 
 DBT_FOLDER_DOMAIN = {
@@ -34,6 +35,7 @@ DBT_FOLDER_DOMAIN = {
     "jobs": "jobs", "market": "jobs",
     "welfare": "welfare",
     "symbolic": "symbolic",
+    "eu_ai_act": "ai_act",
     "shared": "shared",
     "": "jobs",  # seeds at the root of seeds/: the job-ad role and technology patterns
 }
@@ -66,6 +68,12 @@ ORIGINS = [
      "description": "ESS rounds 1–11, integrated files."},
     {"id": "gutenberg", "label": "Project Gutenberg", "domain": "symbolic", "url": "https://www.gutenberg.org",
      "description": "Ten public-domain books of myth, folklore and literature."},
+    {"id": "publications-office", "label": "EU Publications Office (EUR-Lex)", "domain": "ai_act",
+     "url": "https://publications.europa.eu/webapi/rdf/sparql",
+     "description": "Cellar, the repository behind EUR-Lex: the AI Act's text in English and Swedish, its consolidated versions, amending acts, corrigenda and related documents."},
+    {"id": "european-commission", "label": "European Commission", "domain": "ai_act",
+     "url": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai",
+     "description": "The Commission's AI Act pages: guidelines, codes of practice, templates and the AI Act Service Desk."},
 ]
 
 INGESTION = [
@@ -97,6 +105,9 @@ INGESTION = [
     {"id": "symbolic", "path": "platform/ingest/symbolic", "domain": "symbolic",
      "origins": ["gutenberg"], "raw": ["symbolic"],
      "description": "The Gutenberg corpus, every fetch logged with URL, time and SHA-256."},
+    {"id": "eu_ai_act", "path": "platform/ingest/eu_ai_act", "domain": "ai_act",
+     "origins": ["publications-office", "european-commission"], "raw": ["eu_ai_act"],
+     "description": "The AI Act and every related act from Cellar, and the Commission's guidance pages; texts kept per CELEX number and language, changing pages kept per version."},
 ]
 
 ML = [
@@ -127,6 +138,14 @@ PUBLISHERS = [
         {"pattern": "symbolic/reviewed-clusters.json", "inputs": ["ml:symbolic-review"]},
         {"pattern": "symbolic/research-history.json", "inputs": ["ml:symbolic-review"]},
         {"pattern": "symbolic/experiment-comparison.json", "inputs": ["ml:symbolic-review"]},
+    ]},
+    {"path": "platform/publish/eu_ai_act/export_ai_act.py", "domain": "ai_act", "outputs": [
+        {"pattern": "ai-act/article-text-*.json", "inputs": ["dim_ai_act_article", "dim_ai_act_annex"]},
+        {"pattern": "ai-act/obligations.json", "inputs": ["mart_ai_act_obligations"]},
+        {"pattern": "ai-act/timeline.json", "inputs": ["mart_ai_act_timeline"]},
+        {"pattern": "ai-act/changes.json", "inputs": ["mart_ai_act_changes"]},
+        {"pattern": "ai-act/navigator.json", "inputs": ["mart_ai_act_obligations", "dim_ai_act_actor", "dim_ai_act_risk_class"]},
+        {"pattern": "ai-act/*.json"},
     ]},
     {"path": "platform/publish/export_market.py", "domain": "jobs", "outputs": [{"pattern": "jobs/market.json"}]},
     {"path": "platform/ingest/jobtech/export_presentation.py", "domain": "jobs",
@@ -182,6 +201,9 @@ PRODUCTS = [
     {"id": "symbolic", "label": "Symbolic Atlas", "href": "#symbolic-atlas", "domain": "symbolic",
      "frontend": ["frontend/src/symbolic"],
      "description": "Unsupervised map of symbol words in myth and literature, with human review."},
+    {"id": "ai_act", "label": "EU AI Act Observatory", "href": "#ai-act", "domain": "ai_act",
+     "frontend": ["frontend/src/aiact"],
+     "description": "Articles, obligations, actors, application dates and changes of the AI Act, from official EU sources."},
 ]
 
 SHARED = [
@@ -189,6 +211,8 @@ SHARED = [
      "description": "Immutable raw landing: every fetch stored with URL, time and SHA-256 under warehouse/raw."},
     {"id": "warehouse", "label": "dbt + DuckDB", "path": "platform/dbt_project.yml",
      "description": "One DuckDB warehouse; dbt builds bronze views, silver and gold tables, with tests."},
+    {"id": "legal", "label": "EU legal parser", "path": "platform/legal/parse.py",
+     "description": "Parses EU acts (Official Journal or consolidated XHTML) into articles, recitals and annexes and compares versions; written for any EU act."},
     {"id": "catalog", "label": "Delivery catalogue", "path": "platform/publish/build_catalog.py",
      "description": "catalog.json and delivery.json: every published file with its hash, format and where it is served from."},
     {"id": "r2", "label": "Cloudflare R2", "path": "platform/publish/upload.py",

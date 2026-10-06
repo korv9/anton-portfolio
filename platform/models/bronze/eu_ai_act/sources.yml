@@ -1,0 +1,41 @@
+version: 2
+
+# The EU AI Act Observatory's sources, fetched by platform/ingest/eu_ai_act into
+# warehouse/raw/eu_ai_act exactly as served: the acts from the Publications Office (Cellar),
+# Cellar's list of related documents, and the Commission's guidance pages.
+
+sources:
+  - name: eu_ai_act
+    description: Official EU sources for Regulation (EU) 2024/1689 and the fetch log.
+    tables:
+      - name: texts
+        description: One row per act text (CELEX number and language), XHTML as served by Cellar.
+        meta:
+          external_location: >-
+            read_text('{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/eu_ai_act/acts/*.xhtml')
+      - name: related
+        description: Every distinct answer of Cellar's SPARQL endpoint on the documents related to the act.
+        meta:
+          external_location: >-
+            read_text('{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/eu_ai_act/cellar/related@*.json')
+      - name: text_attempts
+        description: Every text the last ingest asked Cellar for, and whether Cellar had it.
+        meta:
+          external_location: >-
+            read_json('{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/eu_ai_act/cellar/fetched.json')
+      - name: guidance_pages
+        description: Every distinct version of each Commission guidance page.
+        meta:
+          external_location: >-
+            read_text('{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/eu_ai_act/guidance/*@*.html')
+      - name: guidance_sources
+        description: The hand-kept list of guidance pages (platform/ingest/eu_ai_act/sources.py).
+        meta:
+          external_location: >-
+            read_json('{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/eu_ai_act/guidance/sources.json')
+      - name: fetches
+        description: One line per fetch with URL, headers, time, SHA-256 and size (lib/rawstore.py).
+        meta:
+          external_location: >-
+            read_json('{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/eu_ai_act/_manifest.jsonl',
+            format = 'newline_delimited', union_by_name = true)
