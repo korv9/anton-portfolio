@@ -64,13 +64,14 @@ export async function loadSymbolProfiles(): Promise<SymbolProfile[]> {
 /**
  * A colour per cluster. There are dozens of clusters and none has a name, so no legend can
  * list them: hues are spread by the golden angle so neighbouring ids differ, and identity is
- * read from the tooltip and the cluster filter. Noise is a muted grey.
+ * read from the tooltip and the cluster filter. The hues are muted, so the map reads as one
+ * field on the dark plate with clusters as tonal regions rather than a rainbow. Noise is grey.
  */
 export function clusterColour(cluster: number, alpha = 1): string {
   if (cluster < 0) return `rgba(150, 146, 140, ${alpha * 0.55})`
   const hue = (cluster * 137.508) % 360
   const light = cluster % 2 ? 72 : 64
-  return `hsla(${hue.toFixed(1)}, 55%, ${light}%, ${alpha})`
+  return `hsla(${hue.toFixed(1)}, 24%, ${light}%, ${alpha})`
 }
 
 export const TRADITION: Record<string, [string, string]> = {

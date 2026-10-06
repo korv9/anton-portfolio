@@ -5,17 +5,17 @@
  */
 
 .body-map {
-  --body-ink: #f1ece2;
+  --body-ink: var(--ink);
   margin: 0 0 var(--sp-6, 2.5rem);
 }
 .body-map svg {
   display: block;
   width: 100%;
   height: auto;
-  background: #070708;
+  background: var(--page);
 }
 .body-ground {
-  fill: #070708;
+  fill: var(--on-accent);
 }
 .body-title,
 .body-sub {
@@ -100,7 +100,7 @@
   opacity: 0.35;
 }
 .body-core {
-  fill: #070708;
+  fill: var(--on-accent);
   stroke: var(--body-ink);
   stroke-width: 1.2;
 }

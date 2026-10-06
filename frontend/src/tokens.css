@@ -1,0 +1,332 @@
+/*
+ * Design tokens: the one place the site's type, colour, space and shape are defined. Loaded
+ * after every other stylesheet, so a component that uses a token follows it everywhere.
+ *
+ * Grey editorial canvas outside, focused analytical worlds inside: the site is a warm mid-grey
+ * page with near-black text and off-white surfaces; a large visualisation (the Symbolic Atlas,
+ * the Data Constellation, a semantic map) sits on a dark plate, `.plate`, which redefines the
+ * same tokens for its own subtree. Colour carries meaning only where data needs it (a party, a
+ * series); the interface itself is neutral.
+ *
+ * Contrast (WCAG): ink on page 13.1, muted on page 6.0 and on the darkest surface 5.2; on a
+ * plate, ink 16.7 and muted 7.7. --subtle is for rules and marks, never for text.
+ */
+@font-face {
+  font-family: 'Manrope';
+  src: url('/fonts/manrope-variable.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 200 800;
+  font-display: swap;
+}
+
+:root {
+  color-scheme: light;
+
+  /* Type: one sans for everything, one mono for figures, metadata and section numbers. */
+  --font: 'Manrope', 'Helvetica Neue', Arial, sans-serif;
+  --font-mono:
+    ui-monospace, 'SFMono-Regular', Menlo, Consolas, 'Liberation Mono',
+    monospace;
+  --weight-body: 470;
+  --weight-ui: 560;
+  --weight-heading: 700;
+
+  /* Type scale: display, project title, section title, subheading, body, small, caption. */
+  --display-xl: clamp(3.2rem, 8vw, 7rem);
+  --display-l: clamp(2.6rem, 5.5vw, 5rem);
+  --h1: clamp(2.2rem, 4.4vw, 3.6rem);
+  --h2: clamp(1.7rem, 3.2vw, 2.6rem);
+  --h3: clamp(1.25rem, 1.8vw, 1.6rem);
+  --body-large: 1.125rem;
+  --body: 1rem;
+  --small: 0.9rem;
+  --caption: 0.78rem;
+  --measure: 68ch;
+  /* The older role names, mapped onto the same scale. */
+  --fs-display: var(--h1);
+  --fs-page-title: 1.6rem;
+  --fs-section-title: var(--h3);
+  --fs-card-title: 1.0625rem;
+  --fs-body: 1rem;
+  --fs-meta: 0.875rem;
+  --fs-label: 0.78rem;
+  --fs-xs: 0.78rem;
+  --fs-sm: 0.875rem;
+  --fs-md: 1rem;
+  --fs-lg: 1.25rem;
+  --fs-xl: clamp(1.75rem, 3vw, 2.25rem);
+
+  /* Colour: the tonal family #0F0F10 · #2A2A2C · #5B5B5E · #F2EFE9 · #C9C2B6, on warm grey. */
+  --page: #d8d5cf;
+  --paper: #e6e3dd;
+  --paper-strong: #f2efe9;
+  --wash: #cfccc5;
+  --surface: #c9c6bf;
+  --ink: #0f0f10;
+  --ink-2: #2a2a2c;
+  --muted: #4a4a4d;
+  --subtle: #6b6b6e;
+  --stone: #c9c2b6;
+  --line: rgba(15, 15, 16, 0.16);
+  --line-strong: rgba(15, 15, 16, 0.42);
+  --focus: #0f0f10;
+  /* What is chosen or current (a page, a tab, a filter): ink on paper, inverted. */
+  --accent: #0f0f10;
+  --accent-2: #2a2a2c;
+  --on-accent: #f2efe9;
+  --select: #c9c6bf;
+  --wash-cool: #d2cfc9;
+  --side: #d2cfc9;
+  /* Meaning, never decoration. */
+  --info: #1f4f73;
+  --negative: #8f3424;
+  --note-bg: #e6dfcb;
+  --note-line: #9c7f2e;
+  /* Legacy names some views still read. */
+  --teal: #0f0f10;
+  --orange: #5b5b5e;
+  /* Data series where a chart needs categories (never for chrome). */
+  --data-blue: #3f6a96;
+  --data-green: #4a8a42;
+  --data-ochre: #b07f1c;
+  --data-rust: #b0563f;
+  --data-purple: #6c62ad;
+  --data-teal: #23786d;
+
+  /* Space and shape. */
+  --sp-1: 0.25rem;
+  --sp-2: 0.5rem;
+  --sp-3: 0.75rem;
+  --sp-4: 1rem;
+  --sp-5: 1.5rem;
+  --sp-6: 2.5rem;
+  --gutter: clamp(16px, 3vw, 44px);
+  --content-width: 1440px;
+  --radius: 2px;
+  --card-pad: 0.9rem 1.05rem 1rem;
+  --card-gap: 0.9rem;
+
+  /* Motion: short, and none at all when the reader asks for less. */
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --dur: 160ms;
+
+  color: var(--ink);
+  background: var(--page);
+  font-family: var(--font);
+  font-synthesis: none;
+  font-variant-numeric: tabular-nums;
+}
+
+/*
+ * A dark plate: the same tokens, inverted, for a visualisation that needs a dark field. Every
+ * component inside reads its colours from the tokens, so it follows without its own theme.
+ */
+.plate {
+  color-scheme: dark;
+  --page: #0f0f10;
+  --paper: #1a1a1c;
+  --paper-strong: #232326;
+  --wash: #202022;
+  --surface: #2a2a2c;
+  --ink: #f2efe9;
+  --ink-2: #d9d4ca;
+  --muted: #a8a49b;
+  --subtle: #8a8a8d;
+  --line: rgba(242, 239, 233, 0.16);
+  --line-strong: rgba(242, 239, 233, 0.38);
+  --focus: #c9c2b6;
+  --accent: #f2efe9;
+  --accent-2: #d9d4ca;
+  --on-accent: #0f0f10;
+  --select: #2a2a2c;
+  --wash-cool: #1a1a1c;
+  --side: #141416;
+  --info: #8bbde3;
+  --negative: #ec8a74;
+  --note-bg: #1d190d;
+  --note-line: #c7a64a;
+  --teal: #f2efe9;
+  --orange: #a8a49b;
+  background: var(--page);
+  color: var(--ink);
+}
+
+html,
+body,
+#root {
+  background: var(--page);
+  color: var(--ink);
+}
+body {
+  font-weight: var(--weight-body);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+html,
+body,
+button,
+input,
+select,
+textarea,
+table,
+svg text {
+  font-family: var(--font);
+}
+input,
+select,
+textarea,
+button {
+  color: inherit;
+}
+input,
+select,
+textarea {
+  background: var(--paper-strong);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+}
+.plate input,
+.plate select,
+.plate textarea {
+  background: var(--paper);
+}
+img {
+  color-scheme: light;
+}
+
+/*
+ * Buttons and filters. Three kinds of button and one chip, each with the same states:
+ *   .btn          primary: ink on the page, inverted (one per view, the main action)
+ *   .btn-quiet    secondary: an outline
+ *   .btn-text     a text action, underlined
+ *   chips         a filter or toggle in a group, pressed when chosen (aria-pressed)
+ * Hover darkens the edge, a pressed chip is filled with ink, a disabled control is faded and
+ * says so to the pointer, and every one shows the focus outline above.
+ */
+.btn,
+.btn-quiet,
+.btn-text {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  min-height: 40px;
+  padding: 0.35rem 1rem;
+  border: 1px solid var(--ink);
+  border-radius: var(--radius);
+  background: var(--accent);
+  color: var(--on-accent);
+  font: inherit;
+  font-weight: var(--weight-ui);
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background var(--dur) var(--ease),
+    color var(--dur) var(--ease),
+    border-color var(--dur) var(--ease);
+}
+.btn:hover {
+  background: var(--accent-2);
+}
+.btn-quiet {
+  border-color: var(--line-strong);
+  background: transparent;
+  color: var(--ink);
+}
+.btn-quiet:hover {
+  border-color: var(--ink);
+}
+.btn-text {
+  min-height: 32px;
+  padding-inline: 0;
+  border-color: transparent;
+  background: transparent;
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  text-decoration-color: var(--line-strong);
+}
+.btn-text:hover {
+  text-decoration-color: currentColor;
+}
+.aa-filters button:hover,
+.aa-term-family button:hover,
+.atlas-chips button:hover,
+.cc-chips button:hover,
+.ph-chips button:hover,
+.constellation-chips button:hover,
+.constellation-layers button:hover,
+.er-tabs button:hover,
+.project-filter button:hover,
+.story-chips button:hover,
+.news-topics button:hover,
+.dataset-presets button:hover,
+.feature-pick button:hover,
+.modell-slicers button:hover,
+.cluster-controls button:hover,
+.speaker-order button:hover {
+  border-color: var(--ink);
+}
+.aa-filters button[aria-pressed='true'],
+.aa-term-family button[aria-pressed='true'],
+.atlas-chips button[aria-pressed='true'],
+.cc-chips button[aria-pressed='true'],
+.ph-chips button[aria-pressed='true'],
+.constellation-chips button[aria-pressed='true'],
+.constellation-layers button[aria-pressed='true'],
+.er-tabs button[aria-pressed='true'],
+.project-filter button[aria-pressed='true'],
+.story-chips button[aria-pressed='true'],
+.news-topics button[aria-pressed='true'],
+.dataset-presets button[aria-pressed='true'],
+.feature-pick button[aria-pressed='true'],
+.modell-slicers button[aria-pressed='true'],
+.cluster-controls button[aria-pressed='true'],
+.speaker-order button[aria-pressed='true'] {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--on-accent);
+}
+.aa-filters button:active,
+.aa-term-family button:active,
+.atlas-chips button:active,
+.cc-chips button:active,
+.ph-chips button:active,
+.constellation-chips button:active,
+.constellation-layers button:active,
+.er-tabs button:active,
+.project-filter button:active,
+.story-chips button:active,
+.news-topics button:active,
+.dataset-presets button:active,
+.feature-pick button:active,
+.modell-slicers button:active,
+.cluster-controls button:active,
+.speaker-order button:active,
+.btn:active,
+.btn-quiet:active {
+  transform: translateY(1px);
+}
+:is(button, .btn, .btn-quiet, .btn-text):disabled,
+:is(button, .btn, .btn-quiet, .btn-text)[aria-disabled='true'] {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Every keyboard-reachable control shows where focus is. */
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

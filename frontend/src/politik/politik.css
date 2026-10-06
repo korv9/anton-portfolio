@@ -11,76 +11,6 @@
   border-right: 1px solid var(--line);
   padding: 1.5rem 1.25rem 1.5rem clamp(1rem, 2.5vw, 2rem);
 }
-.politik-party-rail {
-  top: auto !important;
-  margin-top: 2rem;
-  padding-top: 1rem;
-  border-top: 1px solid var(--line);
-}
-.politik-party-rail > p {
-  margin: 0 0 0.75rem;
-  color: var(--muted);
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-.politik-party-rail ul {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 0.55rem;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-.politik-party-rail a {
-  position: relative;
-  display: grid;
-  place-items: center;
-  min-height: 52px;
-  padding: 0.4rem;
-  border: 1px solid transparent;
-  background: rgba(255, 255, 255, 0.62);
-  text-decoration: none;
-  transition:
-    transform 160ms ease,
-    border-color 160ms ease,
-    background 160ms ease;
-}
-.politik-party-rail a:hover,
-.politik-party-rail a:focus-visible,
-.politik-party-rail a[aria-current] {
-  z-index: 1;
-  transform: none;
-  border-color: var(--line-strong);
-  background: var(--paper);
-}
-.politik-party-rail a[aria-current]::after {
-  content: '';
-  position: absolute;
-  right: 5px;
-  bottom: 5px;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--ink);
-}
-.politik-party-rail .party-logo {
-  object-fit: contain;
-  transition: transform 180ms ease;
-}
-.politik-party-rail a:hover .party-logo,
-.politik-party-rail a:focus-visible .party-logo {
-  transform: scale(1.08);
-}
-.politik-party-rail a > span {
-  position: absolute;
-  bottom: 2px;
-  right: 4px;
-  color: var(--muted);
-  font-size: 0.58rem;
-  font-weight: 700;
-}
 .politik-side > * {
   position: sticky;
   top: var(--header-h, 0px);
@@ -472,75 +402,11 @@
 }
 
 /* ---------- Seats ---------- */
-
-.seat-chart {
-  margin: 0;
-}
-.seat-chart-track {
-  position: relative;
-  height: 64px;
-  background: var(--wash);
-}
-.seat-chart-seg {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  overflow: hidden;
-  border-right: 2px solid var(--page);
-  line-height: 1.1;
-  transform-origin: left center;
-  animation: seat-grow 520ms cubic-bezier(0.2, 0.8, 0.25, 1) both;
-  transition: filter 160ms ease;
-}
-.seat-chart-seg:hover {
-  filter: brightness(1.08) saturate(1.08);
-}
 @keyframes seat-grow {
   from {
     opacity: 0;
     transform: scaleX(0.15);
   }
-}
-.seat-chart-seg b {
-  font-size: 0.875rem;
-}
-.seat-chart-seg small {
-  font-size: 0.75rem;
-}
-.seat-chart-majority {
-  position: absolute;
-  top: -8px;
-  bottom: -8px;
-  border-left: 2px solid var(--ink);
-}
-.seat-chart-scale {
-  position: relative;
-  height: 1.6rem;
-  font-size: 0.8125rem;
-}
-.seat-chart-scale span {
-  position: absolute;
-  top: 0.5rem;
-  transform: translateX(-50%);
-  white-space: nowrap;
-}
-.seat-chart-blocs {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem 2rem;
-  margin: 1.5rem 0 0;
-}
-.seat-chart-blocs dt {
-  font-size: 0.8125rem;
-  color: var(--muted);
-}
-.seat-chart-blocs dd {
-  margin: 0.25rem 0 0;
-  font-size: 0.9375rem;
 }
 
 /* ---------- Line charts in the product ---------- */
@@ -887,8 +753,7 @@
   .theme-kpis > div,
   .theme-figure,
   .theme-meaning,
-  .theme-further,
-  .seat-chart-seg {
+  .theme-further {
     animation: none;
   }
   .politik-slicer button,
@@ -913,12 +778,6 @@
   }
   .explore-row small {
     grid-column: 1;
-  }
-  .seat-chart-seg b {
-    font-size: 0.75rem;
-  }
-  .seat-chart-seg small {
-    display: none;
   }
   .theme-figure-head {
     flex-direction: column;
@@ -973,7 +832,7 @@
   align-items: center;
   gap: 0.75rem 1rem;
   padding: 0.6rem clamp(1rem, 4vw, 4rem);
-  background: rgba(7, 7, 8, 0.96);
+  background: color-mix(in srgb, var(--page) 96%, transparent);
   border-bottom: 1px solid var(--line);
 }
 .politik-slicer-label {
@@ -1059,7 +918,7 @@
   cursor: pointer;
 }
 .politik-slicer-state button:hover {
-  background: #333;
+  background: var(--wash);
 }
 @media (max-width: 1180px) {
   .politik-slicer-label {
@@ -1121,27 +980,26 @@
 .politik-slicer button[aria-pressed] {
   width: 64px;
   height: 56px;
-  border: 2px solid color-mix(in srgb, var(--party, #888) 45%, var(--paper));
-  background: color-mix(in srgb, var(--party, #888) 7%, var(--paper));
-  box-shadow: inset 0 -4px 0 var(--party, #888);
-  border-radius: 6px;
+  border: 2px solid
+    color-mix(in srgb, var(--party, var(--line-strong)) 45%, var(--paper));
+  background: color-mix(in srgb, var(--party, var(--wash)) 7%, var(--paper));
+  box-shadow: inset 0 -4px 0 var(--party, var(--ink));
+  border-radius: var(--radius);
 }
 .politik-slicer button[aria-pressed] > span {
   right: 5px;
   bottom: 6px;
-  color: color-mix(in srgb, var(--party, #444) 70%, #000);
+  color: color-mix(in srgb, var(--party, var(--muted)) 70%, var(--on-accent));
   font-size: 0.8125rem;
 }
 .politik-slicer button[aria-pressed]:hover {
-  border-color: var(--party, #888);
-  background: color-mix(in srgb, var(--party, #888) 16%, var(--paper));
+  border-color: var(--party, var(--line-strong));
+  background: color-mix(in srgb, var(--party, var(--wash)) 16%, var(--paper));
 }
 .politik-slicer button[aria-pressed='true'] {
   border: 3px solid var(--party, var(--ink));
-  background: color-mix(in srgb, var(--party, #888) 24%, var(--paper));
-  box-shadow:
-    inset 0 -6px 0 var(--party, #888),
-    0 6px 14px -8px var(--party, #888);
+  background: color-mix(in srgb, var(--party, var(--wash)) 24%, var(--paper));
+  box-shadow: inset 0 -6px 0 var(--party, var(--ink));
 }
 .politik-slicer button[aria-pressed='true']::after {
   content: '✓';
@@ -1150,7 +1008,7 @@
   left: 4px;
   font-size: 0.75rem;
   font-weight: 800;
-  color: color-mix(in srgb, var(--party, #444) 70%, #000);
+  color: color-mix(in srgb, var(--party, var(--muted)) 70%, var(--on-accent));
 }
 .politik-slicer ul {
   gap: 0.45rem;

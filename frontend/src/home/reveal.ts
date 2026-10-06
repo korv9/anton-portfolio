@@ -32,28 +32,3 @@ export function useReveal<T extends HTMLElement>(deps: unknown[] = []) {
   }, deps)
   return root
 }
-
-/** Counts up to a number once it is in view; the final value is always the real one. */
-export function countUp(
-  el: HTMLElement,
-  value: number,
-  locale: string,
-  decimals = 0,
-) {
-  const format = (n: number) =>
-    n.toLocaleString(locale, {
-      minimumFractionDigits: decimals,
-      maximumFractionDigits: decimals,
-    })
-  if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
-    el.textContent = format(value)
-    return
-  }
-  const start = performance.now()
-  const step = (now: number) => {
-    const t = Math.min(1, (now - start) / 1200)
-    el.textContent = format(value * (1 - Math.pow(1 - t, 3)))
-    if (t < 1) requestAnimationFrame(step)
-  }
-  requestAnimationFrame(step)
-}

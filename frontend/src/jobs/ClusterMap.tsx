@@ -328,7 +328,7 @@ export default function ClusterMap() {
           'Närliggande annonser har liknande semantiska representationer. Axlarna saknar namngiven betydelse. Använd piltangenter för att granska annonser, Enter för att välja deras kluster och Escape för att rensa.',
         )}
       </p>
-      <div className="cluster-layout">
+      <div className="cluster-layout plate">
         <div>
           <canvas
             ref={canvas}

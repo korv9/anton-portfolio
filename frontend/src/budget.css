@@ -40,61 +40,6 @@
   letter-spacing: 0;
   font-weight: 600;
 }
-.budget-summary {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  background: var(--wash);
-  border: 1px solid #d3e3dc;
-  margin: 1.5rem 0;
-}
-.budget-summary > div {
-  padding: 1rem 1.2rem;
-  border-right: 1px solid #d3e3dc;
-}
-.budget-summary > div:last-child {
-  border: 0;
-}
-.budget-summary strong,
-.budget-summary span {
-  display: block;
-}
-.budget-summary strong {
-  font: 750 clamp(1.5rem, 2.4vw, 2.2rem)/1 var(--font);
-  letter-spacing: -0.04em;
-}
-.budget-summary span {
-  color: var(--ink-2);
-  font-size: 0.76rem;
-  margin-top: 0.3rem;
-}
-.budget-party-status {
-  margin: -0.4rem 0 1.3rem;
-}
-.budget-party-status > strong {
-  font-size: 0.79rem;
-}
-.budget-party-status > div {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.35rem;
-  margin: 0.55rem 0;
-}
-.budget-party-status span {
-  border: 1px solid #d2ddd6;
-  padding: 0.3rem 0.48rem;
-  font-size: 0.75rem;
-  background: var(--wash);
-}
-.budget-party-status span.unavailable {
-  color: var(--ink-2);
-  background: var(--wash);
-  border-color: #dddeda;
-}
-.budget-party-status p {
-  margin: 0.4rem 0 0;
-  color: var(--muted);
-  font-size: 0.75rem;
-}
 .party-area-comparison {
   border: 1px solid #d3e3dc;
   background: var(--wash);
@@ -122,10 +67,10 @@
   margin-left: 0.45rem;
 }
 .party-area-head i.budget-key {
-  background: #1a1a1a;
+  background: var(--paper);
 }
 .party-area-head i.keyword-key {
-  background: #8a8a8a;
+  background: var(--wash);
 }
 .party-area-rows {
   display: grid;
@@ -157,10 +102,10 @@
   min-width: 1px;
 }
 .party-area-bars .budget-bar {
-  background: #1a1a1a;
+  background: var(--paper);
 }
 .party-area-bars .keyword-bar {
-  background: #8a8a8a;
+  background: var(--wash);
 }
 .party-area-comparison p {
   color: var(--muted);
@@ -174,36 +119,6 @@
 }
 .correlation-panel {
   grid-column: 1/-1;
-}
-.party-correlation-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1.5rem;
-}
-.party-correlation-grid > div {
-  min-width: 0;
-  padding-top: 0.65rem;
-  border-top: 1px solid var(--line);
-}
-.party-correlation-grid strong,
-.party-mini > strong {
-  font-size: 0.85rem;
-}
-.party-correlation-grid .correlation-timeline {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-.party-small-multiples {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.8rem;
-}
-.trend-panel:has(.party-small-multiples) {
-  grid-column: 1/-1;
-}
-.party-mini {
-  min-width: 0;
-  border-top: 1px solid var(--line);
-  padding-top: 0.5rem;
 }
 .correlation-timeline {
   display: grid;
@@ -235,10 +150,10 @@
   display: block;
 }
 .correlation-track i.positive {
-  background: #1a1a1a;
+  background: var(--paper);
 }
 .correlation-track i.negative {
-  background: #8a8a8a;
+  background: var(--wash);
 }
 .budget-panel {
   min-width: 0;
@@ -285,7 +200,7 @@
   font-weight: 700;
 }
 .budget-dot {
-  fill: #1a1a1a;
+  fill: var(--on-accent);
   stroke: var(--page);
   stroke-width: 1.5;
   opacity: 0.8;
@@ -299,7 +214,7 @@
   outline: none;
 }
 .budget-dot.selected {
-  fill: #8a8a8a;
+  fill: var(--muted);
   stroke: #172321;
   stroke-width: 2.5;
   opacity: 1;
@@ -379,10 +294,10 @@
   top: 0;
 }
 .difference-track i.positive {
-  background: #1a1a1a;
+  background: var(--paper);
 }
 .difference-track i.negative {
-  background: #8a8a8a;
+  background: var(--wash);
 }
 .heatmap-legend {
   display: flex;
@@ -398,9 +313,9 @@
   height: 8px;
   background: linear-gradient(
     90deg,
-    #8a8a8a,
+    var(--wash),
     #f6f5ef,
-    #1a1a1a
+    var(--paper)
   ); /* data legend: diverging scale */
 }
 .heatmap-scroll {
@@ -488,10 +403,10 @@
   display: inline-block;
   width: 14px;
   height: 3px;
-  background: #1a1a1a;
+  background: var(--paper);
 }
 .trend-key span:last-child i {
-  background: #8a8a8a;
+  background: var(--wash);
 }
 .budget-empty {
   border: 1px solid var(--line);
@@ -598,16 +513,6 @@
     width: 100%;
     min-width: 0;
   }
-  .budget-summary {
-    grid-template-columns: 1fr 1fr;
-  }
-  .budget-summary > div:nth-child(2) {
-    border: 0;
-  }
-  .budget-summary > div:last-child {
-    border-top: 1px solid #d3e3dc;
-    grid-column: 1/-1;
-  }
   .budget-panel {
     padding: 0.9rem;
   }
@@ -615,12 +520,7 @@
     align-items: flex-start;
     flex-direction: column;
   }
-  .party-area-rows,
-  .party-correlation-grid,
-  .party-small-multiples {
-    grid-template-columns: 1fr;
-  }
-  .party-correlation-grid .correlation-timeline {
+  .party-area-rows {
     grid-template-columns: 1fr;
   }
   .correlation-timeline {
@@ -729,20 +629,6 @@
   display: block;
   margin-top: 0.5rem;
 }
-.rfc-bar {
-  display: grid;
-  grid-template-columns: 10rem 1fr 5rem;
-  gap: 0.7rem;
-  align-items: center;
-  font-size: 0.78rem;
-  margin: 0.9rem 0;
-}
-.rfc-bar strong {
-  text-align: right;
-}
-.rfc-bar small {
-  display: block;
-}
 .rfc-report label {
   display: flex;
   flex-direction: column;
@@ -757,7 +643,7 @@
 }
 .rfc-example {
   padding: 1rem;
-  border-left: 3px solid #1a1a1a;
+  border-left: 3px solid var(--line);
   margin-top: 1rem;
   background: var(--wash);
 }
@@ -770,7 +656,7 @@
   margin: 1.2rem 0;
   padding: clamp(1rem, 2vw, 1.5rem);
   border: 1px solid #cbd9d0;
-  border-left: 4px solid #1a1a1a;
+  border-left: 4px solid var(--line);
   background: var(--wash);
   border-radius: 0;
 }
@@ -852,11 +738,6 @@
   .language-audit {
     padding: 1rem;
   }
-  .rfc-bar {
-    grid-template-columns: 8rem 1fr 4rem;
-    gap: 0.4rem;
-    font-size: 0.75rem;
-  }
 }
 
 /* Three full-width comparison views; source details stay available below each. */
@@ -866,18 +747,6 @@
 }
 .compact-budget .budget-lab-head h3 {
   font-size: clamp(1.65rem, 3vw, 2.4rem);
-}
-.budget-view-nav {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.6rem;
-  margin: 1rem 0;
-}
-.budget-view-nav a {
-  padding: 0.5rem 0.8rem;
-  background: var(--wash);
-  border: 1px solid #cbd7cf;
-  font-weight: 700;
 }
 .budget-explore {
   border: 1px solid var(--line, #d7dbd5);
@@ -1017,7 +886,7 @@
   position: absolute;
   height: 8px;
   top: 5px;
-  background: #1a1a1a;
+  background: var(--paper);
 }
 .comparison-track i.negative {
   background: #b35031;

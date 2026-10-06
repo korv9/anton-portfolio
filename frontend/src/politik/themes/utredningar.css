@@ -43,7 +43,7 @@
   padding: 0.05rem 0.4rem;
   font-family: var(--font-mono) !important;
   font-size: 0.75rem;
-  color: #fff;
+  color: var(--ink);
   background: var(--info);
 }
 .study-kind.ds {
@@ -156,7 +156,7 @@
 .law-studies button:hover,
 .law-studies a:hover {
   background: var(--info);
-  color: #fff;
+  color: var(--ink);
 }
 .law-arrow {
   color: var(--muted);

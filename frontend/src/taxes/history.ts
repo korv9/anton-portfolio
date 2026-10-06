@@ -10,7 +10,7 @@
  * 5 §), other amounts with prices, so a part counts as changed only when a decision moved
  * it otherwise. What the parts leave is shown as the rest.
  */
-import { computeTax, EMPTY_INPUT, type TaxInput } from './calculator.ts'
+import { computeTax, type TaxInput } from './calculator.ts'
 import { RULES, type Schedule, type TaxRules } from './rules.ts'
 
 export const YEARS = Object.keys(RULES)
@@ -179,11 +179,4 @@ export function changesByYear(input: TaxInput): YearChange[] {
       rest: total - parts.reduce((sum, p) => sum + p.change, 0),
     }
   })
-}
-
-export const EXAMPLE_INPUT: TaxInput = {
-  ...EMPTY_INPUT,
-  year: 2026,
-  birthYear: 1990,
-  salary: 420_000,
 }

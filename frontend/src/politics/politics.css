@@ -38,9 +38,9 @@
   font-weight: 650;
 }
 .politics-tabs button[aria-pressed='true'] {
-  background: #1a1a1a;
+  background: var(--paper);
   color: white;
-  border-color: #1a1a1a;
+  border-color: var(--line);
 }
 .politics-kpis {
   display: grid;
@@ -159,7 +159,7 @@
   gap: 0.8rem;
   width: 100%;
   border: 0;
-  border-bottom: 1px solid #e4e9e4;
+  border-bottom: 1px solid var(--line-strong);
   background: transparent;
   padding: 0.65rem 0;
   color: inherit;
@@ -213,7 +213,7 @@
   align-items: center;
   background: var(--paper);
   border: 0;
-  border-bottom: 1px solid #e4e9e4;
+  border-bottom: 1px solid var(--line-strong);
   padding: 0.8rem 0;
   font-size: 0.75rem;
   cursor: pointer;
@@ -226,7 +226,7 @@
   background: var(--wash);
 }
 .vote-stack i {
-  background: #1a1a1a;
+  background: var(--paper);
 }
 .vote-stack i:nth-child(2) {
   background: #c6553b;
@@ -289,7 +289,7 @@
   cursor: pointer;
 }
 .decision-list button[aria-pressed='true'] {
-  box-shadow: inset 4px 0 #1a1a1a;
+  box-shadow: inset 4px 0 var(--ink);
   background: var(--wash);
 }
 .decision-list button span {
@@ -306,11 +306,10 @@
   font-size: 1.2rem;
   margin: 0.3rem 0;
 }
-.decision-detail blockquote,
-.draft-example blockquote {
+.decision-detail blockquote {
   margin: 1rem 0;
   padding: 0.8rem 1rem;
-  border-left: 3px solid #1a1a1a;
+  border-left: 3px solid var(--line);
   background: var(--paper);
   white-space: pre-wrap;
   max-height: 300px;
@@ -391,19 +390,6 @@
   display: block;
   color: var(--ink);
   font-size: 2rem;
-}
-.evidence-chain {
-  padding-left: 1.2rem;
-  font-size: 0.85rem;
-}
-.evidence-chain li {
-  padding: 0.65rem 0;
-  border-bottom: 1px solid #e1e7df;
-}
-.evidence-chain b {
-  display: block;
-  color: var(--ink);
-  margin-top: 0.2rem;
 }
 .law-browser {
   margin-top: 1rem;

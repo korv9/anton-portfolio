@@ -13,6 +13,7 @@ import {
 } from '../parties/identity'
 import { Card, Cards, Kpi, Kpis } from '../politik/board/Board'
 import '../home/home.css'
+import '../projects/projects.css'
 import '../politik/board/board.css'
 import '../politik/dash/dash.css'
 import './technical.css'
@@ -70,6 +71,43 @@ function useTokens(names: string[]) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
   return values
+}
+
+/** The button system, live: three buttons and a chip group whose state follows a click. */
+function ButtonSpecimen() {
+  const [chosen, setChosen] = useState('dbt')
+  return (
+    <>
+      <button type="button" className="btn">
+        {l('Primary', 'Primär')}
+      </button>
+      <button type="button" className="btn-quiet">
+        {l('Secondary', 'Sekundär')}
+      </button>
+      <button type="button" className="btn-text">
+        {l('Text action', 'Textåtgärd')}
+      </button>
+      <button type="button" className="btn-quiet" disabled>
+        {l('Disabled', 'Inaktiv')}
+      </button>
+      <div
+        className="project-filter"
+        role="group"
+        aria-label={l('Filter chips', 'Filterchips')}
+      >
+        {['dbt', 'DuckDB', 'React'].map((name) => (
+          <button
+            key={name}
+            type="button"
+            aria-pressed={chosen === name}
+            onClick={() => setChosen(name)}
+          >
+            {name}
+          </button>
+        ))}
+      </div>
+    </>
+  )
 }
 
 export default function DesignPage() {
@@ -163,9 +201,9 @@ export default function DesignPage() {
       <section className="tech-section" aria-labelledby="ds-type">
         <h2 id="ds-type">{l('Type', 'Typografi')}</h2>
         <p className="tech-lead">
-          <code>{tokens.font?.split(',')[0] || 'Geist'}</code>{' '}
+          <code>{tokens.font?.split(',')[0] || 'Manrope'}</code>{' '}
           {l('for text,', 'för text,')}{' '}
-          <code>{tokens['font-mono']?.split(',')[0] || 'Geist Mono'}</code>{' '}
+          <code>{tokens['font-mono']?.split(',')[0] || 'ui-monospace'}</code>{' '}
           {l('for figures and labels.', 'för siffror och etiketter.')}
         </p>
         <ol className="ds-type">
@@ -222,15 +260,7 @@ export default function DesignPage() {
           />
         </Kpis>
         <div className="ds-row">
-          <a className="board-button" href="#design">
-            {l('Primary button', 'Primärknapp')}
-          </a>
-          <button type="button" className="ds-toggle" aria-pressed="true">
-            {l('Chosen', 'Vald')}
-          </button>
-          <button type="button" className="ds-toggle" aria-pressed="false">
-            {l('Not chosen', 'Inte vald')}
-          </button>
+          <ButtonSpecimen />
           <ul className="cv-chips" aria-label={l('Chips', 'Chips')}>
             <li>dbt</li>
             <li>DuckDB</li>

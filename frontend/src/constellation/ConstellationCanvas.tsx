@@ -248,7 +248,7 @@ export default function ConstellationCanvas({
       // Domain columns with their names on top; stage names up the left edge.
       const laneW = (width - PAD_SIDE_UPRIGHT - 8) / lanes.length
       ctx.textAlign = 'center'
-      ctx.font = '600 9px "Geist Mono", ui-monospace, monospace'
+      ctx.font = '600 9px ui-monospace, Menlo, monospace'
       lanes.forEach((d, i) => {
         const x = PAD_SIDE_UPRIGHT + i * laneW
         if (i > 0) {
@@ -267,7 +267,7 @@ export default function ConstellationCanvas({
           .forEach((w, j) => ctx.fillText(w, x + laneW / 2, 11 + j * 10))
       })
       ctx.save()
-      ctx.font = '500 9px "Geist Mono", ui-monospace, monospace'
+      ctx.font = '500 9px ui-monospace, Menlo, monospace'
       ctx.fillStyle = 'rgba(241, 236, 226, 0.62)'
       stages.forEach((s, i) => {
         const y =
@@ -307,12 +307,12 @@ export default function ConstellationCanvas({
         }
         const dim = focus && !focus.has(`app:${d.id}`) && d.id !== 'shared'
         ctx.fillStyle = `rgba(241, 236, 226, ${dim ? 0.08 : 0.32})`
-        ctx.font = '600 11px "Geist Mono", ui-monospace, monospace'
+        ctx.font = '600 11px ui-monospace, Menlo, monospace'
         ctx.fillText(d.label.toUpperCase(), PAD_X + 2, y + 16)
       })
     // Stage names along the top.
     if (!upright) {
-      ctx.font = '500 10px "Geist Mono", ui-monospace, monospace'
+      ctx.font = '500 10px ui-monospace, Menlo, monospace'
       ctx.textAlign = 'center'
       ctx.fillStyle = 'rgba(241, 236, 226, 0.45)'
       stages.forEach((s, i) => {
@@ -413,8 +413,8 @@ export default function ConstellationCanvas({
       if (label) {
         ctx.font =
           n.type === 'frontend'
-            ? `600 ${upright ? 10.5 : 12}px Geist, Helvetica, Arial, sans-serif`
-            : `400 ${upright ? 9.5 : 10.5}px Geist, Helvetica, Arial, sans-serif`
+            ? `600 ${upright ? 10.5 : 12}px Manrope, Helvetica, Arial, sans-serif`
+            : `400 ${upright ? 9.5 : 10.5}px Manrope, Helvetica, Arial, sans-serif`
         ctx.fillStyle = on
           ? 'rgba(241, 236, 226, 0.85)'
           : 'rgba(241, 236, 226, 0.2)'

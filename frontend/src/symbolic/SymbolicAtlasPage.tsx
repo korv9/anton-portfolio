@@ -30,7 +30,6 @@ import {
   type AtlasFilters,
 } from './AtlasSidebar'
 import {
-  clusterColour,
   loadAtlasPoints,
   loadAtlasSummary,
   loadBookCenteredAtlas,
@@ -84,8 +83,12 @@ const DEFAULTS: AtlasFilters & { view: string } = {
   noise: '1',
   view: 'baseline',
 }
-const MUTED = 'rgba(170, 165, 158, 0.32)'
-const NOISE = 'rgba(150, 146, 140, 0.16)'
+// The book views' palette: unreviewed clusters grey, cross-book candidates stone, reviewed
+// clusters and the chosen one off-white.
+const MUTED = 'rgba(138, 138, 141, 0.34)'
+const NOISE = 'rgba(138, 138, 141, 0.16)'
+const CANDIDATE = 'rgba(201, 194, 182, 0.85)'
+const REVIEWED = '#f2efe9'
 const num = (v: number, d = 0) =>
   v.toLocaleString(l('en-GB', 'sv-SE'), {
     minimumFractionDigits: d,
@@ -207,12 +210,12 @@ export default function SymbolicAtlasPage({ route }: { route: Route }) {
     return (p: AtlasPoint): Paint => {
       if (p.is_noise) return { fill: NOISE, r: 1.2, layer: 0 }
       if (p.cluster_id === selectedCluster)
-        return { fill: clusterColour(p.cluster_id, 1), r: 3, layer: 4 }
+        return { fill: REVIEWED, r: 3.2, layer: 4 }
       if (reviewedById.has(p.cluster_id))
-        return { fill: clusterColour(p.cluster_id, 1), r: 2.8, layer: 3 }
+        return { fill: REVIEWED, r: 2.6, layer: 3 }
       const info = infoById.get(p.cluster_id)
       if (view === 'cross-book' && info?.review_class === 'candidate')
-        return { fill: clusterColour(p.cluster_id, 0.8), r: 2.1, layer: 2 }
+        return { fill: CANDIDATE, r: 2.1, layer: 2 }
       return { fill: MUTED, r: 1.5, layer: 1 }
     }
   }, [bookView, selectedCluster, reviewedById, infoById, view])
@@ -300,6 +303,25 @@ export default function SymbolicAtlasPage({ route }: { route: Route }) {
                 <p className="atlas-view-hint">
                   {l(...VIEWS.find((v) => v.key === view)!.hint)}
                 </p>
+                <ul
+                  className="atlas-key"
+                  aria-label={l('Key', 'Teckenförklaring')}
+                >
+                  <li>
+                    <i style={{ background: MUTED }} />
+                    {l('Other clusters', 'Övriga kluster')}
+                  </li>
+                  {view === 'cross-book' && (
+                    <li>
+                      <i style={{ background: CANDIDATE }} />
+                      {l('Cross-book candidate', 'Kandidat över böcker')}
+                    </li>
+                  )}
+                  <li>
+                    <i style={{ background: REVIEWED }} />
+                    {l('Reviewed and named', 'Granskat och namngivet')}
+                  </li>
+                </ul>
                 {view === 'reviewed' && reviewed.length === 0 && (
                   <p className="atlas-empty" role="status">
                     {l(

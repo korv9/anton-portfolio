@@ -4,9 +4,9 @@
  */
 
 .stage {
-  --stage-ink: #f1ece2;
-  --stage-muted: rgba(241, 236, 226, 0.62);
-  --stage-rule: rgba(241, 236, 226, 0.16);
+  --stage-ink: var(--ink);
+  --stage-muted: var(--muted);
+  --stage-rule: var(--line);
   display: grid;
   grid-template-columns: minmax(13rem, 1fr) minmax(0, 3.2fr) minmax(13rem, 1fr);
   grid-template-areas:
@@ -22,7 +22,7 @@
 }
 .stage.is-dark {
   color: var(--stage-ink);
-  background: #070708;
+  background: var(--page);
 }
 .stage-head {
   grid-area: head;

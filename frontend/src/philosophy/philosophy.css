@@ -1,9 +1,9 @@
 /* Philosophy Atlas: editorial, archival. Serif headings, warm ink, three era hues (validated
    for colour-vision deficiency on this surface), everything else in neutrals. */
 .philosophy {
-  --ph-ink: #f0e9dc;
-  --ph-muted: rgba(240, 233, 220, 0.62);
-  --ph-rule: rgba(240, 233, 220, 0.14);
+  --ph-ink: var(--ink);
+  --ph-muted: var(--muted);
+  --ph-rule: var(--line);
   --ph-era-0: #3987e5;
   --ph-era-1: #d95926;
   --ph-era-2: #199e70;
@@ -17,7 +17,6 @@
 }
 .ph-hero h1,
 .ph-section h2 {
-  font-family: Georgia, 'Times New Roman', serif;
   font-weight: 400;
 }
 .ph-hero h1 {
@@ -35,7 +34,6 @@
 .ph-question {
   max-width: 46ch;
   margin: 0;
-  font-family: Georgia, serif;
   font-size: clamp(18px, 1.6vw, 23px);
   font-style: italic;
 }
@@ -76,7 +74,7 @@
   min-height: 34px;
   padding: 0.2rem 0.85rem;
   border: 1px solid var(--ph-rule);
-  border-radius: 999px;
+  border-radius: var(--radius);
   background: transparent;
   color: var(--ph-ink);
   font: inherit;
@@ -85,7 +83,7 @@
 .ph-chips button[aria-pressed='true'] {
   border-color: var(--ph-ink);
   background: var(--ph-ink);
-  color: #0b0b0a;
+  color: var(--on-accent);
 }
 .ph-select {
   display: flex;
@@ -101,7 +99,7 @@
   max-width: 100%;
   padding: 0.2rem 0.5rem;
   border: 1px solid var(--ph-rule);
-  background: #111110;
+  background: var(--page);
   color: var(--ph-ink);
   font: 400 14px inherit;
   letter-spacing: 0;
@@ -118,14 +116,14 @@
   height: 100%;
 }
 .ph-dot {
-  stroke: #0b0b0a;
+  stroke: var(--on-accent);
   stroke-width: 0.12;
 }
 .ph-dot.is-noise {
   opacity: 0.45;
 }
 .ph-dot.is-faded {
-  fill: rgba(240, 233, 220, 0.12);
+  fill: color-mix(in srgb, var(--ink) 12%, transparent);
   stroke: none;
 }
 circle.ph-era-0 {
@@ -174,7 +172,6 @@ i.ph-era-2,
 }
 .philosophy blockquote {
   margin: 0;
-  font-family: Georgia, serif;
   font-size: 1rem;
   line-height: 1.55;
 }
@@ -232,7 +229,6 @@ i.ph-era-2,
 }
 .ph-group-id {
   grid-area: id;
-  font-family: Georgia, serif;
 }
 .ph-group-terms {
   grid-area: terms;
@@ -273,7 +269,6 @@ i.ph-era-2,
 }
 .ph-poles b {
   display: block;
-  font-family: Georgia, serif;
   font-weight: 400;
   font-size: 1.1rem;
 }
@@ -300,7 +295,7 @@ i.ph-era-2,
   position: absolute;
   top: 5px;
   height: 4px;
-  background: rgba(240, 233, 220, 0.3);
+  background: color-mix(in srgb, var(--ink) 30%, transparent);
 }
 .ph-range-median {
   position: absolute;
@@ -309,7 +304,7 @@ i.ph-era-2,
   height: 12px;
   margin-left: -6px;
   border-radius: 50%;
-  box-shadow: 0 0 0 2px #0b0b0a;
+  box-shadow: 0 0 0 2px var(--line);
 }
 .ph-range-value {
   color: var(--ph-muted);

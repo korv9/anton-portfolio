@@ -1,21 +1,5 @@
 import type { ReactNode } from 'react'
 
-export function Container({
-  children,
-  className = '',
-}: {
-  children: ReactNode
-  className?: string
-}) {
-  return <div className={`ds-container ${className}`}>{children}</div>
-}
-export function Section({ id, children }: { id: string; children: ReactNode }) {
-  return (
-    <section id={id} className="ds-section ds-container">
-      {children}
-    </section>
-  )
-}
 export function SectionHeader({
   number,
   label,

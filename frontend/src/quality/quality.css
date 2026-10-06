@@ -1,10 +1,10 @@
-/* Quality & validity: calm, technical, on the site's dark surface. Status is a shape and a word;
+/* Quality & validity: calm, technical, on the site's surface. Status is a shape and a word;
    colour is never the only cue, and there is no red/green palette. */
 :root {
-  --q-ink: #f0ebe0;
-  --q-muted: rgba(240, 235, 224, 0.68);
-  --q-rule: rgba(240, 235, 224, 0.16);
-  --q-soft: rgba(240, 235, 224, 0.05);
+  --q-ink: var(--ink);
+  --q-muted: var(--muted);
+  --q-rule: var(--line);
+  --q-soft: color-mix(in srgb, var(--ink) 5%, transparent);
 }
 .quality {
   color: var(--q-ink);
@@ -64,7 +64,7 @@
   margin-top: 1rem;
   padding: 1rem 1.2rem;
   border: 1px solid var(--q-rule);
-  border-radius: 6px;
+  border-radius: var(--radius);
 }
 .q-principles p {
   margin: 0;
@@ -157,7 +157,7 @@
   margin: 2.4rem 0 0;
   padding: 1.2rem 1.3rem;
   border: 1px solid var(--q-rule);
-  border-radius: 6px;
+  border-radius: var(--radius);
   color: var(--q-ink);
 }
 .q-panel-title {
@@ -210,7 +210,7 @@
 .q-analysis {
   padding: 1rem 1.1rem;
   border: 1px solid var(--q-rule);
-  border-radius: 6px;
+  border-radius: var(--radius);
 }
 .q-analysis h3 {
   margin: 0.2rem 0 0.6rem;
@@ -263,7 +263,7 @@
 .q-case {
   padding: 1.2rem 1.3rem;
   border: 1px solid var(--q-rule);
-  border-radius: 6px;
+  border-radius: var(--radius);
 }
 .q-case-steps {
   display: grid;
@@ -345,7 +345,7 @@
 .q-dim-cards > div {
   padding: 0.9rem 1rem;
   border: 1px solid var(--q-rule);
-  border-radius: 6px;
+  border-radius: var(--radius);
 }
 .q-dim-cards h3 {
   margin: 0 0 0.3rem;

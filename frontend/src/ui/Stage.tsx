@@ -31,7 +31,7 @@ export function Stage({
   const Heading = level === 1 ? 'h1' : 'h2'
   return (
     <section
-      className={`stage${dark ? ' is-dark' : ''}`}
+      className={`stage${dark ? ' is-dark plate' : ''}`}
       id={id}
       aria-labelledby={`${id}-title`}
     >

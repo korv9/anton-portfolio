@@ -35,7 +35,3 @@ export function useViewParams<T extends Record<string, string>>(
   }, [route.path, route.params.toString()])
   return [values, set, reset]
 }
-
-/** A comma list in the address, as an array. */
-export const listParam = (value: string) =>
-  value ? value.split(',').filter(Boolean) : []

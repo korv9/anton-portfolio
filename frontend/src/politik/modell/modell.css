@@ -12,9 +12,9 @@
 .modell-slicers button {
   min-width: 2.6rem;
   padding: 0.35rem 0.6rem;
-  border: 1px solid rgba(241, 236, 226, 0.3);
+  border: 1px solid color-mix(in srgb, var(--ink) 30%, transparent);
   background: transparent;
-  color: #f1ece2;
+  color: var(--ink);
   font-family: var(--font-mono) !important;
   font-weight: 600;
   cursor: pointer;
@@ -37,25 +37,25 @@
   animation: modell-in 700ms ease calc(var(--i) * 70ms) both;
 }
 .modell-node {
-  fill: #f1ece2;
+  fill: var(--ink);
   font-family: var(--font-mono) !important;
   font-size: 13px;
   font-weight: 600;
 }
 .modell-share,
 .modell-axis {
-  fill: #f1ece2;
+  fill: var(--ink);
   font-family: var(--font-mono) !important;
   font-size: 12px;
   opacity: 0.75;
 }
 .modell-centre {
-  fill: #070708;
+  fill: var(--on-accent);
   font-size: 22px;
   font-weight: 700;
 }
 .modell-base {
-  stroke: #f1ece2;
+  stroke: var(--ink);
   stroke-dasharray: 3 4;
   opacity: 0.5;
 }
@@ -82,9 +82,9 @@
 }
 .modell-select select {
   padding: 0.35rem;
-  background: #070708;
-  color: #f1ece2;
-  border: 1px solid rgba(241, 236, 226, 0.3);
+  background: var(--page);
+  color: var(--ink);
+  border: 1px solid color-mix(in srgb, var(--ink) 30%, transparent);
 }
 .modell-cttee {
   transition: opacity 200ms;

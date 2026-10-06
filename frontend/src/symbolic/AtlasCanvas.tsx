@@ -144,7 +144,7 @@ export default function AtlasCanvas({
         ctx.fill()
       }
     }
-    ctx.font = '600 12px Geist, Helvetica, Arial, sans-serif'
+    ctx.font = '600 12px Manrope, Helvetica, Arial, sans-serif'
     ctx.textAlign = 'center'
     for (const label of labels) {
       const [lx, ly] = toPx.current(label.x, label.y)

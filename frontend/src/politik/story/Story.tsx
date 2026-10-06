@@ -217,17 +217,17 @@ export default function Story({ route }: { route: Route }) {
                   )}
                 </small>
                 <b>{dayName(latestDebate.date)}</b>
-                <a
-                  href="#debatterna"
-                  onClick={(e) => {
-                    e.preventDefault()
+                <button
+                  type="button"
+                  className="btn-text"
+                  onClick={() =>
                     document
                       .getElementById('partiledardebatt')
                       ?.scrollIntoView({ behavior: 'smooth' })
-                  }}
+                  }
                 >
                   {l('Explore it below', 'Utforska den nedan')}
-                </a>
+                </button>
               </li>
             )}
           </ul>
