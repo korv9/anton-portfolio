@@ -14,6 +14,7 @@
  */
 import { useEffect, useMemo, useState } from 'react'
 import { l } from '../i18n'
+import { fixed } from '../format'
 import { ProductQuality } from '../quality/QualityPanel'
 import type { Route } from '../router'
 import { useViewParams } from '../politik/useViewParams'
@@ -96,11 +97,7 @@ const MUTED = 'rgba(138, 138, 141, 0.34)'
 const NOISE = 'rgba(138, 138, 141, 0.16)'
 const CANDIDATE = 'rgba(201, 194, 182, 0.85)'
 const REVIEWED = '#f2efe9'
-const num = (v: number, d = 0) =>
-  v.toLocaleString(l('en-GB', 'sv-SE'), {
-    minimumFractionDigits: d,
-    maximumFractionDigits: d,
-  })
+const num = fixed
 const pct = (v: number) => `${num(v * 100)} %`
 
 export default function SymbolicAtlasPage({ route }: { route: Route }) {

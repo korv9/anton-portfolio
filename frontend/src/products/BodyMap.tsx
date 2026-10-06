@@ -6,6 +6,7 @@
  */
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { l } from '../i18n'
+import { fixed } from '../format'
 import './body.css'
 
 export type Lineage = {
@@ -102,11 +103,7 @@ const arc = (cx: number, cy: number, r: number, share: number) => {
   return `M ${cx} ${cy - r} A ${r} ${r} 0 ${share > 0.5 ? 1 : 0} 1 ${x.toFixed(1)} ${y.toFixed(1)}`
 }
 
-const num = (v: number, d = 0) =>
-  v.toLocaleString(l('en-GB', 'sv-SE'), {
-    minimumFractionDigits: d,
-    maximumFractionDigits: d,
-  })
+const num = fixed
 
 export default function BodyMap({
   lineages,

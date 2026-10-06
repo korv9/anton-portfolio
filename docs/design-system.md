@@ -11,7 +11,8 @@ second theme file.
 
 ## Type
 
-- **Manrope** for everything, self-hosted as a variable font (`/fonts/manrope-variable.ttf`,
+- **Manrope** for everything, self-hosted as variable WOFF2 (`/fonts/manrope-latin.woff2`, 29 kB, preloaded, with
+  `manrope-variable.woff2` for any other character;
   weights 200–800). The SIL Open Font License is kept at `frontend/public/fonts/Manrope-OFL.txt`.
 - **System monospace** (`--font-mono`) for figures, metadata, section numbers and code.
 - Weights: body 470, interface 560, headings 700.

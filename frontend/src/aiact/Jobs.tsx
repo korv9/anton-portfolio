@@ -6,6 +6,7 @@
  */
 import { useEffect, useState } from 'react'
 import { l } from '../i18n'
+import { count } from '../format'
 import { loadJobs } from './data'
 import type { JobsData } from './jobsTypes'
 import { yearlyFromMonths } from './logic'
@@ -26,7 +27,7 @@ const FAMILY: Record<string, [string, string]> = {
   data: ['Data', 'Data'],
   general: ['General', 'Allmänt'],
 }
-const num = (v: number) => v.toLocaleString(l('en-GB', 'sv-SE'))
+const num = count
 
 export function Jobs({
   data,

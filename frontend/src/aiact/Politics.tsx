@@ -6,6 +6,7 @@
  */
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { l } from '../i18n'
+import { count } from '../format'
 import { PARTY_IDENTITY } from '../parties/identity'
 import { loadPolitics, loadSimilarity } from './data'
 import { balanceWord, partyTotals, yearlyShare } from './logic'
@@ -17,7 +18,7 @@ import { CHART_MILESTONES } from './TimeSeries'
 const PARTIES = ['S', 'M', 'SD', 'C', 'V', 'KD', 'L', 'MP']
 const pct = (v: number, digits = 1) =>
   `${(v * 100).toLocaleString(l('en-GB', 'sv-SE'), { maximumFractionDigits: digits, minimumFractionDigits: digits })} %`
-const num = (v: number) => v.toLocaleString(l('en-GB', 'sv-SE'))
+const num = count
 
 export function Politics({ data }: { data: AiActData }) {
   const [politics, setPolitics] = useState<PoliticsData | null>(null)

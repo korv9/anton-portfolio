@@ -6,6 +6,7 @@
  */
 import { useMemo, useState } from 'react'
 import { l } from '../i18n'
+import { fixed } from '../format'
 
 export type DrugPoint = {
   drug: string
@@ -31,11 +32,7 @@ const PAD = 70
 const HUES = ['#f3d9a4', '#a9cbe8', '#e8b4b8', '#b8d8b0', '#d0c3ec', '#f0c7a0']
 const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII']
 
-const num = (v: number, d = 0) =>
-  v.toLocaleString(l('en-GB', 'sv-SE'), {
-    minimumFractionDigits: d,
-    maximumFractionDigits: d,
-  })
+const num = fixed
 
 /** Prim's minimum spanning tree over points, as index pairs. */
 function spanning(points: [number, number][]) {
