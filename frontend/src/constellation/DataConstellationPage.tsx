@@ -35,8 +35,8 @@ const MODES: { key: Mode; name: [string, string]; hint: [string, string] }[] = [
     key: 'platform',
     name: ['Platform', 'Plattform'],
     hint: [
-      'Sources on the left, products on the right; one lane per domain, shared infrastructure in the middle.',
-      'Källor till vänster, produkter till höger; ett band per domän, gemensam infrastruktur i mitten.',
+      'Data flows from the sources to the products; one lane per domain, shared infrastructure in the middle.',
+      'Data flödar från källorna till produkterna; ett band per domän, gemensam infrastruktur i mitten.',
     ],
   },
   {

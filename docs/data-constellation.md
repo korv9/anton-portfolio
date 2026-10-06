@@ -115,7 +115,7 @@ their `tables`.
 - **Accessibility.** The canvas has a text description; "Architecture by domain" below lists
   every node by domain and stage as keyboard-selectable buttons. Markers differ in shape, not
   only colour.
-- **Phone.** The map keeps a readable width and scrolls sideways; the details follow below.
+- **Phone.** Below 700 px the map stands upright and fills the screen's width: stages run top to bottom, domains become columns, stage names run up the left edge, and only products, the selection and short paths are labelled. No sideways scrolling; the details follow below, and the layer chips sit in one swipeable row.
 
 ## Adding things
 

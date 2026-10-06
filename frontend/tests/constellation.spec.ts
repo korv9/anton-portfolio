@@ -79,3 +79,19 @@ test('a domain filter and the text list keep the map usable without a mouse', as
     'Riksdagen',
   )
 })
+
+test('on a phone the map stands upright and fits the screen', async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(!isMobile, 'phone layout only')
+  await page.goto('/#data-constellation')
+  const canvas = page.locator('.constellation-canvas')
+  await expect(canvas).toBeVisible()
+  const box = (await canvas.boundingBox())!
+  expect(box.height).toBeGreaterThan(box.width * 1.5)
+  const overflow = await page.evaluate(
+    () => document.documentElement.scrollWidth - window.innerWidth,
+  )
+  expect(overflow).toBeLessThanOrEqual(0)
+})
