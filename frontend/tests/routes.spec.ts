@@ -23,18 +23,36 @@ const START_PAGES = [
   '/#quality',
 ]
 
+const hrefs = (page: Page) =>
+  page.$$eval('a[href^="#"]', (as) =>
+    as.map((a) => a.getAttribute('href')!.split('?')[0]),
+  )
+
 async function linksOn(page: Page): Promise<string[]> {
-  // Open the header menus so their links are in the page too.
+  // A page draws its links as its data arrives: wait until their number stops changing.
+  let count = -1
+  await expect
+    .poll(
+      async () => {
+        const now = (await hrefs(page)).length
+        const settled = now === count && now > 0
+        count = now
+        return settled
+      },
+      { intervals: [400], timeout: 15_000 },
+    )
+    .toBe(true)
+  const found = await hrefs(page)
+  // The header menus render their links only while open: read them open, then close.
   for (const name of ['Projects', 'CV']) {
     const button = page.locator('.global-nav').getByRole('button', { name })
     if (await button.isVisible()) {
       await button.click()
+      found.push(...(await hrefs(page)))
       await page.keyboard.press('Escape')
     }
   }
-  return page.$$eval('a[href^="#"]', (as) =>
-    as.map((a) => a.getAttribute('href')!.split('?')[0]),
-  )
+  return found
 }
 
 test('no link is a placeholder and every control has a name', async ({
@@ -72,8 +90,6 @@ test('every internal link opens a page', async ({ page, isMobile }) => {
   for (const start of START_PAGES) {
     await page.goto(start)
     await page.waitForLoadState('networkidle')
-    // The page's own links, not only the header's, before collecting.
-    await page.locator('main a[href^="#"]').first().waitFor()
     for (const href of await linksOn(page)) links.add(href)
   }
   expect(links.size).toBeGreaterThan(30)
