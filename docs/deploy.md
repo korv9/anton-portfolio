@@ -77,9 +77,23 @@ on `workers.dev` and in previews without configuration.
    fetches every public source, builds the DuckDB warehouse with dbt and stores it in the
    bucket with all its raw files (`platform/publish/warehouse_store.py`):
    `warehouse/portfolio.duckdb.gz`, `warehouse/manifest.json` (built when, from which commit,
-   SHA-256, rows per schema) and `warehouse/raw/`. Later runs start from the stored raw files.
+   SHA-256, rows per schema), `warehouse/raw/` and `warehouse/features/` (the ML stages'
+   outputs: embeddings, maps, clusters, the concept layer). Later runs start from the stored
+   files. The ML stages run only when their output is not stored yet; choose `ml: always` to
+   rerun them (seeds are fixed, so the same inputs give the same results). The first run counts
+   every JobTech archive for the AI governance terms and takes a couple of hours.
    Fetch the warehouse anywhere with `python platform/publish/warehouse_store.py pull`. The
    bucket is public, so the warehouse can be downloaded by anyone; it holds only open data.
+   `platform/tests/architecture/test_warehouse_workflow.py` fails if a dbt subject, a source
+   or an ML stage is added without a step here.
+
+   What lives where:
+
+   | What | Where | Kept by |
+   |---|---|---|
+   | The site's JSON (every product's `frontend/public/data/**/*.json`) | Cloudflare Workers static assets | git, deployed on every push to main |
+   | Parquet datasets and document shards | R2, public | *Publish to R2* (`upload.py`), verified by hash |
+   | Raw source files, ML outputs, the DuckDB warehouse | R2, `warehouse/` | *Build and store the warehouse* |
 
 ## Limits
 

@@ -12,9 +12,12 @@ In the bucket, under warehouse/:
                           row count per schema and how many raw files were stored with it
     raw/<source>/...      every raw file, as on disk; each carries its SHA-256 as metadata so a
                           rerun uploads only files that changed
+    features/<stage>/...  the ML stages' outputs (embeddings, maps, clusters, concept alignment)
+                          that dbt reads back as sources, stored the same way, so the gold marts
+                          built on them can be rebuilt without rerunning the models
 
     python platform/publish/warehouse_store.py push            # warehouse and raw files
-    python platform/publish/warehouse_store.py push --only db  # or --only raw
+    python platform/publish/warehouse_store.py push --only db  # or --only raw, --only features
     python platform/publish/warehouse_store.py pull            # fetch both back
     python platform/publish/warehouse_store.py status          # what the bucket holds
 
@@ -44,10 +47,18 @@ from common import ROOT  # noqa: E402
 
 DATABASE = Path(os.environ.get("PORTFOLIO_DB", ROOT / "warehouse/portfolio.duckdb"))
 RAW = Path(os.environ.get("PORTFOLIO_RAW", ROOT / "warehouse/raw"))
+FEATURES = Path(os.environ.get("PORTFOLIO_FEATURES", ROOT / "warehouse/features"))
 PREFIX = "warehouse/"
 DB_KEY = PREFIX + "portfolio.duckdb.gz"
 MANIFEST_KEY = PREFIX + "manifest.json"
 RAW_PREFIX = PREFIX + "raw/"
+FEATURES_PREFIX = PREFIX + "features/"
+TREES = ("raw", "features")
+
+
+def tree(name: str) -> tuple[Path, str]:
+    """A file tree stored next to the warehouse: (local directory, key prefix)."""
+    return {"raw": (RAW, RAW_PREFIX), "features": (FEATURES, FEATURES_PREFIX)}[name]
 CHUNK = 8 * 1024 * 1024
 
 
@@ -94,18 +105,19 @@ def git_commit() -> str | None:
         return None
 
 
-def raw_files() -> list[Path]:
-    if not RAW.is_dir():
+def tree_files(root: Path) -> list[Path]:
+    if not root.is_dir():
         return []
-    return sorted(p for p in RAW.rglob("*") if p.is_file())
+    return sorted(p for p in root.rglob("*") if p.is_file())
 
 
-def push_raw(s3, bucket: str) -> tuple[int, int, int]:
-    """Upload raw files whose SHA-256 differs from the stored copy. Returns (files, sent, bytes)."""
-    files = raw_files()
+def push_tree(s3, bucket: str, name: str) -> tuple[int, int, int]:
+    """Upload a tree's files whose SHA-256 differs from the stored copy. Returns (files, sent, bytes)."""
+    root, prefix = tree(name)
+    files = tree_files(root)
 
     def one(path: Path) -> int:
-        key = RAW_PREFIX + path.relative_to(RAW).as_posix()
+        key = prefix + path.relative_to(root).as_posix()
         digest = sha256(path)
         meta = remote_meta(s3, bucket, key)
         if meta and meta["sha256"] == digest and meta["size"] == path.stat().st_size:
@@ -118,7 +130,7 @@ def push_raw(s3, bucket: str) -> tuple[int, int, int]:
     return len(files), sum(1 for b in sent if b), sum(sent)
 
 
-def push_db(s3, bucket: str, raw_count: int | None) -> dict:
+def push_db(s3, bucket: str, counts: dict[str, int | None]) -> dict:
     if not DATABASE.is_file():
         sys.exit(f"No warehouse at {DATABASE}")
     digest = sha256(DATABASE)
@@ -139,7 +151,8 @@ def push_db(s3, bucket: str, raw_count: int | None) -> dict:
         "bytes": DATABASE.stat().st_size,
         "gzip_bytes": packed_bytes,
         "rows_per_schema": row_counts(DATABASE),
-        "raw_files": raw_count,
+        "raw_files": counts.get("raw"),
+        "feature_files": counts.get("features"),
     }
     s3.put_object(Bucket=bucket, Key=MANIFEST_KEY, ContentType="application/json",
                   Body=json.dumps(manifest, indent=2).encode())
@@ -165,14 +178,15 @@ def pull_db(s3, bucket: str) -> bool:
     return True
 
 
-def pull_raw(s3, bucket: str) -> int:
+def pull_tree(s3, bucket: str, name: str) -> int:
+    root, prefix = tree(name)
     keys = []
-    for page in s3.get_paginator("list_objects_v2").paginate(Bucket=bucket, Prefix=RAW_PREFIX):
+    for page in s3.get_paginator("list_objects_v2").paginate(Bucket=bucket, Prefix=prefix):
         keys += [(o["Key"], o["Size"]) for o in page.get("Contents", [])]
 
     def one(item: tuple[str, int]) -> int:
         key, size = item
-        target = RAW / key[len(RAW_PREFIX):]
+        target = root / key[len(prefix):]
         if target.is_file() and target.stat().st_size == size:
             meta = remote_meta(s3, bucket, key)
             if meta and meta["sha256"] in (None, sha256(target)):
@@ -183,14 +197,15 @@ def pull_raw(s3, bucket: str) -> int:
 
     with ThreadPoolExecutor(max_workers=8) as pool:
         fetched = sum(pool.map(one, keys))
-    print(f"Raw files: {len(keys)} stored, {fetched} fetched to {RAW}")
+    print(f"{name.capitalize()} files: {len(keys)} stored, {fetched} fetched to {root}")
     return fetched
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("action", choices=["push", "pull", "status"])
-    parser.add_argument("--only", choices=["db", "raw"], help="Only the warehouse or only the raw files")
+    parser.add_argument("--only", choices=["db", "raw", "features"],
+                        help="Only the warehouse, only the raw files or only the ML outputs")
     args = parser.parse_args()
 
     from upload import client
@@ -204,17 +219,19 @@ def main() -> int:
             print("No stored warehouse yet.")
         return 0
     if args.action == "pull":
-        if args.only in (None, "raw"):
-            pull_raw(s3, bucket)
+        for name in TREES:
+            if args.only in (None, name):
+                pull_tree(s3, bucket, name)
         if args.only in (None, "db"):
             pull_db(s3, bucket)
         return 0
-    raw_count = None
-    if args.only in (None, "raw"):
-        raw_count, sent, sent_bytes = push_raw(s3, bucket)
-        print(f"Raw files: {raw_count} on disk, {sent} uploaded ({sent_bytes / 1e6:.0f} MB)")
+    counts: dict[str, int | None] = {}
+    for name in TREES:
+        if args.only in (None, name):
+            counts[name], sent, sent_bytes = push_tree(s3, bucket, name)
+            print(f"{name.capitalize()} files: {counts[name]} on disk, {sent} uploaded ({sent_bytes / 1e6:.0f} MB)")
     if args.only in (None, "db"):
-        manifest = push_db(s3, bucket, raw_count)
+        manifest = push_db(s3, bucket, counts)
         print(f"Warehouse stored: {manifest['bytes'] / 1e6:.0f} MB, "
               f"{manifest['gzip_bytes'] / 1e6:.0f} MB compressed, sha256 {manifest['sha256'][:12]}…")
     return 0
