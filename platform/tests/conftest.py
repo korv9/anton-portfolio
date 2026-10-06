@@ -3,6 +3,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-for area in ("ingest/riksdagen", "ingest/statskontoret", "ingest/ess", "ingest/news", "lib",
+for area in ("ingest/riksdagen", "ingest/statskontoret", "ingest/ess", "ingest/news",
+             "ingest/jobtech", "lib",
              "packages"):
     sys.path.insert(0, str(ROOT / area))

@@ -81,6 +81,35 @@ def sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+ADS_COLUMNS = ["publication_month", "field_id", "field", "group_id", "ssyk",
+               "occupation_group", "region"]
+CONDITIONS_COLUMNS = ["publication_month", "field_id", "employment_type", "working_hours",
+                      "experience_required"]
+
+
+def cells(ad: dict) -> tuple[tuple, tuple, int]:
+    """The two cells an ad counts in (ADS_COLUMNS, CONDITIONS_COLUMNS) and its vacancies.
+
+    The archives and the daily stream (ingest_stream.py) write ads in the same shape, so both
+    count with this.
+    """
+    month = (ad.get("publication_date") or "")[:7]
+    vacancies = ad.get("number_of_vacancies")
+    vacancies = vacancies if isinstance(vacancies, int) and 0 < vacancies < 1000 else 1
+    field = first(ad.get("occupation_field"))
+    group = first(ad.get("occupation_group"))
+    place = first(ad.get("workplace_address"))
+    experience = ad.get("experience_required")
+    return (
+        (month, field.get("concept_id"), field.get("label"), group.get("concept_id"),
+         group.get("legacy_ams_taxonomy_id"), group.get("label"), place.get("region")),
+        (month, field.get("concept_id"), first(ad.get("employment_type")).get("label"),
+         first(ad.get("working_hours_type")).get("label"),
+         experience if isinstance(experience, bool) else None),
+        vacancies,
+    )
+
+
 def count(path: Path) -> tuple[dict, dict, dict]:
     # key -> [ads, vacancies]
     ads: dict = defaultdict(lambda: [0, 0])
@@ -100,26 +129,11 @@ def count(path: Path) -> tuple[dict, dict, dict]:
                     duplicates += 1
                     continue
                 seen.add(key)
-                month = (ad.get("publication_date") or "")[:7]
-                vacancies = ad.get("number_of_vacancies")
-                vacancies = vacancies if isinstance(vacancies, int) and 0 < vacancies < 1000 else 1
-                field = first(ad.get("occupation_field"))
-                group = first(ad.get("occupation_group"))
-                place = first(ad.get("workplace_address"))
-                cell = ads[(month,
-                     field.get("concept_id"), field.get("label"),
-                     group.get("concept_id"), group.get("legacy_ams_taxonomy_id"),
-                     group.get("label"),
-                     place.get("region"))]
-                cell[0] += 1
-                cell[1] += vacancies
-                experience = ad.get("experience_required")
-                cell = conditions[(month, field.get("concept_id"),
-                            first(ad.get("employment_type")).get("label"),
-                            first(ad.get("working_hours_type")).get("label"),
-                            experience if isinstance(experience, bool) else None)]
-                cell[0] += 1
-                cell[1] += vacancies
+                ads_key, conditions_key, vacancies = cells(ad)
+                ads[ads_key][0] += 1
+                ads[ads_key][1] += vacancies
+                conditions[conditions_key][0] += 1
+                conditions[conditions_key][1] += vacancies
     return ads, conditions, {"ads_read": read, "duplicates": duplicates, "ads": len(seen)}
 
 
@@ -148,11 +162,8 @@ def main() -> None:
                     path.unlink()
                 continue
         ads, conditions, stats = count(path)
-        write(ads, ["publication_month", "field_id", "field", "group_id", "ssyk",
-                    "occupation_group", "region"], OUT / f"ads_{name}.parquet")
-        write(conditions, ["publication_month", "field_id", "employment_type",
-                           "working_hours", "experience_required"],
-              OUT / f"conditions_{name}.parquet")
+        write(ads, ADS_COLUMNS, OUT / f"ads_{name}.parquet")
+        write(conditions, CONDITIONS_COLUMNS, OUT / f"conditions_{name}.parquet")
         manifest_path.write_text(json.dumps({
             "archive": name, "source_url": url, "sha256": digest, **stamp, **stats,
             "counted_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),

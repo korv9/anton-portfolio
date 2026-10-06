@@ -175,13 +175,13 @@ diagnostics never block a build.
 
 ## Current results (6 October 2026)
 
-There are 41 checks across seven products, built on 259 existing dbt tests:
+There are 42 checks across seven products, built on 259 existing dbt tests:
 
-- 35 pass;
+- 36 pass;
 - 4 are not measured;
 - 2 are not applicable.
 
-There are 14 analyses with 27 diagnostics: 6 supported, 12 warning, 9 insufficient evidence.
+There are 14 analyses with 27 diagnostics: 7 supported, 11 warning, 9 insufficient evidence.
 
 - **Fixed.** `politics_keys_and_relations` failed in the first run: 4 roll calls had a
   committee key that does not exist (`''` three times in 2025/26, `'p'` once in 1994/95),
@@ -219,8 +219,9 @@ There are 14 analyses with 27 diagnostics: 6 supported, 12 warning, 9 insufficie
 
 - Accuracy against an independent copy of the source is measured for some products only.
 - Thresholds are editorial and stated with every check.
-- Freshness depends on the fetch logs. Scheduled refreshes are paused, so currentness is
-  expected to age.
+- Freshness depends on the fetch logs and the job stream's manifest. Job ads, parliament,
+  welfare, taxes and news refresh each morning; the other sources only when the warehouse is
+  rebuilt by hand, so their currentness ages between builds.
 - A supported diagnostic means one test did not find a problem, not that a conclusion is
   proven.
 - Diagnostic labels and interpretations are in English.

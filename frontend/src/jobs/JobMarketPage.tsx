@@ -50,6 +50,11 @@ export type Market = {
     sha256: string
     ads: number
   }[]
+  /** New ads per publication day and field ('all' for every field), from JobTech's daily
+   * stream: only the days it has read whole. Preliminary until the quarter's archive. */
+  daily?: Record<string, [string, number, number][]>
+  /** Months counted from the daily stream rather than an archive. */
+  preliminary?: string[]
   method: string
 }
 

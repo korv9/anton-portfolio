@@ -20,6 +20,8 @@ In the bucket, under warehouse/:
     python platform/publish/warehouse_store.py push --only db  # or --only raw, --only features
     python platform/publish/warehouse_store.py pull            # fetch both back
     python platform/publish/warehouse_store.py status          # what the bucket holds
+    python platform/publish/warehouse_store.py pull --only raw --path jobtech/stream
+                                                               # one folder (daily refreshes)
 
 The bucket is the site's public one, so everything stored here can be downloaded by anyone
 from the r2.dev address. It holds only open data. Credentials as for upload.py: R2_ACCOUNT_ID,
@@ -106,15 +108,20 @@ def git_commit() -> str | None:
 
 
 def tree_files(root: Path) -> list[Path]:
+    if root.is_file():
+        return [root]
     if not root.is_dir():
         return []
     return sorted(p for p in root.rglob("*") if p.is_file())
 
 
-def push_tree(s3, bucket: str, name: str) -> tuple[int, int, int]:
-    """Upload a tree's files whose SHA-256 differs from the stored copy. Returns (files, sent, bytes)."""
+def push_tree(s3, bucket: str, name: str, sub: str = "") -> tuple[int, int, int]:
+    """Upload a tree's files whose SHA-256 differs from the stored copy. Returns (files, sent, bytes).
+
+    `sub` limits it to one folder of the tree (jobtech/stream), for the daily refreshes.
+    """
     root, prefix = tree(name)
-    files = tree_files(root)
+    files = tree_files(root / sub)
 
     def one(path: Path) -> int:
         key = prefix + path.relative_to(root).as_posix()
@@ -178,11 +185,14 @@ def pull_db(s3, bucket: str) -> bool:
     return True
 
 
-def pull_tree(s3, bucket: str, name: str) -> int:
+def pull_tree(s3, bucket: str, name: str, sub: str = "") -> int:
     root, prefix = tree(name)
     keys = []
-    for page in s3.get_paginator("list_objects_v2").paginate(Bucket=bucket, Prefix=prefix):
-        keys += [(o["Key"], o["Size"]) for o in page.get("Contents", [])]
+    # A folder (jobtech/stream) or a single file (jobtech/_manifest.jsonl).
+    wanted = prefix + sub.strip("/")
+    for page in s3.get_paginator("list_objects_v2").paginate(Bucket=bucket, Prefix=wanted):
+        keys += [(o["Key"], o["Size"]) for o in page.get("Contents", [])
+                 if not sub or o["Key"] == wanted or o["Key"].startswith(wanted + "/")]
 
     def one(item: tuple[str, int]) -> int:
         key, size = item
@@ -197,7 +207,8 @@ def pull_tree(s3, bucket: str, name: str) -> int:
 
     with ThreadPoolExecutor(max_workers=8) as pool:
         fetched = sum(pool.map(one, keys))
-    print(f"{name.capitalize()} files: {len(keys)} stored, {fetched} fetched to {root}")
+    print(f"{name.capitalize()} files{' in ' + sub if sub else ''}: {len(keys)} stored, "
+          f"{fetched} fetched to {root}")
     return fetched
 
 
@@ -206,7 +217,13 @@ def main() -> int:
     parser.add_argument("action", choices=["push", "pull", "status"])
     parser.add_argument("--only", choices=["db", "raw", "features"],
                         help="Only the warehouse, only the raw files or only the ML outputs")
+    parser.add_argument("--path", action="append", default=[],
+                        help="With --only raw or features: only this folder or file of the tree "
+                             "(repeatable), e.g. --path jobtech/stream")
     args = parser.parse_args()
+    if args.path and args.only not in TREES:
+        parser.error("--path needs --only raw or --only features")
+    subs = args.path or [""]
 
     from upload import client
 
@@ -221,15 +238,18 @@ def main() -> int:
     if args.action == "pull":
         for name in TREES:
             if args.only in (None, name):
-                pull_tree(s3, bucket, name)
+                for sub in subs:
+                    pull_tree(s3, bucket, name, sub)
         if args.only in (None, "db"):
             pull_db(s3, bucket)
         return 0
     counts: dict[str, int | None] = {}
     for name in TREES:
         if args.only in (None, name):
-            counts[name], sent, sent_bytes = push_tree(s3, bucket, name)
-            print(f"{name.capitalize()} files: {counts[name]} on disk, {sent} uploaded ({sent_bytes / 1e6:.0f} MB)")
+            for sub in subs:
+                counts[name], sent, sent_bytes = push_tree(s3, bucket, name, sub)
+                print(f"{name.capitalize()} files{' in ' + sub if sub else ''}: {counts[name]} "
+                      f"on disk, {sent} uploaded ({sent_bytes / 1e6:.0f} MB)")
     if args.only in (None, "db"):
         manifest = push_db(s3, bucket, counts)
         print(f"Warehouse stored: {manifest['bytes'] / 1e6:.0f} MB, "

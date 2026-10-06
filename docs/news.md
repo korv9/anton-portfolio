@@ -43,7 +43,7 @@ others are still read, and the next run tries again.
 3. **Export** — `platform/publish/export_news.py` writes `frontend/public/data/parliament/news.json`:
    the political items of the last 60 days, topics, items per party in 30 days, and each
    source's last fetch.
-4. **Schedule** — `.github/workflows/refresh-news.yml`, every three hours; commits `news.json`
+4. **Schedule** — `.github/workflows/refresh-news.yml`, every morning; commits `news.json`
    when an item changed. It needs the R2 secrets (docs/deploy.md) and does nothing without them.
 
 ```

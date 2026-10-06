@@ -201,3 +201,29 @@ button.treemap-tile {
 #treemap {
   margin-bottom: 0.75rem;
 }
+
+/* New ads per day from the daily stream: a short table with a bar per day. */
+.jobs-recent {
+  margin-top: 1.5rem;
+}
+.jobs-recent h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+}
+.jobs-recent-table th {
+  width: 7.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+.jobs-recent-table td:last-child {
+  width: 5rem;
+  text-align: right;
+}
+.jobs-recent-bar {
+  display: block;
+  height: 10px;
+  min-width: 2px;
+  background: var(--ink);
+  opacity: 0.6;
+}

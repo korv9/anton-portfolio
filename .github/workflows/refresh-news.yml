@@ -1,15 +1,13 @@
 name: Refresh political news
 
-# Every three hours: read the SVT, Ekot and Government feeds, add new items to the news archive
-# on R2 (the feeds hold only the last day or so, so the archive is built by reading often),
+# Each morning: read the SVT, Ekot and Government feeds, add new items to the news archive on
+# R2 (the feeds hold only the last day or so, so the archive is built by reading daily),
 # tag them by party and topic, and commit parliament/news.json when it changed. Cloudflare
 # publishes the site from that commit (docs/deploy.md).
 
 on:
-  # Paused until the R2 secrets are set and the daily updates are switched on (docs/deploy.md).
-  # To resume, uncomment the two lines below. Runs by hand (workflow_dispatch) still work.
-  # schedule:
-  #   - cron: '17 */3 * * *'
+  schedule:
+    - cron: '17 5 * * *'
   workflow_dispatch:
 
 permissions:
@@ -23,13 +21,15 @@ jobs:
   refresh:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    # The R2 credentials are secrets of the anton-portfolio environment.
+    environment: anton-portfolio
     env:
       DBT_SEND_ANONYMOUS_USAGE_STATS: 'false'
       PORTFOLIO_DB: ${{ github.workspace }}/warehouse/portfolio.duckdb
       PORTFOLIO_RAW: ${{ github.workspace }}/warehouse/raw
       R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
       R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
-      R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY || secrets.R2_SECRET_ACCESS_KEY_ID }}
       R2_BUCKET: ${{ secrets.R2_BUCKET }}
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
     steps:
