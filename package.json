@@ -56,7 +56,10 @@
     "concepts:dbt": "cd platform && dbt build --profiles-dir . --select tag:concepts",
     "concepts:publish": "python platform/publish/concepts/export_concepts.py",
     "concepts": "npm run concepts:build && npm run concepts:dbt && npm run concepts:publish",
-    "ai-governance-timeline": "cd platform && dbt build --profiles-dir . --select tag:cross_domain && cd .. && python platform/publish/cross_domain/export_ai_governance_timeline.py"
+    "ai-governance-timeline": "cd platform && dbt build --profiles-dir . --select tag:cross_domain && cd .. && python platform/publish/cross_domain/export_ai_governance_timeline.py",
+    "quality:build": "python platform/quality/evaluate.py && cd platform && dbt build --profiles-dir . --select tag:quality",
+    "quality:publish": "python platform/publish/quality/export_quality.py",
+    "quality": "npm run quality:build && npm run quality:publish"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.129.0",

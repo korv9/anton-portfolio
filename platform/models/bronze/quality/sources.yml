@@ -1,0 +1,33 @@
+version: 2
+
+# The quality layer's output (platform/quality/evaluate.py) under warehouse/features/quality.
+
+sources:
+  - name: quality_features
+    description: Quality check results and analytical validity diagnostics in one schema each.
+    tables:
+      - name: checks
+        description: One row per data-quality check result.
+        meta:
+          external_location: >-
+            read_parquet('{{ env_var('PORTFOLIO_FEATURES', '../warehouse/features') }}/quality/quality_checks.parquet')
+      - name: validity
+        description: One row per analytical validity diagnostic.
+        meta:
+          external_location: >-
+            read_parquet('{{ env_var('PORTFOLIO_FEATURES', '../warehouse/features') }}/quality/analysis_validity.parquet')
+      - name: validity_history
+        description: Diagnostics across recorded runs (for example before and after cleaning).
+        meta:
+          external_location: >-
+            read_parquet('{{ env_var('PORTFOLIO_FEATURES', '../warehouse/features') }}/quality/validity_history.parquet')
+      - name: confounders
+        description: Registered confounders per analysis.
+        meta:
+          external_location: >-
+            read_parquet('{{ env_var('PORTFOLIO_FEATURES', '../warehouse/features') }}/quality/confounders.parquet')
+      - name: products
+        description: The products the registry covers.
+        meta:
+          external_location: >-
+            read_parquet('{{ env_var('PORTFOLIO_FEATURES', '../warehouse/features') }}/quality/products.parquet')

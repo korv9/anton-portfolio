@@ -126,7 +126,16 @@ jobs:
       - name: AI governance timeline (cross-domain)
         working-directory: platform
         run: dbt build --profiles-dir . --select tag:cross_domain
+      - name: Quality and validity (registered checks, dbt tests, diagnostics)
+        run: |
+          python platform/quality/evaluate.py
+          cd platform && dbt build --profiles-dir . --select tag:quality
       - name: Store the warehouse, raw files and ML outputs in R2
         run: |
           python platform/publish/warehouse_store.py push
           python platform/publish/warehouse_store.py status
+      # After the store, so the data is kept whatever the result: fail the run if a structural
+      # check (gate: true in platform/quality/quality_registry.yml) failed. Validity diagnostics
+      # never block a run.
+      - name: Quality gate (structural checks)
+        run: python platform/quality/evaluate.py --dbt-results platform/target/quality/run_results.json --gate
