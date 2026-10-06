@@ -144,3 +144,23 @@ def test_ml_outputs_are_stored_under_their_own_prefix_and_come_back(store, tmp_p
     (tmp_path / "features/concepts/run.json").unlink()
     assert ws.pull_tree(s3, "b", "features") == 1
     assert (tmp_path / "features/concepts/run.json").read_text() == '{"model": "m"}'
+
+
+def test_one_folder_or_file_of_a_tree_moves_alone(store):
+    """The daily refreshes store and fetch only their own folder and provenance log."""
+    s3, _, raw = store
+    (raw / "jobtech/stream").mkdir(parents=True)
+    (raw / "jobtech/stream/state.json").write_text('{"fetched_until": "x"}')
+    (raw / "jobtech/streamed.json").write_text("{}")
+    (raw / "jobtech/_manifest.jsonl").write_text("{}\n")
+    assert ws.push_tree(s3, "b", "raw", "jobtech/stream")[:2] == (1, 1)
+    assert ws.push_tree(s3, "b", "raw", "jobtech/_manifest.jsonl")[:2] == (1, 1)
+    assert not any(k.endswith(("scb/a.json", "streamed.json")) for k in s3.objects)
+    ws.push_tree(s3, "b", "raw")
+    for path in ("jobtech/stream/state.json", "jobtech/_manifest.jsonl", "scb/a.json"):
+        (raw / path).unlink()
+    # A folder does not match its name's prefix (jobtech/streamed.json), a file matches itself.
+    assert ws.pull_tree(s3, "b", "raw", "jobtech/stream") == 1
+    assert ws.pull_tree(s3, "b", "raw", "jobtech/_manifest.jsonl") == 1
+    assert (raw / "jobtech/stream/state.json").exists()
+    assert not (raw / "scb/a.json").exists()

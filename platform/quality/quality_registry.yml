@@ -319,6 +319,19 @@ checks:
     comparator: "<="
     severity: warning
     source: gold.mart_market_field_monthly
+  - id: jobs_stream_currentness
+    product: jobs
+    dataset: gold.mart_market_daily
+    dimension: currentness
+    description: Days between the daily stream's last complete day and today. Run each morning, the stream is complete up to yesterday.
+    method: python
+    function: jobs_stream_currentness
+    measure: days_since_last_complete_day
+    threshold: 2
+    warn_at: 4
+    comparator: "<="
+    severity: warning
+    source: warehouse/raw/jobtech/market/manifest_stream.json
   - id: jobs_source_credibility
     product: jobs
     dataset: gold.mart_market_archives

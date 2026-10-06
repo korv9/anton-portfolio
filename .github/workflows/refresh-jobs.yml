@@ -1,23 +1,25 @@
 name: Refresh job-market data
 
-# JobTech publishes one archive per year, some months after the year ends, and one per
-# quarter for the current year. Monthly, this:
-#  - counts every ad in any archive from 2020 that is new or changed (the whole job market,
-#    ingest_market.py; the counts are cached, so unchanged archives are not downloaded) and
-#    rebuilds jobs/market.json;
+# Daily, each morning:
+#  - reads JobTech's stream of new and changed ads since the previous run and counts the ads
+#    published each day after the latest archive (ingest_stream.py; preliminary until the
+#    quarter's archive is published);
+#  - counts every archive from 2020 that is new or changed (the whole job market,
+#    ingest_market.py; an unchanged archive is not downloaded), so a new quarterly archive
+#    replaces the stream's counts for its months the morning it appears;
+#  - rebuilds jobs/market.json, and stores the raw stream files and the counts in R2, where
+#    the next run starts from;
 #  - checks whether a year newer than the IT report's data has appeared; only then does it
 #    rebuild that report from every archive (several GB, so it does not run otherwise).
 # Cloudflare publishes the site from the commit this makes to main (docs/deploy.md).
 
 on:
-  # Paused until the R2 secrets are set and the daily updates are switched on (docs/deploy.md).
-  # To resume, uncomment the two lines below. Runs by hand (workflow_dispatch) still work.
-  # schedule:
-  #   - cron: '23 5 3 * *'
+  schedule:
+    - cron: '23 4 * * *'
   workflow_dispatch:
     inputs:
       force:
-        description: Rebuild even if no new archive year exists
+        description: Rebuild the IT report even if no new archive year exists
         type: boolean
         default: false
 
@@ -32,9 +34,21 @@ jobs:
   refresh:
     runs-on: ubuntu-latest
     timeout-minutes: 180
+    # The R2 credentials are secrets of the anton-portfolio environment.
+    environment: anton-portfolio
     env:
       DBT_SEND_ANONYMOUS_USAGE_STATS: 'false'
+      PORTFOLIO_RAW: ${{ github.workspace }}/warehouse/raw
+      R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+      R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY || secrets.R2_SECRET_ACCESS_KEY_ID }}
+      R2_BUCKET: ${{ secrets.R2_BUCKET }}
     steps:
+      - name: Require R2 credentials
+        run: |
+          for name in R2_ACCOUNT_ID R2_ACCESS_KEY_ID R2_SECRET_ACCESS_KEY R2_BUCKET; do
+            if [ -z "${!name}" ]; then echo "::error::$name is not set (docs/deploy.md)"; exit 1; fi
+          done
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
@@ -42,24 +56,23 @@ jobs:
           cache: pip
           cache-dependency-path: platform/requirements.txt
       - run: pip install -r platform/requirements.txt
-      - name: Restore the whole-market counts
-        uses: actions/cache/restore@v4
-        with:
-          path: warehouse/raw/jobtech/market
-          key: jobtech-market-${{ github.run_id }}
-          restore-keys: jobtech-market-
-      - name: Count new or changed archives (whole job market)
+      - name: Start from the stored counts and stream
+        run: >-
+          python platform/publish/warehouse_store.py pull --only raw
+          --path jobtech/market --path jobtech/stream --path jobtech/_manifest.jsonl
+      - name: Count new archives and the day's stream
         run: |
           python platform/ingest/jobtech/ingest_market.py
+          python platform/ingest/jobtech/ingest_stream.py
           cd platform
           dbt build --profiles-dir . --select tag:market
           cd ..
           python platform/publish/export_market.py
-      - name: Save the whole-market counts
-        uses: actions/cache/save@v4
-        with:
-          path: warehouse/raw/jobtech/market
-          key: jobtech-market-${{ github.run_id }}
+      - name: Store the counts and stream in R2
+        if: always()
+        run: >-
+          python platform/publish/warehouse_store.py push --only raw
+          --path jobtech/market --path jobtech/stream --path jobtech/_manifest.jsonl
       - name: Is there a newer archive year?
         id: check
         run: |
@@ -84,7 +97,7 @@ jobs:
           if git diff --cached --quiet; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
           else
-            git commit -m "data: refresh job market from JobTech archives (run ${GITHUB_RUN_ID})"
+            git commit -m "data: refresh job market from JobTech (run ${GITHUB_RUN_ID})"
             git push
             echo "changed=true" >> "$GITHUB_OUTPUT"
           fi

@@ -65,11 +65,15 @@ on `workers.dev` and in previews without configuration.
      (Settings → Secrets and variables → Actions → Variables) and run `npm run data:catalog`
      with it exported, so `delivery.json` points at the domain; commit it;
    - once the site reads from the domain, turn off the bucket's `r2.dev` URL.
-5. **Scheduled refreshes.** The schedules in `refresh-welfare.yml` (daily), `refresh-news.yml`
-   (every three hours) and `refresh-jobs.yml` (monthly) are commented out until the secrets
-   below are set; uncomment the `schedule:` lines to switch them on. They can be run by hand
-   from the Actions tab meanwhile.
-6. **Refresh secrets.** Settings → Secrets and variables → Actions → Secrets:
+5. **Scheduled refreshes.** Each morning (UTC): `refresh-jobs.yml` at 04:23 (new archives and
+   the day's job ads from JobTech's stream), `refresh-welfare.yml` at 04:37 (welfare, taxes
+   and parliament: roll calls, reports, polls, elections, government, studies) and
+   `refresh-news.yml` at 05:17. Each commits the site's data when it changed, and Cloudflare
+   publishes from that commit. They run in the `anton-portfolio` environment, whose secrets
+   hold the R2 credentials, and can also be run by hand from the Actions tab. To pause one,
+   comment out its `schedule:` lines. Riksdag speeches and the analyses built on them
+   (embeddings, maps) are refreshed by *Build and store the warehouse*, run by hand.
+6. **Refresh secrets.** Settings → Environments → `anton-portfolio` → Secrets:
    `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET` (an R2 API token
    with read and write on the bucket). Without them the daily refresh stops at its first step
    and the news collection does nothing.

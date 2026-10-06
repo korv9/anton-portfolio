@@ -250,8 +250,22 @@ def jobs_source_credibility() -> Measurement | None:
     if not _exists(con, "gold.mart_market_archives"):
         return None
     rows = con.execute("select archive, source_url, sha256 from gold.mart_market_archives").fetchall()
-    ok = [a for a, url, sha in rows if urlparse(url or "").netloc == "data.arbetsformedlingen.se" and sha]
+    # Arbetsförmedlingen's archives, and JobTech's stream (Arbetsförmedlingen's open API).
+    hosts = {"data.arbetsformedlingen.se", "jobstream.api.jobtechdev.se"}
+    ok = [a for a, url, sha in rows if urlparse(url or "").netloc in hosts and sha]
     return _ratio(len(ok), len(rows))
+
+
+def jobs_stream_currentness() -> Measurement | None:
+    """Days between the daily stream's last complete day and today; None before its first run."""
+    path = RAW / "jobtech/market/manifest_stream.json"
+    if not path.exists():
+        return None
+    manifest = json.loads(path.read_text(encoding="utf-8"))
+    last = date.fromisoformat(manifest["last_complete_day"])
+    return Measurement((date.today() - last).days,
+                       details={"last_complete_day": str(last), "complete_from": manifest["complete_from"],
+                                "fetched_until": manifest["fetched_until"]})
 
 
 # ---------------------------------------------------------------- Welfare

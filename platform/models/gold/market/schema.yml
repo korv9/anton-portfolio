@@ -34,6 +34,17 @@ models:
     columns:
       - name: ads
         data_tests: [not_null]
+  - name: mart_market_daily
+    description: New ads and vacancies per publication day and occupation field ('all' is the whole market), from JobTech's stream, for the days it has read whole. Preliminary.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [day, field_id]
+    columns:
+      - name: day
+        data_tests: [not_null]
+      - name: ads
+        data_tests: [not_null]
   - name: mart_market_occupation_yearly
     description: Ads per occupation group and year, in full and over the months the latest year covers (ads_ytd), with the year before over the same months.
     data_tests:

@@ -56,6 +56,52 @@ const yearColumns = (data: Market) =>
     label: y === data.latest_year && data.ytd_months < 12 ? `${y}*` : String(y),
   }))
 
+/**
+ * New ads per day since the latest archive, from JobTech's daily stream: the chosen fields
+ * added up, or the whole market. Shown only once the stream has read a whole day, and marked
+ * preliminary, since the quarter's archive replaces it.
+ */
+function RecentDays({ data, fields }: { data: Market; fields: string[] }) {
+  const keys = fields.length ? fields : ['all']
+  const perDay = new Map<string, number>()
+  for (const key of keys)
+    for (const [day, ads] of data.daily?.[key] ?? [])
+      perDay.set(day, (perDay.get(day) ?? 0) + ads)
+  const days = [...perDay].sort(([a], [b]) => a.localeCompare(b)).slice(-14)
+  if (!days.length) return null
+  const most = Math.max(...days.map(([, n]) => n))
+  return (
+    <section className="jobs-recent" aria-labelledby="jobs-recent-title">
+      <h3 id="jobs-recent-title">
+        {l('New ads per day, latest', 'Nya annonser per dag, senaste')}
+      </h3>
+      <table className="data-table jobs-recent-table">
+        <tbody>
+          {days.map(([day, ads]) => (
+            <tr key={day}>
+              <th scope="row">{day}</th>
+              <td>
+                <span
+                  className="jobs-recent-bar"
+                  style={{ width: `${(ads / most) * 100}%` }}
+                  aria-hidden="true"
+                />
+              </td>
+              <td>{number(ads)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <p className="ds-small">
+        {l(
+          'Preliminary: counted each morning from JobTech’s stream of new and changed ads, from the stream’s first run on. The quarter’s archive replaces these counts when it is published.',
+          'Preliminärt: räknat varje morgon ur JobTechs ström av nya och ändrade annonser, från strömmens första körning. Kvartalets arkiv ersätter siffrorna när det publiceras.',
+        )}
+      </p>
+    </section>
+  )
+}
+
 function Trender({ route, data, fields }: ThemeProps) {
   const [view, setView] = useViewParams(route, { diagram: 'manad' })
   const { latest, previous, period, scope } = context(data, fields)
@@ -165,12 +211,15 @@ function Trender({ route, data, fields }: ThemeProps) {
         `${number(now)} annonser ${period}, ${signedPct(change(now, before))} mot samma månader ${previous}.`,
       )}
       meaning={
-        <p>
-          {l(
-            'Each column is the ads published that month. Ads follow the seasons, with more in spring, so compare a month with the same month a year earlier rather than with the month before.',
-            'Varje stapel är de annonser som publicerades den månaden. Annonserna följer säsongen, med fler på våren, så jämför en månad med samma månad året innan snarare än med månaden före.',
-          )}
-        </p>
+        <>
+          <p>
+            {l(
+              'Each column is the ads published that month. Ads follow the seasons, with more in spring, so compare a month with the same month a year earlier rather than with the month before.',
+              'Varje stapel är de annonser som publicerades den månaden. Annonserna följer säsongen, med fler på våren, så jämför en månad med samma månad året innan snarare än med månaden före.',
+            )}
+          </p>
+          <RecentDays data={data} fields={fields} />
+        </>
       }
       table={
         <HeatTable
@@ -757,7 +806,12 @@ function Kallor({ data }: { data: Market }) {
               <tr key={a.archive}>
                 <th scope="row">
                   <a href={a.source_url} target="_blank" rel="noreferrer">
-                    {a.archive}
+                    {a.archive === 'stream'
+                      ? l(
+                          'Daily stream (JobStream), preliminary',
+                          'Daglig ström (JobStream), preliminär',
+                        )
+                      : a.archive}
                   </a>
                 </th>
                 <td>{number(a.ads)}</td>

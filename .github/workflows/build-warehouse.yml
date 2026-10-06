@@ -69,9 +69,10 @@ jobs:
         run: python platform/ingest/run_parliament.py
       - name: Taxes
         run: python platform/ingest/run_taxes.py
-      - name: Job market (JobTech archives, counted)
+      - name: Job market (JobTech archives and daily stream, counted)
         run: |
           python platform/ingest/jobtech/ingest_market.py
+          python platform/ingest/jobtech/ingest_stream.py
           cd platform && dbt build --profiles-dir . --select tag:market
       - name: News (archive on R2, tagged)
         run: |

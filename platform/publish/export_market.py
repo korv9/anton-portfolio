@@ -11,6 +11,9 @@ Writes frontend/public/data/jobs/market.json from the gold market models (dbt ta
     regions      ads per county and year, for all fields and per field, in full and year to date
     conditions   per year and field: ads by employment type, working hours, required experience
     archives     the archives counted, with their source and SHA-256
+    daily        new ads per publication day and field from JobTech's stream, for the days
+                 it has read whole (preliminary until the quarter's archive is published)
+    preliminary  the months counted from the stream rather than an archive
 """
 from __future__ import annotations
 
@@ -76,6 +79,15 @@ def main() -> None:
         c["hours"][hours] += ads
         c["experience"]["yes" if experience else "no" if experience is False else "unknown"] += ads
 
+    daily: dict[str, list] = defaultdict(list)
+    for day, field, ads, vacancies in rows(connection, """
+            select strftime(day, '%Y-%m-%d'), field_id, ads, vacancies
+            from gold.mart_market_daily order by day"""):
+        daily[field].append([day, ads, vacancies])
+    preliminary = [m for (m,) in rows(connection, """
+        select distinct strftime(month, '%Y-%m') from gold.mart_market_field_monthly
+        where preliminary order by 1""")]
+
     archives = [{"archive": a, "source_url": u, "sha256": s, "ads": n}
                 for a, u, s, n in rows(connection, """
                     select archive, source_url, sha256, ads from gold.mart_market_archives
@@ -93,11 +105,16 @@ def main() -> None:
         "regions": sorted(regions.values(), key=lambda r: r["region"]),
         "conditions": conditions,
         "archives": archives,
+        "daily": daily,
+        "preliminary": preliminary,
         "method": ("Every ad in Arbetsförmedlingen's historical archives (JobTech) from 2020, "
                    "counted by the month it was published, its occupation group (SSYK 4) and "
                    "field, and its workplace county. Each archive counts only its own year or "
-                   "quarter. An ad is not a hire; an ad without a number of vacancies counts "
-                   "as one. The latest year is partial, so changes compare the same months."),
+                   "quarter. After the latest archive, ads are counted daily from JobTech's "
+                   "stream, from its first run on; those days and months are preliminary until "
+                   "the quarter's archive is published. An ad is not a hire; an ad without a "
+                   "number of vacancies counts as one. The latest year is partial, so changes "
+                   "compare the same complete months."),
     })
     total = sum(n for _, n, _ in monthly["all"])
     print(f"market: {total:,} ads {years[0]}-{monthly['all'][-1][0]}, {len(fields)} fields, "
