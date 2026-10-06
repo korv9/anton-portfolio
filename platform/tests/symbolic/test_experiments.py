@@ -92,13 +92,14 @@ def test_every_experiment_reads_the_same_sample(tmp_path):
     con.execute("create schema silver")
     con.execute("""create table silver.int_symbol_occurrences as
         select md5(i::varchar) as occurrence_id, 'The serpent ' || i as context,
-               'doc' || (i % 5) as document_id, 'sym' || ((i // 5) % 5) as symbol_id,
-               'trad' || (i % 2) as tradition, 'serpent' as matched_term
+               'doc' || (i % 10) as document_id, 'sym' || ((i // 10) % 5) as symbol_id,
+               'trad' || (i % 2) as tradition, 'serpent' as matched_term,
+               null::varchar as duplicate_of
         from range(2000) t(i)""")
     con.close()
     first = experiments.load_sample(db)
     second = experiments.load_sample(db)
-    assert len(first["ids"]) == 25 * pipeline.PER_PAIR
+    assert len(first["ids"]) == 50 * pipeline.PER_PAIR
     assert first["ids"] == second["ids"]
     assert first["ids"] == [r[0] for r in pipeline.load(db)]
     assert experiments.sample_hash(first["ids"]) == experiments.sample_hash(second["ids"])

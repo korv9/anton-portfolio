@@ -84,24 +84,52 @@ Parquet files; the site reads them from R2 and falls back to its own copy until 
 
 ## Corpus
 
-Ten books from Project Gutenberg (`platform/ingest/symbolic/corpus.json`). Each id was checked
-against the Title and Author lines of the Gutenberg file.
+**v4: 101 books** in twelve tradition groups (`platform/ingest/symbolic/corpus.json`, one
+document per line). v1–v3 used the ten books marked `pilot`.
 
-| Book | Gutenberg | Tradition |
-|---|---|---|
-| The Elder Eddas and the Younger Eddas (Thorpe, Blackwell) | 14726 | Norse |
-| Myths of the Norsemen (Guerber) | 28497 | Norse |
-| Kalevala (Crawford) | 5186 | Finnish |
-| Hesiod, the Homeric Hymns and Homerica (Evelyn-White) | 348 | Greek |
-| The Odyssey (Butler) | 1727 | Greek |
-| Bulfinch's Mythology | 4928 | Classical |
-| Grimms' Fairy Tales | 2591 | European folklore |
-| Andersen's Fairy Tales | 1597 | European folklore |
-| Celtic Fairy Tales (Jacobs) | 7885 | Celtic |
-| Paradise Lost (Milton) | 26 | Christian, literary |
+How the books were chosen and checked:
 
-Every book is an English translation or English original, so "tradition" is partly also
-"translator".
+1. **From the catalogue, not from memory.** Candidates were searched per tradition in Project
+   Gutenberg's catalogue (`pg_catalog.csv`), preferring complete, independent works: one
+   translation per work, no anthology that reprints another chosen book, single files only
+   (so Ovid is Howard's complete blank-verse edition and Malory is volume 1).
+2. **Against Gutenberg's own record.** For every book the Gutenberg RDF record gave the title,
+   the creators with their roles (author, translator, editor, compiler), the language and the
+   rights. All 101 are English and "Public domain in the USA." Title, author, translator and
+   editor in `corpus.json` come from that record; tradition, culture, region, genre, source
+   type and period are curated.
+3. **Against the files.** `platform/ingest/symbolic/audit_corpus.py` (after the ingest) checks
+   the fields, that each file's own header names the same title in English, the length (at
+   least 5,000 words), and duplicated text between books: the share of one book's eight-word
+   shingles found in another. It writes `corpus_audit.json` and stops on a duplicate.
+   *Sakoontala* (12169) was dropped because 52 % of it is reprinted in *Hindu Literature*
+   (13268). Smaller overlaps remain (27 % of the *Mabinogion* is in Bulfinch's *Age of
+   Chivalry*, 22 % of *Serbian Folk-lore* in *Hero Tales of the Serbians*); they are handled
+   per passage (below).
+
+| Tradition group | Books |
+|---|---|
+| Greek and Roman | 13 |
+| Norse and Germanic | 10 |
+| Celtic and Arthurian | 10 |
+| East Asian | 10 |
+| Indigenous North American | 10 |
+| European folklore | 10 |
+| Slavic and Eastern European | 9 |
+| Christian and Biblical | 9 |
+| South Asian | 8 |
+| Egyptian and Ancient Near East | 6 |
+| Finnish and Baltic | 3 |
+| Middle Eastern and Persian | 3 |
+
+Source types: 42 translations, 33 folklore collections, 17 retellings, 8 literary works and
+one work written in English (Malory). Finnish/Baltic and Middle Eastern/Persian stay small:
+Gutenberg has few complete, independent English texts for them, and the corpus does not pad a
+group with weak sources to reach a quota.
+
+Every book is read in English. Many are translations or retellings by nineteenth-century
+English writers, so "tradition" is partly also "translator"; the validity checks below test
+that directly.
 
 ## Symbol vocabulary
 
@@ -485,7 +513,9 @@ are drawn as rings at the edge, and the page says how many. No coordinate is cha
   narrative may go; the audit records every removal so either can be checked.
 - The review priority is a heuristic for where to spend a reader's time, not a measure of
   meaning, and its weights are a choice.
-- The corpus is ten English books chosen by hand; another selection gives another map.
+- The corpus is 101 English books chosen from one archive; another selection gives another
+  map, and Gutenberg's holdings over-represent nineteenth-century English translators and
+  collectors.
 - UMAP distorts the high-dimensional geometry; distances between far-apart groups on the map
   mean little.
 - HDBSCAN leaves many points as noise by design.

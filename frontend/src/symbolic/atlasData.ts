@@ -75,11 +75,36 @@ export function clusterColour(cluster: number, alpha = 1): string {
 }
 
 export const TRADITION: Record<string, [string, string]> = {
+  // The v4 tradition groups (platform/ingest/symbolic/corpus.json).
+  'greek-roman': ['Greek and Roman', 'Grekisk och romersk'],
+  'norse-germanic': ['Norse and Germanic', 'Nordisk och germansk'],
+  'celtic-arthurian': ['Celtic and Arthurian', 'Keltisk och arturisk'],
+  'slavic-eastern-european': [
+    'Slavic and Eastern European',
+    'Slavisk och östeuropeisk',
+  ],
+  'finnish-baltic': ['Finnish and Baltic', 'Finsk och baltisk'],
+  'middle-eastern-persian': [
+    'Middle Eastern and Persian',
+    'Mellanöstern och persisk',
+  ],
+  'south-asian': ['South Asian', 'Sydasiatisk'],
+  'east-asian': ['East Asian', 'Östasiatisk'],
+  'indigenous-north-american': [
+    'Indigenous North American',
+    'Nordamerikansk ursprungsbefolkning',
+  ],
+  'european-folklore': ['European folklore', 'Europeisk folksaga'],
+  'christian-biblical': ['Christian and Biblical', 'Kristen och biblisk'],
+  'egyptian-near-eastern': [
+    'Egyptian and Ancient Near East',
+    'Egyptisk och forntida Främre Orienten',
+  ],
+  // The v1–v3 pilot's labels, for the research history.
   norse: ['Norse', 'Nordisk'],
   finnish: ['Finnish', 'Finsk'],
   greek: ['Greek', 'Grekisk'],
   classical: ['Classical', 'Klassisk'],
-  'european-folklore': ['European folklore', 'Europeisk folksaga'],
   celtic: ['Celtic', 'Keltisk'],
   'christian-literary': ['Christian, literary', 'Kristen, litterär'],
 }

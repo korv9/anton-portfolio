@@ -25,8 +25,9 @@ have run:
     cross-book-clusters.json    the cross-book subset of those, each marked with its review status
     reviewed-clusters.json  only clusters a person has reviewed (nlp/symbolic/reviews.py):
                             label, description, interpretation, confidence. Empty until then.
-    research-history.json   the method history (baseline, book-centred, paratext cleaned) with
-                            the numbers of each step, the cleaning audit and the review counts
+    research-history.json   the method history (v1 baseline, v2 book-centred, v3 paratext
+                            cleaned, v4 expanded corpus) with the numbers of each step, the
+                            validity checks, the cleaning audit and the review counts
 
 The files are registered in the delivery catalogue (catalog.json, delivery.json) with the
 same rules as publish/build_catalog.py, touching no other entry: Parquet goes to object storage,
@@ -44,6 +45,11 @@ ROOT = Path(__file__).resolve().parents[3]
 DATABASE = Path(os.environ.get("PORTFOLIO_DB", ROOT / "warehouse/portfolio.duckdb"))
 FEATURES = Path(os.environ.get("PORTFOLIO_FEATURES", ROOT / "warehouse/features")) / "symbolic"
 OUT = ROOT / "frontend/public/data/symbolic"
+# Parquet is served from object storage, apart from the site's own JSON. Each atlas version has
+# its own folder there, so the published site keeps reading the files it was built with until
+# the new version is deployed with its own JSON.
+ATLAS_VERSION = "v4"
+PARQUET = OUT / ATLAS_VERSION
 EXCERPT = 360
 ATLAS_COLUMNS = ["occurrence_id", "symbol_id", "document_id", "title", "tradition", "matched_term",
                  "context", "x", "y", "cluster_id", "cluster_probability", "is_noise"]
@@ -73,7 +79,15 @@ def register(paths: list[Path]) -> None:
 
     catalog = json.loads(bc.CATALOG.read_text(encoding="utf-8"))
     delivery = json.loads(bc.DELIVERY.read_text(encoding="utf-8"))
-    entries = {e["path"]: e for e in catalog["files"]}
+    current = {path.relative_to(bc.PUBLIC).as_posix() for path in paths}
+    # Parquet of an earlier atlas version leaves the catalogue; its copy in storage stays for
+    # the site that still reads it.
+    entries = {e["path"]: e for e in catalog["files"]
+               if not (e["path"].startswith("symbolic/") and e["path"].endswith(".parquet")
+                       and e["path"] not in current)}
+    for name, parts in list(delivery["parquet_datasets"].items()):
+        if any(p.startswith("symbolic/") and p not in current for p in parts):
+            del delivery["parquet_datasets"][name]
     for path in paths:
         relative = path.relative_to(bc.PUBLIC).as_posix()
         content = path.read_bytes().replace(b"\r\n", b"\n")
@@ -83,7 +97,7 @@ def register(paths: list[Path]) -> None:
                              "schema_version": bc.SCHEMA_VERSION, "partition": bc.partition_of(relative),
                              "sha256": hashlib.sha256(content).hexdigest()}
         if fmt == "parquet":
-            delivery["parquet_datasets"][relative.split("/")[1]] = [relative]
+            delivery["parquet_datasets"][relative.split("/")[-1]] = [relative]
     files = sorted(entries.values(), key=lambda e: e["path"])
     run_id = hashlib.sha256("".join(f"{e['path']}:{e['sha256']}" for e in files).encode()).hexdigest()[:16]
     for entry in files:
@@ -137,7 +151,7 @@ def review_files() -> list[Path]:
     projection = projection.cast(pa.schema([
         (f.name, pa.float32() if f.name in ("x", "y", "cluster_probability") else
          pa.int32() if f.name == "cluster_id" else f.type) for f in projection.schema]))
-    pq.write_table(projection, OUT / "book-centered-atlas.parquet", compression="snappy")
+    pq.write_table(projection, PARQUET / "book-centered-atlas.parquet", compression="snappy")
 
     candidates = pq.read_table(review / "cluster_candidates.parquet").to_pylist()
     passages = pq.read_table(review / "representative_passages.parquet").to_pylist()
@@ -167,7 +181,7 @@ def review_files() -> list[Path]:
         entry.update({k: c[k] for k in ("book_count", "tradition_count", "symbol_count")},
                      representative_occurrence_ids=c["representatives"]["diverse"])
     return [
-        OUT / "book-centered-atlas.parquet",
+        PARQUET / "book-centered-atlas.parquet",
         _dump("book-centered-clusters.json", {"experiment": "book_centered", "note": note, "clusters": clusters}),
         _dump("cross-book-clusters.json", {"experiment": "book_centered", "note": note,
                                            "clusters": [c for c in clusters if c["cross_book_cluster"]]}),
@@ -176,10 +190,23 @@ def review_files() -> list[Path]:
     ]
 
 
+def corpus_size() -> int:
+    corpus = ROOT / "platform/ingest/symbolic/corpus.json"
+    return len(json.loads(corpus.read_text(encoding="utf-8"))["documents"])
+
+
+def validity() -> dict | None:
+    """What the clusters follow (nlp/symbolic/validity.py): association with each property and
+    the similarity of book pairs that share one."""
+    path = FEATURES / "validity.json"
+    return json.loads(path.read_text(encoding="utf-8")) if path.is_file() else None
+
+
 def research_history(review_summary: dict) -> dict:
     """The steps of the investigation with the numbers each produced: the baseline and the
     book-centred run before the paratext cleaning (experiments/history/v2-before-cleaning), the
-    book-centred run after it, the cleaning audit and the review counts."""
+    cleaned ten-book pilot (experiments/history/v3-pilot), the expanded corpus (the current
+    experiments), the validity checks, the cleaning audit and the review counts."""
     folder = FEATURES / "experiments"
 
     def rows(path: Path) -> dict:
@@ -190,7 +217,9 @@ def research_history(review_summary: dict) -> dict:
     keys = ["occurrences", "clusters", "noise_share", "mean_largest_book_share", "mean_book_entropy",
             "cross_book_cluster_count", "cross_book_occurrence_share", "silhouette", "trustworthiness",
             "median_membership"]
-    before, after = rows(folder / "history/v2-before-cleaning/comparison.json"), rows(folder / "comparison.json")
+    before = rows(folder / "history/v2-before-cleaning/comparison.json")
+    pilot = rows(folder / "history/v3-pilot/comparison.json")
+    current = rows(folder / "comparison.json")
     pick = lambda r: {k: r.get(k) for k in keys} if r else None  # noqa: E731
     post = folder / "post_cleaning_comparison.json"
     paratext = {}
@@ -211,9 +240,12 @@ def research_history(review_summary: dict) -> dict:
         "steps": [
             {"id": "v1", "name": "Baseline embeddings", "metrics": pick(before.get("baseline"))},
             {"id": "v2", "name": "Book-centred embeddings", "metrics": pick(before.get("book_centered"))},
-            {"id": "v3", "name": "Paratext cleaned", "metrics": pick(after.get("book_centered")),
-             "baseline_metrics": pick(after.get("baseline"))},
+            {"id": "v3", "name": "Paratext cleaned", "metrics": pick(pilot.get("book_centered")),
+             "baseline_metrics": pick(pilot.get("baseline")), "documents": 10},
+            {"id": "v4", "name": "Expanded corpus", "metrics": pick(current.get("book_centered")),
+             "baseline_metrics": pick(current.get("baseline")), "documents": corpus_size()},
         ],
+        "validity": validity(),
         "cleaning": cleaning,
         "paratext_clusters": paratext,
         "review": {k: review_summary.get(k) for k in (
@@ -236,7 +268,8 @@ def main() -> int:
                            "order by symbol_id, cluster_id").to_arrow_table()
     books = con.execute(
         "select d.document_id, d.title, d.author, d.tradition, d.word_count, s.gutenberg_id, s.source_url, "
-        "(select count(*) from gold.mart_symbol_atlas a where a.document_id = d.document_id) as points "
+        "(select count(*) from gold.mart_symbol_atlas a where a.document_id = d.document_id) as points, "
+        "d.translator, d.culture, d.region, d.genre, d.source_type, d.period, d.pilot "
         "from silver.int_symbolic_documents d join bronze.stg_symbolic_documents s using (document_id) "
         "order by d.tradition, d.document_id").fetchall()
     symbols = con.execute(
@@ -254,9 +287,9 @@ def main() -> int:
     atlas = atlas.cast(pa.schema([
         (f.name, pa.float32() if f.name in ("x", "y", "cluster_probability") else
          pa.int32() if f.name == "cluster_id" else f.type) for f in atlas.schema]))
-    OUT.mkdir(parents=True, exist_ok=True)
-    pq.write_table(atlas, OUT / "atlas.parquet", compression="snappy")
-    pq.write_table(profiles, OUT / "symbol-profiles.parquet", compression="snappy")
+    PARQUET.mkdir(parents=True, exist_ok=True)
+    pq.write_table(atlas, PARQUET / "atlas.parquet", compression="snappy")
+    pq.write_table(profiles, PARQUET / "symbol-profiles.parquet", compression="snappy")
 
     run = json.loads((FEATURES / "run.json").read_text(encoding="utf-8"))
     metrics = json.loads((FEATURES / "evaluation.json").read_text(encoding="utf-8"))
@@ -271,7 +304,9 @@ def main() -> int:
         "symbols": [{"id": s[0], "label": s[1], "points": s[2], "occurrences": s[3]} for s in symbols],
         "traditions": sorted({b[3] for b in books}),
         "documents": [{"id": b[0], "title": b[1], "author": b[2], "tradition": b[3], "words": b[4],
-                       "gutenberg_id": b[5], "source_url": b[6], "points": b[7]} for b in books],
+                       "gutenberg_id": b[5], "source_url": b[6], "points": b[7], "translator": b[8],
+                       "culture": b[9], "region": b[10], "genre": b[11], "source_type": b[12],
+                       "period": b[13], "pilot": bool(b[14])} for b in books],
         "clusters": sorted(set(labels)),
         "run": {k: run[k] for k in ("run_at", "embedding_model", "dimensions", "sample", "umap_map",
                                     "umap_cluster_space", "hdbscan")},
@@ -285,9 +320,9 @@ def main() -> int:
     preview = [[round(xs[i], 3), round(ys[i], 3), labels[i]] for i in range(0, len(ids), 10)]
     (OUT / "preview.json").write_text(json.dumps({"columns": ["x", "y", "cluster_id"], "points": preview},
                                                  separators=(",", ":")) + "\n", encoding="utf-8")
-    register([OUT / "atlas.parquet", OUT / "summary.json", OUT / "symbol-profiles.parquet",
+    register([PARQUET / "atlas.parquet", OUT / "summary.json", PARQUET / "symbol-profiles.parquet",
               OUT / "preview.json", *experiment_files(), *review_files()])
-    size = (OUT / "atlas.parquet").stat().st_size
+    size = (PARQUET / "atlas.parquet").stat().st_size
     print(f"{atlas.num_rows} points, {metrics['clusters']} clusters, atlas.parquet {size / 1e3:.0f} kB")
     return 0
 

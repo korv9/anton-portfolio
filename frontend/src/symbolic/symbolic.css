@@ -327,3 +327,53 @@
   margin: 0;
   font: 600 1.05rem var(--font-mono);
 }
+
+/* The corpus explorer: compact rows with two filters. */
+.corpus-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 0.75rem 1.25rem;
+  margin: 1rem 0 0.75rem;
+}
+.corpus-filters label {
+  display: grid;
+  gap: 0.25rem;
+  color: var(--muted);
+  font-size: var(--small);
+}
+.corpus-filters select {
+  min-height: 36px;
+  padding: 0 0.5rem;
+  color: var(--ink);
+}
+.corpus-count {
+  margin: 0 0 0.4rem auto;
+  color: var(--muted);
+  font-size: var(--small);
+}
+.corpus-table th[scope='row'] {
+  font-weight: var(--weight-ui);
+}
+.corpus-table td,
+.corpus-table th {
+  font-size: var(--small);
+  vertical-align: top;
+}
+.corpus-table .num {
+  text-align: right;
+  font-family: var(--font-mono);
+}
+.corpus-pilot {
+  color: var(--muted);
+  font-weight: var(--weight-body);
+}
+
+.research-validity {
+  margin-top: 2.5rem;
+  max-width: 860px;
+}
+.research-validity .num {
+  text-align: right;
+  font-family: var(--font-mono);
+}

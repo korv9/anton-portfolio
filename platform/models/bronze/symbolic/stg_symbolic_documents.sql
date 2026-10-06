@@ -1,5 +1,7 @@
--- One row per book: the text exactly as fetched, its corpus metadata and the provenance of the
--- latest fetch. Nothing is cleaned here; silver removes Gutenberg's header and licence.
+-- One row per book: the text exactly as fetched, its corpus metadata (title, author, translator,
+-- tradition and culture, region, genre, source type, period, whether it was in the v1-v3
+-- pilot) and the provenance of the latest fetch. Nothing is cleaned here; silver removes
+-- Gutenberg's header and licence.
 with latest_fetch as (
     select path, url, sha256, fetched_at
     from {{ source('symbolic', 'fetches') }}
@@ -11,6 +13,14 @@ select
     c.title,
     c.author,
     c.tradition,
+    c.culture,
+    c.region,
+    c.genre,
+    c.source_type,
+    c.period,
+    c.translator,
+    c.editor,
+    coalesce(c.pilot, false) as pilot,
     c.language,
     c.source,
     c.gutenberg_id,

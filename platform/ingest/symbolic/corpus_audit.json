@@ -1,0 +1,877 @@
+{
+ "audited_at": "2026-10-06T19:40:32+00:00",
+ "documents_listed": 102,
+ "documents_checked": 102,
+ "thresholds": {
+  "min_words": 5000,
+  "shingle_words": 8,
+  "duplicate": 0.3,
+  "overlap": 0.05
+ },
+ "problems": [
+  "korean-folk-tales: file title 'Korean folk tales Imps, ghosts and fairies' does not match 'Korean folk tales : $b Imps, ghosts and fairies'",
+  "duplicate text: sakoontala is 52% contained in hindu-literature"
+ ],
+ "text_pairs": [
+  {
+   "contained": "sakoontala",
+   "in": "hindu-literature",
+   "containment": 0.522,
+   "verdict": "duplicate"
+  },
+  {
+   "contained": "mabinogion",
+   "in": "bulfinch-mythology",
+   "containment": 0.273,
+   "verdict": "overlap"
+  },
+  {
+   "contained": "serbian-folk-lore",
+   "in": "serbian-hero-tales",
+   "containment": 0.22,
+   "verdict": "overlap"
+  },
+  {
+   "contained": "indian-fairy-tales",
+   "in": "tales-of-the-punjab",
+   "containment": 0.111,
+   "verdict": "overlap"
+  },
+  {
+   "contained": "celtic-fairy-tales",
+   "in": "irish-peasantry",
+   "containment": 0.069,
+   "verdict": "overlap"
+  },
+  {
+   "contained": "more-celtic-fairy-tales",
+   "in": "mabinogion",
+   "containment": 0.069,
+   "verdict": "overlap"
+  },
+  {
+   "contained": "indian-fairy-tales",
+   "in": "old-deccan-days",
+   "containment": 0.061,
+   "verdict": "overlap"
+  }
+ ],
+ "documents": [
+  {
+   "id": "odyssey",
+   "gutenberg_id": 1727,
+   "file_title": "The Odyssey",
+   "file_language": "English",
+   "words": 129571,
+   "title_matches": true
+  },
+  {
+   "id": "hesiod-homeric-hymns",
+   "gutenberg_id": 348,
+   "file_title": "Hesiod, the Homeric Hymns, and Homerica",
+   "file_language": "English",
+   "words": 90815,
+   "title_matches": true
+  },
+  {
+   "id": "bulfinch-mythology",
+   "gutenberg_id": 4928,
+   "file_title": "Bulfinch's Mythology",
+   "file_language": "English",
+   "words": 329775,
+   "title_matches": true
+  },
+  {
+   "id": "iliad",
+   "gutenberg_id": 2199,
+   "file_title": "The Iliad",
+   "file_language": "English",
+   "words": 152757,
+   "title_matches": true
+  },
+  {
+   "id": "aeneid",
+   "gutenberg_id": 228,
+   "file_title": "The Aeneid",
+   "file_language": "English",
+   "words": 107551,
+   "title_matches": true
+  },
+  {
+   "id": "metamorphoses",
+   "gutenberg_id": 28621,
+   "file_title": "The Metamorphoses of Publius Ovidus Naso in English blank verse Vols. I & II",
+   "file_language": "English",
+   "words": 117068,
+   "title_matches": true
+  },
+  {
+   "id": "argonautica",
+   "gutenberg_id": 830,
+   "file_title": "The Argonautica",
+   "file_language": "English",
+   "words": 61281,
+   "title_matches": true
+  },
+  {
+   "id": "golden-asse",
+   "gutenberg_id": 1666,
+   "file_title": "The Golden Asse",
+   "file_language": "English",
+   "words": 80796,
+   "title_matches": true
+  },
+  {
+   "id": "sophocles-plays",
+   "gutenberg_id": 31,
+   "file_title": "Plays of Sophocles: Oedipus the King; Oedipus at Colonus; Antigone",
+   "file_language": "English",
+   "words": 37439,
+   "title_matches": true
+  },
+  {
+   "id": "aeschylus-prometheus",
+   "gutenberg_id": 27458,
+   "file_title": "Aeschylus' Prometheus Bound and the Seven Against Thebes",
+   "file_language": "English",
+   "words": 28432,
+   "title_matches": true
+  },
+  {
+   "id": "euripides-hippolytus-bacchae",
+   "gutenberg_id": 8418,
+   "file_title": "Hippolytus; The Bacchae",
+   "file_language": "English",
+   "words": 27737,
+   "title_matches": true
+  },
+  {
+   "id": "kingsley-heroes",
+   "gutenberg_id": 677,
+   "file_title": "The Heroes; Or, Greek Fairy Tales for My Children",
+   "file_language": "English",
+   "words": 48028,
+   "title_matches": true
+  },
+  {
+   "id": "tanglewood-tales",
+   "gutenberg_id": 976,
+   "file_title": "Tanglewood Tales",
+   "file_language": "English",
+   "words": 65495,
+   "title_matches": true
+  },
+  {
+   "id": "elder-younger-eddas",
+   "gutenberg_id": 14726,
+   "file_title": "The Elder Eddas of Saemund Sigfusson; and the Younger Eddas of Snorre Sturleson",
+   "file_language": "English",
+   "words": 87302,
+   "title_matches": true
+  },
+  {
+   "id": "myths-of-the-norsemen",
+   "gutenberg_id": 28497,
+   "file_title": "Myths of the Norsemen: From the Eddas and Sagas",
+   "file_language": "English",
+   "words": 100359,
+   "title_matches": true
+  },
+  {
+   "id": "beowulf",
+   "gutenberg_id": 981,
+   "file_title": "Beowulf",
+   "file_language": "English",
+   "words": 26116,
+   "title_matches": true
+  },
+  {
+   "id": "nibelungenlied",
+   "gutenberg_id": 1151,
+   "file_title": "The Nibelungenlied",
+   "file_language": "English",
+   "words": 103023,
+   "title_matches": true
+  },
+  {
+   "id": "volsunga-saga",
+   "gutenberg_id": 1152,
+   "file_title": "The Story of the Volsungs (Volsunga Saga); with Excerpts from the Poetic Edda",
+   "file_language": "English",
+   "words": 57188,
+   "title_matches": true
+  },
+  {
+   "id": "burnt-njal",
+   "gutenberg_id": 17919,
+   "file_title": "The story of Burnt Njal: From the Icelandic of the Njals Saga",
+   "file_language": "English",
+   "words": 140427,
+   "title_matches": true
+  },
+  {
+   "id": "heimskringla",
+   "gutenberg_id": 598,
+   "file_title": "Heimskringla; Or, The Chronicle of the Kings of Norway",
+   "file_language": "English",
+   "words": 305115,
+   "title_matches": true
+  },
+  {
+   "id": "grettir-the-strong",
+   "gutenberg_id": 12747,
+   "file_title": "The Story of Grettir the Strong",
+   "file_language": "English",
+   "words": 94165,
+   "title_matches": true
+  },
+  {
+   "id": "laxdaela-saga",
+   "gutenberg_id": 17803,
+   "file_title": "Laxdæla Saga",
+   "file_language": "English",
+   "words": 74379,
+   "title_matches": true
+  },
+  {
+   "id": "legends-of-the-rhine",
+   "gutenberg_id": 20496,
+   "file_title": "Legends of the Rhine",
+   "file_language": "English",
+   "words": 53545,
+   "title_matches": true
+  },
+  {
+   "id": "celtic-fairy-tales",
+   "gutenberg_id": 7885,
+   "file_title": "Celtic Fairy Tales",
+   "file_language": "English",
+   "words": 74731,
+   "title_matches": true
+  },
+  {
+   "id": "more-celtic-fairy-tales",
+   "gutenberg_id": 34453,
+   "file_title": "More Celtic Fairy Tales",
+   "file_language": "English",
+   "words": 65328,
+   "title_matches": true
+  },
+  {
+   "id": "mabinogion",
+   "gutenberg_id": 5160,
+   "file_title": "The Mabinogion",
+   "file_language": "English",
+   "words": 107599,
+   "title_matches": true
+  },
+  {
+   "id": "morte-darthur-1",
+   "gutenberg_id": 1251,
+   "file_title": "Le Morte d'Arthur: Volume 1",
+   "file_language": "English",
+   "words": 168768,
+   "title_matches": true
+  },
+  {
+   "id": "idylls-of-the-king",
+   "gutenberg_id": 610,
+   "file_title": "Idylls of the King",
+   "file_language": "English",
+   "words": 84175,
+   "title_matches": true
+  },
+  {
+   "id": "gods-and-fighting-men",
+   "gutenberg_id": 14465,
+   "file_title": "Gods and Fighting Men",
+   "file_language": "English",
+   "words": 171525,
+   "title_matches": true
+  },
+  {
+   "id": "celtic-twilight",
+   "gutenberg_id": 10459,
+   "file_title": "The Celtic Twilight",
+   "file_language": "English",
+   "words": 39570,
+   "title_matches": true
+  },
+  {
+   "id": "irish-peasantry",
+   "gutenberg_id": 33887,
+   "file_title": "Fairy and Folk Tales of the Irish Peasantry",
+   "file_language": "English",
+   "words": 116708,
+   "title_matches": true
+  },
+  {
+   "id": "irish-fairy-tales-stephens",
+   "gutenberg_id": 2892,
+   "file_title": "Irish Fairy Tales",
+   "file_language": "English",
+   "words": 66089,
+   "title_matches": true
+  },
+  {
+   "id": "sir-gawain",
+   "gutenberg_id": 66084,
+   "file_title": "Sir Gawain and the Green Knight: A Middle-English Arthurian Romance Retold in Modern Prose",
+   "file_language": "English",
+   "words": 22057,
+   "title_matches": true
+  },
+  {
+   "id": "russian-fairy-tales",
+   "gutenberg_id": 22373,
+   "file_title": "Russian Fairy Tales: A Choice Collection of Muscovite Folk-lore",
+   "file_language": "English",
+   "words": 130975,
+   "title_matches": true
+  },
+  {
+   "id": "old-peters-russian-tales",
+   "gutenberg_id": 16981,
+   "file_title": "Old Peter's Russian Tales",
+   "file_language": "English",
+   "words": 68691,
+   "title_matches": true
+  },
+  {
+   "id": "polish-fairy-tales",
+   "gutenberg_id": 36668,
+   "file_title": "Polish Fairy Tales",
+   "file_language": "English",
+   "words": 20799,
+   "title_matches": true
+  },
+  {
+   "id": "cossack-fairy-tales",
+   "gutenberg_id": 29672,
+   "file_title": "Cossack Fairy Tales and Folk Tales",
+   "file_language": "English",
+   "words": 61302,
+   "title_matches": true
+  },
+  {
+   "id": "serbian-hero-tales",
+   "gutenberg_id": 38571,
+   "file_title": "Hero Tales and Legends of the Serbians",
+   "file_language": "English",
+   "words": 124730,
+   "title_matches": true
+  },
+  {
+   "id": "serbian-folk-lore",
+   "gutenberg_id": 45321,
+   "file_title": "Serbian Folk-lore",
+   "file_language": "English",
+   "words": 81497,
+   "title_matches": true
+  },
+  {
+   "id": "czechoslovak-fairy-tales",
+   "gutenberg_id": 32217,
+   "file_title": "Czechoslovak Fairy Tales",
+   "file_language": "English",
+   "words": 42860,
+   "title_matches": true
+  },
+  {
+   "id": "roumanian-fairy-tales",
+   "gutenberg_id": 20552,
+   "file_title": "Roumanian Fairy Tales",
+   "file_language": "English",
+   "words": 62900,
+   "title_matches": true
+  },
+  {
+   "id": "byliny-book",
+   "gutenberg_id": 66643,
+   "file_title": "Byliny Book: Hero Tales of Russia",
+   "file_language": "English",
+   "words": 14940,
+   "title_matches": true
+  },
+  {
+   "id": "kalevala",
+   "gutenberg_id": 5186,
+   "file_title": "Kalevala : the Epic Poem of Finland — Complete",
+   "file_language": "English",
+   "words": 137529,
+   "title_matches": true
+  },
+  {
+   "id": "finnish-legends",
+   "gutenberg_id": 24948,
+   "file_title": "Finnish Legends for English Children",
+   "file_language": "English",
+   "words": 45800,
+   "title_matches": true
+  },
+  {
+   "id": "mighty-mikko",
+   "gutenberg_id": 38112,
+   "file_title": "Mighty Mikko: A Book of Finnish Fairy Tales and Folk Tales",
+   "file_language": "English",
+   "words": 48622,
+   "title_matches": true
+  },
+  {
+   "id": "arabian-nights",
+   "gutenberg_id": 128,
+   "file_title": "The Arabian Nights Entertainments",
+   "file_language": "English",
+   "words": 111597,
+   "title_matches": true
+  },
+  {
+   "id": "persian-literature",
+   "gutenberg_id": 10315,
+   "file_title": "The Persian Literature, Comprising The Shah Nameh, The Rubaiyat, The Divan, and The Gulistan, Volume 1",
+   "file_language": "English",
+   "words": 142878,
+   "title_matches": true
+  },
+  {
+   "id": "persian-literature-gulistan",
+   "gutenberg_id": 13060,
+   "file_title": "The Persian Literature, Comprising The Shah Nameh, The Rubaiyat, The Divan, and The Gulistan, Volume 2",
+   "file_language": "English",
+   "words": 44002,
+   "title_matches": true
+  },
+  {
+   "id": "indian-fairy-tales",
+   "gutenberg_id": 7128,
+   "file_title": "Indian Fairy Tales",
+   "file_language": "English",
+   "words": 71252,
+   "title_matches": true
+  },
+  {
+   "id": "bhagavad-gita",
+   "gutenberg_id": 2388,
+   "file_title": "The Song Celestial; Or, Bhagavad-Gîtâ (from the Mahâbhârata)",
+   "file_language": "English",
+   "words": 20149,
+   "title_matches": true
+  },
+  {
+   "id": "buddhist-birth-stories",
+   "gutenberg_id": 51880,
+   "file_title": "Buddhist birth stories; or, Jataka tales, Volume 1",
+   "file_language": "English",
+   "words": 131446,
+   "title_matches": true
+  },
+  {
+   "id": "hindu-literature",
+   "gutenberg_id": 13268,
+   "file_title": "Hindu literature : Comprising The Book of good counsels, Nala and Damayanti, The Ramayana, and Sakoontala",
+   "file_language": "English",
+   "words": 122645,
+   "title_matches": true
+  },
+  {
+   "id": "sakoontala",
+   "gutenberg_id": 12169,
+   "file_title": "Sakoontala; Or, The Lost Ring: An Indian Drama",
+   "file_language": "English",
+   "words": 48005,
+   "title_matches": true
+  },
+  {
+   "id": "tales-of-the-punjab",
+   "gutenberg_id": 6145,
+   "file_title": "Tales of the Punjab: Folklore of India",
+   "file_language": "English",
+   "words": 79613,
+   "title_matches": true
+  },
+  {
+   "id": "old-deccan-days",
+   "gutenberg_id": 36696,
+   "file_title": "Old Deccan Days; or, Hindoo Fairy Legends Current in Southern India",
+   "file_language": "English",
+   "words": 103466,
+   "title_matches": true
+  },
+  {
+   "id": "vikram-and-the-vampire",
+   "gutenberg_id": 2400,
+   "file_title": "Vikram and the Vampire: Classic Hindu Tales of Adventure, Magic, and Romance",
+   "file_language": "English",
+   "words": 77461,
+   "title_matches": true
+  },
+  {
+   "id": "upanishads",
+   "gutenberg_id": 3283,
+   "file_title": "The Upanishads",
+   "file_language": "English",
+   "words": 17648,
+   "title_matches": true
+  },
+  {
+   "id": "japanese-fairy-tales",
+   "gutenberg_id": 4018,
+   "file_title": "Japanese Fairy Tales",
+   "file_language": "English",
+   "words": 70622,
+   "title_matches": true
+  },
+  {
+   "id": "kwaidan",
+   "gutenberg_id": 1210,
+   "file_title": "Kwaidan: Stories and Studies of Strange Things",
+   "file_language": "English",
+   "words": 36610,
+   "title_matches": true
+  },
+  {
+   "id": "tales-of-old-japan",
+   "gutenberg_id": 13015,
+   "file_title": "Tales of Old Japan",
+   "file_language": "English",
+   "words": 136276,
+   "title_matches": true
+  },
+  {
+   "id": "japanese-fairy-world",
+   "gutenberg_id": 29337,
+   "file_title": "Japanese Fairy World",
+   "file_language": "English",
+   "words": 43443,
+   "title_matches": true
+  },
+  {
+   "id": "chinese-fairy-book",
+   "gutenberg_id": 29939,
+   "file_title": "The Chinese Fairy Book",
+   "file_language": "English",
+   "words": 98169,
+   "title_matches": true
+  },
+  {
+   "id": "strange-stories-chinese-studio",
+   "gutenberg_id": 43629,
+   "file_title": "Strange Stories from a Chinese Studio (Volumes 1 and 2)",
+   "file_language": "English",
+   "words": 217794,
+   "title_matches": true
+  },
+  {
+   "id": "myths-legends-of-china",
+   "gutenberg_id": 15250,
+   "file_title": "Myths and Legends of China",
+   "file_language": "English",
+   "words": 118857,
+   "title_matches": true
+  },
+  {
+   "id": "tao-teh-king",
+   "gutenberg_id": 216,
+   "file_title": "The Tao Teh King, or the Tao and its Characteristics",
+   "file_language": "English",
+   "words": 10661,
+   "title_matches": true
+  },
+  {
+   "id": "korean-tales",
+   "gutenberg_id": 55539,
+   "file_title": "Korean Tales",
+   "file_language": "English",
+   "words": 43565,
+   "title_matches": true
+  },
+  {
+   "id": "korean-folk-tales",
+   "gutenberg_id": 51002,
+   "file_title": "Korean folk tales Imps, ghosts and fairies",
+   "file_language": "English",
+   "words": 47174,
+   "title_matches": false
+  },
+  {
+   "id": "myths-of-the-sioux",
+   "gutenberg_id": 341,
+   "file_title": "Myths and Legends of the Sioux",
+   "file_language": "English",
+   "words": 44680,
+   "title_matches": true
+  },
+  {
+   "id": "old-indian-legends",
+   "gutenberg_id": 338,
+   "file_title": "Old Indian Legends",
+   "file_language": "English",
+   "words": 18116,
+   "title_matches": true
+  },
+  {
+   "id": "indian-why-stories",
+   "gutenberg_id": 606,
+   "file_title": "Indian Why Stories: Sparks from War Eagle's Lodge-Fire",
+   "file_language": "English",
+   "words": 29558,
+   "title_matches": true
+  },
+  {
+   "id": "algonquin-legends",
+   "gutenberg_id": 6803,
+   "file_title": "Algonquin Legends of New England",
+   "file_language": "English",
+   "words": 103541,
+   "title_matches": true
+  },
+  {
+   "id": "iroquois-legends",
+   "gutenberg_id": 7978,
+   "file_title": "Legends, Traditions, and Laws of the Iroquois, or Six Nations, and History of the Tuscarora Indians",
+   "file_language": "English",
+   "words": 75818,
+   "title_matches": true
+  },
+  {
+   "id": "pawnee-hero-stories",
+   "gutenberg_id": 36923,
+   "file_title": "Pawnee Hero Stories and Folk-Tales",
+   "file_language": "English",
+   "words": 85410,
+   "title_matches": true
+  },
+  {
+   "id": "traditions-of-the-arikara",
+   "gutenberg_id": 68666,
+   "file_title": "Traditions of the Arikara",
+   "file_language": "English",
+   "words": 97621,
+   "title_matches": true
+  },
+  {
+   "id": "eskimo-folk-tales",
+   "gutenberg_id": 28932,
+   "file_title": "Eskimo Folk-Tales",
+   "file_language": "English",
+   "words": 46454,
+   "title_matches": true
+  },
+  {
+   "id": "unwritten-literature-hopi",
+   "gutenberg_id": 15888,
+   "file_title": "The Unwritten Literature of the Hopi",
+   "file_language": "English",
+   "words": 30944,
+   "title_matches": true
+  },
+  {
+   "id": "song-of-hiawatha",
+   "gutenberg_id": 19,
+   "file_title": "The Song of Hiawatha",
+   "file_language": "English",
+   "words": 32135,
+   "title_matches": true
+  },
+  {
+   "id": "grimms-fairy-tales",
+   "gutenberg_id": 2591,
+   "file_title": "Grimms' Fairy Tales",
+   "file_language": "English",
+   "words": 101111,
+   "title_matches": true
+  },
+  {
+   "id": "andersens-fairy-tales",
+   "gutenberg_id": 1597,
+   "file_title": "Andersen's Fairy Tales",
+   "file_language": "English",
+   "words": 55414,
+   "title_matches": true
+  },
+  {
+   "id": "english-fairy-tales",
+   "gutenberg_id": 7439,
+   "file_title": "English Fairy Tales",
+   "file_language": "English",
+   "words": 60906,
+   "title_matches": true
+  },
+  {
+   "id": "perrault-fairy-tales",
+   "gutenberg_id": 29021,
+   "file_title": "The Fairy Tales of Charles Perrault",
+   "file_language": "English",
+   "words": 28262,
+   "title_matches": true
+  },
+  {
+   "id": "italian-popular-tales",
+   "gutenberg_id": 23634,
+   "file_title": "Italian Popular Tales",
+   "file_language": "English",
+   "words": 163225,
+   "title_matches": true
+  },
+  {
+   "id": "pentamerone",
+   "gutenberg_id": 2198,
+   "file_title": "Stories from the Pentamerone",
+   "file_language": "English",
+   "words": 78705,
+   "title_matches": true
+  },
+  {
+   "id": "swedish-fairy-book",
+   "gutenberg_id": 37193,
+   "file_title": "The Swedish Fairy Book",
+   "file_language": "English",
+   "words": 50370,
+   "title_matches": true
+  },
+  {
+   "id": "popular-tales-from-the-norse",
+   "gutenberg_id": 8933,
+   "file_title": "Popular Tales from the Norse",
+   "file_language": "English",
+   "words": 175274,
+   "title_matches": true
+  },
+  {
+   "id": "basque-legends",
+   "gutenberg_id": 34902,
+   "file_title": "Basque Legends; With an Essay on the Basque Language",
+   "file_language": "English",
+   "words": 96803,
+   "title_matches": true
+  },
+  {
+   "id": "tirol-household-stories",
+   "gutenberg_id": 44746,
+   "file_title": "Household stories from the Land of Hofer; or, Popular Myths of Tirol",
+   "file_language": "English",
+   "words": 99430,
+   "title_matches": true
+  },
+  {
+   "id": "paradise-lost",
+   "gutenberg_id": 26,
+   "file_title": "Paradise Lost",
+   "file_language": "English",
+   "words": 80284,
+   "title_matches": true
+  },
+  {
+   "id": "paradise-regained",
+   "gutenberg_id": 58,
+   "file_title": "Paradise Regained",
+   "file_language": "English",
+   "words": 15874,
+   "title_matches": true
+  },
+  {
+   "id": "divine-comedy",
+   "gutenberg_id": 1004,
+   "file_title": "Divine Comedy, Longfellow's Translation, Complete",
+   "file_language": "English",
+   "words": 113519,
+   "title_matches": true
+  },
+  {
+   "id": "pilgrims-progress",
+   "gutenberg_id": 131,
+   "file_title": "The Pilgrim's Progress from this world to that which is to come",
+   "file_language": "English",
+   "words": 58050,
+   "title_matches": true
+  },
+  {
+   "id": "kjv-genesis",
+   "gutenberg_id": 8001,
+   "file_title": "The Bible, King James version, Book 1: Genesis",
+   "file_language": "English",
+   "words": 39826,
+   "title_matches": true
+  },
+  {
+   "id": "kjv-job",
+   "gutenberg_id": 8018,
+   "file_title": "The Bible, King James version, Book 18: Job",
+   "file_language": "English",
+   "words": 19197,
+   "title_matches": true
+  },
+  {
+   "id": "kjv-psalms",
+   "gutenberg_id": 8019,
+   "file_title": "The Bible, King James version, Book 19: Psalms",
+   "file_language": "English",
+   "words": 45174,
+   "title_matches": true
+  },
+  {
+   "id": "kjv-revelation",
+   "gutenberg_id": 8066,
+   "file_title": "The Bible, King James version, Book 66: Revelation",
+   "file_language": "English",
+   "words": 12428,
+   "title_matches": true
+  },
+  {
+   "id": "golden-legend",
+   "gutenberg_id": 10490,
+   "file_title": "The Golden Legend",
+   "file_language": "English",
+   "words": 28380,
+   "title_matches": true
+  },
+  {
+   "id": "book-of-the-dead",
+   "gutenberg_id": 7145,
+   "file_title": "The Book of the Dead",
+   "file_language": "English",
+   "words": 12698,
+   "title_matches": true
+  },
+  {
+   "id": "egyptian-tales-1",
+   "gutenberg_id": 7386,
+   "file_title": "Egyptian Tales, Translated from the Papyri: First series, IVth to XIIth dynasty",
+   "file_language": "English",
+   "words": 19145,
+   "title_matches": true
+  },
+  {
+   "id": "egyptian-tales-2",
+   "gutenberg_id": 7413,
+   "file_title": "Egyptian Tales, Translated from the Papyri: Second series, XVIIIth to XIXth dynasty",
+   "file_language": "English",
+   "words": 21432,
+   "title_matches": true
+  },
+  {
+   "id": "legends-of-the-gods",
+   "gutenberg_id": 9411,
+   "file_title": "Legends of the Gods",
+   "file_language": "English",
+   "words": 60466,
+   "title_matches": true
+  },
+  {
+   "id": "gilgamesh-old-babylonian",
+   "gutenberg_id": 11000,
+   "file_title": "An Old Babylonian Version of the Gilgamesh Epic",
+   "file_language": "English",
+   "words": 37440,
+   "title_matches": true
+  },
+  {
+   "id": "babylonian-legends-of-creation",
+   "gutenberg_id": 9914,
+   "file_title": "The Babylonian Legends of the Creation",
+   "file_language": "English",
+   "words": 18590,
+   "title_matches": true
+  }
+ ]
+}

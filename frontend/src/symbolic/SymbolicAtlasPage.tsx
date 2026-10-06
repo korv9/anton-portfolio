@@ -1,7 +1,7 @@
 /**
  * Symbolic Atlas: can recurring symbolic meanings be found in myth, folklore and literature
- * without deciding the meanings first? Every occurrence of twenty symbol words in ten public-
- * domain books is placed on a map by the similarity of its surrounding sentences (sentence
+ * without deciding the meanings first? Every occurrence of twenty symbol words in a corpus of
+ * public-domain books (platform/ingest/symbolic/corpus.json) is placed on a map by the similarity of its surrounding sentences (sentence
  * embeddings, UMAP) and grouped by HDBSCAN. Clusters are numbered; only a cluster a person has
  * reviewed (reviewed-clusters.json) is ever named.
  *
@@ -20,6 +20,7 @@ import { useViewParams } from '../politik/useViewParams'
 import { Stage, StageBlock, StageFacts } from '../ui/Stage'
 import AtlasCanvas, { type MapLabel, type Paint } from './AtlasCanvas'
 import ClusterPanel, { clusterTitle } from './ClusterPanel'
+import CorpusExplorer from './CorpusExplorer'
 import ExperimentTable from './ExperimentTable'
 import ResearchStory from './ResearchStory'
 import { ProjectNav } from '../projects/ProjectNav'
@@ -76,7 +77,13 @@ const VIEWS: { key: View; name: [string, string]; hint: [string, string] }[] = [
     ],
   },
 ]
-const DEFAULTS: AtlasFilters & { view: string } = {
+const DEFAULTS: AtlasFilters & {
+  view: string
+  korpus: string
+  kalla: string
+} = {
+  korpus: '',
+  kalla: '',
   symbol: '',
   tradition: '',
   cluster: '',
@@ -529,14 +536,33 @@ export default function SymbolicAtlasPage({ route }: { route: Route }) {
       </div>
       <section
         className="atlas-section ds-container"
+        id="symbolic-corpus"
+        aria-labelledby="symbolic-corpus-title"
+      >
+        <h2 id="symbolic-corpus-title">{l('Corpus', 'Korpus')}</h2>
+        <p>
+          {l(
+            `${summary.document_count} public-domain books from Project Gutenberg in English, chosen per tradition from the Gutenberg catalogue and checked against each book’s Gutenberg record (title, creators, language, rights) and against each other for duplicated text. Many are translations or retellings by nineteenth-century English writers, so a voice can belong to a translator rather than a tradition.`,
+            `${summary.document_count} fria böcker från Project Gutenberg på engelska, valda per tradition ur Gutenbergs katalog och kontrollerade mot varje boks post hos Gutenberg (titel, upphovspersoner, språk, rättigheter) och mot varandra för dubblerad text. Många är översättningar eller återberättelser av engelska 1800-talsförfattare, så en röst kan tillhöra en översättare snarare än en tradition.`,
+          )}
+        </p>
+        <CorpusExplorer
+          documents={summary.documents}
+          tradition={filters.korpus}
+          sourceType={filters.kalla}
+          onFilter={(next) => setFilters(next)}
+        />
+      </section>
+      <section
+        className="atlas-section ds-container"
         id="symbolic-method"
         aria-labelledby="symbolic-method-title"
       >
         <h2 id="symbolic-method-title">{l('Method', 'Metod')}</h2>
         <p>
           {l(
-            `Ten Project Gutenberg books. Each use of a symbol word is cut out with the sentence before and after, embedded with ${summary.run.embedding_model.split('/')[1]} on the CPU, laid out with UMAP (cosine) and clustered with HDBSCAN in a 10-dimensional UMAP space. At most ${summary.run.sample.per_document_and_symbol} uses per book and symbol are mapped.`,
-            `Tio böcker från Project Gutenberg. Varje förekomst av ett symbolord klipps ut med meningen före och efter, bäddas in med ${summary.run.embedding_model.split('/')[1]} på processorn, läggs ut med UMAP (cosinus) och klustras med HDBSCAN i ett tiodimensionellt UMAP-rum. Högst ${summary.run.sample.per_document_and_symbol} förekomster per bok och symbol visas.`,
+            `${summary.document_count} Project Gutenberg books. Each use of a symbol word is cut out with the sentence before and after, embedded with ${summary.run.embedding_model.split('/')[1]} on the CPU, laid out with UMAP (cosine) and clustered with HDBSCAN in a 10-dimensional UMAP space. At most ${summary.run.sample.per_document_and_symbol} uses per book and symbol are mapped.`,
+            `${summary.document_count} böcker från Project Gutenberg. Varje förekomst av ett symbolord klipps ut med meningen före och efter, bäddas in med ${summary.run.embedding_model.split('/')[1]} på processorn, läggs ut med UMAP (cosinus) och klustras med HDBSCAN i ett tiodimensionellt UMAP-rum. Högst ${summary.run.sample.per_document_and_symbol} förekomster per bok och symbol visas.`,
           )}
         </p>
         <p>

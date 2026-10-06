@@ -30,3 +30,9 @@ models:
               field: symbol_id
       - name: context
         tests: [not_null]
+      - name: duplicate_of
+        description: The book a passage is kept in when another book reprints the same sentence (eight words or more); null for a passage only this book has. The atlas sample leaves these out.
+        tests:
+          - relationships:
+              to: ref('int_symbolic_documents')
+              field: document_id
