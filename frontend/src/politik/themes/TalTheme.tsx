@@ -323,19 +323,12 @@ export default function TalTheme({ route }: { route: Route }) {
         onBuild={() => setBuilding(true)}
         deepLinks={[
           {
-            href: '#debates',
-            label: l(
-              'Map of similar political speeches',
-              'Karta över liknande politiska tal',
-            ),
-          },
-          {
-            href: '#data-explorer',
+            href: '#politik-sok',
             label: l('Search and read the speeches', 'Sök och läs talen'),
           },
           {
-            href: '#budget-explore',
-            label: l('Talk compared with money', 'Tal jämfört med pengar'),
+            href: '#politik-budget',
+            label: l('The budget', 'Budgeten'),
           },
         ]}
       />

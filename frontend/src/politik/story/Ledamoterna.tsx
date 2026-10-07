@@ -56,11 +56,8 @@ export default function Ledamoterna({
       )}
       deeper={[
         {
-          href: '#politics-votes',
-          label: l(
-            'How each member voted, roll call by roll call',
-            'Hur varje ledamot röstade, votering för votering',
-          ),
+          href: '#politik-roster',
+          label: l('How the parties vote', 'Hur partierna röstar'),
         },
       ]}
     >

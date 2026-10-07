@@ -531,27 +531,7 @@ export default function BudgetTheme({ route }: { route: Route }) {
           </p>
         }
         onBuild={() => setBuilding(true)}
-        deepLinks={[
-          {
-            href: '#budget-proposals',
-            label: l('All proposals, year by year', 'Alla förslag, år för år'),
-          },
-          {
-            href: '#budget-explore',
-            label: l(
-              'Budget compared with what parties talk about',
-              'Budget jämfört med vad partierna pratar om',
-            ),
-          },
-          {
-            href: '#budget-outturn',
-            label: l(
-              'What was budgeted and spent',
-              'Vad som budgeterades och användes',
-            ),
-          },
-          { href: '#taxes', label: l('Taxes', 'Skatter') },
-        ]}
+        deepLinks={[{ href: '#politik-skatter', label: l('Taxes', 'Skatter') }]}
       />
       <BuilderPanel
         open={building}

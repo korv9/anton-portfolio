@@ -59,24 +59,39 @@ export const REDIRECTS: Record<string, string> = {
   '#work': '#projekt',
   '#teknik': '#kompetenser',
   '#tech': '#technical',
+  // The politics product's older detailed views: each address leads to the theme that
+  // answers the same question now.
+  '#now-seats': '#politik-mandat',
+  '#now-news': '#politik-nyheter',
+  '#now-studies': '#politik-utredningar',
+  '#now-history': '#politik-valjarna',
+  '#now-government': '#politik',
+  '#now-depth': '#politik-utforska',
+  '#data-explorer': '#politik-sok',
+  '#debates': '#politik-partiledardebatter',
+  '#raw-data': '#politik-kallor',
 }
 
-const POLITICS_PREFIXES = [
-  '#politik',
-  '#now-',
-  '#politics',
-  '#budget-',
-  '#parties',
-  '#issue-',
-  '#taxes',
+/** Older address families and the theme they lead to, checked after the exact list. */
+const PREFIX_REDIRECTS: [string, string][] = [
+  ['#now-', '#politik-roster'],
+  ['#politics', '#politik-roster'],
+  ['#issue-', '#politik-roster'],
+  ['#budget-', '#politik-budget'],
+  ['#parties', '#politik-partier'],
+  ['#taxes', '#politik-skatter'],
 ]
-const POLITICS_EXACT = ['#data-explorer', '#debates', '#raw-data']
+
+/** Where an address leads now, if it has moved. */
+export function redirectOf(path: string): string | undefined {
+  return (
+    REDIRECTS[path] ??
+    PREFIX_REDIRECTS.find(([prefix]) => path.startsWith(prefix))?.[1]
+  )
+}
 
 export function isPoliticsPath(path: string) {
-  return (
-    POLITICS_EXACT.includes(path) ||
-    POLITICS_PREFIXES.some((prefix) => path.startsWith(prefix))
-  )
+  return path.startsWith('#politik')
 }
 
 export function pageOf(path: string): Page {
@@ -119,7 +134,7 @@ export function pageOf(path: string): Page {
 export function parseHash(raw: string): Route {
   const hash = raw || '#start'
   const [rawPath, query = ''] = hash.split('?')
-  const path = REDIRECTS[rawPath] ?? rawPath
+  const path = redirectOf(rawPath) ?? rawPath
   return { hash, path, params: new URLSearchParams(query), page: pageOf(path) }
 }
 
@@ -130,7 +145,7 @@ export function useRoute(): Route {
     const update = () => {
       const raw = window.location.hash
       const [rawPath, query] = raw.split('?')
-      const target = REDIRECTS[rawPath]
+      const target = redirectOf(rawPath)
       if (target) {
         // Replace, so the back button does not bounce through the old address.
         history.replaceState(null, '', target + (query ? `?${query}` : ''))

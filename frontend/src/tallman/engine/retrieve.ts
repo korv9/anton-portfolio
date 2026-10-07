@@ -282,7 +282,7 @@ export class LexicalRetriever implements Retriever {
         speaker: piece.speech.speaker,
         date: piece.speech.speech_date,
         session: piece.speech.session,
-        href: '#debates',
+        href: '#politik-partiledardebatter',
         url: piece.speech.source_url,
         sourceLabel: 'Riksdagens protokoll',
         score,

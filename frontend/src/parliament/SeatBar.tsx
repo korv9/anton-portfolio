@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { l } from '../i18n'
 import { PartyLogo, identity } from '../parties/identity'
 import { PARTY_NAMES, partyLabel, type PartyResult } from './data'
+import './parliament.css'
 
 type Props = {
   parties: PartyResult[]

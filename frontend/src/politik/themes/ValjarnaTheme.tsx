@@ -380,14 +380,7 @@ export default function ValjarnaTheme({ route }: { route: Route }) {
         onBuild={() => setBuilding(true)}
         deepLinks={[
           {
-            href: '#now-history',
-            label: l(
-              'Every election and survey since 1973',
-              'Alla val och mätningar sedan 1973',
-            ),
-          },
-          {
-            href: '#parties',
+            href: '#politik-partier',
             label: l('One page per party', 'En sida per parti'),
           },
         ]}

@@ -162,24 +162,6 @@ export default function SpeechBrowser() {
           'Pick a politician, party or debate. Read their own words, then move through the surrounding discussion. You do not need to know how the underlying data is organised.',
         )}
       </p>
-      <div className="politics-journey">
-        <a href="#speech-search">
-          <strong>{t('Read the speeches')}</strong>
-          <span>{t('People, parties and debates')}</span>
-        </a>
-        <a href="#budget-comparison">
-          <strong>{t('Compare budget priorities')}</strong>
-          <span>{t('Proposals and spending areas')}</span>
-        </a>
-        <a href="#politics-votes">
-          <strong>{t('See how they voted')}</strong>
-          <span>{t('Proposals, party votes and reservations')}</span>
-        </a>
-        <a href="#politics-laws">
-          <strong>{t('Read the legal sources')}</strong>
-          <span>{t('Imported law snapshots')}</span>
-        </a>
-      </div>
       <p className="evidence-note">
         {t(
           'These are imported parliamentary records, not complete political coverage. Original quotations remain in Swedish. Some source exports contain damaged characters; open the parliamentary source to verify the wording. Browsing speeches and budgets side by side does not establish a formal link between them.',

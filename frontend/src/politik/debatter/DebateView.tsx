@@ -76,7 +76,9 @@ export function IssueChips({
                   )
             }
           >
-            <a href={`#issue-${key}`}>{issue ? l(issue.en, issue.sv) : key}</a>
+            <a href={`#politik-sakdebatter?omrade=${key}`}>
+              {issue ? l(issue.en, issue.sv) : key}
+            </a>
           </li>
         )
       })}

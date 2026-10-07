@@ -348,24 +348,7 @@ export default function RosterTheme({ route }: { route: Route }) {
           </p>
         }
         onBuild={() => setBuilding(true)}
-        deepLinks={[
-          {
-            href: '#now-votes',
-            label: l('Voting record since 1993', 'Rösthistorik sedan 1993'),
-          },
-          {
-            href: '#politics',
-            label: l('Every roll call in detail', 'Varje votering i detalj'),
-          },
-          {
-            href: '#politics-votes',
-            label: l('How each member voted', 'Hur varje ledamot röstade'),
-          },
-          {
-            href: '#now-decisions',
-            label: l('The latest decisions', 'De senaste besluten'),
-          },
-        ]}
+        deepLinks={[]}
       />
       <BuilderPanel
         open={building}

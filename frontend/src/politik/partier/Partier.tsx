@@ -600,8 +600,6 @@ function PartyDashboard({ party, shared }: { party: string; shared: Shared }) {
             `Topics in the party-leader debates, share of the party’s words, ${topicSession}`,
             `Ämnen i partiledardebatterna, andel av partiets ord, ${topicSession}`,
           )}
-          href={`#parties-${party.toLowerCase()}`}
-          more={l('The full party page', 'Hela partisidan')}
         >
           {topics == null ? (
             <Empty />

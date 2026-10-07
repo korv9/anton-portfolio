@@ -297,17 +297,6 @@ export default function KallorTheme() {
         </h2>
         <ul className="ds-rule-list">
           <li>
-            <a className="explore-row" href="#raw-data">
-              <strong>{l('Tables and raw data', 'Tabeller och rådata')}</strong>
-              <span>
-                {l(
-                  'Browse, filter and download every table.',
-                  'Bläddra, filtrera och ladda ned varje tabell.',
-                )}
-              </span>
-            </a>
-          </li>
-          <li>
             <a className="explore-row" href="#data-model">
               <strong>{l('Data model', 'Datamodell')}</strong>
               <span>

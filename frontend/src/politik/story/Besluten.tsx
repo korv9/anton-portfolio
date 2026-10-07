@@ -39,10 +39,6 @@ export default function Besluten({ a }: { a: Analytics }) {
           label: l('How the parties vote', 'Hur partierna röstar'),
         },
         {
-          href: '#now-decisions',
-          label: l('The latest decisions', 'De senaste besluten'),
-        },
-        {
           href: '#politik-utredningar',
           label: l('From study to law', 'Från utredning till lag'),
         },

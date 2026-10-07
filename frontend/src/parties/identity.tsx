@@ -273,7 +273,7 @@ export function PartyName({
     </>
   )
   return RIKSDAG_PARTIES.includes(party) ? (
-    <a className="party-name" href={`#parties-${party.toLowerCase()}`}>
+    <a className="party-name" href={`#politik-partier?partier=${party}`}>
       {content}
     </a>
   ) : (

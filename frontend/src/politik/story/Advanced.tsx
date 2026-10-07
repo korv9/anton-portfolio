@@ -60,13 +60,6 @@ export default function Advanced({ a }: { a: Analytics }) {
       )}
       deeper={[
         {
-          href: '#debates',
-          label: l(
-            'Map of similar speeches (embeddings)',
-            'Karta över liknande anföranden (embeddings)',
-          ),
-        },
-        {
           href: '#technical',
           label: l('Models and evaluation', 'Modeller och utvärdering'),
         },

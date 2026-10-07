@@ -13,6 +13,8 @@ import type { Route } from '../../router'
 import { Board, Card, Cards, Empty, Kpi, Kpis } from '../board/Board'
 import { Select, num, pct } from '../controls'
 import { useViewParams } from '../useViewParams'
+import TaxCalculator, { type Municipalities } from '../../taxes/TaxCalculator'
+import '../../taxes/taxes.css'
 import './skatter.css'
 
 type TaxType = {
@@ -79,6 +81,14 @@ export default function SkatterTheme({ route }: { route: Route }) {
   const [error, setError] = useState<string | null>(null)
   const [view, setView] = useViewParams(route, DEFAULTS)
   const [hover, setHover] = useState<string | null>(null)
+  const [municipalities, setMunicipalities] = useState<Municipalities | null>(
+    null,
+  )
+  useEffect(() => {
+    fetchJson<Municipalities>('taxes/municipalities.json')
+      .then(setMunicipalities)
+      .catch(() => setMunicipalities(null))
+  }, [])
   useEffect(() => {
     fetchJson<Countries>('taxes/countries.json')
       .then(setData)
@@ -454,8 +464,6 @@ export default function SkatterTheme({ route }: { route: Route }) {
             `Share of GDP, ${year}. Place among ${present.length} countries, highest first.`,
             `Andel av BNP, ${year}. Plats bland ${present.length} länder, högst först.`,
           )}
-          href="#taxes"
-          more={l('Tax calculator and decisions', 'Skatteräknare och beslut')}
         >
           <div className="tax-table-wrap">
             <table className="tax-table">
@@ -503,6 +511,19 @@ export default function SkatterTheme({ route }: { route: Route }) {
             </a>
           </p>
         </Card>
+        {municipalities && (
+          <Card
+            wide
+            index={4}
+            title={l('Your own tax', 'Din egen skatt')}
+            meta={l(
+              'Salary, pension, benefits, a business and capital, by municipality, with this year’s rules.',
+              'Lön, pension, ersättningar, näringsverksamhet och kapital, per kommun, med årets regler.',
+            )}
+          >
+            <TaxCalculator municipalities={municipalities} />
+          </Card>
+        )}
       </Cards>
     </Board>
   )

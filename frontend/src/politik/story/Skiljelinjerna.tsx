@@ -72,10 +72,6 @@ export default function Skiljelinjerna({ a }: { a: Analytics }) {
             'Röster per riksmöte sedan 1993',
           ),
         },
-        {
-          href: '#politics-votes',
-          label: l('Every roll call in detail', 'Varje votering i detalj'),
-        },
       ]}
     >
       <ChartSection

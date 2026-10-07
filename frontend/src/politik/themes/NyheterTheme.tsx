@@ -8,7 +8,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { l } from '../../i18n'
 import { load } from '../../parliament/data'
-import type { News, NewsItem } from '../../parliament/News'
+import type { News, NewsItem } from '../../parliament/news'
 import {
   PartyLogo,
   RIKSDAG_PARTIES,

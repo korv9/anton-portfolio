@@ -80,7 +80,7 @@ export default function Makten({
           label: l('Every election since 1973', 'Alla val sedan 1973'),
         },
         {
-          href: '#now-seats',
+          href: '#politik-mandat',
           label: l('Count seats yourself', 'Räkna mandat själv'),
         },
         {

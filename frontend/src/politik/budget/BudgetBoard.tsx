@@ -185,8 +185,6 @@ export default function BudgetBoard({ route }: { route: Route }) {
             'Varje partis budget totalt',
           )}
           meta={`${percent ? l('Per cent of the government’s budget', 'Procent av regeringens budget') : l('SEK m', 'Mnkr')} · ${basis.short.toLowerCase()} ${year}`}
-          href="#budget-proposals"
-          more={l('The proposals', 'Förslagen')}
         >
           <Columns
             categories={withBudget}
