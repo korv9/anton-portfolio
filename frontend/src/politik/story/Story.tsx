@@ -26,6 +26,7 @@ import Debatterna from './Debatterna'
 import Ledamoterna from './Ledamoterna'
 import Advanced from './Advanced'
 import OmDatan from './OmDatan'
+import { ProjectHero } from '../../ui/Project'
 import {
   DataQuestion,
   ExploreSection,
@@ -64,31 +65,31 @@ export default function Story({ route }: { route: Route }) {
 
   return (
     <article className="story">
-      <header className="story-hero">
-        <p className="story-eyebrow">Political Observatory</p>
-        <DataQuestion
-          level={1}
-          question={l(
-            'What separates the parties in practice?',
-            'Vad skiljer partierna åt i praktiken?',
+      <ProjectHero
+        project="politics"
+        finding={
+          lines?.topArea
+            ? l(
+                `Parties differ most in ${areaName(lines.topArea.committee).toLowerCase()}. Of ${num(a!.votes.length)} roll calls, ${lines.closest.a} and ${lines.closest.b} voted the same way most often (${pct(lines.closest.pct, 0)}), ${lines.furthest.a} and ${lines.furthest.b} least often (${pct(lines.furthest.pct, 0)}).`,
+                `Partierna skiljer sig mest inom ${areaName(lines.topArea.committee).toLowerCase()}. Av ${num(a!.votes.length)} voteringar röstade ${lines.closest.a} och ${lines.closest.b} oftast lika (${pct(lines.closest.pct, 0)}), ${lines.furthest.a} och ${lines.furthest.b} mest sällan (${pct(lines.furthest.pct, 0)}).`,
+              )
+            : undefined
+        }
+        nav={[
+          { href: '#politik', label: l('Overview', 'Översikt'), current: true },
+          { href: '#politik-budget', label: 'Budget' },
+          { href: '#politik-partier', label: l('Parties', 'Partier') },
+          { href: '#politik-roster', label: l('Voting', 'Röster') },
+          { href: '#politik-sakdebatter', label: l('Debates', 'Debatter') },
+          { href: '#politik-kallor', label: l('Sources', 'Källor') },
+        ]}
+      >
+        <p>
+          {l(
+            'Decisions, roll calls, debates and budgets in the Riksdag, party by party, from open data.',
+            'Beslut, voteringar, debatter och budgetar i riksdagen, parti för parti, från öppna data.',
           )}
-        >
-          {lines?.topArea ? (
-            <p className="story-answer">
-              {l(
-                `In votes, most in ${areaName(lines.topArea.committee).toLowerCase()}. Of ${num(a!.votes.length)} roll calls, ${lines.closest.a} and ${lines.closest.b} took the same position most often (${pct(lines.closest.pct, 0)}), ${lines.furthest.a} and ${lines.furthest.b} least often (${pct(lines.furthest.pct, 0)}).`,
-                `I röster, mest inom ${areaName(lines.topArea.committee).toLowerCase()}. Av ${num(a!.votes.length)} voteringar hade ${lines.closest.a} och ${lines.closest.b} oftast samma ståndpunkt (${pct(lines.closest.pct, 0)}), ${lines.furthest.a} och ${lines.furthest.b} mest sällan (${pct(lines.furthest.pct, 0)}).`,
-              )}
-            </p>
-          ) : (
-            <p className="story-answer">
-              {l(
-                'Decisions, roll calls, debates and budgets, party by party.',
-                'Beslut, voteringar, debatter och budgetar, parti för parti.',
-              )}
-            </p>
-          )}
-        </DataQuestion>
+        </p>
         <SourceCaption
           source={l(
             'Riksdagen’s open data, SCB, Valmyndigheten',
@@ -105,7 +106,7 @@ export default function Story({ route }: { route: Route }) {
               : undefined
           }
         />
-      </header>
+      </ProjectHero>
 
       {failed && (
         <p role="alert" className="theme-error">

@@ -32,11 +32,11 @@ import {
   type Market,
 } from './data'
 import { withFields } from './selection'
+import { ProjectHero } from '../ui/Project'
 import {
   ChartSection,
   DataQuestion,
   ExploreSection,
-  FindingHero,
   Interpretation,
   MethodSummary,
   SourceCaption,
@@ -164,42 +164,45 @@ export default function Dashboard({
 
   return (
     <div className="jobb-story">
-      <DataQuestion
-        level={1}
-        eyebrow={l('The job market in numbers', 'Jobbmarknaden i siffror')}
-        question={l(
-          'How is demand for labour changing?',
-          'Hur förändras efterfrågan på arbetskraft?',
-        )}
+      <ProjectHero
+        project="jobs"
+        finding={
+          <>
+            <b>{signedPct(delta)}</b>{' '}
+            {direction
+              ? l(
+                  `${number(now)} new ads in ${period}: ${direction} than in the same months of ${previous}.`,
+                  `${number(now)} nya annonser ${period}: ${direction} än samma månader ${previous}.`,
+                )
+              : l(
+                  `${number(now)} new ads in ${period}.`,
+                  `${number(now)} nya annonser ${period}.`,
+                )}
+          </>
+        }
+        findingLabel={l('Latest', 'Senast')}
+        nav={[
+          { href: '#jobb', label: l('Overview', 'Översikt'), current: true },
+          { href: '#jobb-trender', label: l('Trends', 'Trender') },
+          { href: '#jobb-yrken', label: l('Occupations', 'Yrken') },
+          { href: '#jobb-lan', label: l('Regions', 'Län') },
+          { href: '#jobb-utforska', label: l('Explore', 'Utforska') },
+          { href: '#jobb-kallor', label: l('Sources', 'Källor') },
+        ]}
       >
         <p>
           {l(
-            `New job ads in ${scope}, compared with the same months a year earlier.`,
-            `Nya jobbannonser för ${scope}, jämförda med samma månader året innan.`,
+            `Every job ad published through Arbetsförmedlingen since 2020, read as a measure of demand: new ads in ${scope}, compared with the same months a year earlier.`,
+            `Varje jobbannons som publicerats via Arbetsförmedlingen sedan 2020, läst som ett mått på efterfrågan: nya annonser för ${scope}, jämförda med samma månader året innan.`,
           )}
         </p>
-      </DataQuestion>
-
-      <FindingHero
-        value={signedPct(delta)}
-        statement={
-          direction
-            ? l(
-                `${number(now)} new ads in ${period}: ${direction} than in the same months of ${previous}.`,
-                `${number(now)} nya annonser ${period}: ${direction} än samma månader ${previous}.`,
-              )
-            : l(
-                `${number(now)} new ads in ${period}.`,
-                `${number(now)} nya annonser ${period}.`,
-              )
-        }
-        source={source(
+        {source(
           l(
             'an ad without a number of vacancies counts as one',
             'en annons utan antal platser räknas som en',
           ),
         )}
-      />
+      </ProjectHero>
 
       <ChartSection
         level={2}
@@ -247,8 +250,8 @@ export default function Dashboard({
       >
         <p>
           {l(
-            'The comparison always uses the same months of the year before, because the latest year is not complete and job ads follow the seasons. Choose fields in the bar above to see whether the change is broad or carried by a few fields.',
-            'Jämförelsen görs alltid mot samma månader året innan, eftersom det senaste året inte är komplett och annonserna följer årstiderna. Välj områden i raden ovanför för att se om förändringen är bred eller bärs av några få områden.',
+            'The comparison always uses the same months of the year before, because the latest year is not complete and job ads follow the seasons. Under Explore, occupation fields can be chosen to see whether the change is broad or carried by a few fields.',
+            'Jämförelsen görs alltid mot samma månader året innan, eftersom det senaste året inte är komplett och annonserna följer årstiderna. Under Utforska kan du välja yrkesområden och se om förändringen är bred eller bärs av några få områden.',
           )}
         </p>
       </Interpretation>

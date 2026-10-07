@@ -16,7 +16,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { l } from '../i18n'
 import { fixed } from '../format'
 import { ProductQuality } from '../quality/QualityPanel'
-import { FindingHero, MethodSummary } from '../ui/Story'
+import { MethodSummary } from '../ui/Story'
 import type { Route } from '../router'
 import { useViewParams } from '../politik/useViewParams'
 import { Stage, StageBlock, StageFacts } from '../ui/Stage'
@@ -25,7 +25,7 @@ import ClusterPanel, { clusterTitle } from './ClusterPanel'
 import CorpusExplorer from './CorpusExplorer'
 import ExperimentTable from './ExperimentTable'
 import ResearchStory from './ResearchStory'
-import { ProjectNav } from '../projects/ProjectNav'
+import { ProjectHero } from '../ui/Project'
 import {
   AtlasFiltersPanel,
   SymbolPanel,
@@ -269,14 +269,39 @@ export default function SymbolicAtlasPage({ route }: { route: Route }) {
   const ev = summary.evaluation
   return (
     <div className="symbolic-page">
-      <ProjectNav route={route} />
+      <div className="ds-container">
+        <ProjectHero
+          project="symbolic-atlas"
+          finding={
+            history?.steps[0]?.metrics && history.steps.at(-1)?.metrics
+              ? l(
+                  `${pct(history.steps[0].metrics.mean_largest_book_share)} of a first-run cluster came from one book on average: the model learned the books more than the symbols. After book-centring and a larger corpus: ${pct(history.steps.at(-1)!.metrics!.mean_largest_book_share)}.`,
+                  `${pct(history.steps[0].metrics.mean_largest_book_share)} av ett kluster i första körningen kom i snitt från en och samma bok: modellen lärde sig böckerna mer än symbolerna. Efter bokcentrering och en större korpus: ${pct(history.steps.at(-1)!.metrics!.mean_largest_book_share)}.`,
+                )
+              : undefined
+          }
+          nav={[
+            { href: '#symbolic-map', label: l('Atlas', 'Atlas') },
+            { href: '#symbolic-findings', label: l('Findings', 'Fynd') },
+            { href: '#symbolic-experiments', label: l('Experiments', 'Experiment') },
+            { href: '#symbolic-method', label: l('Method', 'Metod') },
+          ]}
+        >
+          <p>
+            {l(
+              `An unsupervised research project: every use of 20 symbol words in ${summary.document_count} public-domain books of mythology, folklore and literature, placed by the language around it.`,
+              `Ett oövervakat forskningsprojekt: varje förekomst av 20 symbolord i ${summary.document_count} fria böcker med mytologi, folksagor och litteratur, placerad efter språket omkring den.`,
+            )}
+          </p>
+        </ProjectHero>
+      </div>
       <Stage
-        id="symbolic-atlas"
-        level={1}
-        kicker="Symbolic Atlas"
+        id="symbolic-map"
+        level={2}
+        kicker={l('The atlas', 'Atlasen')}
         title={l(
-          'Can recurring symbolic meanings emerge without predefined categories?',
-          'Kan återkommande symbolisk mening träda fram utan förbestämda kategorier?',
+          'One point is one use of a symbol word, in its sentences',
+          'En punkt är en förekomst av ett symbolord, i sina meningar',
         )}
         lead={l(
           `The corpus: ${summary.document_count} public-domain books of mythology, folklore and literature from Project Gutenberg, read without predefined categories.`,
@@ -473,45 +498,12 @@ export default function SymbolicAtlasPage({ route }: { route: Route }) {
                 onCluster={(c) => setFilters({ cluster: String(c) })}
               />
             ) : (
-              <StageBlock
-                title={l('The first surprise', 'Den första överraskningen')}
-              >
-                {history?.steps[0]?.metrics ? (
-                  <FindingHero
-                    value={pct(
-                      history.steps[0].metrics.mean_largest_book_share,
-                    )}
-                    statement={l(
-                      'of a baseline cluster came from one book, on average.',
-                      'av ett kluster i utgångsläget kom i snitt från en och samma bok.',
-                    )}
-                    comparison={
-                      <>
-                        {l(
-                          'The clustering was strong, but it measured books and translators, not symbolic meaning.',
-                          'Klustringen var stark, men den mätte böcker och översättare, inte symbolisk betydelse.',
-                        )}{' '}
-                        {history.steps.at(-1)?.metrics &&
-                          l(
-                            `After book-centring and a larger corpus: ${pct(history.steps.at(-1)!.metrics!.mean_largest_book_share)}.`,
-                            `Efter bokcentrering och en större korpus: ${pct(history.steps.at(-1)!.metrics!.mean_largest_book_share)}.`,
-                          )}{' '}
-                        <a href="#symbolic-findings">
-                          {l('How it changed', 'Hur det ändrades')}
-                        </a>
-                      </>
-                    }
-                  />
-                ) : (
-                  <FindingHero
-                    value={pct(ev.composition.largest_book_share ?? 0)}
-                    statement={l(
-                      'of a cluster came from one book, on average.',
-                      'av ett kluster kom i snitt från en och samma bok.',
-                    )}
-                  />
+              <p className="atlas-prompt">
+                {l(
+                  'Point at a dot to read the passage. Choose a symbol or a tradition on the left to see where it falls.',
+                  'Peka på en prick för att läsa stället. Välj en symbol eller en tradition till vänster för att se var den hamnar.',
                 )}
-              </StageBlock>
+              </p>
             )}
           </>
         }

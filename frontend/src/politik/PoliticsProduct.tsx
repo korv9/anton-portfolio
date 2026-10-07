@@ -144,11 +144,17 @@ export default function PoliticsProduct({ route }: { route: Route }) {
       </nav>
     </Side>
   )
+  // The overview opens on its own first screen: no sidebar and no party bar until the reader
+  // goes into a theme.
+  const landing = route.path === '#politik'
   return (
-    <div className={dock ? 'politik docked' : 'politik'} id="politik">
-      {dock ? createPortal(side, dock) : side}
+    <div
+      className={`politik${dock && !landing ? ' docked' : ''}${landing ? ' politik-landing' : ''}`}
+      id="politik"
+    >
+      {landing ? null : dock ? createPortal(side, dock) : side}
       <div className="politik-body">
-        <PartySlicer route={route} />
+        {!landing && <PartySlicer route={route} />}
         <div className="politik-main">
           <Suspense
             fallback={

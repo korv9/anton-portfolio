@@ -433,7 +433,7 @@
 .project-shell {
   --project-accent: var(--data-purple);
 }
-.project-shell #main h1 {
+.project-shell #main h1:not(.project-hero-title) {
   font-family: var(--font);
   font-size: clamp(32px, 4.4vw, 64px);
   line-height: 1.08;

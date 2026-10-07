@@ -12,6 +12,7 @@ import type { Route } from '../router'
 import { fetchData } from '../dataSource'
 import Journey from './Journey'
 import { ProjectNav } from '../projects/ProjectNav'
+import { ProjectHero } from '../ui/Project'
 import { useViewParams } from '../politik/useViewParams'
 import {
   CORPUS_ORDER,
@@ -160,25 +161,26 @@ function Constellation({ route, data }: { route: Route; data: Data }) {
 
   return (
     <>
-      <header className="cc-hero ds-container">
-        <p className="cc-kicker">
-          {l('Experimental · meaning atlas', 'Experimentellt · betydelseatlas')}
-        </p>
-        <h1>Concept Constellation</h1>
-        <p className="cc-question">
-          {l(
-            'Where do the same ideas appear as they move from stories to philosophy, politics and law?',
-            'Var dyker samma idéer upp när de rör sig från berättelser till filosofi, politik och lag?',
-          )}
-        </p>
-        <p className="cc-lede">
-          {l(
-            `${summary.concepts.length} concepts chosen by an editor, read across ${summary.corpora.reduce((s, c) => s + c.chunks, 0).toLocaleString('en')} passages from four corpora with one multilingual model. Every line below has a stated type. None says that one text influenced another.`,
-            `${summary.concepts.length} begrepp valda av en redaktör, lästa över ${summary.corpora.reduce((s, c) => s + c.chunks, 0).toLocaleString('sv')} passager ur fyra korpusar med en flerspråkig modell. Varje linje nedan har en angiven typ. Ingen säger att en text har påverkat en annan.`,
-          )}
-        </p>
-      </header>
-      <ProjectNav route={route} />
+      <div className="ds-container">
+        <ProjectHero
+          project="concept-constellation"
+          nav={[
+            {
+              href: '#concept-journey',
+              label: l('Follow an idea', 'Följ en idé'),
+            },
+            { href: '#concepts-profiles', label: l('Profiles', 'Profiler') },
+            { href: '#concepts-method', label: l('Method', 'Metod') },
+          ]}
+        >
+          <p>
+            {l(
+              `${summary.concepts.length} concepts chosen by an editor, read across ${summary.corpora.reduce((s, c) => s + c.chunks, 0).toLocaleString('en')} passages from four corpora with one multilingual model. Every line below has a stated type. None says that one text influenced another.`,
+              `${summary.concepts.length} begrepp valda av en redaktör, lästa över ${summary.corpora.reduce((s, c) => s + c.chunks, 0).toLocaleString('sv')} passager ur fyra korpusar med en flerspråkig modell. Varje linje nedan har en angiven typ. Ingen säger att en text har påverkat en annan.`,
+            )}
+          </p>
+        </ProjectHero>
+      </div>
       <div className="cc-body ds-container">
         <section className="cj-start" aria-labelledby="cj-start-title">
           <h2 id="cj-start-title">

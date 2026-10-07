@@ -13,7 +13,7 @@ import { useEffect, useState } from 'react'
 import { l } from '../i18n'
 import type { Route } from '../router'
 import { useViewParams } from '../politik/useViewParams'
-import { ProjectNav } from '../projects/ProjectNav'
+import { ProjectHero } from '../ui/Project'
 import { fetchData } from '../dataSource'
 import {
   DataQuestion,
@@ -120,55 +120,57 @@ export default function Journey({ route, data }: { route: Route; data: Data }) {
 
   return (
     <>
-      <header className="cc-hero ds-container cj-hero">
-        <p className="cc-kicker">
-          <a href="#concept-constellation">Concept Constellation</a> ·{' '}
-          {l('Follow an idea', 'Följ en idé')}
-        </p>
-        <DataQuestion
-          level={1}
-          question={l(
-            'How do the same ideas appear across stories, philosophy, politics and law?',
-            'Hur dyker samma idéer upp i berättelser, filosofi, politik och lag?',
-          )}
+      <div className="ds-container">
+        <ProjectHero
+          project="concept-constellation"
+          status={
+            <div
+              className="cj-picker"
+              role="group"
+              aria-label={l('Pick an idea', 'Välj en idé')}
+            >
+              <p className="project-hero-label">
+                {l('Pick an idea →', 'Välj en idé →')}
+              </p>
+              {featured.map((c) => (
+                <button
+                  key={c.concept_id}
+                  type="button"
+                  aria-pressed={c.concept_id === id}
+                  onClick={() => set({ begrepp: c.concept_id })}
+                >
+                  {label(c)}
+                </button>
+              ))}
+              <a href="#concept-constellation">
+                {l(
+                  `All ${summary.concepts.length} concepts`,
+                  `Alla ${summary.concepts.length} begrepp`,
+                )}
+              </a>
+            </div>
+          }
+          nav={[
+            {
+              href: '#concept-constellation',
+              label: l('Constellation', 'Konstellationen'),
+            },
+            { href: '#concepts-profiles', label: l('Profiles', 'Profiler') },
+            { href: '#concepts-method', label: l('Method', 'Metod') },
+          ]}
         >
           <p>
             {l(
               'Pick an idea. The page shows where related language appears in myths and folk tales, in philosophy, in Riksdag speeches and in the EU AI Act.',
               'Välj en idé. Sidan visar var närliggande språk förekommer i myter och folksagor, i filosofi, i riksdagsanföranden och i EU:s AI-förordning.',
-            )}
-          </p>
-          <p className="cj-caveat">
+            )}{' '}
             {l(
               'This shows semantic similarity, not historical influence.',
               'Det här visar semantisk likhet, inte historisk påverkan.',
             )}
           </p>
-        </DataQuestion>
-        <div
-          className="cj-picker"
-          role="group"
-          aria-label={l('Pick an idea', 'Välj en idé')}
-        >
-          {featured.map((c) => (
-            <button
-              key={c.concept_id}
-              type="button"
-              aria-pressed={c.concept_id === id}
-              onClick={() => set({ begrepp: c.concept_id })}
-            >
-              {label(c)}
-            </button>
-          ))}
-          <a href="#concept-constellation">
-            {l(
-              `All ${summary.concepts.length} concepts`,
-              `Alla ${summary.concepts.length} begrepp`,
-            )}
-          </a>
-        </div>
-      </header>
-      <ProjectNav route={route} />
+        </ProjectHero>
+      </div>
 
       <div className="cc-body ds-container cj-body">
         <section className="cj-overview" aria-labelledby="cj-concept">
