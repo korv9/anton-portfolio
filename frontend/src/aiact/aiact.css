@@ -1518,3 +1518,33 @@
   font-size: var(--small);
   font-weight: var(--weight-heading);
 }
+
+/* The landing's status: what applies now and the next date, two quiet rows. */
+.aa-hero-status {
+  display: grid;
+  gap: var(--sp-3);
+  margin: 0;
+}
+.aa-hero-status div {
+  display: grid;
+  grid-template-columns: 7rem minmax(0, 1fr);
+  gap: var(--sp-3);
+}
+.aa-hero-status dt {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: var(--caption);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding-top: 0.2em;
+}
+.aa-hero-status dd {
+  margin: 0;
+  font-size: var(--body-large);
+}
+@media (max-width: 760px) {
+  .aa-hero-status div {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+}

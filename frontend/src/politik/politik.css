@@ -1222,3 +1222,20 @@
     grid-row: 1;
   }
 }
+
+/* The overview's first screen stands alone: no sidebar column, no party bar. */
+.politik.politik-landing {
+  grid-template-columns: minmax(0, 1fr);
+  max-width: var(--layout-wide);
+  padding-inline: var(--gutter);
+}
+.politik.politik-landing .politik-main {
+  padding-inline: 0;
+}
+/* Under the first screen, the bar lines up with the text instead of the page edge. */
+.politik-landing .politik-slicer {
+  padding-inline: 0;
+}
+.politik-landing :is(.story, .jobb-story) {
+  margin-inline: 0;
+}

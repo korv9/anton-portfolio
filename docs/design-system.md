@@ -21,22 +21,24 @@ second theme file.
   onto the same scale.
 - Figures are tabular everywhere.
 
-The large name is the homepage's. Project pages show it at a medium size on one row with
-the navigation, so the analysis starts high on the screen.
+The large name is the homepage's, and only there. The header is one slim row on every page,
+so the analysis starts high on the screen. On a project page the hero's question is the large
+line (`--h1`); the project's name above it is the `h1` but set small and uppercase
+(`--fs-lg`), so the question is read first and the heading order stays right.
 
 ## Colour
 
-| Token | Light page | Plate | Use |
-|---|---|---|---|
-| `--page` | `#D8D5CF` | `#0F0F10` | the background |
-| `--paper` / `--paper-strong` | `#E6E3DD` / `#F2EFE9` | `#1A1A1C` / `#232326` | surfaces, inputs |
-| `--ink` | `#0F0F10` | `#F2EFE9` | text |
-| `--muted` | `#4A4A4D` | `#A8A49B` | secondary text |
-| `--subtle` | `#6B6B6E` | `#8A8A8D` | rules and marks, never text |
-| `--line` / `--line-strong` | ink at 16 % / 42 % | off-white at 16 % / 38 % | rules, control edges |
-| `--accent` / `--on-accent` | ink / off-white | off-white / ink | what is chosen or current |
-| `--info`, `--negative` | `#1F4F73`, `#8F3424` | `#8BBDE3`, `#EC8A74` | meaning, never decoration |
-| `--data-*` | six series hues | | charts with categories only |
+| Token                        | Light page            | Plate                    | Use                         |
+| ---------------------------- | --------------------- | ------------------------ | --------------------------- |
+| `--page`                     | `#D8D5CF`             | `#0F0F10`                | the background              |
+| `--paper` / `--paper-strong` | `#E6E3DD` / `#F2EFE9` | `#1A1A1C` / `#232326`    | surfaces, inputs            |
+| `--ink`                      | `#0F0F10`             | `#F2EFE9`                | text                        |
+| `--muted`                    | `#4A4A4D`             | `#A8A49B`                | secondary text              |
+| `--subtle`                   | `#6B6B6E`             | `#8A8A8D`                | rules and marks, never text |
+| `--line` / `--line-strong`   | ink at 16 % / 42 %    | off-white at 16 % / 38 % | rules, control edges        |
+| `--accent` / `--on-accent`   | ink / off-white       | off-white / ink          | what is chosen or current   |
+| `--info`, `--negative`       | `#1F4F73`, `#8F3424`  | `#8BBDE3`, `#EC8A74`     | meaning, never decoration   |
+| `--data-*`                   | six series hues       |                          | charts with categories only |
 
 Measured contrast (WCAG): ink on page 13.1, muted on page 6.0 and on the darkest light
 surface 5.2; on a plate, ink 16.7 and muted 7.7. Every main page is checked by axe in
@@ -63,7 +65,34 @@ shape, so colour is never the only cue.
 
 Corners are 0–4 px (`--radius: 2px`); circles stay circles. There are no decorative shadows,
 gradients or blur; an inset rule may mark a party or a current item. Space follows
-`--sp-1` … `--sp-6` and the fluid `--gutter`.
+`--sp-1` … `--sp-7` and the fluid `--gutter`; `--sp-section` is the gap between the start
+page's screens and a project's sections.
+
+Three widths, so text never runs the full screen:
+
+| Token              | Width   | Use                                          |
+| ------------------ | ------- | -------------------------------------------- |
+| `--layout-wide`    | 1440 px | the page frame, charts and maps              |
+| `--layout-content` | 1120 px | a section's content, the project hero        |
+| `--layout-reading` | 68ch    | running text, the hero's summary and finding |
+
+## Page primitives
+
+One screen, one purpose; one section, one question; depth only after the reader asks for it.
+The pieces that carry that rule:
+
+- `ProjectHero` (`ui/Project.tsx`): a flagship's first screen. Eyebrow (number and
+  descriptor), the name, the question, one or two sentences, one finding or a status, and a
+  `ProjectSubnav` row of links. On a wide screen it is at least 72 % of the viewport high
+  (less the header), so the next section starts near the fold; on a phone it is as tall as
+  its content.
+- `ProjectSection`: a numbered section with a label and an `h2`.
+- `Disclosure` (`ui/Disclosure.tsx`): a native `<details>` for depth on demand (job details,
+  the full stack); no script.
+- `FindingHero`, `ChartSection`, `Interpretation`, `ExploreSection`, `MethodSummary`,
+  `SourceCaption` (`ui/Story.tsx`): the finding, the main evidence, explore and method. They
+  keep their names, and the first screen sits in front of them.
+- `a.work-card` (start page): the whole card is the link. A card has no buttons.
 
 ## Buttons and filters
 

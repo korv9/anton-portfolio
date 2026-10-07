@@ -5,6 +5,9 @@ test('welfare leads with a question, one county comparison, then headlines and a
 }) => {
   await page.goto('/#sweden')
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+    'How is Sweden doing?',
+  )
+  await expect(page.locator('.project-hero-question')).toHaveText(
     'Which parts of Sweden do well or poorly, measure by measure?',
   )
   // One regional comparison first, with what it means and does not mean; sources come later.
@@ -20,7 +23,7 @@ test('welfare leads with a question, one county comparison, then headlines and a
   await expect(page.locator('.welfare-tile strong').first()).toContainText('%')
 
   // Every county, each with an unemployment figure for the default year.
-  await page.locator('.topic-tabs a[href="#sweden-counties"]').click()
+  await page.locator('.project-subnav a[href="#sweden-counties"]').click()
   await expect(page.locator('.welfare-table tbody tr')).toHaveCount(21)
 
   // The explorer reads Parquet in the browser and draws the selection.

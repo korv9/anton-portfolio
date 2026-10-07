@@ -44,39 +44,3 @@ export function VisualizationFrame({
     </figure>
   )
 }
-export function ProjectRow({
-  number,
-  id,
-  title,
-  href,
-  children,
-  preview,
-  backgroundPreview = false,
-}: {
-  number: string
-  id: string
-  title: string
-  href: string
-  children: ReactNode
-  preview: ReactNode
-  backgroundPreview?: boolean
-}) {
-  return (
-    <article className="ds-project-row" aria-labelledby={`project-${id}`}>
-      <p className="ds-number">{number}</p>
-      <div className="ds-project-copy">
-        <h3 id={`project-${id}`}>
-          <a href={href}>{title}</a>
-        </h3>
-        {children}
-      </div>
-      <div
-        className="ds-project-preview"
-        aria-hidden={backgroundPreview || undefined}
-        inert={backgroundPreview || undefined}
-      >
-        {preview}
-      </div>
-    </article>
-  )
-}

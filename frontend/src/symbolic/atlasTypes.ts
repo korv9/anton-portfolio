@@ -84,11 +84,6 @@ export type AtlasSummary = {
   }
 }
 
-export type AtlasPreview = {
-  columns: ['x', 'y', 'cluster_id']
-  points: [number, number, number][]
-}
-
 /** One row per deconfounding experiment (platform/nlp/symbolic/experiments.py). */
 export type ExperimentRow = {
   experiment: string

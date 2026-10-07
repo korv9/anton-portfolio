@@ -8,7 +8,7 @@
  * voting map) is one click deeper under "More analyses", and sources, method and data quality
  * under their own fold. Choosing a party, debate or member in the address opens the analyses.
  */
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { l } from '../../i18n'
 import { load, type Now } from '../../parliament/data'
 import type { Route } from '../../router'
@@ -26,6 +26,8 @@ import Debatterna from './Debatterna'
 import Ledamoterna from './Ledamoterna'
 import Advanced from './Advanced'
 import OmDatan from './OmDatan'
+import { ProjectHero } from '../../ui/Project'
+import { partiesOf, withParties } from '../partySelection'
 import {
   DataQuestion,
   ExploreSection,
@@ -37,8 +39,16 @@ import './story.css'
 
 const DEFAULTS = { parti: 'S', debatt: '', ledamot: '' }
 
-export default function Story({ route }: { route: Route }) {
+export default function Story({
+  route,
+  slicer,
+}: {
+  route: Route
+  /** The party bar, placed under the first screen rather than above it. */
+  slicer?: ReactNode
+}) {
   const [view, setView] = useViewParams(route, DEFAULTS)
+  const parties = partiesOf(route.params)
   const [now, setNow] = useState<Now | null>(null)
   const [nowError, setNowError] = useState<string | null>(null)
   const { analytics: a, quality, error } = useVoteAnalytics()
@@ -64,31 +74,43 @@ export default function Story({ route }: { route: Route }) {
 
   return (
     <article className="story">
-      <header className="story-hero">
-        <p className="story-eyebrow">Political Observatory</p>
-        <DataQuestion
-          level={1}
-          question={l(
-            'What separates the parties in practice?',
-            'Vad skiljer partierna åt i praktiken?',
+      <ProjectHero
+        project="politics"
+        finding={
+          lines?.topArea
+            ? l(
+                `Parties differ most in ${areaName(lines.topArea.committee).toLowerCase()}. Of ${num(a!.votes.length)} roll calls, ${lines.closest.a} and ${lines.closest.b} voted the same way most often (${pct(lines.closest.pct, 0)}), ${lines.furthest.a} and ${lines.furthest.b} least often (${pct(lines.furthest.pct, 0)}).`,
+                `Partierna skiljer sig mest inom ${areaName(lines.topArea.committee).toLowerCase()}. Av ${num(a!.votes.length)} voteringar röstade ${lines.closest.a} och ${lines.closest.b} oftast lika (${pct(lines.closest.pct, 0)}), ${lines.furthest.a} och ${lines.furthest.b} mest sällan (${pct(lines.furthest.pct, 0)}).`,
+              )
+            : undefined
+        }
+        nav={[
+          { href: '#politik', label: l('Overview', 'Översikt'), current: true },
+          { href: withParties('#politik-budget', parties), label: 'Budget' },
+          {
+            href: withParties('#politik-partier', parties),
+            label: l('Parties', 'Partier'),
+          },
+          {
+            href: withParties('#politik-roster', parties),
+            label: l('Voting', 'Röster'),
+          },
+          {
+            href: withParties('#politik-sakdebatter', parties),
+            label: l('Debates', 'Debatter'),
+          },
+          {
+            href: withParties('#politik-kallor', parties),
+            label: l('Sources', 'Källor'),
+          },
+        ]}
+      >
+        <p>
+          {l(
+            'Decisions, roll calls, debates and budgets in the Riksdag, party by party, from open data.',
+            'Beslut, voteringar, debatter och budgetar i riksdagen, parti för parti, från öppna data.',
           )}
-        >
-          {lines?.topArea ? (
-            <p className="story-answer">
-              {l(
-                `In votes, most in ${areaName(lines.topArea.committee).toLowerCase()}. Of ${num(a!.votes.length)} roll calls, ${lines.closest.a} and ${lines.closest.b} took the same position most often (${pct(lines.closest.pct, 0)}), ${lines.furthest.a} and ${lines.furthest.b} least often (${pct(lines.furthest.pct, 0)}).`,
-                `I röster, mest inom ${areaName(lines.topArea.committee).toLowerCase()}. Av ${num(a!.votes.length)} voteringar hade ${lines.closest.a} och ${lines.closest.b} oftast samma ståndpunkt (${pct(lines.closest.pct, 0)}), ${lines.furthest.a} och ${lines.furthest.b} mest sällan (${pct(lines.furthest.pct, 0)}).`,
-              )}
-            </p>
-          ) : (
-            <p className="story-answer">
-              {l(
-                'Decisions, roll calls, debates and budgets, party by party.',
-                'Beslut, voteringar, debatter och budgetar, parti för parti.',
-              )}
-            </p>
-          )}
-        </DataQuestion>
+        </p>
         <SourceCaption
           source={l(
             'Riksdagen’s open data, SCB, Valmyndigheten',
@@ -105,7 +127,8 @@ export default function Story({ route }: { route: Route }) {
               : undefined
           }
         />
-      </header>
+      </ProjectHero>
+      {slicer}
 
       {failed && (
         <p role="alert" className="theme-error">

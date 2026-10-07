@@ -46,6 +46,11 @@ test('the party bar follows the reader from the story to the other pages', async
   await bar.getByRole('button', { name: 'Moderates' }).click()
   await expect(page).toHaveURL(/partier=S%2CV%2CM|partier=S,V,M/)
   await page
+    .locator('.project-subnav')
+    .getByRole('link', { name: 'Parties' })
+    .click()
+  await expect(page).toHaveURL(/#politik-partier\?partier=/)
+  await page
     .getByRole('navigation', { name: 'Politics' })
     .getByRole('link', { name: /What voters think/ })
     .click()
@@ -156,50 +161,14 @@ test('explore and sources reach every detailed view and the raw tables', async (
   expect(results.violations).toEqual([])
 })
 
-test.describe('the freestanding name header', () => {
-  test.use({ intro: true })
-
-  test('opens with the cluster intro once, then the start page', async ({
-    page,
-  }) => {
-    await page.goto('/')
-    const intro = page.locator('.intro-screen')
-    await expect(intro.locator('canvas')).toBeVisible()
-    await expect(intro).toHaveCount(0, { timeout: 8000 })
-    await expect(page.locator('.site-name-heading')).toContainText(
-      'ANTON ERNSTSSON',
-    )
-    await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
-    // Once per visit: a reload goes straight to the content.
-    await page.reload()
-    await expect(intro).toHaveCount(0)
-  })
-
-  test('is skipped with Escape', async ({ page }) => {
-    await page.goto('/')
-    await expect(page.locator('.intro-screen')).toBeVisible()
-    await page.keyboard.press('Escape')
-    await expect(page.locator('.intro-screen')).toHaveCount(0)
-  })
-
-  test('does not block a direct project link', async ({ page }) => {
-    await page.goto('/')
-    await expect(page.locator('.intro-screen')).toHaveCount(0, {
-      timeout: 8000,
-    })
-    await page.evaluate(() => sessionStorage.clear())
-    await page.goto('/#politik-budget')
-    await expect(page.locator('.intro-screen')).toHaveCount(0)
-  })
-
-  test('is immediately available with reduced motion', async ({ page }) => {
-    await page.emulateMedia({ reducedMotion: 'reduce' })
-    await page.goto('/')
-    await expect(page.locator('.site-name-heading')).toBeVisible()
-    await expect(page.locator('.intro-screen')).toHaveCount(0, {
-      timeout: 1500,
-    })
-  })
+test('the start page opens on the name, with no intro in front of it', async ({
+  page,
+}) => {
+  await page.goto('/')
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+    'Anton Ernstsson',
+  )
+  await expect(page.locator('.intro-screen')).toHaveCount(0)
 })
 
 test('taxes: every kind of tax, Sweden against the other countries', async ({

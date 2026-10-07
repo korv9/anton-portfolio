@@ -32,6 +32,7 @@ import { useQuality } from '../quality/data'
 import { cellOf, cellText, nodesOfCheck, nodeStatuses } from '../quality/logic'
 import { QualityLegend, StatusMark } from '../quality/QualityPanel'
 import type { QualityData } from '../quality/types'
+import { ProjectHero } from '../ui/Project'
 import './constellation.css'
 
 const DEFAULTS = { view: 'platform', domain: '', node: '', hide: '' }
@@ -171,59 +172,42 @@ export default function DataConstellationPage({ route }: { route: Route }) {
 
   return (
     <div className="constellation">
-      <header className="constellation-hero ds-container">
-        <p className="constellation-kicker">Data Constellation</p>
-        <h1>
-          {l(
-            'From raw sources to analytical products.',
-            'Från råa källor till analytiska produkter.',
+      <div className="ds-container">
+        <ProjectHero
+          eyebrow={l('Under the hood · platform', 'Under huven · plattform')}
+          title="Data Constellation"
+          question={l(
+            'How do raw sources become analytical products?',
+            'Hur blir råa källor till analytiska produkter?',
           )}
-        </h1>
-        <p className="constellation-lede">
-          {l(
-            'This map shows how the portfolio’s sources, pipelines, models and products are connected: one shared data platform, several products on top. It is generated from the repository itself.',
-            'Kartan visar hur portfoliots källor, pipelines, modeller och produkter hänger ihop: en gemensam dataplattform med flera produkter ovanpå. Den genereras ur själva repot.',
+          findingLabel={l('The platform', 'Plattformen')}
+          finding={l(
+            `${total('sources')} public sources, ${total('ingestion')} Python ingesters, ${total('models')} dbt models (${total('gold')} gold) and ${total('delivery')} published file sets, read by ${total('products')} React products.`,
+            `${total('sources')} öppna källor, ${total('ingestion')} Python-inläsare, ${total('models')} dbt-modeller (${total('gold')} guld) och ${total('delivery')} publicerade filgrupper, lästa av ${total('products')} React-produkter.`,
           )}
-        </p>
-        <dl className="constellation-facts">
-          <div>
-            <dt>{l('Sources', 'Källor')}</dt>
-            <dd>
-              {total('sources')}{' '}
-              {l('public APIs and datasets', 'öppna API:er och dataset')}
-            </dd>
-          </div>
-          <div>
-            <dt>{l('Pipelines', 'Pipelines')}</dt>
-            <dd>
-              {total('ingestion')}{' '}
-              {l(
-                'Python ingesters, raw data kept with provenance',
-                'Python-inläsare, rådata sparad med härkomst',
-              )}
-            </dd>
-          </div>
-          <div>
-            <dt>{l('Models', 'Modeller')}</dt>
-            <dd>
-              {total('models')}{' '}
-              {l('dbt models in DuckDB', 'dbt-modeller i DuckDB')},{' '}
-              {total('gold')} {l('of them gold', 'varav guld')}
-            </dd>
-          </div>
-          <div>
-            <dt>{l('Products', 'Produkter')}</dt>
-            <dd>
-              {total('delivery')}{' '}
-              {l(
-                'published file sets, read by',
-                'publicerade filgrupper, lästa av',
-              )}{' '}
-              {total('products')} {l('React products', 'React-produkter')}
-            </dd>
-          </div>
-        </dl>
-      </header>
+          nav={[
+            {
+              href: '#quality',
+              label: l('Quality & Validity', 'Kvalitet och validitet'),
+            },
+            {
+              href: '#data-catalogue',
+              label: l('Data catalogue', 'Datakatalog'),
+            },
+            {
+              href: '#status',
+              label: l('Pipeline status', 'Pipelinens status'),
+            },
+          ]}
+        >
+          <p>
+            {l(
+              'This map shows how the portfolio’s sources, pipelines, models and products are connected: one shared data platform, several products on top. It is generated from the repository itself.',
+              'Kartan visar hur portfoliots källor, pipelines, modeller och produkter hänger ihop: en gemensam dataplattform med flera produkter ovanpå. Den genereras ur själva repot.',
+            )}
+          </p>
+        </ProjectHero>
+      </div>
 
       <section
         className="constellation-stage ds-container"

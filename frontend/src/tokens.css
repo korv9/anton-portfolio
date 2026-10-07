@@ -119,8 +119,15 @@
   --sp-4: 1rem;
   --sp-5: 1.5rem;
   --sp-6: 2.5rem;
+  --sp-7: 4rem;
+  /* Between the major screens of a page. */
+  --sp-section: clamp(4rem, 9vw, 8rem);
   --gutter: clamp(16px, 3vw, 44px);
   --content-width: 1440px;
+  /* Three widths, nothing in between: wide for charts, content for sections, reading for prose. */
+  --layout-wide: var(--content-width);
+  --layout-content: 1120px;
+  --layout-reading: var(--measure);
   --radius: 2px;
   --card-pad: 0.9rem 1.05rem 1rem;
   --card-gap: 0.9rem;

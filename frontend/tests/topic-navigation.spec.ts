@@ -18,8 +18,9 @@ test('one politics navigation isolates content and supports back and direct link
   await politics.getByRole('link', { name: /Overview/ }).click()
   await expect(page.locator('.story-seatbar')).toBeVisible()
   await expect(page.locator('.decision-read')).toHaveCount(0)
+  // The overview is the project's first screen: its own links, no side menu.
   await expect(
-    politics.getByRole('link', { name: /Overview/ }),
+    page.locator('.project-subnav').getByRole('link', { name: 'Overview' }),
   ).toHaveAttribute('aria-current', 'page')
   await page.goBack()
   await expect(page.locator('.decision-read')).toHaveCount(5)

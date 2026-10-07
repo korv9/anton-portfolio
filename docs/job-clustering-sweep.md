@@ -107,5 +107,3 @@ affine view change, not a refit, removal of ads or independent repositioning of 
 The pipeline validates the chosen corpus, source metadata, model, parameters and package
 versions, and checks the recomputed labels/probabilities against the reviewed assignments
 before updating raw. dbt owns gold and the existing exporter supplies the map and homepage.
-No production deployment was performed. See [delivery record](editorial-clustering-delivery.md)
-for the current run identity and validation results.

@@ -234,7 +234,9 @@ test('home loads only preview and stays within mobile width', async ({
   const requests: string[] = []
   page.on('request', (r) => requests.push(r.url()))
   await page.goto('/')
-  await expect(page.getByRole('heading', { level: 1 })).toContainText('ANTON')
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+    'Anton Ernstsson',
+  )
   for (const width of [320, 375, 768, 1440]) {
     await page.setViewportSize({ width, height: 900 })
     expect(

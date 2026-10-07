@@ -6,11 +6,11 @@ test('the constellation shows sources, platform and products at a glance', async
 }) => {
   await page.goto('/#data-constellation')
   await expect(
-    page.getByRole('heading', {
-      level: 1,
-      name: /raw sources to analytical products/,
-    }),
+    page.getByRole('heading', { level: 1, name: 'Data Constellation' }),
   ).toBeVisible()
+  await expect(page.locator('.project-hero-question')).toContainText(
+    'raw sources become analytical products',
+  )
   await expect(page.locator('.constellation-canvas')).toBeVisible()
   await expect(page.locator('.constellation-products li')).toHaveCount(7)
   await expect(page.locator('.project-context')).toContainText(

@@ -210,7 +210,7 @@ def main():
         "- `frontend/public/data/reports/rfc-drift.json` har dessutom `matched_changes: []`; inga verkliga kravpar klarade den strikta matchningen. Syntetiska `scenarios` är motorexempel.",
         "- `platform/sources/allegoria/sources-v1/source/` och `sources-v2/source/` är rå XML/RFC-källdokument, inte relationella tabeller. `sources-v2/failures.json` är en lista med strängar, och `platform/sources/allegoria/corpus/*.yaml` är motor-/annotationskonfigurationer. Bronze-snapshot och de publika lagbestämmelserna är olika nivåer av samma källmaterial.",
         "", "## Källor och begränsningar", "",
-        "[Sveriges riksdag](https://www.riksdagen.se/sv/sa-fungerar-riksdagen/arbetet-i-riksdagen/debatter-och-beslut-i-kammaren/beslut-om-arenden/) för vad en votering avser; [Statskontoret](https://www.statskontoret.se/analys-och-statistik/oppna-data/arsutfall/om-oppna-data-for-arsutfall/) för årsutfallets budget- och utfallsfält. Katalogen beskriver **det som levereras i detta repo**, inte all data hos källmyndigheterna. Se också `docs/rfc-and-budget-audit.md` för urvalet av debattkorpus och ordstamning.",
+        "[Sveriges riksdag](https://www.riksdagen.se/sv/sa-fungerar-riksdagen/arbetet-i-riksdagen/debatter-och-beslut-i-kammaren/beslut-om-arenden/) för vad en votering avser; [Statskontoret](https://www.statskontoret.se/analys-och-statistik/oppna-data/arsutfall/om-oppna-data-for-arsutfall/) för årsutfallets budget- och utfallsfält. Katalogen beskriver **det som levereras i detta repo**, inte all data hos källmyndigheterna.",
     ])
     OUT.write_text("\n".join(lines) + "\n", encoding="utf-8")
     print(f"Wrote {OUT}: {len(SPECS)} logical entries, {sum(n for _,n,_ in summary):,} listed rows (includes materialized duplicates).")

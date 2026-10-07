@@ -272,3 +272,19 @@ button.treemap-tile {
   width: 100%;
   height: auto;
 }
+
+/* The cluster picture (jobs/ClusterPreview.tsx) on the job market's overview. */
+.cluster-preview {
+  display: block;
+  text-decoration: none;
+}
+.cluster-preview svg {
+  display: block;
+  width: 100%;
+}
+.cluster-preview.atmospheric {
+  height: 100%;
+}
+.cluster-preview.atmospheric svg {
+  height: 100%;
+}

@@ -8,7 +8,6 @@ import Header, {
   ProjectPager,
 } from './site/Header'
 import HomePage from './home/HomePage'
-import Intro from './site/Intro'
 import { PageBoundary } from './site/PageBoundary'
 import './site/site.css'
 
@@ -93,7 +92,6 @@ export default function App() {
     <div
       className={`site-shell${page === 'home' ? ' home-shell' : ' project-shell'}`}
     >
-      <Intro />
       <a className="skip-link" href="#main">
         {l('Skip to content', 'Hoppa till innehåll')}
       </a>

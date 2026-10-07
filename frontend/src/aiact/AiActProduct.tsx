@@ -15,12 +15,13 @@ import { useViewParams } from '../politik/useViewParams'
 import { ProjectNav } from '../projects/ProjectNav'
 import { ArticleView } from './ArticleView'
 import { useAiAct } from './data'
-import { isoToday } from './logic'
+import { isoToday, nowAndNext } from './logic'
 import { NavigatorView } from './Navigator'
 import { Jobs } from './Jobs'
 import { Politics } from './Politics'
 import { Signals } from './Signals'
-import { DISCLAIMER, fmtDate } from './shared'
+import { DISCLAIMER, fmtDate, pick } from './shared'
+import { ProjectHero } from '../ui/Project'
 import {
   Changes,
   Obligations,
@@ -147,29 +148,97 @@ export default function AiActProduct({ route }: { route: Route }) {
     return preview && /^\d{4}-\d{2}-\d{2}$/.test(preview) ? preview : isoToday()
   }, [route.params.toString()])
 
+  const status =
+    data && path === '#ai-act' ? nowAndNext(data.timeline, today) : null
   return (
     <div className="aiact">
-      <header className="aa-hero ds-container">
-        <p className="aa-kicker">
-          {path === '#ai-act'
-            ? l(
-                'Regulatory intelligence · official EU sources',
-                'Regelbevakning · officiella EU-källor',
+      {path === '#ai-act' ? (
+        <div className="ds-container">
+          <ProjectHero
+            project="ai-act"
+            status={
+              status && (
+                <dl className="aa-hero-status">
+                  {status.latest && (
+                    <div>
+                      <dt>{l('Applies now', 'Gäller nu')}</dt>
+                      <dd>
+                        {fmtDate(status.latest.date)}:{' '}
+                        {pick({
+                          en: status.latest.title_en,
+                          sv: status.latest.title_sv,
+                        })}
+                      </dd>
+                    </div>
+                  )}
+                  {status.next && (
+                    <div>
+                      <dt>{l('Next', 'Härnäst')}</dt>
+                      <dd>
+                        {fmtDate(status.next.date)}:{' '}
+                        {pick({
+                          en: status.next.title_en,
+                          sv: status.next.title_sv,
+                        })}
+                      </dd>
+                    </div>
+                  )}
+                </dl>
               )
-            : 'EU AI Act Observatory'}
-        </p>
-        <h1>{l(...view.title)}</h1>
-        <p className="aa-question">{l(...view.question)}</p>
-        {data && (
-          <p className="aa-hero-meta">
-            {l('Consolidated text of', 'Konsoliderad text från')}{' '}
-            {fmtDate(data.summary.current_version.published_at)} ·{' '}
-            {l('retrieved', 'hämtad')} {fmtDate(data.summary.latest_retrieval)}{' '}
-            · <span className="aa-disclaimer-inline">{l(...DISCLAIMER)}</span>
-          </p>
-        )}
-      </header>
-      <ProjectNav route={route} />
+            }
+            nav={[
+              {
+                href: '#ai-act-roles',
+                label: l('Who is affected?', 'Vem berörs?'),
+              },
+              {
+                href: '#ai-act-startups',
+                label: l('Startup navigator', 'Startup-navigator'),
+              },
+              {
+                href: '#ai-act-obligations',
+                label: l('Obligations', 'Skyldigheter'),
+              },
+              { href: '#ai-act-changes', label: l('Changes', 'Ändringar') },
+              { href: '#ai-act-sources', label: l('Sources', 'Källor') },
+            ]}
+          >
+            <p>
+              {l(
+                'The EU AI Act read from official EU sources: what applies, to whom and from when, with every obligation linked to its article.',
+                'EU:s AI-förordning läst ur officiella EU-källor: vad som gäller, för vem och från när, med varje skyldighet länkad till sin artikel.',
+              )}
+            </p>
+            {data && (
+              <p className="aa-hero-meta">
+                {l('Consolidated text of', 'Konsoliderad text från')}{' '}
+                {fmtDate(data.summary.current_version.published_at)} ·{' '}
+                {l('retrieved', 'hämtad')}{' '}
+                {fmtDate(data.summary.latest_retrieval)} ·{' '}
+                <span className="aa-disclaimer-inline">{l(...DISCLAIMER)}</span>
+              </p>
+            )}
+          </ProjectHero>
+        </div>
+      ) : (
+        <>
+          <header className="aa-hero ds-container">
+            <p className="aa-kicker">EU AI Act Observatory</p>
+            <h1>{l(...view.title)}</h1>
+            <p className="aa-question">{l(...view.question)}</p>
+            {data && (
+              <p className="aa-hero-meta">
+                {l('Consolidated text of', 'Konsoliderad text från')}{' '}
+                {fmtDate(data.summary.current_version.published_at)} ·{' '}
+                {l('retrieved', 'hämtad')}{' '}
+                {fmtDate(data.summary.latest_retrieval)} ·{' '}
+                <span className="aa-disclaimer-inline">{l(...DISCLAIMER)}</span>
+              </p>
+            )}
+          </header>
+          <ProjectNav route={route} />
+        </>
+      )}
       <div className="aa-body ds-container">
         {error && (
           <p className="aa-lede">

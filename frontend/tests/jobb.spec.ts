@@ -6,10 +6,13 @@ test('the job market tells a demand story: a question, an answer, one chart, the
 }) => {
   await page.goto('/#jobb')
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+    'The job market in job ads',
+  )
+  await expect(page.locator('.project-hero-question')).toHaveText(
     'How is demand for labour changing?',
   )
   // The answer is one number against the same months a year earlier; one main chart follows.
-  await expect(page.locator('.finding-hero-value')).toHaveText(/^[+−±]\d/)
+  await expect(page.locator('.project-hero-finding b')).toHaveText(/^[+−±]\d/)
   await expect(page.locator('.jobb-columns rect.recent').first()).toBeVisible()
   await expect(page.locator('.interpretation-not')).toContainText(
     'proxy for demand',
@@ -22,18 +25,21 @@ test('the job market tells a demand story: a question, an answer, one chart, the
     page.locator('.jobb-story a[href="#jobb-kluster"]'),
   ).toBeVisible()
   await expect(page.locator('#treemap')).toHaveCount(0)
-  const answer = await page.locator('.finding-hero-statement').textContent()
+  const answer = await page.locator('.project-hero-finding').textContent()
 
   // The field bar: choose Data/IT and the story answers for it.
   const bar = page.getByRole('group', { name: 'Occupation fields' })
   await bar.getByRole('button', { name: 'Data/IT', exact: true }).click()
   await expect(page).toHaveURL(/omraden=/)
-  await expect(page.locator('.data-question-context').first()).toContainText(
-    'Data/IT',
-  )
-  await expect(page.locator('.finding-hero-statement')).not.toHaveText(answer!)
+  await expect(page.locator('.project-hero-summary')).toContainText('Data/IT')
+  await expect(page.locator('.project-hero-finding')).not.toHaveText(answer!)
 
-  // The choice follows the reader to every theme.
+  // The choice follows the reader into the themes and on to every other theme.
+  await page
+    .locator('.project-subnav')
+    .getByRole('link', { name: 'Trends' })
+    .click()
+  await expect(page).toHaveURL(/jobb-trender\?omraden=/)
   const nav = page.getByRole('navigation', { name: 'Job market' })
   for (const [name, question] of [
     ['How are ads developing?', 'How are job ads developing?'],

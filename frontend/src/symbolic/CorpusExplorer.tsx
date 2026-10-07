@@ -97,7 +97,7 @@ export default function CorpusExplorer({
           )}
         </p>
       </div>
-      <div className="atlas-table-wrap">
+      <div className="atlas-table-wrap" tabIndex={0}>
         <table className="atlas-table corpus-table">
           <thead>
             <tr>

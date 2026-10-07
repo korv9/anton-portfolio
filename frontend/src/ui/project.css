@@ -1,0 +1,117 @@
+/*
+ * The project shell (ui/Project.tsx). A project's first screen holds its name, its question,
+ * one or two sentences, one finding and a short row of links; nothing else competes with them.
+ */
+.project-hero {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: calc(72svh - var(--header-h, 57px));
+  padding-block: var(--sp-6) var(--sp-5);
+  max-width: var(--layout-content);
+}
+.project-hero.plate {
+  max-width: none;
+  padding-inline: var(--gutter);
+  background: var(--page);
+  color: var(--ink);
+}
+.project-hero-eyebrow,
+.project-hero-label,
+.project-section-label {
+  display: flex;
+  gap: var(--sp-3);
+  margin: 0 0 var(--sp-3);
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: var(--caption);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.project-hero .project-hero-title {
+  margin: 0 0 var(--sp-3);
+  font-size: var(--fs-lg);
+  font-weight: var(--weight-heading);
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+}
+.project-hero .project-hero-question {
+  max-width: 22ch;
+  margin: 0 0 var(--sp-5);
+  font-size: var(--h1);
+  font-weight: var(--weight-heading);
+  letter-spacing: -0.035em;
+  line-height: 1.02;
+}
+.project-hero-summary {
+  max-width: var(--layout-reading);
+  color: var(--ink-2);
+  font-size: var(--body-large);
+  line-height: 1.5;
+}
+.project-hero-summary > * {
+  margin: 0 0 var(--sp-3);
+}
+.project-hero-finding,
+.project-hero-status {
+  max-width: var(--layout-reading);
+  margin-top: var(--sp-4);
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--line-strong);
+}
+.project-hero-finding p:last-child {
+  margin: 0;
+  font-size: var(--body-large);
+  line-height: 1.45;
+}
+.project-hero .project-subnav {
+  margin-top: var(--sp-6);
+}
+
+/* The short row of links into a project: plain links, sideways scroll on a phone. */
+.project-subnav ul {
+  display: flex;
+  gap: var(--sp-2) var(--sp-5);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.project-subnav a {
+  display: inline-block;
+  padding-block: var(--sp-2);
+  color: var(--ink);
+  font-size: var(--fs-sm);
+  font-weight: var(--weight-ui);
+  white-space: nowrap;
+  text-decoration: underline;
+  text-decoration-color: var(--line-strong);
+  text-underline-offset: 0.35em;
+}
+.project-subnav a:hover,
+.project-subnav a[aria-current] {
+  text-decoration-color: var(--ink);
+}
+
+.project-section {
+  padding-block: var(--sp-7);
+  border-top: 1px solid var(--line);
+}
+.project-section > h2 {
+  margin: 0 0 var(--sp-5);
+  max-width: 26ch;
+  font-size: var(--h2);
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+}
+@media (max-width: 760px) {
+  .project-hero {
+    min-height: 0;
+    padding-block: var(--sp-5);
+  }
+  .project-hero .project-hero-question {
+    font-size: clamp(1.9rem, 8vw, 2.6rem);
+  }
+}

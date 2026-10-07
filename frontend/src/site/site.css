@@ -1,7 +1,7 @@
 /*
- * The site frame (site/Header.tsx): one header everywhere, the name as large on a project page
- * as on the start page; the breadcrumb, a project's own navigation,
- * the previous / next project and the footer.
+ * The site frame (site/Header.tsx): one slim header everywhere (on the start page it waits until
+ * the hero is passed); the breadcrumb, a project's own navigation, the previous / next project
+ * and the footer.
  */
 :root {
   --header-h: 0px;
@@ -23,76 +23,61 @@
 }
 
 /* ---------- Header ---------- */
-/* The header and its navigation stay on screen while the page scrolls. */
+/* One slim row on every page: the name, four destinations, the language. On the start page the
+   hero carries the name and the navigation, so until the reader scrolls past it the bar shows
+   only the language switch (.is-home-top). */
 .site-bar {
   position: sticky;
   top: 0;
   z-index: 40;
-  display: flex;
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr) auto auto;
+  grid-template-areas: 'name nav lang menu';
   align-items: center;
-  gap: 1.5rem;
-  padding: 0 clamp(16px, 1.8vw, 36px);
+  gap: 0 clamp(16px, 2.4vw, 40px);
+  padding: 8px clamp(16px, 1.8vw, 36px);
   background: var(--page);
+  border-bottom: 1px solid var(--line);
 }
 .wordmark {
   text-decoration: none;
 }
 .site-name-heading {
-  margin: 0 auto 0 0;
-  min-width: 0;
-  line-height: 1;
-}
-.site-bar .wordmark-name {
-  display: inline-block;
-  width: auto;
-  height: auto;
-  border-radius: 0;
-  background: none;
-  color: var(--ink);
-  white-space: nowrap;
-  text-transform: uppercase;
-  line-height: 1;
-}
-/* The first column is exactly as wide as the name, so the navigation under it starts under
-   the A and ends under the last N. */
-.site-bar {
-  display: grid;
-  grid-template-columns: max-content minmax(0, 1fr) auto;
-  grid-template-areas:
-    'name . .'
-    'nav . lang';
-  align-items: center;
-  gap: 10px 28px;
-  padding-block: 20px 12px;
-}
-.site-bar .site-name-heading {
   grid-area: name;
+  margin: 0;
+  line-height: 1;
 }
 .site-bar .wordmark-name {
-  font-size: 6.2vw;
-  font-weight: 750;
-  letter-spacing: -0.065em;
-  word-spacing: 0.14em;
+  color: var(--ink);
+  font-size: var(--fs-md);
+  font-weight: var(--weight-heading);
+  letter-spacing: -0.02em;
+  white-space: nowrap;
 }
 .site-bar .global-nav {
   grid-area: nav;
-  justify-content: space-between;
-  padding-left: 0.04em;
+  gap: clamp(12px, 2vw, 32px);
 }
 .site-bar .global-nav .nav-item {
-  min-height: 44px;
+  min-height: 40px;
   padding: 0;
   color: var(--ink);
-  font-size: clamp(17px, 1.55vw, 26px);
-  font-weight: 500;
-  letter-spacing: -0.02em;
-}
-.site-bar .global-nav .nav-item:hover,
-.site-bar .global-nav .nav-item[aria-expanded='true'] {
-  color: var(--muted);
+  font-size: var(--fs-sm);
+  font-weight: var(--weight-ui);
 }
 .site-bar .language-switch {
   grid-area: lang;
+}
+.site-bar .site-menu-button {
+  grid-area: menu;
+}
+.site-bar.is-home-top {
+  border-bottom-color: transparent;
+}
+.site-bar.is-home-top .site-name-heading,
+.site-bar.is-home-top .global-nav,
+.site-bar.is-home-top .site-menu-button {
+  visibility: hidden;
 }
 
 .global-nav {
@@ -263,23 +248,11 @@
   margin-top: 0.6rem;
 }
 @media (max-width: 860px) {
-  .global-nav {
+  .site-bar .global-nav {
     display: none;
   }
   .site-menu-button {
     display: inline-block;
-  }
-  .site-bar {
-    grid-template-columns: minmax(0, 1fr) auto auto;
-    grid-template-areas:
-      'name name name'
-      '. lang menu';
-  }
-  .site-bar .wordmark-name {
-    font-size: 8.5vw;
-  }
-  .site-bar .site-menu-button {
-    grid-area: menu;
   }
 }
 @media (max-width: 760px) {
@@ -291,53 +264,21 @@
     gap: 8px;
     padding-inline: 12px;
   }
-  .site-bar .language-switch button {
-    padding-inline: 5px;
-    font-size: 10px;
-  }
-}
-/* On a project page the name steps back: one row, the name at a medium size beside the
-   navigation, so the analysis starts high on the screen. The large name is the start page's. */
-.project-shell .site-bar {
-  grid-template-columns: max-content minmax(0, 1fr) auto;
-  grid-template-areas: 'name nav lang';
-  padding-block: 14px;
-  border-bottom: 1px solid var(--line);
-}
-@media (max-width: 860px) {
-  /* A phone: the name, then the language switch and the menu button, on one row. */
-  .project-shell .site-bar {
-    grid-template-columns: minmax(0, 1fr) auto auto;
-    grid-template-areas: 'name lang menu';
-  }
-}
-.project-shell .site-bar .wordmark-name {
-  font-size: clamp(22px, 2.1vw, 30px);
-  letter-spacing: -0.045em;
-}
-.project-shell .site-bar .global-nav {
-  justify-content: flex-start;
-  gap: clamp(18px, 2.6vw, 44px);
-}
-.project-shell .site-bar .global-nav .nav-item {
-  font-size: clamp(15px, 1.15vw, 18px);
 }
 /* Navigation reads as navigation: an underline on hover and for where the reader is, a
    filled panel for an open menu. Colour alone never carries the state. */
 .site-bar .global-nav .nav-item {
   text-decoration: underline;
   text-decoration-color: transparent;
-  text-decoration-thickness: 2px;
+  text-decoration-thickness: 1px;
   text-underline-offset: 0.35em;
   transition: text-decoration-color var(--dur) var(--ease);
 }
 .site-bar .global-nav .nav-item:hover {
-  color: var(--ink);
   text-decoration-color: var(--line-strong);
 }
 .site-bar .global-nav .nav-item[aria-current],
 .site-bar .global-nav .nav-item[aria-expanded='true'] {
-  color: var(--ink);
   text-decoration-color: var(--ink);
 }
 .site-bar .language-switch button {
@@ -347,34 +288,6 @@
 .site-bar .language-switch button:hover {
   color: var(--ink);
 }
-/* Scrolled: one slim row, the name small beside the navigation. */
-.site-bar.is-compact {
-  grid-template-columns: max-content minmax(0, 1fr) auto;
-  grid-template-areas: 'name nav lang';
-  padding-block: 8px;
-  border-bottom: 1px solid var(--line);
-}
-.site-bar.is-compact .wordmark-name {
-  font-size: clamp(18px, 1.6vw, 24px);
-  letter-spacing: -0.04em;
-}
-.site-bar.is-compact .global-nav {
-  justify-content: flex-start;
-  gap: clamp(16px, 2.4vw, 40px);
-}
-.site-bar.is-compact .global-nav .nav-item {
-  font-size: clamp(15px, 1.1vw, 18px);
-}
-@media (max-width: 860px) {
-  .site-bar.is-compact {
-    grid-template-columns: minmax(0, 1fr) auto auto;
-    grid-template-areas: 'name lang menu';
-  }
-  .site-bar.is-compact .wordmark-name {
-    font-size: 20px;
-  }
-}
-/* The intro's tests and old styles still look for a location line; there is none now. */
 
 /* ---------- Project context ---------- */
 .project-context {
@@ -520,7 +433,7 @@
 .project-shell {
   --project-accent: var(--data-purple);
 }
-.project-shell #main h1 {
+.project-shell #main h1:not(.project-hero-title) {
   font-family: var(--font);
   font-size: clamp(32px, 4.4vw, 64px);
   line-height: 1.08;

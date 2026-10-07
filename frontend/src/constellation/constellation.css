@@ -5,9 +5,6 @@
   --c-rule: var(--line);
   color: var(--c-ink);
 }
-.constellation-hero {
-  padding-block: 1.5rem 1rem;
-}
 .constellation-kicker {
   display: flex;
   align-items: center;
@@ -17,38 +14,6 @@
   font: 500 11px var(--font-mono);
   letter-spacing: 0.14em;
   text-transform: uppercase;
-}
-.constellation-hero h1 {
-  max-width: 22ch;
-  margin: 0 0 0.6rem;
-  font-size: clamp(30px, 4vw, 56px);
-  line-height: 1.02;
-  letter-spacing: -0.04em;
-}
-.constellation-lede {
-  max-width: 62ch;
-  margin: 0;
-  color: var(--c-muted);
-}
-.constellation-facts {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 1rem;
-  margin: 1.4rem 0 0;
-}
-.constellation-facts div {
-  padding-top: 0.6rem;
-  border-top: 1px solid var(--c-rule);
-}
-.constellation-facts dt {
-  font: 500 11px var(--font-mono);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-.constellation-facts dd {
-  margin: 0.3rem 0 0;
-  color: var(--c-muted);
-  font-size: 0.85rem;
 }
 
 .constellation-stage {
@@ -424,7 +389,6 @@
   }
 }
 @media (max-width: 760px) {
-  .constellation-facts,
   .constellation-editorial {
     grid-template-columns: minmax(0, 1fr);
   }

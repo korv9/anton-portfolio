@@ -17,7 +17,18 @@ import {
   ValidityPanel,
 } from './QualityPanel'
 import type { Analysis, QualityData } from './types'
+import { ProjectHero } from '../ui/Project'
 import './quality.css'
+
+/** One line for the first screen: what ran, what failed, what is not measured. */
+function runLine({ summary, checks }: QualityData) {
+  const failed = checks.filter((c) => c.status === 'fail').length
+  const open = checks.filter((c) => c.status === 'not_measured').length
+  return l(
+    `${summary.run.checks} checks across ${summary.products.length} products on ${summary.run.evaluated_at.slice(0, 10)}: ${failed} failed, ${open} not measured yet. There is no overall score.`,
+    `${summary.run.checks} kontroller över ${summary.products.length} produkter den ${summary.run.evaluated_at.slice(0, 10)}: ${failed} underkända, ${open} ännu inte mätta. Det finns inget totalbetyg.`,
+  )
+}
 
 const DEFAULTS = { produkt: '' }
 
@@ -26,27 +37,34 @@ export default function QualityPage({ route }: { route: Route }) {
   const [params, set] = useViewParams(route, DEFAULTS)
   return (
     <div className="quality">
-      <header className="q-hero ds-container">
-        <p className="q-kicker">
-          {l(
+      <div className="ds-container">
+        <ProjectHero
+          eyebrow={l(
             'Under the hood · quality & validity',
             'Under huven · kvalitet och validitet',
           )}
-        </p>
-        <h1>{l('Quality & Validity', 'Kvalitet och validitet')}</h1>
-        <p className="q-question">
-          {l(
+          title={l('Quality & Validity', 'Kvalitet och validitet')}
+          question={l(
             'Did I build the data correctly? And does the analysis actually measure what I think it measures?',
             'Byggde jag datan rätt? Och mäter analysen faktiskt det jag tror att den mäter?',
           )}
-        </p>
-        <p className="q-lede">
-          {l(
-            'The platform separates data quality from analytical validity: correct data does not automatically mean a valid conclusion.',
-            'Plattformen skiljer datakvalitet från analytisk validitet: korrekt data betyder inte automatiskt en giltig slutsats.',
-          )}
-        </p>
-      </header>
+          findingLabel={l('Latest run', 'Senaste körningen')}
+          finding={data ? runLine(data) : undefined}
+          nav={[
+            { href: '#quality-matrix', label: l('Products', 'Produkter') },
+            { href: '#quality-validity', label: l('Validity', 'Validitet') },
+            { href: '#quality-checks', label: l('Checks', 'Kontroller') },
+            { href: '#quality-method', label: l('Method', 'Metod') },
+          ]}
+        >
+          <p>
+            {l(
+              'The platform separates data quality from analytical validity: correct data does not automatically mean a valid conclusion.',
+              'Plattformen skiljer datakvalitet från analytisk validitet: korrekt data betyder inte automatiskt en giltig slutsats.',
+            )}
+          </p>
+        </ProjectHero>
+      </div>
       <div className="q-body ds-container">
         {error && (
           <p>

@@ -13,14 +13,6 @@
 .q-panel a {
   color: inherit;
 }
-.q-hero {
-  padding-block: 1.6rem 1.2rem;
-}
-.q-hero h1 {
-  margin: 0 0 0.5rem;
-  font-size: clamp(34px, 4.6vw, 64px);
-  letter-spacing: -0.02em;
-}
 .q-kicker {
   margin: 0 0 0.4rem;
   color: var(--q-muted);
@@ -28,19 +20,11 @@
   letter-spacing: 0.14em;
   text-transform: uppercase;
 }
-.q-question {
-  max-width: 50ch;
-  margin: 0;
-  font-size: clamp(18px, 1.6vw, 23px);
-}
-.q-lede,
+
 .q-muted {
   max-width: 72ch;
   color: var(--q-muted);
   line-height: 1.5;
-}
-.q-lede {
-  margin: 1rem 0 0;
 }
 .q-small {
   font-size: 0.86rem;

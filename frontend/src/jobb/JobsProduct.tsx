@@ -82,11 +82,16 @@ export default function JobsProduct({ route }: { route: Route }) {
       </nav>
     </Side>
   )
+  // The overview opens on its own first screen: no sidebar, and the field bar under it.
+  const landing = theme?.key === 'lage'
   return (
-    <div className={dock ? 'politik jobb docked' : 'politik jobb'} id="jobb">
-      {dock ? createPortal(side, dock) : side}
+    <div
+      className={`politik jobb${dock && !landing ? ' docked' : ''}${landing ? ' politik-landing' : ''}`}
+      id="jobb"
+    >
+      {landing ? null : dock ? createPortal(side, dock) : side}
       <div className="politik-body">
-        {theme && theme.key !== 'kluster' && data && (
+        {theme && !landing && theme.key !== 'kluster' && data && (
           <FieldBar route={route} data={data} />
         )}
         <div className="politik-main">
@@ -108,7 +113,12 @@ export default function JobsProduct({ route }: { route: Route }) {
             ) : !data ? (
               !error && loading
             ) : theme.key === 'lage' ? (
-              <Dashboard route={route} data={data} fields={selected} />
+              <Dashboard
+                route={route}
+                data={data}
+                fields={selected}
+                slicer={<FieldBar route={route} data={data} />}
+              />
             ) : (
               <Themes
                 theme={theme.key}

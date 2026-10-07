@@ -13,7 +13,6 @@ import {
   RESEARCH,
   type Bilingual,
 } from './projectRegistry'
-import '../home/home.css'
 import './projects.css'
 
 const b = (text: Bilingual) => l(text.en, text.sv)

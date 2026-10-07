@@ -11,6 +11,7 @@ import {
 import { Suspense, lazy, useEffect, useMemo, useState } from 'react'
 import { l } from '../i18n'
 import { ProductQuality } from '../quality/QualityPanel'
+import { ProjectHero } from '../ui/Project'
 import {
   DOMAINS,
   fetchJson,
@@ -140,14 +141,27 @@ export default function WelfarePage({ view }: { view: string }) {
 
   return (
     <div className="project-page welfare-page">
-      <div className="page-lead welfare-lead">
-        <DataQuestion
-          level={1}
-          eyebrow={l('How is Sweden doing?', 'Hur mår Sverige?')}
+      {view === '#sweden' ? (
+        <ProjectHero
+          project="welfare"
           question={l(
             'Which parts of Sweden do well or poorly, measure by measure?',
             'Var i Sverige går det bra och dåligt, mått för mått?',
           )}
+          nav={[
+            {
+              href: '#sweden-counties',
+              label: l('Compare counties', 'Jämför län'),
+            },
+            {
+              href: '#sweden-explorer',
+              label: l('Explore indicators', 'Utforska indikatorer'),
+            },
+            {
+              href: '#status',
+              label: l('Pipeline status', 'Pipelinens status'),
+            },
+          ]}
         >
           <p>
             {l(
@@ -155,18 +169,42 @@ export default function WelfarePage({ view }: { view: string }) {
               'Arbetslöshet, stressrelaterad sjukskrivning och sjukpenning i alla 21 län, på samma axel. Allt här är beskrivande: det visar var måtten skiljer sig och följs åt, inte varför.',
             )}
           </p>
-        </DataQuestion>
-      </div>
+        </ProjectHero>
+      ) : (
+        <>
+          <div className="page-lead welfare-lead">
+            <DataQuestion
+              level={1}
+              eyebrow={l('How is Sweden doing?', 'Hur mår Sverige?')}
+              question={l(
+                'Which parts of Sweden do well or poorly, measure by measure?',
+                'Var i Sverige går det bra och dåligt, mått för mått?',
+              )}
+            >
+              <p>
+                {l(
+                  'Unemployment, stress-related sick leave and sickness benefit in all 21 counties, on the same axis. Everything here is descriptive: it shows where measures differ and move together, not why.',
+                  'Arbetslöshet, stressrelaterad sjukskrivning och sjukpenning i alla 21 län, på samma axel. Allt här är beskrivande: det visar var måtten skiljer sig och följs åt, inte varför.',
+                )}
+              </p>
+            </DataQuestion>
+          </div>
+          <TopicNav
+            active={view}
+            items={[
+              ['#sweden', 'Overview', 'Översikt'],
+              ['#sweden-counties', 'Compare counties', 'Jämför län'],
+              [
+                '#sweden-explorer',
+                'Explore indicators',
+                'Utforska indikatorer',
+              ],
+            ]}
+          />
+        </>
+      )}
       {error && <p role="alert">{error}</p>}
 
-      <TopicNav
-        active={view}
-        items={[
-          ['#sweden', 'Overview', 'Översikt'],
-          ['#sweden-counties', 'Compare counties', 'Jämför län'],
-          ['#sweden-explorer', 'Explore indicators', 'Utforska indikatorer'],
-        ]}
-      />
       {view === '#sweden' && (
         <section className="report welfare-section welfare-main">
           <CountyMultiples rows={counties} />

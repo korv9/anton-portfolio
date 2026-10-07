@@ -6,7 +6,7 @@
  * chosen in the field bar; the latest year is partial, so every change compares the same months
  * of the year before.
  */
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, type ReactNode } from 'react'
 import { TraceResult } from '../ui/Trace'
 import { l } from '../i18n'
 import type { Route } from '../router'
@@ -32,11 +32,11 @@ import {
   type Market,
 } from './data'
 import { withFields } from './selection'
+import { ProjectHero } from '../ui/Project'
 import {
   ChartSection,
   DataQuestion,
   ExploreSection,
-  FindingHero,
   Interpretation,
   MethodSummary,
   SourceCaption,
@@ -50,10 +50,13 @@ export default function Dashboard({
   route,
   data,
   fields,
+  slicer,
 }: {
   route: Route
   data: Market
   fields: string[]
+  /** The field bar, placed under the first screen rather than above it. */
+  slicer?: ReactNode
 }) {
   const [view, setView] = useViewParams(route, SLICERS)
   const latest = data.latest_year
@@ -164,42 +167,58 @@ export default function Dashboard({
 
   return (
     <div className="jobb-story">
-      <DataQuestion
-        level={1}
-        eyebrow={l('The job market in numbers', 'Jobbmarknaden i siffror')}
-        question={l(
-          'How is demand for labour changing?',
-          'Hur förändras efterfrågan på arbetskraft?',
-        )}
+      <ProjectHero
+        project="jobs"
+        finding={
+          <>
+            <b>{signedPct(delta)}</b>{' '}
+            {direction
+              ? l(
+                  `${number(now)} new ads in ${period}: ${direction} than in the same months of ${previous}.`,
+                  `${number(now)} nya annonser ${period}: ${direction} än samma månader ${previous}.`,
+                )
+              : l(
+                  `${number(now)} new ads in ${period}.`,
+                  `${number(now)} nya annonser ${period}.`,
+                )}
+          </>
+        }
+        findingLabel={l('Latest', 'Senast')}
+        nav={[
+          { href: '#jobb', label: l('Overview', 'Översikt'), current: true },
+          {
+            href: withFields('#jobb-trender', fields),
+            label: l('Trends', 'Trender'),
+          },
+          {
+            href: withFields('#jobb-yrken', fields),
+            label: l('Occupations', 'Yrken'),
+          },
+          { href: withFields('#jobb-lan', fields), label: l('Regions', 'Län') },
+          {
+            href: withFields('#jobb-utforska', fields),
+            label: l('Explore', 'Utforska'),
+          },
+          {
+            href: withFields('#jobb-kallor', fields),
+            label: l('Sources', 'Källor'),
+          },
+        ]}
       >
         <p>
           {l(
-            `New job ads in ${scope}, compared with the same months a year earlier.`,
-            `Nya jobbannonser för ${scope}, jämförda med samma månader året innan.`,
+            `Every job ad published through Arbetsförmedlingen since 2020, read as a measure of demand: new ads in ${scope}, compared with the same months a year earlier.`,
+            `Varje jobbannons som publicerats via Arbetsförmedlingen sedan 2020, läst som ett mått på efterfrågan: nya annonser för ${scope}, jämförda med samma månader året innan.`,
           )}
         </p>
-      </DataQuestion>
-
-      <FindingHero
-        value={signedPct(delta)}
-        statement={
-          direction
-            ? l(
-                `${number(now)} new ads in ${period}: ${direction} than in the same months of ${previous}.`,
-                `${number(now)} nya annonser ${period}: ${direction} än samma månader ${previous}.`,
-              )
-            : l(
-                `${number(now)} new ads in ${period}.`,
-                `${number(now)} nya annonser ${period}.`,
-              )
-        }
-        source={source(
+        {source(
           l(
             'an ad without a number of vacancies counts as one',
             'en annons utan antal platser räknas som en',
           ),
         )}
-      />
+      </ProjectHero>
+      {slicer}
 
       <ChartSection
         level={2}
