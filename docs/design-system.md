@@ -49,15 +49,14 @@ Party colours are unchanged and come from `frontend/src/parties/identity.tsx`.
 ### Dark plates
 
 `.plate` redefines the same tokens for its subtree, so a component inside reads its colours
-from the tokens and needs no theme of its own. It is used by the Symbolic Atlas, the Data
-Constellation, the concept and philosophy maps, the job clusters and the project stages
-(`Stage` with `dark`). Component aliases such as `--stage-ink` or `--c-muted` are declared
+from the tokens and needs no theme of its own. `Stage` is light unless it is given `dark`;
+only the Symbolic Atlas map asks for it. Component aliases such as `--stage-ink` or `--c-muted` are declared
 again inside `.plate`, because a custom property set on an outer element keeps the outer
 value.
 
 On the Symbolic Atlas the clusters are muted hues on the plate. In the book views, other
 clusters are grey, cross-book candidates stone (`#C9C2B6`) and reviewed clusters off-white,
-with a key beside the map. The Data Constellation keeps bronze, silver and gold tones for
+with a key beside the map. The Data Constellation sits on the light page. It keeps bronze, silver and gold tones for
 the medallion layers and draws everything else in greys; each layer also has its own mark
 shape, so colour is never the only cue.
 

@@ -499,7 +499,14 @@ export function AgendaLines({
   const x = (i: number) =>
     pad.l + (i / (agenda.length - 1)) * (W - pad.l - pad.r)
   const y = (v: number) => pad.t + (1 - v / top) * (H - pad.t - pad.b)
-  const ink = ['#2a78d6', '#eb6834', '#1baf7a', '#eda100', '#e87ba4', '#4a3aa7']
+  const ink = [
+    'var(--data-blue)',
+    'var(--data-rust)',
+    'var(--data-green)',
+    'var(--data-ochre)',
+    'var(--data-purple)',
+    'var(--data-teal)',
+  ]
   const ends = shown
     .map((k, i) => ({ k, i, y: y(agenda.at(-1)!.shares[k] ?? 0) }))
     .sort((a, b) => a.y - b.y)
@@ -560,7 +567,7 @@ export function AgendaLines({
               )
               .join(' ')}
             fill="none"
-            stroke={ink[i % ink.length]}
+            style={{ stroke: ink[i % ink.length] }}
             strokeWidth={2}
           />
         ))}

@@ -1,6 +1,6 @@
 /*
  * The project dashboard frame (Stage.tsx): figure across the middle at nearly the full height of
- * the screen, technical panels at the sides in small type. Dark by default, like a chart room.
+ * the screen, technical panels at the sides in small type. Light by default; `dark` puts it on a plate.
  */
 
 .stage {

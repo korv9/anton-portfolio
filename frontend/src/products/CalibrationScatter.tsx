@@ -18,8 +18,13 @@ type Point = {
   n?: number
   scheme: string
 }
-// Categorical slots 1–4 of the validated reference palette, in fixed order.
-const COLOURS = ['#2a78d6', '#eb6834', '#1baf7a', '#e87ba4']
+// The site's data-series tokens, in fixed order.
+const COLOURS = [
+  'var(--data-blue)',
+  'var(--data-rust)',
+  'var(--data-green)',
+  'var(--data-purple)',
+]
 const TOLERANCE = 1
 const f1 = (v: number) =>
   v.toLocaleString('sv-SE', {

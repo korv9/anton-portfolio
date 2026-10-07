@@ -303,6 +303,7 @@ export default function SymbolicAtlasPage({ route }: { route: Route }) {
       </div>
       <Stage
         id="symbolic-map"
+        dark
         level={2}
         kicker={l('The atlas', 'Atlasen')}
         title={l(

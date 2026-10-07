@@ -29,7 +29,15 @@ export type DrugCluster = {
 const W = 1000
 const H = 640
 const PAD = 70
-const HUES = ['#f3d9a4', '#a9cbe8', '#e8b4b8', '#b8d8b0', '#d0c3ec', '#f0c7a0']
+// The site's data-series tokens, in fixed order.
+const HUES = [
+  'var(--data-ochre)',
+  'var(--data-blue)',
+  'var(--data-rust)',
+  'var(--data-green)',
+  'var(--data-purple)',
+  'var(--data-teal)',
+]
 const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII']
 
 const num = fixed
@@ -148,9 +156,11 @@ export default function DrugConstellation({
             y1={e.a.py}
             x2={e.b.px}
             y2={e.b.py}
-            stroke={HUES[e.cluster % HUES.length]}
             opacity={dim(e.cluster) ? 0.05 : 0.35}
-            style={{ ['--k' as string]: k }}
+            style={{
+              ['--k' as string]: k,
+              stroke: HUES[e.cluster % HUES.length],
+            }}
           />
         ))}
         {placed.map((d, k) => (
@@ -167,12 +177,12 @@ export default function DrugConstellation({
               cx={d.px}
               cy={d.py}
               r={d.r}
-              fill={HUES[d.cluster % HUES.length]}
+              style={{ fill: HUES[d.cluster % HUES.length] }}
             />
             {d.r > 4 && (
               <path
                 d={`M ${d.px - d.r * 2.2} ${d.py} H ${d.px + d.r * 2.2} M ${d.px} ${d.py - d.r * 2.2} V ${d.py + d.r * 2.2}`}
-                stroke={HUES[d.cluster % HUES.length]}
+                style={{ stroke: HUES[d.cluster % HUES.length] }}
                 className="dsky-spike"
               />
             )}
@@ -185,7 +195,7 @@ export default function DrugConstellation({
             y={c.cy - 18}
             textAnchor="middle"
             className="dsky-label"
-            fill={HUES[c.id % HUES.length]}
+            style={{ fill: HUES[c.id % HUES.length] }}
             opacity={dim(c.id) ? 0.2 : 1}
           >
             {ROMAN[c.id]}

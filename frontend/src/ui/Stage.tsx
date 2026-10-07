@@ -17,7 +17,7 @@ export function Stage({
   figure,
   left,
   right,
-  dark = true,
+  dark = false,
   level = 2,
 }: {
   id: string

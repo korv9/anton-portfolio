@@ -18,12 +18,12 @@ export type ColumnSeries = {
   values: (number | null)[]
 }
 
-const NEUTRAL = '#2a78d6'
+const NEUTRAL = 'var(--ink-2)'
 
 function colour(series: ColumnSeries, index: number, total: number) {
   if (series.party) return identity(series.party).color
   // Non-party series: one hue in steps, darkest first.
-  const shades = ['#2a78d6', '#7aaee8', '#b9d3f2']
+  const shades = ['var(--ink-2)', 'var(--subtle)', 'var(--line-strong)']
   return total === 1 ? NEUTRAL : shades[index % shades.length]
 }
 
@@ -202,9 +202,11 @@ export default function Columns({
                           (stacked ? inner : colW) - (colW > 5 ? 1 : 0),
                         )}
                         height={Math.max(1, bottom - top)}
-                        fill={colour(s, j, series.length)}
                         stroke={p?.casing ?? undefined}
-                        style={{ ['--i' as string]: i }}
+                        style={{
+                          ['--i' as string]: i,
+                          fill: colour(s, j, series.length),
+                        }}
                       />
                     )
                   })}

@@ -169,8 +169,14 @@ export default function DecisionTree({
       >
         <defs>
           <radialGradient id="dtree-glow">
-            <stop offset="0" stopColor="#ffe3a3" stopOpacity="0.9" />
-            <stop offset="1" stopColor="#ffe3a3" stopOpacity="0" />
+            <stop
+              offset="0"
+              style={{ stopColor: 'var(--data-ochre)', stopOpacity: 0.55 }}
+            />
+            <stop
+              offset="1"
+              style={{ stopColor: 'var(--data-ochre)', stopOpacity: 0 }}
+            />
           </radialGradient>
         </defs>
         <rect width={W} height={H} className="dtree-ground" />

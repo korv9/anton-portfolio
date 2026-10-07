@@ -318,7 +318,7 @@
   transition: background 150ms;
 }
 .story-columns li.on span {
-  background: #2a78d6;
+  background: var(--ink-2);
 }
 .story-columns li small {
   position: absolute;

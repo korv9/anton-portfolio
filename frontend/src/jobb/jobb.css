@@ -58,11 +58,11 @@
   display: block;
 }
 .jobb-columns rect {
-  fill: #8e939b;
+  fill: var(--line-strong);
   transition: fill 160ms;
 }
 .jobb-columns rect.recent {
-  fill: #2a78d6;
+  fill: var(--ink-2);
 }
 .jobb-columns .jobb-hit {
   fill: transparent;
@@ -124,7 +124,7 @@
 }
 .jobb-line {
   fill: none;
-  stroke: #2a78d6;
+  stroke: var(--ink-2);
   stroke-width: 2;
   vector-effect: non-scaling-stroke;
 }

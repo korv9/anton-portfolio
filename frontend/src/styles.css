@@ -93,7 +93,6 @@ main {
   color: var(--teal);
 }
 .reports {
-  background: var(--paper);
   border-top: 1px solid var(--line);
 }
 .featured-projects {
