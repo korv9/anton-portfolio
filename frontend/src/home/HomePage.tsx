@@ -340,6 +340,14 @@ const DEEP_DIVES: { href: string; title: Bilingual; line: Bilingual }[] = [
     },
   },
   {
+    href: '#data-catalogue',
+    title: { en: 'Data catalogue', sv: 'Datakatalog' },
+    line: {
+      en: 'Every published dataset, its model, source, readers and quality.',
+      sv: 'Varje publicerat dataset, dess modell, källa, läsare och kvalitet.',
+    },
+  },
+  {
     href: '#alla-projekt',
     title: { en: 'All projects', sv: 'Alla projekt' },
     line: {

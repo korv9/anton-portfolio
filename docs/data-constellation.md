@@ -118,6 +118,23 @@ their `tables`.
   only colour; only the bronze, silver and gold layers keep their tones, the rest are greys.
 - **Phone.** Below 700 px the map stands upright and fills the screen's width: stages run top to bottom, domains become columns, stage names run up the left edge, and only products, the selection and short paths are labelled. No sideways scrolling; the details follow below, and the layer chips sit in one swipeable row.
 
+## Trace this result and the data catalogue
+
+The graph also serves two lighter views.
+
+- **Trace this result** (`frontend/src/ui/Trace.tsx`): a fold under a figure that lists, stage
+  by stage, where it comes from: the page, the published file, the gold model, silver, bronze,
+  seeds, the raw copy, the ingestion and the official source (`tracePath` in
+  `frontend/src/constellation/graph.ts`, unit-tested). It is used on the AI Act timeline and
+  obligations, the politics overview, the job market, welfare and the Concept Journey, and links
+  to the full lineage here (`#data-constellation?view=lineage&node=<id>`).
+- **Data catalogue** (`#data-catalogue`, `frontend/src/catalogue/`): every delivery node as a
+  dataset, with the gold models it is published from (description, grain, columns, rows), its
+  files from `catalog.json` (format, size, rows, download), its sources, the pages that read it
+  and the quality checks registered on its models. Above it, the platform's status: when the
+  graph was built, the export run, how many quality checks pass, and each domain's own record
+  of when it was last built or checked. A domain without such a record is left out.
+
 ## Adding things
 
 - **A source:** add an `ORIGINS` entry and list it in its ingester's `origins`.

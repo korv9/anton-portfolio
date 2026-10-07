@@ -5,6 +5,7 @@
  * under Explore.
  */
 import { useState } from 'react'
+import { TraceResult } from '../../ui/Trace'
 import {
   ChartSection,
   ExploreSection,
@@ -151,6 +152,10 @@ export default function Skiljelinjerna({ a }: { a: Analytics }) {
           )}
         </p>
       </Interpretation>
+      <TraceResult
+        node="out:politics/decisions/**"
+        what={l('the roll calls behind the chart', 'voteringarna bakom grafen')}
+      />
       <ExploreSection
         id="vem-med-vem"
         title={l(

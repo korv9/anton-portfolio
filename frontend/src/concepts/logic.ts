@@ -106,3 +106,33 @@ export function relationsOf(
 
 export const pct = (v: number, digits = 0) =>
   `${(v * 100).toFixed(digits).replace('.', ',')} %`
+
+/**
+ * The concepts the Concept Journey opens with: the ones the data supports across most domains
+ * (a Riksdag word group, an AI Act view or job-ad term, a Philosophy Atlas tension), plus
+ * autonomy, which shows how a concept can be strong in one domain and almost absent in another.
+ */
+export const JOURNEY_CONCEPTS = [
+  'risk',
+  'transparency',
+  'control',
+  'responsibility',
+  'autonomy',
+]
+
+/** Where a concept is most and least often the closest, by lift over chance. */
+export function strongestWeakest(
+  profile: Profile[],
+): { strongest: Profile; weakest: Profile } | null {
+  if (!profile.length) return null
+  const sorted = [...profile].sort((a, b) => b.rank1_lift - a.rank1_lift)
+  return { strongest: sorted[0], weakest: sorted[sorted.length - 1] }
+}
+
+/** A passage shortened at a word boundary, for an editorial excerpt. */
+export function excerpt(text: string, max = 280): string {
+  const clean = text.replace(/\s+/g, ' ').trim()
+  if (clean.length <= max) return clean
+  const cut = clean.slice(0, max)
+  return `${cut.slice(0, cut.lastIndexOf(' ')).replace(/[,;:.]$/, '')} …`
+}

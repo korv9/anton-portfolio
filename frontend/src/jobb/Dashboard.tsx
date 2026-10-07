@@ -7,6 +7,7 @@
  * of the year before.
  */
 import { lazy, Suspense } from 'react'
+import { TraceResult } from '../ui/Trace'
 import { l } from '../i18n'
 import type { Route } from '../router'
 import { useViewParams } from '../politik/useViewParams'
@@ -251,6 +252,10 @@ export default function Dashboard({
           )}
         </p>
       </Interpretation>
+      <TraceResult
+        node="out:jobs/market.json"
+        what={l('the ads per month', 'annonserna per månad')}
+      />
 
       <section className="jobb-story-section" aria-labelledby="jobb-growing">
         <DataQuestion

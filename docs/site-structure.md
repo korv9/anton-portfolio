@@ -43,7 +43,9 @@ Selected projects, in this order:
 
 Supporting technical page: Quality & Validity (`#quality`, [quality-and-validity.md](quality-and-validity.md)), linked from the footer (Under the hood), Data Constellation and each product's *Quality & validity* section.
 
-Experimental, not featured: Philosophy Atlas (`#philosophy-atlas`, [philosophy-atlas.md](philosophy-atlas.md)) and Concept Constellation (`#concept-constellation`, concept pages `#concept-<id>`, [concept-constellation.md](concept-constellation.md)).
+Experimental, not featured: Philosophy Atlas (`#philosophy-atlas`, [philosophy-atlas.md](philosophy-atlas.md)) and Concept Constellation (`#concept-constellation`, concept pages `#concept-<id>`, [concept-constellation.md](concept-constellation.md)). The Concept Journey (`#concept-journey`, [concept-journey.md](concept-journey.md)) is its reading view and appears on the start page as the sixth project.
+
+Technical pages beside Data Constellation: the data catalogue with the platform's status (`#data-catalogue`), linked from the footer and the start page's Under the hood.
 
 Everything else (DrugComb, taLLMan, Allegoria, DiVA, Homie, RAG, MIMII, IN1) is other work.
 

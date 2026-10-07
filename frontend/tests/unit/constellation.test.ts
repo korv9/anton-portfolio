@@ -12,6 +12,7 @@ import {
   lineageOf,
   nodesFor,
   search,
+  tracePath,
   upstream,
   type Graph,
 } from '../../src/constellation/graph.ts'
@@ -105,4 +106,47 @@ test('search finds the symbol models and files', () => {
   const found = search(graph, 'symbol', 20).map((n) => n.id)
   assert.ok(found.includes('dbt:int_symbol_occurrences'))
   assert.ok(found.includes('dbt:mart_symbol_atlas'))
+})
+
+test('an AI Act obligation traces from the page back to the Publications Office', () => {
+  const path = tracePath(graph, 'out:ai-act/obligations.json')
+  const stages = path.map((g) => g.type)
+  assert.deepEqual(
+    stages,
+    [...stages].sort(
+      (a, b) =>
+        [
+          'frontend',
+          'delivery',
+          'gold',
+          'ml',
+          'silver',
+          'bronze',
+          'seed',
+          'raw',
+          'ingestion',
+          'source',
+        ].indexOf(a) -
+        [
+          'frontend',
+          'delivery',
+          'gold',
+          'ml',
+          'silver',
+          'bronze',
+          'seed',
+          'raw',
+          'ingestion',
+          'source',
+        ].indexOf(b),
+    ),
+  )
+  const ids = path.flatMap((g) => g.nodes.map((n) => n.id))
+  for (const id of [
+    'app:ai_act',
+    'dbt:mart_ai_act_obligations',
+    'ingest:eu_ai_act',
+    'src:publications-office',
+  ])
+    assert.ok(ids.includes(id), id)
 })

@@ -34,6 +34,7 @@ const QualityPage = lazy(() => import('./quality/QualityPage'))
 const ConceptConstellationPage = lazy(
   () => import('./concepts/ConceptConstellationPage'),
 )
+const CataloguePage = lazy(() => import('./catalogue/CataloguePage'))
 const DataConstellationPage = lazy(
   () => import('./constellation/DataConstellationPage'),
 )
@@ -131,6 +132,7 @@ export default function App() {
             {page === 'constellation' && (
               <DataConstellationPage route={route} />
             )}
+            {page === 'catalogue' && <CataloguePage />}
             {page === 'aiact' && <AiActProduct route={route} />}
             {page === 'philosophy' && <PhilosophyAtlasPage route={route} />}
             {page === 'concepts' && <ConceptConstellationPage route={route} />}

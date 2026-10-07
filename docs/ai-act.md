@@ -150,18 +150,37 @@ No summary replaces legal text; no LLM output is used anywhere in this product.
 
 ## The page
 
-`frontend/src/aiact/`. Views: overview (what it is, what applies now, what is next, who is
-affected; latest official change, application date, next milestone, latest guidance; a monthly
-snapshot sized for a screenshot with "copy as text"), today (every article by chapter with its
-status on the reader's date), timeline, roles, risk classes, obligations (role × topic matrix
-and a filterable list), the **startup navigator**, changes (with "what changed this month")
-the Riksdag and AI (`#ai-act-politics`), job ads (`#ai-act-jobs`), the AI governance timeline
-(`#ai-act-signals`) and sources. `#ai-act-article?a=<n>` opens an article with its official text in the reader's
-language. The reader's date decides what applies; `?idag=YYYY-MM-DD` previews another day.
+`frontend/src/aiact/`. The overview (`#ai-act`) answers practical questions first and leaves
+the legal modelling for later:
+
+1. **Today:** the latest application date as the main finding, with its article.
+2. **Next:** the next milestone, and the latest official change. Each carries its source label.
+   A line says when the source was last verified (`summary.latest_retrieval`).
+3. **Who are you?** The startup navigator first, then one link per operator role to its
+   obligations (`#ai-act-obligations?actor=<id>`).
+4. **In Sweden:** links to the AI governance timeline, the Riksdag and job ads. The page says
+   that these signals happen in the same period and that this does not show causation.
+5. **This month:** the snapshot, sized for a screenshot, with "copy as text".
+6. Folded: what the Act is, the latest guidance and the amendment. Then *Quality in brief*
+   (accuracy, currentness, traceability, validity, each with its evidence), *How it was built*
+   and *Trace this result*, which opens the lineage from the timeline file back to the
+   Publications Office.
+
+The project navigation follows the same order: overview, today, who it applies to, startup
+navigator, timeline, obligations, risk classes, changes, the Riksdag, job ads, the governance
+timeline, sources. `#ai-act-article?a=<n>` opens an article with its official text in the
+reader's language. The reader's date decides what applies; `?idag=YYYY-MM-DD` previews another
+day.
+
+Every obligation shows three layers that are never merged: the plain-language summary
+(interpretation), the verbatim sentence (official text), and, folded, how it is stored in
+`mart_ai_act_obligations` (derived). A changed document lists the actors its changed articles
+name as "may affect" (derived).
 
 The navigator's rules live in `platform/publish/eu_ai_act/navigator.json` and are checked
-against the obligations and articles when published. Its result says what a scenario *may
-involve* and never classifies anyone.
+against the obligations and articles when published. Its result lists role considerations,
+risk classes, topics, articles and the official source, says "navigation aid, not legal
+advice", and never classifies anyone.
 
 ## The Riksdag and AI
 

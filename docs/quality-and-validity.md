@@ -211,6 +211,20 @@ There are 14 analyses with 27 diagnostics: 8 supported, 11 warning, 8 insufficie
 - **Concept layer.** Same-corpus neighbours are 3.8 × chance (warning); Swedish and English
   anchors agree for every concept (supported).
 
+## On the product pages
+
+Each product shows the quality points that matter for it in *Quality in brief*
+(`QualityBrief` in `frontend/src/ui/Story.tsx`), each a dimension with its evidence, and links
+here for the full profile. The AI Act states accuracy (quotes tested verbatim against the
+official text, `assert_ai_act_quotes_in_current_text`), currentness, traceability and the
+navigator's limits. The Concept Journey states traceability, model quality, validity and
+review status.
+
+The Symbolic Atlas opens its research history with the case "a good model can still measure
+the wrong thing": the first run had the best-separated clusters (silhouette 0.51) and 74 % of a
+cluster from one book; the latest has weaker clusters (0.31) and 36 %. Model quality and
+construct validity are reported side by side, from `research-history.json`.
+
 ## Adding a product
 
 1. Add the product to `products` in `quality_registry.yml`.
