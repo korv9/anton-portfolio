@@ -53,9 +53,9 @@ test('project reports keep their data and downloads on their own pages', async (
   const card = report.locator('.board-card', {
     hasText: 'What the model relies on',
   })
-  const before = await card.locator('.dash-bars').innerText()
+  const before = await card.locator('.rank-bars').innerText()
   await card.getByRole('button', { name: 'New cell line' }).click()
-  await expect(card.locator('.dash-bars')).not.toHaveText(before)
+  await expect(card.locator('.rank-bars')).not.toHaveText(before)
   await page.goto('/#drugcomb-data')
   const drugData = page.locator('#drugcomb-data')
   await expect(

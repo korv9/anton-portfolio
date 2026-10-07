@@ -85,11 +85,11 @@ test('the map, the ranked groups and the picked profile work together', async ({
     '3 IT ads from 2024–2025 form 2 groups',
   )
   // The largest group is picked first; picking another moves the profile.
-  await expect(explorer.locator('.cluster-profile h3')).toHaveText(
+  await expect(explorer.locator('.cluster-profile h2')).toHaveText(
     '1 · Test group A',
   )
   await explorer.getByRole('button', { name: /2 · Test group B/ }).click()
-  await expect(explorer.locator('.cluster-profile h3')).toHaveText(
+  await expect(explorer.locator('.cluster-profile h2')).toHaveText(
     '2 · Test group B',
   )
   await expect(explorer.locator('.cluster-profile')).toContainText('Skill 1')
@@ -214,7 +214,7 @@ test('published real analysis reconciles with its evaluated run and renders', as
       (a: { job_count: number }, b: { job_count: number }) =>
         b.job_count - a.job_count,
     )[0]
-  await expect(explorer.locator('.cluster-profile h3')).toContainText(
+  await expect(explorer.locator('.cluster-profile h2')).toContainText(
     largest.cluster_label,
   )
   await explorer.scrollIntoViewIfNeeded()

@@ -51,8 +51,8 @@
   width: 10px;
   height: 10px;
 }
-.cluster-list h3,
-.cluster-profile h4 {
+.cluster-list h2,
+.cluster-profile h3 {
   margin: 0 0 var(--sp-3);
   font-size: var(--fs-meta);
   font-weight: 600;
@@ -71,7 +71,7 @@
   padding-left: var(--sp-5);
   border-left: 1px solid var(--line-strong);
 }
-.cluster-profile > h3 {
+.cluster-profile > h2 {
   margin: 0;
   font-size: var(--h3, 1.5rem);
 }

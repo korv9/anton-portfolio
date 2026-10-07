@@ -22,7 +22,7 @@ test('the job market tells a demand story: a question, an answer, one chart, the
     page.getByRole('heading', { name: 'Which roles are growing?' }),
   ).toBeVisible()
   await expect(
-    page.locator('.jobb-story a[href="#jobb-kluster"]'),
+    page.locator('.jobb-story-more a[href="#jobb-kluster"]'),
   ).toBeVisible()
   await expect(page.locator('#treemap')).toHaveCount(0)
   const answer = await page.locator('.project-hero-finding').textContent()

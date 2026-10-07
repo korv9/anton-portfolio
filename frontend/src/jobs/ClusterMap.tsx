@@ -321,7 +321,7 @@ export default function ClusterMap() {
 
       <div className="cluster-pair">
         <div className="cluster-list">
-          <h3>{l('The groups by size', 'Grupperna efter storlek')}</h3>
+          <h2>{l('The groups by size', 'Grupperna efter storlek')}</h2>
           <RankBars
             label={l('Ads per group', 'Annonser per grupp')}
             rows={groups.map((c) => ({
@@ -434,7 +434,7 @@ function Profile({ cluster: c, name }: { cluster: Cluster; name: string }) {
   const employer = c.top_employers?.[0]
   return (
     <section className="cluster-profile" aria-live="polite">
-      <h3>{name}</h3>
+      <h2>{name}</h2>
       <p className="cluster-profile-lead">
         {l(
           `${num(c.job_count)} ads, ${pct(c.dataset_share)} of all. Junior in the title: ${pct(c.junior_share)}; senior: ${pct(c.senior_share)}.`,
@@ -443,7 +443,7 @@ function Profile({ cluster: c, name }: { cluster: Cluster; name: string }) {
       </p>
       <div className="cluster-profile-grid">
         <div>
-          <h4>{l('Job titles in the group', 'Jobbtitlar i gruppen')}</h4>
+          <h3>{l('Job titles in the group', 'Jobbtitlar i gruppen')}</h3>
           <RankBars
             label={l('Share per title family', 'Andel per titelfamilj')}
             rows={c.role_distribution.map((r) => ({
@@ -457,7 +457,7 @@ function Profile({ cluster: c, name }: { cluster: Cluster; name: string }) {
         </div>
         {c.years && c.years.length > 1 && (
           <div>
-            <h4>{l('Ads per year', 'Annonser per år')}</h4>
+            <h3>{l('Ads per year', 'Annonser per år')}</h3>
             <RankBars
               label={l('Ads per year', 'Annonser per år')}
               rows={[...c.years]
@@ -468,15 +468,15 @@ function Profile({ cluster: c, name }: { cluster: Cluster; name: string }) {
           </div>
         )}
         <div>
-          <h4>
+          <h3>
             {l('Skills that set it apart', 'Kompetenser som skiljer ut den')}
-          </h4>
+          </h3>
           <div className="cluster-tags">
             {c.top_skills.slice(0, 8).map((s) => (
               <Tag key={s.skill}>{s.skill}</Tag>
             ))}
           </div>
-          <h4>{l('Common titles', 'Vanliga rubriker')}</h4>
+          <h3>{l('Common titles', 'Vanliga rubriker')}</h3>
           <ul className="cluster-titles">
             {c.top_titles.slice(0, 5).map((t) => (
               <li key={t.label}>
