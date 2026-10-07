@@ -93,6 +93,23 @@ The pieces that carry that rule:
   keep their names, and the first screen sits in front of them.
 - `a.work-card` (start page): the whole card is the link. A card has no buttons.
 
+## Charts
+
+A few forms, used everywhere, so a reader learns them once (`frontend/src/charts/`):
+
+- `RankBars`: the one bar chart. Categories ranked as horizontal bars, the label on the left
+  and the number written out on the right. It diverges around zero when a value is negative,
+  takes a party's colour only for a party, fades the other rows when one is picked, and shows
+  a "Show all" button past a limit. Built in HTML, so labels wrap on a phone.
+- `MultiLineChart`: change over time, one line per series, labelled at the end.
+- `Feature` (`charts/feature/`): the frame around a main chart. The title states the finding;
+  a lead, the controls, a table view and the source sit around the chart.
+- `Heatmap` and the poll trend keep their own forms where a grid or a trend is the answer.
+
+Maps and networks (Data Constellation, the job-ad clusters, the concept and philosophy maps)
+draw in greys with one focus: the picked item in ink or in the accent, everything else
+receding. Category hues come from `--data-*`, in a fixed order.
+
 ## Buttons and filters
 
 One system, in `tokens.css`:
@@ -100,13 +117,14 @@ One system, in `tokens.css`:
 - `.btn`: primary, ink filled. One per view, the main action.
 - `.btn-quiet`: secondary, an outline.
 - `.btn-text`: a text action, underlined.
-- Chip groups (`.project-filter`, `.atlas-chips`, `.constellation-chips`, `.aa-filters` and
-  the other groups listed in `tokens.css`): filters and toggles, pressed when chosen.
+- Chip groups (`.atlas-chips`, `.constellation-chips`, `.aa-filters` and the other groups
+  listed in `tokens.css`): filters and toggles, pressed when chosen. Toggles that switch
+  layers on and off (the constellation's layers, the concept relations) stay light when
+  pressed, because most of them are on at once.
 
 Every control has the same states: hover darkens the edge, `aria-pressed="true"` fills it
 with ink, `:active` nudges it, `:disabled` fades it and shows a not-allowed pointer, and
-`:focus-visible` draws a 2 px outline 3 px out. The design page (`#design`) shows them
-working.
+`:focus-visible` draws a 2 px outline 3 px out.
 
 ## Motion
 
