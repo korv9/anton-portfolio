@@ -17,6 +17,9 @@ Follow the skills in `.claude/skills/` (sources in `.claude/skills/README.md`):
   tokens. Inside the site, draw with the CSS variables (`var(--ink)` …) so a `.plate`
   recolours the chart, and keep one focal accent.
 
+- **`de-ai-writing`** for all prose a reader sees: page copy, project descriptions, docs, commit
+  messages and PR text. Keep every fact and number; run `scripts/check_ai_signs.py` on new copy.
+
 Repository rules that sit beside them:
 
 - Data is real or absent: no placeholder numbers or invented rows on any page.
