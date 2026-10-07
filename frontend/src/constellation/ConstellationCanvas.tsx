@@ -21,17 +21,17 @@ export const STYLE: Record<
   NodeType,
   { colour: string; r: number; name: [string, string] }
 > = {
-  source: { colour: '#f4ead6', r: 5.5, name: ['Source', 'Källa'] },
-  ingestion: { colour: '#c9b48e', r: 3, name: ['Ingestion', 'Inläsning'] },
-  raw: { colour: '#a9a093', r: 3, name: ['Raw', 'Rådata'] },
-  seed: { colour: '#8d877d', r: 2.4, name: ['Seed', 'Seed'] },
-  bronze: { colour: '#b88d5c', r: 2.2, name: ['Bronze', 'Brons'] },
-  silver: { colour: '#c9cbd0', r: 2.6, name: ['Silver', 'Silver'] },
-  ml: { colour: '#d9d4ca', r: 5, name: ['ML', 'ML'] },
-  gold: { colour: '#d8b86a', r: 3.6, name: ['Gold', 'Guld'] },
-  delivery: { colour: '#a8a49b', r: 3.2, name: ['Delivery', 'Leverans'] },
-  frontend: { colour: '#fff3d6', r: 8, name: ['Product', 'Produkt'] },
-  shared: { colour: '#c9c2b6', r: 6, name: ['Shared', 'Gemensamt'] },
+  source: { colour: '#2f3e46', r: 5.5, name: ['Source', 'Källa'] },
+  ingestion: { colour: '#6b5b3e', r: 3, name: ['Ingestion', 'Inläsning'] },
+  raw: { colour: '#7a746b', r: 3, name: ['Raw', 'Rådata'] },
+  seed: { colour: '#a29c92', r: 2.4, name: ['Seed', 'Seed'] },
+  bronze: { colour: '#9c6a35', r: 2.2, name: ['Bronze', 'Brons'] },
+  silver: { colour: '#7d838c', r: 2.6, name: ['Silver', 'Silver'] },
+  ml: { colour: '#4a4a4d', r: 5, name: ['ML', 'ML'] },
+  gold: { colour: '#a8801e', r: 3.6, name: ['Gold', 'Guld'] },
+  delivery: { colour: '#6b6b6e', r: 3.2, name: ['Delivery', 'Leverans'] },
+  frontend: { colour: '#0f0f10', r: 8, name: ['Product', 'Produkt'] },
+  shared: { colour: '#8a8378', r: 6, name: ['Shared', 'Gemensamt'] },
 }
 
 const STAGE_NAMES: Record<string, [string, string]> = {
@@ -135,8 +135,8 @@ function drawMark(
 ) {
   const r = 3.2
   ctx.save()
-  ctx.strokeStyle = 'rgba(241, 236, 226, 0.95)'
-  ctx.fillStyle = 'rgba(241, 236, 226, 0.95)'
+  ctx.strokeStyle = 'rgba(26, 26, 28, 0.95)'
+  ctx.fillStyle = 'rgba(26, 26, 28, 0.95)'
   ctx.lineWidth = 1.3
   ctx.beginPath()
   if (status === 'pass') {
@@ -252,7 +252,7 @@ export default function ConstellationCanvas({
       lanes.forEach((d, i) => {
         const x = PAD_SIDE_UPRIGHT + i * laneW
         if (i > 0) {
-          ctx.strokeStyle = 'rgba(241, 236, 226, 0.06)'
+          ctx.strokeStyle = 'rgba(26, 26, 28, 0.08)'
           ctx.lineWidth = 1
           ctx.beginPath()
           ctx.moveTo(x, PAD_TOP_UPRIGHT - 6)
@@ -260,7 +260,7 @@ export default function ConstellationCanvas({
           ctx.stroke()
         }
         const dim = focus && !focus.has(`app:${d.id}`) && d.id !== 'shared'
-        ctx.fillStyle = `rgba(241, 236, 226, ${dim ? 0.12 : 0.55})`
+        ctx.fillStyle = `rgba(26, 26, 28, ${dim ? 0.12 : 0.55})`
         const words = d.label.toUpperCase().split(' ')
         words
           .slice(0, 2)
@@ -268,7 +268,7 @@ export default function ConstellationCanvas({
       })
       ctx.save()
       ctx.font = '500 9px ui-monospace, Menlo, monospace'
-      ctx.fillStyle = 'rgba(241, 236, 226, 0.62)'
+      ctx.fillStyle = 'rgba(26, 26, 28, 0.84)'
       stages.forEach((s, i) => {
         const y =
           PAD_TOP_UPRIGHT +
@@ -282,7 +282,7 @@ export default function ConstellationCanvas({
           const line =
             PAD_TOP_UPRIGHT +
             (i / stages.length) * (height - PAD_TOP_UPRIGHT - PAD_BOTTOM)
-          ctx.strokeStyle = 'rgba(241, 236, 226, 0.03)'
+          ctx.strokeStyle = 'rgba(26, 26, 28, 0.04)'
           ctx.beginPath()
           ctx.moveTo(PAD_SIDE_UPRIGHT, line)
           ctx.lineTo(width - 8, line)
@@ -298,7 +298,7 @@ export default function ConstellationCanvas({
       lanes.forEach((d, i) => {
         const y = PAD_TOP + i * laneH
         if (i > 0) {
-          ctx.strokeStyle = 'rgba(241, 236, 226, 0.05)'
+          ctx.strokeStyle = 'rgba(26, 26, 28, 0.07)'
           ctx.lineWidth = 1
           ctx.beginPath()
           ctx.moveTo(PAD_X, y)
@@ -306,7 +306,7 @@ export default function ConstellationCanvas({
           ctx.stroke()
         }
         const dim = focus && !focus.has(`app:${d.id}`) && d.id !== 'shared'
-        ctx.fillStyle = `rgba(241, 236, 226, ${dim ? 0.08 : 0.32})`
+        ctx.fillStyle = `rgba(26, 26, 28, ${dim ? 0.08 : 0.32})`
         ctx.font = '600 11px ui-monospace, Menlo, monospace'
         ctx.fillText(d.label.toUpperCase(), PAD_X + 2, y + 16)
       })
@@ -314,7 +314,7 @@ export default function ConstellationCanvas({
     if (!upright) {
       ctx.font = '500 10px ui-monospace, Menlo, monospace'
       ctx.textAlign = 'center'
-      ctx.fillStyle = 'rgba(241, 236, 226, 0.45)'
+      ctx.fillStyle = 'rgba(26, 26, 28, 0.61)'
       stages.forEach((s, i) => {
         const x = PAD_X + ((i + 0.5) / stages.length) * (width - PAD_X * 2)
         ctx.fillText(l(...s).toUpperCase(), x, 16)
@@ -343,10 +343,10 @@ export default function ConstellationCanvas({
         const strong = !!path && on
         const accent =
           e.type === 'delivery' || e.type === 'frontend-consumption'
-        const alpha = !on ? 0.025 : strong ? 0.75 : path || focus ? 0.22 : 0.09
+        const alpha = !on ? 0.04 : strong ? 0.8 : path || focus ? 0.3 : 0.14
         ctx.strokeStyle = accent
-          ? `rgba(216, 184, 106, ${alpha})`
-          : `rgba(241, 236, 226, ${alpha})`
+          ? `rgba(160, 122, 32, ${alpha})`
+          : `rgba(26, 26, 28, ${alpha})`
         ctx.lineWidth = strong ? 1.2 : 0.7
         ctx.setLineDash(
           e.type === 'relationship'
@@ -394,11 +394,12 @@ export default function ConstellationCanvas({
       ctx.globalAlpha = 1
       const mark = mode === 'quality' ? marks?.get(n.id) : undefined
       if (mark) drawMark(ctx, mark, x + style.r + 5, y - style.r - 3)
+      // Unselected, only the ends of the flow are named: where data comes from and the
+      // product it ends in. Everything else is named on hover, on a path or when chosen.
       const landmark =
         n.type === 'source' ||
         n.type === 'frontend' ||
-        n.type === 'shared' ||
-        n.type === 'ml' ||
+        (!!focus && (n.type === 'shared' || n.type === 'ml')) ||
         (mode === 'model' && n.kind === 'fact' && !!focus)
       // On a selected path, label the models and stages, and the files only on short paths.
       // Upright, columns are narrow: only products, the selection and short paths get names.
@@ -415,9 +416,7 @@ export default function ConstellationCanvas({
           n.type === 'frontend'
             ? `600 ${upright ? 10.5 : 12}px Manrope, Helvetica, Arial, sans-serif`
             : `400 ${upright ? 9.5 : 10.5}px Manrope, Helvetica, Arial, sans-serif`
-        ctx.fillStyle = on
-          ? 'rgba(241, 236, 226, 0.85)'
-          : 'rgba(241, 236, 226, 0.2)'
+        ctx.fillStyle = on ? 'rgba(26, 26, 28, 0.95)' : 'rgba(26, 26, 28, 0.27)'
         const max = upright ? 22 : 34
         const text =
           n.label.length > max ? n.label.slice(0, max - 1) + '…' : n.label
@@ -446,7 +445,15 @@ export default function ConstellationCanvas({
         } else {
           const right = x > width - (upright ? width / 2 : 170)
           ctx.textAlign = right ? 'right' : 'left'
-          ctx.fillText(text, x + (right ? -1 : 1) * (style.r + 6), y + 3.5)
+          const tx = x + (right ? -1 : 1) * (style.r + 6)
+          // A halo in the background colour keeps the name readable over the lines.
+          ctx.save()
+          ctx.lineWidth = 3
+          ctx.lineJoin = 'round'
+          ctx.strokeStyle = 'rgba(242, 239, 233, 0.9)'
+          ctx.strokeText(text, tx, y + 3.5)
+          ctx.restore()
+          ctx.fillText(text, tx, y + 3.5)
           ctx.textAlign = 'left'
         }
       }

@@ -297,7 +297,7 @@ export default function DataConstellationPage({ route }: { route: Route }) {
           ))}
         </div>
 
-        <div className="constellation-body plate">
+        <div className="constellation-body">
           <div
             className="constellation-scroll"
             tabIndex={0}
@@ -350,8 +350,8 @@ export default function DataConstellationPage({ route }: { route: Route }) {
         )}
         <p className="constellation-legend">
           {l(
-            'Solid line: data built from data. Teal: a published file and the product that reads it. Dashed: a key that joins two tables. Dotted: shared infrastructure. Faded markers are models switched off by default.',
-            'Heldragen linje: data byggd av data. Turkos: en publicerad fil och produkten som läser den. Streckad: en nyckel som förenar två tabeller. Prickad: gemensam infrastruktur. Bleka markörer är modeller som är avstängda som standard.',
+            'Solid line: data built from data. Gold: a published file and the product that reads it. Dashed: a key that joins two tables. Dotted: shared infrastructure. Faded markers are models switched off by default.',
+            'Heldragen linje: data byggd av data. Guld: en publicerad fil och produkten som läser den. Streckad: en nyckel som förenar två tabeller. Prickad: gemensam infrastruktur. Bleka markörer är modeller som är avstängda som standard.',
           )}
         </p>
       </section>
