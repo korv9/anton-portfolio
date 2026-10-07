@@ -162,6 +162,7 @@ PUBLISHERS = [
         {"pattern": "symbolic/reviewed-clusters.json", "inputs": ["ml:symbolic-review"]},
         {"pattern": "symbolic/research-history.json", "inputs": ["ml:symbolic-review"]},
         {"pattern": "symbolic/experiment-comparison.json", "inputs": ["ml:symbolic-review"]},
+        {"pattern": "symbolic/model-comparison.json", "inputs": ["ml:symbolic-review"]},
     ]},
     {"path": "platform/publish/eu_ai_act/export_ai_act.py", "domain": "ai_act", "outputs": [
         {"pattern": "ai-act/article-text-*.json", "inputs": ["dim_ai_act_article", "dim_ai_act_annex"]},
