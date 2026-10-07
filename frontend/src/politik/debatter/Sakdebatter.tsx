@@ -14,7 +14,7 @@ import { Board, Card, Cards, Empty, Kpi, Kpis } from '../board/Board'
 import Columns from '../board/Columns'
 import RankBars from '../../charts/RankBars'
 import { IssueChips, debateHref } from './DebateView'
-import DebateLeaderboard from '../features/DebateLeaderboard'
+import DebateRanking from '../features/DebateRanking'
 import SakAnalys from './SakAnalys'
 import './debatter.css'
 import {
@@ -162,7 +162,7 @@ function Explorer({ route }: { route: Route }) {
       }
     >
       {debates && (
-        <DebateLeaderboard
+        <DebateRanking
           debates={debates}
           session={current.session}
           preferred={selected[0]}

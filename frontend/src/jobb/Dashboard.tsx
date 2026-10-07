@@ -14,7 +14,7 @@ import { useViewParams } from '../politik/useViewParams'
 import { Select } from '../politik/controls'
 import RankBars from '../charts/RankBars'
 import { MonthColumns } from './charts'
-import Treemap from './Treemap'
+import FieldRanking from './FieldRanking'
 import {
   change,
   conditionsOf,
@@ -379,11 +379,11 @@ export default function Dashboard({
       <ExploreSection
         id="jobb-utforska-mer"
         summary={l(
-          'Every field as a treemap, where the jobs are, and on what terms.',
-          'Varje område som en trädkarta, var jobben finns och på vilka villkor.',
+          'Every field ranked, where the jobs are, and on what terms.',
+          'Varje område rangordnat, var jobben finns och på vilka villkor.',
         )}
       >
-        <Treemap data={data} fields={fields} />
+        <FieldRanking data={data} fields={fields} />
         <ChartSection
           title={
             counties[0]

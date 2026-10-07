@@ -16,7 +16,7 @@ import {
 import { PartyTag, RIKSDAG_PARTIES, partyName } from '../../parties/identity'
 import type { Route } from '../../router'
 import ThemeLayout from '../ThemeLayout'
-import VoteWaffle from '../features/VoteWaffle'
+import VoteShares from '../features/VoteShares'
 import BuilderPanel, { Choice, Field } from '../BuilderPanel'
 import RankBars from '../../charts/RankBars'
 import { Select, pct } from '../controls'
@@ -237,7 +237,7 @@ export default function RosterTheme({ route }: { route: Route }) {
         )}
         loading={!data && !error}
         error={error}
-        feature={<VoteWaffle />}
+        feature={<VoteShares />}
         kpis={
           info && closest && furthest
             ? [
