@@ -113,6 +113,25 @@ export type ExperimentComparison = {
   experiments: ExperimentRow[]
 }
 
+/** One embedding model and experiment on the same sample (model-comparison.json). */
+export type ModelRow = ExperimentRow & {
+  model: string
+  dimensions: number
+  embedding_seconds: number | null
+  neighbours_same_book: number
+  neighbours_same_tradition: number
+  neighbours_same_symbol: number
+  chance_same_book: number
+  chance_same_tradition: number
+  chance_same_symbol: number
+}
+
+export type ModelComparison = {
+  sample_sha256: string
+  neighbours: number
+  rows: ModelRow[]
+}
+
 /** The book-centred map of the same points (book-centered-atlas.parquet). */
 export type BookCenteredPoint = {
   occurrence_id: string
