@@ -26,6 +26,7 @@ export type Page =
   | 'symbolic'
   | 'constellation'
   | 'catalogue'
+  | 'lineage'
   | 'aiact'
   | 'philosophy'
   | 'concepts'
@@ -101,6 +102,7 @@ export function pageOf(path: string): Page {
   if (path === '#er' || path === '#er-diagram') return 'er'
   if (path === '#data-constellation') return 'constellation'
   if (path === '#data-catalogue') return 'catalogue'
+  if (path === '#idea-lineage') return 'lineage'
   if (path === '#ai-act' || path.startsWith('#ai-act-')) return 'aiact'
   if (path === '#quality' || path.startsWith('#quality-')) return 'quality'
   if (path.startsWith('#concept-') || path.startsWith('#concepts-'))

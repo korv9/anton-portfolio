@@ -180,6 +180,23 @@ private event, so a public page cannot reveal that a private one exists. The pub
 this repository holds the Symbolic Atlas lineage from its published results (research history,
 commits 5 to 7 October 2026), the Concept Journey decision and the decision to keep this journal.
 
+## The page
+
+`#idea-lineage` (experimental, linked from the footer under the hood) reads only
+`idea-lineage/events.json` and shows one view at a time:
+
+- The timeline puts events by date on a thin thread, one shape per kind (an open circle for an idea, a
+  filled square for a decision, a diamond for a hypothesis, a triangle for an experiment, a
+  filled circle for a finding, a dashed circle for a question). Each event lists its stored
+  links. "Why does this exist?" keeps only the events it came from, following those links back
+  to the origin. Filters: project and kind.
+- Projects now gives the current direction, active decisions, latest findings and open
+  questions per project, derived the same way as the state files (`frontend/src/lineage/logic.ts`).
+- Set aside lists the ideas and decisions a later event superseded or rejected, with that event's
+  reason.
+
+There are no counters, scores or due dates.
+
 ## For agents
 
 Before substantial work on a project, read `.idea-lineage/state/<project>.md` or `context.json`.
