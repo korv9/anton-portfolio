@@ -240,3 +240,35 @@ button.treemap-tile {
   background: var(--ink);
   opacity: 0.6;
 }
+
+/* Läget (Dashboard.tsx) as a demand story: question, answer, one chart, then deeper. */
+.politik-main:has(.jobb-story) {
+  padding: 2.5rem 1.25rem 2rem;
+}
+.jobb-story {
+  max-width: 1080px;
+  margin: 0 auto;
+}
+.jobb-story-section {
+  margin-top: var(--sp-6);
+  padding-top: var(--sp-4);
+  border-top: 1px solid var(--line);
+}
+.jobb-chart-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-3);
+}
+.jobb-story-more {
+  margin: var(--sp-2) 0 0;
+  font-size: var(--small);
+}
+.jobb-story .cluster-preview {
+  display: block;
+  max-width: 760px;
+}
+.jobb-story .cluster-preview svg {
+  width: 100%;
+  height: auto;
+}

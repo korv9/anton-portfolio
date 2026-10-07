@@ -948,3 +948,22 @@
   font-size: var(--fs-label);
   letter-spacing: 0.1em;
 }
+
+/* Read first: the opening answer under the question. */
+.story-hero .data-question {
+  max-width: none;
+  margin-bottom: var(--sp-2);
+}
+.story-answer {
+  color: var(--ink);
+  font-size: var(--fs-card-title);
+  line-height: 1.45;
+  max-width: 58ch;
+}
+/* Explore second: the deeper analyses keep their order but drop the numbering. */
+.explore-section .story-kicker span {
+  display: none;
+}
+.explore-section .story-section:first-child {
+  border-top: 0;
+}

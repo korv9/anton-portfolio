@@ -2,25 +2,33 @@ import { test, expect } from './test'
 import AxeBuilder from '@axe-core/playwright'
 
 /**
- * #politik is one story in nine sections, each answering a question with a chart and a sentence
- * from the data. The choices (party, debate, member) live in the address.
+ * #politik reads first and explores second: the opening question is answered from the data,
+ * then three questions (the situation now, where the parties differ most, what to explore
+ * next). The deeper analyses and sources sit in folds; a choice in the address opens them.
  */
 test('the politics story answers its questions in order', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.goto('/#politik')
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-    'Swedish politics through data',
+    'What separates the parties in practice?',
   )
-  // At most four key figures, and the nine sections in order.
-  await expect(page.locator('.story-hero .story-kpi')).toHaveCount(4)
-  await expect(page.locator('.story-section')).toHaveCount(9)
-  await expect(page.locator('.story-section h2').nth(1)).toHaveText(
-    'How is the Riksdag made up?',
+  await expect(page.locator('.story-answer')).toContainText('roll calls')
+  // No key-figure grid in the hero, and three questions before the folds.
+  await expect(page.locator('.story-hero .story-kpi')).toHaveCount(0)
+  await expect(page.locator('.story > .story-section')).toHaveCount(3)
+  await expect(page.locator('.story-section h2').first()).toHaveText(
+    'What is the political situation right now?',
   )
-  // Power: the seats against the majority line, and the change since the last election.
+  // The situation: the seats against the majority line, and the change since the last election.
   await expect(page.locator('.story-seatbar-majority')).toBeVisible()
   await expect(page.locator('.story-diverge li')).toHaveCount(8)
-  // The dividing lines: an 8 × 8 similarity matrix with its numbers, and a roll call opens.
+  // The major difference: one chart with its interpretation; who votes with whom is a click away.
+  await expect(page.locator('#skiljelinjerna .chart-section')).toHaveCount(1)
+  await expect(page.locator('#skiljelinjerna .interpretation')).toBeVisible()
+  await expect(page.locator('#skiljelinjerna .story-heat')).toHaveCount(0)
+  await page
+    .getByRole('button', { name: 'Explore: who votes with whom' })
+    .click()
   await expect(
     page.locator('#skiljelinjerna .story-heat tbody tr'),
   ).toHaveCount(8)
@@ -31,12 +39,15 @@ test('the politics story answers its questions in order', async ({ page }) => {
   await vote.locator('button').click()
   await expect(vote.locator('.story-vote-detail li')).toHaveCount(8)
   // Every advanced measure explains itself.
-  const info = page.locator('#skiljelinjerna .story-info').first()
+  const info = page.locator('#vem-med-vem .story-info').first()
   await info.locator('button').click()
   await expect(info.getByRole('tooltip')).toContainText(
     'the share where it was the same',
   )
+  // What to explore next: editorial links to the theme pages.
+  await expect(page.locator('#utforska .story-next li')).toHaveCount(5)
 
+  await page.getByRole('button', { name: 'More analyses' }).click()
   // The parties: the fingerprint follows the choice, kept in the address.
   await page
     .locator('.story-party-picker')
@@ -68,8 +79,11 @@ test('the politics story answers its questions in order', async ({ page }) => {
     'not by themselves mean',
   )
 
-  // Advanced and about the data come last.
+  // Advanced analysis closes the analyses; sources, method and data quality have their own fold.
   await expect(page.locator('#fordjupad svg g')).not.toHaveCount(0)
+  await page
+    .getByRole('button', { name: 'Sources, method and data quality' })
+    .click()
   await expect(page.locator('.story-pipeline li')).toHaveCount(6)
   await expect(page.locator('.story-quality')).toContainText(
     'Used in the metrics',

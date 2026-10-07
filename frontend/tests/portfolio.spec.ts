@@ -17,20 +17,15 @@ test('home introduces Anton and routes to each project', async ({
   await expect(
     page.locator('.home-hero-actions a', { hasText: 'CV' }),
   ).toBeInViewport()
-  // Everything about the job comes before the projects: on a laptop experience, education
-  // and the core stack start on the first screen; on a phone they follow the hero.
-  await expect(page.locator('#erfarenhet')).toBeInViewport()
-  if (!isMobile) {
-    await expect(page.locator('#utbildning')).toBeInViewport()
-    await expect(page.locator('#kompetenser')).toBeInViewport()
-  }
-  // Then, in order: experience, education, the core stack, projects, about, under the hood.
+  // What has been built comes first: the selected work starts on the first screen.
+  await expect(page.locator('#projekt')).toBeInViewport()
+  // Then, in order: projects, experience, education, the core stack, about, under the hood.
   const order = await page.evaluate(() =>
     [
+      'projekt',
       'erfarenhet',
       'utbildning',
       'kompetenser',
-      'projekt',
       'om-mig',
       'under-huven',
     ].map((id) => document.getElementById(id)!.getBoundingClientRect().top),
@@ -73,7 +68,7 @@ test('home introduces Anton and routes to each project', async ({
     .first()
     .click()
   await expect(page.getByRole('heading', { level: 1 })).toContainText(
-    'Swedish politics through data',
+    'What separates the parties in practice?',
   )
   await page.goto('/#politics')
   await expect(page.getByRole('heading', { level: 1 })).toContainText(

@@ -1,13 +1,12 @@
 /**
  * The start page: a fast, recruiter-facing summary. Simple first, depth on demand.
  *
- * Order: hero (role, one-line pitch, core tools, CV); experience beside education and the core
- * stack, so everything about the job is on the first screen; then the selected work, about,
- * and under the hood (the technical deep dives). Projects come
- * from projects/projectRegistry.ts (HOME_PROJECTS, each with a plain-language line);
- * experience, education and the stack from home/orbitContent.ts. Methods, metrics and
- * research live on the project pages; the platform pages (Data Constellation, Quality &
- * Validity) are linked at the bottom, never in the first screen.
+ * Order: hero (who, what kind of work, what to click); selected work, so a recruiter sees what
+ * has been built first; experience; education beside the core stack; about; and under the hood
+ * (the technical deep dives). Projects come from projects/projectRegistry.ts (HOME_PROJECTS,
+ * each with its question and finding, tech secondary); experience, education and the stack
+ * from home/orbitContent.ts. Methods, metrics and research live on the project pages; the
+ * platform pages (Data Constellation, Quality & Validity) are linked at the bottom.
  */
 import {
   lazy,
@@ -104,12 +103,9 @@ function Hero() {
           'Jag bygger datapipelines, analysprodukter och tillämpade AI-system.',
         )}
       </p>
-      <p className="home-hero-stack">
-        Python · SQL · dbt · Databricks · Azure · DuckDB
-      </p>
       <div className="home-hero-actions">
         <a className="home-cta is-primary" href="#projekt">
-          {l('View projects', 'Se projekten')}
+          {l('Selected work', 'Utvalda projekt')}
         </a>
         {profile.cv && (
           <a className="home-cta" href={profile.cv} download>
@@ -124,9 +120,6 @@ function Hero() {
             <a href={profile.linkedin} target="_blank" rel="noreferrer">
               LinkedIn
             </a>
-          )}
-          {profile.email && (
-            <a href={`mailto:${profile.email}`}>{l('Email', 'E-post')}</a>
           )}
         </span>
       </div>
@@ -154,7 +147,8 @@ function SelectedWork() {
           href={project.href}
           preview={<LazyPreview id={project.id} />}
         >
-          <p className="home-project-description">{b(project.home!.line)}</p>
+          <p className="home-project-question">{b(project.home!.question)}</p>
+          <p className="home-project-description">{b(project.home!.finding)}</p>
           <p className="home-project-tech">{project.home!.tech.join(' · ')}</p>
           <a
             className="home-project-link"
@@ -393,15 +387,15 @@ export default function HomePage({ path }: { path: string }) {
   return (
     <div className="home home-orbit">
       <Hero />
+      <div className="home-work ds-container">
+        <SelectedWork />
+      </div>
       <div className="home-profile ds-container">
         <Experience />
         <div className="home-profile-side">
           <Education />
           <CoreStack />
         </div>
-      </div>
-      <div className="home-work ds-container">
-        <SelectedWork />
       </div>
       <About />
       <UnderTheHood />

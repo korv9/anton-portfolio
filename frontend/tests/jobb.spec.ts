@@ -1,43 +1,37 @@
 import { test, expect } from './test'
 import AxeBuilder from '@axe-core/playwright'
 
-test('the job market is a product like politics: one screen, a field bar, one question per theme', async ({
+test('the job market tells a demand story: a question, an answer, one chart, then deeper', async ({
   page,
-  isMobile,
 }) => {
   await page.goto('/#jobb')
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-    'The job market now',
+    'How is demand for labour changing?',
   )
-  // The treemap says the totals and which fields grow; the key figures say the rest.
-  await expect(page.locator('.dash-kpi')).toHaveCount(3)
-  await expect(page.locator('.dash-card')).toHaveCount(4)
+  // The answer is one number against the same months a year earlier; one main chart follows.
+  await expect(page.locator('.finding-hero-value')).toHaveText(/^[+−±]\d/)
   await expect(page.locator('.jobb-columns rect.recent').first()).toBeVisible()
-  // The treemap opens the page; the dashboard under it still fits one screen.
-  await expect(page.locator('#treemap')).toBeVisible()
-  if (!isMobile) {
-    await page.setViewportSize({ width: 1440, height: 900 })
-    expect(
-      await page.evaluate(
-        () =>
-          document.querySelector('.jobb-dash')!.getBoundingClientRect().height -
-          innerHeight,
-      ),
-    ).toBeLessThanOrEqual(120)
-  }
-  const total = await page
-    .locator('.dash-kpi dd:not(.dash-kpi-sub)')
-    .first()
-    .textContent()
+  await expect(page.locator('.interpretation-not')).toContainText(
+    'proxy for demand',
+  )
+  // Growing roles, then where the clustering fits; the treemap and counties wait under Explore.
+  await expect(
+    page.getByRole('heading', { name: 'Which roles are growing?' }),
+  ).toBeVisible()
+  await expect(
+    page.locator('.jobb-story a[href="#jobb-kluster"]'),
+  ).toBeVisible()
+  await expect(page.locator('#treemap')).toHaveCount(0)
+  const answer = await page.locator('.finding-hero-statement').textContent()
 
-  // The field bar: choose Data/IT and every card answers for it.
+  // The field bar: choose Data/IT and the story answers for it.
   const bar = page.getByRole('group', { name: 'Occupation fields' })
   await bar.getByRole('button', { name: 'Data/IT', exact: true }).click()
   await expect(page).toHaveURL(/omraden=/)
-  await expect(page.locator('.dash-sub')).toContainText('Data/IT')
-  await expect(
-    page.locator('.dash-kpi dd:not(.dash-kpi-sub)').first(),
-  ).not.toHaveText(total!)
+  await expect(page.locator('.data-question-context').first()).toContainText(
+    'Data/IT',
+  )
+  await expect(page.locator('.finding-hero-statement')).not.toHaveText(answer!)
 
   // The choice follows the reader to every theme.
   const nav = page.getByRole('navigation', { name: 'Job market' })
@@ -76,7 +70,9 @@ test('the job market is a product like politics: one screen, a field bar, one qu
 test('the job-market dashboard is accessible', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.goto('/#jobb')
-  await expect(page.locator('.dash-card')).toHaveCount(4)
+  await expect(page.locator('.jobb-columns')).toBeVisible()
+  await page.getByRole('button', { name: 'Explore the data' }).click()
+  await expect(page.locator('#treemap')).toBeVisible()
   const results = await new AxeBuilder({ page })
     .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
     .analyze()

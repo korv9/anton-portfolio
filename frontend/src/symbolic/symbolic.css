@@ -377,3 +377,39 @@
   text-align: right;
   font-family: var(--font-mono);
 }
+
+/* How to read the map, above it: what a dot, nearness and a cluster mean. */
+.atlas-reading {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: var(--sp-2) var(--sp-4);
+  margin: 0 0 var(--sp-3);
+  font-size: var(--small);
+}
+.atlas-reading dt {
+  font-weight: var(--weight-heading);
+}
+.atlas-reading dd {
+  margin: 0;
+  color: var(--muted);
+}
+/* The first surprise in the narrow side column: number above the sentence. */
+.stage .finding-hero {
+  grid-template-columns: 1fr;
+  margin: 0;
+  padding: var(--sp-2) 0 0;
+  border-bottom: 0;
+}
+.stage .finding-hero-value {
+  font-size: var(--display-l);
+}
+.stage .finding-hero-statement {
+  font-size: var(--body-large);
+}
+.research-steps > li.research-major {
+  border-top: 1px solid var(--line-strong);
+}
+.stage .finding-hero-value,
+.stage .finding-hero-statement {
+  color: var(--ink);
+}

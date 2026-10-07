@@ -225,8 +225,17 @@
   justify-content: space-between;
   gap: 12px;
 }
+.home-project-question {
+  font-size: 18px;
+  line-height: 1.35;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  max-width: 34ch;
+  margin: 0 0 8px;
+}
 .home-project-description {
-  font-size: 16px;
+  font-size: 15px;
   line-height: 1.55;
   color: var(--ink);
   max-width: 40ch;
@@ -505,13 +514,13 @@
   }
 }
 
-/* ---------- First screen: experience left, education and core stack right ---------- */
+/* ---------- After the work: experience left, education and core stack right ---------- */
 .home-profile {
   display: grid;
   grid-template-columns: minmax(0, 1.5fr) minmax(280px, 1fr);
   gap: clamp(24px, 3vw, 56px);
   align-items: start;
-  padding-block: 8px 40px;
+  padding-block: 24px 48px;
 }
 .home-profile-side {
   display: grid;
@@ -528,9 +537,9 @@
   grid-template-columns: minmax(0, 1fr);
   gap: 10px;
 }
-/* The selected work below, each project over its own chart. */
+/* The selected work right after the hero, each project over its own chart. */
 .home-work {
-  padding-block: 8px 56px;
+  padding-block: 8px 40px;
 }
 .home-first-title {
   margin: 0 0 12px;

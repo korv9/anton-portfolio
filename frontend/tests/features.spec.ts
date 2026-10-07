@@ -114,6 +114,8 @@ test('job treemap: fields sized by ads, one opens into its occupations', async (
   page,
 }) => {
   await page.goto('/#jobb')
+  // The treemap is part of Explore on the overview.
+  await page.getByRole('button', { name: 'Explore the data' }).click()
   const f = await feature(page, 'treemap')
   const fields = await f.locator('.treemap-tile').count()
   expect(fields).toBeGreaterThan(15)

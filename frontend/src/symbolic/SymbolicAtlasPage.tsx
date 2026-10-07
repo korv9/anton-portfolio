@@ -16,6 +16,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { l } from '../i18n'
 import { fixed } from '../format'
 import { ProductQuality } from '../quality/QualityPanel'
+import { FindingHero, MethodSummary } from '../ui/Story'
 import type { Route } from '../router'
 import { useViewParams } from '../politik/useViewParams'
 import { Stage, StageBlock, StageFacts } from '../ui/Stage'
@@ -278,11 +279,43 @@ export default function SymbolicAtlasPage({ route }: { route: Route }) {
           'Kan återkommande symbolisk mening träda fram utan förbestämda kategorier?',
         )}
         lead={l(
-          'An unsupervised exploration of mythology, folklore and literature: every dot is one use of a symbol word, placed by what the sentences around it say.',
-          'En oövervakad utforskning av mytologi, folksagor och litteratur: varje prick är en förekomst av ett symbolord, placerad efter vad meningarna runt det säger.',
+          `The corpus: ${summary.document_count} public-domain books of mythology, folklore and literature from Project Gutenberg, read without predefined categories.`,
+          `Korpusen: ${summary.document_count} fria böcker med mytologi, folksagor och litteratur från Project Gutenberg, lästa utan förbestämda kategorier.`,
         )}
         figure={
           <div className="atlas-figure">
+            <dl
+              className="atlas-reading"
+              aria-label={l('How to read the map', 'Så läser du kartan')}
+            >
+              <div>
+                <dt>{l('One dot', 'En prick')}</dt>
+                <dd>
+                  {l(
+                    'one use of a symbol word, in its sentences',
+                    'en förekomst av ett symbolord, i sina meningar',
+                  )}
+                </dd>
+              </div>
+              <div>
+                <dt>{l('Nearby dots', 'Närliggande prickar')}</dt>
+                <dd>
+                  {l(
+                    'similar language and context',
+                    'liknande språk och sammanhang',
+                  )}
+                </dd>
+              </div>
+              <div>
+                <dt>{l('A cluster', 'Ett kluster')}</dt>
+                <dd>
+                  {l(
+                    'a recurring structure the model found, not yet a meaning',
+                    'en återkommande struktur som modellen hittade, ännu inte en betydelse',
+                  )}
+                </dd>
+              </div>
+            </dl>
             {centred && (
               <div className="atlas-views">
                 <div
@@ -440,56 +473,44 @@ export default function SymbolicAtlasPage({ route }: { route: Route }) {
                 onCluster={(c) => setFilters({ cluster: String(c) })}
               />
             ) : (
-              <StageBlock title={l('The run', 'Körningen')}>
-                <StageFacts
-                  rows={[
-                    [l('Books', 'Böcker'), num(summary.document_count)],
-                    [l('Symbols', 'Symboler'), num(summary.symbol_count)],
-                    [l('On the map', 'På kartan'), num(summary.point_count)],
-                    ...(history?.steps[2]?.metrics && history.steps[0]?.metrics
-                      ? ([
-                          [
-                            l(
-                              'Largest book, baseline',
-                              'Största bok, utgångsläge',
-                            ),
-                            pct(
-                              history.steps[0].metrics.mean_largest_book_share,
-                            ),
-                          ],
-                          [
-                            l(
-                              'Largest book, book-centred',
-                              'Största bok, bokcentrerad',
-                            ),
-                            pct(
-                              history.steps[2].metrics.mean_largest_book_share,
-                            ),
-                          ],
-                          [
-                            l(
-                              'Cross-book clusters',
-                              'Kluster över flera böcker',
-                            ),
-                            `${history.steps[2].metrics.cross_book_cluster_count} / ${history.steps[2].metrics.clusters}`,
-                          ],
-                          [
-                            l('Reviewed clusters', 'Granskade kluster'),
-                            num(history.review.reviewed_cluster_count),
-                          ],
-                        ] as [string, string][])
-                      : ([
-                          [
-                            l('Clusters', 'Kluster'),
-                            num(summary.cluster_count),
-                          ],
-                          [
-                            l('Largest book', 'Största bok'),
-                            pct(ev.composition.largest_book_share ?? 0),
-                          ],
-                        ] as [string, string][])),
-                  ]}
-                />
+              <StageBlock
+                title={l('The first surprise', 'Den första överraskningen')}
+              >
+                {history?.steps[0]?.metrics ? (
+                  <FindingHero
+                    value={pct(
+                      history.steps[0].metrics.mean_largest_book_share,
+                    )}
+                    statement={l(
+                      'of a baseline cluster came from one book, on average.',
+                      'av ett kluster i utgångsläget kom i snitt från en och samma bok.',
+                    )}
+                    comparison={
+                      <>
+                        {l(
+                          'The clustering was strong, but it measured books and translators, not symbolic meaning.',
+                          'Klustringen var stark, men den mätte böcker och översättare, inte symbolisk betydelse.',
+                        )}{' '}
+                        {history.steps.at(-1)?.metrics &&
+                          l(
+                            `After book-centring and a larger corpus: ${pct(history.steps.at(-1)!.metrics!.mean_largest_book_share)}.`,
+                            `Efter bokcentrering och en större korpus: ${pct(history.steps.at(-1)!.metrics!.mean_largest_book_share)}.`,
+                          )}{' '}
+                        <a href="#symbolic-findings">
+                          {l('How it changed', 'Hur det ändrades')}
+                        </a>
+                      </>
+                    }
+                  />
+                ) : (
+                  <FindingHero
+                    value={pct(ev.composition.largest_book_share ?? 0)}
+                    statement={l(
+                      'of a cluster came from one book, on average.',
+                      'av ett kluster kom i snitt från en och samma bok.',
+                    )}
+                  />
+                )}
               </StageBlock>
             )}
           </>
@@ -638,6 +659,20 @@ export default function SymbolicAtlasPage({ route }: { route: Route }) {
             )}
           </a>
         </p>
+        <MethodSummary
+          lineage={[
+            'Project Gutenberg',
+            l('Python ingestion', 'inläsning i Python'),
+            'dbt + DuckDB',
+            l('embeddings, UMAP, HDBSCAN', 'inbäddningar, UMAP, HDBSCAN'),
+            'Parquet',
+            'React',
+          ]}
+          quality={l(
+            'Good clusters did not at first mean symbolic meaning: data quality, cluster quality and construct validity are checked separately.',
+            'Bra kluster betydde inte från början symbolisk mening: datakvalitet, klusterkvalitet och begreppsvaliditet kontrolleras var för sig.',
+          )}
+        />
       </section>
     </div>
   )

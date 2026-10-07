@@ -1,16 +1,17 @@
 /**
- * Läget på jobbmarknaden, as one screen: key figures, ads per month (the large card), which
- * fields and occupations grow, where the jobs are and on what terms. Every card answers for the
- * fields chosen in the field bar. The latest year is partial, so every change compares the same
- * months of the year before.
+ * Läget på jobbmarknaden, told as a demand story: is demand rising or falling (the change
+ * against the same months a year earlier, and ads per month as the one main chart), which
+ * occupations are growing, and where the semantic clustering fits. The treemap, counties and
+ * terms of employment are one click deeper under Explore. Every chart answers for the fields
+ * chosen in the field bar; the latest year is partial, so every change compares the same months
+ * of the year before.
  */
-import type { ReactNode } from 'react'
+import { lazy, Suspense } from 'react'
 import { l } from '../i18n'
 import type { Route } from '../router'
 import { useViewParams } from '../politik/useViewParams'
 import { Select } from '../politik/controls'
 import DashBars from '../politik/dash/DashBars'
-import { CountUp } from '../politik/dash/motion'
 import { MonthColumns } from './charts'
 import Treemap from './Treemap'
 import {
@@ -30,63 +31,17 @@ import {
   type Market,
 } from './data'
 import { withFields } from './selection'
+import {
+  ChartSection,
+  DataQuestion,
+  ExploreSection,
+  FindingHero,
+  Interpretation,
+  MethodSummary,
+  SourceCaption,
+} from '../ui/Story'
 
-function Card({
-  title,
-  meta,
-  href,
-  index,
-  children,
-  className = '',
-}: {
-  title: string
-  meta: string
-  href: string
-  index: number
-  children: ReactNode
-  className?: string
-}) {
-  return (
-    <section
-      className={`dash-card ${className}`}
-      style={{ ['--i' as string]: index }}
-      aria-label={title}
-    >
-      <header>
-        <h2>{title}</h2>
-        <a href={href} aria-label={l(`More: ${title}`, `Mer: ${title}`)}>
-          {l('More', 'Mer')}
-        </a>
-      </header>
-      <p className="dash-meta">{meta}</p>
-      <div className="dash-body">{children}</div>
-    </section>
-  )
-}
-
-function Kpi({
-  label,
-  value,
-  format,
-  sub,
-  index,
-}: {
-  label: string
-  value: number
-  format: (v: number) => string
-  sub?: string
-  index: number
-}) {
-  return (
-    <div className="dash-kpi" style={{ ['--i' as string]: index }}>
-      <dt>{label}</dt>
-      <dd>
-        <CountUp value={value} format={format} />
-      </dd>
-      {sub && <dd className="dash-kpi-sub">{sub}</dd>}
-    </div>
-  )
-}
+const ClusterPreview = lazy(() => import('../jobs/ClusterPreview'))
 
 const SLICERS = { period: '36', jamfor: 'ytd', minsta: '100' }
 
@@ -186,32 +141,147 @@ export default function Dashboard({
     },
   ]
 
+  const delta = change(now, before)
+  const direction =
+    delta == null
+      ? null
+      : delta > 0
+        ? l('more', 'fler')
+        : delta < 0
+          ? l('fewer', 'färre')
+          : l('as many', 'lika många')
+  const source = (definition?: string) => (
+    <SourceCaption
+      source="Arbetsförmedlingen, JobTech"
+      period={l(
+        `to ${monthShort(data.last_month)}`,
+        `till och med ${monthShort(data.last_month)}`,
+      )}
+      definition={definition}
+    />
+  )
+
   return (
-    <>
-      <Treemap data={data} fields={fields} />
-      <div className="dash jobb-dash">
-        <header className="dash-head">
-          <div>
-            <h1>{l('The job market now', 'Läget på jobbmarknaden')}</h1>
-            <p className="dash-sub">
-              {l('Job ads in', 'Jobbannonser')} {period} · {scope} ·{' '}
-              {l(
-                `updated to ${monthShort(data.last_month)}`,
-                `till och med ${monthShort(data.last_month)}`,
-              )}
-            </p>
-          </div>
-          <div className="dash-slicers" aria-label={l('Filters', 'Filter')}>
-            <Select
-              label={l('Months shown', 'Månader')}
-              value={view.period}
-              options={[
-                { value: '24', label: l('Last 24', 'Senaste 24') },
-                { value: '36', label: l('Last 36', 'Senaste 36') },
-                { value: 'alla', label: l('Since 2020', 'Sedan 2020') },
-              ]}
-              onChange={(period) => setView({ period })}
-            />
+    <div className="jobb-story">
+      <DataQuestion
+        level={1}
+        eyebrow={l('The job market in numbers', 'Jobbmarknaden i siffror')}
+        question={l(
+          'How is demand for labour changing?',
+          'Hur förändras efterfrågan på arbetskraft?',
+        )}
+      >
+        <p>
+          {l(
+            `New job ads in ${scope}, compared with the same months a year earlier.`,
+            `Nya jobbannonser för ${scope}, jämförda med samma månader året innan.`,
+          )}
+        </p>
+      </DataQuestion>
+
+      <FindingHero
+        value={signedPct(delta)}
+        statement={
+          direction
+            ? l(
+                `${number(now)} new ads in ${period}: ${direction} than in the same months of ${previous}.`,
+                `${number(now)} nya annonser ${period}: ${direction} än samma månader ${previous}.`,
+              )
+            : l(
+                `${number(now)} new ads in ${period}.`,
+                `${number(now)} nya annonser ${period}.`,
+              )
+        }
+        source={source(
+          l(
+            'an ad without a number of vacancies counts as one',
+            'en annons utan antal platser räknas som en',
+          ),
+        )}
+      />
+
+      <ChartSection
+        level={2}
+        question={l(
+          'Is it a dip or a trend?',
+          'Är det en svacka eller en trend?',
+        )}
+        title={l(
+          `Ads per month, ${latest} against the years before`,
+          `Annonser per månad, ${latest} mot åren innan`,
+        )}
+        subtitle={l(
+          `New ads per month · ${scope} · ${latest} darker`,
+          `Nya annonser per månad · ${scope} · ${latest} mörkare`,
+        )}
+        source={source()}
+      >
+        <div className="jobb-chart-controls">
+          <Select
+            label={l('Months shown', 'Månader')}
+            value={view.period}
+            options={[
+              { value: '24', label: l('Last 24', 'Senaste 24') },
+              { value: '36', label: l('Last 36', 'Senaste 36') },
+              { value: 'alla', label: l('Since 2020', 'Sedan 2020') },
+            ]}
+            onChange={(period) => setView({ period })}
+          />
+        </div>
+        <MonthColumns
+          months={shown}
+          highlight={`${latest}-01`}
+          label={l(
+            `New job ads per month, ${scope}: ${number(now)} in ${period}, ${signedPct(delta)} against the same months of ${previous}`,
+            `Nya jobbannonser per månad, ${scope}: ${number(now)} ${period}, ${signedPct(delta)} mot samma månader ${previous}`,
+          )}
+        />
+      </ChartSection>
+
+      <Interpretation
+        notMeaning={l(
+          'Ads are a proxy for demand, not the whole labour market: an ad is not a hire, many jobs are filled without one, and some ads are for several vacancies.',
+          'Annonser är ett mått på efterfrågan, inte hela arbetsmarknaden: en annons är inte en anställning, många jobb tillsätts utan annons och vissa annonser gäller flera platser.',
+        )}
+      >
+        <p>
+          {l(
+            'The comparison always uses the same months of the year before, because the latest year is not complete and job ads follow the seasons. Choose fields in the bar above to see whether the change is broad or carried by a few fields.',
+            'Jämförelsen görs alltid mot samma månader året innan, eftersom det senaste året inte är komplett och annonserna följer årstiderna. Välj områden i raden ovanför för att se om förändringen är bred eller bärs av några få områden.',
+          )}
+        </p>
+      </Interpretation>
+
+      <section className="jobb-story-section" aria-labelledby="jobb-growing">
+        <DataQuestion
+          id="jobb-growing"
+          number={2}
+          eyebrow={l('Occupations', 'Yrken')}
+          question={l('Which roles are growing?', 'Vilka yrken växer?')}
+        />
+        <ChartSection
+          title={
+            growers[0]
+              ? l(
+                  `${growers[0].name} grew the most, ${signedPct(growers[0].change)}`,
+                  `${growers[0].name} växte mest, ${signedPct(growers[0].change)}`,
+                )
+              : l('Occupations growing the most', 'Yrken som växer mest')
+          }
+          subtitle={l(
+            `Change in ads, ${period} against the same months of ${previous} · occupations with ${floor}+ ads a year ago`,
+            `Förändring i annonser, ${period} mot samma månader ${previous} · yrken med minst ${floor} annonser i fjol`,
+          )}
+          finding={
+            top &&
+            l(
+              `Most ads overall: ${top.name}, ${number(top.ytd[String(latest)] ?? 0)}.`,
+              `Flest annonser totalt: ${top.name}, ${number(top.ytd[String(latest)] ?? 0)}.`,
+            )
+          }
+          source={source()}
+        >
+          <div className="jobb-chart-controls">
             <Select
               label={l('Smallest occupation', 'Minsta yrke')}
               value={view.minsta}
@@ -222,151 +292,153 @@ export default function Dashboard({
               onChange={(minsta) => setView({ minsta })}
             />
           </div>
-        </header>
-
-        <dl className="dash-kpis">
-          <Kpi
-            index={3}
-            label={l('Most ads', 'Flest annonser')}
-            value={top?.ytd[String(latest)] ?? 0}
-            format={number}
-            sub={top?.name}
-          />
-          <Kpi
-            index={4}
-            label={l('Largest county', 'Största län')}
-            value={pctOf(counties[0]?.ads ?? 0, countyTotal)}
-            format={(v) => share(v)}
-            sub={counties[0]?.region}
-          />
-          <Kpi
-            index={5}
-            label={l('Full time', 'Heltid')}
-            value={fullTime(cNow)}
-            format={(v) => share(v)}
-            sub={l('of ads stating hours', 'av annonser med arbetstid')}
-          />
-        </dl>
-
-        <div className="dash-grid">
-          <Card
-            index={0}
-            className="dash-budget"
-            title={l(
-              'How ads develop, month by month',
-              'Hur annonserna utvecklas, månad för månad',
-            )}
-            meta={l(
-              `New ads per month · ${scope} · ${latest} darker`,
-              `Nya annonser per månad · ${scope} · ${latest} mörkare`,
-            )}
-            href={withFields('#jobb-trender', fields)}
-          >
-            <MonthColumns
-              months={shown}
-              highlight={`${latest}-01`}
-              label={l(
-                `New job ads per month, ${scope}: ${number(now)} in ${period}, ${signedPct(change(now, before))} against the same months of ${previous}`,
-                `Nya jobbannonser per månad, ${scope}: ${number(now)} ${period}, ${signedPct(change(now, before))} mot samma månader ${previous}`,
-              )}
+          {growers.length ? (
+            <DashBars
+              bars={growers.map((o) => ({
+                key: o.id,
+                label: o.name,
+                value: o.change,
+                tone: 'neutral' as const,
+                note: ` ${number(o.now)}`,
+              }))}
+              format={(v) => signedPct(v)}
+              label={l('Occupations growing the most', 'Yrken som växer mest')}
             />
-            <p className="jobb-takeaway">
+          ) : (
+            <p className="dash-empty">
               {l(
-                `${number(now)} ads in ${period}: ${signedPct(change(now, before))} against the same months of ${previous}.`,
-                `${number(now)} annonser ${period}: ${signedPct(change(now, before))} mot samma månader ${previous}.`,
+                'No occupation this large in the chosen fields.',
+                'Inget så stort yrke i valda områden.',
               )}
             </p>
-          </Card>
-
-          <Card
-            index={2}
-            title={l('Occupations growing the most', 'Yrken som växer mest')}
-            meta={l(
-              `Occupations with ${floor}+ ads a year ago · ${period}`,
-              `Yrken med minst ${floor} annonser i fjol · ${period}`,
+          )}
+        </ChartSection>
+        <p className="jobb-story-more">
+          <a href={withFields('#jobb-yrken', fields)}>
+            {l(
+              'Every occupation, growing and falling',
+              'Alla yrken, växande och minskande',
             )}
-            href={withFields('#jobb-yrken', fields)}
-          >
-            {growers.length ? (
-              <DashBars
-                bars={growers.map((o) => ({
-                  key: o.id,
-                  label: o.name,
-                  value: o.change,
-                  tone: 'neutral' as const,
-                  note: ` ${number(o.now)}`,
-                }))}
-                format={(v) => signedPct(v)}
-                label={l(
-                  'Occupations growing the most',
-                  'Yrken som växer mest',
-                )}
-              />
-            ) : (
-              <p className="dash-empty">
-                {l(
-                  'No occupation this large in the chosen fields.',
-                  'Inget så stort yrke i valda områden.',
-                )}
-              </p>
-            )}
-          </Card>
-
-          <Card
-            index={3}
-            title={l('Where the jobs are', 'Var jobben finns')}
-            meta={l(
-              `Share of ads per county · ${period}`,
-              `Andel av annonserna per län · ${period}`,
-            )}
-            href={withFields('#jobb-lan', fields)}
-          >
-            <DashBars
-              bars={counties.slice(0, 6).map((c) => ({
-                key: c.region,
-                label: c.region,
-                value: pctOf(c.ads, countyTotal),
-                tone: 'neutral' as const,
-              }))}
-              format={(v) => share(v, 1)}
-              label={l(
-                'Share of ads per county',
-                'Andel av annonserna per län',
-              )}
-            />
-          </Card>
-
-          <Card
-            index={4}
-            title={l('On what terms', 'På vilka villkor')}
-            meta={l(
-              `Share of ads ${latest} · tick: ${previous}`,
-              `Andel av annonserna ${latest} · streck: ${previous}`,
-            )}
-            href={withFields('#jobb-villkor', fields)}
-          >
-            <DashBars
-              bars={conditionBars.map((c) => ({
-                ...c,
-                tone: 'neutral' as const,
-              }))}
-              format={(v) => share(v)}
-              max={100}
-              label={l('Terms of employment', 'Anställningsvillkor')}
-            />
-          </Card>
-        </div>
-        <p className="dash-foot">
-          {l('Source', 'Källa')}: Arbetsförmedlingen, JobTech ·{' '}
-          {l(
-            'An ad is not a hire; an ad without a number of vacancies counts as one.',
-            'En annons är inte en anställning; en annons utan antal platser räknas som en.',
-          )}{' '}
-          <a href="#jobb-kallor">
-            {l('Sources and method', 'Källor och metod')}
           </a>
         </p>
-      </div>
-    </>
+      </section>
+
+      <section className="jobb-story-section" aria-labelledby="jobb-groups">
+        <DataQuestion
+          id="jobb-groups"
+          number={3}
+          eyebrow={l('Machine learning', 'Maskininlärning')}
+          question={l(
+            'Do job ads form natural groups beyond their official titles?',
+            'Bildar jobbannonserna naturliga grupper bortom de officiella yrkestitlarna?',
+          )}
+        >
+          <p>
+            {l(
+              'IT ads are embedded by their text and grouped without labels; each dot is one real ad, and ads that are written alike sit close together. The groups are then compared with the job titles the employers chose.',
+              'IT-annonser bäddas in efter sin text och grupperas utan etiketter; varje prick är en verklig annons, och annonser som är skrivna på liknande sätt hamnar nära varandra. Grupperna jämförs sedan med yrkestitlarna arbetsgivarna valde.',
+            )}
+          </p>
+        </DataQuestion>
+        <Suspense fallback={null}>
+          <ClusterPreview />
+        </Suspense>
+        <p className="jobb-story-more">
+          <a href="#jobb-kluster">
+            {l(
+              'The groups and what separates them',
+              'Grupperna och vad som skiljer dem',
+            )}
+          </a>
+        </p>
+      </section>
+
+      <ExploreSection
+        id="jobb-utforska-mer"
+        summary={l(
+          'Every field as a treemap, where the jobs are, and on what terms.',
+          'Varje område som en trädkarta, var jobben finns och på vilka villkor.',
+        )}
+      >
+        <Treemap data={data} fields={fields} />
+        <ChartSection
+          title={
+            counties[0]
+              ? l(
+                  `${counties[0].region} has ${share(pctOf(counties[0].ads, countyTotal))} of the ads`,
+                  `${counties[0].region} har ${share(pctOf(counties[0].ads, countyTotal))} av annonserna`,
+                )
+              : l('Where the jobs are', 'Var jobben finns')
+          }
+          subtitle={l(
+            `Share of ads per county · ${period}`,
+            `Andel av annonserna per län · ${period}`,
+          )}
+          source={source()}
+        >
+          <DashBars
+            bars={counties.slice(0, 6).map((c) => ({
+              key: c.region,
+              label: c.region,
+              value: pctOf(c.ads, countyTotal),
+              tone: 'neutral' as const,
+            }))}
+            format={(v) => share(v, 1)}
+            label={l('Share of ads per county', 'Andel av annonserna per län')}
+          />
+          <p className="jobb-story-more">
+            <a href={withFields('#jobb-lan', fields)}>
+              {l('Every county', 'Alla län')}
+            </a>
+          </p>
+        </ChartSection>
+        <ChartSection
+          title={l('On what terms', 'På vilka villkor')}
+          subtitle={l(
+            `Share of ads ${latest} · tick: ${previous}`,
+            `Andel av annonserna ${latest} · streck: ${previous}`,
+          )}
+          source={source()}
+        >
+          <DashBars
+            bars={conditionBars.map((c) => ({
+              ...c,
+              tone: 'neutral' as const,
+            }))}
+            format={(v) => share(v)}
+            max={100}
+            label={l('Terms of employment', 'Anställningsvillkor')}
+          />
+          <p className="jobb-story-more">
+            <a href={withFields('#jobb-villkor', fields)}>
+              {l(
+                'Employment type, hours and experience',
+                'Anställningsform, arbetstid och erfarenhet',
+              )}
+            </a>
+          </p>
+        </ChartSection>
+      </ExploreSection>
+
+      <MethodSummary
+        lineage={[
+          'JobTech',
+          l('Python ingestion', 'inläsning i Python'),
+          'dbt + DuckDB',
+          'JSON',
+          'React',
+        ]}
+        quality={l(
+          'Job ads are a proxy for demand, not the entire labour market. Every archive counted is recorded with its SHA-256, and months are only compared when complete.',
+          'Jobbannonser är ett mått på efterfrågan, inte hela arbetsmarknaden. Varje räknat arkiv registreras med sin SHA-256, och månader jämförs bara när de är kompletta.',
+        )}
+        more={[
+          {
+            href: '#jobb-kallor',
+            label: l('Sources and method', 'Källor och metod'),
+          },
+        ]}
+      />
+    </div>
   )
 }

@@ -1,6 +1,12 @@
 import TopicNav from '../TopicNav'
 import CountyMultiples from './CountyMultiples'
-import { Stage, StageBlock, StageFacts, StageTools } from '../ui/Stage'
+import {
+  DataQuestion,
+  ExploreSection,
+  Interpretation,
+  MethodSummary,
+  StoryNext,
+} from '../ui/Story'
 import { Suspense, lazy, useEffect, useMemo, useState } from 'react'
 import { l } from '../i18n'
 import { ProductQuality } from '../quality/QualityPanel'
@@ -133,176 +139,155 @@ export default function WelfarePage({ view }: { view: string }) {
 
   return (
     <div className="project-page welfare-page">
-      <div className="page-lead">
-        <p className="eyebrow">
-          {l('Welfare · live public data', 'Välfärd · öppna data, löpande')}
-        </p>
-        <h1>{l('How is Sweden doing?', 'Hur mår Sverige?')}</h1>
-        <p>
-          {l(
-            'Jobs, working life, health, wellbeing and trust from five public sources, joined on shared keys for region, period, sex and age. Refreshed daily from the sources. Everything here is descriptive: it shows how measures move together, not why.',
-            'Jobb, arbetsliv, hälsa, mående och tillit från fem öppna källor, kopplade på gemensamma nycklar för region, period, kön och ålder. Uppdateras dagligen från källorna. Allt här är beskrivande: det visar hur mått samvarierar, inte varför.',
+      <div className="page-lead welfare-lead">
+        <DataQuestion
+          level={1}
+          eyebrow={l('How is Sweden doing?', 'Hur mår Sverige?')}
+          question={l(
+            'Which parts of Sweden do well or poorly, measure by measure?',
+            'Var i Sverige går det bra och dåligt, mått för mått?',
           )}
-        </p>
-        <p className="welfare-links">
-          <a href="#status">{l('Pipeline status', 'Pipelinens status')}</a>
-          <a
-            href="https://github.com/korv9/anton-portfolio/blob/main/docs/welfare-data-model.md"
-            target="_blank"
-            rel="noreferrer"
-          >
-            {l('Data model and caveats', 'Datamodell och förbehåll')}
-          </a>
-        </p>
+        >
+          <p>
+            {l(
+              'Unemployment, stress-related sick leave and sickness benefit in all 21 counties, on the same axis. Everything here is descriptive: it shows where measures differ and move together, not why.',
+              'Arbetslöshet, stressrelaterad sjukskrivning och sjukpenning i alla 21 län, på samma axel. Allt här är beskrivande: det visar var måtten skiljer sig och följs åt, inte varför.',
+            )}
+          </p>
+        </DataQuestion>
       </div>
       {error && <p role="alert">{error}</p>}
 
       <TopicNav
         active={view}
         items={[
-          ['#sweden', 'Key indicators', 'Nyckeltal'],
+          ['#sweden', 'Overview', 'Översikt'],
           ['#sweden-counties', 'Compare counties', 'Jämför län'],
           ['#sweden-explorer', 'Explore indicators', 'Utforska indikatorer'],
         ]}
       />
       {view === '#sweden' && (
-        <Stage
-          id="sweden-stage"
-          dark={false}
-          kicker={l(
-            'How is Sweden doing? · counties',
-            'Hur mår Sverige? · länen',
-          )}
-          title={l('Every county on the same axis', 'Varje län på samma axel')}
-          figure={<CountyMultiples rows={counties} />}
-          left={
-            <>
-              <StageBlock title={l('Sources', 'Källor')}>
-                <StageTools
-                  items={[
-                    'SCB',
-                    'Försäkringskassan',
-                    'Folkhälsomyndigheten',
-                    'ESS',
-                    'Kolada',
-                  ]}
-                />
-                <p>
-                  {l(
-                    'Five public sources joined on shared keys for region, period, sex and age.',
-                    'Fem öppna källor kopplade på gemensamma nycklar för region, period, kön och ålder.',
-                  )}
-                </p>
-              </StageBlock>
-              <StageBlock title={l('Coverage', 'Täckning')}>
-                <StageFacts
-                  rows={[
-                    [l('Indicators', 'Indikatorer'), String(indicators.length)],
-                    [
-                      l('Counties', 'Län'),
-                      String(new Set(counties.map((r) => r.region_code)).size),
-                    ],
-                    [
-                      l('Years', 'År'),
-                      years.length
-                        ? `${years[0]}–${years[years.length - 1]}`
-                        : '–',
-                    ],
-                  ]}
-                />
-              </StageBlock>
-            </>
-          }
-          right={
-            <>
-              <StageBlock title={l('Model', 'Modell')}>
-                <ol className="stage-steps">
-                  <li>
-                    {l(
-                      'Python ingestion per source',
-                      'Inläsning i Python per källa',
-                    )}
-                  </li>
-                  <li>
-                    {l('dbt staging and tests', 'dbt-staging och tester')}
-                  </li>
-                  <li>{l('Star schema in DuckDB', 'Stjärnschema i DuckDB')}</li>
-                  <li>
-                    {l(
-                      'Parquet and JSON to the site',
-                      'Parquet och JSON till sajten',
-                    )}
-                  </li>
-                </ol>
-                <p>
-                  <a href="#status">
-                    {l('Pipeline status', 'Pipelinens status')}
-                  </a>
-                </p>
-              </StageBlock>
-              <StageBlock title={l('Tools', 'Verktyg')}>
-                <StageTools
-                  items={['Python', 'dbt', 'DuckDB', 'SQL', 'Parquet', 'React']}
-                />
-              </StageBlock>
-            </>
-          }
-        />
+        <section className="report welfare-section welfare-main">
+          <CountyMultiples rows={counties} />
+          <Interpretation
+            notMeaning={l(
+              'A county with high values on several measures is not shown to be worse off because of one thing: counties differ in age structure, industry and much else, and unemployment carries a margin of about ±1–2 points per county.',
+              'Ett län med höga värden på flera mått visas inte vara sämre ställt av en enda orsak: länen skiljer sig i åldersstruktur, näringsliv och mycket annat, och arbetslösheten har en felmarginal på ungefär ±1–2 procentenheter per län.',
+            )}
+          >
+            <p>
+              {l(
+                'Each small chart is one county on the same scale, so a shape that sits above the grey line is above the national average. Switch measure to see whether the same counties stand out on work and on health.',
+                'Varje litet diagram är ett län på samma skala, så en kurva som ligger över den grå linjen ligger över rikssnittet. Byt mått för att se om samma län sticker ut för arbete och för hälsa.',
+              )}
+            </p>
+          </Interpretation>
+          <DataQuestion
+            number="→"
+            eyebrow={l('Go deeper', 'Fördjupa')}
+            question={l('Four questions to follow', 'Fyra frågor att följa')}
+          />
+          <StoryNext
+            label={l('Welfare questions', 'Välfärdsfrågor')}
+            links={[
+              {
+                href: '#sweden-counties',
+                title: l('Work', 'Arbete'),
+                line: l(
+                  'Where is unemployment highest, and is it falling?',
+                  'Var är arbetslösheten högst, och sjunker den?',
+                ),
+              },
+              {
+                href: '#sweden-counties',
+                title: l('Health', 'Hälsa'),
+                line: l(
+                  'Where is sick leave highest?',
+                  'Var är sjukskrivningen högst?',
+                ),
+              },
+              {
+                href: '#sweden-explorer',
+                title: l('Trust', 'Tillit'),
+                line: l(
+                  'How much do people trust institutions and each other?',
+                  'Hur stor är tilliten till institutioner och till varandra?',
+                ),
+              },
+              {
+                href: '#sweden-counties',
+                title: l('Overlap', 'Samvariation'),
+                line: l(
+                  'Do unemployment, sick leave and mental strain move together?',
+                  'Följs arbetslöshet, sjukskrivning och psykisk påfrestning åt?',
+                ),
+              },
+            ]}
+          />
+        </section>
       )}
       {view === '#sweden' && (
-        <section
-          className="report welfare-section"
-          aria-labelledby="welfare-headlines"
-        >
-          <p className="eyebrow">
-            {l('Latest national values', 'Senaste värden för riket')}
-          </p>
-          <h2 id="welfare-headlines">
-            {l('Headline indicators', 'Nyckeltal')}
-          </h2>
-          <div className="segmented welfare-domains" role="tablist">
-            {domains.map((key) => (
-              <button
-                key={key}
-                role="tab"
-                aria-selected={domain === key}
-                className={domain === key ? 'active' : ''}
-                onClick={() => setDomain(key)}
-              >
-                {l(...DOMAINS[key])}
-              </button>
-            ))}
-          </div>
-          <div className="welfare-tiles">
-            {tiles.map((headline) => {
-              const indicator = byKey.get(headline.indicator_key)!
-              const delta = change(headline, indicator)
-              return (
-                <article key={headline.indicator_key} className="welfare-tile">
-                  <h3>{indicator.indicator_name}</h3>
-                  <strong>{formatValue(headline.value, indicator.unit)}</strong>
-                  <span className="tile-period">
-                    {headline.period_label}
-                    {headline.age_group_key !== 'ALL' &&
-                      ` · ${headline.age_group_key}`}
-                  </span>
-                  {headline.ci_low != null && headline.ci_high != null && (
-                    <span className="tile-ci">
-                      95 %: {formatValue(headline.ci_low, indicator.unit)}–
-                      {formatValue(headline.ci_high, indicator.unit)}
+        <div className="report welfare-section">
+          <ExploreSection
+            id="welfare-headlines"
+            title={l(
+              'Explore: the latest national values',
+              'Utforska: senaste värden för riket',
+            )}
+            summary={l(
+              `${indicators.length} indicators in ten areas, from jobs and health to trust and safety.`,
+              `${indicators.length} indikatorer inom tio områden, från jobb och hälsa till tillit och trygghet.`,
+            )}
+          >
+            <div className="segmented welfare-domains" role="tablist">
+              {domains.map((key) => (
+                <button
+                  key={key}
+                  role="tab"
+                  aria-selected={domain === key}
+                  className={domain === key ? 'active' : ''}
+                  onClick={() => setDomain(key)}
+                >
+                  {l(...DOMAINS[key])}
+                </button>
+              ))}
+            </div>
+            <div className="welfare-tiles">
+              {tiles.map((headline) => {
+                const indicator = byKey.get(headline.indicator_key)!
+                const delta = change(headline, indicator)
+                return (
+                  <article
+                    key={headline.indicator_key}
+                    className="welfare-tile"
+                  >
+                    <h3>{indicator.indicator_name}</h3>
+                    <strong>
+                      {formatValue(headline.value, indicator.unit)}
+                    </strong>
+                    <span className="tile-period">
+                      {headline.period_label}
+                      {headline.age_group_key !== 'ALL' &&
+                        ` · ${headline.age_group_key}`}
                     </span>
-                  )}
-                  {delta && (
-                    <span className={`tile-change ${delta.tone}`}>
-                      {delta.text}
-                    </span>
-                  )}
-                  <small>{indicator.source_name}</small>
-                </article>
-              )
-            })}
-          </div>
-        </section>
+                    {headline.ci_low != null && headline.ci_high != null && (
+                      <span className="tile-ci">
+                        95 %: {formatValue(headline.ci_low, indicator.unit)}–
+                        {formatValue(headline.ci_high, indicator.unit)}
+                      </span>
+                    )}
+                    {delta && (
+                      <span className={`tile-change ${delta.tone}`}>
+                        {delta.text}
+                      </span>
+                    )}
+                    <small>{indicator.source_name}</small>
+                  </article>
+                )
+              })}
+            </div>
+          </ExploreSection>
+        </div>
       )}
 
       {view === '#sweden-counties' && (
@@ -427,7 +412,39 @@ export default function WelfarePage({ view }: { view: string }) {
       )}
       {view === '#sweden' && (
         <div className="report">
-          <ProductQuality product="welfare" />
+          <ExploreSection
+            id="welfare-quality"
+            title={l('Data quality', 'Datakvalitet')}
+            summary={l(
+              'Completeness, timeliness and the checks on every source.',
+              'Fullständighet, aktualitet och kontrollerna av varje källa.',
+            )}
+          >
+            <ProductQuality product="welfare" />
+          </ExploreSection>
+          <MethodSummary
+            lineage={[
+              'SCB, Försäkringskassan, Folkhälsomyndigheten, ESS, Kolada',
+              l('Python ingestion', 'inläsning i Python'),
+              'dbt + DuckDB',
+              'Parquet, JSON',
+              'React',
+            ]}
+            quality={l(
+              'Five sources are joined on shared keys for region, period, sex and age; the relationships are descriptive only, and survey-based measures carry margins of error.',
+              'Fem källor kopplas på gemensamma nycklar för region, period, kön och ålder; sambanden är bara beskrivande, och enkätbaserade mått har felmarginaler.',
+            )}
+            more={[
+              {
+                href: '#status',
+                label: l('Pipeline status', 'Pipelinens status'),
+              },
+              {
+                href: 'https://github.com/korv9/anton-portfolio/blob/main/docs/welfare-data-model.md',
+                label: l('Data model and caveats', 'Datamodell och förbehåll'),
+              },
+            ]}
+          />
         </div>
       )}
     </div>

@@ -27,6 +27,13 @@ import {
   Status,
 } from './shared'
 import { Snapshot } from './Snapshot'
+import {
+  DataQuestion,
+  ExploreSection,
+  FindingHero,
+  MethodSummary,
+  StoryNext,
+} from '../ui/Story'
 import type { AiActData, Change, Milestone } from './types'
 
 type View = { data: AiActData; today: string }
@@ -43,93 +50,55 @@ export function Overview({ data, today }: View) {
   )
   return (
     <>
-      <section className="aa-cards" aria-label={l('Key facts', 'Nyckelfakta')}>
-        <article className="aa-card">
-          <p className="aa-kicker">{l('What it is', 'Vad det är')}</p>
-          <h2>{l('One EU regulation for AI', 'En EU-förordning för AI')}</h2>
-          <p>
-            {l(
-              `Regulation (EU) 2024/1689 sets rules for AI systems and general-purpose AI models placed on the EU market, scaled by risk: ${counts.articles} articles and ${counts.annexes} annexes in the current consolidated text.`,
-              `Förordning (EU) 2024/1689 ställer krav på AI-system och AI-modeller för allmänna ändamål på EU-marknaden, efter risk: ${counts.articles} artiklar och ${counts.annexes} bilagor i den gällande konsoliderade texten.`,
-            )}
-          </p>
-          <a href="#ai-act-risk">{l('Risk classes', 'Riskklasser')}</a>
-        </article>
-        <article className="aa-card">
-          <p className="aa-kicker">{l('Applies now', 'Gäller nu')}</p>
-          {latest && (
-            <>
-              <h2>{pick({ en: latest.title_en, sv: latest.title_sv })}</h2>
-              <p>
-                {l('Since', 'Sedan')} {fmtDate(latest.date)}.{' '}
-                {pick({ en: latest.description_en, sv: latest.description_sv })}
-              </p>
-            </>
-          )}
-          <a href="#ai-act-today">
-            {l('What applies today', 'Vad gäller i dag')}
-          </a>
-        </article>
-        <article className="aa-card">
-          <p className="aa-kicker">
-            {l('What happens next', 'Vad händer härnäst')}
-          </p>
-          {next && (
-            <>
-              <h2>
-                {fmtDate(next.date)}:{' '}
-                {pick({ en: next.title_en, sv: next.title_sv })}
-              </h2>
-              <p>
-                {pick({ en: next.description_en, sv: next.description_sv })}
-              </p>
-            </>
-          )}
-          <p className="aa-muted">
-            {upcoming.length - 1 > 0 &&
-              l(
-                `${upcoming.length - 1} more dates until 2030.`,
-                `${upcoming.length - 1} datum till fram till 2030.`,
-              )}
-          </p>
-          <a href="#ai-act-timeline">{l('Timeline', 'Tidslinje')}</a>
-        </article>
-        <article className="aa-card">
-          <p className="aa-kicker">{l('Who is affected', 'Vem berörs')}</p>
-          <h2>
-            {l(
-              `${operators.length} kinds of operator`,
-              `${operators.length} slags aktörer`,
-            )}
-          </h2>
-          <p>
-            {operators.map((a) => l(a.label_en, a.label_sv)).join(', ')}.{' '}
-            {l(
-              `${counts.obligations} obligations are mapped to the article that sets them.`,
-              `${counts.obligations} skyldigheter är kopplade till artikeln som anger dem.`,
-            )}
-          </p>
-          <a href="#ai-act-roles">{l('Roles', 'Roller')}</a>
-        </article>
-      </section>
-
-      <section className="aa-latest" aria-labelledby="aa-latest-title">
-        <h2 id="aa-latest-title">{l('Latest', 'Senast')}</h2>
-        <dl>
+      <section className="aa-now" aria-labelledby="aa-today-q">
+        <DataQuestion
+          id="aa-today-q"
+          number={1}
+          eyebrow={l('Today', 'I dag')}
+          question={l('What applies now?', 'Vad gäller nu?')}
+        />
+        {latest && (
+          <FindingHero
+            value={fmtDate(latest.date)}
+            statement={pick({ en: latest.title_en, sv: latest.title_sv })}
+            comparison={pick({
+              en: latest.description_en,
+              sv: latest.description_sv,
+            })}
+            source={
+              <Source href={latest.source_url}>
+                {l('Article', 'Artikel')} {latest.source_article}
+              </Source>
+            }
+          />
+        )}
+        <dl className="aa-now-next">
           <div>
-            <dt>{l('Latest official change', 'Senaste officiella ändring')}</dt>
+            <dt>{l('Next', 'Härnäst')}</dt>
             <dd>
-              {latestOfficial ? (
+              {next ? (
                 <>
-                  <span>{fmtDate(latestOfficial.change_date)}</span>
-                  <span title={latestOfficial.document_title}>
-                    {shortTitle(
-                      latestOfficial.change_kind,
-                      latestOfficial.document_id,
-                      latestOfficial.document_title,
-                    )}
+                  <b>
+                    {fmtDate(next.date)}:{' '}
+                    {pick({ en: next.title_en, sv: next.title_sv })}
+                  </b>
+                  <span>
+                    {pick({ en: next.description_en, sv: next.description_sv })}
                   </span>
-                  <Source href={latestOfficial.source_url} />
+                  <Source href={next.source_url}>
+                    {l('Article', 'Artikel')} {next.source_article}
+                  </Source>
+                  {upcoming.length - 1 > 0 && (
+                    <small>
+                      {l(
+                        `${upcoming.length - 1} more dates until 2030.`,
+                        `${upcoming.length - 1} datum till fram till 2030.`,
+                      )}{' '}
+                      <a href="#ai-act-timeline">
+                        {l('Timeline', 'Tidslinje')}
+                      </a>
+                    </small>
+                  )}
                 </>
               ) : (
                 '–'
@@ -137,53 +106,143 @@ export function Overview({ data, today }: View) {
             </dd>
           </div>
           <div>
-            <dt>{l('Latest application date', 'Senaste tillämpningsdatum')}</dt>
+            <dt>{l('Latest change', 'Senaste ändring')}</dt>
             <dd>
-              {latest && (
+              {latestOfficial ? (
                 <>
-                  <span>{fmtDate(latest.date)}</span>
-                  {pick({ en: latest.title_en, sv: latest.title_sv })}
-                  <Source href={latest.source_url}>
-                    {l('Article', 'Artikel')} {latest.source_article}
-                  </Source>
+                  <b title={latestOfficial.document_title}>
+                    {fmtDate(latestOfficial.change_date)}:{' '}
+                    {shortTitle(
+                      latestOfficial.change_kind,
+                      latestOfficial.document_id,
+                      latestOfficial.document_title,
+                    )}
+                  </b>
+                  <Source href={latestOfficial.source_url} />
+                  <small>
+                    <a href="#ai-act-changes">
+                      {l('Every change', 'Alla ändringar')}
+                    </a>
+                  </small>
                 </>
-              )}
-            </dd>
-          </div>
-          <div>
-            <dt>{l('Next milestone', 'Nästa milstolpe')}</dt>
-            <dd>
-              {next && (
-                <>
-                  <span>{fmtDate(next.date)}</span>
-                  {pick({ en: next.title_en, sv: next.title_sv })}
-                  <Source href={next.source_url}>
-                    {l('Article', 'Artikel')} {next.source_article}
-                  </Source>
-                </>
-              )}
-            </dd>
-          </div>
-          <div>
-            <dt>{l('Latest guidance', 'Senaste vägledning')}</dt>
-            <dd>
-              {latestGuidance && (
-                <>
-                  <span>{fmtDate(latestGuidance.published_at)}</span>
-                  {latestGuidance.title}
-                  <Source href={latestGuidance.source_url}>
-                    {l('Commission', 'Kommissionen')}
-                  </Source>
-                </>
+              ) : (
+                '–'
               )}
             </dd>
           </div>
         </dl>
+        <p className="aa-now-more">
+          <a href="#ai-act-today">
+            {l(
+              'Every article in force today',
+              'Alla artiklar som gäller i dag',
+            )}
+          </a>
+        </p>
       </section>
 
-      <Snapshot data={data} today={today} />
+      <section className="aa-who" aria-labelledby="aa-who-q">
+        <DataQuestion
+          id="aa-who-q"
+          number={2}
+          eyebrow={l('Who are you?', 'Vem är du?')}
+          question={l(
+            'Which parts of the Act apply to you?',
+            'Vilka delar av lagen gäller dig?',
+          )}
+        >
+          <p>
+            {l(
+              `The Act puts obligations on ${operators.length} kinds of operator; ${counts.obligations} obligations are each tied to the article that sets them.`,
+              `Lagen lägger skyldigheter på ${operators.length} slags aktörer; ${counts.obligations} skyldigheter är var och en kopplade till artikeln som anger dem.`,
+            )}
+          </p>
+        </DataQuestion>
+        <StoryNext
+          label={l('Roles and the navigator', 'Roller och navigatorn')}
+          links={[
+            {
+              href: '#ai-act-startups',
+              title: l('Startup navigator', 'Startup-navigator'),
+              line: l(
+                'Answer a few questions about what you build and see which parts may matter.',
+                'Svara på några frågor om vad ni bygger och se vilka delar som kan vara relevanta.',
+              ),
+            },
+            ...operators.map((a) => ({
+              href: `#ai-act-obligations?actor=${a.actor_id}`,
+              title: l(a.label_en, a.label_sv),
+              line: l(
+                `What a ${a.label_en.toLowerCase()} must do, and from when.`,
+                `Vad en ${a.label_sv.toLowerCase()} ska göra, och från när.`,
+              ),
+            })),
+          ]}
+        />
+      </section>
 
-      <AmendmentNote data={data} />
+      <section className="aa-month" aria-labelledby="aa-month-q">
+        <DataQuestion
+          id="aa-month-q"
+          number={3}
+          eyebrow={l('This month', 'Den här månaden')}
+          question={l(
+            'Where does the Act stand this month?',
+            'Var står lagen den här månaden?',
+          )}
+        />
+        <Snapshot data={data} today={today} />
+      </section>
+
+      <ExploreSection
+        id="aa-about"
+        title={l('About the Act', 'Om förordningen')}
+        summary={l(
+          'What the regulation is, how it scales by risk, the latest guidance and the amendment.',
+          'Vad förordningen är, hur den skalar efter risk, den senaste vägledningen och ändringen.',
+        )}
+      >
+        <p className="aa-lede">
+          {l(
+            `Regulation (EU) 2024/1689 sets rules for AI systems and general-purpose AI models placed on the EU market, scaled by risk: ${counts.articles} articles and ${counts.annexes} annexes in the current consolidated text.`,
+            `Förordning (EU) 2024/1689 ställer krav på AI-system och AI-modeller för allmänna ändamål på EU-marknaden, efter risk: ${counts.articles} artiklar och ${counts.annexes} bilagor i den gällande konsoliderade texten.`,
+          )}{' '}
+          <a href="#ai-act-risk">{l('Risk classes', 'Riskklasser')}</a>
+        </p>
+        {latestGuidance && (
+          <p>
+            {l('Latest guidance', 'Senaste vägledning')}:{' '}
+            {fmtDate(latestGuidance.published_at)} · {latestGuidance.title}{' '}
+            <Source href={latestGuidance.source_url}>
+              {l('Commission', 'Kommissionen')}
+            </Source>
+          </p>
+        )}
+        <AmendmentNote data={data} />
+      </ExploreSection>
+
+      <MethodSummary
+        lineage={[
+          l(
+            'EU Publications Office (EN, SV)',
+            'EU:s publikationsbyrå (EN, SV)',
+          ),
+          l('Python ingestion', 'inläsning i Python'),
+          'dbt + DuckDB',
+          'JSON',
+          'React',
+        ]}
+        quality={l(
+          'Derived obligations remain traceable to the official source text: every quote is tested to appear verbatim in the Act, and interpretations are marked as such.',
+          'Härledda skyldigheter går att spåra till den officiella källtexten: varje citat testas mot att det finns ordagrant i lagen, och tolkningar är markerade som tolkningar.',
+        )}
+        more={[
+          {
+            href: '#ai-act-sources',
+            label: l('Sources and method', 'Källor och metod'),
+          },
+        ]}
+      />
     </>
   )
 }
