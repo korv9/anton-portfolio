@@ -7,7 +7,6 @@ import { fetchData } from '../dataSource'
 import { readParquet } from '../parquet'
 import type {
   AtlasPoint,
-  AtlasPreview,
   AtlasSummary,
   BookCenteredPoint,
   ClusterFile,
@@ -29,9 +28,6 @@ const n = (v: unknown) => (typeof v === 'bigint' ? Number(v) : (v as number))
 
 export const loadAtlasSummary = () =>
   json<AtlasSummary>('symbolic/summary.json')
-
-export const loadAtlasPreview = () =>
-  json<AtlasPreview>('symbolic/preview.json')
 
 export async function loadAtlasPoints(): Promise<AtlasPoint[]> {
   const rows = await readParquet('symbolic/v4/atlas.parquet')

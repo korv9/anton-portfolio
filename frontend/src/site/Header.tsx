@@ -4,8 +4,9 @@
  * project's own views (the politics themes, the job-market themes, the atlas sections) live
  * inside the project, under this header, never in it.
  *
- * The header is the same on every page: the name large, the navigation under it. Project lists
- * come from projects/projectRegistry.ts.
+ * The header is one slim row: the name, the four destinations, the language. On the start page
+ * the hero already holds the name and the same four links, so the bar shows only the language
+ * until the hero has scrolled away. Project lists come from projects/projectRegistry.ts.
  */
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
 import { currentLocale, l, setLocale, type Locale } from '../i18n'
@@ -116,12 +117,6 @@ function ProjectList({ onPick }: { onPick: () => void }) {
       <a className="nav-all" href="#alla-projekt" onClick={onPick}>
         {l('View all projects', 'Se alla projekt')}
       </a>
-      <a className="nav-all" href="#data-constellation" onClick={onPick}>
-        {l(
-          'Data Constellation: how the platform fits together',
-          'Data Constellation: hur plattformen hänger ihop',
-        )}
-      </a>
     </>
   )
 }
@@ -159,20 +154,17 @@ export default function Header({
     setLocale(next)
     onLanguage(next)
   }
-  const Name = home ? 'h1' : 'div'
   const close = () => setMobileOpen(false)
-  // The header stays on screen. Once the page scrolls it folds to one slim row (the name and
-  // the navigation side by side); it unfolds at the very top. The gap between the two
-  // thresholds keeps it from flickering when its own change of height moves the page.
+  // On the start page the bar steps aside while the hero (name and links) is on screen.
   const bar = useRef<HTMLElement>(null)
-  const [compact, setCompact] = useState(false)
+  const [homeTop, setHomeTop] = useState(home)
   useEffect(() => {
-    const onScroll = () =>
-      setCompact((was) => (was ? window.scrollY > 8 : window.scrollY > 120))
+    if (!home) return setHomeTop(false)
+    const onScroll = () => setHomeTop(window.scrollY < window.innerHeight * 0.5)
     onScroll()
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
-  }, [])
+  }, [home])
   // Sticky elements further down (a product's sidebar, anchored sections) sit under it.
   useEffect(() => {
     const el = bar.current
@@ -188,16 +180,16 @@ export default function Header({
     }
   }, [])
   return (
-    <header ref={bar} className={`site-bar${compact ? ' is-compact' : ''}`}>
-      <Name className="site-name-heading">
+    <header ref={bar} className={`site-bar${homeTop ? ' is-home-top' : ''}`}>
+      <div className="site-name-heading">
         <a
           className="wordmark"
           href="#start"
           aria-label={l('Anton Ernstsson, home', 'Anton Ernstsson, startsida')}
         >
-          <span className="wordmark-name">ANTON ERNSTSSON</span>
+          <span className="wordmark-name">Anton Ernstsson</span>
         </a>
-      </Name>
+      </div>
       <nav className="global-nav" aria-label={l('Site', 'Webbplatsen')}>
         <Menu label={l('Projects', 'Projekt')} current={active === 'projects'}>
           {(closeMenu) => <ProjectList onPick={closeMenu} />}

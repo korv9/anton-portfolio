@@ -387,3 +387,10 @@
 .turn-bubble .issue-chips a {
   color: var(--ink-2);
 }
+
+.timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--ink);
+}

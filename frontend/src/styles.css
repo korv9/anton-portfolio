@@ -41,27 +41,6 @@ h3 {
 .skip-link:focus {
   top: 1rem;
 }
-.wordmark {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  text-decoration: none;
-}
-.wordmark span {
-  display: grid;
-  place-items: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: var(--ink);
-  color: var(--on-accent);
-  font-weight: 800;
-  font-size: 0.78rem;
-  letter-spacing: 0.08em;
-}
-.wordmark strong {
-  font-size: 0.95rem;
-}
 .nav {
   display: flex;
   align-items: center;
@@ -757,13 +736,6 @@ summary:focus-visible {
   }
   .role-tabs {
     max-width: 600px;
-  }
-}
-/* Between the menu breakpoint and 800px the eight links need the wordmark's name space;
-   the AE mark still links home. */
-@media (min-width: 681px) and (max-width: 800px) {
-  .wordmark strong {
-    display: none;
   }
 }
 @media (max-width: 680px) {
