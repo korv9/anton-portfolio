@@ -34,3 +34,8 @@ frontend/public/data/parquet/welfare/
 
 # ProjectAtlas local index (SQLite), rebuilt by `projectatlas init`
 .projectatlas/
+
+# Idea Lineage: the private journal and every generated view stay local; only the public
+# journal is committed (docs/idea-lineage.md).
+.idea-lineage/*
+!.idea-lineage/public/

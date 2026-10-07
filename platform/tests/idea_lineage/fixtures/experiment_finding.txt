@@ -1,0 +1,8 @@
+## Experiments
+- Book-centred embeddings on the Symbolic Atlas sample, to test whether book identity drives the clusters.
+
+## Findings
+- Largest-book share fell from 0.74 to 0.57 after book-centring.
+- The clusters feel cleaner.
+
+Open question: How much of the remaining structure is translator-driven?

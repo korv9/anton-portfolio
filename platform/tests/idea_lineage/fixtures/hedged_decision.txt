@@ -1,0 +1,1 @@
+Decision: We could maybe make the AI Act navigator the start page.
