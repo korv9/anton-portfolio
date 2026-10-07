@@ -425,7 +425,7 @@ function AtlasMap({
     (a, b) => Number(active(a)) - Number(active(b)),
   )
   return (
-    <figure className="ph-map plate">
+    <figure className="ph-map">
       <svg
         viewBox="0 0 100 100"
         role="img"

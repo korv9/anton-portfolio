@@ -1,13 +1,13 @@
 /* Concept Constellation: the Philosophy Atlas's archival tone, neutral ink, and three relation
-   hues (validated for colour-vision deficiency on the dark surface; see docs). Each relation
+   hues from the site's data-series tokens. Each relation
    type also has its own stroke pattern, so colour is never the only cue. */
 .concepts {
   --cc-ink: var(--ink);
   --cc-muted: var(--muted);
   --cc-rule: var(--line);
-  --cc-semantic: #3987e5;
-  --cc-tension: #d95926;
-  --cc-reference: #199e70;
+  --cc-semantic: var(--data-blue);
+  --cc-tension: var(--data-rust);
+  --cc-reference: var(--data-green);
   --cc-prominent: color-mix(in srgb, var(--ink) 45%, transparent);
   color: var(--cc-ink);
 }
@@ -105,8 +105,9 @@
   color: var(--cc-muted);
   cursor: pointer;
 }
-.cc-chips button[aria-pressed='true'] {
+.concepts .cc-chips button[aria-pressed='true'] {
   border-color: var(--cc-ink);
+  background: var(--paper-strong);
   color: var(--cc-ink);
 }
 .cc-swatch {
@@ -300,7 +301,11 @@
   text-align: left;
 }
 .cc-table td {
-  background: rgba(57, 135, 229, calc(0.04 + var(--v, 0) * 0.36));
+  background: color-mix(
+    in srgb,
+    var(--data-blue) calc(4% + var(--v, 0) * 36%),
+    transparent
+  );
   font-variant-numeric: tabular-nums;
   text-align: right;
 }
@@ -424,16 +429,16 @@
   stroke-width: 2;
 }
 .cj-star-myth > :first-child {
-  fill: #a39d90;
+  fill: var(--line-strong);
 }
 .cj-star-philosophy > :first-child {
-  fill: #c9c2b6;
+  fill: var(--subtle);
 }
 .cj-star-politics > :first-child {
-  fill: #8f98a3;
+  fill: var(--muted);
 }
 .cj-star-law > :first-child {
-  fill: #f2efe9;
+  fill: var(--ink);
 }
 .cj-star-label {
   fill: var(--ink);

@@ -1,12 +1,12 @@
-/* Philosophy Atlas: editorial, archival. Serif headings, warm ink, three era hues (validated
-   for colour-vision deficiency on this surface), everything else in neutrals. */
+/* Philosophy Atlas: editorial, archival. Serif headings, warm ink, three era hues (the site's
+   data-series tokens), everything else in neutrals. */
 .philosophy {
   --ph-ink: var(--ink);
   --ph-muted: var(--muted);
   --ph-rule: var(--line);
-  --ph-era-0: #3987e5;
-  --ph-era-1: #d95926;
-  --ph-era-2: #199e70;
+  --ph-era-0: var(--data-blue);
+  --ph-era-1: var(--data-rust);
+  --ph-era-2: var(--data-green);
   color: var(--ph-ink);
 }
 .philosophy a {

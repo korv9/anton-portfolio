@@ -546,7 +546,7 @@ function DomainLinks({ corpus, links }: { corpus: string; links: Link[] }) {
 }
 
 /**
- * The four domains as a small constellation on a dark plate: each domain a star sized by how
+ * The four domains as a small constellation: each domain a star sized by how
  * strongly the concept stands out there, with its passages around it; lines only where the data
  * has a relation of a stated type. Positions carry no meaning beyond the order of the domains.
  */
@@ -611,7 +611,7 @@ function JourneyMap({
     return `${l(DOMAIN[c].en, DOMAIN[c].sv)}: ${p ? p.rank1_lift.toFixed(1) : '–'}`
   }).join(', ')
   return (
-    <figure className="cj-map plate">
+    <figure className="cj-map">
       <svg
         viewBox="0 0 820 200"
         role="img"

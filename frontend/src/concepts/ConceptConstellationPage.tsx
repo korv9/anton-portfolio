@@ -229,7 +229,7 @@ function Constellation({ route, data }: { route: Route; data: Data }) {
             )}
           </div>
           <div className="cc-stage">
-            <figure className="cc-map plate">
+            <figure className="cc-map">
               <svg
                 viewBox="-12 -6 124 112"
                 role="group"
