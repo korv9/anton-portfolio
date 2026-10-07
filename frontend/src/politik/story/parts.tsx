@@ -5,7 +5,7 @@
  */
 import { useId, useState, type ReactNode } from 'react'
 import { l } from '../../i18n'
-import { identity, partyFill } from '../../parties/identity'
+import { identity } from '../../parties/identity'
 
 export function Section({
   id,
@@ -106,81 +106,8 @@ export function Kpi({
   )
 }
 
-export type BarRow = {
-  key: string
-  label: ReactNode
-  value: number
-  /** Shown instead of the formatted value. */
-  text?: string
-  party?: string
-  color?: string
-  /** A second, thinner bar under the first (e.g. disagreement under volume). */
-  second?: number
-}
-
-/** Labelled horizontal bars; the label always says what the colour says. */
-export function Bars({
-  rows,
-  max,
-  format,
-  label,
-  secondMax,
-  onPick,
-  picked,
-}: {
-  rows: BarRow[]
-  max?: number
-  format: (v: number) => string
-  label: string
-  secondMax?: number
-  onPick?: (key: string) => void
-  picked?: string | null
-}) {
-  const top = max ?? Math.max(...rows.map((r) => r.value), 1)
-  return (
-    <ol className="story-bars" aria-label={label}>
-      {rows.map((r) => {
-        const color = r.color ?? (r.party ? partyFill(r.party) : 'var(--ink)')
-        const body = (
-          <>
-            <span className="story-bar-label">{r.label}</span>
-            <span className="story-bar-track">
-              <span
-                className="story-bar-fill"
-                style={{
-                  width: `${(r.value / top) * 100}%`,
-                  background: color,
-                }}
-              />
-              {r.second != null && secondMax && (
-                <span
-                  className="story-bar-second"
-                  style={{ width: `${(r.second / secondMax) * 100}%` }}
-                />
-              )}
-            </span>
-            <span className="story-bar-value">{r.text ?? format(r.value)}</span>
-          </>
-        )
-        return (
-          <li key={r.key} className={picked === r.key ? 'picked' : ''}>
-            {onPick ? (
-              <button
-                type="button"
-                onClick={() => onPick(r.key)}
-                aria-pressed={picked === r.key}
-              >
-                {body}
-              </button>
-            ) : (
-              body
-            )}
-          </li>
-        )
-      })}
-    </ol>
-  )
-}
+/** The story's bars are the site's one bar chart (charts/RankBars). */
+export { default as Bars, type RankRow as BarRow } from '../../charts/RankBars'
 
 /**
  * A matrix as a heatmap: one shade of ink, darker for higher values, every cell with its

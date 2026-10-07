@@ -12,7 +12,7 @@ import { l } from '../i18n'
 import type { Route } from '../router'
 import { useViewParams } from '../politik/useViewParams'
 import { Select } from '../politik/controls'
-import DashBars from '../politik/dash/DashBars'
+import RankBars from '../charts/RankBars'
 import { MonthColumns } from './charts'
 import Treemap from './Treemap'
 import {
@@ -317,12 +317,11 @@ export default function Dashboard({
             />
           </div>
           {growers.length ? (
-            <DashBars
-              bars={growers.map((o) => ({
+            <RankBars
+              rows={growers.map((o) => ({
                 key: o.id,
                 label: o.name,
                 value: o.change,
-                tone: 'neutral' as const,
                 note: ` ${number(o.now)}`,
               }))}
               format={(v) => signedPct(v)}
@@ -400,12 +399,11 @@ export default function Dashboard({
           )}
           source={source()}
         >
-          <DashBars
-            bars={counties.slice(0, 6).map((c) => ({
+          <RankBars
+            rows={counties.slice(0, 6).map((c) => ({
               key: c.region,
               label: c.region,
               value: pctOf(c.ads, countyTotal),
-              tone: 'neutral' as const,
             }))}
             format={(v) => share(v, 1)}
             label={l('Share of ads per county', 'Andel av annonserna per län')}
@@ -424,10 +422,9 @@ export default function Dashboard({
           )}
           source={source()}
         >
-          <DashBars
-            bars={conditionBars.map((c) => ({
+          <RankBars
+            rows={conditionBars.map((c) => ({
               ...c,
-              tone: 'neutral' as const,
             }))}
             format={(v) => share(v)}
             max={100}

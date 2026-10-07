@@ -18,7 +18,7 @@ import type { Route } from '../../router'
 import ThemeLayout from '../ThemeLayout'
 import VoteWaffle from '../features/VoteWaffle'
 import BuilderPanel, { Choice, Field } from '../BuilderPanel'
-import Bars from '../Bars'
+import RankBars from '../../charts/RankBars'
 import { Select, pct } from '../controls'
 import { useViewParams } from '../useViewParams'
 import { shownParties, useParties } from '../partySelection'
@@ -287,15 +287,15 @@ export default function RosterTheme({ route }: { route: Route }) {
               tick={(d) => d.slice(2, 4)}
             />
           ) : (
-            <Bars
-              bars={others.map((o) => ({
+            <RankBars
+              rows={others.map((o) => ({
                 key: o.party,
                 party: o.party,
                 label: `${o.party} · ${partyName(o.party)}`,
                 value: o.value,
               }))}
               format={(v) => pct(v, 0)}
-              description={l(
+              label={l(
                 `How often ${partyName(party)} voted like each other party in ${session}: ${others.map((o) => `${o.party} ${Math.round(o.value)} %`).join(', ')}`,
                 `Hur ofta ${partyName(party)} röstade som varje annat parti ${session}: ${others.map((o) => `${o.party} ${Math.round(o.value)} %`).join(', ')}`,
               )}

@@ -219,61 +219,6 @@
 }
 
 /* Bars. */
-.story-bars {
-  display: grid;
-  gap: 0.35rem;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-.story-bars li,
-.story-bars li > button {
-  display: grid;
-  grid-template-columns: minmax(7rem, 14rem) minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 0.6rem;
-  font-size: var(--fs-meta);
-}
-.story-bars li > button {
-  width: 100%;
-  padding: 0;
-  border: 0;
-  background: none;
-  color: inherit;
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
-}
-.story-bar-label {
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-.story-bar-track {
-  position: relative;
-  height: 1.1rem;
-}
-.story-bar-fill {
-  position: absolute;
-  inset: 0 auto 0 0;
-  transition: width 400ms cubic-bezier(0.2, 0.7, 0.1, 1);
-}
-.story-bar-second {
-  position: absolute;
-  left: 0;
-  bottom: -5px;
-  height: 3px;
-  background: #c8413b;
-}
-.story-bar-value {
-  min-width: 3.2rem;
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
 
 /* The seat bar against the majority line. */
 .story-seatbar-track {
@@ -838,10 +783,6 @@
   .story-now {
     grid-template-columns: minmax(0, 1fr);
   }
-  .story-bars li,
-  .story-bars li > button {
-    grid-template-columns: minmax(5.5rem, 8rem) minmax(0, 1fr) auto;
-  }
   .story-diverge li {
     grid-template-columns: minmax(5rem, 7rem) minmax(0, 1fr) 2.6rem;
   }
@@ -864,8 +805,7 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .story-skeleton span,
-  .story-bar-fill {
+  .story-skeleton span {
     animation: none;
     transition: none;
   }
@@ -910,9 +850,6 @@
 .sak-diverge li {
   grid-template-columns: minmax(7rem, 14rem) minmax(0, 1fr) 7.5rem;
 }
-.story-bars li.picked .story-bar-label {
-  font-weight: 700;
-}
 .sak-deeper {
   margin-top: var(--sp-5);
   border-top: 3px solid var(--ink);
@@ -926,9 +863,6 @@
 }
 .sak-deeper[open] > summary {
   margin-bottom: var(--sp-3);
-}
-.story-bars li:has(> button) {
-  display: block;
 }
 .sak .story-kpis .story-kpi dd {
   font-size: clamp(1.1rem, 2vw, 1.55rem);

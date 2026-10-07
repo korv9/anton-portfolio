@@ -20,7 +20,7 @@ import BuilderPanel, { Choice, Field } from '../BuilderPanel'
 import { Select, monthName, num, pct, signed } from '../controls'
 import { useViewParams } from '../useViewParams'
 import { shownParties, useParties } from '../partySelection'
-import Bars from '../Bars'
+import RankBars from '../../charts/RankBars'
 import PollTrend from '../features/PollTrend'
 
 type PollRow = {
@@ -299,10 +299,10 @@ export default function ValjarnaTheme({ route }: { route: Route }) {
         }
         chart={
           !overTime ? (
-            <Bars
-              bars={latestBars}
+            <RankBars
+              rows={latestBars}
               format={(v) => pct(v)}
-              description={l(
+              label={l(
                 `Latest support per party: ${latestBars.map((b) => `${b.key} ${pct(b.value)}`).join(', ')}`,
                 `Senaste stöd per parti: ${latestBars.map((b) => `${b.key} ${pct(b.value)}`).join(', ')}`,
               )}

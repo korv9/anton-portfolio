@@ -10,7 +10,7 @@ import { PartyTag, partyName } from '../../parties/identity'
 import type { Route } from '../../router'
 import ThemeLayout from '../ThemeLayout'
 import BuilderPanel, { Choice, Field } from '../BuilderPanel'
-import Bars from '../Bars'
+import RankBars from '../../charts/RankBars'
 import { Select, num, signed } from '../controls'
 import { useViewParams } from '../useViewParams'
 import { shownParties, useParties } from '../partySelection'
@@ -441,15 +441,15 @@ export default function BudgetTheme({ route }: { route: Route }) {
               )}
             />
           ) : (
-            <Bars
-              bars={shown.map((r) => ({
+            <RankBars
+              rows={shown.map((r) => ({
                 key: `${r.actor}-${r.expenditure_area}`,
                 label: label(r),
                 value: value(r),
                 party: r.actor,
               }))}
               format={format}
-              description={l(
+              label={l(
                 `Difference ${basis.long}: ${shown.map((r) => `${label(r)} ${format(value(r))}`).join('; ')}`,
                 `Skillnad ${basis.long}: ${shown.map((r) => `${label(r)} ${format(value(r))}`).join('; ')}`,
               )}

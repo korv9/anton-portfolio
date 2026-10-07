@@ -16,7 +16,7 @@ import type { Route } from '../../router'
 import { useParties, withParties } from '../partySelection'
 import { dayName, num } from '../controls'
 import { Board, Card, Cards, Empty, Kpi, Kpis } from '../board/Board'
-import DashBars from '../dash/DashBars'
+import RankBars from '../../charts/RankBars'
 import {
   exchanges,
   issuesIn,
@@ -414,12 +414,11 @@ export default function DebateView({ route }: { route: Route }) {
               )}
             </>
           ) : speeches ? (
-            <DashBars
-              bars={leaderTopics.map((t) => ({
+            <RankBars
+              rows={leaderTopics.map((t) => ({
                 key: t.issue.key,
                 label: l(t.issue.en, t.issue.sv),
                 value: t.count,
-                tone: 'neutral' as const,
               }))}
               format={(v) => num(v)}
               label={l(

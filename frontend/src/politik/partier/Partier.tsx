@@ -25,7 +25,7 @@ import { useParties, withParties } from '../partySelection'
 import { dayName, num, pct, signed } from '../controls'
 import { Board, Card, Cards, Empty, Kpi, Kpis } from '../board/Board'
 import Columns from '../board/Columns'
-import DashBars from '../dash/DashBars'
+import RankBars from '../../charts/RankBars'
 import {
   budgetBasis,
   loadBudgetReport,
@@ -420,8 +420,8 @@ function PartyDashboard({ party, shared }: { party: string; shared: Shared }) {
           )}
         >
           {profile ? (
-            <DashBars
-              bars={counties.map((c) => ({
+            <RankBars
+              rows={counties.map((c) => ({
                 key: c.county,
                 label: c.county,
                 value: c.seats,
@@ -446,8 +446,8 @@ function PartyDashboard({ party, shared }: { party: string; shared: Shared }) {
           )}
         >
           {profile ? (
-            <DashBars
-              bars={strongest.map((c) => ({
+            <RankBars
+              rows={strongest.map((c) => ({
                 key: c.code,
                 label: c.name,
                 value: (c.seats / c.total) * 100,
@@ -475,8 +475,8 @@ function PartyDashboard({ party, shared }: { party: string; shared: Shared }) {
           )}
         >
           {profile ? (
-            <DashBars
-              bars={constituencies.slice(0, 10).map(([name, n]) => ({
+            <RankBars
+              rows={constituencies.slice(0, 10).map(([name, n]) => ({
                 key: name,
                 label: name,
                 value: n,
@@ -498,8 +498,8 @@ function PartyDashboard({ party, shared }: { party: string; shared: Shared }) {
             `Andel voteringar med samma ståndpunkt, ${latestSession}`,
           )}
         >
-          <DashBars
-            bars={alike.map((a) => ({
+          <RankBars
+            rows={alike.map((a) => ({
               key: a.party,
               label: `${a.party} · ${partyName(a.party)}`,
               value: a.value,
@@ -604,12 +604,11 @@ function PartyDashboard({ party, shared }: { party: string; shared: Shared }) {
           {topics == null ? (
             <Empty />
           ) : latestTopics.length ? (
-            <DashBars
-              bars={latestTopics.map((t) => ({
+            <RankBars
+              rows={latestTopics.map((t) => ({
                 key: String(t.topic_id),
                 label: t.topic_label,
                 value: t.word_share_pct,
-                tone: 'neutral' as const,
               }))}
               format={(v) => pct(v)}
               label={l('Topics', 'Ämnen')}

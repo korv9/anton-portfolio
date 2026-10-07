@@ -21,7 +21,7 @@ import BuilderPanel, { Choice, Field } from '../BuilderPanel'
 import { Select, num, pct } from '../controls'
 import { useViewParams } from '../useViewParams'
 import { shownParties, useParties } from '../partySelection'
-import Bars from '../Bars'
+import RankBars from '../../charts/RankBars'
 import { areaNames, loadBudgetReport, type BudgetReport } from './BudgetTheme'
 
 const DEFAULTS = {
@@ -244,10 +244,10 @@ export default function TalTheme({ route }: { route: Route }) {
         }
         chart={
           !overTime ? (
-            <Bars
-              bars={latestBars}
+            <RankBars
+              rows={latestBars}
               format={(v) => pct(v)}
-              description={l(
+              label={l(
                 `Share of speech about ${areaName}, ${latest}: ${latestBars.map((b) => `${b.key} ${pct(b.value)}`).join(', ')}`,
                 `Andel av talet om ${areaName}, ${latest}: ${latestBars.map((b) => `${b.key} ${pct(b.value)}`).join(', ')}`,
               )}

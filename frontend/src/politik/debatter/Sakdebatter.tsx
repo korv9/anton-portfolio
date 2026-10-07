@@ -12,7 +12,7 @@ import { useViewParams } from '../useViewParams'
 import { Select, dayName, num } from '../controls'
 import { Board, Card, Cards, Empty, Kpi, Kpis } from '../board/Board'
 import Columns from '../board/Columns'
-import DashBars from '../dash/DashBars'
+import RankBars from '../../charts/RankBars'
 import { IssueChips, debateHref } from './DebateView'
 import DebateLeaderboard from '../features/DebateLeaderboard'
 import SakAnalys from './SakAnalys'
@@ -195,12 +195,11 @@ function Explorer({ route }: { route: Route }) {
           )}
         >
           {debates ? (
-            <DashBars
-              bars={areaCounts.slice(0, 10).map((a) => ({
+            <RankBars
+              rows={areaCounts.slice(0, 10).map((a) => ({
                 key: a.issue.key,
                 label: l(a.issue.en, a.issue.sv),
                 value: a.count,
-                tone: 'neutral' as const,
               }))}
               format={(v) => num(v)}
               label={l('Debates per issue area', 'Debatter per sakområde')}

@@ -10,7 +10,7 @@ import { fetchData } from '../dataSource'
 import CalibrationScatter from './CalibrationScatter'
 import { Card, Cards, Empty, Kpi, Kpis } from '../politik/board/Board'
 import Columns from '../politik/board/Columns'
-import DashBars from '../politik/dash/DashBars'
+import RankBars from '../charts/RankBars'
 import '../politik/dash/dash.css'
 import './drugcomb.css'
 import BodyMap, { type Lineage } from './BodyMap'
@@ -740,13 +740,12 @@ export default function DrugCombReport() {
             'Rader kvar efter varje städsteg',
           )}
         >
-          <DashBars
-            bars={report.funnel.map((f) => ({
+          <RankBars
+            rows={report.funnel.map((f) => ({
               key: f.step,
               label:
                 currentLocale() === 'sv' ? (STEP_SV[f.step] ?? f.step) : f.step,
               value: f.rows,
-              tone: 'neutral' as const,
             }))}
             format={(v) => num(v)}
             label={l('Cleaning funnel', 'Städtratten')}
@@ -795,8 +794,8 @@ export default function DrugCombReport() {
           )}
         >
           {tables.entities ? (
-            <DashBars
-              bars={tables.entities.map((e) => ({
+            <RankBars
+              rows={tables.entities.map((e) => ({
                 key: `${e.entity}-${e.method}`,
                 label: `${e.entity === 'drug' ? l('Drug', 'Läkemedel') : l('Cell line', 'Cellinje')} · ${e.method}`,
                 value: e.measurement_share * 100,
@@ -846,15 +845,14 @@ export default function DrugCombReport() {
             ))}
           </div>
           {families.length ? (
-            <DashBars
-              bars={families.map((f) => ({
+            <RankBars
+              rows={families.map((f) => ({
                 key: f.family,
                 label:
                   currentLocale() === 'sv'
                     ? (FAMILY_SV[f.family] ?? f.family)
                     : f.family,
                 value: (f.gain / familyTotal) * 100,
-                tone: 'neutral' as const,
               }))}
               format={(v) => `${num(v, 1)} %`}
               label={l(
