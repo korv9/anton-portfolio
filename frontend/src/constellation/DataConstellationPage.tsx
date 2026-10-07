@@ -191,12 +191,8 @@ export default function DataConstellationPage({ route }: { route: Route }) {
               label: l('Quality & Validity', 'Kvalitet och validitet'),
             },
             {
-              href: '#data-catalogue',
-              label: l('Data catalogue', 'Datakatalog'),
-            },
-            {
-              href: '#status',
-              label: l('Pipeline status', 'Pipelinens status'),
+              href: '#data-model',
+              label: l('Data platform', 'Dataplattformen'),
             },
           ]}
         >

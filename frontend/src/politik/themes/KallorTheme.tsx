@@ -308,7 +308,7 @@ export default function KallorTheme() {
             </a>
           </li>
           <li>
-            <a className="explore-row" href="#status">
+            <a className="explore-row" href="#data-catalogue">
               <strong>{l('Pipeline status', 'Pipelinens status')}</strong>
               <span>
                 {l(

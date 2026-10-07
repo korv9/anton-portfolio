@@ -8,7 +8,7 @@
  * models it comes from (description, grain, columns, rows), its sources, the pages that read it,
  * its quality checks, and a download link.
  */
-import { useEffect, useMemo, useState } from 'react'
+import { Suspense, lazy, useEffect, useMemo, useState } from 'react'
 import { l } from '../i18n'
 import { fetchData } from '../dataSource'
 import { DataQuestion } from '../ui/Story'
@@ -20,7 +20,11 @@ import {
   type Dataset,
   type QualityCheck,
 } from './logic'
+import { Disclosure } from '../ui/Disclosure'
+import { PlatformNav } from '../datamodel/PlatformNav'
 import './catalogue.css'
+
+const StatusPage = lazy(() => import('../status/StatusPage'))
 
 type Status = {
   aiAct?: {
@@ -167,6 +171,7 @@ export default function CataloguePage() {
             )}
           </p>
         </DataQuestion>
+        <PlatformNav current="#data-catalogue" />
       </header>
 
       {failed && (
@@ -184,14 +189,18 @@ export default function CataloguePage() {
           {l(
             'Dates as the published files state them. A domain without a record is left out rather than guessed.',
             'Datum så som de publicerade filerna anger dem. En domän utan uppgift lämnas utanför i stället för att gissas.',
-          )}{' '}
-          <a href="#status">
-            {l(
-              'Pipeline runs and dbt tests',
-              'Pipelinekörningar och dbt-tester',
-            )}
-          </a>
+          )}
         </p>
+        <Disclosure
+          label={l(
+            'Pipeline runs and dbt tests',
+            'Pipelinekörningar och dbt-tester',
+          )}
+        >
+          <Suspense fallback={null}>
+            <StatusPage />
+          </Suspense>
+        </Disclosure>
         <dl className="catalogue-status-grid">
           {graph && catalog && (
             <div>

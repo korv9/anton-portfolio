@@ -164,7 +164,7 @@ export default function Debatterna({
           ),
         },
         {
-          href: '#technical',
+          href: '#data-constellation',
           label: l('How the topics are learned', 'Hur ämnena lärs in'),
         },
       ]}

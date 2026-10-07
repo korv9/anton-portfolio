@@ -158,7 +158,7 @@ export default function WelfarePage({ view }: { view: string }) {
               label: l('Explore indicators', 'Utforska indikatorer'),
             },
             {
-              href: '#status',
+              href: '#data-catalogue',
               label: l('Pipeline status', 'Pipelinens status'),
             },
           ]}
@@ -479,7 +479,7 @@ export default function WelfarePage({ view }: { view: string }) {
             )}
             more={[
               {
-                href: '#status',
+                href: '#data-catalogue',
                 label: l('Pipeline status', 'Pipelinens status'),
               },
               {

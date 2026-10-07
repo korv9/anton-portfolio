@@ -322,7 +322,7 @@ export const PROJECTS: ProjectEntry[] = [
       tech: ['dbt', 'DuckDB', 'Star schema', 'Parquet'],
     },
     code: 'https://github.com/korv9/anton-portfolio/tree/main/platform',
-    pages: ['welfare', 'analysis'],
+    pages: ['welfare'],
   },
   {
     id: 'thesis',

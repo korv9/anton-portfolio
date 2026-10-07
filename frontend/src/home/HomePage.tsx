@@ -209,6 +209,7 @@ function UnderTheHood() {
       </h2>
       <p className="home-links">
         <a href="#data-constellation">Data Constellation</a>
+        <a href="#data-model">{l('Data platform', 'Dataplattformen')}</a>
         <a href="#quality">
           {l('Quality & Validity', 'Kvalitet och validitet')}
         </a>

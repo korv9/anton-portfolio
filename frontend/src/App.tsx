@@ -17,11 +17,7 @@ const TechReport = lazy(() => import('./jobs/TechReport'))
 const JobsProduct = lazy(() => import('./jobb/JobsProduct'))
 const TallmanPage = lazy(() => import('./tallman/TallmanPage'))
 const ProjectsPage = lazy(() => import('./projects/ProjectsPage'))
-const TechnicalPage = lazy(() => import('./technical/TechnicalPage'))
-const DesignPage = lazy(() => import('./technical/DesignPage'))
 const WelfarePage = lazy(() => import('./welfare/WelfarePage'))
-const AnalysisPage = lazy(() => import('./analysis/AnalysisPage'))
-const StatusPage = lazy(() => import('./status/StatusPage'))
 const DataModelPage = lazy(() => import('./datamodel/DataModelPage'))
 const ErPage = lazy(() => import('./datamodel/ErPage'))
 const SymbolicAtlasPage = lazy(() => import('./symbolic/SymbolicAtlasPage'))
@@ -108,8 +104,6 @@ export default function App() {
           >
             {page === 'home' && <HomePage path={path} />}
             {page === 'projects' && <ProjectsPage />}
-            {page === 'technical' && <TechnicalPage />}
-            {page === 'design' && <DesignPage />}
             {page === 'tallman' && <TallmanPage />}
             {page === 'politik' && <PoliticsProduct route={route} />}
             {page === 'jobs' &&
@@ -123,8 +117,6 @@ export default function App() {
                 <JobsProduct route={route} />
               ))}
             {page === 'welfare' && <WelfarePage view={path} />}
-            {page === 'analysis' && <AnalysisPage view={path} />}
-            {page === 'status' && <StatusPage />}
             {page === 'datamodel' && <DataModelPage view={path} />}
             {page === 'er' && <ErPage route={route} />}
             {page === 'symbolic' && <SymbolicAtlasPage route={route} />}

@@ -9,6 +9,7 @@
  * referred table) or, for tables not built locally, taken from dbt's relationships tests.
  */
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { PlatformNav } from './PlatformNav'
 import { l } from '../i18n'
 import { count } from '../format'
 import { fetchData } from '../dataSource'
@@ -740,6 +741,9 @@ export default function ErPage({ route }: { route: Route }) {
 
   return (
     <div className="er-page">
+      <div className="ds-container">
+        <PlatformNav current="#er" />
+      </div>
       <Stage
         id="er"
         level={1}

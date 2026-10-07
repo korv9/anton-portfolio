@@ -67,8 +67,11 @@ export default function OmDatan({
           href: '#politik-kallor',
           label: l('Sources and method', 'Källor och metod'),
         },
-        { href: '#technical', label: l('The data model', 'Datamodellen') },
-        { href: '#status', label: l('Pipeline status', 'Pipelinens status') },
+        { href: '#data-model', label: l('The data model', 'Datamodellen') },
+        {
+          href: '#data-catalogue',
+          label: l('Pipeline status', 'Pipelinens status'),
+        },
       ]}
     >
       <ol

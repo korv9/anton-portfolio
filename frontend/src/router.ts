@@ -10,12 +10,9 @@ import { useEffect, useState } from 'react'
 export type Page =
   | 'home'
   | 'projects'
-  | 'technical'
-  | 'design'
   | 'politik'
   | 'jobs'
   | 'welfare'
-  | 'analysis'
   | 'allegoria'
   | 'drugcomb'
   | 'thesis'
@@ -31,7 +28,6 @@ export type Page =
   | 'philosophy'
   | 'concepts'
   | 'quality'
-  | 'status'
   | 'tallman'
 
 export type Route = {
@@ -58,7 +54,13 @@ export const REDIRECTS: Record<string, string> = {
   '#experience': '#erfarenhet',
   '#work': '#projekt',
   '#teknik': '#kompetenser',
-  '#tech': '#technical',
+  // The architecture page is the Data Constellation now; the platform status sits in the
+  // data catalogue, and the welfare analysis in the welfare product.
+  '#tech': '#data-constellation',
+  '#technical': '#data-constellation',
+  '#teknisk': '#data-constellation',
+  '#design': '#start',
+  '#status': '#data-catalogue',
   // The politics product's older detailed views: each address leads to the theme that
   // answers the same question now.
   '#now-seats': '#politik-mandat',
@@ -80,6 +82,7 @@ const PREFIX_REDIRECTS: [string, string][] = [
   ['#budget-', '#politik-budget'],
   ['#parties', '#politik-partier'],
   ['#taxes', '#politik-skatter'],
+  ['#analysis', '#sweden'],
 ]
 
 /** Where an address leads now, if it has moved. */
@@ -109,11 +112,7 @@ export function pageOf(path: string): Page {
   if (path === '#sweden' || path.startsWith('#sweden-')) return 'welfare'
   if (path === '#alla-projekt') return 'projects'
   if (path === '#rfc-drift') return 'allegoria'
-  if (path === '#design') return 'design'
-  if (path === '#technical' || path === '#teknisk') return 'technical'
-  if (path === '#status') return 'status'
   if (path === '#tallman') return 'tallman'
-  if (path === '#analysis' || path.startsWith('#analysis-')) return 'analysis'
   if (path === '#er' || path === '#er-diagram') return 'er'
   if (path === '#data-constellation') return 'constellation'
   if (path === '#data-catalogue') return 'catalogue'

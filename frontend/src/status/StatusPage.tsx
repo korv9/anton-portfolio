@@ -79,6 +79,7 @@ function Badge({ state }: { state: 'ok' | 'stale' | 'failing' }) {
  * The live run record comes from object storage, replaced on every scheduled run; the
  * committed copy is the fallback.
  */
+/** The scheduled pipeline's last run, shown inside the data catalogue. */
 export default function StatusPage() {
   const [run, setRun] = useState<Run | null>(null)
   const [live, setLive] = useState(false)
@@ -123,12 +124,8 @@ export default function StatusPage() {
   const lastJobYear = jobYears.at(-1)
 
   return (
-    <div className="project-page status-page">
-      <div className="page-lead">
-        <p className="eyebrow">
-          {l('Data platform · operations', 'Dataplattform · drift')}
-        </p>
-        <h1>{l('Pipeline status', 'Pipelinens status')}</h1>
+    <div className="status-page">
+      <div>
         <p>
           {l(
             'Every day a scheduled workflow fetches the public sources, builds and tests the DuckDB warehouse with dbt, exports what the site reads, uploads it to object storage and republishes the site when data changed. This page reads that run record.',

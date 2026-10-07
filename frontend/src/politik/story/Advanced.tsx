@@ -60,7 +60,7 @@ export default function Advanced({ a }: { a: Analytics }) {
       )}
       deeper={[
         {
-          href: '#technical',
+          href: '#data-constellation',
           label: l('Models and evaluation', 'Modeller och utvärdering'),
         },
       ]}

@@ -264,18 +264,15 @@ export default function Header({
 }
 
 /**
- * Where a project page sits: "Projects / <project>", from the registry. Supporting technical
- * pages (architecture, data model, ER diagram, pipeline status, design) say so instead.
+ * Where a project page sits: "Projects / <project>", from the registry. The pages under the
+ * hood (Data Constellation, the data platform, quality, Idea Lineage) say so instead.
  */
 const TECHNICAL: Partial<Record<Route['page'], Bilingual>> = {
-  technical: { en: 'Architecture', sv: 'Arkitektur' },
   constellation: { en: 'Data Constellation', sv: 'Data Constellation' },
   catalogue: { en: 'Data catalogue', sv: 'Datakatalog' },
   lineage: { en: 'Idea Lineage', sv: 'Idea Lineage' },
-  design: { en: 'Design system', sv: 'Designsystem' },
   datamodel: { en: 'Data model', sv: 'Datamodell' },
   er: { en: 'ER diagram', sv: 'ER-diagram' },
-  status: { en: 'Pipeline status', sv: 'Pipelinestatus' },
   quality: { en: 'Quality and validity', sv: 'Kvalitet och validitet' },
 }
 
@@ -286,7 +283,7 @@ export function pageTitle(route: Route): string | null {
   const project = projectForRoute(route)
   if (project) return b(project.title)
   const technical = TECHNICAL[route.page]
-  return technical ? b(technical) : l('Technical', 'Teknik')
+  return technical ? b(technical) : l('Under the hood', 'Under huven')
 }
 
 export function ProjectContext({ route }: { route: Route }) {
@@ -318,13 +315,11 @@ export function ProjectContext({ route }: { route: Route }) {
         {!project && technical && (
           <>
             <li>
-              <a href="#technical">{l('Technical', 'Teknik')}</a>
+              <a href="#under-huven">{l('Under the hood', 'Under huven')}</a>
             </li>
-            {route.page !== 'technical' && (
-              <li>
-                <span aria-current="page">{b(technical)}</span>
-              </li>
-            )}
+            <li>
+              <span aria-current="page">{b(technical)}</span>
+            </li>
           </>
         )}
       </ol>
@@ -423,10 +418,7 @@ export function Footer() {
               <a href="#data-constellation">Data Constellation</a>
             </li>
             <li>
-              <a href="#data-catalogue">{l('Data catalogue', 'Datakatalog')}</a>
-            </li>
-            <li>
-              <a href="#idea-lineage">Idea Lineage</a>
+              <a href="#data-model">{l('Data platform', 'Dataplattformen')}</a>
             </li>
             <li>
               <a href="#quality">
@@ -434,13 +426,7 @@ export function Footer() {
               </a>
             </li>
             <li>
-              <a href="#technical">{l('Architecture', 'Arkitektur')}</a>
-            </li>
-            <li>
-              <a href="#data-model">{l('Data model', 'Datamodell')}</a>
-            </li>
-            <li>
-              <a href="#er">{l('ER diagram', 'ER-diagram')}</a>
+              <a href="#idea-lineage">Idea Lineage</a>
             </li>
           </ul>
         </div>
