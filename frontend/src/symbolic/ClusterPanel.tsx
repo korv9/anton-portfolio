@@ -5,12 +5,12 @@
  * cluster (reviewed-clusters.json); otherwise it is "Cluster n", and nothing is inferred.
  */
 import { l } from '../i18n'
+import { share } from '../format'
 import { StageBlock, StageFacts } from '../ui/Stage'
 import { traditionName } from './AtlasSidebar'
 import type { AtlasPoint, ClusterInfo, ReviewedCluster } from './atlasTypes'
 
-const pct = (v: number) =>
-  `${(v * 100).toLocaleString(l('en-GB', 'sv-SE'), { maximumFractionDigits: 0 })} %`
+const pct = share
 const dec = (v: number) =>
   v.toLocaleString(l('en-GB', 'sv-SE'), {
     minimumFractionDigits: 2,

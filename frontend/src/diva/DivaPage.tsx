@@ -7,6 +7,7 @@
  */
 import { useEffect, useMemo, useState } from 'react'
 import { l } from '../i18n'
+import { fixed } from '../format'
 import { fetchData } from '../dataSource'
 import { Stage, StageBlock, StageFacts, StageTools } from '../ui/Stage'
 import '../products/mlviz.css'
@@ -48,11 +49,7 @@ const HUES = [
   '#a8d39b',
 ]
 
-const num = (v: number, d = 0) =>
-  v.toLocaleString(l('en-GB', 'sv-SE'), {
-    minimumFractionDigits: d,
-    maximumFractionDigits: d,
-  })
+const num = fixed
 
 function ThesisMap({ data }: { data: Clusters }) {
   const [focus, setFocus] = useState<number | null>(null)

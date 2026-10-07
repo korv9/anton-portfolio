@@ -6,6 +6,7 @@
  */
 import { useEffect, useState } from 'react'
 import { l } from '../i18n'
+import { share } from '../format'
 import { loadExperimentComparison } from './atlasData'
 import type { ExperimentComparison } from './atlasTypes'
 
@@ -15,8 +16,7 @@ const NAMES: Record<string, [string, string]> = {
   book_centered: ['Book-centred', 'Bokcentrerad'],
   masked_book_centered: ['Both', 'Båda'],
 }
-const pct = (v: number) =>
-  `${(v * 100).toLocaleString(l('en-GB', 'sv-SE'), { maximumFractionDigits: 0 })} %`
+const pct = share
 const dec = (v: number | null) =>
   v == null
     ? '–'

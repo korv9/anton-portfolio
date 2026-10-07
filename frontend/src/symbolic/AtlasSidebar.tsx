@@ -3,6 +3,7 @@
  * symbol: how many times it occurs, which clusters hold it and in which traditions.
  */
 import { l } from '../i18n'
+import { count, share } from '../format'
 import { StageBlock, StageFacts } from '../ui/Stage'
 import { TRADITION, clusterColour } from './atlasData'
 import type { AtlasPoint, AtlasSummary, SymbolProfile } from './atlasTypes'
@@ -14,9 +15,8 @@ export type AtlasFilters = {
   noise: string
 }
 
-const num = (v: number) => v.toLocaleString(l('en-GB', 'sv-SE'))
-const pct = (v: number) =>
-  `${(v * 100).toLocaleString(l('en-GB', 'sv-SE'), { maximumFractionDigits: 0 })} %`
+const num = count
+const pct = share
 export const traditionName = (key: string) =>
   TRADITION[key] ? l(...TRADITION[key]) : key
 

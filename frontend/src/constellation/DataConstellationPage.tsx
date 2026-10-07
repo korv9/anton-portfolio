@@ -12,6 +12,7 @@
  */
 import { useEffect, useMemo, useState } from 'react'
 import { l } from '../i18n'
+import { count } from '../format'
 import type { Route } from '../router'
 import { fetchData } from '../dataSource'
 import { useViewParams } from '../politik/useViewParams'
@@ -82,7 +83,7 @@ const LAYER_TYPES: NodeType[] = [
   'shared',
 ]
 const GITHUB = 'https://github.com/korv9/anton-portfolio/blob/main/'
-const num = (v: number) => v.toLocaleString(l('en-GB', 'sv-SE'))
+const num = count
 
 export default function DataConstellationPage({ route }: { route: Route }) {
   const [graph, setGraph] = useState<Graph | null>(null)

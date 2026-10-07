@@ -11,12 +11,31 @@
  * Contrast (WCAG): ink on page 13.1, muted on page 6.0 and on the darkest surface 5.2; on a
  * plate, ink 16.7 and muted 7.7. --subtle is for rules and marks, never for text.
  */
+/* Manrope as WOFF2: the Latin set the site writes in (Swedish and English, with Latin-1 and
+   Latin Extended-A for names in the corpus) is 29 kB and preloaded; any other character falls
+   back to the full font, loaded only when a page uses one it has. */
 @font-face {
   font-family: 'Manrope';
-  src: url('/fonts/manrope-variable.ttf') format('truetype');
+  src: url('/fonts/manrope-latin.woff2') format('woff2');
   font-style: normal;
   font-weight: 200 800;
   font-display: swap;
+  unicode-range:
+    U+0020-007E, U+00A0-017F, U+2000-206F, U+20AC, U+2122, U+2190-2193, U+2212,
+    U+2264-2265, U+25B3, U+25CB, U+25CF;
+}
+@font-face {
+  font-family: 'Manrope';
+  src: url('/fonts/manrope-variable.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 200 800;
+  font-display: swap;
+  /* Only what Manrope has beyond the subset, so a sign it lacks (▾, ↗) falls back to a
+     system font instead of fetching this file for nothing. */
+  unicode-range:
+    U+0180-024F, U+0259, U+02C6-02DD, U+0370-04FF, U+1E00-1EFF, U+2070-208F,
+    U+20A0-20AB, U+20AD-20CF, U+2116, U+21B5, U+2202-2211, U+2213-221E, U+222B,
+    U+2248, U+2260, U+25CA, U+FB01-FB02;
 }
 
 :root {

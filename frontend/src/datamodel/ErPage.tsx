@@ -10,6 +10,7 @@
  */
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { l } from '../i18n'
+import { count } from '../format'
 import { fetchData } from '../dataSource'
 import type { Route } from '../router'
 import { useViewParams } from '../politik/useViewParams'
@@ -66,7 +67,7 @@ const KIND: Record<string, [string, string]> = {
   seed: ['seed', 'seed'],
 }
 
-const num = (v: number) => v.toLocaleString(l('en-GB', 'sv-SE'))
+const num = count
 const pct = (v: number) =>
   `${(v * 100).toLocaleString(l('en-GB', 'sv-SE'), { maximumFractionDigits: 1 })} %`
 

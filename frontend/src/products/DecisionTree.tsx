@@ -7,6 +7,7 @@
  */
 import { useMemo, useState } from 'react'
 import { l } from '../i18n'
+import { fixed } from '../format'
 
 type Rule = {
   en: string
@@ -30,11 +31,7 @@ const H = 660
 const TOP = 92
 const BOTTOM = 560
 
-const num = (v: number, d = 0) =>
-  v.toLocaleString(l('en-GB', 'sv-SE'), {
-    minimumFractionDigits: d,
-    maximumFractionDigits: d,
-  })
+const num = fixed
 
 /** A short label for a split, in two lines to fit on the drawing; the full rule is read on hover. */
 function short(node: TreeNode): [string, string] {
