@@ -35,7 +35,7 @@ export function activeSection(
     if (route.path === '#projekt') return 'projects'
     return null
   }
-  if (route.page === 'projects' || projectForRoute(route)) return 'projects'
+  if (projectForRoute(route)) return 'projects'
   return null
 }
 
@@ -114,7 +114,7 @@ function ProjectList({ onPick }: { onPick: () => void }) {
           </li>
         ))}
       </ol>
-      <a className="nav-all" href="#alla-projekt" onClick={onPick}>
+      <a className="nav-all" href="#projekt" onClick={onPick}>
         {l('View all projects', 'Se alla projekt')}
       </a>
     </>
@@ -279,7 +279,6 @@ const TECHNICAL: Partial<Record<Route['page'], Bilingual>> = {
 /** The page's own name for the document title, or null on the homepage. */
 export function pageTitle(route: Route): string | null {
   if (route.page === 'home') return null
-  if (route.page === 'projects') return l('Projects', 'Projekt')
   const project = projectForRoute(route)
   if (project) return b(project.title)
   const technical = TECHNICAL[route.page]
@@ -297,11 +296,7 @@ export function ProjectContext({ route }: { route: Route }) {
     >
       <ol>
         <li>
-          {route.page === 'projects' ? (
-            <span aria-current="page">{l('Projects', 'Projekt')}</span>
-          ) : (
-            <a href="#alla-projekt">{l('Projects', 'Projekt')}</a>
-          )}
+          <a href="#projekt">{l('Projects', 'Projekt')}</a>
         </li>
         {project && (
           <li>
@@ -373,7 +368,7 @@ export function Footer() {
               </li>
             ))}
             <li>
-              <a href="#alla-projekt">{l('All projects', 'Alla projekt')}</a>
+              <a href="#projekt">{l('All projects', 'Alla projekt')}</a>
             </li>
           </ul>
         </div>

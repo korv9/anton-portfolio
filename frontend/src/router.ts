@@ -9,7 +9,6 @@ import { useEffect, useState } from 'react'
 
 export type Page =
   | 'home'
-  | 'projects'
   | 'politik'
   | 'jobs'
   | 'welfare'
@@ -28,7 +27,6 @@ export type Page =
   | 'philosophy'
   | 'concepts'
   | 'quality'
-  | 'tallman'
 
 export type Route = {
   /** The full hash, e.g. `#politik-valjarna?partier=S`. */
@@ -47,6 +45,7 @@ export const REDIRECTS: Record<string, string> = {
   '#politics-page': '#politik',
   '#about': '#om-mig',
   '#projects': '#projekt',
+  '#alla-projekt': '#projekt',
   // The semantic-drift report is withdrawn while it is reworked.
   '#contact': '#om-mig',
   '#kontakt': '#om-mig',
@@ -60,6 +59,7 @@ export const REDIRECTS: Record<string, string> = {
   '#technical': '#data-constellation',
   '#teknisk': '#data-constellation',
   '#design': '#start',
+  '#tallman': '#projekt',
   '#status': '#data-catalogue',
   // The politics product's older detailed views: each address leads to the theme that
   // answers the same question now.
@@ -110,9 +110,7 @@ export function pageOf(path: string): Page {
   if (path === '#homie') return 'homie'
   if (path === '#diva') return 'diva'
   if (path === '#sweden' || path.startsWith('#sweden-')) return 'welfare'
-  if (path === '#alla-projekt') return 'projects'
   if (path === '#rfc-drift') return 'allegoria'
-  if (path === '#tallman') return 'tallman'
   if (path === '#er' || path === '#er-diagram') return 'er'
   if (path === '#data-constellation') return 'constellation'
   if (path === '#data-catalogue') return 'catalogue'

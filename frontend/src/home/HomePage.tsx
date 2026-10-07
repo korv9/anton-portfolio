@@ -19,7 +19,7 @@ import {
   type Bilingual,
 } from './orbitContent'
 import { Disclosure } from '../ui/Disclosure'
-import { HOME_PROJECTS } from '../projects/projectRegistry'
+import { HOME_PROJECTS, PROJECTS } from '../projects/projectRegistry'
 import './home.css'
 
 const b = (text: Bilingual) => l(text.en, text.sv)
@@ -167,6 +167,54 @@ function SelectedWork() {
           </li>
         ))}
       </ol>
+      <MoreWork />
+    </section>
+  )
+}
+
+/** Every other project, smaller: one card each, the whole card a link to its page or code. */
+function MoreWork() {
+  const rest = PROJECTS.filter((p) => !p.home)
+  return (
+    <section
+      className="home-more"
+      id="fler-projekt"
+      aria-labelledby="more-title"
+    >
+      <h3 id="more-title" className="home-label">
+        {l('More work', 'Fler projekt')}
+      </h3>
+      <ul className="more-cards">
+        {rest.map((project) => {
+          const code = Array.isArray(project.code)
+            ? project.code[0]
+            : project.code
+          const href = project.href ?? code
+          const external = !project.href && !!code
+          const body = (
+            <>
+              <span className="more-title">{b(project.title)}</span>
+              <span className="more-summary">{b(project.summary)}</span>
+              <span className="work-tech">{b(project.descriptor)}</span>
+            </>
+          )
+          return (
+            <li key={project.id}>
+              {href ? (
+                <a
+                  className="more-card"
+                  href={href}
+                  {...(external ? { target: '_blank', rel: 'noreferrer' } : {})}
+                >
+                  {body}
+                </a>
+              ) : (
+                <div className="more-card">{body}</div>
+              )}
+            </li>
+          )
+        })}
+      </ul>
     </section>
   )
 }
@@ -213,7 +261,6 @@ function UnderTheHood() {
         <a href="#quality">
           {l('Quality & Validity', 'Kvalitet och validitet')}
         </a>
-        <a href="#alla-projekt">{l('All projects', 'Alla projekt')}</a>
       </p>
     </section>
   )

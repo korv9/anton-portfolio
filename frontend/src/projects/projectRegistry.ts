@@ -488,34 +488,7 @@ export const PROJECTS: ProjectEntry[] = [
     code: 'https://github.com/korv9/DrugComb-Synergy-Prediction',
     pages: ['drugcomb'],
   },
-  {
-    id: 'tallman',
-    title: t('taLLMan', 'taLLMan'),
-    descriptor: t('RAG med källkontroll', 'RAG with source checking'),
-    summary: t(
-      'En chatt om riksdagen som svarar i påståenden, vart och ett kontrollerat mot sina källor.',
-      'A chat about the Riksdag that answers in claims, each checked against its sources.',
-    ),
-    question: t(
-      'Kan en chatt om riksdagen visa vilka av dess påståenden som faktiskt har stöd i källorna?',
-      'Can a chat about the Riksdag show which of its claims the sources actually support?',
-    ),
-    built: t(
-      'Sökning med BM25 och vektorer, ett svar i påståenden och en kontroll av varje påstående mot källan.',
-      'BM25 and vector retrieval, an answer in claims, and a check of every claim against its source.',
-    ),
-    result: t(
-      'Varje påstående får en etikett (belagt, beräknat, tolkning …) och hela spåret kan granskas.',
-      'Every claim gets a label (supported, computed, interpretation …) and the whole trace can be reviewed.',
-    ),
-    tech: ['TypeScript', 'BM25', 'Claude API', 'Workers AI', 'Vectorize'],
-    href: '#tallman',
-    category: 'ai',
-    status: 'experimental',
-    featured: false,
-    code: 'https://github.com/korv9/anton-portfolio/tree/main/frontend/src/tallman',
-    pages: ['tallman'],
-  },
+
   {
     id: 'allegoria',
     title: t('Allegoria / RFC-drift', 'Allegoria / RFC drift'),
@@ -656,55 +629,6 @@ export const PROJECTS: ProjectEntry[] = [
     featured: false,
     code: 'https://github.com/korv9/MIMII-pump-diagnostics',
   },
-  {
-    id: 'in1',
-    title: t(
-      'in1: en app för många AI-modeller',
-      'in1: one app for many AI models',
-    ),
-    descriptor: t(
-      'Fullstack med AI-API:er · grupprojekt',
-      'Full stack with AI APIs · group project',
-    ),
-    summary: t(
-      'En plattform där användaren väljer vilken AI-modell som passar uppgiften, med OpenAI, Gemini och Hugging Face bakom samma gränssnitt.',
-      'A platform where the user picks the AI model that fits the task, with OpenAI, Gemini and Hugging Face behind one interface.',
-    ),
-    question: t(
-      'Rätt AI-modell för uppgiften, bakom ett gränssnitt.',
-      'The right AI model for the task, behind one interface.',
-    ),
-    built: t(
-      'Jag byggde datamodellen och prenumerationerna: modeller och relationer i MySQL, CRUD-endpoints i Flask, kopplingen i React och Cypress-tester.',
-      'I built the data model and subscriptions: models and relations in MySQL, CRUD endpoints in Flask, the React wiring and Cypress tests.',
-    ),
-    result: t(
-      'Promptvy och prenumerationer, testade för inloggning och prenumeration.',
-      'A prompt view and subscriptions, tested for login and subscription.',
-    ),
-    tech: [
-      'Flask',
-      'MySQL',
-      'React',
-      'Vite',
-      'OpenAI',
-      'Gemini',
-      'Hugging Face',
-      'Cypress',
-    ],
-    href: 'https://github.com/leiyese/in1-backend',
-    category: 'ai',
-    status: 'study',
-    featured: false,
-    code: [
-      'https://github.com/leiyese/in1-backend',
-      'https://github.com/leiyese/in1-frontend',
-    ],
-    team: t(
-      'Grupprojekt med tre utvecklare',
-      'Group project with three developers',
-    ),
-  },
 ]
 
 /** The flagship projects, in their numbered order. */
@@ -712,11 +636,8 @@ export const FLAGSHIPS = PROJECTS.filter((p) => p.featured).sort((a, b) =>
   (a.number ?? '').localeCompare(b.number ?? ''),
 )
 
-/** Everything else, in registry order. */
 /** The start page's selected work: projects with a recruiter line, in registry order. */
 export const HOME_PROJECTS = PROJECTS.filter((p) => p.home)
-export const OTHER_WORK = PROJECTS.filter((p) => !p.featured && !p.research)
-export const RESEARCH = PROJECTS.filter((p) => !p.featured && p.research)
 
 /** The project a route belongs to, if any. */
 export function projectForRoute(

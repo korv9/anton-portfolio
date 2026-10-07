@@ -47,7 +47,7 @@ Experimental, not featured: Philosophy Atlas (`#philosophy-atlas`, [philosophy-a
 
 Technical pages beside Data Constellation: the data catalogue with the platform's status (`#data-catalogue`), linked from the footer and the start page's Under the hood.
 
-Everything else (DrugComb, taLLMan, Allegoria, DiVA, Homie, RAG, MIMII, IN1) is other work.
+Everything else (DrugComb, Allegoria, DiVA, Homie, RAG, MIMII) is other work.
 
 ### Project pages
 
@@ -230,10 +230,6 @@ line charts write the party's letters at the end of each line, and the parties t
 differ in marker and line style (S/V red, M/KD/L blue, C/MP green); SD's yellow line has a dark
 casing. Logos appear in pickers, table headers and summaries, never on data points. The logos
 are the parties' current marks as Riksdagen publishes them, stored locally as WebP.
-
-## taLLMan
-
-`#tallman`: a source-critical chat about the Riksdag. It answers in claims that Allegoria checks against their sources. The code is in `frontend/src/tallman/` and the Worker in `worker/`; setup is in [tallman.md](tallman.md).
 
 ## Politics: the sidebar
 

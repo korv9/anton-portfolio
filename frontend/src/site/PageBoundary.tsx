@@ -39,7 +39,7 @@ export class PageBoundary extends Component<
           >
             {l('Reload', 'Ladda om')}
           </button>{' '}
-          <a className="btn-quiet" href="#alla-projekt">
+          <a className="btn-quiet" href="#projekt">
             {l('All projects', 'Alla projekt')}
           </a>
         </p>

@@ -15,8 +15,6 @@ import './site/site.css'
 const PoliticsProduct = lazy(() => import('./politik/PoliticsProduct'))
 const TechReport = lazy(() => import('./jobs/TechReport'))
 const JobsProduct = lazy(() => import('./jobb/JobsProduct'))
-const TallmanPage = lazy(() => import('./tallman/TallmanPage'))
-const ProjectsPage = lazy(() => import('./projects/ProjectsPage'))
 const WelfarePage = lazy(() => import('./welfare/WelfarePage'))
 const DataModelPage = lazy(() => import('./datamodel/DataModelPage'))
 const ErPage = lazy(() => import('./datamodel/ErPage'))
@@ -103,8 +101,6 @@ export default function App() {
             }
           >
             {page === 'home' && <HomePage path={path} />}
-            {page === 'projects' && <ProjectsPage />}
-            {page === 'tallman' && <TallmanPage />}
             {page === 'politik' && <PoliticsProduct route={route} />}
             {page === 'jobs' &&
               ([

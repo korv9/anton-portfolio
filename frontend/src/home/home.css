@@ -269,3 +269,49 @@
     min-height: 0;
   }
 }
+
+/* ---------- More work: every other project, smaller ---------- */
+.home-more {
+  margin-top: var(--sp-7);
+}
+.more-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr));
+  gap: var(--sp-3);
+  margin: var(--sp-3) 0 0;
+  padding: 0;
+  list-style: none;
+}
+.more-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  height: 100%;
+  padding: var(--sp-4);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  text-decoration: none;
+  transition: background-color var(--dur) var(--ease);
+}
+a.more-card:hover {
+  background: var(--paper);
+}
+a.more-card:hover .more-title {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+a.more-card:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 3px;
+}
+.more-title {
+  font-weight: var(--weight-heading);
+}
+.more-summary {
+  color: var(--ink-2);
+  font-size: var(--fs-sm);
+  line-height: 1.45;
+}
+.more-card .work-tech {
+  margin-top: auto;
+}

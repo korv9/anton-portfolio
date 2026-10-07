@@ -7,7 +7,7 @@
     "dev": "vite --config frontend/vite.config.ts --host 127.0.0.1 --port 5173 --strictPort",
     "build": "tsc -b frontend && vite build --config frontend/vite.config.ts",
     "preview": "vite preview --config frontend/vite.config.ts --host 127.0.0.1",
-    "check": "tsc -b frontend && tsc -p worker",
+    "check": "tsc -b frontend",
     "test:e2e": "playwright test --config frontend/playwright.config.ts",
     "test:unit": "node --test frontend/tests/unit/*.test.ts",
     "format": "prettier --write frontend/src frontend/tests frontend/*.ts",
@@ -17,8 +17,6 @@
     "politics:check": "cd platform && dbt build --profiles-dir . --select +tag:politics --exclude tag:parliament --target-path target/politics && cd .. && python platform/publish/export_politics.py --check",
     "politics:parties": "python platform/publish/export_party_profiles.py",
     "politics:debates": "python platform/publish/export_debates.py",
-    "tallman:index": "python platform/tallman/build_index.py",
-    "tallman:eval": "node platform/tallman/eval/run.ts",
     "data:catalog": "python platform/publish/build_catalog.py",
     "data:parquet": "python platform/publish/build_parquet.py",
     "data:upload": "python platform/publish/upload.py",
@@ -73,14 +71,12 @@
     "quality": "npm run quality:build && npm run quality:publish"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.129.0",
     "hyparquet": "^1.31.1",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.10.2",
-    "@cloudflare/workers-types": "^5.20260929.1",
     "@playwright/test": "^1.55.0",
     "@types/react": "^19.1.0",
     "@types/react-dom": "^19.1.0",
