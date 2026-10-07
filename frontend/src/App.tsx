@@ -65,10 +65,9 @@ export default function App() {
   useEffect(() => {
     if (route.page === 'home' && route.path !== '#start') return
     requestAnimationFrame(() => {
-      // A section address (#symbolic-method, #job-market-clusters) scrolls to that section;
+      // A section address (#symbolic-method, #concepts-method) scrolls to that section;
       // a page address to the top.
       const target =
-        route.path === '#job-market-clusters' ||
         (route.page === 'symbolic' && route.path !== '#symbolic-atlas') ||
         (route.page === 'philosophy' && route.path !== '#philosophy-atlas') ||
         (route.page === 'quality' && route.path !== '#quality') ||
@@ -103,12 +102,8 @@ export default function App() {
             {page === 'home' && <HomePage path={path} />}
             {page === 'politik' && <PoliticsProduct route={route} />}
             {page === 'jobs' &&
-              ([
-                '#job-market-tech',
-                '#job-market-clusters',
-                '#job-data',
-              ].includes(path) ? (
-                <TechReport clustering={path === '#job-market-clusters'} />
+              (['#job-market-tech', '#job-data'].includes(path) ? (
+                <TechReport />
               ) : (
                 <JobsProduct route={route} />
               ))}

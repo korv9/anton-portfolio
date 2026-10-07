@@ -404,62 +404,6 @@ body .theme-meaning {
   margin: 0;
   font-variant-numeric: tabular-nums;
 }
-.cluster-size-comparison {
-  margin-block: 36px;
-}
-.cluster-size-comparison > p {
-  max-width: 75ch;
-  color: var(--muted);
-  line-height: 1.6;
-}
-.cluster-size-bars {
-  list-style: none;
-  padding: 0;
-  margin: 20px 0;
-}
-.cluster-size-bars button {
-  width: 100%;
-  display: grid;
-  grid-template-columns: minmax(160px, 1fr) minmax(100px, 2fr) 65px;
-  align-items: center;
-  gap: 20px;
-  min-height: 46px;
-  border: 0;
-  border-bottom: 1px solid var(--line);
-  background: transparent;
-  color: var(--ink);
-  text-align: left;
-  padding: 10px 6px;
-  font: inherit;
-  font-size: 13px;
-  cursor: pointer;
-}
-.cluster-size-bars button:hover,
-.cluster-size-bars button[aria-pressed='true'] {
-  background: color-mix(in srgb, var(--ink) 7%, transparent);
-}
-.cluster-size-bars strong {
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-}
-.cluster-size-track {
-  height: 18px;
-  background: color-mix(in srgb, var(--ink) 5%, transparent);
-}
-.cluster-size-track i {
-  display: block;
-  height: 100%;
-}
-@media (max-width: 600px) {
-  .cluster-size-bars button {
-    grid-template-columns: minmax(0, 1fr) 60px;
-    gap: 8px;
-  }
-  .cluster-size-bars button > span:first-child {
-    grid-column: 1 / -1;
-  }
-}
-
 /* ---------- Disclosure (ui/Disclosure.tsx) ---------- */
 /* One pattern for "more": a quiet underlined label with + / −, the content below it. */
 .disclosure > summary {

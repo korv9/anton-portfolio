@@ -10,7 +10,6 @@ import TimeSeriesChart from '../charts/TimeSeriesChart'
 import { yearSpan } from '../charts/scales'
 import ReportHeader from '../site/ReportHeader'
 import ProjectDataDisclosure from '../products/ProjectDataDisclosure'
-import ClusteringSection from './ClusteringSection'
 
 type MonthlyAd = {
   month: string
@@ -75,11 +74,7 @@ function JobsChart({ rows, role }: { rows: MonthlyAd[]; role: string }) {
   )
 }
 
-export default function TechReport({
-  clustering = false,
-}: {
-  clustering?: boolean
-}) {
+export default function TechReport() {
   const [monthly, setMonthly] = useState<MonthlyAd[]>([])
   const [technologies, setTechnologies] = useState<Technology[]>([])
   const [jobKpis, setJobKpis] = useState<JobKpis | null>(null)
@@ -139,14 +134,14 @@ export default function TechReport({
           )}
         </p>
         <TopicNav
-          active={clustering ? '#job-market-clusters' : '#job-market-tech'}
+          active="#job-market-tech"
           items={[
             ['#job-market', 'Overview', 'Översikt'],
             ['#job-market-occupations', 'Occupations', 'Yrken'],
             ['#job-market-regions', 'Counties', 'Län'],
             ['#job-market-conditions', 'Conditions', 'Villkor'],
             ['#job-market-tech', 'IT report', 'IT-rapport'],
-            ['#job-market-clusters', 'Semantic clusters', 'Semantiska kluster'],
+            ['#jobb-kluster', 'Semantic clusters', 'Semantiska kluster'],
           ]}
         />
       </div>
@@ -300,7 +295,6 @@ export default function TechReport({
           </details>
         </article>
       </div>
-      <ClusteringSection initialOpen={clustering} />
       <ProjectDataDisclosure
         title={t('Job ad tables and definitions')}
         initialDataset="fact_job_month_role"

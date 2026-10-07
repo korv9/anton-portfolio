@@ -109,7 +109,7 @@ export default function JobsProduct({ route }: { route: Route }) {
               )
             ) : theme.key === 'kluster' ? (
               // The semantic clusters of IT ads have their own data; the field bar does not apply.
-              <ClusteringSection initialOpen />
+              <ClusteringSection />
             ) : !data ? (
               !error && loading
             ) : theme.key === 'lage' ? (

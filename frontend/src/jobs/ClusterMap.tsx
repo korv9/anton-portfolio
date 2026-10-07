@@ -1,39 +1,50 @@
+/**
+ * The semantic map of IT job ads. Every ad is a dot placed by how its text reads (UMAP); the
+ * groups HDBSCAN found are numbered on the map by size. One picked group is drawn in ink and
+ * the rest stay grey, so the map has one focus; the ranked list beside it picks the group and
+ * its profile follows under the map. "Job titles" recolours the same dots by the title family
+ * the employer chose, which shows whether the language groups follow the titles.
+ */
 import { useEffect, useMemo, useRef, useState } from 'react'
+import RankBars from '../charts/RankBars'
 import { currentLocale, l } from '../i18n'
-import { Metric, Tag } from '../ui/Editorial'
+import { Tag } from '../ui/Editorial'
+import { Disclosure } from '../ui/Disclosure'
 import {
-  clusterColor,
   jsonData,
-  pointColor,
   projectCoordinates,
   ROLES,
-  CLUSTER_COLORS,
   type Cluster,
   type JobPoint,
-  type Mode,
   type Summary,
 } from './clusterData'
+import '../charts/feature/feature.css'
 import './clusters.css'
 
-const pct = (v: number) => `${(v * 100).toFixed(1)}%`
-const num = (v: number) =>
-  v.toLocaleString(currentLocale() === 'sv' ? 'sv-SE' : 'en-GB')
+const pct = (v: number) => `${Math.round(v * 100)} %`
+const num = (v: number) => v.toLocaleString(currentLocale())
+// The four title families in the site's data-series tokens, in fixed order.
+const ROLE_TOKENS = [
+  '--data-blue',
+  '--data-ochre',
+  '--data-rust',
+  '--data-green',
+]
+
+type View = 'groups' | 'titles'
 
 export default function ClusterMap() {
+  const canvas = useRef<HTMLCanvasElement>(null)
   const [data, setData] = useState<{
     summary: Summary
     points: JobPoint[]
   } | null>(null)
   const [error, setError] = useState('')
   const [retry, setRetry] = useState(0)
-  const [mode, setMode] = useState<Mode>('cluster')
-  const [frame, setFrame] = useState<'clusters' | 'all'>('clusters')
-  const [year, setYear] = useState('all')
-  const [selected, setSelected] = useState<number | null>(null)
+  const [view, setView] = useState<View>('groups')
+  const [picked, setPicked] = useState<number | null>(null)
   const [hover, setHover] = useState<JobPoint | null>(null)
-  const [focused, setFocused] = useState(0)
-  const canvas = useRef<HTMLCanvasElement>(null)
-  const [size, setSize] = useState({ width: 800, height: 480 })
+  const [size, setSize] = useState({ width: 800, height: 500 })
 
   useEffect(() => {
     const controller = new AbortController()
@@ -55,7 +66,6 @@ export default function ClusterMap() {
         }
         if (
           points.length !== summary.diagnostics.dataset_size ||
-          new Set(points.map((p) => p.id)).size !== points.length ||
           points.some((p) => !Number.isFinite(p.x) || !Number.isFinite(p.y))
         )
           throw new Error('Invalid point dataset')
@@ -66,100 +76,129 @@ export default function ClusterMap() {
       })
     return () => controller.abort()
   }, [retry])
+
   useEffect(() => {
     const el = canvas.current
     if (!el) return
     const observer = new ResizeObserver((entries) => {
-      const width = Math.max(240, entries[0].contentRect.width)
-      setSize({ width, height: Math.min(560, Math.max(320, width * 0.6)) })
+      const width = Math.max(260, entries[0].contentRect.width)
+      setSize({ width, height: Math.min(560, Math.max(300, width * 0.66)) })
     })
     observer.observe(el)
     return () => observer.disconnect()
   }, [data])
+
   const points = data?.points
-  const years = useMemo(
-    () => [...new Set(points?.map((p) => p.year) ?? [])].sort(),
+  // Groups ranked by size; the number on the map is the rank, not the run's internal id.
+  const groups = useMemo(
+    () =>
+      (data?.summary.clusters ?? [])
+        .filter((c) => c.cluster_id !== -1)
+        .sort((a, b) => b.job_count - a.job_count),
+    [data],
+  )
+  const rank = useMemo(
+    () => new Map(groups.map((c, i) => [c.cluster_id, i + 1])),
+    [groups],
+  )
+  const focus = picked ?? groups[0]?.cluster_id ?? null
+  const assigned = useMemo(
+    () => (points ?? []).filter((p) => p.cluster !== -1),
     [points],
   )
-  const visible = useMemo(
-    () =>
-      (points ?? []).filter((p) => year === 'all' || p.year === Number(year)),
-    [points, year],
-  )
-  const fitPoints = useMemo(
-    () =>
-      frame === 'clusters'
-        ? (points ?? []).filter((p) => p.cluster !== -1)
-        : (points ?? []),
-    [points, frame],
-  )
-  // Camera bounds use the complete corpus, keeping geometry stable across year filters.
   const coords = useMemo(
-    () => projectCoordinates(points ?? [], size.width, size.height, fitPoints),
-    [points, size, fitPoints],
+    () => projectCoordinates(points ?? [], size.width, size.height, assigned),
+    [points, assigned, size],
   )
-  const outsideFrame = visible.filter((p) => {
-    const pos = coords.get(p.id)
-    return (
-      pos &&
-      (pos[0] < 0 || pos[0] > size.width || pos[1] < 0 || pos[1] > size.height)
-    )
-  }).length
-  useEffect(() => {
-    setHover(null)
-    setFocused(0)
-  }, [year])
+  // Each group's label sits at the median of its dots.
+  const labels = useMemo(() => {
+    const byGroup = new Map<number, [number[], number[]]>()
+    for (const p of assigned) {
+      const pos = coords.get(p.id)
+      if (!pos) continue
+      const entry = byGroup.get(p.cluster) ?? [[], []]
+      entry[0].push(pos[0])
+      entry[1].push(pos[1])
+      byGroup.set(p.cluster, entry)
+    }
+    const median = (v: number[]) => v.sort((a, b) => a - b)[v.length >> 1]
+    return [...byGroup].map(([id, [xs, ys]]) => ({
+      id,
+      x: median(xs),
+      y: median(ys),
+    }))
+  }, [assigned, coords])
+
   useEffect(() => {
     const el = canvas.current
     const ctx = el?.getContext('2d')
-    if (!el || !ctx) return
+    if (!el || !ctx || !points) return
+    const css = getComputedStyle(el)
+    const token = (name: string) => css.getPropertyValue(name).trim()
+    const ink = token('--ink')
+    const grey = token('--line-strong')
+    const roleColours = ROLE_TOKENS.map(token)
     const dpr = window.devicePixelRatio || 1
     el.width = size.width * dpr
     el.height = size.height * dpr
     ctx.scale(dpr, dpr)
     ctx.clearRect(0, 0, size.width, size.height)
-    for (const p of visible) {
+    const r = Math.max(0.9, Math.min(2, 2 * Math.sqrt(4000 / points.length)))
+    const dot = (p: JobPoint, colour: string, alpha: number, radius = r) => {
       const [x, y] = coords.get(p.id)!
-      ctx.globalAlpha =
-        selected !== null && selected !== p.cluster ? 0.08 : 0.55
-      ctx.fillStyle = pointColor(p, mode, years)
+      ctx.globalAlpha = alpha
+      ctx.fillStyle = colour
       ctx.beginPath()
-      ctx.arc(
-        x,
-        y,
-        Math.max(
-          0.8,
-          Math.min(2.2, 2.2 * Math.sqrt(1000 / Math.max(1, visible.length))),
-        ),
-        0,
-        Math.PI * 2,
-      )
+      ctx.arc(x, y, radius, 0, Math.PI * 2)
       ctx.fill()
+    }
+    if (view === 'titles') {
+      for (const p of points) {
+        const i = ROLES.indexOf(p.role)
+        dot(p, i < 0 ? grey : roleColours[i], p.cluster === -1 ? 0.3 : 0.6)
+      }
+    } else {
+      // The grey field first, the picked group last so it sits on top.
+      for (const p of points)
+        if (p.cluster !== focus) dot(p, grey, p.cluster === -1 ? 0.18 : 0.35)
+      for (const p of points)
+        if (p.cluster === focus) dot(p, ink, 0.85, r * 1.15)
+      ctx.globalAlpha = 1
+      ctx.textAlign = 'center'
+      ctx.textBaseline = 'middle'
+      ctx.lineJoin = 'round'
+      for (const g of labels) {
+        const on = g.id === focus
+        ctx.font = `${on ? 700 : 500} ${on ? 14 : 12}px ${css.fontFamily}`
+        ctx.lineWidth = 4
+        ctx.strokeStyle = token('--paper-strong')
+        ctx.fillStyle = on ? ink : token('--muted')
+        const text = String(rank.get(g.id) ?? '')
+        ctx.strokeText(text, g.x, g.y)
+        ctx.fillText(text, g.x, g.y)
+      }
     }
     if (hover && coords.has(hover.id)) {
       const [x, y] = coords.get(hover.id)!
       ctx.globalAlpha = 1
-      ctx.strokeStyle = '#111'
+      ctx.strokeStyle = ink
       ctx.lineWidth = 1.5
       ctx.beginPath()
       ctx.arc(x, y, 6, 0, Math.PI * 2)
       ctx.stroke()
     }
-  }, [coords, visible, mode, years, hover, selected, size])
+  }, [points, coords, labels, rank, view, focus, hover, size])
 
   if (error)
     return (
       <div className="cluster-status" role="status">
         <p>
           {l(
-            'The clustering analysis is currently unavailable. Existing job-market reports remain available.',
-            'Klustringsanalysen är inte tillgänglig just nu. Befintliga arbetsmarknadsrapporter finns kvar.',
+            'The clustering analysis is unavailable just now.',
+            'Klustringsanalysen är inte tillgänglig just nu.',
           )}
         </p>
-        <button
-          className="ds-button secondary"
-          onClick={() => setRetry((v) => v + 1)}
-        >
+        <button className="btn-quiet" onClick={() => setRetry((v) => v + 1)}>
           {l('Try again', 'Försök igen')}
         </button>
       </div>
@@ -170,547 +209,182 @@ export default function ClusterMap() {
         {l('Loading the semantic map…', 'Laddar den semantiska kartan…')}
       </p>
     )
+
   const { summary } = data
-  const isConsensus = summary.config.assignment_method === 'seed-consensus'
-  const cluster = summary.clusters.find((c) => c.cluster_id === selected)
-  const largest = summary.clusters
-    .filter((c) => c.cluster_id !== -1)
-    .sort((a, b) => b.job_count - a.job_count)[0]
-  const legend =
-    mode === 'cluster'
-      ? summary.clusters.map(
-          (c) => [c.cluster_label, clusterColor(c.cluster_id)] as const,
-        )
-      : mode === 'role'
-        ? ROLES.map((r, i) => [r, CLUSTER_COLORS[i]] as const)
-        : mode === 'seniority'
-          ? [
-              ['Junior', '#4E79A7'],
-              ['Senior', '#D4715A'],
-              [l('Unspecified', 'Ospecificerad'), '#94948E'],
-            ]
-          : years.map((y) => [
-              String(y),
-              pointColor({ year: y } as JobPoint, 'year', years),
-            ])
+  const d = summary.diagnostics
+  const noise = summary.clusters.find((c) => c.cluster_id === -1)
+  // The archive years read in full, not the odd ad published just outside them.
+  const years = [
+    ...new Set(
+      (summary.coverage ?? [])
+        .filter((c) => c.status === 'complete')
+        .map((c) => c.month.slice(0, 4)),
+    ),
+  ].sort()
+  const span =
+    years.length > 1 ? `${years[0]}–${years.at(-1)}` : (years[0] ?? '')
+  const largest = groups[0]
+  const current = groups.find((c) => c.cluster_id === focus)
+  const name = (c: Cluster) => `${rank.get(c.cluster_id)} · ${c.cluster_label}`
+  const roleCount = (role: string) =>
+    data.points.filter((p) => p.role === role).length
+
   function nearest(clientX: number, clientY: number) {
     const bounds = canvas.current!.getBoundingClientRect()
-    const x = clientX - bounds.left,
-      y = clientY - bounds.top
-    let distance = 144,
-      hit: JobPoint | null = null
-    for (const p of visible) {
+    const x = clientX - bounds.left
+    const y = clientY - bounds.top
+    let best = 144
+    let hit: JobPoint | null = null
+    for (const p of data!.points) {
       const pos = coords.get(p.id)!
-      const d = (pos[0] - x) ** 2 + (pos[1] - y) ** 2
-      if (d < distance) {
-        distance = d
+      const dist = (pos[0] - x) ** 2 + (pos[1] - y) ** 2
+      if (dist < best) {
+        best = dist
         hit = p
       }
     }
     return hit
   }
+
   return (
     <div className="cluster-explorer">
-      <p className="ds-small">
-        {summary.sampled
-          ? l(
-              `A reproducible sample of ${num(summary.diagnostics.dataset_size)} out of ${num(summary.source_size)} selected ads.`,
-              `Ett reproducerbart urval av ${num(summary.diagnostics.dataset_size)} av ${num(summary.source_size)} utvalda annonser.`,
-            )
-          : l(
-              `${num(summary.diagnostics.dataset_size)} selected tech advertisements.`,
-              `${num(summary.diagnostics.dataset_size)} utvalda IT-annonser.`,
-            )}{' '}
-        {summary.source_kinds.includes('live') &&
-          l(
-            'Current API sample; not the historical archive.',
-            'Aktuellt API-urval; inte det historiska arkivet.',
-          )}
-      </p>
-      {summary.coverage && (
-        <p className="ds-small">
-          {l('Archive coverage', 'Arkivtäckning')}:{' '}
-          {[
-            ...new Set(
-              summary.coverage
-                .filter((c) => c.status === 'complete')
-                .map((c) => c.month.slice(0, 4)),
-            ),
-          ].join(', ')}
-          .{' '}
-          {l(
-            'Publication years outside this coverage are archive spillover, not complete additional years.',
-            'Publiceringsår utanför denna täckning är överlapp i arkivet, inte ytterligare kompletta år.',
-          )}
-        </p>
-      )}
-      <div className="cluster-metrics">
-        <Metric
-          value={summary.diagnostics.cluster_count}
-          label={l('Semantic clusters', 'Semantiska kluster')}
-        />
-        <Metric
-          value={pct(summary.diagnostics.noise_share)}
-          label={l('Unassigned / noise', 'Ej tilldelade / brus')}
-        />
-        <Metric
-          value={(
-            summary.diagnostics.feature_trustworthiness ??
-            summary.diagnostics.trustworthiness
-          ).toFixed(3)}
-          label="UMAP trustworthiness"
-        />
-      </div>
-      <div className="cluster-controls">
-        <fieldset>
-          <legend>{l('Map view', 'Kartutsnitt')}</legend>
-          <button
-            type="button"
-            aria-pressed={frame === 'clusters'}
-            onClick={() => setFrame('clusters')}
-          >
-            {l('Fit clusters', 'Visa klusterutsnitt')}
-          </button>
-          <button
-            type="button"
-            aria-pressed={frame === 'all'}
-            onClick={() => setFrame('all')}
-          >
-            {l('Show all points', 'Visa alla punkter')}
-          </button>
-        </fieldset>
-        <fieldset>
-          <legend>{l('Colour by', 'Färglägg efter')}</legend>
-          {(
-            [
-              ['cluster', l('Discovered clusters', 'Upptäckta kluster')],
-              ['role', l('Existing role', 'Befintlig roll')],
-              ['seniority', l('Seniority', 'Senioritet')],
-              ['year', l('Year', 'År')],
-            ] as [Mode, string][]
-          ).map(([value, label]) => (
-            <button
-              key={value}
-              type="button"
-              aria-pressed={mode === value}
-              onClick={() => setMode(value)}
-            >
-              {label}
-            </button>
-          ))}
-        </fieldset>
-        <label>
-          {l('Publication year', 'Publiceringsår')}
-          <select value={year} onChange={(e) => setYear(e.target.value)}>
-            <option value="all">{l('All years', 'Alla år')}</option>
-            {years.map((y) => (
-              <option key={y} value={y}>
-                {y}
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
-      <p className="ds-small" id="cluster-frame" aria-live="polite">
-        {frame === 'clusters'
-          ? l(
-              `View fitted to assigned clusters. ${num(outsideFrame)} ads lie outside this frame; choose “Show all points” to include them. Coordinates and analysis counts are unchanged.`,
-              `Utsnittet är anpassat till tilldelade kluster. ${num(outsideFrame)} annonser ligger utanför bildutsnittet; välj ”Visa alla punkter” för att se dem. Koordinater och analysantal är oförändrade.`,
-            )
-          : l(
-              'The entire fitted map is shown, including distant noise points.',
-              'Hela den beräknade kartan visas, inklusive avlägsna bruspunkter.',
-            )}
-      </p>
-      <p id="cluster-map-help" className="ds-small">
+      <p className="cluster-finding">
         {l(
-          'Nearby ads have similar semantic representations. Axes have no named meaning. Use arrow keys to inspect ads, Enter to select their cluster and Escape to clear.',
-          'Närliggande annonser har liknande semantiska representationer. Axlarna saknar namngiven betydelse. Använd piltangenter för att granska annonser, Enter för att välja deras kluster och Escape för att rensa.',
+          `${num(d.dataset_size)} IT ads from ${span} form ${groups.length} groups. The largest, “${largest?.cluster_label}”, holds ${pct(largest?.dataset_share ?? 0)} of the ads; ${pct(d.noise_share)} fit no group.`,
+          `${num(d.dataset_size)} IT-annonser från ${span} bildar ${groups.length} grupper. Den största, ”${largest?.cluster_label}”, rymmer ${pct(largest?.dataset_share ?? 0)} av annonserna; ${pct(d.noise_share)} passar inte i någon grupp.`,
         )}
       </p>
-      <div className="cluster-layout plate">
-        <div>
-          <canvas
-            ref={canvas}
-            style={{ height: size.height }}
-            role="img"
-            tabIndex={0}
-            aria-label={l(
-              `Semantic map: ${visible.length - outsideFrame} advertisements in frame, ${visible.length} in the year selection`,
-              `Semantisk karta: ${visible.length - outsideFrame} annonser inom bildutsnittet, ${visible.length} i årsurvalet`,
-            )}
-            aria-describedby="cluster-map-help cluster-visible cluster-frame cluster-point"
-            onPointerMove={(e) => setHover(nearest(e.clientX, e.clientY))}
-            onPointerLeave={() => setHover(null)}
-            onClick={(e) => {
-              const p = nearest(e.clientX, e.clientY)
-              if (p) {
-                setSelected(p.cluster)
-                setHover(p)
-              }
-            }}
-            onFocus={() => setHover(visible[focused] ?? null)}
-            onKeyDown={(e) => {
-              if (
-                [
-                  'ArrowRight',
-                  'ArrowDown',
-                  'ArrowLeft',
-                  'ArrowUp',
-                  'Home',
-                  'End',
-                ].includes(e.key)
-              ) {
-                e.preventDefault()
-                const next =
-                  e.key === 'Home'
-                    ? 0
-                    : e.key === 'End'
-                      ? visible.length - 1
-                      : Math.max(
-                          0,
-                          Math.min(
-                            visible.length - 1,
-                            focused +
-                              (['ArrowLeft', 'ArrowUp'].includes(e.key)
-                                ? -1
-                                : 1),
-                          ),
-                        )
-                setFocused(next)
-                setHover(visible[next] ?? null)
-              }
-              if (e.key === 'Enter' && hover) setSelected(hover.cluster)
-              if (e.key === 'Escape') {
-                setSelected(null)
-                setHover(null)
-              }
-            }}
-          />
-          <p id="cluster-visible" aria-live="polite" className="ds-label">
-            {num(visible.length)}{' '}
-            {l('advertisements in selection', 'annonser i urvalet')} ·{' '}
-            {num(visible.length - outsideFrame)}{' '}
-            {l('within frame', 'inom bildutsnittet')}
-          </p>
-          <div id="cluster-point" className="cluster-point" aria-live="polite">
-            {hover ? (
-              <>
-                <strong>{hover.title}</strong>
-                <span>
-                  {hover.region} · {hover.year} · {hover.cluster_label}
-                </span>
-                <span>
-                  {l('Existing label', 'Befintlig etikett')}: {hover.role} ·{' '}
-                  {hover.seniority} ·{' '}
-                  {isConsensus
-                    ? l(
-                        'Cluster assignment support',
-                        'Stöd för grupptilldelning',
-                      )
-                    : l('Membership', 'Medlemskap')}
-                  : {pct(hover.probability)}
-                </span>
-                <span>{hover.skills.join(' · ')}</span>
-              </>
-            ) : (
-              l(
-                'Point details appear here on hover or keyboard focus.',
-                'Annonsdetaljer visas här vid hovring eller tangentbordsfokus.',
-              )
-            )}
-          </div>
-          <ul
-            className="cluster-legend"
-            aria-label={l('Colour legend', 'Färgförklaring')}
+
+      <div
+        className="cluster-view feature-pick"
+        role="group"
+        aria-label={l('Colour the dots by', 'Färga prickarna efter')}
+      >
+        {(
+          [
+            ['groups', l('Groups found in the text', 'Grupper i texten')],
+            ['titles', l('Job titles', 'Jobbtitlar')],
+          ] as const
+        ).map(([key, label]) => (
+          <button
+            key={key}
+            type="button"
+            aria-pressed={view === key}
+            onClick={() => setView(key)}
           >
-            {legend.map(([label, color], index) => (
-              <li key={`${label}-${index}`}>
-                {mode === 'cluster' ? (
-                  <button
-                    type="button"
-                    aria-pressed={
-                      selected === summary.clusters[index].cluster_id
-                    }
-                    onClick={() => {
-                      const id = summary.clusters[index].cluster_id
-                      setSelected(selected === id ? null : id)
-                    }}
-                  >
-                    <i style={{ background: color }} />
-                    {`${summary.clusters[index].cluster_id === -1 ? '−1' : String(summary.clusters[index].cluster_id).padStart(2, '0')} · ${label}`}
-                  </button>
-                ) : (
-                  <>
-                    <i style={{ background: color }} />
-                    {label}
-                  </>
-                )}
-              </li>
-            ))}
-          </ul>
-        </div>
-        <aside className="cluster-detail">
-          <label>
-            {l('Inspect a cluster', 'Granska ett kluster')}
-            <select
-              value={selected ?? ''}
-              onChange={(e) =>
-                setSelected(
-                  e.target.value === '' ? null : Number(e.target.value),
-                )
-              }
-            >
-              <option value="">
-                {l('Choose a cluster', 'Välj ett kluster')}
-              </option>
-              {summary.clusters.map((c) => (
-                <option key={c.cluster_id} value={c.cluster_id}>
-                  {c.cluster_id} · {c.cluster_label}
-                </option>
+            {label}
+          </button>
+        ))}
+      </div>
+
+      <figure className="cluster-figure">
+        <canvas
+          ref={canvas}
+          style={{ height: size.height }}
+          role="img"
+          aria-label={l(
+            `Map of ${num(d.dataset_size)} job ads; ads written alike sit close together. The groups are listed beside the map.`,
+            `Karta över ${num(d.dataset_size)} jobbannonser; annonser som är skrivna lika ligger nära varandra. Grupperna listas bredvid kartan.`,
+          )}
+          onMouseMove={(e) => setHover(nearest(e.clientX, e.clientY))}
+          onMouseLeave={() => setHover(null)}
+          onClick={(e) => {
+            const hit = nearest(e.clientX, e.clientY)
+            if (hit && hit.cluster !== -1) setPicked(hit.cluster)
+          }}
+        />
+        <figcaption className="cluster-caption" aria-live="polite">
+          {hover ? (
+            <>
+              <strong>{hover.title}</strong> · {hover.role} · {hover.year} ·{' '}
+              {hover.cluster === -1
+                ? l('no group', 'ingen grupp')
+                : `${l('group', 'grupp')} ${rank.get(hover.cluster)}`}
+            </>
+          ) : view === 'titles' ? (
+            <span className="cluster-key">
+              {ROLES.map((role, i) => (
+                <span key={role}>
+                  <i style={{ background: `var(${ROLE_TOKENS[i]})` }} />
+                  {role} {num(roleCount(role))}
+                </span>
               ))}
-            </select>
-          </label>
-          {cluster ? (
-            <ClusterDetails cluster={cluster} />
+            </span>
           ) : (
-            <p>
+            l(
+              'Each dot is an ad. Ads written alike sit close; the axes have no unit. Point at a dot to read it, click to pick its group.',
+              'Varje prick är en annons. Annonser som är skrivna lika ligger nära; axlarna saknar enhet. Peka på en prick för att läsa den, klicka för att välja dess grupp.',
+            )
+          )}
+        </figcaption>
+      </figure>
+
+      <div className="cluster-pair">
+        <div className="cluster-list">
+          <h3>{l('The groups by size', 'Grupperna efter storlek')}</h3>
+          <RankBars
+            label={l('Ads per group', 'Annonser per grupp')}
+            rows={groups.map((c) => ({
+              key: String(c.cluster_id),
+              label: name(c),
+              value: c.job_count,
+              note: pct(c.dataset_share),
+            }))}
+            format={num}
+            limit={10}
+            onPick={(key) => setPicked(Number(key))}
+            picked={focus === null ? null : String(focus)}
+          />
+          {noise && (
+            <p className="cluster-noise">
               {l(
-                'Select a point or choose a cluster to compare its skills, titles and existing role labels.',
-                'Välj en punkt eller ett kluster för att jämföra kompetenser, titlar och befintliga rolletiketter.',
+                `${num(noise.job_count)} ads (${pct(noise.dataset_share)}) fit no group and stay grey.`,
+                `${num(noise.job_count)} annonser (${pct(noise.dataset_share)}) passar inte i någon grupp och är grå.`,
               )}
             </p>
           )}
-          {selected !== null && (
-            <button
-              className="ds-button secondary"
-              onClick={() => setSelected(null)}
-            >
-              {l('Clear selection', 'Rensa val')}
-            </button>
-          )}
-        </aside>
+        </div>
+        {current && <Profile cluster={current} name={name(current)} />}
       </div>
-      <section
-        className="cluster-size-comparison"
-        aria-labelledby="cluster-size-heading"
+
+      <Disclosure
+        label={l(
+          'Groups against job titles (table)',
+          'Grupper mot jobbtitlar (tabell)',
+        )}
       >
-        <h3 id="cluster-size-heading">
-          {l('How large are the groups?', 'Hur stora är grupperna?')}
-        </h3>
-        <p>
-          {l(
-            'All years in the dataset. Compare ad counts, independently of the space each group occupies on the map. Select a bar to inspect the group above. Unassigned ads are shown separately in grey.',
-            'Alla år i datamängden. Jämför antal annonser, oberoende av hur stor yta gruppen tar på kartan. Välj en stapel för att granska gruppen ovan. Ej tilldelade annonser visas separat i grått.',
-          )}
-        </p>
-        <ol className="cluster-size-bars">
-          {[...summary.clusters]
-            .sort((a, b) =>
-              a.cluster_id === -1
-                ? 1
-                : b.cluster_id === -1
-                  ? -1
-                  : b.job_count - a.job_count,
-            )
-            .map((c) => (
-              <li key={c.cluster_id}>
-                <button
-                  type="button"
-                  aria-pressed={selected === c.cluster_id}
-                  onClick={() => {
-                    setSelected(c.cluster_id)
-                    document
-                      .querySelector<HTMLElement>('.cluster-detail')
-                      ?.scrollIntoView({ block: 'nearest' })
-                  }}
-                >
-                  <span>
-                    {c.cluster_id === -1
-                      ? l('Unassigned', 'Ej tilldelade')
-                      : `${c.cluster_id} · ${c.cluster_label}`}
-                  </span>
-                  <span className="cluster-size-track" aria-hidden="true">
-                    <i
-                      style={{
-                        width: `${(c.job_count / Math.max(1, ...summary.clusters.map((item) => item.job_count))) * 100}%`,
-                        background: c.cluster_id === -1 ? '#94948e' : '#4e79a7',
-                      }}
-                    />
-                  </span>
-                  <strong>{num(c.job_count)}</strong>
-                </button>
-              </li>
-            ))}
-        </ol>
-      </section>
-      <details className="cluster-method">
-        <summary>
-          {l(
-            'Method, diagnostics & limitations',
-            'Metod, diagnostik och begränsningar',
-          )}
-        </summary>
-        <p>
-          {summary.config.model} → UMAP ({summary.config.dimensions ?? 15}{' '}
-          dimensions) → HDBSCAN{isConsensus ? ' → consensus' : ''}. A separate
-          2D UMAP is used for this map.
-        </p>
-        {summary.feature_ensemble && (
-          <p>
-            {l('Feature mixture', 'Kombinerade egenskaper')}:{' '}
-            {Object.entries(summary.feature_ensemble.weights)
-              .map(
-                ([key, weight]) =>
-                  `${pct(weight)} ${l(({ clean: 'cleaned advertisement text', title: 'title patterns', skills: 'technology mentions', raw: 'original text', lexical: 'lexical text patterns' } as Record<string, string>)[key] ?? key, ({ clean: 'rensad annonstext', title: 'rubrikmönster', skills: 'teknikomnämnanden', raw: 'ursprunglig text', lexical: 'lexikala textmönster' } as Record<string, string>)[key] ?? key)}`,
-              )
-              .join(', ')}
-            .{' '}
-            {isConsensus &&
-              l(
-                'A group assignment requires agreement from at least two of three runs. Agreement is not a calibrated probability that the label is correct.',
-                'En grupptilldelning kräver stöd från minst två av tre körningar. Stödet är inte en kalibrerad sannolikhet att etiketten är korrekt.',
-              )}
-          </p>
-        )}
-        <p>
-          {l(
-            'Statistics describe the complete analysis dataset; filtering changes visible points only. Cluster labels are automatic descriptions. Skill mentions and title-based seniority may be misleading.',
-            'Statistiken beskriver hela analysunderlaget; filtret ändrar bara synliga punkter. Klusteretiketter är automatiska beskrivningar. Kompetensomnämnanden och titelbaserad senioritet kan vara missvisande.',
-          )}
-        </p>
-        <p>
-          {l('Trustworthiness evaluation sample', 'Urval för trustworthiness')}:{' '}
-          {num(summary.diagnostics.trustworthiness_sample_size)}. Silhouette:{' '}
-          {summary.diagnostics.silhouette?.toFixed(3) ?? '—'}.{' '}
-          {summary.diagnostics.embedding_silhouette !== undefined && (
-            <>
-              {l(
-                'Silhouette in original language vectors',
-                'Silhouette i ursprungliga språkvektorer',
-              )}
-              : {summary.diagnostics.embedding_silhouette?.toFixed(3) ?? '—'}
-              .{' '}
-            </>
-          )}
-          {summary.diagnostics.feature_silhouette !== undefined && (
-            <>
-              {l(
-                'Silhouette in combined features',
-                'Silhouette i kombinerade egenskaper',
-              )}
-              : {summary.diagnostics.feature_silhouette?.toFixed(3) ?? '—'}
-              .{' '}
-            </>
-          )}
-          {isConsensus
-            ? l(
-                'Mean agreement across runs',
-                'Genomsnittligt stöd mellan körningar',
-              )
-            : l(
-                'Mean membership probability',
-                'Genomsnittlig medlemskapssannolikhet',
-              )}
-          : {summary.diagnostics.mean_cluster_probability?.toFixed(3) ?? '—'}.
-        </p>
-        {summary.diagnostics.feature_trustworthiness !== undefined && (
-          <p>
-            {l(
-              'Map neighbour preservation in combined features',
-              'Kartans bevarande av grannar i kombinerade egenskaper',
-            )}
-            : {summary.diagnostics.feature_trustworthiness.toFixed(3)}.{' '}
-            {l(
-              'In original full-text vectors',
-              'I ursprungliga fulltextvektorer',
-            )}
-            : {summary.diagnostics.trustworthiness.toFixed(3)}.
-          </p>
-        )}
-        {summary.parameter_sweep && (
-          <p>
-            {l(
-              `${summary.parameter_sweep.candidate_count} parameter combinations were compared. The selected grouping was also checked with ${summary.parameter_sweep.seed_stability.length} additional random seeds. Separation scores exclude unassigned ads; higher noise can make these scores look better.`,
-              `${summary.parameter_sweep.candidate_count} parameterkombinationer jämfördes. Den valda grupperingen kontrollerades också med ${summary.parameter_sweep.seed_stability.length} ytterligare slumpfrön. Separationsmåtten utesluter ej tilldelade annonser; mer brus kan få dessa mått att se bättre ut.`,
-            )}
-          </p>
-        )}
-        {summary.feature_ensemble?.candidate_count && (
-          <p>
-            {l(
-              `${summary.feature_ensemble.candidate_count} feature and parameter combinations were compared, including the previous model. The ensemble was checked with additional seed windows. Fewer unassigned ads and lower employer concentration do not establish a validated occupational taxonomy.`,
-              `${summary.feature_ensemble.candidate_count} feature- och parameterkombinationer jämfördes, inklusive den tidigare modellen. Ensemblen kontrollerades med ytterligare grupper av slumpfrön. Färre ej tilldelade annonser och lägre arbetsgivarkoncentration fastställer inte en validerad yrkesindelning.`,
-            )}
-          </p>
-        )}
-        <p>
-          {l(
-            'Only the selected software and data role universe is included. An advertisement is not a hire; geometry is exploratory, not causal.',
-            'Endast de utvalda mjukvaru- och datarollerna ingår. En annons är inte en anställning; geometrin är utforskande, inte kausal.',
-          )}
-        </p>
-        <p className="ds-label">
-          {summary.generated_at.slice(0, 10)} · {summary.run_id}
-        </p>
-      </details>
-      <div className="cluster-findings">
-        <h3>{l('What the clusters reveal', 'Vad klustren visar')}</h3>
-        {largest ? (
-          <p>
-            {l(
-              `The largest discovered group, “${largest.cluster_label}”, contains ${num(largest.job_count)} ads (${pct(largest.dataset_share)} of this dataset). ${largest.role_distribution[0].label} accounts for ${pct(largest.role_distribution[0].share)} of that group.`,
-              `Den största upptäckta gruppen, ”${largest.cluster_label}”, innehåller ${num(largest.job_count)} annonser (${pct(largest.dataset_share)} av underlaget). ${largest.role_distribution[0].label} utgör ${pct(largest.role_distribution[0].share)} av gruppen.`,
-            )}
-          </p>
-        ) : (
-          <p>
-            {l(
-              'No dense clusters were identified with these parameters.',
-              'Inga täta kluster identifierades med dessa parametrar.',
-            )}
-          </p>
-        )}
-        <p className="ds-small">
-          {l(
-            'The cross-tab below shows whether each group follows or crosses the existing title-based categories. These are descriptions of this run, not confirmed occupational boundaries.',
-            'Korstabellen nedan visar om grupperna följer eller korsar de befintliga titelbaserade kategorierna. Detta beskriver den här körningen, inte fastställda yrkesgränser.',
-          )}
-        </p>
-      </div>
-      <details className="cluster-method">
-        <summary>
-          {l(
-            'Semantic clusters × existing roles',
-            'Semantiska kluster × befintliga roller',
-          )}
-        </summary>
         <div className="cluster-table-wrap">
           <table>
             <caption>
               {l(
-                'Advertisement counts; all analysis years',
+                'Number of ads; all analysis years',
                 'Antal annonser; alla analysår',
               )}
             </caption>
             <thead>
               <tr>
-                <th>{l('Cluster', 'Kluster')}</th>
+                <th scope="col">{l('Group', 'Grupp')}</th>
                 {ROLES.map((role) => (
-                  <th key={role}>{role}</th>
+                  <th key={role} scope="col">
+                    {role}
+                  </th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {summary.clusters.map((c) => (
+              {[...groups, ...(noise ? [noise] : [])].map((c) => (
                 <tr key={c.cluster_id}>
-                  <th>
-                    {c.cluster_id} · {c.cluster_label}
+                  <th scope="row">
+                    {c.cluster_id === -1
+                      ? l('No group', 'Ingen grupp')
+                      : name(c)}
                   </th>
                   {ROLES.map((role) => (
                     <td key={role}>
-                      {c.role_distribution.find((r) => r.label === role)
-                        ?.count ?? 0}
+                      {num(
+                        c.role_distribution.find((r) => r.label === role)
+                          ?.count ?? 0,
+                      )}
                     </td>
                   ))}
                 </tr>
@@ -718,91 +392,108 @@ export default function ClusterMap() {
             </tbody>
           </table>
         </div>
-      </details>
+      </Disclosure>
+
+      <Disclosure label={l('Method and limits', 'Metod och begränsningar')}>
+        <p>
+          {l(
+            `Title, description and technology mentions of every ad are embedded locally with ${summary.config.model}, combined with title and technology features, reduced with UMAP to ${summary.config.dimensions ?? 10} dimensions and grouped with HDBSCAN. A group needs agreement from at least two of three runs with different seeds. A separate two-dimensional UMAP draws this map.`,
+            `Rubrik, beskrivning och teknikomnämnanden i varje annons bäddas in lokalt med ${summary.config.model}, kombineras med rubrik- och teknikegenskaper, reduceras med UMAP till ${summary.config.dimensions ?? 10} dimensioner och grupperas med HDBSCAN. En grupp kräver stöd från minst två av tre körningar med olika slumpfrön. En separat tvådimensionell UMAP ritar kartan.`,
+          )}
+        </p>
+        <p>
+          {l('Map neighbour preservation', 'Kartans bevarande av grannar')}:{' '}
+          {(d.feature_trustworthiness ?? d.trustworthiness).toFixed(2)}.
+          Silhouette: {d.silhouette?.toFixed(2) ?? '—'}.{' '}
+          {l(
+            'Mean agreement across runs',
+            'Genomsnittligt stöd mellan körningar',
+          )}
+          : {d.mean_cluster_probability?.toFixed(2) ?? '—'}.{' '}
+          {l(
+            `Diagnostics use a sample of ${num(d.trustworthiness_sample_size)} ads.`,
+            `Diagnostiken använder ett urval på ${num(d.trustworthiness_sample_size)} annonser.`,
+          )}
+        </p>
+        <p>
+          {l(
+            'Only the four selected software and data title families are included. An ad is not a hire. Group names are automatic descriptions from distinctive skills or frequent titles, not a validated occupational taxonomy; employer templates can create dense groups. The axes have no meaning.',
+            'Bara de fyra utvalda titelfamiljerna inom mjukvara och data ingår. En annons är inte en anställning. Gruppnamnen är automatiska beskrivningar från särskiljande kompetenser eller vanliga rubriker, inte en validerad yrkesindelning; arbetsgivares mallar kan skapa täta grupper. Axlarna saknar betydelse.',
+          )}
+        </p>
+        <p className="cluster-run">
+          {l('Source', 'Källa')}: JobTech Historical Ads {span} ·{' '}
+          {summary.generated_at.slice(0, 10)} · {summary.run_id}
+        </p>
+      </Disclosure>
     </div>
   )
 }
 
-function ClusterDetails({ cluster: c }: { cluster: Cluster }) {
+function Profile({ cluster: c, name }: { cluster: Cluster; name: string }) {
+  const employer = c.top_employers?.[0]
   return (
-    <>
-      <h3>
-        {c.cluster_id} · {c.cluster_label}
-      </h3>
-      <p>
-        {num(c.job_count)} {l('advertisements', 'annonser')} ·{' '}
-        {pct(c.dataset_share)}
+    <section className="cluster-profile" aria-live="polite">
+      <h3>{name}</h3>
+      <p className="cluster-profile-lead">
+        {l(
+          `${num(c.job_count)} ads, ${pct(c.dataset_share)} of all. Junior in the title: ${pct(c.junior_share)}; senior: ${pct(c.senior_share)}.`,
+          `${num(c.job_count)} annonser, ${pct(c.dataset_share)} av alla. Junior i titeln: ${pct(c.junior_share)}; senior: ${pct(c.senior_share)}.`,
+        )}
       </p>
-      <h4>
-        {l('Distinctive skill mentions', 'Särskiljande kompetensomnämnanden')}
-      </h4>
-      <div className="cluster-tags">
-        {c.top_skills.map((s) => (
-          <Tag key={s.skill}>{s.skill}</Tag>
-        ))}
-      </div>
-      {c.skill_observation_share !== undefined && (
-        <p className="ds-small">
-          {l(
-            `Technology mentions were detected in ${pct(c.skill_observation_share)} of this group's ads. Missing mentions can reflect vocabulary limits.`,
-            `Teknikomnämnanden identifierades i ${pct(c.skill_observation_share)} av gruppens annonser. Saknade omnämnanden kan bero på ordlistans begränsningar.`,
-          )}
-        </p>
-      )}
-      <h4>{l('Existing labels', 'Befintliga etiketter')}</h4>
-      <ul className="cluster-distribution">
-        {c.role_distribution.map((r) => (
-          <li key={r.label}>
-            <span>{r.label}</span>
-            <strong>{pct(r.share)}</strong>
-          </li>
-        ))}
-      </ul>
-      <p>
-        {l('Junior share', 'Juniorandel')}: {pct(c.junior_share)} ·{' '}
-        {l('Senior share', 'Seniorandel')}: {pct(c.senior_share)}
-      </p>
-      <h4>{l('Most common titles', 'Vanligaste titlarna')}</h4>
-      <ul>
-        {c.top_titles.slice(0, 5).map((t) => (
-          <li key={t.label}>
-            {t.label} ({t.count})
-          </li>
-        ))}
-      </ul>
-      <h4>{l('Representative advertisements', 'Representativa annonser')}</h4>
-      <ul>
-        {c.representative_ads.map((ad) => (
-          <li key={ad.id}>{ad.title}</li>
-        ))}
-      </ul>
-      {c.top_employers?.length ? (
-        <>
-          <h4>{l('Employer concentration', 'Arbetsgivarkoncentration')}</h4>
-          <ul className="cluster-distribution">
-            {c.top_employers.map((employer) => (
-              <li key={employer.label}>
-                <span>{employer.label}</span>
-                <strong>{pct(employer.share)}</strong>
+      <div className="cluster-profile-grid">
+        <div>
+          <h4>{l('Job titles in the group', 'Jobbtitlar i gruppen')}</h4>
+          <RankBars
+            label={l('Share per title family', 'Andel per titelfamilj')}
+            rows={c.role_distribution.map((r) => ({
+              key: r.label,
+              label: r.label,
+              value: r.share,
+            }))}
+            format={pct}
+            max={1}
+          />
+        </div>
+        {c.years && c.years.length > 1 && (
+          <div>
+            <h4>{l('Ads per year', 'Annonser per år')}</h4>
+            <RankBars
+              label={l('Ads per year', 'Annonser per år')}
+              rows={[...c.years]
+                .sort((a, b) => a.label.localeCompare(b.label))
+                .map((y) => ({ key: y.label, label: y.label, value: y.count }))}
+              format={num}
+            />
+          </div>
+        )}
+        <div>
+          <h4>
+            {l('Skills that set it apart', 'Kompetenser som skiljer ut den')}
+          </h4>
+          <div className="cluster-tags">
+            {c.top_skills.slice(0, 8).map((s) => (
+              <Tag key={s.skill}>{s.skill}</Tag>
+            ))}
+          </div>
+          <h4>{l('Common titles', 'Vanliga rubriker')}</h4>
+          <ul className="cluster-titles">
+            {c.top_titles.slice(0, 5).map((t) => (
+              <li key={t.label}>
+                {t.label} <span>{num(t.count)}</span>
               </li>
             ))}
           </ul>
-          {c.top_employers[0].share > 0.5 && (
-            <p className="ds-small">
-              {l(
-                'One employer supplies most of this group. Its language and templates may drive the cluster; the skill label should not be read as an independent market segment.',
-                'En arbetsgivare står för större delen av gruppen. Dess språk och mallar kan driva klustret; kompetensetiketten bör inte läsas som ett självständigt marknadssegment.',
-              )}
-            </p>
+        </div>
+      </div>
+      {employer && employer.share > 0.5 && (
+        <p className="cluster-warning">
+          {l(
+            `${employer.label} supplies ${pct(employer.share)} of this group; its templates may be what holds the group together.`,
+            `${employer.label} står för ${pct(employer.share)} av gruppen; dess annonsmallar kan vara det som håller ihop gruppen.`,
           )}
-        </>
-      ) : null}
-      <p className="ds-small">
-        {l(
-          'Labels are based on distinctive skills or frequent titles and need human review.',
-          'Etiketter bygger på särskiljande kompetenser eller vanliga titlar och behöver mänsklig granskning.',
-        )}
-      </p>
-    </>
+        </p>
+      )}
+    </section>
   )
 }

@@ -121,7 +121,7 @@ def test_export_contains_only_delivery_fields_and_run_consistency(tmp_path):
     module.export(database, output)
     point = json.loads((output / 'clusters/test/points-0.json').read_text())['points'][0]
     assert 'description' not in point and 'embedding' not in point
-    assert point['skills'] == ['Python']
+    assert set(point) == {'id', 'x', 'y', 'cluster', 'probability', 'role', 'year', 'title'}
     with duckdb.connect(str(database)) as con:
         con.execute("update gold.mart_job_clusters set run_id = 'other'")
     with pytest.raises(ValueError, match='differ'):

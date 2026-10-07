@@ -316,7 +316,6 @@ img {
 .dataset-presets button:hover,
 .feature-pick button:hover,
 .modell-slicers button:hover,
-.cluster-controls button:hover,
 .speaker-order button:hover {
   border-color: var(--ink);
 }
@@ -334,7 +333,6 @@ img {
 .dataset-presets button[aria-pressed='true'],
 .feature-pick button[aria-pressed='true'],
 .modell-slicers button[aria-pressed='true'],
-.cluster-controls button[aria-pressed='true'],
 .speaker-order button[aria-pressed='true'] {
   border-color: var(--ink);
   background: var(--ink);
@@ -354,7 +352,6 @@ img {
 .dataset-presets button:active,
 .feature-pick button:active,
 .modell-slicers button:active,
-.cluster-controls button:active,
 .speaker-order button:active,
 .btn:active,
 .btn-quiet:active {

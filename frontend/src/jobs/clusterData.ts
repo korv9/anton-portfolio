@@ -1,31 +1,17 @@
 import { useEffect, useState } from 'react'
 import { fetchData } from '../dataSource'
 
-export const CLUSTER_COLORS = [
-  '#4E79A7',
-  '#59A14F',
-  '#E3A83A',
-  '#D4715A',
-  '#887EC8',
-  '#2A9D8F',
-]
 export const ROLES = [
   'Data Engineer',
   'Analytics Engineer',
   'Data Scientist',
   'Software Developer',
 ]
-export type Mode = 'cluster' | 'role' | 'seniority' | 'year'
 export type MapPoint = { id: string; x: number; y: number; cluster: number }
 export type JobPoint = MapPoint & {
-  cluster_label: string
-  probability: number
   role: string
-  seniority: string
   year: number
-  region: string
   title: string
-  skills: string[]
 }
 export type Distribution = { label: string; count: number; share: number }
 export type Cluster = {
@@ -43,6 +29,7 @@ export type Cluster = {
   role_distribution: Distribution[]
   representative_ads: { id: string; title: string }[]
   top_employers?: Distribution[]
+  years?: Distribution[]
   label_uncertainty: string
 }
 export type Summary = {
@@ -95,31 +82,6 @@ export type Summary = {
   }
 }
 
-export function clusterColor(cluster: number) {
-  if (cluster === -1) return '#94948E'
-  if (cluster < CLUSTER_COLORS.length) return CLUSTER_COLORS[cluster]
-  // More clusters must not silently repeat the same six categorical colours.
-  // Selection and numbered labels remain available when hues are hard to distinguish.
-  return `hsl(${((cluster * 137.508 + 210) % 360).toFixed(2)} 52% ${[40, 52, 32][cluster % 3]}%)`
-}
-export function pointColor(point: JobPoint, mode: Mode, years: number[]) {
-  if (mode === 'cluster') return clusterColor(point.cluster)
-  if (mode === 'role')
-    return CLUSTER_COLORS[ROLES.indexOf(point.role)] ?? '#94948E'
-  if (mode === 'seniority')
-    return (
-      (
-        {
-          junior: '#4E79A7',
-          senior: '#D4715A',
-          unspecified: '#94948E',
-        } as Record<string, string>
-      )[point.seniority] ?? '#94948E'
-    )
-  const share =
-    (point.year - years[0]) / Math.max(1, years[years.length - 1] - years[0])
-  return `hsl(210 38% ${75 - share * 45}%)`
-}
 export function projectCoordinates(
   points: MapPoint[],
   width: number,

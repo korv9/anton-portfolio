@@ -1,149 +1,118 @@
-.cluster-story {
-  scroll-margin-top: 88px;
-  border-top: 1px solid var(--ink);
-  padding-block: 3rem;
-  margin-block: 2rem;
+/* The job-ad clustering theme (ClusteringSection, ClusterMap): a light map, the ranked groups
+   beside it and the picked group's profile under it. */
+
+.cluster-finding {
+  max-width: 62ch;
+  margin: 0 0 var(--sp-4);
+  font-size: var(--fs-lead, 1.15rem);
+  line-height: 1.45;
 }
-.cluster-metrics {
+.cluster-view {
+  margin-bottom: var(--sp-4);
+}
+.cluster-pair {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
-  border-block: 1px solid var(--line);
-  padding-block: 1.5rem;
-  margin-block: 2rem;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--sp-5) var(--sp-6);
+  align-items: start;
+  margin-top: var(--sp-5);
 }
-.cluster-controls {
-  display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 1rem;
-  align-items: end;
-}
-.cluster-controls fieldset {
-  border: 0;
-  padding: 0;
+.cluster-figure {
   margin: 0;
 }
-.cluster-controls legend,
-.cluster-controls label,
-.cluster-detail > label {
-  font-size: 0.875rem;
-}
-.cluster-controls button {
-  background: transparent;
-  color: var(--ink);
-  border: 1px solid var(--line);
-  min-height: 44px;
-  padding: 0.55rem 0.75rem;
-  cursor: pointer;
-}
-.cluster-controls button[aria-pressed='true'] {
-  background: var(--ink);
-  color: var(--on-accent);
-  border-color: var(--ink);
-}
-.cluster-controls select,
-.cluster-detail select {
+.cluster-figure canvas {
   display: block;
   width: 100%;
-  padding: 0.6rem;
-  min-height: 44px;
-  background: var(--paper);
-  color: var(--ink);
+  background: var(--paper-strong);
   border: 1px solid var(--line);
-}
-.cluster-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 8fr) minmax(230px, 4fr);
-  gap: 2rem;
-}
-.cluster-layout canvas {
-  display: block;
-  width: 100%;
   cursor: crosshair;
 }
-.cluster-detail {
-  border-left: 1px solid var(--line);
-  padding-left: 1.5rem;
+.cluster-caption {
+  min-height: 3rem;
+  padding-top: var(--sp-2);
+  color: var(--muted);
+  font-size: var(--fs-meta);
+  line-height: 1.45;
 }
-.cluster-detail h3 {
-  margin-top: 1.5rem;
-  font-size: 1.5rem;
+.cluster-caption strong {
+  color: var(--ink);
 }
-.cluster-detail h4 {
-  margin: 1.5rem 0 0.5rem;
+.cluster-key {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem 1rem;
 }
-.cluster-detail ul {
-  padding-left: 1rem;
-  line-height: 1.7;
+.cluster-key span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+.cluster-key i {
+  width: 10px;
+  height: 10px;
+}
+.cluster-list h3,
+.cluster-profile h4 {
+  margin: 0 0 var(--sp-3);
+  font-size: var(--fs-meta);
+  font-weight: 600;
+}
+.cluster-list .rank-bars-list li,
+.cluster-list .rank-bars-list li > button,
+.cluster-profile .rank-bars-list li {
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) auto;
+}
+.cluster-noise {
+  margin-top: var(--sp-3);
+  color: var(--muted);
+  font-size: var(--fs-meta);
+}
+.cluster-profile {
+  padding-left: var(--sp-5);
+  border-left: 1px solid var(--line-strong);
+}
+.cluster-profile > h3 {
+  margin: 0;
+  font-size: var(--h3, 1.5rem);
+}
+.cluster-profile-lead {
+  margin: var(--sp-2) 0 var(--sp-5);
+  color: var(--muted);
+}
+.cluster-profile-grid {
+  display: grid;
+  gap: var(--sp-5);
 }
 .cluster-tags {
   display: flex;
   flex-wrap: wrap;
   gap: 0.35rem;
+  margin-bottom: var(--sp-5);
 }
-.cluster-distribution {
-  list-style: none;
-  padding: 0 !important;
-}
-.cluster-distribution li {
-  display: flex;
-  justify-content: space-between;
-  gap: 0.5rem;
-  border-bottom: 1px solid var(--line);
-  font-size: 0.875rem;
-}
-.cluster-point {
-  display: grid;
-  gap: 0.3rem;
-  padding-block: 1rem;
-  min-height: 120px;
-  border-top: 1px solid var(--line);
-  font-size: 0.875rem;
-}
-.cluster-legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.6rem 1.2rem;
+.cluster-titles {
+  margin: 0;
   padding: 0;
   list-style: none;
-  font-size: 0.75rem;
+  font-size: var(--fs-meta);
 }
-.cluster-legend li {
+.cluster-titles li {
   display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: 0.3rem 0;
+  border-bottom: 1px solid var(--line);
 }
-.cluster-legend i {
-  width: 8px;
-  height: 8px;
-  display: inline-block;
-  flex-shrink: 0;
+.cluster-titles span {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
 }
-.cluster-legend button {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  min-height: 44px;
-  padding: 0.4rem 0.6rem;
-  background: transparent;
-  color: var(--ink);
-  border: 1px solid var(--line);
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
+.cluster-warning {
+  margin-top: var(--sp-4);
+  padding-left: var(--sp-3);
+  border-left: 3px solid var(--note-line);
 }
-.cluster-legend button[aria-pressed='true'] {
-  border-color: var(--ink);
-  font-weight: 700;
-}
-.cluster-method {
-  border-top: 1px solid var(--line);
-  padding-block: 1rem;
-  margin-top: 1rem;
-}
-.cluster-method summary {
-  cursor: pointer;
+.cluster-explorer .disclosure {
+  margin-top: var(--sp-5);
 }
 .cluster-table-wrap {
   overflow: auto;
@@ -151,27 +120,29 @@
 .cluster-table-wrap table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.875rem;
+  font-size: var(--fs-meta);
   text-align: left;
 }
 .cluster-table-wrap th,
 .cluster-table-wrap td {
+  padding: 0.5rem 0.6rem;
   border-bottom: 1px solid var(--line);
-  padding: 0.7rem;
 }
 .cluster-table-wrap td {
   text-align: right;
+  font-variant-numeric: tabular-nums;
 }
-@media (max-width: 800px) {
-  .cluster-layout {
+.cluster-run {
+  color: var(--muted);
+  font-size: var(--fs-label, 0.75rem);
+}
+@media (max-width: 860px) {
+  .cluster-pair {
     grid-template-columns: 1fr;
   }
-  .cluster-detail {
+  .cluster-profile {
+    padding: var(--sp-5) 0 0;
     border-left: 0;
-    border-top: 1px solid var(--line);
-    padding: 1rem 0;
-  }
-  .cluster-metrics {
-    grid-template-columns: 1fr;
+    border-top: 1px solid var(--line-strong);
   }
 }

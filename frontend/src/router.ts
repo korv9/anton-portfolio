@@ -60,6 +60,7 @@ export const REDIRECTS: Record<string, string> = {
   '#teknisk': '#data-constellation',
   '#design': '#start',
   '#tallman': '#projekt',
+  '#job-market-clusters': '#jobb-kluster',
   '#status': '#data-catalogue',
   // The politics product's older detailed views: each address leads to the theme that
   // answers the same question now.
