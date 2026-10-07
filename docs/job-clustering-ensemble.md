@@ -148,5 +148,4 @@ are exported. Source text, models and feature matrices stay local and gitignored
 The display is an independent 2D UMAP of the fused features, using 60 neighbours, minimum
 distance .08 and seed 42. It changes from the prior full-text map; clusters are still fitted
 in 10D, not the display. Both original-text and fused-feature neighbour preservation are
-reported. The fitted-cluster camera/full-map control uses genuine coordinates. See
-[delivery record](editorial-clustering-delivery.md) for the final run identity and checks.
+reported. The fitted-cluster camera/full-map control uses genuine coordinates.

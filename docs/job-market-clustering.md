@@ -138,8 +138,9 @@ sample capped at 1,500 rows, and the sample size is reported.
 `--compare` reruns two alternatives: half the neighbour count and half the minimum cluster
 size. These are sensitivity checks, not an automatic search for the prettiest picture.
 The headline result and parameter comparisons are recorded in delivery, and the website
-shows the role cross-tab alongside the map. See the generated run report and the
-implementation delivery record for the measured results.
+shows the role cross-tab alongside the map. The measured results are in the generated run
+report, [the parameter sweep](job-clustering-sweep.md) and [the feature
+ensemble](job-clustering-ensemble.md).
 
 Repeated advertisements are distinct records, so recruitment templates and employer
 language can create dense groups. Ad distribution is also highly imbalanced across roles;

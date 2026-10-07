@@ -2,7 +2,6 @@
 
 Models trained on the delivered data, each with a model card in `cards/` that records what
 the label means, how the data were split, what the model beat and what it cannot support.
-The design is in [docs/plans/ml-layer-plan.md](../docs/plans/ml-layer-plan.md).
 
 | Task | Input | Split | Headline |
 |---|---|---|---|
