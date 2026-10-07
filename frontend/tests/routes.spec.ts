@@ -12,7 +12,10 @@ import { test, expect, type Page } from './test'
 const HOME = '#start'
 const START_PAGES = [
   '/#start',
-  '/#alla-projekt',
+  '/#drugcomb',
+  '/#jobb-kluster',
+  '/#concept-constellation',
+  '/#philosophy-atlas',
   '/#politik',
   '/#ai-act',
   '/#jobb',

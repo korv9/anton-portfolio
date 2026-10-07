@@ -8,7 +8,10 @@ import { test, expect } from './test'
 
 const PAGES = [
   '#start',
-  '#alla-projekt',
+  '#drugcomb',
+  '#jobb-kluster',
+  '#concept-constellation',
+  '#philosophy-atlas',
   '#politik',
   '#ai-act',
   '#jobb',
@@ -61,7 +64,7 @@ test('keyboard focus is visible on the first controls', async ({
   isMobile,
 }) => {
   test.skip(isMobile, 'no keyboard on a phone')
-  await page.goto('/#alla-projekt')
+  await page.goto('/#start')
   for (let i = 0; i < 4; i++) {
     await page.keyboard.press('Tab')
     const outline = await page.evaluate(() => {
@@ -77,9 +80,9 @@ test('keyboard focus is visible on the first controls', async ({
 test('reduced motion stops transitions', async ({ page, isMobile }) => {
   test.skip(isMobile, 'the same CSS on a phone')
   await page.emulateMedia({ reducedMotion: 'reduce' })
-  await page.goto('/#alla-projekt')
+  await page.goto('/#politik-roster')
   const duration = await page
-    .locator('.project-filter button')
+    .locator('.rank-track i')
     .first()
     .evaluate((el) => parseFloat(getComputedStyle(el).transitionDuration))
   expect(duration).toBeLessThan(0.01)

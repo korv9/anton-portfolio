@@ -140,20 +140,12 @@ test('explore and sources reach every detailed view and the raw tables', async (
   page,
 }) => {
   await page.goto('/#politik-utforska')
-  for (const href of [
-    '#debates',
-    '#data-explorer',
-    '#politics',
-    '#budget-proposals',
-    '#taxes',
-    '#now-history',
-    '#raw-data',
-  ])
+  for (const href of ['#politik-mandat', '#politik-sok'])
     await expect(page.locator(`.explore-row[href="${href}"]`)).toHaveCount(1)
   await expect(page.locator('.explore-parties a')).toHaveCount(8)
   await page.goto('/#politik-kallor')
   await expect(page.locator('.sources-block table tbody tr')).toHaveCount(6)
-  for (const href of ['#raw-data', '#data-model', '#status'])
+  for (const href of ['#data-model', '#data-catalogue'])
     await expect(page.locator(`.explore-row[href="${href}"]`)).toHaveCount(1)
   const results = await new AxeBuilder({ page })
     .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])

@@ -6,7 +6,6 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
   FLAGSHIPS,
-  OTHER_WORK,
   PROJECTS,
   neighbours,
   projectForRoute,
@@ -24,7 +23,11 @@ test('six flagships, numbered 01–06 in order', () => {
       ['06', 'thesis'],
     ],
   )
-  assert.ok(OTHER_WORK.every((p) => !p.number && !p.featured))
+  assert.ok(
+    PROJECTS.filter((p) => !FLAGSHIPS.includes(p)).every(
+      (p) => !p.number && !p.featured,
+    ),
+  )
 })
 
 test('ids and site addresses are unique', () => {
@@ -71,7 +74,7 @@ test('a route finds its project, including sub-views', () => {
     'ai-act',
   )
   assert.equal(
-    projectForRoute({ page: 'analysis', path: '#analysis-europe' })?.id,
+    projectForRoute({ page: 'welfare', path: '#sweden-counties' })?.id,
     'welfare',
   )
   assert.equal(projectForRoute({ page: 'home', path: '#start' }), undefined)

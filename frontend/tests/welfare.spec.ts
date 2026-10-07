@@ -48,13 +48,11 @@ test('welfare leads with a question, one county comparison, then headlines and a
   await expect(explorer.locator('.download-button')).toContainText('CSV')
 })
 
-test('status page reports the last run, its tests and every source', async ({
+test('the catalogue reports the last run, its tests and every source', async ({
   page,
 }) => {
-  await page.goto('/#status')
-  await expect(
-    page.getByRole('heading', { name: 'Pipeline status' }),
-  ).toBeVisible()
+  await page.goto('/#data-catalogue')
+  await page.getByText('Pipeline runs and dbt tests').click()
   await expect(page.locator('.status-summary')).toContainText('passed')
   // Five welfare sources and the JobTech archives.
   await expect(

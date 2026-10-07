@@ -158,6 +158,6 @@ test('the job-ad clustering is a theme of the job-market product', async ({
     })
     .click()
   await expect(page).toHaveURL(/#jobb-kluster/)
-  await expect(page.locator('#job-market-clusters')).toBeVisible()
-  await expect(page.locator('#job-market-clusters')).toContainText('HDBSCAN')
+  await expect(page.locator('.cluster-story')).toBeVisible()
+  await expect(page.locator('.cluster-story')).toContainText('HDBSCAN')
 })

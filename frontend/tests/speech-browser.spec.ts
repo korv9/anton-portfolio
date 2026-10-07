@@ -3,7 +3,7 @@ import { test, expect } from './test'
 test('visitors find a speaker, read full speeches and move through a debate', async ({
   page,
 }) => {
-  await page.goto('/#data-explorer')
+  await page.goto('/#politik-sok')
   const browser = page.locator('#data-explorer')
   await expect(browser.locator('.speech-card')).toHaveCount(12)
   await browser
@@ -29,7 +29,7 @@ test('visitors find a speaker, read full speeches and move through a debate', as
   await expect(
     page.getByRole('combobox', { name: 'Law snapshot', exact: true }),
   ).toBeVisible()
-  await page.goto('/#data-explorer')
+  await page.goto('/#politik-sok')
   await browser.getByRole('link', { name: /See how they voted/ }).click()
   await expect(
     page.getByRole('combobox', { name: 'Voting session', exact: true }),
