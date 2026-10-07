@@ -68,31 +68,28 @@ Simple first, depth on demand. The start page is a recruiter-facing summary; the
 carry the depth, and the technical pages (Data Constellation, Quality & Validity) the platform
 detail. The start page is deliberately plainer than the project pages.
 
-In the order a recruiter reads it (`frontend/src/home/HomePage.tsx`):
+In the order a recruiter reads it (`frontend/src/home/HomePage.tsx`): what has been built
+comes first.
 
 1. **Hero** (`#start`): the role (Data Engineer · Analytics Engineer · Applied AI), one
-   sentence on what I build, the core tools on one line, then *View projects*, *Download CV
-   (PDF)*, GitHub, LinkedIn and email.
-2. **First screen, everything about the job, two columns:**
-   - **left, Experience** (`#erfarenhet`): one entry per job with company, role, period and
-     impact visible; *What I did* opens the details and tools;
-   - **right, Education** (`#utbildning`, with the thesis and earlier work) and the **Core
-     stack** (`#kompetenser`): five groups (Data, Platform, Analytics, AI/ML, Web), the full
-     technical stack behind a disclosure.
-3. **Selected work** (`#projekt`): the five projects in `HOME_PROJECTS` (registry entries with
-   a `home` field), numbered 01–05, each with one plain-language line, its tech and a link.
-   Each row's live chart is a faded backdrop that loads only when the row comes into view
-   (`LazyPreview`), and never at 760 px or below.
+   sentence on what I build, then *Selected work*, *Download CV (PDF)*, GitHub and LinkedIn.
+   No tool list here; the core stack sits further down.
+2. **Selected work** (`#projekt`): the five projects in `HOME_PROJECTS` (registry entries with
+   a `home` field), numbered 01–05. Each row leads with the project's question and its finding
+   in a sentence; the tech is a quiet line under them. Each row's live chart is a faded
+   backdrop that loads only when the row comes into view (`LazyPreview`), and never at 760 px
+   or below.
+3. **Experience** (`#erfarenhet`) beside **Education** (`#utbildning`) and the **Core stack**
+   (`#kompetenser`): impact visible, the details and the full stack behind a click.
 4. **About** (`#om-mig`): two sentences and contact.
-5. **Under the hood** (`#under-huven`): links to Data Constellation, Quality & Validity and
-   All projects. None of these appear in the first screen.
+5. **Under the hood** (`#under-huven`): Data Constellation, Quality & Validity and All projects.
 
 The header and its navigation stay on screen on every page (`position: sticky`); once the page
 scrolls the header folds to one slim row with the name beside the navigation, and its height is
 published as `--header-h` so sticky elements below it (a product's sidebar) sit under it.
 Links carry no arrows.
 
-On a phone (and below 900 px) the two columns stack: experience, then education and the core stack.
+On a phone (and below 900 px) the profile columns stack: experience, then education and the core stack.
 The words live in `frontend/src/home/content.ts`, `orbitContent.ts` and the `home` lines in
 `projects/projectRegistry.ts`; every fact comes from the CVs.
 
@@ -116,7 +113,7 @@ One navigation with seven themes (a sidebar, a horizontal menu on small screens)
 
 | Theme | Address | Main chart |
 |---|---|---|
-| Läget just nu | `#politik` | A one-screen dashboard (below) |
+| Översikt | `#politik` | The overview: a question, its answer, one chart (below) |
 | Vad väljarna tycker | `#politik-valjarna` | Support in SCB's latest PSU (or election) as bars; over time as lines on request |
 | Hur partierna röstar | `#politik-roster` | How often a party votes like each other party, per session |
 | Vad partierna vill lägga pengar på | `#politik-budget` | The chosen parties' budgets compared with the government's, per expenditure area (grouped bars) |
@@ -132,18 +129,27 @@ parties. The choice is kept in the address (`#politik-budget?partier=S,V`) and i
 so it follows the reader from page to page, and "Visa alla" clears it.
 `frontend/src/politik/partySelection.ts`.
 
-### The dashboard
+### The overview
 
-`#politik` fits one desktop screen. The budget comes first and largest: what the parties want
-to spend compared with the government, as grouped bars per expenditure area, one bar per party.
-Slicers above the cards choose the budget year, how many areas (top 5, 8, 12 or all), the order
-(largest difference, most added, area number), the measure (SEK m or per cent of the
-government's proposal) and what the latest survey is compared with (the previous survey or the
-election); they are kept in the address like the parties. Around the budget: key figures (for
-several parties, one comparison tile each), the latest survey as bars with a tick for the
-comparison, who votes alike as a heat table (bars for one party), what the parties talk about as
-a heat table, and the seats, where a click chooses a party. Figures count up, bars grow and cards
-rise in one after another; with reduced motion nothing moves. `frontend/src/politik/dash/`.
+`#politik` reads first and explores second (`frontend/src/politik/story/Story.tsx`):
+
+1. **The question** *What separates the parties in practice?*, answered in one sentence from
+   the roll calls (the most divided policy area, the most and least alike pair), with its
+   source line.
+2. **What is the political situation right now?** The government, the seats against the
+   majority line, the latest election, roll call and party-leader debate, and the change in
+   seats since the election before.
+3. **Where do the parties differ most?** One chart: polarisation per policy area, with a
+   finding, its source and *What this means / What it does not mean*. Who votes with whom
+   (the similarity matrix, a pair to compare, the most divided roll calls) is under
+   *Explore: who votes with whom*.
+4. **What should you explore next?** Editorial links to How the parties vote, What they talk
+   about, Budget, The parties and What voters think.
+5. **More analyses** (folded): decisions and cohesion, one party's fingerprint, the
+   party-leader debates, the members and the voting map. A choice in the address
+   (`?parti=`, `?debatt=`, `?ledamot=`) opens it.
+6. **Sources, method and data quality** (folded): the diagnostics (seats, roll calls,
+   cohesion), the pipeline, definitions and the quality profile; then *How it was built*.
 
 Every other theme follows one template (`frontend/src/politik/ThemeLayout.tsx`): a question, why it
 matters, at most three key figures, one chart, the main result in a sentence, "Vad betyder det
@@ -180,7 +186,7 @@ its own navigation, and every project page has the breadcrumb back to the projec
 
 | Theme | Address | Main chart |
 |---|---|---|
-| Läget just nu | `#jobb` | A one-screen dashboard: key figures, ads per month (the large card), fields and occupations that grow, counties, terms |
+| Läget just nu | `#jobb` | A demand story: *How is demand for labour changing?* answered by the change against the same months a year earlier, ads per month as the one main chart with its interpretation, which roles are growing, where the clustering fits, then the treemap, counties and terms under Explore |
 | Hur utvecklas annonserna? | `#jobb-trender` | New ads per month as columns, or one small chart per field |
 | Vilka yrken växer? | `#jobb-yrken` | Occupations growing or falling the most, or with the most ads |
 | Var finns jobben? | `#jobb-lan` | Share of ads per county, with a county × year heat table |
@@ -254,3 +260,12 @@ One debate opens at `#politik-debatt?typ=sak|partiledare&riksmote=…&id=…`. I
 **How debates are linked to issues** (`platform/publish/export_debates.py`, written to `politics/parliament/debate-stats/`):
 - An issue debate whose title matches a Riksdag decision gets the committee report, each party's position on every decision point, and the committee's issue area. The decision files cover 2024/25 and later.
 - Other debates, and each speech, get issue areas from word matches against the expenditure-area lexicon. These are marked with a dashed border.
+
+## Data storytelling
+
+Every flagship follows one hierarchy: question → answer → one main visual → interpretation →
+explore → method. The first four are the reading experience; filters, tables, diagnostics
+and sources sit below them or in folds. The shared pieces are in `frontend/src/ui/Story.tsx`
+(`DataQuestion`, `FindingHero`, `ChartSection`, `Interpretation`, `SourceCaption`,
+`ExploreSection`, `StoryNext`, `MethodSummary`); [data-storytelling.md](data-storytelling.md)
+has the audit of each flagship and the rules.

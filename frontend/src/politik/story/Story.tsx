@@ -1,42 +1,41 @@
 /**
- * Svensk politik genom data: the politics product's front page, one vertical story in nine
- * sections. Sweden now, power, decisions, the dividing lines, the parties, the debates, the
- * members, advanced analysis, and how it is built. Each section asks one question, answers it
- * with a chart and a sentence generated from the data, and links to the pages that go deeper.
- * The party, debate and member chosen are kept in the address, so a view can be shared.
+ * Svensk politik genom data: the politics product's front page, read first, explore second.
+ *
+ * The opening question (what separates the parties in practice?) is answered in a sentence
+ * from the roll-call data. Then three questions: the situation right now (government and
+ * seats), where the parties differ most (one chart: the most divided policy areas) and what to
+ * explore next. Everything else (decisions, the party fingerprint, debates, members, the
+ * voting map) is one click deeper under "More analyses", and sources, method and data quality
+ * under their own fold. Choosing a party, debate or member in the address opens the analyses.
  */
 import { useEffect, useState } from 'react'
 import { l } from '../../i18n'
 import { load, type Now } from '../../parliament/data'
 import type { Route } from '../../router'
-import { RIKSDAG_PARTIES, partyName } from '../../parties/identity'
+import { RIKSDAG_PARTIES } from '../../parties/identity'
 import { useViewParams } from '../useViewParams'
 import { dayName, num, pct } from '../controls'
 import { useStory, useVoteAnalytics } from '../analytics/load'
+import { areaName } from '../analytics/areas'
 import { Info, Kpi } from './parts'
 import Makten from './Makten'
 import Besluten from './Besluten'
-import Skiljelinjerna from './Skiljelinjerna'
+import Skiljelinjerna, { dividingLines } from './Skiljelinjerna'
 import Partierna from './Partierna'
 import Debatterna from './Debatterna'
 import Ledamoterna from './Ledamoterna'
 import Advanced from './Advanced'
 import OmDatan from './OmDatan'
+import {
+  DataQuestion,
+  ExploreSection,
+  MethodSummary,
+  SourceCaption,
+  StoryNext,
+} from '../../ui/Story'
 import './story.css'
 
 const DEFAULTS = { parti: 'S', debatt: '', ledamot: '' }
-
-const TOC: [string, string, string][] = [
-  ['nu', 'Sweden now', 'Sverige just nu'],
-  ['makten', 'Power', 'Makten'],
-  ['besluten', 'Decisions', 'Besluten'],
-  ['skiljelinjerna', 'Dividing lines', 'Skiljelinjerna'],
-  ['partierna', 'The parties', 'Partierna'],
-  ['debatterna', 'The debates', 'Debatterna'],
-  ['ledamoterna', 'The members', 'Ledamöterna'],
-  ['fordjupad', 'Advanced', 'Fördjupad analys'],
-  ['om-datan', 'About the data', 'Om datan'],
-]
 
 export default function Story({ route }: { route: Route }) {
   const [view, setView] = useViewParams(route, DEFAULTS)
@@ -59,107 +58,53 @@ export default function Story({ route }: { route: Route }) {
     ? [...a.votes].sort((x, y) => y.date.localeCompare(x.date))[0]
     : null
 
+  const lines = a ? dividingLines(a) : null
+  // A shared link that chose a party, debate or member opens the deeper analyses.
+  const deep = ['parti', 'debatt', 'ledamot'].some((k) => route.params.has(k))
+
   return (
     <article className="story">
       <header className="story-hero">
         <p className="story-eyebrow">Political Observatory</p>
-        <h1>
-          {l('Swedish politics through data', 'Svensk politik genom data')}
-        </h1>
-        <p className="story-sub">
-          {l(
-            'Decisions, roll calls, debates and political patterns.',
-            'Beslut, voteringar, debatter och politiska mönster.',
+        <DataQuestion
+          level={1}
+          question={l(
+            'What separates the parties in practice?',
+            'Vad skiljer partierna åt i praktiken?',
           )}
-        </p>
-        <p className="story-meta">
-          {l('Sources', 'Källor')}:{' '}
-          {l(
+        >
+          {lines?.topArea ? (
+            <p className="story-answer">
+              {l(
+                `In votes, most in ${areaName(lines.topArea.committee).toLowerCase()}. Of ${num(a!.votes.length)} roll calls, ${lines.closest.a} and ${lines.closest.b} took the same position most often (${pct(lines.closest.pct, 0)}), ${lines.furthest.a} and ${lines.furthest.b} least often (${pct(lines.furthest.pct, 0)}).`,
+                `I röster, mest inom ${areaName(lines.topArea.committee).toLowerCase()}. Av ${num(a!.votes.length)} voteringar hade ${lines.closest.a} och ${lines.closest.b} oftast samma ståndpunkt (${pct(lines.closest.pct, 0)}), ${lines.furthest.a} och ${lines.furthest.b} mest sällan (${pct(lines.furthest.pct, 0)}).`,
+              )}
+            </p>
+          ) : (
+            <p className="story-answer">
+              {l(
+                'Decisions, roll calls, debates and budgets, party by party.',
+                'Beslut, voteringar, debatter och budgetar, parti för parti.',
+              )}
+            </p>
+          )}
+        </DataQuestion>
+        <SourceCaption
+          source={l(
             'Riksdagen’s open data, SCB, Valmyndigheten',
             'Riksdagens öppna data, SCB, Valmyndigheten',
           )}
-          {now && (
-            <>
-              {' '}
-              · {l('updated', 'uppdaterad')}{' '}
-              {dayName(now.generated_at.slice(0, 10))}
-            </>
-          )}
-          {a && (
-            <>
-              {' '}
-              · {l('roll calls', 'voteringar')} {a.votes[0].session}–
-              {a.votes.at(-1)!.session}
-            </>
-          )}
-          {story && (
-            <>
-              {' '}
-              · {l('debates', 'debatter')} 1993–
-              {story.leader_debates.at(-1)!.date.slice(0, 4)}
-            </>
-          )}
-        </p>
-        <dl className="story-kpis">
-          <Kpi
-            value={
-              now
-                ? num(now.election.parties.reduce((s, p) => s + p.seats, 0))
-                : '…'
-            }
-            label={l('Seats', 'Mandat')}
-          />
-          <Kpi
-            value={
-              now
-                ? num(now.election.parties.filter((p) => p.seats > 0).length)
-                : '…'
-            }
-            label={l('Parties in the Riksdag', 'Riksdagspartier')}
-          />
-          <Kpi
-            value={a ? num(a.votes.length) : '…'}
-            label={l('Roll calls analysed', 'Analyserade voteringar')}
-          />
-          <Kpi
-            value={meanCohesion != null ? pct(meanCohesion, 1) : '…'}
-            label={
-              <Info
-                term={l(
-                  'Average party cohesion',
-                  'Genomsnittlig partisammanhållning',
-                )}
-              >
-                {l(
-                  'The mean over the eight parties of: cast votes by the party’s members matching the party’s most common vote in each roll call, of all their cast votes.',
-                  'Snittet över de åtta partierna av: avgivna röster från partiets ledamöter som stämmer med partiets vanligaste röst i varje votering, av alla deras avgivna röster.',
-                )}
-              </Info>
-            }
-          />
-        </dl>
-        <nav
-          className="story-toc"
-          aria-label={l('On this page', 'På den här sidan')}
-        >
-          <ol>
-            {TOC.map(([id, en, sv], i) => (
-              <li key={id}>
-                <a
-                  href={`#politik?avsnitt=${id}`}
-                  onClick={(e) => {
-                    e.preventDefault()
-                    document
-                      .getElementById(id)
-                      ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-                  }}
-                >
-                  <span>{String(i + 1).padStart(2, '0')}</span> {l(en, sv)}
-                </a>
-              </li>
-            ))}
-          </ol>
-        </nav>
+          period={
+            a
+              ? `${l('roll calls', 'voteringar')} ${a.votes[0].session}–${a.votes.at(-1)!.session}`
+              : undefined
+          }
+          definition={
+            now
+              ? `${l('updated', 'uppdaterad')} ${dayName(now.generated_at.slice(0, 10))}`
+              : undefined
+          }
+        />
       </header>
 
       {failed && (
@@ -169,108 +114,219 @@ export default function Story({ route }: { route: Route }) {
       )}
 
       {now ? (
-        <section className="story-section" id="nu" aria-labelledby="nu-q">
-          <header className="story-section-head">
-            <p className="story-kicker">
-              <span>01</span> {l('Sweden now', 'Sverige just nu')}
-            </p>
-            <h2 id="nu-q">{now.government.government_name}</h2>
-            <p className="story-lead">
-              {l('Prime minister', 'Statsminister')}{' '}
-              {now.government.prime_minister} (
-              {now.government.government_parties.join(', ')}
-              {now.government.agreement_parties?.length
-                ? `; ${l('agreement with', 'avtal med')} ${now.government.agreement_parties.join(', ')}`
-                : ''}
-              ). {now.government.status_note}
-            </p>
-          </header>
-          <ul className="story-now">
-            <li>
-              <small>{l('Latest election', 'Senaste valet')}</small>
-              <b>{dayName(now.election.election_date)}</b>
-              {(() => {
-                const top = [...now.election.parties].sort(
-                  (x, y) => y.seats - x.seats,
-                )[0]
-                return `${l('Largest', 'Störst')}: ${partyName(top.party)}, ${top.seats} ${l('seats', 'mandat')}`
-              })()}
-            </li>
-            {latestVote && (
+        <Makten
+          now={now}
+          facts={
+            <ul className="story-now">
               <li>
-                <small>
-                  {l(
-                    'Latest roll call analysed',
-                    'Senast analyserade votering',
-                  )}
-                </small>
-                <b>{dayName(latestVote.date)}</b>
-                {latestVote.title}
+                <small>{l('Latest election', 'Senaste valet')}</small>
+                <b>{dayName(now.election.election_date)}</b>
+                {now.government.status_note}
               </li>
-            )}
-            {latestDebate && (
-              <li>
-                <small>
-                  {l(
-                    'Latest party-leader debate',
-                    'Senaste partiledardebatten',
-                  )}
-                </small>
-                <b>{dayName(latestDebate.date)}</b>
-                <button
-                  type="button"
-                  className="btn-text"
-                  onClick={() =>
-                    document
-                      .getElementById('partiledardebatt')
-                      ?.scrollIntoView({ behavior: 'smooth' })
-                  }
-                >
-                  {l('Explore it below', 'Utforska den nedan')}
-                </button>
-              </li>
-            )}
-          </ul>
-        </section>
+              {latestVote && (
+                <li>
+                  <small>
+                    {l(
+                      'Latest roll call analysed',
+                      'Senast analyserade votering',
+                    )}
+                  </small>
+                  <b>{dayName(latestVote.date)}</b>
+                  {latestVote.title}
+                </li>
+              )}
+              {latestDebate && (
+                <li>
+                  <small>
+                    {l(
+                      'Latest party-leader debate',
+                      'Senaste partiledardebatten',
+                    )}
+                  </small>
+                  <b>{dayName(latestDebate.date)}</b>
+                  <a href="#politik-partiledardebatter">
+                    {l('The party-leader debates', 'Partiledardebatterna')}
+                  </a>
+                </li>
+              )}
+            </ul>
+          }
+        />
       ) : (
         !failed && <Skeleton />
       )}
+      {a ? <Skiljelinjerna a={a} /> : !failed && <Skeleton />}
 
-      {now && <Makten now={now} />}
-      {a ? (
-        <>
-          <Besluten a={a} />
-          <Skiljelinjerna a={a} />
-          {now && (
+      <section
+        className="story-section"
+        id="utforska"
+        aria-labelledby="utforska-q"
+      >
+        <DataQuestion
+          id="utforska-q"
+          number={3}
+          eyebrow={l('Explore', 'Utforska')}
+          question={l(
+            'What should you explore next?',
+            'Vad vill du utforska härnäst?',
+          )}
+        />
+        <StoryNext
+          label={l('The politics pages', 'Politiksidorna')}
+          links={[
+            {
+              href: '#politik-roster',
+              title: l('How the parties vote', 'Hur partierna röstar'),
+              line: l(
+                'Who votes with whom, session by session since 1993.',
+                'Vem som röstar med vem, riksmöte för riksmöte sedan 1993.',
+              ),
+            },
+            {
+              href: '#politik-tal',
+              title: l('What they talk about', 'Vad de pratar om'),
+              line: l(
+                'Each party’s issues in its speeches, over time.',
+                'Varje partis frågor i anförandena, över tid.',
+              ),
+            },
+            {
+              href: '#politik-budget',
+              title: l(
+                'What they want to spend on',
+                'Vad de vill lägga pengar på',
+              ),
+              line: l(
+                'Each party’s budget motion against the government’s budget.',
+                'Varje partis budgetmotion mot regeringens budget.',
+              ),
+            },
+            {
+              href: '#politik-partier',
+              title: l('The parties', 'Partierna'),
+              line: l(
+                'One page per party: elections, members, votes and debates.',
+                'En sida per parti: val, ledamöter, röster och debatter.',
+              ),
+            },
+            {
+              href: '#politik-valjarna',
+              title: l('What voters think', 'Vad väljarna tycker'),
+              line: l(
+                'Support between elections in SCB’s party preference survey.',
+                'Stödet mellan valen i SCB:s partisympatiundersökning.',
+              ),
+            },
+          ]}
+        />
+      </section>
+
+      <ExploreSection
+        id="fler-analyser"
+        title={l('More analyses', 'Fler analyser')}
+        summary={l(
+          'Decisions and party cohesion, one party’s fingerprint, the party-leader debates, the members and the voting map.',
+          'Beslut och partisammanhållning, ett partis fingeravtryck, partiledardebatterna, ledamöterna och röstkartan.',
+        )}
+        defaultOpen={deep}
+      >
+        {a && now && (
+          <>
+            <Besluten a={a} />
             <Partierna
               a={a}
               now={now}
               party={party}
               onParty={(parti) => setView({ parti })}
             />
-          )}
-        </>
-      ) : (
-        !failed && <Skeleton />
-      )}
-      {story ? (
-        <>
-          <Debatterna
-            story={story}
-            debate={view.debatt}
-            onDebate={(debatt) => setView({ debatt })}
-          />
-          <Ledamoterna
-            story={story}
-            member={view.ledamot}
-            onMember={(ledamot) => setView({ ledamot })}
-          />
-        </>
-      ) : (
-        !failed && <Skeleton />
-      )}
-      {a && <Advanced a={a} />}
-      {story && quality && <OmDatan story={story} quality={quality} />}
+          </>
+        )}
+        {story && (
+          <>
+            <Debatterna
+              story={story}
+              debate={view.debatt}
+              onDebate={(debatt) => setView({ debatt })}
+            />
+            <Ledamoterna
+              story={story}
+              member={view.ledamot}
+              onMember={(ledamot) => setView({ ledamot })}
+            />
+          </>
+        )}
+        {a && <Advanced a={a} />}
+      </ExploreSection>
+
+      <ExploreSection
+        id="om-datan-fold"
+        title={l(
+          'Sources, method and data quality',
+          'Källor, metod och datakvalitet',
+        )}
+        summary={l(
+          'The pipeline, what the cleaning left out, every definition and the quality profile.',
+          'Pipelinen, vad rensningen lämnade utanför, varje definition och kvalitetsprofilen.',
+        )}
+      >
+        <div className="story-diagnostic">
+          <dl>
+            {now && (
+              <Kpi
+                value={num(
+                  now.election.parties.reduce((t, p) => t + p.seats, 0),
+                )}
+                label={l('Seats', 'Mandat')}
+              />
+            )}
+            {a && (
+              <Kpi
+                value={num(a.votes.length)}
+                label={l('Roll calls analysed', 'Analyserade voteringar')}
+              />
+            )}
+            {meanCohesion != null && (
+              <Kpi
+                value={pct(meanCohesion, 1)}
+                label={
+                  <Info
+                    term={l(
+                      'Average party cohesion',
+                      'Genomsnittlig partisammanhållning',
+                    )}
+                  >
+                    {l(
+                      'The mean over the eight parties of: cast votes by the party’s members matching the party’s most common vote in each roll call, of all their cast votes.',
+                      'Snittet över de åtta partierna av: avgivna röster från partiets ledamöter som stämmer med partiets vanligaste röst i varje votering, av alla deras avgivna röster.',
+                    )}
+                  </Info>
+                }
+              />
+            )}
+          </dl>
+        </div>
+        {story && quality && <OmDatan story={story} quality={quality} />}
+      </ExploreSection>
+
+      <MethodSummary
+        lineage={[
+          l('Riksdagen, SCB, Valmyndigheten', 'Riksdagen, SCB, Valmyndigheten'),
+          l('Python ingestion', 'inläsning i Python'),
+          'dbt + DuckDB',
+          'Parquet',
+          'React',
+        ]}
+        quality={l(
+          'Every figure keeps its source and definition: a party’s position is the vote most of its members cast, as Riksdagen reports it.',
+          'Varje siffra behåller sin källa och definition: ett partis ståndpunkt är den röst flest av dess ledamöter lade, som Riksdagen redovisar den.',
+        )}
+        more={[
+          {
+            href: '#politik-kallor',
+            label: l('Sources and method', 'Källor och metod'),
+          },
+        ]}
+      />
     </article>
   )
 }

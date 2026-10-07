@@ -8,6 +8,7 @@
  */
 import { l } from '../i18n'
 import type { ResearchHistory, StepMetrics, Validity } from './atlasTypes'
+import { FindingHero, Interpretation } from '../ui/Story'
 
 const pct = (v: number | null | undefined) =>
   v == null
@@ -164,15 +165,47 @@ export default function ResearchStory({
         {l('How the investigation went', 'Hur undersökningen gick')}
       </h2>
       <ol className="research-steps">
-        {steps.map((s) => (
-          <li key={s.tag[0]}>
-            <p className="research-tag">{l(...s.tag)}</p>
-            <h3>{l(...s.title)}</h3>
-            <p>{l(...s.body)}</p>
-            <Metrics m={s.metrics} />
-          </li>
-        ))}
+        {steps.map((s) =>
+          s.tag[0] === 'Problem' && v1?.metrics ? (
+            // The book effect is the investigation's strongest moment: a major finding.
+            <li key={s.tag[0]} className="research-major">
+              <p className="research-tag">{l(...s.tag)}</p>
+              <h3>{l(...s.title)}</h3>
+              <FindingHero
+                value={pct(v1.metrics.mean_largest_book_share)}
+                statement={l(
+                  'of a baseline cluster came from one book, on average.',
+                  'av ett kluster i utgångsläget kom i snitt från en och samma bok.',
+                )}
+                comparison={l(
+                  'The clustering was strong, but it was not measuring the intended construct: it grouped style and translation, not meaning.',
+                  'Klustringen var stark, men den mätte inte det som var avsett: den grupperade stil och översättning, inte betydelse.',
+                )}
+              />
+            </li>
+          ) : (
+            <li key={s.tag[0]}>
+              <p className="research-tag">{l(...s.tag)}</p>
+              <h3>{l(...s.title)}</h3>
+              <p>{l(...s.body)}</p>
+              <Metrics m={s.metrics} />
+            </li>
+          ),
+        )}
       </ol>
+      <Interpretation
+        notMeaning={l(
+          'A cluster that spans several books does not prove a universal symbolic meaning; it is a recurring context worth reading, and only a person’s review may name it.',
+          'Ett kluster som spänner över flera böcker bevisar inte en universell symbolisk betydelse; det är ett återkommande sammanhang värt att läsa, och bara en människas granskning får namnge det.',
+        )}
+      >
+        <p>
+          {l(
+            'The negative findings are part of the result. Each version removed one thing the model had been measuring instead of symbols (the book, then the paratext) and tested whether what was left held up in a larger corpus. What survives is smaller than the first map suggested, and more plausible.',
+            'De negativa fynden är en del av resultatet. Varje version tog bort en sak som modellen mätte i stället för symboler (boken, sedan paratexten) och prövade om det som återstod höll i en större korpus. Det som överlever är mindre än den första kartan antydde, och mer trovärdigt.',
+          )}
+        </p>
+      </Interpretation>
       {history.validity && <ValidityBlock v={history.validity} />}
     </section>
   )

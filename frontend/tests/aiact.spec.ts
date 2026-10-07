@@ -9,16 +9,29 @@ test('the overview answers what applies now and next, with the source one click 
   await expect(
     page.getByRole('heading', { level: 1, name: 'EU AI Act Observatory' }),
   ).toBeVisible()
-  await expect(page.locator('.aa-cards .aa-card')).toHaveCount(4)
-  await expect(page.locator('.aa-cards')).toContainText('2 December 2026')
+  // Read first: what applies now as the major finding, then what is next and the latest change.
+  await expect(
+    page.getByRole('heading', { level: 2, name: 'What applies now?' }),
+  ).toBeVisible()
+  await expect(page.locator('.aa-now .finding-hero')).toContainText(
+    '2 August 2026',
+  )
+  await expect(page.locator('.aa-now-next')).toContainText('2 December 2026')
+  // Then who you are: the startup navigator first, then each operator role.
+  await expect(page.locator('.aa-who .story-next a').first()).toHaveAttribute(
+    'href',
+    '#ai-act-startups',
+  )
   await expect(page.locator('.aa-snapshot')).toContainText(
     'AI Act — October 2026',
   )
+  // The background on the Act is one click deeper.
+  await page.getByRole('button', { name: 'About the Act' }).click()
   await expect(page.locator('.aa-note')).toContainText(
     'Regulation (EU) 2026/1744',
   )
   await expect(page.locator('.project-nav')).toContainText('Startup navigator')
-  const sources = page.locator('.aa-latest a.aa-source')
+  const sources = page.locator('.aa-now a.aa-source')
   for (const href of await sources.evaluateAll((a) =>
     a.map((x) => x.getAttribute('href')),
   ))

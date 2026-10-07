@@ -39,10 +39,11 @@ export type ProjectEntry = {
   status: ProjectStatus
   featured: boolean
   /**
-   * On the start page: one line a recruiter understands without the method, and the few tools
-   * that prove it. Only projects with this field appear there, in registry order.
+   * On the start page: the project's one question, its finding in a sentence a recruiter
+   * understands without the method, and the few tools that prove it (secondary). Only
+   * projects with this field appear there, in registry order.
    */
-  home?: { line: Bilingual; tech: string[] }
+  home?: { question: Bilingual; finding: Bilingual; tech: string[] }
   /** Exploratory research: listed under Research & experiments, apart from other work. */
   research?: boolean
   code?: string | string[]
@@ -96,9 +97,13 @@ export const PROJECTS: ProjectEntry[] = [
     status: 'live',
     featured: true,
     home: {
-      line: t(
-        'Byggde en pipeline och en analysprodukt av riksdagens öppna data: tal, voteringar, budget och val.',
-        'Built a pipeline and analytical product from Sweden’s open parliamentary data: speeches, votes, budgets and elections.',
+      question: t(
+        'Vad skiljer partierna åt i praktiken?',
+        'What separates the parties in practice?',
+      ),
+      finding: t(
+        'Voteringar sedan 1993/94, budgetmotioner, tal och val visar var partierna faktiskt skiljer sig, med källan ett klick bort.',
+        'Roll calls since 1993/94, budget motions, speeches and elections show where the parties actually differ, with the source one click away.',
       ),
       tech: ['Python', 'dbt', 'DuckDB', 'React'],
     },
@@ -143,9 +148,13 @@ export const PROJECTS: ProjectEntry[] = [
     status: 'live',
     featured: true,
     home: {
-      line: t(
-        'Gjorde om EU:s AI-förordning från officiella källor till en sökbar karta över skyldigheter, roller och datum.',
-        'Turned the EU AI Act, from official sources, into a searchable map of obligations, roles and dates.',
+      question: t(
+        'Vad gäller nu, för vem och när?',
+        'What applies now, to whom, and when?',
+      ),
+      finding: t(
+        'Varje skyldighet går att spåra till artikeln som anger den, och ett test kontrollerar att varje citat finns ordagrant i lagen.',
+        'Every obligation traces to the article that sets it, and a test checks that every quote appears verbatim in the Act.',
       ),
       tech: ['Python', 'dbt', 'DuckDB', 'NLP'],
     },
@@ -153,25 +162,28 @@ export const PROJECTS: ProjectEntry[] = [
     pages: ['aiact'],
     nav: [
       { href: '#ai-act', label: t('Översikt', 'Overview') },
-      { href: '#ai-act-today', label: t('I dag', 'Today') },
-      { href: '#ai-act-timeline', label: t('Tidslinje', 'Timeline') },
+      {
+        href: '#ai-act-today',
+        label: t('Vad gäller i dag?', 'What applies today?'),
+      },
       {
         href: '#ai-act-roles',
         label: t('Vem berörs?', 'Who does it apply to?'),
       },
-      { href: '#ai-act-risk', label: t('Riskklasser', 'Risk classes') },
-      { href: '#ai-act-obligations', label: t('Skyldigheter', 'Obligations') },
       {
         href: '#ai-act-startups',
         label: t('Startup-navigator', 'Startup navigator'),
       },
+      { href: '#ai-act-timeline', label: t('Tidslinje', 'Timeline') },
+      { href: '#ai-act-obligations', label: t('Skyldigheter', 'Obligations') },
+      { href: '#ai-act-risk', label: t('Riskklasser', 'Risk classes') },
+      { href: '#ai-act-changes', label: t('Ändringar', 'Changes') },
       { href: '#ai-act-politics', label: t('I riksdagen', 'In the Riksdag') },
       { href: '#ai-act-jobs', label: t('I jobbannonserna', 'In job ads') },
       {
         href: '#ai-act-signals',
         label: t('Tidslinje: lag, politik, jobb', 'Law, politics, jobs'),
       },
-      { href: '#ai-act-changes', label: t('Ändringar', 'Changes') },
       { href: '#ai-act-sources', label: t('Källor', 'Sources') },
     ],
   },
@@ -205,9 +217,13 @@ export const PROJECTS: ProjectEntry[] = [
     status: 'live',
     featured: true,
     home: {
-      line: t(
-        'Räknade och analyserade nästan fem miljoner svenska jobbannonser för att visa vad arbetsgivare efterfrågar.',
-        'Counted and analysed nearly five million Swedish job ads to show what employers ask for.',
+      question: t(
+        'Hur förändras efterfrågan på arbetskraft?',
+        'How is demand for labour changing?',
+      ),
+      finding: t(
+        'Nästan fem miljoner annonser sedan 2020, jämförda med samma månader året innan, och en klustring som visar grupper bortom yrkestitlarna.',
+        'Nearly five million ads since 2020, compared with the same months a year earlier, and a clustering that finds groups beyond job titles.',
       ),
       tech: ['Python', 'dbt', 'DuckDB', 'GitHub Actions'],
     },
@@ -249,9 +265,13 @@ export const PROJECTS: ProjectEntry[] = [
     status: 'experimental',
     featured: true,
     home: {
-      line: t(
-        'Kartlade tusentals textavsnitt ur myter och folksagor för att hitta återkommande mönster utan fördefinierade kategorier.',
-        'Mapped thousands of passages from myths and folk tales to find recurring patterns without predefined categories.',
+      question: t(
+        'Återkommer symboliska sammanhang i olika berättelser och traditioner?',
+        'Do symbolic contexts recur across stories and traditions?',
+      ),
+      finding: t(
+        'Den första modellen grupperade böckerna starkare än den symboliska meningen; fyra versioner senare finns en mindre men verklig struktur över böckerna.',
+        'The first model clustered books more strongly than symbolic meaning; four versions later a smaller but real cross-book structure remains.',
       ),
       tech: ['Python', 'NLP', 'UMAP', 'HDBSCAN'],
     },
@@ -291,9 +311,13 @@ export const PROJECTS: ProjectEntry[] = [
     status: 'live',
     featured: true,
     home: {
-      line: t(
-        'Samlade fem offentliga källor i en gemensam datamodell för att följa jobb, hälsa och tillit i Sveriges län.',
-        'Combined five public sources in one data model to follow jobs, health and trust across Sweden’s counties.',
+      question: t(
+        'Hur går det för Sverige, län för län?',
+        'How is Sweden doing, county by county?',
+      ),
+      finding: t(
+        'Arbetslöshet, sjukskrivning och psykisk påfrestning från fem öppna källor på samma axel; mönstren är beskrivande, inte orsaker.',
+        'Unemployment, sick leave and mental strain from five public sources on one axis; the patterns are descriptive, not causes.',
       ),
       tech: ['dbt', 'DuckDB', 'Star schema', 'Parquet'],
     },

@@ -1,12 +1,21 @@
 import { test, expect } from './test'
 
-test('welfare page shows headlines, the county comparison and a working explorer', async ({
+test('welfare leads with a question, one county comparison, then headlines and a working explorer', async ({
   page,
 }) => {
   await page.goto('/#sweden')
-  await expect(
-    page.getByRole('heading', { name: 'How is Sweden doing?' }),
-  ).toBeVisible()
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+    'Which parts of Sweden do well or poorly, measure by measure?',
+  )
+  // One regional comparison first, with what it means and does not mean; sources come later.
+  await expect(page.locator('#lanen .multiple')).toHaveCount(21)
+  await expect(page.locator('.interpretation-not')).toContainText(
+    'margin of about',
+  )
+  await expect(page.locator('.welfare-tile')).toHaveCount(0)
+  await page
+    .getByRole('button', { name: 'Explore: the latest national values' })
+    .click()
   await expect(page.locator('.welfare-tile').first()).toBeVisible()
   await expect(page.locator('.welfare-tile strong').first()).toContainText('%')
 

@@ -40,8 +40,8 @@ const VIEWS: Record<
   '#ai-act': {
     title: ['EU AI Act Observatory', 'EU AI Act Observatory'],
     question: [
-      'What does the EU AI Act actually mean for organisations building or deploying AI?',
-      'Vad innebär EU AI Act faktiskt för organisationer som bygger eller använder AI?',
+      'What applies now, to whom, and when?',
+      'Vad gäller nu, för vem och när?',
     ],
   },
   '#ai-act-today': {

@@ -1455,3 +1455,37 @@
     margin-left: 0;
   }
 }
+
+/* The overview reads first: what applies now, what is next, who you are. */
+.aiact .aa-now,
+.aiact .aa-who,
+.aiact .aa-month {
+  margin: var(--sp-5) 0;
+}
+.aa-now-next {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+  gap: var(--sp-4);
+  margin: 0;
+}
+.aa-now-next dt {
+  margin-bottom: var(--sp-1);
+  color: var(--muted);
+  font-size: var(--caption);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.aa-now-next dd {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  margin: 0;
+}
+.aa-now-next dd span,
+.aa-now-next dd small {
+  color: var(--muted);
+}
+.aa-now-more {
+  margin: var(--sp-3) 0 0;
+  font-size: var(--small);
+}

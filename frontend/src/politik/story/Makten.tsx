@@ -3,7 +3,7 @@
  * seats since the election before. The governing side's seats are drawn against the 175 needed
  * for a majority, as a fact of the seat count, not a judgement.
  */
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { l } from '../../i18n'
 import type { Now } from '../../parliament/data'
 import {
@@ -15,7 +15,14 @@ import {
 import { num, pct, signed } from '../controls'
 import { Bars, Insight, Section } from './parts'
 
-export default function Makten({ now }: { now: Now }) {
+export default function Makten({
+  now,
+  facts,
+}: {
+  now: Now
+  /** The latest election, roll call and debate, under the seats. */
+  facts?: ReactNode
+}) {
   const [hover, setHover] = useState<string | null>(null)
   const parties = now.election.parties
     .filter((p) => p.seats > 0)
@@ -46,16 +53,27 @@ export default function Makten({ now }: { now: Now }) {
   return (
     <Section
       id="makten"
-      n={2}
-      kicker={l('Power', 'Makten')}
+      n={1}
+      kicker={l('Latest', 'Läget')}
       question={l(
-        'How is the Riksdag made up?',
-        'Hur är riksdagen sammansatt?',
+        'What is the political situation right now?',
+        'Hur ser det politiska läget ut just nu?',
       )}
-      lead={l(
-        `Seats per party after the election of ${now.election.year}. A majority is ${majority} of ${total} seats.`,
-        `Mandat per parti efter valet ${now.election.year}. Majoritet är ${majority} av ${total} mandat.`,
-      )}
+      lead={
+        <>
+          {now.government.government_name}:{' '}
+          {l('prime minister', 'statsminister')} {now.government.prime_minister}{' '}
+          ({now.government.government_parties.join(', ')}
+          {now.government.agreement_parties?.length
+            ? `; ${l('agreement with', 'avtal med')} ${now.government.agreement_parties.join(', ')}`
+            : ''}
+          ).{' '}
+          {l(
+            `Seats after the election of ${now.election.year}; a majority is ${majority} of ${total}.`,
+            `Mandat efter valet ${now.election.year}; majoritet är ${majority} av ${total}.`,
+          )}
+        </>
+      }
       deeper={[
         {
           href: '#politik-partier',
@@ -137,6 +155,7 @@ export default function Makten({ now }: { now: Now }) {
               `Regeringssidan har ${sideSeats} mandat, ${majority - sideSeats} färre än majoritet.`,
             )}
       </Insight>
+      {facts}
 
       <div className="story-two">
         <div>

@@ -9,10 +9,11 @@ test('politics now: seats, majority, government, decisions and history', async (
   await expect(
     page.getByRole('heading', {
       level: 1,
-      name: /Swedish politics through data/,
+      name: /What separates the parties in practice/,
     }),
   ).toBeVisible()
-  await expect(page.locator('.story-hero .story-kpi')).toHaveCount(4)
+  // The seat count is diagnostics now, under Sources and method, not a hero key figure.
+  await expect(page.locator('.story-hero .story-kpi')).toHaveCount(0)
   await expect(page.locator('.story-seatbar-track > span')).toHaveCount(8)
 
   // The seat calculator adds up any parties against the 175-seat line.
