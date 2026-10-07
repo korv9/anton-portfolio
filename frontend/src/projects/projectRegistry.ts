@@ -422,8 +422,8 @@ export const PROJECTS: ProjectEntry[] = [
       'A balanced sample of four corpora with full provenance, embedded with one multilingual model and read against 28 concepts with anchor sentences in Swedish and English; every relation has a stated type.',
     ),
     result: t(
-      'Korpusarna skiljer sig mer än deras ämnen (94 % av grannarna i samma korpus), så de jämförs bara genom begreppen: död och natur i myterna, omsorg och ansvar i riksdagen, säkerhet och transparens i lagen.',
-      'The corpora differ more than their subjects do (94 % of neighbours in the same corpus), so they are compared only through the concepts: death and nature in myth, care and responsibility in the Riksdag, safety and transparency in the law.',
+      'Korpusarna skiljer sig mer än deras ämnen (93 % av grannarna i samma korpus), så de jämförs bara genom begreppen: död och natur i myterna, omsorg och ansvar i riksdagen, säkerhet och transparens i lagen.',
+      'The corpora differ more than their subjects do (93 % of neighbours in the same corpus), so they are compared only through the concepts: death and nature in myth, care and responsibility in the Riksdag, safety and transparency in the law.',
     ),
     home: {
       question: t(

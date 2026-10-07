@@ -57,13 +57,13 @@ Every link is labelled with its relation type and status:
 
 No passage-to-concept mapping has been reviewed yet, and no reviewed Symbolic Atlas cluster is
 tied to a concept (`summary.reviewed_cluster_links` is 0). The stories section says so and shows
-the model's closest passages in the ten pilot books.
+the model's closest passages among the 101 books of the Symbolic Atlas corpus (v4).
 
 ## Limitations
 
 - The concepts, anchors, tensions and links are editorial. Different anchors would give
   different results.
-- 94 % of nearest neighbours come from the same corpus, so passages are only compared within a
+- 93 % of nearest neighbours come from the same corpus, so passages are only compared within a
   domain and through the concepts, never on one shared map.
-- The myth corpus in the concept layer is the ten-book pilot, not the 101-book v4 corpus of
-  the Symbolic Atlas.
+- The myth corpus samples about four passages from each of the 101 v4 books, so one book's
+  passages rarely carry a concept on their own; it is still a sample, not every passage.

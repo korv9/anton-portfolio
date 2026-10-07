@@ -48,7 +48,7 @@ the gap with a near match.
 
 - The concept list, anchor sentences, tensions and links are editorial. Different anchors would
   give different profiles.
-- The four corpora differ more from each other than their subjects do: 94 % of nearest
+- The four corpora differ more from each other than their subjects do: 93 % of nearest
   neighbours are from the same corpus. Passages are therefore never placed on one map across
   corpora.
 - "Closest passages" are what the model ranks highest. No reader has judged them to be about

@@ -1,5 +1,5 @@
 corpus_id,label_en,label_sv,stage,language,description_en,domain
-myth,Myth and folklore,Myter och folksagor,stories,en,Symbolic Atlas: contexts of symbol words in ten public-domain books,symbolic
+myth,Myth and folklore,Myter och folksagor,stories,en,"Symbolic Atlas: contexts of symbol words in the 101 public-domain books of corpus v4, duplicates removed",symbolic
 philosophy,Philosophy,Filosofi,ideas,en,Philosophy Atlas: passages of thirteen public-domain works,philosophy
 politics,Riksdag speeches,Riksdagsanföranden,contestation,sv,"Every Riksdag speech since 2016/17, paragraphs sampled per year",ai_act
 law,EU AI Act,EU:s AI-förordning,codification,en,"The current consolidated text of Regulation (EU) 2024/1689, by paragraph",ai_act

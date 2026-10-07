@@ -216,8 +216,8 @@ export default function Journey({ route, data }: { route: Route; data: Data }) {
               {c === 'myth' && (
                 <p className="cj-note">
                   {l(
-                    `No reviewed Symbolic Atlas cluster is tied to a concept yet (${summary.reviewed_cluster_links}), so these are the model’s closest passages in the ten pilot books, not a reviewed symbolic meaning.`,
-                    `Inget granskat kluster i Symbolic Atlas är kopplat till ett begrepp ännu (${summary.reviewed_cluster_links}), så detta är modellens närmaste passager i de tio pilotböckerna, inte en granskad symbolisk betydelse.`,
+                    `No reviewed Symbolic Atlas cluster is tied to a concept yet (${summary.reviewed_cluster_links}), so these are the model’s closest passages among the ${corpusOf('myth')?.documents ?? ''} books of the Symbolic Atlas corpus, not a reviewed symbolic meaning.`,
+                    `Inget granskat kluster i Symbolic Atlas är kopplat till ett begrepp ännu (${summary.reviewed_cluster_links}), så detta är modellens närmaste passager bland de ${corpusOf('myth')?.documents ?? ''} böckerna i Symbolic Atlas korpus, inte en granskad symbolisk betydelse.`,
                   )}
                 </p>
               )}
