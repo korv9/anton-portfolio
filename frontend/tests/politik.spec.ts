@@ -46,6 +46,11 @@ test('the party bar follows the reader from the story to the other pages', async
   await bar.getByRole('button', { name: 'Moderates' }).click()
   await expect(page).toHaveURL(/partier=S%2CV%2CM|partier=S,V,M/)
   await page
+    .locator('.project-subnav')
+    .getByRole('link', { name: 'Parties' })
+    .click()
+  await expect(page).toHaveURL(/#politik-partier\?partier=/)
+  await page
     .getByRole('navigation', { name: 'Politics' })
     .getByRole('link', { name: /What voters think/ })
     .click()

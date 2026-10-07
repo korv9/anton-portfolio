@@ -1229,7 +1229,11 @@
   max-width: var(--layout-wide);
   padding-inline: var(--gutter);
 }
-.politik-landing .politik-main {
+.politik.politik-landing .politik-main {
+  padding-inline: 0;
+}
+/* Under the first screen, the bar lines up with the text instead of the page edge. */
+.politik-landing .politik-slicer {
   padding-inline: 0;
 }
 .politik-landing :is(.story, .jobb-story) {

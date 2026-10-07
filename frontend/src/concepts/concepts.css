@@ -364,9 +364,6 @@
 }
 
 /* ---------- Concept Journey (Journey.tsx) ---------- */
-.cj-hero .data-question {
-  max-width: 52rem;
-}
 .cj-caveat {
   color: var(--ink);
   font-weight: var(--weight-ui);

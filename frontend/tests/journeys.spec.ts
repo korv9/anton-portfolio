@@ -48,10 +48,10 @@ test('a visitor follows an idea across stories, philosophy, politics and law', a
   await page.goto('/#concept-constellation')
   await page.locator('.cj-start a', { hasText: 'Control' }).click()
   await expect(page).toHaveURL(/concept-journey\?begrepp=control/)
-  await expect(page.getByRole('heading', { level: 1 })).toContainText(
-    'How do the same ideas appear',
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+    'Concept Constellation',
   )
-  await expect(page.locator('.cj-hero')).toContainText(
+  await expect(page.locator('.project-hero')).toContainText(
     'semantic similarity, not historical influence',
   )
   // Four domains, each with passages that open their source.

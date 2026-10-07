@@ -82,7 +82,7 @@ export default function JobsProduct({ route }: { route: Route }) {
       </nav>
     </Side>
   )
-  // The overview opens on its own first screen: no sidebar and no field bar.
+  // The overview opens on its own first screen: no sidebar, and the field bar under it.
   const landing = theme?.key === 'lage'
   return (
     <div
@@ -113,7 +113,12 @@ export default function JobsProduct({ route }: { route: Route }) {
             ) : !data ? (
               !error && loading
             ) : theme.key === 'lage' ? (
-              <Dashboard route={route} data={data} fields={selected} />
+              <Dashboard
+                route={route}
+                data={data}
+                fields={selected}
+                slicer={<FieldBar route={route} data={data} />}
+              />
             ) : (
               <Themes
                 theme={theme.key}

@@ -84,16 +84,6 @@ h3 {
 main {
   overflow: hidden;
 }
-.intro {
-  min-height: min(760px, calc(100vh - 72px));
-  max-width: 1440px;
-  margin: auto;
-  padding: clamp(3.5rem, 7vw, 6.5rem) clamp(1rem, 6vw, 6rem);
-  display: grid;
-  grid-template-columns: minmax(0, 1.05fr) minmax(360px, 0.95fr);
-  align-items: center;
-  gap: 8vw;
-}
 .eyebrow {
   margin: 0 0 1rem;
   text-transform: uppercase;
@@ -101,11 +91,6 @@ main {
   font-size: 0.75rem;
   font-weight: 800;
   color: var(--teal);
-}
-.intro h1 {
-  font-size: clamp(2.8rem, 5.4vw, 5.8rem);
-  line-height: 0.98;
-  max-width: 900px;
 }
 .reports {
   background: var(--paper);
@@ -705,11 +690,6 @@ summary:focus-visible {
     gap: 0.7rem;
     font-size: 0.82rem;
   }
-  .intro {
-    grid-template-columns: 1fr;
-    min-height: auto;
-    padding-top: 6rem;
-  }
   .umap-layout,
   .project-log,
   .about {
@@ -757,13 +737,6 @@ summary:focus-visible {
   }
   .nav a {
     padding: 0.7rem;
-  }
-  .intro {
-    min-height: calc(100vh - 62px);
-    padding-top: 4rem;
-  }
-  .intro h1 {
-    font-size: clamp(2.8rem, 14vw, 4.5rem);
   }
   .report {
     padding-top: 5rem;

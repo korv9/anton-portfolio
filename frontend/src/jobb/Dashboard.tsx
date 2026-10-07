@@ -6,7 +6,7 @@
  * chosen in the field bar; the latest year is partial, so every change compares the same months
  * of the year before.
  */
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, type ReactNode } from 'react'
 import { TraceResult } from '../ui/Trace'
 import { l } from '../i18n'
 import type { Route } from '../router'
@@ -50,10 +50,13 @@ export default function Dashboard({
   route,
   data,
   fields,
+  slicer,
 }: {
   route: Route
   data: Market
   fields: string[]
+  /** The field bar, placed under the first screen rather than above it. */
+  slicer?: ReactNode
 }) {
   const [view, setView] = useViewParams(route, SLICERS)
   const latest = data.latest_year
@@ -183,11 +186,23 @@ export default function Dashboard({
         findingLabel={l('Latest', 'Senast')}
         nav={[
           { href: '#jobb', label: l('Overview', 'Översikt'), current: true },
-          { href: '#jobb-trender', label: l('Trends', 'Trender') },
-          { href: '#jobb-yrken', label: l('Occupations', 'Yrken') },
-          { href: '#jobb-lan', label: l('Regions', 'Län') },
-          { href: '#jobb-utforska', label: l('Explore', 'Utforska') },
-          { href: '#jobb-kallor', label: l('Sources', 'Källor') },
+          {
+            href: withFields('#jobb-trender', fields),
+            label: l('Trends', 'Trender'),
+          },
+          {
+            href: withFields('#jobb-yrken', fields),
+            label: l('Occupations', 'Yrken'),
+          },
+          { href: withFields('#jobb-lan', fields), label: l('Regions', 'Län') },
+          {
+            href: withFields('#jobb-utforska', fields),
+            label: l('Explore', 'Utforska'),
+          },
+          {
+            href: withFields('#jobb-kallor', fields),
+            label: l('Sources', 'Källor'),
+          },
         ]}
       >
         <p>
@@ -203,6 +218,7 @@ export default function Dashboard({
           ),
         )}
       </ProjectHero>
+      {slicer}
 
       <ChartSection
         level={2}
@@ -250,8 +266,8 @@ export default function Dashboard({
       >
         <p>
           {l(
-            'The comparison always uses the same months of the year before, because the latest year is not complete and job ads follow the seasons. Under Explore, occupation fields can be chosen to see whether the change is broad or carried by a few fields.',
-            'Jämförelsen görs alltid mot samma månader året innan, eftersom det senaste året inte är komplett och annonserna följer årstiderna. Under Utforska kan du välja yrkesområden och se om förändringen är bred eller bärs av några få områden.',
+            'The comparison always uses the same months of the year before, because the latest year is not complete and job ads follow the seasons. Choose fields in the bar above to see whether the change is broad or carried by a few fields.',
+            'Jämförelsen görs alltid mot samma månader året innan, eftersom det senaste året inte är komplett och annonserna följer årstiderna. Välj områden i raden ovanför för att se om förändringen är bred eller bärs av några få områden.',
           )}
         </p>
       </Interpretation>

@@ -144,6 +144,10 @@ export default function WelfarePage({ view }: { view: string }) {
       {view === '#sweden' ? (
         <ProjectHero
           project="welfare"
+          question={l(
+            'Which parts of Sweden do well or poorly, measure by measure?',
+            'Var i Sverige går det bra och dåligt, mått för mått?',
+          )}
           nav={[
             {
               href: '#sweden-counties',

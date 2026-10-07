@@ -57,7 +57,11 @@ function Identity() {
         <a href="#erfarenhet">{l('Experience', 'Erfarenhet')}</a>
         <a href="#om-mig">{l('About', 'Om mig')}</a>
         {profile.cv && (
-          <a href={profile.cv} download>
+          <a
+            href={profile.cv}
+            download
+            aria-label={l('Download CV', 'Ladda ner CV')}
+          >
             CV
           </a>
         )}

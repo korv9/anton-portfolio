@@ -6,12 +6,12 @@ test.use({ language: null })
 test('Swedish is the default language', async ({ page }) => {
   await page.goto('/#politik')
   await expect(page.locator('html')).toHaveAttribute('lang', 'sv')
-  await expect(
-    page.getByRole('heading', {
-      level: 1,
-      name: /Vad skiljer partierna åt i praktiken/,
-    }),
-  ).toBeVisible()
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+    'Svensk politik i siffror',
+  )
+  await expect(page.locator('.project-hero-question')).toContainText(
+    'Vad skiljer partierna åt i praktiken',
+  )
 })
 
 test('language choice persists across project pages and keeps data controls stable', async ({
@@ -20,7 +20,7 @@ test('language choice persists across project pages and keeps data controls stab
   await page.goto('/#start')
   await page.getByRole('button', { name: 'SV', exact: true }).click()
   await expect(page.locator('html')).toHaveAttribute('lang', 'sv')
-  await expect(page.locator('.home-hero-lede')).toContainText(
+  await expect(page.locator('.home-lede')).toContainText(
     'Jag bygger datapipelines',
   )
   await expect(

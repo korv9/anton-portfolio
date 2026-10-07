@@ -17,7 +17,12 @@ import { l } from '../i18n'
 import { PROJECTS } from '../projects/projectRegistry'
 import './project.css'
 
-export type SubnavItem = { href: string; label: string; current?: boolean }
+export type SubnavItem = {
+  href: string
+  label: string
+  /** true for the page the reader is on, 'location' for a section of it. */
+  current?: boolean | 'location'
+}
 
 export function ProjectSubnav({
   items,
@@ -33,7 +38,9 @@ export function ProjectSubnav({
           <li key={item.href}>
             <a
               href={item.href}
-              aria-current={item.current ? 'page' : undefined}
+              aria-current={
+                item.current === true ? 'page' : item.current || undefined
+              }
             >
               {item.label}
             </a>

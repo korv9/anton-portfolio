@@ -187,9 +187,18 @@ export default function AiActProduct({ route }: { route: Route }) {
               )
             }
             nav={[
-              { href: '#ai-act-roles', label: l('Who is affected?', 'Vem berörs?') },
-              { href: '#ai-act-startups', label: l('Startup navigator', 'Startup-navigator') },
-              { href: '#ai-act-obligations', label: l('Obligations', 'Skyldigheter') },
+              {
+                href: '#ai-act-roles',
+                label: l('Who is affected?', 'Vem berörs?'),
+              },
+              {
+                href: '#ai-act-startups',
+                label: l('Startup navigator', 'Startup-navigator'),
+              },
+              {
+                href: '#ai-act-obligations',
+                label: l('Obligations', 'Skyldigheter'),
+              },
               { href: '#ai-act-changes', label: l('Changes', 'Ändringar') },
               { href: '#ai-act-sources', label: l('Sources', 'Källor') },
             ]}
@@ -206,9 +215,7 @@ export default function AiActProduct({ route }: { route: Route }) {
                 {fmtDate(data.summary.current_version.published_at)} ·{' '}
                 {l('retrieved', 'hämtad')}{' '}
                 {fmtDate(data.summary.latest_retrieval)} ·{' '}
-                <span className="aa-disclaimer-inline">
-                  {l(...DISCLAIMER)}
-                </span>
+                <span className="aa-disclaimer-inline">{l(...DISCLAIMER)}</span>
               </p>
             )}
           </ProjectHero>
@@ -225,9 +232,7 @@ export default function AiActProduct({ route }: { route: Route }) {
                 {fmtDate(data.summary.current_version.published_at)} ·{' '}
                 {l('retrieved', 'hämtad')}{' '}
                 {fmtDate(data.summary.latest_retrieval)} ·{' '}
-                <span className="aa-disclaimer-inline">
-                  {l(...DISCLAIMER)}
-                </span>
+                <span className="aa-disclaimer-inline">{l(...DISCLAIMER)}</span>
               </p>
             )}
           </header>

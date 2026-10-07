@@ -54,7 +54,7 @@ export default function ExperimentTable() {
             `Samma ${data.experiments[0]?.occurrences ?? ''} ställen, körda på fyra sätt. Maskering döljer vilken symbol det är; bokcentrering tar bort det alla ställen i en bok har gemensamt. Lägre bokandel och fler kluster över flera böcker betyder mindre bokberoende; silhuett och brus visar vad det kostar.`,
           )}
         </p>
-        <div className="atlas-table-wrap">
+        <div className="atlas-table-wrap" tabIndex={0}>
           <table className="atlas-table">
             <thead>
               <tr>
@@ -147,7 +147,7 @@ function ModelTable() {
           `Samma ${published.occurrences} bokcentrerade ställen, inbäddade av ${rows.length} modeller. För varje ställe räknas dess ${data.neighbours} närmaste grannar: hur många kommer från samma bok, och hur många har samma symbol. Det kräver inga kluster och jämför därför modellerna rättvist.`,
         )}
       </p>
-      <div className="atlas-table-wrap">
+      <div className="atlas-table-wrap" tabIndex={0}>
         <table className="atlas-table">
           <thead>
             <tr>

@@ -95,7 +95,7 @@ test('the atlas has its own navigation and section addresses', async ({
   page,
 }) => {
   await page.goto('/#symbolic-method')
-  const nav = page.locator('.project-nav')
+  const nav = page.locator('.project-subnav')
   await expect(nav.getByRole('link')).toHaveText([
     'Atlas',
     'Findings',
@@ -149,7 +149,8 @@ test('the job-ad clustering is a theme of the job-market product', async ({
   isMobile,
 }) => {
   test.skip(isMobile, 'the product menu is the docked sidebar on desktop')
-  await page.goto('/#jobb')
+  // The overview is the project's first screen; the product menu starts at the themes.
+  await page.goto('/#jobb-trender')
   await page
     .getByRole('navigation', { name: /^(Job market|Jobbmarknad)$/ })
     .getByRole('link', {

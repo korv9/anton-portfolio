@@ -6,14 +6,11 @@ test('politics now: seats, majority, government, decisions and history', async (
   // The old address leads to the story.
   await page.goto('/#now')
   await expect(page).toHaveURL(/#politik$/)
-  await expect(
-    page.getByRole('heading', {
-      level: 1,
-      name: /What separates the parties in practice/,
-    }),
-  ).toBeVisible()
+  await expect(page.locator('.project-hero-question')).toHaveText(
+    'What separates the parties in practice?',
+  )
   // The seat count is diagnostics now, under Sources and method, not a hero key figure.
-  await expect(page.locator('.story-hero .story-kpi')).toHaveCount(0)
+  await expect(page.locator('.project-hero .story-kpi')).toHaveCount(0)
   await expect(page.locator('.story-seatbar-track > span')).toHaveCount(8)
 
   // The seat calculator adds up any parties against the 175-seat line.

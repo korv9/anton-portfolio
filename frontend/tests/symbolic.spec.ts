@@ -6,7 +6,7 @@ test('the Symbolic Atlas maps real occurrences and filters by symbol and traditi
 }) => {
   await page.goto('/#symbolic-atlas')
   await expect(
-    page.getByRole('heading', { level: 1, name: /symbolic meanings emerge/ }),
+    page.getByRole('heading', { level: 1, name: 'Symbolic Atlas' }),
   ).toBeVisible()
   const summary = await (
     await page.request.get('/data/symbolic/summary.json')
@@ -27,9 +27,7 @@ test('the Symbolic Atlas maps real occurrences and filters by symbol and traditi
     .click()
   await expect(page).toHaveURL(/tradition=norse-germanic/)
   await expect(page.locator('.atlas-status')).toContainText('match the filters')
-  const axe = await new AxeBuilder({ page })
-    .include('#symbolic-atlas')
-    .analyze()
+  const axe = await new AxeBuilder({ page }).include('.symbolic-page').analyze()
   expect(axe.violations).toEqual([])
 })
 

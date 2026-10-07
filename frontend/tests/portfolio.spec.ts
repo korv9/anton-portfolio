@@ -1,74 +1,63 @@
 import { test, expect } from './test'
 import AxeBuilder from '@axe-core/playwright'
 
-test('home introduces Anton and routes to each project', async ({
-  page,
-  isMobile,
-}) => {
+test('home introduces Anton and routes to each project', async ({ page }) => {
   const errors: string[] = []
   page.on('pageerror', (e) => errors.push(e.message))
   await page.goto('/')
-  await expect(page.getByRole('heading', { level: 1 })).toContainText(
-    'ERNSTSSON',
+  // First screen: who, in what role, one sentence, and four ways on. Nothing else.
+  const identity = page.locator('#start')
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+    'Anton Ernstsson',
   )
-  // The role, the pitch and the CV are on the first screen, as plain text.
-  await expect(page.locator('.home-hero-role')).toContainText('Data Engineer')
-  await expect(page.locator('.home-hero-role')).toBeInViewport()
-  await expect(
-    page.locator('.home-hero-actions a', { hasText: 'CV' }),
-  ).toBeInViewport()
-  // What has been built comes first: the selected work starts on the first screen.
-  await expect(page.locator('#projekt')).toBeInViewport()
-  // Then, in order: projects, experience, education, the core stack, about, under the hood.
+  await expect(identity.locator('.home-roles')).toContainText('Data Engineer')
+  await expect(identity.locator('.home-roles')).toBeInViewport()
+  const ways = identity.getByRole('navigation', { name: 'Start page' })
+  await expect(ways.getByRole('link')).toHaveText([
+    'Projects',
+    'Experience',
+    'About',
+    'CV',
+  ])
+  await expect(ways).toBeInViewport()
+  // The header does not repeat the name over the identity screen.
+  await expect(page.locator('.site-bar .wordmark')).toBeHidden()
+  // Then, in order: experience with the core stack beside it, the work, about, under the hood.
   const order = await page.evaluate(() =>
-    [
-      'projekt',
-      'erfarenhet',
-      'utbildning',
-      'kompetenser',
-      'om-mig',
-      'under-huven',
-    ].map((id) => document.getElementById(id)!.getBoundingClientRect().top),
+    ['start', 'erfarenhet', 'projekt', 'om-mig', 'under-huven'].map(
+      (id) => document.getElementById(id)!.getBoundingClientRect().top,
+    ),
   )
   expect([...order].sort((a, b) => a - b)).toEqual(order)
-  await expect(page.locator('#projekt .ds-project-row')).toHaveCount(6)
-  await expect(page.locator('.ds-project-row').first()).toContainText(
-    'Swedish politics',
-  )
-  // Experience: company, role, period and impact visible without a click.
+  // Experience: company, role, period and impact without a click; the bullets one click deeper.
   await expect(page.locator('#erfarenhet')).toContainText('Fora')
   await expect(page.locator('#erfarenhet')).toContainText('Avtalat')
   await expect(page.locator('.home-job-impact').first()).toBeVisible()
-  await expect(page.locator('#utbildning')).toContainText('JENSEN')
-  // The header and its navigation stay on screen while the page scrolls.
+  await expect(page.locator('.home-job-did').first()).toBeHidden()
+  await page.locator('.home-job summary').first().click()
+  await expect(page.locator('.home-job-did').first()).toBeVisible()
+  await expect(page.locator('#erfarenhet')).toContainText('JENSEN')
+  // A short stack first; the full one a click away.
+  await expect(page.locator('#kompetenser > dl > div')).toHaveCount(5)
+  // The work: one whole-card link per flagship, no extra buttons.
+  const cards = page.locator('#projekt a.work-card')
+  await expect(cards).toHaveCount(6)
+  await expect(cards.first()).toContainText('Swedish politics')
+  await expect(page.locator('#projekt button')).toHaveCount(0)
+  // Once scrolled, the header carries the name and stays on screen.
   await page.locator('#under-huven').scrollIntoViewIfNeeded()
   await expect(page.locator('.site-bar')).toBeInViewport()
   await expect(page.locator('.site-bar .wordmark')).toBeVisible()
-  await page.evaluate(() => window.scrollTo(0, 0))
-  // A short stack first; the full one a click away.
-  await expect(
-    page.locator('#kompetenser .home-stack-groups > div'),
-  ).toHaveCount(5)
-  await expect(page.locator('#kompetenser .skills-more').first()).toBeHidden()
-  await page.locator('#kompetenser summary').click()
-  await expect(page.locator('#kompetenser .skills-more')).toHaveCount(5)
   // Technical depth is linked at the bottom, not in the first screen.
   await expect(
     page.locator('#under-huven a[href="#data-constellation"]'),
   ).toHaveCount(1)
   await expect(page.locator('#under-huven a[href="#quality"]')).toHaveCount(1)
-  await expect(
-    page.locator('.home-hero a[href="#data-constellation"]'),
-  ).toHaveCount(0)
+  await expect(identity.locator('a[href="#data-constellation"]')).toHaveCount(0)
   await expect(page.locator('#job-market')).toHaveCount(0)
-  await page
-    .locator('.ds-project-row')
-    .first()
-    .getByRole('link')
-    .first()
-    .click()
-  await expect(page.getByRole('heading', { level: 1 })).toContainText(
-    'What separates the parties in practice?',
+  await cards.first().click()
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+    'Swedish politics in numbers',
   )
   await page.goto('/#politics')
   await expect(page.getByRole('heading', { level: 1 })).toContainText(

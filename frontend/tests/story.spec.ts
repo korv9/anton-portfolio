@@ -10,11 +10,16 @@ test('the politics story answers its questions in order', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.goto('/#politik')
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+    'Swedish politics in numbers',
+  )
+  await expect(page.locator('.project-hero-question')).toHaveText(
     'What separates the parties in practice?',
   )
-  await expect(page.locator('.story-answer')).toContainText('roll calls')
+  await expect(page.locator('.project-hero-finding')).toContainText(
+    'roll calls',
+  )
   // No key-figure grid in the hero, and three questions before the folds.
-  await expect(page.locator('.story-hero .story-kpi')).toHaveCount(0)
+  await expect(page.locator('.project-hero .story-kpi')).toHaveCount(0)
   await expect(page.locator('.story > .story-section')).toHaveCount(3)
   await expect(page.locator('.story-section h2').first()).toHaveText(
     'What is the political situation right now?',

@@ -50,7 +50,7 @@ const DeepDive = lazy(() => import('./DeepDive'))
 function ThemeView({ theme, route }: { theme: ThemeKey; route: Route }) {
   switch (theme) {
     case 'lage':
-      return <Story route={route} />
+      return <Story route={route} slicer={<PartySlicer route={route} />} />
     case 'valjarna':
       return <ValjarnaTheme route={route} />
     case 'roster':
@@ -144,8 +144,7 @@ export default function PoliticsProduct({ route }: { route: Route }) {
       </nav>
     </Side>
   )
-  // The overview opens on its own first screen: no sidebar and no party bar until the reader
-  // goes into a theme.
+  // The overview opens on its own first screen: no sidebar, and the party bar under it.
   const landing = route.path === '#politik'
   return (
     <div

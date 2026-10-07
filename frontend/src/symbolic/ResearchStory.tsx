@@ -258,7 +258,7 @@ function ValidityBlock({ v }: { v: Validity }) {
           'Justerad ömsesidig information mellan klustren och varje egenskap hos ett ställe: 0 är vad slumpen ger, 1 är identiskt. En karta om symboler skulle ge högst värde för symbol.',
         )}
       </p>
-      <div className="atlas-table-wrap">
+      <div className="atlas-table-wrap" tabIndex={0}>
         <table className="atlas-table">
           <thead>
             <tr>
@@ -288,7 +288,7 @@ function ValidityBlock({ v }: { v: Validity }) {
           `Bokpar, bokcentrerat: hur lika två böckers fördelning över klustren är (0–1), i snitt efter vad böckerna har gemensamt. ${centred.book_pairs.books} böcker med minst ${centred.book_pairs.min_points} klustrade ställen.`,
         )}
       </p>
-      <div className="atlas-table-wrap">
+      <div className="atlas-table-wrap" tabIndex={0}>
         <table className="atlas-table">
           <thead>
             <tr>
@@ -370,7 +370,7 @@ function ValidityCase({ history }: { history: ResearchHistory }) {
           `Den första körningen (${first.id}) hade de tydligast avgränsade klustren och grupperade böcker, inte symboler. Den senaste (${last.id}) har svagare kluster och beror mycket mindre på boken. Om klustren håller ihop och om de mäter symbolisk betydelse är två olika frågor.`,
         )}
       </p>
-      <div className="atlas-table-wrap">
+      <div className="atlas-table-wrap" tabIndex={0}>
         <table className="atlas-table">
           <thead>
             <tr>

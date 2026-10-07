@@ -30,7 +30,9 @@ test('the overview answers what applies now and next, with the source one click 
   await expect(page.locator('.aa-note')).toContainText(
     'Regulation (EU) 2026/1744',
   )
-  await expect(page.locator('.project-nav')).toContainText('Startup navigator')
+  await expect(page.locator('.project-subnav')).toContainText(
+    'Startup navigator',
+  )
   const sources = page.locator('.aa-now a.aa-source')
   for (const href of await sources.evaluateAll((a) =>
     a.map((x) => x.getAttribute('href')),

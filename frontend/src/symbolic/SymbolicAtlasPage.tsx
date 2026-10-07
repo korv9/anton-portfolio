@@ -280,12 +280,18 @@ export default function SymbolicAtlasPage({ route }: { route: Route }) {
                 )
               : undefined
           }
-          nav={[
-            { href: '#symbolic-map', label: l('Atlas', 'Atlas') },
-            { href: '#symbolic-findings', label: l('Findings', 'Fynd') },
-            { href: '#symbolic-experiments', label: l('Experiments', 'Experiment') },
-            { href: '#symbolic-method', label: l('Method', 'Metod') },
-          ]}
+          nav={(
+            [
+              ['#symbolic-map', l('Atlas', 'Atlas')],
+              ['#symbolic-findings', l('Findings', 'Fynd')],
+              ['#symbolic-experiments', l('Experiments', 'Experiment')],
+              ['#symbolic-method', l('Method', 'Metod')],
+            ] as const
+          ).map(([href, label]) => ({
+            href,
+            label,
+            current: route.path === href ? 'location' : undefined,
+          }))}
         >
           <p>
             {l(
@@ -588,7 +594,7 @@ export default function SymbolicAtlasPage({ route }: { route: Route }) {
             'Hur väl kartan och klustren håller ihop. De beskriver struktur, inte betydelse.',
           )}
         </p>
-        <div className="atlas-table-wrap">
+        <div className="atlas-table-wrap" tabIndex={0}>
           <table className="atlas-table">
             <thead>
               <tr>
