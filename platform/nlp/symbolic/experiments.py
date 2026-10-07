@@ -176,26 +176,41 @@ def archive(label: str) -> Path:
 def compare_models(names: list[str]) -> int:
     data = load_sample()
     sample_id = sample_hash(data["ids"])
+    groups = {"book": data["documents"], "tradition": data["traditions"], "symbol": data["symbols"]}
     rows = []
     for model in MODELS:
         out = OUT / "models" / model.split("/")[-1]
-        cache: dict[bool, tuple[np.ndarray, list[str], float]] = {}
+        out.mkdir(parents=True, exist_ok=True)
+        cache: dict[bool, tuple[np.ndarray, list[str], float | None]] = {}
         for name in names:
             config = EXPERIMENTS[name]
             if config["masking"] not in cache:
                 texts = inputs(data, config["masking"])
-                print(f"{model}: embedding {len(texts)} contexts …", flush=True)
-                started = time.monotonic()
-                vectors = embeddings.embed(texts, model)
-                cache[config["masking"]] = (vectors, texts, round(time.monotonic() - started, 1))
+                # Local only, never delivered: the vectors, so a rerun skips the slow part.
+                saved = out / f"embeddings{'_masked' if config['masking'] else ''}.npy"
+                seconds = None
+                if saved.is_file():
+                    vectors = np.load(saved)
+                else:
+                    print(f"{model}: embedding {len(texts)} contexts …", flush=True)
+                    started = time.monotonic()
+                    vectors = embeddings.embed(texts, model)
+                    seconds = round(time.monotonic() - started, 1)
+                    np.save(saved, vectors)
+                cache[config["masking"]] = (vectors, texts, seconds)
             vectors, texts, seconds = cache[config["masking"]]
+            space_in = center_by_document(vectors, data["documents"]) if config["centering"] else vectors
             metrics = run_experiment(name, config, data, vectors, texts, sample_id, out, model)
+            near = evaluation.neighbourhood(space_in, groups)
             rows.append({"model": model, "dimensions": int(vectors.shape[1]), "embedding_seconds": seconds,
-                         **comparison_row(name, metrics)})
+                         **comparison_row(name, metrics),
+                         **{f"neighbours_same_{g}": v["share"] for g, v in near.items()},
+                         **{f"chance_same_{g}": v["chance"] for g, v in near.items()}})
             print(f"  {name}: {evaluation.summary(metrics)}; cross-book clusters "
-                  f"{metrics['cross_book_cluster_count']}", flush=True)
+                  f"{metrics['cross_book_cluster_count']}; neighbours {near}", flush=True)
             (OUT / "models" / "comparison.json").write_text(
-                json.dumps({"sample_sha256": sample_id, "rows": rows}, indent=2) + "\n", encoding="utf-8")
+                json.dumps({"sample_sha256": sample_id, "neighbours": 10, "rows": rows}, indent=2) + "\n",
+                encoding="utf-8")
     return 0
 
 

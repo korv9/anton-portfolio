@@ -9,6 +9,10 @@
 - composition: per cluster, the share of its largest book and of its largest symbol, averaged
   over clusters. A high book share means the clusters follow a book's style or translation more
   than a symbol's meaning, which is worth knowing before reading anything into them.
+- neighbourhood: for each point, the share of its k nearest neighbours in the embedding space
+  that share its book, tradition or symbol, next to the share expected by chance. It needs no
+  map and no clusters, so it compares embedding models without HDBSCAN's parameters, which
+  were set for one model.
 """
 from __future__ import annotations
 
@@ -144,6 +148,29 @@ def representatives(space: np.ndarray, labels: np.ndarray, top: int = 7) -> list
         dist = np.linalg.norm(space[idx] - centroid, axis=1)
         order = np.lexsort((idx, dist))[:top]
         out += [(c, rank + 1, int(idx[j]), round(float(dist[j]), 5)) for rank, j in enumerate(order)]
+    return out
+
+
+def neighbourhood(vectors: np.ndarray, groups: dict[str, list[str]], k: int = 10,
+                  chunk: int = 1024) -> dict:
+    """{name: {"share", "chance"}} for each grouping: the mean share of a point's k nearest
+    neighbours (cosine, the point itself left out) in its own group, and the share a random
+    neighbour would have. Vectors must be L2-normalised."""
+    n = len(vectors)
+    codes = {name: np.unique(np.asarray(g), return_inverse=True)[1] for name, g in groups.items()}
+    hits = {name: 0 for name in groups}
+    for start in range(0, n, chunk):
+        sims = vectors[start:start + chunk] @ vectors.T
+        rows = np.arange(sims.shape[0])
+        sims[rows, rows + start] = -np.inf
+        nearest = np.argpartition(-sims, k, axis=1)[:, :k]
+        for name, c in codes.items():
+            hits[name] += int((c[nearest] == c[start:start + chunk, None]).sum())
+    out = {}
+    for name, c in codes.items():
+        sizes = np.bincount(c).astype(np.float64)
+        out[name] = {"share": round(hits[name] / (n * k), 4),
+                     "chance": round(float((sizes * (sizes - 1)).sum() / (n * (n - 1))), 4)}
     return out
 
 
