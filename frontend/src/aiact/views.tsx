@@ -32,8 +32,10 @@ import {
   ExploreSection,
   FindingHero,
   MethodSummary,
+  QualityBrief,
   StoryNext,
 } from '../ui/Story'
+import { TraceResult } from '../ui/Trace'
 import type { AiActData, Change, Milestone } from './types'
 
 type View = { data: AiActData; today: string }
@@ -66,15 +68,20 @@ export function Overview({ data, today }: View) {
               sv: latest.description_sv,
             })}
             source={
-              <Source href={latest.source_url}>
-                {l('Article', 'Artikel')} {latest.source_article}
-              </Source>
+              <>
+                <Kind type="source" />{' '}
+                <Source href={latest.source_url}>
+                  {l('Article', 'Artikel')} {latest.source_article}
+                </Source>
+              </>
             }
           />
         )}
         <dl className="aa-now-next">
           <div>
-            <dt>{l('Next', 'Härnäst')}</dt>
+            <dt>
+              {l('Next', 'Härnäst')} <Kind type="source" />
+            </dt>
             <dd>
               {next ? (
                 <>
@@ -106,7 +113,9 @@ export function Overview({ data, today }: View) {
             </dd>
           </div>
           <div>
-            <dt>{l('Latest change', 'Senaste ändring')}</dt>
+            <dt>
+              {l('Latest change', 'Senaste ändring')} <Kind type="source" />
+            </dt>
             <dd>
               {latestOfficial ? (
                 <>
@@ -138,7 +147,18 @@ export function Overview({ data, today }: View) {
               'Alla artiklar som gäller i dag',
             )}
           </a>
+          {data.summary.latest_retrieval && (
+            <>
+              {' · '}
+              {l('Last verified', 'Senast kontrollerad')}{' '}
+              {data.summary.latest_retrieval.slice(0, 10)}
+            </>
+          )}
         </p>
+        <TraceResult
+          node="out:ai-act/timeline.json"
+          what={l('the application dates', 'tillämpningsdatumen')}
+        />
       </section>
 
       <section className="aa-who" aria-labelledby="aa-who-q">
@@ -181,10 +201,61 @@ export function Overview({ data, today }: View) {
         />
       </section>
 
+      <section className="aa-sweden" aria-labelledby="aa-sweden-q">
+        <DataQuestion
+          id="aa-sweden-q"
+          number={3}
+          eyebrow={l('In Sweden', 'I Sverige')}
+          question={l(
+            'How does the Act show up in Swedish politics and job ads?',
+            'Hur syns lagen i svensk politik och i jobbannonserna?',
+          )}
+        >
+          <p>
+            {l(
+              'The Act’s milestones, Riksdag speeches about AI and job ads that ask for AI governance skills, on one time axis. They happen in the same period; that does not show that one caused the other.',
+              'Lagens milstolpar, riksdagsanföranden om AI och jobbannonser som efterfrågar kompetens inom AI-styrning, på en tidsaxel. De sker under samma period; det visar inte att det ena orsakade det andra.',
+            )}
+          </p>
+        </DataQuestion>
+        <StoryNext
+          label={l('The Act in Sweden', 'Lagen i Sverige')}
+          links={[
+            {
+              href: '#ai-act-signals',
+              title: l('One timeline', 'En tidslinje'),
+              line: l(
+                'Milestones, Riksdag speeches and job ads, aligned in time.',
+                'Milstolpar, riksdagsanföranden och jobbannonser i samma tid.',
+              ),
+            },
+            {
+              href: '#ai-act-politics',
+              title: l('AI in Swedish politics', 'AI i svensk politik'),
+              line: l(
+                'When AI regulation became visible in the Riksdag, and which concepts parties use.',
+                'När AI-reglering blev synlig i riksdagen, och vilka begrepp partierna använder.',
+              ),
+            },
+            {
+              href: '#ai-act-jobs',
+              title: l(
+                'AI governance in job ads',
+                'AI-styrning i jobbannonserna',
+              ),
+              line: l(
+                'How often ads ask for AI governance, compliance and model risk.',
+                'Hur ofta annonser efterfrågar AI-styrning, regelefterlevnad och modellrisk.',
+              ),
+            },
+          ]}
+        />
+      </section>
+
       <section className="aa-month" aria-labelledby="aa-month-q">
         <DataQuestion
           id="aa-month-q"
-          number={3}
+          number={4}
           eyebrow={l('This month', 'Den här månaden')}
           question={l(
             'Where does the Act stand this month?',
@@ -220,6 +291,39 @@ export function Overview({ data, today }: View) {
         )}
         <AmendmentNote data={data} />
       </ExploreSection>
+
+      <QualityBrief
+        rows={[
+          [
+            l('Accuracy', 'Riktighet'),
+            l(
+              'Every quoted sentence is tested to appear verbatim in the official text.',
+              'Varje citerad mening testas mot att den finns ordagrant i den officiella texten.',
+            ),
+          ],
+          [
+            l('Currentness', 'Aktualitet'),
+            l(
+              `The consolidated text of ${fmtDate(data.summary.current_version.published_at)}${data.summary.latest_retrieval ? `, last checked ${fmtDate(data.summary.latest_retrieval)}` : ''}.`,
+              `Den konsoliderade texten från ${fmtDate(data.summary.current_version.published_at)}${data.summary.latest_retrieval ? `, senast kontrollerad ${fmtDate(data.summary.latest_retrieval)}` : ''}.`,
+            ),
+          ],
+          [
+            l('Traceability', 'Spårbarhet'),
+            l(
+              `Each of the ${counts.obligations} obligations links to the article and sentence that sets it.`,
+              `Var och en av de ${counts.obligations} skyldigheterna länkar till artikeln och meningen som anger den.`,
+            ),
+          ],
+          [
+            l('Validity', 'Validitet'),
+            l(
+              'The navigator points to what may be relevant; it is not a legal classification.',
+              'Navigatorn pekar på vad som kan vara relevant; den är ingen juridisk klassificering.',
+            ),
+          ],
+        ]}
+      />
 
       <MethodSummary
         lineage={[
@@ -761,46 +865,66 @@ export function ObligationList({
   items,
 }: View & { items: AiActData['obligations'] }) {
   return (
-    <ul className="aa-obligations">
-      {items.map((o) => {
-        const status = articleStatus(o, today)
-        return (
-          <li key={o.obligation_id} className="aa-obligation">
-            <header>
-              <span className="aa-pill">
-                {actorLabel(data.actors, o.actor_id)}
-              </span>
-              <span className="aa-pill aa-pill-quiet">
-                {requirementLabel(o.requirement_type)}
-              </span>
-              <Status status={status} />
-              <span className="aa-muted">
-                {status === 'applies'
-                  ? `${l('since', 'sedan')} ${fmtDate(o.applies_from, true)}`
-                  : `${l('from', 'från')} ${fmtDate(status === 'partly' ? o.applies_from_second : o.applies_from, true)}`}
-                {o.applies_from_second &&
-                  status === 'upcoming' &&
-                  ` / ${fmtDate(o.applies_from_second, true)}`}
-              </span>
-            </header>
-            <p className="aa-summary">
-              <Kind type="interpretation" /> {l(o.summary_en, o.summary_sv)}
-            </p>
-            <blockquote>
-              <Kind type="source" /> “{o.source_quote}”
-            </blockquote>
-            <p className="aa-meta">
-              <ArticleLink n={o.article_number}>
-                {l('Article', 'Artikel')} {o.article_number}
-                {o.paragraph ? `(${o.paragraph})` : ''} ·{' '}
-                {l(o.article_title_en, o.article_title_sv)}
-              </ArticleLink>{' '}
-              <Source href={o.source_url}>EUR-Lex</Source>
-            </p>
-          </li>
-        )
-      })}
-    </ul>
+    <>
+      <ul className="aa-obligations">
+        {items.map((o) => {
+          const status = articleStatus(o, today)
+          return (
+            <li key={o.obligation_id} className="aa-obligation">
+              <header>
+                <span className="aa-pill">
+                  {actorLabel(data.actors, o.actor_id)}
+                </span>
+                <span className="aa-pill aa-pill-quiet">
+                  {requirementLabel(o.requirement_type)}
+                </span>
+                <Status status={status} />
+                <span className="aa-muted">
+                  {status === 'applies'
+                    ? `${l('since', 'sedan')} ${fmtDate(o.applies_from, true)}`
+                    : `${l('from', 'från')} ${fmtDate(status === 'partly' ? o.applies_from_second : o.applies_from, true)}`}
+                  {o.applies_from_second &&
+                    status === 'upcoming' &&
+                    ` / ${fmtDate(o.applies_from_second, true)}`}
+                </span>
+              </header>
+              <p className="aa-summary">
+                <Kind type="interpretation" /> {l(o.summary_en, o.summary_sv)}
+              </p>
+              <blockquote>
+                <Kind type="source" /> “{o.source_quote}”
+              </blockquote>
+              <p className="aa-meta">
+                <ArticleLink n={o.article_number}>
+                  {l('Article', 'Artikel')} {o.article_number}
+                  {o.paragraph ? `(${o.paragraph})` : ''} ·{' '}
+                  {l(o.article_title_en, o.article_title_sv)}
+                </ArticleLink>{' '}
+                <Source href={o.source_url}>EUR-Lex</Source>
+              </p>
+              <details className="aa-model">
+                <summary>
+                  {l('In the data model', 'I datamodellen')}{' '}
+                  <Kind type="derived" />
+                </summary>
+                <dl>
+                  <dt>mart_ai_act_obligations</dt>
+                  <dd>
+                    {o.obligation_id} · actor_id={o.actor_id} ·
+                    requirement_type={o.requirement_type} · risk_class_id=
+                    {o.risk_class_id} · applies_from={o.applies_from}
+                  </dd>
+                </dl>
+              </details>
+            </li>
+          )
+        })}
+      </ul>
+      <TraceResult
+        node="out:ai-act/obligations.json"
+        what={l('the obligations', 'skyldigheterna')}
+      />
+    </>
   )
 }
 
@@ -920,6 +1044,18 @@ export function Changes({
                 <h3 title={c.document_title}>
                   {shortTitle(c.change_kind, c.document_id, c.document_title)}
                 </h3>
+                {(() => {
+                  const actors = [
+                    ...new Set(changed.flatMap((p) => p.affected_actors)),
+                  ]
+                  return actors.length ? (
+                    <p className="aa-affects">
+                      {l('May affect', 'Kan beröra')}:{' '}
+                      {actors.map((a) => actorLabel(data.actors, a)).join(', ')}{' '}
+                      <Kind type="derived" />
+                    </p>
+                  ) : null
+                })()}
                 {changed.length > 0 && (
                   <details>
                     <summary>

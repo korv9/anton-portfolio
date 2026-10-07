@@ -225,6 +225,26 @@ export function StoryNext({
   )
 }
 
+/** The quality points that matter for one product, each a dimension and the evidence for it. */
+export function QualityBrief({ rows }: { rows: [string, ReactNode][] }) {
+  return (
+    <section
+      className="quality-brief"
+      aria-label={l('Quality in brief', 'Kvalitet i korthet')}
+    >
+      <h3>{l('Quality in brief', 'Kvalitet i korthet')}</h3>
+      <dl>
+        {rows.map(([dimension, evidence]) => (
+          <div key={dimension}>
+            <dt>{dimension}</dt>
+            <dd>{evidence}</dd>
+          </div>
+        ))}
+      </dl>
+    </section>
+  )
+}
+
 export function MethodSummary({
   lineage,
   quality,

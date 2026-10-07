@@ -1,0 +1,4 @@
+Here is how I would approach it.
+
+Idea: Centre the Symbolic Atlas embeddings by translator as well as by book.
+It might separate the English voice from the symbol.

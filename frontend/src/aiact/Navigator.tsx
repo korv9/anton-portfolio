@@ -6,7 +6,14 @@
 import { useMemo } from 'react'
 import { l } from '../i18n'
 import { isShown, navigatorResult } from './logic'
-import { actorLabel, ArticleLink, Kind, pick } from './shared'
+import {
+  actorLabel,
+  ArticleLink,
+  Kind,
+  pick,
+  requirementLabel,
+  Source,
+} from './shared'
 import { ObligationList } from './views'
 import type { AiActData, Answer } from './types'
 
@@ -105,6 +112,12 @@ export function NavigatorView({
             {l('Potentially relevant', 'Möjligen relevant')}{' '}
             <Kind type="interpretation" />
           </p>
+          <p className="aa-result-aid">
+            {l(
+              'Navigation aid, not legal advice.',
+              'Navigationsstöd, inte juridisk rådgivning.',
+            )}
+          </p>
           <h2 id="aa-result-title">
             {result.answered
               ? l('This scenario may involve', 'Scenariot kan beröra')
@@ -117,7 +130,7 @@ export function NavigatorView({
             <>
               <dl>
                 <div>
-                  <dt>{l('Roles', 'Roller')}</dt>
+                  <dt>{l('Role considerations', 'Roller att överväga')}</dt>
                   <dd>
                     {result.roles.length
                       ? result.roles
@@ -134,6 +147,20 @@ export function NavigatorView({
                       : '–'}
                   </dd>
                 </div>
+                {result.obligations.length > 0 && (
+                  <div>
+                    <dt>{l('Topics', 'Ämnen')}</dt>
+                    <dd>
+                      {[
+                        ...new Set(
+                          result.obligations.map((o) => o.requirement_type),
+                        ),
+                      ]
+                        .map(requirementLabel)
+                        .join(', ')}
+                    </dd>
+                  </div>
+                )}
                 <div>
                   <dt>{l('Articles to read', 'Artiklar att läsa')}</dt>
                   <dd>
@@ -146,6 +173,15 @@ export function NavigatorView({
                   </dd>
                 </div>
               </dl>
+              <p className="aa-meta">
+                {l('Official source', 'Officiell källa')}:{' '}
+                <Source href={data.summary.current_version.source_url}>
+                  {l(
+                    `The consolidated text of ${data.summary.current_version.published_at}`,
+                    `Den konsoliderade texten från ${data.summary.current_version.published_at}`,
+                  )}
+                </Source>
+              </p>
               {result.notes.length > 0 && (
                 <ul className="aa-notes">
                   {result.notes.map((n) => (

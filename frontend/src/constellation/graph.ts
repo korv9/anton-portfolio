@@ -266,3 +266,45 @@ export function neighbours(graph: Graph, id: string) {
   }
   return { up, down }
 }
+
+/** The stages a result passes through, from what the reader sees back to the source. */
+export const TRACE_ORDER: NodeType[] = [
+  'frontend',
+  'delivery',
+  'gold',
+  'ml',
+  'silver',
+  'bronze',
+  'seed',
+  'raw',
+  'ingestion',
+  'source',
+]
+
+/**
+ * "Where does this come from?": the node, the products that read it, and everything upstream
+ * of it, grouped by stage in reading order (frontend → … → source). Shared infrastructure that
+ * is not data (the warehouse, R2) is left out.
+ */
+export function tracePath(
+  graph: Graph,
+  id: string,
+): { type: NodeType; nodes: GraphNode[] }[] {
+  const byId = new Map(graph.nodes.map((n) => [n.id, n]))
+  const start = byId.get(id)
+  if (!start) return []
+  const consumers = [...downstream(graph, id)]
+    .map((n) => byId.get(n)!)
+    .filter((n) => n.type === 'frontend')
+  const nodes = [
+    start,
+    ...consumers,
+    ...[...upstream(graph, id)].map((n) => byId.get(n)!),
+  ]
+  return TRACE_ORDER.map((type) => ({
+    type,
+    nodes: nodes
+      .filter((n) => n.type === type)
+      .sort((a, b) => a.label.localeCompare(b.label)),
+  })).filter((g) => g.nodes.length)
+}

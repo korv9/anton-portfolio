@@ -12,6 +12,7 @@ import type {
   BookCenteredPoint,
   ClusterFile,
   ExperimentComparison,
+  ModelComparison,
   ResearchHistory,
   ReviewedCluster,
   SymbolProfile,
@@ -115,6 +116,15 @@ export async function loadExperimentComparison(): Promise<ExperimentComparison |
     return await json<ExperimentComparison>(
       'symbolic/experiment-comparison.json',
     )
+  } catch {
+    return null
+  }
+}
+
+/** The embedding-model comparison, or null when it has not been published. */
+export async function loadModelComparison(): Promise<ModelComparison | null> {
+  try {
+    return await json<ModelComparison>('symbolic/model-comparison.json')
   } catch {
     return null
   }

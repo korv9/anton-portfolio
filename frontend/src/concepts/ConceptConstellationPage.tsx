@@ -10,10 +10,12 @@ import { l } from '../i18n'
 import { ProductQuality } from '../quality/QualityPanel'
 import type { Route } from '../router'
 import { fetchData } from '../dataSource'
+import Journey from './Journey'
 import { ProjectNav } from '../projects/ProjectNav'
 import { useViewParams } from '../politik/useViewParams'
 import {
   CORPUS_ORDER,
+  JOURNEY_CONCEPTS,
   FAMILIES,
   conceptFromPath,
   corpusPositions,
@@ -117,7 +119,9 @@ export default function ConceptConstellationPage({ route }: { route: Route }) {
   const known = data.summary.concepts.find((c) => c.concept_id === concept)
   return (
     <div className="concepts">
-      {known ? (
+      {route.path === '#concept-journey' ? (
+        <Journey route={route} data={data} />
+      ) : known ? (
         <ConceptPage route={route} data={data} concept={known} />
       ) : (
         <Constellation route={route} data={data} />
@@ -176,6 +180,27 @@ function Constellation({ route, data }: { route: Route; data: Data }) {
       </header>
       <ProjectNav route={route} />
       <div className="cc-body ds-container">
+        <section className="cj-start" aria-labelledby="cj-start-title">
+          <h2 id="cj-start-title">
+            {l('Pick an idea to follow', 'Välj en idé att följa')}
+          </h2>
+          <p className="cc-hint">
+            {l(
+              'Each idea opens a journey through stories, philosophy, the Riksdag and the AI Act, with the passages and the type of every link.',
+              'Varje idé öppnar en resa genom berättelser, filosofi, riksdagen och AI-förordningen, med passagerna och typen för varje länk.',
+            )}
+          </p>
+          <ul className="cj-start-list">
+            {JOURNEY_CONCEPTS.map((id) => {
+              const c = conceptOf(id)
+              return c ? (
+                <li key={id}>
+                  <a href={`#concept-journey?begrepp=${id}`}>{label(c)}</a>
+                </li>
+              ) : null
+            })}
+          </ul>
+        </section>
         <section
           id="concept-constellation"
           className="cc-section"

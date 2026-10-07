@@ -13,6 +13,8 @@ Writes under frontend/public/data/symbolic/:
     preview.json            every tenth point (by id): x, y and cluster only, for the small
                             picture on the start page
     experiment-comparison.json  one row per deconfounding experiment (nlp/symbolic/experiments.py)
+    model-comparison.json   one row per embedding model and experiment on the same sample
+                            (experiments.py --models)
 
 and, when the book-centred experiment and the cluster review (nlp/symbolic/rank_clusters.py)
 have run:
@@ -126,7 +128,11 @@ def experiment_files() -> list[Path]:
     if not (folder / "comparison.json").is_file():
         return []
     comparison = json.loads((folder / "comparison.json").read_text(encoding="utf-8"))
-    return [_dump("experiment-comparison.json", comparison)]
+    files = [_dump("experiment-comparison.json", comparison)]
+    models = folder / "models" / "comparison.json"
+    if models.is_file():
+        files.append(_dump("model-comparison.json", json.loads(models.read_text(encoding="utf-8"))))
+    return files
 
 
 CLUSTER_FIELDS = ["cluster_id", "cluster_fingerprint", "occurrence_count", "book_count", "tradition_count",

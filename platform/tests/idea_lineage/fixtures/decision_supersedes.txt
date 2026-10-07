@@ -1,0 +1,3 @@
+We looked at both options.
+
+Decision: Concept Journey becomes the default concept experience, supersedes {IDEA_ID}, because the full constellation is too dense for visitors.

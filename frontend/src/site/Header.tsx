@@ -278,6 +278,8 @@ export default function Header({
 const TECHNICAL: Partial<Record<Route['page'], Bilingual>> = {
   technical: { en: 'Architecture', sv: 'Arkitektur' },
   constellation: { en: 'Data Constellation', sv: 'Data Constellation' },
+  catalogue: { en: 'Data catalogue', sv: 'Datakatalog' },
+  lineage: { en: 'Idea Lineage', sv: 'Idea Lineage' },
   design: { en: 'Design system', sv: 'Designsystem' },
   datamodel: { en: 'Data model', sv: 'Datamodell' },
   er: { en: 'ER diagram', sv: 'ER-diagram' },
@@ -427,6 +429,12 @@ export function Footer() {
           <ul>
             <li>
               <a href="#data-constellation">Data Constellation</a>
+            </li>
+            <li>
+              <a href="#data-catalogue">{l('Data catalogue', 'Datakatalog')}</a>
+            </li>
+            <li>
+              <a href="#idea-lineage">Idea Lineage</a>
             </li>
             <li>
               <a href="#quality">

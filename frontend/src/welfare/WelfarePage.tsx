@@ -1,4 +1,5 @@
 import TopicNav from '../TopicNav'
+import { TraceResult } from '../ui/Trace'
 import CountyMultiples from './CountyMultiples'
 import {
   DataQuestion,
@@ -182,6 +183,10 @@ export default function WelfarePage({ view }: { view: string }) {
               )}
             </p>
           </Interpretation>
+          <TraceResult
+            node="out:welfare/*.json"
+            what={l('the county figures', 'länssiffrorna')}
+          />
           <DataQuestion
             number="→"
             eyebrow={l('Go deeper', 'Fördjupa')}

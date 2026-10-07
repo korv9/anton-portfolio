@@ -164,6 +164,7 @@ export default function ResearchStory({
       <h2 id="symbolic-findings-title">
         {l('How the investigation went', 'Hur undersökningen gick')}
       </h2>
+      <ValidityCase history={history} />
       <ol className="research-steps">
         {steps.map((s) =>
           s.tag[0] === 'Problem' && v1?.metrics ? (
@@ -322,5 +323,129 @@ function ValidityBlock({ v }: { v: Validity }) {
         )}
       </p>
     </div>
+  )
+}
+
+const dec2 = (v: number | null | undefined) =>
+  v == null
+    ? '–'
+    : v.toLocaleString(l('en-GB', 'sv-SE'), {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })
+
+/**
+ * The research lesson in one comparison: the first run had the best-separated clusters and
+ * measured the wrong thing; the last has weaker clusters and less dependence on the book. Model
+ * quality and construct validity are different questions.
+ */
+function ValidityCase({ history }: { history: ResearchHistory }) {
+  const first = history.steps[0]
+  const last = history.steps.at(-1)
+  const a = first?.metrics
+  const b = last?.metrics
+  if (!first || !last || !a || !b || first === last) return null
+  const base = history.validity?.experiments.baseline?.association_ami
+  const centred = history.validity?.experiments.book_centered?.association_ami
+  const row = (name: string, from: string, to: string, reading: string) => (
+    <tr>
+      <th scope="row">{name}</th>
+      <td className="num">{from}</td>
+      <td className="num">{to}</td>
+      <td>{reading}</td>
+    </tr>
+  )
+  return (
+    <section className="validity-case" aria-labelledby="validity-case-title">
+      <p className="research-tag">{l('The lesson', 'Lärdomen')}</p>
+      <h3 id="validity-case-title">
+        {l(
+          'A good model can still measure the wrong thing',
+          'En bra modell kan fortfarande mäta fel sak',
+        )}
+      </h3>
+      <p>
+        {l(
+          `The first run (${first.id}) had the best-separated clusters and grouped books, not symbols. The latest (${last.id}) has weaker clusters and depends far less on the book. Whether the clusters hold together and whether they measure symbolic meaning are two different questions.`,
+          `Den första körningen (${first.id}) hade de tydligast avgränsade klustren och grupperade böcker, inte symboler. Den senaste (${last.id}) har svagare kluster och beror mycket mindre på boken. Om klustren håller ihop och om de mäter symbolisk betydelse är två olika frågor.`,
+        )}
+      </p>
+      <div className="atlas-table-wrap">
+        <table className="atlas-table">
+          <thead>
+            <tr>
+              <th scope="col">{l('Question', 'Fråga')}</th>
+              <th scope="col" className="num">
+                {first.id}
+              </th>
+              <th scope="col" className="num">
+                {last.id}
+              </th>
+              <th scope="col">{l('Reading', 'Tolkning')}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {row(
+              l(
+                'Model quality: do the clusters hold together? (silhouette)',
+                'Modellkvalitet: håller klustren ihop? (silhuett)',
+              ),
+              dec2(a.silhouette),
+              dec2(b.silhouette),
+              l('weaker', 'svagare'),
+            )}
+            {row(
+              l(
+                'Validity: share of a cluster from its largest book',
+                'Validitet: andel av ett kluster från dess största bok',
+              ),
+              pct(a.mean_largest_book_share),
+              pct(b.mean_largest_book_share),
+              l('less book-bound', 'mindre bokbundet'),
+            )}
+            {row(
+              l(
+                'Validity: clusters that span several books',
+                'Validitet: kluster som spänner över flera böcker',
+              ),
+              `${a.cross_book_cluster_count} / ${a.clusters}`,
+              `${b.cross_book_cluster_count} / ${b.clusters}`,
+              l('broader', 'bredare'),
+            )}
+            {base?.document_id != null &&
+              centred?.document_id != null &&
+              row(
+                l(
+                  'Validity: how much the clusters follow the book (AMI)',
+                  'Validitet: hur mycket klustren följer boken (AMI)',
+                ),
+                dec2(base.document_id),
+                dec2(centred.document_id),
+                l('baseline → book-centred', 'utgångsläge → bokcentrerat'),
+              )}
+            {base?.symbol_id != null &&
+              centred?.symbol_id != null &&
+              row(
+                l(
+                  'Validity: how much they follow the symbol (AMI)',
+                  'Validitet: hur mycket de följer symbolen (AMI)',
+                ),
+                dec2(base.symbol_id),
+                dec2(centred.symbol_id),
+                l('baseline → book-centred', 'utgångsläge → bokcentrerat'),
+              )}
+          </tbody>
+        </table>
+      </div>
+      <p className="atlas-note">
+        {l(
+          'Data quality, model quality and construct validity are checked separately.',
+          'Datakvalitet, modellkvalitet och begreppsvaliditet kontrolleras var för sig.',
+        )}{' '}
+        <a href="#quality">
+          {l('Quality & Validity', 'Kvalitet och validitet')}
+        </a>
+      </p>
+    </section>
   )
 }

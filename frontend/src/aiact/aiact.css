@@ -1489,3 +1489,32 @@
   margin: var(--sp-3) 0 0;
   font-size: var(--small);
 }
+.aiact .aa-sweden {
+  margin: var(--sp-5) 0;
+}
+.aa-model {
+  margin-top: var(--sp-2);
+  font-size: var(--caption);
+  color: var(--muted);
+}
+.aa-model summary {
+  cursor: pointer;
+}
+.aa-model dl {
+  margin: var(--sp-1) 0 0;
+  font-family: var(--font-mono);
+}
+.aa-model dd {
+  margin: 0;
+  word-break: break-word;
+}
+.aa-affects {
+  margin: var(--sp-1) 0;
+  font-size: var(--small);
+  color: var(--muted);
+}
+.aa-result-aid {
+  margin: 0 0 var(--sp-2);
+  font-size: var(--small);
+  font-weight: var(--weight-heading);
+}

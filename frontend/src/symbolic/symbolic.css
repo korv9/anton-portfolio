@@ -413,3 +413,18 @@
 .stage .finding-hero-statement {
   color: var(--ink);
 }
+.validity-case {
+  margin: var(--sp-4) 0 var(--sp-5);
+  padding: var(--sp-4) 0;
+  border-top: 1px solid var(--line-strong);
+  border-bottom: 1px solid var(--line);
+}
+.validity-case h3 {
+  margin: 0 0 var(--sp-2);
+  font-size: var(--h2);
+  line-height: 1.1;
+  max-width: 24ch;
+}
+.validity-case > p {
+  max-width: var(--measure);
+}

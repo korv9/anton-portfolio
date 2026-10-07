@@ -253,3 +253,88 @@
     gap: var(--sp-1);
   }
 }
+
+/* Trace this result (ui/Trace.tsx): a quiet fold that opens into the lineage. */
+.trace {
+  margin: var(--sp-3) 0;
+  font-size: var(--small);
+}
+.trace > summary {
+  cursor: pointer;
+  color: var(--muted);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.trace-path {
+  list-style: none;
+  margin: var(--sp-3) 0 var(--sp-2);
+  padding: 0 0 0 var(--sp-3);
+  border-left: 1px solid var(--line-strong);
+}
+.trace-path > li {
+  position: relative;
+  padding-bottom: var(--sp-3);
+}
+.trace-path > li::before {
+  content: '';
+  position: absolute;
+  left: calc(-1 * var(--sp-3) - 3.5px);
+  top: 0.45em;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ink);
+}
+.trace-stage {
+  display: block;
+  color: var(--muted);
+  font-size: var(--caption);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.trace-path ul {
+  list-style: none;
+  margin: var(--sp-1) 0 0;
+  padding: 0;
+}
+.trace-path ul li {
+  margin-bottom: var(--sp-1);
+}
+.trace-path ul span {
+  display: block;
+  color: var(--muted);
+  max-width: var(--measure);
+}
+.trace-path b {
+  font-family: var(--font-mono);
+  font-weight: 500;
+}
+.trace-more,
+.trace-note {
+  color: var(--muted);
+}
+
+.quality-brief {
+  margin: var(--sp-5) 0 var(--sp-3);
+  font-size: var(--small);
+}
+.quality-brief h3 {
+  margin: 0 0 var(--sp-2);
+  font-size: var(--small);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+.quality-brief dl {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: var(--sp-3);
+  margin: 0;
+}
+.quality-brief dt {
+  font-weight: var(--weight-heading);
+}
+.quality-brief dd {
+  margin: var(--sp-1) 0 0;
+  color: var(--muted);
+  line-height: 1.5;
+}

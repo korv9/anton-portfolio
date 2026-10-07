@@ -108,3 +108,23 @@ test('cross-corpus pairs are above their random baseline, and no vector is publi
   const all = JSON.stringify([summary, profiles, relations, passages, pairs])
   assert.ok(!/"embedding"|"vector"/.test(all))
 })
+
+test('the journey opens with concepts that exist, and excerpts cut at a word', async () => {
+  const { JOURNEY_CONCEPTS, excerpt, strongestWeakest } =
+    await import('../../src/concepts/logic.ts')
+  const seeds = readFileSync(
+    new URL('../../../platform/seeds/concepts/concepts.csv', import.meta.url),
+    'utf8',
+  )
+  for (const id of JOURNEY_CONCEPTS)
+    assert.match(seeds, new RegExp(`^${id},`, 'm'))
+  const short = excerpt('one two three four five six', 12)
+  assert.equal(short, 'one two …')
+  assert.equal(excerpt('short', 12), 'short')
+  const sw = strongestWeakest([
+    { corpus_id: 'law', rank1_lift: 3 },
+    { corpus_id: 'myth', rank1_lift: 0.2 },
+  ] as never)
+  assert.equal(sw?.strongest.corpus_id, 'law')
+  assert.equal(sw?.weakest.corpus_id, 'myth')
+})

@@ -58,6 +58,26 @@ test('the deconfounding experiments are compared under the atlas', async ({
   await expect(table).toContainText(String(centred.cross_book_cluster_count))
 })
 
+test('the embedding models are compared by their nearest neighbours', async ({
+  page,
+}) => {
+  await page.goto('/#symbolic-atlas')
+  const comparison = await (
+    await page.request.get('/data/symbolic/model-comparison.json')
+  ).json()
+  const centred = comparison.rows.filter(
+    (r: { experiment: string }) => r.experiment === 'book_centered',
+  )
+  const table = page.locator('#symbolic-models .atlas-table')
+  await expect(table.locator('tbody tr')).toHaveCount(centred.length)
+  await expect(table.locator('tbody tr').first()).toContainText(
+    'all-MiniLM-L6-v2 (published)',
+  )
+  await expect(page.locator('#symbolic-models')).toContainText(
+    'The atlas keeps all-MiniLM-L6-v2',
+  )
+})
+
 test('the cross-book view mutes book-bound clusters and opens a cluster for review', async ({
   page,
 }) => {

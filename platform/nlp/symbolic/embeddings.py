@@ -13,13 +13,16 @@ import numpy as np
 
 MODEL = "sentence-transformers/all-MiniLM-L6-v2"
 BATCH = 64
+# Models trained with an instruction prefix (e5: "query: " for symmetric tasks such as clustering).
+PREFIX = {"intfloat/e5-base-v2": "query: "}
 
 
 def embed(texts: list[str], model_name: str = MODEL) -> np.ndarray:
     from sentence_transformers import SentenceTransformer
 
     model = SentenceTransformer(model_name, device="cpu")
-    vectors = model.encode(texts, batch_size=BATCH, normalize_embeddings=True,
+    prefix = PREFIX.get(model_name, "")
+    vectors = model.encode([prefix + t for t in texts] if prefix else texts, batch_size=BATCH, normalize_embeddings=True,
                            show_progress_bar=False, convert_to_numpy=True)
     return vectors.astype(np.float32)
 

@@ -1,0 +1,3 @@
+User: can you plan the next step?
+Assistant: Sure. Decision: ship it.
+User: ok

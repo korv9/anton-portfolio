@@ -45,7 +45,7 @@ tension. *Autonomy* has no Riksdag group or job term, and gets none.
 
 | Corpus | Stage | Language | Chunks | Documents | Read from |
 |---|---|---|---|---|---|
-| myth | stories | en | 500 | 10 books | `silver.int_symbol_occurrences` (context windows) |
+| myth | stories | en | 404 | 101 books (v4) | `silver.int_symbol_occurrences` (context windows) |
 | philosophy | ideas | en | 494 | 13 works | `silver.int_philosophy_passages` |
 | politics | contestation | sv | 495 | 495 speeches | `silver.int_riksdag_speeches`, one paragraph per speech |
 | law | codification | en | 500 | 121 provisions | `silver.int_ai_act_provisions`, `02024R1689-20260727` |
@@ -87,8 +87,8 @@ chunk and a z-score compares chunks *within* one corpus, so neither carries that
 
 ## Evaluation (`run.json`)
 
-- **Corpus dominance.** 94 % of each chunk's ten nearest neighbours come from its own corpus
-  (chance 25 %); with each corpus's mean removed, still 82 %. The four corpora differ in genre,
+- **Corpus dominance.** 93 % of each chunk's ten nearest neighbours come from its own corpus
+  (chance 25 %); with each corpus's mean removed, still 80 %. The four corpora differ in genre,
   period and language far more than in subject, so the layer never places chunks from different
   corpora on one map or clusters them together. It compares them only through the concepts.
 - **Language.** 98 % of neighbours share the chunk's language (chance 63 %); Swedish is one
@@ -96,18 +96,18 @@ chunk and a z-score compares chunks *within* one corpus, so neither carries that
 - **Anchor agreement.** Each Swedish anchor's nearest English anchor is the same concept for 28
   of 28 concepts: the two languages' anchors say the same thing to the model.
 - **Concentration.** No corpus is absorbed by one concept: the largest rank-1 share is death in
-  myth (34 %); normalised entropy of rank-1 concepts is 0.66–0.82.
+  myth (38 %); normalised entropy of rank-1 concepts is 0.68–0.82.
 
-## Results (6 October 2026)
+## Results (7 October 2026)
 
 The concepts most often closest, per corpus (rank-1 share, chance 3.6 %):
 
-- **myth**: death 34 %, nature 21 %, power 9 %;
+- **myth** (101 books since 7 October 2026; 10 before): death 38 %, nature 15 %, freedom 7 %;
 - **philosophy**: dignity 19 %, truth 11 %, order 11 %;
 - **politics**: care 24 %, responsibility 18 %, duty and innovation 8 % each;
 - **law**: safety 16 %, authority 13 %, transparency 13 %, duty 12 %.
 
-148 of 159 concept × corpus-pair combinations have a representative pair above the random-pair
+150 of 159 concept × corpus-pair combinations have a representative pair above the random-pair
 baseline. That says the closest passages of two corpora are closer than chance, not that they
 mean the same thing.
 

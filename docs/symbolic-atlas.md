@@ -558,6 +558,38 @@ Reading these honestly:
   carry over (`reviews.py` matches them by fingerprint); 61 v4 clusters are ranked for review.
 - Not measured: literal against symbolic use of a word; that needs a hand-labelled sample.
 
+## Embedding models (run 2026-10-07)
+
+`python platform/nlp/symbolic/experiments.py --models` embeds the same 21,898 passages with
+four sentence-transformers models (all-MiniLM-L6-v2, BAAI/bge-base-en-v1.5, intfloat/e5-base-v2
+with its `query: ` prefix, thenlper/gte-base) and runs the baseline and book-centred experiments
+for each. It writes `experiments/models/<model>/` and `experiments/models/comparison.json`,
+published as `model-comparison.json`. The vectors stay local (`embeddings.npy`), so a rerun skips
+the slow part.
+
+HDBSCAN's settings were chosen for MiniLM, and bge-base collapses under them to five clusters
+(two book-centred), so cluster counts alone cannot compare models. The comparison therefore adds a
+measure with no map and no clusters (`evaluation.neighbourhood`): for each passage, the share of
+its 10 nearest neighbours (cosine) from the same book, tradition or symbol, next to the share a
+random neighbour would have (1 % same book, 5 % same symbol).
+
+Book-centred:
+
+| Model | Neighbours, same book | Neighbours, same symbol | Clusters | Book share | Noise | Embedding |
+|---|---:|---:|---:|---:|---:|---:|
+| all-MiniLM-L6-v2 | 26 % | 26 % | 114 | 36 % | 52 % | 4 min |
+| bge-base-en-v1.5 | 22 % | 30 % | 2 | 6 % | 4 % | 21 min |
+| e5-base-v2 | 24 % | 30 % | 88 | 26 % | 66 % | 22 min |
+| gte-base | 25 % | 31 % | 98 | 28 % | 61 % | 20 min |
+
+- Every larger model moves the same way: fewer same-book neighbours, about four points more
+  same-symbol ones. The step is small next to the book and tradition effect.
+- The symbol word is still in each passage, so part of "same symbol" is the word itself.
+- The atlas keeps all-MiniLM-L6-v2. A larger model would need new HDBSCAN settings, and those
+  should change only after the clusters have been reviewed.
+- Centring by translator was not run: only three translators have more than one book in the
+  corpus, so it would be almost the same as centring by book.
+
 ## Limitations
 
 - Symbol matching is lexicon-based: "fire" in "fire-sword" and "gate" as a door both count, and
@@ -581,5 +613,6 @@ Reading these honestly:
 - Review the top candidates by hand (`review/representative_passages.parquet`) and record the
   outcome in `reviewed_clusters.json`, rejections included.
 - Tune UMAP and HDBSCAN only after the review, so the effect of cleaner text stays isolated.
-- Centre by translator as well as by book, and try per-symbol analyses within one book.
+- Try per-symbol analyses within one book.
+- Retune HDBSCAN per embedding model after the review, then compare the models' clusters too.
 - More books per tradition, and books in their original languages with a multilingual model.

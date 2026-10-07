@@ -25,6 +25,12 @@ pipeline.py, which the site's atlas is built from, are not touched.
 
 first copies the current results to experiments/history/<label>/, so a rerun (after a change
 to the cleaning, say) never overwrites the results it is compared with.
+
+    python platform/nlp/symbolic/experiments.py --models [baseline book_centered]
+
+runs the named experiments once per embedding model in MODELS, on the same sample, into
+experiments/models/<model>/, and writes experiments/models/comparison.json with one row per
+model and experiment (plus the embedding time). The published atlas is not touched.
 """
 from __future__ import annotations
 
@@ -54,6 +60,7 @@ EXPERIMENTS = {
     "book_centered": {"masking": False, "centering": True},
     "masked_book_centered": {"masking": True, "centering": True},
 }
+MODELS = [embeddings.MODEL, "BAAI/bge-base-en-v1.5", "intfloat/e5-base-v2", "thenlper/gte-base"]
 COLUMNS = "occurrence_id, context, document_id, symbol_id, tradition, matched_term"
 
 
@@ -94,7 +101,7 @@ def write_space(path: Path, ids: list[str], space: np.ndarray) -> None:
 
 
 def run_experiment(name: str, config: dict, data: dict, vectors: np.ndarray, texts: list[str],
-                   sample_id: str) -> dict:
+                   sample_id: str, out: Path = OUT, model: str = embeddings.MODEL) -> dict:
     started = time.monotonic()
     space_in = center_by_document(vectors, data["documents"]) if config["centering"] else vectors
     layout = clustering.reduce(space_in, clustering.MAP)
@@ -105,7 +112,7 @@ def run_experiment(name: str, config: dict, data: dict, vectors: np.ndarray, tex
     rows = evaluation.cluster_composition(labels, data["documents"], data["traditions"], data["symbols"])
     metrics.update(evaluation.composition_summary(rows, len(labels)))
 
-    folder = OUT / name
+    folder = out / name
     folder.mkdir(parents=True, exist_ok=True)
     pipeline.write_projection(folder / "atlas_projection.parquet", data["ids"], layout, labels, probabilities)
     write_space(folder / "cluster_space.parquet", data["ids"], space)
@@ -118,7 +125,7 @@ def run_experiment(name: str, config: dict, data: dict, vectors: np.ndarray, tex
     (folder / "evaluation.json").write_text(json.dumps(metrics, indent=2) + "\n", encoding="utf-8")
     run = {
         "experiment_name": name,
-        "embedding_model": embeddings.MODEL,
+        "embedding_model": model,
         "sample_size": len(data["ids"]),
         "sample_strategy": pipeline.SAMPLE_STRATEGY,
         "sample_sha256": sample_id,
@@ -166,6 +173,47 @@ def archive(label: str) -> Path:
     return target
 
 
+def compare_models(names: list[str]) -> int:
+    data = load_sample()
+    sample_id = sample_hash(data["ids"])
+    groups = {"book": data["documents"], "tradition": data["traditions"], "symbol": data["symbols"]}
+    rows = []
+    for model in MODELS:
+        out = OUT / "models" / model.split("/")[-1]
+        out.mkdir(parents=True, exist_ok=True)
+        cache: dict[bool, tuple[np.ndarray, list[str], float | None]] = {}
+        for name in names:
+            config = EXPERIMENTS[name]
+            if config["masking"] not in cache:
+                texts = inputs(data, config["masking"])
+                # Local only, never delivered: the vectors, so a rerun skips the slow part.
+                saved = out / f"embeddings{'_masked' if config['masking'] else ''}.npy"
+                seconds = None
+                if saved.is_file():
+                    vectors = np.load(saved)
+                else:
+                    print(f"{model}: embedding {len(texts)} contexts …", flush=True)
+                    started = time.monotonic()
+                    vectors = embeddings.embed(texts, model)
+                    seconds = round(time.monotonic() - started, 1)
+                    np.save(saved, vectors)
+                cache[config["masking"]] = (vectors, texts, seconds)
+            vectors, texts, seconds = cache[config["masking"]]
+            space_in = center_by_document(vectors, data["documents"]) if config["centering"] else vectors
+            metrics = run_experiment(name, config, data, vectors, texts, sample_id, out, model)
+            near = evaluation.neighbourhood(space_in, groups)
+            rows.append({"model": model, "dimensions": int(vectors.shape[1]), "embedding_seconds": seconds,
+                         **comparison_row(name, metrics),
+                         **{f"neighbours_same_{g}": v["share"] for g, v in near.items()},
+                         **{f"chance_same_{g}": v["chance"] for g, v in near.items()}})
+            print(f"  {name}: {evaluation.summary(metrics)}; cross-book clusters "
+                  f"{metrics['cross_book_cluster_count']}; neighbours {near}", flush=True)
+            (OUT / "models" / "comparison.json").write_text(
+                json.dumps({"sample_sha256": sample_id, "neighbours": 10, "rows": rows}, indent=2) + "\n",
+                encoding="utf-8")
+    return 0
+
+
 def main(names: list[str] | None = None) -> int:
     data = load_sample()
     sample_id = sample_hash(data["ids"])
@@ -196,4 +244,6 @@ if __name__ == "__main__":
     if args[:1] == ["--archive"]:
         print(f"Archived to {archive(args[1])}")
         args = args[2:]
+    if args[:1] == ["--models"]:
+        sys.exit(compare_models(args[1:] or ["baseline", "book_centered"]))
     sys.exit(main(args or None))

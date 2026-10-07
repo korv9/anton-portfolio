@@ -106,3 +106,12 @@ def test_every_experiment_reads_the_same_sample(tmp_path):
     masked = experiments.inputs(first, masking=True)
     assert all("[SYMBOL]" in m and "serpent" not in m for m in masked)
     assert experiments.inputs(first, masking=False) == first["contexts"]
+
+
+def test_neighbourhood_counts_same_group_neighbours_against_chance():
+    # Two tight pairs far apart: each point's one neighbour is its pair partner.
+    v = np.array([[1, 0], [0.99, 0.141], [0, 1], [0.141, 0.99]], dtype=np.float32)
+    v /= np.linalg.norm(v, axis=1, keepdims=True)
+    out = ev.neighbourhood(v, {"book": ["a", "a", "b", "b"], "symbol": ["x", "y", "x", "y"]}, k=1, chunk=3)
+    assert out["book"] == {"share": 1.0, "chance": round(1 / 3, 4)}
+    assert out["symbol"]["share"] == 0.0
