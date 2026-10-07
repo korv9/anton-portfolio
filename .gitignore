@@ -31,3 +31,6 @@ frontend/public/data/parquet/welfare/
 
 # Wrangler local state
 .wrangler/
+
+# ProjectAtlas local index (SQLite), rebuilt by `projectatlas init`
+.projectatlas/
