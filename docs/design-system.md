@@ -14,7 +14,7 @@ second theme file.
 - **Manrope** for everything, self-hosted as variable WOFF2 (`/fonts/manrope-latin.woff2`, 29 kB, preloaded, with
   `manrope-variable.woff2` for any other character;
   weights 200–800). The SIL Open Font License is kept at `frontend/public/fonts/Manrope-OFL.txt`.
-- **System monospace** (`--font-mono`) for figures, metadata, section numbers and code.
+- **System monospace** (`--font-mono`) for figures, metadata, eyebrows and code.
 - Weights: body 470, interface 560, headings 700.
 - Scale: `--display-xl`, `--display-l`, `--h1`, `--h2`, `--h3`, `--body-large`, `--body`,
   `--small`, `--caption`; reading measure `--measure: 68ch`. The older `--fs-*` names map
@@ -38,7 +38,7 @@ line (`--h1`); the project's name above it is the `h1` but set small and upperca
 | `--line` / `--line-strong`   | ink at 16 % / 42 %    | off-white at 16 % / 38 % | rules, control edges        |
 | `--accent` / `--on-accent`   | ink / off-white       | off-white / ink          | what is chosen or current   |
 | `--info`, `--negative`       | `#1F4F73`, `#8F3424`  | `#8BBDE3`, `#EC8A74`     | meaning, never decoration   |
-| `--data-*`                   | six series hues       |                          | charts with categories only |
+| `--series-1` … `--series-5`  | five series hues      | same                     | charts with categories only |
 
 Measured contrast (WCAG): ink on page 13.1, muted on page 6.0 and on the darkest light
 surface 5.2; on a plate, ink 16.7 and muted 7.7. Every main page is checked by axe in
@@ -49,15 +49,14 @@ Party colours are unchanged and come from `frontend/src/parties/identity.tsx`.
 ### Dark plates
 
 `.plate` redefines the same tokens for its subtree, so a component inside reads its colours
-from the tokens and needs no theme of its own. It is used by the Symbolic Atlas, the Data
-Constellation, the concept and philosophy maps, the job clusters and the project stages
-(`Stage` with `dark`). Component aliases such as `--stage-ink` or `--c-muted` are declared
+from the tokens and needs no theme of its own. `Stage` is light unless it is given `dark`;
+only the Symbolic Atlas map asks for it. Component aliases such as `--stage-ink` or `--c-muted` are declared
 again inside `.plate`, because a custom property set on an outer element keeps the outer
 value.
 
 On the Symbolic Atlas the clusters are muted hues on the plate. In the book views, other
 clusters are grey, cross-book candidates stone (`#C9C2B6`) and reviewed clusters off-white,
-with a key beside the map. The Data Constellation keeps bronze, silver and gold tones for
+with a key beside the map. The Data Constellation sits on the light page. It keeps bronze, silver and gold tones for
 the medallion layers and draws everything else in greys; each layer also has its own mark
 shape, so colour is never the only cue.
 
@@ -81,18 +80,37 @@ Three widths, so text never runs the full screen:
 One screen, one purpose; one section, one question; depth only after the reader asks for it.
 The pieces that carry that rule:
 
-- `ProjectHero` (`ui/Project.tsx`): a flagship's first screen. Eyebrow (number and
+- `ProjectHero` (`ui/Project.tsx`): a flagship's first screen. Eyebrow (the
   descriptor), the name, the question, one or two sentences, one finding or a status, and a
   `ProjectSubnav` row of links. On a wide screen it is at least 72 % of the viewport high
   (less the header), so the next section starts near the fold; on a phone it is as tall as
   its content.
-- `ProjectSection`: a numbered section with a label and an `h2`.
+- `ProjectSection`: a section with an optional label and an `h2`.
 - `Disclosure` (`ui/Disclosure.tsx`): a native `<details>` for depth on demand (job details,
   the full stack); no script.
 - `FindingHero`, `ChartSection`, `Interpretation`, `ExploreSection`, `MethodSummary`,
   `SourceCaption` (`ui/Story.tsx`): the finding, the main evidence, explore and method. They
   keep their names, and the first screen sits in front of them.
 - `a.work-card` (start page): the whole card is the link. A card has no buttons.
+
+## Charts
+
+A few forms, used everywhere, so a reader learns them once (`frontend/src/charts/`):
+
+- `RankBars`: the one bar chart. Categories ranked as horizontal bars, the label on the left
+  and the number written out on the right. It diverges around zero when a value is negative,
+  takes a party's colour only for a party, fades the other rows when one is picked, and shows
+  a "Show all" button past a limit. Built in HTML, so labels wrap on a phone.
+- `MultiLineChart`: change over time, one line per series, labelled at the end.
+- `Feature` (`charts/feature/`): the frame around a main chart. The title states the finding;
+  a lead, the controls, a table view and the source sit around the chart.
+- `Heatmap` and the poll trend keep their own forms where a grid or a trend is the answer.
+
+Maps and networks (Data Constellation, the job-ad clusters, the concept and philosophy maps)
+draw in greys with one focus: the picked item in ink or in the accent, everything else
+receding. Category hues come from `--series-1` to `--series-5`, in that order and never
+cycled; they pass the dataviz palette validator on the page, the paper and the plate. A scatter
+or map where any two groups can touch uses the first three, with `--ink-2` as a fourth.
 
 ## Buttons and filters
 
@@ -101,13 +119,14 @@ One system, in `tokens.css`:
 - `.btn`: primary, ink filled. One per view, the main action.
 - `.btn-quiet`: secondary, an outline.
 - `.btn-text`: a text action, underlined.
-- Chip groups (`.project-filter`, `.atlas-chips`, `.constellation-chips`, `.aa-filters` and
-  the other groups listed in `tokens.css`): filters and toggles, pressed when chosen.
+- Chip groups (`.atlas-chips`, `.constellation-chips`, `.aa-filters` and the other groups
+  listed in `tokens.css`): filters and toggles, pressed when chosen. Toggles that switch
+  layers on and off (the constellation's layers, the concept relations) stay light when
+  pressed, because most of them are on at once.
 
 Every control has the same states: hover darkens the edge, `aria-pressed="true"` fills it
 with ink, `:active` nudges it, `:disabled` fades it and shows a not-allowed pointer, and
-`:focus-visible` draws a 2 px outline 3 px out. The design page (`#design`) shows them
-working.
+`:focus-visible` draws a 2 px outline 3 px out.
 
 ## Motion
 

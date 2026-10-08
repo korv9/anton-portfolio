@@ -12,6 +12,15 @@ Follow the skills in `.claude/skills/` (sources in `.claude/skills/README.md`):
   one, and run the swap, squint, signature and token checks before showing UI work. A new
   product page still answers the intent questions (who reads it, what they must do, how it
   should feel) for that page.
+- **`taste-skill`** (`design-taste-frontend`) on every page or style change, inside the
+  confirmed direction: its design read here is "portfolio for recruiters and hiring managers,
+  editorial with data, leaning toward native CSS on the tokens in `tokens.css`", with dials
+  `DESIGN_VARIANCE 5 / MOTION_INTENSITY 3 / VISUAL_DENSITY 5`. Take its anti-default rules,
+  AI tells (section 9) and pre-flight check (section 14); never its design-system picks,
+  installs or new tokens, which `docs/design-system.md` already decides.
+- **`web-design-guidelines`** to review UI code before showing it: read
+  `.claude/skills/web-design-guidelines/references/guidelines.md` (baked in, no fetch) and
+  report findings as `file:line`.
 - **`diagram-design`** for every chart, data visualisation and diagram (architecture, data
   flow, medallion layers, ER, timelines, Sankey). Its style guide is already set to the site's
   tokens. Inside the site, draw with the CSS variables (`var(--ink)` …) so a `.plate`

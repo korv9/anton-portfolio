@@ -52,12 +52,12 @@ const swedish: Record<string, string> = {
   'Data Engineer': 'Dataingenjör',
   'Analytics Engineer': 'Analytics Engineer',
   '& Analytics Engineer.': 'och Analytics Engineer.',
-  "Hi, I'm Anton. I enjoy making complex information easier to understand — from building reliable data pipelines to exploring questions through reports and applied AI. I'm a junior data professional with experience from Fora and Avtalat, and this is a collection of what I've worked on and what I'm curious about.":
-    'Hej, jag heter Anton. Jag tycker om att göra komplex information lättare att förstå – från att bygga tillförlitliga dataflöden till att utforska frågor genom rapporter och tillämpad AI. Jag är i början av min karriär inom data, med erfarenhet från Fora och Avtalat. Här samlar jag sådant jag har arbetat med och är nyfiken på.',
+  "Hi, I'm Anton. I enjoy making complex information easier to understand, from building reliable data pipelines to exploring questions through reports and applied AI. I'm a junior data professional with experience from Fora and Avtalat, and this is a collection of what I've worked on and what I'm curious about.":
+    'Hej, jag heter Anton. Jag tycker om att göra komplex information lättare att förstå, från att bygga tillförlitliga dataflöden till att utforska frågor genom rapporter och tillämpad AI. Jag är i början av min karriär inom data, med erfarenhet från Fora och Avtalat. Här samlar jag sådant jag har arbetat med och är nyfiken på.',
   'View projects': 'Se projekten',
   'Email me': 'Mejla mig',
-  'Analytics Engineer · LIA internship': 'Analytics Engineer · LIA-praktik',
-  'Data Engineer · LIA internship': 'Data Engineer · LIA-praktik',
+  'Analytics Engineer, LIA internship': 'Analytics Engineer, LIA-praktik',
+  'Data Engineer, LIA internship': 'Data Engineer, LIA-praktik',
   'AI Developer programme': 'Utbildning till AI-utvecklare',
   'Open to junior data roles': 'Öppen för juniora roller inom data',
   'A little more about me': 'Lite mer om mig',
@@ -70,21 +70,21 @@ const swedish: Record<string, string> = {
   'Experience / learning by building': 'Erfarenhet / att lära genom att bygga',
   'From source systems to useful reports.':
     'Från källsystem till användbara rapporter.',
-  'Avtalat · Analytics Engineer': 'Avtalat · Analytics Engineer',
-  'Jan–Jun 2026 · LIA internship': 'Jan–jun 2026 · LIA-praktik',
+  'Avtalat, Analytics Engineer': 'Avtalat, Analytics Engineer',
+  'Jan–Jun 2026, LIA internship': 'Jan–jun 2026, LIA-praktik',
   'Extended Freshservice ETL in Azure Databricks using PySpark and Spark SQL. Built Power BI reports and semantic models with DirectQuery and DAX, and worked on reproducible incident analysis with attention to data quality and anonymisation.':
     'Vidareutvecklade ETL för Freshservice i Azure Databricks med PySpark och Spark SQL. Byggde Power BI-rapporter och semantiska modeller med DirectQuery och DAX samt arbetade med reproducerbar incidentanalys med fokus på datakvalitet och anonymisering.',
-  'Fora · Data Engineer': 'Fora · Data Engineer',
-  'Nov 2025–Jan 2026 · LIA internship': 'Nov 2025–jan 2026 · LIA-praktik',
+  'Fora, Data Engineer': 'Fora, Data Engineer',
+  'Nov 2025–Jan 2026, LIA internship': 'Nov 2025–jan 2026, LIA-praktik',
   'Built API ingestion and incremental Bronze, Silver and Gold pipelines. The work included validation, error handling and a Gold-layer star schema for IT service reporting.':
     'Byggde API-inläsning och inkrementella dataflöden i Bronze, Silver och Gold. Arbetet omfattade validering, felhantering och ett stjärnschema i Gold-lagret för rapportering om IT-tjänster.',
-  'Delicato · Machine Operator': 'Delicato · Maskinoperatör',
+  'Delicato, Machine Operator': 'Delicato, Maskinoperatör',
   'Worked with production, quality control and technical troubleshooting. Also served as vice-chair of the local union club.':
     'Arbetade med produktion, kvalitetskontroll och teknisk felsökning. Var också vice ordförande i den lokala fackklubben.',
   Education: 'Utbildning',
-  'AI Developer · JENSEN': 'AI-utvecklare · JENSEN',
-  '2024–2026 · Higher Vocational Education, 400 YH credits. Graduated June 2026.':
-    '2024–2026 · Yrkeshögskola, 400 YH-poäng. Examen i juni 2026.',
+  'AI Developer, JENSEN': 'AI-utvecklare, JENSEN',
+  '2024–2026, Higher Vocational Education, 400 YH credits. Graduated June 2026.':
+    '2024–2026, Yrkeshögskola, 400 YH-poäng. Examen i juni 2026.',
   'My professional experience is in data and analytics. My frontend skills come from studies and personal projects, including making these reports accessible in the browser.':
     'Min yrkeserfarenhet finns inom data och analys. Mina frontendkunskaper kommer från studier och egna projekt, bland annat arbetet med att göra de här rapporterna tillgängliga i webbläsaren.',
   'Outside the job description': 'Utanför arbetsbeskrivningen',
@@ -97,7 +97,7 @@ const swedish: Record<string, string> = {
   "What I'm looking for": 'Det jag söker',
   'A junior role in data engineering or analytics engineering where I can contribute with Python, SQL and data modelling, keep learning, and work with the people who use the results.':
     'En junior roll inom data engineering eller analytics engineering där jag kan bidra med Python, SQL och datamodellering, fortsätta lära mig och arbeta nära dem som använder resultaten.',
-  'Stockholm · Swedish and English': 'Stockholm · svenska och engelska',
+  'Stockholm, Swedish and English': 'Stockholm, svenska och engelska',
   "Let's talk ↗": 'Hör av dig ↗',
   'My toolkit / across work, studies and projects':
     'Min verktygslåda / från arbete, studier och projekt',
@@ -127,11 +127,11 @@ const swedish: Record<string, string> = {
   'Open project →': 'Öppna projektet →',
   'Source code ↗': 'Källkod ↗',
   'Back to all projects': 'Till alla projekt',
-  'Explore the projects ·': 'Utforska projekten ·',
+  'Explore the projects ,': 'Utforska projekten ,',
   Source: 'Källa',
   Period: 'Period',
   Unit: 'Mått',
-  'Personal research · Swedish politics': 'Egen analys · svensk politik',
+  'Personal research, Swedish politics': 'Egen analys, svensk politik',
   'Swedish politics, in the records.': 'Svensk politik, i källorna.',
   'Speeches, proposed spending and formal decisions in one place. I built this to make it easier to follow what politicians actually do and check the original sources.':
     'Tal, föreslagna utgifter och formella beslut på ett ställe. Jag byggde sidan för att göra det lättare att följa vad politiker faktiskt gör och kontrollera originalkällorna.',
@@ -205,15 +205,15 @@ const swedish: Record<string, string> = {
   'Code and methodology on GitHub': 'Kod och metod på GitHub',
   'Experimental results from cleaned measurements through evaluation on unfamiliar pairs, drugs and cell lines.':
     'Experimentella resultat från rensade mätningar till utvärdering på tidigare okända par, läkemedel och cellinjer.',
-  'Allegoria · work in progress': 'Allegoria · pågående projekt',
+  'Allegoria, work in progress': 'Allegoria, pågående projekt',
   'A compact experiment with real requirement profiles and a clearly labelled synthetic direction example.':
     'Ett kort experiment med verkliga kravprofiler och ett tydligt märkt syntetiskt riktnings exempel.',
-  'Degree project · Fora': 'Examensarbete · Fora',
+  'Degree project, Fora': 'Examensarbete, Fora',
   'Finding useful review candidates in incident data.':
     'Hitta användbara granskningskandidater i incidentdata.',
   'My principal case study in data quality, privacy-aware NLP and clustering. Internal source records are not published.':
     'Min främsta fallstudie om datakvalitet, integritetsmedveten NLP och klustring. Interna källdata publiceras inte.',
-  'Degree project · Fora · 2026': 'Examensarbete · Fora · 2026',
+  'Degree project, Fora, 2026': 'Examensarbete, Fora, 2026',
   'Primary case study': 'Främsta fallstudien',
   'Finding review candidates in incident data':
     'Hitta granskningskandidater i incidentdata',
@@ -237,7 +237,7 @@ const swedish: Record<string, string> = {
   'Pipeline & limitations': 'Dataflöde och begränsningar',
   'Presidio for PII, multilingual sentence embeddings, UMAP to 10 dimensions, HDBSCAN and MLflow. Internal clustering metrics do not replace business validation, and no internal incident text or employer raw data is published here.':
     'Presidio för personuppgifter, flerspråkiga meningsembeddings, UMAP till 10 dimensioner, HDBSCAN och MLflow. Interna klustringsmått ersätter inte verksamhetsvalidering. Inga interna incidenttexter eller rådata från arbetsgivaren publiceras här.',
-  'Homie API · work in progress': 'Homie API · pågående projekt',
+  'Homie API, work in progress': 'Homie API, pågående projekt',
   'From household events to understandable analytics.':
     'Från hushållshändelser till begriplig analys.',
   'The API contract and data design are here for inspection. Several endpoints remain documented stubs.':

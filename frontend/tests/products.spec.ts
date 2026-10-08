@@ -53,9 +53,9 @@ test('project reports keep their data and downloads on their own pages', async (
   const card = report.locator('.board-card', {
     hasText: 'What the model relies on',
   })
-  const before = await card.locator('.dash-bars').innerText()
+  const before = await card.locator('.rank-bars').innerText()
   await card.getByRole('button', { name: 'New cell line' }).click()
-  await expect(card.locator('.dash-bars')).not.toHaveText(before)
+  await expect(card.locator('.rank-bars')).not.toHaveText(before)
   await page.goto('/#drugcomb-data')
   const drugData = page.locator('#drugcomb-data')
   await expect(
@@ -73,12 +73,5 @@ test('project reports keep their data and downloads on their own pages', async (
   ).toHaveAttribute('href', /metrics.csv$/)
   await page.goto('/#job-data')
   await expect(page.locator('#job-data tbody tr')).toHaveCount(25)
-  await page.goto('/#raw-data')
-  const politicsData = page.locator('#raw-data')
-  await expect(politicsData).toContainText('1,161 matching rows of 1,161')
-  await politicsData
-    .getByRole('button', { name: 'All decision points' })
-    .click()
-  await expect(politicsData).toContainText('4,407 matching rows of 4,407')
   expect(errors).toEqual([])
 })

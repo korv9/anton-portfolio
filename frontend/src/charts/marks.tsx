@@ -16,7 +16,7 @@ export function MarkerShape({
   fill: string
   stroke?: string
 }) {
-  const common = { fill, stroke, strokeWidth: 1.5 }
+  const common = { fill, stroke, strokeWidth: 2 }
   switch (shape) {
     case 'square':
       return (

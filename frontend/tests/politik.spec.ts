@@ -57,9 +57,9 @@ test('the party bar follows the reader from the story to the other pages', async
   await expect(page).toHaveURL(
     /#politik-valjarna\?partier=S%2CV%2CM|#politik-valjarna\?partier=S,V,M/,
   )
-  await expect(page.locator('.bars-list li')).toHaveCount(3)
+  await expect(page.locator('.rank-bars-list li')).toHaveCount(3)
   await page.getByRole('button', { name: 'Show all' }).click()
-  await expect(page.locator('.bars-list li')).toHaveCount(8)
+  await expect(page.locator('.rank-bars-list li')).toHaveCount(8)
   await expect(bar.getByRole('button', { pressed: true })).toHaveCount(0)
 })
 
@@ -78,7 +78,7 @@ test('the view builder offers valid choices and keeps them in a shareable addres
 }) => {
   await page.goto('/#politik-valjarna')
   // Bars by default: the latest survey, one bar per party.
-  await expect(page.locator('.bars-list li')).toHaveCount(8)
+  await expect(page.locator('.rank-bars-list li')).toHaveCount(8)
   await page.getByRole('button', { name: 'Build your own view' }).click()
   const panel = page.getByRole('dialog', { name: /Build your own view/ })
   await expect(panel).toBeVisible()
@@ -104,7 +104,7 @@ test('the view builder offers valid choices and keeps them in a shareable addres
 
   await page.goto('/#politik-budget-detalj?partier=V')
   await expect(page.locator('.theme-chart-title')).toContainText('Left Party')
-  expect(await page.locator('.bars-list li').count()).toBeGreaterThan(20)
+  expect(await page.locator('.rank-bars-list li').count()).toBeGreaterThan(20)
   await page.getByRole('button', { name: 'Build your own view' }).click()
   await page.getByLabel('One area, every party').check()
   await page.getByLabel('Per cent of the budget for the area').check()
@@ -140,20 +140,12 @@ test('explore and sources reach every detailed view and the raw tables', async (
   page,
 }) => {
   await page.goto('/#politik-utforska')
-  for (const href of [
-    '#debates',
-    '#data-explorer',
-    '#politics',
-    '#budget-proposals',
-    '#taxes',
-    '#now-history',
-    '#raw-data',
-  ])
+  for (const href of ['#politik-mandat', '#politik-sok'])
     await expect(page.locator(`.explore-row[href="${href}"]`)).toHaveCount(1)
   await expect(page.locator('.explore-parties a')).toHaveCount(8)
   await page.goto('/#politik-kallor')
   await expect(page.locator('.sources-block table tbody tr')).toHaveCount(6)
-  for (const href of ['#raw-data', '#data-model', '#status'])
+  for (const href of ['#data-model', '#data-catalogue'])
     await expect(page.locator(`.explore-row[href="${href}"]`)).toHaveCount(1)
   const results = await new AxeBuilder({ page })
     .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
@@ -237,7 +229,7 @@ test('issue debates: the chosen party is the object, in shares and against the o
 }) => {
   await page.goto('/#politik-sakdebatter?partier=MP')
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-    'Green Party — issue debates',
+    'Green Party: issue debates',
   )
   await expect(page.locator('.sak .story-kpis > div')).toHaveCount(4)
   await expect(page.locator('.sak-standout-text')).toContainText('%')

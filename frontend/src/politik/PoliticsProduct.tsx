@@ -232,8 +232,8 @@ function PartySlicer({ route }: { route: Route }) {
         ) : (
           <span>
             {l(
-              'All parties · choose one or more to compare',
-              'Alla partier · välj ett eller flera för att jämföra',
+              'All parties, choose one or more to compare',
+              'Alla partier, välj ett eller flera för att jämföra',
             )}
           </span>
         )}
@@ -258,7 +258,7 @@ function NextPage({
   const chapter = (t: (typeof THEMES)[number]) => {
     const c = chapterOf(t)
     return c.n
-      ? `${l('Chapter', 'Kapitel')} ${c.n} · ${l(c.en, c.sv)}`
+      ? `${l('Chapter', 'Kapitel')} ${c.n}, ${l(c.en, c.sv)}`
       : l(t.en, t.sv)
   }
   return (

@@ -8,7 +8,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { l } from '../../i18n'
 import { load } from '../../parliament/data'
-import type { News, NewsItem } from '../../parliament/News'
+import type { News, NewsItem } from '../../parliament/news'
 import {
   PartyLogo,
   RIKSDAG_PARTIES,
@@ -193,8 +193,8 @@ export default function NyheterTheme({ route }: { route: Route }) {
           meta={
             summary
               ? l(
-                  `${dayName(summary.period.from)}–${dayName(summary.period.to)} · ${summary.items_considered} headlines · written by a language model (${summary.model}) from the headlines only, each theme linked to its sources`,
-                  `${dayName(summary.period.from)}–${dayName(summary.period.to)} · ${summary.items_considered} rubriker · skriven av en språkmodell (${summary.model}) enbart utifrån rubrikerna, varje tema länkat till sina källor`,
+                  `${dayName(summary.period.from)}–${dayName(summary.period.to)}, ${summary.items_considered} headlines, written by a language model (${summary.model}) from the headlines only, each theme linked to its sources`,
+                  `${dayName(summary.period.from)}–${dayName(summary.period.to)}, ${summary.items_considered} rubriker, skriven av en språkmodell (${summary.model}) enbart utifrån rubrikerna, varje tema länkat till sina källor`,
                 )
               : undefined
           }
@@ -266,8 +266,8 @@ export default function NyheterTheme({ route }: { route: Route }) {
             'Vilka partier nyheterna nämner',
           )}
           meta={l(
-            'Headlines naming each party, last 30 days · naming is not the same as being about',
-            'Rubriker som nämner partiet, senaste 30 dagarna · att nämnas är inte samma sak som att handla om',
+            'Headlines naming each party, last 30 days, naming is not the same as being about',
+            'Rubriker som nämner partiet, senaste 30 dagarna, att nämnas är inte samma sak som att handla om',
           )}
         >
           <ul className="news-party-bars">
@@ -294,8 +294,8 @@ export default function NyheterTheme({ route }: { route: Route }) {
           index={2}
           title={l('Topics', 'Ämnen')}
           meta={l(
-            'Headlines per topic · click to filter',
-            'Rubriker per ämne · klicka för att filtrera',
+            'Headlines per topic, click to filter',
+            'Rubriker per ämne, klicka för att filtrera',
           )}
         >
           <ul className="news-topics">
@@ -320,8 +320,8 @@ export default function NyheterTheme({ route }: { route: Route }) {
           wide
           title={l('The headlines', 'Rubrikerna')}
           meta={l(
-            `${num(items.length)} of ${num(news.items.length)} · newest first${selected.length ? ` · naming ${selected.join(', ')}` : ''}`,
-            `${num(items.length)} av ${num(news.items.length)} · nyast först${selected.length ? ` · som nämner ${selected.join(', ')}` : ''}`,
+            `${num(items.length)} of ${num(news.items.length)}, newest first${selected.length ? `, naming ${selected.join(', ')}` : ''}`,
+            `${num(items.length)} av ${num(news.items.length)}, nyast först${selected.length ? `, som nämner ${selected.join(', ')}` : ''}`,
           )}
         >
           <ol className="news-feed">

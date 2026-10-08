@@ -53,7 +53,7 @@ const MEASURES: {
   },
 ]
 const fmt = (v: number, d: number) =>
-  v.toLocaleString('sv-SE', {
+  v.toLocaleString(l('en-GB', 'sv-SE'), {
     minimumFractionDigits: d,
     maximumFractionDigits: d,
   })

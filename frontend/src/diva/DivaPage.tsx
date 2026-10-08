@@ -113,14 +113,14 @@ function ThesisMap({ data }: { data: Clusters }) {
               textAnchor="middle"
               fill={HUES[c.id % HUES.length]}
             >
-              {c.words.slice(0, 2).join(' · ')}
+              {c.words.slice(0, 2).join(', ')}
             </text>
           </g>
         ))}
       </svg>
       <p className="dtree-caption" aria-live="polite">
         {active
-          ? `${active.words.join(', ')} — ${num(active.size)} ${l('theses', 'uppsatser')}. ${l('E.g.', 'T.ex.')} “${active.examples[0]}”`
+          ? `${active.words.join(', ')}: ${num(active.size)} ${l('theses', 'uppsatser')}. ${l('E.g.', 'T.ex.')} “${active.examples[0]}”`
           : l(
               'Each point is a thesis; colour is its cluster, placed by its first two text components. Point at a cluster’s words.',
               'Varje punkt är en uppsats; färgen är dess kluster, placerad efter de två första textkomponenterna. Peka på ett klusters ord.',
@@ -187,7 +187,7 @@ export default function DivaPage() {
         <Stage
           id="diva-map"
           level={1}
-          kicker={l('DiVA · topic clustering', 'DiVA · ämnesklustring')}
+          kicker={l('DiVA, topic clustering', 'DiVA, ämnesklustring')}
           title={l(
             'What Swedish students write about',
             'Vad svenska studenter skriver om',
@@ -222,7 +222,7 @@ export default function DivaPage() {
                   <b>{c.words.slice(0, 4).join(', ')}</b>
                   <br />
                   {num(c.size)} {l('theses', 'uppsatser')}
-                  {c.universities[0] && ` · ${c.universities[0].name}`}
+                  {c.universities[0] && `, ${c.universities[0].name}`}
                 </p>
               ))}
             </StageBlock>
@@ -232,7 +232,7 @@ export default function DivaPage() {
         <Stage
           id="diva-map"
           level={1}
-          kicker={l('DiVA · topic clustering', 'DiVA · ämnesklustring')}
+          kicker={l('DiVA, topic clustering', 'DiVA, ämnesklustring')}
           title={l(
             'What Swedish students write about',
             'Vad svenska studenter skriver om',

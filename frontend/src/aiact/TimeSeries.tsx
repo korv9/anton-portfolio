@@ -110,7 +110,7 @@ export function TimePanel({
     >
       <figcaption className="aa-panel-title">
         {label}
-        {note && <span className="aa-muted"> · {note}</span>}
+        {note && <span className="aa-muted">, {note}</span>}
       </figcaption>
       <div className="aa-line-y" aria-hidden="true">
         {ticks.map((t) => (

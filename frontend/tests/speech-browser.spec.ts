@@ -3,7 +3,7 @@ import { test, expect } from './test'
 test('visitors find a speaker, read full speeches and move through a debate', async ({
   page,
 }) => {
-  await page.goto('/#data-explorer')
+  await page.goto('/#politik-sok')
   const browser = page.locator('#data-explorer')
   await expect(browser.locator('.speech-card')).toHaveCount(12)
   await browser
@@ -11,7 +11,7 @@ test('visitors find a speaker, read full speeches and move through a debate', as
     .selectOption('M')
   await expect(
     browser.locator('.speech-card').first().locator('small'),
-  ).toContainText(/ M /)
+  ).toContainText(/, M,/)
   await browser.locator('.speech-card').first().click()
   const reader = browser.getByRole('article', { name: 'Selected speech' })
   await expect(reader.locator('.source-text')).not.toBeEmpty()
@@ -25,14 +25,4 @@ test('visitors find a speaker, read full speeches and move through a debate', as
     .getByRole('searchbox', { name: 'Find a politician or debate' })
     .fill('no-matching-person-unique')
   await expect(browser).toContainText('No speeches match.')
-  await browser.getByRole('link', { name: /Read the legal sources/ }).click()
-  await expect(
-    page.getByRole('combobox', { name: 'Law snapshot', exact: true }),
-  ).toBeVisible()
-  await page.goto('/#data-explorer')
-  await browser.getByRole('link', { name: /See how they voted/ }).click()
-  await expect(
-    page.getByRole('combobox', { name: 'Voting session', exact: true }),
-  ).toBeVisible()
-  await expect(page.locator('#data-explorer')).toHaveCount(0)
 })

@@ -26,7 +26,6 @@ export default function Besluten({ a }: { a: Analytics }) {
   return (
     <Section
       id="besluten"
-      n={3}
       kicker={l('Decisions', 'Besluten')}
       question={l('What happens in the Riksdag?', 'Vad händer i riksdagen?')}
       lead={l(
@@ -37,10 +36,6 @@ export default function Besluten({ a }: { a: Analytics }) {
         {
           href: '#politik-roster',
           label: l('How the parties vote', 'Hur partierna röstar'),
-        },
-        {
-          href: '#now-decisions',
-          label: l('The latest decisions', 'De senaste besluten'),
         },
         {
           href: '#politik-utredningar',
@@ -84,7 +79,7 @@ export default function Besluten({ a }: { a: Analytics }) {
       <h3>
         {l('Policy areas', 'Politikområden')}{' '}
         <small className="story-h3-note">
-          {l('roll calls · and', 'voteringar · och')}{' '}
+          {l('roll calls, and', 'voteringar, och')}{' '}
           <Info term={l('close votes', 'jämna voteringar')}>
             {l(
               `The share of the area’s roll calls where yes and no were within ${CLOSE_MARGIN} percentage points of each other (|yes − no| / (yes + no) < ${CLOSE_MARGIN} %). Almost every roll call has some party voting differently, so a near-even split says more.`,
@@ -99,7 +94,7 @@ export default function Besluten({ a }: { a: Analytics }) {
           label: areaName(x.committee),
           value: x.votes,
           second: x.close,
-          text: `${num(x.votes)} · ${pct(x.close, 0)}`,
+          text: `${num(x.votes)}, ${pct(x.close, 0)}`,
           color: 'var(--ink)',
         }))}
         secondMax={maxClose}

@@ -93,7 +93,7 @@
   opacity: 0.3;
 }
 .modell-cttee small {
-  opacity: 0.6;
+  color: var(--muted);
 }
 .modell-all {
   margin: 0 0 2rem;

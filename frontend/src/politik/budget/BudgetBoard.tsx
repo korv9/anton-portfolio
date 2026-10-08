@@ -13,7 +13,7 @@ import { Select, signed } from '../controls'
 import { Board, Card, Cards, Empty, Kpi, Kpis } from '../board/Board'
 import Columns, { ColumnMultiples } from '../board/Columns'
 import BudgetIdentity from './BudgetIdentity'
-import BudgetFlow from '../features/BudgetFlow'
+import BudgetDifference from '../features/BudgetDifference'
 import GroupedBars from '../dash/GroupedBars'
 import {
   areaNames,
@@ -148,7 +148,7 @@ export default function BudgetBoard({ route }: { route: Route }) {
       }
     >
       <BudgetIdentity year={year} />
-      <BudgetFlow
+      <BudgetDifference
         rows={rows}
         year={year}
         parties={withBudget}
@@ -184,9 +184,7 @@ export default function BudgetBoard({ route }: { route: Route }) {
             'Each party’s budget in total',
             'Varje partis budget totalt',
           )}
-          meta={`${percent ? l('Per cent of the government’s budget', 'Procent av regeringens budget') : l('SEK m', 'Mnkr')} · ${basis.short.toLowerCase()} ${year}`}
-          href="#budget-proposals"
-          more={l('The proposals', 'Förslagen')}
+          meta={`${percent ? l('Per cent of the government’s budget', 'Procent av regeringens budget') : l('SEK m', 'Mnkr')}, ${basis.short.toLowerCase()} ${year}`}
         >
           <Columns
             categories={withBudget}
@@ -209,7 +207,7 @@ export default function BudgetBoard({ route }: { route: Route }) {
           index={2}
           wide
           title={l('Per expenditure area', 'Per utgiftsområde')}
-          meta={`${percent ? l('Per cent of the area', 'Procent av området') : l('SEK m', 'Mnkr')} ${basis.long} · ${l('the areas where the parties differ most', 'områdena där partierna skiljer sig mest')}`}
+          meta={`${percent ? l('Per cent of the area', 'Procent av området') : l('SEK m', 'Mnkr')} ${basis.long}, ${l('the areas where the parties differ most', 'områdena där partierna skiljer sig mest')}`}
           href={`#politik-budget-detalj?ar=${year}`}
           more={l('Build your own comparison', 'Bygg en egen jämförelse')}
         >

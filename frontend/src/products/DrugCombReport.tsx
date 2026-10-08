@@ -10,7 +10,7 @@ import { fetchData } from '../dataSource'
 import CalibrationScatter from './CalibrationScatter'
 import { Card, Cards, Empty, Kpi, Kpis } from '../politik/board/Board'
 import Columns from '../politik/board/Columns'
-import DashBars from '../politik/dash/DashBars'
+import RankBars from '../charts/RankBars'
 import '../politik/dash/dash.css'
 import './drugcomb.css'
 import BodyMap, { type Lineage } from './BodyMap'
@@ -164,7 +164,19 @@ const STEP_SV: Record<string, string> = {
     'Unika par × cellinje × studie',
 }
 
-const nf = () => (currentLocale() === 'sv' ? 'sv-SE' : 'en-GB')
+// How a name was matched (entity_resolution.method), in words.
+const METHOD: Record<string, [string, string]> = {
+  drugcombdb: ['DrugCombDB identifier', 'DrugCombDB-id'],
+  pubchem: ['PubChem lookup', 'PubChem-sökning'],
+  exact: ['exact name', 'exakt namn'],
+  alias: ['known alias', 'känt alias'],
+  excluded_non_human: ['left out, not human', 'utelämnad, ej human'],
+  unmatched: ['not matched', 'ej matchad'],
+  unresolved: ['not resolved', 'ej löst'],
+}
+const methodName = (m: string) => (METHOD[m] ? l(...METHOD[m]) : m)
+
+const nf = () => l('en-GB', 'sv-SE')
 const num = (n: number, digits = 0) =>
   n.toLocaleString(nf(), {
     minimumFractionDigits: digits,
@@ -243,7 +255,6 @@ export default function DrugCombReport() {
     <article className="report drugcomb-board" id="drugcomb">
       <Stage
         id="dc-body"
-        kicker={l('DrugComb · 01 · the data', 'DrugComb · 01 · datan')}
         title={l(
           'Where the cancer cells come from',
           'Var cancercellerna kommer ifrån',
@@ -365,10 +376,6 @@ export default function DrugCombReport() {
       {treeFile && (
         <Stage
           id="dc-tree"
-          kicker={l(
-            'DrugComb · 02 · a model you can read',
-            'DrugComb · 02 · en modell man kan läsa',
-          )}
           title={l(
             'How a decision tree decides',
             'Så bestämmer ett beslutsträd',
@@ -398,8 +405,7 @@ export default function DrugCombReport() {
                       .sort((a, b) => b.n.share - a.n.share)
                       .map(({ n, i }) => (
                         <option key={n.id} value={n.id}>
-                          {l('Leaf', 'Löv')} {i + 1} · {pct(n.share)} ·{' '}
-                          {num(n.n)}
+                          {l('Leaf', 'Löv')} {i + 1}, {pct(n.share)}, {num(n.n)}
                         </option>
                       ))}
                   </select>
@@ -468,8 +474,8 @@ export default function DrugCombReport() {
                       pct(treeFile.metrics.base_rate),
                     ],
                     [
-                      l('Leaves · depth', 'Löv · djup'),
-                      `${treeFile.metrics.leaves} · ${treeFile.metrics.depth}`,
+                      l('Leaves, depth', 'Löv, djup'),
+                      `${treeFile.metrics.leaves}, ${treeFile.metrics.depth}`,
                     ],
                   ]}
                 />
@@ -511,7 +517,6 @@ export default function DrugCombReport() {
       {sky && (
         <Stage
           id="dc-sky"
-          kicker={l('DrugComb · 03 · clustering', 'DrugComb · 03 · klustring')}
           title={l('Drugs that behave alike', 'Läkemedel som beter sig lika')}
           lead={l(
             'Each star is a drug, placed by where it is synergistic. Drugs that cluster together are joined like a constellation. Choose a cluster to see it alone.',
@@ -564,7 +569,7 @@ export default function DrugCombReport() {
               {sky.clusters.map((c) => (
                 <p key={c.id}>
                   <b>
-                    {['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'][c.id]} ·{' '}
+                    {['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'][c.id]},{' '}
                     {c.size} {l('drugs', 'läkemedel')}
                   </b>
                   <br />
@@ -710,6 +715,7 @@ export default function DrugCombReport() {
             series={MODELS.map(([id, en, sv]) => ({
               key: id,
               label: l(en, sv),
+              focus: id === 'lgbm_all',
               values: SPLITS.map(
                 ([scheme]) => metric(scheme, id)?.pearson ?? null,
               ),
@@ -740,13 +746,12 @@ export default function DrugCombReport() {
             'Rader kvar efter varje städsteg',
           )}
         >
-          <DashBars
-            bars={report.funnel.map((f) => ({
+          <RankBars
+            rows={report.funnel.map((f) => ({
               key: f.step,
               label:
                 currentLocale() === 'sv' ? (STEP_SV[f.step] ?? f.step) : f.step,
               value: f.rows,
-              tone: 'neutral' as const,
             }))}
             format={(v) => num(v)}
             label={l('Cleaning funnel', 'Städtratten')}
@@ -773,7 +778,7 @@ export default function DrugCombReport() {
                   </span>
                   <span>
                     {q.check}
-                    {q.detail && <small> · {q.detail}</small>}
+                    {q.detail && <small>, {q.detail}</small>}
                   </span>
                 </li>
               ))}
@@ -795,10 +800,10 @@ export default function DrugCombReport() {
           )}
         >
           {tables.entities ? (
-            <DashBars
-              bars={tables.entities.map((e) => ({
+            <RankBars
+              rows={tables.entities.map((e) => ({
                 key: `${e.entity}-${e.method}`,
-                label: `${e.entity === 'drug' ? l('Drug', 'Läkemedel') : l('Cell line', 'Cellinje')} · ${e.method}`,
+                label: `${e.entity === 'drug' ? l('Drug', 'Läkemedel') : l('Cell line', 'Cellinje')}: ${methodName(e.method)}`,
                 value: e.measurement_share * 100,
                 tone:
                   e.method === 'unresolved'
@@ -825,8 +830,8 @@ export default function DrugCombReport() {
           index={4}
           title={l('What the model relies on', 'Vad modellen lutar sig mot')}
           meta={l(
-            `Share of the model’s total gain per feature family · ${splitName(split)}`,
-            `Andel av modellens totala vinst per egenskapsgrupp · ${splitName(split)}`,
+            `Share of the model’s total gain per feature family, ${splitName(split)}`,
+            `Andel av modellens totala vinst per egenskapsgrupp, ${splitName(split)}`,
           )}
         >
           <div
@@ -846,15 +851,14 @@ export default function DrugCombReport() {
             ))}
           </div>
           {families.length ? (
-            <DashBars
-              bars={families.map((f) => ({
+            <RankBars
+              rows={families.map((f) => ({
                 key: f.family,
                 label:
                   currentLocale() === 'sv'
                     ? (FAMILY_SV[f.family] ?? f.family)
                     : f.family,
                 value: (f.gain / familyTotal) * 100,
-                tone: 'neutral' as const,
               }))}
               format={(v) => `${num(v, 1)} %`}
               label={l(
@@ -874,8 +878,8 @@ export default function DrugCombReport() {
             'Hittar den de starkaste paren?',
           )}
           meta={l(
-            `Share of real synergy among the pairs the model ranks highest · ${splitName(split)}`,
-            `Andel verklig synergi bland paren modellen rankar högst · ${splitName(split)}`,
+            `Share of real synergy among the pairs the model ranks highest, ${splitName(split)}`,
+            `Andel verklig synergi bland paren modellen rankar högst, ${splitName(split)}`,
           )}
         >
           {enrichment.length ? (
@@ -921,8 +925,8 @@ export default function DrugCombReport() {
             'Stämmer förutsägelserna i nivå?',
           )}
           meta={l(
-            `Mean predicted and measured ZIP per tenth of the predictions · ${splitName(split)}`,
-            `Medel av förutsagd och uppmätt ZIP per tiondel av förutsägelserna · ${splitName(split)}`,
+            `Mean predicted and measured ZIP per tenth of the predictions, ${splitName(split)}`,
+            `Medel av förutsagd och uppmätt ZIP per tiondel av förutsägelserna, ${splitName(split)}`,
           )}
         >
           {calibration.length ? (
@@ -1144,34 +1148,52 @@ export default function DrugCombReport() {
           )}
         </summary>
         <div className="figure-gallery">
-          {[
+          {(
             [
-              'an_01_zip_distribution',
-              'Distribution of measured ZIP scores',
-              'Fördelning av uppmätta ZIP-värden',
-            ],
-            [
-              'an_02_replicate_agreement',
-              'Agreement between repeated measurements',
-              'Överensstämmelse mellan upprepade mätningar',
-            ],
-            [
-              'ml_03_pred_vs_obs',
-              'Predicted against measured',
-              'Förutsagt mot uppmätt',
-            ],
-            [
-              'ml_04_ablation',
-              'What each feature group adds',
-              'Vad varje egenskapsgrupp tillför',
-            ],
-            [
-              'ml_05_overfitting',
-              'Overfitting check',
-              'Kontroll av överanpassning',
-            ],
-            ['an_06_top_pairs', 'The strongest pairs', 'De starkaste paren'],
-          ].map(([file, en, sv]) => (
+              [
+                'an_01_zip_distribution',
+                1579,
+                738,
+                'Distribution of measured ZIP scores',
+                'Fördelning av uppmätta ZIP-värden',
+              ],
+              [
+                'an_02_replicate_agreement',
+                1007,
+                978,
+                'Agreement between repeated measurements',
+                'Överensstämmelse mellan upprepade mätningar',
+              ],
+              [
+                'ml_03_pred_vs_obs',
+                1007,
+                978,
+                'Predicted against measured',
+                'Förutsagt mot uppmätt',
+              ],
+              [
+                'ml_04_ablation',
+                1681,
+                868,
+                'What each feature group adds',
+                'Vad varje egenskapsgrupp tillför',
+              ],
+              [
+                'ml_05_overfitting',
+                1981,
+                792,
+                'Overfitting check',
+                'Kontroll av överanpassning',
+              ],
+              [
+                'an_06_top_pairs',
+                1582,
+                1378,
+                'The strongest pairs',
+                'De starkaste paren',
+              ],
+            ] as [string, number, number, string, string][]
+          ).map(([file, w, h, en, sv]) => (
             <figure key={file}>
               <a
                 href={`data/products/drugcomb/figures/${file}.svg`}
@@ -1181,6 +1203,8 @@ export default function DrugCombReport() {
                 <img
                   src={`data/products/drugcomb/figures/${file}.png`}
                   alt={l(en, sv)}
+                  width={w}
+                  height={h}
                   loading="lazy"
                 />
               </a>

@@ -1,61 +1,39 @@
-import { lazy, Suspense, useEffect, useState } from 'react'
+/**
+ * The job-ad clustering as one theme of the jobs product: the question, why it matters, then
+ * the map, the ranked groups and the picked group's profile (ClusterMap).
+ */
+import { lazy, Suspense } from 'react'
 import { l } from '../i18n'
-import { SectionHeader } from '../ui/Editorial'
 import './clusters.css'
 
 const ClusterMap = lazy(() => import('./ClusterMap'))
 
-export default function ClusteringSection({
-  initialOpen = false,
-}: {
-  initialOpen?: boolean
-}) {
-  const [open, setOpen] = useState(initialOpen)
-  useEffect(() => {
-    if (initialOpen) {
-      setOpen(true)
-      requestAnimationFrame(() =>
-        document
-          .getElementById('job-market-clusters')
-          ?.scrollIntoView({ block: 'start' }),
-      )
-    }
-  }, [initialOpen])
+export default function ClusteringSection() {
   return (
-    <section className="cluster-story" id="job-market-clusters">
-      <SectionHeader
-        number="03"
-        label={l('Unsupervised learning', 'Oövervakad inlärning')}
-        title={l(
-          'What does the Swedish tech job market actually look like?',
-          'Hur ser den svenska IT-arbetsmarknaden egentligen ut?',
-        )}
-      />
-      <p className="ds-body">
-        {l(
-          'Job titles suggest four broad groups: Data Engineer, Analytics Engineer, Data Scientist and Software Developer. But the language of advertisements may cross those boundaries.',
-          'Jobbtitlar antyder fyra breda grupper: Data Engineer, Analytics Engineer, Data Scientist och Software Developer. Men språket i annonserna kan korsa de gränserna.',
-        )}
-      </p>
-      <p className="ds-body">
-        {l(
-          'This analysis embeds Swedish and English advertisement text locally, reduces the semantic space with UMAP and lets HDBSCAN find dense groups without specifying their number. Compare the discovered structure with the existing labels.',
-          'Analysen bäddar in svensk och engelsk annonstext lokalt, reducerar det semantiska rummet med UMAP och låter HDBSCAN hitta täta grupper utan ett förutbestämt antal. Jämför den upptäckta strukturen med de befintliga etiketterna.',
-        )}
-      </p>
-      {open ? (
-        <Suspense
-          fallback={
-            <p role="status">{l('Loading explorer…', 'Laddar utforskaren…')}</p>
-          }
-        >
-          <ClusterMap />
-        </Suspense>
-      ) : (
-        <button className="ds-button secondary" onClick={() => setOpen(true)}>
-          {l('Explore the semantic map', 'Utforska den semantiska kartan')} →
-        </button>
-      )}
-    </section>
+    <article className="theme cluster-story">
+      <header className="theme-head">
+        <h1 className="theme-question">
+          {l(
+            'What groups do IT job ads form?',
+            'Vilka grupper bildar IT-annonserna?',
+          )}
+        </h1>
+        <p className="theme-why">
+          {l(
+            'Job titles suggest four families: Data Engineer, Analytics Engineer, Data Scientist and Software Developer. Here the ads are grouped by how they are written instead, without the titles, and the groups are then held up against the titles.',
+            'Jobbtitlarna antyder fyra familjer: Data Engineer, Analytics Engineer, Data Scientist och Software Developer. Här grupperas annonserna i stället efter hur de är skrivna, utan titlarna, och grupperna jämförs sedan med titlarna.',
+          )}
+        </p>
+      </header>
+      <Suspense
+        fallback={
+          <p role="status">
+            {l('Loading the semantic map…', 'Laddar den semantiska kartan…')}
+          </p>
+        }
+      >
+        <ClusterMap />
+      </Suspense>
+    </article>
   )
 }

@@ -52,7 +52,6 @@ export default function Partierna({
   return (
     <Section
       id="partierna"
-      n={5}
       kicker={l('The parties', 'Partierna')}
       question={l('How do the parties vote?', 'Hur röstar partierna?')}
       lead={l(

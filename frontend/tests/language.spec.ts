@@ -27,7 +27,7 @@ test('language choice persists across project pages and keeps data controls stab
     page.getByRole('button', { name: 'SV', exact: true }),
   ).toHaveAttribute('aria-pressed', 'true')
 
-  await page.goto('/#data-explorer')
+  await page.goto('/#politik-sok')
   await expect(
     page.getByRole('heading', { name: 'Vad sa de egentligen?' }),
   ).toBeVisible()
@@ -36,15 +36,6 @@ test('language choice persists across project pages and keeps data controls stab
   await page.locator('.speech-card').first().click()
   await expect(page.locator('.source-text[lang="sv"]')).toBeVisible()
 
-  await page.goto('/#budget-comparison')
-  await expect(
-    page.getByRole('heading', {
-      name: 'Jämför förslag, prioriteringar och utfall',
-    }),
-  ).toBeVisible()
-  await expect(page.locator('.budget-ledger')).toContainText(
-    'Partiernas förslag',
-  )
   await page.goto('/#drugcomb')
   await expect(
     page.getByRole('heading', { name: 'Håller förutsägelsen på något nytt?' }),

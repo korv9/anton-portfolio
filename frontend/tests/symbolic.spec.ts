@@ -108,7 +108,7 @@ test('the cross-book view mutes book-bound clusters and opens a cluster for revi
   await expect(panel.locator('.cluster-passages li').first()).toBeVisible()
   // The diverse representatives come from different books.
   const books = await panel.locator('.cluster-passages small').allTextContents()
-  expect(new Set(books.map((b) => b.split(' · ')[1])).size).toBeGreaterThan(1)
+  expect(new Set(books.map((b) => b.split(', ')[1])).size).toBeGreaterThan(1)
 })
 
 test('the reviewed view shows only human-reviewed clusters, and says when there are none', async ({
@@ -142,7 +142,7 @@ test('the investigation is told step by step with its numbers', async ({
     String(history.steps[2].metrics.cross_book_cluster_count),
   )
   // The expanded corpus is its own step, with the number of books it grew to.
-  await expect(steps.nth(5)).toContainText('Corpus expansion · v4')
+  await expect(steps.nth(5)).toContainText('Corpus expansion, v4')
   await expect(steps.nth(5)).toContainText(
     `${history.steps[3].documents} books`,
   )

@@ -9,6 +9,7 @@
  * referred table) or, for tables not built locally, taken from dbt's relationships tests.
  */
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { PlatformNav } from './PlatformNav'
 import { l } from '../i18n'
 import { count } from '../format'
 import { fetchData } from '../dataSource'
@@ -534,7 +535,7 @@ function Overview({
               {l(d.en, d.sv)}
             </text>
             <text className="er-ov-meta" y={16} textAnchor="middle">
-              {tables.length} {l('tables', 'tabeller')} · {inside}{' '}
+              {tables.length} {l('tables', 'tabeller')}, {inside}{' '}
               {inside === 1 ? 'relation' : l('relations', 'relationer')}
             </text>
           </g>
@@ -592,7 +593,7 @@ function TablePanel({
             ],
             [
               l('Primary key', 'Primärnyckel'),
-              t.pk.length ? t.pk.join(' + ') : '—',
+              t.pk.length ? t.pk.join(' + ') : '–',
             ],
           ]}
         />
@@ -609,7 +610,7 @@ function TablePanel({
                     ? l(`${pct(r.coverage)} found`, `${pct(r.coverage)} finns`)
                     : l('dbt test', 'dbt-test')}
                   {r.basis.includes('data') && r.basis.includes('tested')
-                    ? l(' · also tested', ' · även testad')
+                    ? l(', also tested', ', även testad')
                     : ''}
                 </span>
               </li>
@@ -740,6 +741,9 @@ export default function ErPage({ route }: { route: Route }) {
 
   return (
     <div className="er-page">
+      <div className="ds-container">
+        <PlatformNav current="#er" />
+      </div>
       <Stage
         id="er"
         level={1}
@@ -806,8 +810,8 @@ export default function ErPage({ route }: { route: Route }) {
               <Legend />
               <p>
                 {l(
-                  'PK primary key · FK foreign key · ◇ party code. Faint boxes belong to another area.',
-                  'PK primärnyckel · FK främmande nyckel · ◇ partikod. Bleka rutor hör till ett annat område.',
+                  'PK primary key, FK foreign key, ◇ party code. Faint boxes belong to another area.',
+                  'PK primärnyckel, FK främmande nyckel, ◇ partikod. Bleka rutor hör till ett annat område.',
                 )}
               </p>
             </StageBlock>

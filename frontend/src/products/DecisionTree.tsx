@@ -169,8 +169,14 @@ export default function DecisionTree({
       >
         <defs>
           <radialGradient id="dtree-glow">
-            <stop offset="0" stopColor="#ffe3a3" stopOpacity="0.9" />
-            <stop offset="1" stopColor="#ffe3a3" stopOpacity="0" />
+            <stop
+              offset="0"
+              style={{ stopColor: 'var(--series-4)', stopOpacity: 0.55 }}
+            />
+            <stop
+              offset="1"
+              style={{ stopColor: 'var(--series-4)', stopOpacity: 0 }}
+            />
           </radialGradient>
         </defs>
         <rect width={W} height={H} className="dtree-ground" />
@@ -275,8 +281,8 @@ export default function DecisionTree({
         </text>
         <text x={W / 2} y={H - 22} textAnchor="middle" className="dtree-foot">
           {l(
-            'leaves: share synergistic (ZIP > 10) · thousands of measurements',
-            'löv: andel synergistiska (ZIP > 10) · tusen mätningar',
+            'leaves: share synergistic (ZIP > 10), thousands of measurements',
+            'löv: andel synergistiska (ZIP > 10), tusen mätningar',
           )}
         </text>
       </svg>
@@ -290,7 +296,7 @@ export default function DecisionTree({
             </ol>
             <p>
               <b>
-                {num(focused.n)} {l('measurements', 'mätningar')} ·{' '}
+                {num(focused.n)} {l('measurements', 'mätningar')},{' '}
                 {num(focused.share * 100, 1)} %{' '}
                 {l('synergistic', 'synergistiska')}
               </b>

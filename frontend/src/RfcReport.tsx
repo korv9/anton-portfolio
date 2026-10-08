@@ -31,12 +31,12 @@ export default function RfcReport() {
   return (
     <article className="report rfc-report" id="rfc-drift">
       <p className="eyebrow">
-        {t('Allegoria · a small experiment in RFC drift')}
+        {t('Allegoria, a small experiment in RFC drift')}
       </p>
       <h2>{t('When MUST becomes SHOULD.')}</h2>
       <p>
         {t(
-          "Can a small change in wording weaken a technical requirement?\n        Allegoria's meaningquality engine makes that change explicit. Here, a\n        cookie-specification comparison and a controlled example show what it\n        can—and cannot—measure.\n      ",
+          "Can a small change in wording weaken a technical requirement?\n        Allegoria's meaningquality engine makes that change explicit. Here, a\n        cookie-specification comparison and a controlled example show what it\n        can and cannot measure.\n      ",
         )}
       </p>
       {error && <p role="alert">{t('The RFC export could not be loaded.')}</p>}
@@ -44,7 +44,7 @@ export default function RfcReport() {
         <>
           <div className="politics-grid">
             <section className="politics-card">
-              <h3>{t('01 / The language profile changed')}</h3>
+              <h3>{t('The language profile changed')}</h3>
               <p>
                 {t(
                   'RFC 2965 (2000) → RFC 6265 (2011). Share of statements extracted\n                by the heuristic reader, grouped by their first requirement\n                keyword.\n              ',
@@ -112,10 +112,10 @@ export default function RfcReport() {
               </p>
             </section>
             <section className="politics-card">
-              <h3>{t('02 / A change the engine can explain')}</h3>
+              <h3>{t('A change the engine can explain')}</h3>
               <p>
                 {t(
-                  'Synthetic example · the actor and action stay identical. Only\n                obligation strength changes.\n              ',
+                  'Synthetic example, the actor and action stay identical. Only\n                obligation strength changes.\n              ',
                 )}
               </p>
               <label>
@@ -195,7 +195,7 @@ export default function RfcReport() {
             >
               {t('RFC 2119 requirement levels ↗\n            ')}
             </a>{' '}
-            ·{' '}
+            ,{' '}
             <a
               href="https://github.com/korv9/allegoria"
               target="_blank"

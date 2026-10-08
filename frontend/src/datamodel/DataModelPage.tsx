@@ -3,6 +3,7 @@ import { l } from '../i18n'
 import { fetchJson } from '../welfare/data'
 import '../welfare/welfare.css'
 import '../parliament/parliament.css'
+import { PlatformNav } from './PlatformNav'
 import './datamodel.css'
 
 type Column = {
@@ -94,7 +95,7 @@ const LAYERS: {
   },
 ]
 const REPO = 'https://github.com/korv9/anton-portfolio/blob/main/platform/'
-const number = (n: number) => n.toLocaleString('sv-SE')
+const number = (n: number) => n.toLocaleString(l('en-GB', 'sv-SE'))
 /** A table's address in the page's hash; a source carries its source name. */
 const slug = (n: Node) =>
   n.kind === 'source' ? `${n.subject}.${n.name}` : n.name
@@ -114,7 +115,7 @@ function Flow({ schema }: { schema: Schema }) {
     [
       l('Bronze → silver → gold', 'Brons → silver → guld'),
       `${(schema.layers.bronze ?? 0) + (schema.layers.silver ?? 0) + (schema.layers.gold ?? 0)} ${l('models', 'modeller')}, ${schema.tests} ${l('tests', 'tester')}`,
-      `dbt ${schema.dbt_version} · DuckDB`,
+      `dbt ${schema.dbt_version}, DuckDB`,
     ],
     [
       l('Export', 'Export'),
@@ -205,9 +206,9 @@ function Detail({ node, schema }: { node: Node; schema: Schema }) {
   return (
     <article className="dm-detail" data-testid="dm-detail">
       <p className="eyebrow">
-        <span className={`dm-layer ${node.layer}`}>{node.layer}</span> ·{' '}
-        {node.subject} · {node.materialized}
-        {node.rows != null && ` · ${number(node.rows)} ${l('rows', 'rader')}`}
+        <span className={`dm-layer ${node.layer}`}>{node.layer}</span>,{' '}
+        {node.subject}, {node.materialized}
+        {node.rows != null && `, ${number(node.rows)} ${l('rows', 'rader')}`}
       </p>
       <h2>
         {node.kind === 'source' ? node.name : `${node.schema}.${node.name}`}
@@ -287,7 +288,7 @@ function Detail({ node, schema }: { node: Node; schema: Schema }) {
       {node.tests.length > 0 && (
         <p>
           <strong>{l('Table tests', 'Tester på tabellen')}:</strong>{' '}
-          {node.tests.join(' · ')}
+          {node.tests.join(', ')}
         </p>
       )}
 
@@ -429,14 +430,7 @@ export default function DataModelPage({ view }: { view: string }) {
             'Allt på webbplatsen kommer från ett datalager byggt med dbt och DuckDB. Här är varje tabell i det: vad den läser från, vad som läser från den, nycklarna som kopplar ihop dem, testerna som vaktar dem, SQL-koden och exempelrader.',
           )}
         </p>
-        <p>
-          <a href="#er">
-            {l(
-              'See every relation as an ER diagram',
-              'Se alla relationer som ER-diagram',
-            )}
-          </a>
-        </p>
+        <PlatformNav current="#data-model" />
       </div>
       {error && <p role="alert">{error}</p>}
       {!schema && !error && (
@@ -460,7 +454,7 @@ export default function DataModelPage({ view }: { view: string }) {
                       setLayer(layer === layerInfo.key ? 'all' : layerInfo.key)
                     }
                   >
-                    {l(...layerInfo.name)} · {schema.layers[layerInfo.key] ?? 0}
+                    {l(...layerInfo.name)}, {schema.layers[layerInfo.key] ?? 0}
                   </button>
                   <span>{l(...layerInfo.text)}</span>
                 </li>
@@ -530,7 +524,7 @@ export default function DataModelPage({ view }: { view: string }) {
                     </a>
                     <small>
                       {n.subject}
-                      {n.rows != null && ` · ${number(n.rows)}`}
+                      {n.rows != null && `, ${number(n.rows)}`}
                     </small>
                   </li>
                 ))}

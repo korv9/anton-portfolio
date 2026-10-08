@@ -4,13 +4,12 @@
  */
 import { useEffect, useMemo, useState } from 'react'
 import TopicNav from '../TopicNav'
-import { currentLocale, t } from '../i18n'
+import { currentLocale, t, l } from '../i18n'
 import { fetchData } from '../dataSource'
 import TimeSeriesChart from '../charts/TimeSeriesChart'
 import { yearSpan } from '../charts/scales'
 import ReportHeader from '../site/ReportHeader'
 import ProjectDataDisclosure from '../products/ProjectDataDisclosure'
-import ClusteringSection from './ClusteringSection'
 
 type MonthlyAd = {
   month: string
@@ -39,12 +38,10 @@ type JobKpis = {
 }
 
 function formatNumber(value: number) {
-  return new Intl.NumberFormat(
-    currentLocale() === 'sv' ? 'sv-SE' : 'en-GB',
-  ).format(value)
+  return new Intl.NumberFormat(l('en-GB', 'sv-SE')).format(value)
 }
 function formatSignedPercent(value: number) {
-  return `${value < 0 ? '−' : '+'}${Math.abs(value).toLocaleString(currentLocale() === 'sv' ? 'sv-SE' : 'en-GB', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%`
+  return `${value < 0 ? '−' : '+'}${Math.abs(value).toLocaleString(l('en-GB', 'sv-SE'), { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%`
 }
 async function fetchReport(url: string) {
   const response = await fetchData(url)
@@ -75,11 +72,7 @@ function JobsChart({ rows, role }: { rows: MonthlyAd[]; role: string }) {
   )
 }
 
-export default function TechReport({
-  clustering = false,
-}: {
-  clustering?: boolean
-}) {
+export default function TechReport() {
   const [monthly, setMonthly] = useState<MonthlyAd[]>([])
   const [technologies, setTechnologies] = useState<Technology[]>([])
   const [jobKpis, setJobKpis] = useState<JobKpis | null>(null)
@@ -139,21 +132,20 @@ export default function TechReport({
           )}
         </p>
         <TopicNav
-          active={clustering ? '#job-market-clusters' : '#job-market-tech'}
+          active="#job-market-tech"
           items={[
             ['#job-market', 'Overview', 'Översikt'],
             ['#job-market-occupations', 'Occupations', 'Yrken'],
             ['#job-market-regions', 'Counties', 'Län'],
             ['#job-market-conditions', 'Conditions', 'Villkor'],
             ['#job-market-tech', 'IT report', 'IT-rapport'],
-            ['#job-market-clusters', 'Semantic clusters', 'Semantiska kluster'],
+            ['#jobb-kluster', 'Semantic clusters', 'Semantiska kluster'],
           ]}
         />
       </div>
       <div className="reports">
         <article className="report" id="job-market">
           <ReportHeader
-            number="02"
             eyebrow="Labour market & technology"
             title={t('What is happening to tech jobs?')}
             intro="A compact view of ad volume, junior openings and technologies mentioned in Swedish job ads."
@@ -163,12 +155,12 @@ export default function TechReport({
           />
           <div className="kpis jobs-kpis">
             <div>
-              <strong>{jobKpis ? formatNumber(jobKpis.ads_total) : '—'}</strong>
+              <strong>{jobKpis ? formatNumber(jobKpis.ads_total) : '–'}</strong>
               <span>{t('ads in the sample')}</span>
             </div>
             <div>
               <strong>
-                {jobKpis ? formatNumber(jobKpis.employers_unique) : '—'}
+                {jobKpis ? formatNumber(jobKpis.employers_unique) : '–'}
               </strong>
               <span>{t('unique employers')}</span>
             </div>
@@ -176,7 +168,7 @@ export default function TechReport({
               <strong>
                 {jobKpis
                   ? formatSignedPercent(jobKpis.software_change_pct)
-                  : '—'}
+                  : '–'}
               </strong>
               <span>
                 {t('developer ads')}
@@ -187,7 +179,7 @@ export default function TechReport({
             </div>
             <div>
               <strong>
-                {jobKpis ? `${jobKpis.junior_share_pct.toFixed(1)}%` : '—'}
+                {jobKpis ? `${jobKpis.junior_share_pct.toFixed(1)}%` : '–'}
               </strong>
               <span>{t('junior share')}</span>
             </div>
@@ -252,8 +244,8 @@ export default function TechReport({
               <p className="eyebrow">{t('Most mentioned in data ads')}</p>
               <p className="ds-small">
                 {currentLocale() === 'sv'
-                  ? 'Andel annonser · skala 0–100 %. En annons kan nämna flera tekniker.'
-                  : 'Share of ads · scale 0–100%. One ad can mention several technologies.'}
+                  ? 'Andel annonser, skala 0–100 %. En annons kan nämna flera tekniker.'
+                  : 'Share of ads, scale 0–100%. One ad can mention several technologies.'}
               </p>
               {topTech.slice(0, 7).map((tech) => (
                 <div key={tech.technology}>
@@ -266,10 +258,9 @@ export default function TechReport({
                     />
                   </span>
                   <strong>
-                    {tech.share_pct.toLocaleString(
-                      currentLocale() === 'sv' ? 'sv-SE' : 'en-GB',
-                      { maximumFractionDigits: 1 },
-                    )}
+                    {tech.share_pct.toLocaleString(l('en-GB', 'sv-SE'), {
+                      maximumFractionDigits: 1,
+                    })}
                     %
                   </strong>
                 </div>
@@ -300,7 +291,6 @@ export default function TechReport({
           </details>
         </article>
       </div>
-      <ClusteringSection initialOpen={clustering} />
       <ProjectDataDisclosure
         title={t('Job ad tables and definitions')}
         initialDataset="fact_job_month_role"

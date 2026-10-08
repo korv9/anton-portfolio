@@ -189,7 +189,7 @@ export default function Journey({ route, data }: { route: Route; data: Data }) {
           <WhyItMatters concept={concept} profile={profile} links={links} />
         </section>
 
-        {CORPUS_ORDER.map((c, i) => {
+        {CORPUS_ORDER.map((c) => {
           const k = corpusOf(c)
           if (!k) return null
           const p = profile.find((x) => x.corpus_id === c)
@@ -202,7 +202,6 @@ export default function Journey({ route, data }: { route: Route; data: Data }) {
             >
               <DataQuestion
                 id={`cj-${c}`}
-                number={i + 1}
                 eyebrow={label(k)}
                 question={l(DOMAIN[c].en, DOMAIN[c].sv)}
               >
@@ -241,11 +240,11 @@ export default function Journey({ route, data }: { route: Route; data: Data }) {
                         <a href={x.source_url} target="_blank" rel="noreferrer">
                           {x.document_title}
                         </a>
-                        , {x.location} ·{' '}
+                        , {x.location},{' '}
                         <Relation type="semantic_similarity" status="derived" />{' '}
                         <span className="cj-muted">
                           {l('similarity', 'likhet')} {x.similarity.toFixed(2)}{' '}
-                          · {l('rank', 'rang')} {x.rank}/
+                          , {l('rank', 'rang')} {x.rank}/
                           {summary.concepts.length}
                         </span>
                       </p>
@@ -268,7 +267,7 @@ export default function Journey({ route, data }: { route: Route; data: Data }) {
                 <li key={`${p.corpus_a}-${p.corpus_b}`}>
                   <p className="cj-pair-head">
                     {label(corpusOf(p.corpus_a)!)} ↔{' '}
-                    {label(corpusOf(p.corpus_b)!)} ·{' '}
+                    {label(corpusOf(p.corpus_b)!)},{' '}
                     <Relation type="semantic_similarity" status="derived" />{' '}
                     <span className="cj-muted">
                       {p.similarity.toFixed(2)} (
@@ -513,7 +512,7 @@ function DomainLinks({ corpus, links }: { corpus: string; links: Link[] }) {
               {k.target?.periods?.all && (
                 <span className="cj-muted">
                   {' '}
-                  · {pct(k.target.periods.all.share)}{' '}
+                  , {pct(k.target.periods.all.share)}{' '}
                   {l('of AI speeches', 'av AI-anförandena')}
                 </span>
               )}
@@ -538,7 +537,7 @@ function DomainLinks({ corpus, links }: { corpus: string; links: Link[] }) {
               </a>
             </>
           )}
-          {k.note && <span className="cj-muted"> · {k.note}</span>}
+          {k.note && <span className="cj-muted">, {k.note}</span>}
         </li>
       ))}
     </ul>
@@ -546,7 +545,7 @@ function DomainLinks({ corpus, links }: { corpus: string; links: Link[] }) {
 }
 
 /**
- * The four domains as a small constellation on a dark plate: each domain a star sized by how
+ * The four domains as a small constellation: each domain a star sized by how
  * strongly the concept stands out there, with its passages around it; lines only where the data
  * has a relation of a stated type. Positions carry no meaning beyond the order of the domains.
  */
@@ -611,7 +610,7 @@ function JourneyMap({
     return `${l(DOMAIN[c].en, DOMAIN[c].sv)}: ${p ? p.rank1_lift.toFixed(1) : '–'}`
   }).join(', ')
   return (
-    <figure className="cj-map plate">
+    <figure className="cj-map">
       <svg
         viewBox="0 0 820 200"
         role="img"

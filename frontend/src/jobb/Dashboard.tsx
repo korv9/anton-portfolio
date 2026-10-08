@@ -12,9 +12,9 @@ import { l } from '../i18n'
 import type { Route } from '../router'
 import { useViewParams } from '../politik/useViewParams'
 import { Select } from '../politik/controls'
-import DashBars from '../politik/dash/DashBars'
+import RankBars from '../charts/RankBars'
 import { MonthColumns } from './charts'
-import Treemap from './Treemap'
+import FieldRanking from './FieldRanking'
 import {
   change,
   conditionsOf,
@@ -231,8 +231,8 @@ export default function Dashboard({
           `Annonser per månad, ${latest} mot åren innan`,
         )}
         subtitle={l(
-          `New ads per month · ${scope} · ${latest} darker`,
-          `Nya annonser per månad · ${scope} · ${latest} mörkare`,
+          `New ads per month, ${scope}, ${latest} darker`,
+          `Nya annonser per månad, ${scope}, ${latest} mörkare`,
         )}
         source={source()}
       >
@@ -279,7 +279,6 @@ export default function Dashboard({
       <section className="jobb-story-section" aria-labelledby="jobb-growing">
         <DataQuestion
           id="jobb-growing"
-          number={2}
           eyebrow={l('Occupations', 'Yrken')}
           question={l('Which roles are growing?', 'Vilka yrken växer?')}
         />
@@ -293,8 +292,8 @@ export default function Dashboard({
               : l('Occupations growing the most', 'Yrken som växer mest')
           }
           subtitle={l(
-            `Change in ads, ${period} against the same months of ${previous} · occupations with ${floor}+ ads a year ago`,
-            `Förändring i annonser, ${period} mot samma månader ${previous} · yrken med minst ${floor} annonser i fjol`,
+            `Change in ads, ${period} against the same months of ${previous}, occupations with ${floor}+ ads a year ago`,
+            `Förändring i annonser, ${period} mot samma månader ${previous}, yrken med minst ${floor} annonser i fjol`,
           )}
           finding={
             top &&
@@ -317,12 +316,11 @@ export default function Dashboard({
             />
           </div>
           {growers.length ? (
-            <DashBars
-              bars={growers.map((o) => ({
+            <RankBars
+              rows={growers.map((o) => ({
                 key: o.id,
                 label: o.name,
                 value: o.change,
-                tone: 'neutral' as const,
                 note: ` ${number(o.now)}`,
               }))}
               format={(v) => signedPct(v)}
@@ -350,7 +348,6 @@ export default function Dashboard({
       <section className="jobb-story-section" aria-labelledby="jobb-groups">
         <DataQuestion
           id="jobb-groups"
-          number={3}
           eyebrow={l('Machine learning', 'Maskininlärning')}
           question={l(
             'Do job ads form natural groups beyond their official titles?',
@@ -380,11 +377,11 @@ export default function Dashboard({
       <ExploreSection
         id="jobb-utforska-mer"
         summary={l(
-          'Every field as a treemap, where the jobs are, and on what terms.',
-          'Varje område som en trädkarta, var jobben finns och på vilka villkor.',
+          'Every field ranked, where the jobs are, and on what terms.',
+          'Varje område rangordnat, var jobben finns och på vilka villkor.',
         )}
       >
-        <Treemap data={data} fields={fields} />
+        <FieldRanking data={data} fields={fields} />
         <ChartSection
           title={
             counties[0]
@@ -395,17 +392,16 @@ export default function Dashboard({
               : l('Where the jobs are', 'Var jobben finns')
           }
           subtitle={l(
-            `Share of ads per county · ${period}`,
-            `Andel av annonserna per län · ${period}`,
+            `Share of ads per county, ${period}`,
+            `Andel av annonserna per län, ${period}`,
           )}
           source={source()}
         >
-          <DashBars
-            bars={counties.slice(0, 6).map((c) => ({
+          <RankBars
+            rows={counties.slice(0, 6).map((c) => ({
               key: c.region,
               label: c.region,
               value: pctOf(c.ads, countyTotal),
-              tone: 'neutral' as const,
             }))}
             format={(v) => share(v, 1)}
             label={l('Share of ads per county', 'Andel av annonserna per län')}
@@ -419,15 +415,14 @@ export default function Dashboard({
         <ChartSection
           title={l('On what terms', 'På vilka villkor')}
           subtitle={l(
-            `Share of ads ${latest} · tick: ${previous}`,
-            `Andel av annonserna ${latest} · streck: ${previous}`,
+            `Share of ads ${latest}, tick: ${previous}`,
+            `Andel av annonserna ${latest}, streck: ${previous}`,
           )}
           source={source()}
         >
-          <DashBars
-            bars={conditionBars.map((c) => ({
+          <RankBars
+            rows={conditionBars.map((c) => ({
               ...c,
-              tone: 'neutral' as const,
             }))}
             format={(v) => share(v)}
             max={100}

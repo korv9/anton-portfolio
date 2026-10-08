@@ -35,7 +35,7 @@ export function activeSection(
     if (route.path === '#projekt') return 'projects'
     return null
   }
-  if (route.page === 'projects' || projectForRoute(route)) return 'projects'
+  if (projectForRoute(route)) return 'projects'
   return null
 }
 
@@ -105,7 +105,6 @@ function ProjectList({ onPick }: { onPick: () => void }) {
         {FLAGSHIPS.map((p) => (
           <li key={p.id}>
             <a href={p.href} onClick={onPick}>
-              <span className="nav-number">{p.number}</span>
               <span>
                 <strong>{b(p.title)}</strong>
                 <small>{b(p.descriptor)}</small>
@@ -114,7 +113,7 @@ function ProjectList({ onPick }: { onPick: () => void }) {
           </li>
         ))}
       </ol>
-      <a className="nav-all" href="#alla-projekt" onClick={onPick}>
+      <a className="nav-all" href="#projekt" onClick={onPick}>
         {l('View all projects', 'Se alla projekt')}
       </a>
     </>
@@ -160,10 +159,19 @@ export default function Header({
   const [homeTop, setHomeTop] = useState(home)
   useEffect(() => {
     if (!home) return setHomeTop(false)
-    const onScroll = () => setHomeTop(window.scrollY < window.innerHeight * 0.5)
-    onScroll()
-    window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
+    // A marker half a screen down the page: while it is in view, the reader is near the top.
+    const marker = document.createElement('div')
+    marker.style.cssText =
+      'position:absolute;top:50vh;left:0;width:1px;height:1px;pointer-events:none'
+    document.body.append(marker)
+    const observer = new IntersectionObserver(([entry]) =>
+      setHomeTop(entry.isIntersecting || entry.boundingClientRect.top > 0),
+    )
+    observer.observe(marker)
+    return () => {
+      observer.disconnect()
+      marker.remove()
+    }
   }, [home])
   // Sticky elements further down (a product's sidebar, anchored sections) sit under it.
   useEffect(() => {
@@ -264,29 +272,25 @@ export default function Header({
 }
 
 /**
- * Where a project page sits: "Projects / <project>", from the registry. Supporting technical
- * pages (architecture, data model, ER diagram, pipeline status, design) say so instead.
+ * Where a project page sits: "Projects / <project>", from the registry. The pages under the
+ * hood (Data Constellation, the data platform, quality, Idea Lineage) say so instead.
  */
 const TECHNICAL: Partial<Record<Route['page'], Bilingual>> = {
-  technical: { en: 'Architecture', sv: 'Arkitektur' },
   constellation: { en: 'Data Constellation', sv: 'Data Constellation' },
   catalogue: { en: 'Data catalogue', sv: 'Datakatalog' },
   lineage: { en: 'Idea Lineage', sv: 'Idea Lineage' },
-  design: { en: 'Design system', sv: 'Designsystem' },
   datamodel: { en: 'Data model', sv: 'Datamodell' },
   er: { en: 'ER diagram', sv: 'ER-diagram' },
-  status: { en: 'Pipeline status', sv: 'Pipelinestatus' },
   quality: { en: 'Quality and validity', sv: 'Kvalitet och validitet' },
 }
 
 /** The page's own name for the document title, or null on the homepage. */
 export function pageTitle(route: Route): string | null {
   if (route.page === 'home') return null
-  if (route.page === 'projects') return l('Projects', 'Projekt')
   const project = projectForRoute(route)
   if (project) return b(project.title)
   const technical = TECHNICAL[route.page]
-  return technical ? b(technical) : l('Technical', 'Teknik')
+  return technical ? b(technical) : l('Under the hood', 'Under huven')
 }
 
 export function ProjectContext({ route }: { route: Route }) {
@@ -300,11 +304,7 @@ export function ProjectContext({ route }: { route: Route }) {
     >
       <ol>
         <li>
-          {route.page === 'projects' ? (
-            <span aria-current="page">{l('Projects', 'Projekt')}</span>
-          ) : (
-            <a href="#alla-projekt">{l('Projects', 'Projekt')}</a>
-          )}
+          <a href="#projekt">{l('Projects', 'Projekt')}</a>
         </li>
         {project && (
           <li>
@@ -318,13 +318,11 @@ export function ProjectContext({ route }: { route: Route }) {
         {!project && technical && (
           <>
             <li>
-              <a href="#technical">{l('Technical', 'Teknik')}</a>
+              <a href="#under-huven">{l('Under the hood', 'Under huven')}</a>
             </li>
-            {route.page !== 'technical' && (
-              <li>
-                <span aria-current="page">{b(technical)}</span>
-              </li>
-            )}
+            <li>
+              <span aria-current="page">{b(technical)}</span>
+            </li>
           </>
         )}
       </ol>
@@ -378,7 +376,7 @@ export function Footer() {
               </li>
             ))}
             <li>
-              <a href="#alla-projekt">{l('All projects', 'Alla projekt')}</a>
+              <a href="#projekt">{l('All projects', 'Alla projekt')}</a>
             </li>
           </ul>
         </div>
@@ -423,10 +421,7 @@ export function Footer() {
               <a href="#data-constellation">Data Constellation</a>
             </li>
             <li>
-              <a href="#data-catalogue">{l('Data catalogue', 'Datakatalog')}</a>
-            </li>
-            <li>
-              <a href="#idea-lineage">Idea Lineage</a>
+              <a href="#data-model">{l('Data platform', 'Dataplattformen')}</a>
             </li>
             <li>
               <a href="#quality">
@@ -434,13 +429,7 @@ export function Footer() {
               </a>
             </li>
             <li>
-              <a href="#technical">{l('Architecture', 'Arkitektur')}</a>
-            </li>
-            <li>
-              <a href="#data-model">{l('Data model', 'Datamodell')}</a>
-            </li>
-            <li>
-              <a href="#er">{l('ER diagram', 'ER-diagram')}</a>
+              <a href="#idea-lineage">Idea Lineage</a>
             </li>
           </ul>
         </div>

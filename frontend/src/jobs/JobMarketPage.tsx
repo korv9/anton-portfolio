@@ -97,7 +97,8 @@ export const HOURS_EN: Record<string, string> = {
   Okänd: 'Not stated',
 }
 
-const number = (value: number) => Math.round(value).toLocaleString('sv-SE')
+const number = (value: number) =>
+  Math.round(value).toLocaleString(l('en-GB', 'sv-SE'))
 const change = (now: number, before: number | undefined) =>
   before ? ((now - before) / before) * 100 : null
 const signedPct = (value: number | null) =>
@@ -105,7 +106,7 @@ const signedPct = (value: number | null) =>
     ? '–'
     : `${value > 0 ? '+' : value < 0 ? '−' : '±'}${Math.abs(
         value,
-      ).toLocaleString('sv-SE', { maximumFractionDigits: 0 })} %`
+      ).toLocaleString(l('en-GB', 'sv-SE'), { maximumFractionDigits: 0 })} %`
 const MONTHS_SV = [
   'januari',
   'februari',
@@ -174,7 +175,7 @@ export default function JobMarketPage({ view }: { view: string }) {
             ['#job-market-regions', 'Counties', 'Län'],
             ['#job-market-conditions', 'Conditions', 'Villkor'],
             ['#job-market-tech', 'IT report', 'IT-rapport'],
-            ['#job-market-clusters', 'Semantic clusters', 'Semantiska kluster'],
+            ['#jobb-kluster', 'Semantic clusters', 'Semantiska kluster'],
           ]}
         />
       </div>
@@ -326,18 +327,18 @@ function Overview({ data }: { data: Market }) {
         <dl className="market-kpis">
           <div>
             <dt>
-              {l('Ads', 'Annonser')} · {lastFull}
+              {l('Ads', 'Annonser')}, {lastFull}
             </dt>
             <dd>{number(yearTotal(data, 'all', lastFull))}</dd>
             <small>{l('Latest complete year', 'Senaste hela året')}</small>
           </div>
           <div>
             <dt>
-              {l('Change', 'Förändring')} · {latest}
+              {l('Change', 'Förändring')}, {latest}
             </dt>
             <dd>{signedPct(ytdChange)}</dd>
             <small>
-              {ytdLabel(data.ytd_months)} ·{' '}
+              {ytdLabel(data.ytd_months)},{' '}
               {l(
                 'vs the same months last year',
                 'mot samma månader året innan',
@@ -410,8 +411,8 @@ function Overview({ data }: { data: Market }) {
               </option>
               <option value="index">
                 {l(
-                  'Compare development · index 100',
-                  'Jämför utveckling · index 100',
+                  'Compare development, index 100',
+                  'Jämför utveckling, index 100',
                 )}
               </option>
             </select>
@@ -419,8 +420,8 @@ function Overview({ data }: { data: Market }) {
           <span>
             {metric === 'ads'
               ? l(
-                  'Monthly volume · zero baseline',
-                  'Månadsvolym · nollbaserad skala',
+                  'Monthly volume, zero baseline',
+                  'Månadsvolym, nollbaserad skala',
                 )
               : `${l('Index', 'Index')}: ${baselineMonth ? monthLabel(baselineMonth) : '–'} = 100`}
           </span>
@@ -697,7 +698,7 @@ function Occupations({ data }: { data: Market }) {
                   </button>
                   <small className="muted">
                     {' '}
-                    {o.ssyk ? `SSYK ${o.ssyk} · ` : ''}
+                    {o.ssyk ? `SSYK ${o.ssyk}, ` : ''}
                     {fieldName(
                       data.fields.find((f) => f.id === o.field)?.name ?? '',
                     )}
@@ -822,7 +823,7 @@ function Regions({ data }: { data: Market }) {
                 </td>
                 <td>
                   {total
-                    ? `${((100 * r.full) / total).toLocaleString('sv-SE', { maximumFractionDigits: 1 })} %`
+                    ? `${((100 * r.full) / total).toLocaleString(l('en-GB', 'sv-SE'), { maximumFractionDigits: 1 })} %`
                     : '–'}
                 </td>
                 <td className={trendClass(r.change)}>{signedPct(r.change)}</td>
@@ -858,7 +859,7 @@ function ConditionsView({ data }: { data: Market }) {
   const pct = (value: number | null) =>
     value == null
       ? '–'
-      : `${value.toLocaleString('sv-SE', { maximumFractionDigits: 0 })} %`
+      : `${value.toLocaleString(l('en-GB', 'sv-SE'), { maximumFractionDigits: 0 })} %`
   const groups: [
     string,
     string,

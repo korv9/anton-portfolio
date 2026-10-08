@@ -10,7 +10,7 @@ import { PartyTag, partyName } from '../../parties/identity'
 import type { Route } from '../../router'
 import ThemeLayout from '../ThemeLayout'
 import BuilderPanel, { Choice, Field } from '../BuilderPanel'
-import Bars from '../Bars'
+import RankBars from '../../charts/RankBars'
 import { Select, num, signed } from '../controls'
 import { useViewParams } from '../useViewParams'
 import { shownParties, useParties } from '../partySelection'
@@ -226,9 +226,9 @@ export default function BudgetTheme({ route }: { route: Route }) {
   const bottom = shown.at(-1)
   const label = (r: BudgetRow) =>
     byArea
-      ? `${r.actor} · ${partyName(r.actor)}`
+      ? `${r.actor}, ${partyName(r.actor)}`
       : multi
-        ? `${r.actor} · ${r.expenditure_area}. ${names.get(r.expenditure_area)}`
+        ? `${r.actor}, ${r.expenditure_area}. ${names.get(r.expenditure_area)}`
         : `${r.expenditure_area}. ${names.get(r.expenditure_area)}`
 
   const yearOptions = years.map((y) => ({ value: String(y), label: String(y) }))
@@ -441,15 +441,15 @@ export default function BudgetTheme({ route }: { route: Route }) {
               )}
             />
           ) : (
-            <Bars
-              bars={shown.map((r) => ({
+            <RankBars
+              rows={shown.map((r) => ({
                 key: `${r.actor}-${r.expenditure_area}`,
                 label: label(r),
                 value: value(r),
                 party: r.actor,
               }))}
               format={format}
-              description={l(
+              label={l(
                 `Difference ${basis.long}: ${shown.map((r) => `${label(r)} ${format(value(r))}`).join('; ')}`,
                 `Skillnad ${basis.long}: ${shown.map((r) => `${label(r)} ${format(value(r))}`).join('; ')}`,
               )}
@@ -516,7 +516,7 @@ export default function BudgetTheme({ route }: { route: Route }) {
         updated={
           report
             ? new Date(report.coverage.generated_at).toLocaleDateString(
-                'sv-SE',
+                l('en-GB', 'sv-SE'),
                 { day: 'numeric', month: 'long', year: 'numeric' },
               )
             : null
@@ -531,27 +531,7 @@ export default function BudgetTheme({ route }: { route: Route }) {
           </p>
         }
         onBuild={() => setBuilding(true)}
-        deepLinks={[
-          {
-            href: '#budget-proposals',
-            label: l('All proposals, year by year', 'Alla förslag, år för år'),
-          },
-          {
-            href: '#budget-explore',
-            label: l(
-              'Budget compared with what parties talk about',
-              'Budget jämfört med vad partierna pratar om',
-            ),
-          },
-          {
-            href: '#budget-outturn',
-            label: l(
-              'What was budgeted and spent',
-              'Vad som budgeterades och användes',
-            ),
-          },
-          { href: '#taxes', label: l('Taxes', 'Skatter') },
-        ]}
+        deepLinks={[{ href: '#politik-skatter', label: l('Taxes', 'Skatter') }]}
       />
       <BuilderPanel
         open={building}

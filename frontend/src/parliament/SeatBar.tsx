@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { l } from '../i18n'
 import { PartyLogo, identity } from '../parties/identity'
 import { PARTY_NAMES, partyLabel, type PartyResult } from './data'
+import './parliament.css'
 
 type Props = {
   parties: PartyResult[]
@@ -110,7 +111,7 @@ export default function SeatBar({ parties, majority, initial = [] }: Props) {
             onClick={() => toggle(party.party)}
           >
             <PartyLogo party={party.party} size={18} />
-            {partyLabel(party.party)} · {party.seats}
+            {partyLabel(party.party)}, {party.seats}
           </button>
         ))}
       </div>
@@ -122,7 +123,7 @@ export default function SeatBar({ parties, majority, initial = [] }: Props) {
           )
         ) : (
           <>
-            <strong>{sum}</strong> {l('seats', 'mandat')} ·{' '}
+            <strong>{sum}</strong> {l('seats', 'mandat')},{' '}
             {sum >= majority
               ? l('✓ a majority', '✓ majoritet')
               : l(

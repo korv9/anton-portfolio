@@ -142,7 +142,8 @@ export default function BodyMap({
         ...x,
         cx,
         cy,
-        r: 5 + 15 * Math.sqrt(x.combinations / max),
+        // At least 10 so the index fits inside; the area above that grows with the measurements.
+        r: 10 + 12 * Math.sqrt(x.combinations / max),
         name: l(x.lineage, PLACES[x.lineage].sv),
         right: cx >= 450,
         outside: cx < 250 || cx > 650,
@@ -154,7 +155,7 @@ export default function BodyMap({
         .filter((x) => x.right === right && !x.outside)
         .sort((a, b) => a.cy - b.cy)
       const top = 80
-      const gap = Math.max(52, (700 - top) / Math.max(side.length, 1))
+      const gap = Math.max(58, (700 - top) / Math.max(side.length, 1))
       return side.map((x, k) => ({ ...x, ly: top + k * gap }))
     }
     // A tissue outside the body (unknown origin) is labelled where it floats.
@@ -193,12 +194,9 @@ export default function BodyMap({
         </defs>
         <rect width="900" height="760" className="body-ground" />
         <text x="40" y="44" className="body-title">
-          {l('CHART NO. 1', 'TAVLA NR 1')}
-        </text>
-        <text x="40" y="62" className="body-sub">
           {l(
-            'CELL LINES OF THE SCREENS · BY TISSUE OF ORIGIN',
-            'FÖRSÖKENS CELLINJER · EFTER URSPRUNGSVÄVNAD',
+            'Cell lines in the screens, by tissue of origin',
+            'Försökens cellinjer, efter ursprungsvävnad',
           )}
         </text>
 
@@ -254,23 +252,23 @@ export default function BodyMap({
                 d={arc(n.cx, n.cy, n.r + 5, n.share_synergistic)}
                 filter="url(#body-glow)"
               />
-              <text className="body-index" x={n.cx} y={n.cy + 3.5}>
+              <text className="body-index" x={n.cx} y={n.cy + 4.5}>
                 {n.index}
               </text>
               <g
                 className="body-label"
                 transform={`translate(${n.outside ? lx : n.right ? lx + 6 : lx - 6} ${n.ly})`}
               >
-                <text className="body-label-name" textAnchor={anchor} y={-4}>
+                <text className="body-label-name" textAnchor={anchor} y={-6}>
                   {n.index}. {n.name.toUpperCase()}
                 </text>
-                <text className="body-label-meta" textAnchor={anchor} y={11}>
-                  {num(n.cell_lines)} {l('cell lines', 'cellinjer')} ·{' '}
+                <text className="body-label-meta" textAnchor={anchor} y={12}>
+                  {num(n.cell_lines)} {l('cell lines', 'cellinjer')},{' '}
                   {num(n.combinations)} {l('measurements', 'mätningar')}
                 </text>
-                <text className="body-label-meta" textAnchor={anchor} y={25}>
+                <text className="body-label-meta" textAnchor={anchor} y={28}>
                   {num(n.share_synergistic * 100, 1)} %{' '}
-                  {l('synergistic', 'synergistiska')} ·{' '}
+                  {l('synergistic', 'synergistiska')},{' '}
                   {l('median ZIP', 'median-ZIP')} {num(n.median_zip, 2)}
                 </text>
               </g>

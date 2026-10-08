@@ -16,9 +16,9 @@ import {
 import { PartyTag, RIKSDAG_PARTIES, partyName } from '../../parties/identity'
 import type { Route } from '../../router'
 import ThemeLayout from '../ThemeLayout'
-import VoteWaffle from '../features/VoteWaffle'
+import VoteShares from '../features/VoteShares'
 import BuilderPanel, { Choice, Field } from '../BuilderPanel'
-import Bars from '../Bars'
+import RankBars from '../../charts/RankBars'
 import { Select, pct } from '../controls'
 import { useViewParams } from '../useViewParams'
 import { shownParties, useParties } from '../partySelection'
@@ -108,7 +108,7 @@ export default function RosterTheme({ route }: { route: Route }) {
           )
           .map((r) => ({
             date: sessionDate(r.session),
-            label: `${r.session} · ${r.role === 'government' ? l('in government', 'i regeringen') : r.role === 'agreement' ? l('agreement', 'avtalsparti') : l('opposition', 'opposition')}`,
+            label: `${r.session}, ${r.role === 'government' ? l('in government', 'i regeringen') : r.role === 'agreement' ? l('agreement', 'avtalsparti') : l('opposition', 'opposition')}`,
             value: Number(r[record.key]),
           })),
       }))
@@ -237,7 +237,7 @@ export default function RosterTheme({ route }: { route: Route }) {
         )}
         loading={!data && !error}
         error={error}
-        feature={<VoteWaffle />}
+        feature={<VoteShares />}
         kpis={
           info && closest && furthest
             ? [
@@ -270,12 +270,12 @@ export default function RosterTheme({ route }: { route: Route }) {
         chartMeta={
           record
             ? l(
-                `Per cent of roll calls · from ${view.fran}`,
-                `Procent av voteringarna · från ${view.fran}`,
+                `Per cent of roll calls, from ${view.fran}`,
+                `Procent av voteringarna, från ${view.fran}`,
               )
             : l(
-                `Per cent of roll calls with the same position · session ${session}${info ? `, ${info.government_name}` : ''}`,
-                `Procent av voteringarna med samma ståndpunkt · riksmötet ${session}${info ? `, ${info.government_name}` : ''}`,
+                `Per cent of roll calls with the same position, session ${session}${info ? `, ${info.government_name}` : ''}`,
+                `Procent av voteringarna med samma ståndpunkt, riksmötet ${session}${info ? `, ${info.government_name}` : ''}`,
               )
         }
         chart={
@@ -287,15 +287,15 @@ export default function RosterTheme({ route }: { route: Route }) {
               tick={(d) => d.slice(2, 4)}
             />
           ) : (
-            <Bars
-              bars={others.map((o) => ({
+            <RankBars
+              rows={others.map((o) => ({
                 key: o.party,
                 party: o.party,
-                label: `${o.party} · ${partyName(o.party)}`,
+                label: `${o.party}, ${partyName(o.party)}`,
                 value: o.value,
               }))}
               format={(v) => pct(v, 0)}
-              description={l(
+              label={l(
                 `How often ${partyName(party)} voted like each other party in ${session}: ${others.map((o) => `${o.party} ${Math.round(o.value)} %`).join(', ')}`,
                 `Hur ofta ${partyName(party)} röstade som varje annat parti ${session}: ${others.map((o) => `${o.party} ${Math.round(o.value)} %`).join(', ')}`,
               )}
@@ -349,22 +349,7 @@ export default function RosterTheme({ route }: { route: Route }) {
         }
         onBuild={() => setBuilding(true)}
         deepLinks={[
-          {
-            href: '#now-votes',
-            label: l('Voting record since 1993', 'Rösthistorik sedan 1993'),
-          },
-          {
-            href: '#politics',
-            label: l('Every roll call in detail', 'Varje votering i detalj'),
-          },
-          {
-            href: '#politics-votes',
-            label: l('How each member voted', 'Hur varje ledamot röstade'),
-          },
-          {
-            href: '#now-decisions',
-            label: l('The latest decisions', 'De senaste besluten'),
-          },
+          { href: '#politik-partier', label: l('The parties', 'Partierna') },
         ]}
       />
       <BuilderPanel

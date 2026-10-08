@@ -63,7 +63,7 @@ function change(headline: Headline, indicator: Indicator) {
       ? null
       : delta > 0 === indicator.higher_is_better
   // A change in a share is in percentage points, not per cent.
-  const size = Math.abs(delta).toLocaleString(undefined, {
+  const size = Math.abs(delta).toLocaleString(l('en-GB', 'sv-SE'), {
     maximumFractionDigits: 2,
   })
   const unit = indicator.unit?.startsWith('procent') ? l(' pp', ' p.e.') : ''
@@ -158,7 +158,7 @@ export default function WelfarePage({ view }: { view: string }) {
               label: l('Explore indicators', 'Utforska indikatorer'),
             },
             {
-              href: '#status',
+              href: '#data-catalogue',
               label: l('Pipeline status', 'Pipelinens status'),
             },
           ]}
@@ -226,7 +226,6 @@ export default function WelfarePage({ view }: { view: string }) {
             what={l('the county figures', 'länssiffrorna')}
           />
           <DataQuestion
-            number="→"
             eyebrow={l('Go deeper', 'Fördjupa')}
             question={l('Four questions to follow', 'Fyra frågor att följa')}
           />
@@ -311,7 +310,7 @@ export default function WelfarePage({ view }: { view: string }) {
                     <span className="tile-period">
                       {headline.period_label}
                       {headline.age_group_key !== 'ALL' &&
-                        ` · ${headline.age_group_key}`}
+                        `, ${headline.age_group_key}`}
                     </span>
                     {headline.ci_low != null && headline.ci_high != null && (
                       <span className="tile-ci">
@@ -408,7 +407,7 @@ export default function WelfarePage({ view }: { view: string }) {
                                 style={{ width: `${8 + share * 92}%` }}
                               />
                               <span className="cell-value">
-                                {value.toLocaleString(undefined, {
+                                {value.toLocaleString(l('en-GB', 'sv-SE'), {
                                   maximumFractionDigits: 2,
                                 })}
                                 {column.key === 'unemployment_rate_pct' &&
@@ -479,7 +478,7 @@ export default function WelfarePage({ view }: { view: string }) {
             )}
             more={[
               {
-                href: '#status',
+                href: '#data-catalogue',
                 label: l('Pipeline status', 'Pipelinens status'),
               },
               {

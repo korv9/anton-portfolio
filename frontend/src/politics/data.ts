@@ -1,3 +1,4 @@
+import { l } from '../i18n'
 import { useEffect, useState } from 'react'
 import { resolveDataUrl } from '../dataSource'
 
@@ -87,7 +88,7 @@ export function useDataUrl(path: string) {
   }, [path])
   return url
 }
-export const count = (n: number) => n.toLocaleString('en-GB')
+export const count = (n: number) => n.toLocaleString(l('en-GB', 'sv-SE'))
 export function positionFromVotes(vote: PartyVote) {
   const counts = [
     ['Ja', vote.yes_votes],

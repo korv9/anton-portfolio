@@ -8,6 +8,7 @@
  * ColumnMultiples draws one small chart per series on a shared scale, the columns version of
  * several lines over time, so no one has to tell overlapping lines apart.
  */
+import type { KeyboardEvent } from 'react'
 import { identity, partyName } from '../../parties/identity'
 import { useSize } from '../dash/motion'
 
@@ -15,16 +16,30 @@ export type ColumnSeries = {
   key: string
   label: string
   party?: string
+  /** The series the chart is about: drawn darkest, the others step back. */
+  focus?: boolean
   values: (number | null)[]
 }
 
-const NEUTRAL = '#2a78d6'
+const NEUTRAL = 'var(--ink-2)'
 
-function colour(series: ColumnSeries, index: number, total: number) {
+// Non-party series: one hue in opaque steps, darkest first, so a grid line never shows through.
+const SHADES = [
+  'var(--ink-2)',
+  'var(--subtle)',
+  'color-mix(in srgb, var(--ink-2) 38%, var(--page))',
+]
+
+function colour(series: ColumnSeries, index: number, all: ColumnSeries[]) {
   if (series.party) return identity(series.party).color
-  // Non-party series: one hue in steps, darkest first.
-  const shades = ['#2a78d6', '#7aaee8', '#b9d3f2']
-  return total === 1 ? NEUTRAL : shades[index % shades.length]
+  if (all.length === 1) return NEUTRAL
+  const focused = all.findIndex((x) => x.focus)
+  if (focused < 0) return SHADES[Math.min(index, SHADES.length - 1)]
+  if (index === focused) return SHADES[0]
+  // The others keep their order behind the focused one.
+  return SHADES[
+    Math.min(index < focused ? index + 1 : index, SHADES.length - 1)
+  ]
 }
 
 function niceTop(value: number) {
@@ -108,7 +123,7 @@ export default function Columns({
           {series.map((x, j) => (
             <li key={x.key}>
               <i
-                style={{ background: colour(x, j, series.length) }}
+                style={{ background: colour(x, j, series) }}
                 aria-hidden="true"
               />
               {x.label}
@@ -153,6 +168,17 @@ export default function Columns({
                   key={category + i}
                   className={onPick ? 'columns-cat pickable' : 'columns-cat'}
                   onClick={onPick ? () => onPick(i) : undefined}
+                  {...(onPick && {
+                    role: 'button',
+                    tabIndex: 0,
+                    'aria-label': title.replace(/\n/g, ', '),
+                    onKeyDown: (e: KeyboardEvent) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault()
+                        onPick(i)
+                      }
+                    },
+                  })}
                 >
                   <title>{title}</title>
                   <rect
@@ -202,9 +228,11 @@ export default function Columns({
                           (stacked ? inner : colW) - (colW > 5 ? 1 : 0),
                         )}
                         height={Math.max(1, bottom - top)}
-                        fill={colour(s, j, series.length)}
                         stroke={p?.casing ?? undefined}
-                        style={{ ['--i' as string]: i }}
+                        style={{
+                          ['--i' as string]: i,
+                          fill: colour(s, j, series),
+                        }}
                       />
                     )
                   })}

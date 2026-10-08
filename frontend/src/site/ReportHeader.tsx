@@ -2,7 +2,6 @@ import { t } from '../i18n'
 
 /** A report's heading with its source, period and unit, shared by the project reports. */
 export default function ReportHeader({
-  number,
   eyebrow,
   title,
   intro,
@@ -10,7 +9,6 @@ export default function ReportHeader({
   period,
   unit,
 }: {
-  number: string
   eyebrow: string
   title: string
   intro: string
@@ -20,7 +18,6 @@ export default function ReportHeader({
 }) {
   return (
     <header className="report-header">
-      <div className="report-number">R{number}</div>
       <div>
         <p className="eyebrow">{t(eyebrow)}</p>
         <h2>{t(title)}</h2>

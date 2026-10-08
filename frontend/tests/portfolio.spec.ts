@@ -59,10 +59,6 @@ test('home introduces Anton and routes to each project', async ({ page }) => {
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
     'Swedish politics in numbers',
   )
-  await page.goto('/#politics')
-  await expect(page.getByRole('heading', { level: 1 })).toContainText(
-    'Roll calls in detail',
-  )
   await page.goto('/#job-market-tech')
   await expect(page.locator('#job-market')).toBeVisible()
   // The IT report's total, from the file the page reads: it changes when a new archive year
@@ -95,16 +91,7 @@ test('home introduces Anton and routes to each project', async ({ page }) => {
   expect(errors).toEqual([])
 })
 
-test('language map and job chart retain useful controls', async ({ page }) => {
-  await page.goto('/#debates')
-  await expect(page.locator('.umap-point')).toHaveCount(400)
-  await page.getByRole('button', { name: '2022/23' }).click()
-  await expect(page.locator('.point-detail')).toContainText('Selected segment')
-  await page.locator('.viz-toolbar select').selectOption('MP')
-  expect(await page.locator('.umap-point').count()).toBeGreaterThan(0)
-  await expect(page.locator('.umap-guide')).toContainText(
-    'not agreement or a political position',
-  )
+test('the job chart retains useful controls', async ({ page }) => {
   await page.goto('/#job-market-tech')
   await page.getByRole('button', { name: 'Data Engineer', exact: true }).click()
   await expect(page.locator('.job-chart-head')).toContainText('Data Engineer')
@@ -127,19 +114,18 @@ test('navigation, responsive layout and accessibility', async ({ page }) => {
   ).toHaveAttribute('download', '')
   for (const route of [
     '/',
-    '/#politics',
-    '/#now',
+    '/#politik-skatter',
+    '/#politik-sok',
     '/#politik-valjarna',
     '/#politik-roster',
     '/#politik-budget',
     '/#politik-tal',
     '/#politik-utforska',
     '/#politik-kallor',
-    '/#issue-arbete',
-    '/#budget-comparison',
+    '/#jobb-kluster',
     '/#drugcomb',
     '/#sweden',
-    '/#status',
+    '/#data-catalogue',
   ]) {
     await page.goto(route)
     for (const width of [320, 375, 768, 1280]) {
@@ -159,58 +145,6 @@ test('navigation, responsive layout and accessibility', async ({ page }) => {
     .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
     .analyze()
   expect(results.violations).toEqual([])
-})
-
-test('budget proposals and annual outcomes are separate navigable reports', async ({
-  page,
-}) => {
-  await page.goto('/#budget-comparison')
-  const budget = page.locator('#budget-comparison')
-  await expect(budget.locator('.budget-ledger-summary')).toContainText('2026')
-  await expect(budget.locator('.budget-ledger-summary')).toContainText('27/27')
-  await expect(budget.locator('.comparison-bar-row')).toHaveCount(7)
-  await expect(budget.locator('.budget-vote')).toHaveCount(8)
-  await expect(budget.locator('.budget-year-context')).toContainText(
-    'Budget agreement with SD',
-  )
-  await budget
-    .getByRole('combobox', { name: 'Budget year', exact: true })
-    .selectOption('2017/18')
-  // 2018 runs over a page break in the source; all 27 areas are read and reconcile with the
-  // committee's own total (1 000 515 SEK m).
-  await expect(budget.locator('.budget-ledger-summary')).toContainText('27/27')
-  await expect(budget.locator('.budget-ledger-summary')).toContainText(
-    '1,000.5 bn SEK',
-  )
-  await expect(budget.locator('.budget-ledger-summary')).not.toContainText(
-    'Incomplete',
-  )
-  await budget
-    .getByRole('combobox', { name: 'Budget year', exact: true })
-    .selectOption('2021/22')
-  await expect(budget.locator('.budget-year-context')).toContainText(
-    'Opposition alternative',
-  )
-  await expect(budget.locator('.budget-year-context')).toContainText(
-    'M · SD · KD',
-  )
-  await budget
-    .getByRole('combobox', { name: 'Budget year', exact: true })
-    .selectOption('2025/26')
-  await budget
-    .getByRole('combobox', { name: 'Proposal', exact: true })
-    .selectOption('V')
-  await expect(budget.locator('.budget-ledger-detail')).toContainText(
-    'relative to government',
-  )
-  await budget.getByText('View all 27 expenditure areas').click()
-  await expect(budget.locator('.budget-ledger-all tbody tr')).toHaveCount(27)
-  await page.locator('.topic-tabs a[href="#budget-outturn"]').click()
-  await expect(page.locator('#budget-outturn')).toContainText('1997–2025')
-  await page.getByLabel('Annual account year').selectOption('2024')
-  await expect(
-    page.locator('#budget-outturn .budget-ledger-all summary'),
-  ).toContainText('2024')
 })
 
 test('the ER diagram shows the areas, a diagram per area and a table’s keys', async ({

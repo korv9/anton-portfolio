@@ -23,8 +23,8 @@ main evidence, explore and method. See [site structure](docs/site-structure.md) 
 | Philosophy Atlas | `#philosophy-atlas` | [Philosophy Atlas](docs/philosophy-atlas.md) |
 | Under the hood | `#data-constellation`, `#quality`, `#data-model`, `#er` | [Data Constellation](docs/data-constellation.md), [quality and validity](docs/quality-and-validity.md), [gold semantic model](docs/gold-semantic-model.md) |
 
-Other work (DrugComb, taLLMan, Allegoria, the thesis, Homie, DiVA) has its own pages; see
-`platform/products/` and [taLLMan](docs/tallman.md).
+Other work (DrugComb, Allegoria, the thesis, Homie, DiVA) has its own pages; see
+`platform/products/`.
 
 ## How the data flows
 
@@ -92,5 +92,4 @@ Data is checked in, so the site builds with Node alone. To rebuild a subject, in
   tests (`tests/`).
 - `platform/`: ingestion, dbt models, publishing, quality checks and their tests.
 - `ml/`: the NLP/ML layer with its own environment and model cards.
-- `worker/`: the Cloudflare Worker.
 - `docs/`: one document per product, plus design, structure and hosting.

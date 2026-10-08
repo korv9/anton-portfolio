@@ -174,7 +174,7 @@ export default function DataConstellationPage({ route }: { route: Route }) {
     <div className="constellation">
       <div className="ds-container">
         <ProjectHero
-          eyebrow={l('Under the hood · platform', 'Under huven · plattform')}
+          eyebrow={l('Under the hood, platform', 'Under huven, plattform')}
           title="Data Constellation"
           question={l(
             'How do raw sources become analytical products?',
@@ -191,12 +191,8 @@ export default function DataConstellationPage({ route }: { route: Route }) {
               label: l('Quality & Validity', 'Kvalitet och validitet'),
             },
             {
-              href: '#data-catalogue',
-              label: l('Data catalogue', 'Datakatalog'),
-            },
-            {
-              href: '#status',
-              label: l('Pipeline status', 'Pipelinens status'),
+              href: '#data-model',
+              label: l('Data platform', 'Dataplattformen'),
             },
           ]}
         >
@@ -301,7 +297,7 @@ export default function DataConstellationPage({ route }: { route: Route }) {
           ))}
         </div>
 
-        <div className="constellation-body plate">
+        <div className="constellation-body">
           <div
             className="constellation-scroll"
             tabIndex={0}
@@ -354,8 +350,8 @@ export default function DataConstellationPage({ route }: { route: Route }) {
         )}
         <p className="constellation-legend">
           {l(
-            'Solid line: data built from data. Teal: a published file and the product that reads it. Dashed: a key that joins two tables. Dotted: shared infrastructure. Faded markers are models switched off by default.',
-            'Heldragen linje: data byggd av data. Turkos: en publicerad fil och produkten som läser den. Streckad: en nyckel som förenar två tabeller. Prickad: gemensam infrastruktur. Bleka markörer är modeller som är avstängda som standard.',
+            'Solid line: data built from data. Gold: a published file and the product that reads it. Dashed: a key that joins two tables. Dotted: shared infrastructure. Faded markers are models switched off by default.',
+            'Heldragen linje: data byggd av data. Guld: en publicerad fil och produkten som läser den. Streckad: en nyckel som förenar två tabeller. Prickad: gemensam infrastruktur. Bleka markörer är modeller som är avstängda som standard.',
           )}
         </p>
       </section>
@@ -455,7 +451,7 @@ function Detail({
     <>
       <p className="constellation-kicker">
         <Marker type={node.type} /> {l(...STYLE[node.type].name)}
-        {node.kind ? ` · ${node.kind}` : ''}
+        {node.kind ? `, ${node.kind}` : ''}
       </p>
       <h3 className="constellation-node-title">{node.label}</h3>
       {node.description && <p>{node.description}</p>}
@@ -588,7 +584,7 @@ function Detail({
                     {(e.source === node.id ? e.from_cols : e.to_cols)?.join(
                       ', ',
                     )}{' '}
-                    · {e.cardinality}
+                    , {e.cardinality}
                   </small>
                 </li>
               )
@@ -661,10 +657,9 @@ function Fallback({
               <summary>
                 <strong>{d.label}</strong>{' '}
                 <small>
-                  {d.counts.sources} {l('sources', 'källor')} ·{' '}
-                  {d.counts.models} {l('models', 'modeller')} · {d.counts.gold}{' '}
-                  {l('gold', 'guld')} · {d.counts.delivery}{' '}
-                  {l('file sets', 'filgrupper')}
+                  {d.counts.sources} {l('sources', 'källor')}, {d.counts.models}{' '}
+                  {l('models', 'modeller')}, {d.counts.gold} {l('gold', 'guld')}
+                  , {d.counts.delivery} {l('file sets', 'filgrupper')}
                 </small>
               </summary>
               {STAGES.map((s) => {

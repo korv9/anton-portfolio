@@ -1,7 +1,6 @@
 /**
- * Utforska själv: every detailed view, grouped by the question it helps answer. The advanced
- * analyses (the language map, the speech archive, every roll call) live here, one click away,
- * instead of competing with the themes' main charts.
+ * Utforska själv: a way in by party, and the tools that are not themes (the seat counter and
+ * the speech search), grouped by the theme they belong to.
  */
 import { l } from '../../i18n'
 import { RIKSDAG_PARTIES, PartyLogo, partyName } from '../../parties/identity'
@@ -9,10 +8,7 @@ import { DEEP_DIVES, THEMES } from '../nav'
 import { Term } from '../Term'
 
 const TECHNICAL: Record<string, string> = {
-  '#debates': 'UMAP · HDBSCAN · embeddings',
-  '#data-explorer': 'Fulltext · anföranden sedan 1993',
-  '#politics': 'fct_roll_call · decision points',
-  '#raw-data': 'Parquet · DuckDB-WASM',
+  '#politik-sok': 'Fulltext, anföranden sedan 1993',
 }
 
 export default function UtforskaTheme() {
@@ -20,7 +16,7 @@ export default function UtforskaTheme() {
     (theme) => ({
       theme,
       dives: Object.entries(DEEP_DIVES).filter(
-        ([path, d]) => d.parent === theme.key && path !== '#budget-comparison',
+        ([, d]) => d.parent === theme.key,
       ),
     }),
   )
@@ -45,7 +41,7 @@ export default function UtforskaTheme() {
         <ul>
           {RIKSDAG_PARTIES.map((p) => (
             <li key={p}>
-              <a href={`#parties-${p.toLowerCase()}`}>
+              <a href={`#politik-partier?partier=${p}`}>
                 <PartyLogo party={p} size={28} />
                 <span>{partyName(p)}</span>
               </a>
@@ -94,7 +90,7 @@ export default function UtforskaTheme() {
               'En metod som placerar liknande texter nära varandra på en platt karta.',
             )}
           />
-          {' · '}
+          {', '}
           <Term
             word="Embedding"
             explain={l(
@@ -102,7 +98,7 @@ export default function UtforskaTheme() {
               'En text omvandlad till siffror, så att texter med liknande innebörd får liknande siffror.',
             )}
           />
-          {' · '}
+          {', '}
           <Term
             word="HDBSCAN"
             explain={l(
@@ -110,7 +106,7 @@ export default function UtforskaTheme() {
               'En metod som hittar grupper av liknande texter utan att antalet grupper bestäms i förväg.',
             )}
           />
-          {' · '}
+          {', '}
           <Term
             word={l('Roll call', 'Votering')}
             explain={l(

@@ -47,7 +47,6 @@ export default function Ledamoterna({
   return (
     <Section
       id="ledamoterna"
-      n={7}
       kicker={l('The members', 'Ledamöterna')}
       question={l('Explore the members', 'Utforska ledamöterna')}
       lead={l(
@@ -56,11 +55,8 @@ export default function Ledamoterna({
       )}
       deeper={[
         {
-          href: '#politics-votes',
-          label: l(
-            'How each member voted, roll call by roll call',
-            'Hur varje ledamot röstade, votering för votering',
-          ),
+          href: '#politik-roster',
+          label: l('How the parties vote', 'Hur partierna röstar'),
         },
       ]}
     >
@@ -143,7 +139,7 @@ export default function Ledamoterna({
                   p === '-' ? l('independent', 'politisk vilde') : partyName(p),
                 )
                 .join(' → ')}
-              {chosen.constituency ? ` · ${chosen.constituency}` : ''}
+              {chosen.constituency ? `, ${chosen.constituency}` : ''}
             </p>
             <dl className="story-kpis small">
               <Kpi

@@ -29,7 +29,7 @@ export function useMarket() {
 export const fieldName = (name: string) => l(FIELD_EN[name] ?? name, name)
 
 export const number = (value: number) =>
-  Math.round(value).toLocaleString('sv-SE')
+  Math.round(value).toLocaleString(l('en-GB', 'sv-SE'))
 export const change = (now: number, before: number | undefined | null) =>
   before ? ((now - before) / before) * 100 : null
 export const signedPct = (value: number | null, digits = 0) =>
@@ -37,12 +37,12 @@ export const signedPct = (value: number | null, digits = 0) =>
     ? '–'
     : `${value > 0 ? '+' : value < 0 ? '−' : '±'}${Math.abs(
         value,
-      ).toLocaleString('sv-SE', {
+      ).toLocaleString(l('en-GB', 'sv-SE'), {
         maximumFractionDigits: digits,
         minimumFractionDigits: digits,
       })} %`
 export const share = (value: number, digits = 0) =>
-  `${value.toLocaleString('sv-SE', { maximumFractionDigits: digits, minimumFractionDigits: digits })} %`
+  `${value.toLocaleString(l('en-GB', 'sv-SE'), { maximumFractionDigits: digits, minimumFractionDigits: digits })} %`
 
 const MONTHS_SV = [
   'jan',

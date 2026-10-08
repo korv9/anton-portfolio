@@ -1,4 +1,4 @@
-import { currentLocale, t } from '../i18n'
+import { t, l } from '../i18n'
 import { useEffect, useRef, useState } from 'react'
 import { PARTIES, useData } from './data'
 import { readParquet } from '../parquet'
@@ -51,7 +51,7 @@ function Reader({ card }: { card: Card }) {
       tabIndex={-1}
     >
       <p className="eyebrow">
-        {t('Read in context · ')}
+        {t('Read in context, ')}
         {card.speech_date}
       </p>
       <h3 lang="sv">{card.title}</h3>
@@ -60,7 +60,7 @@ function Reader({ card }: { card: Card }) {
       {speech && (
         <>
           <h4>
-            {speech.speaker} · {speech.party}
+            {speech.speaker}, {speech.party}
           </h4>
           <p>
             {t('Speech ')}
@@ -102,7 +102,7 @@ function Reader({ card }: { card: Card }) {
                   aria-pressed={selected === s.speech_id}
                   onClick={() => setSelected(s.speech_id)}
                 >
-                  {s.speech_number}. {s.speaker} · {s.party}
+                  {s.speech_number}. {s.speaker}, {s.party}
                 </button>
               ))}
             </div>
@@ -162,24 +162,6 @@ export default function SpeechBrowser() {
           'Pick a politician, party or debate. Read their own words, then move through the surrounding discussion. You do not need to know how the underlying data is organised.',
         )}
       </p>
-      <div className="politics-journey">
-        <a href="#speech-search">
-          <strong>{t('Read the speeches')}</strong>
-          <span>{t('People, parties and debates')}</span>
-        </a>
-        <a href="#budget-comparison">
-          <strong>{t('Compare budget priorities')}</strong>
-          <span>{t('Proposals and spending areas')}</span>
-        </a>
-        <a href="#politics-votes">
-          <strong>{t('See how they voted')}</strong>
-          <span>{t('Proposals, party votes and reservations')}</span>
-        </a>
-        <a href="#politics-laws">
-          <strong>{t('Read the legal sources')}</strong>
-          <span>{t('Imported law snapshots')}</span>
-        </a>
-      </div>
       <p className="evidence-note">
         {t(
           'These are imported parliamentary records, not complete political coverage. Original quotations remain in Swedish. Some source exports contain damaged characters; open the parliamentary source to verify the wording. Browsing speeches and budgets side by side does not establish a formal link between them.',
@@ -258,10 +240,8 @@ export default function SpeechBrowser() {
       {data && (
         <>
           <p aria-live="polite">
-            {matches.length.toLocaleString(
-              currentLocale() === 'sv' ? 'sv-SE' : 'en-GB',
-            )}{' '}
-            {t('speeches found · newest first')}
+            {matches.length.toLocaleString(l('en-GB', 'sv-SE'))}{' '}
+            {t('speeches found, newest first')}
           </p>
           <div className="speech-browse-layout">
             <div>
@@ -274,7 +254,7 @@ export default function SpeechBrowser() {
                     onClick={() => setSelected(s)}
                   >
                     <small>
-                      {s.speech_date} · {s.party} ·{' '}
+                      {s.speech_date}, {s.party},{' '}
                       {t(s.is_reply ? 'Reply' : 'Speech')}
                     </small>
                     <strong>{s.speaker}</strong>

@@ -58,7 +58,7 @@ function ago(iso: string | null | undefined) {
 }
 function when(iso: string | null | undefined) {
   return iso
-    ? new Date(iso).toLocaleString(undefined, {
+    ? new Date(iso).toLocaleString(l('en-GB', 'sv-SE'), {
         dateStyle: 'medium',
         timeStyle: 'short',
       })
@@ -79,6 +79,7 @@ function Badge({ state }: { state: 'ok' | 'stale' | 'failing' }) {
  * The live run record comes from object storage, replaced on every scheduled run; the
  * committed copy is the fallback.
  */
+/** The scheduled pipeline's last run, shown inside the data catalogue. */
 export default function StatusPage() {
   const [run, setRun] = useState<Run | null>(null)
   const [live, setLive] = useState(false)
@@ -123,12 +124,8 @@ export default function StatusPage() {
   const lastJobYear = jobYears.at(-1)
 
   return (
-    <div className="project-page status-page">
-      <div className="page-lead">
-        <p className="eyebrow">
-          {l('Data platform · operations', 'Dataplattform · drift')}
-        </p>
-        <h1>{l('Pipeline status', 'Pipelinens status')}</h1>
+    <div className="status-page">
+      <div>
         <p>
           {l(
             'Every day a scheduled workflow fetches the public sources, builds and tests the DuckDB warehouse with dbt, exports what the site reads, uploads it to object storage and republishes the site when data changed. This page reads that run record.',
@@ -255,7 +252,7 @@ export default function StatusPage() {
                 <div>
                   <dt>{l('Command', 'Kommando')}</dt>
                   <dd>
-                    <code>dbt {run.dbt.command}</code> · {run.dbt.dbt_version}
+                    <code>dbt {run.dbt.command}</code>, {run.dbt.dbt_version}
                   </dd>
                 </div>
                 <div>
@@ -263,7 +260,7 @@ export default function StatusPage() {
                   <dd>
                     {Object.entries(run.dbt.nodes)
                       .map(([kind, count]) => `${count} ${kind}s`)
-                      .join(' · ')}
+                      .join(', ')}
                   </dd>
                 </div>
                 <div>
@@ -276,7 +273,7 @@ export default function StatusPage() {
                     {Object.entries(run.dbt.tests)
                       .filter(([, count]) => count)
                       .map(([status, count]) => `${count} ${status}`)
-                      .join(' · ')}
+                      .join(', ')}
                   </dd>
                 </div>
               </dl>
@@ -289,7 +286,7 @@ export default function StatusPage() {
                     <dt>
                       <code>gold.{table}</code>
                     </dt>
-                    <dd>{count.toLocaleString()}</dd>
+                    <dd>{count.toLocaleString(l('en-GB', 'sv-SE'))}</dd>
                   </div>
                 ))}
               </dl>
@@ -323,7 +320,7 @@ export default function StatusPage() {
                   <dd>
                     {Object.values(run.parquet_rows)
                       .reduce((sum, count) => sum + count, 0)
-                      .toLocaleString()}
+                      .toLocaleString(l('en-GB', 'sv-SE'))}
                   </dd>
                 </div>
               </dl>

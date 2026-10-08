@@ -46,13 +46,15 @@ the extraction regexes. Role, seniority, publication year, region and employment
 metadata and never enter the embedding input. Required skill labels supplied by JobTech
 are included in addition to the existing detected mentions.
 
-The implementation run rebuilt the **official 2025 archive** using the existing ingestion.
-The raw archive has 582,241 records and retained 14,206 candidates; dbt classification and
-nonempty descriptions leave 6,123 analysis advertisements, containing 5,286 distinct input
-texts. The candidate universe is broader than the classified universe because candidate
-retention also uses occupation matches and dbt applies title exclusions.
+The published run (`efd2e318dc1621b2`) reads the **official 2022–2025 archives**, loaded with
+the existing ingestion: 3,392,438 raw records and 87,287 retained candidates. dbt
+classification and nonempty descriptions leave 35,861 analysis advertisements with 26,104
+distinct input texts. The first run used the 2025 archive alone (6,123 ads). The candidate
+universe is broader than the classified universe because candidate retention also uses
+occupation matches and dbt applies title exclusions.
 
-Archive: `https://data.arbetsformedlingen.se/annonser/historiska/2025.jsonl.zip`
+Archives: `https://data.arbetsformedlingen.se/annonser/historiska/<year>.jsonl.zip` for 2022,
+2023, 2024 and 2025; each month's hash is in the coverage ledger.
 
 SHA-256: `43499d2835b607f47e9641443e160bfcab26816c4f04fa17e87bb52b48ce79c6`
 
@@ -98,7 +100,8 @@ Cluster IDs are run-specific, not persistent occupational identifiers.
 The current defaults, selected after feature ablations and consensus checks, are cosine
 UMAP with 60 neighbours, 10 dimensions and `min_dist=0` for
 clustering, and an independent 2D UMAP with `min_dist=.08` for display. HDBSCAN operates on
-the **10-dimensional space**, using Euclidean distance there, `min_cluster_size=100`,
+the **10-dimensional space**, using Euclidean distance there, `min_cluster_size=600` (100 in
+the 2025-only run; six times the ads, six times the minimum),
 `min_samples=3`, and eom selection. Aligned fits at seeds 42/43/44 assign a group only
 when two agree. Noise (`cluster_id=-1`) is retained. The input combines cleaned semantic
 text, title patterns and detected technology mentions with weights .65/.15/.20. See
@@ -211,7 +214,7 @@ npm run build
 choose weights; `--neighbors`, `--dimensions`, `--cluster-min-dist`, `--visual-min-dist`,
 `--min-cluster-size`, `--min-samples`, `--selection-method` and `--seed` expose parameters.
 `--limit` requests an explicit deterministic SHA-256 sample, marked as sampled in delivery.
-The selected run uses all 6,123 eligible rows and no limit. A new corpus or dependency
+The published run uses all 35,861 eligible rows and no limit. It gives 10 groups, 16.7 % of the ads in none, and the largest group holds 27.6 %. The feature ablations and the parameter sweep were run on the 2025 corpus; they have not been repeated on 2022–2025, so this run applies the chosen settings without a new review file. A new corpus or dependency
 version produces a different sweep directory; use its printed path instead of this run's path.
 
 The exporter writes immutable JSON point shards of 5,000 rows, an aggregate manifest and

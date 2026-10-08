@@ -63,8 +63,8 @@ export const PROJECTS: ProjectEntry[] = [
     number: '01',
     title: t('Svensk politik i siffror', 'Swedish politics in numbers'),
     descriptor: t(
-      'Öppna data · analytics engineering',
-      'Public data · analytics engineering',
+      'Öppna data, analytics engineering',
+      'Public data, analytics engineering',
     ),
     summary: t(
       'Ett öppet dataprojekt om riksdagen, politikerna och hur Sverige röstar.',
@@ -115,8 +115,8 @@ export const PROJECTS: ProjectEntry[] = [
     number: '02',
     title: t('EU AI Act Observatory', 'EU AI Act Observatory'),
     descriptor: t(
-      'Juridisk datamodellering · officiella källor',
-      'Legal data modelling · official sources',
+      'Juridisk datamodellering, officiella källor',
+      'Legal data modelling, official sources',
     ),
     summary: t(
       'Vad EU:s AI-förordning faktiskt innebär för den som bygger eller använder AI, byggt på officiella EU-källor.',
@@ -192,8 +192,8 @@ export const PROJECTS: ProjectEntry[] = [
     number: '03',
     title: t('Arbetsmarknaden i jobbannonser', 'The job market in job ads'),
     descriptor: t(
-      'Data engineering · maskininlärning',
-      'Data engineering · machine learning',
+      'Data engineering, maskininlärning',
+      'Data engineering, machine learning',
     ),
     summary: t(
       'Den svenska arbetsmarknaden genom öppna jobbdata, språkmodeller och klustring.',
@@ -234,7 +234,7 @@ export const PROJECTS: ProjectEntry[] = [
     id: 'symbolic-atlas',
     number: '04',
     title: t('Symbolic Atlas', 'Symbolic Atlas'),
-    descriptor: t('NLP · oövervakad inlärning', 'NLP · unsupervised learning'),
+    descriptor: t('NLP, oövervakad inlärning', 'NLP, unsupervised learning'),
     summary: t(
       'En oövervakad utforskning av återkommande symbolisk mening i mytologi, folksagor och litteratur.',
       'An unsupervised exploration of recurring symbolic meaning in mythology, folklore and literature.',
@@ -288,7 +288,7 @@ export const PROJECTS: ProjectEntry[] = [
     id: 'welfare',
     number: '05',
     title: t('Hur mår Sverige?', 'How is Sweden doing?'),
-    descriptor: t('dbt · offentliga data', 'dbt · public data'),
+    descriptor: t('dbt, offentliga data', 'dbt, public data'),
     summary: t(
       'Jobb, hälsa och förtroende i Sverige, utforskade genom fem offentliga datakällor.',
       'Jobs, health and trust across Sweden, explored through five public data sources.',
@@ -298,8 +298,8 @@ export const PROJECTS: ProjectEntry[] = [
       'Do jobs, sick leave, health and trust move together across Sweden?',
     ),
     built: t(
-      'Fem offentliga källor – SCB, Försäkringskassan, Folkhälsomyndigheten, European Social Survey och Kolada – i en testad dbt-stjärnmodell med gemensamma nycklar för region, period, kön och ålder.',
-      'Five public sources – SCB, Försäkringskassan, the Public Health Agency, the European Social Survey and Kolada – in a tested dbt star schema with shared keys for region, period, sex and age.',
+      'Fem offentliga källor (SCB, Försäkringskassan, Folkhälsomyndigheten, European Social Survey och Kolada) i en testad dbt-stjärnmodell med gemensamma nycklar för region, period, kön och ålder.',
+      'Five public sources (SCB, Försäkringskassan, the Public Health Agency, the European Social Survey and Kolada) in a tested dbt star schema with shared keys for region, period, sex and age.',
     ),
     result: t(
       'Län och kommuner kan jämföras sida vid sida i webbläsaren, med en statussida för varje källa och körning.',
@@ -322,7 +322,7 @@ export const PROJECTS: ProjectEntry[] = [
       tech: ['dbt', 'DuckDB', 'Star schema', 'Parquet'],
     },
     code: 'https://github.com/korv9/anton-portfolio/tree/main/platform',
-    pages: ['welfare', 'analysis'],
+    pages: ['welfare'],
   },
   {
     id: 'thesis',
@@ -331,7 +331,7 @@ export const PROJECTS: ProjectEntry[] = [
       'Examensarbete: NLP-klustring av IT-incidenter',
       'Degree project: NLP clustering of IT incidents',
     ),
-    descriptor: t('NLP · klustring · Avtalat', 'NLP · clustering · Avtalat'),
+    descriptor: t('NLP, klustring, Avtalat', 'NLP, clustering, Avtalat'),
     summary: t(
       'Hitta grupper av relaterade incidenter i IT-servicedata för manuell granskning.',
       'Finding groups of related incidents in IT service data for manual review.',
@@ -365,7 +365,7 @@ export const PROJECTS: ProjectEntry[] = [
   {
     id: 'philosophy-atlas',
     title: t('Philosophy Atlas', 'Philosophy Atlas'),
-    descriptor: t('NLP · semantisk utforskning', 'NLP · semantic exploration'),
+    descriptor: t('NLP, semantisk utforskning', 'NLP, semantic exploration'),
     summary: t(
       'En semantisk atlas över fri filosofi med inbäddningar, klustring och mänskligt granskade begrepp.',
       'A semantic atlas of public-domain philosophy using embeddings, clustering and human-reviewed concepts.',
@@ -408,7 +408,7 @@ export const PROJECTS: ProjectEntry[] = [
   {
     id: 'concept-constellation',
     title: t('Concept Constellation', 'Concept Constellation'),
-    descriptor: t('NLP · betydelseatlas', 'NLP · meaning atlas'),
+    descriptor: t('NLP, betydelseatlas', 'NLP, meaning atlas'),
     summary: t(
       'Samma idéer genom myter, filosofi, riksdagstal och AI-förordningen, med en modell och redaktionellt valda begrepp.',
       'The same ideas across myth, philosophy, Riksdag speeches and the AI Act, with one model and editorially chosen concepts.',
@@ -488,38 +488,11 @@ export const PROJECTS: ProjectEntry[] = [
     code: 'https://github.com/korv9/DrugComb-Synergy-Prediction',
     pages: ['drugcomb'],
   },
-  {
-    id: 'tallman',
-    title: t('taLLMan', 'taLLMan'),
-    descriptor: t('RAG med källkontroll', 'RAG with source checking'),
-    summary: t(
-      'En chatt om riksdagen som svarar i påståenden, vart och ett kontrollerat mot sina källor.',
-      'A chat about the Riksdag that answers in claims, each checked against its sources.',
-    ),
-    question: t(
-      'Kan en chatt om riksdagen visa vilka av dess påståenden som faktiskt har stöd i källorna?',
-      'Can a chat about the Riksdag show which of its claims the sources actually support?',
-    ),
-    built: t(
-      'Sökning med BM25 och vektorer, ett svar i påståenden och en kontroll av varje påstående mot källan.',
-      'BM25 and vector retrieval, an answer in claims, and a check of every claim against its source.',
-    ),
-    result: t(
-      'Varje påstående får en etikett (belagt, beräknat, tolkning …) och hela spåret kan granskas.',
-      'Every claim gets a label (supported, computed, interpretation …) and the whole trace can be reviewed.',
-    ),
-    tech: ['TypeScript', 'BM25', 'Claude API', 'Workers AI', 'Vectorize'],
-    href: '#tallman',
-    category: 'ai',
-    status: 'experimental',
-    featured: false,
-    code: 'https://github.com/korv9/anton-portfolio/tree/main/frontend/src/tallman',
-    pages: ['tallman'],
-  },
+
   {
     id: 'allegoria',
     title: t('Allegoria / RFC-drift', 'Allegoria / RFC drift'),
-    descriptor: t('NLP · pågående', 'NLP · in progress'),
+    descriptor: t('NLP, pågående', 'NLP, in progress'),
     summary: t(
       'Vad händer med innebörden när ett krav går från MUST till SHOULD?',
       'What changes when a requirement goes from MUST to SHOULD?',
@@ -568,7 +541,7 @@ export const PROJECTS: ProjectEntry[] = [
   {
     id: 'homie',
     title: t('Homie API', 'Homie API'),
-    descriptor: t('Python-backend · pågående', 'Python backend · in progress'),
+    descriptor: t('Python-backend, pågående', 'Python backend, in progress'),
     summary: t(
       'FastAPI- och PostgreSQL-tjänst med autentisering, migreringar och ett OpenAPI-kontrakt för en separat frontend.',
       'FastAPI and PostgreSQL service with authentication, migrations and an OpenAPI contract for a separate frontend.',
@@ -597,8 +570,8 @@ export const PROJECTS: ProjectEntry[] = [
     id: 'rag',
     title: t('RAG-baserad studieassistent', 'RAG learning assistant'),
     descriptor: t(
-      'Tillämpad generativ AI · studieprojekt',
-      'Applied generative AI · study project',
+      'Tillämpad generativ AI, studieprojekt',
+      'Applied generative AI, study project',
     ),
     summary: t(
       'Flask-backend som läser in dokument, skapar inbäddningar och ger förankrade svar, semantisk sökning och quiz.',
@@ -630,8 +603,8 @@ export const PROJECTS: ProjectEntry[] = [
       'Industrial pump anomaly detection',
     ),
     descriptor: t(
-      'Djupinlärning på MIMII · studieprojekt',
-      'Deep learning on MIMII · study project',
+      'Djupinlärning på MIMII, studieprojekt',
+      'Deep learning on MIMII, study project',
     ),
     summary: t(
       'Pumpljud omvandlade till mel-spektrogram och en CNN-klassificerare för att hitta avvikande ljud.',
@@ -656,55 +629,6 @@ export const PROJECTS: ProjectEntry[] = [
     featured: false,
     code: 'https://github.com/korv9/MIMII-pump-diagnostics',
   },
-  {
-    id: 'in1',
-    title: t(
-      'in1: en app för många AI-modeller',
-      'in1: one app for many AI models',
-    ),
-    descriptor: t(
-      'Fullstack med AI-API:er · grupprojekt',
-      'Full stack with AI APIs · group project',
-    ),
-    summary: t(
-      'En plattform där användaren väljer vilken AI-modell som passar uppgiften, med OpenAI, Gemini och Hugging Face bakom samma gränssnitt.',
-      'A platform where the user picks the AI model that fits the task, with OpenAI, Gemini and Hugging Face behind one interface.',
-    ),
-    question: t(
-      'Rätt AI-modell för uppgiften, bakom ett gränssnitt.',
-      'The right AI model for the task, behind one interface.',
-    ),
-    built: t(
-      'Jag byggde datamodellen och prenumerationerna: modeller och relationer i MySQL, CRUD-endpoints i Flask, kopplingen i React och Cypress-tester.',
-      'I built the data model and subscriptions: models and relations in MySQL, CRUD endpoints in Flask, the React wiring and Cypress tests.',
-    ),
-    result: t(
-      'Promptvy och prenumerationer, testade för inloggning och prenumeration.',
-      'A prompt view and subscriptions, tested for login and subscription.',
-    ),
-    tech: [
-      'Flask',
-      'MySQL',
-      'React',
-      'Vite',
-      'OpenAI',
-      'Gemini',
-      'Hugging Face',
-      'Cypress',
-    ],
-    href: 'https://github.com/leiyese/in1-backend',
-    category: 'ai',
-    status: 'study',
-    featured: false,
-    code: [
-      'https://github.com/leiyese/in1-backend',
-      'https://github.com/leiyese/in1-frontend',
-    ],
-    team: t(
-      'Grupprojekt med tre utvecklare',
-      'Group project with three developers',
-    ),
-  },
 ]
 
 /** The flagship projects, in their numbered order. */
@@ -712,11 +636,8 @@ export const FLAGSHIPS = PROJECTS.filter((p) => p.featured).sort((a, b) =>
   (a.number ?? '').localeCompare(b.number ?? ''),
 )
 
-/** Everything else, in registry order. */
 /** The start page's selected work: projects with a recruiter line, in registry order. */
 export const HOME_PROJECTS = PROJECTS.filter((p) => p.home)
-export const OTHER_WORK = PROJECTS.filter((p) => !p.featured && !p.research)
-export const RESEARCH = PROJECTS.filter((p) => !p.featured && p.research)
 
 /** The project a route belongs to, if any. */
 export function projectForRoute(

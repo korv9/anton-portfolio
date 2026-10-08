@@ -1,10 +1,6 @@
 import { useMemo } from 'react'
 import { l } from '../i18n'
-import {
-  clusterColor,
-  projectCoordinates,
-  useClusterPreview,
-} from './clusterData'
+import { projectCoordinates, useClusterPreview } from './clusterData'
 
 // Display-space density of real points; these contours are not cluster boundaries.
 function densityContours(coords: Map<string, number[]>) {
@@ -92,7 +88,7 @@ export default function ClusterPreview({
   return (
     <a
       className={`cluster-preview${atmospheric ? ' atmospheric' : ''}`}
-      href="#job-market-clusters"
+      href="#jobb-kluster"
       aria-label={l(
         'Explore the semantic map of tech job advertisements',
         'Utforska den semantiska kartan över IT-annonser',
@@ -102,7 +98,12 @@ export default function ClusterPreview({
         viewBox={atmospheric ? '0 0 720 520' : '0 0 600 220'}
         aria-hidden="true"
       >
-        <g fill="none" stroke="#A39D90" strokeWidth=".6" opacity=".38">
+        <g
+          fill="none"
+          stroke="var(--line-strong)"
+          strokeWidth=".6"
+          opacity=".5"
+        >
           {contours.map((path, i) => (
             <path key={i} d={path} />
           ))}
@@ -115,8 +116,10 @@ export default function ClusterPreview({
               cx={x}
               cy={y}
               r={atmospheric ? 1.05 : 1.5}
-              fill={clusterColor(p.cluster)}
-              opacity={p.cluster === -1 ? 0.25 : 0.82}
+              style={{
+                fill: p.cluster === -1 ? 'var(--line-strong)' : 'var(--ink-2)',
+              }}
+              opacity={p.cluster === -1 ? 0.35 : 0.7}
             />
           )
         })}
@@ -124,8 +127,8 @@ export default function ClusterPreview({
       {!atmospheric && (
         <span className="ds-label">
           {l(
-            'JobTech · UMAP · Sample of real advertisements',
-            'JobTech · UMAP · Urval av verkliga annonser',
+            'JobTech, UMAP, Sample of real advertisements',
+            'JobTech, UMAP, Urval av verkliga annonser',
           )}{' '}
         </span>
       )}

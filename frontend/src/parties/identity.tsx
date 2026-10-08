@@ -60,7 +60,7 @@ export const PARTY_IDENTITY: Record<string, PartyIdentity> = {
     name: 'Moderaterna',
     nameEn: 'Moderates',
     color: '#52BDEC',
-    line: '#3E8FB3',
+    line: '#357b9a',
     ink: '#16201f',
     logo: logo('M'),
     website: 'https://moderaterna.se',
@@ -100,7 +100,7 @@ export const PARTY_IDENTITY: Record<string, PartyIdentity> = {
     name: 'Centerpartiet',
     nameEn: 'Centre Party',
     color: '#009933',
-    line: '#009933',
+    line: '#00852c',
     ink: '#16201f',
     logo: logo('C'),
     website: 'https://www.centerpartiet.se',
@@ -126,7 +126,7 @@ export const PARTY_IDENTITY: Record<string, PartyIdentity> = {
     name: 'Miljöpartiet',
     nameEn: 'Green Party',
     color: '#83CF39',
-    line: '#5B9027',
+    line: '#518023',
     ink: '#16201f',
     logo: logo('MP'),
     website: 'https://www.mp.se',
@@ -165,7 +165,7 @@ export const PARTY_IDENTITY: Record<string, PartyIdentity> = {
     name: 'Övriga',
     nameEn: 'Others',
     color: '#b8b5ab',
-    line: '#76817e',
+    line: '#6b7572',
     ink: '#16201f',
     logo: null,
     website: null,
@@ -273,7 +273,7 @@ export function PartyName({
     </>
   )
   return RIKSDAG_PARTIES.includes(party) ? (
-    <a className="party-name" href={`#parties-${party.toLowerCase()}`}>
+    <a className="party-name" href={`#politik-partier?partier=${party}`}>
       {content}
     </a>
   ) : (

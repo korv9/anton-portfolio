@@ -19,7 +19,7 @@ export function Snapshot({ data, today }: { data: AiActData; today: string }) {
   )
   const latest = data.changes.find((c) => c.change_kind !== 'provision')
   const lines = [
-    `AI ACT — ${monthName(month).toUpperCase()}`,
+    `AI ACT: ${monthName(month).toUpperCase()}`,
     '',
     l('Applies now', 'Gäller nu'),
     ...applying.map(
@@ -53,7 +53,7 @@ export function Snapshot({ data, today }: { data: AiActData; today: string }) {
     <article className="aa-snapshot" aria-labelledby="aa-snapshot-title">
       <header>
         <p className="aa-kicker">{l('Snapshot', 'Läget')}</p>
-        <h2 id="aa-snapshot-title">AI Act — {monthName(month)}</h2>
+        <h2 id="aa-snapshot-title">AI Act: {monthName(month)}</h2>
       </header>
       <div className="aa-snapshot-grid">
         <section>

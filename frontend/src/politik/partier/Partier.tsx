@@ -19,13 +19,13 @@ import {
   identity,
   partyName,
 } from '../../parties/identity'
-import SeatAlluvial from '../features/SeatAlluvial'
+import SeatHistory from '../features/SeatHistory'
 import type { Route } from '../../router'
 import { useParties, withParties } from '../partySelection'
 import { dayName, num, pct, signed } from '../controls'
 import { Board, Card, Cards, Empty, Kpi, Kpis } from '../board/Board'
 import Columns from '../board/Columns'
-import DashBars from '../dash/DashBars'
+import RankBars from '../../charts/RankBars'
 import {
   budgetBasis,
   loadBudgetReport,
@@ -147,7 +147,7 @@ export default function Partier({ route }: { route: Route }) {
       title={party ? partyName(party) : l('The parties', 'Partierna')}
       sub={
         party
-          ? `${ROLE(now, party)} · ${
+          ? `${ROLE(now, party)}, ${
               selected.length > 1
                 ? l(
                     `${selected.length} parties are chosen; this shows the last one. Click a card to show only that party.`,
@@ -164,7 +164,7 @@ export default function Partier({ route }: { route: Route }) {
             )
       }
     >
-      <SeatAlluvial party={party} />
+      <SeatHistory party={party} />
       <ul
         className={party ? 'party-cards compact' : 'party-cards'}
         aria-label={l('Parties', 'Partier')}
@@ -207,7 +207,7 @@ export default function Partier({ route }: { route: Route }) {
                     </dl>
                     {s?.leaders.length ? (
                       <span className="pcard-leader">
-                        {s.leaders.map((x) => x.name).join(' · ')}
+                        {s.leaders.map((x) => x.name).join(', ')}
                       </span>
                     ) : null}
                   </>
@@ -415,13 +415,13 @@ function PartyDashboard({ party, shared }: { party: string; shared: Shared }) {
           index={3}
           title={l('Council seats per county', 'Kommunmandat per län')}
           meta={l(
-            `Seats in the municipal councils, ${councilYear} · tick: the election before`,
-            `Mandat i kommunfullmäktige, ${councilYear} · streck: valet innan`,
+            `Seats in the municipal councils, ${councilYear}, tick: the election before`,
+            `Mandat i kommunfullmäktige, ${councilYear}, streck: valet innan`,
           )}
         >
           {profile ? (
-            <DashBars
-              bars={counties.map((c) => ({
+            <RankBars
+              rows={counties.map((c) => ({
                 key: c.county,
                 label: c.county,
                 value: c.seats,
@@ -446,8 +446,8 @@ function PartyDashboard({ party, shared }: { party: string; shared: Shared }) {
           )}
         >
           {profile ? (
-            <DashBars
-              bars={strongest.map((c) => ({
+            <RankBars
+              rows={strongest.map((c) => ({
                 key: c.code,
                 label: c.name,
                 value: (c.seats / c.total) * 100,
@@ -475,8 +475,8 @@ function PartyDashboard({ party, shared }: { party: string; shared: Shared }) {
           )}
         >
           {profile ? (
-            <DashBars
-              bars={constituencies.slice(0, 10).map(([name, n]) => ({
+            <RankBars
+              rows={constituencies.slice(0, 10).map(([name, n]) => ({
                 key: name,
                 label: name,
                 value: n,
@@ -498,10 +498,10 @@ function PartyDashboard({ party, shared }: { party: string; shared: Shared }) {
             `Andel voteringar med samma ståndpunkt, ${latestSession}`,
           )}
         >
-          <DashBars
-            bars={alike.map((a) => ({
+          <RankBars
+            rows={alike.map((a) => ({
               key: a.party,
-              label: `${a.party} · ${partyName(a.party)}`,
+              label: `${a.party}, ${partyName(a.party)}`,
               value: a.value,
               party: a.party,
             }))}
@@ -600,18 +600,15 @@ function PartyDashboard({ party, shared }: { party: string; shared: Shared }) {
             `Topics in the party-leader debates, share of the party’s words, ${topicSession}`,
             `Ämnen i partiledardebatterna, andel av partiets ord, ${topicSession}`,
           )}
-          href={`#parties-${party.toLowerCase()}`}
-          more={l('The full party page', 'Hela partisidan')}
         >
           {topics == null ? (
             <Empty />
           ) : latestTopics.length ? (
-            <DashBars
-              bars={latestTopics.map((t) => ({
+            <RankBars
+              rows={latestTopics.map((t) => ({
                 key: String(t.topic_id),
                 label: t.topic_label,
                 value: t.word_share_pct,
-                tone: 'neutral' as const,
               }))}
               format={(v) => pct(v)}
               label={l('Topics', 'Ämnen')}
@@ -628,8 +625,8 @@ function PartyDashboard({ party, shared }: { party: string; shared: Shared }) {
           wide
           title={l('The members', 'Ledamöterna')}
           meta={l(
-            `${members.length} members of the Riksdag by constituency · the list of people, ${dayName(index.sources.members.as_of)}`,
-            `${members.length} riksdagsledamöter efter valkrets · riksdagens personlista, ${dayName(index.sources.members.as_of)}`,
+            `${members.length} members of the Riksdag by constituency, the list of people, ${dayName(index.sources.members.as_of)}`,
+            `${members.length} riksdagsledamöter efter valkrets, riksdagens personlista, ${dayName(index.sources.members.as_of)}`,
           )}
         >
           {profile ? (
@@ -664,7 +661,7 @@ function PartyDashboard({ party, shared }: { party: string; shared: Shared }) {
                               : null,
                           ]
                             .filter(Boolean)
-                            .join(' · ')}
+                            .join(', ')}
                         </small>
                       )}
                     </span>

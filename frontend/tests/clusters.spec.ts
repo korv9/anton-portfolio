@@ -2,108 +2,102 @@ import { test, expect } from './test'
 import AxeBuilder from '@axe-core/playwright'
 
 // Deliberate browser fixtures; no test dataset is written into public delivery.
-const roles = ['Data Engineer', 'Software Developer']
+const roles = ['Data Engineer', 'Software Developer', 'Software Developer']
 const points = roles.map((role, index) => ({
   id: `test-${index}`,
   x: index,
   y: index,
-  cluster: index,
-  cluster_label: `Test skill ${index}`,
-  probability: 0.8,
+  cluster: index < 2 ? index : -1,
+  probability: index < 2 ? 1 : 0,
   role,
-  seniority: index ? 'senior' : 'junior',
-  year: 2024 + index,
+  year: 2024 + (index % 2),
   title: `Test advertisement ${index}`,
-  region: 'Stockholm',
-  skills: ['Python'],
 }))
-const clusters = points.map((p) => ({
-  cluster_id: p.cluster,
-  cluster_label: p.cluster_label,
+const profile = (id: number, label: string, role: string) => ({
+  cluster_id: id,
+  cluster_label: label,
   job_count: 1,
-  dataset_share: 0.5,
-  junior_share: 0.5,
-  senior_share: 0.5,
+  dataset_share: 1 / 3,
+  junior_share: 0,
+  senior_share: 1,
   unspecified_share: 0,
-  mean_probability: 0.8,
-  top_skills: [{ skill: 'Python', count: 1, lift: 1 }],
-  top_titles: [{ label: p.title, count: 1, share: 1 }],
-  role_distribution: [{ label: p.role, count: 1, share: 1 }],
-  representative_ads: [{ id: p.id, title: p.title }],
+  mean_probability: 1,
+  top_skills: [{ skill: `Skill ${id}`, count: 1, lift: 2 }],
+  top_titles: [{ label: `Title ${id}`, count: 1, share: 1 }],
+  role_distribution: [{ label: role, count: 1, share: 1 }],
+  representative_ads: [],
+  years: [
+    { label: '2024', count: 1, share: 0.5 },
+    { label: '2025', count: 1, share: 0.5 },
+  ],
   label_uncertainty: 'Test fixture',
-}))
+})
 const summary = {
   schema_version: 1,
   run_id: 'test',
   generated_at: '2026-10-04',
-  source_size: 2,
+  source_size: 3,
   sampled: false,
   source_kinds: ['historical'],
-  config: { model: 'Test model' },
+  config: { model: 'Test model', assignment_method: 'seed-consensus' },
+  coverage: [
+    { month: '2024-01-01', status: 'complete', url: '', sha256: '' },
+    { month: '2025-01-01', status: 'complete', url: '', sha256: '' },
+  ],
   shards: ['jobs/clusters/test/points-0.json'],
-  clusters,
+  clusters: [
+    profile(-1, 'Unassigned', 'Software Developer'),
+    profile(0, 'Test group A', 'Data Engineer'),
+    profile(1, 'Test group B', 'Software Developer'),
+  ],
   diagnostics: {
-    dataset_size: 2,
+    dataset_size: 3,
     cluster_count: 2,
-    noise_share: 0,
+    noise_share: 1 / 3,
     trustworthiness: 0.9,
-    trustworthiness_sample_size: 2,
+    trustworthiness_sample_size: 3,
     silhouette: null,
-    mean_cluster_probability: 0.8,
+    mean_cluster_probability: 1,
     limitations: 'Test fixture',
   },
 }
 
-test('cluster explorer colour, year, keyboard and accessible cluster selection', async ({
-  page,
-}) => {
+async function serve(page: import('@playwright/test').Page) {
   await page.route('**/jobs/cluster-summary.json', (r) =>
     r.fulfill({ json: summary }),
   )
   await page.route('**/jobs/clusters/test/points-0.json', (r) =>
     r.fulfill({ json: { run_id: 'test', points } }),
   )
-  await page.goto('/#job-market-clusters')
+}
+
+test('the map, the ranked groups and the picked profile work together', async ({
+  page,
+}) => {
+  await serve(page)
+  await page.goto('/#jobb-kluster')
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+    'What groups do IT job ads form?',
+  )
   const explorer = page.locator('.cluster-explorer')
   await expect(explorer.locator('canvas')).toBeVisible()
-  for (const name of [
-    'Existing role',
-    'Seniority',
-    'Year',
-    'Discovered clusters',
-  ]) {
-    await explorer.getByRole('button', { name, exact: true }).click()
-    await expect(
-      explorer.getByRole('button', { name, exact: true }),
-    ).toHaveAttribute('aria-pressed', 'true')
-  }
-  await explorer.getByLabel('Publication year').selectOption('2025')
-  await expect(explorer.locator('#cluster-visible')).toContainText(
-    '1 advertisements in selection',
+  await expect(explorer.locator('.cluster-finding')).toContainText(
+    '3 IT ads from 2024–2025 form 2 groups',
   )
-  await explorer.locator('canvas').focus()
-  await expect(explorer.locator('#cluster-point')).toContainText(
-    'Test advertisement 1',
+  // The largest group is picked first; picking another moves the profile.
+  await expect(explorer.locator('.cluster-profile h2')).toHaveText(
+    '1. Test group A',
   )
-  await page.keyboard.press('Enter')
-  await expect(explorer.getByLabel('Inspect a cluster')).toHaveValue('1')
-  await page.keyboard.press('Escape')
-  await expect(explorer.getByLabel('Inspect a cluster')).toHaveValue('')
-  await explorer.getByLabel('Publication year').selectOption('all')
-  await expect(explorer.locator('#cluster-visible')).toContainText(
-    '2 advertisements in selection',
+  await explorer.getByRole('button', { name: /2. Test group B/ }).click()
+  await expect(explorer.locator('.cluster-profile h2')).toHaveText(
+    '2. Test group B',
   )
-  await explorer.getByLabel('Inspect a cluster').selectOption('0')
-  await expect(explorer.locator('.cluster-detail')).toContainText(
-    'Test skill 0',
-  )
-  const legend = explorer.getByRole('list', { name: 'Colour legend' })
-  await legend.getByRole('button', { name: '01 · Test skill 1' }).click()
-  await expect(explorer.getByLabel('Inspect a cluster')).toHaveValue('1')
-  await legend.getByRole('button', { name: '01 · Test skill 1' }).click()
-  await expect(explorer.getByLabel('Inspect a cluster')).toHaveValue('')
-  await explorer.locator('.cluster-size-bars button').first().click()
-  await expect(explorer.getByLabel('Inspect a cluster')).toHaveValue('0')
+  await expect(explorer.locator('.cluster-profile')).toContainText('Skill 1')
+  await expect(explorer.locator('.cluster-noise')).toContainText('fit no group')
+  await explorer.getByRole('button', { name: 'Job titles' }).click()
+  await expect(explorer.locator('.cluster-key')).toContainText('Data Engineer')
+  await explorer.getByText('Method and limits').click()
+  await expect(explorer).toContainText('at least two of three runs')
   const results = await new AxeBuilder({ page })
     .include('.cluster-explorer')
     .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
@@ -123,108 +117,20 @@ test('loading, unavailable data and retry are honest', async ({ page }) => {
   await page.route('**/jobs/clusters/test/points-0.json', (r) =>
     r.fulfill({ json: { run_id: 'test', points } }),
   )
-  await page.goto('/#job-market-clusters')
+  await page.goto('/#jobb-kluster')
   await expect(page.getByText('Loading the semantic map…')).toBeVisible()
   await expect(
-    page.getByText(/The clustering analysis is currently unavailable/),
+    page.getByText('The clustering analysis is unavailable just now.'),
   ).toBeVisible()
   await page.getByRole('button', { name: 'Try again' }).click()
   await expect(page.locator('.cluster-explorer canvas')).toBeVisible()
 })
 
-test('consensus support is distinguished from membership probability', async ({
-  page,
-}) => {
-  await page.route('**/jobs/cluster-summary.json', (r) =>
-    r.fulfill({
-      json: {
-        ...summary,
-        config: { ...summary.config, assignment_method: 'seed-consensus' },
-        feature_ensemble: {
-          recipe: 'balanced',
-          weights: { clean: 0.65, title: 0.15, skills: 0.2 },
-          assignment_method: 'seed-consensus',
-          candidate_count: 192,
-        },
-      },
-    }),
-  )
-  await page.route('**/jobs/clusters/test/points-0.json', (r) =>
-    r.fulfill({
-      json: {
-        run_id: 'test',
-        points: points.map((p) => ({ ...p, probability: 2 / 3 })),
-      },
-    }),
-  )
+test('the old clustering address lands on the theme', async ({ page }) => {
+  await serve(page)
   await page.goto('/#job-market-clusters')
-  const explorer = page.locator('.cluster-explorer')
-  await expect(explorer.locator('canvas')).toBeVisible()
-  await explorer.locator('canvas').focus()
-  await expect(explorer.locator('#cluster-point')).toContainText(
-    'Cluster assignment support: 66.7%',
-  )
-  await explorer
-    .getByText('Method, diagnostics & limitations', { exact: true })
-    .click()
-  await expect(explorer).toContainText('at least two of three runs')
-  await expect(explorer).toContainText('not a calibrated probability')
-})
-
-test('cluster frame enlarges groups while retaining distant noise in the full map', async ({
-  page,
-}) => {
-  const noise = {
-    ...points[0],
-    id: 'noise',
-    cluster: -1,
-    x: 1000,
-    y: 1000,
-    probability: 0,
-  }
-  await page.route('**/jobs/cluster-summary.json', (r) =>
-    r.fulfill({
-      json: {
-        ...summary,
-        diagnostics: {
-          ...summary.diagnostics,
-          dataset_size: 3,
-          noise_share: 1 / 3,
-        },
-        clusters: [
-          ...clusters,
-          { ...clusters[0], cluster_id: -1, cluster_label: 'Noise' },
-        ],
-      },
-    }),
-  )
-  await page.route('**/jobs/clusters/test/points-0.json', (r) =>
-    r.fulfill({ json: { run_id: 'test', points: [...points, noise] } }),
-  )
-  await page.goto('/#job-market-clusters')
-  const explorer = page.locator('.cluster-explorer')
-  await expect(explorer.locator('canvas')).toBeVisible()
-  await expect(explorer.locator('#cluster-frame')).toContainText(
-    '1 ads lie outside',
-  )
-  await expect(explorer.locator('#cluster-visible')).toContainText(
-    '3 advertisements in selection · 2 within frame',
-  )
-  await explorer
-    .getByRole('button', { name: 'Show all points', exact: true })
-    .click()
-  await expect(explorer.locator('#cluster-frame')).toContainText(
-    'entire fitted map',
-  )
-  await expect(explorer.locator('#cluster-visible')).toContainText(
-    '3 advertisements in selection · 3 within frame',
-  )
-  await explorer
-    .getByRole('button', { name: 'Fit clusters', exact: true })
-    .click()
-  await expect(explorer.locator('#cluster-frame')).toContainText(
-    '1 ads lie outside',
-  )
+  await expect(page).toHaveURL(/#jobb-kluster$/)
+  await expect(page.locator('.cluster-explorer canvas')).toBeVisible()
 })
 
 test('home loads only preview and stays within mobile width', async ({
@@ -290,64 +196,29 @@ test('published real analysis reconciles with its evaluated run and renders', as
       0,
     ),
   ).toBe(records.length)
-  if (published.config.assignment_method === 'seed-consensus') {
-    expect(published.feature_ensemble.candidate_count).toBeGreaterThan(0)
-    expect(
-      published.feature_ensemble.consensus_window_stability.length,
-    ).toBeGreaterThan(0)
+  if (published.config.assignment_method === 'seed-consensus')
     expect(
       records.every((p) =>
-        [0, 2 / 3, 1].some((v) => Math.abs(v - p.probability) < 1e-8),
+        [0, 2 / 3, 1].some((v) => Math.abs(v - p.probability) < 1e-3),
       ),
     ).toBe(true)
-  }
-  await page.goto('/#job-market-clusters')
+  await page.goto('/#jobb-kluster')
   const explorer = page.locator('.cluster-explorer')
   await expect(explorer.locator('canvas')).toBeVisible()
-  await expect(explorer.locator('#cluster-visible')).toContainText(
+  await expect(explorer.locator('.cluster-finding')).toContainText(
     records.length.toLocaleString('en-GB'),
   )
-  await explorer
-    .getByLabel('Inspect a cluster')
-    .selectOption(
-      String(
-        published.clusters.find(
-          (c: { cluster_id: number }) => c.cluster_id !== -1,
-        ).cluster_id,
-      ),
-    )
-  await expect(explorer.locator('.cluster-detail h3')).toBeVisible()
-  const chosen = published.clusters.find(
-    (c: { cluster_id: number }) => c.cluster_id !== -1,
-  )
-  await expect(explorer.locator('.cluster-detail')).toContainText(
-    chosen.top_employers[0].label,
-  )
-  await expect(explorer.locator('.cluster-detail')).toContainText(
-    'Employer concentration',
-  )
-  const year = String(Math.max(...records.map((p) => p.year)))
-  await explorer.getByLabel('Publication year').selectOption(year)
-  await expect(explorer.locator('#cluster-visible')).toContainText(
-    records
-      .filter((p) => String(p.year) === year)
-      .length.toLocaleString('en-GB'),
-  )
-  await explorer.locator('canvas').focus()
-  await page.keyboard.press('Home')
-  await expect(explorer.locator('#cluster-point')).toContainText(
-    records.filter((p) => String(p.year) === year)[0].title,
+  const largest = published.clusters
+    .filter((c: { cluster_id: number }) => c.cluster_id !== -1)
+    .sort(
+      (a: { job_count: number }, b: { job_count: number }) =>
+        b.job_count - a.job_count,
+    )[0]
+  await expect(explorer.locator('.cluster-profile h2')).toContainText(
+    largest.cluster_label,
   )
   await explorer.scrollIntoViewIfNeeded()
   await page.screenshot({
     path: `test-results/editorial-clusters-${isMobile ? 'mobile' : 'desktop'}.png`,
   })
-  await page.goto('/#job-market-tech')
-  await page
-    .getByRole('link', { name: 'Semantic clusters', exact: true })
-    .click()
-  await expect(
-    page.getByRole('link', { name: 'Semantic clusters', exact: true }),
-  ).toHaveAttribute('aria-current', 'page')
-  await expect(page.locator('.cluster-explorer canvas')).toBeVisible()
 })

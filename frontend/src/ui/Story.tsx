@@ -22,14 +22,12 @@ import './story.css'
 
 export function DataQuestion({
   id,
-  number,
   eyebrow,
   question,
   children,
   level = 2,
 }: {
   id?: string
-  number?: number | string
   eyebrow?: string
   question: string
   /** A short line of context under the question. */
@@ -39,18 +37,7 @@ export function DataQuestion({
   const H = level === 1 ? 'h1' : 'h2'
   return (
     <header className="data-question">
-      {(number != null || eyebrow) && (
-        <p className="data-question-eyebrow">
-          {number != null && (
-            <span>
-              {typeof number === 'number'
-                ? String(number).padStart(2, '0')
-                : number}
-            </span>
-          )}
-          {eyebrow}
-        </p>
-      )}
+      {eyebrow && <p className="data-question-eyebrow">{eyebrow}</p>}
       <H id={id}>{question}</H>
       {children && <div className="data-question-context">{children}</div>}
     </header>
@@ -158,7 +145,7 @@ export function SourceCaption({
   return (
     <p className="source-caption">
       {l('Source', 'Källa')}:{' '}
-      {[source, period, definition].filter(Boolean).join(' · ')}
+      {[source, period, definition].filter(Boolean).join(', ')}
     </p>
   )
 }

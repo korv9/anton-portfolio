@@ -12,7 +12,10 @@ import { test, expect, type Page } from './test'
 const HOME = '#start'
 const START_PAGES = [
   '/#start',
-  '/#alla-projekt',
+  '/#drugcomb',
+  '/#jobb-kluster',
+  '/#concept-constellation',
+  '/#philosophy-atlas',
   '/#politik',
   '/#ai-act',
   '/#jobb',
@@ -120,7 +123,7 @@ test('every internal link opens a page', async ({ page, isMobile }) => {
     )
       unplaced.push(href)
     // The tab names the page, not just the site.
-    if (!/^.+ · Anton Ernstsson$/.test(await page.title())) untitled.push(href)
+    if (!/^.+ \| Anton Ernstsson$/.test(await page.title())) untitled.push(href)
   }
   expect(untitled, 'pages without their own title').toEqual([])
   expect(unplaced, 'pages whose breadcrumb stops at Projects').toEqual([])

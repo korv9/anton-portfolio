@@ -18,11 +18,16 @@ type Point = {
   n?: number
   scheme: string
 }
-// Categorical slots 1–4 of the validated reference palette, in fixed order.
-const COLOURS = ['#2a78d6', '#eb6834', '#1baf7a', '#e87ba4']
+// The first three series tokens and ink: four groups that stay apart side by side.
+const COLOURS = [
+  'var(--series-1)',
+  'var(--series-2)',
+  'var(--series-3)',
+  'var(--ink-2)',
+]
 const TOLERANCE = 1
 const f1 = (v: number) =>
-  v.toLocaleString('sv-SE', {
+  v.toLocaleString(l('en-GB', 'sv-SE'), {
     minimumFractionDigits: 1,
     maximumFractionDigits: 1,
   })
@@ -122,7 +127,7 @@ export default function CalibrationScatter({
       <ul className="feature-legend">
         {shown.map(([k]) => (
           <li key={k} style={{ ['--c' as string]: colour(k) }}>
-            {name(k)} · {l('off by', 'missar')} {f1(error(k))}
+            {name(k)}, {l('off by', 'missar')} {f1(error(k))}
           </li>
         ))}
       </ul>
@@ -220,16 +225,15 @@ export default function CalibrationScatter({
                     e,
                     <>
                       <b>
-                        {name(p.scheme)} · {l('tenth', 'tiondel')}{' '}
-                        {p.decile + 1}
+                        {name(p.scheme)}, {l('tenth', 'tiondel')} {p.decile + 1}
                       </b>
-                      {l('Predicted', 'Förutsagt')} {f1(p.pred)} ·{' '}
+                      {l('Predicted', 'Förutsagt')} {f1(p.pred)},{' '}
                       {l('measured', 'uppmätt')} {f1(p.obs)}
                       {p.obs_q25 != null && p.obs_q75 != null && (
                         <>
                           <br />
                           {l('middle half', 'mittersta hälften')}{' '}
-                          {f1(p.obs_q25)} – {f1(p.obs_q75)}
+                          {f1(p.obs_q25)} {l('to', 'till')} {f1(p.obs_q75)}
                         </>
                       )}
                     </>,
@@ -240,16 +244,15 @@ export default function CalibrationScatter({
                     e,
                     <>
                       <b>
-                        {name(p.scheme)} · {l('tenth', 'tiondel')}{' '}
-                        {p.decile + 1}
+                        {name(p.scheme)}, {l('tenth', 'tiondel')} {p.decile + 1}
                       </b>
-                      {l('Predicted', 'Förutsagt')} {f1(p.pred)} ·{' '}
+                      {l('Predicted', 'Förutsagt')} {f1(p.pred)},{' '}
                       {l('measured', 'uppmätt')} {f1(p.obs)}
                       {p.obs_q25 != null && p.obs_q75 != null && (
                         <>
                           <br />
                           {l('middle half', 'mittersta hälften')}{' '}
-                          {f1(p.obs_q25)} – {f1(p.obs_q75)}
+                          {f1(p.obs_q25)} {l('to', 'till')} {f1(p.obs_q75)}
                         </>
                       )}
                     </>,

@@ -15,13 +15,7 @@ import './site/site.css'
 const PoliticsProduct = lazy(() => import('./politik/PoliticsProduct'))
 const TechReport = lazy(() => import('./jobs/TechReport'))
 const JobsProduct = lazy(() => import('./jobb/JobsProduct'))
-const TallmanPage = lazy(() => import('./tallman/TallmanPage'))
-const ProjectsPage = lazy(() => import('./projects/ProjectsPage'))
-const TechnicalPage = lazy(() => import('./technical/TechnicalPage'))
-const DesignPage = lazy(() => import('./technical/DesignPage'))
 const WelfarePage = lazy(() => import('./welfare/WelfarePage'))
-const AnalysisPage = lazy(() => import('./analysis/AnalysisPage'))
-const StatusPage = lazy(() => import('./status/StatusPage'))
 const DataModelPage = lazy(() => import('./datamodel/DataModelPage'))
 const ErPage = lazy(() => import('./datamodel/ErPage'))
 const SymbolicAtlasPage = lazy(() => import('./symbolic/SymbolicAtlasPage'))
@@ -58,12 +52,12 @@ export default function App() {
   useEffect(() => {
     document.documentElement.lang = language
   }, [language])
-  // Each page names itself in the tab and the history: "<page> · Anton Ernstsson".
+  // Each page names itself in the tab and the history: "<page> | Anton Ernstsson".
   useEffect(() => {
     const name = pageTitle(route)
     document.title = name
-      ? `${name} · Anton Ernstsson`
-      : l('Anton Ernstsson · Data engineer', 'Anton Ernstsson · Data engineer')
+      ? `${name} | Anton Ernstsson`
+      : l('Anton Ernstsson, Data engineer', 'Anton Ernstsson, Data engineer')
   }, [route.path, route.page, language])
 
   // A new address scrolls to its section on the start page, or to the top elsewhere. Changing
@@ -71,10 +65,9 @@ export default function App() {
   useEffect(() => {
     if (route.page === 'home' && route.path !== '#start') return
     requestAnimationFrame(() => {
-      // A section address (#symbolic-method, #job-market-clusters) scrolls to that section;
+      // A section address (#symbolic-method, #concepts-method) scrolls to that section;
       // a page address to the top.
       const target =
-        route.path === '#job-market-clusters' ||
         (route.page === 'symbolic' && route.path !== '#symbolic-atlas') ||
         (route.page === 'philosophy' && route.path !== '#philosophy-atlas') ||
         (route.page === 'quality' && route.path !== '#quality') ||
@@ -107,24 +100,14 @@ export default function App() {
             }
           >
             {page === 'home' && <HomePage path={path} />}
-            {page === 'projects' && <ProjectsPage />}
-            {page === 'technical' && <TechnicalPage />}
-            {page === 'design' && <DesignPage />}
-            {page === 'tallman' && <TallmanPage />}
             {page === 'politik' && <PoliticsProduct route={route} />}
             {page === 'jobs' &&
-              ([
-                '#job-market-tech',
-                '#job-market-clusters',
-                '#job-data',
-              ].includes(path) ? (
-                <TechReport clustering={path === '#job-market-clusters'} />
+              (['#job-market-tech', '#job-data'].includes(path) ? (
+                <TechReport />
               ) : (
                 <JobsProduct route={route} />
               ))}
             {page === 'welfare' && <WelfarePage view={path} />}
-            {page === 'analysis' && <AnalysisPage view={path} />}
-            {page === 'status' && <StatusPage />}
             {page === 'datamodel' && <DataModelPage view={path} />}
             {page === 'er' && <ErPage route={route} />}
             {page === 'symbolic' && <SymbolicAtlasPage route={route} />}

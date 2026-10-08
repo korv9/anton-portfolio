@@ -4,25 +4,6 @@
  */
 import { test, expect } from './test'
 
-test('the projects filter works from the keyboard', async ({ page }) => {
-  await page.goto('/#alla-projekt')
-  const group = page.getByRole('group', { name: 'Show other work' })
-  const all = group.getByRole('button', { name: /^All/ })
-  const ai = group.getByRole('button', { name: /^AI and ML/ })
-  await expect(all).toHaveAttribute('aria-pressed', 'true')
-  const before = await page.locator('.other-work .cv-tiles > li').count()
-  await ai.focus()
-  await page.keyboard.press('Space')
-  await expect(ai).toHaveAttribute('aria-pressed', 'true')
-  await expect(all).toHaveAttribute('aria-pressed', 'false')
-  const shown = Number(await ai.locator('span').textContent())
-  await expect(page.locator('.other-work .cv-tiles > li').first()).toBeVisible()
-  expect(shown).toBeLessThanOrEqual(before)
-  await page.keyboard.press('Shift+Tab')
-  await page.keyboard.press('Enter')
-  await expect(all).toHaveAttribute('aria-pressed', 'true')
-})
-
 test('a navigator scenario survives a reload and can be cleared', async ({
   page,
 }) => {

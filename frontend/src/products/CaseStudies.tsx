@@ -17,8 +17,8 @@ export function DrugCombPage() {
       <div className="page-lead">
         <p className="eyebrow">
           {l(
-            'Machine learning · DrugComb synergy prediction',
-            'Maskininlärning · förutsäga läkemedelssynergi',
+            'Machine learning, DrugComb synergy prediction',
+            'Maskininlärning, förutsäga läkemedelssynergi',
           )}
         </p>
         <h1>
@@ -50,7 +50,7 @@ export function AllegoriaPage() {
   return (
     <div className="project-page">
       <div className="page-lead">
-        <p className="eyebrow">{t('Allegoria · work in progress')}</p>
+        <p className="eyebrow">{t('Allegoria, work in progress')}</p>
         <h1>{t('Allegoria / RFC drift.')}</h1>
         <p>
           {t(
@@ -72,8 +72,8 @@ export function ThesisPage() {
         id="thesis-stage"
         level={1}
         kicker={l(
-          'Degree project · Avtalat · 2026',
-          'Examensarbete · Avtalat · 2026',
+          'Degree project, Avtalat, 2026',
+          'Examensarbete, Avtalat, 2026',
         )}
         title={l(
           'From 21,000 incidents to 72 to review',
@@ -182,8 +182,8 @@ export function ThesisPage() {
             <div className="project-card-head">
               <span>
                 {l(
-                  'Degree project · Avtalat · 2026',
-                  'Examensarbete · Avtalat · 2026',
+                  'Degree project, Avtalat, 2026',
+                  'Examensarbete, Avtalat, 2026',
                 )}
               </span>
               <strong>{t('Primary case study')}</strong>
@@ -266,7 +266,7 @@ export function HomiePage() {
       <Stage
         id="homie-stage"
         level={1}
-        kicker={l('Homie API · work in progress', 'Homie API · pågående')}
+        kicker={l('Homie API, work in progress', 'Homie API, pågående')}
         title={l(
           'A backend for household events',
           'En backend för hushållets händelser',

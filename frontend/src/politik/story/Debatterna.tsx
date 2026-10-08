@@ -134,7 +134,6 @@ export default function Debatterna({
   return (
     <Section
       id="debatterna"
-      n={6}
       kicker={l('The debates', 'Debatterna')}
       question={l(
         'What do the parties talk about?',
@@ -164,7 +163,7 @@ export default function Debatterna({
           ),
         },
         {
-          href: '#technical',
+          href: '#data-constellation',
           label: l('How the topics are learned', 'Hur ämnena lärs in'),
         },
       ]}
@@ -234,7 +233,7 @@ export default function Debatterna({
           max={Math.max(20, peak?.v ?? 20)}
           rowLabel={(r) => <PartyMark party={r} />}
           colLabel={(c) => topicName(c)}
-          title={(r, c, v) => `${partyName(r)} · ${topicName(c)}: ${pct(v, 1)}`}
+          title={(r, c, v) => `${partyName(r)}, ${topicName(c)}: ${pct(v, 1)}`}
         />
       )}
       <p className="story-axis-note">
@@ -275,7 +274,7 @@ export default function Debatterna({
               setLines(
                 shown.includes(k)
                   ? shown.filter((x) => x !== k)
-                  : [...shown, k].slice(-6),
+                  : [...shown, k].slice(-5),
               )
             }
           >
@@ -317,19 +316,19 @@ export default function Debatterna({
         <select value={chosen.id} onChange={(e) => onDebate(e.target.value)}>
           {[...leaders].reverse().map((d) => (
             <option key={d.id} value={d.id}>
-              {dayName(d.date)} · {d.session}
+              {dayName(d.date)}, {d.session}
             </option>
           ))}
         </select>
       </label>
       <p className="story-meta">
-        {dayName(chosen.date)} ·{' '}
+        {dayName(chosen.date)},{' '}
         {Object.values(chosen.parties).reduce(
           (s, p) => s + p.speeches + p.replies,
           0,
         )}{' '}
-        {l('speeches and replies', 'anföranden och repliker')} ·{' '}
-        {num(words.reduce((s, w) => s + w.words, 0))} {l('words', 'ord')} ·{' '}
+        {l('speeches and replies', 'anföranden och repliker')},{' '}
+        {num(words.reduce((s, w) => s + w.words, 0))} {l('words', 'ord')},{' '}
         {l('Taking part', 'Deltog')}:{' '}
         {Object.entries(chosen.parties)
           .map(([p, row]) => `${row.speakers.join(', ')} (${p})`)
@@ -348,7 +347,7 @@ export default function Debatterna({
                 </>
               ),
               value: w.words,
-              text: `${num(w.words)} · ${pct(w.pct, 0)}`,
+              text: `${num(w.words)}, ${pct(w.pct, 0)}`,
             }))}
             format={(v) => num(v)}
             label={l('Words per party', 'Ord per parti')}
@@ -499,7 +498,13 @@ export function AgendaLines({
   const x = (i: number) =>
     pad.l + (i / (agenda.length - 1)) * (W - pad.l - pad.r)
   const y = (v: number) => pad.t + (1 - v / top) * (H - pad.t - pad.b)
-  const ink = ['#2a78d6', '#eb6834', '#1baf7a', '#eda100', '#e87ba4', '#4a3aa7']
+  const ink = [
+    'var(--series-1)',
+    'var(--series-2)',
+    'var(--series-3)',
+    'var(--series-4)',
+    'var(--series-5)',
+  ]
   const ends = shown
     .map((k, i) => ({ k, i, y: y(agenda.at(-1)!.shares[k] ?? 0) }))
     .sort((a, b) => a.y - b.y)
@@ -560,7 +565,7 @@ export function AgendaLines({
               )
               .join(' ')}
             fill="none"
-            stroke={ink[i % ink.length]}
+            style={{ stroke: ink[i % ink.length] }}
             strokeWidth={2}
           />
         ))}

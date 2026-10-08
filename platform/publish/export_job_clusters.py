@@ -24,12 +24,11 @@ def export(database: Path, output: Path):
             row[field] = json.loads(row[field])
         if 'top_employers' in row:
             row['top_employers'] = json.loads(row['top_employers'])
-    delivered = [{'id': row['job_id'], 'x': round(row['umap_x'], 5), 'y': round(row['umap_y'], 5),
-                  'cluster': row['cluster_id'], 'cluster_label': row['cluster_label'],
-                  'probability': row['cluster_probability'], 'role': row['role_family'],
-                  'seniority': row['seniority'], 'year': row['published_year'],
-                  'region': row['region'] if isinstance(row['region'], str) else 'Unspecified',
-                  'title': row['title'], 'skills': list(row['skills'])} for row in points]
+    # A point carries only what the map draws and its hover line reads; profiles hold the rest.
+    delivered = [{'id': row['job_id'], 'x': round(row['umap_x'], 4), 'y': round(row['umap_y'], 4),
+                  'cluster': row['cluster_id'], 'probability': round(row['cluster_probability'], 4),
+                  'role': row['role_family'], 'year': row['published_year'], 'title': row['title']}
+                 for row in points]
     if len(delivered) != report['diagnostics']['dataset_size']:
         raise ValueError('Delivery row count does not match evaluated dataset')
     output.mkdir(parents=True, exist_ok=True)

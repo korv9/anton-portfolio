@@ -21,7 +21,7 @@ test('document shards load from object storage, not from the site', async ({
   })
 
   const { bases } = await (await page.request.get('/data/delivery.json')).json()
-  await page.goto('/#data-explorer')
+  await page.goto('/#politik-sok')
   await page
     .getByRole('button', { name: /Read full speech/ })
     .first()
@@ -48,8 +48,9 @@ test('the delivery manifest drives resolution and JSON stays on the site', async
   page.on('request', (request) => {
     if (request.url().includes('/gold/')) goldRequests.push(request.url())
   })
-  await page.goto('/#politics')
-  await expect(page.locator('.politics-kpis')).toBeVisible()
+  await page.goto('/#politik-budget')
+  await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+  await page.waitForLoadState('networkidle')
   expect(goldRequests.length).toBeGreaterThan(0)
   for (const url of goldRequests)
     expect(url.startsWith(bases.shard)).toBeFalsy()

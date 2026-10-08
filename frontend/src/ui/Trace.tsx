@@ -120,7 +120,7 @@ function TraceNode({ n }: { n: GraphNode }) {
       {n.rows != null && (
         <small>
           {' '}
-          · {n.rows.toLocaleString(l('en-GB', 'sv-SE'))} {l('rows', 'rader')}
+          , {n.rows.toLocaleString(l('en-GB', 'sv-SE'))} {l('rows', 'rader')}
         </small>
       )}
       {n.description && <span>{n.description}</span>}

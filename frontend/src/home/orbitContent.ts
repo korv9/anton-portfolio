@@ -17,8 +17,8 @@ export const EXPERIENCE: {
   {
     org: 'Avtalat',
     role: t(
-      'Analytics Engineer · LIA-praktik',
-      'Analytics Engineer · LIA internship',
+      'Analytics Engineer, LIA-praktik',
+      'Analytics Engineer, LIA internship',
     ),
     period: t('jan–jun 2026', 'Jan–Jun 2026'),
     did: [
@@ -50,7 +50,7 @@ export const EXPERIENCE: {
   },
   {
     org: 'Fora',
-    role: t('Data Engineer · LIA-praktik', 'Data Engineer · LIA internship'),
+    role: t('Data Engineer, LIA-praktik', 'Data Engineer, LIA internship'),
     period: t('nov 2025–jan 2026', 'Nov 2025–Jan 2026'),
     did: [
       t(

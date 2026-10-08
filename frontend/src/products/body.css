@@ -17,19 +17,10 @@
 .body-ground {
   fill: var(--on-accent);
 }
-.body-title,
-.body-sub {
-  fill: var(--body-ink);
-  font-family: var(--font-mono) !important;
-  letter-spacing: 0.18em;
-}
 .body-title {
-  font-size: 15px;
+  fill: var(--body-ink);
+  font-size: 18px;
   font-weight: 600;
-}
-.body-sub {
-  font-size: 10px;
-  opacity: 0.6;
 }
 
 .body-field ellipse {
@@ -106,26 +97,27 @@
 }
 .body-arc {
   fill: none;
-  stroke: #ffe9b8;
+  stroke: var(--series-4);
   stroke-width: 3;
   stroke-linecap: round;
 }
 .body-index {
   fill: var(--body-ink);
   font-family: var(--font-mono) !important;
-  font-size: 9px;
+  font-size: 13px;
+  font-weight: 600;
   text-anchor: middle;
 }
 .body-label-name {
   fill: var(--body-ink);
   font-family: var(--font-mono) !important;
-  font-size: 11px;
+  font-size: 13px;
+  font-weight: 600;
   letter-spacing: 0.08em;
 }
 .body-label-meta {
-  fill: var(--body-ink);
-  font-size: 11px;
-  opacity: 0.65;
+  fill: var(--muted);
+  font-size: 13px;
 }
 .body-node.is-active .body-leader {
   stroke-opacity: 1;

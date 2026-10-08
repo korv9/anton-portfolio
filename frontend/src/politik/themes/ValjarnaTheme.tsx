@@ -20,7 +20,7 @@ import BuilderPanel, { Choice, Field } from '../BuilderPanel'
 import { Select, monthName, num, pct, signed } from '../controls'
 import { useViewParams } from '../useViewParams'
 import { shownParties, useParties } from '../partySelection'
-import Bars from '../Bars'
+import RankBars from '../../charts/RankBars'
 import PollTrend from '../features/PollTrend'
 
 type PollRow = {
@@ -138,7 +138,7 @@ export default function ValjarnaTheme({ route }: { route: Route }) {
         ? {
             key: s.key,
             party: s.key,
-            label: `${s.key} · ${partyName(s.key)}`,
+            label: `${s.key}, ${partyName(s.key)}`,
             value: last.value,
             note: before
               ? `${signed(last.value - before.value, 1)} ${l('since', 'sedan')} ${measure === 'psu' ? monthName(before.date) : before.date.slice(0, 4)}`
@@ -289,20 +289,20 @@ export default function ValjarnaTheme({ route }: { route: Route }) {
         chartMeta={
           !overTime
             ? l(
-                `Per cent of voters · ${latestWhen ? (measure === 'psu' ? monthName(latestWhen) : latestWhen.slice(0, 4)) : ''} · change since the one before`,
-                `Procent av väljarna · ${latestWhen ? (measure === 'psu' ? monthName(latestWhen) : latestWhen.slice(0, 4)) : ''} · förändring sedan föregående`,
+                `Per cent of voters, ${latestWhen ? (measure === 'psu' ? monthName(latestWhen) : latestWhen.slice(0, 4)) : ''}, change since the one before`,
+                `Procent av väljarna, ${latestWhen ? (measure === 'psu' ? monthName(latestWhen) : latestWhen.slice(0, 4)) : ''}, förändring sedan föregående`,
               )
             : l(
-                `Per cent of voters · ${firstShown ? (measure === 'psu' ? monthName(firstShown) : firstShown.slice(0, 4)) : ''}–${lastShown ? (measure === 'psu' ? monthName(lastShown) : lastShown.slice(0, 4)) : ''}`,
-                `Procent av väljarna · ${firstShown ? (measure === 'psu' ? monthName(firstShown) : firstShown.slice(0, 4)) : ''}–${lastShown ? (measure === 'psu' ? monthName(lastShown) : lastShown.slice(0, 4)) : ''}`,
+                `Per cent of voters, ${firstShown ? (measure === 'psu' ? monthName(firstShown) : firstShown.slice(0, 4)) : ''}–${lastShown ? (measure === 'psu' ? monthName(lastShown) : lastShown.slice(0, 4)) : ''}`,
+                `Procent av väljarna, ${firstShown ? (measure === 'psu' ? monthName(firstShown) : firstShown.slice(0, 4)) : ''}–${lastShown ? (measure === 'psu' ? monthName(lastShown) : lastShown.slice(0, 4)) : ''}`,
               )
         }
         chart={
           !overTime ? (
-            <Bars
-              bars={latestBars}
+            <RankBars
+              rows={latestBars}
               format={(v) => pct(v)}
-              description={l(
+              label={l(
                 `Latest support per party: ${latestBars.map((b) => `${b.key} ${pct(b.value)}`).join(', ')}`,
                 `Senaste stöd per parti: ${latestBars.map((b) => `${b.key} ${pct(b.value)}`).join(', ')}`,
               )}
@@ -380,14 +380,7 @@ export default function ValjarnaTheme({ route }: { route: Route }) {
         onBuild={() => setBuilding(true)}
         deepLinks={[
           {
-            href: '#now-history',
-            label: l(
-              'Every election and survey since 1973',
-              'Alla val och mätningar sedan 1973',
-            ),
-          },
-          {
-            href: '#parties',
+            href: '#politik-partier',
             label: l('One page per party', 'En sida per parti'),
           },
         ]}

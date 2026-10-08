@@ -46,16 +46,17 @@
   font-size: 0.8rem;
   cursor: pointer;
 }
-.constellation-chips button[aria-pressed='true'] {
-  background: var(--c-ink);
-  color: var(--on-accent);
-}
 .constellation-layers {
   margin-top: 0.6rem;
 }
 .constellation-layers button {
   min-height: 28px;
   font-size: 0.72rem;
+}
+.constellation .constellation-layers button[aria-pressed='true'] {
+  border-color: var(--line-strong);
+  background: var(--paper-strong);
+  color: var(--ink);
 }
 .constellation-layers button[aria-pressed='false'] {
   opacity: 0.4;
@@ -138,13 +139,7 @@
 .constellation-scroll {
   min-width: 0;
   border: 1px solid var(--c-rule);
-  background:
-    radial-gradient(
-      ellipse at 50% 50%,
-      rgba(120, 110, 160, 0.06),
-      transparent 70%
-    ),
-    var(--page);
+  background: var(--paper-strong);
 }
 .constellation-frame {
   position: relative;
@@ -163,7 +158,8 @@
   padding: 0.45rem 0.6rem;
   transform: translate(14px, -50%);
   border: 1px solid var(--c-rule);
-  background: rgba(10, 10, 12, 0.95);
+  background: var(--paper-strong);
+  color: var(--ink);
   font-size: 0.75rem;
   pointer-events: none;
 }

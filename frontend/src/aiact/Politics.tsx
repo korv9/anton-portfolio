@@ -567,7 +567,7 @@ function Framing({ politics }: { politics: PoliticsData }) {
                       )}
                     </span>
                     <span className="aa-pair-counts">
-                      {r.speeches_b} · {r.speeches_a}
+                      {r.speeches_b}, {r.speeches_a}
                       <span className="visually-hidden">
                         {word === 'few'
                           ? l(' too few to compare', ' för få för att jämföra')
@@ -601,7 +601,7 @@ function Excerpt({ e }: { e: PoliticsData['examples'][number] }) {
   return (
     <li className="aa-excerpt">
       <p className="aa-meta">
-        {fmtDate(e.speech_date, true)} · {e.speaker} · {e.debate_title}
+        {fmtDate(e.speech_date, true)}, {e.speaker}, {e.debate_title}
       </p>
       <blockquote>
         <Kind type="source" label={SPEECH} /> {e.text}
@@ -748,7 +748,7 @@ function Similarity({ politics }: { politics: PoliticsData }) {
               <li key={r.rank}>
                 <div>
                   <p className="aa-kicker">
-                    {l('The Act (Swedish text)', 'Lagen (svensk text)')} ·{' '}
+                    {l('The Act (Swedish text)', 'Lagen (svensk text)')},{' '}
                     {r.act_passage_id
                       .replace('art_', l('Art. ', 'Art. '))
                       .replace(':', ', ')}
@@ -759,7 +759,7 @@ function Similarity({ politics }: { politics: PoliticsData }) {
                 </div>
                 <div>
                   <p className="aa-kicker">
-                    {fmtDate(r.speech_date, true)} · {r.speaker}
+                    {fmtDate(r.speech_date, true)}, {r.speaker}
                   </p>
                   <blockquote>
                     <Kind type="source" label={SPEECH} /> {r.speech_paragraph}
@@ -826,7 +826,7 @@ function Method({ politics }: { politics: PoliticsData }) {
               <tr key={c.concept_id}>
                 <td>
                   {l(c.label_en, c.label_sv)}
-                  {c.kind === 'gate' && <small> · {l('gate', 'grind')}</small>}
+                  {c.kind === 'gate' && <small>, {l('gate', 'grind')}</small>}
                 </td>
                 <td>
                   {l(c.description_en, c.description_sv)}

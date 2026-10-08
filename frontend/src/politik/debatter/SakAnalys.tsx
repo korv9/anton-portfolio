@@ -154,7 +154,7 @@ export default function SakAnalys({ route }: { route: Route }) {
       <header className="story-hero">
         <p className="story-eyebrow">{l('Issue debates', 'Sakdebatter')}</p>
         <h1>
-          {party && <PartyLogo party={party} size={40} />} {object} —{' '}
+          {party && <PartyLogo party={party} size={40} />} {object}:{' '}
           {l('issue debates', 'sakdebatter')}
         </h1>
         <p className="story-sub">
@@ -303,7 +303,7 @@ export default function SakAnalys({ route }: { route: Route }) {
               'Partiets anföranden och repliker i debatter om varje område, av alla dess anföranden och repliker under perioden. Debattens område kommer från utskottet som beredde beslutet; en debatt med två områden räknas till hälften för vardera.',
             )}
           </Info>{' '}
-          · {period}
+          , {period}
         </p>
         <Bars
           rows={topShares.slice(0, 12).map((s) => ({
@@ -397,8 +397,8 @@ export default function SakAnalys({ route }: { route: Route }) {
             </ol>
             <p className="story-axis-note">
               {l(
-                '← less than the others · more than the others →',
-                '← mindre än övriga · mer än övriga →',
+                '← less than the others, more than the others →',
+                '← mindre än övriga, mer än övriga →',
               )}
             </p>
             {over[0] && compare.at(-1) && (
@@ -438,7 +438,7 @@ export default function SakAnalys({ route }: { route: Route }) {
               rowLabel={(r) => <PartyMark party={r} />}
               colLabel={name}
               title={(p, k, v) =>
-                `${partyName(p)} · ${name(k)}: ${v >= 0 ? '+' : ''}${num(v, 1)} p.e.`
+                `${partyName(p)}, ${name(k)}: ${v >= 0 ? '+' : ''}${num(v, 1)} p.e.`
               }
             />
             <p className="story-axis-note">

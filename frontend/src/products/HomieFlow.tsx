@@ -100,8 +100,8 @@ export default function HomieFlow() {
         })}
         <text x={C} y={40} textAnchor="middle" className="sieve-small">
           {l(
-            'solid: implemented · dashed: documented stub',
-            'hel: klar · streckad: dokumenterad stubbe',
+            'solid: implemented, dashed: documented stub',
+            'hel: klar, streckad: dokumenterad stubbe',
           )}
         </text>
       </svg>

@@ -303,6 +303,7 @@ export default function SymbolicAtlasPage({ route }: { route: Route }) {
       </div>
       <Stage
         id="symbolic-map"
+        dark
         level={2}
         kicker={l('The atlas', 'Atlasen')}
         title={l(
@@ -489,7 +490,7 @@ export default function SymbolicAtlasPage({ route }: { route: Route }) {
                       l('Cluster', 'Kluster'),
                       picked.is_noise
                         ? l('noise', 'brus')
-                        : `#${picked.cluster_id} · ${pct(picked.cluster_probability)}`,
+                        : `#${picked.cluster_id}, ${pct(picked.cluster_probability)}`,
                     ],
                   ]}
                 />
@@ -613,7 +614,7 @@ export default function SymbolicAtlasPage({ route }: { route: Route }) {
                 .map((st) => (
                   <tr key={st.id}>
                     <th scope="row">
-                      {st.id} · {st.name}
+                      {st.id}, {st.name}
                     </th>
                     <td>{num(st.metrics!.trustworthiness, 2)}</td>
                     <td>

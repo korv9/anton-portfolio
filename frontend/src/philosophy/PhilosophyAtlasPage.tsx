@@ -190,8 +190,8 @@ export default function PhilosophyAtlasPage({ route }: { route: Route }) {
       <header className="ph-hero ds-container">
         <p className="ph-kicker">
           {l(
-            'Experimental · semantic exploration',
-            'Experimentellt · semantisk utforskning',
+            'Experimental, semantic exploration',
+            'Experimentellt, semantisk utforskning',
           )}
         </p>
         <h1>Philosophy Atlas</h1>
@@ -281,10 +281,10 @@ export default function PhilosophyAtlasPage({ route }: { route: Route }) {
           {focusPoint && (
             <aside className="ph-passage" aria-live="polite">
               <p className="ph-kicker">
-                {works[focusPoint[1]].author} · {works[focusPoint[1]].title}
+                {works[focusPoint[1]].author}, {works[focusPoint[1]].title}
                 {focusPoint[4] >= 0
-                  ? ` · ${l('group', 'grupp')} ${focusPoint[4]}`
-                  : ` · ${l('no group', 'ingen grupp')}`}
+                  ? `, ${l('group', 'grupp')} ${focusPoint[4]}`
+                  : `, ${l('no group', 'ingen grupp')}`}
               </p>
               <blockquote>
                 {passages?.[focusPoint[0]] ?? l('Loading…', 'Laddar…')}
@@ -326,15 +326,15 @@ export default function PhilosophyAtlasPage({ route }: { route: Route }) {
                     {c.review_label ?? `${l('Group', 'Grupp')} ${c.cluster_id}`}
                   </span>
                   <span className="ph-group-terms">
-                    {c.distinctive_terms.slice(0, 6).join(' · ')}
+                    {c.distinctive_terms.slice(0, 6).join(', ')}
                   </span>
                   <span className="ph-group-meta">
-                    {c.size} {l('passages', 'passager')} · {c.work_count}{' '}
+                    {c.size} {l('passages', 'passager')}, {c.work_count}{' '}
                     {l('works', 'verk')}
                     {c.is_cross_work && (
-                      <b> · {l('across works', 'tvärgående')}</b>
+                      <b>, {l('across works', 'tvärgående')}</b>
                     )}
-                    {' · '}
+                    {', '}
                     {c.review_status === 'unreviewed'
                       ? l('not reviewed', 'ej granskad')
                       : c.review_status}
@@ -362,7 +362,7 @@ export default function PhilosophyAtlasPage({ route }: { route: Route }) {
                       return (
                         <li key={id}>
                           <p className="ph-kicker">
-                            {w?.author} · {w?.title}
+                            {w?.author}, {w?.title}
                           </p>
                           <blockquote>
                             {passages?.[id] ?? l('Loading…', 'Laddar…')}
@@ -425,7 +425,7 @@ function AtlasMap({
     (a, b) => Number(active(a)) - Number(active(b)),
   )
   return (
-    <figure className="ph-map plate">
+    <figure className="ph-map">
       <svg
         viewBox="0 0 100 100"
         role="img"

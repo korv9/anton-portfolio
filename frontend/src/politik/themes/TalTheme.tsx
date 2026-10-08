@@ -21,7 +21,7 @@ import BuilderPanel, { Choice, Field } from '../BuilderPanel'
 import { Select, num, pct } from '../controls'
 import { useViewParams } from '../useViewParams'
 import { shownParties, useParties } from '../partySelection'
-import Bars from '../Bars'
+import RankBars from '../../charts/RankBars'
 import { areaNames, loadBudgetReport, type BudgetReport } from './BudgetTheme'
 
 const DEFAULTS = {
@@ -99,7 +99,7 @@ export default function TalTheme({ route }: { route: Route }) {
     .map((r) => ({
       key: r.party,
       party: r.party,
-      label: `${r.party} · ${partyName(r.party)}`,
+      label: `${r.party}, ${partyName(r.party)}`,
       value: r.keyword_share_pct,
     }))
   const most = latestByParty[0]
@@ -234,20 +234,20 @@ export default function TalTheme({ route }: { route: Route }) {
         chartMeta={
           overTime
             ? l(
-                `Per cent of each party’s issue words · ${corpusName} · ${sessions[0] ?? ''}–${latest}`,
-                `Procent av partiets ämnesord · ${corpusName} · ${sessions[0] ?? ''}–${latest}`,
+                `Per cent of each party’s issue words, ${corpusName}, ${sessions[0] ?? ''}–${latest}`,
+                `Procent av partiets ämnesord, ${corpusName}, ${sessions[0] ?? ''}–${latest}`,
               )
             : l(
-                `Per cent of each party’s issue words · ${corpusName} · ${latest}`,
-                `Procent av partiets ämnesord · ${corpusName} · ${latest}`,
+                `Per cent of each party’s issue words, ${corpusName}, ${latest}`,
+                `Procent av partiets ämnesord, ${corpusName}, ${latest}`,
               )
         }
         chart={
           !overTime ? (
-            <Bars
-              bars={latestBars}
+            <RankBars
+              rows={latestBars}
               format={(v) => pct(v)}
-              description={l(
+              label={l(
                 `Share of speech about ${areaName}, ${latest}: ${latestBars.map((b) => `${b.key} ${pct(b.value)}`).join(', ')}`,
                 `Andel av talet om ${areaName}, ${latest}: ${latestBars.map((b) => `${b.key} ${pct(b.value)}`).join(', ')}`,
               )}
@@ -323,19 +323,12 @@ export default function TalTheme({ route }: { route: Route }) {
         onBuild={() => setBuilding(true)}
         deepLinks={[
           {
-            href: '#debates',
-            label: l(
-              'Map of similar political speeches',
-              'Karta över liknande politiska tal',
-            ),
-          },
-          {
-            href: '#data-explorer',
+            href: '#politik-sok',
             label: l('Search and read the speeches', 'Sök och läs talen'),
           },
           {
-            href: '#budget-explore',
-            label: l('Talk compared with money', 'Tal jämfört med pengar'),
+            href: '#politik-budget',
+            label: l('The budget', 'Budgeten'),
           },
         ]}
       />

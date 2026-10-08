@@ -59,7 +59,6 @@ export default function OmDatan({
   return (
     <Section
       id="om-datan"
-      n={9}
       kicker={l('About the data', 'Om datan')}
       question={l('How it works', 'Så fungerar det')}
       deeper={[
@@ -67,8 +66,11 @@ export default function OmDatan({
           href: '#politik-kallor',
           label: l('Sources and method', 'Källor och metod'),
         },
-        { href: '#technical', label: l('The data model', 'Datamodellen') },
-        { href: '#status', label: l('Pipeline status', 'Pipelinens status') },
+        { href: '#data-model', label: l('The data model', 'Datamodellen') },
+        {
+          href: '#data-catalogue',
+          label: l('Pipeline status', 'Pipelinens status'),
+        },
       ]}
     >
       <ol

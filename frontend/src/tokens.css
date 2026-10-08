@@ -41,7 +41,7 @@
 :root {
   color-scheme: light;
 
-  /* Type: one sans for everything, one mono for figures, metadata and section numbers. */
+  /* Type: one sans for everything, one mono for figures, metadata and eyebrows. */
   --font: 'Manrope', 'Helvetica Neue', Arial, sans-serif;
   --font-mono:
     ui-monospace, 'SFMono-Regular', Menlo, Consolas, 'Liberation Mono',
@@ -104,13 +104,16 @@
   /* Legacy names some views still read. */
   --teal: #0f0f10;
   --orange: #5b5b5e;
-  /* Data series where a chart needs categories (never for chrome). */
-  --data-blue: #3f6a96;
-  --data-green: #4a8a42;
-  --data-ochre: #b07f1c;
-  --data-rust: #b0563f;
-  --data-purple: #6c62ad;
-  --data-teal: #23786d;
+  /* Data series where a chart needs categories (never for chrome): one palette, in this fixed
+     order and never cycled. Checked with the dataviz validator against the page, the paper and
+     the dark plate (lightness, chroma, colour-vision separation of neighbours, 3:1). Where any
+     two series can sit side by side (a scatter), only the first three stay apart; a scatter
+     with four groups takes --ink-2 as the fourth, which no hue here is confused with. */
+  --series-1: #008f82;
+  --series-2: #e0512e;
+  --series-3: #7a52b3;
+  --series-4: #a47400;
+  --series-5: #1c72c4;
 
   /* Space and shape. */
   --sp-1: 0.25rem;
@@ -230,6 +233,19 @@ select,
 textarea,
 button {
   color: inherit;
+  touch-action: manipulation;
+}
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+/* Figures line up in columns (tabular, set on :root); a large standalone number reads better
+   with the font's own widths. */
+h1,
+h2,
+.finding-hero-value {
+  font-variant-numeric: proportional-nums;
 }
 input,
 select,
@@ -316,7 +332,6 @@ img {
 .dataset-presets button:hover,
 .feature-pick button:hover,
 .modell-slicers button:hover,
-.cluster-controls button:hover,
 .speaker-order button:hover {
   border-color: var(--ink);
 }
@@ -334,7 +349,6 @@ img {
 .dataset-presets button[aria-pressed='true'],
 .feature-pick button[aria-pressed='true'],
 .modell-slicers button[aria-pressed='true'],
-.cluster-controls button[aria-pressed='true'],
 .speaker-order button[aria-pressed='true'] {
   border-color: var(--ink);
   background: var(--ink);
@@ -354,7 +368,6 @@ img {
 .dataset-presets button:active,
 .feature-pick button:active,
 .modell-slicers button:active,
-.cluster-controls button:active,
 .speaker-order button:active,
 .btn:active,
 .btn-quiet:active {
