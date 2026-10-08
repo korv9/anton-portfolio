@@ -10,7 +10,9 @@ test('home introduces Anton and routes to each project', async ({ page }) => {
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
     'Anton Ernstsson',
   )
-  await expect(identity.locator('.home-roles')).toContainText('Data Engineer')
+  await expect(identity.locator('.home-roles')).toContainText(
+    'Junior Software Developer',
+  )
   await expect(identity.locator('.home-roles')).toBeInViewport()
   const ways = identity.getByRole('navigation', { name: 'Start page' })
   await expect(ways.getByRole('link')).toHaveText([
