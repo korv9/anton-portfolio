@@ -31,33 +31,31 @@ one slips through.
 ## Event model
 
 ```yaml
-id: decision-2026-10-07-006 # <type>-<date recorded>-<NNN>, readable and unique
+id: decision-2026-10-07-006        # <type>-<date recorded>-<NNN>, readable and unique
 created_at: 2026-10-07T15:20:00+00:00
-occurred_on: 2026-10-07 # optional: when it happened, if not when recorded
-type:
-  decision # idea | decision | hypothesis | experiment | finding | question
-  # (also rejection | implementation | observation)
+occurred_on: 2026-10-07            # optional: when it happened, if not when recorded
+type: decision                     # idea | decision | hypothesis | experiment | finding | question
+                                   # (also rejection | implementation | observation)
 title: Open the concept layer with Concept Journey
 summary: >
   Follow one concept at a time through stories, philosophy, Riksdag speeches and the AI Act.
 reason: A reader can follow one idea more easily than read the whole constellation.
-projects:
-  [concept-constellation, symbolic-atlas, philosophy-atlas, politics, ai-act]
+projects: [concept-constellation, symbolic-atlas, philosophy-atlas, politics, ai-act]
 tags: [concepts]
-importance: major # minor | normal (default) | major
-status: active # as written; see "effective status" below
-certainty: confirmed # proposed | tentative | confirmed
-visibility: public # private (default) | public
-relations: { supersedes: [idea-2026-10-04-003] }
-inferred_relations: { related_to: [idea-2026-10-05-002] } # suggested, never presented as certain
-implementation: { commit: 278a788 }
-source: { kind: manual, session_date: 2026-10-07 }
+importance: major                  # minor | normal (default) | major
+status: active                     # as written; see "effective status" below
+certainty: confirmed               # proposed | tentative | confirmed
+visibility: public                 # private (default) | public
+relations: {supersedes: [idea-2026-10-04-003]}
+inferred_relations: {related_to: [idea-2026-10-05-002]}   # suggested, never presented as certain
+implementation: {commit: 278a788}
+source: {kind: manual, session_date: 2026-10-07}
 ```
 
 Only `id`, `created_at`, `type` and `title` are required. Project ids are the ones in
 `frontend/src/projects/projectRegistry.ts`, plus `portfolio` for work on the site as a whole.
 
-A relation on event E reads "E _relation_ target", and new events point at older ones:
+A relation on event E reads "E *relation* target", and new events point at older ones:
 `inspired_by`, `evolved_from`, `supersedes`, `replaces`, `contradicts`, `tests`, `supports`,
 `rejects`, `implements`, `answers`, `results_from`, `applies_to` and `related_to`. The passive
 forms (`evolved_into`, `tested_by`, `supported_by`, `rejected_by`, `implemented_as`,
@@ -73,7 +71,7 @@ exist when the event is written.
 
 One JSON line per event, one file per day. A line is never edited. When a direction changes, a
 new event says so (`supersedes`, `rejects`, `answers`, `evolved_from`), and the views derive the
-earlier event's _effective status_ from it: superseded, abandoned, answered or evolved. An append
+earlier event's *effective status* from it: superseded, abandoned, answered or evolved. An append
 writes nothing unless every event in the batch passes validation and has an unused id.
 
 Because this repository is public, private events never enter it: `.idea-lineage/*` is
@@ -141,15 +139,15 @@ to the public journal.
 `ideas:export` rebuild one each. Each Markdown file begins with "Generated from the Idea Lineage
 journal. Do not edit".
 
-| File                                            | What it holds                                                                                                                                                                                                                |
-| ----------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `state/<project>.md`                            | Current direction (the latest of the project's own decisions, a major one first), active decisions, hypotheses, experiments, latest findings, open questions, ideas, and what was superseded or set aside and by which event |
-| `state/portfolio.md`                            | Portfolio-wide direction, projects with lineage, themes shared by tag across projects, recent major decisions, cross-project connections, open cross-project questions                                                       |
-| `context.json`                                  | Per project: active decisions, hypotheses, open questions and recent findings (ids and titles), for an agent to read before substantial work                                                                                 |
-| `diary/<date>.md`                               | One readable page per day an event happened (`occurred_on`, else recorded)                                                                                                                                                   |
-| `digests/<year>-W<week>.md`                     | The same for a week                                                                                                                                                                                                          |
-| `idea_lineage.duckdb`                           | `dim_event`, `dim_project`, `dim_tag`, `fact_relation`, `bridge_event_project`, `bridge_event_tag` for descriptive analysis                                                                                                  |
-| `frontend/public/data/idea-lineage/events.json` | Public events only, publishable fields only, links only between public events                                                                                                                                                |
+| File | What it holds |
+|---|---|
+| `state/<project>.md` | Current direction (the latest of the project's own decisions, a major one first), active decisions, hypotheses, experiments, latest findings, open questions, ideas, and what was superseded or set aside and by which event |
+| `state/portfolio.md` | Portfolio-wide direction, projects with lineage, themes shared by tag across projects, recent major decisions, cross-project connections, open cross-project questions |
+| `context.json` | Per project: active decisions, hypotheses, open questions and recent findings (ids and titles), for an agent to read before substantial work |
+| `diary/<date>.md` | One readable page per day an event happened (`occurred_on`, else recorded) |
+| `digests/<year>-W<week>.md` | The same for a week |
+| `idea_lineage.duckdb` | `dim_event`, `dim_project`, `dim_tag`, `fact_relation`, `bridge_event_project`, `bridge_event_tag` for descriptive analysis |
+| `frontend/public/data/idea-lineage/events.json` | Public events only, publishable fields only, links only between public events |
 
 ## Questions
 

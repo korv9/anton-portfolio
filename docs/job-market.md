@@ -44,7 +44,6 @@ or removed in a time window, in the archives' shape.
    month enters the monthly series only when the stream covers it from its first day. The
    months between the latest archive and the stream's first whole month stay empty until their
    quarterly archive is published.
-
 2. **Model** — dbt, tag `market` (`platform/models/{bronze,gold}/market`):
    - `stg_market_ads`, `stg_market_conditions`: each archive counts only its own year or
      quarter, so an ad republished across a turn of the year counts once; the stream
@@ -59,7 +58,7 @@ or removed in a time window, in the archives' shape.
      day from the stream).
    - `int_market_periods`: the comparison period ends with the last complete month.
 3. **Export** — `platform/publish/export_market.py` writes `frontend/public/data/jobs/market.json`,
-   with `daily` (ads per day) and `preliminary` (months from the stream). _Trender_ shows the
+   with `daily` (ads per day) and `preliminary` (months from the stream). *Trender* shows the
    latest days under the monthly chart, marked preliminary.
 4. **Refresh** — `.github/workflows/refresh-jobs.yml`, every morning (04:23 UTC): it fetches
    the stored counts, stream and provenance log from R2

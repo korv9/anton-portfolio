@@ -16,14 +16,14 @@ includes the exactly reused previous input vectors and configuration, not a reno
 approximation of the baseline. All fits use the full eligible corpus; one fixed 1,200-row
 sample supplies pairwise diagnostics, excluding each fit's noise.
 
-| Single fit                                                 | Groups |  Noise | Largest group | Assigned ads in majority-employer groups | Raw cosine silhouette | Clean cosine silhouette | Own feature cosine silhouette |
-| ---------------------------------------------------------- | -----: | -----: | ------------: | ---------------------------------------: | --------------------: | ----------------------: | ----------------------------: |
-| Previous raw model, 30/5, size 60, samples 5, leaf         |     25 | 47.90% |         4.69% |                                   19.28% |                 .0739 |                   .0366 |                         .0739 |
-| Clean text, 30/5, size 100, samples 3, eom                 |      9 | 49.76% |        11.35% |                                       0% |                 .0613 |                   .0625 |                         .0625 |
-| Clean + title, 60/10, size 100, samples 5, eom             |     21 | 13.64% |         9.95% |                                       0% |                −.1008 |                  −.0988 |                         .1665 |
-| Balanced three-view input, 60/10, size 100, samples 3, eom |     17 | 11.81% |        11.40% |                                       0% |                −.0603 |                  −.0620 |                         .1024 |
-| More skill weight, 60/10, size 100, samples 3, eom         |     13 |  5.41% |        46.32% |                                       0% |                −.0497 |                  −.0403 |                         .0548 |
-| Additional lexical view, 60/10, size 100, samples 3, eom   |      4 |  4.85% |        58.84% |                                       0% |                 .0957 |                   .0809 |                         .1281 |
+| Single fit | Groups | Noise | Largest group | Assigned ads in majority-employer groups | Raw cosine silhouette | Clean cosine silhouette | Own feature cosine silhouette |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Previous raw model, 30/5, size 60, samples 5, leaf | 25 | 47.90% | 4.69% | 19.28% | .0739 | .0366 | .0739 |
+| Clean text, 30/5, size 100, samples 3, eom | 9 | 49.76% | 11.35% | 0% | .0613 | .0625 | .0625 |
+| Clean + title, 60/10, size 100, samples 5, eom | 21 | 13.64% | 9.95% | 0% | −.1008 | −.0988 | .1665 |
+| Balanced three-view input, 60/10, size 100, samples 3, eom | 17 | 11.81% | 11.40% | 0% | −.0603 | −.0620 | .1024 |
+| More skill weight, 60/10, size 100, samples 3, eom | 13 | 5.41% | 46.32% | 0% | −.0497 | −.0403 | .0548 |
+| Additional lexical view, 60/10, size 100, samples 3, eom | 4 | 4.85% | 58.84% | 0% | .0957 | .0809 | .1281 |
 
 The lowest noise solutions restore a giant group and were rejected. Clean + title and
 balanced inputs were profiled and checked across seeds. The balanced ensemble was chosen
@@ -102,12 +102,12 @@ automatic-label uncertainty. A skill must occur in at least 15% of a group, with
 least 1.5, to enter its label; rarer distinctive mentions remain visible in the profile.
 This avoids naming a 205-ad frontend group after 17 PHP mentions.
 
-| Ensemble seeds                          | Groups |     Noise | ARI vs chosen ensemble, all rows including noise | ARI on mutually assigned ads |
-| --------------------------------------- | -----: | --------: | -----------------------------------------------: | ---------------------------: |
-| 42/43/44, delivered                     |     17 |    14.91% |                                                1 |                            1 |
-| 43/44/45                                |     18 |     14.5% |                                             .877 |                         .990 |
-| 44/45/46                                |     17 |     13.0% |                                             .845 |                         .972 |
-| **45/46/47, completely disjoint seeds** | **17** | **15.4%** |                                         **.800** |                     **.989** |
+| Ensemble seeds | Groups | Noise | ARI vs chosen ensemble, all rows including noise | ARI on mutually assigned ads |
+|---|---:|---:|---:|---:|
+| 42/43/44, delivered | 17 | 14.91% | 1 | 1 |
+| 43/44/45 | 18 | 14.5% | .877 | .990 |
+| 44/45/46 | 17 | 13.0% | .845 | .972 |
+| **45/46/47, completely disjoint seeds** | **17** | **15.4%** | **.800** | **.989** |
 
 The first two checks share seeds with the selected ensemble and are optimistic sensitivity
 checks. The third uses entirely new seeds. Its common assigned core covers about 81% of

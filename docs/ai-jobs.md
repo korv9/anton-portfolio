@@ -33,14 +33,14 @@ out in bronze.
 `seeds/job_ai_governance/job_ai_governance_terms.csv` holds 13 regular expressions, matched in
 an ad's headline and description. The page prints them verbatim.
 
-| Family           | Terms                                                                             |
-| ---------------- | --------------------------------------------------------------------------------- |
-| Context          | AI (any mention: upper-case _AI_, _artificiell intelligens_, _maskininlärning_ …) |
-| The Act          | the AI Act by name (_AI Act_, _AI-förordningen_, _AI-akten_ …)                    |
-| AI governance    | AI governance, responsible / trustworthy AI, AI compliance, AI safety             |
-| Model operations | model risk, model monitoring, MLOps                                               |
-| Data             | data governance, privacy and data protection (GDPR …)                             |
-| General          | compliance, risk management                                                       |
+| Family | Terms |
+|---|---|
+| Context | AI (any mention: upper-case *AI*, *artificiell intelligens*, *maskininlärning* …) |
+| The Act | the AI Act by name (*AI Act*, *AI-förordningen*, *AI-akten* …) |
+| AI governance | AI governance, responsible / trustworthy AI, AI compliance, AI safety |
+| Model operations | model risk, model monitoring, MLOps |
+| Data | data governance, privacy and data protection (GDPR …) |
+| General | compliance, risk management |
 
 A match means the words are in the ad. It does not mean the job requires them: an ad can name
 GDPR in its privacy notice, or name AI as a feature of the employer's product. The page shows
@@ -48,11 +48,11 @@ example ads per term so a reader can judge what each pattern catches.
 
 ## Data model
 
-| Layer  | Model                                                                                      | Grain                                                                                                                            |
-| ------ | ------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
-| bronze | `stg_job_gov_totals`, `stg_job_gov_terms`, `stg_job_gov_examples`, `stg_job_gov_manifests` | as counted, per archive                                                                                                          |
-| gold   | `mart_job_ai_governance_terms`                                                             | month × occupation field (and ALL) × term: mentions, ads, share, 3-month rolling share, year-on-year change in percentage points |
-| gold   | `mart_job_ai_governance_yearly`                                                            | year × field × term                                                                                                              |
+| Layer | Model | Grain |
+|---|---|---|
+| bronze | `stg_job_gov_totals`, `stg_job_gov_terms`, `stg_job_gov_examples`, `stg_job_gov_manifests` | as counted, per archive |
+| gold | `mart_job_ai_governance_terms` | month × occupation field (and ALL) × term: mentions, ads, share, 3-month rolling share, year-on-year change in percentage points |
+| gold | `mart_job_ai_governance_yearly` | year × field × term |
 
 Every share has its denominator. Rolling and yearly shares are sums over the window, not
 averages of monthly shares.
@@ -70,15 +70,15 @@ averages of monthly shares.
 
 Eight archives (2020 to 2026-Q2), **4,925,716 ads** from January 2020 to July 2026.
 
-| Share of all ads             | 2020    | 2021    | 2022    | 2023    | 2024    | 2025    | 2026    |
-| ---------------------------- | ------- | ------- | ------- | ------- | ------- | ------- | ------- |
-| AI (any mention)             | 0.77 %  | 0.94 %  | 0.80 %  | 0.73 %  | 1.18 %  | 1.97 %  | 2.80 %  |
-| The AI Act by name           | 0       | 0       | 1 ad    | 3 ads   | 0.003 % | 0.016 % | 0.033 % |
-| AI governance                | 0       | 0       | 0       | 0.001 % | 0.002 % | 0.007 % | 0.016 % |
+| Share of all ads | 2020 | 2021 | 2022 | 2023 | 2024 | 2025 | 2026 |
+|---|---|---|---|---|---|---|---|
+| AI (any mention) | 0.77 % | 0.94 % | 0.80 % | 0.73 % | 1.18 % | 1.97 % | 2.80 % |
+| The AI Act by name | 0 | 0 | 1 ad | 3 ads | 0.003 % | 0.016 % | 0.033 % |
+| AI governance | 0 | 0 | 0 | 0.001 % | 0.002 % | 0.007 % | 0.016 % |
 | Responsible / trustworthy AI | 0.001 % | 0.001 % | 0.001 % | 0.001 % | 0.004 % | 0.014 % | 0.034 % |
-| MLOps                        | 0.003 % | 0.006 % | 0.007 % | 0.006 % | 0.017 % | 0.036 % | 0.056 % |
-| Compliance                   | 0.45 %  | 0.51 %  | 0.51 %  | 0.52 %  | 0.83 %  | 1.25 %  | 1.33 %  |
-| Privacy and data protection  | 2.19 %  | 3.21 %  | 3.45 %  | 3.34 %  | 3.73 %  | 4.85 %  | 5.39 %  |
+| MLOps | 0.003 % | 0.006 % | 0.007 % | 0.006 % | 0.017 % | 0.036 % | 0.056 % |
+| Compliance | 0.45 % | 0.51 % | 0.51 % | 0.52 % | 0.83 % | 1.25 % | 1.33 % |
+| Privacy and data protection | 2.19 % | 3.21 % | 3.45 % | 3.34 % | 3.73 % | 4.85 % | 5.39 % |
 
 - Mentions of AI were flat at under 1 % of ads until 2023, then rose to 2.8 % in 2026. In 2025,
   11 % of Data/IT ads mentioned AI.
@@ -90,7 +90,7 @@ Eight archives (2020 to 2026-Q2), **4,925,716 ads** from January 2020 to July 20
 ## Limitations
 
 - Words, not requirements. English and Swedish patterns only.
-- _AI_ in upper case also matches some unrelated uses (for example, AI as a company name).
+- *AI* in upper case also matches some unrelated uses (for example, AI as a company name).
   The examples show how often.
 - Platform coverage changes over time: the archives hold ads published on Arbetsförmedlingen's
   platform, not the whole labour market.

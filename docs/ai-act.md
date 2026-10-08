@@ -15,11 +15,11 @@ npm run architecture:build  # the Data Constellation picks the domain up
 
 ## Official sources
 
-| Source                                                                    | What                                                                                                                            | How                                                                                                        |
-| ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| Publications Office of the EU, **Cellar** (the repository behind EUR-Lex) | The documents related to the Act: amending acts, corrigenda, consolidated versions, proposals to amend it, acts based on it     | SPARQL endpoint `publications.europa.eu/webapi/rdf/sparql` (`platform/legal/cellar.py`)                    |
-| Cellar content negotiation                                                | The text of the Act (Official Journal), of each consolidated version and of each amending act, as XHTML, in English and Swedish | `publications.europa.eu/resource/celex/<CELEX>` with `Accept: application/xhtml+xml` and `Accept-Language` |
-| European Commission                                                       | Guidelines, codes of practice, templates, the AI Act policy page and the AI Act Service Desk                                    | The pages listed in `platform/ingest/eu_ai_act/sources.py`                                                 |
+| Source | What | How |
+|---|---|---|
+| Publications Office of the EU, **Cellar** (the repository behind EUR-Lex) | The documents related to the Act: amending acts, corrigenda, consolidated versions, proposals to amend it, acts based on it | SPARQL endpoint `publications.europa.eu/webapi/rdf/sparql` (`platform/legal/cellar.py`) |
+| Cellar content negotiation | The text of the Act (Official Journal), of each consolidated version and of each amending act, as XHTML, in English and Swedish | `publications.europa.eu/resource/celex/<CELEX>` with `Accept: application/xhtml+xml` and `Accept-Language` |
+| European Commission | Guidelines, codes of practice, templates, the AI Act policy page and the AI Act Service Desk | The pages listed in `platform/ingest/eu_ai_act/sources.py` |
 
 EUR-Lex pages are what a reader follows (every row carries its `source_url`); they are not
 fetched, since EUR-Lex answers automated requests with a browser challenge. No secondary source
@@ -80,22 +80,22 @@ Tests: `platform/tests/legal/`.
 
 ## Data model
 
-| Layer  | Model                                                                                              | Grain                                                                            |
-| ------ | -------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| bronze | `stg_ai_act_texts`, `stg_ai_act_related`, `stg_ai_act_guidance_pages`, `stg_ai_act_fetches`        | file as fetched, with provenance                                                 |
-| silver | `int_ai_act_documents`                                                                             | document (Cellar), with document type from the CELEX scheme and version validity |
-| silver | `int_ai_act_provisions`                                                                            | version × language × provision (article, recital, annex), verbatim               |
-| silver | `int_ai_act_definitions`                                                                           | Article 3 point: term and definition verbatim                                    |
-| silver | `int_ai_act_provision_changes`                                                                     | provision: change between the OJ text and the current text                       |
-| silver | `int_ai_act_guidance`                                                                              | Commission page: title and date read from the page                               |
-| silver | `int_ai_act_article_actors`                                                                        | article × actor: mentions and "shall" sentences (derived)                        |
-| gold   | `dim_ai_act_document`, `dim_ai_act_guidance`                                                       | documents and guidance                                                           |
-| gold   | `dim_ai_act_article`, `dim_ai_act_annex`, `dim_ai_act_recital`                                     | the current text, English and Swedish                                            |
-| gold   | `dim_ai_act_actor`, `dim_ai_act_risk_class`                                                        | actors with Article 3 definitions; risk classes                                  |
-| gold   | `bridge_ai_act_article_actor`, `bridge_ai_act_article_reference`, `bridge_ai_act_article_guidance` | many-to-many links                                                               |
-| gold   | `mart_ai_act_obligations`                                                                          | actor × obligation × article                                                     |
-| gold   | `mart_ai_act_timeline`                                                                             | milestone (application dates, deadlines, document dates)                         |
-| gold   | `mart_ai_act_changes`                                                                              | change (documents, guidance, provisions)                                         |
+| Layer | Model | Grain |
+|---|---|---|
+| bronze | `stg_ai_act_texts`, `stg_ai_act_related`, `stg_ai_act_guidance_pages`, `stg_ai_act_fetches` | file as fetched, with provenance |
+| silver | `int_ai_act_documents` | document (Cellar), with document type from the CELEX scheme and version validity |
+| silver | `int_ai_act_provisions` | version × language × provision (article, recital, annex), verbatim |
+| silver | `int_ai_act_definitions` | Article 3 point: term and definition verbatim |
+| silver | `int_ai_act_provision_changes` | provision: change between the OJ text and the current text |
+| silver | `int_ai_act_guidance` | Commission page: title and date read from the page |
+| silver | `int_ai_act_article_actors` | article × actor: mentions and "shall" sentences (derived) |
+| gold | `dim_ai_act_document`, `dim_ai_act_guidance` | documents and guidance |
+| gold | `dim_ai_act_article`, `dim_ai_act_annex`, `dim_ai_act_recital` | the current text, English and Swedish |
+| gold | `dim_ai_act_actor`, `dim_ai_act_risk_class` | actors with Article 3 definitions; risk classes |
+| gold | `bridge_ai_act_article_actor`, `bridge_ai_act_article_reference`, `bridge_ai_act_article_guidance` | many-to-many links |
+| gold | `mart_ai_act_obligations` | actor × obligation × article |
+| gold | `mart_ai_act_timeline` | milestone (application dates, deadlines, document dates) |
+| gold | `mart_ai_act_changes` | change (documents, guidance, provisions) |
 
 ### Actors
 
@@ -112,7 +112,7 @@ Each article gets the date from which it applies under Article 113 as amended
 (`seeds/eu_ai_act/ai_act_application_rules.csv`): the most specific rule wins (article, then
 section, then chapter, then the general date). Every rule carries the sentence of Article 113 it
 rests on. Where only part of an article has a different date (Article 5's prohibitions added in
-2026), the article carries a second date and is shown as _partly applying_ in between.
+2026), the article carries a second date and is shown as *partly applying* in between.
 
 ### Obligations
 
@@ -127,11 +127,11 @@ Act. Each row has three kinds of content, kept apart:
 
 Every published file and every block on the page is one of three kinds, and the page marks it:
 
-| Kind                       | What                                                                                                                                                                     |
-| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Source** (official text) | Article text, definitions, quoted sentences, document titles and dates, as published                                                                                     |
-| **Derived**                | Computed from the text by a stated method: actor mentions and "shall" sentences (term patterns), cross-references (patterns), what changed between versions (comparison) |
-| **Interpretation**         | Written for this site: obligation summaries and classification, risk-class descriptions, the navigator's questions and rules                                             |
+| Kind | What |
+|---|---|
+| **Source** (official text) | Article text, definitions, quoted sentences, document titles and dates, as published |
+| **Derived** | Computed from the text by a stated method: actor mentions and "shall" sentences (term patterns), cross-references (patterns), what changed between versions (comparison) |
+| **Interpretation** | Written for this site: obligation summaries and classification, risk-class descriptions, the navigator's questions and rules |
 
 No summary replaces legal text; no LLM output is used anywhere in this product.
 
@@ -161,9 +161,9 @@ the legal modelling for later:
 4. **In Sweden:** links to the AI governance timeline, the Riksdag and job ads. The page says
    that these signals happen in the same period and that this does not show causation.
 5. **This month:** the snapshot, sized for a screenshot, with "copy as text".
-6. Folded: what the Act is, the latest guidance and the amendment. Then _Quality in brief_
-   (accuracy, currentness, traceability, validity, each with its evidence), _How it was built_
-   and _Trace this result_, which opens the lineage from the timeline file back to the
+6. Folded: what the Act is, the latest guidance and the amendment. Then *Quality in brief*
+   (accuracy, currentness, traceability, validity, each with its evidence), *How it was built*
+   and *Trace this result*, which opens the lineage from the timeline file back to the
    Publications Office.
 
 The project navigation follows the same order: overview, today, who it applies to, startup

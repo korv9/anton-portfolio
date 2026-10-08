@@ -26,12 +26,12 @@ It needs the AI Act, Riksdag AI and job-ad governance models built first.
 
 The series are defined in `seeds/cross_domain/ai_governance_series.csv`:
 
-| Series               | Numerator / denominator                | From                           |
-| -------------------- | -------------------------------------- | ------------------------------ |
-| `riksdag_ai`         | speeches mentioning AI / all speeches  | `mart_ai_politics_monthly`     |
-| `riksdag_ai_act`     | speeches naming the Act / all speeches | `mart_ai_politics_monthly`     |
-| `jobs_ai_any`        | ads mentioning AI / all ads            | `mart_job_ai_governance_terms` |
-| `jobs_ai_act`        | ads naming the Act / all ads           | `mart_job_ai_governance_terms` |
+| Series | Numerator / denominator | From |
+|---|---|---|
+| `riksdag_ai` | speeches mentioning AI / all speeches | `mart_ai_politics_monthly` |
+| `riksdag_ai_act` | speeches naming the Act / all speeches | `mart_ai_politics_monthly` |
+| `jobs_ai_any` | ads mentioning AI / all ads | `mart_job_ai_governance_terms` |
+| `jobs_ai_act` | ads naming the Act / all ads | `mart_job_ai_governance_terms` |
 | `jobs_ai_governance` | ads mentioning AI governance / all ads | `mart_job_ai_governance_terms` |
 
 Tests check that each series and month appears once, that shares lie between 0 and 1, and that
@@ -40,7 +40,7 @@ no numerator exceeds its denominator. The publisher writes `ai-act/signals.json`
 ## How it is drawn
 
 Each series has its own panel with its own y-scale. All panels share one x-axis and the same
-numbered milestone lines (_small multiples_). There is never a second scale in one chart, and
+numbered milestone lines (*small multiples*). There is never a second scale in one chart, and
 series are never added together. Their levels differ by orders of magnitude: about 1 % of
 speeches mention AI, while a few ads in a hundred thousand name the Act. A shared scale would
 flatten all but one series.
@@ -69,6 +69,6 @@ the job ads begin to rise. The page says so under the panels.
   2026 (95 to July).
 - **Together:** both series rise from 2023. That follows the public launch of generative AI
   (November 2022) and also the Act's negotiation, publication and first application dates.
-  The data cannot separate the two. What it does show is that ads _naming_ the Act appear
+  The data cannot separate the two. What it does show is that ads *naming* the Act appear
   only after its publication and grow as its first obligations apply. That is still temporal
   overlap, not evidence that the Act changed hiring.

@@ -25,12 +25,12 @@ reported separately. The [complete candidate table](job-clustering-sweep.csv) co
 every setting and result; local assignments, reductions, profiles and seed checks are in
 `warehouse/ml/jobs/sweeps/25820ae69496eeba/`.
 
-| Candidate                | UMAP n / dimensions / min_dist | HDBSCAN size / samples / selection | Groups |      Noise | Largest group | Original cosine silhouette | UMAP silhouette |
-| ------------------------ | ------------------------------ | ---------------------------------- | -----: | ---------: | ------------: | -------------------------: | --------------: |
-| Previous                 | 30 / 15 / .05                  | 50 / 10 / eom                      |      5 |      8.79% |        84.99% |                    −0.0882 |          0.2247 |
-| **Selected**             | **30 / 5 / 0**                 | **60 / 5 / leaf**                  | **25** | **47.90%** |     **4.69%** |                 **0.0739** |      **0.5222** |
-| Finer eom fit            | 30 / 5 / 0                     | 30 / 5 / eom                       |     46 |     39.46% |         3.67% |                     0.0654 |          0.5429 |
-| Highest exploratory rank | 60 / 15 / 0                    | 20 / 3 / leaf                      |     84 |     48.02% |         2.11% |                     0.1185 |          0.5759 |
+| Candidate | UMAP n / dimensions / min_dist | HDBSCAN size / samples / selection | Groups | Noise | Largest group | Original cosine silhouette | UMAP silhouette |
+|---|---|---|---:|---:|---:|---:|---:|
+| Previous | 30 / 15 / .05 | 50 / 10 / eom | 5 | 8.79% | 84.99% | −0.0882 | 0.2247 |
+| **Selected** | **30 / 5 / 0** | **60 / 5 / leaf** | **25** | **47.90%** | **4.69%** | **0.0739** | **0.5222** |
+| Finer eom fit | 30 / 5 / 0 | 30 / 5 / eom | 46 | 39.46% | 3.67% | 0.0654 | 0.5429 |
+| Highest exploratory rank | 60 / 15 / 0 | 20 / 3 / leaf | 84 | 48.02% | 2.11% | 0.1185 | 0.5759 |
 
 The exploratory rank is `original_silhouette − .3*noise_share − .5*largest_share
 − .15*employer_majority_share`. It is a screening heuristic, not an accuracy metric.
@@ -44,14 +44,14 @@ The 84-group fit was not selected simply because it ranked higher.
 
 Examples of the selected automatic descriptive profiles:
 
-|  ID | Label            | Ads | Largest employer share |
-| --: | ---------------- | --: | ---------------------: |
-|   8 | Databricks / dbt | 277 |                 12.64% |
-|   9 | Fabric / dbt     | 163 |                  5.52% |
-|  14 | SQL / Python     | 129 |                 10.08% |
-|  15 | Angular / .NET   | 100 |                 45.00% |
-|  16 | Spring / Kafka   | 287 |                  6.62% |
-|  18 | PHP / Node.js    | 172 |                  6.40% |
+| ID | Label | Ads | Largest employer share |
+|---:|---|---:|---:|
+| 8 | Databricks / dbt | 277 | 12.64% |
+| 9 | Fabric / dbt | 163 | 5.52% |
+| 14 | SQL / Python | 129 | 10.08% |
+| 15 | Angular / .NET | 100 | 45.00% |
+| 16 | Spring / Kafka | 287 | 6.62% |
+| 18 | PHP / Node.js | 172 | 6.40% |
 
 Six groups remain majority-employer groups, covering 615 ads (19.28% of assigned ads).
 These include Deploja, Veritaz, Försäkringskassan, Axis and SAAB. Employer/template
@@ -67,10 +67,10 @@ Both the 25-group and 46-group configurations were checked with seeds 43 and 44.
 was refitted; HDBSCAN parameters were held constant. Adjusted Rand index handles
 permuted cluster IDs.
 
-| Selected fit seed | Groups |  Noise | ARI vs seed 42, including noise | ARI on mutually assigned ads | Mutually assigned share of corpus |
-| ----------------: | -----: | -----: | ------------------------------: | ---------------------------: | --------------------------------: |
-|                43 |     24 | 51.27% |                           .6136 |                        .9060 |                            42.61% |
-|                44 |     24 | 47.59% |                           .6751 |                        .8796 |                            45.91% |
+| Selected fit seed | Groups | Noise | ARI vs seed 42, including noise | ARI on mutually assigned ads | Mutually assigned share of corpus |
+|---:|---:|---:|---:|---:|---:|
+| 43 | 24 | 51.27% | .6136 | .9060 | 42.61% |
+| 44 | 24 | 47.59% | .6751 | .8796 | 45.91% |
 
 The 46-group alternative had mutually assigned ARI .7307/.7425 and all-row ARI
 .5191/.5996. The selected fit has more consistent groups within the common assigned

@@ -17,14 +17,14 @@ npm run architecture:build     # python platform/architecture/build_graph.py
 writes `frontend/public/data/architecture/graph.json` and registers it in the delivery
 catalogue. It reads:
 
-| Input                                                                  | What it gives                                                                                                                                                                           |
-| ---------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `platform/target/manifest.json` (dbt; `dbt parse` is run when missing) | every model, seed and source, their paths, descriptions and materialisation, and lineage from `depends_on`                                                                              |
-| `frontend/public/data/schema/er.json` (`export_er.py`)                 | table kinds (fact, dimension, mart, bridge, seed), primary keys, columns, row counts, and relationships between tables, each measured in the data or backed by a dbt relationships test |
-| `platform/architecture/registry.py`                                    | what dbt cannot see: origins, ingesters, ML stages, publishers and their output patterns, products and shared infrastructure                                                            |
-| the publisher scripts                                                  | the dbt tables each one reads, found in its source (`gold.fct_x` or a quoted name)                                                                                                      |
-| frontend code                                                          | the data paths each product's folders name; a product consumes a delivery node when one of its paths matches one of the node's files                                                    |
-| files under `frontend/public/data` and `catalog.json`                  | which files each delivery pattern covers (including Parquet that lives only on R2)                                                                                                      |
+| Input | What it gives |
+|---|---|
+| `platform/target/manifest.json` (dbt; `dbt parse` is run when missing) | every model, seed and source, their paths, descriptions and materialisation, and lineage from `depends_on` |
+| `frontend/public/data/schema/er.json` (`export_er.py`) | table kinds (fact, dimension, mart, bridge, seed), primary keys, columns, row counts, and relationships between tables, each measured in the data or backed by a dbt relationships test |
+| `platform/architecture/registry.py` | what dbt cannot see: origins, ingesters, ML stages, publishers and their output patterns, products and shared infrastructure |
+| the publisher scripts | the dbt tables each one reads, found in its source (`gold.fct_x` or a quoted name) |
+| frontend code | the data paths each product's folders name; a product consumes a delivery node when one of its paths matches one of the node's files |
+| files under `frontend/public/data` and `catalog.json` | which files each delivery pattern covers (including Parquet that lives only on R2) |
 
 `validate()` refuses the graph on duplicate ids, unknown types, layers or domains, edges to a
 missing node, or a data-flow edge that runs right to left. The build fails if a registry entry
@@ -35,44 +35,44 @@ publisher or product needs one registry entry.
 
 ## Domains
 
-| Domain          | Assigned from                                                                                                                                  |
-| --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| Politics        | dbt folders `parliament`, `politics`, `news`, `taxes`; the politics product                                                                    |
-| Job market      | dbt folders `jobs`, `market`; seeds at the root of `seeds/` (role and technology patterns)                                                     |
-| Shared platform | `models/gold/shared` (date, period, region, indicator … dimensions), SCB, and the infrastructure                                               |
-| Sweden          | dbt folder `welfare`                                                                                                                           |
-| Symbolic Atlas  | dbt folder `symbolic`                                                                                                                          |
-| EU AI Act       | dbt folders `eu_ai_act` and `ai_politics` (the Riksdag's speeches read against the Act); the Publications Office and the Commission as sources |
+| Domain | Assigned from |
+|---|---|
+| Politics | dbt folders `parliament`, `politics`, `news`, `taxes`; the politics product |
+| Job market | dbt folders `jobs`, `market`; seeds at the root of `seeds/` (role and technology patterns) |
+| Shared platform | `models/gold/shared` (date, period, region, indicator … dimensions), SCB, and the infrastructure |
+| Sweden | dbt folder `welfare` |
+| Symbolic Atlas | dbt folder `symbolic` |
+| EU AI Act | dbt folders `eu_ai_act` and `ai_politics` (the Riksdag's speeches read against the Act); the Publications Office and the Commission as sources |
 
 Smaller standalone projects (DrugComb, DiVA, Homie) are not in the map: they do not
 run on the dbt warehouse.
 
 ## Node types
 
-| Type                 | Id                 | Meaning                                                                            | Marker                         |
-| -------------------- | ------------------ | ---------------------------------------------------------------------------------- | ------------------------------ |
-| source               | `src:<id>`         | an external system (Riksdagen, SCB, Gutenberg …)                                   | large star with a ring         |
-| ingestion            | `ingest:<id>`      | a `platform/ingest/<dir>` loader                                                   | small square                   |
-| raw                  | `raw:<dbt source>` | a dbt source: raw landing tables                                                   | small diamond                  |
-| seed                 | `dbt:<name>`       | reference data in `seeds/`                                                         | hollow circle                  |
-| bronze, silver, gold | `dbt:<name>`       | dbt models by layer                                                                | dots, gold larger and brighter |
-| ml                   | `ml:<id>`          | analytical stages outside dbt (embeddings, clustering, experiments)                | four-pointed star              |
-| delivery             | `out:<pattern>`    | a set of published files under `frontend/public/data`                              | hollow square                  |
-| frontend             | `app:<id>`         | a product                                                                          | large planet                   |
-| shared               | `infra:<id>`       | rawstore, the EU legal parser, dbt + DuckDB, the delivery catalogue, Cloudflare R2 | double ring                    |
+| Type | Id | Meaning | Marker |
+|---|---|---|---|
+| source | `src:<id>` | an external system (Riksdagen, SCB, Gutenberg …) | large star with a ring |
+| ingestion | `ingest:<id>` | a `platform/ingest/<dir>` loader | small square |
+| raw | `raw:<dbt source>` | a dbt source: raw landing tables | small diamond |
+| seed | `dbt:<name>` | reference data in `seeds/` | hollow circle |
+| bronze, silver, gold | `dbt:<name>` | dbt models by layer | dots, gold larger and brighter |
+| ml | `ml:<id>` | analytical stages outside dbt (embeddings, clustering, experiments) | four-pointed star |
+| delivery | `out:<pattern>` | a set of published files under `frontend/public/data` | hollow square |
+| frontend | `app:<id>` | a product | large planet |
+| shared | `infra:<id>` | rawstore, the EU legal parser, dbt + DuckDB, the delivery catalogue, Cloudflare R2 | double ring |
 
 Models dbt switches off by default (the job-ad clustering marts, enabled by a dbt variable) are
 included, marked `enabled: false` and drawn faded.
 
 ## Edge types
 
-| Type                   | Meaning                                                                                                                                        | Drawn as                        |
-| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------- |
-| `lineage`              | data built from data: origin → ingester → raw → models → ML                                                                                    | solid line                      |
-| `delivery`             | a published file written from a table (or ML output) by a publisher (`via`)                                                                    | accent line                     |
-| `frontend-consumption` | a product reads a published file                                                                                                               | accent line                     |
-| `relationship`         | a key joins two tables (cardinality, basis)                                                                                                    | dashed, Data model view only    |
-| `infrastructure`       | a stage runs on shared infrastructure (an ingester that stores through rawstore, a dbt Python model or ingester that imports `platform/legal`) | dotted, only on a selected path |
+| Type | Meaning | Drawn as |
+|---|---|---|
+| `lineage` | data built from data: origin → ingester → raw → models → ML | solid line |
+| `delivery` | a published file written from a table (or ML output) by a publisher (`via`) | accent line |
+| `frontend-consumption` | a product reads a published file | accent line |
+| `relationship` | a key joins two tables (cardinality, basis) | dashed, Data model view only |
+| `infrastructure` | a stage runs on shared infrastructure (an ingester that stores through rawstore, a dbt Python model or ingester that imports `platform/legal`) | dotted, only on a selected path |
 
 Physical lineage, logical relationships and product consumption are separate edge types and
 are never drawn the same way: a join is not a build step.
@@ -81,51 +81,17 @@ are never drawn the same way: a join is not a build step.
 
 ```json
 {
-  "nodes": [
-    {
-      "id": "dbt:mart_symbol_atlas",
-      "label": "mart_symbol_atlas",
-      "type": "gold",
-      "layer": "gold",
-      "domain": "symbolic",
-      "path": "platform/models/gold/symbolic/mart_symbol_atlas.sql",
-      "description": "…",
-      "materialized": "table",
-      "kind": "mart",
-      "keys": ["occurrence_id"],
-      "rows": 4804,
-      "columns": ["…"],
-      "enabled": true
-    }
-  ],
-  "edges": [
-    {
-      "source": "dbt:int_symbol_occurrences",
-      "target": "dbt:mart_symbol_atlas",
-      "type": "lineage"
-    }
-  ],
-  "domains": [
-    {
-      "id": "symbolic",
-      "label": "Symbolic Atlas",
-      "lane": 4,
-      "counts": { "sources": 1, "models": 5, "gold": 2, "delivery": 9 }
-    }
-  ],
-  "layers": [
-    "source",
-    "ingestion",
-    "raw",
-    "bronze",
-    "silver",
-    "ml",
-    "gold",
-    "delivery",
-    "frontend"
-  ],
-  "generated_at": "…",
-  "dbt_version": "…"
+  "nodes": [{ "id": "dbt:mart_symbol_atlas", "label": "mart_symbol_atlas", "type": "gold",
+              "layer": "gold", "domain": "symbolic",
+              "path": "platform/models/gold/symbolic/mart_symbol_atlas.sql",
+              "description": "…", "materialized": "table", "kind": "mart",
+              "keys": ["occurrence_id"], "rows": 4804, "columns": ["…"], "enabled": true }],
+  "edges": [{ "source": "dbt:int_symbol_occurrences", "target": "dbt:mart_symbol_atlas",
+              "type": "lineage" }],
+  "domains": [{ "id": "symbolic", "label": "Symbolic Atlas", "lane": 4,
+                "counts": { "sources": 1, "models": 5, "gold": 2, "delivery": 9 } }],
+  "layers": ["source", "ingestion", "raw", "bronze", "silver", "ml", "gold", "delivery", "frontend"],
+  "generated_at": "…", "dbt_version": "…"
 }
 ```
 

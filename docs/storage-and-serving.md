@@ -4,11 +4,11 @@ How data reaches the site, and how to move a file without touching a component.
 
 ## The model
 
-| Layer           | Holds                                               | Rule                                                                 |
-| --------------- | --------------------------------------------------- | -------------------------------------------------------------------- |
-| JSON contracts  | KPI cards, chart series, indexes, `delivery.json`   | Needed for first paint. Served from the site                         |
+| Layer | Holds | Rule |
+|---|---|---|
+| JSON contracts | KPI cards, chart series, indexes, `delivery.json` | Needed for first paint. Served from the site |
 | Document shards | Speech transcripts, decision detail, law provisions | Loaded on demand, one document at a time. Served from object storage |
-| Catalogue       | Every delivered file, with size and SHA-256         | Generated, never hand-edited                                         |
+| Catalogue | Every delivered file, with size and SHA-256 | Generated, never hand-edited |
 
 `platform/publish/build_catalog.py` writes two files:
 
@@ -27,11 +27,11 @@ Components ask for logical paths (`gold/overview.json`), never URLs. `frontend/s
 fetches `delivery.json` once, decides whether the path is a shard, and prefixes the matching
 base. Three entry points:
 
-| Function                                    | Use                                            |
-| ------------------------------------------- | ---------------------------------------------- |
-| `fetchData(path, init?)`                    | any fetch of a data file                       |
+| Function | Use |
+|---|---|
+| `fetchData(path, init?)` | any fetch of a data file |
 | `useData(path, root)` / `useGoldData(path)` | React hooks in `frontend/src/politics/data.ts` |
-| `useDataUrl(path)`                          | a resolved URL for an anchor or download link  |
+| `useDataUrl(path)` | a resolved URL for an anchor or download link |
 
 If `delivery.json` is missing or unreadable, everything falls back to `/data/`, which is the
 pre-move layout. The site therefore keeps working from a plain checkout with no bucket at all.
@@ -100,13 +100,13 @@ The authoritative integrity check for object storage is `upload-shards.py --veri
 
 Measured 2026-09-25.
 
-|                                                 | Before    | After         |
-| ----------------------------------------------- | --------- | ------------- |
-| `frontend/public/data/` files                   | 4,004     | **536**       |
-| `frontend/public/data/` size                    | 652 MB    | **158 MB**    |
-| `dist/`                                         | 655 MB    | **157 MB**    |
-| Files per deployment (Cloudflare allows 20,000) | 4,004     | **536**       |
-| Start-page bundle                               | 433.5 KiB | **332.6 KiB** |
+| | Before | After |
+|---|---|---|
+| `frontend/public/data/` files | 4,004 | **536** |
+| `frontend/public/data/` size | 652 MB | **158 MB** |
+| `dist/` | 655 MB | **157 MB** |
+| Files per deployment (Cloudflare allows 20,000) | 4,004 | **536** |
+| Start-page bundle | 433.5 KiB | **332.6 KiB** |
 
 The speech index under `discovery/` was the remaining bulk: 140 MB of JSON, one file per
 session. It is now Parquet, one part per session under `parquet/speech_cards/` (39 MB, the

@@ -23,13 +23,13 @@ pull request gets a preview URL on `workers.dev`. No workflow here deploys.
 
 ## In the repository
 
-| File                            | Purpose                                                                                             |
-| ------------------------------- | --------------------------------------------------------------------------------------------------- |
-| `wrangler.toml`                 | Worker name, and `dist/` as its static assets                                                       |
-| `.node-version`                 | Node 22 for Cloudflare's build image                                                                |
-| `frontend/public/_headers`      | Security headers; long cache for hashed assets, short for data                                      |
+| File | Purpose |
+|---|---|
+| `wrangler.toml` | Worker name, and `dist/` as its static assets |
+| `.node-version` | Node 22 for Cloudflare's build image |
+| `frontend/public/_headers` | Security headers; long cache for hashed assets, short for data |
 | `platform/publish/r2-cors.json` | Origins allowed to read the bucket: the domain, `www`, `workers.dev`, the branch preview, local dev |
-| `frontend/index.html`           | Canonical URL `https://antonernstsson.com/`                                                         |
+| `frontend/index.html` | Canonical URL `https://antonernstsson.com/` |
 
 The site uses relative paths (`base: './'` and hash routing), so it works at the domain root,
 on `workers.dev` and in previews without configuration.
@@ -52,7 +52,6 @@ on `workers.dev` and in previews without configuration.
 
    Under Settings → Build, turn on builds for non-production branches, so every pull request
    gets its preview link.
-
 3. **Domain on the site.** The Worker → Settings → Domains & Routes → Add → Custom domain:
    `antonernstsson.com`, and `www.antonernstsson.com`. To send `www` to the bare domain, add a
    redirect rule: Rules → Redirect Rules → hostname equals `www.antonernstsson.com` → dynamic
@@ -73,12 +72,12 @@ on `workers.dev` and in previews without configuration.
    publishes from that commit. They run in the `anton-portfolio` environment, whose secrets
    hold the R2 credentials, and can also be run by hand from the Actions tab. To pause one,
    comment out its `schedule:` lines. Riksdag speeches and the analyses built on them
-   (embeddings, maps) are refreshed by _Build and store the warehouse_, run by hand.
+   (embeddings, maps) are refreshed by *Build and store the warehouse*, run by hand.
 6. **Refresh secrets.** Settings → Environments → `anton-portfolio` → Secrets:
    `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET` (an R2 API token
    with read and write on the bucket). Without them the daily refresh stops at its first step
    and the news collection does nothing.
-7. **The warehouse in R2.** Actions → _Build and store the warehouse_ → Run workflow. It
+7. **The warehouse in R2.** Actions → *Build and store the warehouse* → Run workflow. It
    fetches every public source, builds the DuckDB warehouse with dbt and stores it in the
    bucket with all its raw files (`platform/publish/warehouse_store.py`):
    `warehouse/portfolio.duckdb.gz`, `warehouse/manifest.json` (built when, from which commit,
@@ -94,11 +93,11 @@ on `workers.dev` and in previews without configuration.
 
    What lives where:
 
-   | What                                                               | Where                            | Kept by                                         |
-   | ------------------------------------------------------------------ | -------------------------------- | ----------------------------------------------- |
-   | The site's JSON (every product's `frontend/public/data/**/*.json`) | Cloudflare Workers static assets | git, deployed on every push to main             |
-   | Parquet datasets and document shards                               | R2, public                       | _Publish to R2_ (`upload.py`), verified by hash |
-   | Raw source files, ML outputs, the DuckDB warehouse                 | R2, `warehouse/`                 | _Build and store the warehouse_                 |
+   | What | Where | Kept by |
+   |---|---|---|
+   | The site's JSON (every product's `frontend/public/data/**/*.json`) | Cloudflare Workers static assets | git, deployed on every push to main |
+   | Parquet datasets and document shards | R2, public | *Publish to R2* (`upload.py`), verified by hash |
+   | Raw source files, ML outputs, the DuckDB warehouse | R2, `warehouse/` | *Build and store the warehouse* |
 
 ## Limits
 

@@ -5,16 +5,16 @@ itself is described in [welfare-data-model.md](welfare-data-model.md).
 
 ## Pick the table by purpose
 
-| Purpose                                     | Use                                 | Grain                                   | Why this one                                                                                            |
-| ------------------------------------------- | ----------------------------------- | --------------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| BI dashboards (Power BI, Tableau, Superset) | the star schema: `dim_*` + `fct_*`  | one fact per source and grain           | BI engines are built for a star; a wide table is slower and less flexible there                         |
-| Metrics that must agree everywhere          | the dbt semantic layer (MetricFlow) | `sweden_month`, `county_year`           | ratio and stock rules are declared once, so every tool gets the same number                             |
-| Regression, correlation, maps               | `mart_county_year_panel`            | county x year (+ country)               | one row per unit and year, each column already aggregated by its rule, with numerators and denominators |
-| Municipal comparison                        | `mart_municipality_year_panel`      | municipality x year                     | Kolada figures with population and county                                                               |
-| Time series, forecasting, nowcasting        | `mart_national_month`               | Sweden x month                          | seasonally adjusted and raw series, rolling twelve-month flows                                          |
-| Cross-country comparison                    | `mart_ess_country_round`            | country or group x ESS round            | weighted means per country, pooled Nordic and EU-27 rows                                                |
-| Machine learning                            | `mart_county_year_features`         | county x year                           | lags, changes and gaps to the country, backward-looking only                                            |
-| Anything across sources, exploratory        | `fct_indicator`                     | indicator x region x period x sex x age | every headline value on one grain                                                                       |
+| Purpose | Use | Grain | Why this one |
+|---|---|---|---|
+| BI dashboards (Power BI, Tableau, Superset) | the star schema: `dim_*` + `fct_*` | one fact per source and grain | BI engines are built for a star; a wide table is slower and less flexible there |
+| Metrics that must agree everywhere | the dbt semantic layer (MetricFlow) | `sweden_month`, `county_year` | ratio and stock rules are declared once, so every tool gets the same number |
+| Regression, correlation, maps | `mart_county_year_panel` | county x year (+ country) | one row per unit and year, each column already aggregated by its rule, with numerators and denominators |
+| Municipal comparison | `mart_municipality_year_panel` | municipality x year | Kolada figures with population and county |
+| Time series, forecasting, nowcasting | `mart_national_month` | Sweden x month | seasonally adjusted and raw series, rolling twelve-month flows |
+| Cross-country comparison | `mart_ess_country_round` | country or group x ESS round | weighted means per country, pooled Nordic and EU-27 rows |
+| Machine learning | `mart_county_year_features` | county x year | lags, changes and gaps to the country, backward-looking only |
+| Anything across sources, exploratory | `fct_indicator` | indicator x region x period x sex x age | every headline value on one grain |
 
 Star schema as the core and wide tables as a serving layer on top is the usual division of
 labour: the star answers questions nobody has asked yet, the wide tables answer known ones fast.
@@ -31,16 +31,16 @@ Every indicator in `dim_indicator` states how it may be combined:
 The principle is Kimball's: a ratio is non-additive, so store its additive components, sum
 those, and divide last. In this model:
 
-| Measure                   | Over regions, sexes, ages                                                       | Over time                               | Proven by                                                                                                                                          |
-| ------------------------- | ------------------------------------------------------------------------------- | --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| AKU unemployment rate     | sum unemployed and labour force, then divide                                    | mean of monthly levels, then divide     | `assert_aku_annual_is_mean_of_months`: within 0.07 points of SCB's published annual rate, 2001-2025                                                |
-| Sjukpenningtal            | sum `sick_pay_days` and `insured_persons`, then divide                          | December (rolling twelve months)        | `assert_sick_pay_rate_recomputes_from_components`: counties from municipalities within 0.014 days                                                  |
-| Started sick-leave cases  | sum                                                                             | sum                                     | `assert_additive_counts_sum_to_country`                                                                                                            |
-| Ongoing cases, population | sum                                                                             | never sum: last or mean                 |                                                                                                                                                    |
-| Kolada rates              | use Kolada's own county and national values                                     | not across years                        | reported crime: a population-weighted mean of municipalities misses the county value by 15% on average, because crime is counted where it happened |
-| Medians (income)          | not at all: use published values                                                |                                         |                                                                                                                                                    |
-| Survey shares (FoHM)      | population-weighted mean approximates; prefer published                         | pooled periods cannot be split or added |                                                                                                                                                    |
-| ESS means                 | only from respondents: `pspwght` in a country, `pspwght x pweight` when pooling | not across rounds with different modes  |                                                                                                                                                    |
+| Measure | Over regions, sexes, ages | Over time | Proven by |
+|---|---|---|---|
+| AKU unemployment rate | sum unemployed and labour force, then divide | mean of monthly levels, then divide | `assert_aku_annual_is_mean_of_months`: within 0.07 points of SCB's published annual rate, 2001-2025 |
+| Sjukpenningtal | sum `sick_pay_days` and `insured_persons`, then divide | December (rolling twelve months) | `assert_sick_pay_rate_recomputes_from_components`: counties from municipalities within 0.014 days |
+| Started sick-leave cases | sum | sum | `assert_additive_counts_sum_to_country` |
+| Ongoing cases, population | sum | never sum: last or mean | |
+| Kolada rates | use Kolada's own county and national values | not across years | reported crime: a population-weighted mean of municipalities misses the county value by 15% on average, because crime is counted where it happened |
+| Medians (income) | not at all: use published values | | |
+| Survey shares (FoHM) | population-weighted mean approximates; prefer published | pooled periods cannot be split or added | |
+| ESS means | only from respondents: `pspwght` in a country, `pspwght x pweight` when pooling | not across rounds with different modes | |
 
 Two structural rules:
 

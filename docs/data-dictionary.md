@@ -15,7 +15,7 @@ CSV-exporter som speglar JSON och riksmötespartitioner är inte nya observation
 - `gold/`: materialiserat semantiskt lager; räknas inte som nya källobservationer. Se `docs/gold-semantic-model.md` för dess schema och mått.
 - `platform/sources/allegoria/` utanför `public/` innehåller källsnapshotfiler och utkastannotationer; dessa är inte färdiga politiska riktningsmått. `data/budget/` innehåller lexikonets källa.
 
-**Nyckelnotation:** `+` anger sammansatt nyckel, `→` en kontrollerad referens, och ordet _kandidat_ betyder att kopplingen inte är ett fastslaget sakförhållande.
+**Nyckelnotation:** `+` anger sammansatt nyckel, `→` en kontrollerad referens, och ordet *kandidat* betyder att kopplingen inte är ett fastslaget sakförhållande.
 
 ## Datatabeller, källsnapshot och metadata: observerade kolumner
 

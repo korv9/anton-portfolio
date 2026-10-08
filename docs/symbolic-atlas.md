@@ -19,11 +19,11 @@ atlas moves from an interesting clustering picture to a transparent, human-revie
 investigation of cross-document symbolic context. Nothing here claims a symbolic meaning has
 been discovered; a cluster gets a name only when a person has read it.
 
-| Version | What changed                   | Largest book in a cluster | Cross-book clusters (passages in them) |
-| ------- | ------------------------------ | ------------------------- | -------------------------------------- |
-| v1      | Baseline embeddings            | 74 %                      | 5 of 43 (7 %)                          |
-| v2      | Book-centred embeddings        | 57 %                      | 24 of 50 (43 %)                        |
-| v3      | Paratext cleaned, book-centred | 58 %                      | 25 of 59 (32 %), ranked for review     |
+| Version | What changed | Largest book in a cluster | Cross-book clusters (passages in them) |
+|---|---|---|---|
+| v1 | Baseline embeddings | 74 % | 5 of 43 (7 %) |
+| v2 | Book-centred embeddings | 57 % | 24 of 50 (43 %) |
+| v3 | Paratext cleaned, book-centred | 58 % | 25 of 59 (32 %), ranked for review |
 
 ## Flow
 
@@ -102,25 +102,25 @@ How the books were chosen and checked:
    the fields, that each file's own header names the same title in English, the length (at
    least 5,000 words), and duplicated text between books: the share of one book's eight-word
    shingles found in another. It writes `corpus_audit.json` and stops on a duplicate.
-   _Sakoontala_ (12169) was dropped because 52 % of it is reprinted in _Hindu Literature_
-   (13268). Smaller overlaps remain (27 % of the _Mabinogion_ is in Bulfinch's _Age of
-   Chivalry_, 22 % of _Serbian Folk-lore_ in _Hero Tales of the Serbians_); they are handled
+   *Sakoontala* (12169) was dropped because 52 % of it is reprinted in *Hindu Literature*
+   (13268). Smaller overlaps remain (27 % of the *Mabinogion* is in Bulfinch's *Age of
+   Chivalry*, 22 % of *Serbian Folk-lore* in *Hero Tales of the Serbians*); they are handled
    per passage (below).
 
-| Tradition group                | Books |
-| ------------------------------ | ----- |
-| Greek and Roman                | 13    |
-| Norse and Germanic             | 10    |
-| Celtic and Arthurian           | 10    |
-| East Asian                     | 10    |
-| Indigenous North American      | 10    |
-| European folklore              | 10    |
-| Slavic and Eastern European    | 9     |
-| Christian and Biblical         | 9     |
-| South Asian                    | 8     |
-| Egyptian and Ancient Near East | 6     |
-| Finnish and Baltic             | 3     |
-| Middle Eastern and Persian     | 3     |
+| Tradition group | Books |
+|---|---|
+| Greek and Roman | 13 |
+| Norse and Germanic | 10 |
+| Celtic and Arthurian | 10 |
+| East Asian | 10 |
+| Indigenous North American | 10 |
+| European folklore | 10 |
+| Slavic and Eastern European | 9 |
+| Christian and Biblical | 9 |
+| South Asian | 8 |
+| Egyptian and Ancient Near East | 6 |
+| Finnish and Baltic | 3 |
+| Middle Eastern and Persian | 3 |
 
 Source types: 42 translations, 33 folklore collections, 17 retellings, 8 literary works and
 one work written in English (Malory). Finnish/Baltic and Middle Eastern/Persian stay small:
@@ -170,15 +170,15 @@ The run is deterministic: the same corpus gives the same map and clusters.
 
 ## Evaluation (current baseline, after the paratext cleaning)
 
-| Measure                             | Value | What it says                                  |
-| ----------------------------------- | ----- | --------------------------------------------- |
-| Clusters                            | 50    | groups HDBSCAN found (43 before the cleaning) |
-| Noise                               | 29 %  | points in no cluster (38 %)                   |
-| Trustworthiness (2-D map)           | 0.85  | the map mostly keeps each point's neighbours  |
-| Silhouette (10-D, clustered points) | 0.49  | clusters are reasonably separated (0.51)      |
-| Median membership probability       | 0.99  | clustered points sit firmly in their cluster  |
-| Largest book's share per cluster    | 69 %  | clusters mostly hold one book (74 %)          |
-| Largest symbol's share per cluster  | 28 %  | clusters mix symbols                          |
+| Measure | Value | What it says |
+|---|---|---|
+| Clusters | 50 | groups HDBSCAN found (43 before the cleaning) |
+| Noise | 29 % | points in no cluster (38 %) |
+| Trustworthiness (2-D map) | 0.85 | the map mostly keeps each point's neighbours |
+| Silhouette (10-D, clustered points) | 0.49 | clusters are reasonably separated (0.51) |
+| Median membership probability | 0.99 | clustered points sit firmly in their cluster |
+| Largest book's share per cluster | 69 % | clusters mostly hold one book (74 %) |
+| Largest symbol's share per cluster | 28 % | clusters mix symbols |
 
 **The main finding so far:** the clusters follow books (their style, era and translator) much
 more than symbols. Well-separated clusters are therefore not evidence of shared symbolic
@@ -193,12 +193,12 @@ four used identical points. Embeddings are computed twice (original and masked c
 shared; each variant gets its own UMAP map, 10-D UMAP space and HDBSCAN run with the
 pipeline's parameters.
 
-| Experiment             | Input to UMAP                                                             | Tests                                                                                   |
-| ---------------------- | ------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| `baseline`             | embeddings of the original contexts                                       | the control; identical to the published atlas                                           |
-| `masked`               | embeddings of contexts with the matched word replaced by `[SYMBOL]`       | does structure survive when the symbol's identity is hidden?                            |
-| `book_centered`        | original embeddings minus their book's mean embedding, re-normalised (L2) | do clusters depend less on book and style when what a book's passages share is removed? |
-| `masked_book_centered` | both                                                                      | both at once                                                                            |
+| Experiment | Input to UMAP | Tests |
+|---|---|---|
+| `baseline` | embeddings of the original contexts | the control; identical to the published atlas |
+| `masked` | embeddings of contexts with the matched word replaced by `[SYMBOL]` | does structure survive when the symbol's identity is hidden? |
+| `book_centered` | original embeddings minus their book's mean embedding, re-normalised (L2) | do clusters depend less on book and style when what a book's passages share is removed? |
+| `masked_book_centered` | both | both at once |
 
 `transforms.py`:
 
@@ -241,19 +241,19 @@ clustering space (`cluster_space.parquet`, local only) for the review.
 
 Archived in `experiments/history/v2-before-cleaning/`.
 
-|                                      | Baseline    | Masked      | Book-centred    | Both        |
-| ------------------------------------ | ----------- | ----------- | --------------- | ----------- |
-| Clusters                             | 43          | 51          | 50              | 53          |
-| Noise                                | 38 %        | 37 %        | 32 %            | 37 %        |
-| Trustworthiness                      | 0.85        | 0.84        | 0.83            | 0.80        |
-| Silhouette                           | 0.51        | 0.52        | 0.52            | 0.51        |
+| | Baseline | Masked | Book-centred | Both |
+|---|---|---|---|---|
+| Clusters | 43 | 51 | 50 | 53 |
+| Noise | 38 % | 37 % | 32 % | 37 % |
+| Trustworthiness | 0.85 | 0.84 | 0.83 | 0.80 |
+| Silhouette | 0.51 | 0.52 | 0.52 | 0.51 |
 | Largest book share (mean / weighted) | 0.74 / 0.72 | 0.71 / 0.74 | **0.57 / 0.50** | 0.59 / 0.55 |
-| Largest tradition share              | 0.80        | 0.82        | **0.64**        | 0.67        |
-| Largest symbol share                 | 0.28        | 0.23        | 0.29            | 0.22        |
-| Book entropy (normalised)            | 0.32        | 0.33        | **0.51**        | 0.48        |
-| Clusters with 3+ books               | 32          | 42          | 44              | 47          |
-| Cross-book clusters                  | 5           | 8           | **24**          | 19          |
-| Occurrences in cross-book clusters   | 7 %         | 8 %         | **43 %**        | 28 %        |
+| Largest tradition share | 0.80 | 0.82 | **0.64** | 0.67 |
+| Largest symbol share | 0.28 | 0.23 | 0.29 | 0.22 |
+| Book entropy (normalised) | 0.32 | 0.33 | **0.51** | 0.48 |
+| Clusters with 3+ books | 32 | 42 | 44 | 47 |
+| Cross-book clusters | 5 | 8 | **24** | 19 |
+| Occurrences in cross-book clusters | 7 % | 8 % | **43 %** | 28 % |
 
 What this says:
 
@@ -284,15 +284,15 @@ dbt Python model). The old SQL collapsed every line break before cleaning, which
 structure that shows where paratext is; the new cleaning reads the lines first and collapses
 white space last. Each rule is its own function and none is one big regular expression:
 
-| Rule                                 | Function                      | Signal                                                                                                                                                                                                                  |
-| ------------------------------------ | ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Gutenberg header, licence and credit | `strip_gutenberg_boilerplate` | START/END markers; a leading "Produced by …" paragraph                                                                                                                                                                  |
-| Footnotes and transcriber's notes    | `remove_footnote_blocks`      | bracketed `[Footnote 12: …]` blocks, wherever they stand                                                                                                                                                                |
-| Tables of contents                   | `remove_table_of_contents`    | a CONTENTS / TABLE OF CONTENTS / LIST OF ILLUSTRATIONS heading, then list-like paragraphs (lines in capitals, numbered, CHAPTER/BOOK/RUNE…, page numbers, indented titles) up to the first paragraph that is not a list |
-| Glossaries                           | `remove_glossary_sections`    | a GLOSSARY / VOCABULARY heading **and** entries that look like "Term, …" / "Term. …" (60 % or more)                                                                                                                     |
-| Indexes                              | `remove_index_sections`       | an INDEX heading **and** entries with page numbers (half or more) or glossary-like entries                                                                                                                              |
-| Notes, references, appendices        | `remove_editorial_notes`      | BIBLIOGRAPHY / REFERENCES anywhere; NOTES, FOOTNOTES, ENDNOTES, APPENDIX, DRAMATIS PERSONAE in the last quarter of a book, or earlier only when their entries look like notes ("[1] …")                                 |
-| The document                         | `clean_document`              | all of the above, then white space collapsed                                                                                                                                                                            |
+| Rule | Function | Signal |
+|---|---|---|
+| Gutenberg header, licence and credit | `strip_gutenberg_boilerplate` | START/END markers; a leading "Produced by …" paragraph |
+| Footnotes and transcriber's notes | `remove_footnote_blocks` | bracketed `[Footnote 12: …]` blocks, wherever they stand |
+| Tables of contents | `remove_table_of_contents` | a CONTENTS / TABLE OF CONTENTS / LIST OF ILLUSTRATIONS heading, then list-like paragraphs (lines in capitals, numbered, CHAPTER/BOOK/RUNE…, page numbers, indented titles) up to the first paragraph that is not a list |
+| Glossaries | `remove_glossary_sections` | a GLOSSARY / VOCABULARY heading **and** entries that look like "Term, …" / "Term. …" (60 % or more) |
+| Indexes | `remove_index_sections` | an INDEX heading **and** entries with page numbers (half or more) or glossary-like entries |
+| Notes, references, appendices | `remove_editorial_notes` | BIBLIOGRAPHY / REFERENCES anywhere; NOTES, FOOTNOTES, ENDNOTES, APPENDIX, DRAMATIS PERSONAE in the last quarter of a book, or earlier only when their entries look like notes ("[1] …") |
+| The document | `clean_document` | all of the above, then white space collapsed |
 
 A heading is a short line on its own with at least two blank lines before it, as Gutenberg sets
 section headings. Words alone never trigger anything: "index", "notes" or "contents" in a
@@ -312,18 +312,18 @@ Each row of `int_symbolic_documents` carries its audit: `raw_char_count`, `body_
 `cleaning_version`. `cleaning_report.py` writes `warehouse/features/symbolic/cleaning_audit.parquet`
 and `cleaning_comparison.json` (occurrences before and after, per book, symbol and tradition).
 
-| Book                        | Removed | Sections                               |
-| --------------------------- | ------- | -------------------------------------- |
-| Andersen's Fairy Tales      | 0.1 %   | contents                               |
-| Bulfinch's Mythology        | 5.2 %   | contents, glossary, 75 footnotes       |
-| Celtic Fairy Tales          | 4.1 %   | contents, notes and references         |
-| The Elder and Younger Eddas | 9.1 %   | contents, glossary, 137 footnotes      |
-| Grimms' Fairy Tales         | 0.3 %   | contents                               |
-| Hesiod, the Homeric Hymns   | 9.0 %   | bibliography, endnotes                 |
-| Kalevala                    | 1.3 %   | contents, glossary                     |
-| Myths of the Norsemen       | 0.5 %   | contents, list of illustrations, notes |
-| The Odyssey                 | 7.6 %   | footnotes                              |
-| Paradise Lost               | 0.0 %   | contents                               |
+| Book | Removed | Sections |
+|---|---|---|
+| Andersen's Fairy Tales | 0.1 % | contents |
+| Bulfinch's Mythology | 5.2 % | contents, glossary, 75 footnotes |
+| Celtic Fairy Tales | 4.1 % | contents, notes and references |
+| The Elder and Younger Eddas | 9.1 % | contents, glossary, 137 footnotes |
+| Grimms' Fairy Tales | 0.3 % | contents |
+| Hesiod, the Homeric Hymns | 9.0 % | bibliography, endnotes |
+| Kalevala | 1.3 % | contents, glossary |
+| Myths of the Norsemen | 0.5 % | contents, list of illustrations, notes |
+| The Odyssey | 7.6 % | footnotes |
+| Paradise Lost | 0.0 % | contents |
 
 Occurrences: 13,168 → 12,712 (456 fewer, 9 of 10 books affected; Paradise Lost unchanged).
 The largest losses are in Bulfinch (−207, its glossary), the Eddas (−107) and the Kalevala
@@ -335,17 +335,17 @@ All four variants rerun on the cleaned occurrences with unchanged UMAP and HDBSC
 so only the cleaning differs (`experiments/post_cleaning_comparison.json`). 4,804 occurrences,
 the same sample in all four.
 
-|                             | Baseline    | Masked      | Book-centred | Both        |
-| --------------------------- | ----------- | ----------- | ------------ | ----------- |
-| Clusters                    | 43 → 50     | 51 → 40     | 50 → 59      | 53 → 57     |
-| Noise                       | 38 → 29 %   | 37 → 30 %   | 32 → 36 %    | 37 → 40 %   |
-| Trustworthiness             | 0.85 → 0.85 | 0.84 → 0.84 | 0.83 → 0.83  | 0.80 → 0.81 |
-| Silhouette                  | 0.51 → 0.49 | 0.52 → 0.47 | 0.52 → 0.53  | 0.51 → 0.54 |
-| Largest book share (mean)   | 0.74 → 0.69 | 0.71 → 0.69 | 0.57 → 0.58  | 0.59 → 0.60 |
-| Book entropy                | 0.32 → 0.36 | 0.33 → 0.35 | 0.51 → 0.48  | 0.48 → 0.46 |
-| Cross-book clusters         | 5 → 10      | 8 → 9       | 24 → 25      | 19 → 23     |
-| Occurrences in them         | 7 → 11 %    | 8 → 19 %    | 43 → 32 %    | 28 → 23 %   |
-| Suspected paratext clusters | 1 → 0       | 2 → 0       | 2 → 0        | 2 → 0       |
+| | Baseline | Masked | Book-centred | Both |
+|---|---|---|---|---|
+| Clusters | 43 → 50 | 51 → 40 | 50 → 59 | 53 → 57 |
+| Noise | 38 → 29 % | 37 → 30 % | 32 → 36 % | 37 → 40 % |
+| Trustworthiness | 0.85 → 0.85 | 0.84 → 0.84 | 0.83 → 0.83 | 0.80 → 0.81 |
+| Silhouette | 0.51 → 0.49 | 0.52 → 0.47 | 0.52 → 0.53 | 0.51 → 0.54 |
+| Largest book share (mean) | 0.74 → 0.69 | 0.71 → 0.69 | 0.57 → 0.58 | 0.59 → 0.60 |
+| Book entropy | 0.32 → 0.36 | 0.33 → 0.35 | 0.51 → 0.48 | 0.48 → 0.46 |
+| Cross-book clusters | 5 → 10 | 8 → 9 | 24 → 25 | 19 → 23 |
+| Occurrences in them | 7 → 11 % | 8 → 19 % | 43 → 32 % | 28 → 23 % |
+| Suspected paratext clusters | 1 → 0 | 2 → 0 | 2 → 0 | 2 → 0 |
 
 What this says, and what it does not:
 
@@ -364,14 +364,14 @@ What this says, and what it does not:
 `platform/nlp/symbolic/rank_clusters.py` ranks the book-centred clusters **for review, not for
 meaning**. `review_priority_score` (0 to 1) is a weighted mean of documented components:
 
-| Weight | Component                             |
-| ------ | ------------------------------------- |
-| 0.25   | book entropy (normalised)             |
-| 0.20   | tradition entropy (normalised)        |
-| 0.20   | 1 − largest book share                |
-| 0.15   | mean HDBSCAN membership probability   |
-| 0.10   | symbol diversity, min(symbols, 5) / 5 |
-| 0.10   | size, min(1, log n / log 200)         |
+| Weight | Component |
+|---|---|
+| 0.25 | book entropy (normalised) |
+| 0.20 | tradition entropy (normalised) |
+| 0.20 | 1 − largest book share |
+| 0.15 | mean HDBSCAN membership probability |
+| 0.10 | symbol diversity, min(symbols, 5) / 5 |
+| 0.10 | size, min(1, log n / log 200) |
 
 Audit flags never remove a cluster from the results; they set its `review_class`:
 
@@ -394,8 +394,8 @@ Review artefacts in `warehouse/features/symbolic/review/`:
 - `cluster_candidates.parquet`: one row per cluster with counts, largest book/tradition/symbol
   and shares, entropies, membership, flags, class, score, status, fingerprint and
   `suggested_terms`;
-- `representative_passages.parquet`: two sets of 12 per cluster. _centroid_: nearest the
-  centroid in the 10-D space. _diverse_: among members at or above the cluster's median
+- `representative_passages.parquet`: two sets of 12 per cluster. *centroid*: nearest the
+  centroid in the 10-D space. *diverse*: among members at or above the cluster's median
   membership, the one nearest the centroid from each book in turn, then by distance, so a
   cross-book cluster shows a passage from every book before a second from any;
 - `cluster_keywords.parquet`: class-based TF-IDF terms (each cluster's passages as one document;
@@ -514,31 +514,31 @@ book reprints from another are left out. The v3 results are archived in
 
 Book-centred (the cross-book view), v3 pilot against v4:
 
-| Measure                           | v3 (10 books) | v4 (101 books) |
-| --------------------------------- | ------------- | -------------- |
-| Passages mapped                   | 4,804         | 21,898         |
-| Clusters                          | 59            | 114            |
-| Noise                             | 36 %          | 52 %           |
-| Largest book's share of a cluster | 58 %          | 36 %           |
-| Clusters over several books       | 25            | 87             |
-| Passages in them                  | 32 %          | 44 %           |
-| Silhouette (10-D)                 | 0.53          | 0.31           |
-| Trustworthiness (2-D)             | 0.83          | 0.74           |
+| Measure | v3 (10 books) | v4 (101 books) |
+|---|---|---|
+| Passages mapped | 4,804 | 21,898 |
+| Clusters | 59 | 114 |
+| Noise | 36 % | 52 % |
+| Largest book's share of a cluster | 58 % | 36 % |
+| Clusters over several books | 25 | 87 |
+| Passages in them | 32 % | 44 % |
+| Silhouette (10-D) | 0.53 | 0.31 |
+| Trustworthiness (2-D) | 0.83 | 0.74 |
 
 Baseline (no centring), v4: 130 clusters, 49 % noise, largest book 50 % (69 % in v3).
 
 **What the clusters follow** (`platform/nlp/symbolic/validity.py`, adjusted mutual information
 between the cluster labels and each property, 0 = chance):
 
-| Property                               | Baseline | Book-centred |
-| -------------------------------------- | -------- | ------------ |
-| Symbol                                 | 0.13     | 0.20         |
-| Book                                   | 0.49     | 0.20         |
-| English voice (translator or compiler) | 0.45     | 0.18         |
-| Tradition                              | 0.40     | 0.16         |
-| Genre                                  | 0.40     | 0.15         |
-| Period                                 | 0.24     | 0.09         |
-| Source type                            | 0.21     | 0.08         |
+| Property | Baseline | Book-centred |
+|---|---|---|
+| Symbol | 0.13 | 0.20 |
+| Book | 0.49 | 0.20 |
+| English voice (translator or compiler) | 0.45 | 0.18 |
+| Tradition | 0.40 | 0.16 |
+| Genre | 0.40 | 0.15 |
+| Period | 0.24 | 0.09 |
+| Source type | 0.21 | 0.08 |
 
 Book pairs, book-centred (mean similarity of two books' spread over the clusters, 0–1): 0.27
 for pairs that share nothing, 0.31 for the same source type or period, 0.34 for the same
@@ -575,12 +575,12 @@ random neighbour would have (1 % same book, 5 % same symbol).
 
 Book-centred:
 
-| Model            | Neighbours, same book | Neighbours, same symbol | Clusters | Book share | Noise | Embedding |
-| ---------------- | --------------------: | ----------------------: | -------: | ---------: | ----: | --------: |
-| all-MiniLM-L6-v2 |                  26 % |                    26 % |      114 |       36 % |  52 % |     4 min |
-| bge-base-en-v1.5 |                  22 % |                    30 % |        2 |        6 % |   4 % |    21 min |
-| e5-base-v2       |                  24 % |                    30 % |       88 |       26 % |  66 % |    22 min |
-| gte-base         |                  25 % |                    31 % |       98 |       28 % |  61 % |    20 min |
+| Model | Neighbours, same book | Neighbours, same symbol | Clusters | Book share | Noise | Embedding |
+|---|---:|---:|---:|---:|---:|---:|
+| all-MiniLM-L6-v2 | 26 % | 26 % | 114 | 36 % | 52 % | 4 min |
+| bge-base-en-v1.5 | 22 % | 30 % | 2 | 6 % | 4 % | 21 min |
+| e5-base-v2 | 24 % | 30 % | 88 | 26 % | 66 % | 22 min |
+| gte-base | 25 % | 31 % | 98 | 28 % | 61 % | 20 min |
 
 - Every larger model moves the same way: fewer same-book neighbours, about four points more
   same-symbol ones. The step is small next to the book and tradition effect.

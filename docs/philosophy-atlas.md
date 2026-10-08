@@ -12,20 +12,19 @@ python platform/nlp/philosophy/pipeline.py                              # sample
 cd platform && dbt build --profiles-dir . --select path:models/gold/philosophy
 python platform/publish/philosophy/export_philosophy.py
 ```
-
 (`npm run philosophy` runs them in order.)
 
 ## Corpus
 
 `platform/ingest/philosophy/corpus.json`: one work per thinker, spread over ethics, political
-philosophy, epistemology and existential thought, from Plato (_Republic_, Jowett) to Nietzsche
-(_Beyond Good and Evil_, Zimmern). Each entry carries title, author, approximate year, period,
+philosophy, epistemology and existential thought, from Plato (*Republic*, Jowett) to Nietzsche
+(*Beyond Good and Evil*, Zimmern). Each entry carries title, author, approximate year, period,
 tradition, area, original language, text language (English throughout), **translator** (from the
-Gutenberg file; null with a note where the file names none: Aristotle's _Ethics_, Marcus
+Gutenberg file; null with a note where the file names none: Aristotle's *Ethics*, Marcus
 Aurelius) and genre. Ids, titles, authors and translators were checked against each file.
 
 **Only the philosopher's own text.** Editions open with translators' and editors' introductions,
-biographies and analyses (Jowett's introduction to the _Republic_ runs to thousands of lines) and
+biographies and analyses (Jowett's introduction to the *Republic* runs to thousands of lines) and
 close with notes and glossaries. `text_start` / `text_end` in corpus.json mark where the work
 itself begins and ends (a line matched in full, its n-th occurrence), and
 `platform/nlp/philosophy/passages.py` `own_text` keeps only that span. The shared Gutenberg
@@ -39,7 +38,7 @@ dropped. 7,794 passages in all.
 1. **Balanced sample**: at most 200 passages per work, evenly spaced through it (2,600).
 2. **Embeddings**: `paraphrase-multilingual-MiniLM-L12-v2` (`nlp/text/vectors.py`), the model the
    concept layer uses for every corpus, so these vectors are comparable with the others.
-3. **Two maps**, as the Symbolic Atlas learned: _raw_, and _centred per work_ (each work's mean
+3. **Two maps**, as the Symbolic Atlas learned: *raw*, and *centred per work* (each work's mean
    vector subtracted, `nlp/symbolic/transforms.py`). UMAP 2-D for the map, 10-D for HDBSCAN
    (min cluster size 25).
 4. **Evaluation** of each map: groups, noise, largest-work share, groups dominated by one work,
@@ -54,14 +53,14 @@ dropped. 7,794 passages in all.
 
 ## Results (6 October 2026)
 
-|                                                           | Raw  | Centred per work |
-| --------------------------------------------------------- | ---- | ---------------- |
-| Groups                                                    | 20   | 23               |
-| Passages in no group                                      | 35 % | 44 %             |
-| Groups across works                                       | 6    | 19               |
-| Groups dominated by one work                              | 2    | 0                |
-| Nearest neighbours from the same work (chance 8 %)        | 48 % | 32 %             |
-| Nearest neighbours with the same translator (chance 14 %) | 58 % | 44 %             |
+| | Raw | Centred per work |
+|---|---|---|
+| Groups | 20 | 23 |
+| Passages in no group | 35 % | 44 % |
+| Groups across works | 6 | 19 |
+| Groups dominated by one work | 2 | 0 |
+| Nearest neighbours from the same work (chance 8 %) | 48 % | 32 % |
+| Nearest neighbours with the same translator (chance 14 %) | 58 % | 44 % |
 
 A well-separated group is not necessarily the structure we meant to measure: in the raw map the
 work, and the translator's English, organise much of it. Centring per work reduces that a lot,
