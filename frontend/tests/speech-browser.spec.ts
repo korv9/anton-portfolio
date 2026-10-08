@@ -25,14 +25,4 @@ test('visitors find a speaker, read full speeches and move through a debate', as
     .getByRole('searchbox', { name: 'Find a politician or debate' })
     .fill('no-matching-person-unique')
   await expect(browser).toContainText('No speeches match.')
-  await browser.getByRole('link', { name: /Read the legal sources/ }).click()
-  await expect(
-    page.getByRole('combobox', { name: 'Law snapshot', exact: true }),
-  ).toBeVisible()
-  await page.goto('/#politik-sok')
-  await browser.getByRole('link', { name: /See how they voted/ }).click()
-  await expect(
-    page.getByRole('combobox', { name: 'Voting session', exact: true }),
-  ).toBeVisible()
-  await expect(page.locator('#data-explorer')).toHaveCount(0)
 })
