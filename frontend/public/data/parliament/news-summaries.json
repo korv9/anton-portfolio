@@ -1,22 +1,41 @@
 {
-  "generated_at": "2026-10-07T12:25:01+00:00",
+  "generated_at": "2026-10-08T12:37:19+00:00",
   "model": "claude-sonnet-5-5",
   "period": {
-    "from": "2026-09-30",
-    "to": "2026-10-07",
+    "from": "2026-10-02",
+    "to": "2026-10-08",
     "days": 7
   },
-  "items_considered": 58,
+  "items_considered": 73,
   "usage": {
-    "input_tokens": 13420,
-    "output_tokens": 2896
+    "input_tokens": 17106,
+    "output_tokens": 3201
   },
-  "headline": "Rödgröna partier enas om stopp för tonårsutvisningar, och regeringen skickar luftvärn till Polen",
-  "summary": "Under veckan enades S, V, MP och C om att ta fram en stopplag för tonårsutvisningar, och Centerpartiet bjöd in till ett möte på fredag. Regeringen meddelade att Sverige bidrar med ett luftvärnsförband till Natoinsats i Polen. Riksdagens utskottsordförandeposter fördelades, med rotation inom SD. Regeringen tog emot betänkanden och remitterade förslag, och flera kommuner fick nya styren efter valet.",
+  "headline": "Regeringsbildningen och Centerpartiets rödgröna möte präglade veckan, vid sidan av ekonomisk prognos och svenskt luftvärn till Polen.",
+  "summary": "Under veckan dominerade regeringsbildningen, där Centerpartiet bjöd in de rödgröna partierna till ett möte och S, V, MP och C enades om ett stopp för tonårsutvisningar. Finansminister Elisabeth Svantesson (M) presenterade en prognos om att lågkonjunkturen är över nästa år. Regeringen meddelade att Sverige skickar luftvärn till Polen, och SD fick nya utskottsposter.",
   "themes": [
     {
-      "title": "Rödgröna samarbetar efter valet",
-      "text": "S, V, MP och C enades om att ta fram ett förslag till stopplag för tonårsutvisningar, den första frågan de är överens om efter valet. Magdalena Andersson (S) sade att de röda linjerna ligger kvar inför Centerpartiets möte på fredag. Försvarsmakten tackade nej till att delta på mötet.",
+      "title": "Regeringsbildning och Centerpartiets rödgröna möte",
+      "text": "Centerpartiet bjöd in de rödgröna partierna till ett möte på fredag, tillsammans med myndigheter och organisationer. Försvarsmakten tackade nej, och Företagarna, LRF och Almega är inte inbjudna, vilket kritiseras. C och V beskrev ett låst läge kring röda linjer, och Magdalena Andersson (S) sade att de röda linjerna ligger kvar. SSU kritiserade Vänsterpartiets ministerkrav.",
+      "parties": [
+        "C",
+        "S",
+        "V"
+      ],
+      "item_ids": [
+        "ekot:rss:sr.se/article/9315495",
+        "svt:https://www.svt.se/nyheter/inrikes/besvikelse-i-c-nara-organisationer-efter-partiets-motesdiss",
+        "ekot:rss:sr.se/article/9315247",
+        "svt:https://www.svt.se/nyheter/inrikes/c-till-v-ett-jattestort-problem-kvarstar",
+        "svt:https://www.svt.se/nyheter/inrikes/internt-tryck-infor-rodgront-toppmote-skarpaste-gransen",
+        "ekot:rss:sr.se/article/9314142",
+        "ekot:rss:sr.se/article/9314293",
+        "ekot:rss:sr.se/article/9315601"
+      ]
+    },
+    {
+      "title": "Stopp för tonårsutvisningar",
+      "text": "Socialdemokraterna, Vänsterpartiet, Miljöpartiet och Centerpartiet enades om att ta fram en stopplag för tonårsutvisningar. Det är den första frågan de är överens om efter valet, och partierna har majoritet i riksdagen och i utskottet.",
       "parties": [
         "S",
         "V",
@@ -24,56 +43,53 @@
         "C"
       ],
       "item_ids": [
-        "ekot:rss:sr.se/article/9314354",
         "ekot:rss:sr.se/article/9314048",
-        "ekot:rss:sr.se/article/9314293",
-        "ekot:rss:sr.se/article/9314142"
+        "ekot:rss:sr.se/article/9314354"
       ]
     },
     {
-      "title": "Luftvärn till Polen och säkerhetsläget",
-      "text": "Statsminister Ulf Kristersson (M) och försvarsminister Pål Jonson meddelade att Sverige skickar ett luftvärnsförband till Polen för att skydda Natos logistiknod, med start i december. Kristersson uttryckte solidaritet med Bulgarien efter drönarattacken mot fartyg i Svarta havet. Försvarsberedningens slutrapport fick förlängd tid till 29 april 2027.",
+      "title": "Ekonomisk prognos och skattefrågor",
+      "text": "Regeringen och finansminister Elisabeth Svantesson (M) presenterade en prognos där lågkonjunkturen bedöms vara över nästa år. Socialdemokraterna begärde att Svantesson kallas till skatteutskottet om Skatteverket och molntjänster efter Ekots granskning.",
+      "parties": [
+        "M",
+        "S"
+      ],
+      "item_ids": [
+        "regeringen:b20b0c89-4777-4347-b3f1-975db03e198c",
+        "svt:https://www.svt.se/nyheter/inrikes/finansminister-elisabeth-svantesson-m-presenterar-ekonomisk-prognos",
+        "regeringen:b7633d97-3ac6-4247-bcca-bbd1fc701669",
+        "ekot:rss:sr.se/article/9315534"
+      ]
+    },
+    {
+      "title": "Säkerhetsläget och luftvärn till Polen",
+      "text": "Regeringen meddelade att Sverige skickar ett luftvärnsförband till Polen från december för att skydda Natos logistiknod. Statsminister Ulf Kristersson (M) uttryckte solidaritet med Bulgarien efter drönarattacker mot fartyg i Svarta havet. Försvarsberedningens slutrapport försenas till april 2027.",
       "parties": [
         "M"
       ],
       "item_ids": [
-        "ekot:rss:sr.se/article/9314110",
         "regeringen:0ffbf47a-901c-44e7-b037-7ce4ebd026c6",
-        "ekot:rss:sr.se/article/9314160",
+        "ekot:rss:sr.se/article/9314110",
         "regeringen:4fc6ce4e-cdcb-4502-8a62-27968874586c",
         "svt:https://www.svt.se/nyheter/utrikes/besattningen-saknas-efter-dronarattack-mot-fartyg-i-svarta-havet",
         "regeringen:27805828-da18-4f82-aa71-00eed7fee5ec"
       ]
     },
     {
-      "title": "SD:s nya utskottsroller",
-      "text": "Sverigedemokraterna genomför en rockad i riksdagsgruppen. Mattias Karlsson blir ordförande i kulturutskottet och vill se över situationen för kulturarvsinstitutionerna. Oscar Sjöstedt är ny utskottsordförande. SD säger nej till att be samer om ursäkt.",
+      "title": "SD:s utskottsposter",
+      "text": "Sverigedemokraterna genomför en rockad i riksdagsgruppen. Mattias Karlsson blir ordförande i kulturutskottet och vill se över kulturarvsinstitutionernas situation, medan Oscar Sjöstedt får en ny ordförandepost.",
       "parties": [
         "SD"
       ],
       "item_ids": [
         "svt:https://www.svt.se/nyheter/inrikes/sd-flyttar-pa-tunga-profiler-i-forslag-till-utskottsplatser",
         "ekot:rss:sr.se/article/9314245",
-        "ekot:rss:sr.se/article/9314077",
-        "svt:https://www.svt.se/nyheter/inrikes/sd-nej-till-att-be-samer-om-ursakt"
+        "ekot:rss:sr.se/article/9314077"
       ]
     },
     {
-      "title": "Betänkanden och remisser från regeringen",
-      "text": "Regeringen tog emot delbetänkandet om preventiva vistelseförbud och slutbetänkandet om redovisning och hållbarhetsrapporter. Socialdepartementet remitterade betänkandet om ett nytt system för återkrav inom socialförsäkringen.",
-      "parties": [
-        "M"
-      ],
-      "item_ids": [
-        "regeringen:cc8eb738-cbbc-4e60-8d19-23ca51bf461e",
-        "regeringen:4cfaa72e-dee5-4f05-b0c6-3424e73a0be2",
-        "regeringen:655373d3-c1e6-48b3-8149-6fcf5483b4a3",
-        "regeringen:c8e5a784-0a72-45ed-9805-6c6e1271a2ff"
-      ]
-    },
-    {
-      "title": "Nya styren i kommuner",
-      "text": "I Sala bildar SD, M, SBÄ och KD ett nytt styre. I Luleå bildar S, C och MP ett minoritetsstyre, medan V får nobben. I Arboga fortsätter S, V, C och MP att styra.",
+      "title": "Lokala styren efter valet",
+      "text": "Flera kommuner har fått nya styren: i Sala bildar SD, M, SBÄ och KD en koalition, och i Luleå bildar S, C och MP ett minoritetsstyre. I Arboga fortsätter S, V, C och MP.",
       "parties": [
         "SD",
         "M",
@@ -92,61 +108,68 @@
   ],
   "by_party": [
     {
-      "party": "S",
-      "text": "S, V, MP och C enades om en stopplag för tonårsutvisningar. Magdalena Andersson sade att de röda linjerna ligger kvar.",
+      "party": "C",
+      "text": "Centerpartiet bjöd in de rödgröna partierna till ett möte, vilket väckte kritik från C-nära organisationer. C ingick också i överenskommelsen om stopp för tonårsutvisningar.",
       "item_ids": [
-        "ekot:rss:sr.se/article/9314048",
+        "ekot:rss:sr.se/article/9315495",
+        "svt:https://www.svt.se/nyheter/inrikes/besvikelse-i-c-nara-organisationer-efter-partiets-motesdiss",
+        "ekot:rss:sr.se/article/9314048"
+      ]
+    },
+    {
+      "party": "S",
+      "text": "Socialdemokraterna begärde att finansministern kallas till skatteutskottet. Magdalena Andersson sade att de röda linjerna ligger kvar.",
+      "item_ids": [
+        "ekot:rss:sr.se/article/9315534",
         "ekot:rss:sr.se/article/9314293"
       ]
     },
     {
       "party": "V",
-      "text": "V är med i den rödgröna överenskommelsen om stopp för tonårsutvisningar. I Luleå fick partiet nobben i det nya styret.",
+      "text": "Vänsterpartiet kritiserades av SSU för sina ministerkrav och möttes av C i en debatt om röda linjer. V ingick i överenskommelsen om tonårsutvisningar.",
       "item_ids": [
-        "ekot:rss:sr.se/article/9314354",
-        "svt:https://www.svt.se/nyheter/lokalt/norrbotten/luleas-styre-forandras-de-partierna-tar-over-makten"
-      ]
-    },
-    {
-      "party": "MP",
-      "text": "MP deltar i överenskommelsen om stopplag och i det nya minoritetsstyret i Luleå. Partiet fortsätter även i styret i Arboga.",
-      "item_ids": [
-        "ekot:rss:sr.se/article/9314048",
-        "svt:https://www.svt.se/nyheter/lokalt/norrbotten/luleas-styre-forandras-de-partierna-tar-over-makten",
-        "svt:https://www.svt.se/nyheter/lokalt/vastmanland/styret-klart-i-arboga-samma-kvartett-fortsatter"
-      ]
-    },
-    {
-      "party": "C",
-      "text": "C har bjudit in de rödgröna partierna till ett möte på fredag, och Försvarsmakten tackade nej till att delta. Partiet ingår i överenskommelsen om stopplag.",
-      "item_ids": [
-        "ekot:rss:sr.se/article/9314142",
+        "ekot:rss:sr.se/article/9315601",
+        "svt:https://www.svt.se/nyheter/inrikes/c-till-v-ett-jattestort-problem-kvarstar",
         "ekot:rss:sr.se/article/9314048"
       ]
     },
     {
-      "party": "SD",
-      "text": "SD flyttar om i riksdagsgruppen, där Mattias Karlsson blir ordförande i kulturutskottet. Partiet är emot att be samer om ursäkt och ingår i det nya styret i Sala.",
+      "party": "M",
+      "text": "Regeringen med M-ministrar presenterade en ekonomisk prognos och beskedet om luftvärn till Polen.",
       "item_ids": [
-        "svt:https://www.svt.se/nyheter/inrikes/sd-flyttar-pa-tunga-profiler-i-forslag-till-utskottsplatser",
-        "svt:https://www.svt.se/nyheter/inrikes/sd-nej-till-att-be-samer-om-ursakt",
-        "svt:https://www.svt.se/nyheter/lokalt/vastmanland/maktskifte-i-sala-hogerkoalition-satter-prio-pa-att-vanda-ekonomin"
+        "svt:https://www.svt.se/nyheter/inrikes/finansminister-elisabeth-svantesson-m-presenterar-ekonomisk-prognos",
+        "regeringen:0ffbf47a-901c-44e7-b037-7ce4ebd026c6"
       ]
     },
     {
-      "party": "M",
-      "text": "Regeringen med Ulf Kristersson meddelade att Sverige skickar luftvärn till Polen. M ingår i det nya styret i Sala.",
+      "party": "SD",
+      "text": "SD gjorde en rockad av utskottsposter, där Mattias Karlsson blev ordförande i kulturutskottet.",
       "item_ids": [
-        "ekot:rss:sr.se/article/9314110",
-        "svt:https://www.svt.se/nyheter/lokalt/vastmanland/maktskifte-i-sala-hogerkoalition-satter-prio-pa-att-vanda-ekonomin"
+        "svt:https://www.svt.se/nyheter/inrikes/sd-flyttar-pa-tunga-profiler-i-forslag-till-utskottsplatser",
+        "ekot:rss:sr.se/article/9314077"
+      ]
+    },
+    {
+      "party": "MP",
+      "text": "Miljöpartiet ingår i överenskommelsen om stopp för tonårsutvisningar och i minoritetsstyret i Luleå.",
+      "item_ids": [
+        "ekot:rss:sr.se/article/9314048",
+        "svt:https://www.svt.se/nyheter/lokalt/norrbotten/luleas-styre-forandras-de-partierna-tar-over-makten"
       ]
     },
     {
       "party": "KD",
-      "text": "KD ingår i det nya styret i Sala. Energi- och näringsminister Ebba Busch besökte Kiruna och Gällivare.",
+      "text": "KD ingår i högerkoalitionen i Sala, och Ebba Busch besökte Kiruna och Gällivare.",
       "item_ids": [
         "svt:https://www.svt.se/nyheter/lokalt/vastmanland/maktskifte-i-sala-hogerkoalition-satter-prio-pa-att-vanda-ekonomin",
         "regeringen:4f062f2d-bb2f-4563-8202-a5213884c0d6"
+      ]
+    },
+    {
+      "party": "L",
+      "text": "Regeringens proposition om anslutning till det globala havsavtalet BBNJ var taggad med L och M.",
+      "item_ids": [
+        "regeringen:ca37ec2d-d9b4-47ae-8528-ef5eafcd9b96"
       ]
     }
   ],
