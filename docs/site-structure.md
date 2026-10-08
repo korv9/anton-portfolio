@@ -70,9 +70,12 @@ Everything else (DrugComb, Allegoria, DiVA, Homie, RAG, MIMII) is other work.
 One screen, one purpose. The start page answers three questions in order, and every detail
 beyond them is one click deeper (`frontend/src/home/HomePage.tsx`):
 
-1. **Who** (`#start`): the name as `h1`, the roles (Data Engineer, Analytics Engineer,
-   Applied AI), one sentence on what I build, and four links: Projects, Experience, About, CV
-   (the PDF downloads). Nothing else is on the first screen: no animation, no chart, no tool list.
+1. **Who** (`#start`): a diverging bar chart fills the first screen (`home/IntroChart.tsx`).
+   The name is the `h1` on its largest row, Anton left of the centre line and Ernstsson right,
+   with three titles under it (Software Developer, Data Engineering, AI Engineering). Once per
+   session the bars grow out from the line and slide away, uncovering the text; on a return
+   visit or with reduced motion the text is simply there. One sentence on what I build and four
+   links (Projects, Experience, About, CV) follow below the chart.
 2. **Experience** (`#erfarenhet`): each role with company, title, period and impact; the bullets
    and the tech sit in a _Details_ disclosure. Education is one line under them. The **core
    stack** (`#kompetenser`) is beside them, five groups, with the full stack in a disclosure.

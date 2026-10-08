@@ -1,5 +1,6 @@
 /**
- * The start page in three screens: who (name, roles, one sentence, four links), experience (the
+ * The start page in three screens: who (the intro chart with name and titles, then one sentence
+ * and four links), experience (the
  * two roles with the core stack beside them) and selected work (one card per flagship). About and
  * the links under the hood follow, smaller. Every detail beyond that is one click deeper:
  * an experience's bullets in a disclosure, a project's depth on its own page.
@@ -20,6 +21,7 @@ import {
 } from './orbitContent'
 import { Disclosure } from '../ui/Disclosure'
 import { HOME_PROJECTS, PROJECTS } from '../projects/projectRegistry'
+import IntroChart from './IntroChart'
 import './home.css'
 
 const b = (text: Bilingual) => l(text.en, text.sv)
@@ -36,36 +38,29 @@ function Identity() {
       id="start"
       aria-labelledby="home-name"
     >
-      <div className="home-identity-text">
-        <h1 id="home-name" className="home-name">
-          Anton Ernstsson
-        </h1>
-        <p className="home-roles">
-          <span>Data Engineer</span>
-          <span>Analytics Engineer</span>
-          <span>{l('Applied AI', 'Tillämpad AI')}</span>
-        </p>
+      <IntroChart />
+      <div className="home-identity-foot">
         <p className="home-lede">
           {l(
             'I build data pipelines, analytical products and applied AI systems.',
             'Jag bygger datapipelines, analysprodukter och tillämpade AI-system.',
           )}
         </p>
+        <nav className="home-nav" aria-label={l('Start page', 'Startsidan')}>
+          <a href="#projekt">{l('Projects', 'Projekt')}</a>
+          <a href="#erfarenhet">{l('Experience', 'Erfarenhet')}</a>
+          <a href="#om-mig">{l('About', 'Om mig')}</a>
+          {profile.cv && (
+            <a
+              href={profile.cv}
+              download
+              aria-label={l('Download CV', 'Ladda ner CV')}
+            >
+              CV
+            </a>
+          )}
+        </nav>
       </div>
-      <nav className="home-nav" aria-label={l('Start page', 'Startsidan')}>
-        <a href="#projekt">{l('Projects', 'Projekt')}</a>
-        <a href="#erfarenhet">{l('Experience', 'Erfarenhet')}</a>
-        <a href="#om-mig">{l('About', 'Om mig')}</a>
-        {profile.cv && (
-          <a
-            href={profile.cv}
-            download
-            aria-label={l('Download CV', 'Ladda ner CV')}
-          >
-            CV
-          </a>
-        )}
-      </nav>
     </section>
   )
 }

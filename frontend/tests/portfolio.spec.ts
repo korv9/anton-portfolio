@@ -5,13 +5,15 @@ test('home introduces Anton and routes to each project', async ({ page }) => {
   const errors: string[] = []
   page.on('pageerror', (e) => errors.push(e.message))
   await page.goto('/')
-  // First screen: who, in what role, one sentence, and four ways on. Nothing else.
+  // First screen: the name and three titles; one sentence and four ways on just below.
   const identity = page.locator('#start')
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
     'Anton Ernstsson',
   )
-  await expect(identity.locator('.home-roles')).toContainText('Data Engineer')
-  await expect(identity.locator('.home-roles')).toBeInViewport()
+  await expect(identity.locator('.intro-titles')).toContainText(
+    'Data Engineering',
+  )
+  await expect(identity.locator('.intro-titles')).toBeInViewport()
   const ways = identity.getByRole('navigation', { name: 'Start page' })
   await expect(ways.getByRole('link')).toHaveText([
     'Projects',
@@ -19,9 +21,10 @@ test('home introduces Anton and routes to each project', async ({ page }) => {
     'About',
     'CV',
   ])
-  await expect(ways).toBeInViewport()
   // The header does not repeat the name over the identity screen.
   await expect(page.locator('.site-bar .wordmark')).toBeHidden()
+  await ways.scrollIntoViewIfNeeded()
+  await expect(ways).toBeInViewport()
   // Then, in order: experience with the core stack beside it, the work, about, under the hood.
   const order = await page.evaluate(() =>
     ['start', 'erfarenhet', 'projekt', 'om-mig', 'under-huven'].map(
