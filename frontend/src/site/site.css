@@ -147,27 +147,16 @@
 }
 .nav-projects a,
 .nav-cvs a {
-  display: grid;
-  grid-template-columns: 2rem minmax(0, 1fr);
-  gap: 0.5rem;
+  display: block;
   padding: 0.5rem 0.35rem;
   color: var(--ink);
   text-decoration: none;
-}
-.nav-cvs a {
-  grid-template-columns: minmax(0, 1fr);
 }
 .nav-projects a:hover,
 .nav-projects a:focus-visible,
 .nav-cvs a:hover,
 .nav-cvs a:focus-visible {
   background: color-mix(in srgb, var(--ink) 7%, transparent);
-}
-.nav-number {
-  color: var(--muted);
-  font-family: var(--font-mono);
-  font-size: 0.78rem;
-  padding-top: 0.15rem;
 }
 .nav-projects strong,
 .nav-cvs strong {

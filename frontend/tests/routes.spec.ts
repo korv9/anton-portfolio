@@ -123,7 +123,7 @@ test('every internal link opens a page', async ({ page, isMobile }) => {
     )
       unplaced.push(href)
     // The tab names the page, not just the site.
-    if (!/^.+ · Anton Ernstsson$/.test(await page.title())) untitled.push(href)
+    if (!/^.+ \| Anton Ernstsson$/.test(await page.title())) untitled.push(href)
   }
   expect(untitled, 'pages without their own title').toEqual([])
   expect(unplaced, 'pages whose breadcrumb stops at Projects').toEqual([])

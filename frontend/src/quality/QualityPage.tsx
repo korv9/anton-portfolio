@@ -40,8 +40,8 @@ export default function QualityPage({ route }: { route: Route }) {
       <div className="ds-container">
         <ProjectHero
           eyebrow={l(
-            'Under the hood · quality & validity',
-            'Under huven · kvalitet och validitet',
+            'Under the hood, quality & validity',
+            'Under huven, kvalitet och validitet',
           )}
           title={l('Quality & Validity', 'Kvalitet och validitet')}
           question={l(
@@ -253,7 +253,7 @@ function Content({
       >
         <h2 id="q-checks-title">
           {l('Every check', 'Varje kontroll')}
-          {active && ` · ${label(active)}`}
+          {active && `, ${label(active)}`}
         </h2>
         <p className="q-muted">
           {l(
@@ -277,9 +277,9 @@ function Content({
                   </summary>
                   <dl className="q-check-detail">
                     <div>
-                      <dt>{l('Product · dataset', 'Produkt · dataset')}</dt>
+                      <dt>{l('Product, dataset', 'Produkt, dataset')}</dt>
                       <dd>
-                        {label(c.product_id)} · <code>{c.dataset_id}</code>
+                        {label(c.product_id)}, <code>{c.dataset_id}</code>
                       </dd>
                     </div>
                     {c.measure_name && (
@@ -306,13 +306,13 @@ function Content({
                       </div>
                     )}
                     <div>
-                      <dt>{l('Method · severity', 'Metod · allvarlighet')}</dt>
+                      <dt>{l('Method, severity', 'Metod, allvarlighet')}</dt>
                       <dd>
-                        {c.method.replace('_', ' ')} · {c.severity}
+                        {c.method.replace('_', ' ')}, {c.severity}
                         {c.gate &&
                           l(
-                            ' · blocks the warehouse run on failure',
-                            ' · stoppar lagerkörningen vid fel',
+                            ', blocks the warehouse run on failure',
+                            ', stoppar lagerkörningen vid fel',
                           )}
                       </dd>
                     </div>
@@ -392,7 +392,7 @@ function SymbolicCase({ analysis }: { analysis: Analysis }) {
       aria-labelledby="q-case-title"
     >
       <p className="q-kicker">
-        {l('Case study · Symbolic Atlas', 'Fallstudie · Symbolic Atlas')}
+        {l('Case study, Symbolic Atlas', 'Fallstudie, Symbolic Atlas')}
       </p>
       <h2 id="q-case-title">
         {l(
@@ -513,7 +513,7 @@ function Method({ data }: { data: QualityData }) {
           <div key={d.id}>
             <h3>{l(d.label_en, d.label_sv)}</h3>
             <p>{l(d.question_en, d.question_sv)}</p>
-            <p className="q-muted q-small">ISO/IEC 25012 · {d.iso_25012}</p>
+            <p className="q-muted q-small">ISO/IEC 25012, {d.iso_25012}</p>
           </div>
         ))}
       </div>
@@ -545,7 +545,7 @@ function Method({ data }: { data: QualityData }) {
       </ul>
       <p className="q-muted q-small">
         {l('Registry hash', 'Registrets hash')}{' '}
-        <code>{summary.run.registry_sha256.slice(0, 12)}</code> ·{' '}
+        <code>{summary.run.registry_sha256.slice(0, 12)}</code>,{' '}
         <a href="https://github.com/korv9/anton-portfolio/blob/main/docs/quality-and-validity.md">
           docs/quality-and-validity.md
         </a>

@@ -262,12 +262,12 @@ export default function BodyMap({
                   {n.index}. {n.name.toUpperCase()}
                 </text>
                 <text className="body-label-meta" textAnchor={anchor} y={11}>
-                  {num(n.cell_lines)} {l('cell lines', 'cellinjer')} ·{' '}
+                  {num(n.cell_lines)} {l('cell lines', 'cellinjer')},{' '}
                   {num(n.combinations)} {l('measurements', 'mätningar')}
                 </text>
                 <text className="body-label-meta" textAnchor={anchor} y={25}>
                   {num(n.share_synergistic * 100, 1)} %{' '}
-                  {l('synergistic', 'synergistiska')} ·{' '}
+                  {l('synergistic', 'synergistiska')},{' '}
                   {l('median ZIP', 'median-ZIP')} {num(n.median_zip, 2)}
                 </text>
               </g>

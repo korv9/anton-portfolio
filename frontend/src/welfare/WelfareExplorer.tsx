@@ -406,7 +406,7 @@ export default function WelfareExplorer({
             <div className="explorer-source">
               <p>
                 <strong>{indicator.indicator_name}</strong>
-                {unit ? ` · ${unit}` : ''}
+                {unit ? `, ${unit}` : ''}
               </p>
               {indicator.description && <p>{indicator.description}</p>}
               {indicator.source_key === 'ess' && (

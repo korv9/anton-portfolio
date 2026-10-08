@@ -111,7 +111,7 @@ export default function SeatBar({ parties, majority, initial = [] }: Props) {
             onClick={() => toggle(party.party)}
           >
             <PartyLogo party={party.party} size={18} />
-            {partyLabel(party.party)} · {party.seats}
+            {partyLabel(party.party)}, {party.seats}
           </button>
         ))}
       </div>
@@ -123,7 +123,7 @@ export default function SeatBar({ parties, majority, initial = [] }: Props) {
           )
         ) : (
           <>
-            <strong>{sum}</strong> {l('seats', 'mandat')} ·{' '}
+            <strong>{sum}</strong> {l('seats', 'mandat')},{' '}
             {sum >= majority
               ? l('✓ a majority', '✓ majoritet')
               : l(

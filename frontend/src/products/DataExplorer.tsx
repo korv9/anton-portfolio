@@ -191,7 +191,7 @@ export default function DataExplorer({
                   .filter((d) => d.product === product)
                   .map((d) => (
                     <option value={d.id} key={d.id}>
-                      {d.label} · {d.rows.toLocaleString('en-GB')} {t('rows')}
+                      {d.label}, {d.rows.toLocaleString('en-GB')} {t('rows')}
                     </option>
                   ))}
               </optgroup>

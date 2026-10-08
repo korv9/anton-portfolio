@@ -118,7 +118,7 @@ export default function DebateTimeline({
                 </b>
                 {part.topics.length > 0 && (
                   <span className="timeline-topics">
-                    {part.topics.map(issueName).join(' · ')}
+                    {part.topics.map(issueName).join(', ')}
                   </span>
                 )}
               </>
@@ -193,13 +193,13 @@ export default function DebateTimeline({
               {speakerName(active.speech.speaker)}
               {active.speech.party ? ` (${active.speech.party})` : ''}
             </b>{' '}
-            ·{' '}
+            ,{' '}
             {active.speech.is_reply
               ? l('reply', 'replik')
               : l('speech', 'anförande')}{' '}
-            · {num(active.words)} {l('words', 'ord')}
+            , {num(active.words)} {l('words', 'ord')}
             {active.topics.length > 0 && (
-              <> · {active.topics.map(issueName).join(', ')}</>
+              <>, {active.topics.map(issueName).join(', ')}</>
             )}
           </>
         ) : (

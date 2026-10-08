@@ -127,8 +127,8 @@ export default function ClusterPreview({
       {!atmospheric && (
         <span className="ds-label">
           {l(
-            'JobTech · UMAP · Sample of real advertisements',
-            'JobTech · UMAP · Urval av verkliga annonser',
+            'JobTech, UMAP, Sample of real advertisements',
+            'JobTech, UMAP, Urval av verkliga annonser',
           )}{' '}
         </span>
       )}

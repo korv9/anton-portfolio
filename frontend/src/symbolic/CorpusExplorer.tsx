@@ -122,7 +122,7 @@ export default function CorpusExplorer({
                   {d.title}
                   {d.pilot && (
                     <span className="corpus-pilot">
-                      {l(' · pilot', ' · pilot')}
+                      {l(', pilot', ', pilot')}
                     </span>
                   )}
                 </th>

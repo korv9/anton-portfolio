@@ -99,7 +99,7 @@ export default function TalTheme({ route }: { route: Route }) {
     .map((r) => ({
       key: r.party,
       party: r.party,
-      label: `${r.party} · ${partyName(r.party)}`,
+      label: `${r.party}, ${partyName(r.party)}`,
       value: r.keyword_share_pct,
     }))
   const most = latestByParty[0]
@@ -234,12 +234,12 @@ export default function TalTheme({ route }: { route: Route }) {
         chartMeta={
           overTime
             ? l(
-                `Per cent of each party’s issue words · ${corpusName} · ${sessions[0] ?? ''}–${latest}`,
-                `Procent av partiets ämnesord · ${corpusName} · ${sessions[0] ?? ''}–${latest}`,
+                `Per cent of each party’s issue words, ${corpusName}, ${sessions[0] ?? ''}–${latest}`,
+                `Procent av partiets ämnesord, ${corpusName}, ${sessions[0] ?? ''}–${latest}`,
               )
             : l(
-                `Per cent of each party’s issue words · ${corpusName} · ${latest}`,
-                `Procent av partiets ämnesord · ${corpusName} · ${latest}`,
+                `Per cent of each party’s issue words, ${corpusName}, ${latest}`,
+                `Procent av partiets ämnesord, ${corpusName}, ${latest}`,
               )
         }
         chart={

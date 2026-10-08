@@ -8,12 +8,12 @@ click away and remembered.
 
 Every page has the same header with four global destinations, and the name links home:
 
-| Destination    | What it is                                                                                                   |
-| -------------- | ------------------------------------------------------------------------------------------------------------ |
-| **Projects ▾** | A menu: the six selected projects with number and one-line descriptor, then "View all projects" (`#projekt`) |
-| **Experience** | `#erfarenhet`, the experience section on the start page                                                      |
-| **About**      | `#om-mig`, about, education and contact on the start page                                                    |
-| **CV ▾**       | A menu with the three role-specific CVs in `public/cv/` (download)                                           |
+| Destination    | What it is                                                                                          |
+| -------------- | --------------------------------------------------------------------------------------------------- |
+| **Projects ▾** | A menu: the six selected projects with a one-line descriptor, then "View all projects" (`#projekt`) |
+| **Experience** | `#erfarenhet`, the experience section on the start page                                             |
+| **About**      | `#om-mig`, about, education and contact on the start page                                           |
+| **CV ▾**       | A menu with the three role-specific CVs in `public/cv/` (download)                                  |
 
 - **Every page:** one slim row: the name (a link home, never a heading), the four destinations, the language switch. It stays on screen (`position: sticky`) and publishes its height as `--header-h`, so the politics side menu and the slicers stick under it. Over the start page's first screen the row shows only the language switch, so the name is not said twice; it fills in once the reader has scrolled half a screen. The `h1` is the name on the start page and the project's title on a project page.
 - **Active state:** `aria-current` marks Projects on every project page and on `#projekt`, Experience and About on their sections. A project's own views (politics themes, job-market themes, atlas sections) never become global destinations.
@@ -53,7 +53,7 @@ Everything else (DrugComb, Allegoria, DiVA, Homie, RAG, MIMII) is other work.
 
 - **Breadcrumb** at the top: "Projects / <project>"; the supporting pages (Data Constellation, the data platform's tables, relations and catalogue, Quality, Idea Lineage) read "Under the hood / <page>".
 - **Previous / next** at the bottom of a selected project's page, in registry order; the first has no previous and the last no next. Other work has no pager.
-- **First screen:** every flagship opens with `ProjectHero` (`frontend/src/ui/Project.tsx`): number and descriptor, the project's name (`h1`), its question, one or two sentences, one finding or status, and a short row of links into the project. See _Project pages: one first screen_ below.
+- **First screen:** every flagship opens with `ProjectHero` (`frontend/src/ui/Project.tsx`): the descriptor, the project's name (`h1`), its question, one or two sentences, one finding or status, and a short row of links into the project. See _Project pages: one first screen_ below.
 - **Project sub-navigation** inside a project. The hero's row of links is the sub-navigation on a flagship's first screen; on the Symbolic Atlas it reads Atlas / Findings / Experiments / Method (`#symbolic-map`, `#symbolic-findings`, `#symbolic-experiments`, `#symbolic-method`) and marks the section an address points at; the EU AI Act Observatory has Overview / Today / Timeline / Who does it apply to? / Risk classes / Obligations / Startup navigator / In the Riksdag / Changes / Sources as pages (`#ai-act`, `#ai-act-today`, …), plus an article reader at `#ai-act-article?a=<number>`; the politics and job-market products keep their own side menus. `frontend/src/projects/ProjectNav.tsx`.
 - **Footer** on every page: Projects (the selected projects and All projects), Profile (Experience, About, CV, LinkedIn, GitHub) and Under the hood (Data Constellation, Data platform, Quality & validity, Idea Lineage).
 
@@ -70,14 +70,14 @@ Everything else (DrugComb, Allegoria, DiVA, Homie, RAG, MIMII) is other work.
 One screen, one purpose. The start page answers three questions in order, and every detail
 beyond them is one click deeper (`frontend/src/home/HomePage.tsx`):
 
-1. **Who** (`#start`): the name as `h1`, the roles (Data Engineer · Analytics Engineer ·
+1. **Who** (`#start`): the name as `h1`, the roles (Data Engineer, Analytics Engineer,
    Applied AI), one sentence on what I build, and four links: Projects, Experience, About, CV
    (the PDF downloads). Nothing else is on the first screen: no animation, no chart, no tool list.
 2. **Experience** (`#erfarenhet`): each role with company, title, period and impact; the bullets
    and the tech sit in a _Details_ disclosure. Education is one line under them. The **core
    stack** (`#kompetenser`) is beside them, five groups, with the full stack in a disclosure.
 3. **Selected work** (`#projekt`): one card per project in `HOME_PROJECTS` (registry entries
-   with a `home` field): number, name, question, finding and tech. The whole card is the link;
+   with a `home` field): name, question, finding and tech. The whole card is the link;
    there are no buttons and no previews.
 4. **More work** (`#fler-projekt`): every other project in the registry as a small card; the
    whole card links to its page, or to its code when it has none.
@@ -101,7 +101,7 @@ Every flagship opens the same way, so a visitor can tell what it is without read
 | 3     | Explore: filters, tables, the rest of the charts, folded or on their own views                     | `ExploreSection`, `Disclosure`                                   |
 | 4     | Method and sources                                                                                 | `MethodSummary`, `SourceCaption`                                 |
 
-The hero's name, number, descriptor, question and finding come from the registry; a page passes
+The hero's name, descriptor, question and finding come from the registry; a page passes
 live values where it has them (the politics roll-call finding, the job market's latest change,
 the AI Act's _applies now_ and _next_, the Symbolic Atlas's book share, the quality run).
 Product menus and slicers stay off the hero: the politics and job-market overviews show no side
@@ -209,7 +209,7 @@ Tokens, type, colour, plates, buttons and states are described in
 meaning only: in the politics product it means a party; navigation, buttons, issue areas and
 budget areas stay neutral.
 
-Every page names itself in the browser tab ("<page> · Anton Ernstsson"), and the breadcrumb
+Every page names itself in the browser tab ("<page> | Anton Ernstsson"), and the breadcrumb
 always ends at the page. `frontend/tests/routes.spec.ts` opens every internal link the site
 shows and fails if one falls back to the homepage, has no title or stops the breadcrumb at
 "Projects".

@@ -148,7 +148,6 @@ export default function TechReport() {
       <div className="reports">
         <article className="report" id="job-market">
           <ReportHeader
-            number="02"
             eyebrow="Labour market & technology"
             title={t('What is happening to tech jobs?')}
             intro="A compact view of ad volume, junior openings and technologies mentioned in Swedish job ads."
@@ -247,8 +246,8 @@ export default function TechReport() {
               <p className="eyebrow">{t('Most mentioned in data ads')}</p>
               <p className="ds-small">
                 {currentLocale() === 'sv'
-                  ? 'Andel annonser · skala 0–100 %. En annons kan nämna flera tekniker.'
-                  : 'Share of ads · scale 0–100%. One ad can mention several technologies.'}
+                  ? 'Andel annonser, skala 0–100 %. En annons kan nämna flera tekniker.'
+                  : 'Share of ads, scale 0–100%. One ad can mention several technologies.'}
               </p>
               {topTech.slice(0, 7).map((tech) => (
                 <div key={tech.technology}>

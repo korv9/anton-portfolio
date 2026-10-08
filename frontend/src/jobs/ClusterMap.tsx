@@ -238,7 +238,7 @@ export default function ClusterMap() {
     years.length > 1 ? `${years[0]}–${years.at(-1)}` : (years[0] ?? '')
   const largest = groups[0]
   const current = groups.find((c) => c.cluster_id === focus)
-  const name = (c: Cluster) => `${rank.get(c.cluster_id)} · ${c.cluster_label}`
+  const name = (c: Cluster) => `${rank.get(c.cluster_id)}. ${c.cluster_label}`
   const roleCount = (role: string) =>
     data.points.filter((p) => p.role === role).length
 
@@ -309,7 +309,7 @@ export default function ClusterMap() {
         <figcaption className="cluster-caption" aria-live="polite">
           {hover ? (
             <>
-              <strong>{hover.title}</strong> · {hover.role} · {hover.year} ·{' '}
+              <strong>{hover.title}</strong>, {hover.role}, {hover.year},{' '}
               {hover.cluster === -1
                 ? l('no group', 'ingen grupp')
                 : `${l('group', 'grupp')} ${rank.get(hover.cluster)}`}
@@ -435,8 +435,8 @@ export default function ClusterMap() {
           )}
         </p>
         <p className="cluster-run">
-          {l('Source', 'Källa')}: JobTech Historical Ads {span} ·{' '}
-          {summary.generated_at.slice(0, 10)} · {summary.run_id}
+          {l('Source', 'Källa')}: JobTech Historical Ads {span},{' '}
+          {summary.generated_at.slice(0, 10)}, {summary.run_id}
         </p>
       </Disclosure>
     </div>

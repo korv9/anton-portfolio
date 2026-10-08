@@ -174,7 +174,7 @@ export default function DataConstellationPage({ route }: { route: Route }) {
     <div className="constellation">
       <div className="ds-container">
         <ProjectHero
-          eyebrow={l('Under the hood · platform', 'Under huven · plattform')}
+          eyebrow={l('Under the hood, platform', 'Under huven, plattform')}
           title="Data Constellation"
           question={l(
             'How do raw sources become analytical products?',
@@ -451,7 +451,7 @@ function Detail({
     <>
       <p className="constellation-kicker">
         <Marker type={node.type} /> {l(...STYLE[node.type].name)}
-        {node.kind ? ` · ${node.kind}` : ''}
+        {node.kind ? `, ${node.kind}` : ''}
       </p>
       <h3 className="constellation-node-title">{node.label}</h3>
       {node.description && <p>{node.description}</p>}
@@ -584,7 +584,7 @@ function Detail({
                     {(e.source === node.id ? e.from_cols : e.to_cols)?.join(
                       ', ',
                     )}{' '}
-                    · {e.cardinality}
+                    , {e.cardinality}
                   </small>
                 </li>
               )
@@ -657,10 +657,9 @@ function Fallback({
               <summary>
                 <strong>{d.label}</strong>{' '}
                 <small>
-                  {d.counts.sources} {l('sources', 'källor')} ·{' '}
-                  {d.counts.models} {l('models', 'modeller')} · {d.counts.gold}{' '}
-                  {l('gold', 'guld')} · {d.counts.delivery}{' '}
-                  {l('file sets', 'filgrupper')}
+                  {d.counts.sources} {l('sources', 'källor')}, {d.counts.models}{' '}
+                  {l('models', 'modeller')}, {d.counts.gold} {l('gold', 'guld')}
+                  , {d.counts.delivery} {l('file sets', 'filgrupper')}
                 </small>
               </summary>
               {STAGES.map((s) => {

@@ -228,8 +228,8 @@ export default function UtredningarTheme({ route }: { route: Route }) {
             'Publicerade varje år, och hur många en proposition bygger på',
           )}
           meta={l(
-            `${kindName(kindForChart)} · the newest years have not had time to lead to bills yet`,
-            `${kindName(kindForChart)} · de senaste åren har ännu inte hunnit leda till propositioner`,
+            `${kindName(kindForChart)}, the newest years have not had time to lead to bills yet`,
+            `${kindName(kindForChart)}, de senaste åren har ännu inte hunnit leda till propositioner`,
           )}
         >
           <Columns
@@ -255,8 +255,8 @@ export default function UtredningarTheme({ route }: { route: Route }) {
           index={1}
           title={l('The studies', 'Utredningarna')}
           meta={l(
-            `${num(list.length)} studies · newest first · choose one`,
-            `${num(list.length)} utredningar · nyast först · välj en`,
+            `${num(list.length)} studies, newest first, choose one`,
+            `${num(list.length)} utredningar, nyast först, välj en`,
           )}
         >
           <ol className="study-list">
@@ -274,7 +274,7 @@ export default function UtredningarTheme({ route }: { route: Route }) {
                   <small>
                     {dayName(s.published)}
                     {s.bills.length > 0 &&
-                      ` · ${l('led to', 'ledde till')} ${s.bills.length} ${l(s.bills.length === 1 ? 'bill' : 'bills', s.bills.length === 1 ? 'proposition' : 'propositioner')}`}
+                      `, ${l('led to', 'ledde till')} ${s.bills.length} ${l(s.bills.length === 1 ? 'bill' : 'bills', s.bills.length === 1 ? 'proposition' : 'propositioner')}`}
                   </small>
                 </button>
               </li>
@@ -374,8 +374,8 @@ export default function UtredningarTheme({ route }: { route: Route }) {
             'Nya lagar och utredningarna de bygger på',
           )}
           meta={l(
-            'Newest decision first · study → bill → decision',
-            'Nyaste beslutet först · utredning → proposition → beslut',
+            'Newest decision first, study → bill → decision',
+            'Nyaste beslutet först, utredning → proposition → beslut',
           )}
         >
           <ol className="law-chains">

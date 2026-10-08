@@ -118,7 +118,7 @@ export function cellText(
     parts.push(
       l(`${cell.notMeasured} not measured`, `${cell.notMeasured} ej mätta`),
     )
-  return parts.join(' · ')
+  return parts.join(', ')
 }
 
 /** A check's value as the reader should see it: a ratio with its parts, a count, or nothing. */

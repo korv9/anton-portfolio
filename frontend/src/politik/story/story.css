@@ -66,28 +66,6 @@
   letter-spacing: 0;
   color: var(--muted);
 }
-.story-toc ol {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.3rem 1.2rem;
-  margin: var(--sp-5) 0 0;
-  padding: 0;
-  list-style: none;
-}
-.story-toc a {
-  font-size: var(--fs-meta);
-  font-weight: 600;
-  color: var(--ink);
-  text-decoration: none;
-}
-.story-toc a:hover {
-  text-decoration: underline;
-}
-.story-toc span,
-.story-kicker span {
-  font-family: var(--font-mono) !important;
-  color: var(--muted);
-}
 
 .story-section {
   padding: var(--sp-6) 0 var(--sp-5);
@@ -893,10 +871,6 @@
   font-size: var(--fs-card-title);
   line-height: 1.45;
   max-width: 58ch;
-}
-/* Explore second: the deeper analyses keep their order but drop the numbering. */
-.explore-section .story-kicker span {
-  display: none;
 }
 .explore-section .story-section:first-child {
   border-top: 0;

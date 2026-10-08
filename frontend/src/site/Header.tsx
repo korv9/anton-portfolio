@@ -105,7 +105,6 @@ function ProjectList({ onPick }: { onPick: () => void }) {
         {FLAGSHIPS.map((p) => (
           <li key={p.id}>
             <a href={p.href} onClick={onPick}>
-              <span className="nav-number">{p.number}</span>
               <span>
                 <strong>{b(p.title)}</strong>
                 <small>{b(p.descriptor)}</small>

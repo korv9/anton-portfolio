@@ -210,7 +210,7 @@ export default function AtlasCanvas({
         >
           <strong>{hover.p.matched_term}</strong>
           <span>
-            {hover.p.title.split(':')[0]} ·{' '}
+            {hover.p.title.split(':')[0]},{' '}
             {TRADITION[hover.p.tradition]
               ? l(...TRADITION[hover.p.tradition])
               : hover.p.tradition}

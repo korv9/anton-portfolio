@@ -528,9 +528,9 @@ function Tip({
       <strong>{node.label}</strong>
       <span>
         {l(...STYLE[node.type].name)}
-        {node.kind ? ` · ${node.kind}` : ''}
+        {node.kind ? `, ${node.kind}` : ''}
         {node.enabled === false
-          ? l(' · off by default', ' · avstängd som standard')
+          ? l(', off by default', ', avstängd som standard')
           : ''}
       </span>
       {node.path && <code>{node.path}</code>}

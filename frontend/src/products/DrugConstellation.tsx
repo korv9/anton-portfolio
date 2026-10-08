@@ -220,7 +220,7 @@ export default function DrugConstellation({
               textAnchor={star.px > W - 220 ? 'end' : 'start'}
               className="dsky-tip-meta"
             >
-              {ROMAN[star.cluster]} · {num(star.n)} {l('meas.', 'mätn.')} · ZIP{' '}
+              {ROMAN[star.cluster]}, {num(star.n)} {l('meas.', 'mätn.')}, ZIP{' '}
               {num(star.mean_zip, 1)}
             </text>
           </g>
@@ -242,7 +242,7 @@ export default function DrugConstellation({
               style={{ background: HUES[c.id % HUES.length] }}
               aria-hidden="true"
             />
-            <b>{ROMAN[c.id]}</b> · {c.size} {l('drugs', 'läkemedel')} ·{' '}
+            <b>{ROMAN[c.id]}</b>, {c.size} {l('drugs', 'läkemedel')},{' '}
             {l('mean ZIP', 'medel-ZIP')} {num(c.mean_zip, 1)}
           </button>
         ))}

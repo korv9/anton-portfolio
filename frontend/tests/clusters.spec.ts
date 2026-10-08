@@ -86,11 +86,11 @@ test('the map, the ranked groups and the picked profile work together', async ({
   )
   // The largest group is picked first; picking another moves the profile.
   await expect(explorer.locator('.cluster-profile h2')).toHaveText(
-    '1 · Test group A',
+    '1. Test group A',
   )
-  await explorer.getByRole('button', { name: /2 · Test group B/ }).click()
+  await explorer.getByRole('button', { name: /2. Test group B/ }).click()
   await expect(explorer.locator('.cluster-profile h2')).toHaveText(
-    '2 · Test group B',
+    '2. Test group B',
   )
   await expect(explorer.locator('.cluster-profile')).toContainText('Skill 1')
   await expect(explorer.locator('.cluster-noise')).toContainText('fit no group')

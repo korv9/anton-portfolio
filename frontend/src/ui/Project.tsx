@@ -1,13 +1,13 @@
 /**
- * The project page shell: one first screen, then numbered sections. Every flagship opens the
+ * The project page shell: one first screen, then sections. Every flagship opens the
  * same way, so a visitor knows where to look before reading anything.
  *
  * - ProjectHero: the project's name (h1), its question, one or two sentences, one finding or
- *   status, and a short row of links into the project. Name, number, descriptor, question and
- *   finding default to the registry (projects/projectRegistry.ts); a page passes live values
+ *   status, and a short row of links into the project. Name, descriptor, question and finding
+ *   default to the registry (projects/projectRegistry.ts); a page passes live values
  *   (a computed finding, today's status) where it has them.
  * - ProjectSubnav: that short row of links; scrolls sideways on a phone.
- * - ProjectSection: a numbered section with a label and a title (h2).
+ * - ProjectSection: a section with an optional label and a title (h2).
  *
  * The evidence, explore and method pieces (FindingHero, ChartSection, ExploreSection,
  * MethodSummary, SourceCaption) are in ui/Story.tsx.
@@ -63,7 +63,7 @@ export function ProjectHero({
   nav,
   dark = false,
 }: {
-  /** Registry id: name, number, descriptor, question and finding come from it by default. */
+  /** Registry id: name, descriptor, question and finding come from it by default. */
   project?: string
   /** For a page outside the registry (Data Constellation, Quality). */
   eyebrow?: string
@@ -86,10 +86,7 @@ export function ProjectHero({
   const shownFinding = status ? null : (finding ?? b(entry?.home?.finding))
   return (
     <header className={`project-hero${dark ? ' plate' : ''}`}>
-      <p className="project-hero-eyebrow">
-        {entry?.number && <span>{entry.number}</span>}
-        {eyebrow ?? b(entry?.descriptor)}
-      </p>
+      <p className="project-hero-eyebrow">{eyebrow ?? b(entry?.descriptor)}</p>
       <h1 className="project-hero-title">{title ?? b(entry?.title)}</h1>
       <p className="project-hero-question">
         {question ?? b(entry?.home?.question)}
@@ -116,14 +113,12 @@ export function ProjectHero({
 
 export function ProjectSection({
   id,
-  number,
   label,
   title,
   children,
   className,
 }: {
   id?: string
-  number?: string
   label?: string
   title: string
   children: ReactNode
@@ -136,12 +131,7 @@ export function ProjectSection({
       id={id}
       aria-labelledby={headingId}
     >
-      {(number || label) && (
-        <p className="project-section-label">
-          {number && <span>{number}</span>}
-          {label}
-        </p>
-      )}
+      {label && <p className="project-section-label">{label}</p>}
       <h2 id={headingId}>{title}</h2>
       {children}
     </section>

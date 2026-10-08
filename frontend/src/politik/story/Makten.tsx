@@ -53,7 +53,6 @@ export default function Makten({
   return (
     <Section
       id="makten"
-      n={1}
       kicker={l('Latest', 'Läget')}
       question={l(
         'What is the political situation right now?',
@@ -128,8 +127,8 @@ export default function Makten({
           {shown ? (
             <>
               <b>{partyName(shown.party)}</b> {shown.seats}{' '}
-              {l('seats', 'mandat')} · {pct((shown.seats / total) * 100, 1)}{' '}
-              {l('of the seats', 'av mandaten')} ·{' '}
+              {l('seats', 'mandat')}, {pct((shown.seats / total) * 100, 1)}{' '}
+              {l('of the seats', 'av mandaten')},{' '}
               {shown.share_pct != null && (
                 <>
                   {pct(shown.share_pct, 1)} {l('of the votes', 'av rösterna')}
@@ -210,8 +209,8 @@ export default function Makten({
           </ol>
           <p className="story-axis-note">
             {l(
-              '← lost seats · gained seats →',
-              '← tappade mandat · ökade mandat →',
+              '← lost seats, gained seats →',
+              '← tappade mandat, ökade mandat →',
             )}
           </p>
         </div>

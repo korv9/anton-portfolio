@@ -39,7 +39,7 @@ export function clusterTitle(
   reviewed: ReviewedCluster | undefined,
 ): string {
   return reviewed
-    ? `${reviewed.label} · #${id}`
+    ? `${reviewed.label}, #${id}`
     : l(`Cluster ${id}`, `Kluster ${id}`)
 }
 
@@ -140,7 +140,7 @@ export default function ClusterPanel({
             <li key={p.occurrence_id}>
               <q>{p.context}</q>
               <small>
-                {p.matched_term} · {p.title.split(':')[0]} ·{' '}
+                {p.matched_term}, {p.title.split(':')[0]},{' '}
                 {traditionName(p.tradition)}
               </small>
             </li>

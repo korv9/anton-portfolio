@@ -51,7 +51,7 @@ function Reader({ card }: { card: Card }) {
       tabIndex={-1}
     >
       <p className="eyebrow">
-        {t('Read in context · ')}
+        {t('Read in context, ')}
         {card.speech_date}
       </p>
       <h3 lang="sv">{card.title}</h3>
@@ -60,7 +60,7 @@ function Reader({ card }: { card: Card }) {
       {speech && (
         <>
           <h4>
-            {speech.speaker} · {speech.party}
+            {speech.speaker}, {speech.party}
           </h4>
           <p>
             {t('Speech ')}
@@ -102,7 +102,7 @@ function Reader({ card }: { card: Card }) {
                   aria-pressed={selected === s.speech_id}
                   onClick={() => setSelected(s.speech_id)}
                 >
-                  {s.speech_number}. {s.speaker} · {s.party}
+                  {s.speech_number}. {s.speaker}, {s.party}
                 </button>
               ))}
             </div>
@@ -243,7 +243,7 @@ export default function SpeechBrowser() {
             {matches.length.toLocaleString(
               currentLocale() === 'sv' ? 'sv-SE' : 'en-GB',
             )}{' '}
-            {t('speeches found · newest first')}
+            {t('speeches found, newest first')}
           </p>
           <div className="speech-browse-layout">
             <div>
@@ -256,7 +256,7 @@ export default function SpeechBrowser() {
                     onClick={() => setSelected(s)}
                   >
                     <small>
-                      {s.speech_date} · {s.party} ·{' '}
+                      {s.speech_date}, {s.party},{' '}
                       {t(s.is_reply ? 'Reply' : 'Speech')}
                     </small>
                     <strong>{s.speaker}</strong>

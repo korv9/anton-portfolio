@@ -9,7 +9,6 @@ import { identity } from '../../parties/identity'
 
 export function Section({
   id,
-  n,
   kicker,
   question,
   lead,
@@ -17,7 +16,6 @@ export function Section({
   children,
 }: {
   id: string
-  n: number
   kicker: string
   question: string
   lead?: ReactNode
@@ -28,9 +26,7 @@ export function Section({
   return (
     <section className="story-section" id={id} aria-labelledby={`${id}-q`}>
       <header className="story-section-head">
-        <p className="story-kicker">
-          <span>{String(n).padStart(2, '0')}</span> {kicker}
-        </p>
+        <p className="story-kicker">{kicker}</p>
         <h2 id={`${id}-q`}>{question}</h2>
         {lead && <p className="story-lead">{lead}</p>}
       </header>

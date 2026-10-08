@@ -127,7 +127,7 @@ export default function CalibrationScatter({
       <ul className="feature-legend">
         {shown.map(([k]) => (
           <li key={k} style={{ ['--c' as string]: colour(k) }}>
-            {name(k)} · {l('off by', 'missar')} {f1(error(k))}
+            {name(k)}, {l('off by', 'missar')} {f1(error(k))}
           </li>
         ))}
       </ul>
@@ -225,10 +225,9 @@ export default function CalibrationScatter({
                     e,
                     <>
                       <b>
-                        {name(p.scheme)} · {l('tenth', 'tiondel')}{' '}
-                        {p.decile + 1}
+                        {name(p.scheme)}, {l('tenth', 'tiondel')} {p.decile + 1}
                       </b>
-                      {l('Predicted', 'Förutsagt')} {f1(p.pred)} ·{' '}
+                      {l('Predicted', 'Förutsagt')} {f1(p.pred)},{' '}
                       {l('measured', 'uppmätt')} {f1(p.obs)}
                       {p.obs_q25 != null && p.obs_q75 != null && (
                         <>
@@ -245,10 +244,9 @@ export default function CalibrationScatter({
                     e,
                     <>
                       <b>
-                        {name(p.scheme)} · {l('tenth', 'tiondel')}{' '}
-                        {p.decile + 1}
+                        {name(p.scheme)}, {l('tenth', 'tiondel')} {p.decile + 1}
                       </b>
-                      {l('Predicted', 'Förutsagt')} {f1(p.pred)} ·{' '}
+                      {l('Predicted', 'Förutsagt')} {f1(p.pred)},{' '}
                       {l('measured', 'uppmätt')} {f1(p.obs)}
                       {p.obs_q25 != null && p.obs_q75 != null && (
                         <>

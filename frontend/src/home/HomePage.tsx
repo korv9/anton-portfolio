@@ -77,7 +77,6 @@ function Experience() {
       id="erfarenhet"
       aria-labelledby="experience-title"
     >
-      <p className="home-label">02</p>
       <h2 id="experience-title" className="home-title">
         {l('Experience', 'Erfarenhet')}
       </h2>
@@ -88,7 +87,7 @@ function Experience() {
               <li key={job.org} className="home-job">
                 <h3 className="home-job-org">{job.org}</h3>
                 <p className="home-job-role">
-                  {b(job.role)} · {b(job.period)}
+                  {b(job.role)}, {b(job.period)}
                 </p>
                 <p className="home-job-impact">{b(job.effect)}</p>
                 <Disclosure label={l('Details', 'Detaljer')}>
@@ -97,7 +96,7 @@ function Experience() {
                       <li key={item.sv}>{b(item)}</li>
                     ))}
                   </ul>
-                  <p className="home-job-tech">{job.tech.join(' · ')}</p>
+                  <p className="home-job-tech">{job.tech.join(', ')}</p>
                 </Disclosure>
               </li>
             ))}
@@ -105,7 +104,7 @@ function Experience() {
           {EDUCATION.map((e) => (
             <p key={e.school} className="home-education">
               <span className="home-label">{l('Education', 'Utbildning')}</span>{' '}
-              {b(e.title)} · {e.school} · {e.period}
+              {b(e.title)}, {e.school}, {e.period}
             </p>
           ))}
         </div>
@@ -121,7 +120,7 @@ function Experience() {
             {CORE_STACK.map((g) => (
               <div key={g.group.en}>
                 <dt>{b(g.group)}</dt>
-                <dd>{g.tools.map(word).join(' · ')}</dd>
+                <dd>{g.tools.map(word).join(', ')}</dd>
               </div>
             ))}
           </dl>
@@ -130,7 +129,7 @@ function Experience() {
               {SKILLS.map((group) => (
                 <div key={group.group.en}>
                   <dt>{b(group.group)}</dt>
-                  <dd>{[...group.top, ...group.more].join(' · ')}</dd>
+                  <dd>{[...group.top, ...group.more].join(', ')}</dd>
                 </div>
               ))}
             </dl>
@@ -148,21 +147,17 @@ function SelectedWork() {
       id="projekt"
       aria-labelledby="projects-title"
     >
-      <p className="home-label">03</p>
       <h2 id="projects-title" className="home-title">
         {l('Selected work', 'Utvalda projekt')}
       </h2>
       <ol className="work-cards">
-        {HOME_PROJECTS.map((project, i) => (
+        {HOME_PROJECTS.map((project) => (
           <li key={project.id}>
             <a className="work-card" href={project.href}>
-              <span className="work-number">
-                {String(i + 1).padStart(2, '0')}
-              </span>
               <h3 className="work-title">{b(project.title)}</h3>
               <p className="work-question">{b(project.home!.question)}</p>
               <p className="work-finding">{b(project.home!.finding)}</p>
-              <p className="work-tech">{project.home!.tech.join(' · ')}</p>
+              <p className="work-tech">{project.home!.tech.join(', ')}</p>
             </a>
           </li>
         ))}

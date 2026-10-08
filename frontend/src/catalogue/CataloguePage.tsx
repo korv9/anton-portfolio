@@ -207,11 +207,11 @@ export default function CataloguePage() {
               <dt>{l('Platform', 'Plattform')}</dt>
               <dd>
                 {l('Architecture graph built', 'Arkitekturgrafen byggd')}{' '}
-                {day(graph.generated_at)} · dbt {graph.dbt_version}
+                {day(graph.generated_at)}, dbt {graph.dbt_version}
               </dd>
               <dd>
                 {l('Export run', 'Exportkörning')} <code>{catalog.run_id}</code>{' '}
-                · {catalog.files.length} {l('files', 'filer')}
+                , {catalog.files.length} {l('files', 'filer')}
               </dd>
               <dd>
                 {l('Quality checks passing', 'Kvalitetskontroller som klaras')}:{' '}
@@ -263,7 +263,7 @@ export default function CataloguePage() {
                 {day(status.symbolic.run_at)}
               </dd>
               <dd>
-                {l('Corpus', 'Korpus')} v4 · {status.symbolic.documents}{' '}
+                {l('Corpus', 'Korpus')} v4, {status.symbolic.documents}{' '}
                 {l('books', 'böcker')}
               </dd>
             </div>
@@ -383,10 +383,10 @@ function DatasetRow({
                   {m.label}
                 </a>
                 {m.rows != null &&
-                  ` · ${m.rows.toLocaleString(l('en-GB', 'sv-SE'))} ${l('rows', 'rader')}`}
+                  `, ${m.rows.toLocaleString(l('en-GB', 'sv-SE'))} ${l('rows', 'rader')}`}
                 {m.keys?.length ? (
                   <>
-                    {' · '}
+                    {', '}
                     {l('grain', 'korn')}: <code>{m.keys.join(', ')}</code>
                   </>
                 ) : null}
@@ -402,7 +402,7 @@ function DatasetRow({
             <dt>{l('Files', 'Filer')}</dt>
             <dd>
               {d.files.length
-                ? `${d.files.length} · ${d.formats.join(', ')} · ${size(d.bytes)}${d.rows ? ` · ${d.rows.toLocaleString(l('en-GB', 'sv-SE'))} ${l('rows', 'rader')}` : ''}`
+                ? `${d.files.length}, ${d.formats.join(', ')}, ${size(d.bytes)}${d.rows ? `, ${d.rows.toLocaleString(l('en-GB', 'sv-SE'))} ${l('rows', 'rader')}` : ''}`
                 : l(
                     'Not in the delivery catalog (built locally or offloaded).',
                     'Inte i leveranskatalogen (byggs lokalt eller ligger utlagt).',

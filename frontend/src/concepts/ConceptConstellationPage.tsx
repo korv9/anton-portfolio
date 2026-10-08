@@ -253,7 +253,7 @@ function Constellation({ route, data }: { route: Route; data: Data }) {
                       strokeWidth={Math.min(0.9, 0.12 * p.rank1_lift)}
                     >
                       <title>
-                        {`${label(conceptOf(p.concept_id)!)} · ${label(corpusOf(p.corpus_id)!)}: ${pct(p.rank1_share)} (${l('chance', 'slump')} ${pct(p.rank1_chance, 1)})`}
+                        {`${label(conceptOf(p.concept_id)!)}, ${label(corpusOf(p.corpus_id)!)}: ${pct(p.rank1_share)} (${l('chance', 'slump')} ${pct(p.rank1_chance, 1)})`}
                       </title>
                     </line>
                   )
@@ -447,7 +447,7 @@ function Constellation({ route, data }: { route: Route; data: Data }) {
             <a href="https://github.com/korv9/anton-portfolio/blob/main/docs/concept-layer.md">
               docs/concept-layer.md
             </a>{' '}
-            ·{' '}
+            ,{' '}
             <a href="https://github.com/korv9/anton-portfolio/blob/main/docs/concept-constellation.md">
               docs/concept-constellation.md
             </a>
@@ -466,7 +466,7 @@ function ConceptCard({ concept, data }: { concept: Concept; data: Data }) {
   return (
     <>
       <p className="cc-kicker">
-        {l(...FAMILY_LABEL[concept.family])} · <Kind kind="interpretation" />
+        {l(...FAMILY_LABEL[concept.family])}, <Kind kind="interpretation" />
       </p>
       <h3>{label(concept)}</h3>
       <p>{l(concept.description_en, concept.description_sv)}</p>
@@ -475,7 +475,7 @@ function ConceptCard({ concept, data }: { concept: Concept; data: Data }) {
         <p className="cc-hint">
           {related.map(({ other, relation }, i) => (
             <span key={`${relation.relation_type}-${other}`}>
-              {i > 0 && ' · '}
+              {i > 0 && ', '}
               <i
                 className={`cc-swatch cc-rel-${relation.relation_type}`}
                 aria-hidden="true"
@@ -657,7 +657,7 @@ function ConceptPage({
     <>
       <header className="cc-hero ds-container">
         <p className="cc-kicker">
-          <a href="#concept-constellation">Concept Constellation</a> ·{' '}
+          <a href="#concept-constellation">Concept Constellation</a>,{' '}
           {l(...FAMILY_LABEL[concept.family])}
         </p>
         <h1>{label(concept)}</h1>
@@ -702,7 +702,7 @@ function ConceptPage({
                 return (
                   <div key={c} className="cc-column">
                     <h3>
-                      {l(...STAGE_LABEL[k.stage])} · {label(k)}
+                      {l(...STAGE_LABEL[k.stage])}, {label(k)}
                     </h3>
                     {list.length === 0 ? (
                       <p className="cc-hint">
@@ -724,8 +724,8 @@ function ConceptPage({
                             <br />
                             <span className="cc-muted">
                               {l('similarity', 'likhet')}{' '}
-                              {p.similarity.toFixed(2)} · {l('rank', 'rang')}{' '}
-                              {p.rank}/28 · z {p.z_score.toFixed(1)}
+                              {p.similarity.toFixed(2)}, {l('rank', 'rang')}{' '}
+                              {p.rank}/28, z {p.z_score.toFixed(1)}
                             </span>
                           </footer>
                         </blockquote>
@@ -758,7 +758,7 @@ function ConceptPage({
                 <li key={`${p.corpus_a}-${p.corpus_b}`}>
                   <p className="cc-kicker">
                     {label(corpusOf(p.corpus_a)!)} ↔{' '}
-                    {label(corpusOf(p.corpus_b)!)} · {p.similarity.toFixed(2)} (
+                    {label(corpusOf(p.corpus_b)!)}, {p.similarity.toFixed(2)} (
                     {l('random p95', 'slump p95')} {p.baseline_p95.toFixed(2)})
                   </p>
                   <div className="cc-pair">
@@ -855,7 +855,7 @@ function LinkRow({ link }: { link: Link }) {
         <a href={`#philosophy-tensions?spanning=${link.target_id}`}>
           {t ? label(t) : link.target_id}
         </a>
-        {link.note && <span className="cc-muted"> · {link.note}</span>}
+        {link.note && <span className="cc-muted">, {link.note}</span>}
       </li>
     )
   if (link.kind === 'ai_act_view')
@@ -863,7 +863,7 @@ function LinkRow({ link }: { link: Link }) {
       <li>
         {l('EU AI Act', 'EU:s AI-förordning')}:{' '}
         <a href={`#${link.target_id}`}>#{link.target_id}</a>
-        {link.note && <span className="cc-muted"> · {link.note}</span>}
+        {link.note && <span className="cc-muted">, {link.note}</span>}
       </li>
     )
   if (link.kind === 'riksdag_framing') {
@@ -875,11 +875,11 @@ function LinkRow({ link }: { link: Link }) {
         {all && (
           <>
             {' '}
-            · {pct(all.share)} ({all.with_concept}/{all.ai_speeches}){' '}
+            , {pct(all.share)} ({all.with_concept}/{all.ai_speeches}){' '}
             <Kind kind="derived" />
           </>
         )}
-        {link.note && <span className="cc-muted"> · {link.note}</span>}
+        {link.note && <span className="cc-muted">, {link.note}</span>}
       </li>
     )
   }
@@ -891,7 +891,7 @@ function LinkRow({ link }: { link: Link }) {
       {last && (
         <>
           {' '}
-          · {last.year}: {pct(last.share, 2)} (
+          , {last.year}: {pct(last.share, 2)} (
           {last.with_term.toLocaleString('sv')}/{last.ads.toLocaleString('sv')}){' '}
           <Kind kind="derived" />
         </>

@@ -115,7 +115,7 @@ function Flow({ schema }: { schema: Schema }) {
     [
       l('Bronze → silver → gold', 'Brons → silver → guld'),
       `${(schema.layers.bronze ?? 0) + (schema.layers.silver ?? 0) + (schema.layers.gold ?? 0)} ${l('models', 'modeller')}, ${schema.tests} ${l('tests', 'tester')}`,
-      `dbt ${schema.dbt_version} · DuckDB`,
+      `dbt ${schema.dbt_version}, DuckDB`,
     ],
     [
       l('Export', 'Export'),
@@ -206,9 +206,9 @@ function Detail({ node, schema }: { node: Node; schema: Schema }) {
   return (
     <article className="dm-detail" data-testid="dm-detail">
       <p className="eyebrow">
-        <span className={`dm-layer ${node.layer}`}>{node.layer}</span> ·{' '}
-        {node.subject} · {node.materialized}
-        {node.rows != null && ` · ${number(node.rows)} ${l('rows', 'rader')}`}
+        <span className={`dm-layer ${node.layer}`}>{node.layer}</span>,{' '}
+        {node.subject}, {node.materialized}
+        {node.rows != null && `, ${number(node.rows)} ${l('rows', 'rader')}`}
       </p>
       <h2>
         {node.kind === 'source' ? node.name : `${node.schema}.${node.name}`}
@@ -288,7 +288,7 @@ function Detail({ node, schema }: { node: Node; schema: Schema }) {
       {node.tests.length > 0 && (
         <p>
           <strong>{l('Table tests', 'Tester på tabellen')}:</strong>{' '}
-          {node.tests.join(' · ')}
+          {node.tests.join(', ')}
         </p>
       )}
 
@@ -454,7 +454,7 @@ export default function DataModelPage({ view }: { view: string }) {
                       setLayer(layer === layerInfo.key ? 'all' : layerInfo.key)
                     }
                   >
-                    {l(...layerInfo.name)} · {schema.layers[layerInfo.key] ?? 0}
+                    {l(...layerInfo.name)}, {schema.layers[layerInfo.key] ?? 0}
                   </button>
                   <span>{l(...layerInfo.text)}</span>
                 </li>
@@ -524,7 +524,7 @@ export default function DataModelPage({ view }: { view: string }) {
                     </a>
                     <small>
                       {n.subject}
-                      {n.rows != null && ` · ${number(n.rows)}`}
+                      {n.rows != null && `, ${number(n.rows)}`}
                     </small>
                   </li>
                 ))}

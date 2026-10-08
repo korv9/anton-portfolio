@@ -190,8 +190,8 @@ function Explorer({ route }: { route: Route }) {
           index={2}
           title={l('Issue areas debated', 'Sakområden som debatterades')}
           meta={l(
-            'Number of debates · from the deciding committee, otherwise from words in the title',
-            'Antal debatter · från utskottet som beslutade, annars från ord i rubriken',
+            'Number of debates, from the deciding committee, otherwise from words in the title',
+            'Antal debatter, från utskottet som beslutade, annars från ord i rubriken',
           )}
         >
           {debates ? (
@@ -217,8 +217,8 @@ function Explorer({ route }: { route: Route }) {
             'Hur partierna röstade om de debatterade betänkandena',
           )}
           meta={l(
-            `Share of decision points, ${linked.length} linked debates · darkest: yes, then no, lightest: abstained`,
-            `Andel beslutspunkter, ${linked.length} kopplade debatter · mörkast: ja, sedan nej, ljusast: avstår`,
+            `Share of decision points, ${linked.length} linked debates, darkest: yes, then no, lightest: abstained`,
+            `Andel beslutspunkter, ${linked.length} kopplade debatter, mörkast: ja, sedan nej, ljusast: avstår`,
           )}
         >
           {linked.length ? (
@@ -263,8 +263,8 @@ function Explorer({ route }: { route: Route }) {
           wide
           title={l('The debates', 'Debatterna')}
           meta={l(
-            `${filtered.length} debates, newest first · open one to read it reply by reply`,
-            `${filtered.length} debatter, nyast först · öppna en för att läsa replik för replik`,
+            `${filtered.length} debates, newest first, open one to read it reply by reply`,
+            `${filtered.length} debatter, nyast först, öppna en för att läsa replik för replik`,
           )}
         >
           {debates ? (
@@ -303,7 +303,7 @@ function Explorer({ route }: { route: Route }) {
                           {d.decision && (
                             <small className="dash-empty">
                               {' '}
-                              · {d.decision.designation}
+                              , {d.decision.designation}
                             </small>
                           )}
                         </td>
@@ -343,7 +343,7 @@ function Explorer({ route }: { route: Route }) {
           )}
           {view.omrade && (
             <p className="dash-empty">
-              {l('Filtered on', 'Filtrerat på')} {issueName(view.omrade)} ·{' '}
+              {l('Filtered on', 'Filtrerat på')} {issueName(view.omrade)},{' '}
               <button
                 type="button"
                 className="link-button"

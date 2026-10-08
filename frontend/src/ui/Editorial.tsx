@@ -1,20 +1,15 @@
 import type { ReactNode } from 'react'
 
 export function SectionHeader({
-  number,
   label,
   title,
 }: {
-  number?: string
   label: string
   title: string
 }) {
   return (
     <div className="ds-section-head">
-      <p className="ds-label">
-        {number && <span className="ds-number">{number} / </span>}
-        {label}
-      </p>
+      <p className="ds-label">{label}</p>
       <h2 className="ds-h2">{title}</h2>
     </div>
   )

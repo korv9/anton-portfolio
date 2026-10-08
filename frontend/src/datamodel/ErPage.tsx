@@ -535,7 +535,7 @@ function Overview({
               {l(d.en, d.sv)}
             </text>
             <text className="er-ov-meta" y={16} textAnchor="middle">
-              {tables.length} {l('tables', 'tabeller')} · {inside}{' '}
+              {tables.length} {l('tables', 'tabeller')}, {inside}{' '}
               {inside === 1 ? 'relation' : l('relations', 'relationer')}
             </text>
           </g>
@@ -610,7 +610,7 @@ function TablePanel({
                     ? l(`${pct(r.coverage)} found`, `${pct(r.coverage)} finns`)
                     : l('dbt test', 'dbt-test')}
                   {r.basis.includes('data') && r.basis.includes('tested')
-                    ? l(' · also tested', ' · även testad')
+                    ? l(', also tested', ', även testad')
                     : ''}
                 </span>
               </li>
@@ -810,8 +810,8 @@ export default function ErPage({ route }: { route: Route }) {
               <Legend />
               <p>
                 {l(
-                  'PK primary key · FK foreign key · ◇ party code. Faint boxes belong to another area.',
-                  'PK primärnyckel · FK främmande nyckel · ◇ partikod. Bleka rutor hör till ett annat område.',
+                  'PK primary key, FK foreign key, ◇ party code. Faint boxes belong to another area.',
+                  'PK primärnyckel, FK främmande nyckel, ◇ partikod. Bleka rutor hör till ett annat område.',
                 )}
               </p>
             </StageBlock>

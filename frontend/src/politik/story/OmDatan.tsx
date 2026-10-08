@@ -59,7 +59,6 @@ export default function OmDatan({
   return (
     <Section
       id="om-datan"
-      n={9}
       kicker={l('About the data', 'Om datan')}
       question={l('How it works', 'Så fungerar det')}
       deeper={[

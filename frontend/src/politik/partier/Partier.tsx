@@ -147,7 +147,7 @@ export default function Partier({ route }: { route: Route }) {
       title={party ? partyName(party) : l('The parties', 'Partierna')}
       sub={
         party
-          ? `${ROLE(now, party)} · ${
+          ? `${ROLE(now, party)}, ${
               selected.length > 1
                 ? l(
                     `${selected.length} parties are chosen; this shows the last one. Click a card to show only that party.`,
@@ -207,7 +207,7 @@ export default function Partier({ route }: { route: Route }) {
                     </dl>
                     {s?.leaders.length ? (
                       <span className="pcard-leader">
-                        {s.leaders.map((x) => x.name).join(' · ')}
+                        {s.leaders.map((x) => x.name).join(', ')}
                       </span>
                     ) : null}
                   </>
@@ -415,8 +415,8 @@ function PartyDashboard({ party, shared }: { party: string; shared: Shared }) {
           index={3}
           title={l('Council seats per county', 'Kommunmandat per län')}
           meta={l(
-            `Seats in the municipal councils, ${councilYear} · tick: the election before`,
-            `Mandat i kommunfullmäktige, ${councilYear} · streck: valet innan`,
+            `Seats in the municipal councils, ${councilYear}, tick: the election before`,
+            `Mandat i kommunfullmäktige, ${councilYear}, streck: valet innan`,
           )}
         >
           {profile ? (
@@ -501,7 +501,7 @@ function PartyDashboard({ party, shared }: { party: string; shared: Shared }) {
           <RankBars
             rows={alike.map((a) => ({
               key: a.party,
-              label: `${a.party} · ${partyName(a.party)}`,
+              label: `${a.party}, ${partyName(a.party)}`,
               value: a.value,
               party: a.party,
             }))}
@@ -625,8 +625,8 @@ function PartyDashboard({ party, shared }: { party: string; shared: Shared }) {
           wide
           title={l('The members', 'Ledamöterna')}
           meta={l(
-            `${members.length} members of the Riksdag by constituency · the list of people, ${dayName(index.sources.members.as_of)}`,
-            `${members.length} riksdagsledamöter efter valkrets · riksdagens personlista, ${dayName(index.sources.members.as_of)}`,
+            `${members.length} members of the Riksdag by constituency, the list of people, ${dayName(index.sources.members.as_of)}`,
+            `${members.length} riksdagsledamöter efter valkrets, riksdagens personlista, ${dayName(index.sources.members.as_of)}`,
           )}
         >
           {profile ? (
@@ -661,7 +661,7 @@ function PartyDashboard({ party, shared }: { party: string; shared: Shared }) {
                               : null,
                           ]
                             .filter(Boolean)
-                            .join(' · ')}
+                            .join(', ')}
                         </small>
                       )}
                     </span>

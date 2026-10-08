@@ -249,16 +249,7 @@ main {
   border-top: 1px solid var(--line);
 }
 .report-header {
-  display: grid;
-  grid-template-columns: 90px 1fr;
-  gap: 2rem;
   max-width: 1060px;
-}
-.report-number {
-  font: 800 0.8rem/1 var(--font);
-  padding-top: 0.4rem;
-  color: var(--muted);
-  letter-spacing: 0.12em;
 }
 .report-header h2 {
   font-size: clamp(2.25rem, 4.4vw, 4.3rem);
@@ -746,10 +737,6 @@ summary:focus-visible {
   }
   .report-jump {
     margin-left: 0;
-  }
-  .report-number {
-    border-bottom: 1px solid var(--line);
-    padding-bottom: 0.7rem;
   }
   .source-strip {
     grid-template-columns: 1fr;

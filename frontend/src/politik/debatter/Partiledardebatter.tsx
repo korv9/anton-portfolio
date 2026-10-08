@@ -157,7 +157,7 @@ export default function Partiledardebatter({ route }: { route: Route }) {
             value={debate.id}
             options={[...all]
               .reverse()
-              .map((d) => ({ value: d.id, label: `${d.date} · ${d.session}` }))}
+              .map((d) => ({ value: d.id, label: `${d.date}, ${d.session}` }))}
             onChange={(debatt) => setView({ debatt })}
           />
         </>
@@ -201,8 +201,8 @@ export default function Partiledardebatter({ route }: { route: Route }) {
             'Vad partierna pratade om, jämfört med debatten innan',
           )}
           meta={l(
-            `Share of each party's words in ${dayName(debate.date)}, by issue area read from the words${earlierDebate ? ` · dashed frame: ${dayName(earlierDebate.date)}` : ''}`,
-            `Andel av partiets ord ${dayName(debate.date)}, per sakområde som orden pekar på${earlierDebate ? ` · streckad ram: ${dayName(earlierDebate.date)}` : ''}`,
+            `Share of each party's words in ${dayName(debate.date)}, by issue area read from the words${earlierDebate ? `, dashed frame: ${dayName(earlierDebate.date)}` : ''}`,
+            `Andel av partiets ord ${dayName(debate.date)}, per sakområde som orden pekar på${earlierDebate ? `, streckad ram: ${dayName(earlierDebate.date)}` : ''}`,
           )}
         >
           {speeches && lexicon ? (
@@ -240,8 +240,8 @@ export default function Partiledardebatter({ route }: { route: Route }) {
             'Vem som talade när, och om vad',
           )}
           meta={l(
-            `${dayName(debate.date)} · one lane per party, each block a speech as long as its words · the issue areas are read from the words`,
-            `${dayName(debate.date)} · en rad per parti, varje block ett inlägg lika långt som sina ord · ämnena läses ur orden`,
+            `${dayName(debate.date)}, one lane per party, each block a speech as long as its words, the issue areas are read from the words`,
+            `${dayName(debate.date)}, en rad per parti, varje block ett inlägg lika långt som sina ord, ämnena läses ur orden`,
           )}
         >
           {speeches && lexicon ? (
@@ -266,8 +266,8 @@ export default function Partiledardebatter({ route }: { route: Route }) {
           index={3}
           title={l('Who replies to whom', 'Vem replikerar på vem')}
           meta={l(
-            `Rows reply to columns · replies and answers, ${dayName(debate.date)}`,
-            `Raden replikerar på kolumnen · repliker och svar, ${dayName(debate.date)}`,
+            `Rows reply to columns, replies and answers, ${dayName(debate.date)}`,
+            `Raden replikerar på kolumnen, repliker och svar, ${dayName(debate.date)}`,
           )}
         >
           <Heatmap

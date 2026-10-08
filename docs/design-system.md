@@ -14,7 +14,7 @@ second theme file.
 - **Manrope** for everything, self-hosted as variable WOFF2 (`/fonts/manrope-latin.woff2`, 29 kB, preloaded, with
   `manrope-variable.woff2` for any other character;
   weights 200–800). The SIL Open Font License is kept at `frontend/public/fonts/Manrope-OFL.txt`.
-- **System monospace** (`--font-mono`) for figures, metadata, section numbers and code.
+- **System monospace** (`--font-mono`) for figures, metadata, eyebrows and code.
 - Weights: body 470, interface 560, headings 700.
 - Scale: `--display-xl`, `--display-l`, `--h1`, `--h2`, `--h3`, `--body-large`, `--body`,
   `--small`, `--caption`; reading measure `--measure: 68ch`. The older `--fs-*` names map
@@ -80,12 +80,12 @@ Three widths, so text never runs the full screen:
 One screen, one purpose; one section, one question; depth only after the reader asks for it.
 The pieces that carry that rule:
 
-- `ProjectHero` (`ui/Project.tsx`): a flagship's first screen. Eyebrow (number and
+- `ProjectHero` (`ui/Project.tsx`): a flagship's first screen. Eyebrow (the
   descriptor), the name, the question, one or two sentences, one finding or a status, and a
   `ProjectSubnav` row of links. On a wide screen it is at least 72 % of the viewport high
   (less the header), so the next section starts near the fold; on a phone it is as tall as
   its content.
-- `ProjectSection`: a numbered section with a label and an `h2`.
+- `ProjectSection`: a section with an optional label and an `h2`.
 - `Disclosure` (`ui/Disclosure.tsx`): a native `<details>` for depth on demand (job details,
   the full stack); no script.
 - `FindingHero`, `ChartSection`, `Interpretation`, `ExploreSection`, `MethodSummary`,

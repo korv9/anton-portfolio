@@ -14,10 +14,6 @@
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
-.data-question-eyebrow span {
-  font-family: var(--font-mono);
-  margin-right: 0.75em;
-}
 .data-question h1,
 .data-question h2 {
   margin: 0;

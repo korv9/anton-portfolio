@@ -95,8 +95,8 @@ export default function ThesisSieve() {
         </text>
         <text x={C} y={34} textAnchor="middle" className="sieve-small">
           {l(
-            '21,000+ incidents · one point per hundred',
-            '21 000+ incidenter · en punkt per hundra',
+            '21,000+ incidents, one point per hundred',
+            '21 000+ incidenter, en punkt per hundra',
           )}
         </text>
         <text x={C} y={C - 230} textAnchor="middle" className="sieve-small">

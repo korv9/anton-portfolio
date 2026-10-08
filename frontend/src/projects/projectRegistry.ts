@@ -63,8 +63,8 @@ export const PROJECTS: ProjectEntry[] = [
     number: '01',
     title: t('Svensk politik i siffror', 'Swedish politics in numbers'),
     descriptor: t(
-      'Öppna data · analytics engineering',
-      'Public data · analytics engineering',
+      'Öppna data, analytics engineering',
+      'Public data, analytics engineering',
     ),
     summary: t(
       'Ett öppet dataprojekt om riksdagen, politikerna och hur Sverige röstar.',
@@ -115,8 +115,8 @@ export const PROJECTS: ProjectEntry[] = [
     number: '02',
     title: t('EU AI Act Observatory', 'EU AI Act Observatory'),
     descriptor: t(
-      'Juridisk datamodellering · officiella källor',
-      'Legal data modelling · official sources',
+      'Juridisk datamodellering, officiella källor',
+      'Legal data modelling, official sources',
     ),
     summary: t(
       'Vad EU:s AI-förordning faktiskt innebär för den som bygger eller använder AI, byggt på officiella EU-källor.',
@@ -192,8 +192,8 @@ export const PROJECTS: ProjectEntry[] = [
     number: '03',
     title: t('Arbetsmarknaden i jobbannonser', 'The job market in job ads'),
     descriptor: t(
-      'Data engineering · maskininlärning',
-      'Data engineering · machine learning',
+      'Data engineering, maskininlärning',
+      'Data engineering, machine learning',
     ),
     summary: t(
       'Den svenska arbetsmarknaden genom öppna jobbdata, språkmodeller och klustring.',
@@ -234,7 +234,7 @@ export const PROJECTS: ProjectEntry[] = [
     id: 'symbolic-atlas',
     number: '04',
     title: t('Symbolic Atlas', 'Symbolic Atlas'),
-    descriptor: t('NLP · oövervakad inlärning', 'NLP · unsupervised learning'),
+    descriptor: t('NLP, oövervakad inlärning', 'NLP, unsupervised learning'),
     summary: t(
       'En oövervakad utforskning av återkommande symbolisk mening i mytologi, folksagor och litteratur.',
       'An unsupervised exploration of recurring symbolic meaning in mythology, folklore and literature.',
@@ -288,7 +288,7 @@ export const PROJECTS: ProjectEntry[] = [
     id: 'welfare',
     number: '05',
     title: t('Hur mår Sverige?', 'How is Sweden doing?'),
-    descriptor: t('dbt · offentliga data', 'dbt · public data'),
+    descriptor: t('dbt, offentliga data', 'dbt, public data'),
     summary: t(
       'Jobb, hälsa och förtroende i Sverige, utforskade genom fem offentliga datakällor.',
       'Jobs, health and trust across Sweden, explored through five public data sources.',
@@ -331,7 +331,7 @@ export const PROJECTS: ProjectEntry[] = [
       'Examensarbete: NLP-klustring av IT-incidenter',
       'Degree project: NLP clustering of IT incidents',
     ),
-    descriptor: t('NLP · klustring · Avtalat', 'NLP · clustering · Avtalat'),
+    descriptor: t('NLP, klustring, Avtalat', 'NLP, clustering, Avtalat'),
     summary: t(
       'Hitta grupper av relaterade incidenter i IT-servicedata för manuell granskning.',
       'Finding groups of related incidents in IT service data for manual review.',
@@ -365,7 +365,7 @@ export const PROJECTS: ProjectEntry[] = [
   {
     id: 'philosophy-atlas',
     title: t('Philosophy Atlas', 'Philosophy Atlas'),
-    descriptor: t('NLP · semantisk utforskning', 'NLP · semantic exploration'),
+    descriptor: t('NLP, semantisk utforskning', 'NLP, semantic exploration'),
     summary: t(
       'En semantisk atlas över fri filosofi med inbäddningar, klustring och mänskligt granskade begrepp.',
       'A semantic atlas of public-domain philosophy using embeddings, clustering and human-reviewed concepts.',
@@ -408,7 +408,7 @@ export const PROJECTS: ProjectEntry[] = [
   {
     id: 'concept-constellation',
     title: t('Concept Constellation', 'Concept Constellation'),
-    descriptor: t('NLP · betydelseatlas', 'NLP · meaning atlas'),
+    descriptor: t('NLP, betydelseatlas', 'NLP, meaning atlas'),
     summary: t(
       'Samma idéer genom myter, filosofi, riksdagstal och AI-förordningen, med en modell och redaktionellt valda begrepp.',
       'The same ideas across myth, philosophy, Riksdag speeches and the AI Act, with one model and editorially chosen concepts.',
@@ -492,7 +492,7 @@ export const PROJECTS: ProjectEntry[] = [
   {
     id: 'allegoria',
     title: t('Allegoria / RFC-drift', 'Allegoria / RFC drift'),
-    descriptor: t('NLP · pågående', 'NLP · in progress'),
+    descriptor: t('NLP, pågående', 'NLP, in progress'),
     summary: t(
       'Vad händer med innebörden när ett krav går från MUST till SHOULD?',
       'What changes when a requirement goes from MUST to SHOULD?',
@@ -541,7 +541,7 @@ export const PROJECTS: ProjectEntry[] = [
   {
     id: 'homie',
     title: t('Homie API', 'Homie API'),
-    descriptor: t('Python-backend · pågående', 'Python backend · in progress'),
+    descriptor: t('Python-backend, pågående', 'Python backend, in progress'),
     summary: t(
       'FastAPI- och PostgreSQL-tjänst med autentisering, migreringar och ett OpenAPI-kontrakt för en separat frontend.',
       'FastAPI and PostgreSQL service with authentication, migrations and an OpenAPI contract for a separate frontend.',
@@ -570,8 +570,8 @@ export const PROJECTS: ProjectEntry[] = [
     id: 'rag',
     title: t('RAG-baserad studieassistent', 'RAG learning assistant'),
     descriptor: t(
-      'Tillämpad generativ AI · studieprojekt',
-      'Applied generative AI · study project',
+      'Tillämpad generativ AI, studieprojekt',
+      'Applied generative AI, study project',
     ),
     summary: t(
       'Flask-backend som läser in dokument, skapar inbäddningar och ger förankrade svar, semantisk sökning och quiz.',
@@ -603,8 +603,8 @@ export const PROJECTS: ProjectEntry[] = [
       'Industrial pump anomaly detection',
     ),
     descriptor: t(
-      'Djupinlärning på MIMII · studieprojekt',
-      'Deep learning on MIMII · study project',
+      'Djupinlärning på MIMII, studieprojekt',
+      'Deep learning on MIMII, study project',
     ),
     summary: t(
       'Pumpljud omvandlade till mel-spektrogram och en CNN-klassificerare för att hitta avvikande ljud.',

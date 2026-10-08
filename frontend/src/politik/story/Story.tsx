@@ -187,7 +187,6 @@ export default function Story({
       >
         <DataQuestion
           id="utforska-q"
-          number={3}
           eyebrow={l('Explore', 'Utforska')}
           question={l(
             'What should you explore next?',

@@ -45,7 +45,7 @@ export default function DeepDive({ path }: { path: string }) {
           {parent && (
             <>
               <a href={parent.path}>{l(parent.en, parent.sv)}</a>
-              {' · '}
+              {', '}
             </>
           )}
           {l('In depth', 'Fördjupning')}

@@ -393,8 +393,7 @@ export default function DrugCombReport() {
                       .sort((a, b) => b.n.share - a.n.share)
                       .map(({ n, i }) => (
                         <option key={n.id} value={n.id}>
-                          {l('Leaf', 'Löv')} {i + 1} · {pct(n.share)} ·{' '}
-                          {num(n.n)}
+                          {l('Leaf', 'Löv')} {i + 1}, {pct(n.share)}, {num(n.n)}
                         </option>
                       ))}
                   </select>
@@ -463,8 +462,8 @@ export default function DrugCombReport() {
                       pct(treeFile.metrics.base_rate),
                     ],
                     [
-                      l('Leaves · depth', 'Löv · djup'),
-                      `${treeFile.metrics.leaves} · ${treeFile.metrics.depth}`,
+                      l('Leaves, depth', 'Löv, djup'),
+                      `${treeFile.metrics.leaves}, ${treeFile.metrics.depth}`,
                     ],
                   ]}
                 />
@@ -558,7 +557,7 @@ export default function DrugCombReport() {
               {sky.clusters.map((c) => (
                 <p key={c.id}>
                   <b>
-                    {['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'][c.id]} ·{' '}
+                    {['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'][c.id]},{' '}
                     {c.size} {l('drugs', 'läkemedel')}
                   </b>
                   <br />
@@ -766,7 +765,7 @@ export default function DrugCombReport() {
                   </span>
                   <span>
                     {q.check}
-                    {q.detail && <small> · {q.detail}</small>}
+                    {q.detail && <small>, {q.detail}</small>}
                   </span>
                 </li>
               ))}
@@ -791,7 +790,7 @@ export default function DrugCombReport() {
             <RankBars
               rows={tables.entities.map((e) => ({
                 key: `${e.entity}-${e.method}`,
-                label: `${e.entity === 'drug' ? l('Drug', 'Läkemedel') : l('Cell line', 'Cellinje')} · ${e.method}`,
+                label: `${e.entity === 'drug' ? l('Drug', 'Läkemedel') : l('Cell line', 'Cellinje')}, ${e.method}`,
                 value: e.measurement_share * 100,
                 tone:
                   e.method === 'unresolved'
@@ -818,8 +817,8 @@ export default function DrugCombReport() {
           index={4}
           title={l('What the model relies on', 'Vad modellen lutar sig mot')}
           meta={l(
-            `Share of the model’s total gain per feature family · ${splitName(split)}`,
-            `Andel av modellens totala vinst per egenskapsgrupp · ${splitName(split)}`,
+            `Share of the model’s total gain per feature family, ${splitName(split)}`,
+            `Andel av modellens totala vinst per egenskapsgrupp, ${splitName(split)}`,
           )}
         >
           <div
@@ -866,8 +865,8 @@ export default function DrugCombReport() {
             'Hittar den de starkaste paren?',
           )}
           meta={l(
-            `Share of real synergy among the pairs the model ranks highest · ${splitName(split)}`,
-            `Andel verklig synergi bland paren modellen rankar högst · ${splitName(split)}`,
+            `Share of real synergy among the pairs the model ranks highest, ${splitName(split)}`,
+            `Andel verklig synergi bland paren modellen rankar högst, ${splitName(split)}`,
           )}
         >
           {enrichment.length ? (
@@ -913,8 +912,8 @@ export default function DrugCombReport() {
             'Stämmer förutsägelserna i nivå?',
           )}
           meta={l(
-            `Mean predicted and measured ZIP per tenth of the predictions · ${splitName(split)}`,
-            `Medel av förutsagd och uppmätt ZIP per tiondel av förutsägelserna · ${splitName(split)}`,
+            `Mean predicted and measured ZIP per tenth of the predictions, ${splitName(split)}`,
+            `Medel av förutsagd och uppmätt ZIP per tiondel av förutsägelserna, ${splitName(split)}`,
           )}
         >
           {calibration.length ? (

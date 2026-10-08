@@ -326,18 +326,18 @@ function Overview({ data }: { data: Market }) {
         <dl className="market-kpis">
           <div>
             <dt>
-              {l('Ads', 'Annonser')} · {lastFull}
+              {l('Ads', 'Annonser')}, {lastFull}
             </dt>
             <dd>{number(yearTotal(data, 'all', lastFull))}</dd>
             <small>{l('Latest complete year', 'Senaste hela året')}</small>
           </div>
           <div>
             <dt>
-              {l('Change', 'Förändring')} · {latest}
+              {l('Change', 'Förändring')}, {latest}
             </dt>
             <dd>{signedPct(ytdChange)}</dd>
             <small>
-              {ytdLabel(data.ytd_months)} ·{' '}
+              {ytdLabel(data.ytd_months)},{' '}
               {l(
                 'vs the same months last year',
                 'mot samma månader året innan',
@@ -410,8 +410,8 @@ function Overview({ data }: { data: Market }) {
               </option>
               <option value="index">
                 {l(
-                  'Compare development · index 100',
-                  'Jämför utveckling · index 100',
+                  'Compare development, index 100',
+                  'Jämför utveckling, index 100',
                 )}
               </option>
             </select>
@@ -419,8 +419,8 @@ function Overview({ data }: { data: Market }) {
           <span>
             {metric === 'ads'
               ? l(
-                  'Monthly volume · zero baseline',
-                  'Månadsvolym · nollbaserad skala',
+                  'Monthly volume, zero baseline',
+                  'Månadsvolym, nollbaserad skala',
                 )
               : `${l('Index', 'Index')}: ${baselineMonth ? monthLabel(baselineMonth) : '–'} = 100`}
           </span>
@@ -697,7 +697,7 @@ function Occupations({ data }: { data: Market }) {
                   </button>
                   <small className="muted">
                     {' '}
-                    {o.ssyk ? `SSYK ${o.ssyk} · ` : ''}
+                    {o.ssyk ? `SSYK ${o.ssyk}, ` : ''}
                     {fieldName(
                       data.fields.find((f) => f.id === o.field)?.name ?? '',
                     )}

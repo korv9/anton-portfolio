@@ -50,14 +50,6 @@ body .project-page {
   margin-bottom: clamp(2rem, 4vw, 3.5rem);
 }
 .ds-label,
-.ds-number {
-  margin: 0;
-  font-family: var(--font-mono);
-  font-size: var(--caption);
-  color: var(--muted);
-  letter-spacing: 0.035em;
-  text-transform: uppercase;
-}
 .ds-h2 {
   margin: 0;
   font-size: var(--h2);

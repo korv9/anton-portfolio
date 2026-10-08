@@ -231,8 +231,8 @@ export default function Dashboard({
           `Annonser per månad, ${latest} mot åren innan`,
         )}
         subtitle={l(
-          `New ads per month · ${scope} · ${latest} darker`,
-          `Nya annonser per månad · ${scope} · ${latest} mörkare`,
+          `New ads per month, ${scope}, ${latest} darker`,
+          `Nya annonser per månad, ${scope}, ${latest} mörkare`,
         )}
         source={source()}
       >
@@ -279,7 +279,6 @@ export default function Dashboard({
       <section className="jobb-story-section" aria-labelledby="jobb-growing">
         <DataQuestion
           id="jobb-growing"
-          number={2}
           eyebrow={l('Occupations', 'Yrken')}
           question={l('Which roles are growing?', 'Vilka yrken växer?')}
         />
@@ -293,8 +292,8 @@ export default function Dashboard({
               : l('Occupations growing the most', 'Yrken som växer mest')
           }
           subtitle={l(
-            `Change in ads, ${period} against the same months of ${previous} · occupations with ${floor}+ ads a year ago`,
-            `Förändring i annonser, ${period} mot samma månader ${previous} · yrken med minst ${floor} annonser i fjol`,
+            `Change in ads, ${period} against the same months of ${previous}, occupations with ${floor}+ ads a year ago`,
+            `Förändring i annonser, ${period} mot samma månader ${previous}, yrken med minst ${floor} annonser i fjol`,
           )}
           finding={
             top &&
@@ -349,7 +348,6 @@ export default function Dashboard({
       <section className="jobb-story-section" aria-labelledby="jobb-groups">
         <DataQuestion
           id="jobb-groups"
-          number={3}
           eyebrow={l('Machine learning', 'Maskininlärning')}
           question={l(
             'Do job ads form natural groups beyond their official titles?',
@@ -394,8 +392,8 @@ export default function Dashboard({
               : l('Where the jobs are', 'Var jobben finns')
           }
           subtitle={l(
-            `Share of ads per county · ${period}`,
-            `Andel av annonserna per län · ${period}`,
+            `Share of ads per county, ${period}`,
+            `Andel av annonserna per län, ${period}`,
           )}
           source={source()}
         >
@@ -417,8 +415,8 @@ export default function Dashboard({
         <ChartSection
           title={l('On what terms', 'På vilka villkor')}
           subtitle={l(
-            `Share of ads ${latest} · tick: ${previous}`,
-            `Andel av annonserna ${latest} · streck: ${previous}`,
+            `Share of ads ${latest}, tick: ${previous}`,
+            `Andel av annonserna ${latest}, streck: ${previous}`,
           )}
           source={source()}
         >

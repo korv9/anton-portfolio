@@ -86,10 +86,10 @@ export function ArticleView({
         <p className="aa-kicker">
           {l('Chapter', 'Kapitel')} {article.chapter}
           {chapter &&
-            ` · ${l(chapter.chapter_title_en, chapter.chapter_title_sv).toLowerCase()}`}
+            `, ${l(chapter.chapter_title_en, chapter.chapter_title_sv).toLowerCase()}`}
           {article.section &&
             chapter?.section_title_en &&
-            ` · ${l('Section', 'Avsnitt')} ${article.section}: ${l(chapter.section_title_en, chapter.section_title_sv ?? '')}`}
+            `, ${l('Section', 'Avsnitt')} ${article.section}: ${l(chapter.section_title_en, chapter.section_title_sv ?? '')}`}
         </p>
         <h2>
           {l('Article', 'Artikel')} {article.article_number}

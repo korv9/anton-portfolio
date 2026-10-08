@@ -38,7 +38,7 @@ export default function TopicBars({
   const describe = (row: TopicRow, party: string) => {
     const now = value(row.key, party)
     const before = previous?.(row.key, party)
-    return `${partyName(party)} · ${row.label}: ${now == null ? '–' : `${num(now, 1)} ${unit}`}${
+    return `${partyName(party)}, ${row.label}: ${now == null ? '–' : `${num(now, 1)} ${unit}`}${
       before != null && previousLabel
         ? ` (${previousLabel}: ${num(before, 1)} ${unit})`
         : ''

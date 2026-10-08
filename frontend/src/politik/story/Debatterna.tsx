@@ -134,7 +134,6 @@ export default function Debatterna({
   return (
     <Section
       id="debatterna"
-      n={6}
       kicker={l('The debates', 'Debatterna')}
       question={l(
         'What do the parties talk about?',
@@ -234,7 +233,7 @@ export default function Debatterna({
           max={Math.max(20, peak?.v ?? 20)}
           rowLabel={(r) => <PartyMark party={r} />}
           colLabel={(c) => topicName(c)}
-          title={(r, c, v) => `${partyName(r)} · ${topicName(c)}: ${pct(v, 1)}`}
+          title={(r, c, v) => `${partyName(r)}, ${topicName(c)}: ${pct(v, 1)}`}
         />
       )}
       <p className="story-axis-note">
@@ -317,19 +316,19 @@ export default function Debatterna({
         <select value={chosen.id} onChange={(e) => onDebate(e.target.value)}>
           {[...leaders].reverse().map((d) => (
             <option key={d.id} value={d.id}>
-              {dayName(d.date)} · {d.session}
+              {dayName(d.date)}, {d.session}
             </option>
           ))}
         </select>
       </label>
       <p className="story-meta">
-        {dayName(chosen.date)} ·{' '}
+        {dayName(chosen.date)},{' '}
         {Object.values(chosen.parties).reduce(
           (s, p) => s + p.speeches + p.replies,
           0,
         )}{' '}
-        {l('speeches and replies', 'anföranden och repliker')} ·{' '}
-        {num(words.reduce((s, w) => s + w.words, 0))} {l('words', 'ord')} ·{' '}
+        {l('speeches and replies', 'anföranden och repliker')},{' '}
+        {num(words.reduce((s, w) => s + w.words, 0))} {l('words', 'ord')},{' '}
         {l('Taking part', 'Deltog')}:{' '}
         {Object.entries(chosen.parties)
           .map(([p, row]) => `${row.speakers.join(', ')} (${p})`)
@@ -348,7 +347,7 @@ export default function Debatterna({
                 </>
               ),
               value: w.words,
-              text: `${num(w.words)} · ${pct(w.pct, 0)}`,
+              text: `${num(w.words)}, ${pct(w.pct, 0)}`,
             }))}
             format={(v) => num(v)}
             label={l('Words per party', 'Ord per parti')}

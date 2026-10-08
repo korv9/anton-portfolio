@@ -155,7 +155,7 @@ function Curve({ model, step }: { model: PartyModel; step: number }) {
         1 {l('tree', 'träd')}
       </text>
       <text x={W - 20} y={H - 6} textAnchor="end" className="modell-axis">
-        {(pts.length - 1) * step} {l('trees', 'träd')} · {pct(pts.at(-1)!, 1)}
+        {(pts.length - 1) * step} {l('trees', 'träd')}, {pct(pts.at(-1)!, 1)}
       </text>
     </svg>
   )
@@ -187,10 +187,7 @@ export default function ModellTheme({ route }: { route: Route }) {
       <Stage
         id="modell"
         level={1}
-        kicker={l(
-          'Politics · gradient boosting',
-          'Politik · gradient boosting',
-        )}
+        kicker={l('Politics, gradient boosting', 'Politik, gradient boosting')}
         title={l(
           'Can a model learn how a party votes?',
           'Kan en modell lära sig hur ett parti röstar?',

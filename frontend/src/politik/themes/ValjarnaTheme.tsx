@@ -138,7 +138,7 @@ export default function ValjarnaTheme({ route }: { route: Route }) {
         ? {
             key: s.key,
             party: s.key,
-            label: `${s.key} · ${partyName(s.key)}`,
+            label: `${s.key}, ${partyName(s.key)}`,
             value: last.value,
             note: before
               ? `${signed(last.value - before.value, 1)} ${l('since', 'sedan')} ${measure === 'psu' ? monthName(before.date) : before.date.slice(0, 4)}`
@@ -289,12 +289,12 @@ export default function ValjarnaTheme({ route }: { route: Route }) {
         chartMeta={
           !overTime
             ? l(
-                `Per cent of voters · ${latestWhen ? (measure === 'psu' ? monthName(latestWhen) : latestWhen.slice(0, 4)) : ''} · change since the one before`,
-                `Procent av väljarna · ${latestWhen ? (measure === 'psu' ? monthName(latestWhen) : latestWhen.slice(0, 4)) : ''} · förändring sedan föregående`,
+                `Per cent of voters, ${latestWhen ? (measure === 'psu' ? monthName(latestWhen) : latestWhen.slice(0, 4)) : ''}, change since the one before`,
+                `Procent av väljarna, ${latestWhen ? (measure === 'psu' ? monthName(latestWhen) : latestWhen.slice(0, 4)) : ''}, förändring sedan föregående`,
               )
             : l(
-                `Per cent of voters · ${firstShown ? (measure === 'psu' ? monthName(firstShown) : firstShown.slice(0, 4)) : ''}–${lastShown ? (measure === 'psu' ? monthName(lastShown) : lastShown.slice(0, 4)) : ''}`,
-                `Procent av väljarna · ${firstShown ? (measure === 'psu' ? monthName(firstShown) : firstShown.slice(0, 4)) : ''}–${lastShown ? (measure === 'psu' ? monthName(lastShown) : lastShown.slice(0, 4)) : ''}`,
+                `Per cent of voters, ${firstShown ? (measure === 'psu' ? monthName(firstShown) : firstShown.slice(0, 4)) : ''}–${lastShown ? (measure === 'psu' ? monthName(lastShown) : lastShown.slice(0, 4)) : ''}`,
+                `Procent av väljarna, ${firstShown ? (measure === 'psu' ? monthName(firstShown) : firstShown.slice(0, 4)) : ''}–${lastShown ? (measure === 'psu' ? monthName(lastShown) : lastShown.slice(0, 4)) : ''}`,
               )
         }
         chart={

@@ -226,7 +226,6 @@ export default function WelfarePage({ view }: { view: string }) {
             what={l('the county figures', 'länssiffrorna')}
           />
           <DataQuestion
-            number="→"
             eyebrow={l('Go deeper', 'Fördjupa')}
             question={l('Four questions to follow', 'Fyra frågor att följa')}
           />
@@ -311,7 +310,7 @@ export default function WelfarePage({ view }: { view: string }) {
                     <span className="tile-period">
                       {headline.period_label}
                       {headline.age_group_key !== 'ALL' &&
-                        ` · ${headline.age_group_key}`}
+                        `, ${headline.age_group_key}`}
                     </span>
                     {headline.ci_low != null && headline.ci_high != null && (
                       <span className="tile-ci">

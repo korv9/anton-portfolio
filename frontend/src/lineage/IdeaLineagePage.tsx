@@ -92,10 +92,10 @@ function EventItem({
       <p className="il-kind">
         {l(...TYPE_LABEL[e.type])}
         {e.certainty && e.certainty !== 'confirmed' && (
-          <span className="il-certainty"> · {e.certainty}</span>
+          <span className="il-certainty">, {e.certainty}</span>
         )}
         {status && !['active', 'open'].includes(status.status) && (
-          <span className="il-status"> · {status.status}</span>
+          <span className="il-status">, {status.status}</span>
         )}
       </p>
       <h3 className="il-title">{e.title}</h3>
@@ -122,10 +122,10 @@ function EventItem({
         </ul>
       )}
       <p className="il-meta">
-        {(e.projects ?? []).map(projectName).join(' · ')}
+        {(e.projects ?? []).map(projectName).join(', ')}
         {e.implementation?.commit && (
           <>
-            {' · '}
+            {', '}
             <a
               href={`https://github.com/korv9/anton-portfolio/commit/${e.implementation.commit}`}
             >
@@ -135,7 +135,7 @@ function EventItem({
         )}
         {rels.length > 0 && (
           <>
-            {' · '}
+            {', '}
             <button
               type="button"
               className="il-why"
@@ -189,10 +189,7 @@ export default function IdeaLineagePage() {
     <div className="idea-lineage ds-container">
       <DataQuestion
         level={1}
-        eyebrow={l(
-          'Idea Lineage · experimental',
-          'Idea Lineage · experimentell',
-        )}
+        eyebrow={l('Idea Lineage, experimental', 'Idea Lineage, experimentell')}
         question={l(
           'How do ideas become decisions, experiments and software?',
           'Hur blir idéer till beslut, experiment och mjukvara?',
@@ -396,7 +393,7 @@ export default function IdeaLineagePage() {
                 <ul className="il-list">
                   {setAside(events).map(({ event, status: s, by }) => (
                     <li key={event.id}>
-                      <strong>{event.title}</strong> · {s}
+                      <strong>{event.title}</strong>, {s}
                       {by && (
                         <>
                           {' '}

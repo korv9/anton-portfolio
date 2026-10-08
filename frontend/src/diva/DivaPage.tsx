@@ -113,7 +113,7 @@ function ThesisMap({ data }: { data: Clusters }) {
               textAnchor="middle"
               fill={HUES[c.id % HUES.length]}
             >
-              {c.words.slice(0, 2).join(' · ')}
+              {c.words.slice(0, 2).join(', ')}
             </text>
           </g>
         ))}
@@ -187,7 +187,7 @@ export default function DivaPage() {
         <Stage
           id="diva-map"
           level={1}
-          kicker={l('DiVA · topic clustering', 'DiVA · ämnesklustring')}
+          kicker={l('DiVA, topic clustering', 'DiVA, ämnesklustring')}
           title={l(
             'What Swedish students write about',
             'Vad svenska studenter skriver om',
@@ -222,7 +222,7 @@ export default function DivaPage() {
                   <b>{c.words.slice(0, 4).join(', ')}</b>
                   <br />
                   {num(c.size)} {l('theses', 'uppsatser')}
-                  {c.universities[0] && ` · ${c.universities[0].name}`}
+                  {c.universities[0] && `, ${c.universities[0].name}`}
                 </p>
               ))}
             </StageBlock>
@@ -232,7 +232,7 @@ export default function DivaPage() {
         <Stage
           id="diva-map"
           level={1}
-          kicker={l('DiVA · topic clustering', 'DiVA · ämnesklustring')}
+          kicker={l('DiVA, topic clustering', 'DiVA, ämnesklustring')}
           title={l(
             'What Swedish students write about',
             'Vad svenska studenter skriver om',

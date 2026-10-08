@@ -281,8 +281,8 @@ export default function DecisionTree({
         </text>
         <text x={W / 2} y={H - 22} textAnchor="middle" className="dtree-foot">
           {l(
-            'leaves: share synergistic (ZIP > 10) · thousands of measurements',
-            'löv: andel synergistiska (ZIP > 10) · tusen mätningar',
+            'leaves: share synergistic (ZIP > 10), thousands of measurements',
+            'löv: andel synergistiska (ZIP > 10), tusen mätningar',
           )}
         </text>
       </svg>
@@ -296,7 +296,7 @@ export default function DecisionTree({
             </ol>
             <p>
               <b>
-                {num(focused.n)} {l('measurements', 'mätningar')} ·{' '}
+                {num(focused.n)} {l('measurements', 'mätningar')},{' '}
                 {num(focused.share * 100, 1)} %{' '}
                 {l('synergistic', 'synergistiska')}
               </b>

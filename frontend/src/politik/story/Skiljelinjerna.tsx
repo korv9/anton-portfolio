@@ -58,7 +58,6 @@ export default function Skiljelinjerna({ a }: { a: Analytics }) {
   return (
     <Section
       id="skiljelinjerna"
-      n={2}
       kicker={l('The major difference', 'Den stora skillnaden')}
       question={l(
         'Where do the parties differ most?',
@@ -95,8 +94,8 @@ export default function Skiljelinjerna({ a }: { a: Analytics }) {
               )}
             </Info>{' '}
             {l(
-              `per policy area, ×100 · areas with at least 15 roll calls · ${period}`,
-              `per politikområde, ×100 · områden med minst 15 voteringar · ${period}`,
+              `per policy area, ×100, areas with at least 15 roll calls, ${period}`,
+              `per politikområde, ×100, områden med minst 15 voteringar, ${period}`,
             )}
           </>
         }
@@ -124,7 +123,7 @@ export default function Skiljelinjerna({ a }: { a: Analytics }) {
             key: x.committee,
             label: areaName(x.committee),
             value: x.polarisation * 100,
-            text: `${num(x.polarisation * 100, 0)} · ${num(x.votes)} ${l('roll calls', 'voteringar')}`,
+            text: `${num(x.polarisation * 100, 0)}, ${num(x.votes)} ${l('roll calls', 'voteringar')}`,
             color: 'var(--ink)',
           }))}
           max={50}
@@ -261,13 +260,13 @@ export default function Skiljelinjerna({ a }: { a: Analytics }) {
                   <span className="story-vote-title">
                     {p.vote.title}
                     <small>
-                      {dayName(p.vote.date)} · {areaName(p.vote.committee)} ·{' '}
+                      {dayName(p.vote.date)}, {areaName(p.vote.committee)},{' '}
                       {p.vote.designation}
                     </small>
                   </span>
                   <span className="story-vote-count">
-                    <b>{num(p.yes)}</b> {l('yes', 'ja')} · <b>{num(p.no)}</b>{' '}
-                    {l('no', 'nej')} · {num(p.abstain)} {l('abst.', 'avst.')}
+                    <b>{num(p.yes)}</b> {l('yes', 'ja')}, <b>{num(p.no)}</b>{' '}
+                    {l('no', 'nej')}, {num(p.abstain)} {l('abst.', 'avst.')}
                   </span>
                 </button>
                 {isOpen && (

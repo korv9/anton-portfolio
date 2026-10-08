@@ -55,7 +55,6 @@ export function Overview({ data, today }: View) {
       <section className="aa-now" aria-labelledby="aa-today-q">
         <DataQuestion
           id="aa-today-q"
-          number={1}
           eyebrow={l('Today', 'I dag')}
           question={l('What applies now?', 'Vad gäller nu?')}
         />
@@ -149,7 +148,7 @@ export function Overview({ data, today }: View) {
           </a>
           {data.summary.latest_retrieval && (
             <>
-              {' · '}
+              {', '}
               {l('Last verified', 'Senast kontrollerad')}{' '}
               {data.summary.latest_retrieval.slice(0, 10)}
             </>
@@ -164,7 +163,6 @@ export function Overview({ data, today }: View) {
       <section className="aa-who" aria-labelledby="aa-who-q">
         <DataQuestion
           id="aa-who-q"
-          number={2}
           eyebrow={l('Who are you?', 'Vem är du?')}
           question={l(
             'Which parts of the Act apply to you?',
@@ -204,7 +202,6 @@ export function Overview({ data, today }: View) {
       <section className="aa-sweden" aria-labelledby="aa-sweden-q">
         <DataQuestion
           id="aa-sweden-q"
-          number={3}
           eyebrow={l('In Sweden', 'I Sverige')}
           question={l(
             'How does the Act show up in Swedish politics and job ads?',
@@ -255,7 +252,6 @@ export function Overview({ data, today }: View) {
       <section className="aa-month" aria-labelledby="aa-month-q">
         <DataQuestion
           id="aa-month-q"
-          number={4}
           eyebrow={l('This month', 'Den här månaden')}
           question={l(
             'Where does the Act stand this month?',
@@ -283,7 +279,7 @@ export function Overview({ data, today }: View) {
         {latestGuidance && (
           <p>
             {l('Latest guidance', 'Senaste vägledning')}:{' '}
-            {fmtDate(latestGuidance.published_at)} · {latestGuidance.title}{' '}
+            {fmtDate(latestGuidance.published_at)}, {latestGuidance.title}{' '}
             <Source href={latestGuidance.source_url}>
               {l('Commission', 'Kommissionen')}
             </Source>
@@ -571,7 +567,7 @@ export function TimelineView({ data, today }: View) {
                       </span>
                     ))}
                     {m.affected_articles.length > 12 && ' …'}
-                    {' · '}
+                    {', '}
                   </>
                 )}
                 <Source href={m.source_url}>
@@ -648,7 +644,7 @@ export function Roles({ data }: View) {
                       )}
                       {n > 0 && (
                         <>
-                          {' · '}
+                          {', '}
                           <a href={`#ai-act-obligations?actor=${a.actor_id}`}>
                             {l(
                               `${n} mapped obligations`,
@@ -705,7 +701,7 @@ export function Risk({ data }: View) {
                 {l('Often called', 'Kallas ofta')}: {r.common_name_en}
                 {n.length > 0 && (
                   <>
-                    {' · '}
+                    {', '}
                     <a href={`#ai-act-obligations?risk=${r.risk_class_id}`}>
                       {l(`${n.length} obligations`, `${n.length} skyldigheter`)}
                     </a>
@@ -897,7 +893,7 @@ export function ObligationList({
               <p className="aa-meta">
                 <ArticleLink n={o.article_number}>
                   {l('Article', 'Artikel')} {o.article_number}
-                  {o.paragraph ? `(${o.paragraph})` : ''} ·{' '}
+                  {o.paragraph ? `(${o.paragraph})` : ''},{' '}
                   {l(o.article_title_en, o.article_title_sv)}
                 </ArticleLink>{' '}
                 <Source href={o.source_url}>EUR-Lex</Source>
@@ -910,9 +906,9 @@ export function ObligationList({
                 <dl>
                   <dt>mart_ai_act_obligations</dt>
                   <dd>
-                    {o.obligation_id} · actor_id={o.actor_id} ·
-                    requirement_type={o.requirement_type} · risk_class_id=
-                    {o.risk_class_id} · applies_from={o.applies_from}
+                    {o.obligation_id}, actor_id={o.actor_id}, requirement_type=
+                    {o.requirement_type}, risk_class_id=
+                    {o.risk_class_id}, applies_from={o.applies_from}
                   </dd>
                 </dl>
               </details>
@@ -1144,15 +1140,14 @@ export function Sources({ data }: View) {
         <div>
           <dt>{l('Current text', 'Gällande text')}</dt>
           <dd>
-            {s.current_version.celex} ·{' '}
-            {fmtDate(s.current_version.published_at)}{' '}
+            {s.current_version.celex}, {fmtDate(s.current_version.published_at)}{' '}
             <Source href={s.current_version.source_url}>EUR-Lex</Source>
           </dd>
         </div>
         <div>
           <dt>{l('As published', 'Som publicerad')}</dt>
           <dd>
-            {s.original_version.celex} ·{' '}
+            {s.original_version.celex},{' '}
             {fmtDate(s.original_version.published_at)}{' '}
             <Source href={s.original_version.source_url}>EUR-Lex</Source>
           </dd>
@@ -1221,7 +1216,7 @@ export function Sources({ data }: View) {
                   <td>{fmtDate(d.published_at, true)}</td>
                   <td>
                     {l(...(DOC_TYPE[d.document_type] ?? DOC_TYPE.other))}
-                    {d.is_current && <b> · {l('current', 'gällande')}</b>}
+                    {d.is_current && <b>, {l('current', 'gällande')}</b>}
                   </td>
                   <td title={d.title ?? undefined}>
                     {shortTitle(
@@ -1257,7 +1252,7 @@ export function Sources({ data }: View) {
                     )}
                 {g.articles.length > 0 && (
                   <>
-                    {' · '}
+                    {', '}
                     {g.articles.map((a, i) => (
                       <span key={a}>
                         {i > 0 && ', '}

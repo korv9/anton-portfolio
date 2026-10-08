@@ -91,7 +91,7 @@ export function Signals({ data }: { data: AiActData }) {
               <a href={`#${s.route}`}>
                 {l('How this is counted', 'Hur detta räknas')}
               </a>{' '}
-              · <code>gold.{s.source_model}</code>
+              , <code>gold.{s.source_model}</code>
             </p>
           </div>
         ))}

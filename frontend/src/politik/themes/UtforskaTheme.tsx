@@ -8,7 +8,7 @@ import { DEEP_DIVES, THEMES } from '../nav'
 import { Term } from '../Term'
 
 const TECHNICAL: Record<string, string> = {
-  '#politik-sok': 'Fulltext · anföranden sedan 1993',
+  '#politik-sok': 'Fulltext, anföranden sedan 1993',
 }
 
 export default function UtforskaTheme() {
@@ -90,7 +90,7 @@ export default function UtforskaTheme() {
               'En metod som placerar liknande texter nära varandra på en platt karta.',
             )}
           />
-          {' · '}
+          {', '}
           <Term
             word="Embedding"
             explain={l(
@@ -98,7 +98,7 @@ export default function UtforskaTheme() {
               'En text omvandlad till siffror, så att texter med liknande innebörd får liknande siffror.',
             )}
           />
-          {' · '}
+          {', '}
           <Term
             word="HDBSCAN"
             explain={l(
@@ -106,7 +106,7 @@ export default function UtforskaTheme() {
               'En metod som hittar grupper av liknande texter utan att antalet grupper bestäms i förväg.',
             )}
           />
-          {' · '}
+          {', '}
           <Term
             word={l('Roll call', 'Votering')}
             explain={l(

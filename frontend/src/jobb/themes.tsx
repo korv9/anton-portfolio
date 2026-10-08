@@ -178,8 +178,8 @@ function Trender({ route, data, fields }: ThemeProps) {
           : l(`New ads per month, ${scope}`, `Nya annonser per månad, ${scope}`)
       }
       chartMeta={l(
-        `Number of ads · ${monthShort(monthly[0]?.[0] ?? '2020-01')}–${monthShort(data.last_month)}${perField ? ' · each chart on its own scale; value and change for ' + period : ''}`,
-        `Antal annonser · ${monthShort(monthly[0]?.[0] ?? '2020-01')}–${monthShort(data.last_month)}${perField ? ' · varje diagram har egen skala; värde och förändring för ' + period : ''}`,
+        `Number of ads, ${monthShort(monthly[0]?.[0] ?? '2020-01')}–${monthShort(data.last_month)}${perField ? ', each chart on its own scale; value and change for ' + period : ''}`,
+        `Antal annonser, ${monthShort(monthly[0]?.[0] ?? '2020-01')}–${monthShort(data.last_month)}${perField ? ', varje diagram har egen skala; värde och förändring för ' + period : ''}`,
       )}
       chart={
         perField ? (
@@ -352,10 +352,10 @@ function Yrken({ route, data, fields }: ThemeProps) {
       }
       chartMeta={
         count
-          ? l(`Number of ads · ${period}`, `Antal annonser · ${period}`)
+          ? l(`Number of ads, ${period}`, `Antal annonser, ${period}`)
           : l(
-              `${period} against the same months of ${previous} · number of ads after the bar`,
-              `${period} mot samma månader ${previous} · antal annonser efter stapeln`,
+              `${period} against the same months of ${previous}, number of ads after the bar`,
+              `${period} mot samma månader ${previous}, antal annonser efter stapeln`,
             )
       }
       chart={
@@ -498,8 +498,8 @@ function Lan({ route, data, fields }: ThemeProps) {
       }
       chartTitle={l(`Ads per county, ${scope}`, `Annonser per län, ${scope}`)}
       chartMeta={l(
-        `Share of the ads · ${label} · change against the year before`,
-        `Andel av annonserna · ${label} · förändring mot året innan`,
+        `Share of the ads, ${label}, change against the year before`,
+        `Andel av annonserna, ${label}, förändring mot året innan`,
       )}
       chart={
         <RankBars
@@ -507,7 +507,7 @@ function Lan({ route, data, fields }: ThemeProps) {
             key: c.region,
             label: c.region,
             value: pctOf(c.ads, total),
-            note: `${number(c.ads)} · ${signedPct(c.change)}`,
+            note: `${number(c.ads)}, ${signedPct(c.change)}`,
           }))}
           format={(v) => share(v, 1)}
           label={l('Share of ads per county', 'Andel av annonserna per län')}
@@ -632,8 +632,8 @@ function Villkor({ route, data, fields }: ThemeProps) {
         `Villkor i annonserna, ${scope}`,
       )}
       chartMeta={l(
-        `Share of the ads · ${year} · change in points against ${year - 1}`,
-        `Andel av annonserna · ${year} · förändring i procentenheter mot ${year - 1}`,
+        `Share of the ads, ${year}, change in points against ${year - 1}`,
+        `Andel av annonserna, ${year}, förändring i procentenheter mot ${year - 1}`,
       )}
       chart={
         <RankBars

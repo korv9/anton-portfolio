@@ -371,7 +371,7 @@ export default function MultiLineChart({
                     style={{ background: paint(s.key) }}
                   />
                   <strong>{format(point.value)}</strong> {s.name}
-                  <small> · {point.label}</small>
+                  <small>, {point.label}</small>
                 </div>
               ) : null
             })}

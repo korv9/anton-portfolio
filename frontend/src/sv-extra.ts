@@ -19,7 +19,7 @@ export const swedishReports: Record<string, string> = {
     'Diagrammet kan skrollas i sidled på små skärmar',
   'Share of party budget': 'Andel av partiets budget',
   'Share of matched debate keywords': 'Andel matchade debattord',
-  '· all eight parties': '· samtliga åtta partier',
+  ', all eight parties': ', samtliga åtta partier',
   'Budget share': 'Budgetandel',
   'Keyword share': 'Nyckelordsandel',
   'Budget share / keyword share. A dash means no separate party budget frame. Keyword shares use the selected method and archive, calculated separately within each party. 0.0% means zero detected matches; – means unavailable. They do not measure policy support.':
@@ -57,7 +57,7 @@ export const swedishReports: Record<string, string> = {
     'Välj riksmöte och parti för att jämföra fullständiga förslag med upptäckta ämnesord. Dessa val påverkar bara språkdiagrammen nedan.',
   'All available parties': 'Alla tillgängliga partier',
   'budget rows in session': 'budgetrader under riksmötet',
-  'All eight parties ·': 'Alla åtta partier ·',
+  'All eight parties ,': 'Alla åtta partier ,',
   'The FiU1 source reports one collective government proposal and separate budget motions for some parties. Debate data exists for all eight; a missing party frame cannot be inferred from GOV.':
     'FiU1-källan redovisar ett gemensamt regeringsförslag och separata budgetmotioner för vissa partier. Debattdata finns för alla åtta; en saknad partibudget kan inte härledas från GOV.',
   "These two percentages have different denominators. Budget share is a fraction of a party's proposed expenditure; keyword share is a fraction of matched words across 27 topic dictionaries. A difference between them is a descriptive comparison, not an amount of money, a position on an issue, or a measure of honesty. The debates span the whole session, including speeches after the budget proposal.":
@@ -74,7 +74,7 @@ export const swedishReports: Record<string, string> = {
   '). Those percentages use different totals. A match does not tell us whether the speaker supported, criticised or merely mentioned the issue.':
     '). Procenttalen bygger på olika totaler. En träff säger inte om talaren stödde, kritiserade eller bara nämnde frågan.',
   'Read the budget source ↗': 'Läs budgetkällan ↗',
-  '01 / Budget versus debate': '01 / Budget mot debatt',
+  'Budget versus debate': 'Budget mot debatt',
   'Where do money and words meet?': 'Var möts pengar och ord?',
   'Each dot is one': 'Varje punkt är ett',
   'expenditure area. Above the diagonal: more keyword attention than budget share.':
@@ -82,11 +82,11 @@ export const swedishReports: Record<string, string> = {
   Budget: 'Budget',
   Keywords: 'Nyckelord',
   matches: 'träffar',
-  '02 / Difference in shares': '02 / Skillnad i andelar',
+  'Difference in shares': 'Skillnad i andelar',
   'Most above and below budget share': 'Störst över och under budgetandelen',
   'Keyword share minus budget share, in percentage points. Select a row to inspect that party and area.':
     'Nyckelordsandel minus budgetandel i procentenheter. Välj en rad för att granska parti och område.',
-  '03 / Money versus government': '03 / Belopp mot regeringen',
+  'Money versus government': 'Belopp mot regeringen',
   'Where do party proposals differ?': 'Var skiljer sig partiernas förslag?',
   "Largest 12 deviations among the 27 expenditure areas. Figures are million SEK above or below the government's proposal.":
     'De tolv största avvikelserna bland 27 utgiftsområden. Beloppen är miljoner kronor över eller under regeringens förslag.',
@@ -94,7 +94,7 @@ export const swedishReports: Record<string, string> = {
   '+ more': '+ mer',
   'GOV denotes the collective government proposal. Only parties with a machine-readable budget motion in this session appear.':
     'GOV betecknar regeringens gemensamma förslag. Bara partier med en maskinläsbar budgetmotion under detta riksmöte visas.',
-  '04 / Available years': '04 / Tillgängliga år',
+  'Available years': 'Tillgängliga år',
   'Does the gap move over time?': 'Ändras skillnaden över tid?',
   'Follow budget share and matched debate keyword share for':
     'Följ budgetandel och andel matchade debattord för',
@@ -102,7 +102,7 @@ export const swedishReports: Record<string, string> = {
     'och område. Saknade år uppskattas inte.',
   'Current proposal': 'Aktuellt förslag',
   'Versus government': 'Jämfört med regeringen',
-  '05 / All available sessions': '05 / Alla tillgängliga riksmöten',
+  'All available sessions': 'Alla tillgängliga riksmöten',
   'How does the overall relationship change?':
     'Hur förändras det övergripande sambandet?',
   'Correlation across expenditure areas': 'Korrelation mellan utgiftsområden',
@@ -122,10 +122,10 @@ export const swedishReports: Record<string, string> = {
   Committee: 'Utskott',
   'All committees': 'Alla utskott',
   'Party for decision detail': 'Parti för beslutsdetaljer',
-  'roll calls in this view · all eight parties':
-    'voteringar i denna vy · alla åtta partier',
-  'Political observatory · Swedish Parliament':
-    'Politiköversikt · Sveriges riksdag',
+  'roll calls in this view, all eight parties':
+    'voteringar i denna vy, alla åtta partier',
+  'Political observatory, Swedish Parliament':
+    'Politiköversikt, Sveriges riksdag',
   'From political words to recorded decisions.':
     'Från politiska ord till registrerade beslut.',
   'Speeches, budget proposals and formal decisions are spread across different documents. This observatory brings the imported records together so you can follow the evidence and make your own comparisons.':
@@ -134,25 +134,25 @@ export const swedishReports: Record<string, string> = {
   'I find it difficult to connect political language with budget priorities and what is actually decided. This is my attempt to make that formal record easier to navigate: start with a question, inspect the data, then open the original source.':
     'Jag tycker att det är svårt att koppla politiskt språk till budgetprioriteringar och faktiska beslut. Här försöker jag göra de formella uppgifterna lättare att utforska: börja med en fråga, granska data och öppna sedan originalkällan.',
   'Explore political records': 'Utforska politiska handlingar',
-  '01 · What was said': '01 · Vad som sades',
+  'What was said': 'Vad som sades',
   'Full speeches, replies and searchable transcripts':
     'Hela tal, repliker och sökbara protokoll',
-  '02 · What was proposed': '02 · Vad som föreslogs',
+  'What was proposed': 'Vad som föreslogs',
   'Budget frames and language comparisons': 'Budgetramar och språkjämförelser',
-  '03 · How they voted': '03 · Hur de röstade',
+  'How they voted': 'Hur de röstade',
   'Party votes, exact proposals and cited documents':
     'Partiernas röster, exakta förslag och citerade dokument',
-  '04 · Explore the people and speeches': '04 · Utforska personerna och talen',
+  'Explore the people and speeches': 'Utforska personerna och talen',
   'Find a politician, read their words and follow the discussion':
     'Hitta en politiker, läs vad personen sa och följ diskussionen',
   'Political analysis views': 'Vyer för politisk analys',
   'Loading political observatory…': 'Läser in politiköversikten…',
   'party-leader debate speeches': 'tal i partiledardebatter',
   'separately indexed issue speeches': 'separat indexerade tal i sakdebatter',
-  'imported roll calls · 2024/25–2025/26':
-    'importerade voteringar · 2024/25–2025/26',
-  'v2 statute provisions · snapshot corpus':
-    'lagbestämmelser i v2 · källögonblicksbilder',
+  'imported roll calls, 2024/25–2025/26':
+    'importerade voteringar, 2024/25–2025/26',
+  'v2 statute provisions, snapshot corpus':
+    'lagbestämmelser i v2, källögonblicksbilder',
   'Voting session': 'Riksmöte för votering',
   'Roll calls cover two imported sessions. Decisions without a roll call and unimported years are not counted as abstentions. Votes refer to committee points, not automatically to each law or motion cited in them.':
     'Voteringarna täcker två importerade riksmöten. Beslut utan votering och år som inte importerats räknas inte som nedlagda röster. Rösterna gäller utskottsförslag och kan inte automatiskt kopplas till varje lag eller motion som nämns.',
@@ -188,7 +188,7 @@ export const swedishReports: Record<string, string> = {
   'Debate project ↗': 'Debattprojektet ↗',
   'Allegoria & meaningquality ↗': 'Allegoria och meaningquality ↗',
   'Selected speech': 'Valt tal',
-  'Read in context ·': 'Läs i sammanhang ·',
+  'Read in context ,': 'Läs i sammanhang ,',
   'Loading the full debate…': 'Läser in hela debatten…',
   Speech: 'Tal',
   'in this discussion. Neighbouring speeches follow the parliamentary order; this does not establish who replied to whom.':
@@ -222,7 +222,7 @@ export const swedishReports: Record<string, string> = {
   'Search covers names, debate titles and opening excerpts within the selected parliamentary year. Open a speech to read the full text.':
     'Sökningen omfattar namn, debattitlar och inledande utdrag inom valt riksmöte. Öppna ett tal för att läsa hela texten.',
   'Loading speeches…': 'Läser in tal…',
-  'speeches found · newest first': 'tal hittade · nyast först',
+  'speeches found, newest first': 'tal hittade, nyast först',
   'Read full speech': 'Läs hela talet',
   'No speeches match. Try another year, party or search term.':
     'Inga tal matchar. Prova ett annat år, parti eller sökord.',
@@ -231,7 +231,7 @@ export const swedishReports: Record<string, string> = {
   'Select a speech to read it here. You can then follow the next speaker and explore the debate in order.':
     'Välj ett tal för att läsa det här. Sedan kan du följa nästa talare och gå igenom debatten i ordning.',
   'Loading source evidence…': 'Läser in källunderlag…',
-  '· point': '· punkt',
+  ', point': ', punkt',
   'Read the exact committee proposal ↗': 'Läs det exakta utskottsförslaget ↗',
   'Exact proposal text is missing in this export. Read the source before interpreting the vote.':
     'Den exakta förslagstexten saknas i exporten. Läs källan innan du tolkar voteringen.',
@@ -247,11 +247,11 @@ export const swedishReports: Record<string, string> = {
   'Related earlier debate passages (': 'Relaterade tidigare debattavsnitt (',
   'Semantic search candidates, not evidence of consistency or contradiction. Similarity ≥ 0.60; selected earlier speeches from the same party.':
     'Kandidater från semantisk sökning, inte bevis för samstämmighet eller motsägelse. Likhet ≥ 0,60; utvalda tidigare tal från samma parti.',
-  '· similarity': '· likhet',
+  ', similarity': ', likhet',
   'Read the speech ↗': 'Läs talet ↗',
   'Vote → enacted law → versioned provision → reviewed slot change is not yet established. No tightening/loosening party score is assigned.':
     'Kedjan röst → antagen lag → versionerad bestämmelse → granskad ändring är ännu inte fastställd. Inget partimått för skärpning eller uppluckring beräknas.',
-  '03 / Follow the evidence': '03 / Följ underlaget',
+  'Follow the evidence': 'Följ underlaget',
   'What did they actually vote on?': 'Vad röstade de faktiskt om?',
   'Search decisions': 'Sök beslut',
   "'s position": 's position',
@@ -265,7 +265,7 @@ export const swedishReports: Record<string, string> = {
   'Select a decision': 'Välj ett beslut',
   'Inspect the exact proposal, all eight parties, named votes, reservations, cited documents and related speeches.':
     'Granska det exakta förslaget, alla åtta partier, namngivna röster, reservationer, citerade dokument och relaterade tal.',
-  '01 / Recorded positions': '01 / Registrerade positioner',
+  'Recorded positions': 'Registrerade positioner',
   'How do parties vote?': 'Hur röstar partierna?',
   'The most common cast vote in each party, per roll call. Yes means support for the committee proposal, which may itself reject a bill.':
     'Den vanligaste avgivna rösten inom varje parti per votering. Ja betyder stöd för utskottets förslag, som i sig kan avstyrka en proposition.',
@@ -274,13 +274,13 @@ export const swedishReports: Record<string, string> = {
   '● Abstain': '● Avstod',
   'Unclassified or tied positions remain outside the three coloured categories. Select a party to inspect decisions.':
     'Oklassificerade positioner eller lika röstetal ligger utanför de tre färgade kategorierna. Välj ett parti för att granska besluten.',
-  '02 / Voting together': '02 / Röstar lika',
+  'Voting together': 'Röstar lika',
   'Where do parties agree?': 'Var är partierna överens?',
   'Same yes/no position divided by roll calls where both parties have a yes/no position. Abstentions are excluded; this is not ideological distance.':
     'Samma ja/nej-position dividerad med voteringar där båda partierna har en ja/nej-position. Nedlagda röster utesluts; detta är inte ett ideologiskt avstånd.',
   'Party agreement matrix': 'Matris över partiers röstsamstämmighet',
-  'Agreement percentage · select a cell to see the denominator':
-    'Andel lika röster · välj en cell för att se nämnaren',
+  'Agreement percentage, select a cell to see the denominator':
+    'Andel lika röster, välj en cell för att se nämnaren',
   'Browse budget proposals': 'Bläddra bland budgetförslag',
   'Budget proposals / the money': 'Budgetförslag / pengarna',
   'Choose a year and see each proposed spending frame.':
@@ -289,10 +289,10 @@ export const swedishReports: Record<string, string> = {
     'Alla belopp nedan är föreslagna utgifter per område för valt budgetår. ”Skillnad” avser jämförelse med regeringens förslag samma år. Det är inte en förändring från föregående år, faktiska utgifter eller ett mått på partiets stöd i en votering.',
   'Budget year': 'Budgetår',
   Proposal: 'Förslag',
-  'Budget year · session': 'Budgetår · riksmöte',
+  'Budget year, session': 'Budgetår, riksmöte',
   'Areas present for': 'Områden som finns för',
-  'Versus government · complete frames only':
-    'Mot regeringen · endast fullständiga ramar',
+  'Versus government, complete frames only':
+    'Mot regeringen, endast fullständiga ramar',
   'Available in this import:': 'Tillgängligt i denna import:',
   '. A missing separate party frame cannot be inferred from the collective government proposal.':
     '. En saknad separat partibudget kan inte härledas från regeringens gemensamma förslag.',
@@ -318,17 +318,17 @@ export const swedishReports: Record<string, string> = {
     'Årsutfallen kunde inte läsas in.',
   'Loading annual accounts…': 'Läser in årsutfall…',
   'Annual account year': 'År för årsutfall',
-  'Approved budget · 27 areas': 'Beslutad budget · 27 områden',
-  'Recorded expenditure · 27 areas': 'Redovisade utgifter · 27 områden',
+  'Approved budget, 27 areas': 'Beslutad budget, 27 områden',
+  'Recorded expenditure, 27 areas': 'Redovisade utgifter, 27 områden',
   'Outturn minus approved budget': 'Utfall minus beslutad budget',
   years: 'år',
   'Available:': 'Tillgängligt:',
   'Largest differences in': 'Största skillnaderna i',
   '. Select an area to inspect its figures; the full 27-area table is below.':
     '. Välj ett område för att granska siffrorna; den fullständiga tabellen med 27 områden finns nedan.',
-  'Recorded expenditure · approved budget':
-    'Redovisade utgifter · beslutad budget',
-  '· difference': '· skillnad',
+  'Recorded expenditure, approved budget':
+    'Redovisade utgifter, beslutad budget',
+  ', difference': ', skillnad',
   'Reported amendments:': 'Redovisade ändringar:',
   '. This field is shown separately and is not added to the difference above.':
     '. Detta fält visas separat och läggs inte till skillnaden ovan.',
@@ -347,8 +347,8 @@ export const swedishReports: Record<string, string> = {
     'Noll betyder ingen upptäckt träff, inte tystnad eller brist på stöd. Korta partiledardebatter, begränsade ordlistor och exakta ordformer kan ge nollor. Sakdebatter har en annan dagordning och visas separat.',
   'Speech corpus': 'Talkorpus',
   'Language method': 'Språkmetod',
-  'Exact keyword baseline': 'Exakta nyckelord · baslinje',
-  'Swedish stemming · exploratory NLP': 'Svensk ordstamning · utforskande NLP',
+  'Exact keyword baseline': 'Exakta nyckelord, baslinje',
+  'Swedish stemming, exploratory NLP': 'Svensk ordstamning, utforskande NLP',
   'party–area cells have no matches.': 'parti–område-celler saknar träffar.',
   'eligible speeches;': 'berättigade tal;',
   'area-assigned hits. All charts below use this corpus and method.':
@@ -362,7 +362,7 @@ export const swedishReports: Record<string, string> = {
   'Total hits': 'Totalt antal träffar',
   'Zero areas / 27': 'Områden med noll träffar / 27',
   'Dictionary for the selected area:': 'Ordlista för valt område:',
-  'matches ·': 'träffar ·',
+  'matches ,': 'träffar ,',
   'Stemming groups some inflected Swedish forms. It can also merge unrelated words and does not resolve synonyms, compounds, context or policy stance. It is a sensitivity check, not a validated semantic classifier. Shares use all area-assigned hits within that party and session; they are not a percentage of all speech.':
     'Ordstamning grupperar vissa böjda svenska ordformer. Den kan också slå ihop ord som inte hör ihop och hanterar inte synonymer, sammansättningar, sammanhang eller politisk ståndpunkt. Det är en känslighetskontroll, inte en validerad semantisk klassificerare. Andelarna bygger på alla områdestilldelade träffar inom parti och riksmöte; de är inte en procentandel av allt tal.',
   'How could semantic NLP improve this?':
@@ -374,7 +374,7 @@ export const swedishReports: Record<string, string> = {
   'Government expenditure frames total': 'Regeringens utgiftsramar uppgår till',
   "billion SEK. Each card compares a party's proposal with the same year's government proposal, not with last year's spending. These are proposed expenditure frames, not actual spending or the full fiscal balance.":
     'miljarder kronor. Varje kort jämför ett partis förslag med regeringens förslag samma år, inte med förra årets utgifter. Det här är föreslagna utgiftsramar, inte faktiska utgifter eller hela budgetens saldo.',
-  'Net difference ·': 'Nettoskillnad ·',
+  'Net difference ,': 'Nettoskillnad ,',
   'bn SEK total': 'mdkr totalt',
   'Largest increases': 'Största ökningarna',
   'No increases in these frames.': 'Inga ökningar i dessa ramar.',
@@ -395,7 +395,7 @@ export const swedishReports: Record<string, string> = {
     'Hur har marknaden för data- och mjukvaruroller förändrats?',
   'Historical job-ad aggregates, role definitions and technology mentions, with clear denominators and downloadable data.':
     'Historiska aggregat av platsannonser, rolldefinitioner och teknikomnämnanden med tydliga nämnare och nedladdningsbara data.',
-  'Research pipeline · v2': 'Forskningsflöde · v2',
+  'Research pipeline, v2': 'Forskningsflöde, v2',
   'How well does a model generalise to unseen drug pairs?':
     'Hur bra generaliserar en modell till okända läkemedelspar?',
   'Drug and cell-line entity resolution, a DuckDB warehouse and model evaluation under four cross-validation strategies. Explore the exported results and their assumptions.':
@@ -406,14 +406,13 @@ export const swedishReports: Record<string, string> = {
     'Vad förändras när ett krav går från MUST till SHOULD?',
   'A structured meaning-quality engine explored through RFC requirement profiles and clearly labelled synthetic examples. Validated political direction scoring is not available.':
     'En strukturerad motor för betydelsekvalitet som utforskas med kravprofiler från RFC:er och tydligt märkta syntetiska exempel. Validerade riktningsmått för politik finns inte.',
-  'Incident NLP · Degree project': 'Incident-NLP · examensarbete',
-  'Case study · Fora': 'Fallstudie · Fora',
+  'Incident NLP, Degree project': 'Incident-NLP, examensarbete',
+  'Case study, Fora': 'Fallstudie, Fora',
   'Can similar incidents reveal useful review candidates?':
     'Kan liknande incidenter visa användbara kandidater för granskning?',
   'A privacy-aware Databricks workflow combining selected ISO/IEC 25012 data-quality dimensions, embeddings and clustering. Only approved aggregate results are shown.':
     'Ett integritetsmedvetet Databricks-flöde med utvalda datakvalitetsdimensioner ur ISO/IEC 25012, embeddings och klustring. Endast godkända aggregerade resultat visas.',
-  'API contract · partial implementation':
-    'API-kontrakt · delvis implementerat',
+  'API contract, partial implementation': 'API-kontrakt, delvis implementerat',
   'How can household activity become understandable analytics?':
     'Hur kan hushållsaktiviteter bli begriplig analys?',
   'A FastAPI and PostgreSQL project with authentication, immutable completion-event design and aggregation SQL. Household, task and analytics endpoints remain documented stubs.':
@@ -431,7 +430,7 @@ export const swedishReports: Record<string, string> = {
   'pair × cell line × study rows': 'rader för par × cellinje × studie',
   'resolved molecules': 'identifierade molekyler',
   'human cell lines': 'mänskliga cellinjer',
-  '01 / Generalisation': '01 / Generalisering',
+  Generalisation: 'Generalisering',
   'The test split changes the question.':
     'Uppdelningen av testdata ändrar frågan.',
   'Feature set / model': 'Egenskaper / modell',
@@ -439,15 +438,15 @@ export const swedishReports: Record<string, string> = {
     'Pearsonkorrelation mellan förutsagt och observerat ZIP-värde. Samma modell i alla fyra uppdelningar; högre är bättre. Staplarna har en fast skala från 0 till 1.',
   'Means over three folds; fold SD is not a confidence interval. The mean-only baseline has no defined correlation. These are saved upstream results, not a new training run.':
     'Medelvärden över tre delmängder; standardavvikelsen är inte ett konfidensintervall. Baslinjen som bara förutsäger medelvärdet saknar definierad korrelation. Detta är sparade resultat från källprojektet, inte en ny träningskörning.',
-  '02 / Data preparation': '02 / Dataförberedelse',
+  'Data preparation': 'Dataförberedelse',
   'From measurements to a modelling table.':
     'Från mätningar till modelltabell.',
   'Counts at each recorded cleaning stage. Replicates are averaged after resolving drug and cell-line identities.':
     'Antal i varje dokumenterat rensningssteg. Replikat medelvärdesbildas efter matchning av läkemedels- och cellinjeidentiteter.',
-  '03 / Dataset context': '03 / Datamaterialets sammanhang',
+  'Dataset context': 'Datamaterialets sammanhang',
   'Synergy differs across the screened tissue groups.':
     'Synergi skiljer sig mellan de undersökta vävnadsgrupperna.',
-  'analysed rows · scale 0–100%': 'analyserade rader · skala 0–100 %',
+  'analysed rows, scale 0–100%': 'analyserade rader, skala 0–100 %',
   'What I built, evaluation assumptions & data access':
     'Vad jag byggde, antaganden och dataåtkomst',
   'The pipeline performs entity resolution, builds a DuckDB star schema, applies data-quality checks and evaluates symmetric chemistry/biology features with LightGBM and baselines. The portfolio keeps a pinned copy of the pipeline and all 22 published result tables.':
@@ -461,23 +460,22 @@ export const swedishReports: Record<string, string> = {
   'Input manifest': 'Manifest över indata',
   'Pinned source revision ↗': 'Fast version av källkoden ↗',
   'More original analysis figures': 'Fler ursprungliga analysfigurer',
-  '· open full figure': '· öppna hela figuren',
-  'Allegoria · a small experiment in RFC drift':
-    'Allegoria · ett litet experiment om RFC-förändringar',
+  ', open full figure': ', öppna hela figuren',
+  'Allegoria, a small experiment in RFC drift':
+    'Allegoria, ett litet experiment om RFC-förändringar',
   'When MUST becomes SHOULD.': 'När MUST blir SHOULD.',
   "Can a small change in wording weaken a technical requirement? Allegoria's meaningquality engine makes that change explicit. Here, a cookie-specification comparison and a controlled example show what it can and cannot measure.":
     'Kan en liten ändring i ordval försvaga ett tekniskt krav? Allegorias meaningquality-motor tydliggör ändringen. Här visar en jämförelse av specifikationer för cookies och ett kontrollerat exempel vad motorn kan och inte kan mäta.',
   'The RFC export could not be loaded.': 'RFC-exporten kunde inte läsas in.',
-  '01 / The language profile changed': '01 / Språkprofilen förändrades',
+  'The language profile changed': 'Språkprofilen förändrades',
   'RFC 2965 (2000) → RFC 6265 (2011). Share of statements extracted by the heuristic reader, grouped by their first requirement keyword.':
     'RFC 2965 (2000) → RFC 6265 (2011). Andel påståenden som den heuristiska läsaren extraherade, grupperade efter första kravordet.',
   'extracted statements': 'extraherade påståenden',
   'A different document-wide profile is not proof that the protocol became looser. These documents differ in content, scope and wording.':
     'En annan profil på dokumentnivå bevisar inte att protokollet blev mindre strikt. Dokumenten skiljer sig i innehåll, omfattning och ordval.',
-  '02 / A change the engine can explain':
-    '02 / En ändring som motorn kan förklara',
-  'Synthetic example · the actor and action stay identical. Only obligation strength changes.':
-    'Syntetiskt exempel · aktör och handling är desamma. Bara skyldighetens styrka ändras.',
+  'A change the engine can explain': 'En ändring som motorn kan förklara',
+  'Synthetic example, the actor and action stay identical. Only obligation strength changes.':
+    'Syntetiskt exempel, aktör och handling är desamma. Bara skyldighetens styrka ändras.',
   'Requirement change': 'Kravändring',
   'Before: The client': 'Före: Klienten',
   'validate the response.': 'validera svaret.',
@@ -547,7 +545,7 @@ export const swedishReports: Record<string, string> = {
   'imported speeches. Reply flags describe the source classification, not who is replying to whom.':
     'importerade tal. Replikmarkeringar beskriver källans klassificering, inte vem som svarar vem.',
   'Speech and reply counts per party': 'Antal tal och repliker per parti',
-  'speeches ·': 'tal ·',
+  'speeches ,': 'tal ,',
   replies: 'repliker',
   'Transcript party': 'Parti i protokollet',
   'Search this transcript': 'Sök i protokollet',
@@ -568,8 +566,8 @@ export const swedishReports: Record<string, string> = {
   'Show 30 more sections': 'Visa 30 avsnitt till',
   'Select a debate to load its full transcript.':
     'Välj en debatt för att läsa hela protokollet.',
-  '· snapshot, not verified as the law on a debate date.':
-    '· ögonblicksbild, inte verifierad som gällande lag vid debattdatumet.',
+  ', snapshot, not verified as the law on a debate date.':
+    ', ögonblicksbild, inte verifierad som gällande lag vid debattdatumet.',
   'Search provisions': 'Sök bestämmelser',
   'Statute source ↗': 'Källa till författning ↗',
   'Source SHA-256:': 'Källans SHA-256:',
@@ -580,8 +578,8 @@ export const swedishReports: Record<string, string> = {
   'Browse both available statute provision pools, with source hashes, snapshot versions and original text. Overlapping pools must not be added together as unique laws.':
     'Bläddra i båda tillgängliga urvalen av lagbestämmelser, med källornas kontrollsummor, versioner och originaltext. Överlappande urval får inte läggas ihop som om de vore unika lagar.',
   'Corpus pool': 'Källurval',
-  'v1 · frozen corpus': 'v1 · fryst korpus',
-  'v2 · expanded pool': 'v2 · utökat urval',
+  'v1, frozen corpus': 'v1, fryst korpus',
+  'v2, expanded pool': 'v2, utökat urval',
   'Search laws': 'Sök lagar',
   'Law snapshot': 'Lagögonblicksbild',
   'Select from': 'Välj bland',
@@ -591,7 +589,7 @@ export const swedishReports: Record<string, string> = {
     'Två källänkade exempel jämför en politisk beskrivning med föreslagen lagtext. De är inte verifierade antagna ändringar eller lämpliga för riktningsmätning. Den andra extraktionen blandar två lagtextkolumner och kräver granskning av layouten.',
   'Political description': 'Politisk beskrivning',
   'Read source ↗': 'Läs källan ↗',
-  'Proposed law ·': 'Föreslagen lag ·',
+  'Proposed law ,': 'Föreslagen lag ,',
   'Inspect proposal layout ↗': 'Granska förslagets layout ↗',
   'Status:': 'Status:',
   'Software Developer': 'Mjukvaruutvecklare',
@@ -699,7 +697,7 @@ export const swedishReports: Record<string, string> = {
     'matchade nyckelordsträffar över partierna',
   'each available party': 'varje tillgängligt parti',
   'one party': 'ett parti',
-  ' · top 8 forms': ' · de åtta vanligaste formerna',
+  ', top 8 forms': ', de åtta vanligaste formerna',
   "Speaker's recorded vote:": 'Talarens registrerade röst:',
   'No same-member vote established.':
     'Ingen röst från samma ledamot har fastställts.',

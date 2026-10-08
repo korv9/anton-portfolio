@@ -252,7 +252,7 @@ export default function StatusPage() {
                 <div>
                   <dt>{l('Command', 'Kommando')}</dt>
                   <dd>
-                    <code>dbt {run.dbt.command}</code> · {run.dbt.dbt_version}
+                    <code>dbt {run.dbt.command}</code>, {run.dbt.dbt_version}
                   </dd>
                 </div>
                 <div>
@@ -260,7 +260,7 @@ export default function StatusPage() {
                   <dd>
                     {Object.entries(run.dbt.nodes)
                       .map(([kind, count]) => `${count} ${kind}s`)
-                      .join(' · ')}
+                      .join(', ')}
                   </dd>
                 </div>
                 <div>
@@ -273,7 +273,7 @@ export default function StatusPage() {
                     {Object.entries(run.dbt.tests)
                       .filter(([, count]) => count)
                       .map(([status, count]) => `${count} ${status}`)
-                      .join(' · ')}
+                      .join(', ')}
                   </dd>
                 </div>
               </dl>

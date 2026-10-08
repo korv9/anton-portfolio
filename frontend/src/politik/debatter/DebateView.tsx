@@ -297,13 +297,13 @@ export default function DebateView({ route }: { route: Route }) {
               ? l('Party-leader debates', 'Partiledardebatter')
               : l('Issue debates', 'Sakdebatter')}
           </a>
-          {' · '}
-          {dayName(debate.date)} ·{' '}
+          {', '}
+          {dayName(debate.date)},{' '}
           {kind === 'partiledare'
             ? l('party-leader debate', 'partiledardebatt')
             : l('issue debate', 'sakdebatt')}
           {issueDebate?.decision &&
-            ` · ${l('report', 'betänkande')} ${issueDebate.decision.designation}`}
+            `, ${l('report', 'betänkande')} ${issueDebate.decision.designation}`}
         </>
       }
     >
@@ -463,7 +463,7 @@ export default function DebateView({ route }: { route: Route }) {
                           .getElementById(`tal-${s.speech_number}`)
                           ?.scrollIntoView({ block: 'start' })
                       }}
-                      title={`${s.speech_number}. ${speakerName(s.speaker)}${s.party ? ` (${s.party})` : ''}${s.is_reply ? ` · ${l('reply', 'replik')}` : ''}`}
+                      title={`${s.speech_number}. ${speakerName(s.speaker)}${s.party ? ` (${s.party})` : ''}${s.is_reply ? `, ${l('reply', 'replik')}` : ''}`}
                       style={{
                         background: p?.color ?? '#9a9a9a',
                         outline: p?.casing

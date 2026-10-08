@@ -93,7 +93,7 @@ export function NavigatorView({
                 <p className="aa-meta">
                   {q.articles.map((a, j) => (
                     <span key={a}>
-                      {j > 0 && ' · '}
+                      {j > 0 && ', '}
                       <ArticleLink n={a} />
                     </span>
                   ))}

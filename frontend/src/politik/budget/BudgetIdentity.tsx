@@ -63,7 +63,7 @@ export default function BudgetIdentity({ year }: { year: number }) {
         <span>{l('The budget for', 'Budgeten för')}</span>
         <strong>{year}</strong>
         <small>
-          {l('Riksmöte', 'Riksmötet')} {session} ·{' '}
+          {l('Riksmöte', 'Riksmötet')} {session},{' '}
           {l('Budget bill', 'Budgetpropositionen')} {session}:1
         </small>
       </div>
@@ -81,7 +81,7 @@ export default function BudgetIdentity({ year }: { year: number }) {
                   {c.agreement_party.map(partyName).join(', ')}
                   {c.agreement_source_url && (
                     <>
-                      {' · '}
+                      {', '}
                       <a
                         href={c.agreement_source_url}
                         target="_blank"
@@ -107,11 +107,11 @@ export default function BudgetIdentity({ year }: { year: number }) {
                 : l('The government’s proposal', 'Regeringens förslag')}
             </b>
             <small>
-              {c.decision_date ? `${dayName(c.decision_date)} · ` : ''}
+              {c.decision_date ? `${dayName(c.decision_date)}, ` : ''}
               {l('backed by', 'med stöd av')} {c.adopted_parties.join(', ')}
               {c.adoption_source_url && (
                 <>
-                  {' · '}
+                  {', '}
                   <a
                     href={c.adoption_source_url}
                     target="_blank"

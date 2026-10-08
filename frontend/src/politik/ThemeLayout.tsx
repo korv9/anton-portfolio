@@ -164,7 +164,7 @@ export default function ThemeLayout(props: Props) {
               {l('Source', 'Källa')}:{' '}
               {props.sources.map((s) => s.name).join(', ')}
               {props.updated &&
-                ` · ${l('Updated', 'Uppdaterad')} ${props.updated}`}
+                `, ${l('Updated', 'Uppdaterad')} ${props.updated}`}
             </p>
           </section>
 

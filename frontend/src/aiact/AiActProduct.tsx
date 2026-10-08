@@ -212,9 +212,9 @@ export default function AiActProduct({ route }: { route: Route }) {
             {data && (
               <p className="aa-hero-meta">
                 {l('Consolidated text of', 'Konsoliderad text från')}{' '}
-                {fmtDate(data.summary.current_version.published_at)} ·{' '}
+                {fmtDate(data.summary.current_version.published_at)},{' '}
                 {l('retrieved', 'hämtad')}{' '}
-                {fmtDate(data.summary.latest_retrieval)} ·{' '}
+                {fmtDate(data.summary.latest_retrieval)},{' '}
                 <span className="aa-disclaimer-inline">{l(...DISCLAIMER)}</span>
               </p>
             )}
@@ -229,9 +229,9 @@ export default function AiActProduct({ route }: { route: Route }) {
             {data && (
               <p className="aa-hero-meta">
                 {l('Consolidated text of', 'Konsoliderad text från')}{' '}
-                {fmtDate(data.summary.current_version.published_at)} ·{' '}
+                {fmtDate(data.summary.current_version.published_at)},{' '}
                 {l('retrieved', 'hämtad')}{' '}
-                {fmtDate(data.summary.latest_retrieval)} ·{' '}
+                {fmtDate(data.summary.latest_retrieval)},{' '}
                 <span className="aa-disclaimer-inline">{l(...DISCLAIMER)}</span>
               </p>
             )}

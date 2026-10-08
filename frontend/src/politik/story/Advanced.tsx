@@ -48,7 +48,6 @@ export default function Advanced({ a }: { a: Analytics }) {
   return (
     <Section
       id="fordjupad"
-      n={8}
       kicker={l('Advanced analysis', 'Fördjupad analys')}
       question={l(
         'Latent patterns in how the parties vote',
@@ -96,10 +95,10 @@ export default function Advanced({ a }: { a: Analytics }) {
             textAnchor="end"
             className="story-tick"
           >
-            {l('Component 1', 'Komponent 1')} · {num(explained[0], 0)} % →
+            {l('Component 1', 'Komponent 1')}, {num(explained[0], 0)} % →
           </text>
           <text x={pad - 6} y={18} className="story-tick">
-            ↑ {l('Component 2', 'Komponent 2')} · {num(explained[1], 0)} %
+            ↑ {l('Component 2', 'Komponent 2')}, {num(explained[1], 0)} %
           </text>
           {groups.map((g) => {
             const w = g.parties.length * 28
@@ -141,7 +140,7 @@ export default function Advanced({ a }: { a: Analytics }) {
                   </foreignObject>
                 ))}
                 <text y={34} textAnchor="middle" className="story-map-label">
-                  {g.parties.join(' · ')}
+                  {g.parties.join(', ')}
                 </text>
               </g>
             )

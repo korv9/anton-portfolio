@@ -226,9 +226,9 @@ export default function BudgetTheme({ route }: { route: Route }) {
   const bottom = shown.at(-1)
   const label = (r: BudgetRow) =>
     byArea
-      ? `${r.actor} · ${partyName(r.actor)}`
+      ? `${r.actor}, ${partyName(r.actor)}`
       : multi
-        ? `${r.actor} · ${r.expenditure_area}. ${names.get(r.expenditure_area)}`
+        ? `${r.actor}, ${r.expenditure_area}. ${names.get(r.expenditure_area)}`
         : `${r.expenditure_area}. ${names.get(r.expenditure_area)}`
 
   const yearOptions = years.map((y) => ({ value: String(y), label: String(y) }))

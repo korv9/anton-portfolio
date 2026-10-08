@@ -428,7 +428,7 @@ export default function TaxCalculator({
           )}{' '}
           {rules.sources.map((source, index) => (
             <span key={source.url}>
-              {index > 0 && ' · '}
+              {index > 0 && ', '}
               <a href={source.url} target="_blank" rel="noreferrer">
                 {source.label}
               </a>

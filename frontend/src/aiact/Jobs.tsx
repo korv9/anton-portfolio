@@ -215,7 +215,7 @@ export function Jobs({
           {examples.map((e, i) => (
             <li key={i}>
               <p className="aa-kicker">
-                {e.publication_month} · {e.occupation} · {e.field}
+                {e.publication_month}, {e.occupation}, {e.field}
               </p>
               <p>
                 <b>{e.headline}</b>

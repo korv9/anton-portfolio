@@ -52,12 +52,12 @@ export default function App() {
   useEffect(() => {
     document.documentElement.lang = language
   }, [language])
-  // Each page names itself in the tab and the history: "<page> · Anton Ernstsson".
+  // Each page names itself in the tab and the history: "<page> | Anton Ernstsson".
   useEffect(() => {
     const name = pageTitle(route)
     document.title = name
-      ? `${name} · Anton Ernstsson`
-      : l('Anton Ernstsson · Data engineer', 'Anton Ernstsson · Data engineer')
+      ? `${name} | Anton Ernstsson`
+      : l('Anton Ernstsson, Data engineer', 'Anton Ernstsson, Data engineer')
   }, [route.path, route.page, language])
 
   // A new address scrolls to its section on the start page, or to the top elsewhere. Changing

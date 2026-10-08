@@ -55,7 +55,7 @@ test('not measured and not applicable are never shown as passes', () => {
   assert.equal(cellText(cellOf([check('not_measured')]), en), 'not measured')
   assert.equal(
     cellText(cellOf([check('pass'), check('not_measured')]), en),
-    '1 measured · 1 pass · 1 not measured',
+    '1 measured, 1 pass, 1 not measured',
   )
 })
 

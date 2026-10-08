@@ -65,7 +65,7 @@ export default function ResearchStory({
       ],
     },
     {
-      tag: ['Baseline · v1', 'Utgångsläge · v1'],
+      tag: ['Baseline, v1', 'Utgångsläge, v1'],
       title: ['Strong clusters appeared.', 'Tydliga kluster uppstod.'],
       body: [
         'The embeddings separate the passages into well-defined groups.',
@@ -85,7 +85,7 @@ export default function ResearchStory({
       ],
     },
     {
-      tag: ['Deconfounding · v2', 'Avkoppling · v2'],
+      tag: ['Deconfounding, v2', 'Avkoppling, v2'],
       title: [
         'Book-centring reduced book dominance.',
         'Bokcentrering minskade bokdominansen.',
@@ -97,7 +97,7 @@ export default function ResearchStory({
       metrics: v2?.metrics,
     },
     {
-      tag: ['Cleaning · v3', 'Rensning · v3'],
+      tag: ['Cleaning, v3', 'Rensning, v3'],
       title: [
         'Paratext was a second confounder (ten-book pilot).',
         'Paratext var en andra störfaktor (pilot med tio böcker).',
@@ -111,7 +111,7 @@ export default function ResearchStory({
     ...(v4?.metrics
       ? [
           {
-            tag: ['Corpus expansion · v4', 'Korpusutökning · v4'] as [
+            tag: ['Corpus expansion, v4', 'Korpusutökning, v4'] as [
               string,
               string,
             ],

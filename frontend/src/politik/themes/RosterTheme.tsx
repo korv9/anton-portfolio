@@ -108,7 +108,7 @@ export default function RosterTheme({ route }: { route: Route }) {
           )
           .map((r) => ({
             date: sessionDate(r.session),
-            label: `${r.session} · ${r.role === 'government' ? l('in government', 'i regeringen') : r.role === 'agreement' ? l('agreement', 'avtalsparti') : l('opposition', 'opposition')}`,
+            label: `${r.session}, ${r.role === 'government' ? l('in government', 'i regeringen') : r.role === 'agreement' ? l('agreement', 'avtalsparti') : l('opposition', 'opposition')}`,
             value: Number(r[record.key]),
           })),
       }))
@@ -270,12 +270,12 @@ export default function RosterTheme({ route }: { route: Route }) {
         chartMeta={
           record
             ? l(
-                `Per cent of roll calls · from ${view.fran}`,
-                `Procent av voteringarna · från ${view.fran}`,
+                `Per cent of roll calls, from ${view.fran}`,
+                `Procent av voteringarna, från ${view.fran}`,
               )
             : l(
-                `Per cent of roll calls with the same position · session ${session}${info ? `, ${info.government_name}` : ''}`,
-                `Procent av voteringarna med samma ståndpunkt · riksmötet ${session}${info ? `, ${info.government_name}` : ''}`,
+                `Per cent of roll calls with the same position, session ${session}${info ? `, ${info.government_name}` : ''}`,
+                `Procent av voteringarna med samma ståndpunkt, riksmötet ${session}${info ? `, ${info.government_name}` : ''}`,
               )
         }
         chart={
@@ -291,7 +291,7 @@ export default function RosterTheme({ route }: { route: Route }) {
               rows={others.map((o) => ({
                 key: o.party,
                 party: o.party,
-                label: `${o.party} · ${partyName(o.party)}`,
+                label: `${o.party}, ${partyName(o.party)}`,
                 value: o.value,
               }))}
               format={(v) => pct(v, 0)}

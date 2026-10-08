@@ -215,7 +215,7 @@ export function ValidityPanel({ analysis }: { analysis: Analysis }) {
   return (
     <article className="q-analysis">
       <p className="q-kicker">
-        {analysis.kind.replace(/_/g, ' ')} ·{' '}
+        {analysis.kind.replace(/_/g, ' ')},{' '}
         <StatusMark status={analysis.analysis_status} validity />
       </p>
       <h3>
