@@ -1,3 +1,4 @@
+import { l } from '../i18n'
 import { fetchJson } from '../welfare/data'
 
 export type PartyResult = {
@@ -203,7 +204,7 @@ export const sessionDate = (session: string) => `${session.slice(0, 4)}-10-01`
 
 export function percent(value: number | null | undefined, digits = 1) {
   if (value == null) return '–'
-  return `${value.toLocaleString('sv-SE', {
+  return `${value.toLocaleString(l('en-GB', 'sv-SE'), {
     minimumFractionDigits: digits,
     maximumFractionDigits: digits,
   })} %`

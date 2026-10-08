@@ -23,13 +23,8 @@ import './clusters.css'
 
 const pct = (v: number) => `${Math.round(v * 100)} %`
 const num = (v: number) => v.toLocaleString(currentLocale())
-// The four title families in the site's data-series tokens, in fixed order.
-const ROLE_TOKENS = [
-  '--data-blue',
-  '--data-ochre',
-  '--data-rust',
-  '--data-green',
-]
+// The four title families: the first three series tokens and ink, which stay apart side by side.
+const ROLE_TOKENS = ['--series-1', '--series-2', '--series-3', '--ink-2']
 
 type View = 'groups' | 'titles'
 
@@ -182,10 +177,10 @@ export default function ClusterMap() {
       ctx.lineJoin = 'round'
       for (const g of labels) {
         const on = g.id === focus
-        ctx.font = `${on ? 700 : 500} ${on ? 14 : 12}px ${css.fontFamily}`
-        ctx.lineWidth = 4
+        ctx.font = `${on ? 800 : 600} ${on ? 17 : 14}px ${css.fontFamily}`
+        ctx.lineWidth = 6
         ctx.strokeStyle = token('--paper-strong')
-        ctx.fillStyle = on ? ink : token('--muted')
+        ctx.fillStyle = on ? ink : token('--ink-2')
         const text = String(rank.get(g.id) ?? '')
         ctx.strokeText(text, g.x, g.y)
         ctx.fillText(text, g.x, g.y)

@@ -34,17 +34,17 @@ Fetched on 6 October 2026: ten sessions, **129,110 speeches** from 13 September 
 `seeds/ai_politics/ai_politics_concepts.csv`: each group of words is a regular expression with a
 description and, where needed, a caveat. The page prints every pattern verbatim.
 
-- **Gate** (`ai`): a paragraph is about AI when it contains upper-case *AI* (also in compounds
-  such as *AI-system*), *artificiell intelligens*, *maskininlärning*, *djupinlärning*,
-  *språkmodell…*, *ChatGPT* or *generativ AI*. Upper case only for the abbreviation, so words
+- **Gate** (`ai`): a paragraph is about AI when it contains upper-case _AI_ (also in compounds
+  such as _AI-system_), _artificiell intelligens_, _maskininlärning_, _djupinlärning_,
+  _språkmodell…_, _ChatGPT_ or _generativ AI_. Upper case only for the abbreviation, so words
   containing the letters do not count.
-- **The Act by name** (`ai_act`): *AI-förordningen*, *AI-akten*, *AI Act*, *förordningen om
-  artificiell intelligens*.
-- **Framing groups** (15): innovation; competitiveness and growth; *säkerhet*; security and
+- **The Act by name** (`ai_act`): _AI-förordningen_, _AI-akten_, _AI Act_, _förordningen om
+  artificiell intelligens_.
+- **Framing groups** (15): innovation; competitiveness and growth; _säkerhet_; security and
   defence; risk and threat; privacy and data protection; surveillance and biometrics; fundamental
   rights; transparency; responsibility; human oversight; automation and algorithms; work and
   jobs; regulation; disinformation and democracy.
-- **Pairs** (`ai_politics_framing_pairs.csv`): innovation vs *säkerhet*, privacy vs security,
+- **Pairs** (`ai_politics_framing_pairs.csv`): innovation vs _säkerhet_, privacy vs security,
   regulation vs competitiveness.
 
 Matching is **per paragraph**: a speech is about AI when one of its paragraphs passes the gate,
@@ -52,25 +52,25 @@ and the framing groups are looked for in those paragraphs only. A budget speech 
 once therefore does not count its other paragraphs. Code: `platform/nlp/text/concepts.py`;
 tests with examples that must and must not match: `platform/tests/ai_politics/`.
 
-Swedish has one word, *säkerhet*, for both safety and security; that group cannot tell them
+Swedish has one word, _säkerhet_, for both safety and security; that group cannot tell them
 apart, and the page says so. The narrower security group (cybersecurity, national security,
 defence) is a separate concept.
 
 ## Data model
 
-| Layer | Model | Grain |
-|---|---|---|
-| bronze | `stg_riksdag_speeches` (Python) | speech: metadata as written, text as plain paragraphs, archive hash |
-| silver | `int_riksdag_speeches` | speech with a normalised party (none for the chair and speakers without a party) |
-| silver | `int_ai_speech_paragraphs` (Python) | paragraph passing the AI gate, with the framing terms found in it |
-| silver | `int_ai_speech_concepts` | speech × concept |
-| gold | `fact_ai_speech` | speech: mentions AI, names the Act; the denominator for every share |
-| gold | `mart_ai_politics_monthly` | month: speeches, AI speeches, AI Act speeches, share, three-month rolling share |
-| gold | `mart_ai_politics_party_year` | party × year |
-| gold | `mart_ai_politics_concepts` | party (or ALL) × period × concept, among AI speeches |
-| gold | `mart_ai_politics_framing` | pair × party × period: counts and balance |
-| gold | `mart_ai_politics_examples` | example paragraphs per concept, and every paragraph naming the Act |
-| gold | `mart_ai_act_speech_similarity` | AI Act article × rank: the closest Riksdag AI paragraphs |
+| Layer  | Model                               | Grain                                                                            |
+| ------ | ----------------------------------- | -------------------------------------------------------------------------------- |
+| bronze | `stg_riksdag_speeches` (Python)     | speech: metadata as written, text as plain paragraphs, archive hash              |
+| silver | `int_riksdag_speeches`              | speech with a normalised party (none for the chair and speakers without a party) |
+| silver | `int_ai_speech_paragraphs` (Python) | paragraph passing the AI gate, with the framing terms found in it                |
+| silver | `int_ai_speech_concepts`            | speech × concept                                                                 |
+| gold   | `fact_ai_speech`                    | speech: mentions AI, names the Act; the denominator for every share              |
+| gold   | `mart_ai_politics_monthly`          | month: speeches, AI speeches, AI Act speeches, share, three-month rolling share  |
+| gold   | `mart_ai_politics_party_year`       | party × year                                                                     |
+| gold   | `mart_ai_politics_concepts`         | party (or ALL) × period × concept, among AI speeches                             |
+| gold   | `mart_ai_politics_framing`          | pair × party × period: counts and balance                                        |
+| gold   | `mart_ai_politics_examples`         | example paragraphs per concept, and every paragraph naming the Act               |
+| gold   | `mart_ai_act_speech_similarity`     | AI Act article × rank: the closest Riksdag AI paragraphs                         |
 
 Shares always carry their denominator; rolling shares are sums over the window, not averages of
 monthly shares. Periods are calendar years and three phases: before the proposal (to
@@ -106,7 +106,7 @@ response to the Act, or shared meaning, and the page says so where the pairs are
 - The yearly share of speeches mentioning AI stayed under 0.4 % every year from 2016 to 2022, then
   rose to 0.64 % in 2023, 0.97 % in 2024, 1.12 % in 2025 and 1.65 % in 2026 (to August).
 - Among AI speeches, the most frequent groups over the whole period are innovation (16 %),
-  regulation (14 %), risk (12 %), work and jobs (10 %) and *säkerhet* (10 %); human oversight
+  regulation (14 %), risk (12 %), work and jobs (10 %) and _säkerhet_ (10 %); human oversight
   is rare (under 1 %).
 
 The rise coincides with the Act's negotiation and application and also with the public launch of

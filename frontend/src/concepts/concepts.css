@@ -1,13 +1,13 @@
 /* Concept Constellation: the Philosophy Atlas's archival tone, neutral ink, and three relation
-   hues from the site's data-series tokens. Each relation
+   hues from the site's series tokens. Each relation
    type also has its own stroke pattern, so colour is never the only cue. */
 .concepts {
   --cc-ink: var(--ink);
   --cc-muted: var(--muted);
   --cc-rule: var(--line);
-  --cc-semantic: var(--data-blue);
-  --cc-tension: var(--data-rust);
-  --cc-reference: var(--data-green);
+  --cc-semantic: var(--series-1);
+  --cc-tension: var(--series-2);
+  --cc-reference: var(--series-3);
   --cc-prominent: color-mix(in srgb, var(--ink) 45%, transparent);
   color: var(--cc-ink);
 }
@@ -303,7 +303,7 @@
 .cc-table td {
   background: color-mix(
     in srgb,
-    var(--data-blue) calc(4% + var(--v, 0) * 36%),
+    var(--series-1) calc(4% + var(--v, 0) * 36%),
     transparent
   );
   font-variant-numeric: tabular-nums;

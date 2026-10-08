@@ -38,7 +38,7 @@ line (`--h1`); the project's name above it is the `h1` but set small and upperca
 | `--line` / `--line-strong`   | ink at 16 % / 42 %    | off-white at 16 % / 38 % | rules, control edges        |
 | `--accent` / `--on-accent`   | ink / off-white       | off-white / ink          | what is chosen or current   |
 | `--info`, `--negative`       | `#1F4F73`, `#8F3424`  | `#8BBDE3`, `#EC8A74`     | meaning, never decoration   |
-| `--data-*`                   | six series hues       |                          | charts with categories only |
+| `--series-1` … `--series-5`  | five series hues      | same                     | charts with categories only |
 
 Measured contrast (WCAG): ink on page 13.1, muted on page 6.0 and on the darkest light
 surface 5.2; on a plate, ink 16.7 and muted 7.7. Every main page is checked by axe in
@@ -108,7 +108,9 @@ A few forms, used everywhere, so a reader learns them once (`frontend/src/charts
 
 Maps and networks (Data Constellation, the job-ad clusters, the concept and philosophy maps)
 draw in greys with one focus: the picked item in ink or in the accent, everything else
-receding. Category hues come from `--data-*`, in a fixed order.
+receding. Category hues come from `--series-1` to `--series-5`, in that order and never
+cycled; they pass the dataviz palette validator on the page, the paper and the plate. A scatter
+or map where any two groups can touch uses the first three, with `--ink-2` as a fourth.
 
 ## Buttons and filters
 

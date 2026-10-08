@@ -4,7 +4,7 @@
  */
 import { useEffect, useMemo, useState } from 'react'
 import TopicNav from '../TopicNav'
-import { currentLocale, t } from '../i18n'
+import { currentLocale, t, l } from '../i18n'
 import { fetchData } from '../dataSource'
 import TimeSeriesChart from '../charts/TimeSeriesChart'
 import { yearSpan } from '../charts/scales'
@@ -38,12 +38,10 @@ type JobKpis = {
 }
 
 function formatNumber(value: number) {
-  return new Intl.NumberFormat(
-    currentLocale() === 'sv' ? 'sv-SE' : 'en-GB',
-  ).format(value)
+  return new Intl.NumberFormat(l('en-GB', 'sv-SE')).format(value)
 }
 function formatSignedPercent(value: number) {
-  return `${value < 0 ? '−' : '+'}${Math.abs(value).toLocaleString(currentLocale() === 'sv' ? 'sv-SE' : 'en-GB', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%`
+  return `${value < 0 ? '−' : '+'}${Math.abs(value).toLocaleString(l('en-GB', 'sv-SE'), { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%`
 }
 async function fetchReport(url: string) {
   const response = await fetchData(url)
@@ -260,10 +258,9 @@ export default function TechReport() {
                     />
                   </span>
                   <strong>
-                    {tech.share_pct.toLocaleString(
-                      currentLocale() === 'sv' ? 'sv-SE' : 'en-GB',
-                      { maximumFractionDigits: 1 },
-                    )}
+                    {tech.share_pct.toLocaleString(l('en-GB', 'sv-SE'), {
+                      maximumFractionDigits: 1,
+                    })}
                     %
                   </strong>
                 </div>

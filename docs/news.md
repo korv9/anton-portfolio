@@ -11,11 +11,11 @@ Only what the feeds themselves publish: the headline, the feed's own short summa
 and the link. Every item links to the article, which stays with its publisher; article text is
 never fetched. SVT's robots.txt allows real-time retrieval (not AI training).
 
-| Source | Feed |
-|---|---|
-| SVT Nyheter | `https://www.svt.se/nyheter/rss.xml` (RSS, about 100 latest items) |
-| Sveriges Radio Ekot | `https://api.sr.se/api/rss/program/83` (Atom, 20 latest; SR's open API) |
-| Government Offices | `https://www.regeringen.se/Filter/RssFeed?filterType=Taxonomy` (RSS, 100 latest, with ministry and policy area as categories) |
+| Source              | Feed                                                                                                                          |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| SVT Nyheter         | `https://www.svt.se/nyheter/rss.xml` (RSS, about 100 latest items)                                                            |
+| Sveriges Radio Ekot | `https://api.sr.se/api/rss/program/83` (Atom, 20 latest; SR's open API)                                                       |
+| Government Offices  | `https://www.regeringen.se/Filter/RssFeed?filterType=Taxonomy` (RSS, 100 latest, with ministry and policy area as categories) |
 
 SVT sometimes answers 403 to automated requests. A failing source is logged and skipped; the
 others are still read, and the next run tries again.

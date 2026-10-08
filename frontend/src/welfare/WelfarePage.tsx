@@ -63,7 +63,7 @@ function change(headline: Headline, indicator: Indicator) {
       ? null
       : delta > 0 === indicator.higher_is_better
   // A change in a share is in percentage points, not per cent.
-  const size = Math.abs(delta).toLocaleString(undefined, {
+  const size = Math.abs(delta).toLocaleString(l('en-GB', 'sv-SE'), {
     maximumFractionDigits: 2,
   })
   const unit = indicator.unit?.startsWith('procent') ? l(' pp', ' p.e.') : ''
@@ -407,7 +407,7 @@ export default function WelfarePage({ view }: { view: string }) {
                                 style={{ width: `${8 + share * 92}%` }}
                               />
                               <span className="cell-value">
-                                {value.toLocaleString(undefined, {
+                                {value.toLocaleString(l('en-GB', 'sv-SE'), {
                                   maximumFractionDigits: 2,
                                 })}
                                 {column.key === 'unemployment_rate_pct' &&

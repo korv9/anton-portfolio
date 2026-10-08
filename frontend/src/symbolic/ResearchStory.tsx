@@ -306,7 +306,9 @@ function ValidityBlock({ v }: { v: Validity }) {
               <tr key={r}>
                 <th scope="row">{l(...RELATION[r])}</th>
                 <td className="num">
-                  {centred.book_pairs.mean_similarity[r].pairs.toLocaleString()}
+                  {centred.book_pairs.mean_similarity[r].pairs.toLocaleString(
+                    l('en-GB', 'sv-SE'),
+                  )}
                 </td>
                 <td className="num">
                   {dec(centred.book_pairs.mean_similarity[r].mean)}

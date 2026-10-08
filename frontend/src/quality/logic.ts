@@ -128,11 +128,11 @@ export function valueText(
 ): string {
   if (c.value == null) return '–'
   if (c.numerator != null && c.denominator != null)
-    return `${fmt(c.numerator)} / ${fmt(c.denominator)}${c.sample_size ? l(' (sample)', ' (urval)') : ''}`
-  return fmt(c.value)
+    return `${fmt(c.numerator, l)} / ${fmt(c.denominator, l)}${c.sample_size ? l(' (sample)', ' (urval)') : ''}`
+  return fmt(c.value, l)
 }
 
-const fmt = (v: number) =>
+const fmt = (v: number, l: (en: string, sv: string) => string) =>
   Number.isInteger(v)
-    ? v.toLocaleString('sv-SE')
-    : v.toLocaleString('sv-SE', { maximumFractionDigits: 3 })
+    ? v.toLocaleString(l('en-GB', 'sv-SE'))
+    : v.toLocaleString(l('en-GB', 'sv-SE'), { maximumFractionDigits: 3 })

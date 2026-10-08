@@ -516,7 +516,7 @@ export default function BudgetTheme({ route }: { route: Route }) {
         updated={
           report
             ? new Date(report.coverage.generated_at).toLocaleDateString(
-                'sv-SE',
+                l('en-GB', 'sv-SE'),
                 { day: 'numeric', month: 'long', year: 'numeric' },
               )
             : null

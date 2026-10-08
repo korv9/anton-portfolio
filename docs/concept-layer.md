@@ -4,7 +4,7 @@ The portfolio's text corpora sit at four stages of one chain: **stories** (myth 
 **ideas** (philosophy), **contestation** (Riksdag speeches) and **codification** (the EU AI Act).
 The concept layer reads a balanced sample of all four against one editorial list of concepts,
 with one embedding model, so that the Concept Constellation (`docs/concept-constellation.md`)
-and the concept pages can show where an idea such as *autonomy* or *risk* is prominent, and in
+and the concept pages can show where an idea such as _autonomy_ or _risk_ is prominent, and in
 what words, without pretending that one corpus caused another.
 
 ```
@@ -39,16 +39,16 @@ names how the concept is read (the anchor embedded with the shared model).
 `concept_tensions.csv` pairs concepts with the Philosophy Atlas tensions they are poles of (or
 nearest to). `concept_links.csv` links a concept to a measure elsewhere on the site only where
 the target measures the same idea: a Riksdag framing group, a job-ad term, an AI Act view or a
-tension. *Autonomy* has no Riksdag group or job term, and gets none.
+tension. _Autonomy_ has no Riksdag group or job term, and gets none.
 
 ## Corpora and sampling
 
-| Corpus | Stage | Language | Chunks | Documents | Read from |
-|---|---|---|---|---|---|
-| myth | stories | en | 404 | 101 books (v4) | `silver.int_symbol_occurrences` (context windows) |
-| philosophy | ideas | en | 494 | 13 works | `silver.int_philosophy_passages` |
-| politics | contestation | sv | 495 | 495 speeches | `silver.int_riksdag_speeches`, one paragraph per speech |
-| law | codification | en | 500 | 121 provisions | `silver.int_ai_act_provisions`, `02024R1689-20260727` |
+| Corpus     | Stage        | Language | Chunks | Documents      | Read from                                               |
+| ---------- | ------------ | -------- | ------ | -------------- | ------------------------------------------------------- |
+| myth       | stories      | en       | 404    | 101 books (v4) | `silver.int_symbol_occurrences` (context windows)       |
+| philosophy | ideas        | en       | 494    | 13 works       | `silver.int_philosophy_passages`                        |
+| politics   | contestation | sv       | 495    | 495 speeches   | `silver.int_riksdag_speeches`, one paragraph per speech |
+| law        | codification | en       | 500    | 121 provisions | `silver.int_ai_act_provisions`, `02024R1689-20260727`   |
 
 At most 500 chunks per corpus, spread evenly over its books, works, calendar years
 (2016–2026, 45 speeches each, party speeches only) or the Act's provisions in reading order
@@ -82,8 +82,8 @@ URL, the hash of the source version it was read from and its retrieval time
 
 Raw similarity depends on the corpus as much as on the concept: the mean chunk–anchor
 similarity is 0.10 for myth, 0.15 for politics, 0.17 for law and 0.21 for philosophy, because
-abstract prose is closer to every abstract anchor sentence. A rank compares concepts *within* one
-chunk and a z-score compares chunks *within* one corpus, so neither carries that offset.
+abstract prose is closer to every abstract anchor sentence. A rank compares concepts _within_ one
+chunk and a z-score compares chunks _within_ one corpus, so neither carries that offset.
 
 ## Evaluation (`run.json`)
 

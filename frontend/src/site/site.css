@@ -420,7 +420,7 @@
 
 /* Project pages share the homepage's open canvas and editorial type. */
 .project-shell {
-  --project-accent: var(--data-purple);
+  --project-accent: var(--series-3);
 }
 .project-shell #main h1:not(.project-hero-title) {
   font-family: var(--font);
@@ -456,7 +456,7 @@
 .project-shell .welfare-tile {
   background: var(--paper);
   border: 0;
-  border-top: 2px solid var(--data-blue);
+  border-top: 2px solid var(--series-1);
   border-radius: 0;
 }
 .project-shell .ds-visualization {

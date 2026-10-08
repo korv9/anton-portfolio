@@ -171,11 +171,11 @@ export default function DecisionTree({
           <radialGradient id="dtree-glow">
             <stop
               offset="0"
-              style={{ stopColor: 'var(--data-ochre)', stopOpacity: 0.55 }}
+              style={{ stopColor: 'var(--series-4)', stopOpacity: 0.55 }}
             />
             <stop
               offset="1"
-              style={{ stopColor: 'var(--data-ochre)', stopOpacity: 0 }}
+              style={{ stopColor: 'var(--series-4)', stopOpacity: 0 }}
             />
           </radialGradient>
         </defs>

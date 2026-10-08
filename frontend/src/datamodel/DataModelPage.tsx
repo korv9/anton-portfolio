@@ -95,7 +95,7 @@ const LAYERS: {
   },
 ]
 const REPO = 'https://github.com/korv9/anton-portfolio/blob/main/platform/'
-const number = (n: number) => n.toLocaleString('sv-SE')
+const number = (n: number) => n.toLocaleString(l('en-GB', 'sv-SE'))
 /** A table's address in the page's hash; a source carries its source name. */
 const slug = (n: Node) =>
   n.kind === 'source' ? `${n.subject}.${n.name}` : n.name

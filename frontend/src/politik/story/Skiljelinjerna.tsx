@@ -123,7 +123,7 @@ export default function Skiljelinjerna({ a }: { a: Analytics }) {
             key: x.committee,
             label: areaName(x.committee),
             value: x.polarisation * 100,
-            text: `${num(x.polarisation * 100, 0)}, ${num(x.votes)} ${l('roll calls', 'voteringar')}`,
+            text: `${num(x.polarisation * 100, 0)} (${num(x.votes)} ${l('roll calls', 'voteringar')})`,
             color: 'var(--ink)',
           }))}
           max={50}

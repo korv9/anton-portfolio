@@ -1,4 +1,4 @@
-import { currentLocale, t } from '../i18n'
+import { t, l } from '../i18n'
 import { useEffect, useRef, useState } from 'react'
 import { PARTIES, useData } from './data'
 import { readParquet } from '../parquet'
@@ -240,9 +240,7 @@ export default function SpeechBrowser() {
       {data && (
         <>
           <p aria-live="polite">
-            {matches.length.toLocaleString(
-              currentLocale() === 'sv' ? 'sv-SE' : 'en-GB',
-            )}{' '}
+            {matches.length.toLocaleString(l('en-GB', 'sv-SE'))}{' '}
             {t('speeches found, newest first')}
           </p>
           <div className="speech-browse-layout">

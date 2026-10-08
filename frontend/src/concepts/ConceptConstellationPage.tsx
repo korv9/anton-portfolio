@@ -175,7 +175,7 @@ function Constellation({ route, data }: { route: Route; data: Data }) {
         >
           <p>
             {l(
-              `${summary.concepts.length} concepts chosen by an editor, read across ${summary.corpora.reduce((s, c) => s + c.chunks, 0).toLocaleString('en')} passages from four corpora with one multilingual model. Every line below has a stated type. None says that one text influenced another.`,
+              `${summary.concepts.length} concepts chosen by an editor, read across ${summary.corpora.reduce((s, c) => s + c.chunks, 0).toLocaleString(l('en-GB', 'sv-SE'))} passages from four corpora with one multilingual model. Every line below has a stated type. None says that one text influenced another.`,
               `${summary.concepts.length} begrepp valda av en redaktör, lästa över ${summary.corpora.reduce((s, c) => s + c.chunks, 0).toLocaleString('sv')} passager ur fyra korpusar med en flerspråkig modell. Varje linje nedan har en angiven typ. Ingen säger att en text har påverkat en annan.`,
             )}
           </p>

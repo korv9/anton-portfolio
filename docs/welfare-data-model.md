@@ -13,14 +13,14 @@ Power BI, Databricks eller Python står i [analysguiden](analysis-guide.md).
 
 ## Källor
 
-| Källa | Vad | Nivå | Period |
-|---|---|---|---|
-| SCB, AKU | Sysselsättningsgrad, arbetslöshet, arbetskraftstal med felmarginal | Län (år, kvartal), riket (månad, kön, ålder) | 2001– |
-| SCB, befolkning | Folkmängd 31 december | Riket, län, kommun × kön | 1968– |
-| Försäkringskassan | Sjukpenningtal 2.0; startade sjukfall per diagnoskapitel; stressdiagnoser (F43) per län; pågående sjukfall per län och ålder | Kommun, län, riket × månad | 1994–, sjukpenningtal 2.0 från 2021 |
-| Folkhälsomyndigheten | Nationella folkhälsoenkäten: psykisk hälsa, allmän hälsa, sociala relationer och tillit, med 95 % konfidensintervall | Län (fyra år sammanslagna), riket per ålder och år | 2004– |
-| European Social Survey | Tillit, förtroende för institutioner, livstillfredsställelse, lycka, hälsa, värderingar | 39 länder; Sverige även per NUTS2 | Omgång 1–11 (2002–2024) |
-| Kolada | 13 nyckeltal: arbetslöshet, sysselsättning, sjukpenningtal, ohälsotal, inkomst, ekonomiskt bistånd, psykisk påfrestning, tillit, valdeltagande, våldsbrott, gymnasiebehörighet, invånare | Kommun, län, riket × kön | 1990– |
+| Källa                  | Vad                                                                                                                                                                                      | Nivå                                               | Period                              |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- | ----------------------------------- |
+| SCB, AKU               | Sysselsättningsgrad, arbetslöshet, arbetskraftstal med felmarginal                                                                                                                       | Län (år, kvartal), riket (månad, kön, ålder)       | 2001–                               |
+| SCB, befolkning        | Folkmängd 31 december                                                                                                                                                                    | Riket, län, kommun × kön                           | 1968–                               |
+| Försäkringskassan      | Sjukpenningtal 2.0; startade sjukfall per diagnoskapitel; stressdiagnoser (F43) per län; pågående sjukfall per län och ålder                                                             | Kommun, län, riket × månad                         | 1994–, sjukpenningtal 2.0 från 2021 |
+| Folkhälsomyndigheten   | Nationella folkhälsoenkäten: psykisk hälsa, allmän hälsa, sociala relationer och tillit, med 95 % konfidensintervall                                                                     | Län (fyra år sammanslagna), riket per ålder och år | 2004–                               |
+| European Social Survey | Tillit, förtroende för institutioner, livstillfredsställelse, lycka, hälsa, värderingar                                                                                                  | 39 länder; Sverige även per NUTS2                  | Omgång 1–11 (2002–2024)             |
+| Kolada                 | 13 nyckeltal: arbetslöshet, sysselsättning, sjukpenningtal, ohälsotal, inkomst, ekonomiskt bistånd, psykisk påfrestning, tillit, valdeltagande, våldsbrott, gymnasiebehörighet, invånare | Kommun, län, riket × kön                           | 1990–                               |
 
 Källor och villkor finns i `dim_source`. ESS-mikrodata stannar i det lokala warehouset;
 bara viktade aggregat lämnar det.
@@ -66,27 +66,27 @@ visar dem bara för `fct_indicator`.
 
 ### Gemensamma nycklar
 
-| Nyckel | Värden | Kommentar |
-|---|---|---|
-| `region_code` | `00` riket, `01`–`25` län, `0114` kommun, `SE11`–`SE33` NUTS2, `0050` AKU-aggregat | SCB:s koder. `dim_region` ger län, NUTS2 och Kolada-id för varje rad |
-| `period_key` | `2024`, `2024-Q1`, `2024-03`, `2021-2024`, `ESS11` | `dim_period` ger typ, start- och slutdatum och `reference_year` |
-| `sex_key` | `T`, `K`, `M` | Varje källas kodning översätts i silver |
-| `age_group_key` | `15-74`, `16-84`, `65+`, `ALL` … | Som källan publicerar dem. Band från olika källor jämförs inte |
+| Nyckel          | Värden                                                                             | Kommentar                                                            |
+| --------------- | ---------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| `region_code`   | `00` riket, `01`–`25` län, `0114` kommun, `SE11`–`SE33` NUTS2, `0050` AKU-aggregat | SCB:s koder. `dim_region` ger län, NUTS2 och Kolada-id för varje rad |
+| `period_key`    | `2024`, `2024-Q1`, `2024-03`, `2021-2024`, `ESS11`                                 | `dim_period` ger typ, start- och slutdatum och `reference_year`      |
+| `sex_key`       | `T`, `K`, `M`                                                                      | Varje källas kodning översätts i silver                              |
+| `age_group_key` | `15-74`, `16-84`, `65+`, `ALL` …                                                   | Som källan publicerar dem. Band från olika källor jämförs inte       |
 
 ### Fakta och grain
 
-| Tabell | Grain | Mått |
-|---|---|---|
-| `fct_labour_force` | region × period × kön × ålder × serietyp × status | tusental, felmarginal, andel, felmarginal |
-| `fct_population` | region × år × kön | folkmängd |
-| `fct_sick_pay_rate` | region × månad × kön × ålder | sjukpenningtal, antal försäkrade |
-| `fct_sick_leave_cases` | falltyp × region × månad × kön × ålder × diagnos | antal, förändring mot året före |
-| `fct_health_survey` | indikator × region × period × kön × ålder | andel, konfidensintervall, antal svar |
-| `fct_social_survey_country` | indikator × land × omgång × kön × ålder | viktat medel, intervall, andel höga svar, antal |
-| `fct_social_survey_region` | indikator × NUTS2 × omgång | som ovan, Sverige, omgång 5– |
-| `fct_kolada` | indikator × region × år × kön | värde |
-| **`fct_indicator`** | indikator × region × period × kön × ålder | värde, intervall, urval |
-| `mart_county_year_overview` | län × år | arbetslöshet, sjukpenningtal, stressfall per 1 000, psykisk påfrestning, folkmängd |
+| Tabell                      | Grain                                             | Mått                                                                               |
+| --------------------------- | ------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| `fct_labour_force`          | region × period × kön × ålder × serietyp × status | tusental, felmarginal, andel, felmarginal                                          |
+| `fct_population`            | region × år × kön                                 | folkmängd                                                                          |
+| `fct_sick_pay_rate`         | region × månad × kön × ålder                      | sjukpenningtal, antal försäkrade                                                   |
+| `fct_sick_leave_cases`      | falltyp × region × månad × kön × ålder × diagnos  | antal, förändring mot året före                                                    |
+| `fct_health_survey`         | indikator × region × period × kön × ålder         | andel, konfidensintervall, antal svar                                              |
+| `fct_social_survey_country` | indikator × land × omgång × kön × ålder           | viktat medel, intervall, andel höga svar, antal                                    |
+| `fct_social_survey_region`  | indikator × NUTS2 × omgång                        | som ovan, Sverige, omgång 5–                                                       |
+| `fct_kolada`                | indikator × region × år × kön                     | värde                                                                              |
+| **`fct_indicator`**         | indikator × region × period × kön × ålder         | värde, intervall, urval                                                            |
+| `mart_county_year_overview` | län × år                                          | arbetslöshet, sjukpenningtal, stressfall per 1 000, psykisk påfrestning, folkmängd |
 
 `fct_indicator` samlar rubrikvärdet från varje källa på en och samma grain. Det är tabellen
 att koppla över områden; källfakta behåller detaljen.

@@ -274,7 +274,7 @@ export default function Debatterna({
               setLines(
                 shown.includes(k)
                   ? shown.filter((x) => x !== k)
-                  : [...shown, k].slice(-6),
+                  : [...shown, k].slice(-5),
               )
             }
           >
@@ -499,12 +499,11 @@ export function AgendaLines({
     pad.l + (i / (agenda.length - 1)) * (W - pad.l - pad.r)
   const y = (v: number) => pad.t + (1 - v / top) * (H - pad.t - pad.b)
   const ink = [
-    'var(--data-blue)',
-    'var(--data-rust)',
-    'var(--data-green)',
-    'var(--data-ochre)',
-    'var(--data-purple)',
-    'var(--data-teal)',
+    'var(--series-1)',
+    'var(--series-2)',
+    'var(--series-3)',
+    'var(--series-4)',
+    'var(--series-5)',
   ]
   const ends = shown
     .map((k, i) => ({ k, i, y: y(agenda.at(-1)!.shares[k] ?? 0) }))

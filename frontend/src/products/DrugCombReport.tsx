@@ -164,7 +164,19 @@ const STEP_SV: Record<string, string> = {
     'Unika par × cellinje × studie',
 }
 
-const nf = () => (currentLocale() === 'sv' ? 'sv-SE' : 'en-GB')
+// How a name was matched (entity_resolution.method), in words.
+const METHOD: Record<string, [string, string]> = {
+  drugcombdb: ['DrugCombDB identifier', 'DrugCombDB-id'],
+  pubchem: ['PubChem lookup', 'PubChem-sökning'],
+  exact: ['exact name', 'exakt namn'],
+  alias: ['known alias', 'känt alias'],
+  excluded_non_human: ['left out, not human', 'utelämnad, ej human'],
+  unmatched: ['not matched', 'ej matchad'],
+  unresolved: ['not resolved', 'ej löst'],
+}
+const methodName = (m: string) => (METHOD[m] ? l(...METHOD[m]) : m)
+
+const nf = () => l('en-GB', 'sv-SE')
 const num = (n: number, digits = 0) =>
   n.toLocaleString(nf(), {
     minimumFractionDigits: digits,
@@ -703,6 +715,7 @@ export default function DrugCombReport() {
             series={MODELS.map(([id, en, sv]) => ({
               key: id,
               label: l(en, sv),
+              focus: id === 'lgbm_all',
               values: SPLITS.map(
                 ([scheme]) => metric(scheme, id)?.pearson ?? null,
               ),
@@ -790,7 +803,7 @@ export default function DrugCombReport() {
             <RankBars
               rows={tables.entities.map((e) => ({
                 key: `${e.entity}-${e.method}`,
-                label: `${e.entity === 'drug' ? l('Drug', 'Läkemedel') : l('Cell line', 'Cellinje')}, ${e.method}`,
+                label: `${e.entity === 'drug' ? l('Drug', 'Läkemedel') : l('Cell line', 'Cellinje')}: ${methodName(e.method)}`,
                 value: e.measurement_share * 100,
                 tone:
                   e.method === 'unresolved'

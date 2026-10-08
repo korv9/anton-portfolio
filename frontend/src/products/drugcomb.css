@@ -149,11 +149,11 @@
   overflow: visible;
 }
 .calib-zone.above {
-  fill: var(--data-blue);
+  fill: var(--series-1);
   fill-opacity: 0.07;
 }
 .calib-zone.below {
-  fill: var(--data-rust);
+  fill: var(--series-2);
   fill-opacity: 0.07;
 }
 .calib-zone-label {

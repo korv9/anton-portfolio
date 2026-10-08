@@ -1,4 +1,5 @@
 /** Controls shared by the politics themes: a select and number formats. */
+import { l } from '../i18n'
 
 export function Select({
   label,
@@ -26,7 +27,7 @@ export function Select({
 }
 
 const nf = (digits: number) =>
-  new Intl.NumberFormat('sv-SE', {
+  new Intl.NumberFormat(l('en-GB', 'sv-SE'), {
     minimumFractionDigits: digits,
     maximumFractionDigits: digits,
   })
@@ -35,9 +36,12 @@ export const pct = (value: number, digits = 1) => `${num(value, digits)} %`
 export const signed = (value: number, digits = 0) =>
   `${value > 0 ? '+' : value < 0 ? '−' : '±'}${num(Math.abs(value), digits)}`
 export const monthName = (iso: string) =>
-  new Date(iso).toLocaleDateString('sv-SE', { month: 'long', year: 'numeric' })
+  new Date(iso).toLocaleDateString(l('en-GB', 'sv-SE'), {
+    month: 'long',
+    year: 'numeric',
+  })
 export const dayName = (iso: string) =>
-  new Date(iso.slice(0, 10)).toLocaleDateString('sv-SE', {
+  new Date(iso.slice(0, 10)).toLocaleDateString(l('en-GB', 'sv-SE'), {
     day: 'numeric',
     month: 'long',
     year: 'numeric',

@@ -263,8 +263,8 @@ export function ValidityPanel({ analysis }: { analysis: Analysis }) {
 
 export const fmt = (v: number) =>
   Math.abs(v) >= 100 || Number.isInteger(v)
-    ? v.toLocaleString('sv-SE')
-    : v.toLocaleString('sv-SE', { maximumFractionDigits: 3 })
+    ? v.toLocaleString(l('en-GB', 'sv-SE'))
+    : v.toLocaleString(l('en-GB', 'sv-SE'), { maximumFractionDigits: 3 })
 
 export function checkWhy(c: QualityCheck): string {
   const reason = (c.details as { reason?: string }).reason

@@ -29,14 +29,12 @@ export type DrugCluster = {
 const W = 1000
 const H = 640
 const PAD = 70
-// The site's data-series tokens, in fixed order.
+// The first three series tokens and ink: four groups that stay apart side by side.
 const HUES = [
-  'var(--data-ochre)',
-  'var(--data-blue)',
-  'var(--data-rust)',
-  'var(--data-green)',
-  'var(--data-purple)',
-  'var(--data-teal)',
+  'var(--series-1)',
+  'var(--series-2)',
+  'var(--series-3)',
+  'var(--ink-2)',
 ]
 const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII']
 
@@ -195,7 +193,6 @@ export default function DrugConstellation({
             y={c.cy - 18}
             textAnchor="middle"
             className="dsky-label"
-            style={{ fill: HUES[c.id % HUES.length] }}
             opacity={dim(c.id) ? 0.2 : 1}
           >
             {ROMAN[c.id]}

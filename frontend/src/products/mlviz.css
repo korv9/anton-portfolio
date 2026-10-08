@@ -141,10 +141,16 @@
   opacity: 0.6;
 }
 .dsky-label {
+  fill: var(--ink);
   font-family: var(--font-mono) !important;
   font-size: 18px;
   font-weight: 600;
   letter-spacing: 0.1em;
+  /* A halo in the surface colour keeps the numeral readable over lines and stars. */
+  paint-order: stroke;
+  stroke: var(--paper-strong);
+  stroke-width: 4px;
+  stroke-linejoin: round;
 }
 .dsky-tip circle {
   fill: none;

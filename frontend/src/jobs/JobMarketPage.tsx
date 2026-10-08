@@ -97,7 +97,8 @@ export const HOURS_EN: Record<string, string> = {
   Okänd: 'Not stated',
 }
 
-const number = (value: number) => Math.round(value).toLocaleString('sv-SE')
+const number = (value: number) =>
+  Math.round(value).toLocaleString(l('en-GB', 'sv-SE'))
 const change = (now: number, before: number | undefined) =>
   before ? ((now - before) / before) * 100 : null
 const signedPct = (value: number | null) =>
@@ -105,7 +106,7 @@ const signedPct = (value: number | null) =>
     ? '–'
     : `${value > 0 ? '+' : value < 0 ? '−' : '±'}${Math.abs(
         value,
-      ).toLocaleString('sv-SE', { maximumFractionDigits: 0 })} %`
+      ).toLocaleString(l('en-GB', 'sv-SE'), { maximumFractionDigits: 0 })} %`
 const MONTHS_SV = [
   'januari',
   'februari',
@@ -822,7 +823,7 @@ function Regions({ data }: { data: Market }) {
                 </td>
                 <td>
                   {total
-                    ? `${((100 * r.full) / total).toLocaleString('sv-SE', { maximumFractionDigits: 1 })} %`
+                    ? `${((100 * r.full) / total).toLocaleString(l('en-GB', 'sv-SE'), { maximumFractionDigits: 1 })} %`
                     : '–'}
                 </td>
                 <td className={trendClass(r.change)}>{signedPct(r.change)}</td>
@@ -858,7 +859,7 @@ function ConditionsView({ data }: { data: Market }) {
   const pct = (value: number | null) =>
     value == null
       ? '–'
-      : `${value.toLocaleString('sv-SE', { maximumFractionDigits: 0 })} %`
+      : `${value.toLocaleString(l('en-GB', 'sv-SE'), { maximumFractionDigits: 0 })} %`
   const groups: [
     string,
     string,

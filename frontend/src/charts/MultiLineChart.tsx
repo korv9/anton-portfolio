@@ -5,17 +5,10 @@ import { identity, partyDash } from '../parties/identity'
 import { MarkerShape, spreadLabels } from './marks'
 
 /**
- * Categorical series colours, in fixed order and never cycled: a sixth series is not
- * drawn. Validated against the site surface (#f3f1ea) for lightness, chroma, colour-vision
- * separation and 3:1 contrast with the dataviz palette validator.
+ * Categorical series colours: the --series tokens (tokens.css), in fixed order and never
+ * cycled; a sixth series is not drawn.
  */
-export const SERIES_COLORS = [
-  '#008f82',
-  '#e0512e',
-  '#7a52b3',
-  '#a47400',
-  '#1c72c4',
-]
+export const SERIES_COLORS = [1, 2, 3, 4, 5].map((n) => `var(--series-${n})`)
 export const MAX_SERIES = SERIES_COLORS.length
 
 export type SeriesPoint = {
@@ -295,7 +288,7 @@ export default function MultiLineChart({
                         shape={identity(s.party).marker}
                         x={x(time(p.date))}
                         y={y(p.value)}
-                        size={3.5}
+                        size={4.5}
                         fill={color}
                         stroke={identity(s.party).casing ?? 'var(--page)'}
                       />
@@ -337,7 +330,7 @@ export default function MultiLineChart({
                   shape={identity(label.party).marker}
                   x={label.x}
                   y={label.y}
-                  size={4}
+                  size={5}
                   fill={paint(label.key)}
                   stroke={identity(label.party).casing ?? 'var(--page)'}
                 />

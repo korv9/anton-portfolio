@@ -1,3 +1,4 @@
+import { l } from '../i18n'
 import { fetchData } from '../dataSource'
 import { readParquet } from '../parquet'
 
@@ -121,7 +122,7 @@ export function loadSourceRows(source: string): Promise<IndicatorRow[]> {
 
 export function formatValue(value: number, unit: string | null) {
   const digits = Math.abs(value) >= 1000 ? 0 : Math.abs(value) >= 100 ? 1 : 2
-  const text = value.toLocaleString(undefined, {
+  const text = value.toLocaleString(l('en-GB', 'sv-SE'), {
     maximumFractionDigits: digits,
   })
   return unit && unit.startsWith('procent') ? `${text} %` : text

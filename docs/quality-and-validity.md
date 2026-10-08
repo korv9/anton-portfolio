@@ -22,8 +22,8 @@ Pages:
 
 - `#quality` is the technical overview: product matrix, the Symbolic Atlas case study, every
   analysis, every check, method and limitations.
-- Each major product has a compact *Quality & validity* section.
-- Data Constellation has a *Quality* view, and the node panel shows quality and validity for
+- Each major product has a compact _Quality & validity_ section.
+- Data Constellation has a _Quality_ view, and the node panel shows quality and validity for
   products and models.
 
 ## Standards: what is and is not claimed
@@ -41,13 +41,13 @@ not ISO-certified, not "fully ISO compliant" and has not been audited against an
 
 ## Data-quality dimensions (`platform/quality/dimensions.py`)
 
-| Dimension | Plain question | ISO/IEC 25012 |
-|---|---|---|
-| Accuracy | Does the data match the source? | Accuracy (inherent) |
-| Completeness | Is expected data missing? | Completeness (inherent) |
-| Consistency | Do related records agree? | Consistency (inherent) |
-| Credibility | Where does the data come from? | Credibility (inherent) |
-| Currentness | How fresh is the data? | Currentness (inherent) |
+| Dimension    | Plain question                                      | ISO/IEC 25012                                |
+| ------------ | --------------------------------------------------- | -------------------------------------------- |
+| Accuracy     | Does the data match the source?                     | Accuracy (inherent)                          |
+| Completeness | Is expected data missing?                           | Completeness (inherent)                      |
+| Consistency  | Do related records agree?                           | Consistency (inherent)                       |
+| Credibility  | Where does the data come from?                      | Credibility (inherent)                       |
+| Currentness  | How fresh is the data?                              | Currentness (inherent)                       |
 | Traceability | Can every value be traced to the file it came from? | Traceability (inherent and system-dependent) |
 
 Each product declares only the dimensions it actually evaluates.
@@ -213,7 +213,7 @@ There are 14 analyses with 27 diagnostics: 8 supported, 11 warning, 8 insufficie
 
 ## On the product pages
 
-Each product shows the quality points that matter for it in *Quality in brief*
+Each product shows the quality points that matter for it in _Quality in brief_
 (`QualityBrief` in `frontend/src/ui/Story.tsx`), each a dimension with its evidence, and links
 here for the full profile. The AI Act states accuracy (quotes tested verbatim against the
 official text, `assert_ai_act_quotes_in_current_text`), currentness, traceability and the

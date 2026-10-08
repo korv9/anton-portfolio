@@ -18,16 +18,16 @@ type Point = {
   n?: number
   scheme: string
 }
-// The site's data-series tokens, in fixed order.
+// The first three series tokens and ink: four groups that stay apart side by side.
 const COLOURS = [
-  'var(--data-blue)',
-  'var(--data-rust)',
-  'var(--data-green)',
-  'var(--data-purple)',
+  'var(--series-1)',
+  'var(--series-2)',
+  'var(--series-3)',
+  'var(--ink-2)',
 ]
 const TOLERANCE = 1
 const f1 = (v: number) =>
-  v.toLocaleString('sv-SE', {
+  v.toLocaleString(l('en-GB', 'sv-SE'), {
     minimumFractionDigits: 1,
     maximumFractionDigits: 1,
   })

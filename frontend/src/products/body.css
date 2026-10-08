@@ -19,7 +19,7 @@
 }
 .body-title {
   fill: var(--body-ink);
-  font-size: 15px;
+  font-size: 18px;
   font-weight: 600;
 }
 
@@ -97,26 +97,27 @@
 }
 .body-arc {
   fill: none;
-  stroke: var(--data-ochre);
+  stroke: var(--series-4);
   stroke-width: 3;
   stroke-linecap: round;
 }
 .body-index {
   fill: var(--body-ink);
   font-family: var(--font-mono) !important;
-  font-size: 9px;
+  font-size: 13px;
+  font-weight: 600;
   text-anchor: middle;
 }
 .body-label-name {
   fill: var(--body-ink);
   font-family: var(--font-mono) !important;
-  font-size: 11px;
+  font-size: 13px;
+  font-weight: 600;
   letter-spacing: 0.08em;
 }
 .body-label-meta {
-  fill: var(--body-ink);
-  font-size: 11px;
-  opacity: 0.65;
+  fill: var(--muted);
+  font-size: 13px;
 }
 .body-node.is-active .body-leader {
   stroke-opacity: 1;

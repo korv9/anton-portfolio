@@ -7,6 +7,10 @@
   font-size: var(--fs-lead, 1.15rem);
   line-height: 1.45;
 }
+/* The explorer is one wide piece: in the politics dashboard grid it takes both columns. */
+.politik .theme.cluster-story > .cluster-explorer {
+  grid-column: 1 / -1;
+}
 .cluster-view {
   margin-bottom: var(--sp-4);
 }

@@ -58,7 +58,7 @@ function ago(iso: string | null | undefined) {
 }
 function when(iso: string | null | undefined) {
   return iso
-    ? new Date(iso).toLocaleString(undefined, {
+    ? new Date(iso).toLocaleString(l('en-GB', 'sv-SE'), {
         dateStyle: 'medium',
         timeStyle: 'short',
       })
@@ -286,7 +286,7 @@ export default function StatusPage() {
                     <dt>
                       <code>gold.{table}</code>
                     </dt>
-                    <dd>{count.toLocaleString()}</dd>
+                    <dd>{count.toLocaleString(l('en-GB', 'sv-SE'))}</dd>
                   </div>
                 ))}
               </dl>
@@ -320,7 +320,7 @@ export default function StatusPage() {
                   <dd>
                     {Object.values(run.parquet_rows)
                       .reduce((sum, count) => sum + count, 0)
-                      .toLocaleString()}
+                      .toLocaleString(l('en-GB', 'sv-SE'))}
                   </dd>
                 </div>
               </dl>

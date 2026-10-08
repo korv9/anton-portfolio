@@ -133,7 +133,9 @@ export default function CorpusExplorer({
                 <td>{d.genre ?? '–'}</td>
                 <td>{named(SOURCE_TYPE, d.source_type)}</td>
                 <td>{named(PERIOD, d.period)}</td>
-                <td className="num">{d.points.toLocaleString()}</td>
+                <td className="num">
+                  {d.points.toLocaleString(l('en-GB', 'sv-SE'))}
+                </td>
                 <td>
                   <a href={d.source_url} target="_blank" rel="noreferrer">
                     {l(

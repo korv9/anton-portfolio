@@ -1,4 +1,4 @@
-import { t } from '../i18n'
+import { t, l } from '../i18n'
 import { fetchData } from '../dataSource'
 import { useEffect, useMemo, useState } from 'react'
 
@@ -191,7 +191,8 @@ export default function DataExplorer({
                   .filter((d) => d.product === product)
                   .map((d) => (
                     <option value={d.id} key={d.id}>
-                      {d.label}, {d.rows.toLocaleString('en-GB')} {t('rows')}
+                      {d.label}, {d.rows.toLocaleString(l('en-GB', 'sv-SE'))}{' '}
+                      {t('rows')}
                     </option>
                   ))}
               </optgroup>
@@ -269,8 +270,9 @@ export default function DataExplorer({
       ) : (
         <>
           <p aria-live="polite">
-            {visible.length.toLocaleString('en-GB')} {t('matching rows of ')}
-            {rows.length.toLocaleString('en-GB')}
+            {visible.length.toLocaleString(l('en-GB', 'sv-SE'))}{' '}
+            {t('matching rows of ')}
+            {rows.length.toLocaleString(l('en-GB', 'sv-SE'))}
             {t('. “–” means missing or not applicable.')}
           </p>
           <div
