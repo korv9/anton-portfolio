@@ -106,9 +106,22 @@ export default function ClusterMap() {
     () => (points ?? []).filter((p) => p.cluster !== -1),
     [points],
   )
+  // The frame fits the middle 98 % of the grouped ads, so a few far-off ads do not shrink
+  // the groups to a speck; dots beyond the frame are clipped.
+  const frame = useMemo(() => {
+    const cut = (v: number[]) => {
+      const s = [...v].sort((a, b) => a - b)
+      return [s[Math.floor(s.length * 0.01)], s[Math.ceil(s.length * 0.99) - 1]]
+    }
+    const [x0, x1] = cut(assigned.map((p) => p.x))
+    const [y0, y1] = cut(assigned.map((p) => p.y))
+    return assigned.filter(
+      (p) => p.x >= x0 && p.x <= x1 && p.y >= y0 && p.y <= y1,
+    )
+  }, [assigned])
   const coords = useMemo(
-    () => projectCoordinates(points ?? [], size.width, size.height, assigned),
-    [points, assigned, size],
+    () => projectCoordinates(points ?? [], size.width, size.height, frame),
+    [points, frame, size],
   )
   // Each group's label sits at the median of its dots.
   const labels = useMemo(() => {
