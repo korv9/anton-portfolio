@@ -593,7 +593,7 @@ function TablePanel({
             ],
             [
               l('Primary key', 'Primärnyckel'),
-              t.pk.length ? t.pk.join(' + ') : '—',
+              t.pk.length ? t.pk.join(' + ') : '–',
             ],
           ]}
         />

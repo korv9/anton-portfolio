@@ -39,7 +39,7 @@ test('issue debates: a dashboard per riksmöte and a debate with its decision', 
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.goto('/#politik-sakdebatter?riksmote=2025/26')
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-    'The Riksdag — issue debates',
+    'The Riksdag: issue debates',
   )
   // The riksmöte explorer sits behind "Go deeper", under the analysis.
   await page.locator('.sak-deeper > summary').click()

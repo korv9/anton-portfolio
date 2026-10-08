@@ -361,7 +361,7 @@ export default function SkatterTheme({ route }: { route: Route }) {
                     <span className="tax-max">{pct(max)}</span>
                   </div>
                   <span className="tax-rank">
-                    {rank ? `${rank}/${values.length}` : '—'}
+                    {rank ? `${rank}/${values.length}` : '–'}
                   </span>
                 </li>
               )
@@ -484,16 +484,16 @@ export default function SkatterTheme({ route }: { route: Route }) {
                   return (
                     <tr key={code}>
                       <th scope="row">{typeName(code)}</th>
-                      <td>{swe == null ? '—' : pct(swe)}</td>
-                      <td>{avg == null ? '—' : pct(avg)}</td>
+                      <td>{swe == null ? '–' : pct(swe)}</td>
+                      <td>{avg == null ? '–' : pct(avg)}</td>
                       <td
                         className={diff == null ? '' : diff > 0 ? 'up' : 'down'}
                       >
                         {diff == null
-                          ? '—'
+                          ? '–'
                           : `${diff >= 0 ? '+' : '−'}${num(Math.abs(diff), 1)}`}
                       </td>
-                      <td>{rankOf(code) ?? '—'}</td>
+                      <td>{rankOf(code) ?? '–'}</td>
                     </tr>
                   )
                 })}

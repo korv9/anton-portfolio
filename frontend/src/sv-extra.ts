@@ -22,8 +22,8 @@ export const swedishReports: Record<string, string> = {
   '· all eight parties': '· samtliga åtta partier',
   'Budget share': 'Budgetandel',
   'Keyword share': 'Nyckelordsandel',
-  'Budget share / keyword share. A dash means no separate party budget frame. Keyword shares use the selected method and archive, calculated separately within each party. 0.0% means zero detected matches; — means unavailable. They do not measure policy support.':
-    'Budgetandel / nyckelordsandel. Ett streck betyder att separat partibudget saknas. Nyckelordsandelen använder vald metod och valt arkiv och beräknas inom varje parti. 0,0 % betyder inga upptäckta träffar; — betyder att data saknas. Andelarna mäter inte politiskt stöd.',
+  'Budget share / keyword share. A dash means no separate party budget frame. Keyword shares use the selected method and archive, calculated separately within each party. 0.0% means zero detected matches; – means unavailable. They do not measure policy support.':
+    'Budgetandel / nyckelordsandel. Ett streck betyder att separat partibudget saknas. Nyckelordsandelen använder vald metod och valt arkiv och beräknas inom varje parti. 0,0 % betyder inga upptäckta träffar; – betyder att data saknas. Andelarna mäter inte politiskt stöd.',
   'Coverage: all eight parties and missing budget data':
     'Täckning: alla åtta partier och saknade budgetdata',
   'Debate speeches are present for all eight parties in these sessions. The cells below count expenditure areas in the imported FiU1 budget table; 27/27 is complete. A dash means there is no separate party budget frame in this export, not zero spending. GOV is the collective government proposal and cannot be assigned to individual parties.':
@@ -372,8 +372,8 @@ export const swedishReports: Record<string, string> = {
   'The budget in plain numbers': 'Budgeten i tydliga siffror',
   'What would each proposal change?': 'Vad skulle varje förslag ändra?',
   'Government expenditure frames total': 'Regeringens utgiftsramar uppgår till',
-  "billion SEK. Each card compares a party's proposal with the same year's government proposal—not with last year's spending. These are proposed expenditure frames, not actual spending or the full fiscal balance.":
-    'miljarder kronor. Varje kort jämför ett partis förslag med regeringens förslag samma år – inte med förra årets utgifter. Det här är föreslagna utgiftsramar, inte faktiska utgifter eller hela budgetens saldo.',
+  "billion SEK. Each card compares a party's proposal with the same year's government proposal, not with last year's spending. These are proposed expenditure frames, not actual spending or the full fiscal balance.":
+    'miljarder kronor. Varje kort jämför ett partis förslag med regeringens förslag samma år, inte med förra årets utgifter. Det här är föreslagna utgiftsramar, inte faktiska utgifter eller hela budgetens saldo.',
   'Net difference ·': 'Nettoskillnad ·',
   'bn SEK total': 'mdkr totalt',
   'Largest increases': 'Största ökningarna',
@@ -465,8 +465,8 @@ export const swedishReports: Record<string, string> = {
   'Allegoria · a small experiment in RFC drift':
     'Allegoria · ett litet experiment om RFC-förändringar',
   'When MUST becomes SHOULD.': 'När MUST blir SHOULD.',
-  "Can a small change in wording weaken a technical requirement? Allegoria's meaningquality engine makes that change explicit. Here, a cookie-specification comparison and a controlled example show what it can—and cannot—measure.":
-    'Kan en liten ändring i ordval försvaga ett tekniskt krav? Allegorias meaningquality-motor tydliggör ändringen. Här visar en jämförelse av specifikationer för cookies och ett kontrollerat exempel vad motorn kan – och inte kan – mäta.',
+  "Can a small change in wording weaken a technical requirement? Allegoria's meaningquality engine makes that change explicit. Here, a cookie-specification comparison and a controlled example show what it can and cannot measure.":
+    'Kan en liten ändring i ordval försvaga ett tekniskt krav? Allegorias meaningquality-motor tydliggör ändringen. Här visar en jämförelse av specifikationer för cookies och ett kontrollerat exempel vad motorn kan och inte kan mäta.',
   'The RFC export could not be loaded.': 'RFC-exporten kunde inte läsas in.',
   '01 / The language profile changed': '01 / Språkprofilen förändrades',
   'RFC 2965 (2000) → RFC 6265 (2011). Share of statements extracted by the heuristic reader, grouped by their first requirement keyword.':
@@ -536,8 +536,8 @@ export const swedishReports: Record<string, string> = {
   'Definitions & relationships': 'Definitioner och relationer',
   'Loading selected records…': 'Läser in valda poster…',
   'matching rows of': 'matchande rader av',
-  '. “—” means missing or not applicable.':
-    '. ”—” betyder saknat eller inte tillämpligt.',
+  '. “–” means missing or not applicable.':
+    '. ”–” betyder saknat eller inte tillämpligt.',
   'Dataset table, scroll horizontally': 'Datatabell, skrolla i sidled',
   Source: 'Källa',
   'No rows match these filters.': 'Inga rader matchar filtren.',

@@ -158,12 +158,12 @@ export default function TechReport() {
           />
           <div className="kpis jobs-kpis">
             <div>
-              <strong>{jobKpis ? formatNumber(jobKpis.ads_total) : '—'}</strong>
+              <strong>{jobKpis ? formatNumber(jobKpis.ads_total) : '–'}</strong>
               <span>{t('ads in the sample')}</span>
             </div>
             <div>
               <strong>
-                {jobKpis ? formatNumber(jobKpis.employers_unique) : '—'}
+                {jobKpis ? formatNumber(jobKpis.employers_unique) : '–'}
               </strong>
               <span>{t('unique employers')}</span>
             </div>
@@ -171,7 +171,7 @@ export default function TechReport() {
               <strong>
                 {jobKpis
                   ? formatSignedPercent(jobKpis.software_change_pct)
-                  : '—'}
+                  : '–'}
               </strong>
               <span>
                 {t('developer ads')}
@@ -182,7 +182,7 @@ export default function TechReport() {
             </div>
             <div>
               <strong>
-                {jobKpis ? `${jobKpis.junior_share_pct.toFixed(1)}%` : '—'}
+                {jobKpis ? `${jobKpis.junior_share_pct.toFixed(1)}%` : '–'}
               </strong>
               <span>{t('junior share')}</span>
             </div>

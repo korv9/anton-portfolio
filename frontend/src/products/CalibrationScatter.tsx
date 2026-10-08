@@ -234,7 +234,7 @@ export default function CalibrationScatter({
                         <>
                           <br />
                           {l('middle half', 'mittersta hälften')}{' '}
-                          {f1(p.obs_q25)} – {f1(p.obs_q75)}
+                          {f1(p.obs_q25)} {l('to', 'till')} {f1(p.obs_q75)}
                         </>
                       )}
                     </>,
@@ -254,7 +254,7 @@ export default function CalibrationScatter({
                         <>
                           <br />
                           {l('middle half', 'mittersta hälften')}{' '}
-                          {f1(p.obs_q25)} – {f1(p.obs_q75)}
+                          {f1(p.obs_q25)} {l('to', 'till')} {f1(p.obs_q75)}
                         </>
                       )}
                     </>,

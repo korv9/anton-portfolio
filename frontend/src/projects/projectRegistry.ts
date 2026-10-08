@@ -298,8 +298,8 @@ export const PROJECTS: ProjectEntry[] = [
       'Do jobs, sick leave, health and trust move together across Sweden?',
     ),
     built: t(
-      'Fem offentliga källor – SCB, Försäkringskassan, Folkhälsomyndigheten, European Social Survey och Kolada – i en testad dbt-stjärnmodell med gemensamma nycklar för region, period, kön och ålder.',
-      'Five public sources – SCB, Försäkringskassan, the Public Health Agency, the European Social Survey and Kolada – in a tested dbt star schema with shared keys for region, period, sex and age.',
+      'Fem offentliga källor (SCB, Försäkringskassan, Folkhälsomyndigheten, European Social Survey och Kolada) i en testad dbt-stjärnmodell med gemensamma nycklar för region, period, kön och ålder.',
+      'Five public sources (SCB, Försäkringskassan, the Public Health Agency, the European Social Survey and Kolada) in a tested dbt star schema with shared keys for region, period, sex and age.',
     ),
     result: t(
       'Län och kommuner kan jämföras sida vid sida i webbläsaren, med en statussida för varje källa och körning.',

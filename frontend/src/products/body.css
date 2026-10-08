@@ -17,19 +17,10 @@
 .body-ground {
   fill: var(--on-accent);
 }
-.body-title,
-.body-sub {
-  fill: var(--body-ink);
-  font-family: var(--font-mono) !important;
-  letter-spacing: 0.18em;
-}
 .body-title {
+  fill: var(--body-ink);
   font-size: 15px;
   font-weight: 600;
-}
-.body-sub {
-  font-size: 10px;
-  opacity: 0.6;
 }
 
 .body-field ellipse {

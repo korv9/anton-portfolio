@@ -39,7 +39,7 @@ const labels: Record<string, string> = {
 }
 const display = (value: unknown): string =>
   value == null
-    ? '—'
+    ? '–'
     : typeof value === 'object'
       ? JSON.stringify(value)
       : String(value)
@@ -271,7 +271,7 @@ export default function DataExplorer({
           <p aria-live="polite">
             {visible.length.toLocaleString('en-GB')} {t('matching rows of ')}
             {rows.length.toLocaleString('en-GB')}
-            {t('. “—” means missing or not applicable.')}
+            {t('. “–” means missing or not applicable.')}
           </p>
           <div
             className="data-table-scroll"

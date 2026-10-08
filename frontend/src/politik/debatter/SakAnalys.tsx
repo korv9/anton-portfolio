@@ -154,7 +154,7 @@ export default function SakAnalys({ route }: { route: Route }) {
       <header className="story-hero">
         <p className="story-eyebrow">{l('Issue debates', 'Sakdebatter')}</p>
         <h1>
-          {party && <PartyLogo party={party} size={40} />} {object} —{' '}
+          {party && <PartyLogo party={party} size={40} />} {object}:{' '}
           {l('issue debates', 'sakdebatter')}
         </h1>
         <p className="story-sub">

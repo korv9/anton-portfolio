@@ -229,7 +229,7 @@ test('issue debates: the chosen party is the object, in shares and against the o
 }) => {
   await page.goto('/#politik-sakdebatter?partier=MP')
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-    'Green Party — issue debates',
+    'Green Party: issue debates',
   )
   await expect(page.locator('.sak .story-kpis > div')).toHaveCount(4)
   await expect(page.locator('.sak-standout-text')).toContainText('%')

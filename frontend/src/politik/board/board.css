@@ -124,6 +124,13 @@
 .columns-cat.pickable {
   cursor: pointer;
 }
+.columns-cat.pickable:focus {
+  outline: none;
+}
+.columns-cat.pickable:focus-visible .columns-hit {
+  stroke: var(--focus);
+  stroke-width: 2;
+}
 .columns-highlight {
   fill: none;
   stroke: var(--ink);

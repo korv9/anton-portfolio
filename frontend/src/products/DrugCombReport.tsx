@@ -243,7 +243,6 @@ export default function DrugCombReport() {
     <article className="report drugcomb-board" id="drugcomb">
       <Stage
         id="dc-body"
-        kicker={l('DrugComb · 01 · the data', 'DrugComb · 01 · datan')}
         title={l(
           'Where the cancer cells come from',
           'Var cancercellerna kommer ifrån',
@@ -365,10 +364,6 @@ export default function DrugCombReport() {
       {treeFile && (
         <Stage
           id="dc-tree"
-          kicker={l(
-            'DrugComb · 02 · a model you can read',
-            'DrugComb · 02 · en modell man kan läsa',
-          )}
           title={l(
             'How a decision tree decides',
             'Så bestämmer ett beslutsträd',
@@ -511,7 +506,6 @@ export default function DrugCombReport() {
       {sky && (
         <Stage
           id="dc-sky"
-          kicker={l('DrugComb · 03 · clustering', 'DrugComb · 03 · klustring')}
           title={l('Drugs that behave alike', 'Läkemedel som beter sig lika')}
           lead={l(
             'Each star is a drug, placed by where it is synergistic. Drugs that cluster together are joined like a constellation. Choose a cluster to see it alone.',
@@ -1142,34 +1136,52 @@ export default function DrugCombReport() {
           )}
         </summary>
         <div className="figure-gallery">
-          {[
+          {(
             [
-              'an_01_zip_distribution',
-              'Distribution of measured ZIP scores',
-              'Fördelning av uppmätta ZIP-värden',
-            ],
-            [
-              'an_02_replicate_agreement',
-              'Agreement between repeated measurements',
-              'Överensstämmelse mellan upprepade mätningar',
-            ],
-            [
-              'ml_03_pred_vs_obs',
-              'Predicted against measured',
-              'Förutsagt mot uppmätt',
-            ],
-            [
-              'ml_04_ablation',
-              'What each feature group adds',
-              'Vad varje egenskapsgrupp tillför',
-            ],
-            [
-              'ml_05_overfitting',
-              'Overfitting check',
-              'Kontroll av överanpassning',
-            ],
-            ['an_06_top_pairs', 'The strongest pairs', 'De starkaste paren'],
-          ].map(([file, en, sv]) => (
+              [
+                'an_01_zip_distribution',
+                1579,
+                738,
+                'Distribution of measured ZIP scores',
+                'Fördelning av uppmätta ZIP-värden',
+              ],
+              [
+                'an_02_replicate_agreement',
+                1007,
+                978,
+                'Agreement between repeated measurements',
+                'Överensstämmelse mellan upprepade mätningar',
+              ],
+              [
+                'ml_03_pred_vs_obs',
+                1007,
+                978,
+                'Predicted against measured',
+                'Förutsagt mot uppmätt',
+              ],
+              [
+                'ml_04_ablation',
+                1681,
+                868,
+                'What each feature group adds',
+                'Vad varje egenskapsgrupp tillför',
+              ],
+              [
+                'ml_05_overfitting',
+                1981,
+                792,
+                'Overfitting check',
+                'Kontroll av överanpassning',
+              ],
+              [
+                'an_06_top_pairs',
+                1582,
+                1378,
+                'The strongest pairs',
+                'De starkaste paren',
+              ],
+            ] as [string, number, number, string, string][]
+          ).map(([file, w, h, en, sv]) => (
             <figure key={file}>
               <a
                 href={`data/products/drugcomb/figures/${file}.svg`}
@@ -1179,6 +1191,8 @@ export default function DrugCombReport() {
                 <img
                   src={`data/products/drugcomb/figures/${file}.png`}
                   alt={l(en, sv)}
+                  width={w}
+                  height={h}
                   loading="lazy"
                 />
               </a>

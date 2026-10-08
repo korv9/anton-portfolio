@@ -160,10 +160,19 @@ export default function Header({
   const [homeTop, setHomeTop] = useState(home)
   useEffect(() => {
     if (!home) return setHomeTop(false)
-    const onScroll = () => setHomeTop(window.scrollY < window.innerHeight * 0.5)
-    onScroll()
-    window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
+    // A marker half a screen down the page: while it is in view, the reader is near the top.
+    const marker = document.createElement('div')
+    marker.style.cssText =
+      'position:absolute;top:50vh;left:0;width:1px;height:1px;pointer-events:none'
+    document.body.append(marker)
+    const observer = new IntersectionObserver(([entry]) =>
+      setHomeTop(entry.isIntersecting || entry.boundingClientRect.top > 0),
+    )
+    observer.observe(marker)
+    return () => {
+      observer.disconnect()
+      marker.remove()
+    }
   }, [home])
   // Sticky elements further down (a product's sidebar, anchored sections) sit under it.
   useEffect(() => {

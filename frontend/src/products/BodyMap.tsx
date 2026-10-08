@@ -193,12 +193,9 @@ export default function BodyMap({
         </defs>
         <rect width="900" height="760" className="body-ground" />
         <text x="40" y="44" className="body-title">
-          {l('CHART NO. 1', 'TAVLA NR 1')}
-        </text>
-        <text x="40" y="62" className="body-sub">
           {l(
-            'CELL LINES OF THE SCREENS · BY TISSUE OF ORIGIN',
-            'FÖRSÖKENS CELLINJER · EFTER URSPRUNGSVÄVNAD',
+            'Cell lines in the screens, by tissue of origin',
+            'Försökens cellinjer, efter ursprungsvävnad',
           )}
         </text>
 

@@ -274,7 +274,7 @@ function Constellation({ route, data }: { route: Route; data: Data }) {
                       }
                     >
                       <title>
-                        {`${label(conceptOf(r.concept_a)!)} – ${label(conceptOf(r.concept_b)!)}: ${l(...RELATION_LABEL[r.relation_type])}`}
+                        {`${label(conceptOf(r.concept_a)!)} ${l('and', 'och')} ${label(conceptOf(r.concept_b)!)}: ${l(...RELATION_LABEL[r.relation_type])}`}
                       </title>
                     </path>
                   )

@@ -230,6 +230,12 @@ select,
 textarea,
 button {
   color: inherit;
+  touch-action: manipulation;
+}
+h1,
+h2,
+h3 {
+  text-wrap: balance;
 }
 input,
 select,

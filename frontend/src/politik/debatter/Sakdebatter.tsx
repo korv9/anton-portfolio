@@ -38,8 +38,8 @@ export default function Sakdebatter({ route }: { route: Route }) {
       <details className="sak-deeper" id="fordjupa">
         <summary>
           {l(
-            'Go deeper: the debates riksmöte by riksmöte — leaderboard, votes on the reports and every debate',
-            'Fördjupa analysen: debatterna riksmöte för riksmöte — topplista, röster på betänkandena och alla debatter',
+            'Go deeper: the debates riksmöte by riksmöte: leaderboard, votes on the reports and every debate',
+            'Fördjupa analysen: debatterna riksmöte för riksmöte: topplista, röster på betänkandena och alla debatter',
           )}
         </summary>
         <Explorer route={route} />

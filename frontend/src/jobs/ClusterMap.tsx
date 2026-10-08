@@ -417,12 +417,12 @@ export default function ClusterMap() {
         <p>
           {l('Map neighbour preservation', 'Kartans bevarande av grannar')}:{' '}
           {(d.feature_trustworthiness ?? d.trustworthiness).toFixed(2)}.
-          Silhouette: {d.silhouette?.toFixed(2) ?? '—'}.{' '}
+          Silhouette: {d.silhouette?.toFixed(2) ?? '–'}.{' '}
           {l(
             'Mean agreement across runs',
             'Genomsnittligt stöd mellan körningar',
           )}
-          : {d.mean_cluster_probability?.toFixed(2) ?? '—'}.{' '}
+          : {d.mean_cluster_probability?.toFixed(2) ?? '–'}.{' '}
           {l(
             `Diagnostics use a sample of ${num(d.trustworthiness_sample_size)} ads.`,
             `Diagnostiken använder ett urval på ${num(d.trustworthiness_sample_size)} annonser.`,

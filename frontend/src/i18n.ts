@@ -52,8 +52,8 @@ const swedish: Record<string, string> = {
   'Data Engineer': 'Dataingenjör',
   'Analytics Engineer': 'Analytics Engineer',
   '& Analytics Engineer.': 'och Analytics Engineer.',
-  "Hi, I'm Anton. I enjoy making complex information easier to understand — from building reliable data pipelines to exploring questions through reports and applied AI. I'm a junior data professional with experience from Fora and Avtalat, and this is a collection of what I've worked on and what I'm curious about.":
-    'Hej, jag heter Anton. Jag tycker om att göra komplex information lättare att förstå – från att bygga tillförlitliga dataflöden till att utforska frågor genom rapporter och tillämpad AI. Jag är i början av min karriär inom data, med erfarenhet från Fora och Avtalat. Här samlar jag sådant jag har arbetat med och är nyfiken på.',
+  "Hi, I'm Anton. I enjoy making complex information easier to understand, from building reliable data pipelines to exploring questions through reports and applied AI. I'm a junior data professional with experience from Fora and Avtalat, and this is a collection of what I've worked on and what I'm curious about.":
+    'Hej, jag heter Anton. Jag tycker om att göra komplex information lättare att förstå, från att bygga tillförlitliga dataflöden till att utforska frågor genom rapporter och tillämpad AI. Jag är i början av min karriär inom data, med erfarenhet från Fora och Avtalat. Här samlar jag sådant jag har arbetat med och är nyfiken på.',
   'View projects': 'Se projekten',
   'Email me': 'Mejla mig',
   'Analytics Engineer · LIA internship': 'Analytics Engineer · LIA-praktik',

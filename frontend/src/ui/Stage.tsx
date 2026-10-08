@@ -21,7 +21,7 @@ export function Stage({
   level = 2,
 }: {
   id: string
-  kicker: string
+  kicker?: string
   title: string
   lead?: string
   figure: ReactNode
@@ -40,7 +40,7 @@ export function Stage({
         aria-labelledby={`${id}-title`}
       >
         <header className="stage-head">
-          <p className="stage-kicker">{kicker}</p>
+          {kicker && <p className="stage-kicker">{kicker}</p>}
           <Heading id={`${id}-title`}>{title}</Heading>
           {lead && <p className="stage-lead">{lead}</p>}
         </header>

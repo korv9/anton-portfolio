@@ -36,7 +36,7 @@ export default function RfcReport() {
       <h2>{t('When MUST becomes SHOULD.')}</h2>
       <p>
         {t(
-          "Can a small change in wording weaken a technical requirement?\n        Allegoria's meaningquality engine makes that change explicit. Here, a\n        cookie-specification comparison and a controlled example show what it\n        can—and cannot—measure.\n      ",
+          "Can a small change in wording weaken a technical requirement?\n        Allegoria's meaningquality engine makes that change explicit. Here, a\n        cookie-specification comparison and a controlled example show what it\n        can and cannot measure.\n      ",
         )}
       </p>
       {error && <p role="alert">{t('The RFC export could not be loaded.')}</p>}

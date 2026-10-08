@@ -23,7 +23,7 @@ test('the overview answers what applies now and next, with the source one click 
     '#ai-act-startups',
   )
   await expect(page.locator('.aa-snapshot')).toContainText(
-    'AI Act — October 2026',
+    'AI Act: October 2026',
   )
   // The background on the Act is one click deeper.
   await page.getByRole('button', { name: 'About the Act' }).click()

@@ -8,6 +8,7 @@
  * ColumnMultiples draws one small chart per series on a shared scale, the columns version of
  * several lines over time, so no one has to tell overlapping lines apart.
  */
+import type { KeyboardEvent } from 'react'
 import { identity, partyName } from '../../parties/identity'
 import { useSize } from '../dash/motion'
 
@@ -153,6 +154,17 @@ export default function Columns({
                   key={category + i}
                   className={onPick ? 'columns-cat pickable' : 'columns-cat'}
                   onClick={onPick ? () => onPick(i) : undefined}
+                  {...(onPick && {
+                    role: 'button',
+                    tabIndex: 0,
+                    'aria-label': title.replace(/\n/g, ', '),
+                    onKeyDown: (e: KeyboardEvent) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault()
+                        onPick(i)
+                      }
+                    },
+                  })}
                 >
                   <title>{title}</title>
                   <rect
