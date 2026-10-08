@@ -41,9 +41,8 @@ function Identity() {
           Anton Ernstsson
         </h1>
         <p className="home-roles">
-          <span>Data Engineer</span>
-          <span>Analytics Engineer</span>
-          <span>{l('Applied AI', 'Tillämpad AI')}</span>
+          <span>Junior Software Developer</span>
+          <span>Data &amp; AI</span>
         </p>
         <p className="home-lede">
           {l(
