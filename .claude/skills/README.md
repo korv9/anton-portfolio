@@ -1,7 +1,7 @@
 # Skills
 
 Agent skills this repository follows. `CLAUDE.md` at the root says when each applies. All
-three that come from repositories are MIT-licensed and keep their upstream `LICENSE`.
+that come from repositories are MIT-licensed and keep their upstream `LICENSE`.
 
 | Skill | Source | Commit | Changes here |
 |---|---|---|---|
@@ -9,6 +9,9 @@ three that come from repositories are MIT-licensed and keep their upstream `LICE
 | `frontend-design-principles` | [joshuadavidthomas/agent-skills](https://github.com/joshuadavidthomas/agent-skills) `frontend-design-principles` | `516dee7` | None. |
 | `de-ai-writing` | Pasted by the owner (based on Wikipedia's *Signs of AI writing*, WikiProject AI Cleanup) | – | `scripts/check_ai_signs.py` was not included and is written here: it finds the pattern-matchable signs, numbered as in `references/signs.md`. |
 | `diagram-design` | [cathrynlavery/diagram-design](https://github.com/cathrynlavery/diagram-design) `skills/diagram-design` | `d137637` | `references/style-guide.md` uses the portfolio's tokens and type. The 200 `assets/example-*.html` files (4.3 MB) are left out; the templates and icons are kept, and the examples can be browsed upstream. |
+| `taste-skill` | [Leonxlnx/taste-skill](https://github.com/Leonxlnx/taste-skill) `skills/taste-skill` (skill name `design-taste-frontend`) | `b482f7a` | None. The other twelve skills in that repository (brutalist, soft, image generation, …) are left out. |
+| `web-design-guidelines` | [vercel-labs/agent-skills](https://github.com/vercel-labs/agent-skills) `skills/web-design-guidelines` | `063bee9` | The rules are baked in: `references/guidelines.md` is `command.md` from [vercel-labs/web-interface-guidelines](https://github.com/vercel-labs/web-interface-guidelines) at `434b7f9`, and `SKILL.md` reads that file instead of fetching it. `LICENSE` is that repository's. |
 
 To update one, copy the folder from upstream again, keep the changes listed above, and update
-the commit.
+the commit. For `web-design-guidelines`, also copy `command.md` from web-interface-guidelines
+over `references/guidelines.md`.
