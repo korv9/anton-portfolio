@@ -120,10 +120,10 @@
   fill: color-mix(in srgb, var(--ink) 55%, transparent);
 }
 .er-mark.is-pk {
-  fill: #f3d9a4;
+  fill: var(--data-ochre);
 }
 .er-mark.is-fk {
-  fill: #a9cbe8;
+  fill: var(--data-blue);
 }
 .er-col {
   fill: var(--ink);
@@ -228,7 +228,7 @@
 .er-col-mark {
   font-family: var(--font-mono);
   font-size: 0.7rem;
-  color: #f3d9a4;
+  color: var(--muted);
 }
 .er-col-type {
   color: var(--stage-muted);

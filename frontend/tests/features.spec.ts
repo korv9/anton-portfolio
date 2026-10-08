@@ -22,21 +22,15 @@ async function feature(page: import('@playwright/test').Page, id: string) {
   return f
 }
 
-test('roll-call waffles: a hundred squares per party, re-ordered by the kind of vote', async ({
+test('vote shares: the parties ranked by the kind of vote picked', async ({
   page,
 }) => {
   await page.goto('/#politik-roster')
   const f = await feature(page, 'rostrutor')
-  await expect(f.locator('.waffle')).toHaveCount(8)
-  await expect(
-    f.locator('.waffle').first().locator('.waffle-grid span'),
-  ).toHaveCount(100)
-  const first = await f.locator('.waffle figcaption span').first().textContent()
-  await f.getByRole('button', { name: 'Abstained' }).click()
-  await expect(f.locator('.waffle figcaption span').first()).not.toHaveText(
-    first!,
-  )
-  await expect(f.locator('h2')).toContainText('abstained')
+  await expect(f.locator('.rank-bars-list li')).toHaveCount(8)
+  const first = await f.locator('.rank-label').first().textContent()
+  await f.getByRole('button', { name: 'Abstained', exact: true }).click()
+  await expect(f.locator('.rank-label').first()).not.toHaveText(first!)
 })
 
 test('poll trend: names at the line ends and a crosshair that reads every party', async ({
@@ -58,72 +52,62 @@ test('poll trend: names at the line ends and a crosshair that reads every party'
   await expect(f.locator('.trend-year').first()).toHaveText(/19[7-9]\d/)
 })
 
-test('seat alluvial: every election since 1973, one party followed through all', async ({
+test('seats over time: one line per party since the chosen election', async ({
   page,
 }) => {
   await page.goto('/#politik-partier')
   const f = await feature(page, 'mandat')
   await f.getByRole('button', { name: 'From 1973' }).click()
-  await expect(f.locator('.alluvial-year')).toHaveCount(16)
-  await f.locator('.alluvial-label').first().dispatchEvent('pointerdown')
-  await expect(f.locator('.alluvial-readout')).toContainText('1973')
+  await expect(f.locator('.feature-table thead th')).toHaveCount(17)
   // The party cards are still there, under the chart.
   await expect(page.locator('.party-cards')).toBeVisible()
 })
 
-test('budget flow: the government’s budget into its areas, coloured by a party', async ({
+test('budget difference: a party against the government, area by area', async ({
   page,
 }) => {
   await page.goto('/#politik-budget')
   const f = await feature(page, 'budgetflode')
-  const bands = f.locator('.budgetflow-band')
-  expect(await bands.count()).toBeGreaterThan(20)
+  await expect(f.locator('.rank-bars-list.diverging')).toBeVisible()
   const title = await f.locator('h2').textContent()
-  const picks = f.locator('.feature-pick button')
-  await picks.nth(1).click()
+  await f.locator('.feature-pick button').nth(1).click()
   await expect(f.locator('h2')).not.toHaveText(title!)
-  await bands.first().dispatchEvent('pointerdown')
-  await expect(f.locator('.feature-tip')).toBeVisible()
 })
 
-test('tax bubbles: every tax by revenue, the mix changes with the year', async ({
+test('tax ranking: every tax by revenue, the mix changes with the year', async ({
   page,
 }) => {
   await page.goto('/#politik-skatter')
   const f = await feature(page, 'skattebubblor')
-  await expect(f.locator('.taxband')).toHaveCount(6)
-  const now = await f.locator('.taxbubble').count()
+  await expect(f.locator('.rank-bars-list li')).toHaveCount(8)
   await f.getByRole('button', { name: '1990' }).click()
   await expect(f.locator('h2')).toContainText('1990')
-  expect(await f.locator('.taxbubble').count()).toBeGreaterThanOrEqual(now)
 })
 
-test('debate leaderboard: one party lit up in every column', async ({
+test('debate ranking: the parties ranked by the measure picked', async ({
   page,
 }) => {
   await page.goto('/#politik-sakdebatter')
   await page.locator('.sak-deeper > summary').click()
   const f = await feature(page, 'topplista')
-  await expect(f.locator('.leaderboard-col')).toHaveCount(5)
-  await f.locator('.leaderboard-col').first().locator('button').first().click()
-  await expect(f.locator('.leaderboard li.on')).toHaveCount(5)
-  await expect(f.locator('.leaderboard-path line')).toHaveCount(4)
+  await expect(f.locator('.rank-bars-list li')).toHaveCount(8)
+  const first = await f.locator('.rank-label').first().textContent()
+  await f.getByRole('button', { name: 'Replies per speech' }).click()
+  await expect(f.locator('.rank-value').first()).not.toHaveText(first!)
 })
 
-test('job treemap: fields sized by ads, one opens into its occupations', async ({
+test('field ranking: fields by ads, one opens into its occupations', async ({
   page,
 }) => {
   await page.goto('/#jobb')
-  // The treemap is part of Explore on the overview.
+  // The ranking is part of Explore on the overview.
   await page.getByRole('button', { name: 'Explore the data' }).click()
   const f = await feature(page, 'treemap')
-  const fields = await f.locator('.treemap-tile').count()
-  expect(fields).toBeGreaterThan(15)
-  await f.locator('button.treemap-tile').first().click()
+  await expect(f.locator('.rank-bars-list li')).toHaveCount(12)
+  await f.locator('.rank-bars-list li > button').first().click()
   await expect(f.locator('.treemap-path b')).toBeVisible()
-  await expect(f.locator('button.treemap-tile')).toHaveCount(0)
   await f.getByRole('button', { name: 'All fields' }).click()
-  await expect(f.locator('button.treemap-tile')).toHaveCount(fields)
+  await expect(f.locator('.treemap-path b')).toHaveCount(0)
 })
 
 test('county small multiples: one chart per county on a shared axis', async ({

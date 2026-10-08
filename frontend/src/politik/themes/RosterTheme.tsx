@@ -348,7 +348,9 @@ export default function RosterTheme({ route }: { route: Route }) {
           </p>
         }
         onBuild={() => setBuilding(true)}
-        deepLinks={[]}
+        deepLinks={[
+          { href: '#politik-partier', label: l('The parties', 'Partierna') },
+        ]}
       />
       <BuilderPanel
         open={building}

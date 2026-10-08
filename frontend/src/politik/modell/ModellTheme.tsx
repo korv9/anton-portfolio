@@ -62,7 +62,7 @@ function Rays({ model }: { model: PartyModel }) {
       {others.map(([key, v], i) => {
         const a = -Math.PI / 2 + (i * Math.PI * 2) / others.length
         const [x, y] = [C + 230 * Math.cos(a), C + 230 * Math.sin(a)]
-        const colour = key === 'committee' ? '#f1ece2' : partyFill(key)
+        const colour = key === 'committee' ? 'var(--subtle)' : partyFill(key)
         const w = 1 + 22 * (v / max)
         return (
           <g key={key} className="modell-ray" style={{ ['--i' as string]: i }}>
@@ -71,7 +71,7 @@ function Rays({ model }: { model: PartyModel }) {
               y1={C}
               x2={x}
               y2={y}
-              stroke={colour}
+              style={{ stroke: colour }}
               strokeWidth={w}
               strokeLinecap="round"
               opacity={0.25 + 0.6 * (v / max)}
@@ -80,8 +80,7 @@ function Rays({ model }: { model: PartyModel }) {
               cx={x}
               cy={y}
               r={20}
-              fill="#070708"
-              stroke={colour}
+              style={{ fill: 'var(--paper-strong)', stroke: colour }}
               strokeWidth={2}
             />
             <text x={x} y={y + 4} textAnchor="middle" className="modell-node">

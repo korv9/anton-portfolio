@@ -57,9 +57,9 @@ test('the party bar follows the reader from the story to the other pages', async
   await expect(page).toHaveURL(
     /#politik-valjarna\?partier=S%2CV%2CM|#politik-valjarna\?partier=S,V,M/,
   )
-  await expect(page.locator('.bars-list li')).toHaveCount(3)
+  await expect(page.locator('.rank-bars-list li')).toHaveCount(3)
   await page.getByRole('button', { name: 'Show all' }).click()
-  await expect(page.locator('.bars-list li')).toHaveCount(8)
+  await expect(page.locator('.rank-bars-list li')).toHaveCount(8)
   await expect(bar.getByRole('button', { pressed: true })).toHaveCount(0)
 })
 
@@ -78,7 +78,7 @@ test('the view builder offers valid choices and keeps them in a shareable addres
 }) => {
   await page.goto('/#politik-valjarna')
   // Bars by default: the latest survey, one bar per party.
-  await expect(page.locator('.bars-list li')).toHaveCount(8)
+  await expect(page.locator('.rank-bars-list li')).toHaveCount(8)
   await page.getByRole('button', { name: 'Build your own view' }).click()
   const panel = page.getByRole('dialog', { name: /Build your own view/ })
   await expect(panel).toBeVisible()
@@ -104,7 +104,7 @@ test('the view builder offers valid choices and keeps them in a shareable addres
 
   await page.goto('/#politik-budget-detalj?partier=V')
   await expect(page.locator('.theme-chart-title')).toContainText('Left Party')
-  expect(await page.locator('.bars-list li').count()).toBeGreaterThan(20)
+  expect(await page.locator('.rank-bars-list li').count()).toBeGreaterThan(20)
   await page.getByRole('button', { name: 'Build your own view' }).click()
   await page.getByLabel('One area, every party').check()
   await page.getByLabel('Per cent of the budget for the area').check()
