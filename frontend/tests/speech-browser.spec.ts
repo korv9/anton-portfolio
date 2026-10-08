@@ -11,7 +11,7 @@ test('visitors find a speaker, read full speeches and move through a debate', as
     .selectOption('M')
   await expect(
     browser.locator('.speech-card').first().locator('small'),
-  ).toContainText(/ M /)
+  ).toContainText(/, M,/)
   await browser.locator('.speech-card').first().click()
   const reader = browser.getByRole('article', { name: 'Selected speech' })
   await expect(reader.locator('.source-text')).not.toBeEmpty()
