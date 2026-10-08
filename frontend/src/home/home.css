@@ -1,10 +1,9 @@
 /*
  * The start page (home/HomePage.tsx): three screens, then two short sections.
- *   identity: the intro chart with the name and three titles (intro.css), then one sentence and
- *   four links.
- *   experience: the two roles first, the core stack beside them.
- *   selected work: one card per flagship, the whole card a link.
- * No previews and no buttons; the only motion is the intro, once per session.
+ *   01 identity: the name, three roles, one sentence, four links on the right.
+ *   02 experience: the two roles first, the core stack beside them.
+ *   03 selected work: one card per flagship, the whole card a link.
+ * No previews, no buttons, no motion beyond a hover shade.
  */
 .home {
   max-width: var(--layout-wide);
@@ -34,17 +33,30 @@
 
 /* ---------- 01 Identity ---------- */
 .home-identity {
-  /* The intro chart fills the first screen (intro.css); the sentence and the links follow. */
-  padding-block: 0 var(--sp-6);
-  border-top: 0;
-}
-.home-identity-foot {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  align-items: end;
-  gap: var(--sp-5) var(--sp-6);
-  padding-top: var(--sp-5);
-  border-top: 1px solid var(--line);
+  align-items: center;
+  gap: var(--sp-6);
+  /* One screen, less the header; never less than the content needs. */
+  min-height: calc(100svh - var(--header-h, 57px) - 40px);
+  padding-block: var(--sp-6);
+  border-top: 0;
+}
+.home-name {
+  margin: 0 0 var(--sp-5);
+  font-size: var(--display-xl);
+  font-weight: 750;
+  letter-spacing: -0.055em;
+  line-height: 0.92;
+  text-transform: uppercase;
+}
+.home-roles {
+  display: grid;
+  margin: 0 0 var(--sp-5);
+  font-size: var(--h3);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
 }
 .home-lede {
   max-width: 34ch;
@@ -54,9 +66,11 @@
   line-height: 1.5;
 }
 .home-nav {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--sp-2) var(--sp-5);
+  display: grid;
+  gap: var(--sp-2);
+  justify-items: end;
+  align-self: end;
+  padding-bottom: var(--sp-2);
 }
 .home-nav a {
   color: var(--ink);
@@ -232,8 +246,19 @@
   }
 }
 @media (max-width: 760px) {
-  .home-identity-foot {
+  .home-identity {
     grid-template-columns: minmax(0, 1fr);
+    align-content: center;
+  }
+  .home-name {
+    font-size: clamp(2.6rem, 13vw, 4rem);
+  }
+  /* The four links on one line under the sentence. */
+  .home-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-items: start;
+    gap: var(--sp-2) var(--sp-4);
   }
   .work-card {
     min-height: 0;

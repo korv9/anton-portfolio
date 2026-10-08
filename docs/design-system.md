@@ -133,11 +133,6 @@ with ink, `:active` nudges it, `:disabled` fades it and shows a not-allowed poin
 Short (`--dur: 160ms`, `--ease`). Under `prefers-reduced-motion: reduce` every animation
 and transition is cut to near zero.
 
-The one longer piece is the start page intro (`home/intro.css`): about 1.9 s, once per
-session, ease-out without overshoot, moving only `scale`, `translate` and opacity. It sets the
-name and titles in Helvetica (`'Helvetica Neue', Helvetica, Arial`), the face the intro is
-drawn for; the rest of the site keeps `--font`.
-
 ## States
 
 A page that fails while drawing shows a short message with a reload button and a link to
