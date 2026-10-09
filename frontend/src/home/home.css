@@ -1,18 +1,16 @@
 /*
- * The start page (home/HomePage.tsx): three screens, then two short sections.
- *   01 identity: the name, three roles, one sentence, four links on the right.
- *   02 experience: the two roles first, the core stack beside them.
- *   03 selected work: one card per flagship, the whole card a link.
- * No previews, no buttons, no motion beyond a hover shade.
+ * The start page (home/HomePage.tsx), across the whole screen with no sidebar:
+ *   identity: the name centred, the role a step below it, four links;
+ *   profile: education, experience and About side by side;
+ *   projects: rows of two, three and four, the flagships largest;
+ *   the way into the project pages.
+ * No boxes around the work: text with room around it, like the experience.
  */
 .home {
-  max-width: var(--layout-wide);
-  margin-inline: auto;
   padding-inline: var(--gutter);
 }
 .home-screen {
   padding-block: var(--sp-section);
-  border-top: 1px solid var(--line);
 }
 .home-label {
   margin: 0 0 var(--sp-2);
@@ -24,26 +22,26 @@
   text-transform: uppercase;
 }
 .home-title {
-  margin: 0 0 var(--sp-6);
+  margin: 0 0 var(--sp-5);
   font-size: var(--h2);
   font-weight: var(--weight-heading);
   letter-spacing: -0.03em;
   line-height: 1.05;
+  text-align: center;
 }
 
-/* ---------- 01 Identity ---------- */
+/* ---------- Identity ---------- */
 .home-identity {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: var(--sp-6);
-  /* One screen, less the header; never less than the content needs. */
-  min-height: calc(100svh - var(--header-h, 57px) - 40px);
+  justify-content: center;
+  min-height: 100svh;
   padding-block: var(--sp-6);
-  border-top: 0;
+  text-align: center;
 }
 .home-name {
-  margin: 0 0 var(--sp-5);
+  margin: 0;
   font-size: var(--display-xl);
   font-weight: 750;
   letter-spacing: -0.055em;
@@ -51,26 +49,18 @@
   text-transform: uppercase;
 }
 .home-roles {
-  display: grid;
-  margin: 0 0 var(--sp-5);
+  margin: var(--sp-6) 0 0;
   font-size: var(--h3);
   font-weight: 500;
   letter-spacing: -0.02em;
   line-height: 1.25;
 }
-.home-lede {
-  max-width: 34ch;
-  margin: 0;
-  color: var(--ink-2);
-  font-size: var(--body-large);
-  line-height: 1.5;
-}
 .home-nav {
-  display: grid;
-  gap: var(--sp-2);
-  justify-items: end;
-  align-self: end;
-  padding-bottom: var(--sp-2);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--sp-2) var(--sp-5);
+  margin-top: var(--sp-7);
 }
 .home-nav a {
   color: var(--ink);
@@ -85,21 +75,22 @@
   text-decoration-color: var(--ink);
 }
 
-/* ---------- 02 Experience ---------- */
-.home-experience-grid {
+/* ---------- Profile: education, experience, About ---------- */
+.home-profile {
   display: grid;
-  grid-template-columns: minmax(0, 2fr) minmax(16rem, 1fr);
-  gap: var(--sp-6) clamp(2rem, 6vw, 6rem);
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: var(--sp-6) clamp(2rem, 4vw, 5rem);
   align-items: start;
 }
 .home-jobs {
-  list-style: none;
+  display: grid;
+  gap: var(--sp-3);
   margin: 0;
   padding: 0;
+  list-style: none;
 }
 .home-job {
-  padding-block: var(--sp-5);
-  border-top: 1px solid var(--line-strong);
+  padding-block: 0 var(--sp-5);
 }
 .home-job-org {
   margin: 0;
@@ -107,13 +98,42 @@
   font-weight: var(--weight-heading);
   letter-spacing: -0.02em;
 }
+.home-job-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0 var(--sp-4);
+}
+.home-job-period {
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--fs-sm);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.home-job-org-small {
+  margin: 0;
+  font-weight: var(--weight-heading);
+}
+.home-job-did {
+  list-style: disc;
+}
+.home-job-did li {
+  line-height: 1.5;
+}
+.home-job-org a {
+  color: inherit;
+  text-underline-offset: 0.2em;
+}
 .home-job-role {
   margin: var(--sp-1) 0 var(--sp-3);
   color: var(--muted);
 }
-.home-job-impact {
+.home-job-impact,
+.home-about-text {
   max-width: var(--layout-reading);
-  margin: 0 0 var(--sp-2);
+  margin: 0 0 var(--sp-3);
   font-size: var(--body-large);
   line-height: 1.5;
 }
@@ -130,18 +150,21 @@
   color: var(--muted);
   font-size: var(--fs-sm);
 }
-.home-education {
-  margin: var(--sp-4) 0 0;
-  padding-top: var(--sp-4);
-  border-top: 1px solid var(--line);
-}
-.home-education .home-label {
-  display: inline;
-  margin-right: var(--sp-2);
-}
 .home-stack {
-  padding-top: var(--sp-5);
-  border-top: 1px solid var(--line-strong);
+  margin-top: var(--sp-5);
+}
+/* Measured so the three columns end close together: on a very wide screen education's short
+   lines would otherwise leave it far shorter than the others. */
+@media (min-width: 2000px) {
+  .home-profile {
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.4fr) minmax(0, 1fr);
+  }
+}
+/* In the three columns the text fills its column, so the columns end close together. */
+.home-profile .home-job-did,
+.home-profile .home-job-impact,
+.home-profile .home-about-text {
+  max-width: none;
 }
 .home-stack dl {
   display: grid;
@@ -155,48 +178,77 @@
 .home-stack dd {
   margin: 0;
 }
+.home-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2) var(--sp-5);
+}
 
-/* ---------- 03 Selected work ---------- */
-.work-cards {
+/* ---------- Projects: rows of two, three, four ---------- */
+.home-work-title {
+  margin: 0 0 var(--sp-7);
+  font-size: var(--display-l);
+  font-weight: 750;
+  letter-spacing: -0.045em;
+  line-height: 1;
+  text-align: center;
+  text-transform: uppercase;
+}
+/* Every row centred, each one wider than the last, so the rows form a symmetric pyramid. */
+.work-row {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--sp-5);
-  margin: 0;
+  grid-template-columns: repeat(var(--cols, 4), minmax(0, 1fr));
+  gap: var(--sp-6) clamp(1.5rem, 3vw, 3.5rem);
+  width: var(--row-w, 100%);
+  margin: 0 auto var(--sp-7);
   padding: 0;
   list-style: none;
+  text-align: center;
+}
+.work-row.cols-2 {
+  --cols: 2;
+  --row-w: 56%;
+}
+.work-row.cols-3 {
+  --cols: 3;
+  --row-w: 78%;
 }
 .work-card {
   display: flex;
   flex-direction: column;
+  align-items: center;
   height: 100%;
-  min-height: 18rem;
-  padding: clamp(1.25rem, 2.4vw, 2.25rem);
-  border: 1px solid var(--line-strong);
   color: var(--ink);
   text-decoration: none;
-  transition: background-color var(--dur) var(--ease);
-}
-.work-card:hover {
-  background: var(--paper);
 }
 .work-card:focus-visible {
   outline: 2px solid var(--focus);
-  outline-offset: 3px;
+  outline-offset: 6px;
 }
 .work-title {
-  margin: var(--sp-4) 0 var(--sp-3);
+  margin: 0 0 var(--sp-3);
   font-size: var(--h3);
   font-weight: var(--weight-heading);
   letter-spacing: -0.02em;
   text-transform: uppercase;
+}
+/* The flagships first and largest; each row a step smaller. */
+.work-row.cols-2 .work-title {
+  font-size: var(--h2);
+}
+.work-row.cols-4 .work-title {
+  font-size: var(--fs-lg);
 }
 .work-question {
   margin: 0 0 var(--sp-3);
   font-size: var(--body-large);
   line-height: 1.4;
 }
+.work-row.cols-4 .work-question {
+  font-size: var(--fs-md);
+}
 .work-finding {
-  margin: 0 0 var(--sp-5);
+  margin: 0 0 var(--sp-4);
   color: var(--ink-2);
   line-height: 1.5;
 }
@@ -205,108 +257,71 @@
   color: var(--muted);
   font-size: var(--fs-sm);
 }
-.work-card:hover .work-title {
+a.work-card:hover .work-title {
   text-decoration: underline;
   text-decoration-thickness: 1px;
   text-underline-offset: 0.2em;
 }
 
-/* ---------- About, under the hood ---------- */
-.home-lower {
+/* ---------- The way into the project pages ---------- */
+.home-cta {
   display: grid;
-  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
-  gap: var(--sp-6) clamp(2rem, 6vw, 6rem);
-  padding-block: var(--sp-7);
-  border-top: 1px solid var(--line);
+  justify-items: center;
+  gap: var(--sp-5);
+  padding-block: var(--sp-5) var(--sp-section);
+  text-align: center;
 }
-.home-lower .home-title {
-  margin-bottom: var(--sp-4);
-  font-size: var(--h3);
+.home-cta-link {
+  color: var(--ink);
+  font-size: var(--display-l);
+  font-weight: 750;
+  letter-spacing: -0.045em;
+  line-height: 1;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-decoration-color: transparent;
+  text-underline-offset: 0.15em;
+  text-transform: uppercase;
+  transition: text-decoration-color var(--dur) var(--ease);
 }
-.home-about p {
-  max-width: var(--layout-reading);
+.home-cta-link:hover {
+  text-decoration-color: var(--ink);
 }
-.home-links {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--sp-2) var(--sp-5);
+.home-cta-link:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 6px;
 }
-.home-hood .home-links {
-  display: grid;
-  gap: var(--sp-2);
+.home-cta .home-links {
+  justify-content: center;
 }
 
-@media (max-width: 900px) {
-  .home-experience-grid,
-  .home-lower {
-    grid-template-columns: minmax(0, 1fr);
+@media (max-width: 1100px) {
+  .home-profile {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   }
-  .work-cards {
-    grid-template-columns: minmax(0, 1fr);
+  .home-column-wide {
+    grid-column: 1 / -1;
+    grid-row: 1;
+  }
+  .work-row {
+    grid-template-columns: repeat(min(var(--cols), 2), minmax(0, 1fr));
+    width: 100%;
   }
 }
 @media (max-width: 760px) {
-  .home-identity {
+  .home-profile,
+  .home-jobs,
+  .work-row {
     grid-template-columns: minmax(0, 1fr);
-    align-content: center;
   }
   .home-name {
     font-size: clamp(2.6rem, 13vw, 4rem);
   }
-  /* The four links on one line under the sentence. */
-  .home-nav {
-    display: flex;
-    flex-wrap: wrap;
-    justify-items: start;
-    gap: var(--sp-2) var(--sp-4);
+  .home-work-title,
+  .home-cta-link {
+    font-size: clamp(2rem, 10vw, 3rem);
   }
-  .work-card {
-    min-height: 0;
+  .work-row .work-title {
+    font-size: var(--h3) !important;
   }
-}
-
-/* ---------- More work: every other project, smaller ---------- */
-.home-more {
-  margin-top: var(--sp-7);
-}
-.more-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr));
-  gap: var(--sp-3);
-  margin: var(--sp-3) 0 0;
-  padding: 0;
-  list-style: none;
-}
-.more-card {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-2);
-  height: 100%;
-  padding: var(--sp-4);
-  border: 1px solid var(--line);
-  color: var(--ink);
-  text-decoration: none;
-  transition: background-color var(--dur) var(--ease);
-}
-a.more-card:hover {
-  background: var(--paper);
-}
-a.more-card:hover .more-title {
-  text-decoration: underline;
-  text-underline-offset: 0.2em;
-}
-a.more-card:focus-visible {
-  outline: 2px solid var(--focus);
-  outline-offset: 3px;
-}
-.more-title {
-  font-weight: var(--weight-heading);
-}
-.more-summary {
-  color: var(--ink-2);
-  font-size: var(--fs-sm);
-  line-height: 1.45;
-}
-.more-card .work-tech {
-  margin-top: auto;
 }

@@ -1,0 +1,514 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<title>Examensarbete: klustring av IT-incidenter – projektdashboard</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap">
+<style>
+body{margin:0;background:#D8D5CF}
+a{color:#0F0F10}a:hover{color:#1F4F73}
+.mono{font-family:'JetBrains Mono',ui-monospace,monospace;font-variant-numeric:tabular-nums}
+.card{background:#F2EFE9;border:1px solid rgba(15,15,16,.16);border-radius:4px;padding:22px;box-sizing:border-box;min-width:0}
+.ch{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px;flex-wrap:wrap}
+.ch h2{margin:0;font-size:17px;font-weight:600;letter-spacing:-0.01em}
+.lbl{font-size:13px;color:#4A4A4D}
+.nav a{display:flex;align-items:center;gap:12px;min-height:40px;padding:0 12px;border-radius:3px;text-decoration:none;font-size:14px;font-weight:560;color:#2a2a2c}
+.nav a:hover{background:#D8D5CF;color:#0F0F10}
+.nav a[aria-current="page"]{background:#D8D5CF;color:#0F0F10}
+.sub a{min-height:32px;font-size:13px;padding-left:42px;color:#4A4A4D}
+.sub a[aria-current="page"]{color:#0F0F10;font-weight:700;background:transparent;box-shadow:inset 2px 0 0 #0F0F10}
+.seg{font:inherit;font-size:13px;font-weight:600;min-height:34px;padding:0 12px;border:0;border-radius:3px;background:transparent;color:#4A4A4D;cursor:pointer}
+.seg[aria-pressed="true"]{background:#F2EFE9;color:#0F0F10;box-shadow:inset 0 0 0 1px rgba(15,15,16,.42)}
+.tbl{border-collapse:collapse;width:100%}
+.tbl th,.tbl td{text-align:left;padding:10px 12px;border-bottom:1px solid rgba(15,15,16,.16);font-size:13px;white-space:nowrap}
+.tbl th{color:#4A4A4D;font-weight:500;font-size:12px;background:#E6E3DD}
+.col{display:flex;align-items:center;gap:8px;padding:5px 10px;font-size:12px;border-top:1px solid rgba(15,15,16,.10)}
+.tbox{background:#E6E3DD;border:1px solid rgba(15,15,16,.22);border-radius:3px;overflow:hidden;min-width:0}
+.tbox h4{margin:0;padding:9px 10px;font-size:12px;font-weight:600;display:flex;justify-content:space-between;gap:8px}
+.th{font:inherit;font-size:12px;font-weight:500;color:#4A4A4D;background:none;border:0;padding:0;cursor:pointer;text-align:inherit}
+.th:hover{color:#0F0F10}
+.inp{font:inherit;font-size:13px;color:#0F0F10;min-height:36px;width:220px;max-width:100%;padding:0 10px;background:#F2EFE9;border:1px solid rgba(15,15,16,.42);border-radius:3px;box-sizing:border-box}
+.ktile{background:#F2EFE9;border:1px solid rgba(15,15,16,.16);border-radius:4px;padding:14px 16px;min-width:0}
+.colbar{flex:1 1 0;min-width:0;display:flex;flex-direction:column;justify-content:flex-end;align-items:stretch}
+.sel{font:inherit;font-size:13px;font-weight:600;color:#0F0F10;min-height:36px;max-width:260px;padding:0 30px 0 10px;background:#E6E3DD;border:1px solid rgba(15,15,16,.42);border-radius:3px;cursor:pointer}
+</style>
+</helmet>
+<div style="font-family: Manrope, system-ui, sans-serif; color: #0F0F10; background: #D8D5CF; min-height: 100vh; display: flex; flex-wrap: wrap; align-items: stretch">
+
+<aside style="flex: 1 1 232px; width: 288px; max-width: 100%; box-sizing: border-box; padding: 22px 14px; background: #E6E3DD; border-right: 1px solid rgba(15,15,16,.16); display: flex; flex-direction: column; gap: 28px">
+<a href="Hem.dc.html" style="display: flex; align-items: center; gap: 12px; text-decoration: none; padding: 0 6px">
+<span class="mono" style="display: grid; place-items: center; width: 38px; height: 38px; border-radius: 3px; background: transparent; border: 1.5px solid #0F0F10; box-sizing: border-box; color: #0F0F10; font-weight: 600; font-size: 14px">AE</span>
+<span style="display: flex; flex-direction: column"><b style="font-size: 15px">Anton Ernstsson</b><span class="mono" style="font-size: 11px; color: #4A4A4D">data engineer</span></span>
+</a>
+<nav class="nav" aria-label="Huvudmeny" style="display: flex; flex-direction: column; gap: 2px">
+<a href="Hem.dc.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 11l9-7 9 7v9H3z"></path></svg>Översikt</a>
+<a href="Hem.dc.html#erfarenhet" aria-current="page"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="2"></rect><path d="M9 7V4h6v3"></path></svg>Erfarenhet</a>
+<div class="sub" style="display: flex; flex-direction: column">
+<a href="DashThesis.dc.html" aria-current="page">Examensarbete</a>
+</div>
+<a href="JobbDashboard.dc.html" ><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect></svg>Projekt</a>
+<div class="sub" style="display: flex; flex-direction: column">
+<a href="DashPolitik.dc.html" >Svensk politik i siffror</a>
+<a href="DashAiAct.dc.html" >EU AI Act Observatory</a>
+<a href="JobbDashboard.dc.html" >Jobbannonser</a>
+<a href="DashValfard.dc.html" >Hur mår Sverige?</a>
+<a href="DashSymbolic.dc.html" >Symbolic Atlas</a>
+</div>
+<a href="Main.dc.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><ellipse cx="12" cy="6" rx="8" ry="3"></ellipse><path d="M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6"></path><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"></path></svg>Plattform</a>
+</nav>
+<div style="margin-top: auto; display: flex; flex-direction: column; gap: 2px" class="nav">
+<a href="Main.dc.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M4 21h16"></path></svg>CV (PDF)</a>
+<a href="https://github.com/korv9"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M9 19c-4 1.5-4-2-6-2.5M15 21v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6 0 00-1.3-3.2 4.2 4.2 0 00-.1-3.2s-1.1-.3-3.5 1.3a12 12 0 00-6.2 0C6.5 2.8 5.4 3.1 5.4 3.1a4.2 4.2 0 00-.1 3.2A4.6 4.6 0 004 9.5c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21"></path></svg>GitHub</a>
+<span class="mono" style="padding: 8px 12px; font-size: 12px; color: #4A4A4D"><b style="color: #0F0F10">SV</b> / EN</span>
+</div>
+</aside>
+
+<main style="flex: 999 1 560px; min-width: 0; box-sizing: border-box; padding: 22px clamp(16px, 2vw, 28px) 40px; display: flex; flex-direction: column; gap: 16px">
+
+<div style="display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap">
+<div style="min-width: 0">
+<p class="mono" style="margin: 0 0 4px; font-size: 12px; color: #4A4A4D">Erfarenhet / Avtalat, 2026</p>
+<h1 style="margin: 0; font-size: clamp(24px, 2.2vw, 32px); letter-spacing: -0.03em; font-weight: 700">Examensarbete: klustring av IT-incidenter</h1>
+<p style="margin: 6px 0 0; font-size: 15px; color: #2a2a2c; max-width: 80ch">Ett reproducerbart flöde i Azure Databricks som bedömer datakvalitet, maskerar personuppgifter och klustrar incidenttexter för att hitta grupper att granska manuellt.</p>
+</div>
+<div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap">
+<span class="mono" style="display: inline-flex; align-items: center; gap: 8px; min-height: 38px; padding: 0 14px; border-radius: 3px; background: #F2EFE9; border: 1px solid rgba(15,15,16,.16); font-size: 12px; color: #2a2a2c"><span style="width: 8px; height: 8px; border-radius: 50%; background: #6B6B6E"></span>Intern data, ingen incidenttext publiceras</span>
+
+</div>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 16px">
+<sc-for list="{{kpis}}" as="k" hint-placeholder-count="3">
+<div class="card">
+<div class="ch" style="margin-bottom: 12px"><span class="lbl" style="font-size: 14px; color: #2a2a2c; font-weight: 600">{{k.label}}</span></div>
+<p style="margin: 0; font-size: 40px; font-weight: 700; letter-spacing: -0.035em; line-height: 1; font-variant-numeric: tabular-nums">{{k.value}}</p>
+<p style="margin: 8px 0 0; font-size: 13px; color: #4A4A4D"><span class="mono" style="color: {{k.dcolor}}">{{k.delta}}</span>{{k.note}}</p>
+</div>
+</sc-for>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 16px">
+<div class="card" style="grid-column: span 8; min-width: 0">
+<div class="ch">
+<div style="min-width: 0"><h2>{{main.title}}</h2><p class="lbl" style="margin: 4px 0 0">{{subtitle}}</p></div>
+<sc-if value="{{hasSlicer}}" hint-placeholder-val="{{ true }}">
+<label style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #4A4A4D">{{main.slicerLabel}}
+<select class="sel" value="{{selName}}" onChange="{{onSel}}">
+<sc-for list="{{options}}" as="o" hint-placeholder-count="8"><option value="{{o}}">{{o}}</option></sc-for>
+</select>
+</label>
+</sc-if>
+</div>
+
+<sc-if value="{{isDots}}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; flex-direction: column; gap: 8px; min-width: 0">
+<div role="img" aria-label="{{chartLabel}}" style="position: relative; height: 230px; display: flex; align-items: flex-end; gap: 3px">
+<sc-for list="{{cols}}" as="c" hint-placeholder-count="36">
+<div title="{{c.tip}}" style="flex: 1 1 0; min-width: 0; display: flex; flex-direction: column-reverse; align-items: center; gap: 3px">
+<sc-for list="{{c.dots}}" as="d" hint-placeholder-count="10">
+<span style="display: block; width: 100%; max-width: 11px; aspect-ratio: 1; border-radius: 50%; background: {{c.color}}"></span>
+</sc-for>
+</div>
+</sc-for>
+<div style="position: absolute; right: 0; top: 0; background: #F2EFE9; border: 1px solid rgba(15,15,16,.22); border-radius: 3px; padding: 8px 10px; font-size: 12px; box-shadow: 0 0 0 3px #F2EFE9">
+<span style="color: #4A4A4D">{{tipLabel}}</span><br><b class="mono" style="font-size: 14px">{{lastValue}}</b> <span class="mono" style="color: {{tipColor}}">{{tipDelta}}</span>
+</div>
+</div>
+<div class="mono" style="display: flex; justify-content: space-between; font-size: 11px; color: #4A4A4D"><sc-for list="{{ticks}}" as="t" hint-placeholder-count="6"><span>{{t}}</span></sc-for></div>
+</div>
+</sc-if>
+
+<sc-if value="{{isScatter}}" hint-placeholder-val="{{ false }}">
+<div role="img" aria-label="{{chartLabel}}" style="position: relative; height: 300px; background: #E6E3DD; border-radius: 3px; overflow: hidden">
+<sc-for list="{{pts}}" as="p" hint-placeholder-count="40">
+<span style="position: absolute; left: {{p.x}}; top: {{p.y}}; width: {{p.s}}; height: {{p.s}}; margin: -2px 0 0 -2px; border-radius: 50%; background: {{p.c}}"></span>
+</sc-for>
+<div style="position: absolute; right: 10px; top: 10px; background: #F2EFE9; border: 1px solid rgba(15,15,16,.22); border-radius: 3px; padding: 8px 10px; font-size: 12px">
+<span style="color: #4A4A4D">{{tipLabel}}</span><br><b class="mono" style="font-size: 14px">{{lastValue}}</b> <span class="mono" style="color: #4A4A4D">{{tipDelta}}</span>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{isGrid}}" hint-placeholder-val="{{ false }}">
+<div style="display: grid; grid-template-columns: minmax(0, 1fr) 220px; gap: 24px; align-items: center">
+<div role="img" aria-label="{{chartLabel}}" style="display: grid; grid-template-columns: repeat(auto-fill, 18px); gap: 6px">
+<sc-for list="{{cells}}" as="g" hint-placeholder-count="60"><span title="{{g.t}}" style="display: block; width: 18px; height: 18px; border-radius: 50%; background: {{g.c}}; box-shadow: inset 0 0 0 1px rgba(15,15,16,.22)"></span></sc-for>
+</div>
+<div style="display: flex; flex-direction: column; gap: 14px">
+<sc-for list="{{main.funnel}}" as="f" hint-placeholder-count="3">
+<div style="border-left: 2px solid {{f.c}}; padding-left: 12px"><p style="margin: 0; font-size: 26px; font-weight: 700; letter-spacing: -0.03em; font-variant-numeric: tabular-nums">{{f.v}}</p><p class="lbl" style="margin: 2px 0 0">{{f.l}}</p></div>
+</sc-for>
+</div>
+</div>
+</sc-if>
+</div>
+
+<div class="card" style="grid-column: span 4; min-width: 0; display: flex; flex-direction: column">
+<div class="ch"><div><h2>{{gauge.title}}</h2><p class="lbl" style="margin: 4px 0 0">{{gauge.sub}}</p></div></div>
+<div style="position: relative; display: grid; place-items: center">
+<svg viewBox="0 0 220 124" width="100%" style="max-width: 300px" role="img" aria-label="{{gaugeLabel}}">
+<path d="M 20 112 A 90 90 0 0 1 200 112" fill="none" stroke="#E6E3DD" stroke-width="16"></path>
+<path d="M 20 112 A 90 90 0 0 1 200 112" fill="none" stroke="#0F0F10" stroke-width="16" stroke-dasharray="166.2 400" stroke-dashoffset="0.0"></path>
+<path d="M 20 112 A 90 90 0 0 1 200 112" fill="none" stroke="#6B6B6E" stroke-width="16" stroke-dasharray="112.5 400" stroke-dashoffset="-168.2"></path>
+</svg>
+<div style="position: absolute; bottom: 4px; text-align: center">
+<p style="margin: 0; font-size: 30px; font-weight: 700; letter-spacing: -0.03em; font-variant-numeric: tabular-nums">{{gauge.center}}</p>
+<p class="lbl" style="margin: 0">{{gauge.centerLabel}}</p>
+</div>
+</div>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px 8px; margin-top: 18px">
+<sc-for list="{{gauge.segments}}" as="s" hint-placeholder-count="3">
+<div style="min-width: 0"><p class="lbl" style="margin: 0; display: flex; align-items: center; gap: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis"><span style="flex: none; width: 8px; height: 8px; border-radius: 50%; background: {{s.c}}"></span>{{s.l}}</p><p class="mono" style="margin: 4px 0 0; font-size: 15px">{{s.d}}</p></div>
+</sc-for>
+</div>
+<p style="margin: auto 0 0; padding-top: 16px; border-top: 1px solid rgba(15,15,16,.16); font-size: 13px; color: #4A4A4D">{{gauge.footer}}</p>
+</div>
+
+<div class="card" style="grid-column: span 5; min-width: 0">
+<div class="ch"><div><h2>{{b1.title}}</h2><p class="lbl" style="margin: 4px 0 0">{{b1.sub}}</p></div></div>
+<div style="display: flex; flex-direction: column; gap: 10px">
+<sc-for list="{{b1rows}}" as="f" hint-placeholder-count="8">
+<div style="display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) 72px; align-items: center; gap: 12px; font-size: 13px">
+<span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #2a2a2c">{{f.name}}</span>
+<div style="position: relative; height: 10px; background: #E6E3DD; border-radius: 3px">
+<span style="position: absolute; top: 0; bottom: 0; left: {{f.left}}; width: {{f.w}}; background: {{f.color}}; border-radius: 3px"></span>
+<sc-if value="{{b1div}}" hint-placeholder-val="{{ true }}"><span style="position: absolute; top: -3px; bottom: -3px; left: 50%; width: 1px; background: rgba(15,15,16,.42)"></span></sc-if>
+</div>
+<span class="mono" style="text-align: right; color: {{f.tcolor}}">{{f.label}}</span>
+</div>
+</sc-for>
+</div>
+<sc-if value="{{b1.note}}" hint-placeholder-val="{{ false }}"><p style="margin: 14px 0 0; font-size: 12px; color: #4A4A4D">{{b1.note}}</p></sc-if>
+</div>
+
+<div class="card" style="grid-column: span 7; min-width: 0">
+<div class="ch">
+<div><h2>Så är datan byggd</h2><p class="lbl" style="margin: 4px 0 0">{{tech.sub}}</p></div>
+<div role="group" aria-label="Teknisk vy" style="display: flex; gap: 4px; background: #E6E3DD; border-radius: 3px; padding: 3px">
+<sc-for list="{{tabs}}" as="t" hint-placeholder-count="3">
+<button class="seg" type="button" aria-pressed="{{t.on}}" onClick="{{t.pick}}">{{t.label}}</button>
+</sc-for>
+</div>
+</div>
+
+<sc-if value="{{showSchema}}" hint-placeholder-val="{{ true }}">
+<div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr) minmax(0, 1fr); gap: 12px; align-items: center">
+<div style="display: flex; flex-direction: column; gap: 12px">
+<sc-for list="{{tech.dims}}" as="b" hint-placeholder-count="2">
+<div class="tbox"><h4><span>{{b.name}}</span><span class="mono" style="color: #8a6a00; font-weight: 400">{{b.tag}}</span></h4>
+<sc-for list="{{b.cols}}" as="c" hint-placeholder-count="2"><div class="col mono"><span style="color: {{c.kc}}">{{c.k}}</span>{{c.n}}<span style="margin-left: auto; color: #4A4A4D">{{c.note}}</span></div></sc-for>
+</div>
+</sc-for>
+</div>
+<div class="tbox" style="border-color: rgba(138,90,43,.55)"><h4><span>{{tech.fact.name}}</span><span class="mono" style="color: #8a5a2b; font-weight: 400">{{tech.fact.tag}}</span></h4>
+<sc-for list="{{tech.fact.cols}}" as="c" hint-placeholder-count="6"><div class="col mono"><span style="color: {{c.kc}}">{{c.k}}</span>{{c.n}}<span style="margin-left: auto; color: #4A4A4D">{{c.note}}</span></div></sc-for>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<p class="mono" style="margin: 0 0 2px; font-size: 11px; color: #8a6a00">{{tech.martsLabel}}</p>
+<sc-for list="{{tech.marts}}" as="m" hint-placeholder-count="5">
+<div class="tbox" style="padding: 7px 10px"><p class="mono" style="margin: 0; font-size: 12px">{{m.n}}</p><p class="mono" style="margin: 2px 0 0; font-size: 11px; color: #4A4A4D">{{m.g}}</p></div>
+</sc-for>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{showRows}}" hint-placeholder-val="{{ false }}">
+<div>
+<p class="mono" style="margin: 0 0 10px; font-size: 12px; color: #4A4A4D">{{tech.query}}</p>
+<div style="overflow-x: auto; border: 1px solid rgba(15,15,16,.16); border-radius: 3px">
+<table class="tbl mono">
+<thead><tr><sc-for list="{{tech.cols}}" as="h" hint-placeholder-count="5"><th>{{h}}</th></sc-for></tr></thead>
+<tbody>
+<sc-for list="{{tech.rows}}" as="r" hint-placeholder-count="5"><tr><sc-for list="{{r}}" as="v" hint-placeholder-count="5"><td>{{v}}</td></sc-for></tr></sc-for>
+</tbody>
+</table>
+</div>
+<p style="margin: 10px 0 0; font-size: 12px; color: #4A4A4D">{{tech.rowsNote}}</p>
+</div>
+</sc-if>
+
+<sc-if value="{{showFlow}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 8px">
+<sc-for list="{{tech.flow}}" as="s" hint-placeholder-count="5">
+<div style="display: grid; grid-template-columns: 28px minmax(0, 220px) minmax(0, 1fr); gap: 12px; align-items: center; padding: 10px 12px; background: #E6E3DD; border-radius: 3px">
+<span class="mono" style="display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; border: 1px solid {{s.c}}; color: {{s.c}}; font-size: 12px">{{s.n}}</span>
+<span class="mono" style="font-size: 12px; overflow-wrap: anywhere">{{s.file}}</span>
+<span style="font-size: 13px; color: #4A4A4D">{{s.what}}</span>
+</div>
+</sc-for>
+<p class="mono" style="margin: 4px 0 0; font-size: 12px; color: #4A4A4D">{{tech.flowFoot}}</p>
+</div>
+</sc-if>
+</div>
+
+<div class="card" style="grid-column: span 5; min-width: 0">
+<div class="ch"><div><h2>{{b2.title}}</h2><p class="lbl" style="margin: 4px 0 0">{{b2.sub}}</p></div></div>
+<div style="display: flex; flex-direction: column; gap: 9px">
+<sc-for list="{{b2rows}}" as="r" hint-placeholder-count="6">
+<div style="display: grid; grid-template-columns: 150px minmax(0, 1fr) 72px; gap: 12px; align-items: center; font-size: 13px">
+<span style="color: #2a2a2c; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{r.name}}</span>
+<div style="height: 10px; background: #E6E3DD; border-radius: 3px"><div style="height: 100%; width: {{r.w}}; background: {{r.c}}; border-radius: 3px"></div></div>
+<span class="mono" style="text-align: right">{{r.label}}</span>
+</div>
+</sc-for>
+</div>
+<sc-if value="{{b2.note}}" hint-placeholder-val="{{ false }}"><p style="margin: 14px 0 0; font-size: 12px; color: #4A4A4D">{{b2.note}}</p></sc-if>
+</div>
+
+<div class="card" style="grid-column: span 7; min-width: 0">
+<div class="ch"><div><h2>{{list.title}}</h2><p class="lbl" style="margin: 4px 0 0">{{list.sub}}</p></div><span class="lbl">{{list.badge}}</span></div>
+<div style="display: flex; flex-direction: column">
+<sc-for list="{{listItems}}" as="a" hint-placeholder-count="5">
+<div style="display: grid; grid-template-columns: 34px minmax(0, 1fr) minmax(0, 1fr) 110px 104px; gap: 12px; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(15,15,16,.10); font-size: 13px">
+<span class="mono" style="display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; background: #E6E3DD; font-size: 10px; color: #2a2a2c">{{a.ini}}</span>
+<span class="mono" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{a.id}}</span>
+<span class="mono" style="color: #4A4A4D; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{a.meta}}</span>
+<span class="mono" style="text-align: right">{{a.value}}</span>
+<span class="mono" style="justify-self: end; font-size: 11px; padding: 4px 8px; border-radius: 3px; background: {{a.bg}}; color: {{a.fg}}">{{a.status}}</span>
+</div>
+</sc-for>
+</div>
+</div>
+</div>
+
+<section aria-labelledby="deep-h" style="display: flex; flex-direction: column; gap: 16px; margin-top: 28px">
+<div style="display: flex; justify-content: space-between; align-items: end; gap: 16px; flex-wrap: wrap; border-top: 2px solid #0F0F10; padding-top: 18px">
+<div><h2 id="deep-h" style="margin: 0; font-size: 24px; letter-spacing: -0.02em">Fördjupning</h2><p class="lbl" style="margin: 4px 0 0; font-size: 14px">{{deep.lead}}</p></div>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr)); gap: 12px">
+<sc-for list="{{deep.kpis}}" as="k" hint-placeholder-count="8">
+<div class="ktile"><p class="lbl" style="margin: 0; font-size: 12px">{{k.label}}</p><p style="margin: 6px 0 0; font-size: 24px; font-weight: 700; letter-spacing: -0.03em; font-variant-numeric: tabular-nums">{{k.value}}</p><p style="margin: 4px 0 0; font-size: 12px; color: #4A4A4D">{{k.note}}</p></div>
+</sc-for>
+</div>
+
+<sc-for list="{{deepRows}}" as="row" hint-placeholder-count="2">
+<div style="display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 16px">
+<sc-for list="{{row}}" as="cd" hint-placeholder-count="2">
+<div class="card" style="grid-column: span {{cd.span}}; min-width: 0">
+<div class="ch">
+<div style="min-width: 0"><h2>{{cd.title}}</h2><p class="lbl" style="margin: 4px 0 0">{{cd.sub}}</p></div>
+<sc-if value="{{cd.hasSel}}" hint-placeholder-val="{{ true }}">
+<label style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #4A4A4D">{{cd.slicerLabel}}
+<select class="sel" value="{{cd.selName}}" onChange="{{cd.onSel}}">
+<sc-for list="{{cd.optNames}}" as="o" hint-placeholder-count="6"><option value="{{o}}">{{o}}</option></sc-for>
+</select>
+</label>
+</sc-if>
+</div>
+<sc-if value="{{cd.isCol}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<div role="img" aria-label="{{cd.label}}" style="height: 180px; display: flex; align-items: flex-end; gap: 2px; border-bottom: 1px solid rgba(15,15,16,.42)">
+<sc-for list="{{cd.bars}}" as="b" hint-placeholder-count="20"><div class="colbar" title="{{b.tip}}" style="height: 100%"><span style="display: block; height: {{b.h}}; background: {{b.c}}; border-radius: 2px 2px 0 0"></span></div></sc-for>
+</div>
+<div class="mono" style="display: flex; justify-content: space-between; font-size: 11px; color: #4A4A4D"><span>{{cd.first}}</span><span>{{cd.last}}</span></div>
+</div>
+</sc-if>
+<sc-if value="{{cd.isBars}}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; flex-direction: column; gap: 9px">
+<sc-for list="{{cd.bars}}" as="r" hint-placeholder-count="8">
+<div style="display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) 84px; gap: 12px; align-items: center; font-size: 13px">
+<span style="color: #2a2a2c; white-space: nowrap; overflow: hidden; text-overflow: ellipsis" title="{{r.name}}">{{r.name}}</span>
+<div style="position: relative; height: 10px; background: #E6E3DD; border-radius: 3px"><span style="position: absolute; top: 0; bottom: 0; left: {{r.left}}; width: {{r.w}}; background: {{r.c}}; border-radius: 3px"></span><sc-if value="{{cd.div}}" hint-placeholder-val="{{ false }}"><span style="position: absolute; top: -3px; bottom: -3px; left: 50%; width: 1px; background: rgba(15,15,16,.42)"></span></sc-if></div>
+<span class="mono" style="text-align: right; color: {{r.tc}}">{{r.label}}</span>
+</div>
+</sc-for>
+</div>
+</sc-if>
+<sc-if value="{{cd.note}}" hint-placeholder-val="{{ false }}"><p style="margin: 14px 0 0; font-size: 12px; color: #4A4A4D">{{cd.note}}</p></sc-if>
+</div>
+</sc-for>
+</div>
+</sc-for>
+
+<div class="card">
+<div class="ch">
+<div style="min-width: 0"><h2>{{deep.explorer.title}}</h2><p class="lbl" style="margin: 4px 0 0">{{ex.sub}}</p></div>
+<div role="group" aria-label="Välj tabell" style="display: flex; gap: 4px; background: #E6E3DD; border-radius: 3px; padding: 3px; flex-wrap: wrap">
+<sc-for list="{{ex.tabs}}" as="t" hint-placeholder-count="4"><button class="seg" type="button" aria-pressed="{{t.on}}" onClick="{{t.pick}}">{{t.label}}</button></sc-for>
+</div>
+</div>
+<div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: end; margin-bottom: 14px">
+<sc-for list="{{ex.filters}}" as="f" hint-placeholder-count="2">
+<label style="display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: #4A4A4D">{{f.label}}
+<select class="sel" value="{{f.value}}" onChange="{{f.onChange}}">
+<sc-for list="{{f.opts}}" as="o" hint-placeholder-count="6"><option value="{{o}}">{{o}}</option></sc-for>
+</select>
+</label>
+</sc-for>
+<sc-if value="{{ex.hasSearch}}" hint-placeholder-val="{{ true }}">
+<label style="display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: #4A4A4D">Sök
+<input class="inp" type="search" value="{{ex.q}}" onChange="{{ex.onQ}}" placeholder="{{ex.ph}}">
+</label>
+</sc-if>
+<span class="mono" style="margin-left: auto; font-size: 12px; color: #4A4A4D">{{ex.count}}</span>
+</div>
+<div style="overflow-x: auto; border: 1px solid rgba(15,15,16,.16); border-radius: 3px">
+<table class="tbl">
+<thead><tr><sc-for list="{{ex.cols}}" as="h" hint-placeholder-count="5"><th style="text-align: {{h.al}}"><button class="th" type="button" onClick="{{h.sort}}">{{h.l}} {{h.ind}}</button></th></sc-for></tr></thead>
+<tbody>
+<sc-for list="{{ex.rows}}" as="r" hint-placeholder-count="10"><tr><sc-for list="{{r}}" as="v" hint-placeholder-count="5"><td style="text-align: {{v.al}}; white-space: {{v.ws}}; max-width: {{v.mw}}; overflow: hidden; text-overflow: ellipsis" title="{{v.t}}" class="{{v.cls}}">{{v.t}}</td></sc-for></tr></sc-for>
+</tbody>
+</table>
+</div>
+<div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 12px; flex-wrap: wrap">
+<p style="margin: 0; font-size: 12px; color: #4A4A4D">{{ex.note}}</p>
+<sc-if value="{{ex.more}}" hint-placeholder-val="{{ true }}"><button class="seg" type="button" onClick="{{ex.onMore}}" style="box-shadow: inset 0 0 0 1px rgba(15,15,16,.42); background: #F2EFE9; color: #0F0F10">Visa 15 till</button></sc-if>
+</div>
+</div>
+</section>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":3900}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { tab: 'schema', sel: null, dsel: {}, ds: null, fv: {}, q: '', sort: null, page: 1 }; }
+  renderVals() {
+    if (!this._C) this._C = {"kpis":[{"label":"Produktionsincidenter","value":"21 000+","delta":"","note":"riktig IT-servicedata, Avtalat"},{"label":"Granskningskandidater","value":"72","delta":"","note":"kluster utan befintlig problemkoppling"},{"label":"Silhouette, HDBSCAN","value":"0,706","delta":"▲ mot 0,534","dir":"up","note":" för K-means"}],"main":{"kind":"grid","title":"Från incidenter till granskning","total":121,"hl":72,"sub":"Varje cirkel är ett av 121 kluster. Svarta saknar koppling till en befintlig problempost. Ordningen säger inget om vilka kluster det är.","funnel":[{"v":"21 000+","l":"incidenter in","c":"#6B6B6E"},{"v":"121","l":"kluster från HDBSCAN","c":"#1F4F73"},{"v":"72","l":"kandidater att granska","c":"#0F0F10"}]},"gauge":{"title":"Kluster med och utan problemkoppling","sub":"Av 121 kluster","center":"72","centerLabel":"utan koppling","segments":[{"l":"Utan koppling","v":72,"d":"72","c":"#0F0F10"},{"l":"Med koppling","v":49,"d":"49","c":"#6B6B6E"}],"footer":"Kandidater, inte bevisade grundorsaker. Verksamheten validerar dem."},"b1":{"title":"Intern separation per metod","sub":"Silhouette, samma inbäddningar","diverging":false,"rows":[{"name":"HDBSCAN","v":0.706,"label":"0,706","c":"#0F0F10"},{"name":"K-means","v":0.534,"label":"0,534","c":"#6B6B6E"}],"note":"Bara intern separation. Den ersätter inte verksamhetens bedömning."},"tech":{"sub":"Azure Databricks, notebooks och MLflow. Strukturen är publik, datan är det inte","martsLabel":"Spårat i MLflow","dims":[{"name":"Kvalitetsbedömning","tag":"ISO/IEC 25012","cols":[{"k":"","kc":"#1F4F73","n":"valda dimensioner bedöms","note":""},{"k":"","kc":"#1F4F73","n":"före all modellering","note":""}]}],"fact":{"name":"Incidentdata (intern)","tag":"arbetsdata","cols":[{"k":"","kc":"#1F4F73","n":"incidenttext","note":"PII maskerad, Presidio"},{"k":"","kc":"#1F4F73","n":"befintlig problemkoppling","note":"ja eller nej"},{"k":"","kc":"#1F4F73","n":"meningsinbäddning","note":"flerspråkig"}]},"marts":[{"n":"UMAP 10D","g":"klustringsrymd"},{"n":"HDBSCAN","g":"121 kluster"},{"n":"Granskningslista","g":"72 kluster utan problemkoppling"}],"query":"Interna poster visas inte.","cols":["steg","in","ut"],"rows":[["kvalitet","incidenter","bedömda dimensioner"],["maskning","fritext","text utan PII"],["inbäddning","text","vektorer"],["UMAP + HDBSCAN","vektorer","121 kluster"],["matchning","kluster","72 kandidater"]],"rowsNote":"Tabellen beskriver flödet. Ingen incidenttext eller rådata från arbetsgivaren publiceras.","flow":[{"n":"1","c":"#6B6B6E","file":"kvalitetsbedömning","what":"Valda dimensioner ur ISO/IEC 25012 bedöms innan modellering."},{"n":"2","c":"#6B6B6E","file":"Presidio","what":"Personuppgifter maskeras i fritexten, med GDPR som ram."},{"n":"3","c":"#7a7a7d","file":"sentence-transformers","what":"Flerspråkiga meningsinbäddningar av incidenttexterna."},{"n":"4","c":"#7a7a7d","file":"UMAP 10D, HDBSCAN","what":"Klustring, jämförd med K-means på samma inbäddningar."},{"n":"5","c":"#8a6a00","file":"MLflow","what":"Parametrar och mått spåras per körning så att resultatet kan återskapas."}],"flowFoot":"Python, Azure Databricks, sentence-transformers, UMAP, HDBSCAN, Presidio, MLflow"},"b2":{"title":"Sållning i siffror","sub":"Antal i varje steg","rows":[{"name":"Kluster","v":121,"label":"121","c":"#1F4F73"},{"name":"Utan problemkoppling","v":72,"label":"72"}]},"list":{"title":"Verktyg i flödet","sub":"Vad varje del gjorde","badge":"5 steg","items":[{"ini":"DB","id":"Azure Databricks","meta":"körmiljö, notebooks","value":"plattform","status":"använd"},{"ini":"PR","id":"Presidio","meta":"PII-maskning","value":"GDPR","status":"använd"},{"ini":"ST","id":"sentence-transformers","meta":"inbäddningar","value":"flerspråkig","status":"använd"},{"ini":"HD","id":"UMAP + HDBSCAN","meta":"klustring","value":"121 kluster","status":"använd"},{"ini":"ML","id":"MLflow","meta":"experimentspårning","value":"per körning","status":"använd"}]},"deep":{"lead":"Metodsteg, verktyg och begränsningar. Ingen intern data publiceras, så fördjupningen beskriver flödet.","kpis":[{"label":"Incidenter","value":"21 000+","note":""},{"label":"Kluster","value":"121","note":""},{"label":"Kandidater","value":"72","note":""},{"label":"Med problemkoppling","value":"49","note":"121 minus 72"},{"label":"Silhouette HDBSCAN","value":"0,706","note":""},{"label":"Silhouette K-means","value":"0,534","note":""},{"label":"UMAP-dimensioner","value":"10","note":""},{"label":"Metodsteg","value":"7","note":""}],"rows":[[{"span":12,"title":"Kandidatandel","mode":"bars","options":[{"name":"alla","rows":[{"name":"Kluster utan problemkoppling","v":72,"label":"72 (60 %)"},{"name":"Kluster med problemkoppling","v":49,"label":"49 (40 %)","c":"#8A8780"}],"sub":"Andel av 121 kluster"}]}]],"explorer":{"title":"Metod","datasets":[{"id":"st","label":"Steg","sub":"Flödet i ordning.","cols":[{"l":"steg","mono":true},{"l":"moment"},{"l":"verktyg","mono":true},{"l":"vad","wrap":true}],"rows":[["1","Kvalitetsbedömning","ISO/IEC 25012","Valda dimensioner bedömdes innan modellering."],["2","PII-maskning","Presidio","Personuppgifter i fritexten maskerades, med GDPR som ram."],["3","Inbäddningar","sentence-transformers","Flerspråkiga meningsinbäddningar av incidenttexterna."],["4","Dimensionsreduktion","UMAP","Till 10 dimensioner inför klustring."],["5","Klustring","HDBSCAN, K-means","HDBSCAN jämfördes med K-means på samma inbäddningar."],["6","Spårning","MLflow","Parametrar och mått loggades per körning."],["7","Urval","egen logik","Kluster utan befintlig problemkoppling blev granskningskandidater."]]},{"id":"lim","label":"Begränsningar","sub":"Vad resultatet inte visar.","cols":[{"l":"begränsning"},{"l":"förklaring","wrap":true}],"rows":[["Intern validering","Silhouette mäter separation, inte om klustren är meningsfulla för verksamheten."],["Ingen grundorsak","Kandidaterna är förslag att granska, inte bevisade grundorsaker."],["Ingen publicering","Ingen incidenttext eller rådata från arbetsgivaren visas här."]]}]}}};
+    const C = this._C;
+    const nf = (v, dec) => {
+      if (v === null || v === undefined) return '–';
+      const s = Number(v).toFixed(dec || 0).replace('.', ',');
+      const [i, d] = s.split(',');
+      return i.replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + (d ? ',' + d : '');
+    };
+    const tab = this.state.tab;
+    const m = C.main;
+    const out = {
+      main: m, gauge: C.gauge, b1: C.b1, b2: C.b2, tech: C.tech, list: C.list,
+      kpis: C.kpis.map(k => ({ label: k.label, value: k.value, note: k.note, delta: k.delta ? k.delta + ' ' : '', dcolor: k.dir === 'up' ? '#007a6f' : (k.dir === 'down' ? '#8F3424' : '#2a2a2c') })),
+      isDots: m.kind === 'dots', isScatter: m.kind === 'scatter', isGrid: m.kind === 'grid',
+      hasSlicer: !!(m.options && m.options.length > 1),
+      tabs: [['schema', 'Schema'], ['rows', 'Datarader'], ['flow', 'Pipeline']].map(([id, label]) => ({ label, on: tab === id ? 'true' : 'false', pick: () => this.setState({ tab: id }) })),
+      showSchema: tab === 'schema', showRows: tab === 'rows', showFlow: tab === 'flow',
+      onSel: e => this.setState({ sel: e.target.value })
+    };
+    const opt = m.options ? (m.options.find(o => o.name === this.state.sel) || m.options[0]) : null;
+    out.options = m.options ? m.options.map(o => o.name) : [];
+    out.selName = opt ? opt.name : '';
+    if (m.kind === 'dots') {
+      const vals = opt.values;
+      const peak = Math.max(...vals.filter(v => v !== null));
+      const raw = peak / 15;
+      const mag = Math.pow(10, Math.floor(Math.log10(raw)));
+      const step = [1, 2, 2.5, 5, 10].map(x => x * mag).find(x => x >= raw);
+      const last = vals.length - 1;
+      out.cols = vals.map((v, i) => ({
+        tip: opt.keys[i] + ': ' + nf(v, opt.dec) + (opt.unit === '%' ? ' %' : ''),
+        color: i === last ? '#0F0F10' : (i >= (opt.emph ?? vals.length) ? '#6B6B6E' : 'rgba(15,15,16,.18)'),
+        dots: Array.from({ length: v ? Math.max(1, Math.round(v / step)) : 0 }, () => ({}))
+      }));
+      const stepTxt = nf(step, step < 1 ? (step < 0.1 ? 3 : 2) : (step % 1 ? 1 : 0));
+      out.subtitle = opt.sub + ' En prick motsvarar ' + stepTxt + ' ' + opt.unitWord + '.';
+      out.ticks = opt.ticks;
+      out.lastValue = nf(vals[last], opt.dec) + (opt.unit === '%' ? ' %' : '');
+      out.chartLabel = m.title + ', ' + opt.name + '. Senaste värde ' + out.lastValue + '.';
+      if (opt.cmp !== undefined && vals[opt.cmp] !== null && vals[opt.cmp] !== undefined) {
+        const a = vals[last], b = vals[opt.cmp];
+        const d = opt.unit === '%' ? a - b : (b ? (a - b) / b * 100 : 0);
+        const up = d >= 0;
+        out.tipDelta = (up ? '▲ ' : '▼ ') + nf(Math.abs(d), opt.unit === '%' ? Math.max(1, opt.dec) : 1) + (opt.unit === '%' ? ' p.e.' : ' %');
+        const good = opt.higherIsBetter === undefined ? null : (up === opt.higherIsBetter);
+        out.tipColor = good === null ? '#2a2a2c' : (good ? '#007a6f' : '#8F3424');
+        out.tipLabel = opt.keys[last] + ', mot ' + opt.keys[opt.cmp];
+      } else { out.tipDelta = ''; out.tipColor = '#2a2a2c'; out.tipLabel = opt.keys[last]; }
+    } else if (m.kind === 'scatter') {
+      const P = m.points;
+      const xs = P.map(p => p[0]), ys = P.map(p => p[1]);
+      const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
+      const hl = opt.cluster;
+      let n = 0;
+      out.pts = P.map(p => {
+        const on = hl === 'all' ? p[2] !== -1 : p[2] === hl;
+        if (on) n++;
+        return { x: (3 + (p[0] - x0) / (x1 - x0) * 94).toFixed(2) + '%', y: (4 + (1 - (p[1] - y0) / (y1 - y0)) * 92).toFixed(2) + '%', s: on ? '5px' : '4px', c: on ? '#0F0F10' : 'rgba(15,15,16,.16)' };
+      });
+      out.subtitle = opt.sub;
+      out.lastValue = nf(n) + ' punkter';
+      out.tipDelta = 'av ' + nf(P.length);
+      out.tipLabel = opt.name;
+      out.chartLabel = m.title + '. ' + opt.name + ': ' + n + ' av ' + P.length + ' punkter.';
+    } else if (m.kind === 'grid') {
+      out.cells = Array.from({ length: m.total }, (_, i) => ({ c: i < m.hl ? '#0F0F10' : '#F2EFE9', t: i < m.hl ? 'Kluster utan problemkoppling' : 'Kluster med befintlig problemkoppling' }));
+      out.subtitle = m.sub;
+      out.chartLabel = m.title + ': ' + m.hl + ' av ' + m.total + ' kluster saknar koppling till en befintlig problempost.';
+    }
+    const G = C.gauge, L = 282.7, tot = G.segments.reduce((s, x) => s + x.v, 0);
+    let acc = 0;
+    out.arcs = G.segments.map(s => { const len = s.v / tot * L; const a = { c: s.c, da: Math.max(0, len - 2).toFixed(1) + ' 400', off: (-acc).toFixed(1) }; acc += len; return a; });
+    out.gaugeLabel = G.title + ': ' + G.segments.map(s => s.l + ' ' + s.d).join(', ');
+    const B1 = C.b1; out.b1div = !!B1.diverging;
+    const mx1 = Math.max(...B1.rows.map(r => Math.abs(r.v)));
+    out.b1rows = B1.rows.map(r => {
+      const pos = r.v >= 0;
+      const col = r.c || (B1.diverging ? (pos ? '#007a6f' : '#8F3424') : '#0F0F10');
+      if (B1.diverging) { const w = Math.abs(r.v) / mx1 * 50; return { name: r.name, w: w.toFixed(1) + '%', left: (pos ? 50 : 50 - w).toFixed(1) + '%', color: col, tcolor: r.tc || (pos ? '#007a6f' : '#8F3424'), label: r.label }; }
+      return { name: r.name, w: (r.v / mx1 * 100).toFixed(1) + '%', left: '0%', color: col, tcolor: '#0F0F10', label: r.label };
+    });
+    const mx2 = Math.max(...C.b2.rows.map(r => r.v));
+    out.b2rows = C.b2.rows.map(r => ({ name: r.name, label: r.label, c: r.c || '#0F0F10', w: (r.v / mx2 * 100).toFixed(1) + '%' }));
+    const tone = { ok: ['rgba(0,122,111,.12)', '#007a6f'], info: ['rgba(31,79,115,.12)', '#1F4F73'], neutral: ['rgba(15,15,16,.08)', '#0F0F10'] };
+    out.listItems = C.list.items.map(a => ({ ...a, bg: tone[a.tone || 'ok'][0], fg: tone[a.tone || 'ok'][1] }));
+
+    // ---- fördjupning ----
+    const D = C.deep;
+    out.deep = D;
+    out.deepRows = D.rows.map((row, ri) => row.map((cd, ci) => {
+      const id = ri + '_' + ci;
+      const o = cd.options.find(x => x.name === this.state.dsel[id]) || cd.options[0];
+      const card = { span: cd.span || 6, title: cd.title, sub: o.sub || cd.sub, slicerLabel: cd.slicerLabel || '', hasSel: cd.options.length > 1,
+        optNames: cd.options.map(x => x.name), selName: o.name, note: o.note || cd.note || '',
+        onSel: e => this.setState({ dsel: { ...this.state.dsel, [id]: e.target.value } }),
+        isCol: cd.mode === 'col', isBars: cd.mode !== 'col', div: cd.mode === 'div' };
+      const vals = o.rows.map(r => r.v).filter(v => v !== null && v !== undefined);
+      const mx = Math.max(...vals.map(v => Math.abs(v)), 1e-9);
+      if (cd.mode === 'col') {
+        card.bars = o.rows.map((r, i) => ({ tip: r.name + ': ' + r.label, h: ((r.v || 0) / mx * 100).toFixed(1) + '%', c: r.c || (i === o.rows.length - 1 ? '#0F0F10' : '#8A8780') }));
+        card.first = o.rows.length ? o.rows[0].name : ''; card.last = o.rows.length ? o.rows[o.rows.length - 1].name : '';
+        card.label = cd.title + ', ' + o.name;
+      } else {
+        card.bars = o.rows.map(r => {
+          const pos = r.v >= 0;
+          if (cd.mode === 'div') { const w = Math.abs(r.v) / mx * 50; return { name: r.name, label: r.label, left: (pos ? 50 : 50 - w).toFixed(1) + '%', w: w.toFixed(1) + '%', c: r.c || (pos ? '#007a6f' : '#8F3424'), tc: pos ? '#007a6f' : '#8F3424' }; }
+          return { name: r.name, label: r.label, left: '0%', w: (Math.abs(r.v) / mx * 100).toFixed(1) + '%', c: r.c || '#0F0F10', tc: '#0F0F10' };
+        });
+      }
+      return card;
+    }));
+    const X = D.explorer;
+    const ds = X.datasets.find(d => d.id === this.state.ds) || X.datasets[0];
+    const fv = this.state.fv[ds.id] || {};
+    const q = (this.state.q || '').toLowerCase().trim();
+    let rows = ds.rows.filter(r => (ds.filters || []).every(f => !fv[f.i] || fv[f.i] === 'Alla' || (f.contains ? String(r[f.i]).split(' ').includes(fv[f.i]) : String(r[f.i]) === fv[f.i])));
+    if (q && ds.search && ds.search.length) rows = rows.filter(r => (ds.search || []).some(i => String(r[i]).toLowerCase().includes(q)));
+    const st = this.state.sort && this.state.sort.ds === ds.id ? this.state.sort : null;
+    if (st) rows = rows.slice().sort((a, b) => { const x = a[st.i], y = b[st.i]; const c = (typeof x === 'number' && typeof y === 'number') ? x - y : String(x).localeCompare(String(y), 'sv'); return st.dir * c; });
+    const shown = rows.slice(0, 15 * this.state.page);
+    const fmtCell = (v, c) => (typeof v === 'number' ? nf(v, c.dec || 0) : (v === null || v === undefined || v === '' ? '–' : String(v)));
+    out.ex = {
+      sub: ds.sub, note: ds.note || '', hasSearch: !!(ds.search && ds.search.length), q: this.state.q, ph: ds.ph || 'Skriv för att filtrera',
+      onQ: e => this.setState({ q: e.target.value, page: 1 }),
+      tabs: X.datasets.map(d => ({ label: d.label, on: d.id === ds.id ? 'true' : 'false', pick: () => this.setState({ ds: d.id, q: '', page: 1 }) })),
+      filters: (ds.filters || []).map(f => {
+        const set = new Set();
+        ds.rows.forEach(r => { if (f.contains) String(r[f.i]).split(' ').filter(Boolean).forEach(x => set.add(x)); else set.add(String(r[f.i])); });
+        const opts = f.order ? f.order.filter(x => set.has(x)) : Array.from(set).sort((a, b) => f.desc ? b.localeCompare(a, 'sv') : a.localeCompare(b, 'sv'));
+        return { label: f.label, value: fv[f.i] || 'Alla', opts: ['Alla', ...opts], onChange: e => this.setState({ fv: { ...this.state.fv, [ds.id]: { ...fv, [f.i]: e.target.value } }, page: 1 }) };
+      }),
+      cols: ds.cols.map((c, i) => ({ l: c.l, al: c.num ? 'right' : 'left', ind: st && st.i === i ? (st.dir > 0 ? '▲' : '▼') : '', sort: () => this.setState({ sort: { ds: ds.id, i, dir: st && st.i === i ? -st.dir : (c.num ? -1 : 1) }, page: 1 }) })),
+      rows: shown.map(r => r.map((v, i) => { const c = ds.cols[i]; return { t: fmtCell(v, c), al: c.num ? 'right' : 'left', ws: c.wrap ? 'normal' : 'nowrap', mw: c.wrap ? '520px' : 'none', cls: c.num || c.mono ? 'mono' : '' }; })),
+      count: 'Visar ' + nf(shown.length) + ' av ' + nf(rows.length) + (rows.length !== ds.rows.length ? ' (filtrerat från ' + nf(ds.rows.length) + ')' : ''),
+      more: shown.length < rows.length, onMore: () => this.setState({ page: this.state.page + 1 })
+    };
+    return out;
+  }
+}
+</script>
+</body>
+</html>

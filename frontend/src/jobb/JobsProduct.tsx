@@ -1,16 +1,14 @@
 /**
- * Jobbmarknaden i siffror: the job-market product, built like the politics product. One
- * navigation with eight themes, a bar of occupation fields above every page (the field
+ * Jobbmarknaden i siffror: the job-market product, built like the politics product. Eight
+ * themes, listed under the project in the site sidebar, a bar of occupation fields above every page (the field
  * bar, like the party bar) and one question per theme. The earlier job-market views open as
  * deep dives under "Utforska själv", so their addresses keep working.
  */
-import { Suspense, lazy, useEffect, useRef } from 'react'
-import { createPortal } from 'react-dom'
-import { useDock } from '../site/dock'
+import { Suspense, lazy, useEffect } from 'react'
 import { l } from '../i18n'
 import type { Route } from '../router'
 import { fieldName, useMarket, type Market } from './data'
-import { carryFields, useFields, withFields } from './selection'
+import { carryFields, useFields } from './selection'
 import '../politik/politik.css'
 import '../politik/dash/dash.css'
 import './jobb.css'
@@ -28,68 +26,23 @@ export type ThemeProps = { route: Route; data: Market; fields: string[] }
 
 export default function JobsProduct({ route }: { route: Route }) {
   const theme = JOB_THEMES.find((t) => t.path === route.path)
-  // Earlier views (#job-market, #job-market-occupations …) live under "Utforska själv".
-  const active: JobsTheme = theme?.key ?? 'utforska'
   const { data, error } = useMarket()
   const valid = data?.fields.map((f) => f.id)
   const { selected } = useFields(route, valid)
-  const nav = useRef<HTMLElement>(null)
   useEffect(() => carryFields(route), [route.path])
-  useEffect(() => {
-    const menu = nav.current
-    const item = menu?.querySelector<HTMLElement>('[aria-current]')
-    if (!menu || !item || menu.scrollWidth <= menu.clientWidth) return
-    menu.scrollLeft =
-      item.offsetLeft - (menu.clientWidth - item.offsetWidth) / 2
-  }, [active])
 
   const loading = (
     <p className="theme-loading" role="status">
       {l('Loading…', 'Laddar…')}
     </p>
   )
-  // On a wide screen the navigation sits in the site sidebar (see site/dock.ts).
-  const dock = useDock()
-  const Side = dock ? 'div' : 'aside'
-  const side = (
-    <Side className="politik-side">
-      <a className="politik-brand" href="#jobb">
-        <span>{l('The job market', 'Jobbmarknaden')}</span>
-        <small>{l('in numbers', 'i siffror')}</small>
-      </a>
-      <nav
-        ref={nav}
-        className="politik-nav"
-        aria-label={l('Job market', 'Jobbmarknad')}
-      >
-        <ol>
-          {JOB_THEMES.map((t, index) => (
-            <li key={t.key}>
-              <a
-                href={withFields(t.path, selected)}
-                aria-current={
-                  t.key === active ? (theme ? 'page' : 'true') : undefined
-                }
-              >
-                <span className="politik-nav-no" aria-hidden="true">
-                  {index + 1}
-                </span>
-                {l(t.en, t.sv)}
-              </a>
-            </li>
-          ))}
-        </ol>
-      </nav>
-    </Side>
-  )
-  // The overview opens on its own first screen: no sidebar, and the field bar under it.
+  // The overview opens on its own first screen, with the field bar under it.
   const landing = theme?.key === 'lage'
   return (
     <div
-      className={`politik jobb${dock && !landing ? ' docked' : ''}${landing ? ' politik-landing' : ''}`}
+      className={`politik jobb${landing ? ' politik-landing' : ''}`}
       id="jobb"
     >
-      {landing ? null : dock ? createPortal(side, dock) : side}
       <div className="politik-body">
         {theme && !landing && theme.key !== 'kluster' && data && (
           <FieldBar route={route} data={data} />

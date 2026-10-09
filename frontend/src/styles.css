@@ -81,8 +81,9 @@ h3 {
 .nav a:hover {
   color: var(--teal);
 }
+/* Clip sideways overflow without making main a scroll container, so sticky bars inside work. */
 main {
-  overflow: hidden;
+  overflow-x: clip;
 }
 .eyebrow {
   margin: 0 0 1rem;
@@ -96,7 +97,7 @@ main {
   border-top: 1px solid var(--line);
 }
 .featured-projects {
-  max-width: 1440px;
+  max-width: none;
   margin: auto;
   padding: clamp(4rem, 7vw, 7rem) clamp(1rem, 6vw, 6rem);
   scroll-margin-top: 72px;
@@ -240,7 +241,7 @@ main {
   font-size: 0.78rem;
 }
 .report {
-  max-width: 1440px;
+  max-width: none;
   margin: auto;
   padding: clamp(3.5rem, 6vw, 6rem) clamp(1rem, 6vw, 6rem);
   scroll-margin-top: 70px;
@@ -608,7 +609,7 @@ select {
 }
 .project-log,
 .about {
-  max-width: 1440px;
+  max-width: none;
   margin: auto;
   padding: clamp(4rem, 7vw, 7rem) clamp(1rem, 6vw, 6rem);
   display: grid;
@@ -628,10 +629,7 @@ select {
   background: var(--ink);
   color: #f9f7f0;
   max-width: none;
-  padding-inline: max(
-    clamp(1rem, 6vw, 6rem),
-    calc((100vw - 1440px) / 2 + 6rem)
-  );
+  padding-inline: clamp(1rem, 6vw, 6rem);
 }
 .about .eyebrow {
   color: #6dd2c7;
@@ -987,7 +985,7 @@ button.decision-read {
   }
 }
 .reports > .topic-tabs {
-  max-width: 1320px;
+  max-width: none;
   margin: 16px auto;
   padding: 0 clamp(1rem, 6vw, 6rem);
 }

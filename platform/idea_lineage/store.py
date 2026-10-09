@@ -41,7 +41,9 @@ def projects() -> dict[str, list[str]]:
     """Canonical project ids from the registry, each with the names that refer to it."""
     text = REGISTRY.read_text(encoding="utf-8")
     start = text.index("export const PROJECTS")
-    ids = re.findall(r"^    id: '([\w-]+)',", text[start:], flags=re.M)
+    # Only the PROJECTS list: later lists in the file (sidebar groups, platform pages) have ids too.
+    end = text.find("\nexport const", start + 1)
+    ids = re.findall(r"^    id: '([\w-]+)',", text[start:end if end > 0 else None], flags=re.M)
     names = {i: [i, i.replace("-", " ")] for i in ids}
     extra = {
         "ai-act": ["AI Act", "AI-förordningen", "EU AI Act"],

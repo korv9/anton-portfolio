@@ -126,10 +126,10 @@
   /* Between the major screens of a page. */
   --sp-section: clamp(4rem, 9vw, 8rem);
   --gutter: clamp(16px, 3vw, 44px);
-  --content-width: 1440px;
-  /* Three widths, nothing in between: wide for charts, content for sections, reading for prose. */
-  --layout-wide: var(--content-width);
-  --layout-content: 1120px;
+  /* Pages and dashboards fill the screen; only running prose keeps a reading measure. */
+  --content-width: none;
+  --layout-wide: none;
+  --layout-content: none;
   --layout-reading: var(--measure);
   --radius: 2px;
   --card-pad: 0.9rem 1.05rem 1rem;
@@ -138,6 +138,17 @@
   /* Motion: short, and none at all when the reader asks for less. */
   --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
   --dur: 160ms;
+
+  /* Cluster visuals (#cluster-visuals): an ivory ground, grey-lilac and olive type, and the
+     palette's colours for the clusters. The same in light and dark. */
+  --cv-ground: #71697a;
+  --cv-ivory: #f4f0e6;
+  --cv-butter: #e5d9a7;
+  --cv-pistachio: #ced2b5;
+  --cv-oat: #ded5c5;
+  --cv-powder: #d8bfc3;
+  --cv-apricot: #d9b397;
+  --cv-olive: #555b45;
 
   color: var(--ink);
   background: var(--page);

@@ -1,4 +1,4 @@
-import { test, expect } from './test'
+import { test, expect, siteNav } from './test'
 
 const FLAGSHIPS = [
   'Swedish politics in numbers',
@@ -9,63 +9,55 @@ const FLAGSHIPS = [
   'Degree project: NLP clustering of IT incidents',
 ]
 
-test('the projects menu lists the flagship work and works from the keyboard', async ({
+test('the sidebar lists the work in groups and marks the page', async ({
   page,
-  isMobile,
 }) => {
-  // The phone layout folds these into the menu, tested below.
-  test.skip(isMobile, 'desktop header')
   await page.goto('/#symbolic-atlas')
-  const button = page
-    .locator('.global-nav')
-    .getByRole('button', { name: 'Projects' })
-  await expect(button).toHaveAttribute('aria-expanded', 'false')
-  await button.focus()
-  await page.keyboard.press('Enter')
-  await expect(button).toHaveAttribute('aria-expanded', 'true')
-  const panel = page.locator(`#${await button.getAttribute('aria-controls')}`)
-  await expect(panel.locator('.nav-projects strong')).toHaveText(FLAGSHIPS)
-  await page.keyboard.press('Escape')
-  await expect(button).toHaveAttribute('aria-expanded', 'false')
-  await expect(button).toBeFocused()
-  await button.click()
-  await panel.getByRole('link', { name: /How is Sweden doing/ }).click()
+  const nav = await siteNav(page)
+  await expect(nav.getByRole('heading')).toHaveText([
+    'Experience',
+    'Projects',
+    'More projects',
+    'Platform',
+  ])
+  await expect(
+    nav.getByRole('link', { name: 'Symbolic Atlas' }),
+  ).toHaveAttribute('aria-current', 'page')
+  // The open project's own views sit under it.
+  await expect(
+    nav.getByRole('list', { name: 'Symbolic Atlas' }).getByRole('link'),
+  ).toHaveText(['Findings', 'Experiments', 'Method'])
+  await nav.getByRole('link', { name: 'How is Sweden doing?' }).click()
   await expect(page).toHaveURL(/#sweden$/)
-  await expect(button).toHaveAttribute('aria-expanded', 'false')
 })
 
-test('the CV menu offers the three role CVs', async ({ page, isMobile }) => {
-  // The phone layout folds these into the menu, tested below.
-  test.skip(isMobile, 'desktop header')
+test('the sidebar holds the CV and the profiles', async ({ page }) => {
   await page.goto('/#politik')
-  await page.locator('.global-nav').getByRole('button', { name: 'CV' }).click()
-  const links = page.locator('.global-nav .nav-cvs a')
-  await expect(links).toHaveCount(3)
-  await expect(links.first()).toHaveAttribute('download', '')
+  const side = page.locator('.side')
+  await siteNav(page)
+  await expect(side.getByRole('link', { name: 'CV (PDF)' })).toHaveAttribute(
+    'download',
+    '',
+  )
+  await expect(side.getByRole('link', { name: 'GitHub' })).toBeVisible()
 })
 
-test('the header marks the global section, not project views', async ({
+test("the sidebar marks the project's view, not the project, inside a project", async ({
   page,
-  isMobile,
 }) => {
-  // The phone layout folds these into the menu, tested below.
-  test.skip(isMobile, 'desktop header')
-  const nav = page.locator('.global-nav')
-  for (const route of ['/#symbolic-method', '/#politik-budget', '/#thesis']) {
-    await page.goto(route)
-    await expect(nav.getByRole('button', { name: 'Projects' })).toHaveAttribute(
-      'aria-current',
-      'page',
-    )
-  }
-  await page.goto('/#erfarenhet')
-  await expect(nav.getByRole('link', { name: 'Experience' })).toHaveAttribute(
+  await page.goto('/#politik-budget')
+  const nav = await siteNav(page)
+  await expect(nav.getByRole('link', { name: 'Budget' })).toHaveAttribute(
     'aria-current',
     'page',
   )
   await expect(
-    nav.getByRole('button', { name: 'Projects' }),
+    nav.getByRole('link', { name: 'Swedish politics in numbers' }),
   ).not.toHaveAttribute('aria-current', 'page')
+  await page.goto('/#thesis')
+  await expect(
+    (await siteNav(page)).getByRole('link', { name: FLAGSHIPS[5] }),
+  ).toHaveAttribute('aria-current', 'page')
 })
 
 test('a project page says where it is and leads to the neighbouring projects', async ({
@@ -109,22 +101,28 @@ test('the atlas has its own navigation and section addresses', async ({
   await expect(page.locator('#symbolic-method')).toBeInViewport()
 })
 
-test('the phone menu holds projects, profile and CVs, and closes on navigation', async ({
+test('the phone menu holds the whole sidebar and closes on navigation', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 390, height: 844 })
   await page.goto('/#job-market')
-  await expect(page.locator('.global-nav')).toBeHidden()
+  const nav = page.getByRole('navigation', { name: 'Site' })
+  await expect(nav).toBeHidden()
   const toggle = page.getByRole('button', { name: 'Menu' })
   await toggle.click()
-  const menu = page.locator('.mobile-nav')
-  await expect(menu).toBeVisible()
-  await expect(menu.locator('.nav-projects strong')).toHaveText(FLAGSHIPS)
-  await expect(menu.locator('.nav-cvs a')).toHaveCount(3)
-  await menu.getByRole('link', { name: 'Experience' }).click()
-  await expect(page).toHaveURL(/#erfarenhet$/)
-  await expect(menu).toBeHidden()
-  await expect(page.locator('#erfarenhet')).toBeInViewport()
+  await expect(nav).toBeVisible()
+  await expect(
+    page.locator('.side').getByRole('link', { name: 'CV (PDF)' }),
+  ).toBeVisible()
+  await page.keyboard.press('Escape')
+  await expect(nav).toBeHidden()
+  await expect(toggle).toBeFocused()
+  await toggle.click()
+  await nav.getByRole('link', { name: 'EU AI Act Observatory' }).click()
+  await expect(page).toHaveURL(/#ai-act$/)
+  await expect(nav).toBeHidden()
+  const width = await page.evaluate(() => document.documentElement.scrollWidth)
+  expect(width).toBeLessThanOrEqual(390)
 })
 
 test('old addresses still land in the right place', async ({ page }) => {
@@ -146,13 +144,12 @@ test('old addresses still land in the right place', async ({ page }) => {
 
 test('the job-ad clustering is a theme of the job-market product', async ({
   page,
-  isMobile,
 }) => {
-  test.skip(isMobile, 'the product menu is the docked sidebar on desktop')
-  // The overview is the project's first screen; the product menu starts at the themes.
+  // The product's themes are listed under it in the site sidebar.
   await page.goto('/#jobb-trender')
-  await page
-    .getByRole('navigation', { name: /^(Job market|Jobbmarknad)$/ })
+  await (
+    await siteNav(page)
+  )
     .getByRole('link', {
       name: /What groups do the ads form|Vilka grupper bildar annonserna/,
     })

@@ -1,6 +1,9 @@
 /* The feature chart each page opens with (Feature.tsx). */
 .feature {
   display: grid;
+  /* A grid item: a wide table scrolls in its own wrap instead of widening the card. */
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
   gap: var(--sp-3);
   padding: var(--sp-4) var(--sp-4) var(--sp-3);
   border: 1px solid var(--line);

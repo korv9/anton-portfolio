@@ -1,8 +1,8 @@
 /**
  * Every internal link leads somewhere. The site routes on the hash, and an address the router
  * does not know falls back to the homepage without an error, so a mistyped link would look
- * like it works. This walks the links the site shows (header menus, homepage, projects page,
- * every project's own pages and their pagers and footers) and opens each one: it must open
+ * like it works. This walks the links the site shows (the sidebar, homepage, projects page,
+ * every project's own pages and their pagers) and opens each one: it must open
  * a page other than the homepage, or be a section of the homepage that exists, and open
  * without a script error.
  */
@@ -24,6 +24,7 @@ const START_PAGES = [
   '/#thesis',
   '/#data-constellation',
   '/#quality',
+  '/#cluster-visuals',
 ]
 
 const hrefs = (page: Page) =>
@@ -45,17 +46,8 @@ async function linksOn(page: Page): Promise<string[]> {
       { intervals: [400], timeout: 15_000 },
     )
     .toBe(true)
-  const found = await hrefs(page)
-  // The header menus render their links only while open: read them open, then close.
-  for (const name of ['Projects', 'CV']) {
-    const button = page.locator('.global-nav').getByRole('button', { name })
-    if (await button.isVisible()) {
-      await button.click()
-      found.push(...(await hrefs(page)))
-      await page.keyboard.press('Escape')
-    }
-  }
-  return found
+  // The sidebar's links are in the page; on a phone they sit in the closed menu.
+  return hrefs(page)
 }
 
 test('no link is a placeholder and every control has a name', async ({

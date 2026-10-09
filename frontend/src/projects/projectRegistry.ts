@@ -631,6 +631,86 @@ export const PROJECTS: ProjectEntry[] = [
   },
 ]
 
+/**
+ * The site sidebar's groups, in reading order. Titles, addresses and views come from the entries
+ * above; only the grouping and order live here.
+ */
+export const SIDEBAR_GROUPS: {
+  id: string
+  label: Bilingual
+  projects: string[]
+}[] = [
+  {
+    id: 'experience',
+    label: t('Erfarenhet', 'Experience'),
+    projects: ['thesis'],
+  },
+  {
+    id: 'projects',
+    label: t('Projekt', 'Projects'),
+    projects: ['politics', 'ai-act', 'jobs', 'welfare', 'symbolic-atlas'],
+  },
+  {
+    id: 'more',
+    label: t('Fler projekt', 'More projects'),
+    projects: [
+      'philosophy-atlas',
+      'concept-constellation',
+      'drugcomb',
+      'diva',
+      'homie',
+      'allegoria',
+      'rag',
+      'mimii',
+    ],
+  },
+]
+
+/** The platform pages under the projects: the data platform the projects share. */
+export const PLATFORM_PAGES: {
+  id: string
+  title: Bilingual
+  href: string
+  pages: Page[]
+}[] = [
+  {
+    id: 'quality',
+    title: t('Datakvalitet', 'Data quality'),
+    href: '#quality',
+    pages: ['quality'],
+  },
+  {
+    id: 'datamodel',
+    title: t('Datamodell och ER', 'Data model and ER'),
+    href: '#data-model',
+    pages: ['datamodel', 'er'],
+  },
+  {
+    id: 'architecture',
+    title: t('Arkitektur', 'Architecture'),
+    href: '#data-constellation',
+    pages: ['constellation'],
+  },
+  {
+    id: 'catalogue',
+    title: t('Datakatalog', 'Data catalogue'),
+    href: '#data-catalogue',
+    pages: ['catalogue'],
+  },
+  {
+    id: 'lineage',
+    title: t('Idea Lineage', 'Idea Lineage'),
+    href: '#idea-lineage',
+    pages: ['lineage'],
+  },
+  {
+    id: 'clusters',
+    title: t('Klustervisualiseringar', 'Cluster visuals'),
+    href: '#cluster-visuals',
+    pages: ['clusters'],
+  },
+]
+
 /** The flagship projects, in their numbered order. */
 export const FLAGSHIPS = PROJECTS.filter((p) => p.featured).sort((a, b) =>
   (a.number ?? '').localeCompare(b.number ?? ''),

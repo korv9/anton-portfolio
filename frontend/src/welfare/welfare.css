@@ -284,7 +284,7 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 2rem;
-  max-width: 1440px;
+  max-width: none;
   margin: auto;
   padding: 0 clamp(1rem, 6vw, 6rem) clamp(3rem, 5vw, 5rem);
   border-top: 1px solid var(--line);

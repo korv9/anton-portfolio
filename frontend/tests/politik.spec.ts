@@ -1,4 +1,4 @@
-import { test, expect } from './test'
+import { test, expect, siteNav } from './test'
 import AxeBuilder from '@axe-core/playwright'
 
 const THEMES: [string, string][] = [
@@ -35,23 +35,23 @@ test('every theme answers one question with one chart, a table and its sources',
   expect(errors).toEqual([])
 })
 
-test('the party bar follows the reader from the story to the other pages', async ({
-  page,
-}) => {
-  await page.goto('/#politik')
+test('the party bar follows the reader from page to page', async ({ page }) => {
+  await page.goto('/#politik-roster')
   const bar = page.getByRole('group', { name: 'Parties' })
   await expect(bar.getByRole('button', { pressed: false })).toHaveCount(8)
   await bar.getByRole('button', { name: 'Social Democrats' }).click()
   await bar.getByRole('button', { name: 'Left Party' }).click()
   await bar.getByRole('button', { name: 'Moderates' }).click()
   await expect(page).toHaveURL(/partier=S%2CV%2CM|partier=S,V,M/)
-  await page
-    .locator('.project-subnav')
-    .getByRole('link', { name: 'Parties' })
+  await (
+    await siteNav(page)
+  )
+    .getByRole('link', { name: 'Parties', exact: true })
     .click()
   await expect(page).toHaveURL(/#politik-partier\?partier=/)
-  await page
-    .getByRole('navigation', { name: 'Politics' })
+  await (
+    await siteNav(page)
+  )
     .getByRole('link', { name: /What voters think/ })
     .click()
   await expect(page).toHaveURL(
@@ -61,16 +61,6 @@ test('the party bar follows the reader from the story to the other pages', async
   await page.getByRole('button', { name: 'Show all' }).click()
   await expect(page.locator('.rank-bars-list li')).toHaveCount(8)
   await expect(bar.getByRole('button', { pressed: true })).toHaveCount(0)
-})
-
-test('one party chosen in the story links to its full profile', async ({
-  page,
-}) => {
-  await page.goto('/#politik?parti=S')
-  await page
-    .getByRole('link', { name: /Everything about Social Democrats/ })
-    .click()
-  await expect(page).toHaveURL(/#politik-partier\?partier=S/)
 })
 
 test('the view builder offers valid choices and keeps them in a shareable address', async ({

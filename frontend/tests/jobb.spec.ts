@@ -1,4 +1,4 @@
-import { test, expect } from './test'
+import { test, expect, siteNav } from './test'
 import AxeBuilder from '@axe-core/playwright'
 
 test('the job market tells a demand story: a question, an answer, one chart, then deeper', async ({
@@ -35,19 +35,19 @@ test('the job market tells a demand story: a question, an answer, one chart, the
   await expect(page.locator('.project-hero-finding')).not.toHaveText(answer!)
 
   // The choice follows the reader into the themes and on to every other theme.
-  await page
-    .locator('.project-subnav')
-    .getByRole('link', { name: 'Trends' })
+  await (
+    await siteNav(page)
+  )
+    .getByRole('link', { name: 'How are ads developing?' })
     .click()
   await expect(page).toHaveURL(/jobb-trender\?omraden=/)
-  const nav = page.getByRole('navigation', { name: 'Job market' })
   for (const [name, question] of [
     ['How are ads developing?', 'How are job ads developing?'],
     ['Which occupations grow?', 'Which occupations are growing?'],
     ['Where are the jobs?', 'Where are the jobs?'],
     ['On what terms?', 'On what terms are people hired?'],
   ]) {
-    await nav.getByRole('link', { name }).click()
+    await (await siteNav(page)).getByRole('link', { name }).click()
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(question)
     await expect(page).toHaveURL(/omraden=/)
     await expect(page.locator('.theme-chart-title')).toContainText('Data/IT')
@@ -69,7 +69,7 @@ test('the job market tells a demand story: a question, an answer, one chart, the
   await page.locator('.explore-row[href="#job-market-occupations"]').click()
   await expect(page.getByTestId('market-occupations')).toBeVisible()
   await expect(
-    nav.getByRole('link', { name: 'Explore for yourself' }),
+    (await siteNav(page)).getByRole('link', { name: 'Explore for yourself' }),
   ).toHaveAttribute('aria-current', 'true')
 })
 

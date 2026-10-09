@@ -1,20 +1,21 @@
-import { test, expect } from './test'
+import { test, expect, siteNav } from './test'
 import AxeBuilder from '@axe-core/playwright'
 
-test('the politics sidebar has Overview, Budget and Debates with their sub-pages', async ({
+test('the sidebar lists the politics themes, Budget among them, with the debates', async ({
   page,
-  isMobile,
 }) => {
   await page.goto('/#politik-budget')
-  const nav = page.getByRole('navigation', { name: 'Politics' })
-  if (!isMobile)
-    await expect(nav.getByRole('list', { name: 'Debates' })).toBeVisible()
-  const debates = nav.getByRole('list', { name: 'Debates' })
-  await expect(debates.getByRole('link')).toHaveText([
-    'Issue debates',
-    'Party-leader debates',
-    'What they talk about',
-  ])
+  const nav = await siteNav(page)
+  const themes = nav.getByRole('list', { name: 'Swedish politics in numbers' })
+  await expect(
+    themes.getByRole('link', { name: 'Issue debates' }),
+  ).toBeVisible()
+  await expect(
+    themes.getByRole('link', { name: 'Party-leader debates' }),
+  ).toBeVisible()
+  await expect(
+    themes.getByRole('link', { name: 'What they talk about' }),
+  ).toBeVisible()
   // The budget is a dashboard: key figures, columns per party, bars per area, years.
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Budget')
   await expect(nav.getByRole('link', { name: 'Budget' })).toHaveAttribute(

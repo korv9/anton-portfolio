@@ -1,0 +1,577 @@
+/*
+ * The dashboard kit (ui/dash/). Cards on --paper-strong in a 12-column grid on --page, with
+ * no maximum width; the main view (header, key figures, main chart and gauge) fits one
+ * 1440 × 900 screen.
+ */
+.dk {
+  --dk-gap: 14px;
+  display: grid;
+  gap: var(--dk-gap);
+  padding: clamp(16px, 1.6vw, 28px);
+  background: var(--page);
+  color: var(--ink);
+}
+
+/* ---------- Header ---------- */
+/* The dashboard's own breadcrumb replaces the site's. */
+main:has(.dk) > .project-context {
+  display: none;
+}
+.politik-main:has(> .dk),
+.politik-landing:has(.dk) {
+  padding: 0;
+}
+.project-shell #main .dk-head h1,
+.dk-head h1 {
+  margin: 0.15rem 0 0.25rem;
+  font-size: clamp(1.6rem, 2.2vw, 2rem);
+  font-weight: var(--weight-heading);
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+.dk-crumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+}
+.dk-crumbs li + li::before {
+  content: '/';
+  margin-right: 0.4rem;
+}
+.dk-crumbs a {
+  color: inherit;
+}
+.dk-lead {
+  max-width: 72ch;
+  margin: 0;
+  color: var(--ink-2);
+  font-size: var(--fs-sm);
+  line-height: 1.45;
+}
+.dk-head-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-top: var(--sp-3);
+}
+.dk-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  min-height: 34px;
+  padding: 0 0.75rem;
+  background: var(--paper-strong);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+}
+.dk-pill i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--muted);
+}
+.dk-ok i {
+  background: var(--series-1);
+}
+.dk-warn i {
+  background: var(--orange);
+}
+.dk-button {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 0 0.85rem;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--fs-sm);
+  font-weight: 650;
+  text-decoration: none;
+  cursor: pointer;
+}
+.dk-button:hover {
+  border-color: var(--ink);
+}
+
+/* ---------- Key figures ---------- */
+.dk-kpis {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--dk-gap);
+  margin: 0;
+}
+.dk-kpi,
+.dk-tiles > div {
+  min-width: 0;
+  padding: 14px 18px;
+  background: var(--paper-strong);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+.dk-kpi dt,
+.dk-tiles dt {
+  color: var(--ink-2);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+}
+.dk-kpi dd,
+.dk-tiles dd {
+  margin: 0.15rem 0 0;
+  font-size: clamp(1.6rem, 2.4vw, 2.25rem);
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+.dk-tiles dd {
+  font-size: 1.35rem;
+}
+.dk-kpi .dk-note,
+.dk-tiles .dk-note {
+  margin-top: 0.3rem;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+/* ---------- Cards ---------- */
+.dk-grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: var(--dk-gap);
+}
+.dk-card {
+  grid-column: span var(--span, 12);
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 18px 20px;
+  background: var(--paper-strong);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+.dk-card-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--sp-2) var(--sp-3);
+  margin-bottom: var(--sp-3);
+}
+.dk-card h2 {
+  margin: 0;
+  font-size: var(--fs-card-title);
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+.dk-sub {
+  margin: 0.15rem 0 0;
+  color: var(--muted);
+  font-size: var(--fs-label);
+}
+.dk-card-body {
+  flex: 1;
+  min-width: 0;
+}
+.dk-foot {
+  margin: var(--sp-3) 0 0;
+  padding-top: var(--sp-2);
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: var(--fs-label);
+}
+.dk-empty {
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--fs-sm);
+}
+.dk-slicer {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  color: var(--muted);
+  font-size: var(--fs-label);
+}
+.dk-slicer select,
+.dk-slicer input {
+  min-height: 34px;
+  max-width: 100%;
+  padding: 0 0.6rem;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+}
+.dk-slicer select:focus-visible,
+.dk-slicer input:focus-visible,
+.dk-button:focus-visible,
+.dk-tabs button:focus-visible,
+.dk-table th button:focus-visible,
+.dk-table-wrap:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* ---------- Main chart ---------- */
+.dk-dotline {
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
+}
+.dk-dotline svg {
+  display: block;
+}
+.dk-tip {
+  margin: 0 0 var(--sp-1);
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+}
+.dk-tip b {
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: var(--fs-md);
+}
+.dk-axis {
+  fill: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+/* ---------- Gauge ---------- */
+.dk-gauge svg {
+  display: block;
+  width: 100%;
+  max-width: 320px;
+  margin: 0 auto;
+}
+.dk-gauge-center {
+  fill: var(--ink);
+  font-size: 28px;
+  font-weight: 750;
+}
+.dk-gauge-label {
+  fill: var(--muted);
+  font-size: 10px;
+}
+.dk-legend {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
+  gap: 6px 12px;
+  margin: var(--sp-3) 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--fs-label);
+}
+.dk-legend li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.dk-legend i {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+}
+.dk-legend b {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- List ---------- */
+.dk-list ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.dk-list li {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 2fr) auto;
+  gap: var(--sp-3);
+  align-items: baseline;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: var(--fs-sm);
+}
+.dk-list-title {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.dk-list-meta {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  overflow-wrap: anywhere;
+}
+.dk-list-value {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+.dk-badge {
+  margin: 0 0 var(--sp-2);
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+}
+
+/* ---------- Tabs, tech card, tables ---------- */
+.dk-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: var(--sp-3);
+}
+.dk-tabs button {
+  min-height: 32px;
+  padding: 0 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--ink-2);
+  font: inherit;
+  font-size: var(--fs-label);
+  font-weight: 650;
+  cursor: pointer;
+}
+.dk-tabs button[aria-selected='true'] {
+  border-color: var(--ink);
+  background: var(--paper);
+  color: var(--ink);
+}
+.dk-schema {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 10px;
+}
+.dk-model,
+.dk-marts {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--paper);
+  font-size: var(--fs-label);
+}
+.dk-model p {
+  margin: 0;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--line);
+  overflow-wrap: anywhere;
+}
+.dk-model p span {
+  color: var(--muted);
+  font-family: var(--font-mono);
+}
+.dk-model ul,
+.dk-marts ul {
+  margin: 0;
+  padding: 4px 10px 6px;
+  list-style: none;
+}
+.dk-model li {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr) auto;
+  gap: 6px;
+  padding: 2px 0;
+  font-family: var(--font-mono);
+}
+.dk-model li i {
+  font-style: normal;
+  font-weight: 700;
+}
+.dk-model li span {
+  overflow-wrap: anywhere;
+}
+.dk-model small,
+.dk-marts small {
+  color: var(--muted);
+}
+.dk-model .dk-more {
+  display: block;
+  color: var(--muted);
+}
+.dk-marts {
+  grid-column: 1 / -1;
+}
+.dk-marts ul {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0 var(--sp-3);
+}
+.dk-marts > p {
+  margin: 0;
+  padding: 6px 10px 0;
+}
+.dk-marts li {
+  display: grid;
+  padding: 3px 0;
+  font-family: var(--font-mono);
+  overflow-wrap: anywhere;
+}
+.dk-sql {
+  max-height: 180px;
+  margin: 0 0 var(--sp-3);
+  padding: 10px 12px;
+  overflow: auto;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  line-height: 1.5;
+}
+.dk-table-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+}
+.dk-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-label);
+  font-variant-numeric: tabular-nums;
+}
+.dk-table caption {
+  margin-bottom: 4px;
+  color: var(--muted);
+  text-align: left;
+}
+.dk-table th,
+.dk-table td {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+}
+.dk-table td {
+  max-width: 36ch;
+  overflow-wrap: anywhere;
+}
+.dk-table th {
+  background: var(--paper);
+  color: var(--ink-2);
+  font-weight: 650;
+  white-space: nowrap;
+}
+.dk-table .num {
+  text-align: right;
+}
+.dk-table th button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.dk-steps {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding-left: 1.4rem;
+  font-size: var(--fs-sm);
+}
+.dk-steps li span {
+  display: block;
+  color: var(--muted);
+  font-size: var(--fs-label);
+}
+
+/* ---------- Fördjupning and the Explorer ---------- */
+.dk-deep {
+  display: grid;
+  gap: var(--dk-gap);
+  margin-top: var(--sp-5);
+  padding-top: var(--sp-4);
+  border-top: 2px solid var(--ink);
+}
+.dk-deep > h2 {
+  margin: 0;
+  font-size: var(--fs-section-title);
+  letter-spacing: -0.02em;
+}
+.dk-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 10px;
+  margin: 0;
+}
+.dk-explorer-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--sp-2) var(--sp-3);
+  margin-bottom: var(--sp-3);
+}
+.dk-explorer-controls .dk-slicer {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+.dk-count {
+  margin: 0 0 0 auto;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+}
+.dk-more-rows {
+  align-self: flex-end;
+  margin-top: var(--sp-3);
+}
+.dk-explorer .dk-card-body {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---------- Narrow screens ---------- */
+@media (max-width: 1100px) {
+  .dk-card {
+    grid-column: span 12;
+  }
+  .dk-card.dk-part {
+    grid-column: span 6;
+  }
+}
+@media (max-width: 720px) {
+  .dk-kpis {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .dk-card {
+    grid-column: span 12 !important;
+    padding: 14px;
+  }
+  .dk-list li {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .dk-list-meta {
+    grid-row: 2;
+    grid-column: 1 / -1;
+  }
+}
+
+/* Ranked bars inside a card: the label never takes the bar's room. */
+.dk-card .rank-bars-list li {
+  grid-template-columns: minmax(6rem, min(40%, 16rem)) minmax(3rem, 1fr) auto;
+  font-size: var(--fs-sm);
+}
+.dk-part .rank-bars-list li {
+  grid-template-columns: minmax(6rem, 50%) minmax(2.5rem, 1fr) auto;
+  gap: 0.5rem;
+  font-size: var(--fs-label);
+}

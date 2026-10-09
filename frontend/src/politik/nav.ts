@@ -271,3 +271,13 @@ export function deepDiveOf(
 }
 
 export const themeByPath = (path: string) => THEMES.find((t) => t.path === path)
+
+/** The theme an address belongs to: itself, the theme a sub-view or deep dive sits under. */
+export function activeTheme(path: string, params: URLSearchParams): ThemeKey {
+  return (
+    themeByPath(path)?.key ??
+    subViewOf(path, params) ??
+    deepDiveOf(path)?.dive.parent ??
+    'utforska'
+  )
+}
