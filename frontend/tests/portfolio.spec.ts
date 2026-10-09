@@ -29,13 +29,13 @@ test('home introduces Anton and routes to each project', async ({ page }) => {
     ),
   )
   expect([...order].sort((a, b) => a - b)).toEqual(order)
-  // Experience: company, role, period and impact without a click; the bullets one click deeper.
-  await expect(page.locator('#erfarenhet')).toContainText('Fora')
-  await expect(page.locator('#erfarenhet')).toContainText('Avtalat')
-  await expect(page.locator('.home-job-impact').first()).toBeVisible()
-  await expect(page.locator('.home-job-did').first()).toBeHidden()
-  await page.locator('.home-job summary').first().click()
-  await expect(page.locator('.home-job-did').first()).toBeVisible()
+  // Experience as in the CV: Avtalat above Fora, each with its bullets shown without a click.
+  const roles = page.locator('.home-jobs > li')
+  await expect(roles).toHaveCount(2)
+  await expect(roles.first()).toContainText('Avtalat')
+  await expect(roles.nth(1)).toContainText('Fora')
+  await expect(roles.first().locator('.home-job-did li')).toHaveCount(3)
+  await expect(roles.first().locator('.home-job-did')).toBeVisible()
   await expect(page.locator('#erfarenhet')).toContainText('JENSEN')
   // A short stack first; the full one a click away.
   await expect(page.locator('#kompetenser > dl > div')).toHaveCount(5)

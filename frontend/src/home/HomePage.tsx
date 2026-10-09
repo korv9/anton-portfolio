@@ -12,6 +12,7 @@ import { l } from '../i18n'
 import { profile } from '../content'
 import { ABOUT } from './content'
 import {
+  ADDITIONAL,
   CORE_STACK,
   EDUCATION,
   EXPERIENCE,
@@ -93,22 +94,34 @@ function Profile() {
         <ol className="home-jobs">
           {EXPERIENCE.map((job) => (
             <li key={job.org} className="home-job">
-              <h3 className="home-job-org">{job.org}</h3>
-              <p className="home-job-role">
-                {b(job.role)}, {b(job.period)}
-              </p>
-              <p className="home-job-impact">{b(job.effect)}</p>
-              <Disclosure label={l('Details', 'Detaljer')}>
-                <ul className="home-job-did">
-                  {job.did.map((item) => (
-                    <li key={item.sv}>{b(item)}</li>
-                  ))}
-                </ul>
-                <p className="home-job-tech">{job.tech.join(', ')}</p>
-              </Disclosure>
+              <div className="home-job-head">
+                <h3 className="home-job-org">
+                  {job.role} | {job.org}
+                </h3>
+                <p className="home-job-period">{b(job.period)}</p>
+              </div>
+              <p className="home-job-role">{b(job.kind)}</p>
+              <ul className="home-job-did">
+                {job.did.map((item) => (
+                  <li key={item.sv}>{b(item)}</li>
+                ))}
+              </ul>
+              <p className="home-job-tech">{job.tech.join(' | ')}</p>
             </li>
           ))}
         </ol>
+        <div className="home-job home-job-additional">
+          <h3 className="home-label">
+            {l('Additional experience', 'Övrig erfarenhet')}
+          </h3>
+          <div className="home-job-head">
+            <p className="home-job-org-small">
+              {b(ADDITIONAL.role)} | {ADDITIONAL.org}
+            </p>
+            <p className="home-job-period">{ADDITIONAL.period}</p>
+          </div>
+          <p className="home-job-role">{b(ADDITIONAL.text)}</p>
+        </div>
       </div>
       <div className="home-column" id="om-mig">
         <h2 className="home-title">{l('About', 'Om mig')}</h2>

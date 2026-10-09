@@ -84,8 +84,7 @@
 }
 .home-jobs {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0 clamp(1.5rem, 3vw, 3.5rem);
+  gap: var(--sp-3);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -98,6 +97,27 @@
   font-size: var(--h3);
   font-weight: var(--weight-heading);
   letter-spacing: -0.02em;
+}
+.home-job-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0 var(--sp-4);
+}
+.home-job-period {
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--fs-sm);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.home-job-org-small {
+  margin: 0;
+  font-weight: var(--weight-heading);
+}
+.home-job-did li {
+  line-height: 1.5;
 }
 .home-job-org a {
   color: inherit;
@@ -158,23 +178,29 @@
   text-align: center;
   text-transform: uppercase;
 }
+/* Every row centred, each one wider than the last, so the rows form a symmetric pyramid. */
 .work-row {
   display: grid;
   grid-template-columns: repeat(var(--cols, 4), minmax(0, 1fr));
   gap: var(--sp-6) clamp(1.5rem, 3vw, 3.5rem);
-  margin: 0 0 var(--sp-7);
+  width: var(--row-w, 100%);
+  margin: 0 auto var(--sp-7);
   padding: 0;
   list-style: none;
+  text-align: center;
 }
 .work-row.cols-2 {
   --cols: 2;
+  --row-w: 56%;
 }
 .work-row.cols-3 {
   --cols: 3;
+  --row-w: 78%;
 }
 .work-card {
   display: flex;
   flex-direction: column;
+  align-items: center;
   height: 100%;
   color: var(--ink);
   text-decoration: none;
@@ -263,6 +289,7 @@ a.work-card:hover .work-title {
   }
   .work-row {
     grid-template-columns: repeat(min(var(--cols), 2), minmax(0, 1fr));
+    width: 100%;
   }
 }
 @media (max-width: 760px) {
