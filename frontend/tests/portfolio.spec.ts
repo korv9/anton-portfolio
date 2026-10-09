@@ -41,8 +41,8 @@ test('home introduces Anton and routes to each project', async ({ page }) => {
   await expect(page.locator('#erfarenhet')).toContainText('JENSEN')
   // A short stack first; the full one a click away.
   await expect(page.locator('#kompetenser > dl > div')).toHaveCount(5)
-  // The work: one whole-entry link per flagship, no extra buttons.
-  const cards = page.locator('#projekt > ol a.index-link')
+  // The work: one whole-card link per flagship, no extra buttons.
+  const cards = page.locator('#projekt a.work-card')
   await expect(cards).toHaveCount(6)
   await expect(cards.first()).toContainText('Swedish politics')
   await expect(page.locator('#projekt button')).toHaveCount(0)
