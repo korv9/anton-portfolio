@@ -17,7 +17,8 @@
 main:has(.dk) > .project-context {
   display: none;
 }
-.politik-main:has(> .dk) {
+.politik-main:has(> .dk),
+.politik-landing:has(.dk) {
   padding: 0;
 }
 .project-shell #main .dk-head h1,

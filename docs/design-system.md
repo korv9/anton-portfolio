@@ -67,13 +67,13 @@ gradients or blur; an inset rule may mark a party or a current item. Space follo
 `--sp-1` … `--sp-7` and the fluid `--gutter`; `--sp-section` is the gap between the start
 page's screens and a project's sections.
 
-Three widths, so text never runs the full screen:
+Pages, sections and dashboards fill the screen; only running text keeps a measure:
 
-| Token              | Width   | Use                                          |
-| ------------------ | ------- | -------------------------------------------- |
-| `--layout-wide`    | 1440 px | the page frame, charts and maps              |
-| `--layout-content` | 1120 px | a section's content, the project hero        |
-| `--layout-reading` | 68ch    | running text, the hero's summary and finding |
+| Token              | Width | Use                                          |
+| ------------------ | ----- | -------------------------------------------- |
+| `--layout-wide`    | none  | the page frame, charts and maps              |
+| `--layout-content` | none  | a section's content, the project hero        |
+| `--layout-reading` | 68ch  | running text, the hero's summary and finding |
 
 ## Page primitives
 
@@ -136,5 +136,5 @@ and transition is cut to near zero.
 ## States
 
 A page that fails while drawing shows a short message with a reload button and a link to
-all projects (`site/PageBoundary.tsx`); the header, breadcrumb and footer stay. Data pages
+all projects (`site/PageBoundary.tsx`); the sidebar and breadcrumb stay. Data pages
 show their own loading and failure messages.

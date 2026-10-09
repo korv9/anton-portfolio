@@ -126,10 +126,10 @@
   /* Between the major screens of a page. */
   --sp-section: clamp(4rem, 9vw, 8rem);
   --gutter: clamp(16px, 3vw, 44px);
-  --content-width: 1440px;
-  /* Three widths, nothing in between: wide for charts, content for sections, reading for prose. */
-  --layout-wide: var(--content-width);
-  --layout-content: 1120px;
+  /* Pages and dashboards fill the screen; only running prose keeps a reading measure. */
+  --content-width: none;
+  --layout-wide: none;
+  --layout-content: none;
   --layout-reading: var(--measure);
   --radius: 2px;
   --card-pad: 0.9rem 1.05rem 1rem;

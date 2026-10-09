@@ -5,8 +5,8 @@
  * LinkedIn and the language at the bottom.
  *
  * On a wide screen it is a column to the left of the page. Under 900 px it is a slim bar at the
- * top with a button that opens the same list as a panel. On the start page it stays out of the
- * way while the name and role fill the first screen, and slides in once the reader is past them.
+ * top with a button that opens the same list as a panel. The start page has no sidebar, only the
+ * language switch.
  */
 import { useEffect, useId, useRef, useState } from 'react'
 import { currentLocale, l, setLocale, type Locale } from '../i18n'
@@ -128,24 +128,6 @@ export default function Sidebar({
     return () => window.removeEventListener('keydown', onKey)
   }, [open])
 
-  // On the start page the sidebar waits until the first screen (name and role) is passed.
-  const [atTop, setAtTop] = useState(home)
-  useEffect(() => {
-    if (!home) return setAtTop(false)
-    const marker = document.createElement('div')
-    marker.style.cssText =
-      'position:absolute;top:70vh;left:0;width:1px;height:1px;pointer-events:none'
-    document.body.append(marker)
-    const observer = new IntersectionObserver(([entry]) =>
-      setAtTop(entry.isIntersecting || entry.boundingClientRect.top > 0),
-    )
-    observer.observe(marker)
-    return () => {
-      observer.disconnect()
-      marker.remove()
-    }
-  }, [home])
-
   // Sticky elements on the page (a product's slicer bar) sit under the phone bar; on a wide
   // screen the sidebar is beside the page and takes no height.
   useEffect(() => {
@@ -156,7 +138,7 @@ export default function Sidebar({
     const update = () =>
       root.style.setProperty(
         '--header-h',
-        narrow.matches && !atTop ? `${el.offsetHeight}px` : '0px',
+        narrow.matches ? `${el.offsetHeight}px` : '0px',
       )
     const observer = new ResizeObserver(update)
     observer.observe(el)
@@ -167,7 +149,7 @@ export default function Sidebar({
       narrow.removeEventListener('change', update)
       root.style.removeProperty('--header-h')
     }
-  }, [atTop])
+  }, [home])
 
   const change = (next: Locale) => {
     setLocale(next)
@@ -193,13 +175,11 @@ export default function Sidebar({
     </div>
   )
   const byId = (id: string) => PROJECTS.find((p) => p.id === id)
-  const hidden = home && atTop
+  // The start page has the room to itself; only the language stays within reach.
+  if (home) return <div className="side-lang-float">{languages}</div>
   return (
     <>
-      <aside
-        className={`side${hidden ? ' is-hidden' : ''}${open ? ' is-open' : ''}`}
-        inert={hidden || undefined}
-      >
+      <aside className={`side${open ? ' is-open' : ''}`}>
         <div className="side-bar" ref={bar}>
           <a
             className="side-brand"
@@ -302,8 +282,6 @@ export default function Sidebar({
           </div>
         </div>
       </aside>
-      {/* The language stays within reach on the start page's first screen. */}
-      {hidden && <div className="side-lang-float">{languages}</div>}
     </>
   )
 }

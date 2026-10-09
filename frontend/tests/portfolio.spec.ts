@@ -14,17 +14,17 @@ test('home introduces Anton and routes to each project', async ({ page }) => {
   await expect(identity.locator('.home-roles')).toBeInViewport()
   const ways = identity.getByRole('navigation', { name: 'Start page' })
   await expect(ways.getByRole('link')).toHaveText([
-    'Projects',
     'Experience',
+    'Projects',
     'About',
     'CV',
   ])
   await expect(ways).toBeInViewport()
-  // The header does not repeat the name over the identity screen.
-  await expect(page.locator('.site-bar .wordmark')).toBeHidden()
-  // Then, in order: experience with the core stack beside it, the work, about, under the hood.
+  // The start page has no sidebar.
+  await expect(page.locator('.side')).toHaveCount(0)
+  // Then, in order: education, experience and about side by side, the work, the project pages.
   const order = await page.evaluate(() =>
-    ['start', 'erfarenhet', 'projekt', 'om-mig', 'under-huven'].map(
+    ['start', 'erfarenhet', 'projekt', 'under-huven'].map(
       (id) => document.getElementById(id)!.getBoundingClientRect().top,
     ),
   )
@@ -39,15 +39,24 @@ test('home introduces Anton and routes to each project', async ({ page }) => {
   await expect(page.locator('#erfarenhet')).toContainText('JENSEN')
   // A short stack first; the full one a click away.
   await expect(page.locator('#kompetenser > dl > div')).toHaveCount(5)
-  // The work: one whole-card link per flagship, no extra buttons.
-  const cards = page.locator('#projekt a.work-card')
-  await expect(cards).toHaveCount(6)
+  // The work: rows of two, three and four, every project but the degree project (under
+  // education), each a whole-card link, no extra buttons.
+  await expect(
+    page.locator('#projekt .work-row').first().locator('li'),
+  ).toHaveCount(2)
+  await expect(
+    page.locator('#projekt .work-row').nth(1).locator('li'),
+  ).toHaveCount(3)
+  await expect(
+    page.locator('#projekt .work-row').nth(2).locator('li'),
+  ).toHaveCount(4)
+  const cards = page.locator('#projekt .work-card')
   await expect(cards.first()).toContainText('Swedish politics')
   await expect(page.locator('#projekt button')).toHaveCount(0)
-  // Once scrolled past the first screen, the sidebar with the name comes in and stays.
-  await page.locator('#under-huven').scrollIntoViewIfNeeded()
-  await expect(page.locator('.side')).not.toHaveClass(/is-hidden/)
-  await expect(page.locator('.side-who strong')).toBeInViewport()
+  // At the bottom, the way into the project pages.
+  await expect(
+    page.locator('#under-huven').getByRole('link', { name: /project pages/ }),
+  ).toHaveAttribute('href', '#politik')
   // Technical depth is linked at the bottom, not in the first screen.
   await expect(
     page.locator('#under-huven a[href="#data-constellation"]'),

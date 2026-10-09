@@ -3,7 +3,7 @@
   padding: 5rem 0 2rem;
 }
 .page-lead {
-  max-width: 1320px;
+  max-width: none;
   margin: 0 auto 2.4rem;
   padding: 0 clamp(1rem, 6vw, 6rem);
 }
@@ -209,7 +209,7 @@ footer a {
   max-width: 900px;
 }
 .politics-page .reports > .budget-lab {
-  max-width: 1320px;
+  max-width: none;
   margin-inline: auto;
   padding-inline: clamp(1rem, 6vw, 6rem);
   box-sizing: border-box;

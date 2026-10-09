@@ -1,7 +1,6 @@
 /*
  * The site sidebar (site/Sidebar.tsx). A column on paper beside the page on a wide screen; a slim
- * bar with a menu panel under 900 px. On the start page it slides in once the first screen is
- * passed.
+ * bar with a menu panel under 900 px. The start page has none.
  */
 :root {
   --side-w: 272px;
@@ -69,10 +68,14 @@
   min-width: 0;
   line-height: 1.25;
 }
+/* The name as on the start page: heavy capitals, set tight. */
 .side-who strong {
-  font-size: var(--fs-md);
-  font-weight: var(--weight-heading);
-  letter-spacing: -0.01em;
+  font-size: 1.2rem;
+  font-weight: 750;
+  white-space: nowrap;
+  letter-spacing: -0.045em;
+  line-height: 1;
+  text-transform: uppercase;
 }
 .side-who small {
   color: var(--muted);
@@ -207,50 +210,23 @@
   z-index: 40;
 }
 
-/* ---------- The start page: the first screen has the room; the sidebar comes after ---------- */
-.home-shell {
-  grid-template-columns: minmax(0, 1fr);
-}
-.home-shell > main {
-  grid-column: 1;
-}
-.home-shell .side {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: var(--side-w);
-  transition:
-    transform 280ms var(--ease),
-    visibility 0s linear 0s;
-}
-.home-shell .side.is-hidden {
-  visibility: hidden;
-  transform: translateX(-100%);
-  transition:
-    transform 280ms var(--ease),
-    visibility 0s linear 280ms;
-}
 @media (min-width: 900px) {
-  .site-shell {
+  .project-shell {
     --bleed: calc(100vw - var(--side-w));
   }
-  /* Everything after the first screen sits beside the sidebar. */
-  .home-shell > main {
-    padding-left: var(--side-w);
-  }
-  .home-shell .home-identity {
-    margin-left: calc(-1 * var(--side-w));
-  }
+}
+
+/* ---------- The start page: no sidebar, the page alone ---------- */
+.home-shell {
+  display: block;
 }
 
 /* ---------- Under 900 px: a slim bar and a menu panel ---------- */
 @media (max-width: 899px) {
-  .site-shell,
-  .home-shell {
+  .site-shell {
     display: block;
   }
-  .side,
-  .home-shell .side {
+  .side {
     position: sticky;
     top: 0;
     width: auto;
@@ -258,13 +234,6 @@
     overflow: visible;
     border-right: 0;
     border-bottom: 1px solid var(--line);
-  }
-  .home-shell .side {
-    position: fixed;
-    right: 0;
-  }
-  .home-shell .side.is-hidden {
-    transform: translateY(-100%);
   }
   .side-bar {
     padding: var(--sp-2) 16px;
@@ -300,12 +269,5 @@
   }
   .side.is-open .side-panel {
     display: flex;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .home-shell .side,
-  .home-shell .side.is-hidden {
-    transition: none;
   }
 }
