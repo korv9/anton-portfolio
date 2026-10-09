@@ -5,14 +5,12 @@ test('home introduces Anton and routes to each project', async ({ page }) => {
   const errors: string[] = []
   page.on('pageerror', (e) => errors.push(e.message))
   await page.goto('/')
-  // First screen: who, in what role, one sentence, and four ways on. Nothing else.
+  // First screen: who, in what role, and four ways on. Nothing else.
   const identity = page.locator('#start')
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
     'Anton Ernstsson',
   )
-  await expect(identity.locator('.home-roles')).toContainText(
-    'Junior Software Developer',
-  )
+  await expect(identity.locator('.home-roles')).toHaveText('Data & AI Engineer')
   await expect(identity.locator('.home-roles')).toBeInViewport()
   const ways = identity.getByRole('navigation', { name: 'Start page' })
   await expect(ways.getByRole('link')).toHaveText([
@@ -46,10 +44,10 @@ test('home introduces Anton and routes to each project', async ({ page }) => {
   await expect(cards).toHaveCount(6)
   await expect(cards.first()).toContainText('Swedish politics')
   await expect(page.locator('#projekt button')).toHaveCount(0)
-  // Once scrolled, the header carries the name and stays on screen.
+  // Once scrolled past the first screen, the sidebar with the name comes in and stays.
   await page.locator('#under-huven').scrollIntoViewIfNeeded()
-  await expect(page.locator('.site-bar')).toBeInViewport()
-  await expect(page.locator('.site-bar .wordmark')).toBeVisible()
+  await expect(page.locator('.side')).not.toHaveClass(/is-hidden/)
+  await expect(page.locator('.side-who strong')).toBeInViewport()
   // Technical depth is linked at the bottom, not in the first screen.
   await expect(
     page.locator('#under-huven a[href="#data-constellation"]'),

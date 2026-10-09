@@ -15,7 +15,8 @@
   gap: 1.25rem clamp(1rem, 2vw, 2rem);
   align-items: start;
   min-height: calc(100vh - 72px);
-  margin: 0 calc(50% - 50vw) 2.5rem;
+  /* Full bleed across the page beside the sidebar (--bleed, site/sidebar.css). */
+  margin: 0 calc(50% - var(--bleed, 100vw) / 2) 2.5rem;
   padding: clamp(1.25rem, 3vw, 2.5rem) clamp(1rem, 3vw, 2.5rem);
   color: var(--ink);
   background: var(--page);

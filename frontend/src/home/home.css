@@ -1,6 +1,6 @@
 /*
  * The start page (home/HomePage.tsx): three screens, then two short sections.
- *   01 identity: the name, three roles, one sentence, four links on the right.
+ *   01 identity: the name, the role a step below it, four links on the right.
  *   02 experience: the two roles first, the core stack beside them.
  *   03 selected work: one card per flagship, the whole card a link.
  * No previews, no buttons, no motion beyond a hover shade.
@@ -12,7 +12,6 @@
 }
 .home-screen {
   padding-block: var(--sp-section);
-  border-top: 1px solid var(--line);
 }
 .home-label {
   margin: 0 0 var(--sp-2);
@@ -40,7 +39,6 @@
   /* One screen, less the header; never less than the content needs. */
   min-height: calc(100svh - var(--header-h, 57px) - 40px);
   padding-block: var(--sp-6);
-  border-top: 0;
 }
 .home-name {
   margin: 0 0 var(--sp-5);
@@ -51,8 +49,7 @@
   text-transform: uppercase;
 }
 .home-roles {
-  display: grid;
-  margin: 0 0 var(--sp-5);
+  margin: var(--sp-6) 0 0;
   font-size: var(--h3);
   font-weight: 500;
   letter-spacing: -0.02em;
@@ -217,7 +214,6 @@
   grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
   gap: var(--sp-6) clamp(2rem, 6vw, 6rem);
   padding-block: var(--sp-7);
-  border-top: 1px solid var(--line);
 }
 .home-lower .home-title {
   margin-bottom: var(--sp-4);

@@ -21,3 +21,14 @@ export const test = base.extend<{
   },
 })
 export { expect }
+
+/** The site sidebar's navigation; on a phone the menu is opened first. */
+export async function siteNav(page: import('@playwright/test').Page) {
+  const menu = page.locator('.side-menu-button')
+  if (
+    (await menu.isVisible()) &&
+    (await menu.getAttribute('aria-expanded')) !== 'true'
+  )
+    await menu.click()
+  return page.getByRole('navigation', { name: 'Site' })
+}

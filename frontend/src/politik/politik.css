@@ -1,102 +1,14 @@
-/* The politics product: one sidebar navigation, themes on a single editorial template. */
+/* The politics product: themes on a single editorial template; the themes are listed in the
+   site sidebar (site/Sidebar.tsx). */
 
 .politik {
   display: grid;
-  grid-template-columns: 230px minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
   max-width: 1600px;
   margin: 0 auto;
   min-height: calc(100vh - var(--header-h, 0px));
 }
-.politik-side {
-  border-right: 1px solid var(--line);
-  padding: 1.5rem 1.25rem 1.5rem clamp(1rem, 2.5vw, 2rem);
-}
-.politik-side > * {
-  position: sticky;
-  top: var(--header-h, 0px);
-  align-self: start;
-  max-height: calc(100vh - var(--header-h, 0px));
-  overflow-y: auto;
-  scrollbar-width: thin;
-}
-.politik-brand {
-  display: block;
-  text-decoration: none;
-  margin-bottom: 1.25rem;
-}
-.politik-brand span,
-.politik-brand small {
-  display: block;
-  font-size: 1.0625rem;
-  font-weight: 700;
-  line-height: 1.2;
-}
-.politik-brand small {
-  font-weight: 400;
-  color: var(--muted);
-}
 
-.politik-nav ol {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  border-top: 1px solid var(--line);
-}
-.politik-nav li {
-  border-bottom: 1px solid var(--line);
-}
-.politik-nav a {
-  display: block;
-  padding: 0.5rem 0;
-  font-size: 0.875rem;
-  line-height: 1.35;
-  text-decoration: none;
-  color: var(--muted);
-}
-.politik-nav-no {
-  display: inline-block;
-  min-width: 1.6em;
-  color: var(--subtle);
-  font-family: var(--font-mono);
-  font-size: 0.78rem;
-}
-.politik-nav a:hover {
-  color: var(--ink);
-}
-.politik-nav a[aria-current] {
-  color: var(--ink);
-  font-weight: 700;
-}
-.politik-nav a[aria-current] {
-  box-shadow: inset 3px 0 0 var(--ink);
-  padding-left: 0.6rem;
-}
-/* A group: a small heading, its items indented under it. */
-.politik-nav-group {
-  padding: 0.7rem 0 0.2rem;
-}
-.politik-nav-heading {
-  display: block;
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-.politik-nav .politik-nav-group ol {
-  border-top: 0;
-  margin-top: 0.3rem;
-}
-.politik-nav .politik-nav-group li {
-  border-bottom: 0;
-}
-.politik-nav .politik-nav-group a {
-  padding: 0.35rem 0 0.35rem 0.75rem;
-  border-left: 1px solid var(--line);
-}
-.politik-nav .politik-nav-group a[aria-current] {
-  box-shadow: inset 3px 0 0 var(--ink);
-}
 .politik-main {
   min-width: 0;
   padding: 2.5rem clamp(1rem, 4vw, 4rem) 6rem;
@@ -639,66 +551,7 @@
   .politik {
     grid-template-columns: minmax(0, 1fr);
   }
-  .politik-side {
-    min-width: 0;
-    border-right: 0;
-    border-bottom: 1px solid var(--line);
-    padding: 1rem 0 0;
-    /* The site header is already fixed on screen; a second fixed bar would leave a phone
-       little room, so the product's menu scrolls with the page here. */
-    position: relative;
-    z-index: 15;
-    background: var(--page);
-  }
-  .politik-side {
-    max-height: none;
-    overflow: visible;
-  }
-  .politik-brand {
-    display: none;
-  }
-  .politik-brand span,
-  .politik-brand small {
-    display: inline;
-    font-size: 0.9375rem;
-  }
-  .politik-nav {
-    overflow-x: auto;
-    scrollbar-width: none;
-  }
-  .politik-nav ol {
-    display: flex;
-    border-top: 0;
-    padding: 0 1rem;
-    width: max-content;
-  }
-  .politik-nav li {
-    border-bottom: 0;
-  }
-  .politik-nav a {
-    display: block;
-    white-space: nowrap;
-    padding: 0.7rem 0.9rem;
-    border-bottom: 2px solid transparent;
-  }
-  .politik-nav a[aria-current] {
-    border-bottom-color: var(--ink);
-  }
-  /* One row: groups dissolve into it, their headings hidden. */
-  .politik-nav-group,
-  .politik-nav .politik-nav-group ol {
-    display: contents;
-  }
-  .politik-nav-heading {
-    display: none;
-  }
-  .politik-nav .politik-nav-group a,
-  .politik-nav a[aria-current],
-  .politik-nav .politik-nav-group a[aria-current] {
-    padding: 0.7rem 0.9rem;
-    border-left: 0;
-    box-shadow: none;
-  }
+
   .politik-main {
     /* The product menu is sticky in the flow (main clips rather than hides overflow), so the
        first heading already starts below it. */
@@ -883,24 +736,8 @@
   }
 }
 @media (max-width: 960px) {
-  /* Theme menu and party bar stack as one sticky header: the menu has a fixed height so the
-     party bar can sit right below it. */
-  .politik-side {
-    padding: 0;
-    height: 45px;
-  }
-  .politik-nav a {
-    height: 44px;
-    padding-block: 0;
-    line-height: 44px;
-  }
-  .politik-nav .politik-nav-group a,
-  .politik-nav a[aria-current],
-  .politik-nav .politik-nav-group a[aria-current] {
-    padding-block: 0;
-  }
   .politik-slicer {
-    top: 109px;
+    top: var(--header-h, 0px);
     padding: 0.45rem 1rem;
     overflow-x: auto;
     scrollbar-width: none;
@@ -1092,18 +929,6 @@
   .politik .theme .sources-block p {
     font-size: 0.875rem;
   }
-}
-
-/* The chapter number before each group in the sidebar. */
-.politik-nav-heading b {
-  display: inline-grid;
-  place-items: center;
-  width: 1.2rem;
-  height: 1.2rem;
-  margin-right: 0.4rem;
-  background: var(--ink);
-  color: var(--on-accent);
-  font-size: 0.7rem;
 }
 
 /* The end of every page: the page before, and the question the next one answers. */

@@ -40,16 +40,7 @@ function Identity() {
         <h1 id="home-name" className="home-name">
           Anton Ernstsson
         </h1>
-        <p className="home-roles">
-          <span>Junior Software Developer</span>
-          <span>Data &amp; AI</span>
-        </p>
-        <p className="home-lede">
-          {l(
-            'I build data pipelines, analytical products and applied AI systems.',
-            'Jag bygger datapipelines, analysprodukter och tillämpade AI-system.',
-          )}
-        </p>
+        <p className="home-roles">Data &amp; AI Engineer</p>
       </div>
       <nav className="home-nav" aria-label={l('Start page', 'Startsidan')}>
         <a href="#projekt">{l('Projects', 'Projekt')}</a>

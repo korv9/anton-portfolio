@@ -1,12 +1,10 @@
 /**
- * Svensk politik i siffror: the politics product. A sidebar in groups (a horizontal menu on
- * small screens): Översikt, Budget, Debatter with sakdebatter and partiledardebatter, and Mer.
+ * Svensk politik i siffror: the politics product. Its themes are listed under the project in
+ * the site sidebar, in groups: Översikt, Makten, Pengarna, Debatter, Besluten and Mer.
  * The main pages are dashboards; every older detailed view opens as a deep dive under its
  * theme, and one debate opens replik för replik under Debatter.
  */
-import { Suspense, lazy, useEffect, useRef } from 'react'
-import { createPortal } from 'react-dom'
-import { useDock } from '../site/dock'
+import { Suspense, lazy, useEffect } from 'react'
 import { l } from '../i18n'
 import {
   PartyLogo,
@@ -17,19 +15,16 @@ import {
 import { carryParties, useParties, withParties } from './partySelection'
 import type { Route } from '../router'
 import {
-  NAV_GROUPS,
   THEMES,
   chapterOf,
   neighbours,
-  deepDiveOf,
-  subViewOf,
   themeByPath,
   type ThemeKey,
 } from './nav'
 import './politik.css'
 import './dash/dash.css'
 
-const Story = lazy(() => import('./story/Story'))
+const PolitikDash = lazy(() => import('./PolitikDash'))
 const ValjarnaTheme = lazy(() => import('./themes/ValjarnaTheme'))
 const RosterTheme = lazy(() => import('./themes/RosterTheme'))
 const BudgetTheme = lazy(() => import('./themes/BudgetTheme'))
@@ -50,7 +45,7 @@ const DeepDive = lazy(() => import('./DeepDive'))
 function ThemeView({ theme, route }: { theme: ThemeKey; route: Route }) {
   switch (theme) {
     case 'lage':
-      return <Story route={route} slicer={<PartySlicer route={route} />} />
+      return <PolitikDash route={route} />
     case 'valjarna':
       return <ValjarnaTheme route={route} />
     case 'roster':
@@ -81,77 +76,15 @@ function ThemeView({ theme, route }: { theme: ThemeKey; route: Route }) {
 }
 
 export default function PoliticsProduct({ route }: { route: Route }) {
+  // The themes are listed in the site sidebar (site/Sidebar.tsx).
   const theme = themeByPath(route.path)
-  const sub = theme ? null : subViewOf(route.path, route.params)
-  const dive = theme || sub ? null : deepDiveOf(route.path)
-  const active: ThemeKey = theme?.key ?? sub ?? dive?.dive.parent ?? 'utforska'
-  const nav = useRef<HTMLElement>(null)
   const { selected } = useParties(route)
   // Moving between pages keeps the parties chosen earlier in the session.
   useEffect(() => carryParties(route), [route.path])
-  // Keep the active item in view in the horizontal menu on small screens, scrolling only the
-  // menu itself (scrollIntoView would also move the page).
-  useEffect(() => {
-    const menu = nav.current
-    const item = menu?.querySelector<HTMLElement>('[aria-current]')
-    if (!menu || !item || menu.scrollWidth <= menu.clientWidth) return
-    menu.scrollLeft =
-      item.offsetLeft - (menu.clientWidth - item.offsetWidth) / 2
-  }, [active])
-
-  // On a wide screen the navigation sits in the site sidebar (see site/dock.ts).
-  const dock = useDock()
-  const Side = dock ? 'div' : 'aside'
-  const side = (
-    <Side className="politik-side">
-      <a className="politik-brand" href="#politik">
-        <span>Political</span>
-        <small>Observatory</small>
-      </a>
-      <nav
-        ref={nav}
-        className="politik-nav"
-        aria-label={l('Politics', 'Politik')}
-      >
-        <ol>
-          {NAV_GROUPS.map((group) => {
-            const items = THEMES.filter((t) => t.group === group.key).map(
-              (t) => (
-                <li key={t.key}>
-                  <a
-                    href={`./${withParties(t.path, selected)}`}
-                    aria-current={
-                      t.key === active ? (theme ? 'page' : 'true') : undefined
-                    }
-                  >
-                    {l(t.en, t.sv)}
-                  </a>
-                </li>
-              ),
-            )
-            if (group.key === 'main') return items
-            return (
-              <li key={group.key} className={`politik-nav-group ${group.key}`}>
-                <span className="politik-nav-heading" aria-hidden="true">
-                  {group.n && <b>{group.n}</b>}
-                  {l(group.en, group.sv)}
-                </span>
-                <ol aria-label={l(group.en, group.sv)}>{items}</ol>
-              </li>
-            )
-          })}
-        </ol>
-      </nav>
-    </Side>
-  )
-  // The overview opens on its own first screen: no sidebar, and the party bar under it.
+  // The overview opens on its own first screen, with the party bar under it.
   const landing = route.path === '#politik'
   return (
-    <div
-      className={`politik${dock && !landing ? ' docked' : ''}${landing ? ' politik-landing' : ''}`}
-      id="politik"
-    >
-      {landing ? null : dock ? createPortal(side, dock) : side}
+    <div className={`politik${landing ? ' politik-landing' : ''}`} id="politik">
       <div className="politik-body">
         {!landing && <PartySlicer route={route} />}
         <div className="politik-main">

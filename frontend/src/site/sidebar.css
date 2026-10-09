@@ -1,0 +1,311 @@
+/*
+ * The site sidebar (site/Sidebar.tsx). A column on paper beside the page on a wide screen; a slim
+ * bar with a menu panel under 900 px. On the start page it slides in once the first screen is
+ * passed.
+ */
+:root {
+  --side-w: 272px;
+  --header-h: 0px;
+  /* The page's width beside the sidebar, for full-bleed plates. */
+  --bleed: 100vw;
+  scroll-padding-top: calc(var(--header-h) + 8px);
+}
+
+.site-shell {
+  display: grid;
+  grid-template-columns: var(--side-w) minmax(0, 1fr);
+  min-height: 100vh;
+}
+.site-shell > main {
+  grid-column: 2;
+  min-width: 0;
+}
+.site-shell main [id] {
+  scroll-margin-top: calc(var(--header-h) + 16px);
+}
+
+.side {
+  grid-column: 1;
+  grid-row: 1;
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  background: var(--paper);
+  border-right: 1px solid var(--line);
+}
+.side-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: var(--sp-4) var(--sp-4) var(--sp-3);
+}
+.side-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  min-width: 0;
+  color: var(--ink);
+  text-decoration: none;
+}
+.side-mono {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 1.5px solid var(--ink);
+  font-size: 0.85rem;
+  font-weight: var(--weight-heading);
+  letter-spacing: 0.04em;
+}
+.side-who {
+  display: grid;
+  min-width: 0;
+  line-height: 1.25;
+}
+.side-who strong {
+  font-size: var(--fs-md);
+  font-weight: var(--weight-heading);
+  letter-spacing: -0.01em;
+}
+.side-who small {
+  color: var(--muted);
+  font-size: var(--fs-label);
+}
+.side-menu-button {
+  display: none;
+}
+
+.side-panel {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--sp-5);
+  padding: var(--sp-2) var(--sp-3) var(--sp-4);
+}
+.side-nav section + section {
+  margin-top: var(--sp-4);
+}
+.side-group {
+  margin: 0 0 var(--sp-1);
+  padding: 0 var(--sp-2);
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.side-nav ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.side-nav a,
+.side-plain {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-height: 34px;
+  padding: 0.3rem var(--sp-2);
+  border-radius: var(--radius);
+  color: var(--ink-2);
+  font-size: var(--fs-sm);
+  font-weight: var(--weight-ui);
+  line-height: 1.3;
+  text-decoration: none;
+}
+.side-plain {
+  color: var(--muted);
+}
+.side-nav a:hover {
+  background: var(--page);
+  color: var(--ink);
+}
+.side-nav a[aria-current] {
+  background: var(--page);
+  color: var(--ink);
+  box-shadow: inset 2px 0 0 var(--ink);
+}
+.side-nav .is-open > a {
+  color: var(--ink);
+}
+/* The open project's own views, indented under it. */
+.side-views {
+  margin: 0.1rem 0 0.35rem var(--sp-3) !important;
+  border-left: 1px solid var(--line);
+}
+.side-views a {
+  min-height: 30px;
+  padding-left: var(--sp-3);
+  color: var(--muted);
+  font-size: var(--fs-label);
+  font-weight: 500;
+}
+.side-views a[aria-current] {
+  font-weight: 650;
+}
+.side-nav a:focus-visible,
+.side-foot a:focus-visible,
+.side-lang button:focus-visible,
+.side-brand:focus-visible,
+.side-menu-button:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.side-foot {
+  display: grid;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-2) 0;
+  border-top: 1px solid var(--line);
+}
+.side-foot ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1) var(--sp-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.side-foot a {
+  color: var(--ink);
+  font-size: var(--fs-sm);
+  text-underline-offset: 0.25em;
+}
+.side-lang {
+  display: inline-flex;
+  gap: var(--sp-1);
+}
+.side-lang button {
+  min-width: 36px;
+  min-height: 32px;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: var(--fs-label);
+  font-weight: 650;
+  cursor: pointer;
+}
+.side-lang button[aria-pressed='true'] {
+  border-color: var(--line-strong);
+  color: var(--ink);
+}
+.side-lang-float {
+  position: fixed;
+  top: var(--sp-3);
+  right: var(--sp-4);
+  z-index: 40;
+}
+
+/* ---------- The start page: the first screen has the room; the sidebar comes after ---------- */
+.home-shell {
+  grid-template-columns: minmax(0, 1fr);
+}
+.home-shell > main {
+  grid-column: 1;
+}
+.home-shell .side {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: var(--side-w);
+  transition:
+    transform 280ms var(--ease),
+    visibility 0s linear 0s;
+}
+.home-shell .side.is-hidden {
+  visibility: hidden;
+  transform: translateX(-100%);
+  transition:
+    transform 280ms var(--ease),
+    visibility 0s linear 280ms;
+}
+@media (min-width: 900px) {
+  .site-shell {
+    --bleed: calc(100vw - var(--side-w));
+  }
+  /* Everything after the first screen sits beside the sidebar. */
+  .home-shell > main {
+    padding-left: var(--side-w);
+  }
+  .home-shell .home-identity {
+    margin-left: calc(-1 * var(--side-w));
+  }
+}
+
+/* ---------- Under 900 px: a slim bar and a menu panel ---------- */
+@media (max-width: 899px) {
+  .site-shell,
+  .home-shell {
+    display: block;
+  }
+  .side,
+  .home-shell .side {
+    position: sticky;
+    top: 0;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .home-shell .side {
+    position: fixed;
+    right: 0;
+  }
+  .home-shell .side.is-hidden {
+    transform: translateY(-100%);
+  }
+  .side-bar {
+    padding: var(--sp-2) 16px;
+  }
+  .side-mono {
+    width: 34px;
+    height: 34px;
+  }
+  .side-menu-button {
+    display: inline-flex;
+    align-items: center;
+    min-height: 40px;
+    padding: 0 0.8rem;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius);
+    background: transparent;
+    color: var(--ink);
+    font: inherit;
+    font-size: var(--fs-sm);
+    cursor: pointer;
+  }
+  .side-panel {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    max-height: calc(100vh - var(--header-h, 56px));
+    overflow-y: auto;
+    padding: var(--sp-3) 16px var(--sp-5);
+    background: var(--paper);
+    border-bottom: 1px solid var(--line);
+  }
+  .side.is-open .side-panel {
+    display: flex;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-shell .side,
+  .home-shell .side.is-hidden {
+    transition: none;
+  }
+}

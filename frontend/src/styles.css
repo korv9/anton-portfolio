@@ -81,8 +81,9 @@ h3 {
 .nav a:hover {
   color: var(--teal);
 }
+/* Clip sideways overflow without making main a scroll container, so sticky bars inside work. */
 main {
-  overflow: hidden;
+  overflow-x: clip;
 }
 .eyebrow {
   margin: 0 0 1rem;

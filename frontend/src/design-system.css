@@ -266,19 +266,8 @@ body .chart-guidance {
   line-height: 1.5;
   margin-top: 12px;
 }
-body .politik-side,
 body .politik-main {
   background: var(--page);
-}
-body .politik-nav a {
-  padding: 12px 10px;
-}
-body .politik-nav a[aria-current] {
-  background: var(--ink);
-  color: var(--on-accent);
-}
-body .politik-nav a[aria-current] .politik-nav-no {
-  color: var(--paper);
 }
 body .theme-head {
   margin-bottom: 24px;

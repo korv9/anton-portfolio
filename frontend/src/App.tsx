@@ -1,12 +1,8 @@
 import { Suspense, lazy, useEffect, useState } from 'react'
 import { currentLocale, l, type Locale } from './i18n'
 import { useRoute } from './router'
-import Header, {
-  Footer,
-  pageTitle,
-  ProjectContext,
-  ProjectPager,
-} from './site/Header'
+import { pageTitle, ProjectContext, ProjectPager } from './site/Header'
+import Sidebar from './site/Sidebar'
 import HomePage from './home/HomePage'
 import { PageBoundary } from './site/PageBoundary'
 import './site/site.css'
@@ -88,7 +84,7 @@ export default function App() {
       <a className="skip-link" href="#main">
         {l('Skip to content', 'Hoppa till innehåll')}
       </a>
-      <Header route={route} onLanguage={setLanguage} />
+      <Sidebar route={route} onLanguage={setLanguage} />
       <main id="main" tabIndex={-1} key={language}>
         <ProjectContext route={route} />
         <PageBoundary key={page}>
@@ -129,7 +125,6 @@ export default function App() {
         </PageBoundary>
         <ProjectPager route={route} />
       </main>
-      <Footer />
     </div>
   )
 }

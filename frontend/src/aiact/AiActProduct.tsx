@@ -12,7 +12,6 @@ import { useMemo } from 'react'
 import { l } from '../i18n'
 import type { Route } from '../router'
 import { useViewParams } from '../politik/useViewParams'
-import { ProjectNav } from '../projects/ProjectNav'
 import { ArticleView } from './ArticleView'
 import { useAiAct } from './data'
 import { isoToday, nowAndNext } from './logic'
@@ -236,7 +235,6 @@ export default function AiActProduct({ route }: { route: Route }) {
               </p>
             )}
           </header>
-          <ProjectNav route={route} />
         </>
       )}
       <div className="aa-body ds-container">

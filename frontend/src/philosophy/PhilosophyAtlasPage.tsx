@@ -11,7 +11,6 @@ import { l } from '../i18n'
 import { ProductQuality } from '../quality/QualityPanel'
 import type { Route } from '../router'
 import { fetchData } from '../dataSource'
-import { ProjectNav } from '../projects/ProjectNav'
 import { useViewParams } from '../politik/useViewParams'
 import './philosophy.css'
 
@@ -208,7 +207,6 @@ export default function PhilosophyAtlasPage({ route }: { route: Route }) {
           )}
         </p>
       </header>
-      <ProjectNav route={route} />
       <div className="ph-body ds-container">
         <section
           id="philosophy-atlas"

@@ -11,7 +11,6 @@ import { ProductQuality } from '../quality/QualityPanel'
 import type { Route } from '../router'
 import { fetchData } from '../dataSource'
 import Journey from './Journey'
-import { ProjectNav } from '../projects/ProjectNav'
 import { ProjectHero } from '../ui/Project'
 import { useViewParams } from '../politik/useViewParams'
 import {
@@ -123,7 +122,7 @@ export default function ConceptConstellationPage({ route }: { route: Route }) {
       {route.path === '#concept-journey' ? (
         <Journey route={route} data={data} />
       ) : known ? (
-        <ConceptPage route={route} data={data} concept={known} />
+        <ConceptPage data={data} concept={known} />
       ) : (
         <Constellation route={route} data={data} />
       )}
@@ -621,15 +620,7 @@ function Profiles({
   )
 }
 
-function ConceptPage({
-  route,
-  data,
-  concept,
-}: {
-  route: Route
-  data: Data
-  concept: Concept
-}) {
+function ConceptPage({ data, concept }: { data: Data; concept: Concept }) {
   const [passages, setPassages] = useState<Record<
     string,
     Record<string, Passage[]>
@@ -672,7 +663,6 @@ function ConceptPage({
           </span>
         </p>
       </header>
-      <ProjectNav route={route} />
       <div className="cc-body ds-container">
         <section className="cc-section" aria-labelledby="cc-profile-title">
           <h2 id="cc-profile-title">
