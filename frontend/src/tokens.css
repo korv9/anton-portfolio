@@ -38,6 +38,19 @@
     U+2248, U+2260, U+25CA, U+FB01-FB02;
 }
 
+/* Terminal Grotesque (Raphaël Bastide, Velvetyne, OFL) for the black pages, `.noir`: one
+   weight, solid and outlined ("open"). Only fetched where a page uses it. */
+@font-face {
+  font-family: 'Terminal Grotesque';
+  src: url('/fonts/terminal-grotesque.woff2') format('woff2');
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Terminal Grotesque Open';
+  src: url('/fonts/terminal-grotesque-open.woff2') format('woff2');
+  font-display: swap;
+}
+
 :root {
   color-scheme: light;
 
@@ -205,6 +218,38 @@
   --stage-rule: var(--line);
   background: var(--page);
   color: var(--ink);
+}
+
+/*
+ * A black page: white text, Terminal Grotesque for everything, large names outlined
+ * (--font-outline, used by the .index primitives in design-system.css). App.tsx sets it on
+ * <html> for the pages listed there, so the header and every alias of a token follow.
+ * Contrast (WCAG): ink on page 21, muted on page 8.6.
+ */
+.noir {
+  color-scheme: dark;
+  --font: 'Terminal Grotesque', 'Helvetica Neue', Arial, sans-serif;
+  --font-outline: 'Terminal Grotesque Open', var(--font);
+  --font-mono: var(--font);
+  --weight-body: 400;
+  --weight-ui: 400;
+  --weight-heading: 400;
+  --page: #000;
+  --paper: #0e0e0e;
+  --paper-strong: #181818;
+  --wash: #111;
+  --surface: #1f1f1f;
+  --ink: #fff;
+  --ink-2: #e2e2e2;
+  --muted: #a6a6a6;
+  --subtle: #6e6e6e;
+  --line: rgba(255, 255, 255, 0.16);
+  --line-strong: rgba(255, 255, 255, 0.4);
+  --focus: #fff;
+  --accent: #fff;
+  --accent-2: #e2e2e2;
+  --on-accent: #000;
+  --select: #1f1f1f;
 }
 
 html,
