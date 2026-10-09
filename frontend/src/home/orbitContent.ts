@@ -81,34 +81,25 @@ export const THESIS = {
   kind: t('Fallstudie, vår 2026', 'Case study, spring 2026'),
   points: [
     t(
-      'Klustrade 19 847 anonymiserade incidenter med sentence-transformers, UMAP och HDBSCAN: silhuett 0,706, 32 % bättre än K-means.',
-      'Clustered 19,847 anonymised incidents with sentence-transformers, UMAP and HDBSCAN: silhouette 0.706, 32% better than K-means.',
+      'Problemet: IT-supporten löser incidenter en och en, så återkommande fel löses om och om igen utan att någon hittar rotorsaken.',
+      'The problem: IT support solves incidents one at a time, so recurring faults are fixed again and again without anyone finding the root cause.',
     ),
     t(
-      '72 av 121 kluster, med 5 605 ärenden, saknade koppling till ett problemärende; 12 av dem blev en prioriterad granskningslista.',
-      '72 of 121 clusters, with 5,605 tickets, had no linked problem record; 12 of them became a prioritised review list.',
+      'Syftet: att låta NLP läsa tusentals gamla ärenden och hitta återkommande fel som aldrig registrerats som problem, och visa hur dokumentationen begränsar det.',
+      'The aim: to let NLP read thousands of old tickets and find recurring faults never registered as problems, and to show how documentation limits that.',
     ),
     t(
-      'Mätte datakvaliteten enligt ISO/IEC 25012: rotorsaksfältet var ifyllt i 12–13 % av ärendena, och processmognaden satte gränsen, inte modellen.',
-      'Measured data quality against ISO/IEC 25012: the root-cause field was filled in 12–13% of tickets, and process maturity set the limit, not the model.',
+      'Nyttan: en lista med 72 möjliga problemärenden, där 12 grupper med 650 ärenden är redo att utredas. Ett fel hade hanterats i tre år utan problemärende.',
+      'The value: a list of 72 candidate problem records, of which 12 groups with 650 tickets are ready to investigate. One fault had been handled for three years without one.',
     ),
     t(
-      'Domänvokabulär för interna förkortningar höjde andelen kluster med problemkoppling med 16 procentenheter utan att byta modell.',
-      'Domain vocabulary for internal abbreviations raised the share of clusters with a problem link by 16 percentage points without changing the model.',
+      'Lärdomen: det som begränsar är dokumentationen, inte AI:n. Rotorsaken skrevs in i 12–13 % av ärendena, och där den fanns blev grupperingen tydligt bättre.',
+      'The lesson: documentation is the limit, not the AI. The root cause was recorded in 12–13% of tickets, and where it was, the grouping was clearly better.',
     ),
     t(
-      'Visade att platshållare från PII-anonymiseringen kan skapa falsk likhet mellan ärenden, så kallade ghost clusters.',
-      'Showed that placeholders from PII anonymisation can create false similarity between tickets, so-called ghost clusters.',
+      'Så gjordes det: 19 847 anonymiserade ärenden grupperades med sentence-transformers, UMAP och HDBSCAN, 32 % bättre än K-means, inom GDPR:s ramar.',
+      'How: 19,847 anonymised tickets were grouped with sentence-transformers, UMAP and HDBSCAN, 32% better than K-means, within GDPR.',
     ),
-  ],
-  tech: [
-    'Python',
-    'Databricks',
-    'sentence-transformers',
-    'UMAP',
-    'HDBSCAN',
-    'XGBoost',
-    'MLflow',
   ],
 }
 

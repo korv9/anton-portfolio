@@ -157,7 +157,7 @@
    lines would otherwise leave it far shorter than the others. */
 @media (min-width: 2000px) {
   .home-profile {
-    grid-template-columns: minmax(0, 0.7fr) minmax(0, 1.4fr) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.4fr) minmax(0, 1fr);
   }
 }
 /* In the three columns the text fills its column, so the columns end close together. */

@@ -95,7 +95,6 @@ function Profile() {
                 <li key={item.sv}>{b(item)}</li>
               ))}
             </ul>
-            <p className="home-job-tech">{THESIS.tech.join(' | ')}</p>
           </div>
         )}
       </div>
