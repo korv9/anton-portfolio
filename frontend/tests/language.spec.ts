@@ -1,4 +1,4 @@
-import { test, expect } from './test'
+import { test, expect, siteNav } from './test'
 import AxeBuilder from '@axe-core/playwright'
 
 test.use({ language: null })
@@ -60,6 +60,8 @@ test('language choice persists across project pages and keeps data controls stab
     .analyze()
   expect(accessibility.violations).toEqual([])
 
+  // On a phone the language sits in the sidebar's menu.
+  await siteNav(page)
   await page.getByRole('button', { name: 'EN', exact: true }).click()
   await expect(page.locator('html')).toHaveAttribute('lang', 'en')
   await expect(
@@ -68,6 +70,7 @@ test('language choice persists across project pages and keeps data controls stab
     }),
   ).toBeVisible()
   await page.reload()
+  await siteNav(page)
   await expect(
     page.getByRole('button', { name: 'EN', exact: true }),
   ).toHaveAttribute('aria-pressed', 'true')
