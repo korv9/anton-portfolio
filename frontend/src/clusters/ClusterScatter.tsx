@@ -16,12 +16,12 @@ export type ClusterPoint = {
 }
 
 const COLOURS = [
+  '--cv-ground',
+  '--cv-olive',
+  '--cv-apricot',
+  '--cv-powder',
   '--cv-butter',
   '--cv-pistachio',
-  '--cv-powder',
-  '--cv-apricot',
-  '--cv-oat',
-  '--cv-ivory',
 ]
 
 const num = (n: number) => n.toLocaleString(l('en-GB', 'sv-SE'))
@@ -113,7 +113,7 @@ export default function ClusterScatter({
     ctx.clearRect(0, 0, width, h)
     const css = getComputedStyle(el)
     const colours = COLOURS.map((v) => css.getPropertyValue(v).trim())
-    const noise = css.getPropertyValue('--cv-olive').trim()
+    const noise = css.getPropertyValue('--cv-oat').trim()
     const draw = (p: ClusterPoint, alpha: number) => {
       ctx.globalAlpha = alpha
       ctx.fillStyle = p.c < 0 ? noise : colours[p.c % colours.length]
@@ -122,7 +122,7 @@ export default function ClusterScatter({
       ctx.fill()
     }
     // Noise first and faint, then the clusters; a picked cluster last and in full.
-    for (const p of points) if (p.c < 0) draw(p, picked == null ? 0.45 : 0.2)
+    for (const p of points) if (p.c < 0) draw(p, picked == null ? 0.7 : 0.35)
     for (const p of points)
       if (p.c >= 0 && p.c !== picked) draw(p, picked == null ? 0.85 : 0.18)
     if (picked != null) for (const p of points) if (p.c === picked) draw(p, 1)

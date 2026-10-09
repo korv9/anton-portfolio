@@ -1,9 +1,10 @@
 /*
- * Cluster visuals (clusters/): one grey-lilac ground across the whole page, ivory type, the
- * maps floating on it without frames. Colours are the --cv tokens in tokens.css.
+ * Cluster visuals (clusters/): an ivory ground across the whole page, grey-lilac and olive type,
+ * the maps floating on it without frames and the clusters in the palette's colours. Colours are
+ * the --cv tokens in tokens.css.
  */
 .project-shell #main:has(.cv) {
-  background: var(--cv-ground);
+  background: var(--cv-ivory);
 }
 .project-shell #main:has(.cv) > .project-context,
 .project-shell #main:has(.cv) > .project-pager {
@@ -12,11 +13,11 @@
 .cv {
   min-height: 100vh;
   padding: clamp(24px, 3vw, 48px) clamp(16px, 3vw, 56px) var(--sp-section);
-  background: var(--cv-ground);
-  color: var(--cv-ivory);
+  background: var(--cv-ivory);
+  color: var(--cv-olive);
 }
 .cv a {
-  color: var(--cv-ivory);
+  color: var(--cv-olive);
 }
 .project-shell #main .cv-intro h1 {
   margin: 0 0 var(--sp-2);
@@ -46,7 +47,7 @@
   text-transform: uppercase;
 }
 .cv-project a {
-  color: var(--cv-butter);
+  color: var(--cv-ground);
   text-underline-offset: 0.25em;
 }
 .project-shell #main .cv-head h2 {
@@ -63,7 +64,7 @@
 }
 .cv-specs {
   margin: 0.4rem 0 0;
-  color: var(--cv-pistachio);
+  color: var(--cv-ground);
   font-family: var(--font-mono);
   font-size: 0.7rem;
   line-height: 1.5;
@@ -80,22 +81,22 @@
   padding: 0 0.7rem;
   border: 0;
   border-radius: 999px;
-  background: color-mix(in srgb, var(--cv-ivory) 12%, transparent);
-  color: var(--cv-ivory);
+  background: var(--cv-oat);
+  color: var(--cv-olive);
   font: inherit;
   font-size: var(--fs-label);
   cursor: pointer;
 }
 .cv-variants button[aria-pressed='true'],
 .cv-legend button[aria-pressed='true'] {
-  background: var(--cv-ivory);
-  color: var(--cv-ground);
+  background: var(--cv-ground);
+  color: var(--cv-ivory);
 }
 .cv-variants button:focus-visible,
 .cv-legend button:focus-visible,
 .cv a:focus-visible,
 .cv canvas:focus-visible {
-  outline: 2px solid var(--cv-butter);
+  outline: 2px solid var(--cv-olive);
   outline-offset: 2px;
 }
 .cv-map {
@@ -113,8 +114,8 @@
   max-width: 260px;
   padding: 6px 9px;
   border-radius: 4px;
-  background: var(--cv-ivory);
-  color: var(--cv-olive);
+  background: var(--cv-olive);
+  color: var(--cv-ivory);
   font-size: var(--fs-label);
   line-height: 1.35;
   pointer-events: none;

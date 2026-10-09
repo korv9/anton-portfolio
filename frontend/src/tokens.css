@@ -139,8 +139,8 @@
   --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
   --dur: 160ms;
 
-  /* Cluster visuals (#cluster-visuals): a grey-lilac ground with ivory type, and soft colours
-     that sit with it for the clusters. The same in light and dark. */
+  /* Cluster visuals (#cluster-visuals): an ivory ground, grey-lilac and olive type, and the
+     palette's colours for the clusters. The same in light and dark. */
   --cv-ground: #71697a;
   --cv-ivory: #f4f0e6;
   --cv-butter: #e5d9a7;

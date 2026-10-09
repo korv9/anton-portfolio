@@ -1,7 +1,7 @@
 /**
  * Cluster visuals: every clustering on the site on one page, each drawn from its own data and
- * interactive (ClusterScatter). UMAP maps of the Symbolic Atlas, the Philosophy Atlas, the job ads
- * and the Riksdag debates, and the PCA map of DrugComb. A map loads when it comes near the screen.
+ * interactive (ClusterScatter): the UMAP maps of the Symbolic Atlas, the Philosophy Atlas, the job
+ * ads and the Riksdag debates. A map loads when it comes near the screen.
  */
 import { useEffect, useRef, useState } from 'react'
 import { l } from '../i18n'
@@ -198,32 +198,6 @@ async function loadDebates(): Promise<Loaded> {
   }
 }
 
-// ---------- DrugComb ----------
-async function loadDrugComb(): Promise<Loaded> {
-  const d = await fetchJson<{
-    k: number
-    silhouette: Record<string, number>
-    drugs: { drug: string; cluster: number; x: number; y: number; n: number }[]
-    clusters: { id: number; size: number; mean_zip: number }[]
-    method: { model: string }
-  }>('products/drugcomb/drug-clusters.json')
-  const zip = new Map(d.clusters.map((c) => [c.id, c.mean_zip]))
-  return {
-    points: d.drugs.map((p) => ({
-      x: p.x,
-      y: p.y,
-      c: p.cluster,
-      label: `${p.drug}, ${num(p.n)} ${l('measurements', 'mätningar')}`,
-    })),
-    name: (id) =>
-      `${l('Cluster', 'Kluster')} ${id + 1}, ZIP ${zip.get(id)?.toLocaleString(l('en-GB', 'sv-SE'))}`,
-    method: [
-      d.method.model,
-      `k = ${d.k}, silhouette ${d.silhouette[String(d.k)]}`,
-    ],
-  }
-}
-
 const MAPS = (): MapSpec[] => [
   {
     id: 'symbolic',
@@ -338,26 +312,6 @@ const MAPS = (): MapSpec[] => [
         key: 'all',
         label: l('All sessions', 'Alla riksmöten'),
         load: loadDebates,
-      },
-    ],
-  },
-  {
-    id: 'drugcomb',
-    project: 'DrugComb',
-    href: '#drugcomb',
-    title: l(
-      'Drugs by where they combine well (PCA)',
-      'Läkemedel efter var de kombinerar väl (PCA)',
-    ),
-    meaning: l(
-      'Each point is a drug, placed by its mean synergy per tissue. Here the map is PCA, not UMAP, and the groups are k-means.',
-      'Varje punkt är ett läkemedel, placerat efter dess medelsynergi per vävnad. Här är kartan PCA och inte UMAP, och grupperna k-means.',
-    ),
-    variants: [
-      {
-        key: 'all',
-        label: l('All drugs', 'Alla läkemedel'),
-        load: loadDrugComb,
       },
     ],
   },
