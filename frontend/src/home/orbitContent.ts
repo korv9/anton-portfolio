@@ -72,6 +72,46 @@ export const EXPERIENCE: {
   },
 ]
 
+/** The degree project's key points, from the thesis (AIDEV24S, spring 2026). */
+export const THESIS = {
+  title: t(
+    'Examensarbete: NLP-klustring av ITSM-data',
+    'Degree project: NLP clustering of ITSM data',
+  ),
+  kind: t('Fallstudie, vår 2026', 'Case study, spring 2026'),
+  points: [
+    t(
+      'Klustrade 19 847 anonymiserade incidenter med sentence-transformers, UMAP och HDBSCAN: silhuett 0,706, 32 % bättre än K-means.',
+      'Clustered 19,847 anonymised incidents with sentence-transformers, UMAP and HDBSCAN: silhouette 0.706, 32% better than K-means.',
+    ),
+    t(
+      '72 av 121 kluster, med 5 605 ärenden, saknade koppling till ett problemärende; 12 av dem blev en prioriterad granskningslista.',
+      '72 of 121 clusters, with 5,605 tickets, had no linked problem record; 12 of them became a prioritised review list.',
+    ),
+    t(
+      'Mätte datakvaliteten enligt ISO/IEC 25012: rotorsaksfältet var ifyllt i 12–13 % av ärendena, och processmognaden satte gränsen, inte modellen.',
+      'Measured data quality against ISO/IEC 25012: the root-cause field was filled in 12–13% of tickets, and process maturity set the limit, not the model.',
+    ),
+    t(
+      'Domänvokabulär för interna förkortningar höjde andelen kluster med problemkoppling med 16 procentenheter utan att byta modell.',
+      'Domain vocabulary for internal abbreviations raised the share of clusters with a problem link by 16 percentage points without changing the model.',
+    ),
+    t(
+      'Visade att platshållare från PII-anonymiseringen kan skapa falsk likhet mellan ärenden, så kallade ghost clusters.',
+      'Showed that placeholders from PII anonymisation can create false similarity between tickets, so-called ghost clusters.',
+    ),
+  ],
+  tech: [
+    'Python',
+    'Databricks',
+    'sentence-transformers',
+    'UMAP',
+    'HDBSCAN',
+    'XGBoost',
+    'MLflow',
+  ],
+}
+
 /** Earlier work outside the field, as the CV lists it. */
 export const ADDITIONAL = {
   role: t('Maskinoperatör', 'Machine Operator'),

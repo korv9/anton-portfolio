@@ -78,7 +78,7 @@
 /* ---------- Profile: education, experience, About ---------- */
 .home-profile {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.4fr) minmax(0, 1fr);
   gap: var(--sp-6) clamp(2rem, 4vw, 5rem);
   align-items: start;
 }
@@ -116,6 +116,9 @@
   margin: 0;
   font-weight: var(--weight-heading);
 }
+.home-job-did {
+  list-style: disc;
+}
 .home-job-did li {
   line-height: 1.5;
 }
@@ -149,6 +152,19 @@
 }
 .home-stack {
   margin-top: var(--sp-5);
+}
+/* Measured so the three columns end close together: on a very wide screen education's short
+   lines would otherwise leave it far shorter than the others. */
+@media (min-width: 2000px) {
+  .home-profile {
+    grid-template-columns: minmax(0, 0.7fr) minmax(0, 1.4fr) minmax(0, 1fr);
+  }
+}
+/* In the three columns the text fills its column, so the columns end close together. */
+.home-profile .home-job-did,
+.home-profile .home-job-impact,
+.home-profile .home-about-text {
+  max-width: none;
 }
 .home-stack dl {
   display: grid;

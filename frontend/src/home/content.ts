@@ -44,7 +44,15 @@ export const ABOUT: Bilingual[] = [
     'I build data and AI products end to end: pulling data from the source, making it reliable with tests and models, and building the interface where someone actually uses it.',
   ),
   t(
+    'I praktiken har jag byggt pipelines i produktion, från insamling och bearbetning av data till att göra den användbar för rapportering och analys, och arbetat nära beställare för att förstå vad de behöver och ge dem pålitlig data.',
+    'In practice I have built production pipelines, from collecting and processing data to making it useful for reporting and analysis, and worked closely with stakeholders to understand their needs and give them reliable data.',
+  ),
+  t(
     'Det jag gillar mest är att göra komplex data begriplig, att en fråga ska kunna besvaras med en graf och källan ett klick bort.',
     'What I like most is making complex data understandable: a question answered with one chart, and the source one click away.',
+  ),
+  t(
+    'Svenska (modersmål), engelska (flytande).',
+    'Swedish (native), English (fluent).',
   ),
 ]

@@ -17,6 +17,7 @@ import {
   EDUCATION,
   EXPERIENCE,
   SKILLS,
+  THESIS,
   type Bilingual,
 } from './orbitContent'
 import { Disclosure } from '../ui/Disclosure'
@@ -72,20 +73,29 @@ function Profile() {
         <h2 className="home-title">{l('Education', 'Utbildning')}</h2>
         {EDUCATION.map((e) => (
           <div key={e.school} className="home-job">
-            <h3 className="home-job-org">{b(e.title)}</h3>
-            <p className="home-job-role">
-              {e.school}, {e.period}
-            </p>
-            <p className="home-job-impact">{b(e.note)}</p>
+            <div className="home-job-head">
+              <h3 className="home-job-org">
+                {b(e.title)} | {e.school}
+              </h3>
+              <p className="home-job-period">{e.period}</p>
+            </div>
+            <p className="home-job-role">{b(e.note)}</p>
           </div>
         ))}
         {thesis && (
           <div className="home-job">
-            <h3 className="home-job-org">
-              <a href={thesis.href}>{b(thesis.title)}</a>
-            </h3>
-            <p className="home-job-role">{b(thesis.descriptor)}</p>
-            <p className="home-job-impact">{b(thesis.result)}</p>
+            <div className="home-job-head">
+              <h3 className="home-job-org">
+                <a href={thesis.href}>{b(THESIS.title)}</a>
+              </h3>
+            </div>
+            <p className="home-job-role">{b(THESIS.kind)}</p>
+            <ul className="home-job-did">
+              {THESIS.points.map((item) => (
+                <li key={item.sv}>{b(item)}</li>
+              ))}
+            </ul>
+            <p className="home-job-tech">{THESIS.tech.join(' | ')}</p>
           </div>
         )}
       </div>
