@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect, useLayoutEffect, useState } from 'react'
+import { Suspense, lazy, useEffect, useState } from 'react'
 import { currentLocale, l, type Locale } from './i18n'
 import { useRoute } from './router'
 import Header, {
@@ -52,12 +52,6 @@ export default function App() {
   useEffect(() => {
     document.documentElement.lang = language
   }, [language])
-  // The black pages (tokens.css, .noir): set on <html> before paint, so the header and the
-  // page background follow without a flash. Other pages can join this list.
-  const noir = route.page === 'home'
-  useLayoutEffect(() => {
-    document.documentElement.classList.toggle('noir', noir)
-  }, [noir])
   // Each page names itself in the tab and the history: "<page> | Anton Ernstsson".
   useEffect(() => {
     const name = pageTitle(route)
@@ -135,8 +129,7 @@ export default function App() {
         </PageBoundary>
         <ProjectPager route={route} />
       </main>
-      {/* The start page closes with its own about and contact. */}
-      {!noir && <Footer />}
+      <Footer />
     </div>
   )
 }

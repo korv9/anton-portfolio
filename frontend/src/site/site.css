@@ -47,22 +47,15 @@
   margin: 0;
   line-height: 1;
 }
-/* Name on the left, everything else on the right, all in small capitals. */
-.site-bar .wordmark-name,
-.site-bar .global-nav .nav-item,
-.site-bar .language-switch button {
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
 .site-bar .wordmark-name {
   color: var(--ink);
   font-size: var(--fs-md);
   font-weight: var(--weight-heading);
+  letter-spacing: -0.02em;
   white-space: nowrap;
 }
 .site-bar .global-nav {
   grid-area: nav;
-  justify-content: flex-end;
   gap: clamp(12px, 2vw, 32px);
 }
 .site-bar .global-nav .nav-item {
@@ -71,15 +64,6 @@
   color: var(--ink);
   font-size: var(--fs-sm);
   font-weight: var(--weight-ui);
-}
-/* The nav panels open under their button; at the right edge they align to it. */
-.site-bar .global-nav .nav-panel {
-  right: 0;
-  left: auto;
-}
-/* A black page has no rule under the bar. */
-.noir .site-bar {
-  border-bottom-color: transparent;
 }
 .site-bar .language-switch {
   grid-area: lang;
@@ -268,13 +252,6 @@
   .site-bar {
     gap: 8px;
     padding-inline: 12px;
-  }
-}
-/* The name in capitals still fits beside the language and the menu at 320 px. */
-@media (max-width: 400px) {
-  .site-bar .wordmark-name {
-    font-size: var(--fs-sm);
-    letter-spacing: 0;
   }
 }
 /* Navigation reads as navigation: an underline on hover and for where the reader is, a

@@ -11,13 +11,9 @@ second theme file.
 
 ## Type
 
-- **Manrope** for everything, self-hosted as variable WOFF2 (`/fonts/manrope-latin.woff2`, 29 kB, with
+- **Manrope** for everything, self-hosted as variable WOFF2 (`/fonts/manrope-latin.woff2`, 29 kB, preloaded, with
   `manrope-variable.woff2` for any other character;
   weights 200–800). The SIL Open Font License is kept at `frontend/public/fonts/Manrope-OFL.txt`.
-- **Terminal Grotesque** (Raphaël Bastide, Velvetyne) on the black pages only: one weight,
-  solid (`terminal-grotesque.woff2`, 27 kB) and outlined (`terminal-grotesque-open.woff2`,
-  36 kB, read as `--font-outline`). Both are preloaded, since the start page is black. The
-  OFL is kept at `frontend/public/fonts/TerminalGrotesque-OFL.txt`.
 - **System monospace** (`--font-mono`) for figures, metadata, eyebrows and code.
 - Weights: body 470, interface 560, headings 700.
 - Scale: `--display-xl`, `--display-l`, `--h1`, `--h2`, `--h3`, `--body-large`, `--body`,
@@ -63,25 +59,6 @@ clusters are grey, cross-book candidates stone (`#C9C2B6`) and reviewed clusters
 with a key beside the map. The Data Constellation sits on the light page. It keeps bronze, silver and gold tones for
 the medallion layers and draws everything else in greys; each layer also has its own mark
 shape, so colour is never the only cue.
-
-### Black pages
-
-`.noir` is a third set of the same tokens: a black page (`#000`), white ink, muted `#A6A6A6`
-(8.6 : 1), and Terminal Grotesque for every role, mono included. `App.tsx` puts the class on
-`<html>` for the pages it lists, so the header, the page background and every token alias
-follow without a theme of their own. Today only the start page is listed; another page joins
-by being added to that one condition. The black start page has no rule under the header and
-closes with its own about and contact, so the shared footer is left out there.
-
-The start page is built from the index primitives in `design-system.css`:
-
-- `.index-label`: a small centred heading in capitals ("Utvalda projekt").
-- `.index` and `.index-title`: a centred list of large names in the outlined face.
-- `.index-meta`: one line of small capitals under a name (role and period, the tools).
-- `.index-link`: an entry that is a link; its name fills in on hover and focus.
-
-The header is the same on every page: the name on the left, the destinations and the language
-on the right, all in capitals.
 
 ## Shape and space
 
