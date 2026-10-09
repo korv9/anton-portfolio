@@ -25,6 +25,7 @@ const ConceptConstellationPage = lazy(
 )
 const CataloguePage = lazy(() => import('./catalogue/CataloguePage'))
 const IdeaLineagePage = lazy(() => import('./lineage/IdeaLineagePage'))
+const ClusterVisualsPage = lazy(() => import('./clusters/ClusterVisualsPage'))
 const DataConstellationPage = lazy(
   () => import('./constellation/DataConstellationPage'),
 )
@@ -112,6 +113,7 @@ export default function App() {
             )}
             {page === 'catalogue' && <CataloguePage />}
             {page === 'lineage' && <IdeaLineagePage />}
+            {page === 'clusters' && <ClusterVisualsPage />}
             {page === 'aiact' && <AiActProduct route={route} />}
             {page === 'philosophy' && <PhilosophyAtlasPage route={route} />}
             {page === 'concepts' && <ConceptConstellationPage route={route} />}

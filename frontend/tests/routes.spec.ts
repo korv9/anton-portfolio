@@ -24,6 +24,7 @@ const START_PAGES = [
   '/#thesis',
   '/#data-constellation',
   '/#quality',
+  '/#cluster-visuals',
 ]
 
 const hrefs = (page: Page) =>

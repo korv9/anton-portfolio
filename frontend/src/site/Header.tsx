@@ -22,6 +22,7 @@ const TECHNICAL: Partial<Record<Route['page'], Bilingual>> = {
   constellation: { en: 'Data Constellation', sv: 'Data Constellation' },
   catalogue: { en: 'Data catalogue', sv: 'Datakatalog' },
   lineage: { en: 'Idea Lineage', sv: 'Idea Lineage' },
+  clusters: { en: 'Cluster visuals', sv: 'Klustervisualiseringar' },
   datamodel: { en: 'Data model', sv: 'Datamodell' },
   er: { en: 'ER diagram', sv: 'ER-diagram' },
   quality: { en: 'Quality and validity', sv: 'Kvalitet och validitet' },

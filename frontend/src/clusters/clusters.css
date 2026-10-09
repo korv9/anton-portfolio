@@ -1,0 +1,153 @@
+/*
+ * Cluster visuals (clusters/): one grey-lilac ground across the whole page, ivory type, the
+ * maps floating on it without frames. Colours are the --cv tokens in tokens.css.
+ */
+.project-shell #main:has(.cv) {
+  background: var(--cv-ground);
+}
+.project-shell #main:has(.cv) > .project-context,
+.project-shell #main:has(.cv) > .project-pager {
+  display: none;
+}
+.cv {
+  min-height: 100vh;
+  padding: clamp(24px, 3vw, 48px) clamp(16px, 3vw, 56px) var(--sp-section);
+  background: var(--cv-ground);
+  color: var(--cv-ivory);
+}
+.cv a {
+  color: var(--cv-ivory);
+}
+.project-shell #main .cv-intro h1 {
+  margin: 0 0 var(--sp-2);
+  font-size: clamp(1.8rem, 3vw, 2.6rem);
+  font-weight: 750;
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+}
+.cv-intro p {
+  max-width: 70ch;
+  margin: 0;
+  font-size: var(--fs-sm);
+  opacity: 0.85;
+}
+.cv-section {
+  padding-top: var(--sp-7);
+}
+.cv-head {
+  max-width: 90ch;
+  margin-bottom: var(--sp-3);
+}
+.cv-project {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.cv-project a {
+  color: var(--cv-butter);
+  text-underline-offset: 0.25em;
+}
+.project-shell #main .cv-head h2 {
+  margin: 0.2rem 0 0.3rem;
+  font-size: var(--fs-md);
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+.cv-meaning {
+  margin: 0;
+  font-size: var(--fs-sm);
+  line-height: 1.45;
+  opacity: 0.9;
+}
+.cv-specs {
+  margin: 0.4rem 0 0;
+  color: var(--cv-pistachio);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  line-height: 1.5;
+}
+.cv-variants {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: var(--sp-2);
+}
+.cv-variants button,
+.cv-legend button {
+  min-height: 30px;
+  padding: 0 0.7rem;
+  border: 0;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--cv-ivory) 12%, transparent);
+  color: var(--cv-ivory);
+  font: inherit;
+  font-size: var(--fs-label);
+  cursor: pointer;
+}
+.cv-variants button[aria-pressed='true'],
+.cv-legend button[aria-pressed='true'] {
+  background: var(--cv-ivory);
+  color: var(--cv-ground);
+}
+.cv-variants button:focus-visible,
+.cv-legend button:focus-visible,
+.cv a:focus-visible,
+.cv canvas:focus-visible {
+  outline: 2px solid var(--cv-butter);
+  outline-offset: 2px;
+}
+.cv-map {
+  position: relative;
+}
+.cv-map canvas {
+  display: block;
+  cursor: crosshair;
+}
+.cv-tip {
+  position: absolute;
+  z-index: 2;
+  display: grid;
+  gap: 2px;
+  max-width: 260px;
+  padding: 6px 9px;
+  border-radius: 4px;
+  background: var(--cv-ivory);
+  color: var(--cv-olive);
+  font-size: var(--fs-label);
+  line-height: 1.35;
+  pointer-events: none;
+}
+.cv-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: var(--sp-2) 0 0;
+  padding: 0;
+  list-style: none;
+}
+.cv-legend button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.cv-legend i {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}
+.cv-legend small {
+  opacity: 0.7;
+}
+.cv-more {
+  align-self: center;
+  font-size: var(--fs-label);
+  opacity: 0.7;
+}
+.cv-status {
+  min-height: 200px;
+  margin: 0;
+  font-size: var(--fs-sm);
+  opacity: 0.8;
+}

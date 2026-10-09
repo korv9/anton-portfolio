@@ -703,6 +703,12 @@ export const PLATFORM_PAGES: {
     href: '#idea-lineage',
     pages: ['lineage'],
   },
+  {
+    id: 'clusters',
+    title: t('Klustervisualiseringar', 'Cluster visuals'),
+    href: '#cluster-visuals',
+    pages: ['clusters'],
+  },
 ]
 
 /** The flagship projects, in their numbered order. */

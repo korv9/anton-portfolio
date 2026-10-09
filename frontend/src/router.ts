@@ -27,6 +27,7 @@ export type Page =
   | 'philosophy'
   | 'concepts'
   | 'quality'
+  | 'clusters'
 
 export type Route = {
   /** The full hash, e.g. `#politik-valjarna?partier=S`. */
@@ -116,6 +117,7 @@ export function pageOf(path: string): Page {
   if (path === '#data-constellation') return 'constellation'
   if (path === '#data-catalogue') return 'catalogue'
   if (path === '#idea-lineage') return 'lineage'
+  if (path === '#cluster-visuals') return 'clusters'
   if (path === '#ai-act' || path.startsWith('#ai-act-')) return 'aiact'
   if (path === '#quality' || path.startsWith('#quality-')) return 'quality'
   if (path.startsWith('#concept-') || path.startsWith('#concepts-'))
