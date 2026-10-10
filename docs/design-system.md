@@ -1,9 +1,9 @@
 # Design system
 
-A grey editorial canvas outside, focused analytical worlds inside. The site is a warm
-mid-grey page with near-black text; a large visualisation sits on a dark plate. Colour
-carries meaning only where the data needs it (a party, a data series, a medallion layer);
-the interface itself is neutral.
+An ivory editorial canvas outside, focused analytical worlds inside. The page background
+is #F4F0E6, sampled from the supplied reference. Butter yellow, pistachio, oat, powder pink
+and muted apricot distinguish panels; deep olive marks selected controls. Text stays
+near-black. Party identity colours are preserved, and large maps can use a dark plate.
 
 `frontend/src/tokens.css` is the one place the tokens are defined. It loads after every
 other stylesheet, so a component that reads a token follows it everywhere. There is no
@@ -21,28 +21,27 @@ second theme file.
   onto the same scale.
 - Figures are tabular everywhere.
 
-The large name is the homepage's, and only there. The header is one slim row on every page,
-so the analysis starts high on the screen. On a project page the hero's question is the large
-line (`--h1`); the project's name above it is the `h1` but set small and uppercase
-(`--fs-lg`), so the question is read first and the heading order stays right.
+The large name belongs to the homepage. Project pages use a compact title
+(`--dashboard-title`), followed by the question and description. Section headings use
+`--dashboard-section`; chart cards and technical side panels use smaller headings.
+Dashboard gutters match the Politics overview, and KPI rows follow the page title.
 
 ## Colour
 
 | Token                        | Light page            | Plate                    | Use                         |
 | ---------------------------- | --------------------- | ------------------------ | --------------------------- |
-| `--page`                     | `#D8D5CF`             | `#0F0F10`                | the background              |
-| `--paper` / `--paper-strong` | `#E6E3DD` / `#F2EFE9` | `#1A1A1C` / `#232326`    | surfaces, inputs            |
+| `--page`                     | `#F4F0E6`             | `#0F0F10`                | the background              |
+| `--paper` / `--paper-strong` | `#F4F0E6` / `#FFFFFF` | `#1A1A1C` / `#232326`    | surfaces, inputs            |
 | `--ink`                      | `#0F0F10`             | `#F2EFE9`                | text                        |
 | `--muted`                    | `#4A4A4D`             | `#A8A49B`                | secondary text              |
 | `--subtle`                   | `#6B6B6E`             | `#8A8A8D`                | rules and marks, never text |
 | `--line` / `--line-strong`   | ink at 16 % / 42 %    | off-white at 16 % / 38 % | rules, control edges        |
-| `--accent` / `--on-accent`   | ink / off-white       | off-white / ink          | what is chosen or current   |
-| `--info`, `--negative`       | `#1F4F73`, `#8F3424`  | `#8BBDE3`, `#EC8A74`     | meaning, never decoration   |
+| `--accent` / `--on-accent`   | `#555B45` / ivory     | off-white / ink          | what is chosen or current   |
+| `--info`, `--negative`       | `#555B45`, `#8F3424`  | `#8BBDE3`, `#EC8A74`     | meaning, never decoration   |
 | `--series-1` … `--series-5`  | five series hues      | same                     | charts with categories only |
 
-Measured contrast (WCAG): ink on page 13.1, muted on page 6.0 and on the darkest light
-surface 5.2; on a plate, ink 16.7 and muted 7.7. Every main page is checked by axe in
-`frontend/tests/accessibility.spec.ts`.
+Pale chart fills keep labels and values alongside them. Every main page is checked by
+axe in `frontend/tests/accessibility.spec.ts`.
 
 Party colours are unchanged and come from `frontend/src/parties/identity.tsx`.
 
@@ -77,14 +76,26 @@ Pages, sections and dashboards fill the screen; only running text keeps a measur
 
 ## Page primitives
 
+Project pages open with a dashboard and continue into a labelled deep dive. The shared
+`ProjectStructure` navigation links to the overview and to `?section=depth`, keeping
+filters in the address. `ProjectDepth` groups existing methods, experiments and source
+links. Study projects without public data show their documented implementation and status.
+
+The politics dashboard kit is shared across the projects: `KpiRow`, the 12-column
+`DashGrid`, chart cards and `ProjectTech`. `ThemeLayout` and `Board` use the same grid
+and KPI styling for individual views. Technical cards read published schemas and sample
+rows when available; otherwise they show the documented pipeline and model names.
+
 One screen, one purpose; one section, one question; depth only after the reader asks for it.
 The pieces that carry that rule:
 
 - `ProjectHero` (`ui/Project.tsx`): a flagship's first screen. Eyebrow (the
   descriptor), the name, the question, one or two sentences, one finding or a status, and a
-  `ProjectSubnav` row of links. On a wide screen it is at least 72 % of the viewport high
-  (less the header), so the next section starts near the fold; on a phone it is as tall as
-  its content.
+  `ProjectSubnav` row of links. Its height follows the content on both desktop and mobile,
+  so the KPI row and charts can start without a large empty introduction.
+- `Stage`: a bounded chart frame with optional KPIs after its heading, a figure and
+  technical side panels. On smaller screens the figure and panels stack; frames keep
+  their margins inside the content column, including in a deep dive.
 - `ProjectSection`: a section with an optional label and an `h2`.
 - `Disclosure` (`ui/Disclosure.tsx`): a native `<details>` for depth on demand (job details,
   the full stack); no script.

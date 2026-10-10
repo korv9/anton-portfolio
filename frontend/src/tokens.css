@@ -2,14 +2,13 @@
  * Design tokens: the one place the site's type, colour, space and shape are defined. Loaded
  * after every other stylesheet, so a component that uses a token follows it everywhere.
  *
- * Grey editorial canvas outside, focused analytical worlds inside: the site is a warm mid-grey
- * page with near-black text and off-white surfaces; a large visualisation (the Symbolic Atlas,
+ * Ivory editorial canvas outside, focused analytical worlds inside: the site uses a warm
+ * page with near-black text and pastel surfaces; a large visualisation (the Symbolic Atlas,
  * the Data Constellation, a semantic map) sits on a dark plate, `.plate`, which redefines the
  * same tokens for its own subtree. Colour carries meaning only where data needs it (a party, a
  * series); the interface itself is neutral.
  *
- * Contrast (WCAG): ink on page 13.1, muted on page 6.0 and on the darkest surface 5.2; on a
- * plate, ink 16.7 and muted 7.7. --subtle is for rules and marks, never for text.
+ * --subtle is for rules and marks, never for text. Party identity colours are kept separately.
  */
 /* Manrope as WOFF2: the Latin set the site writes in (Swedish and English, with Latin-1 and
    Latin Extended-A for names in the corpus) is 29 kB and preloaded; any other character falls
@@ -56,6 +55,9 @@
   --h1: clamp(2.2rem, 4.4vw, 3.6rem);
   --h2: clamp(1.7rem, 3.2vw, 2.6rem);
   --h3: clamp(1.25rem, 1.8vw, 1.6rem);
+  --dashboard-title: clamp(1.6rem, 2.2vw, 2rem);
+  --dashboard-section: clamp(1.125rem, 1.7vw, 1.4rem);
+  --dashboard-gutter: clamp(16px, 1.6vw, 28px);
   --body-large: 1.125rem;
   --body: 1rem;
   --small: 0.9rem;
@@ -75,12 +77,12 @@
   --fs-lg: 1.25rem;
   --fs-xl: clamp(1.75rem, 3vw, 2.25rem);
 
-  /* Colour: the tonal family #0F0F10 · #2A2A2C · #5B5B5E · #F2EFE9 · #C9C2B6, on warm grey. */
-  --page: #d8d5cf;
-  --paper: #e6e3dd;
-  --paper-strong: #f2efe9;
-  --wash: #cfccc5;
-  --surface: #c9c6bf;
+  /* Ivory page, warm pastel surfaces, olive for selected controls. */
+  --page: var(--cv-ivory);
+  --paper: var(--cv-ivory);
+  --paper-strong: #ffffff;
+  --wash: var(--cv-oat);
+  --surface: var(--cv-pistachio);
   --ink: #0f0f10;
   --ink-2: #2a2a2c;
   --muted: #4a4a4d;
@@ -88,32 +90,28 @@
   --stone: #c9c2b6;
   --line: rgba(15, 15, 16, 0.16);
   --line-strong: rgba(15, 15, 16, 0.42);
-  --focus: #0f0f10;
-  /* What is chosen or current (a page, a tab, a filter): ink on paper, inverted. */
-  --accent: #0f0f10;
+  --focus: var(--cv-olive);
+  /* What is chosen or current: olive on ivory, or ink on butter. */
+  --accent: var(--cv-olive);
   --accent-2: #2a2a2c;
-  --on-accent: #f2efe9;
-  --select: #c9c6bf;
-  --wash-cool: #d2cfc9;
-  --side: #d2cfc9;
+  --on-accent: var(--cv-ivory);
+  --select: var(--cv-butter);
+  --wash-cool: var(--cv-pistachio);
+  --side: var(--page);
   /* Meaning, never decoration. */
-  --info: #1f4f73;
+  --info: var(--cv-olive);
   --negative: #8f3424;
-  --note-bg: #e6dfcb;
-  --note-line: #9c7f2e;
+  --note-bg: var(--cv-butter);
+  --note-line: var(--cv-olive);
   /* Legacy names some views still read. */
   --teal: #0f0f10;
   --orange: #5b5b5e;
-  /* Data series where a chart needs categories (never for chrome): one palette, in this fixed
-     order and never cycled. Checked with the dataviz validator against the page, the paper and
-     the dark plate (lightness, chroma, colour-vision separation of neighbours, 3:1). Where any
-     two series can sit side by side (a scatter), only the first three stay apart; a scatter
-     with four groups takes --ink-2 as the fourth, which no hue here is confused with. */
-  --series-1: #008f82;
-  --series-2: #e0512e;
-  --series-3: #7a52b3;
-  --series-4: #a47400;
-  --series-5: #1c72c4;
+  /* Muted data series. Keep labels and values alongside pale fills; colour alone is no key. */
+  --series-1: var(--cv-olive);
+  --series-2: var(--cv-apricot);
+  --series-3: var(--cv-ground);
+  --series-4: var(--cv-butter);
+  --series-5: var(--cv-powder);
 
   /* Space and shape. */
   --sp-1: 0.25rem;
@@ -134,6 +132,7 @@
   --radius: 2px;
   --card-pad: 0.9rem 1.05rem 1rem;
   --card-gap: 0.9rem;
+  --dk-gap: 14px;
 
   /* Motion: short, and none at all when the reader asks for less. */
   --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
@@ -223,6 +222,26 @@ body,
 #root {
   background: var(--page);
   color: var(--ink);
+}
+.plate .stage-side {
+  --ink: #0f0f10;
+  --ink-2: #2a2a2c;
+  --muted: #4a4a4d;
+  --subtle: #6b6b6e;
+  --paper: var(--cv-ivory);
+  --paper-strong: #ffffff;
+  --accent: var(--cv-olive);
+  --on-accent: var(--cv-ivory);
+  --line: rgba(15, 15, 16, 0.16);
+  --line-strong: rgba(15, 15, 16, 0.42);
+  --stage-ink: var(--ink);
+  --stage-muted: var(--muted);
+  --stage-rule: var(--line);
+  color: var(--ink);
+  color-scheme: light;
+}
+.project-shell {
+  --gutter: var(--dashboard-gutter);
 }
 body {
   font-weight: var(--weight-body);

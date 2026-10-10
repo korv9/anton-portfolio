@@ -4,7 +4,7 @@
  * the warehouse; Pipeline lists the steps and how they run. Schema and rows are read from
  * schema/models.json and schema/samples, which dbt writes, so they follow the models.
  */
-import { useEffect, useState } from 'react'
+import { useEffect, useId, useState } from 'react'
 import { l } from '../../i18n'
 import { fetchJson } from '../../welfare/data'
 import { ChartCard } from './Dash'
@@ -117,6 +117,7 @@ export default function TechCard({
   runs: string
   span?: number
 }) {
+  const panelId = useId()
   const [tab, setTab] = useState<'schema' | 'rows' | 'pipeline'>('schema')
   const [schema, setSchema] = useState<Schema | null>(null)
   const [sample, setSample] = useState<Sample | null>(null)
@@ -126,6 +127,7 @@ export default function TechCard({
   }, [])
   const byName = new Map(schema?.nodes.map((n) => [n.name, n]))
   const factModel = byName.get(fact)
+  const shownTab = schema && !factModel ? 'pipeline' : tab
   useEffect(() => {
     if (tab !== 'rows' || !factModel?.has_sample || sample) return
     fetchJson<Sample>(
@@ -168,8 +170,36 @@ export default function TechCard({
             key={key}
             type="button"
             role="tab"
-            aria-selected={tab === key}
+            id={`${panelId}-${key}`}
+            aria-controls={panelId}
+            aria-selected={shownTab === key}
+            disabled={!!schema && !factModel && key !== 'pipeline'}
+            tabIndex={shownTab === key ? 0 : -1}
             onClick={() => setTab(key)}
+            onKeyDown={(event) => {
+              if (
+                !['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)
+              )
+                return
+              event.preventDefault()
+              const enabled = Array.from(
+                event.currentTarget.parentElement!.querySelectorAll<HTMLButtonElement>(
+                  'button:not(:disabled)',
+                ),
+              )
+              const at = enabled.indexOf(event.currentTarget)
+              const next =
+                event.key === 'Home'
+                  ? 0
+                  : event.key === 'End'
+                    ? enabled.length - 1
+                    : (at +
+                        (event.key === 'ArrowRight' ? 1 : -1) +
+                        enabled.length) %
+                      enabled.length
+              enabled[next].click()
+              enabled[next].focus()
+            }}
           >
             {name}
           </button>
@@ -180,12 +210,23 @@ export default function TechCard({
           {l('The model list did not load.', 'Modellistan kunde inte läsas.')}
         </p>
       )}
-      {tab === 'schema' && schema && (
-        <div className="dk-schema" role="tabpanel">
+      {shownTab === 'schema' && schema && (
+        <div
+          className="dk-schema"
+          role="tabpanel"
+          id={panelId}
+          aria-labelledby={`${panelId}-schema`}
+        >
           {factModel && (
             <ModelBox
               model={factModel}
-              tag={l('fact', 'fakta')}
+              tag={
+                fact.startsWith('dim_')
+                  ? 'dim'
+                  : fact.startsWith('mart_')
+                    ? 'mart'
+                    : l('fact', 'fakta')
+              }
               foreign={foreign}
             />
           )}
@@ -217,8 +258,13 @@ export default function TechCard({
           </div>
         </div>
       )}
-      {tab === 'rows' && factModel && (
-        <div role="tabpanel" className="dk-rows">
+      {shownTab === 'rows' && factModel && (
+        <div
+          role="tabpanel"
+          className="dk-rows"
+          id={panelId}
+          aria-labelledby={`${panelId}-rows`}
+        >
           {factModel.sql && (
             <pre className="dk-sql">
               <code>
@@ -258,8 +304,12 @@ export default function TechCard({
           )}
         </div>
       )}
-      {tab === 'pipeline' && (
-        <div role="tabpanel">
+      {shownTab === 'pipeline' && (
+        <div
+          role="tabpanel"
+          id={panelId}
+          aria-labelledby={`${panelId}-pipeline`}
+        >
           <ol className="dk-steps">
             {steps.map((s) => (
               <li key={s.title}>
@@ -269,6 +319,9 @@ export default function TechCard({
             ))}
           </ol>
           <p className="dk-foot">{runs}</p>
+          {!factModel && (
+            <p className="dk-foot">{[fact, ...dims, ...marts].join(' · ')}</p>
+          )}
         </div>
       )}
     </ChartCard>

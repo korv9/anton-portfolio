@@ -5,6 +5,7 @@
  */
 import { useEffect, useState } from 'react'
 import { l } from '../../i18n'
+import { ProjectDepth } from '../../projects/ProjectStructure'
 import { RIKSDAG_PARTIES, identity, partyName } from '../../parties/identity'
 import type { Route } from '../../router'
 import { shownParties, useParties } from '../partySelection'
@@ -35,15 +36,17 @@ export default function Sakdebatter({ route }: { route: Route }) {
   return (
     <>
       <SakAnalys route={route} />
-      <details className="sak-deeper" id="fordjupa">
-        <summary>
-          {l(
-            'Go deeper: the debates riksmöte by riksmöte: leaderboard, votes on the reports and every debate',
-            'Fördjupa analysen: debatterna riksmöte för riksmöte: topplista, röster på betänkandena och alla debatter',
-          )}
-        </summary>
-        <Explorer route={route} />
-      </details>
+      <ProjectDepth project="politics">
+        <details className="sak-deeper" id="fordjupa">
+          <summary>
+            {l(
+              'Go deeper: the debates riksmöte by riksmöte: leaderboard, votes on the reports and every debate',
+              'Fördjupa analysen: debatterna riksmöte för riksmöte: topplista, röster på betänkandena och alla debatter',
+            )}
+          </summary>
+          <Explorer route={route} />
+        </details>
+      </ProjectDepth>
     </>
   )
 }

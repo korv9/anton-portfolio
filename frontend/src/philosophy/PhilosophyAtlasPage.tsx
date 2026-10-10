@@ -8,6 +8,9 @@
  */
 import { useEffect, useMemo, useState } from 'react'
 import { l } from '../i18n'
+import { ProjectDepth } from '../projects/ProjectStructure'
+import ProjectTech from '../projects/ProjectTech'
+import { KpiRow } from '../ui/dash/Dash'
 import { ProductQuality } from '../quality/QualityPanel'
 import type { Route } from '../router'
 import { fetchData } from '../dataSource'
@@ -208,6 +211,26 @@ export default function PhilosophyAtlasPage({ route }: { route: Route }) {
         </p>
       </header>
       <div className="ph-body ds-container">
+        <KpiRow
+          items={[
+            {
+              label: l('Works', 'Verk'),
+              value: works.length.toLocaleString(l('en-GB', 'sv-SE')),
+            },
+            {
+              label: l('Mapped passages', 'Kartlagda passager'),
+              value: summary.run.passages_sampled.toLocaleString(
+                l('en-GB', 'sv-SE'),
+              ),
+            },
+            {
+              label: l('Reviewed groups', 'Granskade grupper'),
+              value: summary.reviewed_clusters.toLocaleString(
+                l('en-GB', 'sv-SE'),
+              ),
+            },
+          ]}
+        />
         <section
           id="philosophy-atlas"
           className="ph-section"
@@ -381,9 +404,12 @@ export default function PhilosophyAtlasPage({ route }: { route: Route }) {
           active={params.spanning}
           onChange={(id) => set({ spanning: id })}
         />
-        <Works works={works} />
-        <ProductQuality product="philosophy" />
-        <Method summary={summary} />
+        <ProjectTech project="philosophy-atlas" />
+        <ProjectDepth project="philosophy-atlas">
+          <Works works={works} />
+          <ProductQuality product="philosophy" />
+          <Method summary={summary} />
+        </ProjectDepth>
       </div>
     </div>
   )

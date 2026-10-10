@@ -11,6 +11,10 @@ import {
   type ReactNode,
 } from 'react'
 import { l } from '../i18n'
+import { DashGrid, KpiRow } from '../ui/dash/Dash'
+import ProjectTech from '../projects/ProjectTech'
+import { projectForRoute } from '../projects/projectRegistry'
+import { parseHash } from '../router'
 
 export type Kpi = { value: string; label: string }
 export type Source = { name: string; url?: string }
@@ -45,6 +49,7 @@ const TABS = ['graph', 'table', 'sources'] as const
 type Tab = (typeof TABS)[number]
 
 export default function ThemeLayout(props: Props) {
+  const project = projectForRoute(parseHash(window.location.hash))
   const [tab, setTab] = useState<Tab>('graph')
   const id = useId()
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([])
@@ -64,7 +69,7 @@ export default function ThemeLayout(props: Props) {
   }
 
   return (
-    <article className="theme">
+    <article className="theme dk">
       <header className="theme-head">
         <h1 className="theme-question">{props.question}</h1>
         <p className="theme-why">{props.why}</p>
@@ -80,93 +85,92 @@ export default function ThemeLayout(props: Props) {
         </p>
       ) : (
         <>
-          {props.feature}
           {props.kpis.length > 0 && (
-            <dl className="theme-kpis">
-              {props.kpis.slice(0, 3).map((kpi) => (
-                <div key={kpi.label}>
-                  <dt>{kpi.label}</dt>
-                  <dd>{kpi.value}</dd>
-                </div>
-              ))}
-            </dl>
+            <KpiRow items={props.kpis} className="theme-kpis" />
           )}
-
-          <section className="theme-figure" aria-labelledby={`${id}-title`}>
-            <div className="theme-figure-head">
-              <div>
-                <h2 id={`${id}-title`} className="theme-chart-title">
-                  {props.chartTitle}
-                </h2>
-                <p className="theme-chart-meta">{props.chartMeta}</p>
-              </div>
-              <div
-                className="theme-tabs"
-                role="tablist"
-                aria-label={l('Show as', 'Visa som')}
-              >
-                {TABS.map((key, index) => (
-                  <button
-                    key={key}
-                    ref={(el) => {
-                      tabRefs.current[index] = el
-                    }}
-                    type="button"
-                    role="tab"
-                    id={`${id}-tab-${key}`}
-                    aria-selected={tab === key}
-                    aria-controls={`${id}-panel`}
-                    tabIndex={tab === key ? 0 : -1}
-                    onClick={() => setTab(key)}
-                    onKeyDown={(event) => onKey(event, index)}
-                  >
-                    {labels[key]}
-                  </button>
-                ))}
-              </div>
-            </div>
-            {props.filters && tab !== 'sources' && (
-              <div className="theme-filters">{props.filters}</div>
-            )}
-            <div
-              id={`${id}-panel`}
-              role="tabpanel"
-              aria-labelledby={`${id}-tab-${tab}`}
-              className="theme-panel"
-            >
-              {tab === 'graph' && props.chart}
-              {tab === 'table' && (
-                <div className="table-scroll theme-table">{props.table}</div>
-              )}
-              {tab === 'sources' && (
-                <div className="theme-sources">
-                  <ul>
-                    {props.sources.map((source) => (
-                      <li key={source.name}>
-                        {source.url ? (
-                          <a href={source.url} target="_blank" rel="noreferrer">
-                            {source.name}
-                          </a>
-                        ) : (
-                          source.name
-                        )}
-                      </li>
-                    ))}
-                  </ul>
-                  {props.method && (
-                    <div className="theme-method">{props.method}</div>
-                  )}
+          {props.feature}
+          <DashGrid>
+            <section className="theme-figure" aria-labelledby={`${id}-title`}>
+              <div className="theme-figure-head">
+                <div>
+                  <h2 id={`${id}-title`} className="theme-chart-title">
+                    {props.chartTitle}
+                  </h2>
+                  <p className="theme-chart-meta">{props.chartMeta}</p>
                 </div>
+                <div
+                  className="theme-tabs"
+                  role="tablist"
+                  aria-label={l('Show as', 'Visa som')}
+                >
+                  {TABS.map((key, index) => (
+                    <button
+                      key={key}
+                      ref={(el) => {
+                        tabRefs.current[index] = el
+                      }}
+                      type="button"
+                      role="tab"
+                      id={`${id}-tab-${key}`}
+                      aria-selected={tab === key}
+                      aria-controls={`${id}-panel`}
+                      tabIndex={tab === key ? 0 : -1}
+                      onClick={() => setTab(key)}
+                      onKeyDown={(event) => onKey(event, index)}
+                    >
+                      {labels[key]}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {props.filters && tab !== 'sources' && (
+                <div className="theme-filters">{props.filters}</div>
               )}
-            </div>
-            <p className="theme-takeaway">{props.takeaway}</p>
-            <p className="theme-source-line">
-              {l('Source', 'Källa')}:{' '}
-              {props.sources.map((s) => s.name).join(', ')}
-              {props.updated &&
-                `, ${l('Updated', 'Uppdaterad')} ${props.updated}`}
-            </p>
-          </section>
+              <div
+                id={`${id}-panel`}
+                role="tabpanel"
+                aria-labelledby={`${id}-tab-${tab}`}
+                className="theme-panel"
+              >
+                {tab === 'graph' && props.chart}
+                {tab === 'table' && (
+                  <div className="table-scroll theme-table">{props.table}</div>
+                )}
+                {tab === 'sources' && (
+                  <div className="theme-sources">
+                    <ul>
+                      {props.sources.map((source) => (
+                        <li key={source.name}>
+                          {source.url ? (
+                            <a
+                              href={source.url}
+                              target="_blank"
+                              rel="noreferrer"
+                            >
+                              {source.name}
+                            </a>
+                          ) : (
+                            source.name
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                    {props.method && (
+                      <div className="theme-method">{props.method}</div>
+                    )}
+                  </div>
+                )}
+              </div>
+              <p className="theme-takeaway">{props.takeaway}</p>
+              <p className="theme-source-line">
+                {l('Source', 'Källa')}:{' '}
+                {props.sources.map((s) => s.name).join(', ')}
+                {props.updated &&
+                  `, ${l('Updated', 'Uppdaterad')} ${props.updated}`}
+              </p>
+            </section>
+            {project && <ProjectTech project={project.id} span={4} />}
+          </DashGrid>
 
           <section className="theme-meaning" aria-labelledby={`${id}-meaning`}>
             <h2 id={`${id}-meaning`}>

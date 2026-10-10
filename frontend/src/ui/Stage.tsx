@@ -19,6 +19,7 @@ export function Stage({
   right,
   dark = false,
   level = 2,
+  metrics,
 }: {
   id: string
   kicker?: string
@@ -30,12 +31,13 @@ export function Stage({
   dark?: boolean
   /** 1 when the stage opens the page and its title is the page's heading. */
   level?: 1 | 2
+  metrics?: ReactNode
 }) {
   const Heading = level === 1 ? 'h1' : 'h2'
   return (
     <StageLevel.Provider value={level}>
       <section
-        className={`stage${dark ? ' is-dark plate' : ''}`}
+        className={`stage${dark ? ' is-dark plate' : ''}${metrics ? ' has-metrics' : ''}`}
         id={id}
         aria-labelledby={`${id}-title`}
       >
@@ -44,6 +46,7 @@ export function Stage({
           <Heading id={`${id}-title`}>{title}</Heading>
           {lead && <p className="stage-lead">{lead}</p>}
         </header>
+        {metrics && <div className="stage-metrics">{metrics}</div>}
         <aside className="stage-side is-left">{left}</aside>
         <div className="stage-figure">{figure}</div>
         <aside className="stage-side is-right">{right}</aside>

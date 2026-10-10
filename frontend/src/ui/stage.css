@@ -14,12 +14,26 @@
     'left figure right';
   gap: 1.25rem clamp(1rem, 2vw, 2rem);
   align-items: start;
-  min-height: calc(100vh - 72px);
-  /* Full bleed across the page beside the sidebar (--bleed, site/sidebar.css). */
-  margin: 0 calc(50% - var(--bleed, 100vw) / 2) 2.5rem;
-  padding: clamp(1.25rem, 3vw, 2.5rem) clamp(1rem, 3vw, 2.5rem);
+  min-height: 0;
+  margin: var(--sp-5) 0;
+  padding: var(--sp-5);
+  border: 1px solid var(--line);
   color: var(--ink);
   background: var(--page);
+}
+.stage.has-metrics {
+  grid-template-areas: 'head head head' 'metrics metrics metrics' 'left figure right';
+}
+.stage-metrics {
+  grid-area: metrics;
+  min-width: 0;
+}
+.stage-metrics .dk-kpis {
+  margin: 0;
+}
+.stage:has(.stage-head h1) {
+  padding: 0;
+  border: 0;
 }
 .stage.is-dark {
   color: var(--stage-ink);
@@ -40,7 +54,7 @@
 .stage-head h1,
 .stage-head h2 {
   margin: 0;
-  font-size: clamp(1.7rem, 3.4vw, 2.6rem);
+  font-size: var(--dashboard-section);
   line-height: 1.05;
   letter-spacing: -0.035em;
 }
@@ -58,6 +72,9 @@
 .stage-figure {
   grid-area: figure;
   min-width: 0;
+}
+.stage-figure > :first-child {
+  margin-top: 0;
 }
 .stage-side {
   display: grid;
@@ -174,6 +191,9 @@
 }
 
 @media (max-width: 1100px) {
+  .stage.has-metrics {
+    grid-template-areas: 'head head' 'metrics metrics' 'figure figure' 'left right';
+  }
   .stage {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     grid-template-areas:
@@ -184,6 +204,9 @@
   }
 }
 @media (max-width: 640px) {
+  .stage.has-metrics {
+    grid-template-areas: 'head' 'metrics' 'figure' 'left' 'right';
+  }
   .stage {
     grid-template-columns: minmax(0, 1fr);
     grid-template-areas:

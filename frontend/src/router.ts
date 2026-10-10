@@ -28,6 +28,8 @@ export type Page =
   | 'concepts'
   | 'quality'
   | 'clusters'
+  | 'rag'
+  | 'mimii'
 
 export type Route = {
   /** The full hash, e.g. `#politik-valjarna?partier=S`. */
@@ -111,6 +113,8 @@ export function pageOf(path: string): Page {
   if (path === '#thesis') return 'thesis'
   if (path === '#homie') return 'homie'
   if (path === '#diva') return 'diva'
+  if (path === '#rag') return 'rag'
+  if (path === '#mimii') return 'mimii'
   if (path === '#sweden' || path.startsWith('#sweden-')) return 'welfare'
   if (path === '#rfc-drift') return 'allegoria'
   if (path === '#er' || path === '#er-diagram') return 'er'

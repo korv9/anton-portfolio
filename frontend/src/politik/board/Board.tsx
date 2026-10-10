@@ -5,6 +5,9 @@
  */
 import type { ReactNode } from 'react'
 import { l } from '../../i18n'
+import ProjectTech from '../../projects/ProjectTech'
+import { projectForRoute } from '../../projects/projectRegistry'
+import { parseHash } from '../../router'
 import { CountUp } from '../dash/motion'
 import './board.css'
 
@@ -23,8 +26,9 @@ export function Board({
   children: ReactNode
 }) {
   const H = level === 1 ? 'h1' : 'h2'
+  const project = projectForRoute(parseHash(window.location.hash))
   return (
-    <div className="board">
+    <div className="board dk">
       <header className="board-head">
         <div>
           <H className={level === 2 ? 'board-title-2' : undefined}>{title}</H>
@@ -37,12 +41,13 @@ export function Board({
         )}
       </header>
       {children}
+      {level === 1 && project && <ProjectTech project={project.id} />}
     </div>
   )
 }
 
 export function Kpis({ children }: { children: ReactNode }) {
-  return <dl className="board-kpis">{children}</dl>
+  return <dl className="board-kpis dk-kpis">{children}</dl>
 }
 
 export function Kpi({
@@ -59,7 +64,7 @@ export function Kpi({
   index: number
 }) {
   return (
-    <div className="dash-kpi" style={{ ['--i' as string]: index }}>
+    <div className="dash-kpi dk-kpi" style={{ ['--i' as string]: index }}>
       <dt>{label}</dt>
       <dd>
         <CountUp value={value} format={format} />
@@ -70,7 +75,7 @@ export function Kpi({
 }
 
 export function Cards({ children }: { children: ReactNode }) {
-  return <div className="board-grid">{children}</div>
+  return <div className="board-grid dk-grid">{children}</div>
 }
 
 export function Card({
@@ -94,8 +99,8 @@ export function Card({
 }) {
   return (
     <section
-      className={wide ? 'board-card wide' : 'board-card'}
-      style={{ ['--i' as string]: index }}
+      className={wide ? 'board-card wide dk-card' : 'board-card dk-card'}
+      style={{ ['--i' as string]: index, ['--span' as string]: wide ? 12 : 6 }}
       aria-label={title}
     >
       <header>

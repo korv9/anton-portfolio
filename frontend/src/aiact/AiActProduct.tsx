@@ -21,6 +21,8 @@ import { Politics } from './Politics'
 import { Signals } from './Signals'
 import { DISCLAIMER, fmtDate, pick } from './shared'
 import { ProjectHero } from '../ui/Project'
+import { KpiRow } from '../ui/dash/Dash'
+import ProjectTech from '../projects/ProjectTech'
 import {
   Changes,
   Obligations,
@@ -251,53 +253,102 @@ export default function AiActProduct({ route }: { route: Route }) {
         )}
         {data && (
           <>
-            {path === '#ai-act' && <Overview data={data} today={today} />}
-            {path === '#ai-act-today' && <Today data={data} today={today} />}
-            {path === '#ai-act-timeline' && (
-              <TimelineView data={data} today={today} />
-            )}
-            {path === '#ai-act-roles' && <Roles data={data} today={today} />}
-            {path === '#ai-act-risk' && <Risk data={data} today={today} />}
-            {path === '#ai-act-obligations' && (
-              <Obligations
-                data={data}
-                today={today}
-                actor={params.actor}
-                risk={params.risk}
-                setFilter={(f) => set(f)}
-              />
-            )}
-            {path === '#ai-act-startups' && (
-              <NavigatorView
-                data={data}
-                today={today}
-                encoded={params.svar}
-                setEncoded={(svar) => set({ svar })}
-              />
-            )}
-            {path === '#ai-act-politics' && <Politics data={data} />}
-            {path === '#ai-act-jobs' && (
-              <Jobs
-                data={data}
-                term={params.term}
-                setTerm={(term) => set({ term })}
-              />
-            )}
-            {path === '#ai-act-signals' && <Signals data={data} />}
-            {path === '#ai-act-changes' && (
-              <Changes
-                data={data}
-                today={today}
-                kind={params.kind}
-                setKind={(kind) => set({ kind })}
-              />
-            )}
-            {path === '#ai-act-sources' && (
-              <Sources data={data} today={today} />
-            )}
-            {path === '#ai-act-article' && (
-              <ArticleView data={data} today={today} number={params.a || '1'} />
-            )}
+            <KpiRow
+              items={[
+                {
+                  label: l('Articles', 'Artiklar'),
+                  value: data.articles.length.toLocaleString(
+                    l('en-GB', 'sv-SE'),
+                  ),
+                  note: l(
+                    'In the consolidated text',
+                    'I den konsoliderade texten',
+                  ),
+                },
+                {
+                  label: l('Obligations', 'Skyldigheter'),
+                  value: data.obligations.length.toLocaleString(
+                    l('en-GB', 'sv-SE'),
+                  ),
+                  note: l(
+                    'Traceable to their articles',
+                    'Spårbara till sina artiklar',
+                  ),
+                },
+                {
+                  label: l('Application milestones', 'Tillämpningsdatum'),
+                  value: data.timeline.length.toLocaleString(
+                    l('en-GB', 'sv-SE'),
+                  ),
+                  note: l(
+                    'In the published timeline',
+                    'I den publicerade tidslinjen',
+                  ),
+                },
+              ]}
+            />
+            <div className={path === '#ai-act' ? undefined : 'dk-grid'}>
+              <div
+                className={path === '#ai-act' ? undefined : 'aa-dashboard-view'}
+              >
+                {path === '#ai-act' && <Overview data={data} today={today} />}
+                {path === '#ai-act-today' && (
+                  <Today data={data} today={today} />
+                )}
+                {path === '#ai-act-timeline' && (
+                  <TimelineView data={data} today={today} />
+                )}
+                {path === '#ai-act-roles' && (
+                  <Roles data={data} today={today} />
+                )}
+                {path === '#ai-act-risk' && <Risk data={data} today={today} />}
+                {path === '#ai-act-obligations' && (
+                  <Obligations
+                    data={data}
+                    today={today}
+                    actor={params.actor}
+                    risk={params.risk}
+                    setFilter={(f) => set(f)}
+                  />
+                )}
+                {path === '#ai-act-startups' && (
+                  <NavigatorView
+                    data={data}
+                    today={today}
+                    encoded={params.svar}
+                    setEncoded={(svar) => set({ svar })}
+                  />
+                )}
+                {path === '#ai-act-politics' && <Politics data={data} />}
+                {path === '#ai-act-jobs' && (
+                  <Jobs
+                    data={data}
+                    term={params.term}
+                    setTerm={(term) => set({ term })}
+                  />
+                )}
+                {path === '#ai-act-signals' && <Signals data={data} />}
+                {path === '#ai-act-changes' && (
+                  <Changes
+                    data={data}
+                    today={today}
+                    kind={params.kind}
+                    setKind={(kind) => set({ kind })}
+                  />
+                )}
+                {path === '#ai-act-sources' && (
+                  <Sources data={data} today={today} />
+                )}
+                {path === '#ai-act-article' && (
+                  <ArticleView
+                    data={data}
+                    today={today}
+                    number={params.a || '1'}
+                  />
+                )}
+              </div>
+              {path !== '#ai-act' && <ProjectTech project="ai-act" span={4} />}
+            </div>
           </>
         )}
       </div>
