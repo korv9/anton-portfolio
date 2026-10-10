@@ -26,6 +26,9 @@ import CorpusExplorer from './CorpusExplorer'
 import ExperimentTable from './ExperimentTable'
 import ResearchStory from './ResearchStory'
 import { ProjectHero } from '../ui/Project'
+import { ProjectDepth } from '../projects/ProjectStructure'
+import ProjectTech from '../projects/ProjectTech'
+import { KpiRow } from '../ui/dash/Dash'
 import {
   AtlasFiltersPanel,
   SymbolPanel,
@@ -301,6 +304,27 @@ export default function SymbolicAtlasPage({ route }: { route: Route }) {
           </p>
         </ProjectHero>
       </div>
+      <div className="ds-container">
+        <KpiRow
+          items={[
+            {
+              label: l('Books', 'Böcker'),
+              value: num(summary.document_count),
+              note: l('Public-domain corpus', 'Fri korpus'),
+            },
+            {
+              label: l('Occurrences', 'Förekomster'),
+              value: num(summary.occurrence_count),
+              note: l('Symbol words in context', 'Symbolord i sitt sammanhang'),
+            },
+            {
+              label: l('Clusters', 'Kluster'),
+              value: num(summary.cluster_count),
+              note: l('Baseline, HDBSCAN', 'Utgångsläge, HDBSCAN'),
+            },
+          ]}
+        />
+      </div>
       <Stage
         id="symbolic-map"
         dark
@@ -515,164 +539,171 @@ export default function SymbolicAtlasPage({ route }: { route: Route }) {
           </>
         }
       />
-      {history ? (
-        <ResearchStory history={history} />
-      ) : (
+      <div className="ds-container">
+        <ProjectTech project="symbolic-atlas" />
+      </div>
+      <ProjectDepth project="symbolic-atlas">
+        {history ? (
+          <ResearchStory history={history} />
+        ) : (
+          <section
+            className="atlas-section ds-container"
+            id="symbolic-findings"
+            aria-labelledby="symbolic-findings-title"
+          >
+            <h2 id="symbolic-findings-title">{l('Findings', 'Fynd')}</h2>
+            <p>
+              {l(
+                `On average ${pct(ev.composition.largest_book_share ?? 0)} of a cluster comes from one book, and ${pct(ev.composition.largest_symbol_share ?? 0)} from one symbol. So far the map groups passages more by a book's style and translation than by what a symbol means. That is a finding, not a failure, and the next thing to work on.`,
+                `I genomsnitt kommer ${pct(ev.composition.largest_book_share ?? 0)} av ett kluster från en och samma bok, och ${pct(ev.composition.largest_symbol_share ?? 0)} från en och samma symbol. Än så länge grupperar kartan ställen mer efter bokens stil och översättning än efter vad en symbol betyder. Det är ett resultat, inte ett misslyckande, och nästa sak att arbeta med.`,
+              )}
+            </p>
+            <p>
+              <a href="#symbolic-experiments">
+                {l(
+                  'How far that can be reduced',
+                  'Hur mycket det går att minska',
+                )}
+              </a>
+            </p>
+          </section>
+        )}
+        <ExperimentTable />
+        <div className="ds-container">
+          <ProductQuality
+            product="symbolic"
+            id="symbolic-quality"
+            intro={[
+              'Data quality answers “Did I build the dataset correctly?” Analytical validity answers “Does the model measure symbolic structure, or something else?” The two are checked separately.',
+              'Datakvalitet svarar på ”Byggde jag datasetet rätt?” Analytisk validitet svarar på ”Mäter modellen symbolisk struktur, eller något annat?” De två kontrolleras separat.',
+            ]}
+          />
+        </div>
         <section
           className="atlas-section ds-container"
-          id="symbolic-findings"
-          aria-labelledby="symbolic-findings-title"
+          id="symbolic-corpus"
+          aria-labelledby="symbolic-corpus-title"
         >
-          <h2 id="symbolic-findings-title">{l('Findings', 'Fynd')}</h2>
+          <h2 id="symbolic-corpus-title">{l('Corpus', 'Korpus')}</h2>
           <p>
             {l(
-              `On average ${pct(ev.composition.largest_book_share ?? 0)} of a cluster comes from one book, and ${pct(ev.composition.largest_symbol_share ?? 0)} from one symbol. So far the map groups passages more by a book's style and translation than by what a symbol means. That is a finding, not a failure, and the next thing to work on.`,
-              `I genomsnitt kommer ${pct(ev.composition.largest_book_share ?? 0)} av ett kluster från en och samma bok, och ${pct(ev.composition.largest_symbol_share ?? 0)} från en och samma symbol. Än så länge grupperar kartan ställen mer efter bokens stil och översättning än efter vad en symbol betyder. Det är ett resultat, inte ett misslyckande, och nästa sak att arbeta med.`,
+              `${summary.document_count} public-domain books from Project Gutenberg in English, chosen per tradition from the Gutenberg catalogue and checked against each book’s Gutenberg record (title, creators, language, rights) and against each other for duplicated text. Many are translations or retellings by nineteenth-century English writers, so a voice can belong to a translator rather than a tradition.`,
+              `${summary.document_count} fria böcker från Project Gutenberg på engelska, valda per tradition ur Gutenbergs katalog och kontrollerade mot varje boks post hos Gutenberg (titel, upphovspersoner, språk, rättigheter) och mot varandra för dubblerad text. Många är översättningar eller återberättelser av engelska 1800-talsförfattare, så en röst kan tillhöra en översättare snarare än en tradition.`,
+            )}
+          </p>
+          <CorpusExplorer
+            documents={summary.documents}
+            tradition={filters.korpus}
+            sourceType={filters.kalla}
+            onFilter={(next) => setFilters(next)}
+          />
+        </section>
+        <section
+          className="atlas-section ds-container"
+          id="symbolic-method"
+          aria-labelledby="symbolic-method-title"
+        >
+          <h2 id="symbolic-method-title">{l('Method', 'Metod')}</h2>
+          <p>
+            {l(
+              `${summary.document_count} Project Gutenberg books. Each use of a symbol word is cut out with the sentence before and after, embedded with ${summary.run.embedding_model.split('/')[1]} on the CPU, laid out with UMAP (cosine) and clustered with HDBSCAN in a 10-dimensional UMAP space. At most ${summary.run.sample.per_document_and_symbol} uses per book and symbol are mapped.`,
+              `${summary.document_count} böcker från Project Gutenberg. Varje förekomst av ett symbolord klipps ut med meningen före och efter, bäddas in med ${summary.run.embedding_model.split('/')[1]} på processorn, läggs ut med UMAP (cosinus) och klustras med HDBSCAN i ett tiodimensionellt UMAP-rum. Högst ${summary.run.sample.per_document_and_symbol} förekomster per bok och symbol visas.`,
             )}
           </p>
           <p>
-            <a href="#symbolic-experiments">
+            {l(
+              'Before extraction, contents, glossaries, indexes, notes, bibliographies and footnotes are removed by explicit rules, and each removal is recorded. Matching is by word list, so a context is not yet a symbolic meaning; clusters are exploratory and numbered, a name comes only from a person’s review, and UMAP bends distances.',
+              'Före extraktionen tas innehållsförteckningar, ordlistor, register, noter, litteraturlistor och fotnoter bort med uttryckliga regler, och varje borttagning registreras. Matchningen sker med en ordlista, så ett sammanhang är ännu inte en symbolisk betydelse; klustren är utforskande och numrerade, ett namn kommer bara från en människas granskning, och UMAP förvränger avstånd.',
+            )}
+          </p>
+          <h3>{l('Diagnostics', 'Diagnostik')}</h3>
+          <p className="atlas-note">
+            {l(
+              'How well the map and the clusters hold together. These describe structure, not meaning.',
+              'Hur väl kartan och klustren håller ihop. De beskriver struktur, inte betydelse.',
+            )}
+          </p>
+          <div className="atlas-table-wrap" tabIndex={0}>
+            <table className="atlas-table">
+              <thead>
+                <tr>
+                  <th scope="col">{l('Run', 'Körning')}</th>
+                  <th scope="col">{l('Trustworthiness', 'Trovärdighet')}</th>
+                  <th scope="col">{l('Silhouette', 'Silhuett')}</th>
+                  <th scope="col">{l('Noise', 'Brus')}</th>
+                  <th scope="col">
+                    {l('Median membership', 'Medianmedlemskap')}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {(history?.steps ?? [])
+                  .filter((st) => st.metrics)
+                  .map((st) => (
+                    <tr key={st.id}>
+                      <th scope="row">
+                        {st.id}, {st.name}
+                      </th>
+                      <td>{num(st.metrics!.trustworthiness, 2)}</td>
+                      <td>
+                        {st.metrics!.silhouette == null
+                          ? '–'
+                          : num(st.metrics!.silhouette, 2)}
+                      </td>
+                      <td>{pct(st.metrics!.noise_share)}</td>
+                      <td>
+                        {st.metrics!.median_membership == null
+                          ? '–'
+                          : num(st.metrics!.median_membership, 2)}
+                      </td>
+                    </tr>
+                  ))}
+                {!history && (
+                  <tr>
+                    <th scope="row">{l('Baseline', 'Utgångsläge')}</th>
+                    <td>{num(ev.trustworthiness, 2)}</td>
+                    <td>
+                      {ev.silhouette == null ? '–' : num(ev.silhouette, 2)}
+                    </td>
+                    <td>{pct(summary.noise_share)}</td>
+                    <td>
+                      {ev.membership_probability
+                        ? num(ev.membership_probability.median, 2)
+                        : '–'}
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+          <p>
+            <a
+              href="https://github.com/korv9/anton-portfolio/blob/main/docs/symbolic-atlas.md"
+              target="_blank"
+              rel="noreferrer"
+            >
               {l(
-                'How far that can be reduced',
-                'Hur mycket det går att minska',
+                'Full method and limitations',
+                'Hela metoden och begränsningarna',
               )}
             </a>
           </p>
-        </section>
-      )}
-      <ExperimentTable />
-      <div className="ds-container">
-        <ProductQuality
-          product="symbolic"
-          id="symbolic-quality"
-          intro={[
-            'Data quality answers “Did I build the dataset correctly?” Analytical validity answers “Does the model measure symbolic structure, or something else?” The two are checked separately.',
-            'Datakvalitet svarar på ”Byggde jag datasetet rätt?” Analytisk validitet svarar på ”Mäter modellen symbolisk struktur, eller något annat?” De två kontrolleras separat.',
-          ]}
-        />
-      </div>
-      <section
-        className="atlas-section ds-container"
-        id="symbolic-corpus"
-        aria-labelledby="symbolic-corpus-title"
-      >
-        <h2 id="symbolic-corpus-title">{l('Corpus', 'Korpus')}</h2>
-        <p>
-          {l(
-            `${summary.document_count} public-domain books from Project Gutenberg in English, chosen per tradition from the Gutenberg catalogue and checked against each book’s Gutenberg record (title, creators, language, rights) and against each other for duplicated text. Many are translations or retellings by nineteenth-century English writers, so a voice can belong to a translator rather than a tradition.`,
-            `${summary.document_count} fria böcker från Project Gutenberg på engelska, valda per tradition ur Gutenbergs katalog och kontrollerade mot varje boks post hos Gutenberg (titel, upphovspersoner, språk, rättigheter) och mot varandra för dubblerad text. Många är översättningar eller återberättelser av engelska 1800-talsförfattare, så en röst kan tillhöra en översättare snarare än en tradition.`,
-          )}
-        </p>
-        <CorpusExplorer
-          documents={summary.documents}
-          tradition={filters.korpus}
-          sourceType={filters.kalla}
-          onFilter={(next) => setFilters(next)}
-        />
-      </section>
-      <section
-        className="atlas-section ds-container"
-        id="symbolic-method"
-        aria-labelledby="symbolic-method-title"
-      >
-        <h2 id="symbolic-method-title">{l('Method', 'Metod')}</h2>
-        <p>
-          {l(
-            `${summary.document_count} Project Gutenberg books. Each use of a symbol word is cut out with the sentence before and after, embedded with ${summary.run.embedding_model.split('/')[1]} on the CPU, laid out with UMAP (cosine) and clustered with HDBSCAN in a 10-dimensional UMAP space. At most ${summary.run.sample.per_document_and_symbol} uses per book and symbol are mapped.`,
-            `${summary.document_count} böcker från Project Gutenberg. Varje förekomst av ett symbolord klipps ut med meningen före och efter, bäddas in med ${summary.run.embedding_model.split('/')[1]} på processorn, läggs ut med UMAP (cosinus) och klustras med HDBSCAN i ett tiodimensionellt UMAP-rum. Högst ${summary.run.sample.per_document_and_symbol} förekomster per bok och symbol visas.`,
-          )}
-        </p>
-        <p>
-          {l(
-            'Before extraction, contents, glossaries, indexes, notes, bibliographies and footnotes are removed by explicit rules, and each removal is recorded. Matching is by word list, so a context is not yet a symbolic meaning; clusters are exploratory and numbered, a name comes only from a person’s review, and UMAP bends distances.',
-            'Före extraktionen tas innehållsförteckningar, ordlistor, register, noter, litteraturlistor och fotnoter bort med uttryckliga regler, och varje borttagning registreras. Matchningen sker med en ordlista, så ett sammanhang är ännu inte en symbolisk betydelse; klustren är utforskande och numrerade, ett namn kommer bara från en människas granskning, och UMAP förvränger avstånd.',
-          )}
-        </p>
-        <h3>{l('Diagnostics', 'Diagnostik')}</h3>
-        <p className="atlas-note">
-          {l(
-            'How well the map and the clusters hold together. These describe structure, not meaning.',
-            'Hur väl kartan och klustren håller ihop. De beskriver struktur, inte betydelse.',
-          )}
-        </p>
-        <div className="atlas-table-wrap" tabIndex={0}>
-          <table className="atlas-table">
-            <thead>
-              <tr>
-                <th scope="col">{l('Run', 'Körning')}</th>
-                <th scope="col">{l('Trustworthiness', 'Trovärdighet')}</th>
-                <th scope="col">{l('Silhouette', 'Silhuett')}</th>
-                <th scope="col">{l('Noise', 'Brus')}</th>
-                <th scope="col">
-                  {l('Median membership', 'Medianmedlemskap')}
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {(history?.steps ?? [])
-                .filter((st) => st.metrics)
-                .map((st) => (
-                  <tr key={st.id}>
-                    <th scope="row">
-                      {st.id}, {st.name}
-                    </th>
-                    <td>{num(st.metrics!.trustworthiness, 2)}</td>
-                    <td>
-                      {st.metrics!.silhouette == null
-                        ? '–'
-                        : num(st.metrics!.silhouette, 2)}
-                    </td>
-                    <td>{pct(st.metrics!.noise_share)}</td>
-                    <td>
-                      {st.metrics!.median_membership == null
-                        ? '–'
-                        : num(st.metrics!.median_membership, 2)}
-                    </td>
-                  </tr>
-                ))}
-              {!history && (
-                <tr>
-                  <th scope="row">{l('Baseline', 'Utgångsläge')}</th>
-                  <td>{num(ev.trustworthiness, 2)}</td>
-                  <td>{ev.silhouette == null ? '–' : num(ev.silhouette, 2)}</td>
-                  <td>{pct(summary.noise_share)}</td>
-                  <td>
-                    {ev.membership_probability
-                      ? num(ev.membership_probability.median, 2)
-                      : '–'}
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-        <p>
-          <a
-            href="https://github.com/korv9/anton-portfolio/blob/main/docs/symbolic-atlas.md"
-            target="_blank"
-            rel="noreferrer"
-          >
-            {l(
-              'Full method and limitations',
-              'Hela metoden och begränsningarna',
+          <MethodSummary
+            lineage={[
+              'Project Gutenberg',
+              l('Python ingestion', 'inläsning i Python'),
+              'dbt + DuckDB',
+              l('embeddings, UMAP, HDBSCAN', 'inbäddningar, UMAP, HDBSCAN'),
+              'Parquet',
+              'React',
+            ]}
+            quality={l(
+              'Good clusters did not at first mean symbolic meaning: data quality, cluster quality and construct validity are checked separately.',
+              'Bra kluster betydde inte från början symbolisk mening: datakvalitet, klusterkvalitet och begreppsvaliditet kontrolleras var för sig.',
             )}
-          </a>
-        </p>
-        <MethodSummary
-          lineage={[
-            'Project Gutenberg',
-            l('Python ingestion', 'inläsning i Python'),
-            'dbt + DuckDB',
-            l('embeddings, UMAP, HDBSCAN', 'inbäddningar, UMAP, HDBSCAN'),
-            'Parquet',
-            'React',
-          ]}
-          quality={l(
-            'Good clusters did not at first mean symbolic meaning: data quality, cluster quality and construct validity are checked separately.',
-            'Bra kluster betydde inte från början symbolisk mening: datakvalitet, klusterkvalitet och begreppsvaliditet kontrolleras var för sig.',
-          )}
-        />
-      </section>
+          />
+        </section>
+      </ProjectDepth>
     </div>
   )
 }

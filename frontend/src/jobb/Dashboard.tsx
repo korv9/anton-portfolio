@@ -9,6 +9,9 @@
 import { lazy, Suspense, type ReactNode } from 'react'
 import { TraceResult } from '../ui/Trace'
 import { l } from '../i18n'
+import { ProjectDepth } from '../projects/ProjectStructure'
+import ProjectTech from '../projects/ProjectTech'
+import { KpiRow, DashGrid } from '../ui/dash/Dash'
 import type { Route } from '../router'
 import { useViewParams } from '../politik/useViewParams'
 import { Select } from '../politik/controls'
@@ -218,45 +221,66 @@ export default function Dashboard({
           ),
         )}
       </ProjectHero>
+      <KpiRow
+        items={[
+          {
+            label: l('New ads', 'Nya annonser'),
+            value: number(now),
+            note: `${period}, ${scope}`,
+          },
+          {
+            label: l('Change from last year', 'Förändring mot föregående år'),
+            value: signedPct(delta),
+            note: l('Same months, same fields', 'Samma månader, samma områden'),
+          },
+          {
+            label: l('Occupation groups', 'Yrkesgrupper'),
+            value: number(occupationsIn(data, fields).length),
+            note: l('In the selected fields', 'I valda områden'),
+          },
+        ]}
+      />
       {slicer}
-
-      <ChartSection
-        level={2}
-        question={l(
-          'Is it a dip or a trend?',
-          'Är det en svacka eller en trend?',
-        )}
-        title={l(
-          `Ads per month, ${latest} against the years before`,
-          `Annonser per månad, ${latest} mot åren innan`,
-        )}
-        subtitle={l(
-          `New ads per month, ${scope}, ${latest} darker`,
-          `Nya annonser per månad, ${scope}, ${latest} mörkare`,
-        )}
-        source={source()}
-      >
-        <div className="jobb-chart-controls">
-          <Select
-            label={l('Months shown', 'Månader')}
-            value={view.period}
-            options={[
-              { value: '24', label: l('Last 24', 'Senaste 24') },
-              { value: '36', label: l('Last 36', 'Senaste 36') },
-              { value: 'alla', label: l('Since 2020', 'Sedan 2020') },
-            ]}
-            onChange={(period) => setView({ period })}
-          />
-        </div>
-        <MonthColumns
-          months={shown}
-          highlight={`${latest}-01`}
-          label={l(
-            `New job ads per month, ${scope}: ${number(now)} in ${period}, ${signedPct(delta)} against the same months of ${previous}`,
-            `Nya jobbannonser per månad, ${scope}: ${number(now)} ${period}, ${signedPct(delta)} mot samma månader ${previous}`,
+      <DashGrid>
+        <ChartSection
+          level={2}
+          question={l(
+            'Is it a dip or a trend?',
+            'Är det en svacka eller en trend?',
           )}
-        />
-      </ChartSection>
+          title={l(
+            `Ads per month, ${latest} against the years before`,
+            `Annonser per månad, ${latest} mot åren innan`,
+          )}
+          subtitle={l(
+            `New ads per month, ${scope}, ${latest} darker`,
+            `Nya annonser per månad, ${scope}, ${latest} mörkare`,
+          )}
+          source={source()}
+        >
+          <div className="jobb-chart-controls">
+            <Select
+              label={l('Months shown', 'Månader')}
+              value={view.period}
+              options={[
+                { value: '24', label: l('Last 24', 'Senaste 24') },
+                { value: '36', label: l('Last 36', 'Senaste 36') },
+                { value: 'alla', label: l('Since 2020', 'Sedan 2020') },
+              ]}
+              onChange={(period) => setView({ period })}
+            />
+          </div>
+          <MonthColumns
+            months={shown}
+            highlight={`${latest}-01`}
+            label={l(
+              `New job ads per month, ${scope}: ${number(now)} in ${period}, ${signedPct(delta)} against the same months of ${previous}`,
+              `Nya jobbannonser per månad, ${scope}: ${number(now)} ${period}, ${signedPct(delta)} mot samma månader ${previous}`,
+            )}
+          />
+        </ChartSection>
+        <ProjectTech project="jobs" span={4} />
+      </DashGrid>
 
       <Interpretation
         notMeaning={l(
@@ -439,25 +463,27 @@ export default function Dashboard({
         </ChartSection>
       </ExploreSection>
 
-      <MethodSummary
-        lineage={[
-          'JobTech',
-          l('Python ingestion', 'inläsning i Python'),
-          'dbt + DuckDB',
-          'JSON',
-          'React',
-        ]}
-        quality={l(
-          'Job ads are a proxy for demand, not the entire labour market. Every archive counted is recorded with its SHA-256, and months are only compared when complete.',
-          'Jobbannonser är ett mått på efterfrågan, inte hela arbetsmarknaden. Varje räknat arkiv registreras med sin SHA-256, och månader jämförs bara när de är kompletta.',
-        )}
-        more={[
-          {
-            href: '#jobb-kallor',
-            label: l('Sources and method', 'Källor och metod'),
-          },
-        ]}
-      />
+      <ProjectDepth project="jobs">
+        <MethodSummary
+          lineage={[
+            'JobTech',
+            l('Python ingestion', 'inläsning i Python'),
+            'dbt + DuckDB',
+            'JSON',
+            'React',
+          ]}
+          quality={l(
+            'Job ads are a proxy for demand, not the entire labour market. Every archive counted is recorded with its SHA-256, and months are only compared when complete.',
+            'Jobbannonser är ett mått på efterfrågan, inte hela arbetsmarknaden. Varje räknat arkiv registreras med sin SHA-256, och månader jämförs bara när de är kompletta.',
+          )}
+          more={[
+            {
+              href: '#jobb-kallor',
+              label: l('Sources and method', 'Källor och metod'),
+            },
+          ]}
+        />
+      </ProjectDepth>
     </div>
   )
 }

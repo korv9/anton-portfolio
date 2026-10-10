@@ -1,4 +1,7 @@
 import TopicNav from '../TopicNav'
+import { ProjectDepth } from '../projects/ProjectStructure'
+import ProjectTech from '../projects/ProjectTech'
+import { KpiRow, DashGrid } from '../ui/dash/Dash'
 import { TraceResult } from '../ui/Trace'
 import CountyMultiples from './CountyMultiples'
 import {
@@ -204,10 +207,39 @@ export default function WelfarePage({ view }: { view: string }) {
         </>
       )}
       {error && <p role="alert">{error}</p>}
+      {indicators.length > 0 && (
+        <KpiRow
+          items={[
+            {
+              label: l('Indicators', 'Indikatorer'),
+              value: indicators.length.toLocaleString(l('en-GB', 'sv-SE')),
+              note: l('In the published dataset', 'I publicerad data'),
+            },
+            {
+              label: l('Sources', 'Källor'),
+              value: new Set(
+                indicators.map((i) => i.source_key),
+              ).size.toLocaleString(l('en-GB', 'sv-SE')),
+            },
+            {
+              label: l('Counties', 'Län'),
+              value: new Set(
+                counties.map((c) => c.region_code),
+              ).size.toLocaleString(l('en-GB', 'sv-SE')),
+              note: l('In the county comparison', 'I länsjämförelsen'),
+            },
+          ]}
+        />
+      )}
 
       {view === '#sweden' && (
         <section className="report welfare-section welfare-main">
-          <CountyMultiples rows={counties} />
+          <DashGrid>
+            <div className="welfare-chart-card">
+              <CountyMultiples rows={counties} />
+            </div>
+            <ProjectTech project="welfare" span={4} />
+          </DashGrid>
           <Interpretation
             notMeaning={l(
               'A county with high values on several measures is not shown to be worse off because of one thing: counties differ in age structure, industry and much else, and unemployment carries a margin of about ±1–2 points per county.',
@@ -452,8 +484,9 @@ export default function WelfarePage({ view }: { view: string }) {
           )}
         </section>
       )}
+      {view !== '#sweden' && <ProjectTech project="welfare" />}
       {view === '#sweden' && (
-        <div className="report">
+        <ProjectDepth project="welfare">
           <ExploreSection
             id="welfare-quality"
             title={l('Data quality', 'Datakvalitet')}
@@ -487,7 +520,7 @@ export default function WelfarePage({ view }: { view: string }) {
               },
             ]}
           />
-        </div>
+        </ProjectDepth>
       )}
     </div>
   )

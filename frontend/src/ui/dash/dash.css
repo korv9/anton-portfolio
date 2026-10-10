@@ -4,12 +4,15 @@
  * 1440 × 900 screen.
  */
 .dk {
-  --dk-gap: 14px;
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--dk-gap);
-  padding: clamp(16px, 1.6vw, 28px);
+  padding: var(--dashboard-gutter);
   background: var(--page);
   color: var(--ink);
+}
+.dk > * {
+  min-width: 0;
 }
 
 /* ---------- Header ---------- */

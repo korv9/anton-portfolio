@@ -4,6 +4,10 @@
  */
 import { useMemo, useState } from 'react'
 import { l } from '../i18n'
+import { ProjectDepth } from '../projects/ProjectStructure'
+import ProjectTech from '../projects/ProjectTech'
+import { DashGrid, ChartCard } from '../ui/dash/Dash'
+import RankBars from '../charts/RankBars'
 import { ProductQuality } from '../quality/QualityPanel'
 import {
   articleOrder,
@@ -52,6 +56,30 @@ export function Overview({ data, today }: View) {
   )
   return (
     <>
+      <DashGrid>
+        <ChartCard
+          span={8}
+          title={l('Obligations by role', 'Skyldigheter per aktör')}
+          sub={l(
+            'Number of obligations in the published model; an obligation can apply to several roles.',
+            'Antal skyldigheter i den publicerade modellen; en skyldighet kan beröra flera aktörer.',
+          )}
+        >
+          <RankBars
+            rows={operators
+              .map((a) => ({
+                key: a.actor_id,
+                label: l(a.label_en, a.label_sv),
+                value: data.obligations.filter((o) => o.actor_id === a.actor_id)
+                  .length,
+              }))
+              .sort((a, b) => b.value - a.value)}
+            format={(v) => v.toLocaleString(l('en-GB', 'sv-SE'))}
+            label={l('Obligations by role', 'Skyldigheter per aktör')}
+          />
+        </ChartCard>
+        <ProjectTech project="ai-act" span={4} />
+      </DashGrid>
       <section className="aa-now" aria-labelledby="aa-today-q">
         <DataQuestion
           id="aa-today-q"
@@ -261,88 +289,90 @@ export function Overview({ data, today }: View) {
         <Snapshot data={data} today={today} />
       </section>
 
-      <ExploreSection
-        id="aa-about"
-        title={l('About the Act', 'Om förordningen')}
-        summary={l(
-          'What the regulation is, how it scales by risk, the latest guidance and the amendment.',
-          'Vad förordningen är, hur den skalar efter risk, den senaste vägledningen och ändringen.',
-        )}
-      >
-        <p className="aa-lede">
-          {l(
-            `Regulation (EU) 2024/1689 sets rules for AI systems and general-purpose AI models placed on the EU market, scaled by risk: ${counts.articles} articles and ${counts.annexes} annexes in the current consolidated text.`,
-            `Förordning (EU) 2024/1689 ställer krav på AI-system och AI-modeller för allmänna ändamål på EU-marknaden, efter risk: ${counts.articles} artiklar och ${counts.annexes} bilagor i den gällande konsoliderade texten.`,
-          )}{' '}
-          <a href="#ai-act-risk">{l('Risk classes', 'Riskklasser')}</a>
-        </p>
-        {latestGuidance && (
-          <p>
-            {l('Latest guidance', 'Senaste vägledning')}:{' '}
-            {fmtDate(latestGuidance.published_at)}, {latestGuidance.title}{' '}
-            <Source href={latestGuidance.source_url}>
-              {l('Commission', 'Kommissionen')}
-            </Source>
+      <ProjectDepth project="ai-act">
+        <ExploreSection
+          id="aa-about"
+          title={l('About the Act', 'Om förordningen')}
+          summary={l(
+            'What the regulation is, how it scales by risk, the latest guidance and the amendment.',
+            'Vad förordningen är, hur den skalar efter risk, den senaste vägledningen och ändringen.',
+          )}
+        >
+          <p className="aa-lede">
+            {l(
+              `Regulation (EU) 2024/1689 sets rules for AI systems and general-purpose AI models placed on the EU market, scaled by risk: ${counts.articles} articles and ${counts.annexes} annexes in the current consolidated text.`,
+              `Förordning (EU) 2024/1689 ställer krav på AI-system och AI-modeller för allmänna ändamål på EU-marknaden, efter risk: ${counts.articles} artiklar och ${counts.annexes} bilagor i den gällande konsoliderade texten.`,
+            )}{' '}
+            <a href="#ai-act-risk">{l('Risk classes', 'Riskklasser')}</a>
           </p>
-        )}
-        <AmendmentNote data={data} />
-      </ExploreSection>
+          {latestGuidance && (
+            <p>
+              {l('Latest guidance', 'Senaste vägledning')}:{' '}
+              {fmtDate(latestGuidance.published_at)}, {latestGuidance.title}{' '}
+              <Source href={latestGuidance.source_url}>
+                {l('Commission', 'Kommissionen')}
+              </Source>
+            </p>
+          )}
+          <AmendmentNote data={data} />
+        </ExploreSection>
 
-      <QualityBrief
-        rows={[
-          [
-            l('Accuracy', 'Riktighet'),
-            l(
-              'Every quoted sentence is tested to appear verbatim in the official text.',
-              'Varje citerad mening testas mot att den finns ordagrant i den officiella texten.',
-            ),
-          ],
-          [
-            l('Currentness', 'Aktualitet'),
-            l(
-              `The consolidated text of ${fmtDate(data.summary.current_version.published_at)}${data.summary.latest_retrieval ? `, last checked ${fmtDate(data.summary.latest_retrieval)}` : ''}.`,
-              `Den konsoliderade texten från ${fmtDate(data.summary.current_version.published_at)}${data.summary.latest_retrieval ? `, senast kontrollerad ${fmtDate(data.summary.latest_retrieval)}` : ''}.`,
-            ),
-          ],
-          [
-            l('Traceability', 'Spårbarhet'),
-            l(
-              `Each of the ${counts.obligations} obligations links to the article and sentence that sets it.`,
-              `Var och en av de ${counts.obligations} skyldigheterna länkar till artikeln och meningen som anger den.`,
-            ),
-          ],
-          [
-            l('Validity', 'Validitet'),
-            l(
-              'The navigator points to what may be relevant; it is not a legal classification.',
-              'Navigatorn pekar på vad som kan vara relevant; den är ingen juridisk klassificering.',
-            ),
-          ],
-        ]}
-      />
+        <QualityBrief
+          rows={[
+            [
+              l('Accuracy', 'Riktighet'),
+              l(
+                'Every quoted sentence is tested to appear verbatim in the official text.',
+                'Varje citerad mening testas mot att den finns ordagrant i den officiella texten.',
+              ),
+            ],
+            [
+              l('Currentness', 'Aktualitet'),
+              l(
+                `The consolidated text of ${fmtDate(data.summary.current_version.published_at)}${data.summary.latest_retrieval ? `, last checked ${fmtDate(data.summary.latest_retrieval)}` : ''}.`,
+                `Den konsoliderade texten från ${fmtDate(data.summary.current_version.published_at)}${data.summary.latest_retrieval ? `, senast kontrollerad ${fmtDate(data.summary.latest_retrieval)}` : ''}.`,
+              ),
+            ],
+            [
+              l('Traceability', 'Spårbarhet'),
+              l(
+                `Each of the ${counts.obligations} obligations links to the article and sentence that sets it.`,
+                `Var och en av de ${counts.obligations} skyldigheterna länkar till artikeln och meningen som anger den.`,
+              ),
+            ],
+            [
+              l('Validity', 'Validitet'),
+              l(
+                'The navigator points to what may be relevant; it is not a legal classification.',
+                'Navigatorn pekar på vad som kan vara relevant; den är ingen juridisk klassificering.',
+              ),
+            ],
+          ]}
+        />
 
-      <MethodSummary
-        lineage={[
-          l(
-            'EU Publications Office (EN, SV)',
-            'EU:s publikationsbyrå (EN, SV)',
-          ),
-          l('Python ingestion', 'inläsning i Python'),
-          'dbt + DuckDB',
-          'JSON',
-          'React',
-        ]}
-        quality={l(
-          'Derived obligations remain traceable to the official source text: every quote is tested to appear verbatim in the Act, and interpretations are marked as such.',
-          'Härledda skyldigheter går att spåra till den officiella källtexten: varje citat testas mot att det finns ordagrant i lagen, och tolkningar är markerade som tolkningar.',
-        )}
-        more={[
-          {
-            href: '#ai-act-sources',
-            label: l('Sources and method', 'Källor och metod'),
-          },
-        ]}
-      />
+        <MethodSummary
+          lineage={[
+            l(
+              'EU Publications Office (EN, SV)',
+              'EU:s publikationsbyrå (EN, SV)',
+            ),
+            l('Python ingestion', 'inläsning i Python'),
+            'dbt + DuckDB',
+            'JSON',
+            'React',
+          ]}
+          quality={l(
+            'Derived obligations remain traceable to the official source text: every quote is tested to appear verbatim in the Act, and interpretations are marked as such.',
+            'Härledda skyldigheter går att spåra till den officiella källtexten: varje citat testas mot att det finns ordagrant i lagen, och tolkningar är markerade som tolkningar.',
+          )}
+          more={[
+            {
+              href: '#ai-act-sources',
+              label: l('Sources and method', 'Källor och metod'),
+            },
+          ]}
+        />
+      </ProjectDepth>
     </>
   )
 }

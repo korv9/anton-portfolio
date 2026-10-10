@@ -9,7 +9,7 @@
  * text influenced another. Only reviewed Symbolic Atlas clusters may be tied to a concept, and
  * there are none yet, so the stories section says so.
  */
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { l } from '../i18n'
 import type { Route } from '../router'
 import { useViewParams } from '../politik/useViewParams'
@@ -86,7 +86,15 @@ function Relation({ type, status }: { type: string; status: string }) {
   )
 }
 
-export default function Journey({ route, data }: { route: Route; data: Data }) {
+export default function Journey({
+  route,
+  data,
+  metrics,
+}: {
+  route: Route
+  data: Data
+  metrics?: ReactNode
+}) {
   const [params, set] = useViewParams(route, DEFAULTS)
   const [passages, setPassages] = useState<Record<
     string,
@@ -170,6 +178,7 @@ export default function Journey({ route, data }: { route: Route; data: Data }) {
             )}
           </p>
         </ProjectHero>
+        {metrics}
       </div>
 
       <div className="cc-body ds-container cj-body">

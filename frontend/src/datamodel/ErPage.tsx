@@ -776,10 +776,17 @@ export default function ErPage({ route }: { route: Route }) {
               ))}
             </div>
             {domain === 'oversikt' ? (
-              <Overview
-                er={er}
-                onOpen={(d) => setView({ omrade: d, tabell: '' })}
-              />
+              <div
+                className="er-overview-scroll"
+                tabIndex={0}
+                role="region"
+                aria-label={l('Subject areas diagram', 'Områdesdiagram')}
+              >
+                <Overview
+                  er={er}
+                  onOpen={(d) => setView({ omrade: d, tabell: '' })}
+                />
+              </div>
             ) : (
               <DomainDiagram
                 er={er}

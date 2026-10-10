@@ -5,9 +5,9 @@
 .project-hero {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  min-height: calc(72svh - var(--header-h, 57px));
-  padding-block: var(--sp-6) var(--sp-5);
+  justify-content: flex-start;
+  min-height: 0;
+  padding-block: var(--sp-4);
   max-width: var(--layout-content);
 }
 .project-hero.plate {
@@ -31,23 +31,22 @@
 }
 .project-hero .project-hero-title {
   margin: 0 0 var(--sp-3);
-  font-size: var(--fs-lg);
+  font-size: var(--dashboard-title);
   font-weight: var(--weight-heading);
   letter-spacing: 0.01em;
-  text-transform: uppercase;
+  text-transform: none;
 }
 .project-hero .project-hero-question {
-  max-width: 22ch;
-  margin: 0 0 var(--sp-5);
-  font-size: var(--h1);
-  font-weight: var(--weight-heading);
-  letter-spacing: -0.035em;
-  line-height: 1.02;
+  max-width: var(--measure);
+  margin: 0 0 var(--sp-3);
+  font-size: var(--body-large);
+  font-weight: var(--weight-ui);
+  line-height: 1.45;
 }
 .project-hero-summary {
   max-width: var(--layout-reading);
   color: var(--ink-2);
-  font-size: var(--body-large);
+  font-size: var(--small);
   line-height: 1.5;
 }
 .project-hero-summary > * {
@@ -66,7 +65,7 @@
   line-height: 1.45;
 }
 .project-hero .project-subnav {
-  margin-top: var(--sp-6);
+  margin-top: var(--sp-3);
 }
 
 /* The short row of links into a project: plain links, sideways scroll on a phone. */
@@ -112,6 +111,6 @@
     padding-block: var(--sp-5);
   }
   .project-hero .project-hero-question {
-    font-size: clamp(1.9rem, 8vw, 2.6rem);
+    font-size: var(--body-large);
   }
 }

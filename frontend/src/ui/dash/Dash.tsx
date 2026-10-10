@@ -64,9 +64,15 @@ export function DashHeader({
 
 export type Kpi = { label: string; value: string; note?: string }
 
-export function KpiRow({ items }: { items: Kpi[] }) {
+export function KpiRow({
+  items,
+  className,
+}: {
+  items: Kpi[]
+  className?: string
+}) {
   return (
-    <dl className="dk-kpis">
+    <dl className={`dk-kpis${className ? ` ${className}` : ''}`}>
       {items.slice(0, 3).map((k) => (
         <div key={k.label} className="dk-kpi">
           <dt>{k.label}</dt>

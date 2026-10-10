@@ -5,13 +5,15 @@
  * line in the constellation has an explicit type, drawn in its own style, and every element is
  * marked as source, derived or interpretation. Experimental.
  */
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { l } from '../i18n'
 import { ProductQuality } from '../quality/QualityPanel'
 import type { Route } from '../router'
 import { fetchData } from '../dataSource'
 import Journey from './Journey'
 import { ProjectHero } from '../ui/Project'
+import ProjectTech from '../projects/ProjectTech'
+import { KpiRow } from '../ui/dash/Dash'
 import { useViewParams } from '../politik/useViewParams'
 import {
   CORPUS_ORDER,
@@ -117,20 +119,55 @@ export default function ConceptConstellationPage({ route }: { route: Route }) {
     return <p className="cc-body ds-container">{l('Loading…', 'Laddar…')}</p>
   const concept = conceptFromPath(route.path)
   const known = data.summary.concepts.find((c) => c.concept_id === concept)
+  const metrics = (
+    <KpiRow
+      items={[
+        {
+          label: l('Concepts', 'Begrepp'),
+          value: data.summary.concepts.length.toLocaleString(
+            l('en-GB', 'sv-SE'),
+          ),
+        },
+        {
+          label: l('Corpora', 'Korpusar'),
+          value: data.summary.corpora.length.toLocaleString(
+            l('en-GB', 'sv-SE'),
+          ),
+        },
+        {
+          label: l('Text passages', 'Textpassager'),
+          value: Object.values(data.summary.run.chunks)
+            .reduce((a, b) => a + b, 0)
+            .toLocaleString(l('en-GB', 'sv-SE')),
+        },
+      ]}
+    />
+  )
   return (
     <div className="concepts">
       {route.path === '#concept-journey' ? (
-        <Journey route={route} data={data} />
+        <Journey route={route} data={data} metrics={metrics} />
       ) : known ? (
         <ConceptPage data={data} concept={known} />
       ) : (
-        <Constellation route={route} data={data} />
+        <Constellation route={route} data={data} metrics={metrics} />
       )}
+      <div className="ds-container">
+        <ProjectTech project="concept-constellation" />
+      </div>
     </div>
   )
 }
 
-function Constellation({ route, data }: { route: Route; data: Data }) {
+function Constellation({
+  route,
+  data,
+  metrics,
+}: {
+  route: Route
+  data: Data
+  metrics?: ReactNode
+}) {
   const [params, set] = useViewParams(route, DEFAULTS)
   const { summary, profiles, relations } = data
   const shown = new Set(params.visa.split(',').filter(Boolean))
@@ -179,6 +216,7 @@ function Constellation({ route, data }: { route: Route; data: Data }) {
             )}
           </p>
         </ProjectHero>
+        {metrics}
       </div>
       <div className="cc-body ds-container">
         <section className="cj-start" aria-labelledby="cj-start-title">

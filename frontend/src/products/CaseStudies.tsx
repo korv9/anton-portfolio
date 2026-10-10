@@ -1,6 +1,9 @@
 /** Project pages that are a single report: DrugComb, Allegoria, the degree project and Homie. */
 import { lazy } from 'react'
 import { l, t } from '../i18n'
+import { ProjectDepth } from '../projects/ProjectStructure'
+import ProjectTech from '../projects/ProjectTech'
+import { KpiRow } from '../ui/dash/Dash'
 import { Stage, StageBlock, StageFacts, StageTools } from '../ui/Stage'
 import ThesisSieve from './ThesisSieve'
 import HomieFlow from './HomieFlow'
@@ -59,6 +62,7 @@ export function AllegoriaPage() {
         </p>
       </div>
       <div className="reports">
+        <ProjectTech project="allegoria" />
         <RfcReport />
       </div>
     </div>
@@ -70,6 +74,30 @@ export function ThesisPage() {
     <div className="project-page">
       <Stage
         id="thesis-stage"
+        metrics={
+          <KpiRow
+            items={[
+              {
+                label: l('Production incidents', 'Produktionsincidenter'),
+                value: '21 000+',
+                note: l('Internal source data', 'Intern källdata'),
+              },
+              {
+                label: l('Clusters', 'Kluster'),
+                value: '121',
+                note: 'HDBSCAN',
+              },
+              {
+                label: l('Review candidates', 'Granskningskandidater'),
+                value: '72',
+                note: l(
+                  'Require domain validation',
+                  'Kräver verksamhetsvalidering',
+                ),
+              },
+            ]}
+          />
+        }
         level={1}
         kicker={l(
           'Degree project, Avtalat, 2026',
@@ -176,86 +204,91 @@ export function ThesisPage() {
           </>
         }
       />
-      <div className="featured-projects">
-        <div className="project-grid">
-          <article className="thesis-card" id="thesis">
-            <div className="project-card-head">
-              <span>
-                {l(
-                  'Degree project, Avtalat, 2026',
-                  'Examensarbete, Avtalat, 2026',
-                )}
-              </span>
-              <strong>{t('Primary case study')}</strong>
-            </div>
-            <h3>{t('Finding review candidates in incident data')}</h3>
-            <p>
-              {t(
-                'Built a privacy-aware Azure Databricks workflow for data quality assessment and NLP clustering. The goal was to surface groups of similar incidents for manual review, without presenting clusters as proven root causes.',
-              )}
-            </p>
-            <div className="thesis-kpis">
-              <div>
-                <strong>21,000+</strong>
+      <ProjectTech project="thesis" />
+      <ProjectDepth project="thesis">
+        <div className="featured-projects">
+          <div className="project-grid">
+            <article className="thesis-card" id="thesis">
+              <div className="project-card-head">
                 <span>
-                  {l('production incidents', 'produktionsincidenter')}
+                  {l(
+                    'Degree project, Avtalat, 2026',
+                    'Examensarbete, Avtalat, 2026',
+                  )}
                 </span>
+                <strong>{t('Primary case study')}</strong>
               </div>
-              <div>
-                <strong>121</strong>
-                <span>{t('clusters found')}</span>
-              </div>
-              <div>
-                <strong>72</strong>
-                <span>{t('without an existing problem link')}</span>
-              </div>
-              <div>
-                <strong>0.706</strong>
-                <span>{t('best reported silhouette')}</span>
-              </div>
-            </div>
-            <div className="thesis-findings">
-              <div>
-                <span>01</span>
-                <p>
-                  <strong>{t('Data quality shaped the pipeline.')}</strong>{' '}
-                  {t(
-                    'Selected ISO/IEC 25012 dimensions were assessed before the modelling stage.',
-                  )}
-                </p>
-              </div>
-              <div>
-                <span>02</span>
-                <p>
-                  <strong>
-                    {t('HDBSCAN produced the stronger internal separation.')}
-                  </strong>{' '}
-                  {t(
-                    'The reported silhouette was 0.706, compared with 0.534 for KMeans.',
-                  )}
-                </p>
-              </div>
-              <div>
-                <span>03</span>
-                <p>
-                  <strong>{t('72 clusters became review candidates.')}</strong>{' '}
-                  {t(
-                    'They lacked an existing problem link, but require domain validation before any root-cause claim.',
-                  )}
-                </p>
-              </div>
-            </div>
-            <details>
-              <summary>{t('Pipeline & limitations')}</summary>
+              <h3>{t('Finding review candidates in incident data')}</h3>
               <p>
                 {t(
-                  'Presidio for PII, multilingual sentence embeddings, UMAP to 10 dimensions, HDBSCAN and MLflow. Internal clustering metrics do not replace business validation, and no internal incident text or employer raw data is published here.',
+                  'Built a privacy-aware Azure Databricks workflow for data quality assessment and NLP clustering. The goal was to surface groups of similar incidents for manual review, without presenting clusters as proven root causes.',
                 )}
               </p>
-            </details>
-          </article>
+              <div className="thesis-kpis">
+                <div>
+                  <strong>21,000+</strong>
+                  <span>
+                    {l('production incidents', 'produktionsincidenter')}
+                  </span>
+                </div>
+                <div>
+                  <strong>121</strong>
+                  <span>{t('clusters found')}</span>
+                </div>
+                <div>
+                  <strong>72</strong>
+                  <span>{t('without an existing problem link')}</span>
+                </div>
+                <div>
+                  <strong>0.706</strong>
+                  <span>{t('best reported silhouette')}</span>
+                </div>
+              </div>
+              <div className="thesis-findings">
+                <div>
+                  <span>01</span>
+                  <p>
+                    <strong>{t('Data quality shaped the pipeline.')}</strong>{' '}
+                    {t(
+                      'Selected ISO/IEC 25012 dimensions were assessed before the modelling stage.',
+                    )}
+                  </p>
+                </div>
+                <div>
+                  <span>02</span>
+                  <p>
+                    <strong>
+                      {t('HDBSCAN produced the stronger internal separation.')}
+                    </strong>{' '}
+                    {t(
+                      'The reported silhouette was 0.706, compared with 0.534 for KMeans.',
+                    )}
+                  </p>
+                </div>
+                <div>
+                  <span>03</span>
+                  <p>
+                    <strong>
+                      {t('72 clusters became review candidates.')}
+                    </strong>{' '}
+                    {t(
+                      'They lacked an existing problem link, but require domain validation before any root-cause claim.',
+                    )}
+                  </p>
+                </div>
+              </div>
+              <details>
+                <summary>{t('Pipeline & limitations')}</summary>
+                <p>
+                  {t(
+                    'Presidio for PII, multilingual sentence embeddings, UMAP to 10 dimensions, HDBSCAN and MLflow. Internal clustering metrics do not replace business validation, and no internal incident text or employer raw data is published here.',
+                  )}
+                </p>
+              </details>
+            </article>
+          </div>
         </div>
-      </div>
+      </ProjectDepth>
     </div>
   )
 }
@@ -265,6 +298,21 @@ export function HomiePage() {
     <div className="project-page">
       <Stage
         id="homie-stage"
+        metrics={
+          <KpiRow
+            items={[
+              {
+                label: l('Implemented route groups', 'Klara ruttgrupper'),
+                value: '3',
+              },
+              {
+                label: l('Documented stubs', 'Dokumenterade stubbar'),
+                value: '4',
+                note: l('Preview responses', 'Förhandsvisningssvar'),
+              },
+            ]}
+          />
+        }
         level={1}
         kicker={l('Homie API, work in progress', 'Homie API, pågående')}
         title={l(
@@ -346,7 +394,10 @@ export function HomiePage() {
         }
       />
       <div className="reports">
-        <HomieProject />
+        <ProjectTech project="homie" />
+        <ProjectDepth project="homie">
+          <HomieProject />
+        </ProjectDepth>
       </div>
     </div>
   )

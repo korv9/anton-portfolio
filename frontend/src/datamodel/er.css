@@ -16,6 +16,17 @@
   gap: 1rem;
   min-width: 0;
 }
+.er-overview-scroll {
+  min-width: 0;
+  max-width: 100%;
+  overflow: auto;
+  border: 1px solid var(--stage-rule);
+  border-radius: var(--radius);
+  background: var(--paper-strong);
+}
+.er-overview-scroll .er-overview {
+  min-width: 900px;
+}
 .er-tabs {
   display: flex;
   flex-wrap: wrap;

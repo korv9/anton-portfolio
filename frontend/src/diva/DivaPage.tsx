@@ -7,6 +7,9 @@
  */
 import { useEffect, useMemo, useState } from 'react'
 import { l } from '../i18n'
+import { ProjectDepth } from '../projects/ProjectStructure'
+import ProjectTech from '../projects/ProjectTech'
+import { KpiRow } from '../ui/dash/Dash'
 import { fixed } from '../format'
 import { fetchData } from '../dataSource'
 import { Stage, StageBlock, StageFacts, StageTools } from '../ui/Stage'
@@ -186,6 +189,22 @@ export default function DivaPage() {
       {data ? (
         <Stage
           id="diva-map"
+          metrics={
+            <KpiRow
+              items={[
+                { label: l('Theses', 'Uppsatser'), value: num(data.theses) },
+                {
+                  label: l('Topic clusters', 'Ämneskluster'),
+                  value: num(data.k),
+                },
+                {
+                  label: l('Vocabulary', 'Ordförråd'),
+                  value: num(data.vocabulary),
+                  note: 'TF-IDF',
+                },
+              ]}
+            />
+          }
           level={1}
           kicker={l('DiVA, topic clustering', 'DiVA, ämnesklustring')}
           title={l(
@@ -199,7 +218,6 @@ export default function DivaPage() {
           figure={<ThesisMap data={data} />}
           left={
             <>
-              {method}
               <StageBlock title={l('Model', 'Modell')}>
                 <StageFacts
                   rows={[
@@ -241,8 +259,24 @@ export default function DivaPage() {
             'The harvest has not run yet, so there are no clusters to show. The pipeline is ready: run the “Harvest DiVA theses” workflow and this page fills in.',
             'Hämtningen har inte körts än, så det finns inga kluster att visa. Pipelinen är klar: kör arbetsflödet ”Harvest DiVA theses” så fylls sidan i.',
           )}
-          figure={<div className="diva-empty" aria-hidden="true" />}
-          left={method}
+          figure={
+            <p className="dk-empty">
+              {l(
+                'No published clusters yet.',
+                'Inga publicerade kluster ännu.',
+              )}
+            </p>
+          }
+          left={
+            <StageBlock title={l('Status', 'Status')}>
+              <p>
+                {l(
+                  'No published clusters yet.',
+                  'Inga publicerade kluster ännu.',
+                )}
+              </p>
+            </StageBlock>
+          }
           right={
             <StageBlock title={l('Tools', 'Verktyg')}>
               <StageTools
@@ -260,6 +294,8 @@ export default function DivaPage() {
           }
         />
       )}
+      <ProjectTech project="diva" />
+      <ProjectDepth project="diva">{method}</ProjectDepth>
     </div>
   )
 }

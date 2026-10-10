@@ -4,6 +4,7 @@ import { useRoute } from './router'
 import { pageTitle, ProjectContext, ProjectPager } from './site/Header'
 import Sidebar from './site/Sidebar'
 import HomePage from './home/HomePage'
+import ProjectStructure from './projects/ProjectStructure'
 import { PageBoundary } from './site/PageBoundary'
 import './site/site.css'
 
@@ -39,6 +40,7 @@ const ThesisPage = lazy(() =>
   import('./products/CaseStudies').then((m) => ({ default: m.ThesisPage })),
 )
 const DivaPage = lazy(() => import('./diva/DivaPage'))
+const StudyProject = lazy(() => import('./projects/StudyProject'))
 const HomiePage = lazy(() =>
   import('./products/CaseStudies').then((m) => ({ default: m.HomiePage })),
 )
@@ -89,41 +91,48 @@ export default function App() {
       <main id="main" tabIndex={-1} key={language}>
         <ProjectContext route={route} />
         <PageBoundary key={page}>
-          <Suspense
-            fallback={
-              <p className="theme-loading ds-container" role="status">
-                {l('Loading…', 'Laddar…')}
-              </p>
-            }
-          >
-            {page === 'home' && <HomePage path={path} />}
-            {page === 'politik' && <PoliticsProduct route={route} />}
-            {page === 'jobs' &&
-              (['#job-market-tech', '#job-data'].includes(path) ? (
-                <TechReport />
-              ) : (
-                <JobsProduct route={route} />
-              ))}
-            {page === 'welfare' && <WelfarePage view={path} />}
-            {page === 'datamodel' && <DataModelPage view={path} />}
-            {page === 'er' && <ErPage route={route} />}
-            {page === 'symbolic' && <SymbolicAtlasPage route={route} />}
-            {page === 'constellation' && (
-              <DataConstellationPage route={route} />
-            )}
-            {page === 'catalogue' && <CataloguePage />}
-            {page === 'lineage' && <IdeaLineagePage />}
-            {page === 'clusters' && <ClusterVisualsPage />}
-            {page === 'aiact' && <AiActProduct route={route} />}
-            {page === 'philosophy' && <PhilosophyAtlasPage route={route} />}
-            {page === 'concepts' && <ConceptConstellationPage route={route} />}
-            {page === 'quality' && <QualityPage route={route} />}
-            {page === 'drugcomb' && <DrugCombPage />}
-            {page === 'allegoria' && <AllegoriaPage />}
-            {page === 'thesis' && <ThesisPage />}
-            {page === 'homie' && <HomiePage />}
-            {page === 'diva' && <DivaPage />}
-          </Suspense>
+          <ProjectStructure route={route}>
+            <Suspense
+              fallback={
+                <p className="theme-loading ds-container" role="status">
+                  {l('Loading…', 'Laddar…')}
+                </p>
+              }
+            >
+              {page === 'home' && <HomePage path={path} />}
+              {page === 'politik' && <PoliticsProduct route={route} />}
+              {page === 'jobs' &&
+                (['#job-market-tech', '#job-data'].includes(path) ? (
+                  <TechReport />
+                ) : (
+                  <JobsProduct route={route} />
+                ))}
+              {page === 'welfare' && <WelfarePage view={path} />}
+              {page === 'datamodel' && <DataModelPage view={path} />}
+              {page === 'er' && <ErPage route={route} />}
+              {page === 'symbolic' && <SymbolicAtlasPage route={route} />}
+              {page === 'constellation' && (
+                <DataConstellationPage route={route} />
+              )}
+              {page === 'catalogue' && <CataloguePage />}
+              {page === 'lineage' && <IdeaLineagePage />}
+              {page === 'clusters' && <ClusterVisualsPage />}
+              {page === 'aiact' && <AiActProduct route={route} />}
+              {page === 'philosophy' && <PhilosophyAtlasPage route={route} />}
+              {page === 'concepts' && (
+                <ConceptConstellationPage route={route} />
+              )}
+              {page === 'quality' && <QualityPage route={route} />}
+              {page === 'drugcomb' && <DrugCombPage />}
+              {page === 'allegoria' && <AllegoriaPage />}
+              {page === 'thesis' && <ThesisPage />}
+              {page === 'homie' && <HomiePage />}
+              {page === 'diva' && <DivaPage />}
+              {(page === 'rag' || page === 'mimii') && (
+                <StudyProject id={page} />
+              )}
+            </Suspense>
+          </ProjectStructure>
         </PageBoundary>
         <ProjectPager route={route} />
       </main>
