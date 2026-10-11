@@ -63,7 +63,6 @@ type Member = {
   constituency: string
   gender: string
   born: number | null
-  photo: string
   on_leave: boolean
   committees: string[]
   party_posts: string[]
@@ -625,8 +624,8 @@ function PartyDashboard({ party, shared }: { party: string; shared: Shared }) {
           wide
           title={l('The members', 'Ledamöterna')}
           meta={l(
-            `${members.length} members of the Riksdag by constituency, the list of people, ${dayName(index.sources.members.as_of)}`,
-            `${members.length} riksdagsledamöter efter valkrets, riksdagens personlista, ${dayName(index.sources.members.as_of)}`,
+            `${members.length} members of the Riksdag, the list of people, ${dayName(index.sources.members.as_of)}`,
+            `${members.length} riksdagsledamöter, riksdagens personlista, ${dayName(index.sources.members.as_of)}`,
           )}
         >
           {profile ? (
@@ -634,37 +633,7 @@ function PartyDashboard({ party, shared }: { party: string; shared: Shared }) {
               {members.map((m) => (
                 <li key={m.url}>
                   <a href={m.url} target="_blank" rel="noreferrer">
-                    {m.photo && (
-                      <img
-                        src={m.photo}
-                        alt=""
-                        loading="lazy"
-                        width={40}
-                        height={53}
-                        onError={(e) =>
-                          (e.currentTarget.style.visibility = 'hidden')
-                        }
-                      />
-                    )}
-                    <span>
-                      <b>{m.name}</b>
-                      <small>{m.constituency}</small>
-                      {(m.party_posts.length > 0 ||
-                        m.minister ||
-                        m.on_leave) && (
-                        <small className="party-member-role">
-                          {[
-                            ...m.party_posts,
-                            m.minister,
-                            m.on_leave && !m.minister
-                              ? l('on leave', 'tjänstledig')
-                              : null,
-                          ]
-                            .filter(Boolean)
-                            .join(', ')}
-                        </small>
-                      )}
-                    </span>
+                    {m.name}
                   </a>
                 </li>
               ))}

@@ -79,55 +79,79 @@ AMOUNTS_PAGES = {
 }
 
 
-def rowstore_pages(http, dataset: str, target: str, filters: dict) -> int:
+def rowstore_pages(http, dataset: str, target: str, filters: dict,
+                   max_age_days: float = 0) -> int:
     """Every page of a rowstore query, one file per page, stale pages removed."""
-    offset, index, paths = 0, 0, []
+    request = {"dataset": dataset, "filters": filters, "page_size": PAGE}
+    cached = rawstore.completed_paths("skatteverket", target, request, max_age_days)
+    if cached:
+        print(f"Reuse skatteverket/{target}: {len(cached)} complete pages", flush=True)
+        return json.loads(cached[0].read_text(encoding="utf-8"))["resultCount"]
+    rawstore.invalidate("skatteverket", target)
+    offset, index, paths, total = 0, 0, [], None
     while True:
         query = urllib.parse.urlencode({**filters, "_limit": PAGE, "_offset": offset})
         url = f"{ROWSTORE}/{dataset}/json?{query}"
         path = rawstore.fetch(http, "skatteverket", f"{target}-{index:03d}.json", url, pause=0.2)
         page = json.loads(path.read_text(encoding="utf-8"))
+        count = int(page["resultCount"])
+        if total is None:
+            total = count
+        if (count != total or not isinstance(page["results"], list)
+                or len(page["results"]) != min(PAGE, total - offset)):
+            raise ValueError(f"Incomplete or changing rowstore query: {target} at {offset}")
         paths.append(path)
         offset += PAGE
         index += 1
-        if offset >= page["resultCount"]:
+        if offset >= total:
             break
     directory = paths[0].parent
     prefix = Path(target).name
     for stale in set(directory.glob(f"{prefix}-*.json")) - set(paths):
         stale.unlink()
-    return page["resultCount"]
+    rawstore.complete("skatteverket", target, paths, request)
+    return total
+
+
+def validate_oecd(payload: bytes) -> None:
+    # HTTP 200 can still contain an API error instead of SDMX CSV.
+    lines = payload.split(b"\n", 2)
+    if len(lines) < 2 or b"OBS_VALUE" not in lines[0] or not lines[1].strip():
+        raise ValueError("Incomplete OECD CSV response")
+
+
+def validate_hut(payload: bytes) -> None:
+    table = json.loads(payload)
+    if not table.get("columns") or not table.get("data"):
+        raise ValueError("Incomplete HUT response")
 
 
 def main() -> None:
     http = rawstore.session()
     for name, url in (("revenue", REVENUE), ("taxing_wages", TAXING_WAGES)):
-        response = http.get(url, timeout=600)
-        response.raise_for_status()
-        rawstore.store("oecd", f"{name}.csv.gz", response.content, url=url)
-        print(f"oecd/{name}: {len(response.content) / 1e6:.1f} MB", flush=True)
+        path = rawstore.fetch(http, "oecd", f"{name}.csv.gz", url, timeout=600, max_age_days=7,
+                              validate=validate_oecd)
+        print(f"oecd/{name}: {path.stat().st_size / 1e6:.1f} MB stored", flush=True)
 
     rates = rowstore_pages(http, MUNICIPAL_RATES, "municipal_rates/part", {})
     print(f"skatteverket/municipal_rates: {rates:,} parish-year rows", flush=True)
 
     rawstore.fetch(http, "scb", "hut/hushallstyp-2021.json", SCB_HUT, method="POST",
-                   body=HUT_QUERY)
+                   body=HUT_QUERY, max_age_days=90, validate=validate_hut)
     print("scb/hut: household spending 2021", flush=True)
 
     for year, path in AMOUNTS_PAGES.items():
         rawstore.fetch(http, "skatteverket", f"amounts/{year}.html", SKATTEVERKET + path,
-                       pause=0.3)
+                       pause=0.3, max_age_days=90 if year < date.today().year else 0)
     print(f"skatteverket/amounts: {len(AMOUNTS_PAGES)} years", flush=True)
 
     # Every year Skatteverket publishes tables for, 2016 on: the calculator is tested
     # against each year's rules. A past year's tables do not change once stored.
     this_year = date.today().year
     for year in range(FIRST_TABLE_YEAR, this_year + 1):
-        stored = sorted((rawstore.RAW / "skatteverket" / "withholding").glob(f"{year}-*.json"))
-        if stored and year < this_year:
-            continue
         tables = rowstore_pages(http, WITHHOLDING_TABLES, f"withholding/{year}",
-                                {"år": str(year), "antal dgr": "30B"})
+                                {"år": str(year), "antal dgr": "30B"},
+                                max_age_days=90 if year < this_year else 0)
         print(f"skatteverket/withholding {year}: {tables:,} rows", flush=True)
 
 

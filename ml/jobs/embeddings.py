@@ -8,6 +8,30 @@ DEFAULT_MODEL = 'sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2'
 REPRESENTATION = 'token-chunks-mean-normalised-v1'
 
 
+def encode_text_batch(model, texts, batch_size=32):
+    """Token-length-weighted chunk means, shared with Cluster Lab."""
+    import numpy as np
+
+    tokenizer = model.tokenizer
+    chunk_size = max(16, model.max_seq_length - tokenizer.num_special_tokens_to_add())
+    chunks, owners, weights = [], [], []
+    for owner, text in enumerate(texts):
+        tokens = tokenizer.encode(text, add_special_tokens=False, truncation=False)
+        for start in range(0, max(1, len(tokens)), chunk_size):
+            part = tokens[start:start + chunk_size]
+            chunks.append(tokenizer.decode(part, skip_special_tokens=True))
+            owners.append(owner)
+            weights.append(max(1, len(part)))
+    vectors = model.encode(chunks, batch_size=batch_size, normalize_embeddings=True,
+                           show_progress_bar=False, convert_to_numpy=True)
+    output = []
+    for owner in range(len(texts)):
+        selected = np.flatnonzero(np.asarray(owners) == owner)
+        vector = np.average(vectors[selected], axis=0, weights=np.asarray(weights)[selected])
+        output.append(vector / max(np.linalg.norm(vector), 1e-12))
+    return np.asarray(output, dtype='float32')
+
+
 def embed(jobs, directory: Path, model_name=DEFAULT_MODEL, revision=None, batch_size=32):
     import numpy as np
     import pandas as pd

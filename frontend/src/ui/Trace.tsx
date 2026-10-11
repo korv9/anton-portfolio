@@ -98,15 +98,6 @@ export function TraceResult({
               </li>
             ))}
           </ol>
-          <a
-            className="trace-full"
-            href={`#data-constellation?view=lineage&node=${encodeURIComponent(node)}`}
-          >
-            {l(
-              'The full lineage in Data Constellation',
-              'Hela härkomsten i Data Constellation',
-            )}
-          </a>
         </>
       )}
     </details>

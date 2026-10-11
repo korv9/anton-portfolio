@@ -79,7 +79,7 @@
   padding: 0.3rem 0.4rem;
   border: 1px solid var(--stage-rule);
   border-radius: 4px;
-  background: var(--page);
+  background: var(--paper);
   color: var(--stage-ink);
   font: inherit;
 }

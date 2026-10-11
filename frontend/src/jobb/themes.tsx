@@ -9,7 +9,7 @@ import ThemeLayout from '../politik/ThemeLayout'
 import RankBars from '../charts/RankBars'
 import { Select } from '../politik/controls'
 import { useViewParams } from '../politik/useViewParams'
-import { EMPLOYMENT_EN, HOURS_EN } from '../jobs/JobMarketPage'
+import { EMPLOYMENT_EN, HOURS_EN } from '../jobs/market'
 import { HeatTable, MonthColumns, SmallMultiples } from './charts'
 import {
   change,

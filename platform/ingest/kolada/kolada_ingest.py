@@ -48,11 +48,28 @@ def main() -> None:
         written = []
         for block in blocks:
             url, page = f"{API}/data/kpi/{kpi}/year/{','.join(map(str, block))}", 1
+            request = {"url": url}
+            group = f"{kpi}/block-{block[0]}"
+            cached = rawstore.completed_paths(SOURCE, group, request,
+                                             90 if block[-1] < date.today().year - 1 else 0)
+            if cached:
+                written.extend(cached)
+                continue
+            rawstore.invalidate(SOURCE, group)
+            paths, seen = [], set()
             while url:
+                if url in seen:
+                    raise ValueError(f"Repeating Kolada page: {url}")
+                seen.add(url)
                 path = fetch(http, SOURCE, f"{kpi}/page-{block[0]}-{page:03d}.json", url, pause=0.3)
+                data = json.loads(path.read_text(encoding="utf-8"))
+                if not isinstance(data.get("values"), list):
+                    raise ValueError(f"Incomplete Kolada page: {url}")
                 written.append(path)
-                url = json.loads(path.read_text(encoding="utf-8")).get("next_url")
+                paths.append(path)
+                url = data.get("next_url")
                 page += 1
+            rawstore.complete(SOURCE, group, paths, request)
         for stale in set((rawstore.RAW / SOURCE / kpi).glob("page-*.json")) - set(written):
             stale.unlink()
         print(f"kolada/{kpi}: {len(written)} page(s)")

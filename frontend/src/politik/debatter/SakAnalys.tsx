@@ -7,14 +7,11 @@
  */
 import { useEffect, useMemo, useState } from 'react'
 import { l } from '../../i18n'
+import { DashHeader, DashGrid, KpiRow } from '../../ui/dash/Dash'
+import ProjectTech from '../../projects/ProjectTech'
 import { load } from '../../parliament/data'
 import type { Route } from '../../router'
-import {
-  PartyLogo,
-  RIKSDAG_PARTIES,
-  partyFill,
-  partyName,
-} from '../../parties/identity'
+import { RIKSDAG_PARTIES, partyFill, partyName } from '../../parties/identity'
 import { useParties } from '../partySelection'
 import { useViewParams } from '../useViewParams'
 import { num, pct } from '../controls'
@@ -33,7 +30,7 @@ import {
   topicWeights,
   type SakData,
 } from '../analytics/issues'
-import { Bars, Heatmap, Info, Insight, Kpi, PartyMark } from '../story/parts'
+import { Bars, Heatmap, Info, Insight, PartyMark } from '../story/parts'
 import { AgendaLines } from '../story/Debatterna'
 import '../story/story.css'
 
@@ -150,19 +147,20 @@ export default function SakAnalys({ route }: { route: Route }) {
   const word = (s: string) => data.words[s] ?? s
 
   return (
-    <article className="story sak">
+    <article className="dk story sak">
       <header className="story-hero">
-        <p className="story-eyebrow">{l('Issue debates', 'Sakdebatter')}</p>
-        <h1>
-          {party && <PartyLogo party={party} size={40} />} {object}:{' '}
-          {l('issue debates', 'sakdebatter')}
-        </h1>
-        <p className="story-sub">
-          {l(
+        <DashHeader
+          crumbs={[
+            { label: l('Projects', 'Projekt'), href: '#projekt' },
+            { label: l('Issue debates', 'Sakdebatter') },
+          ]}
+          title={`${object}: ${l('issue debates', 'sakdebatter')}`}
+          lead={l(
             'Which issues get the most room, which words are used, and how has the focus changed?',
             'Vilka frågor får mest utrymme, vilka begrepp används och hur har fokus förändrats?',
           )}
-        </p>
+          status={{ text: period, tone: 'ok' }}
+        />
         <div
           className="story-filters"
           role="group"
@@ -227,36 +225,28 @@ export default function SakAnalys({ route }: { route: Route }) {
                 )}
           </p>
         </div>
-        <dl className="story-kpis">
-          <Kpi
-            value={num(own.debates)}
-            label={l('Debates analysed', 'Analyserade debatter')}
-            note={period}
-          />
-          <Kpi
-            value={num(own.utterances)}
-            label={
-              party
+        <KpiRow
+          className="story-kpis"
+          items={[
+            {
+              label: l('Debates analysed', 'Analyserade debatter'),
+              value: num(own.debates),
+              note: period,
+            },
+            {
+              label: party
                 ? l(`Utterances by ${party}`, `Yttranden från ${party}`)
-                : l('Utterances', 'Yttranden')
-            }
-            note={l('speeches and replies', 'anföranden och repliker')}
-          />
-          <Kpi
-            value={largest ? name(largest.key) : '–'}
-            label={l('Largest issue area', 'Största ämnesområde')}
-            note={largest ? pct(largest.pct, 0) : undefined}
-          />
-          <Kpi
-            value={rising ? name(rising.key) : '–'}
-            label={l('Rising most', 'Ökar mest')}
-            note={
-              rising
-                ? `+${num(rising.change, 1)} ${l('points', 'p.e.')} ${l('on', 'mot')} ${before[0].session.slice(0, 4)}–${before.at(-1)!.session.slice(0, 4)}`
-                : l('no earlier period', 'ingen tidigare period')
-            }
-          />
-        </dl>
+                : l('Utterances', 'Yttranden'),
+              value: num(own.utterances),
+              note: l('Speeches and replies', 'Anföranden och repliker'),
+            },
+            {
+              label: l('Largest issue area', 'Största ämnesområde'),
+              value: largest ? name(largest.key) : '–',
+              note: largest ? pct(largest.pct, 0) : undefined,
+            },
+          ]}
+        />
       </header>
 
       <section
@@ -284,55 +274,61 @@ export default function SakAnalys({ route }: { route: Route }) {
         )}
       </section>
 
-      <section className="story-section" aria-labelledby="sak-q1">
-        <h2 id="sak-q1">
-          {party
-            ? l(
-                `Which issues does ${party} talk about most?`,
-                `Vilka frågor pratar ${party} mest om?`,
-              )
-            : l(
-                'Which issues get the most room?',
-                'Vilka frågor får mest utrymme?',
+      <DashGrid>
+        <section
+          className="story-section sak-main-card"
+          aria-labelledby="sak-q1"
+        >
+          <h2 id="sak-q1">
+            {party
+              ? l(
+                  `Which issues does ${party} talk about most?`,
+                  `Vilka frågor pratar ${party} mest om?`,
+                )
+              : l(
+                  'Which issues get the most room?',
+                  'Vilka frågor får mest utrymme?',
+                )}
+          </h2>
+          <p className="story-lead">
+            <Info term={l('Share of utterances', 'Andel av yttrandena')}>
+              {l(
+                'The party’s speeches and replies in debates on each issue area, of all its speeches and replies in the period. A debate’s area comes from the committee that prepared its decision; a debate with two areas counts half for each.',
+                'Partiets anföranden och repliker i debatter om varje område, av alla dess anföranden och repliker under perioden. Debattens område kommer från utskottet som beredde beslutet; en debatt med två områden räknas till hälften för vardera.',
               )}
-        </h2>
-        <p className="story-lead">
-          <Info term={l('Share of utterances', 'Andel av yttrandena')}>
-            {l(
-              'The party’s speeches and replies in debates on each issue area, of all its speeches and replies in the period. A debate’s area comes from the committee that prepared its decision; a debate with two areas counts half for each.',
-              'Partiets anföranden och repliker i debatter om varje område, av alla dess anföranden och repliker under perioden. Debattens område kommer från utskottet som beredde beslutet; en debatt med två områden räknas till hälften för vardera.',
+            </Info>{' '}
+            , {period}
+          </p>
+          <Bars
+            rows={topShares.slice(0, 12).map((s) => ({
+              key: s.key,
+              label: name(s.key),
+              value: s.pct,
+              color:
+                amne && s.key !== amne
+                  ? 'var(--line-strong)'
+                  : party
+                    ? partyFill(party)
+                    : 'var(--ink)',
+            }))}
+            format={(v) => pct(v, 1)}
+            label={l(
+              'Share of utterances per issue area',
+              'Andel av yttrandena per ämnesområde',
             )}
-          </Info>{' '}
-          , {period}
-        </p>
-        <Bars
-          rows={topShares.slice(0, 12).map((s) => ({
-            key: s.key,
-            label: name(s.key),
-            value: s.pct,
-            color:
-              amne && s.key !== amne
-                ? 'var(--line-strong)'
-                : party
-                  ? partyFill(party)
-                  : 'var(--ink)',
-          }))}
-          format={(v) => pct(v, 1)}
-          label={l(
-            'Share of utterances per issue area',
-            'Andel av yttrandena per ämnesområde',
-          )}
-          onPick={(k) => setView({ amne: k === amne ? '' : k })}
-          picked={amne || null}
-        />
-        <p className="story-axis-note">
-          {l(
-            'Click an area to follow it below.',
-            'Klicka på ett område för att följa det nedan.',
-          )}
-        </p>
-      </section>
+            onPick={(k) => setView({ amne: k === amne ? '' : k })}
+            picked={amne || null}
+          />
+          <p className="story-axis-note">
+            {l(
+              'Click an area to follow it below.',
+              'Klicka på ett område för att följa det nedan.',
+            )}
+          </p>
+        </section>
 
+        <ProjectTech project="politics" span={4} debates />
+      </DashGrid>
       <section className="story-section" aria-labelledby="sak-q2">
         <h2 id="sak-q2">
           {party

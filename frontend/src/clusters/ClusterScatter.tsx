@@ -5,6 +5,10 @@
  */
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { l } from '../i18n'
+import {
+  CLUSTER_COLOURS as COLOURS,
+  projectClusterPoints,
+} from './clusterGeometry'
 
 export type ClusterPoint = {
   x: number
@@ -14,15 +18,6 @@ export type ClusterPoint = {
   /** What the point is, shown on hover. */
   label?: string
 }
-
-const COLOURS = [
-  '--cv-ground',
-  '--cv-olive',
-  '--cv-apricot',
-  '--cv-powder',
-  '--cv-butter',
-  '--cv-pistachio',
-]
 
 const num = (n: number) => n.toLocaleString(l('en-GB', 'sv-SE'))
 
@@ -62,33 +57,11 @@ export default function ClusterScatter({
   const h = Math.min(height, Math.round(width * 0.62))
   const pad = 12
   const { sx, sy, sizes } = useMemo(() => {
-    // The scale spans the middle 99 % of the points, so a few far outliers do not shrink the
-    // map; those outliers are drawn at its edge.
-    const q = (values: number[], at: number) => {
-      const sorted = [...values].sort((a, b) => a - b)
-      return sorted[Math.min(sorted.length - 1, Math.floor(at * sorted.length))]
-    }
-    const trim = points.length > 500 ? 0.005 : 0
-    const xs = points.map((p) => p.x)
-    const ys = points.map((p) => p.y)
-    const x0 = q(xs, trim)
-    const x1 = q(xs, 1 - trim - 1e-9)
-    const y0 = q(ys, trim)
-    const y1 = q(ys, 1 - trim - 1e-9)
-    // One scale for both axes, so distances mean the same across and up.
-    const k = Math.min(
-      (width - 2 * pad) / (x1 - x0 || 1),
-      (h - 2 * pad) / (y1 - y0 || 1),
-    )
-    const ox = (width - k * (x1 - x0)) / 2
-    const oy = (h - k * (y1 - y0)) / 2
+    const projection = projectClusterPoints(points, width, h, pad)
     const counts = new Map<number, number>()
     for (const p of points) counts.set(p.c, (counts.get(p.c) ?? 0) + 1)
-    const clampX = (x: number) => Math.min(x1, Math.max(x0, x))
-    const clampY = (y: number) => Math.min(y1, Math.max(y0, y))
     return {
-      sx: (x: number) => ox + (clampX(x) - x0) * k,
-      sy: (y: number) => h - (oy + (clampY(y) - y0) * k),
+      ...projection,
       sizes: [...counts].filter(([c]) => c >= 0).sort((a, b) => b[1] - a[1]),
     }
   }, [points, width, h])

@@ -9,6 +9,9 @@ reads as one glob.
 from __future__ import annotations
 
 import math
+import json
+import re
+from datetime import date
 from pathlib import Path
 
 import requests
@@ -66,13 +69,34 @@ def download_table(http: requests.Session, source: str, dataset: str, url: str,
                    selections: dict[str, list[str]] | None = None, max_cells: int = 100_000,
                    pause: float = 0.5, eliminate: tuple[str, ...] = ()) -> list[Path]:
     """Fetch a table as PxWeb JSON parts and its metadata, returning the part paths."""
-    meta = metadata(http, url)
-    fetch(http, source, f"{dataset}/metadata.json", url, pause=pause)
+    meta_path = fetch(http, source, f"{dataset}/metadata.json", url, pause=pause)
+    meta = json.loads(meta_path.read_text(encoding="utf-8-sig"))
     paths = []
-    for index, query in enumerate(plan_queries(meta, selections, max_cells, eliminate)):
+    split = time_code(meta)
+    chosen_times = (selections or {}).get(split, next(v["values"] for v in meta["variables"]
+                                                    if v["code"] == split))
+    def historical(period):
+        years = [int(y) for y in re.findall(r"\d{4}", period)]
+        return bool(years) and max(years) < date.today().year - 1
+
+    queries = []
+    for old in (True, False):
+        periods = [t for t in chosen_times if historical(t) == old]
+        if periods:
+            queries.extend(plan_queries(meta, {**(selections or {}), split: periods},
+                                        max_cells, eliminate))
+    for index, query in enumerate(queries):
         body = {"query": query, "response": {"format": "json"}}
+        periods = next(q["selection"]["values"] for q in query if q["code"] == time_code(meta))
+        old = all(historical(period) for period in periods)
+        expected = math.prod(len(q["selection"]["values"]) for q in query)
+        def validate(payload):
+            data = json.loads(payload)
+            if not data.get("columns") or sum(len(r["values"]) for r in data["data"]) != expected:
+                raise ValueError(f"Incomplete PxWeb response: {source}/{dataset}")
         paths.append(fetch(http, source, f"{dataset}/part-{index:03d}.json", url,
-                           method="POST", body=body, pause=pause))
+                           method="POST", body=body, pause=pause,
+                           max_age_days=90 if old else 0, validate=validate))
     # A table that shrank to fewer parts must not leave old parts behind for the glob.
     for stale in set((rawstore.RAW / source / dataset).glob("part-*.json")) - set(paths):
         stale.unlink()

@@ -106,7 +106,17 @@ def fetch_log() -> list[dict]:
         if not manifest.exists():
             summary.append({"source_key": source, "fetched_at": None})
             continue
-        lines = [json.loads(line) for line in manifest.read_text(encoding="utf-8").splitlines()]
+        lines = []
+        for line in manifest.read_text(encoding="utf-8").splitlines():
+            try:
+                record = json.loads(line)
+                if not record["path"].startswith("_checkpoints/"):
+                    lines.append(record)
+            except (ValueError, KeyError):
+                continue
+        if not lines:
+            summary.append({"source_key": source, "fetched_at": None})
+            continue
         latest = {}
         for line in lines:
             latest[line["path"]] = line

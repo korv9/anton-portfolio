@@ -3,7 +3,6 @@
  * data ads mention. A deep dive of the job-market project.
  */
 import { useEffect, useMemo, useState } from 'react'
-import TopicNav from '../TopicNav'
 import { currentLocale, t, l } from '../i18n'
 import { fetchData } from '../dataSource'
 import TimeSeriesChart from '../charts/TimeSeriesChart'
@@ -125,23 +124,12 @@ export default function TechReport() {
     <div className="project-page">
       <div className="page-lead">
         <p className="eyebrow">{t('Swedish Job Market Analytics')}</p>
-        <h1>{t('Swedish job market.')}</h1>
+        <h1>{l('IT and data roles', 'IT och dataroller')}</h1>
         <p>
           {t(
             'Historical job-ad data, with clear definitions and a view of how software and data roles changed.',
           )}
         </p>
-        <TopicNav
-          active="#job-market-tech"
-          items={[
-            ['#job-market', 'Overview', 'Översikt'],
-            ['#job-market-occupations', 'Occupations', 'Yrken'],
-            ['#job-market-regions', 'Counties', 'Län'],
-            ['#job-market-conditions', 'Conditions', 'Villkor'],
-            ['#job-market-tech', 'IT report', 'IT-rapport'],
-            ['#jobb-kluster', 'Semantic clusters', 'Semantiska kluster'],
-          ]}
-        />
       </div>
       <div className="reports">
         <article className="report" id="job-market">
@@ -224,22 +212,6 @@ export default function TechReport() {
             )}
           </div>
           <div className="reading-grid compact-reading">
-            <div className="finding">
-              <p className="eyebrow">{t('Main observation')}</p>
-              <h3>
-                {jobKpis &&
-                jobKpis.junior_software_change_pct < jobKpis.software_change_pct
-                  ? t('Junior openings fell faster than total volume.')
-                  : t('Junior openings compared with total volume.')}
-              </h3>
-              <p>
-                {jobKpis
-                  ? currentLocale() === 'sv'
-                    ? `Juniora mjukvaruannonser gick från ${formatNumber(jobKpis.junior_software_baseline)} år ${jobKpis.baseline_year} till ${formatNumber(jobKpis.junior_software_comparison)} år ${jobKpis.comparison_year}: ${formatSignedPercent(jobKpis.junior_software_change_pct)}, jämfört med ${formatSignedPercent(jobKpis.software_change_pct)} för alla mjukvaruannonser.`
-                    : `Junior software ads went from ${formatNumber(jobKpis.junior_software_baseline)} in ${jobKpis.baseline_year} to ${formatNumber(jobKpis.junior_software_comparison)} in ${jobKpis.comparison_year}: ${formatSignedPercent(jobKpis.junior_software_change_pct)}, compared with ${formatSignedPercent(jobKpis.software_change_pct)} for all software ads.`
-                  : t('Loading the job-market summary…')}
-              </p>
-            </div>
             <div className="tech-bars">
               <p className="eyebrow">{t('Most mentioned in data ads')}</p>
               <p className="ds-small">

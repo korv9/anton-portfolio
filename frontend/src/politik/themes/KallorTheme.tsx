@@ -297,28 +297,6 @@ export default function KallorTheme() {
         </h2>
         <ul className="ds-rule-list">
           <li>
-            <a className="explore-row" href="#data-model">
-              <strong>{l('Data model', 'Datamodell')}</strong>
-              <span>
-                {l(
-                  'Every table, how they connect, with example rows.',
-                  'Alla tabeller, hur de hänger ihop, med exempelrader.',
-                )}
-              </span>
-            </a>
-          </li>
-          <li>
-            <a className="explore-row" href="#data-catalogue">
-              <strong>{l('Pipeline status', 'Pipelinens status')}</strong>
-              <span>
-                {l(
-                  'The latest run, its tests and every source.',
-                  'Senaste körningen, dess tester och varje källa.',
-                )}
-              </span>
-            </a>
-          </li>
-          <li>
             <a
               className="explore-row"
               href="https://github.com/korv9/anton-portfolio"

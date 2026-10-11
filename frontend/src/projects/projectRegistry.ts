@@ -1,13 +1,4 @@
-/**
- * Every project on the site, once. The header's project menu, the start page's selected work,
- * the projects page, the footer, the breadcrumb on a project page and its previous / next links
- * are all generated from this list, so a project's name, order, category and address live here
- * only.
- *
- * Flagship projects carry a number and are listed in their order; the rest are other work.
- * Every flagship is described in the same grammar: question, what was built, result, key tech.
- * Facts come from the CVs and the project pages; nothing here is new.
- */
+/** Project names, descriptions and menu order shared by every site entry point. */
 import type { Page, Route } from '../router'
 
 export type Bilingual = { sv: string; en: string }
@@ -15,12 +6,8 @@ const t = (sv: string, en: string): Bilingual => ({ sv, en })
 
 export type ProjectStatus = 'live' | 'experimental' | 'in-progress' | 'study'
 
-export type ProjectNavItem = { href: string; label: Bilingual }
-
 export type ProjectEntry = {
   id: string
-  /** '01'–'06' for flagship projects, in display order. */
-  number?: string
   title: Bilingual
   /** A few words under the title in menus: the kind of work. */
   descriptor: Bilingual
@@ -37,13 +24,10 @@ export type ProjectEntry = {
   href: string
   category: 'ai' | 'data'
   status: ProjectStatus
-  featured: boolean
   /**
-   * On the start page: the project's one question, its finding in a sentence a recruiter
-   * understands without the method, and the few tools that prove it (secondary). Only
-   * projects with this field appear there, in registry order.
+   * Optional plain-language question and finding, kept alongside the technical description.
    */
-  home?: { question: Bilingual; finding: Bilingual; tech: string[] }
+  home?: { question: Bilingual }
   /** Exploratory research: listed under Research & experiments, apart from other work. */
   research?: boolean
   code?: string | string[]
@@ -53,15 +37,12 @@ export type ProjectEntry = {
   pages?: Page[]
   /** Addresses of this project that the router gives a page shared with others. */
   paths?: (path: string) => boolean
-  /** The project's own navigation, shown inside the project only. */
-  nav?: ProjectNavItem[]
 }
 
 export const PROJECTS: ProjectEntry[] = [
   {
     id: 'politics',
-    number: '01',
-    title: t('Svensk politik i siffror', 'Swedish politics in numbers'),
+    title: t('Political Observatory', 'Political Observatory'),
     descriptor: t(
       'Öppna data, analytics engineering',
       'Public data, analytics engineering',
@@ -95,24 +76,17 @@ export const PROJECTS: ProjectEntry[] = [
     href: '#politik',
     category: 'data',
     status: 'live',
-    featured: true,
     home: {
       question: t(
         'Vad skiljer partierna åt i praktiken?',
         'What separates the parties in practice?',
       ),
-      finding: t(
-        'Voteringar sedan 1993/94, budgetmotioner, tal och val visar var partierna faktiskt skiljer sig, med källan ett klick bort.',
-        'Roll calls since 1993/94, budget motions, speeches and elections show where the parties actually differ, with the source one click away.',
-      ),
-      tech: ['Python', 'dbt', 'DuckDB', 'React'],
     },
     code: 'https://github.com/korv9/anton-portfolio',
     pages: ['politik'],
   },
   {
     id: 'ai-act',
-    number: '02',
     title: t('EU AI Act Observatory', 'EU AI Act Observatory'),
     descriptor: t(
       'Juridisk datamodellering, officiella källor',
@@ -146,51 +120,18 @@ export const PROJECTS: ProjectEntry[] = [
     href: '#ai-act',
     category: 'data',
     status: 'live',
-    featured: true,
     home: {
       question: t(
         'Vad gäller nu, för vem och när?',
         'What applies now, to whom, and when?',
       ),
-      finding: t(
-        'Varje skyldighet länkar tillbaka till artikeln som anger den, och systemet följer de officiella ändringarna över tid.',
-        'Every obligation links back to the article that defines it, and the system tracks official changes over time.',
-      ),
-      tech: ['Python', 'dbt', 'DuckDB', 'NLP'],
     },
     code: 'https://github.com/korv9/anton-portfolio/blob/main/docs/ai-act.md',
     pages: ['aiact'],
-    nav: [
-      { href: '#ai-act', label: t('Översikt', 'Overview') },
-      {
-        href: '#ai-act-today',
-        label: t('Vad gäller i dag?', 'What applies today?'),
-      },
-      {
-        href: '#ai-act-roles',
-        label: t('Vem berörs?', 'Who does it apply to?'),
-      },
-      {
-        href: '#ai-act-startups',
-        label: t('Startup-navigator', 'Startup navigator'),
-      },
-      { href: '#ai-act-timeline', label: t('Tidslinje', 'Timeline') },
-      { href: '#ai-act-obligations', label: t('Skyldigheter', 'Obligations') },
-      { href: '#ai-act-risk', label: t('Riskklasser', 'Risk classes') },
-      { href: '#ai-act-changes', label: t('Ändringar', 'Changes') },
-      { href: '#ai-act-politics', label: t('I riksdagen', 'In the Riksdag') },
-      { href: '#ai-act-jobs', label: t('I jobbannonserna', 'In job ads') },
-      {
-        href: '#ai-act-signals',
-        label: t('Tidslinje: lag, politik, jobb', 'Law, politics, jobs'),
-      },
-      { href: '#ai-act-sources', label: t('Källor', 'Sources') },
-    ],
   },
   {
     id: 'jobs',
-    number: '03',
-    title: t('Arbetsmarknaden i jobbannonser', 'The job market in job ads'),
+    title: t('Labour Market Observatory', 'Labour Market Observatory'),
     descriptor: t(
       'Data engineering, maskininlärning',
       'Data engineering, machine learning',
@@ -215,25 +156,18 @@ export const PROJECTS: ProjectEntry[] = [
     href: '#jobb',
     category: 'data',
     status: 'live',
-    featured: true,
     home: {
       question: t(
         'Hur förändras efterfrågan på arbetskraft?',
         'How is demand for labour changing?',
       ),
-      finding: t(
-        'Nästan fem miljoner annonser sedan 2020, jämförda med samma månader året innan, och en klustring som visar grupper bortom yrkestitlarna.',
-        'Nearly five million ads since 2020, compared with the same months a year earlier, and a clustering that finds groups beyond job titles.',
-      ),
-      tech: ['Python', 'dbt', 'DuckDB', 'GitHub Actions'],
     },
     code: 'https://github.com/korv9/swedish-job-market-analytics',
     pages: ['jobs'],
   },
   {
     id: 'symbolic-atlas',
-    number: '04',
-    title: t('Symbolic Atlas', 'Symbolic Atlas'),
+    title: t('Symbol Lab', 'Symbol Lab'),
     descriptor: t('NLP, oövervakad inlärning', 'NLP, unsupervised learning'),
     summary: t(
       'En oövervakad utforskning av återkommande symbolisk mening i mytologi, folksagor och litteratur.',
@@ -244,8 +178,8 @@ export const PROJECTS: ProjectEntry[] = [
       'Can symbolic meaning emerge from the data without defining the categories first?',
     ),
     built: t(
-      'Tio fria böcker, symbolord i sitt sammanhang, meningsinbäddningar, UMAP och HDBSCAN, byggt i dbt och DuckDB, med experiment som skiljer symbol från bok.',
-      'Ten public-domain books, symbol words in context, sentence embeddings, UMAP and HDBSCAN, built in dbt and DuckDB, with experiments separating symbol from book.',
+      'Fria böcker indexeras efter symbolförekomster. Sentence Transformers skapar inbäddningar; UMAP och HDBSCAN projicerar och klustrar dem. dbt och DuckDB organiserar datan, med bokcentrerade experiment som jämför delat språk och bokspecifika mönster.',
+      'Public-domain books indexed by symbol occurrence. Sentence Transformers embeds the texts, UMAP projects them and HDBSCAN forms clusters. dbt and DuckDB organize the data; book-centred experiments compare shared language with book-specific patterns.',
     ),
     result: t(
       'En interaktiv karta med numrerade kluster; experimenten visar att klustren följer böckerna mer än symbolerna och hur mycket det går att minska.',
@@ -263,35 +197,22 @@ export const PROJECTS: ProjectEntry[] = [
     href: '#symbolic-atlas',
     category: 'ai',
     status: 'experimental',
-    featured: true,
     home: {
       question: t(
         'Återkommer symboliska sammanhang i olika berättelser och traditioner?',
         'Do symbolic contexts recur across stories and traditions?',
       ),
-      finding: t(
-        'Den första modellen grupperade böckerna starkare än den symboliska meningen; fyra versioner senare finns en mindre men verklig struktur över böckerna.',
-        'The first model clustered books more strongly than symbolic meaning; four versions later a smaller but real cross-book structure remains.',
-      ),
-      tech: ['Python', 'NLP', 'UMAP', 'HDBSCAN'],
     },
     code: 'https://github.com/korv9/anton-portfolio/blob/main/docs/symbolic-atlas.md',
     pages: ['symbolic'],
-    nav: [
-      { href: '#symbolic-atlas', label: t('Atlas', 'Atlas') },
-      { href: '#symbolic-findings', label: t('Fynd', 'Findings') },
-      { href: '#symbolic-experiments', label: t('Experiment', 'Experiments') },
-      { href: '#symbolic-method', label: t('Metod', 'Method') },
-    ],
   },
   {
     id: 'welfare',
-    number: '05',
-    title: t('Hur mår Sverige?', 'How is Sweden doing?'),
+    title: t('Wellbeing Observatory', 'Wellbeing Observatory'),
     descriptor: t('dbt, offentliga data', 'dbt, public data'),
     summary: t(
-      'Jobb, hälsa och förtroende i Sverige, utforskade genom fem offentliga datakällor.',
-      'Jobs, health and trust across Sweden, explored through five public data sources.',
+      'Arbetslöshet, sjukfrånvaro och självrapporterat mående i Sverige, efter period och geografi.',
+      'Unemployment, sick leave and self-reported wellbeing in Sweden, by period and geography.',
     ),
     question: t(
       'Följs jobb, sjukskrivningar, hälsa och förtroende åt i olika delar av landet?',
@@ -309,28 +230,18 @@ export const PROJECTS: ProjectEntry[] = [
     href: '#sweden',
     category: 'data',
     status: 'live',
-    featured: true,
     home: {
       question: t(
         'Hur går det för Sverige, län för län?',
         'How is Sweden doing, county by county?',
       ),
-      finding: t(
-        'Arbetslöshet, sjukskrivning och psykisk påfrestning från fem öppna källor på samma axel; mönstren är beskrivande, inte orsaker.',
-        'Unemployment, sick leave and mental strain from five public sources on one axis; the patterns are descriptive, not causes.',
-      ),
-      tech: ['dbt', 'DuckDB', 'Star schema', 'Parquet'],
     },
     code: 'https://github.com/korv9/anton-portfolio/tree/main/platform',
     pages: ['welfare'],
   },
   {
     id: 'thesis',
-    number: '06',
-    title: t(
-      'Examensarbete: NLP-klustring av IT-incidenter',
-      'Degree project: NLP clustering of IT incidents',
-    ),
+    title: t('IT Incident Clustering', 'IT Incident Clustering'),
     descriptor: t('NLP, klustring, Avtalat', 'NLP, clustering, Avtalat'),
     summary: t(
       'Hitta grupper av relaterade incidenter i IT-servicedata för manuell granskning.',
@@ -359,12 +270,11 @@ export const PROJECTS: ProjectEntry[] = [
     href: '#thesis',
     category: 'ai',
     status: 'live',
-    featured: true,
     pages: ['thesis'],
   },
   {
     id: 'philosophy-atlas',
-    title: t('Philosophy Atlas', 'Philosophy Atlas'),
+    title: t('Philosophy Lab', 'Philosophy Lab'),
     descriptor: t('NLP, semantisk utforskning', 'NLP, semantic exploration'),
     summary: t(
       'En semantisk atlas över fri filosofi med inbäddningar, klustring och mänskligt granskade begrepp.',
@@ -393,21 +303,13 @@ export const PROJECTS: ProjectEntry[] = [
     href: '#philosophy-atlas',
     category: 'ai',
     status: 'experimental',
-    featured: false,
     research: true,
     code: 'https://github.com/korv9/anton-portfolio/blob/main/docs/philosophy-atlas.md',
     pages: ['philosophy'],
-    nav: [
-      { href: '#philosophy-atlas', label: t('Karta', 'Map') },
-      { href: '#philosophy-groups', label: t('Grupper', 'Groups') },
-      { href: '#philosophy-tensions', label: t('Spänningar', 'Tensions') },
-      { href: '#philosophy-works', label: t('Korpus', 'Corpus') },
-      { href: '#philosophy-method', label: t('Metod', 'Method') },
-    ],
   },
   {
     id: 'concept-constellation',
-    title: t('Concept Constellation', 'Concept Constellation'),
+    title: t('Concept Lab', 'Concept Lab'),
     descriptor: t('NLP, betydelseatlas', 'NLP, meaning atlas'),
     summary: t(
       'Samma idéer genom myter, filosofi, riksdagstal och AI-förordningen, med en modell och redaktionellt valda begrepp.',
@@ -430,39 +332,18 @@ export const PROJECTS: ProjectEntry[] = [
         'Var dyker samma idéer upp i berättelser, filosofi, politik och lag?',
         'Where do the same ideas appear across stories, philosophy, politics and law?',
       ),
-      finding: t(
-        'Korpusarna är väldigt olika, så projektet jämför dem genom redaktionellt valda begrepp i stället för att låtsas att de hör hemma i ett naturligt kluster.',
-        'The corpora are very different, so the project compares them through editorially chosen concepts rather than pretending they belong in one natural cluster.',
-      ),
-      tech: ['Python', 'NLP', 'dbt', 'DuckDB'],
     },
     tech: ['Python', 'Sentence Transformers', 'dbt', 'DuckDB', 'React'],
     href: '#concept-journey',
     category: 'ai',
     status: 'experimental',
-    featured: false,
     research: true,
     code: 'https://github.com/korv9/anton-portfolio/blob/main/docs/concept-constellation.md',
     pages: ['concepts'],
-    nav: [
-      {
-        href: '#concept-journey',
-        label: t('Följ en idé', 'Follow an idea'),
-      },
-      {
-        href: '#concept-constellation',
-        label: t('Konstellation', 'Constellation'),
-      },
-      { href: '#concepts-profiles', label: t('Profiler', 'Profiles') },
-      { href: '#concepts-method', label: t('Metod', 'Method') },
-    ],
   },
   {
     id: 'drugcomb',
-    title: t(
-      'DrugComb: förutsäga läkemedelssynergi',
-      'DrugComb: predicting drug synergy',
-    ),
+    title: t('Drug Synergy Lab', 'Drug Synergy Lab'),
     descriptor: t('Multimodal maskininlärning', 'Multimodal machine learning'),
     summary: t(
       'Molekylfingeravtryck, RNA-uttryck och cellinjedata kombinerade för att förutsäga synergi, med skydd mot dataläckage.',
@@ -484,59 +365,36 @@ export const PROJECTS: ProjectEntry[] = [
     href: '#drugcomb',
     category: 'ai',
     status: 'live',
-    featured: false,
     code: 'https://github.com/korv9/DrugComb-Synergy-Prediction',
     pages: ['drugcomb'],
   },
 
   {
-    id: 'allegoria',
-    title: t('Allegoria / RFC-drift', 'Allegoria / RFC drift'),
-    descriptor: t('NLP, pågående', 'NLP, in progress'),
+    id: 'diva-lakehouse',
+    title: t('DiVA Thesis Lakehouse', 'DiVA Thesis Lakehouse'),
+    descriptor: t('Lakehouse i Microsoft Fabric', 'Microsoft Fabric lakehouse'),
     summary: t(
-      'Vad händer med innebörden när ett krav går från MUST till SHOULD?',
-      'What changes when a requirement goes from MUST to SHOULD?',
+      'Inkrementell inläsning av uppsatsmetadata från DiVA till Bronze, Silver och Gold, med PySpark, Delta MERGE och kvalitetskontroller före publicering.',
+      'An incremental pipeline for DiVA thesis metadata, with Bronze, Silver and Gold layers, PySpark, Delta MERGE and quality checks before publishing.',
     ),
     question: t(
-      'Vad händer med innebörden när ett krav går från MUST till SHOULD?',
-      'What changes when a requirement goes from MUST to SHOULD?',
-    ),
-    built: t('Pågående.', 'In progress.'),
-    result: t('Pågående.', 'In progress.'),
-    tech: ['Python', 'NLP'],
-    href: '#rfc-drift',
-    category: 'ai',
-    status: 'in-progress',
-    featured: false,
-    research: true,
-    pages: ['allegoria'],
-  },
-  {
-    id: 'diva',
-    title: t('Uppsatser i DiVA', 'Theses in DiVA'),
-    descriptor: t('Ämnesklustring', 'Topic clustering'),
-    summary: t(
-      'Svenska studentuppsatser från DiVA i ämneskluster, varje kluster namngivet av sina egna ord.',
-      'Swedish student theses from DiVA in topic clusters, each cluster named by its own words.',
-    ),
-    question: t(
-      'Vilka ämnen skriver svenska studenter om, och hur grupperar de sig?',
-      'What do Swedish students write about, and how do the topics group?',
+      'Hur läser man in metadata som ändras och raderas utan dubletter eller osäkra återkörningar?',
+      'How do you ingest changing and deleted metadata without duplicates or unsafe reruns?',
     ),
     built: t(
-      'Inläsning via OAI-PMH, TF-IDF, SVD och K-means med klassbaserad TF-IDF för klustrens ord.',
-      'Harvesting through OAI-PMH, TF-IDF, SVD and K-means with class-based TF-IDF for the clusters’ words.',
+      'En OAI-PMH-klient, spårbar rå XML, en Delta Lake-pipeline och genererade Fabric-notebooks.',
+      'An OAI-PMH client, traceable raw XML, a Delta Lake pipeline and generated Fabric notebooks.',
     ),
     result: t(
-      'En karta över uppsatserna per kluster när inläsningen har körts.',
-      'A map of the theses by cluster once the harvest has run.',
+      'Verifierad lokalt med Spark och Delta. Körning i Fabric och mot DiVA:s levande endpoint återstår att bekräfta.',
+      'Verified locally with Spark and Delta. Execution in Fabric and against the live DiVA endpoint remains to be confirmed.',
     ),
-    tech: ['Python', 'OAI-PMH', 'scikit-learn', 'GitHub Actions'],
-    href: '#diva',
-    category: 'ai',
-    status: 'experimental',
-    featured: false,
-    pages: ['diva'],
+    tech: ['Microsoft Fabric', 'PySpark', 'Delta Lake', 'OAI-PMH', 'Python'],
+    href: '#diva-lakehouse',
+    pages: ['lakehouse'],
+    code: 'https://github.com/korv9/diva-fabric-lakehouse',
+    category: 'data',
+    status: 'study',
   },
   {
     id: 'homie',
@@ -562,162 +420,24 @@ export const PROJECTS: ProjectEntry[] = [
     href: '#homie',
     category: 'data',
     status: 'in-progress',
-    featured: false,
     code: 'https://github.com/korv9/homie-api',
     pages: ['homie'],
   },
-  {
-    id: 'rag',
-    title: t('RAG-baserad studieassistent', 'RAG learning assistant'),
-    descriptor: t(
-      'Tillämpad generativ AI, studieprojekt',
-      'Applied generative AI, study project',
-    ),
-    summary: t(
-      'Flask-backend som läser in dokument, skapar inbäddningar och ger förankrade svar, semantisk sökning och quiz.',
-      'Flask backend ingesting documents, creating embeddings and giving grounded answers, semantic search and quizzes.',
-    ),
-    question: t(
-      'Hjälp att studera ur eget kursmaterial.',
-      'Help studying from one’s own course material.',
-    ),
-    built: t(
-      'Inläsning av dokument, inbäddningar, förankrade svar, semantisk sökning och quiz.',
-      'Document ingestion, embeddings, grounded answers, semantic search and quizzes.',
-    ),
-    result: t(
-      'Integrerad med Vertex AI, Google Cloud Storage och ett React-gränssnitt.',
-      'Integrated with Vertex AI, Google Cloud Storage and a React interface.',
-    ),
-    tech: ['Python', 'Flask', 'Vertex AI', 'RAG', 'React'],
-    // The repository is not public, so the project links nowhere.
-    href: '',
-    category: 'ai',
-    status: 'study',
-    featured: false,
-  },
-  {
-    id: 'mimii',
-    title: t(
-      'Avvikelser i industripumpar',
-      'Industrial pump anomaly detection',
-    ),
-    descriptor: t(
-      'Djupinlärning på MIMII, studieprojekt',
-      'Deep learning on MIMII, study project',
-    ),
-    summary: t(
-      'Pumpljud omvandlade till mel-spektrogram och en CNN-klassificerare för att hitta avvikande ljud.',
-      'Pump audio turned into Mel spectrograms and a CNN classifier to detect anomalous sounds.',
-    ),
-    question: t(
-      'Kan avvikande pumpljud hittas automatiskt?',
-      'Can anomalous pump sounds be found automatically?',
-    ),
-    built: t(
-      'Mel-spektrogram och en CNN-klassificerare.',
-      'Mel spectrograms and a CNN classifier.',
-    ),
-    result: t(
-      'Utvärderad med ROC-AUC och förväxlingsmatris; överanpassning styrd med dropout och L2.',
-      'Evaluated with ROC-AUC and a confusion matrix; overfitting controlled with dropout and L2.',
-    ),
-    tech: ['Python', 'TensorFlow', 'Keras', 'CNN', 'librosa'],
-    href: 'https://github.com/korv9/MIMII-pump-diagnostics',
-    category: 'ai',
-    status: 'study',
-    featured: false,
-    code: 'https://github.com/korv9/MIMII-pump-diagnostics',
-  },
 ]
 
-/**
- * The site sidebar's groups, in reading order. Titles, addresses and views come from the entries
- * above; only the grouping and order live here.
- */
-export const SIDEBAR_GROUPS: {
-  id: string
-  label: Bilingual
-  projects: string[]
-}[] = [
+export const PROJECT_GROUPS = [
+  { label: 'Observatories', ids: ['politics', 'jobs', 'welfare', 'ai-act'] },
   {
-    id: 'experience',
-    label: t('Erfarenhet', 'Experience'),
-    projects: ['thesis'],
-  },
-  {
-    id: 'projects',
-    label: t('Projekt', 'Projects'),
-    projects: ['politics', 'ai-act', 'jobs', 'welfare', 'symbolic-atlas'],
-  },
-  {
-    id: 'more',
-    label: t('Fler projekt', 'More projects'),
-    projects: [
+    label: 'Labs',
+    ids: [
+      'symbolic-atlas',
       'philosophy-atlas',
       'concept-constellation',
       'drugcomb',
-      'diva',
-      'homie',
-      'allegoria',
-      'rag',
-      'mimii',
     ],
   },
+  { label: 'Engineering', ids: ['thesis', 'homie', 'diva-lakehouse'] },
 ]
-
-/** The platform pages under the projects: the data platform the projects share. */
-export const PLATFORM_PAGES: {
-  id: string
-  title: Bilingual
-  href: string
-  pages: Page[]
-}[] = [
-  {
-    id: 'quality',
-    title: t('Datakvalitet', 'Data quality'),
-    href: '#quality',
-    pages: ['quality'],
-  },
-  {
-    id: 'datamodel',
-    title: t('Datamodell och ER', 'Data model and ER'),
-    href: '#data-model',
-    pages: ['datamodel', 'er'],
-  },
-  {
-    id: 'architecture',
-    title: t('Arkitektur', 'Architecture'),
-    href: '#data-constellation',
-    pages: ['constellation'],
-  },
-  {
-    id: 'catalogue',
-    title: t('Datakatalog', 'Data catalogue'),
-    href: '#data-catalogue',
-    pages: ['catalogue'],
-  },
-  {
-    id: 'lineage',
-    title: t('Idea Lineage', 'Idea Lineage'),
-    href: '#idea-lineage',
-    pages: ['lineage'],
-  },
-  {
-    id: 'clusters',
-    title: t('Klustervisualiseringar', 'Cluster visuals'),
-    href: '#cluster-visuals',
-    pages: ['clusters'],
-  },
-]
-
-/** The flagship projects, in their numbered order. */
-export const FLAGSHIPS = PROJECTS.filter((p) => p.featured).sort((a, b) =>
-  (a.number ?? '').localeCompare(b.number ?? ''),
-)
-
-/** The start page's selected work: projects with a recruiter line, in registry order. */
-export const HOME_PROJECTS = PROJECTS.filter((p) => p.home)
 
 /** The project a route belongs to, if any. */
 export function projectForRoute(
@@ -728,12 +448,15 @@ export function projectForRoute(
   )
 }
 
-/** The flagship before and after this one; none at either end (the list does not wrap). */
+/** Previous and next project in menu order, without wrapping. */
 export function neighbours(id: string): {
   previous?: ProjectEntry
   next?: ProjectEntry
 } {
-  const i = FLAGSHIPS.findIndex((p) => p.id === id)
+  const ordered = PROJECT_GROUPS.flatMap((group) => group.ids).map((id) =>
+    PROJECTS.find((p) => p.id === id)!,
+  )
+  const i = ordered.findIndex((p) => p.id === id)
   if (i < 0) return {}
-  return { previous: FLAGSHIPS[i - 1], next: FLAGSHIPS[i + 1] }
+  return { previous: ordered[i - 1], next: ordered[i + 1] }
 }

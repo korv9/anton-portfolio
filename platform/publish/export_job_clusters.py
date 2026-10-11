@@ -47,6 +47,8 @@ def export(database: Path, output: Path):
     preview = sorted(delivered, key=lambda p: hashlib.sha256(p['id'].encode()).hexdigest())[:1500]
     write(output / 'cluster-preview.json', {'run_id': run_id, 'sampled': report['sampled'],
           'points': [{'id': p['id'], 'x': p['x'], 'y': p['y'], 'cluster': p['cluster']} for p in preview]})
+    write(output / 'preview-detail.json', {'run_id': run_id,
+          'points': [[p['x'], p['y'], p['cluster']] for p in delivered]})
     safe_report = {key: report[key] for key in ('run_id', 'generated_at', 'source_size', 'sampled', 'source_kinds', 'config', 'diagnostics', 'parameter_comparisons', 'versions')}
     safe_report.update({key: report[key] for key in ('coverage', 'candidate_count', 'unique_text_count', 'parameter_sweep', 'feature_ensemble') if key in report})
     write(output / 'cluster-summary.json', {**safe_report, 'schema_version': 1, 'shards': shards, 'clusters': profiles})

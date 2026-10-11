@@ -1,0 +1,55 @@
+schema_version: 1
+output: warehouse/cluster_lab/test
+cache: warehouse/cluster_lab/cache
+datasets:
+- name: symbolic
+  adapter: symbolic
+  family: occurrences
+  raw: warehouse/raw/symbolic
+  allow_partial: false
+  representation:
+    model: sentence-transformers/all-MiniLM-L6-v2
+    revision: 1110a243fdf4706b3f48f1d95db1a4f5529b4d41
+    text_fields:
+    - context
+- name: jobs-2023-2026
+  adapter: jobs
+  family: jobs
+  path: warehouse/raw/jobtech/cluster-corpus
+  source_archives:
+  - 2026-Q3
+  start: '2023-01-01'
+  end: '2027-01-01'
+  allow_partial: true
+sample_size: 400
+reduction:
+  n_neighbors: 15
+  n_components: 5
+  min_dist: 0.05
+clustering:
+  min_cluster_size: 10
+  min_samples: 3
+sweep:
+  coarse_candidates: 0
+  finalists: 0
+  refinements_per_finalist: 0
+layouts:
+  count: 2
+  preview_count: 2
+  n_neighbors:
+  - 10
+  - 30
+  min_dist:
+  - 0.05
+  - 0.35
+  seeds:
+  - 42
+  trust_sample_size: 200
+  preview_points: 400
+evaluation:
+  sample_size: 200
+  examples: 2
+representation:
+  device: cuda
+  batch_size: 32
+  storage_dtype: float16

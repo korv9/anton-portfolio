@@ -109,13 +109,13 @@ def git_commit() -> str | None:
 
 def tree_files(root: Path) -> list[Path]:
     if root.is_file():
-        return [root]
+        return [] if root.name.endswith(".tmp") else [root]
     if not root.is_dir():
         return []
-    return sorted(p for p in root.rglob("*") if p.is_file())
+    return sorted(p for p in root.rglob("*") if p.is_file() and not p.name.endswith(".tmp"))
 
 
-def push_tree(s3, bucket: str, name: str, sub: str = "") -> tuple[int, int, int]:
+def push_tree(s3, bucket: str, name: str, sub: str = "", prune: bool = False) -> tuple[int, int, int]:
     """Upload a tree's files whose SHA-256 differs from the stored copy. Returns (files, sent, bytes).
 
     `sub` limits it to one folder of the tree (jobtech/stream), for the daily refreshes.
@@ -134,6 +134,14 @@ def push_tree(s3, bucket: str, name: str, sub: str = "") -> tuple[int, int, int]
 
     with ThreadPoolExecutor(max_workers=8) as pool:
         sent = list(pool.map(one, files))
+    if prune:
+        wanted = prefix + sub.strip("/")
+        local = {prefix + p.relative_to(root).as_posix() for p in files}
+        for page in s3.get_paginator("list_objects_v2").paginate(Bucket=bucket, Prefix=wanted):
+            for obj in page.get("Contents", []):
+                key = obj["Key"]
+                if (key == wanted or key.startswith(wanted + "/")) and key not in local:
+                    s3.delete_object(Bucket=bucket, Key=key)
     return len(files), sum(1 for b in sent if b), sum(sent)
 
 
@@ -185,8 +193,15 @@ def pull_db(s3, bucket: str) -> bool:
     return True
 
 
+def resolved_path(path: Path) -> Path:
+    # Windows can return the extended-length prefix while a parent is being created.
+    return Path(path.resolve().as_posix().replace("//?/UNC/", "//", 1).removeprefix("//?/"))
+
+
 def pull_tree(s3, bucket: str, name: str, sub: str = "") -> int:
     root, prefix = tree(name)
+    root.mkdir(parents=True, exist_ok=True)
+    root = resolved_path(root)
     keys = []
     # A folder (jobtech/stream) or a single file (jobtech/_manifest.jsonl).
     wanted = prefix + sub.strip("/")
@@ -197,12 +212,25 @@ def pull_tree(s3, bucket: str, name: str, sub: str = "") -> int:
     def one(item: tuple[str, int]) -> int:
         key, size = item
         target = root / key[len(prefix):]
+        resolved = resolved_path(target)
+        if not resolved.is_relative_to(root):
+            raise ValueError(f"Invalid stored path: {key}")
+        if target.name.endswith(".tmp"):
+            return 0
+        meta = remote_meta(s3, bucket, key)
         if target.is_file() and target.stat().st_size == size:
-            meta = remote_meta(s3, bucket, key)
-            if meta and meta["sha256"] in (None, sha256(target)):
+            if meta and meta["sha256"] == sha256(target):
                 return 0
         target.parent.mkdir(parents=True, exist_ok=True)
-        s3.download_file(bucket, key, str(target))
+        temporary = target.with_name(target.name + ".tmp")
+        try:
+            s3.download_file(bucket, key, str(temporary))
+            if temporary.stat().st_size != size or (meta and meta["sha256"]
+                                                    and sha256(temporary) != meta["sha256"]):
+                raise ValueError(f"Stored {name} file failed integrity check: {key}")
+            os.replace(temporary, target)
+        finally:
+            temporary.unlink(missing_ok=True)
         return 1
 
     with ThreadPoolExecutor(max_workers=8) as pool:
@@ -220,9 +248,13 @@ def main() -> int:
     parser.add_argument("--path", action="append", default=[],
                         help="With --only raw or features: only this folder or file of the tree "
                              "(repeatable), e.g. --path jobtech/stream")
+    parser.add_argument("--prune", action="store_true",
+                        help="Delete remote files absent locally in the fully restored --path folders")
     args = parser.parse_args()
     if args.path and args.only not in TREES:
         parser.error("--path needs --only raw or --only features")
+    if args.prune and (args.action != "push" or args.only not in TREES or not args.path):
+        parser.error("--prune needs push --only raw/features with explicit --path folders")
     subs = args.path or [""]
 
     from upload import client
@@ -247,7 +279,7 @@ def main() -> int:
     for name in TREES:
         if args.only in (None, name):
             for sub in subs:
-                counts[name], sent, sent_bytes = push_tree(s3, bucket, name, sub)
+                counts[name], sent, sent_bytes = push_tree(s3, bucket, name, sub, args.prune)
                 print(f"{name.capitalize()} files{' in ' + sub if sub else ''}: {counts[name]} "
                       f"on disk, {sent} uploaded ({sent_bytes / 1e6:.0f} MB)")
     if args.only in (None, "db"):

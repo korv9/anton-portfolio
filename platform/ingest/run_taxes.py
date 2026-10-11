@@ -28,8 +28,12 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--skip-fetch", action="store_true")
+    parser.add_argument("--full-refresh", "--force", action="store_true",
+                        help="Refetch verified historical data as well as current data")
     parser.add_argument("--skip-build", action="store_true")
     arguments = parser.parse_args()
+    if arguments.full_refresh:
+        os.environ["PORTFOLIO_FULL_REFRESH"] = "1"
     if not arguments.skip_fetch:
         run([sys.executable, "ingest/taxes/taxes_ingest.py"])
     if not arguments.skip_build:

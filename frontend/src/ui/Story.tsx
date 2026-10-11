@@ -252,16 +252,10 @@ export function MethodSummary({
       <div>
         <h3>{l('How it was built', 'Så byggdes det')}</h3>
         <p className="method-summary-lineage">{lineage.join(' → ')}</p>
-        <a href="#data-constellation">
-          {l('Explore the full lineage', 'Utforska hela flödet')}
-        </a>
       </div>
       <div>
         <h3>{l('Quality and validity', 'Kvalitet och validitet')}</h3>
         <p>{quality}</p>
-        <a href="#quality">
-          {l('Full quality profile', 'Hela kvalitetsprofilen')}
-        </a>
       </div>
       {more && more.length > 0 && (
         <nav aria-label={l('Sources and method', 'Källor och metod')}>

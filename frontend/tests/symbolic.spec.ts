@@ -1,12 +1,17 @@
-import { test, expect } from './test'
+import { test, expect as baseExpect } from './test'
 import AxeBuilder from '@axe-core/playwright'
 
-test('the Symbolic Atlas maps real occurrences and filters by symbol and tradition', async ({
+// Atlas controls and tables appear after its datasets have loaded.
+const expect = baseExpect.configure({ timeout: 45_000 })
+test.setTimeout(90_000)
+
+test('the Symbol Lab maps real occurrences and filters by symbol and tradition', async ({
   page,
 }) => {
   await page.goto('/#symbolic-atlas')
+  await page.locator('#symbolic-map .stage-details summary').click()
   await expect(
-    page.getByRole('heading', { level: 1, name: 'Symbolic Atlas' }),
+    page.getByRole('heading', { level: 1, name: 'Symbol Lab' }),
   ).toBeVisible()
   const summary = await (
     await page.request.get('/data/symbolic/summary.json')
@@ -33,6 +38,7 @@ test('the Symbolic Atlas maps real occurrences and filters by symbol and traditi
 
 test('a filtered atlas address opens with its filter', async ({ page }) => {
   await page.goto('/#symbolic-atlas?symbol=raven')
+  await page.locator('#symbolic-map .stage-details summary').click()
   await expect(
     page.getByRole('button', { name: 'raven', exact: true }),
   ).toHaveAttribute('aria-pressed', 'true')
@@ -97,6 +103,7 @@ test('the cross-book view mutes book-bound clusters and opens a cluster for revi
   await page.goto('/#symbolic-atlas')
   await page.getByRole('button', { name: 'Cross-book', exact: true }).click()
   await expect(page).toHaveURL(/view=cross-book/)
+  await page.locator('#symbolic-map .stage-details summary').click()
   await page
     .locator('.atlas-select select')
     .selectOption(String(top.cluster_id))

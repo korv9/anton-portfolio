@@ -6,10 +6,10 @@
  * concept, and why it is worth looking at. Then one section per domain with how often the concept
  * is the closest there, representative passages with their source, and the measures elsewhere on
  * the site that count the same idea. Every link states its relation type; nothing here says one
- * text influenced another. Only reviewed Symbolic Atlas clusters may be tied to a concept, and
+ * text influenced another. Only reviewed Symbol Lab clusters may be tied to a concept, and
  * there are none yet, so the stories section says so.
  */
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { l } from '../i18n'
 import type { Route } from '../router'
 import { useViewParams } from '../politik/useViewParams'
@@ -86,7 +86,15 @@ function Relation({ type, status }: { type: string; status: string }) {
   )
 }
 
-export default function Journey({ route, data }: { route: Route; data: Data }) {
+export default function Journey({
+  route,
+  data,
+  metrics,
+}: {
+  route: Route
+  data: Data
+  metrics?: ReactNode
+}) {
   const [params, set] = useViewParams(route, DEFAULTS)
   const [passages, setPassages] = useState<Record<
     string,
@@ -150,14 +158,6 @@ export default function Journey({ route, data }: { route: Route; data: Data }) {
               </a>
             </div>
           }
-          nav={[
-            {
-              href: '#concept-constellation',
-              label: l('Constellation', 'Konstellationen'),
-            },
-            { href: '#concepts-profiles', label: l('Profiles', 'Profiler') },
-            { href: '#concepts-method', label: l('Method', 'Metod') },
-          ]}
         >
           <p>
             {l(
@@ -170,6 +170,7 @@ export default function Journey({ route, data }: { route: Route; data: Data }) {
             )}
           </p>
         </ProjectHero>
+        {metrics}
       </div>
 
       <div className="cc-body ds-container cj-body">
@@ -217,8 +218,8 @@ export default function Journey({ route, data }: { route: Route; data: Data }) {
               {c === 'myth' && (
                 <p className="cj-note">
                   {l(
-                    `No reviewed Symbolic Atlas cluster is tied to a concept yet (${summary.reviewed_cluster_links}), so these are the model’s closest passages among the ${corpusOf('myth')?.documents ?? ''} books of the Symbolic Atlas corpus, not a reviewed symbolic meaning.`,
-                    `Inget granskat kluster i Symbolic Atlas är kopplat till ett begrepp ännu (${summary.reviewed_cluster_links}), så detta är modellens närmaste passager bland de ${corpusOf('myth')?.documents ?? ''} böckerna i Symbolic Atlas korpus, inte en granskad symbolisk betydelse.`,
+                    `No reviewed Symbol Lab cluster is tied to a concept yet (${summary.reviewed_cluster_links}), so these are the model’s closest passages among the ${corpusOf('myth')?.documents ?? ''} books of the Symbol Lab corpus, not a reviewed symbolic meaning.`,
+                    `Inget granskat kluster i Symbol Lab är kopplat till ett begrepp ännu (${summary.reviewed_cluster_links}), så detta är modellens närmaste passager bland de ${corpusOf('myth')?.documents ?? ''} böckerna i Symbol Lab korpus, inte en granskad symbolisk betydelse.`,
                   )}
                 </p>
               )}
@@ -485,8 +486,8 @@ function DomainLinks({ corpus, links }: { corpus: string; links: Link[] }) {
                 'Ingen ordgrupp i riksdagen och ingen jobbannonsterm mäter begreppet.',
               )
             : l(
-                'No Philosophy Atlas tension has this concept as a pole.',
-                'Ingen spänning i Philosophy Atlas har begreppet som pol.',
+                'No Philosophy Lab tension has this concept as a pole.',
+                'Ingen spänning i Philosophy Lab har begreppet som pol.',
               )}
       </p>
     )

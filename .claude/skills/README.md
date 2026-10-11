@@ -5,6 +5,7 @@ that come from repositories are MIT-licensed and keep their upstream `LICENSE`.
 
 | Skill | Source | Commit | Changes here |
 |---|---|---|---|
+| `graph-first` | Written for this repository at the owner's request | – | Always consult the existing Graphify graph before source lookup; use bounded queries and verify relevant code. |
 | `ponytail` | [dietrichgebert/ponytail](https://github.com/dietrichgebert/ponytail) `skills/ponytail` | `552acd5` | Only the main skill; the hooks, status line and sub-skills are left out. |
 | `frontend-design-principles` | [joshuadavidthomas/agent-skills](https://github.com/joshuadavidthomas/agent-skills) `frontend-design-principles` | `516dee7` | None. |
 | `de-ai-writing` | Pasted by the owner (based on Wikipedia's *Signs of AI writing*, WikiProject AI Cleanup) | – | `scripts/check_ai_signs.py` was not included and is written here: it finds the pattern-matchable signs, numbered as in `references/signs.md`. |

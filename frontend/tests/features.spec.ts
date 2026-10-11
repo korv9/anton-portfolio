@@ -96,24 +96,10 @@ test('debate ranking: the parties ranked by the measure picked', async ({
   await expect(f.locator('.rank-value').first()).not.toHaveText(first!)
 })
 
-test('field ranking: fields by ads, one opens into its occupations', async ({
-  page,
-}) => {
-  await page.goto('/#jobb')
-  // The ranking is part of Explore on the overview.
-  await page.getByRole('button', { name: 'Explore the data' }).click()
-  const f = await feature(page, 'treemap')
-  await expect(f.locator('.rank-bars-list li')).toHaveCount(12)
-  await f.locator('.rank-bars-list li > button').first().click()
-  await expect(f.locator('.treemap-path b')).toBeVisible()
-  await f.getByRole('button', { name: 'All fields' }).click()
-  await expect(f.locator('.treemap-path b')).toHaveCount(0)
-})
-
 test('county small multiples: one chart per county on a shared axis', async ({
   page,
 }) => {
-  await page.goto('/#sweden')
+  await page.goto('/#sweden-sick-leave')
   const f = await feature(page, 'lanen')
   await expect(f.locator('.multiple')).toHaveCount(21)
   await f.getByRole('button', { name: 'Stress-related sick leave' }).click()

@@ -1,17 +1,18 @@
 /**
- * Concept Constellation (#concept-constellation) and the concept pages (#concept-<id>).
+ * Concept Lab (#concept-constellation) and the concept pages (#concept-<id>).
  * Built from platform/publish/concepts/export_concepts.py: 28 curated concepts read across four
  * corpora (myth, philosophy, Riksdag speeches, the AI Act) with one multilingual model. Every
  * line in the constellation has an explicit type, drawn in its own style, and every element is
  * marked as source, derived or interpretation. Experimental.
  */
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { l } from '../i18n'
 import { ProductQuality } from '../quality/QualityPanel'
 import type { Route } from '../router'
 import { fetchData } from '../dataSource'
 import Journey from './Journey'
 import { ProjectHero } from '../ui/Project'
+import ProjectTech from '../projects/ProjectTech'
 import { useViewParams } from '../politik/useViewParams'
 import {
   CORPUS_ORDER,
@@ -117,20 +118,32 @@ export default function ConceptConstellationPage({ route }: { route: Route }) {
     return <p className="cc-body ds-container">{l('Loading…', 'Laddar…')}</p>
   const concept = conceptFromPath(route.path)
   const known = data.summary.concepts.find((c) => c.concept_id === concept)
+  const metrics = null
   return (
     <div className="concepts">
       {route.path === '#concept-journey' ? (
-        <Journey route={route} data={data} />
+        <Journey route={route} data={data} metrics={metrics} />
       ) : known ? (
         <ConceptPage data={data} concept={known} />
       ) : (
-        <Constellation route={route} data={data} />
+        <Constellation route={route} data={data} metrics={metrics} />
       )}
+      <div className="ds-container">
+        <ProjectTech project="concept-constellation" />
+      </div>
     </div>
   )
 }
 
-function Constellation({ route, data }: { route: Route; data: Data }) {
+function Constellation({
+  route,
+  data,
+  metrics,
+}: {
+  route: Route
+  data: Data
+  metrics?: ReactNode
+}) {
   const [params, set] = useViewParams(route, DEFAULTS)
   const { summary, profiles, relations } = data
   const shown = new Set(params.visa.split(',').filter(Boolean))
@@ -161,17 +174,7 @@ function Constellation({ route, data }: { route: Route; data: Data }) {
   return (
     <>
       <div className="ds-container">
-        <ProjectHero
-          project="concept-constellation"
-          nav={[
-            {
-              href: '#concept-journey',
-              label: l('Follow an idea', 'Följ en idé'),
-            },
-            { href: '#concepts-profiles', label: l('Profiles', 'Profiler') },
-            { href: '#concepts-method', label: l('Method', 'Metod') },
-          ]}
-        >
+        <ProjectHero project="concept-constellation">
           <p>
             {l(
               `${summary.concepts.length} concepts chosen by an editor, read across ${summary.corpora.reduce((s, c) => s + c.chunks, 0).toLocaleString(l('en-GB', 'sv-SE'))} passages from four corpora with one multilingual model. Every line below has a stated type. None says that one text influenced another.`,
@@ -179,6 +182,7 @@ function Constellation({ route, data }: { route: Route; data: Data }) {
             )}
           </p>
         </ProjectHero>
+        {metrics}
       </div>
       <div className="cc-body ds-container">
         <section className="cj-start" aria-labelledby="cj-start-title">
@@ -648,7 +652,7 @@ function ConceptPage({ data, concept }: { data: Data; concept: Concept }) {
     <>
       <header className="cc-hero ds-container">
         <p className="cc-kicker">
-          <a href="#concept-constellation">Concept Constellation</a>,{' '}
+          <a href="#concept-constellation">Concept Lab</a>,{' '}
           {l(...FAMILY_LABEL[concept.family])}
         </p>
         <h1>{label(concept)}</h1>
@@ -841,7 +845,7 @@ function LinkRow({ link }: { link: Link }) {
   if (link.kind === 'philosophy_tension')
     return (
       <li>
-        {l('Philosophy Atlas tension', 'Spänning i Philosophy Atlas')}:{' '}
+        {l('Philosophy Lab tension', 'Spänning i Philosophy Lab')}:{' '}
         <a href={`#philosophy-tensions?spanning=${link.target_id}`}>
           {t ? label(t) : link.target_id}
         </a>

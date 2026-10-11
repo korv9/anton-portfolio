@@ -1,0 +1,62 @@
+schema_version: 1
+datasets:
+  - name: jobs-2023-2026
+    adapter: jobs
+    family: jobs
+    path: warehouse/raw/jobtech/cluster-corpus
+    archives: warehouse/jobtech/archives
+    start: '2023-01-01'
+    end: '2027-01-01'
+    allow_partial: false
+    prepare: true
+    ingestion:
+      archives: ['2023', '2024', '2025', '2026-Q1', '2026-Q2', '2026-Q3']
+      active_snapshot: true
+      checkpoint_rows: 20000
+      pause_seconds: 1
+representation:
+  text_fields: [title, description]
+  title_weight: 1
+  model: sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
+  revision: e8f8c211226b894fcb81acc59f3b34ba3efd5f42
+sweep:
+  coarse_candidates: 24
+  sample_sizes: [20000, 60000]
+  finalists: 3
+  refinements_per_finalist: 3
+  stability_seeds: [43, 44]
+  stability_sample_seeds: [43]
+  full_seeds: [42, 43]
+  baseline:
+    reduction: {method: umap, n_neighbors: 30, n_components: 15, min_dist: 0.05}
+    clustering: {min_cluster_size: 50, min_samples: 10, implementation: hdbscan}
+  search:
+    - parameters:
+        representation.text_fields: [[title, description], [description]]
+        representation.title_weight: [0.5, 1, 2]
+        representation.preprocessing: [raw, boilerplate]
+        reduction.method: [none, pca, svd, umap]
+        clustering.min_cluster_size: [100, 300, 600, {fraction: 0.005}, {fraction: 0.015}]
+        clustering.min_samples: [3, 5, 10, 20]
+        clustering.cluster_selection_method: [eom, leaf]
+    - when: {reduction.method: umap}
+      parameters:
+        reduction.n_neighbors: [15, 30, 60, 120]
+        reduction.n_components: [5, 10, 20, 30]
+        reduction.min_dist: [0.0, 0.05, 0.1]
+    - when: {reduction.method: pca}
+      parameters: {reduction.n_components: [20, 30, 60]}
+    - when: {reduction.method: svd}
+      parameters: {reduction.n_components: [20, 30, 60]}
+layouts:
+  count: 8
+  preview_count: 8
+  n_neighbors: [10, 30, 60, 120]
+  min_dist: [0.0, 0.05, 0.15, 0.35, 0.6]
+  seeds: [42, 43]
+resources:
+  cpu_threads: 4
+  torch_threads: 4
+  workers: 1
+  memory_gb: 10
+  min_free_disk_gb: 2

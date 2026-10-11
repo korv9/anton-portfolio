@@ -58,8 +58,16 @@ const fmt = (v: number, d: number) =>
     maximumFractionDigits: d,
   })
 
-export default function CountyMultiples({ rows }: { rows: CountyYear[] }) {
-  const [key, setKey] = useState<Key>('unemployment_rate_pct')
+export default function CountyMultiples({
+  rows,
+  initialKey = 'unemployment_rate_pct',
+  allowedKeys,
+}: {
+  rows: CountyYear[]
+  initialKey?: Key
+  allowedKeys?: Key[]
+}) {
+  const [key, setKey] = useState<Key>(initialKey)
   const [year, setYear] = useState<number | null>(null)
   const [ref, width] = useWidth<HTMLDivElement>()
   if (!rows.length) return null
@@ -84,8 +92,6 @@ export default function CountyMultiples({ rows }: { rows: CountyYear[] }) {
     valued
       .find((r) => r.region_code === code)
       ?.region_name.replace(/ län$/, '') ?? code
-  const fullName = (code: string) =>
-    valued.find((r) => r.region_code === code)?.region_name ?? code
   const sorted = [...counties].sort(
     (a, b) => (v(b, last) ?? -1) - (v(a, last) ?? -1),
   )
@@ -107,17 +113,12 @@ export default function CountyMultiples({ rows }: { rows: CountyYear[] }) {
       )
       .join(' ')
   const at = year ?? last
-  const highest = ranked[0]
-  const lowest = ranked.at(-1)!
   const national = avg(last)
 
   return (
     <Feature
       id="lanen"
-      title={l(
-        `${m.en} ${last}: highest in ${fullName(highest)} (${fmt(v(highest, last)!, m.digits)}), lowest in ${fullName(lowest)} (${fmt(v(lowest, last)!, m.digits)}).`,
-        `${m.sv} ${last}: högst i ${fullName(highest)} (${fmt(v(highest, last)!, m.digits)}), lägst i ${fullName(lowest)} (${fmt(v(lowest, last)!, m.digits)}).`,
-      )}
+      title={l(`${m.en} by county`, `${m.sv} per lÃ¤n`)}
       lead={l(
         `One small chart per county, ${years[0]}–${last}, all on the same axis (0–${fmt(top, 0)} ${m.unit}), sorted by the latest value. The grey line is the population-weighted average of the counties${national != null ? `, ${fmt(national, m.digits)} in ${last}` : ''}. Hover a year to read it in every county.`,
         `Ett litet diagram per län, ${years[0]}–${last}, alla på samma axel (0–${fmt(top, 0)} ${m.unit}), sorterade efter senaste värdet. Den grå linjen är länens befolkningsvägda snitt${national != null ? `, ${fmt(national, m.digits)} ${last}` : ''}. Håll över ett år för att läsa det i alla län.`,
@@ -126,7 +127,10 @@ export default function CountyMultiples({ rows }: { rows: CountyYear[] }) {
         <Pick
           label={l('Measure', 'Mått')}
           value={key}
-          options={MEASURES.map((x) => ({
+          options={(allowedKeys
+            ? MEASURES.filter((m) => allowedKeys.includes(m.key))
+            : MEASURES
+          ).map((x) => ({
             value: x.key,
             label: l(x.en, x.sv),
           }))}

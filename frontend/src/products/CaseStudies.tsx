@@ -1,12 +1,13 @@
 /** Project pages that are a single report: DrugComb, Allegoria, the degree project and Homie. */
 import { lazy } from 'react'
 import { l, t } from '../i18n'
+import { ProjectHero, ProjectSection } from '../ui/Project'
+import { ProjectDepth } from '../projects/ProjectStructure'
+import ProjectTech from '../projects/ProjectTech'
 import { Stage, StageBlock, StageFacts, StageTools } from '../ui/Stage'
-import ThesisSieve from './ThesisSieve'
 import HomieFlow from './HomieFlow'
 import './mlviz.css'
 
-const RfcReport = lazy(() => import('../RfcReport'))
 const DrugCombReport = lazy(() => import('./DrugCombReport'))
 const HomieProject = lazy(() => import('./HomieProject'))
 const ProjectDataDisclosure = lazy(() => import('./ProjectDataDisclosure'))
@@ -21,16 +22,11 @@ export function DrugCombPage() {
             'Maskininlärning, förutsäga läkemedelssynergi',
           )}
         </p>
-        <h1>
-          {l(
-            'Which drugs work better together?',
-            'Vilka läkemedel fungerar bättre tillsammans?',
-          )}
-        </h1>
+        <h1>{l('Drug Synergy Lab', 'Drug Synergy Lab')}</h1>
         <p>
           {l(
-            'A data pipeline and model that predict which drug pairs kill more cancer cells together than alone, tested honestly on drugs and cell lines it has never seen.',
-            'En datapipeline och modell som förutsäger vilka läkemedelspar som dödar fler cancerceller tillsammans än var för sig, ärligt prövad på läkemedel och cellinjer den aldrig sett.',
+            'Predicting synergy in DrugComb experiment data, with separate tests for unseen drugs, pairs and cell lines.',
+            'Förutsägelse av synergi i DrugCombs experimentdata, med separata tester för osedda läkemedel, par och cellinjer.',
           )}
         </p>
       </div>
@@ -46,217 +42,122 @@ export function DrugCombPage() {
   )
 }
 
-export function AllegoriaPage() {
-  return (
-    <div className="project-page">
-      <div className="page-lead">
-        <p className="eyebrow">{t('Allegoria, work in progress')}</p>
-        <h1>{t('Allegoria / RFC drift.')}</h1>
-        <p>
-          {t(
-            'A compact experiment with real requirement profiles and a clearly labelled synthetic direction example.',
-          )}
-        </p>
-      </div>
-      <div className="reports">
-        <RfcReport />
-      </div>
-    </div>
-  )
-}
-
 export function ThesisPage() {
   return (
-    <div className="project-page">
-      <Stage
-        id="thesis-stage"
-        level={1}
-        kicker={l(
-          'Degree project, Avtalat, 2026',
-          'Examensarbete, Avtalat, 2026',
-        )}
-        title={l(
-          'From 21,000 incidents to 72 to review',
-          'Från 21 000 incidenter till 72 att granska',
-        )}
-        lead={l(
-          'Unsupervised NLP groups similar incident texts; groups without a link to an existing problem record become candidates for review, not proven root causes.',
-          'Oövervakad NLP grupperar liknande incidenttexter; grupper utan koppling till en befintlig problempost blir kandidater för granskning, inte bevisade grundorsaker.',
-        )}
-        figure={<ThesisSieve />}
-        left={
-          <>
-            <StageBlock title={l('Data', 'Data')}>
-              <StageFacts
-                rows={[
-                  [
-                    l('Production incidents', 'Produktionsincidenter'),
-                    '21,000+',
-                  ],
-                  [l('Data quality', 'Datakvalitet'), 'ISO/IEC 25012'],
-                  [
-                    l('Personal data', 'Personuppgifter'),
-                    l('masked (Presidio)', 'maskerade (Presidio)'),
-                  ],
-                ]}
-              />
-              <p>
-                {l(
-                  'Internal records: no incident text or raw data is published.',
-                  'Interna poster: ingen incidenttext eller rådata publiceras.',
-                )}
-              </p>
-            </StageBlock>
-            <StageBlock title={l('Pipeline', 'Pipeline')}>
-              <ol className="stage-steps">
-                <li>{l('Quality assessment', 'Kvalitetsbedömning')}</li>
-                <li>
-                  {l('PII masking with Presidio', 'PII-maskning med Presidio')}
-                </li>
-                <li>
-                  {l(
-                    'Multilingual sentence embeddings',
-                    'Flerspråkiga meningsinbäddningar',
-                  )}
-                </li>
-                <li>
-                  {l('UMAP to 10 dimensions', 'UMAP till 10 dimensioner')}
-                </li>
-                <li>HDBSCAN</li>
-                <li>{l('Tracked in MLflow', 'Spårat i MLflow')}</li>
-              </ol>
-            </StageBlock>
-          </>
-        }
-        right={
-          <>
-            <StageBlock title={l('Results', 'Resultat')}>
-              <StageFacts
-                rows={[
-                  [l('Clusters', 'Kluster'), '121'],
-                  [l('Review candidates', 'Granskningskandidater'), '72'],
-                ]}
-              />
-            </StageBlock>
-            <StageBlock title={l('Silhouette', 'Silhuett')}>
-              {[
-                ['HDBSCAN', 0.706],
-                ['K-means', 0.534],
-              ].map(([m, v]) => (
-                <div key={m as string}>
-                  {m}
-                  <div className="stage-bar">
-                    <span>
-                      <i style={{ width: `${(v as number) * 100}%` }} />
-                    </span>
-                    <b>{(v as number).toFixed(3)}</b>
-                  </div>
-                </div>
-              ))}
-              <p>
-                {l(
-                  'Internal separation only: business validation is still needed. Which clusters are candidates is not shown; they are spread evenly in the figure.',
-                  'Bara intern separation: verksamhetens validering behövs fortfarande. Vilka kluster som är kandidater visas inte; de är jämnt spridda i figuren.',
-                )}
-              </p>
-            </StageBlock>
-            <StageBlock title={l('Tools', 'Verktyg')}>
-              <StageTools
-                items={[
-                  'Python',
-                  'Azure Databricks',
-                  'sentence-transformers',
-                  'UMAP',
-                  'HDBSCAN',
-                  'Presidio',
-                  'MLflow',
-                ]}
-              />
-            </StageBlock>
-          </>
-        }
-      />
-      <div className="featured-projects">
-        <div className="project-grid">
-          <article className="thesis-card" id="thesis">
-            <div className="project-card-head">
-              <span>
-                {l(
-                  'Degree project, Avtalat, 2026',
-                  'Examensarbete, Avtalat, 2026',
-                )}
-              </span>
-              <strong>{t('Primary case study')}</strong>
-            </div>
-            <h3>{t('Finding review candidates in incident data')}</h3>
-            <p>
-              {t(
-                'Built a privacy-aware Azure Databricks workflow for data quality assessment and NLP clustering. The goal was to surface groups of similar incidents for manual review, without presenting clusters as proven root causes.',
-              )}
-            </p>
-            <div className="thesis-kpis">
-              <div>
-                <strong>21,000+</strong>
+    <article className="project-page thesis-page">
+      <ProjectHero
+        project="thesis"
+        question={l('Clustering IT incidents', 'Klustring av IT-incidenter')}
+      >
+        <p>
+          {l(
+            'Degree project at Avtalat, 2026. Similar incident texts are grouped to create candidates for problem management review.',
+            'Examensarbete hos Avtalat, 2026. Liknande incidenttexter grupperas till kandidater för granskning inom problemhantering.',
+          )}
+        </p>
+      </ProjectHero>
+      <section id="thesis-workflow" className="project-section">
+        <h2>
+          {l(
+            'From incidents to review candidates',
+            'Från incidenter till granskningskandidater',
+          )}
+        </h2>
+        <ol className="engineering-flow">
+          <li>
+            <strong>21 000+</strong>
+            {l('Incident records', 'Incidentposter')}
+          </li>
+          <li>
+            <strong>121</strong>
+            {l('HDBSCAN clusters', 'HDBSCAN-kluster')}
+          </li>
+          <li>
+            <strong>72</strong>
+            {l('Review candidates', 'Granskningskandidater')}
+          </li>
+        </ol>
+        <p>
+          {l(
+            'Candidates are groups without a link to an existing problem record. They require domain review; the count does not establish root causes.',
+            'Kandidater är grupper utan koppling till en befintlig problempost. De behöver verksamhetens granskning; antalet fastställer inte grundorsaker.',
+          )}
+        </p>
+      </section>
+      <ProjectSection
+        id="thesis-evaluation"
+        title={l('Model evaluation', 'Modellutvärdering')}
+      >
+        <figure className="thesis-evaluation">
+          <figcaption>
+            {l(
+              'Silhouette score for the compared clustering methods',
+              'Silhuettvärde för de jämförda klustringsmetoderna',
+            )}
+          </figcaption>
+          {[
+            ['HDBSCAN', 0.706],
+            ['K-means', 0.534],
+          ].map(([name, value]) => (
+            <div key={name}>
+              <span>{name}</span>
+              <div className="stage-bar">
                 <span>
-                  {l('production incidents', 'produktionsincidenter')}
+                  <i style={{ width: `${Number(value) * 100}%` }} />
                 </span>
               </div>
-              <div>
-                <strong>121</strong>
-                <span>{t('clusters found')}</span>
-              </div>
-              <div>
-                <strong>72</strong>
-                <span>{t('without an existing problem link')}</span>
-              </div>
-              <div>
-                <strong>0.706</strong>
-                <span>{t('best reported silhouette')}</span>
-              </div>
+              <b>
+                {Number(value).toLocaleString(l('en-GB', 'sv-SE'), {
+                  minimumFractionDigits: 3,
+                })}
+              </b>
             </div>
-            <div className="thesis-findings">
-              <div>
-                <span>01</span>
-                <p>
-                  <strong>{t('Data quality shaped the pipeline.')}</strong>{' '}
-                  {t(
-                    'Selected ISO/IEC 25012 dimensions were assessed before the modelling stage.',
-                  )}
-                </p>
-              </div>
-              <div>
-                <span>02</span>
-                <p>
-                  <strong>
-                    {t('HDBSCAN produced the stronger internal separation.')}
-                  </strong>{' '}
-                  {t(
-                    'The reported silhouette was 0.706, compared with 0.534 for KMeans.',
-                  )}
-                </p>
-              </div>
-              <div>
-                <span>03</span>
-                <p>
-                  <strong>{t('72 clusters became review candidates.')}</strong>{' '}
-                  {t(
-                    'They lacked an existing problem link, but require domain validation before any root-cause claim.',
-                  )}
-                </p>
-              </div>
-            </div>
-            <details>
-              <summary>{t('Pipeline & limitations')}</summary>
-              <p>
-                {t(
-                  'Presidio for PII, multilingual sentence embeddings, UMAP to 10 dimensions, HDBSCAN and MLflow. Internal clustering metrics do not replace business validation, and no internal incident text or employer raw data is published here.',
-                )}
-              </p>
-            </details>
-          </article>
+          ))}
+        </figure>
+        <p>
+          {l(
+            'Silhouette describes internal separation between groups. It does not measure whether a group is a useful problem record.',
+            'Silhuettvärdet beskriver gruppernas interna separation. Det mäter inte om en grupp är en användbar problempost.',
+          )}
+        </p>
+      </ProjectSection>
+      <ProjectDepth project="thesis">
+        <div className="project-depth-notes">
+          <section>
+            <h3>{l('Source and preparation', 'Källa och förberedelse')}</h3>
+            <p>
+              {l(
+                'Internal incident records were assessed with ISO/IEC 25012. Personal data was masked with Presidio. Incident text and raw data are not published.',
+                'Interna incidentposter bedömdes med ISO/IEC 25012. Personuppgifter maskerades med Presidio. Incidenttexter och rådata publiceras inte.',
+              )}
+            </p>
+          </section>
+          <section>
+            <h3>
+              {l(
+                'Representation and clustering',
+                'Representation och klustring',
+              )}
+            </h3>
+            <p>
+              {l(
+                'Multilingual sentence embeddings, UMAP to ten dimensions and HDBSCAN. K-means was used for comparison. Runs were tracked in MLflow on Azure Databricks.',
+                'Flerspråkiga meningsinbäddningar, UMAP till tio dimensioner och HDBSCAN. K-means användes för jämförelse. Körningar spårades i MLflow på Azure Databricks.',
+              )}
+            </p>
+          </section>
+          <section>
+            <h3>{l('Review', 'Granskning')}</h3>
+            <p>
+              {l(
+                'The next step is to assess the candidates against operational knowledge and existing problem records. No confirmed time saving or root-cause outcome is reported here.',
+                'Nästa steg är att bedöma kandidaterna mot verksamhetskunskap och befintliga problemposter. Någon bekräftad tidsbesparing eller fastställd grundorsak redovisas inte här.',
+              )}
+            </p>
+          </section>
         </div>
-      </div>
-    </div>
+      </ProjectDepth>
+    </article>
   )
 }
 
@@ -346,7 +247,10 @@ export function HomiePage() {
         }
       />
       <div className="reports">
-        <HomieProject />
+        <ProjectTech project="homie" />
+        <ProjectDepth project="homie">
+          <HomieProject />
+        </ProjectDepth>
       </div>
     </div>
   )

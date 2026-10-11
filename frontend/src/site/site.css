@@ -4,7 +4,7 @@
 /* ---------- Project context ---------- */
 .project-context {
   max-width: none;
-  padding: 14px clamp(16px, 1.8vw, 36px) 6px;
+  padding: 14px var(--gutter) 6px;
   font-size: 0.85rem;
 }
 .project-context ol {
@@ -61,46 +61,4 @@
 .project-pager span {
   font-size: 1.05rem;
   font-weight: 650;
-}
-
-/* Project pages share the homepage's open canvas and editorial type. */
-.project-shell {
-  --project-accent: var(--series-3);
-}
-.project-shell #main h1:not(.project-hero-title) {
-  font-family: var(--font);
-  font-size: clamp(32px, 4.4vw, 64px);
-  line-height: 1.08;
-  letter-spacing: -0.045em;
-  font-weight: 700;
-}
-.project-shell #main h2 {
-  font-family: var(--font);
-  letter-spacing: -0.035em;
-}
-.project-shell .politik {
-  max-width: none;
-}
-
-.project-shell .welfare-tile {
-  background: var(--paper);
-  border: 0;
-  border-top: 2px solid var(--series-1);
-  border-radius: 0;
-}
-.project-shell .ds-visualization {
-  background: transparent;
-}
-
-.project-shell button[style*='--party'] > span[aria-hidden='true'] {
-  color: var(--ink);
-}
-
-/* A page that failed to draw (PageBoundary). */
-.page-failed {
-  max-width: var(--measure);
-  padding-block: 3rem 4rem;
-}
-.page-failed h1 {
-  font-size: var(--h2);
 }

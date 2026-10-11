@@ -11,11 +11,15 @@ test('a startup finds what applies, uses the navigator and reaches the law', asy
 }) => {
   await page.goto('/#start')
   await page.locator('#projekt a[href="#ai-act"]').first().click()
-  await expect(
-    page.getByRole('heading', { level: 2, name: 'What applies now?' }),
-  ).toBeVisible()
-  await expect(page.locator('.aa-now-more')).toContainText('Last verified')
-  await page.locator('.aa-who a[href="#ai-act-startups"]').click()
+  await page.locator('.overview-topics a[href="#ai-act-roles"]').click()
+  await page
+    .getByRole('navigation', { name: 'Project topics' })
+    .getByRole('link', { name: 'Risk and use', exact: true })
+    .click()
+  await page
+    .getByRole('navigation', { name: 'In this topic' })
+    .getByRole('link', { name: 'Navigator', exact: true })
+    .click()
   await page
     .locator('.aa-question')
     .filter({ hasText: 'under your own name' })
@@ -49,7 +53,7 @@ test('a visitor follows an idea across stories, philosophy, politics and law', a
   await page.locator('.cj-start a', { hasText: 'Control' }).click()
   await expect(page).toHaveURL(/concept-journey\?begrepp=control/)
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-    'Concept Constellation',
+    'Concept Lab',
   )
   await expect(page.locator('.project-hero')).toContainText(
     'semantic similarity, not historical influence',
@@ -69,7 +73,7 @@ test('a visitor follows an idea across stories, philosophy, politics and law', a
   await expect(law.locator('a[href="#ai-act-obligations"]')).toBeVisible()
   // The stories say plainly that no reviewed symbolic cluster is linked yet.
   await expect(page.locator('.cj-domain-myth .cj-note').first()).toContainText(
-    'No reviewed Symbolic Atlas cluster',
+    'No reviewed Symbol Lab cluster',
   )
   await expect(page.locator('.interpretation')).toContainText('not influence')
   // Picking another idea keeps the choice in the address.
@@ -85,40 +89,5 @@ test('a visitor follows an idea across stories, philosophy, politics and law', a
     .analyze()
   expect(axe.violations.map((v) => `${v.id}: ${v.nodes[0]?.target}`)).toEqual(
     [],
-  )
-})
-
-test('a technical reviewer traces a result and reads the catalogue', async ({
-  page,
-}) => {
-  await page.goto('/#ai-act')
-  await page.locator('.trace summary').first().click()
-  const trace = page.locator('.trace').first()
-  await expect(trace.locator('.trace-path')).toContainText(
-    'mart_ai_act_timeline',
-  )
-  await expect(trace.locator('.trace-path')).toContainText(
-    'EU Publications Office',
-  )
-  await trace.locator('a.trace-full').click()
-  await expect(page).toHaveURL(/data-constellation\?view=lineage&node=/)
-
-  await page.goto('/#data-catalogue')
-  await expect(page.locator('.catalogue-status-grid')).toContainText(
-    'EU AI Act',
-  )
-  await page.getByRole('searchbox').fill('obligations')
-  const row = page
-    .locator('.catalogue-item')
-    .filter({ hasText: 'ai-act/obligations.json' })
-  await row.locator('summary').click()
-  await expect(row.locator('.catalogue-facts')).toContainText(
-    'mart_ai_act_obligations',
-  )
-  await expect(row.locator('.catalogue-facts')).toContainText('source_quote')
-  await expect(row.locator('.catalogue-check').first()).toBeVisible()
-  await page.getByRole('searchbox').fill('nothing-matches-this')
-  await expect(page.locator('.catalogue-list')).toContainText(
-    'No dataset matches these filters.',
   )
 })

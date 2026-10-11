@@ -5,7 +5,7 @@ name: Refresh public data
 # build and test the warehouse, export the site's JSON and the Parquet the browser filters,
 # upload to R2, and commit the delivery files when they changed. The run record (welfare/run.json) is also written to R2 on every run,
 # so the status page shows when the pipeline last checked, not only when data last moved.
-# Sources publish monthly or quarterly; a daily check keeps the lag under a day.
+# Current periods are checked daily; bulk OECD/FK responses have a seven-day refresh policy.
 # Cloudflare builds and publishes the site from every push to main, this commit included
 # (docs/deploy.md), so the workflow does not deploy itself.
 
@@ -13,6 +13,11 @@ on:
   schedule:
     - cron: '37 4 * * *'
   workflow_dispatch:
+    inputs:
+      full_refresh:
+        description: Refetch history and current data (source revisions)
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -24,11 +29,12 @@ concurrency:
 jobs:
   refresh:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 240
     # The R2 credentials are secrets of the anton-portfolio environment.
     environment: anton-portfolio
     env:
       DBT_SEND_ANONYMOUS_USAGE_STATS: 'false'
+      PORTFOLIO_FULL_REFRESH: ${{ inputs.full_refresh && '1' || '0' }}
       PORTFOLIO_DB: ${{ github.workspace }}/warehouse/portfolio.duckdb
       PORTFOLIO_RAW: ${{ github.workspace }}/warehouse/raw
       R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
@@ -50,39 +56,76 @@ jobs:
           cache: pip
           cache-dependency-path: platform/requirements.txt
       - run: pip install -r platform/requirements.txt
-      - name: Fetch, build and test
+      # Same writer lock as build-warehouse.yml: shared raw manifests and R2 keys.
+      - name: Restore verified raw files
+        id: restore
+        run: >-
+          python platform/publish/warehouse_store.py pull --only raw
+          --path scb --path fohm --path fk --path ess --path kolada
+          --path riksdagen/votes --path riksdagen/reports --path riksdagen/studies
+          --path riksdagen/formation --path riksdagen/_checkpoints --path riksdagen/_manifest.jsonl --path val --path oecd --path skatteverket
+      - name: Fetch, build and test welfare
+        id: welfare
+        continue-on-error: true
+        timeout-minutes: 70
         run: python platform/ingest/run_welfare.py
-      # Closed sessions' roll calls and bills never change; keep them between runs instead of
-      # downloading 300 MB of history and 4 000 bills every day. The two open sessions are
-      # always refetched.
-      - name: Restore Riksdagen history
-        uses: actions/cache@v4
-        with:
-          path: |
-            warehouse/raw/riksdagen/votes
-            warehouse/raw/riksdagen/studies
-          key: riksdagen-votes-${{ github.run_id }}
-          restore-keys: riksdagen-votes-
+      - name: Save welfare checkpoints
+        if: ${{ !cancelled() && steps.restore.outcome == 'success' }}
+        run: >-
+          python platform/publish/warehouse_store.py push --only raw --prune
+          --path scb --path fohm --path fk --path ess --path kolada
       - name: Fetch, build and test parliament
+        id: parliament
+        if: ${{ !cancelled() && steps.restore.outcome == 'success' }}
+        continue-on-error: true
+        timeout-minutes: 90
         run: python platform/ingest/run_parliament.py
+      - name: Save parliament checkpoints
+        if: ${{ !cancelled() && steps.restore.outcome == 'success' }}
+        run: >-
+          python platform/publish/warehouse_store.py push --only raw --prune
+          --path scb --path riksdagen/votes --path riksdagen/reports --path riksdagen/studies
+          --path riksdagen/formation --path riksdagen/_checkpoints --path riksdagen/_manifest.jsonl --path val
       - name: Fetch, build and test taxes
+        id: taxes
+        if: ${{ !cancelled() && steps.restore.outcome == 'success' }}
+        continue-on-error: true
+        timeout-minutes: 60
         run: python platform/ingest/run_taxes.py
+      # Raw checkpoints are useful even if a later source or dbt test fails.
+      - name: Save all available checkpoints
+        if: ${{ always() && steps.restore.outcome == 'success' }}
+        run: >-
+          python platform/publish/warehouse_store.py push --only raw --prune
+          --path scb --path fohm --path fk --path ess --path kolada
+          --path riksdagen/votes --path riksdagen/reports --path riksdagen/studies
+          --path riksdagen/formation --path riksdagen/_checkpoints --path riksdagen/_manifest.jsonl --path val --path oecd --path skatteverket
+      - name: Require successful subject builds
+        if: ${{ !cancelled() }}
+        env:
+          WELFARE: ${{ steps.welfare.outcome }}
+          PARLIAMENT: ${{ steps.parliament.outcome }}
+          TAXES: ${{ steps.taxes.outcome }}
+        run: |
+          [ "$WELFARE" = success ] && [ "$PARLIAMENT" = success ] && [ "$TAXES" = success ]
       - name: Export delivery files
         run: |
           python platform/publish/export_welfare.py
           python platform/publish/export_parliament.py
           python platform/publish/export_taxes.py
           python platform/publish/export_schema.py
-      - name: Upload to R2 and verify
+      - name: Data contracts before publishing
         run: |
           npm run data:catalog
+          npm run data:check
+          python platform/publish/validate_public_data.py
+      - name: Upload to R2 and verify
+        run: |
           python platform/publish/upload.py
           python platform/publish/upload.py --verify-only --offload
           npm run data:catalog
       - name: Publish the run record
         run: python platform/publish/publish_status.py
-      - name: Data contracts
-        run: npm run data:check
       - name: Commit changed delivery files
         id: commit
         run: |

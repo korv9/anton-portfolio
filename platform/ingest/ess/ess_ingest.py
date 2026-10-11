@@ -22,6 +22,7 @@ from urllib.parse import urlsplit, urlunsplit
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "lib"))
 
 from rawstore import session, store  # noqa: E402
+import rawstore  # noqa: E402
 
 API = "https://api.nsd.no/graphql"
 SOURCE = "ess"
@@ -97,14 +98,22 @@ def main() -> None:
         # Usually one main file; ESS10 has a second for countries that switched to
         # self-completion during the pandemic (Sweden among them), marked SC in its label.
         for main_file in (f for f in files["search"]["studyMetadata"]["dataFiles"] if f["isMainFile"]):
+            label = main_file["label"]["en"]
+            relative = f"{name}/{label}.csv.gz"
+            previous = rawstore.verified_record(SOURCE, relative)
+            if (previous and rawstore.fresh(previous, 90)
+                    and previous.get("body", {}).get("datafile") == {
+                        "id": main_file["id"], "version": main_file["version"]}
+                    and previous["body"].get("requested_variables") == VARIABLES):
+                print(f"Reuse ess/{relative}: published version {main_file['version']}", flush=True)
+                continue
             meta = graphql(http, VARIABLES_QUERY, {"id": main_file["id"], "version": main_file["version"],
                                                     "instance": "PUBLISHED"})
             available = variable_names(meta["search"]["dataFileMetadata"]["variableGroups"])
             wanted = [v for v in VARIABLES if v in available]
             payload, url, request = download(http, main_file, wanted)
-            label = main_file["label"]["en"]
-            store(SOURCE, f"{name}/{label}.csv.gz", payload, url=url, method="GRAPHQL",
-                  body={"api": API, "study": study["id"], **request})
+            store(SOURCE, relative, payload, url=url, method="GRAPHQL",
+                  body={"api": API, "study": study["id"], "requested_variables": VARIABLES, **request})
             missing = sorted(set(VARIABLES) - set(wanted))
             print(f"ess/{name}: {label}, {len(payload) / 1e6:.1f} MB, not in file: {missing}")
 
