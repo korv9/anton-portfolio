@@ -17,6 +17,9 @@ __pycache__/
 # Warehouse: bronze files and the local DuckDB build
 warehouse/
 
+# Private thesis source and analysis files; never served by the site.
+/platform/products/thesis/private/
+
 # dbt
 platform/target/
 platform/dbt_packages/

@@ -1,7 +1,9 @@
 /** Homepage: About, work history, the platform, selected projects and experiments. */
 import { useEffect } from 'react'
 import { profile } from '../content'
-import { ABOUT } from './content'
+import { ABOUT, CONTACT } from './content'
+import { l, currentLocale } from '../i18n'
+import { CvButton } from '../site/CvViewer'
 import {
   ADDITIONAL,
   EDUCATION,
@@ -29,7 +31,7 @@ function Identity() {
       <h1 id="home-name" className="home-name">
         Anton Ernstsson
       </h1>
-      <p className="home-roles">Data &amp; AI Engineer</p>
+      <p className="home-roles">SOFTWARE DATA AI</p>
     </section>
   )
 }
@@ -39,25 +41,29 @@ function Profile() {
   const thesis = PROJECTS.find((p) => p.id === 'thesis')
   return (
     <section className="home-screen home-profile" aria-label="Profile">
-      <div className="home-column home-about" id="om-mig">
-        <h2 className="home-title">About</h2>
+      <div
+        className="home-column home-about"
+        id="om-mig"
+        lang={currentLocale()}
+      >
+        <h2 className="home-title">{l('About', 'Om mig')}</h2>
         {ABOUT.map((text) => (
           <p key={text.sv} className="home-about-text">
-            {b(text)}
+            {l(text.en, text.sv)}
           </p>
         ))}
         <div className="home-contact">
+          <p className="home-contact-intro">{l(CONTACT.en, CONTACT.sv)}</p>
           {profile.email && (
             <p className="home-contact-email">
               <a href={`mailto:${profile.email}`}>{profile.email}</a>
             </p>
           )}
-          <nav className="home-links" aria-label="CV and profiles">
-            {profile.cv && (
-              <a href={profile.cv} download aria-label="Download CV">
-                CV
-              </a>
-            )}
+          <nav
+            className="home-links"
+            aria-label={l('CV and profiles', 'CV och profiler')}
+          >
+            {profile.cv && <CvButton />}
             {profile.linkedin && (
               <a href={profile.linkedin} target="_blank" rel="noreferrer">
                 LinkedIn
@@ -127,6 +133,7 @@ function Profile() {
                 <li key={item.sv}>{b(item)}</li>
               ))}
             </ul>
+            <p className="home-job-role">Tech: {THESIS.tech.join(', ')}</p>
           </div>
         )}
       </div>

@@ -242,22 +242,22 @@ export const PROJECTS: ProjectEntry[] = [
   {
     id: 'thesis',
     title: t('IT Incident Clustering', 'IT Incident Clustering'),
-    descriptor: t('NLP, klustring, Avtalat', 'NLP, clustering, Avtalat'),
+    descriptor: t('NLP, fallstudie hos Fora AB', 'NLP, case study at Fora AB'),
     summary: t(
-      'Hitta grupper av relaterade incidenter i IT-servicedata för manuell granskning.',
-      'Finding groups of related incidents in IT service data for manual review.',
+      'Anton grupperade liknande IT-supportärenden för att ge IT-teamet ett underlag för utredning av återkommande fel.',
+      'Anton grouped similar IT support tickets to help the IT team investigate recurring faults.',
     ),
     question: t(
-      'Liknande incidenter kan dela ett problem innan någon kopplar ihop dem.',
-      'Similar incidents may share a problem before anyone links them.',
+      'Hur hittar IT-teamet återkommande fel bland tusentals enskilda supportärenden?',
+      'How can the IT team find recurring faults among thousands of individual support tickets?',
     ),
     built: t(
-      'Ett reproducerbart flöde för datakvalitet enligt ISO/IEC 25012, anonymisering, inbäddningar och klustring i Azure Databricks, på 21 000+ riktiga produktionsincidenter.',
-      'A reproducible workflow for ISO/IEC 25012 data quality, anonymisation, embeddings and clustering in Azure Databricks, on 21,000+ real production incidents.',
+      'Datakvalitetsanalys av 21 633 incidentposter och ett NLP-flöde i Azure Databricks. Den rensade korpusen hade 19 847 unika incidenter; den valda klustringen använde 16 811.',
+      'Data quality analysis of 21,633 incident records and an NLP pipeline in Azure Databricks. The cleaned corpus had 19,847 unique incidents; the selected clustering run used 16,811.',
     ),
     result: t(
-      '72 möjliga problemposter och bättre klusterkvalitet än K-means. Interna källposter är inte offentliga.',
-      '72 potential problem records and better cluster quality than K-means. Internal source records are not public.',
+      '121 grupper av liknande ärenden, varav 72 saknade befintlig problemkoppling. De är granskningskandidater, inte bevisade rotorsaker. Källärendena är privata.',
+      '121 groups of similar tickets, of which 72 lacked an existing problem link. They are review candidates, not proven root causes. Source tickets are private.',
     ),
     tech: [
       'Python',

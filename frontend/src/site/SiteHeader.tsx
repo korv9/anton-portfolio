@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { currentLocale, l, setLocale, type Locale } from '../i18n'
 import { profile } from '../content'
+import { CvButton } from './CvViewer'
 import {
   PROJECT_GROUPS,
   PROJECTS,
@@ -17,6 +18,23 @@ export default function SiteHeader({
   onLanguage: (locale: Locale) => void
 }) {
   const menu = useRef<HTMLDetailsElement>(null)
+  const header = useRef<HTMLElement>(null)
+  useEffect(() => {
+    const element = header.current
+    if (!element) return
+    const update = () =>
+      document.documentElement.style.setProperty(
+        '--header-h',
+        `${element.getBoundingClientRect().height}px`,
+      )
+    const observer = new ResizeObserver(update)
+    observer.observe(element)
+    update()
+    return () => {
+      observer.disconnect()
+      document.documentElement.style.removeProperty('--header-h')
+    }
+  }, [])
   const [projectsReached, setProjectsReached] = useState(false)
   const hidden = route.page === 'home' && !projectsReached
   useEffect(() => {
@@ -47,7 +65,12 @@ export default function SiteHeader({
     return () => document.removeEventListener('pointerdown', close)
   }, [])
   return (
-    <header className="site-header" data-hidden={hidden} inert={hidden}>
+    <header
+      ref={header}
+      className="site-header"
+      data-hidden={hidden}
+      inert={hidden}
+    >
       <a className="site-identity" href="#start">
         <strong>ANTON ERNSTSSON</strong>
         <span>PERSONAL PROJECTS</span>
@@ -99,11 +122,7 @@ export default function SiteHeader({
         <a href="#om-mig">{l('About', 'Om mig')}</a>
         <a href="#erfarenhet">{l('Experience', 'Erfarenhet')}</a>
         <a href="#utbildning">{l('Education', 'Utbildning')}</a>
-        {profile.cv && (
-          <a href={profile.cv} download>
-            CV
-          </a>
-        )}
+        {profile.cv && <CvButton />}
         <button
           className="language-switch"
           type="button"

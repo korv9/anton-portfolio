@@ -3,6 +3,7 @@ import { currentLocale, l, type Locale } from './i18n'
 import { useRoute } from './router'
 import { pageTitle, ProjectContext, ProjectPager } from './site/Header'
 import SiteHeader from './site/SiteHeader'
+import { CvViewerProvider } from './site/CvViewer'
 import HomePage from './home/HomePage'
 import DebateBackdrop from './home/DebateBackdrop'
 import ProjectOverview from './projects/ProjectOverview'
@@ -70,70 +71,72 @@ export default function App() {
 
   const { page, path } = route
   return (
-    <div
-      className={`site-shell${page === 'home' ? ' home-shell' : ' project-shell'}`}
-    >
-      {page === 'home' && <DebateBackdrop playIntro />}
-      <a className="skip-link" href="#main">
-        {l('Skip to content', 'Hoppa till innehåll')}
-      </a>
-      <SiteHeader route={route} onLanguage={setLanguage} />
-      <main
-        id="main"
-        tabIndex={-1}
-        key={language}
-        style={{ background: 'transparent' }}
+    <CvViewerProvider>
+      <div
+        className={`site-shell${page === 'home' ? ' home-shell' : ' project-shell'}`}
       >
-        <ProjectContext route={route} />
-        <PageBoundary key={page}>
-          <ProjectStructure route={route}>
-            <Suspense
-              fallback={
-                <p className="theme-loading ds-container" role="status">
-                  {l('Loading…', 'Laddar…')}
-                </p>
-              }
-            >
-              {page === 'home' && <HomePage path={path} />}
-              {page === 'politik' &&
-                (path === '#politik' ? (
-                  <ProjectOverview id="politics" />
-                ) : (
-                  <PoliticsProduct route={route} />
-                ))}
-              {page === 'jobs' &&
-                (path === '#jobb' ? (
-                  <ProjectOverview id="jobs" />
-                ) : (
-                  <JobsProduct route={route} />
-                ))}
-              {page === 'welfare' &&
-                (path === '#sweden' ? (
-                  <ProjectOverview id="welfare" />
-                ) : (
-                  <WelfarePage view={path} />
-                ))}
-              {page === 'symbolic' && <SymbolicAtlasPage route={route} />}
-              {page === 'clusters' && <ClusterVisualsPage />}
-              {page === 'aiact' &&
-                (path === '#ai-act' ? (
-                  <ProjectOverview id="ai-act" />
-                ) : (
-                  <AiActProduct route={route} />
-                ))}
-              {page === 'philosophy' && <PhilosophyAtlasPage route={route} />}
-              {page === 'concepts' && (
-                <ConceptConstellationPage route={route} />
-              )}
-              {page === 'drugcomb' && <DrugCombPage />}
-              {page === 'thesis' && <ThesisPage />}
-              {page === 'lakehouse' && <LakehousePage />}
-              {page === 'homie' && <HomiePage />}
-            </Suspense>
-          </ProjectStructure>
-        </PageBoundary>
-        <ProjectPager route={route} />
-      </main>
-    </div>
+        {page === 'home' && <DebateBackdrop playIntro />}
+        <a className="skip-link" href="#main">
+          {l('Skip to content', 'Hoppa till innehåll')}
+        </a>
+        <SiteHeader route={route} onLanguage={setLanguage} />
+        <main
+          id="main"
+          tabIndex={-1}
+          key={language}
+          style={{ background: 'transparent' }}
+        >
+          <ProjectContext route={route} />
+          <PageBoundary key={page}>
+            <ProjectStructure route={route}>
+              <Suspense
+                fallback={
+                  <p className="theme-loading ds-container" role="status">
+                    {l('Loading…', 'Laddar…')}
+                  </p>
+                }
+              >
+                {page === 'home' && <HomePage path={path} />}
+                {page === 'politik' &&
+                  (path === '#politik' ? (
+                    <ProjectOverview id="politics" />
+                  ) : (
+                    <PoliticsProduct route={route} />
+                  ))}
+                {page === 'jobs' &&
+                  (path === '#jobb' ? (
+                    <ProjectOverview id="jobs" />
+                  ) : (
+                    <JobsProduct route={route} />
+                  ))}
+                {page === 'welfare' &&
+                  (path === '#sweden' ? (
+                    <ProjectOverview id="welfare" />
+                  ) : (
+                    <WelfarePage view={path} />
+                  ))}
+                {page === 'symbolic' && <SymbolicAtlasPage route={route} />}
+                {page === 'clusters' && <ClusterVisualsPage />}
+                {page === 'aiact' &&
+                  (path === '#ai-act' ? (
+                    <ProjectOverview id="ai-act" />
+                  ) : (
+                    <AiActProduct route={route} />
+                  ))}
+                {page === 'philosophy' && <PhilosophyAtlasPage route={route} />}
+                {page === 'concepts' && (
+                  <ConceptConstellationPage route={route} />
+                )}
+                {page === 'drugcomb' && <DrugCombPage />}
+                {page === 'thesis' && <ThesisPage />}
+                {page === 'lakehouse' && <LakehousePage />}
+                {page === 'homie' && <HomiePage />}
+              </Suspense>
+            </ProjectStructure>
+          </PageBoundary>
+          <ProjectPager route={route} />
+        </main>
+      </div>
+    </CvViewerProvider>
   )
 }

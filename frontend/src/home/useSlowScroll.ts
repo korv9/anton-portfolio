@@ -29,6 +29,10 @@ export function useSlowScroll() {
       }
     }
     const wheel = (event: WheelEvent) => {
+      if (document.querySelector('dialog[open]')) {
+        stop()
+        return
+      }
       if (
         preference.matches ||
         event.ctrlKey ||

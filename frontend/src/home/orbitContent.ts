@@ -1,6 +1,6 @@
 /**
  * The start page's words, in one place. Facts come from the CV
- * (public/Anton_Ernstsson_CV_Data_Engineer.pdf) and the project catalogue; nothing here is a
+ * (public/cv/Anton_Ernstsson_CV_final.pdf) and the project catalogue; nothing here is a
  * number that is not in those sources.
  */
 export type Bilingual = { sv: string; en: string }
@@ -81,25 +81,29 @@ export const THESIS = {
   kind: t('Fallstudie, vår 2026', 'Case study, spring 2026'),
   points: [
     t(
-      'Problemet: IT-supporten löser incidenter en och en, så återkommande fel löses om och om igen utan att någon hittar rotorsaken.',
-      'The problem: IT support solves incidents one at a time, so recurring faults are fixed again and again without anyone finding the root cause.',
+      'Grupperade personuppgiftsmaskerade Freshservice-incidenter och fann att 72 av 121 grupper saknade koppling till registrerade problem. Arbetet lyfte fram 12 grupper med 650 ärenden för fortsatt utredning och beskrev liknande symptom som återkommit över flera år. Grupperna kräver verksamhetens granskning.',
+      'Clustered PII-masked Freshservice incidents and found that 72 of 121 groups had no link to a registered problem. Highlighted 12 groups with 650 tickets for further investigation and described similar symptoms recurring over several years. The groups need operational review.',
     ),
     t(
-      'Syftet: att låta NLP läsa tusentals gamla ärenden och hitta återkommande fel som aldrig registrerats som problem, och visa hur dokumentationen begränsar det.',
-      'The aim: to let NLP read thousands of old tickets and find recurring faults never registered as problems, and to show how documentation limits that.',
+      'Mätte datakvaliteten i 21 633 incidentposter från Fora AB med fem dimensioner ur ISO/IEC 25012: fullständighet, exakthet, konsistens, unikhet och spårbarhet.',
+      'Measured data quality in 21,633 incident records from Fora AB using five ISO/IEC 25012 dimensions: completeness, accuracy, consistency, uniqueness and traceability.',
     ),
     t(
-      'Nyttan: en lista med 72 möjliga problemärenden, där 12 grupper med 650 ärenden är redo att utredas. Ett fel hade hanterats i tre år utan problemärende.',
-      'The value: a list of 72 candidate problem records, of which 12 groups with 650 tickets are ready to investigate. One fault had been handled for three years without one.',
+      'Fann att giltiga och ifyllda systemfält kunde sakna användbart innehåll. Rotorsaksfältet var ifyllt i bara 4,2 % och problemkoppling fanns i 5,1 % av kvalitetsunderlaget. Arbetet pekade ut dokumentationsluckor och processmognad som en huvudbegränsning för analysen.',
+      'Found that valid, populated system fields could still lack useful content. Root-cause notes were present in only 4.2% and problem links in 5.1% of the quality dataset. The thesis identified documentation gaps and process maturity as a main constraint on the analysis.',
     ),
     t(
-      'Lärdomen: det som begränsar är dokumentationen, inte AI:n. Rotorsaken skrevs in i 12–13 % av ärendena, och där den fanns blev grupperingen tydligt bättre.',
-      'The lesson: documentation is the limit, not the AI. The root cause was recorded in 12–13% of tickets, and where it was, the grouping was clearly better.',
+      'Jämförde HDBSCAN med K-means och kontrollerade grupperna mot befintliga problemkopplingar. HDBSCAN gav cirka 32 % högre silhuettvärde, beräknat på olika delmängder. Namnmaskering skapade också falska likheter som behövde granskas.',
+      'Compared HDBSCAN with K-means and checked the groups against existing problem links. HDBSCAN produced about 32% higher silhouette, calculated on different subsets. Name masking also created false similarities that needed review.',
     ),
-    t(
-      'Så gjordes det: 19 847 anonymiserade ärenden grupperades med sentence-transformers, UMAP och HDBSCAN, 32 % bättre än K-means, inom GDPR:s ramar.',
-      'How: 19,847 anonymised tickets were grouped with sentence-transformers, UMAP and HDBSCAN, 32% better than K-means, within GDPR.',
-    ),
+  ],
+  tech: [
+    'Python',
+    'Azure Databricks',
+    'sentence-transformers',
+    'UMAP',
+    'HDBSCAN',
+    'MLflow',
   ],
 }
 

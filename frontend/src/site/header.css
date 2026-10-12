@@ -48,6 +48,7 @@
   gap: 1.75rem;
 }
 .site-navigation > a,
+.site-navigation > .cv-trigger,
 .project-menu summary {
   font-size: 0.9rem;
   font-weight: 650;
@@ -81,7 +82,7 @@
   padding: 2.5rem var(--gutter);
   background: var(--page);
   border-bottom: 1px solid var(--line-strong);
-  max-height: calc(100dvh - 90px);
+  max-height: calc(100dvh - var(--header-h, 90px));
   overflow-y: auto;
 }
 .project-menu-panel h2 {

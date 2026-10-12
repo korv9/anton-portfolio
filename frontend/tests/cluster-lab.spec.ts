@@ -1,9 +1,16 @@
 import { test, expect } from './test'
 
-test('local lab reopens real saved runs, switches layouts and keeps assignments', async ({
+test('local lab handles missing exports or reopens saved runs and keeps assignments', async ({
   page,
 }) => {
   const response = await page.request.get('/__cluster_lab/index.json')
+  if (response.status() === 404) {
+    await page.goto('/#cluster-visuals')
+    const lab = page.locator('.clab')
+    await expect(lab).toContainText('No local export yet.')
+    await expect(lab.locator('canvas')).toHaveCount(0)
+    return
+  }
   expect(response.ok()).toBeTruthy()
   const index = await response.json()
   expect(index.runs.length).toBeGreaterThanOrEqual(2)

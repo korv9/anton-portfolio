@@ -168,7 +168,8 @@
  * A dark plate: the same tokens, inverted, for a visualisation that needs a dark field. Every
  * component inside reads its colours from the tokens, so it follows without its own theme.
  */
-.home-shell {
+.home-shell,
+.cv-viewer {
   --ink: var(--ink-identity);
   --muted: color-mix(in srgb, var(--ink) 80%, var(--page));
   color: var(--ink);

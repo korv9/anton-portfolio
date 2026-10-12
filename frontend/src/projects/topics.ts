@@ -211,6 +211,10 @@ export const PROJECT_TOPICS: Record<string, Topic[]> = {
       href: '#thesis?section=workflow',
     },
     {
+      title: t('Datakvalitet', 'Data quality'),
+      href: '#thesis?section=quality',
+    },
+    {
       title: t('Utvärdering', 'Evaluation'),
       href: '#thesis?section=evaluation',
     },

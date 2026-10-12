@@ -1,0 +1,151 @@
+.cv-trigger {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.cv-trigger:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.25em;
+}
+.cv-viewer {
+  width: min(72rem, calc(100vw - var(--gutter) * 2));
+  height: calc(100dvh - var(--sp-6) * 2);
+  max-width: none;
+  max-height: none;
+  padding: 0;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--page);
+  color: var(--ink);
+  overflow: hidden;
+  overscroll-behavior: contain;
+}
+.cv-viewer::backdrop {
+  background: color-mix(in srgb, var(--ink) 48%, transparent);
+}
+.cv-viewer-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+.cv-viewer-toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+  border-bottom: 1px solid var(--line);
+}
+.cv-viewer-toolbar h2 {
+  margin: 0 auto 0 0;
+  font-size: var(--body);
+  font-weight: var(--weight-heading);
+}
+.cv-download {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--ink);
+  font-size: var(--small);
+  font-weight: var(--weight-ui);
+  text-underline-offset: 0.25em;
+  white-space: nowrap;
+}
+.cv-close {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  padding: 0;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--ink);
+  font-size: var(--h2);
+  line-height: 1;
+  cursor: pointer;
+}
+.cv-viewer-help {
+  margin: 0;
+  padding: var(--sp-2) var(--sp-4);
+  font-size: var(--small);
+  color: var(--muted);
+}
+.cv-viewer-help a {
+  color: inherit;
+  text-underline-offset: 0.2em;
+}
+.cv-document {
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  border: 0;
+  background: var(--paper-strong);
+}
+.cv-viewer-fallback {
+  padding: var(--sp-5);
+  max-width: var(--measure);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .cv-viewer[open] {
+    animation: cv-enter var(--dur) var(--ease) both;
+  }
+  .cv-viewer[open]::backdrop {
+    animation: cv-backdrop-enter var(--dur) var(--ease) both;
+  }
+  .cv-viewer[data-closing='true'] {
+    animation: cv-exit var(--dur) var(--ease) both;
+  }
+  .cv-viewer[data-closing='true']::backdrop {
+    animation: cv-backdrop-enter var(--dur) var(--ease) reverse both;
+  }
+}
+@keyframes cv-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes cv-exit {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+@keyframes cv-backdrop-enter {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@media (max-width: 760px) {
+  .cv-viewer {
+    width: calc(100vw - var(--sp-2) * 2);
+    height: calc(100dvh - var(--sp-2) * 2);
+  }
+  .cv-viewer-toolbar {
+    flex-wrap: wrap;
+    padding: var(--sp-2);
+    gap: var(--sp-2);
+  }
+  .cv-viewer-toolbar h2 {
+    flex: 1;
+    font-size: var(--small);
+  }
+  .cv-viewer-help {
+    padding-inline: var(--sp-2);
+  }
+}

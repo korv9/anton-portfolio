@@ -180,6 +180,30 @@ test('only the IT job visualization remains faintly present in the background', 
   }
 })
 
+test(
+  'education presents thesis evidence and its technology stack',
+  { tag: '@mobile' },
+  async ({ page }) => {
+    await page.goto('/#utbildning')
+    const thesis = page
+      .locator('#utbildning .home-job')
+      .filter({ has: page.locator('a[href="#thesis"]') })
+    await expect(thesis).toContainText('72 of 121')
+    await expect(thesis).toContainText('ISO/IEC 25012')
+    await expect(thesis).toContainText('21,633')
+    await expect(thesis).toContainText('operational review')
+    await expect(thesis).toContainText('existing problem links')
+    await expect(thesis).toContainText('Tech: Python, Azure Databricks')
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth + 1,
+      ),
+    ).toBe(true)
+    await thesis.locator('a[href="#thesis"]').click()
+    await expect(page.locator('#thesis-quality')).toContainText('Completeness')
+  },
+)
+
 test('experience and education stay aligned while scrolling', async ({
   page,
 }) => {
