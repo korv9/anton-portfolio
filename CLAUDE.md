@@ -1,7 +1,14 @@
 # Working in this repository
 
+Always follow the graph-first rule in [AGENTS.md](AGENTS.md). Consult the existing
+Graphify graph before source lookup on every coding task, review, and repository
+question, even when the user does not mention Graphify.
+
 Follow the skills in `.claude/skills/` (sources in `.claude/skills/README.md`):
 
+- `graph-first` before source lookup on every repository task: query the existing
+  graph with about 1,000 tokens, then read only the relevant code. It also applies
+  when using another skill or delegating work.
 - **`ponytail`** on every coding task: reuse what the repository already has, the platform
   before a dependency, the smallest change that solves the root cause, and one runnable check
   for non-trivial logic. Its short-output rule applies to code comments and commit messages;

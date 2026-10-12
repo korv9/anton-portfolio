@@ -7,7 +7,7 @@
 import { useEffect, useState } from 'react'
 import { l } from '../i18n'
 import { fetchJson } from '../welfare/data'
-import { FIELD_EN, type Market } from '../jobs/JobMarketPage'
+import { FIELD_EN, type Market } from '../jobs/market'
 
 export type { Market }
 

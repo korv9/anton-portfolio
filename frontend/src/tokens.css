@@ -42,6 +42,8 @@
 
   /* Type: one sans for everything, one mono for figures, metadata and eyebrows. */
   --font: 'Manrope', 'Helvetica Neue', Arial, sans-serif;
+  --font-identity: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --ink-identity: #2e2a26;
   --font-mono:
     ui-monospace, 'SFMono-Regular', Menlo, Consolas, 'Liberation Mono',
     monospace;
@@ -148,6 +150,12 @@
   --cv-powder: #d8bfc3;
   --cv-apricot: #d9b397;
   --cv-olive: #555b45;
+  /* Deeper versions of the site's pastel colours for the homepage points. */
+  --cluster-apricot: color-mix(in srgb, var(--cv-apricot) 80%, var(--ink));
+  --cluster-powder: color-mix(in srgb, var(--cv-powder) 78%, var(--ink));
+  --cluster-butter: color-mix(in srgb, var(--cv-butter) 78%, var(--ink));
+  --cluster-pistachio: color-mix(in srgb, var(--cv-pistachio) 72%, var(--ink));
+  --cluster-noise: var(--cv-olive);
 
   color: var(--ink);
   background: var(--page);
@@ -160,6 +168,13 @@
  * A dark plate: the same tokens, inverted, for a visualisation that needs a dark field. Every
  * component inside reads its colours from the tokens, so it follows without its own theme.
  */
+.home-shell,
+.cv-viewer {
+  --ink: var(--ink-identity);
+  --muted: color-mix(in srgb, var(--ink) 80%, var(--page));
+  color: var(--ink);
+}
+
 .plate {
   color-scheme: dark;
   --page: #0f0f10;

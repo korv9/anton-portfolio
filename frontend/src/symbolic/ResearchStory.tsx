@@ -444,9 +444,6 @@ function ValidityCase({ history }: { history: ResearchHistory }) {
           'Data quality, model quality and construct validity are checked separately.',
           'Datakvalitet, modellkvalitet och begreppsvaliditet kontrolleras var för sig.',
         )}{' '}
-        <a href="#quality">
-          {l('Quality & Validity', 'Kvalitet och validitet')}
-        </a>
       </p>
     </section>
   )

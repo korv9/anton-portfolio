@@ -23,7 +23,7 @@ except ImportError:
 BASE = 'https://data.arbetsformedlingen.se/annonser/historiska'
 
 
-def download(year, directory):
+def download(year, directory, on_checkpoint=None):
     directory.mkdir(parents=True, exist_ok=True)
     target = directory / f'{year}.jsonl.zip'
     url = f'{BASE}/{target.name}'
@@ -34,16 +34,22 @@ def download(year, directory):
     with requests.Session() as session:
         session.mount('https://', HTTPAdapter(max_retries=Retry(total=4, backoff_factor=2,
             status_forcelist=[429, 500, 502, 503, 504])))
-        with session.get(url, stream=True, timeout=(30, 120)) as response:
+        offset = partial.stat().st_size if partial.exists() else 0
+        headers = {'Range': f'bytes={offset}-'} if offset else {}
+        with session.get(url, headers=headers, stream=True, timeout=(30, 120)) as response:
             response.raise_for_status()
-            expected = int(response.headers.get('Content-Length', 0))
-            size = 0
+            if response.status_code != 206:
+                offset = 0
+            expected = int(response.headers.get('Content-Length', 0)) + offset
+            size = offset
             reported = time.monotonic()
-            with partial.open('wb') as out:
+            with partial.open('ab' if offset else 'wb') as out:
                 for chunk in response.iter_content(1024 * 1024):
                     out.write(chunk)
                     size += len(chunk)
                     if time.monotonic() - reported > 15:
+                        if on_checkpoint:
+                            on_checkpoint()
                         print(f'{year}: downloaded {size / 1e6:.0f} MB / {expected / 1e6:.0f} MB', flush=True)
                         reported = time.monotonic()
             if expected and size != expected:
@@ -119,17 +125,26 @@ def import_archive(path, year, database, source_uri=None, batch_size=500):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--years', nargs='+', type=int, default=[2024, 2025])
+    parser.add_argument('--years', nargs='+', default=['2024', '2025'])
     parser.add_argument('--database', default='data/history.duckdb')
     parser.add_argument('--directory', type=Path, default=Path('data/history_archives'))
     parser.add_argument('--archive', type=Path, help='Local archive; requires one year')
+    parser.add_argument('--all-occupations', action='store_true', help='Retain full text for every occupation in checkpointed Parquet shards; no role filters')
+    parser.add_argument('--corpus-output', type=Path, default=Path('warehouse/raw/jobtech/cluster-corpus'))
     args = parser.parse_args()
     if args.archive and len(args.years) != 1:
         parser.error('--archive requires exactly one year')
     results = []
     for year in args.years:
         path, uri = (args.archive, str(args.archive)) if args.archive else download(year, args.directory)
-        results.append(import_archive(path, year, args.database, uri))
+        if args.all_occupations:
+            try:
+                from .full_corpus import import_archive_all
+            except ImportError:
+                from full_corpus import import_archive_all
+            results.append(import_archive_all(path, str(year), args.corpus_output, uri))
+        else:
+            results.append(import_archive(path, int(year), args.database, uri))
     args.directory.mkdir(parents=True, exist_ok=True)
     (args.directory / 'last_import.json').write_text(json.dumps(results, indent=2), encoding='utf-8')
 

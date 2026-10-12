@@ -8,15 +8,15 @@ const MODELS: Record<
   { fact: string; dims: string[]; marts: string[]; source: [string, string] }
 > = {
   jobs: {
-    fact: 'fct_job_ads',
-    dims: ['dim_occupations', 'dim_locations', 'dim_employers'],
-    marts: ['mart_job_trends_monthly', 'job_market_summary'],
+    fact: 'stg_market_ads',
+    dims: ['dim_market_field', 'dim_market_occupation_group'],
+    marts: ['mart_market_field_monthly', 'mart_market_occupation_yearly'],
     source: ['JobTech historical archives', 'JobTechs historiska arkiv'],
   },
   welfare: {
     fact: 'fct_indicator',
     dims: ['dim_indicator', 'dim_region', 'dim_period'],
-    marts: ['mart_market_region_yearly'],
+    marts: ['mart_county_year_overview'],
     source: [
       'SCB, Försäkringskassan, Folkhälsomyndigheten, ESS, Kolada',
       'SCB, Försäkringskassan, Folkhälsomyndigheten, ESS, Kolada',
@@ -84,7 +84,42 @@ export default function ProjectTech({
   debates?: boolean
 }) {
   const entry = PROJECTS.find((p) => p.id === project)!
-  const model = MODELS[project]
+  const path = window.location.hash.split('?')[0]
+  const model =
+    project === 'politics' && /budget/.test(path)
+      ? {
+          fact: 'stg_budget_frame',
+          dims: [],
+          marts: ['mart_budget_context'],
+          source: [
+            'Riksdag budget reports',
+            'Riksdagens budgetbetänkanden',
+          ] as [string, string],
+        }
+      : project === 'politics' && /valjarna/.test(path)
+        ? {
+            fact: 'fct_party_poll',
+            dims: [],
+            marts: [],
+            source: [
+              'SCB party preference survey',
+              'SCB:s partisympatiundersökning',
+            ] as [string, string],
+          }
+        : project === 'politics' && /skatter/.test(path)
+          ? {
+              fact: 'fct_tax_revenue',
+              dims: ['dim_tax_country', 'dim_tax_type'],
+              marts: [],
+              source: [
+                'OECD Revenue Statistics',
+                'OECD Revenue Statistics',
+              ] as [string, string],
+            }
+          : project === 'politics' &&
+              /debatt|tal|sok|utredningar|nyheter/.test(path)
+            ? undefined
+            : MODELS[project]
   const built =
     project === 'symbolic-atlas'
       ? l(
@@ -98,14 +133,7 @@ export default function ProjectTech({
       fact={model.fact}
       dims={model.dims}
       marts={model.marts}
-      sub={
-        debates
-          ? l(
-              'Speeches and replies are aggregated by party, session and issue area. Debated reports are linked to the roll-call models shown here.',
-              'Anföranden och repliker aggregeras per parti, riksmöte och sakområde. Debatterade betänkanden länkas till voteringsmodellerna som visas här.',
-            )
-          : built
-      }
+      sub={l(entry.descriptor.en, entry.descriptor.sv)}
       steps={[
         { title: l('Sources', 'Källor'), detail: l(...model.source) },
         {
@@ -144,5 +172,12 @@ export default function ProjectTech({
       </dl>
     </ChartCard>
   )
-  return span === 12 ? <DashGrid>{card}</DashGrid> : card
+  return (
+    <details className="project-method">
+      <summary>
+        {l('Technical method and data', 'Teknisk metod och data')}
+      </summary>
+      <DashGrid>{card}</DashGrid>
+    </details>
+  )
 }

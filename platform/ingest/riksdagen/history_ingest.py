@@ -60,7 +60,8 @@ def fetch_votes(http, session: str) -> int | None:
 
 
 def fetch_reports(http, session: str) -> int:
-    page, total = 1, 0
+    rawstore.invalidate(SOURCE, f"reports/{code(session)}")
+    page, total, paths = 1, 0, []
     while True:
         query = urllib.parse.urlencode({"doktyp": "bet", "rm": session, "sz": 500, "p": page,
                                         "utformat": "json"})
@@ -68,9 +69,15 @@ def fetch_reports(http, session: str) -> int:
         path = rawstore.fetch(http, SOURCE, f"reports/{code(session)}-{page:02d}.json", url,
                               pause=0.3)
         listing = json.loads(path.read_text(encoding="utf-8-sig"))["dokumentlista"]
+        paths.append(path)
         documents = listing.get("dokument") or []
         total += len(documents) if isinstance(documents, list) else 1
         if page >= int(listing.get("@sidor") or 1):
+            if "@traffar" in listing and total != int(listing["@traffar"]):
+                raise ValueError(f"Incomplete reports listing: {session}")
+            for stale in set(path.parent.glob(f"{code(session)}-*.json")) - set(paths):
+                stale.unlink()
+            rawstore.complete(SOURCE, f"reports/{code(session)}", paths, {"session": session})
             return total
         page += 1
 
@@ -87,12 +94,19 @@ def main() -> None:
     open_sessions = set(sessions_until_now()[-2:])
     for session in sessions:
         # A session's roll calls do not change once it has closed; the last two are refetched.
-        stored = rawstore.RAW / SOURCE / f"votes/{code(session)}.csv.gz"
+        group = f"history/{code(session)}"
+        request = {"session": session}
         if (not arguments.session and not arguments.refetch_closed
-                and session not in open_sessions and stored.is_file()):
+                and session not in open_sessions
+                and rawstore.completed_paths(SOURCE, group, request)):
             continue
+        rawstore.invalidate(SOURCE, group)
         lines = fetch_votes(http, session)
         reports = fetch_reports(http, session)
+        paths = list((rawstore.RAW / SOURCE / "reports").glob(f"{code(session)}-*.json"))
+        if lines is not None:
+            paths.append(rawstore.RAW / SOURCE / f"votes/{code(session)}.csv.gz")
+        rawstore.complete(SOURCE, group, paths, request)
         print(f"{session}: {'no roll calls published yet' if lines is None else f'{lines:,} member votes'}, "
               f"{reports} committee reports", flush=True)
 

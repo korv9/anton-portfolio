@@ -64,36 +64,6 @@
   font-size: var(--body-large);
   line-height: 1.45;
 }
-.project-hero .project-subnav {
-  margin-top: var(--sp-3);
-}
-
-/* The short row of links into a project: plain links, sideways scroll on a phone. */
-.project-subnav ul {
-  display: flex;
-  gap: var(--sp-2) var(--sp-5);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-.project-subnav a {
-  display: inline-block;
-  padding-block: var(--sp-2);
-  color: var(--ink);
-  font-size: var(--fs-sm);
-  font-weight: var(--weight-ui);
-  white-space: nowrap;
-  text-decoration: underline;
-  text-decoration-color: var(--line-strong);
-  text-underline-offset: 0.35em;
-}
-.project-subnav a:hover,
-.project-subnav a[aria-current] {
-  text-decoration-color: var(--ink);
-}
-
 .project-section {
   padding-block: var(--sp-7);
   border-top: 1px solid var(--line);

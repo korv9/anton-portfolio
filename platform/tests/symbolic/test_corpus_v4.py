@@ -36,7 +36,7 @@ def test_the_body_is_read_between_gutenbergs_start_and_end_lines():
 
 
 def test_the_corpus_is_complete_and_unique():
-    corpus = json.loads((ROOT / "platform/ingest/symbolic/corpus.json").read_text())["documents"]
+    corpus = json.loads((ROOT / "platform/ingest/symbolic/corpus.json").read_text(encoding="utf-8"))["documents"]
     assert len({d["id"] for d in corpus}) == len(corpus)
     assert len({d["gutenberg_id"] for d in corpus}) == len(corpus)
     assert sum(d["pilot"] for d in corpus) == 10

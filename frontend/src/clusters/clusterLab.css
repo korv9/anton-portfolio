@@ -1,0 +1,114 @@
+.clab {
+  margin-block: var(--sp-7);
+  padding-block: var(--sp-4);
+  border-block: 1px solid var(--line);
+}
+.clab label {
+  display: inline-grid;
+  gap: var(--sp-1);
+  font-size: var(--fs-label);
+}
+.clab select,
+.clab button {
+  padding: var(--sp-1) var(--sp-2);
+  min-height: 36px;
+  background: var(--cv-oat);
+  color: var(--cv-olive);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  font: inherit;
+  cursor: pointer;
+}
+.clab button[aria-pressed='true'] {
+  background: var(--cv-ground);
+  color: var(--cv-ivory);
+}
+.clab button:focus-visible,
+.clab select:focus-visible,
+.clab summary:focus-visible {
+  outline: 2px solid var(--cv-olive);
+  outline-offset: 3px;
+}
+.clab-table {
+  overflow-x: auto;
+  margin-block: var(--sp-3);
+}
+.clab table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-label);
+  font-variant-numeric: tabular-nums;
+}
+.clab caption {
+  text-align: left;
+  margin-block: var(--sp-2);
+}
+.clab td,
+.clab th {
+  padding: var(--sp-2);
+  text-align: left;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+.clab td button {
+  margin: var(--sp-1);
+}
+.clab tr {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 80px;
+}
+.clab-comparison {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 520px), 1fr));
+  gap: var(--sp-4);
+}
+.clab-open {
+  min-width: 0;
+}
+.clab-open h3,
+.clab pre,
+.clab blockquote {
+  overflow-wrap: anywhere;
+}
+.clab td img {
+  display: block;
+  max-width: 180px;
+  height: auto;
+  margin-top: var(--sp-1);
+}
+.clab-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+.clab pre {
+  white-space: pre-wrap;
+  max-height: 500px;
+  overflow: auto;
+  font-size: var(--fs-label);
+  background: var(--paper);
+  padding: var(--sp-2);
+}
+.clab details {
+  margin-block: var(--sp-2);
+}
+.clab summary {
+  cursor: pointer;
+}
+.clab-map canvas {
+  display: block;
+  max-width: 100%;
+}
+.clab-point {
+  min-height: 2.8em;
+  font-size: var(--fs-label);
+}
+.clab-meta {
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+}
+.clab blockquote {
+  margin: var(--sp-2) 0;
+  padding-left: var(--sp-2);
+  border-left: 1px solid var(--line);
+}

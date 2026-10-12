@@ -30,7 +30,7 @@
   max-width: 70ch;
   margin: 0;
   font-size: var(--fs-sm);
-  opacity: 0.85;
+  opacity: 1;
 }
 .cv-section {
   padding-top: var(--sp-7);
@@ -139,16 +139,16 @@
   border-radius: 50%;
 }
 .cv-legend small {
-  opacity: 0.7;
+  opacity: 1;
 }
 .cv-more {
   align-self: center;
   font-size: var(--fs-label);
-  opacity: 0.7;
+  opacity: 1;
 }
 .cv-status {
   min-height: 200px;
   margin: 0;
   font-size: var(--fs-sm);
-  opacity: 0.8;
+  opacity: 1;
 }

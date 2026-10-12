@@ -1,84 +1,47 @@
 import { test, expect } from './test'
-
-const routes = [
-  '#politik-valjarna',
+const pages = [
+  '#politik',
   '#politik-roster',
+  '#politik-budget',
   '#politik-sakdebatter',
+  '#jobb',
   '#jobb-trender',
+  '#jobb-yrken',
+  '#job-market-tech',
+  '#sweden',
+  '#sweden-work',
+  '#sweden-sick-leave',
+  '#sweden-mental-health',
+  '#sweden-counties',
+  '#ai-act',
+  '#ai-act-today',
+  '#symbolic-atlas',
+  '#philosophy-atlas',
+  '#concept-journey',
+  '#drugcomb',
   '#thesis',
   '#homie',
-  '#concept-journey',
-  '#sweden',
-  '#politik-budget',
-  '#politik-partiledardebatter',
+  '#diva-lakehouse',
+  '#cluster-visuals',
 ]
-
-for (const route of routes) {
-  test(`${route} keeps dashboard panels inside the content column`, async ({
-    page,
-  }) => {
-    await page.emulateMedia({ reducedMotion: 'reduce' })
-    await page.goto(`/${route}`)
-    await expect(page.locator('main h1')).toBeVisible({ timeout: 30000 })
-    await expect(page.locator('.dk-tech').first()).toBeVisible({
-      timeout: 30000,
-    })
-    const problems = await page.evaluate(() => {
-      const main = document.querySelector('main')!.getBoundingClientRect()
-      return [
-        ...document.querySelectorAll(
-          'main .dk,main .dk-grid,main .dk-kpis,main .dk-card,main .stage,main .stage-figure,main .stage-side',
-        ),
-      ].flatMap((element) => {
-        const box = element.getBoundingClientRect()
-        if (!box.height) return []
-        return box.left < main.left - 1 ||
-          box.right > main.right + 1 ||
-          box.width < 150
-          ? [
-              {
-                className: element.className,
-                width: box.width,
-                left: box.left,
-                right: box.right,
-              },
-            ]
-          : []
+test(
+  'retained pages fit desktop and mobile',
+  { tag: '@mobile' },
+  async ({ page }) => {
+    test.setTimeout(120000)
+    for (const path of pages) {
+      await page.goto(`/${path}`)
+      await expect(page.locator('main h1').first()).toBeVisible({
+        timeout: 20000,
       })
-    })
-    expect(problems).toEqual([])
-    const inset = await page
-      .locator('main h1')
-      .evaluate(
-        (title) =>
-          title.getBoundingClientRect().left -
-          document.querySelector('main')!.getBoundingClientRect().left,
-      )
-    expect(inset).toBeGreaterThanOrEqual(15)
-  })
-}
-
-test('the page title comes before the KPI row in visual projects', async ({
-  page,
-}) => {
-  for (const route of [
-    '#thesis',
-    '#homie',
-    '#concept-journey',
-    '#concept-constellation',
-  ]) {
-    await page.goto(`/${route}`)
-    await expect(page.locator('main .dk-kpis').first()).toBeVisible({
-      timeout: 30000,
-    })
-    const titleBeforeMetrics = await page.evaluate(() => {
-      const title = document.querySelector('main h1')!
-      const metrics = document.querySelector('main .dk-kpis')!
-      return !!(
-        title.compareDocumentPosition(metrics) &
-        Node.DOCUMENT_POSITION_FOLLOWING
-      )
-    })
-    expect(titleBeforeMetrics, route).toBe(true)
-  }
-})
+      await page.waitForLoadState('networkidle')
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= innerWidth + 1,
+        ),
+        path,
+      ).toBe(true)
+      await expect(page.locator('.page-failed,.site-sidebar')).toHaveCount(0)
+    }
+  },
+)

@@ -4,7 +4,7 @@ Two sources the rest of the site does not have yet, fetched and cached under
 platform/.cache/parties/ (gitignored):
 
 - Riksdagen, the list of people (data.riksdagen.se/personlista): who sits in the Riksdag for
-  each party now, with constituency, gender, birth year and photo; current committee posts,
+  each party now, with constituency, gender and birth year; current committee posts,
   party posts (leader, spokesperson, group leader, secretary) and ministers.
 - Valmyndigheten, the municipal council election (resultat.val.se): seats per party in every
   municipality's council (kommunfullmäktige), with the seats after the election before. The
@@ -83,7 +83,6 @@ def members() -> dict[str, list[dict]]:
             "constituency": person.get("valkrets") or "",
             "gender": person.get("kon") or "",
             "born": int(person["fodd_ar"]) if (person.get("fodd_ar") or "").isdigit() else None,
-            "photo": person.get("bild_url_80") or "",
             "status": person.get("status") or "",
             "on_leave": seat[0].get("status") == "Ledig",
             "committees": sorted({

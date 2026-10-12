@@ -1,5 +1,5 @@
 /**
- * Svensk politik i siffror: the politics product. Its themes are listed under the project in
+ * Political Observatory: the politics product. Its themes are listed under the project in
  * the site sidebar, in groups: Översikt, Makten, Pengarna, Debatter, Besluten and Mer.
  * The main pages are dashboards; every older detailed view opens as a deep dive under its
  * theme, and one debate opens replik för replik under Debatter.
@@ -24,7 +24,6 @@ import {
 import './politik.css'
 import './dash/dash.css'
 
-const PolitikDash = lazy(() => import('./PolitikDash'))
 const ValjarnaTheme = lazy(() => import('./themes/ValjarnaTheme'))
 const RosterTheme = lazy(() => import('./themes/RosterTheme'))
 const BudgetTheme = lazy(() => import('./themes/BudgetTheme'))
@@ -44,8 +43,6 @@ const DeepDive = lazy(() => import('./DeepDive'))
 
 function ThemeView({ theme, route }: { theme: ThemeKey; route: Route }) {
   switch (theme) {
-    case 'lage':
-      return <PolitikDash route={route} />
     case 'valjarna':
       return <ValjarnaTheme route={route} />
     case 'roster':
@@ -80,7 +77,7 @@ export default function PoliticsProduct({ route }: { route: Route }) {
   const theme = themeByPath(route.path)
   const { selected } = useParties(route)
   // Moving between pages keeps the parties chosen earlier in the session.
-  useEffect(() => carryParties(route), [route.path])
+  useEffect(() => carryParties(route), [route.hash])
   // The overview opens on its own first screen, with the party bar under it.
   const landing = route.path === '#politik'
   return (

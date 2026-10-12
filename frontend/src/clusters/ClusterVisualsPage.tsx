@@ -1,6 +1,6 @@
 /**
  * Cluster visuals: every clustering on the site on one page, each drawn from its own data and
- * interactive (ClusterScatter): the UMAP maps of the Symbolic Atlas, the Philosophy Atlas, the job
+ * interactive (ClusterScatter): the UMAP maps of the Symbol Lab, the Philosophy Lab, the job
  * ads and the Riksdag debates. A map loads when it comes near the screen.
  */
 import { useEffect, useRef, useState } from 'react'
@@ -12,7 +12,9 @@ import {
   loadBookCenteredAtlas,
 } from '../symbolic/atlasData'
 import ClusterScatter, { type ClusterPoint } from './ClusterScatter'
+import ClusterLab from './ClusterLab'
 import './clusters.css'
+import { loadDebateMap } from './debateData'
 
 type Loaded = {
   points: ClusterPoint[]
@@ -47,7 +49,7 @@ const umap = (u: Umap) =>
 const hdbscan = (h: Hdbscan) =>
   `HDBSCAN min_cluster_size ${h.min_cluster_size}, min_samples ${h.min_samples}`
 
-// ---------- Symbolic Atlas ----------
+// ---------- Symbol Lab ----------
 type SymbolicRun = {
   embedding_model: string
   umap_map: Umap
@@ -73,7 +75,7 @@ const symbolicLabel = (p: {
   context: string
 }) => `${p.symbol_id} · ${p.title} · “${cut(p.context, 90)}”`
 
-// ---------- Philosophy Atlas ----------
+// ---------- Philosophy Lab ----------
 type PhilosophySummary = {
   works: { title: string; author: string }[]
   run: { model: string; umap_map: Umap; hdbscan: Hdbscan }
@@ -155,45 +157,15 @@ async function loadJobs(): Promise<Loaded> {
 
 // ---------- Riksdag debates ----------
 async function loadDebates(): Promise<Loaded> {
-  const [sessions, overview] = await Promise.all([
-    fetchJson<{ sessions: { session: string }[] }>('parliament/sessions.json'),
+  const [map, overview] = await Promise.all([
+    loadDebateMap(),
     fetchJson<{ parliament: { topic_method: string; umap_note: string } }>(
       'politics/overview.json',
     ),
   ])
-  const parts = await Promise.all(
-    sessions.sessions.map((s) =>
-      fetchJson<{
-        data: {
-          x: number
-          y: number
-          topic_id: number
-          topic_label: string
-          speaker: string
-          party: string
-          session: string
-          excerpt: string
-        }[]
-      }>(
-        `politics/parliament/sessions/${s.session.replace('/', '-')}/umap.json`,
-      ).catch(() => ({ data: [] })),
-    ),
-  )
-  const names = new Map<number, string>()
-  const points: ClusterPoint[] = []
-  for (const part of parts)
-    for (const p of part.data) {
-      names.set(p.topic_id, p.topic_label)
-      points.push({
-        x: p.x,
-        y: p.y,
-        c: p.topic_id,
-        label: `${p.speaker} (${p.party}), ${p.session}: “${cut(p.excerpt, 90)}”`,
-      })
-    }
   return {
-    points,
-    name: (id) => names.get(id) ?? String(id),
+    points: map.points,
+    name: (id) => map.names.get(id) ?? String(id),
     method: [overview.parliament.topic_method, overview.parliament.umap_note],
   }
 }
@@ -201,7 +173,7 @@ async function loadDebates(): Promise<Loaded> {
 const MAPS = (): MapSpec[] => [
   {
     id: 'symbolic',
-    project: 'Symbolic Atlas',
+    project: 'Symbol Lab',
     href: '#symbolic-atlas',
     title: l('Symbol words in their sentences', 'Symbolord i sina meningar'),
     meaning: l(
@@ -256,7 +228,7 @@ const MAPS = (): MapSpec[] => [
   },
   {
     id: 'philosophy',
-    project: 'Philosophy Atlas',
+    project: 'Philosophy Lab',
     href: '#philosophy-atlas',
     title: l(
       'Passages from 13 works of philosophy',
@@ -297,7 +269,7 @@ const MAPS = (): MapSpec[] => [
   },
   {
     id: 'debates',
-    project: l('Swedish politics in numbers', 'Svensk politik i siffror'),
+    project: l('Political Observatory', 'Political Observatory'),
     href: '#politik-tal',
     title: l(
       'What the Riksdag debates are about',
@@ -424,6 +396,7 @@ export default function ClusterVisualsPage() {
           )}
         </p>
       </header>
+      {import.meta.env.DEV && <ClusterLab />}
       {MAPS().map((spec) => (
         <MapSection key={spec.id} spec={spec} />
       ))}

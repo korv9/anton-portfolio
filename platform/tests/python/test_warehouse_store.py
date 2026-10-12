@@ -58,6 +58,9 @@ class Bucket:
 
         return {"Body": Stream(self.objects[Key][0])}
 
+    def delete_object(self, Bucket, Key):
+        self.objects.pop(Key, None)
+
     def get_paginator(self, name):
         objects = self.objects
 
@@ -164,3 +167,71 @@ def test_one_folder_or_file_of_a_tree_moves_alone(store):
     assert ws.pull_tree(s3, "b", "raw", "jobtech/_manifest.jsonl") == 1
     assert (raw / "jobtech/stream/state.json").exists()
     assert not (raw / "scb/a.json").exists()
+
+
+def test_corrupt_or_interrupted_raw_download_keeps_local_checkpoint(store, monkeypatch):
+    s3, _, raw = store
+    path = raw / "scb/a.json"
+    ws.push_tree(s3, "b", "raw")
+    original = path.read_bytes()
+    key = ws.RAW_PREFIX + "scb/a.json"
+    _, meta = s3.objects[key]
+    s3.objects[key] = (b"broken!", meta)
+    path.write_bytes(b"local checkpoint")
+    with pytest.raises(ValueError, match="integrity"):
+        ws.pull_tree(s3, "b", "raw")
+    assert path.read_bytes() == b"local checkpoint"
+    assert not path.with_name(path.name + ".tmp").exists()
+    s3.objects[key] = (original, meta)
+    def interrupted(bucket, key, filename):
+        Path(filename).write_bytes(b"partial")
+        raise TimeoutError("download")
+    monkeypatch.setattr(s3, "download_file", interrupted)
+    with pytest.raises(TimeoutError):
+        ws.pull_tree(s3, "b", "raw")
+    assert path.read_bytes() == b"local checkpoint"
+
+
+def test_pruning_scoped_snapshot_removes_obsolete_pages_and_never_uploads_temp_files(store):
+    s3, _, raw = store
+    ws.push_tree(s3, "b", "raw")
+    key = ws.RAW_PREFIX + "scb/stale.json"
+    s3.objects[key] = (b"{}", {})
+    s3.objects[ws.RAW_PREFIX + "scb_extra/keep.json"] = (b"{}", {})
+    (raw / "scb/partial.json.tmp").write_bytes(b"partial")
+    ws.push_tree(s3, "b", "raw", "scb", prune=True)
+    assert key not in s3.objects
+    assert ws.RAW_PREFIX + "scb/partial.json.tmp" not in s3.objects
+    assert ws.RAW_PREFIX + "scb_extra/keep.json" in s3.objects
+
+
+def test_complete_history_survives_a_fresh_runner_round_trip(store, tmp_path, monkeypatch):
+    import sys
+    sys.path.insert(0, str(ROOT / "ingest/taxes"))
+    import taxes_ingest as taxes
+    import rawstore
+
+    s3, _, raw = store
+    monkeypatch.setattr(rawstore, "RAW", raw)
+    monkeypatch.setattr(rawstore.time, "sleep", lambda _: None)
+    monkeypatch.delenv("PORTFOLIO_FULL_REFRESH", raising=False)
+    class HTTP:
+        calls = 0
+        def get(self, url, **kwargs):
+            self.calls += 1
+            class Response:
+                content = b'{"resultCount":1,"results":[{"id":"a"}]}'
+                def raise_for_status(self):
+                    pass
+            return Response()
+    http = HTTP()
+    taxes.rowstore_pages(http, "tables", "withholding/2020", {}, 90)
+    ws.push_tree(s3, "b", "raw", "skatteverket")
+    restored = tmp_path / "new-runner/raw"
+    monkeypatch.setattr(ws, "RAW", restored)
+    monkeypatch.setattr(rawstore, "RAW", restored)
+    assert ws.pull_tree(s3, "b", "raw", "skatteverket") == 3
+    taxes.rowstore_pages(http, "tables", "withholding/2020", {}, 90)
+    assert http.calls == 1
+    taxes.rowstore_pages(http, "tables", "withholding/2026", {}, 0)
+    assert http.calls == 2

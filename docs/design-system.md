@@ -11,9 +11,11 @@ second theme file.
 
 ## Type
 
-- **Manrope** for everything, self-hosted as variable WOFF2 (`/fonts/manrope-latin.woff2`, 29 kB, preloaded, with
+- **Manrope** for body text, navigation and section headings, self-hosted as variable WOFF2 (`/fonts/manrope-latin.woff2`, 29 kB, preloaded, with
   `manrope-variable.woff2` for any other character;
   weights 200–800). The SIL Open Font License is kept at `frontend/public/fonts/Manrope-OFL.txt`.
+- **Helvetica Neue / Helvetica** (`--font-identity`, weight 700) for the homepage name,
+  with Arial as the fallback on devices without Helvetica installed.
 - **System monospace** (`--font-mono`) for figures, metadata, eyebrows and code.
 - Weights: body 470, interface 560, headings 700.
 - Scale: `--display-xl`, `--display-l`, `--h1`, `--h2`, `--h3`, `--body-large`, `--body`,
@@ -21,10 +23,10 @@ second theme file.
   onto the same scale.
 - Figures are tabular everywhere.
 
-The large name belongs to the homepage. Project pages use a compact title
-(`--dashboard-title`), followed by the question and description. Section headings use
-`--dashboard-section`; chart cards and technical side panels use smaller headings.
-Dashboard gutters match the Politics overview, and KPI rows follow the page title.
+The homepage name uses Helvetica; project introductions use Manrope. Project
+pages use open chart surfaces with generous section spacing. A shared header contains
+the project menu; topics and section links sit inside the selected project. Inventory
+counts belong with their dataset, and are not repeated as a KPI row on every view.
 
 ## Colour
 
@@ -76,33 +78,18 @@ Pages, sections and dashboards fill the screen; only running text keeps a measur
 
 ## Page primitives
 
-Project pages open with a dashboard and continue into a labelled deep dive. The shared
-`ProjectStructure` navigation links to the overview and to `?section=depth`, keeping
-filters in the address. `ProjectDepth` groups existing methods, experiments and source
-links. Study projects without public data show their documented implementation and status.
+The header groups projects into Observatories, Labs and Engineering. Cluster Visuals is
+a separate tool. Observatory overviews link to themed analysis pages. Labs keep related
+material in a continuous report with section addresses; readers for individual passages,
+debates and articles remain separate.
 
-The politics dashboard kit is shared across the projects: `KpiRow`, the 12-column
-`DashGrid`, chart cards and `ProjectTech`. `ThemeLayout` and `Board` use the same grid
-and KPI styling for individual views. Technical cards read published schemas and sample
-rows when available; otherwise they show the documented pipeline and model names.
+- `ProjectStructure` owns topic navigation and section scrolling after data arrives.
+- `ProjectHero` introduces a project with its name, question and short description.
+- `ProjectDepth` contains method, sources and documentation rather than repeated copy.
+- Charts use open page surfaces. Native disclosures contain optional technical detail.
+- `Stage` gives a projection its reading key and groups data/settings below the figure.
 
-One screen, one purpose; one section, one question; depth only after the reader asks for it.
-The pieces that carry that rule:
-
-- `ProjectHero` (`ui/Project.tsx`): a flagship's first screen. Eyebrow (the
-  descriptor), the name, the question, one or two sentences, one finding or a status, and a
-  `ProjectSubnav` row of links. Its height follows the content on both desktop and mobile,
-  so the KPI row and charts can start without a large empty introduction.
-- `Stage`: a bounded chart frame with optional KPIs after its heading, a figure and
-  technical side panels. On smaller screens the figure and panels stack; frames keep
-  their margins inside the content column, including in a deep dive.
-- `ProjectSection`: a section with an optional label and an `h2`.
-- `Disclosure` (`ui/Disclosure.tsx`): a native `<details>` for depth on demand (job details,
-  the full stack); no script.
-- `FindingHero`, `ChartSection`, `Interpretation`, `ExploreSection`, `MethodSummary`,
-  `SourceCaption` (`ui/Story.tsx`): the finding, the main evidence, explore and method. They
-  keep their names, and the first screen sits in front of them.
-- `a.work-card` (start page): the whole card is the link. A card has no buttons.
+See [project-restructure.md](project-restructure.md) for retained and removed views.
 
 ## Charts
 

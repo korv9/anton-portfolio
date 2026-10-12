@@ -8,7 +8,7 @@ import { useEffect, useState } from 'react'
 import { currentLocale, l } from '../i18n'
 import { fetchData } from '../dataSource'
 import CalibrationScatter from './CalibrationScatter'
-import { Card, Cards, Empty, Kpi, Kpis } from '../politik/board/Board'
+import { Card, Cards, Empty } from '../politik/board/Board'
 import Columns from '../politik/board/Columns'
 import RankBars from '../charts/RankBars'
 import '../politik/dash/dash.css'
@@ -22,7 +22,6 @@ import DrugConstellation, {
 import { Stage, StageBlock, StageFacts, StageTools } from '../ui/Stage'
 import { ProjectDepth } from '../projects/ProjectStructure'
 import ProjectTech from '../projects/ProjectTech'
-import { KpiRow } from '../ui/dash/Dash'
 import './mlviz.css'
 import '../politik/modell/modell.css'
 
@@ -234,8 +233,6 @@ export default function DrugCombReport() {
   const o = report.overview
   const metric = (scheme: string, model: string) =>
     report.metrics.find((m) => m.scheme === scheme && m.model === model)
-  const best = metric('random', 'lgbm_all')
-  const hardest = metric('cold_drug', 'lgbm_all')
   const families = (tables.families ?? [])
     .filter((f) => f.scheme === split && f.model === 'lgbm_all')
     .sort((a, b) => b.gain - a.gain)
@@ -256,19 +253,49 @@ export default function DrugCombReport() {
 
   return (
     <article className="report drugcomb-board" id="drugcomb">
-      <KpiRow
-        items={[
-          {
-            label: l('Measurements', 'Mätningar'),
-            value: num(o.combinations),
-            note: l('Pair × cell line × study', 'Par × cellinje × studie'),
-          },
-          { label: l('Drug pairs', 'Läkemedelspar'), value: num(o.drug_pairs) },
-          { label: l('Cell lines', 'Cellinjer'), value: num(o.cell_lines) },
-        ]}
-      />
+      <section id="drugcomb-results">
+        <Cards>
+          {' '}
+          <Card
+            index={0}
+            wide
+            title={l(
+              'Performance by test split',
+              'Modellresultat per testuppdelning',
+            )}
+            meta={l(
+              'Correlation between predicted and measured ZIP (Pearson, 0 = no relation, 1 = perfect), mean of three folds',
+              'Korrelation mellan förutsagd och uppmätt ZIP (Pearson, 0 = inget samband, 1 = perfekt), medel av tre omgångar',
+            )}
+          >
+            <Columns
+              categories={SPLITS.map((s) => l(s[1], s[2]))}
+              series={MODELS.map(([id, en, sv]) => ({
+                key: id,
+                label: l(en, sv),
+                focus: id === 'lgbm_all',
+                values: SPLITS.map(
+                  ([scheme]) => metric(scheme, id)?.pearson ?? null,
+                ),
+              }))}
+              format={(v) => num(v, 2)}
+              domain={[0, 1]}
+              label={l(
+                'Correlation per test split and model',
+                'Korrelation per testuppdelning och modell',
+              )}
+            />
+            <p className="dc-note">
+              {l(
+                'The splits hold out rows, drug pairs, individual drugs or cell lines. Models are evaluated against measured ZIP synergy; these are experimental results.',
+                'Testuppdelningarna håller undan rader, läkemedelspar, enskilda läkemedel eller cellinjer. Modellerna jämförs med uppmätt ZIP-synergi; resultaten gäller experimentdata.',
+              )}
+            </p>
+          </Card>
+        </Cards>
+      </section>
       <Stage
-        id="dc-body"
+        id="drugcomb-context"
         title={l(
           'Where the cancer cells come from',
           'Var cancercellerna kommer ifrån',
@@ -389,7 +416,7 @@ export default function DrugCombReport() {
 
       {treeFile && (
         <Stage
-          id="dc-tree"
+          id="drugcomb-explore"
           title={l(
             'How a decision tree decides',
             'Så bestämmer ett beslutsträd',
@@ -599,8 +626,10 @@ export default function DrugCombReport() {
         />
       )}
 
-      <ProjectTech project="drugcomb" />
       <ProjectDepth project="drugcomb">
+        <div id="drugcomb-method">
+          <ProjectTech project="drugcomb" />
+        </div>
         <CalibrationScatter
           points={
             (tables.calibration ?? []) as Parameters<
@@ -668,89 +697,7 @@ export default function DrugCombReport() {
           </ol>
         </section>
 
-        <Kpis>
-          <Kpi
-            index={0}
-            label={l('Measurements', 'Mätningar')}
-            value={o.combinations}
-            format={(v) => num(v)}
-            sub={l('pair × cell line × study', 'par × cellinje × studie')}
-          />
-          <Kpi
-            index={1}
-            label={l('Drug pairs', 'Läkemedelspar')}
-            value={o.drug_pairs}
-            format={(v) => num(v)}
-          />
-          <Kpi
-            index={2}
-            label={l('Drugs', 'Läkemedel')}
-            value={o.drugs}
-            format={(v) => num(v)}
-          />
-          <Kpi
-            index={3}
-            label={l('Cell lines', 'Cellinjer')}
-            value={o.cell_lines}
-            format={(v) => num(v)}
-            sub={`${o.lineages} ${l('tissue types', 'vävnadstyper')}`}
-          />
-          <Kpi
-            index={4}
-            label={l('Synergistic', 'Synergistiska')}
-            value={o.share_synergistic * 100}
-            format={(v) => `${num(v, 1)} %`}
-            sub={`${pct(o.share_antagonistic)} ${l('antagonistic', 'motverkande')}`}
-          />
-          {best && (
-            <Kpi
-              index={5}
-              label={l('Best correlation', 'Bästa korrelation')}
-              value={best.pearson ?? 0}
-              format={(v) => num(v, 2)}
-              sub={`${l('new drug', 'nytt läkemedel')}: ${num(hardest?.pearson ?? 0, 2)}`}
-            />
-          )}
-        </Kpis>
-
         <Cards>
-          <Card
-            index={0}
-            wide
-            title={l(
-              'Does the prediction hold up on something new?',
-              'Håller förutsägelsen på något nytt?',
-            )}
-            meta={l(
-              'Correlation between predicted and measured ZIP (Pearson, 0 = no relation, 1 = perfect), mean of three folds',
-              'Korrelation mellan förutsagd och uppmätt ZIP (Pearson, 0 = inget samband, 1 = perfekt), medel av tre omgångar',
-            )}
-          >
-            <Columns
-              categories={SPLITS.map((s) => l(s[1], s[2]))}
-              series={MODELS.map(([id, en, sv]) => ({
-                key: id,
-                label: l(en, sv),
-                focus: id === 'lgbm_all',
-                values: SPLITS.map(
-                  ([scheme]) => metric(scheme, id)?.pearson ?? null,
-                ),
-              }))}
-              format={(v) => num(v, 2)}
-              domain={[0, 1]}
-              label={l(
-                'Correlation per test split and model',
-                'Korrelation per testuppdelning och modell',
-              )}
-            />
-            <p className="dc-note">
-              {l(
-                'Read it left to right: the further right, the less the model has seen before. Every model loses accuracy on a new drug or cell line, but the LightGBM model with all features stays the most accurate in all four, ahead of simply reusing earlier results.',
-                'Läs från vänster till höger: ju längre till höger, desto mindre har modellen sett förut. Alla modeller tappar på ett nytt läkemedel eller en ny cellinje, men LightGBM-modellen med alla egenskaper är träffsäkrast i alla fyra, före att bara återanvända tidigare resultat.',
-              )}
-            </p>
-          </Card>
-
           <Card
             index={1}
             title={l(

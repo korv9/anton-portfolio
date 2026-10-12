@@ -23,29 +23,3 @@ test('monthly chart positions observations by date and sorts input', async ({
   expect((x[2] - x[1]) / (x[1] - x[0])).toBeCloseTo(90 / 31, 4)
   await expect(points.first()).toHaveAttribute('aria-label', /2024-01: 10/)
 })
-
-test('RFC composition retains a full whole and visible counts', async ({
-  page,
-}) => {
-  await page.goto('/#rfc-drift')
-  const data = await (
-    await page.request.get('/data/gold/marts/rfc-drift.json')
-  ).json()
-  await expect(page.locator('.composition-stack')).toHaveCount(
-    data.versions.length,
-  )
-  for (let i = 0; i < data.versions.length; i++) {
-    const version = data.versions[i]
-    const segments = page.locator('.composition-stack').nth(i).locator('i')
-    const weights = await segments.evaluateAll((nodes) =>
-      nodes.map((node) => Number(getComputedStyle(node).flexGrow)),
-    )
-    expect(weights).toEqual(
-      ['binding', 'weak', 'absent'].map((key) => version.counts[key]),
-    )
-    expect(weights.reduce((a, b) => a + b, 0)).toBe(version.requirements)
-    await expect(page.locator('.composition-legend').nth(i)).toContainText(
-      `${version.shares_pct.binding}%`,
-    )
-  }
-})

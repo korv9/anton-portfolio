@@ -12,24 +12,15 @@ export type Page =
   | 'politik'
   | 'jobs'
   | 'welfare'
-  | 'allegoria'
   | 'drugcomb'
   | 'thesis'
   | 'homie'
-  | 'diva'
-  | 'datamodel'
-  | 'er'
+  | 'lakehouse'
   | 'symbolic'
-  | 'constellation'
-  | 'catalogue'
-  | 'lineage'
   | 'aiact'
   | 'philosophy'
   | 'concepts'
-  | 'quality'
   | 'clusters'
-  | 'rag'
-  | 'mimii'
 
 export type Route = {
   /** The full hash, e.g. `#politik-valjarna?partier=S`. */
@@ -43,6 +34,17 @@ export type Route = {
 /** Addresses that the new structure replaces, and where they now lead. */
 export const REDIRECTS: Record<string, string> = {
   '#now': '#politik',
+  '#data-constellation': '#projekt',
+  '#data-catalogue': '#projekt',
+  '#idea-lineage': '#projekt',
+  '#quality': '#projekt',
+  '#data-model': '#projekt',
+  '#er': '#projekt',
+  '#er-diagram': '#projekt',
+  '#diva': '#projekt',
+  '#rag': '#projekt',
+  '#mimii': '#projekt',
+  '#rfc-drift': '#projekt',
   '#now-election': '#politik',
   '#politik-debatter': '#politik-sakdebatter',
   '#politics-page': '#politik',
@@ -52,19 +54,23 @@ export const REDIRECTS: Record<string, string> = {
   // The semantic-drift report is withdrawn while it is reworked.
   '#contact': '#om-mig',
   '#kontakt': '#om-mig',
-  '#utbildning': '#erfarenhet',
   '#experience': '#erfarenhet',
   '#work': '#projekt',
-  '#teknik': '#kompetenser',
+  '#teknik': '#om-mig',
+  '#kompetenser': '#om-mig',
   // The architecture page is the Data Constellation now; the platform status sits in the
   // data catalogue, and the welfare analysis in the welfare product.
-  '#tech': '#data-constellation',
-  '#technical': '#data-constellation',
-  '#teknisk': '#data-constellation',
+  '#tech': '#projekt',
+  '#technical': '#projekt',
+  '#teknisk': '#projekt',
   '#design': '#start',
   '#tallman': '#projekt',
+  '#job-market': '#jobb',
+  '#job-market-occupations': '#jobb-yrken',
+  '#job-market-regions': '#jobb-lan',
+  '#job-market-conditions': '#jobb-villkor',
   '#job-market-clusters': '#jobb-kluster',
-  '#status': '#data-catalogue',
+  '#status': '#projekt',
   // The politics product's older detailed views: each address leads to the theme that
   // answers the same question now.
   '#now-seats': '#politik-mandat',
@@ -80,6 +86,8 @@ export const REDIRECTS: Record<string, string> = {
 
 /** Older address families and the theme they lead to, checked after the exact list. */
 const PREFIX_REDIRECTS: [string, string][] = [
+  ['#quality-', '#projekt'],
+  ['#data-model-', '#projekt'],
   ['#now-', '#politik-roster'],
   ['#politics', '#politik-roster'],
   ['#issue-', '#politik-roster'],
@@ -112,26 +120,16 @@ export function pageOf(path: string): Page {
   if (['#drugcomb', '#drugcomb-data'].includes(path)) return 'drugcomb'
   if (path === '#thesis') return 'thesis'
   if (path === '#homie') return 'homie'
-  if (path === '#diva') return 'diva'
-  if (path === '#rag') return 'rag'
-  if (path === '#mimii') return 'mimii'
+  if (path === '#diva-lakehouse') return 'lakehouse'
   if (path === '#sweden' || path.startsWith('#sweden-')) return 'welfare'
-  if (path === '#rfc-drift') return 'allegoria'
-  if (path === '#er' || path === '#er-diagram') return 'er'
-  if (path === '#data-constellation') return 'constellation'
-  if (path === '#data-catalogue') return 'catalogue'
-  if (path === '#idea-lineage') return 'lineage'
   if (path === '#cluster-visuals') return 'clusters'
   if (path === '#ai-act' || path.startsWith('#ai-act-')) return 'aiact'
-  if (path === '#quality' || path.startsWith('#quality-')) return 'quality'
   if (path.startsWith('#concept-') || path.startsWith('#concepts-'))
     return 'concepts'
   if (path === '#philosophy-atlas' || path.startsWith('#philosophy-'))
     return 'philosophy'
   if (path === '#symbolic-atlas' || path.startsWith('#symbolic-'))
     return 'symbolic'
-  if (path === '#data-model' || path.startsWith('#data-model-'))
-    return 'datamodel'
   return 'home'
 }
 

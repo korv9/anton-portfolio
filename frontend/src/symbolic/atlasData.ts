@@ -4,7 +4,7 @@
  * delivery manifest (dataSource.ts, parquet.ts), never by a hard-coded URL.
  */
 import { fetchData } from '../dataSource'
-import { readParquet } from '../parquet'
+import { readParquet as readPart } from '../parquet'
 import type {
   AtlasPoint,
   AtlasSummary,
@@ -16,6 +16,19 @@ import type {
   ReviewedCluster,
   SymbolProfile,
 } from './atlasTypes'
+
+const parts = new Map<string, Promise<Record<string, unknown>[]>>()
+function readParquet(path: string) {
+  let pending = parts.get(path)
+  if (!pending) {
+    pending = readPart(path).catch((error) => {
+      parts.delete(path)
+      throw error
+    })
+    parts.set(path, pending)
+  }
+  return pending
+}
 
 async function json<T>(path: string): Promise<T> {
   const response = await fetchData(path)

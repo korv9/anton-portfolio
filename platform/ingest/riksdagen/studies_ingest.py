@@ -137,10 +137,19 @@ def code(session: str) -> str:
     return session.replace("/", "")
 
 
-def listing(http, doc_type: str, period: str, target: str) -> list[dict]:
+def listing(http, doc_type: str, period: str, target: str, max_age_days: float = 0) -> list[dict]:
     """Every page of a document listing, stored; returns the documents."""
     documents: list[dict] = []
-    page = 1
+    page, paths = 1, []
+    request = {"doc_type": doc_type, "period": period, "sort": "datum", "size": 500}
+    group = f"studies/listing/{target}"
+    cached = rawstore.completed_paths(SOURCE, group, request, max_age_days)
+    if cached:
+        for path in cached:
+            documents.extend(as_list(json.loads(path.read_text(encoding="utf-8-sig"))[
+                "dokumentlista"].get("dokument")))
+        return documents
+    rawstore.invalidate(SOURCE, group)
     while True:
         query = urllib.parse.urlencode({"doktyp": doc_type, "rm": period, "sz": 500, "p": page,
                                         "utformat": "json", "sort": "datum", "sortorder": "asc"})
@@ -149,11 +158,19 @@ def listing(http, doc_type: str, period: str, target: str) -> list[dict]:
         body = path.read_text(encoding="utf-8-sig").strip()
         # A session that has just opened can answer with an empty body instead of an empty list.
         if not body:
+            if page > 1:
+                raise ValueError(f"Incomplete study listing: {target}, empty page {page}")
             return documents
         result = json.loads(body)["dokumentlista"]
+        paths.append(path)
         rows = result.get("dokument") or []
         documents.extend(rows if isinstance(rows, list) else [rows])
         if page >= int(result.get("@sidor") or 1):
+            if "@traffar" in result and len(documents) != int(result["@traffar"]):
+                raise ValueError(f"Incomplete study listing: {target}")
+            for stale in set(path.parent.glob(f"{Path(target).name}-*.json")) - set(paths):
+                stale.unlink()
+            rawstore.complete(SOURCE, group, paths, request)
             return documents
         page += 1
 
@@ -211,8 +228,9 @@ def preparation(http, document: dict) -> dict:
 
 
 def stored_preparation(session: str) -> dict[str, dict]:
-    path = rawstore.RAW / SOURCE / f"studies/preparation/{code(session)}.jsonl.gz"
-    if not path.is_file():
+    relative = f"studies/preparation/{code(session)}.jsonl.gz"
+    path = rawstore.RAW / SOURCE / relative
+    if not rawstore.verified_record(SOURCE, relative):
         return {}
     lines = gzip.decompress(path.read_bytes()).decode("utf-8").splitlines()
     return {record["prop_id"]: record for record in map(json.loads, lines)}
@@ -234,50 +252,77 @@ def main() -> None:
     if not arguments.session:
         this_year = date.today().year
         for year in range(FIRST_STUDY_YEAR, this_year + 1):
-            stored = rawstore.RAW / SOURCE / f"studies/sou/{year}-01.json"
-            # A past year's series is complete; the last two years are read again.
-            if stored.is_file() and year < this_year - 1:
-                continue
-            sou = listing(http, "sou", str(year), f"sou/{year}")
-            ds = listing(http, "ds", str(year), f"ds/{year}")
+            age = 90 if year < this_year - 1 and not arguments.refetch_closed else 0
+            sou = listing(http, "sou", str(year), f"sou/{year}", age)
+            ds = listing(http, "ds", str(year), f"ds/{year}", age)
             # Riksrevisionen's audit reports, which the government answers in a bill.
-            rir = listing(http, "rir", str(year), f"rir/{year}")
+            rir = listing(http, "rir", str(year), f"rir/{year}", age)
             print(f"{year}: {len(sou)} SOU, {len(ds)} Ds, {len(rir)} RiR", flush=True)
 
     for session in sessions:
         known = stored_preparation(session)
+        prior = rawstore.verified_record(SOURCE, f"studies/preparation/{code(session)}.jsonl.gz")
+        unfinished = set((prior.get("body") or {}).get("pending_bills", [])) if prior else set()
         closed = session not in open_sessions
-        if (known and closed and not arguments.session and not arguments.refetch_closed
-                and not arguments.reread):
+        group = f"studies/preparation/{code(session)}"
+        request = {"session": session, "parser_version": 1}
+        revision = closed and rawstore.completed_paths(SOURCE, group, request, None) is not None
+        if (closed and not arguments.session and not arguments.refetch_closed
+                and not arguments.reread and not unfinished
+                and rawstore.completed_paths(SOURCE, group, request)):
             continue
+        rawstore.invalidate(SOURCE, group)
         bills = listing(http, "prop", session, f"propositions/{code(session)}")
         records: dict[str, dict] = {}
         pending = []
         for bill in bills:
             previous = known.get(bill["dok_id"])
             # A bill's text does not change; its committee report is added once it is dealt with.
-            if previous and previous["reports"] and bill.get("beteckning") not in arguments.reread:
+            if (previous and previous["reports"] and not rawstore.full_refresh()
+                    and not arguments.refetch_closed and not revision
+                    and bill["dok_id"] not in unfinished
+                    and bill.get("beteckning") not in arguments.reread):
                 records[bill["dok_id"]] = previous
             else:
                 pending.append(bill)
 
+        errors, refreshed = [], set()
         def read(bill: dict) -> dict | None:
             try:
                 return preparation(http, bill)
             except Exception as error:  # one broken bill must not stop the session
                 print(f"  {bill['dok_id']}: {error}", flush=True)
+                errors.append(bill["dok_id"])
                 return known.get(bill["dok_id"])
+
+        def save_checkpoint():
+            available = {**known, **records}
+            payload = "".join(json.dumps(available[b["dok_id"]], ensure_ascii=False) + "\n"
+                              for b in bills if b["dok_id"] in available)
+            return rawstore.store(SOURCE, f"studies/preparation/{code(session)}.jsonl.gz",
+                                  payload.encode("utf-8"),
+                                  url=f"{API}/dokumentstatus/<prop>.json (rm={session})",
+                                  body={"parser_version": 1, "pending_bills": [
+                                      b["dok_id"] for b in pending if b["dok_id"] not in refreshed]})
 
         # A few bills at a time: Riksdagen's API is shared, and a budget bill is 10 MB.
         with ThreadPoolExecutor(max_workers=4) as pool:
-            for bill, record in zip(pending, pool.map(read, pending)):
+            for index, (bill, record) in enumerate(zip(pending, pool.map(read, pending)), 1):
                 if record:
                     records[bill["dok_id"]] = record
+                if bill["dok_id"] not in errors:
+                    refreshed.add(bill["dok_id"])
+                if index % 25 == 0:
+                    save_checkpoint()
+        path = save_checkpoint()
+        if errors:
+            raise RuntimeError(f"Incomplete preparation for {session}: {len(errors)} failed bills; checkpoint saved")
+        # Empty HTTP listings are not evidence of a complete session.
+        listings = rawstore.completed_paths(SOURCE, f"studies/listing/propositions/{code(session)}",
+                                           {"doc_type": "prop", "period": session, "sort": "datum", "size": 500}, None)
+        if listings is not None:
+            rawstore.complete(SOURCE, group, [path, *listings], request)
         records = [records[bill["dok_id"]] for bill in bills if bill["dok_id"] in records]
-        payload = "\n".join(json.dumps(r, ensure_ascii=False) for r in records) + "\n"
-        rawstore.store(SOURCE, f"studies/preparation/{code(session)}.jsonl.gz",
-                       payload.encode("utf-8"),
-                       url=f"{API}/dokumentstatus/<prop>.json (rm={session})")
         cited = sum(1 for r in records if r["references"])
         print(f"{session}: {len(records)} bills, {cited} cite a study", flush=True)
 

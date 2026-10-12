@@ -1,12 +1,12 @@
 import { test, expect } from './test'
 import AxeBuilder from '@axe-core/playwright'
 
-test('the Philosophy Atlas maps passages, compares maps and reads tensions', async ({
+test('the Philosophy Lab maps passages, compares maps and reads tensions', async ({
   page,
 }) => {
   await page.goto('/#philosophy-atlas')
   await expect(
-    page.getByRole('heading', { level: 1, name: 'Philosophy Atlas' }),
+    page.getByRole('heading', { level: 1, name: 'Philosophy Lab' }),
   ).toBeVisible()
   await expect(page.locator('.ph-map circle').first()).toBeAttached()
   await expect(page.locator('.ph-table').first()).toContainText(

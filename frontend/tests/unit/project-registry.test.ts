@@ -5,29 +5,16 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
-  FLAGSHIPS,
+  PROJECT_GROUPS,
   PROJECTS,
   neighbours,
   projectForRoute,
 } from '../../src/projects/projectRegistry.ts'
 
-test('six flagships, numbered 01–06 in order', () => {
-  assert.deepEqual(
-    FLAGSHIPS.map((p) => [p.number, p.id]),
-    [
-      ['01', 'politics'],
-      ['02', 'ai-act'],
-      ['03', 'jobs'],
-      ['04', 'symbolic-atlas'],
-      ['05', 'welfare'],
-      ['06', 'thesis'],
-    ],
-  )
-  assert.ok(
-    PROJECTS.filter((p) => !FLAGSHIPS.includes(p)).every(
-      (p) => !p.number && !p.featured,
-    ),
-  )
+test('each retained project belongs to one menu group', () => {
+  const grouped = PROJECT_GROUPS.flatMap((group) => group.ids)
+  assert.equal(new Set(grouped).size, grouped.length)
+  assert.deepEqual(new Set(grouped), new Set(PROJECTS.map((p) => p.id)))
 })
 
 test('ids and site addresses are unique', () => {
@@ -38,7 +25,7 @@ test('ids and site addresses are unique', () => {
 })
 
 test('every flagship has the same grammar filled in', () => {
-  for (const p of FLAGSHIPS)
+  for (const p of PROJECTS)
     for (const key of [
       'question',
       'built',
@@ -50,14 +37,12 @@ test('every flagship has the same grammar filled in', () => {
     }
 })
 
-test('previous and next follow the flagship order without wrapping', () => {
-  assert.deepEqual(neighbours('politics').previous, undefined)
-  assert.equal(neighbours('politics').next?.id, 'ai-act')
-  assert.equal(neighbours('jobs').previous?.id, 'ai-act')
-  assert.equal(neighbours('symbolic-atlas').previous?.id, 'jobs')
-  assert.equal(neighbours('symbolic-atlas').next?.id, 'welfare')
-  assert.equal(neighbours('thesis').next, undefined)
-  assert.deepEqual(neighbours('drugcomb'), {})
+test('previous and next follow the project groups without wrapping', () => {
+  assert.equal(neighbours('politics').previous, undefined)
+  assert.equal(neighbours('politics').next?.id, 'jobs')
+  assert.equal(neighbours('ai-act').next?.id, 'symbolic-atlas')
+  assert.equal(neighbours('drugcomb').next?.id, 'thesis')
+  assert.equal(neighbours('diva-lakehouse').next, undefined)
 })
 
 test('a route finds its project, including sub-views', () => {

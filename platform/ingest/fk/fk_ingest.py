@@ -16,6 +16,7 @@ Tables are stored gzip-compressed; the largest is about 135 MB uncompressed.
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 from pathlib import Path
 
@@ -35,6 +36,13 @@ DATASETS = {
 }
 
 
+def validate_table(payload: bytes) -> None:
+    rows = json.loads(payload)
+    if not isinstance(rows, list) or not rows or not all(
+            isinstance(row, dict) and {"dimensions", "observations"} <= row.keys() for row in rows):
+        raise ValueError("Incomplete FK table response")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--only", nargs="*", choices=sorted(DATASETS), help="Fetch only these datasets")
@@ -45,7 +53,7 @@ def main() -> None:
             continue
         fetch(http, SOURCE, f"{dataset}/meta.json", f"{API}/{dataset}/meta.json", pause=1)
         path = fetch(http, SOURCE, f"{dataset}/{table}.json.gz", f"{API}/{dataset}/{table}.json",
-                     pause=1, timeout=600)
+                     pause=1, timeout=600, max_age_days=7, validate=validate_table)
         print(f"fk/{dataset}: {path.stat().st_size / 1e6:.1f} MB stored")
 
 

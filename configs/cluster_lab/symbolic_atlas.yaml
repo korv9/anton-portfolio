@@ -1,0 +1,87 @@
+schema_version: 1
+datasets:
+  - name: symbolic-occurrences
+    adapter: symbolic
+    family: occurrences
+    raw: warehouse/raw/symbolic
+    allow_partial: false
+    include_reprints: true
+    prepare: true
+  - name: symbolic-passages
+    adapter: symbolic
+    family: passages
+    raw: warehouse/raw/symbolic
+    allow_partial: false
+    sweep:
+      coarse_candidates: 12
+    clustering:
+      min_cluster_size: 100
+  - name: symbolic-per-symbol
+    adapter: symbolic
+    family: per_symbol
+    raw: warehouse/raw/symbolic
+    allow_partial: false
+    min_occurrences: 100
+    min_works: 3
+    max_symbols: 20
+    clustering:
+      min_cluster_size: 20
+      min_samples: 5
+    sweep:
+      coarse_candidates: 6
+      sample_sizes: [null]
+      finalists: 2
+      refinements_per_finalist: 2
+      search:
+        - parameters:
+            representation.centering: [none, work, author]
+            representation.centering_strength: [0.5, 1.0]
+            reduction.method: [none, pca, umap]
+            clustering.min_cluster_size: [10, 20, 50, {fraction: 0.02}]
+            clustering.min_samples: [3, 5, 10, 20]
+            clustering.cluster_selection_method: [eom, leaf]
+        - when: {reduction.method: umap}
+          parameters:
+            reduction.n_neighbors: [15, 30, 60, 120]
+            reduction.n_components: [5, 10, 20, 30]
+            reduction.min_dist: [0.0, 0.05, 0.1]
+representation:
+  model: sentence-transformers/all-MiniLM-L6-v2
+  revision: 1110a243fdf4706b3f48f1d95db1a4f5529b4d41
+  text_fields: [context]
+sweep:
+  coarse_candidates: 18
+  sample_sizes: [20000, 60000]
+  finalists: 3
+  refinements_per_finalist: 2
+  stability_seeds: [43, 44]
+  stability_sample_seeds: [43]
+  full_seeds: [42, 43]
+  baseline:
+    reduction: {method: umap, n_neighbors: 15, n_components: 10, min_dist: 0.0}
+    clustering: {implementation: sklearn, min_cluster_size: 20, min_samples: 10}
+  search:
+    - parameters:
+        representation.centering: [none, work, author]
+        representation.centering_strength: [0.5, 1.0]
+        representation.normalize: [true, false]
+        reduction.method: [none, pca, svd, umap]
+        clustering.implementation: [hdbscan]
+        clustering.min_cluster_size: [20, 60, 120, {fraction: 0.003}, {fraction: 0.008}]
+        clustering.min_samples: [3, 5, 10, 20]
+        clustering.cluster_selection_method: [eom, leaf]
+    - when: {reduction.method: umap}
+      parameters:
+        reduction.n_neighbors: [15, 30, 60, 120]
+        reduction.n_components: [5, 10, 20, 30]
+        reduction.min_dist: [0.0, 0.05, 0.1]
+    - when: {reduction.method: pca}
+      parameters: {reduction.n_components: [10, 20, 30]}
+    - when: {reduction.method: svd}
+      parameters: {reduction.n_components: [10, 20, 30]}
+layouts:
+  count: 8
+  preview_count: 8
+  n_neighbors: [10, 30, 60, 120]
+  min_dist: [0.0, 0.05, 0.15, 0.35, 0.6]
+  seeds: [42, 43]

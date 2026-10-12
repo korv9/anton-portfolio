@@ -2,46 +2,17 @@ import { test, expect } from './test'
 import AxeBuilder from '@axe-core/playwright'
 
 // The reader's date is pinned through ?idag so the tests do not move with the calendar.
-test('the overview answers what applies now and next, with the source one click away', async ({
+test('the AI Act overview separates its five reading tasks', async ({
   page,
 }) => {
   await page.goto('/#ai-act?idag=2026-10-06')
-  await expect(
-    page.getByRole('heading', { level: 1, name: 'EU AI Act Observatory' }),
-  ).toBeVisible()
-  // Read first: what applies now as the major finding, then what is next and the latest change.
-  await expect(
-    page.getByRole('heading', { level: 2, name: 'What applies now?' }),
-  ).toBeVisible()
-  await expect(page.locator('.aa-now .finding-hero')).toContainText(
-    '2 August 2026',
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+    'EU AI Act Observatory',
   )
-  await expect(page.locator('.aa-now-next')).toContainText('2 December 2026')
-  // Then who you are: the startup navigator first, then each operator role.
-  await expect(page.locator('.aa-who .story-next a').first()).toHaveAttribute(
-    'href',
-    '#ai-act-startups',
-  )
-  await expect(page.locator('.aa-snapshot')).toContainText(
-    'AI Act: October 2026',
-  )
-  // The background on the Act is one click deeper.
-  await page.getByRole('button', { name: 'About the Act' }).click()
-  await expect(page.locator('.aa-note')).toContainText(
-    'Regulation (EU) 2026/1744',
-  )
-  await expect(page.locator('.project-subnav')).toContainText(
-    'Startup navigator',
-  )
-  const sources = page.locator('.aa-now a.aa-source')
-  for (const href of await sources.evaluateAll((a) =>
-    a.map((x) => x.getAttribute('href')),
-  ))
-    expect(href).toMatch(
-      /^https:\/\/(eur-lex|digital-strategy\.ec)\.europa\.eu\//,
-    )
-  const axe = await new AxeBuilder({ page }).include('.aiact').analyze()
-  expect(axe.violations).toEqual([])
+  await expect(page.locator('.overview-topics > a')).toHaveCount(5)
+  await page.locator('.overview-topics a[href="#ai-act-today"]').click()
+  await expect(page.locator('.aa-body')).toBeVisible()
+  await expect(page.locator('.dk-kpis')).toHaveCount(0)
 })
 
 test('the timeline marks what has passed against the reader’s date', async ({
@@ -125,7 +96,9 @@ test('the observatory works on a phone without sideways scrolling', async ({
     '#ai-act-timeline',
   ]) {
     await page.goto(`/${path}`)
-    await expect(page.locator('.aa-body')).toBeVisible()
+    await expect(
+      page.locator(path === '#ai-act' ? '.project-overview' : '.aa-body'),
+    ).toBeVisible()
     const overflow = await page.evaluate(
       () => document.documentElement.scrollWidth - window.innerWidth,
     )

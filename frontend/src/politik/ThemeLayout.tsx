@@ -11,7 +11,7 @@ import {
   type ReactNode,
 } from 'react'
 import { l } from '../i18n'
-import { DashGrid, KpiRow } from '../ui/dash/Dash'
+import { DashGrid } from '../ui/dash/Dash'
 import ProjectTech from '../projects/ProjectTech'
 import { projectForRoute } from '../projects/projectRegistry'
 import { parseHash } from '../router'
@@ -85,9 +85,6 @@ export default function ThemeLayout(props: Props) {
         </p>
       ) : (
         <>
-          {props.kpis.length > 0 && (
-            <KpiRow items={props.kpis} className="theme-kpis" />
-          )}
           {props.feature}
           <DashGrid>
             <section className="theme-figure" aria-labelledby={`${id}-title`}>
@@ -161,7 +158,6 @@ export default function ThemeLayout(props: Props) {
                   </div>
                 )}
               </div>
-              <p className="theme-takeaway">{props.takeaway}</p>
               <p className="theme-source-line">
                 {l('Source', 'Källa')}:{' '}
                 {props.sources.map((s) => s.name).join(', ')}
@@ -169,15 +165,13 @@ export default function ThemeLayout(props: Props) {
                   `, ${l('Updated', 'Uppdaterad')} ${props.updated}`}
               </p>
             </section>
-            {project && <ProjectTech project={project.id} span={4} />}
           </DashGrid>
 
-          <section className="theme-meaning" aria-labelledby={`${id}-meaning`}>
-            <h2 id={`${id}-meaning`}>
-              {l('What does this mean?', 'Vad betyder det här?')}
-            </h2>
+          <details className="reading-note">
+            <summary>{l('About this measure', 'Om måttet')}</summary>
             <div>{props.meaning}</div>
-          </section>
+          </details>
+          {project && <ProjectTech project={project.id} />}
 
           <nav
             className="theme-further"

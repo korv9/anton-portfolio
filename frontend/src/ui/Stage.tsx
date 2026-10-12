@@ -3,6 +3,7 @@
  * details in narrow panels on either side. Narrower screens put the figure first and the panels
  * under it. Used on every project page, so each opens on one simple, striking chart.
  */
+import { l } from '../i18n'
 import { createContext, useContext, type ReactNode } from 'react'
 import './stage.css'
 
@@ -47,9 +48,18 @@ export function Stage({
           {lead && <p className="stage-lead">{lead}</p>}
         </header>
         {metrics && <div className="stage-metrics">{metrics}</div>}
-        <aside className="stage-side is-left">{left}</aside>
         <div className="stage-figure">{figure}</div>
-        <aside className="stage-side is-right">{right}</aside>
+        {(left || right) && (
+          <details className="stage-details">
+            <summary>
+              {l('Data and settings', 'Data och inställningar')}
+            </summary>
+            <div>
+              <aside className="stage-side is-left">{left}</aside>
+              <aside className="stage-side is-right">{right}</aside>
+            </div>
+          </details>
+        )}
       </section>
     </StageLevel.Provider>
   )

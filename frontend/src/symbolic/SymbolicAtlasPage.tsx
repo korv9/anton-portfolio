@@ -1,5 +1,5 @@
 /**
- * Symbolic Atlas: can recurring symbolic meanings be found in myth, folklore and literature
+ * Symbol Lab: can recurring symbolic meanings be found in myth, folklore and literature
  * without deciding the meanings first? Every occurrence of twenty symbol words in a corpus of
  * public-domain books (platform/ingest/symbolic/corpus.json) is placed on a map by the similarity of its surrounding sentences (sentence
  * embeddings, UMAP) and grouped by HDBSCAN. Clusters are numbered; only a cluster a person has
@@ -28,7 +28,6 @@ import ResearchStory from './ResearchStory'
 import { ProjectHero } from '../ui/Project'
 import { ProjectDepth } from '../projects/ProjectStructure'
 import ProjectTech from '../projects/ProjectTech'
-import { KpiRow } from '../ui/dash/Dash'
 import {
   AtlasFiltersPanel,
   SymbolPanel,
@@ -151,41 +150,6 @@ export default function SymbolicAtlasPage({ route }: { route: Route }) {
     }
   }, [])
 
-  // A section address (#symbolic-findings, -experiments, -method) scrolls to its section once
-  // the page has rendered it; the experiment table loads on its own, so wait a few frames.
-  const loaded = summary !== null && points !== null
-  useEffect(() => {
-    if (!loaded || route.path === '#symbolic-atlas') return
-    let tries = 0
-    let frame = 0
-    let timers: number[] = []
-    let touched = false
-    const stop = () => (touched = true)
-    const events = ['wheel', 'touchstart', 'keydown', 'mousedown']
-    events.forEach((e) => window.addEventListener(e, stop, { passive: true }))
-    const go = () => {
-      const target = document.getElementById(route.path.slice(1))
-      if (!target) {
-        if (tries++ < 60) frame = requestAnimationFrame(go)
-        return
-      }
-      const land = () => {
-        if (!touched)
-          target.scrollIntoView({ block: 'start', behavior: 'instant' })
-      }
-      land()
-      // The map sizes itself after the first paint and pushes the sections down; land again
-      // a few times while that settles, unless the reader has started to move.
-      timers = [300, 700, 1200].map((ms) => window.setTimeout(land, ms))
-    }
-    frame = requestAnimationFrame(go)
-    return () => {
-      cancelAnimationFrame(frame)
-      timers.forEach((t) => window.clearTimeout(t))
-      events.forEach((e) => window.removeEventListener(e, stop))
-    }
-  }, [route.path, loaded])
-
   const byId = useMemo(
     () => new Map((points ?? []).map((p) => [p.occurrence_id, p])),
     [points],
@@ -264,38 +228,17 @@ export default function SymbolicAtlasPage({ route }: { route: Route }) {
     )
   if (!summary || !points)
     return (
-      <p className="ds-container" role="status">
-        {l('Loading the atlas…', 'Laddar atlasen…')}
-      </p>
+      <div className="ds-container">
+        <ProjectHero project="symbolic-atlas" />
+        <p role="status">{l('Loading the map…', 'Laddar kartan…')}</p>
+      </div>
     )
 
   const ev = summary.evaluation
   return (
     <div className="symbolic-page">
       <div className="ds-container">
-        <ProjectHero
-          project="symbolic-atlas"
-          finding={
-            history?.steps[0]?.metrics && history.steps.at(-1)?.metrics
-              ? l(
-                  `${pct(history.steps[0].metrics.mean_largest_book_share)} of a first-run cluster came from one book on average: the model learned the books more than the symbols. After book-centring and a larger corpus: ${pct(history.steps.at(-1)!.metrics!.mean_largest_book_share)}.`,
-                  `${pct(history.steps[0].metrics.mean_largest_book_share)} av ett kluster i första körningen kom i snitt från en och samma bok: modellen lärde sig böckerna mer än symbolerna. Efter bokcentrering och en större korpus: ${pct(history.steps.at(-1)!.metrics!.mean_largest_book_share)}.`,
-                )
-              : undefined
-          }
-          nav={(
-            [
-              ['#symbolic-map', l('Atlas', 'Atlas')],
-              ['#symbolic-findings', l('Findings', 'Fynd')],
-              ['#symbolic-experiments', l('Experiments', 'Experiment')],
-              ['#symbolic-method', l('Method', 'Metod')],
-            ] as const
-          ).map(([href, label]) => ({
-            href,
-            label,
-            current: route.path === href ? 'location' : undefined,
-          }))}
-        >
+        <ProjectHero project="symbolic-atlas">
           <p>
             {l(
               `An unsupervised research project: every use of 20 symbol words in ${summary.document_count} public-domain books of mythology, folklore and literature, placed by the language around it.`,
@@ -304,27 +247,7 @@ export default function SymbolicAtlasPage({ route }: { route: Route }) {
           </p>
         </ProjectHero>
       </div>
-      <div className="ds-container">
-        <KpiRow
-          items={[
-            {
-              label: l('Books', 'Böcker'),
-              value: num(summary.document_count),
-              note: l('Public-domain corpus', 'Fri korpus'),
-            },
-            {
-              label: l('Occurrences', 'Förekomster'),
-              value: num(summary.occurrence_count),
-              note: l('Symbol words in context', 'Symbolord i sitt sammanhang'),
-            },
-            {
-              label: l('Clusters', 'Kluster'),
-              value: num(summary.cluster_count),
-              note: l('Baseline, HDBSCAN', 'Utgångsläge, HDBSCAN'),
-            },
-          ]}
-        />
-      </div>
+      <div className="ds-container"></div>
       <Stage
         id="symbolic-map"
         dark

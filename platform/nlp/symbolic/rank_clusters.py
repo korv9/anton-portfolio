@@ -206,7 +206,9 @@ def stop_words() -> list[str]:
     return sorted((ENGLISH_STOP_WORDS - {"fire"}) | archaic)
 
 
-def ctfidf(texts_by_cluster: dict[int, list[str]], top: int = KEYWORDS) -> list[dict]:
+def ctfidf(texts_by_cluster: dict[int, list[str]], top: int = KEYWORDS,
+           max_features: int | None = None, stop_words_override=None,
+           token_pattern=r"(?u)\b[a-zA-Z][a-zA-Z’']{2,}\b") -> list[dict]:
     """Class-based TF-IDF: each cluster's passages as one document; a term scores high when it
     is frequent in the cluster and rare across clusters. tf = count / words in cluster,
     idf = log(1 + mean words per cluster / term count over all clusters)."""
@@ -214,19 +216,20 @@ def ctfidf(texts_by_cluster: dict[int, list[str]], top: int = KEYWORDS) -> list[
 
     ids = sorted(texts_by_cluster)
     docs = [" ".join(texts_by_cluster[c]) for c in ids]
-    vec = CountVectorizer(stop_words=stop_words(), token_pattern=r"(?u)\b[a-zA-Z][a-zA-Z’']{2,}\b",
-                          lowercase=True, min_df=1)
-    counts = vec.fit_transform(docs).toarray().astype(float)
+    vec = CountVectorizer(stop_words=stop_words() if stop_words_override is None else stop_words_override,
+                          token_pattern=token_pattern, lowercase=True, min_df=1, max_features=max_features)
+    counts = vec.fit_transform(docs).astype(float)
     terms = vec.get_feature_names_out()
-    words = counts.sum(axis=1, keepdims=True)
-    tf = counts / np.where(words == 0, 1, words)
-    idf = np.log(1 + words.mean() / np.maximum(counts.sum(axis=0), 1))
-    scores = tf * idf
+    words = np.asarray(counts.sum(axis=1)).reshape(-1)
+    tf = counts.multiply((1 / np.where(words == 0, 1, words))[:, None])
+    idf = np.log(1 + words.mean() / np.maximum(np.asarray(counts.sum(axis=0)).reshape(-1), 1))
+    scores = tf.multiply(idf).tocsr()
     out = []
     for row, c in enumerate(ids):
-        best = np.argsort(-scores[row], kind="stable")[:top]
-        out += [{"cluster_id": c, "term": str(terms[j]), "score": round(float(scores[row, j]), 6),
-                 "rank": rank + 1} for rank, j in enumerate(best) if scores[row, j] > 0]
+        weights = scores[row].toarray().reshape(-1)
+        best = np.argsort(-weights, kind="stable")[:top]
+        out += [{"cluster_id": c, "term": str(terms[j]), "score": round(float(weights[j]), 6),
+                 "rank": rank + 1} for rank, j in enumerate(best) if weights[j] > 0]
     return out
 
 

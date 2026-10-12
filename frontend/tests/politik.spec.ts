@@ -1,4 +1,4 @@
-import { test, expect, siteNav } from './test'
+import { test, expect } from './test'
 import AxeBuilder from '@axe-core/playwright'
 
 const THEMES: [string, string][] = [
@@ -18,12 +18,10 @@ test('every theme answers one question with one chart, a table and its sources',
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(question)
     // The question shows while the data loads; count the figures once the chart is there.
     await expect(page.locator('.theme-figure')).toHaveCount(1)
-    await expect(page.locator('.theme-kpis > div').first()).toBeVisible()
-    const kpis = await page.locator('.theme-kpis > div').count()
-    expect(kpis, path).toBeLessThanOrEqual(3)
-    await expect(
-      page.getByRole('heading', { name: 'What does this mean?' }),
-    ).toBeVisible()
+    await expect(page.locator('.theme-kpis')).toHaveCount(0)
+    await expect(page.locator('.reading-note summary')).toContainText(
+      'About this measure',
+    )
     await expect(page.locator('.theme-source-line')).toContainText('Source')
     await page.getByRole('tab', { name: 'Table' }).click()
     await expect(page.locator('.theme-table table')).toBeVisible()
@@ -43,20 +41,16 @@ test('the party bar follows the reader from page to page', async ({ page }) => {
   await bar.getByRole('button', { name: 'Left Party' }).click()
   await bar.getByRole('button', { name: 'Moderates' }).click()
   await expect(page).toHaveURL(/partier=S%2CV%2CM|partier=S,V,M/)
-  await (
-    await siteNav(page)
-  )
-    .getByRole('link', { name: 'Parties', exact: true })
+  await page
+    .getByRole('navigation', { name: 'Project topics' })
+    .getByRole('link', { name: 'Government and parliament', exact: true })
     .click()
   await expect(page).toHaveURL(/#politik-partier\?partier=/)
-  await (
-    await siteNav(page)
-  )
-    .getByRole('link', { name: /What voters think/ })
+  await page
+    .getByRole('navigation', { name: 'Project topics' })
+    .getByRole('link', { name: 'Voters and opinion', exact: true })
     .click()
-  await expect(page).toHaveURL(
-    /#politik-valjarna\?partier=S%2CV%2CM|#politik-valjarna\?partier=S,V,M/,
-  )
+  await expect(page).toHaveURL(/#politik-valjarna\?partier=/)
   await expect(page.locator('.rank-bars-list li')).toHaveCount(3)
   await page.getByRole('button', { name: 'Show all' }).click()
   await expect(page.locator('.rank-bars-list li')).toHaveCount(8)
@@ -135,22 +129,13 @@ test('explore and sources reach every detailed view and the raw tables', async (
   await expect(page.locator('.explore-parties a')).toHaveCount(8)
   await page.goto('/#politik-kallor')
   await expect(page.locator('.sources-block table tbody tr')).toHaveCount(6)
-  for (const href of ['#data-model', '#data-catalogue'])
-    await expect(page.locator(`.explore-row[href="${href}"]`)).toHaveCount(1)
+  await expect(
+    page.locator('a[href="#data-model"],a[href="#data-catalogue"]'),
+  ).toHaveCount(0)
   const results = await new AxeBuilder({ page })
     .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
     .analyze()
   expect(results.violations).toEqual([])
-})
-
-test('the start page opens on the name, with no intro in front of it', async ({
-  page,
-}) => {
-  await page.goto('/')
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-    'Anton Ernstsson',
-  )
-  await expect(page.locator('.intro-screen')).toHaveCount(0)
 })
 
 test('taxes: every kind of tax, Sweden against the other countries', async ({
@@ -318,6 +303,7 @@ test('the model: gradient boosting per party, with party and committee slicers',
     .getByRole('button', { name: 'SD' })
     .click()
   await expect(page).toHaveURL(/parti=SD/)
+  await page.locator('#modell .stage-details summary').click()
   await page
     .getByRole('combobox', { name: 'Committee' })
     .selectOption({ index: 1 })

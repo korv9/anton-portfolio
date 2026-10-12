@@ -163,7 +163,7 @@ export default function Debatterna({
           ),
         },
         {
-          href: '#data-constellation',
+          href: '#politik-kallor',
           label: l('How the topics are learned', 'Hur ämnena lärs in'),
         },
       ]}

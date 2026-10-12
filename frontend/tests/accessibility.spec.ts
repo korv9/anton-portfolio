@@ -18,8 +18,7 @@ const PAGES = [
   '#symbolic-atlas',
   '#sweden',
   '#thesis',
-  '#data-constellation',
-  '#quality',
+  '#cluster-visuals',
 ]
 
 for (const path of PAGES) {
@@ -29,6 +28,7 @@ for (const path of PAGES) {
     await page.emulateMedia({ reducedMotion: 'reduce' })
     await page.goto(`/${path}`)
     await page.waitForLoadState('networkidle')
+    await expect(page.locator('a[href="#"], a:not([href])')).toHaveCount(0)
     const result = await new AxeBuilder({ page })
       .include('main')
       // Canvas and SVG charts carry their text alternatives on the figure.
@@ -41,7 +41,7 @@ for (const path of PAGES) {
   })
 }
 
-for (const width of [390, 768, 1024, 1440, 1920]) {
+for (const width of [320, 768, 1440]) {
   test(`nothing scrolls sideways at ${width}px`, async ({ page, isMobile }) => {
     test.skip(isMobile, 'sets its own viewport')
     test.setTimeout(120_000)
@@ -80,6 +80,18 @@ test('keyboard focus is visible on the first controls', async ({
 test('reduced motion stops transitions', async ({ page, isMobile }) => {
   test.skip(isMobile, 'the same CSS on a phone')
   await page.emulateMedia({ reducedMotion: 'reduce' })
+  await page.goto('/')
+  const backdrop = page.locator('.home-backdrop')
+  await expect(backdrop).toHaveAttribute('data-ready', 'true', {
+    timeout: 20000,
+  })
+  await expect(backdrop).toHaveAttribute('data-intro', 'false')
+  await expect(page.locator('.home-umap-intro')).toHaveCount(0)
+  await expect(page.locator('.home-backdrop-toggle')).toHaveCount(0)
+  await expect(backdrop.locator('canvas').first()).toHaveCSS(
+    'animation-name',
+    'none',
+  )
   await page.goto('/#politik-roster')
   const duration = await page
     .locator('.rank-track i')

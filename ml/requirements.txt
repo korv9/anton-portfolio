@@ -7,8 +7,11 @@ transformers==5.6.2
 sentence-transformers==5.4.1
 scikit-learn==1.8.0
 umap-learn==0.5.12
-hdbscan
+hdbscan==0.8.44
 pandas==3.0.1
 pyarrow==23.0.1
 duckdb==1.5.5
 scipy==1.17.1
+PyYAML==6.0.2
+psutil==7.0.0
+matplotlib==3.10.0

@@ -1,12 +1,12 @@
 import { test, expect } from './test'
 import AxeBuilder from '@axe-core/playwright'
 
-test('the Concept Constellation draws typed relations and opens concept pages', async ({
+test('the Concept Lab draws typed relations and opens concept pages', async ({
   page,
 }) => {
   await page.goto('/#concept-constellation')
   await expect(
-    page.getByRole('heading', { level: 1, name: 'Concept Constellation' }),
+    page.getByRole('heading', { level: 1, name: 'Concept Lab' }),
   ).toBeVisible()
   await expect(page.locator('.cc-node')).toHaveCount(28)
   await expect(

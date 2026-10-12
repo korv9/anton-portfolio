@@ -12,6 +12,7 @@ Writes under frontend/public/data/symbolic/:
     symbol-profiles.parquet per symbol and cluster: count, share, mean probability
     preview.json            every tenth point (by id): x, y and cluster only, for the small
                             picture on the start page
+    preview-detail.json     all atlas coordinates and cluster ids for the layered home UMAP
     experiment-comparison.json  one row per deconfounding experiment (nlp/symbolic/experiments.py)
     model-comparison.json   one row per embedding model and experiment on the same sample
                             (experiments.py --models)
@@ -331,8 +332,11 @@ def main() -> int:
     preview = [[round(xs[i], 3), round(ys[i], 3), labels[i]] for i in range(0, len(ids), 10)]
     (OUT / "preview.json").write_text(json.dumps({"columns": ["x", "y", "cluster_id"], "points": preview},
                                                  separators=(",", ":")) + "\n", encoding="utf-8")
+    detail = [[round(x, 3), round(y, 3), label] for x, y, label in zip(xs, ys, labels)]
+    (OUT / "preview-detail.json").write_text(json.dumps({"columns": ["x", "y", "cluster_id"], "points": detail},
+                                                        separators=(",", ":")) + "\n", encoding="utf-8")
     register([PARQUET / "atlas.parquet", OUT / "summary.json", PARQUET / "symbol-profiles.parquet",
-              OUT / "preview.json", *experiment_files(), *review_files()])
+              OUT / "preview.json", OUT / "preview-detail.json", *experiment_files(), *review_files()])
     size = (PARQUET / "atlas.parquet").stat().st_size
     print(f"{atlas.num_rows} points, {metrics['clusters']} clusters, atlas.parquet {size / 1e3:.0f} kB")
     return 0

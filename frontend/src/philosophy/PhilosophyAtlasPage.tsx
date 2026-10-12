@@ -1,5 +1,5 @@
 /**
- * Philosophy Atlas (#philosophy-atlas): how recurring ideas and moral tensions organise thirteen
+ * Philosophy Lab (#philosophy-atlas): how recurring ideas and moral tensions organise thirteen
  * public-domain works of philosophy. Built from platform/publish/philosophy/export_philosophy.py:
  * a balanced sample of passages, one multilingual embedding model, UMAP and HDBSCAN on two maps
  * (raw, and centred per work so a work's own voice and its translator's English weigh less), and
@@ -10,7 +10,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { l } from '../i18n'
 import { ProjectDepth } from '../projects/ProjectStructure'
 import ProjectTech from '../projects/ProjectTech'
-import { KpiRow } from '../ui/dash/Dash'
+import { ProjectHero } from '../ui/Project'
 import { ProductQuality } from '../quality/QualityPanel'
 import type { Route } from '../router'
 import { fetchData } from '../dataSource'
@@ -174,7 +174,14 @@ export default function PhilosophyAtlasPage({ route }: { route: Route }) {
       </p>
     )
   if (!summary || !atlas || !tensions)
-    return <p className="ph-body ds-container">{l('Loading…', 'Laddar…')}</p>
+    return (
+      <div className="ph-body ds-container">
+        <ProjectHero project="philosophy-atlas" />
+        <p role="status">
+          {l('Loading the passages…', 'Laddar textpassagerna…')}
+        </p>
+      </div>
+    )
 
   const variant = params.karta === 'baseline' ? 'baseline' : 'author_centered'
   const points = atlas[variant]
@@ -196,7 +203,7 @@ export default function PhilosophyAtlasPage({ route }: { route: Route }) {
             'Experimentellt, semantisk utforskning',
           )}
         </p>
-        <h1>Philosophy Atlas</h1>
+        <h1>Philosophy Lab</h1>
         <p className="ph-question">
           {l(
             'How do recurring moral and philosophical tensions organise texts across thinkers and traditions?',
@@ -211,26 +218,6 @@ export default function PhilosophyAtlasPage({ route }: { route: Route }) {
         </p>
       </header>
       <div className="ph-body ds-container">
-        <KpiRow
-          items={[
-            {
-              label: l('Works', 'Verk'),
-              value: works.length.toLocaleString(l('en-GB', 'sv-SE')),
-            },
-            {
-              label: l('Mapped passages', 'Kartlagda passager'),
-              value: summary.run.passages_sampled.toLocaleString(
-                l('en-GB', 'sv-SE'),
-              ),
-            },
-            {
-              label: l('Reviewed groups', 'Granskade grupper'),
-              value: summary.reviewed_clusters.toLocaleString(
-                l('en-GB', 'sv-SE'),
-              ),
-            },
-          ]}
-        />
         <section
           id="philosophy-atlas"
           className="ph-section"
@@ -755,8 +742,8 @@ function Method({ summary }: { summary: Summary }) {
         </li>
         <li>
           {l(
-            `Embeddings: ${summary.run.model}, the same model used for the cross-corpus concept layer. UMAP and HDBSCAN, as in the Symbolic Atlas.`,
-            `Inbäddningar: ${summary.run.model}, samma modell som det gemensamma begreppslagret använder. UMAP och HDBSCAN, som i Symbolic Atlas.`,
+            `Embeddings: ${summary.run.model}, the same model used for the cross-corpus concept layer. UMAP and HDBSCAN, as in the Symbol Lab.`,
+            `Inbäddningar: ${summary.run.model}, samma modell som det gemensamma begreppslagret använder. UMAP och HDBSCAN, som i Symbol Lab.`,
           )}
         </li>
         <li>

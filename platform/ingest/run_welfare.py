@@ -35,8 +35,12 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--only", nargs="*", choices=sorted(SOURCES), help="Fetch only these sources")
     parser.add_argument("--skip-fetch", action="store_true", help="Build from the bronze files already on disk")
+    parser.add_argument("--full-refresh", "--force", action="store_true",
+                        help="Refetch verified historical data as well as current data")
     parser.add_argument("--skip-build", action="store_true", help="Fetch only")
     args = parser.parse_args()
+    if args.full_refresh:
+        os.environ["PORTFOLIO_FULL_REFRESH"] = "1"
     if not args.skip_fetch:
         for source, script in SOURCES.items():
             if not args.only or source in args.only:

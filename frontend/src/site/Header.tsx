@@ -1,8 +1,4 @@
-/**
- * The site frame around a page, besides the sidebar (site/Sidebar.tsx): the page's title for the
- * tab, the breadcrumb on project pages and the previous / next project. Project lists come from
- * projects/projectRegistry.ts.
- */
+/** Document titles, breadcrumbs and project paging from the project registry. */
 import { l } from '../i18n'
 import type { Route } from '../router'
 import {
@@ -19,13 +15,7 @@ const b = (text: Bilingual) => l(text.en, text.sv)
  * hood (Data Constellation, the data platform, quality, Idea Lineage) say so instead.
  */
 const TECHNICAL: Partial<Record<Route['page'], Bilingual>> = {
-  constellation: { en: 'Data Constellation', sv: 'Data Constellation' },
-  catalogue: { en: 'Data catalogue', sv: 'Datakatalog' },
-  lineage: { en: 'Idea Lineage', sv: 'Idea Lineage' },
-  clusters: { en: 'Cluster visuals', sv: 'Klustervisualiseringar' },
-  datamodel: { en: 'Data model', sv: 'Datamodell' },
-  er: { en: 'ER diagram', sv: 'ER-diagram' },
-  quality: { en: 'Quality and validity', sv: 'Kvalitet och validitet' },
+  clusters: { en: 'Cluster Visuals', sv: 'Cluster Visuals' },
 }
 
 /** The page's own name for the document title, or null on the homepage. */
@@ -62,7 +52,7 @@ export function ProjectContext({ route }: { route: Route }) {
         {!project && technical && (
           <>
             <li>
-              <a href="#under-huven">{l('Under the hood', 'Under huven')}</a>
+              <a href="#projekt">{l('Tools', 'Verktyg')}</a>
             </li>
             <li>
               <span aria-current="page">{b(technical)}</span>
@@ -77,7 +67,7 @@ export function ProjectContext({ route }: { route: Route }) {
 /** Previous and next flagship project, at the bottom of a flagship's page. */
 export function ProjectPager({ route }: { route: Route }) {
   const project = projectForRoute(route)
-  if (!project?.featured) return null
+  if (!project) return null
   const { previous, next } = neighbours(project.id)
   const link = (p: ProjectEntry | undefined, dir: 'previous' | 'next') =>
     p ? (

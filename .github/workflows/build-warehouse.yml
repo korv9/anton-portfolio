@@ -12,6 +12,10 @@ name: Build and store the warehouse
 on:
   workflow_dispatch:
     inputs:
+      full_refresh:
+        description: Refetch public-source history as well as current data
+        type: boolean
+        default: false
       ml:
         description: >-
           ML stages (embeddings, maps, concept layer): 'missing' runs a stage only when its
@@ -38,6 +42,7 @@ jobs:
     environment: anton-portfolio
     env:
       DBT_SEND_ANONYMOUS_USAGE_STATS: 'false'
+      PORTFOLIO_FULL_REFRESH: ${{ inputs.full_refresh && '1' || '0' }}
       PORTFOLIO_DB: ${{ github.workspace }}/warehouse/portfolio.duckdb
       PORTFOLIO_RAW: ${{ github.workspace }}/warehouse/raw
       PORTFOLIO_FEATURES: ${{ github.workspace }}/warehouse/features
@@ -60,6 +65,7 @@ jobs:
           cache-dependency-path: platform/requirements.txt
       - run: pip install -r platform/requirements.txt
       - name: Start from the stored raw files and ML outputs
+        id: restore
         run: |
           python platform/publish/warehouse_store.py pull --only raw
           python platform/publish/warehouse_store.py pull --only features
@@ -146,3 +152,9 @@ jobs:
       # never block a run.
       - name: Quality gate (structural checks)
         run: python platform/quality/evaluate.py --dbt-results platform/target/quality/run_results.json --gate
+      - name: Save public-source checkpoints after a failed build
+        if: ${{ failure() && steps.restore.outcome == 'success' }}
+        run: >-
+          python platform/publish/warehouse_store.py push --only raw --prune
+          --path scb --path fohm --path fk --path ess --path kolada
+          --path riksdagen --path val --path oecd --path skatteverket

@@ -21,7 +21,6 @@ import { Politics } from './Politics'
 import { Signals } from './Signals'
 import { DISCLAIMER, fmtDate, pick } from './shared'
 import { ProjectHero } from '../ui/Project'
-import { KpiRow } from '../ui/dash/Dash'
 import ProjectTech from '../projects/ProjectTech'
 import {
   Changes,
@@ -187,22 +186,6 @@ export default function AiActProduct({ route }: { route: Route }) {
                 </dl>
               )
             }
-            nav={[
-              {
-                href: '#ai-act-roles',
-                label: l('Who is affected?', 'Vem berörs?'),
-              },
-              {
-                href: '#ai-act-startups',
-                label: l('Startup navigator', 'Startup-navigator'),
-              },
-              {
-                href: '#ai-act-obligations',
-                label: l('Obligations', 'Skyldigheter'),
-              },
-              { href: '#ai-act-changes', label: l('Changes', 'Ändringar') },
-              { href: '#ai-act-sources', label: l('Sources', 'Källor') },
-            ]}
           >
             <p>
               {l(
@@ -253,41 +236,7 @@ export default function AiActProduct({ route }: { route: Route }) {
         )}
         {data && (
           <>
-            <KpiRow
-              items={[
-                {
-                  label: l('Articles', 'Artiklar'),
-                  value: data.articles.length.toLocaleString(
-                    l('en-GB', 'sv-SE'),
-                  ),
-                  note: l(
-                    'In the consolidated text',
-                    'I den konsoliderade texten',
-                  ),
-                },
-                {
-                  label: l('Obligations', 'Skyldigheter'),
-                  value: data.obligations.length.toLocaleString(
-                    l('en-GB', 'sv-SE'),
-                  ),
-                  note: l(
-                    'Traceable to their articles',
-                    'Spårbara till sina artiklar',
-                  ),
-                },
-                {
-                  label: l('Application milestones', 'Tillämpningsdatum'),
-                  value: data.timeline.length.toLocaleString(
-                    l('en-GB', 'sv-SE'),
-                  ),
-                  note: l(
-                    'In the published timeline',
-                    'I den publicerade tidslinjen',
-                  ),
-                },
-              ]}
-            />
-            <div className={path === '#ai-act' ? undefined : 'dk-grid'}>
+            <div className="aa-content">
               <div
                 className={path === '#ai-act' ? undefined : 'aa-dashboard-view'}
               >
@@ -347,11 +296,14 @@ export default function AiActProduct({ route }: { route: Route }) {
                   />
                 )}
               </div>
-              {path !== '#ai-act' && <ProjectTech project="ai-act" span={4} />}
             </div>
           </>
         )}
       </div>
+      <details className="reading-note">
+        <summary>{l('Method and data', 'Metod och data')}</summary>
+        <ProjectTech project="ai-act" />
+      </details>
     </div>
   )
 }

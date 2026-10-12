@@ -165,45 +165,49 @@ export default function TechCard({
       className="dk-tech"
     >
       <div className="dk-tabs" role="tablist" aria-label={l('View', 'Vy')}>
-        {tabs.map(([key, name]) => (
-          <button
-            key={key}
-            type="button"
-            role="tab"
-            id={`${panelId}-${key}`}
-            aria-controls={panelId}
-            aria-selected={shownTab === key}
-            disabled={!!schema && !factModel && key !== 'pipeline'}
-            tabIndex={shownTab === key ? 0 : -1}
-            onClick={() => setTab(key)}
-            onKeyDown={(event) => {
-              if (
-                !['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)
-              )
-                return
-              event.preventDefault()
-              const enabled = Array.from(
-                event.currentTarget.parentElement!.querySelectorAll<HTMLButtonElement>(
-                  'button:not(:disabled)',
-                ),
-              )
-              const at = enabled.indexOf(event.currentTarget)
-              const next =
-                event.key === 'Home'
-                  ? 0
-                  : event.key === 'End'
-                    ? enabled.length - 1
-                    : (at +
-                        (event.key === 'ArrowRight' ? 1 : -1) +
-                        enabled.length) %
-                      enabled.length
-              enabled[next].click()
-              enabled[next].focus()
-            }}
-          >
-            {name}
-          </button>
-        ))}
+        {tabs
+          .filter(([key]) => !schema || factModel || key === 'pipeline')
+          .map(([key, name]) => (
+            <button
+              key={key}
+              type="button"
+              role="tab"
+              id={`${panelId}-${key}`}
+              aria-controls={panelId}
+              aria-selected={shownTab === key}
+              disabled={!!schema && !factModel && key !== 'pipeline'}
+              tabIndex={shownTab === key ? 0 : -1}
+              onClick={() => setTab(key)}
+              onKeyDown={(event) => {
+                if (
+                  !['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(
+                    event.key,
+                  )
+                )
+                  return
+                event.preventDefault()
+                const enabled = Array.from(
+                  event.currentTarget.parentElement!.querySelectorAll<HTMLButtonElement>(
+                    'button:not(:disabled)',
+                  ),
+                )
+                const at = enabled.indexOf(event.currentTarget)
+                const next =
+                  event.key === 'Home'
+                    ? 0
+                    : event.key === 'End'
+                      ? enabled.length - 1
+                      : (at +
+                          (event.key === 'ArrowRight' ? 1 : -1) +
+                          enabled.length) %
+                        enabled.length
+                enabled[next].click()
+                enabled[next].focus()
+              }}
+            >
+              {name}
+            </button>
+          ))}
       </div>
       {error && (
         <p className="dk-empty">

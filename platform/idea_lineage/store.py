@@ -44,13 +44,15 @@ def projects() -> dict[str, list[str]]:
     # Only the PROJECTS list: later lists in the file (sidebar groups, platform pages) have ids too.
     end = text.find("\nexport const", start + 1)
     ids = re.findall(r"^    id: '([\w-]+)',", text[start:end if end > 0 else None], flags=re.M)
-    names = {i: [i, i.replace("-", " ")] for i in ids}
+    # Retired pages remain valid references in the append-only journal.
+    retired = {"allegoria", "diva", "rag", "mimii"}
+    names = {i: [i, i.replace("-", " ")] for i in [*ids, *sorted(retired)]}
     extra = {
         "ai-act": ["AI Act", "AI-förordningen", "EU AI Act"],
         "jobs": ["job market", "jobbannonser", "arbetsmarknaden", "job ads"],
-        "symbolic-atlas": ["Symbolic Atlas", "Symbolic"],
+        "symbolic-atlas": ["Symbolic Atlas", "Symbolic", "Symbol Lab"],
         "concept-constellation": ["Concept Constellation", "Concept Journey", "concept layer"],
-        "philosophy-atlas": ["Philosophy Atlas"],
+        "philosophy-atlas": ["Philosophy Atlas", "Philosophy Lab"],
         "politics": ["politics", "politik", "Riksdag", "riksdagen"],
         "welfare": ["welfare", "välfärd"],
         "thesis": ["thesis", "examensarbete"],

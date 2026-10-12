@@ -198,14 +198,6 @@ export function ProductQualityView({
           </div>
         )}
       </div>
-      <p className="q-more">
-        <a href={`#quality?produkt=${product}`}>
-          {l(
-            'Every check, measure and source',
-            'Varje kontroll, mått och källa',
-          )}
-        </a>
-      </p>
     </section>
   )
 }

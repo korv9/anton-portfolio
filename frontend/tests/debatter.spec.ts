@@ -1,36 +1,16 @@
-import { test, expect, siteNav } from './test'
+import { test, expect } from './test'
 import AxeBuilder from '@axe-core/playwright'
 
-test('the sidebar lists the politics themes, Budget among them, with the debates', async ({
-  page,
-}) => {
-  await page.goto('/#politik-budget')
-  const nav = await siteNav(page)
-  const themes = nav.getByRole('list', { name: 'Swedish politics in numbers' })
+test('politics groups debate tools within the topic', async ({ page }) => {
+  await page.goto('/#politik-sakdebatter')
+  const nav = page.getByRole('navigation', { name: 'Project topics' })
   await expect(
-    themes.getByRole('link', { name: 'Issue debates' }),
-  ).toBeVisible()
+    nav.getByRole('link', { name: 'Debates and language' }),
+  ).toHaveAttribute('aria-current', 'page')
+  const tools = page.getByRole('navigation', { name: 'In this topic' })
   await expect(
-    themes.getByRole('link', { name: 'Party-leader debates' }),
+    tools.getByRole('link', { name: 'Party leader debates' }),
   ).toBeVisible()
-  await expect(
-    themes.getByRole('link', { name: 'What they talk about' }),
-  ).toBeVisible()
-  // The budget is a dashboard: key figures, columns per party, bars per area, years.
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Budget')
-  await expect(nav.getByRole('link', { name: 'Budget' })).toHaveAttribute(
-    'aria-current',
-    'page',
-  )
-  // Only the figures the flow chart does not already say: who adds and who cuts most.
-  await expect(page.locator('.board-kpis .dash-kpi')).toHaveCount(2)
-  await expect(page.locator('.board-card')).toHaveCount(3)
-  await expect(page.locator('#budgetflode')).toBeVisible()
-  await expect(page.locator('.columns svg').first()).toBeVisible()
-  await expect(page.locator('.board-card .grouped > li').first()).toBeVisible()
-  // The old address for the whole debate section leads to the issue debates.
-  await page.goto('/#politik-debatter')
-  await expect(page).toHaveURL(/#politik-sakdebatter/)
 })
 
 test('issue debates: a dashboard per riksmöte and a debate with its decision', async ({

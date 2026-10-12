@@ -30,24 +30,24 @@ test('a navigator scenario survives a reload and can be cleared', async ({
   await expect(page).not.toHaveURL(/svar=[^&]*(:|%3A)yes/)
 })
 
-test('the job-market field slicer chooses, announces and resets', async ({
-  page,
-}) => {
-  await page.goto('/#jobb')
-  const slicer = page.getByRole('group', { name: 'Occupation fields' })
-  const first = slicer.locator('ul button').first()
-  await first.click()
-  await expect(first).toHaveAttribute('aria-pressed', 'true')
-  const state = slicer.locator('.politik-slicer-state')
-  await expect(state).not.toContainText('Whole market')
-  await state.getByRole('button', { name: 'Show all' }).click()
-  await expect(first).toHaveAttribute('aria-pressed', 'false')
-  await expect(state).toContainText('Whole market')
-})
+test(
+  'the job-market field slicer chooses, announces and resets',
+  { tag: '@mobile' },
+  async ({ page }) => {
+    await page.goto('/#jobb-trender')
+    const slicer = page.getByRole('group', { name: 'Occupation fields' })
+    const first = slicer.locator('ul button').first()
+    await first.click()
+    await expect(first).toHaveAttribute('aria-pressed', 'true')
+    const state = slicer.locator('.politik-slicer-state')
+    await expect(state).not.toContainText('Whole market')
+    await state.getByRole('button', { name: 'Show all' }).click()
+    await expect(first).toHaveAttribute('aria-pressed', 'false')
+    await expect(state).toContainText('Whole market')
+  },
+)
 
-test('the Symbolic Atlas view chips explain their colours', async ({
-  page,
-}) => {
+test('the Symbol Lab view chips explain their colours', async ({ page }) => {
   await page.goto('/#symbolic-atlas?view=cross-book')
   const key = page.locator('.atlas-key')
   await expect(key).toContainText('Cross-book candidate')

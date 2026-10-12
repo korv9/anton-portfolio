@@ -1,20 +1,9 @@
-import { useEffect, useRef, type ReactNode } from 'react'
+import { useEffect, type ReactNode } from 'react'
 import { l } from '../i18n'
 import type { Route } from '../router'
 import { PROJECTS, projectForRoute } from './projectRegistry'
+import { PROJECT_TOPICS } from './topics'
 import './projectStructure.css'
-
-const INLINE_DEPTH = [
-  'symbolic-atlas',
-  'welfare',
-  'thesis',
-  'homie',
-  'drugcomb',
-  'philosophy-atlas',
-  'jobs',
-  'ai-act',
-  'diva',
-]
 
 export function ProjectDepth({
   project,
@@ -24,7 +13,6 @@ export function ProjectDepth({
   children?: ReactNode
 }) {
   const entry = PROJECTS.find((p) => p.id === project)!
-  const b = (text: { en: string; sv: string }) => l(text.en, text.sv)
   const code =
     typeof entry.code === 'string' ? [entry.code] : (entry.code ?? [])
   return (
@@ -35,55 +23,16 @@ export function ProjectDepth({
     >
       <header className="project-depth-head">
         <h2 id={`project-${project}-depth-title`}>
-          {l('Deep dive', 'Fördjupning')}
+          {l('Method and data', 'Metod och data')}
         </h2>
-        <p>
-          {l(
-            'Method, sources and the details behind the overview.',
-            'Metod, källor och detaljerna bakom översikten.',
-          )}
-        </p>
       </header>
-      {children ?? (
-        <div className="project-depth-notes">
-          <article>
-            <h3>{l('The question', 'Frågan')}</h3>
-            <p>{b(entry.question)}</p>
-          </article>
-          <article>
-            <h3>{l('How it is built', 'Så är det byggt')}</h3>
-            <p>{b(entry.built)}</p>
-          </article>
-          <article>
-            <h3>{l('Results and status', 'Resultat och status')}</h3>
-            <p>{b(entry.result)}</p>
-          </article>
-        </div>
-      )}
+      {children}
       <footer className="project-depth-foot">
         <p>{entry.tech.join(' · ')}</p>
-        <nav aria-label={l('More detail', 'Mer fördjupning')}>
-          {entry.nav
-            ?.filter((item) => item.href !== entry.href)
-            .map((item) => (
-              <a key={item.href} href={item.href}>
-                {b(item.label)}
-              </a>
-            ))}
-          {project === 'jobs' && (
-            <a href="#job-market-tech">
-              {l('Pipeline and data model', 'Pipeline och datamodell')}
-            </a>
-          )}
-          {project === 'welfare' && (
-            <a href="#sweden-explorer">
-              {l('Explore the indicators', 'Utforska indikatorerna')}
-            </a>
-          )}
+        <nav aria-label={l('Code and documentation', 'Kod och dokumentation')}>
           {code.map((href) => (
             <a key={href} href={href} target="_blank" rel="noreferrer">
-              {l('Code and documentation', 'Kod och dokumentation')}{' '}
-              <span aria-hidden="true">↗</span>
+              {l('Code and documentation', 'Kod och dokumentation')} ↗
             </a>
           ))}
         </nav>
@@ -100,40 +49,33 @@ export default function ProjectStructure({
   children: ReactNode
 }) {
   const project = projectForRoute(route)
-  const enabled = project && project.id !== 'politics'
-  const depth = route.params.get('section') === 'depth'
-  const wasDepth = useRef(depth)
-  const params = new URLSearchParams(
-    route.path === project?.href ? route.params : undefined,
+  const topics = project ? (PROJECT_TOPICS[project.id] ?? []) : []
+  const active = topics.find((topic) =>
+    topic.href.includes('?')
+      ? new URLSearchParams(topic.href.split('?')[1]).get('section') ===
+        route.params.get('section')
+      : topic.href === route.path ||
+        topic.links?.some((link) => link.href === route.path),
   )
-  params.delete('section')
-  const dashboard = `${project?.href}${params.size ? `?${params}` : ''}`
-  params.set('section', 'depth')
-  const deepLink = `${project?.href}?${params}`
-
   useEffect(() => {
-    const previous = wasDepth.current
-    wasDepth.current = depth
-    if (!enabled) return
-    if (!depth) {
-      if (previous) window.scrollTo({ top: 0, behavior: 'instant' })
-      return
-    }
-    const land = () => {
-      const target = document.getElementById(`project-${project.id}-depth`)
-      if (!target) return false
-      target.scrollIntoView({ block: 'start', behavior: 'instant' })
-      return true
-    }
-    land()
-    // Keep the anchor in place while data loads; stop as soon as the reader moves.
+    const section = route.params.get('section')
+    if (!project || (!section && route.path === project.href)) return
+    const id =
+      section === 'depth'
+        ? `project-${project.id}-depth`
+        : section
+          ? `${project.id}-${section}`
+          : route.path.slice(1)
+    const land = () =>
+      document
+        .getElementById(id)
+        ?.scrollIntoView({ block: 'start', behavior: 'instant' })
+    const frame = requestAnimationFrame(land)
     const observer = new MutationObserver(land)
-    observer.observe(document.getElementById('main')!, {
-      childList: true,
-      subtree: true,
-    })
     const resize = new ResizeObserver(land)
-    resize.observe(document.querySelector('.project-structure')!)
+    const main = document.getElementById('main')!
+    observer.observe(main, { childList: true, subtree: true })
+    resize.observe(main)
     const stop = () => {
       observer.disconnect()
       resize.disconnect()
@@ -143,34 +85,61 @@ export default function ProjectStructure({
       window.addEventListener(event, stop, { passive: true }),
     )
     return () => {
+      cancelAnimationFrame(frame)
       stop()
       events.forEach((event) => window.removeEventListener(event, stop))
     }
-  }, [enabled, project?.id, depth, route.hash])
-
-  if (!enabled) return children
+  }, [route.hash, project?.id])
+  if (!project) return children
   return (
     <div className="project-structure">
-      <nav
-        className="project-view-nav"
-        aria-label={l('Project views', 'Projektvyer')}
-      >
-        <a
-          href={dashboard}
-          aria-current={
-            !depth && route.path === project.href ? 'location' : undefined
-          }
+      {topics.length > 0 &&
+        (route.path !== project.href ||
+          !['politics', 'jobs', 'welfare', 'ai-act'].includes(project.id)) && (
+          <nav
+            className="project-topics"
+            aria-label={l('Project topics', 'Projektets teman')}
+          >
+            <a
+              href={project.href}
+              aria-current={
+                route.path === project.href && !route.params.has('section')
+                  ? 'page'
+                  : undefined
+              }
+            >
+              {l('Overview', 'Översikt')}
+            </a>
+            {topics
+              .filter((topic) => topic.href !== project.href)
+              .map((topic) => (
+                <a
+                  key={topic.href}
+                  href={topic.href}
+                  aria-current={active === topic ? 'page' : undefined}
+                >
+                  {l(topic.title.en, topic.title.sv)}
+                </a>
+              ))}
+          </nav>
+        )}
+      {active?.links && (
+        <nav
+          className="project-topic-tools"
+          aria-label={l('In this topic', 'Inom temat')}
         >
-          Dashboard
-        </a>
-        <a href={deepLink} aria-current={depth ? 'location' : undefined}>
-          {l('Deep dive', 'Fördjupning')}
-        </a>
-      </nav>
-      {children}
-      {!INLINE_DEPTH.includes(project.id) && route.path === project.href && (
-        <ProjectDepth project={project.id} />
+          {active.links.map((link) => (
+            <a
+              key={link.href}
+              href={link.href}
+              aria-current={link.href === route.path ? 'page' : undefined}
+            >
+              {l(link.label.en, link.label.sv)}
+            </a>
+          ))}
+        </nav>
       )}
+      {children}
     </div>
   )
 }

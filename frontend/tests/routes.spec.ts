@@ -22,8 +22,6 @@ const START_PAGES = [
   '/#symbolic-atlas',
   '/#sweden',
   '/#thesis',
-  '/#data-constellation',
-  '/#quality',
   '/#cluster-visuals',
 ]
 
@@ -49,31 +47,6 @@ async function linksOn(page: Page): Promise<string[]> {
   // The sidebar's links are in the page; on a phone they sit in the closed menu.
   return hrefs(page)
 }
-
-test('no link is a placeholder and every control has a name', async ({
-  page,
-  isMobile,
-}) => {
-  test.skip(isMobile, 'the same markup on a phone')
-  for (const start of START_PAGES) {
-    await page.goto(start)
-    await page.waitForLoadState('networkidle')
-    await expect(page.locator('a[href="#"], a:not([href])')).toHaveCount(0)
-    const unnamed = await page.$$eval('button, [role="button"]', (els) =>
-      els
-        .filter((el) => {
-          const label =
-            el.getAttribute('aria-label') ||
-            el.getAttribute('aria-labelledby') ||
-            el.getAttribute('title') ||
-            el.textContent?.trim()
-          return !label
-        })
-        .map((el) => el.outerHTML.slice(0, 120)),
-    )
-    expect(unnamed, `${start}: buttons without a name`).toEqual([])
-  }
-})
 
 test('every internal link opens a page', async ({ page, isMobile }) => {
   test.skip(isMobile, 'the same links on a phone')
@@ -128,6 +101,16 @@ test('old addresses redirect and the back button returns', async ({
   isMobile,
 }) => {
   test.skip(isMobile, 'routing is the same on a phone')
+  for (const [from, to, section] of [
+    ['/#about', '#om-mig', '#om-mig'],
+    ['/#contact', '#om-mig', '#om-mig'],
+    ['/#work', '#projekt', '#projekt'],
+    ['/#experience', '#erfarenhet', '#erfarenhet'],
+  ]) {
+    await page.goto(from)
+    await expect(page).toHaveURL(new RegExp(`${to}$`))
+    await expect(page.locator(section)).toBeInViewport()
+  }
   await page.goto('/#projects')
   await expect(page).toHaveURL(/#projekt$/)
   await page.goto('/#politik-debatter')

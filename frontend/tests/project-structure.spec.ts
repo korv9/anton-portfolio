@@ -1,105 +1,148 @@
 import { test, expect } from './test'
-import AxeBuilder from '@axe-core/playwright'
 
 const projects = [
-  ['#ai-act', 'ai-act'],
-  ['#jobb', 'jobs'],
-  ['#sweden', 'welfare'],
-  ['#symbolic-atlas', 'symbolic-atlas'],
-  ['#thesis', 'thesis'],
-  ['#philosophy-atlas', 'philosophy-atlas'],
-  ['#concept-journey', 'concept-constellation'],
-  ['#drugcomb', 'drugcomb'],
-  ['#rfc-drift', 'allegoria'],
-  ['#diva', 'diva'],
-  ['#homie', 'homie'],
-  ['#rag', 'rag'],
-  ['#mimii', 'mimii'],
-]
-
-for (const [hash, id] of projects) {
-  test(`${id} opens with a dashboard and links to its deep dive`, async ({
-    page,
-  }) => {
-    await page.goto(`/${hash}`)
-    const nav = page.getByRole('navigation', { name: 'Project views' })
+  ['#politik', 'Political Observatory', 5],
+  ['#jobb', 'Labour Market Observatory', 5],
+  ['#sweden', 'Wellbeing Observatory', 4],
+  ['#ai-act', 'EU AI Act Observatory', 5],
+] as const
+for (const [path, name, count] of projects)
+  test(`${name} has a topic overview`, async ({ page }) => {
+    await page.goto(`/${path}`)
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(name)
+    await expect(page.locator('.overview-topics > a')).toHaveCount(count)
     await expect(
-      nav.getByRole('link', { name: 'Dashboard', exact: true }),
-    ).toHaveAttribute('aria-current', 'location')
-    const depth = page.locator(`#project-${id}-depth`)
-    await expect(depth).toBeVisible({ timeout: 30000 })
-    await expect(page.locator('.dk-tech').first()).toBeVisible()
-    await expect(
-      depth.getByRole('heading', { name: 'Deep dive', exact: true }),
-    ).toHaveCount(1)
-    await nav.getByRole('link', { name: 'Deep dive', exact: true }).click()
-    await expect(page).toHaveURL(new RegExp(`section=depth`))
-    await expect(
-      depth.getByRole('heading', { name: 'Deep dive', exact: true }),
-    ).toBeInViewport()
-    await page.reload()
-    await expect(
-      depth.getByRole('heading', { name: 'Deep dive', exact: true }),
-    ).toBeInViewport({ timeout: 30000 })
-    await nav.getByRole('link', { name: 'Dashboard', exact: true }).click()
-    await expect(nav).toBeInViewport()
-    expect(
-      await page.evaluate(
-        () => document.documentElement.scrollWidth <= innerWidth + 1,
-      ),
-    ).toBe(true)
-    expect(
-      await page.evaluate(
-        () => getComputedStyle(document.body).backgroundColor,
-      ),
-    ).toBe('rgb(244, 240, 230)')
+      page.locator('.project-hero-finding,.dk-kpis,.site-sidebar'),
+    ).toHaveCount(0)
   })
-}
 
-test('the project views keep filters and the study dashboard is accessible', async ({
-  page,
-}) => {
-  await page.goto('/#mimii?filter=kept')
-  const nav = page.getByRole('navigation', { name: 'Project views' })
-  await expect(
-    nav.getByRole('link', { name: 'Deep dive', exact: true }),
-  ).toHaveAttribute('href', '#mimii?filter=kept&section=depth')
-  const audit = await new AxeBuilder({ page }).include('main').analyze()
-  expect(audit.violations).toEqual([])
+test(
+  'degree project presents the workflow once and separates its evaluation',
+  { tag: '@mobile' },
+  async ({ page }) => {
+    await page.goto('/#thesis')
+    await expect(
+      page.locator('#thesis-workflow .engineering-flow li'),
+    ).toHaveCount(3)
+    await expect(page.locator('.project-hero-summary')).toContainText('Fora AB')
+    await expect(page.locator('#thesis-workflow')).toContainText('16 811')
+    await expect(page.locator('#thesis-workflow')).toContainText('121')
+    await expect(page.locator('#thesis-workflow')).toContainText('72')
+    await expect(page.locator('#thesis-workflow')).toContainText('5,605')
+    await expect(page.locator('#thesis-workflow')).toContainText(
+      'operational review',
+    )
+    await expect(page.locator('#project-thesis-depth')).toContainText('21,633')
+    await expect(page.locator('#project-thesis-depth')).toContainText('19,847')
+    await expect(page.locator('#thesis-quality')).toContainText('4.2%')
+    await expect(page.locator('#thesis-quality')).toContainText('82.2%')
+    await expect(page.locator('#thesis-quality')).toContainText('3.8%')
+    await expect(page.locator('#thesis-quality')).toContainText('5.1%')
+    await expect(
+      page.locator(
+        'main a[href*="/private/"], main a[href*="Examensarbete.pdf"]',
+      ),
+    ).toHaveCount(0)
+    await page
+      .getByRole('navigation', { name: 'Project topics' })
+      .getByRole('link', { name: 'Data quality', exact: true })
+      .click()
+    await expect(page.locator('#thesis-quality')).toBeInViewport()
+    await page.reload()
+    await expect(page.locator('#thesis-quality')).toBeInViewport()
+    await page
+      .getByRole('navigation', { name: 'Project topics' })
+      .getByRole('link', { name: 'Evaluation', exact: true })
+      .click()
+    await expect(page.locator('#thesis-evaluation')).toBeInViewport()
+    await expect(page.locator('#thesis-evaluation')).toContainText('0.7060')
+    await expect(page.locator('#thesis-evaluation')).toContainText('0.5342')
+    await expect(page.locator('#thesis-evaluation')).toContainText('72.3%')
+    await expect(page.locator('#thesis-evaluation')).toContainText(
+      'uneven comparison',
+    )
+    await page.reload()
+    await expect(page.locator('#thesis-evaluation')).toBeInViewport()
+  },
+)
+
+test.describe('Swedish degree project evidence', () => {
+  test.use({ language: 'sv' })
+
+  test(
+    'keeps population, evaluation and candidate limits readable',
+    { tag: '@mobile' },
+    async ({ page }) => {
+      await page.goto('/#thesis')
+      await expect(page.locator('.project-hero-summary')).toContainText('Anton')
+      await expect(page.locator('#thesis-workflow')).toContainText(
+        'Grupper av liknande ärenden',
+      )
+      await expect(page.locator('#thesis-workflow')).toContainText(
+        '12 grupper med 650 ärenden',
+      )
+      await expect(page.locator('#thesis-workflow')).toContainText(
+        'verksamhetens granskning',
+      )
+      await expect(page.locator('#thesis-evaluation')).toContainText('0,5342')
+      await expect(page.locator('#thesis-evaluation')).toContainText(
+        'olika delmängder',
+      )
+      await expect(page.locator('#project-thesis-depth')).toContainText(
+        '21 633',
+      )
+      await expect(page.locator('#project-thesis-depth')).toContainText(
+        '19 847',
+      )
+      await expect(page.locator('#thesis-quality')).toContainText('4,2 %')
+      await expect(page.locator('#thesis-quality')).toContainText('92,8 %')
+      await expect(page.locator('#thesis-quality')).toContainText('Spårbarhet')
+      await expect(page.locator('#project-thesis-depth')).toContainText(
+        'min_samples',
+      )
+      await expect(page.locator('#project-thesis-depth')).toContainText(
+        'föreslagna förbättringar',
+      )
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= innerWidth + 1,
+        ),
+      ).toBe(true)
+    },
+  )
 })
 
-test('the shared dashboard pairs real KPIs and a chart with technical detail', async ({
+test('lab sections open at their addresses after data loads', async ({
   page,
 }) => {
-  for (const hash of [
-    '#politik-sakdebatter',
-    '#ai-act',
-    '#jobb',
-    '#jobb-trender',
+  test.setTimeout(120000)
+  for (const path of [
+    'symbolic-corpus',
+    'philosophy-works',
+    'concepts-profiles',
   ]) {
-    await page.goto(`/${hash}`)
-    await expect(page.locator('.dk-kpis').first()).toBeVisible()
-    const technical = page.locator('.dk-tech').first()
-    await expect(technical).toBeVisible()
-    await expect(
-      technical.getByRole('tab', { name: 'Pipeline', exact: true }),
-    ).toBeVisible()
-    await technical.getByRole('tab', { name: 'Pipeline', exact: true }).click()
-    await expect(technical.getByRole('tabpanel')).toBeVisible()
-    expect(
-      await page.evaluate(
-        () => document.documentElement.scrollWidth <= innerWidth + 1,
-      ),
-    ).toBe(true)
+    await page.goto(`/#${path}`)
+    await expect(page.locator(`#${path}`)).toBeInViewport({ timeout: 45000 })
   }
-  await page.goto('/#jobb')
-  const schema = page
-    .locator('.dk-tech')
-    .getByRole('tab', { name: 'Schema', exact: true })
-  await expect(schema).toBeEnabled()
-  await schema.focus()
-  await page.keyboard.press('ArrowRight')
-  await expect(
-    page.locator('.dk-tech').getByRole('tab', { name: 'Rows', exact: true }),
-  ).toHaveAttribute('aria-selected', 'true')
+})
+
+test('removed pages lead back to the projects and are absent from navigation', async ({
+  page,
+}) => {
+  for (const path of [
+    'quality',
+    'data-model',
+    'data-constellation',
+    'data-catalogue',
+    'idea-lineage',
+    'rag',
+    'mimii',
+    'diva',
+    'rfc-drift',
+  ]) {
+    await page.goto(`/#${path}`)
+    await expect(page).toHaveURL(/#projekt/)
+    await expect(page.locator('.home-project-groups')).toBeVisible()
+    await expect(page.locator(`a[href="#${path}"]`)).toHaveCount(0)
+  }
 })

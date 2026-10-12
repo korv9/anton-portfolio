@@ -13,9 +13,7 @@ import '../politik/politik.css'
 import '../politik/dash/dash.css'
 import './jobb.css'
 
-const Dashboard = lazy(() => import('./Dashboard'))
 const Themes = lazy(() => import('./themes'))
-const JobMarketPage = lazy(() => import('../jobs/JobMarketPage'))
 const TechReport = lazy(() => import('../jobs/TechReport'))
 const ClusteringSection = lazy(() => import('../jobs/ClusteringSection'))
 
@@ -29,7 +27,7 @@ export default function JobsProduct({ route }: { route: Route }) {
   const { data, error } = useMarket()
   const valid = data?.fields.map((f) => f.id)
   const { selected } = useFields(route, valid)
-  useEffect(() => carryFields(route), [route.path])
+  useEffect(() => carryFields(route), [route.hash])
 
   const loading = (
     <p className="theme-loading" role="status">
@@ -57,21 +55,21 @@ export default function JobsProduct({ route }: { route: Route }) {
             {!theme ? (
               ['#job-market-tech', '#job-data'].includes(route.path) ? (
                 <TechReport />
+              ) : !data ? (
+                !error && loading
               ) : (
-                <JobMarketPage view={route.path} />
+                <Themes
+                  theme="trender"
+                  route={route}
+                  data={data}
+                  fields={selected}
+                />
               )
             ) : theme.key === 'kluster' ? (
               // The semantic clusters of IT ads have their own data; the field bar does not apply.
               <ClusteringSection />
             ) : !data ? (
               !error && loading
-            ) : theme.key === 'lage' ? (
-              <Dashboard
-                route={route}
-                data={data}
-                fields={selected}
-                slicer={<FieldBar route={route} data={data} />}
-              />
             ) : (
               <Themes
                 theme={theme.key}
