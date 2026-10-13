@@ -1,5 +1,6 @@
 """Documented attachment 404s do not certify unrelated failures or partial inputs."""
 import json
+import io
 import sys
 from pathlib import Path
 
@@ -116,6 +117,75 @@ def test_missing_or_wrong_document_text_is_failure():
             return response
     with pytest.raises(ValueError, match="Incomplete documentstatus"):
         studies.preparation(HTTP(), {"dok_id": "GY03101"})
+
+
+def test_pdf_only_bill_has_preparation_and_verified_source(tmp_path, monkeypatch):
+    from pypdf import PdfWriter
+    from pypdf.generic import DictionaryObject, NameObject, DecodedStreamObject
+
+    monkeypatch.setattr(rawstore, "RAW", tmp_path)
+    writer = PdfWriter()
+    page = writer.add_blank_page(width=600, height=800)
+    font = DictionaryObject({NameObject("/Type"): NameObject("/Font"),
+                             NameObject("/Subtype"): NameObject("/Type1"),
+                             NameObject("/BaseFont"): NameObject("/Helvetica"),
+                             NameObject("/Encoding"): NameObject("/WinAnsiEncoding")})
+    page[NameObject("/Resources")] = DictionaryObject({
+        NameObject("/Font"): DictionaryObject({NameObject("/F1"): font})})
+    stream = DecodedStreamObject()
+    stream.set_data("BT /F1 12 Tf 10 700 Td (4 Ärendet och dess beredning SOU 2020:5.) Tj ET".encode("latin1"))
+    page[NameObject("/Contents")] = writer._add_object(stream)
+    output = io.BytesIO()
+    writer.write(output)
+    pdf = output.getvalue()
+    pdf_url = "https://data.riksdagen.se/fil/3355FB3D-3FCA-4839-8122-834C14179B85"
+
+    class HTTP:
+        calls = []
+        def get(self, url, **kwargs):
+            self.calls.append(url)
+            response = requests.Response()
+            response.status_code, response.url = 200, url
+            response._content = pdf if url == pdf_url else json.dumps({"dokumentstatus": {
+                "dokument": {"dok_id": "H20329", "rm": "2014/15", "beteckning": "29",
+                             "titel": "Test bill", "html": None},
+                "dokbilaga": {"bilaga": {"dok_id": "H20329", "titel": "Test bill",
+                                          "filtyp": "pdf", "fil_url": pdf_url}}}}).encode()
+            return response
+
+    http = HTTP()
+    bill = studies.preparation(http, {"dok_id": "H20329"})
+    assert bill["has_section"] and bill["references"][0]["key"] == "2020:5"
+    assert bill["text_source"]["url"] == pdf_url
+    assert bill["text_source"]["sha256"] == rawstore.sha256(pdf)
+    assert rawstore.verified_record("riksdagen", "studies/documents/H20329.pdf")
+    studies.preparation(http, {"dok_id": "H20329"})
+    assert http.calls.count(pdf_url) == 1
+
+
+@pytest.mark.parametrize("change", ["identity", "host", "ambiguous", "empty"])
+def test_pdf_fallback_rejects_unverified_or_unreadable_sources(tmp_path, monkeypatch, change):
+    monkeypatch.setattr(rawstore, "RAW", tmp_path)
+    head = {"dok_id": "H20329", "titel": "Test bill", "html": None}
+    pdf = {"dok_id": "H20329", "titel": "Test bill", "filtyp": "pdf",
+           "fil_url": "https://data.riksdagen.se/fil/3355FB3D-3FCA-4839-8122-834C14179B85"}
+    if change == "identity":
+        head["dok_id"] = "wrong"
+    if change == "host":
+        pdf["fil_url"] = "https://example.com/fil/3355FB3D-3FCA-4839-8122-834C14179B85"
+    files = [pdf, pdf] if change == "ambiguous" else [pdf]
+
+    class HTTP:
+        def get(self, url, **kwargs):
+            response = requests.Response()
+            response.status_code, response.url = 200, url
+            response._content = b"not a PDF" if "/fil/" in url else json.dumps({"dokumentstatus": {
+                "dokument": head, "dokbilaga": {"bilaga": files}}}).encode()
+            return response
+
+    with pytest.raises(ValueError):
+        studies.preparation(HTTP(), {"dok_id": "H20329"})
+    assert not rawstore.verified_record("riksdagen", "studies/documents/H20329.pdf")
 
 
 def test_failed_listing_preserves_previous_valid_checkpoint(repair, monkeypatch):

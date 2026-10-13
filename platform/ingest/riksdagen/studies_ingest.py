@@ -25,6 +25,7 @@ from __future__ import annotations
 import argparse
 import gzip
 import html
+import io
 import json
 import re
 import sys
@@ -201,6 +202,39 @@ def as_list(value) -> list:
     return value if isinstance(value, list) else [value]
 
 
+def pdf_text(http, status: dict, dok_id: str) -> tuple[str, dict]:
+    """Read the identified main PDF when Riksdagen has no embedded document text."""
+    from pypdf import PdfReader
+
+    head = status["dokument"]
+    if not re.fullmatch(r"[A-Za-z0-9]+", dok_id) or not plain(head.get("titel") or ""):
+        raise ValueError(f"Invalid PDF document identity: {dok_id}")
+    files = [f for f in as_list((status.get("dokbilaga") or {}).get("bilaga"))
+             if str(f.get("dok_id") or "").lower() == dok_id.lower()
+             and f.get("filtyp") == "pdf"
+             and plain(f.get("titel") or "") == plain(head.get("titel") or "")]
+    if len(files) != 1:
+        raise ValueError(f"No unique main PDF for {dok_id}")
+    url = files[0].get("fil_url") or ""
+    if not re.fullmatch(r"https://data\.riksdagen\.se/fil/[0-9a-fA-F-]{36}", url):
+        raise ValueError(f"Unexpected PDF source for {dok_id}")
+
+    text = ""
+    def extract(payload: bytes) -> str:
+        nonlocal text
+        if not payload.startswith(b"%PDF-"):
+            raise ValueError(f"Invalid PDF for {dok_id}")
+        text = plain(" ".join(page.extract_text() or "" for page in PdfReader(io.BytesIO(payload)).pages))
+        if not text:
+            raise ValueError(f"No extractable PDF text for {dok_id}")
+        return text
+
+    path = rawstore.fetch(http, SOURCE, f"studies/documents/{dok_id}.pdf", url,
+                          max_age_days=36500, validate=extract)
+    return text, {"url": url, "path": path.relative_to(rawstore.RAW).as_posix(),
+                  "sha256": rawstore.stored_sha(path)}
+
+
 def preparation(http, document: dict) -> dict:
     dok_id = document["dok_id"]
     url = f"{API}/dokumentstatus/{urllib.parse.quote(dok_id)}.json"
@@ -208,9 +242,12 @@ def preparation(http, document: dict) -> dict:
     response.raise_for_status()
     status = json.loads(response.content.decode("utf-8-sig"))["dokumentstatus"]
     head = status["dokument"]
+    if str(head.get("dok_id") or "").lower() != dok_id.lower():
+        raise ValueError(f"Incomplete documentstatus for {dok_id}: identity missing or mismatched")
     text = plain(head.get("html") or "")
-    if str(head.get("dok_id") or "").lower() != dok_id.lower() or not text:
-        raise ValueError(f"Incomplete documentstatus for {dok_id}: identity or text missing")
+    text_source = None
+    if not text:
+        text, text_source = pdf_text(http, status, dok_id)
     sections = preparation_sections(text)
     section = " ".join(body for _, body in sections)
     cited = []
@@ -246,6 +283,7 @@ def preparation(http, document: dict) -> dict:
         "references": cited,
         "source_url": f"{API}/dokument/{dok_id}",
         "fetched_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        **({"text_source": text_source} if text_source else {}),
     }
 
 

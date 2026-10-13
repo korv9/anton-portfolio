@@ -1,6 +1,8 @@
-# Taxes: what Sweden collects, and a calculator for your own tax
+# Tax data and calculation checks
 
-The site's tax page (`#taxes`) has three parts, each from an official source.
+The tax pipeline delivers the following data from official sources. The former
+standalone tax page and calculator are retired; `#taxes` redirects into politics.
+The calculation core and its source-based tests remain available locally.
 
 | Part | Source | Coverage |
 |---|---|---|
@@ -11,8 +13,8 @@ The site's tax page (`#taxes`) has three parts, each from an official source.
 
 ## The calculator
 
-`frontend/src/taxes/calculator.ts` is the one implementation. The site uses it, and
-`frontend/tests/unit/tax-calculator.test.ts` tests it. The rules for each year are in
+`frontend/src/taxes/calculator.ts` is the implementation used by
+`frontend/tests/unit/tax-calculator.test.ts`. The rules for each year are in
 `frontend/src/taxes/rules.ts`, with a source for every amount.
 
 **What it computes**
@@ -33,7 +35,7 @@ The site's tax page (`#taxes`) has three parts, each from an official source.
 - The earned-income reduction and the public service fee.
 - What the employer pays on top, with the reduced rates by age and the youth reduction of 2026, and the resulting tax wedge.
 
-**What it leaves out, and says so on the page**
+**What it leaves out**
 - VAT and excise duties.
 - Deductions (travel to work, double housing).
 - The property-fee cap for pensioners.
@@ -80,12 +82,6 @@ it came from the government, the committee's own proposal or a reservation. dbt 
 the first substantive roll call of its report (`fct_tax_decision_vote`) and to the studies its
 proposal was prepared in (`fct_tax_decision_study`). Fuel decisions carry the change per litre
 and the months it applied, from each bill.
-
-On `#taxes-calculator`, `history.ts` works out the same person's tax under every year's rules:
-the same age, the same real income (moved with the price base amount). A year's change is the
-tax with that year's rules less the tax with last year's rules moved as the law moves them
-without a decision (prices; the state tax threshold prices plus two points). Each part of the
-rules is then put back as it was, which splits the change by the decision that made it.
 
 The household estimate uses SCB's household budget survey (HUT 2021): spending per group, prices
 including VAT, VAT = spending × rate / (100 + rate), only groups with one clear rate. It is a
