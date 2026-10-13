@@ -4,9 +4,8 @@ Reads the historical archive build (warehouse/jobtech/history.duckdb) and writes
 web-ready CSVs plus a single Excel workbook to data/presentation/. All column
 names and labels are in English.
 
-Unlike platform/ingest/jobtech/export_analytics.py (which emits wide Power BI star-schema CSVs
-with technical/NULL columns), this produces flat tables you can publish or open
-directly. CSVs are plain UTF-8 (no BOM) so they load cleanly on a website / in
+This produces flat tables you can publish or open directly. CSVs are plain
+UTF-8 (no BOM) so they load cleanly on a website / in
 JavaScript CSV parsers; the accompanying .xlsx carries the same data for Excel
 users (it stores Swedish characters in region names natively, no encoding caveat).
 
@@ -38,19 +37,17 @@ ALL_ROLES = ("role_family in ('Data Engineer', 'Analytics Engineer', "
              "'Data Scientist', 'Software Developer') and " + YEARS)
 DATA_ROLES = ("role_family in ('Data Engineer', 'Analytics Engineer', "
               "'Data Scientist') and " + YEARS)
-ROLE_FILTER = ALL_ROLES  # backwards-compatible alias
 
 
 def configure(first_year, last_year):
     """Point every table's year filter at [first_year, last_year]."""
-    global FIRST_YEAR, LAST_YEAR, YEARS, ALL_ROLES, DATA_ROLES, ROLE_FILTER
+    global FIRST_YEAR, LAST_YEAR, YEARS, ALL_ROLES, DATA_ROLES
     FIRST_YEAR, LAST_YEAR = first_year, last_year
     YEARS = f"extract(year from published_at) between {FIRST_YEAR} and {LAST_YEAR}"
     ALL_ROLES = ("role_family in ('Data Engineer', 'Analytics Engineer', "
                  "'Data Scientist', 'Software Developer') and " + YEARS)
     DATA_ROLES = ("role_family in ('Data Engineer', 'Analytics Engineer', "
                   "'Data Scientist') and " + YEARS)
-    ROLE_FILTER = ALL_ROLES
 
 
 def complete_years(con):

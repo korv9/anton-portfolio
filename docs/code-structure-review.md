@@ -77,9 +77,9 @@ Samla en bilingual typ och en namngiven språkresolver. Använd samma argumentko
 
 ## Vad kan tas bort?
 
-En lokal sökning som följer relativa imports från `main.tsx` hittade två TS-filer utanför den nåbara kedjan: `frontend/src/politik/analytics/areas.ts` och `frontend/src/politik/analytics/load.ts`. Den kompletterande textsökningen hittade inga importreferenser till dessa två filer.
+En lokal sökning som följer relativa imports från `main.tsx` hittade två TS-filer utanför den nåbara kedjan: `frontend/src/politik/analytics/areas.ts` och `frontend/src/politik/analytics/load.ts`. Den kompletterande textsökningen hittade inga importreferenser till dessa två filer. Båda togs bort i [legacy-rensningen](legacy-cleanup.md).
 
-De är kandidater för borttagning, inte slutligt bevis för att de saknar varje användning. Kontrollera testentrypoints, scripts och eventuell planerad ersättning, ta sedan bort dem i en liten ändring och kör relevanta kontroller. Många gamla mappnamn finns kvar som tomma kataloger på disken; Git versionerar inte tomma kataloger.
+Vid granskningen var de kandidater för borttagning. Legacy-rensningen kontrollerade även testentrypoints, scripts och de aktuella sidornas imports före borttagningen. Många gamla mappnamn finns kvar som tomma kataloger på disken; Git versionerar inte tomma kataloger.
 
 För övrigt finns inget underlag för en stor blind utrensning. Behåll använd datakod, frysta upstreamkällor, testfixtures, licenser och vendorerade paket. Behåll också dokumenterade routealias som skyddar gamla länkar. Genererade data kan flyttas till R2 genom en leveransmigrering; `.gitignore` ensam gör inte flytten och tar inte bort redan trackade filer.
 
