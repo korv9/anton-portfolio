@@ -88,6 +88,8 @@
   --ink: #0f0f10;
   --ink-2: #2a2a2c;
   --muted: #4a4a4d;
+  /* A filter or index entry that is not applied now; the applied one is ink and bold. */
+  --ink-faded: color-mix(in srgb, var(--ink) 70%, var(--page));
   --subtle: #6b6b6e;
   --stone: #c9c2b6;
   --line: rgba(15, 15, 16, 0.16);
@@ -100,6 +102,8 @@
   --select: var(--cv-butter);
   --wash-cool: var(--cv-pistachio);
   --side: var(--page);
+  /* Party logos and party colours in charts, a step calmer so they sit on the ivory page. */
+  --party-tone: saturate(0.78) sepia(0.12);
   /* Meaning, never decoration. */
   --info: var(--cv-olive);
   --negative: #8f3424;
@@ -169,6 +173,7 @@
  * component inside reads its colours from the tokens, so it follows without its own theme.
  */
 .home-shell,
+.projects-page,
 .cv-viewer {
   --ink: var(--ink-identity);
   --muted: color-mix(in srgb, var(--ink) 80%, var(--page));

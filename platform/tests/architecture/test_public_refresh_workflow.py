@@ -18,13 +18,16 @@ def test_public_refresh_preserves_the_manual_writer_lock_and_check_order():
         i = next(i for i, s in enumerate(steps) if s.get("id") == topic)
         assert restore < i
         assert steps[i]["continue-on-error"] is True
-    save = next(s for s in steps if s.get("name") == "Save all available checkpoints")
+    save = next(s for s in steps if "always()" in s.get("if", "")
+                and "warehouse_store.py push --only raw --prune" in s.get("run", ""))
     assert "always()" in save["if"] and "steps.restore.outcome == 'success'" in save["if"]
     assert "--prune" in save["run"]
-    gate = next(i for i, s in enumerate(steps) if s.get("name") == "Require successful subject builds")
-    export = next(i for i, s in enumerate(steps) if s.get("name") == "Export delivery files")
+    gate = next(i for i, s in enumerate(steps)
+                if all(f"steps.{topic}.outcome" in " ".join(s.get("env", {}).values())
+                       for topic in ("welfare", "parliament", "taxes")))
+    export = next(i for i, s in enumerate(steps) if "publish/export_welfare.py" in s.get("run", ""))
     check = next(i for i, s in enumerate(steps) if "validate_public_data.py" in s.get("run", ""))
-    upload = next(i for i, s in enumerate(steps) if "publish/upload.py" in s.get("run", ""))
+    upload = next(i for i, s in enumerate(steps) if "publish/release.py publish" in s.get("run", ""))
     status = next(i for i, s in enumerate(steps) if "publish_status.py" in s.get("run", ""))
     assert gate < export < check < upload < status
     assert "npm run data:check" in steps[check]["run"]

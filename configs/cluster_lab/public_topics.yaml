@@ -1,0 +1,137 @@
+lab:
+  output: warehouse/cluster_lab/public-topics-2026-10-12
+  cache: warehouse/cluster_lab/cache
+  representation:
+    device: cuda
+    batch_size: 16
+    storage_dtype: float32
+    fit_seed: 42
+    text_fields:
+      - context
+  sweep:
+    selection:
+      silhouette_weight: 1.0
+      noise_weight: 0.3
+      largest_weight: 0.4
+      dominance_weight: 0.0
+      confound_weight: 1.0
+      min_clusters: 2
+  evaluation:
+    sample_size: 4000
+    examples: 6
+    terms: 12
+    profile_sample_per_cluster: 200
+    profile_total_term_samples: 20000
+  resources:
+    cpu_threads: 3
+    torch_threads: 2
+    memory_gb: 8
+    min_free_disk_gb: 1
+  layouts:
+    count: 4
+    preview_count: 0
+    n_neighbors:
+      - 15
+      - 60
+    min_dist:
+      - 0.1
+      - 0.3
+    seeds:
+      - 42
+    preview_points: 5000
+    trust_sample_size: 1200
+research:
+  debate:
+    sources: warehouse/cluster_lab/public-research-2026-10-12
+    passage_words:
+      - 80
+      - 150
+    minimum_words: 40
+    models:
+      - model: KBLab/sentence-bert-swedish-cased
+        revision: 6b5e83cd29c03729cfdc33d13b1423399b0efb5c
+    centering:
+      - none
+      - author
+    neighbors:
+      - 15
+      - 30
+    dimensions:
+      - 5
+      - 10
+    min_cluster_size:
+      - 60
+      - 100
+      - 150
+    min_samples:
+      - 5
+      - 10
+      - 25
+    selection:
+      - method: eom
+      - method: eom
+        max_share: 0.06
+      - method: leaf
+      - method: leaf
+        epsilon: 0.1
+    seeds:
+      - 42
+      - 43
+      - 44
+    clusters:
+      - 15
+      - 60
+    max_largest: 0.1
+    finalists: 5
+    min_seed_ari: 0.75
+    merge_similarity: 0.7
+    reassign_quantile: 0.1
+    reassign_margin: 0.05
+  philosophy:
+    raw: warehouse/raw/philosophy
+    corpora:
+      - platform/ingest/philosophy/corpus.json
+      - platform/ingest/philosophy/corpus_extended.json
+    per_document: 200
+    models:
+      - model: sentence-transformers/all-mpnet-base-v2
+        revision: e8c3b32edf5434bc2275fc9bab85f82640a19130
+      - model: sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
+        revision: e8f8c211226b894fcb81acc59f3b34ba3efd5f42
+    centering:
+      - none
+      - work
+    neighbors:
+      - 15
+      - 30
+    dimensions:
+      - 5
+      - 10
+    min_cluster_size:
+      - 40
+      - 80
+      - 120
+    min_samples:
+      - 5
+      - 10
+      - 25
+    selection:
+      - method: eom
+      - method: eom
+        max_share: 0.06
+      - method: leaf
+      - method: leaf
+        epsilon: 0.1
+    seeds:
+      - 42
+      - 43
+      - 44
+    clusters:
+      - 15
+      - 60
+    max_largest: 0.1
+    finalists: 5
+    min_seed_ari: 0.75
+    merge_similarity: 0.7
+    reassign_quantile: 0.1
+    reassign_margin: 0.05

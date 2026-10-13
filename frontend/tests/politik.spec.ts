@@ -5,7 +5,6 @@ const THEMES: [string, string][] = [
   ['#politik-valjarna', 'Which parties do voters support?'],
   ['#politik-roster', 'How often do the parties vote alike?'],
   ['#politik-budget-detalj', 'What do the parties want to spend money on?'],
-  ['#politik-tal', 'What do politicians talk about?'],
 ]
 
 test('every theme answers one question with one chart, a table and its sources', async ({
@@ -15,55 +14,30 @@ test('every theme answers one question with one chart, a table and its sources',
   page.on('pageerror', (e) => errors.push(e.message))
   for (const [path, question] of THEMES) {
     await page.goto(`/${path}`)
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText(question)
+    // Every chapter shares one long page; the address lands on its own.
+    const here = page.locator('#politik')
+    await expect(here.getByRole('heading', { level: 1 })).toHaveText(question)
     // The question shows while the data loads; count the figures once the chart is there.
-    await expect(page.locator('.theme-figure')).toHaveCount(1)
-    await expect(page.locator('.theme-kpis')).toHaveCount(0)
-    await expect(page.locator('.reading-note summary')).toContainText(
-      'About this measure',
-    )
-    await expect(page.locator('.theme-source-line')).toContainText('Source')
-    await page.getByRole('tab', { name: 'Table' }).click()
-    await expect(page.locator('.theme-table table')).toBeVisible()
-    await page.getByRole('tab', { name: 'Sources' }).click()
-    await expect(page.locator('.theme-sources a').first()).toBeVisible()
-    await expect(page.locator('.theme-deep a').first()).toBeVisible()
+    await expect(here.locator('.theme-figure')).toHaveCount(1)
+    await expect(here.locator('.theme-kpis')).toHaveCount(0)
+    await expect(here.locator('.theme-source-line')).toContainText('Source')
+    await here.getByRole('tab', { name: 'Table' }).click()
+    await expect(here.locator('.theme-table table')).toBeVisible()
+    await here.getByRole('tab', { name: 'Sources' }).click()
+    await expect(here.locator('.theme-sources a').first()).toBeVisible()
   }
 
   expect(errors).toEqual([])
-})
-
-test('the party bar follows the reader from page to page', async ({ page }) => {
-  await page.goto('/#politik-roster')
-  const bar = page.getByRole('group', { name: 'Parties' })
-  await expect(bar.getByRole('button', { pressed: false })).toHaveCount(8)
-  await bar.getByRole('button', { name: 'Social Democrats' }).click()
-  await bar.getByRole('button', { name: 'Left Party' }).click()
-  await bar.getByRole('button', { name: 'Moderates' }).click()
-  await expect(page).toHaveURL(/partier=S%2CV%2CM|partier=S,V,M/)
-  await page
-    .getByRole('navigation', { name: 'Project topics' })
-    .getByRole('link', { name: 'Government and parliament', exact: true })
-    .click()
-  await expect(page).toHaveURL(/#politik-partier\?partier=/)
-  await page
-    .getByRole('navigation', { name: 'Project topics' })
-    .getByRole('link', { name: 'Voters and opinion', exact: true })
-    .click()
-  await expect(page).toHaveURL(/#politik-valjarna\?partier=/)
-  await expect(page.locator('.rank-bars-list li')).toHaveCount(3)
-  await page.getByRole('button', { name: 'Show all' }).click()
-  await expect(page.locator('.rank-bars-list li')).toHaveCount(8)
-  await expect(bar.getByRole('button', { pressed: true })).toHaveCount(0)
 })
 
 test('the view builder offers valid choices and keeps them in a shareable address', async ({
   page,
 }) => {
   await page.goto('/#politik-valjarna')
+  const voters = page.locator('#politik')
   // Bars by default: the latest survey, one bar per party.
-  await expect(page.locator('.rank-bars-list li')).toHaveCount(8)
-  await page.getByRole('button', { name: 'Build your own view' }).click()
+  await expect(voters.locator('.dumbbell li')).toHaveCount(8)
+  await voters.getByRole('button', { name: 'Build your own view' }).click()
   const panel = page.getByRole('dialog', { name: /Build your own view/ })
   await expect(panel).toBeVisible()
   await panel.getByLabel('Election results').check()
@@ -72,17 +46,17 @@ test('the view builder offers valid choices and keeps them in a shareable addres
   await expect(panel).toBeHidden()
   await expect(page).toHaveURL(/matt=val/)
   await expect(page).toHaveURL(/diagram=linje/)
-  await expect(page.locator('.theme-chart-title')).toHaveText(
+  await expect(voters.locator('.theme-chart-title')).toHaveText(
     'Result in Riksdag elections',
   )
   // Party letters stand at the end of each line.
-  await expect(page.locator('.end-label-text')).toHaveCount(8)
+  await expect(voters.locator('.end-label-text')).toHaveCount(8)
   // The address alone restores the view.
   await page.reload()
-  await expect(page.locator('.theme-chart-title')).toHaveText(
+  await expect(voters.locator('.theme-chart-title')).toHaveText(
     'Result in Riksdag elections',
   )
-  await page.getByRole('button', { name: 'Build your own view' }).click()
+  await voters.getByRole('button', { name: 'Build your own view' }).click()
   await page.keyboard.press('Escape')
   await expect(page.getByRole('dialog')).toBeHidden()
 
@@ -100,23 +74,22 @@ test('the view builder offers valid choices and keeps them in a shareable addres
   await expect(page.locator('.theme .grouped > li').first()).toBeVisible()
 
   await page.goto('/#politik-roster?matt=enighet&partier=S,M')
-  await expect(page.locator('.theme-chart-title')).toContainText('Party unity')
+  const votes = page.locator('#politik')
+  await expect(votes.locator('.theme-chart-title')).toContainText('Party unity')
   // Over time as columns, one small chart per party.
-  await expect(page.locator('.column-multiples > li')).toHaveCount(2)
+  await expect(votes.locator('.column-multiples > li')).toHaveCount(2)
 })
 
 test('the chart, table and sources switch works with the keyboard', async ({
   page,
 }) => {
   await page.goto('/#politik-roster')
-  const chart = page.getByRole('tab', { name: 'Chart' })
-  await chart.focus()
+  const votes = page.locator('#politik')
+  await votes.getByRole('tab', { name: 'Chart' }).focus()
   await page.keyboard.press('ArrowRight')
-  await expect(page.getByRole('tab', { name: 'Table' })).toHaveAttribute(
-    'aria-selected',
-    'true',
-  )
-  await expect(page.getByRole('tab', { name: 'Table' })).toBeFocused()
+  const table = votes.getByRole('tab', { name: 'Table' })
+  await expect(table).toHaveAttribute('aria-selected', 'true')
+  await expect(table).toBeFocused()
   await expect(page.getByTestId('agreement-matrix')).toBeVisible()
 })
 
@@ -133,44 +106,52 @@ test('explore and sources reach every detailed view and the raw tables', async (
     page.locator('a[href="#data-model"],a[href="#data-catalogue"]'),
   ).toHaveCount(0)
   const results = await new AxeBuilder({ page })
+    .include('#politik-kallor')
     .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
     .analyze()
   expect(results.violations).toEqual([])
 })
 
-test('taxes: every kind of tax, Sweden against the other countries', async ({
+test('taxes: Sweden against the average and beside its neighbours', async ({
   page,
 }) => {
+  // The old taxes address opens the money tab.
   await page.goto('/#politik-skatter')
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-    'How do Sweden’s taxes compare?',
-  )
+  await expect(page).toHaveURL(/#politik-budget/)
+  const taxes = page.locator('.report-tab')
   const data = await (
     await page.request.get('/data/taxes/countries.json')
   ).json()
-  // One strip per kind of tax, and one row per kind in the table.
-  await expect(page.locator('.tax-strip')).toHaveCount(data.types.length)
-  await expect(page.locator('.tax-table tbody tr')).toHaveCount(
+  // One row per kind of tax, Sweden beside four neighbours and the average.
+  await expect(taxes.locator('.tax-table tbody tr')).toHaveCount(
     data.types.length,
   )
-  // The mix lists countries, not the published averages.
-  await expect(page.locator('.tax-mix li.swe')).toHaveCount(1)
-  await expect(page.locator('.tax-mix')).not.toContainText('OECD average')
-  // Choosing a tax follows it over time, kept in the address.
-  await page.getByRole('button', { name: 'Value added tax (VAT)' }).click()
-  await expect(page).toHaveURL(/skatt=T_5111/)
-  await expect(page.locator('.board-card h2').nth(2)).toContainText('VAT')
-  await page.getByLabel('Compare with').selectOption('nordic')
-  await expect(page.locator('.tax-mix li')).toHaveCount(5)
+  await expect(taxes.locator('.tax-table thead th')).toHaveText([
+    'Tax',
+    'Sweden',
+    'Denmark',
+    'Norway',
+    'Finland',
+    'Germany',
+    'the OECD average',
+    'Difference',
+    'Place',
+  ])
+  await expect(taxes.locator('.dumbbell li')).not.toHaveCount(0)
+  await taxes.getByLabel('Compare with').selectOption('nordic')
+  await expect(page).toHaveURL(/grupp=nordic/)
+  await expect(taxes.locator('.tax-table thead')).toContainText(
+    'the Nordic average',
+  )
 })
 
 test('studies: the studies before the laws, each readable in depth', async ({
   page,
 }) => {
   await page.goto('/#politik-utredningar')
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-    'The studies before the laws',
-  )
+  await expect(
+    page.locator('#politik-utredningar').getByRole('heading', { level: 1 }),
+  ).toHaveText('The studies before the laws')
   const data = await (
     await page.request.get('/data/parliament/studies.json')
   ).json()
@@ -185,39 +166,11 @@ test('studies: the studies before the laws, each readable in depth', async ({
   await expect(page).toHaveURL(/vald=/)
   await expect(page.locator('.study-detail h3')).toHaveText(title)
   // A study that led to a law shows the chain to the decision.
-  await page.getByLabel('Led to').selectOption('lag')
+  await page
+    .getByRole('combobox', { name: 'Led to', exact: true })
+    .selectOption('lag')
   await expect(page.locator('.study-chain li').first()).toBeVisible()
   await expect(page.locator('.law-chains > li').first()).toBeVisible()
-})
-
-test('the budget says whose budget it is', async ({ page }) => {
-  await page.goto('/#politik-budget')
-  const id = page.locator('.budget-id')
-  await expect(id).toContainText('The budget for')
-  await expect(id).toContainText('Proposed by')
-  await expect(id).toContainText('The Riksdag adopted')
-  await expect(id.locator('.budget-id-votes li')).toHaveCount(8)
-})
-
-test('issue debates: the chosen party is the object, in shares and against the others', async ({
-  page,
-}) => {
-  await page.goto('/#politik-sakdebatter?partier=MP')
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-    'Green Party: issue debates',
-  )
-  await expect(page.locator('.sak .story-kpis > div')).toHaveCount(3)
-  await expect(page.locator('.sak-standout-text')).toContainText('%')
-  await expect(page.locator('.sak-diverge li').first()).toBeVisible()
-  await expect(page.locator('.story-terms')).toHaveCount(2)
-  // Period and topic live in the address.
-  const filters = page.getByRole('group', { name: 'Filters' })
-  await filters.getByRole('combobox', { name: 'From' }).selectOption('2024')
-  await expect(page).toHaveURL(/from=2024/)
-  await filters.getByRole('combobox', { name: 'Topic' }).selectOption('miljo')
-  await expect(page).toHaveURL(/amne=miljo/)
-  // The riksmöte explorer is closed until asked for.
-  await expect(page.locator('#topplista')).toBeHidden()
 })
 
 test('news: the headlines, and the week in summary with its sources', async ({
@@ -297,7 +250,7 @@ test('the model: gradient boosting per party, with party and committee slicers',
   await expect(page.locator('#modell')).toContainText(
     `${(c.accuracy * 100).toFixed(1)} %`,
   )
-  await expect(page.locator('.modell-ray')).toHaveCount(8)
+  await expect(page.locator('.modell-figure .rank-bars-list li')).toHaveCount(8)
   await page
     .locator('.modell-slicers')
     .getByRole('button', { name: 'SD' })

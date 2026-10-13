@@ -1,0 +1,6 @@
+{
+  "schema_version": 2,
+  "files": ["gold/marts/jobs.json"],
+  "include": ["jobs/*"],
+  "exclude": ["jobs/market.json"]
+}

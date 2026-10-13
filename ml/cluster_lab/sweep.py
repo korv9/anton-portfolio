@@ -15,7 +15,7 @@ import yaml
 import numpy as np
 import pandas as pd
 
-from . import datasets, evaluate, layouts, representations
+from . import datasets, evaluate, layouts, refine, representations
 from .config import merge, set_value, validate_trial, values
 from .io import atomic_json, atomic_parquet, digest, file_hash, now, provenance, read_json
 from .registry import Registry
@@ -182,8 +182,8 @@ class Runner:
             self.checkpoint()
             h=config['clustering']
             if h['method']=='kmeans':
-                from sklearn.cluster import MiniBatchKMeans
-                model=MiniBatchKMeans(n_clusters=h['n_clusters'],random_state=config['seed'],n_init=3,batch_size=h['batch_size'])
+                from sklearn.cluster import MiniBatchKMeans, KMeans
+                model=KMeans(n_clusters=h['n_clusters'],random_state=config['seed'],n_init=20) if n<1000 else MiniBatchKMeans(n_clusters=h['n_clusters'],random_state=config['seed'],n_init=3,batch_size=h['batch_size'])
             elif h['implementation']=='sklearn':
                 from sklearn.cluster import HDBSCAN
                 model=HDBSCAN(min_cluster_size=actual,min_samples=h['min_samples'],metric=h['metric'],
@@ -193,17 +193,23 @@ class Runner:
                 from joblib import Memory
                 model=HDBSCAN(min_cluster_size=actual,min_samples=h['min_samples'],metric=h['metric'],
                     cluster_selection_method=h['cluster_selection_method'],cluster_selection_epsilon=h['cluster_selection_epsilon'],
-                    core_dist_n_jobs=1,memory=Memory(Path(config['cache'])/'hierarchies'/digest(reduction)[:24],verbose=0))
-            labels=model.fit_predict(space).astype(int)
+                    max_cluster_size=h['max_cluster_size'] or 0,gen_min_span_tree=True,core_dist_n_jobs=1,memory=Memory(Path(config['cache'])/'hierarchies'/digest(reduction)[:24],verbose=0))
+            core=model.fit_predict(space).astype(int)
+            labels,refinement=refine.refine(vectors,core,h['merge_similarity'],h['reassign_quantile'],h['reassign_margin'],config['seed'])
+            from joblib import dump
+            dump(model,folder/'model.joblib')
             assignments=frame[['observation_id']].copy()
             assignments['cluster']=labels
+            # False for noise the refinement returned to a cluster; the map draws those fainter.
+            assignments['core']=core>=0
             assignments['probability']=model.probabilities_ if hasattr(model,'probabilities_') else np.nan
             if hasattr(model,'outlier_scores_'):
                 assignments['outlier_score']=model.outlier_scores_
             atomic_parquet(assignments,folder/'assignments.parquet')
             metrics=evaluate.evaluate(frame,vectors,space,labels,model,config,folder)
+            metrics['refinement']=refinement
             metrics['min_samples_definition']='includes the point itself' if h['implementation']=='sklearn' else 'excludes the point itself (hdbscan package)'
-            metrics['implementation']=f'{h["implementation"]}.HDBSCAN' if h['method']=='hdbscan' else 'sklearn.MiniBatchKMeans'
+            metrics['implementation']=f'{h["implementation"]}.HDBSCAN' if h['method']=='hdbscan' else f'sklearn.{type(model).__name__}'
             metrics['implementation_version']=self.source['packages']['scikit-learn' if h['implementation']=='sklearn' or h['method']=='kmeans' else 'hdbscan']
             if stage=='full' and (sample['kind']!='full' or len(assignments)!=ds.manifest['observations']):
                 raise datasets.DataProblem('Final full-corpus invariant failed')

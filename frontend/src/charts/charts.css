@@ -114,3 +114,168 @@
     transition: none;
   }
 }
+
+/* ---------- Bullet, dumbbell and stacked shares (Compare.tsx) ---------- */
+.bullet,
+.dumbbell,
+.stacked {
+  margin: 0;
+}
+.bullet-track {
+  position: relative;
+  height: 10px;
+  background: var(--line);
+}
+.bullet-track i {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: var(--ink-2);
+  transition: width 700ms var(--ease);
+}
+.bullet-track b {
+  position: absolute;
+  top: -6px;
+  bottom: -6px;
+  width: 2px;
+  margin-left: -1px;
+  background: var(--ink);
+  transition: left 700ms var(--ease);
+}
+.bullet-key {
+  display: flex;
+  gap: var(--sp-6);
+  margin: var(--sp-3) 0 0;
+}
+.bullet-key div {
+  display: grid;
+  gap: 0.1rem;
+}
+.bullet-key dt {
+  color: var(--muted);
+  font-size: var(--small);
+}
+.bullet-key dd {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--h3);
+  font-weight: 600;
+}
+.dumbbell ol,
+.stacked ol {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--sp-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.dumbbell li,
+.stacked li {
+  display: grid;
+  grid-template-columns: minmax(7rem, 14rem) minmax(0, 1fr) minmax(3.2rem, auto);
+  align-items: center;
+  gap: 0.75rem;
+  font-size: var(--fs-meta, 0.9375rem);
+}
+.stacked li.bare {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+.dumbbell-track {
+  position: relative;
+  height: 12px;
+}
+.dumbbell-track i {
+  position: absolute;
+  top: 5px;
+  height: 2px;
+  background: var(--c, var(--ink-2));
+  transition:
+    left 700ms var(--ease),
+    width 700ms var(--ease);
+}
+.dumbbell-track b {
+  position: absolute;
+  top: 0;
+  width: 12px;
+  height: 12px;
+  margin-left: -6px;
+  border: 2px solid var(--c, var(--ink-2));
+  border-radius: 50%;
+  background: var(--c, var(--ink-2));
+  transition: left 700ms var(--ease);
+}
+.dumbbell-track b.hollow {
+  background: var(--page);
+}
+.dumbbell-key,
+.stacked-key {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2) var(--sp-5);
+  margin: 0 0 var(--sp-4);
+  color: var(--muted);
+  font-size: var(--small);
+}
+.dumbbell-key span::before,
+.stacked-key span::before {
+  content: '';
+  display: inline-block;
+  width: 0.6rem;
+  height: 0.6rem;
+  margin-right: 0.4rem;
+  border: 2px solid var(--c, var(--ink-2));
+  background: var(--c, var(--ink-2));
+}
+.dumbbell-key span::before {
+  border-radius: 50%;
+}
+.dumbbell-key span.hollow::before {
+  background: none;
+}
+.stacked-track {
+  display: flex;
+  height: 10px;
+  gap: 1px;
+}
+.stacked-track i {
+  min-width: 0;
+  transition: width 700ms var(--ease);
+}
+@media (max-width: 600px) {
+  .dumbbell li,
+  .stacked li {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.2rem 0.75rem;
+  }
+  .dumbbell-track,
+  .stacked-track {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+}
+.boxplot {
+  margin: 0;
+}
+.boxplot-track {
+  position: relative;
+  height: 14px;
+  background: linear-gradient(var(--ink-2), var(--ink-2)) center / 100% 2px
+    no-repeat;
+}
+.boxplot-track i {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: var(--line-strong);
+}
+.boxplot-track b {
+  position: absolute;
+  top: -4px;
+  bottom: -4px;
+  width: 2px;
+  margin-left: -1px;
+  background: var(--ink);
+}
+.boxplot .bullet-key dd {
+  font-size: var(--body);
+}

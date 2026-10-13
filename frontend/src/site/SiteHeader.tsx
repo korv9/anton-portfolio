@@ -1,7 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { currentLocale, l, setLocale, type Locale } from '../i18n'
-import { profile } from '../content'
-import { CvButton } from './CvViewer'
+import { l } from '../i18n'
 import {
   PROJECT_GROUPS,
   PROJECTS,
@@ -10,13 +8,7 @@ import {
 import type { Route } from '../router'
 import './header.css'
 
-export default function SiteHeader({
-  route,
-  onLanguage,
-}: {
-  route: Route
-  onLanguage: (locale: Locale) => void
-}) {
+export default function SiteHeader({ route }: { route: Route }) {
   const menu = useRef<HTMLDetailsElement>(null)
   const header = useRef<HTMLElement>(null)
   useEffect(() => {
@@ -47,7 +39,7 @@ export default function SiteHeader({
       rootMargin: '-160px 0px 0px 0px',
     })
     observer.observe(projects)
-    const section = document.getElementById('projekt')
+    const section = projects.parentElement
     if (section) observer.observe(section)
     update()
     return () => observer.disconnect()
@@ -73,8 +65,8 @@ export default function SiteHeader({
     >
       <a className="site-identity" href="#start">
         <strong>ANTON ERNSTSSON</strong>
-        <span>PERSONAL PROJECTS</span>
       </a>
+      <p className="site-notice">SITE STILL IN DEVELOPMENT</p>
       <nav
         className="site-navigation"
         aria-label={l('Main navigation', 'Huvudnavigation')}
@@ -120,21 +112,6 @@ export default function SiteHeader({
           </div>
         </details>
         <a href="#om-mig">{l('About', 'Om mig')}</a>
-        <a href="#erfarenhet">{l('Experience', 'Erfarenhet')}</a>
-        <a href="#utbildning">{l('Education', 'Utbildning')}</a>
-        {profile.cv && <CvButton />}
-        <button
-          className="language-switch"
-          type="button"
-          aria-label={l('Switch to Swedish', 'Byt till engelska')}
-          onClick={() => {
-            const next = currentLocale() === 'sv' ? 'en' : 'sv'
-            setLocale(next)
-            onLanguage(next)
-          }}
-        >
-          {currentLocale() === 'sv' ? 'EN' : 'SV'}
-        </button>
       </nav>
     </header>
   )

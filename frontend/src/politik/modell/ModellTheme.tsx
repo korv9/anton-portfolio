@@ -1,8 +1,8 @@
 /**
  * The model page: gradient boosting that predicts each party's vote from the other parties'
- * positions and the committee, trained on one riksmöte and tested on the next. One figure (the
- * chosen party in the middle, the others around it, each ray as thick as the information its
- * positions carry), the accuracy as trees are added, and slicers for party and committee. From
+ * positions and the committee, trained on one riksmöte and tested on the next. The accuracy
+ * against always guessing the majority (a bullet), what the model leans on (ranked bars), the
+ * accuracy as trees are added, and slicers for party and committee. From
  * politics/parliament/boost.json (platform/publish/politics_boost.py). Descriptive only.
  */
 import { useEffect, useState } from 'react'
@@ -12,6 +12,8 @@ import { partyFill, partyName } from '../../parties/identity'
 import type { Route } from '../../router'
 import { useViewParams } from '../useViewParams'
 import { useParties } from '../partySelection'
+import RankBars from '../../charts/RankBars'
+import { Bullet } from '../../charts/Compare'
 import { Stage, StageBlock, StageFacts, StageTools } from '../../ui/Stage'
 import '../../products/mlviz.css'
 import './modell.css'
@@ -38,78 +40,8 @@ type Boost = {
 }
 
 const DEFAULTS = { parti: '', utskott: '' }
-const C = 300
 const pct = (v: number, d = 0) =>
   `${(v * 100).toLocaleString(l('en-GB', 'sv-SE'), { maximumFractionDigits: d, minimumFractionDigits: d })} %`
-
-function Rays({ model }: { model: PartyModel }) {
-  const others = Object.entries(model.importance)
-  const max = Math.max(...others.map(([, v]) => v), 0.0001)
-  return (
-    <svg
-      viewBox="0 0 600 600"
-      className="modell-rays"
-      role="img"
-      aria-label={l(
-        `What predicts ${partyName(model.party)}'s vote: ${others.map(([k, v]) => `${k === 'committee' ? 'committee' : k} ${pct(v)}`).join(', ')}.`,
-        `Vad som förutsäger ${partyName(model.party)}s röst: ${others.map(([k, v]) => `${k === 'committee' ? 'utskottet' : k} ${pct(v)}`).join(', ')}.`,
-      )}
-    >
-      <rect width="600" height="600" className="dtree-ground" />
-      {[90, 170, 250].map((r) => (
-        <circle key={r} cx={C} cy={C} r={r} className="sieve-ring" />
-      ))}
-      {others.map(([key, v], i) => {
-        const a = -Math.PI / 2 + (i * Math.PI * 2) / others.length
-        const [x, y] = [C + 230 * Math.cos(a), C + 230 * Math.sin(a)]
-        const colour = key === 'committee' ? 'var(--subtle)' : partyFill(key)
-        const w = 1 + 22 * (v / max)
-        return (
-          <g key={key} className="modell-ray" style={{ ['--i' as string]: i }}>
-            <line
-              x1={C}
-              y1={C}
-              x2={x}
-              y2={y}
-              style={{ stroke: colour }}
-              strokeWidth={w}
-              strokeLinecap="round"
-              opacity={0.25 + 0.6 * (v / max)}
-            />
-            <circle
-              cx={x}
-              cy={y}
-              r={20}
-              style={{ fill: 'var(--paper-strong)', stroke: colour }}
-              strokeWidth={2}
-            />
-            <text x={x} y={y + 4} textAnchor="middle" className="modell-node">
-              {key === 'committee' ? l('Cttee', 'Utsk.') : key}
-            </text>
-            <text
-              x={C + 262 * Math.cos(a)}
-              y={C + 262 * Math.sin(a) + 4}
-              textAnchor={
-                Math.cos(a) > 0.3
-                  ? 'start'
-                  : Math.cos(a) < -0.3
-                    ? 'end'
-                    : 'middle'
-              }
-              className="modell-share"
-            >
-              {pct(v)}
-            </text>
-          </g>
-        )
-      })}
-      <circle cx={C} cy={C} r={46} fill={partyFill(model.party)} />
-      <text x={C} y={C + 7} textAnchor="middle" className="modell-centre">
-        {model.party}
-      </text>
-    </svg>
-  )
-}
 
 function Curve({ model, step }: { model: PartyModel; step: number }) {
   const W = 600
@@ -215,7 +147,52 @@ export default function ModellTheme({ route }: { route: Route }) {
                 </button>
               ))}
             </div>
-            <Rays model={model} />
+            <Bullet
+              value={model.accuracy}
+              reference={model.baseline}
+              max={1}
+              valueLabel={l('Test accuracy', 'Testträffsäkerhet')}
+              referenceLabel={l(
+                'Always guessing the majority',
+                'Att alltid gissa majoriteten',
+              )}
+              format={(v) => pct(v, 1)}
+              colour={partyFill(model.party)}
+              label={l(
+                `Test accuracy ${pct(model.accuracy, 1)} against ${pct(model.baseline, 1)} for always guessing the majority`,
+                `Testträffsäkerhet ${pct(model.accuracy, 1)} mot ${pct(model.baseline, 1)} för att alltid gissa majoriteten`,
+              )}
+            />
+            <h3 className="modell-sub">
+              {l(
+                `What predicts ${partyName(model.party)}’s vote`,
+                `Vad som förutsäger ${partyName(model.party)}s röst`,
+              )}
+            </h3>
+            <RankBars
+              rows={Object.entries(model.importance)
+                .sort((a, b) => b[1] - a[1])
+                .map(([key, v]) => ({
+                  key,
+                  label:
+                    key === 'committee'
+                      ? l('The committee', 'Utskottet')
+                      : partyName(key),
+                  value: v,
+                  party: key === 'committee' ? undefined : key,
+                }))}
+              format={(v) => pct(v)}
+              label={l(
+                `Share of the model’s information from each party’s position and the committee`,
+                `Andel av modellens information från varje partis ståndpunkt och utskottet`,
+              )}
+            />
+            <h3 className="modell-sub">
+              {l(
+                'Accuracy as trees are added',
+                'Träffsäkerhet när träd läggs till',
+              )}
+            </h3>
             <Curve model={model} step={data.staged_step} />
             {trivial && (
               <p className="modell-note">

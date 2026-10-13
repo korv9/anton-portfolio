@@ -47,7 +47,7 @@ def text_input(row, config, dataset):
 def representation_identity(dataset, frame, config):
     return digest({'dataset':dataset.manifest['dataset_id'],'ids':frame.observation_id.tolist(),
         'text_hashes':frame.text_hash.tolist(),'representation':config['representation'],
-        'seed':config['seed'] if config['representation']['kind']=='tfidf_svd' else None,
+        'seed':(config['representation']['fit_seed'] if config['representation'].get('fit_seed') is not None else config['seed']) if config['representation']['kind']=='tfidf_svd' else None,
         'version':versions(),'implementation':[file_hash(Path(__file__)),file_hash(ROOT/'ml/jobs/embeddings.py'),
                                              file_hash(ROOT/'ml/jobs/features.py')]})[:24]
 
@@ -67,7 +67,20 @@ def build(dataset, frame, config, checkpoint=lambda:None):
     positions={oid:i for i,oid in enumerate(ids)}
     text_hashes=[None]*len(ids)
     preprocessing_audit=Counter()
-    if r['kind']=='tfidf_svd':
+    if r['kind']=='numeric':
+        from sklearn.preprocessing import StandardScaler, RobustScaler
+        from joblib import dump
+        raw=pd.read_parquet(dataset.path).set_index('observation_id').loc[ids,r['numeric_features']].to_numpy(dtype='float64')
+        if not np.isfinite(raw).all():
+            raise DataProblem('Numeric snapshot contains missing or nonfinite values; choose and document a missingness policy before fitting')
+        scaler=StandardScaler() if r['numeric_scaler']=='standard' else RobustScaler()
+        matrix=scaler.fit_transform(raw).astype('float32')
+        dump(scaler,folder/'scaler.joblib')
+        text_hashes=frame.text_hash.tolist()
+        model_info={'model':r['numeric_scaler'],'revision':None,'features':r['numeric_features'],
+                    'scaler_path':str((folder/'scaler.joblib').resolve()),'missing_policy':'complete cases, no imputation',
+                    'raw_feature_means':raw.mean(axis=0).tolist(),'raw_feature_std':raw.std(axis=0).tolist()}
+    elif r['kind']=='tfidf_svd':
         from ml.jobs.features import tfidf_svd
         texts=['']*len(ids)
         for part in dataset.texts(frame,config['resources']):
@@ -78,7 +91,8 @@ def build(dataset, frame, config, checkpoint=lambda:None):
                 texts[positions[row.observation_id]]=text
                 text_hashes[positions[row.observation_id]]=digest(value)
         # Existing lexical implementation; its complete effective parameters are recorded.
-        matrix,lexical=tfidf_svd(texts,r['svd_dimensions'],config['seed'])
+        fit_seed=r['fit_seed'] if r.get('fit_seed') is not None else config['seed']
+        matrix,lexical=tfidf_svd(texts,r['svd_dimensions'],fit_seed,artifact_path=folder/'lexical.joblib')
         model_info={'model':None,'revision':None,'lexical':lexical,
                     'lexical_parameters':{'max_features':20000,'min_df':2,'max_df':0.9,'ngram_range':[1,2]}}
         if r['max_features']!=20000:
@@ -140,7 +154,7 @@ def build(dataset, frame, config, checkpoint=lambda:None):
                         if actual and actual!=r['revision']:
                             raise DataProblem(f'Model revision mismatch: requested {r["revision"]}, loaded {actual}')
                     values=list(missing.values())
-                    if dataset.spec['adapter']=='jobs':
+                    if dataset.spec['adapter'] in ('jobs','snapshot'):
                         flat=[text for value in values for _,text,_ in value]
                         encoded=encode_text_batch(model,flat,r['batch_size'])
                         vectors=[]
@@ -356,5 +370,7 @@ def reduce(vectors,representation,config):
         info['actual_pca_batch_size']=step
         del space
         (folder/'pca-output.tmp.npy').unlink()
+    from joblib import dump
+    dump(model,folder/'model.joblib')
     atomic_json(folder/'complete.json',info)
     return np.load(target,mmap_mode='r'),info

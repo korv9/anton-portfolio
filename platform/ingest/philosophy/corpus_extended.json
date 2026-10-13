@@ -1,0 +1,1742 @@
+{
+ "note": "One hundred further works for clustering research, beside the Atlas's thirteen in corpus.json: several works per thinker and at least three per tradition, and where Gutenberg has them, a second translator of the same author, so that a tradition can be told apart from one book's voice. Ids, titles, authors and translators come from Project Gutenberg's catalogue (pg_catalog.csv, read 2026-10-12). `year` is the approximate date of composition or first publication (negative: BCE); `tradition` and `area` are coarse labels for evaluation, not a claim about the work. The Atlas pipeline does not read this file.",
+ "documents": [
+  {
+   "id": "plato-apology",
+   "gutenberg_id": 1656,
+   "title": "Apology",
+   "author": "Plato",
+   "year": -399,
+   "period": "ancient",
+   "tradition": "classical-greek",
+   "area": "ethics",
+   "original_language": "grc",
+   "translator": "Benjamin Jowett",
+   "genre": "dialogue",
+   "text_start": {
+    "line": "APOLOGY",
+    "occurrence": 2
+   }
+  },
+  {
+   "id": "plato-phaedo",
+   "gutenberg_id": 1658,
+   "title": "Phaedo",
+   "author": "Plato",
+   "year": -360,
+   "period": "ancient",
+   "tradition": "classical-greek",
+   "area": "metaphysics",
+   "original_language": "grc",
+   "translator": "Benjamin Jowett",
+   "genre": "dialogue",
+   "text_start": {
+    "line": "PERSONS OF THE DIALOGUE.*"
+   }
+  },
+  {
+   "id": "plato-symposium",
+   "gutenberg_id": 1600,
+   "title": "Symposium",
+   "author": "Plato",
+   "year": -380,
+   "period": "ancient",
+   "tradition": "classical-greek",
+   "area": "ethics",
+   "original_language": "grc",
+   "translator": "Benjamin Jowett",
+   "genre": "dialogue",
+   "text_start": {
+    "line": "PERSONS OF THE DIALOGUE.*"
+   }
+  },
+  {
+   "id": "plato-gorgias",
+   "gutenberg_id": 1672,
+   "title": "Gorgias",
+   "author": "Plato",
+   "year": -380,
+   "period": "ancient",
+   "tradition": "classical-greek",
+   "area": "ethics",
+   "original_language": "grc",
+   "translator": "Benjamin Jowett",
+   "genre": "dialogue",
+   "text_start": {
+    "line": "PERSONS OF THE DIALOGUE.*"
+   }
+  },
+  {
+   "id": "plato-meno",
+   "gutenberg_id": 1643,
+   "title": "Meno",
+   "author": "Plato",
+   "year": -385,
+   "period": "ancient",
+   "tradition": "classical-greek",
+   "area": "epistemology",
+   "original_language": "grc",
+   "translator": "Benjamin Jowett",
+   "genre": "dialogue",
+   "text_start": {
+    "line": "PERSONS OF THE DIALOGUE.*"
+   }
+  },
+  {
+   "id": "plato-apology-crito-phaedo-cary",
+   "gutenberg_id": 13726,
+   "title": "Apology, Crito, and Phaedo of Socrates",
+   "author": "Plato",
+   "year": -390,
+   "period": "ancient",
+   "tradition": "classical-greek",
+   "area": "ethics",
+   "original_language": "grc",
+   "translator": "Henry Cary",
+   "genre": "dialogue",
+   "text_start": {
+    "line": "THE APOLOGY OF SOCRATES\\."
+   }
+  },
+  {
+   "id": "aristotle-politics",
+   "gutenberg_id": 6762,
+   "title": "Politics: A Treatise on Government",
+   "author": "Aristotle",
+   "year": -330,
+   "period": "ancient",
+   "tradition": "classical-greek",
+   "area": "political",
+   "original_language": "grc",
+   "translator": "William Ellis",
+   "genre": "treatise",
+   "text_start": {
+    "line": "BOOK I"
+   },
+   "text_end": {
+    "line": "INDEX"
+   }
+  },
+  {
+   "id": "aristotle-poetics",
+   "gutenberg_id": 1974,
+   "title": "The Poetics of Aristotle",
+   "author": "Aristotle",
+   "year": -335,
+   "period": "ancient",
+   "tradition": "classical-greek",
+   "area": "aesthetics",
+   "original_language": "grc",
+   "translator": "S. H. Butcher",
+   "genre": "treatise",
+   "text_start": {
+    "line": "ARISTOTLE'S POETICS"
+   }
+  },
+  {
+   "id": "xenophon-memorabilia",
+   "gutenberg_id": 1177,
+   "title": "The Memorabilia",
+   "author": "Xenophon",
+   "year": -370,
+   "period": "ancient",
+   "tradition": "classical-greek",
+   "area": "ethics",
+   "original_language": "grc",
+   "translator": "Henry Graham Dakyns",
+   "genre": "dialogue",
+   "text_start": {
+    "line": "BOOK I"
+   }
+  },
+  {
+   "id": "epictetus-enchiridion",
+   "gutenberg_id": 45109,
+   "title": "The Enchiridion",
+   "author": "Epictetus",
+   "year": 125,
+   "period": "ancient",
+   "tradition": "stoic",
+   "area": "ethics",
+   "original_language": "grc",
+   "translator": "Thomas Wentworth Higginson",
+   "genre": "handbook",
+   "text_start": {
+    "line": "THE ENCHIRIDION"
+   },
+   "text_end": {
+    "line": "Footnotes"
+   }
+  },
+  {
+   "id": "marcus-thoughts-long",
+   "gutenberg_id": 15877,
+   "title": "Thoughts of Marcus Aurelius Antoninus",
+   "author": "Marcus Aurelius",
+   "year": 180,
+   "period": "ancient",
+   "tradition": "stoic",
+   "area": "ethics",
+   "original_language": "grc",
+   "translator": "George Long",
+   "genre": "meditations",
+   "text_start": {
+    "line": "THE THOUGHTS",
+    "occurrence": 2
+   },
+   "text_end": {
+    "line": "INDEXES\\."
+   }
+  },
+  {
+   "id": "seneca-morals",
+   "gutenberg_id": 56075,
+   "title": "Seneca's Morals of a Happy Life, Benefits, Anger and Clemency",
+   "author": "Lucius Annaeus Seneca",
+   "year": 60,
+   "period": "ancient",
+   "tradition": "stoic",
+   "area": "ethics",
+   "original_language": "la",
+   "translator": "Roger L'Estrange",
+   "genre": "essays",
+   "text_start": {
+    "line": "SENECA OF BENEFITS\\."
+   }
+  },
+  {
+   "id": "seneca-minor-dialogues",
+   "gutenberg_id": 64576,
+   "title": "Minor Dialogues, Together With the Dialogue on Clemency",
+   "author": "Lucius Annaeus Seneca",
+   "year": 50,
+   "period": "ancient",
+   "tradition": "stoic",
+   "area": "ethics",
+   "original_language": "la",
+   "translator": "Aubrey Stewart",
+   "genre": "dialogue",
+   "text_start": {
+    "line": "LUCILIUS\\."
+   },
+   "text_end": {
+    "line": "THE END\\.?"
+   }
+  },
+  {
+   "id": "cicero-tusculan",
+   "gutenberg_id": 14988,
+   "title": "Cicero's Tusculan Disputations Also, Treatises On The Nature Of The Gods, And On The Commonwealth",
+   "author": "Marcus Tullius Cicero",
+   "year": -45,
+   "period": "ancient",
+   "tradition": "roman-hellenistic",
+   "area": "ethics",
+   "original_language": "la",
+   "translator": "Charles Duke Yonge",
+   "genre": "dialogue",
+   "text_start": {
+    "line": "BOOK I\\."
+   },
+   "text_end": {
+    "line": "FOOTNOTES:"
+   }
+  },
+  {
+   "id": "cicero-friendship-old-age",
+   "gutenberg_id": 2808,
+   "title": "Treatises on Friendship and Old Age",
+   "author": "Marcus Tullius Cicero",
+   "year": -44,
+   "period": "ancient",
+   "tradition": "roman-hellenistic",
+   "area": "ethics",
+   "original_language": "la",
+   "translator": "Evelyn S. Shuckburgh",
+   "genre": "dialogue",
+   "text_start": {
+    "line": "ON FRIENDSHIP"
+   }
+  },
+  {
+   "id": "lucretius-nature-of-things",
+   "gutenberg_id": 785,
+   "title": "On the Nature of Things",
+   "author": "Titus Lucretius Carus",
+   "year": -55,
+   "period": "ancient",
+   "tradition": "roman-hellenistic",
+   "area": "metaphysics",
+   "original_language": "la",
+   "translator": "William Ellery Leonard",
+   "genre": "poem",
+   "text_start": {
+    "line": "BOOK I"
+   }
+  },
+  {
+   "id": "augustine-confessions",
+   "gutenberg_id": 3296,
+   "title": "The Confessions of St. Augustine",
+   "author": "Augustine",
+   "year": 400,
+   "period": "late-antique",
+   "tradition": "christian-theological",
+   "area": "religion",
+   "original_language": "la",
+   "translator": "E. B. Pusey",
+   "genre": "confession",
+   "text_start": {
+    "line": "BOOK I"
+   }
+  },
+  {
+   "id": "augustine-city-of-god-1",
+   "gutenberg_id": 45304,
+   "title": "The City of God, Volume I",
+   "author": "Augustine",
+   "year": 426,
+   "period": "late-antique",
+   "tradition": "christian-theological",
+   "area": "religion",
+   "original_language": "la",
+   "translator": null,
+   "genre": "treatise",
+   "translator_note": "The Gutenberg catalogue names no translator for this edition.",
+   "text_start": {
+    "line": "BOOK FIRST\\."
+   }
+  },
+  {
+   "id": "boethius-consolation",
+   "gutenberg_id": 14328,
+   "title": "The Consolation of Philosophy",
+   "author": "Boethius",
+   "year": 524,
+   "period": "late-antique",
+   "tradition": "christian-theological",
+   "area": "ethics",
+   "original_language": "la",
+   "translator": "H. R. James",
+   "genre": "dialogue",
+   "text_start": {
+    "line": "BOOK I\\.",
+    "occurrence": 3
+   }
+  },
+  {
+   "id": "pascal-pensees",
+   "gutenberg_id": 18269,
+   "title": "Pascal's Pensées",
+   "author": "Blaise Pascal",
+   "year": 1670,
+   "period": "early-modern",
+   "tradition": "christian-theological",
+   "area": "religion",
+   "original_language": "fr",
+   "translator": null,
+   "genre": "aphorisms",
+   "translator_note": "The Gutenberg catalogue names no translator for this edition.",
+   "text_start": {
+    "line": "SECTION I"
+   },
+   "text_end": {
+    "line": "NOTES"
+   }
+  },
+  {
+   "id": "ghazzali-confessions",
+   "gutenberg_id": 58977,
+   "title": "The Confessions of Al Ghazzali",
+   "author": "Ghazzali",
+   "year": 1108,
+   "period": "medieval",
+   "tradition": "islamic-jewish-medieval",
+   "area": "religion",
+   "original_language": "ar",
+   "translator": "Claud Field",
+   "genre": "confession",
+   "text_start": {
+    "line": "THE CONFESSIONS OF AL GHAZZALI",
+    "occurrence": 2
+   },
+   "text_end": {
+    "line": "FOOTNOTES"
+   }
+  },
+  {
+   "id": "averroes-philosophy-theology",
+   "gutenberg_id": 65708,
+   "title": "The Philosophy and Theology of Averroes",
+   "author": "Averroës",
+   "year": 1180,
+   "period": "medieval",
+   "tradition": "islamic-jewish-medieval",
+   "area": "religion",
+   "original_language": "ar",
+   "translator": "Muhammad Jamil al-Rahman",
+   "genre": "treatise",
+   "text_start": {
+    "line": "A DECISIVE DISCOURSE ON THE DELINE.*",
+    "occurrence": 2
+   }
+  },
+  {
+   "id": "avicenna-compendium-soul",
+   "gutenberg_id": 58186,
+   "title": "A Compendium on the Soul",
+   "author": "Avicenna",
+   "year": 1000,
+   "period": "medieval",
+   "tradition": "islamic-jewish-medieval",
+   "area": "metaphysics",
+   "original_language": "ar",
+   "translator": "Edward Abbott Van Dyck",
+   "genre": "treatise",
+   "text_start": {
+    "line": "SECTION FIRST"
+   }
+  },
+  {
+   "id": "maimonides-guide",
+   "gutenberg_id": 73584,
+   "title": "The guide for the perplexed",
+   "author": "Moses Maimonides",
+   "year": 1190,
+   "period": "medieval",
+   "tradition": "islamic-jewish-medieval",
+   "area": "religion",
+   "original_language": "ar",
+   "translator": "M. Friedländer",
+   "genre": "treatise",
+   "text_start": {
+    "line": "INTRODUCTION"
+   },
+   "text_end": {
+    "line": "NOTES"
+   }
+  },
+  {
+   "id": "laozi-tao-teh-king",
+   "gutenberg_id": 216,
+   "title": "The Tao Teh King, or the Tao and its Characteristics",
+   "author": "Laozi",
+   "year": -400,
+   "period": "ancient",
+   "tradition": "chinese-classical",
+   "area": "ethics",
+   "original_language": "zh",
+   "translator": "James Legge",
+   "genre": "aphorisms",
+   "text_start": {
+    "line": "PART 1\\."
+   }
+  },
+  {
+   "id": "confucius-sayings",
+   "gutenberg_id": 24055,
+   "title": "The Sayings of Confucius",
+   "author": "Confucius",
+   "year": -450,
+   "period": "ancient",
+   "tradition": "chinese-classical",
+   "area": "ethics",
+   "original_language": "zh",
+   "translator": "Leonard Arthur Lyall",
+   "genre": "aphorisms",
+   "text_start": {
+    "line": "THE SAYINGS OF CONFUCIUS",
+    "occurrence": 2
+   },
+   "text_end": {
+    "line": "INDEX"
+   }
+  },
+  {
+   "id": "zhuangzi-chuang-tzu",
+   "gutenberg_id": 59709,
+   "title": "Chuang Tzu: Mystic, Moralist, and Social Reformer",
+   "author": "Zhuangzi",
+   "year": -300,
+   "period": "ancient",
+   "tradition": "chinese-classical",
+   "area": "metaphysics",
+   "original_language": "zh",
+   "translator": "Herbert Allen Giles",
+   "genre": "essays",
+   "text_start": {
+    "line": "CHAPTER I\\."
+   }
+  },
+  {
+   "id": "machiavelli-prince",
+   "gutenberg_id": 1232,
+   "title": "The Prince",
+   "author": "Niccolò Machiavelli",
+   "year": 1513,
+   "period": "renaissance",
+   "tradition": "renaissance-humanist",
+   "area": "political",
+   "original_language": "it",
+   "translator": "W. K. Marriott",
+   "genre": "treatise",
+   "text_start": {
+    "line": "THE PRINCE",
+    "occurrence": 2
+   }
+  },
+  {
+   "id": "machiavelli-discourses",
+   "gutenberg_id": 10827,
+   "title": "Discourses on the First Decade of Titus Livius",
+   "author": "Niccolò Machiavelli",
+   "year": 1517,
+   "period": "renaissance",
+   "tradition": "renaissance-humanist",
+   "area": "political",
+   "original_language": "it",
+   "translator": "Ninian Hill Thomson",
+   "genre": "treatise",
+   "text_start": {
+    "line": "BOOK I\\.?",
+    "occurrence": 2
+   }
+  },
+  {
+   "id": "more-utopia",
+   "gutenberg_id": 2130,
+   "title": "Utopia",
+   "author": "Thomas More",
+   "year": 1516,
+   "period": "renaissance",
+   "tradition": "renaissance-humanist",
+   "area": "political",
+   "original_language": "la",
+   "translator": null,
+   "genre": "dialogue",
+   "translator_note": "The Gutenberg catalogue names no translator for this edition.",
+   "text_start": {
+    "line": "H\\. ?M\\."
+   }
+  },
+  {
+   "id": "bacon-novum-organum",
+   "gutenberg_id": 45988,
+   "title": "Novum organum",
+   "author": "Francis Bacon",
+   "year": 1620,
+   "period": "early-modern",
+   "tradition": "renaissance-humanist",
+   "area": "epistemology",
+   "original_language": "la",
+   "translator": null,
+   "genre": "aphorisms",
+   "translator_note": "The Gutenberg catalogue names no translator for this edition.",
+   "text_start": {
+    "line": "PREFACE"
+   },
+   "text_end": {
+    "line": "FOOTNOTES",
+    "occurrence": 2
+   }
+  },
+  {
+   "id": "bacon-advancement",
+   "gutenberg_id": 5500,
+   "title": "The Advancement of Learning",
+   "author": "Francis Bacon",
+   "year": 1605,
+   "period": "early-modern",
+   "tradition": "renaissance-humanist",
+   "area": "epistemology",
+   "original_language": "en",
+   "translator": null,
+   "genre": "treatise",
+   "text_start": {
+    "line": "FIRST BOOK OF FRANCIS BACON;"
+   }
+  },
+  {
+   "id": "montaigne-essays",
+   "gutenberg_id": 3600,
+   "title": "Essays of Michel de Montaigne — Complete",
+   "author": "Michel de Montaigne",
+   "year": 1580,
+   "period": "renaissance",
+   "tradition": "renaissance-humanist",
+   "area": "ethics",
+   "original_language": "fr",
+   "translator": "Charles Cotton",
+   "genre": "essays",
+   "text_start": {
+    "line": "CHAPTER I\\.?"
+   }
+  },
+  {
+   "id": "descartes-discourse",
+   "gutenberg_id": 59,
+   "title": "Discourse on the Method of Rightly Conducting One's Reason and of Seeking Truth in the Sciences",
+   "author": "René Descartes",
+   "year": 1637,
+   "period": "early-modern",
+   "tradition": "rationalist",
+   "area": "epistemology",
+   "original_language": "fr",
+   "translator": "John Veitch",
+   "genre": "treatise",
+   "text_start": {
+    "line": "PREFATORY NOTE BY THE AUTHOR"
+   }
+  },
+  {
+   "id": "descartes-meditations",
+   "gutenberg_id": 70091,
+   "title": "Six metaphysical meditations",
+   "author": "René Descartes",
+   "year": 1641,
+   "period": "early-modern",
+   "tradition": "rationalist",
+   "area": "metaphysics",
+   "original_language": "la",
+   "translator": "William Molyneux",
+   "genre": "meditations",
+   "text_start": {
+    "line": "MEDITAT\\. I\\."
+   }
+  },
+  {
+   "id": "spinoza-improvement",
+   "gutenberg_id": 1016,
+   "title": "On the Improvement of the Understanding",
+   "author": "Benedictus de Spinoza",
+   "year": 1662,
+   "period": "early-modern",
+   "tradition": "rationalist",
+   "area": "epistemology",
+   "original_language": "la",
+   "translator": "R. H. M. Elwes",
+   "genre": "treatise",
+   "text_end": {
+    "line": "Notes by Volunteer.*"
+   }
+  },
+  {
+   "id": "spinoza-theologico-political-1",
+   "gutenberg_id": 989,
+   "title": "Theologico-Political Treatise — Part 1",
+   "author": "Benedictus de Spinoza",
+   "year": 1670,
+   "period": "early-modern",
+   "tradition": "rationalist",
+   "area": "political",
+   "original_language": "la",
+   "translator": "R. H. M. Elwes",
+   "genre": "treatise",
+   "text_start": {
+    "line": "PREFACE\\.",
+    "occurrence": 2
+   }
+  },
+  {
+   "id": "leibniz-theodicy",
+   "gutenberg_id": 17147,
+   "title": "Theodicy Essays on the Goodness of God, the Freedom of Man and the Origin of Evil",
+   "author": "Gottfried Wilhelm Leibniz",
+   "year": 1710,
+   "period": "early-modern",
+   "tradition": "rationalist",
+   "area": "religion",
+   "original_language": "fr",
+   "translator": "E. M. Huggard",
+   "genre": "treatise",
+   "text_start": {
+    "line": "PREFACE"
+   },
+   "text_end": {
+    "line": "INDEX"
+   }
+  },
+  {
+   "id": "locke-essay-1",
+   "gutenberg_id": 10615,
+   "title": "An Essay Concerning Humane Understanding, Volume 1 MDCXC, Based on the 2nd Edition, Books 1 and 2",
+   "author": "John Locke",
+   "year": 1689,
+   "period": "early-modern",
+   "tradition": "empiricist",
+   "area": "epistemology",
+   "original_language": "en",
+   "translator": null,
+   "genre": "treatise",
+   "text_start": {
+    "line": "BOOK I\\.?"
+   }
+  },
+  {
+   "id": "berkeley-principles",
+   "gutenberg_id": 4723,
+   "title": "A Treatise Concerning the Principles of Human Knowledge",
+   "author": "George Berkeley",
+   "year": 1710,
+   "period": "early-modern",
+   "tradition": "empiricist",
+   "area": "metaphysics",
+   "original_language": "en",
+   "translator": null,
+   "genre": "treatise",
+   "text_start": {
+    "line": "INTRODUCTION",
+    "occurrence": 2
+   }
+  },
+  {
+   "id": "berkeley-three-dialogues",
+   "gutenberg_id": 4724,
+   "title": "Three Dialogues Between Hylas and Philonous in Opposition to Sceptics and Atheists",
+   "author": "George Berkeley",
+   "year": 1713,
+   "period": "early-modern",
+   "tradition": "empiricist",
+   "area": "metaphysics",
+   "original_language": "en",
+   "translator": null,
+   "genre": "dialogue"
+  },
+  {
+   "id": "hume-treatise",
+   "gutenberg_id": 4705,
+   "title": "A Treatise of Human Nature",
+   "author": "David Hume",
+   "year": 1739,
+   "period": "early-modern",
+   "tradition": "empiricist",
+   "area": "epistemology",
+   "original_language": "en",
+   "translator": null,
+   "genre": "treatise",
+   "text_start": {
+    "line": "INTRODUCTION\\."
+   }
+  },
+  {
+   "id": "hume-principles-of-morals",
+   "gutenberg_id": 4320,
+   "title": "An Enquiry Concerning the Principles of Morals",
+   "author": "David Hume",
+   "year": 1751,
+   "period": "early-modern",
+   "tradition": "empiricist",
+   "area": "ethics",
+   "original_language": "en",
+   "translator": null,
+   "genre": "treatise",
+   "text_start": {
+    "line": "AN ENQUIRY CONCERNING THE PRINCIPLES OF MORALS\\.?",
+    "occurrence": 3
+   }
+  },
+  {
+   "id": "hume-dialogues-religion",
+   "gutenberg_id": 4583,
+   "title": "Dialogues Concerning Natural Religion",
+   "author": "David Hume",
+   "year": 1779,
+   "period": "early-modern",
+   "tradition": "empiricist",
+   "area": "religion",
+   "original_language": "en",
+   "translator": null,
+   "genre": "dialogue"
+  },
+  {
+   "id": "smith-moral-sentiments",
+   "gutenberg_id": 67363,
+   "title": "The Theory of Moral Sentiments Or, an Essay Towards an Analysis of the Principles by Which Men Naturally Judge Concerning the Conduct and Character, First of Their Neighbours, and Afterwards of Themselves. to Which Is Added, a Dissertation on the Origin of Languages.",
+   "author": "Adam Smith",
+   "year": 1759,
+   "period": "enlightenment",
+   "tradition": "british-moralist",
+   "area": "ethics",
+   "original_language": "en",
+   "translator": null,
+   "genre": "treatise"
+  },
+  {
+   "id": "mandeville-fable-of-the-bees",
+   "gutenberg_id": 57260,
+   "title": "The Fable of the Bees; Or, Private Vices, Public Benefits",
+   "author": "Bernard Mandeville",
+   "year": 1714,
+   "period": "early-modern",
+   "tradition": "british-moralist",
+   "area": "ethics",
+   "original_language": "en",
+   "translator": null,
+   "genre": "essays",
+   "text_start": {
+    "line": "PREFACE\\."
+   },
+   "text_end": {
+    "line": "NOTES\\.?"
+   }
+  },
+  {
+   "id": "butler-human-nature",
+   "gutenberg_id": 3150,
+   "title": "Human Nature, and Other Sermons",
+   "author": "Joseph Butler",
+   "year": 1726,
+   "period": "early-modern",
+   "tradition": "british-moralist",
+   "area": "ethics",
+   "original_language": "en",
+   "translator": null,
+   "genre": "sermons",
+   "text_start": {
+    "line": "SERMON I\\.? .*"
+   }
+  },
+  {
+   "id": "rousseau-inequality",
+   "gutenberg_id": 11136,
+   "title": "A Discourse Upon the Origin and the Foundation of the Inequality Among Mankind",
+   "author": "Jean-Jacques Rousseau",
+   "year": 1755,
+   "period": "enlightenment",
+   "tradition": "french-enlightenment",
+   "area": "political",
+   "original_language": "fr",
+   "translator": null,
+   "genre": "treatise",
+   "translator_note": "The Gutenberg catalogue names no translator for this edition.",
+   "text_start": {
+    "line": "QUESTION PROPOSED BY THE ACADEMY OF DIJON"
+   }
+  },
+  {
+   "id": "voltaire-philosophical-dictionary",
+   "gutenberg_id": 18569,
+   "title": "Voltaire's Philosophical Dictionary",
+   "author": "Voltaire",
+   "year": 1764,
+   "period": "enlightenment",
+   "tradition": "french-enlightenment",
+   "area": "religion",
+   "original_language": "fr",
+   "translator": null,
+   "genre": "dictionary",
+   "translator_note": "The Gutenberg catalogue names no translator for this edition."
+  },
+  {
+   "id": "tocqueville-democracy-1",
+   "gutenberg_id": 815,
+   "title": "Democracy in America — Volume 1",
+   "author": "Alexis de Tocqueville",
+   "year": 1835,
+   "period": "nineteenth-century",
+   "tradition": "french-enlightenment",
+   "area": "political",
+   "original_language": "fr",
+   "translator": "Henry Reeve",
+   "genre": "treatise",
+   "text_start": {
+    "line": "Introductory Chapter",
+    "occurrence": 2
+   }
+  },
+  {
+   "id": "paine-common-sense",
+   "gutenberg_id": 147,
+   "title": "Common Sense",
+   "author": "Thomas Paine",
+   "year": 1776,
+   "period": "enlightenment",
+   "tradition": "liberal-utilitarian",
+   "area": "political",
+   "original_language": "en",
+   "translator": null,
+   "genre": "pamphlet",
+   "text_start": {
+    "line": "INTRODUCTION\\."
+   }
+  },
+  {
+   "id": "paine-rights-of-man",
+   "gutenberg_id": 3742,
+   "title": "The Writings of Thomas Paine — Volume 2 (1779-1792): The Rights of Man",
+   "author": "Thomas Paine",
+   "year": 1791,
+   "period": "enlightenment",
+   "tradition": "liberal-utilitarian",
+   "area": "political",
+   "original_language": "en",
+   "translator": null,
+   "genre": "treatise",
+   "text_start": {
+    "line": "RIGHTS OF MAN"
+   }
+  },
+  {
+   "id": "wollstonecraft-rights-of-woman",
+   "gutenberg_id": 3420,
+   "title": "A Vindication of the Rights of Woman With Strictures on Political and Moral Subjects",
+   "author": "Mary Wollstonecraft",
+   "year": 1792,
+   "period": "enlightenment",
+   "tradition": "liberal-utilitarian",
+   "area": "political",
+   "original_language": "en",
+   "translator": null,
+   "genre": "treatise",
+   "text_start": {
+    "line": "INTRODUCTION\\.",
+    "occurrence": 2
+   }
+  },
+  {
+   "id": "mill-utilitarianism",
+   "gutenberg_id": 11224,
+   "title": "Utilitarianism",
+   "author": "John Stuart Mill",
+   "year": 1863,
+   "period": "nineteenth-century",
+   "tradition": "liberal-utilitarian",
+   "area": "ethics",
+   "original_language": "en",
+   "translator": null,
+   "genre": "treatise",
+   "text_start": {
+    "line": "CHAPTER I\\."
+   },
+   "text_end": {
+    "line": "THE END\\.?"
+   }
+  },
+  {
+   "id": "mill-representative-government",
+   "gutenberg_id": 5669,
+   "title": "Considerations on Representative Government",
+   "author": "John Stuart Mill",
+   "year": 1861,
+   "period": "nineteenth-century",
+   "tradition": "liberal-utilitarian",
+   "area": "political",
+   "original_language": "en",
+   "translator": null,
+   "genre": "treatise",
+   "text_start": {
+    "line": "Preface"
+   },
+   "text_end": {
+    "line": "Footnotes:"
+   }
+  },
+  {
+   "id": "mill-subjection-of-women",
+   "gutenberg_id": 27083,
+   "title": "The Subjection of Women",
+   "author": "John Stuart Mill",
+   "year": 1869,
+   "period": "nineteenth-century",
+   "tradition": "liberal-utilitarian",
+   "area": "political",
+   "original_language": "en",
+   "translator": null,
+   "genre": "treatise",
+   "text_start": {
+    "line": "CHAPTER I\\.?"
+   },
+   "text_end": {
+    "line": "THE END\\.?"
+   }
+  },
+  {
+   "id": "sidgwick-methods-of-ethics",
+   "gutenberg_id": 46743,
+   "title": "The Methods of Ethics",
+   "author": "Henry Sidgwick",
+   "year": 1874,
+   "period": "nineteenth-century",
+   "tradition": "liberal-utilitarian",
+   "area": "ethics",
+   "original_language": "en",
+   "translator": null,
+   "genre": "treatise",
+   "text_start": {
+    "line": "BOOK I",
+    "occurrence": 2
+   },
+   "text_end": {
+    "line": "INDEX"
+   }
+  },
+  {
+   "id": "spencer-data-of-ethics",
+   "gutenberg_id": 46129,
+   "title": "The Data of Ethics",
+   "author": "Herbert Spencer",
+   "year": 1879,
+   "period": "nineteenth-century",
+   "tradition": "positivist-evolutionary",
+   "area": "ethics",
+   "original_language": "en",
+   "translator": null,
+   "genre": "treatise",
+   "text_start": {
+    "line": "CHAPTER I\\."
+   },
+   "text_end": {
+    "line": "FOOTNOTES:"
+   }
+  },
+  {
+   "id": "comte-general-view-positivism",
+   "gutenberg_id": 53799,
+   "title": "A General View of Positivism Or, Summary exposition of the System of Thought and Life",
+   "author": "Auguste Comte",
+   "year": 1848,
+   "period": "nineteenth-century",
+   "tradition": "positivist-evolutionary",
+   "area": "epistemology",
+   "original_language": "fr",
+   "translator": "John Henry Bridges",
+   "genre": "treatise",
+   "text_start": {
+    "line": "INTRODUCTORY REMARKS"
+   },
+   "text_end": {
+    "line": "FOOTNOTES"
+   }
+  },
+  {
+   "id": "huxley-evolution-and-ethics",
+   "gutenberg_id": 2940,
+   "title": "Evolution and Ethics, and Other Essays",
+   "author": "Thomas Henry Huxley",
+   "year": 1893,
+   "period": "nineteenth-century",
+   "tradition": "positivist-evolutionary",
+   "area": "ethics",
+   "original_language": "en",
+   "translator": null,
+   "genre": "essays",
+   "text_start": {
+    "line": "PREFACE"
+   }
+  },
+  {
+   "id": "kant-pure-reason",
+   "gutenberg_id": 4280,
+   "title": "The Critique of Pure Reason",
+   "author": "Immanuel Kant",
+   "year": 1781,
+   "period": "enlightenment",
+   "tradition": "german-idealist",
+   "area": "epistemology",
+   "original_language": "de",
+   "translator": "J. M. D. Meiklejohn",
+   "genre": "treatise",
+   "text_start": {
+    "line": "PREFACE TO THE FIRST EDITION.*"
+   }
+  },
+  {
+   "id": "kant-practical-reason",
+   "gutenberg_id": 5683,
+   "title": "The Critique of Practical Reason",
+   "author": "Immanuel Kant",
+   "year": 1788,
+   "period": "enlightenment",
+   "tradition": "german-idealist",
+   "area": "ethics",
+   "original_language": "de",
+   "translator": "Thomas Kingsmill Abbott",
+   "genre": "treatise",
+   "text_start": {
+    "line": "PREFACE\\."
+   }
+  },
+  {
+   "id": "kant-judgement",
+   "gutenberg_id": 48433,
+   "title": "Kant's Critique of Judgement",
+   "author": "Immanuel Kant",
+   "year": 1790,
+   "period": "enlightenment",
+   "tradition": "german-idealist",
+   "area": "aesthetics",
+   "original_language": "de",
+   "translator": "J. H. Bernard",
+   "genre": "treatise",
+   "text_start": {
+    "line": "PREFACE"
+   },
+   "text_end": {
+    "line": "FOOTNOTES:"
+   }
+  },
+  {
+   "id": "kant-prolegomena",
+   "gutenberg_id": 52821,
+   "title": "Kant's Prolegomena to Any Future Metaphysics",
+   "author": "Immanuel Kant",
+   "year": 1783,
+   "period": "enlightenment",
+   "tradition": "german-idealist",
+   "area": "epistemology",
+   "original_language": "de",
+   "translator": null,
+   "genre": "treatise",
+   "translator_note": "The Gutenberg catalogue names no translator for this edition.",
+   "text_start": {
+    "line": "INTRODUCTION\\.",
+    "occurrence": 2
+   }
+  },
+  {
+   "id": "kant-perpetual-peace",
+   "gutenberg_id": 50922,
+   "title": "Perpetual Peace: A Philosophical Essay",
+   "author": "Immanuel Kant",
+   "year": 1795,
+   "period": "enlightenment",
+   "tradition": "german-idealist",
+   "area": "political",
+   "original_language": "de",
+   "translator": "Mary Campbell Smith",
+   "genre": "essay",
+   "text_start": {
+    "line": "PERPETUAL PEACE",
+    "occurrence": 3
+   },
+   "text_end": {
+    "line": "INDEX"
+   }
+  },
+  {
+   "id": "hegel-philosophy-of-mind",
+   "gutenberg_id": 39064,
+   "title": "Hegel's Philosophy of Mind",
+   "author": "Georg Wilhelm Friedrich Hegel",
+   "year": 1830,
+   "period": "nineteenth-century",
+   "tradition": "german-idealist",
+   "area": "metaphysics",
+   "original_language": "de",
+   "translator": "William Wallace",
+   "genre": "treatise",
+   "text_start": {
+    "line": "INTRODUCTION\\."
+   },
+   "text_end": {
+    "line": "INDEX\\."
+   }
+  },
+  {
+   "id": "hegel-logic",
+   "gutenberg_id": 55108,
+   "title": "The Logic of Hegel",
+   "author": "Georg Wilhelm Friedrich Hegel",
+   "year": 1830,
+   "period": "nineteenth-century",
+   "tradition": "german-idealist",
+   "area": "logic",
+   "original_language": "de",
+   "translator": "William Wallace",
+   "genre": "treatise",
+   "text_start": {
+    "line": "CHAPTER I\\.",
+    "occurrence": 2
+   },
+   "text_end": {
+    "line": "NOTES AND ILLUSTRATIONS.*"
+   }
+  },
+  {
+   "id": "schopenhauer-will-and-idea-1",
+   "gutenberg_id": 38427,
+   "title": "The World as Will and Idea (Vol. 1 of 3)",
+   "author": "Arthur Schopenhauer",
+   "year": 1818,
+   "period": "nineteenth-century",
+   "tradition": "voluntarist-pessimist",
+   "area": "metaphysics",
+   "original_language": "de",
+   "translator": "R. B. Haldane and J. Kemp",
+   "genre": "treatise",
+   "text_start": {
+    "line": "PREFACE TO THE FIRST EDITION\\."
+   },
+   "text_end": {
+    "line": "FOOTNOTES"
+   }
+  },
+  {
+   "id": "schopenhauer-pessimism",
+   "gutenberg_id": 10732,
+   "title": "The Essays of Arthur Schopenhauer; Studies in Pessimism",
+   "author": "Arthur Schopenhauer",
+   "year": 1851,
+   "period": "nineteenth-century",
+   "tradition": "voluntarist-pessimist",
+   "area": "ethics",
+   "original_language": "de",
+   "translator": "T. Bailey Saunders",
+   "genre": "essays",
+   "text_start": {
+    "line": "ON THE SUFFERINGS OF THE WORLD\\.?",
+    "occurrence": 2
+   }
+  },
+  {
+   "id": "schopenhauer-wisdom-of-life",
+   "gutenberg_id": 10741,
+   "title": "The Essays of Arthur Schopenhauer: the Wisdom of Life",
+   "author": "Arthur Schopenhauer",
+   "year": 1851,
+   "period": "nineteenth-century",
+   "tradition": "voluntarist-pessimist",
+   "area": "ethics",
+   "original_language": "de",
+   "translator": "T. Bailey Saunders",
+   "genre": "essays",
+   "text_start": {
+    "line": "INTRODUCTION\\."
+   }
+  },
+  {
+   "id": "nietzsche-zarathustra",
+   "gutenberg_id": 1998,
+   "title": "Thus Spake Zarathustra: A Book for All and None",
+   "author": "Friedrich Wilhelm Nietzsche",
+   "year": 1883,
+   "period": "nineteenth-century",
+   "tradition": "existentialist",
+   "area": "existential",
+   "original_language": "de",
+   "translator": "Thomas Common",
+   "genre": "prose-poem",
+   "text_start": {
+    "line": "THUS SPAKE ZARATHUSTRA\\.?",
+    "occurrence": 3
+   },
+   "text_end": {
+    "line": "APPENDIX\\.?"
+   }
+  },
+  {
+   "id": "nietzsche-joyful-wisdom",
+   "gutenberg_id": 52881,
+   "title": "The Joyful Wisdom (\"La Gaya Scienza\")",
+   "author": "Friedrich Wilhelm Nietzsche",
+   "year": 1882,
+   "period": "nineteenth-century",
+   "tradition": "existentialist",
+   "area": "existential",
+   "original_language": "de",
+   "translator": "Paul V. Cohn and Thomas Common and Maude Dominica Petre",
+   "genre": "aphorisms",
+   "text_start": {
+    "line": "PREFACE TO THE SECOND.*",
+    "occurrence": 2
+   },
+   "text_end": {
+    "line": "FOOTNOTES:"
+   }
+  },
+  {
+   "id": "nietzsche-antichrist",
+   "gutenberg_id": 19322,
+   "title": "The Antichrist",
+   "author": "Friedrich Wilhelm Nietzsche",
+   "year": 1888,
+   "period": "nineteenth-century",
+   "tradition": "existentialist",
+   "area": "religion",
+   "original_language": "de",
+   "translator": "H. L. Mencken",
+   "genre": "polemic",
+   "text_start": {
+    "line": "PREFACE"
+   },
+   "text_end": {
+    "line": "THE END\\.?"
+   }
+  },
+  {
+   "id": "nietzsche-birth-of-tragedy",
+   "gutenberg_id": 51356,
+   "title": "The Birth of Tragedy; or, Hellenism and Pessimism",
+   "author": "Friedrich Wilhelm Nietzsche",
+   "year": 1872,
+   "period": "nineteenth-century",
+   "tradition": "existentialist",
+   "area": "aesthetics",
+   "original_language": "de",
+   "translator": "William A. Haussmann",
+   "genre": "treatise",
+   "text_start": {
+    "line": "THE BIRTH OF TRAGEDY\\.?",
+    "occurrence": 2
+   },
+   "text_end": {
+    "line": "APPENDIX\\."
+   }
+  },
+  {
+   "id": "nietzsche-genealogy",
+   "gutenberg_id": 52319,
+   "title": "The Genealogy of Morals The Complete Works, Volume Thirteen, edited by Dr. Oscar Levy.",
+   "author": "Friedrich Wilhelm Nietzsche",
+   "year": 1887,
+   "period": "nineteenth-century",
+   "tradition": "existentialist",
+   "area": "ethics",
+   "original_language": "de",
+   "translator": "J. M. Kennedy and Horace Barnett Samuel",
+   "genre": "treatise",
+   "text_start": {
+    "line": "PREFACE\\."
+   }
+  },
+  {
+   "id": "unamuno-tragic-sense",
+   "gutenberg_id": 14636,
+   "title": "Tragic Sense Of Life",
+   "author": "Miguel de Unamuno",
+   "year": 1912,
+   "period": "twentieth-century",
+   "tradition": "existentialist",
+   "area": "existential",
+   "original_language": "es",
+   "translator": "J. E. Crawford Flitch",
+   "genre": "essays",
+   "text_start": {
+    "line": "I",
+    "occurrence": 2
+   },
+   "text_end": {
+    "line": "INDEX"
+   }
+  },
+  {
+   "id": "marx-engels-manifesto",
+   "gutenberg_id": 61,
+   "title": "The Communist Manifesto",
+   "author": "Karl Marx and Friedrich Engels",
+   "year": 1848,
+   "period": "nineteenth-century",
+   "tradition": "socialist-anarchist",
+   "area": "political",
+   "original_language": "de",
+   "translator": null,
+   "genre": "pamphlet",
+   "translator_note": "The Gutenberg catalogue names no translator for this edition."
+  },
+  {
+   "id": "engels-socialism",
+   "gutenberg_id": 39257,
+   "title": "Socialism, Utopian and Scientific",
+   "author": "Friedrich Engels",
+   "year": 1880,
+   "period": "nineteenth-century",
+   "tradition": "socialist-anarchist",
+   "area": "political",
+   "original_language": "de",
+   "translator": "Edward B. Aveling",
+   "genre": "pamphlet",
+   "text_start": {
+    "line": "INTRODUCTION"
+   }
+  },
+  {
+   "id": "bakunin-god-and-state",
+   "gutenberg_id": 36568,
+   "title": "God and the State",
+   "author": "Mikhail Aleksandrovich Bakunin",
+   "year": 1871,
+   "period": "nineteenth-century",
+   "tradition": "socialist-anarchist",
+   "area": "political",
+   "original_language": "fr",
+   "translator": null,
+   "genre": "polemic",
+   "translator_note": "The Gutenberg catalogue names no translator for this edition.",
+   "text_start": {
+    "line": "GOD AND THE STATE",
+    "occurrence": 3
+   },
+   "text_end": {
+    "line": "CONTENTS"
+   }
+  },
+  {
+   "id": "kropotkin-conquest-of-bread",
+   "gutenberg_id": 23428,
+   "title": "The Conquest of Bread",
+   "author": "Petr Alekseevich Kropotkin",
+   "year": 1892,
+   "period": "nineteenth-century",
+   "tradition": "socialist-anarchist",
+   "area": "political",
+   "original_language": "fr",
+   "translator": null,
+   "genre": "treatise",
+   "translator_note": "The Gutenberg catalogue names no translator for this edition.",
+   "text_start": {
+    "line": "PREFACE"
+   }
+  },
+  {
+   "id": "proudhon-what-is-property",
+   "gutenberg_id": 360,
+   "title": "What is Property? An Inquiry into the Principle of Right and of Government",
+   "author": "P.-J. Proudhon",
+   "year": 1840,
+   "period": "nineteenth-century",
+   "tradition": "socialist-anarchist",
+   "area": "political",
+   "original_language": "fr",
+   "translator": null,
+   "genre": "treatise",
+   "translator_note": "The Gutenberg catalogue names no translator for this edition.",
+   "text_start": {
+    "line": "PREFACE\\."
+   },
+   "text_end": {
+    "line": "FOOTNOTES:"
+   }
+  },
+  {
+   "id": "goldman-anarchism",
+   "gutenberg_id": 2162,
+   "title": "Anarchism and Other Essays",
+   "author": "Emma Goldman",
+   "year": 1910,
+   "period": "twentieth-century",
+   "tradition": "socialist-anarchist",
+   "area": "political",
+   "original_language": "en",
+   "translator": null,
+   "genre": "essays",
+   "text_start": {
+    "line": "PREFACE"
+   }
+  },
+  {
+   "id": "stirner-ego",
+   "gutenberg_id": 34580,
+   "title": "The Ego and His Own",
+   "author": "Max Stirner",
+   "year": 1844,
+   "period": "nineteenth-century",
+   "tradition": "socialist-anarchist",
+   "area": "existential",
+   "original_language": "de",
+   "translator": "Steven T. Byington",
+   "genre": "treatise",
+   "text_start": {
+    "line": "THE EGO AND HIS OWN\\.?"
+   },
+   "text_end": {
+    "line": "THE END\\.?"
+   }
+  },
+  {
+   "id": "james-pragmatism",
+   "gutenberg_id": 5116,
+   "title": "Pragmatism: A New Name for Some Old Ways of Thinking",
+   "author": "William James",
+   "year": 1907,
+   "period": "twentieth-century",
+   "tradition": "american-pragmatist",
+   "area": "epistemology",
+   "original_language": "en",
+   "translator": null,
+   "genre": "lectures",
+   "text_start": {
+    "line": "Preface"
+   }
+  },
+  {
+   "id": "james-will-to-believe",
+   "gutenberg_id": 26659,
+   "title": "The Will to Believe, and Other Essays in Popular Philosophy",
+   "author": "William James",
+   "year": 1897,
+   "period": "nineteenth-century",
+   "tradition": "american-pragmatist",
+   "area": "religion",
+   "original_language": "en",
+   "translator": null,
+   "genre": "essays",
+   "text_start": {
+    "line": "PREFACE\\."
+   },
+   "text_end": {
+    "line": "INDEX\\."
+   }
+  },
+  {
+   "id": "james-varieties",
+   "gutenberg_id": 621,
+   "title": "The Varieties of Religious Experience: A Study in Human Nature",
+   "author": "William James",
+   "year": 1902,
+   "period": "twentieth-century",
+   "tradition": "american-pragmatist",
+   "area": "religion",
+   "original_language": "en",
+   "translator": null,
+   "genre": "lectures",
+   "text_start": {
+    "line": "PREFACE\\."
+   },
+   "text_end": {
+    "line": "INDEX\\."
+   }
+  },
+  {
+   "id": "dewey-reconstruction",
+   "gutenberg_id": 40089,
+   "title": "Reconstruction in Philosophy",
+   "author": "John Dewey",
+   "year": 1920,
+   "period": "twentieth-century",
+   "tradition": "american-pragmatist",
+   "area": "epistemology",
+   "original_language": "en",
+   "translator": null,
+   "genre": "lectures",
+   "text_start": {
+    "line": "CHAPTER I"
+   },
+   "text_end": {
+    "line": "INDEX"
+   }
+  },
+  {
+   "id": "dewey-human-nature-conduct",
+   "gutenberg_id": 41386,
+   "title": "Human Nature and Conduct: An introduction to social psychology",
+   "author": "John Dewey",
+   "year": 1922,
+   "period": "twentieth-century",
+   "tradition": "american-pragmatist",
+   "area": "ethics",
+   "original_language": "en",
+   "translator": null,
+   "genre": "treatise",
+   "text_start": {
+    "line": "PREFACE"
+   },
+   "text_end": {
+    "line": "INDEX"
+   }
+  },
+  {
+   "id": "peirce-chance-love-logic",
+   "gutenberg_id": 65274,
+   "title": "Chance, Love, and Logic: Philosophical Essays",
+   "author": "Charles S. Peirce",
+   "year": 1878,
+   "period": "nineteenth-century",
+   "tradition": "american-pragmatist",
+   "area": "logic",
+   "original_language": "en",
+   "translator": null,
+   "genre": "essays",
+   "text_start": {
+    "line": "PROEM"
+   },
+   "text_end": {
+    "line": "THE PRAGMATISM OF PEIRCE"
+   }
+  },
+  {
+   "id": "santayana-life-of-reason",
+   "gutenberg_id": 15000,
+   "title": "The Life of Reason: The Phases of Human Progress",
+   "author": "George Santayana",
+   "year": 1905,
+   "period": "twentieth-century",
+   "tradition": "american-pragmatist",
+   "area": "ethics",
+   "original_language": "en",
+   "translator": null,
+   "genre": "treatise"
+  },
+  {
+   "id": "emerson-essays-first",
+   "gutenberg_id": 2944,
+   "title": "Essays — First Series",
+   "author": "Ralph Waldo Emerson",
+   "year": 1841,
+   "period": "nineteenth-century",
+   "tradition": "american-pragmatist",
+   "area": "ethics",
+   "original_language": "en",
+   "translator": null,
+   "genre": "essays",
+   "text_start": {
+    "line": "I\\."
+   }
+  },
+  {
+   "id": "thoreau-walden",
+   "gutenberg_id": 205,
+   "title": "Walden, and On The Duty Of Civil Disobedience",
+   "author": "Henry David Thoreau",
+   "year": 1854,
+   "period": "nineteenth-century",
+   "tradition": "american-pragmatist",
+   "area": "ethics",
+   "original_language": "en",
+   "translator": null,
+   "genre": "essays",
+   "text_start": {
+    "line": "Economy",
+    "occurrence": 2
+   }
+  },
+  {
+   "id": "russell-problems",
+   "gutenberg_id": 5827,
+   "title": "The Problems of Philosophy",
+   "author": "Bertrand Russell",
+   "year": 1912,
+   "period": "twentieth-century",
+   "tradition": "analytic",
+   "area": "epistemology",
+   "original_language": "en",
+   "translator": null,
+   "genre": "treatise"
+  },
+  {
+   "id": "russell-analysis-of-mind",
+   "gutenberg_id": 2529,
+   "title": "The Analysis of Mind",
+   "author": "Bertrand Russell",
+   "year": 1921,
+   "period": "twentieth-century",
+   "tradition": "analytic",
+   "area": "epistemology",
+   "original_language": "en",
+   "translator": null,
+   "genre": "lectures",
+   "text_start": {
+    "line": "PREFACE"
+   }
+  },
+  {
+   "id": "russell-mysticism-and-logic",
+   "gutenberg_id": 25447,
+   "title": "Mysticism and Logic and Other Essays",
+   "author": "Bertrand Russell",
+   "year": 1918,
+   "period": "twentieth-century",
+   "tradition": "analytic",
+   "area": "logic",
+   "original_language": "en",
+   "translator": null,
+   "genre": "essays",
+   "text_start": {
+    "line": "PREFACE"
+   },
+   "text_end": {
+    "line": "INDEX"
+   }
+  },
+  {
+   "id": "moore-principia-ethica",
+   "gutenberg_id": 53430,
+   "title": "Principia Ethica",
+   "author": "G. E. Moore",
+   "year": 1903,
+   "period": "twentieth-century",
+   "tradition": "analytic",
+   "area": "ethics",
+   "original_language": "en",
+   "translator": null,
+   "genre": "treatise",
+   "text_start": {
+    "line": "PREFACE\\."
+   },
+   "text_end": {
+    "line": "INDEX\\."
+   }
+  },
+  {
+   "id": "whitehead-concept-of-nature",
+   "gutenberg_id": 18835,
+   "title": "The Concept of Nature The Tarner Lectures Delivered in Trinity College, November 1919",
+   "author": "Alfred North Whitehead",
+   "year": 1920,
+   "period": "twentieth-century",
+   "tradition": "analytic",
+   "area": "metaphysics",
+   "original_language": "en",
+   "translator": null,
+   "genre": "lectures",
+   "text_start": {
+    "line": "PREFACE"
+   },
+   "text_end": {
+    "line": "INDEX"
+   }
+  },
+  {
+   "id": "bergson-creative-evolution",
+   "gutenberg_id": 26163,
+   "title": "Creative Evolution",
+   "author": "Henri Bergson",
+   "year": 1907,
+   "period": "twentieth-century",
+   "tradition": "vitalist-idealist",
+   "area": "metaphysics",
+   "original_language": "fr",
+   "translator": "Arthur Mitchell",
+   "genre": "treatise",
+   "text_start": {
+    "line": "INTRODUCTION"
+   },
+   "text_end": {
+    "line": "INDEX"
+   }
+  },
+  {
+   "id": "bergson-time-and-free-will",
+   "gutenberg_id": 56852,
+   "title": "Time and Free Will: An Essay on the Immediate Data of Consciousness",
+   "author": "Henri Bergson",
+   "year": 1889,
+   "period": "nineteenth-century",
+   "tradition": "vitalist-idealist",
+   "area": "metaphysics",
+   "original_language": "fr",
+   "translator": "Frank Lubecki Pogson",
+   "genre": "treatise",
+   "text_start": {
+    "line": "CHAPTER I",
+    "occurrence": 2
+   }
+  },
+  {
+   "id": "croce-aesthetic",
+   "gutenberg_id": 9306,
+   "title": "Aesthetic as Science of Expression and General Linguistic",
+   "author": "Benedetto Croce",
+   "year": 1902,
+   "period": "twentieth-century",
+   "tradition": "vitalist-idealist",
+   "area": "aesthetics",
+   "original_language": "it",
+   "translator": "Douglas Ainslie",
+   "genre": "treatise",
+   "text_start": {
+    "line": "I",
+    "occurrence": 2
+   }
+  }
+ ]
+}

@@ -6,14 +6,13 @@
  */
 import { useEffect, useMemo, useState } from 'react'
 import { l } from '../../i18n'
-import MultiLineChart from '../../charts/MultiLineChart'
 import { fetchJson } from '../../welfare/data'
-import TaxRanking from '../features/TaxRanking'
+import { Dumbbell } from '../../charts/Compare'
+import MultiLineChart from '../../charts/MultiLineChart'
 import type { Route } from '../../router'
-import { Board, Card, Cards, Empty, Kpi, Kpis } from '../board/Board'
+import { Board, Card, Cards, Empty } from '../board/Board'
 import { Select, num, pct } from '../controls'
 import { useViewParams } from '../useViewParams'
-import TaxCalculator, { type Municipalities } from '../../taxes/TaxCalculator'
 import '../../taxes/taxes.css'
 import './skatter.css'
 
@@ -38,34 +37,6 @@ type Countries = {
   source: string
 }
 
-/** The pieces a country's total is made of, in a fixed order and colour. */
-const MIX: { code: string; en: string; sv: string; color: string }[] = [
-  {
-    code: 'T_1100',
-    en: 'Personal income',
-    sv: 'Inkomstskatt',
-    color: '#1f5f8b',
-  },
-  { code: 'T_1200', en: 'Corporate', sv: 'Bolagsskatt', color: '#6aa6d6' },
-  {
-    code: 'T_1000x',
-    en: 'Other income',
-    sv: 'Övrig inkomst',
-    color: '#b9d3e8',
-  },
-  {
-    code: 'T_2000',
-    en: 'Social security',
-    sv: 'Socialavgifter',
-    color: '#2c7a4b',
-  },
-  { code: 'T_3000', en: 'Payroll', sv: 'Löneskatter', color: '#8cc084' },
-  { code: 'T_4000', en: 'Property', sv: 'Egendom', color: '#b07a2a' },
-  { code: 'T_5111', en: 'VAT', sv: 'Moms', color: '#c8553d' },
-  { code: 'T_5000x', en: 'Other goods', sv: 'Övriga varor', color: '#eaa58f' },
-  { code: 'T_6000', en: 'Other', sv: 'Övrigt', color: '#9aa3a8' },
-]
-
 const GROUPS = [
   { value: 'oecd', en: 'All OECD', sv: 'Hela OECD' },
   { value: 'eu', en: 'EU countries', sv: 'EU-länder' },
@@ -80,15 +51,6 @@ export default function SkatterTheme({ route }: { route: Route }) {
   const [data, setData] = useState<Countries | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [view, setView] = useViewParams(route, DEFAULTS)
-  const [hover, setHover] = useState<string | null>(null)
-  const [municipalities, setMunicipalities] = useState<Municipalities | null>(
-    null,
-  )
-  useEffect(() => {
-    fetchJson<Municipalities>('taxes/municipalities.json')
-      .then(setMunicipalities)
-      .catch(() => setMunicipalities(null))
-  }, [])
   useEffect(() => {
     fetchJson<Countries>('taxes/countries.json')
       .then(setData)
@@ -181,53 +143,15 @@ export default function SkatterTheme({ route }: { route: Route }) {
   )
 
   const types = data.types.map((t) => t.tax_code)
-  const sweTotal = get('SWE', '_T') ?? 0
-  const avgTotal = mean('_T') ?? 0
-  const top = [...present].sort(
-    (a, b) =>
-      (get(b.country_code, '_T') ?? 0) - (get(a.country_code, '_T') ?? 0),
-  )[0]
-
-  // The mix per country, largest total first.
-  const mixRows = [...present]
-    .map((c) => ({
-      country: c,
-      total: get(c.country_code, '_T') ?? 0,
-      parts: MIX.map((m) => get(c.country_code, m.code) ?? 0),
-    }))
-    .sort((a, b) => b.total - a.total)
-  const mixMax = Math.max(...mixRows.map((r) => r.total), 1)
-
-  const chosen = view.skatt
-  const overTime = [
-    {
-      key: 'SWE',
-      name: l('Sweden', 'Sverige'),
-      points: model.years
-        .slice()
-        .reverse()
-        .map((y) => ({ y, v: get('SWE', chosen, y) }))
-        .filter((p): p is { y: number; v: number } => p.v != null)
-        .map((p) => ({ date: `${p.y}-07-01`, label: String(p.y), value: p.v })),
-    },
-    {
-      key: 'avg',
-      name: l('Average', 'Snitt'),
-      points: model.years
-        .slice()
-        .reverse()
-        .map((y) => ({ y, v: mean(chosen, y) }))
-        .filter((p): p is { y: number; v: number } => p.v != null)
-        .map((p) => ({ date: `${p.y}-07-01`, label: String(p.y), value: p.v })),
-    },
-  ]
+  // The countries Sweden is most often set beside.
+  const beside = ['DNK', 'NOR', 'FIN', 'DEU'].flatMap((code) =>
+    data.countries.filter((c) => c.country_code === code),
+  )
 
   return (
     <Board
-      title={l(
-        'How do Sweden’s taxes compare?',
-        'Hur står sig Sveriges skatter?',
-      )}
+      level={2}
+      title={l('Taxes', 'Skatter')}
       sub={l(
         `Every kind of tax as a share of GDP, ${year}. Sweden against ${present.length} countries. Hover a dot to see the country.`,
         `Varje typ av skatt som andel av BNP, ${year}. Sverige mot ${present.length} länder. Hovra över en punkt för att se landet.`,
@@ -257,209 +181,73 @@ export default function SkatterTheme({ route }: { route: Route }) {
         </>
       }
     >
-      <TaxRanking />
-      <Kpis>
-        <Kpi
-          index={0}
-          label={l('Sweden, all taxes', 'Sverige, alla skatter')}
-          value={sweTotal}
-          format={(v) => pct(v)}
-          sub={l('of GDP', 'av BNP')}
-        />
-        <Kpi
-          index={1}
-          label={l('Place', 'Placering')}
-          value={rankOf('_T') ?? 0}
-          format={(v) => `${num(v)} / ${present.length}`}
-          sub={l('highest first', 'högst först')}
-        />
-        <Kpi
-          index={3}
-          label={l('Sweden against the average', 'Sverige mot snittet')}
-          value={sweTotal - avgTotal}
-          format={(v) => `${v >= 0 ? '+' : '−'}${num(Math.abs(v), 1)} p.e.`}
-          sub={l('percentage points of GDP', 'procentenheter av BNP')}
-        />
-        {top && (
-          <Kpi
-            index={4}
-            label={l('Highest', 'Högst')}
-            value={get(top.country_code, '_T') ?? 0}
-            format={(v) => pct(v)}
-            sub={name(top)}
-          />
-        )}
-      </Kpis>
-
       <Cards>
         <Card
-          wide
-          index={0}
-          title={l(
-            'Every tax: where Sweden sits among the countries',
-            'Varje skatt: var Sverige ligger bland länderna',
-          )}
+          index={5}
+          title={l(`Sweden against ${groupLabel}`, `Sverige mot ${groupLabel}`)}
           meta={l(
-            `Share of GDP. Each dot is a country; Sweden is the large dot, the line is ${groupLabel}. Click a row to follow it over time.`,
-            `Andel av BNP. Varje punkt är ett land; Sverige är den stora punkten, strecket är ${groupLabel}. Klicka på en rad för att följa den över tid.`,
+            `Share of GDP per kind of tax, ${year}`,
+            `Andel av BNP per skattetyp, ${year}`,
           )}
         >
-          <ol className="tax-strips">
-            {types.map((code) => {
-              const values = present
-                .map((c) => ({ c, v: get(c.country_code, code) }))
-                .filter((x): x is { c: Country; v: number } => x.v != null)
-              const max = Math.max(...values.map((x) => x.v), 0.1)
+          <Dumbbell
+            rows={types.flatMap((code) => {
               const swe = get('SWE', code)
               const avg = mean(code)
-              const at = (v: number) => `${(v / max) * 100}%`
-              const rank = rankOf(code)
-              return (
-                <li
-                  key={code}
-                  className={`tax-strip${chosen === code ? ' chosen' : ''}${code === '_T' ? ' total' : ''}${byCode.get(code)?.parent_code && byCode.get(code)?.parent_code !== '_T' ? ' sub' : ''}`}
-                >
-                  <button
-                    type="button"
-                    className="tax-strip-name"
-                    aria-pressed={chosen === code}
-                    onClick={() => setView({ skatt: code })}
-                  >
-                    {typeName(code)}
-                  </button>
-                  <div
-                    className="tax-strip-track"
-                    role="img"
-                    aria-label={l(
-                      `${typeName(code)}: Sweden ${pct(swe ?? 0)}, place ${rank} of ${values.length}`,
-                      `${typeName(code)}: Sverige ${pct(swe ?? 0)}, plats ${rank} av ${values.length}`,
-                    )}
-                  >
-                    {avg != null && (
-                      <span className="tax-avg" style={{ left: at(avg) }} />
-                    )}
-                    {values.map(({ c, v }) =>
-                      c.country_code === 'SWE' ? null : (
-                        <span
-                          key={c.country_code}
-                          className={`round tax-dot${c.is_nordic ? ' nordic' : ''}${hover === c.country_code ? ' hover' : ''}`}
-                          style={{ left: at(v) }}
-                          title={`${name(c)} ${pct(v)}`}
-                          onMouseEnter={() => setHover(c.country_code)}
-                          onMouseLeave={() => setHover(null)}
-                        />
-                      ),
-                    )}
-                    {swe != null && (
-                      <span
-                        className="round tax-dot swe"
-                        style={{ left: at(swe) }}
-                      >
-                        <b>{pct(swe)}</b>
-                      </span>
-                    )}
-                    <span className="tax-max">{pct(max)}</span>
-                  </div>
-                  <span className="tax-rank">
-                    {rank ? `${rank}/${values.length}` : '–'}
-                  </span>
-                </li>
-              )
+              return swe == null || avg == null
+                ? []
+                : [{ key: code, label: typeName(code), from: avg, to: swe }]
             })}
-          </ol>
-          <p className="tax-legend">
-            <span className="round tax-dot swe" /> {l('Sweden', 'Sverige')}
-            <span className="round tax-dot nordic" /> {l('Nordic', 'Norden')}
-            <span className="round tax-dot" />{' '}
-            {l('Other countries', 'Övriga länder')}
-            <span className="tax-avg" /> {groupLabel}
-            {hover && (
-              <strong className="tax-hover">
-                {name(data.countries.find((c) => c.country_code === hover)!)}
-              </strong>
+            fromLabel={groupLabel}
+            toLabel={l('Sweden', 'Sverige')}
+            format={(v) => pct(v)}
+            label={l(
+              `Sweden and ${groupLabel} per kind of tax, share of GDP`,
+              `Sverige och ${groupLabel} per skattetyp, andel av BNP`,
             )}
-          </p>
+          />
         </Card>
-
         <Card
-          index={1}
-          title={l(
-            'The tax mix, country by country',
-            'Skattemixen, land för land',
-          )}
+          index={6}
+          title={l('All taxes over time', 'Alla skatter över tid')}
           meta={l(
-            'Share of GDP, largest total first. Each colour is a kind of tax.',
-            'Andel av BNP, störst totalt först. Varje färg är en typ av skatt.',
-          )}
-        >
-          <ul className="tax-mix-legend">
-            {MIX.map((m) => (
-              <li key={m.code}>
-                <i style={{ background: m.color }} />
-                {l(m.en, m.sv)}
-              </li>
-            ))}
-          </ul>
-          <ol
-            className="tax-mix"
-            tabIndex={0}
-            aria-label={l('Tax mix per country', 'Skattemix per land')}
-          >
-            {mixRows.map((row) => (
-              <li
-                key={row.country.country_code}
-                className={
-                  row.country.country_code === 'SWE' ? 'swe' : undefined
-                }
-              >
-                <span className="tax-mix-name">{name(row.country)}</span>
-                <span
-                  className="tax-mix-bar"
-                  style={{ width: `${(row.total / mixMax) * 100}%` }}
-                  title={`${name(row.country)} ${pct(row.total)}`}
-                >
-                  {row.parts.map((v, i) =>
-                    v > 0 ? (
-                      <i
-                        key={MIX[i].code}
-                        style={{
-                          flexGrow: v,
-                          background: MIX[i].color,
-                        }}
-                        title={`${l(MIX[i].en, MIX[i].sv)} ${pct(v)}`}
-                      />
-                    ) : null,
-                  )}
-                </span>
-                <span className="tax-mix-total">{num(row.total, 1)}</span>
-              </li>
-            ))}
-          </ol>
-        </Card>
-
-        <Card
-          index={2}
-          title={l(
-            `${typeName(chosen)} over time`,
-            `${typeName(chosen)} över tid`,
-          )}
-          meta={l(
-            `Sweden and ${groupLabel}, share of GDP. Choose another tax in the strips above.`,
-            `Sverige och ${groupLabel}, andel av BNP. Välj en annan skatt i raderna ovan.`,
+            `Total tax revenue as a share of GDP, Sweden and ${groupLabel}`,
+            `Totala skatteintäkter som andel av BNP, Sverige och ${groupLabel}`,
           )}
         >
           <MultiLineChart
-            series={overTime}
-            label={l('Share of GDP', 'Andel av BNP')}
+            series={[
+              { key: 'SWE', name: l('Sweden', 'Sverige'), of: get },
+              {
+                key: 'avg',
+                name: groupLabel,
+                of: (_: string, code: string, y: number) => mean(code, y),
+              },
+            ].map(({ key, name, of }) => ({
+              key,
+              name,
+              points: [...model.years].reverse().flatMap((y) => {
+                const v = of('SWE', '_T', y)
+                return v == null
+                  ? []
+                  : [{ date: `${y}-07-01`, label: String(y), value: v }]
+              }),
+            }))}
             format={(v) => pct(v)}
-            colorOf={(key) => (key === 'SWE' ? '#16181b' : '#6aa6d6')}
+            colorOf={(key) => (key === 'SWE' ? 1 : 2)}
+            label={l(
+              'Total tax revenue as a share of GDP over time',
+              'Totala skatteintäkter som andel av BNP över tid',
+            )}
           />
         </Card>
-
         <Card
           wide
           index={3}
-          title={l('All the figures', 'Alla siffror')}
+          title={l(
+            'Sweden’s taxes beside its neighbours',
+            'Sveriges skatter bredvid grannländerna',
+          )}
           meta={l(
             `Share of GDP, ${year}. Place among ${present.length} countries, highest first.`,
             `Andel av BNP, ${year}. Plats bland ${present.length} länder, högst först.`,
@@ -470,8 +258,15 @@ export default function SkatterTheme({ route }: { route: Route }) {
               <thead>
                 <tr>
                   <th scope="col">{l('Tax', 'Skatt')}</th>
-                  <th scope="col">{l('Sweden', 'Sverige')}</th>
-                  <th scope="col">{l('Average', 'Snitt')}</th>
+                  <th scope="col" className="swe">
+                    {l('Sweden', 'Sverige')}
+                  </th>
+                  {beside.map((c) => (
+                    <th scope="col" key={c.country_code}>
+                      {name(c)}
+                    </th>
+                  ))}
+                  <th scope="col">{groupLabel}</th>
                   <th scope="col">{l('Difference', 'Skillnad')}</th>
                   <th scope="col">{l('Place', 'Plats')}</th>
                 </tr>
@@ -482,9 +277,17 @@ export default function SkatterTheme({ route }: { route: Route }) {
                   const avg = mean(code)
                   const diff = swe != null && avg != null ? swe - avg : null
                   return (
-                    <tr key={code}>
+                    <tr key={code} className={code === '_T' ? 'total' : ''}>
                       <th scope="row">{typeName(code)}</th>
-                      <td>{swe == null ? '–' : pct(swe)}</td>
+                      <td className="swe">{swe == null ? '–' : pct(swe)}</td>
+                      {beside.map((c) => {
+                        const v = get(c.country_code, code)
+                        return (
+                          <td key={c.country_code}>
+                            {v == null ? '–' : pct(v)}
+                          </td>
+                        )
+                      })}
                       <td>{avg == null ? '–' : pct(avg)}</td>
                       <td
                         className={diff == null ? '' : diff > 0 ? 'up' : 'down'}
@@ -511,19 +314,6 @@ export default function SkatterTheme({ route }: { route: Route }) {
             </a>
           </p>
         </Card>
-        {municipalities && (
-          <Card
-            wide
-            index={4}
-            title={l('Your own tax', 'Din egen skatt')}
-            meta={l(
-              'Salary, pension, benefits, a business and capital, by municipality, with this year’s rules.',
-              'Lön, pension, ersättningar, näringsverksamhet och kapital, per kommun, med årets regler.',
-            )}
-          >
-            <TaxCalculator municipalities={municipalities} />
-          </Card>
-        )}
       </Cards>
     </Board>
   )

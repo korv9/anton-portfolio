@@ -2,8 +2,8 @@ name: Refresh political news
 
 # Each morning: read the SVT, Ekot and Government feeds, add new items to the news archive on
 # R2 (the feeds hold only the last day or so, so the archive is built by reading daily),
-# tag them by party and topic, and commit parliament/news.json when it changed. Cloudflare
-# publishes the site from that commit (docs/deploy.md).
+# tag them by party and topic, then publish an independently versioned news group in R2.
+# Optional summaries may fail without blocking the headlines. No data commit is created.
 
 on:
   schedule:
@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: data-refresh
@@ -31,18 +31,21 @@ jobs:
       R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
       R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY || secrets.R2_SECRET_ACCESS_KEY_ID }}
       R2_BUCKET: ${{ secrets.R2_BUCKET }}
+      R2_PUBLIC_BASE: ${{ vars.R2_PUBLIC_BASE }}
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
     steps:
       # Without the bucket the archive cannot outlive the run, so there is nothing to do.
       - name: Require R2 credentials
         id: creds
         run: |
-          if [ -z "$R2_ACCOUNT_ID" ]; then
-            echo "::warning::R2 secrets are not set; the news archive needs them (docs/deploy.md)"
-            echo "ok=false" >> "$GITHUB_OUTPUT"
-          else
-            echo "ok=true" >> "$GITHUB_OUTPUT"
-          fi
+          for name in R2_ACCOUNT_ID R2_ACCESS_KEY_ID R2_SECRET_ACCESS_KEY R2_BUCKET; do
+            value="${!name}"
+            value="${value#"${value%%[![:space:]]*}"}"
+            value="${value%"${value##*[![:space:]]}"}"
+            export "$name=$value"
+            [ -n "${!name}" ] || { echo "::error::Secret $name is not set"; exit 1; }
+          done
+          echo "ok=true" >> "$GITHUB_OUTPUT"
       - uses: actions/checkout@v4
         if: steps.creds.outputs.ok == 'true'
       - uses: actions/setup-python@v5
@@ -51,10 +54,17 @@ jobs:
           python-version: '3.12'
           cache: pip
           cache-dependency-path: platform/requirements.txt
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: pip install -r platform/requirements.txt
+      - name: Restore the previous published summary
+        run: >-
+          python platform/publish/release.py materialize --root frontend/public/data
+          --spec configs/delivery/news.json --catalog frontend/public/data/catalog.json --prefer-active
       - name: Fetch, tag and export
         if: steps.creds.outputs.ok == 'true'
         run: |
-          pip install -r platform/requirements.txt
           python platform/ingest/news/news_ingest.py --sync --months 3
           python platform/ingest/news/people_ingest.py
           cd platform
@@ -64,34 +74,28 @@ jobs:
       # The week's summary, written by Claude from the headlines and grounded in them. Runs only
       # when the ANTHROPIC_API_KEY secret is set; without it the page shows the headlines alone.
       - name: Summarise the week's news
+        id: summary
         if: steps.creds.outputs.ok == 'true' && env.ANTHROPIC_API_KEY != ''
         run: |
-          pip install anthropic
-          python platform/publish/summarize_news.py --days 7
-      - name: Commit the news when it changed
+          pip install anthropic || echo "::warning::Optional summary SDK could not be installed."
+          summary_exit=0
+          python platform/publish/summarize_news.py --days 7 \
+            --status-file "$RUNNER_TEMP/news-summary-status.json" || summary_exit=$?
+          if [ "$summary_exit" -eq 2 ]; then
+            echo "::warning::Optional AI summary unavailable; publish the fetched headlines and keep the previous summary."
+          elif [ "$summary_exit" -ne 0 ]; then
+            exit "$summary_exit"
+          fi
+      - name: Keep the optional summary outcome
+        if: ${{ always() && steps.creds.outputs.ok == 'true' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: news-summary-status
+          path: ${{ runner.temp }}/news-summary-status.json
+          if-no-files-found: ignore
+          retention-days: 7
+      - name: Publish validated headlines and the available summary
         if: steps.creds.outputs.ok == 'true'
         run: |
-          git config user.name 'data-refresh[bot]'
-          git config user.email 'data-refresh@users.noreply.github.com'
-          # generated_at changes on every run; commit only when an item or a status did.
-          if python -c "
-          import json, subprocess, sys
-          path = 'frontend/public/data/parliament/news.json'
-          before = json.loads(subprocess.run(['git', 'show', 'HEAD:' + path], capture_output=True, text=True).stdout or '{}')
-          after = json.load(open(path))
-          for d in (before, after): d.pop('generated_at', None)
-          sys.exit(0 if before == after else 1)"; then
-            echo "No new news."
-          else
-            git add frontend/public/data/parliament/news.json frontend/public/data/parliament/news-summaries.json 2>/dev/null || git add frontend/public/data/parliament/news.json
-            git commit -m "data: political news (run ${GITHUB_RUN_ID})"
-            # main may have moved during the run (a merge, another refresh): put this commit on
-            # top of it and push, a few times if needed.
-            pushed=false
-            for attempt in 1 2 3; do
-              if git pull --rebase origin main && git push origin HEAD:main; then pushed=true; break; fi
-              git rebase --abort 2>/dev/null || true
-              sleep $((attempt * 15))
-            done
-            "$pushed"
-          fi
+          python platform/publish/release.py publish --group news --root frontend/public/data \
+            --spec configs/delivery/news.json --code-sha "$GITHUB_SHA"

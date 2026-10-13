@@ -1,0 +1,16 @@
+{
+  "schema_version": 2,
+  "files": [
+    "diva/clusters.json"
+  ],
+  "checks": [
+    [
+      "python",
+      "platform/publish/validate_refresh_delivery.py",
+      "--group",
+      "diva",
+      "--root",
+      "{root}"
+    ]
+  ]
+}

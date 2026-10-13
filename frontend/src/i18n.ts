@@ -4,13 +4,9 @@ export type Locale = 'en' | 'sv'
 
 const storageKey = 'anton-portfolio-language'
 
-/** Swedish unless the visitor has chosen English. */
+/** The site is in English; the Swedish copy stays in the code but nothing switches to it. */
 export function initialLocale(): Locale {
-  try {
-    return localStorage.getItem(storageKey) === 'en' ? 'en' : 'sv'
-  } catch {
-    return 'sv'
-  }
+  return 'en'
 }
 
 let locale: Locale = initialLocale()

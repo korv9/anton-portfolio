@@ -1,0 +1,52 @@
+# Names set by hand after reading 5 to 15 random passages per group (2026-10-13).
+# A group is named when most of the passages read share one subject; the rest keep their number.
+# The export drops the names when run_id is no longer the pick.
+debate:
+  run_id: 1b8a9e8a84859c4437eb93f1
+  names:
+    2: [School, Skolan]
+    3: [Government and opposition, Regering och opposition]
+    4: [Climate and emissions, Klimat och utsläpp]
+    5: [Nuclear power and electricity, Kärnkraft och el]
+    6: [Jobs and the labour market, Jobb och arbetsmarknad]
+    8: [Migration and asylum, Migration och asyl]
+    12: [Health care, Vården]
+    13: ['Defence, Nato and Ukraine', 'Försvar, Nato och Ukraina']
+    14: [Gender equality, Jämställdhet]
+    15: [Children and families, Barn och familj]
+    16: [Foreign policy and conflicts, Utrikespolitik och konflikter]
+    17: [Public finances, Statsfinanser]
+    18: [Railways and transport, Järnväg och transporter]
+    19: [Taxes, Skatter]
+    20: [Sickness insurance, Sjukförsäkringen]
+    21: ['Extremism, racism and antisemitism', 'Extremism, rasism och antisemitism']
+    22: [Business and enterprise, Företagande]
+    23: [Countryside and farming, Landsbygd och lantbruk]
+    24: [Working hours, Arbetstid]
+    25: [Growth and inflation, Tillväxt och inflation]
+    26: [Housing, Bostäder]
+    27: [Pensions, Pensioner]
+    28: [Elderly care, Äldreomsorg]
+    30: [Profits in welfare, Vinster i välfärden]
+    31: [Forestry, Skogen]
+philosophy:
+  run_id: 374061f1cc0b8a61bc9712d3
+  names:
+    0: ['Government, law and power', 'Stat, lag och makt']
+    1: [Knowledge and truth, Kunskap och sanning]
+    2: [God and religion, Gud och religion]
+    3: ['Pleasure, pain and love', 'Lust, smärta och kärlek']
+    4: ['Space, time and motion', 'Rum, tid och rörelse']
+    5: ['Property, labour and wealth', 'Egendom, arbete och rikedom']
+    6: ['Soul, death and immortality', 'Själ, död och odödlighet']
+    8: [Women and marriage, Kvinnor och äktenskap]
+    9: [Animals and species, Djur och arter]
+    10: [Language and music, Språk och musik]
+    13: [Children and education, Barn och uppfostran]
+    14: ['Fire, water, air and earth', 'Eld, vatten, luft och jord']
+    16: [Cause and effect, Orsak och verkan]
+municipalities:
+  names:
+    0: [High income, Hög inkomst]
+    1: [Stable employment, Stabil sysselsättning]
+    2: [Higher unemployment and assistance, Högre arbetslöshet och bistånd]

@@ -21,6 +21,7 @@ import { Select, monthName, num, pct, signed } from '../controls'
 import { useViewParams } from '../useViewParams'
 import { shownParties, useParties } from '../partySelection'
 import RankBars from '../../charts/RankBars'
+import { Dumbbell } from '../../charts/Compare'
 import PollTrend from '../features/PollTrend'
 
 type PollRow = {
@@ -144,6 +145,7 @@ export default function ValjarnaTheme({ route }: { route: Route }) {
               ? `${signed(last.value - before.value, 1)} ${l('since', 'sedan')} ${measure === 'psu' ? monthName(before.date) : before.date.slice(0, 4)}`
               : undefined,
             when: last.date,
+            before,
           }
         : null
     })
@@ -298,7 +300,34 @@ export default function ValjarnaTheme({ route }: { route: Route }) {
               )
         }
         chart={
-          !overTime ? (
+          !overTime &&
+          latestBars.length > 0 &&
+          latestBars.every((b) => b.before) ? (
+            <Dumbbell
+              rows={latestBars.map((b) => ({
+                key: b.key,
+                label: b.label,
+                from: b.before!.value,
+                to: b.value,
+                colour: partyLine(b.key),
+              }))}
+              fromLabel={
+                measure === 'psu'
+                  ? monthName(latestBars[0].before!.date)
+                  : latestBars[0].before!.date.slice(0, 4)
+              }
+              toLabel={
+                measure === 'psu'
+                  ? monthName(latestBars[0].when)
+                  : latestBars[0].when.slice(0, 4)
+              }
+              format={(v) => pct(v)}
+              label={l(
+                `Support per party, latest against the one before: ${latestBars.map((b) => `${b.key} ${pct(b.value)}`).join(', ')}`,
+                `Stöd per parti, senaste mot den innan: ${latestBars.map((b) => `${b.key} ${pct(b.value)}`).join(', ')}`,
+              )}
+            />
+          ) : !overTime ? (
             <RankBars
               rows={latestBars}
               format={(v) => pct(v)}

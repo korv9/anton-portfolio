@@ -1,0 +1,105 @@
+/* A debate as a group chat (DebateChat.tsx): one window the reader scrolls inside, so a long
+   debate never takes more of the page than a screen. */
+.chat {
+  max-height: min(72vh, 42rem);
+  padding: var(--sp-2) var(--sp-4) var(--sp-5) 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-strong) transparent;
+  /* The last bubbles fade out where the window ends. */
+  mask-image: linear-gradient(#000 calc(100% - 3rem), transparent);
+}
+.chat:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 4px;
+}
+.chat ol {
+  display: grid;
+  gap: var(--sp-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.chat-turn {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--sp-3);
+  max-width: 78%;
+  animation: chat-in 380ms var(--ease) both;
+  animation-delay: calc(var(--i) * 90ms);
+}
+.chat-turn[data-side='right'] {
+  flex-direction: row-reverse;
+  justify-self: end;
+}
+@keyframes chat-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.97);
+  }
+}
+.chat-face {
+  flex: none;
+  width: 28px;
+  height: 28px;
+}
+/* A bubble in the party's colour, thinned until it sits on the page; the corner by the
+   speaker's logo is square, like a chat. */
+.chat-bubble {
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: 14px 14px 14px 3px;
+  background: color-mix(in srgb, var(--c) 22%, var(--page));
+}
+.chat-turn[data-side='right'] .chat-bubble {
+  border-radius: 14px 14px 3px 14px;
+}
+.chat-who {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--sp-2);
+  margin: 0 0 var(--sp-1);
+  font-size: var(--caption);
+}
+.chat-who span {
+  color: var(--muted);
+}
+.chat-text {
+  margin: 0;
+  font-size: var(--small);
+  line-height: 1.5;
+}
+.chat-text.whole {
+  white-space: pre-line;
+}
+.chat-more,
+.chat-next {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--caption);
+  font-weight: 750;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+  cursor: pointer;
+}
+.chat-more {
+  margin-top: var(--sp-1);
+}
+.chat-next {
+  display: block;
+  margin: var(--sp-5) auto var(--sp-6);
+  font-size: var(--small);
+}
+.chat :is(.chat-more, .chat-next):focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 3px;
+}
+@media (max-width: 700px) {
+  .chat-turn {
+    max-width: 92%;
+  }
+}

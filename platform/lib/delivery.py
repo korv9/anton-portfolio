@@ -56,6 +56,9 @@ def _bucket_client():
             _s3 = False
             return None
         load_env()
+        for name in ("R2_ACCOUNT_ID", "R2_ACCESS_KEY_ID", "R2_SECRET_ACCESS_KEY", "R2_BUCKET", "S3_API_ENDPOINT"):
+            if name in os.environ:
+                os.environ[name] = os.environ[name].strip()
         needed = ("R2_ACCOUNT_ID", "R2_ACCESS_KEY_ID", "R2_SECRET_ACCESS_KEY", "R2_BUCKET")
         if not all(os.environ.get(name) for name in needed):
             _s3 = False

@@ -17,6 +17,8 @@ import {
 } from '../../parties/identity'
 import type { Route } from '../../router'
 import { Board, Card, Cards, Empty, Kpi, Kpis } from '../board/Board'
+import Columns from '../board/Columns'
+import RankBars from '../../charts/RankBars'
 import { Select, dayName, num } from '../controls'
 import { useParties } from '../partySelection'
 import { useViewParams } from '../useViewParams'
@@ -105,7 +107,17 @@ export default function NyheterTheme({ route }: { route: Route }) {
     party: p,
     n: news.party_counts_30d[p] ?? 0,
   })).sort((a, b) => b.n - a.n)
-  const topCount = Math.max(1, ...counts.map((c) => c.n))
+  // Headlines per week, oldest first; a week is named by its Monday.
+  const weeks = [
+    ...news.items
+      .reduce((map, i) => {
+        const day = new Date(i.published_at)
+        day.setUTCDate(day.getUTCDate() - ((day.getUTCDay() + 6) % 7))
+        const key = day.toISOString().slice(0, 10)
+        return map.set(key, (map.get(key) ?? 0) + 1)
+      }, new Map<string, number>())
+      .entries(),
+  ].sort(([a], [b]) => a.localeCompare(b))
   const topicCounts = news.topics
     .map((t) => ({
       key: t.key,
@@ -175,13 +187,6 @@ export default function NyheterTheme({ route }: { route: Route }) {
           value={thisWeek}
           format={(v) => num(v)}
           sub={newest ? `${l('newest', 'senaste')} ${dayName(newest)}` : ''}
-        />
-        <Kpi
-          index={2}
-          label={l('Named most', 'Nämns mest')}
-          value={counts[0]?.n ?? 0}
-          format={(v) => `${counts[0]?.party ?? ''} ${num(v)}`}
-          sub={l('last 30 days', 'senaste 30 dagarna')}
         />
       </Kpis>
 
@@ -259,6 +264,30 @@ export default function NyheterTheme({ route }: { route: Route }) {
           )}
         </Card>
 
+        {weeks.length > 1 && (
+          <Card
+            index={3}
+            title={l('Headlines per week', 'Rubriker per vecka')}
+            meta={l(
+              'Headlines collected, by the week they were published; the latest week is not over',
+              'Insamlade rubriker, efter veckan de publicerades; den senaste veckan är inte slut',
+            )}
+          >
+            <Columns
+              categories={weeks.map(([week]) => week.slice(5))}
+              series={[
+                {
+                  key: 'n',
+                  label: l('Headlines', 'Rubriker'),
+                  values: weeks.map(([, n]) => n),
+                },
+              ]}
+              height={140}
+              format={(v) => num(v)}
+              label={l('Headlines per week', 'Rubriker per vecka')}
+            />
+          </Card>
+        )}
         <Card
           index={1}
           title={l(
@@ -270,24 +299,19 @@ export default function NyheterTheme({ route }: { route: Route }) {
             'Rubriker som nämner partiet, senaste 30 dagarna, att nämnas är inte samma sak som att handla om',
           )}
         >
-          <ul className="news-party-bars">
-            {counts.map((c) => (
-              <li key={c.party}>
-                <span>
-                  <PartyLogo party={c.party} size={18} /> {c.party}
-                </span>
-                <i>
-                  <b
-                    style={{
-                      width: `${(c.n / topCount) * 100}%`,
-                      background: identity(c.party).color,
-                    }}
-                  />
-                </i>
-                <span className="num">{num(c.n)}</span>
-              </li>
-            ))}
-          </ul>
+          <RankBars
+            rows={counts.map((c) => ({
+              key: c.party,
+              label: partyName(c.party),
+              value: c.n,
+              party: c.party,
+            }))}
+            format={(v) => num(v)}
+            label={l(
+              'Headlines naming each party, last 30 days',
+              'Rubriker som nämner varje parti, senaste 30 dagarna',
+            )}
+          />
         </Card>
 
         <Card

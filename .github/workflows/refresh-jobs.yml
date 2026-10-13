@@ -9,22 +9,16 @@ name: Refresh job-market data
 #    replaces the stream's counts for its months the morning it appears;
 #  - rebuilds jobs/market.json, and stores the raw stream files and the counts in R2, where
 #    the next run starts from;
-#  - checks whether a year newer than the IT report's data has appeared; only then does it
-#    rebuild that report from every archive (several GB, so it does not run otherwise).
-# Cloudflare publishes the site from the commit this makes to main (docs/deploy.md).
+# The heavier IT archive report has its own manual workflow. Validated market data is
+# published to a versioned R2 group; it does not create a Git commit or rebuild the site.
 
 on:
   schedule:
     - cron: '23 4 * * *'
   workflow_dispatch:
-    inputs:
-      force:
-        description: Rebuild the IT report even if no new archive year exists
-        type: boolean
-        default: false
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: data-refresh
@@ -43,10 +37,15 @@ jobs:
       R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
       R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY || secrets.R2_SECRET_ACCESS_KEY_ID }}
       R2_BUCKET: ${{ secrets.R2_BUCKET }}
+      R2_PUBLIC_BASE: ${{ vars.R2_PUBLIC_BASE }}
     steps:
       - name: Require R2 credentials
         run: |
           for name in R2_ACCOUNT_ID R2_ACCESS_KEY_ID R2_SECRET_ACCESS_KEY R2_BUCKET; do
+            value="${!name}"
+            value="${value#"${value%%[![:space:]]*}"}"
+            value="${value%"${value##*[![:space:]]}"}"
+            export "$name=$value"
             if [ -z "${!name}" ]; then echo "::error::$name is not set (docs/deploy.md)"; exit 1; fi
           done
       - uses: actions/checkout@v4
@@ -56,7 +55,11 @@ jobs:
           cache: pip
           cache-dependency-path: platform/requirements.txt
       - run: pip install -r platform/requirements.txt
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
       - name: Start from the stored counts and stream
+        id: restore
         run: >-
           python platform/publish/warehouse_store.py pull --only raw
           --path jobtech/market --path jobtech/stream --path jobtech/_manifest.jsonl
@@ -69,43 +72,13 @@ jobs:
           cd ..
           python platform/publish/export_market.py
       - name: Store the counts and stream in R2
-        if: always()
+        if: ${{ always() && steps.restore.outcome == 'success' }}
         run: >-
           python platform/publish/warehouse_store.py push --only raw
           --path jobtech/market --path jobtech/stream --path jobtech/_manifest.jsonl
-      - name: Is there a newer archive year?
-        id: check
+      - name: Validate complete daily coverage and publish
         run: |
-          have=$(python -c "import json;print(max(json.load(open('frontend/public/data/gold/marts/jobs.json'))['years']))")
-          next=$((have + 1))
-          status=$(curl -s -o /dev/null -w '%{http_code}' -I "https://data.arbetsformedlingen.se/annonser/historiska/${next}.jsonl.zip")
-          echo "Site has data to $have; archive $next answers $status"
-          if [ "$status" = 200 ] || [ "${{ inputs.force }}" = true ]; then echo "run=true" >> "$GITHUB_OUTPUT"; else echo "run=false" >> "$GITHUB_OUTPUT"; fi
-      - name: Rebuild from the archives
-        if: steps.check.outputs.run == 'true'
-        run: |
-          python platform/ingest/jobtech/run_history_pipeline.py
-          python platform/legacy/build_gold.py
-          npm run data:catalog
-          npm run data:check
-      - name: Commit changed delivery files
-        id: commit
-        run: |
-          git config user.name 'data-refresh[bot]'
-          git config user.email 'data-refresh@users.noreply.github.com'
-          git add frontend/public/data
-          if git diff --cached --quiet; then
-            echo "changed=false" >> "$GITHUB_OUTPUT"
-          else
-            git commit -m "data: refresh job market from JobTech (run ${GITHUB_RUN_ID})"
-            # main may have moved during the run (a merge, another refresh): put this commit on
-            # top of it and push, a few times if needed.
-            pushed=false
-            for attempt in 1 2 3; do
-              if git pull --rebase origin main && git push origin HEAD:main; then pushed=true; break; fi
-              git rebase --abort 2>/dev/null || true
-              sleep $((attempt * 15))
-            done
-            "$pushed"
-            echo "changed=true" >> "$GITHUB_OUTPUT"
-          fi
+          python platform/publish/validate_refresh_delivery.py --group jobs \
+            --root frontend/public/data --stream-state warehouse/raw/jobtech/stream/state.json
+          python platform/publish/release.py publish --group jobs --root frontend/public/data \
+            --spec configs/delivery/jobs.json --code-sha "$GITHUB_SHA"

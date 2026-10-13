@@ -3,7 +3,7 @@
  * choices themselves are ordinary controls handed in by the theme, which only offers valid
  * combinations; everything chosen is already in the address, so the view can be shared.
  */
-import { useEffect, useRef, type ReactNode } from 'react'
+import { useEffect, useId, useRef, type ReactNode } from 'react'
 import { l } from '../i18n'
 
 export default function BuilderPanel({
@@ -111,13 +111,15 @@ export function Choice<T extends string>({
   options: { value: T; label: string }[]
   onChange: (value: T) => void
 }) {
+  // Several panels share the long page; each keeps its own radio group.
+  const group = useId()
   return (
     <div className="builder-choice">
       {options.map((option) => (
         <label key={option.value}>
           <input
             type="radio"
-            name={name}
+            name={`${group}-${name}`}
             value={option.value}
             checked={value === option.value}
             onChange={() => onChange(option.value)}

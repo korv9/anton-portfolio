@@ -103,7 +103,7 @@ def fuse(blocks, weights):
     return matrix
 
 
-def tfidf_svd(texts, dimensions, seed=42):
+def tfidf_svd(texts, dimensions, seed=42, artifact_path=None):
     from sklearn.feature_extraction.text import TfidfVectorizer
     from sklearn.decomposition import TruncatedSVD
     from sklearn.preprocessing import normalize
@@ -115,6 +115,9 @@ def tfidf_svd(texts, dimensions, seed=42):
         return normalize(sparse).toarray().astype('float32'), {'vocabulary_size': sparse.shape[1], 'dimensions': sparse.shape[1]}
     fitted = TruncatedSVD(n_components=dimensions, random_state=seed)
     matrix = normalize(fitted.fit_transform(sparse)).astype('float32')
+    if artifact_path is not None:
+        from joblib import dump
+        dump({'vectorizer':vectorizer,'svd':fitted},artifact_path)
     return matrix, {'vocabulary_size': sparse.shape[1], 'dimensions': dimensions,
                     'explained_variance': float(fitted.explained_variance_ratio_.sum())}
 

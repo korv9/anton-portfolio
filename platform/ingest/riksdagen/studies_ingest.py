@@ -11,6 +11,7 @@ Stored under warehouse/raw/riksdagen/studies/ with provenance:
     propositions/<rm>-<page>.json   the session's government bills (propositioner)
     preparation/<rm>.jsonl.gz       one line per bill: the committee reports it was dealt
                                     with in, and the studies it cites as its preparation
+    coverage/<rm>.json             every listed document, pending failures and attachment 404s
 
 A bill's preparation is read from its sections "Ärendet och dess beredning" (a budget bill
 has one per proposal), where the government names the inquiry report (SOU), departmental
@@ -36,12 +37,31 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "lib"))
 
 import rawstore  # noqa: E402
+from requests import HTTPError  # noqa: E402
 
 SOURCE = "riksdagen"
 API = "https://data.riksdagen.se"
 FIRST_YEAR = 2006
 # Bills since 2006 cite studies published years before; the series are listed from here.
 FIRST_STUDY_YEAR = 1995
+COVERAGE_VERSION = 1
+
+
+def preparation_request(session: str) -> dict:
+    return {"session": session, "parser_version": 1, "coverage_version": COVERAGE_VERSION}
+
+
+def attachment_parent(document: dict, documents: list[dict]) -> str | None:
+    parent_id = document.get("relaterat_id") or ""
+    suffix = document.get("tempbeteckning") or ""
+    parent = next((d for d in documents if d["dok_id"] == parent_id), None)
+    if (parent and re.fullmatch(r"d\d+", suffix)
+            and document["dok_id"] == parent_id + suffix
+            and "Bilaga" in plain((document.get("sokdata") or {}).get("statusrad") or "")
+            and document.get("rm") == parent.get("rm")
+            and document.get("beteckning") == parent.get("beteckning")):
+        return parent_id
+    return None
 
 SOU = re.compile(r"\bSOU\s?(\d{4}):\s?(\d{1,3})\b")
 DS = re.compile(r"\bDs\s?(\d{4}):\s?(\d{1,3})\b")
@@ -189,6 +209,8 @@ def preparation(http, document: dict) -> dict:
     status = json.loads(response.content.decode("utf-8-sig"))["dokumentstatus"]
     head = status["dokument"]
     text = plain(head.get("html") or "")
+    if str(head.get("dok_id") or "").lower() != dok_id.lower() or not text:
+        raise ValueError(f"Incomplete documentstatus for {dok_id}: identity or text missing")
     sections = preparation_sections(text)
     section = " ".join(body for _, body in sections)
     cited = []
@@ -265,14 +287,14 @@ def main() -> None:
         unfinished = set((prior.get("body") or {}).get("pending_bills", [])) if prior else set()
         closed = session not in open_sessions
         group = f"studies/preparation/{code(session)}"
-        request = {"session": session, "parser_version": 1}
+        request = preparation_request(session)
         revision = closed and rawstore.completed_paths(SOURCE, group, request, None) is not None
         if (closed and not arguments.session and not arguments.refetch_closed
                 and not arguments.reread and not unfinished
                 and rawstore.completed_paths(SOURCE, group, request)):
             continue
-        rawstore.invalidate(SOURCE, group)
         bills = listing(http, "prop", session, f"propositions/{code(session)}")
+        rawstore.invalidate(SOURCE, group)
         records: dict[str, dict] = {}
         pending = []
         for bill in bills:
@@ -286,42 +308,67 @@ def main() -> None:
             else:
                 pending.append(bill)
 
-        errors, refreshed = [], set()
+        errors, refreshed, unavailable = {}, set(), {}
         def read(bill: dict) -> dict | None:
             try:
                 return preparation(http, bill)
             except Exception as error:  # one broken bill must not stop the session
                 print(f"  {bill['dok_id']}: {error}", flush=True)
-                errors.append(bill["dok_id"])
+                parent = attachment_parent(bill, bills)
+                if (isinstance(error, HTTPError) and error.response is not None
+                        and error.response.status_code == 404 and parent):
+                    unavailable[bill["dok_id"]] = parent
+                    return known.get(bill["dok_id"])
+                errors[bill["dok_id"]] = str(error)
                 return known.get(bill["dok_id"])
 
         def save_checkpoint():
             available = {**known, **records}
+            failed, missing = errors.copy(), unavailable.copy()
+            excluded = {doc_id: parent for doc_id, parent in missing.items()
+                        if parent in records and parent not in failed and parent not in missing}
+            waiting = [b["dok_id"] for b in pending
+                       if b["dok_id"] not in refreshed and b["dok_id"] not in excluded]
+            coverage = {"session": session, "coverage_version": COVERAGE_VERSION,
+                        "listed_documents": len(bills), "pending_bills": waiting,
+                        "documents": [{"dok_id": b["dok_id"],
+                            "status": "unavailable_attachment" if b["dok_id"] in excluded else
+                                      "pending" if b["dok_id"] in waiting else "prepared",
+                            "parent_id": excluded.get(b["dok_id"]),
+                            "http_status": 404 if b["dok_id"] in missing else None,
+                            "error": failed.get(b["dok_id"]),
+                            "retained_previous": b["dok_id"] in known and b["dok_id"] in waiting,
+                            "source_url": f"{API}/dokumentstatus/{b['dok_id']}.json"}
+                            for b in bills]}
+            coverage_path = rawstore.store(SOURCE, f"studies/coverage/{code(session)}.json",
+                                          json.dumps(coverage, ensure_ascii=False).encode("utf-8"),
+                                          url=f"{API}/dokumentlista/ (rm={session}, doktyp=prop)",
+                                          body=request)
             payload = "".join(json.dumps(available[b["dok_id"]], ensure_ascii=False) + "\n"
                               for b in bills if b["dok_id"] in available)
-            return rawstore.store(SOURCE, f"studies/preparation/{code(session)}.jsonl.gz",
+            path = rawstore.store(SOURCE, f"studies/preparation/{code(session)}.jsonl.gz",
                                   payload.encode("utf-8"),
                                   url=f"{API}/dokumentstatus/<prop>.json (rm={session})",
-                                  body={"parser_version": 1, "pending_bills": [
-                                      b["dok_id"] for b in pending if b["dok_id"] not in refreshed]})
+                                  body={**request, "pending_bills": waiting})
+            return path, coverage_path, waiting
 
         # A few bills at a time: Riksdagen's API is shared, and a budget bill is 10 MB.
         with ThreadPoolExecutor(max_workers=4) as pool:
             for index, (bill, record) in enumerate(zip(pending, pool.map(read, pending)), 1):
                 if record:
                     records[bill["dok_id"]] = record
-                if bill["dok_id"] not in errors:
+                if bill["dok_id"] not in errors and bill["dok_id"] not in unavailable:
                     refreshed.add(bill["dok_id"])
                 if index % 25 == 0:
                     save_checkpoint()
-        path = save_checkpoint()
-        if errors:
-            raise RuntimeError(f"Incomplete preparation for {session}: {len(errors)} failed bills; checkpoint saved")
+        path, coverage_path, waiting = save_checkpoint()
+        if waiting:
+            raise RuntimeError(f"Incomplete preparation for {session}: {len(waiting)} failed bills; checkpoint saved")
         # Empty HTTP listings are not evidence of a complete session.
         listings = rawstore.completed_paths(SOURCE, f"studies/listing/propositions/{code(session)}",
                                            {"doc_type": "prop", "period": session, "sort": "datum", "size": 500}, None)
         if listings is not None:
-            rawstore.complete(SOURCE, group, [path, *listings], request)
+            rawstore.complete(SOURCE, group, [path, coverage_path, *listings], request)
         records = [records[bill["dok_id"]] for bill in bills if bill["dok_id"] in records]
         cited = sum(1 for r in records if r["references"])
         print(f"{session}: {len(records)} bills, {cited} cite a study", flush=True)

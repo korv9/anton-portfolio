@@ -1,20 +1,16 @@
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type CSSProperties,
-} from 'react'
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { loadDebateMap } from '../clusters/debateData'
 import type { ClusterPoint } from '../clusters/ClusterScatter'
 import { BACKDROP_COLOURS, groupBackdropPoints } from './backdropGeometry'
-import { loadIntroScenes, type UmapScene } from './umapIntroData'
-import UmapIntro from './UmapIntro'
 
 let introPlayed = false
+/** The longest a cluster takes to arrive: its glide plus the last stagger (home.css). */
+const ARRIVAL = 2400
 
-/** Real UMAP points in cluster layers; CSS supplies floating motion and pointer parallax. */
+/**
+ * Real UMAP points in cluster layers; CSS supplies floating motion and pointer parallax. On the
+ * first visit each cluster glides in from its own side of the screen and they settle into the map.
+ */
 export default function DebateBackdrop({
   playIntro = true,
 }: {
@@ -30,34 +26,20 @@ export default function DebateBackdrop({
   const [reduced, setReduced] = useState(
     () => window.matchMedia('(prefers-reduced-motion: reduce)').matches,
   )
-  const [introScenes, setIntroScenes] = useState<UmapScene[]>([])
   const [intro, setIntro] = useState(allowIntro && !introPlayed && !reduced)
-  const finishIntro = useCallback(() => setIntro(false), [])
   const layers = useMemo(() => groupBackdropPoints(points), [points])
   const still = hidden || reduced
 
   useEffect(() => {
     let active = true
-    Promise.all([
-      loadDebateMap(),
-      allowIntro && !introPlayed && !reduced
-        ? loadIntroScenes()
-        : Promise.resolve([]),
-    ])
-      .then(([map, scenes]) => {
+    let timer = 0
+    loadDebateMap()
+      .then((map) => {
         if (!active) return
         setPoints(map.points)
-        if (allowIntro && !introPlayed && !reduced && scenes.length) {
-          setIntroScenes([
-            ...scenes,
-            {
-              id: 'debates',
-              en: 'Riksdag debates',
-              sv: 'Riksdagsdebatter',
-              points: map.points,
-            },
-          ])
+        if (allowIntro && !introPlayed && !reduced) {
           setIntro(true)
+          timer = window.setTimeout(() => setIntro(false), ARRIVAL)
         } else setIntro(false)
         introPlayed = true
       })
@@ -67,14 +49,9 @@ export default function DebateBackdrop({
       })
     return () => {
       active = false
+      clearTimeout(timer)
     }
   }, [reduced, allowIntro])
-
-  useEffect(() => {
-    if (intro || !introScenes.length) return
-    const timer = setTimeout(() => setIntroScenes([]), 400)
-    return () => clearTimeout(timer)
-  }, [intro, introScenes])
 
   useEffect(() => {
     const visibility = () => setHidden(document.hidden)
@@ -207,6 +184,10 @@ export default function DebateBackdrop({
                 '--float-time': `${14 + (i % 9) * 1.5}s`,
                 '--float-delay': `${-i * 2.7}s`,
                 '--float-direction': i % 2 ? 'alternate-reverse' : 'alternate',
+                // The golden angle spreads the clusters' ways in around the whole screen.
+                '--from-x': `${Math.round(Math.cos(i * 2.4) * 95)}vmax`,
+                '--from-y': `${Math.round(Math.sin(i * 2.4) * 95)}vmax`,
+                '--arrive-delay': `${(i % 12) * 55}ms`,
                 '--point-colour':
                   layer.cluster < 0
                     ? 'var(--cluster-noise)'
@@ -237,14 +218,6 @@ export default function DebateBackdrop({
         data-points={points.length}
         data-intro={intro}
       >
-        {introScenes.length > 0 && (
-          <UmapIntro
-            scenes={introScenes}
-            paused={still}
-            complete={!intro}
-            onComplete={finishIntro}
-          />
-        )}
         {renderLayers(false)}
       </div>
       <div

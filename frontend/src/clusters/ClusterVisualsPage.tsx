@@ -18,6 +18,7 @@ import { loadDebateMap } from './debateData'
 
 type Loaded = {
   points: ClusterPoint[]
+  population?: { observations: number; clusters: number; noise_share: number }
   name?: (c: number) => string
   /** The method, as the run that made the map recorded it. */
   method: string[]
@@ -170,7 +171,89 @@ async function loadDebates(): Promise<Loaded> {
   }
 }
 
+async function loadResearch(slug: string): Promise<Loaded> {
+  const data = await fetchJson<{
+    observations: number
+    clusters: number
+    noise_share: number
+    /** The method, written by the export from the run's own record. */
+    method: string[]
+    /** Reviewed names, English then Swedish; a group without one keeps its number. */
+    names: Record<string, [string, string]>
+    points: [string, number, number, number, string][]
+  }>(`cluster-research/${slug}.json`)
+  return {
+    points: data.points.map(([, x, y, c, label]) => ({ x, y, c, label })),
+    population: data,
+    name: (id) => {
+      const named = data.names[id]
+      return named ? l(named[0], named[1]) : String(id)
+    },
+    method: data.method,
+  }
+}
+
 const MAPS = (): MapSpec[] => [
+  {
+    id: 'research-debates',
+    project: 'Political Observatory',
+    href: '#politik-tal',
+    title: l(
+      'Party-leader debates by subject',
+      'Partiledardebatter efter ämne',
+    ),
+    meaning: l(
+      'Each point is a passage of whole sentences, 80 to 150 words, from 108 party-leader debates 1993–2026. The address to the Speaker, applause notes and endorsement lists were removed before embedding. Grey points belong to no group. A group has a name only after its passages were read.',
+      'Varje punkt är en passage med hela meningar, 80 till 150 ord, ur 108 partiledardebatter 1993–2026. Tilltalet till talmannen, applådnoteringar och instämmandelistor togs bort före inbäddningen. Grå punkter hör inte till någon grupp. En grupp har namn först när dess passager har lästs.',
+    ),
+    variants: [
+      {
+        key: 'debate-topics',
+        label: l('Subjects', 'Ämnen'),
+        load: () => loadResearch('debate-topics'),
+      },
+    ],
+  },
+  {
+    id: 'research-philosophy',
+    project: 'Philosophy Lab',
+    href: '#philosophy-atlas',
+    title: l(
+      'Passages from 113 works of philosophy',
+      'Passager ur 113 filosofiska verk',
+    ),
+    meaning: l(
+      'Each point is a passage, at most 200 per work, from 113 works by 66 authors on Project Gutenberg. The search penalises groups that follow one author or translator, so a group here runs across works.',
+      'Varje punkt är en passage, högst 200 per verk, ur 113 verk av 66 författare på Project Gutenberg. Sökningen ger avdrag för grupper som följer en författare eller översättare, så en grupp här spänner över flera verk.',
+    ),
+    variants: [
+      {
+        key: 'philosophy-topics',
+        label: l('Subjects', 'Ämnen'),
+        load: () => loadResearch('philosophy-topics'),
+      },
+    ],
+  },
+  {
+    id: 'research-municipalities',
+    project: l('How is Sweden doing?', 'Hur mår Sverige?'),
+    href: '#sweden',
+    title: l(
+      'Municipal profiles: seven indicators in 2024',
+      'Kommunprofiler: sju indikatorer 2024',
+    ),
+    meaning: l(
+      'Each point is one of 280 municipalities, placed by the first two principal components of seven indicators. Ten municipalities lack a value for social assistance and are left out. The groups describe similar profiles; they do not rank wellbeing.',
+      'Varje punkt är en av 280 kommuner, placerad efter de två första principalkomponenterna av sju indikatorer. Tio kommuner saknar värde för ekonomiskt bistånd och är inte med. Grupperna beskriver liknande profiler och rangordnar inte välmående.',
+    ),
+    variants: [
+      {
+        key: 'municipalities',
+        label: 'PCA · K-means',
+        load: () => loadResearch('municipalities'),
+      },
+    ],
+  },
   {
     id: 'symbolic',
     project: 'Symbol Lab',
@@ -323,9 +406,9 @@ function MapSection({ spec }: { spec: MapSpec }) {
             shown.points.filter((p) => p.c < 0).length /
             (shown.points.length || 1)
           return [
-            `${num(shown.points.length)} ${l('points', 'punkter')}`,
-            `${clusters} ${l('clusters', 'kluster')}`,
-            `${l('noise', 'brus')} ${pct(noise)}`,
+            `${num(shown.population?.observations ?? shown.points.length)} ${l('points', 'punkter')}`,
+            `${shown.population?.clusters ?? clusters} ${l('clusters', 'kluster')}`,
+            `${l('noise', 'brus')} ${pct(shown.population?.noise_share ?? noise)}`,
           ]
         })()
       : []
@@ -396,10 +479,10 @@ export default function ClusterVisualsPage() {
           )}
         </p>
       </header>
-      {import.meta.env.DEV && <ClusterLab />}
       {MAPS().map((spec) => (
         <MapSection key={spec.id} spec={spec} />
       ))}
+      {import.meta.env.DEV && <ClusterLab />}
     </div>
   )
 }

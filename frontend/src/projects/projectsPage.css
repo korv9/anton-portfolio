@@ -1,0 +1,87 @@
+/* The projects page: three categories across the whole screen, Engineering at the left edge,
+   Observatories in the middle and Labs at the right edge, each with its projects listed under.
+   The page mirrors around its middle: the title and the middle category sit on the centre line. */
+.projects-page {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-rows: auto auto;
+  align-content: center;
+  gap: clamp(var(--sp-6), 7vh, var(--sp-section)) var(--sp-6);
+  /* The screen less the header and the bottom padding of the page frame. */
+  min-height: calc(100dvh - var(--header-h, 4.5rem) - 3rem);
+  padding-top: clamp(var(--sp-5), 3.5vh, var(--sp-6));
+}
+.project-shell #main .projects-title {
+  grid-column: 1 / -1;
+  max-width: none;
+  margin: 0;
+  text-align: center;
+  font-size: var(--display-xl);
+  font-weight: 750;
+  letter-spacing: -0.045em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+.projects-group:nth-of-type(2) {
+  text-align: center;
+}
+.projects-group:nth-of-type(3) {
+  text-align: right;
+}
+.project-shell #main .projects-group-title {
+  margin: 0 0 clamp(var(--sp-5), 4vh, var(--sp-7));
+  font-size: var(--h2);
+  font-weight: 750;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+.projects-list {
+  display: grid;
+  gap: clamp(var(--sp-3), 2.2vh, var(--sp-5));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.project-card {
+  display: inline-block;
+  color: var(--ink);
+  text-decoration: none;
+}
+.project-card:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 6px;
+}
+.project-shell #main .project-card-title {
+  margin: 0;
+  font-size: var(--h3);
+  font-weight: var(--weight-heading);
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+}
+.project-card-kind {
+  margin: var(--sp-1) 0 0;
+  color: var(--muted);
+  font-size: var(--small);
+  line-height: 1.4;
+}
+.project-card:hover .project-card-title {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+}
+
+/* Narrow screens stack the categories, all at the left edge. */
+@media (max-width: 900px) {
+  .projects-page {
+    display: block;
+    min-height: 0;
+  }
+  .projects-group {
+    margin-top: var(--sp-7);
+  }
+  .projects-group:nth-of-type(n),
+  .project-shell #main .projects-title {
+    text-align: left;
+  }
+}

@@ -7,7 +7,7 @@ import { l } from '../../i18n'
 import { fetchJson } from '../../welfare/data'
 import { PartyLogo, RIKSDAG_PARTIES, partyName } from '../../parties/identity'
 import { Feature, Pick } from '../../charts/feature/Feature'
-import RankBars from '../../charts/RankBars'
+import { Stacked } from '../../charts/Compare'
 import { num, pct } from '../controls'
 import './features.css'
 
@@ -50,17 +50,13 @@ export default function VoteShares() {
     .filter((r) => r.session === chosen && RIKSDAG_PARTIES.includes(r.party))
     .sort((a, b) => share(b, focus) - share(a, focus))
   const top = shown[0]
-  const abstain = [...shown].sort(
-    (a, b) => share(b, 'abstain') - share(a, 'abstain'),
-  )[0]
-  const kind = (k: Kind) => KINDS.find((x) => x.kind === k)!
 
   return (
     <Feature
       id="rostrutor"
       title={l(
-        `${partyName(top.party)}: ${pct(share(top, focus), 0)} ${kind(focus).en.toLowerCase()}. ${partyName(abstain.party)} abstained most, ${pct(share(abstain, 'abstain'), 0)} of its votes.`,
-        `${partyName(top.party)}: ${pct(share(top, focus), 0)} ${kind(focus).sv.toLowerCase()}. ${partyName(abstain.party)} avstod mest, ${pct(share(abstain, 'abstain'), 0)} av sina röster.`,
+        `How each party voted, ${chosen}`,
+        `Hur varje parti röstade, ${chosen}`,
       )}
       lead={l(
         `Each bar is the share of a party's member votes in ${chosen}, across ${num(top.decision_points)} decision points. Pick a kind of vote to rank the parties by it.`,
@@ -118,23 +114,31 @@ export default function VoteShares() {
         'Riksdagen, voteringar per ledamot',
       )}
     >
-      <RankBars
+      <Stacked
         label={l(
-          `Share of each party's member votes that were ${kind(focus).en.toLowerCase()}, ${chosen}`,
-          `Andel av varje partis ledamotsröster som var ${kind(focus).sv.toLowerCase()}, ${chosen}`,
+          `Each party's member votes by kind, ${chosen}`,
+          `Varje partis ledamotsröster per sort, ${chosen}`,
         )}
-        max={100}
+        parts={KINDS.map((k, i) => ({
+          label: l(k.en, k.sv),
+          colour: [
+            'var(--cv-olive)',
+            'var(--negative)',
+            'var(--cv-butter)',
+            'var(--cv-oat)',
+          ][i],
+        }))}
         format={(v) => pct(v, 0)}
         rows={shown.map((r) => ({
           key: r.party,
-          party: r.party,
           label: (
             <>
               <PartyLogo party={r.party} size={18} />
               {partyName(r.party)}
             </>
           ),
-          value: share(r, focus),
+          values: KINDS.map((k) => share(r, k.kind)),
+          text: pct(share(r, focus), 0),
         }))}
       />
     </Feature>

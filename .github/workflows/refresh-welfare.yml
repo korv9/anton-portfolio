@@ -3,11 +3,10 @@ name: Refresh public data
 # Daily: fetch the five welfare sources, the tax sources (OECD, Skatteverket) and the parliament sources (Riksdagen roll calls and
 # government-formation news, SCB elections and party preference survey, Valmyndigheten),
 # build and test the warehouse, export the site's JSON and the Parquet the browser filters,
-# upload to R2, and commit the delivery files when they changed. The run record (welfare/run.json) is also written to R2 on every run,
+# upload a validated versioned group to R2. The run record (welfare/run.json) is also written to R2 on every run,
 # so the status page shows when the pipeline last checked, not only when data last moved.
 # Current periods are checked daily; bulk OECD/FK responses have a seven-day refresh policy.
-# Cloudflare builds and publishes the site from every push to main, this commit included
-# (docs/deploy.md), so the workflow does not deploy itself.
+# The site reads the active R2 release without a data commit or code deployment.
 
 on:
   schedule:
@@ -20,7 +19,7 @@ on:
         default: false
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: data-refresh
@@ -47,6 +46,10 @@ jobs:
       - name: Require R2 credentials
         run: |
           for name in R2_ACCOUNT_ID R2_ACCESS_KEY_ID R2_SECRET_ACCESS_KEY R2_BUCKET; do
+            value="${!name}"
+            value="${value#"${value%%[![:space:]]*}"}"
+            value="${value%"${value##*[![:space:]]}"}"
+            export "$name=$value"
             [ -n "${!name}" ] || { echo "::error::Secret $name is not set"; exit 1; }
           done
       - uses: actions/checkout@v4
@@ -56,6 +59,9 @@ jobs:
           cache: pip
           cache-dependency-path: platform/requirements.txt
       - run: pip install -r platform/requirements.txt
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
       # Same writer lock as build-warehouse.yml: shared raw manifests and R2 keys.
       - name: Restore verified raw files
         id: restore
@@ -121,32 +127,9 @@ jobs:
           python platform/publish/validate_public_data.py
       - name: Upload to R2 and verify
         run: |
-          python platform/publish/upload.py
-          python platform/publish/upload.py --verify-only --offload
-          npm run data:catalog
+          python platform/publish/release.py materialize --root frontend/public/data \
+            --spec configs/delivery/public-data.json --catalog frontend/public/data/catalog.json
+          python platform/publish/release.py publish --group public-data --root frontend/public/data \
+            --spec configs/delivery/public-data.json --code-sha "$GITHUB_SHA"
       - name: Publish the run record
         run: python platform/publish/publish_status.py
-      - name: Commit changed delivery files
-        id: commit
-        run: |
-          git config user.name 'data-refresh[bot]'
-          git config user.email 'data-refresh@users.noreply.github.com'
-          git add frontend/public/data
-          # run.json changes on every run; commit only when something else did.
-          if git diff --cached --quiet -- . ':(exclude)frontend/public/data/welfare/run.json' \
-               ':(exclude)frontend/public/data/catalog.json' ':(exclude)frontend/public/data/delivery.json'; then
-            echo "No data changes."
-            echo "changed=false" >> "$GITHUB_OUTPUT"
-          else
-            git commit -m "data: refresh public sources (run ${GITHUB_RUN_ID})"
-            # main may have moved during the run (a merge, another refresh): put this commit on
-            # top of it and push, a few times if needed.
-            pushed=false
-            for attempt in 1 2 3; do
-              if git pull --rebase origin main && git push origin HEAD:main; then pushed=true; break; fi
-              git rebase --abort 2>/dev/null || true
-              sleep $((attempt * 15))
-            done
-            "$pushed"
-            echo "changed=true" >> "$GITHUB_OUTPUT"
-          fi

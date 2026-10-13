@@ -83,6 +83,9 @@ a separate tool. Observatory overviews link to themed analysis pages. Labs keep 
 material in a continuous report with section addresses; readers for individual passages,
 debates and articles remain separate.
 
+- `ProjectsPage` (`#projekt`) lists every project on one screen in three rows, Engineering,
+  Observatories and Labs; the start page keeps its own text list of the same groups. A card is a picture, the name and the kind of work; a project
+  without an `image` in the registry shows its group's colour panel.
 - `ProjectStructure` owns topic navigation and section scrolling after data arrives.
 - `ProjectHero` introduces a project with its name, question and short description.
 - `ProjectDepth` contains method, sources and documentation rather than repeated copy.

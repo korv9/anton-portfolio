@@ -65,24 +65,3 @@ export function loadSymbolicPreview(): Promise<UmapScene> {
       throw error
     }))
 }
-
-/** Published coordinate previews keep the introduction small; no embeddings are recomputed. */
-export async function loadIntroScenes(): Promise<UmapScene[]> {
-  const results = await Promise.allSettled([
-    loadSymbolicPreview(),
-    fetchJson<{ author_centered: [string, number, number, number, number][] }>(
-      'philosophy/atlas.json',
-    ).then(({ author_centered }) => ({
-      id: 'philosophy',
-      en: 'Philosophy Atlas',
-      sv: 'Philosophy Atlas',
-      points: author_centered.map(([, , x, y, c]) => ({ x, y, c })),
-    })),
-    loadJobPreview(),
-  ])
-  return results.flatMap((result) =>
-    result.status === 'fulfilled' && result.value.points.length
-      ? [result.value]
-      : [],
-  )
-}

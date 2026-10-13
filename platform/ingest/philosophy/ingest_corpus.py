@@ -1,8 +1,8 @@
 """Fetch the Philosophy Atlas corpus from Project Gutenberg into the bronze store.
 
-    python platform/ingest/philosophy/ingest_corpus.py
+    python platform/ingest/philosophy/ingest_corpus.py [corpus_extended.json]
 
-Each work in corpus.json is fetched as Gutenberg's plain-text UTF-8 file and stored exactly as
+Each work in corpus.json (or the corpus file named) is fetched as Gutenberg's plain-text UTF-8 file and stored exactly as
 received under warehouse/raw/philosophy/gutenberg/<id>.txt, with its provenance line in
 warehouse/raw/philosophy/_manifest.jsonl (lib/rawstore.py). Requests are spaced out and retried,
 since Gutenberg resets connections under load. The corpus metadata (author, year, tradition,
@@ -30,7 +30,8 @@ def text_url(gutenberg_id: int) -> str:
 
 
 def main() -> int:
-    corpus = json.loads((HERE / "corpus.json").read_text(encoding="utf-8"))["documents"]
+    name = sys.argv[1] if len(sys.argv) > 1 else "corpus.json"
+    corpus = json.loads((HERE / name).read_text(encoding="utf-8"))["documents"]
     http = rawstore.session()
     failed = []
     for doc in corpus:
@@ -45,8 +46,8 @@ def main() -> int:
                 time.sleep(PAUSE * (attempt + 2))
     meta = [dict(doc, source="gutenberg", source_url=text_url(doc["gutenberg_id"]),
                  path=f"gutenberg/{doc['id']}.txt") for doc in corpus]
-    rawstore.store(SOURCE, "corpus.json", json.dumps(meta, ensure_ascii=False, indent=1).encode("utf-8"),
-                   url="platform/ingest/philosophy/corpus.json", method="LOCAL")
+    rawstore.store(SOURCE, name, json.dumps(meta, ensure_ascii=False, indent=1).encode("utf-8"),
+                   url=f"platform/ingest/philosophy/{name}", method="LOCAL")
     print(f"Works attempted: {len(corpus)}, failures: {len(failed)}")
     for line in failed:
         print("  failed:", line)

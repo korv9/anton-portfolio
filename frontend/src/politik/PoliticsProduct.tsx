@@ -13,7 +13,8 @@ import {
   partyName,
 } from '../parties/identity'
 import { carryParties, useParties, withParties } from './partySelection'
-import type { Route } from '../router'
+import PartyPicker from './PartyPicker'
+import { REPORT_TABS, isLongRead, type Route } from '../router'
 import {
   THEMES,
   chapterOf,
@@ -23,6 +24,7 @@ import {
 } from './nav'
 import './politik.css'
 import './dash/dash.css'
+import './longread.css'
 
 const ValjarnaTheme = lazy(() => import('./themes/ValjarnaTheme'))
 const RosterTheme = lazy(() => import('./themes/RosterTheme'))
@@ -40,6 +42,7 @@ const UtforskaTheme = lazy(() => import('./themes/UtforskaTheme'))
 const ModellTheme = lazy(() => import('./modell/ModellTheme'))
 const KallorTheme = lazy(() => import('./themes/KallorTheme'))
 const DeepDive = lazy(() => import('./DeepDive'))
+const Report = lazy(() => import('./report/Report'))
 
 function ThemeView({ theme, route }: { theme: ThemeKey; route: Route }) {
   switch (theme) {
@@ -78,12 +81,11 @@ export default function PoliticsProduct({ route }: { route: Route }) {
   const { selected } = useParties(route)
   // Moving between pages keeps the parties chosen earlier in the session.
   useEffect(() => carryParties(route), [route.hash])
-  // The overview opens on its own first screen, with the party bar under it.
-  const landing = route.path === '#politik'
+  const long = isLongRead(route.path)
   return (
-    <div className={`politik${landing ? ' politik-landing' : ''}`} id="politik">
+    <div className={long ? 'politik politik-long' : 'politik'} id="politik">
       <div className="politik-body">
-        {!landing && <PartySlicer route={route} />}
+        {!long && <PartySlicer route={route} />}
         <div className="politik-main">
           <Suspense
             fallback={
@@ -92,7 +94,11 @@ export default function PoliticsProduct({ route }: { route: Route }) {
               </p>
             }
           >
-            {theme ? (
+            {REPORT_TABS.includes(route.path) ? (
+              <Report route={route} />
+            ) : long && theme ? (
+              <Deep route={route} theme={theme.key} />
+            ) : theme ? (
               <>
                 <ThemeView theme={theme.key} route={route} />
                 <NextPage theme={theme.key} selected={selected} />
@@ -108,6 +114,25 @@ export default function PoliticsProduct({ route }: { route: Route }) {
         </div>
       </div>
     </div>
+  )
+}
+
+/** The deep dives whose charts follow the chosen parties, so they carry the logos. */
+const FILTERED: ThemeKey[] = ['sakdebatter', 'partiledare', 'modell']
+
+/** A deep dive: one analysis on a page of its own, with the way back to the report. */
+function Deep({ route, theme }: { route: Route; theme: ThemeKey }) {
+  const { selected } = useParties(route)
+  return (
+    <section className="politik-chapter" id={route.path.slice(1)}>
+      <div className="politik-chapter-top">
+        <a className="politik-back" href={withParties('#politik', selected)}>
+          ← Political Observatory
+        </a>
+        {FILTERED.includes(theme) && <PartyPicker route={route} small />}
+      </div>
+      <ThemeView theme={theme} route={route} />
+    </section>
   )
 }
 

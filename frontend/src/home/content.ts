@@ -9,15 +9,15 @@ const t = (sv: string, en: string): Bilingual => ({ sv, en })
 export const ABOUT: Bilingual[] = [
   t(
     'Jag är en junior mjukvaruutvecklare med inriktning mot data och AI. Jag söker jobb inom mjukvaruutveckling, data engineering och tillämpad AI. Jag har praktisk erfarenhet av datapipelines och analys och gillar särskilt klustring.',
-    'I’m a junior software developer specializing in data and AI. I’m looking for opportunities in software development, data engineering and applied AI. I have hands-on experience in data pipelines and analytics, and I especially enjoy clustering.',
+    'I’m a junior software developer with a focus on data and AI. I’ve worked with data pipelines and analytics, and I especially enjoy clustering. For my degree project, I used it to group similar IT support tickets and investigate recurring faults. I’m now looking for a role in software development, data engineering or applied AI.',
   ),
   t(
     'Det här är min egen experimentella hemsida. Jag uppdaterar den med nya projekt, experiment och saker jag lär mig.',
-    'This is my personal, experimental website. I’ll keep adding projects, experiments and things I learn along the way.',
+    'This site is also where I try things out. I use it to share my projects and experiments, and keep adding things as I learn.',
   ),
 ]
 
 export const CONTACT = t(
   'Hör gärna av dig med feedback eller idéer. Om du känner till en jobböppning inom mjukvaruutveckling, data eller AI blir jag särskilt glad att höra från dig.',
-  'Please feel free to get in touch with feedback or ideas. If you know of a job opening in software development, data or AI, I’d especially love to hear from you.',
+  'Have feedback on something here, an idea to discuss or a job opportunity in mind? Feel free to get in touch.',
 )

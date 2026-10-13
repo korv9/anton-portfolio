@@ -25,6 +25,8 @@ type Run = {
     works?: number
     languages?: Record<string, number>
     last_publication?: string
+    scope?: string
+    '2026_incomplete_calendar_year'?: boolean
   }
   parameters: Record<string, unknown>
   metrics: Record<string, unknown>
@@ -52,6 +54,7 @@ type Profile = {
   characteristic_terms?: { term: string }[]
   representative_examples: { id: string; text: string }[]
   random_examples: { id: string; text: string }[]
+  feature_means?: Record<string, number>
 }
 const num = (n: number) => n.toLocaleString(l('en-GB', 'sv-SE'))
 const base = '/__cluster_lab/'
@@ -210,10 +213,23 @@ function LabMap({
           ? 0.07
           : p.cluster < 0
             ? 0.15
-            : view.display.alpha
+            : view.total <= 100
+              ? Math.max(0.85, view.display.alpha)
+              : view.display.alpha
       ctx.beginPath()
-      ctx.arc(x, y, Math.max(0.6, view.display.point_size), 0, Math.PI * 2)
+      ctx.arc(
+        x,
+        y,
+        Math.max(view.total <= 100 ? 4 : 0.6, view.display.point_size),
+        0,
+        Math.PI * 2,
+      )
       ctx.fill()
+      if (view.total <= 100) {
+        ctx.strokeStyle = styles.getPropertyValue('--cv-olive')
+        ctx.lineWidth = 0.75
+        ctx.stroke()
+      }
     }
   }, [view, width, colour, group])
   return (
@@ -285,7 +301,11 @@ function OpenRun({ run }: { run: Run }) {
   const options =
     run.family === 'jobs'
       ? ['cluster', 'occupation_field', 'year', 'region', 'neutral']
-      : ['cluster', 'symbol_id', 'document_id', 'tradition', 'neutral']
+      : run.family === 'text'
+        ? ['cluster', 'party', 'speaker', 'year', 'document_id', 'neutral']
+        : run.family === 'numeric'
+          ? ['cluster', 'region_name', 'neutral']
+          : ['cluster', 'symbol_id', 'document_id', 'tradition', 'neutral']
   const groups = view
     ? [...new Set(view.points.map((p) => String(p[colour] ?? '')))].sort()
     : []
@@ -420,10 +440,15 @@ function OpenRun({ run }: { run: Run }) {
       >
         <summary>{l('Profiles and examples', 'Profiler och exempel')}</summary>
         <p>
-          {l(
-            'Automatic terms are preliminary. Examples retain their observation IDs.',
-            'Automatiska teman är preliminära. Exemplen behåller sina observations-ID:n.',
-          )}
+          {run.family === 'numeric'
+            ? l(
+                'Groups describe similarity in the selected indicators. Their numbers are not a wellbeing ranking.',
+                'Grupperna beskriver likhet i de valda indikatorerna. Gruppnumren är ingen rangordning av välmående.',
+              )
+            : l(
+                'Automatic terms are preliminary. Examples retain their observation IDs.',
+                'Automatiska teman är preliminära. Exemplen behåller sina observations-ID:n.',
+              )}
         </p>
         {profiles?.map((profile) => (
           <details key={profile.cluster}>
@@ -434,6 +459,26 @@ function OpenRun({ run }: { run: Run }) {
                 ?.map((term) => term.term)
                 .join(', ')}
             </summary>
+            {profile.feature_means && (
+              <>
+                <h4>
+                  {l(
+                    'Profile means in original units',
+                    'Profilmedelvärden i originalenheter',
+                  )}
+                </h4>
+                <dl className="stage-facts">
+                  {Object.entries(profile.feature_means).map(
+                    ([feature, value]) => (
+                      <div key={feature}>
+                        <dt>{feature}</dt>
+                        <dd>{num(value)}</dd>
+                      </div>
+                    ),
+                  )}
+                </dl>
+              </>
+            )}
             <h4>{l('Representative examples', 'Representativa exempel')}</h4>
             {profile.representative_examples.map((example) => (
               <blockquote key={example.id}>
@@ -480,6 +525,12 @@ export default function ClusterLab() {
   const [status, setStatus] = useState(
     l('Loading local experiments…', 'Läser lokala experiment…'),
   )
+  const [includeUnmapped, setIncludeUnmapped] = useState(
+    () =>
+      new URLSearchParams(window.location.hash.split('?')[1] || '').get(
+        'lab_all',
+      ) === '1',
+  )
   useEffect(() => {
     const sync = () => {
       const params = new URLSearchParams(
@@ -487,6 +538,7 @@ export default function ClusterLab() {
       )
       setOpen(params.get('lab_runs')?.split(',').filter(Boolean) || [])
       setDataset(params.get('lab_dataset') || '')
+      setIncludeUnmapped(params.get('lab_all') === '1')
     }
     window.addEventListener('hashchange', sync)
     window.addEventListener('popstate', sync)
@@ -542,12 +594,14 @@ export default function ClusterLab() {
     else params.delete('lab_runs')
     if (dataset) params.set('lab_dataset', dataset)
     else params.delete('lab_dataset')
+    if (includeUnmapped) params.set('lab_all', '1')
+    else params.delete('lab_all')
     window.history.replaceState(
       null,
       '',
       `${path}${params.size ? `?${params}` : ''}`,
     )
-  }, [open, dataset])
+  }, [open, dataset, includeUnmapped])
   function mark(id: string) {
     const updated = selected.includes(id)
       ? selected.filter((value) => value !== id)
@@ -555,7 +609,12 @@ export default function ClusterLab() {
     setSelected(updated)
     localStorage.setItem('cluster-lab-selected', JSON.stringify(updated))
   }
-  const filtered = runs.filter((run) => !dataset || run.dataset === dataset)
+  const hasLayouts = runs.some((run) => run.layouts.length > 0)
+  const filtered = runs.filter(
+    (run) =>
+      (!dataset || run.dataset === dataset) &&
+      (includeUnmapped || !hasLayouts || run.layouts.length > 0),
+  )
   const comparing = runs.filter((run) => open.includes(run.run_id))
   return (
     <section className="clab" aria-labelledby="clab-title">
@@ -586,6 +645,25 @@ export default function ClusterLab() {
               ))}
             </select>
           </label>
+          {hasLayouts && (
+            <label>
+              <input
+                type="checkbox"
+                checked={includeUnmapped}
+                onChange={(e) => setIncludeUnmapped(e.target.checked)}
+              />
+              {l(
+                'Include runs without layouts',
+                'Visa även körningar utan kartor',
+              )}
+            </label>
+          )}
+          <p>
+            {l(
+              `${num(filtered.length)} of ${num(runs.length)} saved runs shown.`,
+              `${num(filtered.length)} av ${num(runs.length)} sparade körningar visas.`,
+            )}
+          </p>
           <div className="clab-table">
             <table>
               <caption>
@@ -628,21 +706,34 @@ export default function ClusterLab() {
                     <td>
                       {num(run.observations)} / {num(run.sample.total)} ·{' '}
                       {run.sample.kind}
-                      <br />
-                      {run.coverage.years
-                        ? Object.entries(run.coverage.years)
-                            .map(([year, count]) => `${year}: ${num(count)}`)
-                            .join(' · ')
-                        : `${run.coverage.works} ${l('works', 'verk')}`}
-                      {run.coverage.years && (
-                        <>
-                          <br />
-                          {l(
-                            '2026 is an incomplete calendar year.',
-                            '2026 är ett ofullständigt kalenderår.',
-                          )}
-                        </>
-                      )}
+                      <details>
+                        <summary>
+                          {l('Dataset coverage', 'Datasetets täckning')}
+                        </summary>
+                        <p>
+                          {run.coverage.years
+                            ? Object.entries(run.coverage.years)
+                                .map(
+                                  ([year, count]) => `${year}: ${num(count)}`,
+                                )
+                                .join(', ')
+                            : run.coverage.works != null
+                              ? `${num(run.coverage.works)} ${l('works', 'verk')}`
+                              : (run.coverage.scope ??
+                                l(
+                                  'See exact resolved configuration.',
+                                  'Se exakt använd konfiguration.',
+                                ))}
+                        </p>
+                        {run.coverage['2026_incomplete_calendar_year'] && (
+                          <p>
+                            {l(
+                              '2026 is an incomplete calendar year.',
+                              '2026 är ett ofullständigt kalenderår.',
+                            )}
+                          </p>
+                        )}
+                      </details>
                     </td>
                     <td>{run.clusters}</td>
                     <td>{(run.noise_share * 100).toFixed(1)} %</td>
