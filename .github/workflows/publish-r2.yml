@@ -4,6 +4,11 @@ name: Bootstrap versioned data delivery in R2
 
 on:
   workflow_dispatch:
+    inputs:
+      manifest_key:
+        description: Active manifest (use manifests/pipeline-smoke.json for verification)
+        type: string
+        default: manifests/current.json
 
 permissions:
   contents: read
@@ -25,6 +30,7 @@ jobs:
       R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY || secrets.R2_SECRET_ACCESS_KEY_ID }}
       R2_BUCKET: ${{ secrets.R2_BUCKET }}
       R2_PUBLIC_BASE: ${{ vars.R2_PUBLIC_BASE }}
+      MANIFEST_KEY: ${{ inputs.manifest_key || 'manifests/current.json' }}
     steps:
       - name: Require R2 credentials
         run: |
@@ -54,10 +60,12 @@ jobs:
               continue
             fi
             python platform/publish/release.py materialize --root frontend/public/data \
-              --spec "configs/delivery/$group.json" --catalog frontend/public/data/catalog.json
+              --spec "configs/delivery/$group.json" --catalog frontend/public/data/catalog.json \
+              --prefer-active
             python platform/publish/release.py publish --stage-only --group "$group" \
               --root frontend/public/data --spec "configs/delivery/$group.json" \
-              --code-sha "$GITHUB_SHA" > "$RUNNER_TEMP/release-$group.log"
+              --code-sha "$GITHUB_SHA" --manifest-key "${MANIFEST_KEY:-manifests/current.json}" \
+              > "$RUNNER_TEMP/release-$group.log"
             release=$(tail -n 1 "$RUNNER_TEMP/release-$group.log" | python -c "import json,sys; print(json.load(sys.stdin)['release'])")
             printf '%s\t%s\n' "$group" "$release" >> "$RUNNER_TEMP/release-bundle.tsv"
           done
@@ -67,7 +75,8 @@ jobs:
           while IFS=$'\t' read -r group release; do
             choices+=(--release "$group=$release")
           done < "$RUNNER_TEMP/release-bundle.tsv"
-          python platform/publish/release.py activate "${choices[@]}"
+          python platform/publish/release.py activate "${choices[@]}" \
+            --manifest-key "${MANIFEST_KEY:-manifests/current.json}"
       - name: Keep publication receipts
         if: always()
         uses: actions/upload-artifact@v4

@@ -219,9 +219,15 @@ def test_initial_bootstrap_stages_groups_then_activates_once(tmp_path):
     assert "diva" not in groups, "bootstrap must not invent a DiVA group without published files"
     assert len(acts) == 1 and calls.index(acts[0]) > max(calls.index(call) for call in pubs)
     assert all(option(call, "--code-sha") == SHA for call in pubs)
+    assert all("--prefer-active" in call for call in calls if "materialize" in call)
     activation_groups = {call.split("=", 1)[0] for call in acts[0][acts[0].index("activate") + 1:]
                          if "=" in call}
     assert groups == activation_groups
+    smoke = "manifests/pipeline-smoke.json"
+    result, calls, _ = run_script(tmp_path, "\n".join(scripts), MANIFEST_KEY=smoke)
+    assert result.returncode == 0, result.stderr
+    assert all(option(call, "--manifest-key") == smoke
+               for call in calls if "publish" in call or "activate" in call)
     (tmp_path / "frontend/public/data/diva/clusters.json").write_text('{"clusters":[],"points":[]}')
     result, calls, _ = run_script(tmp_path, "\n".join(scripts))
     assert result.returncode == 0, result.stderr
