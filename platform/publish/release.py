@@ -7,6 +7,7 @@ import json
 import re
 import subprocess
 import sys
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from fnmatch import fnmatch
 from pathlib import Path, PurePosixPath
@@ -31,6 +32,15 @@ def encoded(value) -> bytes:
 
 def digest(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
+
+
+def parallel(function, values):
+    """Four independent object operations; cancel queued work on failure."""
+    pool = ThreadPoolExecutor(max_workers=4)
+    try:
+        return list(pool.map(function, values))
+    finally:
+        pool.shutdown(wait=True, cancel_futures=True)
 
 
 def name(value: str) -> str:
@@ -121,13 +131,13 @@ def materialize(s3, bucket: str, root: Path, spec: dict, catalogue: dict, prefer
             active.update(group_manifest(s3, bucket, pointer)["files"])
     known = {"files": [{"path": p} for p in entries.keys() | active.keys()]}
     paths = selected(root, spec, known)
-    for relative in paths:
+    def restore_file(relative):
         logical(relative)
         path = root / relative
         if not path.resolve().is_relative_to(root):
             raise ValueError(f"Export escapes staging root: {relative}")
         if path.is_file() and not (prefer_active and relative in active):
-            continue
+            return
         if relative in active:
             data = verified(s3, bucket, active[relative])
         else:
@@ -146,6 +156,7 @@ def materialize(s3, bucket: str, root: Path, spec: dict, catalogue: dict, prefer
                 raise ValueError(f"Offloaded catalogue hash mismatch: {relative}")
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(data)
+    parallel(restore_file, paths)
     return {"files": paths, "schema_version": 2}
 
 
@@ -313,10 +324,11 @@ def publish(s3, bucket: str, group: str, root: Path, spec: dict, code_sha=None, 
                 "checks": spec.get("checks", []), "coverage": spec.get("coverage", {})}
     release = digest(encoded(identity))
     prefix = f"releases/{group}/{release}/"
-    files = {}
-    for path, data in payloads.items():
-        files[path] = immutable(s3, bucket, prefix + "files/" + path, data,
-                                PUBLIC_TYPES.get(Path(path).suffix, "application/octet-stream"))
+    def upload_file(item):
+        path, data = item
+        return path, immutable(s3, bucket, prefix + "files/" + path, data,
+                               PUBLIC_TYPES.get(Path(path).suffix, "application/octet-stream"))
+    files = dict(parallel(upload_file, payloads.items()))
     indexes = {}
     for first, entries in file_indexes(files).items():
         data = encoded(entries)
@@ -354,10 +366,9 @@ def release_pointer(s3, bucket: str, group: str, release: str):
     manifest = group_manifest(s3, bucket, pointer)
     pointer["published_at"] = manifest["published_at"]
     pointer["dependencies"] = manifest["dependencies"]
-    for entry in manifest["files"].values():
+    def verify_file(entry):
         verified(s3, bucket, entry)
-    for entry in manifest["indexes"].values():
-        verified(s3, bucket, entry)
+    parallel(verify_file, [*manifest["files"].values(), *manifest["indexes"].values()])
     return pointer
 
 
@@ -386,7 +397,9 @@ def main():
     undo = commands.add_parser("rollback")
     undo.add_argument("--group", required=True)
     undo.add_argument("--release", required=True)
-    for command in (put, restore, bundle, undo):
+    current = commands.add_parser("current", help="read the approved group manifest without publishing")
+    current.add_argument("--group", required=True)
+    for command in (put, restore, bundle, undo, current):
         command.add_argument("--manifest-key", default=CURRENT,
                              help="active manifest key; use a separate manifests/smoke-NAME.json for drift tests")
     args = parser.parse_args()
@@ -395,7 +408,18 @@ def main():
             raise ValueError("Manifest key must be manifests/NAME.json")
         CURRENT = args.manifest_key
         s3, bucket = client()
-        if args.command == "publish":
+        if args.command == "current":
+            name(args.group)
+            data, _ = read(s3, bucket, CURRENT)
+            state = strict_json(data) if data else {"schema_version": 2, "groups": {}}
+            if state.get("schema_version") != 2:
+                raise ValueError("Unsupported active manifest schema")
+            pointer = state["groups"].get(args.group)
+            manifest = group_manifest(s3, bucket, pointer) if pointer else None
+            if manifest and manifest["group"] != args.group:
+                raise ValueError("Current group identity differs")
+            result = {"release": manifest["release"] if manifest else None}
+        elif args.command == "publish":
             spec = json.loads(args.spec.read_text(encoding="utf-8"))
             result = publish(s3, bucket, args.group, args.root, spec, args.code_sha, args.stage_only)
         elif args.command == "materialize":

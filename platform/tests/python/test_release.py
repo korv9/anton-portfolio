@@ -389,6 +389,10 @@ def test_cli_stage_bundle_rollback_and_restore_are_isolated(exports, monkeypatch
     assert active["groups"].keys() == {"jobs", "news"}
     assert s3.puts[-1] == key
     assert "manifests/current.json" not in s3.objects
+    puts = list(s3.puts)
+    assert run("current", "--group", "jobs") == {"release": jobs["release"]}
+    assert run("current", "--group", "missing") == {"release": None}
+    assert s3.puts == puts
     original = (exports / "parliament/news.json").read_bytes()
     write(exports, "parliament/news.json", b'{"stale":true}')
     run("materialize", "--root", str(exports), "--spec", str(news_spec), "--catalog", str(cat), "--prefer-active")
