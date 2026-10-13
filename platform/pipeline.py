@@ -3,9 +3,11 @@
     python platform/pipeline.py list
     python platform/pipeline.py run welfare
     python platform/pipeline.py run welfare parliament taxes --only ingest,dbt
+    python platform/pipeline.py run symbolic --only dbt:1    # only the first dbt step
     python platform/pipeline.py run --all --ml stale --dry-run
     python platform/pipeline.py pull welfare          # the subject's raw and feature files from R2
     python platform/pipeline.py push welfare
+    python platform/pipeline.py check                 # the data contracts on the delivered files
 
 The same command runs locally and in GitHub Actions. Publishing changes the live site, so it
 runs only in Actions or when asked for with --only publish. One failed subject does not stop
@@ -104,9 +106,11 @@ def ml_argv(step: dict, mode: str) -> list[str] | None:
 def run_subject(name: str, subject: dict, phases: set[str], ml: str, run: Runner) -> None:
     target = subject.get("target", name)
     has_dbt = any("dbt" in step for step in subject["steps"])
+    seen: dict[str, int] = {}
     for step in subject["steps"]:
         phase = next(p for p in PHASES if p in step)
-        if phase not in phases:
+        seen[phase] = seen.get(phase, 0) + 1
+        if phase not in phases and f"{phase}:{seen[phase]}" not in phases:
             continue
         if step.get("when_env") and not os.environ.get(step["when_env"]) and not run.dry_run:
             print(f"  skipped ({step['when_env']} is not set): {step[phase]}")
@@ -128,8 +132,9 @@ def run_subject(name: str, subject: dict, phases: set[str], ml: str, run: Runner
 def publish(config: dict, names: list[str], failed: dict, phases: set[str], run: Runner) -> None:
     """Each group once, and only when all of its subjects came through this run."""
     subjects = config["subjects"]
-    for group in dict.fromkeys(subjects[n]["group"] for n in names):
-        members = [n for n, s in subjects.items() if s["group"] == group]
+    for group in dict.fromkeys(subjects[n]["group"] for n in names if "group" in subjects[n]):
+        members = [n for n, s in subjects.items()
+                   if s.get("group") == group and (n in names or not s.get("manual"))]
         absent = [n for n in members if n not in names or n in failed]
         print(f"\n== publish {group}", flush=True)
         if absent and phases != {"publish"}:
@@ -149,7 +154,8 @@ def command_run(args, config: dict) -> int:
     subjects = config["subjects"]
     names = [n for n, s in subjects.items() if not s.get("manual")] if args.all else args.subjects
     phases = set(args.only.split(",")) if args.only else set(PHASES)
-    if unknown := [n for n in names if n not in subjects] + sorted(phases - set(PHASES)):
+    if unknown := [n for n in names if n not in subjects] + sorted(
+            p for p in phases if p.split(":")[0] not in PHASES):
         raise SystemExit(f"Unknown: {', '.join(unknown)}")
     if not names:
         raise SystemExit("Name a subject or pass --all (python platform/pipeline.py list)")
@@ -205,7 +211,7 @@ def command_list(config: dict) -> int:
     for name, subject in config["subjects"].items():
         phases = dict.fromkeys(next(p for p in PHASES if p in step) for step in subject["steps"])
         needs = f"   needs {', '.join(subject['needs'])}" if subject.get("needs") else ""
-        print(f"{name:<19}{subject['group']:<15}{subject['schedule']:<14}{' '.join(phases)}{needs}")
+        print(f"{name:<19}{subject.get('group', '-'):<15}{subject['schedule']:<14}{' '.join(phases)}{needs}")
     return 0
 
 
@@ -213,6 +219,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     commands = parser.add_subparsers(dest="command", required=True)
     commands.add_parser("list")
+    commands.add_parser("check")
     for name in ("run", "pull", "push"):
         sub = commands.add_parser(name)
         sub.add_argument("subjects", nargs="*")
@@ -231,6 +238,10 @@ def main() -> int:
     config = registry()
     if args.command == "list":
         return command_list(config)
+    if args.command == "check":
+        for command in flat(config["definitions"]["data_check"]):
+            Runner(False)(expand(command))
+        return 0
     return command_run(args, config) if args.command == "run" else command_store(args, config)
 
 

@@ -15,7 +15,7 @@
 # group in configs/delivery that owns its files), needs (subjects that must not have failed in
 # the same run), raw and features (paths under warehouse/raw and warehouse/features kept in R2),
 # prune (raw pushes delete remote files that are gone locally), target (dbt target folder when it
-# differs from the subject name), manual (left out of --all).
+# differs from the subject name), manual (left out of --all, and not required by its group).
 #
 # A group is published once, after every subject in it has succeeded.
 
@@ -97,7 +97,7 @@ subjects:
     prune: true
     steps:
       # Rejects partial or unverified parliament inputs before dbt can build on them.
-      - ingest: python platform/ingest/run_taxes.py --require-parliament
+      - ingest: python platform/ingest/taxes/require_parliament.py
       - ingest: python platform/ingest/taxes/taxes_ingest.py
       - dbt: {select: [+tag:taxes]}
       - export: python platform/publish/export_taxes.py
@@ -134,6 +134,32 @@ subjects:
     steps:
       - dbt: {select: [+tag:politics]}
       - export: python platform/publish/export_politics.py
+
+  # CI: politics from the committed deliveries in an empty warehouse, where the parliament
+  # models have nothing to read, then proof that the export is byte-identical to the site's files.
+  politics_check:
+    schedule: every push
+    manual: true
+    target: politics
+    steps:
+      - dbt: {select: [+tag:politics], exclude: ['tag:parliament']}
+      - export: python platform/publish/export_politics.py --check
+
+  # The builders not yet moved into dbt. build_politics.py is not here: it needs three local
+  # sources (--parliament, --allegoria, --local-corpus), one of them in no repository.
+  legacy:
+    schedule: manual
+    group: baseline
+    manual: true
+    target: politics
+    steps:
+      - ingest: python platform/legacy/build_gold.py
+      - dbt: {select: [+tag:politics]}
+      - export: python platform/publish/export_politics.py
+      - export: python platform/legacy/build_products.py
+      - export: python platform/legacy/build_speech_browser.py
+      - export: python platform/publish/export_debates.py
+      - export: *data_catalog
 
   ai_act:
     schedule: '13 3 * * 0'
