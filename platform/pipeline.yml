@@ -185,6 +185,7 @@ subjects:
           exclude: [mart_ai_act_speech_similarity, assert_concept_link_targets_exist]
       - ml: python platform/nlp/ai_politics/similarity.py
         marker: ai_politics/run.json
+        stale_arg: --if-stale
       - dbt: {select: [mart_ai_act_speech_similarity]}
       - export: python platform/publish/ai_politics/export_ai_politics.py
 
@@ -215,6 +216,7 @@ subjects:
           exclude: ['path:models/gold/philosophy', assert_concept_link_targets_exist]
       - ml: python platform/nlp/philosophy/pipeline.py
         marker: philosophy/run.json
+        stale_arg: --if-stale
       - dbt:
           select: ['path:models/gold/philosophy']
           exclude: [assert_concept_link_targets_exist]
@@ -237,6 +239,7 @@ subjects:
     steps:
       - ml: python platform/nlp/concepts/build.py
         marker: concepts/run.json
+        stale_arg: --if-stale
       - dbt: {select: [tag:concepts]}
       - export: python platform/publish/concepts/export_concepts.py
 

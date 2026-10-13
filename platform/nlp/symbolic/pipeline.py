@@ -30,10 +30,12 @@ import numpy as np
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
+sys.path.insert(0, str(HERE.parent / "text"))
 
 import clustering  # noqa: E402
 import embeddings  # noqa: E402
 import evaluation  # noqa: E402
+import staleness  # noqa: E402
 
 ROOT = HERE.parents[2]
 DATABASE = Path(os.environ.get("PORTFOLIO_DB", ROOT / "warehouse/portfolio.duckdb"))
@@ -86,9 +88,7 @@ def write_projection(path: Path, ids, layout, labels, probabilities) -> None:
 
 
 def sample_sha256(ids: list[str]) -> str:
-    import hashlib
-
-    return hashlib.sha256("\n".join(ids).encode()).hexdigest()
+    return staleness.digest(ids)
 
 
 def main(if_stale: bool = False) -> int:
@@ -96,11 +96,9 @@ def main(if_stale: bool = False) -> int:
     check_size(len(rows))
     ids = [r[0] for r in rows]
     digest = sample_sha256(ids)
-    previous = FEATURES / "run.json"
-    if if_stale and previous.is_file():
-        if json.loads(previous.read_text(encoding="utf-8")).get("sample_sha256") == digest:
-            print("The sample is unchanged since the last run; the map stands.")
-            return 0
+    if if_stale and staleness.stands(FEATURES / "run.json", "sample_sha256", digest):
+        print("The sample is unchanged since the last run; the map stands.")
+        return 0
     started = datetime.now(timezone.utc)
     print(f"Embedding {len(ids)} contexts with {embeddings.MODEL} …", flush=True)
     vectors = embeddings.embed([r[1] for r in rows])

@@ -33,6 +33,7 @@ import pandas as pd
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / "platform" / "nlp" / "text"))
 
+from staleness import digest, stands  # noqa: E402
 from vectors import MULTILINGUAL, embed, top_k  # noqa: E402
 
 DATABASE = Path(os.environ.get("PORTFOLIO_DB", ROOT / "warehouse/portfolio.duckdb"))
@@ -60,7 +61,7 @@ def act_passages(text: str) -> list[str]:
     return out
 
 
-def main() -> int:
+def main(if_stale: bool = False) -> int:
     con = duckdb.connect(str(DATABASE), read_only=True)
     current = con.sql("select celex from silver.int_ai_act_documents where is_current").fetchone()[0]
     articles = con.sql(f"""
@@ -75,6 +76,11 @@ def main() -> int:
     speech = con.sql("""
         select speech_id || ':' || paragraph as speech_passage_id, speech_id, paragraph, text
         from silver.int_ai_speech_paragraphs order by speech_id, paragraph""").df().to_dict("records")
+    inputs = digest([MULTILINGUAL, *(f"{a['act_passage_id']}\t{a['text']}" for a in act),
+                     *(f"{s['speech_passage_id']}\t{s['text']}" for s in speech)])
+    if if_stale and stands(OUT / "run.json", "input_sha256", inputs):
+        print("The Act and the speeches are unchanged since the last run; the similarities stand.")
+        return 0
     print(f"Embedding {len(act)} AI Act passages and {len(speech)} speech paragraphs with {MULTILINGUAL} …",
           flush=True)
     act_vec = embed([a["text"] for a in act])
@@ -123,6 +129,7 @@ def main() -> int:
                                   "p95": float(np.quantile(random_pairs, 0.95))},
         "top1_per_speech": {"mean": float(val[:, 0].mean()), "median": float(np.median(val[:, 0]))},
         "ran_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "input_sha256": inputs,
     }
     (OUT / "run.json").write_text(json.dumps(run, indent=1) + "\n", encoding="utf-8")
     print(json.dumps(run, indent=1))
@@ -130,4 +137,4 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    sys.exit(main(if_stale="--if-stale" in sys.argv))

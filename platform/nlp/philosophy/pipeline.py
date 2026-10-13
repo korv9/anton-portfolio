@@ -45,6 +45,7 @@ ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / "platform" / "nlp" / "text"))
 sys.path.insert(0, str(ROOT / "platform" / "nlp" / "symbolic"))
 
+from staleness import digest, stands  # noqa: E402
 from vectors import MULTILINGUAL, embed  # noqa: E402
 
 DATABASE = Path(os.environ.get("PORTFOLIO_DB", ROOT / "warehouse/portfolio.duckdb"))
@@ -139,7 +140,7 @@ def evaluate(vectors, labels, works, translators) -> dict:
     }
 
 
-def main() -> int:
+def main(if_stale: bool = False) -> int:
     from clustering import MAP, SPACE, cluster, reduce
     from transforms import center_by_document
 
@@ -150,6 +151,11 @@ def main() -> int:
     sample = balanced_sample(passages)
     works = sample["document_id"].tolist()
     translators = [t if isinstance(t, str) else "" for t in sample["translator"]]
+    inputs = digest([MULTILINGUAL, TENSIONS.read_text(encoding="utf-8"), REVIEWS.read_text(encoding="utf-8"),
+                     *(f"{i}\t{t}" for i, t in zip(sample["passage_id"], sample["text"]))])
+    if if_stale and stands(OUT / "run.json", "input_sha256", inputs):
+        print("The sample, the tensions and the reviews are unchanged since the last run; the maps stand.")
+        return 0
     print(f"Embedding {len(sample)} passages from {sample.document_id.nunique()} works with {MULTILINGUAL} …", flush=True)
     vectors = embed(sample["text"].tolist())
     variants = {"baseline": vectors, "author_centered": center_by_document(vectors, works)}
@@ -207,10 +213,11 @@ def main() -> int:
     run = {"model": MULTILINGUAL, "passages_total": int(len(passages)), "passages_sampled": int(len(sample)),
            "per_document": PER_DOCUMENT, "works": int(sample.document_id.nunique()),
            "umap_map": MAP, "umap_space": SPACE, "hdbscan": HDBSCAN, "neighbours": NEIGHBOURS,
-           "evaluation": evaluation, "ran_at": datetime.now(timezone.utc).isoformat(timespec="seconds")}
+           "evaluation": evaluation, "ran_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+           "input_sha256": inputs}
     (OUT / "run.json").write_text(json.dumps(run, indent=1) + "\n", encoding="utf-8")
     return 0
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    sys.exit(main(if_stale="--if-stale" in sys.argv))
