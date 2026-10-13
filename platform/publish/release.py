@@ -140,7 +140,9 @@ def materialize(s3, bucket: str, root: Path, spec: dict, catalogue: dict, prefer
             # Historical catalogue v1 normalised every payload; new releases never do.
             historical = entry.get("schema_version", catalogue.get("schema_version", 1)) == 1
             checked = data.replace(b"\r\n", b"\n") if historical else data
-            if len(checked) != entry["bytes"] or digest(checked) != entry["sha256"]:
+            # V1 binary hashes were normalised, but their sizes counted the exact bytes.
+            size = len(checked) if historical and path.suffix in (".json", ".csv", ".svg") else len(data)
+            if size != entry["bytes"] or digest(checked) != entry["sha256"]:
                 raise ValueError(f"Offloaded catalogue hash mismatch: {relative}")
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(data)

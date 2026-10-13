@@ -44,3 +44,27 @@ once; daily data publications then update the manifest without a code deploy.
 The source fix, isolated bootstrap, public-data refresh and frontend activation
 are separate checks. Live workflow links and final results are recorded below
 as each completes.
+
+- [PR47](https://github.com/korv9/anton-portfolio/pull/47) merged as `27b15c2`.
+  GitHub CI and the production Cloudflare build passed.
+- [The first corrected live run](https://github.com/korv9/anton-portfolio/actions/runs/38412230320)
+  completed welfare and parliament. Taxes then rejected the valid historical
+  filename `19992000.csv.gz`. Its guard now accepts consecutive session years
+  with either two- or four-digit endings and still requires verified seals.
+- [The isolated bootstrap](https://github.com/korv9/anton-portfolio/actions/runs/38414411711)
+  stopped before activation on a V1 Parquet size check. The real object has
+  329,302 bytes, its CRLF-normalised form has 329,300 bytes, and the normalised
+  hash matches the historical catalogue exactly. Materialization now checks
+  binary sizes against raw bytes while preserving the historical hash policy.
+  Legacy text-size compatibility and corruption rejection remain tested.
+- Follow-up local checks: 429 platform tests passed (two skipped), 90 unit
+  tests passed, and tax bootstrap still verifies 62 decisions through 37 dbt
+  nodes/tests. The isolated browser run passed all 126 existing tests; the two
+  live acceptance tests are opt-in and run against actual approved releases.
+
+`build_catalog.py` retains an explicitly configured live manifest URL on
+rebuild. UI checks pin the committed snapshots; live acceptance separately
+checks group/file hashes and the browser's versioned reads. A custom
+`PLAYWRIGHT_PORT` starts an isolated server, with unique output directories.
+Offloaded UI fixtures use API-backed reads from nonstandard local ports;
+live browser checks use the production Origin and its actual CORS policy.

@@ -34,8 +34,8 @@ def require_parliament() -> None:
             raise RuntimeError(f"Missing parliament upstream: {pattern}; restore verified raw data "
                                "or run platform/ingest/run_parliament.py before taxes")
         for path in paths:
-            match = re.fullmatch(r"(\d{4})(\d{2})(?:-\d+)?", path.name.split(".")[0])
-            if not match:
+            match = re.fullmatch(r"(\d{4})(\d{2}|\d{4})(?:-\d+)?", path.name.split(".")[0])
+            if not match or match[2] not in {str(int(match[1]) + 1), str(int(match[1]) + 1)[-2:]}:
                 raise RuntimeError(f"Invalid parliament upstream filename: {path}")
             session = f"{match[1]}/{match[2]}"
             group = ("studies/preparation/" if preparation else "history/") + match[1] + match[2]

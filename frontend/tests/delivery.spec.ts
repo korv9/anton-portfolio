@@ -34,7 +34,7 @@ test('document shards load from object storage, not from the site', async ({
     expect(url.startsWith(bases.shard)).toBeTruthy()
 })
 
-test('the delivery manifest drives resolution and JSON stays on the site', async ({
+test('legacy delivery resolves JSON from the pinned site snapshots', async ({
   page,
 }) => {
   const manifest = await page.request.get('/data/delivery.json')

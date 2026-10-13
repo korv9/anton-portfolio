@@ -251,3 +251,20 @@ def test_tax_requires_verified_complete_preparation_and_history(repair):
     (raw / "riksdagen/studies/coverage/201011.json").write_text("corrupt")
     with pytest.raises(RuntimeError, match="Incomplete or unverified"):
         taxes.require_parliament()
+
+
+def test_tax_gate_accepts_verified_century_session_and_rejects_invalid_years(repair):
+    http, bills, raw = repair
+    studies.main()
+    for session, key in (("2010/11", "201011"), ("1999/2000", "19992000")):
+        vote = rawstore.store("riksdagen", f"votes/{key}.csv.gz", b"fixture", url="votes")
+        report = rawstore.store("riksdagen", f"reports/{key}-01.json", b"{}", url="reports")
+        rawstore.complete("riksdagen", f"history/{key}", [vote, report], {"session": session})
+    taxes.require_parliament()
+    rawstore.invalidate("riksdagen", "history/19992000")
+    with pytest.raises(RuntimeError, match="Incomplete or unverified"):
+        taxes.require_parliament()
+    rawstore.complete("riksdagen", "history/19992000", [vote, report], {"session": "1999/2000"})
+    rawstore.store("riksdagen", "votes/19991999.csv.gz", b"fixture", url="votes")
+    with pytest.raises(RuntimeError, match="Invalid parliament upstream filename"):
+        taxes.require_parliament()

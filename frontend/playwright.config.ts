@@ -1,5 +1,10 @@
 import { defineConfig, devices } from '@playwright/test'
 
+const port = Number(process.env.PLAYWRIGHT_PORT ?? 5173)
+if (!Number.isInteger(port) || port < 1024 || port > 65535)
+  throw new Error('PLAYWRIGHT_PORT must be between 1024 and 65535')
+const baseURL = `http://127.0.0.1:${port}`
+
 export default defineConfig({
   testDir: './tests',
   testMatch: '**/*.spec.ts',
@@ -7,7 +12,7 @@ export default defineConfig({
   reporter: 'list',
   expect: { timeout: 15000 },
   use: {
-    baseURL: 'http://127.0.0.1:5173',
+    baseURL,
     trace: 'retain-on-failure',
     // A preinstalled Chromium whose revision differs from this Playwright version.
     launchOptions: process.env.PLAYWRIGHT_CHROMIUM_PATH
@@ -28,8 +33,8 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'npm run dev',
-    url: 'http://127.0.0.1:5173',
-    reuseExistingServer: !process.env.CI,
+    command: `npx vite --config vite.config.ts --host 127.0.0.1 --port ${port} --strictPort`,
+    url: baseURL,
+    reuseExistingServer: !process.env.CI && !process.env.PLAYWRIGHT_PORT,
   },
 })
