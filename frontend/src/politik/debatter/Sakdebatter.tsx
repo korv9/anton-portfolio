@@ -1,63 +1,36 @@
 /**
- * Sakdebatter: the Riksdag's debates on committee reports, one riksmöte at a time. How many
- * and when, which issue areas, who speaks and who replies, how the parties then voted on the
- * reports that were debated, and every debate in a list that opens replik för replik.
+ * Issue debates: the Riksdag's debates on committee reports, read as a chat. The reader picks a
+ * riksmöte, an issue area and a debate; the debate plays turn by turn, and one chart shows which
+ * areas the riksmöte debated most. From politics/parliament/debate-stats.
  */
 import { useEffect, useState } from 'react'
 import { l } from '../../i18n'
-import { ProjectDepth } from '../../projects/ProjectStructure'
-import { RIKSDAG_PARTIES, identity, partyName } from '../../parties/identity'
 import type { Route } from '../../router'
-import { shownParties, useParties } from '../partySelection'
+import { useParties } from '../partySelection'
 import { useViewParams } from '../useViewParams'
 import { Select, dayName, num } from '../controls'
-import { Board, Card, Cards, Empty, Kpi, Kpis } from '../board/Board'
-import Columns from '../board/Columns'
+import { Board, Card, Cards, Empty } from '../board/Board'
 import RankBars from '../../charts/RankBars'
-import { IssueChips, debateHref } from './DebateView'
-import DebateRanking from '../features/DebateRanking'
-import SakAnalys from './SakAnalys'
+import DebateChat from './DebateChat'
 import './debatter.css'
 import {
   loadDebateIndex,
   loadSession,
-  totalFor,
+  loadSpeeches,
   type DebateIndex,
   type IssueDebate,
+  type Speech,
 } from './data'
 
-const DEFAULTS = { riksmote: '', omrade: '', sok: '' }
+const DEFAULTS = { riksmote: '', omrade: '', debatt: '' }
 
-/**
- * The page: the analysis of the chosen party (or the Riksdag) first, then the riksmöte-level
- * explorer (leaderboard, the votes on the debated reports, every debate) behind "Fördjupa".
- */
 export default function Sakdebatter({ route }: { route: Route }) {
-  return (
-    <>
-      <SakAnalys route={route} />
-      <ProjectDepth project="politics">
-        <details className="sak-deeper" id="fordjupa">
-          <summary>
-            {l(
-              'Go deeper: the debates riksmöte by riksmöte: leaderboard, votes on the reports and every debate',
-              'Fördjupa analysen: debatterna riksmöte för riksmöte: topplista, röster på betänkandena och alla debatter',
-            )}
-          </summary>
-          <Explorer route={route} />
-        </details>
-      </ProjectDepth>
-    </>
-  )
-}
-
-function Explorer({ route }: { route: Route }) {
   const [view, setView] = useViewParams(route, DEFAULTS)
   const { selected } = useParties(route)
   const [index, setIndex] = useState<DebateIndex | null>(null)
   const [debates, setDebates] = useState<IssueDebate[] | null>(null)
+  const [speeches, setSpeeches] = useState<Speech[] | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [query, setQuery] = useState(view.sok)
 
   useEffect(() => {
     loadDebateIndex()
@@ -75,6 +48,38 @@ function Explorer({ route }: { route: Route }) {
       .catch((e: Error) => setError(e.message))
   }, [current?.path])
 
+  // Newest first; a debate needs replies to read as a conversation.
+  const listed = (debates ?? [])
+    .filter(
+      (d) =>
+        d.replies > 0 &&
+        (!view.omrade || d.issues.includes(view.omrade)) &&
+        (!selected.length || selected.some((p) => d.parties[p])),
+    )
+    .sort((a, b) => b.date.localeCompare(a.date))
+  const debate = listed.find((d) => d.id === view.debatt) ?? listed[0]
+  useEffect(() => {
+    setSpeeches(null)
+    if (!debate) return
+    let live = true
+    loadSpeeches(debate.path)
+      .then(
+        (all) =>
+          live &&
+          setSpeeches(
+            all.filter(
+              (s) =>
+                s.speech_number >= debate.first &&
+                s.speech_number <= debate.last,
+            ),
+          ),
+      )
+      .catch((e: Error) => live && setError(e.message))
+    return () => {
+      live = false
+    }
+  }, [debate?.id])
+
   if (error)
     return (
       <p role="alert" className="theme-error">
@@ -83,49 +88,21 @@ function Explorer({ route }: { route: Route }) {
     )
   if (!index || !current) return <Empty />
 
-  const parties = shownParties(selected)
-  const words = query.trim().toLowerCase()
-  const filtered = (debates ?? []).filter(
-    (d) =>
-      (!view.omrade || d.issues.includes(view.omrade)) &&
-      (!selected.length || selected.some((p) => d.parties[p])) &&
-      (!words || d.title.toLowerCase().includes(words)),
-  )
-  const issueName = (key: string) => {
-    const issue = index.issues.find((i) => i.key === key)
-    return issue ? l(issue.en, issue.sv) : key
-  }
-  const linked = filtered.filter((d) => d.decision)
-
-  // Issue areas, by number of debates.
-  const areaCounts = index.issues
+  const areas = index.issues
     .map((issue) => ({
-      issue,
-      count: filtered.filter((d) => d.issues.includes(issue.key)).length,
+      key: issue.key,
+      label: l(issue.en, issue.sv),
+      value: (debates ?? []).filter((d) => d.issues.includes(issue.key)).length,
     }))
-    .filter((x) => x.count > 0)
-    .sort((a, b) => b.count - a.count)
-  // How the parties voted on the debated reports: share of points with Ja, Nej, Avstår.
-  const votes = (party: string, position: string) => {
-    const points = linked.flatMap((d) => d.decision!.points)
-    const withParty = points.filter((p) => p.positions[party])
-    return withParty.length
-      ? (withParty.filter((p) => p.positions[party] === position).length /
-          withParty.length) *
-          100
-      : null
-  }
+    .filter((row) => row.value > 0)
+    .sort((a, b) => b.value - a.value)
 
   return (
     <Board
-      level={2}
-      title={l(
-        `The debates of ${current.session}`,
-        `Debatterna under ${current.session}`,
-      )}
+      title={l('Issue debates', 'Sakdebatter')}
       sub={l(
-        `Debates on committee reports in riksmötet ${current.session}. Choose parties in the bar above to see the debates they take part in.`,
-        `Debatter om utskottens betänkanden under riksmötet ${current.session}. Välj partier i raden ovanför för att se debatterna de deltar i.`,
+        `The Riksdag’s debates on committee reports in ${current.session}. Pick an issue area and a debate to read it turn by turn.`,
+        `Riksdagens debatter om utskottens betänkanden under ${current.session}. Välj ett sakområde och en debatt för att läsa den inlägg för inlägg.`,
       )}
       slicers={
         <>
@@ -135,7 +112,7 @@ function Explorer({ route }: { route: Route }) {
             options={[...sessions]
               .reverse()
               .map((s) => ({ value: s.session, label: s.session }))}
-            onChange={(riksmote) => setView({ riksmote })}
+            onChange={(riksmote) => setView({ riksmote, debatt: '' })}
           />
           <Select
             label={l('Issue area', 'Sakområde')}
@@ -147,215 +124,72 @@ function Explorer({ route }: { route: Route }) {
                 label: l(i.en, i.sv),
               })),
             ]}
-            onChange={(omrade) => setView({ omrade })}
+            onChange={(omrade) => setView({ omrade, debatt: '' })}
           />
-          <label className="board-search">
-            <span>{l('Search titles', 'Sök i rubriker')}</span>
-            <input
-              type="search"
-              value={query}
-              onChange={(e) => {
-                setQuery(e.target.value)
-                setView({ sok: e.target.value })
-              }}
-              placeholder={l('e.g. school', 't.ex. skola')}
+          {debate && (
+            <Select
+              label={l('Debate', 'Debatt')}
+              value={debate.id}
+              options={listed.map((d) => ({
+                value: d.id,
+                label: `${d.date} ${d.title.length > 70 ? `${d.title.slice(0, 70)}…` : d.title}`,
+              }))}
+              onChange={(debatt) => setView({ debatt })}
             />
-          </label>
+          )}
         </>
       }
     >
-      {debates && (
-        <DebateRanking
-          debates={debates}
-          session={current.session}
-          preferred={selected[0]}
-        />
-      )}
-      <Kpis>
-        <Kpi
-          index={0}
-          label={l('Debates', 'Debatter')}
-          value={filtered.length}
-          format={(v) => num(v)}
-          sub={current.session}
-        />
-        <Kpi
-          index={4}
-          label={l('Linked to a decision', 'Kopplade till beslut')}
-          value={linked.length}
-          format={(v) => num(v)}
-          sub={linked.length ? undefined : l('from 2024/25', 'från 2024/25')}
-        />
-      </Kpis>
+      <section className="chat-section" aria-labelledby="sak-chat-title">
+        {debate ? (
+          <>
+            <h2 id="sak-chat-title">{debate.title}</h2>
+            <p className="chat-meta">
+              {dayName(debate.date)}, {num(debate.speeches)}{' '}
+              {l('speeches', 'anföranden')}, {num(debate.replies)}{' '}
+              {l('replies', 'repliker')}
+              {debate.decision && `, ${debate.decision.designation}`}
+            </p>
+            {speeches ? (
+              <DebateChat
+                key={debate.id}
+                speeches={speeches}
+                parties={selected}
+              />
+            ) : (
+              <Empty />
+            )}
+          </>
+        ) : debates ? (
+          <p className="dash-empty">
+            {l(
+              'No debate with replies matches the filters.',
+              'Ingen debatt med repliker matchar filtren.',
+            )}
+          </p>
+        ) : (
+          <Empty />
+        )}
+      </section>
 
       <Cards>
         <Card
-          index={2}
+          index={0}
           title={l('Issue areas debated', 'Sakområden som debatterades')}
           meta={l(
-            'Number of debates, from the deciding committee, otherwise from words in the title',
-            'Antal debatter, från utskottet som beslutade, annars från ord i rubriken',
+            `Number of debates in ${current.session}, from the committee that decided, otherwise from words in the title. Pick a bar to read those debates.`,
+            `Antal debatter under ${current.session}, från utskottet som beslutade, annars från ord i rubriken. Välj en stapel för att läsa de debatterna.`,
           )}
         >
-          {debates ? (
-            <RankBars
-              rows={areaCounts.slice(0, 10).map((a) => ({
-                key: a.issue.key,
-                label: l(a.issue.en, a.issue.sv),
-                value: a.count,
-              }))}
-              format={(v) => num(v)}
-              label={l('Debates per issue area', 'Debatter per sakområde')}
-            />
-          ) : (
-            <Empty />
-          )}
-        </Card>
-
-        <Card
-          index={4}
-          wide
-          title={l(
-            'How the parties voted on the debated reports',
-            'Hur partierna röstade om de debatterade betänkandena',
-          )}
-          meta={l(
-            `Share of decision points, ${linked.length} linked debates, darkest: yes, then no, lightest: abstained`,
-            `Andel beslutspunkter, ${linked.length} kopplade debatter, mörkast: ja, sedan nej, ljusast: avstår`,
-          )}
-        >
-          {linked.length ? (
-            <Columns
-              categories={parties}
-              series={[
-                {
-                  key: 'ja',
-                  label: l('Yes', 'Ja'),
-                  values: parties.map((p) => votes(p, 'Ja')),
-                },
-                {
-                  key: 'nej',
-                  label: l('No', 'Nej'),
-                  values: parties.map((p) => votes(p, 'Nej')),
-                },
-                {
-                  key: 'avst',
-                  label: l('Abstained', 'Avstår'),
-                  values: parties.map((p) => votes(p, 'Avstår')),
-                },
-              ]}
-              stacked
-              format={(v) => `${num(v)} %`}
-              label={l(
-                'Positions per party on the debated reports',
-                'Ställningstaganden per parti i de debatterade betänkandena',
-              )}
-            />
-          ) : (
-            <Empty>
-              {l(
-                'No decisions are linked for this riksmöte; the decision files cover 2024/25 and later.',
-                'Inga beslut är kopplade för det här riksmötet; beslutsfilerna täcker 2024/25 och senare.',
-              )}
-            </Empty>
-          )}
-        </Card>
-
-        <Card
-          index={5}
-          wide
-          title={l('The debates', 'Debatterna')}
-          meta={l(
-            `${filtered.length} debates, newest first, open one to read it reply by reply`,
-            `${filtered.length} debatter, nyast först, öppna en för att läsa replik för replik`,
-          )}
-        >
-          {debates ? (
-            <div
-              className="board-table-wrap"
-              tabIndex={0}
-              role="region"
-              aria-label={l('Table of the debates', 'Tabell över debatterna')}
-            >
-              <table className="board-table">
-                <thead>
-                  <tr>
-                    <th scope="col">{l('Date', 'Datum')}</th>
-                    <th scope="col">{l('Debate', 'Debatt')}</th>
-                    <th scope="col">{l('Issue area', 'Sakområde')}</th>
-                    <th scope="col" className="num">
-                      {l('Speeches', 'Inlägg')}
-                    </th>
-                    <th scope="col" className="num">
-                      {l('Replies', 'Repliker')}
-                    </th>
-                    <th scope="col">{l('Parties', 'Partier')}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {[...filtered]
-                    .reverse()
-                    .slice(0, 200)
-                    .map((d) => (
-                      <tr key={d.id}>
-                        <td>{dayName(d.date)}</td>
-                        <td>
-                          <a href={debateHref('sak', current.session, d.id)}>
-                            {d.title}
-                          </a>
-                          {d.decision && (
-                            <small className="dash-empty">
-                              {' '}
-                              , {d.decision.designation}
-                            </small>
-                          )}
-                        </td>
-                        <td>
-                          <IssueChips
-                            keys={d.issues}
-                            via={d.issues_via}
-                            index={index}
-                          />
-                        </td>
-                        <td className="num">{num(d.speeches)}</td>
-                        <td className="num">{num(d.replies)}</td>
-                        <td>
-                          <span className="party-dots">
-                            {RIKSDAG_PARTIES.filter((p) => d.parties[p]).map(
-                              (p) => (
-                                <abbr
-                                  key={p}
-                                  title={`${partyName(p)}: ${totalFor(d.parties, p)}`}
-                                  style={{
-                                    borderBottomColor: identity(p).color,
-                                  }}
-                                >
-                                  {p}
-                                </abbr>
-                              ),
-                            )}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <Empty />
-          )}
-          {view.omrade && (
-            <p className="dash-empty">
-              {l('Filtered on', 'Filtrerat på')} {issueName(view.omrade)},{' '}
-              <button
-                type="button"
-                className="link-button"
-                onClick={() => setView({ omrade: '' })}
-              >
-                {l('Show all areas', 'Visa alla områden')}
-              </button>
-            </p>
-          )}
+          <RankBars
+            rows={areas}
+            format={(v) => num(v)}
+            picked={view.omrade || null}
+            onPick={(key) =>
+              setView({ omrade: key === view.omrade ? '' : key, debatt: '' })
+            }
+            label={l('Debates per issue area', 'Debatter per sakområde')}
+          />
         </Card>
       </Cards>
     </Board>

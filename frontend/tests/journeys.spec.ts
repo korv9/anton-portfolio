@@ -10,7 +10,7 @@ test('a startup finds what applies, uses the navigator and reaches the law', asy
   page,
 }) => {
   await page.goto('/#start')
-  await page.locator('#projekt a[href="#ai-act"]').first().click()
+  await page.locator('.work-card[href="#ai-act"]').click()
   await page.locator('.overview-topics a[href="#ai-act-roles"]').click()
   await page
     .getByRole('navigation', { name: 'Project topics' })

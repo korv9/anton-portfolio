@@ -19,7 +19,7 @@ import ClusterPreview from './ClusterPreview'
 const b = (text: Bilingual) => text.en
 
 /** The sections a global address points at; the header's links scroll to them. */
-const SECTIONS = ['#projekt', '#erfarenhet', '#om-mig', '#utbildning']
+const SECTIONS = ['#erfarenhet', '#om-mig', '#utbildning']
 
 function Identity() {
   return (
@@ -31,7 +31,9 @@ function Identity() {
       <h1 id="home-name" className="home-name">
         Anton Ernstsson
       </h1>
-      <p className="home-roles">SOFTWARE DATA AI</p>
+      <p className="home-roles">
+        <span>SOFTWARE</span> <span>DATA</span> <span>AI</span>
+      </p>
     </section>
   )
 }
@@ -143,11 +145,7 @@ function Profile() {
 
 function Work() {
   return (
-    <section
-      className="home-screen home-work"
-      id="projekt"
-      aria-labelledby="projects-title"
-    >
+    <section className="home-screen home-work" aria-labelledby="projects-title">
       <span className="home-project-marker" aria-hidden="true" />
       <h2 id="projects-title" className="home-work-title">
         Projects

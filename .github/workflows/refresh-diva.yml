@@ -3,7 +3,7 @@ name: Harvest DiVA theses and cluster their topics
 # Student theses from DiVA (diva-portal.org) over OAI-PMH, then topic clusters for the site
 # (platform/ingest/diva/harvest.py, platform/publish/diva_clusters.py). Runs by hand only; the
 # harvested months are cached between runs, so a later run only fetches new months. The cluster
-# file is committed to the branch the run was started on.
+# file is validated and published as its own R2 group.
 
 on:
   workflow_dispatch:
@@ -16,7 +16,7 @@ on:
         default: '2025-12'
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: data-refresh
@@ -26,7 +26,23 @@ jobs:
   harvest:
     runs-on: ubuntu-latest
     timeout-minutes: 300
+    environment: anton-portfolio
+    env:
+      R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+      R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY || secrets.R2_SECRET_ACCESS_KEY_ID }}
+      R2_BUCKET: ${{ secrets.R2_BUCKET }}
+      R2_PUBLIC_BASE: ${{ vars.R2_PUBLIC_BASE }}
     steps:
+      - name: Require R2 credentials
+        run: |
+          for name in R2_ACCOUNT_ID R2_ACCESS_KEY_ID R2_SECRET_ACCESS_KEY R2_BUCKET; do
+            value="${!name}"
+            value="${value#"${value%%[![:space:]]*}"}"
+            value="${value%"${value##*[![:space:]]}"}"
+            export "$name=$value"
+            [ -n "${!name}" ] || { echo "::error::Secret $name is not set"; exit 1; }
+          done
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
@@ -50,22 +66,8 @@ jobs:
           key: diva-${{ github.run_id }}
       - name: Cluster
         run: python platform/publish/diva_clusters.py
-      - name: Commit the clusters
+      - name: Validate and publish the cluster export
         run: |
-          git config user.name 'data-refresh[bot]'
-          git config user.email 'data-refresh@users.noreply.github.com'
-          git add frontend/public/data/diva
-          if git diff --cached --quiet; then
-            echo "No change"
-          else
-            git commit -m "data: DiVA thesis topic clusters (run ${GITHUB_RUN_ID})"
-            # main may have moved during the run (a merge, another refresh): put this commit on
-            # top of it and push, a few times if needed.
-            pushed=false
-            for attempt in 1 2 3; do
-              if git pull --rebase origin main && git push origin HEAD:main; then pushed=true; break; fi
-              git rebase --abort 2>/dev/null || true
-              sleep $((attempt * 15))
-            done
-            "$pushed"
-          fi
+          python platform/publish/validate_refresh_delivery.py --group diva --root frontend/public/data
+          python platform/publish/release.py publish --group diva --root frontend/public/data \
+            --spec configs/delivery/diva.json --code-sha "$GITHUB_SHA"

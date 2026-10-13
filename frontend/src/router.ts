@@ -9,6 +9,7 @@ import { useEffect, useState } from 'react'
 
 export type Page =
   | 'home'
+  | 'projects'
   | 'politik'
   | 'jobs'
   | 'welfare'
@@ -33,6 +34,7 @@ export type Route = {
 
 /** Addresses that the new structure replaces, and where they now lead. */
 export const REDIRECTS: Record<string, string> = {
+  '#politik-skatter': '#politik-budget',
   '#now': '#politik',
   '#data-constellation': '#projekt',
   '#data-catalogue': '#projekt',
@@ -105,11 +107,30 @@ export function redirectOf(path: string): string | undefined {
   )
 }
 
+/**
+ * The politics report: three tabs, each an address of its own, and the deep dives behind them.
+ * All of them are laid out like the start page: edge to edge, no breadcrumb or topic rows.
+ */
+export const REPORT_TABS = ['#politik', '#politik-budget', '#politik-tal']
+const LONG_READ = [
+  ...REPORT_TABS,
+  '#politik-partier',
+  '#politik-partiledardebatter',
+  '#politik-sakdebatter',
+  '#politik-modell',
+  '#politik-utredningar',
+  '#politik-kallor',
+]
+export function isLongRead(path: string) {
+  return LONG_READ.includes(path)
+}
+
 export function isPoliticsPath(path: string) {
   return path.startsWith('#politik')
 }
 
 export function pageOf(path: string): Page {
+  if (path === '#projekt') return 'projects'
   if (isPoliticsPath(path)) return 'politik'
   if (
     ['#job-market', '#job-data', '#jobb'].includes(path) ||

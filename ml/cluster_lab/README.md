@@ -1,5 +1,35 @@
 # Cluster Lab
 
+## Publicerade debatter och länsprofiler
+
+`public_research` återanvänder labbets representationscache, checkpointade embeddings,
+klustringskörningar, register och layoutmotor. Det laddar fulltexten som den befintliga
+publiceringsmanifesten pekar på, utan ny ingestion eller publicering. Länsprofiler använder
+numeriska årsindikatorer och sparad standardisering, inte textinbäddningar.
+
+```powershell
+python -m ml.cluster_lab.public_research prepare --config configs/cluster_lab/public_research.yaml
+python -m ml.research.prepare_public_profiles
+python -m ml.cluster_lab.public_research pilot --config configs/cluster_lab/public_research_clean.yaml
+python -m ml.cluster_lab.public_research run --config configs/cluster_lab/public_research_clean.yaml
+python -m ml.cluster_lab.public_research run --config configs/cluster_lab/public_research_clean_leaf.yaml
+python -m ml.research.public_results resample --config configs/cluster_lab/public_research_clean.yaml
+python -m ml.research.public_results analyze --config configs/cluster_lab/public_research_clean.yaml
+```
+
+Kommandona kan köras igen efter avbrott. Färdiga försök kontrolleras med checksummor och
+återanvänds. `provenance.json` binder implementationen; ändrad ML-kod kräver ett nytt
+experimentregister. För annat år eller ändrad segmentering välj också ett nytt `lab.output`.
+Snapshoten i ett befintligt register uppdateras aldrig med nya publicerade värden.
+`validated-config.yaml` och varje körnings `config.json` visar de använda parametrarna.
+SVD:s `fit_seed` är låst separat från UMAP-/klustringsseed.
+
+Öppna resultaten i lokal Cluster Lab genom att starta Vite med
+`CLUSTER_LAB_OUTPUT=warehouse/cluster_lab/public-research-clean-2026-10-12`. Inställningen gäller
+bara den lokala servern. `gallery/` innehåller samma observations-id och sparade etiketter
+för alla layouter; numeriska grupper har länsexempel och medelvärden i originalenheter i
+`profiles.json`. Deras nummer är inte en rangordning.
+
 Lokala, återupptagbara experiment för Symbolic Atlas och Platsbankens annonser.
 Kör från repots rot. Verktyget byter inte branch, ersätter inga publicerade
 resultat och deployar inte.

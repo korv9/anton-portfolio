@@ -9,9 +9,9 @@ import { useEffect, useMemo, useState } from 'react'
 import { l } from '../../i18n'
 import { load } from '../../parliament/data'
 import type { Route } from '../../router'
-import { Board, Card, Cards, Empty, Kpi, Kpis } from '../board/Board'
-import Columns from '../board/Columns'
-import { Select, dayName, num, pct } from '../controls'
+import { Board, Card, Cards, Empty } from '../board/Board'
+import { BoxPlot, Stacked } from '../../charts/Compare'
+import { Select, dayName, num } from '../controls'
 import { useViewParams } from '../useViewParams'
 import './utredningar.css'
 
@@ -101,38 +101,20 @@ export default function UtredningarTheme({ route }: { route: Route }) {
     return k ? l(...k) : kind.toUpperCase()
   }
   const chosen = data.latest.find((s) => s.key === view.vald) ?? list[0] ?? null
-  const years = [...new Set(data.per_year.map((r) => r.year))].sort()
-  const perKind = (kind: string, field: 'published' | 'cited') =>
-    years.map(
-      (y) =>
-        data.per_year.find((r) => r.year === y && r.kind === kind)?.[field] ??
-        0,
-    )
   const kindForChart = view.typ === 'alla' ? 'sou' : view.typ
-  const lastFull = years.filter((y) => y <= new Date().getFullYear() - 1).at(-1)
-  const thisYear = years.at(-1)
-  const published = (kind: string, y?: number) =>
-    data.per_year.find((r) => r.year === y && r.kind === kind)?.published ?? 0
   // A study takes one to three years to become a bill: the share is read from years that are
   // at least three years old.
   const settled = data.per_year.filter(
     (r) => r.kind === kindForChart && r.year <= new Date().getFullYear() - 3,
   )
-  const settledShare =
-    settled.reduce((s, r) => s + r.published, 0) > 0
-      ? (settled.reduce((s, r) => s + r.cited, 0) /
-          settled.reduce((s, r) => s + r.published, 0)) *
-        100
-      : 0
+  const settledPublished = settled.reduce((s, r) => s + r.published, 0)
+  const settledCited = settled.reduce((s, r) => s + r.cited, 0)
   const leadTimes = data.recent_laws.flatMap((law) =>
     law.studies
       .map((st) => data.latest.find((s) => s.designation === st.designation))
       .filter((s): s is Study => !!s)
       .map((s) => months(s.published, law.decided)),
   )
-  const medianLead = leadTimes.length
-    ? [...leadTimes].sort((a, b) => a - b)[Math.floor(leadTimes.length / 2)]
-    : null
 
   return (
     <Board
@@ -180,77 +162,128 @@ export default function UtredningarTheme({ route }: { route: Route }) {
         </>
       }
     >
-      <Kpis>
-        <Kpi
-          index={0}
-          label={l(
-            `${kindName(kindForChart)} ${thisYear}`,
-            `${kindName(kindForChart)} ${thisYear}`,
-          )}
-          value={published(kindForChart, thisYear)}
-          format={(v) => num(v)}
-          sub={l('published so far', 'publicerade hittills')}
-        />
-        <Kpi
-          index={1}
-          label={l(`In ${lastFull}`, `Under ${lastFull}`)}
-          value={published(kindForChart, lastFull)}
-          format={(v) => num(v)}
-          sub={l('a full year', 'ett helt år')}
-        />
-        <Kpi
-          index={2}
-          label={l('Led to a bill', 'Ledde till en proposition')}
-          value={settledShare}
-          format={(v) => pct(v, 0)}
-          sub={l(
-            'of those three or more years old',
-            'av dem som är minst tre år gamla',
-          )}
-        />
-        {medianLead != null && (
-          <Kpi
-            index={3}
-            label={l('From study to law', 'Från utredning till lag')}
-            value={medianLead}
-            format={(v) => `${num(v)} ${l('months', 'mån')}`}
-            sub={l('median, recent laws', 'median, nya lagar')}
-          />
-        )}
-      </Kpis>
-
       <Cards>
         <Card
           index={0}
           wide
           title={l(
-            'Published each year, and how many a bill rests on',
-            'Publicerade varje år, och hur många en proposition bygger på',
+            'Recent laws and the studies they rest on',
+            'Nya lagar och utredningarna de bygger på',
           )}
           meta={l(
-            `${kindName(kindForChart)}, the newest years have not had time to lead to bills yet`,
-            `${kindName(kindForChart)}, de senaste åren har ännu inte hunnit leda till propositioner`,
+            'Newest decision first. Each law is named with the studies its bill cites as its basis.',
+            'Nyaste beslutet först. Varje lag står med utredningarna som propositionen anger som underlag.',
           )}
         >
-          <Columns
-            categories={years.map(String)}
-            series={[
-              {
-                key: 'published',
-                label: l('Published', 'Publicerade'),
-                values: perKind(kindForChart, 'published'),
-              },
-              {
-                key: 'cited',
-                label: l('Named in a bill', 'Underlag i en proposition'),
-                values: perKind(kindForChart, 'cited'),
-              },
-            ]}
-            format={(v) => num(v)}
-            label={l('Studies per year', 'Utredningar per år')}
-          />
+          <ol className="law-chains">
+            {data.recent_laws.slice(0, 8).map((law) => (
+              <li key={law.bill}>
+                <div className="law-head">
+                  <a href={law.url} target="_blank" rel="noreferrer">
+                    {law.title}
+                  </a>
+                  <span className="law-decided">
+                    Prop. {law.bill}, {l('decided', 'beslut')}{' '}
+                    {dayName(law.decided)}
+                    {law.department && `, ${law.department}`}
+                  </span>
+                </div>
+                <div className="law-basis">
+                  <p>{l('Rests on', 'Bygger på')}</p>
+                  <ul className="law-studies">
+                    {law.studies.map((st) => {
+                      const known = data.latest.find(
+                        (s) => s.designation === st.designation,
+                      )
+                      const text = (
+                        <>
+                          <b>
+                            {st.kind === 'pm'
+                              ? l('Memorandum', 'Promemoria')
+                              : st.designation}
+                          </b>{' '}
+                          {st.title}
+                        </>
+                      )
+                      return (
+                        <li key={st.designation + st.url}>
+                          {known ? (
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setView({ vald: known.key, typ: 'alla' })
+                              }
+                            >
+                              {text}
+                            </button>
+                          ) : (
+                            <a href={st.url} target="_blank" rel="noreferrer">
+                              {text}
+                            </a>
+                          )}
+                        </li>
+                      )
+                    })}
+                  </ul>
+                </div>
+              </li>
+            ))}
+          </ol>
+          <p className="dash-meta">{data.method}</p>
         </Card>
-
+        {settledPublished > 0 && (
+          <Card
+            index={2}
+            title={l('Led to a bill', 'Ledde till en proposition')}
+            meta={l(
+              `${kindName(kindForChart)} at least three years old: a study takes one to three years to become a bill`,
+              `${kindName(kindForChart)} som är minst tre år gamla: en utredning tar ett till tre år att bli proposition`,
+            )}
+          >
+            <Stacked
+              rows={[
+                {
+                  key: 'led',
+                  values: [settledCited, settledPublished - settledCited],
+                },
+              ]}
+              parts={[
+                {
+                  label: l('Led to a bill', 'Ledde till proposition'),
+                  colour: 'var(--cv-olive)',
+                },
+                {
+                  label: l('No bill', 'Ingen proposition'),
+                  colour: 'var(--cv-oat)',
+                },
+              ]}
+              format={(v) => num(v)}
+              label={l(
+                `${settledCited} of ${settledPublished} studies led to a bill`,
+                `${settledCited} av ${settledPublished} utredningar ledde till en proposition`,
+              )}
+            />
+          </Card>
+        )}
+        {leadTimes.length > 4 && (
+          <Card
+            index={3}
+            title={l('From study to law', 'Från utredning till lag')}
+            meta={l(
+              `Months from a study’s publication to the decision, ${leadTimes.length} studies behind recent laws`,
+              `Månader från utredningens publicering till beslutet, ${leadTimes.length} utredningar bakom nya lagar`,
+            )}
+          >
+            <BoxPlot
+              values={leadTimes}
+              format={(v) => `${num(v)} ${l('mo', 'mån')}`}
+              label={l(
+                `Lead time from study to law, ${leadTimes.length} studies`,
+                `Ledtid från utredning till lag, ${leadTimes.length} utredningar`,
+              )}
+            />
+          </Card>
+        )}
         <Card
           index={1}
           title={l('The studies', 'Utredningarna')}
@@ -364,69 +397,6 @@ export default function UtredningarTheme({ route }: { route: Route }) {
           ) : (
             <Empty>{l('Choose a study.', 'Välj en utredning.')}</Empty>
           )}
-        </Card>
-
-        <Card
-          index={3}
-          wide
-          title={l(
-            'Recent laws and the studies they rest on',
-            'Nya lagar och utredningarna de bygger på',
-          )}
-          meta={l(
-            'Newest decision first, study → bill → decision',
-            'Nyaste beslutet först, utredning → proposition → beslut',
-          )}
-        >
-          <ol className="law-chains">
-            {data.recent_laws.slice(0, 12).map((law) => (
-              <li key={law.bill}>
-                <div className="law-studies">
-                  {law.studies.map((st) => {
-                    const known = data.latest.find(
-                      (s) => s.designation === st.designation,
-                    )
-                    return known ? (
-                      <button
-                        key={st.designation}
-                        type="button"
-                        onClick={() =>
-                          setView({ vald: known.key, typ: 'alla' })
-                        }
-                      >
-                        {st.designation}
-                      </button>
-                    ) : (
-                      <a
-                        key={st.designation}
-                        href={st.url}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        {st.kind === 'pm'
-                          ? l('Memorandum', 'Promemoria')
-                          : st.designation}
-                      </a>
-                    )
-                  })}
-                </div>
-                <span className="law-arrow" aria-hidden="true">
-                  →
-                </span>
-                <a href={law.url} target="_blank" rel="noreferrer">
-                  <b>Prop. {law.bill}</b> {law.title}
-                </a>
-                <span className="law-arrow" aria-hidden="true">
-                  →
-                </span>
-                <span className="law-decided">
-                  {l('Decided', 'Beslut')} {dayName(law.decided)}
-                  {law.department && <small>{law.department}</small>}
-                </span>
-              </li>
-            ))}
-          </ol>
-          <p className="dash-meta">{data.method}</p>
         </Card>
       </Cards>
     </Board>

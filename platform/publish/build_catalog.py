@@ -16,6 +16,7 @@ run_id is derived from the catalogued content, never from the wall clock, so an 
 tree rebuilds to byte-identical output.
 """
 import hashlib
+import argparse
 import json
 import os
 import re
@@ -25,7 +26,7 @@ ROOT = Path(__file__).resolve().parents[2]
 PUBLIC = ROOT / "frontend/public/data"
 CATALOG = PUBLIC / "catalog.json"
 DELIVERY = PUBLIC / "delivery.json"
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 
 # The bucket's public address. Default: Cloudflare's r2.dev development URL, which
 # Cloudflare rate-limits and advises against in production. Once a custom domain is
@@ -127,7 +128,7 @@ def carried_forward(seen):
         # what it removed and that record decides.
         if entry["path"] not in offloaded:
             continue
-        carried.append(entry)
+        carried.append({**entry, "hash_algorithm": entry.get("hash_algorithm", "sha256-crlf-normalized")})
     return carried
 
 
@@ -139,9 +140,8 @@ def build() -> dict:
         if path in (DELIVERY, PUBLIC / "offloaded.json"):
             continue
         relative = path.relative_to(PUBLIC).as_posix()
-        # CRLF is normalised for both size and hash, so a Windows and a Linux checkout of the
-        # same tree produce the same catalogue.
-        content = path.read_bytes().replace(b"\r\n", b"\n")
+        # Version 2 describes the exact uploaded payload, including binary Parquet bytes.
+        content = path.read_bytes()
         fmt = classify(relative)
         entry = {
             "path": relative,
@@ -152,6 +152,7 @@ def build() -> dict:
             "schema_version": SCHEMA_VERSION,
             "partition": partition_of(relative),
             "sha256": hashlib.sha256(content).hexdigest(),
+            "hash_algorithm": "sha256-exact-bytes",
         }
         files.append(entry)
 
@@ -164,10 +165,18 @@ def build() -> dict:
     for entry in files:
         entry["run_id"] = fingerprint
 
-    return {"schema_version": SCHEMA_VERSION, "run_id": fingerprint, "bases": BASES, "files": files}
+    return {"schema_version": SCHEMA_VERSION, "hash_algorithm": "sha256-exact-bytes",
+            "run_id": fingerprint, "bases": BASES, "files": files}
 
 
 def main() -> None:
+    global PUBLIC, CATALOG, DELIVERY
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--root", type=Path, default=PUBLIC, help="public export staging root")
+    args = parser.parse_args()
+    PUBLIC = args.root
+    CATALOG = PUBLIC / "catalog.json"
+    DELIVERY = PUBLIC / "delivery.json"
     catalog = build()
     CATALOG.write_text(json.dumps(catalog, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     # DuckDB cannot glob over HTTP, so the parts of each Parquet dataset are listed here for
@@ -176,9 +185,15 @@ def main() -> None:
     for entry in catalog["files"]:
         if entry["format"] == "parquet":
             datasets.setdefault(entry["path"].split("/")[1], []).append(entry["path"])
+    live = os.environ.get("R2_MANIFEST_URL")
+    if not live and os.environ.get("R2_LIVE_DELIVERY") == "1":
+        live = OBJECT_STORAGE + "manifests/current.json"
+    if live and not live.startswith("https://"):
+        raise ValueError("R2_MANIFEST_URL must use https")
     DELIVERY.write_text(
         json.dumps({"schema_version": SCHEMA_VERSION, "run_id": catalog["run_id"],
                     "bases": BASES, "shard_prefixes": list(SHARD_DIRECTORIES),
+                    **({"manifest_url": live} if live else {}),
                     "parquet_datasets": {name: sorted(parts)
                                          for name, parts in sorted(datasets.items())}},
                    ensure_ascii=False, indent=1) + "\n",

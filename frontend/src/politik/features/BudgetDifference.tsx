@@ -48,20 +48,14 @@ export default function BudgetDifference({
         r.expenditure_area === area,
     )?.deviation_msek ?? 0
   const total = gov.reduce((s, r) => s + r.amount_msek, 0)
-  const more = gov.filter((r) => dev(r.expenditure_area) > 0)
-  const less = gov.filter((r) => dev(r.expenditure_area) < 0)
-  const biggest = [...gov].sort(
-    (a, b) =>
-      Math.abs(dev(b.expenditure_area)) - Math.abs(dev(a.expenditure_area)),
-  )[0]
   const name = (area: number) => names.get(area) ?? String(area)
 
   return (
     <Feature
       id="budgetflode"
       title={l(
-        `${partyName(party)} wants more than the government in ${more.length} of ${gov.length} areas and less in ${less.length}; the biggest difference is ${name(biggest.expenditure_area)} (${signed(dev(biggest.expenditure_area) / 1000, 1)} bn).`,
-        `${partyName(party)} vill ha mer än regeringen i ${more.length} av ${gov.length} områden och mindre i ${less.length}; störst skillnad gäller ${name(biggest.expenditure_area)} (${signed(dev(biggest.expenditure_area) / 1000, 1)} mdkr).`,
+        `${partyName(party)} against the government, area by area`,
+        `${partyName(party)} mot regeringen, område för område`,
       )}
       lead={l(
         `The difference from the government's budget for ${year} (${bn(total)} in all), per expenditure area: right of the line the party wants more, left of it less. Areas with no difference are left out.`,

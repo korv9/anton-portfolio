@@ -1,0 +1,120 @@
+lab:
+  cache: warehouse/cluster_lab/cache
+  clustering:
+    min_cluster_size: 3
+    min_samples: 2
+    cluster_selection_method: leaf
+  evaluation:
+    examples: 3
+    profile_sample_per_cluster: 40
+    profile_stop_words:
+      - och
+      - att
+      - det
+      - som
+      - en
+      - ett
+      - i
+      - på
+      - för
+      - till
+      - av
+      - med
+      - är
+      - har
+      - vi
+      - de
+      - den
+      - inte
+      - om
+      - från
+      - men
+      - så
+      - sig
+      - talman
+      - herr
+      - fru
+      - skulle
+      - ska
+      - kan
+      - jag
+      - ni
+      - också
+      - nu
+      - här
+      - detta
+      - finns
+      - blir
+      - alla
+      - man
+      - var
+      - vara
+      - kommer
+      - eller
+      - när
+      - vad
+    profile_total_term_samples: 10000
+    sample_size: 1200
+  layouts:
+    count: 12
+    min_dist:
+      - 0
+      - 0.3
+    n_neighbors:
+      - 15
+      - 60
+    preview_count: 0
+    preview_points: 5000
+    seeds:
+      - 42
+      - 43
+      - 44
+    trust_sample_size: 1200
+  output: warehouse/cluster_lab/public-research-clean-2026-10-12
+  representation:
+    batch_size: 16
+    device: cuda
+    fit_seed: 42
+    storage_dtype: float32
+    svd_dimensions: 128
+    text_fields:
+      - context
+  resources:
+    cpu_threads: 3
+    memory_gb: 8
+    min_free_disk_gb: 3
+    torch_threads: 2
+research:
+  debate:
+    delivery: frontend/public/data/delivery.json
+    dimensions: 10
+    hdbscan_sizes:
+      - 50
+      - 100
+    index: frontend/public/data/politics/parliament/debate-stats/index.json
+    kmeans_clusters: []
+    min_dist:
+      - 0
+      - 0.2
+    min_samples: 10
+    minimum_words: 40
+    models:
+      - kind: tfidf_svd
+        name: tfidf
+      - kind: embedding
+        model: sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
+        name: multilingual
+        revision: e8f8c211226b894fcb81acc59f3b34ba3efd5f42
+      - kind: embedding
+        model: KBLab/sentence-bert-swedish-cased
+        name: swedish
+        revision: 6b5e83cd29c03729cfdc33d13b1423399b0efb5c
+    neighbors:
+      - 15
+      - 60
+    passage_words: 120
+    pilot_size: 600
+    seeds:
+      - 42
+      - 43
+      - 44

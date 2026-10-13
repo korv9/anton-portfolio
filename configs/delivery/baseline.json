@@ -1,0 +1,37 @@
+{
+  "schema_version": 2,
+  "include": [
+    "*"
+  ],
+  "exclude": [
+    "catalog.json",
+    "delivery.json",
+    "offloaded.json",
+    "*.md",
+    "**/*.md",
+    "*.txt",
+    "**/*.txt",
+    "*.html",
+    "**/*.html",
+    "*.pdf",
+    "**/*.pdf",
+    "jobs/market.json",
+    "welfare/*",
+    "taxes/*",
+    "schema/*",
+    "diva/*",
+    "parquet/welfare/*",
+    "parquet/welfare_indicator/*",
+    "parquet/parliament_roll_calls/*",
+    "parliament/now.json",
+    "parliament/elections.json",
+    "parliament/polls.json",
+    "parliament/sessions.json",
+    "parliament/studies.json",
+    "parliament/issues.json",
+    "parliament/news.json",
+    "parliament/news-summaries.json",
+    "jobs/*",
+    "gold/marts/jobs.json"
+  ]
+}

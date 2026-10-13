@@ -4,9 +4,8 @@
   width: 100%;
   min-height: 100vh;
 }
+/* Every page runs edge to edge like the start page; only running text keeps a measure. */
 .project-shell #main {
-  max-width: 1400px;
-  margin: 0 auto;
   padding: 0 var(--gutter) 3rem;
 }
 .project-shell

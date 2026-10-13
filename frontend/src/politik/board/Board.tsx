@@ -7,7 +7,7 @@ import type { ReactNode } from 'react'
 import { l } from '../../i18n'
 import ProjectTech from '../../projects/ProjectTech'
 import { projectForRoute } from '../../projects/projectRegistry'
-import { parseHash } from '../../router'
+import { isLongRead, parseHash } from '../../router'
 import { CountUp } from '../dash/motion'
 import './board.css'
 
@@ -26,7 +26,8 @@ export function Board({
   children: ReactNode
 }) {
   const H = level === 1 ? 'h1' : 'h2'
-  const project = projectForRoute(parseHash(window.location.hash))
+  const route = parseHash(window.location.hash)
+  const project = projectForRoute(route)
   return (
     <div className="board dk">
       <header className="board-head">
@@ -41,7 +42,9 @@ export function Board({
         )}
       </header>
       {children}
-      {level === 1 && project && <ProjectTech project={project.id} />}
+      {level === 1 && project && !isLongRead(route.path) && (
+        <ProjectTech project={project.id} />
+      )}
     </div>
   )
 }

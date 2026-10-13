@@ -1,0 +1,242 @@
+/*
+ * The politics report (Report.tsx): three numbered tabs across the page, the tab's question,
+ * the main chart large, two charts side by side under it, and the ways further in.
+ */
+
+/* ---------- The tabs: three equal columns, the open one under an olive bar ---------- */
+.report-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--sp-5);
+}
+.report-tabs a {
+  display: grid;
+  gap: var(--sp-2);
+  padding-top: var(--sp-4);
+  border-top: 3px solid var(--line);
+  color: var(--ink-faded);
+  font-size: var(--h3);
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  text-decoration: none;
+  transition:
+    color var(--dur) var(--ease),
+    border-color var(--dur) var(--ease);
+}
+.report-tabs a span {
+  font-family: var(--font-mono);
+  font-size: var(--caption);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+}
+.report-tabs a:hover {
+  border-top-color: var(--ink-faded);
+  color: var(--ink);
+}
+.report-tabs a[aria-current] {
+  border-top-color: var(--cv-olive);
+  color: var(--ink);
+}
+.report-tabs a:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 4px;
+}
+
+/* ---------- A tab: the question, the parties to follow, then the charts ---------- */
+.report-tab {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--sp-section);
+  padding-block: var(--sp-section);
+}
+.report-head {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  align-items: end;
+  gap: var(--sp-5) var(--sp-7);
+}
+.project-shell #main .politik-long .report-head h1 {
+  max-width: 18ch;
+  margin: 0;
+  font-size: var(--display-l);
+  font-weight: 750;
+  letter-spacing: -0.045em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+.report-slicers {
+  display: grid;
+  justify-items: end;
+  gap: var(--sp-3);
+}
+.report-slicers p {
+  margin: 0;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: var(--caption);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.report-slicers .party-picker.small {
+  gap: var(--sp-4);
+}
+.report-slicers .party-picker.small .party-logo {
+  width: 2rem;
+}
+/* The main chart, with the switch that says which measure it draws. */
+.report-main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--sp-5);
+}
+.report-main > .feature-pick {
+  justify-content: flex-end;
+}
+/* The two charts that complete it share a row, each with its words above it. */
+.report-pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-section) var(--sp-7);
+  align-items: start;
+}
+.project-shell
+  #main
+  .politik-long
+  .report-pair
+  .feature:not(#mandat, #opinionen),
+.project-shell #main .politik-long .report .board-grid .board-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: none;
+  gap: var(--sp-5);
+  padding: 0;
+}
+.project-shell
+  #main
+  .politik-long
+  .report-pair
+  .feature:not(#mandat, #opinionen)
+  > *,
+.project-shell #main .politik-long .report .board-grid .board-card > * {
+  grid-column: 1;
+  grid-row: auto;
+}
+.project-shell #main .politik-long .report .board-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-section) var(--sp-7);
+  align-items: start;
+}
+.project-shell #main .politik-long .report .board-grid .board-card.wide {
+  grid-column: 1 / -1;
+}
+/* A section of a tab (budget, taxes) names itself quietly and keeps its own filters. */
+.project-shell #main .politik-long .report .board {
+  gap: var(--sp-7);
+}
+.project-shell #main .politik-long .report .board-title-2 {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--caption);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* ---------- Further in: the analyses that take a page of their own ---------- */
+.report-deeper {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  gap: var(--sp-5) var(--sp-7);
+  padding-block: var(--sp-section);
+}
+.project-shell #main .report-deeper h2 {
+  margin: 0;
+  font-size: var(--h2);
+  font-weight: 750;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+.report-deeper ul {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-6) var(--sp-7);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.report-deeper a {
+  display: grid;
+  gap: var(--sp-1);
+  color: var(--ink);
+  text-decoration: none;
+}
+.report-deeper b {
+  font-size: var(--h3);
+  font-weight: var(--weight-heading);
+  letter-spacing: -0.02em;
+}
+.report-deeper span {
+  color: var(--muted);
+  font-size: var(--small);
+  line-height: 1.4;
+}
+.report-deeper a:hover b {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+}
+/* A deep dive names the report it belongs to, and leads back. */
+.politik-back {
+  display: inline-block;
+  margin-bottom: var(--sp-6);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: var(--caption);
+  letter-spacing: 0.08em;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+.politik-back:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+@media (max-width: 900px) {
+  .report-tabs {
+    gap: var(--sp-3);
+  }
+  .report-tabs a {
+    font-size: var(--body);
+  }
+  .report-head,
+  .report-pair,
+  .report-deeper,
+  .report-deeper ul,
+  .project-shell #main .politik-long .report .board-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .report-slicers {
+    justify-items: start;
+  }
+}
+/* In a half-width chart the labels give room to the marks. */
+.politik-long .report-pair :is(.rank-bars-list li, .stacked li:not(.bare)),
+.politik-long .report .board-grid :is(.rank-bars-list li, .dumbbell li) {
+  grid-template-columns: minmax(6rem, 11rem) minmax(0, 1fr) 6.5rem;
+  gap: var(--sp-4);
+}
+.project-shell #main .politik-long .report .board-grid .board-card {
+  grid-column: auto;
+}
+.project-shell #main .politik-long .report .board-grid .board-card.wide {
+  grid-column: 1 / -1;
+}
+.politik-long .report .board-grid .dumbbell li {
+  grid-template-columns: minmax(6rem, 11rem) minmax(0, 1fr) 9.5rem;
+}
+.project-shell #main .politik-long .report .board-head {
+  align-items: start;
+}

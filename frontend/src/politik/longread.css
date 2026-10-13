@@ -1,0 +1,1153 @@
+/*
+ * The politics long read: the start page's layout for a project page. Edge to edge, the page
+ * name large at the top left, no frames around charts, text at the left with a small chart at
+ * the right, and a large chart from edge to edge with its name and filters at the right. Only the pages named in router.ts (isLongRead) use it.
+ */
+.project-shell #main .politik-long {
+  max-width: none;
+}
+/* ---------- The page name, as on the start page ---------- */
+.project-shell #main .politik-long .board {
+  gap: var(--sp-section);
+}
+.project-shell #main .politik-long .board-head {
+  display: block;
+  padding-block: var(--sp-6) 0;
+}
+.project-shell #main .politik-long .board-head h1 {
+  max-width: none;
+  margin: 0;
+  font-size: var(--display-l);
+  font-weight: 750;
+  letter-spacing: -0.045em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+.project-shell #main .politik-long .board-sub {
+  margin: var(--sp-4) 0 0;
+  font-size: var(--body-large);
+}
+
+/* ---------- A large chart: its name and filters at the right, straight above it ---------- */
+.project-shell #main .politik-long .feature {
+  gap: var(--sp-4);
+  padding: 0;
+  border: 0;
+  background: none;
+}
+.project-shell #main .politik-long .feature-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: end;
+  gap: var(--sp-3);
+  text-align: right;
+}
+.project-shell #main .politik-long .feature-head h2 {
+  max-width: none;
+  font-size: var(--h3);
+  font-weight: var(--weight-heading);
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+}
+.project-shell #main .politik-long .feature-controls {
+  justify-content: flex-end;
+  margin: 0;
+}
+/* The chart explains itself; the reading help stays for screen readers. */
+.politik-long .chart-guidance {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ---------- The parties as logos under a chart they filter, one row across the screen ---------- */
+.party-picker {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-7) var(--gutter) 0;
+}
+.party-picker button {
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  transition:
+    opacity calc(var(--dur) * 2) var(--ease),
+    transform calc(var(--dur) * 2) var(--ease);
+}
+.party-picker .party-logo {
+  width: clamp(2rem, 6.5vw, 5.5rem);
+  height: auto;
+  aspect-ratio: 1;
+}
+.party-picker[data-chosen='true'] button[aria-pressed='false'] {
+  opacity: 0.3;
+}
+.party-picker[data-chosen='true'] button:hover,
+.party-picker button:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}
+.party-picker button:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 3px;
+}
+/* Party colours a step calmer, in the logos and in the charts. */
+.politik-long .party-logo,
+.politik-long
+  :is(.feature-body, .board-body, .theme-panel, .modell-figure)
+  :is(svg, .rank-track, .dumbbell-track, .bullet-track) {
+  filter: var(--party-tone);
+}
+/* The seats chart tones its drawing alone, so its readout keeps the page colour. */
+.politik-long #mandat .feature-body {
+  filter: none;
+}
+.seat-lines svg,
+.seat-lines-tip i {
+  filter: var(--party-tone);
+}
+
+/* ---------- Filters: the one applied is bold, the others fade ---------- */
+.project-shell #main .politik-long .feature-pick {
+  display: flex;
+  gap: var(--sp-5);
+  border: 0;
+}
+.project-shell #main .politik-long .feature-pick button {
+  padding: var(--sp-1) 0;
+  border: 0;
+  background: none;
+  color: var(--ink-faded);
+  font-size: var(--body-large);
+  font-weight: 750;
+  transition: color var(--dur) var(--ease);
+}
+.project-shell #main .politik-long .feature-pick button:hover {
+  background: none;
+  color: var(--ink);
+}
+.project-shell #main .politik-long .feature-pick button[aria-pressed='true'] {
+  background: none;
+  color: var(--ink);
+}
+
+/* ---------- A small chart: words at the left edge, the chart at the right ---------- */
+.project-shell #main .politik-long .board-grid {
+  display: block;
+}
+.project-shell #main .politik-long .board-card {
+  display: grid;
+  grid-template-columns: minmax(0, 0.7fr) minmax(0, 1fr);
+  grid-template-rows: auto auto 1fr;
+  column-gap: clamp(3rem, 10vw, 10rem);
+  padding-block: var(--sp-7);
+}
+.project-shell #main .politik-long .board-card > header,
+.project-shell #main .politik-long .board-card > .dash-meta {
+  grid-column: 1;
+}
+.project-shell #main .politik-long .board-card > header {
+  display: block;
+}
+.project-shell #main .politik-long .board-card h2 {
+  font-size: var(--h3);
+  font-weight: var(--weight-heading);
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+}
+.project-shell #main .politik-long .board-card > header a {
+  display: inline-block;
+  margin-top: var(--sp-3);
+  font-size: var(--small);
+}
+.project-shell #main .politik-long .board-card > .dash-meta {
+  max-width: 30rem;
+  margin: var(--sp-4) 0 0;
+  font-size: var(--body);
+  line-height: 1.6;
+}
+.project-shell #main .politik-long .board-card > .board-body {
+  grid-column: 2;
+  grid-row: 1 / span 3;
+  margin: 0;
+}
+.project-shell #main .politik-long .board-card.wide {
+  display: block;
+}
+.project-shell #main .politik-long .board-card.wide > .board-body {
+  margin-top: var(--sp-6);
+}
+
+@media (max-width: 900px) {
+  .project-shell #main .politik-long .board-card {
+    display: block;
+    padding-block: var(--sp-6);
+  }
+  .project-shell #main .politik-long .board-card > .board-body {
+    margin-top: var(--sp-5);
+  }
+}
+
+/* ---------- A chosen party's key figures and its row of parties ---------- */
+.project-shell #main .politik-long .dk-kpi {
+  border-top: 0;
+}
+.project-shell #main .politik-long .dash-kpi-sub {
+  overflow: visible;
+  color: var(--muted);
+  font-size: var(--small);
+  font-weight: var(--weight-body);
+  line-height: 1.4;
+  white-space: normal;
+}
+
+/* ---------- The seats chart: bare strokes from edge to edge ---------- */
+.project-shell #main .politik-long #mandat .feature-body {
+  width: calc(100% + var(--gutter) * 2);
+  max-width: none;
+  margin-left: calc(var(--gutter) * -1);
+}
+.project-shell #main .politik-long #mandat .feature-foot {
+  margin-top: var(--sp-6);
+}
+.seat-lines {
+  --glide: calc(var(--dur) * 2.5) var(--ease);
+  position: relative;
+  margin-top: var(--sp-4);
+  outline-offset: 4px;
+}
+.seat-lines svg {
+  display: block;
+}
+.seat-lines-stroke {
+  fill: none;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition:
+    opacity var(--glide),
+    stroke-width var(--glide);
+}
+.seat-lines-hit {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 18;
+  pointer-events: stroke;
+}
+/* Pointing at a line lifts it; the others step back. */
+.seat-lines[data-hot]
+  :is(.seat-lines-stroke, .seat-lines-dot, .seat-lines-label) {
+  opacity: 0.18;
+}
+.seat-lines[data-hot] [data-hot] {
+  opacity: 1;
+}
+.seat-lines-stroke[data-hot] {
+  stroke-width: 3;
+}
+.seat-lines-guide,
+.seat-lines-dot {
+  opacity: 0;
+  transition:
+    transform var(--glide),
+    opacity var(--glide);
+}
+.seat-lines-guide {
+  stroke: var(--line-strong);
+  stroke-width: 1;
+}
+.seat-lines-dot {
+  stroke: var(--page);
+  stroke-width: 2;
+}
+.seat-lines[data-on] .seat-lines-guide,
+.seat-lines[data-on]:not([data-hot]) .seat-lines-dot:not([data-empty]),
+.seat-lines[data-on] .seat-lines-dot[data-hot]:not([data-empty]) {
+  opacity: 1;
+}
+.seat-lines-year,
+.seat-lines-label {
+  fill: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  transition:
+    opacity var(--glide),
+    fill var(--glide);
+}
+.seat-lines-year {
+  fill: var(--ink-faded);
+  font-size: 17px;
+  font-weight: 600;
+}
+.seat-lines-year[data-at] {
+  fill: var(--ink);
+}
+/* A halo in the page colour keeps a label readable where a line passes behind it. */
+.seat-lines-label {
+  paint-order: stroke;
+  stroke: var(--page);
+  stroke-width: 4px;
+  stroke-linejoin: round;
+}
+.seat-lines-code {
+  font-family: var(--font);
+  font-weight: 750;
+}
+.seat-lines-tip {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 2;
+  display: grid;
+  gap: var(--sp-1);
+  min-width: 13rem;
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--page);
+  font-size: var(--small);
+  line-height: 1.3;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    transform var(--glide),
+    opacity var(--glide),
+    visibility var(--glide);
+}
+.seat-lines[data-on] .seat-lines-tip {
+  opacity: 1;
+  visibility: visible;
+}
+.seat-lines-tip b {
+  font-family: var(--font-mono);
+  font-size: var(--h3);
+  line-height: 1.1;
+}
+.seat-lines-tip span {
+  display: grid;
+  grid-template-columns: 0.6rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--sp-2);
+  transition: opacity var(--glide);
+}
+.seat-lines[data-hot] .seat-lines-tip span:not([data-hot]) {
+  opacity: 0.45;
+}
+.seat-lines-tip span[data-hot] {
+  font-weight: 750;
+}
+.seat-lines-tip i {
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+}
+.seat-lines-tip em {
+  font-family: var(--font-mono);
+  font-style: normal;
+}
+
+/* ---------- Chapters: one long page, each chapter opening like the first ---------- */
+.politik-chapter {
+  position: relative;
+  min-height: 100dvh;
+  padding-block: var(--sp-section);
+  scroll-margin-top: var(--header-h, 4.5rem);
+}
+.politik-chapter:first-child {
+  padding-top: 0;
+}
+.project-shell #main .politik-long :is(.theme, .board) {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--sp-section);
+  max-width: none;
+}
+.project-shell #main .politik-long .theme-head {
+  margin: 0;
+}
+.project-shell #main .politik-long .theme-question {
+  max-width: 16ch;
+  margin: 0;
+  font-size: var(--display-l);
+  font-weight: 750;
+  letter-spacing: -0.045em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+.project-shell #main .politik-long :is(.theme-why, .board-sub) {
+  max-width: 34rem;
+  margin: var(--sp-5) 0 0;
+  color: var(--ink);
+  font-size: var(--body-large);
+  line-height: 1.5;
+}
+/* The story's own wayfinding and the method notes step out of the long read. */
+.project-shell
+  #main
+  .politik-long
+  :is(
+    .theme-deep,
+    .reading-note,
+    .dk-tech,
+    .project-method,
+    .project-depth-head,
+    .project-depth-foot,
+    .politik-next,
+    .feature-lead,
+    .story-hero .breadcrumb
+  ) {
+  display: none;
+}
+/* No frames and no rules: space alone separates the parts. */
+.project-shell
+  #main
+  .politik-long
+  :is(
+    .theme-filters,
+    .budget-id,
+    .story-hero,
+    .story-section,
+    .sources-block,
+    .timeline,
+    .topic-columns,
+    .stage-block-title,
+    .tax-strip,
+    .dk-kpi,
+    fieldset
+  ) {
+  border: 0;
+  background: none;
+}
+.project-shell #main .politik-long :is(.budget-id, .sources-block) {
+  padding: 0;
+}
+.project-shell #main .politik-long :is(.theme-filters, .board-slicers) {
+  padding: 0;
+}
+
+/* The running head of a chapter: its number and part of the story at the left edge, the
+   parties its charts follow at the right. */
+.politik-chapter-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--sp-5);
+  min-height: 1.5rem;
+  margin-bottom: var(--sp-6);
+}
+.politik-chapter-top p {
+  display: flex;
+  gap: var(--sp-4);
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--caption);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.politik-chapter-top p span {
+  color: var(--ink-faded);
+}
+.party-picker.small {
+  gap: var(--sp-3);
+  padding: 0;
+}
+.party-picker.small .party-logo {
+  width: 1.5rem;
+}
+
+/* ---------- A theme's second chart: words at the left edge, the chart at the right ---------- */
+.project-shell #main .politik-long .theme-figure {
+  display: grid;
+  grid-template-columns: minmax(0, 0.7fr) minmax(0, 1fr);
+  grid-template-rows: auto auto 1fr;
+  column-gap: clamp(3rem, 10vw, 10rem);
+  padding: 0;
+  border: 0;
+}
+.project-shell #main .politik-long .theme-figure > * {
+  grid-column: 1;
+}
+.project-shell #main .politik-long .theme-figure > .theme-panel {
+  grid-column: 2;
+  grid-row: 1 / span 4;
+  min-width: 0;
+}
+.project-shell #main .politik-long .theme-figure-head {
+  display: block;
+  margin: 0;
+}
+.project-shell #main .politik-long .theme-chart-title {
+  margin: 0;
+  font-size: var(--h3);
+  font-weight: var(--weight-heading);
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+}
+.project-shell #main .politik-long .theme-chart-meta {
+  max-width: 30rem;
+  margin: var(--sp-4) 0 0;
+  color: var(--ink);
+  font-size: var(--body);
+  line-height: 1.6;
+}
+.project-shell #main .politik-long .theme-source-line {
+  margin-top: var(--sp-5);
+  align-self: end;
+}
+/* Tabs and dropdowns read as the same filters: the one applied bold, the others faded. */
+.project-shell #main .politik-long .theme-tabs {
+  display: flex;
+  gap: var(--sp-5);
+  margin-top: var(--sp-5);
+  border: 0;
+}
+.project-shell #main .politik-long .theme-tabs button {
+  min-height: 0;
+  padding: var(--sp-1) 0;
+  border: 0;
+  background: none;
+  color: var(--ink-faded);
+  font-size: var(--body-large);
+  font-weight: 750;
+  transition: color var(--dur) var(--ease);
+}
+.project-shell #main .politik-long .theme-tabs button:hover,
+.project-shell #main .politik-long .theme-tabs button[aria-selected='true'] {
+  color: var(--ink);
+}
+.project-shell #main .politik-long .theme-filters {
+  margin: var(--sp-5) 0 0;
+}
+.project-shell #main .politik-long select {
+  min-height: 0;
+  padding: var(--sp-1) var(--sp-5) var(--sp-1) 0;
+  border: 0;
+  border-bottom: 1px solid var(--ink);
+  border-radius: 0;
+  background-color: transparent;
+  font-size: var(--body);
+  font-weight: 750;
+}
+@media (max-width: 900px) {
+  .politik-chapter {
+    padding-block: var(--sp-8, 5rem);
+  }
+  .politik-chapter-top {
+    flex-wrap: wrap;
+  }
+  .project-shell #main .politik-long .theme-figure {
+    display: block;
+  }
+  .project-shell #main .politik-long .theme-figure > .theme-panel {
+    margin-top: var(--sp-5);
+  }
+}
+.project-shell #main .politik-long .theme > * {
+  grid-column: 1 / -1;
+  grid-row: auto;
+  margin: 0;
+}
+
+/* ---------- Charts in the long read: thin marks, no grid, eased changes ---------- */
+.politik-long .rank-track {
+  height: 8px;
+}
+.politik-long .rank-bars-list {
+  gap: var(--sp-3);
+}
+.politik-long .rank-track i {
+  transition:
+    width 700ms var(--ease),
+    left 700ms var(--ease),
+    opacity 300ms var(--ease);
+}
+/* The opinion chart runs from edge to edge like the seats chart. */
+.project-shell #main .politik-long #opinionen .feature-body {
+  width: calc(100% + var(--gutter) * 2);
+  max-width: none;
+  margin-left: calc(var(--gutter) * -1);
+}
+.politik-long .trend-grid line {
+  display: none;
+}
+.politik-long .trend-grid text,
+.politik-long .trend-year {
+  fill: var(--ink-faded);
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+.politik-long .trend-year {
+  font-size: 17px;
+  font-weight: 600;
+}
+.politik-long .trend-party path {
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  transition:
+    opacity 400ms var(--ease),
+    d 600ms var(--ease);
+}
+.politik-long .trend-end {
+  transition: opacity 400ms var(--ease);
+}
+.politik-long .trend-end text {
+  font-size: 13px;
+}
+.politik-long .trend-cross {
+  stroke: var(--line-strong);
+  stroke-dasharray: none;
+}
+
+/* Every chapter opens with the same heading, whatever template it was built on. */
+.project-shell #main .politik-long .politik-chapter h1 {
+  display: block;
+  max-width: 16ch;
+  margin: 0;
+  font-size: var(--display-l);
+  font-weight: 750;
+  letter-spacing: -0.045em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+.project-shell #main .politik-long .board-head h1 {
+  max-width: none;
+}
+.project-shell #main .politik-long :is(.story-hero, .story-section) {
+  padding-inline: 0;
+}
+.project-shell #main .politik-long .sak-main-card {
+  grid-column: 1 / -1;
+}
+.politik-long :is(.trend-grid, .dk-pill, .story-eyebrow) {
+  display: none;
+}
+.politik-long .story-hero :is(.dk-crumb, .breadcrumb, nav) {
+  display: none;
+}
+.project-shell #main .politik-long .story-sub {
+  max-width: 34rem;
+  margin: var(--sp-5) 0 0;
+  color: var(--ink);
+  font-size: var(--body-large);
+  line-height: 1.5;
+}
+.project-shell #main .politik-long .story-section {
+  margin-top: var(--sp-section);
+  padding-block: 0;
+}
+
+/* What is left of a theme's way further in: the view builder, as a quiet link. */
+.project-shell #main .politik-long .theme-further {
+  display: block;
+  padding: 0;
+  border: 0;
+  background: none;
+}
+.project-shell #main .politik-long .theme-further .ds-button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font-weight: 750;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+}
+.project-shell #main .politik-long .project-depth {
+  padding: 0;
+  border: 0;
+}
+
+/* ---------- The top of the long read: the project and the data it is built on ---------- */
+.politik-intro {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 34rem);
+  align-items: end;
+  gap: var(--sp-5) var(--sp-7);
+  padding-block: var(--sp-6) var(--sp-section);
+}
+.politik-intro p {
+  margin: 0;
+}
+.politik-intro-name {
+  font-size: var(--h3);
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+}
+.politik-intro-data {
+  font-size: var(--body-large);
+  line-height: 1.5;
+}
+@media (max-width: 900px) {
+  .politik-intro {
+    display: block;
+  }
+  .politik-intro-data {
+    margin-top: var(--sp-4);
+  }
+}
+
+/* ---------- One grid for every chapter: the heading at the left, its sentence at the right,
+   then each chart as a row with its words at the left edge ---------- */
+.project-shell
+  #main
+  .politik-long
+  :is(.theme-head, .board-head, .stage-head, .story-hero) {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  align-items: end;
+  gap: var(--sp-5) var(--sp-7);
+  padding: 0;
+}
+.project-shell #main .politik-long .board-head > div:first-child {
+  display: contents;
+}
+.project-shell
+  #main
+  .politik-long
+  :is(.theme-why, .board-sub, .stage-lead, .story-sub) {
+  max-width: 34rem;
+  margin: 0;
+  color: var(--ink);
+  font-size: var(--body-large);
+  line-height: 1.5;
+}
+.project-shell
+  #main
+  .politik-long
+  :is(.board-slicers, .story-filters, .stage-kicker) {
+  grid-column: 1 / -1;
+}
+.project-shell #main .politik-long .stage-kicker {
+  display: none;
+}
+.project-shell #main .politik-long .board-slicers {
+  justify-content: flex-start;
+  margin-top: var(--sp-5);
+}
+.project-shell #main .politik-long :is(.board-card, .theme-figure) {
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  column-gap: var(--sp-7);
+}
+/* Key figures: the number in the mono face, its label over it, nothing around it. */
+.project-shell #main .politik-long .board-kpis {
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: var(--sp-6);
+}
+.project-shell #main .politik-long .dash-kpi {
+  padding: 0;
+  border: 0;
+  background: none;
+}
+.project-shell #main .politik-long .dash-kpi:hover {
+  transform: none;
+}
+.project-shell #main .politik-long .dash-kpi dt {
+  font-size: var(--small);
+}
+.project-shell #main .politik-long .dash-kpi dd {
+  margin-top: var(--sp-2);
+  font-family: var(--font-mono);
+  font-size: var(--h2);
+  font-weight: 600;
+}
+.project-shell #main .politik-long .modell-sub {
+  margin: var(--sp-7) 0 var(--sp-4);
+  font-size: var(--h3);
+  font-weight: var(--weight-heading);
+  letter-spacing: -0.02em;
+}
+/* A feature that holds two charts gives each its own room. */
+.politik-long .feature-body > :is(.rank-bars, .stacked) + .stacked {
+  margin-top: var(--sp-7);
+}
+@media (max-width: 900px) {
+  .project-shell
+    #main
+    .politik-long
+    :is(.theme-head, .board-head, .stage-head, .story-hero) {
+    display: block;
+  }
+  .project-shell
+    #main
+    .politik-long
+    :is(.theme-why, .board-sub, .stage-lead, .story-sub) {
+    margin-top: var(--sp-4);
+  }
+}
+/* The model's stage reads as one column, like the other chapters. */
+.project-shell #main .politik-long .stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: none;
+  gap: var(--sp-section);
+}
+.project-shell #main .politik-long .stage > * {
+  grid-area: auto;
+}
+.project-shell #main .politik-long .modell-figure {
+  display: block;
+  max-width: 60rem;
+}
+.project-shell #main .politik-long .modell-slicers {
+  justify-content: flex-start;
+  margin-bottom: var(--sp-6);
+}
+.project-shell #main .politik-long .modell-curve {
+  display: block;
+  width: 100%;
+}
+.project-shell #main .politik-long .feature-body .rank-bars {
+  max-width: none;
+}
+
+/* ---------- Colour: charts take the site's palette; a party keeps its own colour, toned ---------- */
+.politik-long .rank-track i,
+.politik-long .bullet-track i {
+  background: var(--cv-olive);
+}
+.politik-long .dumbbell {
+  --c: var(--cv-olive);
+}
+.politik-long .bullet-track {
+  background: var(--cv-oat);
+}
+.politik-long .boxplot-track {
+  background-image: linear-gradient(var(--cv-olive), var(--cv-olive));
+}
+.politik-long .boxplot-track i {
+  background: var(--cv-pistachio);
+}
+/* ---------- A debate as a chat sits in the middle of the page under its own heading ---------- */
+.politik-long .chat-section {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  grid-template-rows: auto 1fr;
+  gap: var(--sp-4) var(--sp-7);
+}
+.politik-long .chat-section h2 {
+  max-width: 22ch;
+  margin: 0;
+  font-size: var(--h3);
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+.politik-long .chat-meta {
+  grid-column: 1;
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--small);
+  line-height: 1.5;
+}
+.politik-long .chat-section > :is(.chat, .dash-empty, .dk-empty) {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+}
+/* The comparison table: Sweden's column carries the weight. */
+.project-shell #main .politik-long .tax-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--body);
+}
+.project-shell #main .politik-long .tax-table :is(th, td) {
+  padding: var(--sp-3) var(--sp-4) var(--sp-3) 0;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  background: none;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.project-shell #main .politik-long .tax-table :is(th, td):first-child {
+  text-align: left;
+  font-weight: var(--weight-body);
+}
+.project-shell #main .politik-long .tax-table thead th {
+  border-bottom-color: var(--ink);
+  color: var(--muted);
+  font-size: var(--small);
+  font-weight: var(--weight-body);
+}
+.project-shell #main .politik-long .tax-table .swe {
+  color: var(--ink);
+  font-weight: 750;
+}
+.project-shell #main .politik-long .tax-table tr.total :is(th, td) {
+  font-weight: 750;
+}
+.project-shell #main .politik-long .dash-kpi dd .dash-kpi-sub {
+  font-family: var(--font);
+  font-size: var(--small);
+  font-weight: var(--weight-body);
+}
+
+/* ====================================================================================
+   The editorial pass. One grid for every figure: words and filters in a rail at the left
+   edge, the chart in the wide column. A chart says its finding by weight: the leading row
+   is dark and bold, the rest step back. The two line charts stay edge to edge.
+   ==================================================================================== */
+.politik-chapter:not(:empty) {
+  min-height: 0;
+}
+.project-shell #main .politik-long .feature:not(#mandat, #opinionen) {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  grid-template-rows: auto 1fr;
+  gap: var(--sp-5) var(--sp-7);
+}
+.project-shell
+  #main
+  .politik-long
+  .feature:not(#mandat, #opinionen)
+  .feature-head {
+  justify-items: start;
+  gap: var(--sp-5);
+  text-align: left;
+}
+.project-shell
+  #main
+  .politik-long
+  .feature:not(#mandat, #opinionen)
+  .feature-controls {
+  justify-content: flex-start;
+}
+.project-shell
+  #main
+  .politik-long
+  .feature:not(#mandat, #opinionen)
+  .feature-body {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  width: auto;
+  margin: 0;
+}
+.project-shell
+  #main
+  .politik-long
+  .feature:not(#mandat, #opinionen)
+  .feature-foot {
+  grid-column: 1;
+  align-self: end;
+  display: grid;
+  gap: var(--sp-2);
+}
+.project-shell #main .politik-long .feature-pick {
+  flex-wrap: wrap;
+  gap: var(--sp-2) var(--sp-5);
+}
+.project-shell #main .politik-long .feature-pick button {
+  font-size: var(--body);
+}
+/* Every figure title is the same quiet label; the chapter heading is the only loud one. */
+.project-shell
+  #main
+  .politik-long
+  :is(.feature-head h2, .board-card h2, .theme-chart-title) {
+  max-width: 22ch;
+  font-size: var(--h3);
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+.project-shell #main .politik-long :is(.dash-meta, .theme-chart-meta) {
+  color: var(--muted);
+  font-size: var(--small);
+  line-height: 1.5;
+}
+
+/* ---------- Ranked bars: the first row carries the finding ---------- */
+.politik-long .rank-bars-list {
+  gap: var(--sp-4);
+}
+.politik-long .rank-bars-list li,
+.politik-long .rank-bars-list li > button {
+  grid-template-columns: minmax(7rem, 15rem) minmax(0, 1fr) 7.5rem;
+  gap: var(--sp-5);
+  font-size: var(--body);
+}
+.politik-long :is(.rank-value, .bullet-key dd) {
+  font-family: var(--font-mono);
+}
+.politik-long
+  .rank-bars-list:not(.has-pick)
+  li:not(:first-child)
+  .rank-track
+  i:not([style*='background']) {
+  opacity: 0.5;
+}
+.politik-long
+  .rank-bars-list:not(.has-pick)
+  li:first-child
+  :is(.rank-label, .rank-value) {
+  font-weight: 750;
+}
+.politik-long .rank-bars-list:not(.has-pick) li:not(:first-child) {
+  color: var(--ink-faded);
+}
+.politik-long .rank-bars-list.diverging .rank-track::after {
+  border-left-color: var(--line-strong);
+}
+.politik-long .dumbbell .rank-value,
+.politik-long .stacked .rank-value {
+  font-family: var(--font-mono);
+}
+.politik-long .dumbbell .rank-value small {
+  color: var(--ink-faded);
+}
+/* A single share reads as one large figure with its bar. */
+.politik-long .stacked li.bare {
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--sp-3);
+}
+.politik-long .stacked li.bare .stacked-track {
+  height: 14px;
+}
+.politik-long .stacked li.bare .rank-value {
+  order: -1;
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-4);
+  text-align: left;
+}
+.politik-long .stacked li.bare .rank-value b {
+  font-size: var(--display-l);
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+.politik-long .stacked li.bare .rank-value small {
+  margin: 0;
+  font-size: var(--small);
+}
+.politik-long .boxplot .bullet-key div:nth-child(3) dd {
+  font-size: var(--h3);
+  font-weight: 750;
+}
+
+/* ---------- The budget's own facts: one quiet line of four ---------- */
+.project-shell #main .politik-long .budget-id {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--sp-6);
+}
+.project-shell #main .politik-long .budget-id > :is(div, p) {
+  padding: 0;
+  border: 0;
+}
+.project-shell #main .politik-long .budget-id-year strong {
+  font-family: var(--font-mono);
+  font-size: var(--h2);
+  font-weight: 600;
+}
+.project-shell #main .politik-long .budget-id-votes {
+  gap: var(--sp-1) var(--sp-4);
+}
+.project-shell #main .politik-long .budget-id-votes li {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ink-faded);
+  font-size: var(--small);
+}
+.project-shell #main .politik-long .budget-id-votes li.yes,
+.project-shell #main .politik-long .budget-id-votes li.yes small {
+  color: var(--ink);
+  font-weight: 750;
+}
+.project-shell #main .politik-long .budget-id-votes li.no {
+  color: var(--negative);
+}
+@media (max-width: 900px) {
+  .project-shell #main .politik-long .feature:not(#mandat, #opinionen) {
+    display: block;
+  }
+  .project-shell
+    #main
+    .politik-long
+    .feature:not(#mandat, #opinionen)
+    .feature-body {
+    margin-block: var(--sp-5);
+  }
+  .project-shell #main .politik-long .budget-id {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+.politik-long :is(.dumbbell, .stacked) li:not(.bare) {
+  grid-template-columns: minmax(7rem, 15rem) minmax(0, 1fr) 9rem;
+  gap: var(--sp-5);
+  font-size: var(--body);
+}
+.politik-long .stacked li:not(.bare) {
+  grid-template-columns: minmax(7rem, 15rem) minmax(0, 1fr) 7.5rem;
+}
+.politik-long .board-card.wide > .dash-meta:last-child {
+  margin-top: var(--sp-6);
+}
+
+/* ---------- Colour on the page: some chapters stand on a band of the palette ---------- */
+.politik-chapter[data-band] {
+  /* The band is the page for everything inside it: halos, hollow dots and bubbles follow. */
+  --page: var(--band);
+  background: var(--band);
+  box-shadow: 0 0 0 100vmax var(--band);
+  clip-path: inset(0 -100vmax);
+}
+.politik-chapter[data-band='pistachio'] {
+  --band: color-mix(in srgb, var(--cv-pistachio) 32%, var(--cv-ivory));
+}
+.politik-chapter[data-band='butter'] {
+  --band: color-mix(in srgb, var(--cv-butter) 32%, var(--cv-ivory));
+}
+.politik-chapter[data-band='powder'] {
+  --band: color-mix(in srgb, var(--cv-powder) 30%, var(--cv-ivory));
+}
+/* The chapter's number sits in a disc of the palette's olive. */
+.politik-chapter-top p span {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: var(--cv-olive);
+  color: var(--cv-ivory);
+  letter-spacing: 0;
+}
+.politik-chapter-top p {
+  align-items: center;
+}
+/* Key figures and single shares take the olive; the party colours run at full strength. */
+.project-shell #main .politik-long .dash-kpi dd,
+.politik-long .stacked li.bare .rank-value b {
+  color: var(--cv-olive);
+}
+.politik-long .rank-track {
+  height: 10px;
+}
+.politik-long :is(.stacked-track, .dumbbell-track i) {
+  border-radius: 0;
+}
+@media (max-width: 900px) {
+  .politik-long .chat-section {
+    display: block;
+  }
+  .politik-long .chat-meta {
+    margin: var(--sp-2) 0 var(--sp-5);
+  }
+}
+
+/* Lines that are not parties take the strong end of the palette, so they read on ivory. */
+.politik-long {
+  --series-1: var(--cv-olive);
+  --series-2: var(--negative);
+  --series-3: var(--cv-ground);
+  --series-4: var(--ink-2);
+  --series-5: var(--cv-apricot);
+}

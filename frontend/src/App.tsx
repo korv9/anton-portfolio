@@ -1,6 +1,6 @@
-import { Suspense, lazy, useEffect, useState } from 'react'
+import { Suspense, lazy, useEffect, useRef, useState } from 'react'
 import { currentLocale, l, type Locale } from './i18n'
-import { useRoute } from './router'
+import { REPORT_TABS, useRoute } from './router'
 import { pageTitle, ProjectContext, ProjectPager } from './site/Header'
 import SiteHeader from './site/SiteHeader'
 import { CvViewerProvider } from './site/CvViewer'
@@ -13,6 +13,7 @@ import './site/site.css'
 import './site/editorial.css'
 
 // Everything but the start page loads on navigation, so the start page ships none of it.
+const ProjectsPage = lazy(() => import('./projects/ProjectsPage'))
 const PoliticsProduct = lazy(() => import('./politik/PoliticsProduct'))
 const JobsProduct = lazy(() => import('./jobb/JobsProduct'))
 const WelfarePage = lazy(() => import('./welfare/WelfarePage'))
@@ -38,7 +39,7 @@ const HomiePage = lazy(() =>
 
 export default function App() {
   const route = useRoute()
-  const [language, setLanguage] = useState<Locale>(currentLocale)
+  const [language] = useState<Locale>(currentLocale)
   useEffect(() => {
     document.documentElement.lang = language
   }, [language])
@@ -52,8 +53,13 @@ export default function App() {
 
   // A new address scrolls to its section on the start page, or to the top elsewhere. Changing
   // only a view's filters (the query) keeps the reader where they are.
+  const cameFrom = useRef(route.path)
   useEffect(() => {
+    const from = cameFrom.current
+    cameFrom.current = route.path
     if (route.page === 'home' && route.path !== '#start') return
+    // A tab of the politics report opens where the reader stands, like a tab.
+    if (REPORT_TABS.includes(from) && REPORT_TABS.includes(route.path)) return
     requestAnimationFrame(() => {
       // A section address (#symbolic-method, #concepts-method) scrolls to that section;
       // a page address to the top.
@@ -79,7 +85,7 @@ export default function App() {
         <a className="skip-link" href="#main">
           {l('Skip to content', 'Hoppa till innehåll')}
         </a>
-        <SiteHeader route={route} onLanguage={setLanguage} />
+        <SiteHeader route={route} />
         <main
           id="main"
           tabIndex={-1}
@@ -97,12 +103,8 @@ export default function App() {
                 }
               >
                 {page === 'home' && <HomePage path={path} />}
-                {page === 'politik' &&
-                  (path === '#politik' ? (
-                    <ProjectOverview id="politics" />
-                  ) : (
-                    <PoliticsProduct route={route} />
-                  ))}
+                {page === 'projects' && <ProjectsPage />}
+                {page === 'politik' && <PoliticsProduct route={route} />}
                 {page === 'jobs' &&
                   (path === '#jobb' ? (
                     <ProjectOverview id="jobs" />

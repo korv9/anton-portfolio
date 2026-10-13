@@ -1,6 +1,6 @@
 /** Document titles, breadcrumbs and project paging from the project registry. */
 import { l } from '../i18n'
-import type { Route } from '../router'
+import { isLongRead, type Route } from '../router'
 import {
   neighbours,
   projectForRoute,
@@ -16,6 +16,7 @@ const b = (text: Bilingual) => l(text.en, text.sv)
  */
 const TECHNICAL: Partial<Record<Route['page'], Bilingual>> = {
   clusters: { en: 'Cluster Visuals', sv: 'Cluster Visuals' },
+  projects: { en: 'Projects', sv: 'Projekt' },
 }
 
 /** The page's own name for the document title, or null on the homepage. */
@@ -30,7 +31,8 @@ export function pageTitle(route: Route): string | null {
 export function ProjectContext({ route }: { route: Route }) {
   const project = projectForRoute(route)
   const technical = TECHNICAL[route.page]
-  if (route.page === 'home') return null
+  if (route.page === 'home' || route.page === 'projects') return null
+  if (isLongRead(route.path)) return null
   return (
     <nav
       className="project-context ds-container"
@@ -67,7 +69,7 @@ export function ProjectContext({ route }: { route: Route }) {
 /** Previous and next flagship project, at the bottom of a flagship's page. */
 export function ProjectPager({ route }: { route: Route }) {
   const project = projectForRoute(route)
-  if (!project) return null
+  if (!project || isLongRead(route.path)) return null
   const { previous, next } = neighbours(project.id)
   const link = (p: ProjectEntry | undefined, dir: 'previous' | 'next') =>
     p ? (

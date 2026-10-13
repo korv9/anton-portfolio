@@ -8,7 +8,7 @@
  */
 import { useState, type ReactNode } from 'react'
 import { l } from '../i18n'
-import { identity, partyFill } from '../parties/identity'
+import { identity, partyLine } from '../parties/identity'
 import './charts.css'
 
 export type RankRow = {
@@ -79,7 +79,7 @@ export default function RankBars({
                     left: `${left}%`,
                     width: `${Math.max(width, r.value === 0 ? 0 : 0.4)}%`,
                     background:
-                      r.color ?? (r.party ? partyFill(r.party) : undefined),
+                      r.color ?? (r.party ? partyLine(r.party) : undefined),
                     outline: p?.casing ? `1px solid ${p.casing}` : undefined,
                     outlineOffset: -1,
                   }}

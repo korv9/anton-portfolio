@@ -8,6 +8,7 @@ import { test, expect } from './test'
 
 const PAGES = [
   '#start',
+  '#projekt',
   '#drugcomb',
   '#jobb-kluster',
   '#concept-constellation',

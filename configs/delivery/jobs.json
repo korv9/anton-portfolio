@@ -1,0 +1,19 @@
+{
+  "schema_version": 2,
+  "files": [
+    "jobs/market.json"
+  ],
+  "schemas": {
+    "jobs/market.json": "configs/delivery/schemas/market.json"
+  },
+  "checks": [
+    [
+      "python",
+      "platform/publish/validate_refresh_delivery.py",
+      "--group",
+      "jobs",
+      "--root",
+      "{root}"
+    ]
+  ]
+}

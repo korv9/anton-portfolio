@@ -36,6 +36,24 @@ test('local lab handles missing exports or reopens saved runs and keeps assignme
   await expect(
     lab.getByRole('heading', { name: 'Cluster Lab', exact: true }),
   ).toBeVisible()
+  await expect(lab).not.toContainText('undefined works')
+  if (
+    index.runs.some(
+      (entry: { layouts: unknown[] }) => entry.layouts.length === 0,
+    )
+  ) {
+    const checkbox = lab.getByRole('checkbox', {
+      name: 'Include runs without layouts',
+    })
+    await checkbox.check()
+    await expect(lab.locator('tbody tr')).toHaveCount(index.runs.length)
+    await checkbox.uncheck()
+    await expect(lab.locator('tbody tr')).toHaveCount(
+      index.runs.filter(
+        (entry: { layouts: unknown[] }) => entry.layouts.length > 0,
+      ).length,
+    )
+  }
   await expect(lab.locator('canvas')).toHaveCount(1)
   await expect(lab.locator('canvas')).toHaveAttribute(
     'aria-label',
@@ -50,11 +68,25 @@ test('local lab handles missing exports or reopens saved runs and keeps assignme
   await lab.getByText('Profiles and examples', { exact: true }).click()
   await expect(
     lab.getByText(
-      'Automatic terms are preliminary. Examples retain their observation IDs.',
+      run.family === 'numeric'
+        ? 'Groups describe similarity in the selected indicators. Their numbers are not a wellbeing ranking.'
+        : 'Automatic terms are preliminary. Examples retain their observation IDs.',
     ),
   ).toBeVisible()
+  if (run.family === 'numeric') {
+    const profiles = lab
+      .locator('.clab-open details')
+      .filter({ has: page.getByText('Profiles and examples', { exact: true }) })
+    await profiles.locator('details summary').first().click()
+    await expect(
+      profiles
+        .getByRole('heading', { name: 'Profile means in original units' })
+        .first(),
+    ).toBeVisible()
+  }
   const other = index.runs.find(
-    (entry: { run_id: string }) => entry.run_id !== run.run_id,
+    (entry: { run_id: string; layouts: unknown[] }) =>
+      entry.run_id !== run.run_id && entry.layouts.length >= 2,
   )
   await page.goto(`/#cluster-visuals?lab_runs=${run.run_id},${other.run_id}`)
   await expect(lab.locator('.clab-open')).toHaveCount(2)

@@ -202,7 +202,7 @@ def test_partial_bill_preparation_is_saved_but_never_sealed_or_skipped(raw, monk
     with pytest.raises(RuntimeError, match="Incomplete preparation"):
         studies.main()
     assert studies.stored_preparation("2020/21").keys() == {"2020/21-a"}
-    request = {"session": "2020/21", "parser_version": 1}
+    request = studies.preparation_request("2020/21")
     assert rawstore.completed_paths("riksdagen", "studies/preparation/202021", request) is None
     fail.clear()
     calls.clear()

@@ -1,0 +1,50 @@
+output: warehouse/cluster_lab/public-topics-2026-10-12
+municipalities:
+  # Published mart (delivery.json, parquet/welfare/) and https://api.kolada.se/v3/municipality_groups.
+  panel: warehouse/cluster_lab/public-topics-2026-10-12/sources/mart_municipality_year_panel.parquet
+  groups: warehouse/cluster_lab/public-topics-2026-10-12/sources/kolada_municipality_groups.json
+  # SKR's municipality groups of 2023, as Kolada lists them.
+  skr_groups:
+    - G92786
+    - G92787
+    - G92788
+    - G92789
+    - G92790
+    - G92791
+    - G92792
+    - G92793
+    - G92794
+  year: 2024
+  features:
+    - open_unemployment_18_65_pct
+    - employment_rate_20_64_pct
+    - ill_health_days
+    - median_earned_income_sek
+    - social_assistance_pct
+    - turnout_riksdag_pct
+    - eligible_vocational_programme_pct
+  variance_share: 0.8
+  k:
+    - 2
+    - 3
+    - 4
+    - 5
+    - 6
+    - 7
+    - 8
+  seed: 42
+  bootstrap_rounds: 100
+  min_bootstrap_ari: 0.75
+  gap_rounds: 20
+  permutations: 200
+counties:
+  panel: frontend/public/data/welfare/panel-county-year.json
+  year: 2024
+  features:
+    - open_unemployment_18_65_pct
+    - employment_rate_20_64_pct
+    - ill_health_days
+    - median_earned_income_sek
+    - social_assistance_pct
+    - violent_crime_per_100k
+    - eligible_vocational_programme_pct

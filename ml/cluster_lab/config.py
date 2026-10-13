@@ -18,14 +18,17 @@ DEFAULTS = {
         'revision': 'e8f8c211226b894fcb81acc59f3b34ba3efd5f42', 'device': 'cpu',
         'batch_size': 32, 'normalize': True, 'centering': 'none', 'centering_strength': 1.0,
         'author_min_observations': 5, 'author_min_works': 2,
-        'svd_dimensions': 128, 'max_features': 20000, 'metadata_features': [], 'storage_dtype': 'float32'},
+        'svd_dimensions': 128, 'max_features': 20000, 'metadata_features': [], 'storage_dtype': 'float32',
+        'fit_seed': None, 'numeric_features': [], 'numeric_scaler': 'standard'},
     'reduction': {'method': 'umap', 'n_neighbors': 30, 'n_components': 10,
         'min_dist': 0.05, 'metric': 'cosine', 'init': 'random', 'n_epochs': None,
         'pre_pca_components': None, 'pca_batch_size': 2048},
     'clustering': {'method': 'hdbscan', 'implementation': 'hdbscan',
         'min_cluster_size': 50, 'min_samples': 10, 'cluster_selection_method': 'eom',
         'metric': 'euclidean', 'cluster_selection_epsilon': 0.0,
-        'n_clusters': 30, 'batch_size': 2048},
+        'n_clusters': 30, 'batch_size': 2048,
+        'max_cluster_size': None,
+        'merge_similarity': None, 'reassign_quantile': None, 'reassign_margin': 0.0},
     'seed': 42, 'sample_size': None, 'sample_seed': 42,
     'sweep': {'coarse_candidates': 12, 'sample_sizes': [20000, 60000], 'finalists': 3,
         'refinements_per_finalist': 2, 'stability_seeds': [43, 44],
@@ -34,7 +37,7 @@ DEFAULTS = {
         'full_representation_limit': None,
         'full_allowed': [],
         'selection': {'noise_weight': 0.3, 'largest_weight': 0.4, 'dominance_weight': 0.2,
-                      'silhouette_weight': 1.0, 'min_clusters': 2}},
+                      'silhouette_weight': 1.0, 'confound_weight': 1.0, 'min_clusters': 2}},
     'evaluation': {'sample_size': 1200, 'seed': 1729, 'silhouette_metric': 'cosine',
         'examples': 5, 'terms': 12, 'profile_max_features': 20000,
         'profile_sample_per_cluster': 300, 'centroid_sample_per_cluster': 10000,
@@ -117,12 +120,14 @@ def validate(c):
     for ds in c['datasets']:
         if set(ds) - DATA_KEYS:
             raise ValueError(f'Unknown dataset keys: {set(ds)-DATA_KEYS}')
-        if ds.get('adapter') not in ('jobs', 'symbolic'):
-            raise ValueError('Dataset adapter must be jobs or symbolic')
+        if ds.get('adapter') not in ('jobs', 'symbolic', 'snapshot'):
+            raise ValueError('Dataset adapter must be jobs, symbolic or snapshot')
+        if ds.get('adapter')=='snapshot' and not ds.get('manifest'):
+            raise ValueError('Snapshot adapter requires an immutable manifest')
         if ds.get('adapter') == 'jobs':
             if date.fromisoformat(ds.get('start', '2023-01-01')) >= date.fromisoformat(ds.get('end', '2027-01-01')):
                 raise ValueError('Dataset start must precede exclusive end')
-        if ds.get('family', 'occurrences') not in ('jobs', 'occurrences', 'per_symbol', 'passages'):
+        if ds.get('family', 'occurrences') not in ('jobs', 'occurrences', 'per_symbol', 'passages', 'text', 'numeric'):
             raise ValueError('Unknown experiment family')
         for key in ('representation', 'reduction', 'clustering', 'sweep', 'layouts'):
             if key in ds:
@@ -185,8 +190,12 @@ def validate(c):
 
 def validate_trial(c, ds=None):
     r, d, h = c['representation'], c['reduction'], c['clustering']
-    if r['kind'] not in ('embedding','tfidf_svd') or r['preprocessing'] not in ('raw','boilerplate'):
+    if r['kind'] not in ('embedding','tfidf_svd','numeric') or r['preprocessing'] not in ('raw','boilerplate'):
         raise ValueError('Unknown representation or preprocessing')
+    if r['kind']=='numeric' and (not r['numeric_features'] or r['numeric_scaler'] not in ('standard','robust') or r['normalize']):
+        raise ValueError('Numeric input requires named features, standard/robust scaling and normalize=false')
+    if ds and ds.get('family')=='numeric' and r['kind']!='numeric':
+        raise ValueError('Numeric profiles must not be text-embedded')
     if r['centering'] not in ('none','work','author') or not 0 <= r['centering_strength'] <= 1:
         raise ValueError('Centering must be none/work/author with strength in [0,1]')
     if r['title_weight'] < 0 or r['batch_size'] < 1 or not r['text_fields']:
@@ -219,6 +228,9 @@ def validate_trial(c, ds=None):
         raise ValueError('min_cluster_size must be an integer >=2 or {fraction: ...}')
     if h['min_samples'] < 1 or h['cluster_selection_method'] not in ('eom','leaf'):
         raise ValueError('Invalid HDBSCAN min_samples or selection method')
+    for key in ('merge_similarity','reassign_quantile'):
+        if h[key] is not None and not 0 < h[key] < 1:
+            raise ValueError(f'{key} must be null or in (0,1)')
     if ds and ds['adapter'] == 'jobs' and r['centering'] != 'none':
         raise ValueError('Work/author centering only applies to Symbolic Atlas')
     if ds and ds['adapter'] == 'symbolic' and r['metadata_features']:

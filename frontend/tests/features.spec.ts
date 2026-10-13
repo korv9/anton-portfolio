@@ -27,7 +27,7 @@ test('vote shares: the parties ranked by the kind of vote picked', async ({
 }) => {
   await page.goto('/#politik-roster')
   const f = await feature(page, 'rostrutor')
-  await expect(f.locator('.rank-bars-list li')).toHaveCount(8)
+  await expect(f.locator('.stacked li')).toHaveCount(8)
   const first = await f.locator('.rank-label').first().textContent()
   await f.getByRole('button', { name: 'Abstained', exact: true }).click()
   await expect(f.locator('.rank-label').first()).not.toHaveText(first!)
@@ -59,8 +59,8 @@ test('seats over time: one line per party since the chosen election', async ({
   const f = await feature(page, 'mandat')
   await f.getByRole('button', { name: 'From 1973' }).click()
   await expect(f.locator('.feature-table thead th')).toHaveCount(17)
-  // The party cards are still there, under the chart.
-  await expect(page.locator('.party-cards')).toBeVisible()
+  // The parties are logos under the chart.
+  await expect(f.getByRole('group', { name: 'Parties' })).toBeVisible()
 })
 
 test('budget difference: a party against the government, area by area', async ({
@@ -72,28 +72,6 @@ test('budget difference: a party against the government, area by area', async ({
   const title = await f.locator('h2').textContent()
   await f.locator('.feature-pick button').nth(1).click()
   await expect(f.locator('h2')).not.toHaveText(title!)
-})
-
-test('tax ranking: every tax by revenue, the mix changes with the year', async ({
-  page,
-}) => {
-  await page.goto('/#politik-skatter')
-  const f = await feature(page, 'skattebubblor')
-  await expect(f.locator('.rank-bars-list li')).toHaveCount(8)
-  await f.getByRole('button', { name: '1990' }).click()
-  await expect(f.locator('h2')).toContainText('1990')
-})
-
-test('debate ranking: the parties ranked by the measure picked', async ({
-  page,
-}) => {
-  await page.goto('/#politik-sakdebatter')
-  await page.locator('.sak-deeper > summary').click()
-  const f = await feature(page, 'topplista')
-  await expect(f.locator('.rank-bars-list li')).toHaveCount(8)
-  const first = await f.locator('.rank-label').first().textContent()
-  await f.getByRole('button', { name: 'Replies per speech' }).click()
-  await expect(f.locator('.rank-value').first()).not.toHaveText(first!)
 })
 
 test('county small multiples: one chart per county on a shared axis', async ({

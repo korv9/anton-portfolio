@@ -1,0 +1,19 @@
+{
+  "schema_version": 2,
+  "files": [
+    "parliament/now.json",
+    "parliament/elections.json",
+    "parliament/polls.json",
+    "parliament/sessions.json",
+    "parliament/studies.json",
+    "parliament/issues.json"
+  ],
+  "include": [
+    "welfare/*",
+    "taxes/*",
+    "schema/*",
+    "parquet/welfare/*",
+    "parquet/welfare_indicator/*",
+    "parquet/parliament_roll_calls/*"
+  ]
+}

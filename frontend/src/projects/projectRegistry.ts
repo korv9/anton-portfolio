@@ -138,7 +138,7 @@ export const PROJECTS: ProjectEntry[] = [
     ),
     summary: t(
       'Den svenska arbetsmarknaden genom öppna jobbdata, språkmodeller och klustring.',
-      'The Swedish job market through open job data, language models and clustering.',
+      'I use open job data, language models and clustering to explore the Swedish job market.',
     ),
     question: t(
       'Hur förändras efterfrågan på olika yrken, och vilka kompetenser efterfrågas?',
@@ -245,7 +245,7 @@ export const PROJECTS: ProjectEntry[] = [
     descriptor: t('NLP, fallstudie hos Fora AB', 'NLP, case study at Fora AB'),
     summary: t(
       'Anton grupperade liknande IT-supportärenden för att ge IT-teamet ett underlag för utredning av återkommande fel.',
-      'Anton grouped similar IT support tickets to help the IT team investigate recurring faults.',
+      'I grouped similar IT support tickets to help the IT team investigate recurring faults.',
     ),
     question: t(
       'Hur hittar IT-teamet återkommande fel bland tusentals enskilda supportärenden?',

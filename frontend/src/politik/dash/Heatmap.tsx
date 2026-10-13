@@ -65,13 +65,13 @@ export default function Heatmap({
               // skipped so both keep a readable contrast.
               const t = top > low ? (v - low) / (top - low) : 1
               const dark = t >= 0.5
-              const alpha = dark ? 0.62 + (t - 0.5) * 0.5 : 0.05 + t * 0.8
+              const alpha = dark ? 0.9 + (t - 0.5) * 0.2 : 0.05 + t * 0.8
               return (
                 <td
                   key={p}
                   style={{
-                    background: `rgba(17, 18, 20, ${alpha.toFixed(3)})`,
-                    color: dark ? '#fff' : undefined,
+                    background: `rgba(85, 91, 69, ${alpha.toFixed(3)})`,
+                    color: dark ? 'var(--cv-ivory)' : undefined,
                   }}
                 >
                   {format(v)}

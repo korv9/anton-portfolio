@@ -5,7 +5,10 @@ test(
   'the IT job UMAP sits beside Projects without a project button',
   { tag: '@mobile' },
   async ({ page, isMobile }) => {
-    await page.goto('/#projekt')
+    await page.goto('/')
+    await page
+      .locator('.home-work')
+      .evaluate((el) => el.scrollIntoView({ behavior: 'instant' }))
     const preview = page.locator('.home-cluster-preview[data-kind="jobs"]')
     await expect(preview.getByRole('img')).toBeVisible()
     await expect(preview.locator('figcaption')).toHaveText('UMAP of IT job ads')
@@ -124,7 +127,10 @@ test('the IT job UMAP fades out away from its section and returns on scroll back
 test('the smaller IT job UMAP floats without edge fading and respects reduced motion', async ({
   page,
 }) => {
-  await page.goto('/#projekt')
+  await page.goto('/')
+  await page
+    .locator('.home-work')
+    .evaluate((el) => el.scrollIntoView({ behavior: 'instant' }))
   const preview = page.locator('.home-cluster-preview[data-kind="jobs"]')
   await expect(preview).toHaveAttribute('data-ready', 'true')
   await expect(preview.locator('canvas')).toHaveCount(1)
@@ -267,7 +273,6 @@ test(
         ),
       )
       .toBeLessThan(2)
-    await cta.click()
     await expect(header).toBeVisible()
     await expect(header).not.toHaveAttribute('inert', '')
     await expect(page.locator('.home-group-title')).toHaveText([
@@ -275,6 +280,7 @@ test(
       'Observatories',
       'Labs',
     ])
+    await expect(page.locator('.work-card')).toHaveCount(11)
     await expect
       .poll(() =>
         page
@@ -282,17 +288,13 @@ test(
           .evaluate((el) => Number(getComputedStyle(el).opacity)),
       )
       .toBeLessThan(0.1)
-    await header.getByRole('link', { name: 'Education', exact: true }).click()
-    await expect(page).toHaveURL(/#utbildning$/)
-    await expect
-      .poll(() =>
-        page
-          .locator('#utbildning')
-          .evaluate((el) => el.getBoundingClientRect().top),
-      )
-      .toBeLessThan(220)
-    await expect(page.locator('#utbildning .home-title')).toBeInViewport()
-    await expect(header).not.toBeVisible()
+    await cta.click()
+    await expect(page).toHaveURL(/#projekt$/)
+    await expect(page.locator('.projects-group-title')).toHaveText([
+      'Engineering',
+      'Observatories',
+      'Labs',
+    ])
   },
 )
 
@@ -363,16 +365,27 @@ test('home remains usable when the decorative debate map is unavailable', async 
   await expect(page.locator('#start nav')).toHaveCount(0)
 })
 
-test('the homepage groups all retained projects', async ({ page }) => {
+test('the projects page shows every retained project on one screen', async ({
+  page,
+}) => {
   await page.goto('/#projekt')
-  await expect(page.locator('.home-project-groups > section')).toHaveCount(3)
-  await expect(page.locator('.work-card')).toHaveCount(11)
-  await expect(page.locator('.work-card[href="#thesis"]')).toContainText(
+  await expect(page).toHaveTitle('Projects | Anton Ernstsson')
+  await expect(page.locator('.projects-group')).toHaveCount(3)
+  await expect(page.locator('.project-card')).toHaveCount(11)
+  await expect(page.locator('.project-card[href="#thesis"]')).toContainText(
     'IT Incident Clustering',
   )
-  await expect(page.locator('.work-card[href="#drugcomb"]')).toContainText(
+  await expect(page.locator('.project-card[href="#drugcomb"]')).toContainText(
     'Drug Synergy Lab',
   )
+  // Nothing to scroll for on a desktop screen: the last card ends inside the window.
+  for (const card of await page.locator('.project-card').all())
+    await expect(card).toBeInViewport({ ratio: 1 })
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollHeight <= innerHeight,
+    ),
+  ).toBe(true)
   const menu = await siteNav(page)
   await expect(
     menu.getByRole('link', { name: 'Cluster Visuals', exact: true }),

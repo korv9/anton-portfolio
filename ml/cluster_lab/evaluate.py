@@ -26,6 +26,15 @@ def silhouette(vectors,labels,metric):
         return unavailable(str(error))
 
 
+def dbcv(model):
+    """Density-based validity of the fitted groups (before any merge or noise reassignment)."""
+    try:
+        return {'value':float(model.relative_validity_),'space':'clustering space',
+            'note':'hdbscan relative_validity_: fast DBCV approximation, comparable between runs on the same data only'}
+    except AttributeError:
+        return unavailable('Estimator does not expose a density-based validity index')
+
+
 def evaluate(frame,vectors,space,labels,model,config,folder):
     ec=config['evaluation']
     indices=np.sort(np.random.default_rng(ec['seed']).choice(len(frame),min(ec['sample_size'],len(frame)),replace=False))
@@ -36,12 +45,19 @@ def evaluate(frame,vectors,space,labels,model,config,folder):
         silhouette_original=silhouette(np.asarray(vectors[indices]),labels[indices],ec['silhouette_metric']),
         silhouette_analyzed=silhouette(np.asarray(space[indices]),labels[indices],config['clustering']['metric']),
         evaluation_sample={'size':len(indices),'seed':ec['seed'],'ids':'evaluation-ids.parquet'},
+        dbcv=dbcv(model),
         persistence={'value':model.cluster_persistence_.tolist()} if hasattr(model,'cluster_persistence_')
             else unavailable('This implementation/method does not expose cluster_persistence_'),
         mean_probability={'value':float(model.probabilities_[labels>=0].mean())} if hasattr(model,'probabilities_') and (labels>=0).any()
             else unavailable('No assigned observations or estimator has no membership probabilities'))
+    metrics['dominance']=dominance(frame,labels)
+    return metrics
+
+
+def dominance(frame,labels):
+    """How far the groups follow a metadata field: top-value share per group and AMI."""
     dominance={}
-    for field in ['employer','year','occupation_field','occupation_code','region','document_id','author','language','tradition','symbol_id']:
+    for field in ['employer','year','occupation_field','occupation_code','region','document_id','author','language','tradition','symbol_id','party','speaker','length_bin','decade','debate_id','translator','period','area']:
         if field not in frame:
             continue
         parts=pd.DataFrame({'cluster':labels,'value':frame[field].astype(str).to_numpy()})
@@ -50,11 +66,11 @@ def evaluate(frame,vectors,space,labels,model,config,folder):
         top=counts.groupby(level=0).max() if len(counts) else pd.Series(dtype=float)
         sizes=parts[parts.cluster>=0].groupby('cluster').size()
         dominance[field]={'weighted_top_share':float(top.sum()/max(1,(labels>=0).sum())),
+            'adjusted_mutual_information':float(adjusted_mutual_info_score(labels[labels>=0],frame[field].astype(str).to_numpy()[labels>=0])) if (labels>=0).any() else None,
             'missing_share':float(parts.value.isin(['','None','nan']).mean()),
             'per_cluster_top_share':{str(k):float(v/sizes[k]) for k,v in top.items()},
             'note':'Missing metadata excluded from top value, retained in denominator'}
-    metrics['dominance']=dominance
-    return metrics
+    return dominance
 
 
 def stability(left,right):
@@ -70,6 +86,8 @@ def stability(left,right):
         'left_coverage_on_common':float((a>=0).mean()) if len(a) else None,
         'right_coverage_on_common':float((b>=0).mean()) if len(b) else None,
         'both_assigned':int(both.sum()),'including_noise_as_one_group':metrics(a,b),
+        'noise_switch_share':float(((a<0)!=(b<0)).mean()) if len(a) else None,
+        'both_assigned_share':float(both.mean()) if len(a) else None,
         'excluding_noise_in_either':metrics(a[both],b[both]),
         'label_matching':'ARI and AMI are invariant to cluster-label permutations; IDs inner-joined'}
 
@@ -77,6 +95,21 @@ def stability(left,right):
 def profiles(dataset,frame,vectors,labels,config,folder):
     ec=config['evaluation']
     rng=np.random.default_rng(ec['seed'])
+    if dataset.spec.get('family')=='numeric':
+        raw=pd.read_parquet(dataset.path).set_index('observation_id').loc[frame.observation_id]
+        rows=[]
+        for c in sorted(set(labels)-{-1}):
+            idx=np.flatnonzero(labels==c)
+            distances=np.linalg.norm(vectors[idx]-vectors[idx].mean(axis=0),axis=1)
+            reps=idx[np.argsort(distances)[:ec['examples']]]
+            random=rng.choice(idx,min(ec['examples'],len(idx)),replace=False)
+            rows.append({'cluster':int(c),'size':len(idx),'label_status':'unreviewed numeric profile',
+                'feature_means':raw.iloc[idx][config['representation']['numeric_features']].mean().to_dict(),
+                'representative_examples':[{'id':frame.iloc[i].observation_id,'text':str(raw.iloc[i].region_name),'metadata':raw.iloc[i].to_dict()} for i in reps],
+                'random_examples':[{'id':frame.iloc[i].observation_id,'text':str(raw.iloc[i].region_name)} for i in random]})
+        result={'method':'numeric feature means in original units; standardized-space centroid representatives','profiles':rows}
+        atomic_json(folder/'profiles.json',result)
+        return result
     selected=[]
     rows=[]
     cluster_ids=sorted(set(labels)-{-1})
@@ -145,14 +178,22 @@ def profiles(dataset,frame,vectors,labels,config,folder):
 def score(metrics,selection):
     if metrics['cluster_count']<selection['min_clusters']:
         return -100.0
-    separation=metrics['silhouette_original']['value']
+    # Density validity where the estimator has it: original-space silhouette penalises density
+    # clusters in high dimensions and rewarded groups that only separate speakers.
+    separation=metrics.get('dbcv',{}).get('value')
+    if separation is None:
+        separation=metrics['silhouette_original']['value']
     # Missing separation cannot masquerade as zero quality or win selection.
     if separation is None:
         return -99.0
     dominance=max((v['weighted_top_share'] for k,v in metrics['dominance'].items()
         if k in ('employer','document_id','author')),default=0)
+    # Who wrote or said it is the confound; a debate or work is allowed to carry a subject.
+    confound=max((v['adjusted_mutual_information'] or 0 for k,v in metrics['dominance'].items()
+        if k in ('author','speaker','translator')),default=0)
     return (selection['silhouette_weight']*separation-selection['noise_weight']*metrics['noise_share']
-        -selection['largest_weight']*metrics['largest_cluster_share']-selection['dominance_weight']*dominance)
+        -selection['largest_weight']*metrics['largest_cluster_share']-selection['dominance_weight']*dominance
+        -selection.get('confound_weight',0)*confound)
 
 
 def shortlist(entries,count,selection,stabilities=None):

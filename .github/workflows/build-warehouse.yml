@@ -55,6 +55,10 @@ jobs:
       - name: Require R2 credentials
         run: |
           for name in R2_ACCOUNT_ID R2_ACCESS_KEY_ID R2_SECRET_ACCESS_KEY R2_BUCKET; do
+            value="${!name}"
+            value="${value#"${value%%[![:space:]]*}"}"
+            value="${value%"${value##*[![:space:]]}"}"
+            export "$name=$value"
             if [ -z "${!name}" ]; then echo "::error::$name is not set (docs/deploy.md)"; exit 1; fi
           done
       - uses: actions/checkout@v4

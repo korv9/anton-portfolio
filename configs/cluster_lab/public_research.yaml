@@ -1,0 +1,129 @@
+lab:
+  output: warehouse/cluster_lab/public-research-2026-10-12
+  cache: warehouse/cluster_lab/cache
+  representation:
+    device: cuda
+    batch_size: 16
+    storage_dtype: float32
+    fit_seed: 42
+    text_fields: [context]
+    svd_dimensions: 128
+  clustering:
+    min_cluster_size: 3
+    min_samples: 2
+  evaluation:
+    sample_size: 1200
+    examples: 3
+    profile_sample_per_cluster: 40
+    profile_total_term_samples: 10000
+    profile_stop_words:
+      [
+        och,
+        att,
+        det,
+        som,
+        en,
+        ett,
+        i,
+        på,
+        för,
+        till,
+        av,
+        med,
+        är,
+        har,
+        vi,
+        de,
+        den,
+        inte,
+        om,
+        från,
+        men,
+        så,
+        sig,
+        talman,
+        herr,
+        fru,
+        skulle,
+        ska,
+        kan,
+        jag,
+        ni,
+        också,
+        nu,
+        här,
+        detta,
+        finns,
+        blir,
+        alla,
+        man,
+        var,
+        vara,
+        kommer,
+        eller,
+        när,
+        vad,
+      ]
+  resources:
+    cpu_threads: 3
+    torch_threads: 2
+    memory_gb: 8
+    min_free_disk_gb: 3
+  layouts:
+    count: 12
+    preview_count: 0
+    n_neighbors: [15, 60]
+    min_dist: [0, 0.3]
+    seeds: [42, 43, 44]
+    preview_points: 5000
+    trust_sample_size: 1200
+research:
+  debate:
+    index: frontend/public/data/politics/parliament/debate-stats/index.json
+    delivery: frontend/public/data/delivery.json
+    passage_words: 120
+    minimum_words: 40
+    pilot_size: 600
+    models:
+      - { name: tfidf, kind: tfidf_svd }
+      - {
+          name: multilingual,
+          kind: embedding,
+          model: sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2,
+          revision: e8f8c211226b894fcb81acc59f3b34ba3efd5f42,
+        }
+      - {
+          name: swedish,
+          kind: embedding,
+          model: KBLab/sentence-bert-swedish-cased,
+          revision: 6b5e83cd29c03729cfdc33d13b1423399b0efb5c,
+        }
+    neighbors: [15, 60]
+    min_dist: [0, 0.2]
+    dimensions: 10
+    seeds: [42, 43, 44]
+    kmeans_clusters: [20]
+    hdbscan_sizes: [50, 100]
+    min_samples: 10
+  welfare:
+    panel: frontend/public/data/welfare/panel-county-year.json
+    indicators: frontend/public/data/welfare/indicators.json
+    source_run: frontend/public/data/welfare/run.json
+    year: 2024
+    features:
+      open_unemployment_18_65_pct: { unit: percent, source: kolada_N03937 }
+      employment_rate_20_64_pct: { unit: percent, source: kolada_N02267 }
+      ill_health_days: { unit: days, source: kolada_N00957 }
+      median_earned_income_sek: { unit: SEK, source: kolada_N00906 }
+      social_assistance_pct: { unit: percent, source: kolada_N31807 }
+      violent_crime_per_100k: { unit: crimes_per_100000, source: kolada_N07403 }
+      eligible_vocational_programme_pct:
+        { unit: percent, source: kolada_N15428 }
+    scalers: [standard, robust]
+    neighbors: [3, 7, 14]
+    min_dist: [0, 0.2, 0.5]
+    dimensions: 3
+    seeds: [42, 43, 44]
+    kmeans_clusters: [2, 3]
+    hdbscan_sizes: [3]
+    min_samples: 2

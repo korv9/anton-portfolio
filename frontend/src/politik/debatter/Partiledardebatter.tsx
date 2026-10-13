@@ -11,9 +11,8 @@ import type { Route } from '../../router'
 import { shownParties, useParties } from '../partySelection'
 import { useViewParams } from '../useViewParams'
 import { Select, dayName, num } from '../controls'
-import { Board, Card, Cards, Empty, Kpi, Kpis } from '../board/Board'
+import { Board, Card, Cards, Empty } from '../board/Board'
 import Heatmap from '../dash/Heatmap'
-import { debateHref } from './DebateView'
 import {
   issuesIn,
   loadDebateIndex,
@@ -22,8 +21,8 @@ import {
   type DebateIndex,
   type Speech,
 } from './data'
-import DebateTimeline from './DebateTimeline'
-import TopicBars from './TopicBars'
+import DebateChat from './DebateChat'
+import TopicMatrix from './TopicMatrix'
 import './debatter.css'
 
 const DEFAULTS = { debatt: '' }
@@ -93,16 +92,6 @@ export default function Partiledardebatter({ route }: { route: Route }) {
   const parties = shownParties(selected)
   const present = parties.filter((p) => debate.parties[p])
 
-  const given = present.map((p) => ({
-    party: p,
-    n: Object.values(debate.replied_to[p] ?? {}).reduce((s, v) => s + v, 0),
-  }))
-  const received = present.map((p) => ({
-    party: p,
-    n: present.reduce((s, q) => s + (debate.replied_to[q]?.[p] ?? 0), 0),
-  }))
-  const topGiven = [...given].sort((a, b) => b.n - a.n)[0]
-  const topReceived = [...received].sort((a, b) => b.n - a.n)[0]
   const earlierDebate = all[all.indexOf(debate) - 1]
 
   // What each party talked about: the share of its words in speeches whose words point to each
@@ -147,8 +136,8 @@ export default function Partiledardebatter({ route }: { route: Route }) {
     <Board
       title={l('Party-leader debates', 'Partiledardebatter')}
       sub={l(
-        `${all.length} party-leader debates since ${all[0].date.slice(0, 4)}. The chosen debate: ${dayName(debate.date)}.`,
-        `${all.length} partiledardebatter sedan ${all[0].date.slice(0, 4)}. Vald debatt: ${dayName(debate.date)}.`,
+        `${all.length} party-leader debates since ${all[0].date.slice(0, 4)}. Pick a debate to see what each party talked about and read it turn by turn.`,
+        `${all.length} partiledardebatter sedan ${all[0].date.slice(0, 4)}. Välj en debatt för att se vad varje parti pratade om och läsa den inlägg för inlägg.`,
       )}
       slicers={
         <>
@@ -163,50 +152,18 @@ export default function Partiledardebatter({ route }: { route: Route }) {
         </>
       }
     >
-      <Kpis>
-        <Kpi
-          index={2}
-          label={l('Replies most', 'Replikerar mest')}
-          value={topGiven?.n ?? 0}
-          format={(v) => `${topGiven?.party ?? ''} ${num(v)}`}
-          sub={topGiven ? partyName(topGiven.party) : undefined}
-        />
-        <Kpi
-          index={3}
-          label={l('Replied to most', 'Får flest repliker')}
-          value={topReceived?.n ?? 0}
-          format={(v) => `${topReceived?.party ?? ''} ${num(v)}`}
-          sub={topReceived ? partyName(topReceived.party) : undefined}
-        />
-      </Kpis>
-
-      <p className="board-cta">
-        <a
-          className="board-button"
-          href={debateHref('partiledare', debate.session, debate.id)}
-        >
-          {l(
-            'Read the debate reply by reply',
-            'Läs debatten replik för replik',
-          )}
-        </a>
-      </p>
-
       <Cards>
         <Card
           index={0}
           wide
-          title={l(
-            'What the parties talked about, compared with the debate before',
-            'Vad partierna pratade om, jämfört med debatten innan',
-          )}
+          title={l('What the parties talked about', 'Vad partierna pratade om')}
           meta={l(
             `Share of each party's words in ${dayName(debate.date)}, by issue area read from the words${earlierDebate ? `, dashed frame: ${dayName(earlierDebate.date)}` : ''}`,
             `Andel av partiets ord ${dayName(debate.date)}, per sakområde som orden pekar på${earlierDebate ? `, streckad ram: ${dayName(earlierDebate.date)}` : ''}`,
           )}
         >
           {speeches && lexicon ? (
-            <TopicBars
+            <TopicMatrix
               rows={topicRows}
               parties={present}
               value={(row, p) => nowTopics.get(`${row}|${p}`) ?? null}
@@ -219,36 +176,6 @@ export default function Partiledardebatter({ route }: { route: Route }) {
                 earlierDebate ? dayName(earlierDebate.date) : undefined
               }
               unit={l('% of words', '% av orden')}
-            />
-          ) : speechError ? (
-            <p className="dash-empty">
-              {l(
-                'The speeches could not be loaded.',
-                'Anförandena kunde inte hämtas.',
-              )}
-            </p>
-          ) : (
-            <Empty />
-          )}
-        </Card>
-
-        <Card
-          index={1}
-          wide
-          title={l(
-            'Who spoke when, and about what',
-            'Vem som talade när, och om vad',
-          )}
-          meta={l(
-            `${dayName(debate.date)}, one lane per party, each block a speech as long as its words, the issue areas are read from the words`,
-            `${dayName(debate.date)}, en rad per parti, varje block ett inlägg lika långt som sina ord, ämnena läses ur orden`,
-          )}
-        >
-          {speeches && lexicon ? (
-            <DebateTimeline
-              speeches={speeches}
-              issues={index.issues}
-              parties={parties}
             />
           ) : speechError ? (
             <p className="dash-empty">
@@ -284,55 +211,30 @@ export default function Partiledardebatter({ route }: { route: Route }) {
             )}
           />
         </Card>
-
-        <Card
-          index={6}
-          wide
-          title={l('All party-leader debates', 'Alla partiledardebatter')}
-          meta={l('Newest first', 'Nyast först')}
-        >
-          <div
-            className="board-table-wrap"
-            tabIndex={0}
-            role="region"
-            aria-label={l(
-              'Table of all party-leader debates',
-              'Tabell över alla partiledardebatter',
-            )}
-          >
-            <table className="board-table">
-              <thead>
-                <tr>
-                  <th scope="col">{l('Date', 'Datum')}</th>
-                  <th scope="col">{l('Session', 'Riksmöte')}</th>
-                  <th scope="col" className="num">
-                    {l('Speeches', 'Inlägg')}
-                  </th>
-                  <th scope="col" className="num">
-                    {l('Replies', 'Repliker')}
-                  </th>
-                  <th scope="col">{l('Read', 'Läs')}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {[...all].reverse().map((d) => (
-                  <tr key={d.id}>
-                    <td>{dayName(d.date)}</td>
-                    <td>{d.session}</td>
-                    <td className="num">{num(d.speeches)}</td>
-                    <td className="num">{num(d.replies)}</td>
-                    <td>
-                      <a href={debateHref('partiledare', d.session, d.id)}>
-                        {l('Reply by reply', 'Replik för replik')}
-                      </a>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </Card>
       </Cards>
+
+      <section className="chat-section" aria-labelledby="leader-chat-title">
+        <h2 id="leader-chat-title">
+          {l('The debate, turn by turn', 'Debatten, inlägg för inlägg')}
+        </h2>
+        <p className="chat-meta">
+          {dayName(debate.date)}, {num(debate.speeches)}{' '}
+          {l('speeches', 'anföranden')}, {num(debate.replies)}{' '}
+          {l('replies', 'repliker')}
+        </p>
+        {speeches ? (
+          <DebateChat key={debate.id} speeches={speeches} parties={selected} />
+        ) : speechError ? (
+          <p className="dash-empty">
+            {l(
+              'The speeches could not be loaded.',
+              'Anförandena kunde inte hämtas.',
+            )}
+          </p>
+        ) : (
+          <Empty />
+        )}
+      </section>
     </Board>
   )
 }

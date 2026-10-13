@@ -52,9 +52,11 @@ class Dataset:
             return frame.copy(), {'kind': 'full', 'total': len(frame), 'selected': len(frame)}
         # Every observed year/field (or work) gets a point; remainder is uniform hash sampling.
         groups = ['year','occupation_field_id'] if self.spec['adapter']=='jobs' else ['document_id']
+        if self.spec.get('family')=='numeric':
+            groups=[]
         ranked = frame.assign(_hash=frame.observation_id.map(
             lambda x: hashlib.sha256(f'{seed}:{x}'.encode()).hexdigest())).sort_values('_hash')
-        mandatory = ranked.groupby(groups, dropna=False, sort=False).head(1)
+        mandatory = ranked.groupby(groups, dropna=False, sort=False).head(1) if groups else ranked.iloc[:0]
         if len(mandatory) > size:
             raise DataProblem(f'Sample {size} cannot cover {len(mandatory)} observed strata')
         rest = ranked.loc[~ranked.observation_id.isin(mandatory.observation_id)].head(size-len(mandatory))
@@ -200,7 +202,7 @@ def load(spec, config, symbolic_source=None):
                 metadata[column]=metadata[column].astype('string[pyarrow]').fillna('')
         if digest(metadata.observation_id.tolist())!=manifest['ordered_ids_sha256']:
             raise DataProblem('Pinned replay dataset ID ordering changed')
-        return Dataset(manifest['dataset'],path,manifest,metadata)
+        return Dataset({**manifest['dataset'],**spec},path,manifest,metadata)
     output = Path(config['output'])/'datasets'
     output.mkdir(parents=True,exist_ok=True)
     resources = config['resources']

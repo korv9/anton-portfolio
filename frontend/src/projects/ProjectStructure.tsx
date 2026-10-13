@@ -1,6 +1,6 @@
 import { useEffect, type ReactNode } from 'react'
 import { l } from '../i18n'
-import type { Route } from '../router'
+import { isLongRead, type Route } from '../router'
 import { PROJECTS, projectForRoute } from './projectRegistry'
 import { PROJECT_TOPICS } from './topics'
 import './projectStructure.css'
@@ -59,7 +59,9 @@ export default function ProjectStructure({
   )
   useEffect(() => {
     const section = route.params.get('section')
-    if (!project || (!section && route.path === project.href)) return
+    // A long read lands on its own chapters (PoliticsProduct).
+    if (!project || isLongRead(route.path)) return
+    if (!section && route.path === project.href) return
     const id =
       section === 'depth'
         ? `project-${project.id}-depth`
@@ -90,7 +92,7 @@ export default function ProjectStructure({
       events.forEach((event) => window.removeEventListener(event, stop))
     }
   }, [route.hash, project?.id])
-  if (!project) return children
+  if (!project || isLongRead(route.path)) return children
   return (
     <div className="project-structure">
       {topics.length > 0 &&

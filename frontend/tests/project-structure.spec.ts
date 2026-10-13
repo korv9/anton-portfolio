@@ -1,7 +1,6 @@
 import { test, expect } from './test'
 
 const projects = [
-  ['#politik', 'Political Observatory', 5],
   ['#jobb', 'Labour Market Observatory', 5],
   ['#sweden', 'Wellbeing Observatory', 4],
   ['#ai-act', 'EU AI Act Observatory', 5],
@@ -66,52 +65,6 @@ test(
   },
 )
 
-test.describe('Swedish degree project evidence', () => {
-  test.use({ language: 'sv' })
-
-  test(
-    'keeps population, evaluation and candidate limits readable',
-    { tag: '@mobile' },
-    async ({ page }) => {
-      await page.goto('/#thesis')
-      await expect(page.locator('.project-hero-summary')).toContainText('Anton')
-      await expect(page.locator('#thesis-workflow')).toContainText(
-        'Grupper av liknande ärenden',
-      )
-      await expect(page.locator('#thesis-workflow')).toContainText(
-        '12 grupper med 650 ärenden',
-      )
-      await expect(page.locator('#thesis-workflow')).toContainText(
-        'verksamhetens granskning',
-      )
-      await expect(page.locator('#thesis-evaluation')).toContainText('0,5342')
-      await expect(page.locator('#thesis-evaluation')).toContainText(
-        'olika delmängder',
-      )
-      await expect(page.locator('#project-thesis-depth')).toContainText(
-        '21 633',
-      )
-      await expect(page.locator('#project-thesis-depth')).toContainText(
-        '19 847',
-      )
-      await expect(page.locator('#thesis-quality')).toContainText('4,2 %')
-      await expect(page.locator('#thesis-quality')).toContainText('92,8 %')
-      await expect(page.locator('#thesis-quality')).toContainText('Spårbarhet')
-      await expect(page.locator('#project-thesis-depth')).toContainText(
-        'min_samples',
-      )
-      await expect(page.locator('#project-thesis-depth')).toContainText(
-        'föreslagna förbättringar',
-      )
-      expect(
-        await page.evaluate(
-          () => document.documentElement.scrollWidth <= innerWidth + 1,
-        ),
-      ).toBe(true)
-    },
-  )
-})
-
 test('lab sections open at their addresses after data loads', async ({
   page,
 }) => {
@@ -142,7 +95,7 @@ test('removed pages lead back to the projects and are absent from navigation', a
   ]) {
     await page.goto(`/#${path}`)
     await expect(page).toHaveURL(/#projekt/)
-    await expect(page.locator('.home-project-groups')).toBeVisible()
+    await expect(page.locator('.projects-page')).toBeVisible()
     await expect(page.locator(`a[href="#${path}"]`)).toHaveCount(0)
   }
 })

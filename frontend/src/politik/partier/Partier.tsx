@@ -1,5 +1,5 @@
 /**
- * Partier: a card for each party with its logo and where it stands, and below a chosen party a
+ * Partier: seats per party since 1973, and below a chosen party a
  * dashboard of everything the site knows about it: who sits in the Riksdag for it, where it
  * holds seats in the municipal councils, its elections since 1973 and the latest surveys, how
  * it votes and with whom, its budget motions, its part in the party-leader debates and what it
@@ -13,15 +13,11 @@ import {
   type Now,
   type Sessions,
 } from '../../parliament/data'
-import {
-  PartyLogo,
-  RIKSDAG_PARTIES,
-  identity,
-  partyName,
-} from '../../parties/identity'
+import { RIKSDAG_PARTIES, partyName } from '../../parties/identity'
 import SeatHistory from '../features/SeatHistory'
 import type { Route } from '../../router'
-import { useParties, withParties } from '../partySelection'
+import { useParties } from '../partySelection'
+import PartyPicker from '../PartyPicker'
 import { dayName, num, pct, signed } from '../controls'
 import { Board, Card, Cards, Empty, Kpi, Kpis } from '../board/Board'
 import Columns from '../board/Columns'
@@ -110,7 +106,7 @@ const ROLE = (now: Now, p: string) =>
 export default function Partier({ route }: { route: Route }) {
   // The chosen party is the party bar's choice (the last one chosen), so the bar and the cards
   // always agree and the choice follows the reader to the other pages.
-  const { selected, set } = useParties(route)
+  const { selected } = useParties(route)
   const [shared, setShared] = useState<Shared | null>(null)
   const [error, setError] = useState<string | null>(null)
   useEffect(() => {
@@ -136,86 +132,14 @@ export default function Partier({ route }: { route: Route }) {
       </p>
     )
   if (!shared) return <Empty />
-  const { index, now, polls } = shared
-  const months = [...new Set(polls.map((p) => p.survey_month))].sort()
-  const latestMonth = months.at(-1) ?? ''
-  const seatsOf = (p: string) => now.election.parties.find((r) => r.party === p)
+  const { now } = shared
 
   return (
     <Board
       title={party ? partyName(party) : l('The parties', 'Partierna')}
-      sub={
-        party
-          ? `${ROLE(now, party)}, ${
-              selected.length > 1
-                ? l(
-                    `${selected.length} parties are chosen; this shows the last one. Click a card to show only that party.`,
-                    `${selected.length} partier är valda; här visas det senast valda. Klicka på ett kort för att bara visa det.`,
-                  )
-                : l(
-                    'everything about the party on one page. Click the card again to see all parties.',
-                    'allt om partiet på en sida. Klicka på kortet igen för att se alla partier.',
-                  )
-            }`
-          : l(
-              'The eight parties in the Riksdag. Choose one for a dashboard of its members, councils, elections, votes and debates.',
-              'De åtta riksdagspartierna. Välj ett för en dashboard med ledamöter, kommunfullmäktige, val, röster och debatter.',
-            )
-      }
+      sub={party ? ROLE(now, party) : undefined}
     >
-      <SeatHistory party={party} />
-      <ul
-        className={party ? 'party-cards compact' : 'party-cards'}
-        aria-label={l('Parties', 'Partier')}
-      >
-        {RIKSDAG_PARTIES.map((p, i) => {
-          const s = index.parties[p]
-          const result = seatsOf(p)
-          const poll = polls.find(
-            (x) => x.party === p && x.survey_month === latestMonth,
-          )
-          return (
-            <li key={p} style={{ ['--i' as string]: i }}>
-              <a
-                href={withParties('#politik-partier', [p])}
-                aria-current={p === party ? 'page' : undefined}
-                onClick={(e) => {
-                  e.preventDefault()
-                  set(p === party && selected.length === 1 ? [] : [p])
-                }}
-                style={{ borderTopColor: identity(p).color }}
-              >
-                <PartyLogo party={p} size={party ? 28 : 44} />
-                <span className="pcard-name">{partyName(p)}</span>
-                {!party && (
-                  <>
-                    <span className="pcard-role">{ROLE(now, p)}</span>
-                    <dl>
-                      <div>
-                        <dt>{l('Seats', 'Mandat')}</dt>
-                        <dd>{result?.seats ?? '–'}</dd>
-                      </div>
-                      <div>
-                        <dt>PSU</dt>
-                        <dd>{poll ? pct(poll.share_pct) : '–'}</dd>
-                      </div>
-                      <div>
-                        <dt>{l('Councils', 'Kommuner')}</dt>
-                        <dd>{s ? `${s.council_municipalities}/290` : '–'}</dd>
-                      </div>
-                    </dl>
-                    {s?.leaders.length ? (
-                      <span className="pcard-leader">
-                        {s.leaders.map((x) => x.name).join(', ')}
-                      </span>
-                    ) : null}
-                  </>
-                )}
-              </a>
-            </li>
-          )
-        })}
-      </ul>
+      <SeatHistory parties={selected} filter={<PartyPicker route={route} />} />
       {party && <PartyDashboard key={party} party={party} shared={shared} />}
     </Board>
   )
