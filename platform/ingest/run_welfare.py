@@ -47,7 +47,7 @@ def main() -> None:
                 run([sys.executable, script])
     if not args.skip_build:
         run([sys.executable, "-m", "dbt.cli.main", "build", "--profiles-dir", ".",
-             "--select", "tag:welfare"])
+             "--select", "tag:welfare", "--target-path", "target/welfare"])
 
 
 if __name__ == "__main__":

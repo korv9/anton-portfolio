@@ -34,7 +34,7 @@ from common import PUBLIC, ROOT, write_json  # noqa: E402
 
 DATABASE = Path(os.environ.get("PORTFOLIO_DB", ROOT / "warehouse/portfolio.duckdb"))
 RAW = Path(os.environ.get("PORTFOLIO_RAW", ROOT / "warehouse/raw"))
-RUN_RESULTS = ROOT / "platform/target/run_results.json"
+RUN_RESULTS = ROOT / "platform/target/welfare/run_results.json"
 OUT = PUBLIC / "welfare"
 PARQUET = PUBLIC / "parquet/welfare_indicator"
 # Analyst datasets: the star schema and the serving marts, one Parquet file per table, served
@@ -47,7 +47,7 @@ STAR = ("dim_date", "dim_period", "dim_region", "dim_sex", "dim_age_group", "dim
         "fct_social_survey_country", "fct_social_survey_region", "fct_kolada")
 SERVING = ("mart_county_year_panel", "mart_municipality_year_panel", "mart_national_month",
            "mart_ess_country_round", "mart_county_year_features", "mart_county_year_overview")
-MANIFEST_JSON = ROOT / "platform/target/manifest.json"
+MANIFEST_JSON = ROOT / "platform/target/welfare/manifest.json"
 SOURCES = ("scb", "fk", "fohm", "ess", "kolada")
 
 
