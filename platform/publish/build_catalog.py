@@ -188,6 +188,8 @@ def main() -> None:
     live = os.environ.get("R2_MANIFEST_URL")
     if not live and os.environ.get("R2_LIVE_DELIVERY") == "1":
         live = OBJECT_STORAGE + "manifests/current.json"
+    if not live and DELIVERY.is_file():
+        live = json.loads(DELIVERY.read_text(encoding="utf-8-sig")).get("manifest_url")
     if live and not live.startswith("https://"):
         raise ValueError("R2_MANIFEST_URL must use https")
     DELIVERY.write_text(

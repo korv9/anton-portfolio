@@ -4,6 +4,29 @@
 `npm run test:e2e` runs browser tests on desktop and mobile interaction checks.
 Playwright only loads `*.spec.ts`; unit tests run separately.
 
+UI contract tests use the committed delivery snapshots. Versioned resolver tests
+in `r2-delivery.spec.ts` cover manifest refresh, failed requests and pinned file
+versions with explicit fixtures. `live-delivery.spec.ts` is a separate opt-in
+check of actual R2 hashes and browser reads for jobs, news, welfare and taxes.
+
+For a live smoke check with the production browser origin in PowerShell:
+
+```powershell
+$env:PLAYWRIGHT_PORT = '5187'
+$env:E2E_R2_MANIFEST_URL = 'https://data.antonernstsson.com/manifests/pipeline-smoke.json'
+$env:E2E_SITE_URL = 'https://antonernstsson.com'
+$env:E2E_DELIVERY_OVERRIDE = '1'
+npx playwright test --config=frontend/playwright.config.ts live-delivery.spec.ts --project=desktop --workers=1 --output=test-results/live-smoke-unique-run
+Remove-Item Env:PLAYWRIGHT_PORT, Env:E2E_R2_MANIFEST_URL, Env:E2E_SITE_URL, Env:E2E_DELIVERY_OVERRIDE
+```
+
+Choose an unused port and a unique output directory for concurrent work.
+For production acceptance, use `manifests/current.json` and omit the override:
+the test then requires the deployed site's real configuration to match.
+Set `E2E_LIVE_DELIVERY=1` to run the
+shared UI tests against the site's configured live delivery instead of the
+committed snapshots.
+
 Tag a browser test `@mobile` when touch interaction or a narrow viewport can
 change its behaviour. Use `@mobile-only` for a phone-specific test. Data values,
 route aliases and shared DOM contracts run on desktop once. Accessibility tests

@@ -276,6 +276,34 @@ def test_catalog_v1_carried_entries_and_include_excludes(exports, monkeypatch):
         r.prepare(exports, spec(old["path"]), "baseline")
 
 
+def test_v1_parquet_keeps_exact_size_and_legacy_hash_then_v2_exact_bytes(exports):
+    relative = "parquet/fact_member_vote/session=2024-25/part-0.parquet"
+    path = exports / relative
+    path.parent.mkdir(parents=True)
+    con = duckdb.connect()
+    con.execute("copy (select 'line' || chr(13) || chr(10) || 'end' as value) to ? "
+                "(format parquet, compression uncompressed)", [str(path)])
+    con.close()
+    data = path.read_bytes()
+    normalised = data.replace(b"\r\n", b"\n")
+    assert len(normalised) < len(data)
+    path.unlink()
+    s3 = S3()
+    s3.objects[relative] = {"Body": data}
+    legacy = {"schema_version": 1, "files": [{"path": relative, "format": "parquet",
+              "bytes": len(data), "sha256": r.digest(normalised)}]}
+    r.materialize(s3, "bucket", exports, spec(relative), legacy)
+    assert path.read_bytes() == data
+    pointer = r.publish(s3, "bucket", "baseline", exports, spec(relative), stage_only=True)
+    entry = r.group_manifest(s3, "bucket", pointer)["files"][relative]
+    assert entry["sha256"] == r.digest(data) and entry["bytes"] == len(data)
+    path.unlink()
+    s3.objects[relative]["Body"] = data.replace(b"line", b"bine")
+    with pytest.raises(ValueError, match="hash mismatch"):
+        r.materialize(s3, "bucket", exports, spec(relative), legacy)
+    assert not path.exists()
+
+
 def test_legacy_delivery_client_trims_credential_whitespace(monkeypatch):
     import delivery
     import boto3
@@ -298,6 +326,23 @@ def test_legacy_delivery_client_trims_credential_whitespace(monkeypatch):
     monkeypatch.setattr(delivery, "_s3", None)
     monkeypatch.setenv("R2_BUCKET", " \n")
     assert delivery._bucket_client() is None
+
+
+def test_catalog_rebuild_keeps_explicit_live_connection(exports, monkeypatch):
+    url = "https://data.test/manifests/current.json"
+    write(exports, "delivery.json", r.encoded({"schema_version": 2, "manifest_url": url}))
+    monkeypatch.setattr(catalog, "PUBLIC", exports)
+    monkeypatch.setattr(catalog, "CATALOG", exports / "catalog.json")
+    monkeypatch.setattr(catalog, "DELIVERY", exports / "delivery.json")
+    monkeypatch.setattr(sys, "argv", ["build_catalog.py"])
+    monkeypatch.delenv("R2_MANIFEST_URL", raising=False)
+    monkeypatch.delenv("R2_LIVE_DELIVERY", raising=False)
+    catalog.main()
+    assert json.loads((exports / "delivery.json").read_text())["manifest_url"] == url
+    override = "https://other.test/manifests/current.json"
+    monkeypatch.setenv("R2_MANIFEST_URL", override)
+    catalog.main()
+    assert json.loads((exports / "delivery.json").read_text())["manifest_url"] == override
 
 
 def test_prefer_active_preserves_newer_summary_after_optional_failure(exports):
@@ -344,6 +389,10 @@ def test_cli_stage_bundle_rollback_and_restore_are_isolated(exports, monkeypatch
     assert active["groups"].keys() == {"jobs", "news"}
     assert s3.puts[-1] == key
     assert "manifests/current.json" not in s3.objects
+    puts = list(s3.puts)
+    assert run("current", "--group", "jobs") == {"release": jobs["release"]}
+    assert run("current", "--group", "missing") == {"release": None}
+    assert s3.puts == puts
     original = (exports / "parliament/news.json").read_bytes()
     write(exports, "parliament/news.json", b'{"stale":true}')
     run("materialize", "--root", str(exports), "--spec", str(news_spec), "--catalog", str(cat), "--prefer-active")
