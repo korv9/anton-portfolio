@@ -20,7 +20,8 @@ in the warehouse.
 
 | | |
 |---|---|
-| `ingest/` | Fetch to `warehouse/raw/`. One package per source, plus provenance. `run_welfare.py` runs the five welfare sources and their build |
+| `ingest/` | Fetch to `warehouse/raw/`. One package per source, plus provenance |
+| `pipeline.yml`, `pipeline.py` | The subject registry and the one command that runs it ([docs/pipeline.md](../docs/pipeline.md)) |
 | `models/` | dbt: `bronze/`, `silver/`, `gold/`, each namespaced per subject area |
 | `publish/` | Delivery: catalogue, Parquet export, upload to object storage |
 | `lib/` | Shared paths, JSON, hashing, delivered-file resolution; `rawstore` (fetch with provenance, and `store_version` for sources that change in place) and `pxweb` (SCB and Folkhälsomyndigheten tables) |
@@ -36,13 +37,13 @@ is visible instead of looking like architecture.
 
 ## Running it
 
-```powershell
-npm run data:build     # legacy builders, then the catalogue
-npm run data:check     # the four validators
-npm run data:parquet   # Parquet marts
-npm run data:upload    # push shards and Parquet to object storage
+Every subject runs through one command, locally and in GitHub Actions. What it does, the
+schedule of each subject and what is still manual are in [docs/pipeline.md](../docs/pipeline.md).
 
-dbt build --project-dir platform --profiles-dir platform
+```powershell
+python platform/pipeline.py list             # every subject
+python platform/pipeline.py run welfare      # fetch, build, test, export
+python platform/pipeline.py check            # the four validators (npm run data:check)
 python -m pytest platform/tests -q
 ```
 
@@ -54,7 +55,7 @@ The warehouse lives in `warehouse/` and is gitignored: `raw/` for bronze,
 One subject at a time, never a rewrite: bronze reads what the legacy script read, gold
 reproduces its output in SQL, `publish/export_politics.py` serialises it, and `--check`
 must find the result byte-identical to the delivered file before the script is deleted.
-CI keeps running that check afterwards (`npm run politics:check`). Budget context was
+CI keeps running that check afterwards (`npm run politics:check`, the politics_check subject). Budget context was
 first, roll-call votes second; speeches and the language map follow.
 
 Files that `build_gold.py` used to write keep their entries in `gold/semantic-model.json`:
@@ -95,8 +96,8 @@ SOU is the next one. The shape is the same for any source:
    `models/silver/shared/` so politics and research use the same ones.
 4. **Gold.** The marts a reader actually wants.
 5. **Deliver.** Classify each mart: needed for first paint → JSON; filtered interactively →
-   Parquet; long free text read one document at a time → shard. Then
-   `npm run data:catalog` and `npm run data:upload`.
+   Parquet; long free text read one document at a time → shard. Give the files to a group in
+   `configs/delivery/` and add the subject to `pipeline.yml`.
 6. **Test.** Schema tests in dbt. Reserve a Python check for the things dbt cannot express:
    provenance hashes, reconciliation against a published total, delivery verification.
 

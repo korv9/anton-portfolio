@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 968 328" role="img" aria-labelledby="pipeline-flow-title pipeline-flow-desc" font-family="Geist, 'Segoe UI', Helvetica, Arial, sans-serif">
+  <title id="pipeline-flow-title">From source to site</title>
+  <desc id="pipeline-flow-desc">A subject is fetched to the raw store, built and tested with dbt, optionally passed through an ML stage, and exported; its delivery group is then checked and published as a versioned release in R2, which the site reads.</desc>
+  <defs>
+    <marker id="pipeline-flow-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#4A4A4D"/>
+    </marker>
+    <marker id="pipeline-flow-arrow-accent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#1F4F73"/>
+    </marker>
+  </defs>
+  <rect width="968" height="328" fill="#E6E3DD"/>
+
+  <!-- connectors, drawn before the nodes -->
+  <g fill="none" stroke="#4A4A4D" stroke-width="1.5">
+    <line x1="176" y1="72" x2="214" y2="72" marker-end="url(#pipeline-flow-arrow)"/>
+    <line x1="368" y1="72" x2="406" y2="72" marker-end="url(#pipeline-flow-arrow)"/>
+    <line x1="560" y1="72" x2="598" y2="72" stroke-dasharray="5,4" marker-end="url(#pipeline-flow-arrow)"/>
+    <line x1="752" y1="72" x2="790" y2="72" marker-end="url(#pipeline-flow-arrow)"/>
+    <path d="M868,104 V144 a8,8 0 0 1 -8,8 H108 a8,8 0 0 0 -8,8 V190" marker-end="url(#pipeline-flow-arrow)"/>
+    <line x1="176" y1="224" x2="214" y2="224" stroke="#1F4F73" marker-end="url(#pipeline-flow-arrow-accent)"/>
+    <line x1="368" y1="224" x2="406" y2="224" marker-end="url(#pipeline-flow-arrow)"/>
+  </g>
+
+  <!-- row 1: one subject -->
+  <g font-size="14" font-weight="600" fill="#0F0F10">
+    <rect x="24" y="40" width="152" height="64" rx="6" fill="#E6E3DD" stroke="#0F0F10" stroke-dasharray="4,3"/>
+    <text x="40" y="68">Public source</text>
+    <rect x="216" y="40" width="152" height="64" rx="6" fill="#E6E3DD" stroke="#0F0F10"/>
+    <text x="232" y="68">Raw store</text>
+    <rect x="408" y="40" width="152" height="64" rx="6" fill="#E6E3DD" stroke="#0F0F10"/>
+    <text x="424" y="68">Build and test</text>
+    <rect x="600" y="40" width="152" height="64" rx="6" fill="#E6E3DD" stroke="#0F0F10" stroke-dasharray="4,3"/>
+    <text x="616" y="68">ML stage</text>
+    <rect x="792" y="40" width="152" height="64" rx="6" fill="#E6E3DD" stroke="#0F0F10"/>
+    <text x="808" y="68">Export</text>
+
+    <!-- row 2: one delivery group -->
+    <rect x="24" y="192" width="152" height="64" rx="6" fill="#1F4F73" stroke="#1F4F73"/>
+    <text x="40" y="220" fill="#F2EFE9">Check and publish</text>
+    <rect x="216" y="192" width="152" height="64" rx="6" fill="#E6E3DD" stroke="#0F0F10"/>
+    <text x="232" y="220">Active release</text>
+    <rect x="408" y="192" width="152" height="64" rx="6" fill="#E6E3DD" stroke="#0F0F10" stroke-dasharray="4,3"/>
+    <text x="424" y="220">Site</text>
+  </g>
+
+  <!-- technical sublabels -->
+  <g font-family="'Geist Mono', Consolas, Menlo, monospace" font-size="10.5" fill="#4A4A4D">
+    <text x="40" y="88">SCB, Riksdagen, …</text>
+    <text x="232" y="88">warehouse/raw</text>
+    <text x="424" y="88">target/&lt;subject&gt;</text>
+    <text x="616" y="88">warehouse/features</text>
+    <text x="808" y="88">frontend/public/data</text>
+    <text x="40" y="240" fill="#F2EFE9">release.py publish</text>
+    <text x="232" y="240">R2 manifests/current</text>
+    <text x="424" y="240">antonernstsson.com</text>
+  </g>
+
+  <!-- phase names of platform/pipeline.py, above the step they run -->
+  <g font-family="'Geist Mono', Consolas, Menlo, monospace" font-size="10" letter-spacing="1" fill="#6B6B6E">
+    <text x="216" y="30">INGEST</text>
+    <text x="408" y="30">DBT</text>
+    <text x="600" y="30">ML</text>
+    <text x="792" y="30">EXPORT</text>
+    <text x="24" y="182">PUBLISH</text>
+  </g>
+
+  <!-- legend strip -->
+  <line x1="24" y1="284" x2="944" y2="284" stroke="#0F0F10" stroke-opacity="0.2"/>
+  <g font-size="11" fill="#4A4A4D">
+    <rect x="24" y="298" width="20" height="12" rx="2" fill="#1F4F73"/>
+    <text x="52" y="308">The gate: once per delivery group, only when all its subjects came through</text>
+    <rect x="520" y="298" width="20" height="12" rx="2" fill="none" stroke="#0F0F10" stroke-dasharray="4,3"/>
+    <text x="548" y="308">Outside the pipeline, or only some subjects</text>
+  </g>
+</svg>

@@ -1,6 +1,7 @@
 # Storage and serving
 
-How data reaches the site, and how to move a file without touching a component.
+How data reaches the site, and how to move a file without touching a component. What builds
+and publishes the data, and when, is in [pipeline.md](pipeline.md).
 
 ## The model
 
