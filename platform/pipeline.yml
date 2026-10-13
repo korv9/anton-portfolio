@@ -129,7 +129,7 @@ subjects:
         ok_exit: [2]
 
   politics:
-    schedule: '13 3 * * 0'
+    schedule: '13 21 * * 6'
     group: baseline
     steps:
       - dbt: {select: [+tag:politics]}
@@ -162,7 +162,7 @@ subjects:
       - export: *data_catalog
 
   ai_act:
-    schedule: '13 3 * * 0'
+    schedule: '13 21 * * 6'
     group: baseline
     raw: [eu_ai_act]
     steps:
@@ -173,7 +173,7 @@ subjects:
   # assert_concept_link_targets_exist checks links into philosophy, Riksdag and job-ad models;
   # it runs in the concepts subject, once all of them are built.
   ai_politics:
-    schedule: '13 3 * * 0'
+    schedule: '13 21 * * 6'
     group: baseline
     needs: [ai_act]
     raw: [riksdagen/speeches]
@@ -190,7 +190,7 @@ subjects:
       - export: python platform/publish/ai_politics/export_ai_politics.py
 
   symbolic:
-    schedule: '13 3 * * 0'
+    schedule: '13 21 * * 6'
     group: baseline
     raw: [symbolic]
     features: [symbolic]
@@ -205,7 +205,7 @@ subjects:
       - export: python platform/publish/symbolic/export_symbolic.py
 
   philosophy:
-    schedule: '13 3 * * 0'
+    schedule: '13 21 * * 6'
     group: baseline
     raw: [philosophy]
     features: [philosophy]
@@ -223,7 +223,7 @@ subjects:
       - export: python platform/publish/philosophy/export_philosophy.py
 
   job_ai_governance:
-    schedule: '13 3 * * 0'
+    schedule: '13 21 * * 6'
     group: baseline
     raw: [jobtech/governance]
     steps:
@@ -232,7 +232,7 @@ subjects:
       - export: python platform/publish/job_ai_governance/export_job_ai_governance.py
 
   concepts:
-    schedule: '13 3 * * 0'
+    schedule: '13 21 * * 6'
     group: baseline
     needs: [ai_act, ai_politics, symbolic, philosophy, job_ai_governance]
     features: [concepts]
@@ -244,7 +244,7 @@ subjects:
       - export: python platform/publish/concepts/export_concepts.py
 
   cross_domain:
-    schedule: '13 3 * * 0'
+    schedule: '13 21 * * 6'
     group: baseline
     needs: [ai_politics, job_ai_governance]
     steps:
@@ -252,7 +252,7 @@ subjects:
       - export: python platform/publish/cross_domain/export_ai_governance_timeline.py
 
   quality:
-    schedule: '13 3 * * 0'
+    schedule: '13 21 * * 6'
     group: baseline
     # evaluate.py keeps its own dbt test results in target/quality.
     target: quality_build

@@ -1,9 +1,9 @@
 name: Harvest DiVA theses and cluster their topics
 
-# Student theses from DiVA (diva-portal.org) over OAI-PMH, then topic clusters for the site
-# (platform/ingest/diva/harvest.py, platform/publish/diva_clusters.py). Runs by hand only; the
-# harvested months are cached between runs, so a later run only fetches new months. The cluster
-# file is validated and published as its own R2 group.
+# Student theses from DiVA (diva-portal.org) over OAI-PMH, then topic clusters for the site: the
+# diva subject of platform/pipeline.yml. Runs by hand only. The harvested months are stored in R2
+# with the other raw files, so a later run only fetches new months. The cluster file is validated
+# and published as its own R2 group.
 
 on:
   workflow_dispatch:
@@ -28,46 +28,25 @@ jobs:
     timeout-minutes: 300
     environment: anton-portfolio
     env:
+      PORTFOLIO_RAW: ${{ github.workspace }}/warehouse/raw
+      DIVA_FROM: ${{ inputs.from }}
+      DIVA_TO: ${{ inputs.to }}
       R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
       R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
       R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY || secrets.R2_SECRET_ACCESS_KEY_ID }}
       R2_BUCKET: ${{ secrets.R2_BUCKET }}
       R2_PUBLIC_BASE: ${{ vars.R2_PUBLIC_BASE }}
     steps:
-      - name: Require R2 credentials
-        run: |
-          for name in R2_ACCOUNT_ID R2_ACCESS_KEY_ID R2_SECRET_ACCESS_KEY R2_BUCKET; do
-            value="${!name}"
-            value="${value#"${value%%[![:space:]]*}"}"
-            value="${value%"${value##*[![:space:]]}"}"
-            export "$name=$value"
-            [ -n "${!name}" ] || { echo "::error::Secret $name is not set"; exit 1; }
-          done
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Set up and restore harvested months
+        id: setup
+        uses: ./.github/actions/data-setup
         with:
-          python-version: '3.12'
-          cache: pip
-          cache-dependency-path: platform/requirements.txt
-      - run: pip install -r platform/requirements.txt
-      - name: Restore harvested months
-        uses: actions/cache/restore@v4
-        with:
-          path: warehouse/raw/diva
-          key: diva-${{ github.run_id }}
-          restore-keys: diva-
+          pull: diva
       - name: Harvest
-        run: python platform/ingest/diva/harvest.py --from "${{ inputs.from }}" --to "${{ inputs.to }}"
+        run: python platform/pipeline.py run diva --only ingest
       - name: Save harvested months
-        if: always()
-        uses: actions/cache/save@v4
-        with:
-          path: warehouse/raw/diva
-          key: diva-${{ github.run_id }}
-      - name: Cluster
-        run: python platform/publish/diva_clusters.py
-      - name: Validate and publish the cluster export
-        run: |
-          python platform/publish/validate_refresh_delivery.py --group diva --root frontend/public/data
-          python platform/publish/release.py publish --group diva --root frontend/public/data \
-            --spec configs/delivery/diva.json --code-sha "$GITHUB_SHA"
+        if: ${{ always() && steps.setup.outcome == 'success' }}
+        run: python platform/pipeline.py push diva
+      - name: Cluster, validate and publish
+        run: python platform/pipeline.py run diva --only export,publish

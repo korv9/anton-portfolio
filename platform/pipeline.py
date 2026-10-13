@@ -7,6 +7,7 @@
     python platform/pipeline.py run --all --ml stale --dry-run
     python platform/pipeline.py pull welfare          # the subject's raw and feature files from R2
     python platform/pipeline.py push welfare
+    python platform/pipeline.py push ai_politics --only raw
     python platform/pipeline.py check                 # the data contracts on the delivered files
 
 The same command runs locally and in GitHub Actions. Publishing changes the live site, so it
@@ -69,9 +70,21 @@ def missing_files(argv: list[str], cwd: Path) -> list[str]:
     return [p for p in paths if not (cwd / p).exists()]
 
 
+def built(target: str) -> Path:
+    """Written when a subject's ingest, dbt and ML steps have all come through; removed when they
+    start. A later invocation (--only export) reads it, so a build that stopped after its first
+    dbt step cannot be exported on the strength of that step's passing tests."""
+    return PLATFORM / "target" / target / "built"
+
+
+def mark_built(target: str) -> None:
+    built(target).parent.mkdir(parents=True, exist_ok=True)
+    built(target).touch()
+
+
 def tests_passed(target: str) -> bool:
     path = PLATFORM / "target" / target / "run_results.json"
-    if not path.is_file():
+    if not path.is_file() or not built(target).is_file():
         return False
     results = json.loads(path.read_text(encoding="utf-8"))["results"]
     return bool(results) and not any(r["status"] in ("fail", "error", "skipped") for r in results)
@@ -92,6 +105,8 @@ class Runner:
         code = subprocess.run(argv, cwd=cwd, env=env).returncode
         if code and code not in ok_exit:
             raise RuntimeError(f"exit {code}: {shown}")
+        if code:
+            print(f"::warning::exit {code} is allowed for this step; continuing: {shown}", flush=True)
 
 
 def ml_argv(step: dict, mode: str) -> list[str] | None:
@@ -107,11 +122,18 @@ def run_subject(name: str, subject: dict, phases: set[str], ml: str, run: Runner
     target = subject.get("target", name)
     has_dbt = any("dbt" in step for step in subject["steps"])
     seen: dict[str, int] = {}
+    building = False
     for step in subject["steps"]:
         phase = next(p for p in PHASES if p in step)
         seen[phase] = seen.get(phase, 0) + 1
         if phase not in phases and f"{phase}:{seen[phase]}" not in phases:
             continue
+        if not run.dry_run and has_dbt and (phase == "export") == building:
+            # Entering the build steps, or leaving them for the exports with none failed.
+            building = not building
+            built(target).unlink(missing_ok=True)
+            if not building:
+                mark_built(target)
         if step.get("when_env") and not os.environ.get(step["when_env"]) and not run.dry_run:
             print(f"  skipped ({step['when_env']} is not set): {step[phase]}")
             continue
@@ -127,6 +149,8 @@ def run_subject(name: str, subject: dict, phases: set[str], ml: str, run: Runner
             if phase == "export" and has_dbt and not run.dry_run and not tests_passed(target):
                 raise RuntimeError(f"no passing dbt build in platform/target/{target}; not exporting")
             run(expand(step[phase]), ok_exit=step.get("ok_exit", ()))
+    if building:
+        mark_built(target)
 
 
 def publish(config: dict, names: list[str], failed: dict, phases: set[str], run: Runner) -> None:
@@ -198,7 +222,7 @@ def command_store(args, config: dict) -> int:
     chosen = [subjects[n] for n in args.subjects]
     for tree in ("raw", "features"):
         paths = list(dict.fromkeys(p for s in chosen for p in s.get(tree, [])))
-        if not paths:
+        if not paths or args.only not in (None, tree):
             continue
         prune = args.action == "push" and tree == "raw" and all(s.get("prune") for s in chosen)
         run(expand(f"{STORE} {args.action} --only {tree}") + (["--prune"] if prune else [])
@@ -228,6 +252,8 @@ def main() -> int:
         sub.add_argument("--dry-run", action="store_true",
                          help="Print every command and check that the files it names exist")
         sub.set_defaults(action=name)
+    for name in ("pull", "push"):
+        commands.choices[name].add_argument("--only", choices=["raw", "features"])
     run = commands.choices["run"]
     run.add_argument("--only", help="Comma-separated phases: " + ", ".join(PHASES))
     run.add_argument("--full-refresh", action="store_true",
