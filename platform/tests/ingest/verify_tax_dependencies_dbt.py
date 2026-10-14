@@ -16,7 +16,8 @@ import duckdb
 
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / "platform/ingest"))
-import run_taxes as taxes  # noqa: E402
+sys.path.insert(0, str(ROOT / "platform/ingest/taxes"))
+import require_parliament as taxes  # noqa: E402
 from studies_ingest import preparation_request  # noqa: E402
 import rawstore  # noqa: E402
 
@@ -68,7 +69,7 @@ def main():
         rawstore.RAW = temp / "raw"
         env = dict(os.environ, PORTFOLIO_RAW=str(rawstore.RAW), PORTFOLIO_DB=str(temp / "test.duckdb"),
                    DBT_SEND_ANONYMOUS_USAGE_STATS="false", PORTFOLIO_FULL_REFRESH="0", PYTHONUTF8="1")
-        cold = subprocess.run([sys.executable, "ingest/run_taxes.py", "--skip-fetch"],
+        cold = subprocess.run([sys.executable, "ingest/taxes/require_parliament.py"],
                               cwd=ROOT / "platform", env=env, capture_output=True, text=True)
         assert cold.returncode != 0 and "Missing parliament upstream" in cold.stderr
         assert not Path(env["PORTFOLIO_DB"]).exists()

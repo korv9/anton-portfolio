@@ -167,6 +167,51 @@ varje reduktion. Ingen kod läser den.
 Filosofikorpusen hämtas med
 `python platform/ingest/philosophy/ingest_corpus.py corpus_extended.json`.
 
+## Konsensus 2026-10-14: tolv seeds, två nivåer och intrångstest
+
+`ml/research/consensus.py` läser `configs/cluster_lab/public_consensus.yaml`:
+
+```
+python -m ml.research.consensus prepare
+python -m ml.research.consensus seeds --new-runs 1
+python -m ml.research.consensus consensus
+python -m ml.research.consensus levels
+python -m ml.research.consensus layout
+python -m ml.research.consensus intrusion
+python -m ml.research.regions
+python -m ml.research.export_public_maps
+```
+
+`seeds` kör UMAP (5D, 30 grannar, `min_dist` 0) och HDBSCAN (`eom`, storlekstak 10 %)
+för varje variant och seed 0 till 11 och sparar bara etiketterna. `--new-runs 1`
+avslutar processen med kod 3 efter varje körning, så minnet lämnas tillbaka. Upprepa
+tills koden är 0. På en dator med 16 GB minne behövs det.
+
+`consensus` länkar grupper mellan körningar när deras Jaccard-likhet når
+`link_jaccard` (0,3), behåller de länkade grupper som minst `support` (0,5) av
+körningarna hittar och ger varje passage majoritetens grupp. Sedan körs samma
+sammanslagning och återföring som i `ml/cluster_lab/refine.py`. Metoden följer
+Strehl och Ghosh (2002), meta-klustring av basgrupper. Resultatet ligger i
+`<variant>/result.json` och `<variant>/assignments.parquet` med kolumnerna `core`
+och `vote`. `pick-<underlag>.json` skrivs när underlagets alla varianter har ett
+resultat.
+
+`multilingual-e5-large` läses i revision `3d7cfbdacd47fdda877c5cd8a79fbcc4f2a574f3`
+med prefixet `query: ` och halv precision. Vektorerna sparas i `vectors/`.
+Inbäddningen tar ungefär två timmar per underlag på ett GTX 1660 och har ingen
+kontrollpunkt: avbryts den börjar den om.
+
+`levels` klustrar varje grupp med minst 800 passager en gång till (åtta seeds, 15
+grannar) och behåller delningen när split-half-ARI når 0,75. `intrusion` skriver
+uppgifterna i `intrusion-<underlag>-tasks.json` och facit i en egen fil, så läsaren
+inte ser facit. Svaren och träffarna ligger i `intrusion-<underlag>-result.json`.
+
+De vanligaste orden per grupp räknas med c-TF-IDF. För svenska texter används
+stoppordslistan `SWEDISH` i `consensus.py`.
+
+`ml/research/regions.py` hämtar de fem nya indikatorerna från Kolada en gång till
+`sources/kolada_structure_2024.json` och räknar nollfördelningen för silhouette per k.
+
 ## Leverans och kontroller
 
 Det ignorerade resultatregistret innehåller 394 slutförda klustringskörningar,

@@ -75,6 +75,9 @@ jobs:
           cache-dependency-path: platform/requirements.txt
       - run: pip install -r platform/requirements.txt
       - run: python -m pytest platform/tests -q
+      # Every subject in platform/pipeline.yml resolves to commands whose files exist.
+      - name: Pipeline registry (dry run of every subject)
+        run: python platform/pipeline.py run --all --dry-run
       - name: Data contracts (gold, budget, products, politics)
         run: npm run data:check
       - name: dbt parse and compile

@@ -1,8 +1,13 @@
 # Versionsbunden dataleverans från R2
 
-Implementerat 13 oktober 2026. Kontraktet använder befintlig R2-bucket och
-`upload.client()`. Ingen produktionsaktivering eller extern konfiguration har
-gjorts i denna uppgift. Workflowintegration och första driftprov ägs av koordinatorn.
+Hur `platform/publish/release.py` publicerar en leveransgrupp som en version i R2.
+Workflowen publicerar releaser enligt detta kontrakt, men webbplatsen läser dem inte:
+produktionen läser den incheckade datan under `frontend/public/data`, vars
+`delivery.json` saknar `manifest_url`, och `VITE_R2_MANIFEST_URL` används inte.
+Vilka ämnen som hör till vilken grupp och när de
+körs står i [pipeline.md](pipeline.md). Hur sajten hittar sina filer står i
+[storage-and-serving.md](storage-and-serving.md). Innehållskontrollerna för jobb,
+nyheter och DiVA står i [delivery-validation.md](delivery-validation.md).
 
 ## CLI och gruppägarskap
 
@@ -33,8 +38,7 @@ behåller även `--prefer-active` en befintlig lokal export.
 
 `publish --code-sha` accepterar en Git-SHA. Utan flaggan återanvänds
 `warehouse_store.git_commit()`. Resultatet är JSON på stdout och fel ger exitkod 1.
-Uppladdningsklienten läser samma befintliga R2-miljövariabler som `upload.py`.
-Ingen bucket, domän, credential eller betaltjänst skapas.
+Uppladdningsklienten läser samma R2-miljövariabler som `upload.py`.
 
 Grupperna ersätts som helheter. Den dagliga gruppen `jobs` äger endast
 `jobs/market.json`; årsrapporter och ML-filer får en separat grupp, exempelvis
@@ -42,8 +46,7 @@ Grupperna ersätts som helheter. Den dagliga gruppen `jobs` äger endast
 godkänd `parliament/news-summaries.json`. `public-data` omfattar välfärd,
 parlamentets sex publika kontrakt, skatter, deras Parquet och exporterade schemas.
 `diva` och andra manuella grupper använder samma kontrakt. `baseline` kan hålla
-övriga godkända exporter vid migrationen. Exakta workflowval ligger i
-`configs/delivery`, som koordinatorn äger.
+övriga godkända exporter. Varje grupps urval ligger i `configs/delivery/`.
 
 Två grupper får aldrig äga samma logiska path. `files`, `include` och `exclude`
 ska uttrycka filägarskapet, inklusive index, shardfiler, alla Parquetdelar och
@@ -149,19 +152,18 @@ eller offload ingår.
 
 ## Bootstrap och rollback
 
-Första kodrelease med live resolver ska ske efter en komplett godkänd bootstrap.
 Använd `publish --stage-only` för varje grupp: kommandot returnerar en verifierad
 grupppekare och skriver inget aktivmanifest. Samla release-id:n och kör därefter
 `activate --release GROUP=RELEASE` en gång, med flaggan upprepad för alla grupper.
 Kommandot verifierar åter filer och index och aktiverar hela kandidaten med en PUT.
-Detta undviker en första jobs-leverans som lämnar resten av sajten utan data.
+Detta undviker ett första aktivmanifest som bara innehåller jobs.
 Samma kommando kan uppdatera flera korsproduktgrupper tillsammans.
 
 `rollback --group GROUP --release RELEASE` väljer en tidigare verifierad release.
 Alla payloads och index läses tillbaka igen. Ägarskap, beroenden och villkorad
 aktivering gäller även rollback. Ett saknat eller skadat gammalt objekt stoppar
-återställningen. Oberoende grupper lämnas kvar. Retention behöver fastställas av
-driften; håll tidigare godkända releaser tillgängliga tills den policyn är beslutad.
+återställningen. Oberoende grupper lämnas kvar. Per grupp behålls den aktiva
+releasen och de två föregående godkända, som är rollbackmålen; se Öppet.
 
 ## Schemaövergång och frontend
 
@@ -172,18 +174,17 @@ verifierar deras historiska CRLF-normaliserade hash, återställer originalbytes
 och låter nästa publish skapa en ny exakt hash. Detta är endast läskompatibilitet;
 ny publicering normaliserar inga payloads.
 
-`build_catalog.py --root STAGING` stöder annan exportrot. Kör generatorn med
-`R2_LIVE_DELIVERY=1` för att lägga in en stabil `manifest_url` från befintlig
-`R2_PUBLIC_BASE`, eller ange `R2_MANIFEST_URL` explicit. Frontend kan också byggas
-med `VITE_R2_MANIFEST_URL`. Endast denna engångskonfiguration måste följa med
-kodreleasen. Dagliga uppdateringar kräver inget nytt inbyggt `delivery.json`.
+`build_catalog.py --root STAGING` stöder annan exportrot.
 
-Utan livekonfiguration fortsätter resolverns schema1-formatbaser att fungera.
-`VITE_DELIVERY_MODE=local` väljer uttryckligen lokala `data/`-filer för utveckling
-och reproducerbara offlinefixtures. På localhost tillåts saknat bootstrapmanifest
-och Parquetfallback för äldre lokala leveranser. I live mode stoppar fel även på
-localhost; produktionsfel får aldrig falla tillbaka till gamla lokala siffror.
+Resolvern i `frontend/src/dataSource.ts` har ett liveläge som läser
+`manifests/current.json`, men det är inte inkopplat: den incheckade `delivery.json`
+saknar `manifest_url` och `VITE_R2_MANIFEST_URL` används inte. Sajten använder
+schema1-formatbaserna. `VITE_DELIVERY_MODE=local` väljer uttryckligen lokala
+`data/`-filer för utveckling och reproducerbara offlinefixtures. På localhost tillåts
+saknat bootstrapmanifest och Parquetfallback för äldre lokala leveranser.
 
+De två följande styckena beskriver liveläget som det är skrivet i koden. I liveläge
+stoppar fel även på localhost och faller aldrig tillbaka till gamla lokala siffror.
 Browsern låser toppsnapshotet och dess versionsadresser under sidans livstid.
 JSON, index, Parquet och nedladdningar via `resolveDataUrl` använder samma lås.
 `fetchData` ger ett fel med HTTP-status och leveransdatum. Saknad path eller
@@ -195,7 +196,7 @@ omladdning tömmer även komponenternas egna Promise-cacher och hindrar blandade
 versioner. Ett refreshfel behåller tidigare snapshot och skickar `delivery-error`;
 `deliveryState()` ger aktivt datum, gruppers publiceringsdatum och
 `lastRefreshError`. Vyerna kan använda detta för daterad tidigare leverans och
-felmeddelanden utan att byta datasource. Ingen komponentcopy har ändrats här.
+felmeddelanden utan att byta datasource.
 
 ## Cache, browseråtkomst och driftberoenden
 
@@ -206,11 +207,11 @@ Cloudflares cache-regler måste respektera dessa headers. Frontendens `_headers`
 styr inte R2-domänen. Separat driftstatus ska ha kort cache och aldrig ersätta
 en datasetleverans.
 
-Publik GET/HEAD, Parquet och filnedladdning ska fungera på den befintliga
-R2-adressen. Produktionsleveransen behöver en fungerande custom domain, som
+Produktionsdomänen för data är `https://data.antonernstsson.com/`, satt som
+repovariabeln `R2_PUBLIC_BASE`. En custom domain är vad
 [R2 rekommenderar för produktion](https://developers.cloudflare.com/r2/buckets/public-buckets/).
-Saknad custom domain är ett driftberoende, inte ett hinder för implementationen.
-Befintlig r2.dev-bas är kvar under övergången. Ingen ny domän har skapats.
+GET och Range-preflight är kontrollerade med sajtens Origin. Den incheckade
+`delivery.json` pekar fortfarande på r2.dev-basen.
 
 Kontrollera CORS mot de verkliga produktions-, preview- och localhostorigins.
 `platform/publish/r2-cors.json` har GET/HEAD, Range och exponering av ETag,
@@ -218,7 +219,7 @@ Content-Length och Content-Range. Verifiera att den befintliga bucketens faktisk
 konfiguration motsvarar filen och att nya previeworigins är täckta.
 Nuvarande HyParquet-läsare hämtar hela den valda Parquetdelen; framtida Range-läsning
 ska använda samma versionsadress. Autentiserad S3-återläsning bevisar inte CORS,
-CDN-cache eller publik browseråtkomst. Koordinatorn beslutar om avgränsat driftprov.
+CDN-cache eller publik browseråtkomst.
 
 Endast godkända publika exporter får väljas. Publishern avvisar traversal,
 symlänkar som lämnar stagingroten, privata/raw/model-prefix och andra filformat
@@ -228,50 +229,59 @@ objektidentiteter, datum och kod-SHA; inga credentials, lokala källpaths eller
 modell-/råartefakter. Befintliga privata lagringsflöden påverkas inte.
 
 Ett avgränsat driftprov kan använda `--manifest-key manifests/smoke-NAME.json`
-på samtliga fyra CLI-kommandon. Använd en separat grupp, exempelvis
+på samtliga CLI-kommandon. Använd en separat grupp, exempelvis
 `smoke-r2-delivery`, och en liten godkänd fixture under en isolerad stagingrot.
 Prova första publish, oförändrad publish, andra versionen och rollback med samma
-separata manifestnyckel. Kontrollera via browser att manifestet revalideras,
-index och bytes går att läsa, CORS fungerar och produktionsmanifestet är
-oförändrat. Detta skapar bara avgränsade smokeobjekt i befintlig bucket;
-`manifests/current.json` ska inte anges eller aktiveras i detta prov.
-Ingen radering eller full bootstrap följer automatiskt av smokeprovet.
-Koordinatorn fattar beslut om verklig read/write-smoke och dess objekturval.
+separata manifestnyckel. Det skapar bara avgränsade smokeobjekt i bucketen;
+`manifests/current.json` ska inte anges i ett sådant prov, och inget raderas
+automatiskt efteråt.
 
-## Verifiering och levererade filer
+## Bootstrap i Actions
 
-Publisherns regressioner använder en fake S3 med ETag, conditional PUT,
-avbruten upload, authfel och skadade bytes. Fixturedata omfattar riktig Parquet,
-CRLF-JSON och befintliga publika kontrakt med små Parquetfiler. Browserkontroller
-använder isolerade mockmanifest och verkliga logiska paths, utan R2-aktivering.
+`publish-r2.yml` gör den första aktiveringen och tar `manifest_key` som input:
+`manifests/pipeline-smoke.json` för att kontrollera hela bundlet skilt från
+produktionspekaren, därefter `manifests/current.json`. Workflowet läser redan
+godkända gruppmanifest med `release.py current` och återanvänder exakt de
+release-id:na. Bara grupper som saknas stageas från verifierade exporter, så
+nyare leveranser av jobb, nyheter och offentliga data följer med oförändrade.
+Varje release läses tillbaka och verifieras före den enda aktiveringen.
 
-Ändrade/nya filer i denna uppgift:
+Obligatoriska grupper är `baseline`, `jobs`, `jobs-analysis`, `news` och
+`public-data`. `diva` tas med först när en verklig export eller katalogpost finns.
+Materialisering och verifiering kör fyra oberoende operationer åt gången, och
+köat arbete avbryts vid fel. Materialiseringen jämför binärfilers storlek mot
+de råa bytesen och behåller den historiska hashregeln för äldre katalogposter.
 
-- `platform/publish/release.py`: materialize, publish, staged bundleactivation och rollback.
-- `platform/publish/build_catalog.py`: katalog v2, bootstrapopt-in och stagingrot.
-- `platform/lib/delivery.py`: trimning av R2-miljövärden före legacyklientens anrop.
-- `frontend/src/dataSource.ts`: låst snapshot, lazy index, tydliga fel och flikrefresh.
-- `frontend/src/parquet.ts`: fallback endast för uttrycklig lokal/äldre localhostleverans.
-- `platform/tests/python/test_release.py`: publisher-, katalog- och regressionstester.
-- `frontend/tests/r2-delivery.spec.ts`: isolerade browserkontroller.
-- `docs/r2-delivery-contract.md`: detta kontrakt och leveransrapport.
+## Kontrollerat mot riktig R2, 13 oktober 2026
 
-Slutkontroller: 19 publisherregressioner, 421 plattformstester med två
-skips, 90 frontendunit-tester, TypeScript och sju riktade desktopbrowserkontroller
-godkända. Ändrade frontendfiler passerade Prettier och dokumentet gav noll träffar
-i repoets språkgranskare. De aktuella jobs- och news-specsen passerade även
-lokala prepublishkontroller. En motsvarande DiVA-kontroll stoppades på saknad
-`diva/clusters.json`, vilket kräver den dokumenterade materialiseringen före
-bootstrap; inga saknade filer hoppades över. Ingen ny
-produktionsaktivering, publik datafil, workflow, commit, push eller merge utfördes
-av denna worker.
+- Ett smokeprov publicerade redan publika nyheter och opinionsmätningar till
+  gruppen `smoke-r2-delivery-20261013` under
+  `manifests/smoke-r2-delivery-20261013.json`. Villkorad create, villkorad
+  ersättning, upprepad publicering, återläsning av exakta bytes och rollback
+  gick igenom. Produktionens `manifests/current.json` var oförändrad.
+- En Chromium-sida på localhost hämtade smokemanifestet, verifierade index- och
+  payloadhashar och läste 130 nyhetsposter. Manifestet svarade HTTP 200 med
+  `no-cache, max-age=0, must-revalidate`. Det visar åtkomst från localhost, inte
+  från varje produktions- eller previeworigin.
+- [Körningen av offentliga data](https://github.com/korv9/anton-portfolio/actions/runs/38418822351)
+  gick igenom ingestion, dbt, datakontrakt, R2-publicering och körningsstatus. Den
+  aktiverade public-data-releasen
+  `75b52503c551cd7b934d6f5891ab8d45cce6d5ec84f8bcfc42d11a4e21010586` från kod
+  `3c2f48c`, med 156 filer.
 
-Urvalet från aktuell katalog och koordinatorns sex specs gav 59 indexdelar,
-inga ägarskapskollisioner eller avvisade paths och ett uppskattat toppmanifest
-på 29 724 bytes. Indexdata hämtas först när en path
-efterfrågas. Denna uppskattning använder riktiga paths och syntetiska
-objektidentiteter; verklig upload och browserstorlek måste mätas i driftprovet.
+## Tester
 
-Decision: Samma aktivsnapshot låser hela flikens dataleverans och grupper uppdateras med villkorad PUT.
-Finding: Schema1-kataloghashar kräver historisk läskompatibilitet; nya payloads hashas exakt.
-Open question: Produktionsdomän, faktiska CORS/cache-regler, retention och första godkända bootstrap ska verifieras före aktivering.
+- `platform/tests/python/test_release.py`: publisher, katalog och regressioner mot
+  en fake S3 med ETag, villkorad PUT, avbruten upload, authfel och skadade bytes.
+- `platform/tests/architecture/test_r2_refresh_workflows.py` och
+  `test_pipeline_workflows.py`: workflowens ordning, lås, credentials och grupper.
+- `frontend/tests/r2-delivery.spec.ts`: resolvern mot isolerade mockmanifest.
+- `frontend/tests/live-delivery.spec.ts`: valfri kontroll mot verkliga R2-hashar
+  ([frontend/tests/README.md](../frontend/tests/README.md)).
+
+## Öppet
+
+- Retention är beslutad men inte byggd: per grupp behålls den aktiva releasen och
+  de två föregående godkända releaserna (rollbackmålen). Äldre releaser får raderas.
+  Det finns ännu ingen rensning, så inget raderas i dag.
+- Publishern raderar inga oaktiverade versionsobjekt efter ett misslyckat försök.

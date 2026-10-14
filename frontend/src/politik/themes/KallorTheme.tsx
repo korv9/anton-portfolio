@@ -49,21 +49,21 @@ export default function KallorTheme() {
   }, [])
 
   const sources: {
-    name: string
+    name: [string, string]
     url: string
     what: [string, string]
     date?: string
     dateKind: [string, string]
   }[] = [
     {
-      name: 'Valmyndigheten',
+      name: ['Valmyndigheten', 'Valmyndigheten'],
       url: 'https://www.val.se',
       what: ['Election results and seats, 2026', 'Valresultat och mandat 2026'],
       date: dates.now && dayName(dates.now),
       dateKind: ['read', 'hämtad'],
     },
     {
-      name: 'SCB',
+      name: ['SCB', 'SCB'],
       url: 'https://www.scb.se',
       what: [
         'Party preference survey (PSU) and elections 1973–2022',
@@ -73,7 +73,7 @@ export default function KallorTheme() {
       dateKind: ['latest survey', 'senaste mätning'],
     },
     {
-      name: 'Sveriges riksdag, öppna data',
+      name: ['The Riksdag, open data', 'Sveriges riksdag, öppna data'],
       url: 'https://data.riksdagen.se',
       what: [
         'Roll calls, decisions, speeches, laws and budget reports',
@@ -83,14 +83,17 @@ export default function KallorTheme() {
       dateKind: ['latest roll call', 'senaste votering'],
     },
     {
-      name: 'Regeringskansliet',
+      name: ['The Government Offices', 'Regeringskansliet'],
       url: 'https://www.regeringen.se',
       what: ['The government, press releases', 'Regeringen, pressmeddelanden'],
       date: dates.now && dayName(dates.now),
       dateKind: ['read', 'hämtad'],
     },
     {
-      name: 'SVT Nyheter och Sveriges Radio Ekot',
+      name: [
+        'SVT Nyheter and Sveriges Radio Ekot',
+        'SVT Nyheter och Sveriges Radio Ekot',
+      ],
       url: 'https://www.svt.se/nyheter/',
       what: [
         'Political headlines (the article stays with its publisher)',
@@ -100,7 +103,7 @@ export default function KallorTheme() {
       dateKind: ['read', 'hämtad'],
     },
     {
-      name: 'Finansutskottets betänkanden',
+      name: ['Finance Committee reports', 'Finansutskottets betänkanden'],
       url: 'https://data.riksdagen.se',
       what: [
         'Budget frames per expenditure area, government and parties',
@@ -140,10 +143,10 @@ export default function KallorTheme() {
             </thead>
             <tbody>
               {sources.map((s) => (
-                <tr key={s.name}>
+                <tr key={s.name[0]}>
                   <th scope="row">
                     <a href={s.url} target="_blank" rel="noreferrer">
-                      {s.name}
+                      {l(...s.name)}
                     </a>
                   </th>
                   <td>{l(...s.what)}</td>

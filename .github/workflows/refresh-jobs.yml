@@ -1,16 +1,16 @@
 name: Refresh job-market data
 
-# Daily, each morning:
+# Daily, each morning, the market subject of platform/pipeline.yml:
 #  - reads JobTech's stream of new and changed ads since the previous run and counts the ads
-#    published each day after the latest archive (ingest_stream.py; preliminary until the
-#    quarter's archive is published);
-#  - counts every archive from 2020 that is new or changed (the whole job market,
-#    ingest_market.py; an unchanged archive is not downloaded), so a new quarterly archive
-#    replaces the stream's counts for its months the morning it appears;
-#  - rebuilds jobs/market.json, and stores the raw stream files and the counts in R2, where
-#    the next run starts from;
-# The heavier IT archive report has its own manual workflow. Validated market data is
-# published to a versioned R2 group; it does not create a Git commit or rebuild the site.
+#    published each day after the latest archive (preliminary until the quarter's archive is
+#    published);
+#  - counts every archive from 2020 that is new or changed (an unchanged archive is not
+#    downloaded), so a new quarterly archive replaces the stream's counts for its months the
+#    morning it appears;
+#  - rebuilds jobs/market.json, and stores the raw stream files and the counts in R2, where the
+#    next run starts from.
+# The heavier IT archive report has its own manual workflow. Validated market data is published
+# to a versioned R2 group; it does not create a Git commit or rebuild the site.
 
 on:
   schedule:
@@ -39,46 +39,16 @@ jobs:
       R2_BUCKET: ${{ secrets.R2_BUCKET }}
       R2_PUBLIC_BASE: ${{ vars.R2_PUBLIC_BASE }}
     steps:
-      - name: Require R2 credentials
-        run: |
-          for name in R2_ACCOUNT_ID R2_ACCESS_KEY_ID R2_SECRET_ACCESS_KEY R2_BUCKET; do
-            value="${!name}"
-            value="${value#"${value%%[![:space:]]*}"}"
-            value="${value%"${value##*[![:space:]]}"}"
-            export "$name=$value"
-            if [ -z "${!name}" ]; then echo "::error::$name is not set (docs/deploy.md)"; exit 1; fi
-          done
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Set up and start from the stored counts and stream
+        id: setup
+        uses: ./.github/actions/data-setup
         with:
-          python-version: '3.12'
-          cache: pip
-          cache-dependency-path: platform/requirements.txt
-      - run: pip install -r platform/requirements.txt
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-      - name: Start from the stored counts and stream
-        id: restore
-        run: >-
-          python platform/publish/warehouse_store.py pull --only raw
-          --path jobtech/market --path jobtech/stream --path jobtech/_manifest.jsonl
-      - name: Count new archives and the day's stream
-        run: |
-          python platform/ingest/jobtech/ingest_market.py
-          python platform/ingest/jobtech/ingest_stream.py
-          cd platform
-          dbt build --profiles-dir . --select tag:market
-          cd ..
-          python platform/publish/export_market.py
+          pull: market
+      - name: Count new archives and the day's stream, build and export
+        run: python platform/pipeline.py run market --only ingest,dbt,export
       - name: Store the counts and stream in R2
-        if: ${{ always() && steps.restore.outcome == 'success' }}
-        run: >-
-          python platform/publish/warehouse_store.py push --only raw
-          --path jobtech/market --path jobtech/stream --path jobtech/_manifest.jsonl
+        if: ${{ always() && steps.setup.outcome == 'success' }}
+        run: python platform/pipeline.py push market
       - name: Validate complete daily coverage and publish
-        run: |
-          python platform/publish/validate_refresh_delivery.py --group jobs \
-            --root frontend/public/data --stream-state warehouse/raw/jobtech/stream/state.json
-          python platform/publish/release.py publish --group jobs --root frontend/public/data \
-            --spec configs/delivery/jobs.json --code-sha "$GITHUB_SHA"
+        run: python platform/pipeline.py run market --only publish

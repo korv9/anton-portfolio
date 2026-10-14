@@ -7,40 +7,45 @@ test(
     const errors: string[] = []
     page.on('pageerror', (e) => errors.push(e.message))
     await page.goto('/#drugcomb')
-    const report = page.locator('#drugcomb')
-    await expect(report).toContainText('396,498')
-    // Report cards: the question in plain words, key figures, one card per result.
-    await expect(report.locator('.dc-explain h3')).toHaveCount(3)
-    await expect(report.locator('.dash-kpi')).toHaveCount(0)
-    await expect(report.locator('.board-card')).toHaveCount(10)
-    // The cell lines on a body: one node per tissue of origin, the numbers also as a table.
-    await page.locator('#drugcomb-context .stage-details summary').click()
-    await page.locator('#drugcomb-explore .stage-details summary').click()
-    const body = report.locator('.body-map')
+    const intro = page.locator('.politik-intro')
+    await expect(intro).toContainText('396,498')
+    // One question per tab: the splits, then what it finds and whether it is calibrated.
+    await expect(page.locator('.report-tab .feature')).toHaveCount(3)
+    await page.getByRole('button', { name: 'New drug', exact: true }).click()
+    await expect(page).toHaveURL(/uppdelning=cold_drug/)
+    await expect(page.locator('#dc-splits-title')).toContainText('new drug')
+    // What it learns: the tree trained on the screens, the features and a check against luck.
+    const tree = await (
+      await page.request.get('/data/products/drugcomb/tree.json')
+    ).json()
+    await page.getByRole('link', { name: 'What it learns' }).click()
+    await expect(page).toHaveURL(/drugcomb-model\?uppdelning=cold_drug/)
+    const stageTree = page.locator('#dc-tree')
+    await expect(stageTree.locator('.dtree-leaf')).toHaveCount(
+      tree.metrics.leaves,
+    )
+    await stageTree
+      .getByRole('combobox', { name: 'Follow a leaf' })
+      .selectOption({ index: 1 })
+    await expect(stageTree.locator('.dtree-caption li').first()).toBeVisible()
+    // Choosing a test split changes what the model relies on.
+    const families = page.locator('#dc-families')
+    const before = await families.locator('.rank-bars').innerText()
+    await page.getByRole('button', { name: 'New cell line' }).click()
+    await expect(families.locator('.rank-bars')).not.toHaveText(before)
+    // The cell lines on a body, one node per tissue of origin, and the drugs in clusters.
+    await page.getByRole('link', { name: 'Cells and drugs' }).click()
+    const body = page.locator('.body-map')
     await expect(body.locator('.body-node')).toHaveCount(13)
     await body.locator('.body-table summary').click()
     await expect(body.locator('.body-table tbody tr')).toHaveCount(13)
     await expect(body.locator('.body-table')).toContainText('Bone')
     await expect(body.locator('.body-table')).toContainText('23.1 %')
-    // The decision tree trained on the screens, and the drugs in clusters, as dashboards.
-    const tree = await (
-      await page.request.get('/data/products/drugcomb/tree.json')
-    ).json()
-    // Slicers: a tissue lights up on the body, a leaf's path in the tree.
     await page
-      .locator('#drugcomb-context')
+      .locator('#dc-body')
       .getByRole('combobox', { name: 'Tissue' })
       .selectOption('Bone')
     await expect(body.locator('.body-caption')).toContainText('Bone')
-    const stageTree = page.locator('#drugcomb-explore')
-    await expect(stageTree.locator('.dtree-leaf')).toHaveCount(
-      tree.metrics.leaves,
-    )
-    await expect(stageTree).toContainText(String(tree.metrics.roc_auc))
-    await stageTree
-      .getByRole('combobox', { name: 'Follow a leaf' })
-      .selectOption({ index: 1 })
-    await expect(stageTree.locator('.dtree-caption li').first()).toBeVisible()
     const sky = await (
       await page.request.get('/data/products/drugcomb/drug-clusters.json')
     ).json()
@@ -50,14 +55,11 @@ test(
     await expect(
       stageSky.locator('.dsky-legend button').first(),
     ).toHaveAttribute('aria-pressed', 'true')
-    await expect(report.locator('.dc-checks li.ok')).toHaveCount(10)
-    // Choosing a test split changes what the model relies on.
-    const card = report.locator('.board-card', {
-      hasText: 'What the model relies on',
-    })
-    const before = await card.locator('.rank-bars').innerText()
-    await card.getByRole('button', { name: 'New cell line' }).click()
-    await expect(card.locator('.rank-bars')).not.toHaveText(before)
+    // The checks and the method are deep dives of their own.
+    await page.goto('/#drugcomb-quality')
+    await expect(page.locator('.dc-checks li.ok')).toHaveCount(10)
+    await page.goto('/#drugcomb-method')
+    await expect(page.locator('.dc-explain-grid h2')).toHaveCount(3)
     await page.goto('/#drugcomb-data')
     const drugData = page.locator('#drugcomb-data')
     await expect(

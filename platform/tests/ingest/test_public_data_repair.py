@@ -9,8 +9,11 @@ import requests
 import rawstore
 import studies_ingest as studies
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "ingest"))
-import run_taxes as taxes
+import yaml
+
+PLATFORM = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(PLATFORM / "ingest/taxes"))
+import require_parliament as taxes
 
 
 class Riksdag:
@@ -219,24 +222,17 @@ def test_legacy_preparation_is_reused_while_coverage_is_migrated(repair):
                                     studies.preparation_request("2010/11"))
 
 
-def test_tax_cold_runner_fails_before_fetch_or_build(tmp_path, monkeypatch):
+def test_tax_cold_run_fails_at_the_parliament_gate(tmp_path, monkeypatch):
     monkeypatch.setattr(rawstore, "RAW", tmp_path)
-    monkeypatch.setattr(sys, "argv", ["run_taxes.py"])
-    calls = []
-    monkeypatch.setattr(taxes, "run", calls.append)
     with pytest.raises(RuntimeError, match="Missing parliament upstream"):
-        taxes.main()
-    assert not calls
+        taxes.require_parliament()
 
 
-def test_tax_build_selects_parents_and_does_not_bypass_failed_gate(monkeypatch):
-    monkeypatch.setattr(sys, "argv", ["run_taxes.py", "--skip-fetch"])
-    monkeypatch.setattr(taxes, "require_parliament", lambda: None)
-    calls = []
-    monkeypatch.setattr(taxes, "run", calls.append)
-    taxes.main()
-    assert calls[0][calls[0].index("--select") + 1] == "+tag:taxes"
-    assert "build" in calls[0]
+def test_tax_build_selects_parents_and_does_not_bypass_failed_gate():
+    steps = yaml.safe_load((PLATFORM / "pipeline.yml").read_text(encoding="utf-8"))["subjects"]["taxes"]["steps"]
+    # The gate is the first step, so a failure stops the subject before any fetch or build.
+    assert steps[0] == {"ingest": "python platform/ingest/taxes/require_parliament.py"}
+    assert [step["dbt"]["select"] for step in steps if "dbt" in step] == [["+tag:taxes"]]
 
 
 def test_tax_requires_verified_complete_preparation_and_history(repair):

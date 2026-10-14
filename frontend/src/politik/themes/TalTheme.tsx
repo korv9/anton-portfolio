@@ -18,7 +18,7 @@ import {
 import type { Route } from '../../router'
 import ThemeLayout from '../ThemeLayout'
 import BuilderPanel, { Choice, Field } from '../BuilderPanel'
-import { Select, num, pct } from '../controls'
+import { Select, pct } from '../controls'
 import { useViewParams } from '../useViewParams'
 import { shownParties, useParties } from '../partySelection'
 import RankBars from '../../charts/RankBars'
@@ -104,13 +104,6 @@ export default function TalTheme({ route }: { route: Route }) {
     }))
   const most = latestByParty[0]
   const least = latestByParty.at(-1)
-  const coverage = (report?.language.coverage ?? []).filter(
-    (c) =>
-      c.corpus === corpus &&
-      c.method === method &&
-      Number(c.session.slice(0, 4)) >= Number(view.fran),
-  )
-  const speeches = coverage.reduce((s, c) => s + c.speeches, 0)
   const keywords = (report?.language.lexicon ?? [])
     .filter((k) => Number(k.expenditure_area) === area)
     .map((k) => k.keyword)
@@ -199,33 +192,6 @@ export default function TalTheme({ route }: { route: Route }) {
         )}
         loading={!report && !error}
         error={error}
-        kpis={
-          most && least
-            ? [
-                {
-                  value: num(speeches),
-                  label: l(
-                    `speeches read, ${corpusName}`,
-                    `tal lästa, ${corpusName}`,
-                  ),
-                },
-                {
-                  value: pct(most.keyword_share_pct),
-                  label: l(
-                    `${partyName(most.party)} talks most about ${areaName} (${latest})`,
-                    `${partyName(most.party)} pratar mest om ${areaName} (${latest})`,
-                  ),
-                },
-                {
-                  value: pct(least.keyword_share_pct),
-                  label: l(
-                    `${partyName(least.party)} talks least about it`,
-                    `${partyName(least.party)} pratar minst om det`,
-                  ),
-                },
-              ]
-            : []
-        }
         filters={filters}
         chartTitle={l(
           `How much the parties talk about ${areaName}`,
@@ -305,7 +271,10 @@ export default function TalTheme({ route }: { route: Route }) {
         table={table}
         sources={[
           {
-            name: 'Sveriges riksdag, anföranden (öppna data)',
+            name: l(
+              'The Riksdag, speeches (open data)',
+              'Sveriges riksdag, anföranden (öppna data)',
+            ),
             url: 'https://data.riksdagen.se',
           },
         ]}

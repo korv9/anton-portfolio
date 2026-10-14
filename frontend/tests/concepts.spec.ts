@@ -5,9 +5,9 @@ test('the Concept Lab draws typed relations and opens concept pages', async ({
   page,
 }) => {
   await page.goto('/#concept-constellation')
-  await expect(
-    page.getByRole('heading', { level: 1, name: 'Concept Lab' }),
-  ).toBeVisible()
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+    'Which concepts belong together, and on what grounds?',
+  )
   await expect(page.locator('.cc-node')).toHaveCount(28)
   await expect(
     page.locator('.cc-line.cc-rel-shared_tension').first(),

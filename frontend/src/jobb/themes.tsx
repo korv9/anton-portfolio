@@ -31,7 +31,7 @@ import type { JobsTheme, ThemeProps } from './JobsProduct'
 
 const SOURCES = [
   {
-    name: 'Arbetsförmedlingen, JobTech: historiska annonser',
+    name: 'Arbetsförmedlingen, JobTech: historical ads',
     url: 'https://data.arbetsformedlingen.se/annonser/historiska/',
   },
 ]
@@ -108,7 +108,6 @@ function Trender({ route, data, fields }: ThemeProps) {
   const monthly = monthlyAds(data, fields)
   const now = yearAds(data, fields, latest)
   const before = yearAds(data, fields, previous)
-  const peak = [...monthly].sort((a, b) => b[1] - a[1])[0]
   // Small multiples: the chosen fields, or the six largest when none are chosen.
   const size = (id: string) => yearAds(data, [id], latest)
   const multipleFields = fields.length
@@ -139,19 +138,6 @@ function Trender({ route, data, fields }: ThemeProps) {
         'New ads are the earliest sign of where employers want to hire, long before statistics on employment arrive.',
         'Nya annonser är den tidigaste signalen om var arbetsgivare vill anställa, långt innan statistiken om sysselsättning kommer.',
       )}
-      kpis={[
-        ...(peak
-          ? [
-              {
-                value: number(peak[1]),
-                label: l(
-                  `the most in one month: ${monthShort(peak[0])}`,
-                  `flest på en månad: ${monthShort(peak[0])}`,
-                ),
-              },
-            ]
-          : []),
-      ]}
       filters={
         <Select
           label={l('Chart', 'Diagram')}
@@ -293,26 +279,6 @@ function Yrken({ route, data, fields }: ThemeProps) {
         'The fields hide large differences: within one field some occupations are hiring more while others shrink.',
         'Områdena döljer stora skillnader: inom samma område kan vissa yrken annonsera mer medan andra krymper.',
       )}
-      kpis={[
-        ...(byChange.at(-1)
-          ? [
-              {
-                value: signedPct(byChange.at(-1)!.change),
-                label: l(
-                  `${byChange.at(-1)!.name}, the largest fall`,
-                  `${byChange.at(-1)!.name}, störst minskning`,
-                ),
-              },
-            ]
-          : []),
-        {
-          value: number(rows.length),
-          label: l(
-            `occupations with ${floor}+ ads, ${scope}`,
-            `yrken med minst ${floor} annonser, ${scope}`,
-          ),
-        },
-      ]}
       filters={
         <>
           <Select
@@ -453,10 +419,6 @@ function Lan({ route, data, fields }: ThemeProps) {
       change: change(c.ads, before.find((b) => b.region === c.region)?.ads),
     }))
     .sort((a, b) => b.ads - a.ads)
-  const top3 = rows.slice(0, 3).reduce((s, c) => s + c.ads, 0)
-  const grew = rows
-    .filter((c) => c.change != null && c.region !== 'Okänt län')
-    .sort((a, b) => (b.change ?? 0) - (a.change ?? 0))[0]
   const label = ytd ? period : String(year)
   return (
     <ThemeLayout
@@ -465,23 +427,6 @@ function Lan({ route, data, fields }: ThemeProps) {
         'Most ads are in the three metropolitan counties, but the growth is not always there.',
         'De flesta annonserna finns i de tre storstadslänen, men ökningen finns inte alltid där.',
       )}
-      kpis={[
-        {
-          value: share(pctOf(top3, total)),
-          label: l('in the three largest counties', 'i de tre största länen'),
-        },
-        ...(grew
-          ? [
-              {
-                value: signedPct(grew.change),
-                label: l(
-                  `${grew.region}, the best change on ${year - 1}`,
-                  `${grew.region}, bäst utveckling mot ${year - 1}`,
-                ),
-              },
-            ]
-          : []),
-      ]}
       filters={
         <Select
           label={l('Year', 'År')}
@@ -583,10 +528,6 @@ function Villkor({ route, data, fields }: ThemeProps) {
     (now.experience['yes'] ?? 0) + (now.experience['no'] ?? 0),
   )
   const fullTime = pctOf(now.hours['Heltid'] ?? 0, total(now.hours))
-  const regular = pctOf(
-    now.employment['Vanlig anställning'] ?? 0,
-    total(now.employment),
-  )
   const all = [
     ...bars('employment', EMPLOYMENT_EN),
     ...bars('hours', HOURS_EN),
@@ -607,16 +548,6 @@ function Villkor({ route, data, fields }: ThemeProps) {
         'The number of ads says how much employers hire; the terms say what kind of jobs they are.',
         'Antalet annonser säger hur mycket arbetsgivare anställer; villkoren säger vilka slags jobb det är.',
       )}
-      kpis={[
-        {
-          value: share(regular),
-          label: l('regular employment', 'vanlig anställning'),
-        },
-        {
-          value: share(experience),
-          label: l('require experience', 'kräver erfarenhet'),
-        },
-      ]}
       filters={
         <Select
           label={l('Year', 'År')}

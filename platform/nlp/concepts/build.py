@@ -57,6 +57,7 @@ import pandas as pd
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / "platform" / "nlp" / "text"))
 
+from staleness import digest, stands  # noqa: E402
 from vectors import MULTILINGUAL, embed  # noqa: E402
 
 DATABASE = Path(os.environ.get("PORTFOLIO_DB", ROOT / "warehouse/portfolio.duckdb"))
@@ -266,7 +267,7 @@ def norm_entropy(counts: list[int], n: int) -> float:
     return float(-(p * np.log(p)).sum() / np.log(n)) if len(p) > 1 else 0.0
 
 
-def main() -> int:
+def main(if_stale: bool = False) -> int:
     con = duckdb.connect(str(DATABASE), read_only=True)
     concepts = list(csv.DictReader((SEEDS / "concepts.csv").open(encoding="utf-8")))
     ids = [c["concept_id"] for c in concepts]
@@ -277,6 +278,11 @@ def main() -> int:
     chunks["retrieved_at"] = pd.to_datetime(chunks.retrieved_at, utc=True, format="mixed").dt.strftime("%Y-%m-%dT%H:%M:%SZ")
     print(chunks.groupby("corpus_id").size().to_dict(), flush=True)
 
+    inputs = digest([MULTILINGUAL, (SEEDS / "concepts.csv").read_text(encoding="utf-8"),
+                     *(f"{i}\t{t}" for i, t in zip(chunks.chunk_id, chunks.text))])
+    if if_stale and stands(OUT / "run.json", "input_sha256", inputs):
+        print("The four samples and the concepts are unchanged since the last run; the alignment stands.")
+        return 0
     print(f"Embedding {len(chunks)} chunks and {2 * len(ids)} anchors with {MULTILINGUAL} …", flush=True)
     vectors = embed(chunks.text.tolist())
     anchors = embed([c["anchor_en"] for c in concepts] + [c["anchor_sv"] for c in concepts])
@@ -363,10 +369,10 @@ def main() -> int:
            "corpus_size": CORPUS_SIZE, "words": [MIN_WORDS, MAX_WORDS], "concepts": len(ids),
            "top_rank": TOP_RANK, "representatives": REPRESENTATIVES, "neighbours": NEIGHBOURS,
            "act_version": CURRENT_ACT, "baselines": baselines, "evaluation": evaluation,
-           "ran_at": datetime.now(timezone.utc).isoformat(timespec="seconds")}
+           "ran_at": datetime.now(timezone.utc).isoformat(timespec="seconds"), "input_sha256": inputs}
     (OUT / "run.json").write_text(json.dumps(run, indent=1) + "\n", encoding="utf-8")
     return 0
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    sys.exit(main(if_stale="--if-stale" in sys.argv))

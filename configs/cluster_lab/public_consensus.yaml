@@ -1,0 +1,60 @@
+# Consensus subject groups over many UMAP seeds; see ml/research/consensus.py.
+topics: configs/cluster_lab/public_topics.yaml
+output: warehouse/cluster_lab/public-consensus-2026-10-13
+seeds: 12
+max_largest: 0.1
+min_ari: 0.75
+# Base groups are linked at this Jaccard overlap; a passage needs this share of the seeds behind its group.
+# 0.5/0.5 was the first setting (split-half ARI 0.735 on debate-sbert); 0.3 links a group to its halves (0.751).
+link_jaccard: 0.3
+support: 0.5
+merge_similarity: 0.7
+reassign_quantile: 0.1
+reassign_margin: 0.05
+corpora:
+  philosophy_long:
+    raw: warehouse/raw/philosophy
+    corpora:
+      - platform/ingest/philosophy/corpus.json
+      - platform/ingest/philosophy/corpus_extended.json
+    per_document: 200
+    join_words: 300
+# The debate groups of 2026-10-12 that reading found to be replies and general rhetoric.
+rhetoric: &rhetoric
+  assignments: warehouse/cluster_lab/public-topics-2026-10-12/runs/1b8a9e8a84859c4437eb93f1/assignments.parquet
+  groups: [0, 1, 7, 9, 10, 11, 29]
+sbert: &sbert
+  model: KBLab/sentence-bert-swedish-cased
+  revision: 6b5e83cd29c03729cfdc33d13b1423399b0efb5c
+minilm: &minilm
+  model: sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
+  revision: e8f8c211226b894fcb81acc59f3b34ba3efd5f42
+e5: &e5
+  model: intfloat/multilingual-e5-large
+  revision: 3d7cfbdacd47fdda877c5cd8a79fbcc4f2a574f3
+  prefix: 'query: '
+# min_cluster_size follows the number of passages: 150 per 33,023 for debates, 120 per 21,260 for philosophy (95 for 16,602 longer passages).
+variants:
+  debate-sbert: {<<: *sbert, pick: debate, corpus: debate, centering: author, neighbors: 30, min_cluster_size: 150, min_samples: 25}
+  debate-e5: {<<: *e5, pick: debate, corpus: debate, centering: author, neighbors: 30, min_cluster_size: 150, min_samples: 25}
+  debate-sbert-subjects: {<<: *sbert, pick: debate, corpus: debate, centering: author, neighbors: 30, min_cluster_size: 105, min_samples: 25, drop: *rhetoric}
+  debate-e5-subjects: {<<: *e5, pick: debate, corpus: debate, centering: author, neighbors: 30, min_cluster_size: 105, min_samples: 25, drop: *rhetoric}
+  philosophy-minilm: {<<: *minilm, pick: philosophy, corpus: philosophy, centering: work, neighbors: 30, min_cluster_size: 120, min_samples: 25}
+  philosophy-e5: {<<: *e5, pick: philosophy, corpus: philosophy, centering: work, neighbors: 30, min_cluster_size: 120, min_samples: 25}
+  philosophy-long-minilm: {<<: *minilm, pick: philosophy, corpus: philosophy_long, centering: work, neighbors: 30, min_cluster_size: 95, min_samples: 25}
+  philosophy-long-e5: {<<: *e5, pick: philosophy, corpus: philosophy_long, centering: work, neighbors: 30, min_cluster_size: 95, min_samples: 25}
+levels:
+  min_size: 800
+  seeds: 8
+  neighbors: 15
+  min_cluster_share: 0.04
+  min_cluster_size: 30
+  min_samples: 10
+  min_ari: 0.75
+layouts:
+  - [15, 0.1]
+  - [60, 0.3]
+intrusion:
+  seed: 7
+  tasks_per_group: 2
+  characters: 240

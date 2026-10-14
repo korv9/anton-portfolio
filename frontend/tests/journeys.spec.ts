@@ -11,14 +11,9 @@ test('a startup finds what applies, uses the navigator and reaches the law', asy
 }) => {
   await page.goto('/#start')
   await page.locator('.work-card[href="#ai-act"]').click()
-  await page.locator('.overview-topics a[href="#ai-act-roles"]').click()
   await page
-    .getByRole('navigation', { name: 'Project topics' })
-    .getByRole('link', { name: 'Risk and use', exact: true })
-    .click()
-  await page
-    .getByRole('navigation', { name: 'In this topic' })
-    .getByRole('link', { name: 'Navigator', exact: true })
+    .getByRole('navigation', { name: 'Go deeper' })
+    .getByRole('link', { name: /Startup navigator/ })
     .click()
   await page
     .locator('.aa-question')
@@ -49,14 +44,14 @@ test('a startup finds what applies, uses the navigator and reaches the law', asy
 test('a visitor follows an idea across stories, philosophy, politics and law', async ({
   page,
 }) => {
-  await page.goto('/#concept-constellation')
-  await page.locator('.cj-start a', { hasText: 'Control' }).click()
+  await page.goto('/#concept-journey')
+  await page.getByRole('button', { name: 'Control', exact: true }).click()
   await expect(page).toHaveURL(/concept-journey\?begrepp=control/)
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-    'Concept Lab',
+    'Where does one idea appear, from stories to law?',
   )
-  await expect(page.locator('.project-hero')).toContainText(
-    'semantic similarity, not historical influence',
+  await expect(page.locator('.politik-intro')).toContainText(
+    'never that one text influenced another',
   )
   // Four domains, each with passages that open their source.
   await expect(page.locator('.cj-domain')).toHaveCount(4)
@@ -79,7 +74,7 @@ test('a visitor follows an idea across stories, philosophy, politics and law', a
   // Picking another idea keeps the choice in the address.
   await page.getByRole('button', { name: 'Autonomy', exact: true }).click()
   await expect(page).toHaveURL(/begrepp=autonomy/)
-  await expect(page.locator('.cj-concept-title')).toHaveText('Autonomy')
+  await expect(page.locator('#resan-title')).toContainText('Autonomy')
   await expect(page.locator('.cj-domain-law .cj-note').last()).toContainText(
     'nothing is filled in',
   )

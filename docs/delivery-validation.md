@@ -1,10 +1,9 @@
 # Semantisk kontroll före dataleverans
 
-Kontrollerad 13 oktober 2026. Denna worker har lagt till
-`platform/publish/validate_refresh_delivery.py`,
-`platform/tests/python/test_refresh_delivery_validation.py` och denna rapport.
-Tidigare sammanfattningsimplementation och andra agenters ändringar är bevarade.
-Workflows, leveransspecifikationer och schemafiler ägs av root och har inte ändrats.
+`platform/publish/validate_refresh_delivery.py` kontrollerar innehållet i jobb-,
+nyhets- och DiVA-leveranserna innan `release.py` publicerar dem. Offentliga data
+har sin egen kontroll i `validate_public_data.py`. Publiceringens regler står i
+[r2-delivery-contract.md](r2-delivery-contract.md).
 
 ## Anrop och resultat
 
@@ -23,8 +22,10 @@ Jobs kan dessutom kräva färsk streamtäckning:
 python platform/publish/validate_refresh_delivery.py --group jobs --root frontend/public/data --stream-state warehouse/raw/jobtech/stream/state.json
 ```
 
-Root kopplar motsvarande kommando till leveransgruppens `spec.checks` före
-`release.py`. Validatorn läser JSON med repositoryts `read_json` och använder i
+Grupperna `jobs` och `diva` kör kommandot i sitt publiceringssteg i
+`platform/pipeline.yml`. Alla tre grupperna har det dessutom som `checks` i sin
+spec under `configs/delivery/`, så `release.py` kör det före uppladdningen.
+Validatorn läser JSON med repositoryts `read_json` och använder i
 övrigt standardbiblioteket. Den skriver inga dataset, fyller inga luckor och gör
 inga API- eller R2-anrop. Det finns inga nya beroenden.
 
@@ -60,8 +61,7 @@ daterad leverans; den påstår inte att dagens stream har hämtats.
 
 ## Streamtäckning
 
-Koordinatorn bekräftade att det befintliga ingestionkontraktet räcker för denna
-kontroll: `complete_from` och `fetched_until` skrivs till state först efter
+Kontrollen bygger på ingestionens eget state: `complete_from` och `fetched_until` skrivs till state först efter
 framgångsrika hämtfönster. Ingen ny `verified`-markör behövs.
 
 `complete_from` ska vara ett giltigt kalenderdatum senast gårdagen i
@@ -76,8 +76,7 @@ En senast observerad annons från förrgår godkänns när vattenmärket täcker
 Noll annonser är alltså inget bevis på avbrott. Stale, saknat, ogiltigt eller
 framtida vattenmärke avslås när `--stream-state` begärs. Detta verifierar det
 angivna vattenmärkets struktur och färskhet, inte råfilernas hash, extern
-fullständighet eller att state hör till just de exporterade bytesen. Proveniens
-och leveransintegritet behöver root kontrollera separat.
+fullständighet eller att state hör till just de exporterade bytesen.
 
 ## News
 
@@ -108,36 +107,18 @@ tolkning av artikeltext eller att alla relevanta artiklar har arkiverats.
 kluster-id:n och punktreferenser till befintliga kluster. Exporten har inget
 enskilt post-id i punkterna, så punktunikhet kan inte verifieras. Upprepade
 titlar eller koordinater avslås inte som påstådda dubblettposter. Statusen
-redovisar detta som en varning. Den lokala verkliga DiVA-filen saknas; gruppen
-har verifierats med exporterens form som testfixture.
+redovisar detta som en varning. Gruppen är verifierad med exportens form som
+testfixture, inte mot en verklig DiVA-fil.
 
-## Verifierat
+## Tester
 
-```text
-python -m pytest platform/tests/python/test_refresh_delivery_validation.py -q --basetemp tmp/refresh-validation-tests
-61 passed
+`platform/tests/python/test_refresh_delivery_validation.py` täcker falska
+deltotaler, dubbla eller oordnade perioder, framtida datum, negativa räknare och
+räknare som inte är heltal, NaN och Infinity, stale eller framtida täckning,
+Stockholms dygnsgräns, giltiga glesa dagsserier, sammanfattningens citat,
+bevarande av äldre citat och period samt DiVA-koordinater. Tiden är fixerad i
+CLI-testerna, så de fungerar oavsett maskinens datum.
 
-python -m pytest platform/tests/python/test_refresh_delivery_validation.py platform/tests/python/test_summarize_news.py -q --basetemp tmp/refresh-validation-combined
-95 passed
-
-python -m pytest platform/tests -q --basetemp tmp/refresh-validation-full-tests
-420 passed, 2 skipped in 37.15s
+```sh
+python -m pytest platform/tests/python/test_refresh_delivery_validation.py -q
 ```
-
-Rapporten fick 0 träffar i repositoryts `check_ai_signs.py` och filerna passerade
-`git diff --check`.
-
-Fallen täcker falska deltotaler, dubbla eller oordnade perioder, framtida datum,
-negativa/icke-heltalsräknare, NaN/Infinity, stale eller framtida täckning,
-Stockholms dygnsgräns, giltiga glesa dagsserier, aktuell sammanfattningsgrundning,
-bevarande av äldre citat/period och DiVA-koordinater. CLI-testernas tid är fixerad
-så att de fungerar även när maskinens kalenderdatum ändras.
-
-De faktiska lokala jobs- och news-leveranserna passerade kommandona ovan utan
-stream-färskhetskrav. News behöll originalperioden 2–8 oktober 2026 och fick inga
-varningar. Inga verkliga leveransfiler ändrades av kontrollerna.
-
-Decision: Streamtäckning härleds från ingestion state och aldrig från en annonsrad.
-Finding: Faktiska jobs/news passerar semantisk kontroll utan krav på färsk state.
-Finding: Äldre sammanfattningars originalperiod bevaras; saknade arkivcitat redovisas.
-Open question: Root måste verifiera provenance och faktisk liveleverans separat.

@@ -82,14 +82,22 @@ test('every internal link opens a page', async ({ page, isMobile }) => {
     if (await page.locator(HOME).count()) broken.push(href)
     // The breadcrumb names where the page sits, not just "Projects".
     const crumbs = page.locator('.project-context li')
-    // Two pages carry no breadcrumb: the list of projects, and the politics long read, whose
-    // chapters share one page.
-    if (href.startsWith('#politik')) await page.locator('.politik').waitFor()
+    // The list of projects carries no breadcrumb, nor do the observatory and lab reports and
+    // their deep dives, which name the report in a link back.
+    if (
+      /^#(politik|jobb|job-|sweden|ai-act|tech|symbolic-|philosophy-|concept|drugcomb)/.test(
+        href,
+      )
+    )
+      await page
+        .locator('.politik-long, .aiact, .tech')
+        .first()
+        .waitFor({ timeout: 45_000 })
     if (
       (await crumbs.count()) < 2 &&
       !(await page.locator('.project-context [aria-current]').count()) &&
       href !== '#projekt' &&
-      !(await page.locator('.politik-long').count())
+      !(await page.locator('.politik-long, .aiact, .tech').count())
     )
       unplaced.push(href)
     // The tab names the page, not just the site.

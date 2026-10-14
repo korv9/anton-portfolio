@@ -280,18 +280,6 @@ body .theme-why {
   font-size: var(--body-large);
   line-height: 1.6;
 }
-body .theme-kpis {
-  background: transparent;
-  border-block: 1px solid var(--line);
-  padding: 20px 0;
-  margin-bottom: 24px;
-  gap: 24px;
-}
-body .theme-kpis > div {
-  padding: 12px 0;
-  border: 0;
-  background: transparent;
-}
 body .theme-figure {
   background: transparent;
   border: 0;
@@ -323,9 +311,6 @@ body .theme-meaning {
   body .topic-tabs a {
     padding: 12px;
     font-size: var(--small);
-  }
-  body .theme-kpis {
-    grid-template-columns: 1fr;
   }
 }
 @media (prefers-reduced-motion: reduce) {

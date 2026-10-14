@@ -31,19 +31,21 @@ test('a navigator scenario survives a reload and can be cleared', async ({
 })
 
 test(
-  'the job-market field slicer chooses, announces and resets',
+  'the job-market field slicer chooses and resets',
   { tag: '@mobile' },
   async ({ page }) => {
-    await page.goto('/#jobb-trender')
+    await page.goto('/#jobb')
     const slicer = page.getByRole('group', { name: 'Occupation fields' })
-    const first = slicer.locator('ul button').first()
+    const first = slicer.getByRole('button').first()
     await first.click()
     await expect(first).toHaveAttribute('aria-pressed', 'true')
-    const state = slicer.locator('.politik-slicer-state')
-    await expect(state).not.toContainText('Whole market')
-    await state.getByRole('button', { name: 'Show all' }).click()
+    await expect(page).toHaveURL(/omraden=/)
+    await expect(page.locator('#annonser h2')).not.toContainText(
+      'the whole market',
+    )
+    await first.click()
     await expect(first).toHaveAttribute('aria-pressed', 'false')
-    await expect(state).toContainText('Whole market')
+    await expect(page.locator('#annonser h2')).toContainText('the whole market')
   },
 )
 

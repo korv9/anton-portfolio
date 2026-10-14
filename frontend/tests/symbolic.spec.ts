@@ -9,10 +9,9 @@ test('the Symbol Lab maps real occurrences and filters by symbol and tradition',
   page,
 }) => {
   await page.goto('/#symbolic-atlas')
-  await page.locator('#symbolic-map .stage-details summary').click()
-  await expect(
-    page.getByRole('heading', { level: 1, name: 'Symbol Lab' }),
-  ).toBeVisible()
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+    'Do symbol words gather by meaning, or by the book they come from?',
+  )
   const summary = await (
     await page.request.get('/data/symbolic/summary.json')
   ).json()
@@ -24,7 +23,7 @@ test('the Symbol Lab maps real occurrences and filters by symbol and tradition',
   await page.getByRole('button', { name: 'snake', exact: true }).click()
   await expect(page).toHaveURL(/symbol=snake/)
   const snake = summary.symbols.find((s: { id: string }) => s.id === 'snake')
-  await expect(page.locator('.stage-side.is-right')).toContainText(
+  await expect(page.locator('.sym-side')).toContainText(
     snake.occurrences.toLocaleString('en-GB'),
   )
   await page
@@ -38,16 +37,15 @@ test('the Symbol Lab maps real occurrences and filters by symbol and tradition',
 
 test('a filtered atlas address opens with its filter', async ({ page }) => {
   await page.goto('/#symbolic-atlas?symbol=raven')
-  await page.locator('#symbolic-map .stage-details summary').click()
   await expect(
     page.getByRole('button', { name: 'raven', exact: true }),
   ).toHaveAttribute('aria-pressed', 'true')
 })
 
-test('the deconfounding experiments are compared under the atlas', async ({
+test('the deconfounding experiments are compared on the experiments tab', async ({
   page,
 }) => {
-  await page.goto('/#symbolic-atlas')
+  await page.goto('/#symbolic-experiments')
   const comparison = await (
     await page.request.get('/data/symbolic/experiment-comparison.json')
   ).json()
@@ -65,7 +63,7 @@ test('the deconfounding experiments are compared under the atlas', async ({
 test('the embedding models are compared by their nearest neighbours', async ({
   page,
 }) => {
-  await page.goto('/#symbolic-atlas')
+  await page.goto('/#symbolic-experiments')
   const comparison = await (
     await page.request.get('/data/symbolic/model-comparison.json')
   ).json()
@@ -103,11 +101,10 @@ test('the cross-book view mutes book-bound clusters and opens a cluster for revi
   await page.goto('/#symbolic-atlas')
   await page.getByRole('button', { name: 'Cross-book', exact: true }).click()
   await expect(page).toHaveURL(/view=cross-book/)
-  await page.locator('#symbolic-map .stage-details summary').click()
   await page
     .locator('.atlas-select select')
     .selectOption(String(top.cluster_id))
-  const panel = page.locator('.stage-side.is-right')
+  const panel = page.locator('.sym-side')
   // Unreviewed clusters are numbered, never named.
   await expect(panel).toContainText(`Cluster ${top.cluster_id}`)
   await expect(panel).toContainText('Not reviewed')
@@ -156,6 +153,7 @@ test('the investigation is told step by step with its numbers', async ({
   await expect(page.locator('#symbolic-validity')).toContainText(
     'What the clusters follow',
   )
+  await page.goto('/#symbolic-method')
   await expect(page.locator('#symbolic-method')).toContainText('Diagnostics')
 })
 
@@ -165,7 +163,7 @@ test('the corpus explorer lists every book and filters by tradition', async ({
   const summary = await (
     await page.request.get('/data/symbolic/summary.json')
   ).json()
-  await page.goto('/#symbolic-atlas')
+  await page.goto('/#symbolic-corpus')
   const rows = page.locator('.corpus-table tbody tr')
   await expect(rows).toHaveCount(summary.document_count)
   await page

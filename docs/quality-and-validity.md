@@ -20,7 +20,9 @@ npm run quality:publish    # frontend/public/data/quality/*.json
 
 Pages:
 
-- `#quality` is the technical overview: product matrix, the Symbolic Atlas case study, every
+- `#quality` was the technical overview and is retired from the website; the address leads to
+  the project index. The checks, the registries and the weekly `quality` subject still run. It
+  showed: product matrix, the Symbolic Atlas case study, every
   analysis, every check, method and limitations.
 - Each major product has a compact *Quality & validity* section.
 - Data Constellation has a *Quality* view, and the node panel shows quality and validity for

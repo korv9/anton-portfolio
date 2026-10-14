@@ -1,6 +1,6 @@
 # Parliament: elections, government and the Riksdag's decisions
 
-The politics hub on the site (`#now`, `#issue-<key>`) is built from this model. It covers the
+The Political Observatory (`#politik` and its themes) is built from this model. It covers the
 same period evenly for every part:
 
 | Part | Source | Period |
@@ -98,9 +98,36 @@ proposal). Each link keeps the sentence that makes it.
 | `fct_bill_report` | a bill and a committee report it was dealt with in |
 | `fct_bill_study` | a bill and a study it names as preparation, with the sentence |
 
-The site shows the latest studies and what they led to on `#now-studies`, and the studies
+The site shows the latest studies and what they led to on `#politik-utredningar`, and the studies
 behind every decision it lists. Budget and spring bills are left out of that per-decision
 link, since they name hundreds.
+
+### What counts as a complete session
+
+`platform/ingest/riksdagen/studies_ingest.py` reads every document in Riksdagen's bill list and
+writes a coverage report per session, `studies/coverage/<session>.json`: each listed document
+with its status, source URL and, on failure, the error. A session gets a completion record only
+when the report, the preparation rows and the complete list files all match their hashes.
+Missing and failed bills are kept as `pending_bills`; an attempt that leaves any ends in an
+error and stops dbt and publication for the subject. Progress is saved every 25 documents, so a
+restart reuses what was already read.
+
+Two cases are handled without failing the session:
+
+- Annexes with no status page. A 404 from `dokumentstatus` is recorded as
+  `unavailable_attachment` only when the list's own metadata shows an annex: a `d` suffix with
+  a number, a related main document in the same list, the same session and designation, and
+  the annex marker. The main document must have valid preparation in the same attempt. The
+  case that prompted the rule is 2010/11: eight listed parts, GY03101d2 to GY03101d9, of
+  *Årsredovisning för staten 2010* (GY03101), all 404 while the main document answers 200. The
+  annexes get no preparation row of their own and are tried again at the next historical
+  revision. Any other 404, a 503, a timeout, broken JSON, a wrong document identity or empty
+  text is still an error.
+- Documents with no embedded HTML. Sixteen documents from 2014/15 came back with identity
+  and committee links but no text. The ingest then reads the main PDF from Riksdagen's file
+  host, and requires a matching document identity and title and exactly one main PDF. Empty or
+  invalid PDF text is an error. The bytes, URL and hash are stored like any other raw file
+  (`pypdf` is pinned in `platform/requirements.txt`).
 
 ## Parties: colours, logos and the party page
 
@@ -118,7 +145,7 @@ shown (seat bar, party pickers and charts, vote lists, tables, BudgetLab):
 Because every party has its own colour, charts of parties are no longer limited to five
 series.
 
-`#parties` shows a card per party, sorted by the latest election. `#parties-<code>` gathers
+`#politik-partier` shows a card per party, sorted by the latest election. A party's page gathers
 what the other pages have on one party, from the same files: `now.json` (result, poll, role),
 `elections.json` and `polls.json` (support over time), `sessions.json` (governments it sat
 in or supported, voting record, agreement with each other party in the latest session),

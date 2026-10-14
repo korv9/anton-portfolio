@@ -8,7 +8,7 @@ import { useEffect, useState } from 'react'
 import { currentLocale, l } from '../i18n'
 import { fetchData } from '../dataSource'
 import CalibrationScatter from './CalibrationScatter'
-import { Card, Cards, Empty } from '../politik/board/Board'
+import { Empty } from '../politik/board/Board'
 import Columns from '../politik/board/Columns'
 import RankBars from '../charts/RankBars'
 import '../politik/dash/dash.css'
@@ -19,8 +19,16 @@ import DrugConstellation, {
   type DrugCluster,
   type DrugPoint,
 } from './DrugConstellation'
-import { Stage, StageBlock, StageFacts, StageTools } from '../ui/Stage'
-import { ProjectDepth } from '../projects/ProjectStructure'
+import { DRUGCOMB_TABS, type Route } from '../router'
+import { useViewParams } from '../politik/useViewParams'
+import ReportShell, {
+  DeepPage,
+  withQuery,
+  type DeeperLink,
+  type ReportTab,
+} from '../report/ReportShell'
+import { Feature } from '../charts/feature/Feature'
+import { Select } from '../politik/controls'
 import ProjectTech from '../projects/ProjectTech'
 import './mlviz.css'
 import '../politik/modell/modell.css'
@@ -178,6 +186,60 @@ const METHOD: Record<string, [string, string]> = {
 }
 const methodName = (m: string) => (METHOD[m] ? l(...METHOD[m]) : m)
 
+const NAME = 'Drug Synergy Lab'
+const tabs = (): ReportTab[] => [
+  {
+    path: '#drugcomb',
+    label: l('Unseen data', 'Osedd data'),
+    question: l(
+      'Does the model still work on drugs it has never seen?',
+      'Fungerar modellen på läkemedel den aldrig sett?',
+    ),
+  },
+  {
+    path: '#drugcomb-model',
+    label: l('What it learns', 'Vad den lär sig'),
+    question: l(
+      'What does the model rely on, and is it real?',
+      'Vad lutar sig modellen mot, och är det på riktigt?',
+    ),
+  },
+  {
+    path: '#drugcomb-cells',
+    label: l('Cells and drugs', 'Celler och läkemedel'),
+    question: l(
+      'Which cancers and drugs were tested?',
+      'Vilka cancerformer och läkemedel testades?',
+    ),
+  },
+]
+const DEEPER = (): DeeperLink[] => [
+  {
+    href: '#drugcomb-quality',
+    label: l('Data and its checks', 'Datan och dess kontroller'),
+    about: l(
+      'Cleaning, quality tests, name matching, the learning curve and calibration',
+      'Städning, kvalitetstester, namnmatchning, inlärningskurvan och kalibrering',
+    ),
+  },
+  {
+    href: '#drugcomb-method',
+    label: l('Method and limits', 'Metod och begränsningar'),
+    about: l(
+      'Synergy, the splits, the assumptions and the original figures',
+      'Synergi, uppdelningarna, antagandena och originalfigurerna',
+    ),
+  },
+  {
+    href: '#drugcomb-data',
+    label: l('Result tables', 'Resultattabeller'),
+    about: l(
+      'Every evaluation table, to browse and download',
+      'Varje utvärderingstabell, att bläddra i och ladda ned',
+    ),
+  },
+]
+
 const nf = () => l('en-GB', 'sv-SE')
 const num = (n: number, digits = 0) =>
   n.toLocaleString(nf(), {
@@ -186,10 +248,12 @@ const num = (n: number, digits = 0) =>
   })
 const pct = (share: number, digits = 1) => `${num(share * 100, digits)} %`
 
-export default function DrugCombReport() {
+export default function DrugCombReport({ route }: { route: Route }) {
   const [report, setReport] = useState<Report | null>(null)
   const [tables, setTables] = useState<Partial<Tables>>({})
-  const [split, setSplit] = useState('random')
+  const [{ uppdelning: split }, set] = useViewParams(route, {
+    uppdelning: 'random',
+  })
   const [error, setError] = useState(false)
   const [treeFile, setTreeFile] = useState<TreeFile | null>(null)
   const [sky, setSky] = useState<ClusterFile | null>(null)
@@ -250,605 +314,249 @@ export default function DrugCombReport() {
     const s = SPLITS.find((x) => x[0] === id)
     return s ? l(s[1], s[2]) : id
   }
+  const best = metric(split, 'lgbm_all')
+  const source = l(
+    'DrugCombDB screens with DepMap 24Q4; the published results of the pinned pipeline revision',
+    'Försök från DrugCombDB med DepMap 24Q4; publicerade resultat från den fastlåsta versionen av pipelinen',
+  )
 
-  return (
-    <article className="report drugcomb-board" id="drugcomb">
-      <section id="drugcomb-results">
-        <Cards>
-          {' '}
-          <Card
-            index={0}
-            wide
-            title={l(
-              'Performance by test split',
-              'Modellresultat per testuppdelning',
-            )}
-            meta={l(
-              'Correlation between predicted and measured ZIP (Pearson, 0 = no relation, 1 = perfect), mean of three folds',
-              'Korrelation mellan förutsagd och uppmätt ZIP (Pearson, 0 = inget samband, 1 = perfekt), medel av tre omgångar',
-            )}
-          >
-            <Columns
-              categories={SPLITS.map((s) => l(s[1], s[2]))}
-              series={MODELS.map(([id, en, sv]) => ({
-                key: id,
-                label: l(en, sv),
-                focus: id === 'lgbm_all',
-                values: SPLITS.map(
-                  ([scheme]) => metric(scheme, id)?.pearson ?? null,
-                ),
-              }))}
-              format={(v) => num(v, 2)}
-              domain={[0, 1]}
-              label={l(
-                'Correlation per test split and model',
-                'Korrelation per testuppdelning och modell',
-              )}
-            />
-            <p className="dc-note">
-              {l(
-                'The splits hold out rows, drug pairs, individual drugs or cell lines. Models are evaluated against measured ZIP synergy; these are experimental results.',
-                'Testuppdelningarna håller undan rader, läkemedelspar, enskilda läkemedel eller cellinjer. Modellerna jämförs med uppmätt ZIP-synergi; resultaten gäller experimentdata.',
-              )}
-            </p>
-          </Card>
-        </Cards>
-      </section>
-      <Stage
-        id="drugcomb-context"
-        title={l(
-          'Where the cancer cells come from',
-          'Var cancercellerna kommer ifrån',
-        )}
-        lead={l(
-          'Every screened cell line has a tissue of origin. Point at one to read it.',
-          'Varje testad cellinje har en ursprungsvävnad. Peka på en för att läsa den.',
-        )}
-        figure={
-          <BodyMap lineages={report.lineages} highlight={tissue || null} />
-        }
-        left={
+  if (!DRUGCOMB_TABS.includes(route.path))
+    return (
+      <DeepPage id={route.path.slice(1)} back="#drugcomb" name={NAME}>
+        {route.path === '#drugcomb-quality' ? (
           <>
-            <StageBlock title={l('Slicer', 'Filter')}>
-              <label className="modell-select">
-                <span>{l('Tissue', 'Vävnad')}</span>
-                <select
-                  value={tissue}
-                  onChange={(e) => setTissue(e.target.value)}
-                >
-                  <option value="">{l('All tissues', 'Alla vävnader')}</option>
-                  {[...report.lineages]
-                    .sort((a, b) => b.combinations - a.combinations)
-                    .map((t) => (
-                      <option key={t.lineage} value={t.lineage}>
-                        {t.lineage}
-                      </option>
+            <h1>{l('Data and its checks', 'Datan och dess kontroller')}</h1>
+            <div className="report-pair">
+              <Feature
+                id="dc-funnel"
+                title={l(
+                  'From raw rows to a modelling table',
+                  'Från rådata till modelltabell',
+                )}
+                lead={l(
+                  'Rows kept after each cleaning step',
+                  'Rader kvar efter varje städsteg',
+                )}
+                source={source}
+              >
+                <RankBars
+                  rows={report.funnel.map((f) => ({
+                    key: f.step,
+                    label:
+                      currentLocale() === 'sv'
+                        ? (STEP_SV[f.step] ?? f.step)
+                        : f.step,
+                    value: f.rows,
+                  }))}
+                  format={(v) => num(v)}
+                  label={l('Cleaning funnel', 'Städtratten')}
+                />
+              </Feature>
+              <Feature
+                id="dc-checks"
+                title={l(
+                  `${passed} of ${tables.quality?.length ?? 10} data-quality tests passed`,
+                  `${passed} av ${tables.quality?.length ?? 10} datakvalitetstester godkända`,
+                )}
+                source={source}
+              >
+                {tables.quality ? (
+                  <ul className="dc-checks">
+                    {tables.quality.map((q) => (
+                      <li
+                        key={q.check}
+                        className={q.passed === 'True' ? 'ok' : 'fail'}
+                      >
+                        <span aria-hidden="true">
+                          {q.passed === 'True' ? '✓' : '✕'}
+                        </span>
+                        <span>
+                          {q.check}
+                          {q.detail && <small>, {q.detail}</small>}
+                        </span>
+                      </li>
                     ))}
-                </select>
-              </label>
-            </StageBlock>
-            <StageBlock title={l('Data', 'Data')}>
-              <StageFacts
-                rows={[
-                  [l('Measurements', 'Mätningar'), num(o.combinations)],
-                  [l('Drug pairs', 'Läkemedelspar'), num(o.drug_pairs)],
-                  [l('Drugs', 'Läkemedel'), num(o.drugs)],
-                  [l('Cell lines', 'Cellinjer'), num(o.cell_lines)],
-                  [l('Tissue types', 'Vävnadstyper'), num(o.lineages)],
-                ]}
-              />
-            </StageBlock>
-            <StageBlock title={l('Sources', 'Källor')}>
-              <p>
-                {l(
-                  'DrugCombDB screens, joined with DepMap 24Q4 for each cell line’s tissue and gene expression. Every file is checked against its SHA-256 in the data manifest.',
-                  'Försök från DrugCombDB, kopplade till DepMap 24Q4 för varje cellinjes vävnad och genuttryck. Varje fil kontrolleras mot sin SHA-256 i datamanifestet.',
+                  </ul>
+                ) : (
+                  <Empty />
                 )}
-              </p>
-            </StageBlock>
-            <StageBlock title={l('Pipeline', 'Pipeline')}>
-              <ol className="stage-steps">
-                {[
-                  ['Raw screens and DepMap', 'Rådata och DepMap'],
-                  [
-                    'Match drug and cell names',
-                    'Matcha namn på läkemedel och celler',
-                  ],
-                  ['Star schema in DuckDB', 'Stjärnschema i DuckDB'],
-                  ['10 data-quality tests', '10 datakvalitetstester'],
-                  ['LightGBM and baselines', 'LightGBM och baslinjer'],
-                  ['Four test splits', 'Fyra testuppdelningar'],
-                ].map(([en, sv]) => (
-                  <li key={en}>{l(en, sv)}</li>
-                ))}
-              </ol>
-            </StageBlock>
+              </Feature>
+            </div>
+            <div className="report-pair">
+              <Feature
+                id="dc-entities"
+                title={l(
+                  'Matching names to identities',
+                  'Namn matchade till identiteter',
+                )}
+                lead={l(
+                  `Share of measurements resolved by each method. ${pct(o.share_with_structures)} of the rows have a chemical structure for both drugs, ${pct(o.share_with_rna)} have gene expression for the cell line.`,
+                  `Andel av mätningarna som löstes med varje metod. ${pct(o.share_with_structures)} av raderna har kemisk struktur för båda läkemedlen, ${pct(o.share_with_rna)} har genuttryck för cellinjen.`,
+                )}
+                source={source}
+              >
+                {tables.entities ? (
+                  <RankBars
+                    rows={tables.entities.map((e) => ({
+                      key: `${e.entity}-${e.method}`,
+                      label: `${e.entity === 'drug' ? l('Drug', 'Läkemedel') : l('Cell line', 'Cellinje')}: ${methodName(e.method)}`,
+                      value: e.measurement_share * 100,
+                      tone:
+                        e.method === 'unresolved'
+                          ? ('muted' as const)
+                          : ('neutral' as const),
+                      note: ` ${num(e.names)} ${l('names', 'namn')}`,
+                    }))}
+                    format={(v) => `${num(v, 1)} %`}
+                    max={100}
+                    label={l('Entity resolution', 'Entitetsmatchning')}
+                  />
+                ) : (
+                  <Empty />
+                )}
+              </Feature>
+              <Feature
+                id="dc-learning"
+                title={l(
+                  'More data helps, then levels off',
+                  'Mer data hjälper, sedan planar det ut',
+                )}
+                lead={l(
+                  'Correlation on training and test data as the training set grows. The gap narrows as data grows: the model memorises less and generalises more.',
+                  'Korrelation på tränings- och testdata när träningsmängden växer. Glappet krymper när datan växer: modellen lär sig mindre utantill och generaliserar mer.',
+                )}
+                source={source}
+              >
+                {tables.learning ? (
+                  <Columns
+                    categories={tables.learning.map(
+                      (r) => `${num(r.n_train / 1000)}k`,
+                    )}
+                    series={[
+                      {
+                        key: 'train',
+                        label: l('Training data', 'Träningsdata'),
+                        values: tables.learning.map((r) => r.train_r),
+                      },
+                      {
+                        key: 'test',
+                        label: l('Test data', 'Testdata'),
+                        values: tables.learning.map((r) => r.test_r),
+                      },
+                    ]}
+                    format={(v) => num(v, 2)}
+                    domain={[0, 1]}
+                    label={l('Learning curve', 'Inlärningskurva')}
+                  />
+                ) : (
+                  <Empty />
+                )}
+              </Feature>
+            </div>
+            <CalibrationScatter
+              points={
+                (tables.calibration ?? []) as Parameters<
+                  typeof CalibrationScatter
+                >[0]['points']
+              }
+              splits={SPLITS}
+            />
           </>
-        }
-        right={
+        ) : (
           <>
-            <StageBlock title={l('Synergy', 'Synergi')}>
-              <StageFacts
-                rows={[
-                  [
-                    l('Synergistic (ZIP > 10)', 'Synergistiska (ZIP > 10)'),
-                    pct(o.share_synergistic),
-                  ],
-                  [
-                    l('Antagonistic (ZIP < −10)', 'Motverkande (ZIP < −10)'),
-                    pct(o.share_antagonistic),
-                  ],
-                  [l('Mean ZIP', 'Medel-ZIP'), num(o.mean_zip, 2)],
-                ]}
-              />
-            </StageBlock>
-            <StageBlock title={l('Model (LightGBM)', 'Modell (LightGBM)')}>
-              <StageFacts
-                rows={SPLITS.map(([id, en, sv]) => [
-                  l(en, sv),
-                  num(metric(id, 'lgbm_all')?.pearson ?? 0, 2),
-                ])}
-              />
-              <p>
-                {l(
-                  'Pearson correlation between predicted and measured ZIP, per test split.',
-                  'Pearson-korrelation mellan förutsagd och uppmätt ZIP, per testuppdelning.',
-                )}
-              </p>
-            </StageBlock>
-            <StageBlock title={l('Tools', 'Verktyg')}>
-              <StageTools
-                items={[
-                  'Python',
-                  'DuckDB',
-                  'pandas',
-                  'LightGBM',
-                  'scikit-learn',
-                  'RDKit',
-                  'React',
-                  'SVG',
-                ]}
-              />
-            </StageBlock>
+            <h1>{l('Method and limits', 'Metod och begränsningar')}</h1>
+            <Method report={report} />
+            <ProjectTech project="drugcomb" />
           </>
-        }
-      />
+        )}
+      </DeepPage>
+    )
 
-      {treeFile && (
-        <Stage
-          id="drugcomb-explore"
-          title={l(
-            'How a decision tree decides',
-            'Så bestämmer ett beslutsträd',
-          )}
-          lead={l(
-            'A tree asks one yes-or-no question at a time and sends each measurement left or right until it lands in a leaf. LightGBM adds hundreds of trees like this one; this single tree shows the idea.',
-            'Ett träd ställer en ja-eller-nej-fråga i taget och skickar varje mätning åt vänster eller höger tills den hamnar i ett löv. LightGBM lägger ihop hundratals sådana träd; det här enda trädet visar idén.',
-          )}
-          figure={
-            <DecisionTree
-              root={treeFile.tree}
-              highlight={leaf === '' ? null : Number(leaf)}
-            />
-          }
-          left={
-            <>
-              <StageBlock title={l('Slicer', 'Filter')}>
-                <label className="modell-select">
-                  <span>{l('Follow a leaf', 'Följ ett löv')}</span>
-                  <select
-                    value={leaf}
-                    onChange={(e) => setLeaf(e.target.value)}
-                  >
-                    <option value="">{l('None', 'Inget')}</option>
-                    {leavesOf(treeFile.tree)
-                      .map((n, i) => ({ n, i }))
-                      .sort((a, b) => b.n.share - a.n.share)
-                      .map(({ n, i }) => (
-                        <option key={n.id} value={n.id}>
-                          {l('Leaf', 'Löv')} {i + 1}, {pct(n.share)}, {num(n.n)}
-                        </option>
-                      ))}
-                  </select>
-                </label>
-              </StageBlock>
-              <StageBlock title={l('Question', 'Fråga')}>
-                <p>
-                  {l(
-                    'Is a drug pair on a cell line synergistic (ZIP > 10)?',
-                    'Är ett läkemedelspar på en cellinje synergistiskt (ZIP > 10)?',
-                  )}
-                </p>
-              </StageBlock>
-              <StageBlock title={l('Split', 'Uppdelning')}>
-                <StageFacts
-                  rows={[
-                    [
-                      l('Training', 'Träning'),
-                      num(treeFile.metrics.train_measurements),
-                    ],
-                    [
-                      l('Test', 'Test'),
-                      num(treeFile.metrics.test_measurements),
-                    ],
-                    [
-                      l('Unseen test pairs', 'Osedda testpar'),
-                      num(treeFile.metrics.test_pairs),
-                    ],
-                  ]}
-                />
-                <p>
-                  {l(
-                    'Split by drug pair, so every test pair is new to the tree. Features are computed from the training pairs only.',
-                    'Uppdelat per läkemedelspar, så varje testpar är nytt för trädet. Egenskaperna räknas bara från träningsparen.',
-                  )}
-                </p>
-              </StageBlock>
-              <StageBlock title={l('Features', 'Egenskaper')}>
-                <p>
-                  {l(
-                    'Each drug’s mean ZIP (the stronger and the weaker of the pair), the cell line’s mean ZIP and its tissue.',
-                    'Varje läkemedels medel-ZIP (det starkare och det svagare i paret), cellinjens medel-ZIP och dess vävnad.',
-                  )}
-                </p>
-                <p>
-                  {l(
-                    `${num(treeFile.method.dropped_invalid_zip)} measurements with an impossible |ZIP| > 100 left out.`,
-                    `${num(treeFile.method.dropped_invalid_zip)} mätningar med omöjligt |ZIP| > 100 utelämnade.`,
-                  )}
-                </p>
-              </StageBlock>
-            </>
-          }
-          right={
-            <>
-              <StageBlock title={l('On unseen pairs', 'På osedda par')}>
-                <StageFacts
-                  rows={[
-                    ['ROC AUC', num(treeFile.metrics.roc_auc, 3)],
-                    [
-                      l('Average precision', 'Genomsnittlig precision'),
-                      num(treeFile.metrics.average_precision, 3),
-                    ],
-                    [
-                      l('Base rate', 'Basnivå'),
-                      pct(treeFile.metrics.base_rate),
-                    ],
-                    [
-                      l('Leaves, depth', 'Löv, djup'),
-                      `${treeFile.metrics.leaves}, ${treeFile.metrics.depth}`,
-                    ],
-                  ]}
-                />
-                <p>
-                  {l(
-                    'AUC 0.5 is guessing; average precision is compared with the base rate.',
-                    'AUC 0,5 är gissning; genomsnittlig precision jämförs med basnivån.',
-                  )}
-                </p>
-              </StageBlock>
-              <StageBlock title={l('What it splits on', 'Vad den delar på')}>
-                {treeFile.importance.map((f) => (
-                  <div key={f.feature}>
-                    {l(f.label.en, f.label.sv)}
-                    <div className="stage-bar">
-                      <span>
-                        <i style={{ width: `${f.gain * 100}%` }} />
-                      </span>
-                      <b>{num(f.gain * 100, 0)} %</b>
-                    </div>
-                  </div>
-                ))}
-              </StageBlock>
-              <StageBlock title={l('Tools', 'Verktyg')}>
-                <StageTools
-                  items={[
-                    'scikit-learn',
-                    'pandas',
-                    'GroupShuffleSplit',
-                    'SVG animateMotion',
-                  ]}
-                />
-              </StageBlock>
-            </>
-          }
-        />
+  const tab = DRUGCOMB_TABS.indexOf(route.path)
+  const splitChips = (
+    <div
+      className="report-chips"
+      role="group"
+      aria-label={l('Test split', 'Testuppdelning')}
+    >
+      {SPLITS.map(([id, en, sv]) => (
+        <button
+          key={id}
+          type="button"
+          aria-pressed={split === id}
+          onClick={() => set({ uppdelning: id })}
+        >
+          {l(en, sv)}
+        </button>
+      ))}
+    </div>
+  )
+  return (
+    <ReportShell
+      name={NAME}
+      intro={l(
+        `${num(o.combinations)} measurements of ${num(o.drug_pairs)} drug pairs on ${num(o.cell_lines)} cancer cell lines from DrugCombDB, joined with DepMap. A LightGBM model predicts synergy and is tested on drugs, pairs and cell lines it has not seen. Experimental results, not clinical evidence.`,
+        `${num(o.combinations)} mätningar av ${num(o.drug_pairs)} läkemedelspar på ${num(o.cell_lines)} cancercellinjer från DrugCombDB, kopplade till DepMap. En LightGBM-modell förutsäger synergi och prövas på läkemedel, par och cellinjer den inte sett. Experimentella resultat, inte kliniska belägg.`,
       )}
-
-      {sky && (
-        <Stage
-          id="dc-sky"
-          title={l('Drugs that behave alike', 'Läkemedel som beter sig lika')}
-          lead={l(
-            'Each star is a drug, placed by where it is synergistic. Drugs that cluster together are joined like a constellation. Choose a cluster to see it alone.',
-            'Varje stjärna är ett läkemedel, placerat efter var det är synergistiskt. Läkemedel i samma kluster binds ihop som en stjärnbild. Välj ett kluster för att se det ensamt.',
-          )}
-          figure={
-            <DrugConstellation drugs={sky.drugs} clusters={sky.clusters} />
-          }
-          left={
-            <>
-              <StageBlock title={l('Method', 'Metod')}>
-                <StageFacts
-                  rows={[
-                    [l('Drugs', 'Läkemedel'), num(sky.drugs.length)],
-                    [
-                      l('Profile', 'Profil'),
-                      `${sky.tissues.length} ${l('tissues', 'vävnader')}`,
-                    ],
-                    [l('Clusters (k)', 'Kluster (k)'), String(sky.k)],
-                  ]}
-                />
-                <p>
-                  {l(
-                    'Drugs with at least 300 measurements, each described by its mean ZIP in every tissue, standardised. k-means for k = 3–8; the k with the best silhouette is kept. The map is the first two principal components, distances compressed (asinh) so far drugs fit.',
-                    'Läkemedel med minst 300 mätningar, var och ett beskrivet av sitt medel-ZIP i varje vävnad, standardiserat. k-means för k = 3–8; det k med bäst silhuett behålls. Kartan är de två första principalkomponenterna, med avstånden komprimerade (asinh) så att avlägsna läkemedel får plats.',
-                  )}
-                </p>
-              </StageBlock>
-              <StageBlock title={l('Silhouette by k', 'Silhuett per k')}>
-                {Object.entries(sky.silhouette).map(([k, v]) => (
-                  <div key={k} className="stage-bar">
-                    <span>
-                      <i
-                        style={{
-                          width: `${Math.max(v, 0) * 100}%`,
-                          opacity: Number(k) === sky.k ? 1 : 0.45,
-                        }}
-                      />
-                    </span>
-                    <b>
-                      k={k} {num(v, 2)}
-                    </b>
-                  </div>
-                ))}
-              </StageBlock>
-            </>
-          }
-          right={
-            <StageBlock title={l('The clusters', 'Klustren')}>
-              {sky.clusters.map((c) => (
-                <p key={c.id}>
-                  <b>
-                    {['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'][c.id]},{' '}
-                    {c.size} {l('drugs', 'läkemedel')}
-                  </b>
-                  <br />
-                  {l('Highest ZIP in', 'Högst ZIP i')}{' '}
-                  {c.highest
-                    .map((h) => `${h.tissue} (${num(h.zip, 1)})`)
-                    .join(', ')}
-                  . {l('E.g.', 'T.ex.')} {c.examples.slice(0, 3).join(', ')}.
-                </p>
-              ))}
-            </StageBlock>
-          }
-        />
-      )}
-
-      <ProjectDepth project="drugcomb">
-        <div id="drugcomb-method">
-          <ProjectTech project="drugcomb" />
-        </div>
-        <CalibrationScatter
-          points={
-            (tables.calibration ?? []) as Parameters<
-              typeof CalibrationScatter
-            >[0]['points']
-          }
-          splits={SPLITS}
-        />
-        <section className="dc-explain" aria-labelledby="dc-question">
-          <h2 id="dc-question">
-            {l(
-              'Can a model tell which drugs work better together?',
-              'Kan en modell se vilka läkemedel som fungerar bättre tillsammans?',
-            )}
-          </h2>
-          <div className="dc-explain-grid">
-            <div>
-              <h3>{l('Synergy', 'Synergi')}</h3>
-              <p>
-                {l(
-                  'Two drugs are synergistic when together they kill more cancer cells than their separate effects predict. The ZIP score measures that surplus: above 10 counts as synergy, below −10 as the drugs getting in each other’s way.',
-                  'Två läkemedel är synergistiska när de tillsammans dödar fler cancerceller än deras effekter var för sig förutsäger. ZIP-värdet mäter det överskottet: över 10 räknas som synergi, under −10 som att läkemedlen motverkar varandra.',
-                )}
-              </p>
-            </div>
-            <div>
-              <h3>{l('The data', 'Datan')}</h3>
-              <p>
-                {l(
-                  'Laboratory screens from DrugCombDB, where drug pairs were tested on cancer cell lines, joined with each molecule’s structure and each cell line’s gene expression from DepMap.',
-                  'Laboratorieförsök från DrugCombDB, där läkemedelspar testats på cancercellinjer, kopplade till varje molekyls struktur och varje cellinjes genuttryck från DepMap.',
-                )}
-              </p>
-            </div>
-            <div>
-              <h3>{l('The real question', 'Den egentliga frågan')}</h3>
-              <p>
-                {l(
-                  'Predicting a pair the model has almost seen is easy. The test that matters is a drug or a cell line it has never seen, so every model is scored four ways.',
-                  'Att förutsäga ett par som modellen nästan redan sett är lätt. Testet som betyder något är ett läkemedel eller en cellinje den aldrig sett, så varje modell prövas på fyra sätt.',
-                )}
-              </p>
-            </div>
-          </div>
-          <ol
-            className="dc-pipeline"
-            aria-label={l('How it is built', 'Hur det är byggt')}
-          >
-            {[
-              ['Raw screens and DepMap', 'Rådata och DepMap'],
-              [
-                'Match drug and cell names',
-                'Matcha namn på läkemedel och celler',
-              ],
-              ['Star schema in DuckDB', 'Stjärnschema i DuckDB'],
-              ['10 data-quality tests', '10 datakvalitetstester'],
-              ['LightGBM and baselines', 'LightGBM och baslinjer'],
-              ['Four test splits', 'Fyra testuppdelningar'],
-            ].map(([en, sv], i) => (
-              <li key={en}>
-                <span>{i + 1}</span>
-                {l(en, sv)}
-              </li>
-            ))}
-          </ol>
-        </section>
-
-        <Cards>
-          <Card
-            index={1}
-            title={l(
-              'From raw rows to a modelling table',
-              'Från rådata till modelltabell',
-            )}
-            meta={l(
-              'Rows kept after each cleaning step',
-              'Rader kvar efter varje städsteg',
-            )}
-          >
-            <RankBars
-              rows={report.funnel.map((f) => ({
-                key: f.step,
-                label:
-                  currentLocale() === 'sv'
-                    ? (STEP_SV[f.step] ?? f.step)
-                    : f.step,
-                value: f.rows,
-              }))}
-              format={(v) => num(v)}
-              label={l('Cleaning funnel', 'Städtratten')}
-            />
-          </Card>
-
-          <Card
-            index={2}
-            title={l('Data-quality tests', 'Datakvalitetstester')}
-            meta={l(
-              `${passed} of ${tables.quality?.length ?? 10} passed`,
-              `${passed} av ${tables.quality?.length ?? 10} godkända`,
-            )}
-          >
-            {tables.quality ? (
-              <ul className="dc-checks">
-                {tables.quality.map((q) => (
-                  <li
-                    key={q.check}
-                    className={q.passed === 'True' ? 'ok' : 'fail'}
-                  >
-                    <span aria-hidden="true">
-                      {q.passed === 'True' ? '✓' : '✕'}
-                    </span>
-                    <span>
-                      {q.check}
-                      {q.detail && <small>, {q.detail}</small>}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <Empty />
-            )}
-          </Card>
-
-          <Card
-            index={3}
-            title={l(
-              'Matching names to identities',
-              'Namn matchade till identiteter',
-            )}
-            meta={l(
-              'Share of measurements resolved by each method',
-              'Andel av mätningarna som löstes med varje metod',
-            )}
-          >
-            {tables.entities ? (
-              <RankBars
-                rows={tables.entities.map((e) => ({
-                  key: `${e.entity}-${e.method}`,
-                  label: `${e.entity === 'drug' ? l('Drug', 'Läkemedel') : l('Cell line', 'Cellinje')}: ${methodName(e.method)}`,
-                  value: e.measurement_share * 100,
-                  tone:
-                    e.method === 'unresolved'
-                      ? ('muted' as const)
-                      : ('neutral' as const),
-                  note: ` ${num(e.names)} ${l('names', 'namn')}`,
-                }))}
-                format={(v) => `${num(v, 1)} %`}
-                max={100}
-                label={l('Entity resolution', 'Entitetsmatchning')}
-              />
-            ) : (
-              <Empty />
-            )}
-            <p className="dc-note">
-              {l(
-                `${pct(o.share_with_structures)} of the rows have a chemical structure for both drugs, ${pct(o.share_with_rna)} have gene expression for the cell line.`,
-                `${pct(o.share_with_structures)} av raderna har kemisk struktur för båda läkemedlen, ${pct(o.share_with_rna)} har genuttryck för cellinjen.`,
+      tabs={tabs()}
+      path={route.path}
+      hrefOf={(p) => withQuery(p, route.params)}
+      slicerLabel={tab < 2 ? l('Test split', 'Testuppdelning') : undefined}
+      slicer={tab < 2 ? splitChips : undefined}
+      deeper={DEEPER()}
+    >
+      {tab === 0 && (
+        <>
+          <div className="report-main">
+            <Feature
+              id="dc-splits"
+              title={l(
+                `On ${splitName(split).toLowerCase()}, the model reaches a correlation of ${num(best?.pearson ?? 0, 2)}`,
+                `På ${splitName(split).toLowerCase()} når modellen en korrelation på ${num(best?.pearson ?? 0, 2)}`,
               )}
-            </p>
-          </Card>
-
-          <Card
-            index={4}
-            title={l('What the model relies on', 'Vad modellen lutar sig mot')}
-            meta={l(
-              `Share of the model’s total gain per feature family, ${splitName(split)}`,
-              `Andel av modellens totala vinst per egenskapsgrupp, ${splitName(split)}`,
-            )}
-          >
-            <div
-              className="dc-split"
-              role="group"
-              aria-label={l('Test split', 'Testuppdelning')}
+              lead={l(
+                'Correlation between predicted and measured ZIP (Pearson, 0 = no relation, 1 = perfect), mean of three folds. The splits hold out rows, drug pairs, individual drugs or cell lines.',
+                'Korrelation mellan förutsagd och uppmätt ZIP (Pearson, 0 = inget samband, 1 = perfekt), medel av tre omgångar. Uppdelningarna håller undan rader, läkemedelspar, enskilda läkemedel eller cellinjer.',
+              )}
+              source={source}
             >
-              {SPLITS.map(([id, en, sv]) => (
-                <button
-                  key={id}
-                  type="button"
-                  aria-pressed={split === id}
-                  onClick={() => setSplit(id)}
-                >
-                  {l(en, sv)}
-                </button>
-              ))}
-            </div>
-            {families.length ? (
-              <RankBars
-                rows={families.map((f) => ({
-                  key: f.family,
-                  label:
-                    currentLocale() === 'sv'
-                      ? (FAMILY_SV[f.family] ?? f.family)
-                      : f.family,
-                  value: (f.gain / familyTotal) * 100,
+              <Columns
+                categories={SPLITS.map((s) => l(s[1], s[2]))}
+                series={MODELS.map(([id, en, sv]) => ({
+                  key: id,
+                  label: l(en, sv),
+                  focus: id === 'lgbm_all',
+                  values: SPLITS.map(
+                    ([scheme]) => metric(scheme, id)?.pearson ?? null,
+                  ),
                 }))}
-                format={(v) => `${num(v, 1)} %`}
+                format={(v) => num(v, 2)}
+                domain={[0, 1]}
                 label={l(
-                  'Feature importance by family',
-                  'Egenskapernas betydelse per grupp',
+                  'Correlation per test split and model',
+                  'Korrelation per testuppdelning och modell',
                 )}
               />
-            ) : (
-              <Empty />
-            )}
-          </Card>
-
-          <Card
-            index={5}
-            title={l(
-              'Does it find the strongest pairs?',
-              'Hittar den de starkaste paren?',
-            )}
-            meta={l(
-              `Share of real synergy among the pairs the model ranks highest, ${splitName(split)}`,
-              `Andel verklig synergi bland paren modellen rankar högst, ${splitName(split)}`,
-            )}
-          >
-            {enrichment.length ? (
-              <>
+            </Feature>
+          </div>
+          <div className="report-pair">
+            <Feature
+              id="dc-enrichment"
+              title={l(
+                'Does it find the strongest pairs?',
+                'Hittar den de starkaste paren?',
+              )}
+              lead={
+                enrichment[0]
+                  ? l(
+                      `In the top 1 %, ${pct(enrichment[0].hit_rate, 0)} are truly synergistic, against ${pct(enrichment[0].base_rate, 0)} overall: what a lab choosing what to test next would use.`,
+                      `Bland topp 1 % är ${pct(enrichment[0].hit_rate, 0)} verkligt synergistiska, mot ${pct(enrichment[0].base_rate, 0)} totalt: det ett labb som väljer vad som ska testas härnäst skulle använda.`,
+                    )
+                  : undefined
+              }
+              source={source}
+            >
+              {enrichment.length ? (
                 <Columns
                   categories={enrichment.map(
                     (e) => `${l('top', 'topp')} ${num(e.top_fraction * 100)} %`,
@@ -874,318 +582,466 @@ export default function DrugCombReport() {
                     'Träffsäkerhet bland högst rankade par',
                   )}
                 />
-                <p className="dc-note">
-                  {l(
-                    `In the top 1 %, ${pct(enrichment[0].hit_rate, 0)} are truly synergistic, against ${pct(enrichment[0].base_rate, 0)} overall: ${num(enrichment[0].hit_rate / enrichment[0].base_rate, 0)} times more. That is what a lab choosing what to test next would use.`,
-                    `Bland topp 1 % är ${pct(enrichment[0].hit_rate, 0)} verkligt synergistiska, mot ${pct(enrichment[0].base_rate, 0)} totalt: ${num(enrichment[0].hit_rate / enrichment[0].base_rate, 0)} gånger fler. Det är det ett labb som väljer vad som ska testas härnäst skulle använda.`,
-                  )}
-                </p>
-              </>
-            ) : (
-              <Empty />
-            )}
-          </Card>
-
-          <Card
-            index={6}
-            title={l(
-              'Are the predictions calibrated?',
-              'Stämmer förutsägelserna i nivå?',
-            )}
-            meta={l(
-              `Mean predicted and measured ZIP per tenth of the predictions, ${splitName(split)}`,
-              `Medel av förutsagd och uppmätt ZIP per tiondel av förutsägelserna, ${splitName(split)}`,
-            )}
-          >
-            {calibration.length ? (
-              <Columns
-                categories={calibration.map((c) => String(c.decile + 1))}
-                series={[
-                  {
-                    key: 'pred',
-                    label: l('Predicted', 'Förutsagt'),
-                    values: calibration.map((c) => c.pred),
-                  },
-                  {
-                    key: 'obs',
-                    label: l('Measured', 'Uppmätt'),
-                    values: calibration.map((c) => c.obs),
-                  },
-                ]}
-                format={(v) => num(v)}
-                label={l('Calibration by decile', 'Kalibrering per tiondel')}
-              />
-            ) : (
-              <Empty />
-            )}
-          </Card>
-
-          <Card
-            index={7}
-            title={l(
-              'More data helps, then levels off',
-              'Mer data hjälper, sedan planar det ut',
-            )}
-            meta={l(
-              'Correlation on training and test data as the training set grows',
-              'Korrelation på tränings- och testdata när träningsmängden växer',
-            )}
-          >
-            {tables.learning ? (
-              <>
+              ) : (
+                <Empty />
+              )}
+            </Feature>
+            <Feature
+              id="dc-calibration"
+              title={l(
+                'Are the predictions calibrated?',
+                'Stämmer förutsägelserna i nivå?',
+              )}
+              lead={l(
+                'Mean predicted and measured ZIP per tenth of the predictions.',
+                'Medel av förutsagd och uppmätt ZIP per tiondel av förutsägelserna.',
+              )}
+              source={source}
+            >
+              {calibration.length ? (
                 <Columns
-                  categories={tables.learning.map(
-                    (r) => `${num(r.n_train / 1000)}k`,
-                  )}
+                  categories={calibration.map((c) => String(c.decile + 1))}
                   series={[
                     {
-                      key: 'train',
-                      label: l('Training data', 'Träningsdata'),
-                      values: tables.learning.map((r) => r.train_r),
+                      key: 'pred',
+                      label: l('Predicted', 'Förutsagt'),
+                      values: calibration.map((c) => c.pred),
                     },
                     {
-                      key: 'test',
-                      label: l('Test data', 'Testdata'),
-                      values: tables.learning.map((r) => r.test_r),
+                      key: 'obs',
+                      label: l('Measured', 'Uppmätt'),
+                      values: calibration.map((c) => c.obs),
                     },
                   ]}
-                  format={(v) => num(v, 2)}
-                  domain={[0, 1]}
-                  label={l('Learning curve', 'Inlärningskurva')}
+                  format={(v) => num(v)}
+                  label={l('Calibration by decile', 'Kalibrering per tiondel')}
                 />
-                <p className="dc-note">
-                  {l(
-                    'The gap between training and test narrows as data grows: the model memorises less and generalises more.',
-                    'Glappet mellan träning och test krymper när datan växer: modellen lär sig mindre utantill och generaliserar mer.',
-                  )}
-                </p>
-              </>
-            ) : (
-              <Empty />
-            )}
-          </Card>
-
-          <Card
-            index={8}
-            title={l('A check against luck', 'En kontroll mot slumpen')}
-            meta={l(
-              'The same model trained on shuffled answers',
-              'Samma modell tränad på omblandade svar',
-            )}
-          >
-            {tables.scramble?.[0] ? (
-              <div className="dc-scramble">
-                <p>
-                  <strong>{num(tables.scramble[0].test_r, 3)}</strong>
-                  <span>
-                    {l(
-                      'correlation with shuffled answers',
-                      'korrelation med omblandade svar',
-                    )}
-                  </span>
-                </p>
-                <p>
-                  <strong>
-                    {num(
-                      metric(tables.scramble[0].scheme, 'lgbm_all')?.pearson ??
-                        0,
-                      3,
-                    )}
-                  </strong>
-                  <span>
-                    {l(
-                      'correlation with the real answers',
-                      'korrelation med de riktiga svaren',
-                    )}
-                  </span>
-                </p>
-                <p className="dc-note">
-                  {l(
-                    `When the answers are shuffled the model finds nothing (${splitName(tables.scramble[0].scheme).toLowerCase()} split). So the result comes from real patterns, not from information leaking between training and test. It is a useful check, not proof that every leak is ruled out.`,
-                    `När svaren blandas om hittar modellen ingenting (uppdelning ${splitName(tables.scramble[0].scheme).toLowerCase()}). Resultatet kommer alltså från verkliga mönster, inte från information som läcker mellan träning och test. Det är en användbar kontroll, inte ett bevis för att varje läcka är utesluten.`,
-                  )}
-                </p>
-              </div>
-            ) : (
-              <Empty />
-            )}
-          </Card>
-
-          <Card
-            index={10}
-            wide
-            title={l(
-              'The most synergistic pairs in the data',
-              'De mest synergistiska paren i datan',
-            )}
-            meta={l(
-              'Measured, not predicted: mean ZIP across cell lines, pairs tested on many cell lines',
-              'Uppmätt, inte förutsagt: medel-ZIP över cellinjer, par testade på många cellinjer',
-            )}
-          >
-            {tables.pairs ? (
-              <div
-                className="board-table-wrap"
-                tabIndex={0}
-                role="region"
-                aria-label={l(
-                  'Table of the most synergistic pairs',
-                  'Tabell över de mest synergistiska paren',
-                )}
-              >
-                <table className="board-table">
-                  <thead>
-                    <tr>
-                      <th scope="col">{l('Drug pair', 'Läkemedelspar')}</th>
-                      <th scope="col" className="num">
-                        {l('Cell lines', 'Cellinjer')}
-                      </th>
-                      <th scope="col" className="num">
-                        {l('Mean ZIP', 'Medel-ZIP')}
-                      </th>
-                      <th scope="col" className="num">
-                        {l('Synergistic in', 'Synergistiskt i')}
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {tables.pairs.slice(0, 10).map((p) => (
-                      <tr key={p.pair_name}>
-                        <td>{p.pair_name}</td>
-                        <td className="num">{num(p.cell_lines)}</td>
-                        <td className="num">{num(p.mean_zip, 1)}</td>
-                        <td className="num">{pct(p.share_synergistic, 0)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <Empty />
-            )}
-          </Card>
-        </Cards>
-
-        <details className="method">
-          <summary>
-            {l(
-              'Assumptions, limits and downloads',
-              'Antaganden, begränsningar och nedladdningar',
-            )}
-          </summary>
-          <div>
-            <p>
-              {l(
-                'The effect of each drug alone comes from the same screens, so the model assumes those single-drug results are already known. Gene expression comes from the wider DepMap collection. A low score on shuffled answers is a diagnostic, not proof that every leakage risk is gone. None of this is clinical evidence.',
-                'Effekten av varje läkemedel ensamt kommer från samma försök, så modellen förutsätter att de resultaten redan finns. Genuttrycket kommer från DepMaps bredare samling. Ett lågt värde på omblandade svar är en kontroll, inte ett bevis för att varje läckrisk är borta. Inget av detta är kliniska belägg.',
+              ) : (
+                <Empty />
               )}
-            </p>
-            <p>
-              {l(
-                'The numbers are the published results of the pinned pipeline revision; the model was not retrained for this page. Raw files are not bundled; their sources, releases and hashes are in the input manifest.',
-                'Siffrorna är de publicerade resultaten från den fastlåsta versionen av pipelinen; modellen tränades inte om för den här sidan. Rådatafilerna ingår inte; deras källor, versioner och kontrollsummor finns i indatamanifestet.',
-              )}
-            </p>
-            <div className="product-actions">
-              <a href="#drugcomb-data">
-                {l(
-                  'Browse all result tables',
-                  'Bläddra i alla resultattabeller',
-                )}
-              </a>
-              <a href="data/products/drugcomb/REPORT.md" download>
-                {l('Full upstream report', 'Hela rapporten')}
-              </a>
-              <a href="data/products/drugcomb/data_manifest.json" download>
-                {l('Input manifest', 'Indatamanifest')}
-              </a>
-              <a
-                href={`${report.source.repository}/tree/${report.source.revision}`}
-                target="_blank"
-                rel="noreferrer"
-              >
-                {l(
-                  'Source code at this revision',
-                  'Källkoden i den här versionen',
-                )}
-              </a>
-            </div>
+            </Feature>
           </div>
-        </details>
-        <details className="method">
-          <summary>
-            {l(
-              'The original analysis figures',
-              'De ursprungliga analysfigurerna',
-            )}
-          </summary>
-          <div className="figure-gallery">
-            {(
-              [
-                [
-                  'an_01_zip_distribution',
-                  1579,
-                  738,
-                  'Distribution of measured ZIP scores',
-                  'Fördelning av uppmätta ZIP-värden',
-                ],
-                [
-                  'an_02_replicate_agreement',
-                  1007,
-                  978,
-                  'Agreement between repeated measurements',
-                  'Överensstämmelse mellan upprepade mätningar',
-                ],
-                [
-                  'ml_03_pred_vs_obs',
-                  1007,
-                  978,
-                  'Predicted against measured',
-                  'Förutsagt mot uppmätt',
-                ],
-                [
-                  'ml_04_ablation',
-                  1681,
-                  868,
-                  'What each feature group adds',
-                  'Vad varje egenskapsgrupp tillför',
-                ],
-                [
-                  'ml_05_overfitting',
-                  1981,
-                  792,
-                  'Overfitting check',
-                  'Kontroll av överanpassning',
-                ],
-                [
-                  'an_06_top_pairs',
-                  1582,
-                  1378,
-                  'The strongest pairs',
-                  'De starkaste paren',
-                ],
-              ] as [string, number, number, string, string][]
-            ).map(([file, w, h, en, sv]) => (
-              <figure key={file}>
-                <a
-                  href={`data/products/drugcomb/figures/${file}.svg`}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  <img
-                    src={`data/products/drugcomb/figures/${file}.png`}
-                    alt={l(en, sv)}
-                    width={w}
-                    height={h}
-                    loading="lazy"
+        </>
+      )}
+      {tab === 1 && (
+        <>
+          {treeFile && (
+            <div className="report-main">
+              <Feature
+                id="dc-tree"
+                title={l(
+                  'How a decision tree decides',
+                  'Så bestämmer ett beslutsträd',
+                )}
+                lead={l(
+                  `A tree asks one yes-or-no question at a time until a measurement lands in a leaf; LightGBM adds hundreds like it. This one, split by drug pair, reaches ROC AUC ${num(treeFile.metrics.roc_auc, 3)} and average precision ${num(treeFile.metrics.average_precision, 3)} on unseen pairs, against a base rate of ${pct(treeFile.metrics.base_rate)}.`,
+                  `Ett träd ställer en ja-eller-nej-fråga i taget tills en mätning hamnar i ett löv; LightGBM lägger ihop hundratals sådana. Det här, uppdelat per läkemedelspar, når ROC AUC ${num(treeFile.metrics.roc_auc, 3)} och genomsnittlig precision ${num(treeFile.metrics.average_precision, 3)} på osedda par, mot en basnivå på ${pct(treeFile.metrics.base_rate)}.`,
+                )}
+                controls={
+                  <Select
+                    label={l('Follow a leaf', 'Följ ett löv')}
+                    value={leaf}
+                    options={[
+                      { value: '', label: l('None', 'Inget') },
+                      ...leavesOf(treeFile.tree)
+                        .map((n, i) => ({ n, i }))
+                        .sort((a, b) => b.n.share - a.n.share)
+                        .map(({ n, i }) => ({
+                          value: String(n.id),
+                          label: `${l('Leaf', 'Löv')} ${i + 1}, ${pct(n.share)}, ${num(n.n)}`,
+                        })),
+                    ]}
+                    onChange={setLeaf}
                   />
-                </a>
-                <figcaption>{l(en, sv)}</figcaption>
-              </figure>
-            ))}
+                }
+                source={l(
+                  `scikit-learn; ${num(treeFile.metrics.train_measurements)} training and ${num(treeFile.metrics.test_measurements)} test measurements`,
+                  `scikit-learn; ${num(treeFile.metrics.train_measurements)} tränings- och ${num(treeFile.metrics.test_measurements)} testmätningar`,
+                )}
+              >
+                <DecisionTree
+                  root={treeFile.tree}
+                  highlight={leaf === '' ? null : Number(leaf)}
+                />
+              </Feature>
+            </div>
+          )}
+          <div className="report-pair">
+            <Feature
+              id="dc-families"
+              title={l(
+                'What the model relies on',
+                'Vad modellen lutar sig mot',
+              )}
+              lead={l(
+                `Share of the model’s total gain per feature family, ${splitName(split).toLowerCase()}.`,
+                `Andel av modellens totala vinst per egenskapsgrupp, ${splitName(split).toLowerCase()}.`,
+              )}
+              source={source}
+            >
+              {families.length ? (
+                <RankBars
+                  rows={families.map((f) => ({
+                    key: f.family,
+                    label:
+                      currentLocale() === 'sv'
+                        ? (FAMILY_SV[f.family] ?? f.family)
+                        : f.family,
+                    value: (f.gain / familyTotal) * 100,
+                  }))}
+                  format={(v) => `${num(v, 1)} %`}
+                  label={l(
+                    'Feature importance by family',
+                    'Egenskapernas betydelse per grupp',
+                  )}
+                />
+              ) : (
+                <Empty />
+              )}
+            </Feature>
+            <Feature
+              id="dc-scramble"
+              title={l('A check against luck', 'En kontroll mot slumpen')}
+              lead={l(
+                'The same model trained on shuffled answers finds nothing, so the result comes from real patterns, not from information leaking between training and test. A useful check, not proof that every leak is ruled out.',
+                'Samma modell tränad på omblandade svar hittar ingenting, så resultatet kommer från verkliga mönster, inte från information som läcker mellan träning och test. En användbar kontroll, inte ett bevis för att varje läcka är utesluten.',
+              )}
+              source={source}
+            >
+              {tables.scramble?.[0] ? (
+                <div className="dc-scramble">
+                  <p>
+                    <strong>{num(tables.scramble[0].test_r, 3)}</strong>
+                    <span>
+                      {l(
+                        'correlation with shuffled answers',
+                        'korrelation med omblandade svar',
+                      )}
+                    </span>
+                  </p>
+                  <p>
+                    <strong>
+                      {num(
+                        metric(tables.scramble[0].scheme, 'lgbm_all')
+                          ?.pearson ?? 0,
+                        3,
+                      )}
+                    </strong>
+                    <span>
+                      {l(
+                        `correlation with the real answers (${splitName(tables.scramble[0].scheme).toLowerCase()})`,
+                        `korrelation med de riktiga svaren (${splitName(tables.scramble[0].scheme).toLowerCase()})`,
+                      )}
+                    </span>
+                  </p>
+                </div>
+              ) : (
+                <Empty />
+              )}
+            </Feature>
           </div>
-        </details>
-      </ProjectDepth>
-    </article>
+        </>
+      )}
+      {tab === 2 && (
+        <>
+          <div className="report-main">
+            <Feature
+              id="dc-body"
+              title={l(
+                `${num(o.cell_lines)} cell lines from ${num(o.lineages)} kinds of tissue`,
+                `${num(o.cell_lines)} cellinjer från ${num(o.lineages)} sorters vävnad`,
+              )}
+              lead={l(
+                `Every screened cell line has a tissue of origin. Point at one to read it. ${pct(o.share_synergistic)} of the measurements are synergistic (ZIP > 10), ${pct(o.share_antagonistic)} antagonistic (ZIP < −10).`,
+                `Varje testad cellinje har en ursprungsvävnad. Peka på en för att läsa den. ${pct(o.share_synergistic)} av mätningarna är synergistiska (ZIP > 10), ${pct(o.share_antagonistic)} motverkande (ZIP < −10).`,
+              )}
+              controls={
+                <Select
+                  label={l('Tissue', 'Vävnad')}
+                  value={tissue}
+                  options={[
+                    { value: '', label: l('All tissues', 'Alla vävnader') },
+                    ...[...report.lineages]
+                      .sort((a, b) => b.combinations - a.combinations)
+                      .map((t) => ({ value: t.lineage, label: t.lineage })),
+                  ]}
+                  onChange={setTissue}
+                />
+              }
+              source={l(
+                'DrugCombDB screens; tissue of origin from DepMap 24Q4',
+                'Försök från DrugCombDB; ursprungsvävnad från DepMap 24Q4',
+              )}
+            >
+              <BodyMap lineages={report.lineages} highlight={tissue || null} />
+            </Feature>
+          </div>
+          <div className="report-pair">
+            {sky && (
+              <Feature
+                id="dc-sky"
+                title={l(
+                  `${num(sky.drugs.length)} drugs in ${sky.k} groups that behave alike`,
+                  `${num(sky.drugs.length)} läkemedel i ${sky.k} grupper som beter sig lika`,
+                )}
+                lead={l(
+                  'Each star is a drug, placed by where it is synergistic; drugs in one k-means cluster are joined like a constellation. Choose a cluster to see it alone.',
+                  'Varje stjärna är ett läkemedel, placerat efter var det är synergistiskt; läkemedel i samma k-means-kluster binds ihop som en stjärnbild. Välj ett kluster för att se det ensamt.',
+                )}
+                table={
+                  <table className="board-table">
+                    <thead>
+                      <tr>
+                        <th scope="col">{l('Cluster', 'Kluster')}</th>
+                        <th scope="col">
+                          {l('Highest ZIP in', 'Högst ZIP i')}
+                        </th>
+                        <th scope="col">{l('For example', 'Till exempel')}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {sky.clusters.map((c) => (
+                        <tr key={c.id}>
+                          <th scope="row">
+                            {
+                              [
+                                'I',
+                                'II',
+                                'III',
+                                'IV',
+                                'V',
+                                'VI',
+                                'VII',
+                                'VIII',
+                              ][c.id]
+                            }
+                            , {c.size}
+                          </th>
+                          <td>
+                            {c.highest
+                              .map((h) => `${h.tissue} (${num(h.zip, 1)})`)
+                              .join(', ')}
+                          </td>
+                          <td>{c.examples.slice(0, 3).join(', ')}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                }
+                source={l(
+                  `Drugs with at least 300 measurements, mean ZIP per tissue; k-means, k chosen by silhouette (${num(sky.silhouette[String(sky.k)] ?? 0, 2)})`,
+                  `Läkemedel med minst 300 mätningar, medel-ZIP per vävnad; k-means, k valt efter silhuett (${num(sky.silhouette[String(sky.k)] ?? 0, 2)})`,
+                )}
+              >
+                <DrugConstellation drugs={sky.drugs} clusters={sky.clusters} />
+              </Feature>
+            )}
+            <Feature
+              id="dc-pairs"
+              title={l(
+                'The most synergistic pairs in the data',
+                'De mest synergistiska paren i datan',
+              )}
+              lead={l(
+                'Measured, not predicted: mean ZIP across cell lines, for pairs tested on many cell lines.',
+                'Uppmätt, inte förutsagt: medel-ZIP över cellinjer, för par testade på många cellinjer.',
+              )}
+              source={source}
+            >
+              {tables.pairs ? (
+                <div
+                  className="board-table-wrap"
+                  tabIndex={0}
+                  role="region"
+                  aria-label={l(
+                    'Table of the most synergistic pairs',
+                    'Tabell över de mest synergistiska paren',
+                  )}
+                >
+                  <table className="board-table">
+                    <thead>
+                      <tr>
+                        <th scope="col">{l('Drug pair', 'Läkemedelspar')}</th>
+                        <th scope="col" className="num">
+                          {l('Cell lines', 'Cellinjer')}
+                        </th>
+                        <th scope="col" className="num">
+                          {l('Mean ZIP', 'Medel-ZIP')}
+                        </th>
+                        <th scope="col" className="num">
+                          {l('Synergistic in', 'Synergistiskt i')}
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {tables.pairs.slice(0, 10).map((p) => (
+                        <tr key={p.pair_name}>
+                          <td>{p.pair_name}</td>
+                          <td className="num">{num(p.cell_lines)}</td>
+                          <td className="num">{num(p.mean_zip, 1)}</td>
+                          <td className="num">{pct(p.share_synergistic, 0)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <Empty />
+              )}
+            </Feature>
+          </div>
+        </>
+      )}
+    </ReportShell>
+  )
+}
+
+function Method({ report }: { report: Report }) {
+  return (
+    <>
+      <div className="dc-explain-grid">
+        <div>
+          <h2>{l('Synergy', 'Synergi')}</h2>
+          <p>
+            {l(
+              'Two drugs are synergistic when together they kill more cancer cells than their separate effects predict. The ZIP score measures that surplus: above 10 counts as synergy, below −10 as the drugs getting in each other’s way.',
+              'Två läkemedel är synergistiska när de tillsammans dödar fler cancerceller än deras effekter var för sig förutsäger. ZIP-värdet mäter det överskottet: över 10 räknas som synergi, under −10 som att läkemedlen motverkar varandra.',
+            )}
+          </p>
+        </div>
+        <div>
+          <h2>{l('The data', 'Datan')}</h2>
+          <p>
+            {l(
+              'Laboratory screens from DrugCombDB, where drug pairs were tested on cancer cell lines, joined with each molecule’s structure and each cell line’s gene expression from DepMap. Every file is checked against its SHA-256 in the data manifest.',
+              'Laboratorieförsök från DrugCombDB, där läkemedelspar testats på cancercellinjer, kopplade till varje molekyls struktur och varje cellinjes genuttryck från DepMap. Varje fil kontrolleras mot sin SHA-256 i datamanifestet.',
+            )}
+          </p>
+        </div>
+        <div>
+          <h2>{l('The real question', 'Den egentliga frågan')}</h2>
+          <p>
+            {l(
+              'Predicting a pair the model has almost seen is easy. The test that matters is a drug or a cell line it has never seen, so every model is scored four ways.',
+              'Att förutsäga ett par som modellen nästan redan sett är lätt. Testet som betyder något är ett läkemedel eller en cellinje den aldrig sett, så varje modell prövas på fyra sätt.',
+            )}
+          </p>
+        </div>
+      </div>
+      <ol
+        className="dc-pipeline"
+        aria-label={l('How it is built', 'Hur det är byggt')}
+      >
+        {[
+          ['Raw screens and DepMap', 'Rådata och DepMap'],
+          ['Match drug and cell names', 'Matcha namn på läkemedel och celler'],
+          ['Star schema in DuckDB', 'Stjärnschema i DuckDB'],
+          ['10 data-quality tests', '10 datakvalitetstester'],
+          ['LightGBM and baselines', 'LightGBM och baslinjer'],
+          ['Four test splits', 'Fyra testuppdelningar'],
+        ].map(([en, sv], i) => (
+          <li key={en}>
+            <span>{i + 1}</span>
+            {l(en, sv)}
+          </li>
+        ))}
+      </ol>
+      <h2>{l('Assumptions and limits', 'Antaganden och begränsningar')}</h2>
+      <p>
+        {l(
+          'The effect of each drug alone comes from the same screens, so the model assumes those single-drug results are already known. Gene expression comes from the wider DepMap collection. A low score on shuffled answers is a diagnostic, not proof that every leakage risk is gone. None of this is clinical evidence.',
+          'Effekten av varje läkemedel ensamt kommer från samma försök, så modellen förutsätter att de resultaten redan finns. Genuttrycket kommer från DepMaps bredare samling. Ett lågt värde på omblandade svar är en kontroll, inte ett bevis för att varje läckrisk är borta. Inget av detta är kliniska belägg.',
+        )}
+      </p>
+      <p>
+        {l(
+          'The numbers are the published results of the pinned pipeline revision; the model was not retrained for this page. Raw files are not bundled; their sources, releases and hashes are in the input manifest.',
+          'Siffrorna är de publicerade resultaten från den fastlåsta versionen av pipelinen; modellen tränades inte om för den här sidan. Rådatafilerna ingår inte; deras källor, versioner och kontrollsummor finns i indatamanifestet.',
+        )}
+      </p>
+      <div className="product-actions">
+        <a href="data/products/drugcomb/REPORT.md" download>
+          {l('Full upstream report', 'Hela rapporten')}
+        </a>
+        <a href="data/products/drugcomb/data_manifest.json" download>
+          {l('Input manifest', 'Indatamanifest')}
+        </a>
+        <a
+          href={`${report.source.repository}/tree/${report.source.revision}`}
+          target="_blank"
+          rel="noreferrer"
+        >
+          {l('Source code at this revision', 'Källkoden i den här versionen')}
+        </a>
+      </div>
+      <h2>
+        {l('The original analysis figures', 'De ursprungliga analysfigurerna')}
+      </h2>
+      <div className="figure-gallery">
+        {(
+          [
+            [
+              'an_01_zip_distribution',
+              1579,
+              738,
+              'Distribution of measured ZIP scores',
+              'Fördelning av uppmätta ZIP-värden',
+            ],
+            [
+              'an_02_replicate_agreement',
+              1007,
+              978,
+              'Agreement between repeated measurements',
+              'Överensstämmelse mellan upprepade mätningar',
+            ],
+            [
+              'ml_03_pred_vs_obs',
+              1007,
+              978,
+              'Predicted against measured',
+              'Förutsagt mot uppmätt',
+            ],
+            [
+              'ml_04_ablation',
+              1681,
+              868,
+              'What each feature group adds',
+              'Vad varje egenskapsgrupp tillför',
+            ],
+            [
+              'ml_05_overfitting',
+              1981,
+              792,
+              'Overfitting check',
+              'Kontroll av överanpassning',
+            ],
+            [
+              'an_06_top_pairs',
+              1582,
+              1378,
+              'The strongest pairs',
+              'De starkaste paren',
+            ],
+          ] as [string, number, number, string, string][]
+        ).map(([file, w, h, en, sv]) => (
+          <figure key={file}>
+            <a
+              href={`data/products/drugcomb/figures/${file}.svg`}
+              target="_blank"
+              rel="noreferrer"
+            >
+              <img
+                src={`data/products/drugcomb/figures/${file}.png`}
+                alt={l(en, sv)}
+                width={w}
+                height={h}
+                loading="lazy"
+              />
+            </a>
+            <figcaption>{l(en, sv)}</figcaption>
+          </figure>
+        ))}
+      </div>
+    </>
   )
 }

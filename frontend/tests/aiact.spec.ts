@@ -2,17 +2,29 @@ import { test, expect } from './test'
 import AxeBuilder from '@axe-core/playwright'
 
 // The reader's date is pinned through ?idag so the tests do not move with the calendar.
-test('the AI Act overview separates its five reading tasks', async ({
-  page,
-}) => {
+test('the AI Act report answers one question per tab', async ({ page }) => {
   await page.goto('/#ai-act?idag=2026-10-06')
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-    'EU AI Act Observatory',
-  )
-  await expect(page.locator('.overview-topics > a')).toHaveCount(5)
-  await page.locator('.overview-topics a[href="#ai-act-today"]').click()
+  const question = page.getByRole('heading', { level: 1 })
+  await expect(question).toHaveText('What applies now, and what comes next?')
+  const tabs = page.getByRole('navigation', { name: 'Report' })
+  await expect(tabs.getByRole('link')).toHaveCount(3)
+  await expect(page.locator('#tillampning .rank-bars-list li')).toHaveCount(5)
+  await tabs.getByRole('link', { name: 'Roles and obligations' }).click()
+  await expect(question).toHaveText('Who must do what?')
+  await page
+    .getByRole('group', { name: 'Roles' })
+    .getByRole('button', { name: 'Deployer', exact: true })
+    .click()
+  await expect(page).toHaveURL(/roller=deployer/)
+  await expect(page.locator('.report-tab .feature')).toHaveCount(3)
+  await page
+    .getByRole('navigation', { name: 'Go deeper' })
+    .getByRole('link', { name: /Article by article/ })
+    .click()
   await expect(page.locator('.aa-body')).toBeVisible()
   await expect(page.locator('.dk-kpis')).toHaveCount(0)
+  await page.getByRole('link', { name: /EU AI Act Observatory/ }).click()
+  await expect(question).toHaveText('What applies now, and what comes next?')
 })
 
 test('the timeline marks what has passed against the reader’s date', async ({
@@ -97,7 +109,7 @@ test('the observatory works on a phone without sideways scrolling', async ({
   ]) {
     await page.goto(`/${path}`)
     await expect(
-      page.locator(path === '#ai-act' ? '.project-overview' : '.aa-body'),
+      page.locator(path === '#ai-act' ? '.report' : '.aa-body'),
     ).toBeVisible()
     const overflow = await page.evaluate(
       () => document.documentElement.scrollWidth - window.innerWidth,

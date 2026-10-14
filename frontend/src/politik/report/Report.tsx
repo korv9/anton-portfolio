@@ -16,7 +16,7 @@ import VoteShares from '../features/VoteShares'
 import BudgetBoard from '../budget/BudgetBoard'
 import SkatterTheme from '../themes/SkatterTheme'
 import { FocusLines, IssueAreas, StudiesPerYear, VoteAlike } from './charts'
-import './report.css'
+import ReportShell from '../../report/ReportShell'
 
 const TABS = [
   {
@@ -161,54 +161,27 @@ function Debates({ route }: { route: Route }) {
 export default function Report({ route }: { route: Route }) {
   const { selected } = useParties(route)
   const at = Math.max(0, REPORT_TABS.indexOf(route.path))
-  const tab = TABS[at]
   const Body = [Power, Money, Debates][at]
   return (
-    <div className="report">
-      <header className="politik-intro">
-        <p className="politik-intro-name">Political Observatory</p>
-        <p className="politik-intro-data">
-          {l(
-            'Open data on Swedish politics: elections and opinion, the Riksdag’s votes and debates, the budget and taxes, and the studies behind new laws.',
-            'Öppna data om svensk politik: val och opinion, riksdagens röster och debatter, budget och skatter, och utredningarna bakom nya lagar.',
-          )}
-        </p>
-      </header>
-      <nav className="report-tabs" aria-label={l('Report', 'Rapport')}>
-        {TABS.map((t, i) => (
-          <a
-            key={t.path}
-            href={withParties(t.path, selected)}
-            aria-current={i === at ? 'page' : undefined}
-          >
-            <span>{String(i + 1).padStart(2, '0')}</span>
-            {l(t.en, t.sv)}
-          </a>
-        ))}
-      </nav>
-      <section className="report-tab" aria-labelledby="report-question">
-        <header className="report-head">
-          <h1 id="report-question">{l(tab.question.en, tab.question.sv)}</h1>
-          <div className="report-slicers">
-            <p>{l('Follow parties', 'Följ partier')}</p>
-            <PartyPicker route={route} small />
-          </div>
-        </header>
-        <Body route={route} />
-      </section>
-      <nav className="report-deeper" aria-labelledby="report-deeper">
-        <h2 id="report-deeper">{l('Go deeper', 'Fördjupning')}</h2>
-        <ul>
-          {DEEPER.map((d) => (
-            <li key={d.href}>
-              <a href={withParties(d.href, selected)}>
-                <b>{l(d.en, d.sv)}</b>
-                <span>{l(d.about.en, d.about.sv)}</span>
-              </a>
-            </li>
-          ))}
-        </ul>
-      </nav>
-    </div>
+    <ReportShell
+      name="Political Observatory"
+      intro="Open data on Swedish politics: elections and opinion, the Riksdag’s votes and debates, the budget and taxes, and the studies behind new laws."
+      tabs={TABS.map((t) => ({
+        path: t.path,
+        label: t.en,
+        question: t.question.en,
+      }))}
+      path={route.path}
+      hrefOf={(p) => withParties(p, selected)}
+      slicerLabel="Follow parties"
+      slicer={<PartyPicker route={route} small />}
+      deeper={DEEPER.map((d) => ({
+        href: d.href,
+        label: d.en,
+        about: d.about.en,
+      }))}
+    >
+      <Body route={route} />
+    </ReportShell>
   )
 }

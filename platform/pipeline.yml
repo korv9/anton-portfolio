@@ -1,0 +1,288 @@
+# Every subject, from source to site. Read by platform/pipeline.py; nothing else defines a
+# step sequence, a dbt selector or a raw path list. docs/pipeline.md describes how it runs.
+#
+# A subject is an ordered list of steps. Each step has one phase key:
+#   ingest   a command that fetches or prepares inputs
+#   dbt      {select, exclude}; built into platform/target/<subject>
+#   ml       a command, skipped by --ml missing when `marker` (under warehouse/features) exists;
+#            `stale_arg` is appended unless --ml always, and makes the stage check its inputs
+#   export   a command that writes delivery files; runs only if the subject's dbt tests passed
+# Step options: when_env (skip unless the variable is set), ok_exit (tolerated exit codes).
+# Commands run from the repository root. ${NAME:-default} reads the environment, {sha} is the
+# commit being published.
+#
+# Subject keys: schedule (cron of the workflow that runs it, or manual), group (the delivery
+# group in configs/delivery that owns its files), needs (subjects that must not have failed in
+# the same run), raw and features (paths under warehouse/raw and warehouse/features kept in R2),
+# prune (raw pushes delete remote files that are gone locally), target (dbt target folder when it
+# differs from the subject name), manual (left out of --all, and not required by its group),
+# sources (raw folders whose fetch log is kept outside R2 by the ingest itself, for the
+# ingestion status in status/ingestion.json; the first segments of `raw` count already).
+#
+# A group is published once, after every subject in it has succeeded.
+
+definitions:
+  data_catalog: &data_catalog python platform/publish/build_catalog.py
+  data_check: &data_check
+    - python platform/legacy/validate_gold.py
+    - python platform/legacy/validate_budget_context.py
+    - python platform/legacy/validate_products.py
+    - python platform/legacy/validate_politics.py
+
+groups:
+  public-data:
+    publish:
+      - python platform/publish/export_schema.py
+      - python platform/publish/export_er.py
+      - python platform/architecture/build_graph.py
+      - *data_catalog
+      - *data_check
+      - python platform/publish/validate_public_data.py
+      - python platform/publish/release.py materialize --root frontend/public/data --spec configs/delivery/public-data.json --catalog frontend/public/data/catalog.json
+      - python platform/publish/release.py publish --group public-data --root frontend/public/data --spec configs/delivery/public-data.json --code-sha {sha}
+      - python platform/publish/publish_status.py
+  jobs:
+    publish:
+      - python platform/publish/validate_refresh_delivery.py --group jobs --root frontend/public/data --stream-state warehouse/raw/jobtech/stream/state.json
+      - python platform/publish/release.py publish --group jobs --root frontend/public/data --spec configs/delivery/jobs.json --code-sha {sha}
+  news:
+    publish:
+      - python platform/publish/release.py publish --group news --root frontend/public/data --spec configs/delivery/news.json --code-sha {sha}
+  jobs-analysis:
+    publish:
+      - *data_catalog
+      - *data_check
+      - python platform/publish/release.py materialize --root frontend/public/data --spec configs/delivery/jobs-analysis.json --catalog frontend/public/data/catalog.json
+      - python platform/publish/release.py publish --group jobs-analysis --root frontend/public/data --spec configs/delivery/jobs-analysis.json --code-sha {sha}
+  diva:
+    publish:
+      - python platform/publish/validate_refresh_delivery.py --group diva --root frontend/public/data
+      - python platform/publish/release.py publish --group diva --root frontend/public/data --spec configs/delivery/diva.json --code-sha {sha}
+  baseline:
+    publish:
+      - *data_catalog
+      - *data_check
+      - python platform/publish/release.py materialize --root frontend/public/data --spec configs/delivery/baseline.json --catalog frontend/public/data/catalog.json
+      - python platform/publish/release.py publish --group baseline --root frontend/public/data --spec configs/delivery/baseline.json --code-sha {sha}
+
+subjects:
+  welfare:
+    schedule: '37 4 * * *'
+    group: public-data
+    raw: [scb, fohm, fk, ess, kolada]
+    prune: true
+    steps:
+      - ingest: python platform/ingest/scb/scb_ingest.py
+      - ingest: python platform/ingest/fohm/fohm_ingest.py
+      - ingest: python platform/ingest/fk/fk_ingest.py
+      - ingest: python platform/ingest/ess/ess_ingest.py
+      - ingest: python platform/ingest/kolada/kolada_ingest.py
+      - dbt: {select: [tag:welfare]}
+      - export: python platform/publish/export_welfare.py
+
+  parliament:
+    schedule: '37 4 * * *'
+    group: public-data
+    raw: [scb, riksdagen/votes, riksdagen/reports, riksdagen/studies, riksdagen/formation,
+          riksdagen/_checkpoints, riksdagen/_manifest.jsonl, val]
+    prune: true
+    steps:
+      - ingest: python platform/ingest/riksdagen/history_ingest.py
+      - ingest: python platform/ingest/elections/elections_ingest.py
+      - ingest: python platform/ingest/riksdagen/studies_ingest.py
+      - dbt: {select: [tag:parliament, stg_party_vote]}
+      - export: python platform/publish/export_parliament.py
+
+  taxes:
+    schedule: '37 4 * * *'
+    group: public-data
+    needs: [parliament]
+    raw: [oecd, skatteverket]
+    prune: true
+    steps:
+      # Rejects partial or unverified parliament inputs before dbt can build on them.
+      - ingest: python platform/ingest/taxes/require_parliament.py
+      - ingest: python platform/ingest/taxes/taxes_ingest.py
+      - dbt: {select: [+tag:taxes]}
+      - export: python platform/publish/export_taxes.py
+
+  market:
+    schedule: '23 4 * * *'
+    group: jobs
+    raw: [jobtech/market, jobtech/stream, jobtech/_manifest.jsonl]
+    steps:
+      - ingest: python platform/ingest/jobtech/ingest_market.py
+      - ingest: python platform/ingest/jobtech/ingest_stream.py
+      - dbt: {select: [tag:market]}
+      - export: python platform/publish/export_market.py
+
+  news:
+    schedule: '17 5 * * *'
+    group: news
+    sources: [news]
+    steps:
+      # The last approved summary first, so a failed summary step keeps it.
+      - ingest: python platform/publish/release.py materialize --root frontend/public/data --spec configs/delivery/news.json --catalog frontend/public/data/catalog.json --prefer-active
+        when_env: R2_BUCKET
+      - ingest: python platform/ingest/news/news_ingest.py --sync --months 3
+      - ingest: python platform/ingest/news/people_ingest.py
+      - dbt: {select: [tag:news]}
+      - export: python platform/publish/export_news.py
+      # Optional: exit 2 means no summary was written and the headlines publish alone.
+      - export: python platform/publish/summarize_news.py --days 7 --status-file ${RUNNER_TEMP:-warehouse}/news-summary-status.json
+        when_env: ANTHROPIC_API_KEY
+        ok_exit: [2]
+
+  politics:
+    schedule: '13 21 * * 6'
+    group: baseline
+    steps:
+      - dbt: {select: [+tag:politics]}
+      - export: python platform/publish/export_politics.py
+
+  # CI: politics from the committed deliveries in an empty warehouse, where the parliament
+  # models have nothing to read, then proof that the export is byte-identical to the site's files.
+  politics_check:
+    schedule: every push
+    manual: true
+    target: politics
+    steps:
+      - dbt: {select: [+tag:politics], exclude: ['tag:parliament']}
+      - export: python platform/publish/export_politics.py --check
+
+  # The builders not yet moved into dbt. build_politics.py is not here: it needs three local
+  # sources (--parliament, --allegoria, --local-corpus), one of them in no repository.
+  legacy:
+    schedule: manual
+    group: baseline
+    manual: true
+    target: politics
+    steps:
+      - ingest: python platform/legacy/build_gold.py
+      - dbt: {select: [+tag:politics]}
+      - export: python platform/publish/export_politics.py
+      - export: python platform/legacy/build_products.py
+      - export: python platform/legacy/build_speech_browser.py
+      - export: python platform/publish/export_debates.py
+      - export: *data_catalog
+
+  ai_act:
+    schedule: '13 21 * * 6'
+    group: baseline
+    raw: [eu_ai_act]
+    steps:
+      - ingest: python platform/ingest/eu_ai_act/run.py
+      - dbt: {select: [tag:ai_act]}
+      - export: python platform/publish/eu_ai_act/export_ai_act.py
+
+  # assert_concept_link_targets_exist checks links into philosophy, Riksdag and job-ad models;
+  # it runs in the concepts subject, once all of them are built.
+  ai_politics:
+    schedule: '13 21 * * 6'
+    group: baseline
+    needs: [ai_act]
+    raw: [riksdagen/speeches]
+    features: [ai_politics]
+    steps:
+      - ingest: python platform/ingest/riksdagen/ingest_speeches.py
+      - dbt:
+          select: [tag:ai_politics]
+          exclude: [mart_ai_act_speech_similarity, assert_concept_link_targets_exist]
+      - ml: python platform/nlp/ai_politics/similarity.py
+        marker: ai_politics/run.json
+        stale_arg: --if-stale
+      - dbt: {select: [mart_ai_act_speech_similarity]}
+      - export: python platform/publish/ai_politics/export_ai_politics.py
+
+  symbolic:
+    schedule: '13 21 * * 6'
+    group: baseline
+    raw: [symbolic]
+    features: [symbolic]
+    steps:
+      - ingest: python platform/ingest/symbolic/ingest_corpus.py
+      - ingest: python platform/ingest/symbolic/audit_corpus.py
+      - dbt: {select: [tag:symbolic], exclude: ['path:models/gold/symbolic']}
+      # No marker: the stage itself compares the sample with the last run.
+      - ml: python platform/nlp/symbolic/pipeline.py
+        stale_arg: --if-stale
+      - dbt: {select: ['path:models/gold/symbolic']}
+      - export: python platform/publish/symbolic/export_symbolic.py
+
+  philosophy:
+    schedule: '13 21 * * 6'
+    group: baseline
+    raw: [philosophy]
+    features: [philosophy]
+    steps:
+      - ingest: python platform/ingest/philosophy/ingest_corpus.py
+      - dbt:
+          select: [tag:philosophy]
+          exclude: ['path:models/gold/philosophy', assert_concept_link_targets_exist]
+      - ml: python platform/nlp/philosophy/pipeline.py
+        marker: philosophy/run.json
+        stale_arg: --if-stale
+      - dbt:
+          select: ['path:models/gold/philosophy']
+          exclude: [assert_concept_link_targets_exist]
+      - export: python platform/publish/philosophy/export_philosophy.py
+
+  job_ai_governance:
+    schedule: '13 21 * * 6'
+    group: baseline
+    raw: [jobtech/governance]
+    steps:
+      - ingest: python platform/ingest/jobtech/ingest_governance_terms.py
+      - dbt: {select: [tag:job_ai_governance], exclude: [assert_concept_link_targets_exist]}
+      - export: python platform/publish/job_ai_governance/export_job_ai_governance.py
+
+  concepts:
+    schedule: '13 21 * * 6'
+    group: baseline
+    needs: [ai_act, ai_politics, symbolic, philosophy, job_ai_governance]
+    features: [concepts]
+    steps:
+      - ml: python platform/nlp/concepts/build.py
+        marker: concepts/run.json
+        stale_arg: --if-stale
+      - dbt: {select: [tag:concepts]}
+      - export: python platform/publish/concepts/export_concepts.py
+
+  cross_domain:
+    schedule: '13 21 * * 6'
+    group: baseline
+    needs: [ai_politics, job_ai_governance]
+    steps:
+      - dbt: {select: [tag:cross_domain]}
+      - export: python platform/publish/cross_domain/export_ai_governance_timeline.py
+
+  quality:
+    schedule: '13 21 * * 6'
+    group: baseline
+    # evaluate.py keeps its own dbt test results in target/quality.
+    target: quality_build
+    steps:
+      - ingest: python platform/quality/evaluate.py
+      - dbt: {select: [tag:quality]}
+      - export: python platform/publish/quality/export_quality.py
+      # Structural checks (gate: true in quality_registry.yml) fail the subject, after its report is written.
+      - export: python platform/quality/evaluate.py --dbt-results platform/target/quality/run_results.json --gate
+
+  diva:
+    schedule: manual
+    group: diva
+    manual: true
+    raw: [diva]
+    steps:
+      - ingest: python platform/ingest/diva/harvest.py --from ${DIVA_FROM:-2023-01} --to ${DIVA_TO:-2025-12}
+      - export: python platform/publish/diva_clusters.py
+
+  # The IT report: run_history_pipeline.py picks the published archive years and passes them
+  # to dbt as vars, so its dbt build (target/jobs) stays inside the script.
+  jobs_analysis:
+    schedule: manual
+    group: jobs-analysis
+    manual: true
+    steps:
+      - ingest: python platform/ingest/jobtech/run_history_pipeline.py
+      - export: python platform/legacy/build_gold.py

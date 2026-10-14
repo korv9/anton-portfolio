@@ -32,6 +32,7 @@ import {
   Today,
   TimelineView,
 } from './views'
+import '../report/report.css'
 import './aiact.css'
 
 const VIEWS: Record<
@@ -59,7 +60,7 @@ const VIEWS: Record<
       'När börjar varje del av lagen gälla?',
     ],
   },
-  '#ai-act-roles': {
+  '#ai-act-actors': {
     title: ['Who does it apply to?', 'Vem gäller den för?'],
     question: [
       'Which roles does the Act define, and what do they carry?',
@@ -207,7 +208,9 @@ export default function AiActProduct({ route }: { route: Route }) {
       ) : (
         <>
           <header className="aa-hero ds-container">
-            <p className="aa-kicker">EU AI Act Observatory</p>
+            <a className="politik-back" href="#ai-act">
+              ← EU AI Act Observatory
+            </a>
             <h1>{l(...view.title)}</h1>
             <p className="aa-question">{l(...view.question)}</p>
             {data && (
@@ -247,7 +250,7 @@ export default function AiActProduct({ route }: { route: Route }) {
                 {path === '#ai-act-timeline' && (
                   <TimelineView data={data} today={today} />
                 )}
-                {path === '#ai-act-roles' && (
+                {path === '#ai-act-actors' && (
                   <Roles data={data} today={today} />
                 )}
                 {path === '#ai-act-risk' && <Risk data={data} today={today} />}

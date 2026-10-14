@@ -30,11 +30,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "lib"))
 
 import duckdb  # noqa: E402
 
+import rawstore  # noqa: E402
 from common import PUBLIC, ROOT, write_json  # noqa: E402
 
 DATABASE = Path(os.environ.get("PORTFOLIO_DB", ROOT / "warehouse/portfolio.duckdb"))
-RAW = Path(os.environ.get("PORTFOLIO_RAW", ROOT / "warehouse/raw"))
-RUN_RESULTS = ROOT / "platform/target/run_results.json"
+RUN_RESULTS = ROOT / "platform/target/welfare/run_results.json"
 OUT = PUBLIC / "welfare"
 PARQUET = PUBLIC / "parquet/welfare_indicator"
 # Analyst datasets: the star schema and the serving marts, one Parquet file per table, served
@@ -47,7 +47,7 @@ STAR = ("dim_date", "dim_period", "dim_region", "dim_sex", "dim_age_group", "dim
         "fct_social_survey_country", "fct_social_survey_region", "fct_kolada")
 SERVING = ("mart_county_year_panel", "mart_municipality_year_panel", "mart_national_month",
            "mart_ess_country_round", "mart_county_year_features", "mart_county_year_overview")
-MANIFEST_JSON = ROOT / "platform/target/manifest.json"
+MANIFEST_JSON = ROOT / "platform/target/welfare/manifest.json"
 SOURCES = ("scb", "fk", "fohm", "ess", "kolada")
 
 
@@ -100,35 +100,7 @@ def dbt_summary() -> dict:
 
 def fetch_log() -> list[dict]:
     """Per source: latest fetch time, files, bytes, and when content last changed."""
-    summary = []
-    for source in SOURCES:
-        manifest = RAW / source / "_manifest.jsonl"
-        if not manifest.exists():
-            summary.append({"source_key": source, "fetched_at": None})
-            continue
-        lines = []
-        for line in manifest.read_text(encoding="utf-8").splitlines():
-            try:
-                record = json.loads(line)
-                if not record["path"].startswith("_checkpoints/"):
-                    lines.append(record)
-            except (ValueError, KeyError):
-                continue
-        if not lines:
-            summary.append({"source_key": source, "fetched_at": None})
-            continue
-        latest = {}
-        for line in lines:
-            latest[line["path"]] = line
-        changed = [line["fetched_at"] for line in lines if line["changed"]]
-        summary.append({
-            "source_key": source,
-            "fetched_at": max(line["fetched_at"] for line in latest.values()),
-            "content_changed_at": max(changed) if changed else None,
-            "files": len(latest),
-            "bytes": sum(line["bytes"] for line in latest.values()),
-        })
-    return summary
+    return [rawstore.fetch_summary(source) for source in SOURCES]
 
 
 def export_datasets(connection) -> list[dict]:

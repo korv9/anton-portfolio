@@ -9,7 +9,7 @@ English one click away.
 
 The homepage contains the profile, experience and project index. The shared header groups
 projects into Observatories, Labs and Engineering. Observatory overviews lead to themed
-pages; labs use continuous reports and section links. See [project structure](docs/project-restructure.md)
+pages; labs use continuous reports and section links. See [site structure](docs/site-structure.md)
 and the [design system](docs/design-system.md).
 
 | Group       | Project                   | Address             |
@@ -36,8 +36,10 @@ Public sources → Python ingestion (raw files kept with provenance) → dbt on 
 silver, gold) → JSON and Parquet in Cloudflare R2 → React. Heavy text and ML work runs once in
 Python and ships as compact files; the browser computes only cheap, testable metrics. See
 [platform/README.md](platform/README.md), [storage and serving](docs/storage-and-serving.md)
-and the [data dictionary](docs/data-dictionary.md). Scheduled GitHub Actions refresh jobs,
-news, welfare and DiVA, build the warehouse and publish to R2.
+and the [data dictionary](docs/data-dictionary.md). One command runs every subject,
+`python platform/pipeline.py`, locally and in GitHub Actions: jobs, news and public data are
+refreshed every morning, the whole warehouse is rebuilt every Saturday, and each run publishes
+a versioned release to R2 ([pipeline](docs/pipeline.md)).
 
 ### Politics metrics
 
@@ -85,10 +87,16 @@ python -m pytest platform/tests -q
 npm run test:e2e   # needs Playwright Chromium
 ```
 
-Data is checked in, so the site builds with Node alone. To rebuild a subject, install
-`platform/requirements.txt` and run its script, for example `npm run welfare`,
-`npm run parliament`, `npm run ai-act` or `npm run symbolic:build`. `npm run data:build` and
-`npm run data:check` rebuild and verify the gold and product exports.
+A snapshot of the site's JSON is checked in, so the site builds with Node alone. To rebuild a
+subject, install `platform/requirements.txt` and run it:
+
+```bash
+python platform/pipeline.py list            # every subject, its group and schedule
+python platform/pipeline.py run welfare     # fetch, build, test, export (npm run welfare)
+python platform/pipeline.py check           # the four data contracts (npm run data:check)
+```
+
+`npm run data:build` runs the builders that are not yet in dbt.
 
 ## Repository
 
@@ -96,4 +104,5 @@ Data is checked in, so the site builds with Node alone. To rebuild a subject, in
   tests (`tests/`).
 - `platform/`: ingestion, dbt models, publishing, quality checks and their tests.
 - `ml/`: the NLP/ML layer with its own environment and model cards.
-- `docs/`: one document per product, plus design, structure and hosting.
+- `docs/`: one document per product, plus pipeline, delivery, design and hosting. Start at
+  [docs/README.md](docs/README.md).

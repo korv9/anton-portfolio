@@ -82,15 +82,6 @@ export default function RosterTheme({ route }: { route: Route }) {
     .map((p) => ({ party: p, value: agreement(party, p) }))
     .filter((p): p is { party: string; value: number } => p.value != null)
     .sort((a, b) => b.value - a.value)
-  const allPairs = pairs
-    .filter(
-      (p) =>
-        RIKSDAG_PARTIES.includes(p.party_a) &&
-        RIKSDAG_PARTIES.includes(p.party_b),
-    )
-    .sort((a, b) => b.agreement_pct - a.agreement_pct)
-  const closest = allPairs[0]
-  const furthest = allPairs.at(-1)
 
   const picked = shownParties(selected, ['S', 'M', 'SD', 'C', 'V'])
   const record = measure !== 'lika' ? RECORD[measure] : null
@@ -238,26 +229,6 @@ export default function RosterTheme({ route }: { route: Route }) {
         loading={!data && !error}
         error={error}
         feature={<VoteShares />}
-        kpis={
-          info && closest && furthest
-            ? [
-                {
-                  value: pct(closest.agreement_pct, 0),
-                  label: l(
-                    `${closest.party_a} and ${closest.party_b} voted alike most often`,
-                    `${closest.party_a} och ${closest.party_b} röstade oftast lika`,
-                  ),
-                },
-                {
-                  value: pct(furthest.agreement_pct, 0),
-                  label: l(
-                    `${furthest.party_a} and ${furthest.party_b} voted alike least often`,
-                    `${furthest.party_a} och ${furthest.party_b} röstade minst ofta lika`,
-                  ),
-                },
-              ]
-            : []
-        }
         filters={filters}
         chartTitle={
           record
@@ -334,7 +305,10 @@ export default function RosterTheme({ route }: { route: Route }) {
         table={record ? recordTable : matrix}
         sources={[
           {
-            name: 'Sveriges riksdag, voteringar (öppna data)',
+            name: l(
+              'The Riksdag, roll calls (open data)',
+              'Sveriges riksdag, voteringar (öppna data)',
+            ),
             url: 'https://data.riksdagen.se',
           },
         ]}

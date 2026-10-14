@@ -5,15 +5,22 @@
  * line in the constellation has an explicit type, drawn in its own style, and every element is
  * marked as source, derived or interpretation. Experimental.
  */
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useState } from 'react'
 import { l } from '../i18n'
 import { ProductQuality } from '../quality/QualityPanel'
-import type { Route } from '../router'
+import { CONCEPT_TABS, type Route } from '../router'
 import { fetchData } from '../dataSource'
-import Journey from './Journey'
-import { ProjectHero } from '../ui/Project'
+import Journey, { ConceptQuality } from './Journey'
 import ProjectTech from '../projects/ProjectTech'
 import { useViewParams } from '../politik/useViewParams'
+import ReportShell, {
+  DeepPage,
+  ReportFrame,
+  withQuery,
+  type DeeperLink,
+  type ReportTab,
+} from '../report/ReportShell'
+import { Feature } from '../charts/feature/Feature'
 import {
   CORPUS_ORDER,
   JOURNEY_CONCEPTS,
@@ -67,6 +74,68 @@ const RELATION_LABEL: Record<string, [string, string]> = {
   documented_reference: ['Documented reference', 'Dokumenterad hänvisning'],
 }
 const DEFAULTS = { begrepp: '', visa: 'semantic_similarity,shared_tension' }
+const NAME = 'Concept Lab'
+const tabs = (): ReportTab[] => [
+  {
+    path: '#concept-journey',
+    label: l('Follow a concept', 'Följ ett begrepp'),
+    question: l(
+      'Where does one idea appear, from stories to law?',
+      'Var dyker en idé upp, från berättelser till lag?',
+    ),
+  },
+  {
+    path: '#concepts-profiles',
+    label: l('Compare concepts', 'Jämför begrepp'),
+    question: l(
+      'Which ideas stand out in which kind of text?',
+      'Vilka idéer framträder i vilken sorts text?',
+    ),
+  },
+  {
+    path: '#concept-constellation',
+    label: l('Relations', 'Relationer'),
+    question: l(
+      'Which concepts belong together, and on what grounds?',
+      'Vilka begrepp hör ihop, och på vilka grunder?',
+    ),
+  },
+]
+const deeper = (concept?: Concept): DeeperLink[] => [
+  ...(concept
+    ? [
+        {
+          href: `#concept-${concept.concept_id}`,
+          label: label(concept),
+          about: l(
+            'Everything about this concept: its passages, pairs and links',
+            'Allt om begreppet: passager, par och länkar',
+          ),
+        },
+      ]
+    : []),
+  {
+    href: '#concepts-method',
+    label: l('Method and limits', 'Metod och begränsningar'),
+    about: l(
+      'The sample, the model, what does not follow, and the quality checks',
+      'Urvalet, modellen, vad som inte följer och kvalitetskontrollerna',
+    ),
+  },
+  {
+    href: '#symbolic-atlas',
+    label: 'Symbol Lab',
+    about: l('The myth corpus mapped on its own', 'Myterna kartlagda för sig'),
+  },
+  {
+    href: '#philosophy-atlas',
+    label: 'Philosophy Lab',
+    about: l(
+      'The philosophy corpus mapped on its own',
+      'Filosofin kartlagd för sig',
+    ),
+  },
+]
 
 const label = (c: { label_en: string; label_sv: string }) =>
   l(c.label_en, c.label_sv)
@@ -93,6 +162,7 @@ export function Kind({
 export default function ConceptConstellationPage({ route }: { route: Route }) {
   const [data, setData] = useState<Data | null>(null)
   const [failed, setFailed] = useState(false)
+  const [params, set] = useViewParams(route, DEFAULTS)
   useEffect(() => {
     Promise.all([
       json<ConceptSummary>('concepts/summary.json'),
@@ -107,45 +177,55 @@ export default function ConceptConstellationPage({ route }: { route: Route }) {
   }, [])
   if (failed)
     return (
-      <p className="cc-body ds-container">
-        {l(
-          'The concept layer could not be loaded.',
-          'Begreppslagret kunde inte laddas.',
-        )}
-      </p>
+      <ReportFrame>
+        <p role="alert">
+          {l(
+            'The concept layer could not be loaded.',
+            'Begreppslagret kunde inte laddas.',
+          )}
+        </p>
+      </ReportFrame>
     )
   if (!data)
-    return <p className="cc-body ds-container">{l('Loading…', 'Laddar…')}</p>
-  const concept = conceptFromPath(route.path)
-  const known = data.summary.concepts.find((c) => c.concept_id === concept)
-  const metrics = null
-  return (
-    <div className="concepts">
-      {route.path === '#concept-journey' ? (
-        <Journey route={route} data={data} metrics={metrics} />
-      ) : known ? (
-        <ConceptPage data={data} concept={known} />
-      ) : (
-        <Constellation route={route} data={data} metrics={metrics} />
-      )}
-      <div className="ds-container">
-        <ProjectTech project="concept-constellation" />
-      </div>
-    </div>
+    return (
+      <ReportFrame>
+        <p role="status">{l('Loading…', 'Laddar…')}</p>
+      </ReportFrame>
+    )
+  const { summary } = data
+  const concept = summary.concepts.find(
+    (c) => c.concept_id === conceptFromPath(route.path),
   )
-}
+  if (!CONCEPT_TABS.includes(route.path))
+    return (
+      <ReportFrame>
+        <div className="concepts">
+          <DeepPage
+            id={route.path.slice(1)}
+            back={withQuery('#concept-journey', route.params)}
+            name={NAME}
+          >
+            {concept ? (
+              <ConceptPage data={data} concept={concept} />
+            ) : (
+              <>
+                <h1>{l('Method and limits', 'Metod och begränsningar')}</h1>
+                <Method summary={summary} />
+                <ConceptQuality summary={summary} />
+                <ProductQuality product="concepts" />
+                <ProjectTech project="concept-constellation" />
+              </>
+            )}
+          </DeepPage>
+        </div>
+      </ReportFrame>
+    )
 
-function Constellation({
-  route,
-  data,
-  metrics,
-}: {
-  route: Route
-  data: Data
-  metrics?: ReactNode
-}) {
-  const [params, set] = useViewParams(route, DEFAULTS)
-  const { summary, profiles, relations } = data
+  const tab = CONCEPT_TABS.indexOf(route.path)
+  const featured = JOURNEY_CONCEPTS.map((id) =>
+    summary.concepts.find((c) => c.concept_id === id),
+  ).filter((c): c is Concept => c != null)
+  const followed = params.begrepp || featured[0]?.concept_id
   const shown = new Set(params.visa.split(',').filter(Boolean))
   const toggle = (id: string) => {
     const next = new Set(shown)
@@ -153,13 +233,101 @@ function Constellation({
     else next.add(id)
     set({ visa: [...next].join(',') })
   }
+  const slicer = [
+    <div
+      className="report-chips"
+      role="group"
+      aria-label={l('Concept', 'Begrepp')}
+    >
+      {featured.map((c) => (
+        <button
+          key={c.concept_id}
+          type="button"
+          aria-pressed={c.concept_id === followed}
+          onClick={() => set({ begrepp: c.concept_id })}
+        >
+          {label(c)}
+        </button>
+      ))}
+    </div>,
+    null,
+    <div
+      className="report-chips"
+      role="group"
+      aria-label={l('Relations', 'Relationer')}
+    >
+      {['semantic_similarity', 'shared_tension', 'shared_concept'].map((id) => (
+        <button
+          key={id}
+          type="button"
+          aria-pressed={shown.has(id)}
+          onClick={() => toggle(id)}
+        >
+          {l(...RELATION_LABEL[id])}
+        </button>
+      ))}
+    </div>,
+  ][tab]
+  return (
+    <ReportFrame>
+      <div className="concepts">
+        <ReportShell
+          name={NAME}
+          intro={l(
+            `${summary.concepts.length} concepts chosen by an editor, read across ${summary.corpora.reduce((s, c) => s + c.chunks, 0).toLocaleString('en-GB')} passages of myth, philosophy, Riksdag speeches and the EU AI Act with one multilingual model. It shows semantic similarity, never that one text influenced another.`,
+            `${summary.concepts.length} begrepp valda av en redaktör, lästa över ${summary.corpora.reduce((s, c) => s + c.chunks, 0).toLocaleString('sv')} passager ur myter, filosofi, riksdagsanföranden och EU:s AI-förordning med en flerspråkig modell. Den visar semantisk likhet, aldrig att en text har påverkat en annan.`,
+          )}
+          tabs={tabs()}
+          path={route.path}
+          hrefOf={(p) => withQuery(p, route.params)}
+          slicerLabel={
+            tab === 0
+              ? l('Follow a concept', 'Följ ett begrepp')
+              : tab === 2
+                ? l('Relations', 'Relationer')
+                : undefined
+          }
+          slicer={slicer}
+          deeper={deeper(
+            concept ?? featured.find((c) => c.concept_id === followed),
+          )}
+        >
+          {tab === 0 && <Journey route={route} data={data} />}
+          {tab === 1 && <Profiles summary={summary} profiles={data.profiles} />}
+          {tab === 2 && (
+            <Constellation
+              route={route}
+              data={data}
+              shown={shown}
+              selected={params.begrepp || null}
+              onSelect={(id) => set({ begrepp: id })}
+            />
+          )}
+        </ReportShell>
+      </div>
+    </ReportFrame>
+  )
+}
+
+function Constellation({
+  data,
+  shown,
+  selected,
+  onSelect,
+}: {
+  route: Route
+  data: Data
+  shown: Set<string>
+  selected: string | null
+  onSelect: (id: string) => void
+}) {
+  const { summary, profiles, relations } = data
   const placed = radialLayout(summary.concepts)
   const at = Object.fromEntries(placed.map((p) => [p.id, p]))
   const corpora = CORPUS_ORDER.filter((c) =>
     summary.corpora.some((k) => k.corpus_id === c),
   )
   const corpusAt = corpusPositions(corpora)
-  const selected = params.begrepp || null
   const touches = (a: string, b: string) =>
     selected == null || a === selected || b === selected
   const conceptOf = (id: string) =>
@@ -168,295 +336,236 @@ function Constellation({
     summary.corpora.find((c) => c.corpus_id === id)
   const lines = relations.concepts.filter((r) => shown.has(r.relation_type))
   const lifts = shown.has('shared_concept') ? prominent(profiles, 2) : []
-  const ev = summary.run.evaluation
   const active = selected ? conceptOf(selected) : null
 
   return (
-    <>
-      <div className="ds-container">
-        <ProjectHero project="concept-constellation">
-          <p>
-            {l(
-              `${summary.concepts.length} concepts chosen by an editor, read across ${summary.corpora.reduce((s, c) => s + c.chunks, 0).toLocaleString(l('en-GB', 'sv-SE'))} passages from four corpora with one multilingual model. Every line below has a stated type. None says that one text influenced another.`,
-              `${summary.concepts.length} begrepp valda av en redaktör, lästa över ${summary.corpora.reduce((s, c) => s + c.chunks, 0).toLocaleString('sv')} passager ur fyra korpusar med en flerspråkig modell. Varje linje nedan har en angiven typ. Ingen säger att en text har påverkat en annan.`,
-            )}
-          </p>
-        </ProjectHero>
-        {metrics}
-      </div>
-      <div className="cc-body ds-container">
-        <section className="cj-start" aria-labelledby="cj-start-title">
-          <h2 id="cj-start-title">
-            {l('Pick an idea to follow', 'Välj en idé att följa')}
-          </h2>
-          <p className="cc-hint">
-            {l(
-              'Each idea opens a journey through stories, philosophy, the Riksdag and the AI Act, with the passages and the type of every link.',
-              'Varje idé öppnar en resa genom berättelser, filosofi, riksdagen och AI-förordningen, med passagerna och typen för varje länk.',
-            )}
-          </p>
-          <ul className="cj-start-list">
-            {JOURNEY_CONCEPTS.map((id) => {
-              const c = conceptOf(id)
-              return c ? (
-                <li key={id}>
-                  <a href={`#concept-journey?begrepp=${id}`}>{label(c)}</a>
-                </li>
-              ) : null
-            })}
-          </ul>
-        </section>
-        <section
-          id="concept-constellation"
-          className="cc-section"
-          aria-labelledby="cc-map-title"
-        >
-          <h2 id="cc-map-title">{l('The constellation', 'Konstellationen')}</h2>
-          <div
-            role="group"
-            aria-label={l('Relations', 'Relationer')}
-            className="cc-chips"
-          >
-            {['semantic_similarity', 'shared_tension', 'shared_concept'].map(
-              (id) => (
-                <button
-                  key={id}
-                  type="button"
-                  aria-pressed={shown.has(id)}
-                  onClick={() => toggle(id)}
-                >
-                  <i className={`cc-swatch cc-rel-${id}`} aria-hidden="true" />
-                  {l(...RELATION_LABEL[id])}
-                </button>
-              ),
-            )}
-          </div>
-          <div className="cc-stage">
-            <figure className="cc-map">
-              <svg
-                viewBox="-12 -6 124 112"
-                role="group"
-                aria-label={l(
-                  `${summary.concepts.length} concepts on a circle by family, the four corpora inside; lines show the selected relation types.`,
-                  `${summary.concepts.length} begrepp i en cirkel efter familj, de fyra korpusarna i mitten; linjerna visar valda relationstyper.`,
-                )}
-              >
-                {lifts.map((p) => {
-                  const a = at[p.concept_id]
-                  const b = corpusAt[p.corpus_id]
-                  if (!a || !b) return null
-                  return (
-                    <line
-                      key={`${p.concept_id}-${p.corpus_id}`}
-                      x1={a.x}
-                      y1={a.y}
-                      x2={b.x}
-                      y2={b.y}
-                      className={`cc-line cc-rel-shared_concept${touches(p.concept_id, p.concept_id) ? '' : ' is-faded'}`}
-                      strokeWidth={Math.min(0.9, 0.12 * p.rank1_lift)}
+    <div className="report-main">
+      <Feature
+        id="konstellationen"
+        title={l(
+          `${summary.concepts.length} concepts by family, the four corpora inside`,
+          `${summary.concepts.length} begrepp efter familj, de fyra korpusarna i mitten`,
+        )}
+        lead={l(
+          'Every line has a stated type, drawn in its own style. Choose a concept to keep only its lines and read its profile.',
+          'Varje linje har en angiven typ, ritad i sin egen stil. Välj ett begrepp för att bara behålla dess linjer och läsa dess profil.',
+        )}
+        source={`${summary.run.model}; ${l('tensions and links chosen by an editor', 'spänningar och länkar valda av en redaktör')}`}
+      >
+        <div className="cc-stage">
+          <figure className="cc-map">
+            <svg
+              viewBox="-12 -6 124 112"
+              role="group"
+              aria-label={l(
+                `${summary.concepts.length} concepts on a circle by family, the four corpora inside; lines show the selected relation types.`,
+                `${summary.concepts.length} begrepp i en cirkel efter familj, de fyra korpusarna i mitten; linjerna visar valda relationstyper.`,
+              )}
+            >
+              {lifts.map((p) => {
+                const a = at[p.concept_id]
+                const b = corpusAt[p.corpus_id]
+                if (!a || !b) return null
+                return (
+                  <line
+                    key={`${p.concept_id}-${p.corpus_id}`}
+                    x1={a.x}
+                    y1={a.y}
+                    x2={b.x}
+                    y2={b.y}
+                    className={`cc-line cc-rel-shared_concept${touches(p.concept_id, p.concept_id) ? '' : ' is-faded'}`}
+                    strokeWidth={Math.min(0.9, 0.12 * p.rank1_lift)}
+                  >
+                    <title>
+                      {`${label(conceptOf(p.concept_id)!)}, ${label(corpusOf(p.corpus_id)!)}: ${pct(p.rank1_share)} (${l('chance', 'slump')} ${pct(p.rank1_chance, 1)})`}
+                    </title>
+                  </line>
+                )
+              })}
+              {lines.map((r) => {
+                const a = at[r.concept_a]
+                const b = at[r.concept_b]
+                if (!a || !b) return null
+                return (
+                  <path
+                    key={`${r.relation_type}-${r.concept_a}-${r.concept_b}`}
+                    d={`M${a.x},${a.y} Q50,50 ${b.x},${b.y}`}
+                    className={`cc-line cc-rel-${r.relation_type}${touches(r.concept_a, r.concept_b) ? '' : ' is-faded'}`}
+                    strokeWidth={
+                      r.relation_type === 'semantic_similarity'
+                        ? 0.2 + (r.strength ?? 0) * 0.6
+                        : 0.45
+                    }
+                  >
+                    <title>
+                      {`${label(conceptOf(r.concept_a)!)} ${l('and', 'och')} ${label(conceptOf(r.concept_b)!)}: ${l(...RELATION_LABEL[r.relation_type])}`}
+                    </title>
+                  </path>
+                )
+              })}
+              {relations.corpora.map((r) => {
+                const a = corpusAt[r.from]
+                const b = corpusAt[r.to]
+                if (!a || !b) return null
+                return (
+                  <line
+                    key={`${r.from}-${r.to}`}
+                    x1={a.x}
+                    y1={a.y}
+                    x2={b.x}
+                    y2={b.y}
+                    className={`cc-line cc-rel-${r.relation_type}`}
+                  >
+                    <title>{`${l(...RELATION_LABEL[r.relation_type])}: ${r.count} ${l('speeches', 'anföranden')}`}</title>
+                  </line>
+                )
+              })}
+              {corpora.map((c) => {
+                const k = corpusOf(c)!
+                const p = corpusAt[c]
+                return (
+                  <g key={c} className="cc-corpus">
+                    <circle cx={p.x} cy={p.y} r={4.2} />
+                    <text x={p.x} y={p.y - 0.4} textAnchor="middle">
+                      {l(...STAGE_LABEL[k.stage])}
+                    </text>
+                    <text
+                      x={p.x}
+                      y={p.y + 2.2}
+                      textAnchor="middle"
+                      className="cc-corpus-sub"
                     >
-                      <title>
-                        {`${label(conceptOf(p.concept_id)!)}, ${label(corpusOf(p.corpus_id)!)}: ${pct(p.rank1_share)} (${l('chance', 'slump')} ${pct(p.rank1_chance, 1)})`}
-                      </title>
-                    </line>
-                  )
-                })}
-                {lines.map((r) => {
-                  const a = at[r.concept_a]
-                  const b = at[r.concept_b]
-                  if (!a || !b) return null
-                  return (
-                    <path
-                      key={`${r.relation_type}-${r.concept_a}-${r.concept_b}`}
-                      d={`M${a.x},${a.y} Q50,50 ${b.x},${b.y}`}
-                      className={`cc-line cc-rel-${r.relation_type}${touches(r.concept_a, r.concept_b) ? '' : ' is-faded'}`}
-                      strokeWidth={
-                        r.relation_type === 'semantic_similarity'
-                          ? 0.2 + (r.strength ?? 0) * 0.6
-                          : 0.45
-                      }
+                      {label(k)}
+                    </text>
+                  </g>
+                )
+              })}
+              {placed.map((p) => {
+                const c = conceptOf(p.id)!
+                const on = selected == null || selected === p.id
+                const cos = Math.cos(p.angle)
+                const sin = Math.sin(p.angle)
+                const anchor =
+                  cos > 0.08 ? 'start' : cos < -0.08 ? 'end' : 'middle'
+                return (
+                  <g
+                    key={p.id}
+                    className={`cc-node${on ? '' : ' is-faded'}${selected === p.id ? ' is-selected' : ''}`}
+                  >
+                    <a
+                      href={`#concept-constellation?begrepp=${p.id}`}
+                      onClick={(e) => {
+                        e.preventDefault()
+                        onSelect(selected === p.id ? '' : p.id)
+                      }}
+                      aria-label={label(c)}
                     >
-                      <title>
-                        {`${label(conceptOf(r.concept_a)!)} ${l('and', 'och')} ${label(conceptOf(r.concept_b)!)}: ${l(...RELATION_LABEL[r.relation_type])}`}
-                      </title>
-                    </path>
-                  )
-                })}
-                {relations.corpora.map((r) => {
-                  const a = corpusAt[r.from]
-                  const b = corpusAt[r.to]
-                  if (!a || !b) return null
-                  return (
-                    <line
-                      key={`${r.from}-${r.to}`}
-                      x1={a.x}
-                      y1={a.y}
-                      x2={b.x}
-                      y2={b.y}
-                      className={`cc-line cc-rel-${r.relation_type}`}
-                    >
-                      <title>{`${l(...RELATION_LABEL[r.relation_type])}: ${r.count} ${l('speeches', 'anföranden')}`}</title>
-                    </line>
-                  )
-                })}
-                {corpora.map((c) => {
-                  const k = corpusOf(c)!
-                  const p = corpusAt[c]
-                  return (
-                    <g key={c} className="cc-corpus">
-                      <circle cx={p.x} cy={p.y} r={4.2} />
-                      <text x={p.x} y={p.y - 0.4} textAnchor="middle">
-                        {l(...STAGE_LABEL[k.stage])}
-                      </text>
+                      <circle cx={p.x} cy={p.y} r={1.5} />
                       <text
-                        x={p.x}
-                        y={p.y + 2.2}
-                        textAnchor="middle"
-                        className="cc-corpus-sub"
+                        x={50 + 41.5 * cos}
+                        y={
+                          50 +
+                          41.5 * sin +
+                          1 +
+                          (anchor === 'middle' ? sin * 1.5 : 0)
+                        }
+                        textAnchor={anchor}
                       >
-                        {label(k)}
+                        {label(c)}
                       </text>
-                    </g>
-                  )
-                })}
-                {placed.map((p) => {
-                  const c = conceptOf(p.id)!
-                  const on = selected == null || selected === p.id
-                  const cos = Math.cos(p.angle)
-                  const sin = Math.sin(p.angle)
-                  const anchor =
-                    cos > 0.08 ? 'start' : cos < -0.08 ? 'end' : 'middle'
-                  return (
-                    <g
-                      key={p.id}
-                      className={`cc-node${on ? '' : ' is-faded'}${selected === p.id ? ' is-selected' : ''}`}
-                    >
-                      <a
-                        href={`#concept-constellation?${new URLSearchParams({ ...(selected === p.id ? {} : { begrepp: p.id }), ...(params.visa !== DEFAULTS.visa ? { visa: params.visa } : {}) }).toString()}`}
-                        onClick={(e) => {
-                          e.preventDefault()
-                          set({ begrepp: selected === p.id ? '' : p.id })
-                        }}
-                        aria-label={label(c)}
-                      >
-                        <circle cx={p.x} cy={p.y} r={1.5} />
-                        <text
-                          x={50 + 41.5 * cos}
-                          y={
-                            50 +
-                            41.5 * sin +
-                            1 +
-                            (anchor === 'middle' ? sin * 1.5 : 0)
-                          }
-                          textAnchor={anchor}
-                        >
-                          {label(c)}
-                        </text>
-                      </a>
-                    </g>
-                  )
-                })}
-              </svg>
-            </figure>
-            <aside className="cc-panel" aria-live="polite">
-              {active ? (
-                <ConceptCard concept={active} data={data} />
-              ) : (
-                <>
-                  <p className="cc-kicker">
-                    {l('How to read it', 'Så läser du den')}
-                  </p>
-                  <ul className="cc-legend">
-                    {summary.relation_types.map((r) => (
-                      <li key={r.id}>
-                        <i
-                          className={`cc-swatch cc-rel-${r.id}`}
-                          aria-hidden="true"
-                        />
-                        <span>
-                          <b>{l(...RELATION_LABEL[r.id])}</b>{' '}
-                          <Kind kind={r.content_type} />
-                          <br />
-                          {l(r.en, r.sv)}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                  <p className="cc-hint">
-                    {l(
-                      'Concepts sit on the circle by family; the four corpora sit inside in the order of the chain. Choose a concept to see its profile.',
-                      'Begreppen sitter i cirkeln efter familj; de fyra korpusarna sitter i mitten i kedjans ordning. Välj ett begrepp för att se dess profil.',
-                    )}
-                  </p>
-                </>
-              )}
-            </aside>
-          </div>
-          <ul className="cc-families">
-            {FAMILIES.map((f) => (
-              <li key={f}>
-                <b>{l(...FAMILY_LABEL[f])}</b>{' '}
-                {summary.concepts
-                  .filter((c) => c.family === f)
-                  .map((c, i) => (
-                    <span key={c.concept_id}>
-                      {i > 0 && ', '}
-                      <a href={`#concept-${c.concept_id}`}>{label(c)}</a>
-                    </span>
+                    </a>
+                  </g>
+                )
+              })}
+            </svg>
+          </figure>
+          <aside className="cc-panel" aria-live="polite">
+            {active ? (
+              <ConceptCard concept={active} data={data} />
+            ) : (
+              <>
+                <p className="cc-kicker">
+                  {l('How to read it', 'Så läser du den')}
+                </p>
+                <ul className="cc-legend">
+                  {summary.relation_types.map((r) => (
+                    <li key={r.id}>
+                      <i
+                        className={`cc-swatch cc-rel-${r.id}`}
+                        aria-hidden="true"
+                      />
+                      <span>
+                        <b>{l(...RELATION_LABEL[r.id])}</b>{' '}
+                        <Kind kind={r.content_type} />
+                        <br />
+                        {l(r.en, r.sv)}
+                      </span>
+                    </li>
                   ))}
-              </li>
-            ))}
-          </ul>
-        </section>
+                </ul>
+              </>
+            )}
+          </aside>
+        </div>
+        <ul className="cc-families">
+          {FAMILIES.map((f) => (
+            <li key={f}>
+              <b>{l(...FAMILY_LABEL[f])}</b>{' '}
+              {summary.concepts
+                .filter((c) => c.family === f)
+                .map((c, i) => (
+                  <span key={c.concept_id}>
+                    {i > 0 && ', '}
+                    <a href={`#concept-${c.concept_id}`}>{label(c)}</a>
+                  </span>
+                ))}
+            </li>
+          ))}
+        </ul>
+      </Feature>
+    </div>
+  )
+}
 
-        <Profiles summary={summary} profiles={profiles} />
-
-        <ProductQuality product="concepts" />
-        <section
-          id="concepts-method"
-          className="cc-section"
-          aria-labelledby="cc-method-title"
-        >
-          <h2 id="cc-method-title">
-            {l('Method and limits', 'Metod och begränsningar')}
-          </h2>
-          <ul className="cc-method">
-            <li>
-              {l(
-                `Sample: at most ${summary.run.corpus_size} passages per corpus, spread evenly over its books, works, years or provisions; every passage keeps its source URL, version and retrieval time.`,
-                `Urval: högst ${summary.run.corpus_size} passager per korpus, jämnt fördelade över dess böcker, verk, år eller bestämmelser; varje passage behåller källans adress, version och hämtningstid.`,
-              )}
-            </li>
-            <li>
-              {l(
-                `Model: ${summary.run.model}, one for all corpora. Each concept has an anchor sentence in English and Swedish; a passage is compared with the anchor in its own language. Each Swedish anchor’s nearest English anchor is the same concept for ${pct(ev.anchor_agreement_sv_en)} of concepts.`,
-                `Modell: ${summary.run.model}, en för alla korpusar. Varje begrepp har en ankarmening på engelska och svenska; en passage jämförs med ankaret på sitt eget språk. Varje svensk ankarmenings närmaste engelska är samma begrepp för ${pct(ev.anchor_agreement_sv_en)} av begreppen.`,
-              )}
-            </li>
-            <li>
-              {l(
-                `The corpora differ more from each other than their subjects do: ${pct(ev.same_corpus_neighbours)} of a passage’s nearest neighbours come from its own corpus (chance ${pct(ev.same_corpus_chance)}). So passages are never mapped or clustered together across corpora; they are compared only through the concepts, by rank within a passage.`,
-                `Korpusarna skiljer sig mer från varandra än deras ämnen gör: ${pct(ev.same_corpus_neighbours)} av en passages närmaste grannar kommer från samma korpus (slump ${pct(ev.same_corpus_chance)}). Därför kartläggs eller klustras passager aldrig tillsammans över korpusar; de jämförs bara genom begreppen, efter rang inom en passage.`,
-              )}
-            </li>
-            <li>
-              {l(
-                'Concepts, anchors, tensions and links are an editor’s choices and are published to be argued with. No label is generated by a language model.',
-                'Begrepp, ankare, spänningar och länkar är en redaktörs val och publiceras för att kunna ifrågasättas. Ingen etikett genereras av en språkmodell.',
-              )}
-            </li>
-          </ul>
-          <p className="cc-hint">
-            <a href="https://github.com/korv9/anton-portfolio/blob/main/docs/concept-layer.md">
-              docs/concept-layer.md
-            </a>{' '}
-            ,{' '}
-            <a href="https://github.com/korv9/anton-portfolio/blob/main/docs/concept-constellation.md">
-              docs/concept-constellation.md
-            </a>
-          </p>
-        </section>
-      </div>
+function Method({ summary }: { summary: ConceptSummary }) {
+  const ev = summary.run.evaluation
+  return (
+    <>
+      <ul className="cc-method">
+        <li>
+          {l(
+            `Sample: at most ${summary.run.corpus_size} passages per corpus, spread evenly over its books, works, years or provisions; every passage keeps its source URL, version and retrieval time.`,
+            `Urval: högst ${summary.run.corpus_size} passager per korpus, jämnt fördelade över dess böcker, verk, år eller bestämmelser; varje passage behåller källans adress, version och hämtningstid.`,
+          )}
+        </li>
+        <li>
+          {l(
+            `Model: ${summary.run.model}, one for all corpora. Each concept has an anchor sentence in English and Swedish; a passage is compared with the anchor in its own language. Each Swedish anchor’s nearest English anchor is the same concept for ${pct(ev.anchor_agreement_sv_en)} of concepts.`,
+            `Modell: ${summary.run.model}, en för alla korpusar. Varje begrepp har en ankarmening på engelska och svenska; en passage jämförs med ankaret på sitt eget språk. Varje svensk ankarmenings närmaste engelska är samma begrepp för ${pct(ev.anchor_agreement_sv_en)} av begreppen.`,
+          )}
+        </li>
+        <li>
+          {l(
+            `The corpora differ more from each other than their subjects do: ${pct(ev.same_corpus_neighbours)} of a passage’s nearest neighbours come from its own corpus (chance ${pct(ev.same_corpus_chance)}). So passages are never mapped or clustered together across corpora; they are compared only through the concepts, by rank within a passage.`,
+            `Korpusarna skiljer sig mer från varandra än deras ämnen gör: ${pct(ev.same_corpus_neighbours)} av en passages närmaste grannar kommer från samma korpus (slump ${pct(ev.same_corpus_chance)}). Därför kartläggs eller klustras passager aldrig tillsammans över korpusar; de jämförs bara genom begreppen, efter rang inom en passage.`,
+          )}
+        </li>
+        <li>
+          {l(
+            'Concepts, anchors, tensions and links are an editor’s choices and are published to be argued with. No label is generated by a language model.',
+            'Begrepp, ankare, spänningar och länkar är en redaktörs val och publiceras för att kunna ifrågasättas. Ingen etikett genereras av en språkmodell.',
+          )}
+        </li>
+      </ul>
+      <p className="cc-hint">
+        <a href="https://github.com/korv9/anton-portfolio/blob/main/docs/concept-layer.md">
+          docs/concept-layer.md
+        </a>
+        ,{' '}
+        <a href="https://github.com/korv9/anton-portfolio/blob/main/docs/concept-constellation.md">
+          docs/concept-constellation.md
+        </a>
+      </p>
     </>
   )
 }
@@ -562,65 +671,67 @@ function Profiles({
     summary.corpora.find((k) => k.corpus_id === c),
   ).filter((c): c is Corpus => c != null)
   return (
-    <section
-      id="concepts-profiles"
-      className="cc-section"
-      aria-labelledby="cc-profiles-title"
-    >
-      <h2 id="cc-profiles-title">
-        {l('Where each concept is prominent', 'Var varje begrepp framträder')}
-      </h2>
-      <p className="cc-hint">
-        {l(
-          'How often a concept is a passage’s closest of all 28, per corpus. Chance is 3.6 %. A comparison within each passage, so it does not depend on how close a corpus’s language is to abstract sentences in general.',
-          'Hur ofta ett begrepp är en passages närmaste av alla 28, per korpus. Slumpnivån är 3,6 %. En jämförelse inom varje passage, så den beror inte på hur nära en korpus språk ligger abstrakta meningar i allmänhet.',
-        )}{' '}
-        <Kind kind="derived" />
-      </p>
-      <div
-        className="cc-table-wrap"
-        tabIndex={0}
-        aria-label={l('Concept profiles', 'Begreppsprofiler')}
+    <div className="report-main">
+      <Feature
+        id="profiler"
+        title={l(
+          'Where each concept is prominent',
+          'Var varje begrepp framträder',
+        )}
+        lead={l(
+          'How often a concept is a passage’s closest of all 28, per corpus. Chance is 3.6 %. A comparison within each passage, so it does not depend on how close a corpus’s language is to abstract sentences in general. Open a concept for its passages.',
+          'Hur ofta ett begrepp är en passages närmaste av alla 28, per korpus. Slumpnivån är 3,6 %. En jämförelse inom varje passage, så den beror inte på hur nära en korpus språk ligger abstrakta meningar i allmänhet. Öppna ett begrepp för dess passager.',
+        )}
+        source={l(
+          'Rank of each concept within each passage, against chance',
+          'Varje begrepps rang inom varje passage, mot slumpen',
+        )}
       >
-        <table className="cc-table">
-          <thead>
-            <tr>
-              <th scope="col">{l('Concept', 'Begrepp')}</th>
-              {corpora.map((c) => (
-                <th scope="col" key={c.corpus_id}>
-                  {label(c)}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {summary.concepts.map((c) => (
-              <tr key={c.concept_id}>
-                <th scope="row">
-                  <a href={`#concept-${c.concept_id}`}>{label(c)}</a>
-                </th>
-                {corpora.map((k) => {
-                  const p = profiles.find(
-                    (x) =>
-                      x.concept_id === c.concept_id &&
-                      x.corpus_id === k.corpus_id,
-                  )
-                  const v = p ? Math.min(1, p.rank1_share / 0.3) : 0
-                  return (
-                    <td
-                      key={k.corpus_id}
-                      style={{ '--v': v } as React.CSSProperties}
-                    >
-                      {p ? pct(p.rank1_share) : '–'}
-                    </td>
-                  )
-                })}
+        <div
+          className="cc-table-wrap"
+          tabIndex={0}
+          aria-label={l('Concept profiles', 'Begreppsprofiler')}
+        >
+          <table className="cc-table">
+            <thead>
+              <tr>
+                <th scope="col">{l('Concept', 'Begrepp')}</th>
+                {corpora.map((c) => (
+                  <th scope="col" key={c.corpus_id}>
+                    {label(c)}
+                  </th>
+                ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </section>
+            </thead>
+            <tbody>
+              {summary.concepts.map((c) => (
+                <tr key={c.concept_id}>
+                  <th scope="row">
+                    <a href={`#concept-${c.concept_id}`}>{label(c)}</a>
+                  </th>
+                  {corpora.map((k) => {
+                    const p = profiles.find(
+                      (x) =>
+                        x.concept_id === c.concept_id &&
+                        x.corpus_id === k.corpus_id,
+                    )
+                    const v = p ? Math.min(1, p.rank1_share / 0.3) : 0
+                    return (
+                      <td
+                        key={k.corpus_id}
+                        style={{ '--v': v } as React.CSSProperties}
+                      >
+                        {p ? pct(p.rank1_share) : '–'}
+                      </td>
+                    )
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </Feature>
+    </div>
   )
 }
 

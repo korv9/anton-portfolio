@@ -72,6 +72,49 @@ export type BudgetReport = {
 export const loadBudgetReport = () =>
   load<BudgetReport>('gold/marts/budget-report.json')
 
+/** English names for the expenditure areas, keyed by the Riksdag's own wording. */
+const AREA_EN: Record<string, string> = {
+  'Rikets styrelse': 'Governance',
+  'Samhällsekonomi och finansförvaltning':
+    'Economy and financial administration',
+  'Skatt, tull och exekution': 'Taxes, customs and enforcement',
+  Rättsväsendet: 'Justice',
+  'Internationell samverkan': 'International cooperation',
+  'Försvar och samhällets krisberedskap': 'Defence and contingency measures',
+  'Internationellt bistånd': 'International development cooperation',
+  Migration: 'Migration',
+  'Hälsovård, sjukvård och social omsorg':
+    'Health care, medical care and social services',
+  'Ekonomisk trygghet vid sjukdom och funktionsnedsättning':
+    'Financial security for people with illness and disability',
+  'Ekonomisk trygghet vid ålderdom': 'Financial security for the elderly',
+  'Ekonomisk trygghet för familjer och barn':
+    'Financial security for families and children',
+  'Integration och jämställdhet': 'Integration and gender equality',
+  'Jämställdhet och nyanlända invandrares etablering':
+    'Gender equality and introduction of newly arrived immigrants',
+  'Arbetsmarknad och arbetsliv': 'Labour market and working life',
+  Studiestöd: 'Financial support for students',
+  'Utbildning och universitetsforskning': 'Education and academic research',
+  'Kultur, medier, trossamfund och fritid':
+    'Culture, media, religious communities and leisure',
+  'Samhällsplanering, bostadsförsörjning och byggande samt konsumentpolitik':
+    'Community planning, housing, construction and consumer policy',
+  'Regional tillväxt': 'Regional growth',
+  'Regional utveckling': 'Regional development',
+  'Allmän miljö- och naturvård':
+    'General environmental protection and nature conservation',
+  'Klimat, miljö och natur': 'Climate, environment and nature',
+  Energi: 'Energy',
+  Kommunikationer: 'Transport and communications',
+  'Areella näringar, landsbygd och livsmedel':
+    'Agriculture, forestry, fisheries, rural areas and food',
+  Näringsliv: 'Industry and trade',
+  'Allmänna bidrag till kommuner': 'General grants to local government',
+  'Statsskuldsräntor m.m.': 'Interest on central government debt',
+  'Avgiften till Europeiska unionen': 'The fee to the European Union',
+}
+
 /** Each expenditure area's current name (the latest year's wording). */
 export function areaNames(rows: BudgetRow[]) {
   const names = new Map<number, { year: number; name: string }>()
@@ -83,7 +126,9 @@ export function areaNames(rows: BudgetRow[]) {
         name: r.expenditure_area_name,
       })
   }
-  return new Map([...names].map(([k, v]) => [k, v.name]))
+  return new Map(
+    [...names].map(([k, v]) => [k, l(AREA_EN[v.name] ?? v.name, v.name)]),
+  )
 }
 
 /**
@@ -185,9 +230,6 @@ export default function BudgetTheme({ route }: { route: Route }) {
   const area = areas.includes(Number(view.omrade))
     ? Number(view.omrade)
     : [...areas].sort((a, b) => spread(b) - spread(a))[0]
-  const gov = yearRows.find(
-    (r) => r.actor === 'GOV' && r.expenditure_area === area,
-  )
   const basis = budgetBasis(report, year)
   // What a difference is measured against, in running text.
   const against =
@@ -215,13 +257,11 @@ export default function BudgetTheme({ route }: { route: Route }) {
   }
   const reach = (a: number) =>
     Math.max(0, ...compared.map((p) => Math.abs(cell(a, p) ?? 0)))
-  const netOf = basis.net
   const topOf = (p: string) =>
     yearRows
       .filter((r) => r.actor === p)
       .sort((a, b) => b.deviation_msek - a.deviation_msek)[0]
   const shown = byArea ? areaRows : partyRows
-  const netTotal = basis.net(party)
   const top = shown[0]
   const bottom = shown.at(-1)
   const label = (r: BudgetRow) =>
@@ -308,84 +348,6 @@ export default function BudgetTheme({ route }: { route: Route }) {
     </table>
   )
 
-  const kpis = !report
-    ? []
-    : multi
-      ? compared.slice(0, 3).map((p) => ({
-          value: mnkr(netOf(p)),
-          label: l(
-            `${partyName(p)}: in total, ${against}`,
-            `${partyName(p)}: totalt mot ${against}`,
-          ),
-        }))
-      : byArea
-        ? [
-            ...(gov
-              ? [
-                  {
-                    value: `${num(gov.government_amount_msek)} ${l('SEK m', 'mnkr')}`,
-                    label: l(
-                      `${basis.adopted === false ? 'the government’s proposal' : 'the adopted budget'} for ${names.get(area)}`,
-                      `${basis.adopted === false ? 'regeringens förslag' : 'beslutad budget'} för ${names.get(area)}`,
-                    ),
-                  },
-                ]
-              : []),
-            ...(top && top.deviation_msek > 0
-              ? [
-                  {
-                    value: format(value(top)),
-                    label: l(
-                      `${partyName(top.actor)} wants the most more`,
-                      `${partyName(top.actor)} vill lägga mest mer`,
-                    ),
-                  },
-                ]
-              : []),
-            ...(bottom && bottom.deviation_msek < 0
-              ? [
-                  {
-                    value: format(value(bottom)),
-                    label: l(
-                      `${partyName(bottom.actor)} wants the most less`,
-                      `${partyName(bottom.actor)} vill lägga mest mindre`,
-                    ),
-                  },
-                ]
-              : []),
-          ]
-        : [
-            {
-              value: mnkr(netTotal),
-              label: l(
-                `in total across all areas, ${basis.long}`,
-                `totalt över alla områden, ${basis.long}`,
-              ),
-            },
-            ...(top && top.deviation_msek > 0
-              ? [
-                  {
-                    value: format(value(top)),
-                    label: l(
-                      `most more: ${names.get(top.expenditure_area)}`,
-                      `mest mer: ${names.get(top.expenditure_area)}`,
-                    ),
-                  },
-                ]
-              : []),
-            ...(bottom && bottom.deviation_msek < 0
-              ? [
-                  {
-                    value: format(value(bottom)),
-                    label: l(
-                      `most less: ${names.get(bottom.expenditure_area)}`,
-                      `mest mindre: ${names.get(bottom.expenditure_area)}`,
-                    ),
-                  },
-                ]
-              : []),
-          ]
-
   return (
     <>
       <ThemeLayout
@@ -399,7 +361,6 @@ export default function BudgetTheme({ route }: { route: Route }) {
         )}
         loading={!report && !error}
         error={error}
-        kpis={kpis}
         filters={filters}
         chartTitle={
           byArea
@@ -509,7 +470,10 @@ export default function BudgetTheme({ route }: { route: Route }) {
         table={table}
         sources={[
           {
-            name: 'Sveriges riksdag, finansutskottets betänkanden',
+            name: l(
+              'The Riksdag, Finance Committee reports',
+              'Sveriges riksdag, finansutskottets betänkanden',
+            ),
             url: 'https://data.riksdagen.se',
           },
         ]}

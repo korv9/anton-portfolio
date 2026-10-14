@@ -44,3 +44,4 @@ frontend/public/data/parquet/welfare/
 # journal is committed (docs/idea-lineage.md).
 .idea-lineage/*
 !.idea-lineage/public/
+frontend/public/data/status/

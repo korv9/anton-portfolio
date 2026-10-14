@@ -1,6 +1,5 @@
 /**
- * The one template every politics theme follows: a question, why it matters, at most three
- * key figures, one large chart, "Vad betyder det här?", the Graf / Tabell / Källor switch, and
+ * The one template every politics theme follows: a question, why it matters, one large chart, "Vad betyder det här?", the Graf / Tabell / Källor switch, and
  * a way further in (Fördjupa, or Bygg egen vy where the data allows its own view).
  */
 import {
@@ -16,14 +15,12 @@ import ProjectTech from '../projects/ProjectTech'
 import { projectForRoute } from '../projects/projectRegistry'
 import { parseHash } from '../router'
 
-export type Kpi = { value: string; label: string }
 export type Source = { name: string; url?: string }
 
 type Props = {
   question: string
   why: string
-  kpis: Kpi[]
-  /** The page's feature chart, shown first, above the key figures. */
+  /** The page's feature chart, shown first, above the chart. */
   feature?: ReactNode
   /** Quick filters above the chart: period, party, issue. At most two or three. */
   filters?: ReactNode

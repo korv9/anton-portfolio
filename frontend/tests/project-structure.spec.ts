@@ -1,15 +1,19 @@
 import { test, expect } from './test'
 
 const projects = [
-  ['#jobb', 'Labour Market Observatory', 5],
-  ['#sweden', 'Wellbeing Observatory', 4],
-  ['#ai-act', 'EU AI Act Observatory', 5],
+  ['#jobb', 'Labour Market Observatory'],
+  ['#sweden', 'Wellbeing Observatory'],
+  ['#ai-act', 'EU AI Act Observatory'],
 ] as const
-for (const [path, name, count] of projects)
-  test(`${name} has a topic overview`, async ({ page }) => {
+for (const [path, name] of projects)
+  test(`${name} opens as a report in three tabs`, async ({ page }) => {
     await page.goto(`/${path}`)
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText(name)
-    await expect(page.locator('.overview-topics > a')).toHaveCount(count)
+    await expect(page.locator('.politik-intro-name')).toHaveText(name)
+    await expect(
+      page.getByRole('navigation', { name: 'Report' }).getByRole('link'),
+    ).toHaveCount(3)
+    await expect(page.getByRole('heading', { level: 1 })).not.toBeEmpty()
+    await expect(page.locator('.report-tab .feature').first()).toBeVisible()
     await expect(
       page.locator('.project-hero-finding,.dk-kpis,.site-sidebar'),
     ).toHaveCount(0)
@@ -65,14 +69,15 @@ test(
   },
 )
 
-test('lab sections open at their addresses after data loads', async ({
+test('lab deep dives open at their addresses after data loads', async ({
   page,
 }) => {
   test.setTimeout(120000)
   for (const path of [
     'symbolic-corpus',
     'philosophy-works',
-    'concepts-profiles',
+    'concepts-method',
+    'drugcomb-quality',
   ]) {
     await page.goto(`/#${path}`)
     await expect(page.locator(`#${path}`)).toBeInViewport({ timeout: 45000 })

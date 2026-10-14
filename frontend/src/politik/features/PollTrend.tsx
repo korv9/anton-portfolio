@@ -180,7 +180,7 @@ export default function PollTrend({ selected }: { selected: string[] }) {
         </table>
       }
       source={l(
-        'SCB, Partisympatiundersökningen; SCB and Valmyndigheten, election results',
+        'SCB, Party Preference Survey (PSU); SCB and Valmyndigheten, election results',
         'SCB, Partisympatiundersökningen; SCB och Valmyndigheten, valresultat',
       )}
     >

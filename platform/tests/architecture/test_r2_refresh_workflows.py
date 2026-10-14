@@ -1,4 +1,5 @@
-"""Refresh workflows publish validated groups and preserve failure/restore boundaries."""
+"""Data workflows stay read-only and guarded; the bootstrap and the release tool keep their
+contracts. What each refresh runs is tested in test_pipeline_workflows.py."""
 import json
 import os
 import re
@@ -116,26 +117,13 @@ def test_refresh_permissions_and_git_are_read_only(filename):
             assert not re.search(r"\bgit\s+(?:-\S+\s+)*(commit|push)\b", script), filename
 
 
-@pytest.mark.parametrize("filename,group", REFRESHERS.items())
-def test_refresh_uses_scoped_publisher_and_explicit_code_sha(filename, group):
-    publications = commands(filename, "platform/publish/release.py", "publish")
-    assert publications, f"{filename}: no versioned group publication"
-    assert any(option(argv, "--group") == group for _, _, argv in publications)
-    for _, step, argv in publications:
-        assert "--code-sha" in argv, filename
-        assert "GITHUB_SHA" in option(argv, "--code-sha") or "github.sha" in step["run"], filename
-        spec = json.loads((ROOT / option(argv, "--spec")).read_text())
-        assert spec["schema_version"] == 2
-        assert not step.get("continue-on-error"), filename
-    assert not commands(filename, "platform/publish/upload.py"), filename
-
-
 @pytest.mark.parametrize("filename", WORKFLOWS)
 def test_credentials_reject_each_missing_or_whitespace_value(tmp_path, filename):
-    guards = [step["run"] for step in steps(filename)
-              if all(name in step.get("run", "") for name in CREDENTIALS)]
-    assert guards, f"{filename}: no complete credential guard"
-    guard = guards[0]
+    # The guard is the first step of the shared setup, which every data workflow uses.
+    assert any(step.get("uses") == "./.github/actions/data-setup" for step in steps(filename)), filename
+    action = yaml.safe_load((ROOT / ".github/actions/data-setup/action.yml").read_text(encoding="utf-8"))
+    guard = action["runs"]["steps"][0]["run"]
+    assert all(name in guard for name in CREDENTIALS)
     for name in CREDENTIALS:
         for value in ("", " \n\t"):
             result, calls, outputs = run_script(tmp_path, guard, **{name: value})
@@ -144,67 +132,6 @@ def test_credentials_reject_each_missing_or_whitespace_value(tmp_path, filename)
     # Harmless pasted line endings must not make a valid secret into a shell command.
     result, calls, outputs = run_script(tmp_path, guard, **{name: "fixture\n" for name in CREDENTIALS})
     assert result.returncode == 0 and "ok=false" not in outputs, filename
-
-
-@pytest.mark.parametrize("exit_code,expected", [(0, 0), (2, 0), (1, 1)])
-def test_news_only_optional_summary_exit_is_tolerated(tmp_path, exit_code, expected):
-    summary = next(step for step in steps("refresh-news.yml") if "summarize_news.py" in step.get("run", ""))
-    assert not summary.get("continue-on-error")
-    result, calls, _ = run_script(tmp_path, summary["run"], SUMMARY_EXIT=str(exit_code))
-    assert result.returncode == expected, result.stderr
-    assert any("platform/publish/summarize_news.py" in call for call in calls)
-
-
-def test_news_restores_active_optional_summary_before_rebuilding_headlines():
-    restored = commands("refresh-news.yml", "platform/publish/release.py", "materialize")
-    assert len(restored) == 1
-    index, _, argv = restored[0]
-    assert option(argv, "--spec") == "configs/delivery/news.json" and "--prefer-active" in argv
-    fetch = next(i for i, step in enumerate(steps("refresh-news.yml"))
-                 if "ingest/news/news_ingest.py" in step.get("run", ""))
-    assert index < fetch
-    for _, step, _ in commands("refresh-news.yml", "platform/publish/release.py", "publish"):
-        assert "always()" not in step.get("if", "") and "failure()" not in step.get("if", "")
-
-
-def test_shared_raw_writers_keep_lock_restore_guards_and_bootstrap_order():
-    public = workflow("refresh-welfare.yml")
-    manual = workflow("build-warehouse.yml")
-    assert public["concurrency"] == manual["concurrency"]
-    assert public["concurrency"]["cancel-in-progress"] is False
-    for filename in ("refresh-jobs.yml", "refresh-welfare.yml", "build-warehouse.yml"):
-        pulls = commands(filename, "platform/publish/warehouse_store.py", "pull")
-        restores = {step["id"] for _, step, _ in pulls if "id" in step}
-        assert restores, f"{filename}: restore needs an outcome id"
-        for _, step, argv in commands(filename, "platform/publish/warehouse_store.py", "push"):
-            if "--only" in argv and option(argv, "--only") == "raw":
-                assert any(f"steps.{restore}.outcome == 'success'" in step.get("if", "")
-                           for restore in restores), f"{filename}: raw push can overwrite failed restore"
-    indices = [next(i for i, step in enumerate(steps("refresh-welfare.yml"))
-                    if f"ingest/run_{topic}.py" in step.get("run", ""))
-               for topic in ("welfare", "parliament", "taxes")]
-    assert indices == sorted(indices)
-    restores = commands("refresh-welfare.yml", "platform/publish/warehouse_store.py", "pull")
-    assert restores[0][0] < indices[0]
-    restore_args = restores[0][2]
-    assert "riksdagen/studies" in restore_args and "riksdagen/_checkpoints" in restore_args
-
-
-def test_public_group_materialization_and_validation_precede_publication():
-    filename = "refresh-welfare.yml"
-    publications = commands(filename, "platform/publish/release.py", "publish")
-    assert publications, "public-data needs the versioned publisher"
-    position = publications[0][0]
-    materialized = commands(filename, "platform/publish/release.py", "materialize")
-    assert any((i < position or (i == position and step["run"].index("release.py materialize")
-                                < step["run"].index("release.py publish")))
-               and option(argv, "--spec") == "configs/delivery/public-data.json"
-               for i, step, argv in materialized), "public-data must carry the complete approved group"
-    validation = [i for i, step in enumerate(steps(filename))
-                  if "validate_public_data.py" in step.get("run", "")]
-    assert validation and max(validation) < position
-    exports = [i for i, step in enumerate(steps(filename)) if "publish/export_" in step.get("run", "")]
-    assert exports and max(exports) < max(validation)
 
 
 def test_initial_bootstrap_stages_groups_then_activates_once(tmp_path):
@@ -267,15 +194,6 @@ def test_publication_specs_have_disjoint_real_file_owners():
     assert owners["parliament/news.json"] == "news"
     assert owners["diva/clusters.json"] == "diva"
     assert owners["gold/marts/jobs.json"] == "jobs-analysis"
-
-
-def test_daily_jobs_do_not_depend_on_the_heavy_manual_report():
-    daily = "\n".join(step.get("run", "") for step in steps("refresh-jobs.yml"))
-    manual = "\n".join(step.get("run", "") for step in steps("refresh-job-analysis.yml"))
-    assert "run_history_pipeline.py" not in daily and "legacy/build_gold.py" not in daily
-    assert "run_history_pipeline.py" in manual and "legacy/build_gold.py" in manual
-    assert any("configs/delivery/jobs-analysis.json" in argv
-               for _, _, argv in commands("refresh-job-analysis.yml", "platform/publish/release.py", "materialize"))
 
 
 def test_release_cli_staging_uses_one_activation_and_preserves_snapshot_on_failure(tmp_path, monkeypatch, capsys):

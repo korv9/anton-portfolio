@@ -1,12 +1,11 @@
 import { Suspense, lazy, useEffect, useRef, useState } from 'react'
 import { currentLocale, l, type Locale } from './i18n'
-import { REPORT_TABS, useRoute } from './router'
+import { AI_ACT_TABS, WELFARE_TABS, sameReport, useRoute } from './router'
 import { pageTitle, ProjectContext, ProjectPager } from './site/Header'
 import SiteHeader from './site/SiteHeader'
 import { CvViewerProvider } from './site/CvViewer'
 import HomePage from './home/HomePage'
 import DebateBackdrop from './home/DebateBackdrop'
-import ProjectOverview from './projects/ProjectOverview'
 import ProjectStructure from './projects/ProjectStructure'
 import { PageBoundary } from './site/PageBoundary'
 import './site/site.css'
@@ -16,9 +15,14 @@ import './site/editorial.css'
 const ProjectsPage = lazy(() => import('./projects/ProjectsPage'))
 const PoliticsProduct = lazy(() => import('./politik/PoliticsProduct'))
 const JobsProduct = lazy(() => import('./jobb/JobsProduct'))
-const WelfarePage = lazy(() => import('./welfare/WelfarePage'))
+const WelfareReport = lazy(() => import('./welfare/WelfareReport'))
+const WelfareDeep = lazy(() =>
+  import('./welfare/WelfareReport').then((m) => ({ default: m.WelfareDeep })),
+)
 const SymbolicAtlasPage = lazy(() => import('./symbolic/SymbolicAtlasPage'))
 const AiActProduct = lazy(() => import('./aiact/AiActProduct'))
+const AiActReport = lazy(() => import('./aiact/AiActReport'))
+const TechPanel = lazy(() => import('./tech/TechPanel'))
 const PhilosophyAtlasPage = lazy(
   () => import('./philosophy/PhilosophyAtlasPage'),
 )
@@ -58,21 +62,9 @@ export default function App() {
     const from = cameFrom.current
     cameFrom.current = route.path
     if (route.page === 'home' && route.path !== '#start') return
-    // A tab of the politics report opens where the reader stands, like a tab.
-    if (REPORT_TABS.includes(from) && REPORT_TABS.includes(route.path)) return
-    requestAnimationFrame(() => {
-      // A section address (#symbolic-method, #concepts-method) scrolls to that section;
-      // a page address to the top.
-      const target =
-        (route.page === 'symbolic' && route.path !== '#symbolic-atlas') ||
-        (route.page === 'philosophy' && route.path !== '#philosophy-atlas') ||
-        route.path === '#concepts-profiles' ||
-        route.path === '#concepts-method'
-          ? document.getElementById(route.path.slice(1))
-          : null
-      if (target) target.scrollIntoView({ block: 'start' })
-      else window.scrollTo({ top: 0, behavior: 'auto' })
-    })
+    // A tab of a report opens where the reader stands, like a tab.
+    if (sameReport(from, route.path)) return
+    requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: 'auto' }))
   }, [route.path, route.page])
 
   const { page, path } = route
@@ -105,23 +97,19 @@ export default function App() {
                 {page === 'home' && <HomePage path={path} />}
                 {page === 'projects' && <ProjectsPage />}
                 {page === 'politik' && <PoliticsProduct route={route} />}
-                {page === 'jobs' &&
-                  (path === '#jobb' ? (
-                    <ProjectOverview id="jobs" />
-                  ) : (
-                    <JobsProduct route={route} />
-                  ))}
+                {page === 'jobs' && <JobsProduct route={route} />}
                 {page === 'welfare' &&
-                  (path === '#sweden' ? (
-                    <ProjectOverview id="welfare" />
+                  (WELFARE_TABS.includes(path) ? (
+                    <WelfareReport route={route} />
                   ) : (
-                    <WelfarePage view={path} />
+                    <WelfareDeep route={route} />
                   ))}
                 {page === 'symbolic' && <SymbolicAtlasPage route={route} />}
                 {page === 'clusters' && <ClusterVisualsPage />}
+                {page === 'tech' && <TechPanel />}
                 {page === 'aiact' &&
-                  (path === '#ai-act' ? (
-                    <ProjectOverview id="ai-act" />
+                  (AI_ACT_TABS.includes(path) ? (
+                    <AiActReport route={route} />
                   ) : (
                     <AiActProduct route={route} />
                   ))}
@@ -129,7 +117,7 @@ export default function App() {
                 {page === 'concepts' && (
                   <ConceptConstellationPage route={route} />
                 )}
-                {page === 'drugcomb' && <DrugCombPage />}
+                {page === 'drugcomb' && <DrugCombPage route={route} />}
                 {page === 'thesis' && <ThesisPage />}
                 {page === 'lakehouse' && <LakehousePage />}
                 {page === 'homie' && <HomiePage />}

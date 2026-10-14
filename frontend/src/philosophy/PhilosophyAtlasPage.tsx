@@ -8,14 +8,84 @@
  */
 import { useEffect, useMemo, useState } from 'react'
 import { l } from '../i18n'
-import { ProjectDepth } from '../projects/ProjectStructure'
 import ProjectTech from '../projects/ProjectTech'
-import { ProjectHero } from '../ui/Project'
 import { ProductQuality } from '../quality/QualityPanel'
-import type { Route } from '../router'
+import { PHILOSOPHY_TABS, type Route } from '../router'
 import { fetchData } from '../dataSource'
 import { useViewParams } from '../politik/useViewParams'
+import ReportShell, {
+  DeepPage,
+  ReportFrame,
+  withQuery,
+  type DeeperLink,
+  type ReportTab,
+} from '../report/ReportShell'
+import { Feature } from '../charts/feature/Feature'
+import { Select } from '../politik/controls'
 import './philosophy.css'
+
+const NAME = 'Philosophy Lab'
+const tabs = (): ReportTab[] => [
+  {
+    path: '#philosophy-atlas',
+    label: l('Ideas or books', 'Idéer eller böcker'),
+    question: l(
+      'Do the passages gather by idea, or by the book they come from?',
+      'Samlas passagerna efter idé, eller efter boken de kommer från?',
+    ),
+  },
+  {
+    path: '#philosophy-groups',
+    label: l('The groups', 'Grupperna'),
+    question: l(
+      'What do the groups of passages talk about?',
+      'Vad handlar grupperna av passager om?',
+    ),
+  },
+  {
+    path: '#philosophy-tensions',
+    label: l('Tensions', 'Spänningar'),
+    question: l(
+      'Where do the thinkers stand between two poles?',
+      'Var står tänkarna mellan två poler?',
+    ),
+  },
+]
+const deeper = (): DeeperLink[] => [
+  {
+    href: '#philosophy-works',
+    label: l('The corpus', 'Korpusen'),
+    about: l(
+      'The thirteen works, their translators and passages',
+      'De tretton verken, översättarna och passagerna',
+    ),
+  },
+  {
+    href: '#philosophy-method',
+    label: l('Method and limits', 'Metod och begränsningar'),
+    about: l(
+      'Cleaning, sampling, the model and the quality checks',
+      'Rensning, urval, modellen och kvalitetskontrollerna',
+    ),
+  },
+  {
+    href: '#concept-journey',
+    label: 'Concept Lab',
+    about: l(
+      'The same concepts across myth, philosophy, politics and law',
+      'Samma begrepp i myter, filosofi, politik och lag',
+    ),
+  },
+  {
+    href: '#symbolic-atlas',
+    label: 'Symbol Lab',
+    about: l(
+      'The same method on myths, folk tales and literature',
+      'Samma metod på myter, folksagor och litteratur',
+    ),
+  },
+]
+const withView = (path: string, route: Route) => withQuery(path, route.params)
 
 type Work = {
   document_id: string
@@ -116,6 +186,7 @@ const ERAS: { id: string; label: [string, string]; periods: string[] }[] = [
 ]
 const eraOf = (period: string) =>
   ERAS.findIndex((e) => e.periods.includes(period))
+const cap = (s: string) => s[0].toUpperCase() + s.slice(1)
 const pct = (v: number) => `${Math.round(v * 100)} %`
 const DEFAULTS = {
   karta: 'author_centered',
@@ -169,23 +240,55 @@ export default function PhilosophyAtlasPage({ route }: { route: Route }) {
 
   if (failed)
     return (
-      <p className="ph-body ds-container">
-        {l('The atlas could not be loaded.', 'Atlasen kunde inte laddas.')}
-      </p>
+      <ReportFrame>
+        <div className="philosophy">
+          <p role="alert">
+            {l('The atlas could not be loaded.', 'Atlasen kunde inte laddas.')}
+          </p>
+        </div>
+      </ReportFrame>
     )
   if (!summary || !atlas || !tensions)
     return (
-      <div className="ph-body ds-container">
-        <ProjectHero project="philosophy-atlas" />
-        <p role="status">
-          {l('Loading the passages…', 'Laddar textpassagerna…')}
-        </p>
-      </div>
+      <ReportFrame>
+        <div className="philosophy">
+          <p role="status">
+            {l('Loading the passages…', 'Laddar textpassagerna…')}
+          </p>
+        </div>
+      </ReportFrame>
+    )
+
+  const works = summary.works
+  if (!PHILOSOPHY_TABS.includes(route.path))
+    return (
+      <ReportFrame>
+        <div className="philosophy">
+          <DeepPage
+            id={route.path.slice(1)}
+            back="#philosophy-atlas"
+            name={NAME}
+          >
+            {route.path === '#philosophy-works' ? (
+              <>
+                <h1>{l('The corpus', 'Korpusen')}</h1>
+                <Works works={works} />
+              </>
+            ) : (
+              <>
+                <h1>{l('Method and limits', 'Metod och begränsningar')}</h1>
+                <Method summary={summary} />
+                <ProductQuality product="philosophy" />
+                <ProjectTech project="philosophy-atlas" />
+              </>
+            )}
+          </DeepPage>
+        </div>
+      </ReportFrame>
     )
 
   const variant = params.karta === 'baseline' ? 'baseline' : 'author_centered'
   const points = atlas[variant]
-  const works = summary.works
   const workIndex = params.verk
     ? works.findIndex((w) => w.document_id === params.verk)
     : -1
@@ -193,212 +296,258 @@ export default function PhilosophyAtlasPage({ route }: { route: Route }) {
   const variantClusters = clusters.filter((c) => c.variant === variant)
   const ev = summary.run.evaluation
   const focusPoint = focus ? points.find((p) => p[0] === focus) : null
+  const tab = PHILOSOPHY_TABS.indexOf(route.path)
+  const tension =
+    summary.tensions.find((x) => x.tension_id === params.spanning) ??
+    summary.tensions[0]
+  const across = variantClusters.filter((c) => c.is_cross_work).length
+
+  const slicer =
+    tab === 2 ? (
+      <div
+        className="report-chips"
+        role="group"
+        aria-label={l('Tension', 'Spänning')}
+      >
+        {summary.tensions.map((x) => (
+          <button
+            key={x.tension_id}
+            type="button"
+            aria-pressed={x.tension_id === tension.tension_id}
+            onClick={() => set({ spanning: x.tension_id })}
+          >
+            {l(x.label_en, x.label_sv)}
+          </button>
+        ))}
+      </div>
+    ) : (
+      <div className="report-chips" role="group" aria-label={l('Map', 'Karta')}>
+        <button
+          type="button"
+          aria-pressed={variant === 'author_centered'}
+          onClick={() => set({ karta: 'author_centered', kluster: '' })}
+        >
+          {l('Centred per work', 'Centrerad per verk')}
+        </button>
+        <button
+          type="button"
+          aria-pressed={variant === 'baseline'}
+          onClick={() => set({ karta: 'baseline', kluster: '' })}
+        >
+          {l('Raw', 'Rå')}
+        </button>
+      </div>
+    )
 
   return (
-    <div className="philosophy">
-      <header className="ph-hero ds-container">
-        <p className="ph-kicker">
-          {l(
-            'Experimental, semantic exploration',
-            'Experimentellt, semantisk utforskning',
+    <ReportFrame>
+      <div className="philosophy">
+        <ReportShell
+          name={NAME}
+          intro={l(
+            `${works.length} public-domain works, from Plato to Nietzsche, cut into passages; ${summary.run.passages_sampled.toLocaleString('en-GB')} of them placed by meaning with one sentence-embedding model and grouped where they gather. A group is named only after a person has read it; ${summary.reviewed_clusters ? `so far ${summary.reviewed_clusters} have been` : 'none has been yet'}.`,
+            `${works.length} fria filosofiska verk, från Platon till Nietzsche, indelade i passager; ${summary.run.passages_sampled} av dem placerade efter innebörd med en modell för meningsinbäddningar och grupperade där de samlas. En grupp får namn först när en människa har läst den; ${summary.reviewed_clusters ? `hittills ${summary.reviewed_clusters}` : 'ännu ingen'}.`,
           )}
-        </p>
-        <h1>Philosophy Lab</h1>
-        <p className="ph-question">
-          {l(
-            'How do recurring moral and philosophical tensions organise texts across thinkers and traditions?',
-            'Hur organiserar återkommande moraliska och filosofiska spänningar texter över tänkare och traditioner?',
-          )}
-        </p>
-        <p className="ph-lede">
-          {l(
-            `${works.length} public-domain works, from Plato to Nietzsche, cut into passages; ${summary.run.passages_sampled} passages (at most ${summary.run.per_document} per work, so long books do not dominate) placed by meaning with a sentence-embedding model and grouped where they gather. Nothing is labelled by a machine: groups are named only after a person has read them, and so far ${summary.reviewed_clusters} have been.`,
-            `${works.length} fria filosofiska verk, från Platon till Nietzsche, indelade i passager; ${summary.run.passages_sampled} passager (högst ${summary.run.per_document} per verk, så att långa böcker inte dominerar) placerade efter innebörd med en modell för meningsinbäddningar och grupperade där de samlas. Ingenting namnges av en maskin: grupper får namn först när en människa har läst dem, och hittills har ${summary.reviewed_clusters} gjort det.`,
-          )}
-        </p>
-      </header>
-      <div className="ph-body ds-container">
-        <section
-          id="philosophy-atlas"
-          className="ph-section"
-          aria-labelledby="ph-map-title"
+          tabs={tabs()}
+          path={route.path}
+          hrefOf={(p) => withView(p, route)}
+          slicerLabel={tab === 2 ? l('Tension', 'Spänning') : l('Map', 'Karta')}
+          slicer={slicer}
+          deeper={deeper()}
         >
-          <h2 id="ph-map-title">{l('The map', 'Kartan')}</h2>
-          <div className="ph-controls">
-            <div
-              role="group"
-              aria-label={l('Map', 'Karta')}
-              className="ph-chips"
-            >
-              <button
-                type="button"
-                aria-pressed={variant === 'author_centered'}
-                onClick={() => set({ karta: 'author_centered', kluster: '' })}
-              >
-                {l('Centred per work', 'Centrerad per verk')}
-              </button>
-              <button
-                type="button"
-                aria-pressed={variant === 'baseline'}
-                onClick={() => set({ karta: 'baseline', kluster: '' })}
-              >
-                {l('Raw', 'Rå')}
-              </button>
-            </div>
-            <label className="ph-select">
-              <span>{l('Highlight a work', 'Markera ett verk')}</span>
-              <select
-                value={params.verk}
-                onChange={(e) => set({ verk: e.target.value })}
-              >
-                <option value="">{l('All works', 'Alla verk')}</option>
-                {works.map((w) => (
-                  <option key={w.document_id} value={w.document_id}>
-                    {w.author}, {w.title}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
-          <p className="ph-hint">
-            {variant === 'author_centered'
-              ? l(
-                  'Each work’s average position is taken out, so passages group by what they discuss rather than by whose book, or whose translation, they come from.',
-                  'Varje verks genomsnittliga position dras bort, så att passager grupperas efter vad de handlar om snarare än vems bok, eller vems översättning, de kommer från.',
-                )
-              : l(
-                  'The embeddings as they are: passages from one work tend to sit together, whatever they discuss.',
-                  'Inbäddningarna som de är: passager ur samma verk tenderar att hamna tillsammans, vad de än handlar om.',
-                )}
-          </p>
-          <AtlasMap
-            points={points}
-            works={works}
-            workIndex={workIndex}
-            clusterId={clusterId}
-            focus={focus}
-            onFocus={setFocus}
-          />
-          <ul className="ph-legend">
-            {ERAS.map((e, i) => (
-              <li key={e.id}>
-                <i className={`ph-era-${i}`} /> {l(...e.label)}
-              </li>
-            ))}
-          </ul>
-          {focusPoint && (
-            <aside className="ph-passage" aria-live="polite">
-              <p className="ph-kicker">
-                {works[focusPoint[1]].author}, {works[focusPoint[1]].title}
-                {focusPoint[4] >= 0
-                  ? `, ${l('group', 'grupp')} ${focusPoint[4]}`
-                  : `, ${l('no group', 'ingen grupp')}`}
-              </p>
-              <blockquote>
-                {passages?.[focusPoint[0]] ?? l('Loading…', 'Laddar…')}
-              </blockquote>
-            </aside>
-          )}
-          <Evaluation ev={ev} />
-        </section>
-
-        <section
-          id="philosophy-groups"
-          className="ph-section"
-          aria-labelledby="ph-groups-title"
-        >
-          <h2 id="ph-groups-title">{l('The groups', 'Grupperna')}</h2>
-          <p className="ph-hint">
-            {l(
-              'Each group with the works it draws on and its most distinctive words. Words are not a name: open a group to read the passages nearest its centre. Groups drawing on at least three works with none above half are marked across works.',
-              'Varje grupp med de verk den hämtar från och sina mest utmärkande ord. Ord är inte ett namn: öppna en grupp för att läsa passagerna närmast dess mitt. Grupper som hämtar från minst tre verk utan att något väger över hälften är markerade som tvärgående.',
-            )}
-          </p>
-          <ul className="ph-groups">
-            {variantClusters.map((c) => (
-              <li
-                key={c.cluster_id}
-                className={clusterId === c.cluster_id ? 'is-open' : ''}
-              >
-                <button
-                  type="button"
-                  aria-expanded={clusterId === c.cluster_id}
-                  onClick={() =>
-                    set({
-                      kluster:
-                        clusterId === c.cluster_id ? '' : String(c.cluster_id),
-                    })
+          {tab === 0 && (
+            <>
+              <div className="report-main">
+                <Feature
+                  id="kartan"
+                  title={l(
+                    `${points.length.toLocaleString('en-GB')} passages placed by meaning`,
+                    `${points.length} passager placerade efter innebörd`,
+                  )}
+                  lead={
+                    variant === 'author_centered'
+                      ? l(
+                          'Each work’s average position is taken out, so passages group by what they discuss rather than by whose book, or whose translation, they come from. Point at a dot to read it.',
+                          'Varje verks genomsnittliga position dras bort, så att passager grupperas efter vad de handlar om snarare än vems bok, eller vems översättning, de kommer från. Peka på en punkt för att läsa den.',
+                        )
+                      : l(
+                          'The embeddings as they are: passages from one work tend to sit together, whatever they discuss. Point at a dot to read it.',
+                          'Inbäddningarna som de är: passager ur samma verk tenderar att hamna tillsammans, vad de än handlar om. Peka på en punkt för att läsa den.',
+                        )
                   }
+                  controls={
+                    <Select
+                      label={l('Highlight a work', 'Markera ett verk')}
+                      value={params.verk}
+                      options={[
+                        { value: '', label: l('All works', 'Alla verk') },
+                        ...works.map((w) => ({
+                          value: w.document_id,
+                          label: `${w.author}, ${w.title}`,
+                        })),
+                      ]}
+                      onChange={(v) => set({ verk: v })}
+                    />
+                  }
+                  source={`${summary.run.model}, UMAP`}
                 >
-                  <span className="ph-group-id">
-                    {c.review_label ?? `${l('Group', 'Grupp')} ${c.cluster_id}`}
-                  </span>
-                  <span className="ph-group-terms">
-                    {c.distinctive_terms.slice(0, 6).join(', ')}
-                  </span>
-                  <span className="ph-group-meta">
-                    {c.size} {l('passages', 'passager')}, {c.work_count}{' '}
-                    {l('works', 'verk')}
-                    {c.is_cross_work && (
-                      <b>, {l('across works', 'tvärgående')}</b>
-                    )}
-                    {', '}
-                    {c.review_status === 'unreviewed'
-                      ? l('not reviewed', 'ej granskad')
-                      : c.review_status}
-                  </span>
-                  <span className="ph-composition" aria-hidden="true">
-                    {Object.entries(c.works).map(([w, n]) => {
-                      const work = works.find((x) => x.document_id === w)
-                      return (
-                        <i
-                          key={w}
-                          className={`ph-era-${eraOf(work?.period ?? '')}`}
-                          style={{ flexGrow: n }}
-                          title={`${work?.author}: ${n}`}
-                        />
-                      )
-                    })}
-                  </span>
-                </button>
-                {clusterId === c.cluster_id && (
-                  <ol className="ph-reps">
-                    {c.representatives.map((id) => {
-                      const w = works.find((x) =>
-                        id.startsWith(`${x.document_id}:`),
-                      )
-                      return (
-                        <li key={id}>
-                          <p className="ph-kicker">
-                            {w?.author}, {w?.title}
-                          </p>
-                          <blockquote>
-                            {passages?.[id] ?? l('Loading…', 'Laddar…')}
-                          </blockquote>
-                        </li>
-                      )
-                    })}
-                  </ol>
+                  <AtlasMap
+                    points={points}
+                    works={works}
+                    workIndex={workIndex}
+                    clusterId={clusterId}
+                    focus={focus}
+                    onFocus={setFocus}
+                  />
+                  <ul className="ph-legend">
+                    {ERAS.map((e, i) => (
+                      <li key={e.id}>
+                        <i className={`ph-era-${i}`} /> {l(...e.label)}
+                      </li>
+                    ))}
+                  </ul>
+                  {focusPoint && (
+                    <aside className="ph-passage" aria-live="polite">
+                      <p className="ph-kicker">
+                        {works[focusPoint[1]].author},{' '}
+                        {works[focusPoint[1]].title}
+                        {focusPoint[4] >= 0
+                          ? `, ${l('group', 'grupp')} ${focusPoint[4]}`
+                          : `, ${l('no group', 'ingen grupp')}`}
+                      </p>
+                      <blockquote>
+                        {passages?.[focusPoint[0]] ?? l('Loading…', 'Laddar…')}
+                      </blockquote>
+                    </aside>
+                  )}
+                </Feature>
+              </div>
+              <div className="report-main">
+                <Feature
+                  id="verk-eller-ide"
+                  title={l(
+                    `Centring per work raises the groups across works from ${ev.baseline.cross_work_clusters} to ${ev.author_centered.cross_work_clusters}`,
+                    `Centrering per verk ökar de tvärgående grupperna från ${ev.baseline.cross_work_clusters} till ${ev.author_centered.cross_work_clusters}`,
+                  )}
+                  lead={l(
+                    'How far the groups follow the works and translators instead of the ideas, on the raw map and on the map centred per work.',
+                    'Hur mycket grupperna följer verk och översättare i stället för idéer, på den råa kartan och på kartan centrerad per verk.',
+                  )}
+                  source={l(
+                    'HDBSCAN groups and nearest neighbours on each map',
+                    'HDBSCAN-grupper och närmaste grannar på varje karta',
+                  )}
+                >
+                  <Evaluation ev={ev} />
+                </Feature>
+              </div>
+            </>
+          )}
+          {tab === 1 && (
+            <div className="report-main">
+              <Feature
+                id="grupperna"
+                title={l(
+                  `${variantClusters.length} groups, ${across} of them across works`,
+                  `${variantClusters.length} grupper, varav ${across} tvärgående`,
                 )}
-              </li>
-            ))}
-          </ul>
-        </section>
-
-        <Tensions
-          summary={summary}
-          data={tensions}
-          active={params.spanning}
-          onChange={(id) => set({ spanning: id })}
-        />
-        <ProjectTech project="philosophy-atlas" />
-        <ProjectDepth project="philosophy-atlas">
-          <Works works={works} />
-          <ProductQuality product="philosophy" />
-          <Method summary={summary} />
-        </ProjectDepth>
+                lead={l(
+                  'Each group with the works it draws on and its most distinctive words. Words are not a name: open a group to read the passages nearest its centre. A group across works draws on at least three works with none above half.',
+                  'Varje grupp med de verk den hämtar från och sina mest utmärkande ord. Ord är inte ett namn: öppna en grupp för att läsa passagerna närmast dess mitt. En tvärgående grupp hämtar från minst tre verk utan att något väger över hälften.',
+                )}
+                source={l(
+                  'HDBSCAN on the chosen map; the distinctive words of each group',
+                  'HDBSCAN på vald karta; varje grupps utmärkande ord',
+                )}
+              >
+                <ul className="ph-groups">
+                  {variantClusters.map((c) => (
+                    <li
+                      key={c.cluster_id}
+                      className={clusterId === c.cluster_id ? 'is-open' : ''}
+                    >
+                      <button
+                        type="button"
+                        aria-expanded={clusterId === c.cluster_id}
+                        onClick={() =>
+                          set({
+                            kluster:
+                              clusterId === c.cluster_id
+                                ? ''
+                                : String(c.cluster_id),
+                          })
+                        }
+                      >
+                        <span className="ph-group-id">
+                          {c.review_label ??
+                            `${l('Group', 'Grupp')} ${c.cluster_id}`}
+                        </span>
+                        <span className="ph-group-terms">
+                          {c.distinctive_terms.slice(0, 6).join(', ')}
+                        </span>
+                        <span className="ph-group-meta">
+                          {c.size} {l('passages', 'passager')}, {c.work_count}{' '}
+                          {l('works', 'verk')}
+                          {c.is_cross_work && (
+                            <b>, {l('across works', 'tvärgående')}</b>
+                          )}
+                          {', '}
+                          {c.review_status === 'unreviewed'
+                            ? l('not reviewed', 'ej granskad')
+                            : c.review_status}
+                        </span>
+                        <span className="ph-composition" aria-hidden="true">
+                          {Object.entries(c.works).map(([w, n]) => {
+                            const work = works.find((x) => x.document_id === w)
+                            return (
+                              <i
+                                key={w}
+                                className={`ph-era-${eraOf(work?.period ?? '')}`}
+                                style={{ flexGrow: n }}
+                                title={`${work?.author}: ${n}`}
+                              />
+                            )
+                          })}
+                        </span>
+                      </button>
+                      {clusterId === c.cluster_id && (
+                        <ol className="ph-reps">
+                          {c.representatives.map((id) => {
+                            const w = works.find((x) =>
+                              id.startsWith(`${x.document_id}:`),
+                            )
+                            return (
+                              <li key={id}>
+                                <p className="ph-kicker">
+                                  {w?.author}, {w?.title}
+                                </p>
+                                <blockquote>
+                                  {passages?.[id] ?? l('Loading…', 'Laddar…')}
+                                </blockquote>
+                              </li>
+                            )
+                          })}
+                        </ol>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+                <ul className="ph-legend">
+                  {ERAS.map((e, k) => (
+                    <li key={e.id}>
+                      <i className={`ph-era-${k}`} /> {l(...e.label)}
+                    </li>
+                  ))}
+                </ul>
+              </Feature>
+            </div>
+          )}
+          {tab === 2 && (
+            <Tensions summary={summary} data={tensions} t={tension} />
+          )}
+        </ReportShell>
       </div>
-    </div>
+    </ReportFrame>
   )
 }
 
@@ -513,12 +662,6 @@ function Evaluation({ ev }: { ev: Summary['run']['evaluation'] }) {
       )}
     >
       <table className="ph-table">
-        <caption>
-          {l(
-            'How far the groups follow the works and translators instead of the ideas',
-            'Hur mycket grupperna följer verk och översättare i stället för idéer',
-          )}
-        </caption>
         <thead>
           <tr>
             <th scope="col">{l('Measure', 'Mått')}</th>
@@ -549,16 +692,12 @@ function Evaluation({ ev }: { ev: Summary['run']['evaluation'] }) {
 function Tensions({
   summary,
   data,
-  active,
-  onChange,
+  t,
 }: {
   summary: Summary
   data: { distribution: Distribution[]; poles: Pole[] }
-  active: string
-  onChange: (id: string) => void
+  t: Tension
 }) {
-  const t =
-    summary.tensions.find((x) => x.tension_id === active) ?? summary.tensions[0]
   const rows = data.distribution
     .filter((d) => d.tension_id === t.tension_id)
     .sort((a, b) => b.median - a.median)
@@ -567,79 +706,76 @@ function Tensions({
   const x = (v: number) => ((v - lo) / (hi - lo || 1)) * 100
   const work = (id: string) => summary.works.find((w) => w.document_id === id)
   return (
-    <section
-      id="philosophy-tensions"
-      className="ph-section"
-      aria-labelledby="ph-tension-title"
-    >
-      <h2 id="ph-tension-title">
-        {l('Tensions, read as lenses', 'Spänningar, lästa som linser')}
-      </h2>
-      <p className="ph-hint">
-        {l(
-          'Each tension has two poles, each written as one sentence. Every passage is compared with both; its position is how much closer it sits to one pole than the other. A lens chosen by us, not an axis of philosophical truth, and the differences between works are small.',
-          'Varje spänning har två poler, var och en skriven som en mening. Varje passage jämförs med båda; dess position är hur mycket närmare den ligger den ena polen än den andra. En lins vi valt, inte en axel för filosofisk sanning, och skillnaderna mellan verken är små.',
-        )}
-      </p>
-      <label className="ph-select">
-        <span>{l('Tension', 'Spänning')}</span>
-        <select value={t.tension_id} onChange={(e) => onChange(e.target.value)}>
-          {summary.tensions.map((x) => (
-            <option key={x.tension_id} value={x.tension_id}>
-              {l(x.label_en, x.label_sv)}
-            </option>
-          ))}
-        </select>
-      </label>
-      <div className="ph-poles">
-        <p>
-          <b>{t.pole_a}</b> “{t.anchor_a}”
-        </p>
-        <p>
-          <b>{t.pole_b}</b> “{t.anchor_b}”
-        </p>
+    <>
+      <div className="report-main">
+        <Feature
+          id="spanningen"
+          title={l(
+            `${cap(t.pole_a)} or ${t.pole_b}: where each thinker stands`,
+            `${cap(t.pole_a)} eller ${t.pole_b}: var varje tänkare står`,
+          )}
+          lead={l(
+            'Each pole is one sentence. Every passage is compared with both; its position is how much closer it sits to one than the other. The bar is the middle half of a work’s passages, the dot its median. A lens chosen by us, not an axis of philosophical truth, and the differences between works are small.',
+            'Varje pol är en mening. Varje passage jämförs med båda; dess position är hur mycket närmare den ligger den ena än den andra. Stapeln är verkets mittersta hälft av passager, punkten dess median. En lins vi valt, inte en axel för filosofisk sanning, och skillnaderna mellan verken är små.',
+          )}
+          source={`${summary.run.model}; ${l('cosine similarity to each pole sentence', 'cosinuslikhet mot varje polmening')}`}
+        >
+          <div className="ph-poles">
+            <p>
+              <b>{t.pole_a}</b> “{t.anchor_a}”
+            </p>
+            <p>
+              <b>{t.pole_b}</b> “{t.anchor_b}”
+            </p>
+          </div>
+          <ul
+            className="ph-ranges"
+            aria-label={l(
+              'Median and middle half of each work',
+              'Median och mittersta hälften för varje verk',
+            )}
+          >
+            {rows.map((r) => {
+              const w = work(r.document_id)
+              return (
+                <li key={r.document_id}>
+                  <span className="ph-range-label">{w?.author}</span>
+                  <span className="ph-range-track">
+                    <span
+                      className="ph-range-iqr"
+                      style={{
+                        left: `${x(r.q1)}%`,
+                        width: `${x(r.q3) - x(r.q1)}%`,
+                      }}
+                    />
+                    <span
+                      className={`ph-range-median ph-era-${eraOf(w?.period ?? '')}`}
+                      style={{ left: `${x(r.median)}%` }}
+                    />
+                  </span>
+                  <span className="ph-range-value">{r.median.toFixed(3)}</span>
+                </li>
+              )
+            })}
+          </ul>
+          <p className="ph-axis-ends" aria-hidden="true">
+            <span>← {t.pole_b}</span>
+            <span>{t.pole_a} →</span>
+          </p>
+        </Feature>
       </div>
-      <ul
-        className="ph-ranges"
-        aria-label={l(
-          'Median and middle half of each work',
-          'Median och mittersta hälften för varje verk',
-        )}
-      >
-        {rows.map((r) => {
-          const w = work(r.document_id)
-          return (
-            <li key={r.document_id}>
-              <span className="ph-range-label">{w?.author}</span>
-              <span className="ph-range-track">
-                <span
-                  className="ph-range-iqr"
-                  style={{
-                    left: `${x(r.q1)}%`,
-                    width: `${x(r.q3) - x(r.q1)}%`,
-                  }}
-                />
-                <span
-                  className={`ph-range-median ph-era-${eraOf(w?.period ?? '')}`}
-                  style={{ left: `${x(r.median)}%` }}
-                />
-              </span>
-              <span className="ph-range-value">{r.median.toFixed(3)}</span>
-            </li>
-          )
-        })}
-      </ul>
-      <p className="ph-axis-ends" aria-hidden="true">
-        <span>← {t.pole_b}</span>
-        <span>{t.pole_a} →</span>
-      </p>
-      <div className="ph-pole-passages">
+      <div className="report-pair">
         {(['a', 'b'] as const).map((pole) => (
-          <div key={pole}>
-            <h3>
-              {l('Closest to', 'Närmast')} {pole === 'a' ? t.pole_a : t.pole_b}
-            </h3>
-            <ol>
+          <Feature
+            key={pole}
+            id={`polen-${pole}`}
+            title={`${l('Closest to', 'Närmast')} ${pole === 'a' ? t.pole_a : t.pole_b}`}
+            source={l(
+              'The three passages ranked closest to the pole',
+              'De tre passager som ligger närmast polen',
+            )}
+          >
+            <ol className="ph-pole-list">
               {data.poles
                 .filter((p) => p.tension_id === t.tension_id && p.pole === pole)
                 .slice(0, 3)
@@ -650,83 +786,69 @@ function Tensions({
                   </li>
                 ))}
             </ol>
-          </div>
+          </Feature>
         ))}
       </div>
-    </section>
+    </>
   )
 }
 
 function Works({ works }: { works: Work[] }) {
   return (
-    <section
-      id="philosophy-works"
-      className="ph-section"
-      aria-labelledby="ph-works-title"
+    <div
+      className="ph-table-wrap"
+      tabIndex={0}
+      aria-label={l('The works', 'Verken')}
     >
-      <h2 id="ph-works-title">{l('The corpus', 'Korpusen')}</h2>
-      <div
-        className="ph-table-wrap"
-        tabIndex={0}
-        aria-label={l('The works', 'Verken')}
-      >
-        <table className="ph-table">
-          <thead>
-            <tr>
-              <th scope="col">{l('Work', 'Verk')}</th>
-              <th scope="col">{l('Year', 'År')}</th>
-              <th scope="col">{l('Tradition', 'Tradition')}</th>
-              <th scope="col">{l('Translator', 'Översättare')}</th>
-              <th scope="col">{l('Passages', 'Passager')}</th>
+      <table className="ph-table">
+        <thead>
+          <tr>
+            <th scope="col">{l('Work', 'Verk')}</th>
+            <th scope="col">{l('Year', 'År')}</th>
+            <th scope="col">{l('Tradition', 'Tradition')}</th>
+            <th scope="col">{l('Translator', 'Översättare')}</th>
+            <th scope="col">{l('Passages', 'Passager')}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {works.map((w) => (
+            <tr key={w.document_id}>
+              <td>
+                <i
+                  className={`ph-swatch ph-era-${eraOf(w.period)}`}
+                  aria-hidden="true"
+                />{' '}
+                {w.author}, <em>{w.title}</em>{' '}
+                <a href={w.source_url} target="_blank" rel="noreferrer">
+                  Gutenberg
+                </a>
+              </td>
+              <td>
+                {w.year < 0 ? `c. ${-w.year} ${l('BCE', 'f.Kr.')}` : w.year}
+              </td>
+              <td>{w.tradition.replace(/-/g, ' ')}</td>
+              <td>
+                {w.translator ??
+                  (w.original_language === 'en' ? (
+                    l('written in English', 'skriven på engelska')
+                  ) : (
+                    <span title={w.translator_note ?? ''}>
+                      {l('not named in the file', 'anges inte i filen')}
+                    </span>
+                  ))}
+              </td>
+              <td>{w.passages}</td>
             </tr>
-          </thead>
-          <tbody>
-            {works.map((w) => (
-              <tr key={w.document_id}>
-                <td>
-                  <i
-                    className={`ph-swatch ph-era-${eraOf(w.period)}`}
-                    aria-hidden="true"
-                  />{' '}
-                  {w.author}, <em>{w.title}</em>{' '}
-                  <a href={w.source_url} target="_blank" rel="noreferrer">
-                    Gutenberg
-                  </a>
-                </td>
-                <td>
-                  {w.year < 0 ? `c. ${-w.year} ${l('BCE', 'f.Kr.')}` : w.year}
-                </td>
-                <td>{w.tradition.replace(/-/g, ' ')}</td>
-                <td>
-                  {w.translator ??
-                    (w.original_language === 'en' ? (
-                      l('written in English', 'skriven på engelska')
-                    ) : (
-                      <span title={w.translator_note ?? ''}>
-                        {l('not named in the file', 'anges inte i filen')}
-                      </span>
-                    ))}
-                </td>
-                <td>{w.passages}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </section>
+          ))}
+        </tbody>
+      </table>
+    </div>
   )
 }
 
 function Method({ summary }: { summary: Summary }) {
   return (
-    <section
-      id="philosophy-method"
-      className="ph-section"
-      aria-labelledby="ph-method-title"
-    >
-      <h2 id="ph-method-title">
-        {l('Method and limits', 'Metod och begränsningar')}
-      </h2>
+    <>
       <ul className="ph-list">
         <li>
           {l(
@@ -768,6 +890,6 @@ function Method({ summary }: { summary: Summary }) {
           docs/philosophy-atlas.md
         </a>
       </p>
-    </section>
+    </>
   )
 }

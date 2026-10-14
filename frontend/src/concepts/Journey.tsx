@@ -9,19 +9,13 @@
  * text influenced another. Only reviewed Symbol Lab clusters may be tied to a concept, and
  * there are none yet, so the stories section says so.
  */
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useState } from 'react'
 import { l } from '../i18n'
 import type { Route } from '../router'
 import { useViewParams } from '../politik/useViewParams'
-import { ProjectHero } from '../ui/Project'
+import { Feature } from '../charts/feature/Feature'
 import { fetchData } from '../dataSource'
-import {
-  DataQuestion,
-  Interpretation,
-  MethodSummary,
-  QualityBrief,
-} from '../ui/Story'
-import { TraceResult } from '../ui/Trace'
+import { DataQuestion, Interpretation, QualityBrief } from '../ui/Story'
 import {
   CORPUS_ORDER,
   JOURNEY_CONCEPTS,
@@ -86,16 +80,8 @@ function Relation({ type, status }: { type: string; status: string }) {
   )
 }
 
-export default function Journey({
-  route,
-  data,
-  metrics,
-}: {
-  route: Route
-  data: Data
-  metrics?: ReactNode
-}) {
-  const [params, set] = useViewParams(route, DEFAULTS)
+export default function Journey({ route, data }: { route: Route; data: Data }) {
+  const [params] = useViewParams(route, DEFAULTS)
   const [passages, setPassages] = useState<Record<
     string,
     Record<string, Passage[]>
@@ -128,59 +114,16 @@ export default function Journey({
 
   return (
     <>
-      <div className="ds-container">
-        <ProjectHero
-          project="concept-constellation"
-          status={
-            <div
-              className="cj-picker"
-              role="group"
-              aria-label={l('Pick an idea', 'Välj en idé')}
-            >
-              <p className="project-hero-label">
-                {l('Pick an idea →', 'Välj en idé →')}
-              </p>
-              {featured.map((c) => (
-                <button
-                  key={c.concept_id}
-                  type="button"
-                  aria-pressed={c.concept_id === id}
-                  onClick={() => set({ begrepp: c.concept_id })}
-                >
-                  {label(c)}
-                </button>
-              ))}
-              <a href="#concept-constellation">
-                {l(
-                  `All ${summary.concepts.length} concepts`,
-                  `Alla ${summary.concepts.length} begrepp`,
-                )}
-              </a>
-            </div>
-          }
+      <div className="report-main">
+        <Feature
+          id="resan"
+          title={l(
+            `${label(concept)} in stories, ideas, debate and rules`,
+            `${label(concept)} i berättelser, idéer, debatt och regler`,
+          )}
+          lead={l(concept.description_en, concept.description_sv)}
+          source={`${summary.run.model}; ${l('how often the concept is a passage’s closest, against chance', 'hur ofta begreppet är en passages närmaste, mot slumpen')}`}
         >
-          <p>
-            {l(
-              'Pick an idea. The page shows where related language appears in myths and folk tales, in philosophy, in Riksdag speeches and in the EU AI Act.',
-              'Välj en idé. Sidan visar var närliggande språk förekommer i myter och folksagor, i filosofi, i riksdagsanföranden och i EU:s AI-förordning.',
-            )}{' '}
-            {l(
-              'This shows semantic similarity, not historical influence.',
-              'Det här visar semantisk likhet, inte historisk påverkan.',
-            )}
-          </p>
-        </ProjectHero>
-        {metrics}
-      </div>
-
-      <div className="cc-body ds-container cj-body">
-        <section className="cj-overview" aria-labelledby="cj-concept">
-          <h2 id="cj-concept" className="cj-concept-title">
-            {label(concept)}
-          </h2>
-          <p className="cj-description">
-            {l(concept.description_en, concept.description_sv)}
-          </p>
           <JourneyMap
             concept={concept}
             profile={profile}
@@ -188,80 +131,115 @@ export default function Journey({
             reference={reference?.count ?? 0}
           />
           <WhyItMatters concept={concept} profile={profile} links={links} />
-        </section>
+        </Feature>
+      </div>
 
-        {CORPUS_ORDER.map((c) => {
-          const k = corpusOf(c)
-          if (!k) return null
-          const p = profile.find((x) => x.corpus_id === c)
-          const list = (passages?.[id]?.[c] ?? []).slice(0, 2)
-          return (
-            <section
-              key={c}
-              className={`cj-domain cj-domain-${c}`}
-              aria-labelledby={`cj-${c}`}
-            >
-              <DataQuestion
-                id={`cj-${c}`}
-                eyebrow={label(k)}
-                question={l(DOMAIN[c].en, DOMAIN[c].sv)}
+      <div className="report-main">
+        <Feature
+          id="passagerna"
+          title={l(
+            'The closest passages in each domain',
+            'De närmaste passagerna i varje domän',
+          )}
+          lead={l(
+            'The passages the model ranks closest to the concept; no reader has judged them to be about it.',
+            'Passagerna som modellen rankar närmast begreppet; ingen läsare har bedömt att de handlar om det.',
+          )}
+          source={l(
+            'Project Gutenberg, Riksdagen and the EU Publications Office',
+            'Project Gutenberg, Riksdagen och EU:s publikationsbyrå',
+          )}
+        >
+          {CORPUS_ORDER.map((c) => {
+            const k = corpusOf(c)
+            if (!k) return null
+            const p = profile.find((x) => x.corpus_id === c)
+            const list = (passages?.[id]?.[c] ?? []).slice(0, 2)
+            return (
+              <section
+                key={c}
+                className={`cj-domain cj-domain-${c}`}
+                aria-labelledby={`cj-${c}`}
               >
-                {p && (
-                  <p>
+                <DataQuestion
+                  id={`cj-${c}`}
+                  eyebrow={label(k)}
+                  question={l(DOMAIN[c].en, DOMAIN[c].sv)}
+                >
+                  {p && (
+                    <p>
+                      {l(
+                        `${label(concept)} is the closest of the ${summary.concepts.length} concepts in ${pct(p.rank1_share)} of the passages here, ${p.rank1_lift.toFixed(1)} times what chance would give.`,
+                        `${label(concept)} är det närmaste av de ${summary.concepts.length} begreppen i ${pct(p.rank1_share)} av passagerna här, ${p.rank1_lift.toFixed(1).replace('.', ',')} gånger vad slumpen skulle ge.`,
+                      )}
+                    </p>
+                  )}
+                </DataQuestion>
+                {c === 'myth' && (
+                  <p className="cj-note">
                     {l(
-                      `${label(concept)} is the closest of the ${summary.concepts.length} concepts in ${pct(p.rank1_share)} of the passages here, ${p.rank1_lift.toFixed(1)} times what chance would give.`,
-                      `${label(concept)} är det närmaste av de ${summary.concepts.length} begreppen i ${pct(p.rank1_share)} av passagerna här, ${p.rank1_lift.toFixed(1).replace('.', ',')} gånger vad slumpen skulle ge.`,
+                      `No reviewed Symbol Lab cluster is tied to a concept yet (${summary.reviewed_cluster_links}), so these are the model’s closest passages among the ${corpusOf('myth')?.documents ?? ''} books of the Symbol Lab corpus, not a reviewed symbolic meaning.`,
+                      `Inget granskat kluster i Symbol Lab är kopplat till ett begrepp ännu (${summary.reviewed_cluster_links}), så detta är modellens närmaste passager bland de ${corpusOf('myth')?.documents ?? ''} böckerna i Symbol Lab korpus, inte en granskad symbolisk betydelse.`,
                     )}
                   </p>
                 )}
-              </DataQuestion>
-              {c === 'myth' && (
-                <p className="cj-note">
-                  {l(
-                    `No reviewed Symbol Lab cluster is tied to a concept yet (${summary.reviewed_cluster_links}), so these are the model’s closest passages among the ${corpusOf('myth')?.documents ?? ''} books of the Symbol Lab corpus, not a reviewed symbolic meaning.`,
-                    `Inget granskat kluster i Symbol Lab är kopplat till ett begrepp ännu (${summary.reviewed_cluster_links}), så detta är modellens närmaste passager bland de ${corpusOf('myth')?.documents ?? ''} böckerna i Symbol Lab korpus, inte en granskad symbolisk betydelse.`,
-                  )}
-                </p>
-              )}
-              {!passages ? (
-                <p className="cj-note">{l('Loading…', 'Laddar…')}</p>
-              ) : list.length === 0 ? (
-                <p className="cj-note">
-                  {l(
-                    'No passage here ranks this concept among its three closest.',
-                    'Ingen passage här har begreppet bland sina tre närmaste.',
-                  )}
-                </p>
-              ) : (
-                <ol className="cj-passages">
-                  {list.map((x) => (
-                    <li key={x.chunk_id} lang={x.language}>
-                      <p className="cj-excerpt">{excerpt(x.text)}</p>
-                      <p className="cj-source">
-                        <a href={x.source_url} target="_blank" rel="noreferrer">
-                          {x.document_title}
-                        </a>
-                        , {x.location},{' '}
-                        <Relation type="semantic_similarity" status="derived" />{' '}
-                        <span className="cj-muted">
-                          {l('similarity', 'likhet')} {x.similarity.toFixed(2)}{' '}
-                          , {l('rank', 'rang')} {x.rank}/
-                          {summary.concepts.length}
-                        </span>
-                      </p>
-                    </li>
-                  ))}
-                </ol>
-              )}
-              <DomainLinks corpus={c} links={links} />
-            </section>
-          )
-        })}
+                {!passages ? (
+                  <p className="cj-note">{l('Loading…', 'Laddar…')}</p>
+                ) : list.length === 0 ? (
+                  <p className="cj-note">
+                    {l(
+                      'No passage here ranks this concept among its three closest.',
+                      'Ingen passage här har begreppet bland sina tre närmaste.',
+                    )}
+                  </p>
+                ) : (
+                  <ol className="cj-passages">
+                    {list.map((x) => (
+                      <li key={x.chunk_id} lang={x.language}>
+                        <p className="cj-excerpt">{excerpt(x.text)}</p>
+                        <p className="cj-source">
+                          <a
+                            href={x.source_url}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            {x.document_title}
+                          </a>
+                          , {x.location},{' '}
+                          <Relation
+                            type="semantic_similarity"
+                            status="derived"
+                          />{' '}
+                          <span className="cj-muted">
+                            {l('similarity', 'likhet')}{' '}
+                            {x.similarity.toFixed(2)} , {l('rank', 'rang')}{' '}
+                            {x.rank}/{summary.concepts.length}
+                          </span>
+                        </p>
+                      </li>
+                    ))}
+                  </ol>
+                )}
+                <DomainLinks corpus={c} links={links} />
+              </section>
+            )
+          })}
+        </Feature>
+      </div>
 
-        <section className="cj-connects" aria-labelledby="cj-connects-title">
-          <h2 id="cj-connects-title">
-            {l('What connects them?', 'Vad förbinder dem?')}
-          </h2>
+      <div className="report-main">
+        <Feature
+          id="forbindelser"
+          title={l('What connects them?', 'Vad förbinder dem?')}
+          lead={l(
+            'Pairs of passages from different domains that sit closer than random pairs usually do.',
+            'Par av passager från olika domäner som ligger närmare än slumpvisa par brukar göra.',
+          )}
+          source={l(
+            'Cosine similarity against the 95th percentile of random pairs',
+            'Cosinuslikhet mot 95:e percentilen för slumpvisa par',
+          )}
+        >
           {own.length ? (
             <ul className="cj-pairs">
               {own.slice(0, 3).map((p) => (
@@ -314,100 +292,70 @@ export default function Journey({
               <a href={`#${reference.route}`}>{l('Read them', 'Läs dem')}</a>
             </p>
           )}
-        </section>
-
-        <Interpretation
-          title={l(
-            'What does not follow from this',
-            'Vad som inte följer av detta',
-          )}
-        >
-          <p>
-            {l(
-              'Similar wording is not the same meaning, and appearing in two domains is not influence: myths did not cause philosophy, and philosophy did not cause the AI Act. The four corpora also differ more from each other than their subjects do: ',
-              'Liknande formuleringar är inte samma betydelse, och att något förekommer i två domäner är inte påverkan: myterna orsakade inte filosofin, och filosofin orsakade inte AI-förordningen. De fyra korpusarna skiljer sig dessutom mer från varandra än deras ämnen gör: ',
-            )}
-            {l(
-              `${pct(summary.run.evaluation.same_corpus_neighbours)} of each passage’s nearest neighbours come from its own corpus, so passages are compared within a domain and through the concepts, never on one shared map.`,
-              `${pct(summary.run.evaluation.same_corpus_neighbours)} av varje passages närmaste grannar kommer från dess egen korpus, så passagerna jämförs inom en domän och genom begreppen, aldrig på en gemensam karta.`,
-            )}
-          </p>
-          <p>
-            {l(
-              'The passages are the ones the model ranks closest; no reader has judged them to be about the concept.',
-              'Passagerna är de som modellen rankar närmast; ingen läsare har bedömt att de handlar om begreppet.',
-            )}
-          </p>
-        </Interpretation>
-
-        <QualityBrief
-          rows={[
-            [
-              l('Traceability', 'Spårbarhet'),
-              l(
-                'Every passage carries its document, location, source link and the version it was read from.',
-                'Varje passage har sitt dokument, sin plats, en källänk och versionen den lästes från.',
-              ),
-            ],
-            [
-              l('Model quality', 'Modellkvalitet'),
-              l(
-                `One shared multilingual model for all four corpora; each Swedish anchor sentence’s nearest English anchor is the same concept for ${Math.round(summary.run.evaluation.anchor_agreement_sv_en * summary.concepts.length)} of ${summary.concepts.length} concepts.`,
-                `En gemensam flerspråkig modell för alla fyra korpusarna; varje svensk ankarmenings närmaste engelska ankare är samma begrepp för ${Math.round(summary.run.evaluation.anchor_agreement_sv_en * summary.concepts.length)} av ${summary.concepts.length} begrepp.`,
-              ),
-            ],
-            [
-              l('Validity', 'Validitet'),
-              l(
-                'Semantic proximity is not the same meaning, and not influence.',
-                'Semantisk närhet är inte samma betydelse, och inte påverkan.',
-              ),
-            ],
-            [
-              l('Review', 'Granskning'),
-              l(
-                'The concepts, anchor sentences, tensions and links are editorial; no passage-to-concept mapping has been reviewed yet.',
-                'Begreppen, ankarmeningarna, spänningarna och länkarna är redaktionella; ingen koppling mellan passage och begrepp har granskats än.',
-              ),
-            ],
-          ]}
-        />
-        <MethodSummary
-          lineage={[
-            l(
-              'Project Gutenberg, Riksdagen, EU Publications Office',
-              'Project Gutenberg, Riksdagen, EU:s publikationsbyrå',
-            ),
-            l('Python ingestion', 'inläsning i Python'),
-            'dbt + DuckDB',
-            l('one multilingual model', 'en flerspråkig modell'),
-            'JSON',
-            'React',
-          ]}
-          quality={l(
-            'Passages with similar language sit closer; in the method that is multilingual sentence embeddings, cosine similarity to a concept’s anchor sentence, and a baseline from random pairs.',
-            'Passager med liknande språk hamnar närmare varandra; i metoden är det flerspråkiga meningsinbäddningar, cosinuslikhet med begreppets ankarmening och en jämförelse med slumpvisa par.',
-          )}
-          more={[
-            {
-              href: '#concepts-method',
-              label: l('Method and limitations', 'Metod och begränsningar'),
-            },
-            {
-              href: `#concept-${id}`,
-              label: l(
-                `Everything about ${label(concept).toLowerCase()}`,
-                `Allt om ${label(concept).toLowerCase()}`,
-              ),
-            },
-          ]}
-        />
-        <TraceResult
-          node="out:concepts/*.json"
-          what={l('the concept passages', 'begreppspassagerna')}
-        />
+        </Feature>
       </div>
+      <Interpretation
+        title={l(
+          'What does not follow from this',
+          'Vad som inte följer av detta',
+        )}
+      >
+        <p>
+          {l(
+            'Similar wording is not the same meaning, and appearing in two domains is not influence: myths did not cause philosophy, and philosophy did not cause the AI Act. The four corpora also differ more from each other than their subjects do: ',
+            'Liknande formuleringar är inte samma betydelse, och att något förekommer i två domäner är inte påverkan: myterna orsakade inte filosofin, och filosofin orsakade inte AI-förordningen. De fyra korpusarna skiljer sig dessutom mer från varandra än deras ämnen gör: ',
+          )}
+          {l(
+            `${pct(summary.run.evaluation.same_corpus_neighbours)} of each passage’s nearest neighbours come from its own corpus, so passages are compared within a domain and through the concepts, never on one shared map.`,
+            `${pct(summary.run.evaluation.same_corpus_neighbours)} av varje passages närmaste grannar kommer från dess egen korpus, så passagerna jämförs inom en domän och genom begreppen, aldrig på en gemensam karta.`,
+          )}
+        </p>
+        <p>
+          {l(
+            'The passages are the ones the model ranks closest; no reader has judged them to be about the concept.',
+            'Passagerna är de som modellen rankar närmast; ingen läsare har bedömt att de handlar om begreppet.',
+          )}
+        </p>
+      </Interpretation>
     </>
+  )
+}
+
+/** The quality of the concept layer in brief, for the method page. */
+export function ConceptQuality({ summary }: { summary: ConceptSummary }) {
+  return (
+    <QualityBrief
+      rows={[
+        [
+          l('Traceability', 'Spårbarhet'),
+          l(
+            'Every passage carries its document, location, source link and the version it was read from.',
+            'Varje passage har sitt dokument, sin plats, en källänk och versionen den lästes från.',
+          ),
+        ],
+        [
+          l('Model quality', 'Modellkvalitet'),
+          l(
+            `One shared multilingual model for all four corpora; each Swedish anchor sentence’s nearest English anchor is the same concept for ${Math.round(summary.run.evaluation.anchor_agreement_sv_en * summary.concepts.length)} of ${summary.concepts.length} concepts.`,
+            `En gemensam flerspråkig modell för alla fyra korpusarna; varje svensk ankarmenings närmaste engelska ankare är samma begrepp för ${Math.round(summary.run.evaluation.anchor_agreement_sv_en * summary.concepts.length)} av ${summary.concepts.length} begrepp.`,
+          ),
+        ],
+        [
+          l('Validity', 'Validitet'),
+          l(
+            'Semantic proximity is not the same meaning, and not influence.',
+            'Semantisk närhet är inte samma betydelse, och inte påverkan.',
+          ),
+        ],
+        [
+          l('Review', 'Granskning'),
+          l(
+            'The concepts, anchor sentences, tensions and links are editorial; no passage-to-concept mapping has been reviewed yet.',
+            'Begreppen, ankarmeningarna, spänningarna och länkarna är redaktionella; ingen koppling mellan passage och begrepp har granskats än.',
+          ),
+        ],
+      ]}
+    />
   )
 }
 
