@@ -238,10 +238,12 @@ def embed(args) -> int:
 
 def pca(vectors: np.ndarray, dims: int) -> dict:
     """PCA to `dims`, then L2, then an int8 scale per dimension; numbers rounded as stored in pca.json."""
-    mean = vectors.mean(axis=0)
-    components = np.linalg.svd(vectors - mean, full_matrices=False)[2][:dims]
+    # The directions come from the centred corpus, but vectors are projected uncentred (mean 0):
+    # centring before the L2 step changes the cosine ranking, and recall@10 fell to about 0.82
+    # even at the full 1,024 dimensions.
+    components = np.linalg.svd(vectors - vectors.mean(axis=0), full_matrices=False)[2][:dims]
     fitted = {"model": MODEL, "dims_in": vectors.shape[1], "dims": dims,
-              "mean": np.round(mean, 6).tolist(), "components": np.round(components, 6).tolist()}
+              "mean": [0.0] * vectors.shape[1], "components": np.round(components, 6).tolist()}
     projected = project(vectors, fitted)
     fitted["scale"] = np.round(np.abs(projected).max(axis=0) / 127, 8).tolist()
     return fitted

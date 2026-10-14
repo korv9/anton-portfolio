@@ -48,3 +48,17 @@ def test_a_batch_stays_under_the_models_context():
     n = w.batch_size(lengths)
     assert n * lengths[n - 1] <= w.BATCH_TOKENS and (n + 1) * lengths[n] > w.BATCH_TOKENS
     assert w.batch_size([90_000]) == 1
+
+
+def test_projection_keeps_the_cosine_ranking_of_full_vectors():
+    import numpy as np
+    rng = np.random.default_rng(2)
+    # Like bge-m3: every vector shares a large common direction. Centring would reorder neighbours.
+    vectors = (rng.normal(size=(400, 32)) + 4 * rng.normal(size=32)).astype("float32")
+    fitted = w.pca(vectors, 32)
+    assert not any(fitted["mean"])
+    centred = {**fitted, "mean": vectors.mean(axis=0).tolist()}
+    centred["scale"] = (np.abs(w.project(vectors, centred)).max(axis=0) / 127).tolist()
+    kept = w.recall_at_10(vectors, fitted, w.quantise(vectors, fitted), queries=100)
+    assert kept > 0.9
+    assert kept > w.recall_at_10(vectors, centred, w.quantise(vectors, centred), queries=100) + 0.1
