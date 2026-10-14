@@ -13,6 +13,7 @@
   "politics/laws/v1/",
   "politics/laws/v2/",
   "workers-ai/debate/shards/",
+  "workers-ai/debate/shards/",
   "workers-ai/sfs/meta.json"
  ],
  "parquet_datasets": {
