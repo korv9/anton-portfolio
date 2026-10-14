@@ -331,10 +331,12 @@ export default function AskTheLaw({ route }: { route: Route }) {
             {choice === 'sfs' && laws.length > 0 && (
               <section aria-labelledby="lq-laws-title">
                 <h2 id="lq-laws-title">
-                  {l(
-                    `The ${laws.length} laws in the selection`,
-                    `De ${laws.length} lagarna i urvalet`,
-                  )}
+                  {laws.length === 1
+                    ? l('The law in the selection', 'Lagen i urvalet')
+                    : l(
+                        `The ${laws.length} laws in the selection`,
+                        `De ${laws.length} lagarna i urvalet`,
+                      )}
                 </h2>
                 <ul className="lq-laws">
                   {laws.map((law) => (

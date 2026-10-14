@@ -21,7 +21,7 @@ test(
     await expect(card.locator('canvas')).toBeVisible()
     // The vectors wait for the reader.
     expect(requested).not.toContain('debate/vectors.bin')
-    const box = card.getByLabel('Your sentence')
+    const box = card.getByLabel('Your sentence', { exact: true })
     await box.focus()
     await expect.poll(() => requested).toContain('debate/vectors.bin')
     await box.fill('Skolan behöver fler lärare.')
@@ -117,7 +117,9 @@ test(
     await expect(card.locator('.cv-place-group')).toHaveText(
       DEBATE.names[DEBATE.first][0],
     )
-    await card.getByLabel('Your sentence').fill('En egen mening.')
+    await card
+      .getByLabel('Your sentence', { exact: true })
+      .fill('En egen mening.')
     await card.getByRole('button', { name: 'Place it' }).click()
     await expect(card.getByRole('status')).toContainText(
       "Today's Workers AI allocation is used up",
