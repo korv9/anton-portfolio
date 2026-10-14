@@ -147,17 +147,20 @@ export const SYSTEM = [
   'Support every claim with a verbatim quote from a passage, written as [[id]]"quote", where id is the passage id and the quote is copied character for character from that passage.',
   'Never quote anything that is not in the passage with that id, and never use outside knowledge.',
   'If the passages do not answer the question, reply with exactly NO_ANSWER and nothing else.',
+  'Example of the format: Lagen omfattar anställda [[sfs-1982-80-1]]"Lagen gäller arbetstagare i allmän och enskild tjänst".',
 ].join(' ')
 
-const QUOTE = /\[\[([^\]]+)\]\]\s*"([^"]+)"/g
+// [[id]] followed by its quote; a colon or white space between them is tolerated, and curly
+// quotes are already straight after fold(). An [[id]] without a quote is matched too, and fails.
+const QUOTE = /\[\[([^\]]+)\]\](?:\s*:?\s*"([^"]+)")?/g
 
-/** Every quote in the answer, and whether each is verbatim in the passage it names. */
+/** Every citation in the answer, and whether its quote is verbatim in the passage it names. */
 export function checkQuotes(answer: string, passages: Passage[]) {
   const texts = new Map(passages.map((p) => [p.id, fold(p.text)]))
   return [...fold(answer).matchAll(QUOTE)].map(([, id, quote]) => ({
     id,
-    quote,
-    verbatim: texts.get(id)?.includes(fold(quote)) ?? false,
+    quote: quote ?? '',
+    verbatim: quote != null && (texts.get(id)?.includes(fold(quote)) ?? false),
   }))
 }
 

@@ -86,6 +86,18 @@ test('quotes: verbatim after folding, missing, and under the wrong id', () => {
   assert.deepEqual(q('[[sfs-9-9]]"Annan text."'), [false])
 })
 
+test('quotes: harmless format variants pass, a citation without a quote fails', () => {
+  const q = (answer: string) =>
+    checkQuotes(answer, [LAW]).map((x) => x.verbatim)
+  assert.deepEqual(q('[[sfs-1982-80-1]]: "enskild tjänst"'), [true])
+  assert.deepEqual(q('[[sfs-1982-80-1]] ”enskild tjänst”'), [true])
+  assert.deepEqual(
+    q('Ja [[sfs-1982-80-1]]. Och [[sfs-1982-80-1]]"enskild tjänst"'),
+    [false, true],
+  )
+  assert.deepEqual(q('[[sfs-1982-80-1]]"Enskild tjänst"'), [false])
+})
+
 test('assets pass through untouched', async () => {
   const r = await worker.fetch(new Request('https://site.test/'), await env())
   assert.equal(await r.text(), 'asset /')
