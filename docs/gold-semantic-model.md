@@ -46,7 +46,7 @@ npm run test:e2e
 | `fact_umap_sample` | 14,800 | `model_id + chunk_id`; sample points, not a population count |
 | `fact_law_provision` | 20,788 | `pool + document_id + provision_id`; source text is fetched through its snapshot shard |
 
-All 31 table schemas, including the smaller job, activity, RFC and precomputed vote-measure tables, are in [`semantic-model.json`](../public/data/gold/semantic-model.json). The broader physical source inventory is in [the data dictionary](data-dictionary.md).
+All 31 table schemas, including the smaller job, activity, RFC and precomputed vote-measure tables, are in [`semantic-model.json`](../frontend/public/data/gold/semantic-model.json). The broader physical source inventory is in [the data dictionary](data-dictionary.md).
 
 ## Joins and measure semantics
 

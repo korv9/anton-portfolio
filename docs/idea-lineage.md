@@ -182,8 +182,9 @@ commits 5 to 7 October 2026), the Concept Journey decision and the decision to k
 
 ## The page
 
-`#idea-lineage` (experimental, linked from the footer under the hood) reads only
-`idea-lineage/events.json` and shows one view at a time:
+The page is retired from the website: `#idea-lineage` now leads to the project index
+([site-structure.md](site-structure.md)). The journal and its commands are unchanged. The page
+read only `idea-lineage/events.json` and showed one view at a time:
 
 - The timeline puts events by date on a thin thread, one shape per kind (an open circle for an idea, a
   filled square for a decision, a diamond for a hypothesis, a triangle for an experiment, a
@@ -191,7 +192,7 @@ commits 5 to 7 October 2026), the Concept Journey decision and the decision to k
   links. "Why does this exist?" keeps only the events it came from, following those links back
   to the origin. Filters: project and kind.
 - Projects now gives the current direction, active decisions, latest findings and open
-  questions per project, derived the same way as the state files (`frontend/src/lineage/logic.ts`).
+  questions per project, derived the same way as the state files.
 - Set aside lists the ideas and decisions a later event superseded or rejected, with that event's
   reason.
 

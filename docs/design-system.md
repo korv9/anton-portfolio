@@ -92,7 +92,7 @@ debates and articles remain separate.
 - Charts use open page surfaces. Native disclosures contain optional technical detail.
 - `Stage` gives a projection its reading key and groups data/settings below the figure.
 
-See [project-restructure.md](project-restructure.md) for retained and removed views.
+See [site-structure.md](site-structure.md) for retained and removed views.
 
 ## Charts
 

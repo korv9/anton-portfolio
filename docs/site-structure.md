@@ -1,13 +1,56 @@
 # Site structure
 
-The current project structure is documented in [project-restructure.md](project-restructure.md).
-The shared header replaces the sidebar. Project grouping is defined in
-`frontend/src/projects/projectRegistry.ts`; topic links are in `frontend/src/projects/topics.ts`.
+How the site is organised and which file decides what. The visual direction is in
+[design-system.md](design-system.md); how a page orders its content is in
+[data-storytelling.md](data-storytelling.md).
 
-The homepage contains the identity, profile, experience and project index. Each project has
-its own entry page. Observatory entry pages link to themed analyses. Labs and engineering
-projects retain section addresses for their reports. Individual documents and exploratory
-readers remain separate views. Previous and next links follow the menu's group order.
+## Projects and navigation
 
-Retired platform and project addresses resolve to the project index. Their pipelines and
-shared data utilities remain available to the projects that use them.
+The homepage holds the identity, profile, experience and project index. A shared header
+replaces the old sidebar. Its project menu groups the eleven projects, and Cluster Visuals sits
+beside them as a separate tool.
+
+| Group | Projects |
+| --- | --- |
+| Observatories | Political Observatory, Labour Market Observatory, Wellbeing Observatory, EU AI Act Observatory |
+| Labs | Symbol Lab, Philosophy Lab, Concept Lab, Drug Synergy Lab |
+| Engineering | IT Incident Clustering, Homie API, DiVA Thesis Lakehouse |
+
+Each project has an entry page. An observatory opens as a report with three tabs, each tab an
+address of its own, and deeper views behind them. Labs and engineering projects are continuous
+reports with section addresses. Readers for one speech, debate, article or concept are separate
+views. Previous and next links follow the menu's group order.
+
+## Where it is defined
+
+| What | File |
+| --- | --- |
+| Project names, descriptions, addresses and menu grouping | `frontend/src/projects/projectRegistry.ts` |
+| Topic links under each project | `frontend/src/projects/topics.ts` |
+| Hash routing, report tabs, deep dives and redirects for old addresses | `frontend/src/router.ts` |
+| Shared report frame | `frontend/src/report/ReportShell.tsx` |
+
+Routes are `#path` with optional query parameters, so a chosen view can be shared as a link.
+
+## Layout and copy
+
+Charts sit on open page surfaces. Filters and technical detail may have a bounded area. A
+chart heading names the measure; its caption keeps source, unit, period and comparison basis.
+Technical methods use native disclosures. Analytical pages have a quiet ivory canvas, and the
+decorative debate background stays on the homepage. Large map projections keep their reading
+key.
+
+The Wellbeing county reference is a mean of the counties weighted by total population, and is
+labelled that way. Each source keeps its own population definition.
+
+## Retired views
+
+The platform pages (quality, data model and ER, architecture, catalogue, Idea Lineage), the RAG
+assistant, the industrial pump project, DiVA topic clustering and Allegoria are off the
+website. Their addresses lead to the project index (`REDIRECTS` in `router.ts`). The pipelines,
+schema access, quality checks and trace data that the remaining projects use are still in the
+repository, and so are their documents: [quality-and-validity.md](quality-and-validity.md),
+[data-constellation.md](data-constellation.md) and [idea-lineage.md](idea-lineage.md).
+
+Retired project ids are still accepted by the append-only idea journal, so old records stay
+readable.

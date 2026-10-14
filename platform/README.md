@@ -9,7 +9,7 @@ source → warehouse/raw (bronze) → silver → gold → delivery
 ```
 
 Bronze is files on disk, exactly as fetched, never edited. Silver and gold are **schemas in
-DuckDB**, not directories of JSON — that is what makes them queryable, testable and typed.
+DuckDB**, not directories of JSON. That is what makes them queryable, testable and typed.
 Delivery is the last step and a separate concern: sizing files for first paint, choosing
 JSON or Parquet or a shard, hashing and uploading.
 
@@ -84,7 +84,7 @@ before the politics build, since dbt reads the fact tables it writes.
 
 ## Adding a source
 
-SOU is the next one. The shape is the same for any source:
+The shape is the same for any source:
 
 1. **Ingest.** `ingest/<source>/` fetches to `warehouse/raw/<source>/` and records, per
    file, the URL, the fetch date and a SHA-256. Nothing downstream may read anything that
@@ -92,7 +92,7 @@ SOU is the next one. The shape is the same for any source:
 2. **Bronze.** A `sources.yml` and a `stg_<source>.sql` under `models/bronze/<subject>/`,
    one row per source record, typed and nothing else.
 3. **Silver.** Conform it: join to `dim_session`, normalise identifiers, apply crosswalks.
-   Entities shared across subjects — `dim_document`, `dim_session` — belong in
+   Entities shared across subjects (`dim_document`, `dim_session`) belong in
    `models/silver/shared/` so politics and research use the same ones.
 4. **Gold.** The marts a reader actually wants.
 5. **Deliver.** Classify each mart: needed for first paint → JSON; filtered interactively →

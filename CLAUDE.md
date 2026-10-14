@@ -33,7 +33,8 @@ Follow the skills in `.claude/skills/` (sources in `.claude/skills/README.md`):
   tokens. Inside the site, draw with the CSS variables (`var(--ink)` …) so a `.plate`
   recolours the chart, and keep one focal accent.
 - **`de-ai-writing`** for all prose a reader sees: page copy, project descriptions, docs, commit
-  messages and PR text. Keep every fact and number; run `scripts/check_ai_signs.py` on new copy.
+  messages and PR text. Keep every fact and number; run
+  `.claude/skills/de-ai-writing/scripts/check_ai_signs.py` on new copy.
 
 Idea Lineage (`docs/idea-lineage.md`), for substantial project work only, not small fixes:
 

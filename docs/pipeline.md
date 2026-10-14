@@ -13,8 +13,9 @@ that describes orchestration. The definitions themselves are in two files:
 A subject is fetched to `warehouse/raw`, built and tested by dbt into
 `platform/target/<subject>`, passed through an ML stage if it has one, and exported to
 `frontend/public/data`. Its delivery group is then checked and published as a versioned
-release in R2 (`platform/publish/release.py`, specs in `configs/delivery/`). The site reads the
-active release. No workflow commits data.
+release in R2 (`platform/publish/release.py`, specs in `configs/delivery/`). The site does not
+read these releases: it serves the data committed under `frontend/public/data`
+([storage-and-serving.md](storage-and-serving.md)). No workflow commits data.
 
 ## Running a subject locally
 
@@ -51,8 +52,8 @@ Rules the command keeps:
 - One failed subject does not stop the others. A subject that `needs` a failed one is skipped.
   The exit code is non-zero if anything failed.
 - A group is published once, and only when every subject in it succeeded in the same run.
-- Publishing changes the live site. Locally it runs only with `--only publish`, and needs the
-  R2 credentials in the environment. In Actions it is part of a normal run.
+- Publishing changes the active release in R2. Locally it runs only with `--only publish`, and
+  needs the R2 credentials in the environment. In Actions it is part of a normal run.
 
 `pull` and `push` need the R2 credentials too. `push` deletes remote raw files that are gone
 locally only for subjects marked `prune: true` (welfare, parliament, taxes).
@@ -109,6 +110,36 @@ What stays in YAML is the handling of failure, which differs per workflow:
   subject ends with the structural gate, after the store.
 - `publish-r2.yml` is the bootstrap: it stages every group and activates them together. It
   is not a subject and is run by hand.
+
+After a subject's ingest steps, successful or not, `pipeline.py` records the outcome in
+`status/ingestion.json` (`platform/publish/ingest_status.py`): the error if any, the GitHub
+run, and per raw source the last fetch, the last content change, files, size and this run's
+fetches, changes and failed requests, read from `raw/<source>/_manifest.jsonl`. In Actions the
+file is merged into an uncached copy in R2 outside every release; locally it is written to
+`frontend/public/data/status/` (git-ignored). The tech panel (`#tech`) reads it. The sources
+are the first segments of a subject's `raw` paths; a subject whose fetch log is kept outside
+R2 lists it under `sources` (news).
+
+## What a run refetches
+
+The daily runs restore the stored raw files first and fetch only what can have changed. The
+rules are in `platform/lib/rawstore.py` and in each source's ingest script.
+
+| Source | Every run | Reused until |
+|---|---|---|
+| SCB and Folkhälsomyndigheten (PxWeb) | Metadata, and periods from the last two calendar years | Older periods for 90 days, if URL, body, headers and hash match |
+| OECD, Försäkringskassan's large tables | Försäkringskassan's metadata | Verified answers for 7 days, so current observations from these two can lag by up to a week |
+| ESS | The portal's study and file versions | The same file version and variable selection for 90 days |
+| Kolada | Metadata and the block that holds the current years | Complete older blocks for 90 days |
+| Skatteverket and HUT | Municipal rates, current amounts, this year's withholding tables | Complete older years and HUT 2021 for 90 days |
+| Riksdagen | The two latest sessions | Complete older sessions for 90 days |
+
+A paged year or list is reused only when it has a completion record and every file it names
+has the right hash. Starting an update removes the old completion record, so an interrupted
+fetch never counts as complete history. `--full-refresh` ignores every age limit.
+
+`refresh-welfare.yml` allows 240 minutes for the job, and 70, 90 and 60 minutes for welfare,
+parliament and taxes.
 
 ## ML stages
 

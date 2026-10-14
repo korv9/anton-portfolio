@@ -1,7 +1,7 @@
 # The job market
 
-`#job-market` shows every job ad published on Arbetsförmedlingen since 2020, in all
-occupations. The IT report on software and data roles, which reads whole ads, is
+The Labour Market Observatory (`#jobb`) shows every job ad published on Arbetsförmedlingen
+since 2020, in all occupations. The IT report on software and data roles, which reads whole ads, is
 `#job-market-tech` (see `platform/ingest/jobtech/`).
 
 ## Source
@@ -16,7 +16,7 @@ or removed in a time window, in the archives' shape.
 
 ## Pipeline
 
-1. **Count** — `platform/ingest/jobtech/ingest_market.py` streams each archive once and keeps
+1. **Count**: `platform/ingest/jobtech/ingest_market.py` streams each archive once and keeps
    no ad, only counts, in `warehouse/raw/jobtech/market/`:
    - `ads_<archive>.parquet`: ads and vacancies per publication month, occupation field,
      occupation group (SSYK 4) and workplace county;
@@ -44,7 +44,7 @@ or removed in a time window, in the archives' shape.
    month enters the monthly series only when the stream covers it from its first day. The
    months between the latest archive and the stream's first whole month stay empty until their
    quarterly archive is published.
-2. **Model** — dbt, tag `market` (`platform/models/{bronze,gold}/market`):
+2. **Model**: dbt, tag `market` (`platform/models/{bronze,gold}/market`):
    - `stg_market_ads`, `stg_market_conditions`: each archive counts only its own year or
      quarter, so an ad republished across a turn of the year counts once; the stream
      (archive `stream`) counts only the months after the archives end, so a new quarterly
@@ -57,14 +57,14 @@ or removed in a time window, in the archives' shape.
      `mart_market_conditions_yearly`, `mart_market_archives`, `mart_market_daily` (ads per
      day from the stream).
    - `int_market_periods`: the comparison period ends with the last complete month.
-3. **Export** — `platform/publish/export_market.py` writes `frontend/public/data/jobs/market.json`,
+3. **Export**: `platform/publish/export_market.py` writes `frontend/public/data/jobs/market.json`,
    with `daily` (ads per day) and `preliminary` (months from the stream). *Trender* shows the
    latest days under the monthly chart, marked preliminary.
-4. **Refresh** — `.github/workflows/refresh-jobs.yml`, every morning (04:23 UTC): it fetches
-   the stored counts, stream and provenance log from R2
-   (`warehouse_store.py pull --only raw --path …`), counts any new archive and the stream
-   since the previous run, rebuilds `market.json`, stores the files back in R2 and commits
-   the site's data. Quality check `jobs_stream_currentness` warns when the stream's last
+4. **Refresh**: `.github/workflows/refresh-jobs.yml`, every morning (04:23 UTC): it restores
+   the stored counts, stream and provenance log from R2, counts any new archive and the stream
+   since the previous run and rebuilds `market.json` (`pipeline.py run market`). It stores the
+   raw files back in R2 before it validates the export, then publishes the `jobs` group as a
+   versioned release ([delivery-validation.md](delivery-validation.md)). It commits nothing. Quality check `jobs_stream_currentness` warns when the stream's last
    complete day is more than two days old.
 
 ```

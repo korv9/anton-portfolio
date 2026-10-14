@@ -1,13 +1,14 @@
 # Hosting: Cloudflare
 
-The site is static files (`npm run build` → `dist/`) served by **Cloudflare Workers static
-assets** at `https://antonernstsson.com`: a Worker with no script, only files. The document
-shards and Parquet marts are served from the R2 bucket `anton-portfolio`, on the same Cloudflare
-account (see [storage-and-serving.md](storage-and-serving.md)).
+The site is static files (`npm run build` → `dist/`) served by Cloudflare Workers static
+assets at `https://antonernstsson.com`: a Worker with no script, only files. The site's JSON
+is part of those files. Parquet marts and document shards are served from the R2 bucket
+`anton-portfolio` on the same Cloudflare account, which also holds the versioned data releases
+the site does not read ([storage-and-serving.md](storage-and-serving.md)).
 
-Cloudflare builds the site itself from this repository (Workers Builds): every push to `main`
-is published, including the data commits the refresh workflows make, and every other branch and
-pull request gets a preview URL on `workers.dev`. No workflow here deploys.
+Cloudflare builds the site from this repository (Workers Builds). Every push to `main` is
+published, and every other branch and pull request gets a preview URL on `workers.dev`. No
+workflow here deploys the site.
 
 ## Branches: main and a preview per pull request
 
@@ -19,7 +20,8 @@ pull request gets a preview URL on `workers.dev`. No workflow here deploys.
    preview's address stays the same for a branch; `r2-cors.json` allows the working branch's
    so the preview can read the data.
 3. The owner looks at the preview and approves the merge; merged, it is live.
-4. The data refreshes commit to `main` directly (fresh data goes live without review).
+4. The data workflows commit nothing. They publish versioned releases to R2
+   ([pipeline.md](pipeline.md)).
 
 ## In the repository
 
@@ -62,44 +64,43 @@ on `workers.dev` and in previews without configuration.
    - apply the CORS policy: R2 → the bucket → Settings → CORS policy → paste
      `platform/publish/r2-cors.json`;
    - set the repository variable `R2_PUBLIC_BASE` to `https://data.antonernstsson.com/`
-     (Settings → Secrets and variables → Actions → Variables) and run `npm run data:catalog`
-     with it exported, so `delivery.json` points at the domain; commit it;
+     (Settings → Secrets and variables → Actions → Variables). To move the committed
+     `delivery.json` to the domain, run `npm run data:catalog` with the variable exported and
+     commit the result;
    - once the site reads from the domain, turn off the bucket's `r2.dev` URL.
 5. **Scheduled refreshes.** Each morning (UTC): `refresh-jobs.yml` at 04:23, `refresh-welfare.yml`
    at 04:37 (welfare, taxes and parliament) and `refresh-news.yml` at 05:17. Every Saturday at
    21:13 `build-warehouse.yml` rebuilds every subject, including Riksdag speeches and the
-   analyses built on them. Each publishes a versioned release to R2, which the site reads; none
-   commits data. They run in the `anton-portfolio` environment, whose secrets hold the R2
+   analyses built on them. Each publishes a versioned release to R2; none commits data. The
+   site does not read these releases: it serves the data committed under
+   `frontend/public/data` ([storage-and-serving.md](storage-and-serving.md)). They run in the `anton-portfolio` environment, whose secrets hold the R2
    credentials, and can also be run by hand from the Actions tab. To pause one, comment out its
    `schedule:` lines. [pipeline.md](pipeline.md) lists every subject and its schedule.
 6. **Refresh secrets.** Settings → Environments → `anton-portfolio` → Secrets:
    `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET` (an R2 API token
    with read and write on the bucket). Without them the daily refresh stops at its first step
    and the news collection does nothing.
-7. **The warehouse in R2.** Actions → *Build, store and publish the warehouse* → Run workflow. It
+7. **The first release.** Actions → `publish-r2.yml` → Run workflow. It stages every delivery
+   group and activates them together; give it `manifests/pipeline-smoke.json` as
+   `manifest_key` to check the whole bundle apart from the production pointer, then
+   `manifests/current.json`. The site is not wired to the manifest
+   ([r2-delivery-contract.md](r2-delivery-contract.md)).
+8. **The warehouse in R2.** Actions → *Build, store and publish the warehouse* → Run workflow. It
    fetches every public source, builds the DuckDB warehouse with dbt and stores it in the
    bucket with all its raw files (`platform/publish/warehouse_store.py`):
    `warehouse/portfolio.duckdb.gz`, `warehouse/manifest.json` (built when, from which commit,
    SHA-256, rows per schema), `warehouse/raw/` and `warehouse/features/` (the ML stages'
    outputs: embeddings, maps, clusters, the concept layer). Later runs start from the stored
-   files. The ML stages run only when their output is not stored yet; choose `ml: always` to
-   rerun them (seeds are fixed, so the same inputs give the same results). The first run counts
+   files. Run by hand, the ML stages run only when their output is not stored yet; choose
+   `ml: always` to rerun them (seeds are fixed, so the same inputs give the same results). The first run counts
    every JobTech archive for the AI governance terms and takes a couple of hours.
    Fetch the warehouse anywhere with `python platform/publish/warehouse_store.py pull`. The
    bucket is public, so the warehouse can be downloaded by anyone; it holds only open data.
-   `platform/tests/architecture/test_warehouse_workflow.py` fails if a dbt subject, a source
-   or an ML stage is added without a step here.
-
-   What lives where:
-
-   | What | Where | Kept by |
-   |---|---|---|
-   | The site's JSON (every product's `frontend/public/data/**/*.json`) | Cloudflare Workers static assets | git, deployed on every push to main |
-   | Parquet datasets and document shards | R2, public | *Publish to R2* (`upload.py`), verified by hash |
-   | Raw source files, ML outputs, the DuckDB warehouse | R2, `warehouse/` | *Build, store and publish the warehouse* |
+   `platform/tests/architecture/test_pipeline_workflows.py` fails if a dbt subject, a source
+   or an ML stage is left out of the weekly run.
 
 ## Limits
 
 Free plan: 20,000 files and 25 MiB per file in a Worker's static assets; requests for static
-assets are free and unlimited. The site is about 1,000 files; the largest is 5.7 MB. Check the
-config locally with `npx wrangler deploy --dry-run` after `npm run build`.
+assets are free and unlimited. A local build on 13 October 2026 had 950 files, the largest
+5.4 MB. Check the config locally with `npx wrangler deploy --dry-run` after `npm run build`.

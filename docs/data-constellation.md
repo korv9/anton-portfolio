@@ -1,6 +1,11 @@
 # Data Constellation
 
-`#data-constellation` shows the whole data platform as one interactive map: where the data
+The page is retired from the website: `#data-constellation` and `#data-catalogue` now lead to
+the project index ([site-structure.md](site-structure.md)). The graph is still generated
+(`npm run architecture:build`) and still feeds *Trace this result* on the product pages. The
+rest of this document describes the map as it was built.
+
+`#data-constellation` showed the whole data platform as one interactive map: where the data
 comes from, how it is ingested, how dbt models it, which files are published and which
 products read them. The point it makes is that the portfolio is one shared platform with
 several products on top, not separate dashboards; and for a reviewer, that any product can be
