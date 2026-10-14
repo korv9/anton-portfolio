@@ -19,9 +19,100 @@ länshistorik ingår inte. Grupperna gäller liknande indikatorprofiler, inte
 hur bra regionerna mår. Skala, dtype (float32), observations-id och ML-kod
 är frysta före modelljämförelserna.
 
+## Uppföljning 2026-10-14: konsensus över tolv seeds
+
+Kartorna på sidan Klustervisualiseringar bygger nu på körningarna nedan. Avsnittet
+från 2026-10-13 står kvar som jämförelse. Statiska diagram finns i
+`warehouse/cluster_lab/public-consensus-2026-10-13/report.html`.
+
+Varje variant kördes med tolv seeds. En grupp behålls när minst hälften av
+körningarna hittar den, och en passage får den grupp som flest körningar ger den.
+Stabiliteten mäts som ARI mellan konsensus över seeds 0, 2, 4 … och konsensus över
+seeds 1, 3, 5 … (split-half-ARI).
+
+| Underlag | Passager | Grupper | Namngivna | Utan grupp före och efter återföring | Största grupp | Split-half-ARI | Intrångstest |
+|---|---|---|---|---|---|---|---|
+| Partiledardebatter | 33 023 | 33 | 31 | 29,5 % och 16,2 % | 7,8 % | 0,75 | 52 av 66 |
+| Filosofi, 113 verk | 21 260 | 19 | 17 | 57,5 % och 31,2 % | 12,0 % | 0,80 | 25 av 38 |
+
+### Varianter
+
+| Variant | Passager | Grupper | Utan grupp | Split-half-ARI | Poäng |
+|---|---|---|---|---|---|
+| Debatter, SBERT (vald) | 33 023 | 33 | 16,2 % | 0,751 | 0,171 |
+| Debatter, e5-large | 33 023 | 34 | 28,2 % | 0,862 | −0,021 |
+| Debatter, SBERT utan sju grupper | 23 027 | 30 | 16,9 % | 0,720 | 0,048 |
+| Debatter, e5-large utan sju grupper | 23 027 | 33 | 28,2 % | 0,833 | 0,003 |
+| Filosofi, MiniLM, 80–150 ord (vald) | 21 260 | 19 | 31,2 % | 0,805 | −0,125 |
+| Filosofi, e5-large, 80–150 ord | 21 260 | 13 | 46,3 % | 0,563 | −0,211 |
+| Filosofi, MiniLM, cirka 300 ord | 16 602 | 19 | 37,8 % | 0,733 | −0,126 |
+| Filosofi, e5-large, cirka 300 ord | 16 602 | 12 | 42,6 % | 0,764 | −0,154 |
+
+Valet är högsta poäng bland varianter med split-half-ARI minst 0,75.
+
+- Ett tidigare tal var för högt. Seed-ARI 0,77 från 2026-10-13 gällde seeds 42, 43
+  och 44. Samma inställning ger 0,70 i medel över seeds 0 till 5, och ARI mellan två
+  enskilda körningar är 0,68 över alla tolv. Konsensus når 0,751.
+- Tröskeln för att länka grupper mellan körningar sänktes från Jaccard 0,5 till 0,3
+  efter att 0,5 gav split-half-ARI 0,735 på debatterna. Värdet valdes alltså på samma
+  data som det mäts på, och marginalen till gränsen 0,75 är liten.
+- `multilingual-e5-large` ger stabilare grupper på debatterna men lämnar 28 % av
+  passagerna utan grupp mot 16 % för SBERT. På filosofin är modellen sämre på alla mått.
+- Att ta bort de sju grupper som saknade namn och klustra om gav inte bättre grupper.
+  Med svensk stoppordslista visade sig fyra av dem vara ämnen: EU och euron, brott
+  och polis, arbetsmarknadspolitik, skattesänkningar och budget.
+- Passager om cirka 300 ord gav filosofin lika många grupper men fler passager utan
+  grupp och split-half-ARI under gränsen.
+
+### Namn och intrångstest
+
+31 av 33 debattgrupper har namn och rymmer 73,5 % av passagerna. Två grupper med
+10,3 % har inget namn. 21 grupper delar minst 85 % av sina passager med en grupp som
+fick namn 2026-10-13 och behöll det namnet. Tio fick namn efter läsning av åtta
+slumpade passager var. I filosofin har 17 av 19 grupper namn (64,4 % av passagerna).
+
+Intrångstestet visar fyra passager ur en grupp och en ur en annan, två uppgifter per
+grupp. Läsaren pekade ut rätt passage i 52 av 66 uppgifter för debatterna (79 %) och
+25 av 38 för filosofin (66 %). Slumpen ger 20 %. Noll rätt av två fick
+skattesänkningar och budget, försvar och skogen bland debatterna, skönhet och konst
+samt skrift och tro i filosofin. Läsaren var samma språkmodell som satte namnen och
+hade redan läst passager ur 11 debattgrupper och 7 filosofigrupper. Testet är därför
+inte oberoende, och en mänsklig läsare återstår.
+
+### Två nivåer
+
+Grupper med minst 800 passager klustrades en gång till med åtta seeds. Delningen
+visas när split-half-ARI når 0,75. Åtta av 13 debattgrupper delas, till exempel EU i
+samarbete (1 101 passager), euron (535) och folkomröstning (178), och brott och polis
+i polis och straff (1 055), alkohol (79) och abort (54). I filosofin delas en av fem
+grupper. Delgrupperna har bara de vanligaste orden som etikett; ingen har läst dem.
+
+### Kommuner
+
+280 kommuner 2024 med tolv indikatorer. Till de sju tidigare kom folkmängd
+(logaritmerad), in- och utpendling, försörjningskvot och andel med eftergymnasial
+utbildning från Kolada. PCA behåller fyra komponenter (40,2, 24,0, 11,7 och 6,1 % av
+variansen).
+
+Gap-regeln väljer k=2 (71 och 209 kommuner): silhouette 0,352 mot 0,201 för omkastade
+kolumner, bootstrap-ARI 0,75. Med sju indikatorer var silhouette 0,327 mot 0,253.
+Sidan visar den finare delningen k=4, som har högst bootstrap-ARI (0,77) och
+silhouette 0,274 mot 0,201.
+
+| Grupp | Kommuner | Kännetecken |
+|---|---|---|
+| Förorter med hög inkomst och pendling | 33 | medianinkomst 470 452 kr, utpendling 70,8 % |
+| Mindre orter med stabil sysselsättning | 111 | arbetslöshet 2,1 %, sysselsättning 84,6 % |
+| Större städer | 40 | arbetslöshet 3,4 %, eftergymnasial utbildning 45,7 % |
+| Landsbygd med svagare arbetsmarknad | 96 | ohälsotal 31,0 dagar, bistånd 3,4 % |
+
+AMI mot SKR:s kommungrupper är 0,319 för k=4 och 0,172 för k=2, mot 0,138 med sju
+indikatorer. Grupperna följer nu kommuntyp mer än förut, vilket är väntat när
+folkmängd och pendling ingår. Silhouette 0,27 betyder att grupperna överlappar.
+
 ## Uppföljning 2026-10-13: ämnesgrupper som går att visa
 
-Körningarna nedan ersätter kartorna från 2026-10-12 på sidan Klustervisualiseringar.
+Körningarna nedan ersatte kartorna från 2026-10-12 och är i sin tur ersatta av avsnittet ovan.
 De äldre resultaten står kvar längre ned som jämförelse. Statiska diagram över alla
 resultat finns i `warehouse/cluster_lab/public-topics-2026-10-12/report.html`.
 

@@ -64,6 +64,19 @@ def sentence_passages(text,low=80,high=150,minimum=40):
     return [text for text in (' '.join(part) for part in out) if len(text.split())>=minimum]
 
 
+def joined(parts,words):
+    """Consecutive passages joined until each has at least `words` words; a short tail joins the last."""
+    out,current=[],[]
+    for part in parts:
+        current.append(part)
+        if sum(len(p.split()) for p in current)>=words:
+            out.append(' '.join(current))
+            current=[]
+    if current:
+        out[-1:]=[' '.join(out[-1:]+current)]
+    return out
+
+
 def prepare_debate(cfg,folder):
     source=Path(cfg['sources'])
     frozen=pd.read_parquet(source/'datasets/debate/observations.parquet')
@@ -112,6 +125,8 @@ def prepare_philosophy(cfg,folder):
         try:
             text,_,_=own_text((raw/'gutenberg'/f'{d["id"]}.txt').read_text(encoding='utf-8'),d.get('text_start'),d.get('text_end'))
             parts=passages(clean_document(text,{'document_id':d['id']}).structured)
+            if cfg.get('join_words'):
+                parts=joined(parts,cfg['join_words'])
         except (OSError,ValueError,StopIteration) as error:
             failed.append(f'{d["id"]}: {error}')
             continue
@@ -129,7 +144,7 @@ def prepare_philosophy(cfg,folder):
     works=frame.drop_duplicates('document_id')
     coverage={'scope':'public-domain philosophy in English from Project Gutenberg; the author\'s own text, cleaned and cut into passages',
         'works':len(works),'authors':int(works.author.nunique()),'passages':len(frame),
-        'per_document':cfg['per_document'],'works_by_tradition':works.tradition.value_counts().to_dict(),
+        'per_document':cfg['per_document'],'join_words':cfg.get('join_words'),'works_by_tradition':works.tradition.value_counts().to_dict(),
         'works_by_period':works.period.value_counts().to_dict(),
         'works_with_named_translator':int(works.translator.ne('').sum()),
         'authors_with_two_translators':int((works[works.translator.ne('')].groupby('author').translator.nunique()>1).sum()),

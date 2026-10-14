@@ -69,3 +69,22 @@ def test_gap_and_bootstrap_tell_real_groups_from_one_cloud():
     fit=lambda x:KMeans(3,n_init=10,random_state=0).fit_predict(x)
     assert gap(grouped,3,rng,10)[0]>gap(cloud,3,rng,10)[0]
     assert bootstrap_ari(fit,grouped,fit(grouped),rng,20)>.95>bootstrap_ari(fit,cloud,fit(cloud),rng,20)
+
+
+def test_consensus_keeps_groups_most_seeds_agree_on_and_drops_the_rest():
+    from ml.research.consensus import consensus
+    from ml.research.topics import joined
+    truth=np.repeat([0,1,2],[50,30,20])
+    rng=np.random.default_rng(0)
+    runs=[]
+    for seed in range(6):
+        labels=rng.permutation(3)[truth]          # group ids differ between seeds
+        labels[rng.choice(100,5,replace=False)]=-1
+        runs.append(labels)
+    runs[0][50:80]=-1                             # one seed misses the second group
+    runs[1][truth==2]=np.repeat([3,4],10)         # one seed splits the third group
+    runs[2][:5]=5                                 # a group only one seed found
+    labels,share=consensus(np.array(runs))
+    assert (labels==truth).all() and share.min()>=.5 and share[60]<1
+    assert (consensus(np.full((4,10),-1))[0]==-1).all()
+    assert joined(['a b','c','d e f','g'],3)==['a b c','d e f g'] and joined(['a'],3)==['a']

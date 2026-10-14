@@ -16,7 +16,7 @@ import ClusterLab from './ClusterLab'
 import './clusters.css'
 import { loadDebateMap } from './debateData'
 
-type Loaded = {
+export type Loaded = {
   points: ClusterPoint[]
   population?: { observations: number; clusters: number; noise_share: number }
   name?: (c: number) => string
@@ -24,7 +24,7 @@ type Loaded = {
   method: string[]
 }
 type Variant = { key: string; label: string; load: () => Promise<Loaded> }
-type MapSpec = {
+export type MapSpec = {
   id: string
   project: string
   href: string
@@ -193,7 +193,7 @@ async function loadResearch(slug: string): Promise<Loaded> {
   }
 }
 
-const MAPS = (): MapSpec[] => [
+export const MAPS = (): MapSpec[] => [
   {
     id: 'research-debates',
     project: 'Political Observatory',
@@ -239,12 +239,12 @@ const MAPS = (): MapSpec[] => [
     project: l('How is Sweden doing?', 'Hur mår Sverige?'),
     href: '#sweden',
     title: l(
-      'Municipal profiles: seven indicators in 2024',
-      'Kommunprofiler: sju indikatorer 2024',
+      'Municipal profiles: twelve indicators in 2024',
+      'Kommunprofiler: tolv indikatorer 2024',
     ),
     meaning: l(
-      'Each point is one of 280 municipalities, placed by the first two principal components of seven indicators. Ten municipalities lack a value for social assistance and are left out. The groups describe similar profiles; they do not rank wellbeing.',
-      'Varje punkt är en av 280 kommuner, placerad efter de två första principalkomponenterna av sju indikatorer. Tio kommuner saknar värde för ekonomiskt bistånd och är inte med. Grupperna beskriver liknande profiler och rangordnar inte välmående.',
+      'Each point is one of 280 municipalities, placed by the first two principal components of twelve indicators. Ten municipalities lack a value for social assistance and are left out. The groups describe similar profiles; they do not rank wellbeing.',
+      'Varje punkt är en av 280 kommuner, placerad efter de två första principalkomponenterna av tolv indikatorer. Tio kommuner saknar värde för ekonomiskt bistånd och är inte med. Grupperna beskriver liknande profiler och rangordnar inte välmående.',
     ),
     variants: [
       {

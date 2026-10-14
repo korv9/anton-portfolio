@@ -1,4 +1,4 @@
-output: warehouse/cluster_lab/public-topics-2026-10-12
+output: warehouse/cluster_lab/public-consensus-2026-10-13
 municipalities:
   # Published mart (delivery.json, parquet/welfare/) and https://api.kolada.se/v3/municipality_groups.
   panel: warehouse/cluster_lab/public-topics-2026-10-12/sources/mart_municipality_year_panel.parquet
@@ -23,6 +23,19 @@ municipalities:
     - social_assistance_pct
     - turnout_riksdag_pct
     - eligible_vocational_programme_pct
+    # Structure, added 2026-10-13: SKR's groups rest on population and commuting.
+    - log_population
+    - out_commuting_pct
+    - in_commuting_pct
+    - dependency_ratio
+    - post_secondary_25_64_pct
+  kolada:
+    file: warehouse/cluster_lab/public-consensus-2026-10-13/sources/kolada_structure_2024.json
+    kpis:
+      out_commuting_pct: N02279
+      in_commuting_pct: N02276
+      dependency_ratio: N00927
+      post_secondary_25_64_pct: N01982
   variance_share: 0.8
   k:
     - 2
