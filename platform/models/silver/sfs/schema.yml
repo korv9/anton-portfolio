@@ -1,0 +1,26 @@
+version: 2
+
+models:
+  - name: silver_sfs_paragraphs
+    description: >-
+      One row per paragraph (§) of the laws in configs/workers_ai/sfs_selection.yaml, or one per
+      stycke when the paragraph is longer than 1,500 characters; the passages "Fråga lagen" searches.
+    columns:
+      - name: id
+        description: sfs-<year>-<number>-<chapter>-<§>[-<stycke>], or without the chapter for a law that has none.
+        data_tests: [unique, not_null]
+      - name: dok_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_sfs_texts')
+                field: dok_id
+      - name: title
+        data_tests: [not_null]
+      - name: text
+        data_tests: [not_null]
+      - name: url
+        data_tests: [not_null]
+      - name: fetched
+        data_tests: [not_null]

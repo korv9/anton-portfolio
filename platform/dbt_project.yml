@@ -30,6 +30,8 @@ models:
         +tags: [ai_act]
       jobs:
         +tags: [jobs]
+      sfs:
+        +tags: [sfs]
       market:
         +tags: [market]
       news:
@@ -57,6 +59,8 @@ models:
         +tags: [jobs]
       parliament:
         +tags: [parliament]
+      sfs:
+        +tags: [sfs]
       symbolic:
         +tags: [symbolic]
       welfare:
