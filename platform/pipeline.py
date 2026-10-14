@@ -23,9 +23,13 @@ import re
 import shlex
 import subprocess
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 
 import yaml
+
+sys.path.insert(0, str(Path(__file__).resolve().parent / "publish"))
+import ingest_status  # noqa: E402
 
 PLATFORM = Path(__file__).resolve().parent
 ROOT = PLATFORM.parent
@@ -194,10 +198,16 @@ def command_run(args, config: dict) -> int:
         if blocked := [n for n in subjects[name].get("needs", []) if n in failed]:
             failed[name] = f"needs {', '.join(blocked)}"
             continue
+        started = datetime.now(timezone.utc).isoformat(timespec="seconds")
         try:
             run_subject(name, subjects[name], phases, args.ml, run)
         except RuntimeError as error:
             failed[name] = str(error)
+        if "ingest" in phases and not run.dry_run and any("ingest" in s for s in subjects[name]["steps"]):
+            try:
+                ingest_status.record(name, subjects[name], started, failed.get(name))
+            except Exception as error:  # noqa: BLE001 - the status page must not fail a subject
+                print(f"::warning::ingestion status of {name} not recorded: {error}", flush=True)
     if "publish" in phases:
         publish(config, names, failed, phases, run)
     for path in dict.fromkeys(run.missing):

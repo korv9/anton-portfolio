@@ -15,7 +15,9 @@
 # group in configs/delivery that owns its files), needs (subjects that must not have failed in
 # the same run), raw and features (paths under warehouse/raw and warehouse/features kept in R2),
 # prune (raw pushes delete remote files that are gone locally), target (dbt target folder when it
-# differs from the subject name), manual (left out of --all, and not required by its group).
+# differs from the subject name), manual (left out of --all, and not required by its group),
+# sources (raw folders whose fetch log is kept outside R2 by the ingest itself, for the
+# ingestion status in status/ingestion.json; the first segments of `raw` count already).
 #
 # A group is published once, after every subject in it has succeeded.
 
@@ -31,6 +33,8 @@ groups:
   public-data:
     publish:
       - python platform/publish/export_schema.py
+      - python platform/publish/export_er.py
+      - python platform/architecture/build_graph.py
       - *data_catalog
       - *data_check
       - python platform/publish/validate_public_data.py
@@ -115,6 +119,7 @@ subjects:
   news:
     schedule: '17 5 * * *'
     group: news
+    sources: [news]
     steps:
       # The last approved summary first, so a failed summary step keeps it.
       - ingest: python platform/publish/release.py materialize --root frontend/public/data --spec configs/delivery/news.json --catalog frontend/public/data/catalog.json --prefer-active

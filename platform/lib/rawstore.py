@@ -227,6 +227,40 @@ def fetch(http: requests.Session, source: str, relative: str, url: str, *, metho
                 headers=headers)
 
 
+def fetch_summary(source: str, since: str | None = None) -> dict:
+    """What the fetch log of raw/<source> says: the latest fetch, when content last changed,
+    files and bytes as last fetched, and with `since` (an ISO time) how many fetches, changes
+    and failed requests came after it. Reads lines keyed by `path` (store) or `source` (feeds)."""
+    manifest = RAW / source / "_manifest.jsonl"
+    lines = []
+    if manifest.is_file():
+        for line in manifest.read_text(encoding="utf-8").splitlines():
+            try:
+                record = json.loads(line)
+                key = record.get("path") or record["source"]
+                if not key.startswith("_checkpoints/") and record["fetched_at"]:
+                    lines.append((key, record))
+            except (ValueError, KeyError, TypeError, AttributeError):
+                continue  # An interrupted final line is not a fetch.
+    if not lines:
+        return {"source_key": source, "fetched_at": None}
+    latest = dict(lines)
+    changed = [r["fetched_at"] for _, r in lines if r.get("changed")]
+    summary = {
+        "source_key": source,
+        "fetched_at": max(r["fetched_at"] for r in latest.values()),
+        "content_changed_at": max(changed) if changed else None,
+        "files": len(latest),
+        "bytes": sum(r.get("bytes") or 0 for r in latest.values()),
+    }
+    if since:
+        recent = [r for _, r in lines if r["fetched_at"] >= since]
+        summary |= {"fetched": len(recent),
+                    "changed": sum(1 for r in recent if r.get("changed")),
+                    "errors": sum(1 for r in recent if r.get("error"))}
+    return summary
+
+
 def version_path(relative: str, digest: str) -> str:
     """`guidance/page.html` and a hash -> `guidance/page@<first 12 hex>.html`."""
     path = Path(relative)

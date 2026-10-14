@@ -1,0 +1,512 @@
+/*
+ * Tech panel (TechPanel.tsx): a working page, denser than the reports. Mono for names and
+ * figures, hairlines between rows, olive for what succeeded and the site's red for what failed.
+ */
+.tech {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--sp-7);
+  padding: var(--sp-6) clamp(1rem, 1.6vw, 1.5rem) var(--sp-section);
+}
+.tech-head {
+  display: grid;
+  gap: var(--sp-4);
+}
+.tech h1 {
+  margin: 0;
+  font-size: var(--display-l);
+  font-weight: 750;
+  letter-spacing: -0.045em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+.tech-head p {
+  max-width: 62ch;
+  margin: 0;
+  color: var(--ink-faded);
+}
+.tech-head nav,
+.tech-pick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2) var(--sp-5);
+}
+.tech-head nav button,
+.tech-pick button {
+  padding: var(--sp-1) 0;
+  border: 0;
+  background: none;
+  color: var(--ink-faded);
+  font: inherit;
+  font-size: var(--small);
+  font-weight: 650;
+  cursor: pointer;
+}
+.tech-head nav button:hover,
+.tech-pick button:hover {
+  color: var(--ink);
+}
+.tech-pick button[aria-pressed='true'] {
+  color: var(--cv-olive);
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.3em;
+}
+.tech-pick button span {
+  font-family: var(--font-mono);
+  font-size: var(--caption);
+  font-weight: 500;
+}
+.tech :is(button, a, summary, input, select, [tabindex]):focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 3px;
+}
+.tech > section {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--sp-4);
+  padding-top: var(--sp-5);
+  border-top: 3px solid var(--ink);
+  scroll-margin-top: calc(var(--header-h, 4rem) + var(--sp-4));
+}
+.tech h2 {
+  margin: 0;
+  font-size: var(--h2);
+  font-weight: 750;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+}
+.tech h3 {
+  margin: var(--sp-6) 0 0;
+  color: var(--cv-olive);
+  font-family: var(--font-mono);
+  font-size: var(--caption);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.tech h2 + h3 {
+  margin-top: var(--sp-2);
+}
+.tech-note,
+.tech-meta {
+  max-width: 90ch;
+  margin: 0;
+  color: var(--ink-faded);
+  font-size: var(--small);
+}
+.tech-meta {
+  font-family: var(--font-mono);
+  font-size: var(--caption);
+}
+
+/* ---------- Tables ---------- */
+.tech-scroll {
+  overflow-x: auto;
+}
+.tech-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--small);
+}
+.tech-table :is(th, td) {
+  padding: var(--sp-2) var(--sp-4) var(--sp-2) 0;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+}
+.tech-table thead th {
+  color: var(--ink-faded);
+  font-family: var(--font-mono);
+  font-size: var(--caption);
+  font-weight: 500;
+  white-space: nowrap;
+}
+.tech-table tbody th {
+  font-family: var(--font-mono);
+  font-size: var(--caption);
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+.tech-table .num {
+  font-family: var(--font-mono);
+  text-align: right;
+}
+.tech-table a {
+  color: inherit;
+}
+/* What each subject holds per stage: the cell is shaded by its share of the column's most. */
+.tech-table.stages td {
+  background: color-mix(
+    in srgb,
+    var(--cv-olive) calc(var(--share, 0) * 45%),
+    transparent
+  );
+  padding-right: var(--sp-3);
+}
+
+/* Fetches per subject: the outcome in olive or red, like the runs. */
+.fetches-state {
+  font-family: var(--font-mono);
+  font-size: var(--caption);
+  text-transform: uppercase;
+}
+.fetches tr[data-state='success'] .fetches-state {
+  color: var(--cv-olive);
+}
+.fetches tr[data-state='failure'] .fetches-state {
+  color: var(--negative);
+}
+
+/* ---------- The scheduled runs ---------- */
+.runs {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(19rem, 1fr));
+  gap: var(--sp-5) var(--sp-6);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.runs > li {
+  display: grid;
+  gap: var(--sp-2);
+  padding-top: var(--sp-3);
+  border-top: 3px solid var(--line-strong);
+}
+.runs > li[data-state='success'] {
+  border-top-color: var(--cv-olive);
+}
+.runs > li[data-state='failure'] {
+  border-top-color: var(--negative);
+}
+.runs-head {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  align-items: baseline;
+}
+.runs-head b {
+  font-size: var(--body);
+  line-height: 1.25;
+}
+.runs-state {
+  font-family: var(--font-mono);
+  font-size: var(--caption);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.runs > li[data-state='success'] .runs-state {
+  color: var(--cv-olive);
+}
+.runs > li[data-state='failure'] .runs-state {
+  color: var(--negative);
+}
+.runs-strip {
+  display: flex;
+  gap: 3px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.runs-strip a {
+  display: block;
+  width: 1.1rem;
+  height: 1.1rem;
+  background: var(--cv-oat);
+}
+.runs-strip a[data-state='success'] {
+  background: var(--cv-olive);
+}
+.runs-strip a[data-state='failure'] {
+  background: var(--negative);
+}
+.runs-strip a[data-state='running'] {
+  background: var(--cv-butter);
+}
+.runs-strip a:hover {
+  outline: 2px solid var(--ink);
+  outline-offset: 1px;
+}
+
+/* ---------- Pipeline figures ---------- */
+.tech-figures {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-4) var(--sp-7);
+  margin: 0;
+}
+.tech-figures dt {
+  color: var(--ink-faded);
+  font-family: var(--font-mono);
+  font-size: var(--caption);
+}
+.tech-figures dd {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--h3);
+  font-weight: 650;
+}
+
+/* ---------- ER diagram ---------- */
+.er {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--sp-4);
+}
+.er-scroll {
+  max-height: 80vh;
+  overflow: auto;
+  border: 1px solid var(--line);
+}
+.er-scroll svg {
+  display: block;
+}
+.er-lines path {
+  fill: none;
+  stroke: var(--ink-faded);
+  stroke-width: 1;
+  stroke-linejoin: round;
+  transition: opacity var(--dur) var(--ease);
+}
+.er-lines path.lit {
+  stroke: var(--negative);
+  stroke-width: 1.6;
+}
+.er-lines path.dim {
+  opacity: 0.08;
+}
+.er-box {
+  cursor: pointer;
+  transition: opacity var(--dur) var(--ease);
+}
+.er-box.dim {
+  opacity: 0.25;
+}
+.er-frame {
+  fill: var(--page);
+  stroke: var(--line-strong);
+}
+.er-head {
+  fill: var(--cv-oat);
+}
+.er-box.fact .er-head,
+.er-box.bridge .er-head {
+  fill: var(--cv-pistachio);
+}
+.er-box.mart .er-head {
+  fill: var(--cv-butter);
+}
+.er-box.foreign .er-frame {
+  stroke-dasharray: 4 3;
+}
+.er-box.picked .er-frame {
+  stroke: var(--ink);
+  stroke-width: 2;
+}
+.er-box:focus-visible .er-frame {
+  stroke: var(--focus);
+  stroke-width: 2;
+}
+.er-box text {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  fill: var(--ink);
+}
+.er-box .er-name {
+  font-weight: 650;
+}
+.er-box .er-col.key {
+  font-weight: 650;
+}
+.er-box .er-type {
+  fill: var(--ink-faded);
+  font-size: 10px;
+  text-anchor: end;
+}
+.er-box .er-more {
+  fill: var(--ink-faded);
+}
+.er-card {
+  display: grid;
+  gap: var(--sp-3);
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--line-strong);
+}
+.tech .er-card h3 {
+  margin: 0;
+  color: var(--ink);
+  font-size: var(--body);
+  font-weight: 650;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.er-card p {
+  max-width: 90ch;
+  margin: var(--sp-1) 0 0;
+  font-size: var(--small);
+}
+.er-card-body {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr));
+  gap: var(--sp-5) var(--sp-7);
+  align-items: start;
+}
+
+/* ---------- Every table ---------- */
+.tech-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: var(--sp-4) var(--sp-6);
+}
+.tech-filters label {
+  display: grid;
+  gap: var(--sp-1);
+  color: var(--ink-faded);
+  font-family: var(--font-mono);
+  font-size: var(--caption);
+}
+.tech-filters :is(input, select) {
+  min-width: 16rem;
+  padding: var(--sp-2) 0;
+  border: 0;
+  border-bottom: 1px solid var(--ink);
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--small);
+}
+.tables {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.tables > li {
+  border-bottom: 1px solid var(--line);
+}
+.tables summary {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--sp-1) var(--sp-5);
+  padding: var(--sp-2) 0;
+  cursor: pointer;
+}
+.tables summary b {
+  font-family: var(--font-mono);
+  font-size: var(--small);
+}
+.tables details[open] {
+  padding-bottom: var(--sp-4);
+}
+.tables details p {
+  max-width: 90ch;
+  margin: var(--sp-1) 0 var(--sp-2);
+  font-size: var(--small);
+}
+
+/* ---------- Cluster maps ---------- */
+.umap-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+  gap: var(--sp-5);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.umap-card {
+  display: grid;
+  gap: var(--sp-1);
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: zoom-in;
+}
+.umap-card:disabled {
+  cursor: default;
+}
+.umap-thumb {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 320 / 200;
+  border: 1px solid var(--line);
+  transition: border-color var(--dur) var(--ease);
+}
+.umap-card:hover:not(:disabled) .umap-thumb {
+  border-color: var(--ink);
+}
+.umap-card b {
+  font-size: var(--small);
+  line-height: 1.3;
+}
+.umap-dialog {
+  width: min(96vw, 78rem);
+  max-height: 94vh;
+  padding: 0;
+  border: 1px solid var(--line-strong);
+  background: var(--page);
+  color: var(--ink);
+}
+.umap-dialog::backdrop {
+  background: color-mix(in srgb, var(--ink) 55%, transparent);
+}
+.umap-dialog-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--sp-4);
+  padding: var(--sp-5);
+}
+.umap-dialog header {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  gap: var(--sp-5);
+}
+.umap-dialog h3 {
+  margin: 0;
+  font-size: var(--h3);
+}
+.umap-dialog header button {
+  padding: var(--sp-2) var(--sp-4);
+  border: 1px solid var(--ink);
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--small);
+  cursor: pointer;
+}
+.umap-dialog p {
+  max-width: 80ch;
+  margin: 0;
+  font-size: var(--small);
+}
+
+@media (max-width: 700px) {
+  .tech-filters :is(input, select) {
+    min-width: 0;
+    width: 100%;
+  }
+  .tech-filters label {
+    width: 100%;
+  }
+}
+
+/* The list of every table scrolls in its own box, so the page below stays in reach. */
+.tables {
+  max-height: 70vh;
+  overflow-y: auto;
+  border-top: 1px solid var(--line);
+}
+.tech .umap-dialog h3 {
+  margin: 0;
+  color: var(--ink);
+  font-family: inherit;
+  font-size: var(--h3);
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  text-transform: none;
+}
