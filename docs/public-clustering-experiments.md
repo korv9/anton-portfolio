@@ -37,16 +37,17 @@ seeds 1, 3, 5 … (split-half-ARI).
 
 ### Varianter
 
-| Variant | Passager | Grupper | Utan grupp | Split-half-ARI | Poäng |
-|---|---|---|---|---|---|
-| Debatter, SBERT (vald) | 33 023 | 33 | 16,2 % | 0,751 | 0,171 |
-| Debatter, e5-large | 33 023 | 34 | 28,2 % | 0,862 | −0,021 |
-| Debatter, SBERT utan sju grupper | 23 027 | 30 | 16,9 % | 0,720 | 0,048 |
-| Debatter, e5-large utan sju grupper | 23 027 | 33 | 28,2 % | 0,833 | 0,003 |
-| Filosofi, MiniLM, 80–150 ord (vald) | 21 260 | 19 | 31,2 % | 0,805 | −0,125 |
-| Filosofi, e5-large, 80–150 ord | 21 260 | 13 | 46,3 % | 0,563 | −0,211 |
-| Filosofi, MiniLM, cirka 300 ord | 16 602 | 19 | 37,8 % | 0,733 | −0,126 |
-| Filosofi, e5-large, cirka 300 ord | 16 602 | 12 | 42,6 % | 0,764 | −0,154 |
+| Variant | Passager | Grupper | Utan grupp | Största grupp | Split-half-ARI | Poäng |
+|---|---|---|---|---|---|---|
+| Debatter, SBERT (vald) | 33 023 | 33 | 16,2 % | 7,8 % | 0,751 | 0,171 |
+| Debatter, e5-large | 33 023 | 34 | 28,2 % | 6,2 % | 0,862 | −0,021 |
+| Debatter, bge-m3 (Workers AI) | 33 023 | 32 | 28,8 % | 6,9 % | 0,735 | −0,014 |
+| Debatter, SBERT utan sju grupper | 23 027 | 30 | 16,9 % | 9,4 % | 0,720 | 0,048 |
+| Debatter, e5-large utan sju grupper | 23 027 | 33 | 28,2 % | 8,0 % | 0,833 | 0,003 |
+| Filosofi, MiniLM, 80–150 ord (vald) | 21 260 | 19 | 31,2 % | 12,0 % | 0,805 | −0,125 |
+| Filosofi, e5-large, 80–150 ord | 21 260 | 13 | 46,3 % | 12,9 % | 0,563 | −0,211 |
+| Filosofi, MiniLM, cirka 300 ord | 16 602 | 19 | 37,8 % | 6,9 % | 0,733 | −0,126 |
+| Filosofi, e5-large, cirka 300 ord | 16 602 | 12 | 42,6 % | 8,5 % | 0,764 | −0,154 |
 
 Valet är högsta poäng bland varianter med split-half-ARI minst 0,75.
 
@@ -63,6 +64,17 @@ Valet är högsta poäng bland varianter med split-half-ARI minst 0,75.
   och polis, arbetsmarknadspolitik, skattesänkningar och budget.
 - Passager om cirka 300 ord gav filosofin lika många grupper men fler passager utan
   grupp och split-half-ARI under gränsen.
+- `bge-m3` kördes 2026-10-14 genom Cloudflare Workers AI (`platform/nlp/workers_ai.py`)
+  med samma inställningar som SBERT och en egen valnyckel (`pick-debate-bge-m3.json`), så
+  att den inte tävlar om kartan. Den lämnar 28,8 % utan grupp mot 16,2 %, har
+  split-half-ARI 0,735 under gränsen 0,75 och poäng −0,014 mot 0,171. Den är alltså
+  klart sämre för kartan.
+- Demon "Var hamnar din mening?" behåller därför SBERT-kartan, dess grupper och namn.
+  Besökarens mening bäddas in med bge-m3, och punkten placeras bland de närmaste
+  passagerna i bge-m3 med deras koordinater på SBERT-kartan. Sökningen sker i
+  webbläsaren på PCA-komprimerade int8-vektorer. Med 384 dimensioner hittar den 94,1 %
+  av de tio närmaste passagerna enligt cosinus på de fulla vektorerna (500 slumpade
+  passager som frågor). Med 256 dimensioner blir andelen 86,0 %.
 
 ### Namn och intrångstest
 
