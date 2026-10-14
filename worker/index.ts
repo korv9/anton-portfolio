@@ -16,9 +16,13 @@ export type Env = {
 
 export const EMBED_MODEL = '@cf/baai/bge-m3'
 export const ANSWER_MODEL = '@cf/google/gemma-4-26b-a4b-it'
+/** The answer model's reasoning setting (docs/workers-ai.md): tokens here are the cost per answer. */
+export const ANSWER_OPTIONS: Record<string, unknown> = {
+  chat_template_kwargs: { enable_thinking: false },
+}
 export const MAX_TEXT = 500
 export const MAX_PASSAGES = 8
-const MAX_PASSAGE = 4000
+export const MAX_PASSAGE = 5000
 const CORPORA = ['sfs', 'ai-act-sv', 'ai-act-en']
 
 // Python's str.isspace() set, so the folding matches platform/legal/parse.py exactly.
@@ -191,8 +195,9 @@ async function answer(request: Request, env: Env) {
           content: `${found.map((p) => `[[${p.id}]]\n${p.text}`).join('\n\n')}\n\nQuestion: ${question}`,
         },
       ],
-      max_tokens: 700,
+      max_tokens: 2048,
       temperature: 0.1,
+      ...ANSWER_OPTIONS,
     })) as {
       response?: string
       choices?: { message?: { content?: string } }[]

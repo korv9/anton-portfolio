@@ -10,6 +10,8 @@ const LAW = {
   id: 'sfs-1982-80-1',
   text: 'Lagen gäller arbetstagare i allmän och enskild tjänst.',
 }
+// The longest passage the Worker accepts; one character more is refused before any AI call.
+const LONG = { id: 'sfs-1962-700-1-1', text: 'a'.repeat(5000) }
 const shardOf = async (id: string) => {
   const d = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(id))
   return [...new Uint8Array(d)]
@@ -24,6 +26,9 @@ async function env(
   const lists: Record<string, Record<string, string>> = {
     [`/data/workers-ai/sfs/verify/${await shardOf(LAW.id)}.json`]: {
       [LAW.id]: await textHash(LAW.text),
+    },
+    [`/data/workers-ai/sfs/verify/${await shardOf(LONG.id)}.json`]: {
+      [LONG.id]: await textHash(LONG.text),
     },
   }
   const calls: unknown[] = []
@@ -181,6 +186,15 @@ test('answer: verified, unverified, no answer and 503', async () => {
   )
   assert.equal(down.status, 503)
   assert.deepEqual(await down.json(), { reason: 'error' })
+})
+
+test('answer: a passage may be up to MAX_PASSAGE characters', async () => {
+  const e = await env({ response: '[[sfs-1962-700-1-1]]"aaa"' })
+  assert.equal((await worker.fetch(ask([LONG]), e)).status, 200)
+  const over = await env({ response: 'unused' })
+  const r = await worker.fetch(ask([{ ...LONG, text: LONG.text + 'a' }]), over)
+  assert.equal(r.status, 400)
+  assert.equal(over.calls.length, 0)
 })
 
 test('rate limit and methods', async () => {
