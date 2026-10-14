@@ -1,7 +1,9 @@
 # Cloudflare Workers project serving the site (docs/deploy.md). Cloudflare builds it from this
 # repository: build command `npm run build`, deploy command `npx wrangler deploy`.
-# The site is static files only; _headers in dist/ sets response headers.
+# The site is static files plus a Worker for /api/* (worker/index.ts, docs/workers-ai.md);
+# _headers in dist/ sets the headers of the files, the Worker sets its own.
 name = "anton-portfolio"
+main = "worker/index.ts"
 compatibility_date = "2026-09-01"
 # The site answers on anton-portfolio.anton-ernstson.workers.dev as well as its domain, and every
 # pull request gets a preview URL there.
@@ -10,6 +12,18 @@ preview_urls = true
 
 [assets]
 directory = "./dist"
+binding = "ASSETS"
+run_worker_first = ["/api/*"]
+
+[ai]
+binding = "AI"
+
+# Per visitor IP and Cloudflare location: 20 AI requests a minute. The daily neuron allocation
+# stays the hard limit.
+[[ratelimits]]
+name = "RATE_LIMITER"
+namespace_id = "1001"
+simple = { limit = 20, period = 60 }
 
 # Branch previews (`npx wrangler preview`, run by Workers Builds for pull requests); empty is enough.
 [previews]
