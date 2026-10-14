@@ -6,39 +6,30 @@ import { ProjectDepth } from '../projects/ProjectStructure'
 import ProjectTech from '../projects/ProjectTech'
 import { Stage, StageBlock, StageFacts, StageTools } from '../ui/Stage'
 import HomieFlow from './HomieFlow'
+import type { Route } from '../router'
+import { DeepPage, ReportFrame } from '../report/ReportShell'
 import './mlviz.css'
 
 const DrugCombReport = lazy(() => import('./DrugCombReport'))
 const HomieProject = lazy(() => import('./HomieProject'))
 const ProjectDataDisclosure = lazy(() => import('./ProjectDataDisclosure'))
 
-export function DrugCombPage() {
+export function DrugCombPage({ route }: { route: Route }) {
   return (
-    <div className="project-page">
-      <div className="page-lead">
-        <p className="eyebrow">
-          {l(
-            'Machine learning, DrugComb synergy prediction',
-            'Maskininlärning, förutsäga läkemedelssynergi',
-          )}
-        </p>
-        <h1>{l('Drug Synergy Lab', 'Drug Synergy Lab')}</h1>
-        <p>
-          {l(
-            'Predicting synergy in DrugComb experiment data, with separate tests for unseen drugs, pairs and cell lines.',
-            'Förutsägelse av synergi i DrugCombs experimentdata, med separata tester för osedda läkemedel, par och cellinjer.',
-          )}
-        </p>
-      </div>
-      <div className="reports">
-        <DrugCombReport />
-        <ProjectDataDisclosure
-          title={t('Result tables and downloads')}
-          initialDataset="drugcomb_metrics"
-          sectionId="drugcomb-data"
-        />
-      </div>
-    </div>
+    <ReportFrame>
+      {route.path === '#drugcomb-data' ? (
+        <DeepPage id="drugcomb-tables" back="#drugcomb" name="Drug Synergy Lab">
+          <h1>{l('Result tables', 'Resultattabeller')}</h1>
+          <ProjectDataDisclosure
+            title={t('Result tables and downloads')}
+            initialDataset="drugcomb_metrics"
+            sectionId="drugcomb-data"
+          />
+        </DeepPage>
+      ) : (
+        <DrugCombReport route={route} />
+      )}
+    </ReportFrame>
   )
 }
 

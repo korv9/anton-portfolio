@@ -1,7 +1,15 @@
 /*
- * The politics report (Report.tsx): three numbered tabs across the page, the tab's question,
+ * The politics report (Report.tsx): three tabs across the page, the tab's question,
  * the main chart large, two charts side by side under it, and the ways further in.
  */
+
+/* The report starts right under the site header. */
+.project-shell #main .politik-long .report {
+  margin-top: 0;
+}
+.report .report-tab {
+  padding-top: var(--sp-7);
+}
 
 /* ---------- The tabs: three equal columns, the open one under an olive bar ---------- */
 .report-tabs {
@@ -23,12 +31,6 @@
   transition:
     color var(--dur) var(--ease),
     border-color var(--dur) var(--ease);
-}
-.report-tabs a span {
-  font-family: var(--font-mono);
-  font-size: var(--caption);
-  font-weight: 500;
-  letter-spacing: 0.08em;
 }
 .report-tabs a:hover {
   border-top-color: var(--ink-faded);
@@ -239,4 +241,160 @@
 }
 .project-shell #main .politik-long .report .board-head {
   align-items: start;
+}
+
+/* ---------- Three tones: black for the question, olive for labels, grey for the rest ---------- */
+.report .politik-intro {
+  align-items: start;
+}
+.report .politik-intro-name,
+.report .report-slicers p {
+  color: var(--cv-olive);
+  font-family: var(--font-mono);
+  font-size: var(--caption);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.report .politik-intro-data {
+  color: var(--ink-faded);
+  font-size: var(--body);
+}
+.report .report-tabs a {
+  font-size: var(--body-large);
+  font-weight: 500;
+}
+.report .report-tabs a[aria-current] {
+  font-weight: 750;
+}
+.project-shell
+  #main
+  .politik-long
+  .report
+  :is(
+    .feature-head h2,
+    .board-card h2,
+    .theme-chart-title,
+    .report-section > h2
+  ) {
+  color: var(--ink-2);
+  font-size: var(--body-large);
+  font-weight: 650;
+}
+.project-shell #main .politik-long .report .feature-pick button {
+  font-size: var(--body);
+  font-weight: 500;
+}
+.project-shell
+  #main
+  .politik-long
+  .report
+  .feature-pick
+  button[aria-pressed='true'] {
+  color: var(--cv-olive);
+  font-weight: 750;
+}
+.report .report-deeper span {
+  color: var(--ink-faded);
+}
+
+/* A slicer of words (occupation fields, counties): quiet until pressed. */
+.report-chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--sp-2) var(--sp-4);
+}
+.report-chips button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ink-faded);
+  font: inherit;
+  font-size: var(--small);
+  cursor: pointer;
+  transition: color var(--dur) var(--ease);
+}
+.report-chips button:hover {
+  color: var(--ink);
+}
+.report-chips button[aria-pressed='true'] {
+  color: var(--cv-olive);
+  font-weight: 750;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.3em;
+}
+.report-chips button:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 3px;
+}
+@media (max-width: 900px) {
+  .report-chips {
+    justify-content: flex-start;
+  }
+}
+
+/* The jobs report's month columns take the report's olive; the months so far stand darker. */
+.report .jobb-columns rect:not(.jobb-hit) {
+  fill: color-mix(in srgb, var(--cv-olive) 50%, var(--page));
+}
+.report .jobb-columns rect.recent {
+  fill: var(--cv-olive);
+}
+
+/* Lines that are not parties are named above the chart. */
+.report .multi-chart .chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2) var(--sp-5);
+  margin: 0 0 var(--sp-4);
+  padding: 0;
+  list-style: none;
+  color: var(--ink-2);
+  font-size: var(--small);
+}
+.report .multi-chart .chart-legend li {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+.report .multi-chart .legend-swatch {
+  width: 0.9rem;
+  height: 3px;
+}
+
+/* A map the reader works in takes the full width: its words above, the map below. */
+.project-shell
+  #main
+  .politik-long
+  .report
+  :is(#atlasen, #kartan, #konstellationen) {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: none;
+}
+.project-shell
+  #main
+  .politik-long
+  .report
+  :is(#atlasen, #kartan, #konstellationen)
+  .feature-head {
+  max-width: 62ch;
+}
+.project-shell
+  #main
+  .politik-long
+  .report
+  :is(#atlasen, #kartan, #konstellationen)
+  :is(.feature-body, .feature-foot) {
+  grid-column: 1;
+  grid-row: auto;
+}
+
+/* A tab's content written as sections of text and tables (the labs): left on the grid, each
+   section's heading in the chart-title tone. */
+.project-shell #main .politik-long .report .report-section {
+  max-width: 72rem;
+  margin: 0 0 var(--sp-section);
+  padding: 0;
 }

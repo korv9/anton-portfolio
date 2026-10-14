@@ -671,7 +671,7 @@
   grid-template-columns: minmax(0, 1fr) minmax(0, 34rem);
   align-items: end;
   gap: var(--sp-5) var(--sp-7);
-  padding-block: var(--sp-6) var(--sp-section);
+  padding-block: 0 var(--sp-6);
 }
 .politik-intro p {
   margin: 0;

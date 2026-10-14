@@ -35,24 +35,25 @@ test(
   },
 )
 
-test('topics preserve selected occupation fields', async ({ page }) => {
-  await page.goto('/#jobb-trender')
+test('deep dives preserve selected occupation fields', async ({ page }) => {
+  await page.goto('/#jobb')
   await page
     .getByRole('group', { name: 'Occupation fields' })
     .getByRole('button', { name: 'Data/IT', exact: true })
     .click()
   await page
-    .getByRole('navigation', { name: 'Project topics' })
-    .getByRole('link', { name: 'Occupations and skills', exact: true })
+    .getByRole('navigation', { name: 'Go deeper' })
+    .getByRole('link', { name: /Occupations/ })
     .click()
   await expect(page).toHaveURL(/jobb-yrken\?omraden=/)
   await expect(page.locator('.theme-chart-title')).toContainText('Data/IT')
 })
 
 test('project pagers follow the groups', async ({ page }) => {
-  await page.goto('/#drugcomb')
-  await expect(page.locator('.project-pager .pager-next')).toContainText(
-    'IT Incident Clustering',
+  // The labs open as reports without a pager; the engineering pages keep it.
+  await page.goto('/#thesis')
+  await expect(page.locator('.project-pager .pager-previous')).toContainText(
+    'Drug Synergy Lab',
   )
   await page.goto('/#diva-lakehouse')
   await expect(page.locator('.project-pager .pager-previous')).toContainText(

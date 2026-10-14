@@ -330,6 +330,7 @@ i.ph-era-2,
   margin: 0 0 0.4rem;
   font-size: 1rem;
 }
+.ph-pole-list,
 .ph-pole-passages ol {
   display: grid;
   gap: 0.9rem;

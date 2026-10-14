@@ -81,9 +81,9 @@ export const PROJECT_TOPICS: Record<string, Topic[]> = {
   welfare: [
     {
       title: t('Arbete och arbetslöshet', 'Work and unemployment'),
-      href: '#sweden-work',
+      href: '#sweden',
     },
-    { title: t('Sjukfrånvaro', 'Sick leave'), href: '#sweden-sick-leave' },
+    { title: t('Sjukfrånvaro', 'Sick leave'), href: '#sweden-health' },
     {
       title: t('Mående och livskvalitet', 'Mental health and quality of life'),
       href: '#sweden-mental-health',
@@ -106,7 +106,7 @@ export const PROJECT_TOPICS: Record<string, Topic[]> = {
       title: t('Roller och skyldigheter', 'Roles and obligations'),
       href: '#ai-act-roles',
       links: [
-        link('#ai-act-roles', 'Roller', 'Roles'),
+        link('#ai-act-actors', 'Roller', 'Roles'),
         link('#ai-act-obligations', 'Skyldigheter', 'Obligations'),
       ],
     },
@@ -124,9 +124,8 @@ export const PROJECT_TOPICS: Record<string, Topic[]> = {
     },
     {
       title: t('Samhälle och arbetsliv', 'Society and work'),
-      href: '#ai-act-signals',
+      href: '#ai-act-society',
       links: [
-        link('#ai-act-signals', 'Tidsjämförelse', 'Timeline comparison'),
         link('#ai-act-politics', 'Riksdagen', 'Parliament'),
         link('#ai-act-jobs', 'Jobbannonser', 'Job ads'),
       ],
@@ -190,19 +189,19 @@ export const PROJECT_TOPICS: Record<string, Topic[]> = {
   drugcomb: [
     {
       title: t('Resultat och generalisering', 'Results and generalisation'),
-      href: '#drugcomb?section=results',
+      href: '#drugcomb',
     },
     {
       title: t('Utforska kombinationer', 'Explore combinations'),
-      href: '#drugcomb?section=explore',
+      href: '#drugcomb-model',
     },
     {
       title: t('Data och biologisk kontext', 'Data and biological context'),
-      href: '#drugcomb?section=context',
+      href: '#drugcomb-cells',
     },
     {
       title: t('Modeller och utvärdering', 'Models and evaluation'),
-      href: '#drugcomb?section=method',
+      href: '#drugcomb-method',
     },
   ],
   thesis: [

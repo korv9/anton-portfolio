@@ -157,7 +157,7 @@ export default function ResearchStory({
   ]
   return (
     <section
-      className="atlas-section research ds-container"
+      className="atlas-section research report-section ds-container"
       id="symbolic-findings"
       aria-labelledby="symbolic-findings-title"
     >

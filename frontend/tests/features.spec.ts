@@ -77,7 +77,7 @@ test('budget difference: a party against the government, area by area', async ({
 test('county small multiples: one chart per county on a shared axis', async ({
   page,
 }) => {
-  await page.goto('/#sweden-sick-leave')
+  await page.goto('/#sweden-counties')
   const f = await feature(page, 'lanen')
   await expect(f.locator('.multiple')).toHaveCount(21)
   await f.getByRole('button', { name: 'Stress-related sick leave' }).click()
@@ -92,7 +92,7 @@ test('county small multiples: one chart per county on a shared axis', async ({
 test('calibration scatter: predicted against measured, with zones', async ({
   page,
 }) => {
-  await page.goto('/#drugcomb')
+  await page.goto('/#drugcomb-quality')
   const f = await feature(page, 'kalibrering')
   await expect(f.locator('.calib-point')).toHaveCount(40)
   await f.getByRole('button', { name: 'New drug', exact: true }).click()

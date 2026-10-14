@@ -1,25 +1,32 @@
 import { test, expect } from './test'
-test('wellbeing separates work, sick leave and regional comparisons', async ({
+test('wellbeing separates work, health and regional comparisons', async ({
   page,
 }) => {
-  await page.goto('/#sweden')
-  await expect(page.locator('.overview-topics > a')).toHaveCount(4)
   await page.goto('/#sweden-work')
-  await expect(page.locator('#lanen')).toContainText('Unemployment by county')
-  await expect(page.locator('.welfare-page')).toContainText(
-    'total-population-weighted county mean',
+  await expect(page).toHaveURL(/#sweden$/)
+  await expect(page.locator('#arbetsloshet h2')).toContainText('Unemployment')
+  await expect(page.locator('#arbetsloshet .feature-source')).toContainText(
+    'population-weighted mean',
+  )
+  await page
+    .getByRole('group', { name: 'Counties' })
+    .getByRole('button', { name: 'Gotland', exact: true })
+    .click()
+  await expect(page).toHaveURL(/lan=09/)
+  await expect(page.locator('#arbetsloshet .chart-legend')).toContainText(
+    'Gotland',
   )
   await page.goto('/#sweden-sick-leave')
-  await expect(page.locator('#lanen')).toContainText(
-    'Sickness benefit days by county',
+  await expect(page).toHaveURL(/#sweden-health$/)
+  await expect(page.locator('#sjukpenning h2')).toContainText(
+    'Sickness benefit days per county',
   )
   await page.goto('/#sweden-counties')
-  await expect(page.locator('.welfare-table tbody tr')).toHaveCount(21)
-  await page
-    .getByRole('button', { name: 'Sick-pay days', exact: false })
-    .click()
+  const table = page.locator('.welfare-table')
+  await expect(table.locator('tbody tr')).toHaveCount(21)
+  await table.getByRole('button', { name: 'Sickness benefit days' }).click()
   await expect(page.locator('th[aria-sort="descending"]')).toContainText(
-    'Sick-pay days',
+    'Sickness benefit days',
   )
 })
 

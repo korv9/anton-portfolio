@@ -6,14 +6,17 @@
  */
 import { Suspense, lazy, useEffect } from 'react'
 import { l } from '../i18n'
-import type { Route } from '../router'
-import { fieldName, useMarket, type Market } from './data'
-import { carryFields, useFields } from './selection'
+import { JOB_TABS, type Route } from '../router'
+import { DeepPage } from '../report/ReportShell'
+import { useMarket, type Market } from './data'
+import FieldPicker from './FieldPicker'
+import { carryFields, useFields, withFields } from './selection'
 import '../politik/politik.css'
 import '../politik/dash/dash.css'
 import './jobb.css'
 
 const Themes = lazy(() => import('./themes'))
+const JobsReport = lazy(() => import('./JobsReport'))
 const TechReport = lazy(() => import('../jobs/TechReport'))
 const ClusteringSection = lazy(() => import('../jobs/ClusteringSection'))
 
@@ -34,17 +37,10 @@ export default function JobsProduct({ route }: { route: Route }) {
       {l('Loading…', 'Laddar…')}
     </p>
   )
-  // The overview opens on its own first screen, with the field bar under it.
-  const landing = theme?.key === 'lage'
+  const report = JOB_TABS.includes(route.path)
   return (
-    <div
-      className={`politik jobb${landing ? ' politik-landing' : ''}`}
-      id="jobb"
-    >
+    <div className="politik jobb politik-long" id="jobb">
       <div className="politik-body">
-        {theme && !landing && theme.key !== 'kluster' && data && (
-          <FieldBar route={route} data={data} />
-        )}
         <div className="politik-main">
           {error && (
             <p role="alert" className="theme-error">
@@ -52,97 +48,44 @@ export default function JobsProduct({ route }: { route: Route }) {
             </p>
           )}
           <Suspense fallback={loading}>
-            {!theme ? (
-              ['#job-market-tech', '#job-data'].includes(route.path) ? (
-                <TechReport />
-              ) : !data ? (
-                !error && loading
+            {report ? (
+              data ? (
+                <JobsReport route={route} data={data} fields={selected} />
               ) : (
-                <Themes
-                  theme="trender"
-                  route={route}
-                  data={data}
-                  fields={selected}
-                />
+                !error && loading
               )
-            ) : theme.key === 'kluster' ? (
-              // The semantic clusters of IT ads have their own data; the field bar does not apply.
-              <ClusteringSection />
-            ) : !data ? (
-              !error && loading
             ) : (
-              <Themes
-                theme={theme.key}
-                route={route}
-                data={data}
-                fields={selected}
-              />
+              <DeepPage
+                id={route.path.slice(1)}
+                back={withFields('#jobb', selected)}
+                name="Labour Market Observatory"
+                aside={
+                  data &&
+                  theme &&
+                  !['kluster', 'kallor'].includes(theme.key) && (
+                    <FieldPicker route={route} data={data} />
+                  )
+                }
+              >
+                {['#job-market-tech', '#job-data'].includes(route.path) ? (
+                  <TechReport />
+                ) : theme?.key === 'kluster' ? (
+                  <ClusteringSection />
+                ) : data ? (
+                  <Themes
+                    theme={theme?.key ?? 'trender'}
+                    route={route}
+                    data={data}
+                    fields={selected}
+                  />
+                ) : (
+                  !error && loading
+                )}
+              </DeepPage>
             )}
           </Suspense>
         </div>
       </div>
-    </div>
-  )
-}
-
-/**
- * The field bar: the occupation fields as one row of buttons above every page. Any number can
- * be chosen and every chart then answers for them; none chosen means the whole market.
- */
-function FieldBar({ route, data }: { route: Route; data: Market }) {
-  const { selected, toggle, clear } = useFields(
-    route,
-    data.fields.map((f) => f.id),
-  )
-  const latest = data.latest_year
-  const sizeOf = (id: string) =>
-    (data.monthly[id] ?? [])
-      .filter(([m]) => Number(m.slice(0, 4)) === latest)
-      .reduce((s, [, a]) => s + a, 0)
-  // Largest fields first, so the common choices are at hand.
-  const fields = [...data.fields].sort((a, b) => sizeOf(b.id) - sizeOf(a.id))
-  return (
-    <div
-      className={
-        selected.length
-          ? 'politik-slicer jobb-slicer active'
-          : 'politik-slicer jobb-slicer'
-      }
-      role="group"
-      aria-label={l('Occupation fields', 'Yrkesområden')}
-    >
-      <p className="politik-slicer-label" aria-hidden="true">
-        {l('Fields', 'Områden')}
-      </p>
-      <ul>
-        {fields.map((f) => (
-          <li key={f.id}>
-            <button
-              type="button"
-              aria-pressed={selected.includes(f.id)}
-              onClick={() => toggle(f.id)}
-            >
-              {fieldName(f.name)}
-            </button>
-          </li>
-        ))}
-      </ul>
-      <p className="politik-slicer-state" aria-live="polite">
-        {selected.length ? (
-          <>
-            <span>
-              {selected.length === 1
-                ? fieldName(data.fields.find((f) => f.id === selected[0])!.name)
-                : l(`${selected.length} fields`, `${selected.length} områden`)}
-            </span>
-            <button type="button" onClick={clear}>
-              {l('Show all', 'Visa alla')}
-            </button>
-          </>
-        ) : (
-          <span>{l('Whole market', 'Hela marknaden')}</span>
-        )}
-      </p>
     </div>
   )
 }

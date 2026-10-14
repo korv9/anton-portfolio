@@ -111,6 +111,7 @@ export default function SiteHeader({ route }: { route: Route }) {
             </div>
           </div>
         </details>
+        <a href="#tech">Tech panel</a>
         <a href="#om-mig">{l('About', 'Om mig')}</a>
       </nav>
     </header>

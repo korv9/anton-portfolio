@@ -434,3 +434,40 @@
   font-size: var(--fs-sm);
   line-height: 1.5;
 }
+
+/* The map in the report (#symbolic-atlas): the canvas on its dark plate, the filters and the
+   chosen passage beside it on the page. */
+.sym-board {
+  --stage-ink: var(--ink);
+  --stage-muted: var(--muted);
+  --stage-rule: var(--line);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(15rem, 20rem);
+  gap: var(--sp-5) var(--sp-6);
+  align-items: start;
+}
+.sym-plate {
+  --stage-ink: var(--ink);
+  --stage-muted: var(--muted);
+  --stage-rule: var(--line);
+  display: grid;
+  gap: var(--sp-3);
+  min-width: 0;
+  padding: var(--sp-4);
+  background: var(--page);
+  color: var(--ink);
+}
+.sym-side {
+  display: grid;
+  gap: var(--sp-5);
+  min-width: 0;
+}
+.symbolic-page .report .ds-container {
+  max-width: none;
+  padding-inline: 0;
+}
+@media (max-width: 900px) {
+  .sym-board {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

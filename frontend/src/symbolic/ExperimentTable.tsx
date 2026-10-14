@@ -38,7 +38,7 @@ export default function ExperimentTable() {
   return (
     <>
       <section
-        className="atlas-experiments ds-container"
+        className="atlas-experiments report-section ds-container"
         id="symbolic-experiments"
         aria-labelledby="atlas-exp-title"
       >
@@ -131,7 +131,7 @@ function ModelTable() {
   )
   return (
     <section
-      className="atlas-experiments ds-container"
+      className="atlas-experiments report-section ds-container"
       id="symbolic-models"
       aria-labelledby="atlas-models-title"
     >

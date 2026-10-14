@@ -17,16 +17,23 @@ import { l } from '../i18n'
 import { fixed } from '../format'
 import { ProductQuality } from '../quality/QualityPanel'
 import { MethodSummary } from '../ui/Story'
-import type { Route } from '../router'
+import { SYMBOLIC_TABS, type Route } from '../router'
 import { useViewParams } from '../politik/useViewParams'
-import { Stage, StageBlock, StageFacts } from '../ui/Stage'
+import { StageBlock, StageFacts } from '../ui/Stage'
+import '../ui/stage.css'
+import ReportShell, {
+  DeepPage,
+  ReportFrame,
+  withQuery,
+  type DeeperLink,
+  type ReportTab,
+} from '../report/ReportShell'
+import { Feature } from '../charts/feature/Feature'
 import AtlasCanvas, { type MapLabel, type Paint } from './AtlasCanvas'
 import ClusterPanel, { clusterTitle } from './ClusterPanel'
 import CorpusExplorer from './CorpusExplorer'
 import ExperimentTable from './ExperimentTable'
 import ResearchStory from './ResearchStory'
-import { ProjectHero } from '../ui/Project'
-import { ProjectDepth } from '../projects/ProjectStructure'
 import ProjectTech from '../projects/ProjectTech'
 import {
   AtlasFiltersPanel,
@@ -100,6 +107,68 @@ const MUTED = 'rgba(138, 138, 141, 0.34)'
 const NOISE = 'rgba(138, 138, 141, 0.16)'
 const CANDIDATE = 'rgba(201, 194, 182, 0.85)'
 const REVIEWED = '#f2efe9'
+
+const NAME = 'Symbol Lab'
+const tabs = (): ReportTab[] => [
+  {
+    path: '#symbolic-atlas',
+    label: l('The map', 'Kartan'),
+    question: l(
+      'Do symbol words gather by meaning, or by the book they come from?',
+      'Samlas symbolorden efter betydelse, eller efter boken de kommer från?',
+    ),
+  },
+  {
+    path: '#symbolic-findings',
+    label: l('Findings', 'Fynd'),
+    question: l(
+      'What did the clusters turn out to follow?',
+      'Vad visade sig klustren följa?',
+    ),
+  },
+  {
+    path: '#symbolic-experiments',
+    label: l('Experiments', 'Experiment'),
+    question: l(
+      'Which choices weaken the pull of the books?',
+      'Vilka val försvagar böckernas dragningskraft?',
+    ),
+  },
+]
+const deeper = (): DeeperLink[] => [
+  {
+    href: '#symbolic-corpus',
+    label: l('The corpus', 'Korpusen'),
+    about: l(
+      'The books, their traditions and sources',
+      'Böckerna, deras traditioner och källor',
+    ),
+  },
+  {
+    href: '#symbolic-method',
+    label: l('Method and limits', 'Metod och begränsningar'),
+    about: l(
+      'Extraction, the model, diagnostics and the quality checks',
+      'Extraktion, modellen, diagnostik och kvalitetskontrollerna',
+    ),
+  },
+  {
+    href: '#philosophy-atlas',
+    label: 'Philosophy Lab',
+    about: l(
+      'The same method on thirteen works of philosophy',
+      'Samma metod på tretton filosofiska verk',
+    ),
+  },
+  {
+    href: '#concept-journey',
+    label: 'Concept Lab',
+    about: l(
+      'The same concepts across myth, philosophy, politics and law',
+      'Samma begrepp i myter, filosofi, politik och lag',
+    ),
+  },
+]
 const num = fixed
 const pct = (v: number) => `${num(v * 100)} %`
 
@@ -222,411 +291,399 @@ export default function SymbolicAtlasPage({ route }: { route: Route }) {
 
   if (failed)
     return (
-      <p className="ds-container" role="alert">
-        {l('The atlas could not be loaded.', 'Atlasen kunde inte laddas.')}
-      </p>
+      <ReportFrame>
+        <p role="alert">
+          {l('The atlas could not be loaded.', 'Atlasen kunde inte laddas.')}
+        </p>
+      </ReportFrame>
     )
   if (!summary || !points)
     return (
-      <div className="ds-container">
-        <ProjectHero project="symbolic-atlas" />
+      <ReportFrame>
         <p role="status">{l('Loading the map…', 'Laddar kartan…')}</p>
-      </div>
+      </ReportFrame>
     )
 
   const ev = summary.evaluation
-  return (
-    <div className="symbolic-page">
-      <div className="ds-container">
-        <ProjectHero project="symbolic-atlas">
-          <p>
-            {l(
-              `An unsupervised research project: every use of 20 symbol words in ${summary.document_count} public-domain books of mythology, folklore and literature, placed by the language around it.`,
-              `Ett oövervakat forskningsprojekt: varje förekomst av 20 symbolord i ${summary.document_count} fria böcker med mytologi, folksagor och litteratur, placerad efter språket omkring den.`,
-            )}
-          </p>
-        </ProjectHero>
-      </div>
-      <div className="ds-container"></div>
-      <Stage
-        id="symbolic-map"
-        dark
-        level={2}
-        kicker={l('The atlas', 'Atlasen')}
-        title={l(
-          'One point is one use of a symbol word, in its sentences',
-          'En punkt är en förekomst av ett symbolord, i sina meningar',
-        )}
-        lead={l(
-          `The corpus: ${summary.document_count} public-domain books of mythology, folklore and literature from Project Gutenberg, read without predefined categories.`,
-          `Korpusen: ${summary.document_count} fria böcker med mytologi, folksagor och litteratur från Project Gutenberg, lästa utan förbestämda kategorier.`,
-        )}
-        figure={
-          <div className="atlas-figure">
-            <dl
-              className="atlas-reading"
-              aria-label={l('How to read the map', 'Så läser du kartan')}
-            >
-              <div>
-                <dt>{l('One dot', 'En prick')}</dt>
-                <dd>
+  if (!SYMBOLIC_TABS.includes(route.path))
+    return (
+      <ReportFrame>
+        <div className="symbolic-page">
+          <DeepPage id={route.path.slice(1)} back="#symbolic-atlas" name={NAME}>
+            {route.path === '#symbolic-corpus' ? (
+              <>
+                <h1>{l('The corpus', 'Korpusen')}</h1>
+                <p>
                   {l(
-                    'one use of a symbol word, in its sentences',
-                    'en förekomst av ett symbolord, i sina meningar',
+                    `${summary.document_count} public-domain books from Project Gutenberg in English, chosen per tradition from the Gutenberg catalogue and checked against each book’s Gutenberg record (title, creators, language, rights) and against each other for duplicated text. Many are translations or retellings by nineteenth-century English writers, so a voice can belong to a translator rather than a tradition.`,
+                    `${summary.document_count} fria böcker från Project Gutenberg på engelska, valda per tradition ur Gutenbergs katalog och kontrollerade mot varje boks post hos Gutenberg (titel, upphovspersoner, språk, rättigheter) och mot varandra för dubblerad text. Många är översättningar eller återberättelser av engelska 1800-talsförfattare, så en röst kan tillhöra en översättare snarare än en tradition.`,
                   )}
-                </dd>
-              </div>
-              <div>
-                <dt>{l('Nearby dots', 'Närliggande prickar')}</dt>
-                <dd>
-                  {l(
-                    'similar language and context',
-                    'liknande språk och sammanhang',
-                  )}
-                </dd>
-              </div>
-              <div>
-                <dt>{l('A cluster', 'Ett kluster')}</dt>
-                <dd>
-                  {l(
-                    'a recurring structure the model found, not yet a meaning',
-                    'en återkommande struktur som modellen hittade, ännu inte en betydelse',
-                  )}
-                </dd>
-              </div>
-            </dl>
-            {centred && (
-              <div className="atlas-views">
-                <div
-                  className="atlas-chips"
-                  role="group"
-                  aria-label={l('View', 'Vy')}
-                >
-                  {VIEWS.map((v) => (
-                    <button
-                      key={v.key}
-                      type="button"
-                      aria-pressed={view === v.key}
-                      onClick={() => {
-                        setPicked(null)
-                        setFilters({ view: v.key, cluster: '' })
-                      }}
-                    >
-                      {l(...v.name)}
-                    </button>
-                  ))}
-                </div>
-                <p className="atlas-view-hint">
-                  {l(...VIEWS.find((v) => v.key === view)!.hint)}
                 </p>
-                {view !== 'baseline' && (
-                  <ul
-                    className="atlas-key"
-                    aria-label={l('Key', 'Teckenförklaring')}
-                  >
-                    <li>
-                      <i style={{ background: MUTED }} />
-                      {l('Other clusters', 'Övriga kluster')}
-                    </li>
-                    {view === 'cross-book' && (
-                      <li>
-                        <i style={{ background: CANDIDATE }} />
-                        {l('Cross-book candidate', 'Kandidat över böcker')}
-                      </li>
-                    )}
-                    <li>
-                      <i style={{ background: REVIEWED }} />
-                      {l('Reviewed and named', 'Granskat och namngivet')}
-                    </li>
-                  </ul>
-                )}
-                {view === 'reviewed' && reviewed.length === 0 && (
-                  <p className="atlas-empty" role="status">
-                    {l(
-                      'No reviewed semantic clusters yet.',
-                      'Inga granskade semantiska kluster ännu.',
-                    )}
-                  </p>
-                )}
-              </div>
-            )}
-            <AtlasCanvas
-              points={shown}
-              isLit={isLit}
-              selected={picked?.occurrence_id ?? null}
-              onPinned={setPinned}
-              paint={paint}
-              labels={labels}
-              clusterName={
-                bookView
-                  ? (c) => clusterTitle(c, reviewedById.get(c))
-                  : undefined
-              }
-              onPick={(p) => {
-                setPicked(p)
-                if (bookView && !p.is_noise)
-                  setFilters({ cluster: String(p.cluster_id) })
-                else setFilters({ symbol: p.symbol_id })
-              }}
-            />
-            <p className="atlas-status" aria-live="polite">
-              {isLit
-                ? l(
-                    `${num(litCount)} of ${num(shown.length)} points match the filters.`,
-                    `${num(litCount)} av ${num(shown.length)} punkter matchar filtren.`,
-                  )
-                : l(
-                    `${num(shown.length)} points. Point at one to read it; choose a symbol to see where it falls.`,
-                    `${num(shown.length)} punkter. Peka på en för att läsa den; välj en symbol för att se var den hamnar.`,
-                  )}
-              {pinned > 0 &&
-                l(
-                  ` ${num(pinned)} points far from the rest are drawn as rings at the edge.`,
-                  ` ${num(pinned)} punkter långt från resten ritas som ringar vid kanten.`,
-                )}
-            </p>
-          </div>
-        }
-        left={
-          <>
-            <h2 className="visually-hidden">{l('Filters', 'Filter')}</h2>
-            <AtlasFiltersPanel
-              summary={summary}
-              filters={filters}
-              set={setFilters}
-              clusters={
-                bookView
-                  ? clusterInfo.map((c) => ({
-                      id: c.cluster_id,
-                      size: c.occurrence_count,
-                      name: clusterTitle(
-                        c.cluster_id,
-                        reviewedById.get(c.cluster_id),
-                      ),
-                    }))
-                  : undefined
-              }
-            />
-          </>
-        }
-        right={
-          <>
-            {selectedCluster !== null && infoById.get(selectedCluster) && (
-              <ClusterPanel
-                info={infoById.get(selectedCluster)!}
-                reviewed={reviewedById.get(selectedCluster)}
-                passages={byId}
-                onClose={() => {
-                  setPicked(null)
-                  setFilters({ cluster: '' })
-                }}
-              />
-            )}
-            {selectedCluster === null && picked && (
-              <StageBlock title={l('The chosen passage', 'Det valda stället')}>
-                <p className="atlas-quote">{picked.context}</p>
-                <StageFacts
-                  rows={[
-                    [l('Word', 'Ord'), picked.matched_term],
-                    [l('Book', 'Bok'), picked.title.split(':')[0]],
-                    [
-                      l('Tradition', 'Tradition'),
-                      traditionName(picked.tradition),
-                    ],
-                    [
-                      l('Cluster', 'Kluster'),
-                      picked.is_noise
-                        ? l('noise', 'brus')
-                        : `#${picked.cluster_id}, ${pct(picked.cluster_probability)}`,
-                    ],
+                <CorpusExplorer
+                  documents={summary.documents}
+                  tradition={filters.korpus}
+                  sourceType={filters.kalla}
+                  onFilter={(next) => setFilters(next)}
+                />
+              </>
+            ) : (
+              <>
+                <h1>{l('Method and limits', 'Metod och begränsningar')}</h1>
+                <Method summary={summary} history={history} />
+                <ProductQuality
+                  product="symbolic"
+                  id="symbolic-quality"
+                  intro={[
+                    'Data quality answers “Did I build the dataset correctly?” Analytical validity answers “Does the model measure symbolic structure, or something else?” The two are checked separately.',
+                    'Datakvalitet svarar på ”Byggde jag datasetet rätt?” Analytisk validitet svarar på ”Mäter modellen symbolisk struktur, eller något annat?” De två kontrolleras separat.',
                   ]}
                 />
-              </StageBlock>
+                <ProjectTech project="symbolic-atlas" />
+              </>
             )}
-            {selectedCluster !== null ? null : filters.symbol ? (
-              <SymbolPanel
-                symbol={filters.symbol}
-                summary={summary}
-                points={points}
-                profiles={profiles}
-                onCluster={(c) => setFilters({ cluster: String(c) })}
-              />
+          </DeepPage>
+        </div>
+      </ReportFrame>
+    )
+
+  const tab = SYMBOLIC_TABS.indexOf(route.path)
+  return (
+    <ReportFrame>
+      <div className="symbolic-page">
+        <ReportShell
+          name={NAME}
+          intro={l(
+            `Every use of 20 symbol words in ${summary.document_count} public-domain books of mythology, folklore and literature, placed by the language around it and grouped without labels. A cluster is named only after a person has read it.`,
+            `Varje förekomst av 20 symbolord i ${summary.document_count} fria böcker med mytologi, folksagor och litteratur, placerad efter språket omkring den och grupperad utan etiketter. Ett kluster får namn först när en människa har läst det.`,
+          )}
+          tabs={tabs()}
+          path={route.path}
+          hrefOf={(p) => withQuery(p, route.params)}
+          slicerLabel={centred && tab === 0 ? l('View', 'Vy') : undefined}
+          slicer={
+            centred && tab === 0 ? (
+              <div
+                className="report-chips"
+                role="group"
+                aria-label={l('View', 'Vy')}
+              >
+                {VIEWS.map((v) => (
+                  <button
+                    key={v.key}
+                    type="button"
+                    aria-pressed={view === v.key}
+                    onClick={() => {
+                      setPicked(null)
+                      setFilters({ view: v.key, cluster: '' })
+                    }}
+                  >
+                    {l(...v.name)}
+                  </button>
+                ))}
+              </div>
+            ) : undefined
+          }
+          deeper={deeper()}
+        >
+          {tab === 0 && (
+            <div className="report-main">
+              <Feature
+                id="atlasen"
+                title={l(
+                  'One point is one use of a symbol word, in its sentences',
+                  'En punkt är en förekomst av ett symbolord, i sina meningar',
+                )}
+                lead={l(...VIEWS.find((v) => v.key === view)!.hint)}
+                source={`Project Gutenberg; ${summary.run.embedding_model.split('/')[1]}, UMAP, HDBSCAN`}
+              >
+                <div className="sym-board">
+                  <div className="plate sym-plate">
+                    <dl
+                      className="atlas-reading"
+                      aria-label={l(
+                        'How to read the map',
+                        'Så läser du kartan',
+                      )}
+                    >
+                      <div>
+                        <dt>{l('One dot', 'En prick')}</dt>
+                        <dd>
+                          {l(
+                            'one use of a symbol word, in its sentences',
+                            'en förekomst av ett symbolord, i sina meningar',
+                          )}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt>{l('Nearby dots', 'Närliggande prickar')}</dt>
+                        <dd>
+                          {l(
+                            'similar language and context',
+                            'liknande språk och sammanhang',
+                          )}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt>{l('A cluster', 'Ett kluster')}</dt>
+                        <dd>
+                          {l(
+                            'a recurring structure the model found, not yet a meaning',
+                            'en återkommande struktur som modellen hittade, ännu inte en betydelse',
+                          )}
+                        </dd>
+                      </div>
+                    </dl>
+                    {view !== 'baseline' && (
+                      <ul
+                        className="atlas-key"
+                        aria-label={l('Key', 'Teckenförklaring')}
+                      >
+                        <li>
+                          <i style={{ background: MUTED }} />
+                          {l('Other clusters', 'Övriga kluster')}
+                        </li>
+                        {view === 'cross-book' && (
+                          <li>
+                            <i style={{ background: CANDIDATE }} />
+                            {l('Cross-book candidate', 'Kandidat över böcker')}
+                          </li>
+                        )}
+                        <li>
+                          <i style={{ background: REVIEWED }} />
+                          {l('Reviewed and named', 'Granskat och namngivet')}
+                        </li>
+                      </ul>
+                    )}
+                    {view === 'reviewed' && reviewed.length === 0 && (
+                      <p className="atlas-empty" role="status">
+                        {l(
+                          'No reviewed semantic clusters yet.',
+                          'Inga granskade semantiska kluster ännu.',
+                        )}
+                      </p>
+                    )}
+                    <AtlasCanvas
+                      points={shown}
+                      isLit={isLit}
+                      selected={picked?.occurrence_id ?? null}
+                      onPinned={setPinned}
+                      paint={paint}
+                      labels={labels}
+                      clusterName={
+                        bookView
+                          ? (c) => clusterTitle(c, reviewedById.get(c))
+                          : undefined
+                      }
+                      onPick={(p) => {
+                        setPicked(p)
+                        if (bookView && !p.is_noise)
+                          setFilters({ cluster: String(p.cluster_id) })
+                        else setFilters({ symbol: p.symbol_id })
+                      }}
+                    />
+                    <p className="atlas-status" aria-live="polite">
+                      {isLit
+                        ? l(
+                            `${num(litCount)} of ${num(shown.length)} points match the filters.`,
+                            `${num(litCount)} av ${num(shown.length)} punkter matchar filtren.`,
+                          )
+                        : l(
+                            `${num(shown.length)} points. Point at one to read it; choose a symbol to see where it falls.`,
+                            `${num(shown.length)} punkter. Peka på en för att läsa den; välj en symbol för att se var den hamnar.`,
+                          )}
+                      {pinned > 0 &&
+                        l(
+                          ` ${num(pinned)} points far from the rest are drawn as rings at the edge.`,
+                          ` ${num(pinned)} punkter långt från resten ritas som ringar vid kanten.`,
+                        )}
+                    </p>
+                  </div>
+                  <aside className="sym-side">
+                    <AtlasFiltersPanel
+                      summary={summary}
+                      filters={filters}
+                      set={setFilters}
+                      clusters={
+                        bookView
+                          ? clusterInfo.map((c) => ({
+                              id: c.cluster_id,
+                              size: c.occurrence_count,
+                              name: clusterTitle(
+                                c.cluster_id,
+                                reviewedById.get(c.cluster_id),
+                              ),
+                            }))
+                          : undefined
+                      }
+                    />
+                    {selectedCluster !== null &&
+                      infoById.get(selectedCluster) && (
+                        <ClusterPanel
+                          info={infoById.get(selectedCluster)!}
+                          reviewed={reviewedById.get(selectedCluster)}
+                          passages={byId}
+                          onClose={() => {
+                            setPicked(null)
+                            setFilters({ cluster: '' })
+                          }}
+                        />
+                      )}
+                    {selectedCluster === null && picked && (
+                      <StageBlock
+                        title={l('The chosen passage', 'Det valda stället')}
+                      >
+                        <p className="atlas-quote">{picked.context}</p>
+                        <StageFacts
+                          rows={[
+                            [l('Word', 'Ord'), picked.matched_term],
+                            [l('Book', 'Bok'), picked.title.split(':')[0]],
+                            [
+                              l('Tradition', 'Tradition'),
+                              traditionName(picked.tradition),
+                            ],
+                            [
+                              l('Cluster', 'Kluster'),
+                              picked.is_noise
+                                ? l('noise', 'brus')
+                                : `#${picked.cluster_id}, ${pct(picked.cluster_probability)}`,
+                            ],
+                          ]}
+                        />
+                      </StageBlock>
+                    )}
+                    {selectedCluster === null && filters.symbol && (
+                      <SymbolPanel
+                        symbol={filters.symbol}
+                        summary={summary}
+                        points={points}
+                        profiles={profiles}
+                        onCluster={(c) => setFilters({ cluster: String(c) })}
+                      />
+                    )}
+                  </aside>
+                </div>
+              </Feature>
+            </div>
+          )}
+          {tab === 1 &&
+            (history ? (
+              <ResearchStory history={history} />
             ) : (
-              <p className="atlas-prompt">
+              <p>
                 {l(
-                  'Point at a dot to read the passage. Choose a symbol or a tradition on the left to see where it falls.',
-                  'Peka på en prick för att läsa stället. Välj en symbol eller en tradition till vänster för att se var den hamnar.',
+                  `On average ${pct(ev.composition.largest_book_share ?? 0)} of a cluster comes from one book, and ${pct(ev.composition.largest_symbol_share ?? 0)} from one symbol. So far the map groups passages more by a book's style and translation than by what a symbol means.`,
+                  `I genomsnitt kommer ${pct(ev.composition.largest_book_share ?? 0)} av ett kluster från en och samma bok, och ${pct(ev.composition.largest_symbol_share ?? 0)} från en och samma symbol. Än så länge grupperar kartan ställen mer efter bokens stil och översättning än efter vad en symbol betyder.`,
                 )}
               </p>
-            )}
-          </>
-        }
-      />
-      <div className="ds-container">
-        <ProjectTech project="symbolic-atlas" />
+            ))}
+          {tab === 2 && <ExperimentTable />}
+        </ReportShell>
       </div>
-      <ProjectDepth project="symbolic-atlas">
-        {history ? (
-          <ResearchStory history={history} />
-        ) : (
-          <section
-            className="atlas-section ds-container"
-            id="symbolic-findings"
-            aria-labelledby="symbolic-findings-title"
-          >
-            <h2 id="symbolic-findings-title">{l('Findings', 'Fynd')}</h2>
-            <p>
-              {l(
-                `On average ${pct(ev.composition.largest_book_share ?? 0)} of a cluster comes from one book, and ${pct(ev.composition.largest_symbol_share ?? 0)} from one symbol. So far the map groups passages more by a book's style and translation than by what a symbol means. That is a finding, not a failure, and the next thing to work on.`,
-                `I genomsnitt kommer ${pct(ev.composition.largest_book_share ?? 0)} av ett kluster från en och samma bok, och ${pct(ev.composition.largest_symbol_share ?? 0)} från en och samma symbol. Än så länge grupperar kartan ställen mer efter bokens stil och översättning än efter vad en symbol betyder. Det är ett resultat, inte ett misslyckande, och nästa sak att arbeta med.`,
-              )}
-            </p>
-            <p>
-              <a href="#symbolic-experiments">
-                {l(
-                  'How far that can be reduced',
-                  'Hur mycket det går att minska',
-                )}
-              </a>
-            </p>
-          </section>
+    </ReportFrame>
+  )
+}
+
+function Method({
+  summary,
+  history,
+}: {
+  summary: AtlasSummary
+  history: ResearchHistory | null
+}) {
+  const ev = summary.evaluation
+  return (
+    <>
+      <p>
+        {l(
+          `${summary.document_count} Project Gutenberg books. Each use of a symbol word is cut out with the sentence before and after, embedded with ${summary.run.embedding_model.split('/')[1]} on the CPU, laid out with UMAP (cosine) and clustered with HDBSCAN in a 10-dimensional UMAP space. At most ${summary.run.sample.per_document_and_symbol} uses per book and symbol are mapped.`,
+          `${summary.document_count} böcker från Project Gutenberg. Varje förekomst av ett symbolord klipps ut med meningen före och efter, bäddas in med ${summary.run.embedding_model.split('/')[1]} på processorn, läggs ut med UMAP (cosinus) och klustras med HDBSCAN i ett tiodimensionellt UMAP-rum. Högst ${summary.run.sample.per_document_and_symbol} förekomster per bok och symbol visas.`,
         )}
-        <ExperimentTable />
-        <div className="ds-container">
-          <ProductQuality
-            product="symbolic"
-            id="symbolic-quality"
-            intro={[
-              'Data quality answers “Did I build the dataset correctly?” Analytical validity answers “Does the model measure symbolic structure, or something else?” The two are checked separately.',
-              'Datakvalitet svarar på ”Byggde jag datasetet rätt?” Analytisk validitet svarar på ”Mäter modellen symbolisk struktur, eller något annat?” De två kontrolleras separat.',
-            ]}
-          />
-        </div>
-        <section
-          className="atlas-section ds-container"
-          id="symbolic-corpus"
-          aria-labelledby="symbolic-corpus-title"
-        >
-          <h2 id="symbolic-corpus-title">{l('Corpus', 'Korpus')}</h2>
-          <p>
-            {l(
-              `${summary.document_count} public-domain books from Project Gutenberg in English, chosen per tradition from the Gutenberg catalogue and checked against each book’s Gutenberg record (title, creators, language, rights) and against each other for duplicated text. Many are translations or retellings by nineteenth-century English writers, so a voice can belong to a translator rather than a tradition.`,
-              `${summary.document_count} fria böcker från Project Gutenberg på engelska, valda per tradition ur Gutenbergs katalog och kontrollerade mot varje boks post hos Gutenberg (titel, upphovspersoner, språk, rättigheter) och mot varandra för dubblerad text. Många är översättningar eller återberättelser av engelska 1800-talsförfattare, så en röst kan tillhöra en översättare snarare än en tradition.`,
-            )}
-          </p>
-          <CorpusExplorer
-            documents={summary.documents}
-            tradition={filters.korpus}
-            sourceType={filters.kalla}
-            onFilter={(next) => setFilters(next)}
-          />
-        </section>
-        <section
-          className="atlas-section ds-container"
-          id="symbolic-method"
-          aria-labelledby="symbolic-method-title"
-        >
-          <h2 id="symbolic-method-title">{l('Method', 'Metod')}</h2>
-          <p>
-            {l(
-              `${summary.document_count} Project Gutenberg books. Each use of a symbol word is cut out with the sentence before and after, embedded with ${summary.run.embedding_model.split('/')[1]} on the CPU, laid out with UMAP (cosine) and clustered with HDBSCAN in a 10-dimensional UMAP space. At most ${summary.run.sample.per_document_and_symbol} uses per book and symbol are mapped.`,
-              `${summary.document_count} böcker från Project Gutenberg. Varje förekomst av ett symbolord klipps ut med meningen före och efter, bäddas in med ${summary.run.embedding_model.split('/')[1]} på processorn, läggs ut med UMAP (cosinus) och klustras med HDBSCAN i ett tiodimensionellt UMAP-rum. Högst ${summary.run.sample.per_document_and_symbol} förekomster per bok och symbol visas.`,
-            )}
-          </p>
-          <p>
-            {l(
-              'Before extraction, contents, glossaries, indexes, notes, bibliographies and footnotes are removed by explicit rules, and each removal is recorded. Matching is by word list, so a context is not yet a symbolic meaning; clusters are exploratory and numbered, a name comes only from a person’s review, and UMAP bends distances.',
-              'Före extraktionen tas innehållsförteckningar, ordlistor, register, noter, litteraturlistor och fotnoter bort med uttryckliga regler, och varje borttagning registreras. Matchningen sker med en ordlista, så ett sammanhang är ännu inte en symbolisk betydelse; klustren är utforskande och numrerade, ett namn kommer bara från en människas granskning, och UMAP förvränger avstånd.',
-            )}
-          </p>
-          <h3>{l('Diagnostics', 'Diagnostik')}</h3>
-          <p className="atlas-note">
-            {l(
-              'How well the map and the clusters hold together. These describe structure, not meaning.',
-              'Hur väl kartan och klustren håller ihop. De beskriver struktur, inte betydelse.',
-            )}
-          </p>
-          <div className="atlas-table-wrap" tabIndex={0}>
-            <table className="atlas-table">
-              <thead>
-                <tr>
-                  <th scope="col">{l('Run', 'Körning')}</th>
-                  <th scope="col">{l('Trustworthiness', 'Trovärdighet')}</th>
-                  <th scope="col">{l('Silhouette', 'Silhuett')}</th>
-                  <th scope="col">{l('Noise', 'Brus')}</th>
-                  <th scope="col">
-                    {l('Median membership', 'Medianmedlemskap')}
+      </p>
+      <p>
+        {l(
+          'Before extraction, contents, glossaries, indexes, notes, bibliographies and footnotes are removed by explicit rules, and each removal is recorded. Matching is by word list, so a context is not yet a symbolic meaning; clusters are exploratory and numbered, a name comes only from a person’s review, and UMAP bends distances.',
+          'Före extraktionen tas innehållsförteckningar, ordlistor, register, noter, litteraturlistor och fotnoter bort med uttryckliga regler, och varje borttagning registreras. Matchningen sker med en ordlista, så ett sammanhang är ännu inte en symbolisk betydelse; klustren är utforskande och numrerade, ett namn kommer bara från en människas granskning, och UMAP förvränger avstånd.',
+        )}
+      </p>
+      <h2>{l('Diagnostics', 'Diagnostik')}</h2>
+      <p className="atlas-note">
+        {l(
+          'How well the map and the clusters hold together. These describe structure, not meaning.',
+          'Hur väl kartan och klustren håller ihop. De beskriver struktur, inte betydelse.',
+        )}
+      </p>
+      <div className="atlas-table-wrap" tabIndex={0}>
+        <table className="atlas-table">
+          <thead>
+            <tr>
+              <th scope="col">{l('Run', 'Körning')}</th>
+              <th scope="col">{l('Trustworthiness', 'Trovärdighet')}</th>
+              <th scope="col">{l('Silhouette', 'Silhuett')}</th>
+              <th scope="col">{l('Noise', 'Brus')}</th>
+              <th scope="col">{l('Median membership', 'Medianmedlemskap')}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {(history?.steps ?? [])
+              .filter((st) => st.metrics)
+              .map((st) => (
+                <tr key={st.id}>
+                  <th scope="row">
+                    {st.id}, {st.name}
                   </th>
+                  <td>{num(st.metrics!.trustworthiness, 2)}</td>
+                  <td>
+                    {st.metrics!.silhouette == null
+                      ? '–'
+                      : num(st.metrics!.silhouette, 2)}
+                  </td>
+                  <td>{pct(st.metrics!.noise_share)}</td>
+                  <td>
+                    {st.metrics!.median_membership == null
+                      ? '–'
+                      : num(st.metrics!.median_membership, 2)}
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {(history?.steps ?? [])
-                  .filter((st) => st.metrics)
-                  .map((st) => (
-                    <tr key={st.id}>
-                      <th scope="row">
-                        {st.id}, {st.name}
-                      </th>
-                      <td>{num(st.metrics!.trustworthiness, 2)}</td>
-                      <td>
-                        {st.metrics!.silhouette == null
-                          ? '–'
-                          : num(st.metrics!.silhouette, 2)}
-                      </td>
-                      <td>{pct(st.metrics!.noise_share)}</td>
-                      <td>
-                        {st.metrics!.median_membership == null
-                          ? '–'
-                          : num(st.metrics!.median_membership, 2)}
-                      </td>
-                    </tr>
-                  ))}
-                {!history && (
-                  <tr>
-                    <th scope="row">{l('Baseline', 'Utgångsläge')}</th>
-                    <td>{num(ev.trustworthiness, 2)}</td>
-                    <td>
-                      {ev.silhouette == null ? '–' : num(ev.silhouette, 2)}
-                    </td>
-                    <td>{pct(summary.noise_share)}</td>
-                    <td>
-                      {ev.membership_probability
-                        ? num(ev.membership_probability.median, 2)
-                        : '–'}
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-          <p>
-            <a
-              href="https://github.com/korv9/anton-portfolio/blob/main/docs/symbolic-atlas.md"
-              target="_blank"
-              rel="noreferrer"
-            >
-              {l(
-                'Full method and limitations',
-                'Hela metoden och begränsningarna',
-              )}
-            </a>
-          </p>
-          <MethodSummary
-            lineage={[
-              'Project Gutenberg',
-              l('Python ingestion', 'inläsning i Python'),
-              'dbt + DuckDB',
-              l('embeddings, UMAP, HDBSCAN', 'inbäddningar, UMAP, HDBSCAN'),
-              'Parquet',
-              'React',
-            ]}
-            quality={l(
-              'Good clusters did not at first mean symbolic meaning: data quality, cluster quality and construct validity are checked separately.',
-              'Bra kluster betydde inte från början symbolisk mening: datakvalitet, klusterkvalitet och begreppsvaliditet kontrolleras var för sig.',
+              ))}
+            {!history && (
+              <tr>
+                <th scope="row">{l('Baseline', 'Utgångsläge')}</th>
+                <td>{num(ev.trustworthiness, 2)}</td>
+                <td>{ev.silhouette == null ? '–' : num(ev.silhouette, 2)}</td>
+                <td>{pct(summary.noise_share)}</td>
+                <td>
+                  {ev.membership_probability
+                    ? num(ev.membership_probability.median, 2)
+                    : '–'}
+                </td>
+              </tr>
             )}
-          />
-        </section>
-      </ProjectDepth>
-    </div>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        <a
+          href="https://github.com/korv9/anton-portfolio/blob/main/docs/symbolic-atlas.md"
+          target="_blank"
+          rel="noreferrer"
+        >
+          {l('Full method and limitations', 'Hela metoden och begränsningarna')}
+        </a>
+      </p>
+      <MethodSummary
+        lineage={[
+          'Project Gutenberg',
+          l('Python ingestion', 'inläsning i Python'),
+          'dbt + DuckDB',
+          l('embeddings, UMAP, HDBSCAN', 'inbäddningar, UMAP, HDBSCAN'),
+          'Parquet',
+          'React',
+        ]}
+        quality={l(
+          'Good clusters did not at first mean symbolic meaning: data quality, cluster quality and construct validity are checked separately.',
+          'Bra kluster betydde inte från början symbolisk mening: datakvalitet, klusterkvalitet och begreppsvaliditet kontrolleras var för sig.',
+        )}
+      />
+    </>
   )
 }
