@@ -21,6 +21,7 @@ Usage:
     python platform/publish/upload.py --dry-run      # what would transfer
     python platform/publish/upload.py                # upload changed shards
     python platform/publish/upload.py --verify-only  # confirm every shard is present and correct
+    python platform/publish/upload.py --only workers-ai/sfs/  # one prefix only, also with --offload
 """
 import sys
 from pathlib import Path
@@ -93,6 +94,10 @@ def shards():
     return [entry for entry in catalog["files"] if entry["format"] in remote]
 
 
+def scoped(entries, prefix: str | None):
+    return [entry for entry in entries if not prefix or entry["path"].startswith(prefix)]
+
+
 def remote_hash(s3, bucket, key):
     """The catalogued sha256, stored as object metadata. None if the object is absent."""
     try:
@@ -104,7 +109,7 @@ def remote_hash(s3, bucket, key):
 OFFLOADED = PUBLIC / "offloaded.json"
 
 
-def offload(entries) -> None:
+def offload(entries, merge: bool = False) -> None:
     """Delete verified local copies and record which paths now live only in storage.
 
     The catalogue needs to tell two kinds of missing file apart: one that was uploaded and
@@ -120,7 +125,11 @@ def offload(entries) -> None:
             freed += path.stat().st_size
             path.unlink()
             removed += 1
-    listing = json.dumps(sorted(entry["path"] for entry in entries), ensure_ascii=False, indent=1)
+    paths = {entry["path"] for entry in entries}
+    if merge and OFFLOADED.is_file():
+        # A scoped offload (--only) adds to what earlier offloads recorded.
+        paths |= set(json.loads(OFFLOADED.read_text(encoding="utf-8")))
+    listing = json.dumps(sorted(paths), ensure_ascii=False, indent=1)
     OFFLOADED.write_text(listing + "\n", encoding="utf-8")
     for directory in sorted((p for p in PUBLIC.rglob("*") if p.is_dir()),
                             key=lambda p: -len(p.parts)):
@@ -140,9 +149,11 @@ def main() -> None:
     parser.add_argument("--offload", action="store_true",
                         help="after verifying, delete the local copies and record what was offloaded")
     parser.add_argument("--workers", type=int, default=16)
+    parser.add_argument("--only", metavar="PREFIX",
+                        help="only catalogued files whose path starts with PREFIX (upload, verify, offload)")
     arguments = parser.parse_args()
 
-    entries = shards()
+    entries = scoped(shards(), arguments.only)
     total_bytes = sum(entry["bytes"] for entry in entries)
     print(f"{len(entries)} shards, {total_bytes / 1048576:.1f} MB catalogued")
 
@@ -180,7 +191,7 @@ def main() -> None:
             sys.exit(1)
         print(f"VERIFIED: all {len(entries)} shards present with matching hashes.")
         if arguments.offload:
-            offload(entries)
+            offload(entries, merge=bool(arguments.only))
         return
 
     print(f"{len(stale)} to upload, {len(entries) - len(stale)} already current")
