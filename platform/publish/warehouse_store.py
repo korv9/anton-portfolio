@@ -15,9 +15,11 @@ In the bucket, under warehouse/:
     features/<stage>/...  the ML stages' outputs (embeddings, maps, clusters, concept alignment)
                           that dbt reads back as sources, stored the same way, so the gold marts
                           built on them can be rebuilt without rerunning the models
+    cluster_lab/...       the Cluster Lab runs the site's demos depend on (CLUSTER_LAB_RUNS), not
+                          the lab's caches or test runs
 
     python platform/publish/warehouse_store.py push            # warehouse and raw files
-    python platform/publish/warehouse_store.py push --only db  # or --only raw, --only features
+    python platform/publish/warehouse_store.py push --only db  # or --only raw, features, cluster_lab
     python platform/publish/warehouse_store.py pull            # fetch both back
     python platform/publish/warehouse_store.py status          # what the bucket holds
     python platform/publish/warehouse_store.py pull --only raw --path jobtech/stream
@@ -50,17 +52,37 @@ from common import ROOT  # noqa: E402
 DATABASE = Path(os.environ.get("PORTFOLIO_DB", ROOT / "warehouse/portfolio.duckdb"))
 RAW = Path(os.environ.get("PORTFOLIO_RAW", ROOT / "warehouse/raw"))
 FEATURES = Path(os.environ.get("PORTFOLIO_FEATURES", ROOT / "warehouse/features"))
+CLUSTER_LAB = Path(os.environ.get("PORTFOLIO_CLUSTER_LAB", ROOT / "warehouse/cluster_lab"))
 PREFIX = "warehouse/"
 DB_KEY = PREFIX + "portfolio.duckdb.gz"
 MANIFEST_KEY = PREFIX + "manifest.json"
 RAW_PREFIX = PREFIX + "raw/"
 FEATURES_PREFIX = PREFIX + "features/"
-TREES = ("raw", "features")
+CLUSTER_LAB_PREFIX = PREFIX + "cluster_lab/"
+TREES = ("raw", "features", "cluster_lab")
+# The debate map (SBERT pick, its layout and passages) and the bge-m3 run behind the Workers AI demo.
+CLUSTER_LAB_RUNS = (
+    "public-topics-2026-10-12/datasets/debate",
+    "public-consensus-2026-10-13/pick-debate.json",
+    "public-consensus-2026-10-13/layout-debate.json",
+    "public-consensus-2026-10-13/layout-debate.parquet",
+    "public-consensus-2026-10-13/debate-sbert",
+    "public-consensus-2026-10-13/debate-bge-m3",
+    "public-consensus-2026-10-13/pick-debate-bge-m3.json",
+    "workers-ai-debate-bge-m3",
+    "workers_ai_ledger.jsonl",
+)
 
 
 def tree(name: str) -> tuple[Path, str]:
     """A file tree stored next to the warehouse: (local directory, key prefix)."""
-    return {"raw": (RAW, RAW_PREFIX), "features": (FEATURES, FEATURES_PREFIX)}[name]
+    return {"raw": (RAW, RAW_PREFIX), "features": (FEATURES, FEATURES_PREFIX),
+            "cluster_lab": (CLUSTER_LAB, CLUSTER_LAB_PREFIX)}[name]
+
+
+def folders(name: str, subs: list[str]) -> list[str]:
+    """The folders to push: the given ones, or for cluster_lab only the listed runs, never the caches."""
+    return list(CLUSTER_LAB_RUNS) if name == "cluster_lab" and subs == [""] else subs
 CHUNK = 8 * 1024 * 1024
 
 
@@ -243,8 +265,8 @@ def pull_tree(s3, bucket: str, name: str, sub: str = "") -> int:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("action", choices=["push", "pull", "status"])
-    parser.add_argument("--only", choices=["db", "raw", "features"],
-                        help="Only the warehouse, only the raw files or only the ML outputs")
+    parser.add_argument("--only", choices=["db", *TREES],
+                        help="Only the warehouse, the raw files, the ML outputs or the Cluster Lab runs")
     parser.add_argument("--path", action="append", default=[],
                         help="With --only raw or features: only this folder or file of the tree "
                              "(repeatable), e.g. --path jobtech/stream")
@@ -252,9 +274,9 @@ def main() -> int:
                         help="Delete remote files absent locally in the fully restored --path folders")
     args = parser.parse_args()
     if args.path and args.only not in TREES:
-        parser.error("--path needs --only raw or --only features")
+        parser.error("--path needs --only raw, features or cluster_lab")
     if args.prune and (args.action != "push" or args.only not in TREES or not args.path):
-        parser.error("--prune needs push --only raw/features with explicit --path folders")
+        parser.error("--prune needs push --only raw/features/cluster_lab with explicit --path folders")
     subs = args.path or [""]
 
     from upload import client
@@ -278,7 +300,7 @@ def main() -> int:
     counts: dict[str, int | None] = {}
     for name in TREES:
         if args.only in (None, name):
-            for sub in subs:
+            for sub in folders(name, subs):
                 counts[name], sent, sent_bytes = push_tree(s3, bucket, name, sub, args.prune)
                 print(f"{name.capitalize()} files{' in ' + sub if sub else ''}: {counts[name]} "
                       f"on disk, {sent} uploaded ({sent_bytes / 1e6:.0f} MB)")
