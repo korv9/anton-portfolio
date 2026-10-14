@@ -22,6 +22,7 @@ export type Page =
   | 'philosophy'
   | 'concepts'
   | 'clusters'
+  | 'lawqa'
   | 'tech'
 
 export type Route = {
@@ -173,7 +174,8 @@ export function isLongRead(path: string) {
     path.startsWith('#concept-') ||
     path.startsWith('#concepts-') ||
     path.startsWith('#drugcomb') ||
-    path === '#tech'
+    path === '#tech' ||
+    path === '#fraga-lagen'
   )
 }
 /** Two tabs of the same report: the page then keeps the reader where they stand. */
@@ -200,6 +202,7 @@ export function pageOf(path: string): Page {
   if (path === '#diva-lakehouse') return 'lakehouse'
   if (path === '#sweden' || path.startsWith('#sweden-')) return 'welfare'
   if (path === '#cluster-visuals') return 'clusters'
+  if (path === '#fraga-lagen') return 'lawqa'
   if (path === '#tech') return 'tech'
   if (path === '#ai-act' || path.startsWith('#ai-act-')) return 'aiact'
   if (path.startsWith('#concept-') || path.startsWith('#concepts-'))

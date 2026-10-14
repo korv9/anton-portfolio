@@ -1,7 +1,8 @@
 /**
  * One cluster map: every point drawn on a canvas that fills its width, coloured by its cluster,
  * noise faint. Pointing at a point names it; clicking a point, or a cluster in the list under the
- * map, picks that cluster and steps the others back. The list is the keyboard way in.
+ * map, picks that cluster and steps the others back. The list is the keyboard way in. A marker,
+ * such as a visitor's sentence, glides to its place (at once under reduced motion).
  */
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { l } from '../i18n'
@@ -26,6 +27,7 @@ export default function ClusterScatter({
   name,
   label,
   height = 780,
+  marker,
 }: {
   points: ClusterPoint[]
   /** A cluster's name for the tooltip and the list. */
@@ -33,6 +35,8 @@ export default function ClusterScatter({
   /** The accessible name of the map. */
   label: string
   height?: number
+  /** One extra point drawn on top, named in the map's label. */
+  marker?: { x: number; y: number; label: string }
 }) {
   const box = useRef<HTMLDivElement>(null)
   const canvas = useRef<HTMLCanvasElement>(null)
@@ -56,6 +60,7 @@ export default function ClusterScatter({
 
   const h = Math.min(height, Math.round(width * 0.62))
   const pad = 12
+  const [glide, setGlide] = useState<[number, number] | null>(null)
   const { sx, sy, sizes } = useMemo(() => {
     const projection = projectClusterPoints(points, width, h, pad)
     const counts = new Map<number, number>()
@@ -102,6 +107,17 @@ export default function ClusterScatter({
     ctx.globalAlpha = 1
   }, [points, width, h, picked, sx, sy, radius])
 
+  // The marker starts where it was, or in the middle, and moves to its place on the next frames.
+  useEffect(() => {
+    if (!marker) return setGlide(null)
+    const to: [number, number] = [sx(marker.x), sy(marker.y)]
+    setGlide((was) => was ?? [width / 2, h / 2])
+    let frame = requestAnimationFrame(
+      () => (frame = requestAnimationFrame(() => setGlide(to))),
+    )
+    return () => cancelAnimationFrame(frame)
+  }, [marker, sx, sy, width, h])
+
   // A coarse grid of the points so the nearest one is found without scanning them all.
   const grid = useMemo(() => {
     const cell = 16
@@ -147,7 +163,7 @@ export default function ClusterScatter({
         ref={canvas}
         style={{ width: '100%', height: h }}
         role="img"
-        aria-label={`${label}: ${num(points.length)} ${l('points', 'punkter')}, ${sizes.length} ${l('clusters', 'kluster')}`}
+        aria-label={`${label}: ${num(points.length)} ${l('points', 'punkter')}, ${sizes.length} ${l('clusters', 'kluster')}${marker ? `. ${marker.label}` : ''}`}
         onPointerMove={(e) => {
           const [x, y] = at(e)
           const p = nearest(x, y)
@@ -160,6 +176,16 @@ export default function ClusterScatter({
           setPicked(p && p.c >= 0 && p.c !== picked ? p.c : null)
         }}
       />
+      {glide && marker && (
+        <span
+          className="cv-marker"
+          style={{ transform: `translate(${glide[0]}px, ${glide[1]}px)` }}
+          aria-hidden="true"
+        >
+          <i />
+          <b>{marker.label}</b>
+        </span>
+      )}
       {hover && (
         <div
           className="cv-tip"
