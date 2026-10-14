@@ -18,7 +18,7 @@ const MODELS: Record<
     dims: ['dim_indicator', 'dim_region', 'dim_period'],
     marts: ['mart_county_year_overview'],
     source: [
-      'SCB, Försäkringskassan, Folkhälsomyndigheten, ESS, Kolada',
+      'SCB, Försäkringskassan, the Public Health Agency, ESS, Kolada',
       'SCB, Försäkringskassan, Folkhälsomyndigheten, ESS, Kolada',
     ],
   },

@@ -7,8 +7,11 @@ import { RIKSDAG_PARTIES, PartyLogo, partyName } from '../../parties/identity'
 import { DEEP_DIVES, THEMES } from '../nav'
 import { Term } from '../Term'
 
-const TECHNICAL: Record<string, string> = {
-  '#politik-sok': 'Fulltext, anföranden sedan 1993',
+const TECHNICAL: Record<string, [string, string]> = {
+  '#politik-sok': [
+    'Full text, speeches since 1993',
+    'Fulltext, anföranden sedan 1993',
+  ],
 }
 
 export default function UtforskaTheme() {
@@ -67,7 +70,7 @@ export default function UtforskaTheme() {
                   <a href={path} className="explore-row">
                     <strong>{l(dive.en, dive.sv)}</strong>
                     <span>{l(dive.aboutEn, dive.aboutSv)}</span>
-                    {TECHNICAL[path] && <small>{TECHNICAL[path]}</small>}
+                    {TECHNICAL[path] && <small>{l(...TECHNICAL[path])}</small>}
                   </a>
                 </li>
               ))}

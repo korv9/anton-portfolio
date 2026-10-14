@@ -17,7 +17,7 @@ import {
 import type { Route } from '../../router'
 import ThemeLayout from '../ThemeLayout'
 import BuilderPanel, { Choice, Field } from '../BuilderPanel'
-import { Select, monthName, num, pct, signed } from '../controls'
+import { Select, monthName, pct, signed } from '../controls'
 import { useViewParams } from '../useViewParams'
 import { shownParties, useParties } from '../partySelection'
 import RankBars from '../../charts/RankBars'
@@ -111,25 +111,11 @@ export default function ValjarnaTheme({ route }: { route: Route }) {
     ? [...new Set(polls.map((p) => p.survey_month))].sort()
     : []
   const latest = months.at(-1)
-  const previous = months.at(-2)
   const latestRows =
     polls?.filter(
       (p) => p.survey_month === latest && RIKSDAG_PARTIES.includes(p.party),
     ) ?? []
   const leader = [...latestRows].sort((a, b) => b.share_pct - a.share_pct)[0]
-  const moves = latestRows
-    .map((row) => {
-      const before = polls?.find(
-        (p) => p.survey_month === previous && p.party === row.party,
-      )
-      return before
-        ? { party: row.party, change: row.share_pct - before.share_pct }
-        : null
-    })
-    .filter(Boolean) as { party: string; change: number }[]
-  const mover = [...moves].sort(
-    (a, b) => Math.abs(b.change) - Math.abs(a.change),
-  )[0]
   // Bars: the latest value per party, with the change since the one before.
   const latestBars = series
     .map((s) => {
@@ -248,30 +234,6 @@ export default function ValjarnaTheme({ route }: { route: Route }) {
         loading={!loaded && !error}
         error={error}
         feature={<PollTrend selected={selected} />}
-        kpis={
-          leader && latest
-            ? [
-                ...(mover && previous
-                  ? [
-                      {
-                        value: `${signed(mover.change, 1)} ${l('pts', 'p.e.')}`,
-                        label: l(
-                          `${partyName(mover.party)}, the largest change since ${monthName(previous)}`,
-                          `${partyName(mover.party)}, störst förändring sedan ${monthName(previous)}`,
-                        ),
-                      },
-                    ]
-                  : []),
-                {
-                  value: `±${num(leader.margin_of_error_pp ?? 0, 1)}`,
-                  label: l(
-                    'points margin of error for the largest party',
-                    'procentenheter felmarginal för största partiet',
-                  ),
-                },
-              ]
-            : []
-        }
         filters={filters}
         chartTitle={
           !overTime
@@ -389,11 +351,17 @@ export default function ValjarnaTheme({ route }: { route: Route }) {
         table={table}
         sources={[
           {
-            name: 'SCB, Partisympatiundersökningen (PSU)',
+            name: l(
+              'SCB, Party Preference Survey (PSU)',
+              'SCB, Partisympatiundersökningen (PSU)',
+            ),
             url: 'https://www.scb.se/psu',
           },
           {
-            name: 'SCB och Valmyndigheten, riksdagsval',
+            name: l(
+              'SCB and Valmyndigheten, Riksdag elections',
+              'SCB och Valmyndigheten, riksdagsval',
+            ),
             url: 'https://www.val.se',
           },
         ]}
