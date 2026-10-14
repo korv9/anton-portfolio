@@ -1,7 +1,7 @@
 """The law corpora behind "Fråga lagen": passages to embed, then the files the browser and Worker read.
 
     python platform/publish/workers_ai/export_law_corpora.py chunks [--corpus sfs|ai-act]
-    python platform/publish/workers_ai/export_law_corpora.py meta --corpus sfs --run <embed run>
+    python platform/publish/workers_ai/export_law_corpora.py meta --corpus sfs --run <embed run> --recall 0.93
 
 `chunks` writes warehouse/features/workers_ai/<corpus>/chunks.jsonl, one passage per line with
 {id, title, url, text, embed} where `embed` (title and text) is what platform/nlp/workers_ai.py
@@ -14,7 +14,8 @@ embeds and `text` is what a quote is checked against:
                 the Official Journal text in warehouse/raw/eu_ai_act/acts/32024R1689.<lang>.xhtml
 
 `meta` writes frontend/public/data/workers-ai/<corpus>/meta.json in the order of the embed run's
-ids.json (vectors.bin and pca.json come from `workers_ai.py compress`), and the Worker's
+ids.json (vectors.bin and pca.json come from `workers_ai.py compress`, which also reports the
+recall@10 passed as --recall; for sfs also the fetch date and the list of laws), and the Worker's
 verification lists verify/<xx>.json: {id: text_hash(text)} sharded by the first two hex
 characters of sha256(id), so the Worker parses a few KB per request.
 """
@@ -40,6 +41,7 @@ AI_ACT = ROOT / "frontend" / "public" / "data" / "ai-act"
 RAW = Path(os.environ.get("PORTFOLIO_RAW", ROOT / "warehouse" / "raw"))
 DATABASE = Path(os.environ.get("PORTFOLIO_DB", ROOT / "warehouse" / "portfolio.duckdb"))
 OJ = "32024R1689"
+RIKSDAGEN = "https://www.riksdagen.se/sv/dokument-och-lagar/dokument/svensk-forfattningssamling"
 ROMAN = {"i", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix", "x", "xi", "xii"}
 PARAGRAPH = {"en": re.compile(r"^(?:(\d+[a-z]?)\.|\((\d+[a-z]?)\)) "),
              "sv": re.compile(r"^(\d+[a-z]?)\. ()")}
@@ -148,14 +150,20 @@ def write_chunks(corpus: str, rows: list[dict]) -> None:
           f"-> {out.relative_to(ROOT)}")
 
 
-def meta(corpus: str, run: Path) -> None:
+def laws() -> list[dict]:
+    """The selected laws as the page lists them, from the selection the ingest kept."""
+    selection = json.loads((RAW / "sfs" / "selection.json").read_text(encoding="utf-8"))
+    return [{"sfs": law["sfs"], "title": law["name"], "url": f"{RIKSDAGEN}/_{law['dok_id']}/"}
+            for law in selection]
+
+
+def meta(corpus: str, run: Path, recall: float | None) -> None:
     chunks = {}
     for line in (FEATURES / corpus / "chunks.jsonl").read_text(encoding="utf-8").splitlines():
         row = json.loads(line)
         row.pop("embed")
         chunks[row["id"]] = row
     ids = json.loads((run / "ids.json").read_text(encoding="utf-8"))
-    manifest = json.loads((run / "manifest.json").read_text(encoding="utf-8"))
     out = SITE / corpus
     pca = json.loads((out / "pca.json").read_text(encoding="utf-8"))
     if (out / "vectors.bin").stat().st_size != len(ids) * pca["dims"]:
@@ -164,7 +172,10 @@ def meta(corpus: str, run: Path) -> None:
     document = {"corpus": corpus, "model": pca["model"],
                 "created": datetime.now(timezone.utc).isoformat(timespec="seconds"),
                 "n": len(items), "dims": pca["dims"],
-                "recall_at_10": manifest.get("recall_at_10"), "items": items}
+                "recall_at_10": recall}
+    if corpus == "sfs":
+        document |= {"fetched": max(item["fetched"] for item in items), "laws": laws()}
+    document["items"] = items
     (out / "meta.json").write_text(json.dumps(document, ensure_ascii=False, separators=(",", ":")),
                                    encoding="utf-8")
     shards: dict[str, dict] = {}
@@ -186,11 +197,12 @@ def main() -> int:
     parser.add_argument("command", choices=["chunks", "meta"])
     parser.add_argument("--corpus", choices=["sfs", "ai-act", "ai-act-sv", "ai-act-en"])
     parser.add_argument("--run", type=Path, help="meta: the finished embed run folder")
+    parser.add_argument("--recall", type=float, help="meta: recall@10 that compress reported")
     args = parser.parse_args()
     if args.command == "meta":
         if not (args.corpus and args.corpus != "ai-act" and args.run):
             parser.error("meta needs --corpus sfs|ai-act-sv|ai-act-en and --run")
-        meta(args.corpus, args.run)
+        meta(args.corpus, args.run, args.recall)
         return 0
     if args.corpus in (None, "sfs"):
         write_chunks("sfs", sfs_chunks())

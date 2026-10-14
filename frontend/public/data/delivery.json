@@ -1,6 +1,6 @@
 {
  "schema_version": 1,
- "run_id": "407cff640bfa5d4d",
+ "run_id": "cce05eed09314cfa",
  "bases": {
   "json": "data/",
   "parquet": "https://pub-9867b18896ba49e4a0b4a3d2f39c0385.r2.dev/",
@@ -11,7 +11,9 @@
   "politics/parliament/debates/",
   "politics/decisions/",
   "politics/laws/v1/",
-  "politics/laws/v2/"
+  "politics/laws/v2/",
+  "workers-ai/debate/shards/",
+  "workers-ai/sfs/meta.json"
  ],
  "parquet_datasets": {
   "atlas.parquet": [

@@ -59,6 +59,8 @@ SHARD_DIRECTORIES = (
     "politics/laws/v2/",
     # The debate passages and int8 vectors for "Where does your sentence land?" (about 37 MB).
     "workers-ai/debate/shards/",
+    # Fråga lagen's SFS passages (about 7 MB); the Worker's verify/ lists stay in the assets.
+    "workers-ai/sfs/meta.json",
 )
 
 SESSION_PATTERN = re.compile(r"/(?:session=)?(\d{4}-\d{2,4})/")
