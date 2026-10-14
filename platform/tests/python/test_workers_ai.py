@@ -39,3 +39,12 @@ def test_int8_search_keeps_the_nearest_neighbours():
     assert codes.dtype == np.int8 and codes.shape == (600, 16)
     assert np.abs(codes).max() == 127
     assert w.recall_at_10(vectors, fitted, codes, queries=100) > 0.5
+
+
+def test_a_batch_stays_under_the_models_context():
+    assert w.batch_size([10] * 300) == w.BATCH
+    # 100 texts of 617 tokens are 61,700: too many for one call.
+    lengths = [300] * 50 + [617] * 100
+    n = w.batch_size(lengths)
+    assert n * lengths[n - 1] <= w.BATCH_TOKENS and (n + 1) * lengths[n] > w.BATCH_TOKENS
+    assert w.batch_size([90_000]) == 1

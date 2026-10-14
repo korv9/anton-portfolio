@@ -50,6 +50,8 @@ DIMS = 1024
 NEURONS_PER_TOKEN = 1075 / 1e6
 DAILY_CAP = 9500
 BATCH = 100
+# One call may hold at most 60,000 tokens, counted as the batch size times its longest text.
+BATCH_TOKENS = 40_000
 CACHE = ROOT / "warehouse/cluster_lab/cache"
 LEDGER = ROOT / "warehouse/cluster_lab/workers_ai_ledger.jsonl"
 
@@ -146,6 +148,14 @@ def call(session, texts: list[str]) -> tuple[np.ndarray, int, float]:
     raise RuntimeError("Workers AI kept failing after 6 attempts")
 
 
+def batch_size(lengths: list[int], limit: int = BATCH_TOKENS) -> int:
+    """How many of the (ascending) token lengths fit one call: n texts padded to the n-th length."""
+    n = 1
+    while n < min(len(lengths), BATCH) and (n + 1) * lengths[n] <= limit:
+        n += 1
+    return n
+
+
 def next_reset(now: datetime) -> datetime:
     return datetime.combine(now.date() + timedelta(days=1), datetime.min.time(), timezone.utc) + timedelta(minutes=5)
 
@@ -191,7 +201,7 @@ def embed(args) -> int:
                         break
                     wait()
                     continue
-                batch = missing[:min(fits, BATCH)]
+                batch = missing[:min(fits, batch_size([tokens[h] for h in missing[:BATCH]]))]
                 try:
                     vectors, used, neurons = call(session, [unique[h] for h in batch])
                 except QuotaExhausted as error:
