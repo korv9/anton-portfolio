@@ -3,8 +3,8 @@
 Experiment 2026-10-12. [Metod, datakvalitet och återkörning](public-clustering-method.md)
 innehåller källhashar, modellrevisioner, hela parameterutrymmet och kommandon.
 Det underliggande Riksdagslagret saknas lokalt; den befintliga publicerade
-fulltextkorpusen har frysts utan ny ingestion. Ingen data har publicerats eller
-förts till betalda inferenstjänster.
+fulltextkorpusen har frysts utan ny ingestion. Ingen data har publicerats.
+Endast öppen, publicerad data skickas till Workers AI. Besökarens text loggas aldrig och sparas inte.
 
 Debatterna omfattar 108 debatter och 10 148 hämtade anföranden från 1993-2026.
 Efter parti-/längdkrav används 26 592 icke överlappande passager från 9 986

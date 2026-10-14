@@ -47,5 +47,6 @@ Repository rules that sit beside them:
 
 - Data is real or absent: no placeholder numbers or invented rows on any page.
 - Secrets live only in GitHub and Cloudflare secrets.
+- En lokal `.env` (gitignorerad) är tillåten för engångskörningar mot Cloudflare Workers AI; den checkas aldrig in.
 - Checks before a push: `npm run check`, `npm run format:check`, `npm run test:unit`,
   `python -m pytest platform/tests -q`, and `npm run test:e2e` for frontend changes.

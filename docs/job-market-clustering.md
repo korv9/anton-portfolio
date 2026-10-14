@@ -71,7 +71,8 @@ It is a local multilingual model producing 384-dimensional sentence/paragraph em
 its relatively small size and multilingual training make it a practical Swedish/English
 baseline. See the [model card](https://huggingface.co/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2)
 and [multilingual model documentation](https://github.com/huggingface/sentence-transformers/blob/main/docs/sentence_transformer/pretrained_models.md).
-No paid API is called and no advertisement text is sent to a model service.
+The rule for model services, from [workers-ai.md](workers-ai.md):
+"Endast öppen, publicerad data skickas till Workers AI. Besökarens text loggas aldrig och sparas inte."
 
 The model has a short token window. The implementation divides each complete semantic input
 into token-sized chunks, embeds them locally, computes a token-weighted mean and normalises
