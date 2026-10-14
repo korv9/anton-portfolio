@@ -26,3 +26,16 @@ def test_spent_today_counts_only_the_current_utc_day(tmp_path):
             {"utc": "2026-10-14T20:00:00+00:00", "neurons_est": 7.5}]
     ledger.write_text("\n".join(json.dumps(r) for r in rows) + "\n", encoding="utf-8")
     assert w.spent_today(ledger, datetime(2026, 10, 14, 21, tzinfo=timezone.utc)) == 20
+
+
+def test_int8_search_keeps_the_nearest_neighbours():
+    import numpy as np
+    rng = np.random.default_rng(1)
+    # Clustered data in 64 dimensions, compressed to 16: the exact neighbours mostly survive.
+    centres = rng.normal(size=(20, 64))
+    vectors = (centres[rng.integers(0, 20, 600)] + 0.3 * rng.normal(size=(600, 64))).astype("float32")
+    fitted = w.pca(vectors, 16)
+    codes = w.quantise(vectors, fitted)
+    assert codes.dtype == np.int8 and codes.shape == (600, 16)
+    assert np.abs(codes).max() == 127
+    assert w.recall_at_10(vectors, fitted, codes, queries=100) > 0.5

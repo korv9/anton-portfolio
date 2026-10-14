@@ -17,6 +17,13 @@ warehouse/cluster_lab/workers_ai_ledger.jsonl, with the neurons Cloudflare repor
 text has a vector, <out>/vectors.npy (float32, input order), ids.json and manifest.json are written;
 otherwise the manifest says how many are missing and the exit code is 3.
 
+    python platform/nlp/workers_ai.py compress --run <run folder> --out <corpus folder> [--dims 256]
+
+compress fits PCA on a run's vectors.npy, L2-normalises the projections and stores them as int8 with
+one scale per dimension: <out>/pca.json ({model, dims_in, dims, mean, components, scale}) and
+<out>/vectors.bin (n x dims int8, ids.json order). It prints recall@10 of that int8 search against
+cosine on the full vectors, over 500 random passages of the corpus used as queries.
+
 CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID come from the environment or the repository's .env.
 """
 from __future__ import annotations
@@ -150,8 +157,11 @@ def embed(args) -> int:
     hashes = [text_hash(t) for t in texts]
     db = cache()
     unique = dict(zip(hashes, texts))
-    missing = [h for h in unique if h not in cached(db, list(unique))]
+    have = cached(db, list(unique))
+    missing = [h for h in unique if h not in have]
     tokens = dict(zip(missing, count_tokens([unique[h] for h in missing]))) if missing else {}
+    # Cloudflare bills every text in a batch at the batch's longest length; sorted batches pad little.
+    missing.sort(key=tokens.get)
     need = sum(tokens.values())
     print(f"{len(ids):,} texts, {len(unique) - len(missing):,} cached, {len(missing):,} to embed: "
           f"{need:,} tokens, about {need * NEURONS_PER_TOKEN:,.0f} neurons", flush=True)
@@ -214,11 +224,66 @@ def embed(args) -> int:
     return 0 if manifest["missing"] == 0 else 3
 
 
+def pca(vectors: np.ndarray, dims: int) -> dict:
+    """PCA to `dims`, then L2, then an int8 scale per dimension; numbers rounded as stored in pca.json."""
+    mean = vectors.mean(axis=0)
+    components = np.linalg.svd(vectors - mean, full_matrices=False)[2][:dims]
+    fitted = {"model": MODEL, "dims_in": vectors.shape[1], "dims": dims,
+              "mean": np.round(mean, 6).tolist(), "components": np.round(components, 6).tolist()}
+    projected = project(vectors, fitted)
+    fitted["scale"] = np.round(np.abs(projected).max(axis=0) / 127, 8).tolist()
+    return fitted
+
+
+def project(vectors: np.ndarray, fitted: dict) -> np.ndarray:
+    out = (vectors - np.asarray(fitted["mean"], dtype="float32")) @ np.asarray(fitted["components"], dtype="float32").T
+    return out / np.linalg.norm(out, axis=1, keepdims=True).clip(min=1e-12)
+
+
+def quantise(vectors: np.ndarray, fitted: dict) -> np.ndarray:
+    return np.round(np.clip(project(vectors, fitted) / np.asarray(fitted["scale"]), -127, 127)).astype("int8")
+
+
+def recall_at_10(vectors: np.ndarray, fitted: dict, codes: np.ndarray, queries: int = 500, seed: int = 0) -> float:
+    """Share of each query's 10 nearest passages (cosine, full vectors) that the int8 search also returns.
+
+    The query itself is left out of both lists, and is projected in float as a visitor's vector would be.
+    """
+    full = vectors / np.linalg.norm(vectors, axis=1, keepdims=True)
+    rows = np.random.default_rng(seed).choice(len(full), min(queries, len(full)), replace=False)
+    corpus = codes.astype("float32") * np.asarray(fitted["scale"], dtype="float32")
+    hits = 0
+    for start in range(0, len(rows), 100):
+        part = rows[start:start + 100]
+        exact, approx = full[part] @ full.T, project(vectors[part], fitted) @ corpus.T
+        for score in (exact, approx):
+            score[np.arange(len(part)), part] = -np.inf
+        truth = np.argpartition(-exact, 10, axis=1)[:, :10]
+        found = np.argpartition(-approx, 10, axis=1)[:, :10]
+        hits += sum(len(set(a) & set(b)) for a, b in zip(truth, found))
+    return hits / (10 * len(rows))
+
+
+def compress(args) -> int:
+    vectors = np.load(args.run / "vectors.npy").astype("float32")
+    fitted = pca(vectors, args.dims)
+    codes = quantise(vectors, fitted)
+    recall = recall_at_10(vectors, fitted, codes)
+    args.out.mkdir(parents=True, exist_ok=True)
+    (args.out / "pca.json").write_text(json.dumps(fitted, separators=(",", ":")), encoding="utf-8")
+    codes.tofile(args.out / "vectors.bin")
+    print(json.dumps({"dims": args.dims, "n": len(codes), "recall_at_10": round(recall, 4)}), flush=True)
+    return 0
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("command", choices=["embed"])
-    parser.add_argument("--input", type=Path, required=True, help="parquet or jsonl with one row per text")
-    parser.add_argument("--out", type=Path, required=True, help="run folder for vectors.npy, ids.json, manifest.json")
+    parser.add_argument("command", choices=["embed", "compress"])
+    parser.add_argument("--input", type=Path, help="embed: parquet or jsonl with one row per text")
+    parser.add_argument("--out", type=Path, required=True,
+                        help="embed: run folder for vectors.npy, ids.json, manifest.json; compress: corpus folder")
+    parser.add_argument("--run", type=Path, help="compress: a finished embed run folder")
+    parser.add_argument("--dims", type=int, default=256, help="compress: PCA dimensions")
     parser.add_argument("--id-column", default="id")
     parser.add_argument("--text-column", default="text")
     parser.add_argument("--max-tokens-per-run", type=int, default=2_000_000)
@@ -227,6 +292,10 @@ def main() -> int:
     parser.add_argument("--wait-for-reset", action="store_true", help="sleep to the next UTC day when the quota is used")
     parser.add_argument("--dry-run", action="store_true", help="count tokens only")
     args = parser.parse_args()
+    if args.command == "compress":
+        return compress(args)
+    if not args.input:
+        parser.error("embed needs --input")
     return embed(args)
 
 
