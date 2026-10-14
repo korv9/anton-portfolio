@@ -57,6 +57,8 @@ SHARD_DIRECTORIES = (
     "politics/decisions/",
     "politics/laws/v1/",
     "politics/laws/v2/",
+    # The debate passages and int8 vectors for "Where does your sentence land?" (about 37 MB).
+    "workers-ai/debate/shards/",
 )
 
 SESSION_PATTERN = re.compile(r"/(?:session=)?(\d{4}-\d{2,4})/")
