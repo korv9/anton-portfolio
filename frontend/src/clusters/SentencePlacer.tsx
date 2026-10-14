@@ -31,7 +31,9 @@ type Item = {
   url: string
   text: string
 }
-type Example = { text: string; vector: number[] }
+/** A Swedish sentence, an English rendering for English readers, and the Swedish one's vector. */
+type Example = { text: string; text_en?: string; vector: number[] }
+const shown = (e: Example) => l(e.text_en ?? e.text, e.text)
 type Placed = {
   x: number
   y: number
@@ -86,8 +88,8 @@ export default function SentencePlacer({
         error instanceof Unavailable
           ? fallback(error.reason)
           : l(
-              'The passage vectors did not load.',
-              'Passagernas vektorer kunde inte läsas.',
+              'The passage vectors did not load. Reload the page to try again.',
+              'Passagernas vektorer kunde inte läsas. Ladda om sidan och försök igen.',
             ),
       )
     } finally {
@@ -153,6 +155,8 @@ export default function SentencePlacer({
           {l('Your sentence', 'Din mening')}
         </label>
         <textarea
+          name="sentence"
+          autoComplete="off"
           id="cv-place-text"
           rows={2}
           maxLength={MAX}
@@ -165,7 +169,7 @@ export default function SentencePlacer({
           <span id="cv-place-count" className="cv-place-count">
             {text.length} / {MAX}
           </span>
-          <button type="submit" className="btn" disabled={busy || !text.trim()}>
+          <button type="submit" className="btn" disabled={busy}>
             {busy ? l('Placing…', 'Placerar…') : l('Place it', 'Placera')}
           </button>
         </div>
@@ -180,11 +184,11 @@ export default function SentencePlacer({
               type="button"
               disabled={busy}
               onClick={() => {
-                setText(e.text)
+                setText(shown(e))
                 run(Promise.resolve(e.vector))
               }}
             >
-              {e.text}
+              {shown(e)}
             </button>
           ))}
         </div>

@@ -43,7 +43,7 @@
 .lq-switch button:focus-visible,
 .lq-examples button:focus-visible,
 .lq-form textarea:focus-visible,
-.lq-passages li:focus-visible {
+.lq-passages li:focus {
   outline: 2px solid var(--focus);
   outline-offset: 3px;
 }
@@ -135,6 +135,7 @@
   border-top: 1px solid var(--line);
 }
 .lq-passages p {
+  overflow-wrap: anywhere;
   margin: 0 0 var(--sp-1);
   max-width: var(--measure);
   line-height: 1.5;

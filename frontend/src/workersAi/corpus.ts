@@ -21,14 +21,42 @@ export type Corpus<Item> = { pca: Pca; vectors: Int8Array; meta: Meta<Item> }
 const dir = (corpus: string) => `workers-ai/${corpus}`
 const loaded = new Map<string, Promise<Corpus<unknown>>>()
 
+/** A large export lists its items and vectors as parts, in order, each its own file. */
+type Part = { path: string; start: number; count: number }
+const isParts = (list: unknown): list is Part[] =>
+  Array.isArray(list) && typeof list[0]?.path === 'string'
+
 export function loadCorpus<Item>(corpus: string): Promise<Corpus<Item>> {
   if (!loaded.has(corpus)) {
     const at = (file: string) => fetchData(`${dir(corpus)}/${file}`)
     const pending = Promise.all([
       at('pca.json').then((r) => r.json()),
-      at('vectors.bin').then((r) => r.arrayBuffer()),
       at('meta.json').then((r) => r.json()),
-    ]).then(([pca, bin, meta]) => ({ pca, vectors: new Int8Array(bin), meta }))
+    ]).then(async ([pca, meta]) => {
+      const [items, bins] = await Promise.all([
+        isParts(meta.items)
+          ? Promise.all(
+              meta.items.map((p: Part) =>
+                fetchData(p.path).then((r) => r.json()),
+              ),
+            ).then((parts) => parts.flat())
+          : meta.items,
+        Promise.all(
+          isParts(meta.vectors)
+            ? meta.vectors.map((p: Part) =>
+                fetchData(p.path).then((r) => r.arrayBuffer()),
+              )
+            : [at('vectors.bin').then((r) => r.arrayBuffer())],
+        ),
+      ])
+      const vectors = new Int8Array(bins.reduce((n, b) => n + b.byteLength, 0))
+      let offset = 0
+      for (const b of bins) {
+        vectors.set(new Int8Array(b), offset)
+        offset += b.byteLength
+      }
+      return { pca, vectors, meta: { ...meta, items } }
+    })
     // A failed load may be retried on the next attempt.
     pending.catch(() => loaded.delete(corpus))
     loaded.set(corpus, pending)
@@ -54,25 +82,40 @@ export class Unavailable extends Error {
   }
 }
 
-/** One line that says why the Worker gave nothing, for the page to show beside its examples. */
-export const fallback = (reason: Reason) =>
+/**
+ * One line that says why the Worker gave nothing; it points to the examples only when the page
+ * has some.
+ */
+export const fallback = (reason: Reason, examples = true) =>
   ({
-    quota: l(
-      "Today's Workers AI allocation is used up, so only the three examples work until midnight UTC.",
-      'Dagens kvot hos Workers AI är slut, så bara de tre exemplen fungerar fram till midnatt UTC.',
-    ),
+    quota: examples
+      ? l(
+          "Today's Workers AI allocation is used up, so only the examples work until midnight UTC.",
+          'Dagens kvot hos Workers AI är slut, så bara exemplen fungerar fram till midnatt UTC.',
+        )
+      : l(
+          "Today's Workers AI allocation is used up. Try again after midnight UTC.",
+          'Dagens kvot hos Workers AI är slut. Försök igen efter midnatt UTC.',
+        ),
     busy: l(
-      'Too many requests in a short time. Wait a minute, or use an example.',
-      'För många förfrågningar på kort tid. Vänta en minut eller använd ett exempel.',
+      'Too many requests in a short time. Wait a minute and try again.',
+      'För många förfrågningar på kort tid. Vänta en minut och försök igen.',
     ),
-    error: l(
-      'The model did not answer, so only the three examples work right now.',
-      'Modellen svarade inte, så bara de tre exemplen fungerar just nu.',
-    ),
-    offline: l(
-      'The AI service is not reachable here, so only the three examples work.',
-      'AI-tjänsten nås inte här, så bara de tre exemplen fungerar.',
-    ),
+    error: examples
+      ? l(
+          'The model did not answer, so only the examples work right now.',
+          'Modellen svarade inte, så bara exemplen fungerar just nu.',
+        )
+      : l(
+          'The model did not answer. Try again in a moment.',
+          'Modellen svarade inte. Försök igen om en stund.',
+        ),
+    offline: examples
+      ? l(
+          'The AI service is not reachable here, so only the examples work.',
+          'AI-tjänsten nås inte här, så bara exemplen fungerar.',
+        )
+      : l('The AI service is not reachable here.', 'AI-tjänsten nås inte här.'),
   })[reason]
 
 async function call<T>(path: string, body: unknown): Promise<T> {

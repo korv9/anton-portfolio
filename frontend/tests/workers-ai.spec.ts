@@ -35,7 +35,7 @@ test(
       'https://data.riksdagen.se/',
     )
     await expect(card.locator('.rank-bars li')).toHaveCount(5)
-    await expect(card.locator('.cv-marker')).toBeVisible()
+    await expect(card.locator('.cv-marker b')).toBeVisible()
     await expect(card.locator('canvas')).toHaveAttribute(
       'aria-label',
       new RegExp(`Your sentence: ${name}`),

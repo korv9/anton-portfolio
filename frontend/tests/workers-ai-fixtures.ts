@@ -121,9 +121,12 @@ export const FILES: Record<string, Record<string, unknown>> = {
 }
 export const LAW = lawItems
 
-/** Serve the fixture exports; `requested` records which files the page asked for. */
+/**
+ * Serve the fixture exports, on the site or on the R2 base the catalog may route them to;
+ * `requested` records which files the page asked for.
+ */
 export async function serveExports(page: Page, requested: string[] = []) {
-  await page.route('**/data/workers-ai/**', (route: Route) => {
+  await page.route(/\/workers-ai\/[^/]+\/[^/]+$/, (route: Route) => {
     const [, corpus, file] =
       new URL(route.request().url()).pathname.match(
         /workers-ai\/([^/]+)\/([^/]+)$/,

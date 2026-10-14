@@ -178,7 +178,7 @@ export default function ClusterScatter({
       />
       {glide && marker && (
         <span
-          className="cv-marker"
+          className={`cv-marker${glide[0] > width - 220 ? ' cv-marker-left' : ''}`}
           style={{ transform: `translate(${glide[0]}px, ${glide[1]}px)` }}
           aria-hidden="true"
         >

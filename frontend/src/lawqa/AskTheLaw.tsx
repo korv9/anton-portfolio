@@ -127,7 +127,12 @@ export default function AskTheLaw({ route }: { route: Route }) {
       )
     } catch (error) {
       setReply(null)
-      setNotice(fallback(error instanceof Unavailable ? error.reason : 'error'))
+      setNotice(
+        fallback(
+          error instanceof Unavailable ? error.reason : 'error',
+          examples.length > 0,
+        ),
+      )
     } finally {
       setBusy(false)
     }
@@ -186,8 +191,8 @@ export default function AskTheLaw({ route }: { route: Route }) {
             <p>
               {choice === 'sfs'
                 ? l(
-                    `The legal text comes from the Riksdag's open data (fetched ${fetched ?? '–'}) and is not the official version, which is at svenskforfattningssamling.se.`,
-                    `Lagtexten kommer från Riksdagens öppna data (hämtad ${fetched ?? '–'}) och är inte den officiella versionen; den finns på svenskforfattningssamling.se.`,
+                    `The legal text comes from the Riksdag's open data ${fetched ? `(fetched ${fetched}) ` : ''}and is not the official version, which is at svenskforfattningssamling.se.`,
+                    `Lagtexten kommer från Riksdagens öppna data ${fetched ? `(hämtad ${fetched}) ` : ''}och är inte den officiella versionen; den finns på svenskforfattningssamling.se.`,
                   )
                 : l(
                     'The text of the AI Act comes from EUR-Lex. Only the version published in the Official Journal of the EU is authentic.',
@@ -221,6 +226,8 @@ export default function AskTheLaw({ route }: { route: Route }) {
                 {l('Your question', 'Din fråga')}
               </label>
               <textarea
+                name="question"
+                autoComplete="off"
                 id="lq-question"
                 rows={2}
                 maxLength={MAX}
@@ -234,7 +241,7 @@ export default function AskTheLaw({ route }: { route: Route }) {
                 <button
                   type="submit"
                   className="btn"
-                  disabled={busy || !corpus || !question.trim()}
+                  disabled={busy || !corpus}
                 >
                   {busy ? l('Searching…', 'Söker…') : l('Ask', 'Fråga')}
                 </button>
@@ -317,7 +324,7 @@ export default function AskTheLaw({ route }: { route: Route }) {
                     <li key={item.id} id={`lq-${item.id}`} tabIndex={-1}>
                       <p className="lq-title">
                         <a href={item.url}>{item.title}</a>{' '}
-                        <small>{item.id}</small>
+                        <small translate="no">{item.id}</small>
                       </p>
                       <p>{item.text}</p>
                     </li>
@@ -370,7 +377,7 @@ export default function AskTheLaw({ route }: { route: Route }) {
                     </>
                   )}
                   <dt>{l('Answers', 'Svar')}</dt>
-                  <dd>{evaluation?.model ?? ANSWER_MODEL}</dd>
+                  <dd translate="no">{evaluation?.model ?? ANSWER_MODEL}</dd>
                   {evaluation && (
                     <>
                       <dt>{l('Evaluation', 'Utvärdering')}</dt>
