@@ -243,9 +243,9 @@ def pca(vectors: np.ndarray, dims: int) -> dict:
     # even at the full 1,024 dimensions.
     components = np.linalg.svd(vectors - vectors.mean(axis=0), full_matrices=False)[2][:dims]
     fitted = {"model": MODEL, "dims_in": vectors.shape[1], "dims": dims,
-              "mean": [0.0] * vectors.shape[1], "components": np.round(components, 6).tolist()}
+              "mean": [0.0] * vectors.shape[1], "components": np.round(components.astype("float64"), 6).tolist()}
     projected = project(vectors, fitted)
-    fitted["scale"] = np.round(np.abs(projected).max(axis=0) / 127, 8).tolist()
+    fitted["scale"] = np.round(np.abs(projected).max(axis=0).astype("float64") / 127, 8).tolist()
     return fitted
 
 

@@ -62,3 +62,10 @@ def test_projection_keeps_the_cosine_ranking_of_full_vectors():
     kept = w.recall_at_10(vectors, fitted, w.quantise(vectors, fitted), queries=100)
     assert kept > 0.9
     assert kept > w.recall_at_10(vectors, centred, w.quantise(vectors, centred), queries=100) + 0.1
+
+
+def test_pca_json_numbers_are_short():
+    import numpy as np
+    vectors = np.random.default_rng(3).normal(size=(50, 16)).astype("float32")
+    fitted = w.pca(vectors, 4)
+    assert all(len(repr(x)) <= 9 for row in fitted["components"] for x in row)
