@@ -185,7 +185,9 @@ def embed(args) -> int:
                 fits = affordable([tokens[h] for h in missing], args.max_tokens_per_run - sent_tokens,
                                   spent_today() + sent_neurons)
                 if fits == 0:
-                    if not args.wait_for_reset or sent_tokens >= args.max_tokens_per_run:
+                    # Only the day's neurons are worth waiting for; the run's token cap is final.
+                    cap_reached = affordable([tokens[missing[0]]], 10**12, spent_today() + sent_neurons) > 0
+                    if not args.wait_for_reset or cap_reached:
                         break
                     wait()
                     continue
