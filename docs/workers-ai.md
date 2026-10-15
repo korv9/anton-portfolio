@@ -154,6 +154,9 @@ läses först med nyaste dokumenten först och sedan med äldsta först. Däreft
 till `raw/sfs/texts/` med en sekunds paus. En ny körning hämtar bara texter som saknas eller vars
 `systemdatum` i listan är samma dag som den senaste hämtningen eller senare. I pipelinen körs
 steget när `SFS_ALL` är satt. Råtexterna ligger i warehouse och R2 (`raw: [sfs]`), inte i Git.
+I R2 ligger de under `warehouse/raw/sfs/`: 11 564 filer och 203 251 795 byte, samma antal och
+storlek som lokalt. `python platform/pipeline.py push sfs --only raw` laddade upp dem den 15
+oktober 2026, och `pull sfs --only raw` hittar alla och hämtar 0, eftersom SHA-256 stämmer.
 
 Körningen den 15 oktober 2026 tog 3 timmar och 23 minuter:
 
@@ -174,11 +177,30 @@ lämnar inte ut dem under någon adress. Råtexterna tar 215 MB.
 - `silver_sfs_corpus_paragraphs` delar alla texter med samma regler som demons
   `silver_sfs_paragraphs` (`platform/ingest/sfs/chunking.py`). Id:t är dok_id plus Riksdagens
   ankare, till exempel `sfs-1962-700-K3P1`, eftersom delningens eget id kan läsas på två sätt.
+  Ett dokument utan numrerade paragrafer får i stället ett enda stycke med hela texten, `kind`
+  `whole_text` och id `<dok_id>-whole`. Huvudet och övergångsbestämmelserna ingår inte, precis
+  som för paragraferna.
 
 8 960 dokument gav paragrafer. 2 601 saknar numrerade paragrafer: enparagrafsförfattningar,
 tabeller, avtal i bilaga och 132 ocr-skannade reglementen från Riksbanken och Riksgälden, som
 `.text` levererar som XML. Ingen text med numrerade paragrafer blev utan paragrafer. Testet
 `assert_sfs_catalogue_fetched` varnar för de sex saknade texterna och fallerar vid fler än tolv.
+
+Av de 2 601 dokumenten utan paragrafer fick 2 195 ett helt-text-stycke. De 133 XML-texterna
+står utanför: de 132 reglementena och en bevillningsförordning från 1869. OCR-texten är för
+dålig att söka i. Hos 273 dokument finns inget efter huvudet. Korpusen har nu 205 197
+paragrafstycken och 2 195 helt-text-stycken. Ingen text är delad än, så inbäddningssteget får
+välja delning efter längderna (tecken):
+
+| `kind` | Stycken | p50 | p95 | Max | Över 1 500 |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| paragraph | 205 197 | 296 | 981 | 9 398 | 1 177 |
+| whole_text | 2 195 | 458 | 8 128 | 107 700 | 463 |
+
+Det längsta är ett dubbelbeskattningsavtal (`sfs-1977-580-whole`). Fråga lagens
+`silver_sfs_paragraphs` har kvar sina 9 970 stycken, och tabellens innehåll har samma md5 före
+och efter ändringen. `assert_sfs_whole_text_only_without_paragraphs` kontrollerar att inget
+dokument har båda sorterna och att ingen XML-text kommit med.
 
 ## Lokal utveckling
 
