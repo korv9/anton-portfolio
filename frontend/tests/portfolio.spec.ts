@@ -280,7 +280,7 @@ test(
       'Observatories',
       'Labs',
     ])
-    await expect(page.locator('.work-card')).toHaveCount(12)
+    await expect(page.locator('.work-card')).toHaveCount(13)
     await expect
       .poll(() =>
         page
@@ -371,7 +371,7 @@ test('the projects page shows every retained project on one screen', async ({
   await page.goto('/#projekt')
   await expect(page).toHaveTitle('Projects | Anton Ernstsson')
   await expect(page.locator('.projects-group')).toHaveCount(3)
-  await expect(page.locator('.project-card')).toHaveCount(12)
+  await expect(page.locator('.project-card')).toHaveCount(13)
   await expect(page.locator('.project-card[href="#thesis"]')).toContainText(
     'IT Incident Clustering',
   )
