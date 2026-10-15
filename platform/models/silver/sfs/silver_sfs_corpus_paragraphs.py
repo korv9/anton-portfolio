@@ -6,8 +6,9 @@ the SFS number is not, and riksdagen.se's anchor K<chapter>P<§>S<stycke>: the s
 "2-5" both as 2 kap. 5 § and as 2 §, fifth stycke. A document the split gets nothing from, or
 raises on, is counted in silver_sfs_documents.parse_status rather than dropped silently.
 
-A document the split gets no paragraph from becomes one passage, kind 'whole_text' and id
-<dok_id>-whole, holding its body (header and transitional provisions left out) unsplit. The 133
+A document the split gets no paragraph from gets passages of kind 'whole_text' holding its body
+(header and transitional provisions left out), packed by chunking.pack into pieces of at most
+1,500 characters: id <dok_id>-whole when it fits in one, <dok_id>-whole-<n> otherwise. The 133
 texts riksdagen.se serves as XML (OCR'd Riksbank and Riksgälden regulations and one 1869
 ordinance) are left out: their OCR text is too poor to search.
 """
@@ -29,7 +30,7 @@ def model(dbt, session):
     dbt.config(materialized="table")
     import sys
     sys.path.insert(0, str(Path.cwd() / "ingest" / "sfs"))
-    from chunking import body, paragraphs
+    from chunking import body, pack, paragraphs
 
     texts = dbt.ref("stg_sfs_texts").df()
     catalogue = dbt.source("sfs", "catalogue").df()[["dok_id", "beteckning"]]
@@ -47,10 +48,13 @@ def model(dbt, session):
         for item in items:
             rows.append({**item, **common, "id": f"{doc.dok_id}-{anchor(item)}",
                          "kind": "paragraph"})
-        whole = "\n\n".join(body(doc.text))
-        if not items and whole and not doc.text.lstrip().startswith("<"):
-            rows.append({**common, "id": f"{doc.dok_id}-whole", "kind": "whole_text",
-                         "title": f"SFS {doc.beteckning}", "text": whole})
+        if items or doc.text.lstrip().startswith("<"):
+            continue
+        pieces = pack(body(doc.text))
+        for number, piece in enumerate(pieces, 1):
+            suffix = f"-{number}" if len(pieces) > 1 else ""
+            rows.append({**common, "id": f"{doc.dok_id}-whole{suffix}", "kind": "whole_text",
+                         "title": f"SFS {doc.beteckning}", "text": piece})
     frame = pd.DataFrame(rows).reindex(columns=COLUMNS)
     frame["stycke"] = frame["stycke"].astype("Int64")
     return frame

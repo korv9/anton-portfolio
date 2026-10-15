@@ -68,6 +68,25 @@ def body(text: str) -> list[str]:
     return out
 
 
+def pack(found: list[str], limit: int = LONG) -> list[str]:
+    """Blocks packed greedily into pieces of at most `limit` characters, joined by blank lines.
+    A block over the limit is split at sentence ends, a sentence over it cut hard."""
+    units = []
+    for block in found:
+        if len(block) <= limit:
+            units.append(block)
+            continue
+        for sentence in re.split(r"(?<=[.!?])\s+", block):
+            units += [sentence[i:i + limit] for i in range(0, len(sentence), limit)]
+    pieces = []
+    for unit in units:
+        if pieces and len(pieces[-1]) + 2 + len(unit) <= limit:
+            pieces[-1] += "\n\n" + unit
+        else:
+            pieces.append(unit)
+    return pieces
+
+
 def in_force(marker: re.Match | None, fetched: str) -> bool:
     if not marker:
         return True

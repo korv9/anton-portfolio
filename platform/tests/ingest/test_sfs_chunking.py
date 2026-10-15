@@ -4,7 +4,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "ingest" / "sfs"))
 
-from chunking import LONG, paragraphs  # noqa: E402
+from chunking import LONG, pack, paragraphs  # noqa: E402
 
 HEADER = """Lag (2099:1) om prov\r
 \r
@@ -99,3 +99,11 @@ def test_law_without_chapters():
 def test_old_law_with_a_dot_after_the_paragraph_sign():
     found = chunks(HEADER + "1 §. Wi lofwe.\n\n2 §. Andra.\n")
     assert [item["text"] for item in found.values()] == ["Wi lofwe.", "Andra."]
+
+
+def test_whole_text_packs_into_pieces_that_join_back():
+    found = ["Kort stycke.", "Mening. " * 300, "x" * 4000, "Ett till.", "Sista."]
+    pieces = pack(found)
+    assert max(len(piece) for piece in pieces) <= LONG
+    assert "".join("".join(pieces).split()) == "".join("".join(found).split())
+    assert pack(["Får plats."]) == ["Får plats."]

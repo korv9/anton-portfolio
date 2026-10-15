@@ -177,9 +177,11 @@ lämnar inte ut dem under någon adress. Råtexterna tar 215 MB.
 - `silver_sfs_corpus_paragraphs` delar alla texter med samma regler som demons
   `silver_sfs_paragraphs` (`platform/ingest/sfs/chunking.py`). Id:t är dok_id plus Riksdagens
   ankare, till exempel `sfs-1962-700-K3P1`, eftersom delningens eget id kan läsas på två sätt.
-  Ett dokument utan numrerade paragrafer får i stället ett enda stycke med hela texten, `kind`
-  `whole_text` och id `<dok_id>-whole`. Huvudet och övergångsbestämmelserna ingår inte, precis
-  som för paragraferna.
+  Ett dokument utan numrerade paragrafer får i stället hela texten som `kind` `whole_text`.
+  Huvudet och övergångsbestämmelserna ingår inte, precis som för paragraferna. Texten delas vid
+  tomma rader och styckena packas i bitar om högst 1 500 tecken (`chunking.pack`). Ett stycke
+  över gränsen delas vid meningsslut och, om en mening ändå är för lång, rakt av vid 1 500. En
+  text som får plats har id `<dok_id>-whole`, annars `<dok_id>-whole-1`, `-2` och så vidare.
 
 8 960 dokument gav paragrafer. 2 601 saknar numrerade paragrafer: enparagrafsförfattningar,
 tabeller, avtal i bilaga och 132 ocr-skannade reglementen från Riksbanken och Riksgälden, som
@@ -188,16 +190,19 @@ tabeller, avtal i bilaga och 132 ocr-skannade reglementen från Riksbanken och R
 
 Av de 2 601 dokumenten utan paragrafer fick 2 195 ett helt-text-stycke. De 133 XML-texterna
 står utanför: de 132 reglementena och en bevillningsförordning från 1869. OCR-texten är för
-dålig att söka i. Hos 273 dokument finns inget efter huvudet. Korpusen har nu 205 197
-paragrafstycken och 2 195 helt-text-stycken. Ingen text är delad än, så inbäddningssteget får
-välja delning efter längderna (tecken):
+dålig att söka i. Hos 273 dokument finns inget efter huvudet. Före delningen var de 2 195
+helt-text-styckena upp till 107 700 tecken långa (p50 458, p95 8 128), och 463 av dem var över
+1 500. De 463 blev 2 858 bitar, så korpusen har nu 4 590 helt-text-stycken. Längderna i tecken:
 
 | `kind` | Stycken | p50 | p95 | Max | Över 1 500 |
 | --- | ---: | ---: | ---: | ---: | ---: |
 | paragraph | 205 197 | 296 | 981 | 9 398 | 1 177 |
-| whole_text | 2 195 | 458 | 8 128 | 107 700 | 463 |
+| whole_text | 4 590 | 1 146 | 1 489 | 1 500 | 0 |
 
-Det längsta är ett dubbelbeskattningsavtal (`sfs-1977-580-whole`). Fråga lagens
+Flest bitar, 82, fick ett dubbelbeskattningsavtal (`sfs-1977-580`). Paragrafstyckena är inte
+delade. 1 177 av dem är över 1 500 tecken, det längsta 9 398, och inbäddningssteget får välja
+hur de ska delas. Testet `test_whole_text_packs_into_pieces_that_join_back` kontrollerar att
+ingen bit är över 1 500 tecken och att bitarna blir samma text igen, blanktecken frånsett. Fråga lagens
 `silver_sfs_paragraphs` har kvar sina 9 970 stycken, och tabellens innehåll har samma md5 före
 och efter ändringen. `assert_sfs_whole_text_only_without_paragraphs` kontrollerar att inget
 dokument har båda sorterna och att ingen XML-text kommit med.

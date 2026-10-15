@@ -1,4 +1,4 @@
--- A whole-text passage belongs to a document with no paragraph and no XML text, one per document.
+-- A whole-text passage belongs to a document with no paragraph and no XML text.
 select w.dok_id
 from {{ ref('silver_sfs_corpus_paragraphs') }} as w
 join {{ ref('stg_sfs_texts') }} as t on t.dok_id = w.dok_id
