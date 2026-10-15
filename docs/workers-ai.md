@@ -143,6 +143,43 @@ För gpt-oss underskattar den kostnaden, som avsnittet om modellvalet visar.
 Kvar att köra är exemplen för `ai-act-en`, ungefär 180 neurons, när kvoten nollställts
 kl. 00.00 UTC den 2026-10-16. Tills dess visar den engelska sidan att exempel saknas.
 
+## Hela författningssamlingen
+
+Utöver de 40 lagarna i `configs/workers_ai/sfs_selection.yaml` finns hela SFS som dataprodukt,
+utan inbäddningar och utan anrop till Workers AI. Demon läser fortfarande bara urvalet.
+
+`python platform/ingest/sfs/ingest.py --all` läser Riksdagens dokumentlista med `doktyp=sfs`
+till `raw/sfs/catalogue.json`. API:t lämnar högst 50 sidor om 200 träffar per fråga, så listan
+läses först med nyaste dokumenten först och sedan med äldsta först. Därefter hämtas varje text
+till `raw/sfs/texts/` med en sekunds paus. En ny körning hämtar bara texter som saknas eller vars
+`systemdatum` i listan är samma dag som den senaste hämtningen eller senare. I pipelinen körs
+steget när `SFS_ALL` är satt. Råtexterna ligger i warehouse och R2 (`raw: [sfs]`), inte i Git.
+
+Körningen den 15 oktober 2026 tog 3 timmar och 23 minuter:
+
+| | Dokument | Hämtade | Upphävda | Paragrafer |
+| --- | ---: | ---: | ---: | ---: |
+| lag | 3 038 | 3 038 | 1 264 | 94 903 |
+| förordning | 6 732 | 6 732 | 3 509 | 99 558 |
+| övrigt | 1 797 | 1 791 | 1 124 | 10 736 |
+| Summa | 11 567 | 11 561 | 5 897 | 205 197 |
+
+Sex dokument gav 404. Alla har dok_id av formen `sfs-1895-bih. 52 s. 1`, och Riksdagen
+lämnar inte ut dem under någon adress. Råtexterna tar 215 MB.
+
+- `silver_sfs_documents` har en rad per dokument i listan. Upphävda dokument ligger kvar med
+  datumet från raden `Upphävd:`. Tabellen har också sista ändrings-SFS från `Ändrad:`, textens
+  längd och SHA-256 samt ett parsningsstatus. Typen (`lag`, `förordning`, `other`) tas från
+  titelns första ord. Grundlagarna och riksdagsordningen räknas som lag.
+- `silver_sfs_corpus_paragraphs` delar alla texter med samma regler som demons
+  `silver_sfs_paragraphs` (`platform/ingest/sfs/chunking.py`). Id:t är dok_id plus Riksdagens
+  ankare, till exempel `sfs-1962-700-K3P1`, eftersom delningens eget id kan läsas på två sätt.
+
+8 960 dokument gav paragrafer. 2 601 saknar numrerade paragrafer: enparagrafsförfattningar,
+tabeller, avtal i bilaga och 132 ocr-skannade reglementen från Riksbanken och Riksgälden, som
+`.text` levererar som XML. Ingen text med numrerade paragrafer blev utan paragrafer. Testet
+`assert_sfs_catalogue_fetched` varnar för de sex saknade texterna och fallerar vid fler än tolv.
+
 ## Lokal utveckling
 
 R2-hinkens CORS (`platform/publish/r2-cors.json`) släpper bara in `http://localhost:5173` och

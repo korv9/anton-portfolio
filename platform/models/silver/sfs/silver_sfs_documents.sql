@@ -4,8 +4,8 @@
 --                 "...balk" are laws, and so are the grundlagar and Riksdagsordningen whose
 --                 names do not say so; "...förordning" is an ordinance.
 --   parse_status  parsed; unnumbered when the body (header and transitional provisions left
---                 out) has no block starting "<n> §"; failed when it has one but no paragraph
---                 came out; no text when the fetch failed.
+--                 out) has no block starting "<n> §" other than "<n> § har upphävts"; failed
+--                 when it has one but no paragraph came out; no text when the fetch failed.
 with catalogue as (
     select
         *,
@@ -55,7 +55,8 @@ documents as (
         t.source_hash as text_hash,
         t.fetched_at,
         coalesce(p.paragraphs, 0) as paragraphs,
-        regexp_matches(t.body, '\n[ \t]*\r?\n[ \t]*(/[^/\n]*/[ \t]*)?\d+( [a-z])? §') as numbered
+        regexp_matches(regexp_replace(t.body, '§ [Hh]ar upphävts', '', 'g'),
+                       '\n[ \t]*\r?\n[ \t]*(/[^/\n]*/[ \t]*)?\d+( [a-z])? §') as numbered
     from catalogue as c
     left join texts as t on t.dok_id = c.dok_id
     left join paragraphs as p on p.dok_id = c.dok_id

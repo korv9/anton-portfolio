@@ -2,7 +2,7 @@
 
 The text is the header, then blocks separated by blank lines with hard line breaks inside them:
 "AVDELNING I." parts, "<n> kap. <heading>" chapters, unnumbered headings, and paragraphs that
-start "<n>[ <letter>] § ". A paragraph usually ends with the act that last changed it, "Lag
+start "<n>[ <letter>] § " (or "1 §." in some old texts). A paragraph usually ends with the act that last changed it, "Lag
 (2019:937).", which is kept as `amended_by` and taken out of the text. Everything from the line
 "Övergångsbestämmelser" on is left out, and so are repealed paragraphs ("Har upphävts genom
 lag ..."). When a paragraph or chapter is in the text twice, marked "/Upphör att gälla U:<date>/"
@@ -22,7 +22,7 @@ import re
 LONG = 1500
 AVDELNING = re.compile(r"^AVDELNING ([A-Z]+|[IVXLC]+)\b\.?\s*(.*)$")
 CHAPTER = re.compile(r"^(\d+(?: [a-z])?) kap\.(?:\s+(?!\d)(.*))?$")
-PARAGRAPH = re.compile(r"^(\d+(?: [a-z])?) §(?:\s+(.*))?$")
+PARAGRAPH = re.compile(r"^(\d+(?: [a-z])?) §\.?(?:\s+(.*))?$")
 MARKER = re.compile(r"^/(Rubriken |Kapitlet |Paragrafen )?(upphör att gälla U|träder i kraft I):"
                     r"([^/]*)/\s*", re.I)
 # "12 i /Träder i kraft I:.../ §" and "11 a §/Träder ..." put the marker on the wrong side.

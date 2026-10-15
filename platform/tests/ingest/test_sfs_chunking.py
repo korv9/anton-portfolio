@@ -94,3 +94,8 @@ def test_law_without_chapters():
     found = chunks(HEADER + "1 § Första.\n\n2 § Andra. Lag (2099:2).\n")
     assert list(found) == ["sfs-2099-1-1", "sfs-2099-1-2"]
     assert found["sfs-2099-1-2"]["text"] == "Andra."
+
+
+def test_old_law_with_a_dot_after_the_paragraph_sign():
+    found = chunks(HEADER + "1 §. Wi lofwe.\n\n2 §. Andra.\n")
+    assert [item["text"] for item in found.values()] == ["Wi lofwe.", "Andra."]

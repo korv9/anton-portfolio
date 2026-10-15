@@ -64,7 +64,7 @@ models:
       1,500 characters, split as silver_sfs_paragraphs is. No embeddings.
     columns:
       - name: id
-        description: <dok_id>-<chapter>-<§>[-<stycke>], or without the chapter for a text that has none.
+        description: <dok_id>-[K<chapter>]P<§>[S<stycke>], e.g. sfs-1962-700-K3P1 or sfs-1959-287-P2S5.
         data_tests: [unique, not_null]
       - name: dok_id
         data_tests:
