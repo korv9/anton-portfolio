@@ -5,12 +5,17 @@ raw/sfs/catalogue.json, repealed documents included. The id is the dok_id, which
 the SFS number is not, and riksdagen.se's anchor K<chapter>P<§>S<stycke>: the split's own id reads
 "2-5" both as 2 kap. 5 § and as 2 §, fifth stycke. A document the split gets nothing from, or
 raises on, is counted in silver_sfs_documents.parse_status rather than dropped silently.
+
+A document the split gets no paragraph from becomes one passage, kind 'whole_text' and id
+<dok_id>-whole, holding its body (header and transitional provisions left out) unsplit. The 133
+texts riksdagen.se serves as XML (OCR'd Riksbank and Riksgälden regulations and one 1869
+ordinance) are left out: their OCR text is too poor to search.
 """
 from pathlib import Path
 
 import pandas as pd
 
-COLUMNS = ["id", "dok_id", "sfs", "title", "avdelning", "chapter", "paragraph", "stycke", "text",
+COLUMNS = ["id", "kind", "dok_id", "sfs", "title", "avdelning", "chapter", "paragraph", "stycke", "text",
            "amended_by", "fetched", "source_hash"]
 
 
@@ -24,7 +29,7 @@ def model(dbt, session):
     dbt.config(materialized="table")
     import sys
     sys.path.insert(0, str(Path.cwd() / "ingest" / "sfs"))
-    from chunking import paragraphs
+    from chunking import body, paragraphs
 
     texts = dbt.ref("stg_sfs_texts").df()
     catalogue = dbt.source("sfs", "catalogue").df()[["dok_id", "beteckning"]]
@@ -37,10 +42,15 @@ def model(dbt, session):
         except Exception as error:  # noqa: BLE001
             print(f"{doc.dok_id}: {error!r}")
             continue
+        common = {"dok_id": doc.dok_id, "sfs": doc.beteckning, "fetched": fetched,
+                  "source_hash": doc.source_hash}
         for item in items:
-            rows.append({**item, "id": f"{doc.dok_id}-{anchor(item)}", "dok_id": doc.dok_id,
-                         "sfs": doc.beteckning, "fetched": fetched,
-                         "source_hash": doc.source_hash})
+            rows.append({**item, **common, "id": f"{doc.dok_id}-{anchor(item)}",
+                         "kind": "paragraph"})
+        whole = "\n\n".join(body(doc.text))
+        if not items and whole and not doc.text.lstrip().startswith("<"):
+            rows.append({**common, "id": f"{doc.dok_id}-whole", "kind": "whole_text",
+                         "title": f"SFS {doc.beteckning}", "text": whole})
     frame = pd.DataFrame(rows).reindex(columns=COLUMNS)
     frame["stycke"] = frame["stycke"].astype("Int64")
     return frame

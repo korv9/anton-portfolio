@@ -27,6 +27,7 @@ texts as (
 paragraphs as (
     select dok_id, count(*) as paragraphs
     from {{ ref('silver_sfs_corpus_paragraphs') }}
+    where kind = 'paragraph'
     group by dok_id
 ),
 

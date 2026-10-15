@@ -61,11 +61,21 @@ models:
   - name: silver_sfs_corpus_paragraphs
     description: >-
       One row per paragraph (§) of every fetched SFS document, or per stycke of one longer than
-      1,500 characters, split as silver_sfs_paragraphs is. No embeddings.
+      1,500 characters, split as silver_sfs_paragraphs is, plus one whole-text passage per
+      fetched document with no numbered paragraph (the XML texts left out). No embeddings.
     columns:
       - name: id
-        description: <dok_id>-[K<chapter>]P<§>[S<stycke>], e.g. sfs-1962-700-K3P1 or sfs-1959-287-P2S5.
+        description: >-
+          <dok_id>-[K<chapter>]P<§>[S<stycke>], e.g. sfs-1962-700-K3P1 or sfs-1959-287-P2S5;
+          <dok_id>-whole for a whole-text passage.
         data_tests: [unique, not_null]
+      - name: kind
+        description: paragraph, or whole_text for a document with no numbered paragraph.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [paragraph, whole_text]
       - name: dok_id
         data_tests:
           - not_null
