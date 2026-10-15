@@ -19,6 +19,7 @@ export type Page =
   | 'lakehouse'
   | 'symbolic'
   | 'aiact'
+  | 'sfs'
   | 'philosophy'
   | 'concepts'
   | 'clusters'
@@ -137,6 +138,7 @@ export const CONCEPT_TABS = [
   '#concept-constellation',
 ]
 export const DRUGCOMB_TABS = ['#drugcomb', '#drugcomb-model', '#drugcomb-cells']
+export const SFS_TABS = ['#lagboken', '#lagboken-tid', '#lagboken-storlek']
 const REPORTS = [
   REPORT_TABS,
   JOB_TABS,
@@ -146,6 +148,7 @@ const REPORTS = [
   SYMBOLIC_TABS,
   CONCEPT_TABS,
   DRUGCOMB_TABS,
+  SFS_TABS,
 ]
 const DEEP_DIVES = [
   '#politik-partier',
@@ -205,6 +208,7 @@ export function pageOf(path: string): Page {
   if (path === '#fraga-lagen') return 'lawqa'
   if (path === '#tech') return 'tech'
   if (path === '#ai-act' || path.startsWith('#ai-act-')) return 'aiact'
+  if (SFS_TABS.includes(path)) return 'sfs'
   if (path.startsWith('#concept-') || path.startsWith('#concepts-'))
     return 'concepts'
   if (path === '#philosophy-atlas' || path.startsWith('#philosophy-'))

@@ -31,6 +31,7 @@ const ConceptConstellationPage = lazy(
 )
 const ClusterVisualsPage = lazy(() => import('./clusters/ClusterVisualsPage'))
 const AskTheLaw = lazy(() => import('./lawqa/AskTheLaw'))
+const SfsReport = lazy(() => import('./sfs/SfsReport'))
 const DrugCombPage = lazy(() =>
   import('./products/CaseStudies').then((m) => ({ default: m.DrugCombPage })),
 )
@@ -108,6 +109,7 @@ export default function App() {
                 {page === 'symbolic' && <SymbolicAtlasPage route={route} />}
                 {page === 'clusters' && <ClusterVisualsPage />}
                 {page === 'lawqa' && <AskTheLaw route={route} />}
+                {page === 'sfs' && <SfsReport route={route} />}
                 {page === 'tech' && <TechPanel />}
                 {page === 'aiact' &&
                   (AI_ACT_TABS.includes(path) ? (

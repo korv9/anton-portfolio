@@ -4,6 +4,7 @@ const projects = [
   ['#jobb', 'Labour Market Observatory'],
   ['#sweden', 'Wellbeing Observatory'],
   ['#ai-act', 'EU AI Act Observatory'],
+  ['#lagboken', 'Swedish Statute Book'],
 ] as const
 for (const [path, name] of projects)
   test(`${name} opens as a report in three tabs`, async ({ page }) => {
