@@ -9,15 +9,27 @@ search is fuzzy, so nothing is looked up by name: a text whose "SFS nr:" header 
 selection, or whose title differs from the recorded one, fails the run. A law whose header says
 "Upphävd:" with a date on or before today is repealed and left out. The kept selection, with
 each law's status, is stored as raw/sfs/selection.json for silver and its tests.
+
+    python platform/ingest/sfs/ingest.py --all [--sample N]
+
+The whole statute book instead: every page of /dokumentlista/?doktyp=sfs (200 a page, the
+API's cap) into raw/sfs/catalogue.json, then each text as above with a 1 s pause. A text is
+fetched again only when the list's systemdatum is on or after the day it was last fetched, so
+a rerun resumes and picks up amended texts. A text that still fails after the session's retries
+is counted and left for the next run. Repealed documents are kept; silver reads "Upphävd:".
 """
 from __future__ import annotations
 
+import argparse
 import json
 import re
 import sys
+import time
 from datetime import date
 from pathlib import Path
+from urllib.parse import quote
 
+import requests
 import yaml
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -30,6 +42,9 @@ API = "https://data.riksdagen.se"
 SELECTION = ROOT / "configs" / "workers_ai" / "sfs_selection.yaml"
 # Riksdagen answers in seconds to minutes; one law at a time with a pause between them.
 PAUSE = 3.0
+# 11,500 texts at 3 s would take about ten hours.
+FULL_PAUSE = 1.0
+CATALOGUE = ("dok_id", "beteckning", "titel", "datum", "organ", "subtyp", "systemdatum")
 
 
 def dok_id(sfs: str) -> str:
@@ -53,7 +68,64 @@ def repealed(fields: dict, today: date) -> str | None:
     return match.group(1) if match and match.group(1) <= today.isoformat() else None
 
 
+def catalogue(http: requests.Session) -> list[dict]:
+    """Every SFS document in Riksdagen's list. Its status field never marks a repeal.
+
+    The API serves at most 50 pages of 200 for one query, so the list is read newest first
+    and then oldest first until every hit has been seen."""
+    docs, total = {}, 0
+    for order in ("desc", "asc"):
+        for page in range(1, 51):
+            if total and len(docs) >= total:
+                break
+            response = http.get(f"{API}/dokumentlista/?doktyp=sfs&utformat=json&sz=200"
+                                f"&sort=datum&sortorder={order}&p={page}", timeout=300)
+            response.raise_for_status()
+            listing = response.json()["dokumentlista"]
+            total = int(listing["@traffar"])
+            for doc in listing.get("dokument") or []:
+                docs[doc["dok_id"]] = {field: doc.get(field) or "" for field in CATALOGUE}
+            print(f"Page {page} {order}: {len(docs)} of {total}", flush=True)
+            time.sleep(FULL_PAUSE)
+            if page >= int(listing["@sidor"]):
+                break
+    if len(docs) != total:
+        print(f"  warning: the list said {total} hits, {len(docs)} distinct dok_ids", flush=True)
+    return sorted(docs.values(), key=lambda doc: doc["dok_id"])
+
+
+def fetch_all(sample: int | None) -> int:
+    http = rawstore.session()
+    docs = catalogue(http)
+    rawstore.store(SOURCE, "catalogue.json",
+                   json.dumps(docs, ensure_ascii=False, indent=0).encode("utf-8"),
+                   url=f"{API}/dokumentlista/?doktyp=sfs&utformat=json&sz=200", method="LOCAL")
+    started, fetched, failed = time.monotonic(), 0, []
+    chosen = docs[::max(1, len(docs) // sample)][:sample] if sample else docs
+    for doc in chosen:
+        relative = f"texts/{doc['dok_id']}.text"
+        url = f"{API}/dokument/{quote(doc['dok_id'])}.text"
+        record = rawstore.verified_record(SOURCE, relative)
+        current = bool(record) and record["fetched_at"][:10] > doc["systemdatum"][:10]
+        try:
+            rawstore.fetch(http, SOURCE, relative, url, pause=FULL_PAUSE, timeout=300,
+                           max_age_days=36500 if current else 0)
+            fetched += not current
+        except requests.RequestException as error:
+            failed.append(doc["dok_id"])
+            print(f"  failed {doc['dok_id']}: {error}", flush=True)
+    print(f"Listed {len(docs)}, tried {len(chosen)}, fetched {fetched}, failed {len(failed)}, "
+          f"{time.monotonic() - started:.0f} s", flush=True)
+    return 1 if failed else 0
+
+
 def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--all", action="store_true", help="the whole statute book")
+    parser.add_argument("--sample", type=int, help="with --all, N texts spread over the list")
+    args = parser.parse_args()
+    if args.all:
+        return fetch_all(args.sample)
     laws = yaml.safe_load(SELECTION.read_text(encoding="utf-8"))["laws"]
     http = rawstore.session()
     kept, problems = [], []

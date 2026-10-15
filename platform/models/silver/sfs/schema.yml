@@ -24,3 +24,54 @@ models:
         data_tests: [not_null]
       - name: fetched
         data_tests: [not_null]
+
+  - name: silver_sfs_documents
+    description: >-
+      One row per document in Riksdagen's SFS list (raw/sfs/catalogue.json), repealed ones kept
+      with their repeal date, with the header fields of the fetched text and the paragraph count.
+    columns:
+      - name: dok_id
+        data_tests: [unique, not_null]
+      - name: sfs
+        description: The SFS number (beteckning), e.g. 1962:700. Not unique among the old regulations.
+        data_tests: [not_null]
+      - name: title
+        data_tests: [not_null]
+      - name: kind
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [lag, förordning, other]
+      - name: repealed_on
+        description: The date on the text's "Upphävd:" line, which may lie ahead.
+      - name: is_repealed
+        description: repealed_on is on or before the fetch date.
+      - name: amended_to
+        description: The last amending act on the "Ändrad:" line (t.o.m. SFS <number>).
+      - name: text_hash
+        description: SHA-256 of the text as served (warehouse/raw/sfs/_manifest.jsonl).
+      - name: parse_status
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [parsed, unnumbered, failed, no text]
+
+  - name: silver_sfs_corpus_paragraphs
+    description: >-
+      One row per paragraph (§) of every fetched SFS document, or per stycke of one longer than
+      1,500 characters, split as silver_sfs_paragraphs is. No embeddings.
+    columns:
+      - name: id
+        description: <dok_id>-<chapter>-<§>[-<stycke>], or without the chapter for a text that has none.
+        data_tests: [unique, not_null]
+      - name: dok_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('silver_sfs_documents')
+                field: dok_id
+      - name: text
+        data_tests: [not_null]

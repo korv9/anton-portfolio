@@ -1,17 +1,24 @@
 version: 2
 
-# The Swedish laws behind "Fråga lagen", fetched by platform/ingest/sfs/ingest.py into
-# warehouse/raw/sfs exactly as data.riksdagen.se serves them.
+# The Swedish laws behind "Fråga lagen", and with --all the whole statute book, fetched by
+# platform/ingest/sfs/ingest.py into warehouse/raw/sfs exactly as data.riksdagen.se serves them.
 
 sources:
   - name: sfs
-    description: Riksdagen's plain text of each selected law (SFS), the selection and the fetch log.
+    description: Riksdagen's plain text of each SFS document, the list, the selection and the fetch log.
     tables:
       - name: texts
         description: One law per file, texts/<dok_id>.text, as served.
         meta:
           external_location: >-
             read_text('{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/sfs/texts/*.text')
+      - name: catalogue
+        description: >-
+          Every document in /dokumentlista/?doktyp=sfs (ingest.py --all): dok_id, beteckning,
+          titel, datum, organ, subtyp and systemdatum, as the list gave them.
+        meta:
+          external_location: >-
+            read_json('{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/sfs/catalogue.json')
       - name: selection
         description: The laws kept from configs/workers_ai/sfs_selection.yaml, repealed ones left out.
         meta:
