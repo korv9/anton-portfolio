@@ -31,27 +31,61 @@ type Item = {
   fetched?: string
 }
 type Law = { sfs: string; title: string; url: string }
-type Example = { question: string; vector: number[]; answer?: Answer }
-type Eval = {
-  model: string
-  questions: number
-  verified_share: number
-  recall_at_k: number
-  k: number
-  tokens_per_answer: number
+type Example = {
+  question: string
+  question_en?: string
+  vector: number[]
+  answer?: Answer
 }
+/** One answer model's run over the eval questions (eval.json); any figure may be missing. */
+type Run = {
+  model: string
+  setting?: string
+  questions?: number
+  verified_share?: number
+  recall_at_k?: number
+  k?: number
+  neurons_per_answer?: number
+  neurons_lower_bound?: boolean
+}
+type Eval = Run & { tokens_per_answer?: number; compared?: Run[] }
 type Hit = { item: Item; score: number }
 
 const TOP = 8
 const MAX = 500
 const ANSWER_MODEL = '@cf/google/gemma-4-26b-a4b-it'
-const QUOTE = /\[\[([^\]]+)\]\]\s*"([^"]+)"/g
+// As the Worker's parser: a colon or white space may sit between [[id]] and its quote.
+const QUOTE = /\[\[([^\]]+)\]\]\s*:?\s*"([^"]+)"/g
 
 const fileOf = (choice: string) =>
   choice === 'sfs' ? 'sfs' : l('ai-act-en', 'ai-act-sv')
 const num = (n: number) => n.toLocaleString(l('en-GB', 'sv-SE'))
 const pct = (share: number) =>
-  `${(share * 100).toLocaleString(l('en-GB', 'sv-SE'), { maximumFractionDigits: 0 })} %`
+  `${(share * 100).toLocaleString(l('en-GB', 'sv-SE'), { maximumFractionDigits: 0 })}\u00a0%`
+const neurons = (run: Run) =>
+  run.neurons_per_answer == null
+    ? null
+    : `${run.neurons_lower_bound ? l('at least ', 'minst ') : ''}${num(run.neurons_per_answer)}`
+/** The example's question in the reader's language; the corpus text itself stays as published. */
+const asked = (e: Example) => l(e.question_en ?? e.question, e.question)
+
+/** The figures that exist for a run, as one line. */
+function scores(run: Run) {
+  const parts = [
+    run.verified_share != null &&
+      l(
+        `${pct(run.verified_share)} pass the quote check`,
+        `${pct(run.verified_share)} klarar citatkontrollen`,
+      ),
+    run.recall_at_k != null &&
+      run.k != null &&
+      `recall@${run.k} ${pct(run.recall_at_k)}`,
+  ].filter(Boolean)
+  if (parts.length === 0) return null
+  return run.questions != null
+    ? `${l(`${run.questions} questions`, `${run.questions} frågor`)}: ${parts.join(', ')}`
+    : parts.join(', ')
+}
 
 /** The answer's text with each [[id]]"quote" as a marked quote that leads to its passage. */
 function Quoted({ text }: { text: string }) {
@@ -141,6 +175,12 @@ export default function AskTheLaw({ route }: { route: Route }) {
   const meta = corpus && corpus !== 'missing' ? corpus.meta : null
   const laws = (meta?.laws as Law[] | undefined) ?? []
   const fetched = meta?.fetched as string | undefined
+  const compared = evaluation?.compared ?? []
+  const chosen = compared.find(
+    (run) =>
+      run.model === evaluation?.model && run.setting === evaluation?.setting,
+  )
+  const summary = evaluation && scores(evaluation)
   return (
     <ReportFrame>
       <div className="report lq">
@@ -258,14 +298,22 @@ export default function AskTheLaw({ route }: { route: Route }) {
                       type="button"
                       disabled={busy || !corpus}
                       onClick={() => {
-                        setQuestion(e.question)
+                        setQuestion(asked(e))
                         run(e.question, e)
                       }}
                     >
-                      {e.question}
+                      {asked(e)}
                     </button>
                   ))}
                 </div>
+              )}
+              {examples.length === 0 && file === 'ai-act-en' && (
+                <p className="lq-count">
+                  {l(
+                    'Example questions for the English text are not published yet.',
+                    'Exempelfrågor för den engelska texten är inte publicerade än.',
+                  )}
+                </p>
               )}
             </form>
           )}
@@ -377,21 +425,83 @@ export default function AskTheLaw({ route }: { route: Route }) {
                     </>
                   )}
                   <dt>{l('Answers', 'Svar')}</dt>
-                  <dd translate="no">{evaluation?.model ?? ANSWER_MODEL}</dd>
-                  {evaluation && (
+                  <dd>
+                    <span translate="no">
+                      {evaluation?.model ?? ANSWER_MODEL}
+                    </span>
+                    {evaluation?.setting && `, ${evaluation.setting}`}
+                  </dd>
+                  {summary && (
                     <>
                       <dt>{l('Evaluation', 'Utvärdering')}</dt>
-                      <dd>
-                        {l(
-                          `${evaluation.questions} questions: ${pct(evaluation.verified_share)} pass the quote check, recall@${evaluation.k} ${pct(evaluation.recall_at_k)}`,
-                          `${evaluation.questions} frågor: ${pct(evaluation.verified_share)} klarar citatkontrollen, recall@${evaluation.k} ${pct(evaluation.recall_at_k)}`,
-                        )}
-                      </dd>
+                      <dd>{summary}</dd>
+                    </>
+                  )}
+                  {chosen && neurons(chosen) && (
+                    <>
                       <dt>{l('Cost per answer', 'Kostnad per svar')}</dt>
-                      <dd>{num(evaluation.tokens_per_answer)} tokens</dd>
+                      <dd>
+                        {neurons(chosen)} {l('neurons', 'neuroner')}
+                        {evaluation?.tokens_per_answer != null &&
+                          `, ${num(evaluation.tokens_per_answer)} tokens`}
+                      </dd>
                     </>
                   )}
                 </dl>
+              </section>
+            )}
+            {compared.length > 0 && (
+              <section className="lq-models" aria-labelledby="lq-models-title">
+                <h2 id="lq-models-title">
+                  {l('Answer models compared', 'Svarsmodellerna jämförda')}
+                </h2>
+                <div className="lq-table">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th scope="col">{l('Model', 'Modell')}</th>
+                        <th scope="col" className="num">
+                          {l('Questions', 'Frågor')}
+                        </th>
+                        <th scope="col" className="num">
+                          {l('Quote check', 'Citatkontroll')}
+                        </th>
+                        <th scope="col" className="num">
+                          recall@{compared[0].k ?? TOP}
+                        </th>
+                        <th scope="col" className="num">
+                          {l('Neurons per answer', 'Neuroner per svar')}
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {compared.map((run) => (
+                        <tr
+                          key={`${run.model} ${run.setting}`}
+                          className={run === chosen ? 'lq-chosen' : undefined}
+                        >
+                          <th scope="row">
+                            <span translate="no">
+                              {run.model.split('/').pop()}
+                            </span>
+                            {run.setting && <small>{run.setting}</small>}
+                          </th>
+                          <td className="num">
+                            {run.questions != null && num(run.questions)}
+                          </td>
+                          <td className="num">
+                            {run.verified_share != null &&
+                              pct(run.verified_share)}
+                          </td>
+                          <td className="num">
+                            {run.recall_at_k != null && pct(run.recall_at_k)}
+                          </td>
+                          <td className="num">{neurons(run)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </section>
             )}
           </div>

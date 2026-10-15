@@ -8,6 +8,7 @@ import fs from 'node:fs'
 import type { Page, Route } from '@playwright/test'
 
 const DIMS = 4
+const ANSWER_MODEL = '@cf/google/gemma-4-26b-a4b-it'
 const unit = (d: number) => {
   const v = new Array(1024).fill(0)
   v[d] = 1
@@ -112,20 +113,77 @@ export const FILES: Record<string, Record<string, unknown>> = {
         },
       ],
     }),
+    // As the eval publishes them: the Swedish question, its English version, and the Worker's
+    // checked answer. The answer cites with a colon, a variant the Worker's parser accepts.
     'examples.json': {
+      model: ANSWER_MODEL,
+      created: '2026-10-15T00:46:51Z',
       examples: [
-        { question: 'Fixture question near paragraph 1?', vector: unit(0) },
+        {
+          question: 'Fixturefråga nära paragraf 1?',
+          question_en: 'Fixture question near paragraph 1?',
+          vector: unit(0),
+          passages: lawItems.slice(0, 8).map((i) => i.id),
+          status: 'verified',
+          answer: {
+            status: 'verified',
+            answer: `Det gäller [[${lawItems[0].id}]]: "Fixture paragraph 1."`,
+            quotes: [{ id: lawItems[0].id, quote: 'Fixture paragraph 1.' }],
+            model: ANSWER_MODEL,
+          },
+        },
       ],
     },
   },
+  // The English AI Act has passages but, like the real export, no examples.json.
+  'ai-act-en': corpus('ai-act-en', lawItems),
 }
 export const LAW = lawItems
+
+/** eval.json as the model comparison writes it, gpt-oss with a lower-bound cost. */
+export const EVAL = {
+  model: ANSWER_MODEL,
+  setting: 'thinking off',
+  questions: 20,
+  verified_share: 0.75,
+  recall_at_k: 0.85,
+  k: 8,
+  tokens_per_answer: 2672,
+  compared: [
+    {
+      model: ANSWER_MODEL,
+      setting: 'thinking off',
+      questions: 20,
+      verified_share: 0.75,
+      recall_at_k: 0.85,
+      k: 8,
+      tokens_in: 2341,
+      tokens_out: 331,
+      neurons_per_answer: 30.2,
+    },
+    {
+      model: '@cf/openai/gpt-oss-20b',
+      setting: 'reasoning low',
+      questions: 19,
+      verified_share: 0.632,
+      recall_at_k: 0.842,
+      k: 8,
+      tokens_in: 2328,
+      tokens_out: 293,
+      neurons_per_answer: 50.3,
+      neurons_lower_bound: true,
+    },
+  ],
+}
 
 /**
  * Serve the fixture exports, on the site or on the R2 base the catalog may route them to;
  * `requested` records which files the page asked for.
  */
 export async function serveExports(page: Page, requested: string[] = []) {
+  await page.route(/\/workers-ai\/eval\.json$/, (route) =>
+    route.fulfill({ json: EVAL }),
+  )
   await page.route(/\/workers-ai\/[^/]+\/[^/]+$/, (route: Route) => {
     const [, corpus, file] =
       new URL(route.request().url()).pathname.match(

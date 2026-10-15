@@ -62,7 +62,8 @@
 .lq-notice {
   max-width: var(--measure);
   padding: var(--sp-2) var(--sp-3);
-  border-left: 3px solid var(--accent);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
   background: var(--note-bg);
 }
 .lq-form {
@@ -177,6 +178,49 @@
 .lq-tech dd {
   margin: 0;
   font-variant-numeric: tabular-nums;
+}
+.lq-models {
+  grid-column: 1 / -1;
+  max-width: 90ch;
+}
+.lq-table {
+  overflow-x: auto;
+}
+.lq-table table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--small);
+}
+.lq-table th,
+.lq-table td {
+  padding: var(--sp-2) var(--sp-3) var(--sp-2) 0;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+}
+.lq-table thead th {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: var(--caption);
+  font-weight: 400;
+}
+.lq-table .num {
+  text-align: right;
+}
+.lq-table td:not(:last-child) {
+  white-space: nowrap;
+}
+.lq-table tbody th {
+  min-width: 13ch;
+  font-weight: 400;
+}
+.lq-table tbody th small {
+  display: block;
+  color: var(--muted);
+  font-size: var(--caption);
+}
+.lq-chosen th span {
+  font-weight: 650;
 }
 @media (max-width: 720px) {
   .lq .report-head {

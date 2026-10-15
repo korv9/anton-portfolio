@@ -75,6 +75,7 @@ test('a question shows its passages, then the checked answer', async ({
   await expect(page.getByText('not legal advice')).toBeVisible()
   await expect(page.getByText('(fetched 2026-10-14)')).toBeVisible()
   await expect(page.locator('.lq-laws li')).toHaveCount(1)
+  await expect(page.locator('.lq-examples button')).toHaveCount(1)
   await page.getByLabel('Your question').fill('Vem omfattas av lagen?')
   await page.getByRole('button', { name: 'Ask', exact: true }).click()
   await expect(page.locator('.lq-passages li')).toHaveCount(8)
@@ -93,12 +94,27 @@ test('a question shows its passages, then the checked answer', async ({
   ).toBeVisible()
   await expect(page.locator('.lq-passages li')).toHaveCount(8)
 
-  // The corpus is part of the address.
+  // The evaluation: the chosen model's figures and the comparison, gpt-oss cost as a lower bound.
+  const tech = page.locator('.lq-tech')
+  await expect(tech).toContainText(
+    '20 questions: 75 % pass the quote check, recall@8 85 %',
+  )
+  await expect(tech).toContainText('30.2 neurons, 2,672 tokens')
+  const rows = page.locator('.lq-table tbody tr')
+  await expect(rows).toHaveCount(2)
+  await expect(rows.nth(0)).toHaveClass('lq-chosen')
+  await expect(rows.nth(1)).toContainText('gpt-oss-20b')
+  await expect(rows.nth(1).locator('td').last()).toHaveText('at least 50.3')
+
+  // The corpus is part of the address. The English AI Act has no examples yet and says so.
   await page.getByRole('button', { name: 'EU AI Act' }).click()
   await expect(page).toHaveURL(/#fraga-lagen\?korpus=ai-act$/)
   await expect(
-    page.getByText('This corpus is not published yet.'),
+    page.getByText(
+      'Example questions for the English text are not published yet.',
+    ),
   ).toBeVisible()
+  await expect(page.locator('.lq-examples')).toHaveCount(0)
 })
 
 test(
@@ -125,15 +141,18 @@ test(
       "Today's Workers AI allocation is used up",
     )
 
+    // The example's published answer cites with a colon and still renders as a checked quote.
     await page.goto('/#fraga-lagen')
     await page
       .getByRole('button', { name: 'Fixture question near paragraph 1?' })
       .click()
+    await expect(page.getByLabel('Your question')).toHaveValue(
+      'Fixture question near paragraph 1?',
+    )
     await expect(page.locator('.lq-passages li').first()).toContainText(
       'Fixture paragraph',
     )
-    await expect(
-      page.getByText('A checked answer for this example is not published yet'),
-    ).toBeVisible()
+    await expect(page.locator('.lq-quote q')).toHaveText('Fixture paragraph 1.')
+    await expect(page.locator('.lq-answer')).not.toContainText('[[')
   },
 )
