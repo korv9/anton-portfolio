@@ -27,7 +27,8 @@
    "k": 8,
    "tokens_in": 2328,
    "tokens_out": 293,
-   "neurons_per_answer": 50.3
+   "neurons_per_answer": 50.3,
+   "neurons_lower_bound": true
   },
   {
    "model": "@cf/openai/gpt-oss-20b",
@@ -38,7 +39,8 @@
    "k": 8,
    "tokens_in": 2337,
    "tokens_out": 1268,
-   "neurons_per_answer": 77.1
+   "neurons_per_answer": 77.1,
+   "neurons_lower_bound": true
   }
  ]
 }

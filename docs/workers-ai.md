@@ -34,14 +34,19 @@ när Workern godkänner det, alltså när varje citat står ordagrant i det styc
 | Modell             | Inställning             | Frågor | Verifierade | Tokens in | Tokens ut | Neurons per svar |
 | ------------------ | ----------------------- | ------ | ----------- | --------- | --------- | ---------------- |
 | gemma-4-26b-a4b-it | tänkande av             | 20     | 15 (75 %)   | 2 341     | 331       | 30,2             |
-| gpt-oss-20b        | `reasoning_effort: low` | 19     | 12 (63 %)   | 2 328     | 293       | 50,3             |
-| gpt-oss-20b        | standard (medium)       | 16     | 7 (44 %)    | 2 337     | 1 268     | 77,1             |
+| gpt-oss-20b        | `reasoning_effort: low` | 19     | 12 (63 %)   | 2 328     | 293       | minst 50,3       |
+| gpt-oss-20b        | standard (medium)       | 16     | 7 (44 %)    | 2 337     | 1 268     | minst 77,1       |
 
-Tokens och neurons är medelvärden per svar. Dagens kvot tog slut innan gpt-oss hann svara på alla
-frågor. Valet håller ändå: även om de saknade svaren hade blivit verifierade skulle gpt-oss nå högst
-13 av 20 med låg ansträngning och 11 av 20 med standard. Gemma svarar dessutom billigast, eftersom
-gpt-oss tar dubbelt så mycket betalt per inmatad token. Med standardinställningen nådde gpt-oss taket
-på 2 048 tokens i fyra svar.
+Tokens och neurons är medelvärden per svar, räknade från tokenantalen och Cloudflares pris per
+modell. Cloudflare stoppade anropen kl. 00.15 UTC med beskedet att dagens 10 000 neurons var slut,
+fast loggen bara hade räknat 2 793. Inga andra anrop än evalkörningen gjordes efter midnatt, så gpt-oss kostar mer
+än tokenantalen visar, troligen för att dess resonemang inte räknas in i `usage`. Siffrorna för
+gpt-oss är därför en undre gräns, och den verkliga kostnaden var ungefär fyra gånger högre.
+Gemmas pris stämde dagen innan, då 2 725 neurons i loggen gick igenom utan stopp.
+
+Kvoten tog slut innan gpt-oss hann svara på alla frågor. Valet håller ändå: även om de saknade
+svaren hade blivit verifierade skulle gpt-oss nå högst 13 av 20 med låg ansträngning och 11 av 20
+med standard. Med standardinställningen nådde gpt-oss taket på 2 048 tokens i fyra svar.
 
 Två tidigare körningar ligger bakom inställningen. Med tänkandet på gick hela budgeten åt till
 resonemang: med `max_tokens` 700 blev inget av 20 svar verifierat, och med 2 048 blev 3 av 19
@@ -99,3 +104,9 @@ Inget svar blev `NO_ANSWER`. Gemmas fem stoppade svar föll på formen eller på
 - Fråga 15 och 19: några hänvisningar saknade citat, och ett citat var omskrivet.
 
 Raderna per fråga, med modellens råa text, ligger i `warehouse/features/workers_ai/eval/`.
+
+Exempelfrågorna på sidan är tre av Gemmas verifierade svar per korpus, för `sfs` och `ai-act-sv`,
+tagna direkt från evalraderna utan nya anrop. Frågornas vektorer bäddades in lokalt med samma
+bge-m3. En fråga togs bara med när den lokala vektorn gav exakt samma åtta stycken som vektorn från
+Workers AI, vilket gällde sex av sju. `ai-act-en` har inga exempel än, eftersom inga engelska frågor
+har körts.
