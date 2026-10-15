@@ -1,0 +1,44 @@
+{
+ "model": "@cf/google/gemma-4-26b-a4b-it",
+ "setting": "thinking off",
+ "questions": 20,
+ "verified_share": 0.75,
+ "recall_at_k": 0.85,
+ "k": 8,
+ "tokens_per_answer": 2672,
+ "compared": [
+  {
+   "model": "@cf/google/gemma-4-26b-a4b-it",
+   "setting": "thinking off",
+   "questions": 20,
+   "verified_share": 0.75,
+   "recall_at_k": 0.85,
+   "k": 8,
+   "tokens_in": 2341,
+   "tokens_out": 331,
+   "neurons_per_answer": 30.2
+  },
+  {
+   "model": "@cf/openai/gpt-oss-20b",
+   "setting": "reasoning low",
+   "questions": 19,
+   "verified_share": 0.632,
+   "recall_at_k": 0.842,
+   "k": 8,
+   "tokens_in": 2328,
+   "tokens_out": 293,
+   "neurons_per_answer": 50.3
+  },
+  {
+   "model": "@cf/openai/gpt-oss-20b",
+   "setting": "reasoning medium",
+   "questions": 16,
+   "verified_share": 0.438,
+   "recall_at_k": 0.812,
+   "k": 8,
+   "tokens_in": 2337,
+   "tokens_out": 1268,
+   "neurons_per_answer": 77.1
+  }
+ ]
+}
