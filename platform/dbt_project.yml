@@ -92,6 +92,8 @@ models:
         +tags: [parliament]
       politics:
         +tags: [politics]
+      sfs:
+        +tags: [sfs]
       symbolic:
         +tags: [symbolic]
       taxes:
