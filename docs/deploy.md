@@ -1,7 +1,10 @@
 # Hosting: Cloudflare
 
 The site is static files (`npm run build` → `dist/`) served by Cloudflare Workers static
-assets at `https://antonernstsson.com`: a Worker with no script, only files. The site's JSON
+assets at `https://antonernstsson.com`, plus a small Worker script (`worker/index.ts`) for the
+two Workers AI demos ([workers-ai.md](workers-ai.md)). Requests to `/api/*` run the script
+first; every other request is served from the files as before, and a request that matches no
+file is handed back to the files by the script. The site's JSON
 is part of those files. Parquet marts and document shards are served from the R2 bucket
 `anton-portfolio` on the same Cloudflare account, which also holds the versioned data releases
 the site does not read ([storage-and-serving.md](storage-and-serving.md)).
@@ -27,9 +30,10 @@ workflow here deploys the site.
 
 | File | Purpose |
 |---|---|
-| `wrangler.toml` | Worker name, and `dist/` as its static assets |
+| `wrangler.toml` | Worker name, `dist/` as its static assets, the script for `/api/*`, the Workers AI and rate-limit bindings |
+| `worker/index.ts` | `/api/embed` and `/api/answer`; tests in `worker/index.test.ts`, run by `npm run test:unit` |
 | `.node-version` | Node 22 for Cloudflare's build image |
-| `frontend/public/_headers` | Security headers; long cache for hashed assets, short for data |
+| `frontend/public/_headers` | Security headers; long cache for hashed assets, short for data. It does not apply to responses the Worker script makes: `/api/*` sets its own `Cache-Control: no-store`, `X-Content-Type-Options` and `Referrer-Policy` |
 | `platform/publish/r2-cors.json` | Origins allowed to read the bucket: the domain, `www`, `workers.dev`, the branch preview, local dev |
 | `frontend/index.html` | Canonical URL `https://antonernstsson.com/` |
 
@@ -100,7 +104,25 @@ on `workers.dev` and in previews without configuration.
    or an ML stage is left out of the weekly run.
 
 ## Limits
+ Free plan: 20,000 files and 25 MiB per file in a Worker's static assets; requests for static assets
+are free and unlimited. Requests that run the script (`/api/*`, and addresses that match no file)
+count against the Free plan's 100,000 requests a day and 10 ms CPU each; Workers AI has 10,000
+neurons a day. The Worker's `[ai]` binding (`AI`) needs no secret or setup step: Workers Builds
+deploys it with the Worker, and the neurons count against the account. The `[[ratelimits]]` binding
+(`RATE_LIMITER`, 20 requests a minute per IP and location) passes `npx wrangler deploy --dry-run`;
+whether the Free plan accepts it shows on the first preview deploy. If it is rejected, remove the
+block: the neuron allocation is the hard limit either way.
 
-Free plan: 20,000 files and 25 MiB per file in a Worker's static assets; requests for static
-assets are free and unlimited. A local build on 13 October 2026 had 950 files, the largest
+`npx wrangler dev` needs a remote session for the AI binding. Wrangler reads
+`CLOUDFLARE_API_TOKEN` from `.env`, and that token needs the Workers Scripts permission for a
+remote session; without it, run `npx wrangler login` and start dev without the token in the
+environment. Until that is done, live calls go through the Node shim in
+`platform/publish/workers_ai/eval_answer.ts`, which runs the Worker's code against the Workers AI
+REST API ([workers-ai.md](workers-ai.md)).
+
+`r2-cors.json` allows local dev only on port 5173 (`localhost` and `127.0.0.1`). On another port
+the browser cannot read the files the site loads from R2, such as the debate shards and the SFS
+`meta.json`.
+
+A local build on 13 October 2026 had 950 files, the largest
 5.4 MB. Check the config locally with `npx wrangler deploy --dry-run` after `npm run build`.

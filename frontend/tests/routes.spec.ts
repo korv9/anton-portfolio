@@ -23,6 +23,7 @@ const START_PAGES = [
   '/#sweden',
   '/#thesis',
   '/#cluster-visuals',
+  '/#fraga-lagen',
 ]
 
 const hrefs = (page: Page) =>
@@ -85,7 +86,7 @@ test('every internal link opens a page', async ({ page, isMobile }) => {
     // The list of projects carries no breadcrumb, nor do the observatory and lab reports and
     // their deep dives, which name the report in a link back.
     if (
-      /^#(politik|jobb|job-|sweden|ai-act|tech|symbolic-|philosophy-|concept|drugcomb)/.test(
+      /^#(politik|jobb|job-|sweden|ai-act|tech|symbolic-|philosophy-|concept|drugcomb|fraga-lagen)/.test(
         href,
       )
     )

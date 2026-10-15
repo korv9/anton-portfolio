@@ -37,6 +37,8 @@ e5: &e5
 variants:
   debate-sbert: {<<: *sbert, pick: debate, corpus: debate, centering: author, neighbors: 30, min_cluster_size: 150, min_samples: 25}
   debate-e5: {<<: *e5, pick: debate, corpus: debate, centering: author, neighbors: 30, min_cluster_size: 150, min_samples: 25}
+  # bge-m3 through Workers AI (platform/nlp/workers_ai.py); its own pick key keeps pick-debate.json as published.
+  debate-bge-m3: {model: '@cf/baai/bge-m3', revision: workers-ai-2026-10-14, pick: debate-bge-m3, corpus: debate, centering: author, neighbors: 30, min_cluster_size: 150, min_samples: 25}
   debate-sbert-subjects: {<<: *sbert, pick: debate, corpus: debate, centering: author, neighbors: 30, min_cluster_size: 105, min_samples: 25, drop: *rhetoric}
   debate-e5-subjects: {<<: *e5, pick: debate, corpus: debate, centering: author, neighbors: 30, min_cluster_size: 105, min_samples: 25, drop: *rhetoric}
   philosophy-minilm: {<<: *minilm, pick: philosophy, corpus: philosophy, centering: work, neighbors: 30, min_cluster_size: 120, min_samples: 25}

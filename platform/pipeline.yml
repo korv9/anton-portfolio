@@ -175,6 +175,21 @@ subjects:
       - dbt: {select: [tag:ai_act]}
       - export: python platform/publish/eu_ai_act/export_ai_act.py
 
+  # The laws behind "Fråga lagen" (docs/workers-ai.md). The export writes the passages that
+  # platform/nlp/workers_ai.py embeds; the embedding and compression run by hand within the quota.
+  # With SFS_ALL set it also fetches the whole statute book (about 11,600 texts, a few hours the
+  # first time); silver_sfs_documents and silver_sfs_corpus_paragraphs build on it, no embeddings.
+  sfs:
+    schedule: manual
+    group: baseline
+    raw: [sfs]
+    steps:
+      - ingest: python platform/ingest/sfs/ingest.py
+      - ingest: python platform/ingest/sfs/ingest.py --all
+        when_env: SFS_ALL
+      - dbt: {select: [tag:sfs]}
+      - export: python platform/publish/workers_ai/export_law_corpora.py chunks
+
   # assert_concept_link_targets_exist checks links into philosophy, Riksdag and job-ad models;
   # it runs in the concepts subject, once all of them are built.
   ai_politics:

@@ -1,0 +1,15 @@
+version: 2
+
+models:
+  - name: stg_sfs_texts
+    description: One row per law text fetched from data.riksdagen.se, with its provenance.
+    columns:
+      - name: dok_id
+        data_tests: [unique, not_null]
+      - name: source_hash
+        description: SHA-256 of the bytes Riksdagen served (warehouse/raw/sfs/_manifest.jsonl).
+        data_tests: [not_null]
+      - name: source_url
+        data_tests: [not_null]
+      - name: text
+        data_tests: [not_null]

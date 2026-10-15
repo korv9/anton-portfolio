@@ -75,6 +75,7 @@ Running the frontend tests is in [frontend/tests/README.md](../frontend/tests/RE
 | Document | Covers |
 |---|---|
 | [deploy.md](deploy.md) | Hosting on Cloudflare: branches and previews, one-time setup, secrets, limits |
+| [workers-ai.md](workers-ai.md) | Cloudflare Workers AI: what may be sent, the account's limits, and where vector search runs (Swedish) |
 | [idea-lineage.md](idea-lineage.md) | The idea journal: what is recorded, the `ideas:*` commands and the state files |
 
 ## Checking a document

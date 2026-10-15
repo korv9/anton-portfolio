@@ -1,0 +1,46 @@
+# The Swedish laws behind "Fråga lagen" (Ask the law), read by platform/ingest/sfs/ingest.py.
+# Each SFS number is fetched by its dok_id (sfs-<year>-<number>) from data.riksdagen.se, and the
+# ingest checks the text's "SFS nr:" header against it and skips a law whose header says
+# "Upphävd:". `title` is the first line of the text as Riksdagen serves it. Every law is kept
+# whole: Socialförsäkringsbalken, the largest, is about 2,000 passages and 0.2 M tokens.
+laws:
+  - {sfs: "1974:152", name: Regeringsformen, title: "Kungörelse (1974:152) om beslutad ny regeringsform"}
+  - {sfs: "1949:105", name: Tryckfrihetsförordningen, title: "Tryckfrihetsförordning (1949:105)"}
+  - {sfs: "1991:1469", name: Yttrandefrihetsgrundlagen, title: "Yttrandefrihetsgrundlag (1991:1469)"}
+  - {sfs: "1962:700", name: Brottsbalken, title: "Brottsbalk (1962:700)"}
+  - {sfs: "1942:740", name: Rättegångsbalken, title: "Rättegångsbalk (1942:740)"}
+  - {sfs: "1949:381", name: Föräldrabalken, title: "Föräldrabalk (1949:381)"}
+  - {sfs: "1958:637", name: Ärvdabalken, title: "Ärvdabalk (1958:637)"}
+  - {sfs: "1987:230", name: Äktenskapsbalken, title: "Äktenskapsbalk (1987:230)"}
+  - {sfs: "1970:994", name: Jordabalken, title: "Jordabalk (1970:994)"}
+  - {sfs: "2010:110", name: Socialförsäkringsbalken, title: "Socialförsäkringsbalk (2010:110)"}
+  - {sfs: "1915:218", name: Avtalslagen, title: "Lag (1915:218) om avtal och andra rättshandlingar på förmögenhetsrättens område"}
+  - {sfs: "1990:931", name: Köplagen, title: "Köplag (1990:931)"}
+  - {sfs: "2022:260", name: Konsumentköplagen, title: "Konsumentköplag (2022:260)"}
+  - {sfs: "1985:716", name: Konsumenttjänstlagen, title: "Konsumenttjänstlag (1985:716)"}
+  - {sfs: "2005:59", name: Distansavtalslagen, title: "Lag (2005:59) om distansavtal och avtal utanför affärslokaler"}
+  - {sfs: "1972:207", name: Skadeståndslagen, title: "Skadeståndslag (1972:207)"}
+  - {sfs: "1981:130", name: Preskriptionslagen, title: "Preskriptionslag"}
+  - {sfs: "2003:376", name: Sambolagen, title: "Sambolag (2003:376)"}
+  - {sfs: "2010:1846", name: Konsumentkreditlagen, title: "Konsumentkreditlag (2010:1846)"}
+  - {sfs: "2008:486", name: Marknadsföringslagen, title: "Marknadsföringslag (2008:486)"}
+  - {sfs: "1960:729", name: Upphovsrättslagen, title: "Lag (1960:729) om upphovsrätt till litterära och konstnärliga verk"}
+  - {sfs: "1982:80", name: Lagen om anställningsskydd, title: "Lag (1982:80) om anställningsskydd"}
+  - {sfs: "1982:673", name: Arbetstidslagen, title: "Arbetstidslag (1982:673)"}
+  - {sfs: "1977:480", name: Semesterlagen, title: "Semesterlag (1977:480)"}
+  - {sfs: "1976:580", name: Medbestämmandelagen, title: "Lag (1976:580) om medbestämmande i arbetslivet"}
+  - {sfs: "1977:1160", name: Arbetsmiljölagen, title: "Arbetsmiljölag (1977:1160)"}
+  - {sfs: "1995:584", name: Föräldraledighetslagen, title: "Föräldraledighetslag (1995:584)"}
+  - {sfs: "2008:567", name: Diskrimineringslagen, title: "Diskrimineringslag (2008:567)"}
+  - {sfs: "2017:900", name: Förvaltningslagen, title: "Förvaltningslag (2017:900)"}
+  - {sfs: "2009:400", name: Offentlighets- och sekretesslagen, title: "Offentlighets- och sekretesslag (2009:400)"}
+  - {sfs: "2018:218", name: Dataskyddslagen, title: "Lag (2018:218) med kompletterande bestämmelser till EU:s dataskyddsförordning"}
+  - {sfs: "2017:725", name: Kommunallagen, title: "Kommunallag (2017:725)"}
+  - {sfs: "2025:400", name: Socialtjänstlagen, title: "Socialtjänstlag (2025:400)"}
+  - {sfs: "2010:800", name: Skollagen, title: "Skollag (2010:800)"}
+  - {sfs: "2010:900", name: Plan- och bygglagen, title: "Plan- och bygglag (2010:900)"}
+  - {sfs: "2017:30", name: Hälso- och sjukvårdslagen, title: "Hälso- och sjukvårdslag (2017:30)"}
+  - {sfs: "2014:821", name: Patientlagen, title: "Patientlag (2014:821)"}
+  - {sfs: "1993:387", name: LSS, title: "Lag (1993:387) om stöd och service till vissa funktionshindrade"}
+  - {sfs: "1984:387", name: Polislagen, title: "Polislag (1984:387)"}
+  - {sfs: "2018:1200", name: Kamerabevakningslagen, title: "Kamerabevakningslag (2018:1200)"}

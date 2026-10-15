@@ -1,0 +1,232 @@
+/*
+ * Ask the law (AskTheLaw.tsx): the corpus switch beside the title, the fixed notices, the
+ * question box, then the answer above the passages it quotes, and the law list and the numbers.
+ */
+.lq .report-head {
+  align-items: end;
+}
+.lq-switch,
+.lq-examples {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+.lq-switch {
+  justify-content: flex-end;
+}
+.lq-switch button,
+.lq-examples button {
+  min-height: 40px;
+  padding: 0.35rem 0.9rem;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--small);
+  text-align: left;
+  cursor: pointer;
+}
+.lq-switch button:hover,
+.lq-examples button:hover {
+  border-color: var(--ink);
+}
+.lq-switch button[aria-pressed='true'] {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--on-accent);
+}
+.lq-examples button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+.lq-switch button:focus-visible,
+.lq-examples button:focus-visible,
+.lq-form textarea:focus-visible,
+.lq-passages li:focus {
+  outline: 2px solid var(--focus);
+  outline-offset: 3px;
+}
+.lq-notices {
+  display: grid;
+  gap: var(--sp-1);
+  max-width: var(--measure);
+  color: var(--muted);
+  font-size: var(--small);
+}
+.lq-notices p,
+.lq-status,
+.lq-notice {
+  margin: 0;
+}
+.lq-notice {
+  max-width: var(--measure);
+  padding: var(--sp-2) var(--sp-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--note-bg);
+}
+.lq-form {
+  display: grid;
+  gap: var(--sp-2);
+  max-width: 90ch;
+}
+.lq-form label,
+.lq-count,
+.lq-title small,
+.lq-laws small {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: var(--caption);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+}
+.lq-form textarea {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--paper-strong);
+  color: var(--ink);
+  font: inherit;
+  resize: vertical;
+}
+.lq-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+}
+.lq-result {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--sp-6);
+  max-width: 90ch;
+}
+.project-shell #main .lq h2 {
+  margin: 0 0 var(--sp-3);
+  font-size: var(--h3);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.lq-answer {
+  margin: 0;
+  max-width: var(--measure);
+  font-size: var(--body-large);
+  line-height: 1.5;
+}
+.lq-quote q {
+  background: var(--select);
+}
+.lq-quote small {
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: var(--caption);
+  white-space: nowrap;
+}
+.lq-passages {
+  display: grid;
+  gap: var(--sp-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.lq-passages li {
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--line);
+}
+.lq-passages p {
+  overflow-wrap: anywhere;
+  margin: 0 0 var(--sp-1);
+  max-width: var(--measure);
+  line-height: 1.5;
+}
+.lq-title a {
+  color: var(--ink);
+  font-weight: 650;
+}
+.lq-about {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+  gap: var(--sp-6) var(--sp-7);
+  align-items: start;
+}
+.lq-laws {
+  columns: 2 16rem;
+  gap: var(--sp-5);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--small);
+}
+.lq-laws li {
+  break-inside: avoid;
+  padding-block: 3px;
+}
+.lq-tech dl {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: var(--sp-2) var(--sp-4);
+  margin: 0;
+  font-size: var(--small);
+}
+.lq-tech dt {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: var(--caption);
+}
+.lq-tech dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+.lq-models {
+  grid-column: 1 / -1;
+  max-width: 90ch;
+}
+.lq-table {
+  overflow-x: auto;
+}
+.lq-table table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--small);
+}
+.lq-table th,
+.lq-table td {
+  padding: var(--sp-2) var(--sp-3) var(--sp-2) 0;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+}
+.lq-table thead th {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: var(--caption);
+  font-weight: 400;
+}
+.lq-table .num {
+  text-align: right;
+}
+.lq-table td:not(:last-child) {
+  white-space: nowrap;
+}
+.lq-table tbody th {
+  min-width: 13ch;
+  font-weight: 400;
+}
+.lq-table tbody th small {
+  display: block;
+  color: var(--muted);
+  font-size: var(--caption);
+}
+.lq-chosen th span {
+  font-weight: 650;
+}
+@media (max-width: 720px) {
+  .lq .report-head {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .lq-switch {
+    justify-content: flex-start;
+  }
+}

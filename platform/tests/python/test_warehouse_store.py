@@ -149,6 +149,20 @@ def test_ml_outputs_are_stored_under_their_own_prefix_and_come_back(store, tmp_p
     assert (tmp_path / "features/concepts/run.json").read_text() == '{"model": "m"}'
 
 
+def test_cluster_lab_pushes_only_the_listed_runs_never_the_cache(store, tmp_path, monkeypatch):
+    s3, _, _ = store
+    lab = tmp_path / "cluster_lab"
+    (lab / "cache/text_vectors").mkdir(parents=True)
+    (lab / "cache/text_vectors/vectors.sqlite").write_bytes(b"big")
+    (lab / "workers-ai-debate-bge-m3").mkdir()
+    (lab / "workers-ai-debate-bge-m3/manifest.json").write_text("{}")
+    monkeypatch.setattr(ws, "CLUSTER_LAB", lab)
+    for sub in ws.folders("cluster_lab", [""]):
+        ws.push_tree(s3, "b", "cluster_lab", sub)
+    assert sorted(s3.objects) == [ws.CLUSTER_LAB_PREFIX + "workers-ai-debate-bge-m3/manifest.json"]
+    assert ws.folders("raw", [""]) == [""]
+
+
 def test_one_folder_or_file_of_a_tree_moves_alone(store):
     """The daily refreshes store and fetch only their own folder and provenance log."""
     s3, _, raw = store

@@ -7,19 +7,24 @@ How the site is organised and which file decides what. The visual direction is i
 ## Projects and navigation
 
 The homepage holds the identity, profile, experience and project index. A shared header
-replaces the old sidebar. Its project menu groups the eleven projects, and Cluster Visuals sits
+replaces the old sidebar. Its project menu groups the twelve projects, and Cluster Visuals sits
 beside them as a separate tool.
 
 | Group | Projects |
 | --- | --- |
 | Observatories | Political Observatory, Labour Market Observatory, Wellbeing Observatory, EU AI Act Observatory |
-| Labs | Symbol Lab, Philosophy Lab, Concept Lab, Drug Synergy Lab |
+| Labs | Symbol Lab, Philosophy Lab, Concept Lab, Ask the law, Drug Synergy Lab |
 | Engineering | IT Incident Clustering, Homie API, DiVA Thesis Lakehouse |
 
 Each project has an entry page. An observatory opens as a report with three tabs, each tab an
 address of its own, and deeper views behind them. Labs and engineering projects are continuous
 reports with section addresses. Readers for one speech, debate, article or concept are separate
 views. Previous and next links follow the menu's group order.
+
+Two pages use Cloudflare Workers AI ([workers-ai.md](workers-ai.md)). Ask the law (`#fraga-lagen`)
+answers questions over Swedish statutes or the EU AI Act; `?korpus=ai-act` picks the AI Act.
+On `#cluster-visuals`, the card `#cv-place` places a reader's sentence on the party-leader debate
+map.
 
 ## Where it is defined
 

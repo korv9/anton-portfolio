@@ -342,6 +342,36 @@ export const PROJECTS: ProjectEntry[] = [
     pages: ['concepts'],
   },
   {
+    id: 'ask-the-law',
+    title: t('Fråga lagen', 'Ask the law'),
+    descriptor: t(
+      'Workers AI, sökning med kontrollerade citat',
+      'Workers AI, search with checked quotes',
+    ),
+    summary: t(
+      'Frågor över ett urval av svenska lagar och EU:s AI-förordning, besvarade med citat som kontrolleras ord för ord mot lagtexten.',
+      'Questions over a selection of Swedish statutes and the EU AI Act, answered with quotes checked word for word against the legal text.',
+    ),
+    question: t(
+      'Kan en språkmodell svara på frågor om lagtext utan att hitta på citat, på en gratisplan?',
+      'Can a language model answer questions on legal text without inventing quotes, on a free plan?',
+    ),
+    built: t(
+      'Paragrafer inbäddade offline med bge-m3 och komprimerade till int8; sökningen körs i webbläsaren. En Cloudflare Worker bäddar in frågan, kontrollerar att de skickade paragraferna är publicerad lagtext och låter en modell svara med citat.',
+      'Paragraphs embedded offline with bge-m3 and compressed to int8; the search runs in the browser. A Cloudflare Worker embeds the question, checks that the passages sent are published legal text, and has a model answer with quotes.',
+    ),
+    result: t(
+      'Varje citat i ett svar kontrolleras mot sin paragraf innan svaret visas. Ett svar som inte klarar kontrollen visas inte, bara de hittade paragraferna.',
+      'Every quote in an answer is checked against its paragraph before the answer is shown. An answer that fails the check is withheld, and only the paragraphs found are shown.',
+    ),
+    tech: ['Cloudflare Workers AI', 'bge-m3', 'TypeScript', 'React', 'Python'],
+    href: '#fraga-lagen',
+    category: 'ai',
+    status: 'experimental',
+    code: 'https://github.com/korv9/anton-portfolio/blob/main/docs/workers-ai.md',
+    pages: ['lawqa'],
+  },
+  {
     id: 'drugcomb',
     title: t('Drug Synergy Lab', 'Drug Synergy Lab'),
     descriptor: t('Multimodal maskininlärning', 'Multimodal machine learning'),
@@ -433,6 +463,7 @@ export const PROJECT_GROUPS = [
       'symbolic-atlas',
       'philosophy-atlas',
       'concept-constellation',
+      'ask-the-law',
       'drugcomb',
     ],
   },

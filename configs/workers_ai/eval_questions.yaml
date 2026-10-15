@@ -1,0 +1,86 @@
+# Questions for choosing the model behind /api/answer (docs/workers-ai.md), read by
+# platform/publish/workers_ai/eval_answer.ts. Ten on Swedish law (corpus sfs) and ten on the AI Act
+# (corpus ai-act-sv), asked as a lay reader would. `expected` lists the passage ids in the corpus's
+# meta.json that answer the question; a retrieval counts as a hit when any of them is among the
+# top k.
+questions:
+  - corpus: sfs
+    question: Hur lång uppsägningstid har jag om jag har jobbat på samma ställe i fem år?
+    question_en: How long is my notice period if I have worked at the same place for five years?
+    expected: [sfs-1982-80-11]
+  - corpus: sfs
+    question: Hur många semesterdagar har jag rätt till varje år?
+    question_en: How many days of holiday am I entitled to each year?
+    expected: [sfs-1977-480-4]
+  - corpus: sfs
+    question: Kan jag ångra ett köp som jag har gjort på nätet?
+    question_en: Can I cancel a purchase I made online?
+    expected: [sfs-2005-59-2-10]
+  - corpus: sfs
+    question: Vilket straff kan man få för stöld?
+    question_en: What is the penalty for theft?
+    expected: [sfs-1962-700-8-1]
+  - corpus: sfs
+    question: Hur delas bostaden och bohaget när sambor flyttar isär?
+    question_en: How are the home and household goods divided when cohabitants separate?
+    expected: [sfs-2003-376-8]
+  - corpus: sfs
+    question: Har jag rätt att läsa myndigheternas handlingar?
+    question_en: Do I have the right to read the authorities' documents?
+    expected: [sfs-1949-105-2-1]
+  - corpus: sfs
+    question: Hur lång är uppsägningstiden för ett hyreskontrakt på en lägenhet?
+    question_en: How long is the notice period for a flat's rental contract?
+    expected: [sfs-1970-994-12-4]
+  - corpus: sfs
+    question: Vem ärver när någon dör utan testamente?
+    question_en: Who inherits when someone dies without a will?
+    expected: [sfs-1958-637-2-1]
+  - corpus: sfs
+    question: Hur snabbt måste en myndighet handlägga mitt ärende?
+    question_en: How quickly must an authority handle my case?
+    expected: [sfs-2017-900-9]
+  - corpus: sfs
+    question: Hur länge kan någon kräva mig på en gammal skuld?
+    question_en: For how long can someone claim an old debt from me?
+    expected: [sfs-1981-130-2]
+  - corpus: ai-act-sv
+    question: Vilka sorters AI är förbjudna i EU?
+    question_en: What kinds of AI are banned in the EU?
+    expected: [art_5-1, art_5-1-a, art_5-1-b, art_5-1-c, art_5-1-d, art_5-1-e, art_5-1-f, art_5-1-g, art_5-1-h]
+  - corpus: ai-act-sv
+    question: Vad räknas som ett AI-system enligt lagen?
+    question_en: What counts as an AI system under the law?
+    expected: [art_3-1]
+  - corpus: ai-act-sv
+    question: Måste det framgå att jag pratar med en chattbot?
+    question_en: Must it be made clear that I am talking to a chatbot?
+    expected: [art_50-1]
+  - corpus: ai-act-sv
+    question: Måste deepfakes märkas?
+    question_en: Must deepfakes be labelled?
+    expected: [art_50-4]
+  - corpus: ai-act-sv
+    question: Får polisen använda ansiktsigenkänning i realtid på allmän plats?
+    question_en: May the police use real-time facial recognition in public places?
+    expected: [art_5-1-h]
+  - corpus: ai-act-sv
+    question: Får min arbetsgivare använda AI för att läsa av mina känslor?
+    question_en: May my employer use AI to read my emotions?
+    expected: [art_5-1-f]
+  - corpus: ai-act-sv
+    question: Hur höga böter kan ett företag få för förbjuden AI?
+    question_en: How large a fine can a company get for prohibited AI?
+    expected: [art_99-3]
+  - corpus: ai-act-sv
+    question: När börjar AI-förordningen gälla?
+    question_en: When does the AI Act start to apply?
+    expected: [art_113, art_113-a, art_113-b, art_113-c, art_113-d]
+  - corpus: ai-act-sv
+    question: Måste företag utbilda personalen som använder AI?
+    question_en: Must companies train the staff who use AI?
+    expected: [art_4-1]
+  - corpus: ai-act-sv
+    question: Vilka AI-system räknas som högrisk?
+    question_en: Which AI systems count as high risk?
+    expected: [art_6-1, art_6-2]

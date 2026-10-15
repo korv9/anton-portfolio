@@ -15,6 +15,7 @@ import ClusterScatter, { type ClusterPoint } from './ClusterScatter'
 import ClusterLab from './ClusterLab'
 import './clusters.css'
 import { loadDebateMap } from './debateData'
+import SentencePlacer from './SentencePlacer'
 
 export type Loaded = {
   points: ClusterPoint[]
@@ -193,6 +194,8 @@ async function loadResearch(slug: string): Promise<Loaded> {
   }
 }
 
+const debateTopics = () => loadResearch('debate-topics')
+
 export const MAPS = (): MapSpec[] => [
   {
     id: 'research-debates',
@@ -210,7 +213,7 @@ export const MAPS = (): MapSpec[] => [
       {
         key: 'debate-topics',
         label: l('Subjects', 'Ämnen'),
-        load: () => loadResearch('debate-topics'),
+        load: debateTopics,
       },
     ],
   },
@@ -479,6 +482,7 @@ export default function ClusterVisualsPage() {
           )}
         </p>
       </header>
+      <SentencePlacer loadMap={debateTopics} />
       {MAPS().map((spec) => (
         <MapSection key={spec.id} spec={spec} />
       ))}

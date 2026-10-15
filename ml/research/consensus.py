@@ -79,6 +79,17 @@ def encode(texts,v,folder):
     return np.load(path)
 
 
+def cloudflare(texts):
+    """Vectors embedded with platform/nlp/workers_ai.py, read from its per-text cache."""
+    sys.path.insert(0,str(ROOT/'platform/nlp'))
+    import workers_ai
+    hashes=[workers_ai.text_hash(t) for t in texts]
+    found=workers_ai.cached(workers_ai.cache(),list(set(hashes)))
+    if len(found)<len(set(hashes)):
+        raise ValueError(f'{len(set(hashes))-len(found)} passages have no Workers AI vector yet; run workers_ai.py embed first')
+    return np.stack([found[h] for h in hashes])
+
+
 def load(settings,v):
     """Frame and vectors of a variant: optional removal of earlier groups, then centering per speaker or work."""
     sys.path.insert(0,str(ROOT/'platform/nlp/symbolic'))
@@ -86,7 +97,9 @@ def load(settings,v):
     ds,base=corpus(settings,v['corpus'])
     frame,_=ds.sample(None,42)
     frame=frame.merge(pd.read_parquet(ds.path,columns=['observation_id','context']),on='observation_id',validate='one_to_one')
-    if 'prefix' in v:
+    if v['model'].startswith('@cf/'):
+        vectors=cloudflare(frame.context.tolist())
+    elif 'prefix' in v:
         vectors=encode(frame.context.tolist(),v,Path(settings['output'])/'vectors')
     else:
         vectors,_=representations.build(ds,frame,merge(base,{'representation':{'kind':'embedding','model':v['model'],
@@ -229,6 +242,9 @@ def summarise(settings,only):
     # A corpus gets its pick when every one of its variants has a result on disk.
     results={n:read_json(root/n/'result.json') for n in settings['variants'] if (root/n/'result.json').exists()}
     for corpus_name in sorted({v['pick'] for v in settings['variants'].values()}):
+        # --only settles the pick of its own variant's key and leaves the others' files untouched.
+        if only and corpus_name!=settings['variants'][only]['pick']:
+            continue
         names=[n for n,v in settings['variants'].items() if v['pick']==corpus_name]
         if any(n not in results for n in names):
             continue
