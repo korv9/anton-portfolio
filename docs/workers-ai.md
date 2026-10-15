@@ -23,6 +23,19 @@ Kontot har Workers Free:
 Workern gör bara två saker: den bäddar in text och genererar svar. All vektorsökning körs i
 webbläsaren, mot komprimerade vektorer som byggts offline.
 
+## Workern
+
+`worker/index.ts` svarar på två adresser, båda med POST:
+
+- `/api/embed` tar en text på högst 500 tecken och returnerar dess vektor från `@cf/baai/bge-m3`.
+- `/api/answer` tar frågan, korpusen (`sfs`, `ai-act-sv` eller `ai-act-en`) och högst 8 stycken
+  på högst 5 000 tecken vardera. Varje stycke kontrolleras först mot korpusens verifieringslista,
+  så att bara publicerad text går vidare till modellen. Svaret får högst 2 048 tokens och
+  returneras bara om varje citat står ordagrant i sitt stycke.
+
+Bindningen `RATE_LIMITER` släpper igenom 20 anrop per minut och besökare. Är dagens kvot slut
+svarar Workern 503 med `reason: quota`, och sidorna visar då bara de förberäknade exemplen.
+
 ## Modellval
 
 `/api/answer` använder `@cf/google/gemma-4-26b-a4b-it` med tänkandet avstängt
@@ -38,11 +51,12 @@ när Workern godkänner det, alltså när varje citat står ordagrant i det styc
 | gpt-oss-20b        | standard (medium)       | 16     | 7 (44 %)    | 2 337     | 1 268     | minst 77,1       |
 
 Tokens och neurons är medelvärden per svar, räknade från tokenantalen och Cloudflares pris per
-modell. Cloudflare stoppade anropen kl. 00.15 UTC med beskedet att dagens 10 000 neurons var slut,
-fast loggen bara hade räknat 2 793. Inga andra anrop än evalkörningen gjordes efter midnatt, så gpt-oss kostar mer
-än tokenantalen visar, troligen för att dess resonemang inte räknas in i `usage`. Siffrorna för
-gpt-oss är därför en undre gräns, och den verkliga kostnaden var ungefär fyra gånger högre.
-Gemmas pris stämde dagen innan, då 2 725 neurons i loggen gick igenom utan stopp.
+modell. Cloudflare stoppade anropen kl. 00.15 UTC den 2026-10-15 med felkod 4006, alltså att dagens
+10 000 neurons var slut, fast loggen bara hade räknat 2 793. Inga andra anrop än evalkörningen
+gjordes efter midnatt, så gpt-oss kostar mer än tokenantalen visar, troligen för att dess resonemang
+inte räknas in i `usage`. Siffrorna för gpt-oss är därför en undre gräns räknad från loggen, och den
+verkliga kostnaden var ungefär fyra gånger högre. Gemmas pris stämde dagen innan, då 2 725 neurons i
+loggen gick igenom utan stopp.
 
 Kvoten tog slut innan gpt-oss hann svara på alla frågor. Valet håller ändå: även om de saknade
 svaren hade blivit verifierade skulle gpt-oss nå högst 13 av 20 med låg ansträngning och 11 av 20
@@ -110,3 +124,36 @@ tagna direkt från evalraderna utan nya anrop. Frågornas vektorer bäddades in 
 bge-m3. En fråga togs bara med när den lokala vektorn gav exakt samma åtta stycken som vektorn från
 Workers AI, vilket gällde sex av sju. `ai-act-en` har inga exempel än, eftersom inga engelska frågor
 har körts.
+
+## Neurons per steg
+
+Varje anrop skrivs som en rad i `warehouse/cluster_lab/workers_ai_ledger.jsonl`. Agenterna delade
+en gräns på 9 500 neurons per UTC-dygn i loggen, och en körning över 2 000 krävde klartecken först.
+
+| Steg       | Dygn (UTC) | Vad                                              | Neurons |
+| ---------- | ---------- | ------------------------------------------------ | ------- |
+| `debate`   | 2026-10-14 | Inbäddning av debattens 33 023 stycken           | 4 509,6 |
+| `law`      | 2026-10-14 | Inbäddning av `sfs`, `ai-act-sv` och `ai-act-en` | 1 618,8 |
+| `law-eval` | 2026-10-14 | Evalfrågor, Gemma och gpt-oss                    | 2 792,8 |
+| `law-eval` | 2026-10-15 | Evalfrågor, Gemma och gpt-oss                    | 2 792,9 |
+
+Provanropen från Workern och sidorna kostade 13,2 neurons till. Loggen räknar från tokenantalen.
+För gpt-oss underskattar den kostnaden, som avsnittet om modellvalet visar.
+
+Kvar att köra är exemplen för `ai-act-en`, ungefär 180 neurons, när kvoten nollställts
+kl. 00.00 UTC den 2026-10-16. Tills dess visar den engelska sidan att exempel saknas.
+
+## Lokal utveckling
+
+R2-hinkens CORS (`platform/publish/r2-cors.json`) släpper bara in `http://localhost:5173` och
+`http://127.0.0.1:5173` lokalt. På en annan port laddar webbläsaren inte debattens delfiler eller
+`sfs/meta.json`, som ligger i R2. Demonas e2e-tester serverar egna fixturer och påverkas inte.
+
+## Öppna punkter
+
+- Om Free-planen godtar `[[ratelimits]]` syns först vid den första preview-deployen. Godtas den
+  inte tas blocket bort, och neuronkvoten blir den enda gränsen.
+- `npx wrangler dev` har inte körts. Token i `.env` saknar behörigheten Workers Scripts, och
+  wrangler läser den före inloggningen. Livekörningarna går i stället genom en Node-shim mot
+  Workers AI:s REST-API: `platform/publish/workers_ai/eval_answer.ts` kör Workerns egen kod med
+  `env.AI.run` skickat till REST.

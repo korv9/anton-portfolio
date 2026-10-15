@@ -104,17 +104,25 @@ on `workers.dev` and in previews without configuration.
    or an ML stage is left out of the weekly run.
 
 ## Limits
-
-Free plan: 20,000 files and 25 MiB per file in a Worker's static assets; requests for static
-assets are free and unlimited. Requests that run the script (`/api/*`, and addresses that match
-no file) count against the Free plan's 100,000 requests a day and 10 ms CPU each; Workers AI
-has 10,000 neurons a day. The `[[ratelimits]]` binding (20 requests a minute per IP and
-location) passes `npx wrangler deploy --dry-run`; whether the Free plan accepts it shows on the
-first preview deploy. If it is rejected, remove the block: the neuron allocation is the hard
-limit either way.
+ Free plan: 20,000 files and 25 MiB per file in a Worker's static assets; requests for static assets
+are free and unlimited. Requests that run the script (`/api/*`, and addresses that match no file)
+count against the Free plan's 100,000 requests a day and 10 ms CPU each; Workers AI has 10,000
+neurons a day. The Worker's `[ai]` binding (`AI`) needs no secret or setup step: Workers Builds
+deploys it with the Worker, and the neurons count against the account. The `[[ratelimits]]` binding
+(`RATE_LIMITER`, 20 requests a minute per IP and location) passes `npx wrangler deploy --dry-run`;
+whether the Free plan accepts it shows on the first preview deploy. If it is rejected, remove the
+block: the neuron allocation is the hard limit either way.
 
 `npx wrangler dev` needs a remote session for the AI binding. Wrangler reads
 `CLOUDFLARE_API_TOKEN` from `.env`, and that token needs the Workers Scripts permission for a
 remote session; without it, run `npx wrangler login` and start dev without the token in the
-environment. A local build on 13 October 2026 had 950 files, the largest
+environment. Until that is done, live calls go through the Node shim in
+`platform/publish/workers_ai/eval_answer.ts`, which runs the Worker's code against the Workers AI
+REST API ([workers-ai.md](workers-ai.md)).
+
+`r2-cors.json` allows local dev only on port 5173 (`localhost` and `127.0.0.1`). On another port
+the browser cannot read the files the site loads from R2, such as the debate shards and the SFS
+`meta.json`.
+
+A local build on 13 October 2026 had 950 files, the largest
 5.4 MB. Check the config locally with `npx wrangler deploy --dry-run` after `npm run build`.
