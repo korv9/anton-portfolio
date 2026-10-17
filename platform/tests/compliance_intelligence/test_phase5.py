@@ -19,6 +19,11 @@ from test_phase4 import ready, add_publication  # noqa: F401, E402
 from test_phase3 import ROSTER, request  # noqa: E402
 
 
+@pytest.fixture(autouse=True)
+def isolated_public_target(tmp_path, monkeypatch):
+    monkeypatch.setattr('compliance_intelligence.explorer.TARGET', tmp_path/'release.json')
+
+
 @pytest.fixture
 def prepared(ready,tmp_path):
     store,cohort,snap=ready
