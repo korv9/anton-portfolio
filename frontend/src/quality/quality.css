@@ -16,7 +16,7 @@
 .q-kicker {
   margin: 0 0 0.4rem;
   color: var(--q-muted);
-  font: 500 11px var(--font-mono);
+  font: 500 11px var(--font-meta);
   letter-spacing: 0.14em;
   text-transform: uppercase;
 }
@@ -106,7 +106,7 @@
 }
 .q-matrix thead th {
   color: var(--q-muted);
-  font: 500 11px var(--font-mono);
+  font: 500 11px var(--font-meta);
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -224,7 +224,7 @@
 }
 .q-value {
   font-variant-numeric: tabular-nums;
-  font-family: var(--font-mono);
+  font-family: var(--font-meta);
   font-size: 0.85rem;
 }
 .q-tag {
@@ -233,7 +233,7 @@
   border: 1px solid var(--q-rule);
   border-radius: 3px;
   color: var(--q-muted);
-  font: 500 9.5px/1.6 var(--font-mono);
+  font: 500 9.5px/1.6 var(--font-meta);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   vertical-align: 0.1em;

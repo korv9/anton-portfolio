@@ -319,7 +319,7 @@
 }
 .turn-no {
   min-width: 1.8rem;
-  font-family: var(--font-mono) !important;
+  font-family: var(--font-meta) !important;
   font-size: 0.75rem;
   color: var(--muted);
 }
@@ -481,7 +481,7 @@
   color: var(--on-accent);
 }
 .budget-id-votes li.yes small {
-  color: #d5d8dc;
+  color: var(--on-accent);
 }
 .budget-id-votes li.no {
   border-color: var(--negative);

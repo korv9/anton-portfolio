@@ -30,7 +30,7 @@ export default function TimeSeriesChart({
   describe,
   formatTick = String,
   scrollHint,
-  color = '#4e79a7',
+  color = 'var(--color-chart-neutral)',
 }: Props) {
   points = points
     .filter(

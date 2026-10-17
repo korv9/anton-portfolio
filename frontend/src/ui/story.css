@@ -156,7 +156,7 @@
   cursor: pointer;
 }
 .explore-section-sign {
-  font-family: var(--font-mono);
+  font-family: var(--font-meta);
   color: var(--muted);
 }
 .explore-section-summary {
@@ -189,7 +189,7 @@
   line-height: 1.55;
 }
 .method-summary-lineage {
-  font-family: var(--font-mono);
+  font-family: var(--font-meta);
 }
 .method-summary nav {
   display: flex;
@@ -213,7 +213,7 @@
 }
 .story-diagnostic dd {
   margin: 0;
-  font-family: var(--font-mono);
+  font-family: var(--font-meta);
   color: var(--ink);
 }
 
@@ -302,7 +302,7 @@
   max-width: var(--measure);
 }
 .trace-path b {
-  font-family: var(--font-mono);
+  font-family: var(--font-meta);
   font-weight: 500;
 }
 .trace-more,

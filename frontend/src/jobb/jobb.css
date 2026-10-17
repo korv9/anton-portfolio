@@ -129,7 +129,7 @@
   vector-effect: non-scaling-stroke;
 }
 .jobb-area {
-  fill: rgba(42, 120, 214, 0.12);
+  fill: color-mix(in srgb, var(--color-chart-neutral) 12%, transparent);
 }
 .jobb-note {
   grid-column: 1 / -1;
@@ -183,7 +183,7 @@
 }
 .jobs-recent-table th {
   width: 7.5rem;
-  font-family: var(--font-mono);
+  font-family: var(--font-meta);
   font-size: 0.8rem;
   font-weight: 500;
 }

@@ -12,18 +12,3 @@ preview_urls = true
 
 [assets]
 directory = "./dist"
-binding = "ASSETS"
-run_worker_first = ["/api/*"]
-
-[ai]
-binding = "AI"
-
-# Per visitor IP and Cloudflare location: 20 AI requests a minute. The daily neuron allocation
-# stays the hard limit.
-[[ratelimits]]
-name = "RATE_LIMITER"
-namespace_id = "1001"
-simple = { limit = 20, period = 60 }
-
-# Branch previews (`npx wrangler preview`, run by Workers Builds for pull requests); empty is enough.
-[previews]

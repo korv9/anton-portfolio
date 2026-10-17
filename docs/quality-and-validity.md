@@ -247,3 +247,11 @@ construct validity are reported side by side, from `research-history.json`.
 - A supported diagnostic means one test did not find a problem, not that a conclusion is
   proven.
 - Diagnostic labels and interpretations are in English.
+
+## Political workspace v2 validity boundary
+
+The workspace tests appointment totals and the 175-no rejection rule, pairwise denominator
+pooling, missing/tied/all-absent positions, half-open government dates and unique joins.
+Participation, cohesion and PM-party alignment use separate denominators. Similarity is
+not interpreted as ideology or cooperation. Historical snapshots and candidate document
+relationships stay labelled. See [Political Observatory v2](political-observatory-v2.md).

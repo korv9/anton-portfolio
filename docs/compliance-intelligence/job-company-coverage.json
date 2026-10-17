@@ -1,0 +1,53 @@
+{
+  "report_date": "2026-10-17",
+  "scope": "Observed active JobTech Data/IT ads in the recorded publication window; all employer industries.",
+  "observed_at": "2026-10-17T11:19:52.190467+00:00",
+  "valid_until": "2026-10-19T11:19:52.190467+00:00",
+  "window": {
+    "coverage_status": "complete_search_at_observation",
+    "license_url": "https://creativecommons.org/publicdomain/zero/1.0/deed.sv",
+    "limitations": [
+      "Active JobTech ads published inside this window only; not all Swedish vacancies.",
+      "Live API has no snapshot token; unchanged page totals cannot prove immutable source contents.",
+      "Advertisements and requested vacancies are not hires.",
+      "8 returned records were excluded: removed or without the exact Data/IT field."
+    ],
+    "occupation_field": "Data/IT",
+    "occupation_field_id": "apaJ_2ja_LuF",
+    "query_timezone": "Europe/Stockholm",
+    "source_url": "https://jobsearch.api.jobtechdev.se/search",
+    "window_end": "2026-10-17T13:19:44",
+    "window_start": "2026-10-10T13:19:44"
+  },
+  "returned_unique_records": 604,
+  "excluded_records": 8,
+  "duplicate_observations": 0,
+  "scb_requested_legal_persons": 249,
+  "scb_verified_entities": 248,
+  "scb_missing_entities": 0,
+  "scb_held_reasons": {
+    "Foreign legal person requires its registration country and local registry identity": 1
+  },
+  "published_company_profiles": 247,
+  "metrics": {
+    "ambiguous_matches": 1,
+    "companies_with_financial_data": 0,
+    "companies_with_reviewed_compliance_coverage": null,
+    "match_coverage_percentage": 99.5,
+    "rejected_matches": 0,
+    "review_required_matches": 0,
+    "total_active_it_ads": 596,
+    "unresolved_matches": 2,
+    "verified_company_links": 593
+  },
+  "public_payload_sha256": "5d983ac766fdd74b8e01a23db76d850bb82ea3435eed9dda4c4444f8ed9dbc46",
+  "frozen_cohort_created": false,
+  "public_compliance_state": "unavailable",
+  "methodology": "job-company-integration.md",
+  "limitations": [
+    "Historical snapshot report, not a live national vacancy total.",
+    "No reviewed financial history or company-scoped complete compliance search is available.",
+    "SCB current-register lookup is not a complete eligible IT-company population.",
+    "Client query wall times use Europe/Stockholm; upstream offset semantics are not specified."
+  ]
+}

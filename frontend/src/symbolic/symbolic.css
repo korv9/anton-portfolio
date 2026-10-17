@@ -1,14 +1,4 @@
 /* The Symbolic Atlas (SymbolicAtlasPage.tsx): a dark map, a little warmer than the dashboards. */
-.symbolic-page .stage {
-  grid-template-columns: minmax(12rem, 0.75fr) minmax(0, 3fr) minmax(15rem, 1fr);
-  background:
-    radial-gradient(
-      ellipse at 50% 40%,
-      rgba(120, 96, 160, 0.12),
-      transparent 60%
-    ),
-    var(--page);
-}
 .atlas-figure {
   display: grid;
   gap: 0.6rem;
@@ -37,7 +27,7 @@
   transform: translate(12px, -50%);
   border: 1px solid color-mix(in srgb, var(--ink) 25%, transparent);
   border-radius: 4px;
-  background: rgba(14, 13, 16, 0.94);
+  background: var(--paper);
   color: var(--ink);
   font-size: 0.78rem;
   line-height: 1.35;
@@ -301,7 +291,7 @@
 .research-tag {
   margin: 0;
   color: var(--muted);
-  font: 500 11px var(--font-mono);
+  font: 500 11px var(--font-meta);
   letter-spacing: 0.1em;
   text-transform: uppercase;
 }
@@ -325,7 +315,7 @@
 }
 .research-metrics dd {
   margin: 0;
-  font: 600 1.05rem var(--font-mono);
+  font: 600 1.05rem var(--font-meta);
 }
 
 /* The corpus explorer: compact rows with two filters. */
@@ -362,7 +352,7 @@
 }
 .corpus-table .num {
   text-align: right;
-  font-family: var(--font-mono);
+  font-family: var(--font-meta);
 }
 .corpus-pilot {
   color: var(--muted);
@@ -375,7 +365,7 @@
 }
 .research-validity .num {
   text-align: right;
-  font-family: var(--font-mono);
+  font-family: var(--font-meta);
 }
 
 /* How to read the map, above it: what a dot, nearness and a cluster mean. */

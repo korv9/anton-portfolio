@@ -1,7 +1,4 @@
-/*
- * Tech panel (TechPanel.tsx): a working page, denser than the reports. Mono for names and
- * figures, hairlines between rows, olive for what succeeded and the site's red for what failed.
- */
+/* Technical inventory: Helvetica metadata, thin rules and neutral status labels. */
 .tech {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -47,13 +44,13 @@
   color: var(--ink);
 }
 .tech-pick button[aria-pressed='true'] {
-  color: var(--cv-olive);
+  color: var(--ink);
   text-decoration: underline;
   text-decoration-thickness: 2px;
   text-underline-offset: 0.3em;
 }
 .tech-pick button span {
-  font-family: var(--font-mono);
+  font-family: var(--font-meta);
   font-size: var(--caption);
   font-weight: 500;
 }
@@ -78,8 +75,8 @@
 }
 .tech h3 {
   margin: var(--sp-6) 0 0;
-  color: var(--cv-olive);
-  font-family: var(--font-mono);
+  color: var(--ink);
+  font-family: var(--font-meta);
   font-size: var(--caption);
   font-weight: 500;
   letter-spacing: 0.08em;
@@ -96,7 +93,7 @@
   font-size: var(--small);
 }
 .tech-meta {
-  font-family: var(--font-mono);
+  font-family: var(--font-meta);
   font-size: var(--caption);
 }
 
@@ -117,19 +114,19 @@
 }
 .tech-table thead th {
   color: var(--ink-faded);
-  font-family: var(--font-mono);
+  font-family: var(--font-meta);
   font-size: var(--caption);
   font-weight: 500;
   white-space: nowrap;
 }
 .tech-table tbody th {
-  font-family: var(--font-mono);
+  font-family: var(--font-meta);
   font-size: var(--caption);
   font-weight: 650;
   overflow-wrap: anywhere;
 }
 .tech-table .num {
-  font-family: var(--font-mono);
+  font-family: var(--font-meta);
   text-align: right;
 }
 .tech-table a {
@@ -139,7 +136,7 @@
 .tech-table.stages td {
   background: color-mix(
     in srgb,
-    var(--cv-olive) calc(var(--share, 0) * 45%),
+    var(--ink) calc(var(--share, 0) * 24%),
     transparent
   );
   padding-right: var(--sp-3);
@@ -147,12 +144,12 @@
 
 /* Fetches per subject: the outcome in olive or red, like the runs. */
 .fetches-state {
-  font-family: var(--font-mono);
+  font-family: var(--font-meta);
   font-size: var(--caption);
   text-transform: uppercase;
 }
 .fetches tr[data-state='success'] .fetches-state {
-  color: var(--cv-olive);
+  color: var(--ink);
 }
 .fetches tr[data-state='failure'] .fetches-state {
   color: var(--negative);
@@ -174,7 +171,7 @@
   border-top: 3px solid var(--line-strong);
 }
 .runs > li[data-state='success'] {
-  border-top-color: var(--cv-olive);
+  border-top-color: var(--ink);
 }
 .runs > li[data-state='failure'] {
   border-top-color: var(--negative);
@@ -190,13 +187,13 @@
   line-height: 1.25;
 }
 .runs-state {
-  font-family: var(--font-mono);
+  font-family: var(--font-meta);
   font-size: var(--caption);
   text-transform: uppercase;
   white-space: nowrap;
 }
 .runs > li[data-state='success'] .runs-state {
-  color: var(--cv-olive);
+  color: var(--ink);
 }
 .runs > li[data-state='failure'] .runs-state {
   color: var(--negative);
@@ -212,16 +209,16 @@
   display: block;
   width: 1.1rem;
   height: 1.1rem;
-  background: var(--cv-oat);
+  background: var(--wash);
 }
 .runs-strip a[data-state='success'] {
-  background: var(--cv-olive);
+  background: var(--ink);
 }
 .runs-strip a[data-state='failure'] {
   background: var(--negative);
 }
 .runs-strip a[data-state='running'] {
-  background: var(--cv-butter);
+  background: var(--select);
 }
 .runs-strip a:hover {
   outline: 2px solid var(--ink);
@@ -237,14 +234,206 @@
 }
 .tech-figures dt {
   color: var(--ink-faded);
-  font-family: var(--font-mono);
+  font-family: var(--font-meta);
   font-size: var(--caption);
 }
 .tech-figures dd {
   margin: 0;
-  font-family: var(--font-mono);
+  font-family: var(--font-meta);
   font-size: var(--h3);
   font-weight: 650;
+}
+
+.tech-head .tech-figures dd {
+  font-size: var(--h1);
+  letter-spacing: -0.03em;
+}
+
+/* ---------- How the pipeline works (PipelineTour.tsx) ----------
+   A rail of seven stops joined by arrows, the chosen stop in olive; optional stops dashed. */
+.tour {
+  display: grid;
+  gap: var(--sp-5);
+}
+.tour-rail {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: var(--sp-5);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.tour-rail li {
+  position: relative;
+}
+/* The arrow to the next stop, in the gap between them. */
+.tour-rail li + li::before {
+  content: '';
+  position: absolute;
+  top: 1.6rem;
+  right: 100%;
+  width: var(--sp-5);
+  height: 1px;
+  background: var(--ink-faded);
+}
+.tour-rail li + li::after {
+  content: '';
+  position: absolute;
+  top: calc(1.6rem - 4px);
+  right: 100%;
+  border-block: 4px solid transparent;
+  border-left: 6px solid var(--ink-faded);
+}
+.tour-rail button {
+  display: grid;
+  gap: var(--sp-1);
+  width: 100%;
+  height: 100%;
+  padding: var(--sp-3);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.tour-rail li[data-optional] button {
+  border-style: dashed;
+}
+.tour-rail button:hover {
+  border-color: var(--ink);
+}
+.tour-rail button[aria-pressed='true'] {
+  border-color: var(--ink);
+  box-shadow: inset 0 3px 0 var(--ink);
+}
+.tour-n,
+.tour-unit {
+  color: var(--ink-faded);
+  font-family: var(--font-meta);
+  font-size: var(--caption);
+}
+.tour-rail b {
+  font-size: var(--small);
+  line-height: 1.25;
+}
+.tour-count {
+  font-family: var(--font-meta);
+  font-size: var(--h2);
+  font-weight: 650;
+  line-height: 1.1;
+}
+.tour-rail button[aria-pressed='true'] .tour-count {
+  color: var(--ink);
+}
+.tour-step {
+  display: grid;
+  gap: var(--sp-3);
+  max-width: 90ch;
+}
+.tour-step h3 {
+  margin: 0;
+}
+.tour-step p {
+  margin: 0;
+}
+.tour-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1) var(--sp-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-family: var(--font-meta);
+  font-size: var(--caption);
+}
+.tour-items li {
+  padding: 2px var(--sp-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+.tour-items span {
+  color: var(--ink-faded);
+}
+/* dbt's three layers as bars, each as long as its share of the models. */
+.tour-layers {
+  display: grid;
+  gap: var(--sp-2);
+  margin: 0;
+}
+.tour-layers div {
+  display: grid;
+  grid-template-columns: 5rem 3.5rem minmax(0, 1fr);
+  align-items: center;
+  gap: var(--sp-3);
+  font-family: var(--font-meta);
+  font-size: var(--caption);
+}
+.tour-layers div::after {
+  content: '';
+  width: calc(var(--share, 0) * 100%);
+  height: 0.75rem;
+  background: var(--ink);
+}
+.tour-layers dd {
+  margin: 0;
+  text-align: right;
+}
+.tour-nav {
+  display: flex;
+  gap: var(--sp-5);
+}
+.tour-nav button {
+  padding: var(--sp-1) 0;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--small);
+  font-weight: 650;
+  cursor: pointer;
+}
+.tour-nav button:disabled {
+  color: var(--ink-faded);
+  cursor: default;
+}
+
+/* Narrow screens: the rail runs down the page, arrows between the stops. */
+@media (max-width: 1000px) {
+  .tour-rail {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--sp-4);
+  }
+  .tour-rail li + li::before {
+    top: auto;
+    bottom: 100%;
+    left: 1.5rem;
+    right: auto;
+    width: 1px;
+    height: var(--sp-4);
+  }
+  .tour-rail li + li::after {
+    top: auto;
+    bottom: 100%;
+    left: calc(1.5rem - 4px);
+    right: auto;
+    border-inline: 4px solid transparent;
+    border-block: 0;
+    border-top: 6px solid var(--ink-faded);
+  }
+  .tour-rail button {
+    grid-template-columns: 2rem minmax(0, 1fr) auto;
+    align-items: baseline;
+  }
+  .tour-unit {
+    grid-column: 2 / -1;
+  }
+  .tour-count {
+    grid-row: 1;
+    grid-column: 3;
+    font-size: var(--h3);
+  }
 }
 
 /* ---------- ER diagram ---------- */
@@ -287,14 +476,14 @@
   stroke: var(--line-strong);
 }
 .er-head {
-  fill: var(--cv-oat);
+  fill: var(--wash);
 }
 .er-box.fact .er-head,
 .er-box.bridge .er-head {
-  fill: var(--cv-pistachio);
+  fill: var(--surface);
 }
 .er-box.mart .er-head {
-  fill: var(--cv-butter);
+  fill: var(--select);
 }
 .er-box.foreign .er-frame {
   stroke-dasharray: 4 3;
@@ -308,7 +497,7 @@
   stroke-width: 2;
 }
 .er-box text {
-  font-family: var(--font-mono);
+  font-family: var(--font-meta);
   font-size: 11px;
   fill: var(--ink);
 }
@@ -363,7 +552,7 @@
   display: grid;
   gap: var(--sp-1);
   color: var(--ink-faded);
-  font-family: var(--font-mono);
+  font-family: var(--font-meta);
   font-size: var(--caption);
 }
 .tech-filters :is(input, select) {
@@ -393,7 +582,7 @@
   cursor: pointer;
 }
 .tables summary b {
-  font-family: var(--font-mono);
+  font-family: var(--font-meta);
   font-size: var(--small);
 }
 .tables details[open] {

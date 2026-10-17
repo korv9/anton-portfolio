@@ -3,7 +3,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem 1.75rem;
-  padding: 1.5rem 0;
+  padding: var(--sp-3) 0;
   border-bottom: 1px solid var(--line);
 }
 .project-topics a,
@@ -27,7 +27,7 @@
   scroll-margin-top: 110px;
 }
 .project-depth-head {
-  margin-bottom: 2rem;
+  margin-bottom: var(--sp-5);
 }
 .project-depth-notes {
   display: grid;

@@ -1,0 +1,100 @@
+{
+  "approved_gold_records": 0,
+  "cohort": {
+    "as_of_date": "2026-10-17",
+    "cohort_id": "se-it-50-2026-10-17",
+    "eligible_population_count": 43836,
+    "membership_hash": "f0866d8ad65709168017e8cdaf0e2e19b772c6bfaeeb908eb187233f96d8b3d5",
+    "selected_count": 50,
+    "selection_order": [
+      "employee_size_class_order descending",
+      "organization_number ascending"
+    ],
+    "selection_scope": "private_research",
+    "source_reuse_status": "not_reviewed_for_publication"
+  },
+  "observed_at": "2026-10-17T14:27:56.991487+00:00",
+  "review": {
+    "candidate_records": 53,
+    "evidence_complete": 0,
+    "human_review_actions": 0,
+    "publication_eligible": 0
+  },
+  "schema_version": 1,
+  "sources": {
+    "imy": {
+      "authority": "Integritetsskyddsmyndigheten",
+      "coverage_fraction": null,
+      "observed_documents": 56,
+      "observed_resources": 118,
+      "source_url": "https://www.imy.se/om-oss/beslut-publikationer-och-remisser/beslut-om-sanktionsavgift/",
+      "status": "bounded_partial",
+      "verified_at": "2026-10-17T14:15:32.196110+00:00"
+    },
+    "kkv": {
+      "authority": "Konkurrensverket",
+      "coverage_fraction": null,
+      "observed_documents": 0,
+      "observed_resources": 0,
+      "source_url": "https://www.konkurrensverket.se/konkurrens/tillsyn-arenden-och-beslut/arendelista",
+      "status": "blocked_access",
+      "verified_at": "2026-10-17T14:15:32.196110+00:00"
+    }
+  },
+  "state": "awaiting_human_review",
+  "phase_status": {
+    "approved_decisions": 0,
+    "audit": {
+      "entries": 113,
+      "head": "9e7c7ca8cdf4d2fd46b3e05b2929e3a1ac0f909972733ff8a5a710ade95f340f"
+    },
+    "cohort": {
+      "cohort_id": "se-it-50-2026-10-17",
+      "membership_hash": "f0866d8ad65709168017e8cdaf0e2e19b772c6bfaeeb908eb187233f96d8b3d5",
+      "selected_count": 50,
+      "selection_scope": "private_research",
+      "source_reuse_status": "not_reviewed_for_publication",
+      "verified": true
+    },
+    "created_at": "2026-10-17T14:27:57.046627+00:00",
+    "final_stage": {
+      "payload_sha256": "174bb0930fb302c64443306d81adab405b819d5498ee85049595a819f9ec0fb6",
+      "public_file_written": false,
+      "review_status": "pending",
+      "stage_manifest_sha256": "27227c570d30830c15b10b0979d02ec0cdf647f3b3d64dd8786ac28c450097ee"
+    },
+    "phase_2": "incomplete",
+    "phase_3": "awaiting_human_review",
+    "phase_4": "built_from_approved_records_only",
+    "phase_5": "staged_not_publicly_approved",
+    "public_legal_release": "held_pending_independent_human_approval",
+    "schema_version": 1
+  },
+  "population": {
+    "source_rows": 62113,
+    "normalized_legal_entities": 47080,
+    "excluded_rows": 15033,
+    "conflicts": 0,
+    "duplicate_observations": 0
+  },
+  "extraction": {
+    "unique_hash_verified_pdf_versions": 55,
+    "current_candidates": 53,
+    "textless_held": 2,
+    "provisional_case_groups": 19
+  },
+  "validation": {
+    "python_passed": 631,
+    "python_skipped": 2,
+    "frontend_unit_passed": 116,
+    "browser_passed": 160,
+    "browser_skipped": 2,
+    "security_browser_passed": 3,
+    "npm_audit_vulnerabilities": 0,
+    "production_build": "passed",
+    "typescript": "passed",
+    "formatting": "passed",
+    "deployment": "not_performed",
+    "idea_lineage": "blocked_existing_journal_missing_created_at"
+  }
+}

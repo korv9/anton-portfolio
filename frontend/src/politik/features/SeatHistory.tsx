@@ -36,13 +36,22 @@ export default function SeatHistory({
   const seatsAt = (p: string, y: number) =>
     data.results.find((r) => r.election_year === y && r.party === p)?.seats ?? 0
   const shown = parties.length ? parties : RIKSDAG_PARTIES
+  const latest = years.at(-1)!
+  const ranked = shown
+    .map((p) => ({ party: p, seats: seatsAt(p, latest) }))
+    .sort((a, b) => b.seats - a.seats)
+  const leader = ranked[0]
 
   return (
     <Feature
       id="mandat"
       title={l(
-        'Seats per party after each election.',
-        'Mandat per parti efter varje val.',
+        `${partyName(leader.party)}: ${leader.seats} seats in ${latest}.`,
+        `${partyName(leader.party)}: ${leader.seats} mandat ${latest}.`,
+      )}
+      lead={l(
+        `Seats after each election, ${years[0]}-${latest}. Each point is an election result; connecting lines show change between elections. Only the eight parties in the picker are included. Use the arrow keys on the chart to read an election.`,
+        `Mandat efter varje val, ${years[0]}-${latest}. Varje punkt är ett valresultat; linjerna visar förändringen mellan valen. Endast de åtta partierna i partiväljaren ingår. Använd piltangenterna i diagrammet för att läsa ett val.`,
       )}
       controls={
         <Pick
@@ -68,12 +77,12 @@ export default function SeatHistory({
             </tr>
           </thead>
           <tbody>
-            {RIKSDAG_PARTIES.map((p) => (
+            {shown.map((p) => (
               <tr key={p}>
                 <td>{partyName(p)}</td>
                 {years.map((y) => (
                   <td key={y} className="num">
-                    {seatsAt(p, y) || ''}
+                    {seatsAt(p, y)}
                   </td>
                 ))}
               </tr>
@@ -92,6 +101,10 @@ export default function SeatHistory({
           'Mandat per parti efter varje val',
         )}
         years={years}
+        ceiling={Math.max(
+          50,
+          Math.ceil(Math.max(...data.results.map((r) => r.seats)) / 50) * 50,
+        )}
         lines={shown.map((p) => ({
           key: p,
           seats: years.map((y) => seatsAt(p, y)),

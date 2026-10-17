@@ -1,129 +1,91 @@
-/*
- * The project dashboard frame (Stage.tsx): figure across the middle at nearly the full height of
- * the screen, technical panels at the sides in small type. Light by default; `dark` puts it on a plate.
- */
-
+/* VisualizationStage: figure first, optional method/settings below. */
 .stage {
   --stage-ink: var(--ink);
   --stage-muted: var(--muted);
   --stage-rule: var(--line);
   display: grid;
-  grid-template-columns: minmax(13rem, 1fr) minmax(0, 3.2fr) minmax(13rem, 1fr);
-  grid-template-areas:
-    'head head head'
-    'left figure right';
-  gap: 1.25rem clamp(1rem, 2vw, 2rem);
-  align-items: start;
-  min-height: 0;
-  margin: var(--sp-5) 0;
-  padding: var(--sp-5);
-  border: 1px solid var(--line);
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--sp-5);
+  margin-block: var(--sp-section);
   color: var(--ink);
+}
+.stage.plate {
+  padding: var(--sp-5);
   background: var(--page);
-}
-.stage.has-metrics {
-  grid-template-areas: 'head head head' 'metrics metrics metrics' 'left figure right';
-}
-.stage-metrics {
-  grid-area: metrics;
-  min-width: 0;
-}
-.stage-metrics .dk-kpis {
-  margin: 0;
-}
-.stage:has(.stage-head h1) {
-  padding: 0;
-  border: 0;
-}
-.stage.is-dark {
-  color: var(--stage-ink);
-  background: var(--page);
+  border: 1px solid var(--line);
 }
 .stage-head {
-  grid-area: head;
-  max-width: 54rem;
+  max-width: var(--measure);
 }
-.stage-kicker {
-  margin: 0 0 0.4rem;
-  font-family: var(--font-mono) !important;
-  font-size: 0.75rem;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  opacity: 0.7;
+.stage-kicker,
+.stage-block-title {
+  margin: 0 0 var(--sp-2);
+  font-size: var(--type-metadata);
+  font-weight: var(--weight-ui);
+  color: var(--muted);
 }
-.stage-head h1,
-.stage-head h2 {
+.stage-head :is(h1, h2) {
   margin: 0;
-  font-size: var(--dashboard-section);
-  line-height: 1.05;
-  letter-spacing: -0.035em;
-}
-.stage.is-dark .stage-head h1,
-.stage-head h2 {
-  color: var(--stage-ink);
+  font-size: var(--type-section-title);
+  line-height: 1.2;
 }
 .stage-lead {
-  max-width: 44rem;
-  margin: 0.6rem 0 0;
-  font-size: 1rem;
-  line-height: 1.5;
-  opacity: 0.78;
+  max-width: var(--measure);
+  margin: var(--sp-3) 0 0;
+  color: var(--muted);
 }
-.stage-figure {
-  grid-area: figure;
+.stage-figure,
+.stage-metrics {
   min-width: 0;
 }
-.stage-figure > :first-child {
+.stage-figure > :first-child,
+.stage-metrics .dk-kpis {
   margin-top: 0;
+}
+.stage-details {
+  border-top: 1px solid var(--line);
+  padding-top: var(--sp-4);
+}
+.stage-details > summary {
+  cursor: pointer;
+  font-size: var(--small);
+}
+.stage-details > div {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-5);
+  padding-top: var(--sp-5);
 }
 .stage-side {
   display: grid;
-  gap: 1.4rem;
+  align-content: start;
+  gap: var(--sp-5);
   min-width: 0;
-  font-size: 0.85rem;
-  line-height: 1.45;
-}
-.stage-side.is-left {
-  grid-area: left;
-}
-.stage-side.is-right {
-  grid-area: right;
+  font-size: var(--small);
 }
 .stage-block-title {
-  margin: 0 0 0.5rem;
-  padding-bottom: 0.35rem;
-  border-bottom: 1px solid var(--stage-rule);
-  font-family: var(--font-mono) !important;
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-}
-.stage:not(.is-dark) .stage-block-title {
-  border-bottom-color: var(--line);
+  padding-bottom: var(--sp-2);
+  border-bottom: 1px solid var(--line);
 }
 .stage-block p {
-  margin: 0 0 0.5rem;
-}
-.stage.is-dark .stage-block p,
-.stage.is-dark .stage-facts dt {
-  color: var(--stage-muted);
+  margin: 0 0 var(--sp-2);
 }
 .stage-facts {
   display: grid;
-  gap: 0.45rem;
+  gap: var(--sp-2);
   margin: 0;
 }
 .stage-facts div {
   display: flex;
   justify-content: space-between;
-  gap: 0.75rem;
+  gap: var(--sp-3);
+}
+.stage-facts dt {
+  color: var(--muted);
 }
 .stage-facts dd {
   margin: 0;
-  font-family: var(--font-mono) !important;
-  font-weight: 600;
-  text-align: right;
+  font-variant-numeric: tabular-nums;
 }
 .stage-tools {
   display: flex;
@@ -132,7 +94,7 @@
   margin: 0;
   padding: 0;
   list-style: none;
-  font-family: var(--font-mono) !important;
+  font-family: var(--font-meta);
   font-size: 0.75rem;
 }
 .stage-tools li {
@@ -155,7 +117,7 @@
 }
 .stage ol.stage-steps li::before {
   content: counter(step, decimal-leading-zero) '  ';
-  font-family: var(--font-mono) !important;
+  font-family: var(--font-meta);
   opacity: 0.55;
 }
 .stage-bar {
@@ -176,7 +138,7 @@
   background: currentColor;
 }
 .stage-bar b {
-  font-family: var(--font-mono) !important;
+  font-family: var(--font-meta);
   font-size: 0.78rem;
   text-align: right;
 }
@@ -190,56 +152,8 @@
   color: var(--stage-ink);
 }
 
-@media (max-width: 1100px) {
-  .stage.has-metrics {
-    grid-template-areas: 'head head' 'metrics metrics' 'figure figure' 'left right';
-  }
-  .stage {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    grid-template-areas:
-      'head head'
-      'figure figure'
-      'left right';
-    min-height: 0;
-  }
-}
-@media (max-width: 640px) {
-  .stage.has-metrics {
-    grid-template-areas: 'head' 'metrics' 'figure' 'left' 'right';
-  }
-  .stage {
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-areas:
-      'head'
-      'figure'
-      'left'
-      'right';
-  }
-}
-
-/* Captions and notes inside a dark stage use the stage's own muted ink, not the page's. */
-.stage.is-dark .body-caption,
-.stage.is-dark .dc-note,
-.stage.is-dark .board-table th,
-.stage.is-dark .board-table td {
-  color: var(--stage-muted);
-}
-.stage.is-dark .board-table td:first-child {
-  color: var(--stage-ink);
-}
-
-/* Inside the politics product the stage sits in the content column beside its menu. */
-.politik-body .stage {
-  margin: 0 0 2rem;
-  grid-template-columns: minmax(11rem, 1fr) minmax(0, 2.6fr) minmax(11rem, 1fr);
-}
-@media (max-width: 1100px) {
-  .politik-body .stage {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  }
-}
-@media (max-width: 640px) {
-  .politik-body .stage {
+@media (max-width: 760px) {
+  .stage-details > div {
     grid-template-columns: minmax(0, 1fr);
   }
 }

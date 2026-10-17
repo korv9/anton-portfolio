@@ -1,62 +1,26 @@
-/*
- * Design tokens: the one place the site's type, colour, space and shape are defined. Loaded
- * after every other stylesheet, so a component that uses a token follows it everywhere.
- *
- * Ivory editorial canvas outside, focused analytical worlds inside: the site uses a warm
- * page with near-black text and pastel surfaces; a large visualisation (the Symbolic Atlas,
- * the Data Constellation, a semantic map) sits on a dark plate, `.plate`, which redefines the
- * same tokens for its own subtree. Colour carries meaning only where data needs it (a party, a
- * series); the interface itself is neutral.
- *
- * --subtle is for rules and marks, never for text. Party identity colours are kept separately.
- */
-/* Manrope as WOFF2: the Latin set the site writes in (Swedish and English, with Latin-1 and
-   Latin Extended-A for names in the corpus) is 29 kB and preloaded; any other character falls
-   back to the full font, loaded only when a page uses one it has. */
-@font-face {
-  font-family: 'Manrope';
-  src: url('/fonts/manrope-latin.woff2') format('woff2');
-  font-style: normal;
-  font-weight: 200 800;
-  font-display: swap;
-  unicode-range:
-    U+0020-007E, U+00A0-017F, U+2000-206F, U+20AC, U+2122, U+2190-2193, U+2212,
-    U+2264-2265, U+25B3, U+25CB, U+25CF;
-}
-@font-face {
-  font-family: 'Manrope';
-  src: url('/fonts/manrope-variable.woff2') format('woff2');
-  font-style: normal;
-  font-weight: 200 800;
-  font-display: swap;
-  /* Only what Manrope has beyond the subset, so a sign it lacks (▾, ↗) falls back to a
-     system font instead of fetching this file for nothing. */
-  unicode-range:
-    U+0180-024F, U+0259, U+02C6-02DD, U+0370-04FF, U+1E00-1EFF, U+2070-208F,
-    U+20A0-20AB, U+20AD-20CF, U+2116, U+21B5, U+2202-2211, U+2213-221E, U+222B,
-    U+2248, U+2260, U+25CA, U+FB01-FB02;
-}
-
+/* Portfolio v2. All visual tokens live here; .plate scopes dark visualizations.
+   Legacy aliases keep existing components on the same semantic palette. */
 :root {
   color-scheme: light;
 
-  /* Type: one sans for everything, one mono for figures, metadata and eyebrows. */
-  --font: 'Manrope', 'Helvetica Neue', Arial, sans-serif;
+  /* Helvetica for interface, metadata and figures; system monospace for code. */
+  --font: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --font-meta: var(--font);
   --font-identity: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   --ink-identity: #2e2a26;
   --font-mono:
     ui-monospace, 'SFMono-Regular', Menlo, Consolas, 'Liberation Mono',
     monospace;
-  --weight-body: 470;
-  --weight-ui: 560;
-  --weight-heading: 700;
+  --weight-body: 400;
+  --weight-ui: 500;
+  --weight-heading: 600;
 
   /* Type scale: display, project title, section title, subheading, body, small, caption. */
   --display-xl: clamp(3.2rem, 8vw, 7rem);
   --display-l: clamp(2.6rem, 5.5vw, 5rem);
-  --h1: clamp(2.2rem, 4.4vw, 3.6rem);
-  --h2: clamp(1.7rem, 3.2vw, 2.6rem);
-  --h3: clamp(1.25rem, 1.8vw, 1.6rem);
+  --h1: clamp(1.75rem, 2.6vw, 2.5rem);
+  --h2: clamp(1.3rem, 2vw, 1.75rem);
+  --h3: clamp(1.0625rem, 1.4vw, 1.25rem);
   --dashboard-title: clamp(1.6rem, 2.2vw, 2rem);
   --dashboard-section: clamp(1.125rem, 1.7vw, 1.4rem);
   --dashboard-gutter: clamp(16px, 1.6vw, 28px);
@@ -67,8 +31,8 @@
   --measure: 68ch;
   /* The older role names, mapped onto the same scale. */
   --fs-display: var(--h1);
-  --fs-page-title: 1.6rem;
-  --fs-section-title: var(--h3);
+  --fs-page-title: var(--h1);
+  --fs-section-title: var(--h2);
   --fs-card-title: 1.0625rem;
   --fs-body: 1rem;
   --fs-meta: 0.875rem;
@@ -79,45 +43,63 @@
   --fs-lg: 1.25rem;
   --fs-xl: clamp(1.75rem, 3vw, 2.25rem);
 
-  /* Ivory page, warm pastel surfaces, olive for selected controls. */
-  --page: var(--cv-ivory);
-  --paper: var(--cv-ivory);
-  --paper-strong: #ffffff;
-  --wash: var(--cv-oat);
-  --surface: var(--cv-pistachio);
-  --ink: #0f0f10;
-  --ink-2: #2a2a2c;
-  --muted: #4a4a4d;
-  /* A filter or index entry that is not applied now; the applied one is ink and bold. */
-  --ink-faded: color-mix(in srgb, var(--ink) 70%, var(--page));
-  --subtle: #6b6b6e;
-  --stone: #c9c2b6;
-  --line: rgba(15, 15, 16, 0.16);
-  --line-strong: rgba(15, 15, 16, 0.42);
-  --focus: var(--cv-olive);
-  /* What is chosen or current: olive on ivory, or ink on butter. */
-  --accent: var(--cv-olive);
-  --accent-2: #2a2a2c;
-  --on-accent: var(--cv-ivory);
-  --select: var(--cv-butter);
-  --wash-cool: var(--cv-pistachio);
-  --side: var(--page);
-  /* Party logos and party colours in charts, a step calmer so they sit on the ivory page. */
-  --party-tone: saturate(0.78) sepia(0.12);
-  /* Meaning, never decoration. */
-  --info: var(--cv-olive);
-  --negative: #8f3424;
-  --note-bg: var(--cv-butter);
-  --note-line: var(--cv-olive);
-  /* Legacy names some views still read. */
-  --teal: #0f0f10;
-  --orange: #5b5b5e;
-  /* Muted data series. Keep labels and values alongside pale fills; colour alone is no key. */
-  --series-1: var(--cv-olive);
-  --series-2: var(--cv-apricot);
-  --series-3: var(--cv-ground);
-  --series-4: var(--cv-butter);
-  --series-5: var(--cv-powder);
+  /* Interface: canvas, navigation, analysis, separators, type. */
+  --color-canvas: #f1efe7;
+  --color-surface: #e2dfd6;
+  --color-panel: #cecbc2;
+  --color-border: #a9a69d;
+  --color-border-control: #858279;
+  --color-ink: #363636;
+  --color-ink-secondary: #57554e;
+  --color-ink-inverse: #f1efe7;
+  --color-chart-neutral: #484848;
+  --color-chart-muted: #96938c;
+  --color-error: #8f3424;
+
+  --type-display: var(--display-l);
+  --type-page-title: var(--h1);
+  --type-section-title: var(--h2);
+  --type-chart-title: var(--h3);
+  --type-body: var(--body);
+  --type-label: var(--small);
+  --type-caption: var(--caption);
+  --type-metric: clamp(1.6rem, 2.4vw, 2.25rem);
+  --type-metadata: var(--caption);
+  --type-code: 0.875rem;
+
+  --page: var(--color-canvas);
+  --paper: var(--color-surface);
+  --paper-strong: var(--color-canvas);
+  --wash: var(--color-surface);
+  --surface: var(--color-panel);
+  --ink: var(--color-ink);
+  --ink-2: var(--color-chart-neutral);
+  --muted: var(--color-ink-secondary);
+  --ink-faded: var(--muted);
+  --subtle: var(--color-chart-muted);
+  --stone: var(--color-chart-muted);
+  --line: var(--color-border);
+  --line-strong: var(--color-border-control);
+  --focus: var(--color-ink);
+  --accent: var(--color-ink);
+  --accent-2: var(--color-chart-neutral);
+  --on-accent: var(--color-ink-inverse);
+  --select: var(--color-panel);
+  --wash-cool: var(--color-surface);
+  --side: var(--color-surface);
+  --party-tone: none;
+  --info: var(--color-chart-neutral);
+  --negative: var(--color-chart-neutral);
+  --note-bg: var(--color-surface);
+  --note-line: var(--color-border-control);
+  --teal: var(--color-ink);
+  --orange: var(--color-ink-secondary);
+  --series-1: var(--color-chart-neutral);
+  --series-2: #776454;
+  --series-3: #706c83;
+  --series-4: #4c716b;
+  --series-5: #8a684c;
+  --scrim: rgba(54, 54, 54, 0.28);
 
   /* Space and shape. */
   --sp-1: 0.25rem;
@@ -128,7 +110,7 @@
   --sp-6: 2.5rem;
   --sp-7: 4rem;
   /* Between the major screens of a page. */
-  --sp-section: clamp(4rem, 9vw, 8rem);
+  --sp-section: clamp(2rem, 4vw, 4rem);
   --gutter: clamp(16px, 3vw, 44px);
   /* Pages and dashboards fill the screen; only running prose keeps a reading measure. */
   --content-width: none;
@@ -136,16 +118,15 @@
   --layout-content: none;
   --layout-reading: var(--measure);
   --radius: 2px;
-  --card-pad: 0.9rem 1.05rem 1rem;
-  --card-gap: 0.9rem;
-  --dk-gap: 14px;
+  --card-pad: var(--sp-5);
+  --card-gap: var(--sp-5);
+  --dk-gap: var(--sp-5);
 
   /* Motion: short, and none at all when the reader asks for less. */
   --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
   --dur: 160ms;
 
-  /* Cluster visuals (#cluster-visuals): an ivory ground, grey-lilac and olive type, and the
-     palette's colours for the clusters. The same in light and dark. */
+  /* Categorical cluster palette. Kept separate from interface colors. */
   --cv-ground: #71697a;
   --cv-ivory: #f4f0e6;
   --cv-butter: #e5d9a7;
@@ -168,44 +149,100 @@
   font-variant-numeric: tabular-nums;
 }
 
-/*
- * A dark plate: the same tokens, inverted, for a visualisation that needs a dark field. Every
- * component inside reads its colours from the tokens, so it follows without its own theme.
- */
-.home-shell,
-.projects-page,
-.cv-viewer {
+/* Protected homepage: preserve its composition and palette; only the sans changes. */
+:root:has(.home-shell) {
+  --page: var(--cv-ivory);
+  --paper: var(--cv-ivory);
+  --paper-strong: #ffffff;
+  --wash: var(--cv-oat);
+  --surface: var(--cv-pistachio);
+  --ink: #0f0f10;
+  --ink-2: #2a2a2c;
+  --muted: #4a4a4d;
+  --ink-faded: color-mix(in srgb, var(--ink) 70%, var(--page));
+  --subtle: #6b6b6e;
+  --stone: #c9c2b6;
+  --line: rgba(15, 15, 16, 0.16);
+  --line-strong: rgba(15, 15, 16, 0.42);
+  --focus: var(--cv-olive);
+  --accent: var(--cv-olive);
+  --accent-2: #2a2a2c;
+  --on-accent: var(--cv-ivory);
+  --select: var(--cv-butter);
+  --wash-cool: var(--cv-pistachio);
+  --side: var(--page);
+  --info: var(--cv-olive);
+  --negative: var(--color-error);
+  --note-bg: var(--cv-butter);
+  --note-line: var(--cv-olive);
+  --teal: #0f0f10;
+  --orange: #5b5b5e;
+  --series-1: var(--cv-olive);
+  --series-2: var(--cv-apricot);
+  --series-3: var(--cv-ground);
+  --series-4: var(--cv-butter);
+  --series-5: var(--cv-powder);
+  --h1: clamp(2.2rem, 4.4vw, 3.6rem);
+  --h2: clamp(1.7rem, 3.2vw, 2.6rem);
+  --h3: clamp(1.25rem, 1.8vw, 1.6rem);
+  --weight-body: 470;
+  --weight-ui: 560;
+  --weight-heading: 700;
+  --sp-section: clamp(4rem, 9vw, 8rem);
+  --party-tone: saturate(0.78) sepia(0.12);
+}
+
+.home-shell {
   --ink: var(--ink-identity);
   --muted: color-mix(in srgb, var(--ink) 80%, var(--page));
   color: var(--ink);
 }
 
+/*
+ * A dark plate: the same tokens, inverted, for a visualisation that needs a dark field. Every
+ * component inside reads its colours from the tokens, so it follows without its own theme.
+ */
 .plate {
   color-scheme: dark;
-  --page: #0f0f10;
-  --paper: #1a1a1c;
-  --paper-strong: #232326;
-  --wash: #202022;
-  --surface: #2a2a2c;
-  --ink: #f2efe9;
-  --ink-2: #d9d4ca;
-  --muted: #a8a49b;
-  --subtle: #8a8a8d;
-  --line: rgba(242, 239, 233, 0.16);
-  --line-strong: rgba(242, 239, 233, 0.38);
-  --focus: #c9c2b6;
-  --accent: #f2efe9;
-  --accent-2: #d9d4ca;
-  --on-accent: #0f0f10;
-  --select: #2a2a2c;
-  --wash-cool: #1a1a1c;
-  --side: #141416;
-  --info: #8bbde3;
-  --negative: #ec8a74;
-  --note-bg: #1d190d;
-  --note-line: #c7a64a;
-  --teal: #f2efe9;
-  --orange: #a8a49b;
+  --color-canvas: #242422;
+  --color-surface: #30302d;
+  --color-panel: #40403c;
+  --color-border: #77756e;
+  --color-border-control: #96938c;
+  --color-ink: #f1efe7;
+  --color-ink-secondary: #c2beb4;
+  --color-ink-inverse: #242422;
+  --color-chart-neutral: #e2dfd6;
+  --color-chart-muted: #96938c;
+  --page: var(--color-canvas);
+  --paper: var(--color-surface);
+  --paper-strong: var(--color-panel);
+  --wash: var(--color-surface);
+  --surface: var(--color-panel);
+  --ink: var(--color-ink);
+  --ink-2: var(--color-chart-neutral);
+  --muted: var(--color-ink-secondary);
+  --subtle: var(--color-chart-muted);
+  --line: var(--color-border);
+  --line-strong: var(--color-border-control);
+  --focus: var(--color-ink);
+  --accent: var(--color-ink);
+  --accent-2: var(--color-chart-neutral);
+  --on-accent: var(--color-ink-inverse);
+  --select: var(--color-panel);
+  --wash-cool: var(--color-surface);
+  --side: var(--color-surface);
+  --info: var(--color-chart-neutral);
+  --negative: var(--color-chart-neutral);
+  --note-bg: var(--color-surface);
+  --note-line: var(--color-border-control);
+  --teal: var(--color-ink);
+  --orange: var(--color-ink-secondary);
+  --series-1: var(--color-chart-neutral);
+  --series-2: #c6a58a;
+  --series-3: #b4aac9;
+  --series-4: #9dc3b9;
+  --series-5: #d1ba8c;
   /* Component aliases of the tokens, declared again here so they resolve to the plate's
      values: a custom property set on an outer element keeps the outer value. */
   --aa-accent-soft: color-mix(in srgb, var(--info) 14%, transparent);
@@ -243,23 +280,6 @@ body,
   background: var(--page);
   color: var(--ink);
 }
-.plate .stage-side {
-  --ink: #0f0f10;
-  --ink-2: #2a2a2c;
-  --muted: #4a4a4d;
-  --subtle: #6b6b6e;
-  --paper: var(--cv-ivory);
-  --paper-strong: #ffffff;
-  --accent: var(--cv-olive);
-  --on-accent: var(--cv-ivory);
-  --line: rgba(15, 15, 16, 0.16);
-  --line-strong: rgba(15, 15, 16, 0.42);
-  --stage-ink: var(--ink);
-  --stage-muted: var(--muted);
-  --stage-rule: var(--line);
-  color: var(--ink);
-  color-scheme: light;
-}
 .project-shell {
   --gutter: var(--dashboard-gutter);
 }
@@ -293,13 +313,13 @@ h3 {
 /* Figures line up in columns (tabular, set on :root); a large standalone number reads better
    with the font's own widths. */
 h1,
-h2,
-.finding-hero-value {
+h2 {
   font-variant-numeric: proportional-nums;
 }
 input,
 select,
 textarea {
+  max-width: 100%;
   background: var(--paper-strong);
   border: 1px solid var(--line-strong);
   border-radius: var(--radius);
@@ -445,4 +465,18 @@ img {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+code,
+pre,
+kbd,
+samp {
+  font-family: var(--font-mono);
+  font-size: var(--type-code);
+}
+.project-shell :is(input, select, textarea) {
+  min-height: 40px;
+}
+.project-shell :is(.theme-error, .aa-error, .data-error) {
+  color: var(--color-error);
 }

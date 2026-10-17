@@ -209,11 +209,11 @@
 }
 .position.yes {
   background: var(--wash);
-  border-color: #b8dcd5;
+  border-color: var(--line-strong);
 }
 .position.no {
   background: var(--wash);
-  border-color: #ecc3b3;
+  border-color: var(--line-strong);
 }
 
 /* Agreement matrix */
@@ -340,13 +340,13 @@
   min-width: 0;
 }
 .news-item.source-svt {
-  border-left-color: #1e1e1e;
+  border-left-color: var(--ink);
 }
 .news-item.source-ekot {
-  border-left-color: #b8003e;
+  border-left-color: var(--muted);
 }
 .news-item.source-regeringen {
-  border-left-color: #1a4d8f;
+  border-left-color: var(--ink-2);
 }
 .news-meta {
   display: flex;

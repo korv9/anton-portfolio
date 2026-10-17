@@ -279,7 +279,7 @@
   color: var(--ink);
 }
 .builder::backdrop {
-  background: rgba(21, 21, 21, 0.28);
+  background: var(--scrim);
 }
 .builder[open] {
   animation: builder-in 180ms ease-out;

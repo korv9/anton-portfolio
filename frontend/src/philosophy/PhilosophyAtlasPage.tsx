@@ -22,6 +22,7 @@ import ReportShell, {
 } from '../report/ReportShell'
 import { Feature } from '../charts/feature/Feature'
 import { Select } from '../politik/controls'
+import ReportMaps from '../clusters/ReportMaps'
 import './philosophy.css'
 
 const NAME = 'Philosophy Lab'
@@ -540,6 +541,7 @@ export default function PhilosophyAtlasPage({ route }: { route: Route }) {
                   ))}
                 </ul>
               </Feature>
+              <ReportMaps ids={['research-philosophy']} />
             </div>
           )}
           {tab === 2 && (

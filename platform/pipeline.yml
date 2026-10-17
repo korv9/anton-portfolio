@@ -83,10 +83,11 @@ subjects:
   parliament:
     schedule: '37 4 * * *'
     group: public-data
-    raw: [scb, riksdagen/votes, riksdagen/reports, riksdagen/studies, riksdagen/formation,
+    raw: [scb, riksdagen/votes, riksdagen/reports, riksdagen/studies, riksdagen/formation, riksdagen/formation_votes,
           riksdagen/_checkpoints, riksdagen/_manifest.jsonl, val]
     prune: true
     steps:
+      - ingest: python platform/ingest/riksdagen/formation_ingest.py
       - ingest: python platform/ingest/riksdagen/history_ingest.py
       - ingest: python platform/ingest/elections/elections_ingest.py
       - ingest: python platform/ingest/riksdagen/studies_ingest.py
@@ -115,6 +116,7 @@ subjects:
       - ingest: python platform/ingest/jobtech/ingest_stream.py
       - dbt: {select: [tag:market]}
       - export: python platform/publish/export_market.py
+      - export: python platform/publish/job_companies.py refresh --publish
 
   news:
     schedule: '17 5 * * *'

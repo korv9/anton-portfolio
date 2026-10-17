@@ -29,6 +29,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 240
     # The R2 credentials are secrets of the anton-portfolio environment.
+    if: github.ref == 'refs/heads/main'
     environment: anton-portfolio
     env:
       DBT_SEND_ANONYMOUS_USAGE_STATS: 'false'
@@ -42,7 +43,9 @@ jobs:
       # The bucket's public address once a custom domain is connected; empty keeps r2.dev.
       R2_PUBLIC_BASE: ${{ vars.R2_PUBLIC_BASE }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
       # Same writer lock as build-warehouse.yml: shared raw manifests and R2 keys.
       - name: Set up and restore verified raw files
         id: setup

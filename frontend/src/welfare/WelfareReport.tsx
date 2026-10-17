@@ -13,6 +13,7 @@ import { Dumbbell } from '../charts/Compare'
 import { Select } from '../politik/controls'
 import CountyMultiples from './CountyMultiples'
 import { fetchJson, type CountyYear, type Indicator } from './data'
+import ReportMaps from '../clusters/ReportMaps'
 import './welfare.css'
 
 const WelfareExplorer = lazy(() => import('./WelfareExplorer'))
@@ -57,6 +58,10 @@ const TABS = [
   {
     label: 'Regional differences',
     question: 'How do the counties compare?',
+  },
+  {
+    label: 'Municipal profiles',
+    question: 'Which municipalities look alike?',
   },
 ].map((tab, i) => ({ ...tab, path: WELFARE_TABS[i] }))
 
@@ -366,6 +371,11 @@ function useCounties() {
   return { rows, error }
 }
 
+/** Municipalities grouped by twelve indicators, as a map to explore. */
+function Profiles() {
+  return <ReportMaps ids={['research-municipalities']} />
+}
+
 export default function WelfareReport({ route }: { route: Route }) {
   const { rows, error } = useCounties()
   const followed = countiesOf(route.params)
@@ -384,9 +394,8 @@ export default function WelfareReport({ route }: { route: Route }) {
       (rows ?? []).map((r) => [r.region_code, r.region_name]),
     ).entries(),
   ]
-  const Body = [Work, Health, Regional][
-    Math.max(0, WELFARE_TABS.indexOf(route.path))
-  ]
+  const at = Math.max(0, WELFARE_TABS.indexOf(route.path))
+  const Body = [Work, Health, Regional, Profiles][at]
   return (
     <ReportFrame>
       <ReportShell
@@ -397,18 +406,20 @@ export default function WelfareReport({ route }: { route: Route }) {
         hrefOf={(p) => withCounties(p, followed)}
         slicerLabel="Follow counties"
         slicer={
-          <div className="report-chips" role="group" aria-label="Counties">
-            {counties.map(([code, name]) => (
-              <button
-                key={code}
-                type="button"
-                aria-pressed={followed.includes(code)}
-                onClick={() => toggle(code)}
-              >
-                {short(name)}
-              </button>
-            ))}
-          </div>
+          at < 3 && (
+            <div className="report-chips" role="group" aria-label="Counties">
+              {counties.map(([code, name]) => (
+                <button
+                  key={code}
+                  type="button"
+                  aria-pressed={followed.includes(code)}
+                  onClick={() => toggle(code)}
+                >
+                  {short(name)}
+                </button>
+              ))}
+            </div>
+          )
         }
         deeper={DEEPER}
       >

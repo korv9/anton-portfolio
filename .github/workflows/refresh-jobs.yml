@@ -29,6 +29,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 180
     # The R2 credentials are secrets of the anton-portfolio environment.
+    if: github.ref == 'refs/heads/main'
     environment: anton-portfolio
     env:
       DBT_SEND_ANONYMOUS_USAGE_STATS: 'false'
@@ -38,8 +39,11 @@ jobs:
       R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY || secrets.R2_SECRET_ACCESS_KEY_ID }}
       R2_BUCKET: ${{ secrets.R2_BUCKET }}
       R2_PUBLIC_BASE: ${{ vars.R2_PUBLIC_BASE }}
+      SCB_API_KEY: ${{ secrets.SCB_API_KEY }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
       - name: Set up and start from the stored counts and stream
         id: setup
         uses: ./.github/actions/data-setup

@@ -1,8 +1,4 @@
-/*
- * The dashboard kit (ui/dash/). Cards on --paper-strong in a 12-column grid on --page, with
- * no maximum width; the main view (header, key figures, main chart and gauge) fits one
- * 1440 × 900 screen.
- */
+/* Dashboard panels use a twelve-column grid; content determines their height. */
 .dk {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -40,7 +36,7 @@ main:has(.dk) > .project-context {
   padding: 0;
   list-style: none;
   color: var(--muted);
-  font-family: var(--font-mono);
+  font-family: var(--font-meta);
   font-size: var(--fs-label);
 }
 .dk-crumbs li + li::before {
@@ -74,7 +70,7 @@ main:has(.dk) > .project-context {
   background: var(--paper-strong);
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  font-family: var(--font-mono);
+  font-family: var(--font-meta);
   font-size: var(--fs-label);
 }
 .dk-pill i {
@@ -100,7 +96,7 @@ main:has(.dk) > .project-context {
   color: var(--ink);
   font: inherit;
   font-size: var(--fs-sm);
-  font-weight: 650;
+  font-weight: var(--weight-ui);
   text-decoration: none;
   cursor: pointer;
 }
@@ -132,8 +128,8 @@ main:has(.dk) > .project-context {
 .dk-kpi dd,
 .dk-tiles dd {
   margin: 0.15rem 0 0;
-  font-size: clamp(1.6rem, 2.4vw, 2.25rem);
-  font-weight: 750;
+  font-size: var(--type-metric);
+  font-weight: var(--weight-heading);
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.03em;
   line-height: 1.1;
@@ -145,7 +141,7 @@ main:has(.dk) > .project-context {
 .dk-tiles .dk-note {
   margin-top: 0.3rem;
   color: var(--muted);
-  font-family: var(--font-mono);
+  font-family: var(--font-meta);
   font-size: var(--fs-label);
   font-weight: 400;
   letter-spacing: 0;
@@ -178,7 +174,7 @@ main:has(.dk) > .project-context {
 .dk-card h2 {
   margin: 0;
   font-size: var(--fs-card-title);
-  font-weight: 650;
+  font-weight: var(--weight-ui);
   letter-spacing: -0.01em;
 }
 .dk-sub {
@@ -244,7 +240,7 @@ main:has(.dk) > .project-context {
 .dk-tip {
   margin: 0 0 var(--sp-1);
   color: var(--muted);
-  font-family: var(--font-mono);
+  font-family: var(--font-meta);
   font-size: var(--fs-label);
 }
 .dk-tip b {
@@ -254,7 +250,7 @@ main:has(.dk) > .project-context {
 }
 .dk-axis {
   fill: var(--muted);
-  font-family: var(--font-mono);
+  font-family: var(--font-meta);
   font-size: 11px;
 }
 
@@ -268,7 +264,7 @@ main:has(.dk) > .project-context {
 .dk-gauge-center {
   fill: var(--ink);
   font-size: 28px;
-  font-weight: 750;
+  font-weight: var(--weight-heading);
 }
 .dk-gauge-label {
   fill: var(--muted);
@@ -320,7 +316,7 @@ main:has(.dk) > .project-context {
 }
 .dk-list-meta {
   color: var(--muted);
-  font-family: var(--font-mono);
+  font-family: var(--font-meta);
   font-size: var(--fs-label);
   overflow-wrap: anywhere;
 }
@@ -331,7 +327,7 @@ main:has(.dk) > .project-context {
 .dk-badge {
   margin: 0 0 var(--sp-2);
   color: var(--muted);
-  font-family: var(--font-mono);
+  font-family: var(--font-meta);
   font-size: var(--fs-label);
 }
 
@@ -351,7 +347,7 @@ main:has(.dk) > .project-context {
   color: var(--ink-2);
   font: inherit;
   font-size: var(--fs-label);
-  font-weight: 650;
+  font-weight: var(--weight-ui);
   cursor: pointer;
 }
 .dk-tabs button[aria-selected='true'] {
@@ -380,7 +376,7 @@ main:has(.dk) > .project-context {
 }
 .dk-model p span {
   color: var(--muted);
-  font-family: var(--font-mono);
+  font-family: var(--font-meta);
 }
 .dk-model ul,
 .dk-marts ul {
@@ -393,7 +389,7 @@ main:has(.dk) > .project-context {
   grid-template-columns: 22px minmax(0, 1fr) auto;
   gap: 6px;
   padding: 2px 0;
-  font-family: var(--font-mono);
+  font-family: var(--font-meta);
 }
 .dk-model li i {
   font-style: normal;
@@ -425,7 +421,7 @@ main:has(.dk) > .project-context {
 .dk-marts li {
   display: grid;
   padding: 3px 0;
-  font-family: var(--font-mono);
+  font-family: var(--font-meta);
   overflow-wrap: anywhere;
 }
 .dk-sql {
@@ -469,7 +465,7 @@ main:has(.dk) > .project-context {
 .dk-table th {
   background: var(--paper);
   color: var(--ink-2);
-  font-weight: 650;
+  font-weight: var(--weight-ui);
   white-space: nowrap;
 }
 .dk-table .num {
@@ -530,7 +526,7 @@ main:has(.dk) > .project-context {
 .dk-count {
   margin: 0 0 0 auto;
   color: var(--muted);
-  font-family: var(--font-mono);
+  font-family: var(--font-meta);
   font-size: var(--fs-label);
 }
 .dk-more-rows {

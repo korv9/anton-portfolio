@@ -115,10 +115,10 @@ test('explore and sources reach every detailed view and the raw tables', async (
 test('taxes: Sweden against the average and beside its neighbours', async ({
   page,
 }) => {
-  // The old taxes address opens the money tab.
+  // The retained tax address still opens the full comparison.
   await page.goto('/#politik-skatter')
-  await expect(page).toHaveURL(/#politik-budget/)
-  const taxes = page.locator('.report-tab')
+  await expect(page).toHaveURL(/#politik-skatter/)
+  const taxes = page.locator('.po-workspace')
   const data = await (
     await page.request.get('/data/taxes/countries.json')
   ).json()

@@ -1,7 +1,7 @@
 # Parliament: elections, government and the Riksdag's decisions
 
 The Political Observatory (`#politik` and its themes) is built from this model. It covers the
-same period evenly for every part:
+following source periods, with additional workspace coverage limits documented below:
 
 | Part | Source | Period |
 |---|---|---|
@@ -151,3 +151,16 @@ what the other pages have on one party, from the same files: `now.json` (result,
 in or supported, voting record, agreement with each other party in the latest session),
 `issues.json` (record per issue, speeches) and `taxes/decisions.json` (its vote on each tax
 decision).
+
+## Political Observatory v2 contracts
+
+Four Gold models add source-backed appointment ballots and contextual party comparisons:
+`fct_prime_minister_ballot`, `fct_prime_minister_party_vote`, `mart_party_pair_context`,
+and `mart_party_cohesion_context`. `publish/politics_workspace.py` exports a compact index
+and lazy session decision shards; `export_parliament.py` invokes it with the tested warehouse.
+The offline committed snapshot limits detailed party context to 2024/25?2025/26, while the
+existing session-pair mart still covers 1993/94 onward. Ten reviewed appointment/incumbent
+ballots cover selected dates in 2014?2026, with earlier gaps retained. See
+[definitions, sources and build commands](political-observatory-v2.md). Agreement metadata
+in the existing seed is not evidence of support on every date; the new workspace displays
+it separately and joins government membership by exact vote date.

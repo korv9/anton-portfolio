@@ -22,6 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 120
     # The R2 credentials are secrets of the anton-portfolio environment.
+    if: github.ref == 'refs/heads/main'
     environment: anton-portfolio
     env:
       R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
@@ -32,7 +33,9 @@ jobs:
       R2_PUBLIC_BASE: ${{ vars.R2_PUBLIC_BASE }}
       MANIFEST_KEY: ${{ inputs.manifest_key || 'manifests/current.json' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
       - uses: ./.github/actions/data-setup
       - name: Materialize and stage all available publication groups
         run: |
@@ -68,7 +71,7 @@ jobs:
             --manifest-key "${MANIFEST_KEY:-manifests/current.json}"
       - name: Keep publication receipts
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: data-release-receipts
           path: |

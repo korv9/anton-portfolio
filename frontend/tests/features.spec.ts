@@ -67,10 +67,10 @@ test('budget difference: a party against the government, area by area', async ({
   page,
 }) => {
   await page.goto('/#politik-budget')
-  const f = await feature(page, 'budgetflode')
+  const f = await feature(page, 'budget-comparison')
   await expect(f.locator('.rank-bars-list.diverging')).toBeVisible()
   const title = await f.locator('h2').textContent()
-  await f.locator('.feature-pick button').nth(1).click()
+  await f.getByLabel('Budget proposer').selectOption('V')
   await expect(f.locator('h2')).not.toHaveText(title!)
 })
 

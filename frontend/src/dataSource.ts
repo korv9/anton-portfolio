@@ -54,10 +54,14 @@ function objectUrl(key: string, manifestUrl: string) {
 }
 
 async function jsonAt(url: string, cache: RequestCache = 'default') {
-  const response = await fetch(url, { cache })
+  const response = await fetch(siteDataUrl(url), { cache })
   if (!response.ok)
     throw new Error(`Delivery manifest unavailable: HTTP ${response.status}`)
   return response.json()
+}
+
+function siteDataUrl(url: string) {
+  return new URL(url, new URL(import.meta.env.BASE_URL, location.origin)).href
 }
 
 function validateCurrent(value: Current) {
@@ -190,7 +194,7 @@ export async function resolveDataUrl(path: string): Promise<string> {
 
 /** Fetch failures retain the pinned snapshot and never switch to local production data. */
 export async function fetchData(path: string, init?: RequestInit) {
-  const response = await fetch(await resolveDataUrl(path), init)
+  const response = await fetch(siteDataUrl(await resolveDataUrl(path)), init)
   if (!response.ok) {
     const state = await deliveryState()
     throw new Error(

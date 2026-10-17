@@ -71,7 +71,7 @@ def test_data_workflows_share_the_writer_lock_and_the_setup(filename):
     config = workflow(filename)
     assert config["concurrency"] == {"group": "data-refresh", "cancel-in-progress": False}
     uses = [step.get("uses", "") for step in steps(filename)]
-    assert uses.index("actions/checkout@v4") < uses.index("./.github/actions/data-setup"), filename
+    assert next(i for i, use in enumerate(uses) if use.startswith("actions/checkout@")) < uses.index("./.github/actions/data-setup"), filename
     for script in (step.get("run", "") for step in steps(filename)):
         # Sequences, selectors and raw paths live in the registry, not in YAML.
         assert not re.search(r"dbt build|warehouse_store\.py|--path |upload\.py|npm run", script), filename
