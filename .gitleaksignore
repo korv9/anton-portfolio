@@ -126,3 +126,7 @@ c9d1725c234d1ea85d626df7b8ca2640a8b77202:public/data/gold/tables/fact_point_rese
 5c7dff7e975cdf15161b0bfed7091ccfe356576d:public/data/politics/parliament/sessions/2024-25/votes.json:square-access-token:1
 5c7dff7e975cdf15161b0bfed7091ccfe356576d:public/data/politics/parliament/sessions/2024-25/votes.json:square-access-token:1
 5c7dff7e975cdf15161b0bfed7091ccfe356576d:public/data/politics/parliament/sessions/2024-25/votes.json:square-access-token:1
+
+# Reviewed public data: Swedish development-tool label and a Riksdag roll-call UUID.
+e989d898705b37cd7868527954d79f70ea2ae2a4:frontend/public/data/jobs/company-intelligence.json:atlassian-api-token:1
+e989d898705b37cd7868527954d79f70ea2ae2a4:frontend/public/data/parliament/workspace/decisions/2024-25.json:square-access-token:1
