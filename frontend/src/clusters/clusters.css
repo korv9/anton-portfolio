@@ -149,6 +149,148 @@
   opacity: 1;
 }
 
+/* ---------- A visitor's sentence on the debate map (SentencePlacer.tsx) ---------- */
+.cv-place {
+  padding-top: var(--sp-7);
+}
+.cv-marker {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  pointer-events: none;
+  transition: transform calc(var(--dur) * 4) var(--ease);
+}
+.cv-marker i {
+  position: absolute;
+  top: -7px;
+  left: -7px;
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--cv-ivory);
+  border-radius: 50%;
+  background: var(--ink);
+}
+/* The label sits right of the point, or left of it near the map's right edge. */
+.cv-marker b {
+  position: absolute;
+  top: -11px;
+  left: 12px;
+  padding: 2px 6px;
+  border-radius: var(--radius);
+  background: var(--ink);
+  color: var(--cv-ivory);
+  font-size: var(--fs-label);
+  font-weight: 650;
+  white-space: nowrap;
+}
+.cv-marker-left b {
+  right: 12px;
+  left: auto;
+}
+.cv-place-form {
+  display: grid;
+  gap: var(--sp-2);
+  max-width: 90ch;
+}
+.cv-place-form label {
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.cv-place-form textarea {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--paper-strong);
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--fs-sm);
+  resize: vertical;
+}
+.cv-place-form textarea:focus-visible {
+  outline: 2px solid var(--cv-olive);
+  outline-offset: 2px;
+}
+.cv-place-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+}
+.cv-place-count,
+.cv-place-label,
+.cv-place-who {
+  margin: 0;
+  color: var(--cv-ground);
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  font-variant-numeric: tabular-nums;
+}
+.cv-variants button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+.cv-variants button {
+  text-align: left;
+}
+.cv-place-notice {
+  margin: var(--sp-2) 0 0;
+  padding: var(--sp-2) var(--sp-3);
+  border-left: 3px solid var(--cv-olive);
+  background: var(--cv-butter);
+  font-size: var(--fs-sm);
+}
+.cv-place-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--sp-5);
+  margin-top: var(--sp-4);
+}
+@media (min-width: 1000px) {
+  .cv-place-grid {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    align-items: start;
+  }
+}
+.cv-place-panel {
+  display: grid;
+  gap: var(--sp-2);
+  font-size: var(--fs-sm);
+}
+.cv-place-group {
+  margin: 0;
+  color: var(--ink);
+  font-size: var(--fs-md);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.project-shell #main .cv-place-panel h3 {
+  margin: var(--sp-3) 0 0;
+  font-size: var(--fs-sm);
+  font-weight: 650;
+}
+.cv-place-list {
+  display: grid;
+  gap: var(--sp-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.cv-place-list li {
+  padding-top: var(--sp-2);
+  border-top: 1px solid var(--line);
+}
+.cv-place-list p {
+  margin: 0 0 4px;
+  line-height: 1.45;
+}
+.cv-place-empty {
+  margin: 0;
+  max-width: 40ch;
+}
 /* The same maps inside a report tab (ProjectMaps): the report's ground and type. */
 .cv-report {
   display: grid;

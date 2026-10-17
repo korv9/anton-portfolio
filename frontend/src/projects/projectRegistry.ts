@@ -519,3 +519,38 @@ export const PROJECT_GROUPS = [
   {
     label: 'Observatories',
     ids: ['politics', 'jobs', 'compliance', 'welfare', 'ai-act', 'sfs'],
+  },
+  {
+    label: 'Labs',
+    ids: [
+      'symbolic-atlas',
+      'philosophy-atlas',
+      'concept-constellation',
+      'ask-the-law',
+      'drugcomb',
+    ],
+  },
+  { label: 'Engineering', ids: ['thesis', 'homie', 'diva-lakehouse'] },
+]
+
+/** The project a route belongs to, if any. */
+export function projectForRoute(
+  route: Pick<Route, 'page' | 'path'>,
+): ProjectEntry | undefined {
+  return PROJECTS.find(
+    (p) => p.pages?.includes(route.page) || (p.paths && p.paths(route.path)),
+  )
+}
+
+/** Previous and next project in menu order, without wrapping. */
+export function neighbours(id: string): {
+  previous?: ProjectEntry
+  next?: ProjectEntry
+} {
+  const ordered = PROJECT_GROUPS.flatMap((group) => group.ids).map((id) =>
+    PROJECTS.find((p) => p.id === id)!,
+  )
+  const i = ordered.findIndex((p) => p.id === id)
+  if (i < 0) return {}
+  return { previous: ordered[i - 1], next: ordered[i + 1] }
+}

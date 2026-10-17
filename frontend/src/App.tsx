@@ -125,3 +125,28 @@ export default function App() {
                   ))}
                 {page === 'symbolic' && <SymbolicAtlasPage route={route} />}
                 {page === 'clusters' && <ClusterVisualsPage />}
+                {page === 'lawqa' && <AskTheLaw route={route} />}
+                {page === 'sfs' && <SfsReport route={route} />}
+                {page === 'aiact' &&
+                  (AI_ACT_TABS.includes(path) ? (
+                    <AiActReport route={route} />
+                  ) : (
+                    <AiActProduct route={route} />
+                  ))}
+                {page === 'philosophy' && <PhilosophyAtlasPage route={route} />}
+                {page === 'concepts' && (
+                  <ConceptConstellationPage route={route} />
+                )}
+                {page === 'drugcomb' && <DrugCombPage route={route} />}
+                {page === 'thesis' && <ThesisPage />}
+                {page === 'lakehouse' && <LakehousePage />}
+                {page === 'homie' && <HomiePage />}
+              </Suspense>
+            </ProjectStructure>
+          </PageBoundary>
+          <ProjectPager route={route} />
+        </main>
+      </div>
+    </CvViewerProvider>
+  )
+}

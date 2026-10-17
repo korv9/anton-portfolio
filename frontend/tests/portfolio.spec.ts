@@ -280,3 +280,125 @@ test(
       'Observatories',
       'Labs',
     ])
+    await expect(page.locator('.work-card')).toHaveCount(14)
+    await expect
+      .poll(() =>
+        page
+          .locator('.home-backdrop')
+          .evaluate((el) => Number(getComputedStyle(el).opacity)),
+      )
+      .toBeLessThan(0.1)
+    await cta.click()
+    await expect(page).toHaveURL(/#projekt$/)
+    await expect(page.locator('.projects-group-title')).toHaveText([
+      'Engineering',
+      'Observatories',
+      'Labs',
+    ])
+  },
+)
+
+test('the background finishes its fast intro with fully coloured points', async ({
+  page,
+}) => {
+  await page.goto('/')
+  const backdrop = page.locator('.home-backdrop')
+  const canvas = backdrop.locator('canvas').first()
+  await expect(backdrop).toHaveAttribute('data-ready', 'true', {
+    timeout: 20000,
+  })
+  await expect(backdrop).toHaveAttribute('data-intro', 'false', {
+    timeout: 20000,
+  })
+  await expect(backdrop).toHaveAttribute('aria-hidden', 'true')
+  await expect(canvas).toBeVisible()
+  await expect(page.locator('.home-backdrop-toggle')).toHaveCount(0)
+  await expect(backdrop.locator('.home-backdrop-scene')).toHaveCSS(
+    'opacity',
+    '1',
+  )
+  await expect(backdrop.locator('.home-backdrop-scene')).toHaveCSS(
+    'mask-image',
+    'none',
+  )
+  expect(
+    await canvas.evaluate(
+      (el: HTMLCanvasElement) => el.getContext('2d')?.globalAlpha,
+    ),
+  ).toBe(1)
+  await expect(canvas).toHaveCSS('animation-play-state', 'running')
+  await page.evaluate(() => {
+    location.hash = 'cluster-visuals'
+  })
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+    'Cluster visuals',
+  )
+  await page.evaluate(() => {
+    location.hash = ''
+  })
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+    'Anton Ernstsson',
+  )
+  await expect(backdrop).toHaveAttribute('data-intro', 'false')
+  await expect(page.locator('.home-umap-intro')).toHaveCount(0)
+})
+
+test('home remains usable when the decorative debate map is unavailable', async ({
+  page,
+}) => {
+  await page.route('**/umap.json', (route) =>
+    route.fulfill({ status: 503, body: 'Unavailable' }),
+  )
+  const failedMap = page.waitForResponse((response) =>
+    response.url().endsWith('/umap.json'),
+  )
+  await page.goto('/')
+  await failedMap
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+    'Anton Ernstsson',
+  )
+  await expect(page.locator('.home-backdrop')).toHaveAttribute(
+    'data-ready',
+    'false',
+  )
+  await expect(page.locator('.home-backdrop-toggle')).toHaveCount(0)
+  await expect(page.locator('#start nav')).toHaveCount(0)
+})
+
+test('the start page title opens the projects page, which lists every retained project', async ({
+  page,
+}) => {
+  // The start page's Projects title opens the projects page.
+  await page.goto('/')
+  await page.locator('.home-work-title a').click()
+  await expect(page).toHaveURL(/#projekt$/)
+  await expect(page).toHaveTitle('Projects | Anton Ernstsson')
+  await expect(page.locator('.projects-group')).toHaveCount(3)
+  await expect(page.locator('.project-card')).toHaveCount(14)
+  await expect(page.locator('.project-card[href="#thesis"]')).toContainText(
+    'IT Incident Clustering',
+  )
+  await expect(page.locator('.project-card[href="#drugcomb"]')).toContainText(
+    'Drug Synergy Lab',
+  )
+  const menu = await siteNav(page)
+  await expect(
+    menu.getByRole('link', { name: 'Cluster Visuals', exact: true }),
+  ).toBeVisible()
+})
+
+test('the job chart retains useful controls', async ({ page }) => {
+  await page.goto('/#job-market-tech')
+  await page.getByRole('button', { name: 'Data Engineer', exact: true }).click()
+  await expect(page.locator('.job-chart-head')).toContainText('Data Engineer')
+  const jobs = await (
+    await page.request.get('/data/gold/marts/jobs.json')
+  ).json()
+  const first = jobs.yearly.find(
+    (row: { role: string; year: number }) =>
+      row.role === 'Data Engineer' && row.year === jobs.years[0],
+  )
+  await expect(page.locator('.year-totals')).toContainText(
+    first.ads.toLocaleString('en-GB'),
+  )
+})
