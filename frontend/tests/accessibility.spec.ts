@@ -15,6 +15,7 @@ const PAGES = [
   '#philosophy-atlas',
   '#politik',
   '#ai-act',
+  '#lagboken',
   '#jobb',
   '#symbolic-atlas',
   '#sweden',

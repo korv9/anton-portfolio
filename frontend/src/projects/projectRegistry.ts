@@ -41,6 +41,36 @@ export type ProjectEntry = {
 
 export const PROJECTS: ProjectEntry[] = [
   {
+    id: 'compliance',
+    title: t('IT Compliance Intelligence', 'IT Compliance Intelligence'),
+    descriptor: t(
+      'Granskade beslut, juridiska identiteter',
+      'Reviewed decisions, legal identities',
+    ),
+    summary: t(
+      'Källspårbara jämförelser av offentliga beslut för en fast kohort svenska IT-bolag.',
+      'Source-linked comparisons of public decisions for a fixed cohort of Swedish IT companies.',
+    ),
+    question: t(
+      'Vad kan verifierade offentliga beslut säga om en juridisk person?',
+      'What can verified public decisions establish about a legal entity?',
+    ),
+    built: t(
+      'Ett granskningsstyrt analyslager, en explorer och reproducerbara forskningsexporter.',
+      'An analytics layer with human review gates, an explorer and reproducible research exports.',
+    ),
+    result: t(
+      'Publicerade bolagsmått väntar på verifierat register och mänskliga godkännanden.',
+      'Published company metrics await a verified register and human approvals.',
+    ),
+    tech: ['Python', 'DuckDB', 'Parquet', 'React', 'TypeScript'],
+    href: '#compliance',
+    category: 'data',
+    status: 'in-progress',
+    pages: ['compliance', 'company'],
+    code: 'https://github.com/korv9/anton-portfolio/tree/main/docs/compliance-intelligence',
+  },
+  {
     id: 'politics',
     title: t('Political Observatory', 'Political Observatory'),
     descriptor: t(
@@ -128,6 +158,36 @@ export const PROJECTS: ProjectEntry[] = [
     },
     code: 'https://github.com/korv9/anton-portfolio/blob/main/docs/ai-act.md',
     pages: ['aiact'],
+  },
+  {
+    id: 'sfs',
+    title: t('Svensk författningssamling', 'Swedish Statute Book'),
+    descriptor: t('Dataprodukt, öppna data', 'Data product, public data'),
+    summary: t(
+      'Varje författning i Riksdagens SFS-lista, gällande eller upphävd, hämtad som text och delad i paragrafer.',
+      'Every statute in the Riksdag’s SFS list, in force or repealed, fetched as text and split into paragraphs.',
+    ),
+    question: t(
+      'Hur stor är svensk lag, och hur mycket av den går att läsa paragraf för paragraf?',
+      'How large is Swedish law, and how much of it can be read paragraph by paragraph?',
+    ),
+    built: t(
+      'En hämtning av hela SFS-listan och varje text från Riksdagens öppna data, råkopior i R2 och dbt-modeller från brons till guld som sorterar varje dokument efter typ, daterar upphävandet och delar texten i paragrafer.',
+      'A fetch of the whole SFS list and every text from the Riksdag’s open data, raw copies in R2, and dbt models from bronze to gold that sort each document by kind, date its repeal and split the text into paragraphs.',
+    ),
+    result: t(
+      'Lagboken räknad efter typ, utfärdandeår och upphävande, med de största gällande lagarna och längden på varje stycke. Fråga lagen söker fortfarande i 40 utvalda lagar, inte i hela samlingen.',
+      'The statute book counted by kind, year of issue and repeal, with the largest laws in force and the length of every passage. Ask the law still searches 40 selected laws, not the whole collection.',
+    ),
+    tech: ['Python', 'dbt', 'DuckDB', 'Cloudflare R2', 'React', 'TypeScript'],
+    href: '#lagboken',
+    category: 'data',
+    status: 'live',
+    home: {
+      question: t('Hur stor är svensk lag?', 'How large is Swedish law?'),
+    },
+    code: 'https://github.com/korv9/anton-portfolio/blob/main/docs/workers-ai.md',
+    pages: ['sfs'],
   },
   {
     id: 'jobs',
@@ -456,7 +516,10 @@ export const PROJECTS: ProjectEntry[] = [
 ]
 
 export const PROJECT_GROUPS = [
-  { label: 'Observatories', ids: ['politics', 'jobs', 'welfare', 'ai-act'] },
+  {
+    label: 'Observatories',
+    ids: ['politics', 'jobs', 'compliance', 'welfare', 'ai-act', 'sfs'],
+  },
   {
     label: 'Labs',
     ids: [

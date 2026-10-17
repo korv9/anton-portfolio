@@ -83,10 +83,11 @@ subjects:
   parliament:
     schedule: '37 4 * * *'
     group: public-data
-    raw: [scb, riksdagen/votes, riksdagen/reports, riksdagen/studies, riksdagen/formation,
+    raw: [scb, riksdagen/votes, riksdagen/reports, riksdagen/studies, riksdagen/formation, riksdagen/formation_votes,
           riksdagen/_checkpoints, riksdagen/_manifest.jsonl, val]
     prune: true
     steps:
+      - ingest: python platform/ingest/riksdagen/formation_ingest.py
       - ingest: python platform/ingest/riksdagen/history_ingest.py
       - ingest: python platform/ingest/elections/elections_ingest.py
       - ingest: python platform/ingest/riksdagen/studies_ingest.py
@@ -115,6 +116,7 @@ subjects:
       - ingest: python platform/ingest/jobtech/ingest_stream.py
       - dbt: {select: [tag:market]}
       - export: python platform/publish/export_market.py
+      - export: python platform/publish/job_companies.py refresh --publish
 
   news:
     schedule: '17 5 * * *'
@@ -179,6 +181,7 @@ subjects:
   # platform/nlp/workers_ai.py embeds; the embedding and compression run by hand within the quota.
   # With SFS_ALL set it also fetches the whole statute book (about 11,600 texts, a few hours the
   # first time); silver_sfs_documents and silver_sfs_corpus_paragraphs build on it, no embeddings.
+  # export_sfs.py writes the statute-book page's numbers (#lagboken) from fct_sfs_document.
   sfs:
     schedule: manual
     group: baseline
@@ -189,6 +192,7 @@ subjects:
         when_env: SFS_ALL
       - dbt: {select: [tag:sfs]}
       - export: python platform/publish/workers_ai/export_law_corpora.py chunks
+      - export: python platform/publish/export_sfs.py
 
   # assert_concept_link_targets_exist checks links into philosophy, Riksdag and job-ad models;
   # it runs in the concepts subject, once all of them are built.

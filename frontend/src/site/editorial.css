@@ -4,9 +4,9 @@
   width: 100%;
   min-height: 100vh;
 }
-/* Every page runs edge to edge like the start page; only running text keeps a measure. */
+/* Shared project workspace. Reading text keeps a measure; charts use the full grid. */
 .project-shell #main {
-  padding: 0 var(--gutter) 3rem;
+  padding: 0 var(--gutter) var(--sp-7);
 }
 .project-shell
   #main
@@ -26,29 +26,29 @@
 }
 .project-shell #main .project-context {
   display: block;
-  padding: 1.5rem 0 0;
+  padding: var(--sp-4) 0;
 }
 .project-shell
   #main
   :is(.page-lead, .project-hero, .theme-head, .dk-head, .board-head, .aa-hero) {
-  padding-block: clamp(2.5rem, 6vw, 5rem);
+  padding-block: var(--sp-5);
   margin: 0;
   border: 0;
 }
 .project-shell #main h1 {
   font-family: var(--font);
-  font-size: var(--display-l);
-  font-weight: 750;
+  font-size: var(--type-page-title);
+  font-weight: var(--weight-heading);
   line-height: 1.08;
-  letter-spacing: -0.055em;
+  letter-spacing: -0.035em;
   text-wrap: balance;
   max-width: 24ch;
-  margin-bottom: 1.5rem;
+  margin-bottom: var(--sp-4);
 }
 .project-shell #main h2 {
   font-family: var(--font);
   font-size: var(--h3);
-  font-weight: 650;
+  font-weight: var(--weight-ui);
   letter-spacing: -0.035em;
   text-wrap: balance;
 }
@@ -69,14 +69,13 @@
   max-width: none;
 }
 .project-shell #main :is(.dk-grid, .board-grid) {
-  gap: 4rem 3rem;
+  gap: var(--dk-gap);
 }
 .project-shell #main :is(.dk-card, .board-card, .theme-figure, .chart-section) {
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  padding: 0;
-  box-shadow: none;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--paper);
+  padding: var(--card-pad);
 }
 .project-shell #main .theme-figure {
   grid-column: 1 / -1;
@@ -100,46 +99,7 @@
 .project-shell
   #main
   :is(.project-section, .stage, .report, .ph-section, .cc-section) {
-  margin-block: clamp(3rem, 7vw, 6rem);
-}
-.project-shell #main .stage {
-  display: block;
-  background: transparent;
-  padding: 0;
-  border: 0;
-  border-radius: 0;
-}
-.project-shell #main .stage.plate {
-  background: var(--page);
-  padding: 2rem;
-}
-.project-shell #main .stage-head {
-  margin-bottom: 2rem;
-}
-.project-shell #main .stage-figure {
-  width: 100%;
-  min-width: 0;
-}
-.stage-details {
-  margin-top: 2rem;
-}
-.stage-details > div {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 3rem;
-  padding-top: 1.5rem;
-}
-.project-shell #main .stage-details .stage-side {
-  grid-area: auto;
-  align-content: start;
-  width: auto;
-  padding: 0;
-  border: 0;
-  background: transparent;
-}
-.project-shell #main .stage.plate .stage-details .stage-side {
-  background: var(--paper);
-  padding: 1.5rem;
+  margin-block: var(--sp-section);
 }
 .stage-details summary,
 .project-method summary,
@@ -189,7 +149,7 @@
   scroll-margin-top: 110px;
 }
 .project-overview {
-  padding-block: clamp(3rem, 7vw, 6rem);
+  padding-block: var(--sp-6);
 }
 .overview-topics {
   margin-block: 4rem;
@@ -212,7 +172,7 @@
   text-underline-offset: 0.25em;
 }
 .overview-topic-number {
-  font-family: var(--font-mono);
+  font-family: var(--font-meta);
   font-size: var(--caption);
   color: var(--muted);
 }
@@ -278,7 +238,22 @@
 }
 .project-shell #main .project-pager {
   padding-inline: 0;
-  margin-top: 5rem;
+  margin-top: var(--sp-7);
+}
+/* Labs and engineering keep figures open; observatory comparisons use bounded panels. */
+.project-shell:is([data-workspace='labs'], [data-workspace='engineering'])
+  #main
+  :is(.dk-card, .board-card, .theme-figure, .chart-section) {
+  background: transparent;
+  border-inline: 0;
+  border-bottom: 0;
+  padding-inline: 0;
+}
+.project-shell[data-workspace='engineering'] #main .project-section > p {
+  max-width: var(--measure);
+}
+.project-shell[data-workspace='tool'] #main .cv-report {
+  margin-top: var(--sp-5);
 }
 @media (max-width: 760px) {
   .home-project-groups .work-row {
@@ -286,14 +261,10 @@
     gap: 2.5rem;
   }
   .project-shell #main .dk-grid {
-    gap: 3rem;
+    gap: var(--dk-gap);
   }
   .project-shell #main :is(.dk-card, .board-card) {
     grid-column: 1 / -1 !important;
-  }
-  .stage-details > div {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
   }
   .engineering-flow {
     gap: 1rem;

@@ -8,23 +8,25 @@
   margin-top: 0;
 }
 .report .report-tab {
-  padding-top: var(--sp-7);
+  padding-top: var(--sp-5);
 }
 
 /* ---------- The tabs: three equal columns, the open one under an olive bar ---------- */
+/* One column per tab, three or four of them. */
 .report-tabs {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
   gap: var(--sp-5);
 }
 .report-tabs a {
   display: grid;
   gap: var(--sp-2);
   padding-top: var(--sp-4);
-  border-top: 3px solid var(--line);
+  border-top: 1px solid var(--line);
   color: var(--ink-faded);
   font-size: var(--h3);
-  font-weight: 750;
+  font-weight: var(--weight-heading);
   letter-spacing: -0.02em;
   line-height: 1.15;
   text-decoration: none;
@@ -37,7 +39,8 @@
   color: var(--ink);
 }
 .report-tabs a[aria-current] {
-  border-top-color: var(--cv-olive);
+  border-top-color: var(--ink);
+  box-shadow: inset 0 1px var(--ink);
   color: var(--ink);
 }
 .report-tabs a:focus-visible {
@@ -49,8 +52,8 @@
 .report-tab {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: var(--sp-section);
-  padding-block: var(--sp-section);
+  gap: var(--sp-6);
+  padding-block: var(--sp-5);
 }
 .report-head {
   display: grid;
@@ -59,13 +62,13 @@
   gap: var(--sp-5) var(--sp-7);
 }
 .project-shell #main .politik-long .report-head h1 {
-  max-width: 18ch;
+  max-width: 24ch;
   margin: 0;
-  font-size: var(--display-l);
-  font-weight: 750;
+  font-size: var(--type-page-title);
+  font-weight: var(--weight-heading);
   letter-spacing: -0.045em;
   line-height: 1;
-  text-transform: uppercase;
+  text-transform: none;
 }
 .report-slicers {
   display: grid;
@@ -75,10 +78,10 @@
 .report-slicers p {
   margin: 0;
   color: var(--muted);
-  font-family: var(--font-mono);
+  font-family: var(--font-meta);
   font-size: var(--caption);
   letter-spacing: 0.08em;
-  text-transform: uppercase;
+  text-transform: none;
 }
 .report-slicers .party-picker.small {
   gap: var(--sp-4);
@@ -112,7 +115,9 @@
   grid-template-columns: minmax(0, 1fr);
   grid-template-rows: none;
   gap: var(--sp-5);
-  padding: 0;
+  padding: var(--card-pad);
+  border: 1px solid var(--line);
+  background: var(--paper);
 }
 .project-shell
   #main
@@ -139,11 +144,11 @@
 }
 .project-shell #main .politik-long .report .board-title-2 {
   margin: 0;
-  font-family: var(--font-mono);
+  font-family: var(--font-meta);
   font-size: var(--caption);
   font-weight: 500;
   letter-spacing: 0.08em;
-  text-transform: uppercase;
+  text-transform: none;
 }
 
 /* ---------- Further in: the analyses that take a page of their own ---------- */
@@ -156,10 +161,10 @@
 .project-shell #main .report-deeper h2 {
   margin: 0;
   font-size: var(--h2);
-  font-weight: 750;
+  font-weight: var(--weight-heading);
   letter-spacing: -0.03em;
   line-height: 1;
-  text-transform: uppercase;
+  text-transform: none;
 }
 .report-deeper ul {
   display: grid;
@@ -195,11 +200,11 @@
   display: inline-block;
   margin-bottom: var(--sp-6);
   color: var(--ink);
-  font-family: var(--font-mono);
+  font-family: var(--font-meta);
   font-size: var(--caption);
   letter-spacing: 0.08em;
   text-decoration: none;
-  text-transform: uppercase;
+  text-transform: none;
 }
 .politik-back:hover {
   text-decoration: underline;
@@ -209,6 +214,11 @@
 @media (max-width: 900px) {
   .report-tabs {
     gap: var(--sp-3);
+  }
+  /* Four tabs make two rows of two on a phone. */
+  .report-tabs:has(> a:nth-child(4)) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-flow: row;
   }
   .report-tabs a {
     font-size: var(--body);
@@ -249,12 +259,12 @@
 }
 .report .politik-intro-name,
 .report .report-slicers p {
-  color: var(--cv-olive);
-  font-family: var(--font-mono);
+  color: var(--ink);
+  font-family: var(--font-meta);
   font-size: var(--caption);
   font-weight: 500;
   letter-spacing: 0.08em;
-  text-transform: uppercase;
+  text-transform: none;
 }
 .report .politik-intro-data {
   color: var(--ink-faded);
@@ -265,7 +275,7 @@
   font-weight: 500;
 }
 .report .report-tabs a[aria-current] {
-  font-weight: 750;
+  font-weight: var(--weight-heading);
 }
 .project-shell
   #main
@@ -291,8 +301,8 @@
   .report
   .feature-pick
   button[aria-pressed='true'] {
-  color: var(--cv-olive);
-  font-weight: 750;
+  color: var(--ink);
+  font-weight: var(--weight-heading);
 }
 .report .report-deeper span {
   color: var(--ink-faded);
@@ -319,8 +329,8 @@
   color: var(--ink);
 }
 .report-chips button[aria-pressed='true'] {
-  color: var(--cv-olive);
-  font-weight: 750;
+  color: var(--ink);
+  font-weight: var(--weight-heading);
   text-decoration: underline;
   text-decoration-thickness: 2px;
   text-underline-offset: 0.3em;
@@ -337,10 +347,10 @@
 
 /* The jobs report's month columns take the report's olive; the months so far stand darker. */
 .report .jobb-columns rect:not(.jobb-hit) {
-  fill: color-mix(in srgb, var(--cv-olive) 50%, var(--page));
+  fill: color-mix(in srgb, var(--ink) 50%, var(--page));
 }
 .report .jobb-columns rect.recent {
-  fill: var(--cv-olive);
+  fill: var(--ink);
 }
 
 /* Lines that are not parties are named above the chart. */

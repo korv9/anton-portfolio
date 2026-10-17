@@ -144,19 +144,20 @@ export default function AtlasCanvas({
         ctx.fill()
       }
     }
-    ctx.font = '600 12px Manrope, Helvetica, Arial, sans-serif'
+    const style = getComputedStyle(el)
+    ctx.font = `500 12px ${style.fontFamily}`
     ctx.textAlign = 'center'
     for (const label of labels) {
       const [lx, ly] = toPx.current(label.x, label.y)
       ctx.lineWidth = 4
-      ctx.strokeStyle = 'rgba(7, 7, 8, 0.85)'
+      ctx.strokeStyle = style.getPropertyValue('--page')
       ctx.strokeText(label.text, lx, ly - 8)
-      ctx.fillStyle = '#f1ece2'
+      ctx.fillStyle = style.getPropertyValue('--ink')
       ctx.fillText(label.text, lx, ly - 8)
     }
     const sel = placed.find((d) => d.p.occurrence_id === selected)
     if (sel) {
-      ctx.strokeStyle = '#f1ece2'
+      ctx.strokeStyle = style.getPropertyValue('--ink')
       ctx.lineWidth = 1.5
       ctx.beginPath()
       ctx.arc(sel.px, sel.py, 7, 0, Math.PI * 2)

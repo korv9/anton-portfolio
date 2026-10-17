@@ -1,4 +1,4 @@
-/* Swiss Data Editorial. Tokens and shared surfaces, after legacy styles. */
+/* Shared type, controls, chart readouts and disclosures. Tokens live in tokens.css. */
 html,
 body,
 button,
@@ -14,14 +14,14 @@ body {
   background: var(--page);
   color: var(--ink);
   -webkit-font-smoothing: antialiased;
-  font-weight: 450;
+  font-weight: var(--weight-body);
 }
 h1,
 h2,
 h3,
 h4 {
   letter-spacing: -0.035em;
-  font-weight: 700;
+  font-weight: var(--weight-heading);
 }
 a {
   color: inherit;
@@ -32,7 +32,7 @@ a {
 }
 .eyebrow {
   color: var(--muted);
-  font-family: var(--font-mono);
+  font-family: var(--font-meta);
   font-size: var(--caption);
   letter-spacing: 0.08em;
 }
@@ -90,11 +90,12 @@ body .project-page {
   color: var(--ink);
 }
 .ds-button:hover {
-  background: var(--wash);
-  color: var(--paper);
+  background: var(--accent-2);
+  color: var(--on-accent);
 }
 .ds-button.secondary:hover {
   background: var(--ink);
+  color: var(--on-accent);
 }
 .ds-link {
   font-weight: 500;
@@ -104,7 +105,7 @@ body .project-page {
   display: inline-block;
   padding: 0.3rem 0.45rem;
   border: 1px solid var(--line);
-  font: var(--caption) var(--font-mono);
+  font: var(--caption) var(--font-meta);
   text-transform: uppercase;
 }
 .ds-metric {
@@ -189,7 +190,7 @@ body .topic-tabs a[aria-current='page'] {
   color: var(--ink);
   border-bottom-color: var(--ink);
   background: transparent;
-  font-weight: 700;
+  font-weight: var(--weight-heading);
 }
 body .topic-tabs a:hover {
   background: var(--paper);

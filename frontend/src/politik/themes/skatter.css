@@ -52,12 +52,12 @@
   height: 0.6rem;
   margin: -0.3rem 0 0 -0.3rem;
   border-radius: 50% !important;
-  background: rgba(98, 101, 107, 0.45);
+  background: var(--color-chart-muted);
   transition: transform 150ms;
 }
 .tax-dot.nordic {
   background: var(--paper);
-  border: 2px solid #2c7a4b;
+  border: 2px solid var(--ink);
 }
 .tax-dot:hover,
 .tax-dot.hover {
@@ -88,7 +88,7 @@
   bottom: 15%;
   width: 2px;
   margin-left: -1px;
-  background: #c8553d;
+  background: var(--ink);
 }
 .tax-max {
   position: absolute;

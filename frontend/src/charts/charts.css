@@ -156,7 +156,7 @@
 }
 .bullet-key dd {
   margin: 0;
-  font-family: var(--font-mono);
+  font-family: var(--font-meta);
   font-size: var(--h3);
   font-weight: 600;
 }

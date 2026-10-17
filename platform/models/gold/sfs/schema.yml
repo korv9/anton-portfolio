@@ -1,0 +1,33 @@
+version: 2
+
+models:
+  - name: fct_sfs_document
+    description: >-
+      One row per document in Riksdagen's SFS list (silver_sfs_documents) with its numbered
+      paragraphs and passages from silver_sfs_corpus_paragraphs. Read by
+      platform/publish/export_sfs.py for the statute-book page.
+    columns:
+      - name: dok_id
+        data_tests: [unique, not_null]
+      - name: kind
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [lag, förordning, other]
+      - name: issued_year
+        data_tests: [not_null]
+      - name: is_repealed
+        description: The repeal date is on or before the fetch date; false when there is none.
+        data_tests: [not_null]
+      - name: repealed_year
+        description: The year of repeal, for repealed documents only.
+      - name: sections
+        description: Distinct numbered paragraphs (chapter and §).
+        data_tests: [not_null]
+      - name: paragraph_passages
+        description: Paragraph rows in silver_sfs_corpus_paragraphs; a long § gives one per stycke.
+        data_tests: [not_null]
+      - name: whole_text_passages
+        description: Whole-text passages, for a document with no numbered paragraph.
+        data_tests: [not_null]

@@ -92,6 +92,8 @@ models:
         +tags: [parliament]
       politics:
         +tags: [politics]
+      sfs:
+        +tags: [sfs]
       symbolic:
         +tags: [symbolic]
       taxes:
@@ -170,6 +172,14 @@ seeds:
     parliament:
       +tags: [parliament]
       +schema: seeds
+      prime_minister_ballots:
+        +column_types: {vote_key: varchar, candidate: varchar, candidate_party: varchar, kind: varchar,
+                        formed_government_key: varchar, source_url: varchar, source_sha256: varchar,
+                        extraction: varchar, note: varchar, recorded_yes: integer, recorded_no: integer,
+                        recorded_abstain: integer, recorded_absent: integer}
+      prime_minister_party_votes:
+        +column_types: {vote_key: varchar, party: varchar, source_party: varchar,
+                        'yes': integer, 'no': integer, abstain: integer, absent: integer}
       governments:
         +column_types: {government_key: varchar, government_name: varchar, prime_minister: varchar,
                         prime_minister_party: varchar, government_parties: varchar,

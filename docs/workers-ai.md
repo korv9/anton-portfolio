@@ -207,6 +207,19 @@ ingen bit är över 1 500 tecken och att bitarna blir samma text igen, blankteck
 och efter ändringen. `assert_sfs_whole_text_only_without_paragraphs` kontrollerar att inget
 dokument har båda sorterna och att ingen XML-text kommit med.
 
+### Sidan om lagboken
+
+Sidan `#lagboken` (projektet Swedish Statute Book) visar samlingen i tre flikar: omfattning,
+utfärdade och upphävda per år samt storlek. Guldmodellen `fct_sfs_document` har en rad per
+dokument med typ, utfärdandeår, upphävandeår, antal numrerade paragrafer (kapitel och §, räknade
+en gång) och antal stycken. `python platform/publish/export_sfs.py` läser den och
+`silver_sfs_corpus_paragraphs` och skriver `frontend/public/data/sfs/overview.json`, ungefär
+16 kB, efter `dbt build --select tag:sfs --target-path target/sfs`. Exporten vägrar köra om något
+test fallerat. Filen ingår i leveransgruppen `baseline`.
+
+Raden `Ändrad:` anger bara den senaste ändrings-SFS:en, inte hur många ändringar en lag fått, så
+sidan visar inga mest ändrade lagar. Fråga lagen söker fortfarande bara i de 40 utvalda lagarna.
+
 ## Lokal utveckling
 
 R2-hinkens CORS (`platform/publish/r2-cors.json`) släpper bara in `http://localhost:5173` och

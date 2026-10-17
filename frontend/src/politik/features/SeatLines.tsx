@@ -34,10 +34,12 @@ export default function SeatLines({
   years,
   lines,
   label,
+  ceiling,
 }: {
   years: number[]
   lines: SeatLine[]
   label: string
+  ceiling: number
 }) {
   const [ref, width] = useWidth<HTMLDivElement>(1200)
   // The election pointed at stays after the pointer leaves, so the guide fades where it stood.
@@ -45,30 +47,29 @@ export default function SeatLines({
   const [on, setOn] = useState(false)
   const [hot, setHot] = useState<string | null>(null)
   const narrow = width < 700
-  // Nearly a full screen tall, so parties a few seats apart still get lines of their own.
-  const HEIGHT = narrow
-    ? 440
-    : Math.round(Math.min(920, Math.max(520, window.innerHeight * 0.86)))
+  const HEIGHT = narrow ? 360 : 440
+  const left = 38
   const x1 = width - (narrow ? 52 : END)
   const first = years[0]
   const span = years.at(-1)! - first
-  const x = (i: number) => ((years[i] - first) / span) * x1
-  const top = Math.max(...lines.flatMap((line) => line.seats), 1)
+  const x = (i: number) =>
+    left + ((years[i] - first) / (span || 1)) * (x1 - left)
+  // Keep the scale stable when a party is selected.
+  const top = ceiling
   const y = (seats: number) =>
     HEIGHT - BOTTOM - (seats / top) * (HEIGHT - BOTTOM - TOP)
   const last = years.length - 1
   const at = Math.min(picked ?? last, last)
 
-  // A curve with level tangents at every election: it flows without overshooting a value. A
-  // party is drawn from the election before its first seats, so empty years do not pile up.
+  // Start at the first seats: the chart does not date a party's entry between elections.
   const path = (seats: number[]) => {
-    const start = Math.max(0, seats.findIndex((n) => n > 0) - 1)
+    const start = seats.findIndex((n) => n > 0)
+    if (start < 0) return ''
     return seats
       .map((n, i) => {
         if (i < start) return ''
         if (i === start) return `M${x(i)},${y(n)}`
-        const mid = (x(i - 1) + x(i)) / 2
-        return `C${mid},${y(seats[i - 1])} ${mid},${y(n)} ${x(i)},${y(n)}`
+        return `L${x(i)},${y(n)}`
       })
       .join(' ')
   }
@@ -112,6 +113,7 @@ export default function SeatLines({
       tabIndex={0}
       role="group"
       aria-label={label}
+      aria-describedby="seat-lines-help"
       onKeyDown={onKey}
       onBlur={leave}
       onPointerMove={(e: PointerEvent<HTMLDivElement>) =>
@@ -120,6 +122,14 @@ export default function SeatLines({
       onPointerLeave={leave}
     >
       <svg width={width} height={HEIGHT} aria-hidden="true">
+        {Array.from({ length: 5 }, (_, i) => (top * i) / 4).map((v) => (
+          <g key={v} className="seat-lines-scale">
+            <line x1={left} x2={x1} y1={y(v)} y2={y(v)} />
+            <text x={left - 8} y={y(v)} dy="0.32em" textAnchor="end">
+              {v}
+            </text>
+          </g>
+        ))}
         <line
           className="seat-lines-guide"
           y1={TOP}
@@ -135,6 +145,22 @@ export default function SeatLines({
             stroke={partyLine(line.key)}
           />
         ))}
+        {lines.length <= 2 &&
+          lines.flatMap((line) =>
+            line.seats.map(
+              (seats, i) =>
+                seats > 0 && (
+                  <circle
+                    key={`${line.key}-${years[i]}`}
+                    cx={x(i)}
+                    cy={y(seats)}
+                    r={3}
+                    fill="var(--paper)"
+                    stroke={partyLine(line.key)}
+                  />
+                ),
+            ),
+          )}
         {lines.map((line) => (
           <circle
             key={line.key}
@@ -163,27 +189,21 @@ export default function SeatLines({
               </text>
             ),
         )}
-        {labels(0).map((row) => (
-          <text
-            key={`start-${row.key}`}
-            className="seat-lines-label"
-            data-hot={row.key === hot || undefined}
-            x={16}
-            y={row.y - 7}
-          >
-            <tspan className="seat-lines-code">{row.key}</tspan> {row.seats}
-          </text>
-        ))}
         {labels(last).map((row) => (
-          <text
-            key={`end-${row.key}`}
-            className="seat-lines-label"
-            data-hot={row.key === hot || undefined}
-            x={x1 + 10}
-            y={row.y + 4}
-          >
-            <tspan className="seat-lines-code">{row.key}</tspan> {row.seats}
-          </text>
+          <g key={`end-${row.key}`}>
+            <path
+              className="seat-lines-label-link"
+              d={`M${x1 + 2},${y(row.seats)} L${x1 + 7},${row.y}`}
+            />
+            <text
+              className="seat-lines-label"
+              data-hot={row.key === hot || undefined}
+              x={x1 + 10}
+              y={row.y + 4}
+            >
+              <tspan className="seat-lines-code">{row.key}</tspan> {row.seats}
+            </text>
+          </g>
         ))}
         {/* Wide unseen strokes on top, so a thin line is easy to point at. */}
         {lines.map((line) => (
@@ -196,6 +216,10 @@ export default function SeatLines({
           />
         ))}
       </svg>
+      <p id="seat-lines-help" className="visually-hidden">
+        Use the left and right arrow keys to read each election. Exact values
+        are also available in the table.
+      </p>
       <div
         className="seat-lines-tip"
         role="status"

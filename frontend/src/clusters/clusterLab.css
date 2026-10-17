@@ -12,21 +12,21 @@
 .clab button {
   padding: var(--sp-1) var(--sp-2);
   min-height: 36px;
-  background: var(--cv-oat);
-  color: var(--cv-olive);
+  background: var(--wash);
+  color: var(--ink);
   border: 1px solid var(--line);
   border-radius: var(--radius);
   font: inherit;
   cursor: pointer;
 }
 .clab button[aria-pressed='true'] {
-  background: var(--cv-ground);
-  color: var(--cv-ivory);
+  background: var(--muted);
+  color: var(--page);
 }
 .clab button:focus-visible,
 .clab select:focus-visible,
 .clab summary:focus-visible {
-  outline: 2px solid var(--cv-olive);
+  outline: 2px solid var(--ink);
   outline-offset: 3px;
 }
 .clab-table {
@@ -104,7 +104,7 @@
   font-size: var(--fs-label);
 }
 .clab-meta {
-  font-family: var(--font-mono);
+  font-family: var(--font-meta);
   font-size: var(--fs-label);
 }
 .clab blockquote {

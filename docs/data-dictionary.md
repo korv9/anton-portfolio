@@ -496,3 +496,13 @@ Samtliga 393 proposition–utskott-kopplingar refererar en befintlig punkt men g
 ## Källor och begränsningar
 
 [Sveriges riksdag](https://www.riksdagen.se/sv/sa-fungerar-riksdagen/arbetet-i-riksdagen/debatter-och-beslut-i-kammaren/beslut-om-arenden/) för vad en votering avser; [Statskontoret](https://www.statskontoret.se/analys-och-statistik/oppna-data/arsutfall/om-oppna-data-for-arsutfall/) för årsutfallets budget- och utfallsfält. Katalogen beskriver **det som levereras i detta repo**, inte all data hos källmyndigheterna.
+
+## Political workspace v2 supplement (16 October 2026)
+
+`parliament/workspace/index.json` contains `schema_version`, `as_of`, `source_sha256`,
+`context_source`, `governments`, `ballots`, `pairs`, `cohesion`, `decision_coverage`,
+`context_sessions`, `sessions`, `party_pairs`, `party_record`, `issues`, `debate_activity` and
+`coverage`. Decision shards retain one substantive session/roll-call observation, party counts
+where delivered, `source_complete`, dated `government_key`, and separately typed bill/study/
+speech-candidate links. These are derived contracts, not additional source observations.
+See [grains, denominators and coverage](political-observatory-v2.md).

@@ -253,7 +253,15 @@ export default function SkatterTheme({ route }: { route: Route }) {
             `Andel av BNP, ${year}. Plats bland ${present.length} länder, högst först.`,
           )}
         >
-          <div className="tax-table-wrap">
+          <div
+            className="tax-table-wrap"
+            tabIndex={0}
+            role="region"
+            aria-label={l(
+              'Tax comparison table',
+              'Tabell för skattejämförelse',
+            )}
+          >
             <table className="tax-table">
               <thead>
                 <tr>

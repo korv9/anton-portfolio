@@ -63,10 +63,7 @@ export default function PollTrend({ selected }: { selected: string[] }) {
       r.election_year >= Number(from),
   )
   const narrow = width < 560
-  // Most of a screen tall, so parties a point or two apart get lines of their own.
-  const H = narrow
-    ? 340
-    : Math.round(Math.min(760, Math.max(420, window.innerHeight * 0.7)))
+  const H = narrow ? 340 : 440
   const pad = { l: 34, r: narrow ? 58 : 190, t: 12, b: 36 }
   const t0 = time(months[0])
   const t1 = Math.max(
@@ -227,14 +224,12 @@ export default function PollTrend({ selected }: { selected: string[] }) {
                 style={{ ['--c' as string]: partyLine(p) }}
               >
                 <path
-                  // Level tangents at every survey: the line flows without overshooting.
                   d={pts
                     .map(([m, v], i) => {
                       const px = x(m).toFixed(1)
                       const py = y(v).toFixed(1)
                       if (!i) return `M${px} ${py}`
-                      const mid = ((x(pts[i - 1][0]) + x(m)) / 2).toFixed(1)
-                      return `C${mid} ${y(pts[i - 1][1]).toFixed(1)} ${mid} ${py} ${px} ${py}`
+                      return `L${px} ${py}`
                     })
                     .join(' ')}
                 />

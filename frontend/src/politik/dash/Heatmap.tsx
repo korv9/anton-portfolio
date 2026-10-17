@@ -21,6 +21,7 @@ export default function Heatmap({
   format,
   caption,
   max,
+  min,
   rowHeader,
 }: {
   rows: { key: string; label: string }[]
@@ -30,6 +31,8 @@ export default function Heatmap({
   caption: string
   /** The value that gets the darkest shade. */
   max?: number
+  /** A fixed lower bound when comparisons must keep the same scale. */
+  min?: number
   /** Party rows (a party × party table) show the party tag instead of a label. */
   rowHeader?: 'party'
 }) {
@@ -37,7 +40,8 @@ export default function Heatmap({
     parties.map((p) => value(r.key, p) ?? null),
   )
   const top = max ?? Math.max(...values.map((v) => v ?? 0), 1)
-  const low = Math.min(...values.filter((v): v is number => v != null), top)
+  const low =
+    min ?? Math.min(...values.filter((v): v is number => v != null), top)
   return (
     <table className="dash-heat">
       <caption className="visually-hidden">{caption}</caption>
@@ -60,18 +64,29 @@ export default function Heatmap({
             {parties.map((p) => {
               const v = value(row.key, p)
               if (v == null) return <td key={p} className="empty" />
-              // Spread the shades over the range actually shown, so differences stand out.
-              // Light cells carry dark text and dark cells white; the shades in between are
-              // skipped so both keep a readable contrast.
-              const t = top > low ? (v - low) / (top - low) : 1
+              // Fixed scales use a continuous pale ramp so every value keeps dark text.
+              const t =
+                top > low
+                  ? Math.min(1, Math.max(0, (v - low) / (top - low)))
+                  : 1
               const dark = t >= 0.5
-              const alpha = dark ? 0.9 + (t - 0.5) * 0.2 : 0.05 + t * 0.8
+              const alpha =
+                min != null
+                  ? 0.04 + t * 0.26
+                  : dark
+                    ? 0.9 + (t - 0.5) * 0.2
+                    : 0.05 + t * 0.5
               return (
                 <td
                   key={p}
                   style={{
-                    background: `rgba(85, 91, 69, ${alpha.toFixed(3)})`,
-                    color: dark ? 'var(--cv-ivory)' : undefined,
+                    background: `color-mix(in srgb, var(--ink) ${(alpha * 100).toFixed(1)}%, var(--paper))`,
+                    color:
+                      min != null
+                        ? 'var(--ink)'
+                        : dark
+                          ? 'var(--on-accent)'
+                          : undefined,
                   }}
                 >
                   {format(v)}

@@ -9,22 +9,22 @@ is part of those files. Parquet marts and document shards are served from the R2
 `anton-portfolio` on the same Cloudflare account, which also holds the versioned data releases
 the site does not read ([storage-and-serving.md](storage-and-serving.md)).
 
-Cloudflare builds the site from this repository (Workers Builds). Every push to `main` is
-published, and every other branch and pull request gets a preview URL on `workers.dev`. No
-workflow here deploys the site.
+Cloudflare builds the site itself from this repository (Workers Builds): pushes to `main`
+deploy code and static assets. Data workflows publish validated R2 releases and update
+`manifests/current.json`; they do not create data commits or deploy the site. The frontend
+connection is enabled once after the complete R2 bundle is verified.
 
 ## Branches: main and a preview per pull request
 
 `main` is production. New work never lands there directly:
 
 1. Work happens on a feature branch, with a pull request into `main`; CI must be green.
-2. Cloudflare builds the branch as a preview (`npx wrangler preview`, which needs the
-   `[previews]` block in `wrangler.toml`) and comments the link on the pull request. The
-   preview's address stays the same for a branch; `r2-cors.json` allows the working branch's
-   so the preview can read the data.
+2. Cloudflare attempts a branch preview (`npx wrangler preview`, using the
+   `[previews]` block in `wrangler.toml`). Check its actual build result before relying
+   on a preview. Its origin also needs the bucket's CORS permission.
 3. The owner looks at the preview and approves the merge; merged, it is live.
-4. The data workflows commit nothing. They publish versioned releases to R2
-   ([pipeline.md](pipeline.md)).
+4. Data refreshes validate, upload and activate their own R2 groups. Once the frontend
+   connection is enabled, the site reads the approved version without a code commit or deployment.
 
 ## In the repository
 
@@ -68,18 +68,23 @@ on `workers.dev` and in previews without configuration.
    - apply the CORS policy: R2 → the bucket → Settings → CORS policy → paste
      `platform/publish/r2-cors.json`;
    - set the repository variable `R2_PUBLIC_BASE` to `https://data.antonernstsson.com/`
-     (Settings → Secrets and variables → Actions → Variables). To move the committed
-     `delivery.json` to the domain, run `npm run data:catalog` with the variable exported and
-     commit the result;
-   - once the site reads from the domain, turn off the bucket's `r2.dev` URL.
-5. **Scheduled refreshes.** Each morning (UTC): `refresh-jobs.yml` at 04:23, `refresh-welfare.yml`
-   at 04:37 (welfare, taxes and parliament) and `refresh-news.yml` at 05:17. Every Saturday at
-   21:13 `build-warehouse.yml` rebuilds every subject, including Riksdag speeches and the
-   analyses built on them. Each publishes a versioned release to R2; none commits data. The
-   site does not read these releases: it serves the data committed under
-   `frontend/public/data` ([storage-and-serving.md](storage-and-serving.md)). They run in the `anton-portfolio` environment, whose secrets hold the R2
-   credentials, and can also be run by hand from the Actions tab. To pause one, comment out its
-   `schedule:` lines. [pipeline.md](pipeline.md) lists every subject and its schedule.
+     (Settings → Secrets and variables → Actions → Variables);
+   - run *Bootstrap versioned data delivery in R2* first with
+     `manifest_key=manifests/pipeline-smoke.json`, then verify the real files and browser
+     reads before running it with `manifests/current.json`;
+   - enable `manifest_url: https://data.antonernstsson.com/manifests/current.json`
+     in the committed delivery file, or set `VITE_R2_MANIFEST_URL` for the site build.
+     `R2_MANIFEST_URL` / `R2_LIVE_DELIVERY=1` also configure the catalogue generator.
+     Once set in the delivery file, the generator preserves that connection;
+   - retain historical copies until versioned reads, rollback and reproduction pass.
+5. **Scheduled refreshes.** Each morning (UTC): `refresh-jobs.yml` at 04:23 (new archives and
+   the day's job ads from JobTech's stream), `refresh-welfare.yml` at 04:37 (welfare, taxes
+   and parliament: roll calls, reports, polls, elections, government, studies) and
+   `refresh-news.yml` at 05:17. Each publishes a validated R2 group: jobs, public-data
+   or news. They run in the `anton-portfolio` environment, whose secrets
+   hold the R2 credentials, and can also be run by hand from the Actions tab. To pause one,
+   comment out its `schedule:` lines. Riksdag speeches and the analyses built on them
+   (embeddings, maps) are refreshed by *Build and store the warehouse*, run by hand.
 6. **Refresh secrets.** Settings → Environments → `anton-portfolio` → Secrets:
    `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET` (an R2 API token
    with read and write on the bucket). Without them the daily refresh stops at its first step
@@ -100,8 +105,16 @@ on `workers.dev` and in previews without configuration.
    every JobTech archive for the AI governance terms and takes a couple of hours.
    Fetch the warehouse anywhere with `python platform/publish/warehouse_store.py pull`. The
    bucket is public, so the warehouse can be downloaded by anyone; it holds only open data.
-   `platform/tests/architecture/test_pipeline_workflows.py` fails if a dbt subject, a source
-   or an ML stage is left out of the weekly run.
+   `platform/tests/architecture/test_warehouse_workflow.py` fails if a dbt subject, a source
+   or an ML stage is added without a step here.
+
+   What lives where:
+
+   | What | Where | Kept by |
+   |---|---|---|
+   | Approved JSON, Parquet and document shards | R2, `releases/<group>/<id>/files/` | `release.py`, with exact-byte readback and activation last |
+   | Static assets, code and committed reproduction snapshots | Git and Cloudflare Workers | code deployments; snapshots retained during migration |
+   | Raw source files, ML outputs, the DuckDB warehouse | R2, `warehouse/` | *Build and store the warehouse* |
 
 ## Limits
  Free plan: 20,000 files and 25 MiB per file in a Worker's static assets; requests for static assets

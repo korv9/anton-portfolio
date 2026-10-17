@@ -40,7 +40,8 @@ test('every flagship has the same grammar filled in', () => {
 test('previous and next follow the project groups without wrapping', () => {
   assert.equal(neighbours('politics').previous, undefined)
   assert.equal(neighbours('politics').next?.id, 'jobs')
-  assert.equal(neighbours('ai-act').next?.id, 'symbolic-atlas')
+  assert.equal(neighbours('ai-act').next?.id, 'sfs')
+  assert.equal(neighbours('sfs').next?.id, 'symbolic-atlas')
   assert.equal(neighbours('drugcomb').next?.id, 'thesis')
   assert.equal(neighbours('diva-lakehouse').next, undefined)
 })
@@ -61,6 +62,10 @@ test('a route finds its project, including sub-views', () => {
   assert.equal(
     projectForRoute({ page: 'welfare', path: '#sweden-counties' })?.id,
     'welfare',
+  )
+  assert.equal(
+    projectForRoute({ page: 'sfs', path: '#lagboken-tid' })?.id,
+    'sfs',
   )
   assert.equal(projectForRoute({ page: 'home', path: '#start' }), undefined)
   assert.equal(

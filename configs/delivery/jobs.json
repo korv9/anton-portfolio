@@ -1,12 +1,15 @@
 {
   "schema_version": 2,
   "files": [
-    "jobs/market.json"
+    "jobs/market.json",
+    "jobs/company-intelligence.json"
   ],
   "schemas": {
-    "jobs/market.json": "configs/delivery/schemas/market.json"
+    "jobs/market.json": "configs/delivery/schemas/market.json",
+    "jobs/company-intelligence.json": "configs/delivery/schemas/company-intelligence.json"
   },
   "checks": [
+    ["python", "platform/publish/job_companies.py", "check", "--file", "{root}/jobs/company-intelligence.json"],
     [
       "python",
       "platform/publish/validate_refresh_delivery.py",

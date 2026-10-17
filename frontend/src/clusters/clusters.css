@@ -1,10 +1,6 @@
-/*
- * Cluster visuals (clusters/): an ivory ground across the whole page, grey-lilac and olive type,
- * the maps floating on it without frames and the clusters in the palette's colours. Colours are
- * the --cv tokens in tokens.css.
- */
+/* Cluster visuals: neutral interface, open maps and categorical data palettes. */
 .project-shell #main:has(.cv) {
-  background: var(--cv-ivory);
+  background: var(--page);
 }
 .project-shell #main:has(.cv) > .project-context,
 .project-shell #main:has(.cv) > .project-pager {
@@ -13,11 +9,11 @@
 .cv {
   min-height: 100vh;
   padding: clamp(24px, 3vw, 48px) clamp(16px, 3vw, 56px) var(--sp-section);
-  background: var(--cv-ivory);
-  color: var(--cv-olive);
+  background: var(--page);
+  color: var(--ink);
 }
 .cv a {
-  color: var(--cv-olive);
+  color: var(--ink);
 }
 .project-shell #main .cv-intro h1 {
   margin: 0 0 var(--sp-2);
@@ -41,13 +37,13 @@
 }
 .cv-project {
   margin: 0;
-  font-family: var(--font-mono);
+  font-family: var(--font-meta);
   font-size: var(--fs-label);
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 .cv-project a {
-  color: var(--cv-ground);
+  color: var(--muted);
   text-underline-offset: 0.25em;
 }
 .project-shell #main .cv-head h2 {
@@ -64,8 +60,8 @@
 }
 .cv-specs {
   margin: 0.4rem 0 0;
-  color: var(--cv-ground);
-  font-family: var(--font-mono);
+  color: var(--muted);
+  font-family: var(--font-meta);
   font-size: 0.7rem;
   line-height: 1.5;
 }
@@ -81,22 +77,22 @@
   padding: 0 0.7rem;
   border: 0;
   border-radius: 999px;
-  background: var(--cv-oat);
-  color: var(--cv-olive);
+  background: var(--wash);
+  color: var(--ink);
   font: inherit;
   font-size: var(--fs-label);
   cursor: pointer;
 }
 .cv-variants button[aria-pressed='true'],
 .cv-legend button[aria-pressed='true'] {
-  background: var(--cv-ground);
-  color: var(--cv-ivory);
+  background: var(--muted);
+  color: var(--page);
 }
 .cv-variants button:focus-visible,
 .cv-legend button:focus-visible,
 .cv a:focus-visible,
 .cv canvas:focus-visible {
-  outline: 2px solid var(--cv-olive);
+  outline: 2px solid var(--ink);
   outline-offset: 2px;
 }
 .cv-map {
@@ -114,8 +110,8 @@
   max-width: 260px;
   padding: 6px 9px;
   border-radius: 4px;
-  background: var(--cv-olive);
-  color: var(--cv-ivory);
+  background: var(--ink);
+  color: var(--page);
   font-size: var(--fs-label);
   line-height: 1.35;
   pointer-events: none;
@@ -294,4 +290,20 @@
 .cv-place-empty {
   margin: 0;
   max-width: 40ch;
+}
+/* The same maps inside a report tab (ProjectMaps): the report's ground and type. */
+.cv-report {
+  display: grid;
+  gap: var(--sp-7);
+}
+.cv-report .cv-section {
+  padding-top: 0;
+}
+.project-shell #main .cv-report .cv-head h2 {
+  font-size: var(--h3);
+}
+.cv-report a:focus-visible,
+.cv-report canvas:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
 }

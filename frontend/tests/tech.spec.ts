@@ -13,7 +13,7 @@ const run = (id: number, conclusion: string) => ({
   head_sha: 'abcdef1234567',
 })
 
-test('the tech panel shows the runs, the pipeline, the ER diagrams, every table and the maps', async ({
+test('the projects page explains the pipeline, lists the projects and shows the runs, the ER diagrams, every table and the maps', async ({
   page,
 }) => {
   await page.route('https://api.github.com/**', (route) => {
@@ -59,8 +59,30 @@ test('the tech panel shows the runs, the pipeline, the ER diagrams, every table 
       },
     }),
   )
+  // The old address leads here.
   await page.goto('/#tech')
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Tech panel')
+  await expect(page).toHaveURL(/#projekt$/)
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Projects')
+  // The walkthrough: seven stops, the first chosen; a stop explains itself and lists what it holds.
+  const rail = page.locator('.tour-rail button')
+  await expect(rail).toHaveCount(7)
+  await expect(rail.first()).toHaveAttribute('aria-pressed', 'true')
+  await expect(page.locator('.tour-items li').first()).toBeVisible()
+  await rail.nth(3).click()
+  await expect(page.locator('#tour-step-title')).toHaveText('04 Build and test')
+  await expect(page.locator('.tour-layers dt')).toHaveText([
+    'bronze',
+    'silver',
+    'gold',
+  ])
+  await page.getByRole('button', { name: /Next step/ }).click()
+  await expect(page.locator('#tour-step-title')).toHaveText(
+    '05 Machine learning',
+  )
+  // The projects, with what a project on the platform holds.
+  await expect(
+    page.locator('.project-card[href="#politik"] .project-card-holds'),
+  ).toContainText('dbt models')
   const fetched = page.locator('.fetches tbody tr')
   await expect(fetched).toHaveAttribute('data-state', 'failure')
   await expect(fetched).toContainText('6, 0, 2')
@@ -98,18 +120,19 @@ test('the tech panel shows the runs, the pipeline, the ER diagrams, every table 
   await expect(dialog.locator('canvas')).toBeVisible()
   await dialog.getByRole('button', { name: 'Close' }).click()
   await expect(dialog).not.toBeVisible()
-  const scan = await new AxeBuilder({ page }).include('#tech').analyze()
+  const scan = await new AxeBuilder({ page }).include('#projekt').analyze()
   expect(scan.violations).toEqual([])
 })
 
 test(
-  'the tech panel fits a phone and says so when GitHub cannot be read',
+  'the projects page fits a phone and says so when GitHub cannot be read',
   { tag: '@mobile' },
   async ({ page }) => {
     await page.route('https://api.github.com/**', (route) =>
       route.fulfill({ status: 403, json: {} }),
     )
-    await page.goto('/#tech')
+    await page.goto('/#projekt')
+    await expect(page.locator('.tour-rail button')).toHaveCount(7)
     await expect(page.locator('#tech-ingestion')).toContainText(
       'could not be read from GitHub',
     )

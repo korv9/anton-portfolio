@@ -353,17 +353,17 @@
 }
 .multiple-avg {
   fill: none;
-  stroke: #a9a9a3;
+  stroke: var(--color-chart-muted);
   stroke-width: 1.5;
 }
 .multiple-line {
   fill: none;
-  stroke: var(--info, #1f5f8b);
+  stroke: var(--color-chart-neutral);
   stroke-width: 2;
   stroke-linejoin: round;
 }
 .multiple-dot {
-  fill: var(--info, #1f5f8b);
+  fill: var(--color-chart-neutral);
 }
 .multiple-cross {
   stroke: var(--ink);

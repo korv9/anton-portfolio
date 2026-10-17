@@ -186,7 +186,7 @@ function LabMap({
       p,
     }))
     ctx.globalAlpha = 0.12
-    ctx.strokeStyle = styles.getPropertyValue('--cv-ground')
+    ctx.strokeStyle = styles.getPropertyValue('--color-chart-muted')
     for (const [a, b] of view.edges || []) {
       const start = projected.current[a],
         end = projected.current[b]
@@ -226,7 +226,7 @@ function LabMap({
       )
       ctx.fill()
       if (view.total <= 100) {
-        ctx.strokeStyle = styles.getPropertyValue('--cv-olive')
+        ctx.strokeStyle = styles.getPropertyValue('--color-chart-neutral')
         ctx.lineWidth = 0.75
         ctx.stroke()
       }

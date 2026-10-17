@@ -124,3 +124,17 @@
   background: color-mix(in srgb, var(--c) 14%, var(--paper));
   font-weight: 700;
 }
+
+/* The seat scale is shared by the report and the party detail page. */
+.seat-lines-scale line {
+  stroke: var(--line);
+  stroke-dasharray: 2 5;
+}
+.seat-lines-scale text {
+  fill: var(--muted);
+  font: 12px var(--font-meta);
+}
+.seat-lines-label-link {
+  fill: none;
+  stroke: var(--line-strong);
+}

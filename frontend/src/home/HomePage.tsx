@@ -148,7 +148,7 @@ function Work() {
     <section className="home-screen home-work" aria-labelledby="projects-title">
       <span className="home-project-marker" aria-hidden="true" />
       <h2 id="projects-title" className="home-work-title">
-        Projects
+        <a href="#projekt">Projects</a>
       </h2>
       <ClusterPreview kind="jobs" background />
       <div className="home-project-groups">

@@ -5,10 +5,13 @@
   "type": "module",
   "scripts": {
     "dev": "vite --config frontend/vite.config.ts --host 127.0.0.1 --port 5173 --strictPort",
-    "build": "tsc -b frontend && vite build --config frontend/vite.config.ts",
+    "build": "npm run compliance:check && npm run jobs:check && tsc -b frontend && vite build --config frontend/vite.config.ts",
+    "jobs:check": "node --experimental-strip-types scripts/check_job_companies.mjs",
+    "compliance:check": "node --experimental-strip-types scripts/check_compliance_release.mjs",
     "preview": "vite preview --config frontend/vite.config.ts --host 127.0.0.1",
     "check": "tsc -b frontend",
     "test:e2e": "playwright test --config frontend/playwright.config.ts",
+    "test:security": "npm run build && playwright test --config frontend/security.playwright.config.ts",
     "test:unit": "node --experimental-strip-types --test frontend/tests/unit/*.test.ts worker/*.test.ts",
     "format": "prettier --write frontend/src frontend/tests frontend/*.ts worker",
     "format:check": "prettier --check frontend/src frontend/tests frontend/*.ts worker",
@@ -85,6 +88,6 @@
     "prettier": "^3.9.8",
     "typescript": "~5.8.3",
     "vite": "^6.3.5",
-    "wrangler": "^4.143.0"
+    "wrangler": "^4.151.0"
   }
 }

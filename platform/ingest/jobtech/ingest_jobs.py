@@ -3,6 +3,7 @@ import argparse
 import hashlib
 import json
 import os
+import time
 from pathlib import Path
 
 import duckdb
@@ -13,25 +14,52 @@ from urllib3.util.retry import Retry
 API = 'https://jobsearch.api.jobtechdev.se/search'
 
 
-def fetch_jobs(queries, max_pages):
+def jobsearch_session():
     session = requests.Session()
     session.mount('https://', HTTPAdapter(max_retries=Retry(
         total=4, backoff_factor=1, status_forcelist=[429, 500, 502, 503, 504])))
+    return session
+
+
+def fetch_search(session, params, max_pages, *, observe=None, sleep=time.sleep, allow_window_split=False):
+    """Shared bounded search, with explicit coverage for the current-ad consumer."""
+    ads, totals, pages = [], [], 0
+    split = False
+    for page in range(max_pages):
+        sleep(0.25)
+        query = {**params,'limit':100,'offset':page*100}
+        response = session.get(API,params=query,timeout=60)
+        response.raise_for_status()
+        if observe:
+            observe(response,query)
+        body = response.json()
+        hits = body['hits']
+        if not isinstance(hits,list):
+            raise ValueError('API hits must be a list')
+        total = body.get('total',{})
+        total = total.get('value') if isinstance(total,dict) else total
+        if type(total) is not int or total < 0:
+            raise ValueError('API total must be a nonnegative integer')
+        totals.append(total)
+        pages += 1
+        ads.extend(hits)
+        if total > 2000 and allow_window_split:
+            split = True
+            break
+        if len(hits) < 100 or len(ads) >= total:
+            break
+    unique = {str(ad['id']) for ad in ads}
+    return ads, {'pages':pages,'source_totals':totals,'observed':len(unique),'requires_window_split':split,
+        'complete':bool(totals and not split and len(set(totals)) == 1 and len(unique) == totals[0])}
+
+
+def fetch_jobs(queries, max_pages):
     ads = []
-    with session:
+    with jobsearch_session() as session:
         for query in queries:
-            for page in range(max_pages):
-                response = session.get(API, params={
-                    'q': query, 'limit': 100, 'offset': page * 100}, timeout=60)
-                response.raise_for_status()
-                body = response.json()
-                hits = body['hits']
-                if not isinstance(hits, list):
-                    raise ValueError('API hits must be a list')
-                ads.extend(hits)
-                if len(hits) < 100:
-                    break
-            else:
+            found,coverage = fetch_search(session,{'q':query},max_pages)
+            ads.extend(found)
+            if not coverage['complete']:
                 print(f'Page cap reached for {query!r}; this may be a partial sample.')
     return ads
 

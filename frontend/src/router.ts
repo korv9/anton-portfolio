@@ -19,11 +19,13 @@ export type Page =
   | 'lakehouse'
   | 'symbolic'
   | 'aiact'
+  | 'sfs'
   | 'philosophy'
   | 'concepts'
   | 'clusters'
   | 'lawqa'
-  | 'tech'
+  | 'compliance'
+  | 'company'
 
 export type Route = {
   /** The full hash, e.g. `#politik-valjarna?partier=S`. */
@@ -32,11 +34,11 @@ export type Route = {
   path: string
   params: URLSearchParams
   page: Page
+  companyId?: string
 }
 
 /** Addresses that the new structure replaces, and where they now lead. */
 export const REDIRECTS: Record<string, string> = {
-  '#politik-skatter': '#politik-budget',
   '#jobb-utforska': '#jobb',
   '#sweden-work': '#sweden',
   '#sweden-sick-leave': '#sweden-health',
@@ -46,8 +48,9 @@ export const REDIRECTS: Record<string, string> = {
   '#idea-lineage': '#projekt',
   '#quality': '#projekt',
   '#data-model': '#projekt',
-  '#er': '#tech',
-  '#er-diagram': '#tech',
+  '#er': '#projekt',
+  '#er-diagram': '#projekt',
+  '#tech': '#projekt',
   '#diva': '#projekt',
   '#rag': '#projekt',
   '#mimii': '#projekt',
@@ -67,8 +70,8 @@ export const REDIRECTS: Record<string, string> = {
   '#kompetenser': '#om-mig',
   // The architecture page is the Data Constellation now; the platform status sits in the
   // data catalogue, and the welfare analysis in the welfare product.
-  '#technical': '#tech',
-  '#teknisk': '#tech',
+  '#technical': '#projekt',
+  '#teknisk': '#projekt',
   '#design': '#start',
   '#tallman': '#projekt',
   '#job-market': '#jobb',
@@ -76,7 +79,7 @@ export const REDIRECTS: Record<string, string> = {
   '#job-market-regions': '#jobb-lan',
   '#job-market-conditions': '#jobb-villkor',
   '#job-market-clusters': '#jobb-kluster',
-  '#status': '#tech',
+  '#status': '#projekt',
   '#symbolic-map': '#symbolic-atlas',
   // The politics product's older detailed views: each address leads to the theme that
   // answers the same question now.
@@ -117,9 +120,20 @@ export function redirectOf(path: string): string | undefined {
  * behind them. All of them are laid out like the start page: edge to edge, no breadcrumb or
  * topic rows.
  */
-export const REPORT_TABS = ['#politik', '#politik-budget', '#politik-tal']
-export const JOB_TABS = ['#jobb', '#jobb-lan', '#jobb-villkor']
-export const WELFARE_TABS = ['#sweden', '#sweden-health', '#sweden-counties']
+export const REPORT_TABS = [
+  '#politik',
+  '#politik-val',
+  '#politik-riksdag',
+  '#politik-budget',
+  '#politik-tal',
+]
+export const JOB_TABS = ['#jobb', '#jobb-lan', '#jobb-villkor', '#jobb-kluster']
+export const WELFARE_TABS = [
+  '#sweden',
+  '#sweden-health',
+  '#sweden-counties',
+  '#sweden-kommuner',
+]
 export const AI_ACT_TABS = ['#ai-act', '#ai-act-roles', '#ai-act-society']
 export const PHILOSOPHY_TABS = [
   '#philosophy-atlas',
@@ -137,7 +151,14 @@ export const CONCEPT_TABS = [
   '#concept-constellation',
 ]
 export const DRUGCOMB_TABS = ['#drugcomb', '#drugcomb-model', '#drugcomb-cells']
+export const SFS_TABS = ['#lagboken', '#lagboken-tid', '#lagboken-storlek']
 const REPORTS = [
+  [
+    '#compliance',
+    '#compliance-rankings',
+    '#compliance-company',
+    '#compliance-stories',
+  ],
   REPORT_TABS,
   JOB_TABS,
   WELFARE_TABS,
@@ -146,6 +167,7 @@ const REPORTS = [
   SYMBOLIC_TABS,
   CONCEPT_TABS,
   DRUGCOMB_TABS,
+  SFS_TABS,
 ]
 const DEEP_DIVES = [
   '#politik-partier',
@@ -156,7 +178,6 @@ const DEEP_DIVES = [
   '#politik-kallor',
   '#jobb-trender',
   '#jobb-yrken',
-  '#jobb-kluster',
   '#job-market-tech',
   '#jobb-kallor',
   '#sweden-explorer',
@@ -164,6 +185,10 @@ const DEEP_DIVES = [
 ]
 export function isLongRead(path: string) {
   return (
+    path.startsWith('/companies/') ||
+    path === '#compliance' ||
+    path.startsWith('#compliance-') ||
+    path.startsWith('#politik') ||
     REPORTS.flat().includes(path) ||
     DEEP_DIVES.includes(path) ||
     path.startsWith('#ai-act-') ||
@@ -174,7 +199,6 @@ export function isLongRead(path: string) {
     path.startsWith('#concept-') ||
     path.startsWith('#concepts-') ||
     path.startsWith('#drugcomb') ||
-    path === '#tech' ||
     path === '#fraga-lagen'
   )
 }
@@ -188,6 +212,8 @@ export function isPoliticsPath(path: string) {
 }
 
 export function pageOf(path: string): Page {
+  if (path === '#compliance' || path.startsWith('#compliance-'))
+    return 'compliance'
   if (path === '#projekt') return 'projects'
   if (isPoliticsPath(path)) return 'politik'
   if (
@@ -203,8 +229,8 @@ export function pageOf(path: string): Page {
   if (path === '#sweden' || path.startsWith('#sweden-')) return 'welfare'
   if (path === '#cluster-visuals') return 'clusters'
   if (path === '#fraga-lagen') return 'lawqa'
-  if (path === '#tech') return 'tech'
   if (path === '#ai-act' || path.startsWith('#ai-act-')) return 'aiact'
+  if (SFS_TABS.includes(path)) return 'sfs'
   if (path.startsWith('#concept-') || path.startsWith('#concepts-'))
     return 'concepts'
   if (path === '#philosophy-atlas' || path.startsWith('#philosophy-'))
@@ -221,23 +247,60 @@ export function parseHash(raw: string): Route {
   return { hash, path, params: new URLSearchParams(query), page: pageOf(path) }
 }
 
+export function companyHref(id: string) {
+  return '/companies/' + encodeURIComponent(id)
+}
+
+export function parseLocation(pathname: string, hash: string): Route {
+  if (pathname.startsWith('/companies/')) {
+    let id = ''
+    try {
+      id = decodeURIComponent(pathname.slice('/companies/'.length))
+    } catch {
+      /* Invalid identifiers open the explicit missing profile state. */
+    }
+    if (/[\/\\\u0000-\u001f]/.test(id)) id = ''
+    return {
+      page: 'company',
+      path: pathname,
+      hash,
+      params: new URLSearchParams(),
+      companyId: id,
+    }
+  }
+  return parseHash(hash)
+}
+
 /** The current route; follows hash changes and applies redirects in the address bar. */
 export function useRoute(): Route {
-  const [route, setRoute] = useState(() => parseHash(window.location.hash))
+  const [route, setRoute] = useState(() =>
+    parseLocation(location.pathname, location.hash),
+  )
   useEffect(() => {
     const update = () => {
       const raw = window.location.hash
       const [rawPath, query] = raw.split('?')
       const target = redirectOf(rawPath)
+      if (
+        location.pathname.startsWith('/companies/') &&
+        raw &&
+        raw !== '#main'
+      ) {
+        history.replaceState(null, '', '/' + raw)
+      }
       if (target) {
         // Replace, so the back button does not bounce through the old address.
         history.replaceState(null, '', target + (query ? `?${query}` : ''))
       }
-      setRoute(parseHash(window.location.hash))
+      setRoute(parseLocation(location.pathname, location.hash))
     }
     update()
     window.addEventListener('hashchange', update)
-    return () => window.removeEventListener('hashchange', update)
+    window.addEventListener('popstate', update)
+    return () => {
+      window.removeEventListener('hashchange', update)
+      window.removeEventListener('popstate', update)
+    }
   }, [])
   return route
 }

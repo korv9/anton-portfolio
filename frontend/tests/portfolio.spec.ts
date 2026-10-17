@@ -280,7 +280,7 @@ test(
       'Observatories',
       'Labs',
     ])
-    await expect(page.locator('.work-card')).toHaveCount(12)
+    await expect(page.locator('.work-card')).toHaveCount(14)
     await expect
       .poll(() =>
         page
@@ -365,27 +365,22 @@ test('home remains usable when the decorative debate map is unavailable', async 
   await expect(page.locator('#start nav')).toHaveCount(0)
 })
 
-test('the projects page shows every retained project on one screen', async ({
+test('the start page title opens the projects page, which lists every retained project', async ({
   page,
 }) => {
-  await page.goto('/#projekt')
+  // The start page's Projects title opens the projects page.
+  await page.goto('/')
+  await page.locator('.home-work-title a').click()
+  await expect(page).toHaveURL(/#projekt$/)
   await expect(page).toHaveTitle('Projects | Anton Ernstsson')
   await expect(page.locator('.projects-group')).toHaveCount(3)
-  await expect(page.locator('.project-card')).toHaveCount(12)
+  await expect(page.locator('.project-card')).toHaveCount(14)
   await expect(page.locator('.project-card[href="#thesis"]')).toContainText(
     'IT Incident Clustering',
   )
   await expect(page.locator('.project-card[href="#drugcomb"]')).toContainText(
     'Drug Synergy Lab',
   )
-  // Nothing to scroll for on a desktop screen: the last card ends inside the window.
-  for (const card of await page.locator('.project-card').all())
-    await expect(card).toBeInViewport({ ratio: 1 })
-  expect(
-    await page.evaluate(
-      () => document.documentElement.scrollHeight <= innerHeight,
-    ),
-  ).toBe(true)
   const menu = await siteNav(page)
   await expect(
     menu.getByRole('link', { name: 'Cluster Visuals', exact: true }),

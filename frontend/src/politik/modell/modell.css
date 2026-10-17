@@ -15,7 +15,7 @@
   border: 1px solid color-mix(in srgb, var(--ink) 30%, transparent);
   background: transparent;
   color: var(--ink);
-  font-family: var(--font-mono) !important;
+  font-family: var(--font-meta) !important;
   font-weight: 600;
   cursor: pointer;
 }
@@ -38,14 +38,14 @@
 }
 .modell-node {
   fill: var(--ink);
-  font-family: var(--font-mono) !important;
+  font-family: var(--font-meta) !important;
   font-size: 13px;
   font-weight: 600;
 }
 .modell-share,
 .modell-axis {
   fill: var(--ink);
-  font-family: var(--font-mono) !important;
+  font-family: var(--font-meta) !important;
   font-size: 12px;
   opacity: 0.75;
 }

@@ -7,14 +7,19 @@ import { CvViewerProvider } from './site/CvViewer'
 import HomePage from './home/HomePage'
 import DebateBackdrop from './home/DebateBackdrop'
 import ProjectStructure from './projects/ProjectStructure'
+import { PROJECT_GROUPS, projectForRoute } from './projects/projectRegistry'
 import { PageBoundary } from './site/PageBoundary'
 import './site/site.css'
 import './site/editorial.css'
 
 // Everything but the start page loads on navigation, so the start page ships none of it.
-const ProjectsPage = lazy(() => import('./projects/ProjectsPage'))
+const ProjectsPage = lazy(() => import('./tech/TechPanel'))
 const PoliticsProduct = lazy(() => import('./politik/PoliticsProduct'))
 const JobsProduct = lazy(() => import('./jobb/JobsProduct'))
+const ComplianceExplorer = lazy(() => import('./compliance/ComplianceExplorer'))
+const CompanyIntelligence = lazy(
+  () => import('./companies/CompanyIntelligence'),
+)
 const WelfareReport = lazy(() => import('./welfare/WelfareReport'))
 const WelfareDeep = lazy(() =>
   import('./welfare/WelfareReport').then((m) => ({ default: m.WelfareDeep })),
@@ -22,7 +27,6 @@ const WelfareDeep = lazy(() =>
 const SymbolicAtlasPage = lazy(() => import('./symbolic/SymbolicAtlasPage'))
 const AiActProduct = lazy(() => import('./aiact/AiActProduct'))
 const AiActReport = lazy(() => import('./aiact/AiActReport'))
-const TechPanel = lazy(() => import('./tech/TechPanel'))
 const PhilosophyAtlasPage = lazy(
   () => import('./philosophy/PhilosophyAtlasPage'),
 )
@@ -31,6 +35,7 @@ const ConceptConstellationPage = lazy(
 )
 const ClusterVisualsPage = lazy(() => import('./clusters/ClusterVisualsPage'))
 const AskTheLaw = lazy(() => import('./lawqa/AskTheLaw'))
+const SfsReport = lazy(() => import('./sfs/SfsReport'))
 const DrugCombPage = lazy(() =>
   import('./products/CaseStudies').then((m) => ({ default: m.DrugCombPage })),
 )
@@ -69,10 +74,16 @@ export default function App() {
   }, [route.path, route.page])
 
   const { page, path } = route
+  const project = projectForRoute(route)
+  const workspace =
+    PROJECT_GROUPS.find((group) =>
+      group.ids.includes(project?.id ?? ''),
+    )?.label.toLowerCase() ?? 'tool'
   return (
     <CvViewerProvider>
       <div
         className={`site-shell${page === 'home' ? ' home-shell' : ' project-shell'}`}
+        data-workspace={page === 'home' ? undefined : workspace}
       >
         {page === 'home' && <DebateBackdrop playIntro />}
         <a className="skip-link" href="#main">
@@ -98,7 +109,14 @@ export default function App() {
                 {page === 'home' && <HomePage path={path} />}
                 {page === 'projects' && <ProjectsPage />}
                 {page === 'politik' && <PoliticsProduct route={route} />}
-                {page === 'jobs' && <JobsProduct route={route} />}
+                {page === 'jobs' &&
+                  (path === '#jobb-it' ? (
+                    <CompanyIntelligence route={route} />
+                  ) : (
+                    <JobsProduct route={route} />
+                  ))}
+                {page === 'company' && <CompanyIntelligence route={route} />}
+                {page === 'compliance' && <ComplianceExplorer route={route} />}
                 {page === 'welfare' &&
                   (WELFARE_TABS.includes(path) ? (
                     <WelfareReport route={route} />
@@ -108,7 +126,7 @@ export default function App() {
                 {page === 'symbolic' && <SymbolicAtlasPage route={route} />}
                 {page === 'clusters' && <ClusterVisualsPage />}
                 {page === 'lawqa' && <AskTheLaw route={route} />}
-                {page === 'tech' && <TechPanel />}
+                {page === 'sfs' && <SfsReport route={route} />}
                 {page === 'aiact' &&
                   (AI_ACT_TABS.includes(path) ? (
                     <AiActReport route={route} />

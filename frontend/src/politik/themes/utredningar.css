@@ -41,16 +41,16 @@
 .study-kind {
   justify-self: start;
   padding: 0.05rem 0.4rem;
-  font-family: var(--font-mono) !important;
+  font-family: var(--font-meta) !important;
   font-size: 0.75rem;
   color: var(--on-accent);
   background: var(--info);
 }
 .study-kind.ds {
-  background: #2c7a4b;
+  background: var(--ink-2);
 }
 .study-kind.rir {
-  background: #8a5a14;
+  background: var(--muted);
 }
 .study-detail h3 {
   margin: 0 0 0.8rem;
@@ -155,7 +155,7 @@
 .law-basis p {
   margin: 0 0 var(--sp-2);
   color: var(--muted);
-  font-family: var(--font-mono);
+  font-family: var(--font-meta);
   font-size: var(--caption);
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -185,7 +185,7 @@
   text-underline-offset: 0.2em;
 }
 .law-studies b {
-  font-family: var(--font-mono);
+  font-family: var(--font-meta);
   font-size: var(--small);
   font-weight: 600;
 }

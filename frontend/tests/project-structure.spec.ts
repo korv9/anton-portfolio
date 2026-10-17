@@ -1,17 +1,18 @@
 import { test, expect } from './test'
 
 const projects = [
-  ['#jobb', 'Labour Market Observatory'],
-  ['#sweden', 'Wellbeing Observatory'],
-  ['#ai-act', 'EU AI Act Observatory'],
+  ['#jobb', 'Labour Market Observatory', 4],
+  ['#sweden', 'Wellbeing Observatory', 4],
+  ['#ai-act', 'EU AI Act Observatory', 3],
+  ['#lagboken', 'Swedish Statute Book', 3],
 ] as const
-for (const [path, name] of projects)
-  test(`${name} opens as a report in three tabs`, async ({ page }) => {
+for (const [path, name, tabs] of projects)
+  test(`${name} opens as a report in ${tabs} tabs`, async ({ page }) => {
     await page.goto(`/${path}`)
     await expect(page.locator('.politik-intro-name')).toHaveText(name)
     await expect(
       page.getByRole('navigation', { name: 'Report' }).getByRole('link'),
-    ).toHaveCount(3)
+    ).toHaveCount(tabs)
     await expect(page.getByRole('heading', { level: 1 })).not.toBeEmpty()
     await expect(page.locator('.report-tab .feature').first()).toBeVisible()
     await expect(

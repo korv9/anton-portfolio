@@ -91,7 +91,7 @@ export default function ClusterScatter({
     ctx.clearRect(0, 0, width, h)
     const css = getComputedStyle(el)
     const colours = COLOURS.map((v) => css.getPropertyValue(v).trim())
-    const noise = css.getPropertyValue('--cv-oat').trim()
+    const noise = css.getPropertyValue('--color-chart-muted').trim()
     const draw = (p: ClusterPoint, alpha: number) => {
       ctx.globalAlpha = alpha
       ctx.fillStyle = p.c < 0 ? noise : colours[p.c % colours.length]

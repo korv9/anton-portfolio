@@ -353,6 +353,20 @@ body:has(.home-backdrop[data-intro='true']) :is(.home-name, .home-roles span) {
   text-align: left;
   text-transform: uppercase;
 }
+/* The title opens the projects page, where the platform behind them is explained. */
+.home-work-title a {
+  color: inherit;
+  text-decoration: none;
+}
+.home-work-title a:hover {
+  text-decoration: underline;
+  text-decoration-thickness: 3px;
+  text-underline-offset: 0.12em;
+}
+.home-work-title a:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 4px;
+}
 .work-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr);

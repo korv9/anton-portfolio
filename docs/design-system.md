@@ -1,141 +1,162 @@
-# Design system
+# Portfolio design system v2
 
-An ivory editorial canvas outside, focused analytical worlds inside. The page background
-is #F4F0E6, sampled from the supplied reference. Butter yellow, pistachio, oat, powder pink
-and muted apricot distinguish panels; deep olive marks selected controls. Text stays
-near-black. Party identity colours are preserved, and large maps can use a dark plate.
+A warm-grey analytical workspace for recruiters, hiring managers and readers exploring the
+projects. The interface provides structure; charts, networks and source material provide
+meaning. The homepage retains its existing composition and palette, with Helvetica applied.
 
-`frontend/src/tokens.css` is the one place the tokens are defined. It loads after every
-other stylesheet, so a component that reads a token follows it everywhere. There is no
-second theme file.
+## Tokens and type
 
-## Type
+`frontend/src/tokens.css` is the only token definition file. `main.tsx` imports it after the
+base and shared styles. Project styles reference these tokens, including when loaded lazily.
+Semantic names are available to new code; existing aliases resolve to the same values.
 
-- **Manrope** for body text, navigation and section headings, self-hosted as variable WOFF2 (`/fonts/manrope-latin.woff2`, 29 kB, preloaded, with
-  `manrope-variable.woff2` for any other character;
-  weights 200–800). The SIL Open Font License is kept at `frontend/public/fonts/Manrope-OFL.txt`.
-- **Helvetica Neue / Helvetica** (`--font-identity`, weight 700) for the homepage name,
-  with Arial as the fallback on devices without Helvetica installed.
-- **System monospace** (`--font-mono`) for figures, metadata, eyebrows and code.
-- Weights: body 470, interface 560, headings 700.
-- Scale: `--display-xl`, `--display-l`, `--h1`, `--h2`, `--h3`, `--body-large`, `--body`,
-  `--small`, `--caption`; reading measure `--measure: 68ch`. The older `--fs-*` names map
-  onto the same scale.
-- Figures are tabular everywhere.
+| Role                             | Token                    | Value     | Existing aliases                  |
+| -------------------------------- | ------------------------ | --------- | --------------------------------- |
+| Canvas                           | `--color-canvas`         | `#F1EFE7` | `--page`, `--paper-strong`        |
+| Navigation and secondary surface | `--color-surface`        | `#E2DFD6` | `--paper`, `--wash`, `--side`     |
+| Panel and selected field         | `--color-panel`          | `#CECBC2` | `--surface`, `--select`           |
+| Separator                        | `--color-border`         | `#A9A69D` | `--line`                          |
+| Control edge                     | `--color-border-control` | `#858279` | `--line-strong`                   |
+| Main text                        | `--color-ink`            | `#363636` | `--ink`, `--accent`, `--focus`    |
+| Secondary text                   | `--color-ink-secondary`  | `#57554E` | `--muted`, `--ink-faded`          |
+| Inverse text                     | `--color-ink-inverse`    | `#F1EFE7` | `--on-accent`                     |
+| Neutral data                     | `--color-chart-neutral`  | `#484848` | `--ink-2`, `--info`, `--series-1` |
+| Inactive data                    | `--color-chart-muted`    | `#96938C` | `--subtle`, `--stone`             |
 
-The homepage name uses Helvetica; project introductions use Manrope. Project
-pages use open chart surfaces with generous section spacing. A shared header contains
-the project menu; topics and section links sit inside the selected project. Inventory
-counts belong with their dataset, and are not repeated as a KPI row on every view.
+Secondary text is darker than the initial reference `#66645F`: that reference fails 4.5:1
+on the secondary surface. `#57554E` also passes on the darker panel. Inactive data and
+separator colors are not body-text colors. Native control borders use the stronger edge.
 
-## Colour
+Helvetica uses the system stack `"Helvetica Neue", Helvetica, Arial, sans-serif`.
+There are no downloaded Helvetica files or Manrope font requests. Arial is the fallback
+where Helvetica is unavailable. Body is regular, controls and chart titles medium, headings
+selectively semibold. Metadata also uses Helvetica. Code uses the system monospace stack.
+Charts, tables and metrics use tabular figures.
 
-| Token                        | Light page            | Plate                    | Use                         |
-| ---------------------------- | --------------------- | ------------------------ | --------------------------- |
-| `--page`                     | `#F4F0E6`             | `#0F0F10`                | the background              |
-| `--paper` / `--paper-strong` | `#F4F0E6` / `#FFFFFF` | `#1A1A1C` / `#232326`    | surfaces, inputs            |
-| `--ink`                      | `#0F0F10`             | `#F2EFE9`                | text                        |
-| `--muted`                    | `#4A4A4D`             | `#A8A49B`                | secondary text              |
-| `--subtle`                   | `#6B6B6E`             | `#8A8A8D`                | rules and marks, never text |
-| `--line` / `--line-strong`   | ink at 16 % / 42 %    | off-white at 16 % / 38 % | rules, control edges        |
-| `--accent` / `--on-accent`   | `#555B45` / ivory     | off-white / ink          | what is chosen or current   |
-| `--info`, `--negative`       | `#555B45`, `#8F3424`  | `#8BBDE3`, `#EC8A74`     | meaning, never decoration   |
-| `--series-1` … `--series-5`  | five series hues      | same                     | charts with categories only |
+| Type role                   | Token                            |
+| --------------------------- | -------------------------------- |
+| Display, protected homepage | `--type-display`                 |
+| Page title                  | `--type-page-title`              |
+| Section title               | `--type-section-title`           |
+| Chart title                 | `--type-chart-title`             |
+| Body                        | `--type-body`                    |
+| Label                       | `--type-label`                   |
+| Caption                     | `--type-caption`                 |
+| Metric                      | `--type-metric`                  |
+| Technical metadata          | `--type-metadata`, `--font-meta` |
+| Code                        | `--type-code`, `--font-mono`     |
 
-Pale chart fills keep labels and values alongside them. Every main page is checked by
-axe in `frontend/tests/accessibility.spec.ts`.
+The `--h*`, `--fs-*` and dashboard names remain compatibility roles. The display scale is
+reserved for identity; analytical page titles use the smaller page scale.
 
-Party colours are unchanged and come from `frontend/src/parties/identity.tsx`.
+## Composition and ownership
 
-### Dark plates
+The existing React components form the system. Add a component only when the existing
+primitive cannot express the interaction. Use native links, buttons, selects and disclosures.
 
-`.plate` redefines the same tokens for its subtree, so a component inside reads its colours
-from the tokens and needs no theme of its own. `Stage` is light unless it is given `dark`;
-only the Symbolic Atlas map asks for it. Component aliases such as `--stage-ink` or `--c-muted` are declared
-again inside `.plate`, because a custom property set on an outer element keeps the outer
-value.
+| Responsibility                             | Existing implementation                                                       |
+| ------------------------------------------ | ----------------------------------------------------------------------------- |
+| App shell and workspace identity           | `App.tsx`, `.site-shell`, `data-workspace`                                    |
+| Global header and project menu             | `site/SiteHeader.tsx`, `site/header.css`                                      |
+| Breadcrumbs and project pager              | `site/Header.tsx`, `site/site.css`                                            |
+| Project and section navigation             | `projects/ProjectStructure.tsx`, `projects/topics.ts`                         |
+| Content and workspace alignment            | `site/editorial.css`, `.ds-container`                                         |
+| Project header and section header          | `ui/Project.tsx`, `ProjectHero`, `ProjectSection`                             |
+| Dashboard grid and panel                   | `ui/dash/Dash.tsx`, `DashGrid`, `ChartCard`                                   |
+| Analytical chart, header, source and table | `charts/feature/Feature.tsx`, `Feature`                                       |
+| Visualization stage                        | `ui/Stage.tsx`, `Stage`, `StageBlock`, `StageFacts`                           |
+| Metrics and tables                         | `KpiRow`, `Feature` table alternatives and existing native `.dk-table` tables |
+| Ranked comparison and time series          | `charts/RankBars.tsx`, `MultiLineChart.tsx`, `TimeSeriesChart.tsx`            |
+| Filter bar and select                      | `Pick`, `report-chips`, `SlicerSelect` and existing project filters           |
+| Disclosure                                 | `ui/Disclosure.tsx`, native `details` for local methodology                   |
+| Loading, empty and error states            | Existing data-page states, `site/PageBoundary.tsx`                            |
 
-On the Symbolic Atlas the clusters are muted hues on the plate. In the book views, other
-clusters are grey, cross-book candidates stone (`#C9C2B6`) and reviewed clusters off-white,
-with a key beside the map. The Data Constellation sits on the light page. It keeps bronze, silver and gold tones for
-the medallion layers and draws everything else in greys; each layer also has its own mark
-shape, so colour is never the only cue.
+Shared layout rules live in `site/editorial.css`. Chart and stage internals live in their
+own stylesheets. `tokens.css` supplies tokens, shared control states and the scoped plate.
+Do not add a second theme or an override sheet for individual projects.
 
-## Shape and space
+Dashboard grids have twelve columns; a full-width chart spans all twelve. Gutters are fluid
+between 16 and 28 pixels. Project sections use `--sp-section`; local gaps use `--sp-1`
+through `--sp-7`. Charts have no global maximum width. Prose keeps a 68-character measure.
+Panels use thin borders, a 2-pixel radius and no elevation shadow. Navigation is compact.
 
-Corners are 0–4 px (`--radius: 2px`); circles stay circles. There are no decorative shadows,
-gradients or blur; an inset rule may mark a party or a current item. Space follows
-`--sp-1` … `--sp-7` and the fluid `--gutter`; `--sp-section` is the gap between the start
-page's screens and a project's sections.
+## Four workspace patterns
 
-Pages, sections and dashboards fill the screen; only running text keeps a measure:
+`App` derives `data-workspace` from the existing registry groups. Changing visual layout
+does not change routes, analytical calculations, topic order or data loading.
 
-| Token              | Width | Use                                          |
-| ------------------ | ----- | -------------------------------------------- |
-| `--layout-wide`    | none  | the page frame, charts and maps              |
-| `--layout-content` | none  | a section's content, the project hero        |
-| `--layout-reading` | 68ch  | running text, the hero's summary and finding |
+| Pattern          | Projects                                                 | Composition                                                                                                                       |
+| ---------------- | -------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| Observatory      | Political, Labour Market, Wellbeing, EU AI Act           | `ReportShell` and existing deep views; compact question, topic tabs, contextual filters, wide primary chart and supporting panels |
+| Lab              | Symbol, Philosophy, Concept, Drug Synergy                | Report tabs where already present; full-width maps, compact controls, legends and optional method/settings disclosures            |
+| Engineering      | IT Incident Clustering, DiVA Thesis Lakehouse, Homie API | `ProjectHero`, project sections, architecture and pipeline figures, validation, results and code links                            |
+| Interactive tool | Cluster Visuals                                          | Primary visualization and its controls; no added metric row                                                                       |
 
-## Page primitives
+Ask the Law has no active route in the current site. The retired RAG address redirects to
+the project index. A future focused application can use the tool pattern without restoring
+retired functionality as part of this migration.
 
-The header groups projects into Observatories, Labs and Engineering. Cluster Visuals is
-a separate tool. Observatory overviews link to themed analysis pages. Labs keep related
-material in a continuous report with section addresses; readers for individual passages,
-debates and articles remain separate.
+The existing section-navigation model replaces a sidebar. Do not introduce a second global
+navigation hierarchy. Engineering content keeps its existing structure; metrics appear only
+where the report already uses them.
 
-- `ProjectsPage` (`#projekt`) lists every project on one screen in three rows, Engineering,
-  Observatories and Labs; the start page keeps its own text list of the same groups. A card is a picture, the name and the kind of work; a project
-  without an `image` in the registry shows its group's colour panel.
-- `ProjectStructure` owns topic navigation and section scrolling after data arrives.
-- `ProjectHero` introduces a project with its name, question and short description.
-- `ProjectDepth` contains method, sources and documentation rather than repeated copy.
-- Charts use open page surfaces. Native disclosures contain optional technical detail.
-- `Stage` gives a projection its reading key and groups data/settings below the figure.
+## Data color and dark plates
 
-See [site-structure.md](site-structure.md) for retained and removed views.
+Party identities remain in `parties/identity.tsx` and render without an interface color tint.
+Categorical cluster palettes retain their values. The `--cv-*` names now belong to the
+cluster palette and the protected homepage, not the project interface. Other categorical
+series use `--series-1` through `--series-5` with labels and existing marks or legends.
 
-## Charts
+Single-measure charts use neutral ink. Changes, vote kinds and applicability states do not
+imply green or red success. Source labels, selected controls and chart defaults use neutral
+tokens. Actual error messages can use `--color-error` and must include readable text.
 
-A few forms, used everywhere, so a reader learns them once (`frontend/src/charts/`):
+Heatmaps retain their values, order and scales. Pale ramps stop before dark text loses
+contrast; dark cells use inverse text. The technical stage inventory uses the same principle.
+Existing analytical review items remain in [chart-review.md](chart-review.md).
 
-- `RankBars`: the one bar chart. Categories ranked as horizontal bars, the label on the left
-  and the number written out on the right. It diverges around zero when a value is negative,
-  takes a party's colour only for a party, fades the other rows when one is picked, and shows
-  a "Show all" button past a limit. Built in HTML, so labels wrap on a phone.
-- `MultiLineChart`: change over time, one line per series, labelled at the end.
-- `Feature` (`charts/feature/`): the frame around a main chart. The title states the finding;
-  a lead, the controls, a table view and the source sit around the chart.
-- `Heatmap` and the poll trend keep their own forms where a grid or a trend is the answer.
+`.plate` provides a component-scoped dark canvas (`#242422`) and locally rebinds semantic
+colors, compatibility aliases and chart aliases. It does not change the page or navigation.
+Canvas renderers read the local computed typography and colors. Symbol Lab retains its dark
+projection; surrounding controls and content follow the warm-grey page. No decorative
+radial gradient remains. Meaningful architecture-layer colors are not interface accents.
 
-Maps and networks (Data Constellation, the job-ad clusters, the concept and philosophy maps)
-draw in greys with one focus: the picked item in ink or in the accent, everything else
-receding. Category hues come from `--series-1` to `--series-5`, in that order and never
-cycled; they pass the dataviz palette validator on the page, the paper and the plate. A scatter
-or map where any two groups can touch uses the first three, with `--ink-2` as a fourth.
+## Controls, accessibility and responsiveness
 
-## Buttons and filters
+Use `.btn` for the primary action, `.btn-quiet` for an outlined action and `.btn-text` for a
+text action. Existing filter groups share hover, pressed, disabled and focus states. A
+selected text filter uses weight and an underline; a segmented control can use ink fill.
+The dark foreground and light inverse text must travel together on filled controls.
 
-One system, in `tokens.css`:
+Inputs have explicit foreground and background colors. Focus has a visible 2-pixel outline.
+Existing skip links, chart keyboard navigation, table alternatives, accessible labels and
+native disclosures are retained. Reduced motion disables transitions and reveal animations.
 
-- `.btn`: primary, ink filled. One per view, the main action.
-- `.btn-quiet`: secondary, an outline.
-- `.btn-text`: a text action, underlined.
-- Chip groups (`.atlas-chips`, `.constellation-chips`, `.aa-filters` and the other groups
-  listed in `tokens.css`): filters and toggles, pressed when chosen. Toggles that switch
-  layers on and off (the constellation's layers, the concept relations) stay light when
-  pressed, because most of them are on at once.
+At 760 pixels shared workspace panels stack; component-specific chart breakpoints retain
+local scrolling where detail cannot shrink. The header condenses at 760 pixels and stacks
+its links at 360 pixels. Project topic links wrap. Wide tables scroll inside their wrappers.
+No page-level horizontal overflow is allowed at 320, 768 or 1440 pixels.
 
-Every control has the same states: hover darkens the edge, `aria-pressed="true"` fills it
-with ink, `:active` nudges it, `:disabled` fades it and shows a not-allowed pointer, and
-`:focus-visible` draws a 2 px outline 3 px out.
+## Protected homepage
 
-## Motion
+`:root:has(.home-shell)` in `tokens.css` retains the homepage's original legacy token values,
+including its palette, heading scales, section spacing and weights. The sans stack changes
+to Helvetica. Project header changes are scoped to `.project-shell`. No homepage source,
+text positioning, sizing formula or animation timing is changed by this migration.
 
-Short (`--dur: 160ms`, `--ease`). Under `prefers-reduced-motion: reduce` every animation
-and transition is cut to near zero.
+## Validation
 
-## States
+`frontend/tests/design-system.spec.ts` checks navigation through every workspace type,
+Helvetica, page and header colors, header height, the protected homepage name composition
+and the boundary around a dark plate. Existing accessibility tests run axe on the main
+pages, check overflow at three widths, keyboard focus and reduced motion. The broader
+Playwright suite checks the retained interactions and analytical contracts.
 
-A page that fails while drawing shows a short message with a reload button and a link to
-all projects (`site/PageBoundary.tsx`); the sidebar and breadcrumb stay. Data pages
-show their own loading and failure messages.
+See [design-system-audit.md](design-system-audit.md) for the migration inventory and review.
+
+## Political workspace integration
+
+Political Observatory v2 reuses this token system and existing `Feature`, chart, control
+and party-identity components. `politik/workspace/workspace.css` owns its twelve-column
+layout, neutral position symbols, compact navigation and local matrix scrolling. No new
+global tokens or homepage styles were introduced. See [workspace implementation](political-observatory-v2.md).

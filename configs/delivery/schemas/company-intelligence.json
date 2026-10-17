@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["schema_version", "state"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "state": {"enum": ["available", "unavailable"]}
+  },
+  "if": {"properties": {"state": {"const": "available"}}},
+  "then": {"required": ["generated_at", "valid_until", "registry_hash", "coverage", "metrics", "jobs", "links", "companies", "context", "relationships"],
+    "properties": {
+      "jobs": {"type": "array", "items": {"type": "object", "required": ["job_id", "title", "employer_name", "publication_date", "source_url", "document_hash"]}},
+      "links": {"type": "array", "items": {"type": "object", "required": ["job_id", "company_id", "relationship_type", "match_method", "match_status", "match_confidence", "verified_at", "evidence"]}},
+      "companies": {"type": "array"}, "context": {"type": "array"}, "relationships": {"type": "array"}
+    }
+  },
+  "else": {"required": ["reason"]}
+}
