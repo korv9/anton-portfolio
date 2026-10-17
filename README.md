@@ -15,6 +15,7 @@ and the [design system](docs/design-system.md).
 | Group       | Project                   | Address             |
 | ----------- | ------------------------- | ------------------- |
 | Observatory | Political Observatory     | `#politik`          |
+| Observatory | Job Intelligence          | `#jobb-it`          |
 | Observatory | Labour Market Observatory | `#jobb`             |
 | Observatory | Wellbeing Observatory     | `#sweden`           |
 | Observatory | EU AI Act Observatory     | `#ai-act`           |
@@ -29,6 +30,8 @@ and the [design system](docs/design-system.md).
 
 Data models, source documentation and pipeline code remain in the repository. The former
 standalone platform pages are retired from the website.
+
+[Job Intelligence](docs/job-intelligence.md) combines current original advertisements, source-bound requirements and verified company evidence. CV personalisation is an opt-in local development feature; public visitors receive generic analysis.
 
 ## How the data flows
 

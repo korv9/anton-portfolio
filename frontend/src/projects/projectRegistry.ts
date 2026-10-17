@@ -42,32 +42,33 @@ export type ProjectEntry = {
 export const PROJECTS: ProjectEntry[] = [
   {
     id: 'compliance',
-    title: t('IT Compliance Intelligence', 'IT Compliance Intelligence'),
+    title: t('Job Intelligence', 'Job Intelligence'),
     descriptor: t(
-      'Granskade beslut, juridiska identiteter',
-      'Reviewed decisions, legal identities',
+      'Jobb, krav och verifierade företag',
+      'Jobs, requirements and verified companies',
     ),
     summary: t(
-      'Källspårbara jämförelser av offentliga beslut för en fast kohort svenska IT-bolag.',
-      'Source-linked comparisons of public decisions for a fixed cohort of Swedish IT companies.',
+      'Aktuella IT-annonser med originaltext, kravanalys och källbelagda företagsuppgifter.',
+      'Current IT advertisements with original wording, requirements analysis and sourced company context.',
     ),
     question: t(
-      'Vad kan verifierade offentliga beslut säga om en juridisk person?',
-      'What can verified public decisions establish about a legal entity?',
+      'Vad innebär jobbet, vilka krav ställs och vad vet vi om företaget?',
+      'What does the job involve, what does it require and what do we know about the company?',
     ),
     built: t(
-      'Ett granskningsstyrt analyslager, en explorer och reproducerbara forskningsexporter.',
-      'An analytics layer with human review gates, an explorer and reproducible research exports.',
+      'En sammanhållen jobbarbetsyta med kanoniska företagskopplingar och granskningsstyrd juridisk historik.',
+      'A job research workspace with canonical company links and reviewed legal history.',
     ),
     result: t(
-      'Publicerade bolagsmått väntar på verifierat register och mänskliga godkännanden.',
-      'Published company metrics await a verified register and human approvals.',
+      'Originalannonser och SCB-identiteter är kopplade. Juridiska uppgifter kräver separat godkännande.',
+      'Original advertisements and SCB identities are linked. Legal findings require separate approval.',
     ),
     tech: ['Python', 'DuckDB', 'Parquet', 'React', 'TypeScript'],
-    href: '#compliance',
+    href: '#jobb-it',
     category: 'data',
     status: 'in-progress',
     pages: ['compliance', 'company'],
+    paths: (path) => path === '#jobb-it',
     code: 'https://github.com/korv9/anton-portfolio/tree/main/docs/compliance-intelligence',
   },
   {
@@ -476,8 +477,9 @@ export const PROJECT_GROUPS = [
 export function projectForRoute(
   route: Pick<Route, 'page' | 'path'>,
 ): ProjectEntry | undefined {
-  return PROJECTS.find(
-    (p) => p.pages?.includes(route.page) || (p.paths && p.paths(route.path)),
+  return (
+    PROJECTS.find((p) => p.paths?.(route.path)) ??
+    PROJECTS.find((p) => p.pages?.includes(route.page))
   )
 }
 

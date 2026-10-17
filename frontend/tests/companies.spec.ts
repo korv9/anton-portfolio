@@ -2,6 +2,7 @@ import AxeBuilder from '@axe-core/playwright'
 import { readFileSync } from 'node:fs'
 import { test, expect } from './test'
 import { fixtureCompanies } from './fixtures/companies'
+import { latestJobs } from '../src/job-intelligence/model'
 import { envelope, fixturePayload } from './fixtures/compliance'
 
 test('reviewed end employer remains distinct from the advertising recruiter', async ({
@@ -31,7 +32,7 @@ test('reviewed end employer remains distinct from the advertising recruiter', as
     }),
   )
   await page.goto('/#jobb-it')
-  const card = page.locator('.company-job').first()
+  const card = page.locator('#ji-company')
   await expect(card).toContainText('Documented actual employer:')
   await expect(
     card.getByRole('link', { name: 'Synthetic Company AB', exact: true }),
@@ -66,10 +67,27 @@ test(
       await expect(page.locator('.company-job')).toHaveCount(0)
       return
     }
-    await expect(page.getByRole('status')).toContainText(
-      `${d.jobs.length} advertisements`,
+    await expect(page.locator('.ji-result-count')).toContainText(
+      `${Math.min(50, d.jobs.length)} matching results`,
     )
-    const link = page.locator('.company-job a[href^="/companies/"]').first()
+    const verifiedJob = latestJobs(d).find((j) =>
+      d.links.some(
+        (l: {
+          job_id: string
+          match_status: string
+          relationship_type: string
+        }) =>
+          l.job_id === j.job_id &&
+          l.match_status === 'verified' &&
+          l.relationship_type === 'advertised_employer',
+      ),
+    )!
+    await page
+      .locator('.ji-job-item button')
+      .filter({ hasText: verifiedJob.title })
+      .first()
+      .click()
+    const link = page.locator('#ji-company a[href^="/companies/"]').first()
     const href = await link.getAttribute('href')
     const id = decodeURIComponent(href!.slice('/companies/'.length))
     const company = d.companies.find(
@@ -144,16 +162,15 @@ test(
     )
     await page.goto('/#jobb-it')
     await expect(
-      page.getByRole('heading', { name: 'Veckans IT-jobb', exact: true }),
+      page.getByRole('heading', { name: 'Job Intelligence', exact: true }),
     ).toBeVisible()
-    await expect(page.locator('.company-job')).toHaveCount(3)
+    await expect(page.locator('.ji-job-item')).toHaveCount(3)
+    await page.locator('.ji-job-item button').last().click()
+    await expect(page.locator('#ji-company')).toContainText('ambiguous')
     await expect(
-      page
-        .locator('.company-job')
-        .last()
-        .getByRole('link', { name: /Company Intelligence/ }),
+      page.locator('#ji-company a[href^="/companies/"]'),
     ).toHaveCount(0)
-    await expect(page.locator('.company-job').last()).toContainText('ambiguous')
+    await page.locator('.ji-job-item button').first().click()
     await page
       .getByRole('link', { name: 'Synthetic Company AB', exact: true })
       .first()
@@ -162,10 +179,10 @@ test(
     await expect(
       page.getByRole('heading', { name: 'Synthetic Company AB', exact: true }),
     ).toBeVisible()
-    await expect(page.locator('.company-intelligence')).toContainText(
+    await expect(page.locator('.company-intelligence').first()).toContainText(
       'No reviewed financial history',
     )
-    await expect(page.locator('.company-intelligence')).toContainText(
+    await expect(page.locator('.company-intelligence').first()).toContainText(
       'has not been assessed here',
     )
     await expect(page.locator('.company-job')).toHaveCount(2)
@@ -180,9 +197,9 @@ test(
     await expect(
       page.getByRole('link', { name: 'Original job advertisement ↗' }).first(),
     ).toHaveAttribute('href', 'https://example.invalid/ad/0')
-    await expect(page.locator('.company-intelligence')).not.toContainText(
-      'zero violations',
-    )
+    await expect(
+      page.locator('.company-intelligence').first(),
+    ).not.toContainText('zero violations')
     expect(
       await page.evaluate(
         () => document.documentElement.scrollWidth <= innerWidth + 1,
@@ -197,13 +214,13 @@ test(
       fullPage: true,
     })
     await page.getByRole('link', { name: 'Open filtered job list →' }).click()
-    await expect(page.locator('.company-job')).toHaveCount(2)
+    await expect(page.locator('.ji-job-item')).toHaveCount(2)
     await page.goBack()
     await expect(
       page.getByRole('heading', { name: 'Synthetic Company AB', exact: true }),
     ).toBeVisible()
-    await page.getByRole('link', { name: '← Veckans IT-jobb' }).click()
-    await expect(page.locator('.company-job')).toHaveCount(3)
+    await page.getByRole('link', { name: '← Job Intelligence' }).click()
+    await expect(page.locator('.ji-job-item')).toHaveCount(3)
   },
 )
 test('missing profiles and datasets are explicit and names do not substitute', async ({
@@ -216,9 +233,9 @@ test('missing profiles and datasets are explicit and names do not substitute', a
   await expect(
     page.getByRole('heading', { name: 'Company profile unavailable' }),
   ).toBeVisible()
-  await page.getByRole('link', { name: 'Return to IT jobs' }).click()
+  await page.getByRole('link', { name: 'Return to Job Intelligence' }).click()
   await expect(
-    page.getByRole('heading', { name: 'Veckans IT-jobb', exact: true }),
+    page.getByRole('heading', { name: 'Job Intelligence', exact: true }),
   ).toBeVisible()
   await page.route('**/data/jobs/company-intelligence.json', (route) =>
     route.fulfill({

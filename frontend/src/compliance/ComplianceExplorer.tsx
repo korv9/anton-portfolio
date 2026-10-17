@@ -530,7 +530,7 @@ function CompanyDetail({
           <h2>{company.registered_legal_name}</h2>
           <p>
             <a href={companyHref(company.company_id)}>
-              Company Intelligence and related IT jobs →
+              Company Deep Dive and related IT jobs →
             </a>
           </p>
           <dl className="compliance-definition">
@@ -973,7 +973,7 @@ export default function ComplianceExplorer({ route }: { route: Route }) {
     <ReportFrame>
       <div className="compliance" lang="en">
         <ReportShell
-          name="IT Compliance Intelligence"
+          name="Job Intelligence · Compliance & Legal History"
           intro="Swedish IT legal entities · reviewed public decisions · evidence before comparison"
           tabs={TABS}
           path={route.path}

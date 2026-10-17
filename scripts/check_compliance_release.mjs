@@ -16,7 +16,7 @@ try {
   }
   if (release) {
     const hash=createHash('sha256')
-    for (const name of ['model.ts','exports.ts','ComplianceExplorer.tsx','compliance.css','progress.ts','../companies/model.ts','../companies/CompanyIntelligence.tsx','../companies/companies.css']) hash.update((await readFile(new URL('../frontend/src/compliance/'+name,import.meta.url),'utf8')).replace(/\r\n?/g,'\n'))
+    for (const name of ['model.ts','exports.ts','ComplianceExplorer.tsx','compliance.css','progress.ts','../companies/model.ts','../companies/CompanyIntelligence.tsx','../companies/companies.css','../companies/CompanyDeepDive.tsx','../companies/CompanyEvidence.tsx','../companies/CompanyJobCard.tsx','../companies/CompanyCompliance.tsx','../job-intelligence/model.ts','../job-intelligence/JobIntelligence.tsx','../job-intelligence/workspace.css','../job-intelligence/JobResearch.tsx','../job-intelligence/Requirements.tsx','../job-intelligence/CvMatch.tsx','../job-intelligence/JobFilters.tsx','../job-intelligence/useWorkspace.ts','../job-intelligence/profile.ts','../job-intelligence/ranking.ts']) hash.update((await readFile(new URL('../frontend/src/compliance/'+name,import.meta.url),'utf8')).replace(/\r\n?/g,'\n'))
     if (hash.digest('hex') !== release.payload.presentation_sha256) throw new Error('Presentation changed after final review; stage and review again')
   }
   console.log(release ? `Compliance release verified: ${release.publication.payload_sha256}` : 'Compliance release held: no public company data')

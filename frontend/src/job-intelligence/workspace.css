@@ -1,0 +1,318 @@
+.job-intelligence {
+  color: var(--ink);
+  font-family: var(--font);
+  padding: var(--sp-3) var(--sp-4);
+  min-width: 0;
+}
+.job-intelligence :is(h1, h2, h3, h4, p, dd, code, a, q) {
+  overflow-wrap: anywhere;
+}
+.site-shell .job-intelligence .ji-workspace-head h1 {
+  font-size: var(--type-chart-title);
+  margin: 0;
+}
+.job-intelligence h2 {
+  font-size: var(--type-section-title);
+}
+.job-intelligence h3 {
+  font-size: var(--type-chart-title);
+  margin: 0 0 var(--sp-2);
+}
+.job-intelligence h4 {
+  font-size: var(--type-body);
+  margin: 0 0 var(--sp-2);
+}
+.ji-workspace-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-3);
+}
+.ji-workspace-head p {
+  margin: var(--sp-1) 0 0;
+  font-size: var(--type-caption);
+  color: var(--muted);
+}
+.ji-workspace-head nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+  font-size: var(--type-caption);
+}
+.ji-split {
+  display: grid;
+  grid-template-columns: clamp(220px, 22%, 270px) minmax(0, 1fr);
+  height: calc(100dvh - 154px);
+  min-height: 480px;
+  border-block: 1px solid var(--line);
+}
+.ji-explorer {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+  padding-right: var(--sp-3);
+  border-right: 1px solid var(--line);
+}
+.ji-explorer > header {
+  padding-block: var(--sp-2);
+}
+.site-shell .job-intelligence .ji-explorer h2 {
+  font-size: var(--type-body);
+  margin: 0;
+}
+.ji-explorer header p,
+.ji-result-count {
+  font-size: var(--type-caption);
+  color: var(--muted);
+  margin: var(--sp-1) 0;
+}
+.ji-filters {
+  padding-block: var(--sp-2);
+}
+.ji-filters label {
+  display: grid;
+  gap: var(--sp-1);
+  font-size: var(--type-caption);
+  min-width: 0;
+}
+.ji-filter-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-2);
+  margin-top: var(--sp-2);
+}
+.job-intelligence :is(button, input, select) {
+  font: inherit;
+  color: var(--ink);
+  background: var(--page);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  padding: var(--sp-1) var(--sp-2);
+  max-width: 100%;
+  min-height: 32px;
+}
+.job-intelligence :is(input, select) {
+  width: 100%;
+}
+.job-intelligence button {
+  cursor: pointer;
+}
+.job-intelligence :is(a, button, input, select, [tabindex]):focus-visible {
+  outline: 2px solid var(--series-3);
+  outline-offset: 2px;
+}
+.ji-job-list {
+  flex: 1;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  min-height: 100px;
+  margin-top: var(--sp-2);
+}
+.ji-job-list > ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.ji-job-item {
+  border-bottom: 1px solid var(--line);
+}
+.ji-job-item button {
+  display: grid;
+  gap: var(--sp-1);
+  width: 100%;
+  text-align: left;
+  border: 0;
+  padding: var(--sp-3) var(--sp-2);
+  font-size: var(--type-caption);
+}
+.ji-job-item button:hover {
+  background: var(--paper);
+}
+.ji-job-item[data-selected='true'] button {
+  background: var(--surface);
+  box-shadow: inset 3px 0 var(--series-3);
+}
+.ji-job-title {
+  font-weight: 600;
+  font-size: var(--type-body);
+  line-height: 1.3;
+}
+.ji-job-item small {
+  color: var(--muted);
+  font-size: var(--type-caption);
+}
+.ji-research {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  min-width: 0;
+  padding: var(--sp-3) var(--sp-4);
+}
+.site-shell .job-intelligence .ji-job-head h2 {
+  margin: 0 0 var(--sp-2);
+  font-size: var(--type-section-title);
+  font-weight: 600;
+  line-height: 1.15;
+}
+.ji-job-head p {
+  margin: var(--sp-2) 0;
+}
+.ji-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+  align-items: center;
+  margin: var(--sp-3) 0;
+  font-size: var(--type-caption);
+}
+.ji-actions a {
+  white-space: nowrap;
+}
+.ji-section {
+  border-bottom: 1px solid var(--line);
+  padding-block: var(--sp-3);
+}
+.ji-advertisement {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: var(--type-body);
+  line-height: 1.55;
+  max-width: 100ch;
+  margin-block: var(--sp-3);
+}
+.ji-original {
+  padding-bottom: var(--sp-4);
+}
+.ji-requirements,
+.ji-match-evidence {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--sp-3);
+}
+.ji-requirements ul,
+.ji-match-evidence ul {
+  padding-left: var(--sp-3);
+}
+.ji-requirements li,
+.ji-match-evidence li {
+  margin-bottom: var(--sp-2);
+}
+.job-intelligence q {
+  display: block;
+  margin-top: var(--sp-1);
+  font-size: var(--type-caption);
+  color: var(--muted);
+}
+.job-intelligence small,
+.ji-evidence,
+.ji-availability,
+.ji-filter-note {
+  font-size: var(--type-caption);
+  color: var(--muted);
+}
+.ji-cv-evidence {
+  display: block;
+  font-size: var(--type-caption);
+  padding-top: var(--sp-1);
+}
+.ji-match-factors {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--sp-3);
+  padding: var(--sp-3);
+  background: var(--paper);
+}
+.ji-match-factors > div {
+  display: grid;
+  gap: var(--sp-1);
+  font-size: var(--type-caption);
+}
+.ji-snapshot {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--sp-3);
+}
+.ji-snapshot dt {
+  color: var(--muted);
+  font-size: var(--type-caption);
+}
+.ji-snapshot dd {
+  margin: var(--sp-1) 0 0;
+  font-size: var(--type-caption);
+}
+.ji-company-section {
+  padding-block: var(--sp-3);
+  border-bottom: 1px solid var(--line);
+}
+.ji-company-section p {
+  margin: var(--sp-2) 0;
+}
+.ji-related-jobs {
+  max-height: 200px;
+  overflow-y: auto;
+  padding-left: var(--sp-4);
+  font-size: var(--type-caption);
+}
+.ji-hiring-chart {
+  max-width: 720px;
+  margin-block: var(--sp-3);
+}
+.ji-coverage {
+  font-size: var(--type-caption);
+  margin-top: var(--sp-2);
+  color: var(--muted);
+}
+.ji-coverage p {
+  margin: var(--sp-1) 0;
+}
+.ji-unavailable {
+  padding-block: var(--sp-4);
+}
+@media (max-width: 1050px) {
+  .ji-snapshot {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .ji-requirements,
+  .ji-match-evidence {
+    grid-template-columns: 1fr;
+  }
+  .ji-research {
+    padding: var(--sp-3);
+  }
+}
+@media (max-width: 760px) {
+  .job-intelligence {
+    padding: var(--sp-2) var(--sp-3);
+  }
+  .ji-workspace-head {
+    display: block;
+  }
+  .ji-workspace-head nav {
+    margin-top: var(--sp-2);
+  }
+  .ji-split {
+    display: block;
+    height: auto;
+    min-height: 0;
+  }
+  .ji-explorer {
+    border-right: 0;
+    padding: 0;
+  }
+  .ji-filter-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .ji-job-list {
+    max-height: 140px;
+    flex: auto;
+    border-bottom: 1px solid var(--line-strong);
+  }
+  .ji-research {
+    overflow: visible;
+    padding: var(--sp-3) 0;
+  }
+  .ji-match-factors {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

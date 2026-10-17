@@ -90,7 +90,9 @@ test('every internal link opens a page', async ({ page, isMobile }) => {
       )
     )
       await page
-        .locator('.po-workspace, .politik-long, .aiact, .tech')
+        .locator(
+          '.po-workspace, .politik-long, .aiact, .tech, .job-intelligence',
+        )
         .first()
         .waitFor({ timeout: 45_000 })
     if (
@@ -98,7 +100,9 @@ test('every internal link opens a page', async ({ page, isMobile }) => {
       !(await page.locator('.project-context [aria-current]').count()) &&
       href !== '#projekt' &&
       !(await page
-        .locator('.po-workspace, .politik-long, .aiact, .tech')
+        .locator(
+          '.po-workspace, .politik-long, .aiact, .tech, .job-intelligence',
+        )
         .count())
     )
       unplaced.push(href)

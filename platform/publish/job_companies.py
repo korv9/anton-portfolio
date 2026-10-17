@@ -24,6 +24,7 @@ from compliance_intelligence.sources import (ScbClient, load_snapshot, new_outpu
 from weekly_jobs import collect
 from lib.common import load_env
 from lib.rawstore import sha256
+from publish.job_content import active, instant, package, detail
 
 ROOT = Path(__file__).resolve().parents[2]
 PUBLIC = ROOT / 'frontend/public/data/jobs/company-intelligence.json'
@@ -56,6 +57,9 @@ def project(collection_dir, database, registry_dir, output, *, reviews=None, rev
                 raise ValueError('Pinned advertisement version is absent from raw.job_ads')
             ads.append(json.loads(found[0]))
             source_kinds.add(found[1])
+    observed = datetime.fromisoformat(collection['collected_at'])
+    ads = [a for a in ads if active(a, observed)]
+    exclusions = len(collection['versions'])-len(ads)
     links, cards, observations = [], [], []
     hashes = {r['job_id']: r['payload_hash'] for r in collection['versions']}
     for ad in sorted(ads, key=lambda a: str(a['id'])):
@@ -85,6 +89,12 @@ def project(collection_dir, database, registry_dir, output, *, reviews=None, rev
             'technologies': sorted({s['label'] for s in skills if isinstance(s, dict) and s.get('label')}),
             'publication_date': published, 'application_deadline': ad.get('application_deadline'),
             'source_url': url, 'document_hash': hashes[job_id]})
+        content = detail(ad, cards[-1])
+        observations_for_ad = content['analysis']['requirements']
+        cards[-1].update({'remote_evidence': content['remote_evidence'],
+            'normalized_skills': sorted({r['label'] for r in observations_for_ad if r['category'] in
+                ('language', 'framework', 'cloud', 'database', 'platform', 'practice', 'structured_skill')}),
+            'seniority': sorted({r['label'].casefold() for r in observations_for_ad if r['category'] == 'seniority'})})
     reviews = reviews or []
     links = apply_reviews(links, reviews, snapshot, reviewers, registry_hash)
     used = {l['company_id'] for l in links if l['company_id']}
@@ -145,6 +155,8 @@ def project(collection_dir, database, registry_dir, output, *, reviews=None, rev
             **{k:next(d for d in snapshot['documents'] if d['document_id']==r['source_document_id'])[k]
                for k in ('source_url','document_hash')}}
             for r in snapshot['relationships'] if r['company_id'] in reached and r['related_company_id'] in reached]}
+    payload['coverage']['limitations'] = [*collection['limitations'],
+        f'Publication excludes {exclusions} expired, removed or explicitly non-Swedish advertisements from the observed batch.']
     validate(payload)
     with new_output(output) as stage:
         populate_database(stage / 'registry.duckdb', snapshot)
@@ -165,6 +177,8 @@ def project(collection_dir, database, registry_dir, output, *, reviews=None, rev
             for table in ('job_company_link', 'company_resolution_review', 'mart_company_hiring_daily','mart_company_hiring_context'):
                 con.execute(f"copy compliance_intelligence.{table} to '{(stage / (table + '.parquet')).as_posix()}' (format parquet)")
         write_json(stage / 'public.json', payload)
+        write_json(stage / 'workspace.json', package(ads, cards, collection['collected_at'], until, registry_hash))
+        write_json(stage / 'workspace-remaining.json', package(ads, cards, collection['collected_at'], until, registry_hash, remaining=True))
         write_json(stage / 'review-queue.json', [l for l in links if l['match_status'] not in ('verified', 'rejected')])
         write_json(stage / 'audit.json', {'registry_hash': registry_hash, 'reviews': reviews,
             'source_kinds':sorted(source_kinds), 'source_id':collection.get('source_id'), 'source_url':collection['source_url'],
@@ -175,7 +189,8 @@ def project(collection_dir, database, registry_dir, output, *, reviews=None, rev
                     ROOT/'platform/compliance_intelligence/registry.py', ROOT/'platform/compliance_intelligence/sources.py',
                     ROOT/'platform/compliance_intelligence/job_links.sql', ROOT/'platform/compliance_intelligence/schema.sql',
                     ROOT/'platform/compliance_intelligence/cohort.py', ROOT/'platform/compliance_intelligence/policy.json',
-                    ROOT/'platform/ingest/jobtech/weekly_jobs.py', ROOT/'platform/ingest/jobtech/ingest_jobs.py']}})
+                    ROOT/'platform/ingest/jobtech/weekly_jobs.py', ROOT/'platform/ingest/jobtech/ingest_jobs.py',
+                    ROOT/'platform/publish/job_content.py']}})
         seal(stage)
     return payload
 
@@ -253,6 +268,14 @@ def publish(bundle, target=PUBLIC):
     verify(bundle)
     data = json.loads((Path(bundle) / 'public.json').read_text(encoding='utf-8'))
     validate(data)
+    workspace = Path(bundle) / 'workspace.json'
+    content = json.loads(workspace.read_text(encoding='utf-8')) if workspace.exists() else None
+    if content is not None:
+        validate_workspace(content, data)
+    remaining_file = Path(bundle) / 'workspace-remaining.json'
+    remaining = json.loads(remaining_file.read_text(encoding='utf-8')) if remaining_file.exists() else None
+    if remaining is not None:
+        validate_workspace(remaining, data, remaining=True)
     if datetime.fromisoformat(data['valid_until']) <= datetime.now(timezone.utc):
         raise ValueError('Job release expired; refresh before publication')
     target = Path(target).resolve()
@@ -267,6 +290,43 @@ def publish(bundle, target=PUBLIC):
     temporary = target.with_suffix('.pending')
     temporary.write_bytes(encoded(data))
     temporary.replace(target)
+    if content is not None:
+        detail_target = target.parent / 'workspace.json'
+        pending = detail_target.with_suffix('.pending')
+        pending.write_bytes(encoded(content))
+        pending.replace(detail_target)
+    if remaining is not None:
+        pending = target.parent / 'workspace-remaining.pending'
+        pending.write_bytes(encoded(remaining))
+        pending.replace(target.parent / 'workspace-remaining.json')
+
+
+def validate_workspace(content, data, *, remaining=False):
+    if content.get('state') == 'unavailable':
+        return
+    if (content.get('schema_version') != 1 or content.get('state') != 'available'
+        or any(content[k] != data[k] for k in ('generated_at', 'valid_until', 'registry_hash'))):
+        raise ValueError('Workspace is not bound to the company release')
+    jobs = {j['job_id']: j for j in data['jobs']}
+    expected = sorted(data['jobs'], key=lambda j: j['job_id'])
+    expected.sort(key=lambda j: instant(j['publication_date']), reverse=True)
+    selected = expected[50:] if remaining else expected[:50]
+    if [j['job_id'] for j in content['jobs']] != [j['job_id'] for j in selected]:
+        raise ValueError('Workspace must contain exactly the latest 50 active advertisement versions')
+    for row in content['jobs']:
+        if row['document_hash'] != jobs[row['job_id']]['document_hash'] or row['source_url'] != jobs[row['job_id']]['source_url']:
+            raise ValueError('Workspace advertisement provenance does not match')
+        from publish.job_content import public_url
+        if row['application_url'] and not public_url(row['application_url']):
+            raise ValueError('Unsafe application URL')
+        lines = row['description_text'].splitlines()
+        for requirement in row['analysis']['requirements']:
+            if requirement['strength'] not in ('required', 'preferred', 'ambiguous'):
+                raise ValueError('Invalid requirement strength')
+            if requirement['source_field'] == 'description':
+                n = requirement['line']
+                if not isinstance(n, int) or not 1 <= n <= len(lines) or requirement['quote'] not in lines[n-1]:
+                    raise ValueError('Requirement has no exact source sentence')
 
 
 def main():
@@ -293,11 +353,19 @@ def main():
     lookup.add_argument('--identities')
     check = commands.add_parser('check')
     check.add_argument('--file', default=str(PUBLIC))
+    check.add_argument('--workspace')
+    check.add_argument('--remaining')
     args = parser.parse_args()
     load_env()
     read = lambda p: json.loads(Path(p).read_text(encoding='utf-8-sig')) if p else []
     if args.command == 'check':
         validate(json.loads(Path(args.file).read_text(encoding='utf-8')))
+        if args.workspace:
+            validate_workspace(json.loads(Path(args.workspace).read_text(encoding='utf-8')),
+                json.loads(Path(args.file).read_text(encoding='utf-8')))
+        if args.remaining:
+            validate_workspace(json.loads(Path(args.remaining).read_text(encoding='utf-8')),
+                json.loads(Path(args.file).read_text(encoding='utf-8')), remaining=True)
         print('Job/company contract valid')
         return
     if args.command == 'lookup':

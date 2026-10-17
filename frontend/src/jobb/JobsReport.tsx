@@ -61,7 +61,7 @@ const TABS = [
 const DEEPER = [
   {
     href: '#jobb-it',
-    label: 'Veckans IT-jobb',
+    label: 'Job Intelligence',
     about: 'Current advertisements and verified company profiles',
   },
   {
