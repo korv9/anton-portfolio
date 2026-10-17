@@ -75,7 +75,7 @@
     "quality": "python platform/pipeline.py run quality"
   },
   "dependencies": {
-    "hyparquet": "^1.31.1",
+    "hyparquet": "^1.31.4",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
   },
