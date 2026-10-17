@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "observed_at": "2026-10-17T16:03:28.666814+00:00",
+  "cohort": {
+    "cohort_id": "se-it-50-2026-10-17",
+    "membership_hash": "f0866d8ad65709168017e8cdaf0e2e19b772c6bfaeeb908eb187233f96d8b3d5",
+    "selected_count": 50,
+    "selection_scope": "private_research",
+    "source_reuse_status": "not_reviewed_for_publication",
+    "verified": true
+  },
+  "companies_searched": 50,
+  "queries_executed": 100,
+  "queries_planned": 100,
+  "verified_historic_aliases": 0,
+  "identified_candidate_cases": 3,
+  "verified_entity_matches": 0,
+  "accessible_pdf_documents": 4,
+  "extraction_candidates": 4,
+  "approved_for_publication": 0,
+  "kkv_status": "unavailable_direct_access_blocked",
+  "kkv_rankings_enabled": false,
+  "source_population_coverage_fraction": null,
+  "limitations": [
+    "Bounded public index discovery; no negative search or legal finding is implied.",
+    "Index snippets and number mentions are not reviewed party attribution.",
+    "No verified historic alias supplement is currently available.",
+    "Court supplements do not replace the KKV diary."
+  ],
+  "independent_court_coverage": "partial_selected_documents",
+  "blocked_or_missing_sources": {
+    "kkv_case_listing": "http_403_recorded",
+    "kkv_public_diary": "not_collected_same_blocked_origin",
+    "indexed_kkv_originals": "discovery_only_original_bytes_not_collected",
+    "court_precedents_api": "robots_404_policy_hold",
+    "lower_court_and_appeal_history": "incomplete",
+    "verified_historical_alias_supplement": "missing"
+  },
+  "distinct_operative_decisions": null,
+  "candidate_scope": "index_context_only",
+  "private_review_summary": {
+    "total_current_candidates": 57,
+    "imy_candidates_preserved": 53,
+    "court_supplement_candidates": 4,
+    "human_review_actions": 0,
+    "approved_legal_records": 0,
+    "audit_entries": 129
+  },
+  "final_stage_manifest_sha256": "0e6a5a0747d2967cec4194b5d5dc3e4ae441413c631035d9200a0224abe8f950",
+  "validation": {
+    "platform_python_passed": 641,
+    "platform_python_skipped": 2,
+    "frontend_unit_passed": 117,
+    "browser_passed": 160,
+    "browser_skipped": 2,
+    "browser_workers": 2,
+    "security_browser_passed": 3,
+    "production_build": "passed",
+    "typescript": "passed",
+    "formatting": "passed",
+    "deployment": "not_performed",
+    "idea_lineage": "blocked_existing_journal_missing_created_at"
+  }
+}

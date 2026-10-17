@@ -25,7 +25,7 @@
 .politics-controls input,
 .meaning-lab select,
 .law-text input {
-  border: 1px solid #a9b9b0;
+  border: 1px solid var(--line-strong);
   background: var(--paper);
   padding: 0.7rem 0.9rem;
   border-radius: 4px;
@@ -45,13 +45,13 @@
 .politics-kpis {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  border: 1px solid #ccdad2;
+  border: 1px solid var(--line);
   background: var(--wash);
   margin-bottom: 1.5rem;
 }
 .politics-kpis > div {
   padding: 1.3rem;
-  border-right: 1px solid #ccdad2;
+  border-right: 1px solid var(--line);
 }
 .politics-kpis strong {
   display: block;
@@ -144,10 +144,10 @@
   display: inline-block;
 }
 .committee-comparison .selected {
-  background: #bc4d3b;
+  background: var(--ink);
 }
 .committee-comparison .other {
-  background: #8ba89b;
+  background: var(--subtle);
 }
 .committee-comparison-rows {
   display: grid;
@@ -229,10 +229,10 @@
   background: var(--paper);
 }
 .vote-stack i:nth-child(2) {
-  background: #c6553b;
+  background: var(--ink-2);
 }
 .vote-stack i:nth-child(3) {
-  background: #97978a;
+  background: var(--subtle);
 }
 .agreement-scroll {
   overflow-x: auto;
@@ -283,7 +283,7 @@
   text-align: left;
   padding: 1rem;
   border: 0;
-  border-bottom: 1px solid #dfe5de;
+  border-bottom: 1px solid var(--line);
   background: var(--wash);
   color: var(--ink);
   cursor: pointer;
@@ -299,7 +299,7 @@
   min-width: 0;
   padding: 1rem;
   background: var(--wash);
-  border: 1px solid #e0e6dc;
+  border: 1px solid var(--line);
 }
 .decision-detail h5,
 .law-text h5 {
@@ -325,7 +325,7 @@
 .decision-party-grid > div {
   padding: 0.6rem;
   background: var(--paper);
-  border: 1px solid #dde6dc;
+  border: 1px solid var(--line);
 }
 .decision-party-grid span {
   display: block;
@@ -335,7 +335,7 @@
 }
 .decision-detail details,
 .law-text details {
-  border-top: 1px solid #d6dfd5;
+  border-top: 1px solid var(--line);
   padding: 0.7rem 0;
 }
 .decision-detail summary,
@@ -349,14 +349,14 @@
   overflow: auto;
 }
 .member-votes p {
-  border-bottom: 1px solid #e2e7df;
+  border-bottom: 1px solid var(--line);
   display: flex;
   justify-content: space-between;
   gap: 0.5rem;
 }
 .evidence-note {
   background: var(--wash);
-  border-left: 3px solid #b19a5e;
+  border-left: 3px solid var(--note-line);
   padding: 0.8rem 1rem;
   font-size: 0.78rem;
   color: var(--ink-2) !important;
@@ -377,7 +377,7 @@
 .engine-result {
   padding: 1.5rem;
   margin: 1.2rem 0;
-  border: 1px solid #cbded3;
+  border: 1px solid var(--line);
   background: var(--wash);
 }
 .engine-result > span {
@@ -412,7 +412,7 @@
   padding: 1rem 0;
 }
 .politics-lab :focus-visible {
-  outline: 3px solid #a44522;
+  outline: 3px solid var(--focus);
   outline-offset: 3px;
 }
 @media (max-width: 900px) {
@@ -479,7 +479,7 @@
   min-width: 0;
 }
 .speech-record {
-  border-top: 1px solid var(--line, #ccd7d5);
+  border-top: 1px solid var(--line);
   padding: 0.9rem 0;
 }
 .speech-record summary {

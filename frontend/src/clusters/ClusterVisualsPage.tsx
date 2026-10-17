@@ -372,7 +372,7 @@ export const MAPS = (): MapSpec[] => [
   },
 ]
 
-function MapSection({ spec }: { spec: MapSpec }) {
+function MapSection({ spec, own }: { spec: MapSpec; own?: boolean }) {
   const ref = useRef<HTMLElement>(null)
   const [near, setNear] = useState(false)
   const [variant, setVariant] = useState(spec.variants[0].key)
@@ -420,9 +420,11 @@ function MapSection({ spec }: { spec: MapSpec }) {
       id={`cv-${spec.id}`}
     >
       <header className="cv-head">
-        <p className="cv-project">
-          <a href={spec.href}>{spec.project}</a>
-        </p>
+        {!own && (
+          <p className="cv-project">
+            <a href={spec.href}>{spec.project}</a>
+          </p>
+        )}
         <h2 id={`cv-${spec.id}-title`}>{spec.title}</h2>
         <p className="cv-meaning">{spec.meaning}</p>
         {shown && shown !== 'error' && (
@@ -464,6 +466,19 @@ function MapSection({ spec }: { spec: MapSpec }) {
         </p>
       )}
     </section>
+  )
+}
+
+/** A project's own maps inside its report, without the line naming the project. */
+export function ProjectMaps({ ids }: { ids: string[] }) {
+  return (
+    <div className="cv-report">
+      {MAPS()
+        .filter((spec) => ids.includes(spec.id))
+        .map((spec) => (
+          <MapSection key={spec.id} spec={spec} own />
+        ))}
+    </div>
   )
 }
 

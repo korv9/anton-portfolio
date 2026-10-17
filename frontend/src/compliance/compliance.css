@@ -1,0 +1,200 @@
+.compliance {
+  font-family: var(--font);
+  color: var(--ink);
+  min-width: 0;
+}
+.compliance .compliance-notice,
+.compliance-unavailable {
+  padding: var(--sp-5);
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-inline-start: 3px solid var(--series-3);
+  margin-block: var(--sp-5);
+}
+.compliance p {
+  max-width: var(--measure);
+}
+.compliance :is(p, h2, h3, h4, a) {
+  overflow-wrap: anywhere;
+}
+.compliance h2 {
+  font-size: var(--type-section-title);
+}
+.compliance h3 {
+  font-size: var(--type-chart-title);
+}
+.compliance h2,
+.compliance h3,
+.compliance h4 {
+  text-wrap: balance;
+  scroll-margin-top: var(--sp-7);
+}
+.compliance a {
+  text-underline-offset: 0.2em;
+}
+.compliance a:hover {
+  text-decoration-thickness: 2px;
+}
+.compliance small {
+  display: block;
+  font-size: var(--caption);
+  color: var(--muted);
+  margin-top: var(--sp-1);
+}
+.compliance code {
+  font-family: var(--font-mono);
+  overflow-wrap: anywhere;
+}
+.compliance button,
+.compliance select,
+.compliance input {
+  font: inherit;
+  color: var(--ink);
+  background: var(--page);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  min-height: 44px;
+  padding: var(--sp-2) var(--sp-3);
+  max-width: 100%;
+  touch-action: manipulation;
+}
+.compliance button:hover:not(:disabled) {
+  background: var(--surface);
+}
+.compliance button:disabled {
+  cursor: not-allowed;
+  color: var(--muted);
+}
+.compliance :is(a, button, select, input, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+}
+.compliance summary {
+  cursor: pointer;
+  padding-block: var(--sp-2);
+}
+.compliance label {
+  display: grid;
+  gap: var(--sp-2);
+  font-size: var(--small);
+  min-width: 0;
+}
+.compliance-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: var(--sp-4);
+  margin-block: var(--sp-5);
+}
+.compliance-controls label {
+  flex: 1 1 170px;
+}
+.compliance-controls > a {
+  padding-block: var(--sp-3);
+}
+.compliance-measures {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-6);
+  margin-block: var(--sp-6);
+}
+.compliance-measures > div {
+  flex: 1 1 200px;
+}
+.compliance-measures dt {
+  color: var(--muted);
+  font-size: var(--small);
+}
+.compliance-measures dd {
+  margin: var(--sp-2) 0;
+  font-size: var(--type-metric);
+  font-variant-numeric: tabular-nums;
+}
+.compliance-definition {
+  display: grid;
+  grid-template-columns: minmax(130px, 1fr) 3fr;
+  gap: var(--sp-3) var(--sp-5);
+  margin-block: var(--sp-5);
+}
+.compliance-definition dt {
+  color: var(--muted);
+}
+.compliance-definition dd {
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.compliance-section {
+  margin-block: var(--sp-section);
+  min-width: 0;
+}
+.compliance-scroll {
+  overflow-x: auto;
+  max-width: 100%;
+  margin-block: var(--sp-4);
+}
+.compliance table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--small);
+}
+.compliance caption {
+  text-align: left;
+  color: var(--muted);
+  padding-block: var(--sp-3);
+}
+.compliance th,
+.compliance td {
+  text-align: left;
+  padding: var(--sp-3);
+  vertical-align: top;
+  border-bottom: 1px solid var(--line);
+  min-width: 130px;
+}
+.compliance th {
+  font-weight: var(--weight-ui);
+}
+.compliance td {
+  font-variant-numeric: tabular-nums;
+}
+.compliance-evidence {
+  padding-inline-start: var(--sp-5);
+  min-width: 180px;
+}
+.compliance-evidence li {
+  margin-block: var(--sp-3);
+  overflow-wrap: anywhere;
+}
+.compliance-timeline {
+  list-style: none;
+  padding: 0;
+}
+.compliance-timeline > li {
+  border-top: 1px solid var(--line);
+  padding-block: var(--sp-5);
+  content-visibility: auto;
+  contain-intrinsic-size: auto 340px;
+}
+.compliance-timeline time,
+.compliance-eyebrow {
+  color: var(--muted);
+  font-size: var(--caption);
+}
+@media (max-width: 600px) {
+  .compliance-definition {
+    grid-template-columns: 1fr;
+    gap: var(--sp-2);
+  }
+  .compliance-definition dd {
+    margin-bottom: var(--sp-3);
+  }
+  .compliance-controls label {
+    flex-basis: 100%;
+  }
+  .compliance-controls button {
+    flex: 1 1 150px;
+  }
+  .compliance-measures {
+    gap: var(--sp-4);
+  }
+}

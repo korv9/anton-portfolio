@@ -33,7 +33,7 @@
 .rank-bar {
   display: block;
   height: 100%;
-  background: #cfd8d4;
+  background: var(--color-chart-muted);
   border-radius: 0 4px 4px 0;
 }
 .rank-value {

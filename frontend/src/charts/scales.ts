@@ -50,3 +50,15 @@ export function yearSpan(dates: string[]) {
   const years = dates.map((date) => date.slice(0, 4)).sort()
   return { first: years[0], last: years.at(-1)! }
 }
+
+/** Explicit missing observations break both the line and any uncertainty band. */
+export function splitOnBreak<T extends { breakBefore?: boolean }>(
+  points: T[],
+): T[][] {
+  const segments: T[][] = []
+  for (const point of points) {
+    if (!segments.length || point.breakBefore) segments.push([])
+    segments.at(-1)!.push(point)
+  }
+  return segments
+}

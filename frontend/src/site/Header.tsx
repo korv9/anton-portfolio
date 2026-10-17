@@ -17,11 +17,11 @@ const b = (text: Bilingual) => l(text.en, text.sv)
 const TECHNICAL: Partial<Record<Route['page'], Bilingual>> = {
   clusters: { en: 'Cluster Visuals', sv: 'Cluster Visuals' },
   projects: { en: 'Projects', sv: 'Projekt' },
-  tech: { en: 'Tech panel', sv: 'Tech panel' },
 }
 
 /** The page's own name for the document title, or null on the homepage. */
 export function pageTitle(route: Route): string | null {
+  if (route.page === 'company') return 'Company Intelligence'
   if (route.page === 'home') return null
   const project = projectForRoute(route)
   if (project) return b(project.title)

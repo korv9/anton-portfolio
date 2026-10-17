@@ -1,6 +1,6 @@
 import { l } from '../i18n'
 import { useEffect, useId, useMemo, useRef, useState } from 'react'
-import { linearScale, niceTicks } from './scales'
+import { linearScale, niceTicks, splitOnBreak } from './scales'
 import { identity, partyDash } from '../parties/identity'
 import { MarkerShape, spreadLabels } from './marks'
 
@@ -19,6 +19,7 @@ export type SeriesPoint = {
   value: number
   low?: number | null
   high?: number | null
+  breakBefore?: boolean
 }
 export type Series = {
   key: string
@@ -36,6 +37,7 @@ type Props = {
    * the colour itself, for series with their own (a party's colour). */
   colorOf: (key: string) => number | string
   /** Fixed bottom of the y axis, for measures whose floor is not zero (AUC: 0.5). */
+  yTo?: number
   yFrom?: number
 }
 
@@ -53,6 +55,7 @@ export default function MultiLineChart({
   format,
   colorOf,
   yFrom,
+  yTo,
 }: Props) {
   const svg = useRef<SVGSVGElement>(null)
   const container = useRef<HTMLElement>(null)
@@ -87,7 +90,7 @@ export default function MultiLineChart({
       p.low ?? p.value,
       p.high ?? p.value,
     ])
-    const max = Math.max(...values)
+    const max = Math.max(yTo ?? -Infinity, ...values)
     const min = Math.min(...values)
     // Keep a consistent baseline across filters; include negative observations.
     const from = yFrom ?? Math.min(0, Math.floor(min))
@@ -115,7 +118,7 @@ export default function MultiLineChart({
     }
     const dates = [...new Set(all.map((p) => p.date))].sort()
     return { x, y, ticks, years, dates }
-  }, [series, plotW, plotH, yFrom, MARGIN.left, MARGIN.top, width])
+  }, [series, plotW, plotH, yFrom, yTo, MARGIN.left, MARGIN.top, width])
 
   if (!series.length || !dates.length) return null
 
@@ -240,46 +243,67 @@ export default function MultiLineChart({
           ))}
           {series.map((s) => {
             const color = paint(s.key)
-            const banded = s.points.filter(
-              (p) => p.low != null && p.high != null,
-            )
-            const band =
-              banded.length > 1
-                ? banded
-                    .map((p) => `${x(time(p.date))},${y(p.high!)}`)
-                    .join(' ') +
-                  ' ' +
-                  [...banded]
-                    .reverse()
-                    .map((p) => `${x(time(p.date))},${y(p.low!)}`)
-                    .join(' ')
-                : null
-            const line = s.points
-              .map((p) => `${x(time(p.date))},${y(p.value)}`)
-              .join(' ')
             return (
               <g key={s.key}>
-                {band && <polygon points={band} fill={color} opacity={0.12} />}
-                {s.party && identity(s.party).casing && (
-                  <polyline
-                    className="casing"
-                    points={line}
-                    fill="none"
-                    stroke={identity(s.party).casing}
-                    strokeWidth={4}
-                    strokeLinejoin="round"
-                    strokeDasharray={partyDash(s.party)}
-                  />
-                )}
-                <polyline
-                  points={line}
-                  fill="none"
-                  stroke={color}
-                  strokeWidth={2}
-                  strokeLinejoin="round"
-                  strokeDasharray={s.party ? partyDash(s.party) : undefined}
-                  vectorEffect="non-scaling-stroke"
-                />
+                {splitOnBreak(s.points).map((segment, segmentIndex) => {
+                  const banded = segment.filter(
+                    (p) => p.low != null && p.high != null,
+                  )
+                  const band =
+                    banded.length > 1
+                      ? banded
+                          .map((p) => `${x(time(p.date))},${y(p.high!)}`)
+                          .join(' ') +
+                        ' ' +
+                        [...banded]
+                          .reverse()
+                          .map((p) => `${x(time(p.date))},${y(p.low!)}`)
+                          .join(' ')
+                      : null
+                  const line = segment
+                    .map((p) => `${x(time(p.date))},${y(p.value)}`)
+                    .join(' ')
+                  return (
+                    <g key={segmentIndex}>
+                      {band && (
+                        <polygon points={band} fill={color} opacity={0.12} />
+                      )}
+                      {segment.length === 1 &&
+                        banded.map((p) => (
+                          <path
+                            key={p.date}
+                            className="interval-whisker"
+                            d={`M${x(time(p.date))},${y(p.low!)}V${y(p.high!)}M${x(time(p.date)) - 3},${y(p.low!)}h6M${x(time(p.date)) - 3},${y(p.high!)}h6`}
+                            fill="none"
+                            stroke={color}
+                            strokeWidth={1.5}
+                          />
+                        ))}
+                      {s.party && identity(s.party).casing && (
+                        <polyline
+                          className="casing"
+                          points={line}
+                          fill="none"
+                          stroke={identity(s.party).casing}
+                          strokeWidth={4}
+                          strokeLinejoin="round"
+                          strokeDasharray={partyDash(s.party)}
+                        />
+                      )}
+                      <polyline
+                        points={line}
+                        fill="none"
+                        stroke={color}
+                        strokeWidth={2}
+                        strokeLinejoin="round"
+                        strokeDasharray={
+                          s.party ? partyDash(s.party) : undefined
+                        }
+                        vectorEffect="non-scaling-stroke"
+                      />
+                    </g>
+                  )
+                })}
                 {s.points.length < 40 &&
                   s.points.map((p) =>
                     s.party ? (

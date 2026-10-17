@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "as_of_local_date": "2026-10-17",
+  "description": "Fixed acquisition pilot URLs, not a company cohort. Hashes describe observed source bytes; later changes require review.",
+  "baseline_run_id": "a80a462c-a27e-432b-81b1-4543a1e1764b",
+  "observed_at_utc": "2026-10-16T22:19:05.461569+00:00",
+  "extraction_version": "authority-observations-v1:968c4622a3a6d176d658",
+  "resources": [
+    {
+      "source_id": "imy",
+      "source_url": "https://www.imy.se/om-oss/beslut-publikationer-och-remisser/beslut-om-sanktionsavgift/",
+      "kind": "listing",
+      "document_hash": "96efc9f06249ce62c99dcebd7e9600871a63c87898683b343031a4cb9c23b8a5",
+      "publication_date": null,
+      "decision_date": null,
+      "review_status": "unreviewed"
+    },
+    {
+      "source_id": "imy",
+      "source_url": "https://www.imy.se/tillsyner/miljodata-i-karlskrona-ab/",
+      "kind": "record",
+      "document_hash": "1809b3ff349da298a43266ec368c8cfaee58864f9d951ae6da117adb556a9967",
+      "publication_date": null,
+      "decision_date": null,
+      "review_status": "unreviewed"
+    },
+    {
+      "source_id": "imy",
+      "source_url": "https://www.imy.se/tillsyner/sportadmin-i-skandinavien-ab/",
+      "kind": "record",
+      "document_hash": "4b9b10f9c21ab2b0215ba6b247b64a7e29a45c16b89293ce1c4e0964e45defbf",
+      "publication_date": null,
+      "decision_date": null,
+      "review_status": "unreviewed"
+    },
+    {
+      "source_id": "imy",
+      "source_url": "https://www.imy.se/globalassets/dokument/beslut/2026/beslut-efter-tillsyn-enligt-dataskyddsforordningen--miljodata-i-karlskrona-aktiebolag.pdf",
+      "kind": "document",
+      "document_hash": "1a9f5492445f4f5d9e377bb2f3b625550c0814325225380d33e247debdd61bd6",
+      "publication_date": null,
+      "decision_date": "2026-09-22",
+      "review_status": "unreviewed"
+    },
+    {
+      "source_id": "imy",
+      "source_url": "https://www.imy.se/globalassets/dokument/beslut/2026/beslut-efter-tillsyn-enligt-gdpr_sportadmin-i-skandinavien-ab.pdf",
+      "kind": "document",
+      "document_hash": "fe587bb0419cadaee2e462e8250e085a29cbf15eec60e10b9f7255faf29107cf",
+      "publication_date": null,
+      "decision_date": "2026-01-26",
+      "review_status": "unreviewed"
+    }
+  ]
+}

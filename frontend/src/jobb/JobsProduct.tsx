@@ -18,7 +18,6 @@ import './jobb.css'
 const Themes = lazy(() => import('./themes'))
 const JobsReport = lazy(() => import('./JobsReport'))
 const TechReport = lazy(() => import('../jobs/TechReport'))
-const ClusteringSection = lazy(() => import('../jobs/ClusteringSection'))
 
 import { JOB_THEMES, type JobsTheme } from './nav'
 export { JOB_THEMES, type JobsTheme }
@@ -69,8 +68,6 @@ export default function JobsProduct({ route }: { route: Route }) {
               >
                 {['#job-market-tech', '#job-data'].includes(route.path) ? (
                   <TechReport />
-                ) : theme?.key === 'kluster' ? (
-                  <ClusteringSection />
                 ) : data ? (
                   <Themes
                     theme={theme?.key ?? 'trender'}

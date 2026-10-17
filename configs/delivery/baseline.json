@@ -32,6 +32,7 @@
     "parliament/news.json",
     "parliament/news-summaries.json",
     "jobs/*",
-    "gold/marts/jobs.json"
+    "gold/marts/jobs.json",
+    "parliament/workspace/*"
   ]
 }

@@ -1,0 +1,125 @@
+{
+ "meta": {
+  "title": "Examensarbete: NLP-klustring av ITSM-data",
+  "what_it_does": "Grupperar personuppgiftsmaskerade incidenter med embeddings, UMAP och HDBSCAN och jämför grupperna med registrerade problemkopplingar.",
+  "status": {
+   "kind": "Fallstudie, vår 2026",
+   "data": "inga datafiler; bara publicerade tal"
+  },
+  "code": "https://github.com/korv9/anton-portfolio/blob/eb2f4e0fade4e7f60127f913f4d00b83fd2036fb/frontend/src/products/CaseStudies.tsx",
+  "git_sha": "eb2f4e0fade4e7f60127f913f4d00b83fd2036fb",
+  "exported_at": "2026-10-16T18:59:59+00:00"
+ },
+ "kpis": [
+  {
+   "label": "Incidenter",
+   "value": "21 000+",
+   "unit": "incidenter",
+   "source": "frontend/src/home/orbitContent.ts",
+   "field": "CV-text",
+   "how": "Publicerad avrundning av underlaget."
+  },
+  {
+   "label": "Grupper (HDBSCAN)",
+   "value": 121,
+   "unit": "kluster",
+   "source": "frontend/src/products/CaseStudies.tsx",
+   "field": "StageFacts 'HDBSCAN, 121 groups'",
+   "how": "Antal kluster i den valda körningen."
+  },
+  {
+   "label": "Kandidater utan problemkoppling",
+   "value": 72,
+   "unit": "kluster",
+   "source": "frontend/src/home/orbitContent.ts",
+   "field": "THESIS.points[0]",
+   "how": "72 av 121 grupper saknade koppling till registrerade problem."
+  },
+  {
+   "label": "Silhuett HDBSCAN",
+   "value": 0.706,
+   "unit": "−1 till 1",
+   "source": "frontend/src/products/CaseStudies.tsx",
+   "field": "StageFacts",
+   "how": "Beräknat på ärenden som tilldelats grupper."
+  },
+  {
+   "label": "Silhuett K-means",
+   "value": 0.534,
+   "unit": "−1 till 1",
+   "source": "frontend/src/products/CaseStudies.tsx",
+   "field": "StageFacts (0.5342)",
+   "how": "Beräknat på alla ärenden; olika delmängder."
+  }
+ ],
+ "charts": [
+  {
+   "id": "silhouette",
+   "title": "Silhuett: HDBSCAN mot K-means",
+   "type": "bar",
+   "source": "frontend/src/products/CaseStudies.tsx",
+   "slicer": null,
+   "row_count": 2,
+   "rows": [
+    {
+     "method": "HDBSCAN",
+     "silhouette": 0.706
+    },
+    {
+     "method": "K-means",
+     "silhouette": 0.534
+    }
+   ],
+   "note": "Olika delmängder; mäter geometri, inte bättre rotorsaker."
+  },
+  {
+   "id": "candidates",
+   "title": "Grupper med och utan problemkoppling",
+   "type": "bar",
+   "source": "frontend/src/home/orbitContent.ts",
+   "slicer": null,
+   "row_count": 2,
+   "rows": [
+    {
+     "group": "utan problemkoppling",
+     "clusters": 72
+    },
+    {
+     "group": "med problemkoppling",
+     "clusters": 49
+    }
+   ],
+   "note": "121 − 72 = 49."
+  }
+ ],
+ "list": [
+  {
+   "id": "thesis",
+   "source": "Examensarbete AIDEV24S, publicerade sammanfattningar på sidan",
+   "rows": null,
+   "bytes": null,
+   "last_commit": null,
+   "status": "inga datafiler i frontend/public/data"
+  }
+ ],
+ "tech": {
+  "dbt_models": [],
+  "pipeline_steps": [],
+  "schema": null,
+  "sample_rows": null,
+  "stack": [
+   "Python",
+   "Azure Databricks",
+   "sentence-transformers",
+   "UMAP",
+   "HDBSCAN",
+   "MLflow"
+  ]
+ },
+ "gaps": [
+  "Ingen datamapp, dbt-modell eller pipeline-steg: arbetet kördes i Databricks hos Fora, utanför repot.",
+  "Bara de publika talen ovan; ingen intern Avtalat-data och inga incidenttexter.",
+  "Tidsserier, klusterstorlekar och kategorier finns inte publicerade, så inga fler serier går att räkna fram.",
+  "Siffrorna kommer ur sidtexten i frontend/src, inte ur frontend/public/data."
+ ]
+}

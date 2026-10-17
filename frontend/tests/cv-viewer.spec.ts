@@ -2,7 +2,7 @@ import { readFile } from 'node:fs/promises'
 import { test, expect } from './test'
 import AxeBuilder from '@axe-core/playwright'
 
-const pdf = 'cv/Anton_Ernstsson_CV_final.pdf'
+const pdf = '/cv/Anton_Ernstsson_CV_final.pdf'
 
 test(
   'the CV opens in a viewer, closes and restores focus without downloading',
@@ -28,7 +28,7 @@ test(
       ).toHaveAttribute('href', pdf)
       if (await page.evaluate(() => navigator.pdfViewerEnabled)) {
         await expect(viewer.locator('iframe')).toHaveAttribute('src', pdf)
-        const response = await page.request.get(`/${pdf}`)
+        const response = await page.request.get(pdf)
         expect(response.headers()['content-type']).toContain('application/pdf')
         expect((await response.body()).subarray(0, 5).toString()).toBe('%PDF-')
       } else {
@@ -64,7 +64,7 @@ test(
     const download = await downloadPromise
     expect(download.suggestedFilename()).toBe('Anton_Ernstsson_CV_final.pdf')
     expect(await readFile((await download.path())!)).toEqual(
-      await readFile(new URL(`../public/${pdf}`, import.meta.url)),
+      await readFile(new URL(`../public${pdf}`, import.meta.url)),
     )
     await expect(page.getByRole('dialog')).toBeVisible()
   },

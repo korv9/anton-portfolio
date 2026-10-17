@@ -442,6 +442,8 @@ def main() -> None:
             from gold.fct_roll_call
             order by session, vote_date, designation, point, roll_call_id
         ) to '{ROLL_CALLS.as_posix()}' (format parquet, compression snappy)""")
+    from politics_workspace import build as build_workspace
+    build_workspace(PUBLIC, warehouse=connection)
     print(f"parliament: election {latest_year}, {len(sessions)} sessions, {len(issues)} issues, "
           f"latest poll {latest_poll_month}; dbt tests {tests}")
 

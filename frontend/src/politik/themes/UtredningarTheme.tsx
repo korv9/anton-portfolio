@@ -250,11 +250,11 @@ export default function UtredningarTheme({ route }: { route: Route }) {
               parts={[
                 {
                   label: l('Led to a bill', 'Ledde till proposition'),
-                  colour: 'var(--cv-olive)',
+                  colour: 'var(--color-chart-neutral)',
                 },
                 {
                   label: l('No bill', 'Ingen proposition'),
-                  colour: 'var(--cv-oat)',
+                  colour: 'var(--color-chart-muted)',
                 },
               ]}
               format={(v) => num(v)}

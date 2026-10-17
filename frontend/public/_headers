@@ -3,7 +3,9 @@
 /*
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
-  X-Frame-Options: DENY
+  X-Frame-Options: SAMEORIGIN
+  Content-Security-Policy: default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://api.github.com https://data.antonernstsson.com https://pub-9867b18896ba49e4a0b4a3d2f39c0385.r2.dev; frame-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'self'; upgrade-insecure-requests
+  Strict-Transport-Security: max-age=31536000
   Permissions-Policy: camera=(), microphone=(), geolocation=()
 
 # Vite names every built asset by its content hash, so it never changes under the same name.
@@ -13,3 +15,6 @@
 # Data files keep their names across refreshes: cache briefly and revalidate.
 /data/*
   Cache-Control: public, max-age=300, must-revalidate
+
+/data/compliance/release.json
+  Cache-Control: no-store

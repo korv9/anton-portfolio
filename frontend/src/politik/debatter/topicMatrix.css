@@ -49,7 +49,7 @@
 .topic-n {
   display: block;
   color: var(--ink-faded);
-  font-family: var(--font-mono);
+  font-family: var(--font-meta);
   font-size: var(--caption);
   opacity: 0;
   transition: opacity var(--dur) var(--ease);

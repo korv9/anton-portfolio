@@ -1,0 +1,107 @@
+.company-intelligence {
+  font-family: var(--font);
+  color: var(--ink);
+  min-width: 0;
+}
+.company-intelligence :is(p, h1, h2, h3, a, dd, code) {
+  overflow-wrap: anywhere;
+}
+.company-intelligence h1 {
+  font-size: var(--type-page-title);
+  text-wrap: balance;
+}
+.company-intelligence h2 {
+  font-size: var(--type-chart-title);
+  text-wrap: balance;
+}
+.company-intelligence p {
+  max-width: var(--measure);
+}
+.company-intelligence a {
+  text-underline-offset: 0.2em;
+}
+.company-intelligence :is(button, input) {
+  font: inherit;
+  color: var(--ink);
+  background: var(--page);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  min-height: 44px;
+  padding: var(--sp-2) var(--sp-3);
+  max-width: 100%;
+}
+.company-intelligence :is(a, button, input, summary):focus-visible {
+  outline: 2px solid var(--series-3);
+  outline-offset: 3px;
+}
+.company-intelligence button {
+  cursor: pointer;
+}
+.company-intelligence small {
+  display: block;
+  color: var(--muted);
+  font-size: var(--caption);
+  margin-top: var(--sp-2);
+}
+.company-intelligence code {
+  font-family: var(--font-mono);
+}
+.company-section,
+.company-job {
+  padding-block: var(--sp-5);
+  border-bottom: 1px solid var(--line);
+}
+.company-job header p {
+  font-size: var(--type-body);
+}
+.company-state {
+  color: var(--muted);
+}
+.company-coverage {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-inline-start: 3px solid var(--series-3);
+  padding: var(--sp-4);
+  margin-block: var(--sp-5);
+}
+.company-metrics {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+  gap: var(--sp-2) var(--sp-4);
+}
+.company-metrics dd {
+  margin: 0;
+}
+.company-metrics dt {
+  color: var(--muted);
+}
+.company-search {
+  display: grid;
+  gap: var(--sp-2);
+  max-width: var(--measure);
+}
+.company-table {
+  overflow-x: auto;
+}
+.company-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.company-table :is(th, td) {
+  text-align: left;
+  vertical-align: top;
+  padding: var(--sp-3);
+  border-bottom: 1px solid var(--line);
+}
+.company-table caption {
+  text-align: left;
+  padding-block: var(--sp-3);
+}
+@media (max-width: 600px) {
+  .company-metrics {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .company-metrics dd {
+    margin-bottom: var(--sp-3);
+  }
+}

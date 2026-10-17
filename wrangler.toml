@@ -10,6 +10,7 @@ preview_urls = true
 
 [assets]
 directory = "./dist"
+not_found_handling = "single-page-application"
 
 # Branch previews (`npx wrangler preview`, run by Workers Builds for pull requests); empty is enough.
 [previews]

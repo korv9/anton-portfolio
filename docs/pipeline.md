@@ -116,7 +116,7 @@ After a subject's ingest steps, successful or not, `pipeline.py` records the out
 run, and per raw source the last fetch, the last content change, files, size and this run's
 fetches, changes and failed requests, read from `raw/<source>/_manifest.jsonl`. In Actions the
 file is merged into an uncached copy in R2 outside every release; locally it is written to
-`frontend/public/data/status/` (git-ignored). The tech panel (`#tech`) reads it. The sources
+`frontend/public/data/status/` (git-ignored). The projects page (`#projekt`) reads it. The sources
 are the first segments of a subject's `raw` paths; a subject whose fetch log is kept outside
 R2 lists it under `sources` (news).
 
@@ -188,3 +188,13 @@ bucket's `r2.dev` address.
 3. `python platform/pipeline.py run <subject> --dry-run`, then run it.
 
 No workflow changes: the weekly run picks up every subject that is not marked `manual`.
+
+## Political workspace export
+
+The parliament subject verifies source-backed formation seeds with
+`platform/ingest/riksdagen/formation_ingest.py` before dbt. Its existing exporter now calls
+`politics_workspace.py` after writing the parliamentary contracts. The standalone offline
+exporter uses committed snapshots; the warehouse path uses tested party roll-call facts.
+`parliament/workspace/*` belongs to the public-data release and is excluded from baseline.
+Source hashes and bounded coverage are published with the compact index. See
+[Political Observatory v2](political-observatory-v2.md) for reproduction and limits.

@@ -435,7 +435,7 @@ select {
   max-height: 430px;
 }
 .plot-bg {
-  fill: #f5f4ef;
+  fill: var(--paper);
 }
 .umap-point {
   cursor: pointer;
@@ -584,11 +584,11 @@ select {
   width: 100%;
 }
 .grid-line {
-  stroke: #dfded8;
+  stroke: var(--line);
   stroke-width: 1;
 }
 .axis-label {
-  fill: #68716e;
+  fill: var(--muted);
   font-size: 0.75rem;
 }
 .line-point {
@@ -668,7 +668,7 @@ button:focus-visible,
 a:focus-visible,
 select:focus-visible,
 summary:focus-visible {
-  outline: 3px solid #ffb000;
+  outline: 3px solid var(--focus);
   outline-offset: 3px;
 }
 
@@ -826,7 +826,7 @@ summary:focus-visible {
 /* Inline reading keeps navigation and source provenance separate. */
 .document-reader {
   margin: 0.65rem 0;
-  border: 1px solid #ccd7cf;
+  border: 1px solid var(--line);
   padding: 0.65rem;
   overflow-wrap: anywhere;
 }
@@ -844,7 +844,7 @@ summary:focus-visible {
   overflow: auto;
   padding: 1rem;
   background: var(--wash);
-  border: 1px solid #dde2da;
+  border: 1px solid var(--line);
 }
 .inline-decision {
   background: var(--wash);
@@ -884,7 +884,7 @@ button.decision-read {
   padding: 0.6rem 1rem;
   margin-top: 0.7rem;
   background: var(--wash);
-  border: 1px solid #bdccc2;
+  border: 1px solid var(--line-strong);
   cursor: pointer;
 }
 .inline-law-library > summary {
@@ -929,7 +929,7 @@ button.decision-read {
 .document-fulltext td,
 .document-fulltext th {
   padding: 0.6rem;
-  border: 1px solid #d9dfd6;
+  border: 1px solid var(--line);
   min-width: 100px;
   vertical-align: top;
 }
@@ -955,7 +955,7 @@ button.decision-read {
   align-items: center;
   min-height: 44px;
   padding: 9px 16px;
-  border: 1px solid #c4d1d8;
+  border: 1px solid var(--line-strong);
   border-radius: 0;
   background: var(--paper);
   color: var(--ink);
@@ -967,13 +967,13 @@ button.decision-read {
   background: var(--wash);
 }
 .topic-tabs a[aria-current='page'] {
-  background: #173f52;
+  background: var(--ink);
   color: var(--ink);
-  border-color: #173f52;
+  border-color: var(--ink);
   box-shadow: none;
 }
 .topic-tabs a:focus-visible {
-  outline: 3px solid #198cba;
+  outline: 3px solid var(--focus);
   outline-offset: 3px;
 }
 @media (max-width: 600px) {

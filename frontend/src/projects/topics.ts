@@ -53,6 +53,7 @@ export const PROJECT_TOPICS: Record<string, Topic[]> = {
     },
   ],
   jobs: [
+    { title: t('Veckans IT-jobb', 'Weekly IT jobs'), href: '#jobb-it' },
     {
       title: t('Efterfrågan över tid', 'Demand over time'),
       href: '#jobb-trender',

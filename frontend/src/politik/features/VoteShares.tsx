@@ -30,7 +30,7 @@ const KINDS: { kind: Kind; en: string; sv: string }[] = [
 const count = (r: Row, k: Kind) => r[`member_${k}`]
 const total = (r: Row) => KINDS.reduce((s, k) => s + count(r, k.kind), 0)
 
-export default function VoteShares() {
+export default function VoteShares({ parties = [] }: { parties?: string[] }) {
   const [rows, setRows] = useState<Row[] | null>(null)
   const [session, setSession] = useState('')
   const [focus, setFocus] = useState<Kind>('yes')
@@ -47,9 +47,24 @@ export default function VoteShares() {
   const chosen = sessions.includes(session) ? session : sessions.at(-1)!
   const share = (r: Row, k: Kind) => (count(r, k) / total(r)) * 100
   const shown = rows
-    .filter((r) => r.session === chosen && RIKSDAG_PARTIES.includes(r.party))
+    .filter(
+      (r) =>
+        r.session === chosen &&
+        RIKSDAG_PARTIES.includes(r.party) &&
+        (!parties.length || parties.includes(r.party)) &&
+        total(r) > 0,
+    )
     .sort((a, b) => share(b, focus) - share(a, focus))
   const top = shown[0]
+  if (!top)
+    return (
+      <p role="status">
+        {l(
+          'No votes recorded for these parties in this session. Show all parties to see the available records.',
+          'Inga röster finns för dessa partier under riksmötet. Visa alla partier för att se de tillgängliga uppgifterna.',
+        )}
+      </p>
+    )
 
   return (
     <Feature
@@ -59,8 +74,8 @@ export default function VoteShares() {
         `Hur varje parti röstade, ${chosen}`,
       )}
       lead={l(
-        `Each bar is the share of a party's member votes in ${chosen}, across ${num(top.decision_points)} decision points. Pick a kind of vote to rank the parties by it.`,
-        `Varje stapel är andelen av partiets ledamotsröster under ${chosen}, över ${num(top.decision_points)} beslutspunkter. Välj en sorts röst för att rangordna partierna efter den.`,
+        `Each bar totals 100% of a party's recorded member votes, including absence. ${num(top.decision_points)} decision points in ${chosen}. Ranked by ${KINDS.find((k) => k.kind === focus)!.en.toLowerCase()} share; the figure at right shows that share.`,
+        `Varje stapel visar 100 % av partiets registrerade ledamotsröster, inklusive frånvaro. ${num(top.decision_points)} beslutspunkter under ${chosen}. Sorterat efter ${KINDS.find((k) => k.kind === focus)!.sv.toLowerCase()}; siffran till höger visar den andelen.`,
       )}
       controls={
         <>
@@ -122,10 +137,10 @@ export default function VoteShares() {
         parts={KINDS.map((k, i) => ({
           label: l(k.en, k.sv),
           colour: [
-            'var(--cv-olive)',
-            'var(--negative)',
-            'var(--cv-butter)',
-            'var(--cv-oat)',
+            'var(--color-chart-neutral)',
+            'var(--color-chart-muted)',
+            'var(--color-panel)',
+            'var(--color-surface)',
           ][i],
         }))}
         format={(v) => pct(v, 0)}

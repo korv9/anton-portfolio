@@ -23,7 +23,7 @@
   gap: var(--sp-3);
   margin: 0 0 var(--sp-3);
   color: var(--muted);
-  font-family: var(--font-mono);
+  font-family: var(--font-meta);
   font-size: var(--caption);
   font-weight: 500;
   letter-spacing: 0.08em;

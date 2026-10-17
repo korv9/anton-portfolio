@@ -1,0 +1,3190 @@
+{
+ "meta": {
+  "title": "EU:s AI-förordning",
+  "what_it_does": "Hämtar AI-förordningen och dess ändringar från EU:s Cellar, delar texten i artiklar och knyter skyldigheter, datum, riksdagsdebatt och platsannonser till dem.",
+  "status": {
+   "current_version": "02024R1689-20260727",
+   "published_at": "2026-07-27",
+   "latest_retrieval": "2026-10-06 07:10:35"
+  },
+  "code": "https://github.com/korv9/anton-portfolio/blob/eb2f4e0fade4e7f60127f913f4d00b83fd2036fb/frontend/src/aiact/AiActProduct.tsx",
+  "git_sha": "eb2f4e0fade4e7f60127f913f4d00b83fd2036fb",
+  "exported_at": "2026-10-16T18:59:59+00:00"
+ },
+ "kpis": [
+  {
+   "label": "Artiklar",
+   "value": 119,
+   "unit": "artiklar",
+   "source": "ai-act/summary.json",
+   "field": "counts.articles",
+   "how": "I den gällande konsoliderade versionen."
+  },
+  {
+   "label": "Ändrade artiklar",
+   "value": 42,
+   "unit": "artiklar",
+   "source": "ai-act/summary.json",
+   "field": "counts.articles_changed",
+   "how": "Text ändrad mot 2024 års version."
+  },
+  {
+   "label": "Skyldigheter",
+   "value": 51,
+   "unit": "skyldigheter",
+   "source": "ai-act/summary.json",
+   "field": "counts.obligations",
+   "how": "Aktör × skyldighet × artikel, med citat ur texten."
+  },
+  {
+   "label": "Milstolpar",
+   "value": 12,
+   "unit": "datum",
+   "source": "ai-act/summary.json",
+   "field": "counts.milestones",
+   "how": "Tillämpningsdatum ur artikel 113."
+  },
+  {
+   "label": "Aktörer",
+   "value": 11,
+   "unit": "aktörer",
+   "source": "ai-act/summary.json",
+   "field": "counts.actors",
+   "how": "Definierade i artikel 3."
+  }
+ ],
+ "charts": [
+  {
+   "id": "obligation_grid",
+   "title": "Skyldigheter per aktör och typ",
+   "type": "table",
+   "source": "ai-act/obligations.json",
+   "slicer": "aktör",
+   "row_count": 41,
+   "rows": [
+    {
+     "actor": "deployer",
+     "requirement_type": "ai_literacy",
+     "obligations": 1
+    },
+    {
+     "actor": "deployer",
+     "requirement_type": "human_oversight",
+     "obligations": 1
+    },
+    {
+     "actor": "deployer",
+     "requirement_type": "impact_assessment",
+     "obligations": 1
+    },
+    {
+     "actor": "deployer",
+     "requirement_type": "information",
+     "obligations": 1
+    },
+    {
+     "actor": "deployer",
+     "requirement_type": "monitoring",
+     "obligations": 1
+    },
+    {
+     "actor": "deployer",
+     "requirement_type": "prohibition",
+     "obligations": 1
+    },
+    {
+     "actor": "deployer",
+     "requirement_type": "record_keeping",
+     "obligations": 1
+    },
+    {
+     "actor": "deployer",
+     "requirement_type": "registration",
+     "obligations": 1
+    },
+    {
+     "actor": "deployer",
+     "requirement_type": "transparency",
+     "obligations": 3
+    },
+    {
+     "actor": "deployer",
+     "requirement_type": "use_instructions",
+     "obligations": 1
+    },
+    {
+     "actor": "deployer",
+     "requirement_type": "value_chain",
+     "obligations": 1
+    },
+    {
+     "actor": "distributor",
+     "requirement_type": "value_chain",
+     "obligations": 1
+    },
+    {
+     "actor": "distributor",
+     "requirement_type": "verification",
+     "obligations": 1
+    },
+    {
+     "actor": "gpai_provider",
+     "requirement_type": "accuracy_robustness",
+     "obligations": 1
+    },
+    {
+     "actor": "gpai_provider",
+     "requirement_type": "copyright",
+     "obligations": 1
+    },
+    {
+     "actor": "gpai_provider",
+     "requirement_type": "documentation",
+     "obligations": 1
+    },
+    {
+     "actor": "gpai_provider",
+     "requirement_type": "evaluation",
+     "obligations": 1
+    },
+    {
+     "actor": "gpai_provider",
+     "requirement_type": "incident_reporting",
+     "obligations": 1
+    },
+    {
+     "actor": "gpai_provider",
+     "requirement_type": "information",
+     "obligations": 1
+    },
+    {
+     "actor": "gpai_provider",
+     "requirement_type": "representation",
+     "obligations": 1
+    },
+    {
+     "actor": "gpai_provider",
+     "requirement_type": "risk_management",
+     "obligations": 1
+    },
+    {
+     "actor": "gpai_provider",
+     "requirement_type": "transparency",
+     "obligations": 1
+    },
+    {
+     "actor": "importer",
+     "requirement_type": "value_chain",
+     "obligations": 1
+    },
+    {
+     "actor": "importer",
+     "requirement_type": "verification",
+     "obligations": 1
+    },
+    {
+     "actor": "provider",
+     "requirement_type": "accuracy_robustness",
+     "obligations": 1
+    },
+    {
+     "actor": "provider",
+     "requirement_type": "ai_literacy",
+     "obligations": 1
+    },
+    {
+     "actor": "provider",
+     "requirement_type": "conformity",
+     "obligations": 3
+    },
+    {
+     "actor": "provider",
+     "requirement_type": "cooperation",
+     "obligations": 1
+    },
+    {
+     "actor": "provider",
+     "requirement_type": "corrective_action",
+     "obligations": 1
+    },
+    {
+     "actor": "provider",
+     "requirement_type": "data_governance",
+     "obligations": 1
+    },
+    {
+     "actor": "provider",
+     "requirement_type": "documentation",
+     "obligations": 3
+    },
+    {
+     "actor": "provider",
+     "requirement_type": "human_oversight",
+     "obligations": 1
+    },
+    {
+     "actor": "provider",
+     "requirement_type": "incident_reporting",
+     "obligations": 1
+    },
+    {
+     "actor": "provider",
+     "requirement_type": "monitoring",
+     "obligations": 1
+    },
+    {
+     "actor": "provider",
+     "requirement_type": "prohibition",
+     "obligations": 1
+    },
+    {
+     "actor": "provider",
+     "requirement_type": "quality_management",
+     "obligations": 1
+    },
+    {
+     "actor": "provider",
+     "requirement_type": "record_keeping",
+     "obligations": 2
+    },
+    {
+     "actor": "provider",
+     "requirement_type": "registration",
+     "obligations": 2
+    },
+    {
+     "actor": "provider",
+     "requirement_type": "representation",
+     "obligations": 1
+    },
+    {
+     "actor": "provider",
+     "requirement_type": "risk_management",
+     "obligations": 1
+    },
+    {
+     "actor": "provider",
+     "requirement_type": "transparency",
+     "obligations": 3
+    }
+   ]
+  },
+  {
+   "id": "timeline",
+   "title": "Tidslinje: dokument och tillämpningsdatum",
+   "type": "table",
+   "source": "ai-act/timeline.json",
+   "slicer": "typ",
+   "row_count": 16,
+   "rows": [
+    {
+     "date": "2021-04-21",
+     "kind": "document",
+     "title_sv": "Kommissionen föreslår AI-förordningen",
+     "source_article": null
+    },
+    {
+     "date": "2024-07-12",
+     "kind": "document",
+     "title_sv": "Publicerad i Europeiska unionens officiella tidning",
+     "source_article": null
+    },
+    {
+     "date": "2024-08-01",
+     "kind": "entry_into_force",
+     "title_sv": "AI-förordningen träder i kraft",
+     "source_article": "113"
+    },
+    {
+     "date": "2025-02-02",
+     "kind": "application",
+     "title_sv": "Förbud och AI-kunnighet börjar gälla",
+     "source_article": "113"
+    },
+    {
+     "date": "2025-08-02",
+     "kind": "application",
+     "title_sv": "Regler för AI för allmänna ändamål, styrning och sanktioner börjar gälla",
+     "source_article": "113"
+    },
+    {
+     "date": "2026-02-02",
+     "kind": "deadline",
+     "title_sv": "Sista dag: kommissionens riktlinjer om högriskklassning",
+     "source_article": "6"
+    },
+    {
+     "date": "2026-07-08",
+     "kind": "document",
+     "title_sv": "Ändringsförordning antagen",
+     "source_article": null
+    },
+    {
+     "date": "2026-07-27",
+     "kind": "document",
+     "title_sv": "Ny konsoliderad text",
+     "source_article": null
+    },
+    {
+     "date": "2026-07-27",
+     "kind": "application",
+     "title_sv": "Ändringarna i sektoriell produktlagstiftning börjar gälla",
+     "source_article": "113"
+    },
+    {
+     "date": "2026-08-02",
+     "kind": "application",
+     "title_sv": "Allmänt tillämpningsdatum",
+     "source_article": "113"
+    },
+    {
+     "date": "2026-12-02",
+     "kind": "application",
+     "title_sv": "Nya förbud; märkningsfrist för befintliga generatorer",
+     "source_article": "113"
+    },
+    {
+     "date": "2027-08-02",
+     "kind": "deadline",
+     "title_sv": "Sista dag för AI-modeller för allmänna ändamål som redan fanns på marknaden",
+     "source_article": "111"
+    },
+    {
+     "date": "2027-12-02",
+     "kind": "application",
+     "title_sv": "Högriskreglerna börjar gälla: system i bilaga III",
+     "source_article": "113"
+    },
+    {
+     "date": "2028-08-02",
+     "kind": "application",
+     "title_sv": "Högriskreglerna börjar gälla: produkter i bilaga I",
+     "source_article": "113"
+    },
+    {
+     "date": "2030-08-02",
+     "kind": "deadline",
+     "title_sv": "Sista dag för högrisksystem som används av myndigheter",
+     "source_article": "111"
+    },
+    {
+     "date": "2030-12-31",
+     "kind": "deadline",
+     "title_sv": "Sista dag för AI i EU:s storskaliga IT-system",
+     "source_article": "111"
+    }
+   ]
+  },
+  {
+   "id": "riksdag_ai_share",
+   "title": "Andel riksdagsanföranden om AI per månad",
+   "type": "line",
+   "source": "ai-act/politics/monthly.json",
+   "slicer": "år",
+   "row_count": 109,
+   "rows": [
+    {
+     "month": "2016-09",
+     "speeches": 691,
+     "ai_speeches": 0,
+     "ai_act_speeches": 0,
+     "ai_share": 0.0,
+     "ai_share_rolling_3m": 0.0,
+     "speeches_rolling_3m": 691.0
+    },
+    {
+     "month": "2016-10",
+     "speeches": 890,
+     "ai_speeches": 0,
+     "ai_act_speeches": 0,
+     "ai_share": 0.0,
+     "ai_share_rolling_3m": 0.0,
+     "speeches_rolling_3m": 1581.0
+    },
+    {
+     "month": "2016-11",
+     "speeches": 1200,
+     "ai_speeches": 0,
+     "ai_act_speeches": 0,
+     "ai_share": 0.0,
+     "ai_share_rolling_3m": 0.0,
+     "speeches_rolling_3m": 2781.0
+    },
+    {
+     "month": "2016-12",
+     "speeches": 1985,
+     "ai_speeches": 1,
+     "ai_act_speeches": 0,
+     "ai_share": 0.0005,
+     "ai_share_rolling_3m": 0.00025,
+     "speeches_rolling_3m": 4075.0
+    },
+    {
+     "month": "2017-01",
+     "speeches": 952,
+     "ai_speeches": 0,
+     "ai_act_speeches": 0,
+     "ai_share": 0.0,
+     "ai_share_rolling_3m": 0.00024,
+     "speeches_rolling_3m": 4137.0
+    },
+    {
+     "month": "2017-02",
+     "speeches": 1162,
+     "ai_speeches": 0,
+     "ai_act_speeches": 0,
+     "ai_share": 0.0,
+     "ai_share_rolling_3m": 0.00024,
+     "speeches_rolling_3m": 4099.0
+    },
+    {
+     "month": "2017-03",
+     "speeches": 1510,
+     "ai_speeches": 0,
+     "ai_act_speeches": 0,
+     "ai_share": 0.0,
+     "ai_share_rolling_3m": 0.0,
+     "speeches_rolling_3m": 3624.0
+    },
+    {
+     "month": "2017-04",
+     "speeches": 1359,
+     "ai_speeches": 1,
+     "ai_act_speeches": 0,
+     "ai_share": 0.00074,
+     "ai_share_rolling_3m": 0.00025,
+     "speeches_rolling_3m": 4031.0
+    },
+    {
+     "month": "2017-05",
+     "speeches": 1355,
+     "ai_speeches": 0,
+     "ai_act_speeches": 0,
+     "ai_share": 0.0,
+     "ai_share_rolling_3m": 0.00024,
+     "speeches_rolling_3m": 4224.0
+    },
+    {
+     "month": "2017-06",
+     "speeches": 1510,
+     "ai_speeches": 2,
+     "ai_act_speeches": 0,
+     "ai_share": 0.00132,
+     "ai_share_rolling_3m": 0.00071,
+     "speeches_rolling_3m": 4224.0
+    },
+    {
+     "month": "2017-08",
+     "speeches": 97,
+     "ai_speeches": 0,
+     "ai_act_speeches": 0,
+     "ai_share": 0.0,
+     "ai_share_rolling_3m": 0.00068,
+     "speeches_rolling_3m": 2962.0
+    },
+    {
+     "month": "2017-09",
+     "speeches": 760,
+     "ai_speeches": 0,
+     "ai_act_speeches": 0,
+     "ai_share": 0.0,
+     "ai_share_rolling_3m": 0.00084,
+     "speeches_rolling_3m": 2367.0
+    },
+    {
+     "month": "2017-10",
+     "speeches": 729,
+     "ai_speeches": 3,
+     "ai_act_speeches": 0,
+     "ai_share": 0.00412,
+     "ai_share_rolling_3m": 0.00189,
+     "speeches_rolling_3m": 1586.0
+    },
+    {
+     "month": "2017-11",
+     "speeches": 1543,
+     "ai_speeches": 3,
+     "ai_act_speeches": 0,
+     "ai_share": 0.00194,
+     "ai_share_rolling_3m": 0.00198,
+     "speeches_rolling_3m": 3032.0
+    },
+    {
+     "month": "2017-12",
+     "speeches": 1761,
+     "ai_speeches": 2,
+     "ai_act_speeches": 0,
+     "ai_share": 0.00114,
+     "ai_share_rolling_3m": 0.00198,
+     "speeches_rolling_3m": 4033.0
+    },
+    {
+     "month": "2018-01",
+     "speeches": 1008,
+     "ai_speeches": 0,
+     "ai_act_speeches": 0,
+     "ai_share": 0.0,
+     "ai_share_rolling_3m": 0.00116,
+     "speeches_rolling_3m": 4312.0
+    },
+    {
+     "month": "2018-02",
+     "speeches": 1040,
+     "ai_speeches": 2,
+     "ai_act_speeches": 0,
+     "ai_share": 0.00192,
+     "ai_share_rolling_3m": 0.00105,
+     "speeches_rolling_3m": 3809.0
+    },
+    {
+     "month": "2018-03",
+     "speeches": 1442,
+     "ai_speeches": 1,
+     "ai_act_speeches": 0,
+     "ai_share": 0.00069,
+     "ai_share_rolling_3m": 0.00086,
+     "speeches_rolling_3m": 3490.0
+    },
+    {
+     "month": "2018-04",
+     "speeches": 1216,
+     "ai_speeches": 4,
+     "ai_act_speeches": 0,
+     "ai_share": 0.00329,
+     "ai_share_rolling_3m": 0.00189,
+     "speeches_rolling_3m": 3698.0
+    },
+    {
+     "month": "2018-05",
+     "speeches": 1463,
+     "ai_speeches": 4,
+     "ai_act_speeches": 0,
+     "ai_share": 0.00273,
+     "ai_share_rolling_3m": 0.00218,
+     "speeches_rolling_3m": 4121.0
+    },
+    {
+     "month": "2018-06",
+     "speeches": 1499,
+     "ai_speeches": 7,
+     "ai_act_speeches": 0,
+     "ai_share": 0.00467,
+     "ai_share_rolling_3m": 0.00359,
+     "speeches_rolling_3m": 4178.0
+    },
+    {
+     "month": "2018-08",
+     "speeches": 26,
+     "ai_speeches": 0,
+     "ai_act_speeches": 0,
+     "ai_share": 0.0,
+     "ai_share_rolling_3m": 0.00368,
+     "speeches_rolling_3m": 2988.0
+    },
+    {
+     "month": "2018-09",
+     "speeches": 28,
+     "ai_speeches": 0,
+     "ai_act_speeches": 0,
+     "ai_share": 0.0,
+     "ai_share_rolling_3m": 0.00451,
+     "speeches_rolling_3m": 1553.0
+    },
+    {
+     "month": "2018-10",
+     "speeches": 765,
+     "ai_speeches": 3,
+     "ai_act_speeches": 0,
+     "ai_share": 0.00392,
+     "ai_share_rolling_3m": 0.00366,
+     "speeches_rolling_3m": 819.0
+    },
+    {
+     "month": "2018-11",
+     "speeches": 285,
+     "ai_speeches": 0,
+     "ai_act_speeches": 0,
+     "ai_share": 0.0,
+     "ai_share_rolling_3m": 0.00278,
+     "speeches_rolling_3m": 1078.0
+    },
+    {
+     "month": "2018-12",
+     "speeches": 1135,
+     "ai_speeches": 7,
+     "ai_act_speeches": 0,
+     "ai_share": 0.00617,
+     "ai_share_rolling_3m": 0.00458,
+     "speeches_rolling_3m": 2185.0
+    },
+    {
+     "month": "2019-01",
+     "speeches": 345,
+     "ai_speeches": 0,
+     "ai_act_speeches": 0,
+     "ai_share": 0.0,
+     "ai_share_rolling_3m": 0.00397,
+     "speeches_rolling_3m": 1765.0
+    },
+    {
+     "month": "2019-02",
+     "speeches": 1090,
+     "ai_speeches": 0,
+     "ai_act_speeches": 0,
+     "ai_share": 0.0,
+     "ai_share_rolling_3m": 0.00272,
+     "speeches_rolling_3m": 2570.0
+    },
+    {
+     "month": "2019-03",
+     "speeches": 1138,
+     "ai_speeches": 0,
+     "ai_act_speeches": 0,
+     "ai_share": 0.0,
+     "ai_share_rolling_3m": 0.0,
+     "speeches_rolling_3m": 2573.0
+    },
+    {
+     "month": "2019-04",
+     "speeches": 1387,
+     "ai_speeches": 0,
+     "ai_act_speeches": 0,
+     "ai_share": 0.0,
+     "ai_share_rolling_3m": 0.0,
+     "speeches_rolling_3m": 3615.0
+    },
+    {
+     "month": "2019-05",
+     "speeches": 1536,
+     "ai_speeches": 3,
+     "ai_act_speeches": 0,
+     "ai_share": 0.00195,
+     "ai_share_rolling_3m": 0.00074,
+     "speeches_rolling_3m": 4061.0
+    },
+    {
+     "month": "2019-06",
+     "speeches": 1608,
+     "ai_speeches": 3,
+     "ai_act_speeches": 0,
+     "ai_share": 0.00187,
+     "ai_share_rolling_3m": 0.00132,
+     "speeches_rolling_3m": 4531.0
+    },
+    {
+     "month": "2019-08",
+     "speeches": 63,
+     "ai_speeches": 0,
+     "ai_act_speeches": 0,
+     "ai_share": 0.0,
+     "ai_share_rolling_3m": 0.00187,
+     "speeches_rolling_3m": 3207.0
+    },
+    {
+     "month": "2019-09",
+     "speeches": 507,
+     "ai_speeches": 0,
+     "ai_act_speeches": 0,
+     "ai_share": 0.0,
+     "ai_share_rolling_3m": 0.00138,
+     "speeches_rolling_3m": 2178.0
+    },
+    {
+     "month": "2019-10",
+     "speeches": 966,
+     "ai_speeches": 2,
+     "ai_act_speeches": 0,
+     "ai_share": 0.00207,
+     "ai_share_rolling_3m": 0.0013,
+     "speeches_rolling_3m": 1536.0
+    },
+    {
+     "month": "2019-11",
+     "speeches": 1469,
+     "ai_speeches": 7,
+     "ai_act_speeches": 0,
+     "ai_share": 0.00477,
+     "ai_share_rolling_3m": 0.00306,
+     "speeches_rolling_3m": 2942.0
+    },
+    {
+     "month": "2019-12",
+     "speeches": 1665,
+     "ai_speeches": 4,
+     "ai_act_speeches": 0,
+     "ai_share": 0.0024,
+     "ai_share_rolling_3m": 0.00317,
+     "speeches_rolling_3m": 4100.0
+    },
+    {
+     "month": "2020-01",
+     "speeches": 1048,
+     "ai_speeches": 4,
+     "ai_act_speeches": 0,
+     "ai_share": 0.00382,
+     "ai_share_rolling_3m": 0.00359,
+     "speeches_rolling_3m": 4182.0
+    },
+    {
+     "month": "2020-02",
+     "speeches": 1079,
+     "ai_speeches": 3,
+     "ai_act_speeches": 0,
+     "ai_share": 0.00278,
+     "ai_share_rolling_3m": 0.0029,
+     "speeches_rolling_3m": 3792.0
+    },
+    {
+     "month": "2020-03",
+     "speeches": 1129,
+     "ai_speeches": 2,
+     "ai_act_speeches": 0,
+     "ai_share": 0.00177,
+     "ai_share_rolling_3m": 0.00276,
+     "speeches_rolling_3m": 3256.0
+    },
+    {
+     "month": "2020-04",
+     "speeches": 777,
+     "ai_speeches": 9,
+     "ai_act_speeches": 0,
+     "ai_share": 0.01158,
+     "ai_share_rolling_3m": 0.00469,
+     "speeches_rolling_3m": 2985.0
+    },
+    {
+     "month": "2020-05",
+     "speeches": 572,
+     "ai_speeches": 1,
+     "ai_act_speeches": 0,
+     "ai_share": 0.00175,
+     "ai_share_rolling_3m": 0.00484,
+     "speeches_rolling_3m": 2478.0
+    },
+    {
+     "month": "2020-06",
+     "speeches": 1124,
+     "ai_speeches": 11,
+     "ai_act_speeches": 0,
+     "ai_share": 0.00979,
+     "ai_share_rolling_3m": 0.00849,
+     "speeches_rolling_3m": 2473.0
+    },
+    {
+     "month": "2020-08",
+     "speeches": 98,
+     "ai_speeches": 1,
+     "ai_act_speeches": 0,
+     "ai_share": 0.0102,
+     "ai_share_rolling_3m": 0.00725,
+     "speeches_rolling_3m": 1794.0
+    },
+    {
+     "month": "2020-09",
+     "speeches": 914,
+     "ai_speeches": 0,
+     "ai_act_speeches": 0,
+     "ai_share": 0.0,
+     "ai_share_rolling_3m": 0.00562,
+     "speeches_rolling_3m": 2136.0
+    },
+    {
+     "month": "2020-10",
+     "speeches": 587,
+     "ai_speeches": 0,
+     "ai_act_speeches": 0,
+     "ai_share": 0.0,
+     "ai_share_rolling_3m": 0.00063,
+     "speeches_rolling_3m": 1599.0
+    },
+    {
+     "month": "2020-11",
+     "speeches": 1262,
+     "ai_speeches": 2,
+     "ai_act_speeches": 0,
+     "ai_share": 0.00158,
+     "ai_share_rolling_3m": 0.00072,
+     "speeches_rolling_3m": 2763.0
+    },
+    {
+     "month": "2020-12",
+     "speeches": 2041,
+     "ai_speeches": 6,
+     "ai_act_speeches": 0,
+     "ai_share": 0.00294,
+     "ai_share_rolling_3m": 0.00206,
+     "speeches_rolling_3m": 3890.0
+    },
+    {
+     "month": "2021-01",
+     "speeches": 1364,
+     "ai_speeches": 1,
+     "ai_act_speeches": 0,
+     "ai_share": 0.00073,
+     "ai_share_rolling_3m": 0.00193,
+     "speeches_rolling_3m": 4667.0
+    },
+    {
+     "month": "2021-02",
+     "speeches": 1361,
+     "ai_speeches": 10,
+     "ai_act_speeches": 0,
+     "ai_share": 0.00735,
+     "ai_share_rolling_3m": 0.00357,
+     "speeches_rolling_3m": 4766.0
+    },
+    {
+     "month": "2021-03",
+     "speeches": 1937,
+     "ai_speeches": 4,
+     "ai_act_speeches": 0,
+     "ai_share": 0.00207,
+     "ai_share_rolling_3m": 0.00322,
+     "speeches_rolling_3m": 4662.0
+    },
+    {
+     "month": "2021-04",
+     "speeches": 1957,
+     "ai_speeches": 6,
+     "ai_act_speeches": 0,
+     "ai_share": 0.00307,
+     "ai_share_rolling_3m": 0.00381,
+     "speeches_rolling_3m": 5255.0
+    },
+    {
+     "month": "2021-05",
+     "speeches": 1466,
+     "ai_speeches": 3,
+     "ai_act_speeches": 0,
+     "ai_share": 0.00205,
+     "ai_share_rolling_3m": 0.00243,
+     "speeches_rolling_3m": 5360.0
+    },
+    {
+     "month": "2021-06",
+     "speeches": 1912,
+     "ai_speeches": 5,
+     "ai_act_speeches": 0,
+     "ai_share": 0.00262,
+     "ai_share_rolling_3m": 0.00262,
+     "speeches_rolling_3m": 5335.0
+    },
+    {
+     "month": "2021-07",
+     "speeches": 14,
+     "ai_speeches": 0,
+     "ai_act_speeches": 0,
+     "ai_share": 0.0,
+     "ai_share_rolling_3m": 0.00236,
+     "speeches_rolling_3m": 3392.0
+    },
+    {
+     "month": "2021-09",
+     "speeches": 1237,
+     "ai_speeches": 0,
+     "ai_act_speeches": 0,
+     "ai_share": 0.0,
+     "ai_share_rolling_3m": 0.00158,
+     "speeches_rolling_3m": 3163.0
+    },
+    {
+     "month": "2021-10",
+     "speeches": 620,
+     "ai_speeches": 0,
+     "ai_act_speeches": 0,
+     "ai_share": 0.0,
+     "ai_share_rolling_3m": 0.0,
+     "speeches_rolling_3m": 1871.0
+    },
+    {
+     "month": "2021-11",
+     "speeches": 442,
+     "ai_speeches": 0,
+     "ai_act_speeches": 0,
+     "ai_share": 0.0,
+     "ai_share_rolling_3m": 0.0,
+     "speeches_rolling_3m": 2299.0
+    },
+    {
+     "month": "2021-12",
+     "speeches": 1602,
+     "ai_speeches": 3,
+     "ai_act_speeches": 0,
+     "ai_share": 0.00187,
+     "ai_share_rolling_3m": 0.00113,
+     "speeches_rolling_3m": 2664.0
+    },
+    {
+     "month": "2022-01",
+     "speeches": 1211,
+     "ai_speeches": 1,
+     "ai_act_speeches": 0,
+     "ai_share": 0.00083,
+     "ai_share_rolling_3m": 0.00123,
+     "speeches_rolling_3m": 3255.0
+    },
+    {
+     "month": "2022-02",
+     "speeches": 1512,
+     "ai_speeches": 6,
+     "ai_act_speeches": 0,
+     "ai_share": 0.00397,
+     "ai_share_rolling_3m": 0.00231,
+     "speeches_rolling_3m": 4325.0
+    },
+    {
+     "month": "2022-03",
+     "speeches": 1568,
+     "ai_speeches": 1,
+     "ai_act_speeches": 0,
+     "ai_share": 0.00064,
+     "ai_share_rolling_3m": 0.00186,
+     "speeches_rolling_3m": 4291.0
+    },
+    {
+     "month": "2022-04",
+     "speeches": 1250,
+     "ai_speeches": 1,
+     "ai_act_speeches": 0,
+     "ai_share": 0.0008,
+     "ai_share_rolling_3m": 0.00185,
+     "speeches_rolling_3m": 4330.0
+    },
+    {
+     "month": "2022-05",
+     "speeches": 1156,
+     "ai_speeches": 1,
+     "ai_act_speeches": 0,
+     "ai_share": 0.00087,
+     "ai_share_rolling_3m": 0.00075,
+     "speeches_rolling_3m": 3974.0
+    },
+    {
+     "month": "2022-06",
+     "speeches": 1983,
+     "ai_speeches": 7,
+     "ai_act_speeches": 0,
+     "ai_share": 0.00353,
+     "ai_share_rolling_3m": 0.00205,
+     "speeches_rolling_3m": 4389.0
+    },
+    {
+     "month": "2022-09",
+     "speeches": 86,
+     "ai_speeches": 0,
+     "ai_act_speeches": 0,
+     "ai_share": 0.0,
+     "ai_share_rolling_3m": 0.00248,
+     "speeches_rolling_3m": 3225.0
+    },
+    {
+     "month": "2022-10",
+     "speeches": 786,
+     "ai_speeches": 0,
+     "ai_act_speeches": 0,
+     "ai_share": 0.0,
+     "ai_share_rolling_3m": 0.00245,
+     "speeches_rolling_3m": 2855.0
+    },
+    {
+     "month": "2022-11",
+     "speeches": 853,
+     "ai_speeches": 2,
+     "ai_act_speeches": 0,
+     "ai_share": 0.00234,
+     "ai_share_rolling_3m": 0.00116,
+     "speeches_rolling_3m": 1725.0
+    },
+    {
+     "month": "2022-12",
+     "speeches": 1947,
+     "ai_speeches": 4,
+     "ai_act_speeches": 0,
+     "ai_share": 0.00205,
+     "ai_share_rolling_3m": 0.00167,
+     "speeches_rolling_3m": 3586.0
+    },
+    {
+     "month": "2023-01",
+     "speeches": 779,
+     "ai_speeches": 1,
+     "ai_act_speeches": 0,
+     "ai_share": 0.00128,
+     "ai_share_rolling_3m": 0.00196,
+     "speeches_rolling_3m": 3579.0
+    },
+    {
+     "month": "2023-02",
+     "speeches": 1437,
+     "ai_speeches": 1,
+     "ai_act_speeches": 0,
+     "ai_share": 0.0007,
+     "ai_share_rolling_3m": 0.00144,
+     "speeches_rolling_3m": 4163.0
+    },
+    {
+     "month": "2023-03",
+     "speeches": 1729,
+     "ai_speeches": 7,
+     "ai_act_speeches": 0,
+     "ai_share": 0.00405,
+     "ai_share_rolling_3m": 0.00228,
+     "speeches_rolling_3m": 3945.0
+    },
+    {
+     "month": "2023-04",
+     "speeches": 1704,
+     "ai_speeches": 11,
+     "ai_act_speeches": 0,
+     "ai_share": 0.00646,
+     "ai_share_rolling_3m": 0.0039,
+     "speeches_rolling_3m": 4870.0
+    },
+    {
+     "month": "2023-05",
+     "speeches": 1644,
+     "ai_speeches": 8,
+     "ai_act_speeches": 0,
+     "ai_share": 0.00487,
+     "ai_share_rolling_3m": 0.00512,
+     "speeches_rolling_3m": 5077.0
+    },
+    {
+     "month": "2023-06",
+     "speeches": 1457,
+     "ai_speeches": 18,
+     "ai_act_speeches": 2,
+     "ai_share": 0.01235,
+     "ai_share_rolling_3m": 0.0077,
+     "speeches_rolling_3m": 4805.0
+    },
+    {
+     "month": "2023-08",
+     "speeches": 119,
+     "ai_speeches": 7,
+     "ai_act_speeches": 2,
+     "ai_share": 0.05882,
+     "ai_share_rolling_3m": 0.01025,
+     "speeches_rolling_3m": 3220.0
+    },
+    {
+     "month": "2023-09",
+     "speeches": 805,
+     "ai_speeches": 9,
+     "ai_act_speeches": 0,
+     "ai_share": 0.01118,
+     "ai_share_rolling_3m": 0.01428,
+     "speeches_rolling_3m": 2381.0
+    },
+    {
+     "month": "2023-10",
+     "speeches": 771,
+     "ai_speeches": 2,
+     "ai_act_speeches": 0,
+     "ai_share": 0.00259,
+     "ai_share_rolling_3m": 0.01062,
+     "speeches_rolling_3m": 1695.0
+    },
+    {
+     "month": "2023-11",
+     "speeches": 1682,
+     "ai_speeches": 2,
+     "ai_act_speeches": 1,
+     "ai_share": 0.00119,
+     "ai_share_rolling_3m": 0.00399,
+     "speeches_rolling_3m": 3258.0
+    },
+    {
+     "month": "2023-12",
+     "speeches": 2140,
+     "ai_speeches": 26,
+     "ai_act_speeches": 0,
+     "ai_share": 0.01215,
+     "ai_share_rolling_3m": 0.00653,
+     "speeches_rolling_3m": 4593.0
+    },
+    {
+     "month": "2024-01",
+     "speeches": 1137,
+     "ai_speeches": 4,
+     "ai_act_speeches": 0,
+     "ai_share": 0.00352,
+     "ai_share_rolling_3m": 0.00645,
+     "speeches_rolling_3m": 4959.0
+    },
+    {
+     "month": "2024-02",
+     "speeches": 1614,
+     "ai_speeches": 11,
+     "ai_act_speeches": 1,
+     "ai_share": 0.00682,
+     "ai_share_rolling_3m": 0.00838,
+     "speeches_rolling_3m": 4891.0
+    },
+    {
+     "month": "2024-03",
+     "speeches": 1633,
+     "ai_speeches": 17,
+     "ai_act_speeches": 0,
+     "ai_share": 0.01041,
+     "ai_share_rolling_3m": 0.0073,
+     "speeches_rolling_3m": 4384.0
+    },
+    {
+     "month": "2024-04",
+     "speeches": 2398,
+     "ai_speeches": 22,
+     "ai_act_speeches": 0,
+     "ai_share": 0.00917,
+     "ai_share_rolling_3m": 0.00886,
+     "speeches_rolling_3m": 5645.0
+    },
+    {
+     "month": "2024-05",
+     "speeches": 1885,
+     "ai_speeches": 11,
+     "ai_act_speeches": 1,
+     "ai_share": 0.00584,
+     "ai_share_rolling_3m": 0.00845,
+     "speeches_rolling_3m": 5916.0
+    },
+    {
+     "month": "2024-06",
+     "speeches": 1154,
+     "ai_speeches": 29,
+     "ai_act_speeches": 3,
+     "ai_share": 0.02513,
+     "ai_share_rolling_3m": 0.0114,
+     "speeches_rolling_3m": 5437.0
+    },
+    {
+     "month": "2024-08",
+     "speeches": 90,
+     "ai_speeches": 0,
+     "ai_act_speeches": 0,
+     "ai_share": 0.0,
+     "ai_share_rolling_3m": 0.01278,
+     "speeches_rolling_3m": 3129.0
+    },
+    {
+     "month": "2024-09",
+     "speeches": 567,
+     "ai_speeches": 5,
+     "ai_act_speeches": 3,
+     "ai_share": 0.00882,
+     "ai_share_rolling_3m": 0.01877,
+     "speeches_rolling_3m": 1811.0
+    },
+    {
+     "month": "2024-10",
+     "speeches": 1134,
+     "ai_speeches": 1,
+     "ai_act_speeches": 0,
+     "ai_share": 0.00088,
+     "ai_share_rolling_3m": 0.00335,
+     "speeches_rolling_3m": 1791.0
+    },
+    {
+     "month": "2024-11",
+     "speeches": 1469,
+     "ai_speeches": 26,
+     "ai_act_speeches": 3,
+     "ai_share": 0.0177,
+     "ai_share_rolling_3m": 0.01009,
+     "speeches_rolling_3m": 3170.0
+    },
+    {
+     "month": "2024-12",
+     "speeches": 1962,
+     "ai_speeches": 20,
+     "ai_act_speeches": 0,
+     "ai_share": 0.01019,
+     "ai_share_rolling_3m": 0.0103,
+     "speeches_rolling_3m": 4565.0
+    },
+    {
+     "month": "2025-01",
+     "speeches": 1117,
+     "ai_speeches": 8,
+     "ai_act_speeches": 1,
+     "ai_share": 0.00716,
+     "ai_share_rolling_3m": 0.01187,
+     "speeches_rolling_3m": 4548.0
+    },
+    {
+     "month": "2025-02",
+     "speeches": 1463,
+     "ai_speeches": 9,
+     "ai_act_speeches": 1,
+     "ai_share": 0.00615,
+     "ai_share_rolling_3m": 0.00815,
+     "speeches_rolling_3m": 4542.0
+    },
+    {
+     "month": "2025-03",
+     "speeches": 1607,
+     "ai_speeches": 11,
+     "ai_act_speeches": 1,
+     "ai_share": 0.00685,
+     "ai_share_rolling_3m": 0.00669,
+     "speeches_rolling_3m": 4187.0
+    },
+    {
+     "month": "2025-04",
+     "speeches": 1715,
+     "ai_speeches": 17,
+     "ai_act_speeches": 0,
+     "ai_share": 0.00991,
+     "ai_share_rolling_3m": 0.00773,
+     "speeches_rolling_3m": 4785.0
+    },
+    {
+     "month": "2025-05",
+     "speeches": 1760,
+     "ai_speeches": 34,
+     "ai_act_speeches": 0,
+     "ai_share": 0.01932,
+     "ai_share_rolling_3m": 0.0122,
+     "speeches_rolling_3m": 5082.0
+    },
+    {
+     "month": "2025-06",
+     "speeches": 1274,
+     "ai_speeches": 14,
+     "ai_act_speeches": 0,
+     "ai_share": 0.01099,
+     "ai_share_rolling_3m": 0.01369,
+     "speeches_rolling_3m": 4749.0
+    },
+    {
+     "month": "2025-08",
+     "speeches": 152,
+     "ai_speeches": 0,
+     "ai_act_speeches": 0,
+     "ai_share": 0.0,
+     "ai_share_rolling_3m": 0.01507,
+     "speeches_rolling_3m": 3186.0
+    },
+    {
+     "month": "2025-09",
+     "speeches": 622,
+     "ai_speeches": 8,
+     "ai_act_speeches": 0,
+     "ai_share": 0.01286,
+     "ai_share_rolling_3m": 0.01074,
+     "speeches_rolling_3m": 2048.0
+    },
+    {
+     "month": "2025-10",
+     "speeches": 651,
+     "ai_speeches": 7,
+     "ai_act_speeches": 0,
+     "ai_share": 0.01075,
+     "ai_share_rolling_3m": 0.01053,
+     "speeches_rolling_3m": 1425.0
+    },
+    {
+     "month": "2025-11",
+     "speeches": 1322,
+     "ai_speeches": 11,
+     "ai_act_speeches": 0,
+     "ai_share": 0.00832,
+     "ai_share_rolling_3m": 0.01002,
+     "speeches_rolling_3m": 2595.0
+    },
+    {
+     "month": "2025-12",
+     "speeches": 1758,
+     "ai_speeches": 31,
+     "ai_act_speeches": 0,
+     "ai_share": 0.01763,
+     "ai_share_rolling_3m": 0.01313,
+     "speeches_rolling_3m": 3731.0
+    },
+    {
+     "month": "2026-01",
+     "speeches": 1275,
+     "ai_speeches": 10,
+     "ai_act_speeches": 0,
+     "ai_share": 0.00784,
+     "ai_share_rolling_3m": 0.01194,
+     "speeches_rolling_3m": 4355.0
+    },
+    {
+     "month": "2026-02",
+     "speeches": 1553,
+     "ai_speeches": 30,
+     "ai_act_speeches": 1,
+     "ai_share": 0.01932,
+     "ai_share_rolling_3m": 0.01548,
+     "speeches_rolling_3m": 4586.0
+    },
+    {
+     "month": "2026-03",
+     "speeches": 2130,
+     "ai_speeches": 36,
+     "ai_act_speeches": 0,
+     "ai_share": 0.0169,
+     "ai_share_rolling_3m": 0.01533,
+     "speeches_rolling_3m": 4958.0
+    },
+    {
+     "month": "2026-04",
+     "speeches": 1245,
+     "ai_speeches": 16,
+     "ai_act_speeches": 1,
+     "ai_share": 0.01285,
+     "ai_share_rolling_3m": 0.01664,
+     "speeches_rolling_3m": 4928.0
+    },
+    {
+     "month": "2026-05",
+     "speeches": 1260,
+     "ai_speeches": 39,
+     "ai_act_speeches": 5,
+     "ai_share": 0.03095,
+     "ai_share_rolling_3m": 0.01963,
+     "speeches_rolling_3m": 4635.0
+    },
+    {
+     "month": "2026-06",
+     "speeches": 2239,
+     "ai_speeches": 35,
+     "ai_act_speeches": 0,
+     "ai_share": 0.01563,
+     "ai_share_rolling_3m": 0.01897,
+     "speeches_rolling_3m": 4744.0
+    },
+    {
+     "month": "2026-08",
+     "speeches": 577,
+     "ai_speeches": 4,
+     "ai_act_speeches": 0,
+     "ai_share": 0.00693,
+     "ai_share_rolling_3m": 0.01914,
+     "speeches_rolling_3m": 4076.0
+    }
+   ]
+  },
+  {
+   "id": "party_ai_share",
+   "title": "Andel AI-anföranden per parti och år",
+   "type": "bar",
+   "source": "ai-act/politics/party-year.json",
+   "slicer": "år, parti",
+   "row_count": 88,
+   "rows": [
+    {
+     "party": "C",
+     "year": 2016,
+     "speeches": 329,
+     "ai_speeches": 0,
+     "ai_share": 0.0,
+     "ai_act_speeches": 0
+    },
+    {
+     "party": "C",
+     "year": 2017,
+     "speeches": 805,
+     "ai_speeches": 0,
+     "ai_share": 0.0,
+     "ai_act_speeches": 0
+    },
+    {
+     "party": "C",
+     "year": 2018,
+     "speeches": 698,
+     "ai_speeches": 2,
+     "ai_share": 0.00287,
+     "ai_act_speeches": 0
+    },
+    {
+     "party": "C",
+     "year": 2019,
+     "speeches": 787,
+     "ai_speeches": 1,
+     "ai_share": 0.00127,
+     "ai_act_speeches": 0
+    },
+    {
+     "party": "C",
+     "year": 2020,
+     "speeches": 648,
+     "ai_speeches": 3,
+     "ai_share": 0.00463,
+     "ai_act_speeches": 0
+    },
+    {
+     "party": "C",
+     "year": 2021,
+     "speeches": 966,
+     "ai_speeches": 3,
+     "ai_share": 0.00311,
+     "ai_act_speeches": 0
+    },
+    {
+     "party": "C",
+     "year": 2022,
+     "speeches": 1013,
+     "ai_speeches": 1,
+     "ai_share": 0.00099,
+     "ai_act_speeches": 0
+    },
+    {
+     "party": "C",
+     "year": 2023,
+     "speeches": 1103,
+     "ai_speeches": 9,
+     "ai_share": 0.00816,
+     "ai_act_speeches": 0
+    },
+    {
+     "party": "C",
+     "year": 2024,
+     "speeches": 1056,
+     "ai_speeches": 18,
+     "ai_share": 0.01705,
+     "ai_act_speeches": 1
+    },
+    {
+     "party": "C",
+     "year": 2025,
+     "speeches": 992,
+     "ai_speeches": 11,
+     "ai_share": 0.01109,
+     "ai_act_speeches": 0
+    },
+    {
+     "party": "C",
+     "year": 2026,
+     "speeches": 920,
+     "ai_speeches": 20,
+     "ai_share": 0.02174,
+     "ai_act_speeches": 1
+    },
+    {
+     "party": "KD",
+     "year": 2016,
+     "speeches": 239,
+     "ai_speeches": 0,
+     "ai_share": 0.0,
+     "ai_act_speeches": 0
+    },
+    {
+     "party": "KD",
+     "year": 2017,
+     "speeches": 730,
+     "ai_speeches": 0,
+     "ai_share": 0.0,
+     "ai_act_speeches": 0
+    },
+    {
+     "party": "KD",
+     "year": 2018,
+     "speeches": 662,
+     "ai_speeches": 1,
+     "ai_share": 0.00151,
+     "ai_act_speeches": 0
+    },
+    {
+     "party": "KD",
+     "year": 2019,
+     "speeches": 964,
+     "ai_speeches": 0,
+     "ai_share": 0.0,
+     "ai_act_speeches": 0
+    },
+    {
+     "party": "KD",
+     "year": 2020,
+     "speeches": 894,
+     "ai_speeches": 4,
+     "ai_share": 0.00447,
+     "ai_act_speeches": 0
+    },
+    {
+     "party": "KD",
+     "year": 2021,
+     "speeches": 955,
+     "ai_speeches": 0,
+     "ai_share": 0.0,
+     "ai_act_speeches": 0
+    },
+    {
+     "party": "KD",
+     "year": 2022,
+     "speeches": 1023,
+     "ai_speeches": 1,
+     "ai_share": 0.00098,
+     "ai_act_speeches": 0
+    },
+    {
+     "party": "KD",
+     "year": 2023,
+     "speeches": 1794,
+     "ai_speeches": 20,
+     "ai_share": 0.01115,
+     "ai_act_speeches": 3
+    },
+    {
+     "party": "KD",
+     "year": 2024,
+     "speeches": 1852,
+     "ai_speeches": 24,
+     "ai_share": 0.01296,
+     "ai_act_speeches": 4
+    },
+    {
+     "party": "KD",
+     "year": 2025,
+     "speeches": 1616,
+     "ai_speeches": 22,
+     "ai_share": 0.01361,
+     "ai_act_speeches": 1
+    },
+    {
+     "party": "KD",
+     "year": 2026,
+     "speeches": 1196,
+     "ai_speeches": 29,
+     "ai_share": 0.02425,
+     "ai_act_speeches": 1
+    },
+    {
+     "party": "L",
+     "year": 2016,
+     "speeches": 268,
+     "ai_speeches": 1,
+     "ai_share": 0.00373,
+     "ai_act_speeches": 0
+    },
+    {
+     "party": "L",
+     "year": 2017,
+     "speeches": 706,
+     "ai_speeches": 5,
+     "ai_share": 0.00708,
+     "ai_act_speeches": 0
+    },
+    {
+     "party": "L",
+     "year": 2018,
+     "speeches": 611,
+     "ai_speeches": 2,
+     "ai_share": 0.00327,
+     "ai_act_speeches": 0
+    },
+    {
+     "party": "L",
+     "year": 2019,
+     "speeches": 644,
+     "ai_speeches": 3,
+     "ai_share": 0.00466,
+     "ai_act_speeches": 0
+    },
+    {
+     "party": "L",
+     "year": 2020,
+     "speeches": 558,
+     "ai_speeches": 10,
+     "ai_share": 0.01792,
+     "ai_act_speeches": 0
+    },
+    {
+     "party": "L",
+     "year": 2021,
+     "speeches": 706,
+     "ai_speeches": 2,
+     "ai_share": 0.00283,
+     "ai_act_speeches": 0
+    },
+    {
+     "party": "L",
+     "year": 2022,
+     "speeches": 765,
+     "ai_speeches": 2,
+     "ai_share": 0.00261,
+     "ai_act_speeches": 0
+    },
+    {
+     "party": "L",
+     "year": 2023,
+     "speeches": 1497,
+     "ai_speeches": 6,
+     "ai_share": 0.00401,
+     "ai_act_speeches": 0
+    },
+    {
+     "party": "L",
+     "year": 2024,
+     "speeches": 1485,
+     "ai_speeches": 16,
+     "ai_share": 0.01077,
+     "ai_act_speeches": 0
+    },
+    {
+     "party": "L",
+     "year": 2025,
+     "speeches": 1215,
+     "ai_speeches": 25,
+     "ai_share": 0.02058,
+     "ai_act_speeches": 1
+    },
+    {
+     "party": "L",
+     "year": 2026,
+     "speeches": 818,
+     "ai_speeches": 18,
+     "ai_share": 0.022,
+     "ai_act_speeches": 0
+    },
+    {
+     "party": "M",
+     "year": 2016,
+     "speeches": 933,
+     "ai_speeches": 0,
+     "ai_share": 0.0,
+     "ai_act_speeches": 0
+    },
+    {
+     "party": "M",
+     "year": 2017,
+     "speeches": 2561,
+     "ai_speeches": 2,
+     "ai_share": 0.00078,
+     "ai_act_speeches": 0
+    },
+    {
+     "party": "M",
+     "year": 2018,
+     "speeches": 1835,
+     "ai_speeches": 8,
+     "ai_share": 0.00436,
+     "ai_act_speeches": 0
+    },
+    {
+     "party": "M",
+     "year": 2019,
+     "speeches": 2033,
+     "ai_speeches": 6,
+     "ai_share": 0.00295,
+     "ai_act_speeches": 0
+    },
+    {
+     "party": "M",
+     "year": 2020,
+     "speeches": 1673,
+     "ai_speeches": 7,
+     "ai_share": 0.00418,
+     "ai_act_speeches": 0
+    },
+    {
+     "party": "M",
+     "year": 2021,
+     "speeches": 2470,
+     "ai_speeches": 11,
+     "ai_share": 0.00445,
+     "ai_act_speeches": 0
+    },
+    {
+     "party": "M",
+     "year": 2022,
+     "speeches": 2058,
+     "ai_speeches": 8,
+     "ai_share": 0.00389,
+     "ai_act_speeches": 0
+    },
+    {
+     "party": "M",
+     "year": 2023,
+     "speeches": 2876,
+     "ai_speeches": 21,
+     "ai_share": 0.0073,
+     "ai_act_speeches": 0
+    },
+    {
+     "party": "M",
+     "year": 2024,
+     "speeches": 3272,
+     "ai_speeches": 27,
+     "ai_share": 0.00825,
+     "ai_act_speeches": 3
+    },
+    {
+     "party": "M",
+     "year": 2025,
+     "speeches": 2997,
+     "ai_speeches": 26,
+     "ai_share": 0.00868,
+     "ai_act_speeches": 1
+    },
+    {
+     "party": "M",
+     "year": 2026,
+     "speeches": 2241,
+     "ai_speeches": 24,
+     "ai_share": 0.01071,
+     "ai_act_speeches": 1
+    },
+    {
+     "party": "MP",
+     "year": 2016,
+     "speeches": 562,
+     "ai_speeches": 0,
+     "ai_share": 0.0,
+     "ai_act_speeches": 0
+    },
+    {
+     "party": "MP",
+     "year": 2017,
+     "speeches": 1509,
+     "ai_speeches": 3,
+     "ai_share": 0.00199,
+     "ai_act_speeches": 0
+    },
+    {
+     "party": "MP",
+     "year": 2018,
+     "speeches": 1104,
+     "ai_speeches": 5,
+     "ai_share": 0.00453,
+     "ai_act_speeches": 0
+    },
+    {
+     "party": "MP",
+     "year": 2019,
+     "speeches": 1110,
+     "ai_speeches": 3,
+     "ai_share": 0.0027,
+     "ai_act_speeches": 0
+    },
+    {
+     "party": "MP",
+     "year": 2020,
+     "speeches": 1105,
+     "ai_speeches": 6,
+     "ai_share": 0.00543,
+     "ai_act_speeches": 0
+    },
+    {
+     "party": "MP",
+     "year": 2021,
+     "speeches": 1527,
+     "ai_speeches": 7,
+     "ai_share": 0.00458,
+     "ai_act_speeches": 0
+    },
+    {
+     "party": "MP",
+     "year": 2022,
+     "speeches": 822,
+     "ai_speeches": 2,
+     "ai_share": 0.00243,
+     "ai_act_speeches": 0
+    },
+    {
+     "party": "MP",
+     "year": 2023,
+     "speeches": 1143,
+     "ai_speeches": 8,
+     "ai_share": 0.007,
+     "ai_act_speeches": 1
+    },
+    {
+     "party": "MP",
+     "year": 2024,
+     "speeches": 1073,
+     "ai_speeches": 12,
+     "ai_share": 0.01118,
+     "ai_act_speeches": 1
+    },
+    {
+     "party": "MP",
+     "year": 2025,
+     "speeches": 1026,
+     "ai_speeches": 20,
+     "ai_share": 0.01949,
+     "ai_act_speeches": 0
+    },
+    {
+     "party": "MP",
+     "year": 2026,
+     "speeches": 873,
+     "ai_speeches": 24,
+     "ai_share": 0.02749,
+     "ai_act_speeches": 2
+    },
+    {
+     "party": "S",
+     "year": 2016,
+     "speeches": 1702,
+     "ai_speeches": 0,
+     "ai_share": 0.0,
+     "ai_act_speeches": 0
+    },
+    {
+     "party": "S",
+     "year": 2017,
+     "speeches": 4450,
+     "ai_speeches": 0,
+     "ai_share": 0.0,
+     "ai_act_speeches": 0
+    },
+    {
+     "party": "S",
+     "year": 2018,
+     "speeches": 3021,
+     "ai_speeches": 8,
+     "ai_share": 0.00265,
+     "ai_act_speeches": 0
+    },
+    {
+     "party": "S",
+     "year": 2019,
+     "speeches": 3799,
+     "ai_speeches": 6,
+     "ai_share": 0.00158,
+     "ai_act_speeches": 0
+    },
+    {
+     "party": "S",
+     "year": 2020,
+     "speeches": 3433,
+     "ai_speeches": 8,
+     "ai_share": 0.00233,
+     "ai_act_speeches": 0
+    },
+    {
+     "party": "S",
+     "year": 2021,
+     "speeches": 4325,
+     "ai_speeches": 7,
+     "ai_share": 0.00162,
+     "ai_act_speeches": 0
+    },
+    {
+     "party": "S",
+     "year": 2022,
+     "speeches": 3908,
+     "ai_speeches": 7,
+     "ai_share": 0.00179,
+     "ai_act_speeches": 0
+    },
+    {
+     "party": "S",
+     "year": 2023,
+     "speeches": 3164,
+     "ai_speeches": 18,
+     "ai_share": 0.00569,
+     "ai_act_speeches": 0
+    },
+    {
+     "party": "S",
+     "year": 2024,
+     "speeches": 3537,
+     "ai_speeches": 24,
+     "ai_share": 0.00679,
+     "ai_act_speeches": 2
+    },
+    {
+     "party": "S",
+     "year": 2025,
+     "speeches": 3023,
+     "ai_speeches": 25,
+     "ai_share": 0.00827,
+     "ai_act_speeches": 0
+    },
+    {
+     "party": "S",
+     "year": 2026,
+     "speeches": 2011,
+     "ai_speeches": 30,
+     "ai_share": 0.01492,
+     "ai_act_speeches": 0
+    },
+    {
+     "party": "SD",
+     "year": 2016,
+     "speeches": 349,
+     "ai_speeches": 0,
+     "ai_share": 0.0,
+     "ai_act_speeches": 0
+    },
+    {
+     "party": "SD",
+     "year": 2017,
+     "speeches": 1005,
+     "ai_speeches": 0,
+     "ai_share": 0.0,
+     "ai_act_speeches": 0
+    },
+    {
+     "party": "SD",
+     "year": 2018,
+     "speeches": 968,
+     "ai_speeches": 0,
+     "ai_share": 0.0,
+     "ai_act_speeches": 0
+    },
+    {
+     "party": "SD",
+     "year": 2019,
+     "speeches": 1204,
+     "ai_speeches": 0,
+     "ai_share": 0.0,
+     "ai_act_speeches": 0
+    },
+    {
+     "party": "SD",
+     "year": 2020,
+     "speeches": 1183,
+     "ai_speeches": 0,
+     "ai_share": 0.0,
+     "ai_act_speeches": 0
+    },
+    {
+     "party": "SD",
+     "year": 2021,
+     "speeches": 1665,
+     "ai_speeches": 1,
+     "ai_share": 0.0006,
+     "ai_act_speeches": 0
+    },
+    {
+     "party": "SD",
+     "year": 2022,
+     "speeches": 1565,
+     "ai_speeches": 0,
+     "ai_share": 0.0,
+     "ai_act_speeches": 0
+    },
+    {
+     "party": "SD",
+     "year": 2023,
+     "speeches": 1491,
+     "ai_speeches": 9,
+     "ai_share": 0.00604,
+     "ai_act_speeches": 1
+    },
+    {
+     "party": "SD",
+     "year": 2024,
+     "speeches": 1493,
+     "ai_speeches": 15,
+     "ai_share": 0.01005,
+     "ai_act_speeches": 0
+    },
+    {
+     "party": "SD",
+     "year": 2025,
+     "speeches": 1388,
+     "ai_speeches": 9,
+     "ai_share": 0.00648,
+     "ai_act_speeches": 0
+    },
+    {
+     "party": "SD",
+     "year": 2026,
+     "speeches": 1208,
+     "ai_speeches": 18,
+     "ai_share": 0.0149,
+     "ai_act_speeches": 1
+    },
+    {
+     "party": "V",
+     "year": 2016,
+     "speeches": 349,
+     "ai_speeches": 0,
+     "ai_share": 0.0,
+     "ai_act_speeches": 0
+    },
+    {
+     "party": "V",
+     "year": 2017,
+     "speeches": 885,
+     "ai_speeches": 1,
+     "ai_share": 0.00113,
+     "ai_act_speeches": 0
+    },
+    {
+     "party": "V",
+     "year": 2018,
+     "speeches": 888,
+     "ai_speeches": 2,
+     "ai_share": 0.00225,
+     "ai_act_speeches": 0
+    },
+    {
+     "party": "V",
+     "year": 2019,
+     "speeches": 1078,
+     "ai_speeches": 0,
+     "ai_share": 0.0,
+     "ai_act_speeches": 0
+    },
+    {
+     "party": "V",
+     "year": 2020,
+     "speeches": 1005,
+     "ai_speeches": 1,
+     "ai_share": 0.001,
+     "ai_act_speeches": 0
+    },
+    {
+     "party": "V",
+     "year": 2021,
+     "speeches": 1125,
+     "ai_speeches": 1,
+     "ai_share": 0.00089,
+     "ai_act_speeches": 0
+    },
+    {
+     "party": "V",
+     "year": 2022,
+     "speeches": 1064,
+     "ai_speeches": 2,
+     "ai_share": 0.00188,
+     "ai_act_speeches": 0
+    },
+    {
+     "party": "V",
+     "year": 2023,
+     "speeches": 1062,
+     "ai_speeches": 1,
+     "ai_share": 0.00094,
+     "ai_act_speeches": 0
+    },
+    {
+     "party": "V",
+     "year": 2024,
+     "speeches": 1108,
+     "ai_speeches": 10,
+     "ai_share": 0.00903,
+     "ai_act_speeches": 0
+    },
+    {
+     "party": "V",
+     "year": 2025,
+     "speeches": 1029,
+     "ai_speeches": 10,
+     "ai_share": 0.00972,
+     "ai_act_speeches": 0
+    },
+    {
+     "party": "V",
+     "year": 2026,
+     "speeches": 836,
+     "ai_speeches": 7,
+     "ai_share": 0.00837,
+     "ai_act_speeches": 1
+    }
+   ]
+  },
+  {
+   "id": "jobs_ai_act",
+   "title": "Platsannonser som nämner AI-förordningen",
+   "type": "line",
+   "source": "ai-act/jobs/monthly.json",
+   "slicer": "term (term_id)",
+   "row_count": 79,
+   "rows": [
+    {
+     "month": "2020-01",
+     "mention_count": 0.0,
+     "ads": 55425.0,
+     "share": 0.0,
+     "share_rolling_3m": 0.0
+    },
+    {
+     "month": "2020-02",
+     "mention_count": 0.0,
+     "ads": 57183.0,
+     "share": 0.0,
+     "share_rolling_3m": 0.0
+    },
+    {
+     "month": "2020-03",
+     "mention_count": 0.0,
+     "ads": 50581.0,
+     "share": 0.0,
+     "share_rolling_3m": 0.0
+    },
+    {
+     "month": "2020-04",
+     "mention_count": 0.0,
+     "ads": 36531.0,
+     "share": 0.0,
+     "share_rolling_3m": 0.0
+    },
+    {
+     "month": "2020-05",
+     "mention_count": 0.0,
+     "ads": 35291.0,
+     "share": 0.0,
+     "share_rolling_3m": 0.0
+    },
+    {
+     "month": "2020-06",
+     "mention_count": 0.0,
+     "ads": 34907.0,
+     "share": 0.0,
+     "share_rolling_3m": 0.0
+    },
+    {
+     "month": "2020-07",
+     "mention_count": 0.0,
+     "ads": 23932.0,
+     "share": 0.0,
+     "share_rolling_3m": 0.0
+    },
+    {
+     "month": "2020-08",
+     "mention_count": 0.0,
+     "ads": 31280.0,
+     "share": 0.0,
+     "share_rolling_3m": 0.0
+    },
+    {
+     "month": "2020-09",
+     "mention_count": 0.0,
+     "ads": 40590.0,
+     "share": 0.0,
+     "share_rolling_3m": 0.0
+    },
+    {
+     "month": "2020-10",
+     "mention_count": 0.0,
+     "ads": 43536.0,
+     "share": 0.0,
+     "share_rolling_3m": 0.0
+    },
+    {
+     "month": "2020-11",
+     "mention_count": 0.0,
+     "ads": 43973.0,
+     "share": 0.0,
+     "share_rolling_3m": 0.0
+    },
+    {
+     "month": "2020-12",
+     "mention_count": 0.0,
+     "ads": 39902.0,
+     "share": 0.0,
+     "share_rolling_3m": 0.0
+    },
+    {
+     "month": "2021-01",
+     "mention_count": 0.0,
+     "ads": 40080.0,
+     "share": 0.0,
+     "share_rolling_3m": 0.0
+    },
+    {
+     "month": "2021-02",
+     "mention_count": 0.0,
+     "ads": 48409.0,
+     "share": 0.0,
+     "share_rolling_3m": 0.0
+    },
+    {
+     "month": "2021-03",
+     "mention_count": 0.0,
+     "ads": 62548.0,
+     "share": 0.0,
+     "share_rolling_3m": 0.0
+    },
+    {
+     "month": "2021-04",
+     "mention_count": 0.0,
+     "ads": 64773.0,
+     "share": 0.0,
+     "share_rolling_3m": 0.0
+    },
+    {
+     "month": "2021-05",
+     "mention_count": 0.0,
+     "ads": 64442.0,
+     "share": 0.0,
+     "share_rolling_3m": 0.0
+    },
+    {
+     "month": "2021-06",
+     "mention_count": 0.0,
+     "ads": 58596.0,
+     "share": 0.0,
+     "share_rolling_3m": 0.0
+    },
+    {
+     "month": "2021-07",
+     "mention_count": 0.0,
+     "ads": 39645.0,
+     "share": 0.0,
+     "share_rolling_3m": 0.0
+    },
+    {
+     "month": "2021-08",
+     "mention_count": 0.0,
+     "ads": 52662.0,
+     "share": 0.0,
+     "share_rolling_3m": 0.0
+    },
+    {
+     "month": "2021-09",
+     "mention_count": 0.0,
+     "ads": 72529.0,
+     "share": 0.0,
+     "share_rolling_3m": 0.0
+    },
+    {
+     "month": "2021-10",
+     "mention_count": 0.0,
+     "ads": 73806.0,
+     "share": 0.0,
+     "share_rolling_3m": 0.0
+    },
+    {
+     "month": "2021-11",
+     "mention_count": 0.0,
+     "ads": 78825.0,
+     "share": 0.0,
+     "share_rolling_3m": 0.0
+    },
+    {
+     "month": "2021-12",
+     "mention_count": 0.0,
+     "ads": 77724.0,
+     "share": 0.0,
+     "share_rolling_3m": 0.0
+    },
+    {
+     "month": "2022-01",
+     "mention_count": 0.0,
+     "ads": 77628.0,
+     "share": 0.0,
+     "share_rolling_3m": 0.0
+    },
+    {
+     "month": "2022-02",
+     "mention_count": 0.0,
+     "ads": 90183.0,
+     "share": 0.0,
+     "share_rolling_3m": 0.0
+    },
+    {
+     "month": "2022-03",
+     "mention_count": 0.0,
+     "ads": 105396.0,
+     "share": 0.0,
+     "share_rolling_3m": 0.0
+    },
+    {
+     "month": "2022-04",
+     "mention_count": 0.0,
+     "ads": 91958.0,
+     "share": 0.0,
+     "share_rolling_3m": 0.0
+    },
+    {
+     "month": "2022-05",
+     "mention_count": 0.0,
+     "ads": 108047.0,
+     "share": 0.0,
+     "share_rolling_3m": 0.0
+    },
+    {
+     "month": "2022-06",
+     "mention_count": 0.0,
+     "ads": 89073.0,
+     "share": 0.0,
+     "share_rolling_3m": 0.0
+    },
+    {
+     "month": "2022-07",
+     "mention_count": 0.0,
+     "ads": 61418.0,
+     "share": 0.0,
+     "share_rolling_3m": 0.0
+    },
+    {
+     "month": "2022-08",
+     "mention_count": 0.0,
+     "ads": 88880.0,
+     "share": 0.0,
+     "share_rolling_3m": 0.0
+    },
+    {
+     "month": "2022-09",
+     "mention_count": 0.0,
+     "ads": 94231.0,
+     "share": 0.0,
+     "share_rolling_3m": 0.0
+    },
+    {
+     "month": "2022-10",
+     "mention_count": 0.0,
+     "ads": 101687.0,
+     "share": 0.0,
+     "share_rolling_3m": 0.0
+    },
+    {
+     "month": "2022-11",
+     "mention_count": 0.0,
+     "ads": 87653.0,
+     "share": 0.0,
+     "share_rolling_3m": 0.0
+    },
+    {
+     "month": "2022-12",
+     "mention_count": 1.0,
+     "ads": 85620.0,
+     "share": 1.17e-05,
+     "share_rolling_3m": 3.6e-06
+    },
+    {
+     "month": "2023-01",
+     "mention_count": 0.0,
+     "ads": 93722.0,
+     "share": 0.0,
+     "share_rolling_3m": 3.7e-06
+    },
+    {
+     "month": "2023-02",
+     "mention_count": 0.0,
+     "ads": 90602.0,
+     "share": 0.0,
+     "share_rolling_3m": 3.7e-06
+    },
+    {
+     "month": "2023-03",
+     "mention_count": 0.0,
+     "ads": 112673.0,
+     "share": 0.0,
+     "share_rolling_3m": 0.0
+    },
+    {
+     "month": "2023-04",
+     "mention_count": 1.0,
+     "ads": 94931.0,
+     "share": 1.05e-05,
+     "share_rolling_3m": 3.4e-06
+    },
+    {
+     "month": "2023-05",
+     "mention_count": 0.0,
+     "ads": 126943.0,
+     "share": 0.0,
+     "share_rolling_3m": 3e-06
+    },
+    {
+     "month": "2023-06",
+     "mention_count": 0.0,
+     "ads": 86940.0,
+     "share": 0.0,
+     "share_rolling_3m": 3.2e-06
+    },
+    {
+     "month": "2023-07",
+     "mention_count": 0.0,
+     "ads": 62911.0,
+     "share": 0.0,
+     "share_rolling_3m": 0.0
+    },
+    {
+     "month": "2023-08",
+     "mention_count": 0.0,
+     "ads": 76746.0,
+     "share": 0.0,
+     "share_rolling_3m": 0.0
+    },
+    {
+     "month": "2023-09",
+     "mention_count": 0.0,
+     "ads": 77476.0,
+     "share": 0.0,
+     "share_rolling_3m": 0.0
+    },
+    {
+     "month": "2023-10",
+     "mention_count": 0.0,
+     "ads": 74693.0,
+     "share": 0.0,
+     "share_rolling_3m": 0.0
+    },
+    {
+     "month": "2023-11",
+     "mention_count": 0.0,
+     "ads": 69005.0,
+     "share": 0.0,
+     "share_rolling_3m": 0.0
+    },
+    {
+     "month": "2023-12",
+     "mention_count": 2.0,
+     "ads": 60901.0,
+     "share": 3.28e-05,
+     "share_rolling_3m": 9.8e-06
+    },
+    {
+     "month": "2024-01",
+     "mention_count": 2.0,
+     "ads": 72883.0,
+     "share": 2.74e-05,
+     "share_rolling_3m": 1.97e-05
+    },
+    {
+     "month": "2024-02",
+     "mention_count": 0.0,
+     "ads": 71584.0,
+     "share": 0.0,
+     "share_rolling_3m": 1.95e-05
+    },
+    {
+     "month": "2024-03",
+     "mention_count": 0.0,
+     "ads": 69195.0,
+     "share": 0.0,
+     "share_rolling_3m": 9.4e-06
+    },
+    {
+     "month": "2024-04",
+     "mention_count": 2.0,
+     "ads": 76088.0,
+     "share": 2.63e-05,
+     "share_rolling_3m": 9.2e-06
+    },
+    {
+     "month": "2024-05",
+     "mention_count": 2.0,
+     "ads": 68722.0,
+     "share": 2.91e-05,
+     "share_rolling_3m": 1.87e-05
+    },
+    {
+     "month": "2024-06",
+     "mention_count": 2.0,
+     "ads": 55182.0,
+     "share": 3.62e-05,
+     "share_rolling_3m": 3e-05
+    },
+    {
+     "month": "2024-07",
+     "mention_count": 2.0,
+     "ads": 40450.0,
+     "share": 4.94e-05,
+     "share_rolling_3m": 3.65e-05
+    },
+    {
+     "month": "2024-08",
+     "mention_count": 2.0,
+     "ads": 52238.0,
+     "share": 3.83e-05,
+     "share_rolling_3m": 4.06e-05
+    },
+    {
+     "month": "2024-09",
+     "mention_count": 4.0,
+     "ads": 55714.0,
+     "share": 7.18e-05,
+     "share_rolling_3m": 5.39e-05
+    },
+    {
+     "month": "2024-10",
+     "mention_count": 1.0,
+     "ads": 58368.0,
+     "share": 1.71e-05,
+     "share_rolling_3m": 4.21e-05
+    },
+    {
+     "month": "2024-11",
+     "mention_count": 5.0,
+     "ads": 50200.0,
+     "share": 9.96e-05,
+     "share_rolling_3m": 6.09e-05
+    },
+    {
+     "month": "2024-12",
+     "mention_count": 3.0,
+     "ads": 45299.0,
+     "share": 6.62e-05,
+     "share_rolling_3m": 5.85e-05
+    },
+    {
+     "month": "2025-01",
+     "mention_count": 4.0,
+     "ads": 55463.0,
+     "share": 7.21e-05,
+     "share_rolling_3m": 7.95e-05
+    },
+    {
+     "month": "2025-02",
+     "mention_count": 4.0,
+     "ads": 55403.0,
+     "share": 7.22e-05,
+     "share_rolling_3m": 7.04e-05
+    },
+    {
+     "month": "2025-03",
+     "mention_count": 14.0,
+     "ads": 59715.0,
+     "share": 0.0002344,
+     "share_rolling_3m": 0.000129
+    },
+    {
+     "month": "2025-04",
+     "mention_count": 5.0,
+     "ads": 57693.0,
+     "share": 8.67e-05,
+     "share_rolling_3m": 0.0001331
+    },
+    {
+     "month": "2025-05",
+     "mention_count": 5.0,
+     "ads": 52415.0,
+     "share": 9.54e-05,
+     "share_rolling_3m": 0.0001413
+    },
+    {
+     "month": "2025-06",
+     "mention_count": 1.0,
+     "ads": 40175.0,
+     "share": 2.49e-05,
+     "share_rolling_3m": 7.32e-05
+    },
+    {
+     "month": "2025-07",
+     "mention_count": 9.0,
+     "ads": 30522.0,
+     "share": 0.0002949,
+     "share_rolling_3m": 0.0001218
+    },
+    {
+     "month": "2025-08",
+     "mention_count": 6.0,
+     "ads": 41188.0,
+     "share": 0.0001457,
+     "share_rolling_3m": 0.000143
+    },
+    {
+     "month": "2025-09",
+     "mention_count": 9.0,
+     "ads": 49677.0,
+     "share": 0.0001812,
+     "share_rolling_3m": 0.0001977
+    },
+    {
+     "month": "2025-10",
+     "mention_count": 15.0,
+     "ads": 50195.0,
+     "share": 0.0002988,
+     "share_rolling_3m": 0.0002127
+    },
+    {
+     "month": "2025-11",
+     "mention_count": 9.0,
+     "ads": 44353.0,
+     "share": 0.0002029,
+     "share_rolling_3m": 0.0002288
+    },
+    {
+     "month": "2025-12",
+     "mention_count": 14.0,
+     "ads": 45105.0,
+     "share": 0.0003104,
+     "share_rolling_3m": 0.0002721
+    },
+    {
+     "month": "2026-01",
+     "mention_count": 14.0,
+     "ads": 42286.0,
+     "share": 0.0003311,
+     "share_rolling_3m": 0.0002808
+    },
+    {
+     "month": "2026-02",
+     "mention_count": 12.0,
+     "ads": 54390.0,
+     "share": 0.0002206,
+     "share_rolling_3m": 0.0002821
+    },
+    {
+     "month": "2026-03",
+     "mention_count": 23.0,
+     "ads": 55662.0,
+     "share": 0.0004132,
+     "share_rolling_3m": 0.0003217
+    },
+    {
+     "month": "2026-04",
+     "mention_count": 11.0,
+     "ads": 42140.0,
+     "share": 0.000261,
+     "share_rolling_3m": 0.0003022
+    },
+    {
+     "month": "2026-05",
+     "mention_count": 19.0,
+     "ads": 48765.0,
+     "share": 0.0003896,
+     "share_rolling_3m": 0.0003616
+    },
+    {
+     "month": "2026-06",
+     "mention_count": 16.0,
+     "ads": 47972.0,
+     "share": 0.0003335,
+     "share_rolling_3m": 0.0003312
+    },
+    {
+     "month": "2026-07",
+     "mention_count": 0.0,
+     "ads": 187.0,
+     "share": 0.0,
+     "share_rolling_3m": 0.0003611
+    }
+   ],
+   "note": "Filtrerat på term_id=ai_act; filen har fler termer."
+  }
+ ],
+ "list": [
+  {
+   "id": "ai-act/actors.json",
+   "source": "EU Publications Office (Cellar), EUR-Lex, AI Office",
+   "rows": 11,
+   "bytes": 6084,
+   "last_commit": "2026-10-06",
+   "status": "changed since catalog.json"
+  },
+  {
+   "id": "ai-act/annexes.json",
+   "source": "EU Publications Office (Cellar), EUR-Lex, AI Office",
+   "rows": 14,
+   "bytes": 5773,
+   "last_commit": "2026-10-06",
+   "status": "changed since catalog.json"
+  },
+  {
+   "id": "ai-act/articles.json",
+   "source": "EU Publications Office (Cellar), EUR-Lex, AI Office",
+   "rows": 119,
+   "bytes": 97896,
+   "last_commit": "2026-10-06",
+   "status": "changed since catalog.json"
+  },
+  {
+   "id": "ai-act/changes.json",
+   "source": "EU Publications Office (Cellar), EUR-Lex, AI Office",
+   "rows": 65,
+   "bytes": 47626,
+   "last_commit": "2026-10-06",
+   "status": "changed since catalog.json"
+  },
+  {
+   "id": "ai-act/chapters.json",
+   "source": "EU Publications Office (Cellar), EUR-Lex, AI Office",
+   "rows": 25,
+   "bytes": 6698,
+   "last_commit": "2026-10-06",
+   "status": "changed since catalog.json"
+  },
+  {
+   "id": "ai-act/documents.json",
+   "source": "EU Publications Office (Cellar), EUR-Lex, AI Office",
+   "rows": 21,
+   "bytes": 11187,
+   "last_commit": "2026-10-06",
+   "status": "changed since catalog.json"
+  },
+  {
+   "id": "ai-act/guidance.json",
+   "source": "EU Publications Office (Cellar), EUR-Lex, AI Office",
+   "rows": 10,
+   "bytes": 4445,
+   "last_commit": "2026-10-06",
+   "status": "changed since catalog.json"
+  },
+  {
+   "id": "ai-act/navigator.json",
+   "source": "EU Publications Office (Cellar), EUR-Lex, AI Office",
+   "rows": null,
+   "bytes": 9690,
+   "last_commit": "2026-10-06",
+   "status": "changed since catalog.json"
+  },
+  {
+   "id": "ai-act/obligations.json",
+   "source": "EU Publications Office (Cellar), EUR-Lex, AI Office",
+   "rows": 51,
+   "bytes": 54149,
+   "last_commit": "2026-10-06",
+   "status": "changed since catalog.json"
+  },
+  {
+   "id": "ai-act/risk-classes.json",
+   "source": "EU Publications Office (Cellar), EUR-Lex, AI Office",
+   "rows": 6,
+   "bytes": 4443,
+   "last_commit": "2026-10-06",
+   "status": "changed since catalog.json"
+  },
+  {
+   "id": "ai-act/signals.json",
+   "source": "EU Publications Office (Cellar), EUR-Lex, AI Office",
+   "rows": null,
+   "bytes": 16881,
+   "last_commit": "2026-10-06",
+   "status": "changed since catalog.json"
+  },
+  {
+   "id": "ai-act/summary.json",
+   "source": "EU Publications Office (Cellar), EUR-Lex, AI Office",
+   "rows": null,
+   "bytes": 2653,
+   "last_commit": "2026-10-06",
+   "status": "changed since catalog.json"
+  },
+  {
+   "id": "ai-act/timeline.json",
+   "source": "EU Publications Office (Cellar), EUR-Lex, AI Office",
+   "rows": 16,
+   "bytes": 14684,
+   "last_commit": "2026-10-06",
+   "status": "changed since catalog.json"
+  }
+ ],
+ "tech": {
+  "dbt_models": [
+   {
+    "name": "stg_ai_act_fetches",
+    "layer": "bronze",
+    "materialized": "view",
+    "grain": [
+     "path"
+    ],
+    "tests": 4,
+    "path": "models\\bronze\\eu_ai_act\\stg_ai_act_fetches.sql"
+   },
+   {
+    "name": "stg_ai_act_guidance_pages",
+    "layer": "bronze",
+    "materialized": "view",
+    "grain": [
+     "path"
+    ],
+    "tests": 4,
+    "path": "models\\bronze\\eu_ai_act\\stg_ai_act_guidance_pages.sql"
+   },
+   {
+    "name": "stg_ai_act_related",
+    "layer": "bronze",
+    "materialized": "view",
+    "grain": [
+     "path"
+    ],
+    "tests": 3,
+    "path": "models\\bronze\\eu_ai_act\\stg_ai_act_related.sql"
+   },
+   {
+    "name": "stg_ai_act_texts",
+    "layer": "bronze",
+    "materialized": "view",
+    "grain": [
+     "path"
+    ],
+    "tests": 6,
+    "path": "models\\bronze\\eu_ai_act\\stg_ai_act_texts.sql"
+   },
+   {
+    "name": "bridge_ai_act_article_actor",
+    "layer": "gold",
+    "materialized": "table",
+    "grain": null,
+    "tests": 3,
+    "path": "models\\gold\\eu_ai_act\\bridge_ai_act_article_actor.sql"
+   },
+   {
+    "name": "bridge_ai_act_article_guidance",
+    "layer": "gold",
+    "materialized": "table",
+    "grain": null,
+    "tests": 1,
+    "path": "models\\gold\\eu_ai_act\\bridge_ai_act_article_guidance.sql"
+   },
+   {
+    "name": "bridge_ai_act_article_reference",
+    "layer": "gold",
+    "materialized": "table",
+    "grain": null,
+    "tests": 0,
+    "path": "models\\gold\\eu_ai_act\\bridge_ai_act_article_reference.sql"
+   },
+   {
+    "name": "dim_ai_act_actor",
+    "layer": "gold",
+    "materialized": "table",
+    "grain": [
+     "actor_id"
+    ],
+    "tests": 5,
+    "path": "models\\gold\\eu_ai_act\\dim_ai_act_actor.sql"
+   },
+   {
+    "name": "dim_ai_act_annex",
+    "layer": "gold",
+    "materialized": "table",
+    "grain": [
+     "annex_id"
+    ],
+    "tests": 2,
+    "path": "models\\gold\\eu_ai_act\\dim_ai_act_annex.sql"
+   },
+   {
+    "name": "dim_ai_act_article",
+    "layer": "gold",
+    "materialized": "table",
+    "grain": [
+     "article_number"
+    ],
+    "tests": 16,
+    "path": "models\\gold\\eu_ai_act\\dim_ai_act_article.sql"
+   },
+   {
+    "name": "dim_ai_act_document",
+    "layer": "gold",
+    "materialized": "table",
+    "grain": [
+     "document_id"
+    ],
+    "tests": 6,
+    "path": "models\\gold\\eu_ai_act\\dim_ai_act_document.sql"
+   },
+   {
+    "name": "dim_ai_act_guidance",
+    "layer": "gold",
+    "materialized": "table",
+    "grain": [
+     "guidance_id"
+    ],
+    "tests": 4,
+    "path": "models\\gold\\eu_ai_act\\dim_ai_act_guidance.sql"
+   },
+   {
+    "name": "dim_ai_act_recital",
+    "layer": "gold",
+    "materialized": "table",
+    "grain": [
+     "recital_id"
+    ],
+    "tests": 2,
+    "path": "models\\gold\\eu_ai_act\\dim_ai_act_recital.sql"
+   },
+   {
+    "name": "dim_ai_act_risk_class",
+    "layer": "gold",
+    "materialized": "table",
+    "grain": [
+     "risk_class_id"
+    ],
+    "tests": 2,
+    "path": "models\\gold\\eu_ai_act\\dim_ai_act_risk_class.sql"
+   },
+   {
+    "name": "mart_ai_act_changes",
+    "layer": "gold",
+    "materialized": "table",
+    "grain": [
+     "change_id"
+    ],
+    "tests": 6,
+    "path": "models\\gold\\eu_ai_act\\mart_ai_act_changes.sql"
+   },
+   {
+    "name": "mart_ai_act_obligations",
+    "layer": "gold",
+    "materialized": "table",
+    "grain": [
+     "obligation_id"
+    ],
+    "tests": 10,
+    "path": "models\\gold\\eu_ai_act\\mart_ai_act_obligations.sql"
+   },
+   {
+    "name": "mart_ai_act_timeline",
+    "layer": "gold",
+    "materialized": "table",
+    "grain": [
+     "milestone_id"
+    ],
+    "tests": 6,
+    "path": "models\\gold\\eu_ai_act\\mart_ai_act_timeline.sql"
+   },
+   {
+    "name": "int_ai_act_article_actors",
+    "layer": "silver",
+    "materialized": "table",
+    "grain": null,
+    "tests": 0,
+    "path": "models\\silver\\eu_ai_act\\int_ai_act_article_actors.py"
+   },
+   {
+    "name": "int_ai_act_definitions",
+    "layer": "silver",
+    "materialized": "table",
+    "grain": [
+     "point"
+    ],
+    "tests": 3,
+    "path": "models\\silver\\eu_ai_act\\int_ai_act_definitions.py"
+   },
+   {
+    "name": "int_ai_act_documents",
+    "layer": "silver",
+    "materialized": "table",
+    "grain": [
+     "document_id"
+    ],
+    "tests": 5,
+    "path": "models\\silver\\eu_ai_act\\int_ai_act_documents.py"
+   },
+   {
+    "name": "int_ai_act_guidance",
+    "layer": "silver",
+    "materialized": "table",
+    "grain": [
+     "guidance_id"
+    ],
+    "tests": 3,
+    "path": "models\\silver\\eu_ai_act\\int_ai_act_guidance.py"
+   },
+   {
+    "name": "int_ai_act_provision_changes",
+    "layer": "silver",
+    "materialized": "table",
+    "grain": [
+     "provision_id"
+    ],
+    "tests": 3,
+    "path": "models\\silver\\eu_ai_act\\int_ai_act_provision_changes.py"
+   },
+   {
+    "name": "int_ai_act_provisions",
+    "layer": "silver",
+    "materialized": "table",
+    "grain": null,
+    "tests": 4,
+    "path": "models\\silver\\eu_ai_act\\int_ai_act_provisions.py"
+   }
+  ],
+  "pipeline_steps": [
+   {
+    "subject": "ai_act",
+    "phase": "ingest",
+    "command": "python platform/ingest/eu_ai_act/run.py",
+    "file": "platform/ingest/eu_ai_act/run.py"
+   },
+   {
+    "subject": "ai_act",
+    "phase": "dbt",
+    "command": "dbt build {\"select\": [\"tag:ai_act\"]}",
+    "file": null
+   },
+   {
+    "subject": "ai_act",
+    "phase": "export",
+    "command": "python platform/publish/eu_ai_act/export_ai_act.py",
+    "file": "platform/publish/eu_ai_act/export_ai_act.py"
+   },
+   {
+    "subject": "ai_politics",
+    "phase": "ingest",
+    "command": "python platform/ingest/riksdagen/ingest_speeches.py",
+    "file": "platform/ingest/riksdagen/ingest_speeches.py"
+   },
+   {
+    "subject": "ai_politics",
+    "phase": "dbt",
+    "command": "dbt build {\"select\": [\"tag:ai_politics\"], \"exclude\": [\"mart_ai_act_speech_similarity\", \"assert_concept_link_targets_exist\"]}",
+    "file": null
+   },
+   {
+    "subject": "ai_politics",
+    "phase": "ml",
+    "command": "python platform/nlp/ai_politics/similarity.py",
+    "file": "platform/nlp/ai_politics/similarity.py"
+   },
+   {
+    "subject": "ai_politics",
+    "phase": "dbt",
+    "command": "dbt build {\"select\": [\"mart_ai_act_speech_similarity\"]}",
+    "file": null
+   },
+   {
+    "subject": "ai_politics",
+    "phase": "export",
+    "command": "python platform/publish/ai_politics/export_ai_politics.py",
+    "file": "platform/publish/ai_politics/export_ai_politics.py"
+   },
+   {
+    "subject": "job_ai_governance",
+    "phase": "ingest",
+    "command": "python platform/ingest/jobtech/ingest_governance_terms.py",
+    "file": "platform/ingest/jobtech/ingest_governance_terms.py"
+   },
+   {
+    "subject": "job_ai_governance",
+    "phase": "dbt",
+    "command": "dbt build {\"select\": [\"tag:job_ai_governance\"], \"exclude\": [\"assert_concept_link_targets_exist\"]}",
+    "file": null
+   },
+   {
+    "subject": "job_ai_governance",
+    "phase": "export",
+    "command": "python platform/publish/job_ai_governance/export_job_ai_governance.py",
+    "file": "platform/publish/job_ai_governance/export_job_ai_governance.py"
+   }
+  ],
+  "schema": {
+   "model": "mart_ai_act_obligations",
+   "path": "models\\gold\\eu_ai_act\\mart_ai_act_obligations.sql",
+   "description": "Actor × obligation × article with the verbatim sentence, our classification and a plain-language summary.",
+   "columns": [
+    {
+     "name": "obligation_id",
+     "type": null,
+     "description": ""
+    },
+    {
+     "name": "actor_id",
+     "type": null,
+     "description": ""
+    },
+    {
+     "name": "article_number",
+     "type": null,
+     "description": ""
+    },
+    {
+     "name": "source_quote",
+     "type": null,
+     "description": ""
+    },
+    {
+     "name": "applies_from",
+     "type": null,
+     "description": ""
+    },
+    {
+     "name": "source_url",
+     "type": null,
+     "description": ""
+    }
+   ]
+  },
+  "sample_rows": {
+   "mart": "gold.mart_ai_act_obligations",
+   "taken_from": "ai-act/obligations.json",
+   "rows": [
+    {
+     "obligation_id": "lit-deployer",
+     "actor_id": "deployer",
+     "requirement_type": "ai_literacy",
+     "risk_class_id": "all_ai_systems",
+     "article_number": "4",
+     "paragraph": "1",
+     "article_title_en": "AI literacy",
+     "article_title_sv": "AI-kunnighet",
+     "chapter": "I",
+     "section": null,
+     "source_quote": "Providers and deployers of AI systems shall take measures to support the development of AI literacy of their staff",
+     "applies_from": "2025-02-02",
+     "applies_from_second": null,
+     "applies_partially": false,
+     "application_quote": "Chapters I and II shall apply from 2 February 2025",
+     "article_change_type": "amended",
+     "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=CELEX:02024R1689-20260727#art_4"
+    },
+    {
+     "obligation_id": "lit-provider",
+     "actor_id": "provider",
+     "requirement_type": "ai_literacy",
+     "risk_class_id": "all_ai_systems",
+     "article_number": "4",
+     "paragraph": "1",
+     "article_title_en": "AI literacy",
+     "article_title_sv": "AI-kunnighet",
+     "chapter": "I",
+     "section": null,
+     "source_quote": "Providers and deployers of AI systems shall take measures to support the development of AI literacy of their staff",
+     "applies_from": "2025-02-02",
+     "applies_from_second": null,
+     "applies_partially": false,
+     "application_quote": "Chapters I and II shall apply from 2 February 2025",
+     "article_change_type": "amended",
+     "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=CELEX:02024R1689-20260727#art_4"
+    },
+    {
+     "obligation_id": "prohibited-deployer",
+     "actor_id": "deployer",
+     "requirement_type": "prohibition",
+     "risk_class_id": "prohibited",
+     "article_number": "5",
+     "paragraph": "1",
+     "article_title_en": "Prohibited AI practices",
+     "article_title_sv": "Förbjudna AI-användningsområden",
+     "chapter": "II",
+     "section": null,
+     "source_quote": "The following AI practices shall be prohibited:",
+     "applies_from": "2025-02-02",
+     "applies_from_second": "2026-12-02",
+     "applies_partially": true,
+     "application_quote": "with the exception of Article 5(1), first subparagraph, points (ba) and (bb), and Article 5(1a) and (1b) which shall apply from 2 December 2026",
+     "article_change_type": "amended",
+     "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=CELEX:02024R1689-20260727#art_5"
+    },
+    {
+     "obligation_id": "prohibited-provider",
+     "actor_id": "provider",
+     "requirement_type": "prohibition",
+     "risk_class_id": "prohibited",
+     "article_number": "5",
+     "paragraph": "1",
+     "article_title_en": "Prohibited AI practices",
+     "article_title_sv": "Förbjudna AI-användningsområden",
+     "chapter": "II",
+     "section": null,
+     "source_quote": "The following AI practices shall be prohibited:",
+     "applies_from": "2025-02-02",
+     "applies_from_second": "2026-12-02",
+     "applies_partially": true,
+     "application_quote": "with the exception of Article 5(1), first subparagraph, points (ba) and (bb), and Article 5(1a) and (1b) which shall apply from 2 December 2026",
+     "article_change_type": "amended",
+     "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=CELEX:02024R1689-20260727#art_5"
+    },
+    {
+     "obligation_id": "not-high-risk-assessment",
+     "actor_id": "provider",
+     "requirement_type": "documentation",
+     "risk_class_id": "high_risk",
+     "article_number": "6",
+     "paragraph": "4",
+     "article_title_en": "Classification rules for high-risk AI systems",
+     "article_title_sv": "Klassificeringsregler för AI-system med hög risk",
+     "chapter": "III",
+     "section": "1",
+     "source_quote": "A provider who considers that an AI system referred to in Annex III is not high-risk shall document its assessment before that system is placed on the market or put into service.",
+     "applies_from": "2027-12-02",
+     "applies_from_second": "2028-08-02",
+     "applies_partially": false,
+     "application_quote": "2 December 2027 as regards AI systems classified as high-risk pursuant to Article 6(2) and Annex III",
+     "article_change_type": "amended",
+     "source_url": "https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=CELEX:02024R1689-20260727#art_6"
+    }
+   ]
+  }
+ },
+ "gaps": [
+  "Artikeltexterna (article-text-*.json, 390 kB) är inte med: för stora och inga tal.",
+  "Juridisk bedömning: navigatorn är ett hjälpmedel, inte rådgivning.",
+  "Korn saknas för 5 av 23 modeller: det står bara där dbt har ett unique-test.",
+  "13 filer skiljer sig från catalog.json: katalogen är inte ombyggd sedan filerna ändrades."
+ ]
+}

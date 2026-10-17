@@ -90,8 +90,8 @@ const DEEPER = [
   },
 ]
 
-const APPLIES = 'var(--cv-olive)'
-const AHEAD = 'var(--cv-apricot)'
+const APPLIES = 'var(--color-chart-neutral)'
+const AHEAD = 'var(--color-chart-muted)'
 const SOURCE = 'Regulation (EU) 2024/1689, consolidated text, EUR-Lex'
 
 const count = (v: number) => String(Math.round(v))

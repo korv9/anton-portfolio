@@ -196,7 +196,7 @@
   justify-self: start;
   align-self: start;
   padding: 0.15rem 0.45rem;
-  font-family: var(--font-mono) !important;
+  font-family: var(--font-meta) !important;
   font-size: var(--fs-label);
   color: var(--on-accent);
   background: var(--accent);

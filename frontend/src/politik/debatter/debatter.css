@@ -60,7 +60,7 @@
       var(--line-strong) calc(66.666% - 1px) 66.666%,
       transparent 66.666%
     ),
-    #f4f4f1;
+    var(--wash);
 }
 .timeline-block {
   position: absolute;
@@ -314,7 +314,7 @@
   background: repeating-linear-gradient(
     to top,
     transparent 0 calc(25% - 1px),
-    rgba(25, 40, 32, 0.07) calc(25% - 1px) 25%
+    var(--line) calc(25% - 1px) 25%
   );
 }
 .topic-col {

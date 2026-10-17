@@ -41,6 +41,36 @@ export type ProjectEntry = {
 
 export const PROJECTS: ProjectEntry[] = [
   {
+    id: 'compliance',
+    title: t('IT Compliance Intelligence', 'IT Compliance Intelligence'),
+    descriptor: t(
+      'Granskade beslut, juridiska identiteter',
+      'Reviewed decisions, legal identities',
+    ),
+    summary: t(
+      'Källspårbara jämförelser av offentliga beslut för en fast kohort svenska IT-bolag.',
+      'Source-linked comparisons of public decisions for a fixed cohort of Swedish IT companies.',
+    ),
+    question: t(
+      'Vad kan verifierade offentliga beslut säga om en juridisk person?',
+      'What can verified public decisions establish about a legal entity?',
+    ),
+    built: t(
+      'Ett granskningsstyrt analyslager, en explorer och reproducerbara forskningsexporter.',
+      'An analytics layer with human review gates, an explorer and reproducible research exports.',
+    ),
+    result: t(
+      'Publicerade bolagsmått väntar på verifierat register och mänskliga godkännanden.',
+      'Published company metrics await a verified register and human approvals.',
+    ),
+    tech: ['Python', 'DuckDB', 'Parquet', 'React', 'TypeScript'],
+    href: '#compliance',
+    category: 'data',
+    status: 'in-progress',
+    pages: ['compliance', 'company'],
+    code: 'https://github.com/korv9/anton-portfolio/tree/main/docs/compliance-intelligence',
+  },
+  {
     id: 'politics',
     title: t('Political Observatory', 'Political Observatory'),
     descriptor: t(
@@ -426,7 +456,10 @@ export const PROJECTS: ProjectEntry[] = [
 ]
 
 export const PROJECT_GROUPS = [
-  { label: 'Observatories', ids: ['politics', 'jobs', 'welfare', 'ai-act'] },
+  {
+    label: 'Observatories',
+    ids: ['politics', 'jobs', 'compliance', 'welfare', 'ai-act'],
+  },
   {
     label: 'Labs',
     ids: [

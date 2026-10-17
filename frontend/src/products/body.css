@@ -103,14 +103,14 @@
 }
 .body-index {
   fill: var(--body-ink);
-  font-family: var(--font-mono) !important;
+  font-family: var(--font-meta) !important;
   font-size: 13px;
   font-weight: 600;
   text-anchor: middle;
 }
 .body-label-name {
   fill: var(--body-ink);
-  font-family: var(--font-mono) !important;
+  font-family: var(--font-meta) !important;
   font-size: 13px;
   font-weight: 600;
   letter-spacing: 0.08em;

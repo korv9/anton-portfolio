@@ -9,7 +9,7 @@ const here = fileURLToPath(new URL('.', import.meta.url))
 
 export default defineConfig({
   root: here,
-  base: './',
+  base: '/',
   plugins: [react(), clusterLabPlugin()],
   build: {
     outDir: fileURLToPath(new URL('../dist', import.meta.url)),

@@ -13,17 +13,17 @@ Färger och tokens bestäms i [design-system.md](design-system.md) och
 
 Kontrollerade i koden 13 oktober 2026.
 
-| Plats | Fynd | Föreslagen ändring |
-| --- | --- | --- |
-| `frontend/src/politik/dash/Heatmap.tsx:39` | Färgskalan går mellan visat lägsta och högsta värde. Samma värde får olika nyans i olika urval. | Visa färgnyckel och erbjud en fast skala för jämförelser. |
-| `frontend/src/jobb/charts.tsx:117` | Varje minigraf har eget maximum. Höjder kan inte jämföras som volym. | Skriv ut "egen skala" och period. Erbjud gemensam skala för nivåer eller index för relativ utveckling. |
-| `frontend/src/jobb/charts.tsx:123` | X-positionen bygger på radindex. Saknade månader ger jämna avstånd mellan de kvarvarande. | Använd kalenderavstånd och visa luckor som saknade data. |
-| `frontend/src/welfare/CountyMultiples.tsx:107` | Saknade år filtreras bort innan linjen ritas, så linjen förbinder åren på var sida om luckan. | Bryt linjen vid luckor. |
-| `frontend/src/products/DrugCombReport.tsx:936` | Inlärningskurvan ritas som grupperade staplar per träningsmängd. | Två linjer på en numerisk x-axel visar platå och gapet mellan träning och test. |
-| `frontend/src/charts/TimeSeriesChart.tsx:33` | Standardfärgen `#4e79a7` ligger utanför sajtens tokens. | Använd en datatoken eller accenten. |
-| `frontend/src/charts/MultiLineChart.tsx:78` | Slutetiketter finns bara för partiserier. | Lägg namn och senaste värde vid linjens slut även för regioner, med kollisionshantering. |
-| `frontend/src/politik/ThemeLayout.tsx` | Teman skickar in `kpis`, men raden renderas inte. `frontend/tests/politik.spec.ts:22` kräver att `.theme-kpis` saknas, så det är ett val och inget fel. Koden som räknar måtten finns kvar. | Bestäm om måtten ska visas eller om beräkningen ska tas bort. |
-| `frontend/src/politik/features/PollTrend.tsx:191`, `frontend/src/aiact/TimeSeries.tsx:125`, `frontend/src/jobs/ClusterMap.tsx:297` | Detaljvärden nås med pekare eller mus. | Ge samma information via tangentbord och en tabell eller lista. `MultiLineChart` har redan tangentbordsnavigering. |
+| Plats                                                                                                                              | Fynd                                                                                                                                                                                        | Föreslagen ändring                                                                                                 |
+| ---------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `frontend/src/politik/dash/Heatmap.tsx:39`                                                                                         | Färgskalan går mellan visat lägsta och högsta värde. Samma värde får olika nyans i olika urval.                                                                                             | Visa färgnyckel och erbjud en fast skala för jämförelser.                                                          |
+| `frontend/src/jobb/charts.tsx:117`                                                                                                 | Varje minigraf har eget maximum. Höjder kan inte jämföras som volym.                                                                                                                        | Skriv ut "egen skala" och period. Erbjud gemensam skala för nivåer eller index för relativ utveckling.             |
+| `frontend/src/jobb/charts.tsx:123`                                                                                                 | X-positionen bygger på radindex. Saknade månader ger jämna avstånd mellan de kvarvarande.                                                                                                   | Använd kalenderavstånd och visa luckor som saknade data.                                                           |
+| `frontend/src/welfare/CountyMultiples.tsx:107`                                                                                     | Saknade år filtreras bort innan linjen ritas, så linjen förbinder åren på var sida om luckan.                                                                                               | Bryt linjen vid luckor.                                                                                            |
+| `frontend/src/products/DrugCombReport.tsx:936`                                                                                     | Inlärningskurvan ritas som grupperade staplar per träningsmängd.                                                                                                                            | Två linjer på en numerisk x-axel visar platå och gapet mellan träning och test.                                    |
+| `frontend/src/charts/TimeSeriesChart.tsx:33`                                                                                       | Standardfärgen `#4e79a7` ligger utanför sajtens tokens.                                                                                                                                     | Använd en datatoken eller accenten.                                                                                |
+| `frontend/src/charts/MultiLineChart.tsx:78`                                                                                        | Slutetiketter finns bara för partiserier.                                                                                                                                                   | Lägg namn och senaste värde vid linjens slut även för regioner, med kollisionshantering.                           |
+| `frontend/src/politik/ThemeLayout.tsx`                                                                                             | Teman skickar in `kpis`, men raden renderas inte. `frontend/tests/politik.spec.ts:22` kräver att `.theme-kpis` saknas, så det är ett val och inget fel. Koden som räknar måtten finns kvar. | Bestäm om måtten ska visas eller om beräkningen ska tas bort.                                                      |
+| `frontend/src/politik/features/PollTrend.tsx:191`, `frontend/src/aiact/TimeSeries.tsx:125`, `frontend/src/jobs/ClusterMap.tsx:297` | Detaljvärden nås med pekare eller mus.                                                                                                                                                      | Ge samma information via tangentbord och en tabell eller lista. `MultiLineChart` har redan tangentbordsnavigering. |
 
 Två fynd är ändrade sedan genomgångarna och har inte kontrollerats i webbläsare:
 
@@ -36,20 +36,20 @@ Två fynd är ändrade sedan genomgångarna och har inte kontrollerats i webblä
 
 ## Diagramform efter fråga
 
-| Fråga | Form | Villkor |
-| --- | --- | --- |
-| Ett tal för senaste läget | Stort värde med enhet, period och jämförelse | Ett fristående antal behöver ingen graf. |
-| Ett mått mot en verklig referens | Bullet: värde med referensmarkör | Referensen är en baslinje, en tidigare period eller ett mål. Hitta inte på mål eller statuszoner. |
-| Två mättillfällen för flera kategorier | Dumbbell: två sammanbundna punkter per rad | Behåll staplar kring noll när bara förändringen ska rangordnas. Jämför inte delår mot helår. |
-| Rangordning av kategorier | Horisontella staplar (`RankBars`) | Samma skala där raderna ska jämföras. |
-| Små skillnader mellan kategorier | Rangordnat punktdiagram | Punkter tål en avgränsad skala. Staplar från en kapad nollpunkt förstorar skillnaden. |
-| Sammansättning av en total | 100 % staplade staplar | Bara när delarna summerar. Kategorier som kan överlappa, som teknikomnämnanden, får separata staplar. |
-| Utveckling över tid | Linjer | Direktetiketter och en vald serie. |
-| Många överlappande tidsserier | Små separata linjegrafer | När läsaren ska följa varje trend. En gemensam graf passar när nivåerna ska jämföras vid samma tidpunkt. |
-| Mönster över många kategorier och år | Heatmap | Ordnad skala från ljus till mörk, färgnyckel, markering för saknade värden. |
-| Avvikelse från en referens | Staplar kring noll | Vattenfall först när vägen från startsumma till slutsumma är frågan. |
-| Förutsagt mot observerat | Punktdiagram med diagonal | Kalibreringens kvartilspann är inget konfidensintervall. |
-| Närhet i en representation | Projektion, med en lista bredvid | Visa klusterstorlek, exempel och kvalitetsmått. Kartavstånd är ingen KPI. |
+| Fråga                                  | Form                                         | Villkor                                                                                                  |
+| -------------------------------------- | -------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| Ett tal för senaste läget              | Stort värde med enhet, period och jämförelse | Ett fristående antal behöver ingen graf.                                                                 |
+| Ett mått mot en verklig referens       | Bullet: värde med referensmarkör             | Referensen är en baslinje, en tidigare period eller ett mål. Hitta inte på mål eller statuszoner.        |
+| Två mättillfällen för flera kategorier | Dumbbell: två sammanbundna punkter per rad   | Behåll staplar kring noll när bara förändringen ska rangordnas. Jämför inte delår mot helår.             |
+| Rangordning av kategorier              | Horisontella staplar (`RankBars`)            | Samma skala där raderna ska jämföras.                                                                    |
+| Små skillnader mellan kategorier       | Rangordnat punktdiagram                      | Punkter tål en avgränsad skala. Staplar från en kapad nollpunkt förstorar skillnaden.                    |
+| Sammansättning av en total             | 100 % staplade staplar                       | Bara när delarna summerar. Kategorier som kan överlappa, som teknikomnämnanden, får separata staplar.    |
+| Utveckling över tid                    | Linjer                                       | Direktetiketter och en vald serie.                                                                       |
+| Många överlappande tidsserier          | Små separata linjegrafer                     | När läsaren ska följa varje trend. En gemensam graf passar när nivåerna ska jämföras vid samma tidpunkt. |
+| Mönster över många kategorier och år   | Heatmap                                      | Ordnad skala från ljus till mörk, färgnyckel, markering för saknade värden.                              |
+| Avvikelse från en referens             | Staplar kring noll                           | Vattenfall först när vägen från startsumma till slutsumma är frågan.                                     |
+| Förutsagt mot observerat               | Punktdiagram med diagonal                    | Kalibreringens kvartilspann är inget konfidensintervall.                                                 |
+| Närhet i en representation             | Projektion, med en lista bredvid             | Visa klusterstorlek, exempel och kvalitetsmått. Kartavstånd är ingen KPI.                                |
 
 Nära varje huvudgraf: frågan, måttet och enheten, perioden, jämförelsen och en kort tolkning.
 Visa nämnaren för andelar och skilj procent från procentenheter. Saknade värden skrivs
@@ -120,3 +120,28 @@ Förslagen var inte genomförda 12 oktober 2026.
 - [ONS: line chart](https://service-manual.ons.gov.uk/data-visualisation/chart-types/line-chart)
 - [ONS: using colours in charts](https://service-manual.ons.gov.uk/data-visualisation/colours/using-colours-in-charts)
 - [Datawrapper: small multiple line charts](https://www.datawrapper.de/blog/what-to-consider-when-creating-small-multiple-line-charts)
+
+## Visuell migrering till v2, 16 oktober 2026
+
+Gr?nssnittet anv?nder nu varmgr? tokens och Helvetica. Partiernas identitetsf?rger och
+klustrens kategorif?rger ?r kvar. Enf?rgade diagram, statusj?mf?relser och valda kontroller
+anv?nder neutrala f?rger. F?rg anger inte automatiskt att en ?kning ?r bra eller d?lig.
+
+Heatmapens ljusa ramp och tabellen ?ver tekniska steg har justerats f?r l?sbar text p? de
+nya ytorna. V?rden, sortering, skalgr?nser och filtrering ?r of?r?ndrade. Symbol Labs m?rka
+projektion ?r fortsatt en avgr?nsad komponent. Canvasetiketter anv?nder lokal typografi.
+
+Migreringen ?ndrar inte diagramformer, dataset, analysresultat eller ber?kningslogik.
+F?rslagen ovan om analysinneh?ll och nya diagram ?r separata uppgifter. Kontroller och
+komponent?garskap beskrivs i [design-system-audit.md](design-system-audit.md).
+
+## Political Observatory v2 follow-up ? 16 October 2026
+
+The main political routes now use the five-area workspace. The similarity heatmap uses a
+fixed 0?100% scale and exposes comparable counts by focus, hover and table. Survey lines use
+calendar spacing, break across missing observations and show published uncertainty; isolated
+intervals use whiskers. Party-pair history retains a 0?100% scale. Cohesion, participation
+and PM-party alignment have separate denominators. Source totals with incomplete seat
+coverage are flagged. Desktop/mobile screenshots and axe scans were performed on the five
+new areas. Older detailed builders/readers remain available; this does not close unrelated
+chart findings in other projects. See [visualization inventory](political-observatory-v2-audit.md).

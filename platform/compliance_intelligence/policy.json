@@ -1,0 +1,31 @@
+{
+  "methodology_version": "se-it-legal-entities-v1",
+  "sni_version": "2025",
+  "primary_sni_codes": {
+    "58290": "Other software publishing",
+    "62100": "Computer programming",
+    "62201": "Computer consultancy",
+    "62202": "Computer facilities management",
+    "62900": "Other IT and computer services",
+    "63100": "Data infrastructure, processing and hosting"
+  },
+  "target_size": 50,
+  "country_code": "SE",
+  "legal_form": "AB",
+  "scb_legal_form": "49",
+  "scb_active_status": "1",
+  "employee_size_classes": {
+    "1": "0", "2": "1-4", "3": "5-9", "4": "10-19",
+    "5": "20-49", "6": "50-99", "7": "100-199", "8": "200-499",
+    "9": "500-999", "10": "1000-1499", "11": "1500-1999",
+    "12": "2000-2999", "13": "3000-3999", "14": "4000-4999",
+    "15": "5000-9999", "16": "10000+"
+  },
+  "employee_size_class_order": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16"],
+  "sources": [
+    "https://www.scb.se/vara-tjanster/bestall-data-och-statistik/foretagsregistret/variabelbeskrivning/",
+    "https://www.scb.se/contentassets/b06d75cd13f8423595b4ba8290c9ea55/sni-2025.pdf",
+    "https://apiafr.scb.se/swagger/v1/swagger.json"
+  ],
+  "verified_on": "2026-10-16"
+}

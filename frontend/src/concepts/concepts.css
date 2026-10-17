@@ -29,7 +29,7 @@
 .cc-kicker {
   margin: 0 0 0.4rem;
   color: var(--cc-muted);
-  font: 500 11px var(--font-mono);
+  font: 500 11px var(--font-meta);
   letter-spacing: 0.14em;
   text-transform: uppercase;
 }
@@ -75,7 +75,7 @@
   border: 1px solid var(--cc-rule);
   border-radius: 3px;
   color: var(--cc-muted);
-  font: 500 10px/1.6 var(--font-mono);
+  font: 500 10px/1.6 var(--font-meta);
   letter-spacing: 0.1em;
   text-transform: uppercase;
   vertical-align: 0.1em;
@@ -194,6 +194,7 @@
   font-size: 2.6px;
 }
 .cc-node a {
+  pointer-events: bounding-box;
   cursor: pointer;
 }
 .cc-node a:focus-visible circle,
@@ -328,7 +329,7 @@
 .cc-column h3 {
   margin-top: 0;
   color: var(--cc-muted);
-  font: 500 11px var(--font-mono);
+  font: 500 11px var(--font-meta);
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
@@ -449,7 +450,7 @@
 .cj-star-value {
   fill: var(--muted);
   font-size: 13px;
-  font-family: var(--font-mono);
+  font-family: var(--font-meta);
   text-anchor: middle;
 }
 .cj-edge {

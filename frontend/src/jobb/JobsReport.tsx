@@ -3,7 +3,7 @@
  * question per tab and at most three charts in each. Every chart answers for the occupation
  * fields the reader follows; none chosen means the whole market.
  */
-import { useState } from 'react'
+import { Suspense, lazy, useState } from 'react'
 import { JOB_TABS, type Route } from '../router'
 import ReportShell from '../report/ReportShell'
 import { Feature, Pick } from '../charts/feature/Feature'
@@ -31,6 +31,8 @@ import {
 import FieldPicker from './FieldPicker'
 import { withFields } from './selection'
 
+const ClusterMap = lazy(() => import('../jobs/ClusterMap'))
+
 const SOURCE = (
   <a href="https://data.arbetsformedlingen.se/annonser/historiska/">
     Arbetsförmedlingen, JobTech: historical ads
@@ -50,9 +52,18 @@ const TABS = [
     label: 'Employment conditions',
     question: 'On what terms are people hired?',
   },
+  {
+    label: 'IT ad clusters',
+    question: 'What groups do IT job ads form?',
+  },
 ].map((tab, i) => ({ ...tab, path: JOB_TABS[i] }))
 
 const DEEPER = [
+  {
+    href: '#jobb-it',
+    label: 'Veckans IT-jobb',
+    about: 'Current advertisements and verified company profiles',
+  },
   {
     href: '#jobb-trender',
     label: 'Ads over time',
@@ -67,11 +78,6 @@ const DEEPER = [
     href: '#job-market-tech',
     label: 'IT and data roles',
     about: 'The tools and languages the ads ask for',
-  },
-  {
-    href: '#jobb-kluster',
-    label: 'Ad clusters',
-    about: 'Groups a language model finds in the IT ads',
   },
   {
     href: '#jobb-kallor',
@@ -455,14 +461,25 @@ function Conditions({ data, fields }: Props) {
   )
 }
 
+/**
+ * IT ads grouped by how they are written, not by title: the map, the ranked groups and the
+ * picked group's profile, then the same dots coloured by the employer's title (ClusterMap).
+ */
+function Clusters() {
+  return (
+    <Suspense fallback={<p role="status">Loading the semantic map…</p>}>
+      <ClusterMap />
+    </Suspense>
+  )
+}
+
 export default function JobsReport({
   route,
   data,
   fields,
 }: Props & { route: Route }) {
-  const Body = [Demand, Regional, Conditions][
-    Math.max(0, JOB_TABS.indexOf(route.path))
-  ]
+  const at = Math.max(0, JOB_TABS.indexOf(route.path))
+  const Body = [Demand, Regional, Conditions, Clusters][at]
   return (
     <ReportShell
       name="Labour Market Observatory"
@@ -471,7 +488,7 @@ export default function JobsReport({
       path={route.path}
       hrefOf={(p) => withFields(p, fields)}
       slicerLabel="Follow fields"
-      slicer={<FieldPicker route={route} data={data} />}
+      slicer={at < 3 && <FieldPicker route={route} data={data} />}
       deeper={DEEPER}
     >
       <Body data={data} fields={fields} />
