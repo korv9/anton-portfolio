@@ -1,4 +1,6 @@
-# IT Compliance Intelligence
+# Job Intelligence: compliance subsystem
+
+The public workspace is now **Job Intelligence**. See the [workspace architecture and delivery contract](../job-intelligence.md). Existing compliance routes, research cohort, internal module names and publication safeguards remain in place.
 
 Phase 0 audit, Phase 1 registry, Phase 2 collection, Phase 3 evidence review and
 Phase 4 analytics and Phase 5 explorer/export,

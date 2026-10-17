@@ -54,7 +54,17 @@ def new_output(path):
         if stage.parent != output.parent:
             raise ValueError("Staging path escaped output parent")
         yield stage
-        stage.rename(output)
+        # Windows scanners can briefly retain a directory handle after a writer closes.
+        for attempt in range(4):
+            if output.exists():
+                raise ValueError("Output already exists; frozen snapshots and cohorts cannot be replaced")
+            try:
+                stage.rename(output)
+                break
+            except PermissionError as error:
+                if getattr(error, 'winerror', None) not in (5, 32) or attempt == 3:
+                    raise
+                time.sleep(.1 * 2 ** attempt)
 
 
 def write_json(path: Path, value):

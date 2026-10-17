@@ -26,7 +26,12 @@ from lib.rawstore import sha256  # noqa: E402
 REPO = Path(__file__).resolve().parents[2]
 TARGET = REPO/'frontend/public/data/compliance/release.json'
 PRESENTATION_FILES = ['model.ts','exports.ts','ComplianceExplorer.tsx','compliance.css','progress.ts',
-    '../companies/model.ts','../companies/CompanyIntelligence.tsx','../companies/companies.css']
+    '../companies/model.ts','../companies/CompanyIntelligence.tsx','../companies/companies.css',
+    '../companies/CompanyDeepDive.tsx','../companies/CompanyEvidence.tsx','../companies/CompanyJobCard.tsx','../companies/CompanyCompliance.tsx','../job-intelligence/model.ts',
+    '../job-intelligence/JobIntelligence.tsx','../job-intelligence/workspace.css',
+    '../job-intelligence/JobResearch.tsx','../job-intelligence/Requirements.tsx',
+    '../job-intelligence/CvMatch.tsx','../job-intelligence/JobFilters.tsx',
+    '../job-intelligence/useWorkspace.ts','../job-intelligence/profile.ts','../job-intelligence/ranking.ts']
 COMPANY_FIELDS = ('company_id','organization_number','registered_legal_name','country_code',
     'registry_authority','registry_number','primary_sni_code','employee_size_class','snapshot_date',
     'source_url','document_hash','last_verified_at')

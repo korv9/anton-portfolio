@@ -20,6 +20,7 @@ const ComplianceExplorer = lazy(() => import('./compliance/ComplianceExplorer'))
 const CompanyIntelligence = lazy(
   () => import('./companies/CompanyIntelligence'),
 )
+const JobIntelligence = lazy(() => import('./job-intelligence/JobIntelligence'))
 const WelfareReport = lazy(() => import('./welfare/WelfareReport'))
 const WelfareDeep = lazy(() =>
   import('./welfare/WelfareReport').then((m) => ({ default: m.WelfareDeep })),
@@ -111,7 +112,7 @@ export default function App() {
                 {page === 'politik' && <PoliticsProduct route={route} />}
                 {page === 'jobs' &&
                   (path === '#jobb-it' ? (
-                    <CompanyIntelligence route={route} />
+                    <JobIntelligence route={route} />
                   ) : (
                     <JobsProduct route={route} />
                   ))}

@@ -23,6 +23,9 @@ export type Job = {
   workplace_name: string | null
   location: string | null
   technologies: string[]
+  normalized_skills?: string[]
+  seniority?: string[]
+  remote_evidence?: string[]
   publication_date: string
   application_deadline: string | null
   source_url: string
@@ -258,7 +261,12 @@ export function relatedJobs(data: CompanyData, id: string) {
       .filter((l) => l.company_id === id && l.match_status === 'verified')
       .map((l) => l.job_id),
   )
-  return data.jobs.filter((j) => jobs.has(j.job_id))
+  return data.jobs.filter(
+    (j) =>
+      jobs.has(j.job_id) &&
+      (!j.application_deadline ||
+        jobInstant(j.application_deadline, true) >= Date.now()),
+  )
 }
 export function hiringDaily(data: CompanyData, id: string) {
   const counts = new Map<string, number>()
@@ -287,4 +295,32 @@ export const sizeLabels: Record<string, string> = {
   '14': '4,000–4,999',
   '15': '5,000–9,999',
   '16': '10,000+',
+}
+
+export function jobInstant(value: string, deadline = false) {
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value))
+    value += deadline ? 'T23:59:59' : 'T00:00:00'
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?$/.test(value)) {
+    const utc = Date.parse(value + 'Z')
+    const wall = new Intl.DateTimeFormat('sv-SE', {
+      timeZone: 'Europe/Stockholm',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hourCycle: 'h23',
+    })
+    for (const offset of [2, 1]) {
+      const candidate = utc - offset * 3600000
+      if (
+        wall.format(new Date(candidate)).replace(' ', 'T') ===
+        value.slice(0, 19)
+      )
+        return candidate
+    }
+    return NaN
+  }
+  return Date.parse(value)
 }

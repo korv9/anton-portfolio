@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["schema_version", "state"],
+  "properties": {"schema_version": {"const": 1}, "state": {"enum": ["available", "unavailable"]}},
+  "if": {"properties": {"state": {"const": "available"}}},
+  "then": {
+    "required": ["generated_at", "valid_until", "registry_hash", "selection", "jobs"],
+    "properties": {
+      "jobs": {"type": "array", "maxItems": 50, "items": {
+        "type": "object", "required": ["job_id", "document_hash", "source_url", "description_text", "text_origin", "contact_redactions", "application_url", "analysis"],
+        "properties": {"description_text": {"type": "string", "maxLength": 500000}, "document_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"}, "contact_redactions": {"type": "integer", "minimum": 0}, "analysis": {"type": "object", "required": ["version", "requirements", "limitations"]}}
+      }}
+    }
+  },
+  "else": {"required": ["reason"]}
+}

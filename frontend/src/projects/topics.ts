@@ -10,6 +10,13 @@ const link = (href: string, sv: string, en: string) => ({
   label: t(sv, en),
 })
 export const PROJECT_TOPICS: Record<string, Topic[]> = {
+  compliance: [
+    { title: t('Job Explorer', 'Job Explorer'), href: '#jobb-it' },
+    {
+      title: t('Compliance & Legal History', 'Compliance & Legal History'),
+      href: '#compliance',
+    },
+  ],
   politics: [
     {
       title: t('Regering och riksdag', 'Government and parliament'),
@@ -53,7 +60,7 @@ export const PROJECT_TOPICS: Record<string, Topic[]> = {
     },
   ],
   jobs: [
-    { title: t('Veckans IT-jobb', 'Weekly IT jobs'), href: '#jobb-it' },
+    { title: t('Job Intelligence', 'Job Intelligence'), href: '#jobb-it' },
     {
       title: t('Efterfrågan över tid', 'Demand over time'),
       href: '#jobb-trender',
