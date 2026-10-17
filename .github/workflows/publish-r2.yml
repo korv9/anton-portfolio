@@ -9,6 +9,10 @@ on:
         description: Active manifest (use manifests/pipeline-smoke.json for verification)
         type: string
         default: manifests/current.json
+      source_manifest_key:
+        description: Verified source for missing groups (for promotion use manifests/pipeline-smoke.json)
+        type: string
+        default: manifests/current.json
 
 permissions:
   contents: read
@@ -31,6 +35,7 @@ jobs:
       R2_BUCKET: ${{ secrets.R2_BUCKET }}
       R2_PUBLIC_BASE: ${{ vars.R2_PUBLIC_BASE }}
       MANIFEST_KEY: ${{ inputs.manifest_key || 'manifests/current.json' }}
+      SOURCE_MANIFEST_KEY: ${{ inputs.source_manifest_key || 'manifests/current.json' }}
     steps:
       - name: Require R2 credentials
         run: |
@@ -57,6 +62,10 @@ jobs:
           for group in baseline jobs jobs-analysis news public-data diva; do
             existing=$(python platform/publish/release.py current --group "$group" \
               --manifest-key manifests/current.json | python -c "import json,sys; print(json.load(sys.stdin)['release'] or '')")
+            if [ -z "$existing" ] && [ "${SOURCE_MANIFEST_KEY:-manifests/current.json}" != manifests/current.json ]; then
+              existing=$(python platform/publish/release.py current --group "$group" \
+                --manifest-key "$SOURCE_MANIFEST_KEY" | python -c "import json,sys; print(json.load(sys.stdin)['release'] or '')")
+            fi
             if [ -n "$existing" ]; then
               printf '%s\t%s\n' "$group" "$existing" >> "$RUNNER_TEMP/release-bundle.tsv"
               continue

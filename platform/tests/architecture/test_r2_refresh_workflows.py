@@ -71,7 +71,8 @@ def run_script(tmp_path, script, **overrides):
     env = dict(os.environ, **{name: "fixture" for name in CREDENTIALS}, GITHUB_SHA=SHA,
                GITHUB_OUTPUT=str(output), RUNNER_TEMP=str(tmp_path), EVENT_LOG=str(events),
                PYTHON_EXECUTABLE=sys.executable, SUMMARY_EXIT="0", FAIL_GROUP="", CHECK_EXIT="0",
-               FAIL_MATERIALIZE="0", BROKEN_RECEIPT="0", EXISTING_GROUP="", CURRENT_EXIT="0")
+               FAIL_MATERIALIZE="0", BROKEN_RECEIPT="0", EXISTING_GROUP="", CURRENT_EXIT="0",
+               EXISTING_SOURCE_GROUP="")
     env.update(overrides)
     script = re.sub(r"\$\{\{\s*github.sha\s*\}\}", SHA, script)
     script = re.sub(r"\$\{\{\s*[^}]+\}\}", "false", script)
@@ -85,7 +86,9 @@ python() {
     *summarize_news.py*) return "$SUMMARY_EXIT" ;;
     *release.py\ current*)
       if [ "$CURRENT_EXIT" != 0 ]; then return "$CURRENT_EXIT"; fi
-      if [ -n "$EXISTING_GROUP" ] && [[ " $* " == *" --group $EXISTING_GROUP "* ]]; then
+      if [ -n "$EXISTING_SOURCE_GROUP" ] && [[ " $* " == *" --group $EXISTING_SOURCE_GROUP "* ]] && [[ " $* " == *" --manifest-key manifests/pipeline-smoke.json "* ]]; then
+        printf '{"release":"%064d"}\n' 2
+      elif [ -n "$EXISTING_GROUP" ] && [[ " $* " == *" --group $EXISTING_GROUP "* ]]; then
         printf '{"release":"%064d"}\n' 1
       else printf '{"release":null}\n'; fi ;;
     *release.py*publish*)
@@ -237,6 +240,12 @@ def test_initial_bootstrap_stages_groups_then_activates_once(tmp_path):
     assert result.returncode == 0, result.stderr
     assert not any("publish" in call and option(call, "--group") == "public-data" for call in calls)
     assert any("public-data=" + "0" * 63 + "1" in call for call in calls if "activate" in call)
+    result, calls, _ = run_script(tmp_path, "\n".join(scripts), EXISTING_GROUP="jobs",
+                                 SOURCE_MANIFEST_KEY=smoke, EXISTING_SOURCE_GROUP="baseline")
+    assert result.returncode == 0, result.stderr
+    assert not any("publish" in call and option(call, "--group") in {"jobs", "baseline"} for call in calls)
+    assert any("baseline=" + "0" * 63 + "2" in call for call in calls if "activate" in call)
+    assert any("jobs=" + "0" * 63 + "1" in call for call in calls if "activate" in call)
     result, calls, _ = run_script(tmp_path, "\n".join(scripts), CURRENT_EXIT="1")
     assert result.returncode != 0
     assert not any("publish" in call or "activate" in call for call in calls)

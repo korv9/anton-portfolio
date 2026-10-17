@@ -5,21 +5,22 @@ assets** at `https://antonernstsson.com`: a Worker with no script, only files. T
 shards and Parquet marts are served from the R2 bucket `anton-portfolio`, on the same Cloudflare
 account (see [storage-and-serving.md](storage-and-serving.md)).
 
-Cloudflare builds the site itself from this repository (Workers Builds): every push to `main`
-is published, including the data commits the refresh workflows make, and every other branch and
-pull request gets a preview URL on `workers.dev`. No workflow here deploys.
+Cloudflare builds the site itself from this repository (Workers Builds): pushes to `main`
+deploy code and static assets. Data workflows publish validated R2 releases and update
+`manifests/current.json`; they do not create data commits or deploy the site. The frontend
+connection is enabled once after the complete R2 bundle is verified.
 
 ## Branches: main and a preview per pull request
 
 `main` is production. New work never lands there directly:
 
 1. Work happens on a feature branch, with a pull request into `main`; CI must be green.
-2. Cloudflare builds the branch as a preview (`npx wrangler preview`, which needs the
-   `[previews]` block in `wrangler.toml`) and comments the link on the pull request. The
-   preview's address stays the same for a branch; `r2-cors.json` allows the working branch's
-   so the preview can read the data.
+2. Cloudflare attempts a branch preview (`npx wrangler preview`, using the
+   `[previews]` block in `wrangler.toml`). Check its actual build result before relying
+   on a preview. Its origin also needs the bucket's CORS permission.
 3. The owner looks at the preview and approves the merge; merged, it is live.
-4. The data refreshes commit to `main` directly (fresh data goes live without review).
+4. Data refreshes validate, upload and activate their own R2 groups. The site reads
+   the approved version without a code commit or site deployment.
 
 ## In the repository
 
@@ -62,14 +63,20 @@ on `workers.dev` and in previews without configuration.
    - apply the CORS policy: R2 → the bucket → Settings → CORS policy → paste
      `platform/publish/r2-cors.json`;
    - set the repository variable `R2_PUBLIC_BASE` to `https://data.antonernstsson.com/`
-     (Settings → Secrets and variables → Actions → Variables) and run `npm run data:catalog`
-     with it exported, so `delivery.json` points at the domain; commit it;
-   - once the site reads from the domain, turn off the bucket's `r2.dev` URL.
+     (Settings → Secrets and variables → Actions → Variables);
+   - run *Bootstrap versioned data delivery in R2* first with
+     `manifest_key=manifests/pipeline-smoke.json`, then verify the real files and browser
+     reads before running it with `manifests/current.json`;
+   - enable `manifest_url: https://data.antonernstsson.com/manifests/current.json`
+     in the committed delivery file, or set `VITE_R2_MANIFEST_URL` for the site build.
+     `R2_MANIFEST_URL` / `R2_LIVE_DELIVERY=1` also configure the catalogue generator.
+     Once set in the delivery file, the generator preserves that connection;
+   - retain historical copies until versioned reads, rollback and reproduction pass.
 5. **Scheduled refreshes.** Each morning (UTC): `refresh-jobs.yml` at 04:23 (new archives and
    the day's job ads from JobTech's stream), `refresh-welfare.yml` at 04:37 (welfare, taxes
    and parliament: roll calls, reports, polls, elections, government, studies) and
-   `refresh-news.yml` at 05:17. Each commits the site's data when it changed, and Cloudflare
-   publishes from that commit. They run in the `anton-portfolio` environment, whose secrets
+   `refresh-news.yml` at 05:17. Each publishes a validated R2 group: jobs, public-data
+   or news. They run in the `anton-portfolio` environment, whose secrets
    hold the R2 credentials, and can also be run by hand from the Actions tab. To pause one,
    comment out its `schedule:` lines. Riksdag speeches and the analyses built on them
    (embeddings, maps) are refreshed by *Build and store the warehouse*, run by hand.
@@ -95,8 +102,8 @@ on `workers.dev` and in previews without configuration.
 
    | What | Where | Kept by |
    |---|---|---|
-   | The site's JSON (every product's `frontend/public/data/**/*.json`) | Cloudflare Workers static assets | git, deployed on every push to main |
-   | Parquet datasets and document shards | R2, public | *Publish to R2* (`upload.py`), verified by hash |
+   | Approved JSON, Parquet and document shards | R2, `releases/<group>/<id>/files/` | `release.py`, with exact-byte readback and activation last |
+   | Static assets, code and committed reproduction snapshots | Git and Cloudflare Workers | code deployments; snapshots retained during migration |
    | Raw source files, ML outputs, the DuckDB warehouse | R2, `warehouse/` | *Build and store the warehouse* |
 
 ## Limits
