@@ -34,11 +34,15 @@ test(
       'What I found',
       'Why it matters',
     ])
-    await expect(page.locator('.thesis-page .project-section p')).toHaveCount(11)
+    await expect(page.locator('.thesis-page .project-section p')).toHaveCount(
+      11,
+    )
     await expect(page.locator('#thesis-workflow')).toContainText('21,000')
     await expect(page.locator('#thesis-workflow')).toContainText('ISO 25012')
     await expect(page.locator('#thesis-quality')).toContainText('121 clusters')
-    await expect(page.locator('#thesis-quality')).toContainText('72 had no link')
+    await expect(page.locator('#thesis-quality')).toContainText(
+      '72 had no link',
+    )
     await expect(page.locator('#thesis-quality')).toContainText(
       'rather than confirmed root causes',
     )
