@@ -1,12 +1,13 @@
 import { test, expect, siteNav } from './test'
 
-test('the header groups projects and marks the active project', async ({
+test('the header lists projects without groups and marks the active project', async ({
   page,
 }) => {
   await page.goto('/#symbolic-atlas')
   const menu = await siteNav(page)
-  for (const name of ['Observatories', 'Labs', 'Engineering'])
-    await expect(menu.getByRole('heading', { name, exact: true })).toBeVisible()
+  await expect(menu.getByRole('heading')).toHaveCount(0)
+  await expect(menu.locator('ul > li')).toHaveCount(13)
+  await expect(menu.locator('a[href="#thesis"]')).toHaveCount(0)
   await expect(
     menu.getByRole('link', { name: 'Symbol Lab', exact: true }),
   ).toHaveAttribute('aria-current', 'true')

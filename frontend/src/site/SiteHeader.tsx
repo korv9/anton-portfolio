@@ -1,10 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { l } from '../i18n'
-import {
-  PROJECT_GROUPS,
-  PROJECTS,
-  projectForRoute,
-} from '../projects/projectRegistry'
+import { LISTED_PROJECTS, projectForRoute } from '../projects/projectRegistry'
 import type { Route } from '../router'
 import './header.css'
 
@@ -85,26 +81,20 @@ export default function SiteHeader({ route }: { route: Route }) {
             {l('Projects', 'Projekt')} <span aria-hidden="true">⌄</span>
           </summary>
           <div className="project-menu-panel">
-            {PROJECT_GROUPS.map((group) => (
-              <section key={group.label}>
-                <h2>{group.label}</h2>
-                <ul>
-                  {group.ids.map((id) => {
-                    const project = PROJECTS.find((p) => p.id === id)!
-                    return (
-                      <li key={id}>
-                        <a
-                          href={project.href}
-                          aria-current={active?.id === id ? 'true' : undefined}
-                        >
-                          {l(project.title.en, project.title.sv)}
-                        </a>
-                      </li>
-                    )
-                  })}
-                </ul>
-              </section>
-            ))}
+            <ul>
+              {LISTED_PROJECTS.map((project) => (
+                <li key={project.id}>
+                  <a
+                    href={project.href}
+                    aria-current={
+                      active?.id === project.id ? 'true' : undefined
+                    }
+                  >
+                    {l(project.title.en, project.title.sv)}
+                  </a>
+                </li>
+              ))}
+            </ul>
             <div className="project-menu-tools">
               <a href="#projekt">{l('All projects', 'Alla projekt')}</a>
               <a href="#cluster-visuals">Cluster Visuals</a>

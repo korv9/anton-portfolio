@@ -1,20 +1,8 @@
-/* The projects to choose from (ProjectsPage.tsx): three categories side by side, each with its
-   projects listed under it, and under a project on the platform what it holds in the pipeline. */
+/* One continuous list, using the shared portfolio typography and spacing. */
 .projects-groups {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--sp-6);
-}
-.tech .projects-group-title {
-  margin: 0 0 var(--sp-4);
-  padding-bottom: var(--sp-2);
-  border-bottom: 1px solid var(--line-strong);
-  color: var(--ink);
-  font-family: var(--font);
-  font-size: var(--h3);
-  font-weight: 750;
-  letter-spacing: -0.02em;
-  text-transform: uppercase;
 }
 .projects-list {
   display: grid;
