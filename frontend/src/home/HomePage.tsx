@@ -171,7 +171,7 @@ function Work() {
       </div>
       <ClusterPreview kind="jobs" background />
       <div className="home-project-groups">
-        <section aria-label="Projects">
+        <section aria-label="Project list">
           <ul className="work-row">
             {LISTED_PROJECTS.map((project) => (
               <li key={project.id}>

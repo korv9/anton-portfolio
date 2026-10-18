@@ -21,27 +21,28 @@ for (const [path, name, tabs] of projects)
   })
 
 test(
-  'degree project presents the workflow once and separates its evaluation',
+  'degree project presents the supplied narrative and navigable findings',
   { tag: '@mobile' },
   async ({ page }) => {
     await page.goto('/#thesis')
-    await expect(
-      page.locator('#thesis-workflow .engineering-flow li'),
-    ).toHaveCount(3)
-    await expect(page.locator('.project-hero-summary')).toContainText('Fora AB')
-    await expect(page.locator('#thesis-workflow')).toContainText('16 811')
-    await expect(page.locator('#thesis-workflow')).toContainText('121')
-    await expect(page.locator('#thesis-workflow')).toContainText('72')
-    await expect(page.locator('#thesis-workflow')).toContainText('5,605')
-    await expect(page.locator('#thesis-workflow')).toContainText(
-      'operational review',
+    await expect(page.locator('.thesis-page h1')).toHaveText(
+      'Finding recurring problems in IT support data',
     )
-    await expect(page.locator('#project-thesis-depth')).toContainText('21,633')
-    await expect(page.locator('#project-thesis-depth')).toContainText('19,847')
-    await expect(page.locator('#thesis-quality')).toContainText('4.2%')
-    await expect(page.locator('#thesis-quality')).toContainText('82.2%')
-    await expect(page.locator('#thesis-quality')).toContainText('3.8%')
-    await expect(page.locator('#thesis-quality')).toContainText('5.1%')
+    await expect(page.locator('.thesis-page .project-section h2')).toHaveText([
+      'Why I chose this project',
+      'What I did',
+      'What I found',
+      'Why it matters',
+    ])
+    await expect(page.locator('.thesis-page .project-section p')).toHaveCount(11)
+    await expect(page.locator('#thesis-workflow')).toContainText('21,000')
+    await expect(page.locator('#thesis-workflow')).toContainText('ISO 25012')
+    await expect(page.locator('#thesis-quality')).toContainText('121 clusters')
+    await expect(page.locator('#thesis-quality')).toContainText('72 had no link')
+    await expect(page.locator('#thesis-quality')).toContainText(
+      'rather than confirmed root causes',
+    )
+    await expect(page.locator('#thesis-quality')).toContainText('around 96%')
     await expect(
       page.locator(
         'main a[href*="/private/"], main a[href*="Examensarbete.pdf"]',
@@ -49,21 +50,18 @@ test(
     ).toHaveCount(0)
     await page
       .getByRole('navigation', { name: 'Project topics' })
-      .getByRole('link', { name: 'Data quality', exact: true })
+      .getByRole('link', { name: 'What I found', exact: true })
       .click()
     await expect(page.locator('#thesis-quality')).toBeInViewport()
     await page.reload()
     await expect(page.locator('#thesis-quality')).toBeInViewport()
     await page
       .getByRole('navigation', { name: 'Project topics' })
-      .getByRole('link', { name: 'Evaluation', exact: true })
+      .getByRole('link', { name: 'Why it matters', exact: true })
       .click()
     await expect(page.locator('#thesis-evaluation')).toBeInViewport()
-    await expect(page.locator('#thesis-evaluation')).toContainText('0.7060')
-    await expect(page.locator('#thesis-evaluation')).toContainText('0.5342')
-    await expect(page.locator('#thesis-evaluation')).toContainText('72.3%')
     await expect(page.locator('#thesis-evaluation')).toContainText(
-      'uneven comparison',
+      'would need to be evaluated through operational use',
     )
     await page.reload()
     await expect(page.locator('#thesis-evaluation')).toBeInViewport()
