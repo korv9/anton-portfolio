@@ -21,7 +21,7 @@ const TECHNICAL: Partial<Record<Route['page'], Bilingual>> = {
 
 /** The page's own name for the document title, or null on the homepage. */
 export function pageTitle(route: Route): string | null {
-  if (route.page === 'company') return 'Company Intelligence'
+  if (route.page === 'company') return 'Company Deep Dive | Job Intelligence'
   if (route.page === 'home') return null
   const project = projectForRoute(route)
   if (project) return b(project.title)

@@ -1,6 +1,8 @@
 import { readFileSync } from 'node:fs'
 import { test, expect } from '@playwright/test'
 import { fixtureCompanies } from './fixtures/companies'
+import { fixtureWorkspace } from './fixtures/job-intelligence'
+import { fixtureProfile } from './fixtures/job-profile'
 
 test.afterEach(async ({ page }) =>
   page.unrouteAll({ behavior: 'ignoreErrors' }),
@@ -60,8 +62,34 @@ test('canonical company route loads under CSP and renders employer text safely',
   ).toBeVisible()
   await expect(page.locator('.company-intelligence img')).toHaveCount(0)
   expect(await page.evaluate(() => 'injected' in window)).toBe(false)
-  await expect(page.locator('.company-intelligence')).toContainText(
+  await expect(page.locator('.company-intelligence').first()).toContainText(
     'has not been assessed here',
   )
+  expect(errors).toEqual([])
+  const content = fixtureWorkspace(data)
+  content.jobs[0].description_text +=
+    '\n<img src=x onerror="window.injected=true"><script>window.injected=true</script>'
+  await page.route('**/data/jobs/workspace.json', (r) =>
+    r.fulfill({ json: content }),
+  )
+  let privateProfileRequests = 0
+  await page.route('**/__local/job-intelligence-profile', (r) => {
+    privateProfileRequests++
+    return r.fulfill({ json: { state: 'local', profile: fixtureProfile() } })
+  })
+  await page.goto('/#jobb-it?job=0')
+  await expect(page.locator('.ji-advertisement')).toContainText('<img src=x')
+  await expect(
+    page.locator(
+      '.ji-advertisement img,.ji-advertisement script,.ji-advertisement iframe',
+    ),
+  ).toHaveCount(0)
+  expect(await page.evaluate(() => 'injected' in window)).toBe(false)
+  await expect(page.locator('#ji-cv')).toContainText('Public mode')
+  await expect(page.locator('#ji-cv')).not.toContainText(
+    'Synthetic qualification evidence',
+  )
+  expect(privateProfileRequests).toBe(0)
+  await expect(page.locator('input[type=file]')).toHaveCount(0)
   expect(errors).toEqual([])
 })

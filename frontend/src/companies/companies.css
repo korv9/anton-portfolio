@@ -97,6 +97,13 @@
   text-align: left;
   padding-block: var(--sp-3);
 }
+.company-deep-dive .company-section {
+  padding-block: var(--sp-2);
+  border: 0;
+}
+.company-deep-dive :is(h4, h5) {
+  font-size: var(--type-body);
+}
 @media (max-width: 600px) {
   .company-metrics {
     grid-template-columns: minmax(0, 1fr);
