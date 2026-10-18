@@ -75,26 +75,22 @@ export const EXPERIENCE: {
 /** The degree project's key points, from the thesis (AIDEV24S, spring 2026). */
 export const THESIS = {
   title: t(
-    'Examensarbete: NLP-klustring av ITSM-data',
-    'Degree project: NLP clustering of ITSM data',
+    'Examensarbete: Hitta återkommande IT-problem med NLP',
+    'Degree project: Finding recurring IT problems with NLP',
   ),
   kind: t('Fallstudie, vår 2026', 'Case study, spring 2026'),
   points: [
     t(
-      'Grupperade personuppgiftsmaskerade Freshservice-incidenter och fann att 72 av 121 grupper saknade koppling till registrerade problem. Arbetet lyfte fram 12 grupper med 650 ärenden för fortsatt utredning och beskrev liknande symptom som återkommit över flera år. Grupperna kräver verksamhetens granskning.',
-      'Clustered PII-masked Freshservice incidents and found that 72 of 121 groups had no link to a registered problem. The work picked out 12 groups with 650 tickets for further investigation and described similar symptoms that had come back over several years. The groups need operational review.',
+      'Undersökte hur NLP, klustring och oövervakad inlärning kunde hjälpa IT-team att koppla samman återkommande incidenter och identifiera mönster värda att undersöka.',
+      'Explored how NLP, clustering and unsupervised learning could help IT teams connect recurring incidents and identify patterns worth investigating.',
     ),
     t(
-      'Mätte datakvaliteten i 21 633 incidentposter från Fora AB med fem dimensioner ur ISO/IEC 25012: fullständighet, exakthet, konsistens, unikhet och spårbarhet.',
-      'Measured data quality in 21,633 incident records from Fora AB using five ISO/IEC 25012 dimensions: completeness, accuracy, consistency, uniqueness and traceability.',
+      'Analyserade 21 633 incidentposter från Freshservice. Av 121 kluster saknade 72 koppling till ett registrerat problem. Lyfte fram 12 grupper med 650 ärenden för fortsatt granskning i verksamheten.',
+      'Analysed 21,633 Freshservice incident records. Of 121 clusters, 72 had no link to a registered problem. Highlighted 12 groups containing 650 tickets for further operational review.',
     ),
     t(
-      'Fann att giltiga och ifyllda systemfält kunde sakna användbart innehåll. Rotorsaksfältet var ifyllt i bara 4,2 % och problemkoppling fanns i 5,1 % av kvalitetsunderlaget. Arbetet pekade ut dokumentationsluckor och processmognad som en huvudbegränsning för analysen.',
-      'Found that valid, populated system fields could still lack useful content. Root-cause notes were present in only 4.2% and problem links in 5.1% of the quality dataset. The thesis identified documentation gaps and process maturity as a main constraint on the analysis.',
-    ),
-    t(
-      'Jämförde HDBSCAN med K-means och kontrollerade grupperna mot befintliga problemkopplingar. HDBSCAN gav cirka 32 % högre silhuettvärde, beräknat på olika delmängder. Namnmaskering skapade också falska likheter som behövde granskas.',
-      'Compared HDBSCAN with K-means and checked the groups against existing problem links. HDBSCAN gave about 32% higher silhouette, calculated on different subsets. Name masking also created false similarities that needed review.',
+      'Bedömde datakvaliteten med fem dimensioner ur ISO/IEC 25012. Fann att saknad rotorsaksdokumentation och begränsade kopplingar mellan incidenter och problem begränsade analysen, vilket visade varför bättre dokumentation behövs för användbar AI.',
+      'Assessed data quality using five ISO/IEC 25012 dimensions. Found that missing root-cause documentation and limited links between incidents and problems constrained the analysis, showing why better documentation matters for useful AI.',
     ),
   ],
   tech: [
