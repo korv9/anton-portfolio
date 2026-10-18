@@ -28,3 +28,8 @@
 
 - 2026-10-18 [USER] Explicitly authorised committing the Job Intelligence work, merging with latest main and pushing to main. Other dirty workspace changes remain separate.
 - 2026-10-18 [TOOL] A 54-file feature branch merged without conflicts into an isolated checkout of latest origin/main; upstream projects were retained. Merged verification passed: 680 Python tests, 141 unit tests, 180 browser tests and three security tests; type, format, build and publication checks passed.
+
+- 2026-10-18 [USER] Requested the Graphify refresh before completing the branch/main merge. Local graph caches remain ignored; no private profile is published.
+- 2026-10-18 [TOOL] PR #66 is open because main requires four CI checks. Remote site/dependency checks passed; Linux test isolation and two exact reviewed public-taxonomy scanner fingerprints were corrected. Local CI-parity Python rerun: 680 passed, two skipped; full history scan passed.
+
+- 2026-10-18 [TOOL] Graphify caches refreshed in both worktrees: 7,477 nodes, 18,394 edges, 661 communities. Source queries pass; 25 self-loops and bounded scope are disclosed in `docs/job-intelligence-graph-update.md`. Graph files remain ignored.

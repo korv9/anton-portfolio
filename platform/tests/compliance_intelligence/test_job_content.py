@@ -129,7 +129,7 @@ def test_active_sweden_legacy_taxonomy_expiry_and_missing_fields():
     assert d['salary'] is None and d['application_url'] is None and d['description_text'] == ''
 
 
-def test_latest_50_stable_order_bound_hash_and_lazy_publication(tmp_path):
+def test_latest_50_stable_order_bound_hash_and_lazy_publication(tmp_path,monkeypatch):
     collection, database, registry = bundle(tmp_path)
     data = project(collection, database, registry, tmp_path/'resolved')
     content = json.loads((tmp_path/'resolved/workspace.json').read_text())
@@ -144,6 +144,10 @@ def test_latest_50_stable_order_bound_hash_and_lazy_publication(tmp_path):
     with pytest.raises(ValueError, match='provenance'): validate_workspace(bad, data)
     bad = copy.deepcopy(content); bad['generated_at'] = '2020-01-01'
     with pytest.raises(ValueError, match='bound'): validate_workspace(bad, data)
-    publish(tmp_path/'resolved', tmp_path/'published/company-intelligence.json')
-    assert (tmp_path/'published/workspace.json').exists()
-    assert (tmp_path/'published/workspace-remaining.json').exists()
+    monkeypatch.setattr('publish.job_companies.ROOT',tmp_path)
+    with pytest.raises(ValueError,match='workspace test path'):
+        publish(tmp_path/'resolved',tmp_path/'outside/company-intelligence.json')
+    destination=tmp_path/'tmp/published'
+    publish(tmp_path/'resolved',destination/'company-intelligence.json')
+    assert (destination/'workspace.json').exists()
+    assert (destination/'workspace-remaining.json').exists()

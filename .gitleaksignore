@@ -130,3 +130,7 @@ c9d1725c234d1ea85d626df7b8ca2640a8b77202:public/data/gold/tables/fact_point_rese
 # Reviewed public data: Swedish development-tool label and a Riksdag roll-call UUID.
 e989d898705b37cd7868527954d79f70ea2ae2a4:frontend/public/data/jobs/company-intelligence.json:atlassian-api-token:1
 e989d898705b37cd7868527954d79f70ea2ae2a4:frontend/public/data/parliament/workspace/decisions/2024-25.json:square-access-token:1
+
+# Reviewed official JobSearch skill-taxonomy text; exact historical fingerprints only.
+596289c4d9eeb34c36732bfdfab4233a231529be:frontend/public/data/jobs/company-intelligence.json:atlassian-api-token:1
+596289c4d9eeb34c36732bfdfab4233a231529be:frontend/public/data/jobs/workspace-remaining.json:atlassian-api-token:1
