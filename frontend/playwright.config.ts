@@ -4,11 +4,17 @@ const port = Number(process.env.PLAYWRIGHT_PORT ?? 5173)
 if (!Number.isInteger(port) || port < 1024 || port > 65535)
   throw new Error('PLAYWRIGHT_PORT must be between 1024 and 65535')
 const baseURL = `http://127.0.0.1:${port}`
+const workers = Number(
+  process.env.PLAYWRIGHT_WORKERS ?? (process.env.CI ? 2 : 1),
+)
+if (!Number.isInteger(workers) || workers < 1)
+  throw new Error('PLAYWRIGHT_WORKERS must be a positive integer')
 
 export default defineConfig({
   testDir: './tests',
   testMatch: '**/*.spec.ts',
   fullyParallel: true,
+  workers,
   reporter: 'list',
   expect: { timeout: 15000 },
   use: {

@@ -2,6 +2,7 @@ name: Security
 
 on:
   push:
+    branches: [main]
   pull_request:
   workflow_dispatch:
   schedule:
@@ -68,4 +69,14 @@ jobs:
           mkdir -p gitleaks-bin
           tar -xzf gitleaks.tar.gz -C gitleaks-bin gitleaks
       - name: Scan history without printing secret values
-        run: '"$RUNNER_TEMP/gitleaks-bin/gitleaks" git --redact --no-banner .'
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          args=()
+          if [ "$EVENT_NAME" = pull_request ]; then
+            [[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ && "$HEAD_SHA" =~ ^[0-9a-f]{40}$ ]]
+            args+=(--log-opts="$BASE_SHA..$HEAD_SHA")
+          fi
+          "$RUNNER_TEMP/gitleaks-bin/gitleaks" git --redact --no-banner "${args[@]}" .

@@ -1,11 +1,12 @@
 name: CI
 
-# Every push and pull request: the site builds and passes its browser tests, and the
+# Every main push and pull request: the site builds and passes its browser tests, and the
 # platform's tests, data contracts and dbt project are valid. Fetching and building the
 # welfare warehouse from live APIs is the scheduled pipeline's job, not every push's.
 
 on:
   push:
+    branches: [main]
   pull_request:
   workflow_dispatch:
 
@@ -40,7 +41,7 @@ jobs:
         run: npx --no-install wrangler deploy --dry-run
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
-      - run: npm run test:security
+      - run: npm run test:security:built
       - run: npm run test:e2e
         env:
           CI: 'true'
