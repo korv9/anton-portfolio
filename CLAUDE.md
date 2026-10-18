@@ -1,52 +1,46 @@
 # Working in this repository
 
-Always follow the graph-first rule in [AGENTS.md](AGENTS.md). Consult the existing
-Graphify graph before source lookup on every coding task, review, and repository
-question, even when the user does not mention Graphify.
+Read `AGENTS.md`, `CONTINUITY.md` when present, and the relevant README sections.
+Start source lookup with the existing Graphify graph, about 1,000 tokens. Follow
+`.claude/skills/graph-first/SKILL.md`; if it has no relevant result, use a targeted
+source search. Do not rebuild the graph unless requested.
 
-Follow the skills in `.claude/skills/` (sources in `.claude/skills/README.md`):
+## Implementation
 
-- `graph-first` before source lookup on every repository task: query the existing
-  graph with about 1,000 tokens, then read only the relevant code. It also applies
-  when using another skill or delegating work.
-- **`ponytail`** on every coding task: reuse what the repository already has, the platform
-  before a dependency, the smallest change that solves the root cause, and one runnable check
-  for non-trivial logic. Its short-output rule applies to code comments and commit messages;
-  reports the owner asks for are written in full.
-- **`frontend-design-principles`** for any page, component or style change. The design
-  direction is already set in `docs/design-system.md`, and tokens live only in
-  `frontend/src/tokens.css`; treat those as the confirmed direction rather than proposing a new
-  one, and run the swap, squint, signature and token checks before showing UI work. A new
-  product page still answers the intent questions (who reads it, what they must do, how it
-  should feel) for that page.
-- **`taste-skill`** (`design-taste-frontend`) on every page or style change, inside the
-  confirmed direction: its design read here is "portfolio for recruiters and hiring managers,
-  editorial with data, leaning toward native CSS on the tokens in `tokens.css`", with dials
-  `DESIGN_VARIANCE 5 / MOTION_INTENSITY 3 / VISUAL_DENSITY 5`. Take its anti-default rules,
-  AI tells (section 9) and pre-flight check (section 14); never its design-system picks,
-  installs or new tokens, which `docs/design-system.md` already decides.
-- **`web-design-guidelines`** to review UI code before showing it: read
-  `.claude/skills/web-design-guidelines/references/guidelines.md` (baked in, no fetch) and
-  report findings as `file:line`.
-- **`diagram-design`** for every chart, data visualisation and diagram (architecture, data
-  flow, medallion layers, ER, timelines, Sankey). Its style guide is already set to the site's
-  tokens. Inside the site, draw with the CSS variables (`var(--ink)` …) so a `.plate`
-  recolours the chart, and keep one focal accent.
-- **`de-ai-writing`** for all prose a reader sees: page copy, project descriptions, docs, commit
-  messages and PR text. Keep every fact and number; run
-  `.claude/skills/de-ai-writing/scripts/check_ai_signs.py` on new copy.
+Reuse existing code and native platform features. Make the smallest change that
+fixes the cause. Keep inputs, outputs, provenance and failure states explicit.
+Keep new or extracted code files within 300 executable lines. Split by responsibility
+when touching a large file; avoid unrelated repository-wide splitting.
+Write generated source as UTF-8 with LF line endings, including on Windows.
+Data is real or absent. Never publish placeholder rows or private profiles.
+Secrets stay in GitHub/Cloudflare secrets. An ignored local `.env` is allowed for
+one-off Workers AI runs; never commit it. Do not print credential values.
+Do not install dependencies, commit, push or deploy without user authorization.
 
-Idea Lineage (`docs/idea-lineage.md`), for substantial project work only, not small fixes:
+## Verification and resources
 
-- Before: read `.idea-lineage/state/<project>.md` or `.idea-lineage/context.json` if present.
-- After: write the answer's decisions, ideas, findings and open questions as labelled lines
-  (`Decision:`, `Idea:`, `Finding:`, `Open question:`) and run `npm run ideas:extract` on that
-  final answer. Never persist prompts or raw conversations.
+Use `docs/development.md` for verification levels and workspace lifecycle.
+Run `npm run verify:quick`, plus tests of the affected behavior, during development.
+Run `npm run verify:full` for integration or shared frontend changes. Data publication
+and delivery changes also require `npm run verify:delivery`. Required GitHub CI stays
+complete before merge; quick verification is not evidence of complete coverage.
+Run the preflight before expensive checks. Save full logs in ignored `tmp/` and
+report exit status, elapsed time and a short failure excerpt. Avoid repeating checks
+without a new change or unresolved failure. Poll remote CI at most once per minute.
 
-Repository rules that sit beside them:
+## Conditional skills
 
-- Data is real or absent: no placeholder numbers or invented rows on any page.
-- Secrets live only in GitHub and Cloudflare secrets.
-- En lokal `.env` (gitignorerad) är tillåten för engångskörningar mot Cloudflare Workers AI; den checkas aldrig in.
-- Checks before a push: `npm run check`, `npm run format:check`, `npm run test:unit`,
-  `python -m pytest platform/tests -q`, and `npm run test:e2e` for frontend changes.
+Load only the skill sections needed for the current change; keep already-read
+instructions in context instead of re-reading them. The catalog is `.claude/skills/README.md`.
+- New UI or changed visual design: `frontend-design-principles`, the project's
+  `docs/design-system.md` and `frontend/src/tokens.css`. Direction is already approved.
+- Visual critique or a requested redesign: `taste-skill`, within the approved direction.
+- UI behavior, controls or accessibility changes: `web-design-guidelines` and its local reference.
+- New or changed chart encodings: `diagram-design`; use existing tokens and one focal accent.
+- Published prose changes: `de-ai-writing`; scan changed copy with its bundled script.
+- A behavior-preserving extraction needs type checks and the existing behavior tests;
+  it does not restart visual design discovery. Preserve existing markup and styles.
+
+For substantial product decisions, follow `docs/idea-lineage.md`; store labelled
+findings and decisions, never prompts or transcripts. Update `CONTINUITY.md` only
+for durable changes, with a date and provenance tag, within its stated limits.

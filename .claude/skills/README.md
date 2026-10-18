@@ -1,6 +1,6 @@
 # Skills
 
-Agent skills this repository follows. `CLAUDE.md` at the root says when each applies. All
+Skill catalog. `CLAUDE.md` defines which task loads each skill. Do not read the whole catalog as a mandatory checklist. All
 that come from repositories are MIT-licensed and keep their upstream `LICENSE`.
 
 | Skill | Source | Commit | Changes here |

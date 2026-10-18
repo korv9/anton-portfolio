@@ -80,15 +80,16 @@ npm ci
 npm run dev        # http://127.0.0.1:5173
 ```
 
-Before a push:
+During development:
 
 ```bash
-npm run check
-npm run format:check
-npm run test:unit
-python -m pytest platform/tests -q
-npm run test:e2e   # needs Playwright Chromium
+npm run verify:quick   # types, formatting and unit tests; no browser or live-data validation
 ```
+
+Run the tests for the behavior you changed as well. Before integration, run
+`npm run verify:full`; delivery changes also require `npm run verify:delivery`.
+See [development workflow](docs/development.md) for scopes, logs, resource checks
+and safe workspace retirement. GitHub runs complete CI for pull requests and main.
 
 A snapshot of the site's JSON is checked in, so the site builds with Node alone. To rebuild a
 subject, install `platform/requirements.txt` and run it:
