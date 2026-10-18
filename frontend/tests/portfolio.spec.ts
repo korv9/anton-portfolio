@@ -194,11 +194,19 @@ test(
     const thesis = page
       .locator('#utbildning .home-job')
       .filter({ has: page.locator('a[href="#thesis"]') })
-    await expect(thesis).toContainText('72 of 121')
+    await expect(thesis.locator('h3 a')).toHaveText(
+      'Degree project: Finding recurring IT problems with NLP',
+    )
+    await expect(thesis.locator('.home-job-role').first()).toHaveText(
+      'Case study, spring 2026',
+    )
+    await expect(thesis.locator('li')).toHaveCount(3)
+    await expect(thesis).toContainText('Of 121 clusters, 72 had no link')
+    await expect(thesis).toContainText('12 groups containing 650 tickets')
     await expect(thesis).toContainText('ISO/IEC 25012')
     await expect(thesis).toContainText('21,633')
     await expect(thesis).toContainText('operational review')
-    await expect(thesis).toContainText('existing problem links')
+    await expect(thesis).toContainText('missing root-cause documentation')
     await expect(thesis).toContainText('Tech: Python, Azure Databricks')
     expect(
       await page.evaluate(
