@@ -367,6 +367,13 @@ body:has(.home-backdrop[data-intro='true']) :is(.home-name, .home-roles span) {
   outline: 2px solid var(--focus);
   outline-offset: 4px;
 }
+.home-work-heading {
+  grid-column: 1;
+  grid-row: 1;
+}
+.home-project-intro {
+  margin-bottom: var(--sp-7);
+}
 .work-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr);

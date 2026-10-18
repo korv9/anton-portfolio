@@ -11,7 +11,7 @@ import {
   THESIS,
   type Bilingual,
 } from './orbitContent'
-import { PROJECT_GROUPS, PROJECTS } from '../projects/projectRegistry'
+import { LISTED_PROJECTS, PROJECTS } from '../projects/projectRegistry'
 import './home.css'
 import { useSlowScroll } from './useSlowScroll'
 import ClusterPreview from './ClusterPreview'
@@ -147,37 +147,45 @@ function Work() {
   return (
     <section className="home-screen home-work" aria-labelledby="projects-title">
       <span className="home-project-marker" aria-hidden="true" />
-      <h2 id="projects-title" className="home-work-title">
-        <a href="#projekt">Projects</a>
-      </h2>
+      <div className="home-work-heading">
+        <h2 id="projects-title" className="home-work-title">
+          <a href="#projekt">Projects</a>
+        </h2>
+        <div className="home-project-intro">
+          <p className="home-about-text">
+            This website is my largest ongoing project: a data platform that
+            brings together automated pipelines, analytics and interactive
+            applications. I build the full flow, from collecting and processing
+            data to presenting it here.
+          </p>
+          <p className="home-about-text">
+            Several demos are still prototypes, and I’m continuing to improve
+            their design, navigation and presentation.
+          </p>
+          <p className="home-about-text">
+            Most of my latest projects are part of this data platform. Explore
+            the pipelines and application code on{' '}
+            <a href="https://github.com/korv9/anton-portfolio">GitHub</a>.
+          </p>
+        </div>
+      </div>
       <ClusterPreview kind="jobs" background />
       <div className="home-project-groups">
-        {['Engineering', 'Observatories', 'Labs'].map((label) => {
-          const group = PROJECT_GROUPS.find((item) => item.label === label)!
-          return (
-            <section key={group.label} aria-label={group.label}>
-              <div className="home-group-projects">
-                <h3 className="home-group-title">{group.label}</h3>
-                <ul className="work-row">
-                  {group.ids.map((id) => {
-                    const project = PROJECTS.find((p) => p.id === id)!
-                    return (
-                      <li key={id}>
-                        <a className="work-card" href={project.href}>
-                          <h4 className="work-title">{b(project.title)}</h4>
-                          <p className="work-question">{b(project.summary)}</p>
-                          <p className="work-tech">
-                            {project.tech.slice(0, 4).join(' · ')}
-                          </p>
-                        </a>
-                      </li>
-                    )
-                  })}
-                </ul>
-              </div>
-            </section>
-          )
-        })}
+        <section aria-label="Projects">
+          <ul className="work-row">
+            {LISTED_PROJECTS.map((project) => (
+              <li key={project.id}>
+                <a className="work-card" href={project.href}>
+                  <h3 className="work-title">{b(project.title)}</h3>
+                  <p className="work-question">{b(project.summary)}</p>
+                  <p className="work-tech">
+                    {project.tech.slice(0, 4).join(' · ')}
+                  </p>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
       </div>
     </section>
   )

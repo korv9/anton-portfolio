@@ -534,6 +534,14 @@ export const PROJECT_GROUPS = [
   { label: 'Engineering', ids: ['thesis', 'homie', 'diva-lakehouse'] },
 ]
 
+/** Public project listings; the thesis remains available through Education and its URL. */
+export const LISTED_PROJECTS = ['Engineering', 'Observatories', 'Labs'].flatMap(
+  (label) =>
+    PROJECT_GROUPS.find((group) => group.label === label)!
+      .ids.filter((id) => id !== 'thesis')
+      .map((id) => PROJECTS.find((project) => project.id === id)!),
+)
+
 /** The project a route belongs to, if any. */
 export function projectForRoute(
   route: Pick<Route, 'page' | 'path'>,
