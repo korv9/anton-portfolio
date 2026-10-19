@@ -134,7 +134,7 @@ export const SWEDEN_PRODUCTS: SwedenProduct[] = [
       en: 'How have Swedish visions of the future changed?',
       sv: 'Hur har svenska framtidsvisioner förändrats?',
     },
-    status: 'pipeline',
+    status: 'findings',
     related: [
       {
         id: 'B',
@@ -160,7 +160,7 @@ export const SWEDEN_PRODUCTS: SwedenProduct[] = [
       en: 'Which relationships between domains hold when measurement, time and geography are compatible?',
       sv: 'Vilka samband mellan domäner håller när mått, tid och geografi är jämförbara?',
     },
-    status: 'pipeline',
+    status: 'findings',
     related: [
       {
         id: 'A',

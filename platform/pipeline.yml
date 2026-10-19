@@ -308,6 +308,19 @@ subjects:
       - dbt: {select: [tag:sweden_language]}
       - export: python platform/publish/sweden/export_language.py
 
+  # SWEDEN E: future-oriented language in every Riksdag session since 1993/94. Counts only; an
+  # unchanged session is skipped.
+  sweden_futures:
+    schedule: '13 21 * * 6'
+    group: sweden
+    features: [sweden/futures]
+    steps:
+      - ingest: python platform/ingest/riksdagen/futures_language.py --max-new 12
+      - dbt: {select: [tag:sweden_futures]}
+      - export: python platform/publish/sweden/export_futures.py
+      # Connections reads the other SWEDEN outputs, so it runs last.
+      - export: python platform/publish/sweden/export_connections.py
+
   quality:
     schedule: '13 21 * * 6'
     group: baseline

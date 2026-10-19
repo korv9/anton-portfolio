@@ -69,8 +69,26 @@
   - `sweden.spec.ts`: 8 passed, desktop and mobile, axe clean.
   - `verify:quick` passes.
   - Architecture pytest: 8 environment-only failures, because the tests expect `C:/Program Files/Git/mingw64/bin/bash.exe`.
+- 2026-10-20 [CODE] E The Lost Futures:
+  - `platform/ingest/riksdagen/futures_language.py` uses a future marker and nine themes from `seeds/sweden_futures/future_terms.csv`.
+  - The lexicon was corrected for false positives: Kristersson, Miljöpartiet, and SCB's basinkomst.
+  - Marts: `mart_sweden_future_themes`, `mart_sweden_future_trends`. Export: `export_futures.py`. Subject: `sweden_futures`.
+- 2026-10-20 [TOOL] E results, all 32 sessions:
+  - Future-oriented speeches rose from 17.8 % (1994) to 21.9 %.
+  - Within future talk, alternative arrangements fell from 2.9 % to 0.6 % (break 2002), and culture fell from 13 % to 9 %.
+  - Security rose from 27 % to 39 % (break 2017), crisis from 10 % to 18 % (break 2008), and collective transformation from 6.3 % to 8.1 %.
+  - The year 2000 is left out: its archive is thin.
+- 2026-10-20 [CODE] Connections: `export_connections.py` computes Spearman ρ with a bootstrap CI and a partial ρ that holds log population constant.
+  - Visits vs post-secondary education: ρ −0.00, partial 0.19 (uncertain).
+  - Visits vs income: ρ 0.09, partial 0.17 (uncertain).
+  - Service points vs population: trivial.
+  - B×E and speeches×theses are rejected.
+- 2026-10-20 [CODE] Other projects: the header has a SWEDEN link and its menu is titled "Other projects". Featured SWEDEN cards sit on the homepage (new classes only; the protected sections are untouched) and on #projekt.
 - NEXT:
-  - E The Lost Futures: a lexicon over Riksdag speeches from 2016/17 and DiVA abstracts, corpora kept apart.
+  - DiVA abstracts as E's second corpus.
+  - three.js scenes (Knowledge Cube, Language Landscape, Geography of Similarity morph, Accessibility, Future Landscape); WebGL fallback = the 2D views.
+  - Remaining B archive years, via the weekly build.
+  - (older) E The Lost Futures: a lexicon over Riksdag speeches from 2016/17 and DiVA abstracts, corpora kept apart.
   - Connections.
   - Other Projects and the SWEDEN-first homepage listing.
   - three.js scenes.

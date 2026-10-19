@@ -702,3 +702,52 @@ td.sw-cell[data-zero] .sw-cell-button span {
   min-height: 2.75rem;
   padding: 0;
 }
+
+/* E: a wide matrix of years; colour only, exact values in the table under Explore */
+.sw-matrix-wide .sw-table th.sw-n {
+  padding: 0.3rem 0.1rem;
+  font-size: 0.6875rem;
+}
+.sw-cell-dot {
+  min-height: 2.75rem;
+  min-width: 1.4rem;
+}
+
+/* Connections */
+.sw-connection {
+  padding: 1.5rem 0;
+  border-top: 1px solid var(--sw-line);
+}
+.sw-connection h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.25rem;
+}
+.sw-connection-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 20rem);
+  gap: 1.5rem;
+  align-items: start;
+}
+.sw-scatter {
+  margin: 0;
+}
+.sw-scatter svg {
+  width: 100%;
+  height: auto;
+}
+.sw-scatter line {
+  stroke: var(--sw-line);
+}
+.sw-scatter circle {
+  fill: var(--sw-accent);
+  opacity: 0.7;
+}
+.sw-scatter text {
+  fill: var(--sw-muted);
+  font-size: 10px;
+}
+@media (max-width: 760px) {
+  .sw-connection-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -179,3 +179,54 @@ test('the infrastructure of belonging maps libraries by municipality and year', 
     ),
   ).toEqual([])
 })
+
+test('the lost futures reads every session and links its speeches', async ({
+  page,
+}) => {
+  await page.goto('/#sweden-framtid')
+  await expect(page.locator('.sw-matrix tbody tr')).toHaveCount(9)
+  await expect(page.locator('.sw-finding')).not.toHaveCount(0)
+  await page
+    .getByRole('combobox', { name: 'Theme' })
+    .selectOption('alternatives')
+  await expect(page).toHaveURL(/tema=alternatives/)
+  await expect(
+    page
+      .locator('.sw-examples a[href^="https://data.riksdagen.se/anforande/"]')
+      .first(),
+  ).toBeVisible()
+  const axe = await new AxeBuilder({ page })
+    .include('main')
+    .exclude('canvas')
+    .analyze()
+  expect(
+    axe.violations.map(
+      (v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`,
+    ),
+  ).toEqual([])
+})
+
+test('connections state their contracts and the rejected joins', async ({
+  page,
+  request,
+}) => {
+  const data = await (
+    await request.get('/data/sweden/connections/connections.json')
+  ).json()
+  await page.goto('/#sweden-samband')
+  await expect(page.locator('.sw-connection')).toHaveCount(
+    data.relationships.length,
+  )
+  await expect(page.locator('#sw-rejected ~ details')).toHaveCount(
+    data.rejected.length,
+  )
+  await expect(page.locator('.sw-connection').first()).toContainText(
+    'Denominator',
+  )
+  const axe = await new AxeBuilder({ page }).include('main').analyze()
+  expect(
+    axe.violations.map(
+      (v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`,
+    ),
+  ).toEqual([])
+})

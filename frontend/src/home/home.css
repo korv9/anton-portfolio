@@ -719,3 +719,45 @@ a.work-card:hover .work-title {
     grid-auto-flow: row;
   }
 }
+
+/* The featured SWEDEN platform above the other projects: new elements only, so nothing above
+   the project list moves. */
+.work-featured {
+  grid-column: 1;
+  display: grid;
+  gap: var(--sp-2);
+  margin: 0 0 var(--sp-6);
+  padding: var(--sp-5);
+  background: #161616;
+  color: #f1f0ec;
+  border-radius: var(--radius);
+  text-decoration: none;
+}
+.work-featured-kicker {
+  font-size: var(--small);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+.work-featured-title {
+  font: 700 clamp(2rem, 4vw, 3rem) / 1 var(--font-identity);
+  letter-spacing: 0.16em;
+}
+.work-featured-question {
+  max-width: 48ch;
+  line-height: 1.45;
+}
+.work-featured:hover .work-featured-title,
+.work-featured:focus-visible .work-featured-title {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+.work-other-title {
+  grid-column: 1;
+  margin: 0 0 var(--sp-4);
+  font-size: var(--small);
+  font-weight: var(--weight-ui);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}

@@ -67,6 +67,13 @@ export default function SiteHeader({ route }: { route: Route }) {
         className="site-navigation"
         aria-label={l('Main navigation', 'Huvudnavigation')}
       >
+        <a
+          href="#sweden"
+          className="site-featured"
+          aria-current={route.page === 'sweden' ? 'page' : undefined}
+        >
+          SWEDEN
+        </a>
         <details
           ref={menu}
           className="project-menu"
@@ -78,7 +85,8 @@ export default function SiteHeader({ route }: { route: Route }) {
           }}
         >
           <summary>
-            {l('Projects', 'Projekt')} <span aria-hidden="true">⌄</span>
+            {l('Other projects', 'Andra projekt')}{' '}
+            <span aria-hidden="true">⌄</span>
           </summary>
           <div className="project-menu-panel">
             <ul>

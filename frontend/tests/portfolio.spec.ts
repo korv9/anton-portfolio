@@ -384,7 +384,11 @@ test('the start page title opens the projects page, which lists every retained p
   await expect(page).toHaveURL(/#projekt$/)
   await expect(page).toHaveTitle('Projects | Anton Ernstsson')
   await expect(page.locator('.projects-group')).toHaveCount(0)
-  await expect(page.locator('.project-card')).toHaveCount(13)
+  // SWEDEN is featured above the list; the other projects follow.
+  await expect(
+    page.locator('.project-card-featured[href="#sweden"]'),
+  ).toHaveCount(1)
+  await expect(page.locator('.projects-list .project-card')).toHaveCount(13)
   await expect(page.locator('.project-card[href="#thesis"]')).toHaveCount(0)
   await expect(page.locator('.project-card[href="#drugcomb"]')).toContainText(
     'Drug Synergy Lab',

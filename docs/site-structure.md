@@ -15,10 +15,11 @@ Connections page, and its design is described in [sweden-design.md](sweden-desig
 | `#sweden-arbete` | B The Ideal Human | Findings for counted archive years; the full backfill runs weekly |
 | `#sweden-likhet` | C The Invisible Sweden | Findings (the 2024 clustering of 280 municipalities) |
 | `#sweden-tillhorighet` | D The Infrastructure of Belonging | Findings (KB library statistics, 2014 onward) |
-| `#sweden-framtid` | E The Lost Futures | Pipeline pending |
-| `#sweden-samband` | Connections | Pending |
+| `#sweden-framtid` | E The Lost Futures | Findings (Riksdag speeches 1993/94–2025/26; DiVA not yet counted) |
+| `#sweden-samband` | Connections | Three relationships computed, two joins rejected |
 
-The Wellbeing Observatory moved from `#sweden*` to `#wellbeing*`. Its old addresses
+The header links to SWEDEN first. Its project menu is titled Other projects, and on the homepage and
+`#projekt` a featured SWEDEN card stands above the other projects. The Wellbeing Observatory moved from `#sweden*` to `#wellbeing*`. Its old addresses
 (`#sweden-health`, `#sweden-counties` and the others) redirect.
 
 ## Projects and navigation

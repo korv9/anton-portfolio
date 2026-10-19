@@ -1,7 +1,7 @@
 /**
  * The SWEDEN platform's routes (router.ts SWEDEN_PATHS): the hub at #sweden, a page per research
- * product, Connections, and #sweden-kit for developing the shared components. A product whose
- * data has not run yet shows its question and an EmptyState, never sample findings.
+ * product, Connections, and #sweden-kit for developing the shared components. A product page
+ * whose data cannot be read shows its question and an EmptyState, never sample findings.
  */
 import {
   lazy,
@@ -11,12 +11,10 @@ import {
 } from 'react'
 import { l } from '../i18n'
 import type { Route } from '../router'
-import { SWEDEN_PRODUCTS, productByHref, type SwedenProduct } from './products'
+import { SWEDEN_PRODUCTS } from './products'
 import {
   EmptyState,
   EvidenceStamp,
-  RelatedProjects,
-  Scene,
   StatusStamp,
   SwedenMasthead,
 } from './template'
@@ -31,44 +29,11 @@ const PAGES: Record<
   '#sweden-arbete': lazy(() => import('./Language')),
   '#sweden-likhet': lazy(() => import('./Similarity')),
   '#sweden-tillhorighet': lazy(() => import('./Belonging')),
+  '#sweden-framtid': lazy(() => import('./Futures')),
+  '#sweden-samband': lazy(() => import('./Connections')),
 }
 
 const b = (text: { en: string; sv: string }) => l(text.en, text.sv)
-
-/** What each product still needs before its page can show findings. */
-const PENDING: Partial<
-  Record<
-    SwedenProduct['id'],
-    {
-      shows: [string, string]
-      needs: [string, string]
-      state: 'ingestion' | 'validation' | 'licence' | 'cloud'
-    }
-  >
-> = {
-  E: {
-    shows: [
-      'Future-oriented themes in Riksdag speeches and in academic theses over time, each corpus on its own axis.',
-      'Framtidsinriktade teman i riksdagsanföranden och i examensarbeten över tid, varje korpus på sin egen axel.',
-    ],
-    needs: [
-      'A documented future-theme lexicon applied to the Riksdag speech corpus (2016/17 onward) and to DiVA abstracts, with language and genre kept apart.',
-      'Ett dokumenterat lexikon för framtidsteman tillämpat på riksdagens anföranden (från 2016/17) och DiVA-sammanfattningar, med språk och genre åtskilda.',
-    ],
-    state: 'cloud',
-  },
-  X: {
-    shows: [
-      'Relationships between domains, each with its measurement contract, compatibility, result, uncertainty and confounders.',
-      'Samband mellan domäner, vart och ett med sitt mätkontrakt, jämförbarhet, resultat, osäkerhet och störfaktorer.',
-    ],
-    needs: [
-      'Validated results from at least two products on a shared geography or time grain.',
-      'Validerade resultat från minst två produkter på samma geografi eller tidsupplösning.',
-    ],
-    state: 'validation',
-  },
-}
 
 export default function SwedenPage({ route }: { route: Route }) {
   if (route.path === '#sweden') return <Hub />
@@ -86,29 +51,7 @@ export default function SwedenPage({ route }: { route: Route }) {
         <Page route={route} />
       </Suspense>
     )
-  const product = productByHref(route.path)!
-  const pending = PENDING[product.id]!
-  return (
-    <article className="sweden sw-page">
-      <SwedenMasthead current={product.href} />
-      <Scene product={product} line={l(...pending.shows)}>
-        <EmptyState
-          state={pending.state}
-          shows={l(...pending.shows)}
-          needs={l(...pending.needs)}
-          meanwhile={
-            <a href="#sweden-matning">
-              {l(
-                'A — Politics of Measurement has findings',
-                'A — Mätandets politik har resultat',
-              )}
-            </a>
-          }
-        />
-      </Scene>
-      <RelatedProjects product={product} />
-    </article>
-  )
+  return <Hub />
 }
 
 function Hub() {
