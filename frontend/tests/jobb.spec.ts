@@ -57,7 +57,7 @@ test('the observatories show their clusterings as maps in a tab of their own', a
     timeout: 30000,
   })
   // Politics and Sweden: the shared map, with its clusters to pick in a list.
-  for (const path of ['#politik-kluster', '#sweden-kommuner']) {
+  for (const path of ['#politik-kluster', '#wellbeing-kommuner']) {
     await page.goto(`/${path}`)
     const map = page.locator('.cv-report .cv-section').first()
     await expect(map.locator('canvas')).toBeVisible({ timeout: 30000 })

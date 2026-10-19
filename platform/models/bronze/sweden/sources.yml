@@ -1,0 +1,27 @@
+version: 2
+
+# Bronze for the SWEDEN research platform. The catalogue source is fetched by
+# platform/ingest/catalogue/catalogue_ingest.py; its _manifest.jsonl records URL, fetch time and
+# SHA-256 per file. Only catalogue metadata is read here, never the statistics themselves.
+
+sources:
+  - name: catalogue
+    description: Catalogues of Swedish official statistics (SCB statistical database API v2, Kolada API v3).
+    tables:
+      - name: scb_tables
+        description: SCB's table listing, 1,000 tables per page.
+        meta:
+          external_location: >-
+            read_json('{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/catalogue/scb/tables-*.json',
+            filename = true, maximum_object_size = 200000000)
+      - name: scb_metadata
+        description: json-stat2 metadata of every SCB table with a region variable, one file per table.
+        meta:
+          external_location: >-
+            read_text('{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/catalogue/scb/metadata/*.json')
+      - name: kolada_kpis
+        description: Kolada's key-figure catalogue.
+        meta:
+          external_location: >-
+            read_json('{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/catalogue/kolada/kpi-*.json',
+            filename = true, maximum_object_size = 200000000)

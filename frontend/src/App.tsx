@@ -25,6 +25,7 @@ const WelfareReport = lazy(() => import('./welfare/WelfareReport'))
 const WelfareDeep = lazy(() =>
   import('./welfare/WelfareReport').then((m) => ({ default: m.WelfareDeep })),
 )
+const SwedenPage = lazy(() => import('./sweden/SwedenPage'))
 const SymbolicAtlasPage = lazy(() => import('./symbolic/SymbolicAtlasPage'))
 const AiActProduct = lazy(() => import('./aiact/AiActProduct'))
 const AiActReport = lazy(() => import('./aiact/AiActReport'))
@@ -77,9 +78,11 @@ export default function App() {
   const { page, path } = route
   const project = projectForRoute(route)
   const workspace =
-    PROJECT_GROUPS.find((group) =>
-      group.ids.includes(project?.id ?? ''),
-    )?.label.toLowerCase() ?? 'tool'
+    page === 'sweden'
+      ? 'sweden'
+      : (PROJECT_GROUPS.find((group) =>
+          group.ids.includes(project?.id ?? ''),
+        )?.label.toLowerCase() ?? 'tool')
   return (
     <CvViewerProvider>
       <div
@@ -124,6 +127,7 @@ export default function App() {
                   ) : (
                     <WelfareDeep route={route} />
                   ))}
+                {page === 'sweden' && <SwedenPage route={route} />}
                 {page === 'symbolic' && <SymbolicAtlasPage route={route} />}
                 {page === 'clusters' && <ClusterVisualsPage />}
                 {page === 'lawqa' && <AskTheLaw route={route} />}

@@ -18,7 +18,7 @@ const PAGES = [
   '#lagboken',
   '#jobb',
   '#symbolic-atlas',
-  '#sweden',
+  '#wellbeing',
   '#thesis',
   '#cluster-visuals',
 ]

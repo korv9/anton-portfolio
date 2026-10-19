@@ -67,12 +67,12 @@ const TABS = [
 
 const DEEPER = [
   {
-    href: '#sweden-explorer',
+    href: '#wellbeing-explorer',
     label: 'Indicator explorer',
     about: 'Every indicator by region, period, sex and age',
   },
   {
-    href: '#sweden-mental-health',
+    href: '#wellbeing-mental-health',
     label: 'Health indicators',
     about: 'Mental health and quality of life, measure by measure',
   },
@@ -440,10 +440,10 @@ export function WelfareDeep({ route }: { route: Route }) {
       .then(setIndicators)
       .catch((e: Error) => setError(e.message))
   }, [])
-  const health = route.path === '#sweden-mental-health'
+  const health = route.path === '#wellbeing-mental-health'
   return (
     <ReportFrame>
-      <DeepPage id={route.path.slice(1)} back="#sweden" name={NAME}>
+      <DeepPage id={route.path.slice(1)} back="#wellbeing" name={NAME}>
         <h1>{health ? 'Health indicators' : 'Indicator explorer'}</h1>
         {error && <p role="alert">{error}</p>}
         <Suspense fallback={<p role="status">Loading…</p>}>

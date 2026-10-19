@@ -9,7 +9,7 @@ test('project themes survive navigation between all workspace types', async ({
   const projects = [
     ['#politik', 'observatories'],
     ['#jobb', 'observatories'],
-    ['#sweden', 'observatories'],
+    ['#wellbeing', 'observatories'],
     ['#ai-act', 'observatories'],
     ['#symbolic-atlas', 'labs'],
     ['#philosophy-atlas', 'labs'],

@@ -1,0 +1,23 @@
+operating_area,domain_id,note
+Hälso- och sjukvård,health,
+Tandvård,health,
+"Kommunen, övergripande",economy,"Mostly municipal finances, staffing and administration."
+"Regionen, övergripande",economy,"Mostly regional finances, staffing and administration."
+Grundskola åk 0-9 inkl förskoleklass,education,
+Gymnasieskola åk 1-3,education,
+Förskoleverksamhet,education,
+Vuxenutbildning,education,
+Anpassad grund- och gymnasieskola,education,
+"Utbildning, övrigt",education,
+Befolkning,other,Population counts.
+Individ- och familjeomsorg,other,Social services.
+Funktionshinder,other,Disability services.
+Äldre,other,Elderly care.
+Äldre och funktionshinder,other,Elderly and disability care.
+Flyktingmottagande,other,Refugee reception.
+"Infrastruktur, miljö- och hälsoskydd mm",environment,
+Kultur och fritid,culture,"Split by title: sport, recreation and bathing figures count as leisure (see stg_sweden_kolada_kpis)."
+Demokrati,political_participation,
+Arbetsmarknad,employment,
+Affärsverksamhet,economy,Municipal enterprises.
+Trygghet och säkerhet,other,Safety.

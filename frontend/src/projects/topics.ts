@@ -89,16 +89,16 @@ export const PROJECT_TOPICS: Record<string, Topic[]> = {
   welfare: [
     {
       title: t('Arbete och arbetslöshet', 'Work and unemployment'),
-      href: '#sweden',
+      href: '#wellbeing',
     },
-    { title: t('Sjukfrånvaro', 'Sick leave'), href: '#sweden-health' },
+    { title: t('Sjukfrånvaro', 'Sick leave'), href: '#wellbeing-health' },
     {
       title: t('Mående och livskvalitet', 'Mental health and quality of life'),
-      href: '#sweden-mental-health',
+      href: '#wellbeing-mental-health',
     },
     {
       title: t('Regionala skillnader', 'Regional differences'),
-      href: '#sweden-counties',
+      href: '#wellbeing-counties',
     },
   ],
   'ai-act': [

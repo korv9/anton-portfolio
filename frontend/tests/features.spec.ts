@@ -77,7 +77,7 @@ test('budget difference: a party against the government, area by area', async ({
 test('county small multiples: one chart per county on a shared axis', async ({
   page,
 }) => {
-  await page.goto('/#sweden-counties')
+  await page.goto('/#wellbeing-counties')
   const f = await feature(page, 'lanen')
   await expect(f.locator('.multiple')).toHaveCount(21)
   await f.getByRole('button', { name: 'Stress-related sick leave' }).click()

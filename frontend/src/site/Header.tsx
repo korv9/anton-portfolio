@@ -17,6 +17,7 @@ const b = (text: Bilingual) => l(text.en, text.sv)
 const TECHNICAL: Partial<Record<Route['page'], Bilingual>> = {
   clusters: { en: 'Cluster Visuals', sv: 'Cluster Visuals' },
   projects: { en: 'Projects', sv: 'Projekt' },
+  sweden: { en: 'SWEDEN', sv: 'SWEDEN' },
 }
 
 /** The page's own name for the document title, or null on the homepage. */

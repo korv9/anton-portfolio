@@ -41,3 +41,10 @@
 - 2026-10-18 [TOOL] Workflow regression cases pass; TypeScript, formatting, unit tests and production build pass. Worker/script LF checkout rules fix Windows format failures. Final local receipts: 686 Python tests and two skips, 141 unit tests, 180 browser tests and two skips, three security tests. Quick verification passed in about 23 seconds. All 33 original TechPanel declarations match after extraction; cached graph locations predate that extraction.
 
 - 2026-10-18 [USER] Authorised committing and pushing workflow-efficiency changes to a branch, then merging to main after required CI passes.
+
+## SWEDEN research platform (branch korv9/sweden-research-platform)
+
+- 2026-10-19 [CODE] Phase 1 audit done. #sweden moved: Wellbeing Observatory now #wellbeing*, old #sweden-* tabs redirect. SWEDEN routes in router.ts SWEDEN_PATHS; frontend/src/sweden/ (template, products, hub, A page); docs/sweden-design.md.
+- 2026-10-19 [CODE] Phase 2 A Politics of Measurement: ingest platform/ingest/catalogue (SCB API v2 tables + metadata, Kolada KPI catalogue), seeds/sweden, gold mart_sweden_measurement_{items,coverage}, export platform/publish/sweden/export_measurement.py, subject `sweden` in group baseline. dbt 16/16 pass. 4,270 SCB tables, 5,860 Kolada KPIs.
+- 2026-10-19 [TOOL] OPEN: frontend/tests/sweden.spec.ts "politics of measurement" still fails (last seen: axe color-contrast after ramp fix; rerun to see). Architecture pytest: 8 failures are environment-only (expects C:/Program Files/Git/mingw64/bin/bash.exe).
+- NEXT: fix that test, verify:quick, PR + merge; then B The Ideal Human (cluster-corpus 2023-2026 full ads exist locally; pre-2020 archives need a cloud job), C (reuse ml/research/regions.py, 280/290; site text wrongly says all 10 lack social assistance, 3 lack turnout), D (KB library stats), E (Riksdag speeches 2016/17+, DiVA abstracts), Connections, Other Projects, three.js Knowledge Cube.

@@ -13,6 +13,7 @@ export type Page =
   | 'politik'
   | 'jobs'
   | 'welfare'
+  | 'sweden'
   | 'drugcomb'
   | 'thesis'
   | 'homie'
@@ -40,8 +41,15 @@ export type Route = {
 /** Addresses that the new structure replaces, and where they now lead. */
 export const REDIRECTS: Record<string, string> = {
   '#jobb-utforska': '#jobb',
-  '#sweden-work': '#sweden',
-  '#sweden-sick-leave': '#sweden-health',
+  // The Wellbeing Observatory moved from #sweden to #wellbeing when the SWEDEN research
+  // platform took #sweden; its old tab and deep-dive addresses lead to the new ones.
+  '#sweden-work': '#wellbeing',
+  '#sweden-sick-leave': '#wellbeing-health',
+  '#sweden-health': '#wellbeing-health',
+  '#sweden-counties': '#wellbeing-counties',
+  '#sweden-kommuner': '#wellbeing-kommuner',
+  '#sweden-explorer': '#wellbeing-explorer',
+  '#sweden-mental-health': '#wellbeing-mental-health',
   '#now': '#politik',
   '#data-constellation': '#projekt',
   '#data-catalogue': '#projekt',
@@ -104,7 +112,7 @@ const PREFIX_REDIRECTS: [string, string][] = [
   ['#budget-', '#politik-budget'],
   ['#parties', '#politik-partier'],
   ['#taxes', '#politik-skatter'],
-  ['#analysis', '#sweden'],
+  ['#analysis', '#wellbeing'],
 ]
 
 /** Where an address leads now, if it has moved. */
@@ -129,10 +137,21 @@ export const REPORT_TABS = [
 ]
 export const JOB_TABS = ['#jobb', '#jobb-lan', '#jobb-villkor', '#jobb-kluster']
 export const WELFARE_TABS = [
+  '#wellbeing',
+  '#wellbeing-health',
+  '#wellbeing-counties',
+  '#wellbeing-kommuner',
+]
+/** The SWEDEN research platform: the hub, the five research products and Connections. */
+export const SWEDEN_PATHS = [
   '#sweden',
-  '#sweden-health',
-  '#sweden-counties',
-  '#sweden-kommuner',
+  '#sweden-matning',
+  '#sweden-arbete',
+  '#sweden-likhet',
+  '#sweden-tillhorighet',
+  '#sweden-framtid',
+  '#sweden-samband',
+  '#sweden-kit',
 ]
 export const AI_ACT_TABS = ['#ai-act', '#ai-act-roles', '#ai-act-society']
 export const PHILOSOPHY_TABS = [
@@ -180,8 +199,8 @@ const DEEP_DIVES = [
   '#jobb-yrken',
   '#job-market-tech',
   '#jobb-kallor',
-  '#sweden-explorer',
-  '#sweden-mental-health',
+  '#wellbeing-explorer',
+  '#wellbeing-mental-health',
 ]
 export function isLongRead(path: string) {
   return (
@@ -199,7 +218,8 @@ export function isLongRead(path: string) {
     path.startsWith('#concept-') ||
     path.startsWith('#concepts-') ||
     path.startsWith('#drugcomb') ||
-    path === '#fraga-lagen'
+    path === '#fraga-lagen' ||
+    SWEDEN_PATHS.includes(path)
   )
 }
 /** Two tabs of the same report: the page then keeps the reader where they stand. */
@@ -226,7 +246,8 @@ export function pageOf(path: string): Page {
   if (path === '#thesis') return 'thesis'
   if (path === '#homie') return 'homie'
   if (path === '#diva-lakehouse') return 'lakehouse'
-  if (path === '#sweden' || path.startsWith('#sweden-')) return 'welfare'
+  if (path === '#wellbeing' || path.startsWith('#wellbeing-')) return 'welfare'
+  if (SWEDEN_PATHS.includes(path)) return 'sweden'
   if (path === '#cluster-visuals') return 'clusters'
   if (path === '#fraga-lagen') return 'lawqa'
   if (path === '#ai-act' || path.startsWith('#ai-act-')) return 'aiact'
@@ -305,11 +326,19 @@ export function useRoute(): Route {
   return route
 }
 
-/** Replace the query of the current hash without adding a history entry per filter change. */
-export function setHashParams(path: string, params: URLSearchParams) {
+/**
+ * Replace the query of the current hash without adding a history entry per filter change, or
+ * with `push` add one, so back and forward step through chosen views.
+ */
+export function setHashParams(
+  path: string,
+  params: URLSearchParams,
+  push = false,
+) {
   const query = params.toString()
   const next = query ? `${path}?${query}` : path
   if (window.location.hash === next) return
-  history.replaceState(null, '', next)
+  if (push) history.pushState(null, '', next)
+  else history.replaceState(null, '', next)
   window.dispatchEvent(new HashChangeEvent('hashchange'))
 }

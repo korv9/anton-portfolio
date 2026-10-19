@@ -240,7 +240,7 @@ export const MAPS = (): MapSpec[] => [
   {
     id: 'research-municipalities',
     project: l('How is Sweden doing?', 'Hur mår Sverige?'),
-    href: '#sweden',
+    href: '#wellbeing',
     title: l(
       'Municipal profiles: twelve indicators in 2024',
       'Kommunprofiler: tolv indikatorer 2024',
