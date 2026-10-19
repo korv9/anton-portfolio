@@ -137,6 +137,13 @@ local scrolling where detail cannot shrink. The header condenses at 760 pixels a
 its links at 360 pixels. Project topic links wrap. Wide tables scroll inside their wrappers.
 No page-level horizontal overflow is allowed at 320, 768 or 1440 pixels.
 
+## SWEDEN
+
+The SWEDEN pages are one exception to the single token file. Their tokens are scoped to
+`.sweden` in `frontend/src/sweden/sweden.css`, they follow `prefers-color-scheme`, and their
+scene panels may use translucency. Nothing in that file reaches `.home-shell` or the other
+projects. [sweden-design.md](sweden-design.md) is the reference for these pages.
+
 ## Protected homepage
 
 `:root:has(.home-shell)` in `tokens.css` retains the homepage's original legacy token values,

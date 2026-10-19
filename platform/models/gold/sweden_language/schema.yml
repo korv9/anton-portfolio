@@ -1,0 +1,29 @@
+version: 2
+
+models:
+  - name: mart_sweden_job_language
+    description: The Ideal Human. Year × occupation field × county × category over distinct job-ad texts.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [year, field, region, category]
+    columns:
+      - name: texts_matching
+        description: Never more than the distinct texts of the cell.
+        data_tests:
+          - not_null
+  - name: mart_sweden_job_language_trends
+    description: Year × category nationally, crude and occupation-standardised shares and matches per thousand words.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [year, category]
+    columns:
+      - name: share
+        data_tests:
+          - between:
+              arguments: {min: 0, max: 1}
+      - name: share_standardised
+        data_tests:
+          - between:
+              arguments: {min: 0, max: 1}

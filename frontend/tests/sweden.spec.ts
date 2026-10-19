@@ -87,3 +87,95 @@ test('politics of measurement computes its findings from the catalogue', async (
     ),
   ).toEqual([])
 })
+
+test('the invisible sweden moves municipalities into similarity space', async ({
+  page,
+  request,
+}) => {
+  const data = await (
+    await request.get('/data/sweden/similarity/municipalities.json')
+  ).json()
+  await page.goto('/#sweden-likhet')
+  await expect(page.locator('.sw-map-dots circle')).toHaveCount(
+    data.summary.total,
+  )
+  await expect(page.locator('.sw-findings')).toContainText(
+    String(data.summary.nearest_in_other_county),
+  )
+  await page.getByRole('button', { name: 'Similarity', exact: true }).click()
+  await expect(page).toHaveURL(/vy=likhet/)
+  await page
+    .getByRole('combobox', { name: 'Municipality' })
+    .selectOption('1284')
+  await expect(page).toHaveURL(/kommun=1284/)
+  await expect(page.locator('.sw-scene-info')).toContainText('Höganäs')
+  await expect(page.locator('.sw-neighbours li')).toHaveCount(5)
+  // A municipality outside the analysis says which value it lacks.
+  await page
+    .getByRole('combobox', { name: 'Municipality' })
+    .selectOption('0481')
+  await expect(page.locator('.sw-scene-info')).toContainText('Riksdag turnout')
+  const axe = await new AxeBuilder({ page })
+    .include('main')
+    .exclude('canvas')
+    .analyze()
+  expect(
+    axe.violations.map(
+      (v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`,
+    ),
+  ).toEqual([])
+})
+
+test('the ideal human counts language per word with the occupation mix fixed', async ({
+  page,
+  request,
+}) => {
+  const trends = await (
+    await request.get('/data/sweden/language/trends.json')
+  ).json()
+  const years = trends.categories[0].rows.map((r: number[]) => r[0])
+  await page.goto('/#sweden-arbete')
+  await expect(page.locator('.sw-matrix thead th.sw-n')).toHaveCount(
+    years.length,
+  )
+  await expect(page.locator('.sw-finding')).not.toHaveCount(0)
+  // The years with no occupations say so instead of showing a standardised value.
+  await page
+    .getByRole('button', {
+      name: new RegExp(`^Passion and enthusiasm, ${years[0]}`),
+    })
+    .click()
+  await expect(page).toHaveURL(/kategori=passion/)
+  const axe = await new AxeBuilder({ page })
+    .include('main')
+    .exclude('canvas')
+    .analyze()
+  expect(
+    axe.violations.map(
+      (v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`,
+    ),
+  ).toEqual([])
+})
+
+test('the infrastructure of belonging maps libraries by municipality and year', async ({
+  page,
+}) => {
+  await page.goto('/#sweden-tillhorighet')
+  await expect(page.locator('.sw-choropleth path')).toHaveCount(290)
+  await expect(page.locator('.sw-libraries circle')).not.toHaveCount(0)
+  await page
+    .getByRole('combobox', { name: 'Measure' })
+    .selectOption('visits_rate')
+  await expect(page).toHaveURL(/matt=visits_rate/)
+  await page.getByRole('button', { name: /^Höganäs:/ }).click()
+  await expect(page.locator('.sw-scene-info')).toContainText('Höganäs')
+  const axe = await new AxeBuilder({ page })
+    .include('main')
+    .exclude('canvas')
+    .analyze()
+  expect(
+    axe.violations.map(
+      (v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`,
+    ),
+  ).toEqual([])
+})

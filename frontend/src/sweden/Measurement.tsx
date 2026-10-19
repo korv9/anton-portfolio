@@ -16,6 +16,7 @@ import { setHashParams, type Route } from '../router'
 import { productById } from './products'
 import {
   EmptyState,
+  ProductEmpty,
   Scene,
   SwedenResearchPage,
   type Finding,
@@ -124,7 +125,7 @@ export default function Measurement({ route }: { route: Route }) {
     )
   if (summary === 'error')
     return (
-      <div className="sweden sw-page">
+      <ProductEmpty product={product}>
         <EmptyState
           state="cloud"
           shows={l(
@@ -136,7 +137,7 @@ export default function Measurement({ route }: { route: Route }) {
             'Mätkatalogen (sweden/measurement/summary.json) kunde inte läsas.',
           )}
         />
-      </div>
+      </ProductEmpty>
     )
 
   const domains = summary.domains

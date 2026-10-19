@@ -358,3 +358,26 @@ export function SwedenMasthead({ current }: { current: string }) {
     </nav>
   )
 }
+
+/** A product page without validated data: its masthead, question and an EmptyState. */
+export function ProductEmpty({
+  product,
+  children,
+}: {
+  product: SwedenProduct
+  /** The EmptyState. */
+  children: ReactNode
+}) {
+  return (
+    <article className="sweden sw-page">
+      <SwedenMasthead current={product.href} />
+      <Scene
+        product={product}
+        line={l('No validated data yet.', 'Inga validerade data ännu.')}
+      >
+        {children}
+      </Scene>
+      <RelatedProjects product={product} />
+    </article>
+  )
+}

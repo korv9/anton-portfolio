@@ -291,11 +291,16 @@
 .sw-verdict {
   font-weight: 700;
 }
+/* The verdict is written out; the rule beside it repeats it in colour. */
+.sw-verdict {
+  padding-left: 0.6rem;
+  border-left: 3px solid var(--sw-div-mid);
+}
 .sw-reading[data-verdict='challenges'] .sw-verdict {
-  color: var(--sw-div-neg);
+  border-left-color: var(--sw-div-neg);
 }
 .sw-reading[data-verdict='supports'] .sw-verdict {
-  color: var(--sw-div-pos);
+  border-left-color: var(--sw-div-pos);
 }
 
 .sw-method details {
@@ -558,4 +563,142 @@ td.sw-cell[data-zero] .sw-cell-button span {
   max-width: 76rem;
   margin: 0 auto;
   padding: 2rem var(--gutter, 1rem) 3rem;
+}
+
+/* B */
+.sw-table th.sw-group {
+  padding-top: 0.75rem;
+  font: 600 0.6875rem/1.2 var(--sw-font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--sw-muted);
+}
+.sw-pattern {
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: 0.75rem;
+  padding: 0.75rem;
+  border: 1px solid var(--sw-line);
+  border-radius: 2px;
+}
+.sw-examples {
+  display: grid;
+  gap: 0.75rem;
+  padding: 0;
+  list-style: none;
+  font-size: 0.875rem;
+}
+
+/* C: map and similarity space share one SVG; dots glide between the two */
+.sw-map {
+  width: 100%;
+  height: min(92svh, 56rem);
+}
+.sw-map-land path {
+  fill-opacity: 0.35;
+  stroke: var(--sw-bg);
+  stroke-width: 0.6;
+  transition: opacity 0.6s var(--ease, ease);
+}
+.sw-map-land path[data-missing] {
+  fill: var(--sw-div-mid);
+}
+.sw-map[data-view='similarity'] .sw-map-land {
+  opacity: 0.12;
+}
+.sw-map-dots circle {
+  stroke: var(--sw-ink);
+  stroke-width: 0.6;
+  cursor: pointer;
+  transition: transform 0.9s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.sw-map-dots circle[data-missing] {
+  stroke-dasharray: 2 2;
+}
+.sw-map-dots circle[data-selected] {
+  stroke-width: 2.5;
+}
+.sw-map-dots circle:focus-visible {
+  outline: none;
+  stroke: var(--sw-accent);
+  stroke-width: 3;
+}
+.sw-toggle {
+  min-height: 2.75rem;
+  padding: 0 0.9rem;
+  border: 1px solid var(--sw-line);
+  border-radius: 2px;
+  background: var(--sw-bg);
+  color: var(--sw-ink);
+  font: inherit;
+  cursor: pointer;
+}
+.sw-toggle[aria-pressed='true'] {
+  background: var(--sw-band);
+  color: var(--sw-band-ink);
+}
+.sw-legend-list {
+  display: grid;
+  gap: 0.3rem;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+.sw-legend-list i {
+  display: inline-block;
+  width: 0.75rem;
+  height: 0.75rem;
+  margin-right: 0.4rem;
+  border-radius: 50%;
+  vertical-align: -0.1em;
+  border: 1px solid var(--sw-ink);
+}
+.sw-legend-missing {
+  border-style: dashed !important;
+  background: var(--sw-bg);
+}
+.sw-neighbours {
+  margin: 0.5rem 0 0;
+  padding-left: 1.25rem;
+}
+
+/* D: choropleth on C's map, libraries as points */
+.sw-choropleth path {
+  stroke: var(--sw-bg);
+  stroke-width: 0.6;
+  cursor: pointer;
+}
+.sw-choropleth path[data-selected] {
+  stroke: var(--sw-ink);
+  stroke-width: 2;
+}
+.sw-choropleth path:focus-visible {
+  outline: none;
+  stroke: var(--sw-accent);
+  stroke-width: 2.5;
+}
+.sw-libraries circle {
+  fill: var(--sw-ink);
+  opacity: 0.75;
+  pointer-events: none;
+}
+.sw-info-list {
+  display: grid;
+  gap: 0.2rem;
+  margin: 0.5rem 0 0;
+}
+.sw-info-list div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.sw-info-list dt {
+  color: var(--sw-muted);
+}
+.sw-info-list dd {
+  margin: 0;
+}
+.sw-controls input[type='range'] {
+  min-height: 2.75rem;
+  padding: 0;
 }

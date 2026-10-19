@@ -46,5 +46,32 @@
 
 - 2026-10-19 [CODE] Phase 1 audit done. #sweden moved: Wellbeing Observatory now #wellbeing*, old #sweden-* tabs redirect. SWEDEN routes in router.ts SWEDEN_PATHS; frontend/src/sweden/ (template, products, hub, A page); docs/sweden-design.md.
 - 2026-10-19 [CODE] Phase 2 A Politics of Measurement: ingest platform/ingest/catalogue (SCB API v2 tables + metadata, Kolada KPI catalogue), seeds/sweden, gold mart_sweden_measurement_{items,coverage}, export platform/publish/sweden/export_measurement.py, subject `sweden` in group baseline. dbt 16/16 pass. 4,270 SCB tables, 5,860 Kolada KPIs.
-- 2026-10-19 [TOOL] OPEN: frontend/tests/sweden.spec.ts "politics of measurement" still fails (last seen: axe color-contrast after ramp fix; rerun to see). Architecture pytest: 8 failures are environment-only (expects C:/Program Files/Git/mingw64/bin/bash.exe).
-- NEXT: fix that test, verify:quick, PR + merge; then B The Ideal Human (cluster-corpus 2023-2026 full ads exist locally; pre-2020 archives need a cloud job), C (reuse ml/research/regions.py, 280/290; site text wrongly says all 10 lack social assistance, 3 lack turnout), D (KB library stats), E (Riksdag speeches 2016/17+, DiVA abstracts), Connections, Other Projects, three.js Knowledge Cube.
+- 2026-10-19 [TOOL] PR #70 (routes, template, A) merged to main at 198bac5 after the four required GitHub checks passed. Cloudflare Workers branch builds fail on every PR branch (also earlier ones); not required.
+- 2026-10-20 [CODE] B The Ideal Human:
+  - `platform/ingest/jobtech/ad_language.py` uses the lexicon in `seeds/sweden_language/ad_language_terms.csv` (9 categories) and counts distinct texts.
+  - Archives without ids or occupations are handled. Legacy AMS ids map to fields through the JobTech taxonomy. The 2006 archive records no occupation (99.99 % id 0).
+  - Marts `mart_sweden_job_language(_trends)` give shares, per-1,000-word rates, and occupation-standardised rates. A year without occupations gets null.
+  - Export: `export_language.py`. Subject `sweden_language` runs with `--max-new 4` per week.
+- 2026-10-20 [TOOL] B counted locally:
+  - archives 2006 and 2010
+  - corpus folders 2023, 2024 and 2025
+  - 2,000,000 distinct texts in total
+- 2026-10-20 [TOOL] B results: ads grew from 132 to 445 words. Per 1,000 words with the occupation mix fixed, 2010 to 2025:
+  - passion +72 %
+  - creativity +21 %
+  - competence −19 %
+  - stress −34 %
+- 2026-10-20 [CODE] C The Invisible Sweden: `export_similarity.py` reuses `warehouse/cluster_lab/public-consensus-2026-10-13`, adds nearest neighbours, and adds SCB boundaries (CC0, fetched by `platform/ingest/scb/boundaries.py`). 208 of 280 municipalities have their most similar municipality in another county; median 180 km. Site text and docs now give the right exclusion reasons (7 lack social assistance, 3 lack turnout).
+- 2026-10-20 [CODE] D Belonging: `platform/ingest/kb/libraries.py` fetches Biblioteksdatabasen (open API, no licence named; no contact data) and bibstat terms (CC0): BemanService01, Besok01, Publ199, Aktiv99. `export_belonging.py` writes the results.
+- 2026-10-20 [TOOL] D results, 2014 to 2025: staffed service points fell from 1,171 to 1,054; reported visits fell from 63.6 to 48.7 million.
+- 2026-10-20 [CODE] SWEDEN has its own delivery group `sweden` (`configs/delivery/sweden.json`); baseline excludes `sweden/*`. Shared map: `frontend/src/sweden/map.ts`.
+- 2026-10-20 [TOOL] Checks:
+  - `sweden.spec.ts`: 8 passed, desktop and mobile, axe clean.
+  - `verify:quick` passes.
+  - Architecture pytest: 8 environment-only failures, because the tests expect `C:/Program Files/Git/mingw64/bin/bash.exe`.
+- NEXT:
+  - E The Lost Futures: a lexicon over Riksdag speeches from 2016/17 and DiVA abstracts, corpora kept apart.
+  - Connections.
+  - Other Projects and the SWEDEN-first homepage listing.
+  - three.js scenes.
+  - Remaining B archive years, through the weekly build or `workflow_dispatch` of build-warehouse on main.

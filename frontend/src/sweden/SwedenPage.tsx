@@ -3,7 +3,12 @@
  * product, Connections, and #sweden-kit for developing the shared components. A product whose
  * data has not run yet shows its question and an EmptyState, never sample findings.
  */
-import { lazy, Suspense } from 'react'
+import {
+  lazy,
+  Suspense,
+  type ComponentType,
+  type LazyExoticComponent,
+} from 'react'
 import { l } from '../i18n'
 import type { Route } from '../router'
 import { SWEDEN_PRODUCTS, productByHref, type SwedenProduct } from './products'
@@ -17,7 +22,16 @@ import {
 } from './template'
 import './sweden.css'
 
-const Measurement = lazy(() => import('./Measurement'))
+// Products with findings, each loaded only on its own route.
+const PAGES: Record<
+  string,
+  LazyExoticComponent<ComponentType<{ route: Route }>>
+> = {
+  '#sweden-matning': lazy(() => import('./Measurement')),
+  '#sweden-arbete': lazy(() => import('./Language')),
+  '#sweden-likhet': lazy(() => import('./Similarity')),
+  '#sweden-tillhorighet': lazy(() => import('./Belonging')),
+}
 
 const b = (text: { en: string; sv: string }) => l(text.en, text.sv)
 
@@ -32,39 +46,6 @@ const PENDING: Partial<
     }
   >
 > = {
-  B: {
-    shows: [
-      'Language in job advertisements over time: technical skills against personality and identity expectations, by occupation and region, per thousand words.',
-      'Språket i platsannonser över tid: tekniska krav mot personlighet och identitet, per yrke och region, per tusen ord.',
-    ],
-    needs: [
-      'A text-feature pipeline over JobTech’s historical advertisement archives (CC0), run in GitHub Actions year by year; only aggregate term rates are published.',
-      'En textfunktionspipeline över JobTechs historiska annonsarkiv (CC0), körd i GitHub Actions år för år; bara aggregerade termfrekvenser publiceras.',
-    ],
-    state: 'cloud',
-  },
-  C: {
-    shows: [
-      'Municipalities placed by social similarity rather than distance, with cluster profiles, stability and nearest neighbours.',
-      'Kommuner placerade efter social likhet i stället för avstånd, med klusterprofiler, stabilitet och närmaste grannar.',
-    ],
-    needs: [
-      'The validated 2024 municipality clustering (280 of 290 municipalities) published with its features, and licensed municipal boundaries.',
-      'Den validerade kommunklustringen för 2024 (280 av 290 kommuner) publicerad med sina variabler, och licensierade kommungränser.',
-    ],
-    state: 'validation',
-  },
-  D: {
-    shows: [
-      'Where public libraries and other non-commercial meeting places are, per inhabitant and by distance.',
-      'Var folkbibliotek och andra icke-kommersiella mötesplatser finns, per invånare och efter avstånd.',
-    ],
-    needs: [
-      'Official library statistics and locations from Kungliga biblioteket, joined to the municipality geography of C.',
-      'Officiell biblioteksstatistik och platser från Kungliga biblioteket, kopplade till kommungeografin i C.',
-    ],
-    state: 'ingestion',
-  },
   E: {
     shows: [
       'Future-oriented themes in Riksdag speeches and in academic theses over time, each corpus on its own axis.',
@@ -92,7 +73,8 @@ const PENDING: Partial<
 export default function SwedenPage({ route }: { route: Route }) {
   if (route.path === '#sweden') return <Hub />
   if (route.path === '#sweden-kit') return <Kit />
-  if (route.path === '#sweden-matning')
+  const Page = PAGES[route.path]
+  if (Page)
     return (
       <Suspense
         fallback={
@@ -101,7 +83,7 @@ export default function SwedenPage({ route }: { route: Route }) {
           </p>
         }
       >
-        <Measurement route={route} />
+        <Page route={route} />
       </Suspense>
     )
   const product = productByHref(route.path)!
