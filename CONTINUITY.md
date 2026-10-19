@@ -86,10 +86,5 @@
 - 2026-10-20 [CODE] Other projects: the header has a SWEDEN link and its menu is titled "Other projects". Featured SWEDEN cards sit on the homepage (new classes only; the protected sections are untouched) and on #projekt.
 - NEXT:
   - DiVA abstracts as E's second corpus.
-  - three.js scenes (Knowledge Cube, Language Landscape, Geography of Similarity morph, Accessibility, Future Landscape); WebGL fallback = the 2D views.
-  - Remaining B archive years, via the weekly build.
-  - (older) E The Lost Futures: a lexicon over Riksdag speeches from 2016/17 and DiVA abstracts, corpora kept apart.
-  - Connections.
-  - Other Projects and the SWEDEN-first homepage listing.
-  - three.js scenes.
+  - 3D done for A, B and E (BarField, lazy, ?scen=3d). C stays a 2D morph and D an SVG choropleth; a true 3D morph and travel-time accessibility (needs transport-network data) are open.
   - Remaining B archive years, through the weekly build or `workflow_dispatch` of build-warehouse on main.

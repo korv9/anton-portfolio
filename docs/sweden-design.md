@@ -99,12 +99,22 @@ pipeline ready, awaiting execution; or data unavailable.
 | D | Accessibility landscape on C's geometry | Map table, municipal comparisons |
 | E | Future landscape per corpus | Theme trends per corpus and period |
 
-3D rules, for when three.js is added:
-- Load it lazily on SWEDEN routes only.
-- Use a ~32° perspective camera, matte materials and one directional light.
-- No idle rotation. Respect `prefers-reduced-motion`.
-- Provide a WebGL fallback to the 2D view.
-- Raw values stay separate from visual normalisation.
+### 3D
+
+`BarField.tsx` (three.js 0.169.0) is the one 3D scene. It draws A's knowledge cube and B's and E's
+landscapes as one instanced box per matrix cell.
+
+- **Loading:** it loads only when a reader picks 3D with `ViewToggle` (`?scen=3d`). The homepage
+  never loads it.
+- **Fallback:** the 2D matrix is the default and accessible view, and it is also the fallback when
+  WebGL is missing.
+- **Look:** a 32° perspective camera, a matte material, a hemisphere light plus one directional
+  light, and no idle rotation. The device pixel ratio is capped at 2.
+- **Values:** the scene receives only normalised heights. The page keeps the raw values and shows
+  them in the info panel and in the tables under Explore.
+
+C's map moves each municipality between its centroid and its principal components, with a CSS
+transition that reduced motion turns off. D reuses the same geometry and projection (`map.ts`).
 
 ## Accessibility and responsive behaviour
 
