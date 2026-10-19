@@ -21,7 +21,7 @@ const START_PAGES = [
   '/#lagboken',
   '/#jobb',
   '/#symbolic-atlas',
-  '/#sweden',
+  '/#wellbeing',
   '/#thesis',
   '/#cluster-visuals',
   '/#fraga-lagen',
@@ -87,13 +87,13 @@ test('every internal link opens a page', async ({ page, isMobile }) => {
     // The list of projects carries no breadcrumb, nor do the observatory and lab reports and
     // their deep dives, which name the report in a link back.
     if (
-      /^#(politik|jobb|job-|sweden|ai-act|lagboken|tech|symbolic-|philosophy-|concept|drugcomb|fraga-lagen|compliance)/.test(
+      /^#(politik|jobb|job-|sweden|wellbeing|ai-act|lagboken|tech|symbolic-|philosophy-|concept|drugcomb|fraga-lagen|compliance)/.test(
         href,
       )
     )
       await page
         .locator(
-          '.po-workspace, .politik-long, .aiact, .tech, .job-intelligence',
+          '.po-workspace, .politik-long, .aiact, .tech, .job-intelligence, .sweden',
         )
         .first()
         .waitFor({ timeout: 45_000 })
@@ -103,7 +103,7 @@ test('every internal link opens a page', async ({ page, isMobile }) => {
       href !== '#projekt' &&
       !(await page
         .locator(
-          '.po-workspace, .politik-long, .aiact, .tech, .job-intelligence',
+          '.po-workspace, .politik-long, .aiact, .tech, .job-intelligence, .sweden',
         )
         .count())
     )

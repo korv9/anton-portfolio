@@ -275,6 +275,17 @@ subjects:
       - dbt: {select: [tag:cross_domain]}
       - export: python platform/publish/cross_domain/export_ai_governance_timeline.py
 
+  # SWEDEN research platform. A: catalogue metadata of SCB and Kolada (never the statistics).
+  sweden:
+    schedule: '13 21 * * 6'
+    group: baseline
+    raw: [catalogue]
+    prune: true
+    steps:
+      - ingest: python platform/ingest/catalogue/catalogue_ingest.py
+      - dbt: {select: [tag:sweden]}
+      - export: python platform/publish/sweden/export_measurement.py
+
   quality:
     schedule: '13 21 * * 6'
     group: baseline

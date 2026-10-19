@@ -1,0 +1,43 @@
+version: 2
+
+models:
+  - name: mart_sweden_measurement_items
+    description: >-
+      Politics of Measurement. One row per public SCB table and Kolada key figure, with the
+      research domain from seeds/sweden, period range, frequency and finest geography.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [catalogue, item_id]
+    columns:
+      - name: domain_id
+        description: Every subject must be classified; a new SCB subject fails this test.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('research_domains'), field: domain_id}
+      - name: geo_resolution
+        data_tests:
+          - accepted_values:
+              arguments: {values: [national, county, municipality, subarea]}
+      - name: last_year
+        description: SCB only; Kolada's catalogue has no period range.
+        data_tests:
+          - not_null:
+              config:
+                where: "catalogue = 'scb'"
+      - name: is_current
+        description: SCB last period within two years; Kolada a scheduled publication.
+        data_tests:
+          - not_null
+
+  - name: mart_sweden_measurement_coverage
+    description: Domain × year × finest geography, counting SCB tables whose period range covers the year (upper bound).
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [domain_id, year, geo_resolution]
+    columns:
+      - name: tables
+        data_tests:
+          - not_null

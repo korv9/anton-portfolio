@@ -60,7 +60,7 @@ test('a route finds its project, including sub-views', () => {
     'ai-act',
   )
   assert.equal(
-    projectForRoute({ page: 'welfare', path: '#sweden-counties' })?.id,
+    projectForRoute({ page: 'welfare', path: '#wellbeing-counties' })?.id,
     'welfare',
   )
   assert.equal(

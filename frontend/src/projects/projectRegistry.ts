@@ -288,7 +288,7 @@ export const PROJECTS: ProjectEntry[] = [
       'Counties and municipalities side by side in the browser, with a status page for every source and run.',
     ),
     tech: ['dbt', 'DuckDB', 'Star schema', 'Parquet'],
-    href: '#sweden',
+    href: '#wellbeing',
     category: 'data',
     status: 'live',
     home: {

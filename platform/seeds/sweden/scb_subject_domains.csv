@@ -1,0 +1,36 @@
+subject_code,domain_id,note
+AA,other,Cross-cutting register data (integration).
+AM,employment,
+AM0501,employment,Work environment survey: working conditions; health effects are reported but the subject is work.
+AM0502,employment,Work-related disorders; classified with working conditions.
+BE,other,Population counts and projections are denominators rather than a domain of social life.
+BO,housing,
+EN,other,Energy.
+FM,economy,
+HA,economy,
+HE,economy,Household economy.
+HE0111,housing,Household housing situation.
+HE0202,housing,Household housing expenditure.
+HS,health,
+JO,other,Agriculture and fishing.
+JO1104,leisure,Recreational fishing.
+KU,culture,Study association statistics are SCB's only culture and leisure tables.
+LE,wellbeing,
+LE0101,wellbeing,"Living conditions surveys (ULF/SILC): health, leisure, social relations and security in one survey; classified by its purpose."
+LE0102,social_relationships,Children and families.
+LE0105,other,Integration statistics.
+LE0106,wellbeing,Children's living conditions survey.
+LE0108,other,Population IT use.
+LE0201,other,Gender equality statistics span every domain.
+ME,political_participation,
+MI,environment,
+MI0806,leisure,Holiday-home areas.
+NR,economy,
+NR0109,health,Health accounts.
+NV,economy,
+NV0117,social_relationships,Civil society: associations and their activity.
+NV1701,leisure,Accommodation statistics (tourism).
+OE,economy,
+PR,economy,
+TK,other,Transport.
+UF,education,
