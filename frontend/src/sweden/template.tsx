@@ -381,3 +381,33 @@ export function ProductEmpty({
     </article>
   )
 }
+
+/** Matrix or 3D: the matrix is the default and the accessible view; 3D loads only when asked. */
+export function ViewToggle({
+  view,
+  onChange,
+}: {
+  view: 'matrix' | '3d'
+  onChange: (view: 'matrix' | '3d') => void
+}) {
+  return (
+    <div role="group" aria-label={l('View', 'Vy')} className="sw-view-toggle">
+      <button
+        type="button"
+        className="sw-toggle"
+        aria-pressed={view === 'matrix'}
+        onClick={() => onChange('matrix')}
+      >
+        {l('Matrix', 'Matris')}
+      </button>
+      <button
+        type="button"
+        className="sw-toggle"
+        aria-pressed={view === '3d'}
+        onClick={() => onChange('3d')}
+      >
+        3D
+      </button>
+    </div>
+  )
+}

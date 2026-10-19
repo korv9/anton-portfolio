@@ -751,3 +751,25 @@ td.sw-cell[data-zero] .sw-cell-button span {
     grid-template-columns: 1fr;
   }
 }
+
+/* 3D bar field */
+.sw-barfield {
+  width: 100%;
+  margin: 0;
+  align-self: stretch;
+}
+.sw-barfield-canvas {
+  width: 100%;
+  height: min(78svh, 46rem);
+}
+.sw-barfield-canvas canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+.sw-view-toggle {
+  display: flex;
+  gap: 0.25rem;
+  align-self: end;
+}

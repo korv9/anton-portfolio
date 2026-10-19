@@ -230,3 +230,18 @@ test('connections state their contracts and the rejected joins', async ({
     ),
   ).toEqual([])
 })
+
+test('the 3D view loads on demand and keeps the 2D matrix as fallback', async ({
+  page,
+}) => {
+  await page.goto('/#start')
+  // The homepage never loads three.js.
+  const homeScripts = await page.evaluate(() =>
+    performance.getEntriesByType('resource').map((e) => e.name),
+  )
+  expect(homeScripts.some((n) => /BarField|three/.test(n))).toBe(false)
+  await page.goto('/#sweden-matning')
+  await page.getByRole('button', { name: '3D', exact: true }).click()
+  await expect(page).toHaveURL(/scen=3d/)
+  await expect(page.locator('.sw-barfield canvas, .sw-matrix')).toHaveCount(1)
+})

@@ -6,7 +6,7 @@
  * The scene is a theme × year matrix of the share of future-oriented speeches that use each
  * theme. Only one corpus is shown: academic texts are kept apart and are not yet counted.
  */
-import { useEffect, useMemo, useState } from 'react'
+import { Suspense, lazy, useEffect, useMemo, useState } from 'react'
 import { l } from '../i18n'
 import { fetchJson } from '../welfare/data'
 import MultiLineChart from '../charts/MultiLineChart'
@@ -18,6 +18,7 @@ import {
   ProductEmpty,
   Scene,
   SwedenResearchPage,
+  ViewToggle,
   type Finding,
   type Method,
   type Reading,
@@ -75,6 +76,8 @@ const show = (v: number, m: Measure) => (m === 'share' ? pct(v) : v.toFixed(2))
 // Five-year means at each end, so one unusual year (an election, a crisis) does not decide.
 const SPAN = 5
 
+const BarField = lazy(() => import('./BarField'))
+
 export default function Futures({ route }: { route: Route }) {
   const product = productById('E')
   const [trends, setTrends] = useState<Trends | 'error' | null>(null)
@@ -94,6 +97,7 @@ export default function Futures({ route }: { route: Route }) {
       v == null || v === '' ? params.delete(k) : params.set(k, v)
     setHashParams(route.path, params, true)
   }
+  const scene3d = route.params.get('scen') === '3d'
 
   if (trends === null)
     return (
@@ -247,6 +251,10 @@ export default function Futures({ route }: { route: Route }) {
       }
       control={
         <div className="sw-controls">
+          <ViewToggle
+            view={scene3d ? '3d' : 'matrix'}
+            onChange={(v) => set({ scen: v === '3d' ? '3d' : null })}
+          />
           <label>
             {l('Measure', 'Mått')}
             <select
@@ -302,14 +310,64 @@ export default function Futures({ route }: { route: Route }) {
         )
       }
     >
-      <FutureMatrix
-        themes={themes}
-        years={years}
-        measure={measure}
-        picked={picked}
-        year={year}
-        onPick={(t, y) => set({ tema: t, ar: String(y) })}
-      />
+      {scene3d ? (
+        <Suspense
+          fallback={
+            <p className="sw-note" role="status">
+              {l('Loading 3D…', 'Laddar 3D…')}
+            </p>
+          }
+        >
+          <BarField
+            rows={themes.length}
+            cols={years.length}
+            cells={(() => {
+              const top = Math.max(
+                ...themes.flatMap((t) => t.rows.map((r) => value(r, measure))),
+                1e-9,
+              )
+              return themes.flatMap((t, row) =>
+                years.map((y, col) => {
+                  const r = t.rows.find((x) => x[0] === y)
+                  const v = r ? value(r, measure) : null
+                  return {
+                    row,
+                    col,
+                    height: (v ?? 0) / top,
+                    key: `${t.id}|${y}`,
+                    label: `${name(t)}, ${y}: ${v == null ? '–' : show(v, measure)}`,
+                  }
+                }),
+              )
+            })()}
+            picked={picked && year ? `${picked}|${year}` : null}
+            onPick={(key) => {
+              const [t, y] = key.split('|')
+              set({ tema: t, ar: y })
+            }}
+            label={l('3D view of the matrix', '3D-vy av matrisen')}
+            fallback={
+              <FutureMatrix
+                themes={themes}
+                years={years}
+                measure={measure}
+                picked={picked}
+                year={year}
+                onPick={(t, y) => set({ tema: t, ar: String(y) })}
+              />
+            }
+          />
+        </Suspense>
+      ) : (
+        <FutureMatrix
+          themes={themes}
+          years={years}
+          measure={measure}
+          picked={picked}
+          year={year}
+          onPick={(t, y) => set({ tema: t, ar: String(y) })}
+        />
+      )}{' '}
     </Scene>
   )
 

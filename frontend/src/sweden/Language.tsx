@@ -8,7 +8,7 @@
  * Every number is computed from the files. Advertisement language is evidence about how
  * employers write ads, not about what workers are like or how they feel.
  */
-import { useEffect, useMemo, useState } from 'react'
+import { Suspense, lazy, useEffect, useMemo, useState } from 'react'
 import { l } from '../i18n'
 import { fetchJson } from '../welfare/data'
 import MultiLineChart from '../charts/MultiLineChart'
@@ -20,6 +20,7 @@ import {
   ProductEmpty,
   Scene,
   SwedenResearchPage,
+  ViewToggle,
   type Finding,
   type Method,
   type Reading,
@@ -97,6 +98,8 @@ const show = (v: number, m: Measure) => (isRate(m) ? v.toFixed(2) : pct(v))
 const MAIN: Measure = 'rate'
 const rate = (r: Row) => r[8] ?? 0
 
+const BarField = lazy(() => import('./BarField'))
+
 export default function Language({ route }: { route: Route }) {
   const product = productById('B')
   const [trends, setTrends] = useState<Trends | 'error' | null>(null)
@@ -116,6 +119,7 @@ export default function Language({ route }: { route: Route }) {
       v == null || v === '' ? params.delete(k) : params.set(k, v)
     setHashParams(route.path, params, true)
   }
+  const scene3d = route.params.get('scen') === '3d'
 
   if (trends === null)
     return (
@@ -275,6 +279,10 @@ export default function Language({ route }: { route: Route }) {
       }
       control={
         <div className="sw-controls">
+          <ViewToggle
+            view={scene3d ? '3d' : 'matrix'}
+            onChange={(v) => set({ scen: v === '3d' ? '3d' : null })}
+          />
           <label>
             {l('Measure', 'Mått')}
             <select
@@ -320,14 +328,66 @@ export default function Language({ route }: { route: Route }) {
         )
       }
     >
-      <LanguageMatrix
-        cats={cats}
-        years={years}
-        measure={measure}
-        picked={picked}
-        year={year}
-        onPick={(c, y) => set({ kategori: c, ar: String(y) })}
-      />
+      {scene3d ? (
+        <Suspense
+          fallback={
+            <p className="sw-note" role="status">
+              {l('Loading 3D…', 'Laddar 3D…')}
+            </p>
+          }
+        >
+          <BarField
+            rows={cats.length}
+            cols={years.length}
+            cells={(() => {
+              const top = Math.max(
+                ...cats.flatMap((c) =>
+                  c.rows.map((r) => value(r, measure) ?? 0),
+                ),
+                1e-9,
+              )
+              return cats.flatMap((c, row) =>
+                years.map((y, col) => {
+                  const r = at(c, y)
+                  const v = r ? value(r, measure) : null
+                  return {
+                    row,
+                    col,
+                    height: (v ?? 0) / top,
+                    key: `${c.id}|${y}`,
+                    label: `${name(c)}, ${y}: ${v == null ? '–' : show(v, measure)}`,
+                  }
+                }),
+              )
+            })()}
+            picked={picked && year ? `${picked}|${year}` : null}
+            onPick={(key) => {
+              const [c, y] = key.split('|')
+              set({ kategori: c, ar: y })
+            }}
+            label={l('3D view of the matrix', '3D-vy av matrisen')}
+            fallback={
+              <LanguageMatrix
+                cats={cats}
+                years={years}
+                measure={measure}
+                picked={picked}
+                year={year}
+                onPick={(c, y) => set({ kategori: c, ar: String(y) })}
+              />
+            }
+          />
+        </Suspense>
+      ) : (
+        <LanguageMatrix
+          cats={cats}
+          years={years}
+          measure={measure}
+          picked={picked}
+          year={year}
+          onPick={(c, y) => set({ kategori: c, ar: String(y) })}
+        />
+      )}{' '}
     </Scene>
   )
 
