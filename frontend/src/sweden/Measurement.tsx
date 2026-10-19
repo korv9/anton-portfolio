@@ -574,30 +574,11 @@ export default function Measurement({ route }: { route: Route }) {
   )
 }
 
-/** Sequential cell colour and the text colour with the higher WCAG contrast on it. */
+/** Sequential cell colour; the number sits on its own label, so no shade limits contrast. */
 function ramp(t: number) {
-  const dark = matchMedia('(prefers-color-scheme: dark)').matches
-  const [lo, hi] = dark
-    ? [
-        [0x35, 0x2d, 0x4f],
-        [0xd9, 0xcc, 0xff],
-      ]
-    : [
-        [0xbc, 0xb1, 0xdc],
-        [0x2c, 0x1f, 0x5e],
-      ]
-  const rgb = lo.map((c, i) => Math.round(c + (hi[i] - c) * t))
-  const lum = 0.2126 * lin(rgb[0]) + 0.7152 * lin(rgb[1]) + 0.0722 * lin(rgb[2])
-  const onWhite = 1.05 / (lum + 0.05)
-  const onBlack = (lum + 0.05) / 0.05
   return {
-    background: `rgb(${rgb.join(',')})`,
-    color: onWhite > onBlack ? '#ffffff' : '#141416',
+    background: `color-mix(in oklab, var(--sw-seq-hi) ${Math.round(t * 100)}%, var(--sw-seq-lo))`,
   }
-}
-const lin = (c: number) => {
-  const v = c / 255
-  return v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4
 }
 
 function CoverageMatrix({
@@ -660,7 +641,7 @@ function CoverageMatrix({
                       aria-label={`${name(dom)}, ${d}s: ${v}`}
                       onClick={() => onPick(dom.id, d)}
                     >
-                      {v || '·'}
+                      <span>{v || '·'}</span>
                     </button>
                   </td>
                 )

@@ -484,6 +484,16 @@
   font: inherit;
   cursor: pointer;
 }
+.sw-cell-button span {
+  padding: 0.05em 0.3em;
+  border-radius: 2px;
+  background: var(--sw-bg);
+  color: var(--sw-ink);
+}
+td.sw-cell[data-zero] .sw-cell-button span {
+  background: none;
+  color: var(--sw-muted);
+}
 .sw-matrix tr[aria-current] th {
   font-weight: 700;
 }
