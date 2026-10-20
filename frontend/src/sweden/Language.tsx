@@ -166,6 +166,18 @@ export default function Language({ route }: { route: Route }) {
   const falling = rising.filter((c) => change(c) < 0)
   const selected = cats.find((c) => c.id === picked) ?? null
   const spanNote = years.length < last - first + 1
+  // A year counted only from quarterly archives (2026-Q1, …) is still running.
+  const quarters = (coverage?.archives ?? []).filter((a) =>
+    a.archive.includes('-Q'),
+  )
+  const partial = [...new Set(quarters.map((a) => a.archive.slice(0, 4)))].map(
+    (year) => ({
+      year,
+      archives: quarters
+        .filter((a) => a.archive.startsWith(year))
+        .map((a) => a.archive),
+    }),
+  )
   const rel = (v: number) => `${v >= 0 ? '+' : ''}${Math.round(v * 100)} %`
   const words = (y: number) => {
     const r = competence && at(competence, y)
@@ -494,6 +506,14 @@ export default function Language({ route }: { route: Route }) {
             {l(
               `Only ${years.join(', ')} are counted so far; the other years run in the weekly cloud build.`,
               `Bara ${years.join(', ')} är räknade hittills; övriga år körs i den veckovisa molnbygget.`,
+            )}
+          </li>
+        )}
+        {partial.length > 0 && (
+          <li>
+            {l(
+              `${partial.map((p) => p.year).join(', ')} is still running: it covers only the quarterly archives ${partial.map((p) => p.archives.join(', ')).join('; ')}.`,
+              `${partial.map((p) => p.year).join(', ')} pågår fortfarande: året bygger bara på kvartalsarkiven ${partial.map((p) => p.archives.join(', ')).join('; ')}.`,
             )}
           </li>
         )}
