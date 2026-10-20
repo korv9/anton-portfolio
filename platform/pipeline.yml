@@ -198,8 +198,9 @@ subjects:
       - export: python platform/publish/workers_ai/export_law_corpora.py chunks
       - export: python platform/publish/export_sfs.py
 
-  # assert_concept_link_targets_exist checks links into philosophy, Riksdag and job-ad models;
-  # it runs in the concepts subject, once all of them are built.
+  # assert_concept_link_targets_exist and assert_concept_tensions_exist check links into
+  # philosophy, Riksdag and job-ad models; they run in the concepts subject, once all of them
+  # are built.
   ai_politics:
     schedule: '13 21 * * 6'
     group: baseline
@@ -245,9 +246,10 @@ subjects:
       - ml: python platform/nlp/philosophy/pipeline.py
         marker: philosophy/run.json
         stale_arg: --if-stale
+      # assert_concept_tensions_exist reads mart_concept_relations, built later by concepts.
       - dbt:
           select: ['path:models/gold/philosophy']
-          exclude: [assert_concept_link_targets_exist]
+          exclude: [assert_concept_link_targets_exist, assert_concept_tensions_exist]
       - export: python platform/publish/philosophy/export_philosophy.py
 
   job_ai_governance:
@@ -303,8 +305,9 @@ subjects:
     group: sweden
     features: [sweden/ad_language]
     steps:
-      # At most four new archives a week: the backfill since 2006 spreads over the first runs.
-      - ingest: python platform/ingest/jobtech/ad_language.py --max-new 4
+      # At most three new archives a run: the backfill since 2006 spreads over the first runs
+      # and keeps the weekly build inside its timeout.
+      - ingest: python platform/ingest/jobtech/ad_language.py --max-new 3
       - dbt: {select: [tag:sweden_language]}
       - export: python platform/publish/sweden/export_language.py
 
@@ -313,7 +316,7 @@ subjects:
   sweden_futures:
     schedule: '13 21 * * 6'
     group: sweden
-    features: [sweden/futures]
+    features: [sweden/futures, sweden/futures_theses]
     steps:
       - ingest: python platform/ingest/riksdagen/futures_language.py --max-new 12
       # The academic corpus: DiVA student-thesis abstracts in Swedish, 60 harvested months a week.
