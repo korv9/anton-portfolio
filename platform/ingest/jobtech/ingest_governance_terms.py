@@ -54,7 +54,9 @@ PHONE = re.compile(r"(?:\+46|0)[\d\s-]{6,}\d")
 
 
 def load_terms(path: Path = TERMS) -> tuple[list[tuple[str, re.Pattern]], str]:
-    raw = path.read_bytes()
+    # Hashed with LF line endings, so a Windows checkout (CRLF) and the CI runner agree and an
+    # archive counted on one is not counted again on the other.
+    raw = path.read_bytes().replace(b"\r\n", b"\n")
     rows = list(csv.DictReader(raw.decode("utf-8").splitlines()))
     terms = [(r["term_id"], re.compile(r["pattern"], 0 if r["case_sensitive"] == "true" else re.I))
              for r in rows]
