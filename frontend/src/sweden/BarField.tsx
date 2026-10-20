@@ -1,17 +1,23 @@
 /**
  * The shared 3D scene of the SWEDEN matrices (A's Knowledge Cube, B's Language Landscape, E's
  * Future Landscape): one instanced box per cell of a rows × columns grid, its height the cell's
- * normalised value. Loaded lazily with three.js on the pages that use it, never on the homepage.
+ * normalised value, on the shared stage (stage.ts). Loaded lazily with three.js on the pages
+ * that use it, never on the homepage.
  *
  * Raw values stay with the caller: the scene receives heights in [0, 1] for drawing and reports
- * the picked cell back, and the page shows the raw value. Without WebGL, or with reduced motion
- * asked for and no interaction yet, the caller's 2D matrix is the view (`fallback`).
- * Perspective camera at 32°, matte material, hemisphere and one directional light, no idle
- * rotation; the device pixel ratio is capped at 2.
+ * the picked cell back, and the page shows the raw value. Columns without data (`gaps`) are
+ * drawn as flat, labelled ground, never as interpolated bars. Without WebGL the caller's 2D
+ * matrix is the view (`fallback`).
  */
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import * as THREE from 'three'
-import { l } from '../i18n'
+import {
+  createStage,
+  toScreen,
+  useSwedenThemeValue,
+  webgl,
+  type Stage,
+} from './stage'
 
 export type Cell = {
   row: number
@@ -19,16 +25,11 @@ export type Cell = {
   height: number
   label: string
   key: string
+  /** 'glass' draws the cell translucent (B: personal expectations); default matte. */
+  tone?: 'matte' | 'glass' | 'stone'
 }
 
-function webgl() {
-  try {
-    const canvas = document.createElement('canvas')
-    return !!(canvas.getContext('webgl2') || canvas.getContext('webgl'))
-  } catch {
-    return false
-  }
-}
+type Label = { text: string; at: THREE.Vector3; strong?: boolean }
 
 export default function BarField({
   rows,
@@ -38,6 +39,9 @@ export default function BarField({
   onPick,
   label,
   fallback,
+  rowLabels,
+  colLabels,
+  gaps,
 }: {
   rows: number
   cols: number
@@ -47,114 +51,195 @@ export default function BarField({
   label: string
   /** The 2D view shown without WebGL. */
   fallback: ReactNode
+  rowLabels?: string[]
+  /** Labels under chosen columns, e.g. every decade. */
+  colLabels?: { col: number; text: string }[]
+  /** Columns with no data at all, drawn as empty ground. */
+  gaps?: number[]
 }) {
   const box = useRef<HTMLDivElement>(null)
   const [ok] = useState(webgl)
   const [hover, setHover] = useState<string | null>(null)
+  const [tags, setTags] = useState<
+    { text: string; x: number; y: number; strong?: boolean }[]
+  >([])
   const pick = useRef(onPick)
   pick.current = onPick
+  const stageRef = useRef<Stage | null>(null)
+  const theme = useSwedenThemeValue()
+  // Rebuild only when what is drawn changes, not on every render of the page.
+  const sig = [
+    rows,
+    cols,
+    cells
+      .map((c) => `${c.key}:${c.height.toFixed(4)}:${c.tone ?? ''}`)
+      .join(','),
+    (rowLabels ?? []).join('|'),
+    (colLabels ?? []).map((c) => c.col + c.text).join('|'),
+    (gaps ?? []).join(','),
+  ].join('#')
+  const latest = useRef({ cells, rowLabels, colLabels, gaps })
+  latest.current = { cells, rowLabels, colLabels, gaps }
 
   useEffect(() => {
+    const { cells, rowLabels, colLabels, gaps } = latest.current
     const el = box.current
     if (!ok || !el) return
-    const css = getComputedStyle(el)
-    const colour = (name: string, fallbackValue: string) =>
-      new THREE.Color(css.getPropertyValue(name).trim() || fallbackValue)
-    const lo = colour('--sw-seq-lo', '#bcb1dc')
-    const hi = colour('--sw-seq-hi', '#2c1f5e')
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
-    renderer.setPixelRatio(Math.min(2, window.devicePixelRatio))
-    el.appendChild(renderer.domElement)
-    renderer.domElement.setAttribute('aria-hidden', 'true')
-    const scene = new THREE.Scene()
-    const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 500)
-    scene.add(new THREE.HemisphereLight(0xffffff, 0x8a8790, 1.6))
-    const sun = new THREE.DirectionalLight(0xffffff, 1.4)
-    sun.position.set(-30, 60, 40)
-    scene.add(sun)
-    const base = new THREE.Mesh(
-      new THREE.PlaneGeometry(cols + 2, rows + 2),
-      new THREE.MeshStandardMaterial({ color: 0xc9c7c2, roughness: 1 }),
+    const stage = createStage(el)
+    stageRef.current = stage
+    const { scene, colour } = stage
+    const lo = colour('--sw-seq-lo', '#3a3256')
+    const hi = colour('--sw-seq-hi', '#e3d8ff')
+    const unit = 4
+    const span = Math.max(cols, rows) * unit
+    const tall = span * 0.2
+    const x = (c: number) => (c - (cols - 1) / 2) * unit
+    const z = (r: number) => (r - (rows - 1) / 2) * unit
+
+    const plate = new THREE.Mesh(
+      new THREE.BoxGeometry(cols * unit + 4, 0.6, rows * unit + 4),
+      new THREE.MeshStandardMaterial({
+        color: colour('--sw-base', '#2a2925'),
+        roughness: 0.95,
+      }),
     )
-    base.rotation.x = -Math.PI / 2
-    scene.add(base)
-    const geometry = new THREE.BoxGeometry(0.82, 1, 0.82)
-    geometry.translate(0, 0.5, 0)
-    const material = new THREE.MeshStandardMaterial({
-      roughness: 0.8,
-      metalness: 0,
-    })
-    const mesh = new THREE.InstancedMesh(geometry, material, cells.length)
-    const matrix = new THREE.Matrix4()
-    const span = Math.max(cols, rows)
-    const tall = span * 0.32
-    cells.forEach((c, i) => {
-      const h = Math.max(0.02, c.height) * tall
-      matrix.compose(
-        new THREE.Vector3(c.col - cols / 2 + 0.5, 0, c.row - rows / 2 + 0.5),
-        new THREE.Quaternion(),
-        new THREE.Vector3(1, h, 1),
+    plate.position.y = -0.3
+    plate.receiveShadow = true
+    scene.add(plate)
+    for (const g of gaps ?? []) {
+      const m = new THREE.Mesh(
+        new THREE.PlaneGeometry(unit * 0.9, rows * unit),
+        new THREE.MeshBasicMaterial({
+          color: colour('--sw-muted', '#a39e93'),
+          transparent: true,
+          opacity: 0.08,
+        }),
       )
-      mesh.setMatrixAt(i, matrix)
-      mesh.setColorAt(i, lo.clone().lerp(hi, Math.sqrt(c.height)))
-    })
-    scene.add(mesh)
-    // A restrained isometric view, fitted to the grid with room for the overlay panels.
-    camera.position.set(span * 1.25, span * 1.35, span * 1.9)
-    camera.lookAt(-span * 0.12, 0, -span * 0.05)
-    const resize = () => {
-      const w = el.clientWidth
-      const h = el.clientHeight
-      renderer.setSize(w, h, false)
-      camera.aspect = w / Math.max(1, h)
-      camera.updateProjectionMatrix()
-      renderer.render(scene, camera)
+      m.rotation.x = -Math.PI / 2
+      m.position.set(x(g), 0.02, 0)
+      scene.add(m)
     }
-    const observer = new ResizeObserver(resize)
-    observer.observe(el)
+
+    const geometry = new THREE.BoxGeometry(unit * 0.82, 1, unit * 0.82)
+    geometry.translate(0, 0.5, 0)
+    const groups = {
+      matte: [] as number[],
+      glass: [] as number[],
+      stone: [] as number[],
+    }
+    cells.forEach((c, i) => groups[c.tone ?? 'matte'].push(i))
+    const meshes: { mesh: THREE.InstancedMesh; idx: number[] }[] = []
+    const matrix = new THREE.Matrix4()
+    for (const [tone, idx] of Object.entries(groups)) {
+      if (!idx.length) continue
+      const material = new THREE.MeshStandardMaterial({
+        roughness: tone === 'glass' ? 0.35 : tone === 'stone' ? 0.95 : 0.8,
+        transparent: tone === 'glass',
+        opacity: tone === 'glass' ? 0.9 : 1,
+      })
+      const mesh = new THREE.InstancedMesh(geometry, material, idx.length)
+      mesh.castShadow = tone !== 'glass'
+      mesh.receiveShadow = true
+      idx.forEach((ci, j) => {
+        const c = cells[ci]
+        const h = Math.max(0.02, c.height) * tall
+        matrix.compose(
+          new THREE.Vector3(x(c.col), 0, z(c.row)),
+          new THREE.Quaternion(),
+          new THREE.Vector3(1, h, 1),
+        )
+        mesh.setMatrixAt(j, matrix)
+        mesh.setColorAt(
+          j,
+          tone === 'stone'
+            ? new THREE.Color('#8e8c97')
+            : lo.clone().lerp(hi, Math.sqrt(c.height)),
+        )
+      })
+      scene.add(mesh)
+      meshes.push({ mesh, idx })
+    }
+
+    const labels: Label[] = [
+      ...(rowLabels ?? []).map((text, r) => ({
+        text,
+        at: new THREE.Vector3(x(cols - 1) + unit, 0, z(r)),
+        strong: true,
+      })),
+      ...(colLabels ?? []).map(({ col, text }) => ({
+        text,
+        at: new THREE.Vector3(x(col), 0, z(rows - 1) + unit * 1.4),
+      })),
+    ]
+    const place = () =>
+      setTags(
+        labels.flatMap((t) => {
+          const p = toScreen(stage, el, t.at)
+          return p ? [{ text: t.text, x: p[0], y: p[1], strong: t.strong }] : []
+        }),
+      )
+    stage.controls.addEventListener('change', place)
+    stage.home(
+      new THREE.Vector3(span * 0.04, tall * 0.15, 0),
+      span * 2.25,
+      1.0,
+      0.62,
+    )
+    place()
+
     const ray = new THREE.Raycaster()
     const at = (event: MouseEvent) => {
-      const rect = renderer.domElement.getBoundingClientRect()
-      const pointer = new THREE.Vector2(
-        ((event.clientX - rect.left) / rect.width) * 2 - 1,
-        -((event.clientY - rect.top) / rect.height) * 2 + 1,
+      const rect = stage.renderer.domElement.getBoundingClientRect()
+      ray.setFromCamera(
+        new THREE.Vector2(
+          ((event.clientX - rect.left) / rect.width) * 2 - 1,
+          -((event.clientY - rect.top) / rect.height) * 2 + 1,
+        ),
+        stage.camera,
       )
-      ray.setFromCamera(pointer, camera)
-      const hit = ray.intersectObject(mesh)[0]
-      return hit?.instanceId != null ? cells[hit.instanceId] : null
+      for (const { mesh, idx } of meshes) {
+        const hit = ray.intersectObject(mesh)[0]
+        if (hit?.instanceId != null) return cells[idx[hit.instanceId]]
+      }
+      return null
     }
     const move = (e: MouseEvent) => setHover(at(e)?.label ?? null)
     const click = (e: MouseEvent) => {
       const c = at(e)
       if (c) pick.current(c.key)
     }
-    renderer.domElement.addEventListener('pointermove', move)
-    renderer.domElement.addEventListener('click', click)
-    resize()
+    stage.renderer.domElement.addEventListener('pointermove', move)
+    stage.renderer.domElement.addEventListener('click', click)
+    const onResize = new ResizeObserver(place)
+    onResize.observe(el)
     return () => {
-      observer.disconnect()
-      renderer.domElement.removeEventListener('pointermove', move)
-      renderer.domElement.removeEventListener('click', click)
-      geometry.dispose()
-      material.dispose()
-      renderer.dispose()
-      renderer.domElement.remove()
+      onResize.disconnect()
+      stage.renderer.domElement.removeEventListener('pointermove', move)
+      stage.renderer.domElement.removeEventListener('click', click)
+      stage.dispose()
+      stageRef.current = null
     }
-  }, [ok, rows, cols, cells])
+  }, [ok, sig, theme])
 
   if (!ok) return <>{fallback}</>
+  const pickedLabel = picked ? cells.find((c) => c.key === picked)?.label : null
   return (
-    <figure className="sw-barfield" aria-label={label}>
-      <div ref={box} className="sw-barfield-canvas" />
-      <figcaption className="sw-note">
-        {hover ??
-          (picked
-            ? cells.find((c) => c.key === picked)?.label
-            : l(
-                'Point at a bar to name it; the table under Explore has every value.',
-                'Peka på en stapel för att se den; tabellen under Utforska har varje värde.',
-              ))}
-      </figcaption>
+    <figure className="sw-stage" aria-label={label}>
+      <div ref={box} className="sw-stage-canvas" />
+      <div className="sw-stage-labels" aria-hidden="true">
+        {tags.map((t, i) => (
+          <span
+            key={i}
+            className={t.strong ? 'sw-tag sw-tag-row' : 'sw-tag'}
+            style={{ left: t.x, top: t.y }}
+          >
+            {t.text}
+          </span>
+        ))}
+      </div>
+      {(hover ?? pickedLabel) && (
+        <figcaption className="sw-stage-tip">{hover ?? pickedLabel}</figcaption>
+      )}
     </figure>
   )
 }

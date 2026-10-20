@@ -15,10 +15,12 @@ import RankBars from '../charts/RankBars'
 import { setHashParams, type Route } from '../router'
 import { productById } from './products'
 import { useMapLayout, useMapViewBox, type Geometry } from './map'
+import { BelongingField } from './BelongingStage'
 import {
   EmptyState,
   ProductEmpty,
   Scene,
+  ViewToggle,
   SwedenResearchPage,
   type Finding,
   type Method,
@@ -215,6 +217,7 @@ export default function Belonging({ route }: { route: Route }) {
     )
 
   const measure = (route.params.get('matt') as Measure) || 'service_points_rate'
+  const scene3d = route.params.get('scen') !== '2d'
   const years = data.years
   const last = years[years.length - 1]
   const first = years[0]
@@ -377,14 +380,25 @@ export default function Belonging({ route }: { route: Route }) {
               : l('Participation', 'Deltagande')}{' '}
             ·{' '}
             {MEASURES[measure].low
-              ? l(
-                  'darker = more land per point',
-                  'mörkare = mer land per ställe',
-                )
-              : l('darker = more', 'mörkare = mer')}{' '}
-            · {l('hatched = not reported', 'streckat = inte rapporterat')}
+              ? l('higher = more land per point', 'högre = mer land per ställe')
+              : l('higher = more', 'högre = mer')}{' '}
+            ·{' '}
+            {l(
+              'grey or hatched = not reported',
+              'grått eller streckat = inte rapporterat',
+            )}
           </p>
           <div className="sw-ramp" aria-hidden="true" />
+          <p className="sw-note">
+            {l(
+              'Height and colour: rank among municipalities, so a few extremes do not flatten the rest. Lights: public libraries.',
+              'Höjd och färg: rang bland kommunerna, så att några ytterligheter inte plattar till resten. Ljuspunkter: folkbibliotek.',
+            )}
+          </p>
+          <ViewToggle
+            view={scene3d ? '3d' : 'matrix'}
+            onChange={(v) => set({ scen: v === '3d' ? null : '2d' })}
+          />
         </>
       }
       control={
@@ -460,7 +474,29 @@ export default function Belonging({ route }: { route: Route }) {
         )
       }
     >
-      {geo ? (
+      {geo && scene3d ? (
+        <BelongingField
+          geo={geo}
+          values={
+            new Map(byYear.map((r) => [r.code, r[measure] as number | null]))
+          }
+          libraries={libraries?.libraries ?? []}
+          nameOf={nameOf}
+          selected={code}
+          onPick={(c) => set({ kommun: c })}
+          fallback={
+            <BelongingMap
+              geo={geo}
+              rows={byYear}
+              measure={measure}
+              libraries={libraries?.libraries ?? []}
+              nameOf={nameOf}
+              selected={code}
+              onPick={(c) => set({ kommun: c })}
+            />
+          }
+        />
+      ) : geo ? (
         <BelongingMap
           geo={geo}
           rows={byYear}

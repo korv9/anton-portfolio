@@ -93,7 +93,8 @@ export default function App() {
         <a className="skip-link" href="#main">
           {l('Skip to content', 'Hoppa till innehåll')}
         </a>
-        <SiteHeader route={route} />
+        {/* SWEDEN pages carry their own header (sweden/Header.tsx). */}
+        {page !== 'sweden' && <SiteHeader route={route} />}
         <main
           id="main"
           tabIndex={-1}

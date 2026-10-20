@@ -119,7 +119,7 @@ export default function Language({ route }: { route: Route }) {
       v == null || v === '' ? params.delete(k) : params.set(k, v)
     setHashParams(route.path, params, true)
   }
-  const scene3d = route.params.get('scen') === '3d'
+  const scene3d = route.params.get('scen') !== '2d'
 
   if (trends === null)
     return (
@@ -281,7 +281,7 @@ export default function Language({ route }: { route: Route }) {
         <div className="sw-controls">
           <ViewToggle
             view={scene3d ? '3d' : 'matrix'}
-            onChange={(v) => set({ scen: v === '3d' ? '3d' : null })}
+            onChange={(v) => set({ scen: v === '3d' ? null : '2d' })}
           />
           <label>
             {l('Measure', 'Mått')}
@@ -338,7 +338,16 @@ export default function Language({ route }: { route: Route }) {
         >
           <BarField
             rows={cats.length}
-            cols={years.length}
+            cols={years[years.length - 1] - years[0] + 1}
+            gaps={Array.from(
+              { length: years[years.length - 1] - years[0] + 1 },
+              (_, i) => i,
+            ).filter((i) => !years.includes(years[0] + i))}
+            rowLabels={cats.map(name)}
+            colLabels={years.map((y) => ({
+              col: y - years[0],
+              text: String(y),
+            }))}
             cells={(() => {
               const top = Math.max(
                 ...cats.flatMap((c) =>
@@ -346,17 +355,25 @@ export default function Language({ route }: { route: Route }) {
                 ),
                 1e-9,
               )
+              // A year without a count is a gap in the ground, never a zero bar.
               return cats.flatMap((c, row) =>
-                years.map((y, col) => {
+                years.flatMap((y) => {
                   const r = at(c, y)
                   const v = r ? value(r, measure) : null
-                  return {
-                    row,
-                    col,
-                    height: (v ?? 0) / top,
-                    key: `${c.id}|${y}`,
-                    label: `${name(c)}, ${y}: ${v == null ? '–' : show(v, measure)}`,
-                  }
+                  if (v == null) return []
+                  return [
+                    {
+                      row,
+                      col: y - years[0],
+                      height: v / top,
+                      key: `${c.id}|${y}`,
+                      label: `${name(c)}, ${y}: ${show(v, measure)}`,
+                      tone:
+                        c.family === 'skill'
+                          ? ('stone' as const)
+                          : ('glass' as const),
+                    },
+                  ]
                 }),
               )
             })()}

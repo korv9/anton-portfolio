@@ -17,10 +17,17 @@ import { setHashParams, type Route } from '../router'
 import { productById } from './products'
 import { MAP_SIZE, useMapLayout, useMapViewBox, type Geometry } from './map'
 import {
+  GROUP_HEX,
+  MorphControl,
+  SimilarityField,
+  useMorph,
+} from './SimilarityStage'
+import {
   EmptyState,
   ProductEmpty,
   Scene,
   SwedenResearchPage,
+  ViewToggle,
   type Finding,
   type Method,
   type Reading,
@@ -89,12 +96,7 @@ type Groups = {
 }
 const BASE = 'sweden/similarity/'
 // Categorical: the four groups of the finer split, never a magnitude.
-const GROUP_COLOURS = [
-  'var(--sw-accent)',
-  'var(--sw-div-pos)',
-  'var(--sw-div-neg)',
-  'var(--series-4)',
-]
+const GROUP_COLOURS = GROUP_HEX
 const fmt = (v: number | null | undefined, unit = '') =>
   v == null
     ? '–'
@@ -120,6 +122,11 @@ export default function Similarity({ route }: { route: Route }) {
       v == null || v === '' ? params.delete(k) : params.set(k, v)
     setHashParams(route.path, params, true)
   }
+  const scene3d = route.params.get('scen') !== '2d'
+  const toView = (v: 'map' | 'similarity') =>
+    v !== view && set({ vy: v === 'similarity' ? 'likhet' : null })
+  const morph = useMorph(view, toView)
+  const [trails, setTrails] = useState(true)
 
   if (data === null)
     return (
@@ -284,27 +291,50 @@ export default function Similarity({ route }: { route: Route }) {
                 {s.total - s.analysed})
               </li>
             </ul>
+            <p className="sw-note">
+              {l(
+                'Height: population, log scale. Distance in the lifted space means similarity, not geography.',
+                'Höjd: folkmängd, logaritmisk skala. Avstånd i det lyfta rummet betyder likhet, inte geografi.',
+              )}
+            </p>
+            <ViewToggle
+              view={scene3d ? '3d' : 'matrix'}
+              onChange={(v) => set({ scen: v === '3d' ? null : '2d' })}
+            />
           </>
         )
       }
       control={
         <div className="sw-controls" role="group" aria-label={l('View', 'Vy')}>
-          <button
-            type="button"
-            className="sw-toggle"
-            aria-pressed={view === 'map'}
-            onClick={() => set({ vy: null })}
-          >
-            {l('Map', 'Karta')}
-          </button>
-          <button
-            type="button"
-            className="sw-toggle"
-            aria-pressed={view === 'similarity'}
-            onClick={() => set({ vy: 'likhet' })}
-          >
-            {l('Similarity', 'Likhet')}
-          </button>
+          {scene3d ? (
+            <MorphControl
+              t={morph.t}
+              setT={morph.setT}
+              go={morph.go}
+              onEnd={toView}
+              trails={trails}
+              setTrails={setTrails}
+            />
+          ) : (
+            <>
+              <button
+                type="button"
+                className="sw-toggle"
+                aria-pressed={view === 'map'}
+                onClick={() => set({ vy: null })}
+              >
+                {l('Map', 'Karta')}
+              </button>
+              <button
+                type="button"
+                className="sw-toggle"
+                aria-pressed={view === 'similarity'}
+                onClick={() => set({ vy: 'likhet' })}
+              >
+                {l('Similarity', 'Likhet')}
+              </button>
+            </>
+          )}
           <label>
             {l('Municipality', 'Kommun')}
             <select
@@ -341,7 +371,25 @@ export default function Similarity({ route }: { route: Route }) {
         )
       }
     >
-      {geo ? (
+      {geo && scene3d ? (
+        <SimilarityField
+          geo={geo}
+          municipalities={data.municipalities}
+          t={morph.t}
+          trails={trails}
+          selected={selected}
+          onPick={(c) => set({ kommun: c })}
+          fallback={
+            <MapScene
+              data={data}
+              geo={geo}
+              view={view}
+              selected={selected?.code ?? null}
+              onPick={(c) => set({ kommun: c })}
+            />
+          }
+        />
+      ) : geo ? (
         <MapScene
           data={data}
           geo={geo}
