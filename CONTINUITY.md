@@ -55,7 +55,8 @@
 - 2026-10-20 [TOOL] B counted locally:
   - archives 2006 and 2010
   - corpus folders 2023, 2024 and 2025
-  - 2,000,000 distinct texts in total
+  - 2,000,000 distinct texts in total (superseded below)
+- 2026-10-20 [TOOL] Phase 0 audit correction: all 23 archives are now counted, 11,291,650 ads and 8,736,050 distinct texts (sum over `frontend/public/data/sweden/language/coverage.json`). The subject runs `--max-new 3`, not 4 (`platform/pipeline.yml:310`).
 - 2026-10-20 [TOOL] B results: ads grew from 132 to 445 words. Per 1,000 words with the occupation mix fixed, 2010 to 2025:
   - passion +72 %
   - creativity +21 %
@@ -77,7 +78,8 @@
   - Future-oriented speeches rose from 17.8 % (1994) to 21.9 %.
   - Within future talk, alternative arrangements fell from 2.9 % to 0.6 % (break 2002), and culture fell from 13 % to 9 %.
   - Security rose from 27 % to 39 % (break 2017), crisis from 10 % to 18 % (break 2008), and collective transformation from 6.3 % to 8.1 %.
-  - The year 2000 is left out: its archive is thin.
+  - The year 2000 is left out: its archive is thin. (Wrong cause, corrected below.)
+- 2026-10-20 [TOOL] Phase 0 audit correction: session 1999/2000 exists (`anforande-19992000.json.zip`) but the six-digit regex at `platform/ingest/riksdagen/futures_language.py:47` never counts it. So 1999 holds only its spring sitting and 2000 only its autumn sitting, which the half-median rule drops. "17.8 % to 21.9 %" compares 1994 with the partial year 2026. Details: `docs/sweden-research-alignment.md`.
 - 2026-10-20 [CODE] Connections: `export_connections.py` computes Spearman ρ with a bootstrap CI and a partial ρ that holds log population constant.
   - Visits vs post-secondary education: ρ −0.00, partial 0.19 (uncertain).
   - Visits vs income: ρ 0.09, partial 0.17 (uncertain).
