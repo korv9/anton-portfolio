@@ -115,7 +115,7 @@ export default function Measurement({ route }: { route: Route }) {
       v == null || v === '' ? params.delete(k) : params.set(k, v)
     setHashParams(route.path, params, push)
   }
-  const scene3d = route.params.get('scen') === '3d'
+  const scene3d = route.params.get('scen') !== '2d'
   const matrix = useMemo(
     () => (coverage ? decadeMatrix(coverage, geo) : null),
     [coverage, geo],
@@ -247,8 +247,8 @@ export default function Measurement({ route }: { route: Route }) {
     <Scene
       product={product}
       line={l(
-        'Each cell counts the SCB tables that report a year in that decade, at the chosen geography or finer. Darker means more tables, not more importance.',
-        'Varje cell räknar SCB-tabeller som rapporterar ett år i det decenniet, på vald geografi eller finare. Mörkare betyder fler tabeller, inte större vikt.',
+        'Each bar counts the SCB tables that report a year in that decade, at the chosen geography or finer. More tables is taller and further along the scale, not more importance.',
+        'Varje stapel räknar SCB-tabeller som rapporterar ett år i det decenniet, på vald geografi eller finare. Fler tabeller är högre och längre ut på skalan, inte större vikt.',
       )}
       legend={
         <>
@@ -274,7 +274,7 @@ export default function Measurement({ route }: { route: Route }) {
         <div className="sw-controls">
           <ViewToggle
             view={scene3d ? '3d' : 'matrix'}
-            onChange={(v) => set({ scen: v === '3d' ? '3d' : null })}
+            onChange={(v) => set({ scen: v === '3d' ? null : '2d' })}
           />
           <label>
             {l('Finest geography at least', 'Finaste geografi minst')}
@@ -354,6 +354,11 @@ export default function Measurement({ route }: { route: Route }) {
               const [d, dec] = key.split('|')
               set({ domain: d, decade: dec })
             }}
+            rowLabels={domains.map(name)}
+            colLabels={DECADES.filter((d) => d % 30 === 0).map((d) => ({
+              col: DECADES.indexOf(d),
+              text: `${d}s`,
+            }))}
             label={l(
               'The knowledge cube: SCB tables by domain and decade',
               'Kunskapskuben: SCB-tabeller per domän och decennium',
