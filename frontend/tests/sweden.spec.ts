@@ -116,7 +116,7 @@ test('the invisible sweden moves municipalities into similarity space', async ({
     data.summary.total,
   )
   await expect(page.locator('.sw-finds')).toContainText(
-    String(data.summary.nearest_in_other_county),
+    `${data.summary.analysed - data.summary.nearest_in_other_county} of ${data.summary.analysed}`,
   )
   // The county share is read against chance, so clustering in space is not read as its absence.
   await expect(
