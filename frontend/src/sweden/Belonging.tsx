@@ -14,7 +14,7 @@ import MultiLineChart from '../charts/MultiLineChart'
 import RankBars from '../charts/RankBars'
 import { setHashParams, type Route } from '../router'
 import { productById } from './products'
-import { MAP_SIZE, useMapLayout, type Geometry } from './map'
+import { useMapLayout, useMapViewBox, type Geometry } from './map'
 import {
   EmptyState,
   ProductEmpty,
@@ -714,6 +714,7 @@ function BelongingMap({
   onPick: (c: string) => void
 }) {
   const layout = useMapLayout(geo)!
+  const viewBox = useMapViewBox()
   const values = new Map(rows.map((r) => [r.code, r[measure] as number | null]))
   const sorted = [...values.values()]
     .filter((v): v is number => v != null)
@@ -723,7 +724,7 @@ function BelongingMap({
     sorted.length > 1 ? sorted.indexOf(v) / (sorted.length - 1) : 1
   return (
     <svg
-      viewBox={`0 0 ${MAP_SIZE} ${MAP_SIZE}`}
+      viewBox={viewBox}
       className="sw-map"
       role="group"
       aria-label={l(

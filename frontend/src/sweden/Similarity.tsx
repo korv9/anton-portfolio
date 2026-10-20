@@ -15,7 +15,7 @@ import ClusterScatter from '../clusters/ClusterScatter'
 import RankBars from '../charts/RankBars'
 import { setHashParams, type Route } from '../router'
 import { productById } from './products'
-import { MAP_SIZE, useMapLayout, type Geometry } from './map'
+import { MAP_SIZE, useMapLayout, useMapViewBox, type Geometry } from './map'
 import {
   EmptyState,
   ProductEmpty,
@@ -613,9 +613,8 @@ function MapScene({
   selected: string | null
   onPick: (code: string) => void
 }) {
-  const W = MAP_SIZE
-  const H = MAP_SIZE
   const shared = useMapLayout(geo)!
+  const viewBox = useMapViewBox()
   const layout = useMemo(() => {
     const pcs = data.municipalities.filter((m) => m.pc).map((m) => m.pc!)
     const [p0, p1] = [
@@ -634,7 +633,7 @@ function MapScene({
   }, [shared, data])
   return (
     <svg
-      viewBox={`0 0 ${W} ${H}`}
+      viewBox={viewBox}
       className="sw-map"
       role="group"
       aria-label={l('Municipalities of Sweden', 'Sveriges kommuner')}

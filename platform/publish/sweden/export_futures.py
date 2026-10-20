@@ -35,6 +35,8 @@ from export_language import one_break  # noqa: E402
 # A calendar year with less than half the median number of speeches is a partial session edge
 # (1993 starts in the autumn; the current year is still running).
 EDGE = 0.5
+# A publication year with fewer Swedish thesis abstracts is not shown.
+MIN_THESES = 1000
 
 
 def write(name: str, payload: dict) -> None:
@@ -62,12 +64,24 @@ def main() -> int:
         out.append({**t, "rows": [[r[1], r[2], r[3], r[4], r[6], r[7], round(r[9], 5), round(r[10], 4)]
                                   for r in mine],
                      "break": one_break([r[1] for r in mine], [r[9] for r in mine])})
+    # The academic corpus, side by side and never pooled: years with at least MIN_THESES abstracts.
+    theses = con.sql("""select theme, year, abstracts, future_share, future_share_using, per_1000_words
+                        from gold.mart_sweden_future_theses order by theme, year""").fetchall()
+    thesis_years = sorted({r[1] for r in theses if r[2] >= MIN_THESES})
+    academic = {
+        "corpus": "Swedish-language student-thesis abstracts, DiVA (CC0 metadata)",
+        "future_share": [[y, round(next(r[3] for r in theses if r[1] == y), 5),
+                          next(r[2] for r in theses if r[1] == y)] for y in thesis_years],
+        "themes": {t["id"]: [[r[1], round(r[4] or 0, 5), round(r[5] or 0, 4)] for r in theses
+                             if r[0] == t["id"] and r[1] in thesis_years] for t in themes},
+    }
     write("trends.json", {
         "columns": ["year", "speeches", "future_speeches", "words", "future_using", "matches",
                     "future_share_using", "per_1000_words"],
         "marker": marker,
         "themes": out,
         "future_share": [[y, round(next(r[8] for r in rows if r[1] == y), 5)] for y in sorted(kept)],
+        "academic": academic,
         "method": {
             "unit": "one speech in the chamber (anförande), replies included",
             "future_share": "speeches matching the future marker / all speeches",
@@ -95,7 +109,7 @@ def main() -> int:
                                              "dictionary_sha256", "counted_at")} for m in manifests],
         "years_left_out": [{"year": y, "speeches": n} for y, n in sorted(per_year.items()) if y not in kept],
         "run_id": os.environ.get("GITHUB_RUN_ID"), "code_sha": os.environ.get("GITHUB_SHA"),
-        "academic_corpus": "DiVA abstracts: harvested by the diva subject; not yet counted for E",
+        "academic_corpus": "Swedish-language DiVA student-thesis abstracts, counted by platform/ingest/diva/futures_theses.py; shown apart, never pooled",
     })
     sys.path.insert(0, str(ROOT / "platform/publish/symbolic"))
     import export_symbolic

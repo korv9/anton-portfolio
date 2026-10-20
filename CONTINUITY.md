@@ -84,7 +84,7 @@
   - Service points vs population: trivial.
   - B×E and speeches×theses are rejected.
 - 2026-10-20 [CODE] Other projects: the header has a SWEDEN link and its menu is titled "Other projects". Featured SWEDEN cards sit on the homepage (new classes only; the protected sections are untouched) and on #projekt.
+- 2026-10-20 [CODE] E's academic corpus: `platform/ingest/diva/futures_theses.py` harvests the OAI set `studentThesis` (CC0 metadata), keeps Swedish abstracts and counts the same lexicon by publication year. All 322 months are counted. Years with at least 1,000 abstracts (2001–2026) are shown on E's page in a separate chart, never pooled with the Riksdag. Mart: `mart_sweden_future_theses`.
 - NEXT:
-  - DiVA abstracts as E's second corpus.
   - 3D done for A, B and E (BarField, lazy, ?scen=3d). C stays a 2D morph and D an SVG choropleth; a true 3D morph and travel-time accessibility (needs transport-network data) are open.
   - Remaining B archive years, through the weekly build or `workflow_dispatch` of build-warehouse on main.

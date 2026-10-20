@@ -291,16 +291,22 @@
 .sw-verdict {
   font-weight: 700;
 }
-/* The verdict is written out; the rule beside it repeats it in colour. */
-.sw-verdict {
-  padding-left: 0.6rem;
-  border-left: 3px solid var(--sw-div-mid);
+/* The verdict is written out; a small dot before it repeats it in colour. */
+.sw-verdict::before {
+  content: '';
+  display: inline-block;
+  width: 0.5rem;
+  height: 0.5rem;
+  margin-right: 0.45rem;
+  border-radius: 50%;
+  background: var(--sw-div-mid);
+  vertical-align: 0.05em;
 }
-.sw-reading[data-verdict='challenges'] .sw-verdict {
-  border-left-color: var(--sw-div-neg);
+.sw-reading[data-verdict='challenges'] .sw-verdict::before {
+  background: var(--sw-div-neg);
 }
-.sw-reading[data-verdict='supports'] .sw-verdict {
-  border-left-color: var(--sw-div-pos);
+.sw-reading[data-verdict='supports'] .sw-verdict::before {
+  background: var(--sw-div-pos);
 }
 
 .sw-method details {

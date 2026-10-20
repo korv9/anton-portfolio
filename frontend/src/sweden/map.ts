@@ -4,7 +4,7 @@
  * with the country on the right half so the scene's title panel keeps the left. A projected
  * grid needs no map projection; every layer (polygons, dots, points) uses `project`.
  */
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 export type Geometry = {
   municipalities: { code: string; rings: [number, number][][] }[]
@@ -57,4 +57,19 @@ export function useMapLayout(geo: Geometry | null) {
     )
     return { paths, centroid, project }
   }, [geo])
+}
+
+/** On a phone the panels stack above the map, so the view is cropped to the country. */
+export function useMapViewBox() {
+  const query = '(max-width: 760px)'
+  const [narrow, setNarrow] = useState(
+    () => typeof matchMedia !== 'undefined' && matchMedia(query).matches,
+  )
+  useEffect(() => {
+    const m = matchMedia(query)
+    const on = () => setNarrow(m.matches)
+    m.addEventListener('change', on)
+    return () => m.removeEventListener('change', on)
+  }, [])
+  return narrow ? `410 0 580 ${MAP_SIZE}` : `0 0 ${MAP_SIZE} ${MAP_SIZE}`
 }

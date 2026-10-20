@@ -49,6 +49,12 @@ type Trends = {
   }
   themes: Theme[]
   future_share: [number, number][]
+  /** Swedish thesis abstracts (DiVA): year, share of future-oriented abstracts, abstracts. */
+  academic?: {
+    corpus: string
+    future_share: [number, number, number][]
+    themes: Record<string, [number, number, number][]>
+  }
 }
 type Cells = { rows: [string, string, number, number, number][] }
 type Examples = { rows: string[][] }
@@ -807,6 +813,55 @@ function Explore({
           {Math.round(t.break.variance_explained * 100)} %{' '}
           {l('of the variance', 'av variansen')}
         </p>
+      )}
+      {trends.academic && trends.academic.future_share.length > 1 && (
+        <>
+          <h3>
+            {l(
+              'The academic corpus, shown apart (%)',
+              'Den akademiska korpusen, visad för sig (%)',
+            )}
+          </h3>
+          <p className="sw-note">
+            {trends.academic.corpus}.{' '}
+            {l(
+              'Another genre with other authors and another length: compare the direction of the lines, not their level, and never add them to the Riksdag’s.',
+              'En annan genre med andra författare och annan längd: jämför linjernas riktning, inte deras nivå, och lägg dem aldrig ihop med riksdagens.',
+            )}
+          </p>
+          <MultiLineChart
+            series={[
+              {
+                key: '_future',
+                name: l(
+                  'Abstracts about the future',
+                  'Sammanfattningar om framtiden',
+                ),
+                points: trends.academic.future_share.map(([y, v]) => ({
+                  date: `${y}-01-01`,
+                  label: `${y} (${num(trends.academic!.future_share.find((f) => f[0] === y)![2])})`,
+                  value: v * 100,
+                })),
+              },
+              {
+                key: theme,
+                name: name(t),
+                points: (trends.academic.themes[theme] ?? []).map(([y, v]) => ({
+                  date: `${y}-01-01`,
+                  label: String(y),
+                  value: v * 100,
+                })),
+              },
+            ]}
+            label={l(
+              'Future themes in thesis abstracts',
+              'Framtidsteman i uppsatssammanfattningar',
+            )}
+            format={(v) => `${v.toFixed(1)} %`}
+            colorOf={(k) => (k === '_future' ? 1 : 2)}
+            yFrom={0}
+          />
+        </>
       )}
       <h3>{l(`By party, ${year}`, `Per parti, ${year}`)}</h3>
       <div className="sw-controls">

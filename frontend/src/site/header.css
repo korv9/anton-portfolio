@@ -64,6 +64,7 @@
 }
 .project-menu summary {
   list-style: none;
+  white-space: nowrap;
 }
 .site-navigation > a:hover,
 .project-menu summary:hover {

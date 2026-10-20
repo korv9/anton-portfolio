@@ -316,6 +316,8 @@ subjects:
     features: [sweden/futures]
     steps:
       - ingest: python platform/ingest/riksdagen/futures_language.py --max-new 12
+      # The academic corpus: DiVA student-thesis abstracts in Swedish, 60 harvested months a week.
+      - ingest: python platform/ingest/diva/futures_theses.py --max-months 60
       - dbt: {select: [tag:sweden_futures]}
       - export: python platform/publish/sweden/export_futures.py
       # Connections reads the other SWEDEN outputs, so it runs last.
