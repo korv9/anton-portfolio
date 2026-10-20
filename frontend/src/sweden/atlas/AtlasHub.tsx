@@ -3,9 +3,11 @@
  * population, with the same country hanging below as an outline only (what no indicator
  * fills). The five studies float around it as doors.
  */
+import { useState } from 'react'
 import * as THREE from 'three'
 import type { Geometry } from '../map'
 import { AtlasPage } from './AtlasPage'
+import { MuniSelect } from './controls'
 import { extrude, municipalityShapes } from './geo'
 import { slot, useSlots } from './slots'
 import { WARM, type Space, type Tag } from './space'
@@ -14,7 +16,12 @@ export const GROUP_HEX = ['#E07A5F', '#3D9A8B', '#9B8BE0', '#C9A227']
 
 type Sim = {
   summary?: { analysed: number }
-  municipalities: { code: string; population: number | null; finer?: number }[]
+  municipalities: {
+    code: string
+    name: string
+    population: number | null
+    finer?: number
+  }[]
 }
 
 export const STUDIES = [
@@ -51,9 +58,21 @@ export const STUDIES = [
 ]
 
 export default function AtlasHub() {
-  const { states, loading } = useSlots(['geometry', 'similarity'])
+  const { states, loading } = useSlots([
+    'geometry',
+    'similarity',
+    'similarityGroups',
+  ])
+  const [pick, setPick] = useState<string | null>(null)
+  const names = slot<{
+    splits: { role: string; names?: Record<string, [string, string]> }[]
+  }>(states, 'similarityGroups')?.splits.find(
+    (x) => x.role === 'finer split',
+  )?.names
   const geo = slot<Geometry>(states, 'geometry')
   const sim = slot<Sim>(states, 'similarity')
+
+  const chosen = sim?.municipalities.find((m) => m.code === pick)
 
   const build = (s: Space): Tag[] => {
     const tags: Tag[] = []
@@ -71,11 +90,22 @@ export default function AtlasHub() {
         const h = d?.population
           ? 3 + ((Math.log10(d.population) - p0) / (p1 - p0)) * 22
           : 2
-        const colour = d?.finer != null ? GROUP_HEX[d.finer] : '#4a4852'
+        const colour =
+          m.code === pick
+            ? '#f2a65a'
+            : d?.finer != null
+              ? GROUP_HEX[d.finer]
+              : '#4a4852'
         s.scene.add(
-          new THREE.Mesh(
-            extrude(m, h),
-            new THREE.MeshStandardMaterial({ color: colour, roughness: 0.85 }),
+          s.pickable(
+            new THREE.Mesh(
+              extrude(m, h),
+              new THREE.MeshStandardMaterial({
+                color: colour,
+                roughness: 0.85,
+              }),
+            ),
+            () => setPick((c) => (c === m.code ? null : m.code)),
           ),
         )
         const edge = new THREE.LineSegments(
@@ -159,6 +189,35 @@ export default function AtlasHub() {
       slots={states}
       loading={loading}
       build={build}
+      rebuild={pick ?? ''}
+      info={
+        sim && (
+          <>
+            {chosen ? (
+              <>
+                <span className="is-head">{chosen.name.toUpperCase()}</span>
+                <span>
+                  {chosen.finer != null
+                    ? (names?.[String(chosen.finer)]?.[0] ??
+                      `group ${chosen.finer}`)
+                    : 'not in the similarity analysis'}
+                </span>
+                <a href={`#sweden-atlas-c?kommun=${chosen.code}`}>
+                  See its nearest in C →
+                </a>
+              </>
+            ) : (
+              <span>Click a municipality to see its similarity group.</span>
+            )}
+            <MuniSelect
+              label="Choose a municipality"
+              options={sim.municipalities}
+              value={pick}
+              onChange={setPick}
+            />
+          </>
+        )
+      }
     />
   )
 }

@@ -23,6 +23,10 @@ export type Tag = {
   dy?: number
   /** Makes the label a link. */
   href?: string
+  /** Makes the label a button. */
+  onClick?: () => void
+  /** For a button label: whether it is the current choice. */
+  pressed?: boolean
 }
 
 export type View = {
@@ -155,6 +159,12 @@ export function createSpace(el: HTMLElement, view: View) {
     renderer,
     rnd,
     render,
+    /** Objects a click in the scene can choose; the page raycasts against them. */
+    picks: [] as { obj: THREE.Object3D; fn: () => void }[],
+    pickable<T extends THREE.Object3D>(obj: T, fn: () => void) {
+      space.picks.push({ obj, fn })
+      return obj
+    },
     glow(at: THREE.Vector3, size: number, colour = WARM, opacity = 1) {
       const s = new THREE.Sprite(
         new THREE.SpriteMaterial({

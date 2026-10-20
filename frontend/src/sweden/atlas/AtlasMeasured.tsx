@@ -4,6 +4,7 @@
  * a ghost box. Other catalogues (other_catalogues.json) add rows when published; until then
  * a single ghost row says which ones are planned.
  */
+import { useState } from 'react'
 import * as THREE from 'three'
 import { AtlasPage, type KeyItem } from './AtlasPage'
 import { slot, SLOTS, useSlots } from './slots'
@@ -40,6 +41,7 @@ export default function AtlasMeasured() {
   const coverage = slot<Coverage>(states, 'measurementCoverage')
   const other = slot<Other>(states, 'measurementOther')
 
+  const [sel, setSel] = useState<string | null>(null)
   const domains = [...(summary?.domains ?? [])].sort(
     (a, b) => b.scb_tables - a.scb_tables,
   )
@@ -124,12 +126,20 @@ export default function AtlasMeasured() {
           return
         }
         const h = 4 + Math.log10(n + 1) * 24
+        const dim = sel != null && sel !== r.id
         const m = new THREE.Mesh(
           new THREE.BoxGeometry(U * 0.7, h, U * 0.7),
-          new THREE.MeshStandardMaterial({ color: colour, roughness: 0.75 }),
+          new THREE.MeshStandardMaterial({
+            color: colour,
+            roughness: 0.75,
+            transparent: dim,
+            opacity: dim ? 0.18 : 1,
+          }),
         )
         m.position.set(x(i), h / 2, z(j))
-        s.scene.add(m)
+        s.scene.add(
+          s.pickable(m, () => setSel((c) => (c === r.id ? null : r.id))),
+        )
       })
       tags.push({
         at: new THREE.Vector3(x(DECADES.length - 1) + U, 0, z(j)),
@@ -142,6 +152,9 @@ export default function AtlasMeasured() {
         ],
         tone: r.tables === 0 || r.id === '_other' ? 'gap' : 'lab',
         anchor: 'left',
+        head: true,
+        pressed: sel === r.id,
+        onClick: () => setSel((c) => (c === r.id ? null : r.id)),
       })
     })
     DECADES.forEach(
@@ -154,6 +167,36 @@ export default function AtlasMeasured() {
     )
     return tags
   }
+
+  const d = domains.find((x) => x.id === sel)
+  const first = d && firstDecade(d.id)
+  const finest = d
+    ? FINEST.find((g) =>
+        DECADES.some((y) => cells.get(`${d.id}|${y}`)?.geo.has(g)),
+      )
+    : undefined
+  const info = sel ? (
+    d ? (
+      <>
+        <span className="is-head">{d.label_en.toUpperCase()}</span>
+        <span>
+          {d.scb_tables.toLocaleString('en')} SCB tables · first decade{' '}
+          {first ?? 'none'}
+        </span>
+        <span>finest geography: {finest ?? 'none'}</span>
+      </>
+    ) : (
+      <>
+        <span className="is-head">OTHER CATALOGUES</span>
+        <span>Socialstyrelsen, Brå, Folkhälsomyndigheten, Kulturanalys</span>
+        <span className="is-gap">
+          awaiting {SLOTS.measurementOther.path.split('/').pop()}
+        </span>
+      </>
+    )
+  ) : (
+    <span>Choose an area of life to light its row.</span>
+  )
 
   const keyItems: KeyItem[] = [
     ...Object.entries(GEO)
@@ -180,6 +223,8 @@ export default function AtlasMeasured() {
       slots={states}
       loading={loading}
       build={build}
+      rebuild={sel ?? ''}
+      info={info}
     />
   )
 }

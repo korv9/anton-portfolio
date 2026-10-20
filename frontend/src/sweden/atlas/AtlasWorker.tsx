@@ -5,8 +5,10 @@
  * the first and last archive without a counted archive are ghost columns; a year added to
  * trends.json fills its ghost on the next load.
  */
+import { useState } from 'react'
 import * as THREE from 'three'
 import { AtlasPage } from './AtlasPage'
+import { Seg } from './controls'
 import { slot, SLOTS, useSlots } from './slots'
 import type { Space, Tag } from './space'
 
@@ -33,6 +35,8 @@ const SHADES = [
 export default function AtlasWorker() {
   const { states, loading } = useSlots(['languageTrends'])
   const t = slot<Trends>(states, 'languageTrends')
+  const [mode, setMode] = useState<'std' | 'raw'>('std')
+  const [focus, setFocus] = useState<string | null>(null)
   const col = (name: string) => t?.columns.indexOf(name) ?? -1
   const iStd = col('per_1000_words_standardised')
   const iRaw = col('per_1000_words')
@@ -40,7 +44,8 @@ export default function AtlasWorker() {
   const rate = (c: Category, y: number) => {
     const r = c.rows.find((row) => row[0] === y)
     if (!r) return null
-    return { v: (r[iStd] ?? r[iRaw]) as number, raw: r[iStd] == null }
+    const v = mode === 'raw' ? r[iRaw] : (r[iStd] ?? r[iRaw])
+    return { v: v as number, raw: r[iStd] == null }
   }
   const skills = t?.categories.filter((c) => c.family === 'skill') ?? []
   const personal = [
@@ -55,9 +60,11 @@ export default function AtlasWorker() {
     (rate(c, std[std.length - 1])?.v ?? 0) / (rate(c, std[0])?.v || 1)
   personal.sort((a, b) => growth(b) - growth(a))
   const top = personal[0]
+  const shown = personal.find((c) => c.id === focus) ?? top
+  const unit = mode === 'raw' ? ' (raw rate)' : ''
   const revealed =
-    t && top && std.length > 1
-      ? `${top.label_en} grew most among the personal expectations: ${rate(top, std[0])!.v.toFixed(2)} per 1,000 words in ${std[0]}, ${rate(top, std[std.length - 1])!.v.toFixed(2)} in ${std[std.length - 1]}.`
+    t && shown && std.length > 1
+      ? `${shown.label_en}${shown === top && !focus ? ' grew most among the personal expectations:' : ':'} ${rate(shown, std[0])!.v.toFixed(2)} per 1,000 words in ${std[0]}, ${rate(shown, std[std.length - 1])!.v.toFixed(2)} in ${std[std.length - 1]}${unit}.`
       : null
 
   const build = (s: Space): Tag[] => {
@@ -88,8 +95,8 @@ export default function AtlasWorker() {
         new THREE.MeshStandardMaterial({
           color: raw ? '#5b5967' : '#a19eac',
           roughness: 0.95,
-          transparent: raw,
-          opacity: raw ? 0.5 : 1,
+          transparent: raw || !!focus,
+          opacity: focus ? 0.25 : raw ? 0.5 : 1,
         }),
       )
       m.position.set(x(y), (up * K) / 2 + 1, 0)
@@ -103,12 +110,14 @@ export default function AtlasWorker() {
             color: SHADES[j % SHADES.length],
             roughness: 0.4,
             transparent: true,
-            opacity: raw ? 0.35 : 0.92,
+            opacity: (focus && focus !== c.id ? 0.15 : 1) * (raw ? 0.35 : 0.92),
           }),
         )
         g.position.set(x(y), -acc - h / 2, 0)
         acc += h
-        s.scene.add(g)
+        s.scene.add(
+          s.pickable(g, () => setFocus((f) => (f === c.id ? null : c.id))),
+        )
       })
       if (raw)
         tags.push({
@@ -144,7 +153,9 @@ export default function AtlasWorker() {
           (j === 0 ? 'BE · ' : '') + c.label_en.split(' and ')[0].toLowerCase(),
         ],
         anchor: 'left',
-        colour: SHADES[j],
+        colour: focus === c.id ? '#f2a65a' : SHADES[j],
+        pressed: focus === c.id,
+        onClick: () => setFocus((f) => (f === c.id ? null : c.id)),
       })
       acc += h
     })
@@ -188,6 +199,18 @@ export default function AtlasWorker() {
       slots={states}
       loading={loading}
       build={build}
+      rebuild={`${mode}|${focus ?? ''}`}
+      control={
+        <Seg
+          label="Rate"
+          value={mode}
+          onChange={setMode}
+          options={[
+            { id: 'std', text: 'OCCUPATION MIX FIXED' },
+            { id: 'raw', text: 'RAW' },
+          ]}
+        />
+      }
     />
   )
 }

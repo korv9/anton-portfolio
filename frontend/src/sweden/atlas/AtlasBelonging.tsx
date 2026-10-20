@@ -5,10 +5,12 @@
  * (visits per inhabitant) and belonging (belonging.json). A floor without data is an outline.
  * One municipality (?kommun=, default Pajala) is traced up through all four.
  */
+import { useState } from 'react'
 import * as THREE from 'three'
 import { useRoute } from '../../router'
 import type { Geometry } from '../map'
 import { AtlasPage } from './AtlasPage'
+import { MuniSelect } from './controls'
 import { extrude, municipalityShapes, ramp, ranks } from './geo'
 import { slot, SLOTS, useSlots } from './slots'
 import { GAP, WARM, type Space, type Tag } from './space'
@@ -123,7 +125,9 @@ export default function AtlasBelonging() {
     avail && area.size
       ? `In ${year}, staffed service points per 10,000 residents range from ${Math.min(...avail.values()).toFixed(1)} to ${Math.max(...avail.values()).toFixed(1)}, and the area each serves from ${Math.round(Math.min(...area.values()))} to ${Math.round(Math.max(...area.values())).toLocaleString('en')} km².`
       : null
-  const pick = route.params.get('kommun') ?? '2521'
+  const [pick, setPick] = useState(route.params.get('kommun') ?? '2521')
+  const [solo, setSolo] = useState<number | null>(null)
+  const dimFloor = (i: number) => solo != null && solo !== i
 
   const build = (s: Space): Tag[] => {
     const tags: Tag[] = []
@@ -141,7 +145,7 @@ export default function AtlasBelonging() {
               new THREE.LineBasicMaterial({
                 color: 0x8e9ab6,
                 transparent: true,
-                opacity: 0.28,
+                opacity: dimFloor(i) ? 0.06 : 0.28,
               }),
             ),
           )
@@ -150,15 +154,20 @@ export default function AtlasBelonging() {
         const v = f.values.get(m.code)
         if (v == null) missing++
         const t = v == null ? 0 : f.invert ? 1 - rank(v) : rank(v)
+        const op = (v == null ? 0.6 : 1) * (dimFloor(i) ? 0.1 : 1)
         s.scene.add(
-          new THREE.Mesh(
-            extrude(m, 3, y),
-            new THREE.MeshStandardMaterial({
-              color: v == null ? '#2b2a31' : ramp(t),
-              roughness: 0.9,
-              transparent: v == null,
-              opacity: v == null ? 0.6 : 1,
-            }),
+          s.pickable(
+            new THREE.Mesh(
+              extrude(m, 3, y),
+              new THREE.MeshStandardMaterial({
+                color: v == null ? '#2b2a31' : ramp(t),
+                roughness: 0.9,
+                transparent: op < 1,
+                opacity: op,
+                depthWrite: op === 1,
+              }),
+            ),
+            () => setPick(m.code),
           ),
         )
       }
@@ -170,6 +179,8 @@ export default function AtlasBelonging() {
         tone: f.values ? 'mono' : 'gap',
         anchor: 'left',
         dx: 28,
+        pressed: solo === i,
+        onClick: () => setSolo((x) => (x === i ? null : i)),
       })
     })
     if (libs) {
@@ -187,6 +198,8 @@ export default function AtlasBelonging() {
             color: WARM,
             size: 2,
             sizeAttenuation: false,
+            transparent: true,
+            opacity: dimFloor(0) ? 0.1 : 1,
           }),
         ),
       )
@@ -216,18 +229,11 @@ export default function AtlasBelonging() {
       })
       tags.push({
         at: new THREE.Vector3(px, 3 * 125, pz),
-        lines: [
-          (names.get(pick) ?? pick).toUpperCase(),
-          ...floors.map((f) =>
-            f.values?.has(pick) && f.fmt
-              ? f.fmt(f.values.get(pick)!)
-              : `${f.name.toLowerCase()}: no data`,
-          ),
-        ],
+        lines: [(names.get(pick) ?? pick).toUpperCase()],
         head: true,
         tone: 'warm',
-        anchor: 'right',
-        dy: -40,
+        anchor: 'above',
+        dy: -12,
       })
     }
     return tags
@@ -251,10 +257,35 @@ export default function AtlasBelonging() {
           : 'The top floor is empty. Library statistics cannot say whether anyone feels they belong.'
       }
       foot={`Lights: ${libs ? libs.libraries.length.toLocaleString('en') : 'no'} public libraries with coordinates · ramp: rank among municipalities, higher = more`}
-      view={{ camera: [820, 640, 900], target: [60, 230, -60] }}
+      view={{ camera: [820, 640, 900], target: [60, 170, -60] }}
       slots={states}
       loading={loading}
       build={build}
+      rebuild={`${pick}|${solo ?? ''}`}
+      info={
+        geo && (
+          <>
+            <span className="is-head">
+              {(names.get(pick) ?? pick).toUpperCase()}
+            </span>
+            {floors.map((f) =>
+              f.values?.has(pick) && f.fmt ? (
+                <span key={f.name}>{f.fmt(f.values.get(pick)!)}</span>
+              ) : (
+                <span key={f.name} className="is-gap">
+                  {f.name.toLowerCase()}: no data
+                </span>
+              ),
+            )}
+            <MuniSelect
+              label="Choose a municipality"
+              options={[...names].map(([code, name]) => ({ code, name }))}
+              value={pick}
+              onChange={(c) => c && setPick(c)}
+            />
+          </>
+        )
+      }
     />
   )
 }

@@ -4,6 +4,7 @@
  * pooled. A third corpus (sou.json) gets a ghost row until it is published. A year inside a
  * corpus's period without a count is a ghost column.
  */
+import { useState } from 'react'
 import * as THREE from 'three'
 import { AtlasPage } from './AtlasPage'
 import { slot, SLOTS, useSlots } from './slots'
@@ -46,6 +47,7 @@ export default function AtlasFutures() {
   const { states, loading } = useSlots(['futures', 'futuresSou'])
   const f = slot<Trends>(states, 'futures')
   const sou = slot<Sou>(states, 'futuresSou')
+  const [focus, setFocus] = useState<string | null>(null)
   const iShare = f?.columns.indexOf('future_share_using') ?? -1
   const riks = new Map(
     (f?.themes ?? []).map((t) => [
@@ -100,8 +102,18 @@ export default function AtlasFutures() {
   const divaTop = [...diva.entries()].sort(
     (a, b) => mean([...b[1].values()]) - mean([...a[1].values()]),
   )[0]
-  const revealed =
-    sec.length >= 10 && divaTop
+  const series = (m: Map<string, Map<number, number>>, id: string) =>
+    [...(m.get(id)?.entries() ?? [])]
+      .sort((a, b) => a[0] - b[0])
+      .map((e) => e[1])
+  const pct = (xs: number[]) => Math.round(mean(xs) * 100)
+  const fr = focus ? series(riks, focus) : []
+  const fd = focus ? series(diva, focus) : []
+  const revealed = focus
+    ? fr.length >= 10 && fd.length >= 10
+      ? `${labels.get(focus) ?? focus}: in the Riksdag ${pct(fr.slice(0, 5))} % → ${pct(fr.slice(-5))} % of future speeches; in DiVA ${pct(fd.slice(0, 5))} % → ${pct(fd.slice(-5))} % of future abstracts (first vs last five years).`
+      : null
+    : sec.length >= 10 && divaTop
       ? `In the Riksdag, ${(labels.get('security') ?? 'security').toLowerCase()} went from about ${Math.round(mean(sec.slice(0, 5)) * 100)} % to ${Math.round(mean(sec.slice(-5)) * 100)} % of future speeches (first vs last five years). In DiVA, ${(labels.get(divaTop[0]) ?? divaTop[0]).toLowerCase()} is the most common theme.`
       : null
 
@@ -143,13 +155,21 @@ export default function AtlasFutures() {
           if (v == null) continue
           const h = v * K
           if (h < 1.5) continue
+          const dim = focus != null && focus !== id
           const m = new THREE.Mesh(
             new THREE.BoxGeometry(U * 0.8, h - 0.6, 46),
-            new THREE.MeshStandardMaterial({ color: COL[id], roughness: 0.6 }),
+            new THREE.MeshStandardMaterial({
+              color: COL[id],
+              roughness: 0.6,
+              transparent: dim,
+              opacity: dim ? 0.12 : 1,
+            }),
           )
           m.position.set(x(y), acc + h / 2, zc)
           acc += h
-          s.scene.add(m)
+          s.scene.add(
+            s.pickable(m, () => setFocus((f) => (f === id ? null : id))),
+          )
         }
       }
       tags.push({
@@ -209,7 +229,10 @@ export default function AtlasFutures() {
       keyItems={ORDER.map((id) => ({
         label: (labels.get(id) ?? id).toLowerCase(),
         colour: COL[id],
+        pressed: focus === id,
+        onClick: () => setFocus((f) => (f === id ? null : id)),
       }))}
+      rebuild={focus ?? ''}
       foot="Height: share of future-oriented texts that use each theme · a text can use several"
       view={{ camera: [-520, 480, 1180], target: [60, 50, 0], shift: -190 }}
       slots={states}

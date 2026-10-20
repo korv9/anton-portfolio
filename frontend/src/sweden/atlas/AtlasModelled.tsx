@@ -2,15 +2,19 @@
  * C · The Modelled Country: the same municipalities on three floors. Bottom: the map. Middle:
  * similarity space (first two principal components), threads joining each municipality to its
  * place. Top: an alternative model specification (alternatives.json); until one is published
- * the floor is a ghost ring. The chosen municipality (?kommun=, default Kiruna) and its three
- * nearest neighbours are lit.
+ * the floor is a ghost ring. A slider (or play) moves every municipality along its thread
+ * between the map (0) and similarity space (1) without rebuilding the scene. The chosen
+ * municipality (click, the list, or ?kommun=; default Kiruna) and its three nearest
+ * neighbours are lit and named.
  */
+import { useState } from 'react'
 import * as THREE from 'three'
 import { useRoute } from '../../router'
 import type { Geometry } from '../map'
 import { GROUP_HEX } from './AtlasHub'
 import { AtlasPage } from './AtlasPage'
-import { extrude, municipalityShapes } from './geo'
+import { MorphControl, MuniSelect, useTween } from './controls'
+import { extrude, layout, municipalityShapes } from './geo'
 import { slot, SLOTS, useSlots } from './slots'
 import { GAP, WARM, type Space, type Tag } from './space'
 
@@ -44,29 +48,6 @@ const L1 = 190
 const L2 = 380
 const R = 210
 
-/** Points on a floor from 2D coordinates, centred and scaled to the floor's radius. */
-function layout(points: { code: string; pc: [number, number] }[], y: number) {
-  const xs = points.map((p) => p.pc[0])
-  const ys = points.map((p) => p.pc[1])
-  const half =
-    Math.max(
-      Math.max(...xs) - Math.min(...xs),
-      Math.max(...ys) - Math.min(...ys),
-    ) / 2 || 1
-  const mx = (Math.max(...xs) + Math.min(...xs)) / 2
-  const my = (Math.max(...ys) + Math.min(...ys)) / 2
-  return new Map(
-    points.map((p) => [
-      p.code,
-      new THREE.Vector3(
-        ((p.pc[0] - mx) / half) * R,
-        y,
-        (-(p.pc[1] - my) / half) * R,
-      ),
-    ]),
-  )
-}
-
 export default function AtlasModelled() {
   const route = useRoute()
   const { states, loading } = useSlots([
@@ -82,14 +63,19 @@ export default function AtlasModelled() {
   const names = slot<Groups>(states, 'similarityGroups')?.splits.find(
     (x) => x.role === 'finer split',
   )?.names
-  const pick = route.params.get('kommun') ?? '2584'
+  const [pick, setPick] = useState(route.params.get('kommun') ?? '2584')
+  const [t, setT, play, stop] = useTween(1)
+  const [trails, setTrails] = useState(true)
   const revealed = sm
     ? `For ${sm.nearest_in_other_county} of ${sm.analysed} municipalities, the most similar one lies in another county; the median distance to it is ${sm.nearest_km_median} km.`
     : null
 
-  const build = (s: Space): Tag[] => {
+  const build = (s: Space) => {
     const tags: Tag[] = []
-    if (!geo || !sim) return tags
+    // Each mover updates one object for the slider's value, in the order added.
+    const movers: ((live: number) => void)[] = []
+    const apply = (live: number) => movers.forEach((f) => f(live))
+    if (!geo || !sim) return { tags, apply }
     const { munis } = municipalityShapes(geo, 0.034)
     const cen = new Map(munis.map((m) => [m.code, m.c]))
     for (const m of munis)
@@ -100,7 +86,7 @@ export default function AtlasModelled() {
         ),
       )
     const ms = sim.municipalities.filter((m) => m.pc && m.finer != null)
-    const mid = layout(ms as { code: string; pc: [number, number] }[], L1)
+    const mid = layout(ms as { code: string; pc: [number, number] }[], L1, R)
     const disc = new THREE.Mesh(
       new THREE.CircleGeometry(260, 96),
       new THREE.MeshBasicMaterial({
@@ -116,6 +102,14 @@ export default function AtlasModelled() {
     s.scene.add(disc)
     s.web(L1, 260, 0.05, 4, 24)
     const ground = new Map<string, THREE.Vector3>()
+    const curves = new Map<string, THREE.QuadraticBezierCurve3>()
+    /** A point that rides a municipality's thread; `apply` moves it. */
+    const rider = (code: string) => {
+      const v = new THREE.Vector3()
+      const curve = curves.get(code)!
+      movers.push((l) => v.copy(curve.getPoint(l)))
+      return v
+    }
     for (const m of ms) {
       const c = cen.get(m.code)
       const b = mid.get(m.code)
@@ -123,30 +117,34 @@ export default function AtlasModelled() {
       const a = new THREE.Vector3(c[0], 2, c[1])
       ground.set(m.code, a)
       const colour = new THREE.Color(GROUP_HEX[m.finer!])
-      for (const [p, r] of [
-        [a, 2.6],
-        [b, 3.2],
-      ] as const) {
-        const dot = new THREE.Mesh(
-          new THREE.SphereGeometry(r, 10, 10),
-          new THREE.MeshBasicMaterial({ color: colour }),
-        )
-        dot.position.copy(p)
-        s.scene.add(dot)
-      }
+      const anchor = new THREE.Mesh(
+        new THREE.SphereGeometry(1.6, 8, 8),
+        new THREE.MeshBasicMaterial({
+          color: colour,
+          transparent: true,
+          opacity: 0.35,
+        }),
+      )
+      anchor.position.copy(a)
+      s.scene.add(anchor)
       const bend = a.clone().lerp(b, 0.5)
       bend.x *= 0.7
       bend.z *= 0.7
-      s.line(
-        new THREE.QuadraticBezierCurve3(a, bend, b).getPoints(20),
-        colour.getHex(),
-        0.1,
+      const curve = new THREE.QuadraticBezierCurve3(a, bend, b)
+      curves.set(m.code, curve)
+      if (trails) s.line(curve.getPoints(20), colour.getHex(), 0.1)
+      const dot = new THREE.Mesh(
+        new THREE.SphereGeometry(m.code === pick ? 5 : 3.2, 10, 10),
+        new THREE.MeshBasicMaterial({ color: m.code === pick ? WARM : colour }),
       )
+      dot.position.copy(curve.getPoint(t))
+      movers.push((l) => dot.position.copy(curve.getPoint(l)))
+      s.scene.add(s.pickable(dot, () => setPick(m.code)))
     }
     // Top floor: an alternative specification, or its ghost.
     if (alt?.specs.length) {
       const spec = alt.specs[0]
-      const top = layout(spec.municipalities, L2)
+      const top = layout(spec.municipalities, L2, R)
       for (const m of spec.municipalities) {
         const dot = new THREE.Mesh(
           new THREE.SphereGeometry(3, 10, 10),
@@ -195,42 +193,34 @@ export default function AtlasModelled() {
     // The chosen municipality and its nearest neighbours.
     const byCode = new Map(sim.municipalities.map((m) => [m.code, m]))
     const chosen = byCode.get(pick)
-    if (chosen && ground.has(pick)) {
-      const nb = (chosen.neighbours ?? []).slice(0, 3)
-      for (const code of [pick, ...nb.map((n) => n[0])]) {
-        const a = ground.get(code)
-        const b = mid.get(code)
-        if (!a || !b) continue
-        s.glow(a, 26, WARM)
-        s.glow(b, 30, WARM)
-        const bend = a.clone().lerp(b, 0.5).multiplyScalar(0.7)
-        bend.y = (a.y + b.y) / 2
-        s.line(
-          new THREE.QuadraticBezierCurve3(a, bend, b).getPoints(30),
-          WARM,
-          0.9,
-        )
+    if (chosen && curves.has(pick)) {
+      const nb = (chosen.neighbours ?? [])
+        .slice(0, 3)
+        .filter((n) => curves.has(n[0]))
+      const codes = [pick, ...nb.map((n) => n[0])]
+      for (const code of codes) {
+        const v = rider(code)
+        const glow = s.glow(v, 30, WARM)
+        movers.push(() => glow.position.copy(v))
+        if (code !== pick) {
+          const from = rider(pick)
+          const g = new THREE.BufferGeometry().setFromPoints([from, v])
+          s.scene.add(
+            new THREE.Line(g, new THREE.LineBasicMaterial({ color: WARM })),
+          )
+          movers.push(() => {
+            g.setFromPoints([from, v])
+            g.computeBoundingSphere()
+          })
+        }
         tags.push({
-          at: b,
+          at: v,
           lines: [byCode.get(code)!.name],
           tone: 'warm',
           anchor: 'right',
-          dy: ([pick, ...nb.map((n) => n[0])].indexOf(code) - 1.5) * 16,
+          dy: (codes.indexOf(code) - 1.5) * 16,
         })
       }
-      tags.push({
-        at: ground.get(pick)!,
-        lines: [
-          `${chosen.name.toUpperCase()} · its nearest in indicators:`,
-          ...nb.map(
-            (n) => `${byCode.get(n[0])?.name} · ${Math.round(n[2])} km away`,
-          ),
-        ],
-        head: true,
-        tone: 'warm',
-        anchor: 'left',
-        dy: 30,
-      })
     }
     tags.push({
       at: new THREE.Vector3(200, 0, 60),
@@ -244,8 +234,14 @@ export default function AtlasModelled() {
       head: true,
       anchor: 'left',
     })
-    return tags
+    apply(t)
+    return { tags, apply }
   }
+
+  const chosenM = sim?.municipalities.find((m) => m.code === pick)
+  const byName = new Map(
+    (sim?.municipalities ?? []).map((m) => [m.code, m.name]),
+  )
 
   return (
     <AtlasPage
@@ -273,6 +269,43 @@ export default function AtlasModelled() {
       slots={states}
       loading={loading}
       build={build}
+      rebuild={`${pick}|${trails}`}
+      live={t}
+      control={
+        <MorphControl
+          t={t}
+          onPlay={play}
+          onSlide={(v) => {
+            stop()
+            setT(v)
+          }}
+          trails={trails}
+          onTrails={setTrails}
+        />
+      }
+      info={
+        sim && (
+          <>
+            {chosenM && (
+              <>
+                <span className="is-head">{chosenM.name.toUpperCase()}</span>
+                <span>its nearest in indicators:</span>
+                {(chosenM.neighbours ?? []).slice(0, 3).map((n) => (
+                  <span key={n[0]}>
+                    {byName.get(n[0]) ?? n[0]} · {Math.round(n[2])} km away
+                  </span>
+                ))}
+              </>
+            )}
+            <MuniSelect
+              label="Choose a municipality"
+              options={sim.municipalities}
+              value={pick}
+              onChange={(c) => c && setPick(c)}
+            />
+          </>
+        )
+      }
     />
   )
 }

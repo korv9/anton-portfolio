@@ -58,3 +58,30 @@ export function ranks(values: (number | null | undefined)[]) {
   return (v: number) =>
     sorted.length > 1 ? sorted.indexOf(v) / (sorted.length - 1) : 1
 }
+
+/** Points on a floor from 2D coordinates, centred and scaled to the floor's radius. */
+export function layout(
+  points: { code: string; pc: [number, number] }[],
+  y: number,
+  r: number,
+) {
+  const xs = points.map((p) => p.pc[0])
+  const ys = points.map((p) => p.pc[1])
+  const half =
+    Math.max(
+      Math.max(...xs) - Math.min(...xs),
+      Math.max(...ys) - Math.min(...ys),
+    ) / 2 || 1
+  const mx = (Math.max(...xs) + Math.min(...xs)) / 2
+  const my = (Math.max(...ys) + Math.min(...ys)) / 2
+  return new Map(
+    points.map((p) => [
+      p.code,
+      new THREE.Vector3(
+        ((p.pc[0] - mx) / half) * r,
+        y,
+        (-(p.pc[1] - my) / half) * r,
+      ),
+    ]),
+  )
+}

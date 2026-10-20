@@ -19,6 +19,27 @@ Code lives in `frontend/src/sweden/atlas/`. three.js loads only on atlas routes.
   `AtlasHub`, `AtlasMeasured` (A), `AtlasWorker` (B), `AtlasModelled` (C),
   `AtlasBelonging` (D), `AtlasFutures` (E) and `AtlasConnections` (×).
 
+## Interaction
+
+Every choice in the scene has a keyboard route as well:
+
+- Start: click a municipality, or pick one from the list, to see its similarity group and
+  a link to C.
+- A: click a bar or a row label to light that area of life.
+- B: switch between the occupation-fixed and the raw rate, and click a personal trait to
+  follow it. The finding is recomputed.
+- C: play, or drag the slider, to move every municipality between the map and similarity
+  space. Paths can be turned off. Click a municipality, or pick one from the list, to light
+  its three nearest neighbours.
+- D: click a floor label to isolate that floor. Click a municipality, or pick one, to trace
+  it through all four floors.
+- E: click a theme in the key, or a slice, to follow it in both corpora.
+- Connections: click a thread to read the relationship, its interval or the reason it was
+  rejected.
+
+A selection rebuilds the scene and keeps the reader's camera. C's slider moves objects in
+place without a rebuild (`apply` in `AtlasPage`).
+
 ## Data slots
 
 Each page reads its files through `slots.ts`. Every slot has a path, a role and the JSON
