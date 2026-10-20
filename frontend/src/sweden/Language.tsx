@@ -1,9 +1,9 @@
 /**
  * B — The Ideal Human (#sweden-arbete). What Swedish job ads ask of people, year by year, from
  * the counts in sweden/language/*.json (platform/publish/sweden/export_language.py, over
- * JobTech's CC0 historical ads). The scene is a year × category matrix of the occupation-
- * standardised share of distinct ad texts using each category; years not yet counted are
- * shown as gaps, never interpolated.
+ * JobTech's CC0 historical ads). The scene is a year × category matrix of matches per
+ * thousand words with the occupation mix held fixed; years not yet counted are shown as gaps,
+ * never interpolated. Changes run between complete years (languageChange.ts).
  *
  * Every number is computed from the files. Advertisement language is evidence about how
  * employers write ads, not about what workers are like or how they feel.
@@ -15,6 +15,7 @@ import MultiLineChart from '../charts/MultiLineChart'
 import RankBars from '../charts/RankBars'
 import { setHashParams, type Route } from '../router'
 import { productById } from './products'
+import { agreed, baselines, lastComplete, type Verdict } from './languageChange'
 import {
   EmptyState,
   ProductEmpty,
@@ -154,18 +155,6 @@ export default function Language({ route }: { route: Route }) {
   // The occupation-standardised rate starts with the first year that records occupations.
   const from =
     years.find((y) => cats.every((c) => at(c, y)?.[8] != null)) ?? first
-  /** Relative change of the main rate between the first and the last year. */
-  const change = (c: Category) => {
-    const a = at(c, from)
-    const b = at(c, last)
-    return a && b && rate(a) > 0 ? rate(b) / rate(a) - 1 : 0
-  }
-  const personal = cats.filter((c) => c.family === 'personal')
-  const competence = cats.find((c) => c.family === 'skill')
-  const rising = [...personal].sort((a, b) => change(b) - change(a))
-  const falling = rising.filter((c) => change(c) < 0)
-  const selected = cats.find((c) => c.id === picked) ?? null
-  const spanNote = years.length < last - first + 1
   // A year counted only from quarterly archives (2026-Q1, …) is still running.
   const quarters = (coverage?.archives ?? []).filter((a) =>
     a.archive.includes('-Q'),
@@ -178,6 +167,22 @@ export default function Language({ route }: { route: Route }) {
         .map((a) => a.archive),
     }),
   )
+  const end = lastComplete(
+    years,
+    partial.map((p) => p.year),
+  )
+  /** Relative change of the main rate from a baseline year to the last complete year. */
+  const change = (c: Category, base = from) => {
+    const a = at(c, base)
+    const b = at(c, end)
+    return a && b && rate(a) > 0 ? rate(b) / rate(a) - 1 : 0
+  }
+  const personal = cats.filter((c) => c.family === 'personal')
+  const competence = cats.find((c) => c.family === 'skill')
+  const rising = [...personal].sort((a, b) => change(b) - change(a))
+  const falling = rising.filter((c) => change(c) < 0)
+  const selected = cats.find((c) => c.id === picked) ?? null
+  const spanNote = years.length < last - first + 1
   const rel = (v: number) => `${v >= 0 ? '+' : ''}${Math.round(v * 100)} %`
   const words = (y: number) => {
     const r = competence && at(competence, y)
@@ -190,8 +195,8 @@ export default function Language({ route }: { route: Route }) {
       key: 'length',
       contrary: true,
       statement: l(
-        `Ads grew from ${Math.round(words(first))} to ${Math.round(words(last))} words between ${first} and ${last}, so almost every expectation appears in more ads; per word, the picture is different.`,
-        `Annonserna växte från ${Math.round(words(first))} till ${Math.round(words(last))} ord mellan ${first} och ${last}, så nästan varje förväntan finns i fler annonser; per ord ser bilden annorlunda ut.`,
+        `Ads grew from ${Math.round(words(first))} to ${Math.round(words(end))} words between ${first} and ${end}, so almost every expectation appears in more ads; per word, the picture is different.`,
+        `Annonserna växte från ${Math.round(words(first))} till ${Math.round(words(end))} ord mellan ${first} och ${end}, så nästan varje förväntan finns i fler annonser; per ord ser bilden annorlunda ut.`,
       ),
       values: (
         <ul>
@@ -199,10 +204,10 @@ export default function Language({ route }: { route: Route }) {
             .sort((a, b) => change(b) - change(a))
             .map((c) => (
               <li key={c.id}>
-                {name(c)}: {l('share of ads', 'andel annonser')} {first}–{last}{' '}
+                {name(c)}: {l('share of ads', 'andel annonser')} {first}–{end}{' '}
                 {pct(value(at(c, first)!, 'crude')!)} →{' '}
-                {pct(value(at(c, last)!, 'crude')!)};{' '}
-                {l('per 1,000 words', 'per 1 000 ord')} {from}–{last}{' '}
+                {pct(value(at(c, end)!, 'crude')!)};{' '}
+                {l('per 1,000 words', 'per 1 000 ord')} {from}–{end}{' '}
                 {rel(change(c))}
               </li>
             ))}
@@ -220,15 +225,15 @@ export default function Language({ route }: { route: Route }) {
     findings.push({
       key: 'rise',
       statement: l(
-        `Per thousand words, ${name(top).toLowerCase()} rose most among the personal expectations: ${show(rate(at(top, from)!), MAIN)} in ${from}, ${show(rate(at(top, last)!), MAIN)} in ${last}.`,
-        `Per tusen ord ökade ${name(top).toLowerCase()} mest bland de personliga förväntningarna: ${show(rate(at(top, from)!), MAIN)} ${from}, ${show(rate(at(top, last)!), MAIN)} ${last}.`,
+        `Per thousand words, ${name(top).toLowerCase()} rose most among the personal expectations: ${show(rate(at(top, from)!), MAIN)} in ${from}, ${show(rate(at(top, end)!), MAIN)} in ${end}.`,
+        `Per tusen ord ökade ${name(top).toLowerCase()} mest bland de personliga förväntningarna: ${show(rate(at(top, from)!), MAIN)} ${from}, ${show(rate(at(top, end)!), MAIN)} ${end}.`,
       ),
       values: (
         <ul>
           {rising.slice(0, 3).map((c) => (
             <li key={c.id}>
               {name(c)}: {show(rate(at(c, from)!), MAIN)} →{' '}
-              {show(rate(at(c, last)!), MAIN)} ({rel(change(c))})
+              {show(rate(at(c, end)!), MAIN)} ({rel(change(c))})
             </li>
           ))}
         </ul>
@@ -256,7 +261,7 @@ export default function Language({ route }: { route: Route }) {
           ].map((c) => (
             <li key={c.id}>
               {name(c)}: {show(rate(at(c, from)!), MAIN)} →{' '}
-              {show(rate(at(c, last)!), MAIN)} ({rel(change(c))})
+              {show(rate(at(c, end)!), MAIN)} ({rel(change(c))})
             </li>
           ))}
         </ul>
@@ -512,8 +517,8 @@ export default function Language({ route }: { route: Route }) {
         {partial.length > 0 && (
           <li>
             {l(
-              `${partial.map((p) => p.year).join(', ')} is still running: it covers only the quarterly archives ${partial.map((p) => p.archives.join(', ')).join('; ')}.`,
-              `${partial.map((p) => p.year).join(', ')} pågår fortfarande: året bygger bara på kvartalsarkiven ${partial.map((p) => p.archives.join(', ')).join('; ')}.`,
+              `${partial.map((p) => p.year).join(', ')} is still running: it covers only the quarterly archives ${partial.map((p) => p.archives.join(', ')).join('; ')}. Changes are measured to ${end}, the last complete year.`,
+              `${partial.map((p) => p.year).join(', ')} pågår fortfarande: året bygger bara på kvartalsarkiven ${partial.map((p) => p.archives.join(', ')).join('; ')}. Förändringar mäts till ${end}, det senaste hela året.`,
             )}
           </li>
         )}
@@ -525,8 +530,8 @@ export default function Language({ route }: { route: Route }) {
         </li>
         <li>
           {l(
-            'Occupation-field labels changed between taxonomy versions; fields that do not exist in a year drop out of that year’s standardised share.',
-            'Yrkesområdenas namn har ändrats mellan taxonomiversioner; områden som inte finns ett år faller bort ur årets standardiserade andel.',
+            'The 2020–2023 archives also use eight occupation-field names outside the taxonomy ("Pedagogiskt arbete" beside "Pedagogik"); they are mapped to the 21 taxonomy fields. A field with fewer than 30 texts in a year drops out of that year’s standardised value.',
+            'Arkiven 2020–2023 använder också åtta namn på yrkesområden utanför taxonomin ("Pedagogiskt arbete" bredvid "Pedagogik"); de förs till taxonomins 21 områden. Ett område med färre än 30 texter ett år faller bort ur årets standardiserade värde.',
           )}
         </li>
         <li>
@@ -577,9 +582,28 @@ export default function Language({ route }: { route: Route }) {
     ),
   }
 
-  const meanChange =
-    personal.reduce((s, c) => s + change(c), 0) / Math.max(1, personal.length)
+  // Each reading is checked from every baseline year; its verdict needs them all to agree.
+  const bases = baselines(years, from, end)
+  const meanFrom = (base: number) =>
+    personal.reduce((s, c) => s + change(c, base), 0) /
+    Math.max(1, personal.length)
+  const means = bases.map(meanFrom)
+  const skills = bases.map((b) => (competence ? change(competence, b) : 0))
+  const meanChange = meanFrom(from)
   const skillChange = competence ? change(competence) : 0
+  const span = (v: number[]) =>
+    `${rel(Math.min(...v))} ${l('to', 'till')} ${rel(Math.max(...v))}`
+  const range = (v: number[]) =>
+    bases.length > 1
+      ? l(
+          ` With ${bases.join(', ')} as the starting year the value runs from ${span(v)}; the verdict holds only if every starting year gives it.`,
+          ` Med ${bases.join(', ')} som startår ligger värdet mellan ${span(v)}; utslaget gäller bara om varje startår ger det.`,
+        )
+      : ''
+  const achievement = (v: number): Verdict =>
+    v > 0.1 ? 'supports' : v < -0.1 ? 'challenges' : 'undetermined'
+  const skillsFirst = (v: number): Verdict =>
+    v >= -0.1 ? 'supports' : 'challenges'
   const readings: Reading[] = [
     {
       theory: 'Han and Fisher: the achievement subject',
@@ -588,17 +612,12 @@ export default function Language({ route }: { route: Route }) {
         'Annonser efterfrågar alltmer passion, driv och självförverkligande och framställer arbete som identitet.',
       ),
       verdict:
-        years.length < 2
-          ? 'undetermined'
-          : meanChange > 0.1
-            ? 'supports'
-            : meanChange < -0.1
-              ? 'challenges'
-              : 'undetermined',
-      why: l(
-        `Per thousand words, the personal categories changed by ${rel(meanChange)} on average between ${first} and ${last} (occupation mix fixed; a change within ±10 % is read as no change).`,
-        `Per tusen ord förändrades de personliga kategorierna med ${rel(meanChange)} i genomsnitt mellan ${first} och ${last} (fast yrkesmix; en förändring inom ±10 % läses som ingen förändring).`,
-      ),
+        years.length < 2 ? 'undetermined' : agreed(means.map(achievement)),
+      why:
+        l(
+          `Per thousand words, the personal categories changed by ${rel(meanChange)} on average between ${from} and ${end} (occupation mix fixed; a change within ±10 % is read as no change).`,
+          `Per tusen ord förändrades de personliga kategorierna med ${rel(meanChange)} i genomsnitt mellan ${from} och ${end} (fast yrkesmix; en förändring inom ±10 % läses som ingen förändring).`,
+        ) + range(means),
       limits: l(
         'A change in wording is not a change in the self; templates and ad length are competing explanations.',
         'En ändring i ordval är inte en ändring i jaget; mallar och annonslängd är konkurrerande förklaringar.',
@@ -611,15 +630,12 @@ export default function Language({ route }: { route: Route }) {
         'Uttalade kvalifikationer behåller sin vikt eller växer när arbetet blir mer specialiserat.',
       ),
       verdict:
-        years.length < 2
-          ? 'undetermined'
-          : skillChange >= -0.1
-            ? 'supports'
-            : 'challenges',
-      why: l(
-        `Per thousand words, stated qualifications changed by ${rel(skillChange)} between ${first} and ${last}.`,
-        `Per tusen ord förändrades uttalade kvalifikationer med ${rel(skillChange)} mellan ${first} och ${last}.`,
-      ),
+        years.length < 2 ? 'undetermined' : agreed(skills.map(skillsFirst)),
+      why:
+        l(
+          `Per thousand words, stated qualifications changed by ${rel(skillChange)} between ${from} and ${end}.`,
+          `Per tusen ord förändrades uttalade kvalifikationer med ${rel(skillChange)} mellan ${from} och ${end}.`,
+        ) + range(skills),
       limits: l(
         'The competence pattern counts the mention of a qualification, not how demanding it is.',
         'Kompetensmönstret räknar att en kvalifikation nämns, inte hur krävande den är.',
@@ -969,8 +985,8 @@ function Explore({
       )}
       <p className="sw-note">
         {l(
-          'Drawn reproducibly by the lowest hash of the ad id; e-mail addresses and phone numbers masked.',
-          'Dragna reproducerbart med lägsta hash av annonsens id; e-postadresser och telefonnummer maskerade.',
+          'Drawn reproducibly by the lowest hash of the ad text; e-mail addresses and phone numbers masked.',
+          'Dragna reproducerbart med lägsta hash av annonstexten; e-postadresser och telefonnummer maskerade.',
         )}
       </p>
     </>
