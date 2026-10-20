@@ -82,6 +82,8 @@ jobs:
         run: |
           python platform/pipeline.py push welfare parliament taxes
           python platform/pipeline.py push ai_politics --only raw
+          # SWEDEN's counts take hours to rebuild; keep what this run counted.
+          python platform/pipeline.py push sweden sweden_language sweden_futures
       # After the store, so the data is kept whatever the result. A subject that did not build
       # is not exported, and its group is not published; the other groups are. The quality
       # subject ends with the structural gate (gate: true in platform/quality/quality_registry.yml).
