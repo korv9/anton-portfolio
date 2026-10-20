@@ -32,8 +32,8 @@ export const SWEDEN_PRODUCTS: SwedenProduct[] = [
       {
         id: 'D',
         why: {
-          en: 'Culture and civic life are the thinnest measured domains; D builds the missing geography of meeting places.',
-          sv: 'Kultur och civilt liv är de tunnast mätta domänerna; D bygger den saknade geografin över mötesplatser.',
+          en: 'Culture has the fewest tables of any mapped domain in SCB’s database, and civic life the fewest items across SCB and Kolada; D builds the missing geography of meeting places.',
+          sv: 'Kultur har minst antal tabeller av de indelade domänerna i SCB:s statistikdatabas, och civilt liv minst antal poster i SCB och Kolada tillsammans; D bygger den saknade geografin över mötesplatser.',
         },
       },
       {
@@ -65,8 +65,8 @@ export const SWEDEN_PRODUCTS: SwedenProduct[] = [
       {
         id: 'A',
         why: {
-          en: 'Employment is the most densely measured domain in official statistics.',
-          sv: 'Sysselsättning är den tätast mätta domänen i den officiella statistiken.',
+          en: 'Employment is the most densely measured domain in SCB’s database.',
+          sv: 'Sysselsättning är den tätast mätta domänen i SCB:s statistikdatabas.',
         },
       },
     ],

@@ -163,8 +163,8 @@ export default function Measurement({ route }: { route: Route }) {
       key: 'thinnest',
       statement: empty.length
         ? l(
-            `No published table or key figure falls under ${empty.map(name).join(', ')}.`,
-            `Ingen publicerad tabell eller nyckeltal faller under ${empty.map(name).join(', ')}.`,
+            `No published table or key figure falls under ${empty.map(name).join(', ')}: no SCB subject or Kolada area is mapped there, so the zero comes from the classification, not from the catalogues.`,
+            `Ingen publicerad tabell eller nyckeltal faller under ${empty.map(name).join(', ')}: inget SCB-ämne eller Kolada-område är indelat dit, så nollan kommer från indelningen, inte från katalogerna.`,
           )
         : l(
             `${name(thin[0])} is the thinnest of the twelve domains.`,
@@ -587,8 +587,8 @@ export default function Measurement({ route }: { route: Route }) {
       ),
       verdict: 'undetermined',
       why: l(
-        'Culture, leisure and spirituality are thin here, but they are also counted by agencies outside these catalogues.',
-        'Kultur, fritid och andlighet är tunna här, men de räknas också av myndigheter utanför dessa kataloger.',
+        'Culture and leisure are thin here, but they are also counted by agencies outside these catalogues. Spirituality is zero because no subject is mapped to it, which says nothing about whether it is measured.',
+        'Kultur och fritid är tunna här, men de räknas också av myndigheter utanför dessa kataloger. Andlighet är noll eftersom inget ämne är indelat dit, vilket inte säger något om huruvida den mäts.',
       ),
       limits: l(
         'Deciding this needs the other agencies’ catalogues and a reading of how categories changed over time.',

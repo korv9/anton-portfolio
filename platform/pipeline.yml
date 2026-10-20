@@ -282,12 +282,14 @@ subjects:
       - export: python platform/publish/cross_domain/export_ai_governance_timeline.py
 
   # SWEDEN research platform. A: catalogue metadata of SCB and Kolada (never the statistics).
-  # C: the validated municipality clustering with SCB's boundaries (CC0).
+  # C: the validated municipality clustering with SCB's boundaries (CC0); the run and the sources
+  # it hashed are kept under features/sweden/similarity.
   # D: KB's library statistics (CC0) and Biblioteksdatabasen.
   sweden:
     schedule: '13 21 * * 6'
     group: sweden
     raw: [catalogue, geography, kb]
+    features: [sweden/similarity]
     prune: true
     steps:
       - ingest: python platform/ingest/catalogue/catalogue_ingest.py

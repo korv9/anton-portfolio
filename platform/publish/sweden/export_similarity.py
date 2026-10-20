@@ -17,8 +17,13 @@ Writes frontend/public/data/sweden/similarity/:
 - `groups.json`: profiles of both splits (raw and standardised means), stability and the null.
 - `geometry.json`: simplified boundaries in SWEREF99 TM metres, one ring list per municipality.
 
-When the clustering run is not on this machine (a cloud runner without warehouse/cluster_lab)
-the committed files are kept and the script says so.
+The county share of nearest neighbours is compared with two nulls: a random partner (the share
+of other municipalities that lie in another county) and a permutation of the social profiles
+over the municipalities, which keeps the neighbour structure and moves the places.
+
+The run JSON and the three sources it hashed are kept in warehouse/features/sweden/similarity,
+which the sweden subject stores in R2, so a cloud runner rebuilds the same files. When they are
+absent the committed files are kept and the script says so.
 """
 from __future__ import annotations
 
@@ -35,12 +40,15 @@ import duckdb
 import numpy as np
 
 ROOT = Path(__file__).resolve().parents[3]
-RUN = ROOT / "warehouse/cluster_lab/public-consensus-2026-10-13"
-RESULT = RUN / "regions-municipalities.json"
+RUN = "public-consensus-2026-10-13"
+STORE = Path(os.environ.get("PORTFOLIO_FEATURES", ROOT / "warehouse/features")) / "sweden/similarity"
+RESULT = STORE / "regions-municipalities.json"
 BOUNDARIES = Path(os.environ.get("PORTFOLIO_RAW", ROOT / "warehouse/raw")) / "geography/scb_boundaries_shape.zip"
 NAMES = ROOT / "frontend/public/data/cluster-research/municipalities.json"
 OUT = ROOT / "frontend/public/data/sweden/similarity"
 NEIGHBOURS = 5
+ROUNDS = 1000
+ELECTIONS = (2010, 2014, 2018, 2022, 2026)  # Kolada repeats the last Riksdag election in later years
 
 FEATURES = {
     "open_unemployment_18_65_pct": ("Open unemployment, 18–65", "Öppen arbetslöshet, 18–65", "%"),
@@ -64,7 +72,7 @@ def sha256(path: Path) -> str:
 
 def values(result: dict) -> dict[str, dict]:
     """The 2024 indicator values per municipality, from the files the clustering hashed."""
-    sources = {Path(p).name: (ROOT / p, h) for p, h in result["sources"].items()}
+    sources = {Path(p).name: (STORE / Path(p).name, h) for p, h in result["sources"].items()}
     for path, recorded in sources.values():
         if sha256(path) != recorded:
             raise SystemExit(f"{path} changed since the clustering ran; refusing to mix inputs")
@@ -109,9 +117,38 @@ def geometry() -> tuple[list[dict], dict[str, tuple[float, float]]]:
     return shapes, centroids
 
 
+def reference_year(feature: str, year: int) -> int:
+    """The year a 2024 value describes: turnout is the last election held, the rest their year."""
+    return max(e for e in ELECTIONS if e <= year) if feature == "turnout_riksdag_pct" else year
+
+
+def county_null(county: list[str], nearest: list[int], xy: np.ndarray, seed: int = 2024) -> dict:
+    """How often the nearest social neighbour lies in another county, against chance."""
+    c, nn, n = np.array(county), np.array(nearest), len(county)
+    other = int((c != c[nn]).sum())
+    same = (c[:, None] == c[None, :]).sum(axis=1) - 1
+    rng = np.random.default_rng(seed)
+    rounds, km = [], []
+    for _ in range(ROUNDS):
+        p = rng.permutation(n)
+        rounds.append(int((c[p] != c[p][nn]).sum()))
+        km.append(float(np.median(np.linalg.norm(xy[p] - xy[p][nn], axis=1))))
+    pair = np.linalg.norm(xy[:, None] - xy[None, :], axis=2)
+    np.fill_diagonal(pair, np.inf)
+    return {"observed": other,
+            "random_partner": round(float((1 - same / (n - 1)).sum()), 1),
+            "permutation": {"rounds": ROUNDS, "seed": seed,
+                            "mean": round(float(np.mean(rounds)), 1),
+                            "interval_95": [int(v) for v in np.percentile(rounds, [2.5, 97.5])],
+                            "share_at_most_observed": sum(r <= other for r in rounds) / ROUNDS,
+                            "km_median": round(float(np.mean(km)) / 1000)},
+            "random_pair_km_median": round(float(np.median(pair[np.triu_indices(n, 1)])) / 1000),
+            "geographic_nearest_km_median": round(float(np.median(pair.min(axis=1))) / 1000)}
+
+
 def main() -> int:
     if not RESULT.exists():
-        print(f"SWEDEN similarity: {RESULT.relative_to(ROOT)} is not here; committed files kept")
+        print(f"SWEDEN similarity: {RESULT} is not here; committed files kept")
         return 0
     result = json.loads(RESULT.read_text(encoding="utf-8"))
     features = result["features"]
@@ -145,17 +182,21 @@ def main() -> int:
 
     nearest = [r["neighbours"][0] for r in municipalities if "neighbours" in r]
     county = {r["code"]: r["county"] for r in municipalities}
-    other_county = sum(1 for r in municipalities if "neighbours" in r
-                       and county[r["neighbours"][0][0]] != r["county"])
+    null = county_null([county[c] for c in analysed],
+                       [analysed.index(r["neighbours"][0][0]) for r in municipalities if "neighbours" in r],
+                       np.array([centroids[c] for c in analysed]))
+    other_county = null["observed"]
     km = sorted(n[2] for n in nearest)
     OUT.mkdir(parents=True, exist_ok=True)
     payload = {
         "year": result["year"], "features": [{"id": f, "label_en": FEATURES[f][0], "label_sv": FEATURES[f][1],
-                                              "unit": FEATURES[f][2]} for f in features],
+                                              "unit": FEATURES[f][2], "reference_year": reference_year(f, result["year"])}
+                                             for f in features],
         "summary": {"analysed": len(analysed), "total": len(raw),
                     "nearest_in_other_county": other_county,
                     "nearest_km_median": km[len(km) // 2], "nearest_km_p90": km[int(len(km) * 0.9)],
-                    "nearest_over_300km": sum(1 for k in km if k > 300)},
+                    "nearest_over_300km": sum(1 for k in km if k > 300),
+                    "county_null": {k: v for k, v in null.items() if k != "observed"}},
         "municipalities": municipalities,
     }
     (OUT / "municipalities.json").write_text(json.dumps(payload, ensure_ascii=False, separators=(",", ":")) + "\n",
@@ -177,7 +218,7 @@ def main() -> int:
         ],
         "excluded": result["excluded_for_missing_values"],
         "limits": result["limits"],
-        "provenance": {"run": RUN.name, "sources": result["sources"],
+        "provenance": {"run": RUN, "sources": result["sources"],
                        "boundaries": {"url": "https://scb.se/hitta-statistik/regional-statistik-och-kartor/regionala-indelningar/digitala-granser/",
                                       "licence": "CC0 1.0", "sha256": sha256(BOUNDARIES)},
                        "run_id": os.environ.get("GITHUB_RUN_ID"), "code_sha": os.environ.get("GITHUB_SHA")},
