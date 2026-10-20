@@ -72,7 +72,7 @@ export default function Futures({ route }: { route: Route }) {
       v == null || v === '' ? params.delete(k) : params.set(k, v)
     setHashParams(route.path, params, true)
   }
-  const scene3d = route.params.get('scen') === '3d'
+  const scene3d = route.params.get('scen') !== '2d'
 
   if (trends === null)
     return (
@@ -233,8 +233,8 @@ export default function Futures({ route }: { route: Route }) {
           </b>
           <p className="sw-note">
             {l(
-              'Darker means more common that year.',
-              'Mörkare betyder vanligare det året.',
+              'Taller and further along the scale means more common that year.',
+              'Högre och längre ut på skalan betyder vanligare det året.',
             )}
           </p>
           <div className="sw-ramp" aria-hidden="true" />
@@ -244,7 +244,7 @@ export default function Futures({ route }: { route: Route }) {
         <div className="sw-controls">
           <ViewToggle
             view={scene3d ? '3d' : 'matrix'}
-            onChange={(v) => set({ scen: v === '3d' ? '3d' : null })}
+            onChange={(v) => set({ scen: v === '3d' ? null : '2d' })}
           />
           <label>
             {l('Measure', 'Mått')}
@@ -311,23 +311,35 @@ export default function Futures({ route }: { route: Route }) {
         >
           <BarField
             rows={themes.length}
-            cols={years.length}
+            cols={years[years.length - 1] - years[0] + 1}
+            gaps={Array.from(
+              { length: years[years.length - 1] - years[0] + 1 },
+              (_, i) => i,
+            ).filter((i) => !years.includes(years[0] + i))}
+            rowLabels={themes.map(name)}
+            colLabels={years
+              .filter((y) => y % 8 === 2 || y === years[years.length - 1])
+              .map((y) => ({ col: y - years[0], text: String(y) }))}
             cells={(() => {
               const top = Math.max(
                 ...themes.flatMap((t) => t.rows.map((r) => value(r, measure))),
                 1e-9,
               )
+              // Years left out of the corpus stay empty ground, never a zero bar.
               return themes.flatMap((t, row) =>
-                years.map((y, col) => {
+                years.flatMap((y) => {
                   const r = t.rows.find((x) => x[0] === y)
                   const v = r ? value(r, measure) : null
-                  return {
-                    row,
-                    col,
-                    height: (v ?? 0) / top,
-                    key: `${t.id}|${y}`,
-                    label: `${name(t)}, ${y}: ${v == null ? '–' : show(v, measure)}`,
-                  }
+                  if (v == null) return []
+                  return [
+                    {
+                      row,
+                      col: y - years[0],
+                      height: v / top,
+                      key: `${t.id}|${y}`,
+                      label: `${name(t)}, ${y}: ${show(v, measure)}`,
+                    },
+                  ]
                 }),
               )
             })()}

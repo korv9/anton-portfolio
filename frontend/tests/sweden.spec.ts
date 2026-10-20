@@ -19,10 +19,26 @@ test('the hub lists the five research products and Connections', async ({
   page,
 }) => {
   await page.goto('/#sweden')
-  await expect(page.locator('.sw-hub-list > li')).toHaveCount(6)
+  await expect(page.locator('.sw-doors > li')).toHaveCount(6)
   for (const href of ROUTES)
-    await expect(page.locator(`.sw-hub-list a[href="${href}"]`)).toHaveCount(1)
-  await expect(page.locator('.sw-hub-out a[href="#projekt"]')).toHaveCount(1)
+    await expect(page.locator(`.sw-doors a[href="${href}"]`)).toHaveCount(1)
+})
+
+test('SWEDEN has one header of its own, with a menu that closes on Escape', async ({
+  page,
+}) => {
+  await page.goto('/#sweden-likhet')
+  await expect(page.locator('.site-header')).toHaveCount(0)
+  await expect(page.locator('.sw-header')).toHaveCount(1)
+  await expect(
+    page.locator('.sw-nav a[aria-current="page"][href="#sweden-likhet"]'),
+  ).toHaveCount(1)
+  const menu = page.getByRole('button', { name: 'MENU' })
+  await menu.click()
+  await expect(page.locator('.sw-menu a[href="#projekt"]')).toBeVisible()
+  await page.keyboard.press('Escape')
+  await expect(page.locator('.sw-menu')).not.toBeVisible()
+  await expect(menu).toBeFocused()
 })
 
 test(
@@ -34,7 +50,7 @@ test(
     for (const href of ROUTES) {
       await page.goto('/' + href)
       await expect(page.locator('#sw-title')).toBeVisible()
-      await expect(page.locator('.sw-question').first()).not.toBeEmpty()
+      await expect(page.locator('#sw-title')).not.toBeEmpty()
       const width = await page.evaluate(
         () => document.documentElement.scrollWidth,
       )
@@ -65,11 +81,11 @@ test('politics of measurement computes its findings from the catalogue', async (
   const culture = summary.domains.find(
     (d: { id: string }) => d.id === 'culture',
   )
-  await page.goto('/#sweden-matning')
-  const cards = page.locator('.sw-finding')
+  await page.goto('/#sweden-matning?scen=2d')
+  const cards = page.locator('.sw-find')
   await expect(cards).not.toHaveCount(0)
   expect(await cards.count()).toBeLessThanOrEqual(3)
-  await expect(page.locator('.sw-findings')).toContainText(
+  await expect(page.locator('.sw-finds')).toContainText(
     culture.scb_tables.toLocaleString('en-GB'),
   )
   // A matrix cell opens its domain in the info panel and the address keeps it.
@@ -95,11 +111,11 @@ test('the invisible sweden moves municipalities into similarity space', async ({
   const data = await (
     await request.get('/data/sweden/similarity/municipalities.json')
   ).json()
-  await page.goto('/#sweden-likhet')
+  await page.goto('/#sweden-likhet?scen=2d')
   await expect(page.locator('.sw-map-dots circle')).toHaveCount(
     data.summary.total,
   )
-  await expect(page.locator('.sw-findings')).toContainText(
+  await expect(page.locator('.sw-finds')).toContainText(
     String(data.summary.nearest_in_other_county),
   )
   // The county share is read against chance, so clustering in space is not read as its absence.
@@ -138,11 +154,11 @@ test('the ideal human counts language per word with the occupation mix fixed', a
     await request.get('/data/sweden/language/trends.json')
   ).json()
   const years = trends.categories[0].rows.map((r: number[]) => r[0])
-  await page.goto('/#sweden-arbete')
+  await page.goto('/#sweden-arbete?scen=2d')
   await expect(page.locator('.sw-matrix thead th.sw-n')).toHaveCount(
     years.length,
   )
-  await expect(page.locator('.sw-finding')).not.toHaveCount(0)
+  await expect(page.locator('.sw-find')).not.toHaveCount(0)
   // The years with no occupations say so instead of showing a standardised value.
   await page
     .getByRole('button', {
@@ -164,14 +180,15 @@ test('the ideal human counts language per word with the occupation mix fixed', a
 test('the infrastructure of belonging maps libraries by municipality and year', async ({
   page,
 }) => {
-  await page.goto('/#sweden-tillhorighet')
+  await page.goto('/#sweden-tillhorighet?scen=2d')
   await expect(page.locator('.sw-choropleth path')).toHaveCount(290)
   await expect(page.locator('.sw-libraries circle')).not.toHaveCount(0)
   await page
     .getByRole('combobox', { name: 'Measure' })
     .selectOption('visits_rate')
   await expect(page).toHaveURL(/matt=visits_rate/)
-  await page.getByRole('button', { name: /^Höganäs:/ }).click()
+  // The map sits under the scene panels in 2D; the keyboard reaches every municipality.
+  await page.getByRole('button', { name: /^Höganäs:/ }).press('Enter')
   await expect(page.locator('.sw-scene-info')).toContainText('Höganäs')
   // A count of service points cannot decide a theory of welfare-state contraction.
   await expect(
@@ -199,9 +216,9 @@ test('the lost futures reads every session and links its speeches', async ({
   // 1999/2000 is the one session with an eight-digit code.
   expect(sessions).toContain('19992000')
   expect(sessions.length).toBeGreaterThanOrEqual(33)
-  await page.goto('/#sweden-framtid')
+  await page.goto('/#sweden-framtid?scen=2d')
   await expect(page.locator('.sw-matrix tbody tr')).toHaveCount(9)
-  await expect(page.locator('.sw-finding')).not.toHaveCount(0)
+  await expect(page.locator('.sw-find')).not.toHaveCount(0)
   await page
     .getByRole('combobox', { name: 'Theme' })
     .selectOption('alternatives')
@@ -247,17 +264,18 @@ test('connections state their contracts and the rejected joins', async ({
   ).toEqual([])
 })
 
-test('the 3D view loads on demand and keeps the 2D matrix as fallback', async ({
+test('3D is the default, 2D is one click away, and the homepage never loads three.js', async ({
   page,
 }) => {
   await page.goto('/#start')
-  // The homepage never loads three.js.
   const homeScripts = await page.evaluate(() =>
     performance.getEntriesByType('resource').map((e) => e.name),
   )
-  expect(homeScripts.some((n) => /BarField|three/.test(n))).toBe(false)
+  expect(homeScripts.some((n) => /BarField|three|stage/.test(n))).toBe(false)
   await page.goto('/#sweden-matning')
-  await page.getByRole('button', { name: '3D', exact: true }).click()
-  await expect(page).toHaveURL(/scen=3d/)
-  await expect(page.locator('.sw-barfield canvas, .sw-matrix')).toHaveCount(1)
+  // A 3D canvas where WebGL works, the 2D matrix where it does not.
+  await expect(page.locator('.sw-stage canvas, .sw-matrix')).toHaveCount(1)
+  await page.getByRole('button', { name: '2D', exact: true }).click()
+  await expect(page).toHaveURL(/scen=2d/)
+  await expect(page.locator('.sw-matrix')).toHaveCount(1)
 })

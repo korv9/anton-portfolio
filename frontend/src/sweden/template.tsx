@@ -8,16 +8,16 @@
  * Nothing here holds a finding: pages compute their statements from published data, and a
  * product without validated data shows an EmptyState instead of cards.
  */
-import type { ReactNode } from 'react'
+import { createContext, useContext, useState, type ReactNode } from 'react'
 import { l } from '../i18n'
 import { ExploreSection } from '../ui/Story'
 import {
-  SWEDEN_PRODUCTS,
   productById,
   type Evidence,
   type Status,
   type SwedenProduct,
 } from './products'
+import { SwedenHeader } from './Header'
 import './sweden.css'
 
 const b = (text: { en: string; sv: string }) => l(text.en, text.sv)
@@ -90,6 +90,47 @@ export function FindingCard({ finding }: { finding: Finding }) {
     </article>
   )
 }
+
+/**
+ * A finding as a numbered button in the scene's title panel. Choosing it shows its values,
+ * evidence and source under the statement, and moves the scene when the page can (onShow).
+ */
+function FindingButton({ finding, n }: { finding: Finding; n: number }) {
+  const [open, setOpen] = useState(false)
+  return (
+    <li className="sw-find" data-contrary={finding.contrary || undefined}>
+      <button
+        type="button"
+        aria-expanded={open}
+        onClick={() => {
+          setOpen(!open)
+          if (!open) finding.onShow?.()
+        }}
+      >
+        <span className="sw-find-n">{String(n).padStart(2, '0')}</span>
+        <span>
+          {finding.contrary && (
+            <span className="sw-finding-flag">
+              {l('Against the expectation', 'Mot förväntningen')}
+            </span>
+          )}
+          {finding.statement}
+        </span>
+      </button>
+      {open && (
+        <div className="sw-find-more">
+          <div className="sw-finding-values">{finding.values}</div>
+          <p>
+            <EvidenceStamp evidence={finding.evidence} />{' '}
+            <span className="sw-source">{finding.source}</span>
+          </p>
+        </div>
+      )}
+    </li>
+  )
+}
+
+const FindingsContext = createContext<Finding[]>([])
 
 /** What a page would show, what it needs, and what to explore meanwhile. */
 export function EmptyState({
@@ -264,17 +305,31 @@ export function Scene({
   info?: ReactNode
   children: ReactNode
 }) {
+  const findings = useContext(FindingsContext)
   return (
     <section className="sw-scene" aria-labelledby="sw-title">
       <div className="sw-scene-visual">{children}</div>
       <header className="sw-panel sw-scene-title">
         <p className="sw-kicker">
-          <span className="sw-id">{product.id}</span> SWEDEN
+          SWEDEN · {product.id === 'X' ? '×' : product.id} · {b(product.title)}
           <StatusStamp status={product.status} />
         </p>
-        <h1 id="sw-title">{b(product.title)}</h1>
-        <p className="sw-question">{b(product.question)}</p>
-        <p className="sw-note">{line}</p>
+        <h1 id="sw-title">{b(product.question)}</h1>
+        <p className="sw-line">{line}</p>
+        {findings.length > 0 && (
+          <ol className="sw-finds" aria-label={l('Findings', 'Resultat')}>
+            {findings.map((f, i) => (
+              <FindingButton key={f.key} finding={f} n={i + 1} />
+            ))}
+          </ol>
+        )}
+        <a className="sw-more" href="#sw-below">
+          {l(
+            'Explore, method and interpretations',
+            'Utforska, metod och tolkningar',
+          )}{' '}
+          ↓
+        </a>
       </header>
       {legend && <aside className="sw-panel sw-scene-legend">{legend}</aside>}
       {control && <div className="sw-panel sw-scene-control">{control}</div>}
@@ -310,16 +365,10 @@ export function SwedenResearchPage({
   return (
     <article className="sweden sw-page">
       <SwedenMasthead current={product.href} />
-      {scene}
-      <section className="sw-findings" aria-labelledby="sw-findings-title">
-        <h2 id="sw-findings-title">{l('Findings', 'Resultat')}</h2>
-        <div className="sw-findings-grid">
-          {ordered.map((f) => (
-            <FindingCard key={f.key} finding={f} />
-          ))}
-        </div>
-      </section>
-      <div className="sw-explore">
+      <FindingsContext.Provider value={ordered}>
+        {scene}
+      </FindingsContext.Provider>
+      <div className="sw-explore" id="sw-below">
         <ExploreSection summary={exploreSummary} defaultOpen>
           {explore}
         </ExploreSection>
@@ -331,32 +380,9 @@ export function SwedenResearchPage({
   )
 }
 
-/** The black band that marks every SWEDEN page, with the platform's own navigation. */
+/** Every SWEDEN page opens with the same header (Header.tsx), in place of the site header. */
 export function SwedenMasthead({ current }: { current: string }) {
-  return (
-    <nav className="sw-masthead" aria-label="SWEDEN">
-      <a
-        href="#sweden"
-        className="sw-wordmark"
-        aria-current={current === '#sweden' ? 'page' : undefined}
-      >
-        SWEDEN
-      </a>
-      <ul>
-        {SWEDEN_PRODUCTS.map((p) => (
-          <li key={p.href}>
-            <a
-              href={p.href}
-              aria-current={current === p.href ? 'page' : undefined}
-            >
-              <span className="sw-id">{p.id === 'X' ? '×' : p.id}</span>
-              <span className="sw-nav-name">{b(p.title)}</span>
-            </a>
-          </li>
-        ))}
-      </ul>
-    </nav>
-  )
+  return <SwedenHeader current={current} />
 }
 
 /** A product page without validated data: its masthead, question and an EmptyState. */
@@ -382,7 +408,10 @@ export function ProductEmpty({
   )
 }
 
-/** Matrix or 3D: the matrix is the default and the accessible view; 3D loads only when asked. */
+/**
+ * 3D or 2D: 3D is the default where WebGL works (the scene falls back to 2D by itself), and the
+ * reader can always switch to the 2D matrix, which is also the accessible view.
+ */
 export function ViewToggle({
   view,
   onChange,
@@ -394,19 +423,17 @@ export function ViewToggle({
     <div role="group" aria-label={l('View', 'Vy')} className="sw-view-toggle">
       <button
         type="button"
-        className="sw-toggle"
-        aria-pressed={view === 'matrix'}
-        onClick={() => onChange('matrix')}
-      >
-        {l('Matrix', 'Matris')}
-      </button>
-      <button
-        type="button"
-        className="sw-toggle"
         aria-pressed={view === '3d'}
         onClick={() => onChange('3d')}
       >
         3D
+      </button>
+      <button
+        type="button"
+        aria-pressed={view === 'matrix'}
+        onClick={() => onChange('matrix')}
+      >
+        2D
       </button>
     </div>
   )

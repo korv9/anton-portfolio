@@ -12,6 +12,8 @@ export type SwedenProduct = {
   id: 'A' | 'B' | 'C' | 'D' | 'E' | 'X'
   href: string
   title: Bilingual
+  /** One word for the navigation row. */
+  short: Bilingual
   question: Bilingual
   status: Status
   /** Related products and why, two or three. */
@@ -23,6 +25,7 @@ export const SWEDEN_PRODUCTS: SwedenProduct[] = [
     id: 'A',
     href: '#sweden-matning',
     title: { en: 'Politics of Measurement', sv: 'Mätandets politik' },
+    short: { en: 'Measurement', sv: 'Mätning' },
     question: {
       en: 'What does Sweden measure, and what does it overlook?',
       sv: 'Vad mäter Sverige, och vad förbiser det?',
@@ -49,6 +52,7 @@ export const SWEDEN_PRODUCTS: SwedenProduct[] = [
     id: 'B',
     href: '#sweden-arbete',
     title: { en: 'The Ideal Human', sv: 'Den ideala människan' },
+    short: { en: 'Work', sv: 'Arbete' },
     question: {
       en: "How have Swedish employers' expectations of the ideal worker changed?",
       sv: 'Hur har svenska arbetsgivares förväntningar på den ideala arbetstagaren förändrats?',
@@ -75,6 +79,7 @@ export const SWEDEN_PRODUCTS: SwedenProduct[] = [
     id: 'C',
     href: '#sweden-likhet',
     title: { en: 'The Invisible Sweden', sv: 'Det osynliga Sverige' },
+    short: { en: 'Similarity', sv: 'Likhet' },
     question: {
       en: 'Which parts of Sweden are socially similar despite geographical distance?',
       sv: 'Vilka delar av Sverige liknar varandra socialt trots geografiskt avstånd?',
@@ -104,6 +109,7 @@ export const SWEDEN_PRODUCTS: SwedenProduct[] = [
       en: 'The Infrastructure of Belonging',
       sv: 'Tillhörighetens infrastruktur',
     },
+    short: { en: 'Belonging', sv: 'Tillhörighet' },
     question: {
       en: 'Where can people participate in collective life without needing to consume?',
       sv: 'Var kan människor delta i gemensamt liv utan att behöva konsumera?',
@@ -130,6 +136,7 @@ export const SWEDEN_PRODUCTS: SwedenProduct[] = [
     id: 'E',
     href: '#sweden-framtid',
     title: { en: 'The Lost Futures', sv: 'De förlorade framtiderna' },
+    short: { en: 'Futures', sv: 'Framtid' },
     question: {
       en: 'How have Swedish visions of the future changed?',
       sv: 'Hur har svenska framtidsvisioner förändrats?',
@@ -156,6 +163,7 @@ export const SWEDEN_PRODUCTS: SwedenProduct[] = [
     id: 'X',
     href: '#sweden-samband',
     title: { en: 'Connections', sv: 'Samband' },
+    short: { en: 'Connections', sv: 'Samband' },
     question: {
       en: 'Which relationships between domains hold when measurement, time and geography are compatible?',
       sv: 'Vilka samband mellan domäner håller när mått, tid och geografi är jämförbara?',

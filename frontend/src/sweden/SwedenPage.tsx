@@ -11,7 +11,6 @@ import {
 } from 'react'
 import { l } from '../i18n'
 import type { Route } from '../router'
-import { SWEDEN_PRODUCTS } from './products'
 import {
   EmptyState,
   EvidenceStamp,
@@ -21,6 +20,9 @@ import {
 import './sweden.css'
 
 // Products with findings, each loaded only on its own route.
+const Hub = lazy(() => import('./Hub'))
+const Atlas = lazy(() => import('./atlas/Atlas'))
+
 const PAGES: Record<
   string,
   LazyExoticComponent<ComponentType<{ route: Route }>>
@@ -33,10 +35,19 @@ const PAGES: Record<
   '#sweden-samband': lazy(() => import('./Connections')),
 }
 
-const b = (text: { en: string; sv: string }) => l(text.en, text.sv)
-
 export default function SwedenPage({ route }: { route: Route }) {
-  if (route.path === '#sweden') return <Hub />
+  if (route.path === '#sweden')
+    return (
+      <Suspense fallback={null}>
+        <Hub />
+      </Suspense>
+    )
+  if (route.path.startsWith('#sweden-atlas'))
+    return (
+      <Suspense fallback={null}>
+        <Atlas path={route.path} />
+      </Suspense>
+    )
   if (route.path === '#sweden-kit') return <Kit />
   const Page = PAGES[route.path]
   if (Page)
@@ -51,48 +62,10 @@ export default function SwedenPage({ route }: { route: Route }) {
         <Page route={route} />
       </Suspense>
     )
-  return <Hub />
-}
-
-function Hub() {
   return (
-    <article className="sweden sw-page sw-hub">
-      <SwedenMasthead current="#sweden" />
-      <header className="sw-hub-head">
-        <p className="sw-kicker">
-          {l('Featured research platform', 'Utvald forskningsplattform')}
-        </p>
-        <h1>SWEDEN</h1>
-        <p className="sw-question">
-          {l(
-            'What do we measure, what do we value, and what do we overlook?',
-            'Vad mäter vi, vad värderar vi, och vad förbiser vi?',
-          )}
-        </p>
-        <p className="sw-note">
-          {l(
-            'Five research products on work, culture, participation, belonging and imagined futures in Sweden, built on public data with their methods and limits in view. Each page says whether it has findings yet.',
-            'Fem forskningsprodukter om arbete, kultur, deltagande, tillhörighet och föreställda framtider i Sverige, byggda på offentliga data med metod och begränsningar synliga. Varje sida säger om den har resultat ännu.',
-          )}
-        </p>
-      </header>
-      <ol className="sw-hub-list">
-        {SWEDEN_PRODUCTS.map((p) => (
-          <li key={p.id}>
-            <a href={p.href}>
-              <span className="sw-id">{p.id === 'X' ? '×' : p.id}</span>
-              <span className="sw-hub-title">{b(p.title)}</span>
-              <span className="sw-hub-question">{b(p.question)}</span>
-              <StatusStamp status={p.status} />
-            </a>
-          </li>
-        ))}
-      </ol>
-      <nav className="sw-hub-out" aria-label={l('More', 'Mer')}>
-        <a href="#projekt">{l('Other projects', 'Andra projekt')}</a>
-        <a href="#om-mig">{l('About me', 'Om mig')}</a>
-      </nav>
-    </article>
+    <Suspense fallback={null}>
+      <Hub />
+    </Suspense>
   )
 }
 
