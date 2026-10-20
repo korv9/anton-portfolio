@@ -246,8 +246,8 @@ export const MAPS = (): MapSpec[] => [
       'Kommunprofiler: tolv indikatorer 2024',
     ),
     meaning: l(
-      'Each point is one of 280 municipalities, placed by the first two principal components of twelve indicators. Ten municipalities lack a value for social assistance and are left out. The groups describe similar profiles; they do not rank wellbeing.',
-      'Varje punkt är en av 280 kommuner, placerad efter de två första principalkomponenterna av tolv indikatorer. Tio kommuner saknar värde för ekonomiskt bistånd och är inte med. Grupperna beskriver liknande profiler och rangordnar inte välmående.',
+      'Each point is one of 280 municipalities, placed by the first two principal components of twelve indicators. Ten municipalities are left out: seven lack a value for social assistance and three for Riksdag turnout. The groups describe similar profiles; they do not rank wellbeing.',
+      'Varje punkt är en av 280 kommuner, placerad efter de två första principalkomponenterna av tolv indikatorer. Tio kommuner är inte med: sju saknar värde för ekonomiskt bistånd och tre för valdeltagande. Grupperna beskriver liknande profiler och rangordnar inte välmående.',
     ),
     variants: [
       {

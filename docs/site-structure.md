@@ -4,6 +4,24 @@ How the site is organised and which file decides what. The visual direction is i
 [design-system.md](design-system.md); how a page orders its content is in
 [data-storytelling.md](data-storytelling.md).
 
+## SWEDEN research platform
+
+SWEDEN (`#sweden`) is the featured research platform. It has five research products and a
+Connections page, and its design is described in [sweden-design.md](sweden-design.md).
+
+| Route | Product | Status |
+|---|---|---|
+| `#sweden-matning` | A Politics of Measurement | Findings (SCB and Kolada catalogues) |
+| `#sweden-arbete` | B The Ideal Human | Findings for counted archive years; the full backfill runs weekly |
+| `#sweden-likhet` | C The Invisible Sweden | Findings (the 2024 clustering of 280 municipalities) |
+| `#sweden-tillhorighet` | D The Infrastructure of Belonging | Findings (KB library statistics, 2014 onward) |
+| `#sweden-framtid` | E The Lost Futures | Findings (Riksdag speeches 1993/94–2025/26; DiVA not yet counted) |
+| `#sweden-samband` | Connections | Three relationships computed, two joins rejected |
+
+The header links to SWEDEN first. Its project menu is titled Other projects, and on the homepage and
+`#projekt` a featured SWEDEN card stands above the other projects. The Wellbeing Observatory moved from `#sweden*` to `#wellbeing*`. Its old addresses
+(`#sweden-health`, `#sweden-counties` and the others) redirect.
+
 ## Projects and navigation
 
 The homepage holds the identity, profile, experience and project index. A shared header

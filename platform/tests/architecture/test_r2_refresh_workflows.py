@@ -194,7 +194,7 @@ def test_publication_specs_have_disjoint_real_file_owners():
     import release
     public = ROOT / "frontend/public/data"
     owners = {}
-    for group in ("baseline", "jobs", "jobs-analysis", "news", "public-data", "diva"):
+    for group in ("baseline", "jobs", "jobs-analysis", "news", "public-data", "diva", "sweden"):
         spec = json.loads((ROOT / f"configs/delivery/{group}.json").read_text())
         for path in release.selected(public, spec):
             assert path not in owners, f"{path} belongs to both {owners.get(path)} and {group}"
@@ -202,6 +202,7 @@ def test_publication_specs_have_disjoint_real_file_owners():
     assert owners["jobs/market.json"] == "jobs"
     assert owners["parliament/news.json"] == "news"
     assert owners["diva/clusters.json"] == "diva"
+    assert owners["sweden/measurement/summary.json"] == "sweden"
     assert owners["gold/marts/jobs.json"] == "jobs-analysis"
 
 

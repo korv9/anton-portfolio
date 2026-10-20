@@ -44,3 +44,25 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+.project-card-featured {
+  margin-bottom: var(--sp-6);
+  padding: var(--sp-5);
+  background: #161616;
+  color: #f1f0ec;
+  border-radius: var(--radius);
+}
+.project-card-featured .project-card-title {
+  font-size: var(--h2);
+  letter-spacing: 0.16em;
+}
+.project-card-featured .project-card-kind {
+  color: #f1f0ec;
+}
+.projects-other {
+  margin: 0 0 var(--sp-3);
+  font-size: var(--small);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}

@@ -36,6 +36,16 @@ function holds(counts: Record<string, number> | undefined) {
 export default function ProjectList({ domains }: { domains: Domain[] }) {
   return (
     <div className="projects-groups">
+      <a className="project-card project-card-featured" href="#sweden">
+        <span className="project-card-title">SWEDEN</span>
+        <span className="project-card-kind">
+          {l(
+            'Featured research platform: five research products on Swedish society',
+            'Utvald forskningsplattform: fem forskningsprodukter om det svenska samhället',
+          )}
+        </span>
+      </a>
+      <h2 className="projects-other">{l('Other projects', 'Andra projekt')}</h2>
       <p>
         Most of my latest projects are part of this data platform. Explore the
         pipelines and application code on{' '}

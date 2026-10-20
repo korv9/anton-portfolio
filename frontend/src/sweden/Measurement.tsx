@@ -7,7 +7,7 @@
  * not what matters: one table is not one indicator, and a domain held by an agency outside the
  * two catalogues looks thin here without being unmeasured.
  */
-import { useEffect, useMemo, useState } from 'react'
+import { Suspense, lazy, useEffect, useMemo, useState } from 'react'
 import { l } from '../i18n'
 import { fetchJson } from '../welfare/data'
 import RankBars from '../charts/RankBars'
@@ -16,8 +16,10 @@ import { setHashParams, type Route } from '../router'
 import { productById } from './products'
 import {
   EmptyState,
+  ProductEmpty,
   Scene,
   SwedenResearchPage,
+  ViewToggle,
   type Finding,
   type Method,
   type Reading,
@@ -92,6 +94,8 @@ function decadeMatrix(coverage: Coverage, minGeo: Geo) {
   return cell
 }
 
+const BarField = lazy(() => import('./BarField'))
+
 export default function Measurement({ route }: { route: Route }) {
   const product = productById('A')
   const [summary, setSummary] = useState<Summary | 'error' | null>(null)
@@ -111,6 +115,7 @@ export default function Measurement({ route }: { route: Route }) {
       v == null || v === '' ? params.delete(k) : params.set(k, v)
     setHashParams(route.path, params, push)
   }
+  const scene3d = route.params.get('scen') === '3d'
   const matrix = useMemo(
     () => (coverage ? decadeMatrix(coverage, geo) : null),
     [coverage, geo],
@@ -124,7 +129,7 @@ export default function Measurement({ route }: { route: Route }) {
     )
   if (summary === 'error')
     return (
-      <div className="sweden sw-page">
+      <ProductEmpty product={product}>
         <EmptyState
           state="cloud"
           shows={l(
@@ -136,7 +141,7 @@ export default function Measurement({ route }: { route: Route }) {
             'Mätkatalogen (sweden/measurement/summary.json) kunde inte läsas.',
           )}
         />
-      </div>
+      </ProductEmpty>
     )
 
   const domains = summary.domains
@@ -267,6 +272,10 @@ export default function Measurement({ route }: { route: Route }) {
       }
       control={
         <div className="sw-controls">
+          <ViewToggle
+            view={scene3d ? '3d' : 'matrix'}
+            onChange={(v) => set({ scen: v === '3d' ? '3d' : null })}
+          />
           <label>
             {l('Finest geography at least', 'Finaste geografi minst')}
             <select
@@ -314,7 +323,53 @@ export default function Measurement({ route }: { route: Route }) {
         )
       }
     >
-      {matrix ? (
+      {matrix && scene3d ? (
+        <Suspense
+          fallback={
+            <p className="sw-note" role="status">
+              {l('Loading 3D…', 'Laddar 3D…')}
+            </p>
+          }
+        >
+          <BarField
+            rows={domains.length}
+            cols={DECADES.length}
+            cells={(() => {
+              const top = Math.max(1, ...matrix.values())
+              return domains.flatMap((d, row) =>
+                DECADES.map((dec, col) => {
+                  const v = matrix.get(`${d.id}|${dec}`) ?? 0
+                  return {
+                    row,
+                    col,
+                    height: v / top,
+                    key: `${d.id}|${dec}`,
+                    label: `${name(d)}, ${dec}s: ${num(v)} ${l('SCB tables', 'SCB-tabeller')}`,
+                  }
+                }),
+              )
+            })()}
+            picked={picked && decade ? `${picked}|${decade}` : null}
+            onPick={(key) => {
+              const [d, dec] = key.split('|')
+              set({ domain: d, decade: dec })
+            }}
+            label={l(
+              'The knowledge cube: SCB tables by domain and decade',
+              'Kunskapskuben: SCB-tabeller per domän och decennium',
+            )}
+            fallback={
+              <CoverageMatrix
+                domains={domains}
+                matrix={matrix}
+                picked={picked}
+                decade={decade}
+                onPick={(d, dec) => set({ domain: d, decade: String(dec) })}
+              />
+            }
+          />
+        </Suspense>
+      ) : matrix ? (
         <CoverageMatrix
           domains={domains}
           matrix={matrix}

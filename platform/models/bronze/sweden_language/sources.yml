@@ -1,0 +1,25 @@
+version: 2
+
+# SWEDEN B, The Ideal Human: counts of job-ad language per archive, written by
+# platform/ingest/jobtech/ad_language.py under warehouse/features/sweden/ad_language. No ad
+# text is kept apart from the masked review examples.
+
+sources:
+  - name: ad_language
+    description: Category matches in JobTech's historical job ads (CC0), per archive.
+    tables:
+      - name: totals
+        description: Year × occupation field × county; ads, distinct texts and words (the denominators).
+        meta:
+          external_location: >-
+            read_parquet('{{ env_var('PORTFOLIO_FEATURES', '../warehouse/features') }}/sweden/ad_language/totals_*.parquet', union_by_name = true)
+      - name: hits
+        description: The same cells × category; distinct texts matching and number of matches.
+        meta:
+          external_location: >-
+            read_parquet('{{ env_var('PORTFOLIO_FEATURES', '../warehouse/features') }}/sweden/ad_language/hits_*.parquet', union_by_name = true)
+      - name: examples
+        description: Five reproducibly drawn matches per category and archive, masked.
+        meta:
+          external_location: >-
+            read_parquet('{{ env_var('PORTFOLIO_FEATURES', '../warehouse/features') }}/sweden/ad_language/examples_*.parquet', union_by_name = true)

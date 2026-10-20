@@ -53,7 +53,7 @@ export const SWEDEN_PRODUCTS: SwedenProduct[] = [
       en: "How have Swedish employers' expectations of the ideal worker changed?",
       sv: 'Hur har svenska arbetsgivares förväntningar på den ideala arbetstagaren förändrats?',
     },
-    status: 'pipeline',
+    status: 'findings',
     related: [
       {
         id: 'E',
@@ -79,7 +79,7 @@ export const SWEDEN_PRODUCTS: SwedenProduct[] = [
       en: 'Which parts of Sweden are socially similar despite geographical distance?',
       sv: 'Vilka delar av Sverige liknar varandra socialt trots geografiskt avstånd?',
     },
-    status: 'pipeline',
+    status: 'findings',
     related: [
       {
         id: 'D',
@@ -108,7 +108,7 @@ export const SWEDEN_PRODUCTS: SwedenProduct[] = [
       en: 'Where can people participate in collective life without needing to consume?',
       sv: 'Var kan människor delta i gemensamt liv utan att behöva konsumera?',
     },
-    status: 'pipeline',
+    status: 'findings',
     related: [
       {
         id: 'C',
@@ -134,7 +134,7 @@ export const SWEDEN_PRODUCTS: SwedenProduct[] = [
       en: 'How have Swedish visions of the future changed?',
       sv: 'Hur har svenska framtidsvisioner förändrats?',
     },
-    status: 'pipeline',
+    status: 'findings',
     related: [
       {
         id: 'B',
@@ -160,7 +160,7 @@ export const SWEDEN_PRODUCTS: SwedenProduct[] = [
       en: 'Which relationships between domains hold when measurement, time and geography are compatible?',
       sv: 'Vilka samband mellan domäner håller när mått, tid och geografi är jämförbara?',
     },
-    status: 'pipeline',
+    status: 'findings',
     related: [
       {
         id: 'A',

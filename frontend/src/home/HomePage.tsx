@@ -171,6 +171,18 @@ function Work() {
       </div>
       <ClusterPreview kind="jobs" background />
       <div className="home-project-groups">
+        <a className="work-featured" href="#sweden">
+          <span className="work-featured-kicker">
+            Featured research platform
+          </span>
+          <span className="work-featured-title">SWEDEN</span>
+          <span className="work-featured-question">
+            What do we measure, what do we value, and what do we overlook? Five
+            research products on work, culture, belonging and imagined futures
+            in Sweden.
+          </span>
+        </a>
+        <h3 className="work-other-title">Other projects</h3>
         <section aria-label="Project list">
           <ul className="work-row">
             {LISTED_PROJECTS.map((project) => (

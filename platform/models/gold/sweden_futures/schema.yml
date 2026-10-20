@@ -1,0 +1,30 @@
+version: 2
+
+models:
+  - name: mart_sweden_future_themes
+    description: The Lost Futures. Year × party × theme over Riksdag speeches.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [year, party, theme]
+  - name: mart_sweden_future_trends
+    description: Year × theme over all Riksdag speeches.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [year, theme]
+    columns:
+      - name: future_share
+        data_tests:
+          - between:
+              arguments: {min: 0, max: 1}
+      - name: future_share_using
+        data_tests:
+          - between:
+              arguments: {min: 0, max: 1}
+  - name: mart_sweden_future_theses
+    description: Year × theme over Swedish-language student-thesis abstracts in DiVA; never pooled with the Riksdag.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [year, theme]

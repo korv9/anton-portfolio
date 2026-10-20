@@ -48,6 +48,10 @@ models:
         +tags: [welfare]
       sweden:
         +tags: [sweden]
+      sweden_language:
+        +tags: [sweden_language]
+      sweden_futures:
+        +tags: [sweden_futures]
     silver:
       +materialized: view
       +schema: silver
@@ -76,6 +80,10 @@ models:
         +tags: [cross_domain]
       sweden:
         +tags: [sweden]
+      sweden_language:
+        +tags: [sweden_language]
+      sweden_futures:
+        +tags: [sweden_futures]
       concepts:
         +tags: [concepts]
       philosophy:
@@ -116,6 +124,16 @@ seeds:
     sweden:
       +tags: [sweden]
       +schema: seeds
+    sweden_futures:
+      +tags: [sweden_futures]
+      +schema: seeds
+      future_terms:
+        +column_types: {case_sensitive: boolean, sort_order: integer}
+    sweden_language:
+      +tags: [sweden_language]
+      +schema: seeds
+      ad_language_terms:
+        +column_types: {case_sensitive: boolean, sort_order: integer}
       research_domains:
         +column_types: {sort_order: integer}
     cross_domain:

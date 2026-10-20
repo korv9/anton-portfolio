@@ -291,11 +291,22 @@
 .sw-verdict {
   font-weight: 700;
 }
-.sw-reading[data-verdict='challenges'] .sw-verdict {
-  color: var(--sw-div-neg);
+/* The verdict is written out; a small dot before it repeats it in colour. */
+.sw-verdict::before {
+  content: '';
+  display: inline-block;
+  width: 0.5rem;
+  height: 0.5rem;
+  margin-right: 0.45rem;
+  border-radius: 50%;
+  background: var(--sw-div-mid);
+  vertical-align: 0.05em;
 }
-.sw-reading[data-verdict='supports'] .sw-verdict {
-  color: var(--sw-div-pos);
+.sw-reading[data-verdict='challenges'] .sw-verdict::before {
+  background: var(--sw-div-neg);
+}
+.sw-reading[data-verdict='supports'] .sw-verdict::before {
+  background: var(--sw-div-pos);
 }
 
 .sw-method details {
@@ -558,4 +569,213 @@ td.sw-cell[data-zero] .sw-cell-button span {
   max-width: 76rem;
   margin: 0 auto;
   padding: 2rem var(--gutter, 1rem) 3rem;
+}
+
+/* B */
+.sw-table th.sw-group {
+  padding-top: 0.75rem;
+  font: 600 0.6875rem/1.2 var(--sw-font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--sw-muted);
+}
+.sw-pattern {
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: 0.75rem;
+  padding: 0.75rem;
+  border: 1px solid var(--sw-line);
+  border-radius: 2px;
+}
+.sw-examples {
+  display: grid;
+  gap: 0.75rem;
+  padding: 0;
+  list-style: none;
+  font-size: 0.875rem;
+}
+
+/* C: map and similarity space share one SVG; dots glide between the two */
+.sw-map {
+  width: 100%;
+  height: min(92svh, 56rem);
+}
+.sw-map-land path {
+  fill-opacity: 0.35;
+  stroke: var(--sw-bg);
+  stroke-width: 0.6;
+  transition: opacity 0.6s var(--ease, ease);
+}
+.sw-map-land path[data-missing] {
+  fill: var(--sw-div-mid);
+}
+.sw-map[data-view='similarity'] .sw-map-land {
+  opacity: 0.12;
+}
+.sw-map-dots circle {
+  stroke: var(--sw-ink);
+  stroke-width: 0.6;
+  cursor: pointer;
+  transition: transform 0.9s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.sw-map-dots circle[data-missing] {
+  stroke-dasharray: 2 2;
+}
+.sw-map-dots circle[data-selected] {
+  stroke-width: 2.5;
+}
+.sw-map-dots circle:focus-visible {
+  outline: none;
+  stroke: var(--sw-accent);
+  stroke-width: 3;
+}
+.sw-toggle {
+  min-height: 2.75rem;
+  padding: 0 0.9rem;
+  border: 1px solid var(--sw-line);
+  border-radius: 2px;
+  background: var(--sw-bg);
+  color: var(--sw-ink);
+  font: inherit;
+  cursor: pointer;
+}
+.sw-toggle[aria-pressed='true'] {
+  background: var(--sw-band);
+  color: var(--sw-band-ink);
+}
+.sw-legend-list {
+  display: grid;
+  gap: 0.3rem;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+.sw-legend-list i {
+  display: inline-block;
+  width: 0.75rem;
+  height: 0.75rem;
+  margin-right: 0.4rem;
+  border-radius: 50%;
+  vertical-align: -0.1em;
+  border: 1px solid var(--sw-ink);
+}
+.sw-legend-missing {
+  border-style: dashed !important;
+  background: var(--sw-bg);
+}
+.sw-neighbours {
+  margin: 0.5rem 0 0;
+  padding-left: 1.25rem;
+}
+
+/* D: choropleth on C's map, libraries as points */
+.sw-choropleth path {
+  stroke: var(--sw-bg);
+  stroke-width: 0.6;
+  cursor: pointer;
+}
+.sw-choropleth path[data-selected] {
+  stroke: var(--sw-ink);
+  stroke-width: 2;
+}
+.sw-choropleth path:focus-visible {
+  outline: none;
+  stroke: var(--sw-accent);
+  stroke-width: 2.5;
+}
+.sw-libraries circle {
+  fill: var(--sw-ink);
+  opacity: 0.75;
+  pointer-events: none;
+}
+.sw-info-list {
+  display: grid;
+  gap: 0.2rem;
+  margin: 0.5rem 0 0;
+}
+.sw-info-list div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.sw-info-list dt {
+  color: var(--sw-muted);
+}
+.sw-info-list dd {
+  margin: 0;
+}
+.sw-controls input[type='range'] {
+  min-height: 2.75rem;
+  padding: 0;
+}
+
+/* E: a wide matrix of years; colour only, exact values in the table under Explore */
+.sw-matrix-wide .sw-table th.sw-n {
+  padding: 0.3rem 0.1rem;
+  font-size: 0.6875rem;
+}
+.sw-cell-dot {
+  min-height: 2.75rem;
+  min-width: 1.4rem;
+}
+
+/* Connections */
+.sw-connection {
+  padding: 1.5rem 0;
+  border-top: 1px solid var(--sw-line);
+}
+.sw-connection h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.25rem;
+}
+.sw-connection-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 20rem);
+  gap: 1.5rem;
+  align-items: start;
+}
+.sw-scatter {
+  margin: 0;
+}
+.sw-scatter svg {
+  width: 100%;
+  height: auto;
+}
+.sw-scatter line {
+  stroke: var(--sw-line);
+}
+.sw-scatter circle {
+  fill: var(--sw-accent);
+  opacity: 0.7;
+}
+.sw-scatter text {
+  fill: var(--sw-muted);
+  font-size: 10px;
+}
+@media (max-width: 760px) {
+  .sw-connection-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 3D bar field */
+.sw-barfield {
+  width: 100%;
+  margin: 0;
+  align-self: stretch;
+}
+.sw-barfield-canvas {
+  width: 100%;
+  height: min(78svh, 46rem);
+}
+.sw-barfield-canvas canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+.sw-view-toggle {
+  display: flex;
+  gap: 0.25rem;
+  align-self: end;
 }

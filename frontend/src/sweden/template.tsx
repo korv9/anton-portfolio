@@ -358,3 +358,56 @@ export function SwedenMasthead({ current }: { current: string }) {
     </nav>
   )
 }
+
+/** A product page without validated data: its masthead, question and an EmptyState. */
+export function ProductEmpty({
+  product,
+  children,
+}: {
+  product: SwedenProduct
+  /** The EmptyState. */
+  children: ReactNode
+}) {
+  return (
+    <article className="sweden sw-page">
+      <SwedenMasthead current={product.href} />
+      <Scene
+        product={product}
+        line={l('No validated data yet.', 'Inga validerade data ännu.')}
+      >
+        {children}
+      </Scene>
+      <RelatedProjects product={product} />
+    </article>
+  )
+}
+
+/** Matrix or 3D: the matrix is the default and the accessible view; 3D loads only when asked. */
+export function ViewToggle({
+  view,
+  onChange,
+}: {
+  view: 'matrix' | '3d'
+  onChange: (view: 'matrix' | '3d') => void
+}) {
+  return (
+    <div role="group" aria-label={l('View', 'Vy')} className="sw-view-toggle">
+      <button
+        type="button"
+        className="sw-toggle"
+        aria-pressed={view === 'matrix'}
+        onClick={() => onChange('matrix')}
+      >
+        {l('Matrix', 'Matris')}
+      </button>
+      <button
+        type="button"
+        className="sw-toggle"
+        aria-pressed={view === '3d'}
+        onClick={() => onChange('3d')}
+      >
+        3D
+      </button>
+    </div>
+  )
+}

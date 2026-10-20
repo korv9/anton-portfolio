@@ -58,6 +58,10 @@ groups:
     publish:
       - python platform/publish/validate_refresh_delivery.py --group diva --root frontend/public/data
       - python platform/publish/release.py publish --group diva --root frontend/public/data --spec configs/delivery/diva.json --code-sha {sha}
+  # SWEDEN publishes on its own, so a failed SWEDEN source never holds back the baseline.
+  sweden:
+    publish:
+      - python platform/publish/release.py publish --group sweden --root frontend/public/data --spec configs/delivery/sweden.json --code-sha {sha}
   baseline:
     publish:
       - *data_catalog
@@ -276,15 +280,48 @@ subjects:
       - export: python platform/publish/cross_domain/export_ai_governance_timeline.py
 
   # SWEDEN research platform. A: catalogue metadata of SCB and Kolada (never the statistics).
+  # C: the validated municipality clustering with SCB's boundaries (CC0).
+  # D: KB's library statistics (CC0) and Biblioteksdatabasen.
   sweden:
     schedule: '13 21 * * 6'
-    group: baseline
-    raw: [catalogue]
+    group: sweden
+    raw: [catalogue, geography, kb]
     prune: true
     steps:
       - ingest: python platform/ingest/catalogue/catalogue_ingest.py
+      - ingest: python platform/ingest/scb/boundaries.py
+      - ingest: python platform/ingest/kb/libraries.py
       - dbt: {select: [tag:sweden]}
       - export: python platform/publish/sweden/export_measurement.py
+      - export: python platform/publish/sweden/export_similarity.py
+      - export: python platform/publish/sweden/export_belonging.py
+
+  # SWEDEN B: language in every JobTech archive since 2006. Counts only; an unchanged archive
+  # is skipped, so after the first run a week costs the newest quarter.
+  sweden_language:
+    schedule: '13 21 * * 6'
+    group: sweden
+    features: [sweden/ad_language]
+    steps:
+      # At most four new archives a week: the backfill since 2006 spreads over the first runs.
+      - ingest: python platform/ingest/jobtech/ad_language.py --max-new 4
+      - dbt: {select: [tag:sweden_language]}
+      - export: python platform/publish/sweden/export_language.py
+
+  # SWEDEN E: future-oriented language in every Riksdag session since 1993/94. Counts only; an
+  # unchanged session is skipped.
+  sweden_futures:
+    schedule: '13 21 * * 6'
+    group: sweden
+    features: [sweden/futures]
+    steps:
+      - ingest: python platform/ingest/riksdagen/futures_language.py --max-new 12
+      # The academic corpus: DiVA student-thesis abstracts in Swedish, 60 harvested months a week.
+      - ingest: python platform/ingest/diva/futures_theses.py --max-months 60
+      - dbt: {select: [tag:sweden_futures]}
+      - export: python platform/publish/sweden/export_futures.py
+      # Connections reads the other SWEDEN outputs, so it runs last.
+      - export: python platform/publish/sweden/export_connections.py
 
   quality:
     schedule: '13 21 * * 6'

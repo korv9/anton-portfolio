@@ -178,8 +178,8 @@ passagerna.
 
 ### Kommuner och län
 
-280 kommuner 2024 med sju indikatorer. Tio kommuner saknar värde för ekonomiskt
-bistånd och ingår inte. StandardScaler, PCA med tre komponenter (51,8, 20,0 och
+280 kommuner 2024 med sju indikatorer. Tio kommuner ingår inte: sju saknar värde för
+ekonomiskt bistånd och tre för valdeltagande. StandardScaler, PCA med tre komponenter (51,8, 20,0 och
 9,7 % av variansen) och K-means. Gap-statistiken valde k=3 bland lösningar med
 bootstrap-ARI minst 0,75.
 
