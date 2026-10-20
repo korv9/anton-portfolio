@@ -52,6 +52,7 @@ type Libraries = {
 type Coverage = {
   observations_left_out: Record<string, number>
   municipalities_per_year: Record<string, number>
+  set_to_missing?: Record<string, number>
   public_libraries_registered: number
   with_coordinates: number
   population_source: string
@@ -478,6 +479,9 @@ export default function Belonging({ route }: { route: Route }) {
     </Scene>
   )
 
+  const nulled =
+    coverage?.set_to_missing &&
+    Object.values(coverage.set_to_missing).reduce((a, b) => a + b, 0)
   const method: Method = {
     question: <p>{l(product.question.en, product.question.sv)}</p>,
     theory: (
@@ -516,6 +520,17 @@ export default function Belonging({ route }: { route: Route }) {
             'Assign each reporting library organisation to its municipality through Biblioteksdatabasen and sum per municipality and year.',
             'Knyt varje rapporterande biblioteksorganisation till sin kommun via Biblioteksdatabasen och summera per kommun och år.',
           )}
+        </li>
+        <li>
+          {l(
+            'If one of a municipality’s organisations did not report a term that year, the municipality’s value for that term is left missing, since the sum would be incomplete. Zero visits with a staffed service point, and zero service points with visits, are also treated as missing.',
+            'Om en av kommunens organisationer inte rapporterat en term det året lämnas kommunens värde för termen tomt, eftersom summan skulle bli ofullständig. Noll besök med ett bemannat serviceställe, och noll serviceställen med besök, räknas också som saknade.',
+          )}
+          {nulled != null &&
+            l(
+              ` ${nulled} municipality values were set to missing this way.`,
+              ` ${nulled} kommunvärden sattes som saknade på det sättet.`,
+            )}
         </li>
         <li>
           {l(
@@ -634,10 +649,10 @@ export default function Belonging({ route }: { route: Route }) {
         'Non-commercial public places thin out as the welfare state contracts.',
         'Icke-kommersiella offentliga platser glesnar när välfärdsstaten krymper.',
       ),
-      verdict: points.to < points.from ? 'supports' : 'challenges',
+      verdict: 'undetermined',
       why: l(
-        `Staffed service points ${rel(points.from, points.to)} between ${first} and ${last} in the municipalities reporting both years.`,
-        `Bemannade serviceställen ${rel(points.from, points.to)} mellan ${first} och ${last} i kommunerna som rapporterat båda åren.`,
+        `Staffed service points ${rel(points.from, points.to)} between ${first} and ${last} in the municipalities reporting both years. ${points.to < points.from ? 'That is consistent with the reading but does not test it' : 'That does not fit the reading, and a count does not test it either'}: a count of service points says nothing about whether the welfare state contracted.`,
+        `Bemannade serviceställen ${rel(points.from, points.to)} mellan ${first} och ${last} i kommunerna som rapporterat båda åren. ${points.to < points.from ? 'Det stämmer med läsningen men prövar den inte' : 'Det stämmer inte med läsningen, och en räkning prövar den inte heller'}: antalet serviceställen säger inget om huruvida välfärdsstaten krympt.`,
       ),
       limits: l(
         'One kind of place; consolidation can keep or improve access.',
