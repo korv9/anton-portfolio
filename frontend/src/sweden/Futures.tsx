@@ -4,15 +4,23 @@
  * (platform/publish/sweden/export_futures.py over Riksdagen's speech archives).
  *
  * The scene is a theme × year matrix of the share of future-oriented speeches that use each
- * theme. Only one corpus is shown: academic texts are kept apart and are not yet counted.
+ * theme. Swedish thesis abstracts (DiVA) are a second corpus, shown apart under Explore and
+ * never pooled with the Riksdag.
  */
-import { Suspense, lazy, useEffect, useMemo, useState } from 'react'
+import { Suspense, lazy, useEffect, useState } from 'react'
 import { l } from '../i18n'
 import { fetchJson } from '../welfare/data'
-import MultiLineChart from '../charts/MultiLineChart'
-import RankBars from '../charts/RankBars'
 import { setHashParams, type Route } from '../router'
 import { productById } from './products'
+import Explore, {
+  BASE,
+  name,
+  num,
+  pct,
+  type Row,
+  type Theme,
+  type Trends,
+} from './FuturesExplore'
 import {
   EmptyState,
   ProductEmpty,
@@ -24,40 +32,6 @@ import {
   type Reading,
 } from './template'
 
-/** year, speeches, future speeches, words, future speeches using it, matches, share, per 1,000 words */
-type Row = [number, number, number, number, number, number, number, number]
-type Theme = {
-  id: string
-  label_en: string
-  label_sv: string
-  description_en: string
-  pattern: string
-  rows: Row[]
-  break: {
-    first_year_after: number
-    mean_before: number
-    mean_after: number
-    variance_explained: number
-  } | null
-}
-type Trends = {
-  marker: {
-    label_en: string
-    label_sv: string
-    description_en: string
-    pattern: string
-  }
-  themes: Theme[]
-  future_share: [number, number][]
-  /** Swedish thesis abstracts (DiVA): year, share of future-oriented abstracts, abstracts. */
-  academic?: {
-    corpus: string
-    future_share: [number, number, number][]
-    themes: Record<string, [number, number, number][]>
-  }
-}
-type Cells = { rows: [string, string, number, number, number][] }
-type Examples = { rows: string[][] }
 type Coverage = {
   sessions: {
     session: string
@@ -72,11 +46,6 @@ type Coverage = {
 }
 type Measure = 'share' | 'words'
 
-const BASE = 'sweden/futures/'
-const pct = (v: number) => `${(v * 100).toFixed(1)} %`
-const num = (n: number) => n.toLocaleString(l('en-GB', 'sv-SE'))
-const name = (t: { label_en: string; label_sv: string }) =>
-  l(t.label_en, t.label_sv)
 const value = (r: Row, m: Measure) => (m === 'share' ? r[6] : r[7])
 const show = (v: number, m: Measure) => (m === 'share' ? pct(v) : v.toFixed(2))
 // Five-year means at each end, so one unusual year (an election, a crisis) does not decide.
@@ -144,9 +113,10 @@ export default function Futures({ route }: { route: Route }) {
   const change = (t: Theme) => meanOf(t, tail) - meanOf(t, head)
   const ranked = [...themes].sort((a, b) => change(b) - change(a))
   const fs = trends.future_share
-  const fsMean = (ys: number[]) =>
-    fs.filter(([y]) => ys.includes(y)).reduce((s, [, v]) => s + v, 0) /
-    ys.length
+  const fsMean = (ys: number[], column = 1) =>
+    fs
+      .filter(([y]) => ys.includes(y))
+      .reduce((s, r) => s + (r[column] ?? 0), 0) / ys.length
   const span = (ys: number[]) => `${ys[0]}–${ys[ys.length - 1]}`
   const selected = themes.find((t) => t.id === picked) ?? null
   const fisher = ['utopia', 'alternatives', 'collective']
@@ -166,9 +136,24 @@ export default function Futures({ route }: { route: Route }) {
         `${pct(fsMean(tail))} av anförandena ${span(tail)} talar om framtiden, mot ${pct(fsMean(head))} ${span(head)}.`,
       ),
       values: (
-        <p className="sw-note">
-          {l('Marker', 'Markör')}: {trends.marker.description_en}
-        </p>
+        <>
+          <p className="sw-note">
+            {l('Marker', 'Markör')}: {trends.marker.description_en}
+          </p>
+          {fs[0]?.[2] != null && (
+            <p className="sw-note">
+              {l(
+                `Words per speech: ${Math.round(fsMean(head, 2))} → ${Math.round(fsMean(tail, 2))}.`,
+                `Ord per anförande: ${Math.round(fsMean(head, 2))} → ${Math.round(fsMean(tail, 2))}.`,
+              )}{' '}
+              {trends.length &&
+                l(
+                  `Longer speeches match the marker more often: across ${trends.length.years} years the share follows speech length (Spearman’s ρ ${trends.length.spearman_share_words_per_speech}), so part of any change is length.`,
+                  `Längre anföranden träffar markören oftare: över ${trends.length.years} år följer andelen anförandenas längd (Spearmans ρ ${trends.length.spearman_share_words_per_speech}), så en del av varje förändring är längd.`,
+                )}
+            </p>
+          )}
+        </>
       ),
       evidence: 'descriptive',
       source: l(
@@ -424,14 +409,14 @@ export default function Futures({ route }: { route: Route }) {
         </li>
         <li>
           {l(
-            'Match nine themes; report, per calendar year, the share of future-oriented speeches using each theme and matches per thousand words.',
-            'Matcha nio teman; redovisa per kalenderår andelen framtidsinriktade anföranden som använder varje tema och träffar per tusen ord.',
+            'Match nine themes; report, per calendar year, the share of future-oriented speeches using each theme, matches per thousand words and words per speech.',
+            'Matcha nio teman; redovisa per kalenderår andelen framtidsinriktade anföranden som använder varje tema, träffar per tusen ord och ord per anförande.',
           )}
         </li>
         <li>
           {l(
-            'Compare five-year means at each end; show the single least-squares break per theme as exploratory.',
-            'Jämför femårsmedel i varje ände; visa den enda minsta-kvadrat-brytpunkten per tema som explorativ.',
+            'Compare five-year means at each end, leaving out the running year; show the single least-squares break per theme as exploratory.',
+            'Jämför femårsmedel i varje ände, utan det pågående året; visa den enda minsta-kvadrat-brytpunkten per tema som explorativ.',
           )}
         </li>
       </ol>
@@ -482,8 +467,8 @@ export default function Futures({ route }: { route: Route }) {
         </li>
         <li>
           {l(
-            'Academic texts (DiVA) are a separate corpus and are not yet counted; they will never be pooled with the Riksdag.',
-            'Akademiska texter (DiVA) är en separat korpus och är inte räknade ännu; de slås aldrig ihop med riksdagen.',
+            'Swedish thesis abstracts (DiVA) are a separate corpus, shown apart under Explore once every month is harvested with Swedish abstracts only; they are never pooled with the Riksdag.',
+            'Svenska uppsatssammanfattningar (DiVA) är en separat korpus, som visas för sig under Utforska när varje månad är skördad med enbart svenska sammanfattningar; de slås aldrig ihop med riksdagen.',
           )}
         </li>
         {coverage && coverage.years_left_out.length > 0 && (
@@ -671,256 +656,5 @@ function FutureMatrix({
         </tbody>
       </table>
     </div>
-  )
-}
-
-function Explore({
-  themes,
-  trends,
-  years,
-  picked,
-  onPick,
-}: {
-  themes: Theme[]
-  trends: Trends
-  years: number[]
-  picked: string | null
-  onPick: (theme: string) => void
-}) {
-  const [parties, setParties] = useState<Cells | null>(null)
-  const [examples, setExamples] = useState<Examples | null>(null)
-  const theme = picked ?? themes[0].id
-  const last = years[years.length - 1]
-  const [year, setYear] = useState(last)
-  useEffect(() => {
-    fetchJson<Cells>(BASE + 'parties.json').then(setParties, () => {})
-    fetchJson<Examples>(BASE + 'examples.json').then(setExamples, () => {})
-  }, [])
-  const lines = useMemo(() => {
-    const keys = [...new Set([theme, ...themes.map((t) => t.id)])].slice(0, 5)
-    return [
-      {
-        key: '_future',
-        name: l(
-          'Speeches about the future (share of all)',
-          'Anföranden om framtiden (andel av alla)',
-        ),
-        points: trends.future_share.map(([y, v]) => ({
-          date: `${y}-01-01`,
-          label: String(y),
-          value: v * 100,
-        })),
-      },
-      ...keys.slice(0, 4).map((k) => {
-        const t = themes.find((x) => x.id === k)!
-        return {
-          key: k,
-          name: name(t),
-          points: t.rows.map((r) => ({
-            date: `${r[0]}-01-01`,
-            label: String(r[0]),
-            value: r[6] * 100,
-          })),
-        }
-      }),
-    ]
-  }, [themes, trends, theme])
-  const t = themes.find((x) => x.id === theme)!
-  const byParty = (parties?.rows ?? [])
-    .filter((r) => r[1] === theme && r[2] === year)
-    .map((r) => ({
-      key: r[0],
-      label: r[0],
-      party: r[0],
-      value: r[4] / r[3],
-      note: `${num(r[4])} / ${num(r[3])}`,
-    }))
-    .sort((a, b) => b.value - a.value)
-  return (
-    <>
-      <div className="sw-controls">
-        <label>
-          {l('Theme', 'Tema')}
-          <select value={theme} onChange={(e) => onPick(e.target.value)}>
-            {themes.map((x) => (
-              <option key={x.id} value={x.id}>
-                {name(x)}
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
-      <h3>{l('Share per year (%)', 'Andel per år (%)')}</h3>
-      <MultiLineChart
-        series={lines}
-        label={l(
-          'Future talk and themes per year',
-          'Framtidstal och teman per år',
-        )}
-        format={(v) => `${v.toFixed(1)} %`}
-        colorOf={(k) => lines.findIndex((s) => s.key === k) + 1}
-        yFrom={0}
-      />
-      <div className="sw-table-wrap">
-        <table className="sw-table">
-          <caption>
-            {l(
-              'Share of future-oriented speeches using each theme, every year',
-              'Andel framtidsinriktade anföranden som använder varje tema, varje år',
-            )}
-          </caption>
-          <thead>
-            <tr>
-              <th scope="col">{l('Year', 'År')}</th>
-              <th scope="col" className="sw-n">
-                {l('About the future', 'Om framtiden')}
-              </th>
-              {themes.map((x) => (
-                <th key={x.id} scope="col" className="sw-n">
-                  {name(x)}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {years.map((y) => (
-              <tr key={y}>
-                <th scope="row">{y}</th>
-                <td className="sw-n">
-                  {pct(trends.future_share.find(([fy]) => fy === y)?.[1] ?? 0)}
-                </td>
-                {themes.map((x) => {
-                  const r = x.rows.find((q) => q[0] === y)
-                  return (
-                    <td key={x.id} className="sw-n">
-                      {r ? pct(r[6]) : '–'}
-                    </td>
-                  )
-                })}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      {t.break && (
-        <p className="sw-note">
-          {l(
-            'Most likely single break (exploratory)',
-            'Mest sannolika enskilda brytpunkt (explorativ)',
-          )}
-          : {t.break.first_year_after} — {pct(t.break.mean_before)} →{' '}
-          {pct(t.break.mean_after)},{' '}
-          {Math.round(t.break.variance_explained * 100)} %{' '}
-          {l('of the variance', 'av variansen')}
-        </p>
-      )}
-      {trends.academic && trends.academic.future_share.length > 1 && (
-        <>
-          <h3>
-            {l(
-              'The academic corpus, shown apart (%)',
-              'Den akademiska korpusen, visad för sig (%)',
-            )}
-          </h3>
-          <p className="sw-note">
-            {trends.academic.corpus}.{' '}
-            {l(
-              'Another genre with other authors and another length: compare the direction of the lines, not their level, and never add them to the Riksdag’s.',
-              'En annan genre med andra författare och annan längd: jämför linjernas riktning, inte deras nivå, och lägg dem aldrig ihop med riksdagens.',
-            )}
-          </p>
-          <MultiLineChart
-            series={[
-              {
-                key: '_future',
-                name: l(
-                  'Abstracts about the future',
-                  'Sammanfattningar om framtiden',
-                ),
-                points: trends.academic.future_share.map(([y, v]) => ({
-                  date: `${y}-01-01`,
-                  label: `${y} (${num(trends.academic!.future_share.find((f) => f[0] === y)![2])})`,
-                  value: v * 100,
-                })),
-              },
-              {
-                key: theme,
-                name: name(t),
-                points: (trends.academic.themes[theme] ?? []).map(([y, v]) => ({
-                  date: `${y}-01-01`,
-                  label: String(y),
-                  value: v * 100,
-                })),
-              },
-            ]}
-            label={l(
-              'Future themes in thesis abstracts',
-              'Framtidsteman i uppsatssammanfattningar',
-            )}
-            format={(v) => `${v.toFixed(1)} %`}
-            colorOf={(k) => (k === '_future' ? 1 : 2)}
-            yFrom={0}
-          />
-        </>
-      )}
-      <h3>{l(`By party, ${year}`, `Per parti, ${year}`)}</h3>
-      <div className="sw-controls">
-        <label>
-          {l('Year', 'År')}
-          <select
-            value={year}
-            onChange={(e) => setYear(Number(e.target.value))}
-          >
-            {years.map((y) => (
-              <option key={y} value={y}>
-                {y}
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
-      {byParty.length ? (
-        <RankBars
-          rows={byParty}
-          format={pct}
-          max={1}
-          label={l(`${name(t)} by party`, `${name(t)} per parti`)}
-        />
-      ) : (
-        <p className="sw-note">
-          {l(
-            'No party with 50 or more future-oriented speeches that year.',
-            'Inget parti med 50 eller fler framtidsinriktade anföranden det året.',
-          )}
-        </p>
-      )}
-      <h3>
-        {l(
-          'The patterns and source-linked speeches',
-          'Mönstren och länkade anföranden',
-        )}
-      </h3>
-      <p className="sw-note">
-        {l('Future marker', 'Framtidsmarkör')}:{' '}
-        <code className="sw-mono">{trends.marker.pattern}</code>
-      </p>
-      <p className="sw-note">{t.description_en}</p>
-      <pre className="sw-mono sw-pattern">{t.pattern}</pre>
-      {examples && (
-        <ul className="sw-examples">
-          {examples.rows
-            .filter((r) => r[0] === theme)
-            .slice(-12)
-            .map((r) => (
-              <li key={r[5]}>
-                <span className="sw-mono">
-                  {r[2]} · {r[3] ?? '–'} · {r[4]}
-                </span>{' '}
-                <q>{r[7]}</q> <a href={r[5]}>{l('Speech', 'Anförande')}</a>
-              </li>
-            ))}
-        </ul>
-      )}
-    </>
   )
 }

@@ -33,8 +33,9 @@ STUDENT = r"(?i)student\s*thesis|studentuppsats|bachelorThesis|masterThesis|exam
 AGENT = "anton-portfolio/1.0 (+https://github.com/korv9/anton-portfolio)"
 
 
-def parse(xml: bytes) -> tuple[list[dict], str | None]:
-    """Records and the resumption token from one ListRecords page."""
+def parse(xml: bytes, deleted: bool = False) -> tuple[list[dict], str | None]:
+    """Records and the resumption token from one ListRecords page. With `deleted`, a deleted
+    record is returned as {"id": ..., "deleted": True} instead of being skipped."""
     root = ET.fromstring(xml)
     error = root.find("oai:error", NS)
     if error is not None:
@@ -44,7 +45,11 @@ def parse(xml: bytes) -> tuple[list[dict], str | None]:
     out = []
     for rec in root.iterfind(".//oai:record", NS):
         header = rec.find("oai:header", NS)
-        if header is None or header.get("status") == "deleted":
+        if header is None:
+            continue
+        if header.get("status") == "deleted":
+            if deleted:
+                out.append({"id": header.findtext("oai:identifier", default="", namespaces=NS), "deleted": True})
             continue
         dc = rec.find(".//oai_dc:dc", NS)
         if dc is None:
@@ -59,6 +64,8 @@ def parse(xml: bytes) -> tuple[list[dict], str | None]:
             "id": header.findtext("oai:identifier", default="", namespaces=NS),
             "title": " ".join(all_("title")),
             "abstract": " ".join(all_("description")),
+            # A thesis often has its abstract in Swedish and in English, in either order.
+            "descriptions": all_("description"),
             "subjects": all_("subject"),
             "types": all_("type"),
             "year": year,
@@ -129,6 +136,7 @@ def main() -> int:
             records, token = parse(get(params))
             seen += len(records)
             for r in records:
+                r.pop("descriptions")
                 if is_student_thesis(r, args.types) and r["title"]:
                     kept[r["id"]] = r
                     n += 1

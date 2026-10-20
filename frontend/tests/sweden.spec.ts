@@ -102,6 +102,10 @@ test('the invisible sweden moves municipalities into similarity space', async ({
   await expect(page.locator('.sw-findings')).toContainText(
     String(data.summary.nearest_in_other_county),
   )
+  // The county share is read against chance, so clustering in space is not read as its absence.
+  await expect(
+    page.locator('.sw-reading', { hasText: 'Centre and periphery' }),
+  ).toHaveAttribute('data-verdict', 'supports')
   await page.getByRole('button', { name: 'Similarity', exact: true }).click()
   await expect(page).toHaveURL(/vy=likhet/)
   await page
@@ -169,6 +173,10 @@ test('the infrastructure of belonging maps libraries by municipality and year', 
   await expect(page).toHaveURL(/matt=visits_rate/)
   await page.getByRole('button', { name: /^Höganäs:/ }).click()
   await expect(page.locator('.sw-scene-info')).toContainText('Höganäs')
+  // A count of service points cannot decide a theory of welfare-state contraction.
+  await expect(
+    page.locator('.sw-reading', { hasText: 'Habermas' }),
+  ).toHaveAttribute('data-verdict', 'undetermined')
   const axe = await new AxeBuilder({ page })
     .include('main')
     .exclude('canvas')
@@ -182,7 +190,15 @@ test('the infrastructure of belonging maps libraries by municipality and year', 
 
 test('the lost futures reads every session and links its speeches', async ({
   page,
+  request,
 }) => {
+  const coverage = await (
+    await request.get('/data/sweden/futures/coverage.json')
+  ).json()
+  const sessions = coverage.sessions.map((s: { session: string }) => s.session)
+  // 1999/2000 is the one session with an eight-digit code.
+  expect(sessions).toContain('19992000')
+  expect(sessions.length).toBeGreaterThanOrEqual(33)
   await page.goto('/#sweden-framtid')
   await expect(page.locator('.sw-matrix tbody tr')).toHaveCount(9)
   await expect(page.locator('.sw-finding')).not.toHaveCount(0)

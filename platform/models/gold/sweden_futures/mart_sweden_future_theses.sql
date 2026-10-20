@@ -1,10 +1,19 @@
 -- The academic corpus of The Lost Futures: publication year × theme in Swedish-language
 -- student-thesis abstracts. Kept apart from the Riksdag marts: another genre, other authors.
-with cells as (
-    select year::integer as year, theme,
-           sum(abstracts) as abstracts, sum(future) as future, sum(matches) as matches,
-           sum(words) as words
+-- A record comes back in a later month when DiVA changes or deletes it; only its latest month
+-- counts, and a null year there (deleted, or no Swedish abstract) leaves it out.
+with latest as (
+    select *, case when month = 'before-2000' then '0000-00' else month end as seq
     from {{ source('futures', 'theses') }}
+    qualify seq = max(seq) over (partition by id)
+),
+
+cells as (
+    select year::integer as year, theme,
+           count(*) as abstracts, count(*) filter (where future) as future,
+           sum(matches) as matches, sum(words) as words
+    from latest
+    where year is not null
     group by all
 ),
 

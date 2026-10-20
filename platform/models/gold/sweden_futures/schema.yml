@@ -22,9 +22,23 @@ models:
         data_tests:
           - between:
               arguments: {min: 0, max: 1}
+      - name: words_per_speech
+        data_tests:
+          - not_null
+      - name: marker_per_1000_words
+        description: Null for a year until every session in it was counted with the marker matches.
   - name: mart_sweden_future_theses
     description: Year × theme over Swedish-language student-thesis abstracts in DiVA; never pooled with the Riksdag.
     data_tests:
       - unique_combination:
           arguments:
             columns: [year, theme]
+    columns:
+      - name: future_share
+        data_tests:
+          - between:
+              arguments: {min: 0, max: 1}
+      - name: future_share_using
+        data_tests:
+          - between:
+              arguments: {min: 0, max: 1}

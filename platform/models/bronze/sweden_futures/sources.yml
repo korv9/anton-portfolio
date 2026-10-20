@@ -8,7 +8,7 @@ sources:
     description: Theme matches in Riksdagen's speech archives (open data), per session.
     tables:
       - name: totals
-        description: Year × party; speeches, future-oriented speeches and words.
+        description: Year × party; speeches, future-oriented speeches, words and future-marker matches.
         meta:
           external_location: >-
             read_parquet('{{ env_var('PORTFOLIO_FEATURES', '../warehouse/features') }}/sweden/futures/totals_*.parquet', union_by_name = true)
@@ -19,9 +19,9 @@ sources:
             read_parquet('{{ env_var('PORTFOLIO_FEATURES', '../warehouse/features') }}/sweden/futures/hits_*.parquet', union_by_name = true)
       - name: theses
         description: >-
-          Swedish-language student-thesis abstracts in DiVA (CC0 metadata), per harvested month:
-          publication year × theme; theme '_all' carries abstracts, future-oriented abstracts and words.
-          Written by platform/ingest/diva/futures_theses.py.
+          Swedish-language student-thesis abstracts in DiVA (CC0 metadata), per harvested month: one
+          row per OAI record and theme it matches; theme '_all' carries the words, and a null year marks
+          a deleted record or one without a Swedish abstract. Written by platform/ingest/diva/futures_theses.py.
         meta:
           external_location: >-
             read_parquet('{{ env_var('PORTFOLIO_FEATURES', '../warehouse/features') }}/sweden/futures_theses/*.parquet', union_by_name = true)
