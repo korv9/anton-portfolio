@@ -152,6 +152,13 @@ export const SWEDEN_PATHS = [
   '#sweden-framtid',
   '#sweden-samband',
   '#sweden-kit',
+  '#sweden-atlas',
+  '#sweden-atlas-a',
+  '#sweden-atlas-b',
+  '#sweden-atlas-c',
+  '#sweden-atlas-d',
+  '#sweden-atlas-e',
+  '#sweden-atlas-x',
 ]
 export const AI_ACT_TABS = ['#ai-act', '#ai-act-roles', '#ai-act-society']
 export const PHILOSOPHY_TABS = [

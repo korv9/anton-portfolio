@@ -131,6 +131,10 @@ export function SwedenHeader({ current }: { current: string }) {
               <small>{p.id === 'X' ? '×' : p.id}</small>
             </a>
           ))}
+          <a href="#sweden-atlas">
+            <span>{l('Atlas (preview)', 'Atlas (förhandsvisning)')}</span>
+            <small>3D</small>
+          </a>
           <h2>{l('More', 'Övrigt')}</h2>
           <a href="#projekt">{l('All projects', 'Alla projekt')}</a>
           <a href="#cluster-visuals">Cluster Visuals</a>

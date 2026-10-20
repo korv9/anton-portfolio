@@ -21,6 +21,7 @@ import './sweden.css'
 
 // Products with findings, each loaded only on its own route.
 const Hub = lazy(() => import('./Hub'))
+const Atlas = lazy(() => import('./atlas/Atlas'))
 
 const PAGES: Record<
   string,
@@ -39,6 +40,12 @@ export default function SwedenPage({ route }: { route: Route }) {
     return (
       <Suspense fallback={null}>
         <Hub />
+      </Suspense>
+    )
+  if (route.path.startsWith('#sweden-atlas'))
+    return (
+      <Suspense fallback={null}>
+        <Atlas path={route.path} />
       </Suspense>
     )
   if (route.path === '#sweden-kit') return <Kit />
