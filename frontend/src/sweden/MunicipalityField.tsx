@@ -13,6 +13,7 @@ import * as THREE from 'three'
 import type { Geometry } from './map'
 import {
   createStage,
+  ramp,
   toScreen,
   useSwedenThemeValue,
   webgl,
@@ -170,7 +171,7 @@ export default function MunicipalityField({
     const hi = colour('--sw-seq-hi', '#e3d8ff')
     const tint = (p: Place) =>
       p.ramp != null
-        ? lo.clone().lerp(hi, p.ramp)
+        ? ramp(lo, hi, p.ramp)
         : new THREE.Color(p.colour ?? '#888888')
     const lineMat = new THREE.LineBasicMaterial({
       color: colour('--sw-accent', '#c9bcf2'),

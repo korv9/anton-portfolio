@@ -13,6 +13,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react'
 import * as THREE from 'three'
 import {
   createStage,
+  ramp,
   toScreen,
   useSwedenThemeValue,
   webgl,
@@ -153,7 +154,7 @@ export default function BarField({
           j,
           tone === 'stone'
             ? new THREE.Color('#8e8c97')
-            : lo.clone().lerp(hi, Math.sqrt(c.height)),
+            : ramp(lo, hi, c.height),
         )
       })
       scene.add(mesh)

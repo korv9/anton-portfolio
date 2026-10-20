@@ -37,6 +37,14 @@ export function webgl() {
   }
 }
 
+/** A point on a token ramp, mixed in sRGB like the CSS legend gradient (linear mixing washes the middle out). */
+export const ramp = (lo: THREE.Color, hi: THREE.Color, t: number) =>
+  lo
+    .clone()
+    .convertLinearToSRGB()
+    .lerp(hi.clone().convertLinearToSRGB(), t)
+    .convertSRGBToLinear()
+
 export const reducedMotion = () =>
   typeof matchMedia !== 'undefined' &&
   matchMedia('(prefers-reduced-motion: reduce)').matches
