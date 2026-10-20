@@ -48,3 +48,10 @@ def test_one_break_finds_the_level_shift():
     assert result["first_year_after"] == 2010
     assert result["variance_explained"] == 1.0
     assert export_language.one_break(years[:5], values[:5]) is None
+
+
+def test_dictionary_hash_ignores_line_endings(tmp_path):
+    lf = ad_language.TERMS.read_bytes().replace(b"\r\n", b"\n")
+    (tmp_path / "lf.csv").write_bytes(lf)
+    (tmp_path / "crlf.csv").write_bytes(lf.replace(b"\n", b"\r\n"))
+    assert load_terms(tmp_path / "lf.csv")[1] == load_terms(tmp_path / "crlf.csv")[1]
