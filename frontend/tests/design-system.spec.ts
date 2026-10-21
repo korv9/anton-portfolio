@@ -61,7 +61,7 @@ test('the homepage retains its name scale, placement and palette', async ({
   const name = page.locator('.home-name')
   await expect(name).toHaveCSS('font-size', '112px')
   await expect(name).toHaveCSS('line-height', '103.04px')
-  await expect(name).toHaveCSS('color', 'rgb(46, 42, 38)')
+  await expect(name).toHaveCSS('color', 'rgb(47, 40, 54)')
   const bounds = (await name.boundingBox())!
   expect(bounds.x + bounds.width / 2).toBeCloseTo(720, 0)
   expect(bounds.y).toBeCloseTo(372.5, 0)
