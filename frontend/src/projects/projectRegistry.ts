@@ -41,192 +41,6 @@ export type ProjectEntry = {
 
 export const PROJECTS: ProjectEntry[] = [
   {
-    id: 'compliance',
-    title: t('Job Intelligence', 'Job Intelligence'),
-    descriptor: t(
-      'Jobb, krav och verifierade företag',
-      'Jobs, requirements and verified companies',
-    ),
-    summary: t(
-      'Aktuella IT-annonser med originaltext, kravanalys och källbelagda företagsuppgifter.',
-      'Current IT advertisements with original wording, requirements analysis and sourced company context.',
-    ),
-    question: t(
-      'Vad innebär jobbet, vilka krav ställs och vad vet vi om företaget?',
-      'What does the job involve, what does it require and what do we know about the company?',
-    ),
-    built: t(
-      'En sammanhållen jobbarbetsyta med kanoniska företagskopplingar och granskningsstyrd juridisk historik.',
-      'A job research workspace with canonical company links and reviewed legal history.',
-    ),
-    result: t(
-      'Originalannonser och SCB-identiteter är kopplade. Juridiska uppgifter kräver separat godkännande.',
-      'Original advertisements and SCB identities are linked. Legal findings require separate approval.',
-    ),
-    tech: ['Python', 'DuckDB', 'Parquet', 'React', 'TypeScript'],
-    href: '#jobb-it',
-    category: 'data',
-    status: 'in-progress',
-    pages: ['compliance', 'company'],
-    paths: (path) => path === '#jobb-it',
-    code: 'https://github.com/korv9/anton-portfolio/tree/main/docs/compliance-intelligence',
-  },
-  {
-    id: 'politics',
-    title: t('Political Observatory', 'Political Observatory'),
-    descriptor: t(
-      'Öppna data, analytics engineering',
-      'Public data, analytics engineering',
-    ),
-    summary: t(
-      'Ett öppet dataprojekt om riksdagen, politikerna och hur Sverige röstar.',
-      'An open data project exploring parliamentary data, politicians and how Sweden votes.',
-    ),
-    question: t(
-      'Det är svårt att följa vad politikerna säger, vad de vill lägga pengar på och hur de sedan röstar. Uppgifterna finns, men utspridda i olika källor och format.',
-      'It is hard to follow what politicians say, what they want to spend on and how they then vote. The data exists, but spread over sources and formats.',
-    ),
-    built: t(
-      'En sammanhållen produkt ovanpå öppna data från riksdagen, SCB, Valmyndigheten och Regeringskansliet: inläsning, testade dbt-modeller och en webbplats där varje fråga besvaras med en graf.',
-      'One product on open data from the Riksdag, SCB, Valmyndigheten and the Government Offices: ingestion, tested dbt models and a site where each question is answered with one chart.',
-    ),
-    result: t(
-      'Voteringar sedan 1993/94, anföranden, budgetförslag, opinionsmätningar och valresultat går att följa parti för parti, med källan ett klick bort.',
-      'Roll calls since 1993/94, speeches, budget proposals, polls and election results can be followed party by party, with the source one click away.',
-    ),
-    tech: [
-      'Python',
-      'dbt',
-      'DuckDB',
-      'Parquet',
-      'Cloudflare R2',
-      'React',
-      'TypeScript',
-      'NLP',
-    ],
-    href: '#politik',
-    category: 'data',
-    status: 'live',
-    home: {
-      question: t(
-        'Vad skiljer partierna åt i praktiken?',
-        'What separates the parties in practice?',
-      ),
-    },
-    code: 'https://github.com/korv9/anton-portfolio',
-    pages: ['politik'],
-  },
-  {
-    id: 'ai-act',
-    title: t('EU AI Act Observatory', 'EU AI Act Observatory'),
-    descriptor: t(
-      'Juridisk datamodellering, officiella källor',
-      'Legal data modelling, official sources',
-    ),
-    summary: t(
-      'Vad EU:s AI-förordning faktiskt innebär för den som bygger eller använder AI, byggt på officiella EU-källor.',
-      'What the EU AI Act actually means for organisations building or deploying AI, built from official EU sources.',
-    ),
-    question: t(
-      'Vad innebär EU AI Act faktiskt för organisationer som bygger eller använder AI?',
-      'What does the EU AI Act actually mean for organisations building or deploying AI?',
-    ),
-    built: t(
-      'En källspårbar karta över artiklar, skyldigheter, aktörer, tillämpningsdatum och ändringar: lagtexten hämtas från EU:s publikationsbyrå på engelska och svenska, versioneras, tolkas till artiklar i dbt och jämförs mellan 2024 års text och den gällande konsoliderade texten.',
-      'A source-traceable map of articles, obligations, actors, application dates and regulatory changes: the text is fetched from the EU Publications Office in English and Swedish, versioned, parsed into articles in dbt and compared between the 2024 text and the current consolidated text.',
-    ),
-    result: t(
-      'Vad som gäller i dag och härnäst, vem som ska göra vad med lagtexten ett klick bort, en navigator för startups och en ändringslogg; ett test kontrollerar att varje citat finns ordagrant i lagen.',
-      'What applies today and next, who must do what with the legal text one click away, a startup navigator and a changelog; a test checks that every quote appears verbatim in the Act.',
-    ),
-    tech: [
-      'Python',
-      'dbt',
-      'DuckDB',
-      'Legal data modelling',
-      'NLP',
-      'Source traceability',
-      'React',
-    ],
-    href: '#ai-act',
-    category: 'data',
-    status: 'live',
-    home: {
-      question: t(
-        'Vad gäller nu, för vem och när?',
-        'What applies now, to whom, and when?',
-      ),
-    },
-    code: 'https://github.com/korv9/anton-portfolio/blob/main/docs/ai-act.md',
-    pages: ['aiact'],
-  },
-  {
-    id: 'sfs',
-    title: t('Svensk författningssamling', 'Swedish Statute Book'),
-    descriptor: t('Dataprodukt, öppna data', 'Data product, public data'),
-    summary: t(
-      'Varje författning i Riksdagens SFS-lista, gällande eller upphävd, hämtad som text och delad i paragrafer.',
-      'Every statute in the Riksdag’s SFS list, in force or repealed, fetched as text and split into paragraphs.',
-    ),
-    question: t(
-      'Hur stor är svensk lag, och hur mycket av den går att läsa paragraf för paragraf?',
-      'How large is Swedish law, and how much of it can be read paragraph by paragraph?',
-    ),
-    built: t(
-      'En hämtning av hela SFS-listan och varje text från Riksdagens öppna data, råkopior i R2 och dbt-modeller från brons till guld som sorterar varje dokument efter typ, daterar upphävandet och delar texten i paragrafer.',
-      'A fetch of the whole SFS list and every text from the Riksdag’s open data, raw copies in R2, and dbt models from bronze to gold that sort each document by kind, date its repeal and split the text into paragraphs.',
-    ),
-    result: t(
-      'Lagboken räknad efter typ, utfärdandeår och upphävande, med de största gällande lagarna och längden på varje stycke. Fråga lagen söker fortfarande i 40 utvalda lagar, inte i hela samlingen.',
-      'The statute book counted by kind, year of issue and repeal, with the largest laws in force and the length of every passage. Ask the law still searches 40 selected laws, not the whole collection.',
-    ),
-    tech: ['Python', 'dbt', 'DuckDB', 'Cloudflare R2', 'React', 'TypeScript'],
-    href: '#lagboken',
-    category: 'data',
-    status: 'live',
-    home: {
-      question: t('Hur stor är svensk lag?', 'How large is Swedish law?'),
-    },
-    code: 'https://github.com/korv9/anton-portfolio/blob/main/docs/workers-ai.md',
-    pages: ['sfs'],
-  },
-  {
-    id: 'jobs',
-    title: t('Labour Market Observatory', 'Labour Market Observatory'),
-    descriptor: t(
-      'Data engineering, maskininlärning',
-      'Data engineering, machine learning',
-    ),
-    summary: t(
-      'Den svenska arbetsmarknaden genom öppna jobbdata, språkmodeller och klustring.',
-      'I use open job data, language models and clustering to explore the Swedish job market.',
-    ),
-    question: t(
-      'Hur förändras efterfrågan på olika yrken, och vilka kompetenser efterfrågas?',
-      'How does demand for occupations change, and which skills are asked for?',
-    ),
-    built: t(
-      'En pipeline som läser JobTechs annonsarkiv sedan 2020 och bygger en stjärnmodell med tester för korn, referensintegritet och fullständiga månader, plus semantisk klustring av IT-annonser.',
-      'A pipeline reading JobTech’s ad archive since 2020 into a star schema tested for grain, referential integrity and complete months, plus semantic clustering of IT ads.',
-    ),
-    result: t(
-      'Annonser per yrke, län och anställningsvillkor över tid, med tydliga definitioner och nedladdningsbara tabeller.',
-      'Ads by occupation, county and conditions over time, with clear definitions and downloadable tables.',
-    ),
-    tech: ['Python', 'dbt Core', 'DuckDB', 'UMAP', 'HDBSCAN', 'GitHub Actions'],
-    href: '#jobb',
-    category: 'data',
-    status: 'live',
-    home: {
-      question: t(
-        'Hur förändras efterfrågan på arbetskraft?',
-        'How is demand for labour changing?',
-      ),
-    },
-    code: 'https://github.com/korv9/swedish-job-market-analytics',
-    pages: ['jobs'],
-  },
-  {
     id: 'symbolic-atlas',
     title: t('Symbol Lab', 'Symbol Lab'),
     descriptor: t('NLP, oövervakad inlärning', 'NLP, unsupervised learning'),
@@ -266,39 +80,6 @@ export const PROJECTS: ProjectEntry[] = [
     },
     code: 'https://github.com/korv9/anton-portfolio/blob/main/docs/symbolic-atlas.md',
     pages: ['symbolic'],
-  },
-  {
-    id: 'welfare',
-    title: t('Wellbeing Observatory', 'Wellbeing Observatory'),
-    descriptor: t('dbt, offentliga data', 'dbt, public data'),
-    summary: t(
-      'Arbetslöshet, sjukfrånvaro och självrapporterat mående i Sverige, efter period och geografi.',
-      'Unemployment, sick leave and self-reported wellbeing in Sweden, by period and geography.',
-    ),
-    question: t(
-      'Följs jobb, sjukskrivningar, hälsa och förtroende åt i olika delar av landet?',
-      'Do jobs, sick leave, health and trust move together across Sweden?',
-    ),
-    built: t(
-      'Fem offentliga källor (SCB, Försäkringskassan, Folkhälsomyndigheten, European Social Survey och Kolada) i en testad dbt-stjärnmodell med gemensamma nycklar för region, period, kön och ålder.',
-      'Five public sources (SCB, Försäkringskassan, the Public Health Agency, the European Social Survey and Kolada) in a tested dbt star schema with shared keys for region, period, sex and age.',
-    ),
-    result: t(
-      'Län och kommuner kan jämföras sida vid sida i webbläsaren, med en statussida för varje källa och körning.',
-      'Counties and municipalities side by side in the browser, with a status page for every source and run.',
-    ),
-    tech: ['dbt', 'DuckDB', 'Star schema', 'Parquet'],
-    href: '#wellbeing',
-    category: 'data',
-    status: 'live',
-    home: {
-      question: t(
-        'Hur går det för Sverige, län för län?',
-        'How is Sweden doing, county by county?',
-      ),
-    },
-    code: 'https://github.com/korv9/anton-portfolio/tree/main/platform',
-    pages: ['welfare'],
   },
   {
     id: 'thesis',
@@ -518,10 +299,6 @@ export const PROJECTS: ProjectEntry[] = [
 
 export const PROJECT_GROUPS = [
   {
-    label: 'Observatories',
-    ids: ['politics', 'jobs', 'compliance', 'welfare', 'ai-act', 'sfs'],
-  },
-  {
     label: 'Labs',
     ids: [
       'symbolic-atlas',
@@ -535,11 +312,10 @@ export const PROJECT_GROUPS = [
 ]
 
 /** Public project listings; the thesis remains available through Education and its URL. */
-export const LISTED_PROJECTS = ['Engineering', 'Observatories', 'Labs'].flatMap(
-  (label) =>
-    PROJECT_GROUPS.find((group) => group.label === label)!
-      .ids.filter((id) => id !== 'thesis')
-      .map((id) => PROJECTS.find((project) => project.id === id)!),
+export const LISTED_PROJECTS = ['Engineering', 'Labs'].flatMap((label) =>
+  PROJECT_GROUPS.find((group) => group.label === label)!
+    .ids.filter((id) => id !== 'thesis')
+    .map((id) => PROJECTS.find((project) => project.id === id)!),
 )
 
 /** The project a route belongs to, if any. */

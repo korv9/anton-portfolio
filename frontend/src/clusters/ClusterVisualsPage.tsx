@@ -5,7 +5,7 @@
  */
 import { useEffect, useRef, useState } from 'react'
 import { l } from '../i18n'
-import { fetchJson } from '../welfare/data'
+import { fetchJson } from '../dataSource'
 import {
   loadAtlasPoints,
   loadAtlasSummary,
@@ -200,7 +200,7 @@ export const MAPS = (): MapSpec[] => [
   {
     id: 'research-debates',
     project: 'Political Observatory',
-    href: '#politik-tal',
+    href: '#what-does-it-even-mean',
     title: l(
       'Party-leader debates by subject',
       'Partiledardebatter efter ämne',
@@ -240,7 +240,7 @@ export const MAPS = (): MapSpec[] => [
   {
     id: 'research-municipalities',
     project: l('How is Sweden doing?', 'Hur mår Sverige?'),
-    href: '#wellbeing',
+    href: '#what-does-it-even-mean',
     title: l(
       'Municipal profiles: twelve indicators in 2024',
       'Kommunprofiler: tolv indikatorer 2024',
@@ -340,7 +340,7 @@ export const MAPS = (): MapSpec[] => [
   {
     id: 'jobs',
     project: l('The job market in job ads', 'Arbetsmarknaden i jobbannonser'),
-    href: '#jobb-kluster',
+    href: '#what-does-it-even-mean',
     title: l(
       'IT job ads by how they are written',
       'IT-annonser efter hur de är skrivna',
@@ -356,7 +356,7 @@ export const MAPS = (): MapSpec[] => [
   {
     id: 'debates',
     project: l('Political Observatory', 'Political Observatory'),
-    href: '#politik-tal',
+    href: '#what-does-it-even-mean',
     title: l(
       'What the Riksdag debates are about',
       'Vad riksdagsdebatterna handlar om',

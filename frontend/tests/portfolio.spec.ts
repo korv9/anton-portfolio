@@ -303,7 +303,7 @@ test(
     await cta.click()
     await expect(page).toHaveURL(/#projekt$/)
     await expect(page.locator('.projects-group-title')).toHaveCount(0)
-    await expect(page.locator('.projects-list > li')).toHaveCount(13)
+    await expect(page.locator('.projects-list > li')).toHaveCount(7)
     await expect(page.locator('.project-card[href="#thesis"]')).toHaveCount(0)
   },
 )
@@ -388,7 +388,8 @@ test('the start page title opens the projects page, which lists every retained p
   await expect(
     page.locator('.project-card-featured[href="#sweden"]'),
   ).toHaveCount(1)
-  await expect(page.locator('.projects-list .project-card')).toHaveCount(13)
+  await expect(page.locator('.projects-list .project-card')).toHaveCount(7)
+  await expect(page.locator('.project-card[href="#politik"]')).toHaveCount(0)
   await expect(page.locator('.project-card[href="#thesis"]')).toHaveCount(0)
   await expect(page.locator('.project-card[href="#drugcomb"]')).toContainText(
     'Drug Synergy Lab',
@@ -397,20 +398,4 @@ test('the start page title opens the projects page, which lists every retained p
   await expect(
     menu.getByRole('link', { name: 'Cluster Visuals', exact: true }),
   ).toBeVisible()
-})
-
-test('the job chart retains useful controls', async ({ page }) => {
-  await page.goto('/#job-market-tech')
-  await page.getByRole('button', { name: 'Data Engineer', exact: true }).click()
-  await expect(page.locator('.job-chart-head')).toContainText('Data Engineer')
-  const jobs = await (
-    await page.request.get('/data/gold/marts/jobs.json')
-  ).json()
-  const first = jobs.yearly.find(
-    (row: { role: string; year: number }) =>
-      row.role === 'Data Engineer' && row.year === jobs.years[0],
-  )
-  await expect(page.locator('.year-totals')).toContainText(
-    first.ads.toLocaleString('en-GB'),
-  )
 })

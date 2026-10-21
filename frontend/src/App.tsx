@@ -1,6 +1,6 @@
 import { Suspense, lazy, useEffect, useRef, useState } from 'react'
 import { currentLocale, l, type Locale } from './i18n'
-import { AI_ACT_TABS, WELFARE_TABS, sameReport, useRoute } from './router'
+import { sameReport, useRoute } from './router'
 import { pageTitle, ProjectContext, ProjectPager } from './site/Header'
 import SiteHeader from './site/SiteHeader'
 import { CvViewerProvider } from './site/CvViewer'
@@ -14,21 +14,11 @@ import './site/editorial.css'
 
 // Everything but the start page loads on navigation, so the start page ships none of it.
 const ProjectsPage = lazy(() => import('./tech/TechPanel'))
-const PoliticsProduct = lazy(() => import('./politik/PoliticsProduct'))
-const JobsProduct = lazy(() => import('./jobb/JobsProduct'))
-const ComplianceExplorer = lazy(() => import('./compliance/ComplianceExplorer'))
-const CompanyIntelligence = lazy(
-  () => import('./companies/CompanyIntelligence'),
-)
-const JobIntelligence = lazy(() => import('./job-intelligence/JobIntelligence'))
-const WelfareReport = lazy(() => import('./welfare/WelfareReport'))
-const WelfareDeep = lazy(() =>
-  import('./welfare/WelfareReport').then((m) => ({ default: m.WelfareDeep })),
-)
 const SwedenPage = lazy(() => import('./sweden/SwedenPage'))
+const SwedenHeader = lazy(() =>
+  import('./sweden/Header').then((m) => ({ default: m.SwedenHeader })),
+)
 const SymbolicAtlasPage = lazy(() => import('./symbolic/SymbolicAtlasPage'))
-const AiActProduct = lazy(() => import('./aiact/AiActProduct'))
-const AiActReport = lazy(() => import('./aiact/AiActReport'))
 const PhilosophyAtlasPage = lazy(
   () => import('./philosophy/PhilosophyAtlasPage'),
 )
@@ -36,8 +26,8 @@ const ConceptConstellationPage = lazy(
   () => import('./concepts/ConceptConstellationPage'),
 )
 const ClusterVisualsPage = lazy(() => import('./clusters/ClusterVisualsPage'))
+const MeaningPage = lazy(() => import('./meaning/MeaningPage'))
 const AskTheLaw = lazy(() => import('./lawqa/AskTheLaw'))
-const SfsReport = lazy(() => import('./sfs/SfsReport'))
 const DrugCombPage = lazy(() =>
   import('./products/CaseStudies').then((m) => ({ default: m.DrugCombPage })),
 )
@@ -78,7 +68,7 @@ export default function App() {
   const { page, path } = route
   const project = projectForRoute(route)
   const workspace =
-    page === 'sweden'
+    page === 'sweden' || page === 'meaning'
       ? 'sweden'
       : (PROJECT_GROUPS.find((group) =>
           group.ids.includes(project?.id ?? ''),
@@ -93,15 +83,23 @@ export default function App() {
         <a className="skip-link" href="#main">
           {l('Skip to content', 'Hoppa till innehåll')}
         </a>
-        {/* SWEDEN pages carry their own header (sweden/Header.tsx). */}
-        {page !== 'sweden' && <SiteHeader route={route} />}
+        {/* SWEDEN pages carry their own header (sweden/Header.tsx); the meaning page shares it. */}
+        {page === 'meaning' ? (
+          <div className="sweden sw-header-host">
+            <Suspense fallback={null}>
+              <SwedenHeader current="" />
+            </Suspense>
+          </div>
+        ) : (
+          page !== 'sweden' && <SiteHeader route={route} />
+        )}
         <main
           id="main"
           tabIndex={-1}
           key={language}
           style={{ background: 'transparent' }}
         >
-          <ProjectContext route={route} />
+          {page !== 'meaning' && <ProjectContext route={route} />}
           <PageBoundary key={page}>
             <ProjectStructure route={route}>
               <Suspense
@@ -113,32 +111,11 @@ export default function App() {
               >
                 {page === 'home' && <HomePage path={path} />}
                 {page === 'projects' && <ProjectsPage />}
-                {page === 'politik' && <PoliticsProduct route={route} />}
-                {page === 'jobs' &&
-                  (path === '#jobb-it' ? (
-                    <JobIntelligence route={route} />
-                  ) : (
-                    <JobsProduct route={route} />
-                  ))}
-                {page === 'company' && <CompanyIntelligence route={route} />}
-                {page === 'compliance' && <ComplianceExplorer route={route} />}
-                {page === 'welfare' &&
-                  (WELFARE_TABS.includes(path) ? (
-                    <WelfareReport route={route} />
-                  ) : (
-                    <WelfareDeep route={route} />
-                  ))}
                 {page === 'sweden' && <SwedenPage route={route} />}
                 {page === 'symbolic' && <SymbolicAtlasPage route={route} />}
                 {page === 'clusters' && <ClusterVisualsPage />}
+                {page === 'meaning' && <MeaningPage />}
                 {page === 'lawqa' && <AskTheLaw route={route} />}
-                {page === 'sfs' && <SfsReport route={route} />}
-                {page === 'aiact' &&
-                  (AI_ACT_TABS.includes(path) ? (
-                    <AiActReport route={route} />
-                  ) : (
-                    <AiActProduct route={route} />
-                  ))}
                 {page === 'philosophy' && <PhilosophyAtlasPage route={route} />}
                 {page === 'concepts' && (
                   <ConceptConstellationPage route={route} />

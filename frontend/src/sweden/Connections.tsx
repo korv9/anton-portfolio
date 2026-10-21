@@ -7,7 +7,7 @@
  */
 import { useEffect, useState } from 'react'
 import { l } from '../i18n'
-import { fetchJson } from '../welfare/data'
+import { fetchJson } from '../dataSource'
 import { productById } from './products'
 import {
   EmptyState,

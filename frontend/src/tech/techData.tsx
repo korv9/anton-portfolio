@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { fetchJson } from '../welfare/data'
+import { fetchJson } from '../dataSource'
 
 export const REPO = 'korv9/anton-portfolio'
 export const num = (n: number) => n.toLocaleString('en-GB')

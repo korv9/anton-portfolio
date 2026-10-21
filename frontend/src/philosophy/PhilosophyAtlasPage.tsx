@@ -12,7 +12,7 @@ import ProjectTech from '../projects/ProjectTech'
 import { ProductQuality } from '../quality/QualityPanel'
 import { PHILOSOPHY_TABS, type Route } from '../router'
 import { fetchData } from '../dataSource'
-import { useViewParams } from '../politik/useViewParams'
+import { useViewParams } from '../report/useViewParams'
 import ReportShell, {
   DeepPage,
   ReportFrame,
@@ -21,7 +21,7 @@ import ReportShell, {
   type ReportTab,
 } from '../report/ReportShell'
 import { Feature } from '../charts/feature/Feature'
-import { Select } from '../politik/controls'
+import { Select } from '../report/controls'
 import ReportMaps from '../clusters/ReportMaps'
 import './philosophy.css'
 

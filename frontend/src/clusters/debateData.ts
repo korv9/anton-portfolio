@@ -1,4 +1,4 @@
-import { fetchJson } from '../welfare/data'
+import { fetchJson } from '../dataSource'
 import type { ClusterPoint } from './ClusterScatter'
 
 type DebateSegment = {

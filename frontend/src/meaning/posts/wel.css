@@ -1,0 +1,56 @@
+.mean-wel-svg text {
+  font-size: 10px;
+  fill: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.mean-wel-axis line {
+  stroke: color-mix(in srgb, var(--ink) 10%, transparent);
+  stroke-width: 0.6;
+}
+.mean-wel-kpi {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  font-variant-numeric: tabular-nums;
+}
+.mean-wel-kpi b {
+  font-size: clamp(2.6rem, 9vw, 5.5rem);
+  font-weight: var(--weight-heading);
+  letter-spacing: -0.04em;
+  line-height: 1;
+  color: var(--ink);
+}
+.mean-wel-kpi span {
+  font-size: var(--caption);
+  color: var(--muted);
+}
+.mean-wel-kpi em {
+  font-style: normal;
+  font-size: var(--caption);
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--cluster-pistachio);
+}
+.mean-wel-kpi em[data-up='true'] {
+  background: var(--cluster-apricot);
+}
+.mean-wel-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 6px;
+}
+.mean-wel-grid > div {
+  border-radius: 10px;
+  background: var(--wash);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 6px 10px;
+}
+.mean-wel-grid .mean-wel-kpi b {
+  font-size: clamp(1.4rem, 3.4vw, 2.2rem);
+}

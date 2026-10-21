@@ -9,7 +9,7 @@
  */
 import { Suspense, lazy, useEffect, useState } from 'react'
 import { l } from '../i18n'
-import { fetchJson } from '../welfare/data'
+import { fetchJson } from '../dataSource'
 import { setHashParams, type Route } from '../router'
 import { productById } from './products'
 import Explore, {

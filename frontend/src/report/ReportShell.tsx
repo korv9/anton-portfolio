@@ -4,8 +4,8 @@
  * the ways further in. A tab is an address of its own.
  */
 import type { ReactNode } from 'react'
-import '../politik/politik.css'
-import '../politik/longread.css'
+import './theme.css'
+import './longread.css'
 import './report.css'
 
 export type ReportTab = { path: string; label: string; question: string }

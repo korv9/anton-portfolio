@@ -257,26 +257,3 @@ export function PartyTag({
     </span>
   )
 }
-
-/** A party's logo and full name, linking to its page where it has one. */
-export function PartyName({
-  party,
-  size = 18,
-}: {
-  party: string
-  size?: number
-}) {
-  const content = (
-    <>
-      <PartyLogo party={party} size={size} />
-      <span>{partyName(party)}</span>
-    </>
-  )
-  return RIKSDAG_PARTIES.includes(party) ? (
-    <a className="party-name" href={`#politik-partier?partier=${party}`}>
-      {content}
-    </a>
-  ) : (
-    <span className="party-name">{content}</span>
-  )
-}

@@ -1,6 +1,6 @@
 /**
- * SWEDEN: the hub and every research route open, the Wellbeing Observatory's old #sweden
- * addresses lead to #wellbeing, and Politics of Measurement draws its findings from the
+ * SWEDEN: the hub and every research route open, the withdrawn Wellbeing Observatory's old
+ * #sweden addresses lead to the chart feed, and Politics of Measurement draws its findings from the
  * published catalogue (counts are read from the file, never expected as literals).
  */
 import AxeBuilder from '@axe-core/playwright'
@@ -60,14 +60,10 @@ test(
   },
 )
 
-test('old wellbeing addresses lead to #wellbeing', async ({ page }) => {
-  for (const [from, to] of [
-    ['#sweden-health', '#wellbeing-health'],
-    ['#sweden-counties', '#wellbeing-counties'],
-    ['#sweden-mental-health', '#wellbeing-mental-health'],
-  ]) {
+test('old wellbeing addresses lead to the chart feed', async ({ page }) => {
+  for (const from of ['#sweden-health', '#sweden-counties', '#sweden-work']) {
     await page.goto('/' + from)
-    await expect(page).toHaveURL(new RegExp(to + '$'))
+    await expect(page).toHaveURL(/#what-does-it-even-mean$/)
   }
 })
 

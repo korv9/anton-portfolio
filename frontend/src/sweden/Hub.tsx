@@ -5,7 +5,7 @@
  */
 import { lazy, Suspense, useEffect, useState } from 'react'
 import { l } from '../i18n'
-import { fetchJson } from '../welfare/data'
+import { fetchJson } from '../dataSource'
 import type { Geometry } from './map'
 import { SWEDEN_PRODUCTS } from './products'
 import { GROUP_HEX } from './SimilarityStage'

@@ -2,11 +2,7 @@ import { defineConfig, devices } from '@playwright/test'
 
 export default defineConfig({
   testDir: './tests',
-  testMatch: [
-    'security.policy.ts',
-    'compliance.policy.ts',
-    'companies.policy.ts',
-  ],
+  testMatch: ['security.policy.ts'],
   workers: 1,
   reporter: 'list',
   use: {

@@ -4,51 +4,6 @@
  */
 import { test, expect } from './test'
 
-test('a navigator scenario survives a reload and can be cleared', async ({
-  page,
-}) => {
-  await page.goto('/#ai-act-startups')
-  const question = page
-    .locator('.aa-question')
-    .filter({ hasText: 'under your own name' })
-  await question.getByText('Yes', { exact: true }).click()
-  await expect(page).toHaveURL(/svar=[^&]*(:|%3A)yes/)
-  await page.reload()
-  await expect(
-    page
-      .locator('.aa-question')
-      .filter({ hasText: 'under your own name' })
-      .locator('input')
-      .first(),
-  ).toBeChecked()
-  // Choosing the same answer again takes it back.
-  await page
-    .locator('.aa-question')
-    .filter({ hasText: 'under your own name' })
-    .getByText('Yes', { exact: true })
-    .click()
-  await expect(page).not.toHaveURL(/svar=[^&]*(:|%3A)yes/)
-})
-
-test(
-  'the job-market field slicer chooses and resets',
-  { tag: '@mobile' },
-  async ({ page }) => {
-    await page.goto('/#jobb')
-    const slicer = page.getByRole('group', { name: 'Occupation fields' })
-    const first = slicer.getByRole('button').first()
-    await first.click()
-    await expect(first).toHaveAttribute('aria-pressed', 'true')
-    await expect(page).toHaveURL(/omraden=/)
-    await expect(page.locator('#annonser h2')).not.toContainText(
-      'the whole market',
-    )
-    await first.click()
-    await expect(first).toHaveAttribute('aria-pressed', 'false')
-    await expect(page.locator('#annonser h2')).toContainText('the whole market')
-  },
-)
-
 test('the Symbol Lab view chips explain their colours', async ({ page }) => {
   await page.goto('/#symbolic-atlas?view=cross-book')
   const key = page.locator('.atlas-key')

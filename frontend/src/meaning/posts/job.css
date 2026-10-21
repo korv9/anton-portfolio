@@ -1,0 +1,63 @@
+.mean-job-svg text {
+  fill: var(--ink);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+.mean-job-axis line {
+  stroke: var(--line);
+  stroke-width: 0.6;
+}
+.mean-job-axis text {
+  fill: var(--muted);
+  font-size: 10px;
+}
+.mean-job-big {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  border-radius: 10px;
+  color: var(--ink);
+  container-type: inline-size;
+}
+.mean-job-big b {
+  font-size: clamp(32px, 19cqi, 140px);
+  font-weight: var(--weight-heading);
+  letter-spacing: -0.04em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.mean-job-big span {
+  font-size: var(--caption);
+  margin-top: 8px;
+}
+.mean-job-kpis {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+  gap: 6px;
+  container-type: inline-size;
+}
+.mean-job-kpis div {
+  border-left: 4px solid;
+  background: var(--wash);
+  border-radius: 6px;
+  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.mean-job-kpis b {
+  font-size: clamp(16px, 7cqi, 34px);
+  font-weight: var(--weight-heading);
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.mean-job-kpis span {
+  font-size: var(--caption);
+  color: var(--muted);
+}
+.mean-job-hover:hover {
+  opacity: 0.75;
+}

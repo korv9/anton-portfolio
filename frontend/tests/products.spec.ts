@@ -75,8 +75,6 @@ test(
     await expect(
       drugData.getByRole('link', { name: 'Original CSV' }),
     ).toHaveAttribute('href', /metrics.csv$/)
-    await page.goto('/#job-data')
-    await expect(page.locator('#job-data tbody tr')).toHaveCount(25)
     expect(errors).toEqual([])
   },
 )

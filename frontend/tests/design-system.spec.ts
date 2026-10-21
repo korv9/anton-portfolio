@@ -7,10 +7,6 @@ test('project themes survive navigation between all workspace types', async ({
   test.skip(isMobile, 'the same theme cascade on a phone')
   test.setTimeout(120_000)
   const projects = [
-    ['#politik', 'observatories'],
-    ['#jobb', 'observatories'],
-    ['#wellbeing', 'observatories'],
-    ['#ai-act', 'observatories'],
     ['#symbolic-atlas', 'labs'],
     ['#philosophy-atlas', 'labs'],
     ['#concept-constellation', 'labs'],

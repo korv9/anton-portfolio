@@ -18,7 +18,7 @@ import { fixed } from '../format'
 import { ProductQuality } from '../quality/QualityPanel'
 import { MethodSummary } from '../ui/Story'
 import { SYMBOLIC_TABS, type Route } from '../router'
-import { useViewParams } from '../politik/useViewParams'
+import { useViewParams } from '../report/useViewParams'
 import { StageBlock, StageFacts } from '../ui/Stage'
 import '../ui/stage.css'
 import ReportShell, {

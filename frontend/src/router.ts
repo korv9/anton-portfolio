@@ -1,32 +1,26 @@
 /**
  * Hash routing for the whole site.
  *
- * A route is `#path` with optional query parameters, `#politik-valjarna?partier=S,M&fran=2010`,
- * so a chosen view can be shared as a link. Old addresses keep working: the few that the new
- * politics product replaces redirect, and the rest open as deep dives inside it.
+ * A route is `#path` with optional query parameters, `#concept-journey?begrepp=risk`, so a
+ * chosen view can be shared as a link. Old addresses keep working through redirects; the
+ * withdrawn observatories all lead to the "What does it even mean?" feed.
  */
 import { useEffect, useState } from 'react'
 
 export type Page =
   | 'home'
   | 'projects'
-  | 'politik'
-  | 'jobs'
-  | 'welfare'
   | 'sweden'
   | 'drugcomb'
   | 'thesis'
   | 'homie'
   | 'lakehouse'
   | 'symbolic'
-  | 'aiact'
-  | 'sfs'
   | 'philosophy'
   | 'concepts'
   | 'clusters'
+  | 'meaning'
   | 'lawqa'
-  | 'compliance'
-  | 'company'
 
 export type Route = {
   /** The full hash, e.g. `#politik-valjarna?partier=S`. */
@@ -35,22 +29,25 @@ export type Route = {
   path: string
   params: URLSearchParams
   page: Page
+  /** Read by the unrouted Job Intelligence source kept for the compliance release check. */
   companyId?: string
 }
 
 /** Addresses that the new structure replaces, and where they now lead. */
+/** The feed of charts that replaced the withdrawn observatories. */
+export const MEANING = '#what-does-it-even-mean'
+
 export const REDIRECTS: Record<string, string> = {
-  '#jobb-utforska': '#jobb',
-  // The Wellbeing Observatory moved from #sweden to #wellbeing when the SWEDEN research
-  // platform took #sweden; its old tab and deep-dive addresses lead to the new ones.
-  '#sweden-work': '#wellbeing',
-  '#sweden-sick-leave': '#wellbeing-health',
-  '#sweden-health': '#wellbeing-health',
-  '#sweden-counties': '#wellbeing-counties',
-  '#sweden-kommuner': '#wellbeing-kommuner',
-  '#sweden-explorer': '#wellbeing-explorer',
-  '#sweden-mental-health': '#wellbeing-mental-health',
-  '#now': '#politik',
+  '#jobb-utforska': MEANING,
+  // The Wellbeing Observatory's addresses from before the SWEDEN platform took #sweden.
+  '#sweden-work': MEANING,
+  '#sweden-sick-leave': MEANING,
+  '#sweden-health': MEANING,
+  '#sweden-counties': MEANING,
+  '#sweden-kommuner': MEANING,
+  '#sweden-explorer': MEANING,
+  '#sweden-mental-health': MEANING,
+  '#now': MEANING,
   '#data-constellation': '#projekt',
   '#data-catalogue': '#projekt',
   '#idea-lineage': '#projekt',
@@ -63,9 +60,9 @@ export const REDIRECTS: Record<string, string> = {
   '#rag': '#projekt',
   '#mimii': '#projekt',
   '#rfc-drift': '#projekt',
-  '#now-election': '#politik',
-  '#politik-debatter': '#politik-sakdebatter',
-  '#politics-page': '#politik',
+  '#now-election': MEANING,
+  '#politik-debatter': MEANING,
+  '#politics-page': MEANING,
   '#about': '#om-mig',
   '#projects': '#projekt',
   '#alla-projekt': '#projekt',
@@ -76,43 +73,52 @@ export const REDIRECTS: Record<string, string> = {
   '#work': '#projekt',
   '#teknik': '#om-mig',
   '#kompetenser': '#om-mig',
-  // The architecture page is the Data Constellation now; the platform status sits in the
-  // data catalogue, and the welfare analysis in the welfare product.
+  // The architecture page is the Data Constellation now.
   '#technical': '#projekt',
   '#teknisk': '#projekt',
   '#design': '#start',
   '#tallman': '#projekt',
-  '#job-market': '#jobb',
-  '#job-market-occupations': '#jobb-yrken',
-  '#job-market-regions': '#jobb-lan',
-  '#job-market-conditions': '#jobb-villkor',
-  '#job-market-clusters': '#jobb-kluster',
+  '#job-market': MEANING,
+  '#job-market-occupations': MEANING,
+  '#job-market-regions': MEANING,
+  '#job-market-conditions': MEANING,
+  '#job-market-clusters': MEANING,
   '#status': '#projekt',
   '#symbolic-map': '#symbolic-atlas',
-  // The politics product's older detailed views: each address leads to the theme that
-  // answers the same question now.
-  '#now-seats': '#politik-mandat',
-  '#now-news': '#politik-nyheter',
-  '#now-studies': '#politik-utredningar',
-  '#now-history': '#politik-valjarna',
-  '#now-government': '#politik',
-  '#now-depth': '#politik-utforska',
-  '#data-explorer': '#politik-sok',
-  '#debates': '#politik-partiledardebatter',
-  '#raw-data': '#politik-kallor',
+  // The politics product's older detailed views.
+  '#now-seats': MEANING,
+  '#now-news': MEANING,
+  '#now-studies': MEANING,
+  '#now-history': MEANING,
+  '#now-government': MEANING,
+  '#now-depth': MEANING,
+  '#data-explorer': MEANING,
+  '#debates': MEANING,
+  '#raw-data': MEANING,
 }
 
 /** Older address families and the theme they lead to, checked after the exact list. */
 const PREFIX_REDIRECTS: [string, string][] = [
   ['#quality-', '#projekt'],
   ['#data-model-', '#projekt'],
-  ['#now-', '#politik-roster'],
-  ['#politics', '#politik-roster'],
-  ['#issue-', '#politik-roster'],
-  ['#budget-', '#politik-budget'],
-  ['#parties', '#politik-partier'],
-  ['#taxes', '#politik-skatter'],
-  ['#analysis', '#wellbeing'],
+  // The withdrawn observatories: politics, jobs, Job Intelligence, wellbeing, the AI Act
+  // and the statute book, with every tab, deep dive and older address of theirs.
+  ...[
+    '#now',
+    '#politik',
+    '#politics',
+    '#issue-',
+    '#budget-',
+    '#parties',
+    '#taxes',
+    '#analysis',
+    '#jobb',
+    '#job-',
+    '#wellbeing',
+    '#compliance',
+    '#ai-act',
+    '#lagboken',
+  ].map((prefix): [string, string] => [prefix, MEANING]),
 ]
 
 /** Where an address leads now, if it has moved. */
@@ -124,24 +130,9 @@ export function redirectOf(path: string): string | undefined {
 }
 
 /**
- * The observatory reports: three tabs each, every tab an address of its own, and the deep dives
- * behind them. All of them are laid out like the start page: edge to edge, no breadcrumb or
- * topic rows.
+ * The reports: three tabs each, every tab an address of its own. All of them are laid out like
+ * the start page: edge to edge, no breadcrumb or topic rows.
  */
-export const REPORT_TABS = [
-  '#politik',
-  '#politik-val',
-  '#politik-riksdag',
-  '#politik-budget',
-  '#politik-tal',
-]
-export const JOB_TABS = ['#jobb', '#jobb-lan', '#jobb-villkor', '#jobb-kluster']
-export const WELFARE_TABS = [
-  '#wellbeing',
-  '#wellbeing-health',
-  '#wellbeing-counties',
-  '#wellbeing-kommuner',
-]
 /** The SWEDEN research platform: the hub, the five research products and Connections. */
 export const SWEDEN_PATHS = [
   '#sweden',
@@ -160,7 +151,6 @@ export const SWEDEN_PATHS = [
   '#sweden-atlas-e',
   '#sweden-atlas-x',
 ]
-export const AI_ACT_TABS = ['#ai-act', '#ai-act-roles', '#ai-act-society']
 export const PHILOSOPHY_TABS = [
   '#philosophy-atlas',
   '#philosophy-groups',
@@ -177,49 +167,10 @@ export const CONCEPT_TABS = [
   '#concept-constellation',
 ]
 export const DRUGCOMB_TABS = ['#drugcomb', '#drugcomb-model', '#drugcomb-cells']
-export const SFS_TABS = ['#lagboken', '#lagboken-tid', '#lagboken-storlek']
-const REPORTS = [
-  [
-    '#compliance',
-    '#compliance-rankings',
-    '#compliance-company',
-    '#compliance-stories',
-  ],
-  REPORT_TABS,
-  JOB_TABS,
-  WELFARE_TABS,
-  AI_ACT_TABS,
-  PHILOSOPHY_TABS,
-  SYMBOLIC_TABS,
-  CONCEPT_TABS,
-  DRUGCOMB_TABS,
-  SFS_TABS,
-]
-const DEEP_DIVES = [
-  '#politik-partier',
-  '#politik-partiledardebatter',
-  '#politik-sakdebatter',
-  '#politik-modell',
-  '#politik-utredningar',
-  '#politik-kallor',
-  '#jobb-trender',
-  '#jobb-yrken',
-  '#job-market-tech',
-  '#jobb-kallor',
-  '#wellbeing-explorer',
-  '#wellbeing-mental-health',
-]
+const REPORTS = [PHILOSOPHY_TABS, SYMBOLIC_TABS, CONCEPT_TABS, DRUGCOMB_TABS]
 export function isLongRead(path: string) {
   return (
-    path.startsWith('/companies/') ||
-    path === '#compliance' ||
-    path.startsWith('#compliance-') ||
-    path.startsWith('#politik') ||
     REPORTS.flat().includes(path) ||
-    DEEP_DIVES.includes(path) ||
-    path.startsWith('#ai-act-') ||
-    path.startsWith('#jobb-') ||
-    path.startsWith('#job-') ||
     path.startsWith('#philosophy-') ||
     path.startsWith('#symbolic-') ||
     path.startsWith('#concept-') ||
@@ -234,31 +185,16 @@ export function sameReport(a: string, b: string) {
   return REPORTS.some((tabs) => tabs.includes(a) && tabs.includes(b))
 }
 
-export function isPoliticsPath(path: string) {
-  return path.startsWith('#politik')
-}
-
 export function pageOf(path: string): Page {
-  if (path === '#compliance' || path.startsWith('#compliance-'))
-    return 'compliance'
   if (path === '#projekt') return 'projects'
-  if (isPoliticsPath(path)) return 'politik'
-  if (
-    ['#job-market', '#job-data', '#jobb'].includes(path) ||
-    path.startsWith('#job-market-') ||
-    path.startsWith('#jobb-')
-  )
-    return 'jobs'
   if (path.startsWith('#drugcomb')) return 'drugcomb'
   if (path === '#thesis') return 'thesis'
   if (path === '#homie') return 'homie'
   if (path === '#diva-lakehouse') return 'lakehouse'
-  if (path === '#wellbeing' || path.startsWith('#wellbeing-')) return 'welfare'
   if (SWEDEN_PATHS.includes(path)) return 'sweden'
   if (path === '#cluster-visuals') return 'clusters'
+  if (path === MEANING) return 'meaning'
   if (path === '#fraga-lagen') return 'lawqa'
-  if (path === '#ai-act' || path.startsWith('#ai-act-')) return 'aiact'
-  if (SFS_TABS.includes(path)) return 'sfs'
   if (path.startsWith('#concept-') || path.startsWith('#concepts-'))
     return 'concepts'
   if (path === '#philosophy-atlas' || path.startsWith('#philosophy-'))
@@ -279,24 +215,9 @@ export function companyHref(id: string) {
   return '/companies/' + encodeURIComponent(id)
 }
 
+/** Company profiles (`/companies/<id>`) belonged to Job Intelligence; they lead to the feed. */
 export function parseLocation(pathname: string, hash: string): Route {
-  if (pathname.startsWith('/companies/')) {
-    let id = ''
-    try {
-      id = decodeURIComponent(pathname.slice('/companies/'.length))
-    } catch {
-      /* Invalid identifiers open the explicit missing profile state. */
-    }
-    if (/[\/\\\u0000-\u001f]/.test(id)) id = ''
-    return {
-      page: 'company',
-      path: pathname,
-      hash,
-      params: new URLSearchParams(),
-      companyId: id,
-    }
-  }
-  return parseHash(hash)
+  return parseHash(pathname.startsWith('/companies/') ? MEANING : hash)
 }
 
 /** The current route; follows hash changes and applies redirects in the address bar. */
@@ -309,12 +230,8 @@ export function useRoute(): Route {
       const raw = window.location.hash
       const [rawPath, query] = raw.split('?')
       const target = redirectOf(rawPath)
-      if (
-        location.pathname.startsWith('/companies/') &&
-        raw &&
-        raw !== '#main'
-      ) {
-        history.replaceState(null, '', '/' + raw)
+      if (location.pathname.startsWith('/companies/')) {
+        history.replaceState(null, '', '/' + MEANING)
       }
       if (target) {
         // Replace, so the back button does not bounce through the old address.

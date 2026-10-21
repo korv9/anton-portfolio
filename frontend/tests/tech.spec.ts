@@ -81,7 +81,7 @@ test('the projects page explains the pipeline, lists the projects and shows the 
   )
   // The projects, with what a project on the platform holds.
   await expect(
-    page.locator('.project-card[href="#politik"] .project-card-holds'),
+    page.locator('.project-card[href="#symbolic-atlas"] .project-card-holds'),
   ).toContainText('dbt models')
   const fetched = page.locator('.fetches tbody tr')
   await expect(fetched).toHaveAttribute('data-state', 'failure')

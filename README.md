@@ -8,30 +8,27 @@ English one click away.
 ## What is on the site
 
 The homepage contains the profile, experience and project index. The shared header groups
-projects into Observatories, Labs and Engineering. Observatory overviews lead to themed
-pages; labs use continuous reports and section links. See [site structure](docs/site-structure.md)
+projects into Labs and Engineering; labs use continuous reports and section links. The
+observatories are withdrawn: their addresses lead to the chart feed at
+`#what-does-it-even-mean`. See [site structure](docs/site-structure.md)
 and the [design system](docs/design-system.md).
 
-| Group       | Project                   | Address             |
-| ----------- | ------------------------- | ------------------- |
-| Observatory | Political Observatory     | `#politik`          |
-| Observatory | Job Intelligence          | `#jobb-it`          |
-| Observatory | Labour Market Observatory | `#jobb`             |
-| Observatory | Wellbeing Observatory     | `#sweden`           |
-| Observatory | EU AI Act Observatory     | `#ai-act`           |
-| Lab         | Symbol Lab                | `#symbolic-atlas`   |
-| Lab         | Philosophy Lab            | `#philosophy-atlas` |
-| Lab         | Concept Lab               | `#concept-journey`  |
-| Lab         | Drug Synergy Lab          | `#drugcomb`         |
-| Engineering | IT Incident Clustering    | `#thesis`           |
-| Engineering | Homie API                 | `#homie`            |
-| Engineering | DiVA Thesis Lakehouse     | `#diva-lakehouse`   |
-| Tool        | Cluster Visuals           | `#cluster-visuals`  |
+| Group       | Project                 | Address                   |
+| ----------- | ----------------------- | ------------------------- |
+| Lab         | Symbol Lab              | `#symbolic-atlas`         |
+| Lab         | Philosophy Lab          | `#philosophy-atlas`       |
+| Lab         | Concept Lab             | `#concept-journey`        |
+| Lab         | Drug Synergy Lab        | `#drugcomb`               |
+| Engineering | IT Incident Clustering  | `#thesis`                 |
+| Engineering | Homie API               | `#homie`                  |
+| Engineering | DiVA Thesis Lakehouse   | `#diva-lakehouse`         |
+| Tool        | Cluster Visuals         | `#cluster-visuals`        |
+| Tool        | What does it even mean? | `#what-does-it-even-mean` |
 
 Data models, source documentation and pipeline code remain in the repository. The former
 standalone platform pages are retired from the website.
 
-[Job Intelligence](docs/job-intelligence.md) combines current original advertisements, source-bound requirements and verified company evidence. CV personalisation is an opt-in local development feature; public visitors receive generic analysis.
+[Job Intelligence](docs/job-intelligence.md) is withdrawn from the site. Its source in `frontend/src/{compliance,companies,job-intelligence}` stays unrouted because the compliance release hash and build checks read it.
 
 ## How the data flows
 

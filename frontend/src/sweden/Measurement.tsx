@@ -9,7 +9,7 @@
  */
 import { Suspense, lazy, useEffect, useMemo, useState } from 'react'
 import { l } from '../i18n'
-import { fetchJson } from '../welfare/data'
+import { fetchJson } from '../dataSource'
 import RankBars from '../charts/RankBars'
 import MultiLineChart from '../charts/MultiLineChart'
 import { setHashParams, type Route } from '../router'
