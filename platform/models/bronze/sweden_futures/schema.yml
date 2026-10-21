@@ -17,6 +17,12 @@ models:
             columns: [session, year, party]
             # Speeches with no party in the source keep a null party.
             nullable: [party]
+  - name: stg_futures_lengths
+    description: Session × year × words in the speech; speeches and future-oriented speeches.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [session, year, words]
   - name: stg_futures_theses
     description: DiVA thesis abstracts per harvested month × record × theme.
     data_tests:

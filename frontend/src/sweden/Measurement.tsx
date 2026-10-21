@@ -10,8 +10,6 @@
 import { Suspense, lazy, useEffect, useMemo, useState } from 'react'
 import { l } from '../i18n'
 import { fetchJson } from '../dataSource'
-import RankBars from '../charts/RankBars'
-import MultiLineChart from '../charts/MultiLineChart'
 import { setHashParams, type Route } from '../router'
 import { productById } from './products'
 import {
@@ -24,56 +22,20 @@ import {
   type Method,
   type Reading,
 } from './template'
+import Explore, {
+  BASE,
+  GEO_LABEL,
+  GEO_LEVELS,
+  name,
+  num,
+  pct,
+  type Coverage,
+  type Domain,
+  type Geo,
+  type Summary,
+} from './MeasurementExplore'
 
-type Geo = 'national' | 'county' | 'municipality' | 'subarea'
-type Domain = {
-  id: string
-  label_en: string
-  label_sv: string
-  scope_en: string
-  scb_tables: number
-  kolada_kpis: number
-  scb_current: number
-  kolada_current: number
-  scb_municipal: number
-  scb_subannual: number
-  first_year: number | null
-  institutions: number
-  geo: Record<Geo, number>
-}
-type Summary = {
-  current_from: number
-  domains: Domain[]
-  totals: {
-    catalogue: string
-    items: number
-    first_year: number | null
-    last_year: number | null
-    institutions: number
-  }[]
-  provenance: {
-    sources: { name: string; url: string; licence: string }[]
-    fetched: { fetched_at: string | null; files?: number; bytes?: number }
-    run_id: string | null
-    code_sha: string | null
-    models: string[]
-    classification: string[]
-  }
-}
-type Coverage = { rows: [string, number, Geo, number][] }
-type Items = { rows: (string | number | null)[][] }
-
-const BASE = 'sweden/measurement/'
-const GEO_LEVELS: Geo[] = ['national', 'county', 'municipality', 'subarea']
-const GEO_LABEL: Record<Geo, [string, string]> = {
-  national: ['Country only', 'Bara riket'],
-  county: ['Counties', 'Län'],
-  municipality: ['Municipalities', 'Kommuner'],
-  subarea: ['Below municipality', 'Under kommun'],
-}
 const DECADES = Array.from({ length: 13 }, (_, i) => 1900 + i * 10)
-const num = (n: number) => n.toLocaleString(l('en-GB', 'sv-SE'))
-const name = (d: Domain) => l(d.label_en, d.label_sv)
 
 /** Domain × decade: the most SCB tables that report any single year of the decade. */
 function decadeMatrix(coverage: Coverage, minGeo: Geo) {
@@ -155,6 +117,15 @@ export default function Measurement({ route }: { route: Route }) {
   const culture = domains.find((d) => d.id === 'culture')
   const health = domains.find((d) => d.id === 'health')
   const selected = domains.find((d) => d.id === picked) ?? null
+  const { sensitivity, elsewhere } = summary
+  // Kolada health figures whose title is a well-being measure (trust, mental well-being).
+  const healthAsWellbeing =
+    sensitivity.flows.find((f) => f.from === 'health' && f.to === 'wellbeing')
+      ?.kolada ?? 0
+  const keywordCount = (id: string) =>
+    (sensitivity.domains[id]?.scb ?? 0) + (sensitivity.domains[id]?.kolada ?? 0)
+  const absent = elsewhere.filter((a) => a.items === 0)
+  const kb = elsewhere.find((a) => a.agency === 'Kungliga biblioteket')
 
   const findings: Finding[] = []
   if (fewest.length) {
@@ -225,8 +196,8 @@ export default function Measurement({ route }: { route: Route }) {
       key: 'health',
       contrary: true,
       statement: l(
-        'Health looks unmeasured in SCB’s catalogue and is one of the most measured domains in Kolada: where a domain is counted depends on which agency holds it.',
-        'Hälsa ser omätt ut i SCB:s katalog och är en av de mest mätta domänerna i Kolada: var en domän räknas beror på vilken myndighet som äger den.',
+        `SCB’s database has ${num(health.scb_tables)} health tables and Kolada ${num(health.kolada_kpis)} health key figures, ${num(healthAsWellbeing)} of them survey measures of trust or well-being by their titles. Where a domain is counted depends on which agency holds it and on the mapping.`,
+        `SCB:s statistikdatabas har ${num(health.scb_tables)} hälsotabeller och Kolada ${num(health.kolada_kpis)} nyckeltal om hälsa, varav ${num(healthAsWellbeing)} enligt titeln är enkätmått på tillit eller välbefinnande. Var en domän räknas beror på vilken myndighet som äger den och på indelningen.`,
       ),
       values: (
         <ul>
@@ -235,6 +206,13 @@ export default function Measurement({ route }: { route: Route }) {
           </li>
           <li>
             Kolada: {num(health.kolada_kpis)} {l('key figures', 'nyckeltal')}
+          </li>
+          <li>
+            {l(
+              'Kolada health figures matching well-being words',
+              'Kolada-nyckeltal om hälsa med ord för välbefinnande',
+            )}
+            : {num(healthAsWellbeing)}
           </li>
         </ul>
       ),
@@ -451,6 +429,18 @@ export default function Measurement({ route }: { route: Route }) {
             'Räkna tabeller per domän, per år i deras periodspann och per geografi.',
           )}
         </li>
+        <li>
+          {l(
+            'Recount every item under a second mapping by words in its title (seeds/sweden/domain_keywords.csv), where one item can count in several domains. Count the contents in the metadata of each regional SCB table, since one table can hold one measure or dozens.',
+            'Räkna om varje post med en andra indelning efter ord i titeln (seeds/sweden/domain_keywords.csv), där en post kan höra till flera domäner. Räkna innehållen i metadata för varje regional SCB-tabell, eftersom en tabell kan rymma ett mått eller dussintals.',
+          )}
+        </li>
+        <li>
+          {l(
+            'Count the items each catalogue credits to the agencies named under Alternatives (seeds/sweden/other_agencies.csv).',
+            'Räkna de poster som katalogerna anger med de myndigheter som nämns under Alternativ som källa (seeds/sweden/other_agencies.csv).',
+          )}
+        </li>
       </ol>
     ),
     results: (
@@ -505,8 +495,8 @@ export default function Measurement({ route }: { route: Route }) {
         </li>
         <li>
           {l(
-            'The domain classification is a judgement recorded in seed files; another classification would move tables between domains.',
-            'Domänindelningen är en bedömning som ligger i seedfiler; en annan indelning skulle flytta tabeller mellan domäner.',
+            `The domain classification is a judgement recorded in seed files. Under a second mapping by title keywords, ${pct(sensitivity.moved_share ?? 0)} of items match only other domains; both counts are under Explore. The precision of neither mapping has been measured.`,
+            `Domänindelningen är en bedömning som ligger i seedfiler. Med en andra indelning efter ord i titeln matchar ${pct(sensitivity.moved_share ?? 0)} av posterna bara andra domäner; båda antalen finns under Utforska. Ingen av indelningarnas precision är uppmätt.`,
           )}
         </li>
         <li>
@@ -564,9 +554,6 @@ export default function Measurement({ route }: { route: Route }) {
   const bySubannual = [...inside].sort(
     (a, b) => b.scb_subannual - a.scb_subannual,
   )
-  const governed = ['economy', 'employment']
-  const porterHolds =
-    governed.includes(byTables[0].id) && governed.includes(bySubannual[0].id)
   const readings: Reading[] = [
     {
       theory: 'Porter: trust in numbers',
@@ -574,10 +561,12 @@ export default function Measurement({ route }: { route: Route }) {
         'Quantification concentrates where central institutions need comparable numbers to govern at a distance: the economy, the labour market, public finances.',
         'Kvantifiering koncentreras där centrala institutioner behöver jämförbara siffror för att styra på avstånd: ekonomin, arbetsmarknaden, offentliga finanser.',
       ),
-      verdict: porterHolds ? 'supports' : 'challenges',
+      // A national statistics office publishes most on the economy and the labour market under
+      // any theory, so this count could not have come out against the reading.
+      verdict: 'undetermined',
       why: l(
-        `Most SCB tables: ${name(byTables[0])} (${num(byTables[0].scb_tables)}), then ${name(byTables[1])} (${num(byTables[1].scb_tables)}). Most monthly or quarterly tables: ${name(bySubannual[0])} (${num(bySubannual[0].scb_subannual)}).`,
-        `Flest SCB-tabeller: ${name(byTables[0])} (${num(byTables[0].scb_tables)}), sedan ${name(byTables[1])} (${num(byTables[1].scb_tables)}). Flest månads- eller kvartalstabeller: ${name(bySubannual[0])} (${num(bySubannual[0].scb_subannual)}).`,
+        `Most SCB tables: ${name(byTables[0])} (${num(byTables[0].scb_tables)}), then ${name(byTables[1])} (${num(byTables[1].scb_tables)}). Most monthly or quarterly tables: ${name(bySubannual[0])} (${num(bySubannual[0].scb_subannual)}). This is consistent with the reading, but the catalogue cannot test it: a national statistics office would publish most on these domains under any explanation.`,
+        `Flest SCB-tabeller: ${name(byTables[0])} (${num(byTables[0].scb_tables)}), sedan ${name(byTables[1])} (${num(byTables[1].scb_tables)}). Flest månads- eller kvartalstabeller: ${name(bySubannual[0])} (${num(bySubannual[0].scb_subannual)}). Det stämmer med läsningen, men katalogen kan inte pröva den: en nationell statistikmyndighet skulle publicera mest om dessa domäner oavsett förklaring.`,
       ),
       limits: l(
         'A count of tables shows where publishing is dense, not why; administrative demand is one explanation among several.',
@@ -592,8 +581,8 @@ export default function Measurement({ route }: { route: Route }) {
       ),
       verdict: 'undetermined',
       why: l(
-        'Culture and leisure are thin here, but they are also counted by agencies outside these catalogues. Spirituality is zero because no subject is mapped to it, which says nothing about whether it is measured.',
-        'Kultur och fritid är tunna här, men de räknas också av myndigheter utanför dessa kataloger. Andlighet är noll eftersom inget ämne är indelat dit, vilket inte säger något om huruvida den mäts.',
+        `Culture and leisure are thin here, but other agencies count them too. Kolada credits ${num(kb?.items ?? 0)} key figures to Kungliga biblioteket; ${absent.map((a) => a.agency).join(' and ') || 'every named agency appears'}${absent.length ? ' appear in neither catalogue' : ''}. Spirituality is zero because no subject is mapped to it, and ${num(keywordCount('spirituality'))} titles match its words under the keyword mapping. Neither count says whether it is measured.`,
+        `Kultur och fritid är tunna här, men andra myndigheter räknar dem också. Kolada anger Kungliga biblioteket som källa för ${num(kb?.items ?? 0)} nyckeltal; ${absent.map((a) => a.agency).join(' och ') || 'varje nämnd myndighet finns med'}${absent.length ? ' finns inte i någon av katalogerna' : ''}. Andlighet är noll eftersom inget ämne är indelat dit, och ${num(keywordCount('spirituality'))} titlar matchar dess ord med nyckelordsindelningen. Inget av antalen säger om den mäts.`,
       ),
       limits: l(
         'Deciding this needs the other agencies’ catalogues and a reading of how categories changed over time.',
@@ -711,253 +700,5 @@ function CoverageMatrix({
         </tbody>
       </table>
     </div>
-  )
-}
-
-function Explore({
-  summary,
-  coverage,
-  picked,
-  onPick,
-}: {
-  summary: Summary
-  coverage: Coverage | null
-  picked: string | null
-  onPick: (domain: string) => void
-}) {
-  const domains = summary.domains
-  // The full list (about 2 MB) loads only when asked for, so the page's first data stays small.
-  const [items, setItems] = useState<Items | 'loading' | 'error' | null>(null)
-  const [query, setQuery] = useState('')
-  const domain = picked ?? domains[0].id
-  const loadItems = () => {
-    setItems('loading')
-    fetchJson<Items>(BASE + 'items.json').then(setItems, () =>
-      setItems('error'),
-    )
-  }
-  const series = useMemo(() => {
-    if (!coverage) return []
-    const per = new Map<string, Map<number, number>>()
-    for (const [d, year, , tables] of coverage.rows) {
-      if (year < 1950) continue
-      const m = per.get(d) ?? new Map()
-      m.set(year, (m.get(year) ?? 0) + tables)
-      per.set(d, m)
-    }
-    const order = [...domains].sort((a, b) => b.scb_tables - a.scb_tables)
-    const keys = [...new Set([domain, ...order.map((d) => d.id)])].slice(0, 5)
-    return keys
-      .filter((k) => per.has(k))
-      .map((k) => ({
-        key: k,
-        name: name(domains.find((d) => d.id === k)!),
-        points: [...per.get(k)!.entries()]
-          .sort((a, b) => a[0] - b[0])
-          .map(([y, v]) => ({
-            date: `${y}-01-01`,
-            label: String(y),
-            value: v,
-          })),
-      }))
-  }, [coverage, domain, domains])
-  const shown = useMemo(() => {
-    if (!items || typeof items === 'string') return []
-    const q = query.trim().toLowerCase()
-    return items.rows
-      .filter(
-        (r) =>
-          r[3] === domain && (!q || String(r[2]).toLowerCase().includes(q)),
-      )
-      .slice(0, 200)
-  }, [items, domain, query])
-  const keys = series.map((s) => s.key)
-  return (
-    <>
-      <h3>
-        {l(
-          'Published tables and key figures per domain',
-          'Publicerade tabeller och nyckeltal per domän',
-        )}
-      </h3>
-      <RankBars
-        label={l('SCB tables per domain', 'SCB-tabeller per domän')}
-        format={num}
-        picked={picked}
-        onPick={onPick}
-        rows={[...domains]
-          .sort(
-            (a, b) =>
-              b.scb_tables + b.kolada_kpis - a.scb_tables - a.kolada_kpis,
-          )
-          .map((d) => ({
-            key: d.id,
-            label: name(d),
-            value: d.scb_tables + d.kolada_kpis,
-            note: `SCB ${num(d.scb_tables)} · Kolada ${num(d.kolada_kpis)}`,
-          }))}
-      />
-      <div className="sw-table-wrap">
-        <table className="sw-table">
-          <caption>
-            {l('Every domain in numbers', 'Varje domän i siffror')}
-          </caption>
-          <thead>
-            <tr>
-              <th scope="col">{l('Domain', 'Domän')}</th>
-              <th scope="col" className="sw-n">
-                SCB
-              </th>
-              <th scope="col" className="sw-n">
-                {l(
-                  `SCB, data ${summary.current_from}+`,
-                  `SCB, data ${summary.current_from}+`,
-                )}
-              </th>
-              <th scope="col" className="sw-n">
-                {l('SCB monthly/quarterly', 'SCB månad/kvartal')}
-              </th>
-              {GEO_LEVELS.map((g) => (
-                <th key={g} scope="col" className="sw-n">
-                  SCB: {l(...GEO_LABEL[g])}
-                </th>
-              ))}
-              <th scope="col" className="sw-n">
-                Kolada
-              </th>
-              <th scope="col" className="sw-n">
-                {l('Kolada current', 'Kolada aktuella')}
-              </th>
-              <th scope="col" className="sw-n">
-                {l('First year', 'Första år')}
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {domains.map((d) => (
-              <tr key={d.id}>
-                <th scope="row">{name(d)}</th>
-                <td className="sw-n">{num(d.scb_tables)}</td>
-                <td className="sw-n">{num(d.scb_current)}</td>
-                <td className="sw-n">{num(d.scb_subannual)}</td>
-                {GEO_LEVELS.map((g) => (
-                  <td key={g} className="sw-n">
-                    {num(d.geo[g])}
-                  </td>
-                ))}
-                <td className="sw-n">{num(d.kolada_kpis)}</td>
-                <td className="sw-n">{num(d.kolada_current)}</td>
-                <td className="sw-n">{d.first_year ?? '–'}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      <h3>
-        {l(
-          'SCB tables reporting each year, since 1950',
-          'SCB-tabeller som rapporterar varje år, sedan 1950',
-        )}
-      </h3>
-      {series.length > 0 && (
-        <MultiLineChart
-          series={series}
-          label={l(
-            'SCB tables per year by domain',
-            'SCB-tabeller per år och domän',
-          )}
-          format={num}
-          colorOf={(k) => keys.indexOf(k) + 1}
-        />
-      )}
-
-      <h3>
-        {l(
-          'Tables and key figures in a domain',
-          'Tabeller och nyckeltal i en domän',
-        )}
-      </h3>
-      <div className="sw-controls">
-        <label>
-          {l('Domain', 'Domän')}
-          <select value={domain} onChange={(e) => onPick(e.target.value)}>
-            {domains.map((d) => (
-              <option key={d.id} value={d.id}>
-                {name(d)}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          {l('Search titles', 'Sök i titlar')}
-          <input
-            type="search"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-          />
-        </label>
-      </div>
-      {items === null ? (
-        <button type="button" className="sw-link" onClick={loadItems}>
-          {l(
-            'Show every table and key figure',
-            'Visa varje tabell och nyckeltal',
-          )}
-        </button>
-      ) : items === 'error' ? (
-        <p className="sw-note" role="status">
-          {l('The list could not be read.', 'Listan kunde inte läsas.')}
-        </p>
-      ) : items !== 'loading' ? (
-        <div className="sw-table-wrap">
-          <table className="sw-table">
-            <caption className="visually-hidden">
-              {l('Tables and key figures', 'Tabeller och nyckeltal')}
-            </caption>
-            <thead>
-              <tr>
-                <th scope="col">{l('Catalogue', 'Katalog')}</th>
-                <th scope="col">{l('Title', 'Titel')}</th>
-                <th scope="col">{l('Source', 'Källa')}</th>
-                <th scope="col">{l('Frequency', 'Frekvens')}</th>
-                <th scope="col" className="sw-n">
-                  {l('Period', 'Period')}
-                </th>
-                <th scope="col">{l('Finest geography', 'Finaste geografi')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {shown.map((r) => (
-                <tr key={`${r[0]}-${r[1]}`}>
-                  <td className="sw-mono">
-                    {r[0] === 'scb' ? 'SCB' : 'Kolada'} {r[1]}
-                  </td>
-                  <td>{r[2]}</td>
-                  <td>{r[4]}</td>
-                  <td>{r[6]}</td>
-                  <td className="sw-n">
-                    {r[7] ? `${r[7]}–${r[8]}` : (r[8] ?? '–')}
-                  </td>
-                  <td>{l(...GEO_LABEL[r[9] as Geo])}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          {shown.length === 200 && (
-            <p className="sw-note">
-              {l(
-                'First 200 rows; narrow the search.',
-                'De första 200 raderna; smalna av sökningen.',
-              )}
-            </p>
-          )}
-        </div>
-      ) : (
-        <p className="sw-note" role="status">
-          {l('Loading…', 'Laddar…')}
-        </p>
-      )}
-    </>
   )
 }

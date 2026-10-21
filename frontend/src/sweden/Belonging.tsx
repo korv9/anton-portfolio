@@ -16,6 +16,7 @@ import { setHashParams, type Route } from '../router'
 import { productById } from './products'
 import { useMapLayout, useMapViewBox, type Geometry } from './map'
 import { BelongingField } from './BelongingStage'
+import { recoveryFinding, visitsSplit, type Change } from './BelongingChange'
 import {
   EmptyState,
   ProductEmpty,
@@ -168,6 +169,7 @@ export default function Belonging({ route }: { route: Route }) {
   const [data, setData] = useState<Data | 'error' | null>(null)
   const [libraries, setLibraries] = useState<Libraries | null>(null)
   const [coverage, setCoverage] = useState<Coverage | null>(null)
+  const [change, setChange] = useState<Change | null>(null)
   const [geo, setGeo] = useState<Geometry | null>(null)
   const [places, setPlaces] = useState<Municipality[] | null>(null)
   useEffect(() => {
@@ -176,6 +178,7 @@ export default function Belonging({ route }: { route: Route }) {
     )
     fetchJson<Libraries>(BASE + 'libraries.json').then(setLibraries, () => {})
     fetchJson<Coverage>(BASE + 'coverage.json').then(setCoverage, () => {})
+    fetchJson<Change>(BASE + 'change.json').then(setChange, () => {})
     fetchJson<Geometry>('sweden/similarity/geometry.json').then(
       setGeo,
       () => {},
@@ -272,6 +275,10 @@ export default function Belonging({ route }: { route: Route }) {
   const pairs = latest.filter(
     (r) => r.service_points_rate != null && r.visits_rate != null,
   )
+  // The export's ρ with log population held constant: small municipalities have many service
+  // points per inhabitant, so the raw ρ mostly measures population size.
+  const supply = change?.supply_use
+  const held = supply?.[last]?.partial_rho_log_population ?? null
   const rho =
     pairs.length > 20
       ? spearman(
@@ -280,12 +287,19 @@ export default function Belonging({ route }: { route: Route }) {
         )
       : null
 
+  // Visits are reported per period (change.json): most of the fall came after 2019.
+  const split = change ? visitsSplit(change) : null
   const findings: Finding[] = [
     {
       key: 'decline',
-      statement: l(
-        `Staffed library service points ${points.to < points.from ? 'fell' : 'rose'} from ${fmt(points.from)} to ${fmt(points.to)} between ${first} and ${last}; physical visits ${rel(visits.from, visits.to)}.`,
-        `Bemannade biblioteksserviceställen ${points.to < points.from ? 'minskade' : 'ökade'} från ${fmt(points.from)} till ${fmt(points.to)} mellan ${first} och ${last}; fysiska besök ${rel(visits.from, visits.to)}.`,
+      statement: (
+        <>
+          {l(
+            `Staffed library service points ${points.to < points.from ? 'fell' : 'rose'} from ${fmt(points.from)} to ${fmt(points.to)} between ${first} and ${last}.`,
+            `Bemannade biblioteksserviceställen ${points.to < points.from ? 'minskade' : 'ökade'} från ${fmt(points.from)} till ${fmt(points.to)} mellan ${first} och ${last}.`,
+          )}{' '}
+          {split?.statement}
+        </>
       ),
       values: (
         <ul>
@@ -297,11 +311,13 @@ export default function Belonging({ route }: { route: Route }) {
               'kommuner som rapporterat båda åren',
             )}
           </li>
-          <li>
-            {l('Visits', 'Besök')}: {fmt(visits.from / 1e6)} →{' '}
-            {fmt(visits.to / 1e6)} {l('million', 'miljoner')}, {visits.n}{' '}
-            {l('municipalities', 'kommuner')}
-          </li>
+          {split?.values ?? (
+            <li>
+              {l('Visits', 'Besök')}: {fmt(visits.from / 1e6)} →{' '}
+              {fmt(visits.to / 1e6)} {l('million', 'miljoner')}, {visits.n}{' '}
+              {l('municipalities', 'kommuner')}
+            </li>
+          )}
         </ul>
       ),
       evidence: 'descriptive',
@@ -312,6 +328,7 @@ export default function Belonging({ route }: { route: Route }) {
       onShow: () => set({ matt: null, ar: String(last) }),
     },
   ]
+  if (change) findings.push(recoveryFinding(change))
   if (rural.length && urban.length)
     findings.push({
       key: 'measure',
@@ -351,6 +368,11 @@ export default function Belonging({ route }: { route: Route }) {
       ),
       values: (
         <p>
+          {held != null &&
+            l(
+              `With log population held constant, ρ = ${held.toFixed(2)}. `,
+              `Med logaritmerad folkmängd konstant är ρ = ${held.toFixed(2)}. `,
+            )}
           {l(
             'Availability and use are measured separately; a correlation across municipalities says nothing about why.',
             'Tillgång och användning mäts var för sig; ett samband mellan kommuner säger inget om varför.',
@@ -698,24 +720,25 @@ export default function Belonging({ route }: { route: Route }) {
     {
       theory: l('Use follows supply', 'Användning följer utbud'),
       expects: l(
-        'Where there are more libraries per inhabitant, more people visit them.',
-        'Där det finns fler bibliotek per invånare besöker fler dem.',
+        'Where there are more service points per inhabitant, visits per inhabitant are higher.',
+        'Där det finns fler serviceställen per invånare är besöken per invånare fler.',
       ),
+      // Judged on the ρ with log population held constant; the raw ρ alone stays undetermined.
       verdict:
-        rho == null
+        held == null
           ? 'undetermined'
-          : rho > 0.2
+          : held > 0.2
             ? 'supports'
-            : rho < -0.2
+            : held < -0.2
               ? 'challenges'
               : 'undetermined',
       why: l(
-        `Spearman ρ = ${rho?.toFixed(2) ?? '–'} across municipalities in ${last}.`,
-        `Spearman ρ = ${rho?.toFixed(2) ?? '–'} mellan kommuner ${last}.`,
+        `Spearman ρ = ${rho?.toFixed(2) ?? '–'} across municipalities in ${last}, ${held?.toFixed(2) ?? '–'} with log population held constant${supply?.['2019'] ? ` (2019: ${supply['2019'].rho.toFixed(2)} and ${supply['2019'].partial_rho_log_population.toFixed(2)})` : ''}.`,
+        `Spearman ρ = ${rho?.toFixed(2) ?? '–'} mellan kommuner ${last}, ${held?.toFixed(2) ?? '–'} med logaritmerad folkmängd konstant${supply?.['2019'] ? ` (2019: ${supply['2019'].rho.toFixed(2)} och ${supply['2019'].partial_rho_log_population.toFixed(2)})` : ''}.`,
       ),
       limits: l(
-        'Small municipalities have many points per inhabitant and few visitors per point by construction.',
-        'Små kommuner har många ställen per invånare och få besökare per ställe av konstruktionsskäl.',
+        'Small municipalities have many points per inhabitant and few visitors per point by construction. A visit is a count at the door, not a person, and includes visitors from other municipalities.',
+        'Små kommuner har många ställen per invånare och få besökare per ställe av konstruktionsskäl. Ett besök är en räkning vid dörren, inte en person, och omfattar besökare från andra kommuner.',
       ),
     },
   ]

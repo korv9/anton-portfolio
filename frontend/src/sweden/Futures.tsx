@@ -118,6 +118,12 @@ export default function Futures({ route }: { route: Route }) {
       .filter(([y]) => ys.includes(y))
       .reduce((s, r) => s + (r[column] ?? 0), 0) / ys.length
   const span = (ys: number[]) => `${ys[0]}–${ys[ys.length - 1]}`
+  // The future share standardised to one mix of speech lengths (export_futures.length_bands).
+  const std = trends.length_bands?.standardised ?? []
+  const stdMean = (ys: number[]) => {
+    const rs = std.filter(([y]) => ys.includes(y))
+    return rs.length ? rs.reduce((a, [, v]) => a + v, 0) / rs.length : null
+  }
   const selected = themes.find((t) => t.id === picked) ?? null
   const fisher = ['utopia', 'alternatives', 'collective']
     .map((id) => themes.find((t) => t.id === id)!)
@@ -125,6 +131,7 @@ export default function Futures({ route }: { route: Route }) {
   // Relative change of each of Fisher's three themes, so one theme's fall is not averaged away.
   const relative = (t: Theme) =>
     meanOf(t, head) > 0 ? meanOf(t, tail) / meanOf(t, head) - 1 : 0
+  const alternatives = themes.find((t) => t.id === 'alternatives')
   const faded = fisher.filter((t) => relative(t) < -0.2)
   const held = fisher.filter((t) => relative(t) >= -0.2)
 
@@ -151,6 +158,14 @@ export default function Futures({ route }: { route: Route }) {
                   `Longer speeches match the marker more often: across ${trends.length.years} years the share follows speech length (Spearman’s ρ ${trends.length.spearman_share_words_per_speech}), so part of any change is length.`,
                   `Längre anföranden träffar markören oftare: över ${trends.length.years} år följer andelen anförandenas längd (Spearmans ρ ${trends.length.spearman_share_words_per_speech}), så en del av varje förändring är längd.`,
                 )}
+            </p>
+          )}
+          {stdMean(head) != null && stdMean(tail) != null && (
+            <p className="sw-note">
+              {l(
+                `At equal length (shares within four length bands, weighted to the mix of all years): ${pct(stdMean(head)!)} → ${pct(stdMean(tail)!)}.`,
+                `Vid samma längd (andelar inom fyra längdband, vägda efter alla års blandning): ${pct(stdMean(head)!)} → ${pct(stdMean(tail)!)}.`,
+              )}
             </p>
           )}
         </>
@@ -189,8 +204,8 @@ export default function Futures({ route }: { route: Route }) {
       key: 'fisher',
       contrary: held.length > 0,
       statement: l(
-        `${faded.length ? `${faded.map(name).join(', ')} faded from the chamber’s future talk` : 'No alternative future faded'}${held.length ? `; ${held.map((t) => name(t).toLowerCase()).join(', ')} did not` : ''}.`,
-        `${faded.length ? `${faded.map(name).join(', ')} bleknade i kammarens framtidstal` : 'Ingen alternativ framtid bleknade'}${held.length ? `; ${held.map((t) => name(t).toLowerCase()).join(', ')} gjorde det inte` : ''}.`,
+        `${faded.length ? `${faded.map(name).join(', ')} lost more than a fifth of their share of future-oriented speeches` : 'None of the three lost more than a fifth of its share of future-oriented speeches'}${held.length ? `; ${held.map((t) => name(t).toLowerCase()).join(', ')} did not` : ''}.`,
+        `${faded.length ? `${faded.map(name).join(', ')} tappade mer än en femtedel av sin andel av de framtidsinriktade anförandena` : 'Inget av de tre tappade mer än en femtedel av sin andel av de framtidsinriktade anförandena'}${held.length ? `; ${held.map((t) => name(t).toLowerCase()).join(', ')} gjorde det inte` : ''}.`,
       ),
       values: (
         <ul>
@@ -201,6 +216,14 @@ export default function Futures({ route }: { route: Route }) {
               {Math.round(relative(t) * 100)} %)
             </li>
           ))}
+          {alternatives && (
+            <li>
+              {l(
+                `The alternatives pattern lists named proposals (löntagarfonder, sextimmars arbetsdag, medborgarlön …). Future-oriented speeches naming them: ${num(alternatives.rows[0][4])} in ${alternatives.rows[0][0]}, ${num(alternatives.rows[alternatives.rows.length - 1][4])} in ${alternatives.rows[alternatives.rows.length - 1][0]}. Alternatives phrased in later terms are not in the list.`,
+                `Mönstret för alternativ räknar upp namngivna förslag (löntagarfonder, sextimmars arbetsdag, medborgarlön …). Framtidsinriktade anföranden som nämner dem: ${num(alternatives.rows[0][4])} ${alternatives.rows[0][0]}, ${num(alternatives.rows[alternatives.rows.length - 1][4])} ${alternatives.rows[alternatives.rows.length - 1][0]}. Alternativ i senare tiders ord finns inte i listan.`,
+              )}
+            </li>
+          )}
         </ul>
       ),
       evidence: 'descriptive',
@@ -427,8 +450,14 @@ export default function Futures({ route }: { route: Route }) {
         </li>
         <li>
           {l(
-            'Compare five-year means at each end, leaving out the running year; show the single least-squares break per theme as exploratory.',
-            'Jämför femårsmedel i varje ände, utan det pågående året; visa den enda minsta-kvadrat-brytpunkten per tema som explorativ.',
+            'Compare five-year means at each end, leaving out the running year. Compare the future share within four fixed bands of speech length.',
+            'Jämför femårsmedel i varje ände, utan det pågående året. Jämför framtidsandelen inom fyra fasta band av anförandenas längd.',
+          )}
+        </li>
+        <li>
+          {l(
+            'Fit a straight trend to each theme and add one level shift. Report the shift only when it beats 999 simulated series of AR(1) noise around the same trend, with Holm’s correction over the nine themes.',
+            'Anpassa en rak trend till varje tema och lägg till ett nivåskifte. Redovisa skiftet bara när det slår 999 simulerade serier av AR(1)-brus kring samma trend, med Holms korrektion över de nio temana.',
           )}
         </li>
       </ol>
@@ -479,8 +508,8 @@ export default function Futures({ route }: { route: Route }) {
         </li>
         <li>
           {l(
-            'Swedish thesis abstracts (DiVA) are a separate corpus, shown apart under Explore once every month is harvested with Swedish abstracts only; they are never pooled with the Riksdag.',
-            'Svenska uppsatssammanfattningar (DiVA) är en separat korpus, som visas för sig under Utforska när varje månad är skördad med enbart svenska sammanfattningar; de slås aldrig ihop med riksdagen.',
+            'Swedish thesis abstracts (DiVA) are a separate corpus, shown apart under Explore; they are never pooled with the Riksdag.',
+            'Svenska uppsatssammanfattningar (DiVA) är en separat korpus, som visas för sig under Utforska; de slås aldrig ihop med riksdagen.',
           )}
         </li>
         {coverage && coverage.years_left_out.length > 0 && (
@@ -522,6 +551,23 @@ export default function Futures({ route }: { route: Route }) {
 
   const security = themes.find((t) => t.id === 'security')
   const crisis = themes.find((t) => t.id === 'crisis')
+  // Security split into its words; the reading needs defence and crime apart from trygghet.
+  const sub = (id: string) => {
+    const s = trends.subterms?.find((x) => x.id === id)
+    const mean = (ys: number[]) => {
+      const rs = (s?.rows ?? []).filter((r) => ys.includes(r[0]))
+      return rs.length ? rs.reduce((a, r) => a + r[3], 0) / rs.length : null
+    }
+    return s ? { name: name(s), head: mean(head), tail: mean(tail) } : null
+  }
+  const hard = [sub('security_defence'), sub('security_crime')]
+  const welfare = sub('security_welfare')
+  const subChange = (x: ReturnType<typeof sub>) =>
+    x && x.head != null && x.tail != null ? x.tail - x.head : null
+  const subText = (x: ReturnType<typeof sub>) =>
+    x && x.head != null && x.tail != null
+      ? `${x.name.toLowerCase()} ${pct(x.head)} → ${pct(x.tail)}`
+      : ''
   const readings: Reading[] = [
     {
       theory: 'Fisher: the slow cancellation of the future',
@@ -553,17 +599,18 @@ export default function Futures({ route }: { route: Route }) {
         'The future is increasingly framed as security and crisis.',
         'Framtiden ramas alltmer in som säkerhet och kris.',
       ),
-      verdict:
-        security && crisis
-          ? change(security) + change(crisis) > 0.01
-            ? 'supports'
-            : change(security) + change(crisis) < -0.01
-              ? 'challenges'
-              : 'undetermined'
+      // Supports only when defence and crime both rose and security's shift beats the trend
+      // null; challenges when both fell.
+      verdict: hard.every((x) => (subChange(x) ?? 0) > 0)
+        ? security?.break?.reported
+          ? 'supports'
+          : 'undetermined'
+        : hard.every((x) => (subChange(x) ?? 0) < 0)
+          ? 'challenges'
           : 'undetermined',
       why: l(
-        `Security ${security ? `${pct(meanOf(security, head))} → ${pct(meanOf(security, tail))}` : '–'}; crisis ${crisis ? `${pct(meanOf(crisis, head))} → ${pct(meanOf(crisis, tail))}` : '–'}.`,
-        `Säkerhet ${security ? `${pct(meanOf(security, head))} → ${pct(meanOf(security, tail))}` : '–'}; kris ${crisis ? `${pct(meanOf(crisis, head))} → ${pct(meanOf(crisis, tail))}` : '–'}.`,
+        `Security ${security ? `${pct(meanOf(security, head))} → ${pct(meanOf(security, tail))}` : '–'}; crisis ${crisis ? `${pct(meanOf(crisis, head))} → ${pct(meanOf(crisis, tail))}` : '–'}. Within security: ${hard.map(subText).filter(Boolean).join(', ')}; ${subText(welfare)} ${(subChange(welfare) ?? 0) > 0 ? 'rose with them' : 'did not rise'}${security?.break && !security.break.reported ? ', and no level shift in security beats a steady trend with noise' : ''}.`,
+        `Säkerhet ${security ? `${pct(meanOf(security, head))} → ${pct(meanOf(security, tail))}` : '–'}; kris ${crisis ? `${pct(meanOf(crisis, head))} → ${pct(meanOf(crisis, tail))}` : '–'}. Inom säkerhet: ${hard.map(subText).filter(Boolean).join(', ')}; ${subText(welfare)} ${(subChange(welfare) ?? 0) > 0 ? 'steg med dem' : 'steg inte'}${security?.break && !security.break.reported ? ', och inget nivåskifte i säkerhet slår en jämn trend med brus' : ''}.`,
       ),
       limits: l(
         'Security words also follow crime policy and the war in Ukraine; the counts cannot separate framing from events.',

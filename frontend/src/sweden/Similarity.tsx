@@ -22,6 +22,9 @@ import {
   SimilarityField,
   useMorph,
 } from './SimilarityStage'
+import SimilaritySensitivity, {
+  type Sensitivity,
+} from './SimilaritySensitivity'
 import {
   EmptyState,
   ProductEmpty,
@@ -99,9 +102,11 @@ type Groups = {
     bootstrap_ari: number
     ami_skr_groups: number
     null_silhouette_95: number
+    copula_silhouette_95: number
     profiles: Profile[]
     names?: Record<string, [string, string]>
   }[]
+  sensitivity: Sensitivity
   excluded: string[]
   provenance: {
     run: string
@@ -178,9 +183,6 @@ export default function Similarity({ route }: { route: Route }) {
   const chance = s.county_null
   const same = s.analysed - s.nearest_in_other_county
   const ratio = (same / (s.analysed - chance.random_partner)).toFixed(1)
-  const shuffles = Math.round(
-    chance.permutation.share_at_most_observed * chance.permutation.rounds,
-  )
   const pct = (n: number) => Math.round((n / s.analysed) * 100)
   const carried = data.features.filter((f) => f.reference_year !== data.year)
   const featureName = (f: Feature) => l(f.label_en, f.label_sv)
@@ -267,8 +269,8 @@ export default function Similarity({ route }: { route: Route }) {
       key: 'weak',
       contrary: true,
       statement: l(
-        `The groups are a weak structure: silhouette ${finer.silhouette.toFixed(2)}, against ${finer.null_silhouette_95.toFixed(2)} for shuffled data, and they only partly follow SKR’s official municipality types.`,
-        `Grupperna är en svag struktur: silhuett ${finer.silhouette.toFixed(2)}, mot ${finer.null_silhouette_95.toFixed(2)} för omblandade data, och de följer bara delvis SKR:s officiella kommuntyper.`,
+        `The groups are a weak structure: silhouette ${finer.silhouette.toFixed(2)}, against ${finer.copula_silhouette_95.toFixed(2)} for simulated data with the same correlations between indicators, and they only partly follow SKR’s official municipality types.`,
+        `Grupperna är en svag struktur: silhuett ${finer.silhouette.toFixed(2)}, mot ${finer.copula_silhouette_95.toFixed(2)} för simulerade data med samma samband mellan indikatorerna, och de följer bara delvis SKR:s officiella kommuntyper.`,
       ),
       values: (
         <ul>
@@ -287,8 +289,8 @@ export default function Similarity({ route }: { route: Route }) {
       ),
       evidence: 'exploratory',
       source: l(
-        'Permutation null, 200 rounds',
-        'Permutationsnoll, 200 omgångar',
+        `Gaussian copula null, ${groups?.sensitivity.copula_null.rounds} draws`,
+        `Gaussisk copula-noll, ${groups?.sensitivity.copula_null.rounds} dragningar`,
       ),
     })
 
@@ -494,15 +496,24 @@ export default function Similarity({ route }: { route: Route }) {
             'Närmaste grannar: euklidiskt avstånd i de 12 standardiserade indikatorerna; avstånd på kartan är fågelvägen mellan mittpunkter, inte resväg.',
           )}
         </li>
+        <li>
+          {l(
+            'Null for the groups: data drawn with the observed rank correlation between the indicators and each indicator’s own values (a Gaussian copula), then clustered the same way. Shuffling each column apart removes the correlation and gives a lower bar.',
+            'Noll för grupperna: data dragna med den observerade rangkorrelationen mellan indikatorerna och varje indikators egna värden (en gaussisk copula), sedan klustrade på samma sätt. Att blanda varje kolumn för sig tar bort sambandet och ger en lägre ribba.',
+          )}
+        </li>
       </ol>
     ),
     results: (
-      <p>
-        {l(
-          'The findings above and the tables under Explore.',
-          'Resultaten ovan och tabellerna under Utforska.',
-        )}
-      </p>
+      <>
+        <p>
+          {l(
+            'The findings above and the tables under Explore. How much depends on the definition:',
+            'Resultaten ovan och tabellerna under Utforska. Hur mycket som beror på definitionen:',
+          )}
+        </p>
+        {groups && <SimilaritySensitivity s={groups.sensitivity} />}
+      </>
     ),
     alternatives: (
       <ul>
@@ -536,8 +547,8 @@ export default function Similarity({ route }: { route: Route }) {
         </li>
         <li>
           {l(
-            'The groups are weak (silhouette close to the shuffled-data reference); treat them as a summary, not as types.',
-            'Grupperna är svaga (silhuett nära referensen för omblandade data); se dem som en sammanfattning, inte som typer.',
+            'The groups are weak (silhouette close to the reference with the same correlations); treat them as a summary, not as types. Neighbours depend on the definition: see the first table under Observed results.',
+            'Grupperna är svaga (silhuett nära referensen med samma samband); se dem som en sammanfattning, inte som typer. Grannarna beror på definitionen: se den första tabellen under Observerade resultat.',
           )}
         </li>
         <li>
@@ -580,6 +591,11 @@ export default function Similarity({ route }: { route: Route }) {
     ),
   }
 
+  const metro = groups?.sensitivity.centre_periphery.variants
+  const skr = groups?.sensitivity.skr_typology
+  const range = (v: { ci95: [number, number] }) =>
+    `${v.ci95[0].toFixed(2)} ${l('to', 'till')} ${v.ci95[1].toFixed(2)}`
+  const share = (v: number) => `${Math.round(v * 100)} %`
   const readings: Reading[] = [
     {
       theory: l('Centre and periphery', 'Centrum och periferi'),
@@ -587,19 +603,27 @@ export default function Similarity({ route }: { route: Route }) {
         'Social conditions follow distance to the big cities, so similar municipalities are close to each other.',
         'Sociala förhållanden följer avståndet till storstäderna, så lika kommuner ligger nära varandra.',
       ),
+      // Supports only when the rank correlation's interval excludes zero, in the same
+      // direction, with and without population among the indicators.
       verdict:
-        chance.permutation.share_at_most_observed < 0.025
+        metro &&
+        [metro.all_12, metro.without_log_population].every(
+          (v) => v.ci95[1] < 0,
+        ) !==
+          [metro.all_12, metro.without_log_population].every(
+            (v) => v.ci95[0] > 0,
+          )
           ? 'supports'
-          : chance.permutation.share_at_most_observed > 0.975
-            ? 'challenges'
-            : 'undetermined',
-      why: l(
-        `The nearest social neighbour shares the county for ${same} of ${s.analysed}, against ${(s.analysed - chance.random_partner).toFixed(1)} by chance; ${shuffles} of ${chance.permutation.rounds} shuffles reach as many. Median ${s.nearest_km_median} km, against ${chance.random_pair_km_median} km for a random pair.`,
-        `Den närmaste sociala grannen ligger i samma län för ${same} av ${s.analysed}, mot ${(s.analysed - chance.random_partner).toFixed(1)} av slump; ${shuffles} av ${chance.permutation.rounds} omblandningar når lika många. Median ${s.nearest_km_median} km, mot ${chance.random_pair_km_median} km för ett slumpvist par.`,
-      ),
+          : 'undetermined',
+      why: metro
+        ? l(
+            `Rank correlation between the first principal component (signed to rise with income) and distance to the nearest of Stockholm, Göteborg and Malmö: ρ = ${metro.all_12.rho.toFixed(2)} (95 % interval ${range(metro.all_12)}, resampling counties), and ${metro.without_log_population.rho.toFixed(2)} (${range(metro.without_log_population)}) without population. The nearest social neighbour shares the county for ${same} of ${s.analysed}, against ${(s.analysed - chance.random_partner).toFixed(1)} by chance.`,
+            `Rangkorrelation mellan första principalkomponenten (med tecken så att den stiger med inkomsten) och avståndet till närmaste av Stockholm, Göteborg och Malmö: ρ = ${metro.all_12.rho.toFixed(2)} (95 %-intervall ${range(metro.all_12)}, med omdragning av län), och ${metro.without_log_population.rho.toFixed(2)} (${range(metro.without_log_population)}) utan folkmängd. Den närmaste sociala grannen ligger i samma län för ${same} av ${s.analysed}, mot ${(s.analysed - chance.random_partner).toFixed(1)} av slump.`,
+          )
+        : '',
       limits: l(
-        `This tests closeness, not its cause: distance to a big city is not measured. ${pct(s.nearest_in_other_county)} % still have their nearest social neighbour in another county, and counties are administrative units.`,
-        `Detta prövar närhet, inte orsaken: avståndet till en storstad mäts inte. ${pct(s.nearest_in_other_county)} % har ändå sin närmaste sociala granne i ett annat län, och län är administrativa enheter.`,
+        `Straight-line distance between centroids, not travel time. The component is one summary of 12 indicators, and the correlation says nothing about cause. ${pct(s.nearest_in_other_county)} % have their nearest social neighbour in another county.`,
+        `Fågelvägen mellan mittpunkter, inte restid. Komponenten är en sammanfattning av 12 indikatorer, och sambandet säger inget om orsak. ${pct(s.nearest_in_other_county)} % har sin närmaste sociala granne i ett annat län.`,
       ),
     },
     {
@@ -608,15 +632,23 @@ export default function Similarity({ route }: { route: Route }) {
         'Size and commuting, as SKR groups them, capture most of what separates municipalities.',
         'Storlek och pendling, som SKR grupperar dem, fångar det mesta som skiljer kommuner åt.',
       ),
-      verdict:
-        finer && finer.ami_skr_groups < 0.5 ? 'challenges' : 'undetermined',
-      why: l(
-        `Agreement between the groups and SKR’s types is AMI ${finer?.ami_skr_groups.toFixed(2)} (1 is identical, 0 is chance).`,
-        `Överensstämmelsen mellan grupperna och SKR:s typer är AMI ${finer?.ami_skr_groups.toFixed(2)} (1 är identisk, 0 är slump).`,
-      ),
+      // "Most" is read as more than half of the variance, decided by the whole interval.
+      verdict: !skr
+        ? 'undetermined'
+        : skr.ci95[0] > 0.5
+          ? 'supports'
+          : skr.ci95[1] < 0.5
+            ? 'challenges'
+            : 'undetermined',
+      why: skr
+        ? l(
+            `SKR’s nine types hold ${share(skr.share)} of the variance of the ${skr.indicators.length} indicators they are not built from (95 % interval ${share(skr.ci95[0])}–${share(skr.ci95[1])}; ${share(skr.null_95)} for shuffled types). Agreement between the four groups and SKR’s types is AMI ${finer?.ami_skr_groups.toFixed(2)}.`,
+            `SKR:s nio typer rymmer ${share(skr.share)} av variansen i de ${skr.indicators.length} indikatorer de inte bygger på (95 %-intervall ${share(skr.ci95[0])}–${share(skr.ci95[1])}; ${share(skr.null_95)} för omblandade typer). Överensstämmelsen mellan de fyra grupperna och SKR:s typer är AMI ${finer?.ami_skr_groups.toFixed(2)}.`,
+          )
+        : '',
       limits: l(
-        'Both use partly the same inputs (population, commuting).',
-        'Båda använder delvis samma indata (folkmängd, pendling).',
+        '“Most” is read as more than half. Population and commuting are left out of the test because SKR’s types are built from them.',
+        '”Det mesta” läses som mer än hälften. Folkmängd och pendling lämnas utanför prövningen eftersom SKR:s typer bygger på dem.',
       ),
     },
   ]

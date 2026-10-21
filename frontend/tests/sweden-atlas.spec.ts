@@ -84,6 +84,6 @@ test('atlas choices update the text and keep a keyboard route', async ({
   await expect(page.locator('.sw-atlas-info .is-head')).toHaveText('SOLNA')
 
   await page.goto('/#sweden-atlas-x')
-  await page.getByRole('button', { name: /^TRIVIAL/ }).click()
+  await page.getByRole('button', { name: /^UNCERTAIN/ }).click()
   await expect(page.locator('.sw-atlas-info')).toContainText('Spearman')
 })

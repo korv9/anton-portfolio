@@ -16,8 +16,10 @@ for sub in ("ingest/riksdagen", "ingest/diva", "publish/sweden"):
 import futures_language  # noqa: E402
 import futures_theses  # noqa: E402
 from export_connections import rejected_joins  # noqa: E402
-from export_futures import kept_years  # noqa: E402
+import numpy as np  # noqa: E402
+from export_futures import breaks, holm, kept_years, length_bands, trend_break  # noqa: E402
 from harvest import parse  # noqa: E402
+from ingest_governance_terms import load_terms  # noqa: E402
 
 TERMS = [("future", re.compile(r"\bframtid\w*", re.I)), ("crisis", re.compile(r"\bkris\w*", re.I))]
 
@@ -31,10 +33,26 @@ def test_archive_pattern_reads_six_and_eight_digit_sessions():
 def test_riksdag_count_keeps_marker_matches_and_drops_repeats():
     speech = {"id": "a-1", "date": "2024-03-01", "party": "S", "speaker": "X",
               "text": "Framtiden och framtidens kris."}
-    totals, hits, _, stats = futures_language.count([speech, speech], TERMS)
+    totals, hits, lengths, _, stats = futures_language.count([speech, speech], TERMS)
     assert stats == {"speeches": 1}
     assert totals[("2024", "S")] == [1, 1, 4, 2]  # speeches, future, words, marker matches
     assert hits[("2024", "S", "crisis")] == [1, 1, 1]
+    assert dict(lengths) == {("2024", 4): [1, 1]}  # year, words: speeches, future
+
+
+def test_subterms_split_their_theme_exactly():
+    terms, _ = load_terms(futures_language.TERMS)
+    subterms, _ = load_terms(futures_language.SUBTERMS)
+    text = ("Försvaret, beredskapen och gängkriminaliteten; ordning och reda. Säkerhetspolitiken, "
+            "tryggheten och den finansiella stabiliteten. Konstnärerna, konsten och litteraturen, "
+            "kulturarvet, kulturmiljön, biblioteken, folkbildningen, bildning och kulturpolitiken.")
+    speech = {"id": "b-1", "date": "2024-03-01", "party": "S", "speaker": "X", "text": text}
+    _, hits, _, examples, _ = futures_language.count([speech], terms + subterms, {t for t, _ in terms})
+    for theme in ("security", "culture"):
+        parts = [t for t, _ in subterms if t.startswith(theme + "_")]
+        assert all(hits[("2024", "S", t)][2] for t in parts)  # every sub-term is reached
+        assert sum(hits[("2024", "S", t)][2] for t in parts) == hits[("2024", "S", theme)][2]
+    assert not examples  # not future-oriented, and sub-terms are never sampled
 
 
 def test_only_the_swedish_abstract_counts_in_either_order():
@@ -109,3 +127,35 @@ def test_rejected_joins_give_the_current_reasons():
     ads, theses = rejected_joins({2015, 2016, 2017}, {2016, 2017, 2018}, 0.83, False)
     assert ads["reason"].startswith("2 years (2016–2017)") and "0.83" in ads["reason"]
     assert "backfill" not in ads["reason"] and "not yet counted" not in theses["reason"]
+
+
+YEARS = list(range(1994, 2026))
+
+
+def test_a_straight_line_has_no_break_and_a_step_has_one():
+    line = [0.1 + 0.002 * i for i in range(len(YEARS))]
+    noise = np.random.default_rng(1).normal(0, 0.002, len(YEARS))
+    step = [v + 0.05 * (y >= 2010) + e for v, y, e in zip(line, YEARS, noise)]
+    flat, stepped = breaks([(YEARS, line), (YEARS, step)])
+    assert flat["gain"] == 0 and not flat["reported"] and flat["first_year_after"] is None
+    assert stepped["reported"] and stepped["first_year_after"] == 2010 and stepped["p_holm"] <= 0.05
+    assert trend_break(YEARS, step, 7) == trend_break(YEARS, step, 7)  # the seed fixes the null
+
+
+def test_holm_steps_down_and_keeps_order():
+    assert holm([0.01, 0.04, 0.03]) == [0.03, 0.06, 0.06]
+
+
+def test_length_bands_cut_at_quartiles_and_standardise():
+    con = duckdb.connect()
+    con.execute("create schema gold")
+    # Two years, one speech of each length 1..8; in 2000 only long speeches are future-oriented.
+    con.execute("""create table gold.mart_sweden_future_lengths as
+                   select y as year, w as words, 1 as speeches, (y = 2001 or w > 6)::int as future_speeches
+                   from range(2000, 2002) a(y), range(1, 9) b(w)""")
+    bands = length_bands(con, {2000, 2001})
+    assert bands["upper_words"] == [2, 4, 6]
+    assert [r for r in bands["rows"] if r[0] == 2000] == [[2000, 0, 2, 0.0], [2000, 1, 2, 0.0],
+                                                         [2000, 2, 2, 0.0], [2000, 3, 2, 1.0]]
+    assert bands["standardised"] == [[2000, 0.25], [2001, 1.0]]
+

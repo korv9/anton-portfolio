@@ -1,0 +1,13 @@
+domain_id,pattern,note
+economy,"bnp|inkomst|\blön|skatt|pris|kostnad|intäkt|ekonomi|finans|företag|export|import|handel|omsättning|investering|kredit|ränta|budget|skuld",Money and production words.
+employment,"sysselsatt|sysselsättning|arbetslös|arbetskraft|förvärvsarbet|anställ|arbetsmarknad|lediga jobb|vakans|arbetsmiljö|arbetstid|yrke|sjukfrånvaro",Jobs and working conditions.
+housing,"bostad|bostäder|boende|hyr|lägenhet|småhus|fastighet|nybyggnad|bostadsbyggande|trångbo",Dwellings and housing costs.
+health,"hälsa|sjuk|vård|dödsorsak|tandvård|läkemedel|patient|vaccin|övervikt|rökning|rökare|alkohol|narkotika",Health and care.
+education,"skola|skolor|elev|utbildning|student|högskola|universitet|examen|betyg|lärare|förskola|forskning",Schools and learning.
+culture,"kultur|bibliotek|museum|museer|teater|konst|musik|studieförbund|\bbok|\blån\b|\blån av",Culture and libraries.
+social_relationships,"familjer|familjetyp|familjeställning|civilstånd|sambo|gifta|äktenskap|skilsmässa|ensamstående|förening|civilsamhälle|ideell|umgänge|anhörigstöd|anhörigvård|vänner|socialt stöd",Families and civil society; household and child counts are left out as too broad.
+political_participation,"\bval\b|\bvalet|riksdagsval|kommunval|regionval|valdeltagande|röstberättigade|\bparti|mandat|förtroendevald|fullmäktige|demokrati|medborgardialog|inflytande",Elections and local democracy.
+leisure,"fritid|idrott|motion|friluft|turism|gästnätter|fritidshus|semester|fiske|simhall|badhus",Sport and recreation.
+environment,"utsläpp|miljö|avfall|klimat|växthusgas|markanvändning|naturreservat|skyddad natur|grönyta|vattenkvalitet",Environment and nature.
+spirituality,"religiö|trossamfund|samfund|andlig|moské|gudstjänst|kyrkotillhörighet|existentiell",Faith and meaning; the school subject religionskunskap and church fees are left out.
+wellbeing,"välbefinnande|livskvalitet|livstillfredsställelse|nöjd med livet|tillit|otrygg|känner sig trygg|oro för|ängslan|ångest|psykisk|trivs|levnadsförhållanden",How people say they feel; satisfaction with a service is left out.

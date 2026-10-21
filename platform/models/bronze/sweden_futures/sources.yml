@@ -17,6 +17,11 @@ sources:
         meta:
           external_location: >-
             read_parquet('{{ env_var('PORTFOLIO_FEATURES', '../warehouse/features') }}/sweden/futures/hits_*.parquet', union_by_name = true)
+      - name: lengths
+        description: Year × words in the speech (capped); speeches and future-oriented speeches.
+        meta:
+          external_location: >-
+            read_parquet('{{ env_var('PORTFOLIO_FEATURES', '../warehouse/features') }}/sweden/futures/lengths_*.parquet', union_by_name = true)
       - name: theses
         description: >-
           Swedish-language student-thesis abstracts in DiVA (CC0 metadata), per harvested month: one

@@ -549,7 +549,8 @@
   font-weight: 700;
 }
 /* The verdict is written out; a small dot before it repeats it in colour. */
-.sw-verdict::before {
+.sw-verdict::before,
+.sw-agree::before {
   content: '';
   display: inline-block;
   width: 0.5rem;
@@ -564,6 +565,16 @@
 }
 .sw-reading[data-verdict='supports'] .sw-verdict::before {
   background: var(--sw-div-pos);
+}
+/* B: a direction that holds in all three measures is marked in ink; one that depends on the
+   measure keeps the neutral dot. */
+.sw-agree[data-agree='rise']::before,
+.sw-agree[data-agree='fall']::before {
+  background: var(--sw-ink);
+}
+.sw-table tr[data-part] th {
+  padding-left: 1.25rem;
+  font-weight: 400;
 }
 
 .sw-method details {
@@ -983,6 +994,21 @@ td.sw-cell[data-zero] .sw-cell-button span {
 .sw-scatter text {
   fill: var(--sw-muted);
   font-size: 10px;
+}
+/* Connections 3.1: every municipality muted, the chosen one the only accent. */
+.sw-neighbours .sw-scatter svg {
+  max-width: 640px;
+}
+.sw-scatter line.sw-ref {
+  stroke-dasharray: 3 3;
+}
+.sw-scatter .sw-dots circle {
+  fill: var(--sw-muted);
+  opacity: 0.45;
+}
+.sw-scatter .sw-dots circle.is-focal {
+  fill: var(--sw-accent);
+  opacity: 1;
 }
 @media (max-width: 760px) {
   .sw-connection-grid {

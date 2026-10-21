@@ -90,6 +90,13 @@ test('politics of measurement computes its findings from the catalogue', async (
   await expect(page.locator('.sw-scene-info')).toContainText('Culture')
   await page.goBack()
   await expect(page).not.toHaveURL(/domain=culture/)
+  // A count that could not have come out against Porter does not support him.
+  await expect(
+    page.locator('.sw-reading', { hasText: 'Porter' }),
+  ).toHaveAttribute('data-verdict', 'undetermined')
+  await expect(page.locator('.sw-method')).toContainText(
+    `${Math.round(summary.sensitivity.moved_share * 100)} %`,
+  )
   // Nine method sections, limitations open.
   await expect(page.locator('.sw-method details')).toHaveCount(9)
   const axe = await new AxeBuilder({ page }).include('main').analyze()
@@ -114,10 +121,14 @@ test('the invisible sweden moves municipalities into similarity space', async ({
   await expect(page.locator('.sw-finds')).toContainText(
     `${data.summary.analysed - data.summary.nearest_in_other_county} of ${data.summary.analysed}`,
   )
-  // The county share is read against chance, so clustering in space is not read as its absence.
+  // Distance to the big cities is measured, and the verdict needs both variants' intervals.
   await expect(
     page.locator('.sw-reading', { hasText: 'Centre and periphery' }),
   ).toHaveAttribute('data-verdict', 'supports')
+  // SKR's types hold less than half the variance of the indicators they are not built from.
+  await expect(
+    page.locator('.sw-reading', { hasText: 'Official typologies (SKR)' }),
+  ).toHaveAttribute('data-verdict', 'challenges')
   await page.getByRole('button', { name: 'Similarity', exact: true }).click()
   await expect(page).toHaveURL(/vy=likhet/)
   await page
@@ -190,6 +201,23 @@ test('the infrastructure of belonging maps libraries by municipality and year', 
   await expect(
     page.locator('.sw-reading', { hasText: 'Habermas' }),
   ).toHaveAttribute('data-verdict', 'undetermined')
+  // Visits are reported before and after 2019, with the change by SKR group.
+  await expect(
+    page
+      .getByRole('button', { name: /visits changed .* from 2014 to 2019/ })
+      .first(),
+  ).toBeVisible()
+  await page
+    .getByRole('button', { name: /By SKR group the/ })
+    .first()
+    .click()
+  await expect(
+    page.getByRole('figure', { name: /^Median change in visits per/ }),
+  ).toHaveCount(2)
+  // Judged with log population held constant.
+  await expect(
+    page.locator('.sw-reading', { hasText: 'Use follows supply' }),
+  ).toHaveAttribute('data-verdict', 'undetermined')
   const axe = await new AxeBuilder({ page })
     .include('main')
     .exclude('canvas')
@@ -224,6 +252,15 @@ test('the lost futures reads every session and links its speeches', async ({
       .locator('.sw-examples a[href^="https://data.riksdagen.se/anforande/"]')
       .first(),
   ).toBeVisible()
+  await expect(
+    page.getByRole('heading', {
+      name: 'Speeches about the future at equal length (%)',
+    }),
+  ).toBeVisible()
+  await page.getByRole('combobox', { name: 'Theme' }).selectOption('security')
+  await expect(
+    page.getByRole('heading', { name: 'The theme split into its words (%)' }),
+  ).toBeVisible()
   const axe = await new AxeBuilder({ page })
     .include('main')
     .exclude('canvas')
@@ -252,6 +289,23 @@ test('connections state their contracts and the rejected joins', async ({
   await expect(page.locator('.sw-connection').first()).toContainText(
     'Denominator',
   )
+  await expect(page.locator('.sw-connection').first()).not.toContainText(
+    'defined before it was computed',
+  )
+  // 3.1: choosing a municipality moves the one accent and names its values.
+  const pick = page.getByRole('combobox', { name: 'Municipality' })
+  const { visits, service_points } = data.relationships.find(
+    (r: { kind: string }) => r.kind === 'neighbours',
+  ).result.measures
+  const both = new Set(service_points.points.map((p: string[]) => p[0]))
+  const point = visits.points.find((p: string[]) => both.has(p[0]))
+  await pick.selectOption(point[0])
+  await expect(page.locator('.sw-dots circle.is-focal')).toHaveCount(2)
+  await expect(page.locator('.sw-neighbours figcaption')).toContainText(
+    point[2].toFixed(2),
+  )
+  // 3.2: two predictors in two periods.
+  await expect(page.locator('.sw-connection .sw-table tbody tr')).toHaveCount(4)
   const axe = await new AxeBuilder({ page }).include('main').analyze()
   expect(
     axe.violations.map(
