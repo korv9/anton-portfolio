@@ -114,6 +114,20 @@ export const ADDITIONAL = {
   ),
 }
 
+/** Earlier studies outside the field, shown smaller than the main education. */
+export const ADDITIONAL_EDUCATION = {
+  title: t(
+    'Socionomprogrammet med urban profil',
+    'Social Work Programme, urban profile',
+  ),
+  school: 'Södertörn University',
+  period: '2021 – 2022',
+  text: t(
+    'Teorier i socialt arbete, välfärdspolitik och omsorg, offentlig och civil rätt, psykologi och professionell utveckling.',
+    'Social work theory, welfare policy and social care, public and civil law, psychology and professional development.',
+  ),
+}
+
 /** Education, as the CV states it. */
 export const EDUCATION: {
   title: Bilingual

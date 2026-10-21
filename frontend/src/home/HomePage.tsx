@@ -6,17 +6,37 @@ import { l, currentLocale } from '../i18n'
 import { CvButton } from '../site/CvViewer'
 import {
   ADDITIONAL,
+  ADDITIONAL_EDUCATION,
   EDUCATION,
   EXPERIENCE,
   THESIS,
   type Bilingual,
 } from './orbitContent'
-import { LISTED_PROJECTS, PROJECTS } from '../projects/projectRegistry'
+import { PROJECT_GROUPS, PROJECTS } from '../projects/projectRegistry'
 import './home.css'
 import { useSlowScroll } from './useSlowScroll'
 import ClusterPreview from './ClusterPreview'
 
 const b = (text: Bilingual) => text.en
+
+const groupProjects = (label: string) =>
+  PROJECT_GROUPS.find((group) => group.label === label)!
+    .ids.filter((id) => id !== 'thesis')
+    .map((id) => PROJECTS.find((project) => project.id === id)!)
+
+/** Prototypes not yet ready to stand alone: one card per group, its projects as links. */
+const GROUP_CARDS = [
+  {
+    label: 'Observatories',
+    summary:
+      'Dashboards that follow public data on politics, jobs, welfare and law.',
+  },
+  {
+    label: 'Labs',
+    summary:
+      'Experiments with embeddings, clustering and language models on texts and data.',
+  },
+]
 
 /** The sections a global address points at; the header's links scroll to them. */
 const SECTIONS = ['#erfarenhet', '#om-mig', '#utbildning']
@@ -138,6 +158,16 @@ function Profile() {
             <p className="home-job-role">Tech: {THESIS.tech.join(', ')}</p>
           </div>
         )}
+        <div className="home-job home-job-additional">
+          <h3 className="home-label">Additional education</h3>
+          <div className="home-job-head">
+            <p className="home-job-org-small">
+              {b(ADDITIONAL_EDUCATION.title)} | {ADDITIONAL_EDUCATION.school}
+            </p>
+            <p className="home-job-period">{ADDITIONAL_EDUCATION.period}</p>
+          </div>
+          <p className="home-job-role">{b(ADDITIONAL_EDUCATION.text)}</p>
+        </div>
       </div>
     </section>
   )
@@ -171,21 +201,19 @@ function Work() {
       </div>
       <ClusterPreview kind="jobs" background />
       <div className="home-project-groups">
-        <a className="work-featured" href="#sweden">
-          <span className="work-featured-kicker">
-            Featured research platform
-          </span>
-          <span className="work-featured-title">SWEDEN</span>
-          <span className="work-featured-question">
-            What do we measure, what do we value, and what do we overlook? Five
-            research products on work, culture, belonging and imagined futures
-            in Sweden.
-          </span>
-        </a>
-        <h3 className="work-other-title">Other projects</h3>
         <section aria-label="Project list">
           <ul className="work-row">
-            {LISTED_PROJECTS.map((project) => (
+            <li>
+              <a className="work-card" href="#sweden">
+                <h3 className="work-title">SWEDEN</h3>
+                <p className="work-question">
+                  What do we measure, what do we value, and what do we overlook?
+                  Five research products on work, culture, belonging and
+                  imagined futures in Sweden.
+                </p>
+              </a>
+            </li>
+            {groupProjects('Engineering').map((project) => (
               <li key={project.id}>
                 <a className="work-card" href={project.href}>
                   <h3 className="work-title">{b(project.title)}</h3>
@@ -194,6 +222,21 @@ function Work() {
                     {project.tech.slice(0, 4).join(' · ')}
                   </p>
                 </a>
+              </li>
+            ))}
+            {GROUP_CARDS.map((group) => (
+              <li key={group.label}>
+                <div className="work-card">
+                  <h3 className="work-title">{group.label}</h3>
+                  <p className="work-question">{group.summary}</p>
+                  <ul className="work-links">
+                    {groupProjects(group.label).map((project) => (
+                      <li key={project.id}>
+                        <a href={project.href}>{b(project.title)}</a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </li>
             ))}
           </ul>

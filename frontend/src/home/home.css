@@ -546,7 +546,7 @@ body:has(.home-backdrop[data-intro='true']) :is(.home-name, .home-roles span) {
   transition: transform var(--dur) var(--ease);
 }
 @media (hover: hover) and (prefers-reduced-motion: no-preference) {
-  .work-card:hover {
+  a.work-card:hover {
     transform: scale(1.025);
   }
   .home-cta-link:hover {
@@ -720,44 +720,22 @@ a.work-card:hover .work-title {
   }
 }
 
-/* The featured SWEDEN platform above the other projects: new elements only, so nothing above
-   the project list moves. */
-.work-featured {
-  grid-column: 1;
-  display: grid;
-  gap: var(--sp-2);
-  margin: 0 0 var(--sp-6);
-  padding: var(--sp-5);
-  background: #161616;
-  color: #f1f0ec;
-  border-radius: var(--radius);
-  text-decoration: none;
+/* The projects of an Observatories or Labs card, as a plain list of links. */
+.work-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2) var(--sp-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--fs-sm);
+  line-height: 1.6;
 }
-.work-featured-kicker {
-  font-size: var(--small);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  opacity: 0.8;
-}
-.work-featured-title {
-  font: 700 clamp(2rem, 4vw, 3rem) / 1 var(--font-identity);
-  letter-spacing: 0.16em;
-}
-.work-featured-question {
-  max-width: 48ch;
-  line-height: 1.45;
-}
-.work-featured:hover .work-featured-title,
-.work-featured:focus-visible .work-featured-title {
-  text-decoration: underline;
+.work-links a {
+  color: inherit;
   text-underline-offset: 0.2em;
 }
-.work-other-title {
-  grid-column: 1;
-  margin: 0 0 var(--sp-4);
-  font-size: var(--small);
-  font-weight: var(--weight-ui);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--muted);
+.work-links a:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 4px;
 }
