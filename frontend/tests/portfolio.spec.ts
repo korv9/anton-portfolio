@@ -284,7 +284,7 @@ test(
     await expect(header).toBeVisible()
     await expect(header).not.toHaveAttribute('inert', '')
     await expect(page.locator('.home-group-title')).toHaveCount(0)
-    await expect(page.locator('.work-card')).toHaveCount(13)
+    await expect(page.locator('.work-card')).toHaveCount(5)
     await expect(page.locator('.work-card[href="#thesis"]')).toHaveCount(0)
     await expect(page.locator('.home-project-intro')).toContainText(
       'Most of my latest projects are part of this data platform.',
