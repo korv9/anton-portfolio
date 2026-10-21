@@ -3,128 +3,643 @@ version: 2
 models:
   - name: dim_ai_act_document
     description: The AI Act's documents from Cellar; one regulation version is current.
+    config:
+      contract: {enforced: true}
     columns:
       - name: document_id
+        data_type: VARCHAR
+        description: 'Key: the document''s CELEX number.'
         data_tests: [unique, not_null]
       - name: source_url
+        data_type: VARCHAR
+        description: 'Attribute: EUR-Lex URL of the document.'
         data_tests: [not_null]
       - name: published_at
+        data_type: DATE
+        description: 'Attribute: the document''s date in Cellar, ISO date; for the Act itself, the date of its first consolidated version.'
         data_tests: [not_null]
+      - name: celex
+        data_type: VARCHAR
+        description: 'Attribute: the document''s CELEX number, same as document_id.'
+      - name: relation
+        data_type: VARCHAR
+        description: 'Attribute: how Cellar links the document to the Act: self, amends, corrects, proposes_to_amend, consolidates, based_on or adopts (the proposal the Act adopts).'
+      - name: document_type
+        data_type: VARCHAR
+        description: 'Attribute: kind of document read from the CELEX number, e.g. regulation, consolidated_version, amending_regulation, corrigendum, original_proposal.'
+      - name: document_type_basis
+        data_type: VARCHAR
+        description: 'Attribute: how document_type was set, always ''derived from the CELEX number''.'
+      - name: title
+        data_type: VARCHAR
+        description: 'Attribute: the document''s title from Cellar; for the Act, from the Official Journal text; null when Cellar gives none.'
+      - name: title_basis
+        data_type: VARCHAR
+        description: 'Attribute: where the title comes from: ''Cellar'', ''derived from the CELEX number'' for corrigenda, or null when there is no title.'
+      - name: valid_from
+        data_type: DATE
+        description: 'Attribute: first day a consolidated version is valid, its Cellar date; null for other documents.'
+      - name: valid_to
+        data_type: DATE
+        description: 'Attribute: last day a consolidated version is valid, the day before the next version; null for the current version and other documents.'
+      - name: is_current
+        data_type: BOOLEAN
+        description: 'Attribute: true for the newest consolidated version, the text the article and annex dims are read from.'
+      - name: version_hash
+        data_type: VARCHAR
+        description: 'Attribute: SHA-256 of the fetched English text file; null when no English text was fetched.'
+      - name: text_languages
+        data_type: VARCHAR
+        description: 'Attribute: comma-separated language codes of the fetched texts, e.g. ''en,sv''; null when no text was fetched.'
+      - name: retrieved_at
+        data_type: TIMESTAMP WITH TIME ZONE
+        description: 'Attribute: earliest first fetch of the document''s texts; timestamp with time zone, null when no text was fetched.'
+      - name: cellar_retrieved_at
+        data_type: TIMESTAMP WITH TIME ZONE
+        description: 'Attribute: when the Cellar answer listing the document was last fetched; timestamp with time zone.'
+      - name: content_type
+        data_type: VARCHAR
+        description: 'Attribute: content kind of the row, always ''source''.'
   - name: dim_ai_act_guidance
     description: Commission guidance, codes of practice and templates, read from the Commission's pages.
+    config:
+      contract: {enforced: true}
     columns:
       - name: guidance_id
+        data_type: VARCHAR
+        description: 'Key: our id for the Commission page, e.g. ''guidelines-prohibited-practices''.'
         data_tests: [unique, not_null]
       - name: source_url
+        data_type: VARCHAR
+        description: 'Attribute: URL of the Commission page.'
         data_tests: [not_null]
+      - name: kind
+        data_type: VARCHAR
+        description: 'Attribute: our classification of the page: guidelines, code_of_practice, template, policy_page, service_desk or proposal_page.'
+      - name: title
+        data_type: VARCHAR
+        description: 'Attribute: the page''s title from its og:title or title tag.'
+      - name: published_at
+        data_type: DATE
+        description: 'Attribute: publication date from the page header, ISO date; null when the page shows none (policy pages).'
+      - name: published_basis
+        data_type: VARCHAR
+        description: 'Attribute: where published_at comes from, ''page header''; null when there is no date.'
+      - name: articles_json
+        data_type: VARCHAR
+        description: 'Attribute: JSON array of the article numbers the page concerns, from our curated source list; ''[]'' when none.'
+      - name: source_hash
+        data_type: VARCHAR
+        description: 'Attribute: SHA-256 of the latest stored version of the page.'
+      - name: first_fetched_at
+        data_type: TIMESTAMP WITH TIME ZONE
+        description: 'Attribute: when any version of the page was first fetched; timestamp with time zone.'
+      - name: last_fetched_at
+        data_type: TIMESTAMP WITH TIME ZONE
+        description: 'Attribute: when the latest stored version was last fetched; timestamp with time zone.'
+      - name: version_count
+        data_type: BIGINT
+        description: 'Measure, additive: distinct stored versions of the page; count of versions.'
+      - name: content_type
+        data_type: VARCHAR
+        description: 'Attribute: content kind of the row, always ''source''.'
   - name: dim_ai_act_article
     description: The articles of the current consolidated text, English and Swedish, with change status and application date.
+    config:
+      contract: {enforced: true}
     columns:
       - name: article_id
+        data_type: VARCHAR
+        description: 'Key: ELI provision id of the article in the EUR-Lex XHTML, e.g. ''art_5''.'
         data_tests: [unique, not_null]
       - name: article_number
+        data_type: VARCHAR
+        description: 'Key: the article''s number as printed, e.g. ''5'' or ''4a''; unique in the current text.'
         data_tests: [unique, not_null]
       - name: title_en
+        data_type: VARCHAR
+        description: 'Attribute: the article''s title in English, verbatim.'
         data_tests: [not_null]
       - name: text_en
+        data_type: VARCHAR
+        description: 'Attribute: the article''s full English text, verbatim apart from white space.'
         data_tests: [not_null]
       - name: text_sv
+        data_type: VARCHAR
+        description: 'Attribute: the article''s full Swedish text, verbatim apart from white space.'
         data_tests: [not_null]
       - name: applies_from
+        data_type: DATE
         description: From Article 113 via seeds/eu_ai_act/ai_act_application_rules.csv.
         data_tests: [not_null]
       - name: source_url
+        data_type: VARCHAR
+        description: 'Attribute: EUR-Lex URL of the current consolidated text, anchored at the article.'
         data_tests: [not_null]
       - name: change_type
+        data_type: VARCHAR
+        description: 'Attribute: how the article differs from the Official Journal text: inserted, amended, text_differs or unchanged.'
         data_tests:
           - accepted_values:
               arguments:
                 values: [inserted, amended, unchanged, text_differs]
+      - name: article_sort
+        data_type: INTEGER
+        description: 'Attribute: leading integer of article_number, for numeric ordering (''4a'' sorts as 4).'
+      - name: position
+        data_type: BIGINT
+        description: 'Attribute: zero-based order of the provision among all provisions parsed from the current English text.'
+      - name: title_sv
+        data_type: VARCHAR
+        description: 'Attribute: the article''s title in Swedish, verbatim.'
+      - name: chapter
+        data_type: VARCHAR
+        description: 'Attribute: the chapter the article sits in, a Roman numeral such as ''III''.'
+      - name: chapter_title_en
+        data_type: VARCHAR
+        description: 'Attribute: title of the chapter in English.'
+      - name: chapter_title_sv
+        data_type: VARCHAR
+        description: 'Attribute: title of the chapter in Swedish.'
+      - name: section
+        data_type: VARCHAR
+        description: 'Attribute: the section number within the chapter; null when the chapter has no sections.'
+      - name: section_title_en
+        data_type: VARCHAR
+        description: 'Attribute: title of the section in English; null when there is no section.'
+      - name: section_title_sv
+        data_type: VARCHAR
+        description: 'Attribute: title of the section in Swedish; null when there is no section.'
+      - name: char_count
+        data_type: BIGINT
+        description: 'Measure, additive: length of the English text; count of characters.'
+      - name: amended_by
+        data_type: VARCHAR
+        description: 'Attribute: JSON array of CELEX numbers of the acts the consolidated text names as amending the article; ''[]'' when none.'
+      - name: application_rule_id
+        data_type: VARCHAR
+        description: 'Attribute: id of the Article 113 rule that sets the article''s dates (seeds/eu_ai_act/ai_act_application_rules.csv), the most specific match.'
+      - name: applies_from_second
+        data_type: DATE
+        description: 'Attribute: ISO date from which the remaining parts of the article apply; null when the whole article applies from applies_from.'
+      - name: applies_partially
+        data_type: BOOLEAN
+        description: 'Attribute: true when parts of the article apply from applies_from_second rather than applies_from.'
+      - name: application_quote
+        data_type: VARCHAR
+        description: 'Attribute: the sentence of Article 113 the application rule rests on, verbatim.'
+      - name: application_note_en
+        data_type: VARCHAR
+        description: 'Attribute: short English note on what the application rule covers, written for this site.'
+      - name: application_note_sv
+        data_type: VARCHAR
+        description: 'Attribute: short Swedish note on what the application rule covers, written for this site.'
+      - name: article_refs
+        data_type: VARCHAR
+        description: 'Attribute: JSON array of other article numbers the English text refers to, found by pattern; the article itself is left out.'
+      - name: annex_refs
+        data_type: VARCHAR
+        description: 'Attribute: JSON array of annex numbers the English text refers to, found by pattern.'
+      - name: version_celex
+        data_type: VARCHAR
+        description: 'Foreign key to dim_ai_act_document: CELEX number of the consolidated version the text was read from.'
+      - name: source_hash
+        data_type: VARCHAR
+        description: 'Attribute: SHA-256 of the fetched English XHTML file of the consolidated version.'
+      - name: retrieved_at
+        data_type: TIMESTAMP WITH TIME ZONE
+        description: 'Attribute: when the English XHTML file was first fetched; timestamp with time zone.'
+      - name: content_type
+        data_type: VARCHAR
+        description: 'Attribute: content kind of the row, always ''source''.'
   - name: dim_ai_act_annex
     description: The annexes of the current consolidated text.
+    config:
+      contract: {enforced: true}
     columns:
       - name: annex_id
+        data_type: VARCHAR
+        description: 'Key: ELI provision id of the annex in the EUR-Lex XHTML, e.g. ''anx_III''.'
         data_tests: [unique, not_null]
+      - name: annex_number
+        data_type: VARCHAR
+        description: 'Attribute: the annex''s number as printed, a Roman numeral.'
+      - name: position
+        data_type: BIGINT
+        description: 'Attribute: zero-based order of the provision among all provisions parsed from the current English text.'
+      - name: title_en
+        data_type: VARCHAR
+        description: 'Attribute: the annex''s title in English, verbatim.'
+      - name: title_sv
+        data_type: VARCHAR
+        description: 'Attribute: the annex''s title in Swedish, verbatim; null when the Swedish text lacks the annex.'
+      - name: text_en
+        data_type: VARCHAR
+        description: 'Attribute: the annex''s full English text, verbatim apart from white space.'
+      - name: text_sv
+        data_type: VARCHAR
+        description: 'Attribute: the annex''s full Swedish text, verbatim apart from white space; null when missing.'
+      - name: change_type
+        data_type: VARCHAR
+        description: 'Attribute: how the annex differs from the Official Journal text: inserted, amended, text_differs or unchanged.'
+      - name: version_celex
+        data_type: VARCHAR
+        description: 'Foreign key to dim_ai_act_document: CELEX number of the consolidated version the text was read from.'
+      - name: source_url
+        data_type: VARCHAR
+        description: 'Attribute: EUR-Lex URL of the current consolidated text, anchored at the annex.'
+      - name: content_type
+        data_type: VARCHAR
+        description: 'Attribute: content kind of the row, always ''source''.'
   - name: dim_ai_act_recital
     description: The recitals of the Official Journal text.
+    config:
+      contract: {enforced: true}
     columns:
       - name: recital_id
+        data_type: VARCHAR
+        description: 'Key: ELI provision id of the recital in the Official Journal XHTML, e.g. ''rct_1''.'
         data_tests: [unique, not_null]
+      - name: recital_number
+        data_type: INTEGER
+        description: 'Attribute: the recital''s number as an integer.'
+      - name: text_en
+        data_type: VARCHAR
+        description: 'Attribute: the recital''s English text, verbatim apart from white space.'
+      - name: text_sv
+        data_type: VARCHAR
+        description: 'Attribute: the recital''s Swedish text, verbatim apart from white space; null when missing.'
+      - name: version_celex
+        data_type: VARCHAR
+        description: 'Foreign key to dim_ai_act_document: CELEX number of the Official Journal text, always ''32024R1689''.'
+      - name: source_url
+        data_type: VARCHAR
+        description: 'Attribute: EUR-Lex URL of the Official Journal text, anchored at the recital.'
+      - name: content_type
+        data_type: VARCHAR
+        description: 'Attribute: content kind of the row, always ''source''.'
   - name: dim_ai_act_actor
     description: The Act's actors under their official terms with the Article 3 definition verbatim.
+    config:
+      contract: {enforced: true}
     columns:
       - name: actor_id
+        data_type: VARCHAR
+        description: 'Key: short id of the actor, e.g. ''provider'' or ''notified_body'' (seeds/eu_ai_act/ai_act_actors.csv).'
         data_tests: [unique, not_null]
       - name: definition
+        data_type: VARCHAR
         description: Verbatim from Article 3; every actor of the seed must find its definition.
         data_tests: [not_null]
+      - name: official_term
+        data_type: VARCHAR
+        description: 'Attribute: the actor''s term as the Act writes it in English, e.g. ''provider of a general-purpose AI model''.'
+      - name: label_en
+        data_type: VARCHAR
+        description: 'Attribute: display label in English.'
+      - name: label_sv
+        data_type: VARCHAR
+        description: 'Attribute: display label in Swedish.'
+      - name: actor_group
+        data_type: VARCHAR
+        description: 'Attribute: kind of actor, one of operator, body or authority.'
+      - name: definition_point
+        data_type: VARCHAR
+        description: 'Attribute: number of the Article 3 point that defines the actor, e.g. 3 for provider.'
+      - name: defined_term
+        data_type: VARCHAR
+        description: 'Attribute: the term defined at that Article 3 point, verbatim; differs from official_term when the actor is covered by a broader definition.'
+      - name: definition_note
+        data_type: VARCHAR
+        description: 'Attribute: says which Article 3 definition covers the actor when defined_term differs from official_term; null when the actor has its own definition.'
+      - name: articles_mentioning
+        data_type: BIGINT
+        description: 'Measure, non-additive: distinct articles of the current text whose English text mentions the actor; count of articles, 0 when none.'
+      - name: articles_with_duty_sentences
+        data_type: BIGINT
+        description: 'Measure, non-additive: distinct articles with at least one sentence where the actor''s term is followed by ''shall''; count of articles.'
+      - name: match_pattern
+        data_type: VARCHAR
+        description: 'Attribute: case-insensitive regular expression used to find the actor''s term in article text.'
+      - name: sort_order
+        data_type: INTEGER
+        description: 'Attribute: display order of the actor, 1 first.'
+      - name: content_type
+        data_type: VARCHAR
+        description: 'Attribute: content kind of the row, always ''source''.'
   - name: dim_ai_act_risk_class
     description: The risk classes and the sentence each rests on.
+    config:
+      contract: {enforced: true}
     columns:
       - name: risk_class_id
+        data_type: VARCHAR
+        description: 'Key: short id of the risk class, e.g. ''prohibited'', ''high_risk'' or ''gpai_systemic'' (seeds/eu_ai_act/ai_act_risk_classes.csv).'
         data_tests: [unique, not_null]
+      - name: label_en
+        data_type: VARCHAR
+        description: 'Attribute: the class''s name in English as the Act frames it.'
+      - name: label_sv
+        data_type: VARCHAR
+        description: 'Attribute: the class''s name in Swedish.'
+      - name: legal_basis
+        data_type: VARCHAR
+        description: 'Attribute: the provisions the class rests on, e.g. ''Article 6 and Annexes I and III''.'
+      - name: source_article
+        data_type: VARCHAR
+        description: 'Attribute: number of the article the source_quote is taken from.'
+      - name: source_quote
+        data_type: VARCHAR
+        description: 'Attribute: the sentence of the Act the class rests on, verbatim.'
+      - name: common_name_en
+        data_type: VARCHAR
+        description: 'Attribute: the label often used outside the Act, e.g. ''unacceptable risk''; not a term of the Act.'
+      - name: description_en
+        data_type: VARCHAR
+        description: 'Attribute: short English explanation written for this site, not legal text.'
+      - name: description_sv
+        data_type: VARCHAR
+        description: 'Attribute: short Swedish explanation written for this site, not legal text.'
+      - name: sort_order
+        data_type: INTEGER
+        description: 'Attribute: display order of the class, 1 first.'
+      - name: description_type
+        data_type: VARCHAR
+        description: 'Attribute: content kind of the descriptions, always ''interpretation''.'
   - name: bridge_ai_act_article_actor
     description: Article × actor mentions and "shall" sentences (derived).
+    config:
+      contract: {enforced: true}
     data_tests:
       - unique_combination:
           arguments:
             columns: [article_number, actor_id]
     columns:
       - name: article_number
+        data_type: VARCHAR
+        description: 'Key, references dim_ai_act_article: number of the article in the current consolidated text, e.g. ''5'' or ''4a''.'
         data_tests:
           - relationships:
               arguments: {to: ref('dim_ai_act_article'), field: article_number}
       - name: actor_id
+        data_type: VARCHAR
+        description: 'Key, references dim_ai_act_actor: the actor whose term the article''s English text mentions.'
         data_tests:
           - relationships:
               arguments: {to: ref('dim_ai_act_actor'), field: actor_id}
+      - name: mentions
+        data_type: BIGINT
+        description: 'Measure, additive: matches of the actor''s match_pattern in the article''s English text; count of matches.'
+      - name: duty_sentences
+        data_type: BIGINT
+        description: 'Measure, additive: sentences where the actor''s term is followed by ''shall'' within 160 characters; count of sentences, 0 when none.'
+      - name: method
+        data_type: VARCHAR
+        description: 'Attribute: version of the pattern-matching method that produced the counts, currently ''term-match-v1''.'
+      - name: version_celex
+        data_type: VARCHAR
+        description: 'Foreign key to dim_ai_act_document: CELEX number of the consolidated version the text was read from.'
+      - name: content_type
+        data_type: VARCHAR
+        description: 'Attribute: content kind of the row, always ''derived''.'
   - name: bridge_ai_act_article_reference
     description: Article → article cross-references (derived by pattern).
+    config:
+      contract: {enforced: true}
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [from_article, to_article]
+    columns:
+      - name: from_article
+        data_type: VARCHAR
+        description: 'Key, references dim_ai_act_article: the article whose English text contains the reference.'
+      - name: to_article
+        data_type: VARCHAR
+        description: 'Key, references dim_ai_act_article: the article referred to; only numbers that exist in the current text are kept.'
+      - name: method
+        data_type: VARCHAR
+        description: 'Attribute: how the reference was found, always ''pattern'' (text such as ''Article 16'' or ''Articles 8 to 15'').'
+      - name: content_type
+        data_type: VARCHAR
+        description: 'Attribute: content kind of the row, always ''derived''.'
   - name: bridge_ai_act_article_guidance
     description: Article × Commission guidance (curated list).
+    config:
+      contract: {enforced: true}
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [article_number, guidance_id]
     columns:
       - name: article_number
+        data_type: VARCHAR
+        description: 'Key, references dim_ai_act_article: an article the guidance page concerns, from the guidance''s articles_json.'
         data_tests:
           - relationships:
               arguments: {to: ref('dim_ai_act_article'), field: article_number}
+      - name: guidance_id
+        data_type: VARCHAR
+        description: 'Key, references dim_ai_act_guidance: the Commission guidance page.'
+      - name: method
+        data_type: VARCHAR
+        description: 'Attribute: how the link was made, always ''curated'' (our list in platform/ingest/eu_ai_act/sources.py).'
+      - name: content_type
+        data_type: VARCHAR
+        description: 'Attribute: content kind of the row, always ''interpretation''.'
   - name: mart_ai_act_obligations
     description: Actor × obligation × article with the verbatim sentence, our classification and a plain-language summary.
+    config:
+      contract: {enforced: true}
     columns:
       - name: obligation_id
+        data_type: VARCHAR
+        description: 'Key: id of the curated obligation, e.g. ''lit-provider'' (seeds/eu_ai_act/ai_act_obligations.csv).'
         data_tests: [unique, not_null]
       - name: actor_id
+        data_type: VARCHAR
+        description: 'Foreign key to dim_ai_act_actor: the actor the obligation falls on.'
         data_tests:
           - not_null
           - relationships:
               arguments: {to: ref('dim_ai_act_actor'), field: actor_id}
       - name: article_number
+        data_type: VARCHAR
+        description: 'Foreign key to dim_ai_act_article: the article the obligation is written in.'
         data_tests:
           - not_null
           - relationships:
               arguments: {to: ref('dim_ai_act_article'), field: article_number}
       - name: source_quote
+        data_type: VARCHAR
+        description: 'Attribute: the sentence of the Act the obligation rests on, verbatim.'
         data_tests: [not_null]
       - name: applies_from
+        data_type: DATE
+        description: 'Attribute: ISO date from which the article applies, from its Article 113 rule.'
         data_tests: [not_null]
       - name: source_url
+        data_type: VARCHAR
+        description: 'Attribute: EUR-Lex URL of the current consolidated text, anchored at the article.'
         data_tests: [not_null]
+      - name: actor_official_term
+        data_type: VARCHAR
+        description: 'Attribute: the actor''s term as the Act writes it in English.'
+      - name: actor_label_en
+        data_type: VARCHAR
+        description: 'Attribute: the actor''s display label in English.'
+      - name: actor_label_sv
+        data_type: VARCHAR
+        description: 'Attribute: the actor''s display label in Swedish.'
+      - name: requirement_type
+        data_type: VARCHAR
+        description: 'Attribute: our classification of what is required, e.g. ai_literacy, prohibition, risk_management, transparency (curated).'
+      - name: risk_class_id
+        data_type: VARCHAR
+        description: 'Foreign key to dim_ai_act_risk_class: the risk class the obligation belongs to (curated).'
+      - name: risk_class_en
+        data_type: VARCHAR
+        description: 'Attribute: the risk class''s name in English.'
+      - name: risk_class_sv
+        data_type: VARCHAR
+        description: 'Attribute: the risk class''s name in Swedish.'
+      - name: paragraph
+        data_type: VARCHAR
+        description: 'Attribute: paragraph number within the article; null when the obligation is not tied to one paragraph.'
+      - name: article_title_en
+        data_type: VARCHAR
+        description: 'Attribute: the article''s title in English.'
+      - name: article_title_sv
+        data_type: VARCHAR
+        description: 'Attribute: the article''s title in Swedish.'
+      - name: chapter
+        data_type: VARCHAR
+        description: 'Attribute: chapter of the article, a Roman numeral.'
+      - name: section
+        data_type: VARCHAR
+        description: 'Attribute: section of the article within its chapter; null when there is none.'
+      - name: summary_en
+        data_type: VARCHAR
+        description: 'Attribute: short English explanation written for this site, not legal text.'
+      - name: summary_sv
+        data_type: VARCHAR
+        description: 'Attribute: short Swedish explanation written for this site, not legal text.'
+      - name: applies_from_second
+        data_type: DATE
+        description: 'Attribute: ISO date from which the remaining parts of the article apply; null when the whole article applies from applies_from.'
+      - name: applies_partially
+        data_type: BOOLEAN
+        description: 'Attribute: true when parts of the article apply from applies_from_second.'
+      - name: application_quote
+        data_type: VARCHAR
+        description: 'Attribute: the sentence of Article 113 the application date rests on, verbatim.'
+      - name: article_change_type
+        data_type: VARCHAR
+        description: 'Attribute: how the article differs from the Official Journal text: inserted, amended, text_differs or unchanged.'
+      - name: quote_type
+        data_type: VARCHAR
+        description: 'Attribute: content kind of source_quote, always ''source''.'
+      - name: classification_type
+        data_type: VARCHAR
+        description: 'Attribute: content kind of actor, risk class and requirement type, always ''interpretation''.'
+      - name: summary_type
+        data_type: VARCHAR
+        description: 'Attribute: content kind of the summaries, always ''interpretation''.'
   - name: mart_ai_act_timeline
     description: Application dates and deadlines from the Act and the dates of the documents that made it.
+    config:
+      contract: {enforced: true}
     columns:
       - name: milestone_id
+        data_type: VARCHAR
+        description: 'Key: id of the milestone, curated (e.g. ''entry-into-force'') or ''document-<celex>'' for document dates.'
         data_tests: [unique, not_null]
       - name: date
+        data_type: DATE
+        description: 'Attribute: ISO date of the milestone.'
         data_tests: [not_null]
       - name: source_url
+        data_type: VARCHAR
+        description: 'Attribute: EUR-Lex URL: the current consolidated text at source_article, or the document itself for document rows.'
         data_tests: [not_null]
+      - name: kind
+        data_type: VARCHAR
+        description: 'Attribute: entry_into_force, application or deadline (curated from the Act), or document (from Cellar).'
+      - name: title_en
+        data_type: VARCHAR
+        description: 'Attribute: short title in English.'
+      - name: title_sv
+        data_type: VARCHAR
+        description: 'Attribute: short title in Swedish.'
+      - name: description_en
+        data_type: VARCHAR
+        description: 'Attribute: English description written for this site; for document rows, the document''s title.'
+      - name: description_sv
+        data_type: VARCHAR
+        description: 'Attribute: Swedish description written for this site; for document rows, the document''s title untranslated.'
+      - name: affected_articles
+        data_type: VARCHAR
+        description: 'Attribute: semicolon-separated article numbers the milestone concerns; null for document rows.'
+      - name: affected_actors
+        data_type: VARCHAR
+        description: 'Attribute: semicolon-separated actor_ids the milestone concerns; null for document rows or when none are named.'
+      - name: source_article
+        data_type: VARCHAR
+        description: 'Attribute: number of the article the milestone rests on (113, 111 or 6); null for document rows.'
+      - name: source_quote
+        data_type: VARCHAR
+        description: 'Attribute: the sentence of that article, verbatim; null for document rows.'
+      - name: origin
+        data_type: VARCHAR
+        description: 'Attribute: where the row comes from: ''curated from the Act'' or ''Cellar''.'
+      - name: status_at_build
+        data_type: VARCHAR
+        description: 'Attribute: ''applies'' when date is on or before built_on, else ''upcoming''; the site recomputes it for the reader''s date.'
+      - name: built_on
+        data_type: DATE
+        description: 'Attribute: ISO date the warehouse was built, the reference for status_at_build.'
   - name: mart_ai_act_changes
     description: Documents, guidance and article-level changes, each with its official source.
+    config:
+      contract: {enforced: true}
     columns:
       - name: change_id
+        data_type: VARCHAR
+        description: 'Key: ''doc:<celex>'', ''guidance:<guidance_id>'' or ''provision:<provision_id>:<amending celex or unmarked>''.'
         data_tests: [unique, not_null]
       - name: change_date
+        data_type: DATE
+        description: 'Attribute: ISO date of the change: the document''s or guidance page''s publication date; for provisions, the amending act''s date or the current version''s.'
         data_tests: [not_null]
       - name: change_kind
+        data_type: VARCHAR
+        description: 'Attribute: amendment, corrigendum, consolidated_version, proposal, implementing_act, commission_report, guidance or provision.'
         data_tests: [not_null]
       - name: source_url
+        data_type: VARCHAR
+        description: 'Attribute: URL of the official source: EUR-Lex for documents and provisions, the Commission page for guidance.'
         data_tests: [not_null]
+      - name: document_id
+        data_type: VARCHAR
+        description: 'Attribute: CELEX number of the document (dim_ai_act_document), or guidance_id for guidance rows; for provisions, the amending act or the current version.'
+      - name: document_title
+        data_type: VARCHAR
+        description: 'Attribute: title of the document or guidance page; ''Consolidated text'' for provision rows with no named amending act.'
+      - name: article_number
+        data_type: VARCHAR
+        description: 'Attribute: number of the changed article; null for annexes and for document and guidance rows.'
+      - name: provision_id
+        data_type: VARCHAR
+        description: 'Attribute: ELI provision id of the changed article or annex; null for document and guidance rows.'
+      - name: provision_title
+        data_type: VARCHAR
+        description: 'Attribute: English title of the changed provision; null for document and guidance rows.'
+      - name: change_type
+        data_type: VARCHAR
+        description: 'Attribute: how the provision changed: inserted, deleted, amended or text_differs; null for document and guidance rows.'
+      - name: affected_actors
+        data_type: VARCHAR
+        description: 'Attribute: semicolon-separated actor_ids the changed article puts under a ''shall'' (derived); null when none or not an article row.'
+      - name: basis
+        data_type: VARCHAR
+        description: 'Attribute: where the row comes from: ''Cellar'', ''Commission page'' or the comparison of the Official Journal text with the consolidated text.'

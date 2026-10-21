@@ -29,7 +29,7 @@ def model(dbt, session):
     from chunking import paragraphs
 
     texts = dbt.ref("stg_sfs_texts").df().set_index("dok_id")
-    selection = dbt.source("sfs", "selection").df()
+    selection = dbt.ref("stg_sfs_selection").df()
     rows = []
     for law in selection.itertuples():
         text = texts.loc[law.dok_id]

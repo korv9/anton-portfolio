@@ -3,21 +3,152 @@ version: 2
 models:
   - name: mart_job_ai_governance_terms
     description: Month × term × occupation field with denominators, rolling share and year-on-year change.
+    config:
+      contract: {enforced: true}
     data_tests:
       - unique_combination:
           arguments:
             columns: [month, field_id, term_id]
+            # Ads with no occupation field in the source (2020-21 archives) keep a null field_id.
+            nullable: [field_id]
     columns:
       - name: share
+        data_type: DOUBLE
+        description: 'Mentions of the term / ads. Fraction from 0 to 1, not per cent.'
         data_tests:
           - not_null
           - between:
               arguments: {min: 0, max: 1}
       - name: ads
+        data_type: HUGEINT
+        description: 'Measure, additive: count of ads published in the month and field, summed over archives; the denominator of share.'
         data_tests: [not_null]
+      - name: term_id
+        data_type: VARCHAR
+        description: 'Key: term id from seeds/job_ai_governance/job_ai_governance_terms.csv.'
+        data_tests:
+          - relationships: {arguments: {to: ref('job_ai_governance_terms'), field: term_id}}
+      - name: month
+        data_type: DATE
+        description: 'Key: first day of the ads'' publication month.'
+      - name: field_id
+        data_type: VARCHAR
+        description: 'Key, references dim_market_field: JobTech occupation-field id; ''ALL'' for the whole market; null for ads without a field.'
+      - name: field
+        data_type: VARCHAR
+        description: 'Attribute: occupation field label; ''All occupation fields'' for ALL.'
+      - name: mention_count
+        data_type: HUGEINT
+        description: 'Measure, additive: count of ads whose headline or description matches the term; 0 when none.'
+      - name: share_rolling_3m
+        data_type: DOUBLE
+        description: 'Measure, non-additive: mention_count / ads summed over this and the two preceding months of the series; fraction 0-1.'
+      - name: share_change_yoy_pp
+        data_type: DOUBLE
+        description: 'Measure, non-additive: share minus share 12 rows earlier in the field and term series, on the 0-1 scale (0.01 = 1 pp); null for the first 12 months.'
   - name: mart_job_ai_governance_yearly
     description: Year × term × field.
+    config:
+      contract: {enforced: true}
     data_tests:
       - unique_combination:
           arguments:
             columns: [year, field_id, term_id]
+            # Ads with no occupation field in the source keep a null field_id.
+            nullable: [field_id]
+    columns:
+      - name: share
+        data_type: DOUBLE
+        description: 'Mentions / ads in the year. Fraction from 0 to 1, not per cent.'
+      - name: term_id
+        data_type: VARCHAR
+        description: 'Key: term id from seeds/job_ai_governance/job_ai_governance_terms.csv.'
+        data_tests:
+          - relationships: {arguments: {to: ref('job_ai_governance_terms'), field: term_id}}
+      - name: year
+        data_type: BIGINT
+        description: 'Key: calendar year of the ads'' publication month.'
+      - name: field_id
+        data_type: VARCHAR
+        description: 'Key, references dim_market_field: JobTech occupation-field id; ''ALL'' for the whole market; null for ads without a field.'
+      - name: field
+        data_type: VARCHAR
+        description: 'Attribute: occupation field label; ''All occupation fields'' for ALL.'
+      - name: mention_count
+        data_type: HUGEINT
+        description: 'Measure, additive: count of ads in the year whose headline or description matches the term.'
+      - name: ads
+        data_type: HUGEINT
+        description: 'Measure, additive: count of ads published in the year and field; the denominator of share.'
+      - name: months
+        data_type: BIGINT
+        description: 'Measure, non-additive: count of months with ads in the year for the field, out of 12.'
+  - name: dim_job_ai_governance_archive
+    description: One row per counted archive with its source URL, SHA-256 and the dictionary's SHA-256.
+    config:
+      contract: {enforced: true}
+    columns:
+      - name: archive
+        data_type: VARCHAR
+        description: 'Key: JobTech historical archive name, a year or a quarter, for example 2024 or 2026-Q1.'
+        data_tests: [unique, not_null]
+      - name: sha256
+        data_type: VARCHAR
+        description: 'Attribute: SHA-256 of the archive file as downloaded.'
+        data_tests: [not_null]
+      - name: source_url
+        data_type: VARCHAR
+        description: 'Attribute: URL the archive was downloaded from.'
+      - name: dictionary_sha256
+        data_type: VARCHAR
+        description: 'Attribute: SHA-256 of the term dictionary (job_ai_governance_terms.csv, LF line endings) the archive was counted with.'
+      - name: ads
+        data_type: BIGINT
+        description: 'Measure, additive: count of distinct ads in the archive after removing duplicate ad ids.'
+      - name: ads_read
+        data_type: BIGINT
+        description: 'Measure, additive: count of ad records read from the archive, duplicates included.'
+      - name: duplicates
+        data_type: BIGINT
+        description: 'Measure, additive: count of records skipped because their ad id was already seen in the archive.'
+      - name: counted_at
+        data_type: TIMESTAMP WITH TIME ZONE
+        description: 'Attribute: UTC time the archive was counted.'
+  - name: fct_job_ai_governance_example
+    description: Example ads per term and archive, with a masked context window around the match.
+    config:
+      contract: {enforced: true}
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [term_id, ad_id, archive]
+    columns:
+      - name: term_id
+        data_type: VARCHAR
+        description: 'Key: term id from seeds/job_ai_governance/job_ai_governance_terms.csv.'
+        data_tests:
+          - relationships: {arguments: {to: ref('job_ai_governance_terms'), field: term_id}}
+      - name: ad_id
+        data_type: VARCHAR
+        description: 'Key: JobTech ad id.'
+      - name: archive
+        data_type: VARCHAR
+        description: Key, references dim_job_ai_governance_archive.
+      - name: publication_month
+        data_type: VARCHAR
+        description: 'Attribute: the ad''s publication month as text, YYYY-MM.'
+      - name: headline
+        data_type: VARCHAR
+        description: 'Attribute: the ad''s headline, cut to 160 characters.'
+      - name: occupation
+        data_type: VARCHAR
+        description: 'Attribute: the ad''s occupation label from JobTech''s taxonomy.'
+      - name: field
+        data_type: VARCHAR
+        description: 'Attribute: the ad''s occupation field label; null when the ad has none.'
+      - name: matched
+        data_type: VARCHAR
+        description: 'Attribute: the exact text the term''s pattern matched.'
+      - name: context
+        data_type: VARCHAR
+        description: 'Attribute: up to 90 characters either side of the match, whitespace collapsed, e-mail addresses and phone numbers masked.'

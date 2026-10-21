@@ -99,13 +99,14 @@ def main() -> int:
     for name, column in (("fields.json", "field"), ("regions.json", "region")):
         cells = con.sql(f"""select {column}, category, year, sum(texts), sum(texts_matching)
                             from gold.mart_sweden_job_language
+                            join gold.mart_sweden_job_language_totals using (year, field, region)
                             where {column} <> 'Unknown'
                             group by all having sum(texts) >= 30 order by 1, 2, 3""").fetchall()
         write(name, {"columns": [column, "category", "year", "texts", "texts_matching"],
                      "rows": [list(r) for r in cells],
                      "note": "cells with fewer than 30 distinct texts are left out"})
     examples = con.sql("""select category, archive, year, field, headline, matched, context
-                          from {src} order by category, archive""".format(
+                          from {src} order by category, archive, ad_id""".format(
         src=f"read_parquet('{(FEATURES / 'sweden/ad_language/examples_*.parquet').as_posix()}', union_by_name = true)"
     )).fetchall()
     write("examples.json", {"columns": ["category", "archive", "year", "field", "headline", "matched", "context"],

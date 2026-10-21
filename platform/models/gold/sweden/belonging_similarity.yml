@@ -1,0 +1,437 @@
+version: 2
+
+# SWEDEN D (libraries), C (similarity) and Connections, read by
+# platform/publish/sweden/export_{belonging,similarity,connections}.py.
+
+models:
+  - name: dim_library
+    description: Every library in KB's Biblioteksdatabasen, with municipality, type and position.
+    config:
+      contract: {enforced: true}
+    columns:
+      - name: sigel
+        data_type: VARCHAR
+        description: 'Key: KB library code (sigel) in Biblioteksdatabasen.'
+        data_tests: [not_null, unique]
+      - name: name
+        data_type: VARCHAR
+        description: 'Attribute: library name as Biblioteksdatabasen gives it.'
+      - name: municipality_code
+        data_type: VARCHAR
+        description: 'Attribute: four-digit municipality code Biblioteksdatabasen gives the library; NULL or no longer current for some libraries.'
+      - name: library_type
+        data_type: VARCHAR
+        description: 'Attribute: library type as Biblioteksdatabasen labels it.'
+      - name: alive
+        data_type: BOOLEAN
+        description: 'Attribute: true when Biblioteksdatabasen lists the library as active.'
+      - name: country_code
+        data_type: VARCHAR
+        description: 'Attribute: country code Biblioteksdatabasen gives the library.'
+      - name: longitude
+        data_type: DOUBLE
+        description: 'Attribute: WGS84 longitude in degrees; 0 or NULL when the position is unknown.'
+      - name: latitude
+        data_type: DOUBLE
+        description: 'Attribute: WGS84 latitude in degrees; 0 or NULL when the position is unknown.'
+      - name: dump_order
+        data_type: BIGINT
+        description: 'Attribute: position in Biblioteksdatabasen''s dump (file, then position), kept for the published list''s order.'
+
+  - name: fct_library_observation
+    config:
+      contract: {enforced: true}
+    description: >-
+      Public-library observations (Folkbibliotek, Folk- och skolbibliotek) of bibstat's
+      BemanService01, Besok01, Publ199 and Aktiv99, one per library, year and term.
+    data_tests:
+      - unique_combination:
+          arguments: {columns: [sigel, year, measure]}
+    columns:
+      - name: observation_id
+        data_type: VARCHAR
+        description: 'Key: bibstat observation id (@id).'
+        data_tests: [not_null, unique]
+      - name: measure
+        data_type: VARCHAR
+        description: 'Attribute: the term''s name here: service_points, visits, activities or active_borrowers.'
+        data_tests: [not_null]
+      - name: municipality_code
+        data_type: VARCHAR
+        description: NULL when Biblioteksdatabasen gives the library no current municipality.
+        data_tests:
+          - relationships:
+              arguments: {to: ref('dim_municipality'), field: municipality_code}
+      - name: term
+        data_type: VARCHAR
+        description: 'Attribute: bibstat term code: BemanService01, Besok01, Publ199 or Aktiv99.'
+      - name: sigel
+        data_type: VARCHAR
+        description: 'Foreign key to dim_library: the reporting library''s sigel.'
+      - name: year
+        data_type: INTEGER
+        description: 'Attribute: bibstat sample year of the observation.'
+      - name: value
+        data_type: DOUBLE
+        description: 'Measure, additive: the observation''s count for the term; NULL when bibstat has no number.'
+
+  - name: fct_library_municipality_year
+    config:
+      contract: {enforced: true}
+    description: >-
+      Public libraries per municipality and year: the four bibstat totals (NULL when partial or
+      an impossible zero, named in set_to_missing) and the population denominator.
+    semantic_model:
+      enabled: true
+      name: library_municipality_year
+    primary_entity: library_municipality_year
+    agg_time_dimension: library_year_start
+    metrics:
+      - name: library_visits
+        description: Physical library visits; a flow, adds over municipalities and years.
+        type: simple
+        agg: sum
+        expr: visits
+      - name: library_visit_population
+        description: Population of the municipalities with a visits total; a stock, per year only.
+        type: simple
+        agg: sum
+        expr: case when visits is not null then population end
+        non_additive_dimension:
+          name: library_year_start
+          window_agg: max
+      - name: library_visits_per_inhabitant
+        description: >-
+          Visits over the population of the same municipalities (for a longer period, the last
+          year's population). Municipalities with a partial or impossible total are left out.
+        type: ratio
+        numerator: library_visits
+        denominator: library_visit_population
+    derived_semantics:
+      dimensions:
+        - name: library_year_start
+          type: time
+          granularity: year
+          expr: make_date(year, 1, 1)
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [municipality_code, year]
+    columns:
+      - name: municipality_code
+        data_type: VARCHAR
+        description: 'Key, references dim_municipality: SCB four-digit municipality code of the reporting libraries.'
+        data_tests:
+          - relationships:
+              arguments: {to: ref('dim_municipality'), field: municipality_code}
+      - name: population
+        data_type: DOUBLE
+        description: gold.mart_municipality_year_panel's population that year, or the year before.
+      - name: year
+        data_type: INTEGER
+        description: 'Key: bibstat sample year.'
+      - name: service_points
+        data_type: BIGINT
+        description: 'Measure, additive: staffed service points (BemanService01); NULL when an organisation did not report it or the zero is impossible (see set_to_missing); count.'
+      - name: visits
+        data_type: BIGINT
+        description: 'Measure, additive: physical library visits (Besok01); NULL when an organisation did not report it or the zero is impossible (see set_to_missing); count.'
+      - name: activities
+        data_type: BIGINT
+        description: 'Measure, additive: public activities (Publ199); NULL when an organisation did not report it; count.'
+      - name: active_borrowers
+        data_type: BIGINT
+        description: 'Measure, additive: active borrowers (Aktiv99); NULL when an organisation did not report it; count.'
+      - name: set_to_missing
+        data_type: VARCHAR[]
+        description: 'Attribute: list naming each total set to NULL and why (partial report or impossible zero); empty when none.'
+
+  - name: fct_municipal_similarity
+    config:
+      contract: {enforced: true}
+    description: >-
+      SWEDEN C per municipality for the clustering's reference year: its twelve inputs (frozen
+      at the hashes the run recorded), groups and principal components; NULL groups for the ten
+      municipalities left out for a missing value.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [municipality_code, year]
+    columns:
+      - name: municipality_code
+        data_type: VARCHAR
+        description: 'Key, references dim_municipality: SCB four-digit municipality code.'
+        data_tests:
+          - relationships:
+              arguments: {to: ref('dim_municipality'), field: municipality_code}
+      - name: year
+        data_type: INTEGER
+        description: 'Key: the clustering''s reference year (2024).'
+      - name: municipality_name
+        data_type: VARCHAR
+        description: 'Attribute: municipality name in the panel copy the clustering hashed.'
+      - name: county_name
+        data_type: VARCHAR
+        description: 'Attribute: county name in the panel copy the clustering hashed.'
+      - name: population
+        data_type: DOUBLE
+        description: 'Measure, non-additive: SCB population of the municipality, a stock that adds over municipalities but not years; persons.'
+      - name: open_unemployment_18_65_pct
+        data_type: DOUBLE
+        description: 'Measure, non-additive: Kolada N03937, openly unemployed as a share of the population 18-65 (Arbetsförmedlingen register); per cent 0-100.'
+      - name: employment_rate_20_64_pct
+        data_type: DOUBLE
+        description: 'Measure, non-additive: Kolada N02267, register-based employment rate 20-64; per cent 0-100.'
+      - name: ill_health_days
+        data_type: DOUBLE
+        description: 'Measure, non-additive: Kolada N00957, ohälsotal; days per person.'
+      - name: median_earned_income_sek
+        data_type: DOUBLE
+        description: 'Measure, non-additive: Kolada N00906, median earned income 20-64, never averaged across municipalities; SEK.'
+      - name: social_assistance_pct
+        data_type: DOUBLE
+        description: 'Measure, non-additive: Kolada N31807, inhabitants receiving social assistance during the year; per cent 0-100.'
+      - name: turnout_riksdag_pct
+        data_type: DOUBLE
+        description: 'Measure, non-additive: Kolada N05403, turnout in the latest Riksdag election; per cent 0-100.'
+      - name: eligible_vocational_programme_pct
+        data_type: DOUBLE
+        description: 'Measure, non-additive: Kolada N15428, year-9 pupils eligible for vocational upper-secondary programmes; per cent 0-100.'
+      - name: out_commuting_pct
+        data_type: DOUBLE
+        description: 'Measure, non-additive: Kolada N02279, out-commuting, 2024, both sexes; per cent of employed residents.'
+      - name: in_commuting_pct
+        data_type: DOUBLE
+        description: 'Measure, non-additive: Kolada N02276, in-commuting, 2024, both sexes; per cent of jobs in the municipality.'
+      - name: dependency_ratio
+        data_type: DOUBLE
+        description: 'Measure, non-additive: Kolada N00927, demographic dependency ratio (försörjningskvot), 2024, both sexes; a ratio, not a per cent.'
+      - name: post_secondary_25_64_pct
+        data_type: DOUBLE
+        description: 'Measure, non-additive: Kolada N01982, residents 25-64 with post-secondary education, 2024, both sexes; per cent 0-100.'
+      - name: group_id
+        data_type: BIGINT
+        description: 'Attribute: SWEDEN C K-means group, numbered from 0 by median income, highest first; NULL for municipalities left out for a missing value.'
+      - name: finer_group
+        data_type: BIGINT
+        description: 'Attribute: the finer stable K-means split''s group, numbered from 0 by median income, highest first; NULL when not analysed.'
+      - name: skr_group
+        data_type: VARCHAR
+        description: 'Attribute: SKR''s municipality group label (kommungrupp, Swedish) the clustering is compared with; NULL when not analysed.'
+      - name: pc1
+        data_type: DOUBLE
+        description: 'Measure, non-additive: first principal component of the standardised indicators, the map''s x position; NULL when not analysed.'
+      - name: pc2
+        data_type: DOUBLE
+        description: 'Measure, non-additive: second principal component of the standardised indicators, the map''s y position; NULL when not analysed.'
+
+  - name: mart_municipality_year_cross_subject
+    config:
+      contract: {enforced: true}
+    description: >-
+      Municipality x year across products: welfare panel, local income tax rate, the latest
+      Riksdag election's party shares, public libraries and SWEDEN C's inputs and groups.
+      Connections reads it.
+    semantic_model:
+      enabled: true
+      name: municipality_year
+    primary_entity: municipality_year
+    agg_time_dimension: municipality_year_start
+    metrics:
+      - name: tax_rate_population
+        description: Population of the municipalities with a local income tax rate; a stock, per year only.
+        type: simple
+        agg: sum
+        expr: case when local_income_tax_rate is not null then population end
+        non_additive_dimension:
+          name: municipality_year_start
+          window_agg: max
+      - name: tax_rate_times_population
+        type: simple
+        agg: sum
+        expr: local_income_tax_rate * population
+        non_additive_dimension:
+          name: municipality_year_start
+          window_agg: max
+      - name: local_income_tax_rate
+        description: >-
+          Municipal plus regional income tax rate, weighted by population over the selected
+          municipalities (per cent). SCB's average rate weights by taxable income instead, so
+          the two differ slightly. For a longer period, the last year.
+        type: ratio
+        numerator: tax_rate_times_population
+        denominator: tax_rate_population
+    derived_semantics:
+      dimensions:
+        - name: municipality_year_start
+          type: time
+          granularity: year
+          expr: make_date(year, 1, 1)
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [municipality_code, year]
+    columns:
+      - name: local_income_tax_rate
+        data_type: DOUBLE
+        description: 'Municipal plus regional income tax, in per cent of taxable income.'
+      - name: municipality_code
+        data_type: VARCHAR
+        description: 'Key, references dim_municipality: SCB four-digit municipality code.'
+        data_tests:
+          - relationships:
+              arguments: {to: ref('dim_municipality'), field: municipality_code}
+      - name: election_year
+        data_type: INTEGER
+        description: The latest Riksdag election held in or before the year.
+      - name: year
+        data_type: INTEGER
+        description: 'Key: calendar year; each joined product keeps its own years and is NULL where it has none.'
+      - name: municipality_name
+        data_type: VARCHAR
+        description: 'Attribute: municipality name from dim_municipality.'
+      - name: county_code
+        data_type: VARCHAR
+        description: 'Attribute: SCB two-digit county code from dim_municipality.'
+      - name: population
+        data_type: DOUBLE
+        description: 'Measure, non-additive: SCB population of the municipality, a stock that adds over municipalities but not years; persons.'
+      - name: open_unemployment_18_65_pct
+        data_type: DOUBLE
+        description: 'Measure, non-additive: Kolada N03937, openly unemployed as a share of the population 18-65 (Arbetsförmedlingen register); per cent 0-100.'
+      - name: employment_rate_20_64_pct
+        data_type: DOUBLE
+        description: 'Measure, non-additive: Kolada N02267, register-based employment rate 20-64; per cent 0-100.'
+      - name: sick_pay_rate_1_days
+        data_type: DOUBLE
+        description: 'Measure, non-additive: Kolada N00938, sjukpenningtal 1.0, 16-64; days per registered insured.'
+      - name: ill_health_days
+        data_type: DOUBLE
+        description: 'Measure, non-additive: Kolada N00957, ohälsotal; days per person.'
+      - name: median_earned_income_sek
+        data_type: DOUBLE
+        description: 'Measure, non-additive: Kolada N00906, median earned income 20-64, never averaged across municipalities; SEK.'
+      - name: social_assistance_pct
+        data_type: DOUBLE
+        description: 'Measure, non-additive: Kolada N31807, inhabitants receiving social assistance during the year; per cent 0-100.'
+      - name: turnout_riksdag_pct
+        data_type: DOUBLE
+        description: 'Measure, non-additive: Kolada N05403, turnout in the latest Riksdag election; per cent 0-100.'
+      - name: serious_mental_strain_pct
+        data_type: DOUBLE
+        description: 'Measure, non-additive: Kolada N01452, inhabitants 16-84 with serious mental strain (FoHM survey); per cent 0-100.'
+      - name: good_wellbeing_pct
+        data_type: DOUBLE
+        description: 'Measure, non-additive: Kolada U01473, inhabitants 16-84 with good mental wellbeing; per cent 0-100.'
+      - name: low_trust_pct
+        data_type: DOUBLE
+        description: 'Measure, non-additive: Kolada U01413, inhabitants 16-84 lacking trust in others; per cent 0-100.'
+      - name: eligible_vocational_programme_pct
+        data_type: DOUBLE
+        description: 'Measure, non-additive: Kolada N15428, year-9 pupils eligible for vocational upper-secondary programmes; per cent 0-100.'
+      - name: share_s_pct
+        data_type: DOUBLE
+        description: 'Measure, non-additive: S''s share of valid votes in the election_year Riksdag election (SCB); per cent 0-100.'
+      - name: share_m_pct
+        data_type: DOUBLE
+        description: 'Measure, non-additive: M''s share of valid votes in the election_year Riksdag election (SCB); per cent 0-100.'
+      - name: share_sd_pct
+        data_type: DOUBLE
+        description: 'Measure, non-additive: SD''s share of valid votes in the election_year Riksdag election (SCB); per cent 0-100.'
+      - name: share_v_pct
+        data_type: DOUBLE
+        description: 'Measure, non-additive: V''s share of valid votes in the election_year Riksdag election (SCB); per cent 0-100.'
+      - name: share_c_pct
+        data_type: DOUBLE
+        description: 'Measure, non-additive: C''s share of valid votes in the election_year Riksdag election (SCB); per cent 0-100.'
+      - name: share_kd_pct
+        data_type: DOUBLE
+        description: 'Measure, non-additive: KD''s share of valid votes in the election_year Riksdag election (SCB); per cent 0-100.'
+      - name: share_mp_pct
+        data_type: DOUBLE
+        description: 'Measure, non-additive: MP''s share of valid votes in the election_year Riksdag election (SCB); per cent 0-100.'
+      - name: share_l_pct
+        data_type: DOUBLE
+        description: 'Measure, non-additive: L''s share of valid votes in the election_year Riksdag election (SCB); per cent 0-100.'
+      - name: library_service_points
+        data_type: BIGINT
+        description: 'Measure, additive: staffed service points from fct_library_municipality_year; NULL when partial, impossible or not reported; count.'
+      - name: library_visits
+        data_type: BIGINT
+        description: 'Measure, additive: physical library visits from fct_library_municipality_year; NULL when partial, impossible or not reported; count.'
+      - name: library_activities
+        data_type: BIGINT
+        description: 'Measure, additive: public library activities from fct_library_municipality_year; NULL when partial, impossible or not reported; count.'
+      - name: library_active_borrowers
+        data_type: BIGINT
+        description: 'Measure, additive: active library borrowers from fct_library_municipality_year; NULL when partial, impossible or not reported; count.'
+      - name: library_population
+        data_type: DOUBLE
+        description: 'Measure, non-additive: fct_library_municipality_year''s population denominator (that year or the year before); persons.'
+      - name: similarity_population
+        data_type: DOUBLE
+        description: 'Measure, non-additive: SWEDEN C''s frozen population input, reference year only, else NULL; persons.'
+      - name: similarity_median_earned_income_sek
+        data_type: DOUBLE
+        description: 'Measure, non-additive: SWEDEN C''s frozen median earned income 20-64, reference year only, else NULL; SEK.'
+      - name: similarity_post_secondary_25_64_pct
+        data_type: DOUBLE
+        description: 'Measure, non-additive: SWEDEN C''s Kolada N01982 post-secondary education 25-64, reference year only, else NULL; per cent 0-100.'
+      - name: similarity_group_id
+        data_type: BIGINT
+        description: 'Attribute: SWEDEN C K-means group, numbered from 0 by median income, highest first, reference year only; NULL for municipalities left out for a missing value.'
+      - name: similarity_finer_group
+        data_type: BIGINT
+        description: 'Attribute: the finer stable K-means split''s group, numbered from 0 by median income, highest first, reference year only; NULL when not analysed.'
+      - name: similarity_skr_group
+        data_type: VARCHAR
+        description: 'Attribute: SKR''s municipality group label (kommungrupp, Swedish) the clustering is compared with, reference year only; NULL when not analysed.'
+      - name: similarity_pc1
+        data_type: DOUBLE
+        description: 'Measure, non-additive: first principal component of the standardised indicators, the map''s x position, reference year only; NULL when not analysed.'
+      - name: similarity_pc2
+        data_type: DOUBLE
+        description: 'Measure, non-additive: second principal component of the standardised indicators, the map''s y position, reference year only; NULL when not analysed.'
+
+unit_tests:
+  - name: library_totals_are_missing_when_partial
+    description: An organisation that omits a term makes the municipality's total missing, not partial.
+    model: fct_library_municipality_year
+    given:
+      - input: ref('fct_library_observation')
+        rows:
+          - {observation_id: '1', measure: service_points, sigel: A, year: 2020, municipality_code: '0114', value: 2}
+          - {observation_id: '2', measure: service_points, sigel: B, year: 2020, municipality_code: '0114', value: 1}
+          - {observation_id: '3', measure: visits, sigel: A, year: 2020, municipality_code: '0114', value: 500}
+          - {observation_id: '4', measure: visits, sigel: B, year: 2020, municipality_code: '0114', value: 300}
+          - {observation_id: '5', measure: active_borrowers, sigel: A, year: 2020, municipality_code: '0114', value: 40}
+          - {observation_id: '6', measure: visits, sigel: X, year: 2020, municipality_code: null, value: 9}
+      - input: ref('mart_municipality_year_panel')
+        rows:
+          - {municipality_code: '0114', year: 2019, population: 1000}
+    expect:
+      rows:
+        - {municipality_code: '0114', year: 2020, service_points: 3, visits: 800, activities: null,
+           active_borrowers: null, population: 1000,
+           set_to_missing: ['active_borrowers: an organisation did not report']}
+
+  - name: library_impossible_zeros_are_missing
+    description: Zero visits with staffed service points, or zero service points with visits, are missing.
+    model: fct_library_municipality_year
+    given:
+      - input: ref('fct_library_observation')
+        rows:
+          - {observation_id: '1', measure: service_points, sigel: C, year: 2021, municipality_code: '0114', value: 1}
+          - {observation_id: '2', measure: visits, sigel: C, year: 2021, municipality_code: '0114', value: 0}
+          - {observation_id: '3', measure: service_points, sigel: C, year: 2022, municipality_code: '0114', value: 0}
+          - {observation_id: '4', measure: visits, sigel: C, year: 2022, municipality_code: '0114', value: 64110}
+          - {observation_id: '5', measure: service_points, sigel: C, year: 2023, municipality_code: '0114', value: 0}
+          - {observation_id: '6', measure: visits, sigel: C, year: 2023, municipality_code: '0114', value: 0}
+      - input: ref('mart_municipality_year_panel')
+        rows:
+          - {municipality_code: '0114', year: 2021, population: 1000}
+    expect:
+      rows:
+        - {municipality_code: '0114', year: 2021, service_points: 1, visits: null, set_to_missing: ['visits: 0 with staffed service points']}
+        - {municipality_code: '0114', year: 2022, service_points: null, visits: 64110, set_to_missing: ['service_points: 0 with visits']}
+        - {municipality_code: '0114', year: 2023, service_points: 0, visits: 0, set_to_missing: []}

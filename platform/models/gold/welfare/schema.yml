@@ -2,6 +2,8 @@ version: 2
 
 models:
   - name: fct_labour_force
+    config:
+      contract: {enforced: true}
     description: >-
       AKU labour force survey (SCB). Rate denominator depends on labour_status: employment and participation over population, unemployment over labour force.
     data_tests:
@@ -10,30 +12,56 @@ models:
             columns: [region_code, period_key, sex_key, age_group_key, series_type, labour_status]
     columns:
       - name: region_code
+        data_type: VARCHAR
+        description: 'Key, references dim_region: 00 the country (monthly) or a county (annual and quarterly), plus AKU''s aggregate 0050.'
         data_tests:
           - not_null
           - relationships:
               arguments: {to: ref('dim_region'), field: region_code}
       - name: period_key
+        data_type: VARCHAR
+        description: 'Key, references dim_period: YYYY or YYYY-Qn for counties, YYYY-MM for the country.'
         data_tests:
           - not_null
           - relationships:
               arguments: {to: ref('dim_period'), field: period_key}
       - name: sex_key
+        data_type: VARCHAR
+        description: 'Key, references dim_sex: T total, K women, M men.'
         data_tests:
           - not_null
           - relationships:
               arguments: {to: ref('dim_sex'), field: sex_key}
       - name: age_group_key
+        data_type: VARCHAR
+        description: 'Key, references dim_age_group: 15-74 for counties; AKU''s published age bands for the country.'
         data_tests:
           - not_null
           - relationships:
               arguments: {to: ref('dim_age_group'), field: age_group_key}
       - name: series_type
+        data_type: VARCHAR
+        description: 'Key: unadjusted, seasonally_adjusted or trend; counties are unadjusted only.'
         data_tests: [not_null]
       - name: labour_status
+        data_type: VARCHAR
+        description: 'Key: population, employed, unemployed, labour_force or not_in_labour_force.'
         data_tests: [not_null]
+      - name: persons_thousands
+        data_type: DOUBLE
+        description: 'Measure, additive: persons in the labour status, thousands; adds over regions and sexes, not over periods.'
+      - name: persons_thousands_moe
+        data_type: DOUBLE
+        description: 'Measure, non-additive: 95% margin of error of persons_thousands, thousands; counties only, NULL for the country.'
+      - name: rate_pct
+        data_type: DOUBLE
+        description: 'Measure, non-additive: rate for the status, employed and labour force over population, unemployed over labour force; per cent.'
+      - name: rate_pct_moe
+        data_type: DOUBLE
+        description: 'Measure, non-additive: 95% margin of error of rate_pct, percentage points; counties only, NULL for the country.'
   - name: fct_population
+    config:
+      contract: {enforced: true}
     description: >-
       Population on 31 December (SCB). The total over sexes is derived and flagged.
     data_tests:
@@ -42,21 +70,41 @@ models:
             columns: [region_code, period_key, sex_key]
     columns:
       - name: region_code
+        data_type: VARCHAR
+        description: 'Key, references dim_region: SCB code: 00 the country, two-digit county or four-digit municipality.'
         data_tests:
           - not_null
           - relationships:
               arguments: {to: ref('dim_region'), field: region_code}
       - name: period_key
+        data_type: VARCHAR
+        description: 'Key, references dim_period: calendar year, YYYY.'
         data_tests:
           - not_null
           - relationships:
               arguments: {to: ref('dim_period'), field: period_key}
       - name: sex_key
+        data_type: VARCHAR
+        description: 'Key, references dim_sex: T total (derived as K plus M), K women, M men.'
         data_tests:
           - not_null
           - relationships:
               arguments: {to: ref('dim_sex'), field: sex_key}
+      - name: period_end
+        data_type: DATE
+        description: 'Attribute: 31 December of the year, the reference date of the count; ISO date.'
+      - name: population
+        data_type: DOUBLE
+        description: 'Measure, additive: inhabitants on 31 December; count of persons; adds over regions and sexes, never over years.'
+      - name: is_derived_total
+        data_type: BOOLEAN
+        description: 'Attribute: true when the row is the T total summed from women and men, false for SCB''s published cells.'
+      - name: is_perturbed
+        data_type: BOOLEAN
+        description: 'Attribute: true for years published under SCB''s cell key method (small per-cell noise, parts may not add up).'
   - name: fct_sick_pay_rate
+    config:
+      contract: {enforced: true}
     description: >-
       Sjukpenningtal 2.0 (Försäkringskassan), monthly from 2021, rolling twelve months.
     data_tests:
@@ -64,27 +112,55 @@ models:
           arguments:
             columns: [region_code, period_key, sex_key, age_group_key]
     columns:
+      - name: sick_pay_rate
+        data_type: DOUBLE
+        description: 'Sickness benefit rate: paid sick days per insured person per year, not a per cent.'
       - name: region_code
+        data_type: VARCHAR
+        description: 'Key, references dim_region: 00 the country, two-digit county or four-digit municipality.'
         data_tests:
           - not_null
           - relationships:
               arguments: {to: ref('dim_region'), field: region_code}
       - name: period_key
+        data_type: VARCHAR
+        description: 'Key, references dim_period: month, YYYY-MM; the rate covers the twelve months to it.'
         data_tests:
           - not_null
           - relationships:
               arguments: {to: ref('dim_period'), field: period_key}
       - name: sex_key
+        data_type: VARCHAR
+        description: 'Key, references dim_sex: T total, K women, M men.'
         data_tests:
           - not_null
           - relationships:
               arguments: {to: ref('dim_sex'), field: sex_key}
       - name: age_group_key
+        data_type: VARCHAR
+        description: 'Key, references dim_age_group: five-year bands such as 15-19 to 65-69, 15-69 the total.'
         data_tests:
           - not_null
           - relationships:
               arguments: {to: ref('dim_age_group'), field: age_group_key}
+      - name: period_start
+        data_type: DATE
+        description: 'Attribute: first day of the month; ISO date.'
+      - name: sick_pay_rate_suppressed
+        data_type: BOOLEAN
+        description: 'Attribute: true when Försäkringskassan suppressed sick_pay_rate.'
+      - name: insured_persons
+        data_type: DOUBLE
+        description: 'Measure, additive: persons insured for sick pay, the rate''s denominator; count of persons; adds over regions, not months.'
+      - name: insured_persons_suppressed
+        data_type: BOOLEAN
+        description: 'Attribute: true when Försäkringskassan suppressed insured_persons.'
+      - name: sick_pay_days
+        data_type: DOUBLE
+        description: 'Measure, additive: net sick-pay days over the twelve months (rate x insured); days; sum over regions, sexes or ages, then divide.'
   - name: fct_sick_leave_cases
+    config:
+      contract: {enforced: true}
     description: >-
       Started and ongoing sick-leave cases (Försäkringskassan). F43 is inside F00-F99; never add them.
     data_tests:
@@ -93,33 +169,59 @@ models:
             columns: [case_type, region_code, period_key, sex_key, age_group_key, diagnosis_code]
     columns:
       - name: case_type
+        data_type: VARCHAR
+        description: 'Key: started (new cases in the month) or ongoing (cases open at month end).'
         data_tests: [not_null]
       - name: region_code
+        data_type: VARCHAR
+        description: 'Key, references dim_region: 00 the country or a two-digit county.'
         data_tests:
           - not_null
           - relationships:
               arguments: {to: ref('dim_region'), field: region_code}
       - name: period_key
+        data_type: VARCHAR
+        description: 'Key, references dim_period: month, YYYY-MM.'
         data_tests:
           - not_null
           - relationships:
               arguments: {to: ref('dim_period'), field: period_key}
       - name: sex_key
+        data_type: VARCHAR
+        description: 'Key, references dim_sex: T total, K women, M men.'
         data_tests:
           - not_null
           - relationships:
               arguments: {to: ref('dim_sex'), field: sex_key}
       - name: age_group_key
+        data_type: VARCHAR
+        description: 'Key, references dim_age_group: ALL for started cases; FK age bands for ongoing cases, 16+ their total.'
         data_tests:
           - not_null
           - relationships:
               arguments: {to: ref('dim_age_group'), field: age_group_key}
       - name: diagnosis_code
+        data_type: VARCHAR
+        description: 'Key, references dim_diagnosis: ALL, an ICD-10 chapter as FK groups it, or F43 (inside F00-F99, never add them).'
         data_tests:
           - not_null
           - relationships:
               arguments: {to: ref('dim_diagnosis'), field: diagnosis_code}
+      - name: period_start
+        data_type: DATE
+        description: 'Attribute: first day of the month; ISO date.'
+      - name: cases
+        data_type: DOUBLE
+        description: 'Measure, additive: count of sick-leave cases; started is a flow, ongoing a stock (do not add over months); NULL when suppressed.'
+      - name: cases_suppressed
+        data_type: BOOLEAN
+        description: 'Attribute: true when Försäkringskassan suppressed the count; cases is then NULL, not zero.'
+      - name: yoy_change_pct
+        data_type: DOUBLE
+        description: 'Measure, non-additive: FK''s change against the same month a year earlier; per cent; started cases only, NULL for ongoing.'
   - name: fct_health_survey
+    config:
+      contract: {enforced: true}
     description: >-
       Nationella folkhälsoenkäten (Folkhälsomyndigheten): share with 95% interval and responses.
     data_tests:
@@ -128,31 +230,55 @@ models:
             columns: [indicator_key, region_code, period_key, sex_key, age_group_key]
     columns:
       - name: indicator_key
+        data_type: VARCHAR
+        description: 'Key, references dim_indicator: fohm_<topic>_<measure code>, a Nationella folkhälsoenkäten measure.'
         data_tests:
           - not_null
           - relationships:
               arguments: {to: ref('dim_indicator'), field: indicator_key}
       - name: region_code
+        data_type: VARCHAR
+        description: 'Key, references dim_region: SCB region code, 00 the country or a two-digit county.'
         data_tests:
           - not_null
           - relationships:
               arguments: {to: ref('dim_region'), field: region_code}
       - name: period_key
+        data_type: VARCHAR
+        description: 'Key, references dim_period: pooled four-year span (2021-2024) for counties, single year for national age groups.'
         data_tests:
           - not_null
           - relationships:
               arguments: {to: ref('dim_period'), field: period_key}
       - name: sex_key
+        data_type: VARCHAR
+        description: 'Key, references dim_sex: T total, K women, M men.'
         data_tests:
           - not_null
           - relationships:
               arguments: {to: ref('dim_sex'), field: sex_key}
       - name: age_group_key
+        data_type: VARCHAR
+        description: 'Key, references dim_age_group: 16-84 for county results; national age bands 16-29 to 85+, 16+ and 16-84.'
         data_tests:
           - not_null
           - relationships:
               arguments: {to: ref('dim_age_group'), field: age_group_key}
+      - name: share_pct
+        data_type: DOUBLE
+        description: 'Measure, non-additive: share of the population with the outcome; per cent 0-100.'
+      - name: ci_low_pct
+        data_type: DOUBLE
+        description: 'Measure, non-additive: lower bound of the 95% confidence interval of share_pct; per cent 0-100.'
+      - name: ci_high_pct
+        data_type: DOUBLE
+        description: 'Measure, non-additive: upper bound of the 95% confidence interval of share_pct; per cent 0-100.'
+      - name: responses
+        data_type: DOUBLE
+        description: 'Measure, additive: number of survey responses behind the estimate; count of responses.'
   - name: fct_social_survey_country
+    config:
+      contract: {enforced: true}
     description: >-
       European Social Survey, weighted by pspwght, per country and round. Intervals ignore the sampling design and are too narrow.
     data_tests:
@@ -161,31 +287,64 @@ models:
             columns: [indicator_key, country_code, period_key, sex_key, age_group_key]
     columns:
       - name: indicator_key
+        data_type: VARCHAR
+        description: 'Key, references dim_indicator: ess_<variable>, an ESS item from seeds ess_variables.'
         data_tests:
           - not_null
           - relationships:
               arguments: {to: ref('dim_indicator'), field: indicator_key}
       - name: country_code
+        data_type: VARCHAR
+        description: 'Key, references dim_country: ESS two-letter country code.'
         data_tests:
           - not_null
           - relationships:
               arguments: {to: ref('dim_country'), field: country_code}
       - name: period_key
+        data_type: VARCHAR
+        description: 'Key, references dim_period: ESS round, ESSn.'
         data_tests:
           - not_null
           - relationships:
               arguments: {to: ref('dim_period'), field: period_key}
       - name: sex_key
+        data_type: VARCHAR
+        description: 'Key, references dim_sex: T total, K women, M men.'
         data_tests:
           - not_null
           - relationships:
               arguments: {to: ref('dim_sex'), field: sex_key}
       - name: age_group_key
+        data_type: VARCHAR
+        description: 'Key, references dim_age_group: 15+ total, or 15-29, 30-44, 45-64, 65+.'
         data_tests:
           - not_null
           - relationships:
               arguments: {to: ref('dim_age_group'), field: age_group_key}
+      - name: survey_mode
+        data_type: VARCHAR
+        description: 'Attribute: interview or self_completion; ESS10 moved some countries to self-completion.'
+      - name: respondents
+        data_type: BIGINT
+        description: 'Measure, additive: respondents with a valid answer to the item; count of respondents.'
+      - name: effective_n
+        data_type: DOUBLE
+        description: 'Measure, non-additive: Kish effective sample size from the weights, used for the interval.'
+      - name: mean_value
+        data_type: DOUBLE
+        description: 'Measure, non-additive: weighted mean answer on the item''s scale (see dim_indicator.unit), weighted by pspwght.'
+      - name: ci_low
+        data_type: DOUBLE
+        description: 'Measure, non-additive: mean minus 1.96 standard errors from effective_n; ignores the design, so too narrow.'
+      - name: ci_high
+        data_type: DOUBLE
+        description: 'Measure, non-additive: mean plus 1.96 standard errors from effective_n; ignores the design, so too narrow.'
+      - name: share_high_pct
+        data_type: DOUBLE
+        description: 'Measure, non-additive: weighted share at or beyond the item''s threshold (for example 7-10 on 0-10); per cent 0-100.'
   - name: fct_social_survey_region
+    config:
+      contract: {enforced: true}
     description: >-
       European Social Survey for Sweden by NUTS2 area, rounds 5 onward.
     data_tests:
@@ -194,21 +353,50 @@ models:
             columns: [indicator_key, region_code, period_key]
     columns:
       - name: indicator_key
+        data_type: VARCHAR
+        description: 'Key, references dim_indicator: ess_<variable>, an ESS item from seeds ess_variables.'
         data_tests:
           - not_null
           - relationships:
               arguments: {to: ref('dim_indicator'), field: indicator_key}
       - name: region_code
+        data_type: VARCHAR
+        description: 'Key, references dim_region: Swedish NUTS2 area, SE11 to SE33.'
         data_tests:
           - not_null
           - relationships:
               arguments: {to: ref('dim_region'), field: region_code}
       - name: period_key
+        data_type: VARCHAR
+        description: 'Key, references dim_period: ESS round, ESSn.'
         data_tests:
           - not_null
           - relationships:
               arguments: {to: ref('dim_period'), field: period_key}
+      - name: survey_mode
+        data_type: VARCHAR
+        description: 'Attribute: interview or self_completion; ESS10 moved some countries to self-completion.'
+      - name: respondents
+        data_type: BIGINT
+        description: 'Measure, additive: respondents with a valid answer to the item; count of respondents.'
+      - name: effective_n
+        data_type: DOUBLE
+        description: 'Measure, non-additive: Kish effective sample size from the weights, used for the interval.'
+      - name: mean_value
+        data_type: DOUBLE
+        description: 'Measure, non-additive: weighted mean answer on the item''s scale (see dim_indicator.unit), weighted by pspwght.'
+      - name: ci_low
+        data_type: DOUBLE
+        description: 'Measure, non-additive: mean minus 1.96 standard errors from effective_n; ignores the design, so too narrow.'
+      - name: ci_high
+        data_type: DOUBLE
+        description: 'Measure, non-additive: mean plus 1.96 standard errors from effective_n; ignores the design, so too narrow.'
+      - name: share_high_pct
+        data_type: DOUBLE
+        description: 'Measure, non-additive: weighted share at or beyond the item''s threshold (for example 7-10 on 0-10); per cent 0-100.'
   - name: fct_kolada
+    config:
+      contract: {enforced: true}
     description: >-
       Kolada key figures by municipality, county and country.
     data_tests:
@@ -217,26 +405,42 @@ models:
             columns: [indicator_key, region_code, period_key, sex_key]
     columns:
       - name: indicator_key
+        data_type: VARCHAR
+        description: 'Key, references dim_indicator: kolada_<KPI id>, one of the Kolada key figures in seeds kolada_kpis.'
         data_tests:
           - not_null
           - relationships:
               arguments: {to: ref('dim_indicator'), field: indicator_key}
       - name: region_code
+        data_type: VARCHAR
+        description: 'Key, references dim_region: 00 the country, two-digit county or four-digit municipality (mapped from Kolada''s id).'
         data_tests:
           - not_null
           - relationships:
               arguments: {to: ref('dim_region'), field: region_code}
       - name: period_key
+        data_type: VARCHAR
+        description: 'Key, references dim_period: calendar year, YYYY.'
         data_tests:
           - not_null
           - relationships:
               arguments: {to: ref('dim_period'), field: period_key}
       - name: sex_key
+        data_type: VARCHAR
+        description: 'Key, references dim_sex: Kolada''s sex code, T total, K women, M men.'
         data_tests:
           - not_null
           - relationships:
               arguments: {to: ref('dim_sex'), field: sex_key}
+      - name: value
+        data_type: DOUBLE
+        description: 'Measure, non-additive: Kolada key figure value in the KPI''s own unit (per cent, SEK, days, rate); see dim_indicator.description.'
+      - name: value_status
+        data_type: VARCHAR
+        description: 'Attribute: Kolada''s status code for the value as published; NULL when Kolada gives none.'
   - name: fct_indicator
+    config:
+      contract: {enforced: true}
     description: >-
       All headline values on one grain. The table to join across domains.
     data_tests:
@@ -245,34 +449,87 @@ models:
             columns: [indicator_key, region_code, period_key, sex_key, age_group_key]
     columns:
       - name: indicator_key
+        data_type: VARCHAR
+        description: 'Key, references dim_indicator: which indicator the value measures; unit and aggregation rules live in dim_indicator.'
         data_tests:
           - not_null
           - relationships:
               arguments: {to: ref('dim_indicator'), field: indicator_key}
       - name: region_code
+        data_type: VARCHAR
+        description: 'Key, references dim_region: SCB region code: 00 country, county, municipality, 0050 or a NUTS2 area, per source.'
         data_tests:
           - not_null
           - relationships:
               arguments: {to: ref('dim_region'), field: region_code}
       - name: period_key
+        data_type: VARCHAR
+        description: 'Key, references dim_period: year, quarter, month, pooled years or ESS round, depending on the source.'
         data_tests:
           - not_null
           - relationships:
               arguments: {to: ref('dim_period'), field: period_key}
       - name: sex_key
+        data_type: VARCHAR
+        description: 'Key, references dim_sex: T total, K women, M men.'
         data_tests:
           - not_null
           - relationships:
               arguments: {to: ref('dim_sex'), field: sex_key}
       - name: age_group_key
+        data_type: VARCHAR
+        description: 'Key, references dim_age_group: age band as the source publishes it; ALL where the source has no age breakdown.'
         data_tests:
           - not_null
           - relationships:
               arguments: {to: ref('dim_age_group'), field: age_group_key}
+      - name: value
+        data_type: DOUBLE
+        description: 'Measure, non-additive: headline value in the indicator''s own unit (see dim_indicator.unit and measure_type).'
+      - name: ci_low
+        data_type: DOUBLE
+        description: 'Measure, non-additive: lower interval bound in the value''s unit (AKU rate minus margin, FoHM or ESS 95% bound); NULL for other sources.'
+      - name: ci_high
+        data_type: DOUBLE
+        description: 'Measure, non-additive: upper interval bound in the value''s unit (AKU rate plus margin, FoHM or ESS 95% bound); NULL for other sources.'
+      - name: sample_size
+        data_type: DOUBLE
+        description: 'Measure, additive: FoHM responses or ESS respondents behind the value; count of responses; NULL for register sources.'
   - name: mart_county_year_overview
+    config:
+      contract: {enforced: true}
     description: >-
       County by year, indicators side by side. Descriptive co-variation only, not cause and effect.
     data_tests:
       - unique_combination:
           arguments:
             columns: [region_code, year]
+
+    columns:
+      - name: unemployment_rate_moe
+        data_type: DOUBLE
+        description: '95% margin of error of unemployment_rate_pct, percentage points.'
+      - name: region_code
+        data_type: VARCHAR
+        description: 'Key, references dim_region: two-digit SCB county code.'
+      - name: region_name
+        data_type: VARCHAR
+        description: 'Attribute: county name.'
+      - name: year
+        data_type: INTEGER
+        description: 'Key: calendar year, every year AKU publishes.'
+      - name: unemployment_rate_pct
+        data_type: DOUBLE
+        description: 'Measure, non-additive: AKU unemployment rate 15-74, published annual figure; per cent; margin in unemployment_rate_moe.'
+      - name: sick_pay_rate_days
+        data_type: DOUBLE
+        description: 'Measure, non-additive: FK sjukpenningtal 2.0 in December (rolling twelve months), 15-69, from 2021; days per insured person.'
+      - name: stress_cases_per_1000
+        data_type: DOUBLE
+        description: 'Measure, non-additive: started F43 cases in the year per 1,000 inhabitants; NULL unless all twelve months are published.'
+      - name: serious_mental_strain_pct
+        data_type: DOUBLE
+        description: 'Measure, non-additive: Kolada N01452, inhabitants 16-84 with serious mental strain, as Kolada dates it; per cent.'
+      - name: population
+        data_type: DOUBLE
+        description: 'Measure, additive: SCB population on 31 December; count of persons; adds over counties, never years.'

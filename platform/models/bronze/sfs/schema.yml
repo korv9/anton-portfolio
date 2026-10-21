@@ -13,3 +13,13 @@ models:
         data_tests: [not_null]
       - name: text
         data_tests: [not_null]
+  - name: stg_sfs_catalogue
+    description: Every document in Riksdagen's SFS list (raw/sfs/catalogue.json), repealed ones included.
+    columns:
+      - name: dok_id
+        data_tests: [unique, not_null]
+  - name: stg_sfs_selection
+    description: The laws kept for "Fråga lagen" (raw/sfs/selection.json).
+    columns:
+      - name: dok_id
+        data_tests: [unique, not_null]

@@ -64,7 +64,7 @@ defence) is a separate concept.
 | silver | `int_riksdag_speeches` | speech with a normalised party (none for the chair and speakers without a party) |
 | silver | `int_ai_speech_paragraphs` (Python) | paragraph passing the AI gate, with the framing terms found in it |
 | silver | `int_ai_speech_concepts` | speech × concept |
-| gold | `fact_ai_speech` | speech: mentions AI, names the Act; the denominator for every share |
+| gold | `fct_ai_speech` | speech: mentions AI, names the Act; the denominator for every share |
 | gold | `mart_ai_politics_monthly` | month: speeches, AI speeches, AI Act speeches, share, three-month rolling share |
 | gold | `mart_ai_politics_party_year` | party × year |
 | gold | `mart_ai_politics_concepts` | party (or ALL) × period × concept, among AI speeches |

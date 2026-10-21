@@ -13,5 +13,5 @@ select
     min(k.retrieved_at) as first_retrieved_at,
     max(k.retrieved_at) as last_retrieved_at
 from {{ ref('corpora') }} as c
-left join {{ source('concept_features', 'chunks') }} as k using (corpus_id)
+left join {{ ref('stg_concept_chunks') }} as k using (corpus_id)
 group by all

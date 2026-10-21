@@ -1,0 +1,22 @@
+version: 2
+
+models:
+  - name: stg_job_cluster_assignments
+    description: One row per clustered ad.
+    columns:
+      - name: job_id
+        data_tests:
+          - unique:
+              config:
+                enabled: "{{ var('job_clusters_enabled', false) }}"
+          - not_null:
+              config:
+                enabled: "{{ var('job_clusters_enabled', false) }}"
+  - name: stg_job_cluster_profiles
+    description: One row per cluster and run.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [run_id, cluster_id]
+          config:
+            enabled: "{{ var('job_clusters_enabled', false) }}"

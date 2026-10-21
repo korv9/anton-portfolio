@@ -1,0 +1,9 @@
+version: 2
+
+models:
+  - name: stg_news_fetches
+    description: One line per fetch of a news feed.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [source, fetched_at]

@@ -2,6 +2,8 @@
 
 The portfolio serves a **static, versioned gold layer** at `frontend/public/data/gold/`. It is rebuilt from the checked-in Parliament, budget, language, JobTech, Allegoria and RFC exports with `python platform/legacy/build_gold.py`. It requires no live API or database. `semantic-model.json` is the machine-readable contract: table paths, row counts, observed column types, grains, primary keys, relationships, metric definitions, source hashes and output hashes.
 
+**Two builders, one definition.** dbt builds nine of the 31 tables (`fact_language_area`, `fact_language_coverage`, `mart_budget_language_gap`, `fact_topic_session_party`, `fact_activity`, `fact_budget_outturn`, `fact_rfc_version`, `mart_party_session_vote`, `mart_party_agreement`) and the vote marts in `platform/models/gold/politics/`; `platform/publish/export_politics.py` delivers them and reconciles them byte for byte (`--check`). The other 22 tables and the budget-report, jobs, debate, RFC and overview marts are still built in Python by `build_gold.py`, outside dbt. The metrics and relationships are defined once, in dbt YAML: each metric is a dbt (MetricFlow) metric whose `gold` meta is its entry here, and the relationships and the unavailable `validated_vote_direction_pairs` sit on the `gold_semantic_model` exposure (`platform/models/gold/politics/schema.yml`). `export_politics.py` writes both from the dbt manifest; `build_gold.py` carries them forward.
+
 ## Layers and ownership
 
 | Layer | Location | Role |
@@ -14,7 +16,7 @@ The portfolio serves a **static, versioned gold layer** at `frontend/public/data
 **Build order:** regenerate upstream political and report exports when sources change, then run the gold builder and validator. A source hash mismatch causes validation to fail until gold is rebuilt. Gold JSON is committed so the static site builds without Python in its deployment environment.
 
 ```powershell
-python platform/legacy/build_gold.py
+python platform/pipeline.py run legacy   # build_gold.py, dbt +tag:politics, export_politics.py, ...
 python platform/legacy/validate_gold.py
 npm run build
 npm run test:e2e

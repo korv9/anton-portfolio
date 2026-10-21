@@ -1,0 +1,9 @@
+version: 2
+
+models:
+  - name: int_sweden_future_theses_latest
+    description: DiVA thesis abstracts at their latest harvested month, one row per record and theme ('_all' carries the words).
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [id, theme]

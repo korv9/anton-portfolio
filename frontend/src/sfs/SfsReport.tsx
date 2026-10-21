@@ -132,7 +132,7 @@ function Coverage({ data }: Props) {
         <Feature
           id="tolkning"
           title="What came out of each text"
-          source={`${SOURCE}; parse status in silver_sfs_documents. A text without a numbered paragraph is kept as whole-text passages, unless it is scanned XML or has nothing after its header`}
+          source={`${SOURCE}; parse status in int_sfs_documents. A text without a numbered paragraph is kept as whole-text passages, unless it is scanned XML or has nothing after its header`}
         >
           <RankBars
             rows={[
@@ -218,7 +218,7 @@ function Built({ data }: Props) {
     },
     {
       name: 'Silver',
-      where: 'silver_sfs_documents, silver_sfs_corpus_paragraphs',
+      where: 'int_sfs_documents, int_sfs_corpus_paragraphs',
       count: `${n(passages)} passages`,
     },
     {
@@ -427,7 +427,7 @@ function Size({ data }: Props) {
         <Feature
           id="paragraflangd"
           title="Paragraph passages by length"
-          source={`${SOURCE}; silver_sfs_corpus_paragraphs. ${lengthLead('paragraph')} A paragraph is one passage, or one per stycke when it is long`}
+          source={`${SOURCE}; int_sfs_corpus_paragraphs. ${lengthLead('paragraph')} A paragraph is one passage, or one per stycke when it is long`}
         >
           <RankBars
             rows={band('paragraph')}
@@ -439,7 +439,7 @@ function Size({ data }: Props) {
         <Feature
           id="heltextlangd"
           title="Whole-text passages by length"
-          source={`${SOURCE}; silver_sfs_corpus_paragraphs. ${lengthLead('whole_text')} A text without numbered paragraphs is cut into pieces of at most 1,500 characters`}
+          source={`${SOURCE}; int_sfs_corpus_paragraphs. ${lengthLead('whole_text')} A text without numbered paragraphs is cut into pieces of at most 1,500 characters`}
         >
           <RankBars
             rows={band('whole_text')}

@@ -17,7 +17,7 @@ deduplication and a retrying JobSearch client. `weekly_jobs.py` uses that same
 client and writer. The daily market pipeline retains its archive/stream counts;
 its new export step collects current advertisements. The existing market
 export contains aggregate counts. Legacy hashed
-`gold.dim_employers.employer_id` values remain legacy identifiers, not canonical
+`gold.dim_employer.employer_id` values remain legacy identifiers, not canonical
 company IDs. No existing historical ads are rematched by name.
 
 The existing compliance registry supplies organization-number validation, legal

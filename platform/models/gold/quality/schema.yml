@@ -2,73 +2,343 @@ version: 2
 
 models:
   - name: dim_quality_product
+    config:
+      contract: {enforced: true}
     columns:
       - name: product_id
+        data_type: VARCHAR
+        description: 'Key: product id from platform/quality/quality_registry.yml, for example politics, jobs or symbolic.'
         data_tests: [unique, not_null]
+      - name: project_id
+        data_type: VARCHAR
+        description: 'Attribute: the product''s project id on the site, for example symbolic-atlas.'
+      - name: label_en
+        data_type: VARCHAR
+        description: 'Attribute: product name in English.'
+      - name: label_sv
+        data_type: VARCHAR
+        description: 'Attribute: product name in Swedish.'
   - name: mart_quality_checks
     description: One data-quality check result per row.
+    config:
+      contract: {enforced: true}
     columns:
       - name: quality_check_id
+        data_type: VARCHAR
+        description: 'Key: check id from platform/quality/quality_registry.yml.'
         data_tests: [unique, not_null]
       - name: product_id
+        data_type: VARCHAR
+        description: 'Foreign key to dim_quality_product: the product the check belongs to.'
         data_tests:
           - relationships:
               arguments: {to: ref('dim_quality_product'), field: product_id}
       - name: dimension
+        data_type: VARCHAR
+        description: 'Attribute: ISO/IEC 25012 dimension id: accuracy, completeness, consistency, credibility, currentness or traceability.'
         data_tests:
           - accepted_values:
               arguments:
                 values: [accuracy, completeness, consistency, credibility, currentness, traceability]
       - name: status
+        data_type: VARCHAR
+        description: 'Attribute: pass, warning, fail, not_measured or not_applicable; a check that measured nothing is not_measured.'
         data_tests:
           - not_null
           - accepted_values:
               arguments:
                 values: [pass, warning, fail, not_measured, not_applicable]
       - name: severity
+        data_type: VARCHAR
+        description: 'Attribute: how much a failure matters: info, warning or error; separate from status.'
         data_tests:
           - accepted_values:
               arguments:
                 values: [info, warning, error]
       - name: method
+        data_type: VARCHAR
+        description: 'Attribute: how the check is measured: dbt_test, python, manual_review, not_measured or not_applicable.'
         data_tests:
           - accepted_values:
               arguments:
                 values: [dbt_test, python, manual_review, not_measured, not_applicable]
+      - name: project_id
+        data_type: VARCHAR
+        description: 'Attribute: the product''s project id on the site, for example symbolic-atlas.'
+      - name: dataset_id
+        data_type: VARCHAR
+        description: 'Attribute: the table, file or artefact the check is about, for example silver.int_symbol_occurrences.'
+      - name: dimension_label
+        data_type: VARCHAR
+        description: 'Attribute: English label of the dimension.'
+      - name: description
+        data_type: VARCHAR
+        description: 'Attribute: what the requirement says, in plain language.'
+      - name: measure_name
+        data_type: VARCHAR
+        description: 'Attribute: name of the measure behind value; null for checks without a numeric measure.'
+      - name: numerator_definition
+        data_type: VARCHAR
+        description: 'Attribute: what the numerator counts; null when the check has no numerator.'
+      - name: denominator_definition
+        data_type: VARCHAR
+        description: 'Attribute: what the denominator counts; null when the check has no denominator.'
+      - name: comparator
+        data_type: VARCHAR
+        description: 'Attribute: how value is compared with threshold: >=, <= or ==; null when the check has no threshold.'
+      - name: threshold
+        data_type: DOUBLE
+        description: 'Attribute: the pass level for value, in value''s unit; null for not_measured and not_applicable checks.'
+      - name: warn_at
+        data_type: DOUBLE
+        description: 'Attribute: the edge between warning and fail, in value''s unit; null when the check has no warning band.'
+      - name: value
+        data_type: DOUBLE
+        description: 'Measure, non-additive: the measured value, unit set by the measure (share 0-1 for dbt and manual-review checks); null when nothing was measured.'
+      - name: numerator
+        data_type: DOUBLE
+        description: 'Measure, non-additive: numerator of value (for example passing tests or valid sampled rows); not comparable across checks; null when not measured.'
+      - name: denominator
+        data_type: DOUBLE
+        description: 'Measure, non-additive: denominator of value (for example tests that ran or rows reviewed); not comparable across checks; null when not measured.'
+      - name: sample_size
+        data_type: DOUBLE
+        description: 'Measure, non-additive: count of rows in a manual review sample; null for checks that are not manual reviews or have no review.'
+      - name: reviewed_at
+        data_type: VARCHAR
+        description: 'Attribute: date of the manual review as recorded in the registry (text); null without a review.'
+      - name: source
+        data_type: VARCHAR
+        description: 'Attribute: what the check is checked against, as stated in the registry.'
+      - name: gate
+        data_type: BOOLEAN
+        description: 'Attribute: true when a failure of this structural check fails CI.'
+      - name: details
+        data_type: VARCHAR
+        description: 'Attribute: JSON with the evidence: failed and not-run tests, review notes, the reason nothing was measured, or an error.'
+      - name: evaluated_at
+        data_type: TIMESTAMP WITH TIME ZONE
+        description: 'Attribute: UTC time of the platform/quality/evaluate.py run that produced the row.'
+      - name: content_type
+        data_type: VARCHAR
+        description: 'Attribute: always ''derived''; values are computed, definitions live in the registry.'
   - name: mart_analysis_validity
     description: One analytical validity diagnostic per row.
+    config:
+      contract: {enforced: true}
     data_tests:
       - unique_combination:
           arguments:
             columns: [analysis_id, diagnostic_id]
     columns:
       - name: product_id
+        data_type: VARCHAR
+        description: 'Foreign key to dim_quality_product: the product the analysis belongs to.'
         data_tests:
           - relationships:
               arguments: {to: ref('dim_quality_product'), field: product_id}
       - name: status
+        data_type: VARCHAR
+        description: 'Attribute: the diagnostic''s status: supported, warning, insufficient_evidence, invalidated or not_evaluated.'
         data_tests:
           - accepted_values:
               arguments:
                 values: [supported, warning, insufficient_evidence, invalidated, not_evaluated]
       - name: kind
+        data_type: VARCHAR
+        description: 'Attribute: validity kind, one of construct_validity, confounding, representativeness or ml_data_quality.'
         data_tests:
           - accepted_values:
               arguments:
                 values: [construct_validity, confounding, representativeness, ml_data_quality]
       - name: interpretation
+        data_type: VARCHAR
+        description: 'Attribute: a person''s interpretation of the diagnostic, in English; never null.'
         data_tests: [not_null]
+      - name: analysis_id
+        data_type: VARCHAR
+        description: 'Key: analysis id from platform/quality/validity_registry.yml.'
+      - name: analysis_order
+        data_type: BIGINT
+        description: 'Attribute: 0-based position of the analysis in the validity registry, for display order.'
+      - name: diagnostic_order
+        data_type: BIGINT
+        description: 'Attribute: 0-based position of the diagnostic within its analysis, for display order.'
+      - name: question_en
+        data_type: VARCHAR
+        description: 'Attribute: the question the analysis answers, in English.'
+      - name: question_sv
+        data_type: VARCHAR
+        description: 'Attribute: the question the analysis answers, in Swedish; null when not translated.'
+      - name: target_construct
+        data_type: VARCHAR
+        description: 'Attribute: the construct the analysis is meant to measure.'
+      - name: proxy_measure
+        data_type: VARCHAR
+        description: 'Attribute: what the analysis actually measures in place of the construct.'
+      - name: diagnostic_id
+        data_type: VARCHAR
+        description: 'Key: diagnostic id, unique within its analysis.'
+      - name: diagnostic
+        data_type: VARCHAR
+        description: 'Attribute: English label of the diagnostic; the diagnostic id when no label is registered.'
+      - name: experiment
+        data_type: VARCHAR
+        description: 'Attribute: the pipeline experiment the diagnostic reads, for example baseline; null when not tied to one.'
+      - name: result
+        data_type: DOUBLE
+        description: 'Measure, non-additive: the diagnostic''s computed value, unit set by the diagnostic; null for qualitative diagnostics or a missing artefact.'
+      - name: details
+        data_type: VARCHAR
+        description: 'Attribute: JSON with the inputs behind result, or the error when its artefact could not be read.'
+      - name: rule
+        data_type: VARCHAR
+        description: 'Attribute: JSON rule turning result into status (metric_below or metric_above with then and otherwise); JSON null for qualitative diagnostics.'
+      - name: analysis_status
+        data_type: VARCHAR
+        description: 'Attribute: the analysis''s weakest diagnostic status, repeated on each of its rows.'
+      - name: conclusion_en
+        data_type: VARCHAR
+        description: 'Attribute: the analysis''s overall conclusion in English, repeated on each of its rows.'
+      - name: conclusion_sv
+        data_type: VARCHAR
+        description: 'Attribute: the analysis''s overall conclusion in Swedish; null when not translated.'
+      - name: source
+        data_type: VARCHAR
+        description: 'Attribute: the file or artefact the analysis rests on, for example platform/ingest/symbolic/corpus.json; null when not registered.'
+      - name: evaluated_at
+        data_type: TIMESTAMP WITH TIME ZONE
+        description: 'Attribute: UTC time of the platform/quality/evaluate.py run that produced the row.'
+      - name: result_content_type
+        data_type: VARCHAR
+        description: 'Attribute: always ''derived''; result is computed from the pipelines'' artefacts.'
+      - name: interpretation_content_type
+        data_type: VARCHAR
+        description: 'Attribute: always ''interpretation''; interpretation and conclusions are a person''s judgement.'
   - name: mart_product_quality_summary
+    config:
+      contract: {enforced: true}
     data_tests:
       - unique_combination:
           arguments:
             columns: [product_id, dimension]
+    columns:
+      - name: product_id
+        data_type: VARCHAR
+        description: Key, references dim_quality_product.
+      - name: dimension
+        data_type: VARCHAR
+        description: 'Key: ISO/IEC 25012 dimension id, for example accuracy or completeness.'
+      - name: check_count
+        data_type: BIGINT
+        description: 'Measure, additive: count of registered checks for the product and dimension, whatever their status.'
+      - name: measured_count
+        data_type: BIGINT
+        description: 'Measure, additive: count of checks with status pass, warning or fail.'
+      - name: pass_count
+        data_type: BIGINT
+        description: 'Measure, additive: count of checks with status pass.'
+      - name: warning_count
+        data_type: BIGINT
+        description: 'Measure, additive: count of checks with status warning.'
+      - name: fail_count
+        data_type: BIGINT
+        description: 'Measure, additive: count of checks with status fail.'
+      - name: not_measured_count
+        data_type: BIGINT
+        description: 'Measure, additive: count of checks with status not_measured (nothing was measured).'
+      - name: not_applicable_count
+        data_type: BIGINT
+        description: 'Measure, additive: count of checks with status not_applicable.'
   - name: mart_product_validity_summary
+    config:
+      contract: {enforced: true}
     data_tests:
       - unique_combination:
           arguments:
             columns: [product_id, kind]
+    columns:
+      - name: product_id
+        data_type: VARCHAR
+        description: Key, references dim_quality_product.
+      - name: kind
+        data_type: VARCHAR
+        description: 'Key: validity kind, one of construct_validity, confounding, representativeness or ml_data_quality.'
+      - name: analyses
+        data_type: BIGINT
+        description: 'Measure, non-additive: distinct count of analyses of this kind for the product.'
+      - name: diagnostics
+        data_type: BIGINT
+        description: 'Measure, additive: count of diagnostics of this kind for the product.'
+      - name: supported_count
+        data_type: BIGINT
+        description: 'Measure, additive: count of diagnostics with status supported.'
+      - name: warning_count
+        data_type: BIGINT
+        description: 'Measure, additive: count of diagnostics with status warning.'
+      - name: insufficient_evidence_count
+        data_type: BIGINT
+        description: 'Measure, additive: count of diagnostics with status insufficient_evidence.'
+      - name: invalidated_count
+        data_type: BIGINT
+        description: 'Measure, additive: count of diagnostics with status invalidated.'
+      - name: not_evaluated_count
+        data_type: BIGINT
+        description: 'Measure, additive: count of diagnostics with status not_evaluated.'
   - name: mart_analysis_confounders
+    config:
+      contract: {enforced: true}
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [analysis, confounder]
     columns:
       - name: remaining_risk
+        data_type: VARCHAR
+        description: 'Attribute: the risk that remains after mitigation, a person''s interpretation; never null.'
         data_tests: [not_null]
+      - name: analysis
+        data_type: VARCHAR
+        description: 'Key: id of the analysis the confounder threatens, the same id as analysis_id in mart_analysis_validity.'
+      - name: confounder
+        data_type: VARCHAR
+        description: 'Key: short label for the confounder, for example the symbol word itself.'
+      - name: diagnostic
+        data_type: VARCHAR
+        description: 'Attribute: plain-text name of the diagnostic or experiment that looks for the confounder.'
+      - name: effect
+        data_type: VARCHAR
+        description: 'Attribute: what the confounder does to the result, as stated in the validity registry.'
+      - name: mitigation
+        data_type: VARCHAR
+        description: 'Attribute: what was done to reduce the confounder''s effect.'
+      - name: content_type
+        data_type: VARCHAR
+        description: 'Attribute: always ''interpretation''; every text in the row is a person''s judgement, not a computed value.'
+  - name: mart_validity_history
+    description: Validity diagnostics across recorded runs, one row per analysis, run, experiment and metric.
+    config:
+      contract: {enforced: true}
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [analysis_id, run_label, experiment, metric]
+    columns:
+      - name: analysis_id
+        data_type: VARCHAR
+        description: 'Key: analysis id from the validity registry (currently symbolic_atlas_clustering''s history).'
+      - name: product_id
+        data_type: VARCHAR
+        description: 'Foreign key to dim_quality_product: the product the analysis belongs to.'
+      - name: run_label
+        data_type: VARCHAR
+        description: 'Key: which recorded run: before_cleaning (before paratext cleaning) or current.'
+      - name: experiment
+        data_type: VARCHAR
+        description: 'Key: the Symbolic Atlas experiment name, for example baseline.'
+      - name: metric
+        data_type: VARCHAR
+        description: 'Key: metric name, for example mean_largest_book_share, mean_book_entropy, trustworthiness or silhouette.'
+      - name: value
+        data_type: DOUBLE
+        description: 'Measure, non-additive: the metric''s value in that run and experiment; unit set by the metric.'

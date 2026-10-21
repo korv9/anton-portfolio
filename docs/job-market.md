@@ -55,8 +55,11 @@ or removed in a time window, in the archives' shape.
    - `mart_market_field_monthly` (with `preliminary` for stream months),
      `mart_market_occupation_yearly`, `mart_market_region_yearly`,
      `mart_market_conditions_yearly`, `mart_market_archives`, `mart_market_daily` (ads per
-     day from the stream).
-   - `int_market_periods`: the comparison period ends with the last complete month.
+     day from the stream). The whole market is in its own models
+     (`mart_market_field_monthly_total`, `mart_market_region_yearly_total`,
+     `mart_market_conditions_yearly_total`); the export adds it as field `all`.
+   - `int_market_periods` (silver): the comparison period ends with the last complete month;
+     `mart_market_period` is the same row in gold, for the export.
 3. **Export**: `platform/publish/export_market.py` writes `frontend/public/data/jobs/market.json`,
    with `daily` (ads per day) and `preliminary` (months from the stream). *Trender* shows the
    latest days under the monthly chart, marked preliminary.

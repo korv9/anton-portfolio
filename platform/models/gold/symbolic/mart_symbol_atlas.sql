@@ -13,6 +13,6 @@ select
     p.cluster_id,
     p.cluster_probability,
     p.is_noise
-from {{ source('symbolic_features', 'atlas_projection') }} as p
+from {{ ref('stg_symbol_atlas_projection') }} as p
 join {{ ref('int_symbol_occurrences') }} as o using (occurrence_id)
 join {{ ref('int_symbolic_documents') }} as d using (document_id)

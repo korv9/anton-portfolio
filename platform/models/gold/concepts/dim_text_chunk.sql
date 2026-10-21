@@ -14,4 +14,4 @@ select
     word_count,
     text,
     'source' as content_type
-from {{ source('concept_features', 'chunks') }}
+from {{ ref('stg_concept_chunks') }}

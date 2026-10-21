@@ -38,3 +38,32 @@ sources:
         meta:
           external_location: >-
             read_json('{{ env_var('PORTFOLIO_DELIVERY', '../frontend/public/data') }}/debates/budgets/coverage.json')
+      - name: budget_language
+        description: >-
+          The budget-language audit (platform/legacy/build_report_audits.py): lexical matches per
+          corpus, method, session, party and expenditure area, and their coverage.
+        meta:
+          external_location: >-
+            read_json_objects('{{ env_var('PORTFOLIO_DELIVERY', '../frontend/public/data') }}/reports/budget-language.json')
+      - name: topic_session
+        description: Topic word shares per session and party, one file per session and topic model.
+        meta:
+          external_location: >-
+            read_json_objects(['{{ env_var('PORTFOLIO_DELIVERY', '../frontend/public/data') }}/debates/sessions/*/topics.json',
+            '{{ env_var('PORTFOLIO_DELIVERY', '../frontend/public/data') }}/politics/parliament/sessions/*/topics.json'],
+            filename = true)
+      - name: party_activity
+        description: Debate speeches, interpellations and written questions per session and party.
+        meta:
+          external_location: >-
+            read_json_objects('{{ env_var('PORTFOLIO_DELIVERY', '../frontend/public/data') }}/politics/parliament/activities/summary.json')
+      - name: budget_outturn
+        description: Statskontoret's annual outturn per budget year and expenditure area.
+        meta:
+          external_location: >-
+            read_json_objects('{{ env_var('PORTFOLIO_DELIVERY', '../frontend/public/data') }}/politics/parliament/budgets/outturn-areas.json')
+      - name: rfc_drift
+        description: The RFC drift report (platform/legacy/build_report_audits.py); one profile per RFC version.
+        meta:
+          external_location: >-
+            read_json_objects('{{ env_var('PORTFOLIO_DELIVERY', '../frontend/public/data') }}/reports/rfc-drift.json')

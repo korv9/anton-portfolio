@@ -1,0 +1,45 @@
+version: 2
+
+models:
+  - name: int_welfare_ess_answers
+    description: ESS answers, one row per respondent (round, data file, country) and item, within the item's valid range.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [essround, datafile, country_code, respondent_id, variable]
+  - name: int_welfare_health_survey
+    description: Nationella folkhälsoenkäten, one row per indicator, region, period, sex and age group.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [indicator_key, region_code, period_key, sex_key, age_group_key]
+  - name: int_welfare_kolada
+    description: Kolada values for municipalities, counties and the country, one row per indicator, region, year and sex.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [indicator_key, region_code, period_key, sex_key]
+  - name: int_welfare_labour_force
+    description: AKU levels and rates, one row per region, period, sex, age group, series type and labour-force status.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [region_code, period_key, sex_key, age_group_key, series_type, labour_status]
+  - name: int_welfare_population
+    description: Population, one row per region, year and sex (T is the derived total).
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [region_code, period_key, sex_key]
+  - name: int_welfare_sick_leave_cases
+    description: Sick-leave cases, one row per case type, region, month, sex, age group and diagnosis.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [case_type, region_code, period_key, sex_key, age_group_key, diagnosis_code]
+  - name: int_welfare_sick_pay_rate
+    description: Sjukpenningtal, one row per region, month, sex and age group.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [region_code, period_key, sex_key, age_group_key]

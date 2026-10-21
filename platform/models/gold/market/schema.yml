@@ -7,11 +7,20 @@ version: 2
 models:
   - name: dim_market_field
     description: Occupation fields (yrkesområden), with their latest label.
+    config:
+      contract: {enforced: true}
     columns:
       - name: field_id
+        description: 'Key: JobTech taxonomy concept id of the occupation field.'
+        data_type: VARCHAR
         data_tests: [not_null, unique]
       - name: field
+        description: 'Attribute: occupation field label (Swedish) in its latest month.'
+        data_type: VARCHAR
         data_tests: [not_null]
+      - name: occupation_groups
+        description: 'Measure, non-additive: distinct count of occupation groups seen in the field across all months.'
+        data_type: BIGINT
   - name: dim_market_occupation_group
     description: Occupation groups (SSYK 4) as the ads name them, each in its occupation field.
     columns:
@@ -26,52 +35,275 @@ models:
                 to: ref('dim_market_field')
                 field: field_id
   - name: mart_market_field_monthly
-    description: New ads and vacancies per month and occupation field; field_id 'all' is the whole market.
+    description: New ads and vacancies per month and occupation field; the whole market is in mart_market_field_monthly_total.
+    config:
+      contract: {enforced: true}
     data_tests:
       - unique_combination:
           arguments:
             columns: [month, field_id]
     columns:
+      - name: field_id
+        description: 'Key, references dim_market_field: occupation field id.'
+        data_type: VARCHAR
+        data_tests:
+          - relationships: {arguments: {to: ref('dim_market_field'), field: field_id}}
       - name: ads
+        description: 'Measure, additive: count of new ads, each counted once in its archive''s period.'
+        data_type: BIGINT
         data_tests: [not_null]
+      - name: month
+        description: 'Key: publication month as its first day (ISO date).'
+        data_type: DATE
+      - name: field
+        description: 'Attribute: occupation field label from dim_market_field.'
+        data_type: VARCHAR
+      - name: vacancies
+        description: 'Measure, additive: positions sought; an ad without a valid number of vacancies counts as one.'
+        data_type: BIGINT
+      - name: preliminary
+        description: 'Attribute: true when the month is counted from the daily stream rather than an archive (preliminary).'
+        data_type: BOOLEAN
+  - name: mart_market_field_monthly_total
+    description: New ads and vacancies per month over the whole market, ads without an occupation field included.
+    config:
+      contract: {enforced: true}
+    columns:
+      - name: month
+        description: 'Key: publication month as its first day (ISO date).'
+        data_type: DATE
+        data_tests: [not_null, unique]
+      - name: ads
+        description: 'Measure, additive: count of new ads over the whole market, ads without a field included.'
+        data_type: BIGINT
+        data_tests: [not_null]
+      - name: vacancies
+        description: 'Measure, additive: positions sought; an ad without a valid number of vacancies counts as one.'
+        data_type: BIGINT
+      - name: preliminary
+        description: 'Attribute: true when the month is counted from the daily stream rather than an archive (preliminary).'
+        data_type: BOOLEAN
   - name: mart_market_daily
     description: New ads and vacancies per publication day and occupation field ('all' is the whole market), from JobTech's stream, for the days it has read whole. Preliminary.
+    config:
+      contract: {enforced: true}
     data_tests:
       - unique_combination:
           arguments:
             columns: [day, field_id]
     columns:
       - name: day
+        description: 'Key: publication date (ISO date), from the stream''s first run to yesterday.'
+        data_type: DATE
         data_tests: [not_null]
       - name: ads
+        description: 'Measure, additive: count of new ads published that day (preliminary).'
+        data_type: BIGINT
         data_tests: [not_null]
+      - name: field_id
+        description: 'Key, references dim_market_field: occupation field id, or all for the whole market.'
+        data_type: VARCHAR
+      - name: field
+        description: 'Attribute: occupation field label from dim_market_field; Hela arbetsmarknaden for all.'
+        data_type: VARCHAR
+      - name: vacancies
+        description: 'Measure, additive: positions sought that day; an ad without a valid number counts as one (preliminary).'
+        data_type: BIGINT
   - name: mart_market_occupation_yearly
     description: Ads per occupation group and year, in full and over the months the latest year covers (ads_ytd), with the year before over the same months.
+    config:
+      contract: {enforced: true}
     data_tests:
       - unique_combination:
           arguments:
             columns: [year, group_id]
     columns:
       - name: group_id
+        description: 'Key, references dim_market_occupation_group: JobTech concept id of the occupation group.'
+        data_type: VARCHAR
         data_tests:
           - relationships:
               arguments:
                 to: ref('dim_market_occupation_group')
                 field: group_id
+      - name: year
+        description: 'Key: publication year of the ads.'
+        data_type: BIGINT
+      - name: ssyk
+        description: 'Attribute: SSYK 4 code of the group (JobTech''s legacy taxonomy id), from its latest month.'
+        data_type: VARCHAR
+      - name: occupation_group
+        description: 'Attribute: occupation group label (Swedish), from its latest month.'
+        data_type: VARCHAR
+      - name: field_id
+        description: 'Foreign key to dim_market_field: the group''s occupation field in its latest month.'
+        data_type: VARCHAR
+      - name: field
+        description: 'Attribute: the group''s occupation field label in its latest month.'
+        data_type: VARCHAR
+      - name: ads
+        description: 'Measure, additive: count of new ads, each counted once in its archive''s period.'
+        data_type: BIGINT
+      - name: vacancies
+        description: 'Measure, additive: positions sought; an ad without a valid number of vacancies counts as one.'
+        data_type: BIGINT
+      - name: ads_ytd
+        description: 'Measure, additive: ads in the year''s months up to the latest year''s last complete month; 0 when none.'
+        data_type: BIGINT
+      - name: months
+        description: 'Measure, non-additive: distinct count of months with ads for the group in the year.'
+        data_type: BIGINT
+      - name: ads_ytd_previous_year
+        description: 'Measure, additive: ads_ytd of the group''s previous row (normally the year before); NULL for its first year.'
+        data_type: HUGEINT
   - name: mart_market_region_yearly
-    description: Ads per county, occupation field and year; field_id 'all' is every field together.
+    description: Ads per county, occupation field and year; all fields together are in mart_market_region_yearly_total.
+    config:
+      contract: {enforced: true}
     data_tests:
       - unique_combination:
           arguments:
             columns: [year, region, field_id]
+    columns:
+      - name: year
+        description: 'Key: publication year of the ads.'
+        data_type: BIGINT
+      - name: region
+        description: 'Key: the ad''s workplace county; Okänt län when none or unspecified.'
+        data_type: VARCHAR
+      - name: field_id
+        description: 'Key, references dim_market_field: occupation field id; unknown when the ad has none.'
+        data_type: VARCHAR
+      - name: ads
+        description: 'Measure, additive: count of new ads, each counted once in its archive''s period.'
+        data_type: BIGINT
+      - name: vacancies
+        description: 'Measure, additive: positions sought; an ad without a valid number of vacancies counts as one.'
+        data_type: BIGINT
+      - name: ads_ytd
+        description: 'Measure, additive: ads in the year''s months up to the latest year''s last complete month; 0 when none.'
+        data_type: BIGINT
+  - name: mart_market_region_yearly_total
+    description: Ads per county and year over every occupation field.
+    config:
+      contract: {enforced: true}
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [year, region]
+    columns:
+      - name: year
+        description: 'Key: publication year of the ads.'
+        data_type: BIGINT
+      - name: region
+        description: 'Key: the ad''s workplace county; Okänt län when none or unspecified.'
+        data_type: VARCHAR
+      - name: ads
+        description: 'Measure, additive: count of new ads, each counted once in its archive''s period.'
+        data_type: BIGINT
+      - name: vacancies
+        description: 'Measure, additive: positions sought; an ad without a valid number of vacancies counts as one.'
+        data_type: BIGINT
+      - name: ads_ytd
+        description: 'Measure, additive: ads in the year''s months up to the latest year''s last complete month; 0 when none.'
+        data_type: BIGINT
   - name: mart_market_conditions_yearly
-    description: Ads per occupation field and year by employment type, working hours and required experience; field_id 'all' is every field together.
+    description: Ads per occupation field and year by employment type, working hours and required experience; all fields together are in mart_market_conditions_yearly_total.
+    config:
+      contract: {enforced: true}
     data_tests:
       - unique_combination:
           arguments:
             columns: [year, field_id, employment_type, working_hours, experience_required]
+            # Null when the ad does not say whether experience is required.
+            nullable: [experience_required]
+    columns:
+      - name: year
+        description: 'Key: publication year of the ads.'
+        data_type: BIGINT
+      - name: field_id
+        description: 'Key, references dim_market_field: occupation field id; unknown when the ad has none.'
+        data_type: VARCHAR
+      - name: employment_type
+        description: 'Key: employment type label (such as Vanlig anställning); Okänd when not stated.'
+        data_type: VARCHAR
+      - name: working_hours
+        description: 'Key: working hours: Heltid, Deltid, or Okänd when not stated.'
+        data_type: VARCHAR
+      - name: experience_required
+        description: 'Key: whether the ad requires experience; NULL when the ad does not say.'
+        data_type: BOOLEAN
+      - name: ads
+        description: 'Measure, additive: count of new ads, each counted once in its archive''s period.'
+        data_type: BIGINT
+      - name: vacancies
+        description: 'Measure, additive: positions sought; an ad without a valid number of vacancies counts as one.'
+        data_type: BIGINT
+  - name: mart_market_conditions_yearly_total
+    description: Ads per year by employment type, working hours and required experience over every occupation field.
+    config:
+      contract: {enforced: true}
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [year, employment_type, working_hours, experience_required]
+            nullable: [experience_required]
+    columns:
+      - name: year
+        description: 'Key: publication year of the ads.'
+        data_type: BIGINT
+      - name: employment_type
+        description: 'Key: employment type label (such as Vanlig anställning); Okänd when not stated.'
+        data_type: VARCHAR
+      - name: working_hours
+        description: 'Key: working hours: Heltid, Deltid, or Okänd when not stated.'
+        data_type: VARCHAR
+      - name: experience_required
+        description: 'Key: whether the ad requires experience; NULL when the ad does not say.'
+        data_type: BOOLEAN
+      - name: ads
+        description: 'Measure, additive: count of new ads, each counted once in its archive''s period.'
+        data_type: BIGINT
+      - name: vacancies
+        description: 'Measure, additive: positions sought; an ad without a valid number of vacancies counts as one.'
+        data_type: BIGINT
   - name: mart_market_archives
     description: The archives counted, with their source URL, SHA-256 and number of ads.
+    config:
+      contract: {enforced: true}
     columns:
       - name: archive
+        description: 'Key: JobTech archive counted, named by its year or quarter (such as 2024 or 2026-Q1).'
+        data_type: VARCHAR
         data_tests: [not_null, unique]
+      - name: source_url
+        description: 'Attribute: URL the archive was downloaded from.'
+        data_type: VARCHAR
+      - name: sha256
+        description: 'Attribute: SHA-256 hex digest of the archive file.'
+        data_type: VARCHAR
+      - name: ads_read
+        description: 'Measure, additive: count of ad lines read from the archive, repeats included.'
+        data_type: BIGINT
+      - name: duplicates
+        description: 'Measure, additive: count of ad lines skipped because their ad id had already been read.'
+        data_type: BIGINT
+      - name: ads
+        description: 'Measure, additive: count of distinct ad ids counted from the archive.'
+        data_type: BIGINT
+      - name: counted_at
+        description: 'Attribute: when the archive was counted (UTC).'
+        data_type: TIMESTAMP
+  - name: mart_market_period
+    description: One row with the latest year and its last complete month, for year-to-date comparisons; int_market_periods for the export.
+    config:
+      contract: {enforced: true}
+    columns:
+      - name: latest_year
+        description: 'Key: the latest year with ads, by its last complete month.'
+        data_type: BIGINT
+        data_tests: [not_null, unique]
+      - name: last_month_of_latest_year
+        description: 'Attribute: month number 1-12 of the latest year''s last complete month, the year-to-date cut-off.'
+        data_type: BIGINT
+        data_tests: [not_null]

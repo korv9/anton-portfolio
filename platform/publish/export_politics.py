@@ -9,7 +9,8 @@ the work; this only serialises rows in the delivery's key order and forms percen
 
 Files that legacy/build_gold.py used to write are registered in gold/semantic-model.json
 here, with the same entry build_gold would have written (lib/gold_contract.py); build_gold
-carries those entries forward untouched.
+carries those entries forward untouched. So are the model's metrics and relationships, from the
+dbt manifest: the metrics with a `gold` meta and the gold_semantic_model exposure.
 """
 from __future__ import annotations
 
@@ -27,6 +28,8 @@ import gold_contract  # noqa: E402
 from common import GOLD, ROOT  # noqa: E402
 
 DATABASE = Path(os.environ.get("PORTFOLIO_DB", ROOT / "warehouse/portfolio.duckdb"))
+# The dbt build's manifest: the metric and relationship definitions in semantic-model.json.
+MANIFEST = Path(os.environ.get("DBT_MANIFEST", ROOT / "platform/target/politics/manifest.json"))
 
 
 def rows(connection, sql: str) -> list[dict]:
@@ -90,7 +93,67 @@ TABLES = {
         ("One session and ordered party pair", ["session", "party_a", "party_b"], ["session", "party_a", "party_b"],
          "Derived from comparable Ja/Nej positions", "Not ideological distance; abstentions excluded"),
     ),
+    "fact_language_area": (
+        "select * from gold.fct_language_area order by file_order",
+        lambda r: {"corpus": r["corpus"], "method": r["method"], "session": r["session"], "party": r["party"],
+                   "expenditure_area": r["expenditure_area"], "occurrences": r["occurrences"],
+                   "keyword_share_pct": r["keyword_share_pct"], "forms": json.loads(r["forms"])},
+        ("One corpus, method, session, party and area", ["corpus", "method", "session", "party", "expenditure_area"],
+         ["session", "party", "expenditure_area"], "Budget-language audit", "Word matches are topic attention, not support"),
+    ),
+    "fact_language_coverage": (
+        "select * exclude (file_order) from gold.fct_language_coverage order by file_order",
+        dict,
+        ("One corpus, method, session and party", ["corpus", "method", "session", "party"], ["session", "party"],
+         "Budget-language audit", "Zero matches are not evidence of silence"),
+    ),
+    "mart_budget_language_gap": (
+        "select * from gold.mart_budget_language_gap order by file_order",
+        lambda r: {**{field: r[field] for field in (
+                       "corpus", "method", "session", "party", "expenditure_area", "budget_year", "amount_msek",
+                       "budget_share_pct", "keyword_occurrences", "keyword_share_pct", "source_url")},
+                   "attention_minus_budget_pp": round(r["keyword_share_pct"] - r["budget_share_pct"], 4)
+                   if r["keyword_share_pct"] is not None else None},
+        ("One corpus, method, session, party and area with a complete party frame",
+         ["corpus", "method", "session", "party", "expenditure_area"], ["session", "party", "expenditure_area"],
+         "Exact-key join of corrected party frame and language audit",
+         "Descriptive difference in percentage points; no stance or causal inference. Missing/incomplete party frames excluded."),
+    ),
+    "fact_topic_session_party": (
+        "select * exclude (session_year_start, file_order) from gold.fct_topic_session_party order by file_order",
+        dict,
+        ("One model, session, party and topic", ["model_id", "session", "party", "topic_id"],
+         ["model_id", "topic_id", "session", "party"], "Separate legacy and current topic exports",
+         "Word shares include an unclustered category"),
+    ),
+    "fact_activity": (
+        "select * exclude (file_order) from gold.fct_party_activity order by file_order",
+        dict,
+        ("One party and session", ["session", "party"], ["session", "party"], "Parliament activity summary", ""),
+    ),
+    "fact_budget_outturn": (
+        "select * exclude (file_order) from gold.fct_budget_outturn order by file_order",
+        dict,
+        ("One budget year and expenditure area", ["budget_year", "expenditure_area"],
+         ["budget_year", "expenditure_area"], "Statskontoret annual outturn aggregate",
+         "Historical area definitions must be checked before joining a budget proposal"),
+    ),
+    "fact_rfc_version": (
+        "select * exclude (file_order) from gold.fct_rfc_version order by file_order",
+        lambda r: {**r, "counts": json.loads(r["counts"]), "shares_pct": json.loads(r["shares_pct"])},
+        ("One profiled RFC version", ["rfc"], [], "RFC drift report",
+         "Requirement counts are heuristic extraction, not matched changes"),
+    ),
 }
+
+
+def definitions() -> tuple[dict, list]:
+    """The model's metrics and relationships, as the dbt YAML defines them (`gold` meta)."""
+    manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+    gold = manifest["exposures"]["exposure.portfolio.gold_semantic_model"]["config"]["meta"]["gold"]
+    metrics = {metric["name"]: metric["config"]["meta"]["gold"]
+               for metric in manifest["metrics"].values() if "gold" in metric["config"]["meta"]}
+    return {**metrics, **gold["unavailable_metrics"]}, gold["relationships"]
 
 
 def deliveries(connection) -> tuple[dict[str, bytes], dict[str, dict]]:
@@ -109,6 +172,8 @@ def semantic_model(files: dict[str, bytes], entries: dict[str, dict]) -> bytes:
     """The model with this export's tables and materialisations brought up to date."""
     model = json.loads((GOLD / "semantic-model.json").read_text(encoding="utf-8"))
     model["tables"].update(entries)
+    model["metrics"], model["relationships"] = definitions()
+    model["quality"]["budget_language_comparable_rows"] = entries["mart_budget_language_gap"]["rows"]
     for relative, content in files.items():
         if relative in model["materializations"] or relative.startswith(("marts/votes/", "tables/")):
             model["materializations"][relative] = gold_contract.fingerprint(content)

@@ -7,7 +7,7 @@
 {id, title, url, text, embed} where `embed` (title and text) is what platform/nlp/workers_ai.py
 embeds and `text` is what a quote is checked against:
 
-    sfs         one row of silver_sfs_paragraphs per passage (paragraph, or stycke of a long one)
+    sfs         one row of int_sfs_paragraphs per passage (paragraph, or stycke of a long one)
     ai-act-sv   the AI Act in Swedish and English, from the published article and annex texts
     ai-act-en   (frontend/public/data/ai-act/article-text-<lang>.json), split per paragraph
                 and point (art_5-1-a, anx_III-1-a), plus the 180 recitals (rct_<n>) parsed from
@@ -131,7 +131,7 @@ def sfs_chunks() -> list[dict]:
 
     with duckdb.connect(str(DATABASE), read_only=True) as db:
         frame = db.sql("select id, title, url, text, sfs as law, fetched "
-                       "from silver.silver_sfs_paragraphs order by sfs, id").df()
+                       "from silver.int_sfs_paragraphs order by sfs, id").df()
     frame["fetched"] = frame["fetched"].astype(str)
     return frame.to_dict("records")
 

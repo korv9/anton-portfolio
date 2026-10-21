@@ -1,0 +1,25 @@
+version: 2
+
+models:
+  - name: stg_futures_hits
+    description: Session × year × party × theme counts in Riksdag speeches.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [session, year, party, theme]
+            # Speeches with no party in the source keep a null party.
+            nullable: [party]
+  - name: stg_futures_totals
+    description: Session × year × party totals over all Riksdag speeches.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [session, year, party]
+            # Speeches with no party in the source keep a null party.
+            nullable: [party]
+  - name: stg_futures_theses
+    description: DiVA thesis abstracts per harvested month × record × theme.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [month, id, theme]

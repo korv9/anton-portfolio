@@ -64,14 +64,14 @@ URL, the hash of the source version it was read from and its retrieval time
 
 1. Every chunk is embedded; each concept's anchor is embedded in both languages, and a chunk is
    compared with the anchor in its own language.
-2. **Alignment** (`gold.fact_concept_alignment`, chunk × concept): cosine similarity, the
+2. **Alignment** (`gold.fct_concept_alignment`, chunk × concept): cosine similarity, the
    concept's **rank** among the 28 for that chunk, and a **z-score** against the same concept in
    the same corpus.
 3. **Profiles** (`gold.mart_concept_profiles`): how often a concept is a chunk's closest
    (rank-1 share; chance is 1/28 ≈ 3.6 %) and among its three closest.
 4. **Representative passages** (`gold.mart_concept_passages`): chunks where the concept ranks
    in the top three, ordered by z-score within the corpus; eight per concept and corpus.
-5. **Cross-corpus pairs** (`gold.fact_cross_domain_similarity`): per concept and pair of
+5. **Cross-corpus pairs** (`gold.fct_cross_domain_similarity`): per concept and pair of
    corpora, the closest pair among the representatives, kept only above the 95th percentile of
    4,000 random pairs between those corpora.
 6. **Concept relations** (`gold.mart_concept_relations`): `semantic_similarity` where two

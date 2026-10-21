@@ -47,3 +47,27 @@ def test_published_similarity_contract():
     null = data["summary"]["county_null"]
     assert other < null["permutation"]["interval_95"][0] <= null["random_partner"] <= 280
     assert all("reference_year" in f for f in data["features"])
+
+
+def test_connections_reads_c_and_d_from_the_cross_subject_mart():
+    import duckdb
+
+    spec = importlib.util.spec_from_file_location("export_connections",
+                                                  ROOT / "platform/publish/sweden/export_connections.py")
+    connections = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(connections)
+    con = duckdb.connect()
+    con.sql("create schema gold")
+    con.sql("""create table gold.mart_municipality_year_cross_subject as select * from (values
+               ('0114', 2024, 1000.0, 300000.0, 41.234567::double, 1000.0, 2500, 1),
+               ('0115', 2024, 2000.0, 250000.0, null, null, 100, 1),
+               ('0116', 2023, 3000.0, 1.0, 1.0, 3000.0, 1, 1)) as t(municipality_code, year,
+               similarity_population, similarity_median_earned_income_sek,
+               similarity_post_secondary_25_64_pct, library_population, library_visits,
+               library_service_points)""")
+    rows = connections.panel(con, 2024)
+    assert [r["code"] for r in rows] == ["0114", "0115"]
+    assert rows[0] == {"code": "0114", "log_population": 6.9078, "median_earned_income_sek": 300000.0,
+                       "post_secondary_25_64_pct": 41.2346, "visits_rate": 2.5, "service_points_rate": 10.0}
+    # No population for D's rates: the municipality stays, without rates, and is counted as excluded.
+    assert rows[1]["visits_rate"] is None and rows[1]["post_secondary_25_64_pct"] is None

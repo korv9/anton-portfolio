@@ -6,7 +6,7 @@ socially similar municipalities lie.
 Reuses the validated 2024 municipality clustering (ml/research/regions.py, run
 public-consensus-2026-10-13: 12 indicators, PCA, K-means; k=2 by the gap rule, k=4 the finer
 split, both with bootstrap ARI >= 0.75) and the indicator values it was fitted on, whose
-SHA-256 it recorded. It adds what the research question needs: each municipality's five
+SHA-256 it recorded, from gold.fct_municipal_similarity (the dbt sources over those files). It adds what the research question needs: each municipality's five
 nearest municipalities in the standardised indicator space, the straight-line distance between
 their centroids, and SCB's municipality boundaries (CC0) for the map.
 
@@ -41,6 +41,7 @@ import numpy as np
 
 ROOT = Path(__file__).resolve().parents[3]
 RUN = "public-consensus-2026-10-13"
+DATABASE = Path(os.environ.get("PORTFOLIO_DB", ROOT / "warehouse/portfolio.duckdb"))
 STORE = Path(os.environ.get("PORTFOLIO_FEATURES", ROOT / "warehouse/features")) / "sweden/similarity"
 RESULT = STORE / "regions-municipalities.json"
 BOUNDARIES = Path(os.environ.get("PORTFOLIO_RAW", ROOT / "warehouse/raw")) / "geography/scb_boundaries_shape.zip"
@@ -71,27 +72,19 @@ def sha256(path: Path) -> str:
 
 
 def values(result: dict) -> dict[str, dict]:
-    """The 2024 indicator values per municipality, from the files the clustering hashed."""
-    sources = {Path(p).name: (STORE / Path(p).name, h) for p, h in result["sources"].items()}
-    for path, recorded in sources.values():
-        if sha256(path) != recorded:
-            raise SystemExit(f"{path} changed since the clustering ran; refusing to mix inputs")
-    panel_path = sources["mart_municipality_year_panel.parquet"][0]
-    rows = duckdb.sql(f"select * from read_parquet('{panel_path.as_posix()}') where year = {result['year']}").df()
-    out = {r.municipality_code: {"name": r.municipality_name, "county": r.county_name,
-                                 "population": r.population, **{f: getattr(r, f, None) for f in FEATURES}}
-           for r in rows.itertuples()}
-    structure = json.loads(sources["kolada_structure_2024.json"][0].read_text(encoding="utf-8"))
-    names = {kpi: name for name, kpi in structure["kpis"].items()}
-    for row in structure["values"]:
-        for v in row["values"]:
-            if v["gender"] == "T" and row["municipality"] in out:
-                out[row["municipality"]][names[row["kpi"]]] = v["value"]
-    for m in out.values():
-        for f in FEATURES:  # pandas reads a missing value as NaN
-            if isinstance(m.get(f), float) and math.isnan(m[f]):
-                m[f] = None
-        m["log_population"] = math.log(m["population"]) if m["population"] else None
+    """The 2024 indicator values per municipality, from gold over the files the clustering hashed."""
+    for p, recorded in result["sources"].items():
+        if sha256(STORE / Path(p).name) != recorded:
+            raise SystemExit(f"{STORE / Path(p).name} changed since the clustering ran; refusing to mix inputs")
+    con = duckdb.connect(str(DATABASE), read_only=True)
+    rows = con.sql(f"""select municipality_code, municipality_name, county_name, population,
+                              {', '.join(f for f in FEATURES if f != 'log_population')}
+                       from gold.fct_municipal_similarity where year = {result['year']}""").fetchall()
+    out = {}
+    for code, name, county, population, *v in rows:
+        out[code] = {"name": name, "county": county, "population": population,
+                     **dict(zip([f for f in FEATURES if f != "log_population"], v)),
+                     "log_population": math.log(population) if population else None}
     return out
 
 

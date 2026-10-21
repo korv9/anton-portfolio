@@ -19,6 +19,6 @@ select
     k.period,
     k.text,
     'derived' as content_type
-from {{ ref('fact_concept_alignment') }} as a
+from {{ ref('fct_concept_alignment') }} as a
 join {{ ref('dim_text_chunk') }} as k using (chunk_id, corpus_id)
 where a.representative_rank is not null

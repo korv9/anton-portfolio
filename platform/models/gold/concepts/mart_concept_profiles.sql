@@ -8,7 +8,7 @@ with counts as (
         count(*) as chunks,
         count(*) filter (where rank = 1) as rank1_chunks,
         count(*) filter (where rank <= 3) as top3_chunks
-    from {{ ref('fact_concept_alignment') }}
+    from {{ ref('fct_concept_alignment') }}
     group by all
 ),
 

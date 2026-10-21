@@ -78,8 +78,8 @@ def main() -> None:
              "--database", str(args.database), "--directory", str(args.archives)], env)
     # One thread: the gold models each scan the full ad table, and in parallel their
     # temporary files outgrow a CI runner's disk.
-    run([sys.executable, "-m", "dbt.cli.main", "build", "--profiles-dir", ".", "--select", "+tag:jobs",
-         "--full-refresh", "--threads", "1", "--target-path", "target/jobs", "--vars", dbt_vars], env)
+    run([sys.executable, "-m", "dbt.cli.main", "build", "--profiles-dir", ".", "--indirect-selection", "buildable",
+         "--select", "+tag:jobs", "--full-refresh", "--threads", "1", "--target-path", "target/jobs", "--vars", dbt_vars], env)
     presentation = WAREHOUSE / "presentation"
     run([sys.executable, "ingest/jobtech/export_presentation.py", "--database", str(args.database),
          "--output", str(presentation), "--first-year", str(years[0]),

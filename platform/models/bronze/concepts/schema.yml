@@ -1,0 +1,26 @@
+version: 2
+
+models:
+  - name: stg_concept_chunks
+    description: The chunks the concept layer sampled, with provenance.
+    columns:
+      - name: chunk_id
+        data_tests: [unique, not_null]
+  - name: stg_concept_alignment
+    description: Chunk × concept similarity, rank and z-score.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [chunk_id, concept_id]
+  - name: stg_concept_similarity
+    description: Concept × concept similarity of the anchor sentences.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [concept_a, concept_b]
+  - name: stg_concept_cross_pairs
+    description: Per concept and corpus pair, the closest representative chunks and the baseline.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [concept_id, corpus_a, corpus_b]

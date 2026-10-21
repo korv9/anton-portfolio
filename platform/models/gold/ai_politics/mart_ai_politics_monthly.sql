@@ -6,7 +6,7 @@ with monthly as (
         count(*) as speeches,
         count(*) filter (where mentions_ai) as ai_speeches,
         count(*) filter (where names_ai_act) as ai_act_speeches
-    from {{ ref('fact_ai_speech') }}
+    from {{ ref('fct_ai_speech') }}
     group by speech_month
 )
 

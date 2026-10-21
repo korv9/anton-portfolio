@@ -1,0 +1,19 @@
+version: 2
+
+models:
+  - name: stg_ad_language_hits
+    description: Archive × year × field × county × category counts in JobTech's job ads.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [archive, year, field, region, category]
+            # Ads with no occupation field or county in the source keep a null.
+            nullable: [field, region]
+  - name: stg_ad_language_totals
+    description: Archive × year × field × county totals over all job ads.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [archive, year, field, region]
+            # Ads with no occupation field or county in the source keep a null.
+            nullable: [field, region]

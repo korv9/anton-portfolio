@@ -12,14 +12,14 @@ models:
         data_tests:
           - not_null
           - relationships:
-              arguments: {to: ref('dim_job_clusters'), field: cluster_id}
+              arguments: {to: ref('dim_job_cluster'), field: cluster_id}
       - name: umap_x
         data_tests: [not_null]
       - name: umap_y
         data_tests: [not_null]
       - name: cluster_probability
         data_tests: [not_null]
-  - name: dim_job_clusters
+  - name: dim_job_cluster
     columns:
       - name: cluster_id
         data_tests: [unique, not_null]

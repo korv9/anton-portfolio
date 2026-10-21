@@ -18,21 +18,21 @@ speech_pairs as (
     from {{ ref('ai_politics_framing_pairs') }} as p
     cross join (
         select speech_id, coalesce(party, 'NONE') as party, 'all' as period, 'all' as period_kind
-        from {{ ref('fact_ai_speech') }} where mentions_ai
+        from {{ ref('fct_ai_speech') }} where mentions_ai
         union all
-        select speech_id, 'ALL', 'all', 'all' from {{ ref('fact_ai_speech') }} where mentions_ai
+        select speech_id, 'ALL', 'all', 'all' from {{ ref('fct_ai_speech') }} where mentions_ai
         union all
         select speech_id, coalesce(party, 'NONE'),
             case when speech_date < date '2021-04-21' then 'before_proposal'
                  when speech_date < date '2024-07-12' then 'negotiation' else 'after_publication' end,
             'phase'
-        from {{ ref('fact_ai_speech') }} where mentions_ai
+        from {{ ref('fct_ai_speech') }} where mentions_ai
         union all
         select speech_id, 'ALL',
             case when speech_date < date '2021-04-21' then 'before_proposal'
                  when speech_date < date '2024-07-12' then 'negotiation' else 'after_publication' end,
             'phase'
-        from {{ ref('fact_ai_speech') }} where mentions_ai
+        from {{ ref('fct_ai_speech') }} where mentions_ai
     ) as w
     left join {{ ref('int_ai_speech_concepts') }} as a on a.speech_id = w.speech_id and a.concept_id = p.concept_a
     left join {{ ref('int_ai_speech_concepts') }} as b on b.speech_id = w.speech_id and b.concept_id = p.concept_b

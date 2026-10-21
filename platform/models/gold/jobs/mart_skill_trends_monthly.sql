@@ -4,7 +4,7 @@ with counts as (
         count(distinct case when e.employer_name <> 'Unknown' then f.employer_id end) as observed_skill_employers
     from {{ ref('fct_job_ads') }} f
     join {{ ref('bridge_job_skills') }} s using (job_id)
-    join {{ ref('dim_employers') }} e using (employer_id)
+    join {{ ref('dim_employer') }} e using (employer_id)
     where f.role_family <> 'Other'
     group by 1, 2, 3
 ), grid as (

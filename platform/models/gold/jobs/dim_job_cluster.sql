@@ -5,7 +5,7 @@
 with employer_counts as (
     select a.cluster_id, a.run_id, coalesce(j.employer_name, 'Unspecified') as employer,
         count(*) as ads
-    from {{ source('jobs_ml', 'job_cluster_assignments') }} a
+    from {{ ref('stg_job_cluster_assignments') }} a
     join {{ ref('int_job_ads_enriched') }} j using (job_id)
     group by 1, 2, 3
 ), ranked as (
@@ -19,5 +19,5 @@ with employer_counts as (
     from ranked where rank <= 5 group by 1, 2
 )
 select p.*, e.top_employers
-from {{ source('jobs_ml', 'job_cluster_profiles') }} p
+from {{ ref('stg_job_cluster_profiles') }} p
 left join employer_profile e using (cluster_id, run_id)

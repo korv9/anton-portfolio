@@ -23,7 +23,7 @@ flowchart TD
     I --> K[Profiles, diagnostics, role cross-tab]
     J --> K
     K --> L[Parquet run artefacts and raw.job_cluster_* sources]
-    L --> M[dbt gold.mart_job_clusters and dim_job_clusters]
+    L --> M[dbt gold.mart_job_clusters and dim_job_cluster]
     M --> N[Dedicated compact delivery exporter]
     N --> O[React Canvas explorer]
     N --> P[Sample of real coordinates for homepage]

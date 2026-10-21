@@ -1,0 +1,15 @@
+version: 2
+
+models:
+  - name: int_parliament_roll_calls
+    description: One row per roll call, test votes left out; a vote id can carry a substantive and a motivfrågan roll call.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [session, roll_call_id]
+  - name: int_parliament_party_roll_calls
+    description: How each party voted on each roll call, one row per roll call and party.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [session, roll_call_id, party]

@@ -3,7 +3,7 @@
 -- similarity read through a chosen lens; not what the author holds.
 with scores as (
     select s.*, p.document_id, p.text
-    from {{ source('philosophy_features', 'tensions') }} as s
+    from {{ ref('stg_philosophy_tensions') }} as s
     join {{ ref('int_philosophy_passages') }} as p using (passage_id)
 )
 

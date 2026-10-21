@@ -13,4 +13,4 @@ select
     above_baseline,
     'semantic_similarity' as relation_type,
     'derived' as content_type
-from {{ source('concept_features', 'cross_pairs') }}
+from {{ ref('stg_concept_cross_pairs') }}

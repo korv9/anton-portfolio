@@ -3,7 +3,7 @@
     python platform/publish/export_sfs.py
 
 Writes frontend/public/data/sfs/overview.json from gold.fct_sfs_document and
-silver.silver_sfs_corpus_paragraphs:
+gold.fct_sfs_passage:
     fetched     first and last fetch time of the texts
     kinds       documents, fetched texts, repealed, numbered paragraphs and passages per kind
     parse       documents per parse status
@@ -56,7 +56,7 @@ def dbt_tests() -> dict:
 
 
 def band_sql() -> str:
-    cases = " ".join(f"when length(text) <= {b} then {b}" for b in BANDS)
+    cases = " ".join(f"when text_chars <= {b} then {b}" for b in BANDS)
     return f"case {cases} else null end"
 
 
@@ -99,11 +99,11 @@ def export(con) -> dict:
         "years": years,
         "lengths": records(con, f"""
             select kind, {band_sql()} as up_to, count(*) as passages
-            from silver.silver_sfs_corpus_paragraphs group by all order by kind, up_to nulls last"""),
+            from gold.fct_sfs_passage group by all order by kind, up_to nulls last"""),
         "length_stats": records(con, """
-            select kind, quantile_cont(length(text), 0.5)::int as p50,
-                   quantile_cont(length(text), 0.95)::int as p95, max(length(text)) as max
-            from silver.silver_sfs_corpus_paragraphs group by kind order by kind"""),
+            select kind, quantile_cont(text_chars, 0.5)::int as p50,
+                   quantile_cont(text_chars, 0.95)::int as p95, max(text_chars) as max
+            from gold.fct_sfs_passage group by kind order by kind"""),
         "largest": records(con, f"""
             select dok_id, sfs, title, sections, paragraph_passages
             from {doc} where kind = 'lag' and not is_repealed

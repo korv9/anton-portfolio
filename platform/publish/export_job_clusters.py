@@ -14,7 +14,7 @@ def export(database: Path, output: Path):
     import duckdb
     with duckdb.connect(str(database), read_only=True) as con:
         points = con.execute('select * from gold.mart_job_clusters order by job_id').df().to_dict('records')
-        profiles = con.execute('select * from gold.dim_job_clusters order by cluster_id').df().to_dict('records')
+        profiles = con.execute('select * from gold.dim_job_cluster order by cluster_id').df().to_dict('records')
         report = json.loads(con.execute('select report_json from raw.job_cluster_runs').fetchone()[0])
     run_id = report['run_id']
     if any(row['run_id'] != run_id for row in points + profiles):

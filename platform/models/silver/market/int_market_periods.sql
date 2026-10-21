@@ -2,6 +2,10 @@
 -- archive, or the daily stream up to yesterday), so every year is also counted over the same
 -- months as the latest year has (year to date), to compare like with like. Only complete
 -- months count: the current month, while it runs, is left out of the comparison.
+-- A table, not a view: current_date is fixed when the build runs, so the marts and the
+-- export all see the same period.
+{{ config(materialized='table') }}
+
 with bounds as (
     select least(max(month), date_trunc('month', current_date) - interval 1 month)::date
         as last_month
