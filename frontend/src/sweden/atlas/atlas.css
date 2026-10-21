@@ -7,10 +7,11 @@
   min-height: 100svh;
   background: var(--at-bg);
   color: var(--sw-ink);
-  overflow: hidden;
+  overflow: clip;
 }
 .sw-atlas .sw-header {
   z-index: 4;
+  background: var(--at-bg);
 }
 .sw-atlas-stage {
   position: absolute;

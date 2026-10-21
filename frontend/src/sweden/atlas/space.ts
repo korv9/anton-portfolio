@@ -62,7 +62,7 @@ export type Space = ReturnType<typeof createSpace>
 
 export function createSpace(el: HTMLElement, view: View) {
   const renderer = new THREE.WebGLRenderer({ antialias: true })
-  renderer.setPixelRatio(Math.min(2, window.devicePixelRatio))
+  renderer.setPixelRatio(Math.min(1.5, window.devicePixelRatio))
   renderer.setClearColor(0x07070a)
   renderer.domElement.setAttribute('aria-hidden', 'true')
   el.appendChild(renderer.domElement)
@@ -119,12 +119,12 @@ export function createSpace(el: HTMLElement, view: View) {
   controls.maxDistance = 4000
   controls.minDistance = 40
 
+  // One draw per frame: while damping, controls.update() fires 'change', which queues the next.
   let frame = 0
   const draw = () => {
     frame = 0
-    const moving = controls.update()
+    controls.update()
     renderer.render(scene, camera)
-    if (moving) frame = requestAnimationFrame(draw)
   }
   const render = () => {
     if (!frame) frame = requestAnimationFrame(draw)

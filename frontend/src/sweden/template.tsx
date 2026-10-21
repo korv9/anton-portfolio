@@ -323,7 +323,15 @@ export function Scene({
             ))}
           </ol>
         )}
-        <a className="sw-more" href="#sw-below">
+        {/* The hash names the route, so scroll in place instead of navigating. */}
+        <a
+          className="sw-more"
+          href="#sw-below"
+          onClick={(e) => {
+            e.preventDefault()
+            document.getElementById('sw-below')?.scrollIntoView()
+          }}
+        >
           {l(
             'Explore, method and interpretations',
             'Utforska, metod och tolkningar',

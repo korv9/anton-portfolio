@@ -5,7 +5,7 @@
  *
  * The camera's view is offset so the subject sits in the free area between the scene panels
  * (title on the left, legend and info on the right). It renders on change only: orbit, resize,
- * or an explicit `render()`, never in an idle loop. The device pixel ratio is capped at 2.
+ * or an explicit `render()`, never in an idle loop. The device pixel ratio is capped at 1.5.
  */
 import { useEffect, useState } from 'react'
 import * as THREE from 'three'
@@ -59,7 +59,7 @@ export function createStage(
   const colour = (name: string, fallback: string) =>
     new THREE.Color(css.getPropertyValue(name).trim() || fallback)
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
-  renderer.setPixelRatio(Math.min(2, window.devicePixelRatio))
+  renderer.setPixelRatio(Math.min(1.5, window.devicePixelRatio))
   renderer.shadowMap.enabled = true
   renderer.shadowMap.type = THREE.PCFSoftShadowMap
   renderer.domElement.setAttribute('aria-hidden', 'true')
@@ -99,17 +99,24 @@ export function createStage(
   controls.maxDistance = 900
   controls.screenSpacePanning = false
 
+  // One draw per frame: while damping, controls.update() fires 'change', which queues the next.
   let frame = 0
   const draw = () => {
     frame = 0
-    const moving = controls.update()
+    controls.update()
     renderer.render(scene, camera)
-    if (moving) frame = requestAnimationFrame(draw)
   }
-  const render = () => {
+  const schedule = () => {
     if (!frame) frame = requestAnimationFrame(draw)
   }
-  controls.addEventListener('change', render)
+  // The sun is fixed in the world, so orbiting never changes the shadows: only a scene
+  // change (an explicit render) redraws the shadow map.
+  renderer.shadowMap.autoUpdate = false
+  const render = () => {
+    renderer.shadowMap.needsUpdate = true
+    schedule()
+  }
+  controls.addEventListener('change', schedule)
 
   // The panels take the left ~400 px and the right ~340 px on a wide screen: shift the view
   // so the subject's centre lands in the space between them.
