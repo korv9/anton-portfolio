@@ -245,7 +245,7 @@ def build_tables(con, top):
         select e.employer_name as employer,
                count(*) as ads
         from gold.fct_job_ads f
-        join gold.dim_employers e using (employer_id)
+        join gold.dim_employer e using (employer_id)
         where {ALL_ROLES}
         group by 1 order by 2 desc, 1 limit ?
     """, [top])
@@ -256,7 +256,7 @@ def build_tables(con, top):
         select l.region as region,
                count(*) as ads
         from gold.fct_job_ads f
-        join gold.dim_locations l using (location_id)
+        join gold.dim_location l using (location_id)
         where {ALL_ROLES}
         group by 1 order by 2 desc, 1
     """)

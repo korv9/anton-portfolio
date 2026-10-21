@@ -10,4 +10,4 @@ select
     z_score,
     representative_rank::integer as representative_rank,
     'derived' as content_type
-from {{ source('concept_features', 'alignment') }}
+from {{ ref('stg_concept_alignment') }}

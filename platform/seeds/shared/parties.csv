@@ -1,0 +1,12 @@
+party,name_sv,name_en,colour,founded_year
+S,Socialdemokraterna,Social Democrats,#E8112D,1889
+M,Moderaterna,Moderates,#52BDEC,1904
+SD,Sverigedemokraterna,Sweden Democrats,#DDDD00,1988
+V,Vänsterpartiet,Left Party,#DA291C,1917
+C,Centerpartiet,Centre Party,#009933,1913
+KD,Kristdemokraterna,Christian Democrats,#000077,1964
+MP,Miljöpartiet,Green Party,#83CF39,1981
+L,Liberalerna,Liberals,#006AB3,1934
+NYD,Ny demokrati,New Democracy,#8a8f8c,1991
+OTHER,Övriga,Others,#b8b5ab,
+-,Partilös,Independent,,

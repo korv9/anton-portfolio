@@ -1,0 +1,31 @@
+version: 2
+
+models:
+  - name: stg_quality_products
+    description: The products the quality registry covers.
+    columns:
+      - name: product_id
+        data_tests: [unique, not_null]
+  - name: stg_quality_confounders
+    description: Registered confounders per analysis.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [analysis, confounder]
+  - name: stg_quality_validity
+    description: One row per analytical validity diagnostic.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [analysis_id, diagnostic_id]
+  - name: stg_quality_checks
+    description: One row per data-quality check result.
+    columns:
+      - name: quality_check_id
+        data_tests: [unique, not_null]
+  - name: stg_quality_validity_history
+    description: Validity diagnostics across recorded runs.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [analysis_id, run_label, experiment, metric]

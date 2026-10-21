@@ -1,0 +1,9 @@
+version: 2
+
+models:
+  - name: int_market_periods
+    description: One row with the latest year and its last complete month, for year-to-date comparisons.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [latest_year]

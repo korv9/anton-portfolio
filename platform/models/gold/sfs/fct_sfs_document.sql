@@ -9,7 +9,7 @@ with passages as (
             filter (where kind = 'paragraph') as sections,
         count(*) filter (where kind = 'paragraph') as paragraph_passages,
         count(*) filter (where kind = 'whole_text') as whole_text_passages
-    from {{ ref('silver_sfs_corpus_paragraphs') }}
+    from {{ ref('int_sfs_corpus_paragraphs') }}
     group by dok_id
 )
 
@@ -30,5 +30,5 @@ select
     coalesce(p.sections, 0) as sections,
     coalesce(p.paragraph_passages, 0) as paragraph_passages,
     coalesce(p.whole_text_passages, 0) as whole_text_passages
-from {{ ref('silver_sfs_documents') }} as d
+from {{ ref('int_sfs_documents') }} as d
 left join passages as p on p.dok_id = d.dok_id

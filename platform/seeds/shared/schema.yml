@@ -1,0 +1,29 @@
+version: 2
+
+seeds:
+  # Tagged into every subject whose facts test against dim_party: each daily subject builds into
+  # a fresh warehouse, so the dimension has to build with it.
+  - name: parties
+    description: >-
+      Party codes after the parliament_party macro. Names and colours as the site shows them
+      (frontend/src/parties/identity.tsx); '-' is a member without a party.
+    config:
+      schema: seeds
+      tags: [welfare, politics, news, ai_politics, sweden_futures, taxes]
+      column_types: {party: varchar, name_sv: varchar, name_en: varchar, colour: varchar,
+                     founded_year: integer}
+
+  - name: municipality_codes
+    description: >-
+      SCB municipality codes whose years of use differ from 1974 to today, from SCB's
+      "Kommunändringar 1974-idag" (kommunandringar_20230829.pdf, knkodnyckel.xls) and the
+      renumbering keys skanekod.xls (1997) and vgkodandring.xls (1998) on scb.se, Län och
+      kommuner. valid_to is the last year a retired code was used; successor_code is the code
+      that took over (change_type code_change), or the municipality it merged into (merger).
+      retired_name is the successor's name, except Bara, from the PDF: SCB's spreadsheets
+      lost their Swedish characters.
+    config:
+      schema: seeds
+      tags: [welfare]
+      column_types: {municipality_code: varchar, retired_name: varchar, valid_from: integer,
+                     valid_to: integer, successor_code: varchar, change_type: varchar}

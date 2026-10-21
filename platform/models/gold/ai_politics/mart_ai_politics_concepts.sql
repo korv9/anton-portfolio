@@ -4,7 +4,7 @@
 -- publication in July 2024, after). `party` is 'ALL' for every speaker, including those without a
 -- party. Shares rest on `ai_speeches`; a small denominator is a small denominator.
 with ai as (
-    select * from {{ ref('fact_ai_speech') }} where mentions_ai
+    select * from {{ ref('fct_ai_speech') }} where mentions_ai
 ),
 
 phased as (

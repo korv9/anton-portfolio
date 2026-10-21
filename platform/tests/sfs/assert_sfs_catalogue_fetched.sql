@@ -2,5 +2,5 @@
 -- in the list returns 404); more than 12, about 0.1 per cent, means the fetch stopped early.
 {{ config(warn_if='>0', error_if='>12') }}
 select dok_id, sfs, title
-from {{ ref('silver_sfs_documents') }}
+from {{ ref('int_sfs_documents') }}
 where not has_text

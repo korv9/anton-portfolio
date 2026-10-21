@@ -2,6 +2,8 @@ version: 2
 
 models:
   - name: mart_budget_context
+    config:
+      contract: {enforced: true}
     description: >-
       One row per budget year: governing and agreement parties, the adopted proposal, the
       completeness of imported expenditure frames, and the exact FiU1 point 2 roll call.
@@ -9,38 +11,761 @@ models:
       which also reconciles it byte for byte against the committed delivery.
     columns:
       - name: budget_year
+        data_type: INTEGER
+        description: 'Key: calendar year the budget applies to, 2015-2026.'
         data_tests: [not_null, unique]
       - name: session
-        data_tests: [not_null, unique]
+        data_type: VARCHAR
+        description: 'Key, references dim_parliament_session: riksmöte, e.g. 2024/25.'
+        data_tests:
+          - not_null
+          - unique
+          - relationships: {arguments: {to: ref('dim_parliament_session'), field: session}}
       - name: decision_document
+        data_type: VARCHAR
         description: The session's FiU1 report; the parsed comparison table, else the first candidate tried.
         data_tests: [not_null]
       - name: adopted
+        data_type: VARCHAR
+        description: 'Attribute: which proposal the Riksdag adopted, government_proposal or alternative.'
         data_tests:
           - accepted_values:
               arguments:
                 values: [government_proposal, alternative]
       - name: frame_status
+        data_type: VARCHAR
+        description: 'Attribute: completeness of the government frame: complete (27 areas), partial, or not_imported.'
         data_tests:
           - accepted_values:
               arguments:
                 values: [complete, partial, not_imported]
+      - name: government_parties
+        data_type: VARCHAR[]
+        description: 'Attribute: list of party codes in government when the budget was decided.'
+      - name: agreement_parties
+        data_type: VARCHAR[]
+        description: 'Attribute: list of party codes with a budget agreement with the government; empty when none.'
+      - name: agreement_source_url
+        data_type: VARCHAR
+        description: 'Attribute: source for the budget agreement; null when there was no agreement.'
+      - name: comparison_source_url
+        data_type: VARCHAR
+        description: 'Attribute: Riksdagen document URL of the session''s FiU1 report (decision_document).'
+      - name: adopted_parties
+        data_type: VARCHAR[]
+        description: 'Attribute: list of party codes behind the adopted proposal; government plus agreement parties, or the alternative''s parties.'
+      - name: adoption_source_url
+        data_type: VARCHAR
+        description: 'Attribute: source for the adopted proposal; the alternative''s source, else the FiU1 report URL.'
+      - name: frame_rows
+        data_type: STRUCT(GOV BIGINT, C BIGINT, KD BIGINT, L BIGINT, M BIGINT, MP BIGINT, S BIGINT, SD BIGINT, V BIGINT)
+        description: 'Attribute: struct of imported budget-frame row counts per proposer (GOV and each party); 27 is a full frame, 0 not imported.'
+      - name: decision_point
+        data_type: VARCHAR
+        description: 'Foreign key to mart_vote_decisions: point_id of FiU1 point 2 in the session; null when that point is not imported.'
+      - name: decision_date
+        data_type: DATE
+        description: 'Attribute: decision date of FiU1 point 2, ISO date; null when the point is not imported.'
+      - name: vote_id
+        data_type: VARCHAR
+        description: 'Attribute: Riksdagen roll-call id for FiU1 point 2; null when no roll call is imported.'
+      - name: party_votes
+        data_type: STRUCT(party VARCHAR, "position" VARCHAR, "yes" BIGINT, "no" BIGINT, abstain BIGINT, absent BIGINT)[]
+        description: 'Attribute: list of structs per party: modal position and counts of yes, no, abstain and absent members in the FiU1 point 2 roll call; empty when not imported.'
+      - name: cited_documents
+        data_type: STRUCT(reference VARCHAR, "type" VARCHAR, url VARCHAR, evidence VARCHAR)[]
+        description: 'Attribute: list of structs for documents the point explicitly cites: reference, type, url, link evidence; citation is not party support.'
+      - name: reservations
+        data_type: VARCHAR[]
+        description: 'Attribute: list of party codes that entered a reservation against the point; empty when none or not imported.'
+      - name: related_speeches
+        data_type: STRUCT(party VARCHAR, speech_id VARCHAR, url VARCHAR, evidence VARCHAR)[]
+        description: 'Attribute: list of structs with each party''s most similar speech to the roll call; semantic discovery candidates, not stances.'
+      - name: link_quality
+        data_type: STRUCT(budget_to_decision VARCHAR, decision_to_vote VARCHAR, speech_to_vote VARCHAR, cited_document_to_point VARCHAR)
+        description: 'Attribute: struct stating the evidence level of each link (budget to decision, decision to vote, speech to vote, citation to point).'
   - name: mart_vote_decisions
     description: Roll calls in site order with their point and party positions; delivered per session.
+    config:
+      contract: {enforced: true}
     data_tests:
       - unique_combination:
           arguments:
             columns: [slug, file_order]
     columns:
       - name: point_id
+        data_type: VARCHAR
+        description: 'Key: id of the committee report point the roll call decided.'
         data_tests: [not_null, unique]
+      - name: session
+        data_type: VARCHAR
+        description: 'Foreign key to dim_parliament_session: riksmöte of the decision point, e.g. 2024/25.'
+        data_tests:
+          - relationships: {arguments: {to: ref('dim_parliament_session'), field: session}}
+      - name: slug
+        data_type: VARCHAR
+        description: 'Key: session folder name from the decision index path, e.g. 2024-25.'
+      - name: file_order
+        data_type: BIGINT
+        description: 'Key: 1-based position of the decision in the indexes, files in path order then rows in file order.'
+      - name: decision
+        data_type: JSON
+        description: 'Attribute: JSON decision object from the index, with point_id and the eight parties'' positions and member vote counts added.'
   - name: mart_party_session_vote
+    config:
+      contract: {enforced: true}
+    # Semantic layer: one grain (session and party), so the shares below are formed from
+    # summed counts and stay correct over several sessions or parties. The `gold` meta is
+    # the metric's entry in gold/semantic-model.json (publish/export_politics.py).
+    semantic_model:
+      enabled: true
+      name: party_session
+    primary_entity: party_session
+    agg_time_dimension: session_year_start
+    metrics:
+      - name: party_roll_calls
+        type: simple
+        agg: sum
+        expr: roll_calls
+      - name: party_yes_calls
+        type: simple
+        agg: sum
+        expr: yes_calls
+      - name: party_yes_call_share
+        description: Roll calls where the party's modal position was Ja, over all its roll calls.
+        type: ratio
+        numerator: party_yes_calls
+        denominator: party_roll_calls
+        config:
+          meta:
+            gold: {numerator: "count(fact_party_vote where party_position = Ja)", denominator: "count(fact_party_vote)", unit: percent, filters: [session, committee, party]}
+      - name: party_cohesive_member_votes
+        type: simple
+        agg: sum
+        expr: cohesive_member_votes
+      - name: party_cast_member_votes
+        type: simple
+        agg: sum
+        expr: cast_member_votes
+      - name: party_cohesion
+        description: Member votes cast with the party's modal position, over all cast member votes.
+        type: ratio
+        numerator: party_cohesive_member_votes
+        denominator: party_cast_member_votes
+        config:
+          meta:
+            gold: {numerator: "sum(max(yes_votes, no_votes, abstain_votes) per vote-party)", denominator: "sum(cast_votes)", unit: percent}
+      - name: party_possible_member_votes
+        type: simple
+        agg: sum
+        expr: cast_member_votes + recorded_absences
+      - name: recorded_attendance
+        description: Cast member votes over cast votes plus recorded absences. Pairing is unknown.
+        type: ratio
+        numerator: party_cast_member_votes
+        denominator: party_possible_member_votes
+        config:
+          meta:
+            gold: {numerator: "sum(cast_votes)", denominator: "sum(cast_votes + absent_votes)", unit: percent, limitation: pairing arrangements unknown}
     data_tests:
       - unique_combination:
           arguments:
             columns: [session, party]
+    columns:
+      - name: party
+        data_type: VARCHAR
+        description: 'Key, references dim_party: party code (C, KD, L, M, MP, S, SD, V).'
+        dimension:
+          type: categorical
+        data_tests:
+          - relationships: {arguments: {to: ref('dim_party'), field: party}}
+      - name: session
+        data_type: VARCHAR
+        description: 'Key, references dim_parliament_session: riksmöte, e.g. 2024/25.'
+        dimension:
+          type: categorical
+        data_tests:
+          - relationships: {arguments: {to: ref('dim_parliament_session'), field: session}}
+      - name: roll_calls
+        data_type: BIGINT
+        description: 'Measure, additive: count of roll calls with a vote row for the party in the session.'
+      - name: yes_calls
+        data_type: BIGINT
+        description: 'Measure, additive: count of roll calls where the party''s position was Ja.'
+      - name: no_calls
+        data_type: BIGINT
+        description: 'Measure, additive: count of roll calls where the party''s position was Nej.'
+      - name: abstain_calls
+        data_type: BIGINT
+        description: 'Measure, additive: count of roll calls where the party''s position was Avstår.'
+      - name: cast_member_votes
+        data_type: HUGEINT
+        description: 'Measure, additive: count of member votes cast (yes, no or abstain) summed over the roll calls.'
+      - name: recorded_absences
+        data_type: HUGEINT
+        description: 'Measure, additive: count of members recorded absent summed over the roll calls; pairing unknown.'
+      - name: cohesive_member_votes
+        data_type: HUGEINT
+        description: 'Measure, additive: count of member votes with the party''s largest group (max of yes, no, abstain) summed over roll calls.'
+    derived_semantics:
+      dimensions:
+        - name: session_year_start
+          description: First day of the calendar year the session starts in.
+          type: time
+          granularity: year
+          expr: make_date(cast(left(session, 4) as integer), 1, 1)
   - name: mart_party_agreement
+    config:
+      contract: {enforced: true}
+    semantic_model:
+      enabled: true
+      name: party_pair_session
+    primary_entity: party_pair_session
+    agg_time_dimension: session_year_start
+    metrics:
+      - name: party_same_position_calls
+        type: simple
+        agg: sum
+        expr: same_position_calls
+      - name: party_comparable_calls
+        type: simple
+        agg: sum
+        expr: comparable_calls
+      - name: party_agreement
+        description: >-
+          Roll calls where both parties took the same Ja or Nej position, over those where both
+          took one. Abstentions are not comparable. Not an ideological distance.
+        type: ratio
+        numerator: party_same_position_calls
+        denominator: party_comparable_calls
+        config:
+          meta:
+            gold: {numerator: same_position_calls, denominator: comparable_calls, unit: percent, excludes: [Avstår, unavailable]}
     data_tests:
       - unique_combination:
           arguments:
             columns: [session, party_a, party_b]
+    columns:
+      - name: party_a
+        data_type: VARCHAR
+        description: 'Key, references dim_party: first party of the ordered pair.'
+        dimension:
+          type: categorical
+        data_tests:
+          - relationships: {arguments: {to: ref('dim_party'), field: party}}
+      - name: party_b
+        data_type: VARCHAR
+        description: 'Key, references dim_party: second party of the ordered pair; may equal party_a.'
+        dimension:
+          type: categorical
+        data_tests:
+          - relationships: {arguments: {to: ref('dim_party'), field: party}}
+      - name: session
+        data_type: VARCHAR
+        description: 'Key, references dim_parliament_session: riksmöte, e.g. 2024/25.'
+        dimension:
+          type: categorical
+        data_tests:
+          - relationships: {arguments: {to: ref('dim_parliament_session'), field: session}}
+      - name: same_position_calls
+        data_type: BIGINT
+        description: 'Measure, additive: count of roll calls where both parties took the same Ja or Nej position.'
+      - name: comparable_calls
+        data_type: BIGINT
+        description: 'Measure, additive: count of roll calls where both parties took a Ja or Nej position; abstentions excluded.'
+    derived_semantics:
+      dimensions:
+        - name: session_year_start
+          description: First day of the calendar year the session starts in.
+          type: time
+          granularity: year
+          expr: make_date(cast(left(session, 4) as integer), 1, 1)
+  - name: fct_budget_frame
+    description: >-
+      The corrected budget frame, one row per session, proposer (GOV or a party) and expenditure
+      area. The rows are still produced by platform/legacy/build_gold.py (gold/tables/
+      fact_budget_frame.json); this model carries their tests and measures. Incomplete years and
+      missing party proposals must not be imputed.
+    semantic_model:
+      enabled: true
+      name: budget_frame
+    primary_entity: budget_frame
+    agg_time_dimension: budget_year_start
+    metrics:
+      - name: budget_share
+        description: >-
+          The area's share of the proposer's frame, per cent. Adds over areas within one session
+          and proposer (to 100); never sum it over proposers or sessions.
+        type: simple
+        agg: sum
+        expr: budget_share_pct
+        config:
+          meta:
+            gold: {source_column: fact_budget_frame.budget_share_pct, unit: percent, grain: "session, actor, expenditure_area"}
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [session, actor, expenditure_area]
+    columns:
+      - name: session
+        dimension:
+          type: categorical
+        data_tests: [not_null]
+      - name: actor
+        description: GOV for the government's collective proposal, else a party code.
+        dimension:
+          type: categorical
+        data_tests: [not_null]
+      - name: expenditure_area
+        dimension:
+          type: categorical
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27]
+                quote: false
+      - name: budget_year_start
+        granularity: year
+        dimension:
+          type: time
+  - name: fct_language_area
+    config:
+      contract: {enforced: true}
+    description: >-
+      The budget-language audit (reports/budget-language.json): per corpus, method, session,
+      party and expenditure area, the area's share of the party's area-assigned lexical matches.
+      Delivered as gold/tables/fact_language_area.json. Word matches are topic attention, not support.
+    semantic_model:
+      enabled: true
+      name: language_area
+    primary_entity: language_area
+    agg_time_dimension: session_year_start
+    metrics:
+      - name: language_attention
+        description: >-
+          The area's share of the party's lexical matches, per cent. Adds over areas within one
+          corpus, method, session and party; never over parties or sessions.
+        type: simple
+        agg: sum
+        expr: keyword_share_pct
+        config:
+          meta:
+            gold: {source_column: fact_language_area.keyword_share_pct, unit: percent, grain: "corpus, method, session, party, expenditure_area", limitation: "lexical attention, not support"}
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [corpus, method, session, party, expenditure_area]
+    columns:
+      - name: corpus
+        data_type: VARCHAR
+        description: 'Key: speech archive the audit read, leaders (party-leader debates) or issues (issue debates).'
+        dimension:
+          type: categorical
+        data_tests: [not_null]
+      - name: method
+        data_type: VARCHAR
+        description: 'Key: keyword matching method, exact (token equals a keyword) or stem (Swedish Snowball stem equals a keyword''s stem).'
+        dimension:
+          type: categorical
+        data_tests: [not_null]
+      - name: session
+        data_type: VARCHAR
+        description: 'Key, references dim_parliament_session: riksmöte, e.g. 2024/25.'
+        dimension:
+          type: categorical
+        data_tests: [not_null]
+      - name: party
+        data_type: VARCHAR
+        description: 'Key, references dim_party: party code (C, KD, L, M, MP, S, SD, V).'
+        dimension:
+          type: categorical
+        data_tests:
+          - not_null
+          - relationships: {arguments: {to: ref('dim_party'), field: party}}
+      - name: expenditure_area
+        data_type: BIGINT
+        description: 'Key: expenditure area (utgiftsområde) number, 1-27.'
+        dimension:
+          type: categorical
+        data_tests: [not_null]
+      - name: session_year_start
+        data_type: DATE
+        description: First day of the calendar year the session starts in.
+        granularity: year
+        dimension:
+          type: time
+      - name: occurrences
+        data_type: BIGINT
+        description: 'Measure, additive: count of token occurrences matching the area''s keywords in the party''s speeches of 20 words or more.'
+      - name: keyword_share_pct
+        data_type: DOUBLE
+        description: 'Measure, non-additive: occurrences over the party''s matches across all 27 areas, per cent 0-100; adds to 100 over areas; null when the party has no matches.'
+      - name: forms
+        data_type: JSON
+        description: 'Attribute: JSON list of up to eight [matched word form, count] pairs, most frequent first.'
+      - name: file_order
+        data_type: BIGINT
+        description: 'Attribute: 1-based position of the row in the delivered source file; keeps the delivery order.'
+  - name: fct_language_coverage
+    config:
+      contract: {enforced: true}
+    description: >-
+      The speeches, words and matches behind the budget-language audit, per corpus, method,
+      session and party. Delivered as gold/tables/fact_language_coverage.json. Zero matches are
+      not evidence of silence.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [corpus, method, session, party]
+    columns:
+      - name: party
+        data_type: VARCHAR
+        description: 'Key, references dim_party: party code (C, KD, L, M, MP, S, SD, V).'
+        data_tests:
+          - not_null
+          - relationships: {arguments: {to: ref('dim_party'), field: party}}
+      - name: corpus
+        data_type: VARCHAR
+        description: 'Key: speech archive the audit read, leaders (party-leader debates) or issues (issue debates).'
+      - name: method
+        data_type: VARCHAR
+        description: 'Key: keyword matching method, exact (token equals a keyword) or stem (Swedish Snowball stem equals a keyword''s stem).'
+      - name: session
+        data_type: VARCHAR
+        description: 'Key, references dim_parliament_session: riksmöte, e.g. 2024/25.'
+      - name: speeches
+        data_type: BIGINT
+        description: 'Measure, additive: count of distinct speeches of 20 words or more by the party in the session and corpus.'
+      - name: words
+        data_type: BIGINT
+        description: 'Measure, additive: count of word tokens in those speeches.'
+      - name: matched_speeches
+        data_type: BIGINT
+        description: 'Measure, additive: count of those speeches with at least one keyword match under the method.'
+      - name: hits
+        data_type: BIGINT
+        description: 'Measure, additive: count of keyword occurrences over all 27 areas under the method.'
+      - name: zero_areas
+        data_type: BIGINT
+        description: 'Measure, additive: count of expenditure areas (of 27) with no keyword occurrence; zero matches are not evidence of silence.'
+      - name: file_order
+        data_type: BIGINT
+        description: 'Attribute: 1-based position of the row in the delivered source file; keeps the delivery order.'
+  - name: mart_budget_language_gap
+    config:
+      contract: {enforced: true}
+    description: >-
+      Exact-key join of the corrected party frame and the language audit, only for party
+      proposals that cover all 27 expenditure areas. Delivered as
+      gold/tables/mart_budget_language_gap.json, where attention_minus_budget_pp is formed.
+      Descriptive difference; speeches may come after the budget proposal.
+    semantic_model:
+      enabled: true
+      name: budget_language_gap
+    primary_entity: budget_language_gap
+    agg_time_dimension: budget_year_start
+    metrics:
+      - name: attention_minus_budget
+        description: >-
+          Lexical attention minus budget share, percentage points. Adds over areas within one
+          corpus, method, session and party.
+        type: simple
+        agg: sum
+        expr: attention_minus_budget
+        config:
+          meta:
+            gold: {source_column: mart_budget_language_gap.attention_minus_budget_pp, unit: percentage points, formula: keyword_share_pct - budget_share_pct, eligibility: Observed party proposal with all 27 expenditure areas, limitation: "Descriptive comparison only; speeches may occur after the budget proposal"}
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [corpus, method, session, party, expenditure_area]
+    columns:
+      - name: corpus
+        data_type: VARCHAR
+        description: 'Key: speech archive the audit read, leaders (party-leader debates) or issues (issue debates).'
+        dimension:
+          type: categorical
+      - name: method
+        data_type: VARCHAR
+        description: 'Key: keyword matching method, exact (token equals a keyword) or stem (Swedish Snowball stem equals a keyword''s stem).'
+        dimension:
+          type: categorical
+      - name: session
+        data_type: VARCHAR
+        description: 'Key, references dim_parliament_session: riksmöte, e.g. 2024/25.'
+        dimension:
+          type: categorical
+      - name: party
+        data_type: VARCHAR
+        description: 'Key, references dim_party: party code (C, KD, L, M, MP, S, SD, V).'
+        dimension:
+          type: categorical
+        data_tests:
+          - relationships: {arguments: {to: ref('dim_party'), field: party}}
+      - name: expenditure_area
+        data_type: BIGINT
+        description: 'Key: expenditure area (utgiftsområde) number, 1-27.'
+        dimension:
+          type: categorical
+      - name: budget_year_start
+        data_type: DATE
+        description: 'Attribute: first day of budget_year, ISO date; the time dimension.'
+        granularity: year
+        dimension:
+          type: time
+      - name: budget_year
+        data_type: BIGINT
+        description: 'Attribute: calendar year the party''s budget proposal applies to.'
+      - name: amount_msek
+        data_type: BIGINT
+        description: 'Measure, additive: party''s proposed frame for the area; million SEK.'
+      - name: budget_share_pct
+        data_type: DOUBLE
+        description: 'Measure, non-additive: area''s share of the party''s whole frame, per cent 0-100; adds to 100 over areas.'
+      - name: keyword_occurrences
+        data_type: BIGINT
+        description: 'Measure, additive: count of keyword occurrences for the area in the party''s speeches (fct_language_area.occurrences).'
+      - name: keyword_share_pct
+        data_type: DOUBLE
+        description: 'Measure, non-additive: area''s share of the party''s keyword matches, per cent 0-100; null when the party has no matches.'
+      - name: attention_minus_budget
+        data_type: DOUBLE
+        description: 'Measure, non-additive: keyword_share_pct minus budget_share_pct, percentage points; descriptive, not a stance; adds over areas within one party and session.'
+      - name: source_url
+        data_type: VARCHAR
+        description: 'Attribute: source URL of the party''s budget proposal row.'
+      - name: file_order
+        data_type: BIGINT
+        description: 'Attribute: position of the row in the language audit file (fct_language_area.file_order).'
+  - name: fct_topic_session_party
+    config:
+      contract: {enforced: true}
+    description: >-
+      Both topic models' word shares per session, party and topic, from the session topic files.
+      Delivered as gold/tables/fact_topic_session_party.json. Join topics on model_id and
+      topic_id together; the models are not comparable.
+    semantic_model:
+      enabled: true
+      name: topic_session_party
+    primary_entity: topic_session_party
+    agg_time_dimension: session_year_start
+    metrics:
+      - name: topic_word_share
+        description: >-
+          The topic's share of the party's words in the session, per cent, unclustered included.
+          Adds over topics within one model, session and party.
+        type: simple
+        agg: sum
+        expr: word_share_pct
+        config:
+          meta:
+            gold: {source_column: fact_topic_session_party.word_share_pct, unit: percent, grain: "model, session, party, topic", limitation: "unclustered included; models incomparable"}
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [model_id, session, party, topic_id]
+    columns:
+      - name: model_id
+        data_type: VARCHAR
+        description: 'Key: topic model, debates-legacy or parliament-current; the two are not comparable.'
+        dimension:
+          type: categorical
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [debates-legacy, parliament-current]
+      - name: session
+        data_type: VARCHAR
+        description: 'Key, references dim_parliament_session: riksmöte, e.g. 2024/25.'
+        dimension:
+          type: categorical
+      - name: party
+        data_type: VARCHAR
+        description: 'Key, references dim_party: party code (C, KD, L, M, MP, S, SD, V).'
+        dimension:
+          type: categorical
+        data_tests:
+          - relationships: {arguments: {to: ref('dim_party'), field: party}}
+      - name: topic_id
+        data_type: BIGINT
+        description: 'Key: topic number within the model; -1 is the unclustered group (Ej grupperade).'
+        dimension:
+          type: categorical
+      - name: session_year_start
+        data_type: DATE
+        description: 'Attribute: first day of session_year, ISO date; the time dimension.'
+        granularity: year
+        dimension:
+          type: time
+      - name: session_year
+        data_type: BIGINT
+        description: 'Attribute: calendar year the session starts in.'
+      - name: topic_label
+        data_type: VARCHAR
+        description: 'Attribute: topic label from its top terms, in Swedish.'
+      - name: segments
+        data_type: BIGINT
+        description: 'Measure, additive: count of the party''s speech segments assigned to the topic in the session.'
+      - name: words
+        data_type: BIGINT
+        description: 'Measure, additive: count of words in those segments.'
+      - name: word_share_pct
+        data_type: DOUBLE
+        description: 'Measure, non-additive: topic''s share of the party''s words in the session, per cent 0-100; adds to 100 over topics within one model, session and party.'
+      - name: file_order
+        data_type: BIGINT
+        description: 'Attribute: position of the row in delivery order (legacy model first, then files in path order, then rows in file order).'
+
+  - name: fct_party_activity
+    config:
+      contract: {enforced: true}
+    description: >-
+      Debate speeches, interpellations and written questions per session and party, from the
+      parliament activity summary. Delivered as gold/tables/fact_activity.json.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [session, party]
+    columns:
+      - name: party
+        data_type: VARCHAR
+        description: 'Key, references dim_party: party code (C, KD, L, M, MP, S, SD, V).'
+        data_tests:
+          - relationships: {arguments: {to: ref('dim_party'), field: party}}
+      - name: session
+        data_type: VARCHAR
+        description: 'Key, references dim_parliament_session: riksmöte, e.g. 2024/25.'
+      - name: debate_speeches
+        data_type: BIGINT
+        description: 'Measure, additive: count of the party''s debate speeches in the session.'
+      - name: interpellations
+        data_type: BIGINT
+        description: 'Measure, additive: count of interpellations submitted by the party''s members in the session.'
+      - name: written_questions
+        data_type: BIGINT
+        description: 'Measure, additive: count of written questions submitted by the party''s members in the session.'
+      - name: file_order
+        data_type: BIGINT
+        description: 'Attribute: 1-based position of the row in the delivered source file; keeps the delivery order.'
+  - name: fct_budget_outturn
+    config:
+      contract: {enforced: true}
+    description: >-
+      Statskontoret's annual outturn aggregate per budget year and expenditure area. Delivered as
+      gold/tables/fact_budget_outturn.json. Check historical area definitions before joining a
+      budget proposal.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [budget_year, expenditure_area]
+    columns:
+      - name: budget_year
+        data_type: BIGINT
+        description: 'Key: calendar budget year the appropriations belong to.'
+      - name: expenditure_area
+        data_type: BIGINT
+        description: 'Key: expenditure area (utgiftsområde) number, 1-27; area definitions change over time.'
+      - name: expenditure_area_name
+        data_type: VARCHAR
+        description: 'Attribute: Statskontoret''s name for the expenditure area in that year.'
+      - name: approved_budget_msek
+        data_type: DOUBLE
+        description: 'Measure, additive: appropriations in the state budget as first adopted, summed over the area''s appropriations; million SEK.'
+      - name: amendments_msek
+        data_type: DOUBLE
+        description: 'Measure, additive: net change from supplementary budgets (ändringsbudgetar) over the area''s appropriations; million SEK, negative is a cut.'
+      - name: outturn_msek
+        data_type: DOUBLE
+        description: 'Measure, additive: actual outturn (utfall) over the area''s appropriations; million SEK.'
+      - name: appropriation_rows
+        data_type: BIGINT
+        description: 'Measure, additive: count of appropriation (anslag) rows in Statskontoret''s file summed into this row.'
+      - name: source_url
+        data_type: VARCHAR
+        description: 'Attribute: Statskontoret open-data page for annual outturn the figures come from.'
+      - name: file_order
+        data_type: BIGINT
+        description: 'Attribute: 1-based position of the row in the delivered source file; keeps the delivery order.'
+  - name: fct_rfc_version
+    config:
+      contract: {enforced: true}
+    description: >-
+      One profiled RFC version from the RFC drift report. Delivered as
+      gold/tables/fact_rfc_version.json. Requirement counts are heuristic extraction.
+    columns:
+      - name: rfc
+        data_type: BIGINT
+        description: 'Key: RFC number of the profiled version (2965 or 6265).'
+        data_tests: [not_null, unique]
+      - name: url
+        data_type: VARCHAR
+        description: 'Attribute: RFC Editor URL of the RFC.'
+      - name: sha256
+        data_type: VARCHAR
+        description: 'Attribute: SHA-256 hex digest of the RFC text file that was profiled.'
+      - name: requirements
+        data_type: BIGINT
+        description: 'Measure, additive: count of requirement sentences the heuristic reader extracted.'
+      - name: counts
+        data_type: JSON
+        description: 'Attribute: JSON object of requirement counts per modality class (binding, weak, absent) from each sentence''s first modal keyword.'
+      - name: shares_pct
+        data_type: JSON
+        description: 'Attribute: JSON object of each modality class''s share of the requirements, per cent 0-100, one decimal.'
+      - name: file_order
+        data_type: BIGINT
+        description: 'Attribute: 1-based position of the row in the delivered source file; keeps the delivery order.'
+
+exposures:
+  - name: gold_semantic_model
+    label: Gold semantic model
+    type: application
+    description: >-
+      frontend/public/data/gold/semantic-model.json, read by the Data Explorer. Its metrics are
+      the dbt metrics with a `gold` meta entry; its relationships are listed here.
+      platform/publish/export_politics.py writes both from the dbt manifest, and the tables
+      still built by platform/legacy/build_gold.py keep their entries there.
+    owner: {name: korv9}
+    depends_on:
+      - ref('mart_party_session_vote')
+      - ref('mart_party_agreement')
+      - ref('mart_vote_decisions')
+      - ref('mart_budget_context')
+      - ref('fct_budget_frame')
+      - ref('fct_language_area')
+      - ref('fct_language_coverage')
+      - ref('mart_budget_language_gap')
+      - ref('fct_topic_session_party')
+      - ref('mart_job_trends_monthly')
+      - ref('fct_party_activity')
+      - ref('fct_budget_outturn')
+      - ref('fct_rfc_version')
+    config:
+      meta:
+        gold:
+          # Declared absent, not a metric: no reviewed vote-to-provision links exist.
+          unavailable_metrics:
+            validated_vote_direction_pairs: {value: 0, status: unavailable, reason: No reviewed vote-to-versioned-provision links or validated direction annotations}
+          relationships:
+            - {from: fact_party_vote.party, to: dim_party.party, type: many_to_one, status: validated}
+            - {from: fact_party_vote.session, to: dim_session.session, type: many_to_one, status: validated}
+            - {from: fact_activity.party, to: dim_party.party, type: many_to_one, status: validated}
+            - {from: fact_language_area.party, to: dim_party.party, type: many_to_one, status: validated}
+            - {from: fact_topic_session_party.party, to: dim_party.party, type: many_to_one, status: validated}
+            - {from: fact_job_month_role.role, to: dim_role.role, type: many_to_one, status: validated}
+            - {from: fact_budget_frame.expenditure_area, to: dim_expenditure_area.expenditure_area, type: many_to_one, status: code_validated_historical_name_varies}
+            - {from: fact_party_vote.point_id, to: fact_decision_point.point_id, type: many_to_one, status: validated}
+            - {from: fact_point_citation.point_id, to: fact_decision_point.point_id, type: many_to_one, status: validated}
+            - {from: fact_point_reservation.point_id, to: fact_decision_point.point_id, type: many_to_one, status: validated}
+            - {from: fact_speech_vote_candidate.vote_id, to: fact_party_vote.vote_id, type: many_to_many_through_party, status: retrieval_candidate_only}
+            - {from: fact_motion_vote_link.vote_id, to: fact_party_vote.vote_id, type: many_to_many_through_vote, status: citation_only}
+            - {from: fact_proposition_point_link.point_id, to: fact_decision_point.point_id, type: many_to_one, status: document_level_only}
+            - {from: fact_law_mention_candidate.sfs_document_id, to: dim_law_snapshot.document_id, type: candidate, status: temporal_version_unverified}
+            - {from: fact_budget_frame.actor, to: dim_actor.actor, type: many_to_one, status: validated}
+            - {from: "fact_budget_frame.budget_year,expenditure_area", to: "fact_budget_outturn.budget_year,expenditure_area", type: conditional, status: historical_area_definition_unverified}
+            - {from: "fact_language_area.session,party,expenditure_area", to: "fact_budget_frame.session,actor,expenditure_area", type: conditional, status: party_proposals_only_and_coverage_checked}
+            - {from: "fact_topic_session_party.model_id,topic_id", to: "dim_topic.model_id,topic_id", type: many_to_one, status: validated}
+            - {from: "fact_umap_sample.model_id,topic_id", to: "dim_topic.model_id,topic_id", type: many_to_one, status: validated}
+            - {from: "fact_law_provision.pool,document_id", to: "dim_law_snapshot.pool,document_id", type: many_to_one, status: validated}
+            - {from: "fact_job_junior_month.month,role", to: "fact_job_month_role.month,role", type: conditional, status: shared_aggregate_grain_not_individual_ads}

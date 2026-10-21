@@ -1,44 +1,223 @@
 version: 2
 
 models:
+  - name: mart_sweden_future_totals
+    description: The Lost Futures. Year × party over all Riksdag speeches; the denominators of the theme counts.
+    config:
+      contract: {enforced: true}
+    semantic_model:
+      enabled: true
+      name: future_year_party
+    primary_entity: future_year_party
+    agg_time_dimension: year_start
+    metrics:
+      - name: future_speeches
+        type: simple
+        agg: sum
+        expr: future_speeches
+      - name: future_all_speeches
+        type: simple
+        agg: sum
+        expr: speeches
+      - name: future_share
+        description: Future-oriented speeches over all speeches, formed after summing both.
+        type: ratio
+        numerator: future_speeches
+        denominator: future_all_speeches
+    derived_semantics:
+      dimensions:
+        - name: year_start
+          type: time
+          granularity: year
+          expr: make_date(year, 1, 1)
+        - name: party
+          type: categorical
+          expr: party
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [year, party]
+            # Speeches by the Speaker's, the King's and the ålderspresident's roles, or with no party.
+            nullable: [party]
+    columns:
+      - name: party
+        data_type: VARCHAR
+        description: The party code (parliament_party, so KDS is KD); null for the Speaker's, the King's and the ålderspresident's roles and speeches with no party.
+        data_tests:
+          - relationships: {arguments: {to: ref('dim_party'), field: party}}
+      - name: marker_matches
+        data_type: HUGEINT
+        description: Null for a cell until every session in it was counted with the marker matches.
+      - name: year
+        data_type: INTEGER
+        description: 'Key: calendar year of the speeches; a year sums its autumn and spring sessions.'
+      - name: speeches
+        data_type: HUGEINT
+        description: 'Measure, additive: count of Riksdag speeches.'
+      - name: future_speeches
+        data_type: HUGEINT
+        description: 'Measure, additive: count of speeches matching the future marker.'
+      - name: words
+        data_type: HUGEINT
+        description: 'Measure, additive: words in the speeches; count of words.'
   - name: mart_sweden_future_themes
-    description: The Lost Futures. Year × party × theme over Riksdag speeches.
+    config:
+      contract: {enforced: true}
+    description: >-
+      The Lost Futures. Year × party × theme over Riksdag speeches, per-theme counts only; join
+      mart_sweden_future_totals on year and party for the speeches and words.
     data_tests:
       - unique_combination:
           arguments:
             columns: [year, party, theme]
-  - name: mart_sweden_future_trends
-    description: Year × theme over all Riksdag speeches.
-    data_tests:
-      - unique_combination:
-          arguments:
-            columns: [year, theme]
+            nullable: [party]
     columns:
+      - name: year
+        data_type: INTEGER
+        description: 'Key: calendar year of the speeches; a year sums its autumn and spring sessions.'
+      - name: party
+        data_type: VARCHAR
+        description: 'Key, references dim_party: party code (KDS as KD); NULL for the Speaker''s, the King''s and the ålderspresident''s roles and speeches with no party.'
+      - name: theme
+        data_type: VARCHAR
+        description: 'Key: future_terms theme id (family theme).'
+      - name: speeches_using
+        data_type: HUGEINT
+        description: 'Measure, additive: count of speeches using the theme, 0 when none; adds over years and parties, not themes.'
+      - name: future_using
+        data_type: HUGEINT
+        description: 'Measure, additive: count of future-oriented speeches using the theme, 0 when none; adds over years and parties, not themes.'
+      - name: matches
+        data_type: HUGEINT
+        description: 'Measure, additive: count of theme pattern matches in the speeches, 0 when none.'
+  - name: mart_sweden_future_trends_total
+    description: Year over all Riksdag speeches; the denominators of mart_sweden_future_trends.
+    config:
+      contract: {enforced: true}
+    columns:
+      - name: year
+        data_type: INTEGER
+        description: 'Key: calendar year of the speeches.'
+        data_tests: [not_null, unique]
       - name: future_share
-        data_tests:
-          - between:
-              arguments: {min: 0, max: 1}
-      - name: future_share_using
+        data_type: DOUBLE
+        description: "Non-additive ratio: future-oriented speeches / all speeches. Recompute from the counts; never sum or average."
         data_tests:
           - between:
               arguments: {min: 0, max: 1}
       - name: words_per_speech
+        data_type: DOUBLE
+        description: "Non-additive ratio: words / speeches."
         data_tests:
           - not_null
       - name: marker_per_1000_words
-        description: Null for a year until every session in it was counted with the marker matches.
-  - name: mart_sweden_future_theses
-    description: Year × theme over Swedish-language student-thesis abstracts in DiVA; never pooled with the Riksdag.
+        data_type: DOUBLE
+        description: >-
+          Non-additive ratio: future-marker matches per thousand words. Null for a year until every
+          session in it was counted with the marker matches.
+      - name: speeches
+        data_type: HUGEINT
+        description: 'Measure, additive: count of Riksdag speeches over all parties.'
+      - name: future_speeches
+        data_type: HUGEINT
+        description: 'Measure, additive: count of speeches matching the future marker.'
+      - name: words
+        data_type: HUGEINT
+        description: 'Measure, additive: words in the speeches; count of words.'
+      - name: marker_matches
+        data_type: HUGEINT
+        description: 'Measure, additive: count of future-marker matches; NULL for a year until every session in it was counted with the column.'
+  - name: mart_sweden_future_trends
+    description: Year × theme over all Riksdag speeches, per-theme counts only; join mart_sweden_future_trends_total on year for the speeches and words.
+    config:
+      contract: {enforced: true}
     data_tests:
       - unique_combination:
           arguments:
             columns: [year, theme]
     columns:
-      - name: future_share
+      - name: year
+        data_type: INTEGER
+        description: 'Key, references mart_sweden_future_trends_total: calendar year of the speeches.'
         data_tests:
-          - between:
-              arguments: {min: 0, max: 1}
+          - relationships: {arguments: {to: ref('mart_sweden_future_trends_total'), field: year}}
       - name: future_share_using
+        data_type: DOUBLE
+        description: "Non-additive ratio: future-oriented speeches using the theme / future-oriented speeches."
         data_tests:
           - between:
               arguments: {min: 0, max: 1}
+      - name: per_1000_words
+        data_type: DOUBLE
+        description: "Non-additive ratio: theme matches per thousand words."
+      - name: theme
+        data_type: VARCHAR
+        description: 'Key: future_terms theme id (family theme).'
+      - name: speeches_using
+        data_type: HUGEINT
+        description: 'Measure, additive: count of speeches using the theme over all parties; adds over years, not themes.'
+      - name: future_using
+        data_type: HUGEINT
+        description: 'Measure, additive: count of future-oriented speeches using the theme over all parties; adds over years, not themes.'
+      - name: matches
+        data_type: HUGEINT
+        description: 'Measure, additive: count of theme pattern matches over all parties.'
+  - name: mart_sweden_future_theses_total
+    description: Year over Swedish-language student-thesis abstracts in DiVA; the denominators of mart_sweden_future_theses.
+    config:
+      contract: {enforced: true}
+    columns:
+      - name: year
+        data_type: INTEGER
+        description: 'Key: publication year of the abstracts, each record at its latest harvested month.'
+        data_tests: [not_null, unique]
+      - name: future_share
+        data_type: DOUBLE
+        description: "Non-additive ratio: future-oriented abstracts / all abstracts. Recompute from the counts; never sum or average."
+        data_tests:
+          - between:
+              arguments: {min: 0, max: 1}
+      - name: abstracts
+        data_type: BIGINT
+        description: 'Measure, additive: count of Swedish-language student-thesis abstracts.'
+      - name: future_abstracts
+        data_type: BIGINT
+        description: 'Measure, additive: count of abstracts matching the future marker.'
+      - name: words
+        data_type: HUGEINT
+        description: 'Measure, additive: words in the abstracts; count of words.'
+  - name: mart_sweden_future_theses
+    config:
+      contract: {enforced: true}
+    description: >-
+      Year × theme over Swedish-language student-thesis abstracts in DiVA, never pooled with the
+      Riksdag; join mart_sweden_future_theses_total on year for the abstracts and words.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [year, theme]
+    columns:
+      - name: future_share_using
+        data_type: DOUBLE
+        description: "Non-additive ratio: future-oriented abstracts using the theme / future-oriented abstracts."
+        data_tests:
+          - between:
+              arguments: {min: 0, max: 1}
+      - name: per_1000_words
+        data_type: DOUBLE
+        description: "Non-additive ratio: theme matches per thousand words."
+      - name: year
+        data_type: INTEGER
+        description: 'Key, references mart_sweden_future_theses_total: publication year of the abstracts.'
+      - name: theme
+        data_type: VARCHAR
+        description: 'Key: future_terms theme id (family theme).'
+      - name: abstracts_using
+        data_type: BIGINT
+        description: 'Measure, additive: count of thesis abstracts using the theme, 0 when none; adds over years, not themes.'
+      - name: future_using
+        data_type: BIGINT
+        description: 'Measure, additive: count of future-oriented abstracts using the theme, 0 when none; adds over years, not themes.'
+      - name: matches
+        data_type: HUGEINT
+        description: 'Measure, additive: count of theme pattern matches in the abstracts, 0 when none.'

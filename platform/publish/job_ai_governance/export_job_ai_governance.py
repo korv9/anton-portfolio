@@ -46,16 +46,16 @@ def dump(name: str, payload) -> Path:
 
 
 def main() -> int:
-    # The bronze views read warehouse/raw by a path relative to platform/, where dbt runs.
-    os.chdir(ROOT / "platform")
     con = duckdb.connect(str(DATABASE), read_only=True)
     OUT.mkdir(parents=True, exist_ok=True)
     terms = rows(con, """select term_id, family, label_en, label_sv, pattern, case_sensitive, description_en
                          from seeds.job_ai_governance_terms order by sort_order""")
     archives = rows(con, """select archive, source_url, sha256, ads, counted_at, dictionary_sha256
-                            from bronze.stg_job_gov_manifests order by archive""")
+                            from gold.dim_job_ai_governance_archive order by archive""")
+    # Every term row of a month carries the month's ads; one per month gives the total.
     totals = con.sql("""select sum(ads) as ads, min(month) as first, max(month) as last
-                        from bronze.stg_job_gov_totals""").df().iloc[0]
+                        from (select distinct month, ads from gold.mart_job_ai_governance_terms
+                              where field_id = 'ALL')""").df().iloc[0]
     monthly = rows(con, """
         select month, term_id, mention_count, ads, share, share_rolling_3m, share_change_yoy_pp
         from gold.mart_job_ai_governance_terms where field_id = 'ALL' order by term_id, month""")
@@ -67,7 +67,7 @@ def main() -> int:
         order by year, field, term_id""")
     examples = rows(con, """
         select term_id, publication_month, headline, occupation, field, matched, context, archive
-        from bronze.stg_job_gov_examples order by term_id, archive desc""")
+        from gold.fct_job_ai_governance_example order by term_id, archive desc""")
     summary = {
         "terms": terms, "archives": archives,
         "ads": int(totals.ads), "first_month": str(totals.first)[:7], "last_month": str(totals.last)[:7],

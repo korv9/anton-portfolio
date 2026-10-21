@@ -2,6 +2,8 @@ version: 2
 
 models:
   - name: mart_sweden_measurement_items
+    config:
+      contract: {enforced: true}
     description: >-
       Politics of Measurement. One row per public SCB table and Kolada key figure, with the
       research domain from seeds/sweden, period range, frequency and finest geography.
@@ -11,33 +13,78 @@ models:
             columns: [catalogue, item_id]
     columns:
       - name: domain_id
+        data_type: VARCHAR
         description: Every subject must be classified; a new SCB subject fails this test.
         data_tests:
           - not_null
           - relationships:
               arguments: {to: ref('research_domains'), field: domain_id}
       - name: geo_resolution
+        data_type: VARCHAR
+        description: 'Attribute: finest geography by the region codes reported: national, county, municipality or subarea; Kolada county or municipality.'
         data_tests:
           - accepted_values:
               arguments: {values: [national, county, municipality, subarea]}
       - name: last_year
+        data_type: INTEGER
         description: SCB only; Kolada's catalogue has no period range.
         data_tests:
           - not_null:
               config:
                 where: "catalogue = 'scb'"
       - name: is_current
+        data_type: BOOLEAN
         description: SCB last period within two years; Kolada a scheduled publication.
         data_tests:
           - not_null
+      - name: catalogue
+        data_type: VARCHAR
+        description: 'Key: source catalogue: scb or kolada.'
+      - name: item_id
+        data_type: VARCHAR
+        description: 'Key: SCB table id or Kolada key figure id (kpi_id).'
+      - name: title
+        data_type: VARCHAR
+        description: 'Attribute: table or key figure title as the catalogue gives it (Swedish).'
+      - name: institution
+        data_type: VARCHAR
+        description: 'Attribute: producing institution; for Kolada the source named in the description, else Kolada (RKA).'
+      - name: subject_code
+        data_type: VARCHAR
+        description: 'Attribute: SCB second-level subject code, or Kolada''s operating area.'
+      - name: subject_label
+        data_type: VARCHAR
+        description: 'Attribute: SCB second-level subject label, or Kolada''s operating area.'
+      - name: frequency
+        data_type: VARCHAR
+        description: 'Attribute: publication frequency: month, quarter or year (other SCB time units lower-cased); Kolada always year.'
+      - name: first_year
+        data_type: INTEGER
+        description: 'Attribute: year of the SCB table''s first period; NULL for Kolada, whose catalogue has no period range.'
+      - name: updated_at
+        data_type: TIMESTAMP
+        description: 'Attribute: when SCB last updated the table; NULL for Kolada.'
 
   - name: mart_sweden_measurement_coverage
     description: Domain × year × finest geography, counting SCB tables whose period range covers the year (upper bound).
+    config:
+      contract: {enforced: true}
     data_tests:
       - unique_combination:
           arguments:
             columns: [domain_id, year, geo_resolution]
     columns:
       - name: tables
+        data_type: BIGINT
+        description: 'Measure, additive: count of public SCB tables whose period range covers the year, an upper bound; adds over domains and geographies, not years.'
         data_tests:
           - not_null
+      - name: domain_id
+        data_type: VARCHAR
+        description: 'Key: research domain id from seeds/sweden (research_domains).'
+      - name: year
+        data_type: BIGINT
+        description: 'Key: calendar year inside the tables'' first to last period.'
+      - name: geo_resolution
+        data_type: VARCHAR
+        description: 'Key: finest geography of the tables: national, county, municipality or subarea.'

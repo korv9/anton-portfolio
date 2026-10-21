@@ -230,3 +230,22 @@ def test_every_ml_stage_that_feeds_dbt_and_every_new_source_is_in_the_weekly_run
     for script in ["eu_ai_act/run.py", "riksdagen/ingest_speeches.py", "symbolic/ingest_corpus.py",
                    "philosophy/ingest_corpus.py", "jobtech/ingest_governance_terms.py"]:
         assert f"platform/ingest/{script}" in weekly, script
+
+
+def test_source_freshness_runs_before_the_build_and_never_fails_it():
+    module = load_cli()
+    calls = []
+
+    class Recorder:
+        dry_run = True
+
+        def __call__(self, argv, cwd=None, ok_exit=()):
+            calls.append((argv, tuple(ok_exit)))
+
+    step = {"select": ["tag:x", "+y"], "freshness": True}
+    module.run_subject("s", {"steps": [{"dbt": step}]}, {"dbt"}, "missing", Recorder())
+    (fresh, fresh_ok), (build, _) = calls
+    assert fresh[3:5] == ["source", "freshness"] and fresh_ok == (1, 2)
+    assert fresh[fresh.index("--select") + 1:][:2] == ["+tag:x", "+y"] and "build" in build
+    flagged = {name for name, s in SUBJECTS.items() for st in s["steps"] if st.get("dbt", {}).get("freshness")}
+    assert flagged == {"ai_act", "ai_politics", "symbolic", "philosophy", "quality"}

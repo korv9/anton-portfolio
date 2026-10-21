@@ -97,11 +97,11 @@ def main() -> int:
     concept_relations = rows(con, """select concept_a, concept_b, relation_type, strength, tension_id, content_type
                                      from gold.mart_concept_relations order by relation_type, strength desc""")
     named = con.sql("""select count(*), min(speech_date), max(speech_date)
-                       from gold.fact_ai_speech where names_ai_act""").fetchone()
+                       from gold.fct_ai_speech where names_ai_act""").fetchone()
     corpus_relations = [{
         "from": "politics", "to": "law", "relation_type": "documented_reference",
         "count": int(named[0]), "first": str(named[1]), "last": str(named[2]),
-        "en": "Riksdag speeches that name the AI Act (gold.fact_ai_speech, names_ai_act).",
+        "en": "Riksdag speeches that name the AI Act (gold.fct_ai_speech, names_ai_act).",
         "sv": "Riksdagsanföranden som nämner AI-förordningen vid namn.",
         "route": "ai-act-politics",
     }]
@@ -121,7 +121,7 @@ def main() -> int:
                                 a.source_url as url_a, a.language as language_a,
                                 b.text as text_b, b.document_title as title_b, b.location as location_b,
                                 b.source_url as url_b, b.language as language_b
-                         from gold.fact_cross_domain_similarity as f
+                         from gold.fct_cross_domain_similarity as f
                          join gold.dim_text_chunk as a on a.chunk_id = f.chunk_a
                          join gold.dim_text_chunk as b on b.chunk_id = f.chunk_b
                          where f.above_baseline

@@ -39,17 +39,20 @@ def rows(connection, sql: str) -> list[tuple]:
 
 def main() -> None:
     connection = duckdb.connect(str(DATABASE), read_only=True)
-    latest_year, last_month = rows(connection, "select * from gold.int_market_periods")[0]
+    latest_year, last_month = rows(connection, """
+        select latest_year, last_month_of_latest_year from gold.mart_market_period""")[0]
     years = [y for (y,) in rows(connection, """
-        select distinct year(month) from gold.mart_market_field_monthly order by 1""")]
+        select distinct year(month) from gold.mart_market_field_monthly_total order by 1""")]
 
     fields = [{"id": f, "name": n, "groups": g} for f, n, g in rows(connection, """
         select field_id, field, occupation_groups from gold.dim_market_field order by field""")]
 
     monthly: dict[str, list] = defaultdict(list)
     for month, field, ads, vacancies in rows(connection, """
-            select strftime(month, '%Y-%m'), field_id, ads, vacancies
-            from gold.mart_market_field_monthly order by month"""):
+            select strftime(month, '%Y-%m'), field_id, ads, vacancies from gold.mart_market_field_monthly
+            union all
+            select strftime(month, '%Y-%m'), 'all', ads, vacancies from gold.mart_market_field_monthly_total
+            order by 1, 2"""):
         monthly[field].append([month, ads, vacancies])
 
     occupations: dict[str, dict] = {}
@@ -64,7 +67,9 @@ def main() -> None:
     regions: dict[str, dict] = {}
     for year, region, field, ads, ads_ytd in rows(connection, """
             select year, region, field_id, ads, ads_ytd from gold.mart_market_region_yearly
-            order by region, year"""):
+            union all
+            select year, region, 'all', ads, ads_ytd from gold.mart_market_region_yearly_total
+            order by region, year, field_id"""):
         r = regions.setdefault(region, {"region": region, "ads": {}, "ytd": {}})
         r["ads"].setdefault(field, {})[year] = ads
         r["ytd"].setdefault(field, {})[year] = ads_ytd
@@ -73,7 +78,11 @@ def main() -> None:
         "employment": defaultdict(int), "hours": defaultdict(int), "experience": defaultdict(int)}))
     for year, field, employment, hours, experience, ads in rows(connection, """
             select year, field_id, employment_type, working_hours, experience_required, ads
-            from gold.mart_market_conditions_yearly"""):
+            from gold.mart_market_conditions_yearly
+            union all
+            select year, 'all', employment_type, working_hours, experience_required, ads
+            from gold.mart_market_conditions_yearly_total
+            order by 1, 2, 3, 4, 5"""):
         c = conditions[year][field]
         c["employment"][employment] += ads
         c["hours"][hours] += ads
@@ -82,10 +91,10 @@ def main() -> None:
     daily: dict[str, list] = defaultdict(list)
     for day, field, ads, vacancies in rows(connection, """
             select strftime(day, '%Y-%m-%d'), field_id, ads, vacancies
-            from gold.mart_market_daily order by day"""):
+            from gold.mart_market_daily order by day, field_id"""):
         daily[field].append([day, ads, vacancies])
     preliminary = [m for (m,) in rows(connection, """
-        select distinct strftime(month, '%Y-%m') from gold.mart_market_field_monthly
+        select distinct strftime(month, '%Y-%m') from gold.mart_market_field_monthly_total
         where preliminary order by 1""")]
 
     archives = [{"archive": a, "source_url": u, "sha256": s, "ads": n}

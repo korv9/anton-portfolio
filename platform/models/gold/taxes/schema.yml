@@ -3,62 +3,343 @@ version: 2
 models:
   - name: fct_tax_revenue
     description: Tax revenue per country, year and tax type (OECD Revenue Statistics), share of GDP and national currency.
+    config:
+      contract: {enforced: true}
     data_tests:
       - unique_combination:
           arguments:
             columns: [country_code, year, tax_code]
+    columns:
+      - name: country_code
+        data_type: VARCHAR
+        description: 'Key, references dim_tax_country: ISO 3166 alpha-3 country code or OECD/EU aggregate code.'
+      - name: year
+        data_type: INTEGER
+        description: 'Key: calendar year of the revenue.'
+      - name: tax_code
+        data_type: VARCHAR
+        description: 'Key, references dim_tax_type: OECD revenue category.'
+      - name: pct_gdp
+        data_type: DOUBLE
+        description: 'Measure, non-additive: revenue as a share of GDP, per cent 0-100; general government, all levels.'
+      - name: amount_national
+        data_type: DOUBLE
+        description: 'Measure, additive: revenue in national currency units (not millions); null when OECD gives no amount.'
+      - name: currency
+        data_type: VARCHAR
+        description: 'Attribute: ISO 4217 code of amount_national''s currency.'
   - name: fct_tax_wedge
     description: Labour taxation per country, year, household type and wage level (OECD Taxing Wages).
+    config:
+      contract: {enforced: true}
     data_tests:
       - unique_combination:
           arguments:
             columns: [country_code, year, household_type, wage_level, spouse_wage_level]
+    columns:
+      - name: country_code
+        data_type: VARCHAR
+        description: 'Key, references dim_tax_country: ISO 3166 alpha-3 country code or OECD/EU aggregate code.'
+      - name: year
+        data_type: INTEGER
+        description: 'Key: calendar year.'
+      - name: household_type
+        data_type: VARCHAR
+        description: 'Key: OECD Taxing Wages household type code (single or couple, with or without children).'
+      - name: wage_level
+        data_type: VARCHAR
+        description: 'Key: OECD code for the principal earner''s wage as a share of the average wage, e.g. AW100.'
+      - name: spouse_wage_level
+        data_type: VARCHAR
+        description: 'Key: OECD code for the spouse''s wage level; _Z or NOEARN_UNEMP when there is no earning spouse.'
+      - name: tax_wedge_pct
+        data_type: DOUBLE
+        description: 'Measure, non-additive: average tax wedge, income tax plus employee and employer contributions less cash benefits over labour cost; per cent.'
+      - name: marginal_tax_wedge_pct
+        data_type: DOUBLE
+        description: 'Measure, non-additive: marginal tax wedge on a rise in the principal earner''s gross earnings; per cent.'
+      - name: income_tax_pct
+        data_type: DOUBLE
+        description: 'Measure, non-additive: average income tax rate (OECD AV_ITR); per cent.'
+      - name: employee_ssc_pct
+        data_type: DOUBLE
+        description: 'Measure, non-additive: average employee social security contribution rate (OECD AV_R_EMPEE_SSC); per cent.'
+      - name: employer_ssc_pct
+        data_type: DOUBLE
+        description: 'Measure, non-additive: average employer social security contribution rate (OECD AV_R_EMPER_SSC); per cent.'
+      - name: net_personal_average_rate_pct
+        data_type: DOUBLE
+        description: 'Measure, non-additive: net personal average tax rate, income tax and employee contributions less cash benefits over gross earnings; per cent.'
+      - name: gross_earnings_usd_ppp
+        data_type: DOUBLE
+        description: 'Measure, non-additive: household gross earnings before taxes, a level per household; USD at purchasing power parity.'
+      - name: net_income_usd_ppp
+        data_type: DOUBLE
+        description: 'Measure, non-additive: household net income after taxes and benefits, a level per household; USD at purchasing power parity.'
+      - name: labour_cost_usd_ppp
+        data_type: DOUBLE
+        description: 'Measure, non-additive: gross labour cost (earnings plus employer contributions), a level per household; USD at purchasing power parity.'
+      - name: gross_earnings_national
+        data_type: DOUBLE
+        description: 'Measure, non-additive: household gross earnings before taxes, a level per household; national currency.'
   - name: fct_municipal_tax_rate
     description: Local income tax, burial and church fee rates per parish and year (Skatteverket).
+    config:
+      contract: {enforced: true}
     data_tests:
       - unique_combination:
           arguments:
             columns: [year, parish_code, parish_name]
+    columns:
+      - name: church_rate
+        data_type: DOUBLE
+        description: 'Church fee for members of the Church of Sweden, in per cent of taxable income.'
+      - name: burial_rate
+        data_type: DOUBLE
+        description: 'Burial fee, in per cent of taxable income.'
+      - name: regional_rate
+        data_type: DOUBLE
+        description: 'Regional income tax, in per cent of taxable income.'
+      - name: municipal_rate
+        data_type: DOUBLE
+        description: 'Municipal income tax, in per cent of taxable income.'
+      - name: local_income_tax_rate
+        data_type: DOUBLE
+        description: 'municipal_rate + regional_rate, in per cent of taxable income.'
+      - name: municipality_code
+        data_type: VARCHAR
+        description: 'SCB four-digit municipality code (kommunkod), as in dim_region.region_code.'
+        data_tests:
+          - relationships:
+              arguments: {to: ref('dim_municipality'), field: municipality_code}
+      - name: year
+        data_type: INTEGER
+        description: 'Key: income year the rates apply to.'
+      - name: municipality_name
+        data_type: VARCHAR
+        description: 'Attribute: municipality name as Skatteverket gives it.'
+      - name: parish_code
+        data_type: VARCHAR
+        description: 'Key: Skatteverket parish code (församlingskod); its first four digits are the municipality code.'
+      - name: parish_name
+        data_type: VARCHAR
+        description: 'Key: parish (församling) name.'
   - name: dim_tax_type
+    config:
+      contract: {enforced: true}
     columns:
       - name: tax_code
+        data_type: VARCHAR
+        description: 'Key: OECD Revenue Statistics category code, e.g. _T (total) or T_1100.'
         data_tests: [unique, not_null]
+      - name: name_sv
+        data_type: VARCHAR
+        description: 'Attribute: tax type name in Swedish.'
+      - name: name_en
+        data_type: VARCHAR
+        description: 'Attribute: tax type name in English.'
+      - name: parent_code
+        data_type: VARCHAR
+        description: 'Attribute: tax_code of the parent category; null for the total.'
+      - name: is_headline
+        data_type: BOOLEAN
+        description: 'Attribute: true for the tax types the site shows by default.'
+      - name: note_sv
+        data_type: VARCHAR
+        description: 'Attribute: note in Swedish on what the category includes; null when none.'
   - name: dim_tax_country
+    config:
+      contract: {enforced: true}
     columns:
       - name: country_code
+        data_type: VARCHAR
+        description: 'Key: ISO 3166 alpha-3 country code, or the code of the OECD or EU average.'
         data_tests: [unique, not_null]
+      - name: name_sv
+        data_type: VARCHAR
+        description: 'Attribute: country or aggregate name in Swedish.'
+      - name: name_en
+        data_type: VARCHAR
+        description: 'Attribute: country or aggregate name in English.'
+      - name: is_nordic
+        data_type: BOOLEAN
+        description: 'Attribute: true for the Nordic countries.'
+      - name: is_eu
+        data_type: BOOLEAN
+        description: 'Attribute: true for EU member states.'
   - name: dim_tax_decision
     description: Riksdag decisions that changed taxes from 2016, with bill, report and origin.
+    config:
+      contract: {enforced: true}
     columns:
       - name: decision_key
+        data_type: VARCHAR
+        description: 'Key: slug naming the decision and its year, e.g. jsa-2007.'
         data_tests: [unique, not_null]
       - name: direction
+        data_type: VARCHAR
+        description: 'Attribute: whether the decision made the tax lower or higher.'
         data_tests:
           - accepted_values:
               arguments:
                 values: [lower, higher]
       - name: origin
+        data_type: VARCHAR
+        description: 'Attribute: where the decided proposal came from: government, committee or reservation.'
         data_tests:
           - accepted_values:
               arguments:
                 values: [government, committee, reservation]
       - name: bill_title
+        data_type: VARCHAR
         description: Empty only for decisions taken on the committee's proposal or a reservation.
+      - name: in_force
+        data_type: DATE
+        description: 'Attribute: date the change took effect, ISO date.'
+      - name: in_force_year
+        data_type: BIGINT
+        description: 'Attribute: calendar year of in_force.'
+      - name: component
+        data_type: VARCHAR
+        description: 'Attribute: tax component changed, e.g. in_work_credit, vat, fuel; several are joined with |.'
+      - name: title_sv
+        data_type: VARCHAR
+        description: 'Attribute: short description of the change in Swedish.'
+      - name: title_en
+        data_type: VARCHAR
+        description: 'Attribute: short description of the change in English.'
+      - name: bill
+        data_type: VARCHAR
+        description: 'Attribute: government bill (proposition) number, e.g. 2006/07:1; null when decided on the committee''s proposal or a reservation.'
+      - name: bill_section
+        data_type: VARCHAR
+        description: 'Attribute: section of the bill holding the proposal, e.g. 12.1.3; null when not known or no bill.'
+      - name: bill_date
+        data_type: DATE
+        description: 'Attribute: date of the bill, ISO date; null when there is no bill or it is not in fct_bill.'
+      - name: department
+        data_type: VARCHAR
+        description: 'Attribute: ministry that submitted the bill; null when there is no bill.'
+      - name: report
+        data_type: VARCHAR
+        description: 'Attribute: committee report the Riksdag decided in, session:designation, e.g. 2006/07:FiU1.'
+      - name: report_session
+        data_type: VARCHAR
+        description: 'Attribute: riksmöte part of the report, e.g. 2006/07.'
+      - name: report_designation
+        data_type: VARCHAR
+        description: 'Attribute: committee designation part of the report, e.g. FiU1.'
+      - name: petrol_sek_per_litre
+        data_type: DOUBLE
+        description: 'Attribute: change in tax on petrol for a fuel decision, SEK per litre excluding VAT, negative is a cut; null for other taxes.'
+      - name: diesel_sek_per_litre
+        data_type: DOUBLE
+        description: 'Attribute: change in tax on diesel for a fuel decision, SEK per litre excluding VAT, negative is a cut; null for other taxes.'
+      - name: months
+        data_type: INTEGER
+        description: 'Attribute: months of the year a fuel tax change applied, 12 for a full year; null for other taxes.'
+      - name: source_url
+        data_type: VARCHAR
+        description: 'Attribute: Riksdagen document URL for the decision''s bill or report.'
   - name: fct_tax_decision_vote
     description: Each party's vote on each tax decision, in the first substantive roll call of its report.
+    config:
+      contract: {enforced: true}
     data_tests:
       - unique_combination:
           arguments:
             columns: [decision_key, party]
+    columns:
+      - name: session
+        data_type: VARCHAR
+        description: 'Foreign key to dim_parliament_session: riksmöte of the roll call.'
+        data_tests:
+          - relationships: {arguments: {to: ref('dim_parliament_session'), field: session}}
+      - name: decision_key
+        data_type: VARCHAR
+        description: 'Key, references dim_tax_decision: the tax decision.'
+      - name: roll_call_id
+        data_type: VARCHAR
+        description: 'Attribute: id of the first substantive roll call in the decision''s committee report.'
+      - name: point
+        data_type: VARCHAR
+        description: 'Attribute: report point the roll call decided; for FiU1 the budget framework vote, taxes included.'
+      - name: vote_date
+        data_type: DATE
+        description: 'Attribute: date of the roll call, ISO date.'
+      - name: outcome
+        data_type: VARCHAR
+        description: 'Attribute: result of the roll call: yes, no or tie, by more yes or no votes.'
+      - name: government_won
+        data_type: BOOLEAN
+        description: 'Attribute: true when the prime minister''s party''s position matched the outcome; null when that party did not vote yes or no.'
+      - name: party
+        data_type: VARCHAR
+        description: 'Key, references dim_party: party code.'
+      - name: position
+        data_type: VARCHAR
+        description: 'Attribute: party''s plurality position: yes, no, abstain, split, or absent when all members were absent.'
+      - name: role
+        data_type: VARCHAR
+        description: 'Attribute: party''s role on the vote date: government, agreement (written agreement with the government) or opposition.'
   - name: fct_tax_decision_study
     description: The studies a tax decision's bill names as its preparation.
+    config:
+      contract: {enforced: true}
     data_tests:
       - unique_combination:
           arguments:
             columns: [decision_key, study_key]
+    columns:
+      - name: decision_key
+        data_type: VARCHAR
+        description: 'Key, references dim_tax_decision: the tax decision.'
+      - name: study_key
+        data_type: VARCHAR
+        description: 'Key, references dim_study: a study the decision''s bill names as preparation.'
+      - name: context
+        data_type: VARCHAR
+        description: 'Attribute: the sentence in the bill that names the study.'
   - name: fct_household_vat
     description: Estimated VAT per household type and spending group (SCB HUT and VAT rates).
+    config:
+      contract: {enforced: true}
     data_tests:
       - unique_combination:
           arguments:
             columns: [household_type, year, spending_group]
+
+    columns:
+      - name: vat_rate
+        data_type: DOUBLE
+        description: 'VAT rate in per cent (25 = 25 %).'
+      - name: household_type
+        data_type: VARCHAR
+        description: 'Key: SCB HUT household type code, e.g. E90 for all households.'
+      - name: household_sv
+        data_type: VARCHAR
+        description: 'Attribute: household type name in Swedish.'
+      - name: household_en
+        data_type: VARCHAR
+        description: 'Attribute: household type name in English.'
+      - name: year
+        data_type: INTEGER
+        description: 'Key: survey year of the spending figures.'
+      - name: spending_group
+        data_type: VARCHAR
+        description: 'Key: SCB HUT code of the group of goods and services.'
+      - name: name_sv
+        data_type: VARCHAR
+        description: 'Attribute: spending group name in Swedish.'
+      - name: name_en
+        data_type: VARCHAR
+        description: 'Attribute: spending group name in English.'
+      - name: sek_per_household
+        data_type: DOUBLE
+        description: 'Measure, additive: spending on the group per household in the year, prices including VAT; SEK.'
+      - name: vat_sek
+        data_type: DOUBLE
+        description: 'Measure, additive: estimated VAT in that spending, sek_per_household * rate / (100 + rate); SEK per household per year.'
+      - name: note_sv
+        data_type: VARCHAR
+        description: 'Attribute: note in Swedish on the rate, e.g. a later rate change; null when none.'

@@ -29,4 +29,4 @@ select
     details,
     evaluated_at::timestamptz as evaluated_at,
     'derived' as content_type
-from {{ source('quality_features', 'checks') }}
+from {{ ref('stg_quality_checks') }}

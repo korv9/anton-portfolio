@@ -3,20 +3,46 @@ version: 2
 models:
   - name: mart_ai_governance_timeline
     description: Month × series of AI in the Riksdag and in job ads, for one timeline with the AI Act's milestones (derived; temporal overlap only).
+    config:
+      contract: {enforced: true}
     data_tests:
       - unique_combination:
           arguments:
             columns: [series_id, month]
     columns:
       - name: series_id
+        data_type: VARCHAR
+        description: 'Key: the series, one of riksdag_ai, riksdag_ai_act, jobs_ai_any, jobs_ai_act, jobs_ai_governance (seeds/cross_domain/ai_governance_series.csv).'
         data_tests:
           - relationships:
               arguments: {to: ref('ai_governance_series'), field: series_id}
       - name: share
+        data_type: DOUBLE
+        description: 'numerator / denominator. Fraction from 0 to 1, not per cent.'
         data_tests:
           - between:
               arguments: {min: 0, max: 1}
       - name: share_rolling_3m
+        data_type: DOUBLE
+        description: 'Measure, non-additive: sum of numerator over sum of denominator for this and the two preceding rows of the series; fraction 0-1.'
         data_tests:
           - between:
               arguments: {min: 0, max: 1}
+      - name: domain
+        data_type: VARCHAR
+        description: 'Attribute: source domain of the series, politics or jobs.'
+      - name: month
+        data_type: DATE
+        description: 'Key: calendar month, as the date of its first day.'
+      - name: numerator
+        data_type: HUGEINT
+        description: 'Measure, additive: Riksdag speeches or job ads matching the series in the month; count of speeches or ads. Never add across series.'
+      - name: denominator
+        data_type: HUGEINT
+        description: 'Measure, additive: all Riksdag speeches or all job ads in the month; count of speeches or ads.'
+      - name: source_model
+        data_type: VARCHAR
+        description: 'Attribute: the gold model the counts come from, mart_ai_politics_monthly or mart_job_ai_governance_terms.'
+      - name: content_type
+        data_type: VARCHAR
+        description: 'Attribute: content kind of the row, always ''derived''.'

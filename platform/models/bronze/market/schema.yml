@@ -1,0 +1,14 @@
+version: 2
+
+models:
+  - name: stg_market_daily
+    description: Ads and vacancies per publication day and occupation field from JobTech's stream.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [publication_date, field_id]
+  - name: stg_market_manifests
+    description: One record per JobTech archive counted.
+    columns:
+      - name: archive
+        data_tests: [unique, not_null]

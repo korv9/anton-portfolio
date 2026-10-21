@@ -4,7 +4,7 @@
 -- speech–Act pairs from the same run (run.json). Semantic similarity only: related language,
 -- not influence, response or shared meaning. Derived.
 with run as (
-    select model, act_version, baseline_random_pairs.p95 as chance_p95 from {{ source('ai_politics_features', 'run') }}
+    select model, act_version, baseline_random_pairs.p95 as chance_p95 from {{ ref('stg_ai_politics_similarity_run') }}
 )
 
 select
@@ -26,8 +26,8 @@ select
     run.model,
     run.act_version,
     'derived' as content_type
-from {{ source('ai_politics_features', 'article_to_speech') }} as s
+from {{ ref('stg_ai_politics_article_to_speech') }} as s
 cross join run
-join {{ source('ai_politics_features', 'act_passages') }} as a on a.act_passage_id = s.act_passage_id
+join {{ ref('stg_ai_politics_act_passages') }} as a on a.act_passage_id = s.act_passage_id
 join {{ ref('int_ai_speech_paragraphs') }} as p on p.speech_id = s.speech_id and p.paragraph = s.paragraph
-join {{ ref('fact_ai_speech') }} as f on f.speech_id = s.speech_id
+join {{ ref('fct_ai_speech') }} as f on f.speech_id = s.speech_id

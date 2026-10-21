@@ -3,54 +3,292 @@ version: 2
 models:
   - name: dim_philosophy_document
     description: The works with author, year, tradition and translator as first-class metadata.
+    config:
+      contract: {enforced: true}
     columns:
       - name: document_id
+        data_type: VARCHAR
+        description: 'Key: identifier of the philosophy work, e.g. plato-republic.'
         data_tests: [unique, not_null]
       - name: passages
+        data_type: BIGINT
+        description: 'Measure, additive: count of passages cut from the author''s own text.'
         data_tests: [not_null]
+      - name: title
+        data_type: VARCHAR
+        description: 'Attribute: title of the work.'
+      - name: author
+        data_type: VARCHAR
+        description: 'Attribute: author of the work.'
+      - name: year
+        data_type: HUGEINT
+        description: 'Attribute: approximate year of the work; negative means BCE.'
+      - name: period
+        data_type: VARCHAR
+        description: 'Attribute: period: ancient, early-modern, enlightenment or nineteenth-century.'
+      - name: tradition
+        data_type: VARCHAR
+        description: 'Attribute: philosophical tradition, e.g. classical-greek, empiricist or stoic.'
+      - name: area
+        data_type: VARCHAR
+        description: 'Attribute: main area: epistemology, ethics, existential or political.'
+      - name: original_language
+        data_type: VARCHAR
+        description: 'Attribute: language the work was written in; ISO 639 code, grc for Ancient Greek.'
+      - name: text_language
+        data_type: VARCHAR
+        description: 'Attribute: language of the text read, always en (English translation or original).'
+      - name: translator
+        data_type: VARCHAR
+        description: 'Attribute: translator named in the Gutenberg file; null when the file names none or the text is the original.'
+      - name: translator_note
+        data_type: VARCHAR
+        description: 'Attribute: note explaining a missing translator; null when not needed.'
+      - name: genre
+        data_type: VARCHAR
+        description: 'Attribute: form of the work, e.g. dialogue, treatise, essay or aphorisms.'
+      - name: gutenberg_id
+        data_type: BIGINT
+        description: 'Attribute: Project Gutenberg ebook number.'
+      - name: source_url
+        data_type: VARCHAR
+        description: 'Attribute: Project Gutenberg URL of the plain-text file.'
+      - name: source_hash
+        data_type: VARCHAR
+        description: 'Attribute: SHA-256 of the latest GET fetch of the text file; null if no fetch is logged.'
+      - name: fetched_at
+        data_type: TIMESTAMP WITH TIME ZONE
+        description: 'Attribute: time of the latest GET fetch of the text file; timestamp with time zone.'
+      - name: words
+        data_type: HUGEINT
+        description: 'Measure, additive: count of words over all passages of the work.'
   - name: dim_tension
     description: Analytical tensions with the anchor sentence of each pole (interpretation).
+    config:
+      contract: {enforced: true}
     columns:
       - name: tension_id
+        data_type: VARCHAR
+        description: 'Key: identifier of the tension, e.g. freedom_control.'
         data_tests: [unique, not_null]
+      - name: pole_a
+        data_type: VARCHAR
+        description: 'Attribute: name of the first pole, e.g. freedom.'
+      - name: pole_b
+        data_type: VARCHAR
+        description: 'Attribute: name of the second pole, e.g. control.'
+      - name: label_en
+        data_type: VARCHAR
+        description: 'Attribute: English display label, pole A ↔ pole B.'
+      - name: label_sv
+        data_type: VARCHAR
+        description: 'Attribute: Swedish display label, pole A ↔ pole B.'
+      - name: anchor_a
+        data_type: VARCHAR
+        description: 'Attribute: English anchor sentence that pole A is embedded from.'
+      - name: anchor_b
+        data_type: VARCHAR
+        description: 'Attribute: English anchor sentence that pole B is embedded from.'
+      - name: description_en
+        data_type: VARCHAR
+        description: 'Attribute: English description of what the lens asks of a passage.'
+      - name: description_sv
+        data_type: VARCHAR
+        description: 'Attribute: Swedish description of what the lens asks of a passage.'
+      - name: status
+        data_type: VARCHAR
+        description: 'Attribute: editorial status, currently always lens.'
+      - name: sort_order
+        data_type: INTEGER
+        description: 'Attribute: display order of the tension; integer from 1.'
+      - name: content_type
+        data_type: VARCHAR
+        description: 'Attribute: content type of the row, always ''interpretation''.'
   - name: mart_philosophy_atlas
     description: Passage × map variant with position and cluster (derived).
+    config:
+      contract: {enforced: true}
     data_tests:
       - unique_combination:
           arguments:
             columns: [variant, passage_id]
     columns:
       - name: variant
+        data_type: VARCHAR
+        description: 'Key: map variant: baseline (embeddings as they are) or author_centered (each work''s mean vector removed).'
         data_tests:
           - accepted_values:
               arguments:
                 values: [baseline, author_centered]
+      - name: passage_id
+        data_type: VARCHAR
+        description: 'Key: passage identifier, document_id and zero-based passage index.'
+      - name: document_id
+        data_type: VARCHAR
+        description: 'Foreign key to dim_philosophy_document: the work the passage comes from.'
+      - name: author
+        data_type: VARCHAR
+        description: 'Attribute: author of the work.'
+      - name: title
+        data_type: VARCHAR
+        description: 'Attribute: title of the work.'
+      - name: tradition
+        data_type: VARCHAR
+        description: 'Attribute: philosophical tradition of the work.'
+      - name: period
+        data_type: VARCHAR
+        description: 'Attribute: period of the work.'
+      - name: year
+        data_type: HUGEINT
+        description: 'Attribute: approximate year of the work; negative means BCE.'
+      - name: translator
+        data_type: VARCHAR
+        description: 'Attribute: translator of the work; null when the file names none.'
+      - name: position
+        data_type: BIGINT
+        description: 'Attribute: zero-based index of the passage within the work''s own text.'
+      - name: text
+        data_type: VARCHAR
+        description: 'Attribute: passage text, verbatim from the cleaned work.'
+      - name: x
+        data_type: DOUBLE
+        description: 'Attribute: horizontal map coordinate from 2-D UMAP; unitless.'
+      - name: y
+        data_type: DOUBLE
+        description: 'Attribute: vertical map coordinate from 2-D UMAP; unitless.'
+      - name: cluster_id
+        data_type: BIGINT
+        description: 'Attribute: HDBSCAN cluster number within the variant; -1 is noise. Numbered, never named.'
+      - name: probability
+        data_type: DOUBLE
+        description: 'Measure, non-additive: HDBSCAN membership probability for the passage''s cluster; 0-1, 0 for noise.'
+      - name: is_noise
+        data_type: BOOLEAN
+        description: 'Attribute: true when cluster_id is -1.'
   - name: mart_philosophy_clusters
     description: Clusters with composition, representatives, distinctive words and review status.
+    config:
+      contract: {enforced: true}
     data_tests:
       - unique_combination:
           arguments:
             columns: [variant, cluster_id]
     columns:
       - name: review_status
+        data_type: VARCHAR
+        description: 'Attribute: review status: unreviewed unless a person reviewed the fingerprint (candidate, reviewed, rejected).'
         data_tests:
           - accepted_values:
               arguments:
                 values: [unreviewed, candidate, reviewed, rejected]
       - name: largest_work_share
+        data_type: DOUBLE
+        description: 'Measure, non-additive: passages from the cluster''s largest work / size; share 0-1.'
         data_tests:
           - between:
               arguments: {min: 0, max: 1}
+      - name: variant
+        data_type: VARCHAR
+        description: 'Key: map variant: baseline or author_centered.'
+      - name: cluster_id
+        data_type: BIGINT
+        description: 'Key: HDBSCAN cluster number within the variant; noise is not a row.'
+      - name: size
+        data_type: BIGINT
+        description: 'Measure, additive: count of passages in the cluster.'
+      - name: fingerprint
+        data_type: VARCHAR
+        description: 'Attribute: first 16 hex characters of the SHA-256 of the cluster''s sorted passage ids; identity across runs.'
+      - name: works
+        data_type: VARCHAR
+        description: 'Attribute: JSON object of document_id to passage count, most common first.'
+      - name: traditions
+        data_type: VARCHAR
+        description: 'Attribute: JSON object of tradition to passage count, most common first.'
+      - name: work_count
+        data_type: BIGINT
+        description: 'Measure, non-additive: distinct count of works with passages in the cluster.'
+      - name: work_entropy
+        data_type: DOUBLE
+        description: 'Measure, non-additive: entropy of passages over all sampled works, normalised; 0 (one work) to 1 (even).'
+      - name: is_cross_work
+        data_type: BOOLEAN
+        description: 'Attribute: true when the cluster has at least three works and none above half of it.'
+      - name: representatives
+        data_type: VARCHAR
+        description: 'Attribute: JSON list of passage ids nearest the cluster centre.'
+      - name: distinctive_terms
+        data_type: VARCHAR
+        description: 'Attribute: JSON list of the cluster''s most distinctive words by class-based TF-IDF; not a label.'
+      - name: review_label
+        data_type: VARCHAR
+        description: 'Attribute: label written by a person reviewing the cluster; null while unreviewed, never generated.'
+      - name: content_type
+        data_type: VARCHAR
+        description: 'Attribute: content type of the row, always ''derived''.'
   - name: mart_philosophy_tensions
     description: Work × tension, distribution of positions along the lens (derived).
+    config:
+      contract: {enforced: true}
     data_tests:
       - unique_combination:
           arguments:
             columns: [tension_id, document_id]
     columns:
       - name: tension_id
+        data_type: VARCHAR
+        description: 'Key, references dim_tension: the tension.'
         data_tests:
           - relationships:
               arguments: {to: ref('dim_tension'), field: tension_id}
+      - name: document_id
+        data_type: VARCHAR
+        description: 'Key, references dim_philosophy_document: the work.'
+      - name: passages
+        data_type: BIGINT
+        description: 'Measure, additive: count of the work''s sampled passages scored on the tension.'
+      - name: mean_position
+        data_type: DOUBLE
+        description: 'Measure, non-additive: mean position (similarity to pole A minus pole B) over the work''s passages.'
+      - name: q1
+        data_type: DOUBLE
+        description: 'Measure, non-additive: 25th percentile of position over the work''s passages.'
+      - name: median
+        data_type: DOUBLE
+        description: 'Measure, non-additive: median position over the work''s passages.'
+      - name: q3
+        data_type: DOUBLE
+        description: 'Measure, non-additive: 75th percentile of position over the work''s passages.'
+      - name: content_type
+        data_type: VARCHAR
+        description: 'Attribute: content type of the row, always ''derived''.'
   - name: mart_philosophy_tension_poles
     description: The passages nearest each pole of each tension.
+    config:
+      contract: {enforced: true}
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [tension_id, pole, rank]
+    columns:
+      - name: tension_id
+        data_type: VARCHAR
+        description: 'Key, references dim_tension: the tension.'
+      - name: pole
+        data_type: VARCHAR
+        description: 'Key: which pole the passage is near: a (largest positions) or b (smallest positions).'
+      - name: rank
+        data_type: BIGINT
+        description: 'Key: rank of the passage towards the pole across all works; 1 to 5.'
+      - name: passage_id
+        data_type: VARCHAR
+        description: 'Attribute: passage identifier, document_id and zero-based passage index.'
+      - name: document_id
+        data_type: VARCHAR
+        description: 'Foreign key to dim_philosophy_document: the work the passage comes from.'
+      - name: position
+        data_type: DOUBLE
+        description: 'Measure, non-additive: cosine similarity to pole A minus to pole B; positive leans to A.'
+      - name: text
+        data_type: VARCHAR
+        description: 'Attribute: passage text, verbatim.'

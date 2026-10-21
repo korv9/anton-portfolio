@@ -232,7 +232,7 @@ def test_tax_build_selects_parents_and_does_not_bypass_failed_gate():
     steps = yaml.safe_load((PLATFORM / "pipeline.yml").read_text(encoding="utf-8"))["subjects"]["taxes"]["steps"]
     # The gate is the first step, so a failure stops the subject before any fetch or build.
     assert steps[0] == {"ingest": "python platform/ingest/taxes/require_parliament.py"}
-    assert [step["dbt"]["select"] for step in steps if "dbt" in step] == [["+tag:taxes"]]
+    assert [step["dbt"]["select"] for step in steps if "dbt" in step] == [["+tag:taxes", "+dim_municipality"]]
 
 
 def test_tax_requires_verified_complete_preparation_and_history(repair):

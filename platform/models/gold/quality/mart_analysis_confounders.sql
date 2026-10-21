@@ -8,4 +8,4 @@ select
     mitigation,
     remaining_risk,
     'interpretation' as content_type
-from {{ source('quality_features', 'confounders') }}
+from {{ ref('stg_quality_confounders') }}

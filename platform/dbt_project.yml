@@ -52,9 +52,15 @@ models:
         +tags: [sweden_language]
       sweden_futures:
         +tags: [sweden_futures]
+      concepts:
+        +tags: [concepts]
+      quality:
+        +tags: [quality]
     silver:
       +materialized: view
       +schema: silver
+      market:
+        +tags: [market]
       philosophy:
         +tags: [philosophy]
       ai_politics:

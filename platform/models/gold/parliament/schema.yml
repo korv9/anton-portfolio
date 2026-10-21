@@ -4,6 +4,9 @@ models:
   - name: fct_prime_minister_ballot
     description: Source-backed appointment ballots and the 2018 incumbent check; selected verified coverage since 2014.
     columns:
+      - name: candidate_party
+        data_tests:
+          - relationships: {arguments: {to: ref('dim_party'), field: party}}
       - name: vote_key
         data_tests: [unique, not_null]
       - name: source_url
@@ -16,6 +19,9 @@ models:
           arguments:
             columns: [vote_key, party]
     columns:
+      - name: party
+        data_tests:
+          - relationships: {arguments: {to: ref('dim_party'), field: party}}
       - name: vote_key
         data_tests:
           - relationships: {arguments: {to: ref('fct_prime_minister_ballot'), field: vote_key}}
@@ -30,33 +36,155 @@ models:
       - unique_combination:
           arguments:
             columns: [session, government_key, issue_key, party_a, party_b]
+            # No government for roll calls without a date; no policy area for committee 'ovrigt'.
+            nullable: [government_key, issue_key]
+    columns:
+      - name: party_a
+        data_tests:
+          - relationships: {arguments: {to: ref('dim_party'), field: party}}
+      - name: party_b
+        data_tests:
+          - relationships: {arguments: {to: ref('dim_party'), field: party}}
+      - name: session
+        data_tests:
+          - relationships: {arguments: {to: ref('dim_parliament_session'), field: session}}
+      - name: government_key
+        data_tests:
+          - relationships: {arguments: {to: ref('dim_government'), field: government_key}}
   - name: mart_party_cohesion_context
     description: Distinct member-weighted unity, participation and PM-party alignment denominators.
     data_tests:
       - unique_combination:
           arguments:
             columns: [session, government_key, issue_key, party]
+            # No government for roll calls without a date; no policy area for committee 'ovrigt'.
+            nullable: [government_key, issue_key]
+    columns:
+      - name: party
+        data_tests:
+          - relationships: {arguments: {to: ref('dim_party'), field: party}}
+      - name: session
+        data_tests:
+          - relationships: {arguments: {to: ref('dim_parliament_session'), field: session}}
+      - name: government_key
+        data_tests:
+          - relationships: {arguments: {to: ref('dim_government'), field: government_key}}
   - name: dim_government
     description: Governments since 1991, from seeds/parliament/governments.csv with a source per row.
+    config:
+      contract: {enforced: true}
     columns:
+      - name: prime_minister_party
+        data_type: VARCHAR
+        description: 'Foreign key to dim_party: the prime minister''s party; its roll-call position counts as the government''s.'
+        data_tests:
+          - relationships: {arguments: {to: ref('dim_party'), field: party}}
       - name: government_key
+        data_type: VARCHAR
+        description: 'Key: short lower-case name of the government, such as bildt or kristersson; from seeds/parliament/governments.csv.'
         data_tests: [unique, not_null]
+      - name: government_name
+        data_type: VARCHAR
+        description: 'Attribute: Swedish name of the government, such as Regeringen Kristersson.'
+      - name: prime_minister
+        data_type: VARCHAR
+        description: 'Attribute: full name of the prime minister.'
+      - name: government_parties
+        data_type: VARCHAR[]
+        description: 'Attribute: list of the parties in government, by abbreviation.'
+      - name: start_date
+        data_type: DATE
+        description: 'Attribute: date the government took office; ISO date.'
+      - name: end_date
+        data_type: DATE
+        description: 'Attribute: date the government left office, the next one''s start date; null for the sitting government.'
+      - name: agreement_name
+        data_type: VARCHAR
+        description: 'Attribute: name of the written agreement with parties outside government, such as Tidöavtalet; null when there was none.'
+      - name: agreement_parties
+        data_type: VARCHAR[]
+        description: 'Attribute: list of parties in a written agreement with the government but not in it; null when there was none.'
+      - name: status_note
+        data_type: VARCHAR
+        description: 'Attribute: Swedish note on the government''s current status, such as a caretaker government; null for most rows.'
+      - name: source_url
+        data_type: VARCHAR
+        description: 'Attribute: URL of the source for the row.'
+      - name: is_current
+        data_type: BOOLEAN
+        description: 'Attribute: true when end_date is null, the government now in office.'
   - name: dim_committee
     columns:
       - name: committee_key
         data_tests: [unique, not_null]
   - name: dim_issue
+    config:
+      contract: {enforced: true}
     columns:
       - name: issue_key
+        data_type: VARCHAR
+        description: 'Key: short Swedish key of the policy issue, such as arbete or bostad; from seeds/parliament/issues.csv.'
         data_tests: [unique, not_null]
+      - name: issue_name_sv
+        data_type: VARCHAR
+        description: 'Attribute: Swedish name of the issue.'
+      - name: issue_name_en
+        data_type: VARCHAR
+        description: 'Attribute: English name of the issue.'
+      - name: summary_sv
+        data_type: VARCHAR
+        description: 'Attribute: one-sentence Swedish summary of what the issue covers.'
+      - name: expenditure_areas
+        data_type: INTEGER[]
+        description: 'Attribute: list of budget expenditure area numbers (utgiftsområden) the issue decides.'
+      - name: welfare_indicators
+        data_type: VARCHAR[]
+        description: 'Attribute: list of welfare indicator keys read beside the issue; empty when none. Not a causal claim.'
+      - name: committees
+        data_type: VARCHAR[]
+        description: 'Attribute: list of committee codes that handle the issue, standing committees first, joint committees after.'
   - name: dim_parliament_session
     description: Riksmöten with roll calls, the election each followed and the government at its first roll call.
+    config:
+      contract: {enforced: true}
     columns:
       - name: session
+        data_type: VARCHAR
+        description: 'Key: riksmöte, written ''1993/94'' or ''1999/2000''; only sessions with roll calls.'
         data_tests: [unique, not_null]
       - name: government_key
-        data_tests: [not_null]
+        data_type: VARCHAR
+        description: 'Foreign key to dim_government: the government in office on the session''s first roll call.'
+        data_tests:
+          - not_null
+          - relationships: {arguments: {to: ref('dim_government'), field: government_key}}
+      - name: start_year
+        data_type: INTEGER
+        description: 'Attribute: the year the session began, the first four characters of session.'
+      - name: first_vote
+        data_type: DATE
+        description: 'Attribute: date of the session''s first roll call; ISO date.'
+      - name: last_vote
+        data_type: DATE
+        description: 'Attribute: date of the session''s last roll call; ISO date.'
+      - name: roll_calls
+        data_type: BIGINT
+        description: 'Measure, additive: count of roll calls in the session, motivfrågan roll calls included, test votes left out.'
+      - name: election_year
+        data_type: INTEGER
+        description: 'Attribute: year of the latest Riksdag election in fct_election on or before start_year.'
+      - name: government_name
+        data_type: VARCHAR
+        description: 'Attribute: name of that government, from dim_government.'
+      - name: government_parties
+        data_type: VARCHAR[]
+        description: 'Attribute: list of parties in that government, from dim_government.'
+      - name: agreement_parties
+        data_type: VARCHAR[]
+        description: 'Attribute: list of parties in a written agreement with that government; null when there was none.'
   - name: fct_roll_call
+    config:
+      contract: {enforced: true}
     description: >-
       Every roll call since 1993/94. Grain: session x roll_call_id (vote id, plus ':motiv' for
       a roll call on the reasons for a decision rather than the decision itself).
@@ -66,31 +194,253 @@ models:
             columns: [session, roll_call_id]
     columns:
       - name: committee_key
+        data_type: VARCHAR
+        description: 'Foreign key to dim_committee: the designation''s leading letters lower-cased, or ''ovrigt'' when it names no committee.'
         data_tests:
           - relationships: {arguments: {to: ref('dim_committee'), field: committee_key}, config: {severity: warn}}
       - name: government_key
+        data_type: VARCHAR
         description: The government on the roll call's date. NULL where the source gives no date.
         data_tests:
           - not_null: {config: {where: "vote_date is not null"}}
+          - relationships: {arguments: {to: ref('dim_government'), field: government_key}}
+      - name: session
+        data_type: VARCHAR
+        description: 'Key, references dim_parliament_session: riksmöte, written ''1993/94'' or ''1999/2000''.'
+        data_tests:
+          - relationships: {arguments: {to: ref('dim_parliament_session'), field: session}}
+      - name: roll_call_id
+        data_type: VARCHAR
+        description: 'Key: the vote id, plus '':motiv'' for a roll call on the reasons for a decision (motivfrågan); unique within a session.'
+      - name: vote_id
+        data_type: VARCHAR
+        description: 'Attribute: Riksdagen''s vote id; one id can carry both the substantive and the motivfrågan roll call.'
+      - name: is_substantive
+        data_type: BOOLEAN
+        description: 'Attribute: true for a roll call on the decision itself, false for one on its reasons (motivfrågan).'
+      - name: is_complete
+        data_type: BOOLEAN
+        description: 'Attribute: true when the roll call lists all 349 members; false for three in the source.'
+      - name: designation
+        data_type: VARCHAR
+        description: 'Attribute: the committee report''s designation, such as FiU12.'
+      - name: point
+        data_type: VARCHAR
+        description: 'Attribute: the point (punkt) of the report voted on, as text.'
+      - name: subject
+        data_type: VARCHAR
+        description: 'Attribute: sakfrågan or motivfrågan; null in the earliest files, which do not record it.'
+      - name: vote_date
+        data_type: DATE
+        description: 'Attribute: date of the roll call; the report''s decision date when the source gives none.'
+      - name: committee_code
+        data_type: VARCHAR
+        description: 'Attribute: the committee''s code, from dim_committee.'
+      - name: committee_name
+        data_type: VARCHAR
+        description: 'Attribute: the committee''s name, from dim_committee.'
+      - name: issue_key
+        data_type: VARCHAR
+        description: 'Foreign key to dim_issue: the committee''s policy issue; null for committee ''ovrigt''.'
+      - name: report_title
+        data_type: VARCHAR
+        description: 'Attribute: title of the committee report; null when no report matches.'
+      - name: report_headline
+        data_type: VARCHAR
+        description: 'Attribute: headline of the committee report; null when no report matches.'
+      - name: document_id
+        data_type: VARCHAR
+        description: 'Attribute: Riksdagen''s document id of the committee report; null when no report matches.'
+      - name: report_url
+        data_type: VARCHAR
+        description: 'Attribute: URL of the committee report; null when no report matches.'
+      - name: members
+        data_type: BIGINT
+        description: 'Measure, additive: count of members listed on the roll call; 349 when complete.'
+      - name: 'yes'
+        data_type: BIGINT
+        description: 'Measure, additive: count of members voting yes.'
+      - name: 'no'
+        data_type: BIGINT
+        description: 'Measure, additive: count of members voting no.'
+      - name: abstain
+        data_type: BIGINT
+        description: 'Measure, additive: count of members abstaining.'
+      - name: absent
+        data_type: BIGINT
+        description: 'Measure, additive: count of members absent.'
+      - name: outcome
+        data_type: VARCHAR
+        description: 'Attribute: yes when yes votes outnumber no votes, no when the reverse, tie otherwise.'
+      - name: government_position
+        data_type: VARCHAR
+        description: 'Attribute: position of the prime minister''s party (yes, no, abstain, absent, split); null with no government.'
+      - name: government_won
+        data_type: BOOLEAN
+        description: 'Attribute: true when the government''s position matched the outcome; null unless that position was yes or no.'
   - name: fct_party_roll_call
     description: Each party's members' votes and position on each roll call, with the party's role that day.
+    config:
+      contract: {enforced: true}
     data_tests:
       - unique_combination:
           arguments:
             columns: [session, roll_call_id, party]
+    columns:
+      - name: party
+        data_type: VARCHAR
+        description: 'Key, references dim_party: party abbreviation (FP written L, KDS written KD).'
+        data_tests:
+          - relationships: {arguments: {to: ref('dim_party'), field: party}}
+      - name: session
+        data_type: VARCHAR
+        description: 'Key, references dim_parliament_session: riksmöte, written ''1993/94'' or ''1999/2000''.'
+        data_tests:
+          - relationships: {arguments: {to: ref('dim_parliament_session'), field: session}}
+      - name: roll_call_id
+        data_type: VARCHAR
+        description: 'Key: the vote id, plus '':motiv'' for a roll call on the reasons for a decision (motivfrågan); unique within a session.'
+      - name: vote_id
+        data_type: VARCHAR
+        description: 'Attribute: Riksdagen''s vote id; one id can carry both the substantive and the motivfrågan roll call.'
+      - name: is_substantive
+        data_type: BOOLEAN
+        description: 'Attribute: true for a roll call on the decision itself, false for one on its reasons (motivfrågan).'
+      - name: vote_date
+        data_type: DATE
+        description: 'Attribute: date of the roll call; the report''s decision date when the source gives none.'
+      - name: issue_key
+        data_type: VARCHAR
+        description: 'Foreign key to dim_issue: the policy issue of the roll call''s committee; null for committee ''ovrigt''.'
+      - name: members
+        data_type: BIGINT
+        description: 'Measure, additive: count of the party''s members listed on the roll call.'
+      - name: present
+        data_type: BIGINT
+        description: 'Measure, additive: count of the party''s members not absent (members minus absent).'
+      - name: 'yes'
+        data_type: BIGINT
+        description: 'Measure, additive: count of the party''s members voting yes.'
+      - name: 'no'
+        data_type: BIGINT
+        description: 'Measure, additive: count of the party''s members voting no.'
+      - name: abstain
+        data_type: BIGINT
+        description: 'Measure, additive: count of the party''s members abstaining.'
+      - name: absent
+        data_type: BIGINT
+        description: 'Measure, additive: count of the party''s members absent.'
+      - name: position
+        data_type: VARCHAR
+        description: 'Attribute: the option most present members chose (yes, no, abstain); absent when all were absent, split on a tie.'
+      - name: cohesion
+        data_type: DOUBLE
+        description: 'Measure, non-additive: share of present members voting with the party''s plurality, fraction 0-1; null when none present.'
+      - name: role
+        data_type: VARCHAR
+        description: 'Attribute: government, agreement or opposition, the party''s role on the roll call''s date.'
+      - name: on_winning_side
+        data_type: BOOLEAN
+        description: 'Attribute: true when the party''s position was yes or no and matched the outcome.'
+      - name: with_government
+        data_type: BOOLEAN
+        description: 'Attribute: true when the party''s position was yes or no and matched the prime minister''s party.'
   - name: mart_party_session_record
     description: Attendance, unity, winning side and voting with the government, per party and riksmöte (decisions only).
+    config:
+      contract: {enforced: true}
     data_tests:
       - unique_combination:
           arguments:
             columns: [session, party]
+    columns:
+      - name: party
+        data_type: VARCHAR
+        description: 'Key, references dim_party: party abbreviation (FP written L, KDS written KD).'
+        data_tests:
+          - relationships: {arguments: {to: ref('dim_party'), field: party}}
+      - name: session
+        data_type: VARCHAR
+        description: 'Key, references dim_parliament_session: riksmöte, written ''1993/94'' or ''1999/2000''.'
+        data_tests:
+          - relationships: {arguments: {to: ref('dim_parliament_session'), field: session}}
+      - name: roll_calls
+        data_type: BIGINT
+        description: 'Measure, additive: count of substantive roll calls the party is listed on in the session.'
+      - name: role
+        data_type: VARCHAR
+        description: 'Attribute: the party''s most frequent role over those roll calls: government, agreement or opposition.'
+      - name: attendance_pct
+        data_type: DOUBLE
+        description: 'Measure, non-additive: present members over listed members, summed over roll calls; per cent 0-100.'
+      - name: cohesion_pct
+        data_type: DOUBLE
+        description: 'Measure, non-additive: mean cohesion over roll calls; per cent 0-100.'
+      - name: on_winning_side_pct
+        data_type: DOUBLE
+        description: 'Measure, non-additive: share of roll calls with a yes or no position that matched the outcome; per cent 0-100.'
+      - name: with_government_pct
+        data_type: DOUBLE
+        description: 'Measure, non-additive: share of roll calls with a yes or no position that matched the prime minister''s party; per cent 0-100.'
+      - name: abstained_pct
+        data_type: DOUBLE
+        description: 'Measure, non-additive: share of roll calls where the party''s position was abstain; per cent 0-100.'
   - name: mart_party_pair_session
     description: Share of decisions on which two parties took the same position, per riksmöte.
+    config:
+      contract: {enforced: true}
     data_tests:
       - unique_combination:
           arguments:
             columns: [session, party_a, party_b]
+    columns:
+      - name: party_a
+        data_type: VARCHAR
+        description: 'Key, references dim_party: the alphabetically first party of the pair.'
+        data_tests:
+          - relationships: {arguments: {to: ref('dim_party'), field: party}}
+      - name: party_b
+        data_type: VARCHAR
+        description: 'Key, references dim_party: the alphabetically second party of the pair.'
+        data_tests:
+          - relationships: {arguments: {to: ref('dim_party'), field: party}}
+      - name: session
+        data_type: VARCHAR
+        description: 'Key, references dim_parliament_session: riksmöte, written ''1993/94'' or ''1999/2000''.'
+        data_tests:
+          - relationships: {arguments: {to: ref('dim_parliament_session'), field: session}}
+      - name: comparable_roll_calls
+        data_type: BIGINT
+        description: 'Measure, additive: count of substantive roll calls where both parties took yes, no or abstain.'
+      - name: same_position
+        data_type: BIGINT
+        description: 'Measure, additive: count of those roll calls where both took the same position.'
+      - name: agreement_pct
+        data_type: DOUBLE
+        description: 'Measure, non-additive: same_position over comparable_roll_calls; per cent 0-100, one decimal.'
+  - name: dim_election_count
+    config:
+      contract: {enforced: true}
+    description: >-
+      Valmyndigheten's count per Riksdag election on its results site: election date, count
+      status (preliminary or final) and last update. Read by platform/publish/export_parliament.py.
+    columns:
+      - name: election_year
+        data_type: INTEGER
+        description: 'Key: year of the Riksdag election, from Valmyndigheten''s result file name.'
+        data_tests: [unique, not_null]
+      - name: election_date
+        data_type: DATE
+        description: 'Attribute: date of the election as Valmyndigheten reports it; ISO date.'
+      - name: count_status
+        data_type: VARCHAR
+        description: 'Attribute: Valmyndigheten''s count stage (räkningstillfälle), preliminary or final, as written in the source.'
+      - name: last_updated
+        data_type: VARCHAR
+        description: 'Attribute: when Valmyndigheten last updated the result, as written in the source; text, not parsed.'
   - name: fct_election
+    config:
+      contract: {enforced: true}
     description: >-
       Riksdag election results, Sweden, 1973 to the latest election. SCB where it has published,
       Valmyndigheten otherwise. Ny demokrati's votes (1991, 1994) are inside OTHER in SCB's tables;
@@ -99,43 +449,195 @@ models:
       - unique_combination:
           arguments:
             columns: [election_year, party]
+    columns:
+      - name: party
+        data_type: VARCHAR
+        description: 'Key, references dim_party: party abbreviation; small parties summed into OTHER.'
+        data_tests:
+          - relationships: {arguments: {to: ref('dim_party'), field: party}}
+      - name: election_year
+        data_type: INTEGER
+        description: 'Key: year of the Riksdag election.'
+      - name: votes
+        data_type: DOUBLE
+        description: 'Measure, additive: count of valid votes for the party in the whole country; null for Ny demokrati 1991 and 1994, whose votes are in OTHER.'
+      - name: share_pct
+        data_type: DOUBLE
+        description: 'Measure, non-additive: share of valid votes; per cent 0-100.'
+      - name: seats
+        data_type: HUGEINT
+        description: 'Measure, additive: count of Riksdag seats won; 0 when none.'
+      - name: source
+        data_type: VARCHAR
+        description: 'Attribute: SCB or Valmyndigheten, where the row comes from.'
   - name: fct_election_municipality
     data_tests:
       - unique_combination:
           arguments:
             columns: [municipality_code, election_year, party]
+    columns:
+      - name: party
+        data_tests:
+          - relationships: {arguments: {to: ref('dim_party'), field: party}}
+      - name: municipality_code
+        description: 'SCB four-digit municipality code (kommunkod), as in dim_region.region_code.'
+        data_tests:
+          - relationships:
+              arguments: {to: ref('dim_municipality'), field: municipality_code}
   - name: fct_party_poll
     description: SCB's party preference survey (PSU) with its margin of error.
+    config:
+      contract: {enforced: true}
     data_tests:
       - unique_combination:
           arguments:
             columns: [survey_month, party]
+    columns:
+      - name: party
+        data_type: VARCHAR
+        description: 'Key, references dim_party: party abbreviation, or OTHER for other parties.'
+        data_tests:
+          - relationships: {arguments: {to: ref('dim_party'), field: party}}
+      - name: survey_month
+        data_type: DATE
+        description: 'Key: first day of the survey month (May, November, some years February); ISO date.'
+      - name: share_pct
+        data_type: DOUBLE
+        description: 'Measure, non-additive: estimated share who would vote for the party if there were an election today; per cent 0-100.'
+      - name: margin_of_error_pp
+        data_type: DOUBLE
+        description: 'Measure, non-additive: SCB''s margin of error for share_pct; percentage points.'
+      - name: change_since_election_pp
+        data_type: DOUBLE
+        description: 'Measure, non-additive: change in share since the latest election, as SCB publishes it; percentage points.'
+      - name: change_since_last_survey_pp
+        data_type: DOUBLE
+        description: 'Measure, non-additive: change in share since the previous survey, as SCB publishes it; percentage points.'
   - name: dim_study
     description: Government studies (SOU, Ds) and the ministry memoranda bills name as preparation.
+    config:
+      contract: {enforced: true}
     columns:
       - name: study_key
+        data_type: VARCHAR
+        description: 'Key: kind:year:number for a series report (sou:2026:56), or ''pm:'' plus the lower-cased title or diary number for a memorandum.'
         data_tests: [unique, not_null]
+      - name: kind
+        data_type: VARCHAR
+        description: 'Attribute: sou, ds, rir (Riksrevisionen) or pm (ministry memorandum, promemoria).'
+      - name: year
+        data_type: BIGINT
+        description: 'Attribute: series year of the report; for a memorandum, the year of the earliest bill that names it.'
+      - name: number
+        data_type: INTEGER
+        description: 'Attribute: number of the report in its series year; null for a memorandum.'
+      - name: designation
+        data_type: VARCHAR
+        description: 'Attribute: series and number as written, such as SOU 2026:56; a memorandum''s title or ''Promemoria <diary>''.'
+      - name: diary
+        data_type: VARCHAR
+        description: 'Attribute: ministry diary number (diarienummer) of a memorandum; null for series reports.'
+      - name: title
+        data_type: VARCHAR
+        description: 'Attribute: title of the study; null for a series report known only from a bill''s citation.'
+      - name: inquiry
+        data_type: VARCHAR
+        description: 'Attribute: the inquiry that wrote the report, read from Riksdagen''s notice text; null when not stated.'
+      - name: published
+        data_type: DATE
+        description: 'Attribute: publication date from Riksdagen''s listing; null for memoranda and cited-only reports.'
+      - name: source_url
+        data_type: VARCHAR
+        description: 'Attribute: Riksdagen document URL; for a memorandum, the citing bill''s URL; for a cited-only report, a Riksdagen search URL.'
   - name: fct_bill
     description: Government bills since 2006/07.
+    config:
+      contract: {enforced: true}
     columns:
       - name: bill
+        data_type: VARCHAR
+        description: 'Key: the bill as session:number, such as 2023/24:1.'
         data_tests: [unique, not_null]
+      - name: session
+        data_type: VARCHAR
+        description: 'Foreign key to dim_parliament_session: riksmöte the bill was tabled in.'
+        data_tests:
+          # Bills are tabled before a session's first roll call, which starts its dim row.
+          - relationships: {arguments: {to: ref('dim_parliament_session'), field: session}, config: {severity: warn}}
+      - name: number
+        data_type: VARCHAR
+        description: 'Attribute: the bill''s number within the session, as text.'
+      - name: prop_id
+        data_type: VARCHAR
+        description: 'Attribute: Riksdagen''s document id for the bill''s main document.'
+      - name: title
+        data_type: VARCHAR
+        description: 'Attribute: title of the bill.'
+      - name: bill_date
+        data_type: DATE
+        description: 'Attribute: date of the bill; null when the source has none.'
+      - name: department
+        data_type: VARCHAR
+        description: 'Attribute: the ministry that put the bill forward, as Riksdagen writes it; null when blank.'
+      - name: has_preparation_section
+        data_type: BOOLEAN
+        description: 'Attribute: true when the bill has a section on how the proposal was prepared.'
+      - name: studies
+        data_type: BIGINT
+        description: 'Measure, additive: count of study references the bill names in its preparation, before deduplication by study.'
+      - name: source_url
+        data_type: VARCHAR
+        description: 'Attribute: URL of the bill on Riksdagen.'
   - name: fct_bill_report
     description: The committee reports each bill was dealt with in.
+    config:
+      contract: {enforced: true}
     data_tests:
       - unique_combination:
           arguments:
             columns: [bill, report]
+    columns:
+      - name: bill
+        data_type: VARCHAR
+        description: 'Key: the bill as session:number; references fct_bill.'
+      - name: report_session
+        data_type: VARCHAR
+        description: 'Attribute: riksmöte of the committee report.'
+      - name: designation
+        data_type: VARCHAR
+        description: 'Attribute: the report''s designation within its session, such as FiU1.'
+      - name: report
+        data_type: VARCHAR
+        description: 'Key: the committee report as report_session:designation.'
+      - name: report_title
+        data_type: VARCHAR
+        description: 'Attribute: title of the committee report.'
   - name: fct_bill_study
     description: The studies each bill names in its preparation, with the sentence that names them.
+    config:
+      contract: {enforced: true}
     data_tests:
       - unique_combination:
           arguments:
             columns: [bill, study_key]
     columns:
       - name: study_key
+        data_type: VARCHAR
+        description: 'Key, references dim_study: the study the bill names.'
         data_tests:
           - relationships:
               arguments:
                 to: ref('dim_study')
                 field: study_key
+      - name: bill
+        data_type: VARCHAR
+        description: 'Key: the bill as session:number; references fct_bill.'
+      - name: kind
+        data_type: VARCHAR
+        description: 'Attribute: sou, ds, rir or pm, the study''s kind.'
+      - name: section
+        data_type: VARCHAR
+        description: 'Attribute: in a budget bill, the number of the proposal whose preparation names the study; null otherwise.'
+      - name: context
+        data_type: VARCHAR
+        description: 'Attribute: the sentence in the bill that names the study.'

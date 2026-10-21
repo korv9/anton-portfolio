@@ -1,29 +1,178 @@
 version: 2
 
 models:
+  - name: mart_sweden_job_language_totals
+    description: The Ideal Human. Year × occupation field × county over all job ads; the denominators of the category counts.
+    config:
+      contract: {enforced: true}
+    # Semantic layer: the cell (year, field, county) is the entity both marts share, so the
+    # category counts reach these dimensions and language_share forms over the same cells.
+    semantic_model:
+      enabled: true
+      name: language_cell
+    agg_time_dimension: year_start
+    metrics:
+      - name: language_texts
+        description: Distinct ad texts. Adds over fields and counties.
+        type: simple
+        agg: sum
+        expr: texts
+      - name: language_share
+        description: >-
+          Texts using the category over distinct texts, formed after summing both. Group by year,
+          field or county (language_cell__); pick one category with a filter, since a text can
+          use several and the share never adds over categories.
+        type: ratio
+        numerator: language_texts_matching
+        denominator: language_texts
+    derived_semantics:
+      entities:
+        - name: language_cell
+          type: primary
+          expr: "year || '|' || field || '|' || region"
+      dimensions:
+        - name: year_start
+          type: time
+          granularity: year
+          expr: make_date(year, 1, 1)
+        - name: field
+          type: categorical
+          expr: field
+        - name: county
+          type: categorical
+          expr: region
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [year, field, region]
+    columns:
+      - name: year
+        data_type: INTEGER
+        description: 'Key: publication year of the job ads.'
+      - name: field
+        data_type: VARCHAR
+        description: 'Key: occupation field label after the crosswalk seed; Unknown when the ad has none.'
+      - name: region
+        data_type: VARCHAR
+        description: 'Key: workplace county as JobTech names it; Unknown when the ad has none.'
+      - name: ads
+        data_type: HUGEINT
+        description: 'Measure, additive: count of job ads.'
+      - name: texts
+        data_type: HUGEINT
+        description: 'Measure, additive: count of distinct ad texts; an ad posted for many workplaces counts once.'
+      - name: words
+        data_type: HUGEINT
+        description: 'Measure, additive: words of the distinct ad texts; count of words.'
   - name: mart_sweden_job_language
-    description: The Ideal Human. Year × occupation field × county × category over distinct job-ad texts.
+    config:
+      contract: {enforced: true}
+    description: >-
+      The Ideal Human. Year × occupation field × county × category over distinct job-ad texts,
+      per-category counts only; join mart_sweden_job_language_totals on year, field and region
+      for the texts and words.
+    semantic_model:
+      enabled: true
+      name: language_cell_category
+    agg_time_dimension: category_year_start
+    metrics:
+      - name: language_texts_matching
+        description: Distinct ad texts using the category. Adds over fields and counties, not categories.
+        type: simple
+        agg: sum
+        expr: texts_matching
+    derived_semantics:
+      entities:
+        - name: language_cell_category
+          type: primary
+          expr: "year || '|' || field || '|' || region || '|' || category"
+        - name: language_cell
+          type: foreign
+          expr: "year || '|' || field || '|' || region"
+      dimensions:
+        - name: category_year_start
+          type: time
+          granularity: year
+          expr: make_date(year, 1, 1)
+        - name: category
+          type: categorical
+          expr: category
     data_tests:
       - unique_combination:
           arguments:
             columns: [year, field, region, category]
     columns:
       - name: texts_matching
+        data_type: HUGEINT
         description: Never more than the distinct texts of the cell.
         data_tests:
           - not_null
+      - name: year
+        data_type: INTEGER
+        description: 'Key: publication year of the job ads.'
+      - name: field
+        data_type: VARCHAR
+        description: 'Key: occupation field label after the crosswalk seed; Unknown when the ad has none.'
+      - name: region
+        data_type: VARCHAR
+        description: 'Key: workplace county as JobTech names it; Unknown when the ad has none.'
+      - name: category
+        data_type: VARCHAR
+        description: 'Key: ad_language_terms category id.'
+      - name: family
+        data_type: VARCHAR
+        description: 'Attribute: the category''s family from ad_language_terms (such as skill or personal).'
+      - name: matches
+        data_type: HUGEINT
+        description: 'Measure, additive: count of category pattern matches in the cell''s distinct texts, 0 when none.'
   - name: mart_sweden_job_language_trends
     description: Year × category nationally, crude and occupation-standardised shares and matches per thousand words.
+    config:
+      contract: {enforced: true}
     data_tests:
       - unique_combination:
           arguments:
             columns: [year, category]
     columns:
       - name: share
+        data_type: DOUBLE
+        description: "Non-additive ratio: texts using the category / distinct texts. Recompute from the counts; never sum or average."
         data_tests:
           - between:
               arguments: {min: 0, max: 1}
       - name: share_standardised
+        data_type: DOUBLE
+        description: "Non-additive ratio: the share with the occupation-field mix fixed."
         data_tests:
           - between:
               arguments: {min: 0, max: 1}
+      - name: per_1000_words
+        data_type: DOUBLE
+        description: "Non-additive ratio: matches per thousand words of the distinct texts."
+      - name: per_1000_words_standardised
+        data_type: DOUBLE
+        description: "Non-additive ratio: matches per thousand words with the occupation-field mix fixed."
+      - name: known_field_share
+        data_type: DOUBLE
+        description: "Non-additive ratio: distinct texts with an occupation field / all distinct texts."
+      - name: year
+        data_type: INTEGER
+        description: 'Key: publication year of the job ads.'
+      - name: category
+        data_type: VARCHAR
+        description: 'Key: ad_language_terms category id.'
+      - name: family
+        data_type: VARCHAR
+        description: 'Attribute: the category''s family from ad_language_terms (such as skill or personal).'
+      - name: texts
+        data_type: HUGEINT
+        description: 'Measure, additive: count of distinct ad texts in the year, all fields and counties; adds over years, not categories.'
+      - name: words
+        data_type: HUGEINT
+        description: 'Measure, additive: words of the year''s distinct ad texts; count of words.'
+      - name: texts_matching
+        data_type: HUGEINT
+        description: 'Measure, additive: count of distinct texts using the category; adds over years, not categories.'
+      - name: matches
+        data_type: HUGEINT
+        description: 'Measure, additive: count of category pattern matches in the year''s distinct texts.'

@@ -2,15 +2,71 @@ version: 2
 models:
   - name: mart_skill_year_comparison
     description: One row per role and technology comparing complete baseline/comparison years. Annual shares use counts, not averages of monthly percentages.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [role_family, skill]
   - name: stg_collection_coverage
     description: Archive completion by publication month; absent/loading periods are incomplete, not zero demand.
   - name: int_analysis_months
     description: Complete monthly calendar for the configured analysis_start and analysis_end, inclusive.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [publication_month]
   - name: mart_job_trends_monthly
     description: One row per month and role, counting distinct source advertisements. Missing coverage yields NULL official totals. Year comparisons need 12 preceding calendar months.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [publication_month, role_family]
+    # Semantic layer: new_job_ads is gold/semantic-model.json's metric (the `gold` meta);
+    # gold/tables/fact_job_month_role.json is these rows for the four site roles.
+    semantic_model:
+      enabled: true
+      name: job_month_role
+    primary_entity: job_month_role
+    agg_time_dimension: publication_month
+    metrics:
+      - name: new_job_ads
+        description: >-
+          Distinct source ads published in the month, complete months only (total_ads is NULL
+          otherwise). A flow; adds over months and roles. Ads are not hires.
+        type: simple
+        agg: sum
+        expr: total_ads
+        config:
+          meta:
+            gold: {source_column: fact_job_month_role.new_ads, unit: unique ad IDs per month and role, limitation: not hires}
+    columns:
+      - name: ads_yoy_pct
+        description: 'Change in ads from the same month a year before, as a fraction (0.05 = 5 %), despite the _pct suffix.'
+      - name: ads_mom_pct
+        description: 'Change in ads from the month before, as a fraction (0.05 = 5 %), despite the _pct suffix.'
+      - name: publication_month
+        granularity: month
+        dimension:
+          type: time
+      - name: role_family
+        dimension:
+          type: categorical
   - name: mart_skill_trends_monthly
     description: One row per month, role and technology. Counts, distinct known employers, shares, calendar-aligned growth and weighted three-month shares. total_ads is repeated per skill and must not be summed across skills.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [publication_month, role_family, skill]
     columns:
+      - name: skill_ads_yoy_pct
+        description: 'Change in ads with the skill from the same month a year before, as a fraction (0.05 = 5 %), despite the _pct suffix.'
+      - name: skill_ads_mom_pct
+        description: 'Change in ads with the skill from the month before, as a fraction (0.05 = 5 %), despite the _pct suffix.'
+      - name: previous_year_share
+        description: 'skill_share of the same month a year before. Fraction from 0 to 1, not per cent.'
+      - name: previous_month_share
+        description: 'skill_share of the month before. Fraction from 0 to 1, not per cent.'
+      - name: skill_share
+        description: 'Ads with the skill / all ads of the role family in the month. Fraction from 0 to 1, not per cent.'
       - name: publication_month
         data_tests: [not_null]
       - name: role_family

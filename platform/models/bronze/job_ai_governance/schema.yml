@@ -7,6 +7,8 @@ models:
       - unique_combination:
           arguments:
             columns: [month, field_id]
+            # Ads with no occupation field in the source (2020-21 archives) keep a null field_id.
+            nullable: [field_id]
     columns:
       - name: ads
         data_tests: [not_null]
@@ -16,6 +18,8 @@ models:
       - unique_combination:
           arguments:
             columns: [month, field_id, term_id]
+            # Ads with no occupation field in the source (2020-21 archives) keep a null field_id.
+            nullable: [field_id]
     columns:
       - name: term_id
         data_tests:

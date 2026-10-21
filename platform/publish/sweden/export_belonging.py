@@ -3,11 +3,11 @@ without buying anything, per municipality, from KB's official library statistics
 
     python platform/publish/sweden/export_belonging.py
 
-Inputs: KB's library statistics (bibstat, CC0) for staffed service points, physical visits,
-public activities and active borrowers per library organisation and year; KB's Biblioteksdatabasen
-for each organisation's municipality and the public libraries' coordinates; the municipal
-population (gold.mart_municipality_year_panel, or its published Parquet when the warehouse is not
-on this machine); SCB's boundaries for each municipality's land area; the groups of C.
+Inputs: gold.fct_library_municipality_year (KB's library statistics, bibstat, CC0: staffed service
+points, physical visits, public activities and active borrowers per municipality and year, with the
+municipal population), gold.fct_library_observation (what was left out), gold.dim_library (KB's
+Biblioteksdatabasen: the public libraries' coordinates); SCB's boundaries for each municipality's
+land area.
 
 Writes frontend/public/data/sweden/belonging/:
 - `municipalities.json`: per municipality and year, the four measures and their rates per
@@ -17,54 +17,33 @@ Writes frontend/public/data/sweden/belonging/:
 - `coverage.json`: what was joined, what was left out and why, the values set to missing, and how
   many municipalities report each measure in every year.
 
-A municipality total is missing when one of its reporting organisations omitted the term that year,
-since the sum would be partial. Zero visits with a staffed service point, or zero service points
-with visits, are treated as missing values, not as zeros.
+The dbt models (platform/models/gold/sweden) sum the organisations per municipality: a total is
+missing when one of its reporting organisations omitted the term that year, since the sum would be
+partial, and zero visits with a staffed service point, or zero service points with visits, are
+treated as missing values, not as zeros.
 
 Availability (service points, opening) and participation (visits, activities, borrowers) are
 kept apart. Neither measures belonging. Distances are not travel times.
 """
 from __future__ import annotations
 
-import glob
-import hashlib
 import io
 import json
-import math
 import os
 import sys
 import tempfile
 import zipfile
-from collections import defaultdict
+from collections import Counter
 from pathlib import Path
 
 import duckdb
-import requests
 
 ROOT = Path(__file__).resolve().parents[3]
 RAW = Path(os.environ.get("PORTFOLIO_RAW", ROOT / "warehouse/raw"))
 DATABASE = Path(os.environ.get("PORTFOLIO_DB", ROOT / "warehouse/portfolio.duckdb"))
-PUBLISHED_PANEL = "https://pub-9867b18896ba49e4a0b4a3d2f39c0385.r2.dev/parquet/welfare/mart_municipality_year_panel.parquet"
 OUT = ROOT / "frontend/public/data/sweden/belonging"
 TERMS = {"BemanService01": "service_points", "Besok01": "visits", "Publ199": "activities",
          "Aktiv99": "active_borrowers"}
-PUBLIC = {"Folkbibliotek", "Folk- och skolbibliotek"}
-
-
-def population() -> tuple[dict[tuple[str, int], float], str]:
-    sql = "select municipality_code, year, population from {} where population is not null"
-    if DATABASE.exists():
-        con = duckdb.connect(str(DATABASE), read_only=True)
-        rows = con.sql(sql.format("gold.mart_municipality_year_panel")).fetchall()
-        source = "gold.mart_municipality_year_panel"
-    else:
-        payload = requests.get(PUBLISHED_PANEL, timeout=120).content
-        with tempfile.NamedTemporaryFile(suffix=".parquet", delete=False) as tmp:
-            tmp.write(payload)
-        rows = duckdb.sql(sql.format(f"read_parquet('{Path(tmp.name).as_posix()}')")).fetchall()
-        os.unlink(tmp.name)
-        source = f"{PUBLISHED_PANEL} sha256:{hashlib.sha256(payload).hexdigest()}"
-    return {(c, int(y)): p for c, y, p in rows}, source
 
 
 def areas_and_projection() -> dict[str, float]:
@@ -89,57 +68,31 @@ def to_sweref(points: list[tuple[float, float]]) -> list[tuple[float, float]]:
     return [(x, y) for _, x, y in rows]
 
 
-def aggregate(observations: dict[str, list], municipality_of: dict, area: dict):
-    """Sum public-library observations per municipality and year. Return the cells, the observations
-    left out and the values set to missing (partial sums and impossible zeros)."""
-    cells: dict = defaultdict(dict)
-    reporters: dict = defaultdict(lambda: defaultdict(set))
-    left_out: dict = defaultdict(int)
-    for term, measure in TERMS.items():
-        for o in observations[term]:
-            if o.get("targetGroup") not in PUBLIC:
-                continue
-            sigel = o["library"]["@id"].rsplit("/", 1)[-1]
-            code = municipality_of.get(sigel)
-            value = o.get(term)
-            if not code or code not in area:
-                left_out["no municipality in Biblioteksdatabasen"] += 1
-                continue
-            if not isinstance(value, (int, float)):
-                left_out["no value"] += 1
-                continue
-            key = (code, int(o["sampleYear"]))
-            cells[key][measure] = cells[key].get(measure, 0) + value
-            reporters[key][measure].add(sigel)
-    missing: dict = defaultdict(int)
-    for key, m in cells.items():
-        orgs = set().union(*reporters[key].values())
-        for measure in list(m):
-            if reporters[key][measure] != orgs:
-                m[measure] = None
-                missing[f"{measure}: an organisation did not report"] += 1
-        if m.get("visits") == 0 and m.get("service_points"):
-            m["visits"] = None
-            missing["visits: 0 with staffed service points"] += 1
-        if m.get("service_points") == 0 and m.get("visits"):
-            m["service_points"] = None
-            missing["service_points: 0 with visits"] += 1
-    return cells, left_out, missing
+def coverage_counts(con) -> tuple[dict, dict]:
+    """The observations left out (no current municipality, no value) and the values gold set to
+    missing, by reason."""
+    no_code, no_value = con.sql("""select count(*) filter (where municipality_code is null),
+                                          count(*) filter (where municipality_code is not null and value is null)
+                                   from gold.fct_library_observation""").fetchone()
+    left_out = {k: n for k, n in (("no municipality in Biblioteksdatabasen", no_code), ("no value", no_value)) if n}
+    missing = Counter(r for (reasons,) in con.sql("""select set_to_missing from gold.fct_library_municipality_year
+                                                     order by municipality_code, year""").fetchall() for r in reasons)
+    return left_out, dict(missing)
 
 
 def main() -> int:
-    libraries = [x for p in sorted(glob.glob(str(RAW / "kb/libraries-*.json")))
-                 for x in json.loads(Path(p).read_text(encoding="utf-8"))["libraries"]]
-    municipality_of = {x["sigel"]: x.get("municipality_code") for x in libraries}
-    pop, pop_source = population()
+    con = duckdb.connect(str(DATABASE), read_only=True)
+    measures = list(TERMS.values())
+    totals = con.sql(f"""select municipality_code, year, population, {', '.join(measures)}
+                         from gold.fct_library_municipality_year""").fetchall()
+    cells = {(code, year): dict(zip(measures, m)) for code, year, _, *m in totals}
+    pop = {(code, year): p for code, year, p, *_ in totals}
+    left_out, missing = coverage_counts(con)
     area = areas_and_projection()
-    observations = {t: json.loads((RAW / f"kb/statistics/{t}.json").read_text(encoding="utf-8"))["observations"]
-                    for t in TERMS}
-    cells, left_out, missing = aggregate(observations, municipality_of, area)
     rows = []
     for (code, year), m in sorted(cells.items()):
-        p = pop.get((code, year)) or pop.get((code, year - 1))
-        row = {"code": code, "year": year, **{k: m.get(k) for k in TERMS.values()}, "population": p}
+        p = pop[(code, year)]
+        row = {"code": code, "year": year, **m, "population": p}
         if p:
             for k, per in (("service_points", 10_000), ("visits", 1), ("activities", 1_000),
                            ("active_borrowers", 100)):
@@ -148,12 +101,13 @@ def main() -> int:
                                         if m.get("service_points") else None)
         rows.append(row)
     years = sorted({r["year"] for r in rows})
-    public = [x for x in libraries if x.get("alive") and x.get("library_type") in ("folkbib", "folkskolbib")
-              and x.get("country_code") == "se"]
-    located = [x for x in public if x.get("latitude") and x.get("longitude")]
-    xy = to_sweref([(x["longitude"], x["latitude"]) for x in located])
-    points = [{"name": x["name"], "code": x.get("municipality_code"), "type": x["library_type"],
-               "x": round(px / 100), "y": round(py / 100)} for x, (px, py) in zip(located, xy)]
+    public = con.sql("""select name, municipality_code, library_type, longitude, latitude from gold.dim_library
+                        where alive and library_type in ('folkbib', 'folkskolbib') and country_code = 'se'
+                        order by dump_order""").fetchall()
+    located = [x for x in public if x[4] and x[3]]
+    xy = to_sweref([(lon, lat) for _, _, _, lon, lat in located])
+    points = [{"name": name, "code": code, "type": kind, "x": round(px / 100), "y": round(py / 100)}
+              for (name, code, kind, _, _), (px, py) in zip(located, xy)]
     OUT.mkdir(parents=True, exist_ok=True)
     write = lambda name, payload: (OUT / name).write_text(  # noqa: E731
         json.dumps(payload, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
@@ -172,7 +126,7 @@ def main() -> int:
             k: sum(1 for c in area if all(m.get(k) is not None for m in (cells.get((c, y), {}) for y in years)))
             for k in TERMS.values()},
         "public_libraries_registered": len(public), "with_coordinates": len(located),
-        "population_source": pop_source,
+        "population_source": "gold.mart_municipality_year_panel",
         "sources": [
             {"name": "KB, official library statistics (bibstat)", "url": "https://bibstat.kb.se/", "licence": "CC0 1.0",
              "terms": list(TERMS), "sha256": {t: manifest(f"statistics/{t}.json").get("sha256") for t in TERMS}},

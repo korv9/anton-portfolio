@@ -13,6 +13,7 @@ with field_year as (
            sum(texts) as texts, sum(words) as words,
            sum(texts_matching) as texts_matching, sum(matches) as matches
     from {{ ref('mart_sweden_job_language') }}
+    join {{ ref('mart_sweden_job_language_totals') }} using (year, field, region)
     group by all
 ),
 

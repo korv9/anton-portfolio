@@ -57,6 +57,18 @@ def kept_years(per_year: dict[int, int], running: int) -> set[int]:
     return {y for y, n in per_year.items() if n >= EDGE * median and y < running}
 
 
+def yearly(con, running: int) -> tuple[dict[int, int], set[int], list[list]]:
+    """Speeches per year, the years kept, and per kept year the future share, words per speech
+    and future-marker matches per thousand words, rounded as published."""
+    years = con.sql("""select year, speeches, future_share, words_per_speech, marker_per_1000_words
+                       from gold.mart_sweden_future_trends_total order by year""").fetchall()
+    per_year = {r[0]: r[1] for r in years}
+    kept = kept_years(per_year, running)
+    share = [[y, round(s, 5), round(w, 1), None if m is None else round(m, 3)]
+             for y, _, s, w, m in years if y in kept]
+    return per_year, kept, share
+
+
 def academic(con, themes: list[dict], running: int) -> dict | None:
     """The academic corpus, side by side and never pooled: full years with at least MIN_THESES
     abstracts. Absent until every month is harvested with record ids and Swedish-only abstracts."""
@@ -64,7 +76,9 @@ def academic(con, themes: list[dict], running: int) -> dict | None:
     if not done.exists() or not json.loads(done.read_text()).get("complete"):
         return None
     theses = con.sql("""select theme, year, abstracts, future_share, future_share_using, per_1000_words
-                        from gold.mart_sweden_future_theses order by theme, year""").fetchall()
+                        from gold.mart_sweden_future_theses
+                        join gold.mart_sweden_future_theses_total using (year)
+                        order by theme, year""").fetchall()
     years = sorted({r[1] for r in theses if r[2] >= MIN_THESES and r[1] < running})
     by_year = {r[1]: r for r in theses}  # abstracts and future_share repeat on every theme row
     return {
@@ -83,21 +97,18 @@ def main() -> int:
     marker = dict(zip(keys, next(t for t in terms if t[1] == "marker")))
     themes = [dict(zip(keys, t)) for t in terms if t[1] == "theme"]
     rows = con.sql("""select theme, year, speeches, future_speeches, words, speeches_using, future_using,
-                             matches, future_share, future_share_using, per_1000_words,
-                             words_per_speech, marker_per_1000_words
-                      from gold.mart_sweden_future_trends order by theme, year""").fetchall()
-    per_year = {r[1]: r[2] for r in rows}
+                             matches, future_share_using, per_1000_words
+                      from gold.mart_sweden_future_trends
+                      join gold.mart_sweden_future_trends_total using (year)
+                      order by theme, year""").fetchall()
     running = date.today().year
-    kept = kept_years(per_year, running)
+    per_year, kept, share = yearly(con, running)
     out = []
     for t in themes:
         mine = [r for r in rows if r[0] == t["id"] and r[1] in kept]
-        out.append({**t, "rows": [[r[1], r[2], r[3], r[4], r[6], r[7], round(r[9], 5), round(r[10], 4)]
+        out.append({**t, "rows": [[r[1], r[2], r[3], r[4], r[6], r[7], round(r[8], 5), round(r[9], 4)]
                                   for r in mine],
-                     "break": one_break([r[1] for r in mine], [r[9] for r in mine])})
-    year_rows = {r[1]: r for r in rows}
-    share = [[y, round(year_rows[y][8], 5), round(year_rows[y][11], 1),
-              None if year_rows[y][12] is None else round(year_rows[y][12], 3)] for y in sorted(kept)]
+                     "break": one_break([r[1] for r in mine], [r[8] for r in mine])})
     rho = spearman(np.array([r[1] for r in share]), np.array([r[2] for r in share]))
     write("trends.json", {
         "columns": ["year", "speeches", "future_speeches", "words", "future_using", "matches",
@@ -120,7 +131,9 @@ def main() -> int:
         },
     })
     parties = con.sql("""select party, theme, year, sum(future_speeches), sum(future_using)
-                         from gold.mart_sweden_future_themes where party <> 'Unknown'
+                         from gold.mart_sweden_future_themes
+                         join gold.mart_sweden_future_totals using (year, party)
+                         where party is not null
                          group by all having sum(future_speeches) >= 50 order by 1, 2, 3""").fetchall()
     write("parties.json", {"columns": ["party", "theme", "year", "future_speeches", "future_using"],
                            "rows": [list(r) for r in parties if r[2] in kept],

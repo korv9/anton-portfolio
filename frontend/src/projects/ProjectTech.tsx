@@ -51,7 +51,7 @@ const MODELS: Record<
     source: ['Public-domain philosophical works', 'Fria filosofiska verk'],
   },
   'concept-constellation': {
-    fact: 'fact_concept_alignment',
+    fact: 'fct_concept_alignment',
     dims: ['dim_concept', 'dim_corpus', 'dim_text_chunk'],
     marts: [
       'mart_concept_profiles',

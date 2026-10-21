@@ -15,17 +15,21 @@ models:
         description: Source must-have skill objects, retained as JSON; keyword mentions are derived separately.
   - name: int_job_ads_enriched
     description: Classifies roles using versioned title/taxonomy seeds, management exclusions and ambiguity flags. Seniority is inferred from the title.
-  - name: dim_employers
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [job_id]
+  - name: dim_employer
     description: Type 1 employer dimension. Name fallbacks may merge unrelated employers; organization numbers are preferred.
     columns:
       - name: employer_id
         data_tests: [not_null, unique]
-  - name: dim_locations
+  - name: dim_location
     description: Location dimension keyed by the complete source location tuple, including country to distinguish non-Swedish locations.
     columns:
       - name: location_id
         data_tests: [not_null, unique]
-  - name: dim_occupations
+  - name: dim_occupation
     description: Type 1 occupation dimension retaining source taxonomy identifiers.
     columns:
       - name: occupation_id
@@ -40,21 +44,21 @@ models:
           - not_null
           - relationships:
               arguments:
-                to: ref('dim_employers')
+                to: ref('dim_employer')
                 field: employer_id
       - name: location_id
         data_tests:
           - not_null
           - relationships:
               arguments:
-                to: ref('dim_locations')
+                to: ref('dim_location')
                 field: location_id
       - name: occupation_id
         data_tests:
           - not_null
           - relationships:
               arguments:
-                to: ref('dim_occupations')
+                to: ref('dim_occupation')
                 field: occupation_id
       - name: ingestion_id
         description: Monotonic ingestion watermark, independent of publication date. Gaps are harmless.
@@ -71,6 +75,10 @@ models:
                 values: [junior, senior, unspecified]
   - name: bridge_job_skills
     description: One row per job and detected technology mention using seed regex patterns. Includes title, description and structured skills; does not establish requirements or proficiency.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [job_id, skill]
     columns:
       - name: job_id
         data_tests:
@@ -86,8 +94,12 @@ models:
               arguments:
                 to: ref('technology_patterns')
                 field: skill
-  - name: job_market_summary
+  - name: mart_job_market_summary
     description: Observed ad count by publication month, role, region and inferred seniority. Cohorts of collected ads, not historical market totals.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [publication_month, role_family, region, seniority]
     columns:
       - name: job_count
         data_tests: [not_null]

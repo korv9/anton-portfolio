@@ -190,8 +190,8 @@ PUBLISHERS = [
     {"path": "platform/ingest/jobtech/export_presentation.py", "domain": "jobs",
      "outputs": [{"pattern": "jobs/*.csv"}]},
     {"path": "platform/publish/export_job_clusters.py", "domain": "jobs", "outputs": [
-        {"pattern": "jobs/cluster-*.json", "inputs": ["mart_job_clusters", "dim_job_clusters"]},
-        {"pattern": "jobs/clusters/**", "inputs": ["mart_job_clusters", "dim_job_clusters"]},
+        {"pattern": "jobs/cluster-*.json", "inputs": ["mart_job_clusters", "dim_job_cluster"]},
+        {"pattern": "jobs/clusters/**", "inputs": ["mart_job_clusters", "dim_job_cluster"]},
     ]},
     {"path": "platform/publish/export_welfare.py", "domain": "welfare", "outputs": [
         {"pattern": "welfare/*.json"}, {"pattern": "parquet/welfare/**"},

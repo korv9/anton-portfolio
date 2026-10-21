@@ -14,7 +14,7 @@ with paragraphs as (
         f.debate_title,
         f.source_url
     from {{ ref('int_ai_speech_paragraphs') }} as p
-    join {{ ref('fact_ai_speech') }} as f on f.speech_id = p.speech_id
+    join {{ ref('fct_ai_speech') }} as f on f.speech_id = p.speech_id
 ),
 
 by_concept as (

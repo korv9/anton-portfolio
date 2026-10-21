@@ -112,7 +112,7 @@ def test_export_contains_only_delivery_fields_and_run_consistency(tmp_path):
                     false as is_noise, 1.0 as umap_x, 2.0 as umap_y, 'Data Engineer' as role_family,
                     'junior' as seniority, 2025 as published_year, 'Stockholm' as region,
                     'Engineer' as title, ['Python'] as skills''')
-        con.execute('''create table gold.dim_job_clusters as select 'test' as run_id, 0 as cluster_id,
+        con.execute('''create table gold.dim_job_cluster as select 'test' as run_id, 0 as cluster_id,
                     '[]' as top_titles, '[]' as top_skills, '[]' as role_distribution,
                     '[]' as regions, '[]' as years, '[]' as representative_ads''')
         con.execute('create table raw.job_cluster_runs (report_json varchar)')

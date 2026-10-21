@@ -1,5 +1,5 @@
 -- One row per document in Riksdagen's SFS list, repealed ones included, with what the text's
--- header says and how the paragraph split went (silver_sfs_corpus_paragraphs).
+-- header says and how the paragraph split went (int_sfs_corpus_paragraphs).
 --   kind          lag, förordning or other, from the first word of the title: "...lag" and
 --                 "...balk" are laws, and so are the grundlagar and Riksdagsordningen whose
 --                 names do not say so; "...förordning" is an ordinance.
@@ -12,7 +12,7 @@ with catalogue as (
         trim(regexp_replace(titel, '\s+', ' ', 'g')) as title,
         lower(regexp_extract(regexp_replace(titel, '^(\s*/[^/]*/\s*)+', ''), '^([^\s(,]+)', 1))
             as word
-    from {{ source('sfs', 'catalogue') }}
+    from {{ ref('stg_sfs_catalogue') }}
 ),
 
 texts as (
@@ -26,7 +26,7 @@ texts as (
 
 paragraphs as (
     select dok_id, count(*) as paragraphs
-    from {{ ref('silver_sfs_corpus_paragraphs') }}
+    from {{ ref('int_sfs_corpus_paragraphs') }}
     where kind = 'paragraph'
     group by dok_id
 ),

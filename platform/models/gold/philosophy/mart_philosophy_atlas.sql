@@ -17,6 +17,6 @@ select
     a.cluster_id,
     a.probability,
     a.cluster_id = -1 as is_noise
-from {{ source('philosophy_features', 'atlas') }} as a
+from {{ ref('stg_philosophy_atlas') }} as a
 join {{ ref('int_philosophy_passages') }} as p using (passage_id)
 join {{ ref('dim_philosophy_document') }} as d on d.document_id = p.document_id

@@ -27,4 +27,4 @@ select
     evaluated_at::timestamptz as evaluated_at,
     'derived' as result_content_type,
     'interpretation' as interpretation_content_type
-from {{ source('quality_features', 'validity') }}
+from {{ ref('stg_quality_validity') }}

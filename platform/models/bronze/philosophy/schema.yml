@@ -12,3 +12,21 @@ models:
         data_tests: [not_null]
       - name: text_start
         description: Where the author's own text begins (a line matched in full); null only when the file starts with it.
+  - name: stg_philosophy_atlas
+    description: Passage × map variant, from the ML stage.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [variant, passage_id]
+  - name: stg_philosophy_clusters
+    description: Cluster × map variant, from the ML stage.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [variant, cluster_id]
+  - name: stg_philosophy_tensions
+    description: Passage × tension scores, from the ML stage.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [tension_id, passage_id]

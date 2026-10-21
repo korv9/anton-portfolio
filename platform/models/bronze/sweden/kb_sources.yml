@@ -1,0 +1,47 @@
+version: 2
+
+# Bronze for SWEDEN D and C. KB's files are fetched by platform/ingest/kb/libraries.py (its
+# _manifest.jsonl records URL, time and SHA-256). C's inputs are the files the 2024 clustering
+# hashed, kept under features/sweden/similarity; export_similarity.py checks those hashes.
+
+sources:
+  - name: kb
+    description: KB's library statistics (bibstat, CC0) and Biblioteksdatabasen.
+    tables:
+      - name: statistics
+        description: One file per bibstat term, each a list of observations per library and year.
+        meta:
+          external_location: >-
+            read_text('{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/kb/statistics/*.json')
+      - name: libraries
+        description: Biblioteksdatabasen's dump, 200 libraries per file, ordered by sigel.
+        meta:
+          external_location: >-
+            read_text('{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/kb/libraries-*.json')
+
+  - name: sweden_similarity
+    description: The validated 2024 municipality clustering (run public-consensus-2026-10-13) and its inputs.
+    tables:
+      - name: run
+        description: ml/research/regions.py's result; its points carry each analysed municipality's groups.
+        meta:
+          external_location: >-
+            read_json('{{ env_var('PORTFOLIO_FEATURES', '../warehouse/features') }}/sweden/similarity/regions-municipalities.json',
+            maximum_object_size = 200000000)
+      - name: panel
+        description: The copy of gold.mart_municipality_year_panel the clustering was fitted on.
+        meta:
+          external_location: >-
+            read_parquet('{{ env_var('PORTFOLIO_FEATURES', '../warehouse/features') }}/sweden/similarity/mart_municipality_year_panel.parquet')
+      - name: kolada_structure
+        description: The four Kolada key figures for 2024 the panel lacks.
+        meta:
+          external_location: >-
+            read_text('{{ env_var('PORTFOLIO_FEATURES', '../warehouse/features') }}/sweden/similarity/kolada_structure_2024.json')
+
+models:
+  - name: stg_similarity_kolada
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [municipality_code, feature]

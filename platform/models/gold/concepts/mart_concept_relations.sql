@@ -4,9 +4,9 @@
 -- shared_tension: the two concepts are the poles (or nearest concepts to the poles) of a
 --   Philosophy Atlas tension (seeds/concepts/concept_tensions.csv), an editorial link.
 with pairs as (
-    select concept_a, concept_b, similarity_en, similarity_sv from {{ source('concept_features', 'concept_similarity') }}
+    select concept_a, concept_b, similarity_en, similarity_sv from {{ ref('stg_concept_similarity') }}
     union all
-    select concept_b, concept_a, similarity_en, similarity_sv from {{ source('concept_features', 'concept_similarity') }}
+    select concept_b, concept_a, similarity_en, similarity_sv from {{ ref('stg_concept_similarity') }}
 ),
 
 ranked as (

@@ -3,35 +3,73 @@ version: 2
 models:
   - name: fct_news_item
     description: News items (SVT, Ekot, the Government) with the parties and topics they concern, and whether they are political.
+    config:
+      contract: {enforced: true}
     columns:
       - name: item_id
+        data_type: VARCHAR
+        description: 'Key: source plus '':'' plus the feed''s guid or id, or the item URL when it has none.'
         data_tests: [not_null, unique]
       - name: source
+        data_type: VARCHAR
+        description: 'Attribute: the feed: svt, ekot or regeringen.'
         data_tests:
           - accepted_values:
               arguments:
                 values: [svt, ekot, regeringen]
       - name: url
+        data_type: VARCHAR
+        description: 'Attribute: link to the item.'
         data_tests: [not_null]
+      - name: title
+        data_type: VARCHAR
+        description: 'Attribute: headline of the item.'
+      - name: summary
+        data_type: VARCHAR
+        description: 'Attribute: the feed''s summary; null when empty.'
+      - name: published_at
+        data_type: TIMESTAMP WITH TIME ZONE
+        description: 'Attribute: publication time from the feed; first_seen when the feed gives none.'
+      - name: first_seen
+        data_type: TIMESTAMP WITH TIME ZONE
+        description: 'Attribute: time the item was first fetched.'
+      - name: parties
+        data_type: VARCHAR[]
+        description: 'Attribute: sorted list of parties the item names, from fct_news_item_party; empty when none.'
+      - name: topics
+        data_type: VARCHAR[]
+        description: 'Attribute: sorted list of topics the item is about, from fct_news_item_topic; empty when none.'
+      - name: is_political
+        data_type: BOOLEAN
+        description: 'Attribute: true when from regeringen, names a party, is about forming a government, or uses words of national politics.'
   - name: fct_news_item_party
     description: Each party a news item names, by a party term or by the full name of a politician in office (via).
+    config:
+      contract: {enforced: true}
     data_tests:
       - unique_combination:
           arguments:
             columns: [item_id, party]
     columns:
       - name: party
+        data_type: VARCHAR
+        description: 'Key, references dim_party: a party the item names.'
         data_tests:
+          - relationships: {arguments: {to: ref('dim_party'), field: party}}
           - accepted_values:
               arguments:
                 values: [S, M, SD, V, C, KD, MP, L]
       - name: item_id
+        data_type: VARCHAR
+        description: 'Key: the news item; references fct_news_item.'
         data_tests:
           - relationships:
               arguments:
                 to: ref('fct_news_item')
                 field: item_id
       - name: via
+        data_type: VARCHAR
+        description: 'Attribute: how the party was found: name (a politician in office) when that matched, term (a party term) otherwise.'
         data_tests:
           - accepted_values:
               arguments:
@@ -51,6 +89,28 @@ models:
                 field: topic
   - name: mart_news_fetch_status
     description: The latest fetch of each news source and when it last succeeded.
+    config:
+      contract: {enforced: true}
     columns:
       - name: source
+        data_type: VARCHAR
+        description: 'Key: the feed: svt, ekot or regeringen.'
         data_tests: [not_null, unique]
+      - name: last_fetch
+        data_type: TIMESTAMP WITH TIME ZONE
+        description: 'Attribute: time of the latest fetch attempt.'
+      - name: last_success
+        data_type: TIMESTAMP WITH TIME ZONE
+        description: 'Attribute: time of the latest fetch with no error; null when every fetch failed.'
+      - name: last_status
+        data_type: BIGINT
+        description: 'Attribute: HTTP status code of the latest fetch; null when the request got no response.'
+      - name: last_error
+        data_type: VARCHAR
+        description: 'Attribute: first line of the latest fetch''s error, at most 200 characters; null when it succeeded.'
+      - name: fetches
+        data_type: BIGINT
+        description: 'Measure, additive: count of logged fetches.'
+      - name: failed_fetches
+        data_type: BIGINT
+        description: 'Measure, additive: count of logged fetches with an error.'

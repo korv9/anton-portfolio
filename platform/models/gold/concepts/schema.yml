@@ -3,44 +3,151 @@ version: 2
 models:
   - name: dim_concept
     description: Curated concepts with an anchor sentence per language (interpretation).
+    config:
+      contract: {enforced: true}
     columns:
       - name: concept_id
+        data_type: VARCHAR
+        description: 'Key: identifier of the curated concept, e.g. autonomy.'
         data_tests: [unique, not_null]
       - name: status
+        data_type: VARCHAR
+        description: 'Attribute: editorial status of the concept: curated, reviewed or candidate.'
         data_tests:
           - accepted_values:
               arguments:
                 values: [curated, reviewed, candidate]
+      - name: label_en
+        data_type: VARCHAR
+        description: 'Attribute: English display name of the concept.'
+      - name: label_sv
+        data_type: VARCHAR
+        description: 'Attribute: Swedish display name of the concept.'
+      - name: family
+        data_type: VARCHAR
+        description: 'Attribute: concept family: moral, political, regulatory, epistemic, social or symbolic.'
+      - name: description_en
+        data_type: VARCHAR
+        description: 'Attribute: one-line English description of the concept, written by the editor.'
+      - name: description_sv
+        data_type: VARCHAR
+        description: 'Attribute: one-line Swedish description of the concept, written by the editor.'
+      - name: anchor_en
+        data_type: VARCHAR
+        description: 'Attribute: English anchor sentence that is embedded and compared with English chunks.'
+      - name: anchor_sv
+        data_type: VARCHAR
+        description: 'Attribute: Swedish anchor sentence that is embedded and compared with Swedish chunks.'
+      - name: created_by
+        data_type: VARCHAR
+        description: 'Attribute: who made the concept, e.g. editorial (portfolio).'
+      - name: method
+        data_type: VARCHAR
+        description: 'Attribute: how the concept is read, e.g. anchor-sentence embedding with the named multilingual model.'
+      - name: sort_order
+        data_type: INTEGER
+        description: 'Attribute: display order of the concept on the site; integer from 1.'
+      - name: content_type
+        data_type: VARCHAR
+        description: 'Attribute: content type of the row, always ''interpretation''.'
   - name: dim_corpus
     description: The four corpora and the size of their sample.
+    config:
+      contract: {enforced: true}
     columns:
       - name: corpus_id
+        data_type: VARCHAR
+        description: 'Key: corpus identifier: myth, philosophy, politics or law.'
         data_tests: [unique, not_null]
       - name: chunks
+        data_type: BIGINT
+        description: 'Measure, additive: count of chunks the concept layer sampled from the corpus; at most 500.'
         data_tests:
           - between:
               arguments: {min: 1, max: 1000}
+      - name: label_en
+        data_type: VARCHAR
+        description: 'Attribute: English display name of the corpus.'
+      - name: label_sv
+        data_type: VARCHAR
+        description: 'Attribute: Swedish display name of the corpus.'
+      - name: stage
+        data_type: VARCHAR
+        description: 'Attribute: the corpus''s stage in the chain: stories, ideas, contestation or codification.'
+      - name: language
+        data_type: VARCHAR
+        description: 'Attribute: language of the corpus''s chunks, en or sv; selects which anchor sentence chunks are compared with.'
+      - name: description_en
+        data_type: VARCHAR
+        description: 'Attribute: English description of what the corpus is and how it was sampled.'
+      - name: domain
+        data_type: VARCHAR
+        description: 'Attribute: site project the corpus comes from: symbolic, philosophy or ai_act.'
+      - name: documents
+        data_type: BIGINT
+        description: 'Measure, non-additive: distinct count of documents (books, works, speeches, provisions) the sampled chunks come from.'
+      - name: first_retrieved_at
+        data_type: VARCHAR
+        description: 'Attribute: earliest retrieval time of the corpus''s sampled chunks; ISO 8601 UTC text, null if the corpus has no chunks.'
+      - name: last_retrieved_at
+        data_type: VARCHAR
+        description: 'Attribute: latest retrieval time of the corpus''s sampled chunks; ISO 8601 UTC text, null if the corpus has no chunks.'
   - name: dim_text_chunk
     description: Sampled chunks with full provenance.
+    config:
+      contract: {enforced: true}
     columns:
       - name: chunk_id
+        data_type: VARCHAR
+        description: 'Key: identifier of the sampled chunk, built from its corpus and source ids.'
         data_tests: [unique, not_null]
       - name: corpus_id
+        data_type: VARCHAR
+        description: 'Foreign key to dim_corpus: the corpus the chunk was sampled from.'
         data_tests:
           - relationships:
               arguments: {to: ref('dim_corpus'), field: corpus_id}
       - name: source_url
+        data_type: VARCHAR
+        description: 'Attribute: URL of the source the chunk was read from.'
         data_tests: [not_null]
       - name: source_version
+        data_type: VARCHAR
+        description: 'Attribute: hash of the source version the chunk was read from; for the AI Act, the consolidated version and hash prefix.'
         data_tests: [not_null]
       - name: retrieved_at
+        data_type: VARCHAR
+        description: 'Attribute: when the source was retrieved; ISO 8601 UTC text.'
         data_tests: [not_null]
       - name: language
+        data_type: VARCHAR
+        description: 'Attribute: language of the chunk text, en or sv.'
         data_tests:
           - accepted_values:
               arguments:
                 values: [en, sv]
-  - name: fact_concept_alignment
+      - name: document_id
+        data_type: VARCHAR
+        description: 'Attribute: id of the source document: book, philosophy work, Riksdag speech or AI Act provision.'
+      - name: document_title
+        data_type: VARCHAR
+        description: 'Attribute: readable title of the source document, e.g. author and work, or speaker (party): debate.'
+      - name: location
+        data_type: VARCHAR
+        description: 'Attribute: where in the document the chunk sits, e.g. passage number, paragraph of the speech or character offset.'
+      - name: period
+        data_type: VARCHAR
+        description: 'Attribute: speech date for Riksdag chunks; ISO date text, null for the other corpora.'
+      - name: word_count
+        data_type: BIGINT
+        description: 'Measure, additive: count of whitespace-separated words in the chunk text.'
+      - name: text
+        data_type: VARCHAR
+        description: 'Attribute: the chunk text as it stands in the source, cleaned of layout only.'
+      - name: content_type
+        data_type: VARCHAR
+        description: 'Attribute: content type of the row, always ''source''.'
+  - name: fct_concept_alignment
     description: Chunk × concept similarity, rank and within-corpus z-score (derived).
     data_tests:
       - unique_combination:
@@ -63,85 +170,261 @@ models:
         data_tests:
           - between:
               arguments: {min: 1, max: 28}
-  - name: fact_cross_domain_similarity
+  - name: fct_cross_domain_similarity
     description: Best representative pair per concept and corpus pair, with a random-pair baseline.
+    config:
+      contract: {enforced: true}
     data_tests:
       - unique_combination:
           arguments:
             columns: [concept_id, corpus_a, corpus_b]
     columns:
       - name: chunk_a
+        data_type: VARCHAR
+        description: 'Foreign key to dim_text_chunk: the representative chunk from corpus_a in the most similar pair.'
         data_tests:
           - relationships:
               arguments: {to: ref('dim_text_chunk'), field: chunk_id}
       - name: chunk_b
+        data_type: VARCHAR
+        description: 'Foreign key to dim_text_chunk: the representative chunk from corpus_b in the most similar pair.'
         data_tests:
           - relationships:
               arguments: {to: ref('dim_text_chunk'), field: chunk_id}
+      - name: concept_id
+        data_type: VARCHAR
+        description: 'Key, references dim_concept: the concept whose representative chunks are compared.'
+      - name: corpus_a
+        data_type: VARCHAR
+        description: 'Key, references dim_corpus: first corpus of the pair, in the order myth, philosophy, politics, law.'
+      - name: corpus_b
+        data_type: VARCHAR
+        description: 'Key, references dim_corpus: second corpus of the pair, later than corpus_a in that order.'
+      - name: similarity
+        data_type: DOUBLE
+        description: 'Measure, non-additive: cosine similarity of the two chunks'' embeddings; -1 to 1.'
+      - name: baseline_mean
+        data_type: DOUBLE
+        description: 'Measure, non-additive: mean cosine similarity of 4,000 random chunk pairs between the two corpora; same for every concept.'
+      - name: baseline_p95
+        data_type: DOUBLE
+        description: 'Measure, non-additive: 95th percentile cosine similarity of 4,000 random chunk pairs between the two corpora.'
+      - name: above_baseline
+        data_type: BOOLEAN
+        description: 'Attribute: true when similarity is above baseline_p95.'
+      - name: relation_type
+        data_type: VARCHAR
+        description: 'Attribute: relation type, always ''semantic_similarity'': similar wording, not influence.'
+      - name: content_type
+        data_type: VARCHAR
+        description: 'Attribute: content type of the row, always ''derived''.'
   - name: bridge_cluster_concept
     description: Reviewed links between atlas clusters and concepts; empty until a person reviews.
+    config:
+      contract: {enforced: true}
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [concept_source, cluster_variant, fingerprint, concept_id]
     columns:
       - name: concept_id
+        data_type: VARCHAR
+        description: 'Key, references dim_concept: the concept the reviewer linked to the cluster.'
         data_tests:
           - relationships:
               arguments: {to: ref('dim_concept'), field: concept_id}
       - name: reviewer
+        data_type: VARCHAR
+        description: 'Attribute: the person who reviewed the link; never a model.'
         data_tests: [not_null]
+      - name: concept_source
+        data_type: VARCHAR
+        description: 'Key: which atlas the reviewed cluster comes from (Symbolic Atlas or Philosophy Atlas), as written by the reviewer.'
+      - name: cluster_variant
+        data_type: VARCHAR
+        description: 'Key: map variant of the atlas the cluster belongs to, e.g. baseline or author_centered.'
+      - name: fingerprint
+        data_type: VARCHAR
+        description: 'Key: cluster fingerprint, the first 16 hex characters of the SHA-256 of its sorted member ids; a review holds only while the cluster is unchanged.'
+      - name: reviewed_at
+        data_type: DATE
+        description: 'Attribute: date of the review; ISO date.'
+      - name: note
+        data_type: VARCHAR
+        description: 'Attribute: the reviewer''s free-text note on the link; null when none was written.'
+      - name: content_type
+        data_type: VARCHAR
+        description: 'Attribute: content type of the row, always ''interpretation''.'
   - name: mart_concept_relations
     description: Concept × concept relations with an explicit relation type.
+    config:
+      contract: {enforced: true}
     data_tests:
       - unique_combination:
           arguments:
             columns: [concept_a, concept_b, relation_type]
     columns:
       - name: relation_type
+        data_type: VARCHAR
+        description: 'Key: semantic_similarity (anchors among each other''s three nearest in both languages) or shared_tension (editorial).'
         data_tests:
           - accepted_values:
               arguments:
                 values: [semantic_similarity, shared_tension]
       - name: concept_a
+        data_type: VARCHAR
+        description: 'Key, references dim_concept: the alphabetically first concept of the pair.'
         data_tests:
           - relationships:
               arguments: {to: ref('dim_concept'), field: concept_id}
       - name: concept_b
+        data_type: VARCHAR
+        description: 'Key, references dim_concept: the alphabetically second concept of the pair.'
         data_tests:
           - relationships:
               arguments: {to: ref('dim_concept'), field: concept_id}
+      - name: strength
+        data_type: DOUBLE
+        description: 'Measure, non-additive: mean of English and Swedish anchor cosine similarity for semantic_similarity; null for shared_tension.'
+      - name: tension_id
+        data_type: VARCHAR
+        description: 'Foreign key to dim_tension: the Philosophy Atlas tension the pair are poles of; null for semantic_similarity.'
+      - name: content_type
+        data_type: VARCHAR
+        description: 'Attribute: content type: ''derived'' for semantic_similarity, ''interpretation'' for shared_tension.'
   - name: mart_concept_profiles
     description: Concept × corpus rank-1 and top-3 shares against chance (derived).
+    config:
+      contract: {enforced: true}
     data_tests:
       - unique_combination:
           arguments:
             columns: [corpus_id, concept_id]
     columns:
       - name: rank1_share
+        data_type: DOUBLE
+        description: 'Measure, non-additive: rank1_chunks / chunks; share 0-1.'
         data_tests:
           - between:
               arguments: {min: 0, max: 1}
+      - name: corpus_id
+        data_type: VARCHAR
+        description: 'Key, references dim_corpus: the corpus.'
+      - name: concept_id
+        data_type: VARCHAR
+        description: 'Key, references dim_concept: the concept.'
+      - name: chunks
+        data_type: BIGINT
+        description: 'Measure, additive: count of the corpus''s chunks scored against the concept.'
+      - name: rank1_chunks
+        data_type: BIGINT
+        description: 'Measure, additive: count of chunks where the concept is the closest of all concepts (rank 1).'
+      - name: top3_chunks
+        data_type: BIGINT
+        description: 'Measure, additive: count of chunks where the concept is among the three closest concepts.'
+      - name: top3_share
+        data_type: DOUBLE
+        description: 'Measure, non-additive: top3_chunks / chunks; share 0-1.'
+      - name: rank1_chance
+        data_type: DOUBLE
+        description: 'Measure, non-additive: rank-1 share expected by chance, 1 / number of concepts; share 0-1.'
+      - name: rank1_lift
+        data_type: DOUBLE
+        description: 'Measure, non-additive: rank1_share / rank1_chance; ratio, 1 means chance level.'
+      - name: content_type
+        data_type: VARCHAR
+        description: 'Attribute: content type of the row, always ''derived''.'
   - name: mart_concept_passages
     description: Representative chunks per concept and corpus, with provenance.
+    config:
+      contract: {enforced: true}
     data_tests:
       - unique_combination:
           arguments:
             columns: [concept_id, corpus_id, representative_rank]
     columns:
       - name: representative_rank
+        data_type: INTEGER
+        description: 'Key: rank of the chunk by z-score among the corpus''s chunks where the concept is in the top three; 1 to 8.'
         data_tests:
           - between:
               arguments: {min: 1, max: 8}
+      - name: concept_id
+        data_type: VARCHAR
+        description: 'Key, references dim_concept: the concept the passage is representative for.'
+      - name: corpus_id
+        data_type: VARCHAR
+        description: 'Key, references dim_corpus: the corpus the passage comes from.'
+      - name: similarity
+        data_type: FLOAT
+        description: 'Measure, non-additive: cosine similarity of the chunk to the concept''s anchor sentence in the chunk''s language; -1 to 1.'
+      - name: rank
+        data_type: INTEGER
+        description: 'Measure, non-additive: the concept''s rank among all 28 concepts for this chunk; 1 to 3 here.'
+      - name: z_score
+        data_type: FLOAT
+        description: 'Measure, non-additive: similarity standardised against the same concept in the same corpus; standard deviations.'
+      - name: chunk_id
+        data_type: VARCHAR
+        description: 'Foreign key to dim_text_chunk: the representative chunk.'
+      - name: language
+        data_type: VARCHAR
+        description: 'Attribute: language of the chunk text, en or sv.'
+      - name: document_id
+        data_type: VARCHAR
+        description: 'Attribute: id of the source document: book, philosophy work, Riksdag speech or AI Act provision.'
+      - name: document_title
+        data_type: VARCHAR
+        description: 'Attribute: readable title of the source document.'
+      - name: location
+        data_type: VARCHAR
+        description: 'Attribute: where in the document the chunk sits, e.g. passage number or paragraph of the speech.'
+      - name: source_url
+        data_type: VARCHAR
+        description: 'Attribute: URL of the source the chunk was read from.'
+      - name: source_version
+        data_type: VARCHAR
+        description: 'Attribute: hash of the source version the chunk was read from.'
+      - name: retrieved_at
+        data_type: VARCHAR
+        description: 'Attribute: when the source was retrieved; ISO 8601 UTC text.'
+      - name: period
+        data_type: VARCHAR
+        description: 'Attribute: speech date for Riksdag chunks; ISO date text, null for the other corpora.'
+      - name: text
+        data_type: VARCHAR
+        description: 'Attribute: the chunk text as it stands in the source.'
+      - name: content_type
+        data_type: VARCHAR
+        description: 'Attribute: content type of the row, always ''derived''.'
   - name: mart_concept_links
     description: Editorial links from a concept to measures elsewhere on the site (interpretation).
+    config:
+      contract: {enforced: true}
     data_tests:
       - unique_combination:
           arguments:
             columns: [concept_id, kind, target_id]
     columns:
       - name: concept_id
+        data_type: VARCHAR
+        description: 'Key, references dim_concept: the concept the link starts from.'
         data_tests:
           - relationships:
               arguments: {to: ref('dim_concept'), field: concept_id}
       - name: kind
+        data_type: VARCHAR
+        description: 'Key: kind of target: philosophy_tension, riksdag_framing, ai_act_view or job_term.'
         data_tests:
           - accepted_values:
               arguments:
                 values: [philosophy_tension, riksdag_framing, ai_act_view, job_term]
+      - name: target_id
+        data_type: VARCHAR
+        description: 'Key: id of the target measure within its kind, e.g. a tension_id for philosophy_tension.'
+      - name: note
+        data_type: VARCHAR
+        description: 'Attribute: editor''s note on why the link holds; null when none was written.'
+      - name: content_type
+        data_type: VARCHAR
+        description: 'Attribute: content type of the row, always ''interpretation''.'

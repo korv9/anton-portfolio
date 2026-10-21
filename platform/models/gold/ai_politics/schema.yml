@@ -1,68 +1,309 @@
 version: 2
 
 models:
-  - name: fact_ai_speech
+  - name: fct_ai_speech
     description: One row per speech, whether it mentions AI and whether it names the AI Act; the denominator for every share.
+    config:
+      contract: {enforced: true}
     columns:
+      - name: party
+        data_type: VARCHAR
+        description: 'Foreign key to dim_party: the speaker''s party code; null for the chair, ministers and members without a party.'
+        data_tests:
+          - relationships: {arguments: {to: ref('dim_party'), field: party}}
       - name: speech_id
+        data_type: VARCHAR
+        description: 'Key: Riksdag speech id, protocol document id and speech number joined by a hyphen.'
         data_tests: [unique, not_null]
+      - name: session
+        data_type: VARCHAR
+        description: 'Foreign key to dim_parliament_session: the Riksdag session (riksmöte) of the speech, for example 2023/24.'
+        data_tests:
+          - relationships: {arguments: {to: ref('dim_parliament_session'), field: session}}
+      - name: speech_date
+        data_type: DATE
+        description: 'Attribute: date of the speech, ISO date.'
+      - name: speech_month
+        data_type: TIMESTAMP
+        description: 'Attribute: first day of the speech''s month.'
+      - name: speech_year
+        data_type: BIGINT
+        description: 'Attribute: calendar year of the speech.'
+      - name: speaker
+        data_type: VARCHAR
+        description: 'Attribute: the speaker''s name and title as in Riksdagen''s export.'
+      - name: debate_title
+        data_type: VARCHAR
+        description: 'Attribute: title of the debate item the speech belongs to.'
+      - name: debate_kind
+        data_type: VARCHAR
+        description: 'Attribute: kind of chamber activity, as in Riksdagen''s export (kammaraktivitet).'
+      - name: word_count
+        data_type: BIGINT
+        description: 'Measure, additive: count of whitespace-separated words in the speech text.'
+      - name: ai_paragraphs
+        data_type: BIGINT
+        description: 'Measure, additive: count of the speech''s paragraphs that pass the AI gate; 0 when none.'
+      - name: mentions_ai
+        data_type: BOOLEAN
+        description: 'Attribute: true when at least one paragraph passes the AI gate (a dictionary match, not a reading).'
+      - name: names_ai_act
+        data_type: BOOLEAN
+        description: 'Attribute: true when an AI paragraph names the AI Act; a speech can discuss the Act without naming it.'
+      - name: source_url
+        data_type: VARCHAR
+        description: 'Attribute: link to the speech on data.riksdagen.se.'
   - name: mart_ai_politics_monthly
     description: Month × all speeches, AI speeches and AI Act speeches, shares and a three-month rolling share.
+    config:
+      contract: {enforced: true}
     columns:
       - name: month
+        data_type: TIMESTAMP
+        description: 'Key: first day of the calendar month.'
         data_tests: [unique, not_null]
       - name: ai_share
+        data_type: DOUBLE
+        description: 'AI speeches / all speeches in the month. Fraction from 0 to 1, not per cent.'
         data_tests:
           - not_null
           - between:
               arguments: {min: 0, max: 1}
+      - name: speeches
+        data_type: BIGINT
+        description: 'Measure, additive: count of Riksdag speeches in the month.'
+      - name: ai_speeches
+        data_type: BIGINT
+        description: 'Measure, additive: count of speeches in the month that mention AI.'
+      - name: ai_act_speeches
+        data_type: BIGINT
+        description: 'Measure, additive: count of speeches in the month that name the AI Act.'
+      - name: ai_share_rolling_3m
+        data_type: DOUBLE
+        description: 'Measure, non-additive: AI speeches / speeches summed over this and the two preceding months; fraction 0-1.'
+      - name: speeches_rolling_3m
+        data_type: HUGEINT
+        description: 'Measure, non-additive: count of speeches in this and the two preceding months (a rolling window, so rows overlap).'
   - name: mart_ai_politics_party_year
     description: Party × year, share of speeches mentioning AI.
+    config:
+      contract: {enforced: true}
     data_tests:
       - unique_combination:
           arguments:
             columns: [party, year]
+    columns:
+      - name: ai_share
+        data_type: DOUBLE
+        description: 'The party''s AI speeches / all its speeches in the year. Fraction from 0 to 1, not per cent.'
+      - name: party
+        data_type: VARCHAR
+        description: 'Key, references dim_party: party code; speakers without a party are left out.'
+        data_tests:
+          - relationships: {arguments: {to: ref('dim_party'), field: party}}
+      - name: year
+        data_type: BIGINT
+        description: 'Key: calendar year of the speeches.'
+      - name: speeches
+        data_type: BIGINT
+        description: 'Measure, additive: count of the party''s speeches in the year.'
+      - name: ai_speeches
+        data_type: BIGINT
+        description: 'Measure, additive: count of the party''s speeches in the year that mention AI.'
+      - name: ai_act_speeches
+        data_type: BIGINT
+        description: 'Measure, additive: count of the party''s speeches in the year that name the AI Act.'
   - name: mart_ai_politics_concepts
     description: Party (or ALL) × period × concept among AI speeches.
+    config:
+      contract: {enforced: true}
     data_tests:
       - unique_combination:
           arguments:
             columns: [party, period, concept_id]
     columns:
+      - name: party
+        data_type: VARCHAR
+        description: 'Key: party code, or ''ALL'' for every speaker including those without a party.'
+        data_tests:
+          - relationships: {arguments: {to: ref('dim_party'), field: party}, config: {where: "party <> 'ALL'"}}
       - name: share
+        data_type: DOUBLE
+        description: 'Speeches naming the concept / AI speeches. Fraction from 0 to 1, not per cent.'
         data_tests:
           - between:
               arguments: {min: 0, max: 1}
+      - name: concept_id
+        data_type: VARCHAR
+        description: 'Key: framing concept id from seeds/ai_politics/ai_politics_concepts.csv.'
+        data_tests:
+          - relationships: {arguments: {to: ref('ai_politics_concepts'), field: concept_id}}
+      - name: period
+        data_type: VARCHAR
+        description: 'Key: a calendar year, a phase (before_proposal, negotiation, after_publication) or ''all''.'
+      - name: period_kind
+        data_type: VARCHAR
+        description: 'Attribute: what period holds: year, phase or all.'
+      - name: ai_speeches
+        data_type: BIGINT
+        description: 'Measure, additive: count of speeches mentioning AI for the party and period; the denominator of share.'
+      - name: speeches_with_concept
+        data_type: BIGINT
+        description: 'Measure, additive: count of those AI speeches with the concept in an AI paragraph; 0 when none.'
   - name: mart_ai_politics_framing
     description: Framing pairs per party and phase, with a balance only from ten speeches.
+    config:
+      contract: {enforced: true}
     data_tests:
       - unique_combination:
           arguments:
             columns: [pair_id, party, period]
     columns:
+      - name: party
+        data_type: VARCHAR
+        description: 'Key: party code, or ''ALL'' for every speaker including those without a party.'
+        data_tests:
+          - relationships: {arguments: {to: ref('dim_party'), field: party}, config: {where: "party <> 'ALL'"}}
       - name: balance
+        data_type: DOUBLE
+        description: 'Measure, non-additive: (speeches_a - speeches_b) / (speeches_a + speeches_b), -1 (only B) to 1 (only A); null below ten speeches using either.'
         data_tests:
           - between:
               arguments: {min: -1, max: 1}
+      - name: pair_id
+        data_type: VARCHAR
+        description: 'Key: framing pair id from seeds/ai_politics/ai_politics_framing_pairs.csv.'
+        data_tests:
+          - relationships: {arguments: {to: ref('ai_politics_framing_pairs'), field: pair_id}}
+      - name: period
+        data_type: VARCHAR
+        description: 'Key: a phase (before_proposal, negotiation, after_publication) or ''all''.'
+      - name: period_kind
+        data_type: VARCHAR
+        description: 'Attribute: what period holds: phase or all.'
+      - name: speeches_a
+        data_type: BIGINT
+        description: 'Measure, additive: count of AI speeches with the pair''s concept A in an AI paragraph.'
+      - name: speeches_b
+        data_type: BIGINT
+        description: 'Measure, additive: count of AI speeches with the pair''s concept B in an AI paragraph.'
+      - name: speeches_both
+        data_type: BIGINT
+        description: 'Measure, additive: count of AI speeches with both concepts.'
+      - name: ai_speeches
+        data_type: BIGINT
+        description: 'Measure, additive: count of speeches mentioning AI for the party and period.'
   - name: mart_ai_politics_examples
     description: Example AI paragraphs per concept (newest first) and every paragraph naming the AI Act.
+    config:
+      contract: {enforced: true}
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [concept_id, speech_id, paragraph]
     columns:
+      - name: party
+        data_type: VARCHAR
+        description: 'Attribute: the speaker''s party code; null for speakers without a party.'
+        data_tests:
+          - relationships: {arguments: {to: ref('dim_party'), field: party}}
       - name: source_url
+        data_type: VARCHAR
+        description: 'Attribute: link to the speech on data.riksdagen.se.'
         data_tests: [not_null]
+      - name: speech_id
+        data_type: VARCHAR
+        description: Key, references fct_ai_speech.
+        data_tests:
+          - relationships: {arguments: {to: ref('fct_ai_speech'), field: speech_id}}
+      - name: concept_id
+        data_type: VARCHAR
+        description: 'Key: framing concept id, or ''ai_act'' for paragraphs that name the AI Act.'
+        data_tests:
+          - relationships: {arguments: {to: ref('ai_politics_concepts'), field: concept_id}}
+      - name: paragraph
+        data_type: BIGINT
+        description: 'Key: 0-based index of the paragraph within the speech text.'
+      - name: text
+        data_type: VARCHAR
+        description: 'Attribute: the paragraph''s text, in Swedish.'
+      - name: speech_date
+        data_type: DATE
+        description: 'Attribute: date of the speech, ISO date.'
+      - name: speaker
+        data_type: VARCHAR
+        description: 'Attribute: the speaker''s name and title as in Riksdagen''s export.'
+      - name: debate_title
+        data_type: VARCHAR
+        description: 'Attribute: title of the debate item the speech belongs to.'
   - name: mart_ai_act_speech_similarity
     description: Per AI Act article, the closest Riksdag AI paragraphs by multilingual embeddings (semantic similarity, derived).
+    config:
+      contract: {enforced: true}
     data_tests:
       - unique_combination:
           arguments:
             columns: [article_number, rank]
     columns:
       - name: similarity
+        data_type: DOUBLE
+        description: 'Measure, non-additive: cosine similarity between the paragraph and the article''s best-matching passage, -1 to 1.'
         data_tests:
           - not_null
           - between:
               arguments: {min: -1, max: 1}
       - name: model
+        data_type: VARCHAR
         description: One model for both sides; a test checks there is only one.
         data_tests: [not_null]
       - name: speech_url
+        data_type: VARCHAR
+        description: 'Attribute: link to the speech on data.riksdagen.se.'
         data_tests: [not_null]
+      - name: speech_id
+        data_type: VARCHAR
+        description: 'Foreign key to fct_ai_speech: the speech the paragraph comes from.'
+        data_tests:
+          - relationships: {arguments: {to: ref('fct_ai_speech'), field: speech_id}}
+      - name: article_number
+        data_type: VARCHAR
+        description: 'Key: AI Act article number, from the current Swedish version.'
+      - name: rank
+        data_type: BIGINT
+        description: 'Key: 1 for the speech paragraph closest to the article, then 2, 3 and so on.'
+      - name: above_chance
+        data_type: BOOLEAN
+        description: 'Attribute: true when similarity is above chance_p95, the 95th percentile of random speech-Act pairs.'
+      - name: chance_p95
+        data_type: DOUBLE
+        description: 'Measure, non-additive: 95th percentile cosine similarity of 5,000 random speech-Act pairs in the same run; one value for all rows.'
+      - name: act_passage_id
+        data_type: VARCHAR
+        description: 'Attribute: id of the article''s best-matching passage, art_<article number>:<0-based passage index>.'
+      - name: act_passage_sv
+        data_type: VARCHAR
+        description: 'Attribute: text of that AI Act passage, in Swedish.'
+      - name: paragraph
+        data_type: BIGINT
+        description: 'Attribute: 0-based index of the paragraph within the speech text.'
+      - name: speech_paragraph
+        data_type: VARCHAR
+        description: 'Attribute: text of the speech paragraph, in Swedish.'
+      - name: speech_date
+        data_type: DATE
+        description: 'Attribute: date of the speech, ISO date.'
+      - name: party
+        data_type: VARCHAR
+        description: 'Attribute: the speaker''s party code; null for speakers without a party.'
+      - name: speaker
+        data_type: VARCHAR
+        description: 'Attribute: the speaker''s name and title as in Riksdagen''s export.'
+      - name: debate_title
+        data_type: VARCHAR
+        description: 'Attribute: title of the debate item the speech belongs to.'
+      - name: act_version
+        data_type: VARCHAR
+        description: 'Attribute: CELEX number of the AI Act version the passages come from.'
+      - name: content_type
+        data_type: VARCHAR
+        description: 'Attribute: always ''derived''; the pairs are computed by embeddings.'

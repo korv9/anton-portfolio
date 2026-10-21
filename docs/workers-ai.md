@@ -170,12 +170,12 @@ Körningen den 15 oktober 2026 tog 3 timmar och 23 minuter:
 Sex dokument gav 404. Alla har dok_id av formen `sfs-1895-bih. 52 s. 1`, och Riksdagen
 lämnar inte ut dem under någon adress. Råtexterna tar 215 MB.
 
-- `silver_sfs_documents` har en rad per dokument i listan. Upphävda dokument ligger kvar med
+- `int_sfs_documents` har en rad per dokument i listan. Upphävda dokument ligger kvar med
   datumet från raden `Upphävd:`. Tabellen har också sista ändrings-SFS från `Ändrad:`, textens
   längd och SHA-256 samt ett parsningsstatus. Typen (`lag`, `förordning`, `other`) tas från
   titelns första ord. Grundlagarna och riksdagsordningen räknas som lag.
-- `silver_sfs_corpus_paragraphs` delar alla texter med samma regler som demons
-  `silver_sfs_paragraphs` (`platform/ingest/sfs/chunking.py`). Id:t är dok_id plus Riksdagens
+- `int_sfs_corpus_paragraphs` delar alla texter med samma regler som demons
+  `int_sfs_paragraphs` (`platform/ingest/sfs/chunking.py`). Id:t är dok_id plus Riksdagens
   ankare, till exempel `sfs-1962-700-K3P1`, eftersom delningens eget id kan läsas på två sätt.
   Ett dokument utan numrerade paragrafer får i stället hela texten som `kind` `whole_text`.
   Huvudet och övergångsbestämmelserna ingår inte, precis som för paragraferna. Texten delas vid
@@ -203,7 +203,7 @@ Flest bitar, 82, fick ett dubbelbeskattningsavtal (`sfs-1977-580`). Paragrafstyc
 delade. 1 177 av dem är över 1 500 tecken, det längsta 9 398, och inbäddningssteget får välja
 hur de ska delas. Testet `test_whole_text_packs_into_pieces_that_join_back` kontrollerar att
 ingen bit är över 1 500 tecken och att bitarna blir samma text igen, blanktecken frånsett. Fråga lagens
-`silver_sfs_paragraphs` har kvar sina 9 970 stycken, och tabellens innehåll har samma md5 före
+`int_sfs_paragraphs` har kvar sina 9 970 stycken, och tabellens innehåll har samma md5 före
 och efter ändringen. `assert_sfs_whole_text_only_without_paragraphs` kontrollerar att inget
 dokument har båda sorterna och att ingen XML-text kommit med.
 
@@ -213,7 +213,7 @@ Sidan `#lagboken` (projektet Swedish Statute Book) visar samlingen i tre flikar:
 utfärdade och upphävda per år samt storlek. Guldmodellen `fct_sfs_document` har en rad per
 dokument med typ, utfärdandeår, upphävandeår, antal numrerade paragrafer (kapitel och §, räknade
 en gång) och antal stycken. `python platform/publish/export_sfs.py` läser den och
-`silver_sfs_corpus_paragraphs` och skriver `frontend/public/data/sfs/overview.json`, ungefär
+`int_sfs_corpus_paragraphs` och skriver `frontend/public/data/sfs/overview.json`, ungefär
 16 kB, efter `dbt build --select tag:sfs --target-path target/sfs`. Exporten vägrar köra om något
 test fallerat. Filen ingår i leveransgruppen `baseline`.
 

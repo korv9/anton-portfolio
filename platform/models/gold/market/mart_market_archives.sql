@@ -7,4 +7,4 @@ select
     duplicates,
     ads,
     cast(counted_at as timestamp) as counted_at
-from {{ source('jobtech_market', 'manifests') }}
+from {{ ref('stg_market_manifests') }}

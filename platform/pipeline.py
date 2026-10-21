@@ -60,11 +60,21 @@ def expand(command: str) -> list[str]:
 
 
 def dbt_argv(spec: dict, target: str) -> list[str]:
+    # buildable: a test runs only when all of its models are selected or upstream of the selection,
+    # so another subject's tests against a shared dimension stay with that subject.
     argv = [sys.executable, "-m", "dbt.cli.main", "build", "--profiles-dir", ".",
-            "--select", *spec["select"]]
+            "--indirect-selection", "buildable", "--select", *spec["select"]]
     if spec.get("exclude"):
         argv += ["--exclude", *spec["exclude"]]
     return argv + ["--target-path", f"target/{target}"]
+
+
+def freshness_argv(spec: dict, target: str) -> list[str]:
+    """dbt source freshness for the sources upstream of a dbt step; dbt skips those without a
+    freshness config. It runs before the build, so the build's run_results.json stands."""
+    select = [s if s.startswith("+") else f"+{s}" for s in spec["select"]]
+    return [sys.executable, "-m", "dbt.cli.main", "source", "freshness", "--profiles-dir", ".",
+            "--select", *select, "--target-path", f"target/{target}"]
 
 
 def missing_files(argv: list[str], cwd: Path) -> list[str]:
@@ -142,6 +152,9 @@ def run_subject(name: str, subject: dict, phases: set[str], ml: str, run: Runner
             print(f"  skipped ({step['when_env']} is not set): {step[phase]}")
             continue
         if phase == "dbt":
+            if step["dbt"].get("freshness"):
+                # Warn-only: a stale or unreadable source is reported and never stops the build.
+                run(freshness_argv(step["dbt"], target), cwd=PLATFORM, ok_exit=(1, 2))
             run(dbt_argv(step["dbt"], target), cwd=PLATFORM)
         elif phase == "ml":
             argv = ml_argv(step, ml)

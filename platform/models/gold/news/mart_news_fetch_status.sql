@@ -7,7 +7,7 @@ with fetches as (
         cast(fetched_at as timestamptz) as fetched_at,
         status,
         to_json(f) ->> 'error' as error
-    from {{ source('news', 'fetches') }} as f
+    from {{ ref('stg_news_fetches') }} as f
 )
 select
     source,

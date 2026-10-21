@@ -6,99 +6,287 @@ version: 2
 models:
   - name: dim_date
     description: Calendar, one row per day 1968-2030. Also the semantic layer's time spine.
+    config:
+      contract: {enforced: true}
     time_spine:
       standard_granularity_column: date_day
     columns:
       - name: date_day
+        data_type: DATE
+        description: 'Key: calendar day; ISO date, 1968-01-01 to 2030-12-31.'
         granularity: day
         data_tests: [not_null, unique]
+      - name: year
+        data_type: BIGINT
+        description: 'Attribute: calendar year.'
+      - name: quarter
+        data_type: BIGINT
+        description: 'Attribute: quarter of the year, 1-4.'
+      - name: month
+        data_type: BIGINT
+        description: 'Attribute: month of the year, 1-12.'
+      - name: year_month
+        data_type: VARCHAR
+        description: 'Attribute: month as YYYY-MM, matching dim_period month keys.'
+      - name: year_quarter
+        data_type: VARCHAR
+        description: 'Attribute: quarter as YYYY-Qn, matching dim_period quarter keys.'
+      - name: month_name_sv
+        data_type: VARCHAR
+        description: 'Attribute: Swedish month name in lower case, januari to december.'
+      - name: iso_day_of_week
+        data_type: BIGINT
+        description: 'Attribute: ISO day of week, 1 Monday to 7 Sunday.'
+      - name: is_month_start
+        data_type: BOOLEAN
+        description: 'Attribute: true on the first day of a month.'
+      - name: is_month_end
+        data_type: BOOLEAN
+        description: 'Attribute: true on the last day of a month.'
+
+  - name: dim_party
+    description: >-
+      One row per party code in the warehouse: the eight Riksdag parties, Ny demokrati, OTHER
+      (small parties summed) and '-' (no party). No bloc: blocs change by period and are in
+      seeds/parliament/governments.csv.
+    columns:
+      - name: party
+        data_tests: [not_null, unique]
+      - name: name_sv
+        data_tests: [not_null]
+      - name: founded_year
+        description: Null for OTHER and '-'.
 
   - name: dim_period
+    config:
+      contract: {enforced: true}
     description: >-
       Reporting periods: year (2024), quarter (2024-Q1), month (2024-03), pooled_years
       (2021-2024, Folkhälsomyndigheten's county results) and survey_round (ESS11).
       start_date and end_date join dim_date; reference_year aligns periods of different types.
     columns:
       - name: period_key
+        data_type: VARCHAR
+        description: 'Key: 2024, 2024-Q1, 2024-03, 2021-2024 (pooled years) or ESS11 (survey round).'
         data_tests: [not_null, unique]
       - name: period_type
+        data_type: VARCHAR
+        description: 'Attribute: year, quarter, month, pooled_years or survey_round.'
         data_tests:
           - not_null
           - accepted_values:
               arguments:
                 values: [year, quarter, month, pooled_years, survey_round]
       - name: start_date
+        data_type: DATE
+        description: 'Foreign key to dim_date: first day of the period; for an ESS round, 1 January of the fieldwork start year.'
         data_tests:
           - not_null
           - relationships:
               arguments: {to: ref('dim_date'), field: date_day}
       - name: end_date
+        data_type: DATE
+        description: 'Foreign key to dim_date: last day of the period; for an ESS round, 31 December of the fieldwork end year.'
         data_tests:
           - not_null
           - relationships:
               arguments: {to: ref('dim_date'), field: date_day}
       - name: reference_year
+        data_type: INTEGER
+        description: 'Attribute: year the period is compared under; the last year of a pooled span, an ESS round''s nominal year.'
         data_tests: [not_null]
+      - name: period_label
+        data_type: VARCHAR
+        description: 'Attribute: display label; the key itself, with fieldwork years added for ESS rounds.'
 
   - name: dim_region
+    config:
+      contract: {enforced: true}
     description: >-
       Swedish regions on SCB codes: country 00, counties (2 digits), municipalities
       (4 digits), AKU's aggregate 0050 and the eight NUTS2 areas used by ESS.
     columns:
       - name: region_code
+        data_type: VARCHAR
+        description: 'SCB region code: 00 the country, two digits a county, four digits a municipality, 0050 an aggregate. Facts name it region_code, or municipality_code when only municipalities occur.'
         data_tests: [not_null, unique]
       - name: region_level
+        data_type: VARCHAR
+        description: 'Attribute: country, county, municipality, aggregate (AKU''s 0050) or nuts2.'
         data_tests:
           - not_null
           - accepted_values:
               arguments:
                 values: [country, county, municipality, aggregate, nuts2]
       - name: county_code
+        data_type: VARCHAR
         description: The county a county or municipality belongs to; NULL for other levels.
       - name: nuts2_code
+        data_type: VARCHAR
         description: NUTS2 area of a county or municipality, and of a NUTS2 row itself.
       - name: kolada_region_id
+        data_type: VARCHAR
         description: Kolada's id for the same region (0000, 00LL, KKKK).
+      - name: region_name
+        data_type: VARCHAR
+        description: 'Attribute: region name as SCB publishes it, or the NUTS2 area name.'
+      - name: county_name
+        data_type: VARCHAR
+        description: 'Attribute: name of the county a county or municipality belongs to; NULL for other levels.'
+      - name: nuts2_name
+        data_type: VARCHAR
+        description: 'Attribute: name of the NUTS2 area (riksområde); NULL when the region has none.'
+
+  - name: dim_municipality
+    description: >-
+      Every SCB municipality code in use since 1974: today's codes from dim_region and the
+      retired ones from seeds/shared/municipality_codes, each with its years of use. Facts
+      with a four-digit municipality code test against it.
+    columns:
+      - name: municipality_code
+        data_tests: [not_null, unique]
+      - name: municipality_name
+        data_tests: [not_null]
+      - name: county_code
+        description: Today's county; for a retired code, its successor's.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('dim_region'), field: region_code}
+      - name: kolada_region_id
+        description: Kolada's id; NULL for a retired code.
+      - name: valid_from
+        description: First year the code was in use (1974 at the earliest, the start of SCB's list).
+        data_tests: [not_null]
+      - name: valid_to
+        description: Last year a retired code was in use; NULL while the code is current.
+      - name: successor_code
+        description: The current code that replaced a retired one.
+        data_tests:
+          - relationships:
+              arguments: {to: ref('dim_region'), field: region_code}
 
   - name: dim_sex
+    config:
+      contract: {enforced: true}
     columns:
       - name: sex_key
+        data_type: VARCHAR
+        description: 'Key: T total, K women (kvinnor), M men.'
         data_tests: [not_null, unique]
+      - name: name_sv
+        data_type: VARCHAR
+        description: 'Attribute: Swedish name: Totalt, Kvinnor or Män.'
+      - name: name_en
+        data_type: VARCHAR
+        description: 'Attribute: English name: Total, Women or Men.'
+      - name: sort_order
+        data_type: INTEGER
+        description: 'Attribute: display order, 1 Total, 2 Women, 3 Men.'
 
   - name: dim_age_group
     description: Age bands as sources publish them. Bands from different sources overlap and are compared only like with like.
+    config:
+      contract: {enforced: true}
     columns:
       - name: age_group_key
+        data_type: VARCHAR
+        description: 'Key: age band as published, such as 15-74, 16+ or ALL (no age breakdown).'
         data_tests: [not_null, unique]
+      - name: age_min
+        data_type: INTEGER
+        description: 'Attribute: lowest age in the band; years; NULL for ALL.'
+      - name: age_max
+        data_type: INTEGER
+        description: 'Attribute: highest age in the band; years; NULL for open bands (16+) and ALL.'
+      - name: age_group_label
+        data_type: VARCHAR
+        description: 'Attribute: Swedish display label, such as 16–84 år or Alla åldrar.'
 
   - name: dim_country
     description: ESS participating countries.
+    config:
+      contract: {enforced: true}
     columns:
       - name: country_code
+        data_type: VARCHAR
+        description: 'Key: ESS two-letter country code.'
         data_tests: [not_null, unique]
+      - name: country_name_sv
+        data_type: VARCHAR
+        description: 'Attribute: country name in Swedish.'
+      - name: country_name_en
+        data_type: VARCHAR
+        description: 'Attribute: country name in English.'
+      - name: is_nordic
+        data_type: BOOLEAN
+        description: 'Attribute: true for the Nordic countries pooled in the NORDIC group.'
+      - name: is_eu27
+        data_type: BOOLEAN
+        description: 'Attribute: true for EU-27 member states, pooled in the EU27 group.'
 
   - name: dim_source
+    config:
+      contract: {enforced: true}
     columns:
       - name: source_key
+        data_type: VARCHAR
+        description: 'Key: short source id: scb, fk, fohm, ess or kolada.'
         data_tests: [not_null, unique]
+      - name: source_name
+        data_type: VARCHAR
+        description: 'Attribute: name of the statistics product.'
+      - name: publisher
+        data_type: VARCHAR
+        description: 'Attribute: publishing organisation.'
+      - name: homepage_url
+        data_type: VARCHAR
+        description: 'Attribute: source homepage url.'
+      - name: licence
+        data_type: VARCHAR
+        description: 'Attribute: licence or terms of use as stated by the source.'
+      - name: citation
+        data_type: VARCHAR
+        description: 'Attribute: citation text to show with the data.'
 
   - name: dim_diagnosis
     description: ICD-10 chapters as grouped by Försäkringskassan, plus F43 inside F00-F99.
+    config:
+      contract: {enforced: true}
     columns:
       - name: diagnosis_code
+        data_type: VARCHAR
+        description: 'Key: ALL, an ICD-10 chapter as Försäkringskassan groups it (such as F00-F99), or F43.'
         data_tests: [not_null, unique]
+      - name: diagnosis_label
+        data_type: VARCHAR
+        description: 'Attribute: Swedish label of the diagnosis group.'
+      - name: parent_diagnosis_code
+        data_type: VARCHAR
+        description: 'Attribute: enclosing group, ALL for a chapter and F00-F99 for F43; NULL for ALL.'
+      - name: is_psychiatric
+        data_type: BOOLEAN
+        description: 'Attribute: true for F00-F99 and F43, the psychiatric diagnoses.'
 
   - name: dim_indicator
     description: Every indicator in fct_indicator, with unit, welfare domain and direction.
+    config:
+      contract: {enforced: true}
     columns:
       - name: indicator_key
+        data_type: VARCHAR
+        description: 'Key: source prefix plus code, such as aku_unemployment_rate, ess_ppltrst or kolada_N03937.'
         data_tests: [not_null, unique]
       - name: source_key
+        data_type: VARCHAR
+        description: 'Foreign key to dim_source: the publishing source (scb, fk, fohm, ess, kolada).'
         data_tests:
           - not_null
           - relationships:
               arguments: {to: ref('dim_source'), field: source_key}
       - name: domain
+        data_type: VARCHAR
+        description: 'Attribute: finer welfare area used on the site, such as jobb or mental_halsa.'
         data_tests:
           - not_null
           - accepted_values:
@@ -106,6 +294,7 @@ models:
                 values: [jobb, arbetsliv, ekonomi, politik, mental_halsa, halsa,
                          tillit_varderingar, trygghet, utbildning, befolkning]
       - name: measure_type
+        data_type: VARCHAR
         description: >-
           count_flow (add over time and space), count_stock (add over space, not time),
           rate and share (non-additive: recompute from components or weight), mean_score
@@ -116,6 +305,7 @@ models:
               arguments:
                 values: [count_flow, count_stock, rate, share, mean_score, median]
       - name: time_rule
+        data_type: VARCHAR
         description: How values over periods combine into a longer period.
         data_tests:
           - not_null
@@ -123,6 +313,7 @@ models:
               arguments:
                 values: [sum, mean_of_periods, end_of_period, recompute_from_components, not_aggregable]
       - name: space_rule
+        data_type: VARCHAR
         description: How values over regions, sexes or ages combine.
         data_tests:
           - not_null
@@ -130,3 +321,30 @@ models:
               arguments:
                 values: [sum, recompute_from_components, population_weighted_mean,
                          recompute_from_microdata, not_aggregable]
+      - name: source_code
+        data_type: VARCHAR
+        description: 'Attribute: the source''s own code for the indicator (AKU status, FoHM measure, ESS variable, Kolada KPI id).'
+      - name: indicator_name
+        data_type: VARCHAR
+        description: 'Attribute: indicator name in Swedish.'
+      - name: unit
+        data_type: VARCHAR
+        description: 'Attribute: unit of fct_indicator.value in Swedish (procent, antal, medelvärde 0-10); NULL for Kolada, see description.'
+      - name: welfare_dimension
+        data_type: VARCHAR
+        description: 'Attribute: dimension as in SCB''s Nya mått på välfärd, such as ekonomisk or social.'
+      - name: higher_is_better
+        data_type: BOOLEAN
+        description: 'Attribute: true when a higher value is better, false when worse; NULL when no direction applies.'
+      - name: description
+        data_type: VARCHAR
+        description: 'Attribute: Swedish description of what the indicator measures; Kolada''s KPI description for Kolada.'
+      - name: weight_indicator
+        data_type: VARCHAR
+        description: 'Attribute: indicator_key to weight by when combining regions (scb_population for FoHM); NULL when none.'
+      - name: components
+        data_type: VARCHAR
+        description: 'Attribute: formula of the indicator''s additive components in the facts, for recomputing; NULL when none.'
+      - name: aggregation_note
+        data_type: VARCHAR
+        description: 'Attribute: plain-English rule for aggregating the indicator correctly.'

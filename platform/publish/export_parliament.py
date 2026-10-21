@@ -210,9 +210,8 @@ def main() -> None:
     for row in elections:
         by_year[row["election_year"]][row["party"]] = row
     val_meta = records(connection, """
-        select any_value(election_date) as election_date, any_value(count_status) as count_status,
-               any_value(last_updated) as last_updated
-        from bronze.stg_val_riksdag_result where election_year = ?""", [latest_year])[0]
+        select election_date, count_status, last_updated
+        from gold.dim_election_count where election_year = ?""", [latest_year])[0]
 
     latest_election = {
         "year": latest_year, **val_meta, "majority": MAJORITY,

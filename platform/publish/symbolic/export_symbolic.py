@@ -273,23 +273,20 @@ def main() -> int:
     import pyarrow.parquet as pq
 
     con = duckdb.connect(str(DATABASE), read_only=True)
-    os.chdir(ROOT / "platform")  # the bronze views read raw files by a path relative to platform/
     atlas = con.execute(f"select {', '.join(ATLAS_COLUMNS)} from gold.mart_symbol_atlas "
                         "order by occurrence_id").to_arrow_table()
     profiles = con.execute("select * from gold.mart_symbol_profiles "
                            "order by symbol_id, cluster_id").to_arrow_table()
     books = con.execute(
-        "select d.document_id, d.title, d.author, d.tradition, d.word_count, s.gutenberg_id, s.source_url, "
+        "select d.document_id, d.title, d.author, d.tradition, d.word_count, d.gutenberg_id, d.source_url, "
         "(select count(*) from gold.mart_symbol_atlas a where a.document_id = d.document_id) as points, "
         "d.translator, d.culture, d.region, d.genre, d.source_type, d.period, d.pilot "
-        "from silver.int_symbolic_documents d join bronze.stg_symbolic_documents s using (document_id) "
-        "order by d.tradition, d.document_id").fetchall()
+        "from gold.dim_symbolic_document d order by d.tradition, d.document_id").fetchall()
     symbols = con.execute(
-        "select s.symbol_id, s.label, count(a.occurrence_id) as points, "
-        "(select count(*) from silver.int_symbol_occurrences o where o.symbol_id = s.symbol_id) as occurrences "
-        "from seeds.symbols s left join gold.mart_symbol_atlas a using (symbol_id) "
-        "group by 1, 2 order by 1").fetchall()
-    total_occurrences = con.execute("select count(*) from silver.int_symbol_occurrences").fetchone()[0]
+        "select s.symbol_id, s.label, count(a.occurrence_id) as points, s.occurrence_count as occurrences "
+        "from gold.dim_symbol s left join gold.mart_symbol_atlas a using (symbol_id) "
+        "group by 1, 2, 4 order by 1").fetchall()
+    total_occurrences = con.execute("select sum(occurrence_count)::bigint from gold.dim_symbol").fetchone()[0]
     con.close()
 
     contexts = atlas.column("context").to_pylist()

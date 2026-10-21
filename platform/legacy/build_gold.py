@@ -2,6 +2,10 @@
 
 No network access, model calls, or inferred political positions are involved.
 Run ``python platform/legacy/build_gold.py`` after the upstream export builders.
+
+Not dbt: the gold tables written here are built in Python from delivered JSON and CSV, outside
+the dbt DAG. The tables in DBT_TABLES, the vote marts and the model's metrics and relationships
+are dbt's (publish/export_politics.py); this build carries their entries forward unchanged.
 """
 
 import sys
@@ -26,7 +30,9 @@ GOLD = SOURCE / "gold"
 PARTIES = ("C", "KD", "L", "M", "MP", "S", "SD", "V")
 HISTORICAL_PARTIES = ("NYD",)
 # Built by dbt and delivered by publish/export_politics.py; see main().
-DBT_TABLES = ("mart_party_session_vote", "mart_party_agreement")
+DBT_TABLES = ("mart_party_session_vote", "mart_party_agreement", "fact_language_area",
+              "fact_language_coverage", "mart_budget_language_gap", "fact_topic_session_party",
+              "fact_activity", "fact_budget_outturn", "fact_rfc_version")
 DBT_PATHS = ("marts/votes/", *(f"tables/{name}.json" for name in DBT_TABLES))
 PARTY_NAMES = {
     "C": "Centerpartiet", "KD": "Kristdemokraterna", "L": "Liberalerna",
@@ -137,7 +143,8 @@ def main():
         for path in sorted(SOURCE.glob("politics/decisions/*/index.json"))
     ]
     budget = rows(SOURCE / "debates/budgets/summary.json")
-    budget_outturn = rows(SOURCE / "politics/parliament/budgets/outturn-areas.json")
+    # Read for its source hash only: dbt builds fact_budget_outturn from it now.
+    rows(SOURCE / "politics/parliament/budgets/outturn-areas.json")
     budget_alignment = rows(SOURCE / "debates/budgets/speech-alignment.json")
     budget_coverage = source(SOURCE / "debates/budgets/coverage.json")
     budget_speech = rows(SOURCE / "debates/budgets/speech-keywords-all-parties.json")
@@ -267,42 +274,12 @@ def main():
     model_tables["fact_proposition_point_link"] = table("fact_proposition_point_link", proposition_facts, "One proposition cited at a decision point", ["point_id", "proposition_id"], ["point_id"], "Explicit committee document citation", "No claim-level or enacted-provision link")
     law_mention_facts = [{**row, "evidence_status": "lexical_candidate"} for row in law_mentions]
     model_tables["fact_law_mention_candidate"] = table("fact_law_mention_candidate", law_mention_facts, "One speech and named law candidate", ["speech_id", "sfs_document_id"], ["speech_id"], "Lexical law-name matching", "Snapshot not verified effective at speech date; provision and direction unresolved")
-    model_tables["fact_activity"] = table("fact_activity", activities, "One party and session", ["session", "party"], ["session", "party"], "Parliament activity summary")
     model_tables["fact_budget_frame"] = table("fact_budget_frame", budget, "One session, proposer and area", ["session", "actor", "expenditure_area"], ["session", "actor", "expenditure_area"], "Corrected exact-year budget frame", "Incomplete years and missing party proposals must not be imputed")
-    model_tables["fact_budget_outturn"] = table("fact_budget_outturn", budget_outturn, "One budget year and expenditure area", ["budget_year", "expenditure_area"], ["budget_year", "expenditure_area"], "Statskontoret annual outturn aggregate", "Historical area definitions must be checked before joining a budget proposal")
-    model_tables["fact_language_area"] = table("fact_language_area", language["rows"], "One corpus, method, session, party and area", ["corpus", "method", "session", "party", "expenditure_area"], ["session", "party", "expenditure_area"], "Budget-language audit", "Word matches are topic attention, not support")
-    model_tables["fact_language_coverage"] = table("fact_language_coverage", language["coverage"], "One corpus, method, session and party", ["corpus", "method", "session", "party"], ["session", "party"], "Budget-language audit", "Zero matches are not evidence of silence")
     budget_groups = defaultdict(set)
     for row in budget:
         budget_groups[(row["session"], row["actor"])].add(row["expenditure_area"])
-    complete_budget = {
-        (row["session"], row["actor"], row["expenditure_area"]): row
-        for row in budget
-        if row["actor"] in PARTIES and budget_groups[(row["session"], row["actor"])] == set(range(1, 28))
-    }
-    budget_language = []
-    for row in language["rows"]:
-        frame = complete_budget.get((row["session"], row["party"], row["expenditure_area"]))
-        if frame is None:
-            continue
-        budget_language.append({
-            "corpus": row["corpus"], "method": row["method"], "session": row["session"],
-            "party": row["party"], "expenditure_area": row["expenditure_area"],
-            "budget_year": frame["budget_year"], "amount_msek": frame["amount_msek"],
-            "budget_share_pct": frame["budget_share_pct"],
-            "keyword_occurrences": row["occurrences"], "keyword_share_pct": row["keyword_share_pct"],
-            "attention_minus_budget_pp": round(row["keyword_share_pct"] - frame["budget_share_pct"], 4)
-            if row["keyword_share_pct"] is not None else None,
-            "source_url": frame["source_url"],
-        })
-    model_tables["mart_budget_language_gap"] = table(
-        "mart_budget_language_gap", budget_language,
-        "One corpus, method, session, party and area with a complete party frame",
-        ["corpus", "method", "session", "party", "expenditure_area"],
-        ["session", "party", "expenditure_area"],
-        "Exact-key join of corrected party frame and language audit",
-        "Descriptive difference in percentage points; no stance or causal inference. Missing/incomplete party frames excluded.")
-
+    complete_frames = {key for key, areas in budget_groups.items()
+                       if key[1] in PARTIES and areas == set(range(1, 28))}
     job_month = [{**row, "new_ads": int(row["new_ads"]), "unique_employers": int(row["unique_employers"])} for row in jobs_month]
     job_year = [{**row, "year": int(row["year"]), "ads": int(row["ads"]), "unique_employers": int(row["unique_employers"])} for row in jobs_year]
     job_junior = [{**row, "junior_ads": int(row["junior_ads"]), "total_ads": int(row["total_ads"]), "junior_share_pct": float(row["junior_share_pct"])} for row in jobs_junior]
@@ -311,11 +288,9 @@ def main():
     model_tables["fact_job_year_role"] = table("fact_job_year_role", job_year, "One year and role", ["year", "role"], ["role"], "JobTech historical-ad aggregate", "Annual distinct-ad counts; do not sum employer counts across months")
     model_tables["fact_job_junior_month"] = table("fact_job_junior_month", job_junior, "One month and role with junior data", ["month", "role"], ["role"], "JobTech title-rule aggregate", "Absent rows are missing, not zero")
     model_tables["fact_job_technology"] = table("fact_job_technology", job_technology, "One cohort and technology", ["cohort", "technology"], [], "JobTech mention aggregate", "A mention may be optional or negated")
-    model_tables["fact_topic_session_party"] = table("fact_topic_session_party", topic_session, "One model, session, party and topic", ["model_id", "session", "party", "topic_id"], ["model_id", "topic_id", "session", "party"], "Separate legacy and current topic exports", "Word shares include an unclustered category")
     umap_facts = [{field: row.get(field) for field in ("model_id", "chunk_id", "speech_id", "topic_id", "x", "y", "party", "session", "speech_date", "source_url", "session_population")} for row in umap]
     model_tables["fact_umap_sample"] = table("fact_umap_sample", umap_facts, "One sampled text segment in a model run", ["model_id", "chunk_id"], ["model_id", "topic_id", "session", "party", "speech_id"], "Deterministic UMAP export", "Sample coordinates are not comparable across model runs or ideological positions")
     model_tables["fact_law_provision"] = table("fact_law_provision", provisions, "One parsed provision in a snapshot", ["pool", "document_id", "provision_id"], ["pool", "document_id"], "Allegoria provision snapshots", "Metadata only; full text remains in versioned source shard")
-    model_tables["fact_rfc_version"] = table("fact_rfc_version", rfc["versions"], "One profiled RFC version", ["rfc"], [], "RFC drift report", "Requirement counts are heuristic extraction, not matched changes")
 
     if any(row["party"] not in PARTY_NAMES for row in party_rows + language["rows"] + activities + topic_session + umap):
         raise ValueError("Unknown party in a party-grain fact")
@@ -404,47 +379,16 @@ def main():
                     "sha256": portable_sha(ROOT / "platform/legacy/build_gold.py")},
         "description": "Static, reproducible analytics model. Tables are arrays of records; source text is accessed through detail paths.",
         "tables": model_tables,
-        "relationships": [
-            {"from": "fact_party_vote.party", "to": "dim_party.party", "type": "many_to_one", "status": "validated"},
-            {"from": "fact_party_vote.session", "to": "dim_session.session", "type": "many_to_one", "status": "validated"},
-            {"from": "fact_activity.party", "to": "dim_party.party", "type": "many_to_one", "status": "validated"},
-            {"from": "fact_language_area.party", "to": "dim_party.party", "type": "many_to_one", "status": "validated"},
-            {"from": "fact_topic_session_party.party", "to": "dim_party.party", "type": "many_to_one", "status": "validated"},
-            {"from": "fact_job_month_role.role", "to": "dim_role.role", "type": "many_to_one", "status": "validated"},
-            {"from": "fact_budget_frame.expenditure_area", "to": "dim_expenditure_area.expenditure_area", "type": "many_to_one", "status": "code_validated_historical_name_varies"},
-            {"from": "fact_party_vote.point_id", "to": "fact_decision_point.point_id", "type": "many_to_one", "status": "validated"},
-            {"from": "fact_point_citation.point_id", "to": "fact_decision_point.point_id", "type": "many_to_one", "status": "validated"},
-            {"from": "fact_point_reservation.point_id", "to": "fact_decision_point.point_id", "type": "many_to_one", "status": "validated"},
-            {"from": "fact_speech_vote_candidate.vote_id", "to": "fact_party_vote.vote_id", "type": "many_to_many_through_party", "status": "retrieval_candidate_only"},
-            {"from": "fact_motion_vote_link.vote_id", "to": "fact_party_vote.vote_id", "type": "many_to_many_through_vote", "status": "citation_only"},
-            {"from": "fact_proposition_point_link.point_id", "to": "fact_decision_point.point_id", "type": "many_to_one", "status": "document_level_only"},
-            {"from": "fact_law_mention_candidate.sfs_document_id", "to": "dim_law_snapshot.document_id", "type": "candidate", "status": "temporal_version_unverified"},
-            {"from": "fact_budget_frame.actor", "to": "dim_actor.actor", "type": "many_to_one", "status": "validated"},
-            {"from": "fact_budget_frame.budget_year,expenditure_area", "to": "fact_budget_outturn.budget_year,expenditure_area", "type": "conditional", "status": "historical_area_definition_unverified"},
-            {"from": "fact_language_area.session,party,expenditure_area", "to": "fact_budget_frame.session,actor,expenditure_area", "type": "conditional", "status": "party_proposals_only_and_coverage_checked"},
-            {"from": "fact_topic_session_party.model_id,topic_id", "to": "dim_topic.model_id,topic_id", "type": "many_to_one", "status": "validated"},
-            {"from": "fact_umap_sample.model_id,topic_id", "to": "dim_topic.model_id,topic_id", "type": "many_to_one", "status": "validated"},
-            {"from": "fact_law_provision.pool,document_id", "to": "dim_law_snapshot.pool,document_id", "type": "many_to_one", "status": "validated"},
-            {"from": "fact_job_junior_month.month,role", "to": "fact_job_month_role.month,role", "type": "conditional", "status": "shared_aggregate_grain_not_individual_ads"},
-        ],
-        "metrics": {
-            "party_yes_call_share": {"numerator": "count(fact_party_vote where party_position = Ja)", "denominator": "count(fact_party_vote)", "unit": "percent", "filters": ["session", "committee", "party"]},
-            "party_agreement": {"numerator": "same_position_calls", "denominator": "comparable_calls", "unit": "percent", "excludes": ["Avstår", "unavailable"]},
-            "party_cohesion": {"numerator": "sum(max(yes_votes, no_votes, abstain_votes) per vote-party)", "denominator": "sum(cast_votes)", "unit": "percent"},
-            "recorded_attendance": {"numerator": "sum(cast_votes)", "denominator": "sum(cast_votes + absent_votes)", "unit": "percent", "limitation": "pairing arrangements unknown"},
-            "budget_share": {"source_column": "fact_budget_frame.budget_share_pct", "unit": "percent", "grain": "session, actor, expenditure_area"},
-            "language_attention": {"source_column": "fact_language_area.keyword_share_pct", "unit": "percent", "grain": "corpus, method, session, party, expenditure_area", "limitation": "lexical attention, not support"},
-            "attention_minus_budget": {"source_column": "mart_budget_language_gap.attention_minus_budget_pp", "unit": "percentage points", "formula": "keyword_share_pct - budget_share_pct", "eligibility": "Observed party proposal with all 27 expenditure areas", "limitation": "Descriptive comparison only; speeches may occur after the budget proposal"},
-            "new_job_ads": {"source_column": "fact_job_month_role.new_ads", "unit": "unique ad IDs per month and role", "limitation": "not hires"},
-            "topic_word_share": {"source_column": "fact_topic_session_party.word_share_pct", "unit": "percent", "grain": "model, session, party, topic", "limitation": "unclustered included; models incomparable"},
-            "validated_vote_direction_pairs": {"value": 0, "status": "unavailable", "reason": "No reviewed vote-to-versioned-provision links or validated direction annotations"},
-        },
+        # Defined once, in the dbt YAML (models/gold/politics/schema.yml and the `gold` meta on
+        # each metric); publish/export_politics.py writes them from the manifest.
+        "relationships": previous["relationships"],
+        "metrics": previous["metrics"],
         "source_files": [{"path": path, "sha256": sha} for path, sha in sorted(source_hashes.items())],
         "materializations": dict(sorted(outputs.items())),
         "quality": {"decision_points": len(points), "roll_calls": len(vote_ids), "party_vote_rows": len(party_rows),
                     "citations": len(citations), "reservations": len(reservations),
-                    "complete_party_budget_frames": len({(session, actor) for session, actor, _ in complete_budget}),
-                    "budget_language_comparable_rows": len(budget_language),
+                    "complete_party_budget_frames": len(complete_frames),
+                    "budget_language_comparable_rows": previous["quality"]["budget_language_comparable_rows"],
                     "parsed_law_snapshots": len(law_dim),
                     "normalized_abstain_labels": sum(row["party_position"] == "Avstår" for row in party_rows),
                     "validated_vote_direction_pairs": 0},

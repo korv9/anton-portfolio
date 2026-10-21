@@ -80,13 +80,24 @@ def test_theses_mart_counts_each_record_once_at_its_latest_month(tmp_path):
     # a changed (no longer future-oriented), b deleted: both come back in a later month.
     month("2021-06", [{"month": "2021-06", "id": "a", "year": 2019, **{**row, "future": False}},
                       {"month": "2021-06", "id": "b", "year": None, **row}])
-    sql = (ROOT / "models/gold/sweden_futures/mart_sweden_future_theses.sql").read_text(encoding="utf-8")
-    sql = sql.replace("{{ source('futures', 'theses') }}",
-                      f"read_parquet('{tmp_path.as_posix()}/*.parquet', union_by_name = true)")
-    sql = sql.replace("{{ ref('future_terms') }}", "(select 'crisis' as term_id, 'theme' as family)")
-    got = duckdb.sql(sql + " order by year").fetchall()
-    # year, theme, abstracts, future abstracts, words, using, future using, matches
-    assert [r[:8] for r in got] == [(1998, "crisis", 1, 1, 100, 0, 0, 0), (2019, "crisis", 1, 0, 100, 0, 0, 0)]
+    con = duckdb.connect()
+    con.execute(f"create view stg_futures_theses as select * from read_parquet("
+                f"'{tmp_path.as_posix()}/*.parquet', union_by_name = true)")
+    con.execute("create view future_terms as select 'crisis' as term_id, 'theme' as family")
+    for name in ("silver/sweden_futures/int_sweden_future_theses_latest", "gold/sweden_futures/mart_sweden_future_theses_total"):
+        sql(con, name, f"create view {name.rsplit('/', 1)[1]} as ")
+    total = con.sql("select year, abstracts, future_abstracts, words from mart_sweden_future_theses_total order by year")
+    assert total.fetchall() == [(1998, 1, 1, 100), (2019, 1, 0, 100)]
+    got = sql(con, "gold/sweden_futures/mart_sweden_future_theses", "", " order by year").fetchall()
+    # year, theme, abstracts using, future using, matches
+    assert [r[:5] for r in got] == [(1998, "crisis", 0, 0, 0), (2019, "crisis", 0, 0, 0)]
+
+
+def sql(con, name: str, prefix: str, suffix: str = ""):
+    """A dbt model's SQL with its config dropped and each ref() read as a view of that name."""
+    source = (ROOT / f"models/{name}.sql").read_text(encoding="utf-8")
+    source = re.sub(r"\{\{ config\(.*?\) \}\}", "", source)
+    return con.execute(prefix + re.sub(r"\{\{ ref\('([^']+)'\) \}\}", r"\1", source) + suffix)
 
 
 def test_running_year_and_thin_edges_are_left_out():
@@ -95,9 +106,6 @@ def test_running_year_and_thin_edges_are_left_out():
 
 
 def test_rejected_joins_give_the_current_reasons():
-    language = {"categories": [{"rows": [[y] + [0] * 7 + [0.1] for y in (2015, 2016, 2017)]}]}
-    futures = {"themes": [{"rows": [[y] for y in (2016, 2017, 2018)]}],
-               "length": {"spearman_share_words_per_speech": 0.83}, "academic": None}
-    ads, theses = rejected_joins(language, futures)
+    ads, theses = rejected_joins({2015, 2016, 2017}, {2016, 2017, 2018}, 0.83, False)
     assert ads["reason"].startswith("2 years (2016–2017)") and "0.83" in ads["reason"]
     assert "backfill" not in ads["reason"] and "not yet counted" not in theses["reason"]

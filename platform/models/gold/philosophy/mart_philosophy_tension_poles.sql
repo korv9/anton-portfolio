@@ -9,7 +9,7 @@ with ranked as (
         p.text,
         row_number() over (partition by s.tension_id order by s.position desc) as rank_a,
         row_number() over (partition by s.tension_id order by s.position asc) as rank_b
-    from {{ source('philosophy_features', 'tensions') }} as s
+    from {{ ref('stg_philosophy_tensions') }} as s
     join {{ ref('int_philosophy_passages') }} as p using (passage_id)
 )
 

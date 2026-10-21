@@ -3,7 +3,7 @@ with counts as (
         f.role_family, count(*) as observed_ads,
         count(distinct case when e.employer_name <> 'Unknown' then f.employer_id end) as observed_employers
     from {{ ref('fct_job_ads') }} f
-    join {{ ref('dim_employers') }} e using (employer_id)
+    join {{ ref('dim_employer') }} e using (employer_id)
     where f.role_family <> 'Other'
     group by 1, 2
 ), grid as (

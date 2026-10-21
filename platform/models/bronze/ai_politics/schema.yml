@@ -11,3 +11,19 @@ models:
       - name: archive_hash
         description: SHA-256 of the archive as fetched (warehouse/raw/riksdagen/_manifest.jsonl).
         data_tests: [not_null]
+  - name: stg_ai_politics_act_passages
+    description: The AI Act's Swedish passages, as the similarity stage split them.
+    columns:
+      - name: act_passage_id
+        data_tests: [unique, not_null]
+  - name: stg_ai_politics_article_to_speech
+    description: Per AI Act article, its nearest Riksdag AI paragraphs, ranked.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [article_number, rank]
+  - name: stg_ai_politics_similarity_run
+    description: The similarity run (run.json), one row.
+    columns:
+      - name: model
+        data_tests: [unique, not_null]

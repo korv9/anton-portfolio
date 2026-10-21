@@ -2,32 +2,91 @@ version: 2
 
 models:
   - name: fct_sfs_document
+    config:
+      contract: {enforced: true}
     description: >-
-      One row per document in Riksdagen's SFS list (silver_sfs_documents) with its numbered
-      paragraphs and passages from silver_sfs_corpus_paragraphs. Read by
+      One row per document in Riksdagen's SFS list (int_sfs_documents) with its numbered
+      paragraphs and passages from int_sfs_corpus_paragraphs. Read by
       platform/publish/export_sfs.py for the statute-book page.
     columns:
       - name: dok_id
+        data_type: VARCHAR
+        description: 'Key: Riksdagen''s document id, unique where the SFS number is not.'
         data_tests: [unique, not_null]
       - name: kind
+        data_type: VARCHAR
+        description: 'Attribute: lag, förordning or other, from the first word of the title; grundlagar and Riksdagsordningen count as lag.'
         data_tests:
           - not_null
           - accepted_values:
               arguments:
                 values: [lag, förordning, other]
       - name: issued_year
+        data_type: BIGINT
+        description: 'Attribute: year of issued.'
         data_tests: [not_null]
       - name: is_repealed
+        data_type: BOOLEAN
         description: The repeal date is on or before the fetch date; false when there is none.
         data_tests: [not_null]
       - name: repealed_year
+        data_type: BIGINT
         description: The year of repeal, for repealed documents only.
       - name: sections
+        data_type: BIGINT
         description: Distinct numbered paragraphs (chapter and §).
         data_tests: [not_null]
       - name: paragraph_passages
-        description: Paragraph rows in silver_sfs_corpus_paragraphs; a long § gives one per stycke.
+        data_type: BIGINT
+        description: Paragraph rows in int_sfs_corpus_paragraphs; a long § gives one per stycke.
         data_tests: [not_null]
       - name: whole_text_passages
+        data_type: BIGINT
         description: Whole-text passages, for a document with no numbered paragraph.
         data_tests: [not_null]
+      - name: sfs
+        data_type: VARCHAR
+        description: 'Attribute: SFS number (beteckning), such as 2010:800; not unique.'
+      - name: title
+        data_type: VARCHAR
+        description: 'Attribute: title of the document, whitespace collapsed.'
+      - name: issued
+        data_type: DATE
+        description: 'Attribute: date of issue from Riksdagen''s list; null when unparsable.'
+      - name: repealed_on
+        data_type: DATE
+        description: 'Attribute: repeal date from the text header (Upphävd); null when none or no text.'
+      - name: has_text
+        data_type: BOOLEAN
+        description: 'Attribute: true when the document''s text was fetched.'
+      - name: parse_status
+        data_type: VARCHAR
+        description: 'Attribute: parsed, unnumbered (no numbered §), failed (numbered § but none split out) or no text.'
+      - name: text_chars
+        data_type: BIGINT
+        description: 'Measure, additive: characters in the fetched text; null when there is no text.'
+      - name: fetched_at
+        data_type: TIMESTAMP WITH TIME ZONE
+        description: 'Attribute: time the text was fetched; null when there is no text.'
+  - name: fct_sfs_passage
+    config:
+      contract: {enforced: true}
+    description: >-
+      One row per passage in int_sfs_corpus_paragraphs with its length, without the text.
+      Read by platform/publish/export_sfs.py for the passage length bands.
+    columns:
+      - name: id
+        data_type: VARCHAR
+        description: 'Key: dok_id plus riksdagen.se''s anchor K<chapter>P<§>S<stycke>, or dok_id-whole[-n] for a whole-text passage.'
+        data_tests: [unique, not_null]
+      - name: kind
+        data_type: VARCHAR
+        description: paragraph, or whole_text for a document with no numbered paragraph.
+        data_tests: [not_null]
+      - name: text_chars
+        data_type: BIGINT
+        description: Characters in the passage text.
+        data_tests: [not_null]
+      - name: dok_id
+        data_type: VARCHAR
+        description: 'Attribute: the passage''s document; references fct_sfs_document.'

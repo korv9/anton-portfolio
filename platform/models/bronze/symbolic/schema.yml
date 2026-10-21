@@ -11,3 +11,8 @@ models:
       - name: source_hash
         description: SHA-256 of the bytes Gutenberg served (warehouse/raw/symbolic/_manifest.jsonl).
         tests: [not_null]
+  - name: stg_symbol_atlas_projection
+    description: One row per sampled occurrence with its map position and cluster, from the ML stage.
+    columns:
+      - name: occurrence_id
+        data_tests: [unique, not_null]

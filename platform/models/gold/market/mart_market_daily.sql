@@ -7,6 +7,6 @@ select
     coalesce(f.field, 'Hela arbetsmarknaden') as field,
     d.ads::bigint as ads,
     d.vacancies::bigint as vacancies
-from {{ source('jobtech_market', 'daily') }} as d
+from {{ ref('stg_market_daily') }} as d
 left join {{ ref('dim_market_field') }} as f using (field_id)
 where d.field_id = 'all' or f.field_id is not null

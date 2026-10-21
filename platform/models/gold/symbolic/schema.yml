@@ -3,24 +3,140 @@ version: 2
 models:
   - name: mart_symbol_atlas
     description: One point per sampled symbol occurrence with its map position, cluster and context.
+    config:
+      contract: {enforced: true}
     columns:
       - name: occurrence_id
+        data_type: VARCHAR
+        description: 'Key: occurrence identifier, first 16 hex of the SHA-1 of document, character offset and symbol.'
         tests: [unique, not_null]
       - name: symbol_id
+        data_type: VARCHAR
+        description: 'Foreign key to dim_symbol: the symbol whose word occurs.'
         tests:
           - relationships:
               to: ref('symbols')
               field: symbol_id
       - name: x
+        data_type: FLOAT
+        description: 'Attribute: horizontal map coordinate from UMAP; unitless.'
         tests: [not_null]
       - name: y
+        data_type: FLOAT
+        description: 'Attribute: vertical map coordinate from UMAP; unitless.'
         tests: [not_null]
       - name: cluster_id
+        data_type: INTEGER
+        description: 'Attribute: HDBSCAN cluster number; -1 is noise. Numbered, never named.'
         tests: [not_null]
+      - name: document_id
+        data_type: VARCHAR
+        description: 'Foreign key to dim_symbolic_document: the book the occurrence is in.'
+      - name: title
+        data_type: VARCHAR
+        description: 'Attribute: title of the book.'
+      - name: tradition
+        data_type: VARCHAR
+        description: 'Attribute: tradition of the book.'
+      - name: matched_term
+        data_type: VARCHAR
+        description: 'Attribute: the word in the text that matched one of the symbol''s aliases.'
+      - name: context
+        data_type: VARCHAR
+        description: 'Attribute: previous sentence, matching sentence and next sentence, each cut to a window.'
+      - name: cluster_probability
+        data_type: FLOAT
+        description: 'Measure, non-additive: HDBSCAN membership probability for the cluster; 0-1.'
+      - name: is_noise
+        data_type: BOOLEAN
+        description: 'Attribute: true when cluster_id is -1.'
   - name: mart_symbol_profiles
     description: Per symbol and cluster, how many occurrences and what share of the symbol's points.
+    config:
+      contract: {enforced: true}
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [symbol_id, cluster_id]
     columns:
+      - name: share_within_symbol
+        data_type: DOUBLE
+        description: 'Occurrences in this group / all occurrences of the symbol. Fraction from 0 to 1, not per cent.'
       - name: symbol_id
+        data_type: VARCHAR
+        description: 'Key, references dim_symbol: the symbol.'
         tests: [not_null]
       - name: occurrence_count
+        data_type: BIGINT
+        description: 'Measure, additive: count of the symbol''s sampled occurrences in the cluster.'
         tests: [not_null]
+      - name: cluster_id
+        data_type: INTEGER
+        description: 'Key: HDBSCAN cluster number; -1 is noise and is kept as a row.'
+      - name: avg_cluster_probability
+        data_type: DOUBLE
+        description: 'Measure, non-additive: mean HDBSCAN membership probability of those occurrences; 0-1.'
+  - name: dim_symbolic_document
+    description: One row per book in the corpus with its metadata, word count, Gutenberg id and source URL. No text.
+    config:
+      contract: {enforced: true}
+    columns:
+      - name: document_id
+        data_type: VARCHAR
+        description: 'Key: identifier of the book, e.g. odyssey.'
+        tests: [unique, not_null]
+      - name: title
+        data_type: VARCHAR
+        description: 'Attribute: title of the book.'
+      - name: author
+        data_type: VARCHAR
+        description: 'Attribute: author of the book.'
+      - name: tradition
+        data_type: VARCHAR
+        description: 'Attribute: mythological or folk tradition of the book, e.g. greek-roman.'
+      - name: word_count
+        data_type: BIGINT
+        description: 'Measure, additive: count of words in the cleaned text, without Gutenberg header, licence and paratext.'
+      - name: gutenberg_id
+        data_type: BIGINT
+        description: 'Attribute: Project Gutenberg ebook number.'
+      - name: source_url
+        data_type: VARCHAR
+        description: 'Attribute: Project Gutenberg URL of the plain-text file.'
+      - name: translator
+        data_type: VARCHAR
+        description: 'Attribute: translator of the book; null when none is named.'
+      - name: culture
+        data_type: VARCHAR
+        description: 'Attribute: culture the material comes from, e.g. greek.'
+      - name: region
+        data_type: VARCHAR
+        description: 'Attribute: geographic region of the material, e.g. Greece.'
+      - name: genre
+        data_type: VARCHAR
+        description: 'Attribute: genre, e.g. epic, folktales or myths.'
+      - name: source_type
+        data_type: VARCHAR
+        description: 'Attribute: kind of source: translation, primary-english, literary, folklore-collection or retelling.'
+      - name: period
+        data_type: VARCHAR
+        description: 'Attribute: period of the material: ancient, medieval, early-modern, 19th-century or modern.'
+      - name: pilot
+        data_type: BOOLEAN
+        description: 'Attribute: true when the book was in the v1-v3 pilot corpus.'
+  - name: dim_symbol
+    description: One row per dictionary symbol with its occurrences in the whole corpus, before the atlas sample.
+    config:
+      contract: {enforced: true}
+    columns:
+      - name: symbol_id
+        data_type: VARCHAR
+        description: 'Key: identifier of the dictionary symbol, e.g. snake.'
+        tests: [unique, not_null]
+      - name: occurrence_count
+        data_type: BIGINT
+        description: 'Measure, additive: count of the symbol''s word occurrences in the whole corpus, before the atlas sample; 0 if none.'
+        tests: [not_null]
+      - name: label
+        data_type: VARCHAR
+        description: 'Attribute: display name of the symbol.'

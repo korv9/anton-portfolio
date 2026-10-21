@@ -3,7 +3,8 @@
 #
 # A subject is an ordered list of steps. Each step has one phase key:
 #   ingest   a command that fetches or prepares inputs
-#   dbt      {select, exclude}; built into platform/target/<subject>
+#   dbt      {select, exclude, freshness}; built into platform/target/<subject>; freshness: true
+#            first runs dbt source freshness on the sources upstream of select, warn-only
 #   ml       a command, skipped by --ml missing when `marker` (under warehouse/features) exists;
 #            `stale_arg` is appended unless --ml always, and makes the stage check its inputs
 #   export   a command that writes delivery files; runs only if the subject's dbt tests passed
@@ -95,7 +96,8 @@ subjects:
       - ingest: python platform/ingest/riksdagen/history_ingest.py
       - ingest: python platform/ingest/elections/elections_ingest.py
       - ingest: python platform/ingest/riksdagen/studies_ingest.py
-      - dbt: {select: [tag:parliament, stg_party_vote]}
+      # Its facts test against dim_party and dim_municipality, so both build with it.
+      - dbt: {select: [tag:parliament, stg_party_vote, +dim_party, +dim_municipality]}
       - export: python platform/publish/export_parliament.py
 
   taxes:
@@ -108,7 +110,7 @@ subjects:
       # Rejects partial or unverified parliament inputs before dbt can build on them.
       - ingest: python platform/ingest/taxes/require_parliament.py
       - ingest: python platform/ingest/taxes/taxes_ingest.py
-      - dbt: {select: [+tag:taxes]}
+      - dbt: {select: [+tag:taxes, +dim_municipality]}
       - export: python platform/publish/export_taxes.py
 
   market:
@@ -158,6 +160,12 @@ subjects:
 
   # The builders not yet moved into dbt. build_politics.py is not here: it needs three local
   # sources (--parliament, --allegoria, --local-corpus), one of them in no repository.
+  # Not dbt: build_gold.py writes 22 of gold/semantic-model.json's 31 tables in Python (dims
+  # party, actor, session, expenditure_area, role, topic, law_snapshot; the decision-point,
+  # vote, citation, reservation, speech/motion/proposition link, law mention/provision, budget
+  # frame, job and UMAP facts) and marts/budget-report, jobs, debate, rfc-drift and overview.
+  # dbt builds the other nine and the vote marts (models/gold/politics, export_politics.py),
+  # and defines the model's metrics and relationships (docs/gold-semantic-model.md).
   legacy:
     schedule: manual
     group: baseline
@@ -178,13 +186,13 @@ subjects:
     raw: [eu_ai_act]
     steps:
       - ingest: python platform/ingest/eu_ai_act/run.py
-      - dbt: {select: [tag:ai_act]}
+      - dbt: {select: [tag:ai_act], freshness: true}
       - export: python platform/publish/eu_ai_act/export_ai_act.py
 
   # The laws behind "Fråga lagen" (docs/workers-ai.md). The export writes the passages that
   # platform/nlp/workers_ai.py embeds; the embedding and compression run by hand within the quota.
   # With SFS_ALL set it also fetches the whole statute book (about 11,600 texts, a few hours the
-  # first time); silver_sfs_documents and silver_sfs_corpus_paragraphs build on it, no embeddings.
+  # first time); int_sfs_documents and int_sfs_corpus_paragraphs build on it, no embeddings.
   # export_sfs.py writes the statute-book page's numbers (#lagboken) from fct_sfs_document.
   sfs:
     schedule: manual
@@ -211,11 +219,16 @@ subjects:
       - ingest: python platform/ingest/riksdagen/ingest_speeches.py
       - dbt:
           select: [tag:ai_politics]
-          exclude: [mart_ai_act_speech_similarity, assert_concept_link_targets_exist]
+          freshness: true
+          # The similarity stage's output and its staging views are built after the stage runs.
+          exclude: [mart_ai_act_speech_similarity, stg_ai_politics_act_passages, stg_ai_politics_article_to_speech,
+                    stg_ai_politics_similarity_run, assert_concept_link_targets_exist]
       - ml: python platform/nlp/ai_politics/similarity.py
         marker: ai_politics/run.json
         stale_arg: --if-stale
-      - dbt: {select: [mart_ai_act_speech_similarity]}
+      - dbt:
+          select: [stg_ai_politics_act_passages, stg_ai_politics_article_to_speech, stg_ai_politics_similarity_run,
+                   mart_ai_act_speech_similarity]
       - export: python platform/publish/ai_politics/export_ai_politics.py
 
   symbolic:
@@ -226,11 +239,12 @@ subjects:
     steps:
       - ingest: python platform/ingest/symbolic/ingest_corpus.py
       - ingest: python platform/ingest/symbolic/audit_corpus.py
-      - dbt: {select: [tag:symbolic], exclude: ['path:models/gold/symbolic']}
+      - dbt: {select: [tag:symbolic], exclude: ['path:models/gold/symbolic', stg_symbol_atlas_projection],
+              freshness: true}
       # No marker: the stage itself compares the sample with the last run.
       - ml: python platform/nlp/symbolic/pipeline.py
         stale_arg: --if-stale
-      - dbt: {select: ['path:models/gold/symbolic']}
+      - dbt: {select: ['path:models/gold/symbolic', stg_symbol_atlas_projection]}
       - export: python platform/publish/symbolic/export_symbolic.py
 
   philosophy:
@@ -242,13 +256,16 @@ subjects:
       - ingest: python platform/ingest/philosophy/ingest_corpus.py
       - dbt:
           select: [tag:philosophy]
-          exclude: ['path:models/gold/philosophy', assert_concept_link_targets_exist]
+          freshness: true
+          exclude: ['path:models/gold/philosophy', stg_philosophy_atlas, stg_philosophy_clusters,
+                    stg_philosophy_tensions, assert_concept_link_targets_exist]
       - ml: python platform/nlp/philosophy/pipeline.py
         marker: philosophy/run.json
         stale_arg: --if-stale
       # assert_concept_tensions_exist reads mart_concept_relations, built later by concepts.
       - dbt:
-          select: ['path:models/gold/philosophy']
+          select: ['path:models/gold/philosophy', stg_philosophy_atlas, stg_philosophy_clusters,
+                   stg_philosophy_tensions]
           exclude: [assert_concept_link_targets_exist, assert_concept_tensions_exist]
       - export: python platform/publish/philosophy/export_philosophy.py
 
@@ -270,7 +287,8 @@ subjects:
       - ml: python platform/nlp/concepts/build.py
         marker: concepts/run.json
         stale_arg: --if-stale
-      - dbt: {select: [tag:concepts]}
+      # Named: their models span other subjects, so buildable selection would not pick them.
+      - dbt: {select: [tag:concepts, assert_concept_link_targets_exist, assert_concept_tensions_exist]}
       - export: python platform/publish/concepts/export_concepts.py
 
   cross_domain:
@@ -285,9 +303,11 @@ subjects:
   # C: the validated municipality clustering with SCB's boundaries (CC0); the run and the sources
   # it hashed are kept under features/sweden/similarity.
   # D: KB's library statistics (CC0) and Biblioteksdatabasen.
+  # Its gold joins the welfare panel, tax rates and election results built earlier in the run.
   sweden:
     schedule: '13 21 * * 6'
     group: sweden
+    needs: [welfare, parliament, taxes]
     raw: [catalogue, geography, kb]
     features: [sweden/similarity]
     prune: true
@@ -335,7 +355,7 @@ subjects:
     target: quality_build
     steps:
       - ingest: python platform/quality/evaluate.py
-      - dbt: {select: [tag:quality]}
+      - dbt: {select: [tag:quality], freshness: true}
       - export: python platform/publish/quality/export_quality.py
       # Structural checks (gate: true in quality_registry.yml) fail the subject, after its report is written.
       - export: python platform/quality/evaluate.py --dbt-results platform/target/quality/run_results.json --gate
@@ -357,4 +377,5 @@ subjects:
     manual: true
     steps:
       - ingest: python platform/ingest/jobtech/run_history_pipeline.py
+      # Not dbt: rewrites the gold job tables and marts/jobs.json in Python from the CSVs above.
       - export: python platform/legacy/build_gold.py
