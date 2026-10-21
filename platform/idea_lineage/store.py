@@ -45,7 +45,7 @@ def projects() -> dict[str, list[str]]:
     end = text.find("\nexport const", start + 1)
     ids = re.findall(r"^    id: '([\w-]+)',", text[start:end if end > 0 else None], flags=re.M)
     # Retired pages remain valid references in the append-only journal.
-    retired = {"allegoria", "diva", "rag", "mimii"}
+    retired = {"allegoria", "diva", "rag", "mimii", "compliance", "politics", "ai-act", "sfs", "jobs", "welfare"}
     names = {i: [i, i.replace("-", " ")] for i in [*ids, *sorted(retired)]}
     extra = {
         "ai-act": ["AI Act", "AI-förordningen", "EU AI Act"],
