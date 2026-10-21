@@ -11,10 +11,15 @@ on this machine); SCB's boundaries for each municipality's land area; the groups
 
 Writes frontend/public/data/sweden/belonging/:
 - `municipalities.json`: per municipality and year, the four measures and their rates per
-  inhabitant; land area; and the share of years reported.
+  inhabitant; and land area.
 - `libraries.json`: public libraries in Biblioteksdatabasen with coordinates in SWEREF99 TM
   (100 m), name and municipality. No contact details.
-- `coverage.json`: what was joined, what was left out and why.
+- `coverage.json`: what was joined, what was left out and why, the values set to missing, and how
+  many municipalities report each measure in every year.
+
+A municipality total is missing when one of its reporting organisations omitted the term that year,
+since the sum would be partial. Zero visits with a staffed service point, or zero service points
+with visits, are treated as missing values, not as zeros.
 
 Availability (service points, opening) and participation (visits, activities, borrowers) are
 kept apart. Neither measures belonging. Distances are not travel times.
@@ -84,17 +89,14 @@ def to_sweref(points: list[tuple[float, float]]) -> list[tuple[float, float]]:
     return [(x, y) for _, x, y in rows]
 
 
-def main() -> int:
-    libraries = [x for p in sorted(glob.glob(str(RAW / "kb/libraries-*.json")))
-                 for x in json.loads(Path(p).read_text(encoding="utf-8"))["libraries"]]
-    municipality_of = {x["sigel"]: x.get("municipality_code") for x in libraries}
-    pop, pop_source = population()
-    area = areas_and_projection()
+def aggregate(observations: dict[str, list], municipality_of: dict, area: dict):
+    """Sum public-library observations per municipality and year. Return the cells, the observations
+    left out and the values set to missing (partial sums and impossible zeros)."""
     cells: dict = defaultdict(dict)
-    left_out = defaultdict(int)
+    reporters: dict = defaultdict(lambda: defaultdict(set))
+    left_out: dict = defaultdict(int)
     for term, measure in TERMS.items():
-        data = json.loads((RAW / f"kb/statistics/{term}.json").read_text(encoding="utf-8"))
-        for o in data["observations"]:
+        for o in observations[term]:
             if o.get("targetGroup") not in PUBLIC:
                 continue
             sigel = o["library"]["@id"].rsplit("/", 1)[-1]
@@ -106,8 +108,34 @@ def main() -> int:
             if not isinstance(value, (int, float)):
                 left_out["no value"] += 1
                 continue
-            cell = cells[(code, int(o["sampleYear"]))]
-            cell[measure] = cell.get(measure, 0) + value
+            key = (code, int(o["sampleYear"]))
+            cells[key][measure] = cells[key].get(measure, 0) + value
+            reporters[key][measure].add(sigel)
+    missing: dict = defaultdict(int)
+    for key, m in cells.items():
+        orgs = set().union(*reporters[key].values())
+        for measure in list(m):
+            if reporters[key][measure] != orgs:
+                m[measure] = None
+                missing[f"{measure}: an organisation did not report"] += 1
+        if m.get("visits") == 0 and m.get("service_points"):
+            m["visits"] = None
+            missing["visits: 0 with staffed service points"] += 1
+        if m.get("service_points") == 0 and m.get("visits"):
+            m["service_points"] = None
+            missing["service_points: 0 with visits"] += 1
+    return cells, left_out, missing
+
+
+def main() -> int:
+    libraries = [x for p in sorted(glob.glob(str(RAW / "kb/libraries-*.json")))
+                 for x in json.loads(Path(p).read_text(encoding="utf-8"))["libraries"]]
+    municipality_of = {x["sigel"]: x.get("municipality_code") for x in libraries}
+    pop, pop_source = population()
+    area = areas_and_projection()
+    observations = {t: json.loads((RAW / f"kb/statistics/{t}.json").read_text(encoding="utf-8"))["observations"]
+                    for t in TERMS}
+    cells, left_out, missing = aggregate(observations, municipality_of, area)
     rows = []
     for (code, year), m in sorted(cells.items()):
         p = pop.get((code, year)) or pop.get((code, year - 1))
@@ -139,6 +167,10 @@ def main() -> int:
     write("coverage.json", {
         "observations_left_out": dict(left_out),
         "municipalities_per_year": {y: sum(1 for r in rows if r["year"] == y) for y in years},
+        "set_to_missing": dict(missing),
+        "municipalities_reporting_every_year": {
+            k: sum(1 for c in area if all(m.get(k) is not None for m in (cells.get((c, y), {}) for y in years)))
+            for k in TERMS.values()},
         "public_libraries_registered": len(public), "with_coordinates": len(located),
         "population_source": pop_source,
         "sources": [

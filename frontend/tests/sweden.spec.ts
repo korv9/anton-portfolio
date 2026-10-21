@@ -116,8 +116,12 @@ test('the invisible sweden moves municipalities into similarity space', async ({
     data.summary.total,
   )
   await expect(page.locator('.sw-finds')).toContainText(
-    String(data.summary.nearest_in_other_county),
+    `${data.summary.analysed - data.summary.nearest_in_other_county} of ${data.summary.analysed}`,
   )
+  // The county share is read against chance, so clustering in space is not read as its absence.
+  await expect(
+    page.locator('.sw-reading', { hasText: 'Centre and periphery' }),
+  ).toHaveAttribute('data-verdict', 'supports')
   await page.getByRole('button', { name: 'Similarity', exact: true }).click()
   await expect(page).toHaveURL(/vy=likhet/)
   await page
@@ -186,6 +190,10 @@ test('the infrastructure of belonging maps libraries by municipality and year', 
   // The map sits under the scene panels in 2D; the keyboard reaches every municipality.
   await page.getByRole('button', { name: /^Höganäs:/ }).press('Enter')
   await expect(page.locator('.sw-scene-info')).toContainText('Höganäs')
+  // A count of service points cannot decide a theory of welfare-state contraction.
+  await expect(
+    page.locator('.sw-reading', { hasText: 'Habermas' }),
+  ).toHaveAttribute('data-verdict', 'undetermined')
   const axe = await new AxeBuilder({ page })
     .include('main')
     .exclude('canvas')
@@ -199,7 +207,15 @@ test('the infrastructure of belonging maps libraries by municipality and year', 
 
 test('the lost futures reads every session and links its speeches', async ({
   page,
+  request,
 }) => {
+  const coverage = await (
+    await request.get('/data/sweden/futures/coverage.json')
+  ).json()
+  const sessions = coverage.sessions.map((s: { session: string }) => s.session)
+  // 1999/2000 is the one session with an eight-digit code.
+  expect(sessions).toContain('19992000')
+  expect(sessions.length).toBeGreaterThanOrEqual(33)
   await page.goto('/#sweden-framtid?scen=2d')
   await expect(page.locator('.sw-matrix tbody tr')).toHaveCount(9)
   await expect(page.locator('.sw-find')).not.toHaveCount(0)

@@ -15,7 +15,10 @@ Write generated source as UTF-8 with LF line endings, including on Windows.
 Data is real or absent. Never publish placeholder rows or private profiles.
 Secrets stay in GitHub/Cloudflare secrets. An ignored local `.env` is allowed for
 one-off Workers AI runs; never commit it. Do not print credential values.
-Do not install dependencies, commit, push or deploy without user authorization.
+Installing dependencies (`npm ci`, `npm install`, `pip install`) and uploading
+open data to R2 through the repo's own tools (`pipeline.py push`, `warehouse_store.py`,
+`upload.py`) need no separate approval. Do not commit, push or deploy without user
+authorization.
 
 ## Verification and resources
 

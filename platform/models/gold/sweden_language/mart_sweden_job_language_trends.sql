@@ -6,7 +6,8 @@
 -- longer since 2006, so shares of ads rise with length alone and rates per word are the fairer
 -- comparison over time. Texts without an occupation field take no part in the standardisation,
 -- and a year where fewer than half the texts have one gets no standardised value (the 2006
--- archive records no occupation at all).
+-- archive records no occupation at all). A field-year with fewer than 30 distinct texts takes
+-- no part either: a handful of texts would otherwise carry the field's full weight.
 with field_year as (
     select year, field, category, family,
            sum(texts) as texts, sum(words) as words,
@@ -25,10 +26,10 @@ weights as (
 standardised as (
     select f.year, f.category,
            sum(f.texts) / any_value(t.texts) as known_share,
-           sum(w.weight * f.texts_matching / nullif(f.texts, 0))
-               / nullif(sum(w.weight) filter (where f.texts > 0), 0) as share,
-           sum(w.weight * f.matches * 1000.0 / nullif(f.words, 0))
-               / nullif(sum(w.weight) filter (where f.words > 0), 0) as per_1000_words
+           sum(w.weight * f.texts_matching / f.texts) filter (where f.texts >= 30)
+               / nullif(sum(w.weight) filter (where f.texts >= 30), 0) as share,
+           sum(w.weight * f.matches * 1000.0 / f.words) filter (where f.texts >= 30 and f.words > 0)
+               / nullif(sum(w.weight) filter (where f.texts >= 30 and f.words > 0), 0) as per_1000_words
     from field_year f
     join weights w using (field)
     join (select year, category, sum(texts) as texts from field_year group by all) t

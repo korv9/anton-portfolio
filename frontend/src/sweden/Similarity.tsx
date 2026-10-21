@@ -33,7 +33,13 @@ import {
   type Reading,
 } from './template'
 
-type Feature = { id: string; label_en: string; label_sv: string; unit: string }
+type Feature = {
+  id: string
+  label_en: string
+  label_sv: string
+  unit: string
+  reference_year: number
+}
 type Municipality = {
   code: string
   name: string
@@ -57,6 +63,16 @@ type Data = {
     nearest_km_median: number
     nearest_km_p90: number
     nearest_over_300km: number
+    county_null: {
+      random_partner: number
+      permutation: {
+        rounds: number
+        interval_95: [number, number]
+        share_at_most_observed: number
+      }
+      random_pair_km_median: number
+      geographic_nearest_km_median: number
+    }
   }
   municipalities: Municipality[]
 }
@@ -159,6 +175,14 @@ export default function Similarity({ route }: { route: Route }) {
   const byCode = new Map(data.municipalities.map((m) => [m.code, m]))
   const selected = (code && byCode.get(code)) || null
   const s = data.summary
+  const chance = s.county_null
+  const same = s.analysed - s.nearest_in_other_county
+  const ratio = (same / (s.analysed - chance.random_partner)).toFixed(1)
+  const shuffles = Math.round(
+    chance.permutation.share_at_most_observed * chance.permutation.rounds,
+  )
+  const pct = (n: number) => Math.round((n / s.analysed) * 100)
+  const carried = data.features.filter((f) => f.reference_year !== data.year)
   const featureName = (f: Feature) => l(f.label_en, f.label_sv)
 
   const spans = finer
@@ -178,17 +202,28 @@ export default function Similarity({ route }: { route: Route }) {
     {
       key: 'distance',
       statement: l(
-        `For ${s.nearest_in_other_county} of ${s.analysed} municipalities, the socially most similar municipality lies in another county.`,
-        `För ${s.nearest_in_other_county} av ${s.analysed} kommuner ligger den socialt mest lika kommunen i ett annat län.`,
+        `Social similarity clusters in space: for ${same} of ${s.analysed} municipalities the most similar municipality lies in the same county, ${ratio} times what chance gives.`,
+        `Social likhet samlas geografiskt: för ${same} av ${s.analysed} kommuner ligger den mest lika kommunen i samma län, ${ratio} gånger så ofta som slumpen ger.`,
       ),
       values: (
         <ul>
+          <li>
+            {l('In another county', 'I ett annat län')}:{' '}
+            {s.nearest_in_other_county} ({pct(s.nearest_in_other_county)} %) ·{' '}
+            {l('random partner', 'slumpvis partner')}:{' '}
+            {chance.random_partner.toFixed(1)} ({pct(chance.random_partner)} %)
+            · {l('shuffled profiles, 95 %', 'omblandade profiler, 95 %')}:{' '}
+            {chance.permutation.interval_95.join('–')}
+          </li>
           <li>
             {l(
               'Median distance to the most similar municipality',
               'Medianavstånd till den mest lika kommunen',
             )}
-            : {s.nearest_km_median} km
+            : {s.nearest_km_median} km · {l('random pair', 'slumpvist par')}:{' '}
+            {chance.random_pair_km_median} km ·{' '}
+            {l('nearest on the map', 'närmast på kartan')}:{' '}
+            {chance.geographic_nearest_km_median} km
           </li>
           <li>
             {l('90th percentile', '90:e percentilen')}: {s.nearest_km_p90} km ·{' '}
@@ -198,8 +233,8 @@ export default function Similarity({ route }: { route: Route }) {
       ),
       evidence: 'exploratory',
       source: l(
-        `Kolada and SCB, ${data.year}; 12 standardised indicators; straight-line distance between centroids`,
-        `Kolada och SCB, ${data.year}; 12 standardiserade indikatorer; fågelvägen mellan mittpunkter`,
+        `Own processing of data from Kolada and SCB, ${data.year}; 12 standardised indicators; straight-line distance between centroids; ${chance.permutation.rounds} shuffles of the profiles over the municipalities`,
+        `Egen bearbetning av data från Kolada och SCB, ${data.year}; 12 standardiserade indikatorer; fågelvägen mellan mittpunkter; ${chance.permutation.rounds} omblandningar av profilerna över kommunerna`,
       ),
       onShow: () => set({ vy: 'likhet' }),
     },
@@ -419,7 +454,7 @@ export default function Similarity({ route }: { route: Route }) {
       <ul>
         {data.features.map((f) => (
           <li key={f.id}>
-            {featureName(f)} ({f.unit})
+            {featureName(f)} ({f.unit}, {f.reference_year})
           </li>
         ))}
         <li>
@@ -435,8 +470,14 @@ export default function Similarity({ route }: { route: Route }) {
       <ol>
         <li>
           {l(
-            'Standardise the 12 indicators for 2024.',
-            'Standardisera de 12 indikatorerna för 2024.',
+            `Standardise the 12 indicators as Kolada reports them for ${data.year}.`,
+            `Standardisera de 12 indikatorerna som Kolada redovisar dem för ${data.year}.`,
+          )}
+          {carried.map((f) =>
+            l(
+              ` ${f.label_en} is the ${f.reference_year} election, which Kolada repeats in every year until the next election.`,
+              ` ${f.label_sv} är valet ${f.reference_year}, som Kolada upprepar varje år fram till nästa val.`,
+            ),
           )}
         </li>
         <li>{groups?.method}</li>
@@ -489,8 +530,8 @@ export default function Similarity({ route }: { route: Route }) {
         </li>
         <li>
           {l(
-            'One year (2024). Profiles of municipalities, not of their residents: nothing here describes a person.',
-            'Ett år (2024). Profiler av kommuner, inte av deras invånare: inget här beskriver en person.',
+            `One reporting year (${data.year}${carried.map((f) => `; ${f.label_en.toLowerCase()} ${f.reference_year}`).join('')}). Profiles of municipalities, not of their residents: nothing here describes a person.`,
+            `Ett redovisningsår (${data.year}${carried.map((f) => `; ${f.label_sv.toLowerCase()} ${f.reference_year}`).join('')}). Profiler av kommuner, inte av deras invånare: inget här beskriver en person.`,
           )}
         </li>
         <li>
@@ -547,16 +588,18 @@ export default function Similarity({ route }: { route: Route }) {
         'Sociala förhållanden följer avståndet till storstäderna, så lika kommuner ligger nära varandra.',
       ),
       verdict:
-        s.nearest_in_other_county / s.analysed > 0.5
-          ? 'challenges'
-          : 'supports',
+        chance.permutation.share_at_most_observed < 0.025
+          ? 'supports'
+          : chance.permutation.share_at_most_observed > 0.975
+            ? 'challenges'
+            : 'undetermined',
       why: l(
-        `${Math.round((s.nearest_in_other_county / s.analysed) * 100)} % have their nearest social neighbour in another county; median ${s.nearest_km_median} km.`,
-        `${Math.round((s.nearest_in_other_county / s.analysed) * 100)} % har sin närmaste sociala granne i ett annat län; median ${s.nearest_km_median} km.`,
+        `The nearest social neighbour shares the county for ${same} of ${s.analysed}, against ${(s.analysed - chance.random_partner).toFixed(1)} by chance; ${shuffles} of ${chance.permutation.rounds} shuffles reach as many. Median ${s.nearest_km_median} km, against ${chance.random_pair_km_median} km for a random pair.`,
+        `Den närmaste sociala grannen ligger i samma län för ${same} av ${s.analysed}, mot ${(s.analysed - chance.random_partner).toFixed(1)} av slump; ${shuffles} av ${chance.permutation.rounds} omblandningar når lika många. Median ${s.nearest_km_median} km, mot ${chance.random_pair_km_median} km för ett slumpvist par.`,
       ),
       limits: l(
-        'Counties are administrative units; a neighbour across a county line can still be close.',
-        'Län är administrativa enheter; en granne över länsgränsen kan ändå ligga nära.',
+        `This tests closeness, not its cause: distance to a big city is not measured. ${pct(s.nearest_in_other_county)} % still have their nearest social neighbour in another county, and counties are administrative units.`,
+        `Detta prövar närhet, inte orsaken: avståndet till en storstad mäts inte. ${pct(s.nearest_in_other_county)} % har ändå sin närmaste sociala granne i ett annat län, och län är administrativa enheter.`,
       ),
     },
     {

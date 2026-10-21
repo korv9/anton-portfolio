@@ -39,7 +39,7 @@ CONTACT = re.compile(r"kontakt|frågor|ring |nås |mejla|\[e-post\]|\[telefon\]|
 def write(name: str, payload: dict) -> Path:
     path = OUT / name
     path.write_text(json.dumps(payload, ensure_ascii=False, separators=(",", ":")) + "\n",
-                    encoding="utf-8")
+                    encoding="utf-8", newline="\n")
     return path
 
 
@@ -110,7 +110,7 @@ def main() -> int:
     )).fetchall()
     write("examples.json", {"columns": ["category", "archive", "year", "field", "headline", "matched", "context"],
                             "rows": [list(r) for r in examples if not CONTACT.search(r[6] or "")],
-                            "note": "Drawn reproducibly (lowest hash of the ad id); e-mail addresses and phone numbers masked. Source: JobTech historical ads, CC0."})
+                            "note": "Drawn reproducibly (lowest hash of the ad text); e-mail addresses and phone numbers masked. Source: JobTech historical ads, CC0."})
     manifests = sorted((FEATURES / "sweden/ad_language").glob("manifest_*.json"))
     coverage = [json.loads(p.read_text()) for p in manifests]
     dropped = sorted({r[1]: r[2] for r in rows if 0 < r[2] < MIN_TEXTS}.items())

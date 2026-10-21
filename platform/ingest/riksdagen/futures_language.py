@@ -8,14 +8,15 @@ nine themes. Each session's speech archive (data.riksdagen.se, Riksdagen's open 
 streamed once, counted and deleted; no speech text is kept apart from short review examples.
 Per session, under warehouse/features/sweden/futures/:
 
-    totals_<session>.parquet    year × party: speeches, future-oriented speeches, words
+    totals_<session>.parquet    year × party: speeches, future-oriented speeches, words and
+                                matches of the future marker
     hits_<session>.parquet      the same × theme: speeches using it, of them future-oriented,
                                 and matches
     examples_<session>.parquet  per theme, three future-oriented speeches with the lowest hash
                                 of the speech id: date, party, speaker, link and a short window
     manifest_<session>.json     source URL and SHA-256, the dictionary's SHA-256, counts
 
-A session is counted again only when its archive or the dictionary changed.
+A session is counted again when its archive, the dictionary or COUNTS changed.
 """
 from __future__ import annotations
 
@@ -44,10 +45,13 @@ from ingest_governance_terms import load_terms, window, write_rows  # noqa: E402
 from rawstore import session as http_session  # noqa: E402
 
 CATALOG = "https://www.riksdagen.se/sv/dokument-och-lagar/riksdagens-oppna-data/anforanden/"
-ARCHIVE = re.compile(r"https://data\.riksdagen\.se/dataset/anforande/anforande-(\d{6})\.json\.zip")
+# Session codes have six digits (199394), except 1999/2000, which has eight (19992000).
+ARCHIVE = re.compile(r"https://data\.riksdagen\.se/dataset/anforande/anforande-(\d{8}|\d{6})\.json\.zip")
 OUT = REPO / "warehouse/features/sweden/futures"
 TERMS = REPO / "platform/seeds/sweden_futures/future_terms.csv"
 EXAMPLES = 3
+# Bumped when count() writes new columns, so every session is counted again.
+COUNTS = 2
 WORD = re.compile(r"\w+")
 # Riksdagen wrote the Liberals as FP until 2015.
 PARTY = {"FP": "L", "fp": "L", "-": None, "": None}
@@ -72,7 +76,7 @@ def speeches(path: Path):
 def count(rows, terms):
     marker = next(p for t, p in terms if t == "future")
     themes = [(t, p) for t, p in terms if t != "future"]
-    totals: dict = defaultdict(lambda: [0, 0, 0])  # speeches, future-oriented, words
+    totals: dict = defaultdict(lambda: [0, 0, 0, 0])  # speeches, future-oriented, words, marker matches
     hits: dict = defaultdict(lambda: [0, 0, 0])  # speeches using, of them future-oriented, matches
     draws: dict = defaultdict(list)
     seen: set[str] = set()
@@ -81,10 +85,12 @@ def count(rows, terms):
             continue
         seen.add(s["id"])
         cell = (s["date"][:4], s["party"])
-        future = marker.search(s["text"]) is not None
+        marked = len(marker.findall(s["text"]))
+        future = marked > 0
         totals[cell][0] += 1
         totals[cell][1] += future
         totals[cell][2] += len(WORD.findall(s["text"]))
+        totals[cell][3] += marked
         rank = int(hashlib.sha1(s["id"].encode()).hexdigest()[:15], 16)
         for term_id, pattern in themes:
             matches = pattern.findall(s["text"])
@@ -126,6 +132,7 @@ def main() -> None:
                  "last_modified": head.headers.get("Last-Modified")}
         previous = json.loads(manifest_path.read_text()) if manifest_path.exists() else {}
         if (previous and not args.force and previous.get("dictionary_sha256") == dictionary
+                and previous.get("counts") == COUNTS
                 and all(previous.get(k) == v for k, v in stamp.items())):
             print(f"{code}: unchanged archive and dictionary, skipped", flush=True)
             continue
@@ -143,14 +150,14 @@ def main() -> None:
                     out.write(chunk)
                     digest.update(chunk)
             totals, hits, examples, stats = count(speeches(path), terms)
-        write_rows([{"session": code, "year": y, "party": p, "speeches": n, "future": f, "words": w}
-                    for (y, p), (n, f, w) in totals.items()], OUT / f"totals_{code}.parquet")
+        write_rows([{"session": code, "year": y, "party": p, "speeches": n, "future": f, "words": w,
+                     "marker_matches": m} for (y, p), (n, f, w, m) in totals.items()], OUT / f"totals_{code}.parquet")
         write_rows([{"session": code, "year": y, "party": p, "theme": t, "speeches": n, "future": f,
                      "matches": m} for (y, p, t), (n, f, m) in hits.items()], OUT / f"hits_{code}.parquet")
         write_rows([{"session": code, **e} for e in examples], OUT / f"examples_{code}.parquet")
         manifest_path.write_text(json.dumps({
             "session": code, "source_url": url, "sha256": digest.hexdigest(), **stamp, **stats,
-            "dictionary_sha256": dictionary,
+            "dictionary_sha256": dictionary, "counts": COUNTS,
             "counted_at": datetime.now(timezone.utc).isoformat(timespec="seconds")}, indent=2) + "\n")
         print(f"{code}: {stats['speeches']:,} speeches, {time.monotonic() - started:.0f}s", flush=True)
 

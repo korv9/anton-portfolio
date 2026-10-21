@@ -75,6 +75,34 @@ def municipal(rng, similarity: dict, belonging: dict, x_key: str, y_key: str, ye
             "points": [[p[3], round(p[1], 4), round(p[0], 4)] for p in pairs]}
 
 
+def rejected_joins(language: dict, futures: dict | None) -> list[dict]:
+    """The joins left uncomputed, with the reason each would mislead."""
+    b_years = {r[0] for r in language["categories"][0]["rows"] if r[8] is not None}
+    e_years = {r[0] for r in futures["themes"][0]["rows"]} if futures else set()
+    overlap = sorted(b_years & e_years)
+    span = f"{overlap[0]}–{overlap[-1]}" if overlap else "none"
+    rho = (futures or {}).get("length", {}).get("spearman_share_words_per_speech")
+    length = (f"the Riksdag's future share also rises and falls with speech length (Spearman's ρ {rho} "
+              "across years)" if rho is not None else "the Riksdag's future share also follows speech length")
+    academic = (futures or {}).get("academic")
+    return [{
+        "id": "ads-career-futures", "products": ["B", "E"],
+        "question": "Does the language of careers and self-development rise in job ads and in the Riksdag's future talk together?",
+        "reason": (f"{len(overlap)} years ({span}) have both a standardised job-ad rate and a Riksdag count. Job ads and "
+                   "speeches are two genres with their own vocabulary, and two yearly series that both drift over "
+                   f"time correlate whether or not they are related; {length}. A correlation would not show a "
+                   "common cause."),
+    }, {
+        "id": "speeches-theses", "products": ["E"],
+        "question": "Do Riksdag speeches and academic theses imagine the same futures?",
+        "reason": ("The two corpora differ in genre, author and length. "
+                   + ("The DiVA abstracts are shown next to the Riksdag on The Lost Futures page, never pooled into one map."
+                      if academic else
+                      "The DiVA abstracts are being harvested again so that only Swedish abstracts count, each record "
+                      "once; they are shown next to the Riksdag when that is done, never pooled into one map.")),
+    }]
+
+
 def main() -> int:
     rng = np.random.default_rng(SEED)
     similarity = load("similarity/municipalities.json")
@@ -114,23 +142,8 @@ def main() -> int:
         "evidence": "descriptive", "assessment": "trivial",
         "alternatives": ["Every municipality keeps at least one main library, so a small population gives a high rate by construction."],
     })
-    language = load("language/trends.json")
-    b_years = {r[0] for r in language["categories"][0]["rows"] if r[8] is not None}
-    e_years = ({r[0] for r in load("futures/trends.json")["themes"][0]["rows"]}
-               if (DATA / "futures/trends.json").exists() else set())
-    overlap = sorted(b_years & e_years)
-    rejected = [{
-        "id": "ads-career-futures", "products": ["B", "E"],
-        "question": "Does the language of careers and self-development rise in job ads and in the Riksdag's future talk together?",
-        "reason": (f"Only {len(overlap)} years ({', '.join(map(str, overlap))}) have both a standardised job-ad rate and a "
-                   "Riksdag count; a correlation over so few points, two genres and unequal coverage would describe "
-                   "nothing. The join waits for the full job-ad backfill."),
-    }, {
-        "id": "speeches-theses", "products": ["E"],
-        "question": "Do Riksdag speeches and academic theses imagine the same futures?",
-        "reason": "DiVA abstracts are not yet counted, and the two corpora differ in genre, language and author; "
-                  "they will be compared side by side, never pooled into one map.",
-    }]
+    futures = load("futures/trends.json") if (DATA / "futures/trends.json").exists() else None
+    rejected = rejected_joins(load("language/trends.json"), futures)
     OUT.mkdir(parents=True, exist_ok=True)
     path = OUT / "connections.json"
     path.write_text(json.dumps({"relationships": relationships, "rejected": rejected,
