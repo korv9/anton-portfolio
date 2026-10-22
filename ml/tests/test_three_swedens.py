@@ -1,7 +1,7 @@
 """The three-spaces statistics: the permutation null, neighbours, chance Jaccard and Holm."""
 import numpy as np
 
-from ml.three_swedens import chance_jaccard, distances, holm, jaccard, mantel, nearest
+from ml.three_swedens import centroid, chance_jaccard, clr, distances, holm, jaccard, mantel, nearest, ring_area
 
 
 def matrices(seed: int, related: bool):
@@ -42,3 +42,33 @@ def test_chance_jaccard_matches_simulation():
 
 def test_holm():
     assert holm([0.01, 0.04, 0.03]) == [0.03, 0.06, 0.06]
+
+
+def test_partial_r_removes_what_geography_explains():
+    # Both spaces are noisy copies of geography: plain r is high, partial r is near zero.
+    rng = np.random.default_rng(2)
+    xy = rng.uniform(size=(40, 2))
+    geo = distances(xy)
+    a = distances(np.column_stack([xy, rng.normal(scale=0.05, size=(40, 1))]))
+    b = distances(np.column_stack([xy, rng.normal(scale=0.05, size=(40, 1))]))
+    result = mantel(a, b, geo, np.random.default_rng(2), permutations=99)
+    assert result["r"] > 0.9
+    assert abs(result["partial_r"]) < 0.3 < result["r"] - result["partial_r"]
+
+
+def test_clr_rows_centre_and_ignore_scale():
+    counts = np.array([[10.0, 20.0, 70.0], [100.0, 200.0, 700.0]])
+    out = clr(counts)
+    assert np.allclose(out.sum(axis=1), 0)
+    assert np.allclose(out[0], clr(counts[:1] * 3)[0], atol=0.05)  # +0.5 pseudo-count only
+    assert np.allclose(out[1], np.log([1, 2, 7]) - np.log([1, 2, 7]).mean(), atol=0.01)
+
+
+def test_centroid_and_distance():
+    square = [[0, 0], [2, 0], [2, 2], [0, 2]]
+    assert centroid(square) == (1.0, 1.0)
+    assert centroid(square[::-1] + [square[-1]]) == (1.0, 1.0)  # orientation and a closing vertex
+    assert centroid([[0, 0], [3, 0], [0, 3]]) == (1.0, 1.0)
+    assert ring_area(square) == 4.0
+    d = distances(np.array([[0.0, 0.0], [3.0, 4.0]]))
+    assert d.tolist() == [[0.0, 5.0], [5.0, 0.0]]

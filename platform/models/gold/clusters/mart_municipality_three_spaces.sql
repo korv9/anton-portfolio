@@ -1,5 +1,5 @@
 -- Three Swedens (H4): how far each municipality's 10 nearest neighbours agree between the social,
--- job-ad and vote spaces (Jaccard per pair, agreement their mean), the 20 misfits and the two
+-- job-ad and vote spaces (Jaccard per pair, agreement their mean), the 20 with the least agreement and the two
 -- published SWEDEN C groupings. Names come from dim_municipality.
 select t.municipality_code, m.municipality_name, t.agreement,
        t.jaccard_social_jobs, t.jaccard_social_votes, t.jaccard_jobs_votes,

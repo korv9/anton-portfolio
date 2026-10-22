@@ -4,8 +4,8 @@
 
 Runs after `python -m ml.three_swedens` and `dbt build --select tag:clusters`. Takes the method,
 the Mantel diagnostics, the grouping decision and generated_at from the run's metrics.json, and
-the 20 misfits with their neighbours by name from gold.mart_municipality_three_spaces, so a
-reader can check each misfit without the map's colours. A NaN stops the export.
+the 20 municipalities with the least agreement, with their neighbours by name from
+gold.mart_municipality_three_spaces, so a reader can check each one without the map's colours. A NaN stops the export.
 """
 from __future__ import annotations
 
@@ -36,8 +36,11 @@ def payload(con) -> dict:
                                        "grouping")},
             "misfits": misfits,
             "notes": ["Descriptive only: municipalities where the neighbours differ, not people who differ.",
-                      f"{cut['at_or_below']} municipalities have an agreement at or below the 20th misfit's "
-                      f"{cut['agreement']}; ties are broken by municipality code, as pre-registered.",
+                      "Agreement is the mean Jaccard overlap of the 10 nearest neighbours across the three "
+                      "pairs of spaces; the list holds the 20 municipalities with the least agreement.",
+                      f"{cut['at_or_below']} municipalities have an agreement of {cut['agreement']} or less, the "
+                      "value of the 20th; ties are broken by municipality code, as pre-registered.",
+                      next(t["note"] for t in metrics["diagnostics"]["tests"] if t["pair"] == ["social", "votes"]),
                       metrics["grouping"]["note"]]}
 
 

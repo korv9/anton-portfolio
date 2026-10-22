@@ -136,8 +136,10 @@ def group_fit(k: int):
     return fit
 
 
-def grouping(indicators: np.ndarray, spaces: dict[str, np.ndarray], published: dict[int, np.ndarray]) -> dict:
-    """The pre-registered k = 2 against k = 4 rule, with its evidence."""
+def grouping(indicators: np.ndarray, spaces: dict[str, np.ndarray], published: dict[int, np.ndarray],
+             analysed: np.ndarray) -> dict:
+    """The pre-registered k = 2 against k = 4 rule, with its evidence. The fit uses every row of
+    the social map (the municipalities the site groups); `analysed` picks the rows of `spaces`."""
     scaled = StandardScaler().fit_transform(indicators)
     space = PCA(4).fit_transform(scaled)
     out = {}
@@ -159,10 +161,11 @@ def grouping(indicators: np.ndarray, spaces: dict[str, np.ndarray], published: d
                            "p": round(p, 4), "rounds": GROUP_ROUNDS, "kind": "each indicator permuted on its own"},
                   "qualifies": ari["mean"] >= 0.75 and ari["p05"] >= 0.6 and p < 0.05,
                   "ari_with_published": round(float(adjusted_rand_score(published[k], labels)), 4),
-                  "silhouette_in": {s: round(float(silhouette_score(x, labels)), 4) for s, x in spaces.items()}}
+                  "silhouette_in": {s: round(float(silhouette_score(x, labels[analysed])), 4) for s, x in spaces.items()}}
     qualifying = [g for g in out.values() if g["qualifies"]]
     chosen = max(qualifying, key=lambda g: (round(g["bootstrap_ari"]["p05"], 3), -g["k"]))["k"] if qualifying else None
-    bar = "mean bootstrap ARI at least 0.75, 5th percentile at least 0.6 and null p below 0.05"
+    bar = (f"mean bootstrap ARI at least 0.75, 5th percentile at least 0.6 and null p below 0.05, "
+           f"fitted on the {len(indicators)} municipalities of the social map")
     note = (f"The site uses k = {chosen}: it meets the pre-registered bar ({bar}) with the higher 5th percentile ARI."
             if chosen else f"Neither k = 2 nor k = 4 meets the pre-registered bar ({bar}), so the site shows "
                            "no municipality grouping as a finding.")
@@ -170,7 +173,8 @@ def grouping(indicators: np.ndarray, spaces: dict[str, np.ndarray], published: d
 
 
 def load() -> tuple:
-    """One row per municipality in all three spaces with a boundary, in code order, and the drops."""
+    """The social map (all its rows, code order), the codes in all three spaces with a boundary,
+    the per-space inputs for those codes, and each dropped code with its reason."""
     sim = json.loads((SIMILARITY / "municipalities.json").read_text(encoding="utf-8"))
     features = [f["id"] for f in sim["features"]]
     social = pd.DataFrame([{"municipality_code": m["code"], "municipality_name": m["name"], "group_k2": m.get("group"),
@@ -190,16 +194,25 @@ def load() -> tuple:
     scale = 0.1  # geometry units are 100 m; kilometres
     centres = {m["code"]: centroid(max(m["rings"], key=ring_area)) for m in geometry["municipalities"]}
     codes = sorted(set(social.municipality_code) & set(jobs.index) & set(votes.index) & set(centres))
-    frame = social.set_index("municipality_code").loc[codes]
+    social = social.set_index("municipality_code").sort_index()
+    with_ads = set(ads.municipality_code)
+    universe = set(social.index) | with_ads | set(votes.index) | set(centres)
+    checks = [("not in the social map (a missing indicator)", set(social.index)),
+              ("no job ads", with_ads), (f"fewer than {MIN_ADS} job ads", set(jobs.index) | (universe - with_ads)),
+              ("no 2022 vote count", set(votes.index)), ("no boundary", set(centres))]
+    dropped = [{"code": c, "reasons": [why for why, present in checks if c not in present]}
+               for c in sorted(universe - set(codes))]
     drops = {"in_space": {"social": int(len(social)), "jobs": int(len(jobs)), "votes": int(len(votes)),
                           "boundaries": len(centres)},
-             "jobs_below_minimum": int(ads.municipality_code.nunique() - len(jobs))}
-    return frame, features, jobs.loc[codes], votes.loc[codes], np.array([centres[c] for c in codes]) * scale, drops
+             "jobs_below_minimum": int(ads.municipality_code.nunique() - len(jobs)), "dropped": dropped}
+    return (social, codes, features, jobs.loc[codes], votes.loc[codes],
+            np.array([centres[c] for c in codes]) * scale, drops)
 
 
 def main() -> None:
-    frame, features, jobs, votes, xy, drops = load()
-    codes = frame.index.to_numpy()
+    social, codes, features, jobs, votes, xy, drops = load()
+    frame = social.loc[codes]
+    codes = np.asarray(codes)
     indicators = frame[features].to_numpy(float)
     spaces = {"social": StandardScaler().fit_transform(indicators), "jobs": clr(jobs.to_numpy(float)),
               "votes": clr(votes.to_numpy(float))}
@@ -212,6 +225,9 @@ def main() -> None:
     for t, adjusted in zip(tests, holm([t["partial_p"] for t in tests])):
         t["partial_p_holm"] = round(adjusted, 4)
         t["reading"] = "agree" if adjusted < 0.05 else "no measurable agreement"
+        if t["pair"] == ["social", "votes"]:
+            t["note"] = ("Riksdag turnout is one of the social indicators, so part of the social-votes r "
+                         "comes from that shared indicator.")
         for key in ("r", "partial_r"):
             t[key] = round(t[key], 4)
     near = {s: nearest(m) for s, m in d.items()}
@@ -220,8 +236,9 @@ def main() -> None:
     rank = np.lexsort((codes, agreement))[:MISFITS]
     misfit_rank = np.full(len(codes), np.nan)
     misfit_rank[rank] = np.arange(1, MISFITS + 1)
-    groups = grouping(indicators, {s: spaces[s] for s in ("jobs", "votes")},
-                      {2: frame.group_k2.to_numpy(int), 4: frame.group_k4.to_numpy(int)})
+    groups = grouping(social[features].to_numpy(float), {s: spaces[s] for s in ("jobs", "votes")},
+                      {2: social.group_k2.to_numpy(int), 4: social.group_k4.to_numpy(int)},
+                      social.index.isin(codes))
     rows = pd.DataFrame({"municipality_code": codes, "municipality_name": frame.municipality_name.to_numpy(),
                          "agreement": agreement.round(4), **{k: v.round(4) for k, v in pairs.items()},
                          "misfit_rank": pd.array(misfit_rank, dtype="Int64"),
@@ -246,7 +263,8 @@ def main() -> None:
                         # Ties at the cut-off are broken by code (pre-registered); the reader sees how many.
                         "misfit_cutoff": {"agreement": round(float(agreement[rank[-1]]), 4),
                                           "at_or_below": int((agreement <= agreement[rank[-1]]).sum())}},
-        "grouping": {"chosen_k": groups["chosen_k"], "candidates": candidates, "note": groups["note"]},
+        "grouping": {"chosen_k": groups["chosen_k"], "n": int(len(social)), "candidates": candidates,
+                 "note": groups["note"]},
     }
     OUT.mkdir(parents=True, exist_ok=True)
     atomic_parquet(rows, OUT / "municipalities.parquet")

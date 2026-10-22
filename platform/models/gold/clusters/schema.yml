@@ -63,7 +63,7 @@ models:
   - name: mart_municipality_three_spaces
     description: >-
       Neighbour agreement of each municipality across the social, job-ad and vote spaces
-      (docs/sweden-three-spaces-preregistration.md), with the 20 misfits ranked.
+      (docs/sweden-three-spaces-preregistration.md), with the 20 of least agreement ranked (misfit_rank).
     columns:
       - name: municipality_code
         data_tests:
