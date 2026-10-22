@@ -5,10 +5,12 @@
 Reads the published SBERT consensus topics (run 7ddccfed7864e26fe7aa90da, the names on the site)
 and the bge-m3 consensus run beside it in cluster_lab/public-consensus-2026-10-13, and the
 passages' year, party, speech and debate from the debate dataset. Writes features/clusters/
-debate-topics: topic shares per year and per party and decade, with 90 % intervals from
-resampling speeches within each cell (a speech's passages move together); noise is left out of
-the shares and its share stated. Checks:
-- stability: ARI between the 12 HDBSCAN seeds behind the consensus (66 pairs; nothing is refitted).
+debate-topics: topic shares per year (clustering debate-topics) and per party and decade
+(debate-topics-party), with 90 % intervals from resampling speeches within each cell (a speech's
+passages move together); noise is left out of the shares and its share stated. The inputs are
+cluster_lab runs that no pipeline step writes; a missing one stops the script. Checks:
+- stability: `seed_ari`, the ARI between the 12 HDBSCAN seeds behind the consensus (66 pairs;
+  nothing is refitted, so it is seed agreement, not a bootstrap).
 - null: Cramer's V of topic x year against the debates' years shuffled over the debates.
 - the bge-m3 model: ARI with SBERT, and per topic whether its share trend holds in both
   (best-overlap bge-m3 cluster, Jaccard >= 0.3, yearly shares rank-correlated >= 0.5).
@@ -94,17 +96,25 @@ def topic_agreement(frame: pd.DataFrame, other: np.ndarray) -> list[dict]:
         candidates = {o: (inside & (other == o)).sum() / (inside | (other == o)).sum() for o in set(other[other >= 0])}
         best = max(candidates, key=candidates.get)
         rho = spearmanr(yearly(mine, c), yearly(other, best)).statistic
+        rho = None if np.isnan(rho) else round(float(rho), 3)  # a constant yearly share has no rank correlation
         out.append({"cluster": int(c), "bge_m3_cluster": int(best), "jaccard": round(float(candidates[best]), 3),
-                    "rho_yearly": round(float(rho), 3), "holds_in_both": bool(candidates[best] >= 0.3 and rho >= 0.5)})
+                    "rho_yearly": rho, "holds_in_both": bool(candidates[best] >= 0.3 and rho is not None and rho >= 0.5)})
     return out
 
 
 def main() -> None:
+    inputs = [OBSERVATIONS, *(RUN / m / f for m in ("debate-sbert", "debate-bge-m3")
+                              for f in ("assignments.parquet", "result.json"))]
+    missing = [str(p) for p in inputs if not p.exists()]
+    if missing:
+        raise SystemExit(f"debate_topics needs the cluster_lab runs public-topics-2026-10-12 and "
+                         f"public-consensus-2026-10-13 under {LAB}; no pipeline step writes them. Missing: {missing}")
     observations = pd.read_parquet(OBSERVATIONS, columns=["observation_id", "speech_id", "debate_id", "party", "year"])
     sbert = pd.read_parquet(RUN / "debate-sbert/assignments.parquet")
     bge = pd.read_parquet(RUN / "debate-bge-m3/assignments.parquet")
     frame = observations.merge(sbert[["observation_id", "cluster"]], on="observation_id", validate="one_to_one")
-    other = frame[["observation_id"]].merge(bge, on="observation_id", how="left").cluster.fillna(-1).astype(int).to_numpy()
+    other = frame[["observation_id"]].merge(bge[["observation_id", "cluster"]], on="observation_id", how="left",
+                                            validate="one_to_one").cluster.fillna(-1).astype(int).to_numpy()
     result = json.loads((RUN / "debate-sbert/result.json").read_text(encoding="utf-8"))
     published = json.loads(NAMES.read_text(encoding="utf-8"))
     if published["run_id"] != result["run_id"]:
@@ -115,18 +125,20 @@ def main() -> None:
     k = int(labels.max() + 1)
     kept = labels >= 0
     frame["decade"] = frame.year // 10 * 10
-    by_year = cell_shares(frame, ["year"], k).assign(party="all")
-    by_party = cell_shares(frame, ["decade", "party"], k).rename(columns={"decade": "year"})
+    by_year = cell_shares(frame, ["year"], k).assign(party="all", clustering="debate-topics")
+    by_party = (cell_shares(frame, ["decade", "party"], k).rename(columns={"decade": "year"})
+                .assign(clustering="debate-topics-party"))
     shares = pd.concat([by_year, by_party]).rename(columns={"year": "period", "party": "segment"})
     shares["period"] = shares.period.astype(str)
     both = kept & (other >= 0)
     diagnostics = stats.diagnostics(
         labels, round(result["silhouette_cosine"], 4),
-        stats.summary(pairs, len(pairs), 0, f"ARI between {len(seeds)} HDBSCAN seeds ({len(pairs)} pairs); no refit here"),
+        stats.summary(pairs, len(pairs), 0, f"ARI between {len(seeds)} HDBSCAN seeds ({len(pairs)} pairs); "
+                                            "seed agreement, nothing refitted on resampled passages"),
         association_null(labels[kept], frame.year.to_numpy()[kept], frame.debate_id.to_numpy()[kept]),
         {"party": round(result["ami"]["party"], 4), "year": round(result["ami"]["year"], 4),
          "bge_m3_clusters": round(float(adjusted_mutual_info_score(labels[both], other[both])), 4)},
-        space="centred SBERT vectors, cosine, 5,000-passage sample (from the run)")
+        space="centred SBERT vectors, cosine, 5,000-passage sample (from the run)", stability_key="seed_ari")
     clusters = [{"id": int(c), "name": published["names"].get(str(c), [None, None]),
                  "size": int((labels == c).sum())} for c in range(k)]
     metrics = {
@@ -139,7 +151,7 @@ def main() -> None:
         "bge_m3": {"run_id": json.loads((RUN / "debate-bge-m3/result.json").read_text(encoding="utf-8"))["run_id"],
                    "ari_with_sbert_both_assigned": round(float(adjusted_rand_score(labels[both], other[both])), 4),
                    "both_assigned": int(both.sum()), "topics": topic_agreement(frame, other)},
-        "assignments": ["debate-topics"], "members": False, "shares": True,
+        "assignments": ["debate-topics"], "members": False, "shares": ["debate-topics", "debate-topics-party"],
     }
     assignments = stats.frame("debate-topics", frame.observation_id, frame.party, frame.year, labels)
     stats.save("debate-topics", frame[["observation_id", "speech_id", "debate_id", "party", "year"]], assignments,

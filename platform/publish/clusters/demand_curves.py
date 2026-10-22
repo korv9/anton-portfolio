@@ -8,10 +8,11 @@ that month (so a curve is relative to the market, which fell after 2023) is spli
 into a trend (centred 2x12 moving average, 33 months) and a seasonal profile (mean deviation from
 the trend per calendar month), and each part is z-normalised, so only its shape counts. The two
 parts are clustered separately: average linkage on correlation distance, k by silhouette over
-3-8, K-means on the z-scores as a check (tslearn is not installed, so no k-Shape).
+2-8, K-means on the z-scores as a check (tslearn is not installed, so no k-Shape).
 - bootstrap over occupations, and a block bootstrap over months (the remainder after trend and
   season resampled in 12-month blocks, then both parts rebuilt and refitted);
-- nulls: each trend's months shuffled; each seasonal profile shifted by a random number of months
+- nulls: each raw monthly series shuffled before the trend is smoothed (shuffling a smoothed
+  trend keeps too much of it); each seasonal profile shifted by a random number of months
   (circular), which keeps its shape and breaks its timing.
 """
 from __future__ import annotations
@@ -79,14 +80,14 @@ def shuffle_months(x: np.ndarray, rng) -> np.ndarray:
 
 
 def cluster_part(x, y, first_month, part, shuffle, kind) -> tuple[np.ndarray, dict, dict]:
-    sweep = {k: correlation_silhouette(x, correlation_fit(k)(x)) for k in range(3, 9)}
+    sweep = {k: correlation_silhouette(x, correlation_fit(k)(x)) for k in stats.KS}
     k = max(sweep, key=lambda k: sweep[k] or -1)
     fit = correlation_fit(k)
     labels = fit(x)
     observed = correlation_silhouette(x, labels)
     null = stats.permutation_null(x, observed, fit, shuffle=shuffle, kind=kind, score=correlation_silhouette)
     diagnostics = stats.diagnostics(labels, observed, stats.bootstrap_ari(x, labels, fit), null,
-                                    space=f"z-normalised {part}, correlation distance")
+                                    space=f"z-normalised {part}, correlation distance", sweep=sweep)
     diagnostics["block_bootstrap_ari"] = block_bootstrap(y, first_month, part, labels, fit)
     check = stats.kmeans(k)(x)
     return labels, diagnostics, {"k": k, "k_sweep_silhouette": sweep,
@@ -118,8 +119,9 @@ def main() -> None:
     first_month = int(FIRST[5:]) - 1
     trend, season, _ = decompose(y, first_month)
     xt, xs = znorm(trend), znorm(season)
-    trend_labels, trend_diag, trend_method = cluster_part(xt, y, first_month, "trend", shuffle_months,
-                                                          "each trend's months shuffled")
+    raw_null = lambda _, rng: znorm(decompose(shuffle_months(y, rng), first_month)[0])
+    trend_labels, trend_diag, trend_method = cluster_part(xt, y, first_month, "trend", raw_null,
+                                                          "each raw monthly series shuffled, then smoothed")
     season_labels, season_diag, season_method = cluster_part(xs, y, first_month, "seasonal profile", shift_season,
                                                              "each seasonal profile shifted circularly")
     groups = wide.index.to_numpy()

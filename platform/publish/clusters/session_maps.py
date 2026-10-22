@@ -41,7 +41,7 @@ def main() -> None:
     cluster = frame.topic_id.to_numpy()
     diagnostics = stats.diagnostics(
         cluster, None, None, None, {"party": stats.ami(cluster, frame.party.tolist())},
-        note="The maps carry no vectors: silhouette and stability cannot be computed from them, "
+        note="A picture, not a measurement. The maps carry no vectors: silhouette and stability cannot be computed from them, "
              "and a silhouette in the 2D map space is not a measure of quality.")
     metrics = {"title": "Same parliament, 33 maps",
                "method": {"features": "speech chunks of the parliament-current topic model",

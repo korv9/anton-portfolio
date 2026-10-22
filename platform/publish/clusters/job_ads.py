@@ -4,7 +4,8 @@
 
 Reads raw/jobtech/cluster-corpus/{2023,2024,2025,2026-Q*}/*.parquet (the active snapshot repeats
 ads already in the quarters and is left out) with DuckDB at memory_limit 1GB and two threads,
-reading five columns. An ad counts once per observation_id. Writes features/clusters/job-ads:
+spilling to tmp/duckdb, reading six columns. An ad counts once per observation_id. Writes
+features/clusters/job-ads:
 - municipality_field.parquet: publication year x municipality name x county x occupation field;
 - occupation_month.parquet: month x occupation group x occupation field.
 Names stay as JobTech spells them; gold.mart_job_ad_municipality_field maps them to SCB codes
@@ -29,8 +30,14 @@ OUT = stats.FEATURES / "job-ads"
 def main() -> None:
     files = [(CORPUS / f / "*.parquet").as_posix() for f in FOLDERS]
     OUT.mkdir(parents=True, exist_ok=True)
+    spill = stats.ROOT / "tmp/duckdb"
+    spill.mkdir(parents=True, exist_ok=True)
     con = duckdb.connect()
-    con.sql("set memory_limit='1GB'; set threads=2; set preserve_insertion_order=false")
+    for setting in ("memory_limit='1GB'", "threads=2", "preserve_insertion_order=false",
+                    f"temp_directory='{spill.as_posix()}'"):
+        con.execute(f"set {setting}")
+    print("memory_limit", con.execute("select current_setting('memory_limit')").fetchone()[0])
+    # published_at is an ISO string (VARCHAR) in the corpus, so its first seven characters are the month.
     con.sql(f"""create temp table ads as
         select observation_id, any_value(published_at)[:7] as month, any_value(municipality) as municipality,
                any_value(region) as region, any_value(occupation_field) as occupation_field,

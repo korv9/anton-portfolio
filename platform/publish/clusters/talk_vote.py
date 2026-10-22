@@ -82,12 +82,16 @@ def main() -> None:
         if np.isnan(vote).any():
             raise SystemExit(f"{session}: a party pair lacks agreement")
         r, null = mantel(talk, vote, seed=stats.SEED + len(sessions))
+        if np.isnan(r):
+            raise SystemExit(f"{session}: Mantel r is undefined (all party distances equal)")
         talk_tree, vote_tree = tree(talk), tree(vote)
         talk_cut, vote_cut = fcluster(talk_tree, CUT, "maxclust") - 1, fcluster(vote_tree, CUT, "maxclust") - 1
         boots.append(np.mean(topic_bootstrap(shares, talk_cut, seed=stats.SEED + len(sessions))))
         rs.append(r)
         nulls.append(null)
-        sessions.append({"session": session, "parties": parties, "mantel_r": round(r, 4),
+        sessions.append({"session": session, "parties": parties, "n": len(parties), "k": CUT,
+                         "largest_share": round(float(np.bincount(talk_cut).max() / len(parties)), 4),
+                         "mantel_r": round(r, 4),
                          "p": round((1 + int((null >= r).sum())) / (1 + ROUNDS), 4),
                          "ari_cuts": round(float(adjusted_rand_score(talk_cut, vote_cut)), 4),
                          "talk_tree": np.round(talk_tree, 4).tolist(), "vote_tree": np.round(vote_tree, 4).tolist()})
@@ -97,9 +101,9 @@ def main() -> None:
     pooled = np.mean(np.vstack(nulls), axis=0)
     rng = np.random.default_rng(stats.SEED)
     boot_r = [np.mean(rng.choice(rs, len(rs))) for _ in range(BOOT)]
-    labels = np.concatenate([a.cluster.to_numpy() for a in assignments[::2]])
+    # n, k and the largest share only mean something per session (in `sessions`); here n counts sessions.
     diagnostics = stats.diagnostics(
-        labels, None,
+        np.arange(len(sessions)), None,
         stats.summary(boots, BOOT, stats.SEED, f"talk tree per session: topics drawn with replacement, "
                                                 f"recut at {CUT} groups; mean of the session means"),
         {"statistic": "mean Mantel r over sessions", "kind": "party labels permuted within each session",
@@ -108,6 +112,7 @@ def main() -> None:
          "p": round((1 + int((pooled >= observed).sum())) / (1 + ROUNDS), 4), "rounds": ROUNDS, "seed": stats.SEED,
          "bootstrap_over_sessions": stats.summary(boot_r, BOOT, stats.SEED, "sessions drawn with replacement")},
         {}, note="Descriptive: 7-9 parties per session. Silhouette is not defined for a 3-group cut of so few parties.")
+    diagnostics.update(n_unit="sessions", k=CUT, largest_share=None)
     metrics = {"title": "Talk alike, vote alike?",
                "method": {"talk": f"Hellinger distance between word shares over the {MODEL} topics",
                           "vote": "1 - roll-call agreement", "trees": "average linkage", "cut": CUT,

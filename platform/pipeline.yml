@@ -402,12 +402,17 @@ subjects:
   # Clustering batches 0-2 (platform/publish/clusters): one DuckDB pass over the local JobTech
   # cluster corpus, small fits on stored and published inputs, exports under clusters/. A run
   # stored under features/clusters is kept unless --ml always; the dbt tests gate the exports.
+  # Five fits read published JSON under frontend/public/data, not marts, so each needs the
+  # subject that exports it: eras and talk_vote (politics: gold/tables/fact_topic_session_party;
+  # parliament: parliament/sessions.json), tax_mix (taxes), field_language (sweden_language);
+  # trajectories and labour_market read sweden/similarity (sweden). session_maps reads the
+  # committed politics/parliament/sessions/*/umap.json, which no subject here writes.
   clusters:
     schedule: '13 21 * * 6'
     sla: {fresh_within: 8d}
     write: {features: {merge: [path]}, warehouse: overwrite, delivery: versioned}
     group: sweden
-    needs: [welfare, parliament, taxes, sweden, sweden_language]
+    needs: [welfare, parliament, politics, taxes, sweden, sweden_language]
     features: [clusters]
     steps:
       - ml: python platform/publish/clusters/job_ads.py

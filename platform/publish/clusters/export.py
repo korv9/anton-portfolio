@@ -7,9 +7,10 @@ Runs after the fit scripts and `dbt build --select tag:clusters`. Each file hold
 method, `diagnostics` (n, k, noise and largest share, original-space silhouette, bootstrap ARI with
 its 5-95 % range, null and p, AMI with the reference labels, status) and run id, plus:
 - `members` from gold.mart_cluster_assignments when the run publishes them (entity, period, cluster);
-- `shares` from gold.mart_cluster_shares when it has shares over time.
-A status of "counter_example" (mean bootstrap ARI under 0.6) or "unvalidated" must not be shown
-as a finding. Files over MAX_BYTES stop the export.
+- `shares` from gold.mart_cluster_shares for the clusterings the run lists under `shares`.
+Only status "finding" may be shown as a finding; "counter_example", "descriptive" and
+"unvalidated" may not. Every file is built and size-checked before any is written; one over
+MAX_BYTES, or a NaN, stops the export.
 """
 from __future__ import annotations
 
@@ -25,7 +26,7 @@ NAMES = ["debate-topics", "session-maps", "talk-vote", "municipal-trajectories",
 OUT = stats.PUBLIC / "clusters"
 MAX_BYTES = 200_000
 MEMBER_COLUMNS = ["clustering", "entity_id", "entity_name", "period", "cluster"]
-SHARE_COLUMNS = ["period", "segment", "cluster", "share", "low", "high", "passages"]
+SHARE_COLUMNS = ["clustering", "period", "segment", "cluster", "share", "low", "high", "passages"]
 
 
 def table(con, sql: str, columns: list[str], params: list) -> dict:
@@ -42,20 +43,28 @@ def payload(con, name: str) -> dict:
                                MEMBER_COLUMNS, [metrics["assignments"]])
     if metrics.get("shares"):
         out["shares"] = table(con, f"""select {', '.join(SHARE_COLUMNS)} from gold.mart_cluster_shares
-                                       where clustering = ? order by all""", SHARE_COLUMNS, [name])
+                                       where clustering in (select unnest(?)) order by all""",
+                              SHARE_COLUMNS, [metrics["shares"]])
+    return out
+
+
+def bodies(con, names: list[str]) -> dict[str, str]:
+    out = {}
+    for name in names:
+        out[name] = json.dumps(payload(con, name), ensure_ascii=False, allow_nan=False, separators=(",", ":")) + "\n"
+        size = len(out[name].encode("utf-8"))
+        if size > MAX_BYTES:
+            raise SystemExit(f"{name}: {size} bytes is over {MAX_BYTES}; nothing written")
     return out
 
 
 def main(names: list[str]) -> None:
-    OUT.mkdir(parents=True, exist_ok=True)
     with duckdb.connect(str(stats.DATABASE), read_only=True) as con:
-        for name in names:
-            body = json.dumps(payload(con, name), ensure_ascii=False, separators=(",", ":")) + "\n"
-            size = len(body.encode("utf-8"))
-            if size > MAX_BYTES:
-                raise SystemExit(f"{name}: {size} bytes is over {MAX_BYTES}")
-            (OUT / f"{name}.json").write_text(body, encoding="utf-8", newline="\n")
-            print(f"clusters/{name}.json {size} bytes")
+        built = bodies(con, names)
+    OUT.mkdir(parents=True, exist_ok=True)
+    for name, body in built.items():
+        (OUT / f"{name}.json").write_text(body, encoding="utf-8", newline="\n")
+        print(f"clusters/{name}.json {len(body.encode('utf-8'))} bytes")
 
 
 if __name__ == "__main__":

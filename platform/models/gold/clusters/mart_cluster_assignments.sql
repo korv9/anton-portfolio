@@ -9,7 +9,7 @@ with assignments as (
         a.period, a.cluster, a.cluster < 0 as is_noise, a.probability
     from assignments as a
     left join {{ ref('dim_municipality') }} as m
-        on m.municipality_code = a.entity_id
+        on m.municipality_code = a.entity_id and m.valid_to is null
         and (a.clustering like 'municipal-%' or a.clustering like 'labour-market-%')
 )
 select

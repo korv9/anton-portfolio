@@ -1,5 +1,6 @@
 """Clustering batches 0-2: each statistic behind a `diagnostics` block, on data with a known
 answer. Every test fails if its null or bootstrap is replaced by a constant or removed."""
+import contextlib
 import sys
 from pathlib import Path
 
@@ -12,6 +13,7 @@ sys.path.insert(0, str(ROOT / "publish/clusters"))
 import debate_topics  # noqa: E402
 import demand_curves  # noqa: E402
 import eras  # noqa: E402
+import export  # noqa: E402
 import labour_market  # noqa: E402
 import stats  # noqa: E402
 import talk_vote  # noqa: E402
@@ -46,10 +48,38 @@ def test_permutation_null_separates_structure_from_noise():
 
 def test_diagnostics_marks_unstable_clusters_as_counter_examples():
     labels = np.array([0, 0, 1, 1, -1])
+    large = np.repeat([0, 1], 25)
     assert stats.diagnostics(labels, 0.5, {"mean": 0.59}, None)["status"] == "counter_example"
-    assert stats.diagnostics(labels, 0.5, {"mean": 0.6}, None)["status"] == "finding"
+    assert stats.diagnostics(labels, 0.5, {"mean": 0.6}, None)["status"] == "descriptive"
+    assert stats.diagnostics(large, 0.5, {"mean": 0.6}, None)["status"] == "finding"
+    assert stats.diagnostics(large, 0.5, {"mean": 0.9}, None, period_ari={"periods": [1, 2], "ari": 0.32})["status"] == "counter_example"
+    assert "seed_ari" in stats.diagnostics(large, 0.5, {"mean": 0.9}, None, stability_key="seed_ari")
     assert stats.diagnostics(labels, None, None, None)["status"] == "unvalidated"
     assert stats.diagnostics(labels, 0.5, None, None)["noise_share"] == 0.2
+
+
+def test_k_flags_mark_sweep_ends_and_near_ties():
+    assert stats.k_flags({2: 0.5, 3: 0.4, 4: 0.3}, 2)[0].startswith("k = 2 is at the end")
+    assert stats.k_flags({2: 0.3, 3: 0.402, 4: 0.4}, 3) == ["k = 4 is within 0.005 of k = 3 (0.4 vs 0.402)"]
+    assert stats.k_flags({2: 0.3, 3: 0.5, 4: 0.4}, 3) == []
+
+
+def test_save_writes_features_and_registers_a_stable_run(tmp_path, monkeypatch):
+    monkeypatch.setattr(stats, "FEATURES", tmp_path / "features")
+    monkeypatch.setattr(stats, "LAB", tmp_path / "lab")
+    inputs = stats.pd.DataFrame({"x": [1.0, 2.0]})
+    rows = stats.frame("demo", ["a", "b"], ["A", "B"], "2024", [0, 1])
+    metrics = {"diagnostics": {"status": "finding", "k": np.int64(2)}}
+    first = stats.save("demo", inputs, rows, metrics)
+    assert stats.save("demo", inputs, rows, metrics) == first
+    saved = stats.json.loads((tmp_path / "features/demo/run/metrics.json").read_text(encoding="utf-8"))
+    assert saved["run_id"] == first and saved["diagnostics"]["k"] == 2
+    assert stats.save("demo", inputs, rows, {**metrics, "method": {"k": 3}}) != first
+    registry = stats.Registry(stats.LAB)
+    assert registry.get(first)["status"] == "completed"
+    registry.close()
+    with pytest.raises(ValueError):
+        stats.save("demo", inputs, rows, {"diagnostics": {"ari": float("nan")}})
 
 
 def test_debate_share_intervals_come_from_resampled_speeches():
@@ -87,6 +117,10 @@ def test_talk_tree_bootstrap_resamples_topics():
     labels = talk_vote.fcluster(talk_vote.tree(talk_vote.hellinger(shares)), 3, "maxclust")
     boot = talk_vote.topic_bootstrap(shares, labels, rounds=20)
     assert len(boot) == 20 and np.mean(boot) > 0.9
+    flat = RNG.dirichlet(np.ones(20) * 50, 8)
+    loose = talk_vote.topic_bootstrap(flat, talk_vote.fcluster(talk_vote.tree(talk_vote.hellinger(flat)), 3, "maxclust"),
+                                      rounds=20)
+    assert np.mean(loose) < 0.9 and np.std(loose) > 0
 
 
 def test_era_order_null_detects_time_structure():
@@ -119,6 +153,10 @@ def test_trajectory_null_shuffles_years_within_municipality():
     null = stats.permutation_null(shapes, stats.silhouette(shapes, fit(shapes)), fit, rounds=30,
                                   shuffle=trajectories.shuffle_years)
     assert null["p"] <= round(1 / 31, 4)
+    levels = np.repeat(np.array([0.0, 2.0, 4.0]), 10)[:, None] + RNG.normal(0, 0.3, (30, 45))
+    kept = stats.permutation_null(levels, stats.silhouette(levels, fit(levels)), fit, rounds=30,
+                                  shuffle=trajectories.shuffle_years)
+    assert kept["p"] > 0.05  # shuffling years keeps levels, so level groups do not beat this null
 
 
 def test_dtw_aligns_shifted_series():
@@ -139,9 +177,44 @@ def test_seasonal_null_and_block_bootstrap():
     labels = np.array([0, 0, 0, 1, 1, 1])
     boot = demand_curves.block_bootstrap(y, 0, "seasonal profile", labels, demand_curves.correlation_fit(2), rounds=10)
     assert boot["rounds"] == 10 and boot["mean"] > 0.9
+    noise = RNG.normal(0, 1, (6, 45))
+    loose = demand_curves.block_bootstrap(noise, 0, "seasonal profile", labels, demand_curves.correlation_fit(2), rounds=10)
+    assert loose["mean"] < 0.5 and loose["p05"] < loose["p95"]
 
 
-def test_gap_statistic_finds_three_groups():
+def test_gap_statistic_finds_the_number_of_groups():
     x, _ = blobs(n=20, spread=0.3)
     assert labour_market.gap_k(x, range(2, 6), references=5) == 3
-    assert np.allclose(labour_market.clr(np.array([[1.0, 4.0, 9.0]])).sum(), 0)
+    x4, _ = blobs(n=20, k=4, spread=0.3)
+    assert labour_market.gap_k(x4, range(2, 7), references=5) == 4
+    assert np.allclose(stats.clr(np.array([[1.0, 4.0, 9.0]])).sum(), 0)
+
+
+def test_labour_market_matrix_drops_small_municipalities_and_aligns_fields():
+    rows = stats.pd.DataFrame({"year": [2023, 2023, 2023], "municipality_code": ["a", "a", "b"],
+                               "occupation_field": ["x", "y", "x"], "ads": [200, 150, 299]})
+    wide, dropped = labour_market.matrix(rows, [2023], 300, columns=["x", "y", "z"])
+    assert wide.index.tolist() == ["a"] and dropped == 1 and wide.columns.tolist() == ["x", "y", "z"]
+    assert wide.loc["a", "z"] == 0
+
+
+def test_tax_mix_splits_income_and_goods_into_nine_parts():
+    wide = stats.pd.DataFrame([{"_T": 100, "T_1000": 40, "T_1100": 25, "T_1200": 10, "T_2000": 20, "T_3000": 0,
+                                "T_4000": 5, "T_5000": 30, "T_5111": 20, "T_6000": 5}])
+    shares = tax_mix.mix(wide).iloc[0]
+    assert len(shares) == 9 and shares.sum() == pytest.approx(1)
+    assert shares.other_income > shares.payroll > 0  # 5 % of tax against the 0.1 % floor
+    assert shares.other_goods_services / shares.vat == pytest.approx(0.5)
+
+
+def test_export_writes_nothing_when_one_file_is_too_large(tmp_path, monkeypatch):
+    monkeypatch.setattr(export, "OUT", tmp_path)
+    monkeypatch.setattr(export, "payload", lambda con, name: {"name": name, "pad": "x" * (10 if name == "a" else 300)})
+    monkeypatch.setattr(export, "MAX_BYTES", 100)
+    monkeypatch.setattr(export.duckdb, "connect", lambda *a, **k: contextlib.nullcontext())
+    with pytest.raises(SystemExit):
+        export.main(["a", "b"])
+    assert not list(tmp_path.iterdir())
+    monkeypatch.setattr(export, "payload", lambda con, name: {"value": float("nan")})
+    with pytest.raises(ValueError):
+        export.main(["a"])
