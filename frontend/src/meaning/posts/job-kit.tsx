@@ -3,7 +3,7 @@
  * ticks, line paths and a squarified treemap. Exports no posts of its own.
  */
 import type { ReactNode } from 'react'
-import { color, type Post } from '../kit'
+import { color, tile, type Post } from '../kit'
 import { FIELD_EN, type Market } from '../../jobs/market'
 import './job.css'
 
@@ -39,8 +39,8 @@ export function tally(keys: string[]) {
 export function Legend({ items }: { items: [string, string][] }) {
   return (
     <div className="mean-legend">
-      {items.map(([label, c]) => (
-        <span key={label}>
+      {items.map(([label, c], i) => (
+        <span key={`${i}-${label}`}>
           <i style={{ background: c }} />
           {label}
         </span>
@@ -60,7 +60,7 @@ export function Big({
   tone?: number
 }) {
   return (
-    <div className="mean-job-big" style={{ background: color(tone) }}>
+    <div className="mean-job-big" style={tile(color(tone))}>
       <b>{value}</b>
       <span>{unit}</span>
     </div>

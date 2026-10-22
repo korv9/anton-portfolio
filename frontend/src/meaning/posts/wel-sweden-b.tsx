@@ -18,7 +18,7 @@ type Connections = {
     id: string
     x: { name: string }
     y: { name: string }
-    result: { rho: number; points: [string, number, number][] }
+    result: { rho?: number; points?: [string, number, number][] }
   }[]
 }
 
@@ -54,15 +54,18 @@ function Relations() {
   return (
     <Frame data={data}>
       {(d) => {
-        const r = d.relationships[i] ?? d.relationships[0]
-        const pts = r.result.points.filter((p) => num(p[1]) && num(p[2]))
+        // Only the relationships tested on municipality points can be drawn as a scatter.
+        const rels = d.relationships.filter((r) => r.result.points?.length)
+        const r = rels[i] ?? rels[0]
+        if (!r) return null
+        const pts = r.result.points!.filter((p) => num(p[1]) && num(p[2]))
         const x = scale(extent(pts.map((p) => p[1])), [20, 380])
         const y = scale(extent(pts.map((p) => p[2])), [370, 20])
         return (
           <>
             <Slicer
               label="Relationship"
-              options={d.relationships.map((_, j) => j)}
+              options={rels.map((_, j) => j)}
               value={i}
               onChange={setI}
             />
@@ -83,7 +86,7 @@ function Relations() {
                 textAnchor="end"
                 style={{ fontSize: 30, fill: 'var(--ink)' }}
               >
-                ρ {fmt(r.result.rho, 3)}
+                ρ {num(r.result.rho) ? fmt(r.result.rho, 3) : '–'}
               </text>
             </Svg>
             <Legend items={[r.x.name, r.y.name]} />

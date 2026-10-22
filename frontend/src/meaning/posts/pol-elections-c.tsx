@@ -1,5 +1,5 @@
 /** Riksdag election results 1973 onward and the 2026 count. */
-import { Frame, useData, type Post } from '../kit'
+import { Frame, tile, useData, type Post } from '../kit'
 import { linearScale } from '../../charts/scales'
 import { pc } from './pol-kit'
 
@@ -88,7 +88,7 @@ function SeatGrid() {
             <div
               key={p.party}
               className="mean-pol-cell"
-              style={{ background: pc(p.party) }}
+              style={tile(pc(p.party))}
             >
               {p.seats}
               <small>{p.party} seats</small>

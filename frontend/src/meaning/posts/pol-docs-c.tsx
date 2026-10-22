@@ -1,5 +1,5 @@
 /** Studies, news, tax decisions, debate topics, polarization and the meaning tests. */
-import { color, Frame, PALETTE, useData, type Post } from '../kit'
+import { color, Frame, PALETTE, tile, useData, type Post } from '../kit'
 import { arc, squarify } from './pol-kit'
 
 type Topic = {
@@ -65,11 +65,7 @@ function DebateKpis() {
             [o.analyzed_segments, 'segments'],
             [o.sessions, 'sessions'],
           ].map(([v, u], i) => (
-            <div
-              key={u}
-              className="mean-pol-cell"
-              style={{ background: color(i + 2) }}
-            >
+            <div key={u} className="mean-pol-cell" style={tile(color(i + 2))}>
               {v.toLocaleString('sv-SE')}
               <small>{u}</small>
             </div>
