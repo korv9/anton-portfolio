@@ -48,7 +48,7 @@ concurrency:
 jobs:
   run:
     runs-on: ubuntu-latest
-    timeout-minutes: 345
+    timeout-minutes: 360
     if: github.ref == 'refs/heads/main'
     environment: anton-portfolio
     env:
@@ -107,7 +107,7 @@ jobs:
         run: python platform/publish/warehouse_store.py pull --only "$TREE" --path "$PULL"
       - name: Run
         id: run
-        timeout-minutes: 280
+        timeout-minutes: 265
         # Named so that pipefail is on: a failed step is not hidden behind tee.
         shell: bash
         run: |
@@ -126,11 +126,12 @@ jobs:
               python -m "${parts[0]}" "${parts[@]:1}" 2>&1 | tee logs/module.log
               ;;
           esac
-      # After a failure too, so the checkpoints of a stopped run are kept for the next one.
+      # After a failure too, so the checkpoints of a stopped run are kept for the next one
+      # (futures-topics and features only; a failed raw rebuild pushes nothing).
       - name: Push the outputs
         if: ${{ always() && env.PUSH != '' && steps.check.outcome == 'success' && (env.PULL == '' || steps.pull.outcome == 'success') }}
         # The job-ad corpus is about 2.4 GB.
-        timeout-minutes: 30
+        timeout-minutes: 45
         env:
           RUN_OUTCOME: ${{ steps.run.outcome }}
           R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
@@ -139,7 +140,11 @@ jobs:
           R2_BUCKET: ${{ secrets.R2_BUCKET }}
         run: |
           folder="$PUSH"
-          [ "$RUN_OUTCOME" = success ] || folder="$CHECKPOINTS"
+          if [ "$RUN_OUTCOME" != success ]; then
+            # A failed raw rebuild would overwrite good stored files with partial ones.
+            if [ "$TREE" = raw ]; then echo "Run failed: raw files are not pushed."; exit 0; fi
+            folder="$CHECKPOINTS"
+          fi
           python platform/publish/warehouse_store.py push --only "$TREE" --path "$folder"
       # Logs and diagnostics only. The review sheet (tmp/topics-review.csv) quotes sentences and stays out.
       - name: Keep the logs and diagnostics
