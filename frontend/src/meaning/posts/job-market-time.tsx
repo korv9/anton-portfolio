@@ -170,6 +170,7 @@ function Calendar() {
           <>
             <Slicer
               label="Metric"
+              cycles={false}
               options={['ads', 'vacancies'] as const}
               value={metric}
               onChange={setMetric}

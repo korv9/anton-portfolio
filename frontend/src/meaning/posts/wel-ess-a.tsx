@@ -30,6 +30,22 @@ const METRICS = [
   'imwbcnt',
 ]
 
+/** ESS item codes in plain words. */
+const ESS_NAMES: Record<string, string> = {
+  ppltrst: 'Trust in people',
+  trstprl: 'Trust in parliament',
+  trstplt: 'Trust in politicians',
+  trstplc: 'Trust in the police',
+  trstlgl: 'Trust in the legal system',
+  stflife: 'Life satisfaction',
+  happy: 'Happiness',
+  stfdem: 'Satisfaction with democracy',
+  stfeco: 'Satisfaction with the economy',
+  sclmeet: 'Meets friends socially',
+  imwbcnt: 'Immigrants make the country better',
+}
+const essName = (m: string) => ESS_NAMES[m] ?? m
+
 const UNITS = ['SE', 'NO', 'DK', 'FI', 'DE', 'NORDIC', 'EU27']
 
 const round = (p: string) => +p.replace('ESS', '')
@@ -64,6 +80,7 @@ function Radar() {
             <Slicer
               label="Survey round"
               options={rounds}
+              format={(r) => `ESS round ${r}`}
               value={p}
               onChange={setP}
             />
@@ -126,7 +143,9 @@ function RoundLines() {
           <>
             <Slicer
               label="Survey measure"
+              cycles={false}
               options={METRICS}
+              format={essName}
               value={m}
               onChange={setM}
             />
@@ -203,7 +222,7 @@ function EssHeat() {
                     rx={3}
                     fill={`color-mix(in srgb, var(--cv-olive) ${Math.round(v * 10)}%, var(--cluster-butter))`}
                   >
-                    <title>{`${m} ESS${round(r.period_key)}: ${fmt(v, 2)}`}</title>
+                    <title>{`${essName(m)}, ESS round ${round(r.period_key)}: ${fmt(v, 2)}`}</title>
                   </rect>
                 ) : null
               }),

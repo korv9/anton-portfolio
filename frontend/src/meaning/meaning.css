@@ -20,15 +20,25 @@
   --mean-s6: var(--series-4);
   --mean-seq-lo: var(--sw-seq-lo);
   --mean-seq-hi: var(--sw-seq-hi);
+  --mean-other: color-mix(in srgb, var(--sw-ink) 30%, transparent);
+  --mean-party-v: #c06a5c;
+  --mean-party-s: #e0806f;
+  --mean-party-mp: #9cb873;
+  --mean-party-c: #6f9a68;
+  --mean-party-l: #8fb0d4;
+  --mean-party-kd: #6f86b8;
+  --mean-party-m: #7d9fcb;
+  --mean-party-sd: #d9b85a;
+  --mean-party-nyd: #b49a6a;
   /* Posts separate marks with the card colour and mix tints towards it. */
   --paper: var(--mean-card);
   --mean-ease: cubic-bezier(0.3, 0.7, 0.2, 1);
   --mean-glide: 0.42s;
 }
-/* Home page: white cards on the ivory page, olive as the focal series, deeper pastels after it. */
+/* Home page: paper slips a whisper above the ivory page, olive as the focal series, deeper pastels after it. */
 .mean-light .mean-feed {
   --mean-bg: var(--page);
-  --mean-card: #ffffff;
+  --mean-card: #fbf9f3;
   --mean-ink: var(--ink);
   --mean-muted: var(--muted);
   --mean-line: var(--line);
@@ -44,6 +54,16 @@
   --mean-s6: #a7777e;
   --mean-seq-lo: #efeadf;
   --mean-seq-hi: #3d4232;
+  --mean-other: #8f897d;
+  --mean-party-v: #8c3a33;
+  --mean-party-s: #c0574a;
+  --mean-party-mp: #7e9a4f;
+  --mean-party-c: #3f7350;
+  --mean-party-l: #6f97c2;
+  --mean-party-kd: #2f4c7c;
+  --mean-party-m: #3f6a9e;
+  --mean-party-sd: #c9a02c;
+  --mean-party-nyd: #8a7a52;
   --wash: #f3efe6;
   --line-strong: rgba(15, 15, 16, 0.32);
 }
@@ -63,34 +83,54 @@
 .mean-section + .mean-section {
   margin-top: var(--sp-5);
 }
+/* A chapter break: title and line on the left, the pause on the right, and a hairline that
+   draws across the grid as the chapter scrolls in. */
 .mean-section-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 4px var(--sp-3);
   margin-bottom: var(--sp-3);
 }
-/* Section titles match the home page's About and Experience titles. */
+.mean-section-head::after {
+  content: '';
+  grid-column: 1 / -1;
+  height: 1px;
+  margin-top: var(--sp-2);
+  background: var(--mean-ink);
+  transform-origin: left;
+}
+/* Chapter titles sit one step under the feed's display heading. */
 .mean-section-head :is(h2, h3) {
-  margin: 0 0 4px;
+  grid-column: 1;
+  margin: 0;
   color: var(--mean-ink);
   font-family: var(--font);
-  font-size: var(--display-l);
+  font-size: var(--h2);
   font-weight: 750;
-  letter-spacing: -0.045em;
+  letter-spacing: -0.03em;
   line-height: 1;
   text-transform: uppercase;
 }
 .mean-section-head p {
+  grid-column: 1;
   margin: 0;
+  max-width: 62ch;
   color: var(--mean-muted);
   font-family: var(--mean-font);
   font-size: 0.85rem;
   line-height: 1.4;
+  text-wrap: pretty;
 }
 /* Stops the section's thumbnails (WCAG 2.2.2); pressed, it reads as held. */
 .mean-pause {
-  margin-top: 6px;
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  align-self: end;
   min-height: 28px;
   padding: 0 10px;
   border: 1px solid var(--mean-line);
-  border-radius: 999px;
+  border-radius: var(--radius);
   background: none;
   color: var(--mean-muted);
   font: 0.75rem var(--mean-font);
@@ -100,14 +140,17 @@
   border-color: var(--mean-accent);
   color: var(--mean-ink);
 }
+/* Touch targets reach 44 px where the pointer is a finger. */
+@media (pointer: coarse) {
+  .mean-pause,
+  .mean-close {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
 .mean-pause:focus-visible {
   outline: 2px solid var(--mean-accent);
   outline-offset: 2px;
-}
-@media (max-width: 760px) {
-  .mean-section-head :is(h2, h3) {
-    font-size: clamp(2rem, 10vw, 3rem);
-  }
 }
 .mean-grid {
   display: grid;
@@ -119,7 +162,7 @@
   position: relative;
   background: var(--mean-card);
   border: 1px solid var(--mean-line);
-  border-radius: 10px;
+  border-radius: var(--radius);
   aspect-ratio: 1;
   overflow: hidden;
   display: flex;
@@ -128,6 +171,33 @@
   font-family: var(--mean-font);
   contain: layout paint;
   transition: border-color 0.2s;
+}
+/* Cards settle in as they enter, each on its own view timeline, so the grid fills in reading
+   order. translate, not transform, so it never fights the open/close view transition. */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .mean-post {
+      animation: mean-card-in linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 35%;
+    }
+    .mean-section-head::after {
+      animation: mean-rule linear both;
+      animation-timeline: view();
+      animation-range: entry 10% entry 70%;
+    }
+  }
+}
+@keyframes mean-card-in {
+  from {
+    opacity: 0;
+    translate: 0 12px;
+  }
+}
+@keyframes mean-rule {
+  from {
+    transform: scaleX(0);
+  }
 }
 .mean-wide {
   grid-column: span 2;
@@ -147,21 +217,36 @@
     aspect-ratio: 1;
   }
 }
-.mean-avatar {
+/* Freshness of the post's source: filled when its last ingestion is within the SLA, a ring
+   when it is overdue, absent when the status is unknown. Fill against ring, not colour. */
+.mean-fresh {
   position: absolute;
-  top: 8px;
-  left: 8px;
-  width: 12px;
-  height: 12px;
+  top: 10px;
+  left: 10px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
-  background: conic-gradient(
-    var(--mean-s1),
-    var(--mean-s2),
-    var(--mean-s4),
-    var(--mean-s3),
-    var(--mean-s1)
-  );
-  box-shadow: 0 0 0 2px var(--mean-card) inset;
+  border: 1.5px solid var(--mean-ink);
+  background: var(--mean-ink);
+}
+.mean-fresh[data-fresh='false'] {
+  background: none;
+}
+/* The option a thumbnail is showing, in the corner it keeps free for it. */
+.mean-now {
+  position: absolute;
+  top: 6px;
+  left: 24px;
+  right: 10px;
+  overflow: hidden;
+  color: var(--mean-muted);
+  font: 500 0.68rem/1.4 var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.mean-post:not(:has(.mean-fresh)) .mean-now {
+  left: 10px;
 }
 .mean-body {
   flex: 1;
@@ -227,10 +312,20 @@
   ) {
   transition: background-color var(--mean-glide) var(--mean-ease);
 }
+/* Loading: the chart's empty grid, a baseline and three faint gridlines; no shimmer. */
 .mean-wait {
   flex: 1;
-  border-radius: 6px;
-  background: var(--wash);
+  border-bottom: 1px solid var(--mean-line);
+  background:
+    linear-gradient(var(--mean-grid) 0 0) 0 25% / 100% 1px no-repeat,
+    linear-gradient(var(--mean-grid) 0 0) 0 50% / 100% 1px no-repeat,
+    linear-gradient(var(--mean-grid) 0 0) 0 75% / 100% 1px no-repeat;
+}
+.mean-failed {
+  margin: auto 0;
+  color: var(--mean-muted);
+  font: 0.8rem/1.5 var(--font-mono);
+  overflow-wrap: anywhere;
 }
 .mean-slicer {
   display: flex;
@@ -241,7 +336,7 @@
   font: inherit;
   font-size: 0.7rem;
   padding: 2px 8px;
-  border-radius: 999px;
+  border-radius: var(--radius);
   border: 1px solid var(--mean-line);
   background: transparent;
   color: var(--mean-muted);
@@ -279,8 +374,15 @@
 .mean-post:not(.mean-open) :is(.mean-legend, .mean-slicer) {
   display: none;
 }
-.mean-post:not(.mean-open):hover {
+/* Two slicers in one post: the corner names the first. */
+.mean-post .mean-now ~ .mean-now {
+  display: none;
+}
+.mean-post:not(.mean-open):is(:hover, :focus-within) {
   border-color: var(--mean-accent);
+}
+.mean-post:is(:hover, :focus-within) .mean-now {
+  color: var(--mean-ink);
 }
 .mean-hit {
   position: absolute;

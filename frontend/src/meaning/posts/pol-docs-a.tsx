@@ -1,6 +1,6 @@
 /** Studies, news, tax decisions, debate topics, polarization and the meaning tests. */
 import { useState } from 'react'
-import { color, Frame, Slicer, useData, type Post } from '../kit'
+import { color, focal, Frame, Slicer, useData, type Post } from '../kit'
 import { linearScale, niceTicks } from '../../charts/scales'
 import {
   every,
@@ -38,6 +38,7 @@ function StudyBars() {
           <>
             <Slicer
               label="Measure"
+              cycles={false}
               options={['published', 'cited'] as const}
               value={m}
               onChange={setM}
@@ -139,7 +140,23 @@ function NewsRadial() {
   )
 }
 
+/** Topic keys are the Riksdag issue keys; government formation is the one news-only topic. */
+const TOPIC_NAMES: Record<string, string> = {
+  regeringsbildning: 'Government formation',
+}
+
 function NewsTopics() {
+  const issues = useData<{
+    issues: { issue_key: string; issue_name_en: string }[]
+  }>('parliament/issues.json')
+  const names =
+    issues && !(issues instanceof Error)
+      ? Object.fromEntries(
+          issues.issues.map((i) => [i.issue_key, i.issue_name_en]),
+        )
+      : {}
+  // Tiles stay unlabelled until the names are known, so a key never shows.
+  const label = (k: string) => names[k] ?? TOPIC_NAMES[k]
   return (
     <Frame data={useData<News>('parliament/news.json')}>
       {(d) => {
@@ -170,18 +187,18 @@ function NewsTopics() {
                   y={r.y}
                   width={r.w}
                   height={r.h}
-                  fill={color(i)}
+                  fill={focal(i === 0)}
                   stroke="var(--paper)"
                   strokeWidth={2}
                 />
-                {r.w > 50 && r.h > 18 && (
+                {r.w > 50 && r.h > 18 && label(r.item[0]) && (
                   <text
                     x={r.x + 5}
                     y={r.y + 13}
                     className="mean-pol-t"
                     style={{ fill: 'var(--ink)' }}
                   >
-                    {r.item[0]} {r.item[1]}
+                    {label(r.item[0])} {r.item[1]}
                   </text>
                 )}
               </g>

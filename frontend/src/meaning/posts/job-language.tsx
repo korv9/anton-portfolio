@@ -50,6 +50,7 @@ function Lines() {
           <>
             <Slicer
               label="Metric"
+              cycles={false}
               options={['per 1,000 words', 'share'] as const}
               value={metric}
               onChange={setMetric}

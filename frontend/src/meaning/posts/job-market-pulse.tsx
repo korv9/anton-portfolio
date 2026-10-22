@@ -1,5 +1,5 @@
 /** Jobs: the ad market over time, from market.json's monthly, daily and archive counts. */
-import { color, Frame, useData, type Post } from '../kit'
+import { color, focal, Frame, useData, type Post } from '../kit'
 import { linearScale, niceTicks } from '../../charts/scales'
 import {
   compact,
@@ -54,15 +54,26 @@ function Sparks() {
                   <title>{fieldName(f.name)}</title>
                   <path
                     d={`${linePath(pts)}L300,${j * rowH + rowH - 4}L8,${j * rowH + rowH - 4}Z`}
-                    fill={color(j)}
+                    fill={focal(j === 0)}
                     opacity={0.35}
                   />
                   <path
                     d={linePath(pts)}
                     fill="none"
-                    stroke={color(j)}
+                    stroke={focal(j === 0)}
                     strokeWidth={1.5}
                   />
+                  <text
+                    x={10}
+                    y={j * rowH + 12}
+                    fontSize={10}
+                    fontWeight={j === 0 ? 700 : 500}
+                    stroke="var(--paper)"
+                    strokeWidth={3}
+                    paintOrder="stroke"
+                  >
+                    {fieldName(f.name)}
+                  </text>
                   <circle
                     cx={pts.at(-1)?.[0]}
                     cy={pts.at(-1)?.[1]}

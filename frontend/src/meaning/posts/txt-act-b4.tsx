@@ -29,7 +29,11 @@ function SignalCalendar() {
           <>
             <Slicer
               label="Series"
+              cycles={false}
               options={series.map((x) => x.series_id)}
+              format={(id) =>
+                series.find((x) => x.series_id === id)?.label_en ?? id
+              }
               value={s.series_id}
               onChange={setSid}
             />

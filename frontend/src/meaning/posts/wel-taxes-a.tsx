@@ -62,6 +62,7 @@ function MixArea() {
           <>
             <Slicer
               label="Unit"
+              cycles={false}
               options={['% of GDP', 'SEK bn'] as const}
               value={m}
               onChange={setM}
@@ -179,6 +180,9 @@ function League() {
             <Slicer
               label="Tax"
               options={d.types.map((t) => t.tax_code)}
+              format={(c) =>
+                d.types.find((t) => t.tax_code === c)?.name_en ?? c
+              }
               value={code}
               onChange={setCode}
             />

@@ -22,7 +22,7 @@ async function tickingPost(page: Page) {
   const feed = page.locator('.home-feed')
   await feed.evaluate((el) => el.scrollIntoView({ behavior: 'instant' }))
   const ticking = feed
-    .locator('.mean-post:not([data-dense]):has(.mean-slicer)')
+    .locator('.mean-post:not([data-dense]):has(.mean-now)')
     .first()
   await scrollTo(page, ticking)
   // Pinned by id: `.first()` would move on as other posts mount and unmount.
@@ -82,11 +82,10 @@ test(
     await expect(first).toHaveCSS('background-color', card)
     await expect(first.locator('svg, .mean-body > div').first()).toBeVisible()
 
-    // A thumbnail with a slicer steps by itself while on screen.
-    const ticking = feed
-      .locator('.mean-post:not([data-dense]):has(.mean-slicer)')
-      .first()
-    await scrollTo(page, ticking)
+    // A thumbnail with a slicer steps by itself while on screen, and its corner names the
+    // option it shows.
+    const ticking = await tickingPost(page)
+    await expect(ticking.locator('.mean-now')).toBeVisible()
     const checked = ticking.locator('.mean-slicer [aria-checked="true"]')
     const before = await checked.textContent()
     await expect.poll(() => checked.textContent()).not.toBe(before)
@@ -165,15 +164,41 @@ test('focus moves to the close button on open and back to the card on close', as
   await expect(open).toBeFocused()
 })
 
+test('the name is there at first paint and the map sleeps after the hero', async ({
+  page,
+}) => {
+  // A slow map must not hold the name back or fly in under it.
+  await page.route('**/umap.json', async (route) => {
+    await new Promise((r) => setTimeout(r, 2000))
+    await route.fulfill({ response: await route.fetch() })
+  })
+  await page.goto('/')
+  await expect(page.locator('.home-name')).toHaveCSS('opacity', '1')
+  const backdrop = page.locator('.home-backdrop')
+  await expect(backdrop).toHaveAttribute('data-ready', 'true', {
+    timeout: 15_000,
+  })
+  await expect(backdrop).toHaveAttribute('data-intro', 'late')
+  await expect(backdrop).toHaveAttribute('data-paused', 'false')
+  await page.evaluate(() => scrollTo(0, innerHeight * 2))
+  await expect(backdrop).toHaveAttribute('data-paused', 'true')
+})
+
 test('posts whose data is past its valid_until date leave the feed', async ({
   page,
 }) => {
   const ADS = '[data-post="job-co-remote"]'
+  const errors: string[] = []
+  page.on('console', (m) => m.type() === 'error' && errors.push(m.text()))
   // The published company snapshot is past its date: its posts render nothing.
   await page.goto('/')
   await page.locator('.home-feed').evaluate((el) => el.scrollIntoView())
   await page.locator(ADS).evaluate((el) => el.scrollIntoView())
   await expect(page.locator(ADS)).toHaveCount(0)
+  // Leaving is quiet: no error boundary report in the console.
+  expect(errors.filter((e) => /Expired|company-intelligence/.test(e))).toEqual(
+    [],
+  )
 
   // The same data with a date still ahead renders the post.
   await page.route('**/jobs/company-intelligence.json', async (route) => {
