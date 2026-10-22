@@ -176,3 +176,138 @@ models:
       - name: matches
         data_type: HUGEINT
         description: 'Measure, additive: count of category pattern matches in the year''s distinct texts.'
+  - name: mart_sweden_job_language_bands
+    description: >-
+      Year × occupation field × length band × category nationally, for the categories and their
+      sub-terms; the cells of the length-band measure. Bands are cut at the 2010 quartiles of words
+      per distinct text.
+    config:
+      contract: {enforced: true}
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [year, field, band, category]
+    columns:
+      - name: year
+        data_type: INTEGER
+        description: 'Key: publication year of the job ads.'
+      - name: field
+        data_type: VARCHAR
+        description: 'Key: occupation field label after the crosswalk seed; Unknown when the ad has none.'
+      - name: band
+        data_type: BIGINT
+        description: 'Key: length band 0-3; 0 is at most the 2010 lower quartile of words per distinct text.'
+      - name: category
+        data_type: VARCHAR
+        description: 'Key: ad_language_terms category id, or an ad_language_subterms id.'
+      - name: parent
+        data_type: VARCHAR
+        description: 'Attribute: the category itself, or the parent category of a sub-term.'
+      - name: texts
+        data_type: HUGEINT
+        description: 'Measure, additive: count of distinct ad texts in the cell.'
+      - name: words
+        data_type: HUGEINT
+        description: 'Measure, additive: words of the cell''s distinct texts.'
+      - name: texts_matching
+        data_type: HUGEINT
+        description: 'Measure, additive over cells: count of distinct texts using the category.'
+      - name: matches
+        data_type: HUGEINT
+        description: 'Measure, additive: count of pattern matches; a sub-term''s matches add up to its parent''s.'
+  - name: mart_sweden_job_language_measures
+    description: >-
+      Year × category (terms and sub-terms) nationally in three measures with the occupation mix
+      fixed: share of texts, matches per thousand words, and share of texts within 2010 length
+      bands. A change is read as stable only when the three agree in sign.
+    config:
+      contract: {enforced: true}
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [year, category]
+    columns:
+      - name: year
+        data_type: INTEGER
+        description: 'Key: publication year of the job ads.'
+      - name: category
+        data_type: VARCHAR
+        description: 'Key: ad_language_terms category id, or an ad_language_subterms id.'
+      - name: parent
+        data_type: VARCHAR
+        description: 'Attribute: the category itself, or the parent category of a sub-term.'
+      - name: texts
+        data_type: HUGEINT
+        description: 'Measure, additive over years: count of distinct ad texts.'
+      - name: words
+        data_type: HUGEINT
+        description: 'Measure, additive over years: words of the distinct texts.'
+      - name: texts_matching
+        data_type: HUGEINT
+        description: 'Measure, additive over years: count of distinct texts using the category.'
+      - name: matches
+        data_type: HUGEINT
+        description: 'Measure, additive over years: count of pattern matches.'
+      - name: share
+        data_type: DOUBLE
+        description: "Non-additive ratio: texts using the category / distinct texts."
+        data_tests:
+          - between:
+              arguments: {min: 0, max: 1}
+      - name: per_1000_words
+        data_type: DOUBLE
+        description: "Non-additive ratio: matches per thousand words."
+      - name: share_standardised
+        data_type: DOUBLE
+        description: "Non-additive ratio: the share with the occupation-field mix fixed."
+        data_tests:
+          - between:
+              arguments: {min: 0, max: 1}
+      - name: per_1000_words_standardised
+        data_type: DOUBLE
+        description: "Non-additive ratio: matches per thousand words with the occupation-field mix fixed."
+      - name: share_banded_standardised
+        data_type: DOUBLE
+        description: "Non-additive ratio: the share within each 2010 length band, combined with 2010 band weights and the fixed occupation-field mix."
+        data_tests:
+          - between:
+              arguments: {min: 0, max: 1}
+  - name: mart_sweden_job_language_mix
+    description: >-
+      Year × SSYK-4 occupation group × employer type × category over distinct ad texts; the cells
+      of the occupation and employer composition of each change.
+    config:
+      contract: {enforced: true}
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [year, occupation_group, employer_type, category]
+    columns:
+      - name: year
+        data_type: INTEGER
+        description: 'Key: publication year of the job ads.'
+      - name: occupation_group
+        data_type: VARCHAR
+        description: 'Key: SSYK 2012 four-digit code through JobTech''s taxonomy; Unknown when the ad has no mapped occupation.'
+      - name: employer_type
+        data_type: VARCHAR
+        description: 'Key: agency (staffing or recruitment, from the employer name), other, or unknown (no name).'
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [agency, other, unknown]
+      - name: category
+        data_type: VARCHAR
+        description: 'Key: ad_language_terms category id.'
+      - name: texts
+        data_type: HUGEINT
+        description: 'Measure, additive: count of distinct ad texts in the cell.'
+      - name: words
+        data_type: HUGEINT
+        description: 'Measure, additive: words of the cell''s distinct texts.'
+      - name: texts_matching
+        data_type: HUGEINT
+        description: 'Measure, additive over cells: count of distinct texts using the category.'
+      - name: matches
+        data_type: HUGEINT
+        description: 'Measure, additive: count of pattern matches.'

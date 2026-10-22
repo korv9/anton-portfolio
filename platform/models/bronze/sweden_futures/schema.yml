@@ -29,3 +29,9 @@ models:
       - unique_combination:
           arguments:
             columns: [month, id, theme]
+  - name: stg_futures_theses_detail
+    description: DiVA thesis records from 2019-01 per harvested month × record.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [month, id]

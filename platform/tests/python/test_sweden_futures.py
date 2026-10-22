@@ -15,6 +15,7 @@ for sub in ("ingest/riksdagen", "ingest/diva", "publish/sweden"):
 
 import futures_language  # noqa: E402
 import futures_theses  # noqa: E402
+import export_futures_theses  # noqa: E402
 from export_connections import rejected_joins  # noqa: E402
 import numpy as np  # noqa: E402
 from export_futures import breaks, holm, kept_years, length_bands, trend_break  # noqa: E402
@@ -159,3 +160,21 @@ def test_length_bands_cut_at_quartiles_and_standardise():
                                                          [2000, 2, 2, 0.0], [2000, 3, 2, 1.0]]
     assert bands["standardised"] == [[2000, 0.25], [2001, 1.0]]
 
+
+def test_diva_jump_splits_the_marker_and_the_shift_share_adds_up():
+    # Two levels: bachelor 20 % -> 30 % future, master 10 % throughout; master's weight 1/2 -> 1/4.
+    rows = []
+    for y in range(2021, 2026):
+        late = y >= 2024
+        for level, n, f in (("bachelor", 1000 if not late else 1500, 200 if not late else 450),
+                            ("master", 1000 if not late else 500, 100 if not late else 50)):
+            rows.append((y, level, "Medicine", "uu", n, f, f - 20, f - 20 - (5 if late else 0), 20, f - 20, 0, 0, 0, 0, 0))
+    out = export_futures_theses.jump(rows, list(range(2021, 2026)))
+    first, last = out["rows"][0], out["rows"][-1]
+    assert first[:5] == [2021, 2000, 0.15, 0.13, 0.13] and last[:5] == [2025, 2000, 0.25, 0.23, 0.225]
+    level = out["shift_share"]["level"]
+    # composition (0.75-0.5)*0.2 + (0.25-0.5)*0.1 = 0.025; within 0.5*0.1 = 0.05; interaction 0.25*0.1
+    assert (level["composition"], level["within"], level["interaction"]) == (0.025, 0.05, 0.025)
+    assert round(sum(level[k] for k in ("composition", "within", "interaction")), 4) == 0.1
+    assert level["cells"] == 2 and level["cells_rising"] == 1 and out["periods"] == [[2021, 2022, 2023], [2024, 2025]]
+    assert export_futures_theses.jump(rows, [2024, 2025]) is None

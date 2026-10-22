@@ -221,6 +221,65 @@ models:
       - name: matches
         data_type: HUGEINT
         description: 'Measure, additive: count of theme pattern matches in the abstracts, 0 when none.'
+  - name: mart_sweden_future_theses_detail
+    description: >-
+      Year × degree level × HSV area × institution over Swedish-language DiVA student-thesis abstracts
+      from record month 2019-01, with the future marker split into alternatives; never pooled with the Riksdag.
+    config:
+      contract: {enforced: true}
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [year, level, area, institution]
+    columns:
+      - name: year
+        data_type: INTEGER
+        description: 'Key: publication year of the abstracts, each record at its latest harvested month from 2019-01.'
+      - name: level
+        data_type: VARCHAR
+        description: 'Key: degree level from dc:type (master, bachelor, other).'
+      - name: area
+        data_type: VARCHAR
+        description: 'Key: HSV subject area from the OAI setSpecs; none or several when not exactly one.'
+      - name: institution
+        data_type: VARCHAR
+        description: 'Key: the institution code, the first OAI setSpec.'
+      - name: abstracts
+        data_type: BIGINT
+        description: 'Measure, additive: count of Swedish-language student-thesis abstracts.'
+      - name: future_abstracts
+        data_type: BIGINT
+        description: 'Measure, additive: count of abstracts matching the future marker.'
+      - name: future_without_research
+        data_type: BIGINT
+        description: 'Measure, additive: count of abstracts matching the marker outside the research alternative.'
+      - name: future_without_research_long_term
+        data_type: BIGINT
+        description: 'Measure, additive: count of abstracts matching the marker outside the research and long-term alternatives.'
+      - name: using_research
+        data_type: BIGINT
+        description: 'Measure, additive over cells, not alternatives: count of abstracts with a research match.'
+      - name: using_framtiden
+        data_type: BIGINT
+        description: 'Measure, additive over cells, not alternatives: count of abstracts with a framtiden match.'
+      - name: using_framtida
+        data_type: BIGINT
+        description: 'Measure, additive over cells, not alternatives: count of abstracts with a framtida match.'
+      - name: using_framtid_compound
+        data_type: BIGINT
+        description: 'Measure, additive over cells, not alternatives: count of abstracts with a framtid_compound match.'
+      - name: using_long_term
+        data_type: BIGINT
+        description: 'Measure, additive over cells, not alternatives: count of abstracts with a long_term match.'
+      - name: using_vision
+        data_type: BIGINT
+        description: 'Measure, additive over cells, not alternatives: count of abstracts with a vision match.'
+      - name: using_other
+        data_type: BIGINT
+        description: 'Measure, additive over cells, not alternatives: count of abstracts with a other match.'
+      - name: words
+        data_type: HUGEINT
+        description: 'Measure, additive: words in the abstracts; count of words.'
   - name: mart_sweden_future_lengths
     description: >-
       The Lost Futures. Year × words in the speech over all Riksdag speeches; the export cuts it

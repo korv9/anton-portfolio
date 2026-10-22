@@ -73,3 +73,24 @@ def test_clustering_separates_two_subjects():
     assert sizes == [12, 12]
     unis = {c["universities"][0]["name"] for c in out["clusters"]}
     assert unis == {"KTH", "KI"}
+
+
+def test_detail_alternatives_add_up_to_the_future_marker():
+    import futures_theses_detail as d
+
+    terms, _ = d.load_terms(d.TERMS)
+    marker = next(p for t, p in terms if t == "future")
+    abstract = ("Uppsatsen visar att framtiden och framtida skolor kräver långsiktiga visioner och att "
+                "framtidstron är svag. Framtida forskning bör pröva detta, liksom forskning i framtiden, "
+                "för kommande generationer och det är inte en studie om engelska.")
+    rec = {"id": "oai:DiVA.org:uu-9", "title": "Skolan", "language": "swe", "year": 2025, "types": [
+        "Student thesis", "info:eu-repo/semantics/masterThesis"], "sets": "uu|studentThesis|Medicine",
+           "descriptions": ["An English abstract with the future of the school.", abstract]}
+    row = d.row(rec, marker, "2025-06")
+    got = {a: row[f"m_{a}"] for a in d.ALTERNATIVES}
+    assert got == {"research": 2, "framtiden": 1, "framtida": 1, "framtid_compound": 1,
+                   "long_term": 1, "vision": 1, "other": 1}
+    assert sum(got.values()) == len(marker.findall(f"Skolan\n{abstract}"))
+    assert row["sets"] == "uu|studentThesis|Medicine" and "masterThesis" in row["types"]
+    gone = d.row({**rec, "deleted": True}, marker, "2025-06")
+    assert gone["year"] is None and gone["words"] == 0 and gone["m_framtiden"] == 0
