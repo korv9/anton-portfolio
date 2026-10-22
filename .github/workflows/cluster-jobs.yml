@@ -7,8 +7,11 @@ name: Run a heavy compute job
 #   futures-topics  the SWEDEN E topic pilot (docs/sweden-futures-topics-preregistration.md):
 #                   cluster, analyze, then a scratch dbt build and export_futures_topics.py whose
 #                   topics.json is kept as an artifact for review.
-#   module          python -m <module> <arguments>, <module> under ml., with <path> pulled before
-#                   and pushed after, so a later batch needs no change here.
+#   module          python -m <module> <arguments>, <module> under ml., with <path> of the <tree>
+#                   (features, or raw for a source corpus) pulled before and pushed after, so a
+#                   later batch needs no change here. The job-ad corpus behind Cluster Lab:
+#                   tree raw, path jobtech/cluster-corpus,
+#                   args ml.cluster_lab.cli prepare --config configs/cluster_lab/jobs_corpus.yaml
 #
 # The run step stops at 300 minutes, so the push has its own window before the job limit. After a
 # failure or that timeout only the checkpoints are pushed (futures-topics: run/), so the next run
@@ -27,8 +30,13 @@ on:
         description: 'module only: the module and its arguments, e.g. ml.cluster_lab.cli run --new-runs 1'
         default: ''
       path:
-        description: 'module only: features folder to pull before and push after, e.g. clusters/eras'
+        description: 'module only: folder of the tree to pull before and push after, e.g. clusters/eras'
         default: ''
+      tree:
+        description: 'module only: the stored tree that path is in'
+        type: choice
+        options: [features, raw]
+        default: features
 
 permissions:
   contents: read
@@ -40,12 +48,13 @@ concurrency:
 jobs:
   run:
     runs-on: ubuntu-latest
-    timeout-minutes: 330
+    timeout-minutes: 345
     if: github.ref == 'refs/heads/main'
     environment: anton-portfolio
     env:
       JOB: ${{ inputs.job }}
       ARGS: ${{ inputs.args }}
+      TREE: ${{ inputs.job == 'module' && inputs.tree || 'features' }}
       PULL: ${{ inputs.job == 'futures-topics' && 'sweden/futures_topics/run' || inputs.path }}
       PUSH: ${{ inputs.job == 'futures-topics' && 'sweden/futures_topics' || inputs.path }}
       CHECKPOINTS: ${{ inputs.job == 'futures-topics' && 'sweden/futures_topics/run' || inputs.path }}
@@ -81,7 +90,10 @@ jobs:
             fi
           fi
           if [ -n "$PUSH" ] && ! [[ "$PUSH" =~ ^[a-z0-9_-]+(/[a-z0-9_-]+)*$ ]]; then
-            echo "::error::path must be a features folder of a-z, 0-9, _ and -, e.g. clusters/eras"; exit 1
+            echo "::error::path must be a folder of a-z, 0-9, _ and -, e.g. clusters/eras"; exit 1
+          fi
+          if [ "$TREE" != features ] && [ "$TREE" != raw ]; then
+            echo "::error::tree must be features or raw"; exit 1
           fi
       - name: Pull the inputs
         id: pull
@@ -92,7 +104,7 @@ jobs:
           R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
           R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY || secrets.R2_SECRET_ACCESS_KEY_ID }}
           R2_BUCKET: ${{ secrets.R2_BUCKET }}
-        run: python platform/publish/warehouse_store.py pull --only features --path "$PULL"
+        run: python platform/publish/warehouse_store.py pull --only "$TREE" --path "$PULL"
       - name: Run
         id: run
         timeout-minutes: 280
@@ -117,7 +129,8 @@ jobs:
       # After a failure too, so the checkpoints of a stopped run are kept for the next one.
       - name: Push the outputs
         if: ${{ always() && env.PUSH != '' && steps.check.outcome == 'success' && (env.PULL == '' || steps.pull.outcome == 'success') }}
-        timeout-minutes: 10
+        # The job-ad corpus is about 2.4 GB.
+        timeout-minutes: 30
         env:
           RUN_OUTCOME: ${{ steps.run.outcome }}
           R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
@@ -127,7 +140,7 @@ jobs:
         run: |
           folder="$PUSH"
           [ "$RUN_OUTCOME" = success ] || folder="$CHECKPOINTS"
-          python platform/publish/warehouse_store.py push --only features --path "$folder"
+          python platform/publish/warehouse_store.py push --only "$TREE" --path "$folder"
       # Logs and diagnostics only. The review sheet (tmp/topics-review.csv) quotes sentences and stays out.
       - name: Keep the logs and diagnostics
         if: always()
