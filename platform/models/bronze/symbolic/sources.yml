@@ -20,9 +20,10 @@ sources:
       - name: fetches
         config:
           loaded_at_field: fetched_at
-          # Refreshed by the weekly (Saturday) schedule in platform/pipeline.yml.
+          # Weekly (Saturday); warns at the subject's sla.fresh_within in platform/pipeline.yml.
           freshness:
             warn_after: {count: 8, period: day}
+            error_after: {count: 16, period: day}
         description: One line per fetch with URL, time, SHA-256 and size (lib/rawstore.py).
         meta:
           external_location: >-

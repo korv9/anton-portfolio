@@ -20,7 +20,7 @@ read these releases: it serves the data committed under `frontend/public/data`
 ## Running a subject locally
 
 ```sh
-python platform/pipeline.py list                      # every subject, its group and schedule
+python platform/pipeline.py list                      # every subject: group, schedule, SLA, write modes
 python platform/pipeline.py run welfare               # fetch, build, test, export
 python platform/pipeline.py run welfare --only dbt    # one phase: ingest, dbt, ml, export, publish
 python platform/pipeline.py run symbolic --only dbt:1 # the first dbt step of a subject that has two
@@ -126,6 +126,14 @@ file is merged into an uncached copy in R2 outside every release; locally it is 
 are the first segments of a subject's `raw` paths; a subject whose fetch log is kept outside
 R2 lists it under `sources` (news).
 
+Each subject declares `sla: {fresh_within: ...}` and, per layer it writes, the `write` mode its
+code uses (header of `platform/pipeline.yml`; `platform/tests/architecture/test_pipeline_spec.py`
+checks both against the code). Every hour `data-heartbeat.yml` (`platform/publish/heartbeat.py`)
+reads the published `status/ingestion.json` and compares each subject's last successful ingestion
+with its SLA: past it, one issue labelled `data-freshness` opens or is updated, and it closes
+when all are fresh again. Only subjects with ingest steps are recorded, so only they are checked.
+dbt source freshness on the fetch logs warns at the same age and never fails a run.
+
 ## What a run refetches
 
 The daily runs restore the stored raw files first and fetch only what can have changed. The
@@ -188,8 +196,8 @@ bucket's `r2.dev` address.
 
 ## Adding a subject
 
-1. Add its entry to `platform/pipeline.yml`: steps in order, `group`, `schedule`, and `raw` or
-   `features` if it stores files in R2.
+1. Add its entry to `platform/pipeline.yml`: steps in order, `group`, `schedule`, `sla`, `write`,
+   and `raw` or `features` if it stores files in R2.
 2. Give its files to a group in `configs/delivery/`, or leave them to `baseline`.
 3. `python platform/pipeline.py run <subject> --dry-run`, then run it.
 

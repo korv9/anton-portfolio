@@ -253,12 +253,19 @@ def command_store(args, config: dict) -> int:
     return 0
 
 
+def write_modes(subject: dict) -> str:
+    """The declared write mode per layer: raw=mirror warehouse=overwrite raw=merge(path) ..."""
+    return " ".join(f"{layer}=" + (mode if isinstance(mode, str) else f"merge({','.join(mode['merge'])})")
+                    for layer, mode in subject["write"].items())
+
+
 def command_list(config: dict) -> int:
-    print(f"{'subject':<19}{'group':<15}{'schedule':<14}phases")
+    print(f"{'subject':<19}{'group':<15}{'schedule':<14}{'sla':<6}{'phases':<26}write")
     for name, subject in config["subjects"].items():
-        phases = dict.fromkeys(next(p for p in PHASES if p in step) for step in subject["steps"])
+        phases = " ".join(dict.fromkeys(next(p for p in PHASES if p in step) for step in subject["steps"]))
         needs = f"   needs {', '.join(subject['needs'])}" if subject.get("needs") else ""
-        print(f"{name:<19}{subject.get('group', '-'):<15}{subject['schedule']:<14}{' '.join(phases)}{needs}")
+        print(f"{name:<19}{subject.get('group', '-'):<15}{subject['schedule']:<14}"
+              f"{subject['sla']['fresh_within']:<6}{phases:<26}{write_modes(subject)}{needs}")
     return 0
 
 

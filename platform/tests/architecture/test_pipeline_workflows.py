@@ -279,4 +279,4 @@ def test_source_freshness_runs_before_the_build_and_never_fails_it():
     assert fresh[3:5] == ["source", "freshness"] and fresh_ok == (1, 2)
     assert fresh[fresh.index("--select") + 1:][:2] == ["+tag:x", "+y"] and "build" in build
     flagged = {name for name, s in SUBJECTS.items() for st in s["steps"] if st.get("dbt", {}).get("freshness")}
-    assert flagged == {"ai_act", "ai_politics", "symbolic", "philosophy", "quality"}
+    assert flagged == {"ai_act", "ai_politics", "symbolic", "philosophy", "quality", "news", "sfs"}

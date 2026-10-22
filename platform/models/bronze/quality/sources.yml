@@ -9,9 +9,10 @@ sources:
       - name: checks
         config:
           loaded_at_field: cast(evaluated_at as timestamptz)
-          # Refreshed by the weekly (Saturday) schedule in platform/pipeline.yml.
+          # Weekly (Saturday); warns at the subject's sla.fresh_within in platform/pipeline.yml.
           freshness:
             warn_after: {count: 8, period: day}
+            error_after: {count: 16, period: day}
         description: One row per data-quality check result.
         meta:
           external_location: >-
