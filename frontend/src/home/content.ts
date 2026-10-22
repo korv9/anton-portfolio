@@ -8,16 +8,16 @@ const t = (sv: string, en: string): Bilingual => ({ sv, en })
 /** About, short: what kind of work, not every tool. Experience and education are shown below it. */
 export const ABOUT: Bilingual[] = [
   t(
-    'Jag är en junior mjukvaruutvecklare med inriktning mot data och AI. Jag söker jobb inom mjukvaruutveckling, data engineering och tillämpad AI. Jag har praktisk erfarenhet av datapipelines och analys och gillar särskilt klustring.',
-    'I’m a junior software developer with a focus on data and AI. I’ve worked with data pipelines and analytics, and I especially enjoy clustering. For my degree project, I used it to group similar IT support tickets and investigate recurring faults. I’m now looking for a role in software development, data engineering or applied AI.',
+    'Välkommen! Jag heter Anton Ernstsson och älskar att utforska data på kreativa sätt. Sidan är min portfolio och en översikt över min erfarenhet för rekryterare. Under ytan körs en dataplattform där jag testar projekt, tankar och idéer innan jag visar dem här.',
+    'Welcome! I’m Anton Ernstsson, and I love exploring data in creative ways. This site is my portfolio and an overview of my experience for recruiters. Underneath it runs a data platform where I try out projects, thoughts and ideas before I show them here.',
   ),
   t(
-    'Det här är min egen experimentella hemsida. Jag uppdaterar den med nya projekt, experiment och saker jag lär mig.',
-    'This site is also where I try things out. I use it to share my projects and experiments, and keep adding things as I learn.',
+    'Jag dras särskilt till samhällsfrågor, men trivs med att bygga datalösningar oavsett område och har erfarenhet av att leverera i produktion. Jag söker roller inom mjukvaruutveckling, data och AI.',
+    'I’m especially drawn to social questions, but I enjoy building data solutions in any field and have experience delivering in production. I’m looking for roles in software development, data and AI.',
   ),
 ]
 
 export const CONTACT = t(
   'Hör gärna av dig med feedback eller idéer. Om du känner till en jobböppning inom mjukvaruutveckling, data eller AI blir jag särskilt glad att höra från dig.',
-  'Have feedback on something here, an idea to discuss or a job opportunity in mind? Feel free to get in touch.',
+  'Feedback or ideas are welcome. If you know of an opening in software development, data or AI, I’d especially like to hear from you.',
 )

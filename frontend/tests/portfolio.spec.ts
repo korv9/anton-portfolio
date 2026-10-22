@@ -1,4 +1,4 @@
-import { test, expect, siteNav } from './test'
+import { test, expect } from './test'
 import AxeBuilder from '@axe-core/playwright'
 
 test(
@@ -193,8 +193,10 @@ test(
     await page.goto('/#utbildning')
     const thesis = page
       .locator('#utbildning .home-job')
-      .filter({ has: page.locator('a[href="#thesis"]') })
-    await expect(thesis.locator('h3 a')).toHaveText(
+      .filter({ hasText: 'Degree project' })
+    // The case-study page is offline, so the title is plain text.
+    await expect(thesis.locator('h3 a')).toHaveCount(0)
+    await expect(thesis.locator('h3')).toHaveText(
       'Degree project: Finding recurring IT problems with NLP',
     )
     await expect(thesis.locator('.home-job-role').first()).toHaveText(
@@ -206,15 +208,13 @@ test(
     await expect(thesis).toContainText('ISO/IEC 25012')
     await expect(thesis).toContainText('21,633')
     await expect(thesis).toContainText('operational review')
-    await expect(thesis).toContainText('missing root-cause documentation')
+    await expect(thesis).toContainText('Missing root-cause documentation')
     await expect(thesis).toContainText('Tech: Python, Azure Databricks')
     expect(
       await page.evaluate(
         () => document.documentElement.scrollWidth <= innerWidth + 1,
       ),
     ).toBe(true)
-    await thesis.locator('a[href="#thesis"]').click()
-    await expect(page.locator('#thesis-quality')).toContainText('What I found')
   },
 )
 
@@ -284,15 +284,18 @@ test(
     await expect(header).toBeVisible()
     await expect(header).not.toHaveAttribute('inert', '')
     await expect(page.locator('.home-group-title')).toHaveCount(0)
-    await expect(page.locator('.work-card')).toHaveCount(5)
-    await expect(page.locator('.work-card[href="#thesis"]')).toHaveCount(0)
-    await expect(page.locator('.home-project-intro')).toContainText(
-      'Most of my latest projects are part of this data platform.',
-    )
-    await expect(page.locator('.home-project-intro a')).toHaveAttribute(
+    // The start page stands alone: four repositories on GitHub, the platform first.
+    const cards = page.locator('.work-card')
+    await expect(cards).toHaveCount(4)
+    await expect(cards.first()).toHaveAttribute(
       'href',
       'https://github.com/korv9/anton-portfolio',
     )
+    await expect(
+      page.locator(
+        'main a[href^="#"]:not([href^="#om-mig"]):not([href="#start"]):not([href="#main"])',
+      ),
+    ).toHaveCount(0)
     await expect
       .poll(() =>
         page
@@ -300,11 +303,7 @@ test(
           .evaluate((el) => Number(getComputedStyle(el).opacity)),
       )
       .toBeLessThan(0.1)
-    await cta.click()
-    await expect(page).toHaveURL(/#projekt$/)
-    await expect(page.locator('.projects-group-title')).toHaveCount(0)
-    await expect(page.locator('.projects-list > li')).toHaveCount(7)
-    await expect(page.locator('.project-card[href="#thesis"]')).toHaveCount(0)
+    await expect(cta).toHaveAttribute('href', 'https://github.com/korv9')
   },
 )
 
@@ -375,13 +374,9 @@ test('home remains usable when the decorative debate map is unavailable', async 
   await expect(page.locator('#start nav')).toHaveCount(0)
 })
 
-test('the start page title opens the projects page, which lists every retained project', async ({
-  page,
-}) => {
-  // The start page's Projects title opens the projects page.
-  await page.goto('/')
-  await page.locator('.home-work-title a').click()
-  await expect(page).toHaveURL(/#projekt$/)
+test('the projects page lists every retained project', async ({ page }) => {
+  // Not linked from the published start page; local dev still opens it.
+  await page.goto('/#projekt')
   await expect(page).toHaveTitle('Projects | Anton Ernstsson')
   await expect(page.locator('.projects-group')).toHaveCount(0)
   // SWEDEN is featured above the list; the other projects follow.
@@ -394,8 +389,4 @@ test('the start page title opens the projects page, which lists every retained p
   await expect(page.locator('.project-card[href="#drugcomb"]')).toContainText(
     'Drug Synergy Lab',
   )
-  const menu = await siteNav(page)
-  await expect(
-    menu.getByRole('link', { name: 'Cluster Visuals', exact: true }),
-  ).toBeVisible()
 })
