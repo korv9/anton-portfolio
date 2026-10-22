@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["schema_version", "name", "title", "method", "coverage", "fields", "by_period"],
+  "properties": {
+    "name": {"const": "oldbailey-extraction"},
+    "method": {
+      "type": "object",
+      "required": ["preregistration", "source", "model", "prompt_sha256", "sample", "bootstrap", "amendments"],
+      "properties": {
+        "source": {"type": "object", "required": ["doi", "licence", "attribution"]},
+        "amendments": {"type": "array"}
+      }
+    },
+    "coverage": {"type": "object", "required": ["trials", "eligible", "by_period"]},
+    "fields": {
+      "type": "object",
+      "required": ["offence", "verdict", "punishment"],
+      "additionalProperties": {
+        "type": "object",
+        "required": ["n", "methods", "gemma_minus_keyword", "invalid_gemma", "confusion"],
+        "properties": {
+          "n": {"type": "integer", "minimum": 1},
+          "methods": {
+            "type": "object",
+            "required": ["gemma", "keyword", "majority"],
+            "additionalProperties": {
+              "type": "object",
+              "required": ["accuracy", "accuracy_ci95", "macro_f1"],
+              "properties": {
+                "accuracy": {"type": "number", "minimum": 0, "maximum": 1},
+                "macro_f1": {"type": "number", "minimum": 0, "maximum": 1}
+              }
+            }
+          }
+        }
+      }
+    },
+    "by_period": {"type": "object", "required": ["offence", "verdict", "punishment"]}
+  }
+}
