@@ -249,8 +249,11 @@ def test_the_weekly_run_builds_every_dbt_subject_before_the_warehouse_is_stored(
     weekly = {name: s for name, s in SUBJECTS.items() if not s.get("manual")}
     selected = {sel.lstrip("+") for s in weekly.values() for step in s["steps"] if "dbt" in step
                 for sel in step["dbt"]["select"]}
+    # Manual subjects (built on demand from stored counts) are not part of the weekly run.
+    manual = {sel.lstrip("+").removeprefix("tag:") for s in SUBJECTS.values() if s.get("manual")
+              for step in s["steps"] if "dbt" in step for sel in step["dbt"]["select"]}
     # serving is part of the welfare build; the job-ad detail models belong to jobs_analysis.
-    for tag in sorted(dbt_tags() - {"serving", "jobs"}):
+    for tag in sorted(dbt_tags() - {"serving", "jobs"} - manual):
         assert f"tag:{tag}" in selected, f"tag:{tag} is not built by `pipeline.py run --all`"
 
 

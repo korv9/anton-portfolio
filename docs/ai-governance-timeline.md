@@ -72,3 +72,53 @@ the job ads begin to rise. The page says so under the panels.
   The data cannot separate the two. What it does show is that ads *naming* the Act appear
   only after its publication and grow as its first obligations apply. That is still temporal
   overlap, not evidence that the Act changed hiring.
+
+## The diffusion clock
+
+`gold.mart_ai_act_term_diffusion` sits beside the timeline and asks a narrower question: after
+each milestone, how many months pass before the Act's own terms show up in Riksdag speeches and
+in job ads? The method was fixed before any counting, in
+[ai-act-diffusion-preregistration.md](ai-act-diffusion-preregistration.md).
+
+```
+python platform/nlp/ai_act_terms.py                  # candidate terms, for review
+python -m ml.ai_act.diffusion speeches               # Riksdag counts, local
+gh workflow run cluster-jobs.yml -f job=module \
+  -f args="ml.ai_act.diffusion ads" -f path=ai_act/diffusion   # ad counts, Actions
+python platform/pipeline.py run ai_act_diffusion     # mart and ai-act/diffusion.json
+```
+
+The terms come from the Act, scored against Swedish statute law by weighted log-odds. Of the 60
+best-scoring n-grams, review kept four: *AI-system med hög risk*, *AI-byrån*, *AI-modeller för
+allmänna ändamål* and *testning under verkliga förhållanden*. The other 56 are listed in
+`seeds/cross_domain/ai_act_terms.csv` with their reasons. Most are EU drafting language or
+common Swedish.
+
+The mart has one row per corpus, term, language and whole month. The export works out each
+lag and tests it against 200 random months (the placebo null).
+
+Results for the Riksdag (22 October 2026, speeches from October 2016 to July 2026). With the
+primary list, the four terms occur in one speech in all, in January 2025. The result is
+uninformative (1 match): each of the four uncensored lags rests on that one speech, so its p
+says nothing, and the other 50 lags are censored. It is neither a null result nor a
+counter-example.
+
+An amendment added the same day ([pre-registration](ai-act-diffusion-preregistration.md#amendment-2026-10-22-after-review-after-the-first-riksdag-counts))
+re-admits *AI-system* and *AI-modell*, which review had dropped by a misread reason, and lets
+every token inflect. Both terms passed a precision check (19 of 19 and 12 of 12 matched
+speeches on topic). The export reports both lists side by side in `lags_side_by_side`:
+
+| term | milestone | primary lag (matches) | amended lag (matches) | amended p |
+| --- | --- | --- | --- | ---: |
+| AI-system med hög risk | proposal, Apr 2021 | 45 (1) | 45 (1) | 0.31 |
+| AI-system med hög risk | prohibitions, Feb 2025 | 0 (1) | 0 (1) | 0.04 |
+| AI-system | publication, Jul 2024 | – | 2 (2) | 0.24 |
+| AI-system | amending regulation, Jul 2026 | – | 0 (7) | 0.14 |
+| AI-modell | publication, Jul 2024 | – | 0 (2) | 0.16 |
+| AI-modell | high-risk guidelines, Feb 2026 | – | 0 (5) | 0.12 |
+
+Of the 22 amended lags with a p, 19 rest on 5 matches or fewer, and only the three July 2026 lags
+of *AI-system* rest on more (7, with p from 0.14 to 0.16). The Riksdag rarely uses the Act's own
+words, even with the amended list. The job-ad lane follows once the scan has run in Actions.
+Each archive is written when it is done, so a run that hits the Actions timeout still keeps the
+archives it finished.

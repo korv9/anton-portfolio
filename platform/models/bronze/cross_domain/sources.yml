@@ -1,0 +1,25 @@
+version: 2
+
+# The AI Act's own terms counted per month in Riksdag speeches and job ads by
+# ml/ai_act/diffusion.py (docs/ai-act-diffusion-preregistration.md), a features folder kept in R2.
+# Only counts: no speech or ad text is stored.
+
+sources:
+  - name: ai_act_diffusion
+    description: Documents per month and documents matching each term per month, per counted source.
+    tables:
+      - name: months
+        description: Documents per month (the denominator), one file per source.
+        meta:
+          external_location: >-
+            read_parquet('{{ env_var('PORTFOLIO_FEATURES', '../warehouse/features') }}/ai_act/diffusion/*_months.parquet', filename = true)
+      - name: terms
+        description: Documents matching each term, keyed term_id:language, per month.
+        meta:
+          external_location: >-
+            read_parquet('{{ env_var('PORTFOLIO_FEATURES', '../warehouse/features') }}/ai_act/diffusion/*_terms.parquet', filename = true)
+      - name: sources
+        description: One per counted source with its first and last document date and the term list's SHA-256.
+        meta:
+          external_location: >-
+            read_json('{{ env_var('PORTFOLIO_FEATURES', '../warehouse/features') }}/ai_act/diffusion/*.json', union_by_name = true)
