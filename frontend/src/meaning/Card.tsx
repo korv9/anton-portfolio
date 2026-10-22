@@ -2,8 +2,16 @@
  * One card of the chart feed (Feed.tsx): it renders near the screen, ticks while on screen and
  * opens in place. Split from the feed so each file stays small.
  */
-import { Component, useEffect, useRef, useState, type ReactNode } from 'react'
-import { PostLive, PostOpen, still, type Post } from './kit'
+import {
+  Component,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react'
+import { useFresh } from './freshness'
+import { PostLeave, PostLive, PostOpen, still, type Post } from './kit'
 
 /** Above this many SVG elements a thumbnail steps without transitions. */
 const DENSE_MARKS = 400
@@ -61,6 +69,11 @@ function observe(
 const nameOf = (post: Post, section: string) =>
   post.label ?? `${section}: ${post.id.split('-').slice(1).join(' ')}`
 
+/** The overdue mark's text, with the day of the last ingestion when known. Only an overdue
+ * source is marked: a dot on every card would say nothing. */
+const freshText = ({ at }: { at?: string }) =>
+  `Source ingestion overdue${at ? `, last ${at.slice(0, 10)}` : ''}`
+
 /** Whether the tab is in front; thumbnails stop ticking behind another tab. */
 export function usePageVisible() {
   const [visible, setVisible] = useState(
@@ -100,6 +113,8 @@ export function Card({
   const [onScreen, setOnScreen] = useState(false)
   const [dense, setDense] = useState(false)
   const [failed, setFailed] = useState(false)
+  const fresh = useFresh(post.domain)
+  const leave = useCallback(() => setFailed(true), [])
   useEffect(() => {
     const node = ref.current
     if (!node) return
@@ -153,15 +168,24 @@ export function Card({
       data-dense={dense || undefined}
       style={near ? { viewTransitionName: `mp-${index}` } : undefined}
     >
-      <span className="mean-avatar" aria-hidden="true" />
+      {fresh && !fresh.fresh && (
+        <span
+          className="mean-fresh"
+          role="img"
+          aria-label={freshText(fresh)}
+          title={freshText(fresh)}
+        />
+      )}
       <div className="mean-body">
-        <PostOpen.Provider value={open}>
-          <PostLive.Provider value={onScreen && moving && !dense}>
-            <PostBoundary onFail={() => setFailed(true)}>
-              {near || open ? post.render() : null}
-            </PostBoundary>
-          </PostLive.Provider>
-        </PostOpen.Provider>
+        <PostLeave.Provider value={leave}>
+          <PostOpen.Provider value={open}>
+            <PostLive.Provider value={onScreen && moving && !dense}>
+              <PostBoundary onFail={leave}>
+                {near || open ? post.render() : null}
+              </PostBoundary>
+            </PostLive.Provider>
+          </PostOpen.Provider>
+        </PostLeave.Provider>
       </div>
       {open ? (
         <button

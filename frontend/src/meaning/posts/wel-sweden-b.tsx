@@ -48,6 +48,14 @@ type Rate =
   | 'activities_rate'
   | 'service_points_rate'
 
+/** The rates' units, as export_belonging.py writes them. */
+const LIBRARY_RATES: Record<Rate, string> = {
+  active_borrowers_rate: 'Active borrowers per 100 inhabitants',
+  visits_rate: 'Library visits per inhabitant',
+  activities_rate: 'Public activities per 1,000 inhabitants',
+  service_points_rate: 'Service points per 10,000 inhabitants',
+}
+
 function Relations() {
   const data = useData<Connections>('sweden/connections/connections.json')
   const [i, setI] = useState(0)
@@ -65,7 +73,9 @@ function Relations() {
           <>
             <Slicer
               label="Relationship"
+              cycles={false}
               options={rels.map((_, j) => j)}
+              format={(j) => `${rels[j].x.name} against ${rels[j].y.name}`}
               value={i}
               onChange={setI}
             />
@@ -159,6 +169,7 @@ function LibraryTrend() {
           <>
             <Slicer
               label="Rate"
+              cycles={false}
               options={
                 [
                   'active_borrowers_rate',
@@ -167,6 +178,7 @@ function LibraryTrend() {
                   'service_points_rate',
                 ] as const
               }
+              format={(k) => LIBRARY_RATES[k]}
               value={m}
               onChange={setM}
             />

@@ -43,6 +43,7 @@ function SkillColumns() {
           <>
             <Slicer
               label="Top"
+              cycles={false}
               options={[10, 20, 40]}
               value={n}
               onChange={setN}

@@ -73,6 +73,9 @@ function Scatter() {
             <Slicer
               label="Cluster"
               options={['all', ...ids.map((i) => `#${i}`)]}
+              format={(v) =>
+                v === 'all' ? 'All clusters' : `Cluster ${v.slice(1)}`
+              }
               value={pick}
               onChange={setPick}
             />

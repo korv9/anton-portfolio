@@ -16,6 +16,7 @@ import {
 
 type Issue = {
   issue_key: string
+  issue_name_en: string
   per_session: {
     session: string
     decisions: number
@@ -39,6 +40,9 @@ type Issues = { issues: Issue[] }
 
 const useIssues = () => useData<Issues>('parliament/issues.json')
 const keys = (d: Issues) => d.issues.map((i) => i.issue_key)
+/** An issue's English name, for its key. */
+const issueName = (d: Issues) => (k: string) =>
+  d.issues.find((i) => i.issue_key === k)?.issue_name_en ?? k
 
 function Multiples() {
   return (
@@ -72,7 +76,7 @@ function Multiples() {
                     fill={color(k)}
                   />
                   <text x={4} y={12} className="mean-pol-t">
-                    {iss.issue_key}
+                    {iss.issue_name_en}
                   </text>
                 </g>
               )
@@ -121,7 +125,7 @@ function Outturn() {
                     stroke="var(--paper)"
                     strokeWidth={0.5}
                   >
-                    <title>{iss.issue_key}</title>
+                    <title>{iss.issue_name_en}</title>
                   </path>
                 )
               })}
@@ -166,6 +170,7 @@ function Speeches() {
             <Slicer
               label="Issue"
               options={keys(d)}
+              format={issueName(d)}
               value={key}
               onChange={setKey}
             />

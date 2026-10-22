@@ -48,3 +48,16 @@
   font-weight: var(--weight-body);
   color: var(--ink-2);
 }
+/* Treemap tile labels: 13 units in the 300-unit viewBox, about 8 px on a desktop thumbnail
+   and 15 px on a phone. */
+.mean-body svg text.mean-pol-tile {
+  font-size: 13px;
+  fill: var(--mean-ink);
+  font-variant-numeric: tabular-nums;
+}
+/* End labels beside a stacked area: they name each band, so no colour needs matching. */
+.mean-body svg text.mean-pol-end {
+  font-size: 18px;
+  font-weight: 600;
+  fill: var(--mean-ink);
+}

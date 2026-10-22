@@ -57,6 +57,7 @@ function UnemploymentLines() {
           <>
             <Slicer
               label="Metric"
+              cycles={false}
               options={['unemployment', 'employment'] as const}
               value={m}
               onChange={setM}

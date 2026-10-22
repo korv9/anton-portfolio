@@ -422,7 +422,7 @@ subjects:
   # Five fits read published JSON under frontend/public/data, not marts, so each needs the
   # subject that exports it: eras and talk_vote (politics: gold/tables/fact_topic_session_party;
   # parliament: parliament/sessions.json), tax_mix (taxes), field_language (sweden_language);
-  # trajectories and labour_market read sweden/similarity (sweden). session_maps reads the
+  # trajectories, labour_market and ml.three_swedens read sweden/similarity (sweden). session_maps reads the
   # committed politics/parliament/sessions/*/umap.json, which no subject here writes.
   clusters:
     schedule: '13 21 * * 6'
@@ -434,7 +434,8 @@ subjects:
     steps:
       - ml: python platform/publish/clusters/job_ads.py
         marker: clusters/job-ads/manifest.json
-      - dbt: {select: [tag:clusters]}
+      # The three-spaces models read ml.three_swedens' output, which needs this build's job-ad mart.
+      - dbt: {select: [tag:clusters], exclude: [stg_municipality_three_spaces+]}
       - ml: python platform/publish/clusters/debate_topics.py
         marker: clusters/debate-topics/run/metrics.json
       - ml: python platform/publish/clusters/session_maps.py
@@ -453,8 +454,11 @@ subjects:
         marker: clusters/labour-market-types/run/metrics.json
       - ml: python platform/publish/clusters/demand_curves.py
         marker: clusters/demand-curves/run/metrics.json
+      - ml: python -m ml.three_swedens
+        marker: clusters/three-swedens/run/metrics.json
       - dbt: {select: [tag:clusters]}
       - export: python platform/publish/clusters/export.py
+      - export: python platform/publish/clusters/three_swedens.py
 
   quality:
     schedule: '13 21 * * 6'

@@ -118,6 +118,7 @@ function TensionBoxes() {
           <>
             <Slicer
               label="Tension"
+              cycles={false}
               options={ids}
               value={ids.includes(tid) ? tid : ids[0]}
               onChange={setTid}
