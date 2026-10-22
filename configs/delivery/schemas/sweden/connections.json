@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["relationships", "rejected", "method", "run_id", "code_sha"],
+  "properties": {
+    "relationships": {"type": "array", "minItems": 1, "items": {"type": "object", "required": ["id", "kind", "question", "result", "assessment"]}},
+    "rejected": {"type": "array", "items": {"type": "object", "required": ["id", "reason"]}},
+    "method": {"type": "object", "minProperties": 1},
+    "run_id": {"type": ["string", "null"]},
+    "code_sha": {"type": ["string", "null"]}
+  }
+}

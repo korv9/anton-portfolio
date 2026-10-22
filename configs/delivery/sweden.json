@@ -2,5 +2,51 @@
   "schema_version": 2,
   "include": [
     "sweden/*"
-  ]
+  ],
+  "files": [
+    "sweden/belonging/change.json",
+    "sweden/belonging/coverage.json",
+    "sweden/belonging/libraries.json",
+    "sweden/belonging/municipalities.json",
+    "sweden/connections/connections.json",
+    "sweden/futures/coverage.json",
+    "sweden/futures/examples.json",
+    "sweden/futures/parties.json",
+    "sweden/futures/trends.json",
+    "sweden/language/composition.json",
+    "sweden/language/coverage.json",
+    "sweden/language/examples.json",
+    "sweden/language/fields.json",
+    "sweden/language/regions.json",
+    "sweden/language/trends.json",
+    "sweden/measurement/coverage.json",
+    "sweden/measurement/items.json",
+    "sweden/measurement/summary.json",
+    "sweden/similarity/geometry.json",
+    "sweden/similarity/groups.json",
+    "sweden/similarity/municipalities.json"
+  ],
+  "schemas": {
+    "sweden/belonging/change.json": "configs/delivery/schemas/sweden/belonging-change.json",
+    "sweden/belonging/coverage.json": "configs/delivery/schemas/sweden/belonging-coverage.json",
+    "sweden/belonging/libraries.json": "configs/delivery/schemas/sweden/belonging-libraries.json",
+    "sweden/belonging/municipalities.json": "configs/delivery/schemas/sweden/belonging-municipalities.json",
+    "sweden/connections/connections.json": "configs/delivery/schemas/sweden/connections.json",
+    "sweden/futures/coverage.json": "configs/delivery/schemas/sweden/futures-coverage.json",
+    "sweden/futures/examples.json": "configs/delivery/schemas/sweden/table.json",
+    "sweden/futures/parties.json": "configs/delivery/schemas/sweden/table.json",
+    "sweden/futures/trends.json": "configs/delivery/schemas/sweden/futures-trends.json",
+    "sweden/language/composition.json": "configs/delivery/schemas/sweden/language-composition.json",
+    "sweden/language/coverage.json": "configs/delivery/schemas/sweden/language-coverage.json",
+    "sweden/language/examples.json": "configs/delivery/schemas/sweden/table.json",
+    "sweden/language/fields.json": "configs/delivery/schemas/sweden/table.json",
+    "sweden/language/regions.json": "configs/delivery/schemas/sweden/table.json",
+    "sweden/language/trends.json": "configs/delivery/schemas/sweden/language-trends.json",
+    "sweden/measurement/coverage.json": "configs/delivery/schemas/sweden/table.json",
+    "sweden/measurement/items.json": "configs/delivery/schemas/sweden/table.json",
+    "sweden/measurement/summary.json": "configs/delivery/schemas/sweden/measurement-summary.json",
+    "sweden/similarity/geometry.json": "configs/delivery/schemas/sweden/similarity-geometry.json",
+    "sweden/similarity/groups.json": "configs/delivery/schemas/sweden/similarity-groups.json",
+    "sweden/similarity/municipalities.json": "configs/delivery/schemas/sweden/similarity-municipalities.json"
+  }
 }

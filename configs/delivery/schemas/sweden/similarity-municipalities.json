@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["year", "features", "summary", "municipalities"],
+  "properties": {
+    "year": {"type": "integer"},
+    "features": {"type": "array", "minItems": 1, "items": {"type": "object", "required": ["id", "label_en", "label_sv", "unit"]}},
+    "summary": {"type": "object", "required": ["analysed", "total"]},
+    "municipalities": {"type": "array", "minItems": 290, "items": {"type": "object", "required": ["code", "name", "county", "population", "values"]}}
+  }
+}

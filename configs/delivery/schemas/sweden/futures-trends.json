@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["columns", "marker", "themes", "future_share_columns", "future_share", "subterms", "method"],
+  "properties": {
+    "columns": {"type": "array", "minItems": 1},
+    "marker": {"type": "object", "required": ["id", "pattern"]},
+    "themes": {"type": "array", "minItems": 1, "items": {"type": "object", "required": ["id", "label_en", "label_sv", "pattern", "rows"], "properties": {"rows": {"type": "array", "minItems": 1}}}},
+    "future_share": {"type": "array", "minItems": 1, "items": {"type": "array", "minItems": 2}},
+    "subterms": {"type": "array", "items": {"type": "object", "required": ["id", "theme", "rows"]}},
+    "method": {"type": "object", "minProperties": 1}
+  }
+}
