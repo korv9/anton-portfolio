@@ -36,6 +36,7 @@
     "jobs/*",
     "gold/marts/jobs.json",
     "parliament/workspace/*",
-    "sweden/*"
+    "sweden/*",
+    "clusters/*"
   ]
 }

@@ -1,9 +1,19 @@
 {
   "schema_version": 2,
   "include": [
-    "sweden/*"
+    "sweden/*",
+    "clusters/*"
   ],
   "files": [
+    "clusters/debate-topics.json",
+    "clusters/demand-curves.json",
+    "clusters/field-language.json",
+    "clusters/labour-market-types.json",
+    "clusters/municipal-trajectories.json",
+    "clusters/riksdag-eras.json",
+    "clusters/session-maps.json",
+    "clusters/talk-vote.json",
+    "clusters/tax-mix.json",
     "sweden/belonging/change.json",
     "sweden/belonging/coverage.json",
     "sweden/belonging/libraries.json",
@@ -27,6 +37,15 @@
     "sweden/similarity/municipalities.json"
   ],
   "schemas": {
+    "clusters/debate-topics.json": "configs/delivery/schemas/clusters/export.json",
+    "clusters/demand-curves.json": "configs/delivery/schemas/clusters/export.json",
+    "clusters/field-language.json": "configs/delivery/schemas/clusters/export.json",
+    "clusters/labour-market-types.json": "configs/delivery/schemas/clusters/export.json",
+    "clusters/municipal-trajectories.json": "configs/delivery/schemas/clusters/export.json",
+    "clusters/riksdag-eras.json": "configs/delivery/schemas/clusters/export.json",
+    "clusters/session-maps.json": "configs/delivery/schemas/clusters/export.json",
+    "clusters/talk-vote.json": "configs/delivery/schemas/clusters/export.json",
+    "clusters/tax-mix.json": "configs/delivery/schemas/clusters/export.json",
     "sweden/belonging/change.json": "configs/delivery/schemas/sweden/belonging-change.json",
     "sweden/belonging/coverage.json": "configs/delivery/schemas/sweden/belonging-coverage.json",
     "sweden/belonging/libraries.json": "configs/delivery/schemas/sweden/belonging-libraries.json",

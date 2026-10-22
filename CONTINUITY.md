@@ -91,3 +91,8 @@
 - NEXT:
   - 3D done for A, B and E (BarField, lazy, ?scen=3d). C stays a 2D morph and D an SVG choropleth; a true 3D morph and travel-time accessibility (needs transport-network data) are open.
   - Remaining B archive years, through the weekly build or `workflow_dispatch` of build-warehouse on main.
+
+## Clustering batches 0-2 (branch korv9/cluster-batch)
+
+- 2026-10-22 [CODE] `platform/publish/clusters/`: one fit script per clustering writes `features/clusters/<name>` (inputs, assignments, metrics with a run id in `cluster_lab/clusters/registry.sqlite`). `export.py` writes `frontend/public/data/clusters/*.json` from the metrics and the gold marts `mart_cluster_{assignments,shares}` and `mart_job_ad_*`. Pipeline subject `clusters`, delivery group `sweden`, schema `configs/delivery/schemas/clusters/export.json`. No feed posts yet.
+- 2026-10-22 [TOOL] Results (mean bootstrap ARI). Findings: debate topics 0.68 (seed pairs; topic x year V 0.151, null 95 % 0.143), trajectories 0.67 (DTW agrees only at ARI 0.18), eras k = 6 at 0.63, tax mix 0.73, field language 0.85, labour-market types 0.63 (2023 vs 2025 ARI only 0.32), demand trends 0.80. Counter-examples: talk vs vote (mean Mantel r -0.04, p 0.81), seasonal shapes 0.58. Session maps are unvalidated (no vectors).
