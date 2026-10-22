@@ -1,7 +1,7 @@
 /**
  * The feed of every chart the site's data allows, shared by the meaning page (dark) and the
- * end of the home page (light). Posts come from ./posts/*.tsx and alternate between the four
- * families. Thumbnails animate their own slicers while on screen; a click opens one.
+ * end of the home page (light). Posts come from ./posts/*.tsx and are grouped by subject, each
+ * under a short heading. Thumbnails animate their own slicers while on screen; a click opens one.
  */
 import { Component, useEffect, useRef, useState, type ReactNode } from 'react'
 import { flushSync } from 'react-dom'
@@ -50,7 +50,7 @@ const DROPPED = new Set<string>([
 /** Above this many SVG elements a thumbnail steps without transitions. */
 const DENSE_MARKS = 400
 
-/** Round-robin across groups so neighbouring posts come from different data. */
+/** Round-robin across groups so neighbouring posts come from different files. */
 function interleave(groups: Post[][]) {
   const out: Post[] = []
   const longest = Math.max(0, ...groups.map((g) => g.length))
@@ -59,15 +59,84 @@ function interleave(groups: Post[][]) {
   return out
 }
 
-/** Files by family (the prefix before the first dash: job, pol, txt, wel). */
-const families = new Map<string, Post[][]>()
+/**
+ * The feed reads as one long scroll by subject. A post joins the first section whose pattern
+ * matches its id; the last section takes the rest.
+ */
+const SECTIONS = [
+  {
+    key: 'politics',
+    title: 'Politics',
+    line: 'The Riksdag: elections, polls, votes and debates.',
+    match: /^pol-|^txt-ml-observations$/,
+  },
+  {
+    key: 'sweden',
+    title: 'Sweden',
+    line: 'Welfare, taxes, trust, and how counties and municipalities differ.',
+    match: /^wel-/,
+  },
+  {
+    key: 'jobs',
+    title: 'Jobs',
+    line: 'Swedish job ads: demand, fields, language and AI.',
+    match: /^job-/,
+  },
+  {
+    key: 'ai-act',
+    title: 'AI Act',
+    line: 'The EU AI Act: what applies, to whom and when.',
+    match: /^txt-act-/,
+  },
+  {
+    key: 'law',
+    title: 'Swedish law',
+    line: 'The statute book (SFS): its growth, length and largest laws.',
+    match: /^txt-plat-sfs-/,
+  },
+  {
+    key: 'symbols',
+    title: 'Symbols',
+    line: 'Myth and religious symbols across 101 public-domain books.',
+    match: /^txt-ml-(symbol|book|model|research|cluster-skyline)/,
+  },
+  {
+    key: 'philosophy',
+    title: 'Philosophy',
+    line: 'Ideas, works and tensions in the philosophy corpus.',
+    match: /^txt-ml-(phil|works|tension|eval|cluster-stacks|words)/,
+  },
+  {
+    key: 'concepts',
+    title: 'Concepts',
+    line: 'How concepts relate across law, myth, philosophy and politics.',
+    match: /^txt-ml-(concept|pair)/,
+  },
+  {
+    key: 'platform',
+    title: 'Platform',
+    line: 'The models, data quality and lineage behind these charts.',
+    match: /./,
+  },
+] as const
+
+/** Per section, the posts of each file, interleaved so neighbours come from different files. */
+const grouped = new Map<string, Post[][]>()
 for (const key of Object.keys(modules).sort()) {
-  const family = key.split('/').pop()!.split('-')[0]
-  const posts = (modules[key].posts ?? []).filter((p) => !DROPPED.has(p.id))
-  if (posts.length)
-    families.set(family, [...(families.get(family) ?? []), posts])
+  const byFile = new Map<string, Post[]>()
+  for (const p of modules[key].posts ?? []) {
+    if (DROPPED.has(p.id)) continue
+    const section = SECTIONS.find((s) => s.match.test(p.id))!.key
+    byFile.set(section, [...(byFile.get(section) ?? []), p])
+  }
+  for (const [section, posts] of byFile)
+    grouped.set(section, [...(grouped.get(section) ?? []), posts])
 }
-export const FEED = interleave([...families.values()].map(interleave))
+const PARTS = SECTIONS.map((s) => ({
+  ...s,
+  posts: interleave(grouped.get(s.key) ?? []),
+})).filter((s) => s.posts.length)
+export const FEED = PARTS.flatMap((s) => s.posts)
 
 /** Grid reflow animated by the View Transitions API where the browser has it. */
 function morph(change: () => void) {
@@ -204,7 +273,9 @@ function Card({
   )
 }
 
-export default function Feed() {
+/** `level` is the section heading level: 2 under the meaning page's h1, 3 on the home page. */
+export default function Feed({ level = 2 }: { level?: 2 | 3 }) {
+  const Heading = level === 2 ? 'h2' : 'h3'
   const [openId, setOpenId] = useState<string | null>(null)
   const pageVisible = usePageVisible()
   const toggle = (id: string | null) => morph(() => setOpenId(id))
@@ -215,15 +286,29 @@ export default function Feed() {
   }, [])
   return (
     <div className="mean-feed">
-      {FEED.map((p, i) => (
-        <Card
-          key={p.id}
-          post={p}
-          index={i}
-          open={p.id === openId}
-          pageVisible={pageVisible}
-          toggle={toggle}
-        />
+      {PARTS.map((s) => (
+        <section
+          key={s.key}
+          className="mean-section"
+          aria-labelledby={`mean-${s.key}`}
+        >
+          <header className="mean-section-head">
+            <Heading id={`mean-${s.key}`}>{s.title}</Heading>
+            <p>{s.line}</p>
+          </header>
+          <div className="mean-grid">
+            {s.posts.map((p) => (
+              <Card
+                key={p.id}
+                post={p}
+                index={FEED.indexOf(p)}
+                open={p.id === openId}
+                pageVisible={pageVisible}
+                toggle={toggle}
+              />
+            ))}
+          </div>
+        </section>
       ))}
     </div>
   )

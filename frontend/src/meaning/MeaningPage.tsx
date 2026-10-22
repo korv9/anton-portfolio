@@ -1,7 +1,7 @@
 /**
  * What does it even mean? An overwhelming feed of every chart the site's data allows. No prose:
- * only the title, the charts and their legends. The feed itself lives in ./Feed.tsx, which the
- * home page also mounts in its light theme.
+ * only the title, one line per subject, the charts and their legends. The feed lives in ./Feed.tsx,
+ * which the home page also mounts in its light theme.
  */
 import Feed from './Feed'
 import '../sweden/sweden.css'

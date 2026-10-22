@@ -35,6 +35,10 @@ test(
     await expect
       .poll(() => feed.locator('.mean-post').count())
       .toBeGreaterThan(100)
+    // The feed reads by subject, politics first.
+    await expect(
+      feed.getByRole('heading', { level: 3, name: 'Politics' }),
+    ).toBeVisible()
     const first = feed.locator('.mean-post').first()
     await expect(first).toHaveCSS('background-color', 'rgb(255, 255, 255)')
     await expect(first.locator('svg, .mean-body > div').first()).toBeVisible()
@@ -48,14 +52,12 @@ test(
     const before = await checked.textContent()
     await expect.poll(() => checked.textContent()).not.toBe(before)
 
-    await first.scrollIntoViewIfNeeded()
-    await first.getByRole('button', { name: 'Open chart' }).click()
-    await expect(first).toHaveClass(/mean-open/)
-    await expect(
-      first.locator('.mean-legend, .mean-slicer').first(),
-    ).toBeVisible()
+    // Opened, the post shows the slicer it was cycling.
+    await ticking.getByRole('button', { name: 'Open chart' }).click()
+    await expect(ticking).toHaveClass(/mean-open/)
+    await expect(ticking.locator('.mean-slicer')).toBeVisible()
     await page.keyboard.press('Escape')
-    await expect(first).not.toHaveClass(/mean-open/)
+    await expect(ticking).not.toHaveClass(/mean-open/)
   },
 )
 
