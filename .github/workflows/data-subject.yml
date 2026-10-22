@@ -1,6 +1,6 @@
 name: Data subject
 
-# The shared shape of the daily refreshes (refresh-jobs, refresh-news, refresh-welfare): restore
+# The shared shape of the daily refreshes (refresh-jobs, refresh-news): restore
 # the subjects' stored raw files from R2, fetch, build, test and export them with
 # platform/pipeline.py, store the raw files whatever the build did, then check and publish their
 # delivery group. A failed or timed-out run opens (or comments on) an issue; a successful one
@@ -23,14 +23,6 @@ on:
         description: The data job's timeout
         type: number
         required: true
-      build-timeout-minutes:
-        description: The build step's timeout; below the job's, so the raw files are still stored
-        type: number
-        default: 300
-      full-refresh:
-        description: Refetch history and current data (source revisions)
-        type: boolean
-        default: false
       scb-key:
         description: Give the build the SCB API key (company registry lookups)
         type: boolean
@@ -52,7 +44,6 @@ jobs:
     environment: anton-portfolio
     env:
       DBT_SEND_ANONYMOUS_USAGE_STATS: 'false'
-      PORTFOLIO_FULL_REFRESH: ${{ inputs.full-refresh && '1' || '0' }}
       PORTFOLIO_DB: ${{ github.workspace }}/warehouse/portfolio.duckdb
       PORTFOLIO_RAW: ${{ github.workspace }}/warehouse/raw
       R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
@@ -82,9 +73,8 @@ jobs:
       # One failed subject does not stop the others; the step fails if any did, which skips the
       # publication below. Unquoted on purpose: one argument per subject.
       - name: Fetch, build, test and export
-        timeout-minutes: ${{ inputs.build-timeout-minutes }}
         run: python platform/pipeline.py run $SUBJECTS --only ingest,dbt,export
-      # Raw checkpoints are useful even if a source or a dbt test failed or the build timed out.
+      # Raw checkpoints are useful even if a source or a dbt test failed.
       - name: Store the raw files in R2
         if: ${{ always() && steps.setup.outcome == 'success' && inputs.store != '' }}
         run: python platform/pipeline.py push $STORE

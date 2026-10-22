@@ -292,13 +292,20 @@ de råa bytesen och behåller den historiska hashregeln för äldre katalogposte
 
 ## Retention
 
-`platform/publish/retention.py` rensar varje vecka, sist i `build-warehouse.yml` och
+`platform/publish/retention.py` körs varje vecka, sist i `build-warehouse.yml` och
 under samma skrivlås. Per grupp i `manifests/current.json` behålls den aktiva
 releasen, varje release som ett annat `manifests/*.json` pekar på (smoke och
 bootstrap) och de två senaste övriga godkända releaserna, ordnade efter när
 `manifest.json` skrevs. De är rollbackmålen. Äldre godkända releaser raderas. Ett
 releaseprefix utan `manifest.json` är en avbruten upload och raderas när alla dess
 objekt är äldre än sju dagar. Utan `--apply` skrivs bara planen ut.
+
+I `build-warehouse.yml` är steget en torrkörning: planen hamnar i stegets summary och
+inget raderas. Den första riktiga körningen skulle radera många releaser ur den publika
+bucketen på en gång, så ägaren granskar först en verklig plan. Därefter slås radering
+på med repositoryvariabeln `RETENTION_APPLY` satt till `true` (Settings → Secrets and
+variables → Actions → Variables), som lägger till `--apply`. Ta bort variabeln för att
+gå tillbaka till torrkörning.
 
 Kommandot avbryter innan något raderas om `current.json` saknas eller inte går att
 läsa, eller om den aktiva releasen inte finns i listningen. Grupper som inte finns i

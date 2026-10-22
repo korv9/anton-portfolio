@@ -143,23 +143,23 @@ def test_public_refresh_keeps_checkpoints_the_gate_and_the_check_order():
     job = workflow(filename)["jobs"]["refresh"]
     assert job["timeout-minutes"] >= 180
     all_steps = job["steps"]
-    topics = ["welfare", "parliament", "taxes"]
     restore = next(i for i, s in enumerate(all_steps) if s.get("id") == "setup")
-    assert all_steps[restore]["with"]["pull"].split() == topics
-    # One build of all three, in order: a failed source does not stop the others (pipeline.py
-    # runs every subject and exits non-zero if any failed), and its timeout leaves time to store.
-    ((build, step, argv),) = [found for found in cli(filename, "run") if "ingest,dbt,export" in found[2]]
-    assert restore < build and argv[:3] == topics
-    assert "if" not in step and not step.get("continue-on-error")
-    assert step["timeout-minutes"] < job["timeout-minutes"]
-    save = next(i for i, s in enumerate(all_steps)
-                if "always()" in s.get("if", "") and "pipeline.py push" in s.get("run", ""))
-    assert "steps.setup.outcome == 'success'" in all_steps[save]["if"]
-    assert all_steps[save]["run"].split()[-3:] == topics
-    # The gate: a failed build fails its step, and the unconditional publication is then skipped.
+    assert all_steps[restore]["with"]["pull"].split() == ["welfare", "parliament", "taxes"]
+    order = []
+    for topic in ("welfare", "parliament", "taxes"):
+        i = next(i for i, s in enumerate(all_steps) if s.get("id") == topic)
+        assert restore < i and all_steps[i]["continue-on-error"] is True
+        assert f"pipeline.py run {topic} " in all_steps[i]["run"]
+        order.append(i)
+    assert order == sorted(order)
+    save = next(s for s in all_steps if "always()" in s.get("if", "") and "pipeline.py push" in s.get("run", ""))
+    assert "steps.setup.outcome == 'success'" in save["if"]
+    assert save["run"].split()[-3:] == ["welfare", "parliament", "taxes"]
+    gate = next(i for i, s in enumerate(all_steps)
+                if all(f"steps.{topic}.outcome" in " ".join(s.get("env", {}).values())
+                       for topic in ("welfare", "parliament", "taxes")))
     publish = next(i for i, s in enumerate(all_steps) if "--only publish" in s.get("run", ""))
-    assert build < save < publish
-    assert all_steps[publish]["run"].split()[-5:-2] == topics
+    assert max(order) < gate < publish
     assert "if" not in all_steps[publish] and not all_steps[publish].get("continue-on-error")
     for topic in ("welfare", "parliament", "taxes"):
         assert SUBJECTS[topic]["prune"] is True
@@ -242,7 +242,7 @@ def test_the_weekly_run_builds_every_dbt_subject_before_the_warehouse_is_stored(
     build = next(i for i, _, argv in cli(filename, "run") if "--all" in argv and "dbt" in argv[argv.index("--only") + 1])
     store = next(i for i, step, argv in cli(filename, "push") if "--all" in argv and "if" not in step)
     publish = next(i for i, _, argv in cli(filename, "run") if "publish" in argv[argv.index("--only") + 1])
-    retention = next(i for i, s in enumerate(steps(filename)) if "retention.py --apply" in s.get("run", ""))
+    retention = next(i for i, s in enumerate(steps(filename)) if "retention.py" in s.get("run", ""))
     assert build < store < publish < retention
     setup = steps(filename)[0:2][1]["with"]
     assert setup["pull"] == "--all" and setup["ml"] == "true"

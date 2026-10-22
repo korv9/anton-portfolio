@@ -121,7 +121,7 @@ def test_refresh_permissions_and_git_are_read_only(filename):
             assert not re.search(r"\bgit\s+(?:-\S+\s+)*(commit|push)\b", script), filename
 
 
-@pytest.mark.parametrize("filename", ["refresh-jobs.yml", "refresh-news.yml", "refresh-welfare.yml"])
+@pytest.mark.parametrize("filename", ["refresh-jobs.yml", "refresh-news.yml"])
 def test_callers_hold_the_lock_and_bound_the_called_jobs(filename):
     config = yaml.safe_load((ROOT / ".github/workflows" / filename).read_text(encoding="utf-8"))
     (job,) = config["jobs"].values()
@@ -152,6 +152,20 @@ def test_credentials_reject_each_missing_or_whitespace_value(tmp_path, filename)
     # Harmless pasted line endings must not make a valid secret into a shell command.
     result, calls, outputs = run_script(tmp_path, guard, **{name: "fixture\n" for name in CREDENTIALS})
     assert result.returncode == 0 and "ok=false" not in outputs, filename
+
+
+def test_weekly_retention_is_a_dry_run_unless_the_owner_opts_in(tmp_path):
+    (step,) = [s for s in steps("build-warehouse.yml") if "retention.py" in s.get("run", "")]
+    assert "--apply" not in step["run"]
+    assert step["env"] == {"APPLY": "${{ vars.RETENTION_APPLY == 'true' && '--apply' || '' }}"}
+    for apply in ("", "--apply"):
+        summary = tmp_path / f"summary{apply}"
+        result, calls, _ = run_script(tmp_path / f"run{apply}", step["run"], APPLY=apply,
+                                      GITHUB_STEP_SUMMARY=str(summary))
+        assert result.returncode == 0, result.stderr
+        ((*_, last),) = [call for call in calls if "platform/publish/retention.py" in call]
+        assert (last == "--apply") == bool(apply)
+        assert "### Release retention" in summary.read_text()
 
 
 def test_initial_bootstrap_stages_groups_then_activates_once(tmp_path):
