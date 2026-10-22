@@ -162,11 +162,7 @@ function Profile() {
               <h3 className="home-job-org">{b(THESIS.title)}</h3>
             </div>
             <p className="home-job-role">{b(THESIS.kind)}</p>
-            <ul className="home-job-did">
-              {THESIS.points.map((item) => (
-                <li key={item.sv}>{b(item)}</li>
-              ))}
-            </ul>
+            <p className="home-job-role">{THESIS.points.map(b).join(' ')}</p>
             <p className="home-job-role">Tech: {THESIS.tech.join(', ')}</p>
           </div>
         )}
