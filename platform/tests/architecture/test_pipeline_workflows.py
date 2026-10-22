@@ -69,12 +69,43 @@ def load_cli():
 @pytest.mark.parametrize("filename", DATA_WORKFLOWS)
 def test_data_workflows_share_the_writer_lock_and_the_setup(filename):
     config = workflow(filename)
-    assert config["concurrency"] == {"group": "data-refresh", "cancel-in-progress": False}
+    # queue: max keeps every waiting run; the default cancels all but the newest pending one.
+    assert config["concurrency"] == {"group": "data-refresh", "cancel-in-progress": False, "queue": "max"}
     uses = [step.get("uses", "") for step in steps(filename)]
     assert next(i for i, use in enumerate(uses) if use.startswith("actions/checkout@")) < uses.index("./.github/actions/data-setup"), filename
     for script in (step.get("run", "") for step in steps(filename)):
         # Sequences, selectors and raw paths live in the registry, not in YAML.
         assert not re.search(r"dbt build|warehouse_store\.py|--path |upload\.py|npm run", script), filename
+
+
+@pytest.mark.parametrize("filename", DATA_WORKFLOWS)
+def test_a_failed_data_job_opens_an_issue_from_a_job_of_its_own(filename):
+    jobs = workflow(filename)["jobs"]
+    alert = jobs.pop("alert")
+    (data,) = jobs
+    assert alert["needs"] == data and f"needs.{data}.result" in alert["if"] and "!cancelled()" in alert["if"]
+    assert alert["permissions"] == {"contents": "read", "actions": "read", "issues": "write"}
+    assert "environment" not in alert, "the alert needs no data secrets"
+    assert alert["steps"][-1] == {"uses": "./.github/actions/failure-issue",
+                                  "with": {"result": f"${{{{ needs.{data}.result }}}}"}}
+
+
+def test_pipeline_schedules_match_the_workflow_crons():
+    """pipeline.yml's schedule documents the cron of the workflow that runs the subject."""
+    crons = {name: [entry["cron"] for entry in workflow(name)[True].get("schedule", [])]
+             for name in DATA_WORKFLOWS}
+    runner = {subject: name for name, (subjects, _) in REFRESHERS.items() for subject in subjects}
+    used = {name: set() for name in crons}
+    for subject, config in SUBJECTS.items():
+        if config.get("manual"):
+            assert config["schedule"] in ("manual", "every push"), subject
+            continue
+        # A subject without manual: true runs in its refresh workflow or in the weekly --all.
+        name = runner.get(subject, "build-warehouse.yml")
+        assert config["schedule"] in crons[name], f"{subject}: {config['schedule']} is not a cron of {name}"
+        used[name].add(config["schedule"])
+    for name, schedule in crons.items():
+        assert set(schedule) == used[name], f"{name} runs on a cron no subject documents"
 
 
 @pytest.mark.parametrize("filename", REFRESHERS)

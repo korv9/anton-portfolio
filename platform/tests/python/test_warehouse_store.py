@@ -213,10 +213,37 @@ def test_pruning_scoped_snapshot_removes_obsolete_pages_and_never_uploads_temp_f
     s3.objects[key] = (b"{}", {})
     s3.objects[ws.RAW_PREFIX + "scb_extra/keep.json"] = (b"{}", {})
     (raw / "scb/partial.json.tmp").write_bytes(b"partial")
-    ws.push_tree(s3, "b", "raw", "scb", prune=True)
+    # One of three stored files is far above the default share: an intentional cleanup says so.
+    ws.push_tree(s3, "b", "raw", "scb", prune=True, max_delete_pct=100)
     assert key not in s3.objects
     assert ws.RAW_PREFIX + "scb/partial.json.tmp" not in s3.objects
     assert ws.RAW_PREFIX + "scb_extra/keep.json" in s3.objects
+
+
+def test_a_prune_beyond_the_share_or_without_the_fetch_log_deletes_nothing(store):
+    """An incomplete restore looks like a mass deletion; the default 5 % guard stops it."""
+    s3, _, raw = store
+    for i in range(38):
+        (raw / f"scb/page-{i}.json").write_text("{}")
+    ws.push_tree(s3, "b", "raw", "scb")
+    stored = set(s3.objects)
+    assert len(stored) == 40
+    for i in range(3):
+        (raw / f"scb/page-{i}.json").unlink()
+    with pytest.raises(SystemExit, match="3 of 40 stored files"):
+        ws.push_tree(s3, "b", "raw", "scb", prune=True)
+    assert set(s3.objects) == stored
+    (raw / "scb/page-0.json").write_text("{}")
+    (raw / "scb/page-1.json").write_text("{}")
+    manifest = raw / "scb/_manifest.jsonl"
+    log = manifest.read_bytes()
+    manifest.unlink()
+    with pytest.raises(SystemExit, match="fetch log"):
+        ws.push_tree(s3, "b", "raw", "scb", prune=True)
+    assert set(s3.objects) == stored
+    manifest.write_bytes(log)
+    ws.push_tree(s3, "b", "raw", "scb", prune=True)
+    assert set(s3.objects) == stored - {ws.RAW_PREFIX + "scb/page-2.json"}
 
 
 def test_complete_history_survives_a_fresh_runner_round_trip(store, tmp_path, monkeypatch):

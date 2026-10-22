@@ -94,7 +94,13 @@ Each workflow checks out the repository, calls `.github/actions/data-setup` and 
 subjects. The shared setup checks the four R2 credentials, installs Python and
 `platform/requirements.txt`, optionally the ML dependencies, and restores the stored raw files
 (`pipeline.py pull`). All seven data workflows share the concurrency group `data-refresh`, so
-two of them never write the same raw manifests or R2 keys at once.
+two of them never write the same raw manifests or R2 keys at once. `queue: max` lets the runs
+waiting for it start in order; by default GitHub keeps only the newest pending run and cancels
+the others. Each workflow ends with an `alert` job (`.github/actions/failure-issue`): a failed or
+timed-out run opens an issue labelled `data-pipeline-failure`, or comments on the open one, and
+the next successful run closes it. A raw prune (`prune: true`) stops without deleting when more
+than 5 % of a folder's stored files, or a folder without its local fetch log, would go;
+`PRUNE_MAX_DELETE_PCT` raises the limit for an intentional cleanup.
 
 What stays in YAML is the handling of failure, which differs per workflow:
 

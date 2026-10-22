@@ -37,6 +37,8 @@ permissions:
 concurrency:
   group: data-refresh
   cancel-in-progress: false
+  # Wait in order: the default keeps one pending run and cancels the one before it.
+  queue: max
 
 jobs:
   build:
@@ -90,3 +92,22 @@ jobs:
       - name: Export, check and publish each complete group
         if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         run: python platform/pipeline.py run --all --only export,publish
+
+  # A failed or timed-out run opens (or comments on) an issue; a successful one closes it.
+  alert:
+    needs: build
+    if: ${{ !cancelled() && needs.build.result != 'skipped' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      actions: read
+      issues: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+          sparse-checkout: .github/actions
+      - uses: ./.github/actions/failure-issue
+        with:
+          result: ${{ needs.build.result }}
