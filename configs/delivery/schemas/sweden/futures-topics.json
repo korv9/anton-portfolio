@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["generated_at", "method", "clusters", "columns", "rows"],
+  "properties": {
+    "method": {
+      "type": "object",
+      "required": ["run_id", "sentences", "stability", "null_shuffled_dimensions", "preregistration", "result"],
+      "properties": {
+        "stability": {"type": "object", "required": ["passes"]},
+        "null_shuffled_dimensions": {"type": "object", "required": ["passes"]},
+        "result": {"type": "string", "minLength": 1}
+      }
+    },
+    "clusters": {"type": "array", "items": {"type": "object", "required": ["cluster", "label", "top_terms", "stable"]}},
+    "columns": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+    "rows": {"type": "array", "items": {"type": "array", "minItems": 1}}
+  },
+  "if": {"properties": {"method": {"properties": {"stability": {"properties": {"passes": {"const": false}}}}}}},
+  "then": {"properties": {"clusters": {"maxItems": 0}, "rows": {"maxItems": 0}}}
+}

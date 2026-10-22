@@ -58,6 +58,8 @@ models:
         +tags: [concepts]
       quality:
         +tags: [quality]
+      clusters:
+        +tags: [clusters]
     silver:
       +materialized: view
       +schema: silver
@@ -84,6 +86,8 @@ models:
       +schema: gold
       quality:
         +tags: [quality]
+      clusters:
+        +tags: [clusters]
       cross_domain:
         +tags: [cross_domain]
       sweden:

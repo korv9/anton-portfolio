@@ -302,6 +302,7 @@ def test_configured_sweden_contract_gates_tracked_exports(tmp_path, monkeypatch,
     import release
 
     shutil.copytree(ROOT / "frontend/public/data/sweden", tmp_path / "sweden")
+    shutil.copytree(ROOT / "frontend/public/data/clusters", tmp_path / "clusters")
     spec = json.loads((ROOT / "configs/delivery/sweden.json").read_text())
     trends = tmp_path / "sweden/futures/trends.json"
     connections = tmp_path / "sweden/connections/connections.json"
