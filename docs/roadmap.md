@@ -54,7 +54,7 @@ Motion and layout decisions follow the motion plan's recommendation in each case
 | Code reviewer | every PR | Correctness, tests, reuse, file size, the repository rules in `CLAUDE.md`. |
 | Data and statistics reviewer | every PR that touches data, charts or analysis | Grain, joins, units, nulls, the pre-registration, the null model, what the caption claims. |
 | Design and accessibility QA | before each merge to `main`, batched | Keyboard, axe, reduced motion, 360 px layout, contrast, the approved design direction. |
-| Writer | any published prose | Applies `.claude/skills/de-ai-writing/SKILL.md` and runs its `scripts/check_ai_signs.py` on every changed prose file. |
+| Writer | any published prose | Writes new text only and never changes the owner's existing home-page copy unless asked. Applies `.claude/skills/de-ai-writing/SKILL.md` and runs its `scripts/check_ai_signs.py` on every changed prose file. |
 | Coordinator | throughout | Dispatches items, runs reviewers, merges to `dev`, keeps this file current, asks the owner. |
 
 Review rules:

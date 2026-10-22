@@ -52,10 +52,6 @@ jobs:
       DBT_SEND_ANONYMOUS_USAGE_STATS: 'false'
       PORTFOLIO_DB: ${{ github.workspace }}/warehouse/portfolio.duckdb
       PORTFOLIO_FEATURES: ${{ github.workspace }}/warehouse/features
-      R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
-      R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
-      R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY || secrets.R2_SECRET_ACCESS_KEY_ID }}
-      R2_BUCKET: ${{ secrets.R2_BUCKET }}
       R2_PUBLIC_BASE: ${{ vars.R2_PUBLIC_BASE }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -63,10 +59,17 @@ jobs:
           persist-credentials: false
       - name: Set up Python and the ML lock
         uses: ./.github/actions/data-setup
+        timeout-minutes: 20
+        # The R2 keys go only to the steps that talk to the bucket, never to the run step.
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY || secrets.R2_SECRET_ACCESS_KEY_ID }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
         with:
           ml: 'true'
-      # The module and the path come from the dispatch form and run with the R2 keys in the
-      # environment, so only a module of the ml package and a plain features folder are accepted.
+      # The module and the path come from the dispatch form, so only a module of the ml package and a
+      # plain features folder are accepted. The R2 keys are never in the run step's environment.
       - name: Check the inputs
         id: check
         shell: bash
@@ -83,10 +86,16 @@ jobs:
       - name: Pull the inputs
         id: pull
         if: env.PULL != ''
+        timeout-minutes: 15
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY || secrets.R2_SECRET_ACCESS_KEY_ID }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
         run: python platform/publish/warehouse_store.py pull --only features --path "$PULL"
       - name: Run
         id: run
-        timeout-minutes: 300
+        timeout-minutes: 280
         # Named so that pipefail is on: a failed step is not hidden behind tee.
         shell: bash
         run: |
@@ -108,8 +117,13 @@ jobs:
       # After a failure too, so the checkpoints of a stopped run are kept for the next one.
       - name: Push the outputs
         if: ${{ always() && env.PUSH != '' && steps.check.outcome == 'success' && (env.PULL == '' || steps.pull.outcome == 'success') }}
+        timeout-minutes: 10
         env:
           RUN_OUTCOME: ${{ steps.run.outcome }}
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY || secrets.R2_SECRET_ACCESS_KEY_ID }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
         run: |
           folder="$PUSH"
           [ "$RUN_OUTCOME" = success ] || folder="$CHECKPOINTS"

@@ -54,7 +54,8 @@ def main() -> int:
     if not con.execute("select count(*) from gold.mart_sweden_future_topics").fetchone()[0]:
         raise SystemExit("gold.mart_sweden_future_topics is empty; run the pilot and dbt first")
     method = json.loads((FEATURES / "sweden/futures_topics/method.json").read_text(encoding="utf-8"))
-    found = method["stability"]["passes"] and method["null_shuffled_dimensions"]["passes"]
+    found = (method["stability"]["passes"] and method["null_shuffled_dimensions"]["passes"]
+             and bool(con.execute("select count(*) from gold.mart_sweden_future_topics where stable").fetchone()[0]))
     cells = con.execute("""select year, corpus, cluster, sentences, year_sentences, share, share_low, share_high
         from gold.mart_sweden_future_topics where stable order by corpus, cluster, year""").fetchall() if found else []
     payload = {
