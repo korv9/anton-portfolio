@@ -265,12 +265,6 @@ body:has(.home-backdrop[data-intro='true']) :is(.home-name, .home-roles span) {
   margin: 0;
   font-weight: var(--weight-heading);
 }
-.home-job-did {
-  list-style: disc;
-}
-.home-job-did li {
-  line-height: 1.5;
-}
 .home-job-org a {
   color: inherit;
   text-underline-offset: 0.2em;
@@ -286,21 +280,12 @@ body:has(.home-backdrop[data-intro='true']) :is(.home-name, .home-roles span) {
   font-size: var(--body-large);
   line-height: 1.5;
 }
-.home-job-did {
-  max-width: var(--layout-reading);
-  margin: 0;
-  padding-left: 1.1rem;
-}
-.home-job-did li + li {
-  margin-top: var(--sp-2);
-}
 .home-job-tech {
   margin: var(--sp-3) 0 0;
   color: var(--muted);
   font-size: var(--fs-sm);
 }
 /* In the three columns the text fills its column, so the columns end close together. */
-.home-profile .home-job-did,
 .home-profile .home-job-impact,
 .home-profile .home-about-text {
   max-width: none;

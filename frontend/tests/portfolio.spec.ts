@@ -202,7 +202,7 @@ test(
     await expect(thesis.locator('.home-job-role').first()).toHaveText(
       'Case study, spring 2026',
     )
-    await expect(thesis.locator('li')).toHaveCount(3)
+    await expect(thesis.locator('li')).toHaveCount(0)
     await expect(thesis).toContainText('Of 121 clusters, 72 had no link')
     await expect(thesis).toContainText('12 groups containing 650 tickets')
     await expect(thesis).toContainText('ISO/IEC 25012')
