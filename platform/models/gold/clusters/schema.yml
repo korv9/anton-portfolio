@@ -1,0 +1,62 @@
+version: 2
+
+models:
+  - name: mart_cluster_assignments
+    description: >-
+      Every published clustering's members (platform/publish/clusters): entity, period, cluster
+      and the cluster's share of the period's assigned entities. Noise (-1) has no share.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [clustering, entity_id, period]
+    columns:
+      - name: cluster
+        data_tests: [not_null]
+      - name: entity_name
+        data_tests: [not_null]
+      - name: cluster_share
+        data_tests:
+          - between:
+              arguments: {min: 0, max: 1}
+  - name: mart_cluster_shares
+    description: Cluster shares per period and segment with their bootstrap 5-95 % range.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [clustering, period, segment, cluster]
+    columns:
+      - name: share
+        data_tests:
+          - between:
+              arguments: {min: 0, max: 1}
+  - name: mart_job_ad_municipality_field
+    description: >-
+      Distinct job ads per year, SCB municipality and occupation field, from one DuckDB pass over
+      the JobTech cluster corpus (2023 to 2026-Q3); share within municipality and year.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [year, municipality_code, occupation_field]
+    columns:
+      - name: municipality_code
+        data_tests:
+          - relationships:
+              arguments: {to: ref('dim_municipality'), field: municipality_code}
+      - name: share
+        data_tests:
+          - between:
+              arguments: {min: 0, max: 1}
+  - name: mart_job_ad_unmatched_municipalities
+    description: JobTech municipality names with no current SCB match, and how many ads carry them.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [municipality]
+            # The ads that name no municipality form one row with a null name.
+            nullable: [municipality]
+  - name: mart_job_ad_occupation_month
+    description: Distinct job ads per publication month and occupation group.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [month, occupation_group]

@@ -19,8 +19,6 @@ const PAGES: Record<string, LazyExoticComponent<ComponentType>> = {
   '#sweden-atlas-x': lazy(() => import('./AtlasConnections')),
 }
 
-export const ATLAS_PATHS = Object.keys(PAGES)
-
 export default function Atlas({ path }: { path: string }) {
   const Page = PAGES[path] ?? PAGES['#sweden-atlas']
   return (

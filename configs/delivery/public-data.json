@@ -14,7 +14,6 @@
     "schema/*",
     "parquet/welfare/*",
     "parquet/welfare_indicator/*",
-    "parquet/parliament_roll_calls/*",
-    "parliament/workspace/*"
+    "parquet/parliament_roll_calls/*"
   ]
 }

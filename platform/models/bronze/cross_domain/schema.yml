@@ -1,0 +1,36 @@
+version: 2
+
+models:
+  - name: stg_ai_act_diffusion_months
+    description: Documents per corpus and month (the denominator of the AI Act diffusion clock).
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [corpus, month]
+    columns:
+      - name: documents
+        data_tests: [not_null]
+  - name: stg_ai_act_diffusion_terms
+    description: Documents matching each AI Act term per corpus, term list, language and month.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [corpus, term_list, term_id, language, month]
+    columns:
+      - name: language
+        data_tests:
+          - accepted_values:
+              arguments: {values: [sv, en]}
+      - name: term_list
+        data_tests:
+          - accepted_values:
+              arguments: {values: [primary, amended]}
+  - name: stg_ai_act_diffusion_sources
+    description: Each counted source with the dates it covers and the term list's SHA-256.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [source]
+    columns:
+      - name: dictionary_sha256
+        data_tests: [not_null]

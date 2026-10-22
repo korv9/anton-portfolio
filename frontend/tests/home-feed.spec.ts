@@ -184,26 +184,43 @@ test('the name is there at first paint and the map sleeps after the hero', async
   await expect(backdrop).toHaveAttribute('data-paused', 'true')
 })
 
-test('posts whose data is past its valid_until date leave the feed', async ({
+test('posts whose data is withdrawn or past its valid_until date leave the feed', async ({
   page,
 }) => {
   const ADS = '[data-post="job-co-remote"]'
   const errors: string[] = []
   page.on('console', (m) => m.type() === 'error' && errors.push(m.text()))
-  // The published company snapshot is past its date: its posts render nothing.
+  // The published company file is withdrawn ({state: 'unavailable'}): its posts leave the feed.
   await page.goto('/')
   await page.locator('.home-feed').evaluate((el) => el.scrollIntoView())
-  await page.locator(ADS).evaluate((el) => el.scrollIntoView())
+  await page
+    .locator('#mean-jobs')
+    .evaluate((el) => el.scrollIntoView({ block: 'start' }))
   await expect(page.locator(ADS)).toHaveCount(0)
   // Leaving is quiet: nothing at all in the console.
   expect(errors).toEqual([])
 
-  // The same data with a date still ahead renders the post.
-  await page.route('**/jobs/company-intelligence.json', async (route) => {
-    const json = await (await route.fetch()).json()
-    json.valid_until = new Date(Date.now() + 86_400_000).toISOString()
-    await route.fulfill({ json })
+  // A routed release, invented for the test, past its date leaves the feed; ahead, it renders.
+  const release = (days: number) => ({
+    schema_version: 1,
+    state: 'available',
+    valid_until: new Date(Date.now() + days * 86_400_000).toISOString(),
+    jobs: [{ remote_evidence: ['remote'] }],
   })
+  await page.route('**/jobs/company-intelligence.json', (route) =>
+    route.fulfill({ json: release(-1) }),
+  )
+  await page.goto('/')
+  await page.locator('.home-feed').evaluate((el) => el.scrollIntoView())
+  await page
+    .locator('#mean-jobs')
+    .evaluate((el) => el.scrollIntoView({ block: 'start' }))
+  await expect(page.locator(ADS)).toHaveCount(0)
+
+  await page.unroute('**/jobs/company-intelligence.json')
+  await page.route('**/jobs/company-intelligence.json', (route) =>
+    route.fulfill({ json: release(1) }),
+  )
   await page.goto('/')
   await page.locator('.home-feed').evaluate((el) => el.scrollIntoView())
   const post = page.locator(ADS)

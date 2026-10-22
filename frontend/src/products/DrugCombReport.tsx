@@ -31,7 +31,6 @@ import { Feature } from '../charts/feature/Feature'
 import { Select } from '../report/controls'
 import ProjectTech from '../projects/ProjectTech'
 import './mlviz.css'
-import '../report/modell.css'
 
 type TreeFile = {
   tree: TreeNode

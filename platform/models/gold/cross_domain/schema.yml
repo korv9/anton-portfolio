@@ -46,3 +46,70 @@ models:
       - name: content_type
         data_type: VARCHAR
         description: 'Attribute: content kind of the row, always ''derived''.'
+  - name: mart_ai_act_term_diffusion
+    description: Corpus × term list × term × language × month of the AI Act's own terms in Riksdag speeches and job ads, whole months only (derived; never pooled across corpora).
+    config:
+      contract: {enforced: true}
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [corpus, term_list, term_id, language, month]
+    columns:
+      - name: corpus
+        data_type: VARCHAR
+        description: 'Key: riksdag (speeches) or job_ads (ads).'
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments: {values: [riksdag, job_ads]}
+      - name: term_list
+        data_type: VARCHAR
+        description: 'Key: primary (the pre-registered terms and matching) or amended (the 2026-10-22 amendment: re-reviewed terms, every token inflected).'
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments: {values: [primary, amended]}
+      - name: term_id
+        data_type: VARCHAR
+        description: 'Key: the term (seeds/cross_domain/ai_act_terms.csv, decision or amended_decision keep).'
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('ai_act_terms'), field: term_id}
+      - name: language
+        data_type: VARCHAR
+        description: 'Key: sv for the Swedish term, en for its reviewed English counterpart.'
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments: {values: [sv, en]}
+      - name: term
+        data_type: VARCHAR
+        description: 'Attribute: the term as matched.'
+      - name: month
+        data_type: DATE
+        description: 'Key: calendar month, as the date of its first day; only whole months of the corpus.'
+        data_tests: [not_null]
+      - name: matches
+        data_type: HUGEINT
+        description: 'Measure, additive within a corpus: documents that contain the term in the month.'
+        data_tests: [not_null]
+      - name: documents
+        data_tests: [not_null]
+        data_type: HUGEINT
+        description: 'Measure, additive within a corpus: all speeches or ads in the month; 0 in a month without sittings.'
+      - name: share
+        data_type: DOUBLE
+        description: 'matches / documents, null when documents is 0. Fraction from 0 to 1.'
+        data_tests:
+          - between:
+              arguments: {min: 0, max: 1}
+      - name: share_rolling_3m
+        data_type: DOUBLE
+        description: 'Measure, non-additive: matches over documents summed over this and the two preceding months; fraction 0-1.'
+        data_tests:
+          - between:
+              arguments: {min: 0, max: 1}
+      - name: content_type
+        data_type: VARCHAR
+        description: 'Attribute: content kind of the row, always ''derived''.'

@@ -43,7 +43,7 @@ def atomic_json(path, value):
 def atomic_parquet(frame, path):
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
-    temporary = path.with_name(path.name + '.tmp')
+    temporary = path.with_name(path.name + f'.{os.getpid()}.tmp')
     frame.to_parquet(temporary, index=False, compression='zstd')
     os.replace(temporary, path)
 
