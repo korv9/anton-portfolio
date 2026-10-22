@@ -119,6 +119,10 @@ def main() -> None:
     published = json.loads(NAMES.read_text(encoding="utf-8"))
     if published["run_id"] != result["run_id"]:
         raise SystemExit(f"Published names belong to run {published['run_id']}, not {result['run_id']}")
+    # The consensus run keeps no registry; its completed pick is pick-debate.json, written after result.json.
+    pick = json.loads((RUN / "pick-debate.json").read_text(encoding="utf-8")) if (RUN / "pick-debate.json").exists() else {}
+    if (pick.get("variant"), pick.get("run_id")) != ("debate-sbert", result["run_id"]):
+        raise SystemExit(f"{RUN / 'pick-debate.json'} does not name debate-sbert run {result['run_id']} as completed")
     seeds = [json.loads(p.read_text(encoding="utf-8"))["labels"] for p in sorted((RUN / "debate-sbert").glob("seed-*.json"))]
     pairs = [adjusted_rand_score(a, b) for a, b in itertools.combinations(seeds, 2)]
     labels = frame.cluster.to_numpy()

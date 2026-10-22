@@ -103,7 +103,7 @@ def main() -> None:
     boot_r = [np.mean(rng.choice(rs, len(rs))) for _ in range(BOOT)]
     # n, k and the largest share only mean something per session (in `sessions`); here n counts sessions.
     diagnostics = stats.diagnostics(
-        np.arange(len(sessions)), None,
+        np.zeros(len(sessions), int), None,  # only n (sessions) is used; k and largest share are set below
         stats.summary(boots, BOOT, stats.SEED, f"talk tree per session: topics drawn with replacement, "
                                                 f"recut at {CUT} groups; mean of the session means"),
         {"statistic": "mean Mantel r over sessions", "kind": "party labels permuted within each session",

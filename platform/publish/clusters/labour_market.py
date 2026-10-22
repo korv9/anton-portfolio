@@ -89,6 +89,8 @@ def main() -> None:
                                     note="" if stable else
                                     f"Types are not stable over time: the same fit on {YEARS[0]} and on {YEARS[-1]} "
                                     f"alone agrees at ARI {year_ari['ari']}.")
+    if not MANIFEST.exists():
+        raise SystemExit(f"{MANIFEST} is missing: run job_ads.py over the cluster corpus first")
     manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
     fields = wide.columns.to_numpy()
     clusters = []

@@ -14,7 +14,6 @@ No ad text, title or employer leaves the scan.
 """
 from __future__ import annotations
 
-import json
 import os
 from pathlib import Path
 
@@ -53,7 +52,8 @@ def main() -> None:
     counts = dict(zip(["ads", "without_municipality", "first_month", "last_month"], con.sql(
         "select count(*), count(*) - count(municipality), min(month), max(month) from ads").fetchone()))
     counts["folders"] = list(FOLDERS)
-    (OUT / "manifest.json").write_text(json.dumps(counts, indent=1) + "\n", encoding="utf-8", newline="\n")
+    # Written last and atomically: a manifest means both aggregates are complete.
+    stats.atomic_json(OUT / "manifest.json", counts)
     print(counts)
 
 

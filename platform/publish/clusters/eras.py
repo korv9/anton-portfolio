@@ -5,7 +5,8 @@
 Session x topic word shares over all parties from gold fact_topic_session_party, one topic model
 (parliament-current, checked to span all 33 sessions), unassigned speech left out. Ward
 agglomeration with a chain connectivity, so an era is a run of consecutive sessions. The cut is
-the largest jump in merge cost (ratio to the merge before it) among 3-6 eras.
+the largest jump in merge cost (ratio to the merge before it) among 2-8 eras; a pick at an end
+of the sweep or near a tie is flagged (stats.k_flags).
 - null: the sessions' order shuffled and refitted; the within-era sum of squares at the same k
   against the observed (an era structure tied to time leaves less within-era variation).
 - bootstrap: topics drawn with replacement, refitted; ARI with the reference eras.
@@ -42,12 +43,13 @@ def within(x: np.ndarray, labels: np.ndarray) -> float:
     return float(sum(((x[labels == c] - x[labels == c].mean(axis=0)) ** 2).sum() for c in set(labels)))
 
 
-def choose_cut(x: np.ndarray, ks=range(3, 7)) -> tuple[int, dict]:
+def choose_cut(x: np.ndarray, ks=stats.KS) -> tuple[int, dict]:
     """Merge cost of going from k to k-1 eras; the cut is the k whose next merge costs most
-    relative to the merge before it (the largest jump)."""
+    relative to the merge before it (the largest jump). Returns the k, the merge costs and the
+    jump per k (the sweep for stats.k_flags)."""
     cost = {k: within(x, eras(x, k - 1)) - within(x, eras(x, k)) for k in range(ks[0], ks[-1] + 2)}
-    jump = {k: cost[k] / cost[k + 1] for k in ks}
-    return max(jump, key=jump.get), {k: round(v, 5) for k, v in cost.items()}
+    jump = {k: round(cost[k] / cost[k + 1], 4) for k in ks}
+    return max(jump, key=jump.get), {k: round(v, 5) for k, v in cost.items()}, jump
 
 
 def order_null(x: np.ndarray, k: int, rounds: int = ROUNDS, seed: int = stats.SEED) -> dict:
@@ -66,7 +68,7 @@ def main() -> None:
     matrix = matrix.sort_index(key=lambda s: s.str[:4].astype(int))
     shares = matrix.div(matrix.sum(axis=1), axis=0)
     x = shares.to_numpy()
-    k, cost = choose_cut(x)
+    k, cost, jump = choose_cut(x)
     labels = eras(x, k)
     rng = np.random.default_rng(stats.SEED)
     boot = [adjusted_rand_score(labels, eras(x[:, rng.integers(0, x.shape[1], x.shape[1])], k))
@@ -90,10 +92,10 @@ def main() -> None:
         order_null(x, k),
         {"government": stats.ami(labels, [governments.get(s) for s in shares.index]),
          "futures_breaks": stats.ami(labels, futures)},
-        space="topic word shares per session", note="33 sessions: descriptive.")
+        space="topic word shares per session", sweep=jump, note="33 sessions: descriptive.")
     metrics = {"title": "Riksdag eras", "method": {"features": f"word shares over {x.shape[1]} {MODEL} topics",
                                                    "algorithm": "Ward with chain connectivity", "k": k,
-                                                   "merge_cost": cost},
+                                                   "merge_cost": cost, "merge_cost_jump": jump},
                "diagnostics": diagnostics, "clusters": clusters, "breaks": breaks, "futures_breaks": FUTURES_BREAKS,
                "topic_shares": {"sessions": shares.index.tolist(), "topics": [[int(t), labels_text[t]] for t in shares.columns],
                           "rows": np.round(x, 4).tolist()},
