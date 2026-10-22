@@ -119,4 +119,20 @@ users, so only counts and agreement figures leave the machine.
 
 ## Changes after registration
 
-None yet.
+- 2026-10-22, unit (amendment, before any Riksdag text was embedded or labelled). The first draw
+  found an eligible paragraph in 99 to 100 % of speeches in 1993/94, 1995/96 and from 2014/15, but in
+  only 15 to 40 % in 1996/97 to 2013/14, so in those years mostly short speeches qualified (median
+  100 words against 53). The archives mark paragraphs in three ways: HTML paragraphs, one line break
+  per paragraph (2000s), and hard-wrapped print lines with words hyphenated at the line end (1990s).
+  No paragraph rule fits all three. The unit is now a passage: the speech's text with tags removed,
+  words joined across a hyphenated line end and all white space made one space, split into sentences
+  at `.`, `!` or `?`, and packed from the start into passages of up to 80 words; passages of 15 to
+  150 words are eligible. The draw keeps the registered seed, hash rule and sizes, with passage in
+  place of paragraph everywhere. On the first 3,000 speeches of the 1993/94, 1996/97, 2008/09 and
+  2021/22 archives, 99 % or more have an eligible passage, with a median of 69 to 70 words.
+- 2026-10-22, eMFD threshold. The threshold grid 0.05 to 0.95 is coarse for eMFD, whose mean word
+  probabilities lie near 0.1. The baseline keeps the registered grid, so its F1 may be lower than a
+  finer grid would give. Reported, not changed.
+- 2026-10-22, ETHICS calls. The first 101 answers came from one call at a time, the rest from four
+  parallel calls after the serial run proved slow. Temperature is 0 and the prompts are the same.
+  One wording (virtue, wording 2) was reworded before the first call because some traits are nouns.
