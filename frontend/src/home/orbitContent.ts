@@ -26,7 +26,7 @@ export const EXPERIENCE: {
       ),
       t(
         'Byggde Power BI-rapporter och semantiska modeller med DirectQuery och DAX, som ersatte manuell rapportering med självbetjäning.',
-        'Built Power BI reports and semantic models with DirectQuery and DAX. They replaced manual reporting with self-service.',
+        'Built Power BI reports and semantic models with DirectQuery and DAX that replaced manual reporting with self-service.',
       ),
       t(
         'Gjorde en reproducerbar NLP-analys av över 21 000 incidenter och bedömde datakvaliteten med hänsyn till GDPR och anonymisering.',
@@ -89,8 +89,8 @@ export const THESIS = {
       'Analysed 21,633 Freshservice incident records. Of 121 clusters, 72 had no link to a registered problem. Highlighted 12 groups containing 650 tickets for further operational review.',
     ),
     t(
-      'Bedömde datakvaliteten med fem dimensioner ur ISO/IEC 25012. Fann att saknad rotorsaksdokumentation och begränsade kopplingar mellan incidenter och problem begränsade analysen, vilket visade varför bättre dokumentation behövs för användbar AI.',
-      'Assessed data quality using five ISO/IEC 25012 dimensions. Found that missing root-cause documentation and limited links between incidents and problems constrained the analysis, showing why better documentation matters for useful AI.',
+      'Bedömde datakvaliteten med fem dimensioner ur ISO/IEC 25012. Fann att saknad rotorsaksdokumentation och få kopplingar mellan incidenter och problem begränsade analysen, vilket visade varför bättre dokumentation behövs för användbar AI.',
+      'Assessed data quality using five ISO/IEC 25012 dimensions. Missing root-cause documentation and few links between incidents and problems limited the analysis. Useful AI here needs better documentation.',
     ),
   ],
   tech: [
@@ -118,7 +118,7 @@ export const ADDITIONAL = {
 export const ADDITIONAL_EDUCATION = {
   title: t(
     'Socionomprogrammet med urban profil',
-    'Social Work Programme, urban profile',
+    'Social Work Programme (urban specialisation)',
   ),
   school: 'Södertörn University',
   period: '2021 – 2022',

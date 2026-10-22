@@ -1,27 +1,14 @@
 /**
- * The portfolio's user journeys, end to end: a visitor opening the chart feed from the start
- * page, a visitor following an idea through the Concept Journey, and a technical reviewer tracing a result to its source
+ * The portfolio's user journeys, end to end: the chart feed by its
+ * address, a visitor following an idea through the Concept Journey, and a technical reviewer tracing a result to its source
  * and opening the data catalogue.
  */
 import { test, expect } from './test'
 import AxeBuilder from '@axe-core/playwright'
 
-test('a visitor opens the chart feed from its start-page card', async ({
-  page,
-}) => {
-  await page.goto('/#start')
-  const card = page.locator('a.work-card[href="#what-does-it-even-mean"]')
-  await expect(card.locator('.work-title')).toHaveText(
-    'What does it even mean?',
-  )
-  await expect(card).toContainText(
-    'A collection of charts on all the data behind this site, which I have not yet presented in a coherent way.',
-  )
-  await expect(
-    page.locator('.work-title', { hasText: 'Observatories' }),
-  ).toHaveCount(0)
-  await card.click()
-  await expect(page).toHaveURL(/#what-does-it-even-mean$/)
+test('a visitor opens the chart feed by its address', async ({ page }) => {
+  // The published start page no longer links here; the address still opens it in local dev.
+  await page.goto('/#what-does-it-even-mean')
   await expect(page).toHaveTitle('What does it even mean? | Anton Ernstsson')
 })
 
