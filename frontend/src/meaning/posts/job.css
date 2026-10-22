@@ -35,27 +35,34 @@
 .mean-job-kpis {
   flex: 1;
   display: grid;
+  min-height: 0;
   grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+  grid-auto-rows: minmax(0, 1fr);
   gap: 6px;
+  overflow: hidden;
   container-type: inline-size;
 }
 .mean-job-kpis div {
-  border-left: 4px solid;
+  border-left: 3px solid;
   background: var(--wash);
   border-radius: 6px;
-  padding: 6px 8px;
+  padding: 4px 8px;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   justify-content: center;
 }
 .mean-job-kpis b {
-  font-size: clamp(16px, 7cqi, 34px);
+  font-size: clamp(13px, 6.5cqi, 30px);
   font-weight: var(--weight-heading);
   letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
 }
 .mean-job-kpis span {
   font-size: var(--caption);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   color: var(--muted);
 }
 .mean-job-hover:hover {

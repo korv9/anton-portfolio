@@ -1,5 +1,5 @@
 /** Members of the Riksdag and municipal council seats per party. */
-import { Frame, useData, type Post } from '../kit'
+import { Frame, tile, useData, type Post } from '../kit'
 import { linearScale } from '../../charts/scales'
 import { arc, Legend, pc, PARTIES, sum, XTicks } from './pol-kit'
 
@@ -185,11 +185,7 @@ function Ministers() {
         return (
           <div className="mean-pol-grid4">
             {ps.map((p) => (
-              <div
-                key={p}
-                className="mean-pol-cell"
-                style={{ background: pc(p) }}
-              >
+              <div key={p} className="mean-pol-cell" style={tile(pc(p))}>
                 {d.parties[p].ministers.length}
                 <small>{p} ministers</small>
               </div>

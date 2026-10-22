@@ -28,20 +28,29 @@ export type Post = {
   render: () => ReactNode
 }
 
-/** Six series colours from the SWEDEN dark palette; charts cycle through them. */
+/**
+ * Six series colours; charts cycle through them. The first is the focal one. meaning.css maps
+ * them to the SWEDEN dark palette or, on the home page, to its light palette.
+ */
 export const PALETTE = [
-  'var(--sw-accent)',
-  'var(--sw-div-pos)',
-  'var(--sw-div-neg)',
-  'var(--sw-stamp)',
-  'var(--sw-seq-hi)',
-  'var(--series-4)',
+  'var(--mean-s1)',
+  'var(--mean-s2)',
+  'var(--mean-s3)',
+  'var(--mean-s4)',
+  'var(--mean-s5)',
+  'var(--mean-s6)',
 ]
 /** Sequential ramp ends for heatmaps: mix between them with color-mix. */
-export const SEQ = ['var(--sw-seq-lo)', 'var(--sw-seq-hi)'] as const
+export const SEQ = ['var(--mean-seq-lo)', 'var(--mean-seq-hi)'] as const
 export const seq = (t: number) =>
   `color-mix(in oklab, ${SEQ[1]} ${Math.round(Math.max(0, Math.min(1, t)) * 100)}%, ${SEQ[0]})`
 export const color = (i: number) => PALETTE[i % PALETTE.length]
+/** A number tile in a series colour: a pale tint of it, edged with the full colour, so the
+ * ink stays legible on both themes. */
+export const tile = (c: string) => ({
+  background: `color-mix(in srgb, ${c} 18%, var(--paper))`,
+  boxShadow: `inset 3px 0 0 ${c}`,
+})
 
 const cache = new Map<string, Promise<unknown>>()
 
@@ -62,9 +71,13 @@ export function useData<T>(path: string): T | null | Error {
   return state
 }
 
-/** A row of toggle chips. The labels are legend text, so they count as legend. */
 /** Whether the post is opened (full controls) or a living thumbnail. */
 export const PostOpen = createContext(false)
+/** Whether the post is on screen in a visible tab, so its thumbnail may tick. */
+export const PostLive = createContext(false)
+
+/** Thumbnails step their slicer twice a second; the marks glide between steps in CSS. */
+const TICK_MS = 500
 
 const still =
   typeof matchMedia === 'function' &&
@@ -87,19 +100,26 @@ export function Slicer<T extends string | number>({
   label: string
 }) {
   const open = useContext(PostOpen)
+  const live = useContext(PostLive)
   const now = useRef({ options, value, onChange })
   now.current = { options, value, onChange }
   useEffect(() => {
-    if (open || still || options.length < 2) return
-    const id = setInterval(
-      () => {
-        const { options: o, value: v, onChange: set } = now.current
-        set(o[(o.indexOf(v) + 1) % o.length])
-      },
-      2400 + Math.random() * 2400,
-    )
-    return () => clearInterval(id)
-  }, [open, options.length])
+    if (open || !live || still || options.length < 2) return
+    const step = () => {
+      const { options: o, value: v, onChange: set } = now.current
+      set(o[(o.indexOf(v) + 1) % o.length])
+    }
+    // A random phase per card, so the feed does not tick in lockstep.
+    let id = 0
+    const start = setTimeout(() => {
+      step()
+      id = window.setInterval(step, TICK_MS)
+    }, Math.random() * TICK_MS)
+    return () => {
+      clearTimeout(start)
+      clearInterval(id)
+    }
+  }, [open, live, options.length])
   return (
     <div className="mean-slicer" role="radiogroup" aria-label={label}>
       {options.map((o) => (

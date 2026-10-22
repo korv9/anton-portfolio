@@ -724,3 +724,12 @@ a.work-card:hover .work-title {
   outline: 2px solid var(--focus);
   outline-offset: 4px;
 }
+
+/* The chart feed closes Projects across both columns, its heading in the Projects style. */
+.home-feed {
+  grid-column: 1 / -1;
+}
+.home-feed .home-work-title {
+  grid-row: auto;
+  margin-bottom: var(--sp-6);
+}

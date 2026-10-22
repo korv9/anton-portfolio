@@ -17,7 +17,7 @@
   font-variant-numeric: tabular-nums;
 }
 .mean-wel-kpi b {
-  font-size: clamp(2.6rem, 9vw, 5.5rem);
+  font-size: clamp(28px, 21cqi, 5.5rem);
   font-weight: var(--weight-heading);
   letter-spacing: -0.04em;
   line-height: 1;
@@ -52,5 +52,5 @@
   padding: 6px 10px;
 }
 .mean-wel-grid .mean-wel-kpi b {
-  font-size: clamp(1.4rem, 3.4vw, 2.2rem);
+  font-size: clamp(14px, 9cqi, 2.2rem);
 }
