@@ -105,18 +105,24 @@ the next successful run closes it. A raw prune (`prune: true`) stops without del
 than 5 % of a folder's stored files, or a folder without its local fetch log, would go;
 `PRUNE_MAX_DELETE_PCT` raises the limit for an intentional cleanup.
 
-What stays in YAML is the handling of failure, which differs per workflow:
+What stays in YAML is the handling of failure. `refresh-jobs.yml`, `refresh-news.yml` and
+`refresh-welfare.yml` each call `.github/workflows/data-subject.yml` with their subjects and keep
+only their schedule, inputs and lock:
 
-- `refresh-welfare.yml` runs welfare, parliament and taxes as three steps and pushes raw
-  checkpoints after each, so a timeout in one source does not lose what the others fetched.
-  The group is published only if all three succeeded.
+- The called job restores the subjects' raw files, builds and exports all of them in one
+  `pipeline.py run` (a failed subject does not stop the others), stores the raw files whatever
+  the build did, and publishes only if every subject came through. Its build step has a
+  timeout below the job's, so a hung source still leaves time to store what was fetched.
+- `refresh-welfare.yml` builds welfare, parliament and taxes this way and publishes them as one
+  group. taxes needs parliament, so a failed parliament skips taxes for the day.
 - `refresh-jobs.yml` stores the counts and the stream in R2 before it validates and
   publishes, so the next run starts from them even if validation fails.
 - `refresh-news.yml` installs the optional summary SDK when `ANTHROPIC_API_KEY` is set. The
   subject tolerates exit code 2 from the summary step and publishes the headlines alone.
 - `build-warehouse.yml` builds every subject, stores the warehouse only if all of them
   built, then exports and publishes each group whose subjects all came through. The quality
-  subject ends with the structural gate, after the store.
+  subject ends with the structural gate, after the store. Last, `platform/publish/retention.py`
+  deletes superseded releases (docs/r2-delivery-contract.md).
 - `publish-r2.yml` is the bootstrap: it stages every group and activates them together. It
   is not a subject and is run by hand.
 
@@ -155,8 +161,8 @@ A paged year or list is reused only when it has a completion record and every fi
 has the right hash. Starting an update removes the old completion record, so an interrupted
 fetch never counts as complete history. `--full-refresh` ignores every age limit.
 
-`refresh-welfare.yml` allows 240 minutes for the job, and 70, 90 and 60 minutes for welfare,
-parliament and taxes.
+`refresh-welfare.yml` allows 240 minutes for the job and 220 for building welfare,
+parliament and taxes, which leaves the rest for storing and publishing.
 
 ## ML stages
 
@@ -186,7 +192,10 @@ the jobs_analysis ingest step.
 
 ## Secrets and variables
 
-All in the `anton-portfolio` environment, except where noted.
+All in the `anton-portfolio` environment, except where noted. The callers of
+`data-subject.yml` pass `secrets: inherit`: only the called job enters the environment, so the
+caller cannot name its secrets. The called job hands `SCB_API_KEY` and `ANTHROPIC_API_KEY` to
+the build only when the caller asks for them (`scb-key`, `summary`).
 
 | Workflow | Secrets | Variables |
 |---|---|---|

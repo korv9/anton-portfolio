@@ -27,86 +27,20 @@ concurrency:
   queue: max
 
 jobs:
+  # The steps and the failure alert are in data-subject.yml. The R2 credentials are secrets of
+  # the anton-portfolio environment, which only the called job enters, so they cannot be passed
+  # by name from here. The token is limited to what the alert needs.
   refresh:
-    runs-on: ubuntu-latest
-    timeout-minutes: 240
-    # The R2 credentials are secrets of the anton-portfolio environment.
-    if: github.ref == 'refs/heads/main'
-    environment: anton-portfolio
-    env:
-      DBT_SEND_ANONYMOUS_USAGE_STATS: 'false'
-      PORTFOLIO_FULL_REFRESH: ${{ inputs.full_refresh && '1' || '0' }}
-      PORTFOLIO_DB: ${{ github.workspace }}/warehouse/portfolio.duckdb
-      PORTFOLIO_RAW: ${{ github.workspace }}/warehouse/raw
-      R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
-      R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
-      R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY || secrets.R2_SECRET_ACCESS_KEY_ID }}
-      R2_BUCKET: ${{ secrets.R2_BUCKET }}
-      # The bucket's public address once a custom domain is connected; empty keeps r2.dev.
-      R2_PUBLIC_BASE: ${{ vars.R2_PUBLIC_BASE }}
-    steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-        with:
-          persist-credentials: false
-      # Same writer lock as build-warehouse.yml: shared raw manifests and R2 keys.
-      - name: Set up and restore verified raw files
-        id: setup
-        uses: ./.github/actions/data-setup
-        with:
-          pull: welfare parliament taxes
-      - name: Fetch, build, test and export welfare
-        id: welfare
-        continue-on-error: true
-        timeout-minutes: 70
-        run: python platform/pipeline.py run welfare --only ingest,dbt,export
-      - name: Save welfare checkpoints
-        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
-        run: python platform/pipeline.py push welfare
-      - name: Fetch, build, test and export parliament
-        id: parliament
-        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
-        continue-on-error: true
-        timeout-minutes: 90
-        run: python platform/pipeline.py run parliament --only ingest,dbt,export
-      - name: Save parliament checkpoints
-        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
-        run: python platform/pipeline.py push parliament
-      - name: Fetch, build, test and export taxes
-        id: taxes
-        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
-        continue-on-error: true
-        timeout-minutes: 60
-        run: python platform/pipeline.py run taxes --only ingest,dbt,export
-      # Raw checkpoints are useful even if a later source or dbt test fails.
-      - name: Save all available checkpoints
-        if: ${{ always() && steps.setup.outcome == 'success' }}
-        run: python platform/pipeline.py push welfare parliament taxes
-      - name: Require successful subject builds
-        if: ${{ !cancelled() }}
-        env:
-          WELFARE: ${{ steps.welfare.outcome }}
-          PARLIAMENT: ${{ steps.parliament.outcome }}
-          TAXES: ${{ steps.taxes.outcome }}
-        run: |
-          [ "$WELFARE" = success ] && [ "$PARLIAMENT" = success ] && [ "$TAXES" = success ]
-      - name: Data contracts, then publish and verify the group in R2
-        run: python platform/pipeline.py run welfare parliament taxes --only publish
-
-  # A failed or timed-out run opens (or comments on) an issue; a successful one closes it.
-  alert:
-    needs: refresh
-    if: ${{ !cancelled() && needs.refresh.result != 'skipped' }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
+    uses: ./.github/workflows/data-subject.yml
+    secrets: inherit
     permissions:
       contents: read
       actions: read
       issues: write
-    steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-        with:
-          persist-credentials: false
-          sparse-checkout: .github/actions
-      - uses: ./.github/actions/failure-issue
-        with:
-          result: ${{ needs.refresh.result }}
+    with:
+      subjects: welfare parliament taxes
+      store: welfare parliament taxes
+      timeout-minutes: 240
+      # 70, 90 and 60 minutes for the three sources; the store and the publication need the rest.
+      build-timeout-minutes: 220
+      full-refresh: ${{ inputs.full_refresh == true }}

@@ -12,8 +12,10 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / "platform/architecture"))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import registry as architecture  # noqa: E402
+from data_workflows import workflow  # noqa: E402
 
 PIPELINE = yaml.safe_load((ROOT / "platform/pipeline.yml").read_text(encoding="utf-8"))
 SUBJECTS, GROUPS = PIPELINE["subjects"], PIPELINE["groups"]
@@ -26,8 +28,6 @@ REFRESHERS = {"refresh-jobs.yml": (["market"], "jobs"), "refresh-news.yml": (["n
 DATA_WORKFLOWS = [*REFRESHERS, "build-warehouse.yml", "publish-r2.yml"]
 
 
-def workflow(filename):
-    return yaml.safe_load((ROOT / ".github/workflows" / filename).read_text(encoding="utf-8"))
 
 
 def steps(filename):
@@ -143,23 +143,23 @@ def test_public_refresh_keeps_checkpoints_the_gate_and_the_check_order():
     job = workflow(filename)["jobs"]["refresh"]
     assert job["timeout-minutes"] >= 180
     all_steps = job["steps"]
+    topics = ["welfare", "parliament", "taxes"]
     restore = next(i for i, s in enumerate(all_steps) if s.get("id") == "setup")
-    assert all_steps[restore]["with"]["pull"].split() == ["welfare", "parliament", "taxes"]
-    order = []
-    for topic in ("welfare", "parliament", "taxes"):
-        i = next(i for i, s in enumerate(all_steps) if s.get("id") == topic)
-        assert restore < i and all_steps[i]["continue-on-error"] is True
-        assert f"pipeline.py run {topic} " in all_steps[i]["run"]
-        order.append(i)
-    assert order == sorted(order)
-    save = next(s for s in all_steps if "always()" in s.get("if", "") and "pipeline.py push" in s.get("run", ""))
-    assert "steps.setup.outcome == 'success'" in save["if"]
-    assert save["run"].split()[-3:] == ["welfare", "parliament", "taxes"]
-    gate = next(i for i, s in enumerate(all_steps)
-                if all(f"steps.{topic}.outcome" in " ".join(s.get("env", {}).values())
-                       for topic in ("welfare", "parliament", "taxes")))
+    assert all_steps[restore]["with"]["pull"].split() == topics
+    # One build of all three, in order: a failed source does not stop the others (pipeline.py
+    # runs every subject and exits non-zero if any failed), and its timeout leaves time to store.
+    ((build, step, argv),) = [found for found in cli(filename, "run") if "ingest,dbt,export" in found[2]]
+    assert restore < build and argv[:3] == topics
+    assert "if" not in step and not step.get("continue-on-error")
+    assert step["timeout-minutes"] < job["timeout-minutes"]
+    save = next(i for i, s in enumerate(all_steps)
+                if "always()" in s.get("if", "") and "pipeline.py push" in s.get("run", ""))
+    assert "steps.setup.outcome == 'success'" in all_steps[save]["if"]
+    assert all_steps[save]["run"].split()[-3:] == topics
+    # The gate: a failed build fails its step, and the unconditional publication is then skipped.
     publish = next(i for i, s in enumerate(all_steps) if "--only publish" in s.get("run", ""))
-    assert max(order) < gate < publish
+    assert build < save < publish
+    assert all_steps[publish]["run"].split()[-5:-2] == topics
     assert "if" not in all_steps[publish] and not all_steps[publish].get("continue-on-error")
     for topic in ("welfare", "parliament", "taxes"):
         assert SUBJECTS[topic]["prune"] is True

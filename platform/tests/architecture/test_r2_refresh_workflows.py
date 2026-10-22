@@ -13,6 +13,9 @@ import pytest
 import yaml
 
 ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from data_workflows import REUSABLE, workflow  # noqa: E402
+
 REFRESHERS = {"refresh-jobs.yml": "jobs", "refresh-news.yml": "news",
               "refresh-welfare.yml": "public-data", "refresh-diva.yml": "diva",
               "refresh-job-analysis.yml": "jobs-analysis"}
@@ -21,8 +24,6 @@ CREDENTIALS = ("R2_ACCOUNT_ID", "R2_ACCESS_KEY_ID", "R2_SECRET_ACCESS_KEY", "R2_
 SHA = "a" * 40
 
 
-def workflow(filename):
-    return yaml.safe_load((ROOT / ".github/workflows" / filename).read_text(encoding="utf-8"))
 
 
 def steps(filename):
@@ -118,6 +119,22 @@ def test_refresh_permissions_and_git_are_read_only(filename):
         for step in job["steps"]:
             script = step.get("run", "")
             assert not re.search(r"\bgit\s+(?:-\S+\s+)*(commit|push)\b", script), filename
+
+
+@pytest.mark.parametrize("filename", ["refresh-jobs.yml", "refresh-news.yml", "refresh-welfare.yml"])
+def test_callers_hold_the_lock_and_bound_the_called_jobs(filename):
+    config = yaml.safe_load((ROOT / ".github/workflows" / filename).read_text(encoding="utf-8"))
+    (job,) = config["jobs"].values()
+    assert job["uses"] == REUSABLE and job["secrets"] == "inherit"
+    # The caller's token bounds every called job: only the alert's issue write is added.
+    assert job["permissions"] == {"contents": "read", "actions": "read", "issues": "write"}
+    assert config["permissions"] == {"contents": "read"}
+    assert config[True]["schedule"]
+    reusable = yaml.safe_load((ROOT / REUSABLE).read_text(encoding="utf-8"))
+    # A called workflow runs inside its caller's run; the same group here would wait on itself.
+    assert "concurrency" not in reusable and list(reusable[True]) == ["workflow_call"]
+    assert reusable["permissions"] == {"contents": "read"}
+    assert "permissions" not in reusable["jobs"]["refresh"]
 
 
 @pytest.mark.parametrize("filename", WORKFLOWS)

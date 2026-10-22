@@ -27,53 +27,18 @@ concurrency:
   queue: max
 
 jobs:
+  # The steps and the failure alert are in data-subject.yml. The R2 credentials are secrets of
+  # the anton-portfolio environment, which only the called job enters, so they cannot be passed
+  # by name from here. The token is limited to what the alert needs.
   refresh:
-    runs-on: ubuntu-latest
-    timeout-minutes: 180
-    # The R2 credentials are secrets of the anton-portfolio environment.
-    if: github.ref == 'refs/heads/main'
-    environment: anton-portfolio
-    env:
-      DBT_SEND_ANONYMOUS_USAGE_STATS: 'false'
-      PORTFOLIO_RAW: ${{ github.workspace }}/warehouse/raw
-      R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
-      R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
-      R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY || secrets.R2_SECRET_ACCESS_KEY_ID }}
-      R2_BUCKET: ${{ secrets.R2_BUCKET }}
-      R2_PUBLIC_BASE: ${{ vars.R2_PUBLIC_BASE }}
-      SCB_API_KEY: ${{ secrets.SCB_API_KEY }}
-    steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-        with:
-          persist-credentials: false
-      - name: Set up and start from the stored counts and stream
-        id: setup
-        uses: ./.github/actions/data-setup
-        with:
-          pull: market
-      - name: Count new archives and the day's stream, build and export
-        run: python platform/pipeline.py run market --only ingest,dbt,export
-      - name: Store the counts and stream in R2
-        if: ${{ always() && steps.setup.outcome == 'success' }}
-        run: python platform/pipeline.py push market
-      - name: Validate complete daily coverage and publish
-        run: python platform/pipeline.py run market --only publish
-
-  # A failed or timed-out run opens (or comments on) an issue; a successful one closes it.
-  alert:
-    needs: refresh
-    if: ${{ !cancelled() && needs.refresh.result != 'skipped' }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
+    uses: ./.github/workflows/data-subject.yml
+    secrets: inherit
     permissions:
       contents: read
       actions: read
       issues: write
-    steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-        with:
-          persist-credentials: false
-          sparse-checkout: .github/actions
-      - uses: ./.github/actions/failure-issue
-        with:
-          result: ${{ needs.refresh.result }}
+    with:
+      subjects: market
+      store: market
+      timeout-minutes: 180
+      scb-key: true
