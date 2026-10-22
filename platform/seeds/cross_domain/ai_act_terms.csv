@@ -1,61 +1,61 @@
-term_id,term_sv,act_count,act_articles,sfs_count,z,term_en,en_cosine,decision,reason,en_decision,note
-ai_system,ai-system,471,82,50,23.58,systems,0.878,drop,general_language,,"The Act's central defined term (Article 3(1)), but used widely about any AI product."
-hog_risk,hög risk,313,61,12,19.67,high-risk,0.999,drop,general_language,,"Common in health and finance ('hög risk för'), not only about AI."
-ai_system_med_hog,ai-system med hög,204,56,0,16.09,high-risk,0.938,drop,fragment,,
-ai_system_med_hog_risk,ai-system med hög risk,204,56,0,16.08,high-risk,0.938,keep,,misaligned,"High-risk AI system, the Act's main category (Article 6). high-risk alone is the pair of hög risk, not of the whole term."
-ai_systemet,ai-systemet,197,53,0,15.81,ai system,0.833,drop,nested_duplicate,,Definite form of ai-system; the term rule's inflection already matches it.
-hog,hög,324,64,404,14.32,high-risk,0.996,drop,general_language,,
-ai_byran,ai-byrån,120,28,0,12.34,ai office,0.996,keep,,keep,The AI Office (Article 64).
-allmanna_andamal,allmänna ändamål,113,29,9,11.65,general-purpose,0.999,drop,general_language,,General purpose; used for many things in Swedish law and speech.
-ai_systemet_med_hog,ai-systemet med hög,97,32,0,11.09,high-risk ai system,0.921,drop,fragment,,
-ai_systemet_med_hog_risk,ai-systemet med hög risk,97,32,0,11.09,high-risk ai system,0.921,drop,nested_duplicate,,Definite form of the kept ai-system med hög risk.
-ai,ai,74,17,2,9.6,ai regulatory,0.971,drop,general_language,,Already counted by the riksdag_ai and jobs_ai_any series.
-risk,risk,345,62,1487,9.6,high-risk,0.987,drop,general_language,,
-verkliga_forhallanden,verkliga förhållanden,75,11,4,9.58,testing,0.969,drop,fragment,,Part of testning under verkliga förhållanden.
-nationella_behoriga,nationella behöriga,72,24,0,9.56,national competent,0.998,drop,fragment,,
-ai_modeller,ai-modeller,50,23,0,7.96,ai models,0.989,drop,general_language,,
-anmalda,anmälda,116,30,194,7.87,notified,0.98,drop,fragment,,
-inbegripet,inbegripet,147,60,359,7.82,including,0.957,drop,general_language,,
-harmoniseringslagstiftning,harmoniseringslagstiftning,48,19,0,7.8,legislation listed,0.989,drop,eu_boilerplate,,
-unionens_harmoniseringslagstiftning,unionens harmoniseringslagstiftning,47,18,0,7.72,legislation listed,0.987,drop,eu_boilerplate,,
-regulatoriska,regulatoriska,46,8,0,7.64,ai regulatory,0.998,drop,fragment,,Part of regulatoriska sandlådor för AI.
-grundlaggande_rattigheter,grundläggande rättigheter,51,30,9,7.58,fundamental,1.0,drop,general_language,,Fundamental rights; used across law and politics.
-harmoniseringslagstiftning_som_fortecknas,harmoniseringslagstiftning som förtecknas,45,18,0,7.55,legislation listed,0.994,drop,eu_boilerplate,,
-unionens_harmoniseringslagstiftning_som_fortecknas,unionens harmoniseringslagstiftning som förtecknas,44,17,0,7.47,legislation listed,0.992,drop,eu_boilerplate,,
-testningen,testningen,42,10,0,7.3,real,0.986,drop,fragment,,
-ai_modeller_for_allmanna,ai-modeller för allmänna,41,21,0,7.21,general-purpose ai models,0.982,drop,fragment,,
-ai_modeller_for_allmanna_andamal,ai-modeller för allmänna ändamål,41,21,0,7.21,general-purpose ai models,0.982,keep,,keep,General-purpose AI models (Chapter V).
-avsnitt_a_i_bilaga,avsnitt a i bilaga,41,13,0,7.21,section a of annex i,1.0,drop,eu_boilerplate,,
-avsnitt_a,avsnitt a,45,17,7,7.17,section a of annex,0.995,drop,eu_boilerplate,,
-tillhandahallare,tillhandahållare,70,23,66,7.13,deployers,0.976,drop,general_language,,"The Act's word for deployer, but also any provider of a service in Swedish law."
-testning,testning,64,20,51,7.07,testing,0.938,drop,general_language,,
-fortecknas_i_avsnitt,förtecknas i avsnitt,39,15,0,7.03,listed in section,0.998,drop,eu_boilerplate,,
-testning_under_verkliga,testning under verkliga,38,11,0,6.94,testing,0.948,drop,fragment,,
-testning_under_verkliga_forhallanden,testning under verkliga förhållanden,38,11,0,6.94,testing,0.948,keep,,misaligned,Testing in real-world conditions (Article 60). testing alone is the pair of testning.
-anmalda_organ,anmälda organ,51,23,25,6.87,notified bodies,0.958,drop,eu_boilerplate,,"Notified bodies, common to all EU product law."
-fortecknas,förtecknas,71,29,81,6.86,listed,0.977,drop,eu_boilerplate,,
-anmalda_organet,anmälda organet,44,13,12,6.82,notified body,0.945,drop,eu_boilerplate,,
-avses_i_punkt,avses i punkt,88,43,150,6.82,paragraph,0.821,drop,eu_boilerplate,,
-ai_modellen,ai-modellen,36,16,0,6.76,general-purpose ai model,0.833,drop,general_language,,
-leverantoren,leverantören,188,48,912,6.74,provider,0.976,drop,general_language,,
-ai_modellen_for_allmanna,ai-modellen för allmänna,34,14,0,6.57,general-purpose ai model,0.803,drop,fragment,,
-ai_modellen_for_allmanna_andamal,ai-modellen för allmänna ändamål,34,14,0,6.57,general-purpose ai model,0.803,drop,nested_duplicate,,Definite form of the kept ai-modeller för allmänna ändamål.
-anmalande,anmälande,49,13,28,6.57,notifying,0.997,drop,eu_boilerplate,,
-sandladan,sandlådan,34,6,0,6.57,sandbox,0.971,drop,general_language,,Sandbox; also an everyday word.
-unionsratt,unionsrätt,36,20,5,6.45,law,0.743,drop,eu_boilerplate,,
-testningen_under_verkliga,testningen under verkliga,32,5,0,6.37,world,0.99,drop,fragment,,
-testningen_under_verkliga_forhallanden,testningen under verkliga förhållanden,32,5,0,6.37,world,0.99,drop,nested_duplicate,,Definite form of the kept testning under verkliga förhållanden.
-kapitel_iii_avsnitt,kapitel iii avsnitt,34,21,5,6.25,iii section,1.0,drop,eu_boilerplate,,
-tillampliga_fall,tillämpliga fall,60,28,71,6.25,applicable,0.874,drop,general_language,,
-iii_avsnitt,iii avsnitt,34,21,7,6.13,iii section,1.0,drop,eu_boilerplate,,
-sandlador,sandlådor,29,7,0,6.07,sandboxes,0.999,drop,general_language,,Sandboxes; also an everyday word.
-fortecknas_i_avsnitt_a,förtecknas i avsnitt a,29,12,0,6.06,harmonisation legislation,0.882,drop,eu_boilerplate,,
-nationella_behoriga_myndigheter,nationella behöriga myndigheter,29,16,0,6.06,national competent authorities,0.854,drop,eu_boilerplate,,"National competent authorities, common to EU regulations."
-kapitel_iii,kapitel iii,38,24,16,6.05,chapter iii,1.0,drop,eu_boilerplate,,
-ai_modell,ai-modell,28,8,0,5.96,ai model,0.866,drop,general_language,,
-kraven_i_kapitel_iii,kraven i kapitel iii,28,16,0,5.96,requirements set out in chapter,0.972,drop,eu_boilerplate,,
-utdata,utdata,27,17,0,5.85,output,0.82,drop,general_language,,Output; ordinary IT vocabulary.
-medlemsstaterna,medlemsstaterna,69,32,131,5.84,member states,0.923,drop,eu_boilerplate,,
-ai_system_som_omfattas,ai-system som omfattas,27,9,1,5.78,code,0.749,drop,fragment,,
-kommissionen,kommissionen,206,63,1562,5.76,commission,0.993,drop,eu_boilerplate,,
-kraven_i_kapitel,kraven i kapitel,28,16,3,5.75,requirements set out in chapter,0.972,drop,eu_boilerplate,,
+term_id,term_sv,act_count,act_articles,sfs_count,z,term_en,en_cosine,decision,reason,en_decision,note,amended_decision,amended_reason,amended_en_decision
+ai_system,ai-system,471,82,50,23.58,systems,0.878,drop,general_language,,"The Act's central defined term (Article 3(1)), but used widely about any AI product.",keep,,misaligned
+hog_risk,hög risk,313,61,12,19.67,high-risk,0.999,drop,general_language,,"Common in health and finance ('hög risk för'), not only about AI.",drop,general_language,
+ai_system_med_hog,ai-system med hög,204,56,0,16.09,high-risk,0.938,drop,fragment,,,drop,fragment,
+ai_system_med_hog_risk,ai-system med hög risk,204,56,0,16.08,high-risk,0.938,keep,,misaligned,"High-risk AI system, the Act's main category (Article 6). high-risk alone is the pair of hög risk, not of the whole term.",keep,,misaligned
+ai_systemet,ai-systemet,197,53,0,15.81,ai system,0.833,drop,nested_duplicate,,Definite form of ai-system; the term rule's inflection already matches it.,drop,nested_duplicate,
+hog,hög,324,64,404,14.32,high-risk,0.996,drop,general_language,,,drop,general_language,
+ai_byran,ai-byrån,120,28,0,12.34,ai office,0.996,keep,,keep,The AI Office (Article 64).,keep,,keep
+allmanna_andamal,allmänna ändamål,113,29,9,11.65,general-purpose,0.999,drop,general_language,,General purpose; used for many things in Swedish law and speech.,drop,general_language,
+ai_systemet_med_hog,ai-systemet med hög,97,32,0,11.09,high-risk ai system,0.921,drop,fragment,,,drop,fragment,
+ai_systemet_med_hog_risk,ai-systemet med hög risk,97,32,0,11.09,high-risk ai system,0.921,drop,nested_duplicate,,Definite form of the kept ai-system med hög risk.,drop,nested_duplicate,
+ai,ai,74,17,2,9.6,ai regulatory,0.971,drop,general_language,,Already counted by the riksdag_ai and jobs_ai_any series.,drop,general_language,
+risk,risk,345,62,1487,9.6,high-risk,0.987,drop,general_language,,,drop,general_language,
+verkliga_forhallanden,verkliga förhållanden,75,11,4,9.58,testing,0.969,drop,fragment,,Part of testning under verkliga förhållanden.,drop,fragment,
+nationella_behoriga,nationella behöriga,72,24,0,9.56,national competent,0.998,drop,fragment,,,drop,fragment,
+ai_modeller,ai-modeller,50,23,0,7.96,ai models,0.989,drop,general_language,,,drop,nested_duplicate,
+anmalda,anmälda,116,30,194,7.87,notified,0.98,drop,fragment,,,drop,fragment,
+inbegripet,inbegripet,147,60,359,7.82,including,0.957,drop,general_language,,,drop,general_language,
+harmoniseringslagstiftning,harmoniseringslagstiftning,48,19,0,7.8,legislation listed,0.989,drop,eu_boilerplate,,,drop,eu_boilerplate,
+unionens_harmoniseringslagstiftning,unionens harmoniseringslagstiftning,47,18,0,7.72,legislation listed,0.987,drop,eu_boilerplate,,,drop,eu_boilerplate,
+regulatoriska,regulatoriska,46,8,0,7.64,ai regulatory,0.998,drop,fragment,,Part of regulatoriska sandlådor för AI.,drop,fragment,
+grundlaggande_rattigheter,grundläggande rättigheter,51,30,9,7.58,fundamental,1.0,drop,general_language,,Fundamental rights; used across law and politics.,drop,general_language,
+harmoniseringslagstiftning_som_fortecknas,harmoniseringslagstiftning som förtecknas,45,18,0,7.55,legislation listed,0.994,drop,eu_boilerplate,,,drop,eu_boilerplate,
+unionens_harmoniseringslagstiftning_som_fortecknas,unionens harmoniseringslagstiftning som förtecknas,44,17,0,7.47,legislation listed,0.992,drop,eu_boilerplate,,,drop,eu_boilerplate,
+testningen,testningen,42,10,0,7.3,real,0.986,drop,fragment,,,drop,fragment,
+ai_modeller_for_allmanna,ai-modeller för allmänna,41,21,0,7.21,general-purpose ai models,0.982,drop,fragment,,,drop,fragment,
+ai_modeller_for_allmanna_andamal,ai-modeller för allmänna ändamål,41,21,0,7.21,general-purpose ai models,0.982,keep,,keep,General-purpose AI models (Chapter V).,keep,,keep
+avsnitt_a_i_bilaga,avsnitt a i bilaga,41,13,0,7.21,section a of annex i,1.0,drop,eu_boilerplate,,,drop,eu_boilerplate,
+avsnitt_a,avsnitt a,45,17,7,7.17,section a of annex,0.995,drop,eu_boilerplate,,,drop,eu_boilerplate,
+tillhandahallare,tillhandahållare,70,23,66,7.13,deployers,0.976,drop,general_language,,"The Act's word for deployer, but also any provider of a service in Swedish law.",drop,general_language,
+testning,testning,64,20,51,7.07,testing,0.938,drop,general_language,,,drop,general_language,
+fortecknas_i_avsnitt,förtecknas i avsnitt,39,15,0,7.03,listed in section,0.998,drop,eu_boilerplate,,,drop,eu_boilerplate,
+testning_under_verkliga,testning under verkliga,38,11,0,6.94,testing,0.948,drop,fragment,,,drop,fragment,
+testning_under_verkliga_forhallanden,testning under verkliga förhållanden,38,11,0,6.94,testing,0.948,keep,,misaligned,Testing in real-world conditions (Article 60). testing alone is the pair of testning.,keep,,misaligned
+anmalda_organ,anmälda organ,51,23,25,6.87,notified bodies,0.958,drop,eu_boilerplate,,"Notified bodies, common to all EU product law.",drop,eu_boilerplate,
+fortecknas,förtecknas,71,29,81,6.86,listed,0.977,drop,eu_boilerplate,,,drop,eu_boilerplate,
+anmalda_organet,anmälda organet,44,13,12,6.82,notified body,0.945,drop,eu_boilerplate,,,drop,eu_boilerplate,
+avses_i_punkt,avses i punkt,88,43,150,6.82,paragraph,0.821,drop,eu_boilerplate,,,drop,eu_boilerplate,
+ai_modellen,ai-modellen,36,16,0,6.76,general-purpose ai model,0.833,drop,general_language,,,drop,nested_duplicate,
+leverantoren,leverantören,188,48,912,6.74,provider,0.976,drop,general_language,,,drop,general_language,
+ai_modellen_for_allmanna,ai-modellen för allmänna,34,14,0,6.57,general-purpose ai model,0.803,drop,fragment,,,drop,fragment,
+ai_modellen_for_allmanna_andamal,ai-modellen för allmänna ändamål,34,14,0,6.57,general-purpose ai model,0.803,drop,nested_duplicate,,Definite form of the kept ai-modeller för allmänna ändamål.,drop,nested_duplicate,
+anmalande,anmälande,49,13,28,6.57,notifying,0.997,drop,eu_boilerplate,,,drop,eu_boilerplate,
+sandladan,sandlådan,34,6,0,6.57,sandbox,0.971,drop,general_language,,Sandbox; also an everyday word.,drop,precision,
+unionsratt,unionsrätt,36,20,5,6.45,law,0.743,drop,eu_boilerplate,,,drop,eu_boilerplate,
+testningen_under_verkliga,testningen under verkliga,32,5,0,6.37,world,0.99,drop,fragment,,,drop,fragment,
+testningen_under_verkliga_forhallanden,testningen under verkliga förhållanden,32,5,0,6.37,world,0.99,drop,nested_duplicate,,Definite form of the kept testning under verkliga förhållanden.,drop,nested_duplicate,
+kapitel_iii_avsnitt,kapitel iii avsnitt,34,21,5,6.25,iii section,1.0,drop,eu_boilerplate,,,drop,eu_boilerplate,
+tillampliga_fall,tillämpliga fall,60,28,71,6.25,applicable,0.874,drop,general_language,,,drop,general_language,
+iii_avsnitt,iii avsnitt,34,21,7,6.13,iii section,1.0,drop,eu_boilerplate,,,drop,eu_boilerplate,
+sandlador,sandlådor,29,7,0,6.07,sandboxes,0.999,drop,general_language,,Sandboxes; also an everyday word.,drop,precision,
+fortecknas_i_avsnitt_a,förtecknas i avsnitt a,29,12,0,6.06,harmonisation legislation,0.882,drop,eu_boilerplate,,,drop,eu_boilerplate,
+nationella_behoriga_myndigheter,nationella behöriga myndigheter,29,16,0,6.06,national competent authorities,0.854,drop,eu_boilerplate,,"National competent authorities, common to EU regulations.",drop,eu_boilerplate,
+kapitel_iii,kapitel iii,38,24,16,6.05,chapter iii,1.0,drop,eu_boilerplate,,,drop,eu_boilerplate,
+ai_modell,ai-modell,28,8,0,5.96,ai model,0.866,drop,general_language,,,keep,,precision
+kraven_i_kapitel_iii,kraven i kapitel iii,28,16,0,5.96,requirements set out in chapter,0.972,drop,eu_boilerplate,,,drop,eu_boilerplate,
+utdata,utdata,27,17,0,5.85,output,0.82,drop,general_language,,Output; ordinary IT vocabulary.,drop,general_language,
+medlemsstaterna,medlemsstaterna,69,32,131,5.84,member states,0.923,drop,eu_boilerplate,,,drop,eu_boilerplate,
+ai_system_som_omfattas,ai-system som omfattas,27,9,1,5.78,code,0.749,drop,fragment,,,drop,fragment,
+kommissionen,kommissionen,206,63,1562,5.76,commission,0.993,drop,eu_boilerplate,,,drop,eu_boilerplate,
+kraven_i_kapitel,kraven i kapitel,28,16,3,5.75,requirements set out in chapter,0.972,drop,eu_boilerplate,,,drop,eu_boilerplate,

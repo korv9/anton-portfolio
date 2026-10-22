@@ -112,3 +112,49 @@ Act was negotiated and published at the same time, so many terms rise from 2023 
 milestone. Milestones close together (July and August 2024, July and August 2026) share most
 of their windows. A term in an ad shows that the words were written, not that the job requires
 compliance work.
+
+## Amendment, 2026-10-22 (after review, after the first Riksdag counts)
+
+Added after the primary analysis had run and its result was known. Nothing above this heading
+has changed. The primary list and matching stay as written and are reported in full; the
+amended list is reported beside them, never in their place.
+
+Why: review dropped `ai-system`, `ai-modeller`, `ai-modell` and the sandbox terms as
+`general_language`. That reason covers common phrases with uses outside AI ("hög risk",
+"testning"). An AI-specific compound is not one, so these terms did not fit their own reason.
+With them gone, the four kept terms matched one speech in ten years, and the lags rested on that
+single match.
+
+What changes, for the amended list only:
+
+- Re-review: the 56 dropped terms of the top 60 are read again against the reason definitions.
+  The re-review admits only Act-derived candidates and adds no hand-picked words such as
+  "AI-förordningen" or "högrisk". Result: `ai-system` and `ai-modell` come back. `ai-modeller` and
+  `ai-modellen` are forms of `ai-modell` and are kept as `nested_duplicate`. `sandlådor`,
+  `sandlådan` and every other drop keep their reason. The `amended_*` columns of
+  `ai_act_terms.csv` record the result.
+- Matching: every token, not only the last, may take up to four more letters, so
+  "ai-systemet med högre risk" matches "ai-system med hög risk".
+- Precision: for each re-admitted term and language, up to 50 random matched speeches (seed
+  20261022) are read by hand. A match counts as on topic if it means the AI concept the
+  Act names. An AI sandbox counts; a regulatory sandbox for energy, or a child's sandbox, does not.
+  A term stays only at a precision of 0.8 or more. A term that fails gets the reason
+  `precision`. Only the counts go to `ai_act_term_precision.csv`, never the speech text.
+- Reporting: each lag shows `window_matches`, the matches in its three-month adoption window. A
+  lag with 5 or fewer is labelled uninformative, whatever its p, and the diagnostics count those
+  lags per list. The adoption rule and the placebo null are unchanged.
+
+Precision in the Riksdag speeches (October 2016 to July 2026; ads follow with the ad scan):
+
+| term | language | matched | read | on topic | precision | decision |
+| --- | --- | ---: | ---: | ---: | ---: | --- |
+| ai-system | sv | 19 | 19 | 19 | 1.00 | keep |
+| ai-modell | sv | 12 | 12 | 12 | 1.00 | keep |
+| ai model | en | 11 | 11 | 0 | 0.00 | drop: each match is the Swedish "AI-modeller" |
+| sandlådor | sv | 10 | 10 | 3 | 0.30 | drop |
+| sandlådan | sv | 25 | 25 | 0 | 0.00 | drop |
+| sandbox | en | 1 | 1 | 0 | 0.00 | drop |
+| sandboxes | en | 0 | 0 | 0 | – | drop |
+
+The English side of `ai-system` was aligned to "systems", which is wrong, so it stays
+`misaligned`.

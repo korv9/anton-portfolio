@@ -5,7 +5,8 @@
     python -m ml.ai_act.diffusion ads --archives 2025 --sample 20000   # a quick local check
 
 The terms are the kept rows of platform/seeds/cross_domain/ai_act_terms.csv, Swedish and English,
-matched as docs/ai-act-diffusion-preregistration.md fixes. A document is one speech (its full
+matched as docs/ai-act-diffusion-preregistration.md fixes, and the amended list of its 2026-10-22
+amendment, counted beside it with every token inflected. A document is one speech (its full
 text) or one ad (headline and description, duplicate ad ids counted once). Nothing but counts is
 kept. Under $PORTFOLIO_FEATURES/ai_act/diffusion/, per source (speeches, or ads_<archive>):
 
@@ -14,7 +15,9 @@ kept. Under $PORTFOLIO_FEATURES/ai_act/diffusion/, per source (speeches, or ads_
     <source>.json             first and last document date, documents, the source's SHA-256 and
                               the term list's SHA-256; an unchanged source is not counted again
 
-Dates after the day of the scan (a few ads say 2051) are left out.
+Dates after the day of the scan (a few ads say 2051) are left out. Each ad archive is written as
+soon as it is counted, so a run stopped by the Actions timeout still pushes the archives it
+finished, and the next run skips them as unchanged.
 """
 from __future__ import annotations
 
@@ -39,21 +42,25 @@ SPEECHES = ROOT / "warehouse/raw/riksdagen/speeches"
 OUT = Path(os.environ.get("PORTFOLIO_FEATURES", ROOT / "warehouse/features")) / "ai_act/diffusion"
 
 
-def pattern(term: str) -> str:
-    """Tokens in order, white space or a hyphen between them, up to four letters of inflection."""
-    body = r"[\s-]+".join(re.escape(t) for t in term.split())
-    return rf"(?<![\w-]){body}[a-zåäö]{{0,4}}(?!\w)"
+def pattern(term: str, every_token: bool = False) -> str:
+    """Tokens in order, white space or a hyphen between them, up to four letters of inflection on
+    the last token (the pre-registration) or on every token (the amendment)."""
+    tail = r"[a-zåäö]{0,4}"
+    body = r"[\s-]+".join(re.escape(t) + (tail if every_token else "") for t in term.split())
+    return rf"(?<![\w-]){body}{'' if every_token else tail}(?!\w)"
 
 
 def load_terms(path: Path = SEED) -> tuple[list[tuple[str, re.Pattern]], str]:
+    """The primary list (keys term:lang) and the amended list (keys term:lang:amended)."""
     raw = path.read_bytes().replace(b"\r\n", b"\n")
     terms = []
     for r in csv.DictReader(raw.decode("utf-8").splitlines()):
-        if r["decision"] != "keep":
-            continue
-        terms.append((f"{r['term_id']}:sv", re.compile(pattern(r["term_sv"]), re.I)))
-        if r["term_en"] and r["en_decision"] == "keep":
-            terms.append((f"{r['term_id']}:en", re.compile(pattern(r["term_en"]), re.I)))
+        for prefix, suffix, amended in (("", "", False), ("amended_", ":amended", True)):
+            if r[f"{prefix}decision"] != "keep":
+                continue
+            terms.append((f"{r['term_id']}:sv{suffix}", re.compile(pattern(r["term_sv"], amended), re.I)))
+            if r["term_en"] and r[f"{prefix}en_decision"] == "keep":
+                terms.append((f"{r['term_id']}:en{suffix}", re.compile(pattern(r["term_en"], amended), re.I)))
     return terms, hashlib.sha256(raw).hexdigest()
 
 

@@ -11,16 +11,20 @@ models:
       - name: documents
         data_tests: [not_null]
   - name: stg_ai_act_diffusion_terms
-    description: Documents matching each AI Act term per corpus, language and month.
+    description: Documents matching each AI Act term per corpus, term list, language and month.
     data_tests:
       - unique_combination:
           arguments:
-            columns: [corpus, term_id, language, month]
+            columns: [corpus, term_list, term_id, language, month]
     columns:
       - name: language
         data_tests:
           - accepted_values:
               arguments: {values: [sv, en]}
+      - name: term_list
+        data_tests:
+          - accepted_values:
+              arguments: {values: [primary, amended]}
   - name: stg_ai_act_diffusion_sources
     description: Each counted source with the dates it covers and the term list's SHA-256.
     data_tests:

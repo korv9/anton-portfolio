@@ -47,13 +47,13 @@ models:
         data_type: VARCHAR
         description: 'Attribute: content kind of the row, always ''derived''.'
   - name: mart_ai_act_term_diffusion
-    description: Corpus × term × language × month of the AI Act's own terms in Riksdag speeches and job ads, whole months only (derived; never pooled across corpora).
+    description: Corpus × term list × term × language × month of the AI Act's own terms in Riksdag speeches and job ads, whole months only (derived; never pooled across corpora).
     config:
       contract: {enforced: true}
     data_tests:
       - unique_combination:
           arguments:
-            columns: [corpus, term_id, language, month]
+            columns: [corpus, term_list, term_id, language, month]
     columns:
       - name: corpus
         data_type: VARCHAR
@@ -62,9 +62,16 @@ models:
           - not_null
           - accepted_values:
               arguments: {values: [riksdag, job_ads]}
+      - name: term_list
+        data_type: VARCHAR
+        description: 'Key: primary (the pre-registered terms and matching) or amended (the 2026-10-22 amendment: re-reviewed terms, every token inflected).'
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments: {values: [primary, amended]}
       - name: term_id
         data_type: VARCHAR
-        description: 'Key: the term (seeds/cross_domain/ai_act_terms.csv, decision keep).'
+        description: 'Key: the term (seeds/cross_domain/ai_act_terms.csv, decision or amended_decision keep).'
         data_tests:
           - not_null
           - relationships:

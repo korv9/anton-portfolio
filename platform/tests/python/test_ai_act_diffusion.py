@@ -37,6 +37,15 @@ def test_pattern_takes_inflection_space_or_hyphen_but_not_a_longer_word():
     assert p.search("Alla AI-system med hög risken") and p.search("ai-system med hög-risk")
     assert not p.search("ai-system med hög riskbedömning")
     assert not p.search("xai-system med hög risk")
+    assert not p.search("ai-systemet med hög risk")  # pre-registered: only the last token inflects
+    amended = re.compile(df.pattern("ai-system med hög risk", every_token=True), re.I)
+    assert amended.search("ai-systemet med högre risken") and not amended.search("ai-system med hög riskbedömning")
+
+
+def test_the_amended_list_is_counted_beside_the_primary_list():
+    keys = [k for k, _ in df.load_terms()[0]]
+    assert "ai_byran:sv" in keys and "ai_byran:sv:amended" in keys
+    assert "ai_system:sv:amended" in keys and "ai_system:sv" not in keys
 
 
 def test_counts_skip_future_dates_and_count_each_document_once_per_term():
@@ -79,18 +88,25 @@ def gold_fixture() -> duckdb.DuckDBPyConnection:
         con.execute(f"create schema {schema}")
     terms = pd.DataFrame([
         {"term_id": "ai_byran", "term_sv": "ai-byrån", "term_en": "ai office", "act_count": 120, "sfs_count": 0,
-         "z": 12.3, "decision": "keep", "reason": None, "en_decision": "keep"},
+         "z": 12.3, "decision": "keep", "reason": None, "en_decision": "keep",
+         "amended_decision": "keep", "amended_reason": None, "amended_en_decision": "keep"},
         {"term_id": "hog", "term_sv": "hög", "term_en": "high", "act_count": 300, "sfs_count": 400,
-         "z": 14.0, "decision": "drop", "reason": "general_language", "en_decision": None}])
+         "z": 14.0, "decision": "drop", "reason": "general_language", "en_decision": None,
+         "amended_decision": "drop", "amended_reason": "general_language", "amended_en_decision": None}])
     con.register("terms_df", terms)
     con.execute("create table seeds.ai_act_terms as select * from terms_df")
+    con.execute("""create table seeds.ai_act_term_precision as select * from (values
+        ('ai_byran', 'sv', 'ai-byrån', 'riksdag', 10, 10, 9, 0.9))
+        t(term_id, language, term, corpus, matched, sampled, on_topic, precision)""")
     con.execute("""create table gold.mart_ai_act_timeline as
         select * from (values ('m1', date '2023-01-12', 'One', 'Ett'), ('m2', date '2031-01-01', 'Late', 'Sent'))
         t(milestone_id, date, title_en, title_sv)""")
     months = pd.date_range("2016-01-01", periods=120, freq="MS")
-    rows = [{"corpus": "riksdag", "term_id": "ai_byran", "language": lang, "term": "x", "month": m.date(),
-             "matches": int(v * 1000), "documents": 1000, "share_rolling_3m": v}
-            for lang in ("sv", "en") for m, v in zip(months, STEP)]
+    # The amended list holds a single match: its lag rests on one document.
+    rows = [{"corpus": "riksdag", "term_list": tl, "term_id": "ai_byran", "language": lang, "term": "x",
+             "month": m.date(), "matches": int(v * 1000) if tl == "primary" else int(i == 84),
+             "documents": 1000, "share_rolling_3m": v if tl == "primary" else (0.001 if 84 <= i < 87 else 0.0)}
+            for tl in ("primary", "amended") for lang in ("sv", "en") for i, (m, v) in enumerate(zip(months, STEP))]
     con.register("mart_df", pd.DataFrame(rows))
     con.execute("create table gold.mart_ai_act_term_diffusion as select * from mart_df")
     return con
@@ -98,10 +114,23 @@ def gold_fixture() -> duckdb.DuckDBPyConnection:
 
 def test_export_gives_every_uncensored_lag_a_placebo_p_from_200_dates():
     payload = ex.build(gold_fixture())
-    lags = payload["lags"]
+    lags = [x for x in payload["lags"] if x["term_list"] == "primary"]
     assert {x["milestone_id"] for x in lags} == {"m1"}  # the milestone after the data is not tested
     assert all(x["lag_months"] == 0 and x["placebo_p"] is not None and x["placebo_p"] < 0.1 for x in lags)
-    assert payload["diagnostics"]["placebo_rounds"] == 200 and payload["diagnostics"]["with_p"] == 2
+    assert all(x["window_matches"] == 10 and x["reading"] is None for x in lags)
+    assert payload["diagnostics"]["placebo_rounds"] == 200 and payload["diagnostics"]["primary"]["with_p"] == 2
     assert payload["dropped"] == [{"term_sv": "hög", "reason": "general_language"}]
     assert payload["corpora"][0]["swedish_share"][0]["rows"][0] == ["2023-01", 10, 10]  # months with a match only
     assert {"method", "diagnostics", "generated_at"} <= payload.keys()
+
+
+def test_a_lag_on_one_match_is_labelled_uninformative_and_kept_beside_the_primary_one():
+    payload = ex.build(gold_fixture())
+    amended = [x for x in payload["lags"] if x["term_list"] == "amended"]
+    assert all(x["window_matches"] == 1 and x["reading"] == "uninformative (1 match)" for x in amended)
+    assert payload["diagnostics"]["amended"]["lags_on_at_most_5_matches"] == 2
+    assert payload["diagnostics"]["primary"]["lags_on_at_most_5_matches"] == 0
+    assert payload["corpora"][0]["result"] == {"primary": "tested: see the lags", "amended": "uninformative (1 match)"}
+    row = payload["lags_side_by_side"][0]
+    assert row["primary"]["window_matches"] == 10 and row["amended"]["reading"] == "uninformative (1 match)"
+    assert payload["amended_terms"][0]["precision"]["sv"]["precision"] == 0.9
