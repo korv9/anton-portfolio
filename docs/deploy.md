@@ -105,7 +105,7 @@ on `workers.dev` and in previews without configuration.
    every JobTech archive for the AI governance terms and takes a couple of hours.
    Fetch the warehouse anywhere with `python platform/publish/warehouse_store.py pull`. The
    bucket is public, so the warehouse can be downloaded by anyone; it holds only open data.
-   `platform/tests/architecture/test_warehouse_workflow.py` fails if a dbt subject, a source
+   `platform/tests/architecture/test_pipeline_workflows.py` fails if a dbt subject, a source
    or an ML stage is added without a step here.
 
    What lives where:

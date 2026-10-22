@@ -60,6 +60,10 @@ RAW_PREFIX = PREFIX + "raw/"
 FEATURES_PREFIX = PREFIX + "features/"
 CLUSTER_LAB_PREFIX = PREFIX + "cluster_lab/"
 TREES = ("raw", "features", "cluster_lab")
+# A prune deletes stored files that are absent locally; more than this share of a folder's stored
+# files is taken as an incomplete local tree, not a cleanup. Raise it (--max-delete-pct or
+# PRUNE_MAX_DELETE_PCT) only for an intentional cleanup.
+MAX_DELETE_PCT = float(os.environ.get("PRUNE_MAX_DELETE_PCT") or 5)
 # The debate map (SBERT pick, its layout and passages) and the bge-m3 run behind the Workers AI demo.
 CLUSTER_LAB_RUNS = (
     "public-topics-2026-10-12/datasets/debate",
@@ -137,7 +141,22 @@ def tree_files(root: Path) -> list[Path]:
     return sorted(p for p in root.rglob("*") if p.is_file() and not p.name.endswith(".tmp"))
 
 
-def push_tree(s3, bucket: str, name: str, sub: str = "", prune: bool = False) -> tuple[int, int, int]:
+def prune_refusal(name: str, sub: str, local: int, stored: int, stale: int, max_pct: float) -> str | None:
+    """Why deleting `stale` of a folder's `stored` files would be unsafe, or None."""
+    if not stale:
+        return None
+    if not local:
+        return "the local folder is empty"
+    if name == "raw" and not (RAW / sub.strip("/").split("/")[0] / "_manifest.jsonl").is_file():
+        return "its local fetch log (_manifest.jsonl) is missing, so the restore was incomplete"
+    share = 100 * stale / stored
+    if share > max_pct:
+        return f"{stale} of {stored} stored files ({share:.1f} %) is more than {max_pct:g} %"
+    return None
+
+
+def push_tree(s3, bucket: str, name: str, sub: str = "", prune: bool = False,
+              max_delete_pct: float = MAX_DELETE_PCT) -> tuple[int, int, int]:
     """Upload a tree's files whose SHA-256 differs from the stored copy. Returns (files, sent, bytes).
 
     `sub` limits it to one folder of the tree (jobtech/stream), for the daily refreshes.
@@ -159,11 +178,15 @@ def push_tree(s3, bucket: str, name: str, sub: str = "", prune: bool = False) ->
     if prune:
         wanted = prefix + sub.strip("/")
         local = {prefix + p.relative_to(root).as_posix() for p in files}
-        for page in s3.get_paginator("list_objects_v2").paginate(Bucket=bucket, Prefix=wanted):
-            for obj in page.get("Contents", []):
-                key = obj["Key"]
-                if (key == wanted or key.startswith(wanted + "/")) and key not in local:
-                    s3.delete_object(Bucket=bucket, Key=key)
+        stored = [obj["Key"] for page in s3.get_paginator("list_objects_v2").paginate(Bucket=bucket, Prefix=wanted)
+                  for obj in page.get("Contents", [])
+                  if obj["Key"] == wanted or obj["Key"].startswith(wanted + "/")]
+        stale = [key for key in stored if key not in local]
+        refusal = prune_refusal(name, sub, len(files), len(stored), len(stale), max_delete_pct)
+        if refusal:
+            sys.exit(f"Refusing to prune {wanted}: {refusal}. Nothing was deleted; uploads are kept.")
+        for key in stale:
+            s3.delete_object(Bucket=bucket, Key=key)
     return len(files), sum(1 for b in sent if b), sum(sent)
 
 
@@ -272,6 +295,9 @@ def main() -> int:
                              "(repeatable), e.g. --path jobtech/stream")
     parser.add_argument("--prune", action="store_true",
                         help="Delete remote files absent locally in the fully restored --path folders")
+    parser.add_argument("--max-delete-pct", type=float, default=MAX_DELETE_PCT,
+                        help="With --prune: refuse when more than this share of a folder's stored "
+                             "files would be deleted (default %(default)g, or PRUNE_MAX_DELETE_PCT)")
     args = parser.parse_args()
     if args.path and args.only not in TREES:
         parser.error("--path needs --only raw, features or cluster_lab")
@@ -301,7 +327,8 @@ def main() -> int:
     for name in TREES:
         if args.only in (None, name):
             for sub in folders(name, subs):
-                counts[name], sent, sent_bytes = push_tree(s3, bucket, name, sub, args.prune)
+                counts[name], sent, sent_bytes = push_tree(s3, bucket, name, sub, args.prune,
+                                                               args.max_delete_pct)
                 print(f"{name.capitalize()} files{' in ' + sub if sub else ''}: {counts[name]} "
                       f"on disk, {sent} uploaded ({sent_bytes / 1e6:.0f} MB)")
     if args.only in (None, "db"):

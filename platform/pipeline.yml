@@ -195,7 +195,7 @@ subjects:
   # first time); int_sfs_documents and int_sfs_corpus_paragraphs build on it, no embeddings.
   # export_sfs.py writes the statute-book page's numbers (#lagboken) from fct_sfs_document.
   sfs:
-    schedule: manual
+    schedule: '13 21 * * 6'
     group: baseline
     raw: [sfs]
     steps:
