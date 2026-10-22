@@ -1,0 +1,9 @@
+# Copy to terraform.tfvars for a local run (ignored by git). CI sets the same values through
+# the repository variables CLOUDFLARE_ACCOUNT_ID and TF_WORKER_DOMAIN_IDS (infra/README.md).
+account_id = "<32-character account id>"
+
+# From GET /accounts/{account_id}/workers/domains (infra/README.md, step 6).
+worker_domain_ids = {
+  "antonernstsson.com"     = "<domain id>"
+  "www.antonernstsson.com" = "<domain id>"
+}
