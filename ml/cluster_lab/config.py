@@ -50,9 +50,11 @@ DEFAULTS = {
         'preview_points': 30000, 'preview_count': 8, 'display_seed': 1729,
         'point_size': 1.4, 'alpha': 0.35, 'neighbor_lines': 0, 'density_contours': False,
         'feature_source': 'representation'},
-    'resources': {'cpu_threads': 4, 'workers': 1, 'memory_gb': 10, 'min_free_disk_gb': 2,
-        'duckdb_memory_gb': 1.5, 'max_spill_gb': 2, 'spill_directory': 'warehouse/cluster_lab/spill',
-        'torch_threads': 2, 'embedding_checkpoint_rows': 256, 'text_vector_cache_rows': 300000},
+    # Laptop limits (about 2 GB free). Larger runs raise them explicitly, e.g. on a GitHub runner:
+    # --set resources.memory_gb=6. limits.py enforces memory_gb during fits, not only at checkpoints.
+    'resources': {'cpu_threads': 2, 'workers': 1, 'memory_gb': 1.5, 'min_free_disk_gb': 2,
+        'duckdb_memory_gb': 1, 'max_spill_gb': 2, 'spill_directory': 'warehouse/cluster_lab/spill',
+        'torch_threads': 1, 'embedding_checkpoint_rows': 256, 'text_vector_cache_rows': 300000},
 }
 DATA_KEYS = {'name', 'adapter', 'database', 'path', 'raw', 'family', 'symbol',
     'start', 'end', 'as_of', 'min_occurrences', 'min_works', 'max_symbols',
