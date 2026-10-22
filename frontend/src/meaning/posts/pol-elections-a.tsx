@@ -21,22 +21,39 @@ const byYear = (d: Elections, y: number) =>
 const share = (d: Elections, y: number, p: string) =>
   d.results.find((r) => r.election_year === y && r.party === p)?.share_pct ?? 0
 
+/** Room between end labels, in viewBox units. */
+const GAP = 18
+
 function StackedShare() {
   return (
     <Frame data={useElections()}>
       {(d) => {
-        const x = linearScale([d.years[0], d.years.at(-1)!], [24, 632])
+        const x = linearScale([d.years[0], d.years.at(-1)!], [24, 580])
         const y = linearScale([0, 100], [180, 8])
         let base = d.years.map(() => 0)
+        // End labels name the bands at the latest election, so no colour has to be matched to
+        // the legend. Bands under 4 % go unnamed; the rest are nudged
+        // 18 units apart, up first, then down so the top one stays inside the plot.
+        const ends: { p: string; y: number }[] = []
         const layers = ORDER.map((p) => {
           const top = d.years.map((yr, i) => base[i] + share(d, yr, p))
           const path = band(
             top.map((v, i) => [x(d.years[i]), y(v)]),
             base.map((v, i) => [x(d.years[i]), y(v)]),
           )
+          const last = top.length - 1
+          if (top[last] - base[last] >= 4)
+            ends.push({ p, y: y((top[last] + base[last]) / 2) + 4 })
           base = top
           return { p, path }
         })
+        ends.sort((a, b) => b.y - a.y)
+        ends.forEach((e, i) => i && (e.y = Math.min(e.y, ends[i - 1].y - GAP)))
+        for (let i = ends.length - 1; i >= 0; i--)
+          ends[i].y = Math.max(
+            ends[i].y,
+            i === ends.length - 1 ? 18 : ends[i + 1].y + GAP,
+          )
         return (
           <>
             <svg
@@ -54,6 +71,11 @@ function StackedShare() {
                 >
                   <title>{l.p}</title>
                 </path>
+              ))}
+              {ends.map((e) => (
+                <text key={e.p} x={586} y={e.y} className="mean-pol-end">
+                  {e.p}
+                </text>
               ))}
               <XTicks
                 y={194}

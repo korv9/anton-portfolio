@@ -1,6 +1,6 @@
 /** Jobs: the language of Swedish job ads since 2006, from sweden/language/*.json. */
 import { useState } from 'react'
-import { color, Frame, Slicer, useData, type Post } from '../kit'
+import { color, focal, Frame, Slicer, useData, type Post } from '../kit'
 import { linearScale, niceTicks } from '../../charts/scales'
 import { D, Legend, linePath, pct, Svg, XLabels, YTicks } from './job-kit'
 
@@ -170,6 +170,9 @@ function Multiples() {
     <Frame data={data}>
       {(t) => {
         const cellH = 780 / t.categories.length
+        // The focal row is the category whose share grew most since the first year.
+        const rise = (c: Category) => c.rows.at(-1)![5] - c.rows[0][5]
+        const top = t.categories.reduce((a, c) => (rise(c) > rise(a) ? c : a))
         return (
           <Svg
             w={400}
@@ -193,8 +196,20 @@ function Multiples() {
                   <title>{c.label_en}</title>
                   <path
                     d={`${linePath(pts)}L300,${y(0)}L10,${y(0)}Z`}
-                    fill={color(k)}
+                    fill={focal(c === top)}
+                    opacity={c === top ? 1 : 0.55}
                   />
+                  <text
+                    x={14}
+                    y={k * cellH + 20}
+                    fontSize={13}
+                    fontWeight={c === top ? 700 : 500}
+                    stroke="var(--paper)"
+                    strokeWidth={3}
+                    paintOrder="stroke"
+                  >
+                    {short(c.label_en)}
+                  </text>
                   <text
                     x={392}
                     y={k * cellH + cellH / 2 + 8}

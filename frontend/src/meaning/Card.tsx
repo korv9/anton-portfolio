@@ -69,9 +69,10 @@ function observe(
 const nameOf = (post: Post, section: string) =>
   post.label ?? `${section}: ${post.id.split('-').slice(1).join(' ')}`
 
-/** The freshness dot's text: its state and, when known, the day of the last ingestion. */
-const freshText = ({ fresh, at }: { fresh: boolean; at?: string }) =>
-  `${fresh ? 'Source ingested on schedule' : 'Source ingestion overdue'}${at ? `, last ${at.slice(0, 10)}` : ''}`
+/** The overdue mark's text, with the day of the last ingestion when known. Only an overdue
+ * source is marked: a dot on every card would say nothing. */
+const freshText = ({ at }: { at?: string }) =>
+  `Source ingestion overdue${at ? `, last ${at.slice(0, 10)}` : ''}`
 
 /** Whether the tab is in front; thumbnails stop ticking behind another tab. */
 export function usePageVisible() {
@@ -167,10 +168,9 @@ export function Card({
       data-dense={dense || undefined}
       style={near ? { viewTransitionName: `mp-${index}` } : undefined}
     >
-      {fresh && (
+      {fresh && !fresh.fresh && (
         <span
           className="mean-fresh"
-          data-fresh={fresh.fresh}
           role="img"
           aria-label={freshText(fresh)}
           title={freshText(fresh)}

@@ -18,6 +18,7 @@ type Studies = {
 }
 type News = {
   party_counts_30d: Record<string, number>
+  topics: { key: string; name_en: string }[]
   items: { topics: string[] }[]
 }
 function StudyBars() {
@@ -140,26 +141,37 @@ function NewsRadial() {
   )
 }
 
-/** Topic keys are the Riksdag issue keys; government formation is the one news-only topic. */
-const TOPIC_NAMES: Record<string, string> = {
-  regeringsbildning: 'Government formation',
+/** Tiles under this width (in the 300-unit viewBox, about 65 px on the smallest card) carry
+ * no label. A name wraps by word to the tile's width; if a word or the lines do not fit, the
+ * tile shows its count alone, so no label clips. */
+const TILE_MIN = 100
+const LINE = 15
+const tileLines = (
+  w: number,
+  h: number,
+  name: string | undefined,
+  n: number,
+) => {
+  const max = Math.floor((w - 12) / 7.4)
+  const lines: string[] = []
+  for (const word of name?.split(' ') ?? []) {
+    const last = lines.at(-1)
+    if (last && `${last} ${word}`.length <= max)
+      lines[lines.length - 1] = `${last} ${word}`
+    else lines.push(word)
+  }
+  lines.push(String(n))
+  return lines.every((l) => l.length <= max) && lines.length * LINE + 8 <= h
+    ? lines
+    : [String(n)]
 }
 
 function NewsTopics() {
-  const issues = useData<{
-    issues: { issue_key: string; issue_name_en: string }[]
-  }>('parliament/issues.json')
-  const names =
-    issues && !(issues instanceof Error)
-      ? Object.fromEntries(
-          issues.issues.map((i) => [i.issue_key, i.issue_name_en]),
-        )
-      : {}
-  // Tiles stay unlabelled until the names are known, so a key never shows.
-  const label = (k: string) => names[k] ?? TOPIC_NAMES[k]
   return (
     <Frame data={useData<News>('parliament/news.json')}>
       {(d) => {
+        // A topic without a name stays unlabelled, so a key never shows.
+        const names = new Map(d.topics.map((t) => [t.key, t.name_en]))
         const counts = [
           ...d.items
             .flatMap((i) => i.topics)
@@ -191,14 +203,18 @@ function NewsTopics() {
                   stroke="var(--paper)"
                   strokeWidth={2}
                 />
-                {r.w > 50 && r.h > 18 && label(r.item[0]) && (
+                {r.w >= TILE_MIN && r.h > 22 && (
                   <text
-                    x={r.x + 5}
-                    y={r.y + 13}
-                    className="mean-pol-t"
-                    style={{ fill: 'var(--ink)' }}
+                    className="mean-pol-tile"
+                    style={i === 0 ? { fill: 'var(--mean-card)' } : undefined}
                   >
-                    {label(r.item[0])} {r.item[1]}
+                    {tileLines(r.w, r.h, names.get(r.item[0]), r.item[1]).map(
+                      (l, k) => (
+                        <tspan key={k} x={r.x + 6} y={r.y + 17 + k * LINE}>
+                          {l}
+                        </tspan>
+                      ),
+                    )}
                   </text>
                 )}
               </g>

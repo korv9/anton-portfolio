@@ -1,6 +1,6 @@
 /** European Social Survey means and the latest welfare headline figures. */
 import { useState } from 'react'
-import { Frame, Slicer, color, useData, type Post } from '../kit'
+import { Frame, Slicer, color, focal, useData, type Post } from '../kit'
 import { Legend, Svg, XTicks, arc, fmt, num, path, scale } from './wel-kit'
 
 type Ess = { unit_code: string; period_key: string } & Record<
@@ -154,7 +154,8 @@ function RoundLines() {
               h={400}
               label="Survey means by round for seven countries and groups"
             >
-              {UNITS.map((u, j) => {
+              {/* Sweden is the focal line, drawn last so it sits on top; the rest are grey. */}
+              {[...UNITS].reverse().map((u) => {
                 const pts = rows
                   .filter((r) => r.unit_code === u && num(val(r, m)))
                   .sort((a, b) => round(a.period_key) - round(b.period_key))
@@ -170,7 +171,7 @@ function RoundLines() {
                     <path
                       d={path(pts)}
                       fill="none"
-                      stroke={color(j)}
+                      stroke={focal(u === 'SE')}
                       strokeWidth={u === 'SE' ? 4 : 1.6}
                     />
                     {pts.map(([cx, cy]) => (
@@ -179,9 +180,24 @@ function RoundLines() {
                         cx={cx}
                         cy={cy}
                         r={u === 'SE' ? 5 : 3}
-                        fill={color(j)}
+                        fill={focal(u === 'SE')}
                       />
                     ))}
+                    {u === 'SE' && pts.length > 0 && (
+                      <text
+                        x={pts.at(-1)![0]}
+                        y={pts.at(-1)![1] - 14}
+                        textAnchor="end"
+                        fontSize={22}
+                        fontWeight={700}
+                        stroke="var(--paper)"
+                        strokeWidth={4}
+                        paintOrder="stroke"
+                        style={{ fill: 'var(--mean-ink)' }}
+                      >
+                        Sweden
+                      </text>
+                    )}
                   </g>
                 )
               })}
@@ -191,7 +207,10 @@ function RoundLines() {
                 y={392}
               />
             </Svg>
-            <Legend items={UNITS} />
+            <Legend
+              items={['Sweden', 'Other countries and groups']}
+              colors={[focal(true), focal(false)]}
+            />
           </>
         )
       }}

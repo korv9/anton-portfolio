@@ -1,6 +1,6 @@
 /** Jobs: occupations and fields, from market.json's yearly occupation and monthly field counts. */
 import { useState } from 'react'
-import { color, focal, Frame, Slicer, useData, type Post } from '../kit'
+import { focal, Frame, Slicer, useData, type Post } from '../kit'
 import { linearScale } from '../../charts/scales'
 import {
   compact,
@@ -255,7 +255,7 @@ function FieldChange() {
                   width={Math.abs(x(r.ch) - mid)}
                   height={rowH - 4}
                   rx={3}
-                  fill={r.ch >= 0 ? color(4) : color(1)}
+                  fill={focal(r.ch >= 0)}
                 />
                 <text
                   x={r.ch >= 0 ? mid - 4 : mid + 4}

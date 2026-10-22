@@ -195,10 +195,8 @@ test('posts whose data is past its valid_until date leave the feed', async ({
   await page.locator('.home-feed').evaluate((el) => el.scrollIntoView())
   await page.locator(ADS).evaluate((el) => el.scrollIntoView())
   await expect(page.locator(ADS)).toHaveCount(0)
-  // Leaving is quiet: no error boundary report in the console.
-  expect(errors.filter((e) => /Expired|company-intelligence/.test(e))).toEqual(
-    [],
-  )
+  // Leaving is quiet: nothing at all in the console.
+  expect(errors).toEqual([])
 
   // The same data with a date still ahead renders the post.
   await page.route('**/jobs/company-intelligence.json', async (route) => {

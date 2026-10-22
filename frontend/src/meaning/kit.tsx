@@ -53,6 +53,10 @@ export const color = (i: number) => PALETTE[i % PALETTE.length]
 /** Grey for every mark but the focal one: for more categories than the palette can tell apart. */
 export const OTHER = 'var(--mean-other)'
 export const focal = (on: boolean) => (on ? PALETTE[0] : OTHER)
+/** The i-th of n greys, each paler towards the paper: parts of a whole beside one focal part,
+ * told apart by step rather than hue. Every part gets its own step. */
+export const shade = (i: number, n: number) =>
+  `color-mix(in srgb, ${OTHER} ${Math.round(100 - (i / Math.max(1, n)) * 72)}%, var(--paper))`
 /** A number tile in a series colour: a pale tint of it, edged with the full colour, so the
  * ink stays legible on both themes. */
 export const tile = (c: string) => ({
@@ -204,7 +208,7 @@ function Leave() {
 
 /**
  * Wraps a chart. While loading it shows the chart's empty grid. A thumbnail whose data failed
- * or expired leaves the feed; an opened post names the file it could not load.
+ * or expired leaves the feed; an opened post stays, so focus is not lost, and names the file.
  */
 export function Frame<T>({
   data,
@@ -216,8 +220,11 @@ export function Frame<T>({
   const open = useContext(PostOpen)
   if (data === null) return <div className="mean-wait" aria-busy="true" />
   if (data instanceof Error)
-    return open && !(data instanceof Expired) ? (
-      <p className="mean-failed">Data unavailable: {data.message}</p>
+    return open ? (
+      <p className="mean-failed">
+        {data instanceof Expired ? 'Data expired' : 'Data unavailable'}:{' '}
+        {data.message}
+      </p>
     ) : (
       <Leave />
     )

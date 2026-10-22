@@ -1,0 +1,99 @@
+/*
+ * The feed's chrome around the charts: chapter heads with their pause button, the overdue
+ * mark and the corner label naming a thumbnail's current option. Split from meaning.css.
+ */
+/* A chapter break: title and line on the left, the pause on the right, and a hairline that
+   draws across the grid as the chapter scrolls in. */
+.mean-section-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 4px var(--sp-3);
+  margin-bottom: var(--sp-3);
+}
+.mean-section-head::after {
+  content: '';
+  grid-column: 1 / -1;
+  height: 1px;
+  margin-top: var(--sp-2);
+  background: var(--mean-ink);
+  transform-origin: left;
+}
+/* Chapter titles sit one step under the feed's display heading. */
+.mean-section-head :is(h2, h3) {
+  grid-column: 1;
+  margin: 0;
+  color: var(--mean-ink);
+  font-family: var(--font);
+  font-size: var(--h2);
+  font-weight: 750;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+.mean-section-head p {
+  grid-column: 1;
+  margin: 0;
+  max-width: 62ch;
+  color: var(--mean-muted);
+  font-family: var(--mean-font);
+  font-size: 0.85rem;
+  line-height: 1.4;
+  text-wrap: pretty;
+}
+/* Stops the section's thumbnails (WCAG 2.2.2); pressed, it reads as held. */
+.mean-pause {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  align-self: end;
+  min-height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--mean-line);
+  border-radius: var(--radius);
+  background: none;
+  color: var(--mean-muted);
+  font: 0.75rem var(--mean-font);
+  cursor: pointer;
+}
+.mean-pause[aria-pressed='true'] {
+  border-color: var(--mean-accent);
+  color: var(--mean-ink);
+}
+.mean-pause:focus-visible {
+  outline: 2px solid var(--mean-accent);
+  outline-offset: 2px;
+}
+/* A ring when the post's source is overdue for ingestion; on schedule or unknown, no mark, so
+   the one that shows stands out. */
+.mean-fresh {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  border: 1.5px solid var(--mean-ink);
+}
+/* The option a thumbnail is showing, in the corner it keeps free for it. */
+.mean-now {
+  position: absolute;
+  top: 6px;
+  left: 24px;
+  right: 10px;
+  overflow: hidden;
+  color: var(--mean-muted);
+  font: 500 0.68rem/1.4 var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.mean-post:not(:has(.mean-fresh)) .mean-now {
+  left: 10px;
+}
+/* Two slicers in one post: the corner names the first. */
+.mean-post .mean-now ~ .mean-now {
+  display: none;
+}
+.mean-post:is(:hover, :focus-within) .mean-now {
+  color: var(--mean-ink);
+}
