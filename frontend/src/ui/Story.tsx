@@ -190,28 +190,6 @@ export function ExploreSection({
   )
 }
 
-/** Where to go next, as editorial links: a question or topic and one line on what it shows. */
-export function StoryNext({
-  links,
-  label,
-}: {
-  links: { href: string; title: string; line: string }[]
-  label: string
-}) {
-  return (
-    <ul className="story-next" aria-label={label}>
-      {links.map((link) => (
-        <li key={link.href + link.title}>
-          <a href={link.href}>
-            <b>{link.title}</b>
-            <span>{link.line}</span>
-          </a>
-        </li>
-      ))}
-    </ul>
-  )
-}
-
 /** The quality points that matter for one product, each a dimension and the evidence for it. */
 export function QualityBrief({ rows }: { rows: [string, ReactNode][] }) {
   return (

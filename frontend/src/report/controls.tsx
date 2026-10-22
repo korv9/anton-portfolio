@@ -35,14 +35,3 @@ export const num = (value: number, digits = 0) => nf(digits).format(value)
 export const pct = (value: number, digits = 1) => `${num(value, digits)} %`
 export const signed = (value: number, digits = 0) =>
   `${value > 0 ? '+' : value < 0 ? '−' : '±'}${num(Math.abs(value), digits)}`
-export const monthName = (iso: string) =>
-  new Date(iso).toLocaleDateString(l('en-GB', 'sv-SE'), {
-    month: 'long',
-    year: 'numeric',
-  })
-export const dayName = (iso: string) =>
-  new Date(iso.slice(0, 10)).toLocaleDateString(l('en-GB', 'sv-SE'), {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  })
