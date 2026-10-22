@@ -23,6 +23,7 @@ ml/**/*.py text eol=lf
 docs/** text eol=lf
 .claude/**/*.md text eol=lf
 .github/** text eol=lf
+infra/** text eol=lf
 /*.md text eol=lf
 /*.json text eol=lf
 /.git* text eol=lf

@@ -36,11 +36,16 @@ connection is enabled once after the complete R2 bundle is verified.
 | `frontend/public/_headers` | Security headers; long cache for hashed assets, short for data. It does not apply to responses the Worker script makes: `/api/*` sets its own `Cache-Control: no-store`, `X-Content-Type-Options` and `Referrer-Policy` |
 | `platform/publish/r2-cors.json` | Origins allowed to read the bucket: the domain, `www`, `workers.dev`, the branch preview, local dev |
 | `frontend/index.html` | Canonical URL `https://antonernstsson.com/` |
+| `infra/` | Terraform for the R2 buckets, CORS, the Worker's custom domains, the `main` ruleset and environments ([infra/README.md](../infra/README.md)) |
 
 The site uses relative paths (`base: './'` and hash routing), so it works at the domain root,
 on `workers.dev` and in previews without configuration.
 
 ## Setup, once
+
+Terraform in `infra/` now owns part of this setup; its bootstrap checklist is in
+[infra/README.md](../infra/README.md). Once it is applied, CORS and the Worker's custom domains
+change through Terraform, not the dashboard.
 
 1. **Domain.** Cloudflare → Domain Registration → register `antonernstsson.com`. Its DNS is
    then on Cloudflare, which the custom domains below need.
@@ -66,7 +71,7 @@ on `workers.dev` and in previews without configuration.
 4. **Domain on the data.** R2 → `anton-portfolio` → Settings → Custom Domains →
    `data.antonernstsson.com`. Then:
    - apply the CORS policy: R2 → the bucket → Settings → CORS policy → paste
-     `platform/publish/r2-cors.json`;
+     `platform/publish/r2-cors.json` (with Terraform applied, `infra/cloudflare` does this);
    - set the repository variable `R2_PUBLIC_BASE` to `https://data.antonernstsson.com/`
      (Settings → Secrets and variables → Actions → Variables);
    - run *Bootstrap versioned data delivery in R2* first with
@@ -105,7 +110,7 @@ on `workers.dev` and in previews without configuration.
    every JobTech archive for the AI governance terms and takes a couple of hours.
    Fetch the warehouse anywhere with `python platform/publish/warehouse_store.py pull`. The
    bucket is public, so the warehouse can be downloaded by anyone; it holds only open data.
-   `platform/tests/architecture/test_warehouse_workflow.py` fails if a dbt subject, a source
+   `platform/tests/architecture/test_pipeline_workflows.py` fails if a dbt subject, a source
    or an ML stage is added without a step here.
 
    What lives where:

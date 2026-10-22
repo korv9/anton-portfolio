@@ -112,9 +112,30 @@ manifests/current.json
 
 Release-id är SHA-256 över de exakta filhasharna, beroendeversionerna och
 kontrollkontraktet. Gruppmanifestet har `schema_version`, `group`, `release`,
-`published_at`, `code_sha`, `coverage`, `dependencies`, `files` och `indexes`.
-Varje filpost har `key`, `sha256` och `bytes`. Gruppmanifestet läses av publishern,
-inte av browsern.
+`published_at`, `code_sha`, `coverage`, `dependencies`, `files`, `indexes`, `dq`
+och `reconcile`. Varje filpost har `key`, `sha256` och `bytes`. Gruppmanifestet läses
+av publishern, inte av browsern.
+
+`dq` och `reconcile` skrivs av `platform/publish/dq_gate.py` efter `prepare` och
+före första uppladdningen. `dq` sammanfattar `platform/target/<target>/run_results.json`
+för varje subject i `pipeline.yml` med samma `group` och ett dbt-steg: status
+`pass`, `warn`, `error` eller `not_run`, testantal, `failing` och `warnings`.
+`error` (en nod med `fail`, `error` eller `skipped`) stoppar publiceringen. Saknas
+resultatfil, till exempel vid `publish-r2.yml`, blir det `not_run` med `reason`.
+Bara det sista dbt-steget i ett subject lämnar en resultatfil. `reconcile.rows`
+har radantal per JSON-array, `rows`/`data`-array och Parquetfil. `checks` jämför
+bara där exportören redan skrivit källtabellens antal bredvid en publicerad path
+(`welfare/datasets.json`); avvikelse stoppar. Annars är status `counts_only`.
+Fälten ingår inte i release-id: samma bytes ger samma release, och ett redan
+uppladdat manifest behåller sina ursprungliga `dq` och `reconcile`.
+
+```json
+"dq": {"status": "warn", "scope": "dbt build of each subject in the group",
+       "subjects": {"market": {"status": "warn", "generated_at": "2026-10-22T06:00:00Z",
+         "invocation_id": "…", "tests": {"pass": 41, "warn": 1, "error": 0, "skip": 0},
+         "failing": [], "warnings": ["test.portfolio.…"]}}},
+"reconcile": {"status": "counts_only", "rows": {"jobs/market.json": 1}, "checks": {}}
+```
 
 Publishern fryser och validerar gruppen, laddar upp filer med villkorad create,
 läser tillbaka varje payload och kontrollerar hash och storlek. Därefter görs
@@ -269,8 +290,34 @@ de råa bytesen och behåller den historiska hashregeln för äldre katalogposte
   `75b52503c551cd7b934d6f5891ab8d45cce6d5ec84f8bcfc42d11a4e21010586` från kod
   `3c2f48c`, med 156 filer.
 
+## Retention
+
+`platform/publish/retention.py` körs varje vecka, sist i `build-warehouse.yml` och
+under samma skrivlås. Per grupp i `manifests/current.json` behålls den aktiva
+releasen, varje release som ett annat `manifests/*.json` pekar på (smoke och
+bootstrap) och de två senaste övriga godkända releaserna, ordnade efter när
+`manifest.json` skrevs. De är rollbackmålen. Äldre godkända releaser raderas. Ett
+releaseprefix utan `manifest.json` är en avbruten upload och raderas när alla dess
+objekt är äldre än sju dagar. Utan `--apply` skrivs bara planen ut.
+
+I `build-warehouse.yml` är steget en torrkörning: planen hamnar i stegets summary och
+inget raderas. Den första riktiga körningen skulle radera många releaser ur den publika
+bucketen på en gång, så ägaren granskar först en verklig plan. Därefter slås radering
+på med repositoryvariabeln `RETENTION_APPLY` satt till `true` (Settings → Secrets and
+variables → Actions → Variables), som lägger till `--apply`. Ta bort variabeln för att
+gå tillbaka till torrkörning.
+
+Kommandot avbryter innan något raderas om `current.json` saknas eller inte går att
+läsa, eller om den aktiva releasen inte finns i listningen. Grupper som inte finns i
+det aktiva manifestet och nycklar med okänd layout lämnas orörda. Manifesten raderas
+före filerna, så ett avbrutet raderingsförsök lämnar ett ogodkänt prefix och aldrig
+ett trasigt rollbackmål.
+
 ## Tester
 
+- `platform/tests/python/test_dq_gate.py`: dbt-grind och radavstämning.
+- `platform/tests/python/test_retention.py`: aktiv + 2 behålls, rollback- och
+  smokemål skyddas, torrkörning raderar inget, avbrutna uploads efter sju dagar.
 - `platform/tests/python/test_release.py`: publisher, katalog och regressioner mot
   en fake S3 med ETag, villkorad PUT, avbruten upload, authfel och skadade bytes.
 - `platform/tests/architecture/test_r2_refresh_workflows.py` och
@@ -278,10 +325,3 @@ de råa bytesen och behåller den historiska hashregeln för äldre katalogposte
 - `frontend/tests/r2-delivery.spec.ts`: resolvern mot isolerade mockmanifest.
 - `frontend/tests/live-delivery.spec.ts`: valfri kontroll mot verkliga R2-hashar
   ([frontend/tests/README.md](../frontend/tests/README.md)).
-
-## Öppet
-
-- Retention är beslutad men inte byggd: per grupp behålls den aktiva releasen och
-  de två föregående godkända releaserna (rollbackmålen). Äldre releaser får raderas.
-  Det finns ännu ingen rensning, så inget raderas i dag.
-- Publishern raderar inga oaktiverade versionsobjekt efter ett misslyckat försök.

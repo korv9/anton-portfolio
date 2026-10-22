@@ -13,6 +13,9 @@ import pytest
 import yaml
 
 ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from data_workflows import REUSABLE, workflow  # noqa: E402
+
 REFRESHERS = {"refresh-jobs.yml": "jobs", "refresh-news.yml": "news",
               "refresh-welfare.yml": "public-data", "refresh-diva.yml": "diva",
               "refresh-job-analysis.yml": "jobs-analysis"}
@@ -21,8 +24,6 @@ CREDENTIALS = ("R2_ACCOUNT_ID", "R2_ACCESS_KEY_ID", "R2_SECRET_ACCESS_KEY", "R2_
 SHA = "a" * 40
 
 
-def workflow(filename):
-    return yaml.safe_load((ROOT / ".github/workflows" / filename).read_text(encoding="utf-8"))
 
 
 def steps(filename):
@@ -120,6 +121,22 @@ def test_refresh_permissions_and_git_are_read_only(filename):
             assert not re.search(r"\bgit\s+(?:-\S+\s+)*(commit|push)\b", script), filename
 
 
+@pytest.mark.parametrize("filename", ["refresh-jobs.yml", "refresh-news.yml"])
+def test_callers_hold_the_lock_and_bound_the_called_jobs(filename):
+    config = yaml.safe_load((ROOT / ".github/workflows" / filename).read_text(encoding="utf-8"))
+    (job,) = config["jobs"].values()
+    assert job["uses"] == REUSABLE and job["secrets"] == "inherit"
+    # The caller's token bounds every called job: only the alert's issue write is added.
+    assert job["permissions"] == {"contents": "read", "actions": "read", "issues": "write"}
+    assert config["permissions"] == {"contents": "read"}
+    assert config[True]["schedule"]
+    reusable = yaml.safe_load((ROOT / REUSABLE).read_text(encoding="utf-8"))
+    # A called workflow runs inside its caller's run; the same group here would wait on itself.
+    assert "concurrency" not in reusable and list(reusable[True]) == ["workflow_call"]
+    assert reusable["permissions"] == {"contents": "read"}
+    assert "permissions" not in reusable["jobs"]["refresh"]
+
+
 @pytest.mark.parametrize("filename", WORKFLOWS)
 def test_credentials_reject_each_missing_or_whitespace_value(tmp_path, filename):
     # The guard is the first step of the shared setup, which every data workflow uses.
@@ -135,6 +152,20 @@ def test_credentials_reject_each_missing_or_whitespace_value(tmp_path, filename)
     # Harmless pasted line endings must not make a valid secret into a shell command.
     result, calls, outputs = run_script(tmp_path, guard, **{name: "fixture\n" for name in CREDENTIALS})
     assert result.returncode == 0 and "ok=false" not in outputs, filename
+
+
+def test_weekly_retention_is_a_dry_run_unless_the_owner_opts_in(tmp_path):
+    (step,) = [s for s in steps("build-warehouse.yml") if "retention.py" in s.get("run", "")]
+    assert "--apply" not in step["run"]
+    assert step["env"] == {"APPLY": "${{ vars.RETENTION_APPLY == 'true' && '--apply' || '' }}"}
+    for apply in ("", "--apply"):
+        summary = tmp_path / f"summary{apply}"
+        result, calls, _ = run_script(tmp_path / f"run{apply}", step["run"], APPLY=apply,
+                                      GITHUB_STEP_SUMMARY=str(summary))
+        assert result.returncode == 0, result.stderr
+        ((*_, last),) = [call for call in calls if "platform/publish/retention.py" in call]
+        assert (last == "--apply") == bool(apply)
+        assert "### Release retention" in summary.read_text()
 
 
 def test_initial_bootstrap_stages_groups_then_activates_once(tmp_path):
@@ -261,3 +292,30 @@ def test_configured_diva_contract_rejects_phantom_cluster_links_before_upload(tm
     with pytest.raises((ValueError, subprocess.CalledProcessError)):
         release.publish(s3, "fixture-bucket", "diva", tmp_path, spec, code_sha=SHA)
     assert not s3.puts and release.CURRENT not in s3.objects
+
+
+@pytest.mark.parametrize("breakage", [None, "empty", "malformed", "missing"])
+def test_configured_sweden_contract_gates_tracked_exports(tmp_path, monkeypatch, breakage):
+    """The tracked exports pass; an emptied, malformed or absent gated file stops prepare."""
+    import jsonschema
+    sys.path.insert(0, str(ROOT / "platform/publish"))
+    import release
+
+    shutil.copytree(ROOT / "frontend/public/data/sweden", tmp_path / "sweden")
+    spec = json.loads((ROOT / "configs/delivery/sweden.json").read_text())
+    trends = tmp_path / "sweden/futures/trends.json"
+    connections = tmp_path / "sweden/connections/connections.json"
+    if breakage == "empty":
+        trends.write_text(json.dumps({**json.loads(trends.read_text(encoding="utf-8")), "themes": []}))
+    elif breakage == "malformed":
+        data = json.loads(connections.read_text(encoding="utf-8"))
+        del data["run_id"]
+        connections.write_text(json.dumps(data))
+    elif breakage == "missing":
+        (tmp_path / "sweden/similarity/geometry.json").unlink()
+    monkeypatch.chdir(ROOT)
+    if breakage is None:
+        assert "sweden/futures/trends.json" in release.prepare(tmp_path, spec, "sweden")
+    else:
+        with pytest.raises(FileNotFoundError if breakage == "missing" else jsonschema.ValidationError):
+            release.prepare(tmp_path, spec, "sweden")

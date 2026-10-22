@@ -20,6 +20,17 @@
 # sources (raw folders whose fetch log is kept outside R2 by the ingest itself, for the
 # ingestion status in status/ingestion.json; the first segments of `raw` count already).
 #
+# Every subject also declares, without changing what the code does:
+#   sla    {fresh_within: <n>h | <n>d | none}: how old its last successful ingestion in
+#          status/ingestion.json may be before data-heartbeat.yml opens a data-freshness issue;
+#          none for manual subjects. Its dbt source freshness warns at the same age.
+#   write  per layer it writes, the mode the code uses today:
+#          raw, features  R2 under warehouse/: mirror (prune: true, remote files gone locally are
+#                         deleted) or {merge: [keys]} (upload changed objects, delete nothing)
+#          warehouse      overwrite: every dbt model is a view or a table, rebuilt in full
+#          delivery       versioned: release.py publishes an immutable release, then swaps the pointer
+# The dbt tests are the data-quality gate: an export runs only if every one of them passed.
+#
 # A group is published once, after every subject in it has succeeded.
 
 definitions:
@@ -73,6 +84,8 @@ groups:
 subjects:
   welfare:
     schedule: '37 4 * * *'
+    sla: {fresh_within: 36h}
+    write: {raw: mirror, warehouse: overwrite, delivery: versioned}
     group: public-data
     raw: [scb, fohm, fk, ess, kolada]
     prune: true
@@ -87,6 +100,8 @@ subjects:
 
   parliament:
     schedule: '37 4 * * *'
+    sla: {fresh_within: 36h}
+    write: {raw: mirror, warehouse: overwrite, delivery: versioned}
     group: public-data
     raw: [scb, riksdagen/votes, riksdagen/reports, riksdagen/studies, riksdagen/formation, riksdagen/formation_votes,
           riksdagen/_checkpoints, riksdagen/_manifest.jsonl, val]
@@ -102,6 +117,8 @@ subjects:
 
   taxes:
     schedule: '37 4 * * *'
+    sla: {fresh_within: 36h}
+    write: {raw: mirror, warehouse: overwrite, delivery: versioned}
     group: public-data
     needs: [parliament]
     raw: [oecd, skatteverket]
@@ -115,6 +132,8 @@ subjects:
 
   market:
     schedule: '23 4 * * *'
+    sla: {fresh_within: 36h}
+    write: {raw: {merge: [path]}, warehouse: overwrite, delivery: versioned}
     group: jobs
     raw: [jobtech/market, jobtech/stream, jobtech/_manifest.jsonl]
     steps:
@@ -126,6 +145,8 @@ subjects:
 
   news:
     schedule: '17 5 * * *'
+    sla: {fresh_within: 36h}
+    write: {raw: {merge: [id]}, warehouse: overwrite, delivery: versioned}
     group: news
     sources: [news]
     steps:
@@ -134,7 +155,7 @@ subjects:
         when_env: R2_BUCKET
       - ingest: python platform/ingest/news/news_ingest.py --sync --months 3
       - ingest: python platform/ingest/news/people_ingest.py
-      - dbt: {select: [tag:news]}
+      - dbt: {select: [tag:news], freshness: true}
       - export: python platform/publish/export_news.py
       # Optional: exit 2 means no summary was written and the headlines publish alone.
       - export: python platform/publish/summarize_news.py --days 7 --status-file ${RUNNER_TEMP:-warehouse}/news-summary-status.json
@@ -143,6 +164,8 @@ subjects:
 
   politics:
     schedule: '13 21 * * 6'
+    sla: {fresh_within: 8d}
+    write: {warehouse: overwrite, delivery: versioned}
     group: baseline
     steps:
       - dbt: {select: [+tag:politics]}
@@ -152,6 +175,8 @@ subjects:
   # models have nothing to read, then proof that the export is byte-identical to the site's files.
   politics_check:
     schedule: every push
+    sla: {fresh_within: none}
+    write: {warehouse: overwrite}
     manual: true
     target: politics
     steps:
@@ -168,6 +193,8 @@ subjects:
   # and defines the model's metrics and relationships (docs/gold-semantic-model.md).
   legacy:
     schedule: manual
+    sla: {fresh_within: none}
+    write: {warehouse: overwrite, delivery: versioned}
     group: baseline
     manual: true
     target: politics
@@ -182,6 +209,8 @@ subjects:
 
   ai_act:
     schedule: '13 21 * * 6'
+    sla: {fresh_within: 8d}
+    write: {raw: {merge: [path]}, warehouse: overwrite, delivery: versioned}
     group: baseline
     raw: [eu_ai_act]
     steps:
@@ -195,14 +224,16 @@ subjects:
   # first time); int_sfs_documents and int_sfs_corpus_paragraphs build on it, no embeddings.
   # export_sfs.py writes the statute-book page's numbers (#lagboken) from fct_sfs_document.
   sfs:
-    schedule: manual
+    schedule: '13 21 * * 6'
+    sla: {fresh_within: 8d}
+    write: {raw: {merge: [path]}, warehouse: overwrite, delivery: versioned}
     group: baseline
     raw: [sfs]
     steps:
       - ingest: python platform/ingest/sfs/ingest.py
       - ingest: python platform/ingest/sfs/ingest.py --all
         when_env: SFS_ALL
-      - dbt: {select: [tag:sfs]}
+      - dbt: {select: [tag:sfs], freshness: true}
       - export: python platform/publish/workers_ai/export_law_corpora.py chunks
       - export: python platform/publish/export_sfs.py
 
@@ -211,6 +242,8 @@ subjects:
   # are built.
   ai_politics:
     schedule: '13 21 * * 6'
+    sla: {fresh_within: 8d}
+    write: {raw: {merge: [path]}, features: {merge: [path]}, warehouse: overwrite, delivery: versioned}
     group: baseline
     needs: [ai_act]
     raw: [riksdagen/speeches]
@@ -233,6 +266,8 @@ subjects:
 
   symbolic:
     schedule: '13 21 * * 6'
+    sla: {fresh_within: 8d}
+    write: {raw: {merge: [path]}, features: {merge: [path]}, warehouse: overwrite, delivery: versioned}
     group: baseline
     raw: [symbolic]
     features: [symbolic]
@@ -249,6 +284,8 @@ subjects:
 
   philosophy:
     schedule: '13 21 * * 6'
+    sla: {fresh_within: 8d}
+    write: {raw: {merge: [path]}, features: {merge: [path]}, warehouse: overwrite, delivery: versioned}
     group: baseline
     raw: [philosophy]
     features: [philosophy]
@@ -271,6 +308,8 @@ subjects:
 
   job_ai_governance:
     schedule: '13 21 * * 6'
+    sla: {fresh_within: 8d}
+    write: {raw: {merge: [path]}, warehouse: overwrite, delivery: versioned}
     group: baseline
     raw: [jobtech/governance]
     steps:
@@ -280,6 +319,8 @@ subjects:
 
   concepts:
     schedule: '13 21 * * 6'
+    sla: {fresh_within: 8d}
+    write: {features: {merge: [path]}, warehouse: overwrite, delivery: versioned}
     group: baseline
     needs: [ai_act, ai_politics, symbolic, philosophy, job_ai_governance]
     features: [concepts]
@@ -293,6 +334,8 @@ subjects:
 
   cross_domain:
     schedule: '13 21 * * 6'
+    sla: {fresh_within: 8d}
+    write: {warehouse: overwrite, delivery: versioned}
     group: baseline
     needs: [ai_politics, job_ai_governance]
     steps:
@@ -306,6 +349,8 @@ subjects:
   # Its gold joins the welfare panel, tax rates and election results built earlier in the run.
   sweden:
     schedule: '13 21 * * 6'
+    sla: {fresh_within: 8d}
+    write: {raw: mirror, features: {merge: [path]}, warehouse: overwrite, delivery: versioned}
     group: sweden
     needs: [welfare, parliament, taxes]
     raw: [catalogue, geography, kb]
@@ -324,6 +369,8 @@ subjects:
   # is skipped, so after the first run a week costs the newest quarter.
   sweden_language:
     schedule: '13 21 * * 6'
+    sla: {fresh_within: 8d}
+    write: {features: {merge: [path]}, warehouse: overwrite, delivery: versioned}
     group: sweden
     features: [sweden/ad_language]
     steps:
@@ -337,6 +384,8 @@ subjects:
   # unchanged session is skipped.
   sweden_futures:
     schedule: '13 21 * * 6'
+    sla: {fresh_within: 8d}
+    write: {features: {merge: [path]}, warehouse: overwrite, delivery: versioned}
     group: sweden
     features: [sweden/futures, sweden/futures_theses, sweden/futures_theses_detail]
     steps:
@@ -352,6 +401,8 @@ subjects:
 
   quality:
     schedule: '13 21 * * 6'
+    sla: {fresh_within: 8d}
+    write: {warehouse: overwrite, delivery: versioned}
     group: baseline
     # evaluate.py keeps its own dbt test results in target/quality.
     target: quality_build
@@ -364,6 +415,8 @@ subjects:
 
   diva:
     schedule: manual
+    sla: {fresh_within: none}
+    write: {raw: {merge: [path]}, delivery: versioned}
     group: diva
     manual: true
     raw: [diva]
@@ -375,6 +428,8 @@ subjects:
   # to dbt as vars, so its dbt build (target/jobs) stays inside the script.
   jobs_analysis:
     schedule: manual
+    sla: {fresh_within: none}
+    write: {warehouse: overwrite, delivery: versioned}
     group: jobs-analysis
     manual: true
     steps:

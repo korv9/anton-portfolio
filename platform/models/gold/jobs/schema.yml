@@ -35,7 +35,7 @@ models:
       - name: occupation_id
         data_tests: [not_null, unique]
   - name: fct_job_ads
-    description: One current row per observed job advertisement, incrementally replaced on newly ingested payload changes. Not a vacancy count or active-ad snapshot.
+    description: One current row per observed job advertisement, rebuilt in full on every build. Not a vacancy count or active-ad snapshot.
     columns:
       - name: job_id
         data_tests: [not_null, unique]

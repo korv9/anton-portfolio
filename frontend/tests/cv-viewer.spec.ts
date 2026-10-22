@@ -111,25 +111,28 @@ test(
 )
 
 test(
-  'the introduction and contact copy describe junior roles and job opportunities',
+  'the introduction and contact copy describe production work and the roles sought',
   { tag: '@mobile' },
   async ({ page }) => {
     await page.goto('/#om-mig')
     await expect(page.locator('.home-roles')).toHaveText('SOFTWARE DATA AI')
     await expect(page.locator('.home-roles')).toHaveCSS('font-weight', '700')
     await expect(page.locator('.home-about-text').first()).toContainText(
-      'junior software developer with a focus on data and AI',
+      'I love exploring data in creative ways',
     )
     await expect(page.locator('.home-contact-intro')).toContainText(
-      'job opportunity in mind',
+      'I’d especially like to hear from you',
     )
     expect(
       await page
         .locator('.home-contact-intro')
         .evaluate((el) => el.nextElementSibling?.className),
     ).toBe('home-contact-email')
-    await expect(page.locator('.home-about-text').first()).toContainText(
-      'looking for a role in software development, data engineering or applied AI',
+    await expect(page.locator('.home-about-text').nth(1)).toContainText(
+      'delivering in production',
+    )
+    await expect(page.locator('.home-about-text').nth(1)).toContainText(
+      'roles in software development, data and AI',
     )
   },
 )

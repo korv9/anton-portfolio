@@ -13,14 +13,17 @@ that describes orchestration. The definitions themselves are in two files:
 A subject is fetched to `warehouse/raw`, built and tested by dbt into
 `platform/target/<subject>`, passed through an ML stage if it has one, and exported to
 `frontend/public/data`. Its delivery group is then checked and published as a versioned
-release in R2 (`platform/publish/release.py`, specs in `configs/delivery/`). The site does not
+release in R2 (`platform/publish/release.py`, specs in `configs/delivery/`). Each release's
+group manifest records the dbt results of the group's subjects and its file row counts under
+`dq` and `reconcile`; a blocking dbt result stops the upload
+([r2-delivery-contract.md](r2-delivery-contract.md)). The site does not
 read these releases: it serves the data committed under `frontend/public/data`
 ([storage-and-serving.md](storage-and-serving.md)). No workflow commits data.
 
 ## Running a subject locally
 
 ```sh
-python platform/pipeline.py list                      # every subject, its group and schedule
+python platform/pipeline.py list                      # every subject: group, schedule, SLA, write modes
 python platform/pipeline.py run welfare               # fetch, build, test, export
 python platform/pipeline.py run welfare --only dbt    # one phase: ingest, dbt, ml, export, publish
 python platform/pipeline.py run symbolic --only dbt:1 # the first dbt step of a subject that has two
@@ -94,10 +97,20 @@ Each workflow checks out the repository, calls `.github/actions/data-setup` and 
 subjects. The shared setup checks the four R2 credentials, installs Python and
 `platform/requirements.txt`, optionally the ML dependencies, and restores the stored raw files
 (`pipeline.py pull`). All seven data workflows share the concurrency group `data-refresh`, so
-two of them never write the same raw manifests or R2 keys at once.
+two of them never write the same raw manifests or R2 keys at once. `queue: max` lets the runs
+waiting for it start in order; by default GitHub keeps only the newest pending run and cancels
+the others. Each workflow ends with an `alert` job (`.github/actions/failure-issue`): a failed or
+timed-out run opens an issue labelled `data-pipeline-failure`, or comments on the open one, and
+the next successful run closes it. A raw prune (`prune: true`) stops without deleting when more
+than 5 % of a folder's stored files, or a folder without its local fetch log, would go;
+`PRUNE_MAX_DELETE_PCT` raises the limit for an intentional cleanup.
 
 What stays in YAML is the handling of failure, which differs per workflow:
 
+- `refresh-jobs.yml` and `refresh-news.yml` call `.github/workflows/data-subject.yml` with
+  their subjects and keep only their schedule and lock. The called job restores the subjects'
+  raw files, builds and exports them, stores the raw files whatever the build did, and
+  publishes only if every subject came through.
 - `refresh-welfare.yml` runs welfare, parliament and taxes as three steps and pushes raw
   checkpoints after each, so a timeout in one source does not lose what the others fetched.
   The group is published only if all three succeeded.
@@ -107,7 +120,9 @@ What stays in YAML is the handling of failure, which differs per workflow:
   subject tolerates exit code 2 from the summary step and publishes the headlines alone.
 - `build-warehouse.yml` builds every subject, stores the warehouse only if all of them
   built, then exports and publishes each group whose subjects all came through. The quality
-  subject ends with the structural gate, after the store.
+  subject ends with the structural gate, after the store. Last, `platform/publish/retention.py`
+  plans the deletion of superseded releases, and deletes them only when the repository
+  variable `RETENTION_APPLY` is `true` (docs/r2-delivery-contract.md).
 - `publish-r2.yml` is the bootstrap: it stages every group and activates them together. It
   is not a subject and is run by hand.
 
@@ -119,6 +134,14 @@ file is merged into an uncached copy in R2 outside every release; locally it is 
 `frontend/public/data/status/` (git-ignored). The projects page (`#projekt`) reads it. The sources
 are the first segments of a subject's `raw` paths; a subject whose fetch log is kept outside
 R2 lists it under `sources` (news).
+
+Each subject declares `sla: {fresh_within: ...}` and, per layer it writes, the `write` mode its
+code uses (header of `platform/pipeline.yml`; `platform/tests/architecture/test_pipeline_spec.py`
+checks both against the code). Every hour `data-heartbeat.yml` (`platform/publish/heartbeat.py`)
+reads the published `status/ingestion.json` and compares each subject's last successful ingestion
+with its SLA: past it, one issue labelled `data-freshness` opens or is updated, and it closes
+when all are fresh again. Only subjects with ingest steps are recorded, so only they are checked.
+dbt source freshness on the fetch logs warns at the same age and never fails a run.
 
 ## What a run refetches
 
@@ -169,7 +192,10 @@ the jobs_analysis ingest step.
 
 ## Secrets and variables
 
-All in the `anton-portfolio` environment, except where noted.
+All in the `anton-portfolio` environment, except where noted. The callers of
+`data-subject.yml` (jobs and news) pass `secrets: inherit`: only the called job enters the environment, so the
+caller cannot name its secrets. The called job hands `SCB_API_KEY` and `ANTHROPIC_API_KEY` to
+the build only when the caller asks for them (`scb-key`, `summary`).
 
 | Workflow | Secrets | Variables |
 |---|---|---|
@@ -182,8 +208,8 @@ bucket's `r2.dev` address.
 
 ## Adding a subject
 
-1. Add its entry to `platform/pipeline.yml`: steps in order, `group`, `schedule`, and `raw` or
-   `features` if it stores files in R2.
+1. Add its entry to `platform/pipeline.yml`: steps in order, `group`, `schedule`, `sla`, `write`,
+   and `raw` or `features` if it stores files in R2.
 2. Give its files to a group in `configs/delivery/`, or leave them to `baseline`.
 3. `python platform/pipeline.py run <subject> --dry-run`, then run it.
 

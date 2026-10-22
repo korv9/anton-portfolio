@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["current_from", "domains", "totals", "sensitivity", "elsewhere", "provenance"],
+  "properties": {
+    "domains": {"type": "array", "minItems": 1, "items": {"type": "object", "required": ["id", "label_en", "label_sv", "scb_tables", "kolada_kpis"]}},
+    "totals": {"type": "array", "minItems": 1, "items": {"type": "object", "required": ["catalogue", "items"]}},
+    "sensitivity": {"type": "object", "minProperties": 1},
+    "elsewhere": {"type": "array"},
+    "provenance": {
+      "type": "object",
+      "required": ["sources", "fetched", "run_id", "code_sha"],
+      "properties": {
+        "sources": {"type": "array", "minItems": 1},
+        "run_id": {"type": ["string", "null"]},
+        "code_sha": {"type": ["string", "null"]}
+      }
+    }
+  }
+}

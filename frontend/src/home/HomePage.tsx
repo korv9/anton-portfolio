@@ -1,4 +1,4 @@
-/** Homepage: About, work history, the platform, selected projects and experiments. */
+/** Homepage: About, work history and selected projects on GitHub. */
 import { useEffect } from 'react'
 import { profile } from '../content'
 import { ABOUT, CONTACT } from './content'
@@ -12,33 +12,47 @@ import {
   THESIS,
   type Bilingual,
 } from './orbitContent'
-import { PROJECT_GROUPS, PROJECTS } from '../projects/projectRegistry'
+import { PROJECTS } from '../projects/projectRegistry'
 import './home.css'
 import { useSlowScroll } from './useSlowScroll'
 import ClusterPreview from './ClusterPreview'
 
 const b = (text: Bilingual) => text.en
 
-const groupProjects = (label: string) =>
-  PROJECT_GROUPS.find((group) => group.label === label)!
-    .ids.filter((id) => id !== 'thesis')
-    .map((id) => PROJECTS.find((project) => project.id === id)!)
-
-/**
- * Prototypes not yet ready to stand alone: one card per group, its projects as links, or one
- * card that is itself the link.
- */
-const GROUP_CARDS: { label: string; summary: string; href?: string }[] = [
+/** Selected repositories, the platform first. Each card leads to its code on GitHub. */
+const REPOS: {
+  name: string
+  title: string
+  summary: string
+  tech: string[]
+}[] = [
   {
-    label: 'What does it even mean?',
+    name: 'anton-portfolio',
+    title: 'Data platform behind this site',
     summary:
-      'A collection of charts on all the data behind this site, which I have not yet presented in a coherent way.',
-    href: '#what-does-it-even-mean',
+      'Collects Swedish and EU public data every day and models it in dbt. The platform pages are offline for now; the code is public.',
+    tech: ['Python', 'dbt', 'DuckDB', 'React', 'Cloudflare'],
   },
   {
-    label: 'Labs',
+    name: 'DrugComb-Synergy-Prediction',
+    title: 'DrugComb synergy prediction',
     summary:
-      'Experiments with embeddings, clustering and language models on texts and data.',
+      'Joins two public drug-research datasets in DuckDB and tests how well a LightGBM model predicts drug-combination synergy under four evaluation splits.',
+    tech: ['Python', 'DuckDB', 'SQL', 'LightGBM'],
+  },
+  {
+    name: 'swedish-job-market-analytics',
+    title: 'Swedish job market analytics',
+    summary:
+      'A dbt pipeline that turns four years of Arbetsförmedlingen job ads into role, skill and region trends.',
+    tech: ['dbt', 'DuckDB', 'Python', 'Power BI'],
+  },
+  {
+    name: 'diva-fabric-lakehouse',
+    title: 'DiVA Fabric lakehouse',
+    summary:
+      'An incremental Microsoft Fabric lakehouse for DiVA thesis metadata, with quarantine and quality gates. Re-runs add no duplicates.',
+    tech: ['PySpark', 'Delta Lake', 'Fabric', 'pytest'],
   },
 ]
 
@@ -113,11 +127,7 @@ function Profile() {
                 <p className="home-job-period">{b(job.period)}</p>
               </div>
               <p className="home-job-role">{b(job.kind)}</p>
-              <ul className="home-job-did">
-                {job.did.map((item) => (
-                  <li key={item.sv}>{b(item)}</li>
-                ))}
-              </ul>
+              <p className="home-job-role">{b(job.did)}</p>
               <p className="home-job-tech">{job.tech.join(' | ')}</p>
             </li>
           ))}
@@ -149,16 +159,10 @@ function Profile() {
         {thesis && (
           <div className="home-job">
             <div className="home-job-head">
-              <h3 className="home-job-org">
-                <a href={thesis.href}>{b(THESIS.title)}</a>
-              </h3>
+              <h3 className="home-job-org">{b(THESIS.title)}</h3>
             </div>
             <p className="home-job-role">{b(THESIS.kind)}</p>
-            <ul className="home-job-did">
-              {THESIS.points.map((item) => (
-                <li key={item.sv}>{b(item)}</li>
-              ))}
-            </ul>
+            <p className="home-job-role">{THESIS.points.map(b).join(' ')}</p>
             <p className="home-job-role">Tech: {THESIS.tech.join(', ')}</p>
           </div>
         )}
@@ -183,23 +187,17 @@ function Work() {
       <span className="home-project-marker" aria-hidden="true" />
       <div className="home-work-heading">
         <h2 id="projects-title" className="home-work-title">
-          <a href="#projekt">Projects</a>
+          Projects
         </h2>
         <div className="home-project-intro">
           <p className="home-about-text">
-            This website is my largest ongoing project: a data platform that
-            brings together automated pipelines, analytics and interactive
-            applications. I build the full flow, from collecting and processing
-            data to presenting it here.
+            My largest ongoing project is the data platform behind this site:
+            automated pipelines, dbt models and the applications on top. I build
+            the full flow, from collecting and processing data to presenting it.
           </p>
           <p className="home-about-text">
-            Several demos are still prototypes, and I’m continuing to improve
-            their design, navigation and presentation.
-          </p>
-          <p className="home-about-text">
-            Most of my latest projects are part of this data platform. Explore
-            the pipelines and application code on{' '}
-            <a href="https://github.com/korv9/anton-portfolio">GitHub</a>.
+            The platform’s own pages are offline while I refine them. The code
+            for it and for the projects below is on GitHub.
           </p>
         </div>
       </div>
@@ -207,47 +205,18 @@ function Work() {
       <div className="home-project-groups">
         <section aria-label="Project list">
           <ul className="work-row">
-            <li>
-              <a className="work-card" href="#sweden">
-                <h3 className="work-title">SWEDEN</h3>
-                <p className="work-question">
-                  What do we measure, what do we value, and what do we overlook?
-                  Five research products on work, culture, belonging and
-                  imagined futures in Sweden.
-                </p>
-              </a>
-            </li>
-            {groupProjects('Engineering').map((project) => (
-              <li key={project.id}>
-                <a className="work-card" href={project.href}>
-                  <h3 className="work-title">{b(project.title)}</h3>
-                  <p className="work-question">{b(project.summary)}</p>
-                  <p className="work-tech">
-                    {project.tech.slice(0, 4).join(' · ')}
-                  </p>
+            {REPOS.map((repo) => (
+              <li key={repo.name}>
+                <a
+                  className="work-card"
+                  href={`https://github.com/korv9/${repo.name}`}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <h3 className="work-title">{repo.title}</h3>
+                  <p className="work-question">{repo.summary}</p>
+                  <p className="work-tech">{repo.tech.join(' · ')}</p>
                 </a>
-              </li>
-            ))}
-            {GROUP_CARDS.map((group) => (
-              <li key={group.label}>
-                {group.href ? (
-                  <a className="work-card" href={group.href}>
-                    <h3 className="work-title">{group.label}</h3>
-                    <p className="work-question">{group.summary}</p>
-                  </a>
-                ) : (
-                  <div className="work-card">
-                    <h3 className="work-title">{group.label}</h3>
-                    <p className="work-question">{group.summary}</p>
-                    <ul className="work-links">
-                      {groupProjects(group.label).map((project) => (
-                        <li key={project.id}>
-                          <a href={project.href}>{b(project.title)}</a>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
               </li>
             ))}
           </ul>
@@ -275,8 +244,13 @@ export default function HomePage({ path }: { path: string }) {
       <Profile />
       <Work />
       <footer className="home-cta">
-        <a className="home-cta-link" href="#projekt">
-          Explore projects <span aria-hidden="true">↗</span>
+        <a
+          className="home-cta-link"
+          href="https://github.com/korv9"
+          target="_blank"
+          rel="noreferrer"
+        >
+          More on GitHub <span aria-hidden="true">↗</span>
         </a>
       </footer>
     </div>

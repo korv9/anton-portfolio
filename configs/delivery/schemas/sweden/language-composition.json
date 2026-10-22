@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["end", "bases", "columns", "rows", "method"],
+  "properties": {
+    "end": {"type": "integer"},
+    "columns": {"type": "array", "minItems": 1},
+    "rows": {"type": "array", "minItems": 1, "items": {"type": "array", "minItems": 1}},
+    "method": {"type": "object", "minProperties": 1}
+  }
+}

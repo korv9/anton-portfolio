@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["columns", "categories", "subterms", "length_bands", "method"],
+  "properties": {
+    "columns": {"type": "array", "minItems": 1},
+    "categories": {"type": "array", "minItems": 1, "items": {"type": "object", "required": ["id", "label_en", "label_sv", "pattern", "rows"], "properties": {"rows": {"type": "array", "minItems": 1}}}},
+    "subterms": {"type": "array", "items": {"type": "object", "required": ["id", "parent", "rows"]}},
+    "length_bands": {"type": "object", "required": ["columns", "rows"]},
+    "method": {"type": "object", "minProperties": 1}
+  }
+}

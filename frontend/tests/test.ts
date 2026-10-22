@@ -38,11 +38,3 @@ export const test = base.extend<{
   },
 })
 export { expect }
-
-/** Open the shared project menu on either viewport. */
-export async function siteNav(page: import('@playwright/test').Page) {
-  const menu = page.locator('.project-menu')
-  if (!((await menu.getAttribute('open')) != null))
-    await menu.locator('summary').click()
-  return page.locator('.project-menu-panel')
-}

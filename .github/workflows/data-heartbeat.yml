@@ -1,0 +1,65 @@
+name: Data heartbeat
+
+# Hourly: each subject's last successful ingestion in the published status/ingestion.json against
+# its sla.fresh_within in platform/pipeline.yml (platform/publish/heartbeat.py). Stale subjects
+# open one issue labelled data-freshness, or update the open one; when all are fresh again it is
+# closed. It reads only the public bucket, so it needs no secrets and stays out of the
+# data-refresh lock that the writing workflows share.
+
+on:
+  schedule:
+    - cron: '41 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: data-heartbeat
+  cancel-in-progress: true
+
+jobs:
+  heartbeat:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      R2_PUBLIC_BASE: ${{ vars.R2_PUBLIC_BASE }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.12'
+      # Only PyYAML, with the version and hashes of the CI lock.
+      - name: PyYAML
+        run: |
+          awk '/^pyyaml==/{p=1; print; next} p && /^[^ #]/{exit} p' platform/requirements-ci.lock > "$RUNNER_TEMP/yaml.txt"
+          pip install --require-hashes --no-deps -r "$RUNNER_TEMP/yaml.txt"
+      - name: Compare with the SLA and open, update or close the issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          TITLE: 'Data is stale'
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          stale=$(python platform/publish/heartbeat.py)
+          label=data-freshness
+          open=$(gh issue list --label "$label" --state open --limit 100 --json number,title \
+            --jq 'map(select(.title == $ENV.TITLE)) | .[0].number // empty')
+          if [ -z "$stale" ]; then
+            echo "Every checked subject is within its SLA."
+            if [ -n "$open" ]; then gh issue close "$open" --comment "Fresh again: $RUN_URL"; fi
+            exit 0
+          fi
+          echo "$stale"
+          body=$(printf 'Past sla.fresh_within in platform/pipeline.yml (status/ingestion.json):\n\n%s\n\nLast checked: %s\n' \
+            "$stale" "$RUN_URL")
+          # The issue is edited, not commented on, so an hourly check does not notify every hour.
+          if [ -n "$open" ]; then
+            gh issue edit "$open" --body "$body"
+          else
+            gh label create "$label" --color FBCA04 --description "A data subject is older than its SLA" --force
+            gh issue create --title "$TITLE" --label "$label" --body "$body"
+          fi

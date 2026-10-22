@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["sessions", "years_left_out", "run_id", "code_sha"],
+  "properties": {
+    "sessions": {"type": "array", "minItems": 1, "items": {"type": "object", "required": ["session", "source_url", "sha256", "speeches"]}},
+    "years_left_out": {"type": "array"},
+    "run_id": {"type": ["string", "null"]},
+    "code_sha": {"type": ["string", "null"]}
+  }
+}

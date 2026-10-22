@@ -23,6 +23,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "lib"))
 
 import rawstore  # noqa: E402
 from common import PUBLIC  # noqa: E402
+from heartbeat import last_success  # noqa: E402
 
 KEY = "status/ingestion.json"
 LOCAL = PUBLIC / KEY
@@ -52,7 +53,12 @@ def merged(current: bytes | None, name: str, value: dict) -> dict:
         status = json.loads(current) if current else {}
     except ValueError:
         status = {}
-    return {"subjects": {**status.get("subjects", {}), name: value}}
+    subjects = status.get("subjects", {})
+    # A failed run keeps the time of the last success, which data-heartbeat.yml compares with the SLA.
+    previous = subjects.get(name) if isinstance(subjects.get(name), dict) else {}
+    if since := last_success(value) or last_success(previous):
+        value = {**value, "last_success_at": since}
+    return {"subjects": {**subjects, name: value}}
 
 
 def record(name: str, subject: dict, started: str, error: str | None) -> None:
@@ -95,4 +101,7 @@ if __name__ == "__main__":
         assert got[1] == {"source_key": "missing", "fetched_at": None}
         assert merged(b'{"subjects": {"b": 1}}', "a", {"n": 2}) == {"subjects": {"b": 1, "a": {"n": 2}}}
         assert merged(b"torn", "a", {}) == {"subjects": {"a": {}}}
+        ok = {"outcome": "success", "recorded_at": "2026-01-01T00:00:00+00:00"}
+        failed = merged(json.dumps(merged(None, "a", ok)).encode(), "a", {"outcome": "failure"})
+        assert failed["subjects"]["a"]["last_success_at"] == ok["recorded_at"], failed
     print("ok")

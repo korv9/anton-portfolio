@@ -17,42 +17,21 @@ permissions:
 concurrency:
   group: data-refresh
   cancel-in-progress: false
+  # Wait in order: the default keeps one pending run and cancels the one before it.
+  queue: max
 
 jobs:
+  # The steps and the failure alert are in data-subject.yml. The R2 credentials are secrets of
+  # the anton-portfolio environment, which only the called job enters, so they cannot be passed
+  # by name from here. The token is limited to what the alert needs.
   refresh:
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    # The R2 credentials are secrets of the anton-portfolio environment.
-    if: github.ref == 'refs/heads/main'
-    environment: anton-portfolio
-    env:
-      DBT_SEND_ANONYMOUS_USAGE_STATS: 'false'
-      PORTFOLIO_DB: ${{ github.workspace }}/warehouse/portfolio.duckdb
-      PORTFOLIO_RAW: ${{ github.workspace }}/warehouse/raw
-      R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
-      R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
-      R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY || secrets.R2_SECRET_ACCESS_KEY_ID }}
-      R2_BUCKET: ${{ secrets.R2_BUCKET }}
-      R2_PUBLIC_BASE: ${{ vars.R2_PUBLIC_BASE }}
-      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-    steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-        with:
-          persist-credentials: false
-      - uses: ./.github/actions/data-setup
-      # The week's summary is written by Claude from the headlines and grounded in them. The
-      # subject runs that step only when ANTHROPIC_API_KEY is set; without it the page shows the
-      # headlines alone.
-      - name: Summary SDK (optional)
-        if: env.ANTHROPIC_API_KEY != ''
-        run: pip install --require-hashes -r platform/requirements-news.lock || echo "::warning::Optional summary SDK could not be installed."
-      - name: Restore, fetch, tag, export, summarise and publish
-        run: python platform/pipeline.py run news
-      - name: Keep the optional summary outcome
-        if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
-        with:
-          name: news-summary-status
-          path: ${{ runner.temp }}/news-summary-status.json
-          if-no-files-found: ignore
-          retention-days: 7
+    uses: ./.github/workflows/data-subject.yml
+    secrets: inherit
+    permissions:
+      contents: read
+      actions: read
+      issues: write
+    with:
+      subjects: news
+      timeout-minutes: 20
+      summary: true

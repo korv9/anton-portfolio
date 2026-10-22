@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["archives", "years_left_out", "min_texts", "run_id", "code_sha"],
+  "properties": {
+    "archives": {"type": "array", "minItems": 1, "items": {"type": "object", "required": ["archive", "source_url", "sha256", "ads", "distinct_texts"]}},
+    "years_left_out": {"type": "array"},
+    "min_texts": {"type": "integer", "minimum": 1},
+    "run_id": {"type": ["string", "null"]},
+    "code_sha": {"type": ["string", "null"]}
+  }
+}
