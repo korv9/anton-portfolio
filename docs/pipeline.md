@@ -125,6 +125,12 @@ What stays in YAML is the handling of failure, which differs per workflow:
   variable `RETENTION_APPLY` is `true` (docs/r2-delivery-contract.md).
 - `publish-r2.yml` is the bootstrap: it stages every group and activates them together. It
   is not a subject and is run by hand.
+- `cluster-jobs.yml` runs model fits and clustering sweeps that need more memory than a
+  laptop, by hand and only from `main`. It is not a subject and publishes nothing. It pulls one
+  features folder from the warehouse store, runs the chosen job (`futures-topics`, or `module`
+  for `python -m <args>`) and pushes the folder back, after a failure too, so a stopped run
+  resumes from its checkpoints. Its lock is per job, not `data-refresh`; do not start it while
+  `build-warehouse.yml` runs, since that run pushes back the copy of the features it pulled.
 
 After a subject's ingest steps, successful or not, `pipeline.py` records the outcome in
 `status/ingestion.json` (`platform/publish/ingest_status.py`): the error if any, the GitHub
@@ -199,7 +205,7 @@ the build only when the caller asks for them (`scb-key`, `summary`).
 
 | Workflow | Secrets | Variables |
 |---|---|---|
-| `refresh-welfare.yml`, `refresh-jobs.yml`, `refresh-diva.yml`, `refresh-job-analysis.yml`, `build-warehouse.yml`, `publish-r2.yml` | `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` (or `R2_SECRET_ACCESS_KEY_ID`), `R2_BUCKET` | `R2_PUBLIC_BASE` |
+| `refresh-welfare.yml`, `refresh-jobs.yml`, `refresh-diva.yml`, `refresh-job-analysis.yml`, `build-warehouse.yml`, `publish-r2.yml`, `cluster-jobs.yml` | `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` (or `R2_SECRET_ACCESS_KEY_ID`), `R2_BUCKET` | `R2_PUBLIC_BASE` |
 | `refresh-news.yml` | the four above, and optionally `ANTHROPIC_API_KEY` | `R2_PUBLIC_BASE` |
 | `ci.yml` | repository secrets `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET`, all optional | none |
 

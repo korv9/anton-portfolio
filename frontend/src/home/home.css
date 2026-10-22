@@ -25,6 +25,21 @@
 .home-backdrop-foreground[data-ready='false'] {
   visibility: hidden;
 }
+/* The map steps aside while the chart feed fills the screen (HomeFeed.tsx). */
+.home-backdrop,
+.home-backdrop-foreground {
+  transition:
+    opacity 0.4s var(--ease),
+    visibility 0s;
+}
+.home-shell:has(.home-feed[data-in-view])
+  :is(.home-backdrop, .home-backdrop-foreground) {
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.4s var(--ease),
+    visibility 0s 0.4s;
+}
 @media (min-width: 761px) {
   .home-backdrop,
   .home-backdrop-foreground {
@@ -723,4 +738,13 @@ a.work-card:hover .work-title {
 .work-links a:focus-visible {
   outline: 2px solid var(--focus);
   outline-offset: 4px;
+}
+
+/* The chart feed closes Projects across both columns, its heading in the Projects style. */
+.home-feed {
+  grid-column: 1 / -1;
+}
+.home-feed .home-work-title {
+  grid-row: auto;
+  margin-bottom: var(--sp-6);
 }

@@ -52,6 +52,7 @@ const show = (v: number, m: Measure) => (m === 'share' ? pct(v) : v.toFixed(2))
 const SPAN = 5
 
 const BarField = lazy(() => import('./BarField'))
+const FuturesTopics = lazy(() => import('./FuturesTopics'))
 
 export default function Futures({ route }: { route: Route }) {
   const product = productById('E')
@@ -625,13 +626,18 @@ export default function Futures({ route }: { route: Route }) {
       scene={scene}
       findings={findings}
       explore={
-        <Explore
-          themes={themes}
-          trends={trends}
-          years={years}
-          picked={picked}
-          onPick={(t) => set({ tema: t })}
-        />
+        <>
+          <Explore
+            themes={themes}
+            trends={trends}
+            years={years}
+            picked={picked}
+            onPick={(t) => set({ tema: t })}
+          />
+          <Suspense fallback={null}>
+            <FuturesTopics />
+          </Suspense>
+        </>
       }
       exploreSummary={l(
         'Theme trends, the parties compared, the patterns and source-linked speeches.',

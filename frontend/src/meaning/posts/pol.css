@@ -12,7 +12,7 @@
   display: grid;
   place-content: center;
   text-align: center;
-  font-size: clamp(48px, 9vw, 120px);
+  font-size: clamp(28px, 21cqi, 120px);
   font-weight: var(--weight-heading);
   letter-spacing: -0.04em;
   line-height: 0.9;
@@ -38,7 +38,7 @@
   place-content: center;
   text-align: center;
   border-radius: 8px;
-  font-size: clamp(16px, 2.6vw, 30px);
+  font-size: clamp(14px, 8cqi, 30px);
   font-weight: var(--weight-heading);
   font-variant-numeric: tabular-nums;
   color: var(--ink);

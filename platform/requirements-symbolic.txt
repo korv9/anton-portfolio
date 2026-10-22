@@ -3,6 +3,7 @@
 #
 #     pip install --require-hashes -r platform/requirements-ml.lock
 #
-# HDBSCAN comes from scikit-learn (requirements.txt).
+# The atlas's HDBSCAN comes from scikit-learn (requirements.txt). The futures topic pilot uses the
+# hdbscan package (requirements-ml.in): sklearn.cluster.HDBSCAN has no relative_validity_ (DBCV).
 sentence-transformers==6.1.0
 umap-learn==0.5.12

@@ -341,3 +341,72 @@ models:
         data_tests:
           - between:
               arguments: {min: 0, max: 1}
+  - name: mart_sweden_future_topics
+    description: >-
+      Futures topic pilot: year × corpus × unsupervised cluster of sampled future-marked sentences
+      (docs/sweden-futures-topics-preregistration.md). Labels are unreviewed; cluster -1 is noise.
+    config:
+      contract: {enforced: true}
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [year, corpus, cluster]
+    columns:
+      - name: year
+        data_type: INTEGER
+        description: 'Key: calendar year of the speech or publication year of the thesis.'
+        data_tests: [not_null]
+      - name: corpus
+        data_type: VARCHAR
+        description: "Key: 'riksdag' or 'diva'; never pooled."
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [riksdag, diva]
+      - name: cluster
+        data_type: INTEGER
+        description: 'Key: cluster number of the run; -1 is noise.'
+        data_tests: [not_null]
+      - name: label
+        data_type: VARCHAR
+        description: "Dimension: 'unreviewed cluster N' until reviewed, 'noise' for -1."
+      - name: top_terms
+        data_type: VARCHAR
+        description: 'Dimension: the cluster''s ten c-TF-IDF terms, future marker words removed.'
+      - name: stable
+        data_type: BOOLEAN
+        description: 'Dimension: the run passed the stability and null criteria and the cluster''s Jaccard match is at least 0.5 in every seed.'
+      - name: sentences
+        data_type: BIGINT
+        description: 'Measure, additive: sampled sentences in the cluster.'
+      - name: year_sentences
+        data_type: HUGEINT
+        description: 'Measure: sampled sentences of the year and corpus, noise included; the denominator.'
+      - name: share
+        data_type: DOUBLE
+        description: "Non-additive ratio: sentences / year_sentences."
+        data_tests:
+          - between:
+              arguments: {min: 0, max: 1}
+      - name: share_low
+        data_type: DOUBLE
+        description: 'Non-additive: 2.5th percentile of 1,000 multinomial bootstrap shares.'
+      - name: share_high
+        data_type: DOUBLE
+        description: 'Non-additive: 97.5th percentile of 1,000 multinomial bootstrap shares.'
+      - name: run_id
+        data_type: VARCHAR
+        description: 'Dimension: the clustering run.'
+  - name: mart_sweden_future_topic_clusters
+    description: Futures topic pilot per cluster × corpus; exploratory test statistics, unreviewed labels.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [cluster, corpus]
+    columns:
+      - name: trend_p_holm
+        data_tests:
+          - between:
+              arguments: {min: 0, max: 1}
+      - name: label
+        data_tests: [not_null]

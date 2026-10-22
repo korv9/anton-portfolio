@@ -43,10 +43,13 @@ const SUMMARY = 'ai-act/jobs/summary.json'
 const MONTHLY = 'ai-act/jobs/monthly.json'
 const FIELDS = 'ai-act/jobs/fields.json'
 
-/** Monthly rows per term, in month order. */
+/** Monthly rows per term, in month order. Months with under 1,000 ads are left out: a partial
+ * month's share is noise. */
 const byTerm = (rows: Monthly) => {
   const m = new Map<string, Monthly>()
-  for (const r of [...rows].sort((a, b) => a.month.localeCompare(b.month)))
+  for (const r of rows
+    .filter((r) => r.ads >= 1000)
+    .sort((a, b) => a.month.localeCompare(b.month)))
     m.set(r.term_id, [...(m.get(r.term_id) ?? []), r])
   return m
 }

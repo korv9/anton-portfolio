@@ -1,0 +1,143 @@
+name: Run a heavy compute job
+
+# Model fits and clustering sweeps that need more memory than a laptop has, by hand only. A job
+# pulls its inputs from the warehouse store in R2 (platform/publish/warehouse_store.py), runs, and
+# pushes its outputs back under the same features folder. It publishes nothing to the site.
+#
+#   futures-topics  the SWEDEN E topic pilot (docs/sweden-futures-topics-preregistration.md):
+#                   cluster, analyze, then a scratch dbt build and export_futures_topics.py whose
+#                   topics.json is kept as an artifact for review.
+#   module          python -m <module> <arguments>, <module> under ml., with <path> pulled before
+#                   and pushed after, so a later batch needs no change here.
+#
+# The run step stops at 300 minutes, so the push has its own window before the job limit. After a
+# failure or that timeout only the checkpoints are pushed (futures-topics: run/), so the next run
+# resumes; the derived outputs are pushed only after a run that succeeded. A cancelled run or a
+# runner that dies pushes nothing.
+
+on:
+  workflow_dispatch:
+    inputs:
+      job:
+        description: Job to run
+        type: choice
+        options: [futures-topics, module]
+        default: futures-topics
+      args:
+        description: 'module only: the module and its arguments, e.g. ml.cluster_lab.cli run --new-runs 1'
+        default: ''
+      path:
+        description: 'module only: features folder to pull before and push after, e.g. clusters/eras'
+        default: ''
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cluster-jobs-${{ inputs.job }}
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    if: github.ref == 'refs/heads/main'
+    environment: anton-portfolio
+    env:
+      JOB: ${{ inputs.job }}
+      ARGS: ${{ inputs.args }}
+      PULL: ${{ inputs.job == 'futures-topics' && 'sweden/futures_topics/run' || inputs.path }}
+      PUSH: ${{ inputs.job == 'futures-topics' && 'sweden/futures_topics' || inputs.path }}
+      CHECKPOINTS: ${{ inputs.job == 'futures-topics' && 'sweden/futures_topics/run' || inputs.path }}
+      DBT_SEND_ANONYMOUS_USAGE_STATS: 'false'
+      PORTFOLIO_DB: ${{ github.workspace }}/warehouse/portfolio.duckdb
+      PORTFOLIO_FEATURES: ${{ github.workspace }}/warehouse/features
+      R2_PUBLIC_BASE: ${{ vars.R2_PUBLIC_BASE }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Set up Python and the ML lock
+        uses: ./.github/actions/data-setup
+        timeout-minutes: 20
+        # The R2 keys go only to the steps that talk to the bucket, never to the run step.
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY || secrets.R2_SECRET_ACCESS_KEY_ID }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+        with:
+          ml: 'true'
+      # The module and the path come from the dispatch form, so only a module of the ml package and a
+      # plain features folder are accepted. The R2 keys are never in the run step's environment.
+      - name: Check the inputs
+        id: check
+        shell: bash
+        run: |
+          if [ "$JOB" = module ]; then
+            read -ra parts <<< "$ARGS"
+            if ! [[ "${parts[0]:-}" =~ ^ml\.[a-z0-9_.]+$ ]]; then
+              echo "::error::module must be an ml. module, e.g. ml.cluster_lab.cli"; exit 1
+            fi
+          fi
+          if [ -n "$PUSH" ] && ! [[ "$PUSH" =~ ^[a-z0-9_-]+(/[a-z0-9_-]+)*$ ]]; then
+            echo "::error::path must be a features folder of a-z, 0-9, _ and -, e.g. clusters/eras"; exit 1
+          fi
+      - name: Pull the inputs
+        id: pull
+        if: env.PULL != ''
+        timeout-minutes: 15
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY || secrets.R2_SECRET_ACCESS_KEY_ID }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+        run: python platform/publish/warehouse_store.py pull --only features --path "$PULL"
+      - name: Run
+        id: run
+        timeout-minutes: 280
+        # Named so that pipefail is on: a failed step is not hidden behind tee.
+        shell: bash
+        run: |
+          mkdir -p logs
+          case "$JOB" in
+            futures-topics)
+              python -m ml.futures_topics.cluster 2>&1 | tee logs/cluster.log
+              python -m ml.futures_topics.analyze 2>&1 | tee logs/analyze.log
+              (cd platform && python -m dbt.cli.main build --profiles-dir . \
+                --select stg_futures_topics+ stg_futures_topic_cells+ stg_futures_topic_clusters+) 2>&1 | tee logs/dbt.log
+              python platform/publish/sweden/export_futures_topics.py 2>&1 | tee logs/export.log
+              ;;
+            module)
+              # Split on white space into the module and its arguments, each passed as one word.
+              read -ra parts <<< "$ARGS"
+              python -m "${parts[0]}" "${parts[@]:1}" 2>&1 | tee logs/module.log
+              ;;
+          esac
+      # After a failure too, so the checkpoints of a stopped run are kept for the next one.
+      - name: Push the outputs
+        if: ${{ always() && env.PUSH != '' && steps.check.outcome == 'success' && (env.PULL == '' || steps.pull.outcome == 'success') }}
+        timeout-minutes: 10
+        env:
+          RUN_OUTCOME: ${{ steps.run.outcome }}
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY || secrets.R2_SECRET_ACCESS_KEY_ID }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+        run: |
+          folder="$PUSH"
+          [ "$RUN_OUTCOME" = success ] || folder="$CHECKPOINTS"
+          python platform/publish/warehouse_store.py push --only features --path "$folder"
+      # Logs and diagnostics only. The review sheet (tmp/topics-review.csv) quotes sentences and stays out.
+      - name: Keep the logs and diagnostics
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: ${{ inputs.job }}-${{ github.run_id }}
+          if-no-files-found: ignore
+          path: |
+            logs/
+            warehouse/features/sweden/futures_topics/run/metrics.json
+            warehouse/features/sweden/futures_topics/run/cache/*/sweep.parquet
+            warehouse/features/sweden/futures_topics/method.json
+            frontend/public/data/sweden/futures/topics.json
