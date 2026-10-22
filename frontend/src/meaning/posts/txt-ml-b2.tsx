@@ -38,6 +38,7 @@ function ResearchSteps() {
           <>
             <Slicer
               label="Measure"
+              cycles={false}
               options={keys}
               value={metric}
               onChange={setMetric}

@@ -1,17 +1,7 @@
 /** Jobs: the tech-ad clustering run, from cluster-summary.json and cluster-preview.json. */
-import { color, Frame, useData, type Post } from '../kit'
+import { color, focal, Frame, useData, type Post } from '../kit'
 import { linearScale } from '../../charts/scales'
-import {
-  arc,
-  CLUSTERS,
-  D,
-  fmt,
-  KpiGrid,
-  Legend,
-  pct,
-  Svg,
-  XLabels,
-} from './job-kit'
+import { arc, CLUSTERS, D, fmt, KpiGrid, pct, Svg, XLabels } from './job-kit'
 
 type Share = { label: string; count: number; share: number }
 type Cluster = {
@@ -102,6 +92,8 @@ function Gauges() {
     <Frame data={data}>
       {(s) => {
         const g = s.diagnostics
+        // Silhouette is the headline score, so it alone takes the focal colour; each gauge is
+        // named under its arc, so no legend is needed.
         const items: [string, number][] = [
           ['silhouette', g.silhouette],
           ['trustworthiness', g.trustworthiness],
@@ -136,7 +128,7 @@ function Gauges() {
                         a0,
                         a0 + span * Math.max(0, Math.min(1, v)),
                       )}
-                      fill={color(i)}
+                      fill={focal(i === 0)}
                     />
                     <text
                       x={cx}
@@ -147,11 +139,13 @@ function Gauges() {
                     >
                       {v.toFixed(2)}
                     </text>
+                    <text x={cx} y={cy + 66} textAnchor="middle" fontSize={14}>
+                      {k}
+                    </text>
                   </g>
                 )
               })}
             </Svg>
-            <Legend items={items.map(([k], i) => [k, color(i)])} />
           </>
         )
       }}

@@ -72,12 +72,19 @@ export function Svg({
   )
 }
 
-export function Legend({ items }: { items: string[] }) {
+export function Legend({
+  items,
+  colors,
+}: {
+  items: string[]
+  /** Swatch colours, where the chart does not cycle the palette. */
+  colors?: string[]
+}) {
   return (
     <div className="mean-legend">
       {items.map((t, i) => (
         <span key={t}>
-          <i style={{ background: color(i) }} />
+          <i style={{ background: colors?.[i] ?? color(i) }} />
           {t}
         </span>
       ))}

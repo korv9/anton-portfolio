@@ -6,10 +6,13 @@ import { BACKDROP_COLOURS, groupBackdropPoints } from './backdropGeometry'
 let introPlayed = false
 /** The longest a cluster takes to arrive: its glide plus the last stagger (home.css). */
 const ARRIVAL = 2400
+/** A map later than this after mount fades in where it stands: no fly-in under text being read. */
+const LATE = 1200
 
 /**
  * Real UMAP points in cluster layers; CSS supplies floating motion and pointer parallax. On the
  * first visit each cluster glides in from its own side of the screen and they settle into the map.
+ * The name never waits for it, and the map stops moving once the hero is off screen.
  */
 export default function DebateBackdrop({
   playIntro = true,
@@ -26,27 +29,30 @@ export default function DebateBackdrop({
   const [reduced, setReduced] = useState(
     () => window.matchMedia('(prefers-reduced-motion: reduce)').matches,
   )
-  const [intro, setIntro] = useState(allowIntro && !introPlayed && !reduced)
+  const [intro, setIntro] = useState<'true' | 'late' | 'false'>('false')
+  const [heroVisible, setHeroVisible] = useState(true)
   const layers = useMemo(() => groupBackdropPoints(points), [points])
-  const still = hidden || reduced
+  const still = hidden || reduced || !heroVisible
 
   useEffect(() => {
     let active = true
     let timer = 0
+    const mounted = performance.now()
     loadDebateMap()
       .then((map) => {
         if (!active) return
         setPoints(map.points)
         if (allowIntro && !introPlayed && !reduced) {
-          setIntro(true)
-          timer = window.setTimeout(() => setIntro(false), ARRIVAL)
-        } else setIntro(false)
+          if (performance.now() - mounted > LATE) setIntro('late')
+          else {
+            setIntro('true')
+            timer = window.setTimeout(() => setIntro('false'), ARRIVAL)
+          }
+        }
         introPlayed = true
       })
-      .catch(() => {
-        // An unavailable map leaves the decoration absent.
-        if (active) setIntro(false)
-      })
+      // An unavailable map leaves the decoration absent.
+      .catch(() => {})
     return () => {
       active = false
       clearTimeout(timer)
@@ -57,6 +63,16 @@ export default function DebateBackdrop({
     const visibility = () => setHidden(document.hidden)
     document.addEventListener('visibilitychange', visibility)
     return () => document.removeEventListener('visibilitychange', visibility)
+  }, [])
+
+  useEffect(() => {
+    const identity = document.getElementById('start')
+    if (!identity) return
+    const observer = new IntersectionObserver(([entry]) =>
+      setHeroVisible(entry.isIntersecting),
+    )
+    observer.observe(identity)
+    return () => observer.disconnect()
   }, [])
 
   useEffect(() => {

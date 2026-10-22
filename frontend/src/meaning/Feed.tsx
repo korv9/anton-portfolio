@@ -8,6 +8,7 @@ import { flushSync } from 'react-dom'
 import { Card, usePageVisible } from './Card'
 import { type Post } from './kit'
 import './meaning.css'
+import './feed-chrome.css'
 
 const modules = import.meta.glob<{ posts: Post[] }>('./posts/*.tsx', {
   eager: true,

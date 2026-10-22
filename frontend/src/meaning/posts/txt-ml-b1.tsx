@@ -48,6 +48,7 @@ function SymbolRadial() {
           <>
             <Slicer
               label="Measure"
+              cycles={false}
               options={SYM_METRICS}
               value={metric}
               onChange={setMetric}
@@ -158,6 +159,7 @@ function ModelParallel() {
           <>
             <Slicer
               label="Experiment"
+              cycles={false}
               options={EXPS}
               value={exp}
               onChange={setExp}

@@ -96,6 +96,7 @@ function RiskDonut() {
           <>
             <Slicer
               label="Actor"
+              cycles={false}
               options={['all', ...uniq(rows.map((o) => o.actor_id))]}
               value={actor}
               onChange={setActor}

@@ -1,9 +1,10 @@
 /** Jobs: counties and conditions of employment, from market.json's regions and conditions. */
 import { useState } from 'react'
-import { color, Frame, Slicer, useData, type Post } from '../kit'
+import { color, focal, Frame, shade, Slicer, useData, type Post } from '../kit'
 import { linearScale } from '../../charts/scales'
 import { EMPLOYMENT_EN, HOURS_EN } from '../../jobs/market'
 import {
+  knownRegion,
   arc,
   D,
   fieldName,
@@ -26,6 +27,7 @@ function RegionLollipop() {
     <Frame data={data}>
       {(m) => {
         const rows = m.regions
+          .filter(knownRegion)
           .map((r) => ({ name: short(r.region), v: r.ads.all?.[year] ?? 0 }))
           .sort((a, b) => b.v - a.v)
         const W = 400,
@@ -90,7 +92,7 @@ function RegionHeatmap() {
         ]
         const id =
           m.fields.find((f) => fieldName(f.name) === field)?.id ?? 'all'
-        const regions = m.regions.filter((r) => r.region !== 'unknown')
+        const regions = m.regions.filter(knownRegion)
         const W = 800,
           rowH = 16,
           L = 120
@@ -165,6 +167,11 @@ function EmploymentDonut() {
         const inner = Object.entries(all?.hours ?? {}).sort(
           (a, b) => b[1] - a[1],
         )
+        // Only the outer ring's largest part takes the focal colour; the rest step through greys.
+        const tone = (i: number, off: number) =>
+          off === 0 && i === 0
+            ? focal(true)
+            : shade(i, (off ? inner : outer).length)
         const ring = (
           rows: [string, number][],
           r0: number,
@@ -180,7 +187,7 @@ function EmploymentDonut() {
               <path
                 key={k}
                 d={arc(200, 200, r0, r1, a0, a - 0.01)}
-                fill={color(i + off)}
+                fill={tone(i, off)}
               >
                 <title>{`${EMPLOYMENT_EN[k] ?? HOURS_EN[k] ?? k}: ${pct(v / t, 1)}`}</title>
               </path>
@@ -201,17 +208,17 @@ function EmploymentDonut() {
               label="Sunburst of employment type and working hours"
             >
               {ring(outer, 140, 190, 0)}
-              {ring(inner, 80, 134, 3)}
+              {ring(inner, 80, 134, 1)}
             </Svg>
             <Legend
               items={[
                 ...outer.map(
                   ([k], i) =>
-                    [EMPLOYMENT_EN[k] ?? k, color(i)] as [string, string],
+                    [EMPLOYMENT_EN[k] ?? k, tone(i, 0)] as [string, string],
                 ),
                 ...inner.map(
                   ([k], i) =>
-                    [HOURS_EN[k] ?? k, color(i + 3)] as [string, string],
+                    [HOURS_EN[k] ?? k, tone(i, 1)] as [string, string],
                 ),
               ]}
             />
