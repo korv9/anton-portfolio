@@ -107,6 +107,10 @@ than 5 % of a folder's stored files, or a folder without its local fetch log, wo
 
 What stays in YAML is the handling of failure, which differs per workflow:
 
+- `refresh-jobs.yml` and `refresh-news.yml` call `.github/workflows/data-subject.yml` with
+  their subjects and keep only their schedule and lock. The called job restores the subjects'
+  raw files, builds and exports them, stores the raw files whatever the build did, and
+  publishes only if every subject came through.
 - `refresh-welfare.yml` runs welfare, parliament and taxes as three steps and pushes raw
   checkpoints after each, so a timeout in one source does not lose what the others fetched.
   The group is published only if all three succeeded.
@@ -116,7 +120,9 @@ What stays in YAML is the handling of failure, which differs per workflow:
   subject tolerates exit code 2 from the summary step and publishes the headlines alone.
 - `build-warehouse.yml` builds every subject, stores the warehouse only if all of them
   built, then exports and publishes each group whose subjects all came through. The quality
-  subject ends with the structural gate, after the store.
+  subject ends with the structural gate, after the store. Last, `platform/publish/retention.py`
+  plans the deletion of superseded releases, and deletes them only when the repository
+  variable `RETENTION_APPLY` is `true` (docs/r2-delivery-contract.md).
 - `publish-r2.yml` is the bootstrap: it stages every group and activates them together. It
   is not a subject and is run by hand.
 
@@ -186,7 +192,10 @@ the jobs_analysis ingest step.
 
 ## Secrets and variables
 
-All in the `anton-portfolio` environment, except where noted.
+All in the `anton-portfolio` environment, except where noted. The callers of
+`data-subject.yml` (jobs and news) pass `secrets: inherit`: only the called job enters the environment, so the
+caller cannot name its secrets. The called job hands `SCB_API_KEY` and `ANTHROPIC_API_KEY` to
+the build only when the caller asks for them (`scb-key`, `summary`).
 
 | Workflow | Secrets | Variables |
 |---|---|---|

@@ -1,0 +1,109 @@
+name: Data subject
+
+# The shared shape of the daily refreshes (refresh-jobs, refresh-news): restore
+# the subjects' stored raw files from R2, fetch, build, test and export them with
+# platform/pipeline.py, store the raw files whatever the build did, then check and publish their
+# delivery group. A failed or timed-out run opens (or comments on) an issue; a successful one
+# closes it. The caller keeps its schedule, its inputs and the data-refresh lock: a called
+# workflow runs inside the caller's run, so the caller's concurrency group covers these jobs too.
+# This file has no concurrency of its own; the same group here would wait for its own caller.
+
+on:
+  workflow_call:
+    inputs:
+      subjects:
+        description: Subjects of platform/pipeline.yml, built and published together
+        type: string
+        required: true
+      store:
+        description: Subjects whose raw files are restored first and stored after the build; empty skips both
+        type: string
+        default: ''
+      timeout-minutes:
+        description: The data job's timeout
+        type: number
+        required: true
+      scb-key:
+        description: Give the build the SCB API key (company registry lookups)
+        type: boolean
+        default: false
+      summary:
+        description: Install the summary SDK, give the build the Anthropic key and keep the summary outcome
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: ${{ inputs.timeout-minutes }}
+    # The R2 credentials are secrets of the anton-portfolio environment.
+    if: github.ref == 'refs/heads/main'
+    environment: anton-portfolio
+    env:
+      DBT_SEND_ANONYMOUS_USAGE_STATS: 'false'
+      PORTFOLIO_DB: ${{ github.workspace }}/warehouse/portfolio.duckdb
+      PORTFOLIO_RAW: ${{ github.workspace }}/warehouse/raw
+      R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+      R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY || secrets.R2_SECRET_ACCESS_KEY_ID }}
+      R2_BUCKET: ${{ secrets.R2_BUCKET }}
+      # The bucket's public address once a custom domain is connected; empty keeps r2.dev.
+      R2_PUBLIC_BASE: ${{ vars.R2_PUBLIC_BASE }}
+      SCB_API_KEY: ${{ inputs.scb-key && secrets.SCB_API_KEY || '' }}
+      # The news subject writes the week's summary only when this is set (platform/pipeline.yml).
+      ANTHROPIC_API_KEY: ${{ inputs.summary && secrets.ANTHROPIC_API_KEY || '' }}
+      SUBJECTS: ${{ inputs.subjects }}
+      STORE: ${{ inputs.store }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      # Same writer lock as build-warehouse.yml: shared raw manifests and R2 keys.
+      - name: Set up and restore the stored raw files
+        id: setup
+        uses: ./.github/actions/data-setup
+        with:
+          pull: ${{ inputs.store }}
+      - name: Summary SDK (optional)
+        if: env.ANTHROPIC_API_KEY != ''
+        run: pip install --require-hashes -r platform/requirements-news.lock || echo "::warning::Optional summary SDK could not be installed."
+      # One failed subject does not stop the others; the step fails if any did, which skips the
+      # publication below. Unquoted on purpose: one argument per subject.
+      - name: Fetch, build, test and export
+        run: python platform/pipeline.py run $SUBJECTS --only ingest,dbt,export
+      # Raw checkpoints are useful even if a source or a dbt test failed.
+      - name: Store the raw files in R2
+        if: ${{ always() && steps.setup.outcome == 'success' && inputs.store != '' }}
+        run: python platform/pipeline.py push $STORE
+      - name: Data contracts, then publish and verify the group in R2
+        run: python platform/pipeline.py run $SUBJECTS --only publish
+      - name: Keep the optional summary outcome
+        if: ${{ always() && inputs.summary }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: news-summary-status
+          path: ${{ runner.temp }}/news-summary-status.json
+          if-no-files-found: ignore
+          retention-days: 7
+
+  # A failed or timed-out run opens (or comments on) an issue; a successful one closes it.
+  alert:
+    needs: refresh
+    if: ${{ !cancelled() && needs.refresh.result != 'skipped' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      actions: read
+      issues: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+          sparse-checkout: .github/actions
+      - uses: ./.github/actions/failure-issue
+        with:
+          result: ${{ needs.refresh.result }}

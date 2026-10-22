@@ -12,8 +12,10 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / "platform/architecture"))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import registry as architecture  # noqa: E402
+from data_workflows import workflow  # noqa: E402
 
 PIPELINE = yaml.safe_load((ROOT / "platform/pipeline.yml").read_text(encoding="utf-8"))
 SUBJECTS, GROUPS = PIPELINE["subjects"], PIPELINE["groups"]
@@ -26,8 +28,6 @@ REFRESHERS = {"refresh-jobs.yml": (["market"], "jobs"), "refresh-news.yml": (["n
 DATA_WORKFLOWS = [*REFRESHERS, "build-warehouse.yml", "publish-r2.yml"]
 
 
-def workflow(filename):
-    return yaml.safe_load((ROOT / ".github/workflows" / filename).read_text(encoding="utf-8"))
 
 
 def steps(filename):
@@ -242,7 +242,8 @@ def test_the_weekly_run_builds_every_dbt_subject_before_the_warehouse_is_stored(
     build = next(i for i, _, argv in cli(filename, "run") if "--all" in argv and "dbt" in argv[argv.index("--only") + 1])
     store = next(i for i, step, argv in cli(filename, "push") if "--all" in argv and "if" not in step)
     publish = next(i for i, _, argv in cli(filename, "run") if "publish" in argv[argv.index("--only") + 1])
-    assert build < store < publish
+    retention = next(i for i, s in enumerate(steps(filename)) if "retention.py" in s.get("run", ""))
+    assert build < store < publish < retention
     setup = steps(filename)[0:2][1]["with"]
     assert setup["pull"] == "--all" and setup["ml"] == "true"
     weekly = {name: s for name, s in SUBJECTS.items() if not s.get("manual")}
