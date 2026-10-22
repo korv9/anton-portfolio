@@ -72,3 +72,32 @@ the job ads begin to rise. The page says so under the panels.
   The data cannot separate the two. What it does show is that ads *naming* the Act appear
   only after its publication and grow as its first obligations apply. That is still temporal
   overlap, not evidence that the Act changed hiring.
+
+## The diffusion clock
+
+`gold.mart_ai_act_term_diffusion` sits beside the timeline and asks a narrower question: after
+each milestone, how many months pass before the Act's own terms show up in Riksdag speeches and
+in job ads? The method was fixed before any counting, in
+[ai-act-diffusion-preregistration.md](ai-act-diffusion-preregistration.md).
+
+```
+python platform/nlp/ai_act_terms.py                  # candidate terms, for review
+python -m ml.ai_act.diffusion speeches               # Riksdag counts, local
+gh workflow run cluster-jobs.yml -f job=module \
+  -f args="ml.ai_act.diffusion ads" -f path=ai_act/diffusion   # ad counts, Actions
+python platform/pipeline.py run ai_act_diffusion     # mart and ai-act/diffusion.json
+```
+
+The terms come from the Act, scored against Swedish statute law by weighted log-odds. Of the 60
+best-scoring n-grams, review kept four: *AI-system med hög risk*, *AI-byrån*, *AI-modeller för
+allmänna ändamål* and *testning under verkliga förhållanden*. The other 56 are listed in
+`seeds/cross_domain/ai_act_terms.csv` with their reasons. Most are EU drafting language or
+common Swedish.
+
+The mart has one row per corpus, term, language and whole month. The export works out each
+lag and tests it against 200 random months (the placebo null).
+
+Results for the Riksdag (22 October 2026, speeches from October 2016 to July 2026): the four
+terms occur in one speech in all, in January 2025. The Riksdag talks about the Act in its own
+words ("AI-förordningen", "högrisk") and not in the Act's phrases, so 50 of the 54 lags are
+censored. The job-ad lane follows once the scan has run in Actions.
