@@ -39,3 +39,24 @@ sources:
         meta:
           external_location: >-
             read_parquet('{{ env_var('PORTFOLIO_FEATURES', '../warehouse/features') }}/sweden/futures_theses_detail/*.parquet', union_by_name = true)
+      - name: topics
+        description: >-
+          The futures topic pilot: one future-marked sentence per sampled Riksdag speech or DiVA
+          abstract (ids only, no text) with its unsupervised cluster (-1 is noise), membership
+          probability, embedding model, revision and run id. Written by ml/futures_topics/analyze.py;
+          pre-registered in docs/sweden-futures-topics-preregistration.md.
+        meta:
+          external_location: >-
+            read_parquet('{{ env_var('PORTFOLIO_FEATURES', '../warehouse/features') }}/sweden/futures_topics/topics.parquet')
+      - name: topic_cells
+        description: Cluster × corpus × year; sentences and a 95 % bootstrap interval of the share.
+        meta:
+          external_location: >-
+            read_parquet('{{ env_var('PORTFOLIO_FEATURES', '../warehouse/features') }}/sweden/futures_topics/cells.parquet')
+      - name: topic_clusters
+        description: >-
+          Cluster × corpus; unreviewed label, c-TF-IDF top terms, stability, trend test and the
+          Riksdag-DiVA correlation and lag check, with Holm-adjusted p-values.
+        meta:
+          external_location: >-
+            read_parquet('{{ env_var('PORTFOLIO_FEATURES', '../warehouse/features') }}/sweden/futures_topics/clusters.parquet')
