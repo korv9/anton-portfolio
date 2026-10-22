@@ -319,3 +319,12 @@ def test_configured_sweden_contract_gates_tracked_exports(tmp_path, monkeypatch,
     else:
         with pytest.raises(FileNotFoundError if breakage == "missing" else jsonschema.ValidationError):
             release.prepare(tmp_path, spec, "sweden")
+
+
+def test_cluster_jobs_accepts_only_known_trees_and_never_pushes_a_failed_raw_rebuild():
+    """The corpus rebuild writes the raw tree, so a failed run must not overwrite stored files."""
+    text = (ROOT / ".github/workflows/cluster-jobs.yml").read_text(encoding="utf-8")
+    assert '[ "$TREE" != features ] && [ "$TREE" != raw ]' in text
+    assert 'if [ "$TREE" = raw ]; then echo "Run failed: raw files are not pushed."; exit 0; fi' in text
+    config = yaml.safe_load((ROOT / "configs/cluster_lab/jobs_corpus.yaml").read_text(encoding="utf-8"))
+    assert config["datasets"]
