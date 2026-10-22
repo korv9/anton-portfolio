@@ -1,6 +1,6 @@
 /** Symbolic atlas, concept layer and the Workers AI eval: radial bars, treemap, parallel axes, gauges. */
 import { useState } from 'react'
-import { Frame, Slicer, color, useData, type Post } from '../kit'
+import { Frame, Slicer, color, tile, useData, type Post } from '../kit'
 import { Legend, Svg, arc, fmt, pct } from './txt-kit'
 
 type SymSummary = {
@@ -25,8 +25,6 @@ type Eval = {
   }[]
 }
 const SYM = 'symbolic/summary.json'
-const mix = (c: string, p: number) =>
-  `color-mix(in srgb, ${c} ${Math.round(p)}%, var(--paper))`
 const short = (m: string) => m.split('/').at(-1)!
 const d = 'ml'
 
@@ -85,7 +83,7 @@ function Gauges() {
             <div className="mean-txt-kpis">
               {(['neurons_per_answer', 'tokens_in', 'tokens_out'] as const).map(
                 (k, i) => (
-                  <div key={k} style={{ background: mix(color(i + 2), 45) }}>
+                  <div key={k} style={tile(color(i + 2))}>
                     {fmt(c[k])}
                     <small>{k.replace(/_/g, ' ')}</small>
                   </div>
@@ -113,7 +111,7 @@ function SymbolCounts() {
               'symbol_count',
             ] as const
           ).map((k, i) => (
-            <div key={k} style={{ background: mix(color(i), 40) }}>
+            <div key={k} style={tile(color(i))}>
               {fmt(d[k])}
               <small>{k.replace('_count', 's')}</small>
             </div>

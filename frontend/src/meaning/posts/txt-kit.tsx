@@ -109,8 +109,8 @@ export function squarify<T>(items: T[], value: (t: T) => number, box: Rect) {
 export function Legend({ items }: { items: [string, string][] }) {
   return (
     <div className="mean-legend">
-      {items.map(([label, c]) => (
-        <span key={label}>
+      {items.map(([label, c], i) => (
+        <span key={`${i}-${label}`}>
           <i style={{ background: c }} />
           {label}
         </span>

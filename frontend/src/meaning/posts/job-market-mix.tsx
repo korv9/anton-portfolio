@@ -34,7 +34,7 @@ function OccupationBars() {
           <>
             <Slicer
               label="Year"
-              options={m.years}
+              options={m.years.filter((y) => y < m.latest_year)}
               value={year}
               onChange={setYear}
             />
@@ -160,7 +160,7 @@ function OccupationTreemap() {
           <>
             <Slicer
               label="Year"
-              options={m.years}
+              options={m.years.filter((y) => y < m.latest_year)}
               value={year}
               onChange={setYear}
             />
