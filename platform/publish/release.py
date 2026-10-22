@@ -14,6 +14,7 @@ from pathlib import Path, PurePosixPath
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from upload import client, CONTENT_TYPES
+from dq_gate import gate
 from warehouse_store import git_commit, sha256
 
 CURRENT = "manifests/current.json"
@@ -304,6 +305,7 @@ def publish(s3, bucket: str, group: str, root: Path, spec: dict, code_sha=None, 
             if path in previous["files"] and not (root / path).is_file():
                 raise ValueError(f"Previously published optional file must be materialized: {path}")
     payloads = prepare(root, spec, group)
+    quality, counts = gate(group, payloads)  # Blocks before any upload.
     dependencies = spec.get("dependencies", {})
     for dependency, version in dependencies.items():
         name(dependency)
@@ -340,6 +342,7 @@ def publish(s3, bucket: str, group: str, root: Path, spec: dict, code_sha=None, 
     manifest = {"schema_version": 2, "group": group, "release": release, "files": files,
                 "indexes": indexes,
                 "dependencies": dependencies, "coverage": spec.get("coverage", {}),
+                "dq": quality, "reconcile": counts,
                 "published_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
                 "code_sha": code_sha or git_commit(), "hash_algorithm": "sha256-exact-bytes"}
     if existing is not None:

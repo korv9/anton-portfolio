@@ -13,7 +13,10 @@ that describes orchestration. The definitions themselves are in two files:
 A subject is fetched to `warehouse/raw`, built and tested by dbt into
 `platform/target/<subject>`, passed through an ML stage if it has one, and exported to
 `frontend/public/data`. Its delivery group is then checked and published as a versioned
-release in R2 (`platform/publish/release.py`, specs in `configs/delivery/`). The site does not
+release in R2 (`platform/publish/release.py`, specs in `configs/delivery/`). Each release's
+group manifest records the dbt results of the group's subjects and its file row counts under
+`dq` and `reconcile`; a blocking dbt result stops the upload
+([r2-delivery-contract.md](r2-delivery-contract.md)). The site does not
 read these releases: it serves the data committed under `frontend/public/data`
 ([storage-and-serving.md](storage-and-serving.md)). No workflow commits data.
 

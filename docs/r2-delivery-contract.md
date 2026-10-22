@@ -112,9 +112,30 @@ manifests/current.json
 
 Release-id är SHA-256 över de exakta filhasharna, beroendeversionerna och
 kontrollkontraktet. Gruppmanifestet har `schema_version`, `group`, `release`,
-`published_at`, `code_sha`, `coverage`, `dependencies`, `files` och `indexes`.
-Varje filpost har `key`, `sha256` och `bytes`. Gruppmanifestet läses av publishern,
-inte av browsern.
+`published_at`, `code_sha`, `coverage`, `dependencies`, `files`, `indexes`, `dq`
+och `reconcile`. Varje filpost har `key`, `sha256` och `bytes`. Gruppmanifestet läses
+av publishern, inte av browsern.
+
+`dq` och `reconcile` skrivs av `platform/publish/dq_gate.py` efter `prepare` och
+före första uppladdningen. `dq` sammanfattar `platform/target/<target>/run_results.json`
+för varje subject i `pipeline.yml` med samma `group` och ett dbt-steg: status
+`pass`, `warn`, `error` eller `not_run`, testantal, `failing` och `warnings`.
+`error` (en nod med `fail`, `error` eller `skipped`) stoppar publiceringen. Saknas
+resultatfil, till exempel vid `publish-r2.yml`, blir det `not_run` med `reason`.
+Bara det sista dbt-steget i ett subject lämnar en resultatfil. `reconcile.rows`
+har radantal per JSON-array, `rows`/`data`-array och Parquetfil. `checks` jämför
+bara där exportören redan skrivit källtabellens antal bredvid en publicerad path
+(`welfare/datasets.json`); avvikelse stoppar. Annars är status `counts_only`.
+Fälten ingår inte i release-id: samma bytes ger samma release, och ett redan
+uppladdat manifest behåller sina ursprungliga `dq` och `reconcile`.
+
+```json
+"dq": {"status": "warn", "scope": "dbt build of each subject in the group",
+       "subjects": {"market": {"status": "warn", "generated_at": "2026-10-22T06:00:00Z",
+         "invocation_id": "…", "tests": {"pass": 41, "warn": 1, "error": 0, "skip": 0},
+         "failing": [], "warnings": ["test.portfolio.…"]}}},
+"reconcile": {"status": "counts_only", "rows": {"jobs/market.json": 1}, "checks": {}}
+```
 
 Publishern fryser och validerar gruppen, laddar upp filer med villkorad create,
 läser tillbaka varje payload och kontrollerar hash och storlek. Därefter görs
@@ -271,6 +292,7 @@ de råa bytesen och behåller den historiska hashregeln för äldre katalogposte
 
 ## Tester
 
+- `platform/tests/python/test_dq_gate.py`: dbt-grind och radavstämning.
 - `platform/tests/python/test_release.py`: publisher, katalog och regressioner mot
   en fake S3 med ETag, villkorad PUT, avbruten upload, authfel och skadade bytes.
 - `platform/tests/architecture/test_r2_refresh_workflows.py` och
