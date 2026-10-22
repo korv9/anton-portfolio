@@ -38,5 +38,8 @@
     "parliament/workspace/*",
     "sweden/*",
     "clusters/*"
-  ]
+  ],
+  "schemas": {
+    "ai-act/diffusion.json": "configs/delivery/schemas/ai-act-diffusion.json"
+  }
 }

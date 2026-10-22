@@ -1,0 +1,21 @@
+# Rebuilds warehouse/raw/jobtech/cluster-corpus from JobTech's public historical archives, the
+# same dataset block as overnight.yaml without its symbolic set. Run by .github/workflows/cluster-jobs.yml:
+#   job=module, tree=raw, path=jobtech/cluster-corpus,
+#   args=ml.cluster_lab.cli prepare --config configs/cluster_lab/jobs_corpus.yaml
+schema_version: 1
+datasets:
+- name: jobs-2023-2026
+  adapter: jobs
+  family: jobs
+  path: warehouse/raw/jobtech/cluster-corpus
+  archives: warehouse/jobtech/archives
+  start: '2023-01-01'
+  end: '2027-01-01'
+  allow_partial: false
+  prepare: true
+  ingestion:
+    archives: ['2023', '2024', '2025', '2026-Q1', '2026-Q2', '2026-Q3']
+    active_snapshot: true
+    checkpoint_rows: 20000
+    pause_seconds: 1
+    retain_downloads: false

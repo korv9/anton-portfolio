@@ -285,3 +285,18 @@ def test_complete_history_survives_a_fresh_runner_round_trip(store, tmp_path, mo
     assert http.calls == 1
     taxes.rowstore_pages(http, "tables", "withholding/2026", {}, 0)
     assert http.calls == 2
+
+
+def test_a_whole_tree_pull_skips_the_on_demand_corpus_but_a_named_pull_fetches_it(store):
+    """The weekly build pulls all raw files; the 2.4 GB job-ad corpus comes only when named."""
+    s3, _, raw = store
+    (raw / "jobtech/cluster-corpus/2025").mkdir(parents=True)
+    (raw / "jobtech/cluster-corpus/2025/part.parquet").write_text("x")
+    ws.push_tree(s3, "b", "raw")
+    (raw / "jobtech/cluster-corpus/2025/part.parquet").unlink()
+    (raw / "scb/a.json").unlink()
+    ws.pull_tree(s3, "b", "raw")
+    assert (raw / "scb/a.json").exists()
+    assert not (raw / "jobtech/cluster-corpus/2025/part.parquet").exists()
+    assert ws.pull_tree(s3, "b", "raw", "jobtech/cluster-corpus") == 1
+    assert (raw / "jobtech/cluster-corpus/2025/part.parquet").exists()

@@ -246,6 +246,10 @@ def resolved_path(path: Path) -> Path:
     return Path(path.resolve().as_posix().replace("//?/UNC/", "//", 1).removeprefix("//?/"))
 
 
+# Large folders that a whole-tree pull skips; fetch them by name with --path.
+ON_DEMAND = ("jobtech/cluster-corpus",)
+
+
 def pull_tree(s3, bucket: str, name: str, sub: str = "") -> int:
     root, prefix = tree(name)
     root.mkdir(parents=True, exist_ok=True)
@@ -255,7 +259,8 @@ def pull_tree(s3, bucket: str, name: str, sub: str = "") -> int:
     wanted = prefix + sub.strip("/")
     for page in s3.get_paginator("list_objects_v2").paginate(Bucket=bucket, Prefix=wanted):
         keys += [(o["Key"], o["Size"]) for o in page.get("Contents", [])
-                 if not sub or o["Key"] == wanted or o["Key"].startswith(wanted + "/")]
+                 if (sub and (o["Key"] == wanted or o["Key"].startswith(wanted + "/")))
+                 or (not sub and not any(o["Key"].startswith(prefix + p + "/") for p in ON_DEMAND))]
 
     def one(item: tuple[str, int]) -> int:
         key, size = item

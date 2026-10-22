@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["terms", "amended_terms", "dropped", "milestones", "corpora", "lags", "lags_side_by_side",
+    "diagnostics", "method", "generated_at"],
+  "properties": {
+    "terms": {"type": "array", "minItems": 1, "items": {"type": "object", "required": ["term_id", "term_sv"]}},
+    "dropped": {"type": "array", "items": {"type": "object", "required": ["term_sv", "reason"]}},
+    "corpora": {"type": "array", "minItems": 1, "items": {"type": "object",
+      "required": ["corpus", "first_month", "last_month", "years", "series"],
+      "properties": {"corpus": {"enum": ["riksdag", "job_ads"]}}}},
+    "lags": {"type": "array", "items": {"type": "object",
+      "required": ["corpus", "term_list", "term_id", "language", "milestone_id", "lag_months", "placebo_p",
+        "window_matches", "reading"],
+      "properties": {"term_list": {"enum": ["primary", "amended"]},
+        "placebo_p": {"type": ["number", "null"], "minimum": 0, "maximum": 1}}}},
+    "diagnostics": {"type": "object", "required": ["tests", "placebo_rounds", "seed", "primary", "amended"],
+      "properties": {"placebo_rounds": {"const": 200}}},
+    "method": {"type": "object", "required": ["preregistration", "placebo", "departures"]},
+    "generated_at": {"type": "string"}
+  }
+}
