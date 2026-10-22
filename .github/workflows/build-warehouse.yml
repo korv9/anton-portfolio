@@ -92,6 +92,11 @@ jobs:
       - name: Export, check and publish each complete group
         if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         run: python platform/pipeline.py run --all --only export,publish
+      # Under the same writer lock, whatever this build did: each group keeps its active release
+      # and the two previous approved ones (docs/r2-delivery-contract.md); older ones go.
+      - name: Delete superseded releases
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
+        run: python platform/publish/retention.py --apply
 
   # A failed or timed-out run opens (or comments on) an issue; a successful one closes it.
   alert:
