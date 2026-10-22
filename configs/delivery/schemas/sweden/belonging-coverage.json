@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["municipalities_per_year", "public_libraries_registered", "with_coordinates", "sources", "run_id", "code_sha"],
+  "properties": {
+    "municipalities_per_year": {"type": "object", "minProperties": 1},
+    "public_libraries_registered": {"type": "integer", "minimum": 1},
+    "with_coordinates": {"type": "integer", "minimum": 1},
+    "sources": {"type": "array", "minItems": 1, "items": {"type": "object", "required": ["name", "licence"]}},
+    "run_id": {"type": ["string", "null"]},
+    "code_sha": {"type": ["string", "null"]}
+  }
+}

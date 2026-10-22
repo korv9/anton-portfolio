@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["years", "rows", "area_km2", "rates"],
+  "properties": {
+    "years": {"type": "array", "minItems": 1, "items": {"type": "integer"}},
+    "rows": {"type": "array", "minItems": 1, "items": {"type": "object", "required": ["code", "year", "service_points", "visits", "population"]}},
+    "area_km2": {"type": "object", "minProperties": 1},
+    "rates": {"type": "object", "minProperties": 1}
+  }
+}

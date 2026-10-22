@@ -261,3 +261,30 @@ def test_configured_diva_contract_rejects_phantom_cluster_links_before_upload(tm
     with pytest.raises((ValueError, subprocess.CalledProcessError)):
         release.publish(s3, "fixture-bucket", "diva", tmp_path, spec, code_sha=SHA)
     assert not s3.puts and release.CURRENT not in s3.objects
+
+
+@pytest.mark.parametrize("breakage", [None, "empty", "malformed", "missing"])
+def test_configured_sweden_contract_gates_tracked_exports(tmp_path, monkeypatch, breakage):
+    """The tracked exports pass; an emptied, malformed or absent gated file stops prepare."""
+    import jsonschema
+    sys.path.insert(0, str(ROOT / "platform/publish"))
+    import release
+
+    shutil.copytree(ROOT / "frontend/public/data/sweden", tmp_path / "sweden")
+    spec = json.loads((ROOT / "configs/delivery/sweden.json").read_text())
+    trends = tmp_path / "sweden/futures/trends.json"
+    connections = tmp_path / "sweden/connections/connections.json"
+    if breakage == "empty":
+        trends.write_text(json.dumps({**json.loads(trends.read_text(encoding="utf-8")), "themes": []}))
+    elif breakage == "malformed":
+        data = json.loads(connections.read_text(encoding="utf-8"))
+        del data["run_id"]
+        connections.write_text(json.dumps(data))
+    elif breakage == "missing":
+        (tmp_path / "sweden/similarity/geometry.json").unlink()
+    monkeypatch.chdir(ROOT)
+    if breakage is None:
+        assert "sweden/futures/trends.json" in release.prepare(tmp_path, spec, "sweden")
+    else:
+        with pytest.raises(FileNotFoundError if breakage == "missing" else jsonschema.ValidationError):
+            release.prepare(tmp_path, spec, "sweden")
