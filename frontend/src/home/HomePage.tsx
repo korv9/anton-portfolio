@@ -127,11 +127,7 @@ function Profile() {
                 <p className="home-job-period">{b(job.period)}</p>
               </div>
               <p className="home-job-role">{b(job.kind)}</p>
-              <ul className="home-job-did">
-                {job.did.map((item) => (
-                  <li key={item.sv}>{b(item)}</li>
-                ))}
-              </ul>
+              <p className="home-job-role">{b(job.did)}</p>
               <p className="home-job-tech">{job.tech.join(' | ')}</p>
             </li>
           ))}
