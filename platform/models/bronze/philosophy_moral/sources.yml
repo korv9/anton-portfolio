@@ -1,0 +1,40 @@
+version: 2
+
+# Philosophy track 1 (docs/philosophy-moral-preregistration.md), written by ml/moral/ into the
+# features folder philosophy/moral, which warehouse_store.py keeps in R2. Figures, ids and labels
+# only: no MFRC comment, ETHICS scenario or speech text is read here.
+#   MFRC, CC BY 4.0 (huggingface.co/datasets/USC-MOLA-Lab/MFRC, revision ddc21d2f)
+#   eMFD, GPL-3.0 (osf.io/vw85e; github.com/medianeuroscience/emfdscore), English baseline only
+#   ETHICS, MIT (huggingface.co/datasets/hendrycks/ethics, revision b8b47c58)
+#   Riksdag speeches, Riksdagen's open data (data.riksdagen.se)
+# The raw files and their URL, time and SHA-256 are under raw/philosophy_moral (_manifest.jsonl).
+
+sources:
+  - name: philosophy_moral
+    description: The moral-foundation tagger's agreement, the Swedish check, the Riksdag shares and the ETHICS agreement.
+    tables:
+      - name: agreement
+        description: Per foundation, the tagger's and eMFD's test F1 on MFRC beside the human ceiling.
+        meta:
+          external_location: >-
+            read_parquet('{{ env_var('PORTFOLIO_FEATURES', '../warehouse/features') }}/philosophy/moral/agreement.parquet')
+      - name: gate
+        description: The Swedish check against the owner's labels; status "awaiting labels" until they exist.
+        meta:
+          external_location: >-
+            read_json('{{ env_var('PORTFOLIO_FEATURES', '../warehouse/features') }}/philosophy/moral/gate.json')
+      - name: shares
+        description: Flagged share of sampled passages per foundation, year and party (party null for the year); empty until the check passes.
+        meta:
+          external_location: >-
+            read_parquet('{{ env_var('PORTFOLIO_FEATURES', '../warehouse/features') }}/philosophy/moral/shares.parquet')
+      - name: spread
+        description: Between-party spread per foundation against the within-year party shuffle null; empty until the check passes.
+        meta:
+          external_location: >-
+            read_parquet('{{ env_var('PORTFOLIO_FEATURES', '../warehouse/features') }}/philosophy/moral/spread.parquet')
+      - name: ethics
+        description: Gemma's agreement with the ETHICS labels per subset and wording, with the label-shuffle null.
+        meta:
+          external_location: >-
+            read_parquet('{{ env_var('PORTFOLIO_FEATURES', '../warehouse/features') }}/philosophy/moral/ethics_agreement.parquet')

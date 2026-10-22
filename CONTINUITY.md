@@ -91,3 +91,9 @@
 - NEXT:
   - 3D done for A, B and E (BarField, lazy, ?scen=3d). C stays a 2D morph and D an SVG choropleth; a true 3D morph and travel-time accessibility (needs transport-network data) are open.
   - Remaining B archive years, through the weekly build or `workflow_dispatch` of build-warehouse on main.
+
+## Philosophy track 1 (branch korv9/philosophy-moral)
+
+- 2026-10-22 [CODE] Pre-registered in `docs/philosophy-moral-preregistration.md`: MFRC foundation tagger (bge-m3 + logistic regression), eMFD baseline, Riksdag passages 1993-2026, ETHICS agreement. Code `ml/moral/`, marts `models/*/philosophy_moral`, export `platform/publish/philosophy/export_moral.py` -> `philosophy/moral/{foundations,ethics}.json`.
+- 2026-10-22 [TOOL] English: tagger macro-F1 0.39 on MFRC test; annotator-vs-annotator F1 0.27; human alpha 0.08-0.31; eMFD F1 0.04-0.22. ETHICS (gemma, 200 items per subset): kappa 0.50-0.84, every subset above the shuffle null in both wordings; 40 unparsed replies.
+- 2026-10-22 [USER] Riksdag shares stay unpublished until the owner labels `tmp/mf-review.csv` (300 passages) and `python -m ml.moral.riksdag gate` passes; then `score`. Unit amended to sentence passages before any embedding (archive markup differs by era).
