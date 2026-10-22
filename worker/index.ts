@@ -1,8 +1,9 @@
 /**
  * The site's Worker: static assets as before, plus two endpoints on Workers AI (docs/workers-ai.md).
  * POST /api/embed embeds a visitor's sentence with bge-m3; POST /api/answer answers a question
- * from passages the browser found, after checking that every passage is verbatim published law
- * text and that every quote in the answer is verbatim in its passage. Visitor text is never logged
+ * from passages the browser found, after checking that every passage is verbatim published text
+ * (law, or the platform's own documents) and that every quote in the answer is verbatim in its
+ * passage. Visitor text is never logged
  * or stored. All vector search happens in the browser.
  */
 
@@ -23,7 +24,7 @@ export const ANSWER_OPTIONS: Record<string, unknown> = {
 export const MAX_TEXT = 500
 export const MAX_PASSAGES = 8
 export const MAX_PASSAGE = 5000
-const CORPORA = ['sfs', 'ai-act-sv', 'ai-act-en']
+const CORPORA = ['sfs', 'ai-act-sv', 'ai-act-en', 'platform']
 
 // Python's str.isspace() set, so the folding matches platform/legal/parse.py exactly.
 const SPACE =
@@ -141,23 +142,39 @@ async function published(
   return checks.every(Boolean)
 }
 
-export const SYSTEM = [
-  'You answer questions about law using only the numbered passages you are given.',
+const RULES = [
   'Answer in the language of the question, in at most five sentences.',
   'Support every claim with a verbatim quote from a passage, written as [[id]]"quote", where id is the passage id and the quote is copied character for character from that passage.',
   'Never quote anything that is not in the passage with that id, and never use outside knowledge.',
   'If the passages do not answer the question, reply with exactly NO_ANSWER and nothing else.',
+]
+export const SYSTEM = [
+  'You answer questions about law using only the numbered passages you are given.',
+  ...RULES,
   'Example of the format: Lagen omfattar anställda [[sfs-1982-80-1]]"Lagen gäller arbetstagare i allmän och enskild tjänst".',
+].join(' ')
+/** The platform corpus: the repository's documents, dbt models and data catalogue. */
+export const PLATFORM_SYSTEM = [
+  "You answer questions about how this data platform is built, using only the numbered passages you are given: the repository's documents, dbt model descriptions and data catalogue.",
+  ...RULES,
+  'Example of the format: The model is chosen by an evaluation [[docs/workers-ai.md#modellval]]"Kandidaterna kördes på de 20 evalfrågorna".',
 ].join(' ')
 
 // [[id]] followed by its quote; a colon or white space between them is tolerated, and curly
 // quotes are already straight after fold(). An [[id]] without a quote is matched too, and fails.
 const QUOTE = /\[\[([^\]]+)\]\](?:\s*:?\s*"([^"]+)")?/g
+// A quote written just before an [[id]] that has no quote of its own is the same citation turned
+// around, "quote" [[id]]; it is rewritten as [[id]]"quote" and then checked like any other.
+const TURNED = /"([^"]+)"\s*\[\[([^\]]+)\]\](?!\s*:?\s*")/g
+
+/** The answer folded, with every citation in the [[id]]"quote" order. */
+export const canonical = (answer: string) =>
+  fold(answer).replace(TURNED, '[[$2]]"$1"')
 
 /** Every citation in the answer, and whether its quote is verbatim in the passage it names. */
 export function checkQuotes(answer: string, passages: Passage[]) {
   const texts = new Map(passages.map((p) => [p.id, fold(p.text)]))
-  return [...fold(answer).matchAll(QUOTE)].map(([, id, quote]) => ({
+  return [...canonical(answer).matchAll(QUOTE)].map(([, id, quote]) => ({
     id,
     quote: quote ?? '',
     verbatim: quote != null && (texts.get(id)?.includes(fold(quote)) ?? false),
@@ -192,7 +209,10 @@ async function answer(request: Request, env: Env) {
   try {
     const out = (await env.AI.run(ANSWER_MODEL, {
       messages: [
-        { role: 'system', content: SYSTEM },
+        {
+          role: 'system',
+          content: corpus === 'platform' ? PLATFORM_SYSTEM : SYSTEM,
+        },
         {
           role: 'user',
           content: `${found.map((p) => `[[${p.id}]]\n${p.text}`).join('\n\n')}\n\nQuestion: ${question}`,
@@ -219,7 +239,7 @@ async function answer(request: Request, env: Env) {
     return json({ status: 'unverified', passages: found })
   return json({
     status: 'verified',
-    answer: fold(text),
+    answer: canonical(text),
     quotes: quotes.map(({ id, quote }) => ({ id, quote })),
     model: ANSWER_MODEL,
     usage,

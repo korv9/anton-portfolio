@@ -1,0 +1,236 @@
+/*
+ * Ask the platform (AskThePlatform.tsx): one field with its button, three example questions,
+ * then the checked answer, its five-step path and the passages it read. Colours use the aliases,
+ * as lawqa.css does, so the home page's palette carries through; the quoted node takes --accent,
+ * the same colour as the Ask button, so the component has one accent wherever it sits.
+ */
+.ap {
+  display: grid;
+  gap: var(--sp-4);
+  max-width: 72ch;
+}
+.ap h3 {
+  margin: 0;
+  font-size: var(--type-chart-title);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+.ap p {
+  margin: 0;
+}
+.ap-lede {
+  max-width: var(--measure);
+  color: var(--muted);
+}
+.ap-form {
+  display: grid;
+  gap: var(--sp-2);
+}
+.ap-form label {
+  color: var(--muted);
+  font-size: var(--type-label);
+}
+.ap-field {
+  display: flex;
+  gap: var(--sp-2);
+}
+.ap-field input {
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0 var(--sp-3);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--paper-strong);
+  color: var(--ink);
+  font: inherit;
+  caret-color: var(--ink);
+}
+.ap-field input::placeholder {
+  color: var(--muted);
+}
+.ap-field .btn {
+  min-height: 44px;
+}
+.ap-examples {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+.ap-examples button {
+  min-height: 44px;
+  padding: var(--sp-2) var(--sp-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--type-label);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color var(--dur) var(--ease);
+}
+.ap-examples button:hover {
+  border-color: var(--ink);
+}
+.ap-examples button:disabled {
+  cursor: progress;
+  opacity: 0.6;
+}
+.ap-field input:focus-visible,
+.ap-examples button:focus-visible,
+.ap-cite:focus-visible,
+.ap-passages summary:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 3px;
+}
+.ap-status,
+.ap-notice {
+  color: var(--muted);
+}
+.ap-notice {
+  padding: var(--sp-2) var(--sp-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--wash);
+}
+.ap-result {
+  display: grid;
+  gap: var(--sp-5);
+}
+.ap-result:empty {
+  display: none;
+}
+.ap-answer {
+  font-size: var(--body-large);
+  line-height: 1.55;
+}
+.ap-quote q {
+  background: var(--select);
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  padding: 0 0.15em;
+}
+.ap-cite {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: var(--type-metadata);
+  overflow-wrap: anywhere;
+  text-underline-offset: 0.2em;
+}
+.ap ::selection {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+/* The path: five stops on one rule, the quoted node in ink and the rest secondary. */
+.ap-lineage {
+  margin: 0;
+  display: grid;
+  gap: var(--sp-3);
+}
+.ap-lineage figcaption {
+  color: var(--muted);
+  font-size: var(--type-label);
+}
+.ap-lineage ol {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ap-lineage li {
+  position: relative;
+  display: grid;
+  gap: var(--sp-1);
+  align-content: start;
+  padding: var(--sp-4) var(--sp-2) 0 0;
+  border-top: 1px solid var(--line-strong);
+  color: var(--muted);
+}
+.ap-lineage li::before {
+  content: '';
+  position: absolute;
+  top: -5px;
+  left: 0;
+  width: 9px;
+  height: 9px;
+  border: 1px solid var(--line-strong);
+  border-radius: 50%;
+  background: var(--wash);
+}
+.ap-lineage li.is-self {
+  color: var(--ink);
+}
+.ap-lineage li.is-self::before {
+  border-color: var(--accent);
+  background: var(--accent);
+}
+.ap-lineage li.is-missing {
+  border-top-style: dashed;
+}
+.ap-lineage li.is-missing::before {
+  background: var(--paper-strong);
+}
+.ap-step {
+  font-size: var(--type-caption);
+  font-variant-numeric: tabular-nums;
+}
+.ap-node {
+  font-family: var(--font-mono);
+  font-size: var(--type-metadata);
+  overflow-wrap: break-word;
+}
+.ap-lineage li.is-self .ap-node {
+  font-weight: 600;
+}
+.ap-lineage li.is-missing .ap-node {
+  font-family: inherit;
+  font-style: italic;
+}
+@media (max-width: 560px) {
+  .ap-lineage ol {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .ap-lineage li {
+    grid-template-columns: 7rem minmax(0, 1fr);
+    padding: var(--sp-2) 0 var(--sp-2) var(--sp-4);
+    border-top: 0;
+    border-left: 1px solid var(--line-strong);
+  }
+  .ap-lineage li.is-missing {
+    border-left-style: dashed;
+  }
+  .ap-lineage li::before {
+    top: calc(var(--sp-2) + 0.35em);
+    left: -5px;
+  }
+}
+
+.ap-passages summary {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  color: var(--muted);
+  font-size: var(--type-label);
+  cursor: pointer;
+}
+.ap-passages ol {
+  display: grid;
+  gap: var(--sp-4);
+  margin: var(--sp-2) 0 0;
+  padding-left: 1.5em;
+}
+.ap-passages li p {
+  margin-top: var(--sp-1);
+  color: var(--muted);
+  font-size: var(--type-label);
+  white-space: pre-line;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ap-examples button {
+    transition: none;
+  }
+}
