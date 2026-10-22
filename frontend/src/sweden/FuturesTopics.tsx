@@ -3,6 +3,8 @@
  * (platform/publish/sweden/export_futures_topics.py). Future-marked sentences from Riksdag speeches
  * and DiVA abstracts, clustered in one embedding space without a word list. No cluster is named
  * until the owner has reviewed it, so each is shown as "unreviewed cluster N" with its top terms.
+ * Only stable clusters are shown; when the run fails the stability or the structure null, the
+ * section shows that no stable topic structure was found and no chart or table.
  */
 import { useEffect, useState } from 'react'
 import MultiLineChart from '../charts/MultiLineChart'
@@ -34,8 +36,17 @@ type Cluster = {
 type Topics = {
   method: {
     sentences: number
-    selected: { clusters: number; coverage: number }
-    stability: { seed_ari_mean: number; subsample_ari_mean: number }
+    selected: { clusters: number; coverage: number } | null
+    stability: {
+      seed_ari_mean?: number
+      subsample_ari_mean?: number
+      passes: boolean
+    }
+    null_shuffled_dimensions: {
+      dbcv?: number
+      real_dbcv?: number
+      passes: boolean
+    }
     preregistration: string
   }
   clusters: Cluster[]
@@ -50,6 +61,7 @@ const ALPHA = 0.05
 const label = (c: Cluster) =>
   l(`Unreviewed cluster ${c.cluster}`, `Ogranskat kluster ${c.cluster}`)
 const signed = (v: number) => `${v > 0 ? '+' : ''}${(v * 100).toFixed(1)}`
+const fixed = (v: number | undefined) => (v == null ? '–' : v.toFixed(2))
 
 function Trend({ side }: { side: Side }) {
   const marked = side.trend_p_holm != null && side.trend_p_holm < ALPHA
@@ -71,9 +83,45 @@ export default function FuturesTopics() {
     fetchJson<Topics>(BASE + 'topics.json').then(setTopics, () => {})
   }, [])
   if (!topics) return null
-  const stable = topics.clusters.filter((c) => c.stable)
-  const shown = stable.length ? stable : topics.clusters
+  const m = topics.method
+  const shown = topics.clusters.filter((c) => c.stable)
   const current = shown.find((c) => c.cluster === picked) ?? shown[0]
+  const heading = (
+    <h3 id="futures-topics">
+      {l(
+        'Which futures: topics found without a word list (pilot)',
+        'Vilka framtider: ämnen funna utan ordlista (pilot)',
+      )}
+    </h3>
+  )
+  if (
+    !current ||
+    !m.selected ||
+    !m.stability.passes ||
+    !m.null_shuffled_dimensions.passes
+  ) {
+    const s = m.stability
+    const n = m.null_shuffled_dimensions
+    return (
+      <section aria-labelledby="futures-topics">
+        {heading}
+        <p>
+          <strong>
+            {l(
+              'No stable topic structure found',
+              'Ingen stabil ämnesstruktur hittades',
+            )}
+          </strong>
+        </p>
+        <p className="sw-note">
+          {l(
+            `${num(m.sentences)} future-marked sentences were clustered as pre-registered, and the result did not meet the bar set in advance, so no topics are published. Refits agree with an adjusted Rand index of ${fixed(s.seed_ari_mean)} across seeds (at least 0.60 required) and ${fixed(s.subsample_ari_mean)} across subsamples (at least 0.50). DBCV is ${fixed(n.real_dbcv)} on the real vectors and ${fixed(n.dbcv)} on vectors with every dimension shuffled; the real one has to be higher. Rules: ${m.preregistration}.`,
+            `${num(m.sentences)} framtidsmarkerade meningar klustrades enligt förregistreringen, och resultatet nådde inte den gräns som sattes i förväg, så inga ämnen publiceras. Omkörningar stämmer överens med justerat Rand-index ${fixed(s.seed_ari_mean)} mellan seeds (minst 0,60 krävs) och ${fixed(s.subsample_ari_mean)} mellan delurval (minst 0,50). DBCV är ${fixed(n.real_dbcv)} för de verkliga vektorerna och ${fixed(n.dbcv)} när varje dimension blandats om; den verkliga måste vara högre. Regler: ${m.preregistration}.`,
+          )}
+        </p>
+      </section>
+    )
+  }
   const series = CORPORA.map((corpus) => ({
     key: corpus,
     name: corpusName(corpus),
@@ -85,19 +133,13 @@ export default function FuturesTopics() {
         value: r[5] * 100,
       })),
   }))
-  const m = topics.method
   return (
     <section aria-labelledby="futures-topics">
-      <h3 id="futures-topics">
-        {l(
-          'Which futures: topics found without a word list (pilot)',
-          'Vilka framtider: ämnen funna utan ordlista (pilot)',
-        )}
-      </h3>
+      {heading}
       <p className="sw-note">
         {l(
-          `${num(m.sentences)} sentences that use the future marker, at most one per speech or abstract and 1,500 a year per corpus, embedded with a multilingual sentence model and clustered together. ${m.selected.clusters.toFixed(0)} clusters cover ${pct(m.selected.coverage)} of the sentences; refits agree with an adjusted Rand index of ${m.stability.seed_ari_mean.toFixed(2)} across seeds and ${m.stability.subsample_ari_mean.toFixed(2)} across subsamples. ${stable.length} clusters are stable. The clusters are not yet reviewed or named; the terms are what sets each apart.`,
-          `${num(m.sentences)} meningar med framtidsmarkören, högst en per anförande eller sammanfattning och 1 500 per år och korpus, inbäddade med en flerspråkig meningsmodell och klustrade tillsammans. ${m.selected.clusters.toFixed(0)} kluster täcker ${pct(m.selected.coverage)} av meningarna; omkörningar stämmer överens med justerat Rand-index ${m.stability.seed_ari_mean.toFixed(2)} mellan seeds och ${m.stability.subsample_ari_mean.toFixed(2)} mellan delurval. ${stable.length} kluster är stabila. Klustren är ännu inte granskade eller namngivna; orden är det som skiljer dem åt.`,
+          `${num(m.sentences)} sentences that use the future marker, at most one per speech or abstract and 1,500 a year per corpus, embedded with a multilingual sentence model and clustered together. ${m.selected.clusters.toFixed(0)} clusters cover ${pct(m.selected.coverage)} of the sentences; refits agree with an adjusted Rand index of ${fixed(m.stability.seed_ari_mean)} across seeds and ${fixed(m.stability.subsample_ari_mean)} across subsamples. ${shown.length} clusters are stable and shown. The clusters are not yet reviewed or named; the terms are what sets each apart.`,
+          `${num(m.sentences)} meningar med framtidsmarkören, högst en per anförande eller sammanfattning och 1 500 per år och korpus, inbäddade med en flerspråkig meningsmodell och klustrade tillsammans. ${m.selected.clusters.toFixed(0)} kluster täcker ${pct(m.selected.coverage)} av meningarna; omkörningar stämmer överens med justerat Rand-index ${fixed(m.stability.seed_ari_mean)} mellan seeds och ${fixed(m.stability.subsample_ari_mean)} mellan delurval. ${shown.length} kluster är stabila och visas. Klustren är ännu inte granskade eller namngivna; orden är det som skiljer dem åt.`,
         )}
       </p>
       <div className="sw-controls">

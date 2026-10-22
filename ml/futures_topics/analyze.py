@@ -23,7 +23,7 @@ import sys
 import numpy as np
 import pandas as pd
 
-from ml.futures_topics.cluster import centre, embeddings
+from ml.futures_topics.cluster import centre, embeddings, sample_key
 from ml.futures_topics.sentences import FEATURES, REPO, RUN, SEED, YEARS
 
 sys.path.insert(0, str(REPO / "platform/nlp/symbolic"))
@@ -38,7 +38,20 @@ OVERLAP = (2005, 2025)
 STOPS = sorted(STOP | set("herr fru talman ledamot ledamoten jag vi våra vår vårt oss ni er man skall måste "
                           "kommer också så att inte bara nu här där".split()))
 # Exploratory only: which clusters to list in the securitisation reading, never a name.
-SECURITY = re.compile(r"säkerhet|försvar|hot|kris|krig|beredskap|terror|militär|nato|ryssland", re.I)
+SECURITY = re.compile(r"\b(?:säkerhet\w*|försvar\w*|hot|hotet|hoten|hotbild\w*|kris|krisen|kriser\w*|krisberedskap"
+                      r"|krig\w*|beredskap\w*|terror\w*|militär\w*|nato|ryssland)\b", re.I)
+PAIR_COLUMNS = ["cluster", "r_lag0", "p_lag0", "best_lag", "r_best_lag", "p_best_lag", "r_by_lag"]
+# Departures from docs/sweden-futures-topics-preregistration.md ("Changes after registration").
+DEVIATIONS = [
+    {"date": "2026-10-22", "change": "storage",
+     "reason": "The first UMAP fit ran out of memory on the laptop, so the clustering runs in "
+               ".github/workflows/cluster-jobs.yml and the sample and embedding shards are kept in "
+               "the R2 warehouse store under features/sweden/futures_topics/run/, never in a release."},
+    {"date": "2026-10-22", "change": "compute",
+     "reason": "The method is unchanged: UMAP on the full centred vectors with the registered grid on a "
+               "16 GB runner, TensorFlow kept out of the process, and the centred space rebuilt from "
+               "the shards for the analysis instead of being saved twice."},
+]
 
 
 def holm(p: list[float]) -> list[float]:
@@ -82,10 +95,20 @@ def cross(riksdag: np.ndarray, diva: np.ndarray, rng) -> dict:
             "r_by_lag": json.dumps({str(k): round(v, 4) for k, v in rs.items()})}
 
 
+def pairs_table(pairs: list[dict]) -> pd.DataFrame:
+    """The Riksdag-DiVA tests with Holm columns, also when no cluster qualified."""
+    table = pd.DataFrame(pairs, columns=PAIR_COLUMNS)
+    table["p_lag0_holm"] = holm(table.p_lag0.tolist())
+    table["p_best_lag_holm"] = holm(table.p_best_lag.tolist())
+    return table
+
+
 def main() -> None:
     sample = pd.read_parquet(RUN / "sample.parquet")
     frame = sample.merge(pd.read_parquet(RUN / "labels.parquet"), on="sentence_id", validate="one_to_one")
     metrics = json.loads((RUN / "metrics.json").read_text(encoding="utf-8"))
+    if metrics.get("sample_key") != sample_key(sample):
+        raise SystemExit("metrics.json belongs to another sample; rerun ml.futures_topics.cluster")
     # The corpus-centred space, rebuilt from the stored shards rather than kept as a second copy.
     space = centre(embeddings(sample), sample.corpus.to_numpy())
     run_id = "futures-topics-" + hashlib.sha1(frame.cluster.to_numpy().tobytes()).hexdigest()[:10]
@@ -114,8 +137,10 @@ def main() -> None:
     cells = pd.DataFrame(cells)
 
     def series(corpus, c, first, last):
-        part = cells[(cells.corpus == corpus) & (cells.cluster == c) & cells.year.between(first, last)]
-        return part.year.to_numpy(), part.share.to_numpy()
+        """Every year of first..last in order; a year without sampled sentences is NaN."""
+        part = cells[(cells.corpus == corpus) & (cells.cluster == c)].set_index("year").share
+        share = part.reindex(range(first, last + 1)).to_numpy()
+        return np.arange(first, last + 1), share
 
     for c in clusters:
         members = np.flatnonzero(frame.cluster.to_numpy() == c)
@@ -123,6 +148,7 @@ def main() -> None:
         closest = members[np.argsort(-(space[members] @ centroid))[:5]]
         for corpus in ("riksdag", "diva"):
             years, share = series(corpus, c, *YEARS[corpus])
+            years, share = years[~np.isnan(share)], share[~np.isnan(share)]
             s, p = trend(years, share, rng)
             rows.append({"cluster": int(c), "corpus": corpus, "label": f"unreviewed cluster {c}",
                          "top_terms": ", ".join(top[c]), "sentences": int((frame.cluster == c).sum()),
@@ -131,6 +157,8 @@ def main() -> None:
                          "security_terms": bool(SECURITY.search(" ".join(top[c]))),
                          "trend_slope": s, "trend_p": p, "share_mean": float(share.mean())})
         corpus_share = frame.corpus[members].value_counts(normalize=True)
+        for row in rows[-2:]:
+            row["corpus_specific"] = bool(corpus_share.max() >= 0.9)
         review.append({"cluster": c, "sentences": len(members),
                        "riksdag_share": round(float(corpus_share.get("riksdag", 0)), 3),
                        "stable": stable[c], "top_terms": ", ".join(top[c]),
@@ -142,15 +170,15 @@ def main() -> None:
     table["trend_p_holm"] = np.nan
     table.loc[tested, "trend_p_holm"] = holm(table.trend_p[tested].tolist()) if tested.any() else []
     pairs = []
+    corpus_total = frame.corpus.value_counts()
     for c in clusters:
-        mean = table[table.cluster == c].set_index("corpus").share_mean
-        if stable[c] and mean.min() >= 0.01:
-            pairs.append({"cluster": c, **cross(series("riksdag", c, *OVERLAP)[1], series("diva", c, *OVERLAP)[1], rng)})
-    pairs = pd.DataFrame(pairs, columns=["cluster", "r_lag0", "p_lag0", "best_lag", "r_best_lag", "p_best_lag", "r_by_lag"])
-    if len(pairs):
-        pairs["p_lag0_holm"] = holm(pairs.p_lag0.tolist())
-        pairs["p_best_lag_holm"] = holm(pairs.p_best_lag.tolist())
-    table = table.merge(pairs, on="cluster", how="left")
+        part = table[table.cluster == c].set_index("corpus").corpus_sentences
+        riksdag, diva = series("riksdag", c, *OVERLAP)[1], series("diva", c, *OVERLAP)[1]
+        # At least 1 % of each corpus's sampled sentences, and every overlap year present in both.
+        if (stable[c] and (part / corpus_total[part.index]).min() >= 0.01
+                and not np.isnan(riksdag).any() and not np.isnan(diva).any()):
+            pairs.append({"cluster": c, **cross(riksdag, diva, rng)})
+    table = table.merge(pairs_table(pairs), on="cluster", how="left")
     meta = {"model": metrics["model"], "revision": metrics["revision"], "run_id": run_id}
     FEATURES.mkdir(parents=True, exist_ok=True)
     frame[["sentence_id", "corpus", "year", "cluster", "probability"]].assign(**meta).to_parquet(
@@ -160,7 +188,7 @@ def main() -> None:
     (FEATURES / "method.json").write_text(json.dumps({**meta, **{k: metrics[k] for k in (
         "sentences", "space", "selected", "stability", "null_shuffled_dimensions", "corpus_ami")},
         "baseline": metrics["baseline"], "preregistration": "docs/sweden-futures-topics-preregistration.md",
-        "deviations": []}, indent=2, default=float) + "\n", encoding="utf-8")
+        "deviations": DEVIATIONS}, indent=2, default=float) + "\n", encoding="utf-8")
     sheet = REPO / "tmp/topics-review.csv"
     sheet.parent.mkdir(exist_ok=True)
     with sheet.open("w", newline="", encoding="utf-8") as out:

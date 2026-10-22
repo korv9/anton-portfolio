@@ -9,7 +9,9 @@ with counted as (
 ), totals as (
     select corpus, year, sum(sentences) as year_sentences from counted group by all
 ), labels as (
-    select distinct cluster::integer as cluster, label, top_terms, stable from {{ ref('stg_futures_topic_clusters') }}
+    -- One row per cluster: the per-corpus rows repeat the cluster's label, terms and stability.
+    select cluster::integer as cluster, label, top_terms, stable from {{ ref('stg_futures_topic_clusters') }}
+    qualify row_number() over (partition by cluster order by corpus) = 1
 )
 
 select

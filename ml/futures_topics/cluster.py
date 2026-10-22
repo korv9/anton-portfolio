@@ -5,11 +5,16 @@ stability and the structure null, as fixed in docs/sweden-futures-topics-preregi
 
 CPU only, one fit at a time. Embeddings are written in shards of SHARD sentences and each UMAP
 space is cached, so a stopped run resumes. RUN is <PORTFOLIO_FEATURES>/sweden/futures_topics/run,
-so warehouse_store.py pushes the checkpoints with the results. Reads RUN/sample.parquet; writes
-RUN/labels.parquet (sentence id, cluster, probability), RUN/sweep.parquet and RUN/metrics.json.
+so warehouse_store.py pushes the checkpoints with the results. The checkpoints (embeddings/,
+umap/, sweep.parquet) sit under RUN/cache/<sample key>, a hash of the sample's sentence ids in
+order, so a redrawn sample never reuses another sample's vectors or sweep. Reads
+RUN/sample.parquet; writes RUN/labels.parquet (sentence id, cluster, probability) and
+RUN/metrics.json, which carries the sample key. With no eligible configuration it writes
+metrics.json with passes false and exits non-zero.
 """
 from __future__ import annotations
 
+import hashlib
 import itertools
 import json
 import os
@@ -18,6 +23,8 @@ os.environ.setdefault("CUDA_VISIBLE_DEVICES", "")
 # The embedding model is only loaded for missing shards; keep TensorFlow out of the UMAP fits.
 os.environ.setdefault("USE_TF", "0")
 os.environ.setdefault("TF_CPP_MIN_LOG_LEVEL", "3")
+
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -36,9 +43,17 @@ KS = (8, 12, 16, 24, 32)
 SUBSAMPLE_SEEDS = (11, 12, 13)
 
 
+def sample_key(frame: pd.DataFrame) -> str:
+    return hashlib.sha1("\n".join(frame.sentence_id).encode()).hexdigest()[:16]
+
+
+def cache(frame: pd.DataFrame) -> Path:
+    return RUN / "cache" / sample_key(frame)
+
+
 def embeddings(frame: pd.DataFrame) -> np.ndarray:
     from sentence_transformers import SentenceTransformer
-    folder = RUN / "embeddings"
+    folder = cache(frame) / "embeddings"
     folder.mkdir(parents=True, exist_ok=True)
     model = None
     parts = []
@@ -61,9 +76,9 @@ def centre(vectors: np.ndarray, corpus: np.ndarray) -> np.ndarray:
     return out / np.maximum(np.linalg.norm(out, axis=1, keepdims=True), 1e-12)
 
 
-def space(vectors: np.ndarray, neighbours: int, seed: int, name: str) -> np.ndarray:
+def space(folder: Path, vectors: np.ndarray, neighbours: int, seed: int, name: str) -> np.ndarray:
     import umap
-    path = RUN / "umap" / f"{name}-n{neighbours}-s{seed}.npy"
+    path = folder / "umap" / f"{name}-n{neighbours}-s{seed}.npy"
     if path.exists():
         return np.load(path)
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -76,6 +91,7 @@ def space(vectors: np.ndarray, neighbours: int, seed: int, name: str) -> np.ndar
 
 def hdbscan_fit(reduced: np.ndarray, size: float, samples: int):
     import hdbscan
+    # gen_min_span_tree is what makes relative_validity_ (DBCV) available.
     model = hdbscan.HDBSCAN(min_cluster_size=max(2, round(size * len(reduced))), min_samples=samples,
                             cluster_selection_method="eom", gen_min_span_tree=True).fit(reduced)
     return model.labels_, model.probabilities_, float(model.relative_validity_)
@@ -102,12 +118,12 @@ def best_jaccard(a: np.ndarray, b: np.ndarray) -> dict[int, float]:
     return out
 
 
-def sweep(vectors: np.ndarray) -> pd.DataFrame:
-    path = RUN / "sweep.parquet"
+def sweep(folder: Path, vectors: np.ndarray) -> pd.DataFrame:
+    path = folder / "sweep.parquet"
     rows = pd.read_parquet(path).to_dict("records") if path.exists() else []
     done = {(r["neighbours"], r["seed"], r["size"], r["samples"]) for r in rows}
     for neighbours, seed in itertools.product(NEIGHBOURS, SEEDS):
-        reduced = space(vectors, neighbours, seed, "centred")
+        reduced = space(folder, vectors, neighbours, seed, "centred")
         for size, samples in itertools.product(SIZES, SAMPLES):
             if (neighbours, seed, size, samples) in done:
                 continue
@@ -122,18 +138,23 @@ def sweep(vectors: np.ndarray) -> pd.DataFrame:
 def main() -> None:
     frame = pd.read_parquet(RUN / "sample.parquet")
     corpus = frame.corpus.to_numpy()
+    key, folder = sample_key(frame), cache(frame)
     raw = embeddings(frame)
     vectors = centre(raw, corpus)
-    table = sweep(vectors)
+    table = sweep(folder, vectors)
     configs = table.groupby(["neighbours", "size", "samples"]).agg(
         dbcv=("dbcv", "mean"), silhouette=("silhouette", "mean"), coverage=("coverage", "mean"),
         clusters=("clusters", "mean")).reset_index()
     eligible = configs[(configs.coverage >= 0.5) & configs.clusters.between(5, 60)]
     if eligible.empty:
+        (RUN / "metrics.json").write_text(json.dumps({
+            "sample_key": key, "sentences": len(frame), "selected": None, "eligible": 0,
+            "stability": {"passes": False}, "null_shuffled_dimensions": {"passes": False},
+        }, indent=2) + "\n", encoding="utf-8")
         raise SystemExit("No eligible configuration: no stable topic structure to report")
     chosen = eligible.sort_values("dbcv", ascending=False).iloc[0]
     n, size, samples = int(chosen.neighbours), float(chosen["size"]), int(chosen.samples)
-    fits = {s: hdbscan_fit(space(vectors, n, s, "centred"), size, samples) for s in SEEDS}
+    fits = {s: hdbscan_fit(space(folder, vectors, n, s, "centred"), size, samples) for s in SEEDS}
     labels, probability, _ = fits[1]
     seed_ari = [ari(fits[a][0], fits[b][0]) for a, b in itertools.combinations(SEEDS, 2)]
     jaccard = {c: min(best_jaccard(labels, fits[s][0]).get(c, 0.0) for s in SEEDS[1:])
@@ -141,15 +162,15 @@ def main() -> None:
     sub_ari = []
     for s in SUBSAMPLE_SEEDS:
         keep = np.sort(np.random.default_rng(s).choice(len(frame), int(0.8 * len(frame)), replace=False))
-        sub = hdbscan_fit(space(vectors[keep], n, 1, f"sub{s}"), size, samples)[0]
+        sub = hdbscan_fit(space(folder, vectors[keep], n, 1, f"sub{s}"), size, samples)[0]
         sub_ari.append(ari(labels[keep], sub))
     rng = np.random.default_rng(SEED)
     shuffled = np.stack([rng.permutation(col) for col in vectors.T], axis=1)
-    null_labels, _, null_dbcv = hdbscan_fit(space(shuffled, n, 1, "null"), size, samples)
+    null_labels, _, null_dbcv = hdbscan_fit(space(folder, shuffled, n, 1, "null"), size, samples)
     null_big = int(sum((null_labels == c).mean() > 0.01 for c in range(null_labels.max() + 1)))
     real_big = int(sum((labels == c).mean() > 0.01 for c in range(labels.max() + 1)))
-    raw_labels = hdbscan_fit(space(raw, n, 1, "raw"), size, samples)[0]
-    reduced = space(vectors, n, 1, "centred")
+    raw_labels = hdbscan_fit(space(folder, raw, n, 1, "raw"), size, samples)[0]
+    reduced = space(folder, vectors, n, 1, "centred")
     real_dbcv = float(table[(table.neighbours == n) & (table["size"] == size)
                             & (table.samples == samples) & (table.seed == 1)].dbcv.iloc[0])
     baseline = []
@@ -167,7 +188,7 @@ def main() -> None:
     assigned = labels >= 0
     metrics = {
         "model": DEFAULT_MODEL, "revision": REVISION, "representation": REPRESENTATION, "seed": SEED,
-        "sentences": len(frame), "space": "corpus-centred, re-normalised",
+        "sample_key": key, "sentences": len(frame), "space": "corpus-centred, re-normalised",
         "selected": {"neighbours": n, "min_cluster_size_fraction": size, "min_samples": samples,
                      "min_cluster_size": max(2, round(size * len(frame))), **{k: float(chosen[k]) for k in
                      ("dbcv", "silhouette", "coverage", "clusters")}},
