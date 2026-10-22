@@ -190,5 +190,3 @@ export const SWEDEN_PRODUCTS: SwedenProduct[] = [
 
 export const productById = (id: SwedenProduct['id']) =>
   SWEDEN_PRODUCTS.find((p) => p.id === id)!
-export const productByHref = (href: string) =>
-  SWEDEN_PRODUCTS.find((p) => p.href === href)

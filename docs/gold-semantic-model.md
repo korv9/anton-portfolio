@@ -81,11 +81,3 @@ The frontend reads the gold vote, budget, job, UMAP and RFC marts. Original memb
 
 Gold keeps **facts, dimensions and marts distinct**. Do not add their row counts together: marts are materialized views of the facts. Legacy source exports stay available for reproducibility but are not interchangeable with the corrected and versioned gold tables.
 
-## Political workspace presentation contracts
-
-`parliament/workspace/index.json` and its session decision shards supplement the existing
-Gold JSON. They reuse session, party, issue and decision-point keys. Context comparisons
-pool comparable counts before computing percentages; cohesion and participation retain
-distinct denominators. Document citations and semantic candidates remain separate.
-The four dbt models, snapshot limits and release ownership are documented in
-[Political Observatory v2](political-observatory-v2.md).

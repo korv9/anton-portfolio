@@ -68,7 +68,8 @@ export const expired = (v: unknown) =>
 
 /**
  * One published dataset, fetched once per page load. null while loading; Error on failure;
- * Expired once a dataset with a `valid_until` date has passed it.
+ * Expired once a dataset with a `valid_until` date has passed it, or once it is withdrawn
+ * ({state: 'unavailable'}).
  */
 export function useData<T>(path: string): T | null | Error {
   const [state, setState] = useState<T | null | Error>(null)
@@ -83,7 +84,9 @@ export function useData<T>(path: string): T | null | Error {
       live = false
     }
   }, [path])
-  return expired(state) ? new Expired(path) : state
+  const withdrawn =
+    (state as { state?: unknown } | null)?.state === 'unavailable'
+  return expired(state) || withdrawn ? new Expired(path) : state
 }
 
 /** Whether the post is opened (full controls) or a living thumbnail. */
