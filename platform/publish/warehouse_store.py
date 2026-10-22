@@ -162,6 +162,9 @@ def push_tree(s3, bucket: str, name: str, sub: str = "", prune: bool = False,
     `sub` limits it to one folder of the tree (jobtech/stream), for the daily refreshes.
     """
     root, prefix = tree(name)
+    root = resolved_path(root)
+    if not resolved_path(root / sub).is_relative_to(root):
+        raise ValueError(f"Invalid path outside the {name} tree: {sub}")
     files = tree_files(root / sub)
 
     def one(path: Path) -> int:
