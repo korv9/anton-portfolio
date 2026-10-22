@@ -1,25 +1,5 @@
 import { test, expect } from './test'
 
-const projects = [
-  ['#jobb', 'Labour Market Observatory', 4],
-  ['#wellbeing', 'Wellbeing Observatory', 4],
-  ['#ai-act', 'EU AI Act Observatory', 3],
-  ['#lagboken', 'Swedish Statute Book', 3],
-] as const
-for (const [path, name, tabs] of projects)
-  test(`${name} opens as a report in ${tabs} tabs`, async ({ page }) => {
-    await page.goto(`/${path}`)
-    await expect(page.locator('.politik-intro-name')).toHaveText(name)
-    await expect(
-      page.getByRole('navigation', { name: 'Report' }).getByRole('link'),
-    ).toHaveCount(tabs)
-    await expect(page.getByRole('heading', { level: 1 })).not.toBeEmpty()
-    await expect(page.locator('.report-tab .feature').first()).toBeVisible()
-    await expect(
-      page.locator('.project-hero-finding,.dk-kpis,.site-sidebar'),
-    ).toHaveCount(0)
-  })
-
 test(
   'degree project presents the supplied narrative and navigable findings',
   { tag: '@mobile' },
@@ -104,6 +84,16 @@ test('removed pages lead back to the projects and are absent from navigation', a
     await page.goto(`/#${path}`)
     await expect(page).toHaveURL(/#projekt/)
     await expect(page.locator('.projects-page')).toBeVisible()
+    await expect(page.locator(`a[href="#${path}"]`)).toHaveCount(0)
+  }
+})
+
+test('withdrawn observatories lead to the chart feed and are absent from navigation', async ({
+  page,
+}) => {
+  for (const path of ['politik', 'jobb', 'wellbeing', 'ai-act', 'lagboken']) {
+    await page.goto(`/#${path}`)
+    await expect(page).toHaveURL(/#what-does-it-even-mean$/)
     await expect(page.locator(`a[href="#${path}"]`)).toHaveCount(0)
   }
 })

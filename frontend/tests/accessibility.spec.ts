@@ -10,15 +10,9 @@ const PAGES = [
   '#start',
   '#projekt',
   '#drugcomb',
-  '#jobb-kluster',
   '#concept-constellation',
   '#philosophy-atlas',
-  '#politik',
-  '#ai-act',
-  '#lagboken',
-  '#jobb',
   '#symbolic-atlas',
-  '#wellbeing',
   '#thesis',
   '#cluster-visuals',
 ]
@@ -94,10 +88,4 @@ test('reduced motion stops transitions', async ({ page, isMobile }) => {
     'animation-name',
     'none',
   )
-  await page.goto('/#politik-roster')
-  const duration = await page
-    .locator('.rank-track i')
-    .first()
-    .evaluate((el) => parseFloat(getComputedStyle(el).transitionDuration))
-  expect(duration).toBeLessThan(0.01)
 })

@@ -204,6 +204,12 @@ export async function fetchData(path: string, init?: RequestInit) {
   return response
 }
 
+export async function fetchJson<T>(path: string): Promise<T> {
+  const response = await fetchData(path)
+  if (!response.ok) throw new Error(`${path}: HTTP ${response.status}`)
+  return response.json()
+}
+
 export async function localDataFallbackAllowed() {
   return localMode || (localHost && !(await load()).current)
 }

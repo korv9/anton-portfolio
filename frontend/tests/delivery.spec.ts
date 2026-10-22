@@ -1,38 +1,10 @@
 import { test, expect } from './test'
 
 /**
- * Shards are served from object storage, JSON contracts from the site. These tests watch the
- * network rather than the rendered output, because with the shard files still present locally
- * a broken resolver would silently fall back to them and every other test would still pass.
+ * JSON contracts are served from the site, not object storage. This test watches the network
+ * rather than the rendered output, because with the files still present locally a broken
+ * resolver would silently fall back to them and every other test would still pass.
  */
-
-test('document shards load from object storage, not from the site', async ({
-  page,
-}) => {
-  const shardRequests: string[] = []
-  page.on('request', (request) => {
-    const url = request.url()
-    if (
-      /\/politics\/(parliament\/(issues|debates)|decisions|laws\/v[12])\//.test(
-        url,
-      )
-    )
-      shardRequests.push(url)
-  })
-
-  const { bases } = await (await page.request.get('/data/delivery.json')).json()
-  await page.goto('/#politik-sok')
-  await page
-    .getByRole('button', { name: /Read full speech/ })
-    .first()
-    .click()
-  await expect(page.locator('.speech-reader h4')).toBeVisible()
-
-  expect(shardRequests.length).toBeGreaterThan(0)
-  // From the bucket's public address, whichever it is (r2.dev or a custom domain).
-  for (const url of shardRequests)
-    expect(url.startsWith(bases.shard)).toBeTruthy()
-})
 
 test('legacy delivery resolves JSON from the pinned site snapshots', async ({
   page,
@@ -48,7 +20,8 @@ test('legacy delivery resolves JSON from the pinned site snapshots', async ({
   page.on('request', (request) => {
     if (request.url().includes('/gold/')) goldRequests.push(request.url())
   })
-  await page.goto('/#politik-budget')
+  // The result tables' catalogue reads gold/semantic-model.json.
+  await page.goto('/#drugcomb-data')
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
   await page.waitForLoadState('networkidle')
   expect(goldRequests.length).toBeGreaterThan(0)

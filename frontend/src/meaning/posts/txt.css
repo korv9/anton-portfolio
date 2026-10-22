@@ -1,0 +1,55 @@
+.mean-txt-t {
+  font-size: 8px;
+  fill: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.mean-txt-grid {
+  stroke: var(--line);
+  stroke-width: 0.5;
+}
+.mean-txt-kpi {
+  flex: 1;
+  display: grid;
+  place-content: center;
+  text-align: center;
+  font-size: clamp(44px, 8vw, 112px);
+  font-weight: var(--weight-heading);
+  letter-spacing: -0.04em;
+  line-height: 0.9;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+.mean-txt-kpi small {
+  display: block;
+  font-size: var(--caption);
+  letter-spacing: 0;
+  font-weight: var(--weight-body);
+  color: var(--muted);
+  margin-top: 8px;
+}
+.mean-txt-kpis {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+  gap: 6px;
+}
+.mean-txt-kpis > div {
+  display: grid;
+  align-content: center;
+  padding: 6px 8px;
+  border-radius: 8px;
+  font-size: clamp(18px, 2.4vw, 30px);
+  font-weight: var(--weight-heading);
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+.mean-txt-kpis small {
+  font-size: var(--caption);
+  font-weight: var(--weight-body);
+  letter-spacing: 0;
+  color: var(--ink-2);
+}
+.mean-txt-hover:hover {
+  opacity: 0.7;
+}

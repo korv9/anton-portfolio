@@ -7,7 +7,7 @@
  * the scene picks it up on the next load. docs/sweden-atlas.md has the same list.
  */
 import { useEffect, useState } from 'react'
-import { fetchJson } from '../../welfare/data'
+import { fetchJson } from '../../dataSource'
 
 export type SlotDef = {
   path: string

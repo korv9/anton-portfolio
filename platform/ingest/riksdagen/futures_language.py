@@ -4,19 +4,23 @@
     python platform/ingest/riksdagen/futures_language.py --sessions 199394 202526
 
 The terms are seeds/sweden_futures/future_terms.csv: a marker for speaking of the future and
-nine themes. Each session's speech archive (data.riksdagen.se, Riksdagen's open data) is
+nine themes; seeds/sweden_futures/future_subterms.csv splits security and culture into sub-terms,
+counted like themes. Each session's speech archive (data.riksdagen.se, Riksdagen's open data) is
 streamed once, counted and deleted; no speech text is kept apart from short review examples.
 Per session, under warehouse/features/sweden/futures/:
 
     totals_<session>.parquet    year × party: speeches, future-oriented speeches, words and
                                 matches of the future marker
-    hits_<session>.parquet      the same × theme: speeches using it, of them future-oriented,
-                                and matches
+    hits_<session>.parquet      the same × theme or sub-term: speeches using it, of them
+                                future-oriented, and matches
+    lengths_<session>.parquet   year × words in the speech (capped at MAX_WORDS): speeches and
+                                future-oriented speeches, for shares within fixed length bands
     examples_<session>.parquet  per theme, three future-oriented speeches with the lowest hash
                                 of the speech id: date, party, speaker, link and a short window
     manifest_<session>.json     source URL and SHA-256, the dictionary's SHA-256, counts
 
-A session is counted again when its archive, the dictionary or COUNTS changed.
+A session is counted again when its archive, the dictionaries or COUNTS changed. PORTFOLIO_FEATURES
+moves the output, so a recount can be checked before it replaces the shared files.
 """
 from __future__ import annotations
 
@@ -24,6 +28,7 @@ import argparse
 import hashlib
 import heapq
 import json
+import os
 import re
 import sys
 import tempfile
@@ -47,11 +52,15 @@ from rawstore import session as http_session  # noqa: E402
 CATALOG = "https://www.riksdagen.se/sv/dokument-och-lagar/riksdagens-oppna-data/anforanden/"
 # Session codes have six digits (199394), except 1999/2000, which has eight (19992000).
 ARCHIVE = re.compile(r"https://data\.riksdagen\.se/dataset/anforande/anforande-(\d{8}|\d{6})\.json\.zip")
-OUT = REPO / "warehouse/features/sweden/futures"
+OUT = Path(os.environ.get("PORTFOLIO_FEATURES", REPO / "warehouse/features")) / "sweden/futures"
 TERMS = REPO / "platform/seeds/sweden_futures/future_terms.csv"
+# Kept apart from TERMS: the DiVA harvest reads TERMS and would harvest again if it changed.
+SUBTERMS = REPO / "platform/seeds/sweden_futures/future_subterms.csv"
 EXAMPLES = 3
+# Longer speeches share one length bin; far above the longest quartile's lower bound.
+MAX_WORDS = 5000
 # Bumped when count() writes new columns, so every session is counted again.
-COUNTS = 2
+COUNTS = 3
 WORD = re.compile(r"\w+")
 # Riksdagen wrote the Liberals as FP until 2015.
 PARTY = {"FP": "L", "fp": "L", "-": None, "": None}
@@ -73,11 +82,14 @@ def speeches(path: Path):
                        "text": "\n".join(paragraphs(s.get("anforandetext") or ""))}
 
 
-def count(rows, terms):
+def count(rows, terms, sampled=None):
+    """Totals, hits, length bins, examples and stats; examples only for terms in `sampled` (all
+    when None), so sub-terms do not add review examples."""
     marker = next(p for t, p in terms if t == "future")
     themes = [(t, p) for t, p in terms if t != "future"]
     totals: dict = defaultdict(lambda: [0, 0, 0, 0])  # speeches, future-oriented, words, marker matches
     hits: dict = defaultdict(lambda: [0, 0, 0])  # speeches using, of them future-oriented, matches
+    lengths: dict = defaultdict(lambda: [0, 0])  # speeches, future-oriented
     draws: dict = defaultdict(list)
     seen: set[str] = set()
     for s in rows:
@@ -89,8 +101,12 @@ def count(rows, terms):
         future = marked > 0
         totals[cell][0] += 1
         totals[cell][1] += future
-        totals[cell][2] += len(WORD.findall(s["text"]))
+        words = len(WORD.findall(s["text"]))
+        totals[cell][2] += words
         totals[cell][3] += marked
+        length = lengths[(cell[0], min(words, MAX_WORDS))]
+        length[0] += 1
+        length[1] += future
         rank = int(hashlib.sha1(s["id"].encode()).hexdigest()[:15], 16)
         for term_id, pattern in themes:
             matches = pattern.findall(s["text"])
@@ -100,8 +116,10 @@ def count(rows, terms):
             hit[0] += 1
             hit[1] += future
             hit[2] += len(matches)
+            if not future or (sampled is not None and term_id not in sampled):
+                continue
             heap = draws[term_id]
-            if future and (len(heap) < EXAMPLES or rank < -heap[0][0]):
+            if len(heap) < EXAMPLES or rank < -heap[0][0]:
                 match = pattern.search(s["text"])
                 heapq.heappush(heap, (-rank, s["id"], {
                     "theme": term_id, "speech_id": s["id"], "date": s["date"], "party": s["party"],
@@ -110,7 +128,7 @@ def count(rows, terms):
                 if len(heap) > EXAMPLES:
                     heapq.heappop(heap)
     examples = [e for heap in draws.values() for _, _, e in sorted(heap, reverse=True)]
-    return totals, hits, examples, {"speeches": len(seen)}
+    return totals, hits, lengths, examples, {"speeches": len(seen)}
 
 
 def main() -> None:
@@ -120,6 +138,10 @@ def main() -> None:
     parser.add_argument("--max-new", type=int, help="Count at most this many changed sessions this run")
     args = parser.parse_args()
     terms, dictionary = load_terms(TERMS)
+    subterms, sub_dictionary = load_terms(SUBTERMS)
+    sampled = {t for t, _ in terms}
+    terms += subterms
+    dictionary = hashlib.sha256(f"{dictionary}{sub_dictionary}".encode()).hexdigest()
     http = http_session()
     OUT.mkdir(parents=True, exist_ok=True)
     counted = 0
@@ -149,11 +171,13 @@ def main() -> None:
                 for chunk in response.iter_content(1 << 20):
                     out.write(chunk)
                     digest.update(chunk)
-            totals, hits, examples, stats = count(speeches(path), terms)
+            totals, hits, lengths, examples, stats = count(speeches(path), terms, sampled)
         write_rows([{"session": code, "year": y, "party": p, "speeches": n, "future": f, "words": w,
                      "marker_matches": m} for (y, p), (n, f, w, m) in totals.items()], OUT / f"totals_{code}.parquet")
         write_rows([{"session": code, "year": y, "party": p, "theme": t, "speeches": n, "future": f,
                      "matches": m} for (y, p, t), (n, f, m) in hits.items()], OUT / f"hits_{code}.parquet")
+        write_rows([{"session": code, "year": y, "words": w, "speeches": n, "future": f}
+                    for (y, w), (n, f) in sorted(lengths.items())], OUT / f"lengths_{code}.parquet")
         write_rows([{"session": code, **e} for e in examples], OUT / f"examples_{code}.parquet")
         manifest_path.write_text(json.dumps({
             "session": code, "source_url": url, "sha256": digest.hexdigest(), **stamp, **stats,

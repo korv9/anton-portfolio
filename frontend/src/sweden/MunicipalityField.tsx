@@ -100,7 +100,7 @@ export default function MunicipalityField({
     const stage = stageRef.current
     const el = box.current
     if (!stage || !el) return
-    const { t, trails, selected, marked, names } = latest.current
+    const { t, trails } = latest.current
     const e = t * t * (3 - 2 * t)
     for (const b of built.current.values()) {
       const k = b.moves ? e : 0
@@ -124,6 +124,15 @@ export default function MunicipalityField({
         b.trail.geometry.setFromPoints(curve.getPoints(16))
       }
     }
+    placeTags()
+    stage.render()
+  }
+  // Orbiting moves only the camera: re-project the labels, leave the meshes where they are.
+  const placeTags = () => {
+    const stage = stageRef.current
+    const el = box.current
+    if (!stage || !el) return
+    const { selected, marked, names } = latest.current
     const show = [selected, ...marked].filter((c): c is string => !!c)
     const next = show.flatMap((code) => {
       const b = built.current.get(code)
@@ -149,7 +158,6 @@ export default function MunicipalityField({
       lastTags.current = key
       setTags(next)
     }
-    stage.render()
   }
 
   useEffect(() => {
@@ -272,7 +280,7 @@ export default function MunicipalityField({
       })
       scene.add(lamps)
     }
-    stage.controls.addEventListener('change', pose)
+    stage.controls.addEventListener('change', placeTags)
     const moving = targets.length > 0 && latest.current.t > 0.5
     stage.home(
       new THREE.Vector3(0, moving ? 20 : 6, 4),

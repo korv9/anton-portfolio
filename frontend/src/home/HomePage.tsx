@@ -24,12 +24,16 @@ const groupProjects = (label: string) =>
     .ids.filter((id) => id !== 'thesis')
     .map((id) => PROJECTS.find((project) => project.id === id)!)
 
-/** Prototypes not yet ready to stand alone: one card per group, its projects as links. */
-const GROUP_CARDS = [
+/**
+ * Prototypes not yet ready to stand alone: one card per group, its projects as links, or one
+ * card that is itself the link.
+ */
+const GROUP_CARDS: { label: string; summary: string; href?: string }[] = [
   {
-    label: 'Observatories',
+    label: 'What does it even mean?',
     summary:
-      'Dashboards that follow public data on politics, jobs, welfare and law.',
+      'A collection of charts on all the data behind this site, which I have not yet presented in a coherent way.',
+    href: '#what-does-it-even-mean',
   },
   {
     label: 'Labs',
@@ -226,17 +230,24 @@ function Work() {
             ))}
             {GROUP_CARDS.map((group) => (
               <li key={group.label}>
-                <div className="work-card">
-                  <h3 className="work-title">{group.label}</h3>
-                  <p className="work-question">{group.summary}</p>
-                  <ul className="work-links">
-                    {groupProjects(group.label).map((project) => (
-                      <li key={project.id}>
-                        <a href={project.href}>{b(project.title)}</a>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+                {group.href ? (
+                  <a className="work-card" href={group.href}>
+                    <h3 className="work-title">{group.label}</h3>
+                    <p className="work-question">{group.summary}</p>
+                  </a>
+                ) : (
+                  <div className="work-card">
+                    <h3 className="work-title">{group.label}</h3>
+                    <p className="work-question">{group.summary}</p>
+                    <ul className="work-links">
+                      {groupProjects(group.label).map((project) => (
+                        <li key={project.id}>
+                          <a href={project.href}>{b(project.title)}</a>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </li>
             ))}
           </ul>

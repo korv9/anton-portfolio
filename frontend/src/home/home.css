@@ -720,7 +720,7 @@ a.work-card:hover .work-title {
   }
 }
 
-/* The projects of an Observatories or Labs card, as a plain list of links. */
+/* The projects of a Labs card, as a plain list of links. */
 .work-links {
   display: flex;
   flex-wrap: wrap;

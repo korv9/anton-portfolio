@@ -1,0 +1,50 @@
+.mean-pol-t {
+  font-size: 8px;
+  fill: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.mean-pol-grid {
+  stroke: var(--line);
+  stroke-width: 0.5;
+}
+.mean-pol-kpi {
+  flex: 1;
+  display: grid;
+  place-content: center;
+  text-align: center;
+  font-size: clamp(48px, 9vw, 120px);
+  font-weight: var(--weight-heading);
+  letter-spacing: -0.04em;
+  line-height: 0.9;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+.mean-pol-kpi small {
+  display: block;
+  font-size: var(--caption);
+  letter-spacing: 0;
+  font-weight: var(--weight-body);
+  color: var(--muted);
+  margin-top: 8px;
+}
+.mean-pol-grid4 {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(var(--cols, 3), 1fr);
+  gap: 6px;
+}
+.mean-pol-cell {
+  display: grid;
+  place-content: center;
+  text-align: center;
+  border-radius: 8px;
+  font-size: clamp(16px, 2.6vw, 30px);
+  font-weight: var(--weight-heading);
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+.mean-pol-cell small {
+  font-size: var(--caption);
+  font-weight: var(--weight-body);
+  color: var(--ink-2);
+}

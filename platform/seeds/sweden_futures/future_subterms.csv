@@ -1,0 +1,11 @@
+term_id,theme,label_en,label_sv,pattern,case_sensitive,description_en,sort_order
+security_defence,security,Defence and preparedness,Försvar och beredskap,"\b(?:försvar\w*|beredskap\w*)",false,"Defence and preparedness (försvar, beredskap and their compounds).",1
+security_crime,security,Crime and order,Brott och ordning,"\b(?:brottslighet\w*|gängkriminalitet\w*|ordning och reda)",false,"Crime, gang crime and law and order.",2
+security_safety,security,Säkerhet in any compound,Säkerhet i alla sammansättningar,"\bsäkerhet\w*",false,"Säkerhet and every compound: security policy, but also traffic safety, legal certainty and social security.",3
+security_welfare,security,Welfare security (trygghet),Trygghet,"\btrygghet\w*",false,"Trygghet and its compounds, such as trygghetssystem: mostly welfare and social security.",4
+security_stability,security,Stability,Stabilitet,"\bstabilitet\w*",false,"Stability, mostly financial and fiscal.",5
+culture_arts,culture,Arts and literature,Konst och litteratur,"\b(?:konstnär\w*|konsten\b|litteratur\w*)",false,"Artists, the arts and literature.",6
+culture_heritage,culture,Cultural heritage,Kulturarv,"\bkultur(?:arv|miljö)\w*",false,"Cultural heritage and cultural environments (kulturarv, kulturmiljö).",7
+culture_libraries,culture,Libraries,Bibliotek,"\bbibliotek\w*",false,"Libraries and their compounds.",8
+culture_bildning,culture,Bildung and popular education,Bildning och folkbildning,"\b(?:bildning\w*|folkbildning\w*)",false,"Bildung and popular education.",9
+culture_other,culture,Other kultur compounds,Övriga kultursammansättningar,"\bkultur(?!arv|miljö)\w*",false,"Every other word beginning with kultur: such as kulturpolitik, kulturell and kulturskola.",10

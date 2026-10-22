@@ -58,10 +58,11 @@ export default function AtlasConnections() {
   const [sel, setSel] = useState<string | null>(null)
   const toggle = (id: string) => () => setSel((c) => (c === id ? null : id))
   const fade = (id: string) => (sel && sel !== id ? 0.15 : 1)
-  const rels = k?.relationships ?? []
+  // Threads carry a ρ; the neighbour comparison and the change model have none.
+  const rels = (k?.relationships ?? []).filter((r) => r.result.ci95)
   const clear = rels.filter((r) => r.result.ci95[0] > 0 || r.result.ci95[1] < 0)
   const revealed = k
-    ? `${rels.length} relationships are tested; ${clear.length} ${clear.length === 1 ? 'has an interval' : 'have intervals'} that exclude zero${clear.length ? ` (${clear.map((r) => r.assessment).join(', ')})` : ''}. ${k.rejected.length} were rejected before testing.`
+    ? `${k.relationships.length} relationships are tested; ${clear.length} ${clear.length === 1 ? 'has an interval' : 'have intervals'} that exclude zero${clear.length ? ` (${clear.map((r) => r.assessment).join(', ')})` : ''}. ${k.rejected.length} were rejected before testing.`
     : null
 
   const build = (s: Space): Tag[] => {

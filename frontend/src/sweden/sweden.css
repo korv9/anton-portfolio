@@ -155,26 +155,34 @@
   cursor: pointer;
 }
 
-/* Header: on the page, no band; a gradient keeps it legible over the scene. */
+/* Header: a solid band fixed over the top of the scene, so it follows the reader down the
+   page. The scene panels start below it (top: 7.75rem). */
 .sw-header {
-  position: absolute;
+  position: fixed;
   inset: 0 0 auto;
-  z-index: 5;
+  z-index: 50;
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   gap: 1rem;
-  padding: 1.375rem max(1.875rem, var(--gutter, 1rem)) 2.75rem;
-  background: linear-gradient(
-    180deg,
-    var(--sw-bg) 0%,
-    color-mix(in srgb, var(--sw-bg) 85%, transparent) 45%,
-    transparent 100%
-  );
-  pointer-events: none;
+  padding: 1.375rem max(1.875rem, var(--gutter, 1rem)) 0.25rem;
+  background: var(--sw-bg);
+  border-bottom: 1px solid var(--sw-line);
 }
-.sw-header > * {
-  pointer-events: auto;
+/* In-page jumps land below the header. */
+:root:has(.sw-header) {
+  scroll-padding-top: 8rem;
+}
+/* Pages without a scene (the meaning page) keep the header in the flow, sticky. */
+.sweden.sw-header-host {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  min-height: 0;
+  margin-inline: 0;
+}
+.sw-header-host .sw-header {
+  position: relative;
 }
 .sw-header-main {
   min-width: 0;
@@ -541,7 +549,8 @@
   font-weight: 700;
 }
 /* The verdict is written out; a small dot before it repeats it in colour. */
-.sw-verdict::before {
+.sw-verdict::before,
+.sw-agree::before {
   content: '';
   display: inline-block;
   width: 0.5rem;
@@ -556,6 +565,16 @@
 }
 .sw-reading[data-verdict='supports'] .sw-verdict::before {
   background: var(--sw-div-pos);
+}
+/* B: a direction that holds in all three measures is marked in ink; one that depends on the
+   measure keeps the neutral dot. */
+.sw-agree[data-agree='rise']::before,
+.sw-agree[data-agree='fall']::before {
+  background: var(--sw-ink);
+}
+.sw-table tr[data-part] th {
+  padding-left: 1.25rem;
+  font-weight: 400;
 }
 
 .sw-method details {
@@ -682,9 +701,9 @@
 /* Phone: the header and panels leave the scene and stack around it. */
 @media (max-width: 760px) {
   .sw-header {
-    position: relative;
+    position: sticky;
+    top: 0;
     padding: 1rem 1rem 0.25rem;
-    background: var(--sw-bg);
   }
   .sw-wordmark {
     font-size: 1.1875rem;
@@ -975,6 +994,21 @@ td.sw-cell[data-zero] .sw-cell-button span {
 .sw-scatter text {
   fill: var(--sw-muted);
   font-size: 10px;
+}
+/* Connections 3.1: every municipality muted, the chosen one the only accent. */
+.sw-neighbours .sw-scatter svg {
+  max-width: 640px;
+}
+.sw-scatter line.sw-ref {
+  stroke-dasharray: 3 3;
+}
+.sw-scatter .sw-dots circle {
+  fill: var(--sw-muted);
+  opacity: 0.45;
+}
+.sw-scatter .sw-dots circle.is-focal {
+  fill: var(--sw-accent);
+  opacity: 1;
 }
 @media (max-width: 760px) {
   .sw-connection-grid {

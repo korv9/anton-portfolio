@@ -16,6 +16,7 @@
 - 2026-10-18 [CODE] Added fulltext delivery, conservative extraction, deterministic local ranking, continuous company sections and private development access controls.
 - 2026-10-18 [TOOL] Python: 662 passed, two skipped. Frontend: 129 unit tests; Playwright: 173 passed, two skipped; security: three passed. Build, format, TypeScript and publication checks passed after module split.
 - 2026-10-18 [USER] No automatic deployment. Missing financial/workforce/contracts/repository/issuer data must remain absent; named legal findings still require human approval.
+- 2026-10-21 [USER] Observatories withdrawn from the site (politics, jobs, Job Intelligence, wellbeing, AI Act, statute book); every old address and `/companies/*` redirects to `#what-does-it-even-mean`. Home card "What does it even mean?" replaces Observatories. `frontend/src/{compliance,companies,job-intelligence}` kept unrouted for the compliance release hash; `platform/architecture/registry.py` still lists deleted frontend folders.
 
 ## Working set
 

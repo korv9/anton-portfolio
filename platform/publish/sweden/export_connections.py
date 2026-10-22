@@ -3,15 +3,20 @@ its measurement contract, and the joins that were rejected.
 
     python platform/publish/sweden/export_connections.py
 
-Reads gold.mart_municipality_year_cross_subject for the municipal relationships (SWEDEN C's
-frozen 2024 inputs and D's library totals) and B's and E's gold marts for the rejected joins,
-and writes frontend/public/data/sweden/connections/connections.json. Every relationship declares
-geography, time, population and denominator, units, missing-data behaviour, confounders and its evidence class; a join whose grains do not meet is recorded as
+Reads gold.mart_municipality_year_cross_subject (the welfare panel, SWEDEN C's 2024 inputs and
+D's library totals), gold.fct_municipal_similarity for C's commuting shares and
+gold.fct_library_municipality_year for why a visit count is missing, and B's and E's gold marts
+for the rejected joins. Writes frontend/public/data/sweden/connections/connections.json. Every
+relationship declares geography, time, population and denominator, units, missing-data
+behaviour, confounders and its evidence class; a join whose grains do not meet is recorded as
 rejected with the reason, not computed.
 
-Statistics: Spearman's ρ with a 95 % bootstrap interval (2,000 resamples, fixed seed) and a
-partial ρ that removes log population from both ranks. Several relationships are tested, so
-none is called significant; the intervals are descriptive.
+The socioeconomic relationship (plan 3.3) is one question with one family of tests: the partial
+Spearman ρ of visits per inhabitant with median earned income after log population, in the
+reference year and in REPLICATION, and with post-secondary education in the reference year
+(education is C's 2024 input only). Each carries an iid and a county-cluster bootstrap interval
+and a residual permutation p, Holm-adjusted over the family. The label is read from the income
+estimate alone, the one measured the same way in both years.
 """
 from __future__ import annotations
 
@@ -25,72 +30,120 @@ from pathlib import Path
 import duckdb
 import numpy as np
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import connections_preregistered as pre  # noqa: E402
+from connections_stats import RESAMPLES, ROUNDS, holm, interval, partial, permutation_p, spearman  # noqa: E402
+
 ROOT = Path(__file__).resolve().parents[3]
 DATABASE = Path(os.environ.get("PORTFOLIO_DB", ROOT / "warehouse/portfolio.duckdb"))
 DATA = ROOT / "frontend/public/data/sweden"
 OUT = DATA / "connections"
 SEED = 20261020
-RESAMPLES = 2000
-# Rate per inhabitant multiplier, as SWEDEN D publishes each rate.
-PER = {"visits_rate": ("library_visits", 1), "service_points_rate": ("library_service_points", 10_000)}
-X = ("median_earned_income_sek", "post_secondary_25_64_pct")
-
-
-def ranks(x: np.ndarray) -> np.ndarray:
-    order = x.argsort(kind="mergesort")
-    r = np.empty(len(x))
-    r[order] = np.arange(len(x))
-    # Average tied ranks.
-    for v in np.unique(x):
-        tie = x == v
-        if tie.sum() > 1:
-            r[tie] = r[tie].mean()
-    return r
-
-
-def spearman(a: np.ndarray, b: np.ndarray) -> float:
-    return float(np.corrcoef(ranks(a), ranks(b))[0, 1])
-
-
-def partial(a: np.ndarray, b: np.ndarray, z: np.ndarray) -> float:
-    """Spearman's ρ of a and b after removing z linearly from both ranks."""
-    ra, rb, rz = ranks(a), ranks(b), ranks(z)
-    design = np.column_stack([np.ones_like(rz), rz])
-    res = lambda y: y - design @ np.linalg.lstsq(design, y, rcond=None)[0]  # noqa: E731
-    return float(np.corrcoef(res(ra), res(rb))[0, 1])
-
-
-def bootstrap(a: np.ndarray, b: np.ndarray, rng) -> list[float]:
-    draws = [spearman(a[i], b[i]) for i in (rng.integers(0, len(a), len(a)) for _ in range(RESAMPLES))]
-    return [round(float(np.percentile(draws, 2.5)), 3), round(float(np.percentile(draws, 97.5)), 3)]
+# The last year before the pandemic closed libraries: the reference year's replication.
+REPLICATION = 2019
+EDUCATION = "post_secondary_25_64_pct"
+INCOME = "median_earned_income_sek"
+COMMUTING = ("in_commuting_pct", "out_commuting_pct")
+PREREGISTERED = "ecd242f2"
 
 
 def panel(con, year: int) -> list[dict]:
-    """SWEDEN C's municipalities in its reference year, with C's values at the precision C
-    publishes (4 decimals) and D's rates as D publishes them."""
-    rows = con.sql(f"""select municipality_code, similarity_population, similarity_median_earned_income_sek,
-                              similarity_post_secondary_25_64_pct, library_population, library_visits,
-                              library_service_points
-                       from gold.mart_municipality_year_cross_subject
-                       where year = {year} and similarity_population is not null
-                       order by municipality_code""")
+    """Every municipality in the year: panel population and income, C's education and commuting
+    (reference year only), D's visit rate as D publishes it, and why a visit count is missing."""
+    rows = con.sql(f"""select x.municipality_code as code, x.municipality_name as name, x.population, x.{INCOME},
+                              x.similarity_{EDUCATION} as {EDUCATION}, f.{COMMUTING[0]}, f.{COMMUTING[1]},
+                              x.library_visits, x.library_population, l.municipality_code is not null as in_kb,
+                              l.set_to_missing
+                       from gold.mart_municipality_year_cross_subject as x
+                       left join gold.fct_municipal_similarity as f using (municipality_code, year)
+                       left join gold.fct_library_municipality_year as l using (municipality_code, year)
+                       where x.year = {year} order by x.municipality_code""")
     out = []
     for r in (dict(zip(rows.columns, values)) for values in rows.fetchall()):
-        p = r["library_population"]
-        out.append({"code": r["municipality_code"],
-                    "log_population": round(math.log(r["similarity_population"]), 4),
-                    **{f: (round(r[f"similarity_{f}"], 4) if r[f"similarity_{f}"] is not None else None) for f in X},
-                    **{k: (round(r[c] * per / p, 4) if p and r[c] is not None else None) for k, (c, per) in PER.items()}})
+        p, v = r["library_population"], r["library_visits"]
+        reasons = [m for m in (r["set_to_missing"] or []) if m.startswith("visits")]
+        out.append({"code": r["code"], "name": r["name"],
+                    "log_population": math.log(r["population"]) if r["population"] else None,
+                    **{k: r[k] for k in (INCOME, EDUCATION, *COMMUTING)},
+                    "visits_rate": round(v / p, 4) if p and v is not None else None,
+                    "missing": None if v is not None else "; ".join(reasons) or (
+                        "no visit count in KB's statistics" if r["in_kb"] else "no row in KB's statistics")})
     return out
 
 
-def municipal(rng, rows: list[dict], x_key: str, y_key: str) -> dict:
-    pairs = [(r[y_key], r[x_key], r["log_population"], r["code"])
-             for r in rows if r.get(y_key) is not None and r.get(x_key) is not None]
-    y, x, z = (np.array([p[i] for p in pairs], dtype=float) for i in range(3))
-    return {"n": len(pairs), "excluded": len(rows) - len(pairs), "rho": round(spearman(x, y), 3),
-            "ci95": bootstrap(x, y, rng), "partial_rho_log_population": round(partial(x, y, z), 3),
-            "points": [[p[3], round(p[1], 4), round(p[0], 4)] for p in pairs]}
+def complete(rows: list[dict], keys: tuple[str, ...]) -> tuple[list[dict], dict[str, np.ndarray]]:
+    kept = [r for r in rows if all(r[k] is not None for k in keys)]
+    return kept, {k: np.array([r[k] for r in kept], dtype=float) for k in keys}
+
+
+def estimate(rows: list[dict], x_key: str, controls: tuple[str, ...], seed: int, test: bool = True) -> dict:
+    """Partial ρ of visits per inhabitant with x_key after the controls, with both intervals."""
+    kept, v = complete(rows, ("visits_rate", x_key, *controls))
+    x, y, z = v[x_key], v["visits_rate"], [v[k] for k in controls]
+    county = np.array([r["code"][:2] for r in kept])
+    stat = lambda i: partial(x[i], y[i], [c[i] for c in z])  # noqa: E731
+    out = {"n": len(kept), "partial_rho": round(partial(x, y, z), 3),
+           "ci95_iid": interval(stat, len(kept), np.random.default_rng(seed)),
+           "ci95_county": interval(stat, len(kept), np.random.default_rng(seed), county)}
+    if test:
+        out["p"] = round(permutation_p(x, y, z, np.random.default_rng(seed)), 4)
+    return out
+
+
+def side(ci: list[float]) -> int:
+    return 1 if ci[0] > 0 else -1 if ci[1] < 0 else 0
+
+
+def replicated(intervals: list[list[float]]) -> str:
+    """robust: every interval excludes zero on the same side; not_supported: every interval
+    includes zero; uncertain otherwise."""
+    sides = {side(ci) for ci in intervals}
+    return "robust" if len(sides) == 1 and 0 not in sides else "not_supported" if sides == {0} else "uncertain"
+
+
+def gradient(con, year: int, label: dict) -> dict:
+    """Plan 3.3: one socioeconomic gradient in library visits after population size."""
+    rows, early = panel(con, year), panel(con, REPLICATION)
+    family = [("income", year, estimate(rows, INCOME, ("log_population",), SEED)),
+              ("income", REPLICATION, estimate(early, INCOME, ("log_population",), SEED)),
+              ("education", year, estimate(rows, EDUCATION, ("log_population",), SEED))]
+    for (_, _, e), p in zip(family, holm([e["p"] for _, _, e in family])):
+        e["p_holm"] = round(p, 4)
+    others = ("log_population", *COMMUTING)
+    joint = {"income": estimate(rows, INCOME, (*others, EDUCATION), SEED, test=False),
+             "education": estimate(rows, EDUCATION, (*others, INCOME), SEED, test=False)}
+    kept, v = complete(rows, ("visits_rate", INCOME))
+    missing = [r for r in rows if r["visits_rate"] is None]
+    median = lambda group, f: round(float(np.median([r[f] for r in group if r[f] is not None])), 3)  # noqa: E731
+    return {
+        "id": "visits-socioeconomic", "kind": "gradient", "products": ["D", "C"],
+        "specification": "chosen by the authors after the data were available; not pre-registered",
+        "question": "After population size, are library visits higher in municipalities with higher incomes?",
+        "x": {"name": label[INCOME][0], "unit": label[INCOME][1], "source": "Kolada N00906 via the municipal panel"},
+        "y": {"name": "Physical library visits per inhabitant", "unit": "visits per inhabitant",
+              "source": "KB library statistics (D)", "denominator": "municipal population"},
+        "contract": {"geography": "municipality (SCB code, 290)",
+                     "time": f"calendar year {year}, repeated for {REPLICATION}",
+                     "missing": "a municipality without a visit count is left out and named below"},
+        "confounders": ["population size (partialled out)", "commuting (held constant in the joint model)",
+                        "library opening hours", "students and tourists visiting another municipality's library"],
+        "result": {"n": len(kept), "excluded": len(rows) - len(kept),
+                   "rho": round(spearman(v[INCOME], v["visits_rate"]), 3),
+                   "ci95": interval(lambda i: spearman(v[INCOME][i], v["visits_rate"][i]), len(kept),
+                                    np.random.default_rng(SEED)),
+                   "family": [{"measure": m, "year": y, **e} for m, y, e in family],
+                   "joint": joint,
+                   "missing": [{"code": r["code"], "name": r["name"], "reason": r["missing"]} for r in missing],
+                   "missing_profile": [{"feature": f, "missing_median": median(missing, f),
+                                        "included_median": median(kept, f)}
+                                       for f in ("log_population", INCOME, EDUCATION, *COMMUTING)],
+                   "points": [[r["code"], round(r[INCOME]), r["visits_rate"]] for r in kept]},
+        "evidence": "exploratory",
+        "assessment": replicated([family[0][2]["ci95_county"], family[1][2]["ci95_county"]]),
+        "alternatives": ["Income and education measure one gradient: holding either constant shrinks the other (joint model).",
+                         "Larger towns have both more graduates and central libraries that draw visitors from around them.",
+                         "Visits are counted by door counters of uneven quality across municipalities."],
+    }
 
 
 def joined_series(con) -> tuple[set[int], set[int], float | None, bool]:
@@ -137,67 +190,46 @@ def rejected_joins(b_years: set[int], e_years: set[int], rho: float | None, acad
 
 
 def main() -> int:
-    rng = np.random.default_rng(SEED)
     con = duckdb.connect(str(DATABASE), read_only=True)
     year = con.sql("select max(year) from gold.fct_municipal_similarity").fetchone()[0]
-    rows = panel(con, year)
-    sys.path.insert(0, str(Path(__file__).resolve().parent))
     from export_similarity import FEATURES
 
     label = {f: (en, unit) for f, (en, _, unit) in FEATURES.items()}
-    contract = {"geography": "municipality (SCB code, 290)", "time": f"calendar year {year}",
-                "missing": "a municipality without either value is left out, and counted"}
-    relationships = []
-    for x_key, why in (("post_secondary_25_64_pct", "Cultural capital: do libraries see more visits where more adults hold a post-secondary education?"),
-                       ("median_earned_income_sek", "Economic capital: are library visits higher where earned incomes are higher?")):
-        result = municipal(rng, rows, x_key, "visits_rate")
-        rho, part = result["rho"], result["partial_rho_log_population"]
-        relationships.append({
-            "id": f"visits-{x_key}", "products": ["D", "C"], "question": why,
-            "x": {"name": label[x_key][0], "unit": label[x_key][1], "source": "Kolada/SCB via C (12-indicator profile)"},
-            "y": {"name": "Physical library visits per inhabitant", "unit": "visits per inhabitant",
-                  "source": "KB library statistics (D)", "denominator": "municipal population"},
-            "contract": contract,
-            "confounders": ["population size (partialled out)", "share of commuters", "library opening hours",
-                            "students and tourists visiting another municipality's library"],
-            "result": result,
-            "evidence": "exploratory",
-            "assessment": ("robust" if result["ci95"][0] > 0.1 and part > 0.1 else
-                           "uncertain" if max(abs(rho), abs(part)) >= 0.1 else "not_supported"),
-            "alternatives": ["Larger towns have both more graduates and central libraries that draw visitors from around them.",
-                             "Visits are counted by door counters of uneven quality across municipalities."],
-        })
-    trivial = municipal(rng, rows, "log_population", "service_points_rate")
-    relationships.append({
-        "id": "points-population", "products": ["D", "C"],
-        "question": "Do small municipalities have more library service points per inhabitant?",
-        "x": {"name": "Population (log)", "unit": "ln persons", "source": "SCB via C"},
-        "y": {"name": "Staffed service points per 10,000 inhabitants", "unit": "per 10,000",
-              "source": "KB library statistics (D)", "denominator": "municipal population"},
-        "contract": contract, "confounders": ["the rate's own denominator"], "result": trivial,
-        "evidence": "descriptive", "assessment": "trivial",
-        "alternatives": ["Every municipality keeps at least one main library, so a small population gives a high rate by construction."],
-    })
+    spec = f"pre-registered in docs/sweden-connections-preregistration.md (commit {PREREGISTERED}) before it was computed"
+    relationships = [gradient(con, year, label),
+                     pre.neighbour_comparison(con, year, list(FEATURES), REPLICATION) | {"specification": spec},
+                     pre.change_model(con) | {"specification": spec}]
     rejected = rejected_joins(*joined_series(con))
     OUT.mkdir(parents=True, exist_ok=True)
     path = OUT / "connections.json"
-    path.write_text(json.dumps({"relationships": relationships, "rejected": rejected,
-                                "method": {"statistic": "Spearman's rho", "interval": f"bootstrap percentile, {RESAMPLES} resamples, seed {SEED}",
-                                           "partial": "ranks residualised on the rank of log population",
-                                           "assessment": {"robust": "interval above 0.1 and partial rho above 0.1",
-                                                          "uncertain": "|rho| or |partial rho| at least 0.1 otherwise",
-                                                          "not_supported": "both below 0.1",
-                                                          "trivial": "follows from how the measure is built"},
-                                           "multiple_comparisons": "several relationships are tested; none is called significant"},
-                                "run_id": os.environ.get("GITHUB_RUN_ID"), "code_sha": os.environ.get("GITHUB_SHA")},
-                               ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
+    path.write_text(json.dumps({"relationships": relationships, "rejected": rejected, "method": {
+        "statistic": "Spearman's rho; the partial rho removes the controls' ranks linearly from both ranks",
+        "interval": f"95 % percentile bootstrap, {RESAMPLES} resamples of municipalities (iid) or of the 21 counties "
+                    "(county cluster)",
+        "test": f"residual permutation, {ROUNDS} rounds, two-sided",
+        "seeds": {"visits-socioeconomic": SEED, "neighbours-libraries": pre.SEED, "visits-change": pre.SEED},
+        "families": {"visits-socioeconomic": f"income in {year} and {REPLICATION}, education in {year}",
+                     "neighbours-libraries": "visits and service points",
+                     "visits-change": "population and income in both periods"},
+        "multiple_comparisons": "Holm-adjusted p within each family, published beside the raw p; no label rests on p",
+        "assessment": {"visits-socioeconomic": "robust when the county-cluster intervals of the income partial rho "
+                                               "exclude zero in both years on the same side; not_supported when both "
+                                               "include zero; uncertain otherwise",
+                       "neighbours-libraries": "per measure: robust when the median absolute log ratio lies below the "
+                                               "reference's 2.5th percentile, uncertain when below its median, "
+                                               "not_supported otherwise",
+                       "visits-change": "robust when one coefficient's interval excludes zero in both periods on the "
+                                        "same side; not_supported when every interval includes zero; uncertain otherwise"},
+        "deviations": pre.DEVIATIONS,
+    }, "run_id": os.environ.get("GITHUB_RUN_ID"), "code_sha": os.environ.get("GITHUB_SHA")},
+        ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8", newline="\n")
     sys.path.insert(0, str(ROOT / "platform/publish/symbolic"))
     import export_symbolic
 
     export_symbolic.register([path])
     print(f"SWEDEN connections: {len(relationships)} computed, {len(rejected)} rejected -> {path.relative_to(ROOT)}")
     for r in relationships:
-        print(f"  {r['id']}: rho {r['result']['rho']} {r['result']['ci95']} partial {r['result']['partial_rho_log_population']} -> {r['assessment']}")
+        print(f"  {r['id']}: {r['assessment']} {json.dumps({k: v for k, v in r['result'].items() if k != 'points'})}")
     return 0
 
 

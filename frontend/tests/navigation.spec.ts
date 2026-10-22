@@ -1,21 +1,32 @@
 import { test, expect, siteNav } from './test'
 
-test('the header lists projects without groups and marks the active project', async ({
+test('the header lists projects without groups or observatories and marks the active project', async ({
   page,
 }) => {
   await page.goto('/#symbolic-atlas')
   const menu = await siteNav(page)
   await expect(menu.getByRole('heading')).toHaveCount(0)
-  await expect(menu.locator('ul > li')).toHaveCount(13)
+  await expect(menu.locator('ul > li')).toHaveCount(7)
   await expect(menu.locator('a[href="#thesis"]')).toHaveCount(0)
   await expect(
     menu.getByRole('link', { name: 'Symbol Lab', exact: true }),
   ).toHaveAttribute('aria-current', 'true')
+  for (const href of [
+    '#politik',
+    '#jobb',
+    '#jobb-it',
+    '#wellbeing',
+    '#ai-act',
+    '#lagboken',
+  ])
+    await expect(menu.locator(`a[href="${href}"]`)).toHaveCount(0)
   await menu
-    .getByRole('link', { name: 'Political Observatory', exact: true })
+    .getByRole('link', { name: 'What does it even mean?', exact: true })
     .click()
-  await expect(page).toHaveURL(/#politik$/)
-  await expect(page.locator('.project-menu')).not.toHaveAttribute('open', '')
+  await expect(page).toHaveURL(/#what-does-it-even-mean$/)
+  // The meaning page wears the SWEDEN header instead of the site header.
+  await expect(page.locator('.sw-header')).toBeVisible()
+  await expect(page.locator('.site-header')).toHaveCount(0)
 })
 
 test(
@@ -35,20 +46,6 @@ test(
     await expect(page).toHaveURL(/#cluster-visuals/)
   },
 )
-
-test('deep dives preserve selected occupation fields', async ({ page }) => {
-  await page.goto('/#jobb')
-  await page
-    .getByRole('group', { name: 'Occupation fields' })
-    .getByRole('button', { name: 'Data/IT', exact: true })
-    .click()
-  await page
-    .getByRole('navigation', { name: 'Go deeper' })
-    .getByRole('link', { name: /Occupations/ })
-    .click()
-  await expect(page).toHaveURL(/jobb-yrken\?omraden=/)
-  await expect(page.locator('.theme-chart-title')).toContainText('Data/IT')
-})
 
 test('project pagers follow the groups', async ({ page }) => {
   // The labs open as reports without a pager; the engineering pages keep it.

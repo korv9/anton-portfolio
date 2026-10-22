@@ -14,7 +14,11 @@ Writes frontend/public/data/sweden/similarity/:
 - `municipalities.json`: all 290 municipalities; for the 280 in the analysis their raw values,
   groups, first two principal components and nearest neighbours; for the 10 others which value
   is missing.
-- `groups.json`: profiles of both splits (raw and standardised means), stability and the null.
+- `groups.json`: profiles of both splits (raw and standardised means), stability, the nulls and
+  the sensitivity checks of similarity_checks.py: a copula null for the groups, neighbours under
+  four other definitions, the groups refitted on 2020-2023, outcomes outside the 12 indicators
+  (2022 party shares, 2024 library rates from gold.mart_municipality_year_cross_subject), and
+  the tests behind the page's two readings.
 - `geometry.json`: simplified boundaries in SWEREF99 TM metres, one ring list per municipality.
 
 The county share of nearest neighbours is compared with two nulls: a random partner (the share
@@ -22,7 +26,9 @@ of other municipalities that lie in another county) and a permutation of the soc
 over the municipalities, which keeps the neighbour structure and moves the places.
 
 The run JSON and the three sources it hashed are kept in warehouse/features/sweden/similarity,
-which the sweden subject stores in R2, so a cloud runner rebuilds the same files. When they are
+which the sweden subject stores in R2, so a cloud runner rebuilds the same files. Kolada's four
+structure key figures for 2020-2023 (kolada_structure_<year>.json, fetched once with
+ml.research.regions.kolada) sit beside them for the refits; a missing year is left out. When they are
 absent the committed files are kept and the script says so.
 """
 from __future__ import annotations
@@ -40,6 +46,9 @@ import duckdb
 import numpy as np
 
 ROOT = Path(__file__).resolve().parents[3]
+sys.path[:0] = [str(Path(__file__).resolve().parent), str(ROOT)]
+import similarity_checks as checks
+
 RUN = "public-consensus-2026-10-13"
 DATABASE = Path(os.environ.get("PORTFOLIO_DB", ROOT / "warehouse/portfolio.duckdb"))
 STORE = Path(os.environ.get("PORTFOLIO_FEATURES", ROOT / "warehouse/features")) / "sweden/similarity"
@@ -49,6 +58,10 @@ NAMES = ROOT / "frontend/public/data/cluster-research/municipalities.json"
 OUT = ROOT / "frontend/public/data/sweden/similarity"
 NEIGHBOURS = 5
 ROUNDS = 1000
+EARLIER = (2020, 2021, 2022, 2023)  # employment is missing before 2020 in the panel
+BIG_CITIES = ("0180", "1480", "1280")  # Stockholm, Göteborg, Malmö
+SKR_INPUTS = {"log_population", "out_commuting_pct", "in_commuting_pct"}
+PARTIES = ("s", "m", "sd", "v", "c", "kd", "mp", "l")
 ELECTIONS = (2010, 2014, 2018, 2022, 2026)  # Kolada repeats the last Riksdag election in later years
 
 FEATURES = {
@@ -139,6 +152,70 @@ def county_null(county: list[str], nearest: list[int], xy: np.ndarray, seed: int
             "geographic_nearest_km_median": round(float(np.median(pair.min(axis=1))) / 1000)}
 
 
+def earlier(year: int, features: list[str], codes: list[str]) -> np.ndarray | None:
+    """The 12 indicators for an earlier year, from the hashed panel copy and Kolada's file for that year."""
+    path = STORE / f"kolada_structure_{year}.json"
+    if not path.exists():
+        return None
+    from ml.research.regions import kolada
+
+    panel = duckdb.sql(f"""select * from read_parquet('{(STORE / "mart_municipality_year_panel.parquet").as_posix()}')
+                           where year = {year}""").df()
+    stored = {"file": path, "kpis": json.loads(path.read_text(encoding="utf-8"))["kpis"]}
+    frame = panel.merge(kolada(stored, year), on="municipality_code", how="left")
+    frame = frame.assign(log_population=np.log(frame.population)).set_index("municipality_code")
+    return frame.reindex(codes)[features].to_numpy(dtype=float)
+
+
+def outcomes(year: int, codes: list[str]) -> dict[str, np.ndarray]:
+    """Party shares in the last election by that year and library rates, none of them clustering inputs."""
+    con = duckdb.connect(str(DATABASE), read_only=True)
+    rows = {r[0]: r[1:] for r in con.sql(f"""
+        select municipality_code, {', '.join(f'share_{p}_pct' for p in PARTIES)},
+               library_visits / library_population, library_service_points * 10000 / library_population
+        from gold.mart_municipality_year_cross_subject where year = {year}""").fetchall()}
+    names = [f"share_{p}_pct" for p in PARTIES] + ["library_visits_per_inhabitant", "library_service_points_per_10k"]
+    return {n: np.array([rows.get(c, (None,) * len(names))[j] for c in codes], dtype=float)
+            for j, n in enumerate(names)}
+
+
+def sensitivity(result: dict, analysed: list[str], matrix: np.ndarray, splits: dict[str, np.ndarray],
+                skr: list[str], county: list[str], centroids: dict) -> dict:
+    """The checks of research plan 2.3 and the tests behind the page's two readings."""
+    features, components = result["features"], result["components"]
+    observed = {result["k"]: result["silhouette"], result["finer"]["k"]: result["finer"]["silhouette"]}
+    temporal = []
+    for year in EARLIER:
+        x = earlier(year, features, analysed)
+        if x is None:
+            continue
+        ok = ~np.isnan(x).any(axis=1)
+        temporal.append({"year": year, "n": int(ok.sum()),
+                         **{f"ari_k{k}": checks.temporal_ari(x[ok], splits[f"k{k}"][ok], k, components)
+                            for k in observed}})
+    km = np.array([min(math.dist(centroids[c], centroids[b]) for b in BIG_CITIES) / 1000 for c in analysed])
+    income = matrix[:, features.index("median_earned_income_sek")]
+    gradient = {name: checks.metro_gradient(checks.first_component(matrix[:, keep], income), km, county)
+                for name, keep in {"all_12": list(range(len(features))),
+                                   "without_log_population": [j for j, f in enumerate(features)
+                                                              if f != "log_population"]}.items()}
+    outside = [j for j, f in enumerate(features) if f not in SKR_INPUTS]
+    return {
+        "copula_null": checks.copula_null(matrix, observed, components),
+        "neighbours": {"reference": "all 12 indicators, Euclidean",
+                       "variants": checks.neighbour_stability(matrix, features, components)},
+        "temporal": {"reference_year": result["year"], "years": temporal,
+                     "note": "the same pipeline refitted per year; turnout repeats the last election"},
+        "outcomes": checks.outcome_eta(splits, outcomes(result["year"], analysed)),
+        "centre_periphery": {"distance_to": "nearest of Stockholm, Göteborg and Malmö (centroids)",
+                             "component": "first principal component, signed to rise with median income",
+                             "variants": gradient, "rounds": 2000, "seed": checks.SEED},
+        "skr_typology": {"indicators": [features[j] for j in outside],
+                         **checks.typology_share(checks.standardise(matrix[:, outside]),
+                                                 np.unique(skr, return_inverse=True)[1])},
+    }
+
+
 def main() -> int:
     if not RESULT.exists():
         print(f"SWEDEN similarity: {RESULT} is not here; committed files kept")
@@ -195,6 +272,11 @@ def main() -> int:
     (OUT / "municipalities.json").write_text(json.dumps(payload, ensure_ascii=False, separators=(",", ":")) + "\n",
                                              encoding="utf-8")
     kmeans = {c["k"]: c for c in result["comparison"] if c["method"] == "kmeans"}
+    splits = {f"k{result['k']}": np.array([points[c]["group"] for c in analysed]),
+              f"k{result['finer']['k']}": np.array([points[c]["finer_group"] for c in analysed])}
+    checked = sensitivity(result, analysed, matrix, splits, [points[c]["skr_group"] for c in analysed],
+                          [raw[c]["county"] for c in analysed], centroids)
+    copula = checked["copula_null"]["silhouette_95"]
     groups = {
         "method": result["method"], "criterion": result["criterion"],
         "explained_variance": [round(v, 4) for v in result["explained_variance"]],
@@ -202,18 +284,22 @@ def main() -> int:
         "splits": [
             {"k": result["k"], "role": "gap rule", "silhouette": result["silhouette"],
              "bootstrap_ari": kmeans[result["k"]]["bootstrap_ari"], "ami_skr_groups": result["ami_skr_groups"],
-             "null_silhouette_95": result["kmeans_null_95"][str(result["k"])], "profiles": result["profiles"]},
+             "null_silhouette_95": result["kmeans_null_95"][str(result["k"])],
+             "copula_silhouette_95": copula[str(result["k"])], "profiles": result["profiles"]},
             {"k": result["finer"]["k"], "role": "finer split", "silhouette": result["finer"]["silhouette"],
              "bootstrap_ari": kmeans[result["finer"]["k"]]["bootstrap_ari"],
              "ami_skr_groups": result["finer"]["ami_skr_groups"],
              "null_silhouette_95": result["kmeans_null_95"][str(result["finer"]["k"])],
-             "profiles": result["finer"]["profiles"], "names": names},
+             "copula_silhouette_95": copula[str(result["finer"]["k"])], "profiles": result["finer"]["profiles"], "names": names},
         ],
+        "sensitivity": checked,
         "excluded": result["excluded_for_missing_values"],
         "limits": result["limits"],
         "provenance": {"run": RUN, "sources": result["sources"],
                        "boundaries": {"url": "https://scb.se/hitta-statistik/regional-statistik-och-kartor/regionala-indelningar/digitala-granser/",
                                       "licence": "CC0 1.0", "sha256": sha256(BOUNDARIES)},
+                       "kolada_earlier_years": {f"kolada_structure_{y}.json": sha256(STORE / f"kolada_structure_{y}.json")
+                                                for y in EARLIER if (STORE / f"kolada_structure_{y}.json").exists()},
                        "run_id": os.environ.get("GITHUB_RUN_ID"), "code_sha": os.environ.get("GITHUB_SHA")},
     }
     (OUT / "groups.json").write_text(json.dumps(groups, ensure_ascii=False, separators=(",", ":")) + "\n",

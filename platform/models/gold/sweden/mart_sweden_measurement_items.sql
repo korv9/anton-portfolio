@@ -6,7 +6,7 @@ with scb as (
     select
         t.*,
         coalesce(sub.domain_id, area.domain_id) as domain_id,
-        g.region_codes, g.county_codes, g.municipality_codes, g.subarea_codes
+        g.region_codes, g.county_codes, g.municipality_codes, g.subarea_codes, g.measures
     from {{ ref('stg_sweden_scb_tables') }} t
     left join {{ ref('scb_subject_domains') }} sub on sub.subject_code = t.subject_code
     left join {{ ref('scb_subject_domains') }} area on area.subject_code = t.subject_area
@@ -48,7 +48,8 @@ select
         else 'national'
     end as geo_resolution,
     last_year >= extract(year from current_date) - 2 as is_current,
-    updated_at
+    updated_at,
+    measures
 from scb
 
 union all
@@ -66,5 +67,6 @@ select
     null,
     case municipality_type when 'L' then 'county' else 'municipality' end,
     scheduled_period is not null,
+    null,
     null
 from kolada

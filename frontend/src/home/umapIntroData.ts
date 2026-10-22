@@ -1,4 +1,4 @@
-import { fetchJson } from '../welfare/data'
+import { fetchJson } from '../dataSource'
 
 export type UmapScene = {
   id: string

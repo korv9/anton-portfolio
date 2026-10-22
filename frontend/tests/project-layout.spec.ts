@@ -1,23 +1,5 @@
 import { test, expect } from './test'
 const pages = [
-  '#politik',
-  '#politik-roster',
-  '#politik-budget',
-  '#politik-sakdebatter',
-  '#jobb',
-  '#jobb-trender',
-  '#jobb-yrken',
-  '#job-market-tech',
-  '#wellbeing',
-  '#sweden-work',
-  '#sweden-sick-leave',
-  '#wellbeing-mental-health',
-  '#wellbeing-counties',
-  '#ai-act',
-  '#ai-act-today',
-  '#lagboken',
-  '#lagboken-tid',
-  '#lagboken-storlek',
   '#symbolic-atlas',
   '#philosophy-atlas',
   '#concept-journey',
@@ -26,6 +8,7 @@ const pages = [
   '#homie',
   '#diva-lakehouse',
   '#cluster-visuals',
+  '#what-does-it-even-mean',
 ]
 test(
   'retained pages fit desktop and mobile',

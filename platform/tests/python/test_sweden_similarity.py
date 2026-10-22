@@ -49,25 +49,66 @@ def test_published_similarity_contract():
     assert all("reference_year" in f for f in data["features"])
 
 
-def test_connections_reads_c_and_d_from_the_cross_subject_mart():
-    import duckdb
+checks = export_similarity.checks
+GROUPS = ROOT / "frontend/public/data/sweden/similarity/groups.json"
 
-    spec = importlib.util.spec_from_file_location("export_connections",
-                                                  ROOT / "platform/publish/sweden/export_connections.py")
-    connections = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(connections)
-    con = duckdb.connect()
-    con.sql("create schema gold")
-    con.sql("""create table gold.mart_municipality_year_cross_subject as select * from (values
-               ('0114', 2024, 1000.0, 300000.0, 41.234567::double, 1000.0, 2500, 1),
-               ('0115', 2024, 2000.0, 250000.0, null, null, 100, 1),
-               ('0116', 2023, 3000.0, 1.0, 1.0, 3000.0, 1, 1)) as t(municipality_code, year,
-               similarity_population, similarity_median_earned_income_sek,
-               similarity_post_secondary_25_64_pct, library_population, library_visits,
-               library_service_points)""")
-    rows = connections.panel(con, 2024)
-    assert [r["code"] for r in rows] == ["0114", "0115"]
-    assert rows[0] == {"code": "0114", "log_population": 6.9078, "median_earned_income_sek": 300000.0,
-                       "post_secondary_25_64_pct": 41.2346, "visits_rate": 2.5, "service_points_rate": 10.0}
-    # No population for D's rates: the municipality stays, without rates, and is counted as excluded.
-    assert rows[1]["visits_rate"] is None and rows[1]["post_secondary_25_64_pct"] is None
+
+def correlated(n=60, seed=1):
+    rng = np.random.default_rng(seed)
+    base = rng.standard_normal((n, 1))
+    return np.hstack([base + 0.3 * rng.standard_normal((n, 1)) for _ in range(4)]) ** 3
+
+
+def test_copula_null_is_seeded_and_keeps_each_indicator_s_values():
+    x = correlated()
+    first, again = (checks.copula_null(x, {2: 0.9}, 2, rounds=5) for _ in range(2))
+    assert first == again and first["seed"] == checks.SEED
+    assert first["share_at_least_observed"]["2"] == 1 / 6  # no draw reaches a silhouette of 0.9
+
+
+def test_neighbour_stability_is_one_for_a_rescaled_copy():
+    x = correlated()
+    rows = {v["variant"]: v for v in checks.neighbour_stability(x, ["a", "b", "log_population", "c"], 4)}
+    assert set(rows) == {"without_log_population", "without_commuting", "pca_space", "mahalanobis"}
+    # Nothing to drop and all four components kept: the same neighbours.
+    assert rows["without_commuting"] == {"variant": "without_commuting", "median_jaccard": 1.0,
+                                         "first_neighbour_changed": 0.0}
+    assert rows["pca_space"]["median_jaccard"] == 1.0
+
+
+def test_temporal_ari_is_one_for_the_same_year():
+    x = correlated()
+    labels = checks.fit(x, 2, 2)[1]
+    assert checks.temporal_ari(x, labels, 2, 2) == 1.0
+
+
+def test_outcome_eta_separates_a_group_variable_from_noise_with_holm():
+    labels = np.repeat([0, 1], 30)
+    noise = np.random.default_rng(3).standard_normal(60)
+    out = checks.outcome_eta({"k2": labels}, {"by_group": labels * 10.0 + noise * 0.01, "noise": noise}, rounds=99)
+    rows = {r["outcome"]: r for r in out["results"]}
+    assert rows["by_group"]["eta_squared"] == 1.0 and rows["by_group"]["p"] == 0.01
+    assert rows["noise"]["eta_squared"] < rows["noise"]["null_95"]
+    assert rows["by_group"]["p_holm"] == 0.02 and checks.holm([0.01, 0.04, 0.03]) == [0.03, 0.06, 0.06]
+
+
+def test_metro_gradient_and_typology_share_measure_what_the_readings_claim():
+    km = np.arange(40.0)
+    gradient = checks.metro_gradient(-km, km, ["A", "B", "C", "D"] * 10, rounds=50)
+    assert gradient["rho"] == -1.0 and gradient["ci95"][1] < 0
+    labels = np.repeat([0, 1], 20)
+    z = np.column_stack([labels, labels * 2.0])
+    assert checks.typology_share(z, labels, rounds=20)["share"] == 1.0
+
+
+def test_published_sensitivity_contract():
+    g = json.loads(GROUPS.read_text(encoding="utf-8"))
+    s = g["sensitivity"]
+    for split in g["splits"]:
+        # The copula keeps the correlation, so its bar is above the column shuffle's.
+        assert split["copula_silhouette_95"] > split["null_silhouette_95"]
+    assert len(s["neighbours"]["variants"]) == 4
+    assert [y["year"] for y in s["temporal"]["years"]] == [2020, 2021, 2022, 2023]
+    assert {r["outcome"] for r in s["outcomes"]["results"]} >= {"share_sd_pct", "library_visits_per_inhabitant"}
+    assert set(s["centre_periphery"]["variants"]) == {"all_12", "without_log_population"}
+    assert not {"log_population", "out_commuting_pct", "in_commuting_pct"} & set(s["skr_typology"]["indicators"])

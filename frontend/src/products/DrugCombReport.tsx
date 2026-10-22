@@ -8,10 +8,10 @@ import { useEffect, useState } from 'react'
 import { currentLocale, l } from '../i18n'
 import { fetchData } from '../dataSource'
 import CalibrationScatter from './CalibrationScatter'
-import { Empty } from '../politik/board/Board'
-import Columns from '../politik/board/Columns'
+import { Empty } from '../report/board/Board'
+import Columns from '../report/board/Columns'
 import RankBars from '../charts/RankBars'
-import '../politik/dash/dash.css'
+import '../report/dash.css'
 import './drugcomb.css'
 import BodyMap, { type Lineage } from './BodyMap'
 import DecisionTree, { leavesOf, type TreeNode } from './DecisionTree'
@@ -20,7 +20,7 @@ import DrugConstellation, {
   type DrugPoint,
 } from './DrugConstellation'
 import { DRUGCOMB_TABS, type Route } from '../router'
-import { useViewParams } from '../politik/useViewParams'
+import { useViewParams } from '../report/useViewParams'
 import ReportShell, {
   DeepPage,
   withQuery,
@@ -28,10 +28,10 @@ import ReportShell, {
   type ReportTab,
 } from '../report/ReportShell'
 import { Feature } from '../charts/feature/Feature'
-import { Select } from '../politik/controls'
+import { Select } from '../report/controls'
 import ProjectTech from '../projects/ProjectTech'
 import './mlviz.css'
-import '../politik/modell/modell.css'
+import '../report/modell.css'
 
 type TreeFile = {
   tree: TreeNode

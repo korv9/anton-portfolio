@@ -7,7 +7,7 @@
  */
 import { useEffect, useMemo, useState } from 'react'
 import { l } from '../i18n'
-import { fetchJson } from '../welfare/data'
+import { fetchJson } from '../dataSource'
 import RankBars from '../charts/RankBars'
 import ClusterScatter from './ClusterScatter'
 import type { Loaded } from './ClusterVisualsPage'
@@ -129,7 +129,9 @@ export default function SentencePlacer({
     >
       <header className="cv-head">
         <p className="cv-project">
-          <a href="#politik-tal">Political Observatory · Workers AI</a>
+          <a href="#what-does-it-even-mean">
+            Political Observatory · Workers AI
+          </a>
         </p>
         <h2 id="cv-place-title">
           {l(

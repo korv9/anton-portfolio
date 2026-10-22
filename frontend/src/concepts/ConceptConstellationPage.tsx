@@ -12,7 +12,7 @@ import { CONCEPT_TABS, type Route } from '../router'
 import { fetchData } from '../dataSource'
 import Journey, { ConceptQuality } from './Journey'
 import ProjectTech from '../projects/ProjectTech'
-import { useViewParams } from '../politik/useViewParams'
+import { useViewParams } from '../report/useViewParams'
 import ReportShell, {
   DeepPage,
   ReportFrame,
@@ -976,7 +976,7 @@ function LinkRow({ link }: { link: Link }) {
     return (
       <li>
         {l('Riksdag AI speeches', 'Riksdagens AI-anföranden')}:{' '}
-        <a href="#ai-act-politics">{t ? label(t) : link.target_id}</a>
+        <a href="#what-does-it-even-mean">{t ? label(t) : link.target_id}</a>
         {all && (
           <>
             {' '}
@@ -992,7 +992,7 @@ function LinkRow({ link }: { link: Link }) {
   return (
     <li>
       {l('Job ads', 'Jobbannonser')}:{' '}
-      <a href="#ai-act-jobs">{t ? label(t) : link.target_id}</a>
+      <a href="#what-does-it-even-mean">{t ? label(t) : link.target_id}</a>
       {last && (
         <>
           {' '}

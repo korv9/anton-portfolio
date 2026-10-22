@@ -5,10 +5,6 @@ import './projectsPage.css'
 
 /** The subject in architecture/graph.json that each project on the platform is built from. */
 const DOMAIN: Record<string, string> = {
-  politics: 'politics',
-  jobs: 'jobs',
-  welfare: 'welfare',
-  'ai-act': 'ai_act',
   'symbolic-atlas': 'symbolic',
   'philosophy-atlas': 'philosophy',
   'concept-constellation': 'concepts',

@@ -13,15 +13,9 @@ const HOME = '#start'
 const START_PAGES = [
   '/#start',
   '/#drugcomb',
-  '/#jobb-kluster',
   '/#concept-constellation',
   '/#philosophy-atlas',
-  '/#politik',
-  '/#ai-act',
-  '/#lagboken',
-  '/#jobb',
   '/#symbolic-atlas',
-  '/#wellbeing',
   '/#thesis',
   '/#cluster-visuals',
   '/#fraga-lagen',
@@ -62,7 +56,7 @@ test('every internal link opens a page', async ({ page, isMobile }) => {
     await page.waitForLoadState('networkidle')
     for (const href of await linksOn(page)) links.add(href)
   }
-  expect(links.size).toBeGreaterThan(30)
+  expect(links.size).toBeGreaterThan(20)
   test
     .info()
     .annotations.push({ type: 'links', description: String(links.size) })
@@ -84,28 +78,21 @@ test('every internal link opens a page', async ({ page, isMobile }) => {
     if (await page.locator(HOME).count()) broken.push(href)
     // The breadcrumb names where the page sits, not just "Projects".
     const crumbs = page.locator('.project-context li')
-    // The list of projects carries no breadcrumb, nor do the observatory and lab reports and
-    // their deep dives, which name the report in a link back.
+    // The list of projects carries no breadcrumb, nor do the lab reports and their deep dives, which name the report in a link back.
     if (
-      /^#(politik|jobb|job-|sweden|wellbeing|ai-act|lagboken|tech|symbolic-|philosophy-|concept|drugcomb|fraga-lagen|compliance)/.test(
+      /^#(sweden|tech|symbolic-|philosophy-|concept|drugcomb|fraga-lagen)/.test(
         href,
       )
     )
       await page
-        .locator(
-          '.po-workspace, .politik-long, .aiact, .tech, .job-intelligence, .sweden',
-        )
+        .locator('.politik-long, .tech, .sweden')
         .first()
         .waitFor({ timeout: 45_000 })
     if (
       (await crumbs.count()) < 2 &&
       !(await page.locator('.project-context [aria-current]').count()) &&
       href !== '#projekt' &&
-      !(await page
-        .locator(
-          '.po-workspace, .politik-long, .aiact, .tech, .job-intelligence, .sweden',
-        )
-        .count())
+      !(await page.locator('.politik-long, .tech, .sweden').count())
     )
       unplaced.push(href)
     // The tab names the page, not just the site.
@@ -134,12 +121,22 @@ test('old addresses redirect and the back button returns', async ({
   }
   await page.goto('/#projects')
   await expect(page).toHaveURL(/#projekt$/)
-  await page.goto('/#politik-debatter')
-  await expect(page).toHaveURL(/#politik-sakdebatter$/)
   await page.goto('/#symbolic-atlas')
-  await page.goto('/#ai-act')
+  await page.goto('/#philosophy-atlas')
   await page.goBack()
   await expect(page).toHaveURL(/#symbolic-atlas$/)
   await page.goForward()
-  await expect(page).toHaveURL(/#ai-act$/)
+  await expect(page).toHaveURL(/#philosophy-atlas$/)
+})
+
+test('observatory addresses land on the meaning feed', async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(isMobile, 'routing is the same on a phone')
+  for (const from of ['/#politik', '/#jobb-lan', '/#ai-act-roles', '/#now']) {
+    await page.goto(from)
+    await expect(page).toHaveURL(/#what-does-it-even-mean$/)
+  }
+  await expect(page).toHaveTitle('What does it even mean? | Anton Ernstsson')
 })

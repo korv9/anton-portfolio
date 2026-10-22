@@ -9,6 +9,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { l } from '../i18n'
 import { SWEDEN_PRODUCTS } from './products'
+import './sweden.css'
 
 const b = (text: { en: string; sv: string }) => l(text.en, text.sv)
 const THEME_KEY = 'sw-theme'

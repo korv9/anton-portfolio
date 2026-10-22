@@ -221,3 +221,64 @@ models:
       - name: matches
         data_type: HUGEINT
         description: 'Measure, additive: count of theme pattern matches in the abstracts, 0 when none.'
+  - name: mart_sweden_future_lengths
+    description: >-
+      The Lost Futures. Year × words in the speech over all Riksdag speeches; the export cuts it
+      into fixed length bands (quartiles of the published years) to compare the future share at
+      equal length.
+    config:
+      contract: {enforced: true}
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [year, words]
+    columns:
+      - name: year
+        data_type: INTEGER
+        description: 'Key: calendar year of the speeches.'
+      - name: words
+        data_type: BIGINT
+        description: 'Key: words in the speech; speeches above the ingest cap (MAX_WORDS) share its value.'
+      - name: speeches
+        data_type: HUGEINT
+        description: 'Measure, additive: count of Riksdag speeches of this length.'
+      - name: future_speeches
+        data_type: HUGEINT
+        description: 'Measure, additive: count of those speeches matching the future marker.'
+  - name: mart_sweden_future_subterms
+    description: >-
+      Year × sub-term of the security and culture themes (seed future_subterms) over all Riksdag
+      speeches. The sub-terms split each theme's pattern, so their matches add up to the theme's.
+    config:
+      contract: {enforced: true}
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [year, subterm]
+    columns:
+      - name: year
+        data_type: INTEGER
+        description: 'Key, references mart_sweden_future_trends_total: calendar year of the speeches.'
+        data_tests:
+          - relationships: {arguments: {to: ref('mart_sweden_future_trends_total'), field: year}}
+      - name: theme
+        data_type: VARCHAR
+        description: 'The future_terms theme the sub-term splits.'
+      - name: subterm
+        data_type: VARCHAR
+        description: 'Key: future_subterms term id.'
+      - name: speeches_using
+        data_type: HUGEINT
+        description: 'Measure, additive: count of speeches using the sub-term; adds over years, not sub-terms.'
+      - name: future_using
+        data_type: HUGEINT
+        description: 'Measure, additive: count of future-oriented speeches using the sub-term; adds over years, not sub-terms.'
+      - name: matches
+        data_type: HUGEINT
+        description: 'Measure, additive: count of sub-term pattern matches; adds over sub-terms to the theme''s matches.'
+      - name: future_share_using
+        data_type: DOUBLE
+        description: "Non-additive ratio: future-oriented speeches using the sub-term / future-oriented speeches."
+        data_tests:
+          - between:
+              arguments: {min: 0, max: 1}

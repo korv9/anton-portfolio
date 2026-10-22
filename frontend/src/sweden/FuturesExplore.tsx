@@ -4,9 +4,10 @@
  */
 import { useEffect, useMemo, useState } from 'react'
 import { l } from '../i18n'
-import { fetchJson } from '../welfare/data'
+import { fetchJson } from '../dataSource'
 import MultiLineChart from '../charts/MultiLineChart'
 import RankBars from '../charts/RankBars'
+import FuturesMeasures from './FuturesMeasures'
 
 /** year, speeches, future speeches, words, future speeches using it, matches, share, per 1,000 words */
 export type Row = [
@@ -26,12 +27,26 @@ export type Theme = {
   description_en: string
   pattern: string
   rows: Row[]
+  /** A linear trend plus one level shift, tested against AR(1) noise around the trend (Holm over
+   * the nine themes); the year and shift are null unless the shift beats the null. */
   break: {
-    first_year_after: number
-    mean_before: number
-    mean_after: number
-    variance_explained: number
+    first_year_after: number | null
+    shift: number | null
+    gain: number
+    null_p95: number
+    p: number
+    p_holm: number
+    reported: boolean
   } | null
+}
+/** year, future-oriented speeches using it, matches, share of future-oriented speeches */
+export type Subterm = {
+  id: string
+  theme: string
+  label_en: string
+  label_sv: string
+  pattern: string
+  rows: [number, number, number, number][]
 }
 export type Trends = {
   marker: {
@@ -44,6 +59,14 @@ export type Trends = {
   /** year, share of all speeches, words per speech, marker matches per 1,000 words (null until counted) */
   future_share: [number, number, number?, (number | null)?][]
   length?: { spearman_share_words_per_speech: number; years: number }
+  /** Future share per year within four length bands (band 0 shortest); standardised to the
+   * pooled band mix. */
+  length_bands?: {
+    upper_words: number[]
+    rows: [number, number, number, number][]
+    standardised: [number, number][]
+  }
+  subterms?: Subterm[]
   /** Swedish thesis abstracts (DiVA): year, share of future-oriented abstracts, abstracts. */
   academic?: {
     corpus: string
@@ -55,6 +78,9 @@ export type Cells = { rows: [string, string, number, number, number][] }
 export type Examples = { rows: string[][] }
 
 export const BASE = 'sweden/futures/'
+// DiVA years whose rise in the future share is not yet explained (an institution or length
+// change does not account for it; the marker's words per abstract are not counted yet).
+const UNEXPLAINED = [2024, 2025]
 export const pct = (v: number) => `${(v * 100).toFixed(1)} %`
 export const num = (n: number) => n.toLocaleString(l('en-GB', 'sv-SE'))
 export const name = (t: { label_en: string; label_sv: string }) =>
@@ -195,16 +221,18 @@ export default function Explore({
       </div>
       {t.break && (
         <p className="sw-note">
-          {l(
-            'Most likely single break (exploratory)',
-            'Mest sannolika enskilda brytpunkt (explorativ)',
-          )}
-          : {t.break.first_year_after} — {pct(t.break.mean_before)} →{' '}
-          {pct(t.break.mean_after)},{' '}
-          {Math.round(t.break.variance_explained * 100)} %{' '}
-          {l('of the variance', 'av variansen')}
+          {t.break.reported && t.break.first_year_after != null
+            ? l(
+                `A level shift on top of the trend from ${t.break.first_year_after}: ${t.break.shift! > 0 ? '+' : ''}${(t.break.shift! * 100).toFixed(1)} percentage points. It removes ${Math.round(t.break.gain * 100)} % of the variation the trend leaves, more than in 95 % of simulated series with the same trend and noise (Holm-adjusted p ${t.break.p_holm}).`,
+                `Ett nivåskifte ovanpå trenden från ${t.break.first_year_after}: ${t.break.shift! > 0 ? '+' : ''}${(t.break.shift! * 100).toFixed(1)} procentenheter. Det tar bort ${Math.round(t.break.gain * 100)} % av variationen som trenden lämnar, mer än i 95 % av simulerade serier med samma trend och brus (Holm-justerat p ${t.break.p_holm}).`,
+              )
+            : l(
+                `No level shift beyond the trend: the best one removes ${Math.round(t.break.gain * 100)} % of the variation the trend leaves, within what simulated series with the same trend and noise reach (Holm-adjusted p ${t.break.p_holm}).`,
+                `Inget nivåskifte utöver trenden: det bästa tar bort ${Math.round(t.break.gain * 100)} % av variationen som trenden lämnar, inom vad simulerade serier med samma trend och brus når (Holm-justerat p ${t.break.p_holm}).`,
+              )}
         </p>
       )}
+      <FuturesMeasures trends={trends} theme={theme} />
       {trends.academic && trends.academic.future_share.length > 1 && (
         <>
           <h3>
@@ -230,7 +258,7 @@ export default function Explore({
                 ),
                 points: trends.academic.future_share.map(([y, v, n]) => ({
                   date: `${y}-01-01`,
-                  label: `${y} (${num(n)})`,
+                  label: `${y} (${num(n)})${UNEXPLAINED.includes(y) ? l(', rise not yet explained', ', ökningen ännu oförklarad') : ''}`,
                   value: v * 100,
                 })),
               },
@@ -252,6 +280,16 @@ export default function Explore({
             colorOf={(k) => (k === '_future' ? 1 : 2)}
             yFrom={0}
           />
+          {trends.academic.future_share.some(([y]) =>
+            UNEXPLAINED.includes(y),
+          ) && (
+            <p className="sw-note">
+              {l(
+                `The rise in ${UNEXPLAINED.join(' and ')} is not yet explained. Counting which words of the marker the abstracts use needs a new harvest.`,
+                `Ökningen ${UNEXPLAINED.join(' och ')} är ännu inte förklarad. Att räkna vilka av markörens ord sammanfattningarna använder kräver en ny skörd.`,
+              )}
+            </p>
+          )}
         </>
       )}
       <h3>{l(`By party, ${year}`, `Per parti, ${year}`)}</h3>

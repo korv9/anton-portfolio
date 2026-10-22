@@ -12,7 +12,7 @@
 import { useEffect, useState } from 'react'
 import { l } from '../i18n'
 import type { Route } from '../router'
-import { useViewParams } from '../politik/useViewParams'
+import { useViewParams } from '../report/useViewParams'
 import { Feature } from '../charts/feature/Feature'
 import { fetchData } from '../dataSource'
 import { DataQuestion, Interpretation, QualityBrief } from '../ui/Story'
@@ -454,7 +454,7 @@ function DomainLinks({ corpus, links }: { corpus: string; links: Link[] }) {
           {k.kind === 'riksdag_framing' && (
             <>
               <Relation type="shared_concept" status="derived" />{' '}
-              <a href="#ai-act-politics">
+              <a href="#what-does-it-even-mean">
                 {l('Riksdag AI speeches', 'Riksdagens AI-anföranden')}:{' '}
                 {k.target ? label(k.target) : k.target_id}
               </a>
@@ -470,7 +470,7 @@ function DomainLinks({ corpus, links }: { corpus: string; links: Link[] }) {
           {k.kind === 'job_term' && (
             <>
               <Relation type="shared_concept" status="derived" />{' '}
-              <a href="#ai-act-jobs">
+              <a href="#what-does-it-even-mean">
                 {l('Job ads', 'Jobbannonser')}:{' '}
                 {k.target ? label(k.target) : k.target_id}
               </a>

@@ -8,7 +8,7 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { l } from '../i18n'
 import { setHashParams, type Route } from '../router'
-import { fetchJson } from '../welfare/data'
+import { fetchJson } from '../dataSource'
 import { ReportFrame } from '../report/ReportShell'
 import {
   answer as ask,

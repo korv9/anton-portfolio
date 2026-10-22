@@ -106,6 +106,7 @@ export default function SiteHeader({ route }: { route: Route }) {
             <div className="project-menu-tools">
               <a href="#projekt">{l('All projects', 'Alla projekt')}</a>
               <a href="#cluster-visuals">Cluster Visuals</a>
+              <a href="#what-does-it-even-mean">What does it even mean?</a>
             </div>
           </div>
         </details>

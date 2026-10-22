@@ -35,8 +35,8 @@ export const SWEDEN_PRODUCTS: SwedenProduct[] = [
       {
         id: 'D',
         why: {
-          en: 'Culture has the fewest tables of any mapped domain in SCB’s database, and civic life the fewest items across SCB and Kolada; D builds the missing geography of meeting places.',
-          sv: 'Kultur har minst antal tabeller av de indelade domänerna i SCB:s statistikdatabas, och civilt liv minst antal poster i SCB och Kolada tillsammans; D bygger den saknade geografin över mötesplatser.',
+          en: 'Culture has the fewest tables of any mapped domain in SCB’s database, and social relationships, civil society included, has none in Kolada’s classification. D maps public libraries from KB’s statistics.',
+          sv: 'Kultur har minst antal tabeller av de indelade domänerna i SCB:s statistikdatabas, och sociala relationer, civilsamhället inräknat, har inga i Koladas indelning. D kartlägger folkbiblioteken med KB:s statistik.',
         },
       },
       {
@@ -153,8 +153,8 @@ export const SWEDEN_PRODUCTS: SwedenProduct[] = [
       {
         id: 'X',
         why: {
-          en: 'Political and academic themes compared over time.',
-          sv: 'Politiska och akademiska teman jämförda över tid.',
+          en: 'The Riksdag and thesis abstracts are shown apart on The Lost Futures page, never joined.',
+          sv: 'Riksdagen och uppsatssammanfattningarna visas var för sig på sidan De förlorade framtiderna, aldrig sammanslagna.',
         },
       },
     ],

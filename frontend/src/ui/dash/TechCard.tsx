@@ -6,7 +6,7 @@
  */
 import { useEffect, useId, useState } from 'react'
 import { l } from '../../i18n'
-import { fetchJson } from '../../welfare/data'
+import { fetchJson } from '../../dataSource'
 import { ChartCard } from './Dash'
 
 type Column = { name: string; type: string | null; tests: string[] }

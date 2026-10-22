@@ -64,6 +64,9 @@ models:
       - name: updated_at
         data_type: TIMESTAMP
         description: 'Attribute: when SCB last updated the table; NULL for Kolada.'
+      - name: measures
+        data_type: BIGINT
+        description: 'Measure, additive: contents (metric categories) in the SCB table''s metadata; NULL for Kolada and for SCB tables without a region variable, whose metadata is not fetched.'
 
   - name: mart_sweden_measurement_coverage
     description: Domain × year × finest geography, counting SCB tables whose period range covers the year (upper bound).
