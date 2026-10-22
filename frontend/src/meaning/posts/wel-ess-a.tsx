@@ -1,20 +1,12 @@
-/** European Social Survey means and the latest welfare headline figures. */
+/** European Social Survey means (the trust gauges live in wel-ess-gauges.tsx). */
 import { useState } from 'react'
 import { Frame, Slicer, color, focal, useData, type Post } from '../kit'
-import { Legend, Svg, XTicks, arc, fmt, num, path, scale } from './wel-kit'
+import { Legend, Svg, XTicks, fmt, num, path, scale } from './wel-kit'
 
 type Ess = { unit_code: string; period_key: string } & Record<
   string,
   number | string | null
 >
-
-type Headline = {
-  indicator_key: string
-  period_label: string
-  value: number
-  previous_value: number | null
-  previous_period_label: string | null
-}
 
 const METRICS = [
   'ppltrst',
@@ -51,8 +43,6 @@ const UNITS = ['SE', 'NO', 'DK', 'FI', 'DE', 'NORDIC', 'EU27']
 const round = (p: string) => +p.replace('ESS', '')
 
 const useEss = () => useData<Ess[]>('welfare/ess-countries.json')
-
-const useHeadlines = () => useData<Headline[]>('welfare/headlines.json')
 
 const val = (r: Ess | undefined, m: string) =>
   r && num(r[`${m}_mean`]) ? (r[`${m}_mean`] as number) : null
@@ -263,63 +253,6 @@ function EssHeat() {
   )
 }
 
-function Gauges() {
-  const data = useHeadlines()
-  return (
-    <Frame data={data}>
-      {(rows) => {
-        const keys = [
-          'ess_trstplc',
-          'ess_trstlgl',
-          'ess_trstprl',
-          'ess_trstplt',
-        ]
-        const half = Math.PI / 2
-        return (
-          <>
-            <Svg label="Four trust gauges on a 0 to 10 scale">
-              {keys.map((k, i) => {
-                const h = rows.find((r) => r.indicator_key === k)
-                if (!h) return null
-                const cx = 100 + (i % 2) * 200
-                const cy = 150 + Math.floor(i / 2) * 190
-                return (
-                  <g key={k}>
-                    <path
-                      d={arc(cx, cy, 58, 86, -half, half)}
-                      fill="var(--wash)"
-                    />
-                    <path
-                      d={arc(
-                        cx,
-                        cy,
-                        58,
-                        86,
-                        -half,
-                        -half + (h.value / 10) * Math.PI,
-                      )}
-                      fill={color(i)}
-                    />
-                    <text
-                      x={cx}
-                      y={cy - 6}
-                      textAnchor="middle"
-                      style={{ fontSize: 26, fill: 'var(--ink)' }}
-                    >
-                      {fmt(h.value, 1)}
-                    </text>
-                  </g>
-                )
-              })}
-            </Svg>
-            <Legend items={keys.map((k) => k.slice(4))} />
-          </>
-        )
-      }}
-    </Frame>
-  )
-}
-
 export const posts: Post[] = [
   { id: 'wel-ess-radar', domain: 'welfare', render: () => <Radar /> },
   {
@@ -329,5 +262,4 @@ export const posts: Post[] = [
     render: () => <RoundLines />,
   },
   { id: 'wel-ess-heat', domain: 'welfare', render: () => <EssHeat /> },
-  { id: 'wel-trust-gauges', domain: 'welfare', render: () => <Gauges /> },
 ]
