@@ -12,6 +12,13 @@ from botocore.exceptions import ClientError
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "publish"))
 import release as r
 import build_catalog as catalog
+import dq_gate
+
+
+@pytest.fixture(autouse=True)
+def no_local_dbt_results(tmp_path, monkeypatch):
+    """Publication tests must not read a developer's platform/target."""
+    monkeypatch.setattr(dq_gate, "TARGET", tmp_path / "dbt-target")
 
 
 class S3:
@@ -412,3 +419,25 @@ def test_approved_image_mime_types(exports):
     manifest = r.group_manifest(s3, "bucket", current["groups"]["figures"])
     for path, content_type in images.items():
         assert s3.objects[manifest["files"][path]["key"]]["ContentType"] == content_type
+
+
+def test_group_manifest_records_dq_and_reconcile(exports):
+    write(exports, "jobs/rows.json", b'{"rows":[[1],[2]]}')
+    s3 = S3()
+    current = r.publish(s3, "bucket", "jobs", exports, spec("jobs/market.json", "jobs/rows.json"))
+    manifest = r.group_manifest(s3, "bucket", current["groups"]["jobs"])
+    assert manifest["dq"]["status"] == "not_run" and manifest["dq"]["reason"]
+    assert manifest["reconcile"]["rows"] == {"jobs/market.json": 1, "jobs/rows.json": 2}
+    assert set(current["groups"]["jobs"]) == {"key", "bytes", "sha256", "release", "published_at",
+                                              "dependencies"}
+
+
+def test_blocking_dbt_result_stops_before_upload(exports):
+    results = dq_gate.TARGET / "market" / "run_results.json"
+    results.parent.mkdir(parents=True)
+    results.write_text(json.dumps({"args": {"which": "build"}, "results": [
+        {"unique_id": "test.p.not_null_x", "status": "fail"}]}), encoding="utf-8")
+    s3 = S3()
+    with pytest.raises(ValueError, match="not_null_x"):
+        r.publish(s3, "bucket", "jobs", exports, spec("jobs/market.json"))
+    assert s3.puts == []
