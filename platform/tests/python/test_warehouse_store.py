@@ -149,6 +149,15 @@ def test_ml_outputs_are_stored_under_their_own_prefix_and_come_back(store, tmp_p
     assert (tmp_path / "features/concepts/run.json").read_text() == '{"model": "m"}'
 
 
+def test_a_push_path_outside_the_tree_is_refused(store, tmp_path):
+    s3, _, _ = store
+    (tmp_path / "x").mkdir()
+    (tmp_path / "x/secret.txt").write_text("no")
+    with pytest.raises(ValueError, match="outside"):
+        ws.push_tree(s3, "b", "features", "../x")
+    assert not s3.objects
+
+
 def test_cluster_lab_pushes_only_the_listed_runs_never_the_cache(store, tmp_path, monkeypatch):
     s3, _, _ = store
     lab = tmp_path / "cluster_lab"

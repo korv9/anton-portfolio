@@ -35,3 +35,25 @@ models:
       - unique_combination:
           arguments:
             columns: [month, id]
+  - name: stg_futures_topics
+    description: Futures topic pilot, one sampled sentence (id only) × cluster.
+    columns:
+      - name: sentence_id
+        data_tests: [not_null, unique]
+      - name: corpus
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [riksdag, diva]
+  - name: stg_futures_topic_cells
+    description: Futures topic pilot, cluster × corpus × year with the share's bootstrap interval.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [cluster, corpus, year]
+  - name: stg_futures_topic_clusters
+    description: Futures topic pilot, cluster × corpus statistics.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [cluster, corpus]
