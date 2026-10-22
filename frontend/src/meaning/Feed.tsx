@@ -5,7 +5,7 @@
  */
 import { Component, useEffect, useRef, useState, type ReactNode } from 'react'
 import { flushSync } from 'react-dom'
-import { PostLive, PostOpen, type Post } from './kit'
+import { PostLive, PostOpen, still, type Post } from './kit'
 import './meaning.css'
 
 const modules = import.meta.glob<{ posts: Post[] }>('./posts/*.tsx', {
@@ -45,6 +45,19 @@ const DROPPED = new Set<string>([
   'txt-act-characters',
   'txt-plat-gold-kpi',
   'txt-ml-observations',
+  // Data not fit to show until the phase 1 data review: thin samples, partial periods or
+  // ranges labelled wider than the data.
+  'wel-wedge-bars',
+  'txt-act-signal-line',
+  'pol-poll-kpi',
+  'pol-poll-radial',
+  'pol-poll-error',
+  'pol-poll-changes',
+  'wel-ess-radar',
+  'wel-ess-radial',
+  'wel-ess-slope',
+  'pol-study-bars',
+  'pol-news-radial',
 ])
 
 /** Above this many SVG elements a thumbnail steps without transitions. */
@@ -67,8 +80,8 @@ const SECTIONS = [
   {
     key: 'politics',
     title: 'Politics',
-    line: 'The Riksdag: elections, polls, votes and debates.',
-    match: /^pol-|^txt-ml-observations$/,
+    line: "Elections, polls, news and the Riksdag's votes and debates.",
+    match: /^pol-/,
   },
   {
     key: 'sweden',
@@ -85,7 +98,7 @@ const SECTIONS = [
   {
     key: 'ai-act',
     title: 'AI Act',
-    line: 'The EU AI Act: what applies, to whom and when.',
+    line: 'The EU AI Act: what applies, to whom and when, and how often AI comes up in ads and debates.',
     match: /^txt-act-/,
   },
   {
@@ -164,6 +177,42 @@ class PostBoundary extends Component<
   }
 }
 
+/**
+ * One IntersectionObserver per margin for the whole feed, rather than two per card.
+ * `observe` returns the matching unobserve.
+ */
+const watchers = new Map<
+  string,
+  { io: IntersectionObserver; on: Map<Element, (hit: boolean) => void> }
+>()
+function observe(
+  node: Element,
+  rootMargin: string,
+  cb: (hit: boolean) => void,
+) {
+  let w = watchers.get(rootMargin)
+  if (!w) {
+    const on = new Map<Element, (hit: boolean) => void>()
+    const io = new IntersectionObserver(
+      (es) => es.forEach((e) => on.get(e.target)?.(e.isIntersecting)),
+      { rootMargin },
+    )
+    w = { io, on }
+    watchers.set(rootMargin, w)
+  }
+  const { io, on } = w
+  on.set(node, cb)
+  io.observe(node)
+  return () => {
+    on.delete(node)
+    io.unobserve(node)
+  }
+}
+
+/** The card's accessible name: the post's label, or its id read as words under its section. */
+const nameOf = (post: Post, section: string) =>
+  post.label ?? `${section}: ${post.id.split('-').slice(1).join(' ')}`
+
 /** Whether the tab is in front; thumbnails stop ticking behind another tab. */
 function usePageVisible() {
   const [visible, setVisible] = useState(
@@ -184,15 +233,18 @@ function usePageVisible() {
  */
 function Card({
   post,
+  section,
   index,
   open,
-  pageVisible,
+  moving,
   toggle,
 }: {
   post: Post
+  section: string
   index: number
   open: boolean
-  pageVisible: boolean
+  /** The tab is in front and the reader has not paused this section. */
+  moving: boolean
   toggle: (id: string | null) => void
 }) {
   const ref = useRef<HTMLElement>(null)
@@ -203,33 +255,44 @@ function Card({
   useEffect(() => {
     const node = ref.current
     if (!node) return
-    const nearby = new IntersectionObserver(
-      ([e]) => setNear(e.isIntersecting),
-      { rootMargin: '400px' },
-    )
-    const seen = new IntersectionObserver(([e]) =>
-      setOnScreen(e.isIntersecting),
-    )
-    nearby.observe(node)
-    seen.observe(node)
+    const offNear = observe(node, '400px', setNear)
+    const offSeen = observe(node, '0px', setOnScreen)
     return () => {
-      nearby.disconnect()
-      seen.disconnect()
+      offNear()
+      offSeen()
     }
   }, [])
+  // Opened, the card scrolls into view and takes focus on its close button; closed, focus goes
+  // back to the card, unless the reader has already moved it to another card.
+  const wasOpen = useRef(open)
   useEffect(() => {
-    if (open)
-      ref.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+    const node = ref.current
+    if (open) {
+      node?.scrollIntoView({
+        block: 'nearest',
+        behavior: still ? 'auto' : 'smooth',
+      })
+      node?.querySelector<HTMLElement>('.mean-close')?.focus()
+    } else if (
+      wasOpen.current &&
+      (!document.activeElement || document.activeElement === document.body)
+    )
+      node?.querySelector<HTMLElement>('.mean-hit')?.focus()
+    wasOpen.current = open
   }, [open])
   // Charts with thousands of marks step without gliding: tweening them all costs every frame.
+  // The marks are counted once, when the chart first renders.
   useEffect(() => {
     const node = ref.current
     if (!node || !near) return
-    const count = () =>
+    const count = () => {
+      if (!node.querySelector('svg *')) return false
       setDense(node.querySelectorAll('svg *').length > DENSE_MARKS)
-    const mo = new MutationObserver(count)
+      return true
+    }
+    if (count()) return
+    const mo = new MutationObserver(() => count() && mo.disconnect())
     mo.observe(node, { childList: true, subtree: true })
-    count()
     return () => mo.disconnect()
   }, [near])
   if (failed) return null
@@ -245,7 +308,7 @@ function Card({
       <span className="mean-avatar" aria-hidden="true" />
       <div className="mean-body">
         <PostOpen.Provider value={open}>
-          <PostLive.Provider value={onScreen && pageVisible && !dense}>
+          <PostLive.Provider value={onScreen && moving && !dense}>
             <PostBoundary onFail={() => setFailed(true)}>
               {near || open ? post.render() : null}
             </PostBoundary>
@@ -256,7 +319,7 @@ function Card({
         <button
           type="button"
           className="mean-close"
-          aria-label="Close chart"
+          aria-label={`Close chart: ${nameOf(post, section)}`}
           onClick={() => toggle(null)}
         >
           ×
@@ -265,7 +328,7 @@ function Card({
         <button
           type="button"
           className="mean-hit"
-          aria-label="Open chart"
+          aria-label={`Open chart: ${nameOf(post, section)}`}
           onClick={() => toggle(post.id)}
         />
       )}
@@ -278,12 +341,23 @@ export default function Feed({ level = 2 }: { level?: 2 | 3 }) {
   const Heading = level === 2 ? 'h2' : 'h3'
   const [openId, setOpenId] = useState<string | null>(null)
   const pageVisible = usePageVisible()
+  // Sections the reader paused; their thumbnails stay still while the page is open.
+  const [paused, setPaused] = useState<ReadonlySet<string>>(new Set())
   const toggle = (id: string | null) => morph(() => setOpenId(id))
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && toggle(null)
+    if (!openId) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') morph(() => setOpenId(null))
+    }
     addEventListener('keydown', onKey)
     return () => removeEventListener('keydown', onKey)
-  }, [])
+  }, [openId])
+  const pause = (key: string) =>
+    setPaused((was) => {
+      const now = new Set(was)
+      if (!now.delete(key)) now.add(key)
+      return now
+    })
   return (
     <div className="mean-feed">
       {PARTS.map((s) => (
@@ -295,15 +369,24 @@ export default function Feed({ level = 2 }: { level?: 2 | 3 }) {
           <header className="mean-section-head">
             <Heading id={`mean-${s.key}`}>{s.title}</Heading>
             <p>{s.line}</p>
+            <button
+              type="button"
+              className="mean-pause"
+              aria-pressed={paused.has(s.key)}
+              onClick={() => pause(s.key)}
+            >
+              Pause<span className="visually-hidden"> {s.title} charts</span>
+            </button>
           </header>
           <div className="mean-grid">
             {s.posts.map((p) => (
               <Card
                 key={p.id}
                 post={p}
+                section={s.title}
                 index={FEED.indexOf(p)}
                 open={p.id === openId}
-                pageVisible={pageVisible}
+                moving={pageVisible && !paused.has(s.key)}
                 toggle={toggle}
               />
             ))}

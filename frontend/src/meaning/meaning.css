@@ -84,6 +84,26 @@
   font-size: 0.85rem;
   line-height: 1.4;
 }
+/* Stops the section's thumbnails (WCAG 2.2.2); pressed, it reads as held. */
+.mean-pause {
+  margin-top: 6px;
+  min-height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--mean-line);
+  border-radius: 999px;
+  background: none;
+  color: var(--mean-muted);
+  font: 0.75rem var(--mean-font);
+  cursor: pointer;
+}
+.mean-pause[aria-pressed='true'] {
+  border-color: var(--mean-accent);
+  color: var(--mean-ink);
+}
+.mean-pause:focus-visible {
+  outline: 2px solid var(--mean-accent);
+  outline-offset: 2px;
+}
 @media (max-width: 760px) {
   .mean-section-head :is(h2, h3) {
     font-size: clamp(2rem, 10vw, 3rem);

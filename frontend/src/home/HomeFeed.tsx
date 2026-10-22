@@ -2,9 +2,31 @@
  * The chart feed at the end of Projects, in the home page's light colours. Its code and data
  * load only when the reader scrolls near it, so the page's first paint stays light.
  */
-import { lazy, Suspense, useEffect, useRef, useState } from 'react'
+import {
+  Component,
+  lazy,
+  Suspense,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react'
 
 const Feed = lazy(() => import('../meaning/Feed'))
+
+/** If the feed's code fails to load or render, the home page goes on without it. */
+class FeedBoundary extends Component<
+  { children: ReactNode },
+  { failed: boolean }
+> {
+  state = { failed: false }
+  static getDerivedStateFromError() {
+    return { failed: true }
+  }
+  render() {
+    return this.state.failed ? null : this.props.children
+  }
+}
 
 export default function HomeFeed() {
   const ref = useRef<HTMLElement>(null)
@@ -42,9 +64,11 @@ export default function HomeFeed() {
         What does it even mean?
       </h2>
       {near && (
-        <Suspense fallback={null}>
-          <Feed level={3} />
-        </Suspense>
+        <FeedBoundary>
+          <Suspense fallback={null}>
+            <Feed level={3} />
+          </Suspense>
+        </FeedBoundary>
       )}
     </section>
   )

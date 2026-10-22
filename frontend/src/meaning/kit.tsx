@@ -25,6 +25,8 @@ export type Post = {
   domain: string
   /** 'wide' spans two feed columns on large screens. */
   size?: 'square' | 'wide' | 'tall'
+  /** Readable name for the card's open and close buttons; defaults to the id read as words. */
+  label?: string
   render: () => ReactNode
 }
 
@@ -54,7 +56,20 @@ export const tile = (c: string) => ({
 
 const cache = new Map<string, Promise<unknown>>()
 
-/** One published dataset, fetched once per page load. null while loading; Error on failure. */
+/** A dataset past its `valid_until` date; the post that reads it leaves the feed. */
+export class Expired extends Error {}
+
+/** Whether a dataset carries a `valid_until` date that has passed. */
+export const expired = (v: unknown) =>
+  typeof v === 'object' &&
+  v !== null &&
+  'valid_until' in v &&
+  !(Date.parse(String(v.valid_until)) > Date.now())
+
+/**
+ * One published dataset, fetched once per page load. null while loading; Error on failure;
+ * Expired once a dataset with a `valid_until` date has passed it.
+ */
 export function useData<T>(path: string): T | null | Error {
   const [state, setState] = useState<T | null | Error>(null)
   useEffect(() => {
@@ -68,7 +83,7 @@ export function useData<T>(path: string): T | null | Error {
       live = false
     }
   }, [path])
-  return state
+  return expired(state) ? new Expired(path) : state
 }
 
 /** Whether the post is opened (full controls) or a living thumbnail. */
@@ -79,7 +94,7 @@ export const PostLive = createContext(false)
 /** Thumbnails step their slicer twice a second; the marks glide between steps in CSS. */
 const TICK_MS = 500
 
-const still =
+export const still =
   typeof matchMedia === 'function' &&
   matchMedia('(prefers-reduced-motion: reduce)').matches
 
@@ -137,7 +152,10 @@ export function Slicer<T extends string | number>({
   )
 }
 
-/** Wraps a chart: shows nothing while loading and an empty frame if the data is missing. */
+/**
+ * Wraps a chart: shows nothing while loading and an empty frame if the data is missing. Expired
+ * data is thrown, so the card's error boundary removes the whole post.
+ */
 export function Frame<T>({
   data,
   children,
@@ -146,6 +164,7 @@ export function Frame<T>({
   children: (d: T) => ReactNode
 }) {
   if (data === null) return <div className="mean-wait" aria-busy="true" />
+  if (data instanceof Expired) throw data
   if (data instanceof Error) return <div className="mean-wait" />
   return <>{children(data)}</>
 }
