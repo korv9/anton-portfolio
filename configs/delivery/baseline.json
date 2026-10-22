@@ -35,7 +35,6 @@
     "parliament/news-summaries.json",
     "jobs/*",
     "gold/marts/jobs.json",
-    "parliament/workspace/*",
     "sweden/*"
   ]
 }

@@ -156,11 +156,11 @@ decision).
 
 Four Gold models add source-backed appointment ballots and contextual party comparisons:
 `fct_prime_minister_ballot`, `fct_prime_minister_party_vote`, `mart_party_pair_context`,
-and `mart_party_cohesion_context`. `publish/politics_workspace.py` exports a compact index
-and lazy session decision shards; `export_parliament.py` invokes it with the tested warehouse.
-The offline committed snapshot limits detailed party context to 2024/25?2025/26, while the
+and `mart_party_cohesion_context`. Their workspace export was removed on 2026-10-22; the
+models remain with their tests. The offline committed snapshot limits detailed party
+context to 2024/25?2025/26, while the
 existing session-pair mart still covers 1993/94 onward. Ten reviewed appointment/incumbent
 ballots cover selected dates in 2014?2026, with earlier gaps retained. See
 [definitions, sources and build commands](political-observatory-v2.md). Agreement metadata
-in the existing seed is not evidence of support on every date; the new workspace displays
-it separately and joins government membership by exact vote date.
+in the existing seed is not evidence of support on every date; the models keep it
+separate and join government membership by exact vote date.
