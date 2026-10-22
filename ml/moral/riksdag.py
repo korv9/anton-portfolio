@@ -192,8 +192,17 @@ def gate(labels_path: Path) -> dict:
     vectors = embed(list(picked.index), picked.text.tolist(), "riksdag-review", "moral-review")
     if vectors is None:
         raise SystemExit("Review passages are not all embedded yet; run again after the quota resets.")
-    predicted = flags(vectors)
     english = pd.read_parquet(FEATURES / "agreement.parquet").set_index("foundation").tagger_f1
+    result = decide(truth, flags(vectors), english)
+    # The owner's labels are kept without the text, so the gate can be recomputed.
+    truth.astype(int).reset_index().to_parquet(FEATURES / "review_labels.parquet", index=False)
+    (FEATURES / "gate.json").write_text(json.dumps(result, indent=1), encoding="utf-8")
+    return result
+
+
+def decide(truth: pd.DataFrame, predicted: np.ndarray, english: pd.Series) -> dict:
+    """The stop rule. The Swedish F1 is against one rater (the owner), the English F1 against the
+    majority of several, so the comparison is stricter than like with like."""
     rows = [{"foundation": f, "positives": int(truth[f].sum()), "swedish_f1": f1(truth[f], predicted[:, i]),
              "english_f1": float(english[f])} for i, f in enumerate(FOUNDATIONS)]
     for r in rows:
@@ -201,13 +210,9 @@ def gate(labels_path: Path) -> dict:
                               and r["swedish_f1"] >= RATIO * r["english_f1"])
     swedish = float(np.mean([r["swedish_f1"] or 0 for r in rows]))
     passed = swedish >= RATIO * float(english[FOUNDATIONS].mean())
-    result = {"status": "passed" if passed else "failed", "passages": len(truth), "raters": 1, "swedish_macro_f1": swedish,
-              "english_macro_f1": float(english[FOUNDATIONS].mean()), "ratio_required": RATIO,
-              "passed": passed, "foundations": rows}
-    # The owner's labels are kept without the text, so the gate can be recomputed.
-    truth.astype(int).reset_index().to_parquet(FEATURES / "review_labels.parquet", index=False)
-    (FEATURES / "gate.json").write_text(json.dumps(result, indent=1), encoding="utf-8")
-    return result
+    return {"status": "passed" if passed else "failed", "passages": len(truth), "raters": 1, "swedish_macro_f1": swedish,
+            "english_macro_f1": float(english[FOUNDATIONS].mean()), "ratio_required": RATIO,
+            "passed": bool(passed), "foundations": rows}
 
 
 def shares(frame: pd.DataFrame, flagged: np.ndarray) -> tuple[pd.DataFrame, pd.DataFrame]:

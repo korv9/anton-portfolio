@@ -3,6 +3,7 @@
     python -m ml.moral.mfrc fetch    # MFRC, eMFD and ETHICS into warehouse/raw/philosophy_moral
     python -m ml.moral.mfrc embed    # bge-m3 vectors of every MFRC comment (Workers AI, cached)
     python -m ml.moral.mfrc fit      # tagger.npz and agreement.parquet under FEATURES
+    python -m ml.moral.mfrc ci       # adds 95 % bootstrap intervals to agreement.parquet (no refit)
 
 Every choice (gold label, split, C grid, threshold grid, ceiling, eMFD scoring) is fixed in
 docs/philosophy-moral-preregistration.md. No comment text is written outside RAW.
@@ -18,7 +19,7 @@ import numpy as np
 import pandas as pd
 
 from ml.moral import FEATURES, FOUNDATIONS, RAW, REPO, embed
-from ml.moral.stats import alpha_binary, f1, rank
+from ml.moral.stats import SEED, alpha_binary, f1, rank
 
 MFRC_REV = "ddc21d2f03e156732fd1ba95a51c4c29f07975be"
 ETHICS_REV = "b8b47c589f8bee77175b8648e5497278b68da48a"
@@ -152,9 +153,55 @@ def fit() -> None:
              intercept=np.array(intercepts), threshold=np.array(thresholds))
 
 
+def weighted_f1(truth, pred, w) -> float:
+    tp, fp, fn = (w * (truth & pred)).sum(), (w * (~truth & pred)).sum(), (w * (truth & ~pred)).sum()
+    return np.nan if 2 * tp + fp + fn == 0 else 2 * tp / (2 * tp + fp + fn)
+
+
+def ceiling_gap(wide: np.ndarray, predicted: np.ndarray, w: np.ndarray) -> float:
+    """`ceiling` with the tagger minus `ceiling` without it, on comments weighted by w (bootstrap counts)."""
+    has, yes = ~np.isnan(wide), wide == 1
+    tagger = [weighted_f1(yes[has[:, a], a], predicted[has[:, a]], w[has[:, a]]) for a in range(wide.shape[1])]
+    humans = [weighted_f1(yes[both, b], yes[both, a], w[both])
+              for a in range(wide.shape[1]) for b in range(wide.shape[1])
+              if a != b and (both := has[:, a] & has[:, b]).any()]
+    return float(np.nanmean(tagger) - np.nanmean(humans))
+
+
+def intervals(rounds: int = 1000) -> None:
+    """95 % intervals over resampled test comments for the tagger's F1 and for its gap to the human
+    ceiling (tagger vs one annotator minus annotator vs annotator). Uses the stored tagger, no refit."""
+    gold, rows = comments()
+    vectors = np.load(FEATURES / "vectors/mfrc/vectors.npy")
+    position = {int(i): n for n, i in enumerate(json.loads((FEATURES / "vectors/mfrc/ids.json").read_text(encoding="utf-8")))}
+    test = gold[gold.split == "test"]
+    x = vectors[[position[i] for i in test.comment_id]]
+    tagger = np.load(FEATURES / "tagger.npz")
+    agreement = pd.read_parquet(FEATURES / "agreement.parquet")
+    rows = rows[rows.comment_id.isin(set(test.comment_id))]
+    rows = rows[rows.groupby("comment_id").annotator.transform("size") >= 3]
+    rng = np.random.default_rng(SEED)
+    counts = [np.bincount(rng.integers(0, len(test), len(test)), minlength=len(test)) for _ in range(rounds)]
+    out = {}
+    for n, label in enumerate(tagger["labels"]):
+        predicted = 1 / (1 + np.exp(-(x @ tagger["coef"][n] + tagger["intercept"][n]))) >= tagger["threshold"][n]
+        y = test[label].to_numpy()
+        wide = rows.pivot(index="comment_id", columns="annotator", values=label).astype(float)
+        on = test.comment_id.isin(set(wide.index)).to_numpy()
+        wide = wide.reindex(test.comment_id[on]).to_numpy()
+        f1s = [weighted_f1(y, predicted, w) for w in counts]
+        gaps = [ceiling_gap(wide, predicted[on], w[on]) for w in counts]
+        out[str(label)] = [*np.nanpercentile(f1s, [2.5, 97.5]), *np.nanpercentile(gaps, [2.5, 97.5]),
+                           ceiling_gap(wide, predicted[on], np.ones(on.sum()))]
+        print(label, np.round(out[str(label)], 3), flush=True)
+    for k, column in enumerate(["tagger_f1_low", "tagger_f1_high", "ceiling_gap_low", "ceiling_gap_high", "ceiling_gap"]):
+        agreement[column] = agreement.foundation.map(lambda f: out[f][k])
+    agreement.to_parquet(FEATURES / "agreement.parquet", index=False)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("step", choices=["fetch", "embed", "fit"])
+    parser.add_argument("step", choices=["fetch", "embed", "fit", "ci"])
     step = parser.parse_args().step
     if step == "fetch":
         fetch()
@@ -162,8 +209,10 @@ def main() -> None:
         gold, _ = comments()
         done = embed([str(i) for i in gold.comment_id], gold.text.tolist(), "mfrc", "moral-mfrc")
         sys.exit(0 if done is not None else 3)
-    else:
+    elif step == "fit":
         fit()
+    else:
+        intervals()
 
 
 if __name__ == "__main__":

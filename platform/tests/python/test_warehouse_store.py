@@ -192,6 +192,18 @@ def test_one_folder_or_file_of_a_tree_moves_alone(store):
     assert not (raw / "scb/a.json").exists()
 
 
+def test_third_party_text_kept_local_is_never_pushed(store):
+    """The bucket is public: raw/philosophy_moral (Reddit comments, GPL data) stays on the machine."""
+    s3, _, raw = store
+    (raw / "philosophy_moral/ethics").mkdir(parents=True)
+    (raw / "philosophy_moral/mfrc.parquet").write_text("comments")
+    (raw / "philosophy_moral/ethics/test.csv").write_text("scenarios")
+    ws.push_tree(s3, "b", "raw")
+    assert ws.push_tree(s3, "b", "raw", "philosophy_moral")[:2] == (0, 0)
+    assert not any("philosophy_moral" in key for key in s3.objects)
+    assert ws.RAW_PREFIX + "scb/a.json" in s3.objects
+
+
 def test_corrupt_or_interrupted_raw_download_keeps_local_checkpoint(store, monkeypatch):
     s3, _, raw = store
     path = raw / "scb/a.json"

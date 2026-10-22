@@ -87,6 +87,39 @@ def test_ceiling_compares_annotator_pairs_on_shared_comments():
     assert mfrc.ceiling(rows, {1, 2}, "care", predicted={1: True, 2: False}) == pytest.approx(2 / 3)
 
 
+def test_gate_passes_fails_and_validates_per_foundation():
+    english = pd.Series(0.5, index=riksdag.FOUNDATIONS)
+    truth = pd.DataFrame({f: [True] * 20 + [False] * 80 for f in riksdag.FOUNDATIONS})
+    perfect = truth.to_numpy()
+    passed = riksdag.decide(truth, perfect, english)
+    assert passed["passed"] and passed["status"] == "passed" and passed["raters"] == 1
+    assert all(r["validated"] for r in passed["foundations"])
+    failed = riksdag.decide(truth, ~perfect, english)
+    assert not failed["passed"] and failed["status"] == "failed"
+    assert not any(r["validated"] for r in failed["foundations"])
+    # Under 10 positives a foundation is not validated even when the gate passes.
+    few = truth.copy()
+    few["purity"] = [True] * 5 + [False] * 95
+    mixed = riksdag.decide(few, few.to_numpy(), english)
+    assert mixed["passed"] and {r["foundation"]: r["validated"] for r in mixed["foundations"]}["purity"] is False
+
+
+def test_bootstrap_moves_items_that_share_a_scenario_together():
+    values = np.array([1, 1, 0, 0, 1, 0])
+    alone = stats.bootstrap(values, np.mean, rounds=200)
+    grouped = stats.bootstrap(values, np.mean, rounds=200, groups=["a", "a", "b", "b", "c", "c"])
+    assert grouped[1] - grouped[0] >= alone[1] - alone[0]
+
+
+def test_ceiling_gap_matches_the_two_ceilings():
+    rows = pd.DataFrame({"comment_id": [1, 1, 1, 2, 2, 2], "annotator": ["a", "b", "c"] * 2,
+                         "care": [True, True, False, False, False, True]})
+    wide = rows.pivot(index="comment_id", columns="annotator", values="care").astype(float).to_numpy()
+    gap = mfrc.ceiling_gap(wide, np.array([True, False]), np.ones(2))
+    assert gap == pytest.approx(mfrc.ceiling(rows, {1, 2}, "care", predicted={1: True, 2: False})
+                                - mfrc.ceiling(rows, {1, 2}, "care"))
+
+
 def test_reply_parser_takes_the_first_word_only():
     assert ethics.parse("justice", "Yes.") == 1 and ethics.parse("virtue", "**No**") == 0
     assert ethics.parse("utilitarianism", "B") == "B"

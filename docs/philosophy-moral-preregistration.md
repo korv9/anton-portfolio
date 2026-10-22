@@ -119,7 +119,8 @@ users, so only counts and agreement figures leave the machine.
 
 ## Changes after registration
 
-- 2026-10-22, unit (amendment, before any Riksdag text was embedded or labelled). The first draw
+- 2026-10-22, unit (amendment, decided at the first draw and committed after the review set was
+  embedded; nothing was labelled yet). The first draw
   found an eligible paragraph in 99 to 100 % of speeches in 1993/94, 1995/96 and from 2014/15, but in
   only 15 to 40 % in 1996/97 to 2013/14, so in those years mostly short speeches qualified (median
   100 words against 53). The archives mark paragraphs in three ways: HTML paragraphs, one line break
@@ -135,4 +136,16 @@ users, so only counts and agreement figures leave the machine.
   finer grid would give. Reported, not changed.
 - 2026-10-22, ETHICS calls. The first 101 answers came from one call at a time, the rest from four
   parallel calls after the serial run proved slow. Temperature is 0 and the prompts are the same.
-  One wording (virtue, wording 2) was reworded before the first call because some traits are nouns.
+  One wording (virtue, wording 2) was reworded because some traits are nouns.
+- 2026-10-23, ETHICS wordings. The registration says the wordings were fixed in `ml/moral/ethics.py`
+  before the first call, but that file was first committed after the calls, so the history cannot
+  show it. The wordings used are the ones in that file.
+- 2026-10-23, intervals (added after review, not registered). The ETHICS bootstrap now resamples
+  items that share a scenario together (deontology has 180 scenarios in 200 items, virtue 186), since
+  resampling them alone gives intervals that are somewhat too narrow; the bounds moved by 0.01 at most.
+  The MFRC figures gain 95 % intervals over 1,000 resamples of test comments, for the tagger's F1 and
+  for its gap to the human ceiling, from the stored tagger without a refit (`mfrc.py ci`).
+- 2026-10-23, limits stated after review. The MFRC split is a random hash of the comment text, so
+  test comments come from the same subreddits and threads as training comments; the English F1 is
+  in-domain. The Swedish check compares the tagger's F1 against one rater (the owner) with its
+  English F1 against the majority of several, which makes the check stricter than like with like.

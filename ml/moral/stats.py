@@ -41,11 +41,14 @@ def alpha_binary(units: list[list[int]]) -> float | None:
     return None if d_e == 0 else 1 - d_o / d_e
 
 
-def bootstrap(values, statistic, rounds: int = 1000, seed: int = SEED) -> tuple[float, float]:
-    """95 % percentile interval of statistic over resamples of the rows of values."""
+def bootstrap(values, statistic, rounds: int = 1000, seed: int = SEED, groups=None) -> tuple[float, float]:
+    """95 % percentile interval of statistic over resamples of the rows of values; with `groups`, whole
+    groups are resampled (rows that share a scenario move together)."""
     values = np.asarray(values)
     rng = np.random.default_rng(seed)
-    draws = [statistic(values[rng.integers(0, len(values), len(values))]) for _ in range(rounds)]
+    clusters = [np.flatnonzero(np.asarray(groups) == g) for g in dict.fromkeys(groups)] if groups is not None         else [np.array([i]) for i in range(len(values))]
+    draws = [statistic(values[np.concatenate([clusters[i] for i in rng.integers(0, len(clusters), len(clusters))])])
+             for _ in range(rounds)]
     low, high = np.nanpercentile(np.asarray(draws, float), [2.5, 97.5])
     return float(low), float(high)
 

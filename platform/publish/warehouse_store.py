@@ -60,6 +60,10 @@ RAW_PREFIX = PREFIX + "raw/"
 FEATURES_PREFIX = PREFIX + "features/"
 CLUSTER_LAB_PREFIX = PREFIX + "cluster_lab/"
 TREES = ("raw", "features", "cluster_lab")
+# Raw folders that never leave the machine: the bucket is public, and their licences or authors do
+# not allow redistribution (MFRC Reddit comments, the GPL-3.0 eMFD, ETHICS scenarios). Only the
+# figures derived from them are stored, under features/.
+LOCAL_ONLY_RAW = ("philosophy_moral",)
 # A prune deletes stored files that are absent locally; more than this share of a folder's stored
 # files is taken as an incomplete local tree, not a cleanup. Raise it (--max-delete-pct or
 # PRUNE_MAX_DELETE_PCT) only for an intentional cleanup.
@@ -166,6 +170,8 @@ def push_tree(s3, bucket: str, name: str, sub: str = "", prune: bool = False,
     if not resolved_path(root / sub).is_relative_to(root):
         raise ValueError(f"Invalid path outside the {name} tree: {sub}")
     files = tree_files(root / sub)
+    if name == "raw":
+        files = [p for p in files if p.relative_to(root).parts[0] not in LOCAL_ONLY_RAW]
 
     def one(path: Path) -> int:
         key = prefix + path.relative_to(root).as_posix()

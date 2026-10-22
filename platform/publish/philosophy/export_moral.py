@@ -40,12 +40,19 @@ ETHICS_SOURCE = {"name": "ETHICS (Hendrycks et al. 2021)", "url": "https://huggi
 DEPARTURES = [
     "2026-10-22: the Riksdag unit is a passage of consecutive sentences packed up to 80 words instead of a "
     "paragraph, because the archives mark paragraphs differently by era (HTML, one line break, hard-wrapped "
-    "print lines) and the registered split left only short speeches eligible in 1996/97-2013/14. Amended "
-    "before any Riksdag text was embedded or labelled.",
+    "print lines) and the registered split left only short speeches eligible in 1996/97-2013/14. Decided "
+    "at the first draw and committed after the review set was embedded; nothing was labelled yet.",
     "2026-10-22: the threshold grid 0.05-0.95 is coarse for eMFD, whose mean word probabilities lie near "
     "0.1; the baseline kept the pre-registered grid, so its F1 may be lower than a finer grid would give.",
+    "2026-10-23: added after review, not registered: 95 % intervals over resampled test comments for the "
+    "tagger's F1 and its gap to the human ceiling. The split is a random hash of the text, so the English "
+    "test is in-domain (same subreddits and threads). The Swedish check uses one rater against the English "
+    "majority label, which is stricter than like with like.",
     "2026-10-22: the first 101 ETHICS answers came from a serial run, the rest from four parallel calls; "
     "temperature is 0 and the prompts are the same, so the answers do not depend on the order.",
+    "2026-10-23: the registration says the wordings were fixed before the first call, but ml/moral/ethics.py "
+    "was first committed after the calls, so the history cannot show it. Added after review: the bootstrap "
+    "resamples items that share a scenario together.",
 ]
 
 
@@ -95,13 +102,18 @@ def moral_payload(con) -> dict:
             "tagger": "bge-m3 vectors (Workers AI) and one logistic regression per foundation, trained on 80 % of "
                       "MFRC comments; gold label = more than half of a comment's annotators.",
             "ceiling": "Mean F1 of one annotator against another on test comments with three or more annotators; "
-                       "the tagger's comparable figure is its mean F1 against each single annotator.",
+                       "the tagger's comparable figure is its mean F1 against each single annotator. The 95 % "
+                       "intervals resample test comments (1,000 rounds).",
+            "split": "80/20 by a hash of the comment text, so test comments share subreddits and threads with "
+                     "training comments: an in-domain test.",
             "baseline": "eMFD: mean dictionary probability of a comment's words, threshold chosen on the train split; "
                         "English only, fairness compared with equality or proportionality merged.",
             "swedish_check": "300 Riksdag passages labelled blind by the owner; Riksdag shares are published only "
-                             "if the Swedish macro-F1 is at least 0.8 times the English one.",
+                             "if the Swedish macro-F1 is at least 0.8 times the English one. The Swedish F1 is "
+                             "against one rater, the English against the majority of several, so the check is "
+                             "stricter than like with like.",
             "null": "Party labels shuffled within year, 999 rounds; between-party spread and a band per party cell.",
-            "sources": SOURCES, "departures": DEPARTURES[:2],
+            "sources": SOURCES, "departures": DEPARTURES[:3],
         },
         "caveat_en": "The tagger flags vocabulary that crowdworkers linked to a moral foundation in English Reddit "
                      "comments. A share is how often that vocabulary appears, not how moral a party or a speech is.",
@@ -127,7 +139,8 @@ def ethics_payload(con) -> dict:
             "sample": "200 rows of each subset's test split by a seeded hash; commonsense short items only.",
             "baseline": "Always the most common label among the 200 (kappa 0).",
             "null": "Human labels permuted 999 times; the 95th percentile of kappa and a one-sided p.",
-            "sources": [ETHICS_SOURCE], "departures": DEPARTURES[2:],
+            "intervals": "1,000 bootstrap resamples; items that share a scenario are resampled together.",
+            "sources": [ETHICS_SOURCE], "departures": DEPARTURES[3:],
         },
         "caveat_en": "Agreement with US crowdworkers' labels, on a public benchmark the model may have seen. The "
                      "subsets differ in format, so they are not ranked, and nothing here says which theory is right.",
