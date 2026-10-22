@@ -127,5 +127,7 @@ export function Frame<T>({
 }) {
   if (data === null) return <div className="mean-wait" aria-busy="true" />
   if (data instanceof Error) return <div className="mean-wait" />
+  // A withdrawn dataset ships as {state: 'unavailable'}; its post draws nothing.
+  if ((data as { state?: unknown }).state === 'unavailable') return null
   return <>{children(data)}</>
 }

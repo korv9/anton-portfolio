@@ -141,7 +141,7 @@ subjects:
       - ingest: python platform/ingest/jobtech/ingest_stream.py
       - dbt: {select: [tag:market]}
       - export: python platform/publish/export_market.py
-      - export: python platform/publish/job_companies.py refresh --publish
+      - export: python platform/publish/job_companies.py refresh
 
   news:
     schedule: '17 5 * * *'
