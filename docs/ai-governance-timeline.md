@@ -98,6 +98,6 @@ The mart has one row per corpus, term, language and whole month. The export work
 lag and tests it against 200 random months (the placebo null).
 
 Results for the Riksdag (22 October 2026, speeches from October 2016 to July 2026): the four
-terms occur in one speech in all, in January 2025. The Riksdag talks about the Act in its own
-words ("AI-förordningen", "högrisk") and not in the Act's phrases, so 50 of the 54 lags are
+terms occur in one speech in all, in January 2025. Speeches about the Act say
+"AI-förordningen" and "högrisk"; the Act's longer phrases hardly occur, so 50 of the 54 lags are
 censored. The job-ad lane follows once the scan has run in Actions.
