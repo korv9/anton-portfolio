@@ -20,3 +20,24 @@ export const agreed = (verdicts: Verdict[]): Verdict =>
   verdicts.length > 0 && verdicts.every((v) => v === verdicts[0])
     ? verdicts[0]
     : 'undetermined'
+
+export type Agreement = 'rise' | 'fall' | 'mixed'
+
+/** A change is stable only when every measure (share of ads, per 1,000 words, share at equal
+ * length) moves the same way; a missing measure or a zero change leaves it mixed. */
+export const agreement = (changes: (number | null)[]): Agreement =>
+  changes.length > 0 && changes.every((c) => c != null && c > 0)
+    ? 'rise'
+    : changes.length > 0 && changes.every((c) => c != null && c < 0)
+      ? 'fall'
+      : 'mixed'
+
+/** The mean of the changes with each one left out in turn: how far one category moves it. */
+export const leaveOneOut = (changes: number[]) =>
+  changes.length < 2
+    ? []
+    : changes.map(
+        (_, i) =>
+          changes.reduce((s, c, j) => (j === i ? s : s + c), 0) /
+          (changes.length - 1),
+      )

@@ -1,0 +1,5 @@
+term_id,parent,label_en,label_sv,pattern,sort_order
+passion_engage,passion,Engagement (engage*),Engagemang (engage*),engage\w*,1
+passion_core,passion,"Passion, burning interest, enthusiasm","Passion, brinnande intresse, entusiasm",(?:passion\w*|brinn(?:er|ande)|entusias\w*|glöd\w*|hjärta för|enthusias\w*),2
+identity_formula,identity,Recruitment formulas,Rekryteringsformler,(?:personlig lämplighet|personliga egenskaper|personal suitability),3
+identity_other,identity,"Personality, growth and career","Personlighet, utveckling och karriär",(?:personlig utveckling|din personlighet|vem du är|utvecklas (?:som person|i din roll|med oss)|växa (?:med oss|i rollen|som person)|karriär\w*|självförverkligande|personal development|grow with us|career),4

@@ -173,6 +173,17 @@ test('the ideal human counts language per word with the occupation mix fixed', a
     })
     .click()
   await expect(page).toHaveURL(/kategori=passion/)
+  // Every category and sub-term is shown in three measures with its direction; stated
+  // qualifications rise as a share of ads and fall per word, so their reading is undetermined.
+  await expect(page.locator('.sw-agree')).toHaveCount(
+    trends.categories.length + trends.subterms.length,
+  )
+  await expect(
+    page.locator('.sw-reading', { hasText: 'Human capital' }),
+  ).toHaveAttribute('data-verdict', 'undetermined')
+  await expect(
+    page.getByText(/split into a part within groups/).first(),
+  ).toBeVisible()
   const axe = await new AxeBuilder({ page })
     .include('main')
     .exclude('canvas')

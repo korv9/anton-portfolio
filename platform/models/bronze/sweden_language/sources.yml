@@ -9,12 +9,16 @@ sources:
     description: Category matches in JobTech's historical job ads (CC0), per archive.
     tables:
       - name: totals
-        description: Year × occupation field × county; ads, distinct texts and words (the denominators).
+        description: >-
+          Year × occupation field × county × length band (2010 quartiles of words per distinct
+          text); ads, distinct texts and words (the denominators).
         meta:
           external_location: >-
             read_parquet('{{ env_var('PORTFOLIO_FEATURES', '../warehouse/features') }}/sweden/ad_language/totals_*.parquet', union_by_name = true)
       - name: hits
-        description: The same cells × category; distinct texts matching and number of matches.
+        description: >-
+          The same cells × category; distinct texts matching and number of matches. Sub-terms of
+          ad_language_subterms are categories of their own here.
         meta:
           external_location: >-
             read_parquet('{{ env_var('PORTFOLIO_FEATURES', '../warehouse/features') }}/sweden/ad_language/hits_*.parquet', union_by_name = true)
@@ -23,3 +27,10 @@ sources:
         meta:
           external_location: >-
             read_parquet('{{ env_var('PORTFOLIO_FEATURES', '../warehouse/features') }}/sweden/ad_language/examples_*.parquet', union_by_name = true)
+      - name: mix
+        description: >-
+          Year × SSYK-4 occupation group × employer type (staffing or recruitment agency, other,
+          unknown) × category; distinct texts, words, texts matching and matches.
+        meta:
+          external_location: >-
+            read_parquet('{{ env_var('PORTFOLIO_FEATURES', '../warehouse/features') }}/sweden/ad_language/mix_*.parquet', union_by_name = true)

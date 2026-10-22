@@ -4,8 +4,12 @@
 
 Writes frontend/public/data/sweden/language/:
 - `trends.json`: per category and year, distinct texts, the crude and the occupation-
-  standardised share of texts using the category, and matches per thousand words; per
-  category the single most likely break in the standardised share (exploratory).
+  standardised share of texts using the category, matches per thousand words, and the share
+  within 2010 length bands; per category the single most likely break in the standardised
+  share (exploratory). The sub-terms of passion and identity get the same rows.
+- `composition.json`: per category, the change from each baseline year to the last complete
+  year split into a part within groups and a part from the groups' mix, for occupation fields,
+  SSYK-4 groups, employer types and both together; and the change without agencies.
 - `fields.json`: the same per occupation field (share of texts), for the years with data.
 - `regions.json`: the same per county.
 - `examples.json`: per category, the masked review examples with archive and year.
@@ -22,6 +26,9 @@ import sys
 from pathlib import Path
 
 import duckdb
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from language_stats import baselines, composition  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[3]
 DATABASE = Path(os.environ.get("PORTFOLIO_DB", ROOT / "warehouse/portfolio.duckdb"))
@@ -74,28 +81,56 @@ def main() -> int:
     rows = con.sql("""select category, year, texts, texts_matching, matches, words, share,
                              share_standardised, per_1000_words, per_1000_words_standardised
                       from gold.mart_sweden_job_language_trends order by category, year""").fetchall()
+    measures = con.sql("""select category, year, texts, texts_matching, matches, words, share,
+                                 share_standardised, per_1000_words, per_1000_words_standardised,
+                                 share_banded_standardised, parent
+                          from gold.mart_sweden_job_language_measures order by category, year""").fetchall()
+    banded = {(r[0], r[1]): r[10] for r in measures}
+    opt = lambda v, n: None if v is None else round(v, n)  # noqa: E731
+    row = lambda r, b: [r[1], r[2], r[3], r[4], r[5], round(r[6], 5), opt(r[7], 5),  # noqa: E731
+                        round(r[8] or 0, 4), opt(r[9], 4), opt(b, 5)]
     trends = []
     for c in categories:
         mine = [r for r in rows if r[0] == c["id"] and r[2] >= MIN_TEXTS]
-        years = [r[1] for r in mine]
         kept = [r for r in mine if r[9] is not None]
         series = [round(r[9], 5) for r in kept]
-        trends.append({**c, "rows": [[r[1], r[2], r[3], r[4], r[5], round(r[6], 5), None if r[7] is None else round(r[7], 5),
-                                      round(r[8] or 0, 4), None if r[9] is None else round(r[9], 4)] for r in mine],
+        trends.append({**c, "rows": [row(r, banded.get((c["id"], r[1]))) for r in mine],
                        "break": one_break([r[1] for r in kept], series)})
+    subterms = [dict(zip(["id", "parent", "label_en", "label_sv", "pattern"], t)) for t in con.sql(
+        """select term_id, parent, label_en, label_sv, pattern from seeds.ad_language_subterms
+           order by sort_order""").fetchall()]
+    for t in subterms:
+        t["rows"] = [row(r, r[10]) for r in measures if r[0] == t["id"] and r[2] >= MIN_TEXTS]
+    bands = con.sql("""select year, band, sum(texts) from gold.mart_sweden_job_language_bands
+                       where category = 'competence' group by all order by 1, 2""").fetchall()
+    years = sorted({r[1] for r in rows if r[2] >= MIN_TEXTS})
+    manifests = sorted((FEATURES / "sweden/ad_language").glob("manifest_*.json"))
+    coverage = [json.loads(p.read_text()) for p in manifests]
+    full_years = {int(m["archive"]) for m in coverage if m["archive"].isdigit()}
+    end = max(y for y in years if y in full_years)
+    first = next(y for y in years if all(r[9] is not None for r in rows if r[1] == y and r[2] >= MIN_TEXTS))
+    bases = baselines(years, first, end)
     write("trends.json", {
         "columns": ["year", "texts", "texts_matching", "matches", "words", "share",
-                    "share_standardised", "per_1000_words", "per_1000_words_standardised"],
+                    "share_standardised", "per_1000_words", "per_1000_words_standardised",
+                    "share_banded_standardised"],
         "categories": trends,
+        "subterms": subterms,
+        "length_bands": {"cuts": coverage[0].get("bands") if coverage else None,
+                         "columns": ["year", "band", "texts"], "rows": [list(r) for r in bands]},
         "method": {
             "unit": "distinct ad text (headline and description); an ad repeated with the same text counts once",
             "share": "texts using the category / distinct texts",
             "share_standardised": "occupation-field mix fixed at its pooled share over all years",
             "per_1000_words": "matches per thousand words of the distinct texts",
             "per_1000_words_standardised": "the same with the occupation-field mix fixed; the main measure, since ads grew longer",
+            "share_banded_standardised": "share of texts within each length band (cut at the 2010 quartiles of words per distinct text), combined with the 2010 band weights and the fixed occupation-field mix",
+            "agreement": "a change is stable only when share, per 1,000 words and the length-banded share agree in sign",
+            "subterms": "each match of passion or identity is given to the one sub-term that matches it whole, so sub-term matches add up to the parent's",
             "break": "least-squares split of the standardised rate per 1,000 words into two means, at least 3 years per side; exploratory",
         },
     })
+    write("composition.json", composition(con, [c["id"] for c in categories], bases, end))
     for name, column in (("fields.json", "field"), ("regions.json", "region")):
         cells = con.sql(f"""select {column}, category, year, sum(texts), sum(texts_matching)
                             from gold.mart_sweden_job_language
@@ -112,19 +147,17 @@ def main() -> int:
     write("examples.json", {"columns": ["category", "archive", "year", "field", "headline", "matched", "context"],
                             "rows": [list(r) for r in examples if not CONTACT.search(r[6] or "")],
                             "note": "Drawn reproducibly (lowest hash of the ad text); e-mail addresses and phone numbers masked. Source: JobTech historical ads, CC0."})
-    manifests = sorted((FEATURES / "sweden/ad_language").glob("manifest_*.json"))
-    coverage = [json.loads(p.read_text()) for p in manifests]
     dropped = sorted({r[1]: r[2] for r in rows if 0 < r[2] < MIN_TEXTS}.items())
     write("coverage.json", {"years_left_out": [{"year": y, "texts": t} for y, t in dropped],
                             "min_texts": MIN_TEXTS, "archives": [{k: m.get(k) for k in (
         "archive", "source_url", "sha256", "ads", "distinct_texts", "duplicate_ids",
-        "dictionary_sha256", "counted_at", "from")} for m in coverage],
+        "dictionary_sha256", "bands", "counted_at", "from")} for m in coverage],
         "run_id": os.environ.get("GITHUB_RUN_ID"), "code_sha": os.environ.get("GITHUB_SHA")})
     sys.path.insert(0, str(ROOT / "platform/publish/symbolic"))
     import export_symbolic
 
-    export_symbolic.register([OUT / n for n in ("trends.json", "fields.json", "regions.json",
-                                                "examples.json", "coverage.json")])
+    export_symbolic.register([OUT / n for n in ("trends.json", "composition.json", "fields.json",
+                                                "regions.json", "examples.json", "coverage.json")])
     print(f"SWEDEN language: {len(coverage)} archives, {len(rows)} year × category rows -> "
           f"{OUT.relative_to(ROOT)}")
     return 0

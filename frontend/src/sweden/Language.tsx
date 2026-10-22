@@ -8,14 +8,33 @@
  * Every number is computed from the files. Advertisement language is evidence about how
  * employers write ads, not about what workers are like or how they feel.
  */
-import { Suspense, lazy, useEffect, useMemo, useState } from 'react'
+import { Suspense, lazy, useEffect, useState } from 'react'
 import { l } from '../i18n'
 import { fetchJson } from '../dataSource'
-import MultiLineChart from '../charts/MultiLineChart'
-import RankBars from '../charts/RankBars'
 import { setHashParams, type Route } from '../router'
 import { productById } from './products'
-import { agreed, baselines, lastComplete, type Verdict } from './languageChange'
+import {
+  agreed,
+  baselines,
+  lastComplete,
+  leaveOneOut,
+  type Verdict,
+} from './languageChange'
+import {
+  MEASURES,
+  MeasureAgreement,
+  changeIn,
+  stability,
+  type Sub,
+} from './LanguageMeasures'
+import Explore, {
+  BASE,
+  name,
+  num,
+  pct,
+  type Category,
+  type Row,
+} from './LanguageExplore'
 import {
   EmptyState,
   ProductEmpty,
@@ -27,37 +46,11 @@ import {
   type Reading,
 } from './template'
 
-/** year, texts, matching, matches, words, share, share mix fixed, per 1,000 words, per 1,000
- * words mix fixed; the mix-fixed values are null where a year records no occupations. */
-type Row = [
-  number,
-  number,
-  number,
-  number,
-  number,
-  number,
-  number | null,
-  number,
-  number | null,
-]
-type Category = {
-  id: string
-  family: 'skill' | 'personal'
-  label_en: string
-  label_sv: string
-  description_en: string
-  pattern: string
-  rows: Row[]
-  break: {
-    first_year_after: number
-    mean_before: number
-    mean_after: number
-    variance_explained: number
-  } | null
+type Trends = {
+  categories: Category[]
+  subterms?: Sub[]
+  length_bands?: { cuts: number[] | null }
 }
-type Trends = { categories: Category[] }
-type Cells = { rows: [string, string, number, number, number][] }
-type Examples = { rows: string[][] }
 type Coverage = {
   archives: {
     archive: string
@@ -71,9 +64,8 @@ type Coverage = {
   run_id: string | null
   code_sha: string | null
 }
-type Measure = 'rate' | 'words' | 'standardised' | 'crude'
+type Measure = 'rate' | 'words' | 'standardised' | 'banded' | 'crude'
 
-const BASE = 'sweden/language/'
 const MEASURE: Record<Measure, [string, string, number]> = {
   rate: [
     'Matches per 1,000 words, occupation mix fixed',
@@ -85,12 +77,14 @@ const MEASURE: Record<Measure, [string, string, number]> = {
     'Andel annonser, fast yrkesmix',
     6,
   ],
+  banded: [
+    'Share of ads at 2010 lengths, occupation mix fixed',
+    'Andel annonser vid 2010 års längder, fast yrkesmix',
+    9,
+  ],
   crude: ['Share of ads, as published', 'Andel annonser, som publicerat', 5],
   words: ['Matches per 1,000 words', 'Träffar per 1 000 ord', 7],
 }
-const pct = (v: number) => `${(v * 100).toFixed(1)} %`
-const num = (n: number) => n.toLocaleString(l('en-GB', 'sv-SE'))
-const name = (c: Category) => l(c.label_en, c.label_sv)
 const value = (r: Row, m: Measure) => r[MEASURE[m][2]] as number | null
 const isRate = (m: Measure) => m === 'rate' || m === 'words'
 const show = (v: number, m: Measure) => (isRate(m) ? v.toFixed(2) : pct(v))
@@ -246,13 +240,28 @@ export default function Language({ route }: { route: Route }) {
       onShow: () => set({ kategori: top.id, matt: null }),
     })
   }
+  // As a share of ads (mix fixed) from the same baseline: the other side of the per-word fall.
+  const shareRose = cats.filter(
+    (c) => (changeIn(c.rows, from, end, 6) ?? 0) > 0,
+  ).length
+  const asShare =
+    shareRose === cats.length
+      ? l(
+          ` As a share of ads, every category rose; ads grew from ${Math.round(words(from))} to ${Math.round(words(end))} words.`,
+          ` Som andel av annonserna ökade varje kategori; annonserna växte från ${Math.round(words(from))} till ${Math.round(words(end))} ord.`,
+        )
+      : l(
+          ` As a share of ads, ${shareRose} of ${cats.length} categories rose; ads grew from ${Math.round(words(from))} to ${Math.round(words(end))} words.`,
+          ` Som andel av annonserna ökade ${shareRose} av ${cats.length} kategorier; annonserna växte från ${Math.round(words(from))} till ${Math.round(words(end))} ord.`,
+        )
   if (falling.length || (competence && change(competence) < 0))
     findings.push({
       key: 'fall',
-      statement: l(
-        `Per word, some expectations became rarer: ${[...falling, ...(competence && change(competence) < 0 ? [competence] : [])].map(name).join(', ')}.`,
-        `Per ord blev vissa förväntningar ovanligare: ${[...falling, ...(competence && change(competence) < 0 ? [competence] : [])].map(name).join(', ')}.`,
-      ),
+      statement:
+        l(
+          `Per word, some expectations became rarer: ${[...falling, ...(competence && change(competence) < 0 ? [competence] : [])].map(name).join(', ')}.`,
+          `Per ord blev vissa förväntningar ovanligare: ${[...falling, ...(competence && change(competence) < 0 ? [competence] : [])].map(name).join(', ')}.`,
+        ) + asShare,
       values: (
         <ul>
           {[
@@ -273,6 +282,38 @@ export default function Language({ route }: { route: Route }) {
       ),
       onShow: () =>
         set({ kategori: (falling[0] ?? competence)!.id, matt: null }),
+    })
+  const bases = baselines(years, from, end)
+  const relOr = (v: number | null) => (v == null ? '–' : rel(v))
+  const stable = cats.filter((c) => stability(c.rows, bases, end) !== 'mixed')
+  if (bases.length && cats.some((c) => c.rows.some((r) => r[9] != null)))
+    findings.push({
+      key: 'measures',
+      statement: l(
+        `${stable.length} of ${cats.length} categories move the same way as a share of ads, per 1,000 words and at equal length, from every starting year (${bases.join(', ')}); for the rest the direction depends on the measure.`,
+        `${stable.length} av ${cats.length} kategorier rör sig åt samma håll som andel annonser, per 1 000 ord och vid samma längd, från varje startår (${bases.join(', ')}); för resten beror riktningen på måttet.`,
+      ),
+      values: (
+        <ul>
+          {cats
+            .filter((c) => !stable.includes(c))
+            .map((c) => (
+              <li key={c.id}>
+                {name(c)} {from}–{end}:{' '}
+                {MEASURES.map(
+                  ([i, en, sv]) =>
+                    `${l(en, sv).toLowerCase()} ${relOr(changeIn(c.rows, from, end, i))}`,
+                ).join(', ')}
+              </li>
+            ))}
+        </ul>
+      ),
+      evidence: 'descriptive',
+      source: l(
+        'Distinct texts, occupation mix fixed; length bands cut at the 2010 quartiles of words per text',
+        'Unika texter, fast yrkesmix; längdband skurna vid 2010 års kvartiler av ord per text',
+      ),
+      onShow: () => set({ matt: 'banded' }),
     })
 
   const scene = (
@@ -425,6 +466,7 @@ export default function Language({ route }: { route: Route }) {
     </Scene>
   )
 
+  const cuts = trends.length_bands?.cuts ?? null
   const method: Method = {
     question: <p>{l(product.question.en, product.question.sv)}</p>,
     theory: (
@@ -489,6 +531,32 @@ export default function Language({ route }: { route: Route }) {
             'Där minst sex år finns visas den enda minsta-kvadrat-brytpunkten i varje standardiserad serie som explorativ.',
           )}
         </li>
+        {cuts && (
+          <li>
+            {l(
+              `Sort each text into four length bands cut at the 2010 quartiles of words per text (${cuts.join(', ')} words), and combine the share within each band with the 2010 band weights. A change counts as stable only when the share of ads, the rate per thousand words and this share agree in sign from every starting year.`,
+              `Sortera varje text i fyra längdband skurna vid 2010 års kvartiler av ord per text (${cuts.join(', ')} ord), och väg ihop andelen inom varje band med 2010 års bandvikter. En förändring räknas som stabil bara när andelen annonser, frekvensen per tusen ord och denna andel har samma tecken från varje startår.`,
+            )}
+          </li>
+        )}
+        <li>
+          {l(
+            'Split passion into engage* words and the rest, and identity into the recruitment formulas ("personlig lämplighet", "personliga egenskaper") and the rest. Each match goes to exactly one part.',
+            'Dela passion i engage*-ord och resten, och identitet i rekryteringsformlerna ("personlig lämplighet", "personliga egenskaper") och resten. Varje träff hamnar i exakt en del.',
+          )}
+        </li>
+        <li>
+          {l(
+            'Split each change into a part within groups and a part from the groups’ mix (shift-share), by occupation field, SSYK-4 occupation group and employer type. Staffing and recruitment agencies are read from the employer name.',
+            'Dela varje förändring i en del inom grupper och en del från gruppernas mix (shift-share), efter yrkesområde, SSYK-4-yrkesgrupp och arbetsgivartyp. Bemannings- och rekryteringsföretag läses ur arbetsgivarnamnet.',
+          )}
+        </li>
+        <li>
+          {l(
+            'Draw a seeded sample of matches (17 per category from 2006–2012 and from 2019–2025) for two readers to code. Until it is coded, how often a pattern matches the wrong sense is not known.',
+            'Dra ett seedat urval av träffar (17 per kategori från 2006–2012 och från 2019–2025) för två läsare att koda. Tills det är kodat är det okänt hur ofta ett mönster träffar fel betydelse.',
+          )}
+        </li>
       </ol>
     ),
     results: (
@@ -515,8 +583,8 @@ export default function Language({ route }: { route: Route }) {
         </li>
         <li>
           {l(
-            'Who advertises on Platsbanken: the mix of employers and occupations publishing there has changed since 2006; standardisation holds the occupation-field mix, not the employer mix.',
-            'Vilka som annonserar på Platsbanken: mixen av arbetsgivare och yrken som publicerar där har förändrats sedan 2006; standardiseringen håller yrkesområdesmixen, inte arbetsgivarmixen.',
+            'Who advertises on Platsbanken: the mix of employers and occupations publishing there has changed since 2006; standardisation holds the occupation-field mix, and Explore splits each change by SSYK-4 group and employer type.',
+            'Vilka som annonserar på Platsbanken: mixen av arbetsgivare och yrken som publicerar där har förändrats sedan 2006; standardiseringen håller yrkesområdesmixen, och Utforska delar varje förändring efter SSYK-4-grupp och arbetsgivartyp.',
           )}
         </li>
       </ul>
@@ -599,15 +667,31 @@ export default function Language({ route }: { route: Route }) {
     ),
   }
 
-  // Each reading is checked from every baseline year; its verdict needs them all to agree.
-  const bases = baselines(years, from, end)
-  const meanFrom = (base: number) =>
-    personal.reduce((s, c) => s + change(c, base), 0) /
-    Math.max(1, personal.length)
-  const means = bases.map(meanFrom)
-  const skills = bases.map((b) => (competence ? change(competence, b) : 0))
-  const meanChange = meanFrom(from)
-  const skillChange = competence ? change(competence) : 0
+  // Each reading is checked from every baseline year and in every measure (share of ads, per
+  // 1,000 words, share at equal length); its verdict needs them all to agree.
+  const meanIn = (base: number, index: number) => {
+    const v = personal.map((c) => changeIn(c.rows, base, end, index))
+    return v.some((x) => x == null)
+      ? null
+      : (v as number[]).reduce((s, x) => s + x, 0) / Math.max(1, v.length)
+  }
+  const skillIn = (base: number, index: number) =>
+    competence ? changeIn(competence.rows, base, end, index) : null
+  const everywhere = (
+    f: (base: number, index: number) => number | null,
+    rule: (v: number) => Verdict,
+  ): Verdict => {
+    const v = bases.flatMap((b) => MEASURES.map(([i]) => f(b, i)))
+    return years.length < 2 || v.some((x) => x == null)
+      ? 'undetermined'
+      : agreed(v.map((x) => rule(x!)))
+  }
+  const means = bases.map((b) => meanIn(b, 8) ?? 0)
+  const meanChange = meanIn(from, 8) ?? 0
+  // Claim 11: how far a single category moves the per-word mean.
+  const personalChanges = personal.map((c) => change(c))
+  const loo = leaveOneOut(personalChanges)
+  const passionAt = personal.findIndex((c) => c.id === 'passion')
   const span = (v: number[]) =>
     `${rel(Math.min(...v))} ${l('to', 'till')} ${rel(Math.max(...v))}`
   const range = (v: number[]) =>
@@ -628,13 +712,19 @@ export default function Language({ route }: { route: Route }) {
         'Ads ask increasingly for passion, drive and self-realisation, and present work as identity.',
         'Annonser efterfrågar alltmer passion, driv och självförverkligande och framställer arbete som identitet.',
       ),
-      verdict:
-        years.length < 2 ? 'undetermined' : agreed(means.map(achievement)),
+      verdict: everywhere(meanIn, achievement),
       why:
         l(
-          `Per thousand words, the personal categories changed by ${rel(meanChange)} on average between ${from} and ${end} (occupation mix fixed; a change within ±10 % is read as no change).`,
-          `Per tusen ord förändrades de personliga kategorierna med ${rel(meanChange)} i genomsnitt mellan ${from} och ${end} (fast yrkesmix; en förändring inom ±10 % läses som ingen förändring).`,
-        ) + range(means),
+          `Per thousand words, the personal categories changed by ${rel(meanChange)} on average between ${from} and ${end} (occupation mix fixed). This page reads a mean change within ±10 % as no change; that is a convention, not a test. As a share of ads the mean is ${relOr(meanIn(from, 6))}, at equal length ${relOr(meanIn(from, 9))}.`,
+          `Per tusen ord förändrades de personliga kategorierna med ${rel(meanChange)} i genomsnitt mellan ${from} och ${end} (fast yrkesmix). Sidan läser en genomsnittlig förändring inom ±10 % som ingen förändring; det är en konvention, inte ett test. Som andel av annonserna är medelvärdet ${relOr(meanIn(from, 6))}, vid samma längd ${relOr(meanIn(from, 9))}.`,
+        ) +
+        range(means) +
+        (loo.length
+          ? l(
+              ` Leaving one category out, the per-word mean runs from ${span(loo)}${passionAt >= 0 ? `; without passion it is ${rel(loo[passionAt])}` : ''}.`,
+              ` Utan en kategori i taget ligger medelvärdet per ord mellan ${span(loo)}${passionAt >= 0 ? `; utan passion är det ${rel(loo[passionAt])}` : ''}.`,
+            )
+          : ''),
       limits: l(
         'A change in wording is not a change in the self; templates and ad length are competing explanations.',
         'En ändring i ordval är inte en ändring i jaget; mallar och annonslängd är konkurrerande förklaringar.',
@@ -646,13 +736,11 @@ export default function Language({ route }: { route: Route }) {
         'Stated qualifications keep their weight or grow as work becomes more specialised.',
         'Uttalade kvalifikationer behåller sin vikt eller växer när arbetet blir mer specialiserat.',
       ),
-      verdict:
-        years.length < 2 ? 'undetermined' : agreed(skills.map(skillsFirst)),
-      why:
-        l(
-          `Per thousand words, stated qualifications changed by ${rel(skillChange)} between ${from} and ${end}.`,
-          `Per tusen ord förändrades uttalade kvalifikationer med ${rel(skillChange)} mellan ${from} och ${end}.`,
-        ) + range(skills),
+      verdict: everywhere(skillIn, skillsFirst),
+      why: l(
+        `Between ${from} and ${end}, stated qualifications changed by ${relOr(skillIn(from, 6))} as a share of ads, ${relOr(skillIn(from, 8))} per thousand words and ${relOr(skillIn(from, 9))} at equal length (occupation mix fixed). The verdict stands only if every measure and every starting year (${bases.join(', ')}) gives it.`,
+        `Mellan ${from} och ${end} förändrades uttalade kvalifikationer med ${relOr(skillIn(from, 6))} som andel av annonserna, ${relOr(skillIn(from, 8))} per tusen ord och ${relOr(skillIn(from, 9))} vid samma längd (fast yrkesmix). Utslaget gäller bara om varje mått och varje startår (${bases.join(', ')}) ger det.`,
+      ),
       limits: l(
         'The competence pattern counts the mention of a qualification, not how demanding it is.',
         'Kompetensmönstret räknar att en kvalifikation nämns, inte hur krävande den är.',
@@ -683,6 +771,16 @@ export default function Language({ route }: { route: Route }) {
       findings={findings}
       explore={
         <Explore
+          agreement={
+            bases.length > 0 && (
+              <MeasureAgreement
+                cats={cats}
+                subs={trends.subterms ?? []}
+                bases={bases}
+                end={end}
+              />
+            )
+          }
           cats={cats}
           years={years}
           picked={picked}
@@ -792,220 +890,5 @@ function LanguageMatrix({
         ))}
       </table>
     </div>
-  )
-}
-
-function Explore({
-  cats,
-  years,
-  picked,
-  onPick,
-}: {
-  cats: Category[]
-  years: number[]
-  picked: string | null
-  onPick: (category: string) => void
-}) {
-  const [fields, setFields] = useState<Cells | null>(null)
-  const [regions, setRegions] = useState<Cells | null>(null)
-  const [examples, setExamples] = useState<Examples | null>(null)
-  const [by, setBy] = useState<'field' | 'region'>('field')
-  const category = picked ?? cats[1]?.id ?? cats[0].id
-  const last = years[years.length - 1]
-  const [year, setYear] = useState(last)
-  useEffect(() => {
-    fetchJson<Cells>(BASE + 'fields.json').then(setFields, () => {})
-    fetchJson<Cells>(BASE + 'regions.json').then(setRegions, () => {})
-    fetchJson<Examples>(BASE + 'examples.json').then(setExamples, () => {})
-  }, [])
-  const lines = useMemo(() => {
-    const keys = [...new Set([category, ...cats.map((c) => c.id)])].slice(0, 5)
-    return keys.map((k) => {
-      const c = cats.find((x) => x.id === k)!
-      return {
-        key: k,
-        name: name(c),
-        // The mix-fixed rate exists from the first year that records occupations.
-        points: c.rows
-          .filter((r) => r[8] != null)
-          .map((r, i, rows) => ({
-            date: `${r[0]}-01-01`,
-            label: String(r[0]),
-            value: r[8]!,
-            // A gap of more than a year is a break in the line, never an interpolation.
-            breakBefore: i > 0 && r[0] - rows[i - 1][0] > 1,
-          })),
-      }
-    })
-  }, [cats, category])
-  const cells = by === 'field' ? fields : regions
-  const ranked = (cells?.rows ?? [])
-    .filter((r) => r[1] === category && r[2] === year)
-    .map((r) => ({
-      key: r[0],
-      label: r[0],
-      value: r[4] / r[3],
-      note: `${num(r[4])} / ${num(r[3])}`,
-    }))
-    .sort((a, b) => b.value - a.value)
-  const cat = cats.find((c) => c.id === category)!
-  return (
-    <>
-      <div className="sw-controls">
-        <label>
-          {l('Category', 'Kategori')}
-          <select value={category} onChange={(e) => onPick(e.target.value)}>
-            {cats.map((c) => (
-              <option key={c.id} value={c.id}>
-                {name(c)}
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
-      <h3>
-        {l(
-          'Matches per 1,000 words, occupation mix fixed',
-          'Träffar per 1 000 ord, fast yrkesmix',
-        )}
-      </h3>
-      <MultiLineChart
-        series={lines}
-        label={l(
-          'Standardised rate per year',
-          'Standardiserad frekvens per år',
-        )}
-        format={(v) => v.toFixed(2)}
-        colorOf={(k) => lines.findIndex((s) => s.key === k) + 1}
-        yFrom={0}
-      />
-      <div className="sw-table-wrap">
-        <table className="sw-table">
-          <caption>
-            {l('Every category and year', 'Varje kategori och år')}
-          </caption>
-          <thead>
-            <tr>
-              <th scope="col">{l('Category', 'Kategori')}</th>
-              <th scope="col" className="sw-n">
-                {l('Year', 'År')}
-              </th>
-              <th scope="col" className="sw-n">
-                {l('Distinct texts', 'Unika texter')}
-              </th>
-              <th scope="col" className="sw-n">
-                {l('Using it', 'Använder den')}
-              </th>
-              <th scope="col" className="sw-n">
-                {l('Share', 'Andel')}
-              </th>
-              <th scope="col" className="sw-n">
-                {l('Standardised', 'Standardiserad')}
-              </th>
-              <th scope="col" className="sw-n">
-                {l('Per 1,000 words', 'Per 1 000 ord')}
-              </th>
-              <th scope="col" className="sw-n">
-                {l('Per 1,000 words, mix fixed', 'Per 1 000 ord, fast mix')}
-              </th>
-              <th scope="col" className="sw-n">
-                {l('Words per text', 'Ord per text')}
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {cats.flatMap((c) =>
-              c.rows.map((r) => (
-                <tr key={c.id + r[0]}>
-                  <th scope="row">{name(c)}</th>
-                  <td className="sw-n">{r[0]}</td>
-                  <td className="sw-n">{num(r[1])}</td>
-                  <td className="sw-n">{num(r[2])}</td>
-                  <td className="sw-n">{pct(r[5])}</td>
-                  <td className="sw-n">{r[6] == null ? '–' : pct(r[6])}</td>
-                  <td className="sw-n">{r[7].toFixed(2)}</td>
-                  <td className="sw-n">
-                    {r[8] == null ? '–' : r[8].toFixed(2)}
-                  </td>
-                  <td className="sw-n">{Math.round(r[4] / r[1])}</td>
-                </tr>
-              )),
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      <h3>{l('By occupation field or county', 'Per yrkesområde eller län')}</h3>
-      <div className="sw-controls">
-        <label>
-          {l('Compare', 'Jämför')}
-          <select
-            value={by}
-            onChange={(e) => setBy(e.target.value as 'field' | 'region')}
-          >
-            <option value="field">
-              {l('Occupation fields', 'Yrkesområden')}
-            </option>
-            <option value="region">{l('Counties', 'Län')}</option>
-          </select>
-        </label>
-        <label>
-          {l('Year', 'År')}
-          <select
-            value={year}
-            onChange={(e) => setYear(Number(e.target.value))}
-          >
-            {years.map((y) => (
-              <option key={y} value={y}>
-                {y}
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
-      {ranked.length ? (
-        <RankBars
-          rows={ranked}
-          format={pct}
-          max={1}
-          label={l(
-            `${name(cat)} by ${by}`,
-            `${name(cat)} per ${by === 'field' ? 'yrkesområde' : 'län'}`,
-          )}
-        />
-      ) : (
-        <p className="sw-note">{l('Loading…', 'Laddar…')}</p>
-      )}
-      <p className="sw-note">
-        {l(
-          'Crude shares; cells with fewer than 30 distinct texts are left out.',
-          'Råa andelar; celler med färre än 30 unika texter är utelämnade.',
-        )}
-      </p>
-
-      <h3>{l('The pattern and examples', 'Mönstret och exempel')}</h3>
-      <p className="sw-note">{cat.description_en}</p>
-      <pre className="sw-mono sw-pattern">{cat.pattern}</pre>
-      {examples && (
-        <ul className="sw-examples">
-          {examples.rows
-            .filter((r) => r[0] === category)
-            .map((r, i) => (
-              <li key={i}>
-                <span className="sw-mono">
-                  {r[1]} · {r[3]}
-                </span>{' '}
-                <q>{r[6]}</q>
-              </li>
-            ))}
-        </ul>
-      )}
-      <p className="sw-note">
-        {l(
-          'Drawn reproducibly by the lowest hash of the ad text; e-mail addresses and phone numbers masked.',
-          'Dragna reproducerbart med lägsta hash av annonstexten; e-postadresser och telefonnummer maskerade.',
-        )}
-      </p>
-    </>
   )
 }
