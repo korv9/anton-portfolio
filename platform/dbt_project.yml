@@ -20,6 +20,8 @@ models:
     bronze:
       +materialized: view
       +schema: bronze
+      cross_domain:
+        +tags: [ai_act_diffusion]
       philosophy:
         +tags: [philosophy]
       job_ai_governance:
@@ -147,6 +149,10 @@ seeds:
       +schema: seeds
       ai_governance_series:
         +column_types: {sort_order: integer}
+      ai_act_terms:
+        +column_types: {act_count: integer, act_articles: integer, sfs_count: integer, z: double, en_cosine: double}
+      ai_act_term_precision:
+        +column_types: {matched: integer, sampled: integer, on_topic: integer, precision: double}
     concepts:
       +tags: [concepts]
       +schema: seeds

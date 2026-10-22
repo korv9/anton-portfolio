@@ -37,5 +37,8 @@
     "gold/marts/jobs.json",
     "parliament/workspace/*",
     "sweden/*"
-  ]
+  ],
+  "schemas": {
+    "ai-act/diffusion.json": "configs/delivery/schemas/ai-act-diffusion.json"
+  }
 }
