@@ -30,3 +30,12 @@ sources:
         meta:
           external_location: >-
             read_parquet('{{ env_var('PORTFOLIO_FEATURES', '../warehouse/features') }}/sweden/futures_theses/*.parquet', union_by_name = true)
+      - name: theses_detail
+        description: >-
+          DiVA student-thesis records from record month 2019-01, per harvested month: OAI setSpecs
+          (institution, HSV subject area), dc:type values, words and the future marker's matches per
+          alternative; a null year marks a deleted record or one without a Swedish abstract. Written
+          by platform/ingest/diva/futures_theses_detail.py.
+        meta:
+          external_location: >-
+            read_parquet('{{ env_var('PORTFOLIO_FEATURES', '../warehouse/features') }}/sweden/futures_theses_detail/*.parquet', union_by_name = true)

@@ -11,7 +11,8 @@ Writes frontend/public/data/sweden/futures/:
   the published years); per theme a linear trend plus one level shift, reported only when the shift
   beats an AR(1)-around-trend null after Holm's correction over the nine themes; and the yearly
   counts of the security and culture sub-terms (seeds/sweden_futures/future_subterms.csv). Under
-  `academic`, the same shares for Swedish DiVA thesis abstracts, once every month is harvested.
+  `academic`, the same shares for Swedish DiVA thesis abstracts, once every month is harvested,
+  and under `academic.jump` the 2024-25 rise taken apart (export_futures_theses.py).
 - `parties.json`: the same share per party and year (cells with at least 50 future-oriented
   speeches).
 - `examples.json`: per theme and session, three future-oriented speeches with date, party,
@@ -40,6 +41,7 @@ FEATURES = Path(os.environ.get("PORTFOLIO_FEATURES", ROOT / "warehouse/features"
 OUT = ROOT / "frontend/public/data/sweden/futures"
 sys.path.insert(0, str(ROOT / "platform/publish/sweden"))
 
+import export_futures_theses  # noqa: E402
 from export_connections import spearman  # noqa: E402
 
 # A calendar year with less than half the median number of speeches is a partial session edge
@@ -187,11 +189,18 @@ def academic(con, themes: list[dict], running: int) -> dict | None:
                         order by theme, year""").fetchall()
     years = sorted({r[1] for r in theses if r[2] >= MIN_THESES and r[1] < running})
     by_year = {r[1]: r for r in theses}  # abstracts and future_share repeat on every theme row
+    detail = FEATURES / "sweden/futures_theses_detail/done.json"
+    jump = None
+    if detail.exists() and json.loads(detail.read_text()).get("complete"):
+        cells = con.sql(f"select {', '.join(export_futures_theses.COLUMNS)} "
+                        "from gold.mart_sweden_future_theses_detail").fetchall()
+        jump = export_futures_theses.jump(cells, [y for y in years if y >= 2019])
     return {
         "corpus": "Swedish-language student-thesis abstracts, DiVA (CC0 metadata)",
         "future_share": [[y, round(by_year[y][3], 5), by_year[y][2]] for y in years],
         "themes": {t["id"]: [[r[1], round(r[4] or 0, 5), round(r[5] or 0, 4)] for r in theses
                              if r[0] == t["id"] and r[1] in years] for t in themes},
+        "jump": jump,
     }
 
 

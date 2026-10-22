@@ -7,6 +7,7 @@ import { l } from '../i18n'
 import { fetchJson } from '../dataSource'
 import MultiLineChart from '../charts/MultiLineChart'
 import RankBars from '../charts/RankBars'
+import FuturesJump, { type Jump } from './FuturesJump'
 import FuturesMeasures from './FuturesMeasures'
 
 /** year, speeches, future speeches, words, future speeches using it, matches, share, per 1,000 words */
@@ -72,14 +73,15 @@ export type Trends = {
     corpus: string
     future_share: [number, number, number][]
     themes: Record<string, [number, number, number][]>
+    jump?: Jump | null
   } | null
 }
 export type Cells = { rows: [string, string, number, number, number][] }
 export type Examples = { rows: string[][] }
 
 export const BASE = 'sweden/futures/'
-// DiVA years whose rise in the future share is not yet explained (an institution or length
-// change does not account for it; the marker's words per abstract are not counted yet).
+// DiVA years whose rise in the future share is marked as not yet explained while the
+// per-word counts (academic.jump) are absent.
 const UNEXPLAINED = [2024, 2025]
 export const pct = (v: number) => `${(v * 100).toFixed(1)} %`
 export const num = (n: number) => n.toLocaleString(l('en-GB', 'sv-SE'))
@@ -258,7 +260,7 @@ export default function Explore({
                 ),
                 points: trends.academic.future_share.map(([y, v, n]) => ({
                   date: `${y}-01-01`,
-                  label: `${y} (${num(n)})${UNEXPLAINED.includes(y) ? l(', rise not yet explained', ', ökningen ännu oförklarad') : ''}`,
+                  label: `${y} (${num(n)})${!trends.academic?.jump && UNEXPLAINED.includes(y) ? l(', rise not yet explained', ', ökningen ännu oförklarad') : ''}`,
                   value: v * 100,
                 })),
               },
@@ -280,15 +282,19 @@ export default function Explore({
             colorOf={(k) => (k === '_future' ? 1 : 2)}
             yFrom={0}
           />
-          {trends.academic.future_share.some(([y]) =>
-            UNEXPLAINED.includes(y),
-          ) && (
-            <p className="sw-note">
-              {l(
-                `The rise in ${UNEXPLAINED.join(' and ')} is not yet explained. Counting which words of the marker the abstracts use needs a new harvest.`,
-                `Ökningen ${UNEXPLAINED.join(' och ')} är ännu inte förklarad. Att räkna vilka av markörens ord sammanfattningarna använder kräver en ny skörd.`,
-              )}
-            </p>
+          {trends.academic.jump ? (
+            <FuturesJump jump={trends.academic.jump} />
+          ) : (
+            trends.academic.future_share.some(([y]) =>
+              UNEXPLAINED.includes(y),
+            ) && (
+              <p className="sw-note">
+                {l(
+                  `The rise in ${UNEXPLAINED.join(' and ')} is not yet explained. Counting which words of the marker the abstracts use needs a new harvest.`,
+                  `Ökningen ${UNEXPLAINED.join(' och ')} är ännu inte förklarad. Att räkna vilka av markörens ord sammanfattningarna använder kräver en ny skörd.`,
+                )}
+              </p>
+            )
           )}
         </>
       )}

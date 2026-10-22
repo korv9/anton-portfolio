@@ -7,3 +7,13 @@ models:
       - unique_combination:
           arguments:
             columns: [id, theme]
+  - name: int_sweden_future_theses_detail_latest
+    description: DiVA thesis records from 2019-01 at their latest harvested month, with degree level and HSV area.
+    columns:
+      - name: id
+        data_tests: [not_null, unique]
+      - name: level
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [master, bachelor, other]
