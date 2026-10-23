@@ -1,5 +1,5 @@
 /** Taxes close to home: municipal rates, church fees, household VAT and the tax wedge. */
-import { Frame, color, useData, type Post } from '../kit'
+import { Frame, color, tile, useData, type Post } from '../kit'
 import { Kpi, Svg, XTicks, extent, fmt, groupBy, scale } from './wel-kit'
 
 type Municipalities = {
@@ -71,12 +71,7 @@ function RateKpis() {
               r[r.length - 1],
               r[r.length - 1] - r[0],
             ].map((v, i) => (
-              <div
-                key={i}
-                style={{
-                  background: `color-mix(in srgb, ${color(i + 1)} 45%, var(--paper))`,
-                }}
-              >
+              <div key={i} style={tile(color(i + 1))}>
                 <Kpi value={fmt(v, 2)} unit="%" />
               </div>
             ))}

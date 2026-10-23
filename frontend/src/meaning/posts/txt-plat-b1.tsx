@@ -61,6 +61,7 @@ function SfsStream() {
           <>
             <Slicer
               label="Layout"
+              cycles={false}
               options={MODES}
               value={mode}
               onChange={setMode}

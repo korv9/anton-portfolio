@@ -44,13 +44,6 @@ export function yearTicks(dates: string[]) {
   return ticks
 }
 
-/** First and last year of a series of ISO dates, for titles and accessible names. */
-export function yearSpan(dates: string[]) {
-  if (!dates.length) return null
-  const years = dates.map((date) => date.slice(0, 4)).sort()
-  return { first: years[0], last: years.at(-1)! }
-}
-
 /** Explicit missing observations break both the line and any uncertainty band. */
 export function splitOnBreak<T extends { breakBefore?: boolean }>(
   points: T[],

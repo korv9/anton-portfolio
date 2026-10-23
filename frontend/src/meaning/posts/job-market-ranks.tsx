@@ -1,6 +1,6 @@
 /** Jobs: occupations and fields, from market.json's yearly occupation and monthly field counts. */
 import { useState } from 'react'
-import { color, Frame, Slicer, useData, type Post } from '../kit'
+import { focal, Frame, Slicer, useData, type Post } from '../kit'
 import { linearScale } from '../../charts/scales'
 import {
   compact,
@@ -55,7 +55,9 @@ function FieldBump() {
               h={H}
               label="Bump chart of field rank by ads, same months each year"
             >
-              {shown.map((id, k) => {
+              {/* The leader draws last, on top of the grey field. */}
+              {[...shown].reverse().map((id) => {
+                const k = shown.indexOf(id)
                 const pts = ranks.map(
                   (r, i) =>
                     [x(i), y(Math.min(r.indexOf(id), n - 1))] as [
@@ -72,7 +74,7 @@ function FieldBump() {
                     <path
                       d={linePath(pts)}
                       fill="none"
-                      stroke={color(k)}
+                      stroke={focal(k === 0)}
                       strokeWidth={6}
                       strokeLinejoin="round"
                       strokeLinecap="round"
@@ -83,11 +85,25 @@ function FieldBump() {
                         cx={px}
                         cy={py}
                         r={8}
-                        fill={color(k)}
+                        fill={focal(k === 0)}
                         stroke="var(--paper)"
                         strokeWidth={2}
                       />
                     ))}
+                    {k < 3 && (
+                      <text
+                        x={pts.at(-1)![0] - 12}
+                        y={pts.at(-1)![1] - 13}
+                        textAnchor="end"
+                        fontSize={15}
+                        fontWeight={k === 0 ? 700 : 500}
+                        stroke="var(--paper)"
+                        strokeWidth={4}
+                        paintOrder="stroke"
+                      >
+                        {name}
+                      </text>
+                    )}
                   </g>
                 )
               })}
@@ -97,10 +113,14 @@ function FieldBump() {
               />
             </Svg>
             <Legend
-              items={shown.map((id, k) => [
-                fieldName(m.fields.find((f) => f.id === id)?.name ?? id),
-                color(k),
-              ])}
+              items={[
+                [
+                  fieldName(
+                    m.fields.find((f) => f.id === shown[0])?.name ?? '',
+                  ),
+                  focal(true),
+                ],
+              ]}
             />
           </>
         )
@@ -115,10 +135,23 @@ function FieldRadial() {
   return (
     <Frame data={data}>
       {(m) => {
-        const rows = ytdByField(m, year)
+        // The latest year's top 14 keep their rings in every year and share one scale, so a
+        // year step shows change instead of a re-sort.
+        const order = ytdByField(m, m.latest_year)
           .sort((a, b) => b.ads - a.ads)
           .slice(0, 14)
-        const max = Math.max(1, ...rows.map((r) => r.ads))
+          .map((r) => r.id)
+        const byYear = m.years.map((yr) => ytdByField(m, yr))
+        const max = Math.max(
+          1,
+          ...byYear.flatMap((rows) =>
+            rows.filter((r) => order.includes(r.id)).map((r) => r.ads),
+          ),
+        )
+        const now = ytdByField(m, year)
+        const rows = order.map(
+          (id) => now.find((r) => r.id === id) ?? { id, name: id, ads: 0 },
+        )
         const cx = 200,
           cy = 200,
           step = 12
@@ -127,6 +160,9 @@ function FieldRadial() {
             <Slicer
               label="Year"
               options={m.years}
+              format={(yr) =>
+                `${yr}, Jan–${new Date(2000, m.ytd_months - 1).toLocaleString('en', { month: 'short' })}`
+              }
               value={year}
               onChange={setYear}
             />
@@ -150,7 +186,7 @@ function FieldRadial() {
                     <path
                       d={`M${cx},${cy - rad}A${rad},${rad} 0 ${large} 1 ${ex},${ey}`}
                       fill="none"
-                      stroke={color(i)}
+                      stroke={focal(i === 0)}
                       strokeWidth={step - 3}
                       strokeLinecap="round"
                     >
@@ -219,7 +255,7 @@ function FieldChange() {
                   width={Math.abs(x(r.ch) - mid)}
                   height={rowH - 4}
                   rx={3}
-                  fill={r.ch >= 0 ? color(4) : color(1)}
+                  fill={focal(r.ch >= 0)}
                 />
                 <text
                   x={r.ch >= 0 ? mid - 4 : mid + 4}
@@ -229,6 +265,18 @@ function FieldChange() {
                 >
                   {`${r.ch >= 0 ? '+' : ''}${(r.ch * 100).toFixed(0)} %`}
                 </text>
+                {/* The two largest rises and falls are named on the free side of the axis. */}
+                {(j < 2 || j >= rows.length - 2) && (
+                  <text
+                    x={r.ch >= 0 ? mid - 42 : mid + 42}
+                    y={j * rowH + rowH / 2 + 3}
+                    textAnchor={r.ch >= 0 ? 'end' : 'start'}
+                    fontSize={9}
+                    fontWeight={600}
+                  >
+                    {r.name}
+                  </text>
+                )}
               </g>
             ))}
           </Svg>

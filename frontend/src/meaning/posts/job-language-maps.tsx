@@ -46,6 +46,12 @@ const REGIONS = 'sweden/language/regions.json'
 const FIELDS = 'sweden/language/fields.json'
 const COVERAGE = 'sweden/language/coverage.json'
 
+/** Years in the file, less the running calendar year: its ads cover only part of it. */
+const fullYears = (d: Cells) =>
+  [...new Set(d.rows.map((r) => r[2]))]
+    .filter((y) => y < new Date().getFullYear())
+    .sort()
+
 function Parallel() {
   const trends = useData<Trends>(TRENDS)
   const data = useData<Cells>(REGIONS)
@@ -56,7 +62,7 @@ function Parallel() {
         <Frame data={data}>
           {(d) => {
             const cats = t.categories.map((c) => c.id)
-            const years = [...new Set(d.rows.map((r) => r[2]))].sort()
+            const years = fullYears(d)
             const regions = [...new Set(d.rows.map((r) => r[0]))]
             const share = (reg: string, cat: string) => {
               const r = d.rows.find(
@@ -150,7 +156,7 @@ function FieldMatrix() {
           {(d) => {
             const cats = t.categories.map((c) => c.id)
             const fields = [...new Set(d.rows.map((r) => r[0]))].sort()
-            const years = [...new Set(d.rows.map((r) => r[2]))].sort().slice(-6)
+            const years = fullYears(d).slice(-6)
             const L = 150,
               cw = (400 - L) / cats.length,
               rowH = 370 / fields.length

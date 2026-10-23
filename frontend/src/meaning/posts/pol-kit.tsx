@@ -3,7 +3,7 @@
  * and arc geometry. Exports no posts of its own.
  */
 import type { ReactNode } from 'react'
-import { PALETTE, type Post } from '../kit'
+import type { Post } from '../kit'
 import './pol.css'
 
 export const posts: Post[] = []
@@ -11,21 +11,13 @@ export const posts: Post[] = []
 /** Left to right on the usual bloc axis. */
 export const PARTIES = ['V', 'S', 'MP', 'C', 'L', 'KD', 'M', 'SD'] as const
 
-const mix = (a: string, b: string, pct: number) =>
-  `color-mix(in srgb, ${a} ${pct}%, ${b})`
+/** Swedish party colours, muted to the feed's palette (meaning.css sets them per theme): S red,
+ * V a deeper red, M, L and KD in blues, SD yellow, C and MP in greens. */
+const PARTY_COLOR: Record<string, string> = Object.fromEntries(
+  [...PARTIES, 'NYD'].map((p) => [p, `var(--mean-party-${p.toLowerCase()})`]),
+)
+PARTY_COLOR.OTHER = 'var(--line-strong)'
 
-const PARTY_COLOR: Record<string, string> = {
-  V: PALETTE[0],
-  S: PALETTE[1],
-  MP: PALETTE[4],
-  C: mix(PALETTE[4], PALETTE[0], 45),
-  L: PALETTE[2],
-  KD: mix(PALETTE[2], PALETTE[5], 40),
-  M: PALETTE[5],
-  SD: PALETTE[3],
-  NYD: mix(PALETTE[3], PALETTE[5], 50),
-  OTHER: 'var(--line-strong)',
-}
 export const pc = (p: string) => PARTY_COLOR[p] ?? 'var(--line-strong)'
 
 export const sum = (xs: number[]) => xs.reduce((a, b) => a + b, 0)

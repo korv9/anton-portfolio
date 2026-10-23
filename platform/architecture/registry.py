@@ -180,6 +180,8 @@ PUBLISHERS = [
      "outputs": [{"pattern": "philosophy/*.json"}]},
     {"path": "platform/publish/cross_domain/export_ai_governance_timeline.py", "domain": "ai_act",
      "outputs": [{"pattern": "ai-act/signals.json", "inputs": ["mart_ai_governance_timeline"]}]},
+    {"path": "platform/publish/cross_domain/export_ai_act_diffusion.py", "domain": "ai_act",
+     "outputs": [{"pattern": "ai-act/diffusion.json", "inputs": ["mart_ai_act_term_diffusion", "mart_ai_act_timeline"]}]},
     {"path": "platform/publish/quality/export_quality.py", "domain": "shared",
      "outputs": [{"pattern": "quality/*.json", "inputs": ["mart_quality_checks", "mart_analysis_validity"]}]},
     {"path": "platform/publish/concepts/export_concepts.py", "domain": "concepts",

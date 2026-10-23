@@ -18,7 +18,7 @@ type Connections = {
     id: string
     x: { name: string }
     y: { name: string }
-    result: { rho: number; points: [string, number, number][] }
+    result: { rho?: number; points?: [string, number, number][] }
   }[]
 }
 
@@ -48,21 +48,34 @@ type Rate =
   | 'activities_rate'
   | 'service_points_rate'
 
+/** The rates' units, as export_belonging.py writes them. */
+const LIBRARY_RATES: Record<Rate, string> = {
+  active_borrowers_rate: 'Active borrowers per 100 inhabitants',
+  visits_rate: 'Library visits per inhabitant',
+  activities_rate: 'Public activities per 1,000 inhabitants',
+  service_points_rate: 'Service points per 10,000 inhabitants',
+}
+
 function Relations() {
   const data = useData<Connections>('sweden/connections/connections.json')
   const [i, setI] = useState(0)
   return (
     <Frame data={data}>
       {(d) => {
-        const r = d.relationships[i] ?? d.relationships[0]
-        const pts = r.result.points.filter((p) => num(p[1]) && num(p[2]))
+        // Only the relationships tested on municipality points can be drawn as a scatter.
+        const rels = d.relationships.filter((r) => r.result.points?.length)
+        const r = rels[i] ?? rels[0]
+        if (!r) return null
+        const pts = r.result.points!.filter((p) => num(p[1]) && num(p[2]))
         const x = scale(extent(pts.map((p) => p[1])), [20, 380])
         const y = scale(extent(pts.map((p) => p[2])), [370, 20])
         return (
           <>
             <Slicer
               label="Relationship"
-              options={d.relationships.map((_, j) => j)}
+              cycles={false}
+              options={rels.map((_, j) => j)}
+              format={(j) => `${rels[j].x.name} against ${rels[j].y.name}`}
               value={i}
               onChange={setI}
             />
@@ -83,7 +96,7 @@ function Relations() {
                 textAnchor="end"
                 style={{ fontSize: 30, fill: 'var(--ink)' }}
               >
-                ρ {fmt(r.result.rho, 3)}
+                ρ {num(r.result.rho) ? fmt(r.result.rho, 3) : '–'}
               </text>
             </Svg>
             <Legend items={[r.x.name, r.y.name]} />
@@ -156,6 +169,7 @@ function LibraryTrend() {
           <>
             <Slicer
               label="Rate"
+              cycles={false}
               options={
                 [
                   'active_borrowers_rate',
@@ -164,6 +178,7 @@ function LibraryTrend() {
                   'service_points_rate',
                 ] as const
               }
+              format={(k) => LIBRARY_RATES[k]}
               value={m}
               onChange={setM}
             />

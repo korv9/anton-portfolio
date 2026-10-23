@@ -43,6 +43,8 @@
 
 - 2026-10-18 [USER] Authorised committing and pushing workflow-efficiency changes to a branch, then merging to main after required CI passes.
 
+- 2026-10-22 [CODE] Clustering batches 0-2 (`platform/publish/clusters/`, pipeline subject `clusters`, schema `configs/delivery/schemas/clusters/export.json`): one fit script per clustering, run ids in `cluster_lab/clusters/registry.sqlite`, exports in `frontend/public/data/clusters/`. Only status `finding` may be posted. Results and statuses: `docs/cluster-batches.md`.
+
 ## SWEDEN research platform (branch korv9/sweden-research-platform)
 
 - 2026-10-19 [CODE] Phase 1 audit done. #sweden moved: Wellbeing Observatory now #wellbeing*, old #sweden-* tabs redirect. SWEDEN routes in router.ts SWEDEN_PATHS; frontend/src/sweden/ (template, products, hub, A page); docs/sweden-design.md.
@@ -91,3 +93,4 @@
 - NEXT:
   - 3D done for A, B and E (BarField, lazy, ?scen=3d). C stays a 2D morph and D an SVG choropleth; a true 3D morph and travel-time accessibility (needs transport-network data) are open.
   - Remaining B archive years, through the weekly build or `workflow_dispatch` of build-warehouse on main.
+

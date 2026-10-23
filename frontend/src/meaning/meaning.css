@@ -1,4 +1,73 @@
-/* The feed wears the SWEDEN dark theme (.sweden tokens); these rules only lay it out, tightly. */
+/*
+ * The chart feed reads --mean-* properties only. On the meaning page they come from the SWEDEN
+ * dark theme (.sweden tokens); on the home page .mean-light maps them to the home palette.
+ */
+.mean-feed {
+  --mean-bg: var(--sw-bg);
+  --mean-card: var(--sw-solid);
+  --mean-ink: var(--sw-ink);
+  --mean-muted: var(--sw-muted);
+  --mean-line: var(--sw-line);
+  --mean-grid: color-mix(in srgb, var(--sw-ink) 12%, transparent);
+  --mean-accent: var(--sw-accent);
+  --mean-pill: var(--sw-pill);
+  --mean-font: var(--sw-font-mono);
+  --mean-s1: var(--sw-accent);
+  --mean-s2: var(--sw-div-pos);
+  --mean-s3: var(--sw-div-neg);
+  --mean-s4: var(--sw-stamp);
+  --mean-s5: var(--sw-seq-hi);
+  --mean-s6: var(--series-4);
+  --mean-seq-lo: var(--sw-seq-lo);
+  --mean-seq-hi: var(--sw-seq-hi);
+  --mean-other: color-mix(in srgb, var(--sw-ink) 30%, transparent);
+  --mean-party-v: #c06a5c;
+  --mean-party-s: #e0806f;
+  --mean-party-mp: #9cb873;
+  --mean-party-c: #6f9a68;
+  --mean-party-l: #8fb0d4;
+  --mean-party-kd: #6f86b8;
+  --mean-party-m: #7d9fcb;
+  --mean-party-sd: #d9b85a;
+  --mean-party-nyd: #b49a6a;
+  /* Posts separate marks with the card colour and mix tints towards it. */
+  --paper: var(--mean-card);
+  --mean-ease: cubic-bezier(0.3, 0.7, 0.2, 1);
+  --mean-glide: 0.42s;
+}
+/* Home page: paper slips a whisper above the ivory page, olive as the focal series, deeper pastels after it. */
+.mean-light .mean-feed {
+  --mean-bg: var(--page);
+  --mean-card: #fbf9f3;
+  --mean-ink: var(--ink);
+  --mean-muted: var(--muted);
+  --mean-line: var(--line);
+  --mean-grid: rgba(15, 15, 16, 0.09);
+  --mean-accent: var(--cv-olive);
+  --mean-pill: var(--cv-olive);
+  --mean-font: var(--font);
+  --mean-s1: var(--cv-olive);
+  --mean-s2: #4c716b;
+  --mean-s3: #b8704a;
+  --mean-s4: #b0903a;
+  --mean-s5: var(--cv-ground);
+  --mean-s6: #a7777e;
+  --mean-seq-lo: #efeadf;
+  --mean-seq-hi: #3d4232;
+  --mean-other: #8f897d;
+  --mean-party-v: #8c3a33;
+  --mean-party-s: #c0574a;
+  --mean-party-mp: #98b56a;
+  --mean-party-c: #2b5238;
+  --mean-party-l: #6f97c2;
+  --mean-party-kd: #2f4c7c;
+  --mean-party-m: #3f6a9e;
+  --mean-party-sd: #c9a02c;
+  --mean-party-nyd: #8a7a52;
+  --wash: #f3efe6;
+  --line-strong: rgba(15, 15, 16, 0.32);
+}
+
 .mean-page {
   padding: clamp(10px, 1.6vw, 20px);
 }
@@ -10,23 +79,64 @@
   color: var(--sw-ink);
   margin: 0.2em 0 clamp(10px, 1.6vw, 20px);
 }
-.mean-feed {
+/* One grid per subject, so dense packing never pulls a post above its section heading. */
+.mean-section + .mean-section {
+  margin-top: var(--sp-5);
+}
+/* Touch targets reach 44 px where the pointer is a finger. */
+@media (pointer: coarse) {
+  .mean-pause,
+  .mean-close {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+.mean-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 210px), 1fr));
   grid-auto-flow: dense;
-  gap: 6px;
+  gap: 8px;
 }
 .mean-post {
   position: relative;
-  background: var(--sw-solid);
-  border: 1px solid var(--sw-line);
-  border-radius: 8px;
+  background: var(--mean-card);
+  border: 1px solid var(--mean-line);
+  border-radius: var(--radius);
   aspect-ratio: 1;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  color: var(--sw-ink);
-  font-family: var(--sw-font-mono);
+  color: var(--mean-ink);
+  font-family: var(--mean-font);
+  contain: layout paint;
+  transition: border-color 0.2s;
+}
+/* Cards settle in as they enter, each on its own view timeline, so the grid fills in reading
+   order. translate, not transform, so it never fights the open/close view transition. */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .mean-post {
+      animation: mean-card-in linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 35%;
+    }
+    .mean-section-head::after {
+      animation: mean-rule linear both;
+      animation-timeline: view();
+      animation-range: entry 10% entry 70%;
+    }
+  }
+}
+@keyframes mean-card-in {
+  from {
+    opacity: 0;
+    translate: 0 12px;
+  }
+}
+@keyframes mean-rule {
+  from {
+    transform: scaleX(0);
+  }
 }
 .mean-wide {
   grid-column: span 2;
@@ -46,94 +156,134 @@
     aspect-ratio: 1;
   }
 }
-.mean-avatar {
-  position: absolute;
-  top: 6px;
-  left: 6px;
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: conic-gradient(
-    var(--sw-accent),
-    var(--sw-div-pos),
-    var(--sw-stamp),
-    var(--sw-div-neg),
-    var(--sw-accent)
-  );
-  box-shadow: 0 0 0 2px var(--sw-solid) inset;
-}
 .mean-body {
   flex: 1;
   min-height: 0;
-  padding: 24px 8px 8px;
+  padding: 26px 10px 10px;
   display: flex;
   flex-direction: column;
   gap: 4px;
+  /* Big numbers size to the card, not the window. */
+  container-type: inline-size;
 }
 .mean-body svg {
   width: 100%;
   flex: 1;
   min-height: 0;
+  overflow: hidden;
 }
 .mean-body svg text {
-  fill: var(--sw-muted);
-  font-family: var(--sw-font-mono);
+  fill: var(--mean-muted);
+  font-family: var(--mean-font);
 }
+/* One gridline weight across the four families. */
+.mean-body
+  :is(
+    .mean-pol-grid,
+    .mean-txt-grid,
+    .mean-job-axis line,
+    .mean-wel-axis line
+  ) {
+  stroke: var(--mean-grid);
+  stroke-width: 0.6;
+}
+/* Bars, tiles and cells get soft corners unless the post sets its own. */
+.mean-body svg rect:not([rx]) {
+  rx: 1.5px;
+}
+/* A slicer step glides: geometry, colour and opacity ease between states. */
+.mean-body svg :is(rect, circle, ellipse, path, g) {
+  transition:
+    x var(--mean-glide) var(--mean-ease),
+    y var(--mean-glide) var(--mean-ease),
+    width var(--mean-glide) var(--mean-ease),
+    height var(--mean-glide) var(--mean-ease),
+    cx var(--mean-glide) var(--mean-ease),
+    cy var(--mean-glide) var(--mean-ease),
+    r var(--mean-glide) var(--mean-ease),
+    d var(--mean-glide) var(--mean-ease),
+    transform var(--mean-glide) var(--mean-ease),
+    fill var(--mean-glide) var(--mean-ease),
+    stroke var(--mean-glide) var(--mean-ease),
+    opacity var(--mean-glide) var(--mean-ease);
+}
+.mean-post[data-dense] svg * {
+  transition: none;
+}
+.mean-body
+  :is(
+    .mean-job-big,
+    .mean-job-kpis > div,
+    .mean-pol-cell,
+    .mean-txt-kpis > div,
+    .mean-wel-grid > div
+  ) {
+  transition: background-color var(--mean-glide) var(--mean-ease);
+}
+/* Loading: the chart's empty grid, a baseline and three faint gridlines; no shimmer. */
 .mean-wait {
   flex: 1;
-  border-radius: 4px;
-  background: var(--wash);
+  border-bottom: 1px solid var(--mean-line);
+  background:
+    linear-gradient(var(--mean-grid) 0 0) 0 25% / 100% 1px no-repeat,
+    linear-gradient(var(--mean-grid) 0 0) 0 50% / 100% 1px no-repeat,
+    linear-gradient(var(--mean-grid) 0 0) 0 75% / 100% 1px no-repeat;
+}
+.mean-failed {
+  margin: auto 0;
+  color: var(--mean-muted);
+  font: 0.8rem/1.5 var(--font-mono);
+  overflow-wrap: anywhere;
 }
 .mean-slicer {
   display: flex;
   flex-wrap: wrap;
-  gap: 3px;
+  gap: 4px;
 }
 .mean-slicer button {
   font: inherit;
-  font-size: 0.68rem;
-  padding: 1px 6px;
-  border-radius: 999px;
-  border: 1px solid var(--sw-line);
+  font-size: 0.7rem;
+  padding: 2px 8px;
+  border-radius: var(--radius);
+  border: 1px solid var(--mean-line);
   background: transparent;
-  color: var(--sw-muted);
+  color: var(--mean-muted);
   cursor: pointer;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
 }
 .mean-slicer button[aria-checked='true'] {
-  background: var(--sw-pill);
-  color: var(--sw-bg);
-  border-color: var(--sw-pill);
+  background: var(--mean-pill);
+  color: var(--mean-card);
+  border-color: var(--mean-pill);
 }
 .mean-slicer button:focus-visible {
-  outline: 2px solid var(--sw-accent);
+  outline: 2px solid var(--mean-accent);
   outline-offset: 2px;
 }
 .mean-legend {
   display: flex;
   flex-wrap: wrap;
-  gap: 1px 7px;
-  font-size: 0.6rem;
-  line-height: 1.3;
-  color: var(--sw-muted);
+  gap: 2px 8px;
+  font-size: 0.64rem;
+  line-height: 1.35;
+  color: var(--mean-muted);
 }
 .mean-legend i {
   display: inline-block;
-  width: 6px;
-  height: 6px;
-  border-radius: 1px;
-  margin-right: 3px;
+  width: 7px;
+  height: 7px;
+  border-radius: 2px;
+  margin-right: 4px;
 }
 
 /* Thumbnails: the chart alone. Legends and slicers appear when a post is opened. */
 .mean-post:not(.mean-open) :is(.mean-legend, .mean-slicer) {
   display: none;
 }
-.mean-post {
-  contain: layout paint;
-  transition: border-color 0.2s;
-}
-.mean-post:not(.mean-open):hover {
-  border-color: var(--sw-accent);
+.mean-post:not(.mean-open):is(:hover, :focus-within) {
+  border-color: var(--mean-accent);
 }
 .mean-hit {
   position: absolute;
@@ -145,18 +295,18 @@
 }
 .mean-hit:focus-visible,
 .mean-close:focus-visible {
-  outline: 2px solid var(--sw-accent);
+  outline: 2px solid var(--mean-accent);
   outline-offset: -2px;
 }
 .mean-open {
   grid-column: span 3;
   grid-row: span 2;
   aspect-ratio: 3 / 2;
-  border-color: var(--sw-accent);
+  border-color: var(--mean-accent);
   z-index: 3;
 }
 .mean-open .mean-body {
-  padding: 28px 16px 14px;
+  padding: 30px 18px 16px;
   gap: 8px;
 }
 .mean-close {
@@ -169,7 +319,7 @@
   border: 0;
   border-radius: 50%;
   background: var(--wash);
-  color: var(--sw-ink);
+  color: var(--mean-ink);
   font-size: 1.1rem;
   line-height: 1;
   cursor: pointer;
@@ -188,5 +338,9 @@
 @media (prefers-reduced-motion: reduce) {
   ::view-transition-group(*) {
     animation: none;
+  }
+  .mean-body svg *,
+  .mean-body * {
+    transition: none !important;
   }
 }

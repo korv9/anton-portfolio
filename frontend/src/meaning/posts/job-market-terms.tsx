@@ -1,9 +1,10 @@
 /** Jobs: counties and conditions of employment, from market.json's regions and conditions. */
 import { useState } from 'react'
-import { color, Frame, Slicer, useData, type Post } from '../kit'
+import { color, focal, Frame, Slicer, useData, type Post } from '../kit'
 import { linearScale } from '../../charts/scales'
 import { HOURS_EN } from '../../jobs/market'
 import {
+  knownRegion,
   compact,
   D,
   fieldName,
@@ -35,7 +36,8 @@ function ExperienceWaffle() {
           <>
             <Slicer
               label="Year"
-              options={m.years}
+              // 2026 is partial and uses new experience categories, so it is not a step.
+              options={m.years.filter((y) => y < m.latest_year)}
               value={year}
               onChange={setYear}
             />
@@ -138,14 +140,17 @@ function RegionSwarm() {
           m.fields[0].id
         const yr = m.latest_year - 1
         const pts = m.regions
-          .filter((r) => r.region !== 'unknown' && r.ads.all?.[yr])
+          .filter((r) => knownRegion(r) && r.ads.all?.[yr])
           .map((r) => ({
             name: short(r.region),
             s: (r.ads[id]?.[yr] ?? 0) / r.ads.all[yr],
           }))
           .sort((a, b) => a.s - b.s)
-        const max = Math.max(0.01, ...pts.map((p) => p.s))
-        const x = linearScale([0, max], [30, 370])
+        // The domain fits the counties' range, not zero to max: shares bunch in a narrow band,
+        // and a zero-based axis piled them into a tall stack on narrow cards.
+        const min = Math.min(...pts.map((p) => p.s))
+        const max = Math.max(min + 0.001, ...pts.map((p) => p.s))
+        const x = linearScale([min, max], [30, 370])
         const placed: { x: number; y: number }[] = []
         const nodes = pts.map((p) => {
           const px = x(p.s)
@@ -159,6 +164,11 @@ function RegionSwarm() {
           placed.push({ x: px, y: py })
           return { ...p, x: px, y: py }
         })
+        // The view crops to the stack's height, with room for the axis labels below it. The
+        // focal county is named on its left, level with its dot, so the name reads as its own.
+        const top = Math.min(...nodes.map((n) => n.y)) - 14
+        const lead = nodes.at(-1)!
+        const H = Math.max(...nodes.map((n) => n.y)) - top + 44
         return (
           <>
             <Slicer
@@ -169,24 +179,36 @@ function RegionSwarm() {
             />
             <Svg
               w={400}
-              h={340}
+              h={H}
               label="Beeswarm of counties by the field's share of their ads"
             >
               {nodes.map((n, i) => (
                 <circle
                   key={n.name}
                   cx={n.x}
-                  cy={n.y}
+                  cy={n.y - top}
                   r={9}
-                  fill={color(i % 5)}
+                  fill={focal(i === nodes.length - 1)}
                   stroke="var(--paper)"
                 >
                   <title>{`${n.name}: ${pct(n.s, 1)}`}</title>
                 </circle>
               ))}
+              <text
+                x={lead.x - 14}
+                y={lead.y - top + 5}
+                textAnchor="end"
+                fontSize={16}
+                fontWeight={600}
+                stroke="var(--paper)"
+                strokeWidth={3}
+                paintOrder="stroke"
+              >
+                {lead.name}
+              </text>
               <XLabels
-                y={330}
-                items={[0, max / 2, max].map((v) => ({
+                y={H - 10}
+                items={[min, (min + max) / 2, max].map((v) => ({
                   x: x(v),
                   label: pct(v, 1),
                 }))}

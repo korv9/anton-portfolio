@@ -3,7 +3,7 @@
  * ticks, line paths and a squarified treemap. Exports no posts of its own.
  */
 import type { ReactNode } from 'react'
-import { color, type Post } from '../kit'
+import { color, tile, type Post } from '../kit'
 import { FIELD_EN, type Market } from '../../jobs/market'
 import './job.css'
 
@@ -12,6 +12,9 @@ export type { Market }
 
 export const D = 'jobs'
 export const MARKET = 'jobs/market.json'
+/** A county with a name: ads without one sit under 'Okänt län' ('unknown county'). */
+export const knownRegion = (r: { region: string }) =>
+  r.region !== 'unknown' && !r.region.startsWith('Okänt')
 export const CLUSTERS = 'jobs/cluster-summary.json'
 export const PREVIEW = 'jobs/cluster-preview.json'
 export const COMPANIES = 'jobs/company-intelligence.json'
@@ -39,8 +42,8 @@ export function tally(keys: string[]) {
 export function Legend({ items }: { items: [string, string][] }) {
   return (
     <div className="mean-legend">
-      {items.map(([label, c]) => (
-        <span key={label}>
+      {items.map(([label, c], i) => (
+        <span key={`${i}-${label}`}>
           <i style={{ background: c }} />
           {label}
         </span>
@@ -60,7 +63,7 @@ export function Big({
   tone?: number
 }) {
   return (
-    <div className="mean-job-big" style={{ background: color(tone) }}>
+    <div className="mean-job-big" style={tile(color(tone))}>
       <b>{value}</b>
       <span>{unit}</span>
     </div>

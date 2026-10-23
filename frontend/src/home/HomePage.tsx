@@ -16,6 +16,7 @@ import { PROJECTS } from '../projects/projectRegistry'
 import './home.css'
 import { useSlowScroll } from './useSlowScroll'
 import ClusterPreview from './ClusterPreview'
+import HomeFeed from './HomeFeed'
 
 const b = (text: Bilingual) => text.en
 
@@ -222,6 +223,7 @@ function Work() {
           </ul>
         </section>
       </div>
+      <HomeFeed />
     </section>
   )
 }

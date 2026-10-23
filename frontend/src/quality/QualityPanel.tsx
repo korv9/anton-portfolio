@@ -1,18 +1,12 @@
 /**
- * Shared quality and validity components: status marks, a product's compact quality panel, and
- * an analysis's validity panel. Status is always a shape and a word, never colour alone:
+ * Shared quality components: status marks and a product's compact quality panel. Status is
+ * always a shape and a word, never colour alone:
  * ● pass · △ warning · × fail · ○ not measured · – not applicable.
  */
 import { l } from '../i18n'
 import { cellOf, cellText } from './logic'
 import { useQuality } from './data'
-import type {
-  Analysis,
-  QualityCheck,
-  QualityData,
-  QualityStatus,
-  ValidityStatus,
-} from './types'
+import type { QualityData, QualityStatus, ValidityStatus } from './types'
 import './quality.css'
 
 export const STATUS_TEXT: Record<QualityStatus, [string, string]> = {
@@ -73,29 +67,6 @@ export function StatusMark({
     <span className={`q-mark q-mark-${GLYPH[status]}`}>
       <Glyph status={status} /> {l(...text)}
     </span>
-  )
-}
-
-export function QualityLegend() {
-  return (
-    <ul
-      className="q-legend"
-      aria-label={l('Status marks', 'Statusmarkeringar')}
-    >
-      {(
-        [
-          'pass',
-          'warning',
-          'fail',
-          'not_measured',
-          'not_applicable',
-        ] as QualityStatus[]
-      ).map((s) => (
-        <li key={s}>
-          <StatusMark status={s} />
-        </li>
-      ))}
-    </ul>
   )
 }
 
@@ -200,68 +171,4 @@ export function ProductQualityView({
       </div>
     </section>
   )
-}
-
-/** One analysis with its diagnostics: question, construct, proxy, results and interpretation. */
-export function ValidityPanel({ analysis }: { analysis: Analysis }) {
-  return (
-    <article className="q-analysis">
-      <p className="q-kicker">
-        {analysis.kind.replace(/_/g, ' ')},{' '}
-        <StatusMark status={analysis.analysis_status} validity />
-      </p>
-      <h3>
-        {l(analysis.question_en, analysis.question_sv ?? analysis.question_en)}
-      </h3>
-      <dl className="q-validity-brief">
-        <div>
-          <dt>{l('Target construct', 'Avsett begrepp')}</dt>
-          <dd>{analysis.target_construct}</dd>
-        </div>
-        <div>
-          <dt>{l('What is actually measured', 'Vad som faktiskt mäts')}</dt>
-          <dd>{analysis.proxy_measure}</dd>
-        </div>
-      </dl>
-      <ul className="q-diagnostics">
-        {analysis.diagnostics.map((d) => (
-          <li key={d.diagnostic_id}>
-            <span className="q-diag-head">
-              <StatusMark status={d.status} validity />
-              <b>{d.diagnostic}</b>
-              {d.result != null && (
-                <span className="q-value">
-                  {fmt(d.result)}
-                  <span className="q-tag">{l('derived', 'härlett')}</span>
-                </span>
-              )}
-            </span>
-            <span className="q-interp">
-              {d.interpretation}{' '}
-              <span className="q-tag">{l('interpretation', 'tolkning')}</span>
-            </span>
-          </li>
-        ))}
-      </ul>
-      <p className="q-conclusion">
-        {l(
-          analysis.conclusion_en,
-          analysis.conclusion_sv ?? analysis.conclusion_en,
-        )}
-      </p>
-    </article>
-  )
-}
-
-export const fmt = (v: number) =>
-  Math.abs(v) >= 100 || Number.isInteger(v)
-    ? v.toLocaleString(l('en-GB', 'sv-SE'))
-    : v.toLocaleString(l('en-GB', 'sv-SE'), { maximumFractionDigits: 3 })
-
-export function checkWhy(c: QualityCheck): string {
-  const reason = (c.details as { reason?: string }).reason
-  if (reason) return reason
-  const failed = (c.details as { failed?: string[] }).failed
-  if (failed && failed.length) return `Failed: ${failed.join(', ')}`
-  return ''
 }

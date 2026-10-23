@@ -1,6 +1,6 @@
 /** AI Act articles, chapters and dates: bars, treemap, waffle, steps, timeline and counts. */
 import { useState } from 'react'
-import { Frame, Slicer, color, useData, type Post } from '../kit'
+import { Frame, Slicer, color, tile, useData, type Post } from '../kit'
 import { linearScale, niceTicks } from '../../charts/scales'
 import { Legend, Svg, fmt, palette, squarify, sum, uniq } from './txt-kit'
 
@@ -64,6 +64,7 @@ function ArticleBars() {
           <>
             <Slicer
               label="Colour by"
+              cycles={false}
               options={BAR_MODES}
               value={mode}
               onChange={setMode}
@@ -99,12 +100,7 @@ function Counts() {
       {(d) => (
         <div className="mean-txt-kpis">
           {Object.entries(d.counts).map(([k, v], i) => (
-            <div
-              key={k}
-              style={{
-                background: `color-mix(in srgb, ${color(i)} 45%, var(--paper))`,
-              }}
-            >
+            <div key={k} style={tile(color(i))}>
               {fmt(v)}
               <small>{k.replace(/_/g, ' ')}</small>
             </div>
@@ -143,6 +139,7 @@ function ChapterTreemap() {
           <>
             <Slicer
               label="Size by"
+              cycles={false}
               options={TREE_METRICS}
               value={metric}
               onChange={setMetric}

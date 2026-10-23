@@ -6,6 +6,7 @@ import { line, pc, squarify, sum, XTicks } from './pol-kit'
 
 type Issue = {
   issue_key: string
+  issue_name_en: string
   per_session: {
     session: string
     decisions: number
@@ -29,6 +30,9 @@ type Issues = { issues: Issue[] }
 
 const useIssues = () => useData<Issues>('parliament/issues.json')
 const keys = (d: Issues) => d.issues.map((i) => i.issue_key)
+/** An issue's English name, for its key. */
+const issueName = (d: Issues) => (k: string) =>
+  d.issues.find((i) => i.issue_key === k)?.issue_name_en ?? k
 
 function WithGov() {
   const data = useIssues()
@@ -45,6 +49,7 @@ function WithGov() {
             <Slicer
               label="Issue"
               options={keys(d)}
+              format={issueName(d)}
               value={key}
               onChange={setKey}
             />
@@ -120,6 +125,7 @@ function Welfare() {
             <Slicer
               label="Issue"
               options={keys(d)}
+              format={issueName(d)}
               value={key}
               onChange={setKey}
             />
@@ -201,7 +207,7 @@ function DecisionTree() {
                     stroke="var(--paper)"
                     strokeWidth={2}
                   >
-                    <title>{`${r.item.issue_key}: ${total(r.item)}`}</title>
+                    <title>{`${r.item.issue_name_en}: ${total(r.item)}`}</title>
                   </rect>
                   {r.w > 40 && r.h > 16 && (
                     <text

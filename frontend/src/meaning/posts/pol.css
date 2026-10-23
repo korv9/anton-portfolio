@@ -12,7 +12,7 @@
   display: grid;
   place-content: center;
   text-align: center;
-  font-size: clamp(48px, 9vw, 120px);
+  font-size: clamp(28px, 21cqi, 120px);
   font-weight: var(--weight-heading);
   letter-spacing: -0.04em;
   line-height: 0.9;
@@ -38,7 +38,7 @@
   place-content: center;
   text-align: center;
   border-radius: 8px;
-  font-size: clamp(16px, 2.6vw, 30px);
+  font-size: clamp(14px, 8cqi, 30px);
   font-weight: var(--weight-heading);
   font-variant-numeric: tabular-nums;
   color: var(--ink);
@@ -47,4 +47,17 @@
   font-size: var(--caption);
   font-weight: var(--weight-body);
   color: var(--ink-2);
+}
+/* Treemap tile labels: 13 units in the 300-unit viewBox, about 8 px on a desktop thumbnail
+   and 15 px on a phone. */
+.mean-body svg text.mean-pol-tile {
+  font-size: 13px;
+  fill: var(--mean-ink);
+  font-variant-numeric: tabular-nums;
+}
+/* End labels beside a stacked area: they name each band, so no colour needs matching. */
+.mean-body svg text.mean-pol-end {
+  font-size: 18px;
+  font-weight: 600;
+  fill: var(--mean-ink);
 }
