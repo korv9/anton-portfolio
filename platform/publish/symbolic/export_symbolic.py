@@ -98,12 +98,14 @@ def register(paths: list[Path]) -> None:
                 del delivery["parquet_datasets"][name]
     for path in paths:
         relative = path.relative_to(bc.PUBLIC).as_posix()
-        content = path.read_bytes().replace(b"\r\n", b"\n")
+        # Exact bytes, as build_catalog.py's schema version 2: a binary file is not text.
+        content = path.read_bytes()
         fmt = bc.classify(relative)
         entries[relative] = {"path": relative, "product": bc.product_of(relative), "format": fmt,
                              "bytes": len(content), "rows": bc.row_count(path, fmt),
                              "schema_version": bc.SCHEMA_VERSION, "partition": bc.partition_of(relative),
-                             "sha256": hashlib.sha256(content).hexdigest()}
+                             "sha256": hashlib.sha256(content).hexdigest(),
+                             "hash_algorithm": "sha256-exact-bytes"}
         if fmt == "parquet":
             delivery["parquet_datasets"][relative.split("/")[-1]] = [relative]
     files = sorted(entries.values(), key=lambda e: e["path"])
