@@ -19,27 +19,22 @@ const modules = import.meta.glob<{ posts: Post[] }>('./posts/*.tsx', {
  * lines that read as noise at card size, squeezed scatters and repeats of a stronger number.
  */
 const DROPPED = new Set<string>([
+  // A single number or a weak relation (rho 0.10) that a sentence states as well.
+  'wel-population-kpi',
+  'wel-connections-scatter',
   // Empty or near-uniform.
   'pol-issue-welfare',
   'txt-plat-quality-waffle',
-  'wel-ongoing-calendar',
-  'wel-ess-heat',
   'job-ai-field-heat',
   'txt-act-signal-calendar',
   'txt-plat-compliance-funnel',
   // Tangles of lines.
-  'wel-county-bump',
-  'wel-county-parallel',
-  'wel-tax-slope',
   'txt-ml-model-parallel',
   'job-occupation-slope',
   // Squeezed or too fine to read.
   'pol-cohesion-scatter',
   'txt-plat-sfs-repealed',
-  'wel-church-swarm',
   'txt-plat-dataset-bubbles',
-  'wel-headline-waffles',
-  'wel-rate-kpis',
   'pol-ministers',
   // Single numbers beyond the strongest few.
   'txt-act-duty-total',
@@ -49,15 +44,11 @@ const DROPPED = new Set<string>([
   'txt-ml-observations',
   // Data not fit to show until the phase 1 data review: thin samples, partial periods or
   // ranges labelled wider than the data.
-  'wel-wedge-bars',
   'txt-act-signal-line',
   'pol-poll-kpi',
   'pol-poll-radial',
   'pol-poll-error',
   'pol-poll-changes',
-  'wel-ess-radar',
-  'wel-ess-radial',
-  'wel-ess-slope',
   'pol-study-bars',
   'pol-news-radial',
   // Data withdrawn on purpose (named employers and workplaces): the files now read
@@ -83,10 +74,6 @@ const DROPPED = new Set<string>([
   'pol-poll-heat',
   'pol-chord',
   'pol-gov-gauge',
-  'wel-future-stream',
-  'wel-measured-sunburst',
-  'wel-county-beeswarm',
-  'wel-sick-ridgeline',
   'job-ai-ridgeline',
   'job-cluster-bubbles',
   'job-lang-lines',
@@ -100,10 +87,6 @@ const DROPPED = new Set<string>([
   'pol-majority',
   'pol-polar-kpi',
   'pol-parallel',
-  'wel-labour-force-area',
-  'wel-county-slope',
-  'wel-similarity-scree',
-  'wel-similarity-biplot',
   'job-cluster-years',
   'job-lang-parallel',
   'job-archives',
