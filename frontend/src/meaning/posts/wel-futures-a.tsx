@@ -165,13 +165,20 @@ export const posts: Post[] = [
   {
     id: 'wel-future-stream',
     domain: 'sweden',
+    sources: ['sweden/futures/trends.json'],
     size: 'wide',
     render: () => <ThemeStream />,
   },
-  { id: 'wel-future-share', domain: 'sweden', render: () => <FutureShare /> },
+  {
+    id: 'wel-future-share',
+    domain: 'sweden',
+    sources: ['sweden/futures/trends.json'],
+    render: () => <FutureShare />,
+  },
   {
     id: 'wel-future-multiples',
     domain: 'sweden',
+    sources: ['sweden/futures/trends.json'],
     render: () => <ThemeMultiples />,
   },
 ]

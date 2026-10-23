@@ -190,7 +190,23 @@ function Daily() {
 }
 
 export const posts: Post[] = [
-  { id: 'job-sparks', domain: D, size: 'tall', render: () => <Sparks /> },
-  { id: 'job-archives', domain: D, render: () => <Archives /> },
-  { id: 'job-daily-rose', domain: D, render: () => <Daily /> },
+  {
+    id: 'job-sparks',
+    domain: D,
+    sources: ['jobs/market.json'],
+    size: 'tall',
+    render: () => <Sparks />,
+  },
+  {
+    id: 'job-archives',
+    domain: D,
+    sources: ['jobs/market.json'],
+    render: () => <Archives />,
+  },
+  {
+    id: 'job-daily-rose',
+    domain: D,
+    sources: ['jobs/market.json'],
+    render: () => <Daily />,
+  },
 ]

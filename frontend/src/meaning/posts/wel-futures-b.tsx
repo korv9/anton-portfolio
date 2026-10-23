@@ -216,13 +216,20 @@ export const posts: Post[] = [
   {
     id: 'wel-future-parties',
     domain: 'sweden',
+    sources: ['sweden/futures/parties.json', 'sweden/futures/trends.json'],
     size: 'wide',
     render: () => <PartyHeat />,
   },
-  { id: 'wel-measured-bars', domain: 'sweden', render: () => <MeasuredBars /> },
+  {
+    id: 'wel-measured-bars',
+    domain: 'sweden',
+    sources: ['sweden/measurement/summary.json'],
+    render: () => <MeasuredBars />,
+  },
   {
     id: 'wel-measured-sunburst',
     domain: 'sweden',
+    sources: ['sweden/measurement/summary.json'],
     render: () => <GeoSunburst />,
   },
 ]

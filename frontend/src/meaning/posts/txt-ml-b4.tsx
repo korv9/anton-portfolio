@@ -123,6 +123,16 @@ function SymbolCounts() {
 }
 
 export const posts: Post[] = [
-  { id: 'txt-ml-gauges', domain: d, render: () => <Gauges /> },
-  { id: 'txt-ml-symbol-counts', domain: d, render: () => <SymbolCounts /> },
+  {
+    id: 'txt-ml-gauges',
+    domain: d,
+    sources: ['workers-ai/eval.json'],
+    render: () => <Gauges />,
+  },
+  {
+    id: 'txt-ml-symbol-counts',
+    domain: d,
+    sources: ['symbolic/summary.json'],
+    render: () => <SymbolCounts />,
+  },
 ]

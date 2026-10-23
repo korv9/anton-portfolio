@@ -230,7 +230,22 @@ function DecisionTree() {
 }
 
 export const posts: Post[] = [
-  { id: 'pol-issue-withgov', domain: 'politics', render: () => <WithGov /> },
-  { id: 'pol-issue-tree', domain: 'politics', render: () => <DecisionTree /> },
-  { id: 'pol-issue-welfare', domain: 'politics', render: () => <Welfare /> },
+  {
+    id: 'pol-issue-withgov',
+    domain: 'politics',
+    sources: ['parliament/issues.json'],
+    render: () => <WithGov />,
+  },
+  {
+    id: 'pol-issue-tree',
+    domain: 'politics',
+    sources: ['parliament/issues.json'],
+    render: () => <DecisionTree />,
+  },
+  {
+    id: 'pol-issue-welfare',
+    domain: 'politics',
+    sources: ['parliament/issues.json'],
+    render: () => <Welfare />,
+  },
 ]

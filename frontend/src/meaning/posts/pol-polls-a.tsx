@@ -249,19 +249,27 @@ export const posts: Post[] = [
   {
     id: 'pol-poll-lines',
     domain: 'politics',
+    sources: ['parliament/polls.json'],
     size: 'wide',
     render: () => <Lines />,
   },
-  { id: 'pol-poll-error', domain: 'politics', render: () => <ErrorBars /> },
+  {
+    id: 'pol-poll-error',
+    domain: 'politics',
+    sources: ['parliament/polls.json'],
+    render: () => <ErrorBars />,
+  },
   {
     id: 'pol-poll-stream',
     domain: 'politics',
+    sources: ['parliament/polls.json'],
     size: 'wide',
     render: () => <Stream />,
   },
   {
     id: 'pol-poll-heat',
     domain: 'politics',
+    sources: ['parliament/polls.json'],
     size: 'wide',
     render: () => <Heat />,
   },

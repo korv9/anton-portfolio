@@ -213,11 +213,22 @@ function SfsLengths() {
 }
 
 export const posts: Post[] = [
-  { id: 'txt-plat-sfs-repealed', domain: d, render: () => <SfsRepealed /> },
+  {
+    id: 'txt-plat-sfs-repealed',
+    domain: d,
+    sources: ['sfs/overview.json'],
+    render: () => <SfsRepealed />,
+  },
   {
     id: 'txt-plat-compliance-funnel',
     domain: d,
+    sources: ['compliance/progress.json'],
     render: () => <ComplianceFunnel />,
   },
-  { id: 'txt-plat-sfs-lengths', domain: d, render: () => <SfsLengths /> },
+  {
+    id: 'txt-plat-sfs-lengths',
+    domain: d,
+    sources: ['sfs/overview.json'],
+    render: () => <SfsLengths />,
+  },
 ]

@@ -234,8 +234,19 @@ export const posts: Post[] = [
   {
     id: 'job-experience-waffle',
     domain: D,
+    sources: ['jobs/market.json'],
     render: () => <ExperienceWaffle />,
   },
-  { id: 'job-hours-stack', domain: D, render: () => <HoursStack /> },
-  { id: 'job-region-swarm', domain: D, render: () => <RegionSwarm /> },
+  {
+    id: 'job-hours-stack',
+    domain: D,
+    sources: ['jobs/market.json'],
+    render: () => <HoursStack />,
+  },
+  {
+    id: 'job-region-swarm',
+    domain: D,
+    sources: ['jobs/market.json'],
+    render: () => <RegionSwarm />,
+  },
 ]

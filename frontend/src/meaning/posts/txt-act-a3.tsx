@@ -130,8 +130,14 @@ export const posts: Post[] = [
   {
     id: 'txt-act-timeline',
     domain: d,
+    sources: ['ai-act/changes.json', 'ai-act/timeline.json'],
     size: 'wide',
     render: () => <Timeline />,
   },
-  { id: 'txt-act-references-kpi', domain: d, render: () => <References /> },
+  {
+    id: 'txt-act-references-kpi',
+    domain: d,
+    sources: ['ai-act/articles.json'],
+    render: () => <References />,
+  },
 ]

@@ -233,17 +233,20 @@ export const posts: Post[] = [
   {
     id: 'job-region-heatmap',
     domain: D,
+    sources: ['jobs/market.json'],
     size: 'wide',
     render: () => <RegionHeatmap />,
   },
   {
     id: 'job-employment-sunburst',
     domain: D,
+    sources: ['jobs/market.json'],
     render: () => <EmploymentDonut />,
   },
   {
     id: 'job-region-lollipop',
     domain: D,
+    sources: ['jobs/market.json'],
     size: 'tall',
     render: () => <RegionLollipop />,
   },

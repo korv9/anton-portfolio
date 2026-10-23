@@ -86,7 +86,8 @@
 /* Touch targets reach 44 px where the pointer is a finger. */
 @media (pointer: coarse) {
   .mean-pause,
-  .mean-close {
+  .mean-close,
+  .mean-trace-toggle {
     min-width: 44px;
     min-height: 44px;
   }
@@ -342,5 +343,84 @@
   .mean-body svg *,
   .mean-body * {
     transition: none !important;
+  }
+}
+
+/* Trace: an opened card's "Source" toggle turns a panel over the chart, beside the close
+ * button, so provenance stays one tap away and out of the thumbnail. */
+.mean-trace-toggle {
+  position: absolute;
+  top: 4px;
+  right: 40px;
+  z-index: 4;
+  min-height: 28px;
+  padding: 0 10px;
+  border: 1px solid transparent;
+  border-radius: 14px;
+  background: var(--wash);
+  color: var(--mean-ink);
+  font: inherit;
+  font-size: 0.72rem;
+  cursor: pointer;
+}
+.mean-trace-toggle[aria-expanded='true'] {
+  border-color: var(--mean-accent);
+}
+.mean-trace-toggle:focus-visible {
+  outline: 2px solid var(--mean-accent);
+  outline-offset: -2px;
+}
+.mean-trace {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  overflow: auto;
+  padding: 40px 18px 16px;
+  background: var(--mean-card);
+  color: var(--mean-ink);
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+.mean-trace dl {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 6px 16px;
+  margin: 0;
+  max-width: 68ch;
+}
+.mean-trace dt {
+  color: var(--mean-muted);
+}
+.mean-trace dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.mean-trace code {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+}
+.mean-trace dd > code + code::before {
+  content: ', ';
+}
+.mean-trace a {
+  color: inherit;
+}
+/* Each group's rows sit in the list's two columns. */
+.mean-trace-group {
+  display: contents;
+}
+@media (max-width: 700px) {
+  .mean-trace dl {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  .mean-trace dd {
+    margin-bottom: 8px;
+  }
+}
+/* Clear of the close button once both grow to finger size. */
+@media (pointer: coarse) {
+  .mean-trace-toggle {
+    right: 56px;
   }
 }

@@ -239,9 +239,21 @@ export const posts: Post[] = [
   {
     id: 'job-monthly-line',
     domain: D,
+    sources: ['jobs/market.json'],
     size: 'wide',
     render: () => <MonthlyLine />,
   },
-  { id: 'job-calendar', domain: D, render: () => <Calendar /> },
-  { id: 'job-stream', domain: D, size: 'wide', render: () => <Stream /> },
+  {
+    id: 'job-calendar',
+    domain: D,
+    sources: ['jobs/market.json'],
+    render: () => <Calendar />,
+  },
+  {
+    id: 'job-stream',
+    domain: D,
+    sources: ['jobs/market.json'],
+    size: 'wide',
+    render: () => <Stream />,
+  },
 ]

@@ -147,12 +147,23 @@ function SwedenKpi() {
 }
 
 export const posts: Post[] = [
-  { id: 'wel-tax-kpi', domain: 'taxes', render: () => <SwedenKpi /> },
+  {
+    id: 'wel-tax-kpi',
+    domain: 'taxes',
+    sources: ['taxes/countries.json'],
+    render: () => <SwedenKpi />,
+  },
   {
     id: 'wel-tax-nordic-lines',
     domain: 'taxes',
+    sources: ['taxes/countries.json'],
     size: 'wide',
     render: () => <NordicLines />,
   },
-  { id: 'wel-tax-slope', domain: 'taxes', render: () => <CountrySlope /> },
+  {
+    id: 'wel-tax-slope',
+    domain: 'taxes',
+    sources: ['taxes/countries.json'],
+    render: () => <CountrySlope />,
+  },
 ]
