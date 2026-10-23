@@ -177,24 +177,27 @@
   min-height: 0;
   overflow: hidden;
 }
-/* Chart text in one place: the body face with tabular figures, never smaller than 10 units
-   for ticks and 11 for labels. A post's own size wins only on .mean-wel-svg text, which inherits. */
+/* Chart text in one place: the body face with tabular figures, about 10 px for ticks and 11 px
+   for labels on screen. Card.tsx sets --mean-s, the scale the chart is drawn at; sizes are
+   divided by it, clamped so a chart drawn far too wide for its card cannot blow its labels up
+   past their layout. A size a post sets on its own text element still wins. */
+.mean-body svg {
+  --mean-k: clamp(0.6, var(--mean-s, 1), 2.4);
+  font-size: calc(11px / var(--mean-k));
+}
 .mean-body svg text {
   fill: var(--mean-muted);
   font-family: var(--mean-font);
   font-variant-numeric: tabular-nums;
 }
-.mean-body .mean-wel-svg {
-  font-size: 11px;
-}
 .mean-body
   svg
   :is(.mean-pol-t, .mean-txt-t, .mean-wel-axis text, .mean-axis text) {
-  font-size: 10px;
+  font-size: calc(10px / var(--mean-k));
 }
 /* Direct labels (axes.tsx EndLabels) name the marks, so they take the ink, not the muted grey. */
 .mean-body svg .mean-end text {
-  font-size: 11px;
+  font-size: calc(11px / var(--mean-k));
   font-weight: 500;
   fill: var(--mean-ink);
 }
@@ -388,6 +391,14 @@
   cursor: pointer;
 }
 @media (max-width: 700px) {
+  /* Opened on a phone, the close button is 44 px to tap and sits above the chart, not on it. */
+  .mean-open .mean-body {
+    padding-top: 52px;
+  }
+  .mean-close {
+    width: 44px;
+    height: 44px;
+  }
   .mean-open {
     grid-column: 1 / -1;
     aspect-ratio: auto;
