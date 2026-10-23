@@ -151,14 +151,16 @@
   grid-row: span 2;
   aspect-ratio: 1 / 2;
 }
+/* One column on a phone: wide and tall charts keep most of their shape, so a 2:1 chart is not
+   drawn at half size in a square with half the card empty. */
 @media (max-width: 480px) {
   .mean-wide {
     grid-column: auto;
-    aspect-ratio: 1;
+    aspect-ratio: 3 / 2;
   }
   .mean-tall {
     grid-row: auto;
-    aspect-ratio: 1;
+    aspect-ratio: 3 / 4;
   }
 }
 .mean-body {
@@ -499,4 +501,45 @@
   .mean-trace-toggle {
     right: 56px;
   }
+}
+/* charts/RankBars and Compare Stacked inside a card (wrap them in .mean-bars): caption type and
+   one line per row at any width, so ten rows fit a square card. A long label ends in an
+   ellipsis. */
+.mean-bars {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  font-family: var(--mean-font);
+}
+.mean-bars :is(.rank-bars-list li, .stacked li) {
+  grid-template-columns: minmax(0, 7.5em) minmax(0, 1fr) auto;
+  gap: 0.5em;
+  font-size: var(--type-caption);
+  line-height: 1.25;
+}
+.mean-bars .rank-bars-list {
+  gap: 5px;
+}
+.mean-bars .stacked ol {
+  gap: 7px;
+}
+.mean-bars .rank-label {
+  grid-column: auto;
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--mean-ink);
+}
+.mean-bars :is(.rank-track, .stacked-track) {
+  grid-column: auto;
+  grid-row: auto;
+  height: 10px;
+}
+.mean-bars .rank-value {
+  color: var(--mean-ink);
+}
+.mean-bars .stacked-key {
+  margin: 0 0 8px;
+  font-size: var(--type-caption);
 }
