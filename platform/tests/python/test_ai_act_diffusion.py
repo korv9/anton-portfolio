@@ -96,8 +96,9 @@ def gold_fixture() -> duckdb.DuckDBPyConnection:
     con.register("terms_df", terms)
     con.execute("create table seeds.ai_act_terms as select * from terms_df")
     con.execute("""create table seeds.ai_act_term_precision as select * from (values
-        ('ai_byran', 'sv', 'ai-byrån', 'riksdag', 10, 10, 9, 0.9))
-        t(term_id, language, term, corpus, matched, sampled, on_topic, precision)""")
+        ('ai_byran', 'sv', 'ai-byrån', 'riksdag', 10, 10, 9, 0.9, null),
+        ('ai_byran', 'sv', 'ai-byrån', 'job_ads', 9, 9, 9, 1.0, 1))
+        t(term_id, language, term, corpus, matched, sampled, on_topic, precision, employers)""")
     con.execute("""create table gold.mart_ai_act_timeline as
         select * from (values ('m1', date '2023-01-12', 'One', 'Ett'), ('m2', date '2031-01-01', 'Late', 'Sent'))
         t(milestone_id, date, title_en, title_sv)""")
@@ -133,4 +134,6 @@ def test_a_lag_on_one_match_is_labelled_uninformative_and_kept_beside_the_primar
     assert payload["corpora"][0]["result"] == {"primary": "tested: see the lags", "amended": "uninformative (1 match)"}
     row = payload["lags_side_by_side"][0]
     assert row["primary"]["window_matches"] == 10 and row["amended"]["reading"] == "uninformative (1 match)"
-    assert payload["amended_terms"][0]["precision"]["sv"]["precision"] == 0.9
+    precision = payload["amended_terms"][0]["precision"]
+    assert precision["riksdag"]["sv"]["precision"] == 0.9 and precision["riksdag"]["sv"]["employers"] is None
+    assert precision["job_ads"]["sv"]["employers"] == 1  # each corpus keeps its own check

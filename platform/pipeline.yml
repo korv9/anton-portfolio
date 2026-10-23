@@ -359,6 +359,22 @@ subjects:
       - dbt: {select: [tag:ai_act_diffusion]}
       - export: python platform/publish/cross_domain/export_ai_act_diffusion.py
 
+  # Philosophy track 1 (docs/philosophy-moral-preregistration.md). The tagger, the Riksdag sample,
+  # the Swedish check and the ETHICS answers are made by hand with python -m ml.moral.{mfrc,riksdag,
+  # ethics} (Workers AI within the free quota); riksdag score runs locally too, since the passage
+  # sample is text and never leaves the machine. This builds the marts and the export from the
+  # stored figures each week, without a model call. No raw folder: the MFRC, eMFD and ETHICS files
+  # stay on the machine (LOCAL_ONLY in warehouse_store.py); only figures and vectors are stored.
+  philosophy_moral:
+    schedule: '13 21 * * 6'
+    sla: {fresh_within: 8d}
+    write: {features: {merge: [path]}, warehouse: overwrite, delivery: versioned}
+    group: baseline
+    features: [philosophy/moral]
+    steps:
+      - dbt: {select: [tag:philosophy_moral]}
+      - export: python platform/publish/philosophy/export_moral.py
+
   # SWEDEN research platform. A: catalogue metadata of SCB and Kolada (never the statistics).
   # C: the validated municipality clustering with SCB's boundaries (CC0); the run and the sources
   # it hashed are kept under features/sweden/similarity.
