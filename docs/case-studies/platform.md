@@ -123,10 +123,10 @@ delivered file, and CI keeps checking that afterwards.
 | dbt models | 302 (bronze 107, silver 17, gold 178) | `.sql` files under `platform/models/` and each layer folder |
 | Models with an enforced contract | 149 | `contract: {enforced: true}` lines in `platform/models/**/*.yml` |
 | dbt source tables | 125, in 33 source definitions | `sources:` entries parsed from the model YAML files |
-| dbt data tests | 829 generic, 46 singular | `tests:`/`data_tests:` list items in the model YAML files; `.sql` files under `platform/tests/` |
+| dbt data tests | 821 generic (812 on models, 9 on sources), 46 singular | `tests:`/`data_tests:` list items on models, sources and their columns in `platform/models/**/*.yml`; `.sql` files under `platform/tests/` |
 | Python tests | 806 | `python -m pytest platform/tests --collect-only -q` |
 | Frontend and Worker unit tests | 93 | `# tests` line printed by `npm run test:unit` |
-| Browser (Playwright) tests | 88, in 26 spec files | `test(` calls in `frontend/tests/*.spec.ts` |
+| Browser (Playwright) tests | 88, in 28 spec files | `test(` calls in `frontend/tests/*.spec.ts` |
 | Delivery JSON Schemas | 23 | `.json` files under `configs/delivery/schemas/` |
 | Pipeline subjects | 24 | entries under `subjects:` in `platform/pipeline.yml` |
 | Published files | 6,394 (1,701 JSON, 68 Parquet, 4,625 shards) for 20 products | entries in `frontend/public/data/catalog.json`, grouped by `format` and `product` |
