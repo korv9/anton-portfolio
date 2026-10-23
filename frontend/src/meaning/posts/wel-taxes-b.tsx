@@ -8,6 +8,7 @@ import {
   extent,
   fmt,
   groupBy,
+  maxOf,
   path,
   scale,
   signed,
@@ -24,12 +25,12 @@ type Countries = {
 const useCountries = () => useData<Countries>('taxes/countries.json')
 
 const totals = (d: Countries) =>
-  d.rows.filter((r) => r[2] === '_T' && r[3] !== null)
+  d.rows.filter((r) => r[2] === '_T' && r[3] != null)
 
 /** Sweden's total in the latest year, and the year before. */
 function sweden(d: Countries) {
   const se = totals(d).filter((r) => r[0] === 'SWE')
-  const year = Math.max(...se.map((r) => r[1]))
+  const year = maxOf(se.map((r) => r[1])) ?? 0
   return {
     year,
     now: se.find((r) => r[1] === year)?.[3] ?? null,
@@ -141,7 +142,12 @@ export const posts: Post[] = [
     id: 'wel-tax-kpi',
     domain: 'taxes',
     sources: ['taxes/countries.json'],
-    title: (d: Countries) => `Sweden's total tax take in ${sweden(d).year}`,
+    title: (d: Countries) => {
+      const s = sweden(d)
+      return s.now === null
+        ? "Sweden's total tax take"
+        : `Sweden's total tax take in ${s.year}`
+    },
     note: 'Taxes and social contributions, % of GDP. Source: OECD Revenue Statistics',
     render: () => <SwedenKpi />,
   },
@@ -152,7 +158,7 @@ export const posts: Post[] = [
     size: 'wide',
     title: (d: Countries) => {
       const rows = totals(d)
-      const year = Math.max(...rows.map((r) => r[1]))
+      const year = maxOf(rows.map((r) => r[1]))
       const nordic = new Set(
         d.countries.filter((c) => c.is_nordic).map((c) => c.country_code),
       )

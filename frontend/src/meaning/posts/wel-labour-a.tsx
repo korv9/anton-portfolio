@@ -50,7 +50,8 @@ function UnemploymentLines() {
           false,
         )
         const x = scale([0, r.length - 1], [32, 470])
-        const last = r.at(-1)!
+        const last = r.at(-1)
+        if (!last) return null
         return (
           <>
             <Slicer
@@ -67,7 +68,7 @@ function UnemploymentLines() {
                 x1={470}
                 format={(v) => `${v}%`}
               />
-              {[...set].reverse().map(([k], j) => (
+              {[...set].reverse().map(([k]) => (
                 <path
                   key={k}
                   d={path(
@@ -79,7 +80,7 @@ function UnemploymentLines() {
                   fill="none"
                   stroke={focal(k === set[0][0])}
                   strokeWidth={k === set[0][0] ? 2.4 : 1}
-                  opacity={j === 0 && set.length > 1 ? 0.6 : 1}
+                  opacity={k === 'unemployment_rate' ? 0.6 : 1}
                 />
               ))}
               <EndLabels
@@ -125,18 +126,23 @@ function SickLines() {
   return (
     <Frame data={useMonths()}>
       {(rows) => {
+        // Months where the parts do not nest (stress within psychiatric within all) are left
+        // out, so the three groups stay non-overlapping.
         const r = rows.filter(
           (d) =>
             num(d.started_cases) &&
             num(d.started_psychiatric) &&
-            num(d.started_stress),
+            num(d.started_stress) &&
+            d.started_stress <= d.started_psychiatric &&
+            d.started_psychiatric <= d.started_cases,
         )
         const ax = axis(
           r.flatMap((d) => CAUSES.map(([, f]) => f(d))),
           [196, 12],
         )
         const x = scale([0, r.length - 1], [36, 470])
-        const last = r.at(-1)!
+        const last = r.at(-1)
+        if (!last) return null
         return (
           <Svg
             w={600}

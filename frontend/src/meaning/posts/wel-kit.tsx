@@ -54,11 +54,17 @@ export const month = (label: string) =>
       })
     : label
 
+/** Whole kronor with Swedish digit grouping, e.g. '14 108'. */
+export const sek = (v: number) => Math.round(v).toLocaleString('sv-SE')
+
 export const pct = (v: number, digits = 1) => `${fmt(v, digits)}%`
 
 /** 1 -> '1st', 2 -> '2nd', 11 -> '11th'. */
 export const ordinal = (n: number) =>
   `${n}${n % 100 >= 11 && n % 100 <= 13 ? 'th' : (['th', 'st', 'nd', 'rd'][n % 10] ?? 'th')}`
+
+/** The largest value, or null for an empty list (Math.max would give -Infinity). */
+export const maxOf = (v: number[]) => (v.length ? Math.max(...v) : null)
 
 export function groupBy<T, K>(rows: T[], key: (r: T) => K) {
   const out = new Map<K, T[]>()

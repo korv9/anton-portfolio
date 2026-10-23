@@ -8,22 +8,21 @@ import {
   type CountyYear,
   type Dot,
 } from './wel-charts'
-import { Ranked, fmt, num, pct } from './wel-kit'
+import { Ranked, fmt, maxOf, num, pct } from './wel-kit'
 
 const usePanel = () => useData<CountyYear[]>('welfare/panel-county-year.json')
 
 const TURNOUT = 'turnout_riksdag_pct'
 
-/** Election years: the panel repeats each result until the next election, so a year counts
- * only where the national turnout changes. */
-function elections(rows: CountyYear[]) {
-  const nat = rows
-    .filter((r) => r.is_country && num(r[TURNOUT]))
-    .sort((a, b) => a.year - b.year)
-  return nat
-    .filter((r, i) => i > 0 && r[TURNOUT] !== nat[i - 1][TURNOUT])
-    .map((r) => r.year)
-}
+/** Riksdag general elections (every four years since 1994). The panel repeats each result
+ * in the years until the next election, so only these years are shown. */
+const RIKSDAG_ELECTIONS = [1994, 1998, 2002, 2006, 2010, 2014, 2018, 2022, 2026]
+
+/** The election years the panel has county turnout for. */
+const elections = (rows: CountyYear[]) =>
+  RIKSDAG_ELECTIONS.filter((y) =>
+    rows.some((r) => !r.is_country && r.year === y && num(r[TURNOUT])),
+  )
 
 const turnoutIn = (rows: CountyYear[], year: number) =>
   rows.filter((r) => r.year === year && num(r[TURNOUT]))
@@ -35,7 +34,8 @@ function Turnout() {
     <Frame data={data}>
       {(rows) => {
         const opts = elections(rows)
-        const year = yr ?? opts[opts.length - 1]
+        const year = yr ?? opts.at(-1)
+        if (year === undefined) return null
         const at = turnoutIn(rows, year)
         const nation = at.find((r) => r.is_country)?.[TURNOUT]
         return (
@@ -75,10 +75,10 @@ function healthTrust(rows: CountyYear[]) {
   const ok = rows.filter(
     (r) => !r.is_country && num(r[HEALTH]) && num(r[TRUST]),
   )
-  const year = Math.max(...ok.map((r) => r.year))
+  const year = maxOf(ok.map((r) => r.year))
   const at = ok.filter((r) => r.year === year)
   return {
-    period: String(at[0]?.fohm_period ?? year),
+    period: String(at[0]?.fohm_period ?? year ?? ''),
     dots: at.map((r): Dot => ({
       key: r.region_code,
       name: county(r.region_name),
@@ -114,6 +114,7 @@ export const posts: Post[] = [
       const v = turnoutIn(rows, year)
         .filter((r) => !r.is_country)
         .map((r) => r[TURNOUT] as number)
+      if (!v.length) return 'Riksdag election turnout by county'
       return `Turnout in the ${year} Riksdag election ranged from ${pct(Math.min(...v), 0)} to ${pct(Math.max(...v), 0)} across counties`
     },
     note: 'Share of eligible voters who voted; tick: Sweden as a whole. Source: Kolada',
@@ -127,6 +128,7 @@ export const posts: Post[] = [
       const { period, dots } = healthTrust(rows)
       if (dots.length < 3) return 'Health and trust by county'
       const r = pearson(dots)
+      if (r === null) return `Health and trust by county, ${period}`
       const link =
         Math.abs(r) < 0.3
           ? 'barely related'

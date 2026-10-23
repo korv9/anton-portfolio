@@ -88,7 +88,8 @@ function IncomeScatter() {
     <Frame data={data}>
       {(rows) => {
         const ys = bothYears(rows)
-        const year = yr ?? ys[ys.length - 1]
+        const year = yr ?? ys.at(-1)
+        if (year === undefined) return null
         return (
           <>
             <Slicer
@@ -120,7 +121,7 @@ export const posts: Post[] = [
     size: 'tall',
     title: (rows: CountyYear[]) => {
       const { year, counties } = latestCounties(rows, METRICS.assistance.key)
-      return counties.length
+      return year !== null && counties.length
         ? `Social assistance was most common in ${county(counties[0].region_name)} in ${year}`
         : 'Social assistance by county'
     },
@@ -135,9 +136,14 @@ export const posts: Post[] = [
       const y = bothYears(rows).at(-1)
       if (y === undefined) return 'Income and social assistance by county'
       const r = pearson(dots(rows, y))
-      return r < -0.3
-        ? `In ${y}, counties with higher incomes had fewer residents on social assistance (r = ${fmt(r, 2)})`
-        : `Income and social assistance by county, ${y} (r = ${fmt(r, 2)})`
+      if (r === null) return `Income and social assistance by county, ${y}`
+      const link =
+        r <= -0.3
+          ? 'counties with higher incomes had fewer residents on social assistance'
+          : r >= 0.3
+            ? 'counties with higher incomes had more residents on social assistance'
+            : 'income and social assistance were barely related across counties'
+      return `In ${y}, ${link} (r = ${fmt(r, 2)})`
     },
     note: 'Across: median earned income, SEK. Up: residents receiving social assistance, %. Source: Kolada',
     render: () => <IncomeScatter />,

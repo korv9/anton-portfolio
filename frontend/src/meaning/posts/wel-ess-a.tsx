@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import { Frame, Slicer, focal, useData, type Post } from '../kit'
 import { EndLabels, XAxis, YAxis } from '../axes'
-import { Svg, extent, num, path, scale } from './wel-kit'
+import { Svg, extent, maxOf, num, path, scale } from './wel-kit'
 
 type Ess = {
   unit_code: string
@@ -39,12 +39,13 @@ const UNITS: Record<string, string> = {
 const val = (r: Ess | undefined, m: string) =>
   r && num(r[`${m}_mean`]) ? (r[`${m}_mean`] as number) : null
 
-const latestRound = (rows: Ess[]) =>
-  Math.max(...rows.map((r) => r.reference_year))
+/** Each item's answer scale: 0 to 10, except meeting friends (1 never to 7 every day). */
+const SCALE: Record<string, [number, number]> = { sclmeet: [1, 7] }
+const scaleOf = (m: string) => SCALE[m] ?? [0, 10]
 
 /** On how many measures Sweden's latest mean is above the EU27's. */
 function aboveEu(rows: Ess[]) {
-  const y = latestRound(rows)
+  const y = maxOf(rows.map((r) => r.reference_year))
   const at = (u: string) =>
     rows.find((r) => r.unit_code === u && r.reference_year === y)
   const both = METRICS.filter(
@@ -62,7 +63,8 @@ function RoundLines() {
       {(rows) => {
         const [y0, y1] = extent(rows.map((r) => r.reference_year))
         const x = scale([y0, y1], [28, 520])
-        const y = scale([0, 10], [200, 12])
+        const [lo, hi] = scaleOf(m)
+        const y = scale([lo, hi], [200, 12])
         const lines = Object.keys(UNITS).map((u) => ({
           u,
           pts: rows
@@ -84,9 +86,17 @@ function RoundLines() {
             <Svg
               w={600}
               h={220}
-              label={`${ESS_NAMES[m]}, mean on a 0 to 10 scale by survey year`}
+              label={`${ESS_NAMES[m]}, mean on a ${lo} to ${hi} scale by survey year`}
             >
-              <YAxis y={y} ticks={[0, 2, 4, 6, 8, 10]} x0={28} x1={520} />
+              <YAxis
+                y={y}
+                ticks={Array.from(
+                  { length: (hi - lo) / 2 + 1 },
+                  (_, i) => lo + i * 2,
+                )}
+                x0={28}
+                x1={520}
+              />
               {order.map(({ u, pts }) => (
                 <path
                   key={u}
@@ -130,10 +140,12 @@ export const posts: Post[] = [
     size: 'wide',
     title: (rows: Ess[]) => {
       const a = aboveEu(rows)
+      if (a.y === null || !a.of)
+        return 'Sweden and its neighbours in the European Social Survey'
       const n = a.above === a.of ? `all ${a.of}` : `${a.above} of ${a.of}`
       return `In ${a.y}, Sweden was above the EU27 average on ${n} survey measures`
     },
-    note: 'Shown: trust in other people, mean on a 0–10 scale. Source: European Social Survey',
+    note: 'Mean answer by survey year, on a 0–10 scale (meeting friends: 1–7). Source: European Social Survey',
     render: () => <RoundLines />,
   },
 ]

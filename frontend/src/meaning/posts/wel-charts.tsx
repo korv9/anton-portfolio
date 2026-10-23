@@ -5,13 +5,14 @@
 import { useState } from 'react'
 import { XAxis, YAxis } from '../axes'
 import { OTHER, Slicer } from '../kit'
-import { Ranked, Svg, axis, num } from './wel-kit'
+import { Ranked, Svg, axis, maxOf, num } from './wel-kit'
 
 export type Dot = { key: string; name: string; x: number; y: number }
 
-/** Pearson's r of the dots' x and y. */
-export function pearson(p: Dot[]) {
+/** Pearson's r of the dots' x and y; null with fewer than three dots or no spread. */
+export function pearson(p: Dot[]): number | null {
   const n = p.length
+  if (n < 3) return null
   const mx = p.reduce((s, q) => s + q.x, 0) / n
   const my = p.reduce((s, q) => s + q.y, 0) / n
   let sxy = 0
@@ -22,7 +23,7 @@ export function pearson(p: Dot[]) {
     sxx += (q.x - mx) ** 2
     syy += (q.y - my) ** 2
   }
-  return sxy / Math.sqrt(sxx * syy)
+  return sxx > 0 && syy > 0 ? sxy / Math.sqrt(sxx * syy) : null
 }
 
 /**
@@ -113,10 +114,11 @@ export type CountyMetric = {
 
 export const county = (name: string) => name.replace(/s? län$/, '')
 
-/** The latest year with county values for `key`, the counties and the national figure. */
+/** The latest year with county values for `key` (null without any), the counties and the
+ * national figure. */
 export function latestCounties(rows: CountyYear[], key: string) {
   const ok = rows.filter((r) => num(r[key]))
-  const year = Math.max(...ok.map((r) => r.year))
+  const year = maxOf(ok.map((r) => r.year))
   const at = ok.filter((r) => r.year === year)
   const nation = at.find((r) => r.is_country)?.[key]
   return {
@@ -144,6 +146,7 @@ export function CountyRank({
   const [m, setM] = useState(names[0])
   const metric = metrics[m]
   const { year, counties, nation } = latestCounties(rows, metric.key)
+  if (year === null) return null
   return (
     <>
       <Slicer

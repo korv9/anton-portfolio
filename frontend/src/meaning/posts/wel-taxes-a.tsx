@@ -1,7 +1,17 @@
 /** OECD revenue statistics: Sweden's tax mix over time, its largest taxes, and the league. */
 import { Frame, OTHER, focal, useData, type Post } from '../kit'
 import { EndLabels, XAxis, YAxis } from '../axes'
-import { Ranked, Svg, axis, fmt, ordinal, path, pct, scale } from './wel-kit'
+import {
+  Ranked,
+  Svg,
+  axis,
+  fmt,
+  maxOf,
+  ordinal,
+  path,
+  pct,
+  scale,
+} from './wel-kit'
 
 type TaxType = { tax_code: string; name_en: string; parent_code: string | null }
 
@@ -46,7 +56,8 @@ function mix(d: Sweden) {
         name: SHORT[t.tax_code] ?? t.name_en,
         v: years.map((y) => at.get(`${y}:${t.tax_code}`) ?? null),
       }))
-      .sort((a, b) => (b.v.at(-1) ?? 0) - (a.v.at(-1) ?? 0)),
+      // Types without a latest value sort last; their lines still draw.
+      .sort((a, b) => (b.v.at(-1) ?? -Infinity) - (a.v.at(-1) ?? -Infinity)),
   }
 }
 
@@ -92,7 +103,7 @@ function MixLines() {
               top={12}
               bottom={196}
               items={series
-                .filter((s) => s.v.at(-1) !== null)
+                .filter((s) => s.v.at(-1) != null)
                 .map((s, j) => ({
                   y: ax.y(s.v.at(-1)!),
                   label: `${s.name} ${fmt(s.v.at(-1)!, 1)}`,
@@ -115,19 +126,25 @@ function MixLines() {
 
 /** The latest year's taxes with no sub-types, by % of GDP. */
 function leaves(d: Sweden) {
-  const year = Math.max(...d.rows.filter((r) => r[2] !== null).map((r) => r[0]))
+  const year = maxOf(d.rows.filter((r) => r[2] != null).map((r) => r[0]))
   const parents = new Set(d.types.map((t) => t.parent_code))
+  // Only taxes with a published value that year; a missing one is left out, not zero.
   const at = new Map(
-    d.rows.filter((r) => r[0] === year).map((r) => [r[1], r[2] ?? 0]),
+    d.rows
+      .filter((r) => r[0] === year && r[2] != null)
+      .map((r) => [r[1], r[2]!]),
   )
   return {
     year,
     rows: d.types
-      .filter((t) => !parents.has(t.tax_code) && t.tax_code !== '_T')
+      .filter(
+        (t) =>
+          !parents.has(t.tax_code) && t.tax_code !== '_T' && at.has(t.tax_code),
+      )
       .map((t) => ({
         key: t.tax_code,
         label: t.name_en,
-        value: at.get(t.tax_code) ?? 0,
+        value: at.get(t.tax_code)!,
       }))
       .sort((a, b) => b.value - a.value)
       .slice(0, 6),
@@ -155,8 +172,9 @@ function League() {
   return (
     <Frame data={useData<Countries>('taxes/countries.json')}>
       {(d) => {
-        const rows = d.rows.filter((r) => r[2] === '_T' && r[3] !== null)
-        const year = Math.max(...rows.map((r) => r[1]))
+        const rows = d.rows.filter((r) => r[2] === '_T' && r[3] != null)
+        const year = maxOf(rows.map((r) => r[1]))
+        if (year === null) return null
         const names = new Map(
           d.countries.map((c) => [c.country_code, c.name_en]),
         )
@@ -188,8 +206,9 @@ export const posts: Post[] = [
     title: (d: Sweden) => {
       const { years, series } = mix(d)
       const s = series[0]
-      return s
-        ? `Taxes on ${s.name.toLowerCase()} raised the most in ${years.at(-1)}: ${pct(s.v.at(-1) ?? 0)} of GDP`
+      const v = s?.v.at(-1)
+      return s && v != null
+        ? `Taxes on ${s.name.toLowerCase()} raised the most in ${years.at(-1)}: ${pct(v)} of GDP`
         : "Sweden's tax mix"
     },
     note: 'Tax revenue by type, % of GDP. Source: OECD Revenue Statistics',
@@ -201,8 +220,8 @@ export const posts: Post[] = [
     sources: ['taxes/countries.json'],
     size: 'tall',
     title: (d: Countries) => {
-      const rows = d.rows.filter((r) => r[2] === '_T' && r[3] !== null)
-      const year = Math.max(...rows.map((r) => r[1]))
+      const rows = d.rows.filter((r) => r[2] === '_T' && r[3] != null)
+      const year = maxOf(rows.map((r) => r[1]))
       const ranked = rows
         .filter((r) => r[1] === year)
         .sort((a, b) => b[3]! - a[3]!)
@@ -220,7 +239,7 @@ export const posts: Post[] = [
     sources: ['taxes/sweden.json'],
     title: (d: Sweden) => {
       const { year, rows } = leaves(d)
-      return rows[0]
+      return rows[0] && year !== null
         ? `${rows[0].label} was Sweden's largest single tax in ${year}`
         : "Sweden's largest taxes"
     },

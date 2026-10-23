@@ -46,8 +46,8 @@ const useGroups = () => useData<Groups>('sweden/similarity/groups.json')
  * cluster-research; a group is named only where both files count the same municipalities.
  */
 function named(c: Clusters, g: Groups) {
-  const split = g.splits.find((s) => s.k === 4) ?? g.splits.at(-1)!
-  return split.profiles.map((p) => {
+  const split = g.splits.find((s) => s.k === 4) ?? g.splits.at(-1)
+  return (split?.profiles ?? []).map((p) => {
     const size = c.points.filter((q) => q[3] === p.group).length
     const name = c.names[String(p.group)]?.[0]
     return {
@@ -109,7 +109,8 @@ function Profiles() {
   return (
     <Both>
       {(groups) => {
-        const p = groups.find((x) => x.group === g) ?? groups[0]
+        const p = groups.find((x) => x.group === g) ?? groups.at(0)
+        if (!p) return null
         return (
           <>
             <Slicer
@@ -145,14 +146,11 @@ export const posts: Post[] = [
       'cluster-research/municipalities.json',
       'sweden/similarity/groups.json',
     ],
+    // The group names need both files, and a title reads only the first, so it names none.
     title: (c: Clusters) => {
-      const sizes = Object.keys(c.names).map((k) => ({
-        name: c.names[k][0],
-        n: c.points.filter((p) => String(p[3]) === k).length,
-      }))
-      const top = sizes.sort((a, b) => b.n - a.n)[0]
-      return top
-        ? `${sizes.length} kinds of municipality; the largest is ${top.name.toLowerCase()} (${top.n})`
+      const n = new Set(c.points.map((p) => p[3])).size
+      return n
+        ? `${c.points.length} municipalities sorted into ${n} groups by twelve indicators`
         : 'Kinds of municipality'
     },
     note: 'Municipalities per group, clustered on twelve indicators; under each name, the towns nearest its centre',

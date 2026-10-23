@@ -55,7 +55,7 @@ export const posts: Post[] = [
     title: (rows: Headline[]) => {
       const t = trust(rows)
       if (!t.length) return 'Trust in institutions and people'
-      return `In ${years(t[0].period_label)}, people in Sweden trusted ${NAMES[t[0].indicator_key][1]} most and ${NAMES[t.at(-1)!.indicator_key][1]} least`
+      return `In ${years(t[0].period_label)}, trust in Sweden was highest for ${NAMES[t[0].indicator_key][1]} (${fmt(t[0].value, 1)}) and lowest for ${NAMES[t.at(-1)!.indicator_key][1]} (${fmt(t.at(-1)!.value, 1)})`
     },
     note: 'Mean answer on a 0–10 scale, latest round. Source: European Social Survey',
     render: () => <TrustBars />,

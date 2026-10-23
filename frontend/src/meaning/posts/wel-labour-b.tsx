@@ -27,6 +27,7 @@ function PsychShare() {
         const v = r.map((d) => d.psychiatric_share_of_started_12m_pct!)
         const ax = axis(v, [176, 12])
         const x = scale([0, r.length - 1], [30, 250])
+        if (!v.length) return null
         return (
           <Svg label="Psychiatric diagnoses as a share of new sick-leave cases, rolling 12 months">
             <YAxis
@@ -104,7 +105,7 @@ export const posts: Post[] = [
     size: 'tall',
     title: (rows: CountyYear[]) => {
       const { year, counties } = latestCounties(rows, METRICS.unemployment.key)
-      return counties.length
+      return year !== null && counties.length
         ? `${county(counties[0].region_name)} had the highest unemployment of the counties in ${year}`
         : 'Unemployment by county'
     },

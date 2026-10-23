@@ -1,7 +1,7 @@
 /** Municipal income tax rates: how far they spread. */
 import { Frame, OTHER, focal, useData, type Post } from '../kit'
 import { XAxis, YAxis } from '../axes'
-import { Svg, axis, fmt, scale } from './wel-kit'
+import { Svg, axis, fmt, num, scale } from './wel-kit'
 
 type Municipalities = {
   year: string | number
@@ -12,7 +12,10 @@ type Municipalities = {
 const BIN = 0.25
 
 const rates = (d: Municipalities) =>
-  d.municipalities.map((m) => m.local_rate).sort((a, b) => a - b)
+  d.municipalities
+    .map((m) => m.local_rate)
+    .filter(num)
+    .sort((a, b) => a - b)
 
 const median = (v: number[]) =>
   v.length % 2
@@ -26,6 +29,7 @@ function RateHistogram() {
     <Frame data={useData<Municipalities>('taxes/municipalities.json')}>
       {(d) => {
         const v = rates(d)
+        if (!v.length) return null
         const lo = Math.floor(v[0] / BIN) * BIN
         const hi = Math.ceil((v.at(-1)! + 1e-9) / BIN) * BIN
         const bins = Array.from(

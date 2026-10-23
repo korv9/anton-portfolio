@@ -82,7 +82,12 @@ function Relation() {
             yFormat={(v) => fmt(v, 1)}
             dots={r.result
               .points!.filter((p) => num(p[1]) && num(p[2]))
-              .map((p) => ({ key: p[0], name: p[0], x: p[1], y: p[2] }))}
+              .map((p) => ({
+                key: p[0],
+                name: `Municipality code ${p[0]}`,
+                x: p[1],
+                y: p[2],
+              }))}
           />
         )
       }}
@@ -98,9 +103,10 @@ function LibraryMap() {
     <Frame data={useData<Libraries>('sweden/belonging/libraries.json')}>
       {(d) => {
         const libs = located(d)
+        if (!libs.length) return null
         const [x0, x1] = extent(libs.map((l) => l.x!))
         const [y0, y1] = extent(libs.map((l) => l.y!))
-        const k = Math.min(280 / (x1 - x0), 580 / (y1 - y0))
+        const k = Math.min(280 / (x1 - x0 || 1), 580 / (y1 - y0 || 1))
         const types = Object.keys(TYPES)
         const fill = (t: string) => focal(t === 'folkskolbib')
         return (
@@ -146,7 +152,12 @@ function quantiles(d: Belonging, m: Rate) {
     .sort((a, b) => a[0] - b[0])
     .map(([yr, list]) => {
       const v = list.map((r) => r[m]!).sort((a, b) => a - b)
-      const q = (p: number) => v[Math.floor(p * (v.length - 1))]
+      // Linear between the two nearest values, so an even count's median is their mean.
+      const q = (p: number) => {
+        const h = p * (v.length - 1)
+        const lo = Math.floor(h)
+        return v[lo] + (v[Math.min(lo + 1, v.length - 1)] - v[lo]) * (h - lo)
+      }
       return { yr, q: [q(0.1), q(0.25), q(0.5), q(0.75), q(0.9)] }
     })
 }
@@ -167,7 +178,8 @@ function LibraryTrend() {
         const x = scale([0, qs.length - 1], [34, 250])
         const xs = qs.map((_, i) => x(i))
         const at = (j: number) => qs.map((q) => ax.y(q.q[j]))
-        const last = qs.at(-1)!
+        const last = qs.at(-1)
+        if (!last) return null
         return (
           <>
             <Slicer
@@ -228,8 +240,9 @@ export const posts: Post[] = [
     size: 'tall',
     title: (d: Libraries) => {
       const libs = located(d)
+      if (!libs.length) return 'Public libraries in Sweden'
       const both = libs.filter((l) => l.type === 'folkskolbib').length
-      return `${libs.length.toLocaleString('en-GB')} public libraries; ${both} of them are also school libraries`
+      return `${libs.length.toLocaleString('en-GB')} public libraries on the map; ${both} of them are combined public and school libraries`
     },
     note: 'One dot per library; accent: combined public and school libraries. Source: KB library statistics',
     render: () => <LibraryMap />,
@@ -242,7 +255,12 @@ export const posts: Post[] = [
       const r = scattered(d)
       const rho = r?.result.rho
       if (!r || !num(rho)) return 'Library visits and income by municipality'
-      const how = Math.abs(rho) < 0.3 ? 'barely follow' : 'follow'
+      const how =
+        Math.abs(rho) < 0.3
+          ? 'barely track'
+          : rho > 0
+            ? 'rise with'
+            : 'fall with'
       return `Library visits ${how} median income across ${r.result.n ?? r.result.points!.length} municipalities (ρ = ${fmt(rho, 2)})`
     },
     note: 'Across: median earned income, SEK. Up: library visits per inhabitant. ρ: rank correlation. Sources: Kolada, KB',
@@ -256,10 +274,14 @@ export const posts: Post[] = [
       const qs = quantiles(d, 'active_borrowers_rate')
       if (qs.length < 2) return 'Active library borrowers per municipality'
       const [a, b] = [qs[0], qs.at(-1)!]
-      const dir = b.q[2] < a.q[2] ? 'fell' : 'rose'
-      return `In the median municipality, active borrowers ${dir} from ${fmt(a.q[2], 0)} to ${fmt(b.q[2], 0)} per 100 inhabitants, ${a.yr}–${b.yr}`
+      const [from, to] = [fmt(a.q[2], 1), fmt(b.q[2], 1)]
+      const change =
+        from === to
+          ? `stayed at ${to}`
+          : `${b.q[2] < a.q[2] ? 'fell' : 'rose'} from ${from} to ${to}`
+      return `Across municipalities, the median number of active borrowers ${change} per 100 inhabitants, ${a.yr}–${b.yr}`
     },
-    note: 'Active borrowers per 100 inhabitants; bands: middle 50% and 80% of municipalities. Source: KB',
+    note: 'Median across municipalities by year; bands: the middle 50% and 80%. Source: KB library statistics',
     render: () => <LibraryTrend />,
   },
 ]

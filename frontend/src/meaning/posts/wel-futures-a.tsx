@@ -71,11 +71,13 @@ function FutureShare() {
               x={250}
               top={12}
               bottom={176}
-              items={series.map((s) => ({
-                y: ax.y(s.rows.at(-1)![1] * 100),
-                label: s.name,
-                color: s.focal ? undefined : 'var(--mean-muted)',
-              }))}
+              items={series
+                .filter((s) => s.rows.length)
+                .map((s) => ({
+                  y: ax.y(s.rows.at(-1)![1] * 100),
+                  label: s.name,
+                  color: s.focal ? undefined : 'var(--mean-muted)',
+                }))}
             />
             <XAxis
               x={x}
@@ -100,6 +102,7 @@ const themes = (d: Trends) =>
       years: t.rows.map((r) => r[0]),
       v: t.rows.map((r) => r[PER_1000]),
     }))
+    .filter((t) => t.v.length)
     .sort((a, b) => b.v.at(-1)! - a.v.at(-1)!)
 
 function ThemeMultiples() {
@@ -162,7 +165,7 @@ export const posts: Post[] = [
     title: (d: Trends) => {
       const r = d.future_share.at(-1)
       return r
-        ? `In ${r[0]}, ${pct(r[1] * 100, 0)} of Riksdag speeches spoke of the future`
+        ? `In ${r[0]}, ${pct(r[1] * 100, 0)} of Riksdag speeches used future-marker words`
         : 'Talk of the future in the Riksdag'
     },
     note: 'Share of speeches, and of thesis abstracts, matching a future marker. Sources: Riksdagen, DiVA',

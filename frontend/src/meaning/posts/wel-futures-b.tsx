@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import { Frame, OTHER, Slicer, focal, useData, type Post } from '../kit'
 import { XAxis } from '../axes'
-import { Ranked, Svg, axis, fmt, pct } from './wel-kit'
+import { Ranked, Svg, axis, fmt, maxOf, pct } from './wel-kit'
 
 /** party, theme, year, future-oriented speeches, of which use the theme. */
 type Parties = { rows: [string, string, number, number, number][] }
@@ -33,9 +33,13 @@ const PARTY: Record<string, string> = {
 /** Years pooled per party, so a share rests on enough speeches. */
 const SPAN = 4
 
-/** Per party, the theme's share of its future-oriented speeches over the last SPAN years. */
+/** Fewest future-oriented speeches in the span for a party's share to be shown. */
+const MIN_SPEECHES = 100
+
+/** Per party with at least MIN_SPEECHES, the theme's share of its future-oriented speeches
+ * over the last SPAN years. */
 function shares(d: Parties, theme: string) {
-  const last = Math.max(...d.rows.map((r) => r[2]))
+  const last = maxOf(d.rows.map((r) => r[2])) ?? 0
   const from = last - SPAN + 1
   const sum = new Map<string, [number, number]>()
   for (const [p, t, y, all, used] of d.rows)
@@ -46,8 +50,12 @@ function shares(d: Parties, theme: string) {
   return {
     period: `${from}–${last}`,
     rows: [...sum]
-      .filter(([, [all]]) => all > 0)
-      .map(([p, [all, used]]) => ({ party: p, share: (used / all) * 100 }))
+      .filter(([, [all]]) => all >= MIN_SPEECHES)
+      .map(([p, [all, used]]) => ({
+        party: p,
+        share: (used / all) * 100,
+        n: all,
+      }))
       .sort((a, b) => b.share - a.share),
   }
 }
@@ -139,17 +147,21 @@ function PartyDots() {
   )
 }
 
+/** The life domains, without the bucket for items outside them. */
+const domains = (d: Summary) => d.domains.filter((r) => r.id !== 'other')
+const count = (r: Summary['domains'][number]) => r.scb_tables + r.kolada_kpis
+
 function MeasuredBars() {
   return (
     <Frame data={useData<Summary>('sweden/measurement/summary.json')}>
       {(d) => (
         <Ranked
-          label="SCB statistics tables and Kolada municipal indicators per life domain"
+          label="SCB statistics tables plus Kolada municipal indicators, counted together, per life domain"
           format={(v) => fmt(v, 0)}
-          rows={d.domains.map((r) => ({
+          rows={domains(d).map((r) => ({
             key: r.id,
             label: r.label_en,
-            value: r.scb_tables + r.kolada_kpis,
+            value: count(r),
           }))}
         />
       )}
@@ -166,10 +178,10 @@ export const posts: Post[] = [
     title: (d: Parties) => {
       const { period, rows } = shares(d, 'environment')
       return rows[0]
-        ? `The ${PARTY[rows[0].party] ?? rows[0].party} spoke of environmental futures most often, ${period}`
+        ? `Environmental themes took the largest share of future speeches for the ${PARTY[rows[0].party] ?? rows[0].party}, ${period}`
         : 'Future themes by party'
     },
-    note: "Shown: environment. Share of each party's future-oriented speeches using the theme. Source: Riksdagen",
+    note: "Share of each party's future-oriented speeches that use the theme; parties with 100 or more such speeches. Source: Riksdagen",
     render: () => <PartyDots />,
   },
   {
@@ -177,17 +189,13 @@ export const posts: Post[] = [
     domain: 'sweden',
     sources: ['sweden/measurement/summary.json'],
     title: (d: Summary) => {
-      const top = [...d.domains]
-        .filter((r) => r.id !== 'other')
-        .sort(
-          (a, b) =>
-            b.scb_tables + b.kolada_kpis - (a.scb_tables + a.kolada_kpis),
-        )[0]
+      const ds = domains(d)
+      const top = [...ds].sort((a, b) => count(b) - count(a))[0]
       return top
-        ? `${top.label_en} has the most published statistics of the twelve life domains`
+        ? `${top.label_en} has the most statistics tables and indicators of the ${ds.length} life domains`
         : 'What Sweden measures'
     },
-    note: 'SCB tables plus Kolada indicators per domain. Sources: SCB, Kolada catalogues',
+    note: 'SCB statistics tables plus Kolada municipal indicators, counted together; items outside the domains left out. Sources: SCB, Kolada',
     render: () => <MeasuredBars />,
   },
 ]

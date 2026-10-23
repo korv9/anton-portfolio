@@ -8,6 +8,7 @@ import {
   axis,
   extent,
   fmt,
+  sek,
   groupBy,
   num,
   path,
@@ -34,7 +35,7 @@ type Wedge = {
 const ALL = 'E90'
 
 const household = (d: Household, key: string) =>
-  d.households.find((x) => x.key === key) ?? d.households[0]
+  d.households.find((x) => x.key === key) ?? d.households.at(0)
 
 function Vat() {
   const data = useData<Household>('taxes/household.json')
@@ -43,12 +44,13 @@ function Vat() {
     <Frame data={data}>
       {(d) => {
         const hh = household(d, h)
+        if (!hh) return null
         return (
           <>
             <Slicer
               label="Household"
               options={d.households.map((x) => x.key)}
-              format={(k) => household(d, k).name[0]}
+              format={(k) => household(d, k)?.name[0] ?? k}
               value={hh.key}
               onChange={setH}
             />
@@ -57,7 +59,7 @@ function Vat() {
               head={4}
               tail={0}
               label={`VAT per household and year by spending group, SEK: ${hh.name[0]}`}
-              format={(v) => fmt(v, 0)}
+              format={sek}
               rows={hh.groups.map((g) => ({
                 key: g.group,
                 label: g.name[0],
@@ -173,12 +175,12 @@ export const posts: Post[] = [
     sources: ['taxes/household.json'],
     title: (d: Household) => {
       const hh = household(d, ALL)
-      const top = [...hh.groups].sort((a, b) => b.vat - a.vat)[0]
+      const top = [...(hh?.groups ?? [])].sort((a, b) => b.vat - a.vat)[0]
       return top
         ? `${top.name[0]} carried the most VAT in household spending in ${d.year}`
         : 'VAT in household spending'
     },
-    note: 'SEK per household and year, all households; a floor, as mixed-rate groups are left out. Source: SCB',
+    note: 'SEK per household and year, by type of household; a floor, as mixed-rate groups are left out. Source: SCB',
     render: () => <Vat />,
   },
   {
@@ -189,10 +191,14 @@ export const posts: Post[] = [
     title: (d: Wedge) => {
       const s = swedenWedge(d)
       if (!s) return 'The tax wedge on an average wage'
-      const dir = s[1][3]! < s[0][3]! ? 'fell' : 'rose'
-      return `Sweden's tax wedge on an average wage ${dir} from ${fmt(s[0][3]!, 0)}% to ${fmt(s[1][3]!, 0)}%, ${s[0][1]}–${s[1][1]}`
+      const [a, b] = [s[0][3]!, s[1][3]!]
+      const who = 'For a single earner without children on an average wage'
+      const span = `${s[0][1]}–${s[1][1]}`
+      return fmt(a, 1) === fmt(b, 1)
+        ? `${who}, Sweden's tax wedge stayed at ${fmt(a, 1)}%, ${span}`
+        : `${who}, Sweden's tax wedge ${b < a ? 'fell' : 'rose'} from ${fmt(a, 1)}% to ${fmt(b, 1)}%, ${span}`
     },
-    note: 'Shown: single, no children. Income tax and social contributions, % of labour costs. Source: OECD Taxing Wages',
+    note: 'Income tax and social contributions, % of labour costs, average wage. Source: OECD Taxing Wages',
     render: () => <WedgeLines />,
   },
 ]
