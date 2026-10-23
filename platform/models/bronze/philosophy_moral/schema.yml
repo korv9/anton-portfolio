@@ -1,0 +1,42 @@
+version: 2
+
+models:
+  - name: stg_moral_agreement
+    description: The MFRC tagger's agreement per foundation (ml/moral/mfrc.py fit).
+    columns:
+      - name: foundation
+        data_tests: [unique, not_null]
+      - name: tagger_f1
+        data_tests: [not_null]
+      - name: human_pair_f1
+        data_tests: [not_null]
+  - name: stg_moral_gate
+    description: The Swedish check (ml/moral/riksdag.py gate), one row per foundation once labelled.
+    columns:
+      - name: status
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments: {values: [awaiting labels, passed, failed]}
+  - name: stg_moral_shares
+    description: Flagged shares per foundation, year and party (ml/moral/riksdag.py score).
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [foundation, year, party]
+  - name: stg_moral_spread
+    description: Party spread and its within-year shuffle null per validated foundation.
+    columns:
+      - name: null_p
+        data_tests: [not_null]
+  - name: stg_moral_ethics
+    description: Gemma's ETHICS agreement per subset and wording (ml/moral/ethics.py analyze).
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [subset, wording]
+    columns:
+      - name: null_kappa_p95
+        data_tests: [not_null]
+      - name: null_p
+        data_tests: [not_null]

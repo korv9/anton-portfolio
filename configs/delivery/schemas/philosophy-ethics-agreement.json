@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["subsets", "diagnostics", "method", "generated_at"],
+  "properties": {
+    "subsets": {"type": "array", "minItems": 10, "items": {"type": "object",
+      "required": ["subset", "wording", "items", "accuracy", "kappa", "majority_accuracy", "null_kappa_p95", "null_p"],
+      "properties": {"subset": {"enum": ["commonsense", "deontology", "justice", "utilitarianism", "virtue"]},
+                     "wording": {"enum": [1, 2]}, "null_p": {"type": "number", "minimum": 0, "maximum": 1}}}},
+    "diagnostics": {"type": "object", "required": ["items_per_subset", "null_rounds"],
+      "properties": {"null_rounds": {"const": 999}}},
+    "method": {"type": "object", "required": ["preregistration", "model", "null", "sources", "departures"]},
+    "generated_at": {"type": "string"}
+  }
+}
