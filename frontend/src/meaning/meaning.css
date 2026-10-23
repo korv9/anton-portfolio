@@ -543,3 +543,13 @@
   margin: 0 0 8px;
   font-size: var(--type-caption);
 }
+/* Opened, a long ranked list scrolls inside the card instead of being cut off. */
+.mean-open .mean-bars {
+  overflow-y: auto;
+}
+/* The option a slicer holds, named above the chart; slicers are hidden in thumbnails. */
+.mean-cap {
+  margin: 0;
+  color: var(--mean-ink);
+  font: 500 var(--type-caption) / 1.3 var(--mean-font);
+}
