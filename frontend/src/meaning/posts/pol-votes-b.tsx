@@ -1,6 +1,6 @@
 /** Riksdag roll calls per session since 1993/94: party agreement and government wins. */
 import { useState } from 'react'
-import { focal, Frame, seq, Slicer, useData, type Post } from '../kit'
+import { cellInk, focal, Frame, seq, Slicer, useData, type Post } from '../kit'
 import { linearScale } from '../../charts/scales'
 import { ticksBetween, XAxis, YAxis } from '../axes'
 import { every, GovStrip, line, PARTIES } from './pol-kit'
@@ -88,9 +88,7 @@ function Matrix() {
                           y={i * c + c / 2 + 3}
                           textAnchor="middle"
                           className="mean-pol-cellv"
-                          style={
-                            v > 55 ? { fill: 'var(--mean-card)' } : undefined
-                          }
+                          style={cellInk(v / 100)}
                         >
                           {Math.round(v)}
                         </text>

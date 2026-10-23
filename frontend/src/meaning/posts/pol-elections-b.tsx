@@ -133,7 +133,7 @@ function Dumbbell() {
             aria-label={`Vote share per party, previous election and ${n.election.year}`}
           >
             <g className="mean-axis">
-              {ticksBetween(0, hi).map((t) => (
+              {ticksBetween(0, hi, 2).map((t) => (
                 <g key={t}>
                   <line x1={x(t)} x2={x(t)} y1={4} y2={bottom} />
                   <text x={x(t)} y={bottom + 14} textAnchor="middle">

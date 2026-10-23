@@ -74,23 +74,18 @@ function Sparks() {
                     stroke={focal(j === 0)}
                     strokeWidth={1.25}
                   />
+                  {/* The latest month's number follows the name on its line, so it never
+                      meets the next row's name. */}
                   <text
                     className={j === 0 ? 'mean-job-on' : 'mean-job-v'}
                     x={4}
                     y={j * rowH + 11}
                   >
-                    {fieldName(f.name)}
+                    {fieldName(f.name).split(',')[0]}
+                    {last && (
+                      <tspan className="mean-job-n">{` ${compact(last[1])}`}</tspan>
+                    )}
                   </text>
-                  {last && (
-                    <text
-                      className="mean-job-v"
-                      x={W - 2}
-                      y={y0 - 2}
-                      textAnchor="end"
-                    >
-                      {compact(last[1])}
-                    </text>
-                  )}
                 </g>
               )
             })}
@@ -144,7 +139,7 @@ function Daily() {
                   y={y(r[1])}
                   width={bw * 0.7}
                   height={B - y(r[1])}
-                  fill="var(--mean-ink)"
+                  fill={focal(i === rows.length - 1)}
                 />
                 <text
                   className="mean-job-v"

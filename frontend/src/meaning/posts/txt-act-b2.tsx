@@ -1,5 +1,6 @@
 /** AI Act actors: how many articles name each one, and how many give it a duty. */
-import { Frame, OTHER, PALETTE, useData, type Post } from '../kit'
+import { useContext } from 'react'
+import { Frame, OTHER, PALETTE, PostOpen, useData, type Post } from '../kit'
 import { linearScale, niceTicks } from '../../charts/scales'
 import { Svg, XGrid, clip, heading, usable } from './txt-kit'
 
@@ -23,6 +24,7 @@ const byMentions = (rows: Actor[]) =>
   [...rows].sort((a, b) => b.articles_mentioning - a.articles_mentioning)
 
 function ActorDumbbell() {
+  const open = useContext(PostOpen)
   const data = usable(
     useData<Actor[]>(ACTORS),
     ACTORS,
@@ -31,8 +33,10 @@ function ActorDumbbell() {
   return (
     <Frame data={data}>
       {(rows) => {
-        const as = byMentions(rows)
-        const [W, H, m, top, bottom] = [300, 240, 118, 16, 24]
+        // The thumbnail lists the eight most named actors; opened, all of them.
+        const as = byMentions(rows).slice(0, open ? undefined : 8)
+        const [W, m, top, bottom] = [300, 118, 16, 24]
+        const H = top + bottom + as.length * 22
         const ticks = niceTicks(as[0].articles_mentioning)
         const x = linearScale([0, ticks.at(-1)!], [m, W - 10])
         const rh = (H - top - bottom) / as.length
@@ -44,22 +48,20 @@ function ActorDumbbell() {
             label="Articles mentioning each actor and articles giving it duties"
           >
             <XGrid x={x} ticks={ticks} y0={top - 4} y1={H - bottom + 2} />
-            <text className="mean-txt-t" x={W - 10} y={H - 1} textAnchor="end">
-              articles
-            </text>
+            {/* The top row names its two dots, each on its outer side (duties ≤ named). */}
             <text
               className="mean-txt-v"
-              x={x(as[0].articles_with_duty_sentences)}
+              x={x(as[0].articles_with_duty_sentences) - 5}
               y={top - 6}
-              textAnchor="middle"
+              textAnchor="end"
             >
               duties
             </text>
             <text
               className="mean-txt-t"
-              x={x(as[0].articles_mentioning)}
+              x={x(as[0].articles_mentioning) + 5}
               y={top - 6}
-              textAnchor="end"
+              textAnchor="start"
             >
               named
             </text>

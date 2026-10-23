@@ -14,17 +14,18 @@ const useTrends = () => useData<Trends>('sweden/futures/trends.json')
 /** Column of `rows` with matches per thousand words of all speeches. */
 const PER_1000 = 7
 
-/** Short theme names for a panel heading; label_en where none is set. */
+/** Short theme names for a panel heading, one word so each fits over its panel on a phone;
+ * label_en where none is set. */
 const SHORT: Record<string, string> = {
   technology: 'Technology',
-  collective: 'Collective change',
+  collective: 'Collective',
   career: 'Careers',
   environment: 'Environment',
-  crisis: 'Crisis and collapse',
-  utopia: 'Utopias and hope',
-  alternatives: 'Alternative economies',
+  crisis: 'Crisis',
+  utopia: 'Utopias',
+  alternatives: 'Alternatives',
   security: 'Security',
-  culture: 'Cultural renewal',
+  culture: 'Culture',
 }
 
 function FutureShare() {

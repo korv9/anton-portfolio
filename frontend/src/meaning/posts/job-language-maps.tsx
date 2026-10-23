@@ -152,7 +152,7 @@ function CoverageBars() {
             <XLabels
               y={H - 4}
               items={a
-                .filter((_, i) => i % 5 === 0)
+                .filter((_, i) => i % 10 === 5)
                 .map((r) => ({
                   x: L + a.indexOf(r) * bw + bw / 2,
                   label: r.archive.slice(0, 4),

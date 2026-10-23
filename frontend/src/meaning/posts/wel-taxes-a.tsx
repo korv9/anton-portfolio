@@ -70,7 +70,8 @@ function MixLines() {
           series.flatMap((s) => s.v.filter((v): v is number => v !== null)),
           [196, 12],
         )
-        const x = scale([0, years.length - 1], [30, 450])
+        // The plot leaves the right third to the six end labels, which are long.
+        const x = scale([0, years.length - 1], [30, 390])
         return (
           <Svg
             w={600}
@@ -81,7 +82,7 @@ function MixLines() {
               y={ax.y}
               ticks={ax.ticks}
               x0={30}
-              x1={450}
+              x1={390}
               format={(v) => `${v}%`}
             />
             {series.map((s, j) => (
@@ -99,7 +100,7 @@ function MixLines() {
               />
             ))}
             <EndLabels
-              x={456}
+              x={396}
               top={12}
               bottom={196}
               items={series

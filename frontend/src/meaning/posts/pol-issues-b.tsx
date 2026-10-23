@@ -32,8 +32,9 @@ function WithGov() {
         const rows = [...iss.parties].sort(
           (a, b) => b.with_government_pct - a.with_government_pct,
         )
-        const x = linearScale([0, 100], [34, 246])
-        const row = (i: number) => 14 + i * 26
+        // The value column sits right of the plot, clear of a dot at 100 %.
+        const x = linearScale([0, 100], [34, 210])
+        const row = (i: number) => 12 + i * 22
         const bottom = row(rows.length - 1) + 12
         return (
           <>
@@ -46,7 +47,7 @@ function WithGov() {
             />
             <Sub>{iss.issue_name_en}</Sub>
             <svg
-              viewBox="0 0 300 236"
+              viewBox={`0 0 300 ${bottom + 20}`}
               role="img"
               aria-label={`How often each party voted with the government: ${iss.issue_name_en}`}
             >

@@ -33,11 +33,12 @@ const SUMMARY = 'philosophy/summary.json'
 const CLUSTERS = 'philosophy/clusters.json'
 const d = 'ml'
 
-/** Three measures before and after centring, with plain names; the first is focal. */
-const MEASURES: [string, string][] = [
-  ['same_work_neighbours', 'Same-work neighbours'],
-  ['mean_largest_work_share', 'Largest work share'],
-  ['noise_share', 'Unclustered'],
+/** Three measures before and after centring, with plain names and the short ones the line
+ * ends carry; the first is focal. */
+const MEASURES: [string, string, string][] = [
+  ['same_work_neighbours', 'Same-work neighbours', 'Same work'],
+  ['mean_largest_work_share', 'Largest work share', 'Largest work'],
+  ['noise_share', 'Unclustered', 'Unclustered'],
 ]
 const pc = (v: number) => `${Math.round(v * 100)}%`
 /** Both maps carry every measure the slope draws, and the chance level. */
@@ -54,7 +55,7 @@ function EvalSlope() {
     <Frame data={data}>
       {({ run }) => {
         const vs = VARIANTS
-        const [W, H, l, r, top, bottom] = [300, 230, 40, 150, 12, 20]
+        const [W, H, l, r, top, bottom] = [300, 190, 40, 100, 12, 20]
         const y = linearScale([0, 1], [H - bottom, top])
         const x = (j: number) => l + j * (W - l - r)
         const ev = (v: string, k: string) => run.evaluation[v][k]
@@ -74,9 +75,9 @@ function EvalSlope() {
             />
             <XAxis
               x={x}
-              y={H - 4}
+              y={H + 8}
               ticks={[
-                { value: 0, label: 'as embedded' },
+                { value: 0, label: 'embedded' },
                 { value: 1, label: 'style removed' },
               ]}
             />
@@ -113,7 +114,7 @@ function EvalSlope() {
               x={x(1) + 6}
               top={top}
               bottom={H - bottom}
-              items={MEASURES.map(([k, name], i) => ({
+              items={MEASURES.map(([k, , name], i) => ({
                 y: y(ev(vs[1], k)),
                 label: `${name} ${pc(ev(vs[1], k))}`,
                 color: i ? undefined : PALETTE[0],
