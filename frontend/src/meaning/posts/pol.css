@@ -1,3 +1,7 @@
+/* Ranked bars whose labels wrap rather than end in an ellipsis (pol-kit Bars `wrap`). */
+.mean-bars.mean-pol-wrap .rank-label {
+  white-space: normal;
+}
 .mean-pol-grid {
   stroke: var(--line);
   stroke-width: 0.5;
