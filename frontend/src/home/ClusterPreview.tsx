@@ -29,11 +29,7 @@ export default function ClusterPreview({
   useEffect(() => {
     const el = figure.current
     // The job-ad map sits beside the job assistant, below the platform's text and off the first screen.
-    const anchor = document.querySelector(
-      kind === 'jobs'
-        ? '#jobs'
-        : '.work-card[href="#symbolic-atlas"] .work-title',
-    )
+    const anchor = kind === 'jobs' ? document.querySelector('#jobs') : null
     if (!el || !anchor || !el.parentElement) return
     const align = () => {
       if (innerWidth <= 760) {
@@ -46,7 +42,7 @@ export default function ClusterPreview({
         parseFloat(getComputedStyle(el).marginTop)
       el.style.setProperty(
         '--cluster-anchor-y',
-        `${target.top + target.height / 2 - normalTop - (kind === 'jobs' ? 80 : 0)}px`,
+        `${target.top + target.height / 2 - normalTop - 80}px`,
       )
     }
     const observer = new ResizeObserver(align)

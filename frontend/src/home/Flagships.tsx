@@ -45,8 +45,8 @@ function ReleaseProof() {
     <p className="home-proof">
       <span className="home-proof-dot" aria-hidden="true" />
       {l(
-        `The release this page reads from was published ${when} and holds ${release.groups} dataset groups.`,
-        `Releasen som sidan läser från publicerades ${when} och innehåller ${release.groups} grupper av datamängder.`,
+        `The release this page reads from was published ${when} and holds ${release.groups} dataset ${release.groups === 1 ? 'group' : 'groups'}.`,
+        `Releasen som sidan läser från publicerades ${when} och innehåller ${release.groups} ${release.groups === 1 ? 'grupp' : 'grupper'} av datamängder.`,
       )}
     </p>
   )

@@ -71,7 +71,7 @@ test('the built site loads under CSP and blocks injected scripts', async ({
   }
   await page.keyboard.press('Escape')
   await page.goto('/#projects')
-  await expect(page.locator('#root')).toContainText('Projects')
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Projects')
   expect(violations).toEqual([])
 
   await page.evaluate(() => {

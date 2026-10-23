@@ -43,7 +43,7 @@ export const PLATFORM = {
 export const JOB_ASSISTANT = {
   title: t('Jobbassistenten', 'The job assistant'),
   text: t(
-    'Bygger på plattformens data om svenska platsannonser. Förhandsvisningen är inte publicerad än.',
+    'Bygger på plattformens data om svenska platsannonser. Förhandsvisningen är ännu inte publicerad.',
     'Built on the platform’s data on Swedish job ads. The live preview is not published yet.',
   ),
 }
@@ -52,7 +52,7 @@ export const JOB_ASSISTANT = {
 export const RESEARCH = {
   title: t('Forskning', 'Research'),
   text: t(
-    'Sidostudier i humaniora: inbäddningar och klustring på myter, filosofi och riksdagstal, med gränserna utskrivna.',
+    'Sidostudier i humaniora: inbäddningar och klustring på myter, filosofi och riksdagstal, med deras gränser redovisade.',
     'Side studies in the humanities: embeddings and clustering on myth, philosophy and Riksdag speeches, with their limits written down.',
   ),
 }

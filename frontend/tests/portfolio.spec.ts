@@ -22,9 +22,8 @@ test(
       )
       .toBeGreaterThan(0)
     const layout = await page.evaluate(() => {
-      const title = document
-        .querySelector('#projects-title')!
-        .getBoundingClientRect()
+      // The map centres on the job assistant's slot, 80 px above its middle.
+      const anchor = document.querySelector('#jobs')!.getBoundingClientRect()
       const list = document
         .querySelector('.home-project-groups > section')!
         .getBoundingClientRect()
@@ -49,7 +48,7 @@ test(
                 )!
                 .getBoundingClientRect().height /
                 2 -
-              (title.top + title.height / 2 - 80),
+              (anchor.top + anchor.height / 2 - 80),
           ) < 2,
         aboveList: map.bottom <= list.top,
         fits: document.documentElement.scrollWidth <= innerWidth,
@@ -284,13 +283,18 @@ test(
     await expect(header).toBeVisible()
     await expect(header).not.toHaveAttribute('inert', '')
     await expect(page.locator('.home-group-title')).toHaveCount(0)
-    // The start page stands alone: four repositories on GitHub, the platform first.
-    const cards = page.locator('.work-card')
-    await expect(cards).toHaveCount(4)
-    await expect(cards.first()).toHaveAttribute(
+    // The start page stands alone: the platform leads with its code, then three more
+    // repositories on GitHub and three research write-ups.
+    await expect(
+      page.locator('#platform .home-flagship-links a').last(),
+    ).toHaveAttribute('href', 'https://github.com/korv9/anton-portfolio')
+    const repos = page.locator('.home-project-groups .work-card')
+    await expect(repos).toHaveCount(3)
+    await expect(repos.first()).toHaveAttribute(
       'href',
-      'https://github.com/korv9/anton-portfolio',
+      'https://github.com/korv9/DrugComb-Synergy-Prediction',
     )
+    await expect(page.locator('#research .work-card')).toHaveCount(3)
     await expect(
       page.locator(
         'main a[href^="#"]:not([href^="#om-mig"]):not([href="#start"]):not([href="#main"])',

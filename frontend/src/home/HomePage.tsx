@@ -15,6 +15,7 @@ import {
 import { PROJECTS } from '../projects/projectRegistry'
 import LanguageToggle from '../site/LanguageToggle'
 import './home.css'
+import './flagships.css'
 import { useSlowScroll } from './useSlowScroll'
 import HomeFeed from './HomeFeed'
 import { PlatformFlagship } from './Flagships'
@@ -54,7 +55,7 @@ function Identity() {
           target="_blank"
           rel="noreferrer"
         >
-          {l('Code for this site', 'Koden till sidan')}
+          {l('Code for this site', 'Koden för sidan')}
         </a>
         {profile.linkedin && (
           <a href={profile.linkedin} target="_blank" rel="noreferrer">
