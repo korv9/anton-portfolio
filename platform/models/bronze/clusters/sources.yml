@@ -28,3 +28,8 @@ sources:
         meta:
           external_location: >-
             read_parquet('{{ env_var('PORTFOLIO_FEATURES', '../warehouse/features') }}/clusters/job-ads/occupation_month.parquet')
+      - name: three_spaces
+        description: One row per municipality of the three-spaces analysis (ml/three_swedens.py).
+        meta:
+          external_location: >-
+            read_parquet('{{ env_var('PORTFOLIO_FEATURES', '../warehouse/features') }}/clusters/three-swedens/run/municipalities.parquet')

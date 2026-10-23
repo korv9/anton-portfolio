@@ -36,6 +36,11 @@
     "jobs/*",
     "gold/marts/jobs.json",
     "parliament/workspace/*",
+    "politics/parliament/parties/*",
+    "politics/parliament/similarity/*",
+    "politics/parliament/speakers/*",
+    "politics/parliament/votes/*",
+    "politics/parliament/manifest.json",
     "sweden/*",
     "clusters/*"
   ],

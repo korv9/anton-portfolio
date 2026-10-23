@@ -120,19 +120,3 @@ export function cellText(
     )
   return parts.join(', ')
 }
-
-/** A check's value as the reader should see it: a ratio with its parts, a count, or nothing. */
-export function valueText(
-  c: QualityCheck,
-  l: (en: string, sv: string) => string,
-): string {
-  if (c.value == null) return '–'
-  if (c.numerator != null && c.denominator != null)
-    return `${fmt(c.numerator, l)} / ${fmt(c.denominator, l)}${c.sample_size ? l(' (sample)', ' (urval)') : ''}`
-  return fmt(c.value, l)
-}
-
-const fmt = (v: number, l: (en: string, sv: string) => string) =>
-  Number.isInteger(v)
-    ? v.toLocaleString(l('en-GB', 'sv-SE'))
-    : v.toLocaleString(l('en-GB', 'sv-SE'), { maximumFractionDigits: 3 })

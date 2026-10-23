@@ -1,5 +1,5 @@
 /**
- * partyMeta: each party's colour, logo and chart style, the one place a party's look is set.
+ * PARTY_IDENTITY: each party's colour, logo and chart style, the one place a party's look is set.
  *
  * `color` is the party colour as Swedish media and Valmyndigheten draw it (checked against the
  * parties' current logos in public/logos/parties/). `line` is the same hue, darkened where
@@ -175,85 +175,14 @@ export const PARTY_IDENTITY: Record<string, PartyIdentity> = {
   },
 }
 
-/** The eight parties in the Riksdag. */
-export const RIKSDAG_PARTIES = ['S', 'SD', 'M', 'V', 'C', 'KD', 'MP', 'L']
-
-/** The central party configuration (alias of PARTY_IDENTITY). */
-export const partyMeta = PARTY_IDENTITY
-
 const FALLBACK = PARTY_IDENTITY.OTHER
 export const identity = (code: string) => PARTY_IDENTITY[code] ?? FALLBACK
 /** The colour for a party's line, text or small mark on the page. */
 export const partyLine = (code: string) => identity(code).line
-/** The party colour, for filled areas; put `identity(code).ink` on it. */
-export const partyFill = (code: string) => identity(code).color
 /** SVG stroke-dasharray for a party's line style. */
 export const partyDash = (code: string) =>
   ({ solid: undefined, dashed: '7 4', dotted: '2 4' })[identity(code).lineStyle]
 export const partyName = (code: string) => {
   const p = identity(code)
   return l(p.nameEn, p.name)
-}
-
-/** The party's logo, or its letters on its colour where there is no logo. */
-export function PartyLogo({
-  party,
-  size = 20,
-  className,
-  decorative = true,
-}: {
-  party: string
-  size?: number
-  className?: string
-  /** True where the party's name is written next to the logo; otherwise the logo is named. */
-  decorative?: boolean
-}) {
-  const p = identity(party)
-  const cls = className ? `party-logo ${className}` : 'party-logo'
-  if (p.logo)
-    return (
-      <img
-        className={cls}
-        src={p.logo}
-        alt={decorative ? '' : l(`${p.nameEn} logo`, `${p.name}s logotyp`)}
-        width={size}
-        height={size}
-        loading="lazy"
-        decoding="async"
-      />
-    )
-  return (
-    <span
-      className={`${cls} party-logo-text`}
-      aria-hidden="true"
-      style={{
-        width: size,
-        height: size,
-        background: p.color,
-        color: p.ink,
-        fontSize: size * 0.42,
-      }}
-    >
-      {party === 'OTHER' ? '…' : party}
-    </span>
-  )
-}
-
-/** A party's logo and short name, e.g. in lists of how parties voted. */
-export function PartyTag({
-  party,
-  size = 16,
-}: {
-  party: string
-  size?: number
-}) {
-  return (
-    <span className="party-tag">
-      <PartyLogo party={party} size={size} />
-      <abbr title={partyName(party)}>
-        {party === 'OTHER' ? l('Other', 'Övr.') : party}
-      </abbr>
-      <span className="visually-hidden"> ({partyName(party)})</span>
-    </span>
-  )
 }

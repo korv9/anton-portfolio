@@ -77,10 +77,6 @@ export function Kpi({
   )
 }
 
-export function Cards({ children }: { children: ReactNode }) {
-  return <div className="board-grid dk-grid">{children}</div>
-}
-
 export function Card({
   title,
   meta,

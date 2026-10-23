@@ -14,6 +14,8 @@ import common
 
 ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / 'frontend/public/data/politics'
+# Upstream exports that nothing here reads; the mirror leaves them out.
+UNREAD = {'parties', 'similarity', 'speakers', 'votes', 'manifest.json'}
 
 def read(path):
     obj = json.loads(path.read_text(encoding='utf-8-sig'))
@@ -33,7 +35,7 @@ def mirror(source: Path, target: Path) -> int:
     """
     copied = 0
     for item in source.rglob('*'):
-        if not item.is_file():
+        if not item.is_file() or item.relative_to(source).parts[0] in UNREAD:
             continue
         destination = target / item.relative_to(source)
         if (destination.is_file()

@@ -60,3 +60,26 @@ models:
       - unique_combination:
           arguments:
             columns: [month, occupation_group]
+  - name: mart_municipality_three_spaces
+    description: >-
+      Neighbour agreement of each municipality across the social, job-ad and vote spaces
+      (docs/sweden-three-spaces-preregistration.md), with the 20 of least agreement ranked (misfit_rank).
+    columns:
+      - name: municipality_code
+        data_tests:
+          - unique
+          - not_null
+          - relationships:
+              arguments: {to: ref('dim_municipality'), field: municipality_code}
+      - name: municipality_name
+        data_tests: [not_null]
+      - name: agreement
+        data_tests:
+          - not_null
+          - between:
+              arguments: {min: 0, max: 1}
+      - name: misfit_rank
+        data_tests:
+          - unique
+          - between:
+              arguments: {min: 1, max: 20}

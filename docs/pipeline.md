@@ -221,12 +221,8 @@ bucket's `r2.dev` address.
 
 No workflow changes: the weekly run picks up every subject that is not marked `manual`.
 
-## Political workspace export
+## Formation seeds
 
 The parliament subject verifies source-backed formation seeds with
-`platform/ingest/riksdagen/formation_ingest.py` before dbt. Its existing exporter now calls
-`politics_workspace.py` after writing the parliamentary contracts. The standalone offline
-exporter uses committed snapshots; the warehouse path uses tested party roll-call facts.
-`parliament/workspace/*` belongs to the public-data release and is excluded from baseline.
-Source hashes and bounded coverage are published with the compact index. See
-[Political Observatory v2](political-observatory-v2.md) for reproduction and limits.
+`platform/ingest/riksdagen/formation_ingest.py` before dbt. The workspace export that read
+them (`parliament/workspace/*`) was removed on 2026-10-22 because no page read it.

@@ -94,15 +94,6 @@ models:
               arguments:
                 to: ref('technology_patterns')
                 field: skill
-  - name: mart_job_market_summary
-    description: Observed ad count by publication month, role, region and inferred seniority. Cohorts of collected ads, not historical market totals.
-    data_tests:
-      - unique_combination:
-          arguments:
-            columns: [publication_month, role_family, region, seniority]
-    columns:
-      - name: job_count
-        data_tests: [not_null]
 seeds:
   - name: technology_patterns
     description: Reviewable lower-case regex patterns. Fabric requires Microsoft or MS context to reduce false positives.

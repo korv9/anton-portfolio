@@ -161,6 +161,7 @@ function CountyHeat() {
           <>
             <Slicer
               label="Metric"
+              cycles={false}
               options={['unemployment', 'stress'] as const}
               value={m}
               onChange={setM}

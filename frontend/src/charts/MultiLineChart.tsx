@@ -9,7 +9,6 @@ import { MarkerShape, spreadLabels } from './marks'
  * cycled; a sixth series is not drawn.
  */
 export const SERIES_COLORS = [1, 2, 3, 4, 5].map((n) => `var(--series-${n})`)
-export const MAX_SERIES = SERIES_COLORS.length
 
 export type SeriesPoint = {
   /** Period start, ISO date; the x position. */
