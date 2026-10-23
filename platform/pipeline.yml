@@ -528,11 +528,10 @@ subjects:
     group: job-assistant
     raw: [job_assistant]
     steps:
+      # platform/job_assistant/sync.py turns a new CV upload into a draft and stores an approved
+      # draft as the next version (worker/jobs.ts). It needs the owner token, so it runs in its own
+      # step of data-subject.yml before this subject, not here.
       - ingest: python platform/job_assistant/ads.py
-      # A new CV upload becomes a draft; a draft the owner asked to approve is checked against
-      # its CV and stored as the next version (worker/jobs.ts holds the records).
-      - ingest: python platform/job_assistant/sync.py
-        secrets: [JOB_ASSIST_TOKEN]
       # Matches the ads with the approved profile from the Worker into the raw match store, which
       # dbt reads next; without a profile nothing is matched. A failed match run keeps the last
       # matches.json, so the ad list is still built and published; the mart drops closed ads.

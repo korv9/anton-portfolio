@@ -177,6 +177,20 @@ def test_explain_error_is_recorded(store, profile, monkeypatch):
     assert entry["model"] == ai.EXPLAIN_MODEL and entry["neurons_est"] > 0, "a failed call keeps its estimate"
 
 
+def test_explain_timeout_keeps_its_estimate(store, profile, monkeypatch):
+    monkeypatch.setenv("CLOUDFLARE_ACCOUNT_ID", "acct")
+    monkeypatch.setattr(ai, "vectors", lambda texts, http, note: {})
+
+    class Slow:
+        def post(self, url, json, timeout):
+            raise TimeoutError("read timed out")
+
+    result = rank.run(profile, Slow(), NOW)
+    assert result["note"]["explain_stopped"] == "error: TimeoutError"
+    entry = json.loads((store / "ledger.jsonl").read_text(encoding="utf-8").splitlines()[-1])
+    assert entry["model"] == ai.EXPLAIN_MODEL and entry["neurons_est"] > 0, "a timed-out call keeps its estimate"
+
+
 def test_unquoted_claim_is_unverified():
     assert ai.verified('It fits: "Python". You will surely be hired.', ["Python"]) is None
     assert ai.verified('It fits: "Python". The gap is "dbt".', ["Python och dbt"]) == ["Python", "dbt"]

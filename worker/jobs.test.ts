@@ -192,7 +192,13 @@ test('personnummer and street addresses count as contact details', async () => {
     })
     assert.equal(r.status, 400, summary)
   }
-  for (const summary of ['2019 - 2022', 'Kandidatexamen, 180 hp']) {
+  // An org number is not a valid birth date; a word before the digits is not an address.
+  for (const summary of [
+    '2019 - 2022',
+    'Kandidatexamen, 180 hp',
+    'Org.nr 556677-8899',
+    'Nominated 200 10 Kronor',
+  ]) {
     const r = await call(e, 'profile/draft', {
       method: 'PUT',
       body: JSON.stringify({ profile: profile({ summary }) }),

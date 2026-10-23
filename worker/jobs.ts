@@ -45,10 +45,11 @@ const MEDIA: Record<string, number[]> = {
 const MAX_CV = 1_400_000
 const MAX_PROFILE = 512_000
 const AD_ID = /^[0-9A-Za-z_-]{1,40}$/
-// E-mail, phone, Swedish personnummer, street address, and a postcode before a town.
-// The same pattern as CONTACT in platform/job_assistant/cv.py.
+// E-mail, phone, Swedish personnummer (with a valid date), street address, and a postcode (100 00 to
+// 999 99) before a town, with no word just before it. The same pattern as CONTACT in
+// platform/job_assistant/cv.py.
 const CONTACT =
-  /@|\+\d[\d ]{6,}|\b0\d{2}[- ]?\d{3} ?\d{2} ?\d{2}\b|\b(?:19|20)?\d{6}[-+]?\d{4}\b|\p{L}*(?:gatan|vägen|gränd|torget|allén|stigen) \d+|\b\d{3} ?\d{2} [A-ZÅÄÖ][a-zåäö]+/u
+  /@|\+\d[\d ]{6,}|\b0\d{2}[- ]?\d{3} ?\d{2} ?\d{2}\b|\b(?:19|20)?\d{2}(?:0[1-9]|1[0-2])(?:0[1-9]|[12]\d|3[01])[-+]?\d{4}\b|\p{L}*(?:gatan|vägen|gränd|torget|allén|stigen) \d+|(?<![\p{L}\d] )\b[1-9]\d{2} ?\d{2} [A-ZÅÄÖ][a-zåäö]+/u
 
 export const SQL = {
   upsert:

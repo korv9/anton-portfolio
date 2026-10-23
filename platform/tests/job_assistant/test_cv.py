@@ -10,7 +10,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / "platform/job_assistant"))
-from cv import CONTACT, DOCX, PDF, parse, read_text  # noqa: E402
+from cv import CONTACT, DOCX, PDF, clean_lines, parse, read_text  # noqa: E402
 from cv_profile import approve, correct, problems  # noqa: E402
 
 CV = ROOT / "frontend/public/cv/Anton_Ernstsson_CV_final.pdf"
@@ -87,9 +87,16 @@ def test_personnummer_and_addresses_count_as_contact(owner, text):
     assert any("contact details" in p for p in problems(profile))
 
 
-@pytest.mark.parametrize("text", ["2019 - 2022", "Kandidatexamen, 180 hp", "Python, SQL, Kubernetes"])
+@pytest.mark.parametrize("text", ["2019 - 2022", "Kandidatexamen, 180 hp", "Python, SQL, Kubernetes",
+                                  "Org.nr 556677-8899", "Nominated 200 10 Kronor"])
 def test_ordinary_cv_text_is_not_contact(text):
     assert not CONTACT.search(text)
+
+
+def test_a_contact_span_is_cut_and_the_rest_of_its_line_kept():
+    lines = clean_lines("Kungsholmen, Hantverkargatan 5\nkim@example.com / +46 70 123 45 67\nAnalyst, 123 45 Stockholm")
+    assert lines == ["Kungsholmen", "Analyst"]
+    assert not any(CONTACT.search(line) for line in lines)
 
 
 def test_docx_swedish_headings_and_ongoing_role():
