@@ -4,7 +4,9 @@
 
 Reads the JobTech cluster corpus (warehouse/raw/jobtech/cluster-corpus/<year>/*.parquet, or the
 folders given) in one DuckDB pass with a 1 GB limit: occupation field Data/IT, a description of
-at least 300 characters, deduplicated on the lower-cased description (tmp/job-ads-ml.md).
+at least 300 characters, deduplicated on the exact lower-cased description (tmp/job-ads-ml.md),
+so a repost with an edited description stays in. Ads without an employer are left out (none in
+2024-2025).
 - Label: senior when the title matches SENIOR, junior when it matches JUNIOR; the title is never
   a feature. Role: the six largest occupation groups.
 - Baseline: the 32 skill flags of platform/seeds/technology_patterns.csv in the body.
@@ -62,36 +64,35 @@ def sql_text(value: str) -> str:
 
 def load(folders: list[str]) -> tuple[dict, list[str]]:
     names = [s for s, _ in skills()]
-    flags = ", ".join(f"regexp_matches(body, {sql_text(p)})::tinyint" for _, p in skills())
-    signals = ", ".join(f"regexp_matches(body, {sql_text(p)})::tinyint" for k, p in {**SIGNALS, **CONSISTENCY}.items()
-                        if k != "years")
+    flags = ", ".join(f"regexp_matches(body, {sql_text(p)})::tinyint as flag_{i}" for i, (_, p) in enumerate(skills()))
+    signals = ", ".join(f"regexp_matches(body, {sql_text(p)})::tinyint as signal_{i}"
+                        for i, (k, p) in enumerate((k, p) for k, p in {**SIGNALS, **CONSISTENCY}.items() if k != "years"))
     paths = ", ".join(sql_text(f"{f}/*.parquet") for f in folders)
     query = f"""
         with ads as (
             select any_value(lower(title)) as title, any_value(employer) as employer,
                    any_value(occupation_group) as role, lower(any_value(description)) as body
             from read_parquet([{paths}])
-            where occupation_field = 'Data/IT' and length(description) >= 300
+            where occupation_field = 'Data/IT' and length(description) >= 300 and employer is not null
             group by md5(lower(description)))
-        select coalesce(employer, '?'), coalesce(role, '?'),
+        select employer, coalesce(role, '?') as role,
                case when regexp_matches(title, {sql_text(SENIOR)}) then 1
-                    when regexp_matches(title, {sql_text(JUNIOR)}) then 0 end,
-               len(string_split(body, ' ')),
+                    when regexp_matches(title, {sql_text(JUNIOR)}) then 0 end as senior,
+               len(string_split(body, ' ')) as words,
                coalesce(list_max(list_transform(regexp_extract_all(body, {sql_text(SIGNALS['years'])}, 1),
-                                                x -> least(x::int, 20))), 0),
+                                                x -> least(x::int, 20))), 0) as years,
                {signals}, {flags}
         from ads"""
     with duckdb.connect() as con:
         con.execute("set memory_limit='1GB'")
         con.execute("set threads=2")
         rows = con.sql(query).fetchnumpy()
-    columns = list(rows.values())
     other = [k for k in {**SIGNALS, **CONSISTENCY} if k != "years"]
-    data = {"employer": columns[0].astype(str), "role": columns[1].astype(str),
-            "senior": np.array([np.nan if v is None else v for v in columns[2]], dtype=float),
-            "words": np.asarray(columns[3], float), "years": np.asarray(columns[4], float)}
-    data.update({k: np.asarray(v, float) for k, v in zip(other, columns[5:5 + len(other)])})
-    data["flags"] = np.column_stack(columns[5 + len(other):]).astype(float)
+    data = {"employer": rows["employer"].astype(str), "role": rows["role"].astype(str),
+            "senior": np.array([np.nan if v is None else v for v in rows["senior"]], dtype=float),
+            "words": np.asarray(rows["words"], float), "years": np.asarray(rows["years"], float)}
+    data.update({k: np.asarray(rows[f"signal_{i}"], float) for i, k in enumerate(other)})
+    data["flags"] = np.column_stack([rows[f"flag_{i}"] for i in range(len(names))]).astype(float)
     return data, names
 
 

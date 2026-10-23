@@ -1,4 +1,5 @@
 """Feature builders of ml/feature_study on data with a known answer."""
+import json
 import re
 import sys
 from pathlib import Path
@@ -94,3 +95,62 @@ def test_talk_distances_cut_two_blocs():
     labels = talk_vote.cut(d["hellinger"])
     assert labels[0] == labels[1] == labels[2] != labels[3]
     assert np.allclose(d["aitchison"], d["aitchison"].T) and np.allclose(np.diag(d["aitchison"]), 0)
+
+
+def ads(n=200, seed=0):
+    rng = np.random.default_rng(seed)
+    years = rng.integers(0, 8, n).astype(float)
+    data = {"flags": rng.integers(0, 2, (n, 12)).astype(float), "words": rng.integers(100, 900, n).astype(float),
+            "years": years, "lead": (years > 4).astype(float), "entry": (years == 0).astype(float),
+            "remote": rng.integers(0, 2, n).astype(float), "body_senior": (years > 5).astype(float),
+            "body_junior": (years < 1).astype(float)}
+    return data, (years > 3).astype(int), np.repeat(np.arange(n // 4), 4).astype(str)
+
+
+def test_job_feature_sets_add_each_block_to_the_skills():
+    data, _, _ = ads()
+    sets = job_ads.feature_sets(data)
+    assert set(sets) == {"skills", "skills+size", "skills+stack", "skills+experience", "skills+all",
+                         "skills+all+consistency"}
+    assert sets["skills+size"].shape[1] == 12 + 2 and sets["skills+experience"].shape[1] == 12 + 5
+    assert sets["skills+all"].shape[1] == 12 + 2 + 8 + 5
+    assert np.array_equal(sets["skills+all"][:, :12], data["flags"])
+
+
+def test_job_compare_scores_each_set_against_skills(monkeypatch):
+    monkeypatch.setattr(job_ads, "BOOT", 50)
+    data, y, groups = ads()
+    sets = {k: v for k, v in job_ads.feature_sets(data).items() if k in ("skills", "skills+experience")}
+    out = job_ads.compare(sets, y, groups, job_ads.auc, True, False)
+    assert "vs_skills" not in out["skills"]
+    gain = out["skills+experience"]["vs_skills"]
+    assert gain["low"] > 0.2 and out["skills+experience"]["score"]["point"] > 0.9
+
+
+def test_municipal_feature_sets_and_common_units():
+    p = panel()
+    for share, value in zip(municipal.SHARES, (30, 20, 20, 10, 5, 5, 4, 4)):
+        p[share] = value
+    p.loc[(p.municipality_code == "0115") & (p.year == 2015), "median_earned_income_sek"] = np.nan
+    columns = ["open_unemployment_18_65_pct", "median_earned_income_sek"]
+    sets = municipal.feature_sets(p, 2024, 2015, columns)
+    assert set(sets) == {"levels", "engineered", "engineered+change", "engineered+slope"}
+    assert sets["engineered"].shape[1] == 2 + 9
+    assert list(municipal.common(sets)) == ["0114"]  # 0115 lacks its 2015 income, so no change
+
+
+def test_talk_sessions_keep_their_position_and_lag_pairs_skip_gaps(tmp_path, monkeypatch):
+    parties, sessions = ["A", "B", "C", "D"], ["2001/02", "2002/03", "2003/04"]
+    topics = [{"model_id": talk_vote.published.MODEL, "topic_id": t, "session": s, "party": p, "words": 10 + t}
+              for s in sessions for p in parties for t in range(3)]
+    pairs = [{"session": s, "party_a": a, "party_b": b, "agreement_pct": 80.0}
+             for s in sessions if s != "2002/03" for i, a in enumerate(parties) for b in parties[i + 1:]]
+    (tmp_path / "t.json").write_text(json.dumps(topics), encoding="utf-8")
+    (tmp_path / "v.json").write_text(json.dumps({"party_pairs": pairs}), encoding="utf-8")
+    monkeypatch.setattr(talk_vote.published, "TOPICS", tmp_path / "t.json")
+    monkeypatch.setattr(talk_vote.published, "VOTES", tmp_path / "v.json")
+    rows = talk_vote.sessions()
+    assert [r["position"] for r in rows] == [0, 2]  # 2002/03 has no votes
+    assert rows[0]["pooled"].sum() == 2 * rows[0]["words"].sum()  # 2001/02 pools with 2002/03 only
+    assert talk_vote.lag_pairs([0, 2], 1) == [] and talk_vote.lag_pairs([0, 2], 2) == [(0, 1)]
+    assert talk_vote.lag_pairs([0, 1, 3, 4], 1) == [(0, 1), (2, 3)]

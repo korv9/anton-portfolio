@@ -13,12 +13,14 @@ amend it; nothing here is published as topics. Reads the pilot's sample and its 
 - conditioned: the centred PCA components joined with the metadata, scaled to the same total
   variance, so the metadata can steer the clusters.
 K-means for k = 8 and 16: seed ARI (seeds 1-3, one start each, the role UMAP seeds play in the
-pilot), ARI against refits on 80 % subsamples (seeds 11-13), silhouette on 10,000 sentences
-against a null with every component permuted on its own, and AMI with each metadata field.
+pilot), ARI between the seed-1 fit and seed-1 refits on three 80 % subsamples (rows drawn with
+seeds 11-13), silhouette on 10,000 sentences against a null with every component permuted on its
+own (20 rounds, so its 95th percentile is indicative), and AMI with each metadata field.
 """
 from __future__ import annotations
 
 import itertools
+import json
 import os
 import re
 from pathlib import Path
@@ -38,6 +40,7 @@ MARKERS = {"future": r"framtid", "generations": r"kommande generationer|våra ba
            "tomorrow": r"morgondagens", "long_term": r"långsiktig|på lång sikt",
            "horizon": r"om (?:tio|tjugo|trettio|femtio|hundra) år|(?:år|till|fram till|inför) 20[2-9]0\b",
            "vision": r"vision"}
+REGISTERED = ROOT / "frontend/public/data/sweden/futures/topics.json"
 KS, SEEDS, SUBSAMPLES, COMPONENTS, SIL_N, NULL_ROUNDS = (8, 16), (1, 2, 3), (11, 12, 13), 50, 10000, 20
 
 
@@ -115,6 +118,12 @@ def load() -> tuple[pd.DataFrame, np.ndarray]:
     return sample, vectors
 
 
+def registered() -> dict:
+    stability = json.loads(REGISTERED.read_text(encoding="utf-8"))["method"]["stability"]
+    return {k: round(stability[k], 4) for k in ("seed_ari_mean", "subsample_ari_mean")} | {
+        "source": REGISTERED.relative_to(ROOT).as_posix()}
+
+
 def main() -> None:
     sample, vectors = load()
     meta = metadata(sample)
@@ -125,8 +134,7 @@ def main() -> None:
     spaces["conditioned"] = condition(spaces["centred"], meta)
     write("futures", {"sentences": int(len(sample)), "components": COMPONENTS,
                       "markers": meta.marker.value_counts().to_dict(),
-                      "registered_result": {"seed_ari_mean": 0.3791, "subsample_ari_mean": 0.3622,
-                                            "source": "frontend/public/data/sweden/futures/topics.json"},
+                      "registered_result": registered(),
                       "spaces": {name: [score(x, k, meta) for k in KS] for name, x in spaces.items()}})
 
 

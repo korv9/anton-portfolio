@@ -16,7 +16,9 @@ sessions one and three apart on their common parties (does the grouping persist;
 overlap at one apart, not at three), topic bootstrap ARI
 for the sets that use topics (topics drawn with replacement, votes kept), and for talk sets the
 Mantel r with votes. The votes stay fixed in the topic bootstrap, so talk+votes is stable there
-partly by construction. Session means with a bootstrap over sessions (1,000 rounds).
+partly by construction. Session means with a bootstrap over sessions (1,000 rounds). The lag is
+counted in the full session order, so a skipped session leaves a gap and shifts no pair. Pooled
+against Hellinger also gets a paired bootstrap over the same session pairs.
 """
 from __future__ import annotations
 
@@ -28,7 +30,7 @@ import pandas as pd
 from scipy.cluster.hierarchy import fcluster
 from sklearn.metrics import adjusted_rand_score
 
-from ml.feature_study.report import ROOT, write
+from ml.feature_study.report import ROOT, stats, write
 
 sys.path.insert(0, str(ROOT / "platform/publish/clusters"))
 import talk_vote as published  # noqa: E402
@@ -37,9 +39,8 @@ CUT, BOOT, SEED = published.CUT, 1000, 20261022
 TOPIC_ROUNDS = 100
 
 
-def aitchison(shares: np.ndarray, words: np.ndarray) -> np.ndarray:
-    logs = np.log(words + 0.5)
-    logs = logs - logs.mean(axis=1, keepdims=True)
+def aitchison(words: np.ndarray) -> np.ndarray:
+    logs = stats.clr(words + 0.5)
     return np.linalg.norm(logs[:, None] - logs[None], axis=2)
 
 
@@ -55,7 +56,7 @@ def distances(words: np.ndarray, pooled_words: np.ndarray, vote: np.ndarray) -> 
     shares = words / words.sum(axis=1, keepdims=True)
     pooled = pooled_words / pooled_words.sum(axis=1, keepdims=True)
     talk = published.hellinger(shares)
-    return {"hellinger": talk, "aitchison": aitchison(shares, words), "pooled": published.hellinger(pooled),
+    return {"hellinger": talk, "aitchison": aitchison(words), "pooled": published.hellinger(pooled),
             "votes": vote, "talk+votes": (scaled(talk) + scaled(vote)) / 2}
 
 
@@ -87,7 +88,7 @@ def sessions() -> list[dict]:
                           for b in parties] for a in parties])
         if np.isnan(vote).any():
             continue
-        out.append({"session": session, "parties": parties, "words": cube.loc[session].loc[parties].to_numpy(float),
+        out.append({"session": session, "position": i, "parties": parties, "words": cube.loc[session].loc[parties].to_numpy(float),
                     "pooled": pooled.to_numpy(float), "vote": vote})
     return out
 
@@ -97,6 +98,12 @@ def interval(values, rng) -> dict:
     boot = [rng.choice(values, len(values)).mean() for _ in range(BOOT)]
     return {"mean": round(float(values.mean()), 4), "low": round(float(np.percentile(boot, 2.5)), 4),
             "high": round(float(np.percentile(boot, 97.5)), 4), "sessions": int(len(values))}
+
+
+def lag_pairs(positions: list[int], lag: int) -> list[tuple[int, int]]:
+    """Row indices (a, b) whose sessions lie `lag` apart in the full session order."""
+    at = {p: i for i, p in enumerate(positions)}
+    return [(i, at[p + lag]) for i, p in enumerate(positions) if p + lag in at]
 
 
 def main() -> None:
@@ -113,17 +120,20 @@ def main() -> None:
                 boots[n].append(topic_bootstrap(row["words"], row["pooled"], row["vote"], n, labels, rng))
             if n in mantels:
                 mantels[n].append(published.mantel(d[n], row["vote"], rounds=1)[0])
-    persist = {}
+    persist, pooled_gain = {}, {}
     for lag in (1, 3):  # pooled windows share sessions at lag 1, none at lag 3
-        persist[f"lag_{lag}"] = {}
+        pairs = lag_pairs([r["position"] for r in rows], lag)
+        values = {}
         for n in names:
-            values = []
-            for a, b in zip(cuts[n], cuts[n][lag:]):
+            values[n] = []
+            for i, j in pairs:
+                a, b = cuts[n][i], cuts[n][j]
                 common = sorted(set(a) & set(b))
-                values.append(adjusted_rand_score([a[p] for p in common], [b[p] for p in common]))
-            persist[f"lag_{lag}"][n] = interval(values, rng)
+                values[n].append(adjusted_rand_score([a[p] for p in common], [b[p] for p in common]))
+        persist[f"lag_{lag}"] = {n: interval(v, rng) for n, v in values.items()}
+        pooled_gain[f"lag_{lag}"] = interval(np.subtract(values["pooled"], values["hellinger"]), rng)
     write("talk_vote", {"sessions": [r["session"] for r in rows], "cut": CUT,
-                        "session_ari": persist,
+                        "session_ari": persist, "pooled_minus_hellinger": pooled_gain,
                         "topic_bootstrap_ari": {n: interval(v, rng) for n, v in boots.items()},
                         "mantel_r_with_votes": {n: interval(v, rng) for n, v in mantels.items()}})
 

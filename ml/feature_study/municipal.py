@@ -16,8 +16,8 @@ Feature sets, each z-scored per column and clustered with the same K-means and c
 - + jobs: engineered plus CLR of the 21 occupation-field shares of distinct job ads, pooled
   2023-2025 (gold.mart_job_ad_municipality_field, at least 900 ads, as labour_market.py).
 A municipality missing any value is left out of every set, so all sets cover the same units.
-Library visits are missing for 10-30 municipalities, so every comparison runs with and without
-them. Period check: each set built for 2014-2019 and for 2019-2024, clustered at the fixed k, as
+Library visits are missing for 38 of the 240 municipalities that have every other value, so
+every comparison runs with and without them. Period check: each set built for 2014-2019 and for 2019-2024, clustered at the fixed k, as
 ARI (none for + jobs: the ads start in 2023).
 """
 from __future__ import annotations
