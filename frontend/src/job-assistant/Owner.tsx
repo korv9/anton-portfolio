@@ -137,15 +137,15 @@ export default function Owner({ owner, available, onOwner, onRecords }: Props) {
             />
           </label>
           <button className="btn-quiet" type="submit">
-            {l('Use on this device', 'Använd på den här enheten')}
+            {l('Use in this tab', 'Använd i den här fliken')}
           </button>
         </form>
       ) : (
         <>
           <p className="ja-owner-row">
             {l(
-              'Writes are on for this device. The Worker still checks the token on each one.',
-              'Skrivning är på för den här enheten. Workern kontrollerar ändå token vid varje skrivning.',
+              'Writes are on until this tab closes. The Worker still checks the token on each one.',
+              'Skrivning är på tills fliken stängs. Workern kontrollerar ändå token vid varje skrivning.',
             )}
             <button
               className="btn-text"

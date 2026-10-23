@@ -4,9 +4,9 @@ bge-m3 embeds every ad text once (cached per text hash) and the profile; gemma w
 explanation for the top new candidates. Both go through platform/nlp/workers_ai.py's REST call and
 ledger, with the agent name job-assistant and the ledger under warehouse/raw/job_assistant, so this
 project's spend is counted on its own. When the project cap (CAP) or the account's free allocation is
-used up, the run goes on without AI: rules and cached vectors still rank every ad, and the missing
-vectors and explanations are made on a later day. An explanation is kept only if every quote in it is
-found in the ad or the CV.
+used up, or a call fails, the run goes on without AI: rules and cached vectors still rank every ad,
+and the missing vectors and explanations are made on a later run. An explanation is kept only if
+every sentence quotes the ad or the CV and every quote is found there.
 """
 from __future__ import annotations
 
@@ -95,6 +95,10 @@ def vectors(texts: dict[str, str], http, note: dict) -> dict[str, np.ndarray]:
         except workers_ai.QuotaExhausted:
             note["stopped"] = "account quota"
             break
+        except (RuntimeError, OSError) as error:  # a 5xx after retries, or the connection
+            note["stopped"] = "error"
+            note["error"] = type(error).__name__
+            break
         workers_ai.append_ledger(AGENT, used, neurons, ledger())
         db.executemany("insert or ignore into vectors values (?, ?)", [(h, v.tobytes()) for h, v in zip(batch, found)])
         db.commit()
@@ -117,16 +121,21 @@ def fold(text: str) -> str:
 
 
 def verified(answer: str, sources: list[str]) -> list[str] | None:
-    """The answer's quotes when every one is found in a source; None when any is not, or there are none."""
-    quotes = re.findall(r'"([^"]{3,})"', answer.replace("“", '"').replace("”", '"'))
+    """The answer's quotes when every sentence has one and every one is found in a source; else None."""
+    answer = answer.replace("“", '"').replace("”", '"')
+    quotes = re.findall(r'"([^"]{3,})"', answer)
     pool = [fold(s) for s in sources]
-    if not quotes or not all(any(fold(q) in s for s in pool) for q in quotes):
+    # A sentence without a quote is a claim nobody checked.
+    masked = re.sub(r'"[^"]{3,}"', "\0", answer)
+    claims = [s for s in re.split(r"(?<=[.!?])\s+", masked) if s.strip()]
+    if not quotes or not all("\0" in s for s in claims) or not all(any(fold(q) in s for s in pool) for q in quotes):
         return None
     return quotes
 
 
-def explain(match: dict, ad: dict, http, explained_today: int) -> dict | None:
-    """A checked explanation of one match, or None when the budget, the quota or the check says no."""
+def explain(match: dict, ad: dict, http, explained_today: int, now: datetime | None = None) -> dict | None:
+    """A checked explanation of one match, or None when the budget or the quota says no. A failed call
+    raises RuntimeError (or the connection's OSError), so the caller can record why it stopped."""
     if http is None or explained_today >= EXPLAIN_PER_DAY:
         return None
     facts = {"role": match["role"], "class": match["class"], "reasons": match["reasons"],
@@ -143,7 +152,9 @@ def explain(match: dict, ad: dict, http, explained_today: int) -> dict | None:
         "max_tokens": 300, "temperature": 0.1, "chat_template_kwargs": {"enable_thinking": False}})
     body = response.json() if response.headers.get("content-type", "").startswith("application/json") else {}
     if not (response.ok and body.get("success")):
-        return None
+        if any(e.get("code") == 4006 for e in body.get("errors") or []):
+            return None
+        raise RuntimeError(f"Workers AI {response.status_code}")
     result = body["result"]
     text = (result.get("response") or ((result.get("choices") or [{}])[0].get("message") or {}).get("content") or "").strip()
     usage = result.get("usage") or {}
@@ -153,7 +164,8 @@ def explain(match: dict, ad: dict, http, explained_today: int) -> dict | None:
     sources = [ad.get("description") or "", ad.get("headline") or ""] + [
         q["quote"] for j in match["skills"] for q in j["cv_quotes"]]
     quotes = verified(text, sources)
+    # Every made explanation counts toward EXPLAIN_PER_DAY, checked or not.
+    at = (now or datetime.now(timezone.utc)).isoformat(timespec="seconds")
     if quotes is None:
-        return {"status": "unverified", "model": EXPLAIN_MODEL}
-    return {"status": "verified", "text": text, "quotes": quotes, "model": EXPLAIN_MODEL,
-            "at": datetime.now(timezone.utc).isoformat(timespec="seconds")}
+        return {"status": "unverified", "model": EXPLAIN_MODEL, "at": at}
+    return {"status": "verified", "text": text, "quotes": quotes, "model": EXPLAIN_MODEL, "at": at}

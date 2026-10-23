@@ -4,11 +4,14 @@ The result is a match class with the rule that set it, never a chance of being h
 judgement carries the ad sentence and the CV lines it rests on. Formal education and conditions such
 as citizenship are listed on their own and never change the class.
 
-Classes, in order:
+Classes, in order. "Practical" is a skill shown in employment or an internship; skills shown only
+in projects or education are counted and reported apart and never lift an ad to strong or possible.
     strong    a wished role read from the title, in a wished place, not senior, at least three
-              skills named and at least 60 % of them shown in practical work or projects
-    possible  a wished role in a wished place, not senior, at least 30 % shown (or no skills named)
-    stretch   a wished role in a wished place with at least 30 % shown, but senior or 3+ years asked
+              skills named and at least 60 % of them practical
+    possible  a wished role in a wished place, not senior, at least one skill named and at least
+              30 % of them practical
+    stretch   a wished role in a wished place with at least 30 % shown in practical work, projects or
+              education (or no skill named), but senior, 3+ years asked or under 30 % practical
     outside   anything else: another role, another place, or under 30 % shown
 """
 from __future__ import annotations
@@ -22,7 +25,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from publish.job_content import requirements  # noqa: E402
 from skills import find_skills  # noqa: E402
 
-ENGINE = "job-match-v1"
+ENGINE = "job-match-v2"
 CLASSES = ("strong", "possible", "stretch", "outside")
 LISTED = ("strong", "possible")
 # Title first, in this order; the first that matches names the role.
@@ -105,8 +108,9 @@ def match(ad: dict, profile: dict) -> dict:
     judgements = judge(asked_skills(ad), profile)
     required = [j for j in judgements if j["strength"] == "required"]
     basis = required or judgements
+    practical = [j for j in basis if j["cv_level"] == "practical"]
     shown = [j for j in basis if j["cv_level"] in MET]
-    share = len(shown) / len(basis) if basis else None
+    share = len(practical) / len(basis) if basis else None
     years = [int(y) for y in re.findall(YEARS, text, re.I)]
     senior_title = first(SENIOR, headline)
     senior = bool(senior_title) or (max(years, default=0) >= 3)
@@ -117,11 +121,9 @@ def match(ad: dict, profile: dict) -> dict:
     place_ok = (not places or (ad.get("municipality") or "").casefold() in places
                 or (ad.get("region") or "").casefold() in places
                 or (wishes["remote"] in ("hybrid", "remote") and bool(remote)))
-    enough = share is None or share >= 0.3
-    if role_ok and place_ok and enough and not senior:
-        klass = ("strong" if from_title and share is not None and share >= 0.6 and len(basis) >= 3
-                 else "possible")
-    elif role_ok and place_ok and enough:
+    if role_ok and place_ok and share is not None and share >= 0.3 and not senior:
+        klass = "strong" if from_title and share >= 0.6 and len(basis) >= 3 else "possible"
+    elif role_ok and place_ok and (not basis or len(shown) / len(basis) >= 0.3):
         klass = "stretch"
     else:
         klass = "outside"
@@ -130,7 +132,9 @@ def match(ad: dict, profile: dict) -> dict:
                + ("" if role_ok else ", not a wished role")]
     if basis:
         kind = "required" if required else "named"
-        reasons.append(f"{len(shown)} of {len(basis)} {kind} skills shown in practical work or projects")
+        reasons.append(f"{len(practical)} of {len(basis)} {kind} skills shown in practical work")
+        if len(shown) > len(practical):
+            reasons.append(f"{len(shown) - len(practical)} more only in projects or education")
     else:
         reasons.append("the ad names no skill from the vocabulary")
     place = ad.get("municipality") or ad.get("region") or "no place given"

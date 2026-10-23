@@ -90,6 +90,29 @@ def test_docx_swedish_headings_and_ongoing_role():
     assert problems(profile, read_text(data, DOCX)) == []
 
 
+def test_internship_named_only_in_the_title():
+    lines = [line for line in DOCX_LINES if line != "LIA praktik"]
+    assert parse(docx(lines), DOCX, "cv.docx", NOW)["experience"][1]["kind"] == "internship"
+
+
+def test_evidence_level_follows_the_cv_section_of_its_quote(owner):
+    profile, text = owner
+    listed = next(s for s in profile["skills"] if s["level"] == "listed")
+    row = next(r for r in listed["evidence"] if r["ref"] == "skills")
+    real = next(e for e in profile["experience"] if e["details"])
+    # A skills-list line paired with a real experience sentence must not lift the skill to practical.
+    lifted = [{**s, "level": "practical", "evidence": [{**row, "level": "practical", "ref": real["id"]},
+                                                       {"level": "practical", "ref": real["id"],
+                                                        "quote": real["details"][0]}]}
+              if s is listed else s for s in profile["skills"]]
+    found = problems(correct(profile, {"skills": lifted}, "", NOW), text)
+    assert any(f"skills/{listed['skill']}/{real['id']}: quote is not in the CV experience" in p for p in found)
+    relabelled = [{**s, "level": "practical", "evidence": [{**row, "level": "practical"}]} if s is listed else s
+                  for s in profile["skills"]]
+    assert any("does not match the CV section" in p
+               for p in problems(correct(profile, {"skills": relabelled}, "", NOW), text))
+
+
 def test_unreadable_file_and_missing_sections():
     with pytest.raises(ValueError):
         read_text(b"plain text", "text/plain")
@@ -102,7 +125,7 @@ def test_correction_cannot_invent_experience(owner):
     kubernetes = {"skill": "Kubernetes", "category": "platform", "level": "practical",
                   "evidence": [{"level": "practical", "ref": "experience-2", "quote": "Ran Kubernetes clusters."}]}
     invented = correct(profile, {"skills": profile["skills"] + [kubernetes]}, "add k8s", NOW)
-    assert any("not in the CV text" in p for p in problems(invented, text))
+    assert any("not in the CV experience" in p for p in problems(invented, text))
     raised = [dict(s) for s in profile["skills"]]
     sql = next(s for s in raised if s["skill"] == "SQL")
     sql["level"] = "practical"
@@ -121,7 +144,7 @@ def test_approval_versions_and_rejects_unchanged(owner):
     assert (v1["status"], v1["version"]) == ("approved", 1) and len(v1["profile_sha256"]) == 64
     assert problems(v1, text) == []
     with pytest.raises(ValueError, match="unchanged"):
-        approve(correct(v1, {}, "no change", NOW) | {"corrections": v1["corrections"]}, text, [v1], NOW)
+        approve(correct(v1, {}, "no change", NOW), text, [v1], NOW)
     v2 = approve(correct(v1, {"professional_years": 0}, "no paid years yet", NOW), text, [v1], NOW)
     assert v2["version"] == 2 and v2["profile_sha256"] != v1["profile_sha256"]
     with pytest.raises(ValueError, match="not valid"):

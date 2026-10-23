@@ -25,10 +25,11 @@ class Worker:
         return type("R", (), {"status_code": status, "content": content, "json": lambda s: body,
                               "raise_for_status": lambda s: None})()
 
-    def get(self, url, timeout):
+    def get(self, url, timeout, headers=None):
         path = url.split("/api/jobs")[1]
         if path == "/profile":
             return self.response({"draft": self.draft, "approved": self.approved}, status=self.status)
+        assert headers == {"Authorization": "Bearer token"}, "CV files are owner-only"
         if path == "/cv":
             return self.response({"files": [{"sha256": SHA, "filename": CV.name, "media_type": PDF}]})
         assert path == f"/cv/{SHA}"
@@ -72,7 +73,7 @@ def test_invented_experience_is_refused_with_its_problem():
                             "evidence": [{"level": "practical", "ref": "experience-1", "quote": "Ran Kubernetes."}]})
     worker = Worker(draft={"profile": draft, "approval_requested": True, "problems": []})
     assert sync.sync(worker, "token").startswith("approval refused")
-    assert any("not in the CV text" in p for p in worker.draft["problems"]) and worker.approved is None
+    assert any("not in the CV experience" in p for p in worker.draft["problems"]) and worker.approved is None
 
 
 def test_without_storage_or_token_nothing_is_written():

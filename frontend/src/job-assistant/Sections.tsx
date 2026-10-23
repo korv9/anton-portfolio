@@ -57,14 +57,14 @@ export default function Sections({
           </li>
           <li>
             {l(
-              'Rules compare each ad with the approved profile on role, skills, seniority and place. Strong means a wished role in the title, a wished place, not senior, and at least 60 % of three or more named skills shown in work or projects. Education and conditions such as citizenship are listed apart and never change the class.',
-              'Regler jämför varje annons med den godkända profilen på roll, kompetenser, senioritet och ort. Stark betyder en önskad roll i titeln, en önskad ort, inte senior, och minst 60 % av tre eller fler nämnda kompetenser visade i arbete eller projekt. Utbildning och villkor som medborgarskap listas för sig och ändrar aldrig klassen.',
+              'Rules compare each ad with the approved profile on role, skills, seniority and place. Strong means a wished role in the title, a wished place, not senior, and at least 60 % of three or more named skills shown in employment or internships. Skills shown only in projects or education are counted apart and never make an ad strong or possible. Education and conditions such as citizenship are listed apart and never change the class.',
+              'Regler jämför varje annons med den godkända profilen på roll, kompetenser, senioritet och ort. Stark betyder en önskad roll i titeln, en önskad ort, inte senior, och minst 60 % av tre eller fler nämnda kompetenser visade i anställning eller praktik. Kompetenser som bara finns i projekt eller utbildning räknas för sig och gör aldrig en annons stark eller möjlig. Utbildning och villkor som medborgarskap listas för sig och ändrar aldrig klassen.',
             )}
           </li>
           <li>
             {l(
-              'A language model may add a short explanation within a small daily budget. It is shown only if every quote in it is found in the ad or the CV.',
-              'En språkmodell kan lägga till en kort förklaring inom en liten daglig budget. Den visas bara om varje citat i den finns i annonsen eller cv:t.',
+              'A language model may add a short explanation within a small daily budget. It is shown only if every sentence quotes the ad or the CV and every quote is found there.',
+              'En språkmodell kan lägga till en kort förklaring inom en liten daglig budget. Den visas bara om varje mening citerar annonsen eller cv:t och varje citat finns där.',
             )}
           </li>
         </ol>

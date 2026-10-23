@@ -1,7 +1,8 @@
 /**
- * The job assistant's owner records in D1 (docs/job-assistant.md). Reads are public; every write
- * needs the Worker secret JOB_ASSIST_TOKEN as a bearer token, compared in constant time, and comes
- * from the site's own origin or from no browser at all (the hourly GitHub Actions run).
+ * The job assistant's owner records in D1 (docs/job-assistant.md). Reads are public except the
+ * uploaded CV files; every write and every CV read needs the Worker secret JOB_ASSIST_TOKEN as a
+ * bearer token, compared in constant time, and comes from the site's own origin or from no browser
+ * at all (the hourly GitHub Actions run).
  *
  * One table, records(kind, key, value, updated_at), holds every kind:
  *   cv       key = SHA-256 of the file; value = {filename, media_type, size, base64}
@@ -15,7 +16,7 @@
 export type D1 = {
   prepare: (sql: string) => {
     bind: (...values: unknown[]) => {
-      run: () => Promise<unknown>
+      run: () => Promise<{ meta?: { changes?: number } }>
       all: <T>() => Promise<{ results: T[] }>
       first: <T>() => Promise<T | null>
     }
@@ -49,6 +50,10 @@ export const SQL = {
   upsert:
     'insert into records (kind, key, value, updated_at) values (?, ?, ?, ?) ' +
     'on conflict (kind, key) do update set value = excluded.value, updated_at = excluded.updated_at',
+  // A version is only ever added: two concurrent approvals of the same number cannot both win.
+  insert:
+    'insert into records (kind, key, value, updated_at) values (?, ?, ?, ?) ' +
+    'on conflict (kind, key) do nothing',
   get: 'select key, value, updated_at from records where kind = ? and key = ?',
   list: 'select key, value, updated_at from records where kind = ? order by key',
 }
@@ -104,7 +109,12 @@ async function list(db: D1, kind: string) {
   return results
 }
 
+/** A declared body above the limit is refused before it is read; the read is checked again. */
+const tooLarge = (request: Request, max: number) =>
+  Number(request.headers.get('Content-Length') ?? 0) > max
+
 async function readJson(request: Request, max: number) {
+  if (tooLarge(request, max)) return null
   const raw = await request.text()
   if (raw.length > max) return null
   try {
@@ -149,7 +159,8 @@ export async function jobs(request: Request, env: JobsEnv): Promise<Response> {
     .slice('/api/jobs/'.length)
     .split('/')
   const write = request.method !== 'GET'
-  if (write && !(await owner(request, env)))
+  // Raw uploaded CVs (drafts, older versions) are owner-only; the approved profile is public.
+  if ((write || path[0] === 'cv') && !(await owner(request, env)))
     return reply({ error: 'owner token required' }, 401)
 
   if (path[0] === 'profile' && path.length === 1 && !write) {
@@ -211,10 +222,14 @@ export async function jobs(request: Request, env: JobsEnv): Promise<Response> {
       CONTACT.test(JSON.stringify(p))
     )
       return reply({ error: `an approved profile with version ${next}` }, 400)
-    return reply({
-      version: next,
-      updated_at: await put(db, 'version', String(next).padStart(6, '0'), p),
-    })
+    const at = new Date().toISOString()
+    const { meta } = await db
+      .prepare(SQL.insert)
+      .bind('version', String(next).padStart(6, '0'), JSON.stringify(p), at)
+      .run()
+    if (!meta?.changes)
+      return reply({ error: `version ${next} was stored meanwhile` }, 409)
+    return reply({ version: next, updated_at: at })
   }
   if (path[0] === 'cv' && path.length === 1) {
     if (!write) {
@@ -238,13 +253,11 @@ export async function jobs(request: Request, env: JobsEnv): Promise<Response> {
     const media = (request.headers.get('Content-Type') ?? '')
       .split(';')[0]
       .trim()
-    const bytes = new Uint8Array(await request.arrayBuffer())
     const magic = MEDIA[media]
-    if (
-      !magic ||
-      bytes.length > MAX_CV ||
-      !magic.every((b, i) => bytes[i] === b)
-    )
+    if (!magic || tooLarge(request, MAX_CV))
+      return reply({ error: 'a PDF or DOCX file up to 2 MB' }, 400)
+    const bytes = new Uint8Array(await request.arrayBuffer())
+    if (bytes.length > MAX_CV || !magic.every((b, i) => bytes[i] === b))
       return reply({ error: 'a PDF or DOCX file up to 2 MB' }, 400)
     const filename = (request.headers.get('X-Filename') ?? 'cv')
       .replace(/[^\w. -]/g, '')
@@ -267,7 +280,7 @@ export async function jobs(request: Request, env: JobsEnv): Promise<Response> {
       {
         headers: {
           'Content-Type': media_type,
-          'Cache-Control': 'public, max-age=3600',
+          'Cache-Control': 'no-store',
           'X-Content-Type-Options': 'nosniff',
         },
       },

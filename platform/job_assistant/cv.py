@@ -101,8 +101,8 @@ def entries(lines: list[str]) -> list[dict]:
 def experience(name: str, lines: list[str]) -> list[dict]:
     out = []
     for e in entries(lines):
-        context = e["lines"][0] if e["lines"] else ""
-        kind = "internship" if INTERNSHIP.search(context) else "employment"
+        # The title (Praktikant, LIA) or the first line under it names an internship.
+        kind = "internship" if INTERNSHIP.search(" ".join([e["title"], *e["lines"][:1]])) else "employment"
         body = sentences(e["lines"])
         out.append({"id": f"{name}-{len(out) + 1}", "kind": kind, "title": e["title"], "organisation": e["org"],
                     "start": e["start"], "end": e["end"], "quote": e["header"], "details": body,

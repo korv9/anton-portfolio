@@ -20,7 +20,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from cv import CONTACT, DOCX, LINK, PDF, clean_lines, read_text  # noqa: E402
+from cv import CONTACT, DOCX, LINK, PDF, clean_lines, read_text, sections  # noqa: E402
 from skills import LEVELS, SKILLS, best_level  # noqa: E402
 
 KEYS = {"schema_version", "status", "cv", "summary", "experience", "projects", "education", "skills",
@@ -29,6 +29,11 @@ APPROVED_KEYS = KEYS | {"version", "approved_at", "profile_sha256"}
 WISH_KEYS = {"locations", "remote", "roles", "interests"}
 ROLES = ("data_engineering", "analytics_engineering", "python_backend", "applied_ai", "bi", "frontend",
          "fullstack", "data_analysis", "ml_engineering", "other")
+# An evidence ref names the CV section its quote must sit in, and that section fixes the level:
+# a skills-list or summary line stays `listed` whatever experience sentence it is paired with.
+REFS = {"experience": ("experience", "practical"), "other": ("other_experience", "practical"),
+        "project": ("projects", "education_or_project"), "education": ("education", "education_or_project"),
+        "skills": ("skills", "listed"), "summary": ("summary", "listed")}
 
 
 def fold(text: str) -> str:
@@ -49,14 +54,17 @@ def problems(profile: dict, cv_text: str | None = None) -> list[str]:
     if CONTACT.search(json.dumps(profile, ensure_ascii=False)):
         out.append("profile contains an e-mail address or phone number")
     lines = clean_lines(cv_text) if cv_text is not None else None
-    # The summary drops link words inside lines, so a quote may match either form of the text.
-    sources = (fold(" ".join(lines)), fold(" ".join(LINK.sub("", line) for line in lines))) if lines is not None else None
+    parts = sections(lines) if lines is not None else {}
 
-    def quoted(where: str, quote: object):
+    def text(lines: list[str]) -> tuple[str, str]:
+        # The summary drops link words inside lines, so a quote may match either form of the text.
+        return fold(" ".join(lines)), fold(" ".join(LINK.sub("", line) for line in lines))
+
+    def quoted(where: str, quote: object, section: str | None = None):
         if not isinstance(quote, str) or not quote.strip():
             out.append(f"{where}: quote is missing")
-        elif sources is not None and not any(fold(quote) in s for s in sources):
-            out.append(f"{where}: quote is not in the CV text: {quote[:80]}")
+        elif lines is not None and not any(fold(quote) in s for s in text(parts.get(section, []) if section else lines)):
+            out.append(f"{where}: quote is not in the CV {section or 'text'}: {quote[:80]}")
 
     for section in ("experience", "projects", "education"):
         for item in profile[section]:
@@ -76,7 +84,10 @@ def problems(profile: dict, cv_text: str | None = None) -> list[str]:
         if s.get("level") != best_level(rows):
             out.append(f"{where}: level {s.get('level')} differs from its strongest evidence {best_level(rows)}")
         for r in rows:
-            quoted(f"{where}/{r.get('ref')}", r.get("quote"))
+            section, level = REFS.get(re.sub(r"-\d+$", "", str(r.get("ref"))), (None, None))
+            if section is None or r["level"] != level:
+                out.append(f"{where}/{r.get('ref')}: level {r['level']} does not match the CV section of its ref")
+            quoted(f"{where}/{r.get('ref')}", r.get("quote"), section)
     wishes = profile["wishes"]
     if set(wishes) != WISH_KEYS:
         out.append(f"wishes must have exactly {sorted(WISH_KEYS)}")
@@ -105,8 +116,8 @@ def correct(profile: dict, changes: dict, note: str, now: datetime | None = None
     return out
 
 
-def digest(profile: dict) -> str:
-    body = {k: v for k, v in profile.items() if k not in ("approved_at", "profile_sha256")}
+def digest(profile: dict, skip: tuple[str, ...] = ("approved_at", "profile_sha256")) -> str:
+    body = {k: v for k, v in profile.items() if k not in skip}
     return hashlib.sha256(json.dumps(body, ensure_ascii=False, sort_keys=True).encode()).hexdigest()
 
 
@@ -120,7 +131,9 @@ def approve(profile: dict, cv_text: str, versions: list[dict], now: datetime | N
     out["profile_sha256"] = digest(out)
     if versions:
         last = max(versions, key=lambda v: v["version"])
-        if digest({**last, "version": out["version"]}) == out["profile_sha256"]:
+        # The correction log grows with every edit, so it does not count as a change.
+        same = ("approved_at", "profile_sha256", "corrections")
+        if digest({**last, "version": out["version"]}, same) == digest(out, same):
             raise ValueError(f"profile is unchanged since version {last['version']}")
     out["approved_at"] = (now or datetime.now(timezone.utc)).isoformat(timespec="seconds")
     return out

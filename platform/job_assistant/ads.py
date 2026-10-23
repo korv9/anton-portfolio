@@ -3,7 +3,8 @@
     python platform/job_assistant/ads.py [--until 2026-10-23T14:00]
 
 The first run reads every current Data/IT ad from JobSearch, one publication day at a time over the
-last 60 days (JobStream's snapshot ignores the occupation filter); later runs ask the stream for
+last 60 days (JobStream's snapshot ignores the occupation filter). An ad published earlier and still
+open is missed until it changes, when the stream brings it in; later runs ask the stream for
 every change since the stored cursor, in windows of at most six hours. Each answer is kept as
 served, with its provenance line (lib/rawstore.py), under warehouse/raw/job_assistant/. The store:
 
@@ -113,11 +114,16 @@ def apply(ads: dict, items: list[dict], seen: str) -> dict:
     counts = {"new": 0, "changed": 0, "removed": 0, "unchanged": 0, "other_field": 0}
     for ad in items:
         field = (ad.get("occupation_field") or {}).get("concept_id")
-        if field not in (None, IT_FIELD):
-            counts["other_field"] += 1
-            continue
         key = str(ad["id"])
         old = ads.get(key)
+        if field not in (None, IT_FIELD):
+            # An ad moved out of Data/IT is no longer current here; without removed_at it would stay forever.
+            if old and not old.get("removed_at"):
+                old["removed_at"] = seen
+                old["history"].append({"at": seen, "event": "left_field"})
+                counts["removed"] += 1
+            counts["other_field"] += 1
+            continue
         if ad.get("removed"):
             if old and not old.get("removed_at"):
                 old["removed_at"] = ad.get("removed_date") or seen

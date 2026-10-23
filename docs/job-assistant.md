@@ -29,8 +29,8 @@ The subject `job_assistant` in `platform/pipeline.yml` runs these steps in order
 
 ## Flow
 
-1. The owner uploads a CV as PDF or DOCX. The Worker stores the file in R2, and the next hourly
-   run (or a manual run) reads it with `platform/job_assistant/cv.py` into a draft profile.
+1. The owner uploads a CV as PDF or DOCX. The Worker stores the file in D1, readable only with
+   the owner token, and the next hourly run (or a manual run) reads it with `platform/job_assistant/cv.py` into a draft profile.
 2. The owner reads the draft, corrects it and adds wishes (places, remote work, prioritised
    roles, interests). `cv_profile.py` checks each correction, and approval freezes the draft as
    the next numbered version.
@@ -53,7 +53,10 @@ A CV fact has one of four levels. They are never merged into one number.
 | `interest` | An owner wish with no documented experience; never read from the CV | a skill the owner wants to learn |
 
 Each skill keeps every CV line that names it, with the entry it sits in. Its level is the
-strongest of those lines. A correction may move, rename or delete facts. It cannot add a fact at
+strongest of those lines. The level of a line follows from the CV section it sits in, and
+`cv_profile.py` checks both: a row's ref must name a section whose text contains the quote, and its
+level must be that section's level. A skills-list line therefore stays `listed` even when it is
+paired with a real experience sentence. A correction may move, rename or delete facts. It cannot add a fact at
 a level above `interest` unless the quote is found in the CV text, so the profile never states
 experience the CV lacks. `professional_years` stays empty until the owner enters a documented
 number; internships are not turned into years of employment.
@@ -64,20 +67,22 @@ conditions to check.
 
 ## Data model
 
-All of it is public. The pipeline's files sit under `warehouse/raw/job_assistant/` and the
-released group `job-assistant` in the public R2 bucket. The owner's own records sit in a D1
-database behind the Worker.
+Everything except the uploaded CV files is public. The pipeline's files sit under
+`warehouse/raw/job_assistant/` and the released group `job-assistant` in the public R2 bucket. The
+owner's own records sit in a D1 database behind the Worker. Uploaded CV files (drafts and older
+versions included) never go to R2: they stay in D1 and only the owner token reads them. The
+approved profile and the draft, with their CV quotes, are public by the owner's choice.
 
 | Record | Store | Grain and main fields |
 | --- | --- | --- |
-| CV file | R2 `job-assistant/cv/<sha256>.<ext>` | One file per uploaded version; the current CV is already public |
+| CV file | D1 `cv`, owner-only | One file per uploaded version: name, media type, size and the file itself; never published |
 | Draft profile | D1 `profile_draft` | One row: profile JSON (schema v1 in `cv_profile.py`), CV hash, updated time |
 | Approved profile | D1 `profile_version` | One row per version: version, profile JSON, `profile_sha256`, CV hash, approved time |
 | Ad store | R2 `warehouse/raw/job_assistant/ads.json` | One row per JobTech ad id: headline, employer, place, full public text, source and application links, published, last changed, first seen, removed time, content hash, duplicate group, and its history of new, changed and removed events |
-| Ad list | gold `mart_job_assistant_ads`; `job-assistant/ads.json` | Current ads and those removed in the last 30 days, without the text, with an `expired` flag |
+| Ad list | gold `mart_job_assistant_ads`; `job-assistant/ads.json` | Current ads and those removed in the last 30 days, without the text, with an `expired` flag (the deadline, a Stockholm local timestamp, has passed) |
 | Ad events | bronze `stg_job_assistant_ad_events` | One row per new, changed or removed event of an ad |
 | Match store | R2 `warehouse/raw/job_assistant/matches.json` | One row per current ad: role category, match class, reasons, skill judgements, gaps, conditions, similarity, explanation (optional), `profile_version`, CV hash, engine version, the ad's content hash |
-| Match | gold `mart_job_assistant_matches`; `job-assistant/matches.json` | One row per matched ad in rank order: class, role, reasons, gaps, similarity, checked explanation, profile version and CV hash, and whether it is detailed (strong, possible, stretch or in the 30-ad evaluation sample) |
+| Match | gold `mart_job_assistant_matches`; `job-assistant/matches.json` | One row per matched ad that is neither removed nor expired, in rank order: class, role, reasons, gaps, similarity, checked explanation, profile version and CV hash, and whether it is detailed (strong, possible, stretch or in the 30-ad evaluation sample) |
 | Judgement and evidence | gold `mart_job_assistant_judgements`, `mart_job_assistant_evidence` | One row per detailed ad and skill (strength, CV level), and one per quote behind it, from the ad or the CV |
 | Condition | gold `mart_job_assistant_checks` | Education and conditions a detailed ad states, with the sentence |
 | Ad text | gold `mart_job_assistant_texts`; `job-assistant/texts.json` | The full public text of exactly the detailed ads |
@@ -99,7 +104,8 @@ sentence and its line) and the CV side (the level and the CV quotes, or "not in 
 `platform/job_assistant/ads.py` runs every hour in `refresh-job-assistant.yml`, as the
 `job_assistant` subject of `platform/pipeline.yml`. The first run reads every current Data/IT ad
 from JobSearch, one publication day at a time over the last 60 days, with the client in
-`platform/ingest/jobtech/ingest_jobs.py`. JobStream's snapshot is not used: it ignores the
+`platform/ingest/jobtech/ingest_jobs.py`. An ad published earlier that is still open is missed
+until it changes and the stream brings it in; most Platsbanken ads close within that time. JobStream's snapshot is not used: it ignores the
 occupation filter and returns about 40,000 ads. Later runs ask JobStream for every change since
 the stored cursor, in windows of at most six hours, as `ingest_stream.py` does. Each answer is
 stored with its provenance line (`platform/lib/rawstore.py`) under its own source,
@@ -110,9 +116,13 @@ contact redaction come from `platform/publish/job_content.py`.
   the old version is noted in the row's history. An unchanged repeat does nothing.
 - Ads with the same employer, title and text hash under different ids form one duplicate group;
   the list shows the group once.
-- A `removed` record sets the removed time, and a passed application deadline sets `expired` in
-  the list. The row stays so the owner's status and labels still have something to point at. An
-  ad that comes back after removal is reopened.
+- A `removed` record sets the removed time. So does a change that moves the ad out of the Data/IT
+  occupation field (history event `left_field`). The row stays so the owner's status and labels
+  still have something to point at. An ad that comes back after removal is reopened.
+- A passed application deadline sets `expired` in the list. JobTech gives the deadline as a
+  Stockholm local timestamp, usually 23:59:59, and the ad expires when that moment has passed.
+  `rank.py` does not match an expired ad, and the match mart drops matches of ads that were
+  removed or expired after the last match run.
 - The store is written atomically before the cursor moves. A run that stops halfway asks for the
   same window again, and the id plus hash rule makes that harmless.
 
@@ -128,26 +138,30 @@ ads: the requirement taxonomy from `job_content.py` plus a few CV terms.
 | Seniority | Senior, lead and principal titles and stated years of experience, with the experience wording that lifted the senior/junior AUC by 0.15 in the feature study (`ml/feature_study/job_ads.py`, branch `korv9/ml-feature-engineering`) |
 | Wishes | Place, remote wording and the owner's role order |
 
-`platform/job_assistant/match.py` sets one of four classes. "Shown" means the profile has the skill
-at `practical` or `education_or_project`. The share counts required skills, or every named skill
-when the ad marks none as required.
+`platform/job_assistant/match.py` sets one of four classes. "Practical" means the profile has the
+skill at `practical`; "shown" adds `education_or_project`. Only practical skills can make an ad
+strong or possible; skills shown only in projects or education are counted and reported apart. The
+shares count required skills, or every named skill when the ad marks none as required.
 
 | Class | Rule |
 | --- | --- |
-| `strong` | A wished role read from the title, in a wished place, not senior; at least three skills named and at least 60 % shown |
-| `possible` | A wished role in a wished place, not senior, at least 30 % shown or no skill named; or a strong case whose role is only in the ad text or that names fewer than three skills |
-| `stretch` | A wished role in a wished place with at least 30 % shown, but a senior, lead or architect title, or three or more years of experience asked |
+| `strong` | A wished role read from the title, in a wished place, not senior; at least three skills named and at least 60 % practical |
+| `possible` | A wished role in a wished place, not senior, at least one skill named and at least 30 % practical; or a strong case whose role is only in the ad text or that names fewer than three skills |
+| `stretch` | A wished role in a wished place with at least 30 % shown (or no skill named), but a senior, lead or architect title, three or more years of experience asked, or under 30 % practical |
 | `outside` | Another role, another place without remote wording, or under 30 % shown |
 
 Hybrid work counts as work at the ad's own office, so only remote wording widens the place. Each
-match lists its reasons in plain words, for example "data engineering (from the title); 5 of 8
-named skills shown in practical work or projects; Stockholm". `strong` and `possible` make the
+match lists its reasons in plain words, for example "data engineering (from the title); 3 of 8
+named skills shown in practical work; 2 more only in projects or education; Stockholm". `strong` and `possible` make the
 review list. Within a class, ads are sorted by the owner's role order, then by the bge-m3 cosine
 between the ad and the profile, then newest first. A match is redone only when the ad's content
 hash, the profile version or the engine version changes.
 
 On the 2,233 current, non-duplicate ads of the local run, with Stockholm and Solna as places and
-nine wished roles, the rules gave 15 strong, 93 possible, 115 stretch and 2,010 outside. Most
+nine wished roles, the earlier rules (which counted project skills toward strong and possible)
+gave 15 strong, 93 possible, 115 stretch and 2,010 outside. The current rules (`job-match-v2`),
+on 2,239 current, unexpired ads of a later local store, give 4 strong, 35 possible, 186 stretch and
+2,014 outside: the test profile shows SQL and dbt only in projects and education. Most
 outside ads are support, Java or other roles outside the wishes. These counts come from one test
 profile; the owner's labels measure whether the rules are right.
 
@@ -166,28 +180,36 @@ of a run the same way.
 | Explanations for the top new candidates | `@cf/google/gemma-4-26b-a4b-it` | 30 to 80 neurons each; at most 12 a day |
 
 Vectors are cached per text hash in `warehouse/raw/job_assistant/vectors.sqlite`, so an ad is
-embedded once per text. When the project cap or the account quota is reached, rules and cached
-embeddings still rank every ad, and the explanations wait for the next day. An explanation is kept
-only if every quote in it is found in the ad or the CV lines, the same rule as the Worker's quote
-check for `/api/answer`; otherwise it is marked unverified and not shown. The hourly run gets the
+embedded once per text. When the project cap or the account quota is reached, or a call fails
+with a server or connection error (`stopped: "error"` in the run note), rules and cached embeddings
+still rank every ad, and the missing vectors and explanations wait for a later run. An explanation
+is kept only if every sentence in it quotes the ad or the CV lines and every quote is found there;
+otherwise it is marked unverified and not shown. Checked or not, each explanation counts toward the
+12 a day. The Workers AI token reaches only the `rank.py` step and the owner token only
+`sync.py` (the `secrets` step option in `platform/pipeline.yml`). A failed `rank.py` does not stop
+the run: dbt keeps the last matches and the ad list is still published. The hourly run gets the
 token through the `workers-ai` input of `data-subject.yml`; without it the run uses rules and
 cached vectors only.
 
 ## Security of writes
 
-Reads are public. Every write route requires a Worker secret, `JOB_ASSIST_TOKEN`, sent as a
-bearer token: status, note, label, profile draft, profile version and CV upload. The routes are in
+Reads are public, except the CV files. Every write route and both CV routes require a Worker
+secret, `JOB_ASSIST_TOKEN`, sent as a bearer token: status, note, label, profile draft, profile
+version, CV upload, the list of uploads and the files, which are served with `no-store`. The routes are in
 `worker/jobs.ts` under `/api/jobs/`. The Worker compares the token in constant time, as SHA-256
 digests, and refuses a write whose `Origin` header names another site. Writes without an `Origin`
 come from the Actions run. A missing or wrong token gets 401 and changes nothing. All job routes
-keep the existing rate limit of 20 requests a minute per visitor. There is no open write endpoint.
+use the rate limit of 20 requests a minute per visitor, counted apart for reads and writes so
+public reads cannot use up the write budget; without the limiter binding the routes answer 503.
+A body whose declared length is over the limit is refused before it is read. Two approvals of the
+same version number cannot both be stored: the second gets 409. There is no open write endpoint.
 
 | Route | Read | Write (token) |
 | --- | --- | --- |
 | `/api/jobs/profile` | draft, latest approved profile, list of versions | |
 | `/api/jobs/profile/draft` | | `PUT {profile, approval_requested, problems}`; schema v1, status draft, no contact details |
 | `/api/jobs/profile/versions` | | `POST` the next approved version only (the hourly run) |
-| `/api/jobs/cv`, `/api/jobs/cv/<sha256>` | list of uploads, the file | `POST` a PDF or DOCX up to 2 MB, checked by its first bytes |
+| `/api/jobs/cv`, `/api/jobs/cv/<sha256>` | owner only: list of uploads, the file | `POST` a PDF or DOCX up to 2 MB, checked by its first bytes |
 | `/api/jobs/reviews`, `/reviews/<ad id>` | every status and note | `PUT {status, note}` |
 | `/api/jobs/labels`, `/labels/<ad id>` | every label | `PUT {label, note, shown_class}` |
 

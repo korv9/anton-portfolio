@@ -94,6 +94,13 @@ def test_duplicate_ids_point_at_the_first(raw):
     assert rows["8"]["duplicate_of"] is None
 
 
+def test_ad_that_leaves_data_it_is_removed(raw):
+    answers = {"snapshot": [ad("1")], "2026-10-23T05:50:00": [ad("1", occupation_field={"concept_id": "other"})]}
+    store.run(datetime(2026, 10, 23, 6, 0), Http(answers), clock)
+    row = stored(raw)["1"]
+    assert row["removed_at"] and row["history"][-1]["event"] == "left_field"
+
+
 def test_republished_ad_reopens(raw):
     answers = {"snapshot": [ad("1")], "2026-10-23T05:50:00": [removed("1")],
                "2026-10-23T06:00:00": [ad("1")]}

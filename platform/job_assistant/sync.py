@@ -8,8 +8,8 @@
    (cv_profile.problems). If it holds, it is stored as the next version; if not, the draft keeps
    its problems so the owner can correct them.
 
-It reads the public routes of JOB_ASSIST_API and writes with JOB_ASSIST_TOKEN. Without storage
-(503) or without the token it changes nothing and says so.
+It reads the profile from the public route of JOB_ASSIST_API; the uploaded CV files and every
+write need JOB_ASSIST_TOKEN. Without storage (503) or without the token it changes nothing and says so.
 """
 from __future__ import annotations
 
@@ -30,10 +30,12 @@ def sync(http, token: str) -> str:
         return "storage is not configured"
     profile.raise_for_status()
     state = profile.json()
-    files = http.get(API + "/cv", timeout=30).json()["files"]
     if not token:
         return "no JOB_ASSIST_TOKEN; nothing written"
     headers = {"Authorization": "Bearer " + token}
+    listing = http.get(API + "/cv", headers=headers, timeout=30)
+    listing.raise_for_status()
+    files = listing.json()["files"]
     draft = state.get("draft")
     current = draft["profile"] if draft else None
 
@@ -42,7 +44,7 @@ def sync(http, token: str) -> str:
         http.put(API + "/profile/draft", json=body, headers=headers, timeout=30).raise_for_status()
 
     def cv_bytes(sha: str) -> bytes:
-        response = http.get(f"{API}/cv/{sha}", timeout=60)
+        response = http.get(f"{API}/cv/{sha}", headers=headers, timeout=60)
         response.raise_for_status()
         return response.content
 

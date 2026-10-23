@@ -8,7 +8,8 @@
 #   ml       a command, skipped by --ml missing when `marker` (under warehouse/features) exists;
 #            `stale_arg` is appended unless --ml always, and makes the stage check its inputs
 #   export   a command that writes delivery files; runs only if the subject's dbt tests passed
-# Step options: when_env (skip unless the variable is set), ok_exit (tolerated exit codes).
+# Step options: when_env (skip unless the variable is set), ok_exit (tolerated exit codes),
+# secrets (variables only this step of the subject receives; its other steps run without them).
 # Commands run from the repository root. ${NAME:-default} reads the environment, {sha} is the
 # commit being published.
 #
@@ -515,8 +516,12 @@ subjects:
       # A new CV upload becomes a draft; a draft the owner asked to approve is checked against
       # its CV and stored as the next version (worker/jobs.ts holds the records).
       - ingest: python platform/job_assistant/sync.py
+        secrets: [JOB_ASSIST_TOKEN]
       # Matches the ads with the approved profile from the Worker into the raw match store, which
-      # dbt reads next; without a profile nothing is matched.
+      # dbt reads next; without a profile nothing is matched. A failed match run keeps the last
+      # matches.json, so the ad list is still built and published; the mart drops closed ads.
       - ingest: python platform/job_assistant/rank.py
+        secrets: [CLOUDFLARE_API_TOKEN]
+        ok_exit: [1]
       - dbt: {select: [tag:job_assistant]}
       - export: python platform/job_assistant/export.py

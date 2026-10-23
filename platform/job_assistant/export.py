@@ -93,7 +93,7 @@ def main() -> None:
             return json.loads((args.check / "job-assistant" / name).read_text(encoding="utf-8"))
         data = read("ads.json")
         found = problems(data, now) + export_matches.problems(read("matches.json"), read("texts.json"),
-                                                              {a["id"] for a in data["ads"]})
+                                                              export_matches.open_ids(data))
         print("\n".join(found) or "job-assistant: valid")
         sys.exit(1 if found else 0)
     state = json.loads((store_dir() / "state.json").read_text(encoding="utf-8"))
@@ -103,7 +103,7 @@ def main() -> None:
     data = build(db, state, now)
     matches, texts, demand = export_matches.build(db, data["generated_at"])
     db.close()
-    found = problems(data, now) + export_matches.problems(matches, texts, {a["id"] for a in data["ads"]})
+    found = problems(data, now) + export_matches.problems(matches, texts, export_matches.open_ids(data))
     if found:
         sys.exit("\n".join(found))
     for name, value in (("matches.json", matches), ("texts.json", texts), ("demand.json", demand), ("ads.json", data)):

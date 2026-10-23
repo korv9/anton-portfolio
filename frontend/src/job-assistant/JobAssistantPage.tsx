@@ -1,53 +1,32 @@
 /**
  * #jobs: the owner's review list of current Data/IT ads matched with the approved CV profile
  * (docs/job-assistant.md). A work tool: dense rows, the selected ad beside them, keyboard first.
- * j/k or the arrow keys move, 1-6 set a status for the owner, / searches, Escape clears it.
+ * j/k or the arrow keys move, 1-6 set a status for the owner, / searches, Escape clears it
+ * (useListKeys.ts).
  */
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { l } from '../i18n'
 import { setHashParams, type Route } from '../router'
 import AdDetail from './AdDetail'
+import AdList from './AdList'
 import Sections from './Sections'
-import { classLabel, day, statusLabel } from './labels'
+import Toolbar, { VIEWS } from './Toolbar'
+import { useListKeys } from './useListKeys'
 import {
   DEFAULT_VIEW,
-  ROLE_NAMES,
-  STATUSES,
   filter,
   loadDelivered,
   loadRecords,
   ownerToken,
   rows as joinRows,
   type Delivered,
-  type MatchClass,
   type LabelRow,
   type Records,
   type Review,
+  type Status,
   type View,
 } from './data'
 import './job-assistant.css'
-
-const VIEWS: {
-  id: string
-  classes: View['classes']
-  en: string
-  sv: string
-}[] = [
-  {
-    id: 'list',
-    classes: ['strong', 'possible'],
-    en: 'Review list',
-    sv: 'Granskningslistan',
-  },
-  { id: 'stretch', classes: ['stretch'], en: 'Stretch', sv: 'Utmaning' },
-  { id: 'outside', classes: ['outside'], en: 'Outside', sv: 'Utanför' },
-  {
-    id: 'sample',
-    classes: 'sample',
-    en: 'Evaluation sample',
-    sv: 'Utvärderingsurval',
-  },
-]
 
 export default function JobAssistantPage({ route }: { route: Route }) {
   const [data, setData] = useState<Delivered | null>(null)
@@ -66,6 +45,7 @@ export default function JobAssistantPage({ route }: { route: Route }) {
   const search = useRef<HTMLInputElement>(null)
   const listRef = useRef<HTMLOListElement>(null)
   const focusRow = useRef(false)
+  const statusKey = useRef<((status: Status) => void) | null>(null)
 
   useEffect(() => {
     loadDelivered().then(setData, (e) => setFailed(String(e.message ?? e)))
@@ -130,49 +110,15 @@ export default function JobAssistantPage({ route }: { route: Route }) {
     )
   }
 
-  useEffect(() => {
-    function key(e: KeyboardEvent) {
-      const target = e.target as HTMLElement
-      if (
-        e.ctrlKey ||
-        e.metaKey ||
-        e.altKey ||
-        e.isComposing ||
-        e.defaultPrevented
-      )
-        return
-      if (target.closest('input, textarea, select') && e.key !== 'Escape')
-        return
-      // Arrow keys move the selection only from the list; elsewhere they scroll the page.
-      const arrow = e.key === 'ArrowDown' || e.key === 'ArrowUp'
-      if (arrow && !target.closest('.ja-list')) return
-      const index = shown.findIndex((r) => r.ad.id === selected?.ad.id)
-      if (e.key === '/') {
-        e.preventDefault()
-        search.current?.focus()
-      } else if (e.key === 'Escape' && view.q) {
-        setView({ ...view, q: '' })
-      } else if (
-        (e.key === 'j' || e.key === 'ArrowDown') &&
-        index < shown.length - 1
-      ) {
-        e.preventDefault()
-        select(shown[index + 1].ad.id)
-        focusRow.current = true
-      } else if ((e.key === 'k' || e.key === 'ArrowUp') && index > 0) {
-        e.preventDefault()
-        select(shown[index - 1].ad.id)
-        focusRow.current = true
-      } else if (owner && /^[1-6]$/.test(e.key) && selected) {
-        document
-          .querySelectorAll<HTMLButtonElement>(
-            '.ja-decide .ja-segment:first-child button',
-          )
-          [Number(e.key) - 1]?.click()
-      }
-    }
-    window.addEventListener('keydown', key)
-    return () => window.removeEventListener('keydown', key)
+  useListKeys({
+    shown,
+    selected,
+    view,
+    setView,
+    search,
+    select,
+    statusKey,
+    focusRow,
   })
 
   useEffect(() => {
@@ -225,91 +171,15 @@ export default function JobAssistantPage({ route }: { route: Route }) {
         )}
       </header>
 
-      <div className="ja-toolbar" role="search">
-        <div
-          className="ja-segment"
-          role="group"
-          aria-label={l('Which ads', 'Vilka annonser')}
-        >
-          {VIEWS.map((v) => (
-            <button
-              key={v.id}
-              type="button"
-              aria-pressed={viewId === v.id}
-              onClick={() => chooseView(v.id)}
-            >
-              {l(v.en, v.sv)}
-              <span className="ja-count">
-                {
-                  all.filter((r) =>
-                    v.classes === 'sample'
-                      ? r.match.sample
-                      : v.classes.includes(r.match.class as MatchClass),
-                  ).length
-                }
-              </span>
-            </button>
-          ))}
-        </div>
-        <label>
-          <span>{l('Status', 'Status')}</span>
-          <select
-            value={view.status}
-            onChange={(e) =>
-              setView({ ...view, status: e.target.value as View['status'] })
-            }
-          >
-            <option value="all">{l('Any', 'Alla')}</option>
-            {STATUSES.map((s) => (
-              <option key={s} value={s}>
-                {statusLabel(s)}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          <span>{l('Role', 'Roll')}</span>
-          <select
-            value={view.role}
-            onChange={(e) => setView({ ...view, role: e.target.value })}
-          >
-            <option value="all">{l('Any', 'Alla')}</option>
-            {roles.map((r) => (
-              <option key={r} value={r}>
-                {l(...(ROLE_NAMES[r] ?? [r, r]))}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          <span>{l('Sort', 'Sortera')}</span>
-          <select
-            value={view.sort}
-            onChange={(e) =>
-              setView({ ...view, sort: e.target.value as View['sort'] })
-            }
-          >
-            <option value="rank">{l('Best match', 'Bäst matchning')}</option>
-            <option value="newest">{l('Newest', 'Nyast')}</option>
-            <option value="deadline">{l('Deadline', 'Sista dag')}</option>
-          </select>
-        </label>
-        <label className="ja-search">
-          <span>
-            {l('Search', 'Sök')} <kbd>/</kbd>
-          </span>
-          <input
-            ref={search}
-            type="search"
-            value={view.q}
-            placeholder={l(
-              'Title, employer, place',
-              'Titel, arbetsgivare, ort',
-            )}
-            onChange={(e) => setView({ ...view, q: e.target.value })}
-          />
-        </label>
-      </div>
+      <Toolbar
+        all={all}
+        viewId={viewId}
+        onView={chooseView}
+        view={view}
+        setView={setView}
+        roles={roles}
+        search={search}
+      />
 
       {!data ? (
         <p className="theme-loading" role="status">
@@ -317,69 +187,15 @@ export default function JobAssistantPage({ route }: { route: Route }) {
         </p>
       ) : (
         <div className="ja-work">
-          <div className="ja-list-pane">
-            <p className="ja-list-note" aria-live="polite">
-              {shown.length} {l('ads', 'annonser')} · <kbd>j</kbd>/<kbd>k</kbd>{' '}
-              {l('to move', 'för att flytta')}
-              {owner && records.available && (
-                <>
-                  {' '}
-                  · <kbd>1</kbd>–<kbd>6</kbd> {l('status', 'status')}
-                </>
-              )}
-            </p>
-            {shown.length === 0 ? (
-              <p className="ja-muted">
-                {profile
-                  ? l('No ad fits this view.', 'Ingen annons passar vyn.')
-                  : l(
-                      'Matches appear once a profile is approved.',
-                      'Matchningar visas när en profil är godkänd.',
-                    )}
-              </p>
-            ) : (
-              <ol className="ja-list" ref={listRef}>
-                {shown.map((r) => (
-                  <li key={r.ad.id}>
-                    <a
-                      href={`${route.path}?${new URLSearchParams({ ...Object.fromEntries(route.params), ad: r.ad.id })}`}
-                      aria-current={
-                        r.ad.id === selected?.ad.id ? 'true' : undefined
-                      }
-                      onClick={(e) => {
-                        e.preventDefault()
-                        select(r.ad.id, true)
-                        // Stacked under 760 px the detail sits below the list: bring it up.
-                        if (matchMedia('(max-width: 760px)').matches)
-                          requestAnimationFrame(() =>
-                            document
-                              .getElementById('ja-detail-title')
-                              ?.scrollIntoView({ block: 'start' }),
-                          )
-                      }}
-                    >
-                      <span className="ja-row-class" data-class={r.match.class}>
-                        {classLabel(r.match.class)}
-                      </span>
-                      <span className="ja-row-title">{r.ad.headline}</span>
-                      <span className="ja-row-meta">
-                        {r.ad.employer} ·{' '}
-                        {r.ad.municipality ?? r.ad.region ?? '–'}
-                      </span>
-                      <span className="ja-row-side">
-                        {r.status !== 'new' && (
-                          <span className="ja-row-status">
-                            {statusLabel(r.status)}
-                          </span>
-                        )}
-                        {day(r.ad.published)}
-                      </span>
-                    </a>
-                  </li>
-                ))}
-              </ol>
-            )}
-          </div>
+          <AdList
+            route={route}
+            shown={shown}
+            selectedId={selected?.ad.id}
+            keys={owner && records.available}
+            profile={Boolean(profile)}
+            listRef={listRef}
+            onSelect={(id) => select(id, true)}
+          />
           {selected && (
             <AdDetail
               key={selected.ad.id}
@@ -388,6 +204,7 @@ export default function JobAssistantPage({ route }: { route: Route }) {
               owner={owner}
               storage={records.available}
               onSaved={saved}
+              statusKey={statusKey}
             />
           )}
         </div>

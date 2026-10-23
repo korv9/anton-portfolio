@@ -61,6 +61,11 @@ def build(db, generated_at: str) -> tuple[dict, dict, dict]:
             {**head, "profile": profile, "skills": demand})
 
 
+def open_ids(ads: dict) -> set[str]:
+    """Ids of the ads a match may point at: neither removed nor past their deadline."""
+    return {a["id"] for a in ads["ads"] if not a["removed_at"] and not a["expired"]}
+
+
 def problems(matches: dict, texts: dict, ad_ids: set[str]) -> list[str]:
     out = []
     if matches.get("schema_version") != 1 or texts.get("schema_version") != 1:
@@ -70,7 +75,7 @@ def problems(matches: dict, texts: dict, ad_ids: set[str]) -> list[str]:
         return [] if found == [] and texts.get("texts") == {} else ["matches without an approved profile"]
     ids = [r["id"] for r in found]
     if len(ids) != len(set(ids)) or not set(ids) <= ad_ids:
-        out.append("matches.json: duplicate ids or ids missing from ads.json")
+        out.append("matches.json: duplicate ids or ids of removed, expired or unknown ads")
     for r in found:
         if r["class"] not in CLASSES or not r["reasons"]:
             out.append(f"match {r['id']}: class or reasons missing")

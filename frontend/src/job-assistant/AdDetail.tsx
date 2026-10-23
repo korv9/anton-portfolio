@@ -1,39 +1,21 @@
 /** One ad under review: why it got its class, the evidence on both sides, the full text, the decision. */
-import { useState } from 'react'
+import { useState, type MutableRefObject } from 'react'
 import { l } from '../i18n'
-import {
-  LABELS,
-  ROLE_NAMES,
-  STATUSES,
-  write,
-  type Judgement,
-  type Label,
-  type Row,
-  type Status,
-} from './data'
-import { classLabel, cvLevelLabel, day, statusLabel } from './labels'
+import { ROLE_NAMES, type Row, type Status } from './data'
+import Decision, { type Saved } from './Decision'
+import Evidence from './Evidence'
+import { classLabel, day, statusLabel } from './labels'
 
-const ASKS: Record<Judgement['strength'], [string, string]> = {
-  required: ['required', 'krav'],
-  preferred: ['preferred', 'meriterande'],
-  ambiguous: ['mentioned', 'nämns'],
-}
-const LABEL_NAMES: Record<Label, [string, string]> = {
-  relevant: ['Relevant', 'Relevant'],
-  maybe: ['Maybe', 'Kanske'],
-  not_relevant: ['Not relevant', 'Inte relevant'],
-}
+// Python's str.splitlines() breaks, so line numbers match platform/publish/job_content.py.
+const LINE_BREAK = /\r\n|[\n\r\v\f\x1c-\x1e\x85\u2028\u2029]/
 
 type Props = {
   row: Row
   text?: string
   owner: boolean
   storage: boolean
-  onSaved: (
-    id: string,
-    kind: 'review' | 'label',
-    value: Record<string, unknown>,
-  ) => void
+  onSaved: Saved
+  statusKey: MutableRefObject<((status: Status) => void) | null>
 }
 
 /** Keyed by the ad id in the page, so the note, messages and scroll start fresh per ad. */
@@ -43,36 +25,17 @@ export default function AdDetail({
   owner,
   storage,
   onSaved,
+  statusKey,
 }: Props) {
   const { ad, match } = row
-  const [note, setNote] = useState(row.review?.note ?? '')
-  const [error, setError] = useState('')
-  const [busy, setBusy] = useState(false)
-  const [done, setDone] = useState('')
-
-  async function save(
-    kind: 'review' | 'label',
-    value: Record<string, unknown>,
-  ) {
-    setError('')
-    setDone('')
-    setBusy(true)
-    try {
-      await write(`${kind}s/${ad.id}`, 'PUT', JSON.stringify(value))
-      onSaved(ad.id, kind, value)
-      setDone(l('Saved.', 'Sparat.'))
-    } catch (e) {
-      setError(
-        l(
-          `Not saved: ${(e as Error).message}`,
-          `Inte sparat: ${(e as Error).message}`,
-        ),
-      )
-    } finally {
-      setBusy(false)
-    }
+  const [hit, setHit] = useState<number | null>(null)
+  const showLine = (line: number) => {
+    setHit(line)
+    const target = document.getElementById(`ja-line-${line}`)
+    target?.scrollIntoView({ block: 'center' })
+    // Focus follows, so keyboard and screen-reader users land on the line too.
+    target?.focus({ preventScroll: true })
   }
-  const setStatus = (status: Status) => save('review', { status, note })
   const place = [ad.municipality, ad.region].filter(Boolean).join(', ')
 
   return (
@@ -132,73 +95,7 @@ export default function AdDetail({
         </p>
       )}
       {owner && storage && (
-        <section
-          className="ja-decide"
-          aria-label={l('Decision', 'Beslut')}
-          aria-busy={busy}
-        >
-          <div
-            className="ja-segment"
-            role="group"
-            aria-label={l('Status', 'Status')}
-          >
-            {STATUSES.map((s, i) => (
-              <button
-                key={s}
-                type="button"
-                aria-pressed={row.status === s}
-                disabled={busy}
-                onClick={() => setStatus(s)}
-                aria-keyshortcuts={String(i + 1)}
-              >
-                {statusLabel(s)}
-              </button>
-            ))}
-          </div>
-          <label className="ja-note">
-            <span>{l('Note', 'Anteckning')}</span>
-            <textarea
-              rows={2}
-              maxLength={4000}
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              onBlur={() =>
-                note !== (row.review?.note ?? '') && setStatus(row.status)
-              }
-            />
-          </label>
-          <div
-            className="ja-segment"
-            role="group"
-            aria-label={l('Relevance label', 'Relevansmärkning')}
-          >
-            {LABELS.map((x) => (
-              <button
-                key={x}
-                type="button"
-                aria-pressed={row.label?.label === x}
-                disabled={busy}
-                onClick={() =>
-                  save('label', {
-                    label: x,
-                    note: row.label?.note ?? '',
-                    shown_class: match.class,
-                  })
-                }
-              >
-                {l(...LABEL_NAMES[x])}
-              </button>
-            ))}
-          </div>
-          {error && (
-            <p className="ja-error" role="alert">
-              {error}
-            </p>
-          )}
-          <p className="ja-muted" role="status">
-            {done}
-          </p>
-        </section>
+        <Decision row={row} onSaved={onSaved} statusKey={statusKey} />
       )}
 
       <section aria-labelledby="ja-why">
@@ -214,8 +111,8 @@ export default function AdDetail({
             <small>
               {l('Written by', 'Skrivet av')} {match.explanation_model};{' '}
               {l(
-                'every quote checked against the ad or the CV.',
-                'varje citat kontrollerat mot annonsen eller cv:t.',
+                'every sentence quotes the ad or the CV, and every quote was checked there.',
+                'varje mening citerar annonsen eller cv:t, och varje citat är kontrollerat där.',
               )}
             </small>
           </p>
@@ -223,45 +120,7 @@ export default function AdDetail({
       </section>
 
       {match.skills && match.skills.length > 0 && (
-        <section aria-labelledby="ja-evidence">
-          <h3 id="ja-evidence">
-            {l('Requirements and CV evidence', 'Krav och belägg i cv:t')}
-          </h3>
-          <div className="ja-table-wrap">
-            <table className="ja-table">
-              <thead>
-                <tr>
-                  <th scope="col">{l('Skill', 'Kompetens')}</th>
-                  <th scope="col">{l('The ad', 'Annonsen')}</th>
-                  <th scope="col">{l('The CV', 'Cv:t')}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {match.skills.map((j) => (
-                  <tr
-                    key={j.skill}
-                    data-gap={
-                      j.cv_level !== 'practical' &&
-                      j.cv_level !== 'education_or_project'
-                    }
-                  >
-                    <th scope="row">
-                      {j.skill}
-                      <span>{l(...ASKS[j.strength])}</span>
-                    </th>
-                    <td>
-                      <q>{j.ad_quotes[0]?.quote}</q>
-                    </td>
-                    <td>
-                      <strong>{cvLevelLabel(j.cv_level)}</strong>
-                      {j.cv_quotes[0] && <q>{j.cv_quotes[0].quote}</q>}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
+        <Evidence skills={match.skills} onLine={text ? showLine : undefined} />
       )}
 
       {((match.gaps?.length ?? 0) > 0 ||
@@ -299,12 +158,24 @@ export default function AdDetail({
       <section aria-labelledby="ja-text">
         <h3 id="ja-text">{l('The full ad', 'Hela annonsen')}</h3>
         {text ? (
-          <p className="ja-ad-text">{text}</p>
+          <p className="ja-ad-text">
+            {text.split(LINE_BREAK).map((line, i) => (
+              <span
+                key={i}
+                id={`ja-line-${i + 1}`}
+                tabIndex={-1}
+                data-hit={hit === i + 1 || undefined}
+              >
+                {line}
+                {'\n'}
+              </span>
+            ))}
+          </p>
         ) : (
           <p className="ja-muted">
             {l(
-              'The text is published for listed, stretch and sampled ads; this one is on the original page.',
-              'Texten publiceras för listade, stretch- och urvalsannonser; den här finns på originalsidan.',
+              'By design the full text is published only for listed, stretch and sampled ads, which keeps the public files small. This ad is on the original page.',
+              'Hela texten publiceras med avsikt bara för listade, stretch- och urvalsannonser, så att de publika filerna hålls små. Den här annonsen finns på originalsidan.',
             )}
           </p>
         )}

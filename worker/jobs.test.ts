@@ -1,6 +1,6 @@
 /**
- * The job assistant's routes with an in-memory D1: public reads, and writes refused without the
- * owner token, with a wrong token or from another origin.
+ * The job assistant's routes with an in-memory D1: public reads, and writes and CV files refused
+ * without the owner token, with a wrong token or from another origin.
  */
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
@@ -19,13 +19,15 @@ function memory(): D1 {
     prepare: (sql) => ({
       bind: (...v) => ({
         run: async () => {
-          assert.equal(sql, SQL.upsert)
-          rows.set(`${v[0]}\u0000${v[1]}`, {
+          assert.ok(sql === SQL.upsert || sql === SQL.insert)
+          const k = `${v[0]}\u0000${v[1]}`
+          if (sql === SQL.insert && rows.has(k)) return { meta: { changes: 0 } }
+          rows.set(k, {
             key: String(v[1]),
             value: String(v[2]),
             updated_at: String(v[3]),
           })
-          return {}
+          return { meta: { changes: 1 } }
         },
         first: async <T>() => {
           assert.equal(sql, SQL.get)
@@ -44,11 +46,15 @@ function memory(): D1 {
   }
 }
 
+const keys: string[] = []
 const env = (db: D1 | null = memory()): Env => ({
   AI: { run: async () => ({}) },
   ASSETS: { fetch: async () => new Response('asset') },
   JOBS_DB: db ?? undefined,
   JOB_ASSIST_TOKEN: TOKEN,
+  RATE_LIMITER: {
+    limit: async ({ key }) => (keys.push(key), { success: true }),
+  },
 })
 
 const call = (
@@ -164,6 +170,53 @@ test('draft, approval request and versions', async () => {
   assert.equal(state.versions.length, 1)
 })
 
+test('a version stored by a concurrent approval is not overwritten', async () => {
+  const db = memory()
+  const v1 = JSON.stringify({ ...profile(), status: 'approved', version: 1 })
+  // The other approval lands between this request's version count and its insert.
+  const stale: D1 = {
+    prepare: (sql) =>
+      sql === SQL.list
+        ? {
+            bind: () => ({
+              ...db.prepare(sql).bind(),
+              all: async <T>() => ({ results: [] as T[] }),
+            }),
+          }
+        : db.prepare(sql),
+  }
+  await db.prepare(SQL.insert).bind('version', '000001', v1, 'then').run()
+  const r = await call(env(stale), 'profile/versions', {
+    method: 'POST',
+    body: v1,
+    token: TOKEN,
+  })
+  assert.equal(r.status, 409)
+})
+
+test('a body declared too large is refused before it is read', async () => {
+  const r = await call(env(), 'reviews/1', {
+    method: 'PUT',
+    body: '{}',
+    token: TOKEN,
+    headers: { 'Content-Length': '9000000' },
+  })
+  assert.equal(r.status, 400)
+})
+
+test('jobs routes need the rate limiter; reads and writes count apart', async () => {
+  const e = env()
+  keys.length = 0
+  const ip = { 'CF-Connecting-IP': '1.2.3.4' }
+  await call(e, 'reviews', { headers: ip })
+  await call(e, 'reviews/1', { method: 'PUT', body: '{}', headers: ip })
+  assert.deepEqual(keys, ['jobs-read:1.2.3.4', 'jobs-write:1.2.3.4'])
+  assert.equal(
+    (await call({ ...e, RATE_LIMITER: undefined }, 'reviews')).status,
+    503,
+  )
+})
+
 test('CV upload accepts PDF and DOCX only and serves the file back', async () => {
   const e = env()
   const upload = (type: string, bytes: Uint8Array) =>
@@ -185,10 +238,14 @@ test('CV upload accepts PDF and DOCX only and serves the file back', async () =>
   const pdf = new TextEncoder().encode('%PDF-1.7 minimal')
   const { sha256 } = await (await upload('application/pdf', pdf)).json()
   assert.match(sha256, /^[0-9a-f]{64}$/)
-  const { files } = await (await call(e, 'cv')).json()
+  // Raw uploads are owner-only: no listing or download without the token.
+  assert.equal((await call(e, 'cv')).status, 401)
+  assert.equal((await call(e, `cv/${sha256}`)).status, 401)
+  const { files } = await (await call(e, 'cv', { token: TOKEN })).json()
   assert.equal(files[0].filename, 'cv.pdf')
-  const back = await call(e, `cv/${sha256}`)
+  const back = await call(e, `cv/${sha256}`, { token: TOKEN })
   assert.equal(back.headers.get('Content-Type'), 'application/pdf')
+  assert.equal(back.headers.get('Cache-Control'), 'no-store')
   assert.deepEqual(new Uint8Array(await back.arrayBuffer()), pdf)
 })
 

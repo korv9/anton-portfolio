@@ -1,7 +1,7 @@
 /**
  * The job assistant's data (docs/job-assistant.md): the released files job-assistant/*.json,
  * read through the delivery manifest, and the owner's records at /api/jobs/*, read in public
- * and written only with the owner token kept in this browser.
+ * and written only with the owner token, kept for this tab's session.
  */
 import { fetchJson } from '../dataSource'
 import type { Delivered, Records } from './model'
@@ -30,18 +30,19 @@ export async function loadRecords(): Promise<Records> {
   }
 }
 
+// sessionStorage, not localStorage: the token ends with the tab and is not left on the device.
 const TOKEN_KEY = 'job-assistant-owner-token'
 export const ownerToken = () => {
   try {
-    return localStorage.getItem(TOKEN_KEY) ?? ''
+    return sessionStorage.getItem(TOKEN_KEY) ?? ''
   } catch {
     return ''
   }
 }
 export const setOwnerToken = (token: string) => {
   try {
-    if (token) localStorage.setItem(TOKEN_KEY, token)
-    else localStorage.removeItem(TOKEN_KEY)
+    if (token) sessionStorage.setItem(TOKEN_KEY, token)
+    else sessionStorage.removeItem(TOKEN_KEY)
   } catch {
     /* private window: the token lasts for this page only */
   }

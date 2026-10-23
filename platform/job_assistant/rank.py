@@ -21,7 +21,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import ai  # noqa: E402
-from ads import load_ads, store_dir, write_atomic  # noqa: E402
+from ads import LOCAL, STAMP, load_ads, store_dir, write_atomic  # noqa: E402
 from cv_profile import problems  # noqa: E402
 from match import ENGINE, LISTED, match, order  # noqa: E402
 
@@ -56,7 +56,10 @@ def run(profile: dict | None, http=None, now: datetime | None = None) -> dict:
         result = {"profile": None, "engine": ENGINE, "note": {**note, "skipped": "no approved profile"}, "matches": []}
         write_atomic(path, result)
         return result
-    current = {k: a for k, a in ads.items() if not a.get("removed_at") and not a.get("duplicate_of")}
+    # A passed deadline ends an ad as removal does; the rule is mart_job_assistant_ads' `expired`.
+    local = now.astimezone(LOCAL).strftime(STAMP)
+    current = {k: a for k, a in ads.items() if not a.get("removed_at") and not a.get("duplicate_of")
+               and not (a.get("application_deadline") or "9")[:19] < local}
     rows = {}
     for key, ad in current.items():
         before = old.get(key)
@@ -78,7 +81,11 @@ def run(profile: dict | None, http=None, now: datetime | None = None) -> dict:
     for row in ranked:
         if row["class"] not in LISTED or row.get("explanation"):
             continue
-        result = ai.explain(row, ads[row["id"]], http, explained)
+        try:
+            result = ai.explain(row, ads[row["id"]], http, explained, now)
+        except (RuntimeError, OSError) as error:
+            note["explain_stopped"] = f"error: {type(error).__name__}"
+            break
         if result is None:
             break
         row["explanation"] = result

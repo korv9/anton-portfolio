@@ -5,7 +5,7 @@
  * (law, or the platform's own documents) and that every quote in the answer is verbatim in its
  * passage. Visitor text is never logged
  * or stored. All vector search happens in the browser. /api/jobs/* is the job assistant's owner
- * records (worker/jobs.ts): public reads, token-protected writes.
+ * records (worker/jobs.ts): public reads, token-protected writes and CV files.
  */
 import { jobs, type JobsEnv } from './jobs.ts'
 
@@ -266,11 +266,14 @@ export default {
     const { pathname } = new URL(request.url)
     if (!pathname.startsWith('/api/')) return env.ASSETS.fetch(request)
     if (pathname.startsWith('/api/jobs/')) {
-      if (env.RATE_LIMITER) {
-        const key = request.headers.get('CF-Connecting-IP') ?? 'anonymous'
-        if (!(await env.RATE_LIMITER.limit({ key })).success)
-          return json({ error: 'too many requests' }, 429)
-      }
+      // Owner records are never served unlimited; reads and writes count separately so public
+      // reads cannot use up the owner's write budget.
+      if (!env.RATE_LIMITER)
+        return json({ error: 'rate limiter is not configured' }, 503)
+      const ip = request.headers.get('CF-Connecting-IP') ?? 'anonymous'
+      const key = `jobs-${request.method === 'GET' ? 'read' : 'write'}:${ip}`
+      if (!(await env.RATE_LIMITER.limit({ key })).success)
+        return json({ error: 'too many requests' }, 429)
       return jobs(request, env)
     }
     const route = { '/api/embed': embed, '/api/answer': answer }[pathname]
