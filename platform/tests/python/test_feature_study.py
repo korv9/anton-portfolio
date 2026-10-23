@@ -62,10 +62,13 @@ def test_cluster_report_scores_structure_above_noise():
 
 
 def test_stack_vectors_put_co_mentioned_skills_together():
-    flags = np.array([[1, 1, 0, 0]] * 20 + [[0, 0, 1, 1]] * 20 + [[0, 0, 0, 0]], float)
+    flags = np.array([[1, 1, 0, 0]] * 20 + [[0, 0, 1, 1]] * 20 + [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0],
+                                                                  [0, 0, 0, 0]], float)
     v = job_ads.stack_vectors(flags, dims=2)
     assert np.allclose(v[-1], 0)
-    assert np.linalg.norm(v[0] - v[1]) < np.linalg.norm(v[0] - v[20])
+    # an ad with skill 0 sits nearer one with skill 1 (co-mentioned) than one with skill 2
+    assert np.linalg.norm(v[40] - v[41]) < np.linalg.norm(v[40] - v[42])
+    assert np.linalg.norm(v[0] - v[40]) < np.linalg.norm(v[0] - v[20])
 
 
 def test_seniority_signals():
@@ -102,8 +105,8 @@ def ads(n=200, seed=0):
     years = rng.integers(0, 8, n).astype(float)
     data = {"flags": rng.integers(0, 2, (n, 12)).astype(float), "words": rng.integers(100, 900, n).astype(float),
             "years": years, "lead": (years > 4).astype(float), "entry": (years == 0).astype(float),
-            "remote": rng.integers(0, 2, n).astype(float), "body_senior": (years > 5).astype(float),
-            "body_junior": (years < 1).astype(float)}
+            "remote": rng.integers(0, 2, n).astype(float), "title_senior_in_body": (years > 5).astype(float),
+            "title_junior_in_body": (years < 1).astype(float)}
     return data, (years > 3).astype(int), np.repeat(np.arange(n // 4), 4).astype(str)
 
 
@@ -154,3 +157,12 @@ def test_talk_sessions_keep_their_position_and_lag_pairs_skip_gaps(tmp_path, mon
     assert rows[0]["pooled"].sum() == 2 * rows[0]["words"].sum()  # 2001/02 pools with 2002/03 only
     assert talk_vote.lag_pairs([0, 2], 1) == [] and talk_vote.lag_pairs([0, 2], 2) == [(0, 1)]
     assert talk_vote.lag_pairs([0, 1, 3, 4], 1) == [(0, 1), (2, 3)]
+
+
+def test_pair_interval_resamples_sessions_not_pairs():
+    # Session 0 is in five of the seven pairs; whenever it is not drawn only the zero pairs remain.
+    pairs = [(0, i) for i in range(1, 6)] + [(6, 7), (8, 9)]
+    out = talk_vote.pair_interval([1] * 5 + [0, 0], pairs, 10, np.random.default_rng(0))
+    assert np.isclose(out["mean"], 5 / 7, atol=1e-4) and out["low"] == 0 and out["pairs"] == 7 and out["sessions"] == 10
+    same = talk_vote.pair_interval([0.3, 0.3], [(0, 1), (1, 2)], 3, np.random.default_rng(0))
+    assert same["low"] == same["high"] == 0.3

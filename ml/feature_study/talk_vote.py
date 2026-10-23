@@ -16,9 +16,11 @@ sessions one and three apart on their common parties (does the grouping persist;
 overlap at one apart, not at three), topic bootstrap ARI
 for the sets that use topics (topics drawn with replacement, votes kept), and for talk sets the
 Mantel r with votes. The votes stay fixed in the topic bootstrap, so talk+votes is stable there
-partly by construction. Session means with a bootstrap over sessions (1,000 rounds). The lag is
-counted in the full session order, so a skipped session leaves a gap and shifts no pair. Pooled
-against Hellinger also gets a paired bootstrap over the same session pairs.
+partly by construction. Per-session values get a bootstrap over sessions (1,000 rounds). A
+session sits in up to two lag pairs, so the pair means resample sessions, not pairs: a pair counts
+once for each way both its sessions were drawn, and a round with no complete pair is skipped. The
+lag is counted in the full session order, so a skipped session leaves a gap and shifts no pair.
+Pooled against Hellinger is paired: the difference per session pair, under the same resampling.
 """
 from __future__ import annotations
 
@@ -100,6 +102,21 @@ def interval(values, rng) -> dict:
             "high": round(float(np.percentile(boot, 97.5)), 4), "sessions": int(len(values))}
 
 
+def pair_interval(values, pairs: list[tuple[int, int]], n: int, rng) -> dict:
+    """Mean over session pairs; the bootstrap draws n sessions and weights pair (a, b) by count_a * count_b."""
+    values = np.asarray(values, float)
+    a, b = np.array(pairs, int).reshape(-1, 2).T
+    boot = []
+    for _ in range(BOOT):
+        drawn = np.bincount(rng.integers(0, n, n), minlength=n)
+        weights = drawn[a] * drawn[b]
+        if weights.sum():
+            boot.append(np.average(values, weights=weights))
+    return {"mean": round(float(values.mean()), 4), "low": round(float(np.percentile(boot, 2.5)), 4),
+            "high": round(float(np.percentile(boot, 97.5)), 4), "pairs": int(len(values)), "sessions": n,
+            "rounds": len(boot)}
+
+
 def lag_pairs(positions: list[int], lag: int) -> list[tuple[int, int]]:
     """Row indices (a, b) whose sessions lie `lag` apart in the full session order."""
     at = {p: i for i, p in enumerate(positions)}
@@ -130,8 +147,9 @@ def main() -> None:
                 a, b = cuts[n][i], cuts[n][j]
                 common = sorted(set(a) & set(b))
                 values[n].append(adjusted_rand_score([a[p] for p in common], [b[p] for p in common]))
-        persist[f"lag_{lag}"] = {n: interval(v, rng) for n, v in values.items()}
-        pooled_gain[f"lag_{lag}"] = interval(np.subtract(values["pooled"], values["hellinger"]), rng)
+        persist[f"lag_{lag}"] = {n: pair_interval(v, pairs, len(rows), rng) for n, v in values.items()}
+        pooled_gain[f"lag_{lag}"] = pair_interval(np.subtract(values["pooled"], values["hellinger"]), pairs,
+                                                  len(rows), rng)
     write("talk_vote", {"sessions": [r["session"] for r in rows], "cut": CUT,
                         "session_ari": persist, "pooled_minus_hellinger": pooled_gain,
                         "topic_bootstrap_ari": {n: interval(v, rng) for n, v in boots.items()},

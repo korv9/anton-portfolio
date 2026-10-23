@@ -4,8 +4,8 @@
 
 Reads the JobTech cluster corpus (warehouse/raw/jobtech/cluster-corpus/<year>/*.parquet, or the
 folders given) in one DuckDB pass with a 1 GB limit: occupation field Data/IT, a description of
-at least 300 characters, deduplicated on the exact lower-cased description (tmp/job-ads-ml.md),
-so a repost with an edited description stays in. Ads without an employer are left out (none in
+at least 300 characters. Dedup: one ad per md5 of the lower-cased description (any_value of title,
+employer and role within it), so a repost with an edited description stays in. Ads without an employer are left out (none in
 2024-2025).
 - Label: senior when the title matches SENIOR, junior when it matches JUNIOR; the title is never
   a feature. Role: the six largest occupation groups.
@@ -15,7 +15,8 @@ so a repost with an edited description stays in. Ads without an employer are lef
   skills' positive PMI (fitted on all ads, no labels); experience: years of experience asked
   for, lead/mentor words, entry words, remote or hybrid work; interactions: a gradient-boosted
   model on the flags alone.
-- consistency (separate, close to leakage): senior or junior written in the body as well.
+- consistency (separate, close to leakage): the title label regexes SENIOR and JUNIOR applied to
+  the body. It shares the label's own words, so it is not an independent signal.
 Logistic regression with balanced class weights, 5 folds grouped by employer, out-of-fold scores. AUC (seniority) and
 macro-F1 (role) with a 1,000-round employer bootstrap; each set against the baseline with the
 paired bootstrap, so the interval is for the difference.
@@ -41,7 +42,7 @@ CORPUS = ROOT / "warehouse/raw/jobtech/cluster-corpus"
 PATTERNS = ROOT / "platform/seeds/technology_patterns.csv"
 SENIOR = r"\b(senior|lead|principal|sr|erfaren)\b"
 JUNIOR = r"\b(junior|graduate|trainee|jr|nyexad\w*)\b"
-# Body signals; the literal title words are kept apart in CONSISTENCY.
+# Body signals; the title label regexes run on the body are kept apart in CONSISTENCY.
 SIGNALS = {
     "years": r"\b(\d{1,2})\s*\+?\s*(?:års?|years?)\s*(?:av\s+|of\s+)?(?:\w+\s+){0,2}(?:erfarenhet|experience)",
     "lead": r"\b(mentor\w*|coach\w*|leda\b|leder\b|teamlead\w*|tech lead|arkitekt\w*|strateg\w*|ansvar för)",
@@ -49,7 +50,7 @@ SIGNALS = {
              r"ingen tidigare erfarenhet|no prior experience)",
     "remote": r"\b(distans\w*|remote|hybrid\w*|hemifrån|work from home)",
 }
-CONSISTENCY = {"body_senior": SENIOR, "body_junior": JUNIOR}
+CONSISTENCY = {"title_senior_in_body": SENIOR, "title_junior_in_body": JUNIOR}
 ROLES, FOLDS, BOOT, SEED = 6, 5, 1000, 20261022
 
 
@@ -120,8 +121,8 @@ def feature_sets(data: dict) -> dict[str, np.ndarray]:
     for name, extra in (("size", size), ("stack", stack), ("experience", experience)):
         base[f"skills+{name}"] = np.hstack([flags, extra])
     base["skills+all"] = np.hstack([flags, size, stack, experience])
-    base["skills+all+consistency"] = np.hstack([base["skills+all"], np.column_stack([data["body_senior"],
-                                                                                      data["body_junior"]])])
+    title_in_body = np.column_stack([data["title_senior_in_body"], data["title_junior_in_body"]])
+    base["skills+all+consistency"] = np.hstack([base["skills+all"], title_in_body])
     return base
 
 

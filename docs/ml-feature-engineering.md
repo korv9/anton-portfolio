@@ -13,22 +13,24 @@ column says 5-95 %.
 
 | Analysis | Baseline | Gain over the baseline (paired interval) | No clear gain |
 |---|---|---|---|
-| Job ads, senior vs junior (AUC) | 32 skill flags: 0.56 [0.48, 0.63] | experience signals in the body: +0.15 [+0.10, +0.21] | skill count and length, co-occurrence stack vectors, boosted-tree interactions |
+| Job ads, senior vs junior (AUC) | 32 skill flags: 0.56 [0.48, 0.63] | experience signals in the body: +0.147 [+0.105, +0.191] | skill count and length, co-occurrence stack vectors, boosted-tree interactions |
 | Job ads, six roles (macro-F1) | 0.20 [0.18, 0.21] | experience +0.057 [+0.047, +0.069]; smaller gains from size +0.035, boosted trees +0.015 and stack vectors +0.014, each interval above 0; all together +0.084 [+0.075, +0.095] | none |
 | Municipal types (bootstrap ARI) | plain levels | none | per-capita rates and logs, party CLR, change since 2015, slopes, job-field CLR |
-| Riksdag party groups (session ARI, 3 sessions apart) | Hellinger on one session's topic words | pooling a session with its two neighbours: +0.16 [+0.03, +0.29] | CLR (Aitchison) of topic shares; talk added to votes |
-| Futures sentences (exploratory) | PCA-50 K-means on the centred space: seed ARI 0.70 at k = 16 | none | metadata regressed out (0.70 at k = 16); metadata as features (the clusters then follow the metadata) |
+| Riksdag party groups (session ARI, 3 sessions apart) | Hellinger on one session's topic words | none | pooling a session with its two neighbours (+0.16 [−0.07, +0.36]); CLR (Aitchison) of topic shares; talk added to votes |
+| Futures sentences (exploratory) | PCA-50 K-means on the centred space: seed ARI 0.70 at k = 16 | none at k = 16 (k = 8 and 16 were both fixed before the run; centred k = 8 repeats at seed ARI 1.00, subsample 0.98, and follows the marker) | metadata regressed out (0.70 at k = 16); metadata as features (the clusters then follow the metadata) |
 
 No gold mart is added. The one clear gain is the job-ad experience signals, and they are
 ad-level features. The repository publishes job ads only as aggregates, and no aggregate
-analysis uses them yet. The Riksdag pooling gain is small and its interval is wide. In the futures
-run, regressing out the metadata adds no stability at the same k. A mart can follow once an analysis that is published depends on one of
+analysis uses them yet. Pooling Riksdag sessions has a positive point estimate, but its interval
+includes zero once sessions, not session pairs, are resampled. In the futures run, regressing out
+the metadata adds no stability at k = 16. A mart can follow once an analysis that is published depends on one of
 these.
 
 ## Job ads: seniority and role
 
 `python -m ml.feature_study.job_ads <folders>` reads the JobTech cluster corpus for 2024 and 2025
-(pulled from R2 into the ignored `tmp/warehouse/raw`). It keeps Data/IT ads with descriptions of
+(pulled from R2 into the ignored `tmp/warehouse/raw`). The counts and scores below are in
+`ml/feature_study/results/job_ads.json` (numbers only, no ad text). It keeps Data/IT ads with descriptions of
 at least 300 characters, deduplicated on the exact lower-cased description: 62,966 ads. A repost
 with an edited description counts twice. Every ad in these two years names an employer; the code
 leaves out any ad that does not. The title
@@ -51,22 +53,20 @@ difference comes from the paired bootstrap, so it is an interval for the differe
 | + all + "senior"/"junior" in the body | 0.927 [0.902, 0.946] | +0.366 [+0.280, +0.456] | | |
 
 How to read it:
-- The 32 repository skill flags barely separate senior from junior titles. On 2025 alone the AUC
-  was 0.45 [0.35, 0.57], which is no better than chance. The probe in `tmp/job-ads-ml.md` reached
-  0.67 because its 15 extra patterns (architecture, agile, CI/CD, network, ServiceNow, security
-  clearance) carry most of the signal. Those patterns have not been precision-checked, so they
-  are not part of this baseline.
+- The 32 repository skill flags barely separate senior from junior titles. An earlier run on
+  2025 alone, without class weights, gave 0.45 [0.35, 0.57], which is no better than chance
+  (`ml/feature_study/results/job_ads-2025-unweighted.json`).
 - The skill co-occurrence vectors and boosted-tree interactions add nothing to seniority. The
   vectors are a linear summary of the same flags, and the flags hold little signal to begin with.
 - Experience wording helps both tasks. The ad states the years of experience it asks for and
   whether the role leads or mentors. The years pattern counts "N års erfarenhet" and "N years of
   experience" and caps at 20. The senior label includes "erfaren" in the title, which is close to
   "erfarenhet" in the body. That overlap is lexical, but it is also what the ad asks for.
-- Title and body agree: when the body also says senior or junior, the AUC reaches 0.93. This is
-  close to leakage, so it measures consistency between title and body and does not count as a
-  predictive gain.
+- The consistency row runs the title label regexes (senior, lead, principal, sr, erfaren and the
+  junior words) on the body. The features are the label's own words, so the 0.93 shows how often
+  title and body use the same words. It is not an independent signal and not a predictive gain.
 - Limits: only 20 % of ads carry a title label, and "lead" also matches team-lead roles. Each
-  regex flag means "mentioned in the ad", not "required". The 2025 run without class weights gave
+  regex flag means "mentioned in the ad", not "required". The same unweighted 2025 run gave
   role macro-F1 0.13, roughly the score of always predicting the majority group (58 % of ads).
   That is why every set uses balanced weights.
 
@@ -81,7 +81,7 @@ and is also run at a fixed k = 4. The checks are a 100-round bootstrap ARI (5-95
 silhouette margin over the 95th percentile of a feature-wise permutation null (200 rounds), AMI
 with SKR's municipality groups, and the ARI between the fit on 2014-2019 features and the fit on
 2019-2024 features. Every set covers the same municipalities. Without library visits, 240 of the 290 municipalities
-have every value. Library visits are missing for 38 more, so the comparison runs without them
+have every value. Library visits are missing for 38 of those 240, so the comparison runs without them
 (240 units) and with them (202 units).
 
 Without library visits (240 municipalities):
@@ -109,23 +109,27 @@ SKR's groups (AMI 0.27 against 0.17) but makes them less stable. On this panel, 
 
 `python -m ml.feature_study.talk_vote` takes its inputs from the published talk-vote clustering
 (`platform/publish/clusters/talk_vote.py`): 33 sessions with seven to nine parties. Each set's
-distances are cut into three groups by average linkage. The intervals come from a bootstrap
-over sessions. The lag counts positions in the full session order, so pairs stay the same
-distance apart even when a session is left out. In this run all 33 sessions are consecutive.
+distances are cut into three groups by average linkage. All intervals come from a bootstrap
+over sessions (1,000 rounds). The topic bootstrap ARI and the Mantel r have one value per
+session. A session sits in up to two lag pairs, so for the session ARI each round draws 33
+sessions with replacement and averages the pairs whose two sessions were both drawn, weighted by
+how often each was drawn. The lag counts positions in the full session order, so pairs stay the
+same distance apart even when a session is left out. In this run all 33 sessions are consecutive.
 
-| Distance | Session ARI, 1 apart | Session ARI, 3 apart | Topic bootstrap ARI | Mantel r with votes |
+| Distance | Session ARI, 1 apart (95 %, session bootstrap) | Session ARI, 3 apart (95 %, session bootstrap) | Topic bootstrap ARI (95 %, session bootstrap) | Mantel r with votes (95 %, session bootstrap) |
 |---|---|---|---|---|
-| Hellinger, one session's topic words (published) | 0.21 [0.09, 0.34] | 0.07 [−0.02, 0.18] | 0.44 [0.40, 0.50] | −0.04 [−0.11, 0.05] |
-| Aitchison (CLR of topic shares) | 0.06 [−0.02, 0.14] | 0.03 [−0.05, 0.12] | 0.42 [0.37, 0.46] | 0.01 [−0.06, 0.08] |
-| Hellinger, session pooled with its neighbours | 0.48 [0.36, 0.60] | 0.23 [0.11, 0.35] | 0.47 [0.41, 0.52] | −0.04 [−0.13, 0.07] |
-| votes (1 − agreement) | 0.76 [0.67, 0.86] | 0.52 [0.39, 0.65] | | |
-| talk + votes (mean of scaled distances) | 0.56 [0.45, 0.68] | 0.47 [0.34, 0.59] | 0.79 [0.75, 0.84] | |
+| Hellinger, one session's topic words (published) | 0.21 [−0.01, 0.45] | 0.07 [−0.09, 0.26] | 0.44 [0.40, 0.49] | −0.04 [−0.12, 0.06] |
+| Aitchison (CLR of topic shares) | 0.06 [−0.09, 0.19] | 0.03 [−0.08, 0.20] | 0.42 [0.37, 0.46] | 0.01 [−0.06, 0.08] |
+| Hellinger, session pooled with its neighbours | 0.48 [0.30, 0.72] | 0.23 [0.02, 0.46] | 0.47 [0.41, 0.53] | −0.04 [−0.12, 0.06] |
+| votes (1 − agreement) | 0.76 [0.58, 0.91] | 0.52 [0.29, 0.76] | | |
+| talk + votes (mean of scaled distances) | 0.56 [0.35, 0.80] | 0.47 [0.24, 0.69] | 0.79 [0.75, 0.84] | |
 
-- The Hellinger row matches the published topic bootstrap (0.44), so the setup is the same.
+- The Hellinger row matches the published topic bootstrap (0.44, published with a 5-95 %
+  interval), so the setup is the same.
 - Pooled windows overlap one session apart, so that column flatters them. Three sessions apart
-  the windows share nothing, and pooling still gives 0.23 against 0.07. On the same 30 session
-  pairs the paired difference is +0.16 [+0.03, +0.29]. That is a modest gain in persistence with
-  a wide interval, and it does not make the talk tree stable.
+  the windows share nothing. Pooling gives 0.23 against 0.07, but on the same 30 session pairs
+  the paired difference is +0.16 [−0.07, +0.36]. The interval includes zero, so this run does not
+  show that pooling helps, and the talk tree is unstable either way.
 - CLR makes the talk groups less persistent: small topics get as much weight as large ones.
 - Talk does not track votes under any of these distances (Mantel r near 0). Adding talk to votes
   gives groups that persist less than votes alone. Its high topic bootstrap ARI is partly built
