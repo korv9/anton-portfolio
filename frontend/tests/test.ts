@@ -25,6 +25,12 @@ export const test = base.extend<{
         await route.fulfill({ json: delivery })
       })
     }
+    // E2E_CPU_THROTTLE=4 slows the page's CPU like a busy CI runner, to reproduce timing flakes.
+    const throttle = Number(process.env.E2E_CPU_THROTTLE ?? 1)
+    if (throttle > 1)
+      await (
+        await page.context().newCDPSession(page)
+      ).send('Emulation.setCPUThrottlingRate', { rate: throttle })
     await page.addInitScript((lang) => {
       try {
         if (lang && !localStorage.getItem('anton-portfolio-language'))
