@@ -172,11 +172,22 @@ function ApplyStep() {
 }
 
 export const posts: Post[] = [
-  { id: 'txt-act-applies-waffle', domain: d, render: () => <AppliesWaffle /> },
-  { id: 'txt-act-characters', domain: d, render: () => <Characters /> },
+  {
+    id: 'txt-act-applies-waffle',
+    domain: d,
+    sources: ['ai-act/articles.json'],
+    render: () => <AppliesWaffle />,
+  },
+  {
+    id: 'txt-act-characters',
+    domain: d,
+    sources: ['ai-act/articles.json'],
+    render: () => <Characters />,
+  },
   {
     id: 'txt-act-apply-step',
     domain: d,
+    sources: ['ai-act/articles.json'],
     size: 'wide',
     render: () => <ApplyStep />,
   },

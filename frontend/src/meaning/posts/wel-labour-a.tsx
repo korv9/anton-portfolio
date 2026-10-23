@@ -264,23 +264,27 @@ export const posts: Post[] = [
   {
     id: 'wel-unemployment-lines',
     domain: 'welfare',
+    sources: ['welfare/national-month.json'],
     size: 'wide',
     render: () => <UnemploymentLines />,
   },
   {
     id: 'wel-sick-stream',
     domain: 'welfare',
+    sources: ['welfare/national-month.json'],
     size: 'tall',
     render: () => <SickStream />,
   },
   {
     id: 'wel-ongoing-calendar',
     domain: 'welfare',
+    sources: ['welfare/national-month.json'],
     render: () => <OngoingCalendar />,
   },
   {
     id: 'wel-labour-force-area',
     domain: 'welfare',
+    sources: ['welfare/national-month.json'],
     size: 'wide',
     render: () => <LabourForceArea />,
   },

@@ -290,9 +290,20 @@ export const posts: Post[] = [
   {
     id: 'job-field-bump',
     domain: D,
+    sources: ['jobs/market.json'],
     size: 'wide',
     render: () => <FieldBump />,
   },
-  { id: 'job-field-radial', domain: D, render: () => <FieldRadial /> },
-  { id: 'job-field-change', domain: D, render: () => <FieldChange /> },
+  {
+    id: 'job-field-radial',
+    domain: D,
+    sources: ['jobs/market.json'],
+    render: () => <FieldRadial />,
+  },
+  {
+    id: 'job-field-change',
+    domain: D,
+    sources: ['jobs/market.json'],
+    render: () => <FieldChange />,
+  },
 ]

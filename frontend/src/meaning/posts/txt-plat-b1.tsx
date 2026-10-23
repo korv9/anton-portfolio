@@ -196,14 +196,21 @@ export const posts: Post[] = [
   {
     id: 'txt-plat-sfs-stream',
     domain: d,
+    sources: ['sfs/overview.json'],
     size: 'wide',
     render: () => <SfsStream />,
   },
   {
     id: 'txt-plat-sfs-units',
     domain: d,
+    sources: ['sfs/overview.json'],
     size: 'tall',
     render: () => <SfsUnits />,
   },
-  { id: 'txt-plat-lineage-units', domain: d, render: () => <LineageUnits /> },
+  {
+    id: 'txt-plat-lineage-units',
+    domain: d,
+    sources: ['idea-lineage/events.json'],
+    render: () => <LineageUnits />,
+  },
 ]

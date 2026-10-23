@@ -222,16 +222,23 @@ function ConceptLift() {
 
 const d = 'ml'
 export const posts: Post[] = [
-  { id: 'txt-ml-research-steps', domain: d, render: () => <ResearchSteps /> },
+  {
+    id: 'txt-ml-research-steps',
+    domain: d,
+    sources: ['symbolic/research-history.json'],
+    render: () => <ResearchSteps />,
+  },
   {
     id: 'txt-ml-cluster-skyline',
     domain: d,
+    sources: ['symbolic/summary.json'],
     size: 'wide',
     render: () => <ClusterSkyline />,
   },
   {
     id: 'txt-ml-concept-lift',
     domain: d,
+    sources: ['concepts/profiles.json'],
     size: 'tall',
     render: () => <ConceptLift />,
   },

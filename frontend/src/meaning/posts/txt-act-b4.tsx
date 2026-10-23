@@ -136,12 +136,14 @@ export const posts: Post[] = [
   {
     id: 'txt-act-signal-calendar',
     domain: d,
+    sources: ['ai-act/signals.json'],
     size: 'tall',
     render: () => <SignalCalendar />,
   },
   {
     id: 'txt-act-signal-multiples',
     domain: d,
+    sources: ['ai-act/signals.json'],
     size: 'tall',
     render: () => <SignalMultiples />,
   },

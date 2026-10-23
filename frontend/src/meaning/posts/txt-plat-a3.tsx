@@ -122,6 +122,16 @@ function GoldBytes() {
 }
 
 export const posts: Post[] = [
-  { id: 'txt-plat-arch-degree', domain: d, render: () => <ArchDegree /> },
-  { id: 'txt-plat-gold-bytes', domain: d, render: () => <GoldBytes /> },
+  {
+    id: 'txt-plat-arch-degree',
+    domain: d,
+    sources: ['architecture/graph.json'],
+    render: () => <ArchDegree />,
+  },
+  {
+    id: 'txt-plat-gold-bytes',
+    domain: d,
+    sources: ['gold/semantic-model.json'],
+    render: () => <GoldBytes />,
+  },
 ]

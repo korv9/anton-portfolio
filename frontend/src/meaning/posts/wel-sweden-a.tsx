@@ -203,12 +203,28 @@ function Profiles() {
 }
 
 export const posts: Post[] = [
-  { id: 'wel-cluster-map', domain: 'sweden', render: () => <ClusterMap /> },
-  { id: 'wel-similarity-scree', domain: 'sweden', render: () => <Scree /> },
-  { id: 'wel-similarity-biplot', domain: 'sweden', render: () => <Biplot /> },
+  {
+    id: 'wel-cluster-map',
+    domain: 'sweden',
+    sources: ['cluster-research/municipalities.json'],
+    render: () => <ClusterMap />,
+  },
+  {
+    id: 'wel-similarity-scree',
+    domain: 'sweden',
+    sources: ['sweden/similarity/groups.json'],
+    render: () => <Scree />,
+  },
+  {
+    id: 'wel-similarity-biplot',
+    domain: 'sweden',
+    sources: ['sweden/similarity/groups.json'],
+    render: () => <Biplot />,
+  },
   {
     id: 'wel-similarity-profiles',
     domain: 'sweden',
+    sources: ['sweden/similarity/groups.json'],
     render: () => <Profiles />,
   },
 ]

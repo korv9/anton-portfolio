@@ -225,8 +225,28 @@ function Bubbles() {
 }
 
 export const posts: Post[] = [
-  { id: 'job-cluster-kpis', domain: D, render: () => <Kpis /> },
-  { id: 'job-cluster-years', domain: D, render: () => <YearHeat /> },
-  { id: 'job-cluster-gauges', domain: D, render: () => <Gauges /> },
-  { id: 'job-cluster-bubbles', domain: D, render: () => <Bubbles /> },
+  {
+    id: 'job-cluster-kpis',
+    domain: D,
+    sources: ['jobs/cluster-summary.json'],
+    render: () => <Kpis />,
+  },
+  {
+    id: 'job-cluster-years',
+    domain: D,
+    sources: ['jobs/cluster-summary.json'],
+    render: () => <YearHeat />,
+  },
+  {
+    id: 'job-cluster-gauges',
+    domain: D,
+    sources: ['jobs/cluster-summary.json'],
+    render: () => <Gauges />,
+  },
+  {
+    id: 'job-cluster-bubbles',
+    domain: D,
+    sources: ['jobs/cluster-summary.json'],
+    render: () => <Bubbles />,
+  },
 ]

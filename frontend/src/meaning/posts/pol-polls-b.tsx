@@ -211,13 +211,29 @@ function Kpi() {
 }
 
 export const posts: Post[] = [
-  { id: 'pol-poll-kpi', domain: 'politics', render: () => <Kpi /> },
+  {
+    id: 'pol-poll-kpi',
+    domain: 'politics',
+    sources: ['parliament/polls.json'],
+    render: () => <Kpi />,
+  },
   {
     id: 'pol-poll-ridges',
     domain: 'politics',
+    sources: ['parliament/polls.json'],
     size: 'tall',
     render: () => <Ridges />,
   },
-  { id: 'pol-poll-radial', domain: 'politics', render: () => <Radial /> },
-  { id: 'pol-poll-changes', domain: 'politics', render: () => <Changes /> },
+  {
+    id: 'pol-poll-radial',
+    domain: 'politics',
+    sources: ['parliament/polls.json'],
+    render: () => <Radial />,
+  },
+  {
+    id: 'pol-poll-changes',
+    domain: 'politics',
+    sources: ['parliament/polls.json'],
+    render: () => <Changes />,
+  },
 ]

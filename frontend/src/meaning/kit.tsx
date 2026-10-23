@@ -26,6 +26,9 @@ export type Post = {
   id: string
   /** The data family: picks the pipeline subject whose freshness the card shows. */
   domain: string
+  /** Every published data path the post reads, for its trace panel. A unit test holds each
+   * file's `useData` paths to these (feed-sources.test.ts). */
+  sources: readonly string[]
   /** 'wide' spans two feed columns on large screens. */
   size?: 'square' | 'wide' | 'tall'
   /** Readable name for the card's open and close buttons; defaults to the id read as words. */

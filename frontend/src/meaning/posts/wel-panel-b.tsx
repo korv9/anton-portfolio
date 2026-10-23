@@ -279,18 +279,30 @@ function HealthTrust() {
 }
 
 export const posts: Post[] = [
-  { id: 'wel-turnout-lollipop', domain: 'welfare', render: () => <Turnout /> },
+  {
+    id: 'wel-turnout-lollipop',
+    domain: 'welfare',
+    sources: ['welfare/panel-county-year.json'],
+    render: () => <Turnout />,
+  },
   {
     id: 'wel-county-parallel',
     domain: 'welfare',
+    sources: ['welfare/panel-county-year.json'],
     size: 'wide',
     render: () => <Parallel />,
   },
   {
     id: 'wel-sick-ridgeline',
     domain: 'welfare',
+    sources: ['welfare/panel-county-year.json'],
     size: 'tall',
     render: () => <Ridgeline />,
   },
-  { id: 'wel-health-trust', domain: 'welfare', render: () => <HealthTrust /> },
+  {
+    id: 'wel-health-trust',
+    domain: 'welfare',
+    sources: ['welfare/panel-county-year.json'],
+    render: () => <HealthTrust />,
+  },
 ]

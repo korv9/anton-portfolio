@@ -200,11 +200,22 @@ function DatasetBubbles() {
 }
 
 export const posts: Post[] = [
-  { id: 'txt-plat-delivery-donut', domain: d, render: () => <DeliveryDonut /> },
-  { id: 'txt-plat-sfs-largest', domain: d, render: () => <SfsLargest /> },
+  {
+    id: 'txt-plat-delivery-donut',
+    domain: d,
+    sources: ['delivery.json'],
+    render: () => <DeliveryDonut />,
+  },
+  {
+    id: 'txt-plat-sfs-largest',
+    domain: d,
+    sources: ['sfs/overview.json'],
+    render: () => <SfsLargest />,
+  },
   {
     id: 'txt-plat-dataset-bubbles',
     domain: d,
+    sources: ['products/datasets.json'],
     render: () => <DatasetBubbles />,
   },
 ]

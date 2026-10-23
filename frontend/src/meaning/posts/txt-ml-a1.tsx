@@ -142,12 +142,27 @@ function Observations() {
 }
 
 export const posts: Post[] = [
-  { id: 'txt-ml-topic-map', domain: d, render: () => <TopicMap /> },
+  {
+    id: 'txt-ml-topic-map',
+    domain: d,
+    sources: [
+      'cluster-research/debate-topics.json',
+      'cluster-research/municipalities.json',
+      'cluster-research/philosophy-topics.json',
+    ],
+    render: () => <TopicMap />,
+  },
   {
     id: 'txt-ml-phil-atlas',
     domain: d,
+    sources: ['philosophy/atlas.json'],
     size: 'tall',
     render: () => <PhilAtlas />,
   },
-  { id: 'txt-ml-observations', domain: d, render: () => <Observations /> },
+  {
+    id: 'txt-ml-observations',
+    domain: d,
+    sources: ['cluster-research/debate-topics.json'],
+    render: () => <Observations />,
+  },
 ]

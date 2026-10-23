@@ -290,6 +290,7 @@ function Diffusion() {
 export const posts: Post[] = [
   {
     id: 'txt-act-diffusion',
+    sources: ['ai-act/diffusion.json'],
     domain: 'ai-act',
     size: 'wide',
     label: "AI Act: when the Act's terms appear in speeches and job ads",

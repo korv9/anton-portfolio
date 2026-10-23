@@ -252,7 +252,23 @@ function Seniority() {
 }
 
 export const posts: Post[] = [
-  { id: 'job-cluster-map', domain: D, size: 'wide', render: () => <Scatter /> },
-  { id: 'job-cluster-sunburst', domain: D, render: () => <Sunburst /> },
-  { id: 'job-cluster-seniority', domain: D, render: () => <Seniority /> },
+  {
+    id: 'job-cluster-map',
+    domain: D,
+    sources: ['jobs/cluster-preview.json', 'jobs/cluster-summary.json'],
+    size: 'wide',
+    render: () => <Scatter />,
+  },
+  {
+    id: 'job-cluster-sunburst',
+    domain: D,
+    sources: ['jobs/cluster-summary.json'],
+    render: () => <Sunburst />,
+  },
+  {
+    id: 'job-cluster-seniority',
+    domain: D,
+    sources: ['jobs/cluster-summary.json'],
+    render: () => <Seniority />,
+  },
 ]

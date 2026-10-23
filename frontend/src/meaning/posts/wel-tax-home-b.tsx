@@ -244,16 +244,23 @@ function WedgeLines() {
 }
 
 export const posts: Post[] = [
-  { id: 'wel-vat-donut', domain: 'taxes', render: () => <VatDonut /> },
+  {
+    id: 'wel-vat-donut',
+    domain: 'taxes',
+    sources: ['taxes/household.json'],
+    render: () => <VatDonut />,
+  },
   {
     id: 'wel-wedge-bars',
     domain: 'taxes',
+    sources: ['taxes/wedge.json'],
     size: 'tall',
     render: () => <WedgeBars />,
   },
   {
     id: 'wel-wedge-lines',
     domain: 'taxes',
+    sources: ['taxes/wedge.json'],
     size: 'wide',
     render: () => <WedgeLines />,
   },
