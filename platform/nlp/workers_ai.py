@@ -76,11 +76,12 @@ def affordable(tokens: list[int], max_tokens: int, spent: float, cap: float = DA
     return int(np.searchsorted(total, budget, side="right"))
 
 
-def append_ledger(agent: str, tokens: int, neurons: float, ledger: Path = LEDGER) -> None:
+def append_ledger(agent: str, tokens: int, neurons: float, ledger: Path = LEDGER, model: str = MODEL,
+                  tokens_out: int = 0) -> None:
     ledger.parent.mkdir(parents=True, exist_ok=True)
     with ledger.open("a", encoding="utf-8") as out:
         out.write(json.dumps({"utc": datetime.now(timezone.utc).isoformat(timespec="seconds"), "agent": agent,
-                              "model": MODEL, "tokens_in": tokens, "tokens_out": 0,
+                              "model": model, "tokens_in": tokens, "tokens_out": tokens_out,
                               "neurons_est": round(neurons, 4)}) + "\n")
 
 
@@ -120,24 +121,18 @@ class QuotaExhausted(Exception):
     pass
 
 
-def call(session, texts: list[str]) -> tuple[np.ndarray, int, float]:
-    """One REST call. Returns (vectors, input tokens, neurons) as Cloudflare reports them."""
-    url = f"https://api.cloudflare.com/client/v4/accounts/{os.environ['CLOUDFLARE_ACCOUNT_ID']}/ai/run/{MODEL}"
+def post(session, model: str, payload: dict) -> dict:
+    """One REST call to `model`, retried on network errors, 429 and 5xx. Returns Cloudflare's result."""
+    url = f"https://api.cloudflare.com/client/v4/accounts/{os.environ['CLOUDFLARE_ACCOUNT_ID'].strip()}/ai/run/{model}"
     for attempt in range(6):
         try:
-            response = session.post(url, json={"text": texts}, timeout=120)
+            response = session.post(url, json=payload, timeout=120)
         except OSError:
             time.sleep(2 ** attempt)
             continue
         body = response.json() if response.headers.get("content-type", "").startswith("application/json") else {}
         if response.ok and body.get("success"):
-            result = body["result"]
-            meta = result.get("meta") or {}
-            vectors = np.asarray(result["data"], dtype="float32")
-            if vectors.shape != (len(texts), DIMS):
-                raise ValueError(f"Unexpected shape {vectors.shape}")
-            tokens = meta.get("cost_metric_value_1") or 0
-            return vectors, int(tokens), float(meta.get("neurons") or tokens * NEURONS_PER_TOKEN)
+            return body["result"]
         errors = json.dumps(body.get("errors", []))[:300]
         # 4006: the account has used its daily free allocation.
         if "4006" in errors or "daily free allocation" in errors:
@@ -146,6 +141,17 @@ def call(session, texts: list[str]) -> tuple[np.ndarray, int, float]:
             raise RuntimeError(f"Workers AI {response.status_code}: {errors}")
         time.sleep(2 ** attempt)
     raise RuntimeError("Workers AI kept failing after 6 attempts")
+
+
+def call(session, texts: list[str]) -> tuple[np.ndarray, int, float]:
+    """One embedding call. Returns (vectors, input tokens, neurons) as Cloudflare reports them."""
+    result = post(session, MODEL, {"text": texts})
+    meta = result.get("meta") or {}
+    vectors = np.asarray(result["data"], dtype="float32")
+    if vectors.shape != (len(texts), DIMS):
+        raise ValueError(f"Unexpected shape {vectors.shape}")
+    tokens = meta.get("cost_metric_value_1") or 0
+    return vectors, int(tokens), float(meta.get("neurons") or tokens * NEURONS_PER_TOKEN)
 
 
 def batch_size(lengths: list[int], limit: int = BATCH_TOKENS) -> int:

@@ -44,6 +44,7 @@
 - 2026-10-18 [USER] Authorised committing and pushing workflow-efficiency changes to a branch, then merging to main after required CI passes.
 
 - 2026-10-22 [CODE] Clustering batches 0-2 (`platform/publish/clusters/`, pipeline subject `clusters`, schema `configs/delivery/schemas/clusters/export.json`): one fit script per clustering, run ids in `cluster_lab/clusters/registry.sqlite`, exports in `frontend/public/data/clusters/`. Only status `finding` may be posted. Results and statuses: `docs/cluster-batches.md`.
+- 2026-10-23 [CODE] Old Bailey extraction (`ml/oldbailey/`, pre-registered in `docs/oldbailey-extraction-preregistration.md`): ORDA zip is CC BY-NC 4.0, stored in R2 `warehouse/raw/oldbailey/` with ATTRIBUTION.txt; trial text stays local. gemma answers accrue in `warehouse/features/oldbailey/gemma-sample.jsonl` at 6,000 neurons per UTC day; `python -m ml.oldbailey.score` refuses to export until all 2,000 are answered (871 on 2026-10-23).
 
 ## SWEDEN research platform (branch korv9/sweden-research-platform)
 
@@ -94,3 +95,9 @@
   - 3D done for A, B and E (BarField, lazy, ?scen=3d). C stays a 2D morph and D an SVG choropleth; a true 3D morph and travel-time accessibility (needs transport-network data) are open.
   - Remaining B archive years, through the weekly build or `workflow_dispatch` of build-warehouse on main.
 
+## Philosophy track 1 (branch korv9/philosophy-moral)
+
+- 2026-10-22 [CODE] Pre-registered in `docs/philosophy-moral-preregistration.md`: MFRC foundation tagger (bge-m3 + logistic regression), eMFD baseline, Riksdag passages 1993-2026, ETHICS agreement. Code `ml/moral/`, marts `models/*/philosophy_moral`, export `platform/publish/philosophy/export_moral.py` -> `philosophy/moral/{foundations,ethics}.json`.
+- 2026-10-23 [TOOL] English (in-domain random-hash split, not by subreddit or thread): tagger vs one annotator macro-F1 0.32 against annotator vs annotator 0.27, a weak human ceiling (alpha 0.08-0.31). The tagger sits at or just above that ceiling; gap per foundation with 95 % CI: care 0.04 (0.01 to 0.08), equality 0.06 (0.01 to 0.12), proportionality 0.09 (0.04 to 0.14), loyalty 0.01 (-0.06 to 0.07), authority 0.05 (0.01 to 0.10), purity 0.05 (0.00 to 0.10). eMFD F1 0.04-0.22. ETHICS (gemma, 200 items per subset): kappa 0.50-0.84, every subset above the shuffle null in both wordings; 40 unparsed replies.
+- 2026-10-22 [USER] Riksdag shares stay unpublished until the owner labels `tmp/mf-review.csv` (300 passages) and `python -m ml.moral.riksdag gate` passes; then `score`. The gate compares the owner's single-rater F1 with the majority-gold English F1 (stricter). Unit amended to sentence passages at the first draw, committed after the review set was embedded (archive markup differs by era).
+- 2026-10-23 [CODE] `warehouse/raw/philosophy_moral` (MFRC Reddit text, GPL eMFD, ETHICS) stays local; `warehouse_store.py` never pushes it, nor `features/philosophy/moral/run` (`LOCAL_ONLY`); the Riksdag passage sample now lives in `warehouse/ml/moral/run`. Only figures and derived features go to R2.
