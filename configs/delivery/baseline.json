@@ -45,6 +45,7 @@
     "clusters/*"
   ],
   "schemas": {
-    "ai-act/diffusion.json": "configs/delivery/schemas/ai-act-diffusion.json"
+    "ai-act/diffusion.json": "configs/delivery/schemas/ai-act-diffusion.json",
+    "humanities/oldbailey/extraction.json": "configs/delivery/schemas/humanities/oldbailey-extraction.json"
   }
 }
