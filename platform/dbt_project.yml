@@ -24,6 +24,8 @@ models:
         +tags: [ai_act_diffusion]
       philosophy:
         +tags: [philosophy]
+      philosophy_moral:
+        +tags: [philosophy_moral]
       job_ai_governance:
         +tags: [job_ai_governance]
       ai_politics:
@@ -100,6 +102,8 @@ models:
         +tags: [concepts]
       philosophy:
         +tags: [philosophy]
+      philosophy_moral:
+        +tags: [philosophy_moral]
       job_ai_governance:
         +tags: [job_ai_governance]
       ai_politics:
