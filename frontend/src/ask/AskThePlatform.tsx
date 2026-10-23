@@ -227,7 +227,7 @@ export default function AskThePlatform() {
         </p>
       )}
 
-      <div className="ap-result" aria-live="polite">
+      <div className="ap-result" aria-live="polite" aria-busy={busy}>
         {reply === 'waiting' ? (
           <p className="ap-status">
             {hits

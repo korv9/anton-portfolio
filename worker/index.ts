@@ -171,13 +171,25 @@ const TURNED = /"([^"]+)"\s*\[\[([^\]]+)\]\](?!\s*:?\s*")/g
 export const canonical = (answer: string) =>
   fold(answer).replace(TURNED, '[[$2]]"$1"')
 
+// Markdown marks (code ticks, bold, table bars) and line breaks are dropped on both sides before
+// the compare, so a quote that leaves out a table's | still matches; its words must not change.
+const plain = (text: string) =>
+  fold(text)
+    .replace(/[`*|]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .replace(/ ([,.;:)])/g, '$1')
+    .trim()
+
 /** Every citation in the answer, and whether its quote is verbatim in the passage it names. */
 export function checkQuotes(answer: string, passages: Passage[]) {
-  const texts = new Map(passages.map((p) => [p.id, fold(p.text)]))
+  const texts = new Map(passages.map((p) => [p.id, plain(p.text)]))
   return [...canonical(answer).matchAll(QUOTE)].map(([, id, quote]) => ({
     id,
     quote: quote ?? '',
-    verbatim: quote != null && (texts.get(id)?.includes(fold(quote)) ?? false),
+    verbatim:
+      quote != null &&
+      /\p{L}|\p{N}/u.test(plain(quote)) &&
+      (texts.get(id)?.includes(plain(quote)) ?? false),
   }))
 }
 

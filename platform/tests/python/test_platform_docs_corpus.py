@@ -1,4 +1,4 @@
-"""Ask the platform's corpus: only tracked public files, each passage traceable to its file at a commit."""
+"""Ask the platform's corpus: only tracked public files, each document passage found in its file."""
 import json
 import subprocess
 import sys
@@ -28,18 +28,37 @@ def test_allowed_refuses_untracked_ignored_and_private_paths():
 
 def test_sections_skip_headings_inside_code_fences():
     text = "# Title\nintro\n\n```sh\n# a comment, not a heading\n```\n\n## Next\nbody"
-    assert [h for h, _ in corpus.sections(text)] == ["Title", "Next"]
+    assert [(h, t) for h, _, t in corpus.sections(text)] == [("Title", "Title"), ("Next", "Title > Next")]
 
 
-def test_every_published_passage_is_a_tracked_public_file_at_its_commit():
+def source(path: str, commit: str) -> str:
+    """The file at the passage's commit; a shallow checkout (CI) lacks it, so the working tree."""
+    shown = git("show", f"{commit}:{path}")
+    return shown.stdout if shown.returncode == 0 else (ROOT / path).read_text(encoding="utf-8")
+
+
+def test_every_published_passage_is_a_tracked_public_file():
     items = json.loads(META.read_text(encoding="utf-8"))["items"]
     tracked = set(git("ls-files", "-z").stdout.split("\0"))
     ids = [i["id"] for i in items]
     assert len(ids) == len(set(ids))
     for path in {i["path"] for i in items}:
         assert corpus.allowed(path, tracked), f"{path} must not be in the corpus"
-    for path, commit in {(i["path"], i["commit"]) for i in items}:
-        assert git("cat-file", "-e", f"{commit}:{path}").returncode == 0, (path, commit)
+        assert path not in corpus.EXCLUDED, path
     for item in items:
         assert 0 < len(item["text"]) <= corpus.LONG
         assert item["url"].endswith(f"/{item['commit']}/{item['path']}")
+        assert not corpus.LOCAL.search(item["text"]), item["id"]
+
+
+def test_every_document_passage_line_is_in_its_file():
+    items = json.loads(META.read_text(encoding="utf-8"))["items"]
+    docs = [i for i in items if i["path"].endswith(".md")]
+    assert docs
+    files = {}
+    for item in docs:
+        key = (item["path"], item["commit"])
+        if key not in files:
+            files[key] = source(*key)
+        for line in item["text"].splitlines():
+            assert line.strip() in files[key], (item["id"], line)

@@ -125,6 +125,19 @@ test('quotes: a quote written before its [[id]] is turned around and checked', (
   )
 })
 
+test('quotes: Markdown marks are ignored on both sides, the words are not', () => {
+  const table = {
+    id: 'docs/taxes.md#checks',
+    text: '| Part | Source |\n|---|---|\n| Tax on a **salary** | OECD `Taxing Wages` |',
+  }
+  const q = (quote: string) =>
+    checkQuotes(`[[${table.id}]]"${quote}"`, [table]).map((x) => x.verbatim)
+  assert.deepEqual(q('Tax on a salary OECD Taxing Wages'), [true])
+  assert.deepEqual(q('Tax on a **salary** |'), [true])
+  assert.deepEqual(q('Tax on a wage'), [false])
+  assert.deepEqual(q('| **'), [false])
+})
+
 test('quotes: harmless format variants pass, a citation without a quote fails', () => {
   const q = (answer: string) =>
     checkQuotes(answer, [LAW]).map((x) => x.verbatim)

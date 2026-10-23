@@ -252,10 +252,24 @@ Varje stycke har `path` (den spårade filen), `commit` (senaste commit som ändr
 `nodes` (de noder i `architecture/graph.json` som stycket nämner). Id:t är sökväg och rubrik,
 till exempel `docs/pipeline.md#subjects`, eller `dbt:<modell>`, `graph:<nod>` och
 `catalog:<produkt>`. En fil som Git inte spårar, som `.gitignore` täcker eller som ser privat ut
-(`.env`, `private/`, `warehouse/`, `.idea-lineage/`) vägras. Testet
-`test_every_published_passage_is_a_tracked_public_file_at_its_commit` fallerar om en sådan sökväg
-finns i den publicerade korpusen, och kontrollerar att varje stycke finns i sin fil vid sin commit.
-Bygget vägrar också köra om en fil som används har ändringar som inte är incheckade.
+(`.env`, `private/`, `warehouse/`, `.idea-lineage/`) vägras. Två driftloggar med lokala sökvägar
+(`compliance-intelligence/repository-audit.md` och `validation.md`) är undantagna, och ett stycke
+som innehåller en lokal hemkatalog (`C:/Users/...`, `/home/...`) tas bort. Testet
+`test_every_published_passage_is_a_tracked_public_file` fallerar om en sådan sökväg eller ett
+sådant stycke finns i den publicerade korpusen. `test_every_document_passage_line_is_in_its_file`
+kontrollerar att varje rad i ett dokumentstycke finns i filen vid styckets commit. CI checkar ut
+med djup 1 och har inte den committen; där jämförs mot filen i arbetskopian. Ändras ett dokument
+utan att korpusen byggs om fallerar testet alltså i CI. Bygget vägrar också köra om en fil som
+används har ändringar som inte är incheckade.
+
+Bygget bäddar in stycket med rubrikvägen framför (`fil › H1 > H2`). De dokument som är skrivna
+på svenska får dessutom ett engelskt namn i den raden, så att en engelsk fråga hittar dem. Ett
+modellstycke som fortsätter i en andra bit börjar med modellens namn och "columns and tests".
+Det som citeras och kontrolleras är fortfarande bara stycket. Den levererade korpusen är ännu
+inte inbäddad på det sättet: den 23 oktober 2026 var dygnets neuronkvot redan slut. Den
+levererade korpusen är därför 22 oktober-bygget, där de stycken som ovan undantas och de
+dokumentstycken som inte längre står i sin fil har tagits bort (1 423 blev 1 399), utan ny
+inbäddning.
 
 Inbäddning och komprimering är samma som för Fråga lagen: `workers_ai.py embed` med
 `--agent platform` och sedan `compress`. `export_law_corpora.py meta --corpus platform` skriver
@@ -289,6 +303,11 @@ De 20 frågorna står i `configs/workers_ai/eval_questions_platform.yaml` och k�
 Den levererade Workern är körning 3. Målet var minst 75 % och nåddes inte. Med Workerns nya
 tolkning blir körning 1 15 av 20 (75 %) och körning 2 14 av 20, räknat på samma råtext utan nya
 anrop. Svaren varierar alltså mellan körningar med en eller två frågor, trots temperatur 0,1.
+
+Den 23 oktober 2026 fick Workern en lösare jämförelse: Markdown-tecken (`` ` ``, `**`, `|`) och
+radbrytningar tas bort på båda sidor innan citatet söks i stycket, men orden måste vara desamma.
+Räknat om på samma råtext, utan nya anrop, blir körningarna 1 till 4 då 15, 15, 14 och 13 av 20
+(75, 75, 70 och 65 %). Ingen ny körning gjordes, eftersom neuronkvoten var slut den dagen.
 
 Sökningen hittade ett förväntat stycke bland de åtta första för 17 av 20 frågor. De tre missarna:
 

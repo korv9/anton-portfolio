@@ -40,6 +40,23 @@ LONG = 1500
 PRIVATE = re.compile(r"(^|/)(\.env|private|warehouse|\.idea-lineage|profiles?)(/|$|\.)", re.I)
 HEADING = re.compile(r"^(#{1,4}) +(.+?)\s*#*\s*$")
 TICKED = re.compile(r"`([^`\s]+)`")
+# Operator logs: audits and run records written on one machine, with its local paths.
+EXCLUDED = {"docs/compliance-intelligence/repository-audit.md", "docs/compliance-intelligence/validation.md"}
+LOCAL = re.compile(r"\b[A-Za-z]:[/\\]Users[/\\]|/home/\w+/|/Users/\w+/")
+# English names for the documents written in Swedish, put in front of the text that is embedded
+# (not into the passage), so that an English question finds them.
+ALIAS = {
+    "docs/chart-review.md": "Chart and KPI view review: open findings and chart choices",
+    "docs/data-dictionary.md": "Data dictionary: tables, columns, relations and sources",
+    "docs/delivery-validation.md": "Semantic validation before data delivery",
+    "docs/mockups/SPEC.md": "Dashboard specification per project",
+    "docs/public-clustering-experiments.md": "Clustering of party leader debates and county profiles",
+    "docs/public-clustering-method.md": "Method and rerun for the public clustering experiments",
+    "docs/r2-delivery-contract.md": "Versioned data delivery from R2",
+    "docs/thesis-evidence-review.md": "Review of the thesis portfolio content",
+    "docs/welfare-data-model.md": "Welfare data model: how Sweden is doing",
+    "docs/workers-ai.md": "Workers AI: Ask the law and Ask the platform, model choice, embeddings, eval and quota",
+}
 
 
 def git(*args: str) -> str:
@@ -83,20 +100,22 @@ def slug(heading: str) -> str:
     return re.sub(r"[^\w]+", "-", heading.lower()).strip("-") or "section"
 
 
-def sections(text: str) -> list[tuple[str, str]]:
-    """(heading, body) per heading of a Markdown text; code fences are not read as headings."""
-    out, heading, lines, fenced = [], "", [], False
+def sections(text: str) -> list[tuple[str, str, str]]:
+    """(heading, body, heading path "H1 > H2") per heading of a Markdown text; code fences are
+    not read as headings."""
+    out, heading, lines, fenced, trail = [], "", [], False, {}
     for line in text.splitlines():
         if line.lstrip().startswith("```"):
             fenced = not fenced
         match = None if fenced else HEADING.match(line)
         if match:
-            out.append((heading, "\n".join(lines)))
-            heading, lines = match.group(2).strip(), []
+            out.append((heading, "\n".join(lines), " > ".join(trail.values())))
+            level, heading, lines = len(match.group(1)), match.group(2).strip(), []
+            trail = {k: v for k, v in trail.items() if k < level} | {level: heading}
         else:
             lines.append(line)
-    out.append((heading, "\n".join(lines)))
-    return [(h, b.strip()) for h, b in out if b.strip()]
+    out.append((heading, "\n".join(lines), " > ".join(trail.values())))
+    return [(h, b.strip(), t) for h, b, t in out if b.strip()]
 
 
 class Graph:
@@ -117,27 +136,34 @@ class Graph:
         return list(dict.fromkeys(found))[:6]
 
 
-def row(ident: str, title: str, path: str, text: str, files: Files, nodes: list[str]) -> dict:
+def row(ident: str, title: str, path: str, text: str, files: Files, nodes: list[str],
+        context: str = "") -> dict:
+    """`embed` is the text that is embedded: context (default the title) and the passage."""
     commit = files.commit(path)
     return {"id": ident, "title": title, "url": f"{REPO}/{commit}/{path}", "text": text,
-            "path": path, "commit": commit, "nodes": nodes}
+            "path": path, "commit": commit, "nodes": nodes, "embed": f"{context or title}\n{text}"}
 
 
 def doc_rows(files: Files, graph: Graph) -> list[dict]:
     paths = sorted(p for p in files.tracked
-                   if p == "README.md" or p.startswith("docs/") and p.endswith(".md"))
+                   if (p == "README.md" or p.startswith("docs/") and p.endswith(".md"))
+                   and p not in EXCLUDED)
     rows, seen = [], defaultdict(int)
     for path in paths:
-        for heading, body in sections(files.read(path)):
+        name = f"{path} ({ALIAS[path]})" if path in ALIAS else path
+        for heading, body, trail in sections(files.read(path)):
             base = f"{path}#{slug(heading)}" if heading else path
             # A block over the limit (a long table or list) is split into its lines first.
             blocks = [line for b in re.split(r"\n\s*\n", body) if b.strip()
                       for line in ([b.strip()] if len(b.strip()) <= LONG else b.strip().splitlines())]
             for piece in pack([b for b in blocks if b.strip()], LONG):
+                if LOCAL.search(piece):
+                    continue
                 seen[base] += 1
                 ident = base if seen[base] == 1 else f"{base}-{seen[base]}"
                 title = f"{path} › {heading}" if heading else path
-                rows.append(row(ident, title, path, piece, files, graph.named(piece)))
+                rows.append(row(ident, title, path, piece, files, graph.named(piece),
+                                f"{name} › {trail}" if trail else name))
     return rows
 
 
@@ -192,8 +218,11 @@ def model_rows(manifest: dict, files: Files, graph: Graph) -> list[dict]:
             blocks.append("Tests: " + "; ".join(found) + ".")
         node = f"dbt:{model['name']}"
         nodes = [node] if node in graph.nodes else []
-        for n, piece in enumerate(pack(blocks, LONG), 1):
+        for n, piece in enumerate(pack(blocks, LONG - 100), 1):
             ident = node if n == 1 else f"{node}-{n}"
+            if n > 1:
+                # A continuation names its model, so a question about the model's tests finds it.
+                piece = f"Model {model['name']}, continued: columns and tests.\n{piece}"
             rows.append(row(ident, f"{model['name']} ({path})", path, piece, files, nodes))
     return rows
 
@@ -269,7 +298,7 @@ def main() -> int:
     OUT.parent.mkdir(parents=True, exist_ok=True)
     with OUT.open("w", encoding="utf-8", newline="\n") as handle:
         for r in rows:
-            handle.write(json.dumps({**r, "embed": f"{r['title']}\n{r['text']}"}, ensure_ascii=False) + "\n")
+            handle.write(json.dumps(r, ensure_ascii=False) + "\n")
     kinds = defaultdict(int)
     for r in rows:
         kinds[r["id"].split(":")[0] if r["id"].split(":")[0] in ("dbt", "graph", "catalog") else "docs"] += 1
