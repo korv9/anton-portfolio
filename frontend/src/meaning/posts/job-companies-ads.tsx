@@ -255,9 +255,34 @@ function Remote() {
 }
 
 export const posts: Post[] = [
-  { id: 'job-co-remote', domain: D, render: () => <Remote /> },
-  { id: 'job-co-chord', domain: D, render: () => <SkillChord /> },
-  { id: 'job-co-metrics', domain: D, render: () => <Metrics /> },
-  { id: 'job-co-seniority', domain: D, render: () => <SeniorityDonut /> },
-  { id: 'job-ws-requirements', domain: D, render: () => <Requirements /> },
+  {
+    id: 'job-co-remote',
+    domain: D,
+    sources: ['jobs/company-intelligence.json'],
+    render: () => <Remote />,
+  },
+  {
+    id: 'job-co-chord',
+    domain: D,
+    sources: ['jobs/company-intelligence.json'],
+    render: () => <SkillChord />,
+  },
+  {
+    id: 'job-co-metrics',
+    domain: D,
+    sources: ['jobs/company-intelligence.json'],
+    render: () => <Metrics />,
+  },
+  {
+    id: 'job-co-seniority',
+    domain: D,
+    sources: ['jobs/company-intelligence.json'],
+    render: () => <SeniorityDonut />,
+  },
+  {
+    id: 'job-ws-requirements',
+    domain: D,
+    sources: ['jobs/workspace.json'],
+    render: () => <Requirements />,
+  },
 ]

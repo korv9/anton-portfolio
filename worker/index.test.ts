@@ -4,11 +4,22 @@
  */
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import worker, { checkQuotes, fold, textHash, type Env } from './index.ts'
+import worker, {
+  canonical,
+  checkQuotes,
+  fold,
+  PLATFORM_SYSTEM,
+  textHash,
+  type Env,
+} from './index.ts'
 
 const LAW = {
   id: 'sfs-1982-80-1',
   text: 'Lagen gäller arbetstagare i allmän och enskild tjänst.',
+}
+const DOC = {
+  id: 'docs/pipeline.md#subjects',
+  text: 'Times are UTC. "Weekly" is `build-warehouse.yml`, Saturday 21:13.',
 }
 // The longest passage the Worker accepts; one character more is refused before any AI call.
 const LONG = { id: 'sfs-1962-700-1-1', text: 'a'.repeat(5000) }
@@ -29,6 +40,9 @@ async function env(
     },
     [`/data/workers-ai/sfs/verify/${await shardOf(LONG.id)}.json`]: {
       [LONG.id]: await textHash(LONG.text),
+    },
+    [`/data/workers-ai/platform/verify/${await shardOf(DOC.id)}.json`]: {
+      [DOC.id]: await textHash(DOC.text),
     },
   }
   const calls: unknown[] = []
@@ -84,6 +98,44 @@ test('quotes: verbatim after folding, missing, and under the wrong id', () => {
   assert.deepEqual(q('[[sfs-1982-80-1]]"privat tjänst"'), [false])
   assert.deepEqual(q('[[sfs-1982-80-2]]"allmän och enskild tjänst"'), [false])
   assert.deepEqual(q('[[sfs-9-9]]"Annan text."'), [false])
+})
+
+test('quotes: a quote written before its [[id]] is turned around and checked', () => {
+  const other = { id: 'sfs-1982-80-2', text: 'Annan text.' }
+  const q = (answer: string) =>
+    checkQuotes(answer, [LAW, other]).map((x) => [x.id, x.verbatim])
+  assert.equal(
+    canonical('Den gäller "enskild tjänst" [[sfs-1982-80-1]].'),
+    'Den gäller [[sfs-1982-80-1]]"enskild tjänst".',
+  )
+  assert.deepEqual(q('"enskild tjänst" [[sfs-1982-80-2]]'), [
+    ['sfs-1982-80-2', false],
+  ])
+  // In the usual order the quote after an [[id]] stays with that id, not the next one.
+  assert.deepEqual(
+    q('[[sfs-1982-80-1]]"enskild tjänst" [[sfs-1982-80-2]]"Annan text."'),
+    [
+      ['sfs-1982-80-1', true],
+      ['sfs-1982-80-2', true],
+    ],
+  )
+  assert.deepEqual(
+    q('Ord som "lagen" står [[sfs-1982-80-1]]"enskild tjänst"'),
+    [['sfs-1982-80-1', true]],
+  )
+})
+
+test('quotes: Markdown marks are ignored on both sides, the words are not', () => {
+  const table = {
+    id: 'docs/taxes.md#checks',
+    text: '| Part | Source |\n|---|---|\n| Tax on a **salary** | OECD `Taxing Wages` |',
+  }
+  const q = (quote: string) =>
+    checkQuotes(`[[${table.id}]]"${quote}"`, [table]).map((x) => x.verbatim)
+  assert.deepEqual(q('Tax on a salary OECD Taxing Wages'), [true])
+  assert.deepEqual(q('Tax on a **salary** |'), [true])
+  assert.deepEqual(q('Tax on a wage'), [false])
+  assert.deepEqual(q('| **'), [false])
 })
 
 test('quotes: harmless format variants pass, a citation without a quote fails', () => {
@@ -184,7 +236,11 @@ test('answer: verified, unverified, no answer and 503', async () => {
   const uncited = await (
     await worker.fetch(ask(), await env({ response: 'Alla.' }))
   ).json()
-  assert.equal(uncited.status, 'unverified')
+  assert.equal(uncited.status, 'no_answer')
+  const dotted = await (
+    await worker.fetch(ask(), await env({ response: 'NO_ANSWER.' }))
+  ).json()
+  assert.equal(dotted.status, 'no_answer')
   const unknown = await (
     await worker.fetch(
       ask(),
@@ -198,6 +254,36 @@ test('answer: verified, unverified, no answer and 503', async () => {
   )
   assert.equal(down.status, 503)
   assert.deepEqual(await down.json(), { reason: 'error' })
+})
+
+test('answer: the platform corpus has its own prompt, quote check and 503 on a spent quota', async () => {
+  const asked = (passages = [DOC]) =>
+    post('/api/answer', {
+      question: 'When does the weekly build run?',
+      corpus: 'platform',
+      passages,
+    })
+  const e = await env({
+    response: 'On Saturdays [[docs/pipeline.md#subjects]]"Saturday 21:13".',
+  })
+  const verified = await (await worker.fetch(asked(), e)).json()
+  assert.equal(verified.status, 'verified')
+  const [{ input }] = e.calls as {
+    input: { messages: { content: string }[] }
+  }[]
+  assert.equal(input.messages[0].content, PLATFORM_SYSTEM)
+  // A law passage is not a platform passage.
+  assert.equal((await worker.fetch(asked([LAW]), await env())).status, 400)
+  const spent = await worker.fetch(
+    asked(),
+    await env(
+      new Error(
+        '4006: you have used up your daily free allocation of 10,000 neurons',
+      ),
+    ),
+  )
+  assert.equal(spent.status, 503)
+  assert.deepEqual(await spent.json(), { reason: 'quota' })
 })
 
 test('answer: a passage may be up to MAX_PASSAGE characters', async () => {

@@ -195,15 +195,18 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("command", choices=["chunks", "meta"])
-    parser.add_argument("--corpus", choices=["sfs", "ai-act", "ai-act-sv", "ai-act-en"])
+    # platform: chunks from platform/nlp/platform_docs_corpus.py, published with `meta` only.
+    parser.add_argument("--corpus", choices=["sfs", "ai-act", "ai-act-sv", "ai-act-en", "platform"])
     parser.add_argument("--run", type=Path, help="meta: the finished embed run folder")
     parser.add_argument("--recall", type=float, help="meta: recall@10 that compress reported")
     args = parser.parse_args()
     if args.command == "meta":
         if not (args.corpus and args.corpus != "ai-act" and args.run):
-            parser.error("meta needs --corpus sfs|ai-act-sv|ai-act-en and --run")
+            parser.error("meta needs --corpus sfs|ai-act-sv|ai-act-en|platform and --run")
         meta(args.corpus, args.run, args.recall)
         return 0
+    if args.corpus == "platform":
+        parser.error("platform chunks come from platform/nlp/platform_docs_corpus.py")
     if args.corpus in (None, "sfs"):
         write_chunks("sfs", sfs_chunks())
     if args.corpus in (None, "ai-act", "ai-act-sv", "ai-act-en"):

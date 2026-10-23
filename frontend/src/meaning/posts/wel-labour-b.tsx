@@ -242,18 +242,30 @@ function CountySlope() {
 }
 
 export const posts: Post[] = [
-  { id: 'wel-psych-share', domain: 'welfare', render: () => <PsychShare /> },
+  {
+    id: 'wel-psych-share',
+    domain: 'welfare',
+    sources: ['welfare/national-month.json'],
+    render: () => <PsychShare />,
+  },
   {
     id: 'wel-county-bump',
     domain: 'welfare',
+    sources: ['welfare/county-year.json'],
     size: 'tall',
     render: () => <CountyBump />,
   },
   {
     id: 'wel-county-heat',
     domain: 'welfare',
+    sources: ['welfare/county-year.json'],
     size: 'wide',
     render: () => <CountyHeat />,
   },
-  { id: 'wel-county-slope', domain: 'welfare', render: () => <CountySlope /> },
+  {
+    id: 'wel-county-slope',
+    domain: 'welfare',
+    sources: ['welfare/county-year.json'],
+    render: () => <CountySlope />,
+  },
 ]

@@ -1,0 +1,40 @@
+version: 2
+
+models:
+  - name: stg_job_assistant_ads
+    description: One row per JobTech ad id in the job assistant's store, current or removed.
+    columns:
+      - name: ad_id
+        data_tests: [unique, not_null]
+      - name: content_hash
+        data_tests: [not_null]
+      - name: source_url
+        data_tests: [not_null]
+  - name: stg_job_assistant_ad_events
+    description: One row per observed new, changed or removed event of an ad.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [ad_id, event_number]
+    columns:
+      - name: event
+        data_tests:
+          - accepted_values: {arguments: {values: [new, changed, removed]}}
+  - name: stg_job_assistant_matches
+    description: One row per matched ad from rank.py's store.
+    columns:
+      - name: ad_id
+        data_tests:
+          - unique
+          - not_null
+          - relationships: {arguments: {to: ref('stg_job_assistant_ads'), field: ad_id}}
+      - name: match_class
+        data_tests:
+          - accepted_values: {arguments: {values: [strong, possible, stretch, outside]}}
+  - name: stg_job_assistant_profile
+    description: The approved profile the matches used; one row, or none without a profile.
+  - name: stg_job_assistant_runs
+    description: One row per hourly run of ads.py.
+    columns:
+      - name: started
+        data_tests: [unique, not_null]

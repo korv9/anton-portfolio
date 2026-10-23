@@ -1,12 +1,15 @@
 /**
  * The site's Worker: static assets as before, plus two endpoints on Workers AI (docs/workers-ai.md).
  * POST /api/embed embeds a visitor's sentence with bge-m3; POST /api/answer answers a question
- * from passages the browser found, after checking that every passage is verbatim published law
- * text and that every quote in the answer is verbatim in its passage. Visitor text is never logged
- * or stored. All vector search happens in the browser.
+ * from passages the browser found, after checking that every passage is verbatim published text
+ * (law, or the platform's own documents) and that every quote in the answer is verbatim in its
+ * passage. Visitor text is never logged
+ * or stored. All vector search happens in the browser. /api/jobs/* is the job assistant's owner
+ * records (worker/jobs.ts): public reads, token-protected writes and CV files.
  */
+import { jobs, type JobsEnv } from './jobs.ts'
 
-export type Env = {
+export type Env = JobsEnv & {
   AI: { run: (model: string, input: unknown) => Promise<unknown> }
   ASSETS: { fetch: (request: Request) => Promise<Response> }
   RATE_LIMITER?: {
@@ -23,7 +26,7 @@ export const ANSWER_OPTIONS: Record<string, unknown> = {
 export const MAX_TEXT = 500
 export const MAX_PASSAGES = 8
 export const MAX_PASSAGE = 5000
-const CORPORA = ['sfs', 'ai-act-sv', 'ai-act-en']
+const CORPORA = ['sfs', 'ai-act-sv', 'ai-act-en', 'platform']
 
 // Python's str.isspace() set, so the folding matches platform/legal/parse.py exactly.
 const SPACE =
@@ -141,26 +144,54 @@ async function published(
   return checks.every(Boolean)
 }
 
-export const SYSTEM = [
-  'You answer questions about law using only the numbered passages you are given.',
+const RULES = [
   'Answer in the language of the question, in at most five sentences.',
   'Support every claim with a verbatim quote from a passage, written as [[id]]"quote", where id is the passage id and the quote is copied character for character from that passage.',
   'Never quote anything that is not in the passage with that id, and never use outside knowledge.',
   'If the passages do not answer the question, reply with exactly NO_ANSWER and nothing else.',
+]
+export const SYSTEM = [
+  'You answer questions about law using only the numbered passages you are given.',
+  ...RULES,
   'Example of the format: Lagen omfattar anställda [[sfs-1982-80-1]]"Lagen gäller arbetstagare i allmän och enskild tjänst".',
+].join(' ')
+/** The platform corpus: the repository's documents, dbt models and data catalogue. */
+export const PLATFORM_SYSTEM = [
+  "You answer questions about how this data platform is built, using only the numbered passages you are given: the repository's documents, dbt model descriptions and data catalogue.",
+  ...RULES,
+  'Example of the format: The model is chosen by an evaluation [[docs/workers-ai.md#modellval]]"Kandidaterna kördes på de 20 evalfrågorna".',
 ].join(' ')
 
 // [[id]] followed by its quote; a colon or white space between them is tolerated, and curly
 // quotes are already straight after fold(). An [[id]] without a quote is matched too, and fails.
 const QUOTE = /\[\[([^\]]+)\]\](?:\s*:?\s*"([^"]+)")?/g
+// A quote written just before an [[id]] that has no quote of its own is the same citation turned
+// around, "quote" [[id]]; it is rewritten as [[id]]"quote" and then checked like any other.
+const TURNED = /"([^"]+)"\s*\[\[([^\]]+)\]\](?!\s*:?\s*")/g
+
+/** The answer folded, with every citation in the [[id]]"quote" order. */
+export const canonical = (answer: string) =>
+  fold(answer).replace(TURNED, '[[$2]]"$1"')
+
+// Markdown marks (code ticks, bold, table bars) and line breaks are dropped on both sides before
+// the compare, so a quote that leaves out a table's | still matches; its words must not change.
+const plain = (text: string) =>
+  fold(text)
+    .replace(/[`*|]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .replace(/ ([,.;:)])/g, '$1')
+    .trim()
 
 /** Every citation in the answer, and whether its quote is verbatim in the passage it names. */
 export function checkQuotes(answer: string, passages: Passage[]) {
-  const texts = new Map(passages.map((p) => [p.id, fold(p.text)]))
-  return [...fold(answer).matchAll(QUOTE)].map(([, id, quote]) => ({
+  const texts = new Map(passages.map((p) => [p.id, plain(p.text)]))
+  return [...canonical(answer).matchAll(QUOTE)].map(([, id, quote]) => ({
     id,
     quote: quote ?? '',
-    verbatim: quote != null && (texts.get(id)?.includes(fold(quote)) ?? false),
+    verbatim:
+      quote != null &&
+      /\p{L}|\p{N}/u.test(plain(quote)) &&
+      (texts.get(id)?.includes(plain(quote)) ?? false),
   }))
 }
 
@@ -192,7 +223,10 @@ async function answer(request: Request, env: Env) {
   try {
     const out = (await env.AI.run(ANSWER_MODEL, {
       messages: [
-        { role: 'system', content: SYSTEM },
+        {
+          role: 'system',
+          content: corpus === 'platform' ? PLATFORM_SYSTEM : SYSTEM,
+        },
         {
           role: 'user',
           content: `${found.map((p) => `[[${p.id}]]\n${p.text}`).join('\n\n')}\n\nQuestion: ${question}`,
@@ -211,15 +245,16 @@ async function answer(request: Request, env: Env) {
   } catch (error) {
     return unavailable(error)
   }
-  if (text === 'NO_ANSWER')
-    return json({ status: 'no_answer', passages: found })
   const quotes = checkQuotes(text, found)
+  // A refusal, or an answer that quotes nothing, has nothing to check.
+  if (/^NO_ANSWER\W*$/.test(text) || !quotes.length)
+    return json({ status: 'no_answer', passages: found })
   // Generated in full, then checked: an answer with a quote that is not in its source is dropped.
-  if (!quotes.length || !quotes.every((q) => q.verbatim))
+  if (!quotes.every((q) => q.verbatim))
     return json({ status: 'unverified', passages: found })
   return json({
     status: 'verified',
-    answer: fold(text),
+    answer: canonical(text),
     quotes: quotes.map(({ id, quote }) => ({ id, quote })),
     model: ANSWER_MODEL,
     usage,
@@ -230,6 +265,17 @@ export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const { pathname } = new URL(request.url)
     if (!pathname.startsWith('/api/')) return env.ASSETS.fetch(request)
+    if (pathname.startsWith('/api/jobs/')) {
+      // Owner records are never served unlimited; reads and writes count separately so public
+      // reads cannot use up the owner's write budget.
+      if (!env.RATE_LIMITER)
+        return json({ error: 'rate limiter is not configured' }, 503)
+      const ip = request.headers.get('CF-Connecting-IP') ?? 'anonymous'
+      const key = `jobs-${request.method === 'GET' ? 'read' : 'write'}:${ip}`
+      if (!(await env.RATE_LIMITER.limit({ key })).success)
+        return json({ error: 'too many requests' }, 429)
+      return jobs(request, env)
+    }
     const route = { '/api/embed': embed, '/api/answer': answer }[pathname]
     if (!route) return json({ error: 'not found' }, 404)
     if (request.method !== 'POST') return json({ error: 'POST only' }, 405)

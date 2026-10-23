@@ -1,0 +1,86 @@
+# Questions for Ask the platform (docs/workers-ai.md), read by
+# platform/publish/workers_ai/eval_answer.ts --questions eval_questions_platform.yaml. They are
+# asked as a hiring manager or data engineer might ask them about this repository. `expected` lists
+# passage ids in workers-ai/platform/meta.json that answer the question; a retrieval counts as a
+# hit when any of them is among the top k.
+questions:
+  - corpus: platform
+    question: How is the junior share tested?
+    question_en: How is the junior share tested?
+    expected: [dbt:fct_job_ads, docs/data-dictionary.md#jobbannonser-junior-per-månad]
+  - corpus: platform
+    question: Where do the election results come from?
+    question_en: Where do the election results come from?
+    expected: [graph:src:valmyndigheten, graph:ingest:elections, dbt:fct_election]
+  - corpus: platform
+    question: How was the model behind Ask the law chosen?
+    question_en: How was the model behind Ask the law chosen?
+    expected: [docs/workers-ai.md#modellval, docs/workers-ai.md#modellval-2]
+  - corpus: platform
+    question: What happens when the daily Workers AI quota runs out?
+    question_en: What happens when the daily Workers AI quota runs out?
+    expected: [docs/workers-ai.md#workern]
+  - corpus: platform
+    question: When does the weekly warehouse build run?
+    question_en: When does the weekly warehouse build run?
+    expected: [docs/pipeline.md#subjects]
+  - corpus: platform
+    question: Where are the credentials kept?
+    question_en: Where are the credentials kept?
+    expected: [docs/security.md#security-checks, docs/storage-and-serving.md#what-is-stored-where]
+  - corpus: platform
+    question: How does the site find the address of a data file?
+    question_en: How does the site find the address of a data file?
+    expected: [docs/storage-and-serving.md#how-the-site-resolves-a-path, docs/storage-and-serving.md#the-catalogue]
+  - corpus: platform
+    question: How are the embedding vectors compressed for search in the browser?
+    question_en: How are the embedding vectors compressed for search in the browser?
+    expected: [docs/workers-ai.md#recall-efter-komprimering]
+  - corpus: platform
+    question: Which checks should run during development?
+    question_en: Which checks should run during development?
+    expected: [docs/development.md#verification-levels]
+  - corpus: platform
+    question: Where do the job ads come from?
+    question_en: Where do the job ads come from?
+    expected: [docs/ai-jobs.md#source, graph:src:arbetsformedlingen]
+  - corpus: platform
+    question: What does fct_sfs_document contain?
+    question_en: What does fct_sfs_document contain?
+    expected: [dbt:fct_sfs_document]
+  - corpus: platform
+    question: How many documents does the full Swedish statute book hold?
+    question_en: How many documents does the full Swedish statute book hold?
+    expected: [docs/workers-ai.md#hela-författningssamlingen, docs/workers-ai.md#hela-författningssamlingen-2]
+  - corpus: platform
+    question: What does the AI Act diffusion clock measure?
+    question_en: What does the AI Act diffusion clock measure?
+    expected: [docs/ai-governance-timeline.md#the-diffusion-clock, dbt:mart_ai_act_term_diffusion]
+  - corpus: platform
+    question: Which tests does the AI Act diffusion mart have?
+    question_en: Which tests does the AI Act diffusion mart have?
+    expected: [dbt:mart_ai_act_term_diffusion-2, dbt:mart_ai_act_term_diffusion]
+  - corpus: platform
+    question: What data does the tax pipeline deliver?
+    question_en: What data does the tax pipeline deliver?
+    expected: [docs/taxes.md#tax-data-and-calculation-checks]
+  - corpus: platform
+    question: How is the job ad clustering validated?
+    question_en: How is the job ad clustering validated?
+    expected: [docs/job-clustering-ensemble.md#features-and-ablations, docs/job-clustering-sweep.md#search-and-selection]
+  - corpus: platform
+    question: Is a visitor's question stored or logged?
+    question_en: Is a visitor's question stored or logged?
+    expected: [docs/workers-ai.md#regeln]
+  - corpus: platform
+    question: How is the site deployed?
+    question_en: How is the site deployed?
+    expected: [docs/deploy.md#hosting-cloudflare, docs/deploy.md#branches-main-and-a-preview-per-pull-request]
+  - corpus: platform
+    question: What does a dbt contract enforce in this project?
+    question_en: What does a dbt contract enforce in this project?
+    expected: [dbt:fct_election, dbt:dim_date]
+  - corpus: platform
+    question: Vilka källor bygger det politiska observatoriet på?
+    question_en: Which sources is the political observatory built from?
+    expected: [docs/parliament-data-model.md#parliament-elections-government-and-the-riksdag-s-decisions]

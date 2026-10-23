@@ -207,9 +207,20 @@ export const posts: Post[] = [
   {
     id: 'txt-act-duty-flows',
     domain: d,
+    sources: ['ai-act/obligations.json'],
     size: 'wide',
     render: () => <DutyFlows />,
   },
-  { id: 'txt-act-duty-total', domain: d, render: () => <DutyTotal /> },
-  { id: 'txt-act-actor-dumbbell', domain: d, render: () => <ActorDumbbell /> },
+  {
+    id: 'txt-act-duty-total',
+    domain: d,
+    sources: ['ai-act/obligations.json'],
+    render: () => <DutyTotal />,
+  },
+  {
+    id: 'txt-act-actor-dumbbell',
+    domain: d,
+    sources: ['ai-act/actors.json'],
+    render: () => <ActorDumbbell />,
+  },
 ]

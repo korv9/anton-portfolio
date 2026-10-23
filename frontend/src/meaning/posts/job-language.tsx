@@ -230,11 +230,23 @@ function Multiples() {
 }
 
 export const posts: Post[] = [
-  { id: 'job-lang-lines', domain: D, size: 'wide', render: () => <Lines /> },
-  { id: 'job-lang-dumbbell', domain: D, render: () => <Dumbbell /> },
+  {
+    id: 'job-lang-lines',
+    domain: D,
+    sources: ['sweden/language/trends.json'],
+    size: 'wide',
+    render: () => <Lines />,
+  },
+  {
+    id: 'job-lang-dumbbell',
+    domain: D,
+    sources: ['sweden/language/trends.json'],
+    render: () => <Dumbbell />,
+  },
   {
     id: 'job-lang-multiples',
     domain: D,
+    sources: ['sweden/language/trends.json'],
     size: 'tall',
     render: () => <Multiples />,
   },

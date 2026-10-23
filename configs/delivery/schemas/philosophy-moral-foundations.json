@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["status", "english", "swedish_check", "riksdag", "diagnostics", "method", "generated_at"],
+  "properties": {
+    "status": {"enum": ["awaiting labels", "passed", "failed"]},
+    "english": {"type": "array", "minItems": 6, "items": {"type": "object",
+      "required": ["foundation", "tagger_f1", "human_pair_f1", "tagger_vs_annotator_f1", "human_alpha"]}},
+    "riksdag": {"oneOf": [{"type": "null"}, {"type": "object", "required": ["shares", "spread"],
+      "properties": {"spread": {"type": "array", "minItems": 1, "items": {"type": "object",
+        "required": ["foundation", "null_p", "null_spread_p95", "holm_p"]}}}}]},
+    "diagnostics": {"type": "object", "required": ["english_macro_f1", "human_pair_macro_f1", "test_comments"]},
+    "method": {"type": "object", "required": ["preregistration", "null", "sources", "departures"]},
+    "generated_at": {"type": "string"}
+  }
+}

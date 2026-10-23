@@ -8,7 +8,8 @@
 #   ml       a command, skipped by --ml missing when `marker` (under warehouse/features) exists;
 #            `stale_arg` is appended unless --ml always, and makes the stage check its inputs
 #   export   a command that writes delivery files; runs only if the subject's dbt tests passed
-# Step options: when_env (skip unless the variable is set), ok_exit (tolerated exit codes).
+# Step options: when_env (skip unless the variable is set), ok_exit (tolerated exit codes),
+# secrets (variables only this step of the subject receives; its other steps run without them).
 # Commands run from the repository root. ${NAME:-default} reads the environment, {sha} is the
 # commit being published.
 #
@@ -70,6 +71,10 @@ groups:
     publish:
       - python platform/publish/validate_refresh_delivery.py --group diva --root frontend/public/data
       - python platform/publish/release.py publish --group diva --root frontend/public/data --spec configs/delivery/diva.json --code-sha {sha}
+  job-assistant:
+    publish:
+      - python platform/job_assistant/export.py --check frontend/public/data
+      - python platform/publish/release.py publish --group job-assistant --root frontend/public/data --spec configs/delivery/job-assistant.json --code-sha {sha}
   # SWEDEN publishes on its own, so a failed SWEDEN source never holds back the baseline.
   sweden:
     publish:
@@ -359,6 +364,22 @@ subjects:
       - dbt: {select: [tag:ai_act_diffusion]}
       - export: python platform/publish/cross_domain/export_ai_act_diffusion.py
 
+  # Philosophy track 1 (docs/philosophy-moral-preregistration.md). The tagger, the Riksdag sample,
+  # the Swedish check and the ETHICS answers are made by hand with python -m ml.moral.{mfrc,riksdag,
+  # ethics} (Workers AI within the free quota); riksdag score runs locally too, since the passage
+  # sample is text and never leaves the machine. This builds the marts and the export from the
+  # stored figures each week, without a model call. No raw folder: the MFRC, eMFD and ETHICS files
+  # stay on the machine (LOCAL_ONLY in warehouse_store.py); only figures and vectors are stored.
+  philosophy_moral:
+    schedule: '13 21 * * 6'
+    sla: {fresh_within: 8d}
+    write: {features: {merge: [path]}, warehouse: overwrite, delivery: versioned}
+    group: baseline
+    features: [philosophy/moral]
+    steps:
+      - dbt: {select: [tag:philosophy_moral]}
+      - export: python platform/publish/philosophy/export_moral.py
+
   # SWEDEN research platform. A: catalogue metadata of SCB and Kolada (never the statistics).
   # C: the validated municipality clustering with SCB's boundaries (CC0); the run and the sources
   # it hashed are kept under features/sweden/similarity.
@@ -497,3 +518,25 @@ subjects:
       - ingest: python platform/ingest/jobtech/run_history_pipeline.py
       # Not dbt: rewrites the gold job tables and marts/jobs.json in Python from the CSVs above.
       - export: python platform/legacy/build_gold.py
+
+  # The job assistant (docs/job-assistant.md): Data/IT ads from JobStream every hour, with
+  # changes and removals, kept under warehouse/raw/job_assistant and published as their own group.
+  job_assistant:
+    schedule: '7 * * * *'
+    sla: {fresh_within: 3h}
+    write: {raw: {merge: [path]}, warehouse: overwrite, delivery: versioned}
+    group: job-assistant
+    raw: [job_assistant]
+    steps:
+      # platform/job_assistant/sync.py turns a new CV upload into a draft and stores an approved
+      # draft as the next version (worker/jobs.ts). It needs the owner token, so it runs in its own
+      # step of data-subject.yml before this subject, not here.
+      - ingest: python platform/job_assistant/ads.py
+      # Matches the ads with the approved profile from the Worker into the raw match store, which
+      # dbt reads next; without a profile nothing is matched. A failed match run keeps the last
+      # matches.json, so the ad list is still built and published; the mart drops closed ads.
+      - ingest: python platform/job_assistant/rank.py
+        secrets: [CLOUDFLARE_API_TOKEN]
+        ok_exit: [1]
+      - dbt: {select: [tag:job_assistant]}
+      - export: python platform/job_assistant/export.py

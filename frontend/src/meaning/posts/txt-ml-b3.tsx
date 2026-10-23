@@ -152,6 +152,16 @@ function ConceptWheel() {
 }
 
 export const posts: Post[] = [
-  { id: 'txt-ml-pair-dots', domain: d, render: () => <PairDots /> },
-  { id: 'txt-ml-concept-wheel', domain: d, render: () => <ConceptWheel /> },
+  {
+    id: 'txt-ml-pair-dots',
+    domain: d,
+    sources: ['concepts/pairs.json'],
+    render: () => <PairDots />,
+  },
+  {
+    id: 'txt-ml-concept-wheel',
+    domain: d,
+    sources: ['concepts/relations.json'],
+    render: () => <ConceptWheel />,
+  },
 ]

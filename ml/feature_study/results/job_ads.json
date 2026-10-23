@@ -1,0 +1,232 @@
+{
+ "folders": [
+  "2024",
+  "2025"
+ ],
+ "ads": 62966,
+ "skills": [
+  "Python",
+  "SQL",
+  "Databricks",
+  "dbt",
+  "Snowflake",
+  "Fabric",
+  "Azure",
+  "AWS",
+  "Power BI",
+  "Java",
+  "JavaScript",
+  "TypeScript",
+  "C#",
+  ".NET",
+  "C++",
+  "Go",
+  "Rust",
+  "PHP",
+  "Kotlin",
+  "Scala",
+  "Ruby",
+  "React",
+  "Angular",
+  "Vue",
+  "Node.js",
+  "Spring",
+  "Docker",
+  "Kubernetes",
+  "Git",
+  "Linux",
+  "Kafka",
+  "Terraform"
+ ],
+ "seniority": {
+  "labelled": 12557,
+  "senior_share": 0.869,
+  "employers": 1467,
+  "sets": {
+   "skills": {
+    "score": {
+     "point": 0.5608692697144996,
+     "low": 0.48211156941964484,
+     "high": 0.6332273396388127,
+     "iterations": 1000
+    }
+   },
+   "skills+size": {
+    "score": {
+     "point": 0.5620783064738968,
+     "low": 0.5183344040650034,
+     "high": 0.6037171748956469,
+     "iterations": 1000
+    },
+    "vs_skills": {
+     "point": 0.0012090367593972084,
+     "low": -0.04426149381683221,
+     "high": 0.05154476898370343,
+     "iterations": 1000
+    }
+   },
+   "skills+stack": {
+    "score": {
+     "point": 0.5568736963962599,
+     "low": 0.4835097812320292,
+     "high": 0.6259590289525742,
+     "iterations": 1000
+    },
+    "vs_skills": {
+     "point": -0.003995573318239631,
+     "low": -0.011625405540307412,
+     "high": 0.004390144940515437,
+     "iterations": 1000
+    }
+   },
+   "skills+experience": {
+    "score": {
+     "point": 0.7080967162556044,
+     "low": 0.6489261504794481,
+     "high": 0.7642331176207391,
+     "iterations": 1000
+    },
+    "vs_skills": {
+     "point": 0.14722744654110487,
+     "low": 0.10533582712747096,
+     "high": 0.19141188644049204,
+     "iterations": 1000
+    }
+   },
+   "skills+all": {
+    "score": {
+     "point": 0.7118094521298879,
+     "low": 0.6595331063818047,
+     "high": 0.7622154205344799,
+     "iterations": 1000
+    },
+    "vs_skills": {
+     "point": 0.1509401824153883,
+     "low": 0.10054633112234199,
+     "high": 0.20575025191425653,
+     "iterations": 1000
+    }
+   },
+   "skills+all+consistency": {
+    "score": {
+     "point": 0.9268210898572945,
+     "low": 0.9017253140639745,
+     "high": 0.9455884058331238,
+     "iterations": 1000
+    },
+    "vs_skills": {
+     "point": 0.3659518201427949,
+     "low": 0.28047926669154033,
+     "high": 0.4564345605324476,
+     "iterations": 1000
+    }
+   },
+   "skills, boosted trees": {
+    "score": {
+     "point": 0.5665621462442841,
+     "low": 0.48919110017715084,
+     "high": 0.6367180330131678,
+     "iterations": 1000
+    },
+    "vs_skills": {
+     "point": 0.005692876529784563,
+     "low": -0.011479982503597629,
+     "high": 0.026915874566169867,
+     "iterations": 1000
+    }
+   }
+  }
+ },
+ "roles": {
+  "groups": [
+   "Mjukvaru- och systemutvecklare m.fl.",
+   "Systemanalytiker och IT-arkitekter m.fl.",
+   "Supporttekniker, IT",
+   "Drifttekniker, IT",
+   "Systemförvaltare m.fl.",
+   "Övriga IT-specialister"
+  ],
+  "ads": 52686,
+  "majority_share": 0.5839,
+  "sets": {
+   "skills": {
+    "score": {
+     "point": 0.19476836334011707,
+     "low": 0.18113320914484746,
+     "high": 0.2086115760097056,
+     "iterations": 1000
+    }
+   },
+   "skills+size": {
+    "score": {
+     "point": 0.22960908948190784,
+     "low": 0.2137871260045145,
+     "high": 0.24728445601608814,
+     "iterations": 1000
+    },
+    "vs_skills": {
+     "point": 0.03484072614179076,
+     "low": 0.02746763218592774,
+     "high": 0.0432265329893196,
+     "iterations": 1000
+    }
+   },
+   "skills+stack": {
+    "score": {
+     "point": 0.20831489295802363,
+     "low": 0.19246118897132658,
+     "high": 0.22569141311881258,
+     "iterations": 1000
+    },
+    "vs_skills": {
+     "point": 0.01354652961790656,
+     "low": 0.008292897598443452,
+     "high": 0.020230526194495585,
+     "iterations": 1000
+    }
+   },
+   "skills+experience": {
+    "score": {
+     "point": 0.25225661020014367,
+     "low": 0.23241149609853776,
+     "high": 0.2731893766707807,
+     "iterations": 1000
+    },
+    "vs_skills": {
+     "point": 0.0574882468600266,
+     "low": 0.046992975467031656,
+     "high": 0.06869308097582053,
+     "iterations": 1000
+    }
+   },
+   "skills+all": {
+    "score": {
+     "point": 0.27905204773520675,
+     "low": 0.2607005136611883,
+     "high": 0.2984596203925137,
+     "iterations": 1000
+    },
+    "vs_skills": {
+     "point": 0.08428368439508968,
+     "low": 0.07473616935319775,
+     "high": 0.09474730026347987,
+     "iterations": 1000
+    }
+   },
+   "skills, boosted trees": {
+    "score": {
+     "point": 0.20984733869656635,
+     "low": 0.19342348667719808,
+     "high": 0.22756331715421263,
+     "iterations": 1000
+    },
+    "vs_skills": {
+     "point": 0.015078975356449281,
+     "low": 0.009548378952465424,
+     "high": 0.02248186173436627,
+     "iterations": 1000
+    }
+   }
+  }
+ }
+}

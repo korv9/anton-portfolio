@@ -169,12 +169,14 @@ export const posts: Post[] = [
   {
     id: 'txt-act-reference-arcs',
     domain: d,
+    sources: ['ai-act/articles.json'],
     size: 'wide',
     render: () => <ReferenceArcs />,
   },
   {
     id: 'txt-act-signal-line',
     domain: d,
+    sources: ['ai-act/signals.json'],
     size: 'wide',
     render: () => <SignalLine />,
   },

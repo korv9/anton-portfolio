@@ -1,0 +1,90 @@
+"""The public match files of the job assistant, read from the gold marts by export.py.
+
+matches.json   every current ad's class, role and reasons in rank order; for detailed ads (strong,
+               possible, stretch and the 30-ad evaluation sample) also the skill judgements with
+               their ad and CV quotes, gaps, conditions to check and the checked explanation
+texts.json     the full public ad text of exactly the detailed ads
+demand.json    per skill, how many matched ads name it and the CV's evidence level for it
+
+Which profile version and CV the matches used is in `profile`; without an approved profile the
+files hold no matches.
+"""
+from __future__ import annotations
+
+import re
+
+CLASSES = ("strong", "possible", "stretch", "outside")
+
+
+def rows(db, sql: str) -> list[dict]:
+    result = db.execute(sql)
+    names = [d[0] for d in result.description]
+    return [dict(zip(names, r)) for r in result.fetchall()]
+
+
+def iso(value):
+    return value.isoformat() if hasattr(value, "isoformat") else value
+
+
+def build(db, generated_at: str) -> tuple[dict, dict, dict]:
+    head = {"schema_version": 1, "generated_at": generated_at}
+    profile = rows(db, "select * from gold.mart_job_assistant_profile")
+    profile = {k: iso(v) for k, v in profile[0].items()} if profile else None
+    judgements: dict[str, list] = {}
+    quotes: dict[tuple, list] = {}
+    for q in rows(db, "select * from gold.mart_job_assistant_evidence order by ad_id, skill, side, quote_number"):
+        side = {"quote": q["quote"], "line": q["line"], "field": q["source"]} if q["side"] == "ad" else \
+               {"quote": q["quote"], "ref": q["source"], "level": q["cv_level"]}
+        quotes.setdefault((q["ad_id"], q["skill"], q["side"]), []).append(side)
+    for j in rows(db, "select * from gold.mart_job_assistant_judgements order by ad_id, skill"):
+        judgements.setdefault(j["ad_id"], []).append({
+            "skill": j["skill"], "strength": j["strength"], "cv_level": j["cv_level"],
+            "ad_quotes": quotes.get((j["ad_id"], j["skill"], "ad"), []),
+            "cv_quotes": quotes.get((j["ad_id"], j["skill"], "cv"), [])})
+    checks: dict[str, list] = {}
+    for c in rows(db, "select * from gold.mart_job_assistant_checks order by ad_id, line, kind, label"):
+        checks.setdefault(c.pop("ad_id"), []).append(c)
+    out = []
+    for m in rows(db, "select * from gold.mart_job_assistant_matches order by rank"):
+        item = {"id": m["ad_id"], "rank": m["rank"], "class": m["match_class"], "role": m["role"],
+                "role_from_title": m["role_from_title"], "reasons": m["reasons"], "similarity": m["similarity"],
+                "sample": m["sample"], "detailed": m["detailed"]}
+        if m["detailed"]:
+            item.update(gaps=m["gaps"], uncertain=m["uncertain"], remote=m["remote_quote"],
+                        seniority={"title": m["senior_title"], "years": m["years_asked"], "junior": m["junior_quote"]},
+                        explanation=m["explanation"], explanation_model=m["explanation_model"] if m["explanation"] else None,
+                        skills=judgements.get(m["ad_id"], []), checks=checks.get(m["ad_id"], []))
+        out.append(item)
+    texts = {t.pop("ad_id"): t for t in rows(db, "select * from gold.mart_job_assistant_texts order by ad_id")}
+    demand = rows(db, "select * from gold.mart_job_assistant_skill_demand order by ads_naming desc, skill")
+    return ({**head, "profile": profile, "matches": out}, {**head, "texts": texts},
+            {**head, "profile": profile, "skills": demand})
+
+
+def open_ids(ads: dict) -> set[str]:
+    """Ids of the ads a match may point at: neither removed nor past their deadline."""
+    return {a["id"] for a in ads["ads"] if not a["removed_at"] and not a["expired"]}
+
+
+def problems(matches: dict, texts: dict, ad_ids: set[str]) -> list[str]:
+    out = []
+    if matches.get("schema_version") != 1 or texts.get("schema_version") != 1:
+        return ["matches.json and texts.json need schema_version 1"]
+    found = matches.get("matches")
+    if matches.get("profile") is None:
+        return [] if found == [] and texts.get("texts") == {} else ["matches without an approved profile"]
+    ids = [r["id"] for r in found]
+    if len(ids) != len(set(ids)) or not set(ids) <= ad_ids:
+        out.append("matches.json: duplicate ids or ids of removed, expired or unknown ads")
+    for r in found:
+        if r["class"] not in CLASSES or not r["reasons"]:
+            out.append(f"match {r['id']}: class or reasons missing")
+        if r["detailed"] != (r["id"] in texts["texts"]):
+            out.append(f"match {r['id']}: detail and text do not go together")
+        for j in r.get("skills", []):
+            if not j["ad_quotes"] or (j["cv_level"] in ("practical", "education_or_project") and not j["cv_quotes"]):
+                out.append(f"match {r['id']}: judgement of {j['skill']} lacks its quotes")
+                break
+    if re.search(r"[\w.+-]+@[\w-]+\.[a-z]{2,}", str(texts.get("texts")), re.I):
+        out.append("texts.json: an e-mail address is present")
+    return out

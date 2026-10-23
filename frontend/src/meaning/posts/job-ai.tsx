@@ -234,11 +234,23 @@ function FieldHeat() {
 }
 
 export const posts: Post[] = [
-  { id: 'job-ai-big', domain: D, render: () => <AiBig /> },
-  { id: 'job-ai-lines', domain: D, size: 'wide', render: () => <TermLines /> },
+  {
+    id: 'job-ai-big',
+    domain: D,
+    sources: ['ai-act/jobs/monthly.json'],
+    render: () => <AiBig />,
+  },
+  {
+    id: 'job-ai-lines',
+    domain: D,
+    sources: ['ai-act/jobs/monthly.json', 'ai-act/jobs/summary.json'],
+    size: 'wide',
+    render: () => <TermLines />,
+  },
   {
     id: 'job-ai-field-heat',
     domain: D,
+    sources: ['ai-act/jobs/fields.json', 'ai-act/jobs/summary.json'],
     size: 'wide',
     render: () => <FieldHeat />,
   },

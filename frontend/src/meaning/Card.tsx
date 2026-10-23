@@ -12,6 +12,7 @@ import {
 } from 'react'
 import { useFresh } from './freshness'
 import { PostLeave, PostLive, PostOpen, still, type Post } from './kit'
+import { Trace } from './Trace'
 
 /** Above this many SVG elements a thumbnail steps without transitions. */
 const DENSE_MARKS = 400
@@ -113,6 +114,8 @@ export function Card({
   const [onScreen, setOnScreen] = useState(false)
   const [dense, setDense] = useState(false)
   const [failed, setFailed] = useState(false)
+  const [traced, setTraced] = useState(false)
+  if (!open && traced) setTraced(false)
   const fresh = useFresh(post.domain)
   const leave = useCallback(() => setFailed(true), [])
   useEffect(() => {
@@ -176,7 +179,7 @@ export function Card({
           title={freshText(fresh)}
         />
       )}
-      <div className="mean-body">
+      <div className="mean-body" inert={traced || undefined}>
         <PostLeave.Provider value={leave}>
           <PostOpen.Provider value={open}>
             <PostLive.Provider value={onScreen && moving && !dense}>
@@ -187,6 +190,16 @@ export function Card({
           </PostOpen.Provider>
         </PostLeave.Provider>
       </div>
+      {open && (
+        <PostOpen.Provider value>
+          <Trace
+            post={post}
+            fresh={fresh}
+            shown={traced}
+            toggle={() => setTraced(!traced)}
+          />
+        </PostOpen.Provider>
+      )}
       {open ? (
         <button
           type="button"

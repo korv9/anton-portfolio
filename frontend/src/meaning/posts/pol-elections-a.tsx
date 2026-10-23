@@ -262,10 +262,27 @@ export const posts: Post[] = [
   {
     id: 'pol-share-stacked',
     domain: 'politics',
+    sources: ['parliament/elections.json'],
     size: 'wide',
     render: () => <StackedShare />,
   },
-  { id: 'pol-hemicycle', domain: 'politics', render: () => <Hemicycle /> },
-  { id: 'pol-bump', domain: 'politics', size: 'wide', render: () => <Bump /> },
-  { id: 'pol-waffle', domain: 'politics', render: () => <Waffle /> },
+  {
+    id: 'pol-hemicycle',
+    domain: 'politics',
+    sources: ['parliament/elections.json'],
+    render: () => <Hemicycle />,
+  },
+  {
+    id: 'pol-bump',
+    domain: 'politics',
+    sources: ['parliament/elections.json'],
+    size: 'wide',
+    render: () => <Bump />,
+  },
+  {
+    id: 'pol-waffle',
+    domain: 'politics',
+    sources: ['parliament/elections.json'],
+    render: () => <Waffle />,
+  },
 ]

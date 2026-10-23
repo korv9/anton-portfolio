@@ -227,3 +227,38 @@ test('posts whose data is withdrawn or past its valid_until date leave the feed'
   await post.evaluate((el) => el.scrollIntoView())
   await expect(post).toContainText('of ads mention remote work')
 })
+
+test('the Source panel opens from the keyboard and says what is not recorded', async ({
+  page,
+}) => {
+  // No status and an empty provenance file: no freshness or cost rows, and no lineage.
+  await page.route('**/status/ingestion.json', (route) => route.abort())
+  await page.route('**/architecture/feed-provenance.json', (route) =>
+    route.fulfill({ json: { paths: {}, deliveries: {} } }),
+  )
+  await page.goto('/')
+  const post = await tickingPost(page)
+  await post.getByRole('button', { name: /^Open chart: \S/ }).click()
+  const toggle = post.getByRole('button', { name: 'Source', exact: true })
+  await expect(toggle).toHaveAttribute('aria-expanded', 'false')
+  await expect(toggle).not.toHaveAttribute('aria-controls')
+
+  await toggle.focus()
+  await page.keyboard.press('Enter')
+  const panel = post.getByRole('region', { name: 'Where this comes from' })
+  await expect(toggle).toHaveAttribute('aria-expanded', 'true')
+  await expect(toggle).toHaveAttribute(
+    'aria-controls',
+    (await panel.getAttribute('id'))!,
+  )
+  await expect(panel).toContainText('Lineage not recorded')
+  await expect(
+    panel.locator('dt', { hasText: /^(Ingested|Cost)$/ }),
+  ).toHaveCount(0)
+  await expect(post.locator('.mean-body')).toHaveAttribute('inert', '')
+
+  await page.keyboard.press('Space')
+  await expect(panel).toHaveCount(0)
+  await expect(toggle).toHaveAttribute('aria-expanded', 'false')
+  await expect(post.locator('.mean-body')).not.toHaveAttribute('inert')
+})

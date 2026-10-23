@@ -227,14 +227,21 @@ export const posts: Post[] = [
   {
     id: 'wel-tax-mix-area',
     domain: 'taxes',
+    sources: ['taxes/sweden.json'],
     size: 'wide',
     render: () => <MixArea />,
   },
   {
     id: 'wel-tax-league',
     domain: 'taxes',
+    sources: ['taxes/countries.json'],
     size: 'tall',
     render: () => <League />,
   },
-  { id: 'wel-tax-treemap', domain: 'taxes', render: () => <Treemap /> },
+  {
+    id: 'wel-tax-treemap',
+    domain: 'taxes',
+    sources: ['taxes/sweden.json'],
+    render: () => <Treemap />,
+  },
 ]

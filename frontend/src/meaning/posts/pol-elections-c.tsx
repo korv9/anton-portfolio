@@ -101,7 +101,22 @@ function SeatGrid() {
 }
 
 export const posts: Post[] = [
-  { id: 'pol-majority', domain: 'politics', render: () => <Majority /> },
-  { id: 'pol-seat-swing', domain: 'politics', render: () => <SeatSwing /> },
-  { id: 'pol-seat-grid', domain: 'politics', render: () => <SeatGrid /> },
+  {
+    id: 'pol-majority',
+    domain: 'politics',
+    sources: ['parliament/now.json'],
+    render: () => <Majority />,
+  },
+  {
+    id: 'pol-seat-swing',
+    domain: 'politics',
+    sources: ['parliament/now.json'],
+    render: () => <SeatSwing />,
+  },
+  {
+    id: 'pol-seat-grid',
+    domain: 'politics',
+    sources: ['parliament/now.json'],
+    render: () => <SeatGrid />,
+  },
 ]

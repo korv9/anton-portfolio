@@ -240,13 +240,20 @@ export const posts: Post[] = [
   {
     id: 'pol-rollcall-lollipop',
     domain: 'politics',
+    sources: ['parliament/sessions.json'],
     size: 'wide',
     render: () => <Lollipop />,
   },
-  { id: 'pol-chord', domain: 'politics', render: () => <Chord /> },
+  {
+    id: 'pol-chord',
+    domain: 'politics',
+    sources: ['parliament/sessions.json'],
+    render: () => <Chord />,
+  },
   {
     id: 'pol-metric-heat',
     domain: 'politics',
+    sources: ['parliament/sessions.json'],
     size: 'wide',
     render: () => <MetricHeat />,
   },

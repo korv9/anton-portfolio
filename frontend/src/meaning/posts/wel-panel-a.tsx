@@ -251,17 +251,20 @@ export const posts: Post[] = [
   {
     id: 'wel-county-multiples',
     domain: 'welfare',
+    sources: ['welfare/panel-county-year.json'],
     size: 'tall',
     render: () => <Multiples />,
   },
   {
     id: 'wel-income-scatter',
     domain: 'welfare',
+    sources: ['welfare/panel-county-year.json'],
     render: () => <IncomeScatter />,
   },
   {
     id: 'wel-county-beeswarm',
     domain: 'welfare',
+    sources: ['welfare/panel-county-year.json'],
     size: 'wide',
     render: () => <Beeswarm />,
   },

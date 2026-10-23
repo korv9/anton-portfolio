@@ -40,6 +40,7 @@ DBT_FOLDER_DOMAIN = {
     "eu_ai_act": "ai_act",
     "ai_politics": "ai_act",
     "job_ai_governance": "ai_act",  # AI governance words in job ads, read against the Act
+    "job_assistant": "jobs",  # the owner's CV matched with current Data/IT ads
     "philosophy": "philosophy",
     "concepts": "concepts",  # four corpora read against one set of curated concepts
     "quality": "shared",  # quality checks and validity diagnostics across every product
@@ -100,6 +101,9 @@ INGESTION = [
     {"id": "jobtech", "path": "platform/ingest/jobtech", "domain": "jobs",
      "origins": ["arbetsformedlingen"], "raw": ["jobtech", "jobtech_market", "jobtech_governance"],
      "description": "Job ads from the JobSearch API and ad counts from every historical archive."},
+    {"id": "job_assistant", "path": "platform/job_assistant", "domain": "jobs",
+     "origins": ["arbetsformedlingen"], "raw": ["job_assistant"],
+     "description": "Current Data/IT ads for the job assistant: JobSearch once, then JobStream every hour."},
     {"id": "scb", "path": "platform/ingest/scb", "domain": "welfare",
      "origins": ["scb"], "raw": ["scb"], "description": "Labour force survey and population."},
     {"id": "fk", "path": "platform/ingest/fk", "domain": "welfare",
@@ -178,6 +182,10 @@ PUBLISHERS = [
     ]},
     {"path": "platform/publish/philosophy/export_philosophy.py", "domain": "philosophy",
      "outputs": [{"pattern": "philosophy/*.json"}]},
+    {"path": "platform/publish/philosophy/export_moral.py", "domain": "philosophy",
+     "outputs": [{"pattern": "philosophy/moral/*.json",
+                  "inputs": ["mart_moral_foundation_agreement", "mart_moral_swedish_check", "mart_moral_foundation_shares",
+                             "mart_moral_party_spread", "mart_ethics_agreement"]}]},
     {"path": "platform/publish/cross_domain/export_ai_governance_timeline.py", "domain": "ai_act",
      "outputs": [{"pattern": "ai-act/signals.json", "inputs": ["mart_ai_governance_timeline"]}]},
     {"path": "platform/publish/cross_domain/export_ai_act_diffusion.py", "domain": "ai_act",
@@ -189,6 +197,7 @@ PUBLISHERS = [
     {"path": "platform/publish/job_ai_governance/export_job_ai_governance.py", "domain": "ai_act",
      "outputs": [{"pattern": "ai-act/jobs/*.json"}]},
     {"path": "platform/publish/export_market.py", "domain": "jobs", "outputs": [{"pattern": "jobs/market.json"}]},
+    {"path": "platform/job_assistant/export.py", "domain": "jobs", "outputs": [{"pattern": "job-assistant/*.json"}]},
     {"path": "platform/ingest/jobtech/export_presentation.py", "domain": "jobs",
      "outputs": [{"pattern": "jobs/*.csv"}]},
     {"path": "platform/publish/export_job_clusters.py", "domain": "jobs", "outputs": [
