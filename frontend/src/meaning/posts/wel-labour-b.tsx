@@ -65,12 +65,12 @@ function PsychShare() {
 
 const METRICS: Record<string, CountyMetric> = {
   unemployment: {
-    key: 'unemployment_rate_pct',
+    field: 'unemployment_rate_pct',
     format: (v) => pct(v),
     name: 'unemployment, % of the labour force',
   },
   stress: {
-    key: 'stress_cases_per_1000',
+    field: 'stress_cases_per_1000',
     format: (v) => fmt(v, 1),
     name: 'new stress-related sick-leave cases per 1,000 inhabitants',
   },
@@ -104,7 +104,10 @@ export const posts: Post[] = [
     sources: ['welfare/panel-county-year.json'],
     size: 'tall',
     title: (rows: CountyYear[]) => {
-      const { year, counties } = latestCounties(rows, METRICS.unemployment.key)
+      const { year, counties } = latestCounties(
+        rows,
+        METRICS.unemployment.field,
+      )
       return year !== null && counties.length
         ? `${county(counties[0].region_name)} had the highest unemployment of the counties in ${year}`
         : 'Unemployment by county'

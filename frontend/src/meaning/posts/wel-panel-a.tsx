@@ -16,32 +16,32 @@ import { fmt, num, pct } from './wel-kit'
 /** The panel's measures, in plain words with their units. Turnout has its own post. */
 const METRICS: Record<string, CountyMetric> = {
   assistance: {
-    key: 'social_assistance_pct',
+    field: 'social_assistance_pct',
     name: 'residents receiving social assistance, %',
     format: (v) => pct(v),
   },
   income: {
-    key: 'median_earned_income_sek',
+    field: 'median_earned_income_sek',
     name: 'median earned income, SEK',
     format: (v) => fmt(v, 0),
   },
   'ill health': {
-    key: 'ill_health_days',
+    field: 'ill_health_days',
     name: 'ill-health days per person aged 16–64',
     format: (v) => fmt(v, 1),
   },
   crime: {
-    key: 'violent_crime_per_100k',
+    field: 'violent_crime_per_100k',
     name: 'reported violent crimes per 100,000 inhabitants',
     format: (v) => fmt(v, 0),
   },
   'sick leave': {
-    key: 'ongoing_sick_leave_per_1000',
+    field: 'ongoing_sick_leave_per_1000',
     name: 'ongoing sick-leave cases per 1,000 inhabitants',
     format: (v) => fmt(v, 1),
   },
   employment: {
-    key: 'employment_rate_pct',
+    field: 'employment_rate_pct',
     name: 'employment rate, % of people aged 15–74',
     format: (v) => pct(v),
   },
@@ -120,7 +120,7 @@ export const posts: Post[] = [
     sources: ['welfare/panel-county-year.json'],
     size: 'tall',
     title: (rows: CountyYear[]) => {
-      const { year, counties } = latestCounties(rows, METRICS.assistance.key)
+      const { year, counties } = latestCounties(rows, METRICS.assistance.field)
       return year !== null && counties.length
         ? `Social assistance was most common in ${county(counties[0].region_name)} in ${year}`
         : 'Social assistance by county'

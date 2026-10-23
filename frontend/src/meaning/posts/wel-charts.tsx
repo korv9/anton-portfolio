@@ -107,7 +107,7 @@ export type CountyYear = {
 } & Record<string, unknown>
 
 export type CountyMetric = {
-  key: string
+  field: string
   name: string
   format: (v: number) => string
 }
@@ -145,7 +145,7 @@ export function CountyRank({
   const names = Object.keys(metrics)
   const [m, setM] = useState(names[0])
   const metric = metrics[m]
-  const { year, counties, nation } = latestCounties(rows, metric.key)
+  const { year, counties, nation } = latestCounties(rows, metric.field)
   if (year === null) return null
   return (
     <>
