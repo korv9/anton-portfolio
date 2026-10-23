@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import { Frame, Slicer, useData, type Post } from '../kit'
 import { linearScale } from '../../charts/scales'
-import { EndLabels, XAxis, YAxis } from '../axes'
+import { EndLabels, ticksBetween, XAxis, YAxis } from '../axes'
 import { every, line, pc, pct, PARTIES, uniq } from './pol-kit'
 
 type Poll = {
@@ -26,14 +26,18 @@ function Lines() {
     <Frame data={data}>
       {(d) => {
         const ms = months(d)
+        if (ms.length < 2) return null
         const x = linearScale([0, ms.length - 1], [34, 530])
-        const y = linearScale([0, 60], [178, 8])
+        const top = Math.max(60, ...d.polls.map((r) => r.share_pct))
+        const y = linearScale([0, top], [178, 8])
         const ticks = every(years(ms), 9).map((yr) => ({
           value: ms.findIndex((m) => m.startsWith(yr)),
           label: yr,
         }))
         const lines = PARTIES.map((p) => {
-          const rows = d.polls.filter((r) => r.party === p)
+          const rows = d.polls
+            .filter((r) => r.party === p)
+            .sort((a, b) => a.survey_month.localeCompare(b.survey_month))
           return {
             p,
             pts: rows.map(
@@ -61,7 +65,7 @@ function Lines() {
             >
               <YAxis
                 y={y}
-                ticks={[0, 20, 40, 60]}
+                ticks={ticksBetween(0, top, 3)}
                 x0={34}
                 x1={530}
                 format={(v) => `${v} %`}
@@ -110,7 +114,9 @@ export const posts: Post[] = [
     size: 'wide',
     title: (d: Polls) => {
       const ms = months(d)
-      return `Party support in SCB surveys, ${ms[0].slice(0, 4)}–${ms.at(-1)!.slice(0, 4)}`
+      return ms.length
+        ? `Party support in SCB surveys, ${ms[0].slice(0, 4)}–${ms.at(-1)!.slice(0, 4)}`
+        : 'Party support in SCB surveys'
     },
     note: 'Share of voters, %, in the party preference survey, mostly twice a year. Source: SCB.',
     render: () => <Lines />,

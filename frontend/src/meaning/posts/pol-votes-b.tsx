@@ -1,26 +1,14 @@
-/** Riksdag roll calls per session since 1993/94: attendance, cohesion, agreement. */
+/** Riksdag roll calls per session since 1993/94: party agreement and government wins. */
 import { useState } from 'react'
 import { focal, Frame, seq, Slicer, useData, type Post } from '../kit'
 import { linearScale } from '../../charts/scales'
 import { ticksBetween, XAxis, YAxis } from '../axes'
-import { arc, every, GovStrip, line, PARTIES } from './pol-kit'
+import { every, GovStrip, line, PARTIES } from './pol-kit'
 
 type Session = {
   session: string
-  roll_calls: number
   government_key: string
   government_name: string
-  government_parties: string[]
-}
-type Record_ = {
-  session: string
-  party: string
-  role: string
-  attendance_pct: number
-  cohesion_pct: number
-  on_winning_side_pct: number
-  with_government_pct: number
-  abstained_pct: number
 }
 type Pair = {
   session: string
@@ -30,26 +18,26 @@ type Pair = {
 }
 type Sessions = {
   sessions: Session[]
-  party_record: Record_[]
   party_pairs: Pair[]
-  government_record: {
-    session: string
-    decisions: number
-    government_won_pct: number
-  }[]
+  government_record: { session: string; government_won_pct: number }[]
 }
 
 const useSessions = () => useData<Sessions>('parliament/sessions.json')
-const recentFirst = (d: Sessions) => d.sessions.map((s) => s.session).reverse()
+/** Every third session back from the latest, oldest first, so the cycle reads forwards. */
+const sessionSteps = (d: Sessions) =>
+  every(d.sessions.map((s) => s.session).reverse(), 3).reverse()
 
 /** Lower triangle of party pairs: each cell is the share of roll calls where the two parties
  * took the same position, written out and shaded on one sequential ramp. */
 function Matrix() {
   const data = useSessions()
-  const [s, setS] = useState('2025/26')
+  const [picked, setS] = useState<string | null>(null)
   return (
     <Frame data={data}>
       {(d) => {
+        const options = sessionSteps(d)
+        const s = picked ?? options.at(-1)
+        if (!s) return null
         const pairs = d.party_pairs.filter((p) => p.session === s)
         const get = (a: string, b: string) =>
           pairs.find(
@@ -66,7 +54,7 @@ function Matrix() {
             <Slicer
               label="Session"
               cycles
-              options={every(recentFirst(d), 3).reverse()}
+              options={options}
               value={s}
               onChange={setS}
             />
@@ -131,60 +119,35 @@ function Matrix() {
   )
 }
 
-function Gauge() {
-  const data = useSessions()
-  const [s, setS] = useState('2025/26')
-  return (
-    <Frame data={data}>
-      {(d) => {
-        const v =
-          d.government_record.find((g) => g.session === s)
-            ?.government_won_pct ?? 0
-        const a0 = -Math.PI / 2
-        return (
-          <>
-            <Slicer
-              label="Session"
-              cycles
-              options={every(recentFirst(d), 4)}
-              value={s}
-              onChange={setS}
-            />
-            <svg
-              viewBox="0 0 300 180"
-              role="img"
-              aria-label={`Share of decisions the government won, ${s}`}
-            >
-              <path d={arc(150, 160, 90, 130, a0, -a0)} fill="var(--wash)" />
-              <path
-                d={arc(150, 160, 90, 130, a0, a0 + (v / 100) * Math.PI)}
-                fill="var(--accent)"
-              />
-              <text
-                x={150}
-                y={156}
-                textAnchor="middle"
-                style={{ fontSize: 40, fontWeight: 600, fill: 'var(--ink)' }}
-              >
-                {v}%
-              </text>
-            </svg>
-          </>
-        )
-      }}
-    </Frame>
+/** Sessions in order with the share of decisions the government won, null where the record
+ * has no figure: one list places both the line and the government bands. */
+const govRows = (d: Sessions) => {
+  const won = new Map(
+    d.government_record.map((r) => [r.session, r.government_won_pct]),
   )
+  return d.sessions.map((s) => ({ ...s, won: won.get(s.session) ?? null }))
+}
+const wonRange = (d: Sessions) => {
+  const v = govRows(d)
+    .map((r) => r.won)
+    .filter((w) => w !== null)
+  return v.length ? [Math.min(...v), Math.max(...v)] : null
 }
 
 function GovWon() {
   return (
     <Frame data={useSessions()}>
       {(d) => {
-        const g = d.government_record
-        const step = 548 / g.length
+        const rows = govRows(d)
+        const range = wonRange(d)
+        if (!range) return null
+        const step = 548 / rows.length
         const x = (i: number) => 44 + step * (i + 0.5)
-        const lo = Math.min(80, Math.floor(wonRange(d)[0] / 10) * 10)
+        const lo = Math.min(80, Math.floor(range[0] / 10) * 10)
         const y = linearScale([lo, 100], [146, 10])
+        const pts = rows.flatMap((r, i) =>
+          r.won === null ? [] : [{ i, s: r.session, won: r.won }],
+        )
         return (
           <svg
             viewBox="0 0 600 200"
@@ -199,31 +162,31 @@ function GovWon() {
               format={(v) => `${v} %`}
             />
             <path
-              d={line(g.map((r, i) => [x(i), y(r.government_won_pct)]))}
+              d={line(pts.map((p) => [x(p.i), y(p.won)]))}
               fill="none"
               stroke={focal(true)}
               strokeWidth={2}
               strokeLinejoin="round"
             />
-            {g.map((r, i) => (
+            {pts.map((p) => (
               <circle
-                key={r.session}
-                cx={x(i)}
-                cy={y(r.government_won_pct)}
+                key={p.s}
+                cx={x(p.i)}
+                cy={y(p.won)}
                 r={2.5}
                 fill={focal(true)}
               >
-                <title>{`${r.session}: ${r.government_won_pct} %`}</title>
+                <title>{`${p.s}: ${p.won} %`}</title>
               </circle>
             ))}
-            <GovStrip sessions={d.sessions} x={x} step={step} y={156} />
+            <GovStrip sessions={rows} x={x} step={step} y={156} />
             <XAxis
               y={194}
               x={x}
               ticks={every(
-                g.map((_, i) => i),
+                rows.map((_, i) => i),
                 8,
-              ).map((i) => ({ value: i, label: g[i].session }))}
+              ).map((i) => ({ value: i, label: rows[i].session }))}
             />
           </svg>
         )
@@ -232,18 +195,7 @@ function GovWon() {
   )
 }
 
-const wonRange = (d: Sessions) => {
-  const v = d.government_record.map((r) => r.government_won_pct)
-  return [Math.min(...v), Math.max(...v)]
-}
-
 export const posts: Post[] = [
-  {
-    id: 'pol-gov-gauge',
-    domain: 'politics',
-    sources: ['parliament/sessions.json'],
-    render: () => <Gauge />,
-  },
   {
     id: 'pol-agree-matrix',
     domain: 'politics',
@@ -258,8 +210,10 @@ export const posts: Post[] = [
     sources: ['parliament/sessions.json'],
     size: 'wide',
     title: (d: Sessions) => {
-      const [lo, hi] = wonRange(d)
-      return `The government won between ${lo} % and ${hi} % of Riksdag decisions per session`
+      const r = wonRange(d)
+      return r
+        ? `The government won between ${r[0]} % and ${r[1]} % of Riksdag decisions per session`
+        : 'Share of Riksdag decisions the government won'
     },
     note: 'Share of decisions won per session, with the government of the day. Source: Riksdagen.',
     render: () => <GovWon />,

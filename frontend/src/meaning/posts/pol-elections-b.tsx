@@ -1,9 +1,17 @@
 /** Riksdag election results 1973 onward and the 2026 count. */
-import { useState } from 'react'
-import { Frame, Slicer, useData, type Post } from '../kit'
+import { Frame, useData, type Post } from '../kit'
 import { linearScale } from '../../charts/scales'
 import { niceDomain, ticksBetween } from '../axes'
-import { every, groupBy, line, pc, pct, PARTIES, squarify } from './pol-kit'
+import {
+  best,
+  groupBy,
+  isParty,
+  line,
+  pc,
+  pct,
+  PARTIES,
+  signed,
+} from './pol-kit'
 
 type Result = {
   election_year: number
@@ -22,79 +30,15 @@ type NowParty = {
 }
 type Now = { election: { year: number; majority: number; parties: NowParty[] } }
 
-const ORDER: string[] = [...PARTIES, 'NYD', 'OTHER']
 const useElections = () => useData<Elections>('parliament/elections.json')
 const useNow = () => useData<Now>('parliament/now.json')
-const byYear = (d: Elections, y: number) =>
-  d.results
-    .filter((r) => r.election_year === y)
-    .sort((a, b) => ORDER.indexOf(a.party) - ORDER.indexOf(b.party))
-
-function VotesTreemap() {
-  const data = useElections()
-  const [year, setYear] = useState(2022)
-  return (
-    <Frame data={data}>
-      {(d) => {
-        const rows = byYear(d, year).filter((r) => (r.votes ?? 0) > 0)
-        const rects = squarify(rows, (r) => r.votes!, {
-          x: 0,
-          y: 0,
-          w: 300,
-          h: 300,
-        })
-        return (
-          <>
-            <Slicer
-              label="Election year"
-              cycles
-              options={every([...d.years].reverse(), 3)}
-              value={year}
-              onChange={setYear}
-            />
-            <svg
-              viewBox="0 0 300 300"
-              role="img"
-              aria-label={`Votes per party in ${year}`}
-            >
-              {rects.map((r) => (
-                <g key={r.item.party}>
-                  <rect
-                    x={r.x}
-                    y={r.y}
-                    width={r.w}
-                    height={r.h}
-                    fill={pc(r.item.party)}
-                    stroke="var(--paper)"
-                    strokeWidth={2}
-                  />
-                  {r.w > 60 && r.h > 18 && (
-                    <text
-                      x={r.x + 6}
-                      y={r.y + 14}
-                      className="mean-pol-t"
-                      style={{ fill: 'var(--ink)' }}
-                    >
-                      {r.item.party}{' '}
-                      {Math.round(r.item.votes! / 1000).toLocaleString('sv-SE')}
-                      k
-                    </text>
-                  )}
-                </g>
-              ))}
-            </svg>
-          </>
-        )
-      }}
-    </Frame>
-  )
-}
 
 /** One panel per party on a shared 0–50 % scale, so heights compare across panels. */
 function Multiples() {
   return (
     <Frame data={useElections()}>
       {(d) => {
+        if (d.years.length < 2) return null
         const by = groupBy(d.results, (r) => r.party)
         const first = d.years[0]
         const last = d.years.at(-1)!
@@ -166,16 +110,15 @@ function Multiples() {
 }
 
 const change = (p: NowParty) => p.share_pct - p.previous_share_pct
-const signed = (v: number) => `${v >= 0 ? '+' : '−'}${Math.abs(v).toFixed(1)}`
+const parties = (n: Now) => n.election.parties.filter((p) => isParty(p.party))
 
 /** Each party's previous and latest share on one row, sorted by the latest. */
 function Dumbbell() {
   return (
     <Frame data={useNow()}>
       {(n) => {
-        const ps = n.election.parties
-          .filter((p) => PARTIES.includes(p.party as never))
-          .sort((a, b) => b.share_pct - a.share_pct)
+        const ps = parties(n).sort((a, b) => b.share_pct - a.share_pct)
+        if (!ps.length) return null
         const [, hi] = niceDomain(
           0,
           Math.max(...ps.flatMap((p) => [p.share_pct, p.previous_share_pct])),
@@ -243,14 +186,21 @@ function Dumbbell() {
   )
 }
 
-/** The party that gained the most share and the one that lost the most, in points. */
+/** The largest rise and the largest fall in share, worded by their actual sign. */
 function swingTitle(n: Now) {
-  const ps = n.election.parties.filter((p) =>
-    PARTIES.includes(p.party as never),
-  )
-  const up = ps.reduce((a, b) => (change(b) > change(a) ? b : a))
-  const down = ps.reduce((a, b) => (change(b) < change(a) ? b : a))
-  return `${n.election.year}: ${up.party} gained the most share (${signed(change(up))} points), ${down.party} lost the most (${signed(change(down))})`
+  const ps = parties(n)
+  const up = best(ps, change)
+  const down = best(ps, (p) => -change(p))
+  if (!up || !down) return 'Vote share per party, previous and latest election'
+  const rise =
+    change(up) > 0
+      ? `${up.party} gained the most share (${signed(change(up))} points)`
+      : `every party lost share; ${up.party} the least (${signed(change(up))})`
+  const fall =
+    change(down) < 0
+      ? `${down.party} lost the most (${signed(change(down))})`
+      : `${down.party} gained the least (${signed(change(down))})`
+  return `${n.election.year}: ${rise}, ${fall}`
 }
 
 export const posts: Post[] = [
@@ -268,14 +218,10 @@ export const posts: Post[] = [
     sources: ['parliament/elections.json'],
     size: 'wide',
     title: (d: Elections) =>
-      `Each party's vote share, ${d.years[0]}–${d.years.at(-1)}`,
+      d.years.length
+        ? `Each party's vote share, ${d.years[0]}–${d.years.at(-1)}`
+        : "Each party's vote share",
     note: 'Share of votes, %; every panel uses the same scale. Source: Valmyndigheten.',
     render: () => <Multiples />,
-  },
-  {
-    id: 'pol-votes-treemap',
-    domain: 'politics',
-    sources: ['parliament/elections.json'],
-    render: () => <VotesTreemap />,
   },
 ]

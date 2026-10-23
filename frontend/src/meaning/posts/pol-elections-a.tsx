@@ -4,7 +4,7 @@ import { Frame, Slicer, useData, type Post } from '../kit'
 import { linearScale } from '../../charts/scales'
 import { spreadLabels } from '../../charts/marks'
 import { EndLabels, XAxis, YAxis } from '../axes'
-import { band, every, pc, PARTIES, sum } from './pol-kit'
+import { band, every, fromEnd, pc, PARTIES, sum } from './pol-kit'
 
 type Result = {
   election_year: number
@@ -20,21 +20,28 @@ const byYear = (d: Elections, y: number) =>
   d.results
     .filter((r) => r.election_year === y)
     .sort((a, b) => ORDER.indexOf(a.party) - ORDER.indexOf(b.party))
+/** A party's share, or null where it did not stand or the share is not published. */
 const share = (d: Elections, y: number, p: string) =>
-  d.results.find((r) => r.election_year === y && r.party === p)?.share_pct ?? 0
+  d.results.find((r) => r.election_year === y && r.party === p)?.share_pct ??
+  null
 
 function StackedShare() {
   return (
     <Frame data={useElections()}>
       {(d) => {
+        if (d.years.length < 2) return null
         const x = linearScale([d.years[0], d.years.at(-1)!], [34, 548])
         const y = linearScale([0, 100], [178, 8])
         let base = d.years.map(() => 0)
         // End labels name the bands at the latest election, so no legend is needed. Bands
         // under 4 % go unnamed.
         const ends: { y: number; label: string }[] = []
-        const layers = ORDER.map((p) => {
-          const top = d.years.map((yr, i) => base[i] + share(d, yr, p))
+        // A missing share adds no thickness to the stack: nothing is drawn for it. (NYD's
+        // 1991 votes, unpublished per party, sit under OTHER, so each year still sums to 100.)
+        const layers = ORDER.filter((p) =>
+          d.years.some((yr) => share(d, yr, p) !== null),
+        ).map((p) => {
+          const top = d.years.map((yr, i) => base[i] + (share(d, yr, p) ?? 0))
           const path = band(
             top.map((v, i) => [x(d.years[i]), y(v)]),
             base.map((v, i) => [x(d.years[i]), y(v)]),
@@ -91,12 +98,14 @@ function StackedShare() {
 /** One bar of all seats, parties in bloc order from the left, the majority marked. */
 function SeatBar() {
   const data = useElections()
-  const [year, setYear] = useState(2026)
+  const [picked, setYear] = useState<number | null>(null)
   return (
     <Frame data={data}>
       {(d) => {
+        const year = picked ?? d.years.at(-1)!
         const rows = byYear(d, year).filter((r) => (r.seats ?? 0) > 0)
         const total = sum(rows.map((r) => r.seats!))
+        if (!total) return null
         const x = linearScale([0, total], [4, 296])
         let acc = 0
         const segs = rows.map((r) => {
@@ -182,8 +191,10 @@ export const posts: Post[] = [
     domain: 'politics',
     sources: ['parliament/elections.json'],
     size: 'wide',
-    title: (d: { years: number[] }) =>
-      `Vote share by party in Riksdag elections, ${d.years[0]}–${d.years.at(-1)}`,
+    title: (d: Elections) =>
+      d.years.length
+        ? `Vote share by party in Riksdag elections, ${d.years[0]}–${d.years.at(-1)}`
+        : 'Vote share by party in Riksdag elections',
     note: 'Share of votes cast, %. Source: Valmyndigheten.',
     render: () => <StackedShare />,
   },
@@ -191,9 +202,11 @@ export const posts: Post[] = [
     id: 'pol-hemicycle',
     domain: 'politics',
     sources: ['parliament/elections.json'],
-    title: (d: { years: number[] }) =>
-      `Riksdag seats per party, ${d.years.at(-8)}–${d.years.at(-1)} elections`,
-    note: 'Seats of 349, parties from left to right. Source: Valmyndigheten.',
+    title: (d: Elections) =>
+      d.years.length
+        ? `Riksdag seats per party, ${fromEnd(d.years, 8)}–${d.years.at(-1)} elections`
+        : 'Riksdag seats per party',
+    note: 'All seats in one bar, parties from left to right. Source: Valmyndigheten.',
     render: () => <SeatBar />,
   },
 ]

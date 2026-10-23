@@ -85,8 +85,12 @@ export const posts: Post[] = [
     domain: 'politics',
     sources: ['debates/summary.json'],
     title: (d: Summary) => {
-      const rest = d.data.find((t) => t.is_unclustered)?.word_share_pct ?? 0
-      return `Ten largest of ${topics(d).length} debate topics; ${Math.round(rest)} % of words fit no topic`
+      const rest = d.data.find((t) => t.is_unclustered)?.word_share_pct
+      const n = topics(d).length
+      const head = `${Math.min(10, n)} largest of ${n} debate topics`
+      return rest == null
+        ? head
+        : `${head}; ${Math.round(rest)} % of words fit no topic`
     },
     note: 'Share of all words in Riksdag debates, labelled by key words. Source: Riksdagen.',
     render: () => <TopicBars />,
@@ -96,7 +100,9 @@ export const posts: Post[] = [
     domain: 'politics',
     sources: ['debates/overview.json'],
     title: (d: Overview) =>
-      `Riksdag debate speeches, ${d.data.first_date.slice(0, 4)}–${d.data.last_date.slice(0, 4)}`,
+      d.data.first_date && d.data.last_date
+        ? `Riksdag debate speeches, ${d.data.first_date.slice(0, 4)}–${d.data.last_date.slice(0, 4)}`
+        : 'Riksdag debate speeches',
     note: 'Speeches read for the debate topics. Source: Riksdagen.',
     render: () => <DebateKpis />,
   },
@@ -105,9 +111,9 @@ export const posts: Post[] = [
     domain: 'politics',
     sources: ['politics/meaning.json'],
     title: (m: Meaning) =>
-      m.passed === m.total
-        ? `The rule-change reader passes all ${m.total} test cases`
-        : `The rule-change reader passes ${m.passed} of ${m.total} test cases`,
+      m.total
+        ? `Rule-change reader: ${m.passed} of ${m.total} test cases read as expected`
+        : 'Rule-change reader test cases',
     note: 'Each case is a law edit to be read as loosening or tightening a rule.',
     render: () => <MeaningKpi />,
   },

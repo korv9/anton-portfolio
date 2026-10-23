@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { focal, Frame, seq, Slicer, useData, type Post } from '../kit'
 import { linearScale } from '../../charts/scales'
 import { niceDomain, ticksBetween, XAxis, YAxis } from '../axes'
-import { every, GovStrip, int, PARTIES, Sub } from './pol-kit'
+import { best, every, fromEnd, GovStrip, int, PARTIES, Sub } from './pol-kit'
 
 type Session = {
   session: string
@@ -11,6 +11,7 @@ type Session = {
   government_key: string
   government_name: string
   government_parties: string[]
+  start_year: number
 }
 type Record_ = {
   session: string
@@ -57,17 +58,23 @@ const METRIC_NAMES: Record<Metric, string> = {
 }
 
 const useSessions = () => useData<Sessions>('parliament/sessions.json')
+/** A riksmöte runs from September to the next summer; until the next one opens it may still
+ * be adding roll calls, so it is not compared with full sessions. */
+const ongoing = (s: Session) => Date.now() < Date.UTC(s.start_year + 1, 8, 1)
 
-/** Roll calls per session as plain columns, the latest one in the accent, with the
- * government of each session named in grey bands underneath. */
+/** Roll calls per session as plain columns, the latest full one in the accent, with the
+ * government of each session named in grey bands underneath. A session still under way is
+ * drawn faint. */
 function Columns() {
   return (
     <Frame data={useSessions()}>
       {(d) => {
         const n = d.sessions.length
+        if (!n) return null
+        const lastFull = d.sessions.map((s) => !ongoing(s)).lastIndexOf(true)
         const [, hi] = niceDomain(
           0,
-          Math.max(...d.sessions.map((s) => s.roll_calls)),
+          Math.max(1, ...d.sessions.map((s) => s.roll_calls)),
         )
         const y = linearScale([0, hi], [150, 10])
         const step = 548 / n
@@ -92,9 +99,10 @@ function Columns() {
                 y={y(s.roll_calls)}
                 width={step * 0.7}
                 height={y(0) - y(s.roll_calls)}
-                fill={focal(i === n - 1)}
+                fill={focal(i === lastFull)}
+                opacity={ongoing(s) ? 0.4 : 1}
               >
-                <title>{`${s.session}: ${int(s.roll_calls)} roll calls`}</title>
+                <title>{`${s.session}: ${int(s.roll_calls)} roll calls${ongoing(s) ? ' so far (session under way)' : ''}`}</title>
               </rect>
             ))}
             <GovStrip sessions={d.sessions} x={x} step={step} y={156} />
@@ -129,6 +137,7 @@ function MetricHeat() {
         const ss = d.sessions.slice(-SHOWN).map((s) => s.session)
         const recs = d.party_record.filter((r) => ss.includes(r.session))
         const ps = PARTIES.filter((p) => recs.some((r) => r.party === p))
+        if (!recs.length) return null
         const vals = recs.map((r) => r[METRICS[m]])
         const lo = Math.min(...vals)
         const hi = Math.max(...vals)
@@ -218,10 +227,13 @@ export const posts: Post[] = [
     sources: ['parliament/sessions.json'],
     size: 'wide',
     title: (d: Sessions) => {
-      const top = d.sessions.reduce((a, b) =>
-        b.roll_calls > a.roll_calls ? b : a,
+      const top = best(
+        d.sessions.filter((s) => !ongoing(s)),
+        (s) => s.roll_calls,
       )
-      return `Roll calls per Riksdag session; ${top.session} had the most, ${int(top.roll_calls)}`
+      return top
+        ? `Roll calls per Riksdag session; ${top.session} had the most, ${int(top.roll_calls)}`
+        : 'Roll calls per Riksdag session'
     },
     note: 'Recorded votes per session, with the government of the day. Source: Riksdagen.',
     render: () => <Columns />,
@@ -232,8 +244,10 @@ export const posts: Post[] = [
     sources: ['parliament/sessions.json'],
     size: 'wide',
     title: (d: Sessions) =>
-      `Party voting records, ${d.sessions.at(-SHOWN)?.session}–${d.sessions.at(-1)?.session}`,
-    note: 'Per party and session; darker cells are higher. Source: Riksdagen roll calls.',
+      d.sessions.length
+        ? `Party voting records, ${fromEnd(d.sessions, SHOWN).session}–${d.sessions.at(-1)!.session}`
+        : 'Party voting records',
+    note: 'Per party and session; the shade follows the value written in each cell. Source: Riksdagen roll calls.',
     render: () => <MetricHeat />,
   },
 ]

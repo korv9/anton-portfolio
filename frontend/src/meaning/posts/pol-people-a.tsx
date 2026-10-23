@@ -1,8 +1,8 @@
 /** Members of the Riksdag and municipal council seats per party. */
-import { focal, Frame, shade, tile, useData, type Post } from '../kit'
+import { focal, Frame, shade, useData, type Post } from '../kit'
 import { linearScale } from '../../charts/scales'
 import { niceDomain, ticksBetween } from '../axes'
-import { arc, int, pc, PARTIES, Shares, sum } from './pol-kit'
+import { best, int, pc, PARTIES, Shares, signed, sum } from './pol-kit'
 
 type PartyStat = {
   members: number
@@ -54,6 +54,7 @@ function Dumbbell() {
         const ps = present(d).sort(
           (a, b) => d.parties[b].council_seats - d.parties[a].council_seats,
         )
+        if (!ps.length) return null
         const [, max] = niceDomain(
           0,
           Math.max(
@@ -133,82 +134,31 @@ function Dumbbell() {
   )
 }
 
-function Donut() {
-  return (
-    <Frame data={useIndex()}>
-      {(d) => {
-        const ps = present(d)
-        const total = sum(ps.map((p) => d.parties[p].members))
-        let a = 0
-        return (
-          <svg
-            viewBox="0 0 300 300"
-            role="img"
-            aria-label="Members per party, outer ring; women and men per party, inner ring"
-          >
-            {ps.map((p) => {
-              const s = d.parties[p]
-              const a0 = a
-              const span = (s.members / total) * Math.PI * 2
-              const aw = a0 + span * (s.women / s.members)
-              a += span
-              return (
-                <g key={p}>
-                  <path
-                    d={arc(150, 150, 100, 140, a0, a0 + span - 0.01)}
-                    fill={pc(p)}
-                  >
-                    <title>{`${p}: ${s.members}`}</title>
-                  </path>
-                  <path
-                    d={arc(150, 150, 74, 96, a0, aw)}
-                    fill={pc(p)}
-                    opacity={0.55}
-                  />
-                  <path
-                    d={arc(150, 150, 74, 96, aw, a0 + span - 0.01)}
-                    fill={pc(p)}
-                    opacity={0.2}
-                  />
-                </g>
-              )
-            })}
-            <text
-              x={150}
-              y={162}
-              textAnchor="middle"
-              style={{ fontSize: 36, fontWeight: 600, fill: 'var(--ink)' }}
-            >
-              {Math.round(
-                (100 * sum(ps.map((p) => d.parties[p].women))) / total,
-              )}
-              %
-            </text>
-          </svg>
-        )
-      }}
-    </Frame>
-  )
+function membersTitle(d: Index) {
+  const ps = present(d)
+  const w = sum(ps.map((p) => d.parties[p].women))
+  const n = sum(ps.map((p) => d.parties[p].members))
+  return n
+    ? `${w} of the ${n} members from the eight Riksdag parties are women, ${Math.round((100 * w) / n)} %`
+    : 'Women and men among Riksdag members'
 }
 
-function Ministers() {
-  return (
-    <Frame data={useIndex()}>
-      {(d) => {
-        const ps = present(d).filter((p) => d.parties[p].ministers.length)
-        return (
-          <div className="mean-pol-grid4">
-            {ps.map((p) => (
-              <div key={p} className="mean-pol-cell" style={tile(pc(p))}>
-                {d.parties[p].ministers.length}
-                <small>{p} ministers</small>
-              </div>
-            ))}
-          </div>
-        )
-      }}
-    </Frame>
-  )
+/** The largest gain and the largest loss in council seats, worded by their actual sign. */
+function councilTitle(d: Index) {
+  const ps = present(d)
+  const ch = (p: string) => councilChange(d.parties[p])
+  const up = best(ps, ch)
+  const down = best(ps, (p) => -ch(p))
+  if (!up || !down) return 'Municipal council seats per party'
+  const rise =
+    ch(up) > 0
+      ? `${up} gained the most municipal council seats (${signed(ch(up), 0)})`
+      : `every party lost council seats; ${up} the fewest (${signed(ch(up), 0)})`
+  const fall =
+    ch(down) < 0
+      ? `${down} lost the most (${signed(ch(down), 0)})`
+      : `${down} gained the fewest (${signed(ch(down), 0)})`
+  return `${rise}; ${fall}`
 }
 
 export const posts: Post[] = [
@@ -216,12 +166,7 @@ export const posts: Post[] = [
     id: 'pol-member-units',
     domain: 'politics',
     sources: ['politics/parties/index.json'],
-    title: (d: Index) => {
-      const ps = present(d)
-      const w = sum(ps.map((p) => d.parties[p].women))
-      const n = sum(ps.map((p) => d.parties[p].members))
-      return `${w} of ${n} members of the Riksdag are women, ${Math.round((100 * w) / n)} %`
-    },
+    title: membersTitle,
     note: 'Women and men per party among current members. Source: Riksdagen.',
     render: () => <Units />,
   },
@@ -229,29 +174,8 @@ export const posts: Post[] = [
     id: 'pol-council-dumbbell',
     domain: 'politics',
     sources: ['politics/parties/index.json'],
-    title: (d: Index) => {
-      const ps = present(d)
-      const by = (f: (a: number, b: number) => boolean) =>
-        ps.reduce((a, b) =>
-          f(councilChange(d.parties[b]), councilChange(d.parties[a])) ? b : a,
-        )
-      const up = by((a, b) => a > b)
-      const down = by((a, b) => a < b)
-      return `${up} gained the most municipal council seats (+${int(councilChange(d.parties[up]))}); ${down} lost the most (−${int(Math.abs(councilChange(d.parties[down])))})`
-    },
+    title: councilTitle,
     note: 'Council seats before (open dot) and after (filled) the 2026 election. Source: Valmyndigheten.',
     render: () => <Dumbbell />,
-  },
-  {
-    id: 'pol-gender-donut',
-    domain: 'politics',
-    sources: ['politics/parties/index.json'],
-    render: () => <Donut />,
-  },
-  {
-    id: 'pol-ministers',
-    domain: 'politics',
-    sources: ['politics/parties/index.json'],
-    render: () => <Ministers />,
   },
 ]

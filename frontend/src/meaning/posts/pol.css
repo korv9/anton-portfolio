@@ -12,14 +12,14 @@
   letter-spacing: -0.04em;
   line-height: 0.9;
   font-variant-numeric: tabular-nums;
-  color: var(--ink);
+  color: var(--mean-ink);
 }
 .mean-pol-kpi small {
   display: block;
   font-size: var(--caption);
   letter-spacing: 0;
   font-weight: var(--weight-body);
-  color: var(--muted);
+  color: var(--mean-muted);
   margin-top: 8px;
 }
 .mean-pol-grid4 {
@@ -36,12 +36,12 @@
   font-size: clamp(14px, 8cqi, 30px);
   font-weight: var(--weight-heading);
   font-variant-numeric: tabular-nums;
-  color: var(--ink);
+  color: var(--mean-ink);
 }
 .mean-pol-cell small {
   font-size: var(--caption);
   font-weight: var(--weight-body);
-  color: var(--ink-2);
+  color: var(--mean-muted);
 }
 /* The number written in a heatmap cell; dark cells switch it to the card colour inline. */
 .mean-body svg text.mean-pol-cellv {
@@ -52,49 +52,6 @@
 .mean-body svg .mean-pol-val {
   fill: var(--mean-muted);
   font-weight: 400;
-}
-/* charts/RankBars and Compare Stacked inside a card: caption type and one line per row at
-   any width, so ten rows fit a square card. A long label ends in an ellipsis. */
-.mean-pol-bars {
-  flex: 1;
-  min-height: 0;
-  overflow: hidden;
-  font-family: var(--mean-font);
-}
-.mean-pol-bars :is(.rank-bars-list li, .stacked li) {
-  grid-template-columns: minmax(0, 7.5em) minmax(0, 1fr) auto;
-  gap: 0.5em;
-  font-size: var(--type-caption);
-  line-height: 1.25;
-}
-.mean-pol-bars .rank-bars-list {
-  gap: 5px;
-}
-.mean-pol-bars .stacked ol {
-  gap: 7px;
-}
-.mean-pol-bars .rank-label {
-  grid-column: auto;
-  display: block;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  color: var(--mean-ink);
-}
-.mean-pol-bars .rank-track {
-  height: 10px;
-}
-.mean-pol-bars .stacked-track {
-  grid-column: auto;
-  grid-row: auto;
-  height: 10px;
-}
-.mean-pol-bars .rank-value {
-  color: var(--mean-ink);
-}
-.mean-pol-bars .stacked-key {
-  margin: 0 0 8px;
-  font-size: var(--type-caption);
 }
 /* The option a categorical slicer holds, named above the chart. */
 .mean-pol-sub {

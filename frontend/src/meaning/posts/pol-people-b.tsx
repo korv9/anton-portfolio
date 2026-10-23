@@ -2,8 +2,8 @@
 import { useState } from 'react'
 import { Frame, Slicer, useData, type Post } from '../kit'
 import { linearScale } from '../../charts/scales'
-import { niceDomain, ticksBetween, YAxis } from '../axes'
-import { pc, PARTIES, Sub, XTicks } from './pol-kit'
+import { niceDomain, ticksBetween, XAxis, YAxis } from '../axes'
+import { pc, PARTIES, Sub } from './pol-kit'
 
 type Member = { born: number; gender: string }
 type Council = { seats: number; total: number }
@@ -123,10 +123,12 @@ function CouncilHistogram() {
       <Slicer label="Party" options={PARTIES} value={p} onChange={setP} />
       <Frame data={f}>
         {(f) => {
-          const bins = Array.from({ length: 20 }, () => 0)
+          // 2.5-point bands over the whole 0–100 % range; a full council lands in the last band.
+          const bins = Array.from({ length: 40 }, () => 0)
           for (const c of f.councils)
             if (c.total)
-              bins[Math.min(19, Math.floor((c.seats / c.total) * 40))]++
+              bins[Math.min(39, Math.floor((c.seats / c.total) * 40))]++
+          const bx = (v: number) => 32 + (v / 100) * 260
           const [, max] = niceDomain(0, Math.max(...bins, 1))
           const y = linearScale([0, max], [196, 10])
           return (
@@ -141,19 +143,20 @@ function CouncilHistogram() {
                 {bins.map((b, i) => (
                   <rect
                     key={i}
-                    x={32 + i * 13}
+                    x={bx(i * 2.5) + 0.5}
                     y={y(b)}
-                    width={12}
+                    width={5.5}
                     height={y(0) - y(b)}
                     fill={pc(p)}
                   >
                     <title>{`${i * 2.5}–${i * 2.5 + 2.5} %: ${b} municipalities`}</title>
                   </rect>
                 ))}
-                <XTicks
+                <XAxis
                   y={212}
-                  ticks={[0, 25, 50].map((v) => ({
-                    x: 32 + (v / 2.5) * 13,
+                  x={bx}
+                  ticks={[0, 25, 50, 75, 100].map((v) => ({
+                    value: v,
                     label: `${v} %`,
                   }))}
                 />

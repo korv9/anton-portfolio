@@ -1,31 +1,16 @@
-/** Fifteen policy issues: decisions, speeches, budget outturn and welfare indicators. */
+/** Fifteen policy issues: decisions, speeches and budget outturn. */
 import { useState } from 'react'
 import { focal, Frame, Slicer, useData, type Post } from '../kit'
 import { linearScale } from '../../charts/scales'
 import { niceDomain } from '../axes'
-import { Bars, int, line, pc, Sub, sum } from './pol-kit'
+import { Bars, int, line, pc, Sub, sum, uniq } from './pol-kit'
 
 type Issue = {
   issue_key: string
   issue_name_en: string
-  per_session: {
-    session: string
-    decisions: number
-    government_won_pct: number
-  }[]
-  parties: {
-    party: string
-    role: string
-    with_government_pct: number
-    on_winning_side_pct: number
-  }[]
+  per_session: { session: string; decisions: number }[]
   speeches: { session: string; party: string; speeches: number }[]
   budget_outturn_msek: { year: number; outturn_msek: number }[]
-  welfare: {
-    indicator_key: string
-    unit: string
-    series: { year: number; value: number }[]
-  }[]
 }
 type Issues = { issues: Issue[] }
 
@@ -37,9 +22,12 @@ const issueName = (d: Issues) => (k: string) =>
 /** "Social insurance and migration" → "Social insurance", to fit a small panel. */
 const shortName = (i: Issue) => i.issue_name_en.split(' and ')[0]
 const decisions = (i: Issue) => sum(i.per_session.map((s) => s.decisions))
+/** Every session any issue has, in order, so all panels share one time axis. */
+const sessions = (d: Issues) =>
+  uniq(d.issues.flatMap((i) => i.per_session.map((s) => s.session))).sort()
 const sessionSpan = (d: Issues) => {
-  const s = d.issues[0]?.per_session ?? []
-  return `${s[0]?.session}–${s.at(-1)?.session}`
+  const s = sessions(d)
+  return s.length ? `${s[0]}–${s.at(-1)}` : ''
 }
 
 /** One panel per issue, most decisions first, all on one scale. */
@@ -47,17 +35,19 @@ function Multiples() {
   return (
     <Frame data={useIssues()}>
       {(d) => {
+        const ss = sessions(d)
+        if (ss.length < 2) return null
         const [, max] = niceDomain(
           0,
           Math.max(
+            1,
             ...d.issues.flatMap((i) => i.per_session.map((s) => s.decisions)),
           ),
         )
         const ordered = [...d.issues].sort(
           (a, b) => decisions(b) - decisions(a),
         )
-        const n = ordered[0]?.per_session.length ?? 1
-        const x = linearScale([0, n - 1], [4, 92])
+        const x = linearScale([0, ss.length - 1], [4, 92])
         const y = linearScale([0, max], [56, 20])
         return (
           <svg
@@ -81,7 +71,10 @@ function Multiples() {
                 </g>
                 <path
                   d={line(
-                    iss.per_session.map((s, i) => [x(i), y(s.decisions)]),
+                    iss.per_session.map((s) => [
+                      x(ss.indexOf(s.session)),
+                      y(s.decisions),
+                    ]),
                   )}
                   fill="none"
                   stroke={focal(true)}
@@ -102,17 +95,20 @@ function Multiples() {
   )
 }
 
-const latestYear = (d: Issues) =>
-  Math.max(...d.issues.flatMap((i) => i.budget_outturn_msek.map((b) => b.year)))
+const latestYear = (d: Issues) => {
+  const ys = d.issues.flatMap((i) => i.budget_outturn_msek.map((b) => b.year))
+  return ys.length ? Math.max(...ys) : null
+}
+/** Issues with an outturn in the latest year, largest first. An issue with no figure for that
+ * year is left out. */
 const outturn = (d: Issues) => {
   const yr = latestYear(d)
   return d.issues
-    .map((i) => ({
-      i,
-      bn:
-        (i.budget_outturn_msek.find((b) => b.year === yr)?.outturn_msek ?? 0) /
-        1000,
-    }))
+    .map((i) => {
+      const v = i.budget_outturn_msek.find((b) => b.year === yr)?.outturn_msek
+      return v == null ? null : { i, bn: v / 1000 }
+    })
+    .filter((r) => r !== null)
     .sort((a, b) => b.bn - a.bn)
 }
 
@@ -139,11 +135,13 @@ function Outturn() {
 
 function Speeches() {
   const data = useIssues()
-  const [key, setKey] = useState('miljo')
+  const [picked, setKey] = useState<string | null>(null)
   return (
     <Frame data={data}>
       {(d) => {
-        const iss = d.issues.find((i) => i.issue_key === key)!
+        const key = picked ?? keys(d)[0]
+        const iss = d.issues.find((i) => i.issue_key === key)
+        if (!iss) return null
         const by = new Map<string, number>()
         for (const s of iss.speeches)
           by.set(s.party, (by.get(s.party) ?? 0) + s.speeches)
@@ -192,7 +190,9 @@ export const posts: Post[] = [
     sources: ['parliament/issues.json'],
     title: (d: Issues) => {
       const [top] = outturn(d)
-      return `${top.i.issue_name_en} had the largest budget outturn in ${latestYear(d)}: ${int(top.bn)} billion kronor`
+      return top
+        ? `${top.i.issue_name_en} had the largest budget outturn in ${latestYear(d)}: ${int(top.bn)} billion kronor`
+        : 'Budget outturn per policy area'
     },
     note: 'Outturn of the expenditure areas behind each issue, SEK billion, ten largest. Source: Statskontoret.',
     render: () => <Outturn />,
@@ -203,7 +203,7 @@ export const posts: Post[] = [
     sources: ['parliament/issues.json'],
     title: (d: Issues) =>
       `Speeches per party in issue debates, ${sessionSpan(d)}`,
-    note: 'Only speeches in debates linked to a committee report are counted. Source: Riksdagen.',
+    note: "Counts only debate speeches linked to the issue's committee reports by title. Source: Riksdagen.",
     render: () => <Speeches />,
   },
 ]
