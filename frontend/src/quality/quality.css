@@ -132,9 +132,6 @@
 .q-matrix tr.is-active {
   background: var(--q-soft);
 }
-.q-case-table td {
-  font-variant-numeric: tabular-nums;
-}
 
 /* Product panel */
 .q-panel {
@@ -243,24 +240,6 @@
   padding-top: 0.7rem;
   border-top: 1px solid var(--q-rule);
   line-height: 1.5;
-}
-.q-case {
-  padding: 1.2rem 1.3rem;
-  border: 1px solid var(--q-rule);
-  border-radius: var(--radius);
-}
-.q-case-steps {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-  gap: 1rem 1.6rem;
-  margin: 1rem 0;
-}
-.q-case-steps p {
-  margin: 0;
-  line-height: 1.5;
-}
-.q-case .q-analysis {
-  margin-top: 1.2rem;
 }
 
 /* Checks */

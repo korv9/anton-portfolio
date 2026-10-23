@@ -1,4 +1,4 @@
-/** Types and pure logic of the job assistant's review list: status, filters, sort, evaluation. */
+/** Types and pure logic of the job assistant: the joined rows, status and the label evaluation. */
 export type MatchClass = 'strong' | 'possible' | 'stretch' | 'outside'
 export const CLASSES: MatchClass[] = [
   'strong',
@@ -12,9 +12,20 @@ export const STATUSES = [
   'interesting',
   'pass',
   'applied',
+  'interview',
+  'offer',
+  'rejected',
   'closed',
 ] as const
 export type Status = (typeof STATUSES)[number]
+/** The application pipeline, from saving an ad to the answer; 'interesting' is shown as Saved. */
+export const PIPELINE = [
+  'interesting',
+  'applied',
+  'interview',
+  'offer',
+  'rejected',
+] as const satisfies readonly Status[]
 export const LABELS = ['relevant', 'maybe', 'not_relevant'] as const
 export type Label = (typeof LABELS)[number]
 
@@ -130,21 +141,6 @@ export type Row = {
   review?: Review
   label?: LabelRow
 }
-export type View = {
-  classes: MatchClass[] | 'sample'
-  status: Status | 'all'
-  role: string
-  q: string
-  sort: 'rank' | 'newest' | 'deadline'
-}
-export const DEFAULT_VIEW: View = {
-  classes: ['strong', 'possible'],
-  status: 'all',
-  role: 'all',
-  q: '',
-  sort: 'rank',
-}
-
 export function rows(d: Delivered, rec: Records): Row[] {
   const ads = new Map(d.ads.ads.map((a) => [a.id, a]))
   return d.matches.matches.flatMap((match) => {
@@ -161,32 +157,6 @@ export function rows(d: Delivered, rec: Records): Row[] {
       },
     ]
   })
-}
-
-export function filter(all: Row[], v: View): Row[] {
-  const q = v.q.trim().toLocaleLowerCase()
-  const kept = all.filter(
-    (r) =>
-      (v.classes === 'sample'
-        ? r.match.sample
-        : v.classes.includes(r.match.class)) &&
-      (v.status === 'all' || r.status === v.status) &&
-      (v.role === 'all' || r.match.role === v.role) &&
-      (!q ||
-        `${r.ad.headline} ${r.ad.employer} ${r.ad.municipality ?? ''}`
-          .toLocaleLowerCase()
-          .includes(q)),
-  )
-  const by = {
-    rank: (a: Row, b: Row) => a.match.rank - b.match.rank,
-    newest: (a: Row, b: Row) =>
-      (b.ad.published ?? '').localeCompare(a.ad.published ?? ''),
-    deadline: (a: Row, b: Row) =>
-      (a.ad.application_deadline ?? '9999').localeCompare(
-        b.ad.application_deadline ?? '9999',
-      ),
-  }[v.sort]
-  return kept.sort(by)
 }
 
 /**

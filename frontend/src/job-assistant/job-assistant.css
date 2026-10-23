@@ -1,5 +1,5 @@
-/* The job assistant (#jobs): a work tool in the warm-grey workspace. Dense rows beside the
-   selected ad, thin rules, no shadows; the selected row is the one focal mark on the screen. */
+/* The job assistant (#jobs): a job board in the warm-grey workspace. Result cards beside the
+   open ad, thin rules, no shadows; the open card is the one focal mark on the screen. */
 .ja {
   padding-block: var(--sp-5) var(--sp-section);
 }
@@ -14,14 +14,9 @@
   margin: var(--sp-2) 0 0;
   color: var(--color-ink-secondary);
 }
-.ja-meta,
-.ja-list-note,
 .ja-muted {
   color: var(--color-ink-secondary);
   font-size: var(--type-caption);
-}
-.ja-meta {
-  margin: var(--sp-3) 0 0;
 }
 .ja kbd {
   padding: 0 0.3em;
@@ -29,33 +24,12 @@
   border-radius: var(--radius);
   font-size: 0.75rem;
 }
-
-.ja-toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: end;
-  gap: var(--sp-3) var(--sp-4);
-  margin: var(--sp-5) 0 var(--sp-4);
-  padding-block: var(--sp-3);
-  border-block: 1px solid var(--color-border);
-}
-.ja-toolbar label,
 .ja-note,
 .ja-owner label {
   display: grid;
   gap: var(--sp-1);
   font-size: var(--type-caption);
   color: var(--color-ink-secondary);
-}
-.ja-toolbar select,
-.ja-toolbar input {
-  min-height: 36px;
-  padding-inline: var(--sp-2);
-  color: var(--color-ink);
-  font-size: var(--type-label);
-}
-.ja-search {
-  flex: 1 1 14rem;
 }
 
 .ja-segment {
@@ -81,12 +55,6 @@
 .ja-segment button:hover {
   background: var(--color-surface);
 }
-/* Ink fill is kept for the view switch; the owner's decision buttons stay quieter, so the
-   selected row remains the one focal mark. */
-.ja-toolbar .ja-segment button[aria-pressed='true'] {
-  background: var(--color-ink);
-  color: var(--color-ink-inverse);
-}
 .ja-decide .ja-segment button[aria-pressed='true'] {
   outline: 1px solid var(--color-border-control);
   outline-offset: -1px;
@@ -96,12 +64,12 @@
 .ja-count {
   margin-inline-start: 0.4em;
   font-weight: var(--weight-body);
-  opacity: 0.75;
+  color: var(--color-ink-secondary);
 }
 
 .ja-work {
   display: grid;
-  grid-template-columns: minmax(18rem, 2fr) minmax(0, 3fr);
+  grid-template-columns: minmax(20rem, 2fr) minmax(0, 3fr);
   gap: var(--sp-5);
   align-items: start;
 }
@@ -112,81 +80,15 @@
   scrollbar-color: var(--color-border-control) transparent;
   scrollbar-width: thin;
 }
-/* Below the sticky site header, not under it. */
-.ja-list-pane {
+/* Below the sticky site header, not under it; each pane keeps its own scroll position. */
+.ja-list-pane,
+.ja-detail {
   position: sticky;
   top: calc(var(--header-h, 5.5rem) + var(--sp-3));
   overscroll-behavior: contain;
 }
-/* Rows and links fill their scroll panes, so the focus ring is drawn inside them. */
-.ja-list a:focus-visible,
+/* Cards and links fill their scroll panes, so the focus ring is drawn inside them. */
+.ja-card:focus-visible,
 .ja-detail a:focus-visible {
   outline-offset: -2px;
-}
-.ja-list-note {
-  margin: 0 0 var(--sp-2);
-}
-.ja-list {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  border-top: 1px solid var(--color-border);
-}
-.ja-list a {
-  display: grid;
-  grid-template-columns: 5.5rem minmax(0, 1fr) auto;
-  grid-template-areas:
-    'class title side'
-    'class meta side';
-  column-gap: var(--sp-3);
-  padding: var(--sp-2) var(--sp-2);
-  border-bottom: 1px solid var(--color-border);
-  color: inherit;
-  text-decoration: none;
-}
-.ja-list a:hover {
-  background: var(--color-surface);
-}
-.ja-list a[aria-current='true'] {
-  background: var(--color-panel);
-}
-.ja-list a[aria-current='true'] .ja-row-title {
-  text-decoration: underline;
-  text-underline-offset: 0.2em;
-}
-.ja-row-class {
-  grid-area: class;
-  font-size: var(--type-caption);
-  font-weight: var(--weight-ui);
-  color: var(--color-ink-secondary);
-}
-.ja-row-class[data-class='strong'] {
-  color: var(--color-ink);
-  font-weight: var(--weight-heading);
-}
-.ja-row-title {
-  grid-area: title;
-  overflow: hidden;
-  font-weight: var(--weight-ui);
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.ja-row-meta {
-  grid-area: meta;
-  overflow: hidden;
-  color: var(--color-ink-secondary);
-  font-size: var(--type-caption);
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.ja-row-side {
-  grid-area: side;
-  display: grid;
-  justify-items: end;
-  color: var(--color-ink-secondary);
-  font-size: var(--type-caption);
-}
-.ja-row-status {
-  color: var(--color-ink);
-  font-weight: var(--weight-ui);
 }
