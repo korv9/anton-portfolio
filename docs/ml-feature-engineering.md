@@ -14,7 +14,7 @@ column says 5-95 %.
 | Analysis | Baseline | Gain over the baseline (paired interval) | No clear gain |
 |---|---|---|---|
 | Job ads, senior vs junior (AUC) | 32 skill flags: 0.56 [0.48, 0.63] | experience signals in the body: +0.147 [+0.105, +0.191] | skill count and length, co-occurrence stack vectors, boosted-tree interactions |
-| Job ads, six roles (macro-F1) | 0.20 [0.18, 0.21] | experience +0.057 [+0.047, +0.069]; smaller gains from size +0.035, boosted trees +0.015 and stack vectors +0.014, each interval above 0; all together +0.084 [+0.075, +0.095] | none |
+| Job ads, six roles (macro-F1) | 0.19 [0.18, 0.21] | experience +0.057 [+0.047, +0.069]; smaller gains from size +0.035, boosted trees +0.015 and stack vectors +0.014, each interval above 0; all together +0.084 [+0.075, +0.095] | none |
 | Municipal types (bootstrap ARI) | plain levels | none | per-capita rates and logs, party CLR, change since 2015, slopes, job-field CLR |
 | Riksdag party groups (session ARI, 3 sessions apart) | Hellinger on one session's topic words | none | pooling a session with its two neighbours (+0.16 [−0.07, +0.36]); CLR (Aitchison) of topic shares; talk added to votes |
 | Futures sentences (exploratory) | PCA-50 K-means on the centred space: seed ARI 0.70 at k = 16 | none at k = 16 (k = 8 and 16 were both fixed before the run; centred k = 8 repeats at seed ARI 1.00, subsample 0.98, and follows the marker) | metadata regressed out (0.70 at k = 16); metadata as features (the clusters then follow the metadata) |
@@ -30,7 +30,7 @@ these.
 
 `python -m ml.feature_study.job_ads <folders>` reads the JobTech cluster corpus for 2024 and 2025
 (pulled from R2 into the ignored `tmp/warehouse/raw`). The counts and scores below are in
-`ml/feature_study/results/job_ads.json` (numbers only, no ad text). It keeps Data/IT ads with descriptions of
+`ml/feature_study/results/job_ads.json` (counts, scores, skill names and occupation group labels; no ad text). It keeps Data/IT ads with descriptions of
 at least 300 characters, deduplicated on the exact lower-cased description: 62,966 ads. A repost
 with an edited description counts twice. Every ad in these two years names an employer; the code
 leaves out any ad that does not. The title
@@ -67,7 +67,7 @@ How to read it:
   title and body use the same words. It is not an independent signal and not a predictive gain.
 - Limits: only 20 % of ads carry a title label, and "lead" also matches team-lead roles. Each
   regex flag means "mentioned in the ad", not "required". The same unweighted 2025 run gave
-  role macro-F1 0.13, roughly the score of always predicting the majority group (58 % of ads).
+  role macro-F1 0.13, roughly the score of always predicting the majority group (59 % of ads).
   That is why every set uses balanced weights.
 
 ## Municipal types from the cross-subject panel
