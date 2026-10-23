@@ -41,14 +41,15 @@ ENTRY = re.compile(
     r"(?P<end>" + MONTH + r"\d{4}|present|now|pågående|nu)$", re.I)
 # E-mail, phone, Swedish personnummer or samordningsnummer (day + 60) with a valid date, street
 # address, and a postcode (100 00 to 999 99) before a town, with no word just before it unless the
-# word is an address label. Explicit lookarounds instead of \b, so this and CONTACT in worker/jobs.ts
-# agree on non-ASCII letters; platform/tests/job_assistant/contact_cases.json tests both.
-S, E = r"(?<![^\W_])", r"(?![^\W_])"
-CONTACT = re.compile(r"@|\+\d[\d ]{6,}|" + S + r"0\d{2}[- ]?\d{3} ?\d{2} ?\d{2}" + E
-                     + "|" + S + r"(?:19|20)?\d{2}(?:0[1-9]|1[0-2])(?:0[1-9]|[12]\d|3[01]|6[1-9]|[78]\d|9[01])"
-                     r"[-+]?\d{4}" + E
-                     + r"|[^\W\d_]*(?:gatan|vägen|gränd|torget|allén|stigen) \d+"
-                     r"|(?:[^\W\d_]*[Aa]d{1,2}ress:? |(?<![^\W_] ))" + S + r"[1-9]\d{2} ?\d{2} [A-ZÅÄÖ][a-zåäö]+")
+# word is an address label. Explicit lookarounds instead of \b, and [0-9] instead of \d (Python's \d
+# also takes non-ASCII digits), so this and CONTACT in worker/jobs.ts agree;
+# platform/tests/job_assistant/contact_cases.json tests both.
+S, E = r"(?<![^\W\d_])(?<![0-9])", r"(?![^\W\d_])(?![0-9])"
+CONTACT = re.compile(r"@|\+[0-9][0-9 ]{6,}|" + S + r"0[0-9]{1,3}[- ]?[0-9]{2,3} ?[0-9]{2} ?[0-9]{2}" + E
+                     + "|" + S + r"(?:19|20)?[0-9]{2}(?:0[1-9]|1[0-2])(?:0[1-9]|[12][0-9]|3[01]|6[1-9]|[78][0-9]|9[01])"
+                     r"[-+]?[0-9]{4}" + E
+                     + r"|[^\W\d_]*(?:gatan|vägen|gränd|torget|allén|stigen) [0-9]+"
+                     r"|(?:[^\W\d_]*[Aa][Dd]{1,2}[Rr][Ee][Ss]{2}:? |(?<![^\W\d_] )(?<![0-9] ))" + S + r"[1-9][0-9]{2} ?[0-9]{2} [A-ZÅÄÖ][a-zåäö]+")
 # What clean_lines cuts out of a CV line: a whole e-mail address, or any other CONTACT match.
 CONTACT_SPAN = re.compile(r"\S*@\S*|" + CONTACT.pattern)
 LINK = re.compile(r"(?:https?://)?(?:www\.)?[\w-]+(?:\.[\w-]+)*\.(?:com|se|io|dev|net|org|me)(?:/\S*)?", re.I)

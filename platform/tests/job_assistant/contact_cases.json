@@ -1,14 +1,38 @@
 {
   "_note": "Shared by test_cv.py and worker/jobs.test.ts, so both CONTACT patterns agree.",
   "contact": [
-    "19900101-1234", "900101+1234", "200001011234", "19900161-1234", "900191-1234",
-    "070-123 45 67", "Storgatan 12", "Kungsvägen 3", "Ringvägen 5", "Lilla torget 2",
-    "123 45 Stockholm", "12345 Malmö", "Postadress 111 44 Stockholm", "Besöksadress: 111 44 Stockholm",
-    "adress 111 44 Stockholm", "Address 111 44 Stockholm"
+    "19900101-1234",
+    "900101+1234",
+    "200001011234",
+    "19900161-1234",
+    "900191-1234",
+    "070-123 45 67",
+    "Storgatan 12",
+    "Kungsvägen 3",
+    "Ringvägen 5",
+    "Lilla torget 2",
+    "123 45 Stockholm",
+    "12345 Malmö",
+    "Postadress 111 44 Stockholm",
+    "Besöksadress: 111 44 Stockholm",
+    "adress 111 44 Stockholm",
+    "Address 111 44 Stockholm",
+    "08-123 45 67",
+    "ADRESS 111 44 Stockholm",
+    "POSTADRESS: 111 44 Stockholm"
   ],
   "not_contact": [
-    "2019 - 2022", "Kandidatexamen, 180 hp", "Python, SQL, Kubernetes", "Org.nr 556677-8899",
-    "Nominated 200 10 Kronor", "900192-1234", "900160-1234", "ö19900101-1234", "19900101-1234ö",
-    "å070-123 45 67", "Vägen 200 10 Kronor"
+    "2019 - 2022",
+    "Kandidatexamen, 180 hp",
+    "Python, SQL, Kubernetes",
+    "Org.nr 556677-8899",
+    "Nominated 200 10 Kronor",
+    "900192-1234",
+    "900160-1234",
+    "ö19900101-1234",
+    "19900101-1234ö",
+    "å070-123 45 67",
+    "Vägen 200 10 Kronor",
+    "١٩٩٠0101-١٢٣٤"
   ]
 }
