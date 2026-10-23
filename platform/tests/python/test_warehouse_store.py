@@ -204,6 +204,21 @@ def test_third_party_text_kept_local_is_never_pushed(store):
     assert ws.RAW_PREFIX + "scb/a.json" in s3.objects
 
 
+def test_a_full_features_push_leaves_the_text_sample_behind(store, tmp_path):
+    """features/philosophy/moral/run held Riksdag passage text; it is never pushed, even if present."""
+    s3, _, _ = store
+    moral = tmp_path / "features/philosophy/moral"
+    (moral / "run").mkdir(parents=True)
+    (moral / "run/sample.parquet").write_text("passages")
+    (moral / "running.json").write_text("{}")
+    (moral / "gate.json").write_text("{}")
+    ws.push_tree(s3, "b", "features")
+    assert ws.push_tree(s3, "b", "features", "philosophy/moral/run")[:2] == (0, 0)
+    assert not any("/run/" in key for key in s3.objects)
+    assert ws.FEATURES_PREFIX + "philosophy/moral/gate.json" in s3.objects
+    assert ws.FEATURES_PREFIX + "philosophy/moral/running.json" in s3.objects
+
+
 def test_corrupt_or_interrupted_raw_download_keeps_local_checkpoint(store, monkeypatch):
     s3, _, raw = store
     path = raw / "scb/a.json"

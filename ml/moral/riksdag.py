@@ -6,9 +6,9 @@
     python -m ml.moral.riksdag score           # only after the gate passed: shares.parquet, spread.parquet
 
 Unit, sample, review draw, threshold and null are fixed in docs/philosophy-moral-preregistration.md.
-The candidates stay in ignored local storage; RUN/sample.parquet holds passage text and is never
-published. score is the step meant for cluster-jobs.yml (module ml.moral.riksdag score, path
-philosophy/moral); it needs the whole sample embedded, which `score` asks Workers AI for first.
+The candidates and RUN/sample.parquet (passage text) stay in ignored local storage and are never
+published, so score runs on this machine as well; it needs the whole sample embedded, which
+`score` asks Workers AI for first.
 """
 from __future__ import annotations
 
@@ -30,11 +30,13 @@ sys.path.insert(0, str(REPO / "platform/nlp/text"))
 from concepts import paragraphs  # noqa: E402  (Riksdagen's HTML to plain text, as futures_language)
 
 LOCAL = REPO / "warehouse/ml/moral/candidates"
-RUN = FEATURES / "run"
+RUN = REPO / "warehouse/ml/moral/run"  # passage text: local only, never under FEATURES
 REVIEW = REPO / "tmp/mf-review.csv"
 YEARS, PER_YEAR, REVIEW_SIZE, MIN_CELL, MIN_POSITIVES, RATIO = (1993, 2026), 1500, 300, 50, 10, 0.8
 # Party cells: the Riksdag parties; KDS is KD before its 1996 name. Speaker titles count only in the year.
 PARTIES = {"S", "M", "L", "V", "C", "MP", "KD", "SD", "NYD", "KDS"}
+# Float slack for the stop rule: a mean of six F1s of 0.8 comes out as 0.7999999999999999.
+EPS = 1e-9
 WORD = re.compile(r"\w+")
 SENTENCE = re.compile(r"(?<=[.!?])\s+")
 # A word hyphenated at a hard line end in the 1990s print layout: "perio-\nden".
@@ -186,9 +188,9 @@ def gate(labels_path: Path) -> dict:
     labelled = pd.read_csv(labels_path, dtype={"passage_id": str})
     picked = review_set(pd.read_parquet(RUN / "sample.parquet")).set_index("passage_id")
     labelled = labelled.set_index("passage_id").loc[picked.index]
-    if labelled[FOUNDATIONS].isna().any().any():
+    if not labelled[FOUNDATIONS].isin([0, 1]).all().all():
         raise SystemExit("Every review passage needs a 0 or 1 in each foundation column.")
-    truth = labelled[FOUNDATIONS].astype(int).astype(bool)
+    truth = labelled[FOUNDATIONS].astype(bool)
     vectors = embed(list(picked.index), picked.text.tolist(), "riksdag-review", "moral-review")
     if vectors is None:
         raise SystemExit("Review passages are not all embedded yet; run again after the quota resets.")
@@ -207,9 +209,9 @@ def decide(truth: pd.DataFrame, predicted: np.ndarray, english: pd.Series) -> di
              "english_f1": float(english[f])} for i, f in enumerate(FOUNDATIONS)]
     for r in rows:
         r["validated"] = bool(r["positives"] >= MIN_POSITIVES and r["swedish_f1"] is not None
-                              and r["swedish_f1"] >= RATIO * r["english_f1"])
+                              and r["swedish_f1"] >= RATIO * r["english_f1"] - EPS)
     swedish = float(np.mean([r["swedish_f1"] or 0 for r in rows]))
-    passed = swedish >= RATIO * float(english[FOUNDATIONS].mean())
+    passed = swedish >= RATIO * float(english[FOUNDATIONS].mean()) - EPS
     return {"status": "passed" if passed else "failed", "passages": len(truth), "raters": 1, "swedish_macro_f1": swedish,
             "english_macro_f1": float(english[FOUNDATIONS].mean()), "ratio_required": RATIO,
             "passed": bool(passed), "foundations": rows}

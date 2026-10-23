@@ -104,6 +104,34 @@ def test_gate_passes_fails_and_validates_per_foundation():
     assert mixed["passed"] and {r["foundation"]: r["validated"] for r in mixed["foundations"]}["purity"] is False
 
 
+def test_gate_holds_at_exactly_the_ratio_and_fails_just_below():
+    english = pd.Series(1.0, index=riksdag.FOUNDATIONS)
+    truth = pd.DataFrame({f: [True] * 20 + [False] * 80 for f in riksdag.FOUNDATIONS})
+
+    def predicted(false_positives: int) -> np.ndarray:
+        # 14 of 20 found plus the false positives: F1 28/35 = 0.8 with one, 28/36 with two.
+        row = [True] * 14 + [False] * 6 + [True] * false_positives + [False] * (80 - false_positives)
+        return np.array([row] * len(riksdag.FOUNDATIONS)).T
+
+    at = riksdag.decide(truth, predicted(1), english)
+    assert at["passed"] and all(r["validated"] for r in at["foundations"])
+    below = riksdag.decide(truth, predicted(2), english)
+    assert not below["passed"] and not any(r["validated"] for r in below["foundations"])
+
+
+@pytest.mark.parametrize("bad", [2, 0.5, -1, "x", None])
+def test_gate_refuses_labels_other_than_zero_or_one(tmp_path, monkeypatch, bad):
+    monkeypatch.setattr(riksdag, "RUN", tmp_path)
+    pd.DataFrame({"passage_id": ["a", "b"], "text": ["t", "u"]}).to_parquet(tmp_path / "sample.parquet")
+    labels = pd.DataFrame({"passage_id": ["a", "b"], **{f: [1, 0] for f in riksdag.FOUNDATIONS}})
+    labels["care"] = labels["care"].astype(object)
+    labels.loc[0, "care"] = bad
+    labels.to_csv(tmp_path / "labels.csv", index=False)
+    monkeypatch.setattr(riksdag, "embed", lambda *a: pytest.fail("embedded before the labels were checked"))
+    with pytest.raises(SystemExit, match="0 or 1"):
+        riksdag.gate(tmp_path / "labels.csv")
+
+
 def test_bootstrap_moves_items_that_share_a_scenario_together():
     values = np.array([1, 1, 0, 0, 1, 0])
     alone = stats.bootstrap(values, np.mean, rounds=200)

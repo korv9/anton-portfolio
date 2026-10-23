@@ -1,9 +1,9 @@
 """Philosophy track 1 (docs/philosophy-moral-preregistration.md): shared paths and the bge-m3 call.
 
 Raw source files live under warehouse/raw/philosophy_moral (with rawstore's _manifest.jsonl), the
-derived tables under warehouse/features/philosophy/moral; warehouse_store.py carries both to R2.
-Texts stay local: the features folder holds ids, vectors, labels and figures, never comment, scenario
-or speech text, except the Riksdag sample in features/philosophy/moral/run, which is not published.
+derived tables under warehouse/features/philosophy/moral; warehouse_store.py carries only the features
+to R2. Texts stay local: the features folder holds ids, vectors, labels and figures, never comment,
+scenario or speech text. The Riksdag passage sample lives in warehouse/ml/moral/run, also local.
 """
 from __future__ import annotations
 

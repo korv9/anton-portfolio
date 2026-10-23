@@ -103,9 +103,9 @@ users, so only counts and agreement figures leave the machine.
   shown as A and B, swapped when the hash is odd, and the label is the more pleasant one.
 - Model: `@cf/google/gemma-4-26b-a4b-it` on Workers AI, thinking off, temperature 0, at most
   8 output tokens. Every call is written to the Workers AI ledger.
-- Two wordings per subset, fixed in `ml/moral/ethics.py` before the first call. Wording 1 asks the
-  task as ETHICS states it; wording 2 asks how most people would judge it. The answer is the first
-  word of the reply; a reply that matches neither option counts as a disagreement and is counted.
+- Two wordings per subset, in `ml/moral/ethics.py`; see the 2026-10-23 amendment on when they
+  were fixed. Wording 1 asks the task as ETHICS states it; wording 2 asks how most people would
+  judge it. The answer is the first word of the reply; a reply that matches neither option counts as a disagreement and is counted.
 - Per subset and wording: accuracy and Cohen's kappa against the human label; the majority-class
   baseline (always the most common label in the 200, kappa 0); a label-shuffle null of 999
   permutations of the human labels, giving the 95th percentile of kappa and a p-value; a 95 %
@@ -137,7 +137,7 @@ users, so only counts and agreement figures leave the machine.
 - 2026-10-22, ETHICS calls. The first 101 answers came from one call at a time, the rest from four
   parallel calls after the serial run proved slow. Temperature is 0 and the prompts are the same.
   One wording (virtue, wording 2) was reworded because some traits are nouns.
-- 2026-10-23, ETHICS wordings. The registration says the wordings were fixed in `ml/moral/ethics.py`
+- 2026-10-23, ETHICS wordings. The registration first said the wordings were fixed in `ml/moral/ethics.py`
   before the first call, but that file was first committed after the calls, so the history cannot
   show it. The wordings used are the ones in that file.
 - 2026-10-23, intervals (added after review, not registered). The ETHICS bootstrap now resamples
