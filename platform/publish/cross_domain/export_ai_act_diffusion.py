@@ -241,7 +241,8 @@ def main() -> int:
     con = duckdb.connect(str(DATABASE), read_only=True)
     con.execute("set memory_limit = '1GB'")
     payload = build(con)
-    OUT.write_text(json.dumps(payload, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
+    OUT.write_text(json.dumps(payload, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8",
+                   newline="\n")  # the catalogue hashes the exact bytes
     sys.path.insert(0, str(ROOT / "platform/publish/symbolic"))
     import export_symbolic
 
