@@ -19,6 +19,8 @@ type Delivery = {
   shardPrefixes: string[]
   current?: Current
   manifestUrl?: string
+  // Legacy delivery with a few groups already read from the versioned R2 manifest.
+  live?: { manifest_url: string; prefixes: string[] }
 }
 const LOCAL: Delivery = {
   bases: { json: 'data/', parquet: 'data/', shard: 'data/' },
@@ -29,6 +31,7 @@ const localHost = ['localhost', '127.0.0.1', '[::1]'].includes(
   location.hostname,
 )
 let pending: Promise<Delivery> | null = null
+let pendingLive: Promise<Delivery> | null = null
 const indexes = new Map<string, Promise<Record<string, Entry>>>()
 let lastRefreshError: string | undefined
 
@@ -161,6 +164,7 @@ async function bootstrap(): Promise<Delivery> {
   return {
     bases: { ...LOCAL.bases, ...manifest.bases },
     shardPrefixes: manifest.shard_prefixes ?? [],
+    live: manifest.live,
   }
 }
 
@@ -170,7 +174,12 @@ function load(): Promise<Delivery> {
 
 export async function resolveDataUrl(path: string): Promise<string> {
   const clean = logical(path)
-  const delivery = await load()
+  let delivery = await load()
+  if (
+    !delivery.current &&
+    delivery.live?.prefixes.some((p) => clean.startsWith(p))
+  )
+    delivery = await (pendingLive ??= snapshot(delivery.live.manifest_url))
   if (delivery.current) {
     const routes = delivery.current.routes.filter(
       (r) => clean >= r.first && clean <= r.last,

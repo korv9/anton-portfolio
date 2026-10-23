@@ -351,6 +351,27 @@ def test_catalog_rebuild_keeps_explicit_live_connection(exports, monkeypatch):
     catalog.main()
     assert json.loads((exports / "delivery.json").read_text())["manifest_url"] == override
 
+    assert "live" not in json.loads((exports / "delivery.json").read_text())
+
+
+def test_catalog_routes_release_only_groups_through_the_manifest(exports, monkeypatch):
+    write(exports, "delivery.json", r.encoded({"schema_version": 1}))
+    monkeypatch.setattr(catalog, "PUBLIC", exports)
+    monkeypatch.setattr(catalog, "CATALOG", exports / "catalog.json")
+    monkeypatch.setattr(catalog, "DELIVERY", exports / "delivery.json")
+    monkeypatch.setattr(sys, "argv", ["build_catalog.py"])
+    monkeypatch.delenv("R2_MANIFEST_URL", raising=False)
+    monkeypatch.delenv("R2_LIVE_DELIVERY", raising=False)
+    catalog.main()
+    delivery = json.loads((exports / "delivery.json").read_text())
+    assert "manifest_url" not in delivery
+    assert delivery["live"] == {"manifest_url": catalog.OBJECT_STORAGE + "manifests/current.json",
+                                "prefixes": ["job-assistant/"]}
+    # The group's own spec owns exactly the paths the site routes to R2.
+    spec_file = Path(__file__).resolve().parents[3] / "configs/delivery/job-assistant.json"
+    owned = json.loads(spec_file.read_text())["files"]
+    assert all(path.startswith(tuple(delivery["live"]["prefixes"])) for path in owned)
+
 
 def test_prefer_active_preserves_newer_summary_after_optional_failure(exports):
     s3 = S3()
