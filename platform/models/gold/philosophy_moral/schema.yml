@@ -1,0 +1,54 @@
+version: 2
+
+# docs/philosophy-moral-preregistration.md. Agreement figures only; no text.
+
+models:
+  - name: mart_moral_foundation_agreement
+    description: English agreement per foundation on MFRC's test split, beside the human ceiling and eMFD.
+    columns:
+      - name: foundation
+        data_tests:
+          - unique
+          - accepted_values:
+              arguments: {values: [care, equality, proportionality, loyalty, authority, purity, fairness]}
+      - name: human_pair_f1
+        description: Mean F1 of one annotator against another, the ceiling the tagger is read against.
+        data_tests: [not_null]
+      - name: ceiling_gap_low
+        description: Lower 95 % bound of tagger-vs-annotator minus annotator-vs-annotator F1, over resampled test comments.
+        data_tests: [not_null]
+  - name: mart_moral_swedish_check
+    description: The stop rule; Riksdag shares are published only when passed.
+    columns:
+      - name: foundation
+        data_tests: [unique]
+  - name: mart_moral_foundation_shares
+    description: Flagged share of sampled Riksdag passages per validated foundation, year and party.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [foundation, year, party]
+            nullable: [party]
+    columns:
+      - name: passages
+        data_tests: [not_null]
+  - name: mart_moral_party_spread
+    description: Between-party spread per validated foundation; finding when Holm p is below 0.05.
+    columns:
+      - name: foundation
+        data_tests: [unique, not_null]
+      - name: null_p
+        data_tests: [not_null]
+  - name: mart_ethics_agreement
+    description: Gemma against the ETHICS labels per subset and wording, with the majority baseline and the label-shuffle null.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [subset, wording]
+    columns:
+      - name: subset
+        data_tests:
+          - accepted_values:
+              arguments: {values: [commonsense, deontology, justice, utilitarianism, virtue]}
+      - name: null_kappa_p95
+        data_tests: [not_null]

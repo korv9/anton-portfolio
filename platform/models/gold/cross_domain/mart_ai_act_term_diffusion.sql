@@ -5,13 +5,18 @@
 -- seeds/cross_domain/ai_act_terms.csv: term_list primary as pre-registered, amended as its
 -- 2026-10-22 amendment re-reviewed them (amended_decision). The two lists are side by side,
 -- never merged. Only whole months: a corpus's first and last month count
--- only when its documents reach the month's first or last day. Riksdag speeches and job ads are
--- never added together.
+-- only when its documents reach the month's first or last day. The job ads start in January 2020
+-- as pre-registered: the 2020 archive also holds a few ads from late 2019 (117 in three months),
+-- whose other ads sit in archives that are not counted. Riksdag speeches and job ads are never
+-- added together.
 with coverage as (
     select
         corpus,
-        case when day(min(first_date)) = 1 then date_trunc('month', min(first_date))
-             else date_trunc('month', min(first_date)) + interval 1 month end as first_month,
+        greatest(
+            case when day(min(first_date)) = 1 then date_trunc('month', min(first_date))
+                 else date_trunc('month', min(first_date)) + interval 1 month end,
+            case when corpus = 'job_ads' then date '2020-01-01' else date '1900-01-01' end
+        ) as first_month,
         case when max(last_date) = last_day(max(last_date)) then date_trunc('month', max(last_date))
              else date_trunc('month', max(last_date)) - interval 1 month end as last_month
     from {{ ref('stg_ai_act_diffusion_sources') }}
