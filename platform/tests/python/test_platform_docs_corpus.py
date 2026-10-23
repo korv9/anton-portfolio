@@ -32,8 +32,11 @@ def test_sections_skip_headings_inside_code_fences():
 
 
 def source(path: str, commit: str) -> str:
-    """The file at the passage's commit; a shallow checkout (CI) lacks it, so the working tree."""
+    """The file at the passage's commit, fetched when a shallow checkout (CI) lacks it."""
     shown = git("show", f"{commit}:{path}")
+    if shown.returncode:
+        git("fetch", "--quiet", "--depth=1", "origin", commit)
+        shown = git("show", f"{commit}:{path}")
     return shown.stdout if shown.returncode == 0 else (ROOT / path).read_text(encoding="utf-8")
 
 
