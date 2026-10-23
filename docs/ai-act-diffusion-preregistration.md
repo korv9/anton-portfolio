@@ -158,3 +158,42 @@ Precision in the Riksdag speeches (October 2016 to July 2026; ads follow with th
 
 The English side of `ai-system` was aligned to "systems", which is wrong, so it stays
 `misaligned`.
+
+## Ad lane, 2026-10-23 (after the ad scan)
+
+Added after the ad counts had run (Actions run 39896556099) and their result was known. Nothing
+above has changed.
+
+The ad lane covers January 2020 to September 2026, 81 whole months. The 2020 archive also holds
+117 ads from October to December 2019. The other ads of those months sit in archives that are not
+counted, so the months are left out, as the corpus definition above says.
+
+Precision in the job ads. The 50 ads per re-admitted term were drawn (seed 20261022) from the
+matches in the 2022 to 2026-Q3 archives: 323 of 347 for `ai-system` and 420 of 427 for
+`ai-modell`. The local read was stopped before it reached the 2020 and 2021 archives. All nine
+ads behind each of the two longer primary terms were read. Employers counts the distinct
+employers among the ads read.
+
+| term | language | matched | read | on topic | precision | employers | decision |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | --- |
+| ai-system | sv | 347 | 50 | 50 | 1.00 | 30 | keep |
+| ai-modell | sv | 427 | 50 | 50 | 1.00 | 39 | keep |
+| ai-system med hög risk | sv | 9 | 9 | 9 | 1.00 | 1 | primary term, read as a check |
+| ai-modeller för allmänna ändamål | sv | 9 | 9 | 9 | 1.00 | 1 | primary term, read as a check |
+
+Result, against what this file set out:
+
+- The question was how long after each milestone the Act's terms appear, and in which corpus
+  first. The null was that a lag is no shorter than at random dates.
+- `ai-system` and `ai-modell` were in job ads before the Commission's proposal (first in June and
+  February 2020) and rise year by year, as generative AI does. No lag after any of the ten tested
+  dates is shorter than at random dates: p is 0.27 or more for `ai-system` and 0.48 or more for
+  `ai-modell`. This is a null result.
+- In the Riksdag the same two terms give the same null (PR #97). The four primary terms matched
+  one speech in ten years.
+- Both corpora first use `ai-system` in June 2020. `ai-modell` came to job ads in February 2020
+  and to the Riksdag in June 2023. The ad lane starts only in 2020, so this order says little.
+- `ai-system med hög risk` and `ai-modeller för allmänna ändamål` give lags with p of 0.05 or
+  less after every date from July 2024. All nine matches of each are from one employer, three
+  ads each posted three times on 12 September 2026. By the rule of the amendment they are not
+  uninformative (more than five matches), but they show one employer's wording, not a spread.

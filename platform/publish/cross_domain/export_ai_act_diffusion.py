@@ -20,6 +20,7 @@ from pathlib import Path
 
 import duckdb
 import numpy as np
+import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[3]
 DATABASE = Path(os.environ.get("PORTFOLIO_DB", ROOT / "warehouse/portfolio.duckdb"))
@@ -39,6 +40,11 @@ DEPARTURES = [
     "inflection and a precision check of up to 50 matched speeches per re-admitted term (kept at 0.8 or "
     "more), they form the amended list. It is reported beside the primary list, which stays as "
     "pre-registered.",
+    "Job ads start in January 2020 as pre-registered. The 2020 archive also holds 117 ads from October to "
+    "December 2019, whose other ads sit in archives that are not counted, so those months are left out.",
+    "Ad precision: the 50 ads per re-admitted term were drawn (seed 20261022) from the matches in the 2022 to "
+    "2026-Q3 archives, 323 of 347 for ai-system and 420 of 427 for ai-modell, because the local read stopped "
+    "before the 2020 and 2021 archives. All nine ads behind each of the two longer primary terms were read.",
 ]
 
 
@@ -144,7 +150,7 @@ def swedish_share(series: dict) -> list[dict]:
 
 def build(con) -> dict:
     terms = con.sql("select * from seeds.ai_act_terms order by z desc").df()
-    precision = con.sql("select * from seeds.ai_act_term_precision order by term_id, language").df()
+    precision = con.sql("select * from seeds.ai_act_term_precision order by corpus desc, term_id, language").df()
     milestones = [{"milestone_id": i, "month": d.strftime("%Y-%m"), "date": d.isoformat(), "title_en": en,
                    "title_sv": sv} for i, d, en, sv in con.sql(
         "select milestone_id, date, title_en, title_sv from gold.mart_ai_act_timeline order by date, milestone_id"
@@ -178,13 +184,18 @@ def build(con) -> dict:
                  "act_count": int(r.act_count), "sfs_count": int(r.sfs_count), "z": float(r.z)}
                 for r in kept.itertuples()]
 
-    checked = {(r.term_id, r.language): {"corpus": r.corpus, "matched": int(r.matched), "sampled": int(r.sampled),
-                                         "on_topic": int(r.on_topic),
-                                         "precision": None if r.sampled == 0 else float(r.precision)}
-               for r in precision.itertuples()}
+    # employers: distinct employers among the matched ads read, a check that the matches are not one poster's.
+    checked = {(r.corpus, r.term_id, r.language): {
+        "matched": int(r.matched), "sampled": int(r.sampled), "on_topic": int(r.on_topic),
+        "precision": None if r.sampled == 0 else float(r.precision),
+        "employers": None if pd.isna(getattr(r, "employers", None)) else int(r.employers)}
+        for r in precision.itertuples()}
     amended = listed(terms[terms["amended_decision"] == "keep"], "amended_en_decision")
     for t in amended:
-        t["precision"] = {lang: checked[(t["term_id"], lang)] for lang in ("sv", "en") if (t["term_id"], lang) in checked}
+        t["precision"] = {}
+        for (corpus, term_id, lang), v in checked.items():
+            if term_id == t["term_id"]:
+                t["precision"].setdefault(corpus, {})[lang] = v
     return {
         "columns": {"documents": ["month", "documents"], "series": ["month", "matches", "share_rolling_3m"],
                     "swedish_share": ["month", "sv_matches", "en_matches"]},
@@ -193,7 +204,7 @@ def build(con) -> dict:
         "dropped": [{"term_sv": r.term_sv, "reason": r.reason} for r in terms[terms["decision"] != "keep"].itertuples()],
         "amended_dropped": [{"term_sv": r.term_sv, "reason": r.amended_reason}
                             for r in terms[terms["amended_decision"] != "keep"].itertuples()],
-        "precision": [{"term_id": k[0], "language": k[1], **v} for k, v in checked.items()],
+        "precision": [{"corpus": k[0], "term_id": k[1], "language": k[2], **v} for k, v in checked.items()],
         "milestones": milestones,
         "corpora": corpora,
         "lags": all_lags,
@@ -212,8 +223,9 @@ def build(con) -> dict:
                        f"p = (1 + placebo lags <= observed) / {ROUNDS + 1}; no multiple-test adjustment.",
             "term_lists": "primary: the pre-registered terms and matching; amended: the 2026-10-22 amendment. "
                           "Both are reported, side by side in lags_side_by_side.",
-            "precision": "Up to 50 random matched speeches per re-admitted term and language, read by hand; a "
-                         "term is kept at 0.8 or more. Only the counts are stored.",
+            "precision": "Up to 50 random matched speeches or ads per re-admitted term and language, read by "
+                         "hand; a term is kept at 0.8 or more. For ads, employers counts the distinct employers "
+                         "among the ads read. Only the counts are stored.",
             "never_pooled": True, "partial_months": "excluded", "departures": DEPARTURES,
         },
         "caveat_en": "A shorter lag than at random dates is timing, not proof that the Act caused it. A lag whose "
