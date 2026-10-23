@@ -1,7 +1,8 @@
 # Workers AI
 
-Två demos använder Cloudflare Workers AI: en besökares mening placerad på kartan över
-partiledardebatterna, och frågor med citat över ett urval av SFS och EU:s AI-förordning.
+Tre demos använder Cloudflare Workers AI: en besökares mening placerad på kartan över
+partiledardebatterna, frågor med citat över ett urval av SFS och EU:s AI-förordning (Fråga lagen)
+och frågor om hur plattformen själv är byggd (Fråga plattformen).
 
 ## Regeln
 
@@ -28,10 +29,17 @@ webbläsaren, mot komprimerade vektorer som byggts offline.
 `worker/index.ts` svarar på två adresser, båda med POST:
 
 - `/api/embed` tar en text på högst 500 tecken och returnerar dess vektor från `@cf/baai/bge-m3`.
-- `/api/answer` tar frågan, korpusen (`sfs`, `ai-act-sv` eller `ai-act-en`) och högst 8 stycken
-  på högst 5 000 tecken vardera. Varje stycke kontrolleras först mot korpusens verifieringslista,
-  så att bara publicerad text går vidare till modellen. Svaret får högst 2 048 tokens och
-  returneras bara om varje citat står ordagrant i sitt stycke.
+- `/api/answer` tar frågan, korpusen (`sfs`, `ai-act-sv`, `ai-act-en` eller `platform`) och högst
+  8 stycken på högst 5 000 tecken vardera. Varje stycke kontrolleras först mot korpusens
+  verifieringslista, så att bara publicerad text går vidare till modellen. Svaret får högst 2 048
+  tokens och returneras bara om varje citat står ordagrant i sitt stycke. `platform` har en egen
+  systemprompt (`PLATFORM_SYSTEM`) med samma regler för citaten.
+
+Ett citat skrivs `[[id]]"citat"`. Sedan 2026-10-22 godtar Workern också den omvända ordningen,
+`"citat" [[id]]`, när id:t inte har något eget citat efter sig. Den skrivs om till
+`[[id]]"citat"` innan kontrollen, så citatet måste fortfarande stå ordagrant i sitt stycke.
+Ändringen gäller alla korpusar. Evalen för Fråga lagen nedan kördes före den, så fråga 7 räknas
+där som stoppad.
 
 Bindningen `RATE_LIMITER` släpper igenom 20 anrop per minut och besökare. Är dagens kvot slut
 svarar Workern 503 med `reason: quota`, och sidorna visar då bara de förberäknade exemplen.
@@ -136,6 +144,13 @@ en gräns på 9 500 neurons per UTC-dygn i loggen, och en körning över 2 000 k
 | `law`      | 2026-10-14 | Inbäddning av `sfs`, `ai-act-sv` och `ai-act-en` | 1 618,8 |
 | `law-eval` | 2026-10-14 | Evalfrågor, Gemma och gpt-oss                    | 2 792,8 |
 | `law-eval` | 2026-10-15 | Evalfrågor, Gemma och gpt-oss                    | 2 792,9 |
+| `platform` | 2026-10-22 | Inbäddning av plattformens 1 423 stycken, i tre omgångar | 599,9 |
+| `platform-eval` | 2026-10-22 | Fyra evalkörningar och exemplen, Gemma | 2 010,7 |
+
+Fråga plattformen och Fråga lagen delar dygnets 9 500 neurons lika, 4 750 var. Den 22 oktober
+använde Fråga plattformen 2 610,6, varav 66,5 till exemplen. Loggens rader för dagen ligger i
+arbetskatalogens egen logg; andra agenters anrop samma dygn, 3 170 neurons enligt deras loggar,
+räknades in innan körningarna startade.
 
 Provanropen från Workern och sidorna kostade 13,2 neurons till. Loggen räknar från tokenantalen.
 För gpt-oss underskattar den kostnaden, som avsnittet om modellvalet visar.
@@ -219,6 +234,93 @@ test fallerat. Filen ingår i leveransgruppen `baseline`.
 
 Raden `Ändrad:` anger bara den senaste ändrings-SFS:en, inte hur många ändringar en lag fått, så
 sidan visar inga mest ändrade lagar. Fråga lagen söker fortfarande bara i de 40 utvalda lagarna.
+
+## Fråga plattformen
+
+Korpusen är plattformens egna publika filer, lästa ur Git vid `HEAD`:
+`platform/nlp/platform_docs_corpus.py --manifest <manifest.json från dbt parse>` skriver
+`warehouse/features/workers_ai/platform/chunks.jsonl`. Ett stycke kommer från en av fyra källor:
+
+| Källa | Stycken | Vad |
+| --- | ---: | --- |
+| Dokument | 1 038 | `docs/**/*.md` och `README.md`, delade vid rubriker och packade i bitar om högst 1 500 tecken |
+| dbt | 338 | varje modell i manifestet: beskrivning, kolumner, kontrakt och tester, med schemafilen som källa |
+| Grafen | 27 | källor, hämtskript och publicerade filer i `architecture/graph.json` |
+| Katalogen | 20 | en rad per dataprodukt i `catalog.json` |
+
+Varje stycke har `path` (den spårade filen), `commit` (senaste commit som ändrade filen) och
+`nodes` (de noder i `architecture/graph.json` som stycket nämner). Id:t är sökväg och rubrik,
+till exempel `docs/pipeline.md#subjects`, eller `dbt:<modell>`, `graph:<nod>` och
+`catalog:<produkt>`. En fil som Git inte spårar, som `.gitignore` täcker eller som ser privat ut
+(`.env`, `private/`, `warehouse/`, `.idea-lineage/`) vägras. Två driftloggar med lokala sökvägar
+(`compliance-intelligence/repository-audit.md` och `validation.md`) är undantagna, och ett stycke
+som innehåller en lokal hemkatalog (`C:/Users/...`, `/home/...`) tas bort. Testet
+`test_every_published_passage_is_a_tracked_public_file` fallerar om en sådan sökväg eller ett
+sådant stycke finns i den publicerade korpusen. `test_every_document_passage_line_is_in_its_file`
+kontrollerar att varje rad i ett dokumentstycke finns i filen vid styckets commit. CI checkar ut
+med djup 1 och har inte den committen; där jämförs mot filen i arbetskopian. Ändras ett dokument
+utan att korpusen byggs om fallerar testet alltså i CI. Bygget vägrar också köra om en fil som
+används har ändringar som inte är incheckade.
+
+Bygget bäddar in stycket med rubrikvägen framför (`fil › H1 > H2`). De dokument som är skrivna
+på svenska får dessutom ett engelskt namn i den raden, så att en engelsk fråga hittar dem. Ett
+modellstycke som fortsätter i en andra bit börjar med modellens namn och "columns and tests".
+Det som citeras och kontrolleras är fortfarande bara stycket. Den levererade korpusen är ännu
+inte inbäddad på det sättet: den 23 oktober 2026 var dygnets neuronkvot redan slut. Den
+levererade korpusen är därför 22 oktober-bygget, där de stycken som ovan undantas och de
+dokumentstycken som inte längre står i sin fil har tagits bort (1 423 blev 1 399), utan ny
+inbäddning.
+
+Inbäddning och komprimering är samma som för Fråga lagen: `workers_ai.py embed` med
+`--agent platform` och sedan `compress`. `export_law_corpora.py meta --corpus platform` skriver
+`meta.json` och verifieringslistorna under `frontend/public/data/workers-ai/platform/`. 1 423
+stycken gav recall@10 0,952 med 256 dimensioner och 0,979 med 384; 256 levereras.
+
+Komponenten `frontend/src/ask/AskThePlatform.tsx` laddar korpusen först när läsaren går till
+fältet. Varje citat länkar till sin fil vid sin commit på GitHub. När ett citerat stycke nämner en
+nod i grafen som är en källa, rådata, en silver- eller guldmodell eller en publicerad fil ritas en
+väg i fem steg: källa, rådata, silver, guld och publicerad fil (`frontend/src/ask/lineage.ts`).
+En modell väljs före andra noder. Ett steg som vägen inte passerar visas som saknat. Komponenten är
+inte monterad i flödet än; den nås på testadressen `#ask-platform`.
+
+Är kvoten slut svarar Workern 503 med `reason: quota`, och komponenten visar då tre förberäknade
+exempel (`examples.json`, frågorna 2, 7 och 10 i evalen, med sina vektorer och kontrollerade svar).
+Det testas både i Workern och i `frontend/tests/ask-platform.spec.ts` med ett stubbat 503-svar.
+
+### Eval
+
+De 20 frågorna står i `configs/workers_ai/eval_questions_platform.yaml` och kördes med
+`eval_answer.ts run --questions eval_questions_platform.yaml --agent platform-eval` den 22 oktober
+2026 (UTC), genom samma väg som sidan och med Gemma.
+
+| Körning | Ändring | Verifierade | Tokens in | Tokens ut | Neurons per svar |
+| --- | --- | --- | ---: | ---: | ---: |
+| 1 | ingen | 14 (70 %) | 2 237 | 154 | 24,4 |
+| 2 | en rad om citatens ordning i prompten | 13 (65 %) | 2 260 | 134 | 23,8 |
+| 3 | raden borttagen, Workern godtar `"citat" [[id]]` | 14 (70 %) | 2 237 | 150 | 24,2 |
+| 4 | som 3, plus en rad om korta citat i prompten | 12 (60 %) | 2 269 | 160 | 24,8 |
+
+Den levererade Workern är körning 3. Målet var minst 75 % och nåddes inte. Med Workerns nya
+tolkning blir körning 1 15 av 20 (75 %) och körning 2 14 av 20, räknat på samma råtext utan nya
+anrop. Svaren varierar alltså mellan körningar med en eller två frågor, trots temperatur 0,1.
+
+Den 23 oktober 2026 fick Workern en lösare jämförelse: Markdown-tecken (`` ` ``, `**`, `|`) och
+radbrytningar tas bort på båda sidor innan citatet söks i stycket, men orden måste vara desamma.
+Räknat om på samma råtext, utan nya anrop, blir körningarna 1 till 4 då 15, 15, 14 och 13 av 20
+(75, 75, 70 och 65 %). Ingen ny körning gjordes, eftersom neuronkvoten var slut den dagen.
+
+Sökningen hittade ett förväntat stycke bland de åtta första för 17 av 20 frågor. De tre missarna:
+
+- Fråga 1, hur juniorandelen testas. Testet finns, `accepted_values` på `seniority` i
+  `fct_job_ads`, men frågans vektor ligger inte nära det stycket. Gemma svarade `NO_ANSWER`.
+- Fråga 3, hur modellen bakom Ask the law valdes. Dokumentet heter Fråga lagen och är skrivet på
+  svenska. Gemma svarade `NO_ANSWER`.
+- Fråga 19, vad ett dbt-kontrakt gör. Svaret blev ändå verifierat, från andra modellstycken.
+
+Fråga 12 (antal dokument i författningssamlingen) gav `NO_ANSWER` i alla fyra körningarna fast
+stycket med tabellen hittades. Övriga stoppade svar skrev om text ur Markdown-tabeller och listor
+i stället för att citera den ordagrant. Raderna per fråga, med modellens råa text, ligger lokalt i
+`warehouse/features/workers_ai/eval/gemma-4-26b-a4b-it-platform.jsonl` (körning 3).
 
 ## Lokal utveckling
 
