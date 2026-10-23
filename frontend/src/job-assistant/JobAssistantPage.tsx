@@ -27,6 +27,8 @@ import {
   type View,
 } from './data'
 import './job-assistant.css'
+import './job-assistant-detail.css'
+import './job-assistant-sections.css'
 
 export default function JobAssistantPage({ route }: { route: Route }) {
   const [data, setData] = useState<Delivered | null>(null)

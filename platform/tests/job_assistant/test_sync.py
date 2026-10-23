@@ -18,8 +18,9 @@ WISHES = {"locations": ["Stockholm"], "remote": "hybrid", "roles": ["data_engine
 
 class Worker:
     """The Worker's /api/jobs routes over one in-memory state."""
-    def __init__(self, draft=None, approved=None, status=200):
+    def __init__(self, draft=None, approved=None, status=200, newer=()):
         self.draft, self.approved, self.status, self.writes = draft, approved, status, []
+        self.files = [{"sha256": SHA, "filename": CV.name, "media_type": PDF}, *newer]
 
     def response(self, body=None, content=b"", status=200):
         return type("R", (), {"status_code": status, "content": content, "json": lambda s: body,
@@ -27,11 +28,11 @@ class Worker:
 
     def get(self, url, timeout, headers=None):
         path = url.split("/api/jobs")[1]
+        assert headers == {"Authorization": "Bearer token"}, "the draft and CV files are owner-only"
         if path == "/profile":
             return self.response({"draft": self.draft, "approved": self.approved}, status=self.status)
-        assert headers == {"Authorization": "Bearer token"}, "CV files are owner-only"
         if path == "/cv":
-            return self.response({"files": [{"sha256": SHA, "filename": CV.name, "media_type": PDF}]})
+            return self.response({"files": self.files})
         assert path == f"/cv/{SHA}"
         return self.response(content=DATA)
 
@@ -65,6 +66,14 @@ def test_approval_request_adds_a_version_once():
     assert worker.draft["approval_requested"] is False
     worker.draft = json.loads(json.dumps({**worker.draft, "approval_requested": True}))
     assert sync.sync(worker, "token").startswith("approval refused: profile is unchanged")
+
+
+def test_a_newer_cv_waits_for_a_pending_approval():
+    draft = correct(parse(DATA, PDF, CV.name), {"wishes": WISHES}, "wishes")
+    newer = {"sha256": "f" * 64, "filename": "new.pdf", "media_type": PDF}
+    worker = Worker(draft={"profile": draft, "approval_requested": True, "problems": []}, newer=[newer])
+    assert sync.sync(worker, "token") == "approved version 1; new.pdf is parsed next run"
+    assert [w[0] for w in worker.writes] == ["version", "draft"]
 
 
 def test_invented_experience_is_refused_with_its_problem():

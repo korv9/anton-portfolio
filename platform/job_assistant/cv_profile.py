@@ -52,7 +52,7 @@ def problems(profile: dict, cv_text: str | None = None) -> list[str]:
     if not re.fullmatch(r"[0-9a-f]{64}", str(profile["cv"].get("sha256", ""))):
         out.append("cv.sha256 is not a SHA-256 hex digest")
     if CONTACT.search(json.dumps(profile, ensure_ascii=False)):
-        out.append("profile contains an e-mail address or phone number")
+        out.append("profile contains contact details (e-mail, phone, personnummer or address)")
     lines = clean_lines(cv_text) if cv_text is not None else None
     parts = sections(lines) if lines is not None else {}
 

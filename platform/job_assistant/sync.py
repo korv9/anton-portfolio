@@ -2,14 +2,15 @@
 
     python platform/job_assistant/sync.py
 
-1. A CV uploaded since the draft was made is parsed (cv.py) into a new draft; the owner's wishes
-   carry over, every CV fact comes from the new file.
-2. A draft the owner asked to approve is checked against the text of its own CV file
+1. A draft the owner asked to approve is checked against the text of its own CV file
    (cv_profile.problems). If it holds, it is stored as the next version; if not, the draft keeps
-   its problems so the owner can correct them.
+   its problems so the owner can correct them. A CV uploaded meanwhile waits for the next run, so
+   a new upload never drops a pending approval.
+2. A CV uploaded since the draft was made is parsed (cv.py) into a new draft; the owner's wishes
+   carry over, every CV fact comes from the new file.
 
-It reads the profile from the public route of JOB_ASSIST_API; the uploaded CV files and every
-write need JOB_ASSIST_TOKEN. Without storage (503) or without the token it changes nothing and says so.
+The draft, the uploaded CV files and every write need JOB_ASSIST_TOKEN from JOB_ASSIST_API.
+Without storage (503) or without the token it changes nothing and says so.
 """
 from __future__ import annotations
 
@@ -25,14 +26,14 @@ API = os.environ.get("JOB_ASSIST_API", "https://antonernstsson.com/api/jobs")
 
 
 def sync(http, token: str) -> str:
-    profile = http.get(API + "/profile", timeout=30)
+    if not token:
+        return "no JOB_ASSIST_TOKEN; nothing written"
+    headers = {"Authorization": "Bearer " + token}
+    profile = http.get(API + "/profile", headers=headers, timeout=30)
     if profile.status_code == 503:
         return "storage is not configured"
     profile.raise_for_status()
     state = profile.json()
-    if not token:
-        return "no JOB_ASSIST_TOKEN; nothing written"
-    headers = {"Authorization": "Bearer " + token}
     listing = http.get(API + "/cv", headers=headers, timeout=30)
     listing.raise_for_status()
     files = listing.json()["files"]
@@ -49,13 +50,7 @@ def sync(http, token: str) -> str:
         return response.content
 
     latest = files[-1] if files else None
-    if latest and (current is None or current["cv"]["sha256"] != latest["sha256"]):
-        data = cv_bytes(latest["sha256"])
-        new = parse(data, latest["media_type"], latest["filename"])
-        if current:
-            new["wishes"] = current["wishes"]
-        put_draft(new, problems(new, read_text(data, latest["media_type"])))
-        return f"parsed {latest['filename']} into a new draft"
+    newer = latest and (current is None or current["cv"]["sha256"] != latest["sha256"])
     if draft and draft.get("approval_requested"):
         media = next((f["media_type"] for f in files if f["sha256"] == current["cv"]["sha256"]), current["cv"]["media_type"])
         text = read_text(cv_bytes(current["cv"]["sha256"]), media)
@@ -63,10 +58,17 @@ def sync(http, token: str) -> str:
             approved = approve(current, text, [state["approved"]] if state.get("approved") else [])
         except ValueError as error:
             put_draft(current, problems(current, text) or [str(error)])
-            return f"approval refused: {error}"
+            return f"approval refused: {error}" + (f"; {latest['filename']} is parsed next run" if newer else "")
         http.post(API + "/profile/versions", json=approved, headers=headers, timeout=30).raise_for_status()
         put_draft(current, [])
-        return f"approved version {approved['version']}"
+        return f"approved version {approved['version']}" + (f"; {latest['filename']} is parsed next run" if newer else "")
+    if newer:
+        data = cv_bytes(latest["sha256"])
+        new = parse(data, latest["media_type"], latest["filename"])
+        if current:
+            new["wishes"] = current["wishes"]
+        put_draft(new, problems(new, read_text(data, latest["media_type"])))
+        return f"parsed {latest['filename']} into a new draft"
     return "nothing to do"
 
 

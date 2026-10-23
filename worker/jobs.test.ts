@@ -148,7 +148,11 @@ test('draft, approval request and versions', async () => {
     200,
   )
   let state = await (await call(e, 'profile')).json()
+  assert.equal(state.draft, null, 'the unapproved draft is owner-only')
+  state = await (await call(e, 'profile', { token: TOKEN })).json()
   assert.equal(state.draft.approval_requested, true)
+  state = await (await call(e, 'profile', { token: 'wrong-token' })).json()
+  assert.equal(state.draft, null)
   assert.equal(state.approved, null)
   const post = (b: unknown) =>
     call(e, 'profile/versions', {
@@ -168,6 +172,34 @@ test('draft, approval request and versions', async () => {
   state = await (await call(e, 'profile')).json()
   assert.equal(state.approved.version, 1)
   assert.equal(state.versions.length, 1)
+})
+
+test('personnummer and street addresses count as contact details', async () => {
+  const e = env()
+  for (const summary of [
+    '19900101-1234',
+    '900101+1234',
+    'Storgatan 12',
+    'Kungsvägen 3',
+    'Lilla torget 2',
+    '123 45 Stockholm',
+    '12345 Malmö',
+  ]) {
+    const r = await call(e, 'profile/draft', {
+      method: 'PUT',
+      body: JSON.stringify({ profile: profile({ summary }) }),
+      token: TOKEN,
+    })
+    assert.equal(r.status, 400, summary)
+  }
+  for (const summary of ['2019 - 2022', 'Kandidatexamen, 180 hp']) {
+    const r = await call(e, 'profile/draft', {
+      method: 'PUT',
+      body: JSON.stringify({ profile: profile({ summary }) }),
+      token: TOKEN,
+    })
+    assert.equal(r.status, 200, summary)
+  }
 })
 
 test('a version stored by a concurrent approval is not overwritten', async () => {

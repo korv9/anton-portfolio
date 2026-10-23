@@ -173,6 +173,8 @@ def test_explain_error_is_recorded(store, profile, monkeypatch):
     result = rank.run(profile, Http(status=500), NOW)
     assert result["note"]["explain_stopped"] == "error: RuntimeError"
     assert by_id(result)["1"]["explanation"] is None
+    entry = json.loads((store / "ledger.jsonl").read_text(encoding="utf-8").splitlines()[-1])
+    assert entry["model"] == ai.EXPLAIN_MODEL and entry["neurons_est"] > 0, "a failed call keeps its estimate"
 
 
 def test_unquoted_claim_is_unverified():

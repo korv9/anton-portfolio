@@ -193,8 +193,8 @@ cached vectors only.
 
 ## Security of writes
 
-Reads are public, except the CV files. Every write route and both CV routes require a Worker
-secret, `JOB_ASSIST_TOKEN`, sent as a bearer token: status, note, label, profile draft, profile
+Reads are public, except the CV files and the unapproved draft. Every write route, both CV routes
+and the draft require a Worker secret, `JOB_ASSIST_TOKEN`, sent as a bearer token: status, note, label, profile draft, profile
 version, CV upload, the list of uploads and the files, which are served with `no-store`. The routes are in
 `worker/jobs.ts` under `/api/jobs/`. The Worker compares the token in constant time, as SHA-256
 digests, and refuses a write whose `Origin` header names another site. Writes without an `Origin`
@@ -206,10 +206,10 @@ same version number cannot both be stored: the second gets 409. There is no open
 
 | Route | Read | Write (token) |
 | --- | --- | --- |
-| `/api/jobs/profile` | draft, latest approved profile, list of versions | |
-| `/api/jobs/profile/draft` | | `PUT {profile, approval_requested, problems}`; schema v1, status draft, no contact details |
+| `/api/jobs/profile` | latest approved profile, list of versions; the draft only with the token | |
+| `/api/jobs/profile/draft` | | `PUT {profile, approval_requested, problems}`; schema v1, status draft, no contact details (e-mail, phone, personnummer, street address) |
 | `/api/jobs/profile/versions` | | `POST` the next approved version only (the hourly run) |
-| `/api/jobs/cv`, `/api/jobs/cv/<sha256>` | owner only: list of uploads, the file | `POST` a PDF or DOCX up to 2 MB, checked by its first bytes |
+| `/api/jobs/cv`, `/api/jobs/cv/<sha256>` | owner only: list of uploads, the file | `POST` a PDF or DOCX up to 1.4 MB, checked by its first bytes; D1 holds at most 2 MB per value and base64 adds a third |
 | `/api/jobs/reviews`, `/reviews/<ad id>` | every status and note | `PUT {status, note}` |
 | `/api/jobs/labels`, `/labels/<ad id>` | every label | `PUT {label, note, shown_class}` |
 

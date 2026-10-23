@@ -1,6 +1,6 @@
 /**
  * The job assistant's owner records in D1 (docs/job-assistant.md). Reads are public except the
- * uploaded CV files; every write and every CV read needs the Worker secret JOB_ASSIST_TOKEN as a
+ * uploaded CV files and the unapproved draft; every write, every CV read and the draft need the Worker secret JOB_ASSIST_TOKEN as a
  * bearer token, compared in constant time, and comes from the site's own origin or from no browser
  * at all (the hourly GitHub Actions run).
  *
@@ -41,10 +41,14 @@ const MEDIA: Record<string, number[]> = {
     0x50, 0x4b,
   ],
 }
-const MAX_CV = 2_000_000
+// D1 stores at most 2 MB per value: base64 adds a third, so the file stops at 1.4 MB.
+const MAX_CV = 1_400_000
 const MAX_PROFILE = 512_000
 const AD_ID = /^[0-9A-Za-z_-]{1,40}$/
-const CONTACT = /@|\+\d[\d ]{6,}|\b0\d{2}[- ]?\d{3} ?\d{2} ?\d{2}\b/
+// E-mail, phone, Swedish personnummer, street address, and a postcode before a town.
+// The same pattern as CONTACT in platform/job_assistant/cv.py.
+const CONTACT =
+  /@|\+\d[\d ]{6,}|\b0\d{2}[- ]?\d{3} ?\d{2} ?\d{2}\b|\b(?:19|20)?\d{6}[-+]?\d{4}\b|\p{L}*(?:gatan|vägen|gränd|torget|allén|stigen) \d+|\b\d{3} ?\d{2} [A-ZÅÄÖ][a-zåäö]+/u
 
 export const SQL = {
   upsert:
@@ -166,10 +170,12 @@ export async function jobs(request: Request, env: JobsEnv): Promise<Response> {
   if (path[0] === 'profile' && path.length === 1 && !write) {
     const versions = await list(db, 'version')
     const last = versions.at(-1) ?? null
+    // The draft is unapproved: only the owner sees it.
+    const draft = (await owner(request, env))
+      ? parse(await db.prepare(SQL.get).bind('draft', 'current').first<Row>())
+      : null
     return reply({
-      draft: parse(
-        await db.prepare(SQL.get).bind('draft', 'current').first<Row>(),
-      ),
+      draft,
       // The approved profile exactly as stored, so its profile_sha256 still matches.
       approved: last ? JSON.parse(last.value) : null,
       versions: versions.map((v) => {
@@ -255,10 +261,10 @@ export async function jobs(request: Request, env: JobsEnv): Promise<Response> {
       .trim()
     const magic = MEDIA[media]
     if (!magic || tooLarge(request, MAX_CV))
-      return reply({ error: 'a PDF or DOCX file up to 2 MB' }, 400)
+      return reply({ error: 'a PDF or DOCX file up to 1.4 MB' }, 400)
     const bytes = new Uint8Array(await request.arrayBuffer())
     if (bytes.length > MAX_CV || !magic.every((b, i) => bytes[i] === b))
-      return reply({ error: 'a PDF or DOCX file up to 2 MB' }, 400)
+      return reply({ error: 'a PDF or DOCX file up to 1.4 MB' }, 400)
     const filename = (request.headers.get('X-Filename') ?? 'cv')
       .replace(/[^\w. -]/g, '')
       .slice(0, 120)

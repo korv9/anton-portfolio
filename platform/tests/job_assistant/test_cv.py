@@ -1,4 +1,5 @@
 """CV parsing keeps a CV quote behind every fact, and a correction cannot invent experience."""
+import copy
 import io
 import sys
 import zipfile
@@ -9,7 +10,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / "platform/job_assistant"))
-from cv import DOCX, PDF, parse, read_text  # noqa: E402
+from cv import CONTACT, DOCX, PDF, parse, read_text  # noqa: E402
 from cv_profile import approve, correct, problems  # noqa: E402
 
 CV = ROOT / "frontend/public/cv/Anton_Ernstsson_CV_final.pdf"
@@ -75,6 +76,20 @@ def test_contact_details_never_enter_the_profile(owner):
     profile, _ = owner
     blob = str(profile)
     assert "@" not in blob and "541 024" not in blob and "+46" not in blob and "linkedin" not in blob
+
+
+@pytest.mark.parametrize("text", ["19900101-1234", "900101+1234", "200001011234", "Storgatan 12",
+                                  "Kungsvägen 3", "Ringvägen 5", "Lilla torget 2", "123 45 Stockholm", "12345 Malmö"])
+def test_personnummer_and_addresses_count_as_contact(owner, text):
+    assert CONTACT.search(text)
+    profile = copy.deepcopy(owner[0])
+    profile["summary"] = text
+    assert any("contact details" in p for p in problems(profile))
+
+
+@pytest.mark.parametrize("text", ["2019 - 2022", "Kandidatexamen, 180 hp", "Python, SQL, Kubernetes"])
+def test_ordinary_cv_text_is_not_contact(text):
+    assert not CONTACT.search(text)
 
 
 def test_docx_swedish_headings_and_ongoing_role():

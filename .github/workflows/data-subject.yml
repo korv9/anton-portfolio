@@ -66,8 +66,6 @@ jobs:
       # Without them the job assistant ranks by rules and cached vectors only (platform/job_assistant/ai.py).
       CLOUDFLARE_API_TOKEN: ${{ inputs.workers-ai && secrets.CLOUDFLARE_AI_TOKEN || '' }}
       CLOUDFLARE_ACCOUNT_ID: ${{ inputs.workers-ai && vars.CLOUDFLARE_ACCOUNT_ID || '' }}
-      # The job assistant's owner token for its profile records (worker/jobs.ts); empty writes nothing.
-      JOB_ASSIST_TOKEN: ${{ inputs.job-assist-token && secrets.JOB_ASSIST_TOKEN || '' }}
       SUBJECTS: ${{ inputs.subjects }}
       STORE: ${{ inputs.store }}
     steps:
@@ -87,6 +85,10 @@ jobs:
       # publication below. Unquoted on purpose: one argument per subject.
       - name: Fetch, build, test and export
         run: python platform/pipeline.py run $SUBJECTS --only ingest,dbt,export
+        env:
+          # The job assistant's owner token for its profile records (worker/jobs.ts). Only this step
+          # runs platform/job_assistant/sync.py; empty writes nothing.
+          JOB_ASSIST_TOKEN: ${{ inputs.job-assist-token && secrets.JOB_ASSIST_TOKEN || '' }}
       # Raw checkpoints are useful even if a source or a dbt test failed.
       - name: Store the raw files in R2
         if: ${{ always() && steps.setup.outcome == 'success' && inputs.store != '' }}

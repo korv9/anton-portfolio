@@ -33,7 +33,10 @@ export default function Owner({ owner, available, onOwner, onRecords }: Props) {
   const [message, setMessage] = useState('')
 
   async function refresh() {
-    const r = await fetch('/api/jobs/profile').catch(() => null)
+    // The draft is owner-only: without the token the route leaves it out.
+    const r = await fetch('/api/jobs/profile', {
+      headers: { Authorization: `Bearer ${ownerToken()}` },
+    }).catch(() => null)
     const state = r?.ok ? await r.json() : null
     setDraft(state?.draft ?? null)
     setText(state?.draft ? JSON.stringify(state.draft.profile, null, 1) : '')
@@ -161,8 +164,8 @@ export default function Owner({ owner, available, onOwner, onRecords }: Props) {
           <label className="ja-owner-row">
             <span>
               {l(
-                'Upload a new CV (PDF or DOCX, up to 2 MB)',
-                'Ladda upp ett nytt cv (PDF eller DOCX, högst 2 MB)',
+                'Upload a new CV (PDF or DOCX, up to 1.4 MB)',
+                'Ladda upp ett nytt cv (PDF eller DOCX, högst 1,4 MB)',
               )}
             </span>
             <input

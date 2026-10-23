@@ -154,6 +154,8 @@ def explain(match: dict, ad: dict, http, explained_today: int, now: datetime | N
     if not (response.ok and body.get("success")):
         if any(e.get("code") == 4006 for e in body.get("errors") or []):
             return None
+        # A failed call may still be billed: the ledger keeps its estimate so the cap stays honest.
+        workers_ai.append_ledger(AGENT, (len(SYSTEM) + len(prompt)) // 3, estimate, ledger(), model=EXPLAIN_MODEL)
         raise RuntimeError(f"Workers AI {response.status_code}")
     result = body["result"]
     text = (result.get("response") or ((result.get("choices") or [{}])[0].get("message") or {}).get("content") or "").strip()

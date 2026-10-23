@@ -38,7 +38,10 @@ MONTH = r"(?:[A-Za-zåäöÅÄÖ]{3,9}\.?\s+)?"
 ENTRY = re.compile(
     r"^(?P<title>[^·|]+?)(?:\s*[·|]\s*|\s+[-–]\s+)(?P<org>.+?)\s+(?P<start>" + MONTH + r"\d{4})\s*[-–]\s*"
     r"(?P<end>" + MONTH + r"\d{4}|present|now|pågående|nu)$", re.I)
-CONTACT = re.compile(r"@|\+\d[\d ]{6,}|\b0\d{2}[- ]?\d{3} ?\d{2} ?\d{2}\b")
+# E-mail, phone, Swedish personnummer, street address, and a postcode before a town.
+# The same pattern as CONTACT in worker/jobs.ts.
+CONTACT = re.compile(r"@|\+\d[\d ]{6,}|\b0\d{2}[- ]?\d{3} ?\d{2} ?\d{2}\b|\b(?:19|20)?\d{6}[-+]?\d{4}\b"
+                     r"|[^\W\d_]*(?:gatan|vägen|gränd|torget|allén|stigen) \d+|\b\d{3} ?\d{2} [A-ZÅÄÖ][a-zåäö]+")
 LINK = re.compile(r"(?:https?://)?(?:www\.)?[\w-]+(?:\.[\w-]+)*\.(?:com|se|io|dev|net|org|me)(?:/\S*)?", re.I)
 NOISE = re.compile(r"^[•·\s]*$|^\S+\s+\d+\s*/\s*\d+$")
 INTERNSHIP = re.compile(r"\blia\b|internship|praktik|\bintern\b|trainee", re.I)
