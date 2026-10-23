@@ -1,15 +1,11 @@
-.mean-job-svg text {
-  fill: var(--ink);
-  font-size: 11px;
-  font-variant-numeric: tabular-nums;
+/* Chart text takes its size from meaning.css, scaled to the card. Names and values written on
+   the marks take the ink; ticks stay muted. */
+.mean-body .mean-job-svg .mean-job-v {
+  fill: var(--mean-ink);
 }
-.mean-job-axis line {
-  stroke: var(--line);
-  stroke-width: 0.6;
-}
-.mean-job-axis text {
-  fill: var(--muted);
-  font-size: 10px;
+.mean-body .mean-job-svg .mean-job-on {
+  fill: var(--mean-s1);
+  font-weight: 500;
 }
 .mean-job-big {
   flex: 1;
