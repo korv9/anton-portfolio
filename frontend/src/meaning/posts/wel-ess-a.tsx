@@ -1,26 +1,14 @@
-/** European Social Survey means (the trust gauges live in wel-ess-gauges.tsx). */
+/** European Social Survey means by round (the trust bars live in wel-ess-gauges.tsx). */
 import { useState } from 'react'
-import { Frame, Slicer, color, focal, useData, type Post } from '../kit'
-import { Legend, Svg, XTicks, fmt, num, path, scale } from './wel-kit'
+import { Frame, Slicer, focal, useData, type Post } from '../kit'
+import { EndLabels, XAxis, YAxis } from '../axes'
+import { Svg, extent, maxOf, num, path, scale } from './wel-kit'
 
-type Ess = { unit_code: string; period_key: string } & Record<
-  string,
-  number | string | null
->
-
-const METRICS = [
-  'ppltrst',
-  'trstprl',
-  'trstplt',
-  'trstplc',
-  'trstlgl',
-  'stflife',
-  'happy',
-  'stfdem',
-  'stfeco',
-  'sclmeet',
-  'imwbcnt',
-]
+type Ess = {
+  unit_code: string
+  period_key: string
+  reference_year: number
+} & Record<string, number | string | null>
 
 /** ESS item codes in plain words. */
 const ESS_NAMES: Record<string, string> = {
@@ -36,218 +24,108 @@ const ESS_NAMES: Record<string, string> = {
   sclmeet: 'Meets friends socially',
   imwbcnt: 'Immigrants make the country better',
 }
-const essName = (m: string) => ESS_NAMES[m] ?? m
+const METRICS = Object.keys(ESS_NAMES)
 
-const UNITS = ['SE', 'NO', 'DK', 'FI', 'DE', 'NORDIC', 'EU27']
-
-const round = (p: string) => +p.replace('ESS', '')
-
-const useEss = () => useData<Ess[]>('welfare/ess-countries.json')
+const UNITS: Record<string, string> = {
+  SE: 'Sweden',
+  NO: 'Norway',
+  DK: 'Denmark',
+  FI: 'Finland',
+  DE: 'Germany',
+  NORDIC: 'Nordic',
+  EU27: 'EU27',
+}
 
 const val = (r: Ess | undefined, m: string) =>
   r && num(r[`${m}_mean`]) ? (r[`${m}_mean`] as number) : null
 
-function Radar() {
-  const data = useEss()
-  const [p, setP] = useState(11)
-  return (
-    <Frame data={data}>
-      {(rows) => {
-        const units = ['SE', 'NORDIC', 'EU27', 'DE']
-        const rounds = [...new Set(rows.map((r) => round(r.period_key)))].sort(
-          (a, b) => a - b,
-        )
-        const n = METRICS.length
-        const pt = (i: number, v: number) => {
-          const a = (i / n) * 2 * Math.PI
-          return [200 + Math.sin(a) * v * 18, 200 - Math.cos(a) * v * 18] as [
-            number,
-            number,
-          ]
-        }
-        return (
-          <>
-            <Slicer
-              label="Survey round"
-              cycles
-              options={rounds}
-              format={(r) => `ESS round ${r}`}
-              value={p}
-              onChange={setP}
-            />
-            <Svg label="Radar of survey means, Sweden against comparison groups">
-              {[2, 4, 6, 8, 10].map((v) => (
-                <path
-                  key={v}
-                  d={`${path(METRICS.map((_, i) => pt(i, v)))}Z`}
-                  fill="none"
-                  stroke="var(--muted)"
-                  strokeWidth={0.4}
-                />
-              ))}
-              {units.map((u, j) => {
-                const r = rows.find(
-                  (x) => x.unit_code === u && round(x.period_key) === p,
-                )
-                const pts = METRICS.map((m, i) => pt(i, val(r, m) ?? 0))
-                return r ? (
-                  <path
-                    key={u}
-                    d={`${path(pts)}Z`}
-                    fill={color(j)}
-                    fillOpacity={0.25}
-                    stroke={color(j)}
-                    strokeWidth={1.6}
-                  />
-                ) : null
-              })}
-              {METRICS.map((m, i) => {
-                const [x, y] = pt(i, 11)
-                return (
-                  <text key={m} x={x} y={y + 3} textAnchor="middle">
-                    {m}
-                  </text>
-                )
-              })}
-            </Svg>
-            <Legend items={units} />
-          </>
-        )
-      }}
-    </Frame>
+/** Each item's answer scale: 0 to 10, except meeting friends (1 never to 7 every day). */
+const SCALE: Record<string, [number, number]> = { sclmeet: [1, 7] }
+const scaleOf = (m: string) => SCALE[m] ?? [0, 10]
+
+/** On how many measures Sweden's latest mean is above the EU27's. */
+function aboveEu(rows: Ess[]) {
+  const y = maxOf(rows.map((r) => r.reference_year))
+  const at = (u: string) =>
+    rows.find((r) => r.unit_code === u && r.reference_year === y)
+  const both = METRICS.filter(
+    (m) => num(val(at('SE'), m)) && num(val(at('EU27'), m)),
   )
+  const above = both.filter((m) => val(at('SE'), m)! > val(at('EU27'), m)!)
+  return { y, above: above.length, of: both.length }
 }
 
 function RoundLines() {
-  const data = useEss()
+  const data = useData<Ess[]>('welfare/ess-countries.json')
   const [m, setM] = useState('ppltrst')
   return (
     <Frame data={data}>
       {(rows) => {
-        const x = scale([1, 11], [30, 780])
-        const vs = rows.map((r) => val(r, m)).filter(num)
-        const y = scale(
-          [Math.floor(Math.min(...vs)), Math.ceil(Math.max(...vs))],
-          [370, 20],
-        )
+        const [y0, y1] = extent(rows.map((r) => r.reference_year))
+        const x = scale([y0, y1], [28, 520])
+        const [lo, hi] = scaleOf(m)
+        const y = scale([lo, hi], [200, 12])
+        const lines = Object.keys(UNITS).map((u) => ({
+          u,
+          pts: rows
+            .filter((r) => r.unit_code === u && num(val(r, m)))
+            .sort((a, b) => a.reference_year - b.reference_year),
+        }))
+        // Sweden is the focal line, drawn last so it sits on top; the rest are grey.
+        const order = [...lines].reverse()
+        const ends = lines.filter((l) => l.pts.at(-1)?.reference_year === y1)
         return (
           <>
             <Slicer
               label="Survey measure"
-              cycles={false}
               options={METRICS}
-              format={essName}
+              format={(k) => ESS_NAMES[k]}
               value={m}
               onChange={setM}
             />
             <Svg
-              w={800}
-              h={400}
-              label="Survey means by round for seven countries and groups"
+              w={600}
+              h={220}
+              label={`${ESS_NAMES[m]}, mean on a ${lo} to ${hi} scale by survey year`}
             >
-              {/* Sweden is the focal line, drawn last so it sits on top; the rest are grey. */}
-              {[...UNITS].reverse().map((u) => {
-                const pts = rows
-                  .filter((r) => r.unit_code === u && num(val(r, m)))
-                  .sort((a, b) => round(a.period_key) - round(b.period_key))
-                  .map(
-                    (r) =>
-                      [x(round(r.period_key)), y(val(r, m)!)] as [
-                        number,
-                        number,
-                      ],
-                  )
-                return (
-                  <g key={u}>
-                    <path
-                      d={path(pts)}
-                      fill="none"
-                      stroke={focal(u === 'SE')}
-                      strokeWidth={u === 'SE' ? 4 : 1.6}
-                    />
-                    {pts.map(([cx, cy]) => (
-                      <circle
-                        key={cx}
-                        cx={cx}
-                        cy={cy}
-                        r={u === 'SE' ? 5 : 3}
-                        fill={focal(u === 'SE')}
-                      />
-                    ))}
-                    {u === 'SE' && pts.length > 0 && (
-                      <text
-                        x={pts.at(-1)![0]}
-                        y={pts.at(-1)![1] - 14}
-                        textAnchor="end"
-                        fontSize={22}
-                        fontWeight={700}
-                        stroke="var(--paper)"
-                        strokeWidth={4}
-                        paintOrder="stroke"
-                        style={{ fill: 'var(--mean-ink)' }}
-                      >
-                        Sweden
-                      </text>
-                    )}
-                  </g>
-                )
-              })}
-              <XTicks
-                values={Array.from({ length: 11 }, (_, i) => i + 1)}
-                x={(i) => x(i + 1)}
-                y={392}
+              <YAxis
+                y={y}
+                ticks={Array.from(
+                  { length: (hi - lo) / 2 + 1 },
+                  (_, i) => lo + i * 2,
+                )}
+                x0={28}
+                x1={520}
+              />
+              {order.map(({ u, pts }) => (
+                <path
+                  key={u}
+                  d={path(pts.map((r) => [x(r.reference_year), y(val(r, m)!)]))}
+                  fill="none"
+                  stroke={focal(u === 'SE')}
+                  strokeWidth={u === 'SE' ? 2.5 : 1.2}
+                />
+              ))}
+              <EndLabels
+                x={526}
+                top={12}
+                bottom={200}
+                items={ends.map(({ u, pts }) => ({
+                  y: y(val(pts.at(-1), m)!),
+                  label: UNITS[u],
+                  color: u === 'SE' ? undefined : 'var(--mean-muted)',
+                }))}
+              />
+              <XAxis
+                x={x}
+                y={216}
+                ticks={[...new Set(rows.map((r) => r.reference_year))]
+                  .sort()
+                  .filter((v) => (v - y0) % 6 === 0 || v === y1)
+                  .map((v) => ({ value: v, label: String(v) }))}
               />
             </Svg>
-            <Legend
-              items={['Sweden', 'Other countries and groups']}
-              colors={[focal(true), focal(false)]}
-            />
           </>
-        )
-      }}
-    </Frame>
-  )
-}
-
-function EssHeat() {
-  const data = useEss()
-  return (
-    <Frame data={data}>
-      {(rows) => {
-        const se = rows.filter((r) => r.unit_code === 'SE')
-        const cw = 340 / 11
-        const ch = 370 / METRICS.length
-        return (
-          <Svg label="Sweden's survey means, measure by round">
-            {METRICS.map((m, i) =>
-              se.map((r) => {
-                const v = val(r, m)
-                return num(v) ? (
-                  <rect
-                    key={m + r.period_key}
-                    x={56 + (round(r.period_key) - 1) * cw}
-                    y={i * ch}
-                    width={cw - 1.5}
-                    height={ch - 1.5}
-                    rx={3}
-                    fill={`color-mix(in srgb, var(--cv-olive) ${Math.round(v * 10)}%, var(--cluster-butter))`}
-                  >
-                    <title>{`${essName(m)}, ESS round ${round(r.period_key)}: ${fmt(v, 2)}`}</title>
-                  </rect>
-                ) : null
-              }),
-            )}
-            {METRICS.map((m, i) => (
-              <text key={m} x={52} y={i * ch + ch / 2 + 3} textAnchor="end">
-                {m}
-              </text>
-            ))}
-            <XTicks
-              values={Array.from({ length: 11 }, (_, i) => i + 1)}
-              x={(i) => 56 + i * cw + cw / 2}
-              y={392}
-            />
-          </Svg>
         )
       }}
     </Frame>
@@ -256,22 +134,18 @@ function EssHeat() {
 
 export const posts: Post[] = [
   {
-    id: 'wel-ess-radar',
-    domain: 'welfare',
-    sources: ['welfare/ess-countries.json'],
-    render: () => <Radar />,
-  },
-  {
     id: 'wel-ess-lines',
     domain: 'welfare',
     sources: ['welfare/ess-countries.json'],
     size: 'wide',
+    title: (rows: Ess[]) => {
+      const a = aboveEu(rows)
+      if (a.y === null || !a.of)
+        return 'Sweden and its neighbours in the European Social Survey'
+      const n = a.above === a.of ? `all ${a.of}` : `${a.above} of ${a.of}`
+      return `In ${a.y}, Sweden was above the EU27 average on ${n} survey measures`
+    },
+    note: 'Mean answer by survey year, on a 0–10 scale (meeting friends: 1–7). Source: European Social Survey',
     render: () => <RoundLines />,
-  },
-  {
-    id: 'wel-ess-heat',
-    domain: 'welfare',
-    sources: ['welfare/ess-countries.json'],
-    render: () => <EssHeat />,
   },
 ]

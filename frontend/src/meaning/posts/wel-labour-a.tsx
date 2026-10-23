@@ -1,21 +1,9 @@
-/** Labour market and sick leave, national by month and county by year. */
+/** The labour market and new sick leave, national by month. */
 import { useState } from 'react'
-import { Frame, Slicer, color, useData, type Post } from '../kit'
-import * as axes from '../axes'
+import { Frame, OTHER, Slicer, focal, useData, type Post } from '../kit'
+import { EndLabels, XAxis, YAxis } from '../axes'
 import { yearTicks } from '../../charts/scales'
-import {
-  Legend,
-  Svg,
-  XTicks,
-  YAxis,
-  band,
-  extent,
-  fmt,
-  niceMax,
-  num,
-  path,
-  scale,
-} from './wel-kit'
+import { Svg, axis, fmt, month, num, path, pct, scale } from './wel-kit'
 
 type Month = {
   month_start: string
@@ -23,24 +11,30 @@ type Month = {
   unemployment_rate_trend: number | null
   unemployment_rate: number | null
   employment_rate_sa: number | null
-  unemployed_thousands: number | null
-  labour_force_thousands: number | null
   started_cases: number | null
   started_psychiatric: number | null
   started_stress: number | null
-  ongoing_cases: number | null
-  psychiatric_share_of_started_12m_pct: number | null
 }
 
-/** Plain names for the monthly series in the legend. */
-const SERIES: Partial<Record<keyof Month, string>> = {
-  unemployment_rate: 'unemployment, raw',
-  unemployment_rate_sa: 'seasonally adjusted',
-  unemployment_rate_trend: 'trend',
-  employment_rate_sa: 'employment, seasonally adjusted',
+type Key = keyof Omit<Month, 'month_start'>
+
+/** Each series' direct label; the first of a set is the focal line. */
+const SETS: Record<'unemployment' | 'employment', [Key, string][]> = {
+  unemployment: [
+    ['unemployment_rate_trend', 'Trend'],
+    ['unemployment_rate_sa', 'Adjusted'],
+    ['unemployment_rate', 'Unadjusted'],
+  ],
+  employment: [['employment_rate_sa', 'Adjusted']],
 }
 
 const useMonths = () => useData<Month[]>('welfare/national-month.json')
+
+/** A year tick every `every` years, from the series' first January. */
+const ticks = (dates: string[], x: (i: number) => number, every: number) =>
+  yearTicks(dates)
+    .filter((t) => +t.label % every === 0)
+    .map((t) => ({ value: x(t.index), label: t.label }))
 
 function UnemploymentLines() {
   const data = useMonths()
@@ -48,60 +42,69 @@ function UnemploymentLines() {
   return (
     <Frame data={data}>
       {(rows) => {
-        const keys: (keyof Month)[] =
-          m === 'unemployment'
-            ? [
-                'unemployment_rate',
-                'unemployment_rate_sa',
-                'unemployment_rate_trend',
-              ]
-            : ['employment_rate_sa']
-        const r = rows.filter((x) => num(x[keys[0]]))
-        const [lo, hi] = axes.niceDomain(
-          ...extent(r.flatMap((x) => keys.map((k) => x[k] as number))),
+        const set = SETS[m]
+        const r = rows.filter((d) => num(d[set[0][0]]))
+        const ax = axis(
+          r.flatMap((d) => set.map(([k]) => d[k]).filter(num)),
+          [196, 12],
+          false,
         )
-        const x = scale([0, r.length - 1], [36, 790])
-        // The lines and the axis share this one domain, so each label sits at its value.
-        const y = scale([lo, hi], [370, 20])
-        const years = yearTicks(r.map((d) => d.month_start)).filter(
-          (_, i) => i % 3 === 0,
-        )
+        const x = scale([0, r.length - 1], [32, 470])
+        const last = r.at(-1)
+        if (!last) return null
         return (
           <>
             <Slicer
-              label="Metric"
-              cycles={false}
+              label="Measure"
               options={['unemployment', 'employment'] as const}
               value={m}
               onChange={setM}
             />
-            <Svg w={800} h={400} label="Monthly labour market rates, Sweden">
-              <axes.YAxis
-                y={y}
-                ticks={axes.ticksBetween(lo, hi)}
-                x0={36}
-                x1={790}
+            <Svg w={600} h={220} label={`Monthly ${m} rate in Sweden, %`}>
+              <YAxis
+                y={ax.y}
+                ticks={ax.ticks}
+                x0={32}
+                x1={470}
                 format={(v) => `${v}%`}
               />
-              {keys.map((k, j) => (
+              {[...set].reverse().map(([k]) => (
                 <path
                   key={k}
-                  d={path(r.map((d, i) => [x(i), y(d[k] as number)]))}
+                  d={path(
+                    r
+                      .map((d, i) => [i, d[k]] as const)
+                      .filter(([, v]) => num(v))
+                      .map(([i, v]) => [x(i), ax.y(v!)]),
+                  )}
                   fill="none"
-                  stroke={color(j)}
-                  strokeWidth={j === 2 ? 3 : 1.4}
+                  stroke={focal(k === set[0][0])}
+                  strokeWidth={k === set[0][0] ? 2.4 : 1}
+                  opacity={k === 'unemployment_rate' ? 0.6 : 1}
                 />
               ))}
-              <axes.XAxis
-                x={x}
-                ticks={years.map((t) => ({ value: t.index, label: t.label }))}
-                y={390}
+              <EndLabels
+                x={476}
+                top={12}
+                bottom={196}
+                items={set
+                  .filter(([k]) => num(last[k]))
+                  .map(([k, label]) => ({
+                    y: ax.y(last[k]!),
+                    label: `${label} ${pct(last[k]!)}`,
+                    color: k === set[0][0] ? undefined : 'var(--mean-muted)',
+                  }))}
+              />
+              <XAxis
+                x={(v) => v}
+                y={214}
+                ticks={ticks(
+                  r.map((d) => d.month_start),
+                  x,
+                  5,
+                )}
               />
             </Svg>
-            <Legend
-              items={keys.map((k) => SERIES[k] ?? String(k))}
-              colors={keys.map((_, j) => color(j))}
-            />
           </>
         )
       }}
@@ -109,168 +112,78 @@ function UnemploymentLines() {
   )
 }
 
-function LabourForceArea() {
-  const data = useMonths()
-  return (
-    <Frame data={data}>
-      {(rows) => {
-        const r = rows.filter(
-          (d) => num(d.labour_force_thousands) && num(d.unemployed_thousands),
-        )
-        const top = niceMax(
-          Math.max(...r.map((d) => d.labour_force_thousands!)),
-        )
-        const x = scale([0, r.length - 1], [40, 790])
-        const y = scale([0, top], [370, 15])
-        const xs = r.map((_, i) => x(i))
-        const unemp = r.map((d) => y(d.unemployed_thousands!))
-        return (
-          <>
-            <Svg
-              w={800}
-              h={400}
-              label="Labour force split into employed and unemployed, thousands"
-            >
-              <YAxis max={top} x0={40} x1={790} y0={370} y1={15} />
-              <path
-                d={band(
-                  xs,
-                  r.map((d) => y(d.labour_force_thousands!)),
-                  unemp,
-                )}
-                fill={color(4)}
-              />
-              <path
-                d={band(
-                  xs,
-                  unemp,
-                  xs.map(() => y(0)),
-                )}
-                fill={color(1)}
-              />
-              <XTicks
-                values={r.map((d, i) =>
-                  i % 48 ? '' : d.month_start.slice(0, 4),
-                )}
-                x={x}
-                y={390}
-              />
-            </Svg>
-            <Legend items={['employed, k', 'unemployed, k']} />
-          </>
-        )
-      }}
-    </Frame>
-  )
-}
+/** Started cases split into three non-overlapping groups of diagnoses. */
+const CAUSES = [
+  ['Stress-related', (d: Month) => d.started_stress!],
+  [
+    'Other psychiatric',
+    (d: Month) => d.started_psychiatric! - d.started_stress!,
+  ],
+  ['Other diagnoses', (d: Month) => d.started_cases! - d.started_psychiatric!],
+] as const
 
-function SickStream() {
-  const data = useMonths()
+function SickLines() {
   return (
-    <Frame data={data}>
+    <Frame data={useMonths()}>
       {(rows) => {
+        // Months where the parts do not nest (stress within psychiatric within all) are left
+        // out, so the three groups stay non-overlapping.
         const r = rows.filter(
           (d) =>
             num(d.started_cases) &&
             num(d.started_psychiatric) &&
-            num(d.started_stress),
+            num(d.started_stress) &&
+            d.started_stress <= d.started_psychiatric &&
+            d.started_psychiatric <= d.started_cases,
         )
-        const parts = r.map((d) => [
-          d.started_stress!,
-          d.started_psychiatric! - d.started_stress!,
-          d.started_cases! - d.started_psychiatric!,
-        ])
-        const max = Math.max(...parts.map((p) => p[0] + p[1] + p[2]))
-        const y = scale([0, r.length - 1], [10, 790])
-        const x = scale([-max / 2, max / 2], [10, 390])
-        const ys = r.map((_, i) => y(i))
-        let base = parts.map((p) => -(p[0] + p[1] + p[2]) / 2)
-        const layers = [0, 1, 2].map((k) => {
-          const lo = base
-          const hi = base.map((b, i) => b + parts[i][k])
-          base = hi
-          const left = ys.map((yy, i) => [x(lo[i]), yy] as [number, number])
-          const right = ys
-            .map((yy, i) => [x(hi[i]), yy] as [number, number])
-            .reverse()
-          return `${path(left)}L${path(right).slice(1)}Z`
-        })
+        const ax = axis(
+          r.flatMap((d) => CAUSES.map(([, f]) => f(d))),
+          [196, 12],
+        )
+        const x = scale([0, r.length - 1], [36, 470])
+        const last = r.at(-1)
+        if (!last) return null
         return (
-          <>
-            <Svg
-              w={400}
-              h={800}
-              label="Started sick-leave cases per month as a vertical streamgraph"
-            >
-              {layers.map((d, k) => (
-                <path key={k} d={d} fill={color(k + 1)} />
-              ))}
-              {r.map((d, i) =>
-                i % 36 ? null : (
-                  <text key={d.month_start} x={4} y={y(i)}>
-                    {d.month_start.slice(0, 4)}
-                  </text>
-                ),
+          <Svg
+            w={600}
+            h={220}
+            label="New sick-leave cases per month by group of diagnoses, Sweden"
+          >
+            <YAxis
+              y={ax.y}
+              ticks={ax.ticks}
+              x0={36}
+              x1={470}
+              format={(v) => fmt(v)}
+            />
+            {CAUSES.map(([name, f], j) => (
+              <path
+                key={name}
+                d={path(r.map((d, i) => [x(i), ax.y(f(d))]))}
+                fill="none"
+                stroke={j === 0 ? focal(true) : OTHER}
+                strokeWidth={j === 0 ? 1.8 : 1}
+              />
+            ))}
+            <EndLabels
+              x={476}
+              top={12}
+              bottom={196}
+              items={CAUSES.map(([name, f], j) => ({
+                y: ax.y(f(last)),
+                label: name,
+                color: j ? 'var(--mean-muted)' : undefined,
+              }))}
+            />
+            <XAxis
+              x={(v) => v}
+              y={214}
+              ticks={ticks(
+                r.map((d) => d.month_start),
+                x,
+                5,
               )}
-            </Svg>
-            <Legend
-              items={['stress', 'other psychiatric', 'other']}
-              colors={[color(1), color(2), color(3)]}
             />
-          </>
-        )
-      }}
-    </Frame>
-  )
-}
-
-function OngoingCalendar() {
-  const data = useMonths()
-  return (
-    <Frame data={data}>
-      {(rows) => {
-        const r = rows.filter((d) => num(d.ongoing_cases))
-        const years = [...new Set(r.map((d) => +d.month_start.slice(0, 4)))]
-        const [lo, hi] = extent(r.map((d) => d.ongoing_cases!))
-        const cw = 360 / 12
-        const ch = 380 / years.length
-        return (
-          <Svg label="Ongoing sick-leave cases by year and month">
-            {r.map((d) => {
-              const yi = years.indexOf(+d.month_start.slice(0, 4))
-              const mi = +d.month_start.slice(5, 7) - 1
-              const t = (d.ongoing_cases! - lo) / (hi - lo)
-              return (
-                <rect
-                  key={d.month_start}
-                  x={36 + mi * cw}
-                  y={6 + yi * ch}
-                  width={cw - 1}
-                  height={ch - 1}
-                  rx={2}
-                  fill={`color-mix(in srgb, var(--cluster-apricot) ${Math.round(t * 100)}%, var(--cluster-powder))`}
-                >
-                  <title>{`${d.month_start.slice(0, 7)}: ${fmt(d.ongoing_cases!)}`}</title>
-                </rect>
-              )
-            })}
-            <XTicks
-              values={Array.from({ length: 12 }, (_, i) => i + 1)}
-              x={(i) => 36 + i * cw + cw / 2}
-              y={398}
-            />
-            {years.map((v, i) =>
-              i % 5 ? null : (
-                <text
-                  key={v}
-                  x={32}
-                  y={6 + i * ch + ch / 2 + 3}
-                  textAnchor="end"
-                >
-                  {v}
-                </text>
-              ),
-            )}
           </Svg>
         )
       }}
@@ -284,29 +197,22 @@ export const posts: Post[] = [
     domain: 'welfare',
     sources: ['welfare/national-month.json'],
     size: 'wide',
-    title: 'Unemployment and employment in Sweden, by month',
-    note: 'Share of the labour force, %',
+    title: (rows: Month[]) => {
+      const r = rows.filter((d) => num(d.unemployment_rate_trend)).at(-1)
+      return r
+        ? `The unemployment trend stood at ${pct(r.unemployment_rate_trend!)} in ${month(r.month_start.slice(0, 7))}`
+        : 'Unemployment in Sweden, by month'
+    },
+    note: 'Monthly, ages 15–74; adjusted means seasonally adjusted. Source: SCB Labour Force Survey',
     render: () => <UnemploymentLines />,
   },
   {
     id: 'wel-sick-stream',
     domain: 'welfare',
     sources: ['welfare/national-month.json'],
-    size: 'tall',
-    title: 'New sick-leave cases per month, by cause',
-    render: () => <SickStream />,
-  },
-  {
-    id: 'wel-ongoing-calendar',
-    domain: 'welfare',
-    sources: ['welfare/national-month.json'],
-    render: () => <OngoingCalendar />,
-  },
-  {
-    id: 'wel-labour-force-area',
-    domain: 'welfare',
-    sources: ['welfare/national-month.json'],
     size: 'wide',
-    render: () => <LabourForceArea />,
+    title: 'New sick-leave cases per month, by group of diagnoses',
+    note: 'Cases started per month. Source: Försäkringskassan',
+    render: () => <SickLines />,
   },
 ]

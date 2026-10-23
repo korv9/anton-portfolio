@@ -1,231 +1,196 @@
-/** OECD revenue statistics: Sweden's tax mix and the country league. */
-import { useState } from 'react'
-import { Frame, Slicer, color, useData, type Post } from '../kit'
+/** OECD revenue statistics: Sweden's tax mix over time, its largest taxes, and the league. */
+import { Frame, OTHER, focal, useData, type Post } from '../kit'
+import { EndLabels, XAxis, YAxis } from '../axes'
 import {
-  Legend,
+  Ranked,
   Svg,
-  XTicks,
-  YAxis,
-  band,
+  axis,
   fmt,
-  niceMax,
+  maxOf,
+  ordinal,
+  path,
+  pct,
   scale,
-  squarify,
 } from './wel-kit'
 
 type TaxType = { tax_code: string; name_en: string; parent_code: string | null }
 
 type Country = { country_code: string; name_en: string; is_nordic: boolean }
 
+/** year, tax code, % of GDP, SEK bn. */
 type Sweden = {
   types: TaxType[]
   rows: [number, string, number | null, number | null][]
 }
 
+/** country, year, tax code, % of GDP. */
 type Countries = {
   types: TaxType[]
   countries: Country[]
   rows: [string, number, string, number | null][]
 }
 
-const useSweden = () => useData<Sweden>('taxes/sweden.json')
+/** Short names for the six top-level tax types, for direct labels. */
+const SHORT: Record<string, string> = {
+  T_1000: 'Income and profits',
+  T_2000: 'Social security',
+  T_3000: 'Payroll',
+  T_4000: 'Property',
+  T_5000: 'Goods and services',
+  T_6000: 'Other',
+}
 
-const useCountries = () => useData<Countries>('taxes/countries.json')
+const useSweden = () => useData<Sweden>('taxes/sweden.json')
 
 const tops = (types: TaxType[]) => types.filter((t) => t.parent_code === '_T')
 
-function latest(d: Countries, code = '_T') {
-  const rows = d.rows.filter((r) => r[2] === code && r[3] !== null)
-  const year = Math.max(...rows.map((r) => r[1]))
-  return { year, rows: rows.filter((r) => r[1] === year) }
+/** Each top-level type's % of GDP by year, largest in the latest year first. */
+function mix(d: Sweden) {
+  const years = [...new Set(d.rows.map((r) => r[0]))].sort()
+  const at = new Map(d.rows.map((r) => [`${r[0]}:${r[1]}`, r[2]]))
+  return {
+    years,
+    series: tops(d.types)
+      .map((t) => ({
+        code: t.tax_code,
+        name: SHORT[t.tax_code] ?? t.name_en,
+        v: years.map((y) => at.get(`${y}:${t.tax_code}`) ?? null),
+      }))
+      // Types without a latest value sort last; their lines still draw.
+      .sort((a, b) => (b.v.at(-1) ?? -Infinity) - (a.v.at(-1) ?? -Infinity)),
+  }
 }
 
-function MixArea() {
-  const data = useSweden()
-  const [m, setM] = useState<'% of GDP' | 'SEK bn'>('% of GDP')
+function MixLines() {
   return (
-    <Frame data={data}>
+    <Frame data={useSweden()}>
       {(d) => {
-        const col = m === '% of GDP' ? 2 : 3
-        const codes = tops(d.types).map((t) => t.tax_code)
-        const years = [...new Set(d.rows.map((r) => r[0]))].sort()
-        const at = new Map(d.rows.map((r) => [`${r[0]}:${r[1]}`, r[col] ?? 0]))
-        const total = years.map((y) =>
-          codes.reduce((s, c) => s + (at.get(`${y}:${c}`) ?? 0), 0),
+        const { years, series } = mix(d)
+        const ax = axis(
+          series.flatMap((s) => s.v.filter((v): v is number => v !== null)),
+          [196, 12],
         )
-        const top = niceMax(Math.max(...total))
-        const x = scale([0, years.length - 1], [40, 790])
-        const y = scale([0, top], [370, 15])
-        const xs = years.map((_, i) => x(i))
-        let base = years.map(() => 0)
+        const x = scale([0, years.length - 1], [30, 450])
         return (
-          <>
-            <Slicer
-              label="Unit"
-              cycles={false}
-              options={['% of GDP', 'SEK bn'] as const}
-              value={m}
-              onChange={setM}
+          <Svg
+            w={600}
+            h={220}
+            label="Sweden's tax revenue by type of tax, % of GDP"
+          >
+            <YAxis
+              y={ax.y}
+              ticks={ax.ticks}
+              x0={30}
+              x1={450}
+              format={(v) => `${v}%`}
             />
-            <Svg w={800} h={400} label="Sweden's tax revenue by type, stacked">
-              <YAxis max={top} x0={40} x1={790} y0={370} y1={15} />
-              {codes.map((c, j) => {
-                const lo = base
-                const hi = years.map(
-                  (yr, i) => lo[i] + (at.get(`${yr}:${c}`) ?? 0),
-                )
-                base = hi
-                return (
-                  <path
-                    key={c}
-                    d={band(xs, hi.map(y), lo.map(y))}
-                    fill={color(j)}
-                  />
-                )
-              })}
-              <XTicks
-                values={years.map((v, i) => (i % 10 ? '' : v))}
-                x={x}
-                y={390}
+            {series.map((s, j) => (
+              <path
+                key={s.code}
+                d={path(
+                  s.v
+                    .map((v, i) => [i, v] as const)
+                    .filter(([, v]) => v !== null)
+                    .map(([i, v]) => [x(i), ax.y(v!)]),
+                )}
+                fill="none"
+                stroke={j === 0 ? focal(true) : OTHER}
+                strokeWidth={j === 0 ? 2.2 : 1.2}
               />
-            </Svg>
-            <Legend items={tops(d.types).map((t) => t.name_en.split(',')[0])} />
-          </>
+            ))}
+            <EndLabels
+              x={456}
+              top={12}
+              bottom={196}
+              items={series
+                .filter((s) => s.v.at(-1) != null)
+                .map((s, j) => ({
+                  y: ax.y(s.v.at(-1)!),
+                  label: `${s.name} ${fmt(s.v.at(-1)!, 1)}`,
+                  color: j ? 'var(--mean-muted)' : undefined,
+                }))}
+            />
+            <XAxis
+              x={x}
+              y={214}
+              ticks={years
+                .map((y, i) => ({ value: i, label: String(y) }))
+                .filter((t) => +t.label % 10 === 0)}
+            />
+          </Svg>
         )
       }}
     </Frame>
   )
 }
 
-function Treemap() {
-  const data = useSweden()
-  const [yr, setYr] = useState<number | null>(null)
+/** The latest year's taxes with no sub-types, by % of GDP. */
+function leaves(d: Sweden) {
+  const year = maxOf(d.rows.filter((r) => r[2] != null).map((r) => r[0]))
+  const parents = new Set(d.types.map((t) => t.parent_code))
+  // Only taxes with a published value that year; a missing one is left out, not zero.
+  const at = new Map(
+    d.rows
+      .filter((r) => r[0] === year && r[2] != null)
+      .map((r) => [r[1], r[2]!]),
+  )
+  return {
+    year,
+    rows: d.types
+      .filter(
+        (t) =>
+          !parents.has(t.tax_code) && t.tax_code !== '_T' && at.has(t.tax_code),
+      )
+      .map((t) => ({
+        key: t.tax_code,
+        label: t.name_en,
+        value: at.get(t.tax_code)!,
+      }))
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 6),
+  }
+}
+
+function LargestTaxes() {
   return (
-    <Frame data={data}>
-      {(d) => {
-        const parents = new Set(d.types.map((t) => t.parent_code))
-        const leaves = d.types.filter(
-          (t) => !parents.has(t.tax_code) && t.tax_code !== '_T',
-        )
-        const years = [...new Set(d.rows.map((r) => r[0]))].sort()
-        const opts = years.filter(
-          (v) => v % 10 === years[years.length - 1] % 10,
-        )
-        const year = yr ?? years[years.length - 1]
-        const at = new Map(
-          d.rows.filter((r) => r[0] === year).map((r) => [r[1], r[2] ?? 0]),
-        )
-        const vals = leaves.map((t) => Math.max(0, at.get(t.tax_code) ?? 0))
-        const rects = squarify(vals, { x: 0, y: 0, w: 400, h: 400 })
-        const top = tops(d.types).map((t) => t.tax_code)
-        const family = (t: TaxType) => {
-          let p: TaxType | undefined = t
-          while (p && !top.includes(p.tax_code))
-            p = d.types.find((q) => q.tax_code === p!.parent_code)
-          return p ? top.indexOf(p.tax_code) : 0
-        }
-        return (
-          <>
-            <Slicer
-              label="Year"
-              cycles
-              options={opts}
-              value={year}
-              onChange={setYr}
-            />
-            <Svg label="Squarified treemap of Sweden's taxes as a share of GDP">
-              {rects.map((r, i) =>
-                r.w > 0 ? (
-                  <g key={leaves[i].tax_code}>
-                    <rect
-                      x={r.x + 1}
-                      y={r.y + 1}
-                      width={Math.max(0, r.w - 2)}
-                      height={Math.max(0, r.h - 2)}
-                      rx={4}
-                      fill={color(family(leaves[i]))}
-                    >
-                      <title>{`${leaves[i].name_en}: ${fmt(vals[i], 2)}% of GDP`}</title>
-                    </rect>
-                    {r.w > 44 && r.h > 18 ? (
-                      <text
-                        x={r.x + 6}
-                        y={r.y + 15}
-                        style={{ fill: 'var(--ink)' }}
-                      >
-                        {fmt(vals[i])}%
-                      </text>
-                    ) : null}
-                  </g>
-                ) : null,
-              )}
-            </Svg>
-          </>
-        )
-      }}
+    <Frame data={useSweden()}>
+      {(d) => (
+        <Ranked
+          wrap
+          head={4}
+          tail={0}
+          label="Sweden's six largest taxes, % of GDP"
+          format={(v) => pct(v)}
+          rows={leaves(d).rows}
+        />
+      )}
     </Frame>
   )
 }
 
 function League() {
-  const data = useCountries()
-  const [code, setCode] = useState('_T')
   return (
-    <Frame data={data}>
+    <Frame data={useData<Countries>('taxes/countries.json')}>
       {(d) => {
-        const { rows } = latest(d, code)
-        const sorted = [...rows].sort((a, b) => b[3]! - a[3]!)
-        const nordic = new Set(
-          d.countries.filter((c) => c.is_nordic).map((c) => c.country_code),
+        const rows = d.rows.filter((r) => r[2] === '_T' && r[3] != null)
+        const year = maxOf(rows.map((r) => r[1]))
+        if (year === null) return null
+        const names = new Map(
+          d.countries.map((c) => [c.country_code, c.name_en]),
         )
-        const top = niceMax(sorted[0]?.[3] ?? 1)
-        const x = scale([0, top], [40, 392])
-        const h = 780 / Math.max(1, sorted.length)
         return (
-          <>
-            <Slicer
-              label="Tax"
-              options={d.types.map((t) => t.tax_code)}
-              format={(c) =>
-                d.types.find((t) => t.tax_code === c)?.name_en ?? c
-              }
-              value={code}
-              onChange={setCode}
-            />
-            <Svg
-              w={400}
-              h={800}
-              label="Countries ranked by tax revenue as a share of GDP"
-            >
-              {sorted.map((r, i) => (
-                <g key={r[0]}>
-                  <rect
-                    x={40}
-                    y={i * h + 2}
-                    width={x(r[3]!) - 40}
-                    height={h - 3}
-                    rx={2}
-                    fill={
-                      r[0] === 'SWE'
-                        ? color(1)
-                        : nordic.has(r[0])
-                          ? color(0)
-                          : color(2)
-                    }
-                  >
-                    <title>{`${d.countries.find((c) => c.country_code === r[0])?.name_en}: ${fmt(r[3]!)}%`}</title>
-                  </rect>
-                  <text x={36} y={i * h + h / 2 + 3} textAnchor="end">
-                    {r[0]}
-                  </text>
-                </g>
-              ))}
-            </Svg>
-            <Legend
-              items={['Sweden', 'Nordic', 'other OECD']}
-              colors={[color(1), color(0), color(2)]}
-            />
-          </>
+          <Ranked
+            label={`OECD countries ranked by total tax revenue, % of GDP, ${year}`}
+            format={(v) => pct(v)}
+            focus="SWE"
+            rows={rows
+              .filter((r) => r[1] === year)
+              .map((r) => ({
+                key: r[0],
+                label: names.get(r[0]) ?? r[0],
+                value: r[3]!,
+              }))}
+          />
         )
       }}
     </Frame>
@@ -238,20 +203,47 @@ export const posts: Post[] = [
     domain: 'taxes',
     sources: ['taxes/sweden.json'],
     size: 'wide',
-    render: () => <MixArea />,
+    title: (d: Sweden) => {
+      const { years, series } = mix(d)
+      const s = series[0]
+      const v = s?.v.at(-1)
+      return s && v != null
+        ? `Taxes on ${s.name.toLowerCase()} raised the most in ${years.at(-1)}: ${pct(v)} of GDP`
+        : "Sweden's tax mix"
+    },
+    note: 'Tax revenue by type, % of GDP. Source: OECD Revenue Statistics',
+    render: () => <MixLines />,
   },
   {
     id: 'wel-tax-league',
     domain: 'taxes',
     sources: ['taxes/countries.json'],
     size: 'tall',
-    title: 'Tax revenue as a share of GDP, OECD countries',
+    title: (d: Countries) => {
+      const rows = d.rows.filter((r) => r[2] === '_T' && r[3] != null)
+      const year = maxOf(rows.map((r) => r[1]))
+      const ranked = rows
+        .filter((r) => r[1] === year)
+        .sort((a, b) => b[3]! - a[3]!)
+      const i = ranked.findIndex((r) => r[0] === 'SWE')
+      return i < 0
+        ? 'Tax revenue as a share of GDP, OECD countries'
+        : `Sweden had the ${ordinal(i + 1)}-highest tax take of ${ranked.length} OECD countries in ${year}`
+    },
+    note: 'Total tax revenue, % of GDP. Source: OECD Revenue Statistics',
     render: () => <League />,
   },
   {
     id: 'wel-tax-treemap',
     domain: 'taxes',
     sources: ['taxes/sweden.json'],
-    render: () => <Treemap />,
+    title: (d: Sweden) => {
+      const { year, rows } = leaves(d)
+      return rows[0] && year !== null
+        ? `${rows[0].label} was Sweden's largest single tax in ${year}`
+        : "Sweden's largest taxes"
+    },
+    note: 'The six largest, % of GDP. Source: OECD Revenue Statistics',
+    render: () => <LargestTaxes />,
   },
 ]
