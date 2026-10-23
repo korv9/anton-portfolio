@@ -1,7 +1,8 @@
 /** European Social Survey means by round (the trust bars live in wel-ess-gauges.tsx). */
 import { useState } from 'react'
 import { Frame, Slicer, focal, useData, type Post } from '../kit'
-import { EndLabels, XAxis, YAxis } from '../axes'
+import { niceStep } from '../../charts/scales'
+import { EndLabels, niceDomain, ticksBetween, XAxis, YAxis } from '../axes'
 import { Svg, extent, maxOf, num, path, scale } from './wel-kit'
 
 type Ess = {
@@ -64,13 +65,21 @@ function RoundLines() {
         const [y0, y1] = extent(rows.map((r) => r.reference_year))
         const x = scale([y0, y1], [28, 520])
         const [lo, hi] = scaleOf(m)
-        const y = scale([lo, hi], [200, 12])
         const lines = Object.keys(UNITS).map((u) => ({
           u,
           pts: rows
             .filter((r) => r.unit_code === u && num(val(r, m)))
             .sort((a, b) => a.reference_year - b.reference_year),
         }))
+        // The axis spans the means, not the whole answer scale, so the lines have room to
+        // differ; the note says so.
+        const vs = lines.flatMap((l) => l.pts.map((r) => val(r, m)!))
+        const [vlo, vhi] = vs.length
+          ? [Math.min(...vs), Math.max(...vs)]
+          : [lo, hi]
+        const step = niceStep(vhi - vlo, 4)
+        const [a0, a1] = niceDomain(vlo, vhi, 4)
+        const y = scale([a0, a1], [200, 12])
         // Sweden is the focal line, drawn last so it sits on top; the rest are grey.
         const order = [...lines].reverse()
         const ends = lines.filter((l) => l.pts.at(-1)?.reference_year === y1)
@@ -90,10 +99,7 @@ function RoundLines() {
             >
               <YAxis
                 y={y}
-                ticks={Array.from(
-                  { length: (hi - lo) / 2 + 1 },
-                  (_, i) => lo + i * 2,
-                )}
+                ticks={ticksBetween(a0, a1, 4, step)}
                 x0={28}
                 x1={520}
               />
@@ -145,7 +151,7 @@ export const posts: Post[] = [
       const n = a.above === a.of ? `all ${a.of}` : `${a.above} of ${a.of}`
       return `In ${a.y}, Sweden was above the EU27 average on ${n} survey measures`
     },
-    note: 'Mean answer by survey year, on a 0–10 scale (meeting friends: 1–7). Source: European Social Survey',
+    note: 'Mean answer by survey year on a 0–10 scale (meeting friends: 1–7); the axis covers only the range of the means. Source: European Social Survey',
     render: () => <RoundLines />,
   },
 ]

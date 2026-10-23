@@ -57,6 +57,11 @@ export const PALETTE = [
 export const SEQ = ['var(--mean-seq-lo)', 'var(--mean-seq-hi)'] as const
 export const seq = (t: number) =>
   `color-mix(in oklab, ${SEQ[1]} ${Math.round(Math.max(0, Math.min(1, t)) * 100)}%, ${SEQ[0]})`
+/** The fill for a number written on a `seq(t)` cell: near-black on a light cell, near-white on
+ * a dark one, read from the cell's own lightness, so it holds in either theme. */
+export const cellInk = (t: number) => ({
+  fill: `oklch(from ${seq(t)} clamp(0.2, (0.6 - l) * 1000, 0.97) 0 0)`,
+})
 export const color = (i: number) => PALETTE[i % PALETTE.length]
 /** Grey for every mark but the focal one: for more categories than the palette can tell apart. */
 export const OTHER = 'var(--mean-other)'

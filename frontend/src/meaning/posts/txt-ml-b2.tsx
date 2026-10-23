@@ -1,5 +1,15 @@
 /** Symbolic atlas research steps, and the concept layer's lift per corpus. */
-import { Frame, OTHER, PALETTE, seq, useData, type Post } from '../kit'
+import { useContext } from 'react'
+import {
+  cellInk,
+  Frame,
+  OTHER,
+  PALETTE,
+  PostOpen,
+  seq,
+  useData,
+  type Post,
+} from '../kit'
 import { linearScale } from '../../charts/scales'
 import { EndLabels, YAxis } from '../axes'
 import { Svg, heading, uniq, usable } from './txt-kit'
@@ -16,6 +26,8 @@ type Profile = { concept_id: string; corpus_id: string; rank1_lift: number }
 const STEPS = 'symbolic/research-history.json'
 const PROFILES = 'concepts/profiles.json'
 const pc = (v: number) => `${Math.round(v * 100)}%`
+/** Short column heads for the lift matrix, so four fit over the cells. */
+const COL: Record<string, string> = { philosophy: 'phil', politics: 'pol' }
 const d = 'ml'
 
 /** Two shares over the steps; the first is focal. Higher is better for the first. */
@@ -28,6 +40,7 @@ const value = (s: Steps['steps'][number], k: string) =>
   Number.isFinite(s.metrics?.[k]) ? s.metrics[k] : null
 
 function ResearchSteps() {
+  const open = useContext(PostOpen)
   const data = usable(useData<Steps>(STEPS), STEPS, (d) => d.steps.length > 1)
   return (
     <Frame data={data}>
@@ -42,25 +55,24 @@ function ResearchSteps() {
             h={H}
             label="Symbolic atlas measures across the research steps"
           >
-            <YAxis
-              y={y}
-              ticks={[0, 0.25, 0.5, 0.75, 1]}
-              x0={l}
-              x1={W - r}
-              format={pc}
-            />
-            {/* Step names alternate between two lines so neighbours never touch. */}
+            <YAxis y={y} ticks={[0, 0.5, 1]} x0={l} x1={W - r} format={pc} />
+            {/* The thumbnail names the first and last step; opened, every step, alternating
+                between two lines (spaced in em) so neighbours never touch. */}
             <g className="mean-axis">
-              {steps.map((s, i) => (
-                <text
-                  key={s.id}
-                  x={x(i)}
-                  y={H - (i % 2 ? 4 : 17)}
-                  textAnchor="middle"
-                >
-                  {s.name.split(' ')[0]}
-                </text>
-              ))}
+              {steps.map(
+                (s, i) =>
+                  (open || i === 0 || i === steps.length - 1) && (
+                    <text
+                      key={s.id}
+                      x={x(i)}
+                      y={H - bottom}
+                      dy={open && i % 2 ? '2.4em' : '1.3em'}
+                      textAnchor="middle"
+                    >
+                      {s.name.split(' ')[0]}
+                    </text>
+                  ),
+              )}
             </g>
             {MEASURES.map(([k, name], j) => {
               // A missing value breaks the line rather than dropping it to zero.
@@ -149,7 +161,7 @@ function ConceptLift() {
       {(rows) => {
         const { corpora, concepts, v } = lifts(rows)
         const max = Math.max(...v.values(), 1)
-        const [W, mx, my, ch] = [300, 92, 18, 18]
+        const [W, mx, my, ch] = [300, 112, 18, 18]
         const cw = (W - mx) / corpora.length
         return (
           <Svg
@@ -165,7 +177,8 @@ function ConceptLift() {
                 y={11}
                 textAnchor="middle"
               >
-                {c}
+                {COL[c] ?? c}
+                <title>{c}</title>
               </text>
             ))}
             {concepts.map((k, i) => (
@@ -203,9 +216,7 @@ function ConceptLift() {
                           x={mx + (j + 0.5) * cw}
                           y={my + (i + 0.5) * ch + 3.5}
                           textAnchor="middle"
-                          style={
-                            t > 0.6 ? { fill: 'var(--mean-card)' } : undefined
-                          }
+                          style={cellInk(t)}
                         >
                           {l.toFixed(1)}
                         </text>

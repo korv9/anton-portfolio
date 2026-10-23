@@ -51,12 +51,14 @@ function Timeline() {
           const px = x(Date.parse(m.date))
           const text = SHORT[m.milestone_id]
           if (!text) return []
-          const k = ends.findIndex((e) => e < px - 4)
-          if (k < 0) return []
-          const width = text.length * 6.5
-          ends[k] = px + width
+          // Room for the text at the size a phone draws it, in drawing units.
+          const width = text.length * 10
           // Near the right edge the label ends at its dot instead of starting there.
-          return [{ m, px, text, dy: LEVEL[k], end: px + width > W - 8 }]
+          const end = px + width > W - 8
+          const k = ends.findIndex((e) => e < (end ? px - width : px) - 4)
+          if (k < 0) return []
+          ends[k] = end ? px : px + width
+          return [{ m, px, text, dy: LEVEL[k], end }]
         })
         const yrs = Array.from({ length: y1 - y0 + 1 }, (_, i) => y0 + i)
         return (

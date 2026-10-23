@@ -3,6 +3,7 @@
  * marks use, so a label can never sit at another value than its gridline. meaning.css styles
  * `.mean-axis` gridlines and tick text once for every family.
  */
+import { useLayoutEffect, useRef, useState, type RefObject } from 'react'
 import { spreadLabels } from '../charts/marks'
 import { niceStep } from '../charts/scales'
 
@@ -32,7 +33,8 @@ export function ticksBetween(
   return out
 }
 
-/** Horizontal gridlines across `[x0, x1]` with the value, formatted with its unit, on the left. */
+/** Horizontal gridlines across `[x0, x1]` with the value, formatted with its unit, on the left,
+ * centred on its line at any text size. */
 export function YAxis({
   y,
   ticks,
@@ -51,7 +53,7 @@ export function YAxis({
       {ticks.map((t) => (
         <g key={t}>
           <line x1={x0} x2={x1} y1={y(t)} y2={y(t)} />
-          <text x={x0 - 4} y={y(t) + 3.5} textAnchor="end">
+          <text x={x0 - 4} y={y(t)} dy="0.35em" textAnchor="end">
             {format(t)}
           </text>
         </g>
@@ -59,6 +61,11 @@ export function YAxis({
     </g>
   )
 }
+
+/** Where an x tick label's baseline sits for a `y` given at the nominal 10-unit text size: from
+ * about the plot's bottom (`y` − 12) one and a third lines down, so the gap to the plot and
+ * to the lowest y label grows with the text the card draws. */
+export const xTickY = (y: number) => ({ y: y - 12, dy: '1.35em' })
 
 /** Tick labels under the plot at positions from the x scale, e.g. `yearTicks` indexes. */
 export function XAxis({
@@ -73,7 +80,7 @@ export function XAxis({
   return (
     <g className="mean-axis">
       {ticks.map((t) => (
-        <text key={t.value} x={x(t.value)} y={y} textAnchor="middle">
+        <text key={t.value} x={x(t.value)} {...xTickY(y)} textAnchor="middle">
           {t.label}
         </text>
       ))}
@@ -105,9 +112,31 @@ export function RefLine({
   )
 }
 
+/** The font size of the first text in `ref`, in drawing units, read again whenever the card
+ * rescales its chart (fit.ts sets --mean-s on the svg's style). */
+function useFontSize(ref: RefObject<SVGGElement | null>) {
+  const [size, setSize] = useState(0)
+  useLayoutEffect(() => {
+    const g = ref.current
+    const svg = g?.ownerSVGElement
+    if (!g || !svg) return
+    const read = () => {
+      const t = g.querySelector('text')
+      setSize(t ? parseFloat(getComputedStyle(t).fontSize) : 0)
+    }
+    read()
+    const mo = new MutationObserver(read)
+    mo.observe(svg, { attributes: true, attributeFilter: ['style'] })
+    return () => mo.disconnect()
+  }, [ref])
+  return size
+}
+
 /**
  * Direct labels at the end of lines, moved apart so none overlap (charts/marks spreadLabels).
- * Each label takes its line's colour where it has one.
+ * The gap is the labels' own line height at the size they are drawn. When more labels than
+ * fit, the first item (the focal line), the top and the bottom line keep theirs, then the rest
+ * in order while room lasts. Each label takes its line's colour where it has one.
  */
 export function EndLabels({
   items,
@@ -122,9 +151,18 @@ export function EndLabels({
   bottom: number
   gap?: number
 }) {
+  const ref = useRef<SVGGElement>(null)
+  const step = Math.max(gap, useFontSize(ref))
+  const room = Math.floor((bottom - top) / step) + 1
+  let shown = items
+  if (items.length > room) {
+    const byY = [...items].sort((a, b) => a.y - b.y)
+    const first = [items[0], byY[0], byY.at(-1)!]
+    shown = [...new Set([...first, ...items])].slice(0, Math.max(1, room))
+  }
   return (
-    <g className="mean-end">
-      {spreadLabels(items, gap, top, bottom).map((l) => (
+    <g className="mean-end" ref={ref}>
+      {spreadLabels(shown, step, top, bottom).map((l) => (
         <text
           key={l.label}
           x={x}

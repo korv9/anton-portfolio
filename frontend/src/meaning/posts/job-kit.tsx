@@ -4,7 +4,8 @@
  */
 import { useContext, type ReactNode } from 'react'
 import RankBars, { type RankRow } from '../../charts/RankBars'
-import { focal, OTHER, PostOpen, tile, type Post } from '../kit'
+import { xTickY } from '../axes'
+import { OTHER, PostOpen, type Post } from '../kit'
 import { FIELD_EN, type Market } from '../../jobs/market'
 import './job.css'
 
@@ -53,10 +54,10 @@ export const fullYear = (m: Market) =>
 export const span = (m: Market) =>
   `January–${new Date(2000, m.ytd_months - 1, 15).toLocaleString('en-GB', { month: 'long' })}`
 
-/** A giant single number with its unit, on the focal tint. */
+/** A giant single number with its unit, plain on the card like the other families' KPIs. */
 export function Big({ value, unit }: { value: string; unit: string }) {
   return (
-    <div className="mean-job-big" style={tile(focal(true))}>
+    <div className="mean-job-big">
       <b>{value}</b>
       <span>{unit}</span>
     </div>
@@ -101,7 +102,7 @@ export function Svg({
   )
 }
 
-/** Labels along the bottom at given x positions. */
+/** Labels along the bottom at given x positions, spaced like axes.tsx XAxis. */
 export function XLabels({
   items,
   y,
@@ -112,7 +113,7 @@ export function XLabels({
   return (
     <g className="mean-axis">
       {items.map((t) => (
-        <text key={t.label + t.x} x={t.x} y={y} textAnchor="middle">
+        <text key={t.label + t.x} x={t.x} {...xTickY(y)} textAnchor="middle">
           {t.label}
         </text>
       ))}

@@ -50,14 +50,6 @@
   line-height: 1.25;
   color: var(--mean-muted);
 }
-.mean-txt-more {
-  margin: 6px 0 0;
-  color: var(--mean-muted);
-  font-size: var(--type-caption);
-}
-.mean-open .mean-txt-more {
-  display: none;
-}
 /* Rows whose names carry the meaning (chapters, statutes, works) get a wider label column. */
 .mean-bars.mean-txt-long :is(.rank-bars-list li, .stacked li) {
   grid-template-columns: minmax(0, 46%) minmax(0, 1fr) auto;

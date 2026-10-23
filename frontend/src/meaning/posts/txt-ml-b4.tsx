@@ -28,13 +28,13 @@ function Gauges() {
     <Frame data={data}>
       {({ compared }) => {
         const top = best(compared)
-        const [W, H, m, y0, bottom] = [300, 220, 118, 22, 22]
+        const [W, H, m, y0, bottom] = [300, 170, 118, 22, 22]
         const x = linearScale([0, 1], [m, W - 12])
         const rh = (H - y0 - bottom) / compared.length
         const cy = (i: number) => y0 + (i + 0.5) * rh
         const k = compared[0].k
-        const n = compared.length
-        const last = compared[n - 1]
+        const first = compared[0]
+        const qFirst = first.verified_share <= first.recall_at_k
         return (
           <Svg
             w={W}
@@ -43,25 +43,28 @@ function Gauges() {
           >
             <XGrid
               x={x}
-              ticks={[0, 0.25, 0.5, 0.75, 1]}
+              ticks={[0, 0.5, 1]}
               y0={y0 - 4}
               y1={H - bottom}
               format={pct}
             />
-            {/* The bottom row names its two dots; the rows above share them. */}
+            {/* The top row names its two dots, each on its outer side; the rows below
+                share them. Offsets are in em, so they grow with the text. */}
             <text
               className="mean-txt-v"
-              x={x(last.verified_share)}
-              y={cy(n - 1) + 15}
-              textAnchor="middle"
+              x={x(first.verified_share)}
+              y={cy(0)}
+              dy="-0.9em"
+              textAnchor={qFirst ? 'end' : 'start'}
             >
               quote check
             </text>
             <text
               className="mean-txt-t"
-              x={x(last.recall_at_k)}
-              y={cy(n - 1) + 15}
-              textAnchor="middle"
+              x={x(first.recall_at_k)}
+              y={cy(0)}
+              dy="-0.9em"
+              textAnchor={qFirst ? 'start' : 'end'}
             >
               {`recall@${k}`}
             </text>
@@ -70,7 +73,8 @@ function Gauges() {
                 <text
                   className="mean-txt-v"
                   x={m - 6}
-                  y={cy(i) - 2}
+                  y={cy(i)}
+                  dy="-0.2em"
                   textAnchor="end"
                 >
                   {short(c.model)}
@@ -78,10 +82,11 @@ function Gauges() {
                 <text
                   className="mean-txt-t"
                   x={m - 6}
-                  y={cy(i) + 10}
+                  y={cy(i)}
+                  dy="0.9em"
                   textAnchor="end"
                 >
-                  {`${c.setting}, ${c.questions} q.`}
+                  {c.setting}
                 </text>
                 <line
                   x1={x(c.verified_share)}

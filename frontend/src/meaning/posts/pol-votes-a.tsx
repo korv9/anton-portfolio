@@ -1,6 +1,6 @@
 /** Riksdag roll calls per session since 1993/94: attendance, cohesion, agreement. */
 import { useState } from 'react'
-import { focal, Frame, seq, Slicer, useData, type Post } from '../kit'
+import { cellInk, focal, Frame, seq, Slicer, useData, type Post } from '../kit'
 import { linearScale } from '../../charts/scales'
 import { niceDomain, ticksBetween, XAxis, YAxis } from '../axes'
 import { best, every, fromEnd, GovStrip, int, PARTIES, Sub } from './pol-kit'
@@ -187,11 +187,7 @@ function MetricHeat() {
                             y={r * (rh + 2) + 14}
                             textAnchor="middle"
                             className="mean-pol-cellv"
-                            style={
-                              t > 0.55
-                                ? { fill: 'var(--mean-card)' }
-                                : undefined
-                            }
+                            style={cellInk(t)}
                           >
                             {cell(v)}
                           </text>
@@ -200,6 +196,7 @@ function MetricHeat() {
                     })}
                 </g>
               ))}
+              {/* Sessions without their century, 18/19, so eight fit under the columns on a phone. */}
               <g className="mean-axis">
                 {ss.map((s, i) => (
                   <text
@@ -208,7 +205,7 @@ function MetricHeat() {
                     y={ps.length * (rh + 2) + 12}
                     textAnchor="middle"
                   >
-                    {s}
+                    {s.slice(2)}
                   </text>
                 ))}
               </g>

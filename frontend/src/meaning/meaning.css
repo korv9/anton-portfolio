@@ -184,7 +184,7 @@
    divided by it, clamped so a chart drawn far too wide for its card cannot blow its labels up
    past their layout. A size a post sets on its own text element still wins. */
 .mean-body svg {
-  --mean-k: clamp(0.6, var(--mean-s, 1), 2.4);
+  --mean-k: clamp(0.5, var(--mean-s, 1), 2.4);
   font-size: calc(11px / var(--mean-k));
 }
 .mean-body svg text {
@@ -235,6 +235,13 @@
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
+}
+/* A closed square or tall card gives the finding a third line; a square keeps the note to one. */
+.mean-post:is(.mean-square, .mean-tall):not(.mean-open) .mean-head-title {
+  -webkit-line-clamp: 3;
+}
+.mean-square:not(.mean-open) .mean-head-note {
+  -webkit-line-clamp: 1;
 }
 .mean-open .mean-head-title {
   font-size: var(--type-chart-title);
@@ -503,8 +510,8 @@
   }
 }
 /* charts/RankBars and Compare Stacked inside a card (wrap them in .mean-bars): caption type and
-   one line per row at any width, so ten rows fit a square card. A long label ends in an
-   ellipsis. */
+   one line per row at any width, so ten rows fit a square card. The label takes 45 % of the
+   row; a longer one ends in an ellipsis in a narrow card and wraps where there is room. */
 .mean-bars {
   flex: 1;
   min-height: 0;
@@ -512,7 +519,7 @@
   font-family: var(--mean-font);
 }
 .mean-bars :is(.rank-bars-list li, .stacked li) {
-  grid-template-columns: minmax(0, 7.5em) minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 45%) minmax(0, 1fr) auto;
   gap: 0.5em;
   font-size: var(--type-caption);
   line-height: 1.25;
@@ -530,6 +537,28 @@
   overflow: hidden;
   text-overflow: ellipsis;
   color: var(--mean-ink);
+}
+/* Where there is room (a phone-wide card, or opened), a long name wraps onto a second line. */
+@container (min-width: 300px) {
+  .mean-bars .rank-label {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+}
+.mean-open .mean-bars .rank-label {
+  -webkit-line-clamp: unset;
+}
+/* A thumbnail shows the rows that fit whole and counts the rest (fit.ts sets data-more). */
+.mean-post:not(.mean-open) .mean-bars[data-more]::after {
+  content: attr(data-more) ' more when opened';
+  display: block;
+  margin-top: 4px;
+  color: var(--mean-muted);
+  font-size: var(--type-caption);
+  line-height: 1.2;
 }
 .mean-bars :is(.rank-track, .stacked-track) {
   grid-column: auto;

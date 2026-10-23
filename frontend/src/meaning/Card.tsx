@@ -10,6 +10,7 @@ import {
   useState,
   type ReactNode,
 } from 'react'
+import { fitCharts } from './fit'
 import { useFresh } from './freshness'
 import { PostLeave, PostLive, PostOpen, still, useData, type Post } from './kit'
 import { Trace } from './Trace'
@@ -186,27 +187,15 @@ export function Card({
       node?.querySelector<HTMLElement>('.mean-hit')?.focus()
     wasOpen.current = open
   }, [open])
-  // Chart text is sized in SVG units and the chart is scaled to the card, so each chart gets its
-  // own drawn scale as --mean-s; meaning.css divides text sizes by it to keep them near 10 px.
+  // Each chart's text keeps its screen size and stays inside the chart (fit.ts).
   useEffect(() => {
     const node = ref.current
     if (!node || !near) return
-    const fit = () =>
-      node
-        .querySelectorAll<SVGSVGElement>('.mean-body svg[viewBox]')
-        .forEach((svg) => {
-          const box = svg.viewBox.baseVal
-          const { width, height } = svg.getBoundingClientRect()
-          if (box.width && box.height && width)
-            svg.style.setProperty(
-              '--mean-s',
-              String(Math.min(width / box.width, height / box.height)),
-            )
-        })
+    const fit = () => fitCharts(node)
     const ro = new ResizeObserver(fit)
     ro.observe(node)
     const mo = new MutationObserver(fit)
-    mo.observe(node, { childList: true, subtree: true })
+    mo.observe(node, { childList: true, subtree: true, characterData: true })
     return () => {
       ro.disconnect()
       mo.disconnect()

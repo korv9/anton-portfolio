@@ -43,7 +43,7 @@ function PairDots() {
       {(rows) => {
         const pairs = byPair(rows)
         const [W, H, m, top, bottom] = [300, 220, 112, 18, 22]
-        const ticks = [0, 0.25, 0.5, 0.75, 1]
+        const ticks = [0, 0.5, 1]
         const x = linearScale([0, 1], [m, W - 12])
         const rh = (H - top - bottom) / pairs.length
         const cy = (i: number) => top + (i + 0.5) * rh
@@ -62,9 +62,9 @@ function PairDots() {
             />
             <text
               className="mean-txt-t"
-              x={x(pairs[0].chance)}
+              x={x(pairs[0].chance) - 4}
               y={top - 7}
-              textAnchor="middle"
+              textAnchor="end"
             >
               chance
             </text>

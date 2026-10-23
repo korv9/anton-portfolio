@@ -1,9 +1,7 @@
 /** Swedish statutes: how long their passages are, in characters. */
 import { useState } from 'react'
-import { Frame, OTHER, Slicer, useData, type Post } from '../kit'
-import { YAxis } from '../axes'
-import { linearScale, niceTicks } from '../../charts/scales'
-import { Svg, fmt, heading, sum, uniq, usable } from './txt-kit'
+import { Frame, Slicer, useData, type Post } from '../kit'
+import { Bars, fmt, heading, sum, uniq, usable } from './txt-kit'
 
 type Bin = { kind: string; up_to: number | null; passages: number }
 type Sfs = { lengths: Bin[] }
@@ -30,10 +28,6 @@ function SfsLengths() {
         const kinds = uniq(lengths.map((l) => l.kind))
         const kind = kinds.includes(pick) ? pick : kinds[0]
         const rows = lengths.filter((l) => l.kind === kind)
-        const [W, H, m, top, bottom] = [300, 220, 40, 14, 30]
-        const yt = niceTicks(Math.max(...rows.map((r) => r.passages), 1))
-        const y = linearScale([0, yt.at(-1)!], [H - bottom, top])
-        const bw = (W - m) / rows.length
         return (
           <>
             <Slicer
@@ -44,37 +38,17 @@ function SfsLengths() {
               onChange={setKind}
             />
             <p className="mean-cap">{kindName(kind)}</p>
-            <Svg
-              w={W}
-              h={H}
+            {/* Length bins top to bottom, shortest first, so the rows read as a histogram. */}
+            <Bars
               label={`${kindName(kind)} of Swedish statutes by length in characters`}
-            >
-              <YAxis y={y} ticks={yt} x0={m} x1={W} format={compact} />
-              {rows.map((r, i) => (
-                <g key={i}>
-                  <rect
-                    x={m + i * bw + 3}
-                    width={bw - 6}
-                    y={y(r.passages)}
-                    height={H - bottom - y(r.passages)}
-                    fill={OTHER}
-                  >
-                    <title>{`${bin(r, rows[i - 1]?.up_to)} characters: ${fmt(r.passages)} passages`}</title>
-                  </rect>
-                  <text
-                    className="mean-txt-t"
-                    x={m + (i + 0.5) * bw}
-                    y={H - bottom + 12}
-                    textAnchor="middle"
-                  >
-                    {bin(r, rows[i - 1]?.up_to)}
-                  </text>
-                </g>
-              ))}
-              <text className="mean-txt-t" x={W} y={H - 2} textAnchor="end">
-                characters per passage
-              </text>
-            </Svg>
+              format={compact}
+              focus={null}
+              rows={rows.map((r, i) => ({
+                key: String(r.up_to),
+                label: `${bin(r, rows[i - 1]?.up_to)} characters`,
+                value: r.passages,
+              }))}
+            />
           </>
         )
       }}

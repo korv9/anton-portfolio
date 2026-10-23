@@ -181,7 +181,10 @@ export function Ranked({
     .filter(({ r, i }) => keep(r, i))
   const hidden = sorted.length - shown.length
   return (
-    <div className={`mean-bars mean-wel-rank${wrap ? ' mean-wel-wrap' : ''}`}>
+    <div
+      className={`mean-bars mean-wel-rank${wrap ? ' mean-wel-wrap' : ''}`}
+      data-hidden={hidden}
+    >
       <RankBars
         label={label}
         format={format}
@@ -202,7 +205,6 @@ export function Ranked({
           ref: mark,
         }))}
       />
-      {hidden > 0 && <p className="mean-wel-more">{hidden} more when opened</p>}
     </div>
   )
 }

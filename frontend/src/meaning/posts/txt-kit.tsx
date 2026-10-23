@@ -5,6 +5,7 @@
  */
 import { useContext, type ReactNode } from 'react'
 import { OTHER, PALETTE, PostOpen, type Post } from '../kit'
+import { xTickY } from '../axes'
 import RankBars, { type RankRow } from '../../charts/RankBars'
 import './txt.css'
 
@@ -99,7 +100,10 @@ export function Bars({
   const shown = open ? rows : rows.slice(0, limit)
   const key = focus === undefined ? rows[0]?.key : focus
   return (
-    <div className={long ? 'mean-bars mean-txt-long' : 'mean-bars'}>
+    <div
+      className={long ? 'mean-bars mean-txt-long' : 'mean-bars'}
+      data-hidden={rows.length - shown.length}
+    >
       <RankBars
         rows={shown.map((r) => ({
           ...r,
@@ -109,11 +113,6 @@ export function Bars({
         label={label}
         max={max ?? Math.max(...rows.map((r) => Math.abs(r.value)), 1e-9)}
       />
-      {shown.length < rows.length && (
-        <p className="mean-txt-more">
-          {rows.length - shown.length} more when opened
-        </p>
-      )}
     </div>
   )
 }
@@ -137,7 +136,7 @@ export function XGrid({
       {ticks.map((t) => (
         <g key={t}>
           <line x1={x(t)} x2={x(t)} y1={y0} y2={y1} />
-          <text x={x(t)} y={y1 + 12} textAnchor="middle">
+          <text x={x(t)} {...xTickY(y1 + 12)} textAnchor="middle">
             {format(t)}
           </text>
         </g>
