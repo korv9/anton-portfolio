@@ -14,7 +14,6 @@ export type Page =
   | 'drugcomb'
   | 'thesis'
   | 'homie'
-  | 'lakehouse'
   | 'symbolic'
   | 'philosophy'
   | 'concepts'
@@ -22,7 +21,7 @@ export type Page =
   | 'meaning'
   | 'lawqa'
   | 'jobs'
-  | 'askplatform'
+  | 'platform'
 
 export type Route = {
   /** The full hash, e.g. `#politik-valjarna?partier=S`. */
@@ -59,6 +58,9 @@ export const REDIRECTS: Record<string, string> = {
   '#er-diagram': '#projekt',
   '#tech': '#projekt',
   '#diva': '#projekt',
+  // Ask the platform and the DiVA lakehouse are sections of the platform page now.
+  '#ask-platform': '#platform',
+  '#diva-lakehouse': '#platform',
   '#rag': '#projekt',
   '#mimii': '#projekt',
   '#rfc-drift': '#projekt',
@@ -198,15 +200,13 @@ export function pageOf(path: string): Page {
   if (path.startsWith('#drugcomb')) return 'drugcomb'
   if (path === '#thesis') return 'thesis'
   if (path === '#homie') return 'homie'
-  if (path === '#diva-lakehouse') return 'lakehouse'
+  if (path === '#platform') return 'platform'
   if (SWEDEN_PATHS.includes(path)) return 'sweden'
   if (path === '#cluster-visuals') return 'clusters'
   if (path === MEANING) return 'meaning'
   if (path === '#fraga-lagen') return 'lawqa'
   // The job assistant (docs/job-assistant.md); #jobb and #job- still lead to the feed.
   if (path === '#jobs') return 'jobs'
-  // Ask the platform on its own, for its tests until the feed's closing chapter mounts it.
-  if (path === '#ask-platform') return 'askplatform'
   if (path.startsWith('#concept-') || path.startsWith('#concepts-'))
     return 'concepts'
   if (path === '#philosophy-atlas' || path.startsWith('#philosophy-'))

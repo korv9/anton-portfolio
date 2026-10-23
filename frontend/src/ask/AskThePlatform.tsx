@@ -68,7 +68,8 @@ function Quoted({ text, items }: { text: string; items: Map<string, Item> }) {
   return <p className="ap-answer">{parts}</p>
 }
 
-export default function AskThePlatform() {
+/** With `ready`, the first precomputed example's answer shows before anything is asked. */
+export default function AskThePlatform({ ready = false }: { ready?: boolean }) {
   const [corpus, setCorpus] = useState<Corpus<Item> | 'missing' | null>(null)
   const [examples, setExamples] = useState<Example[]>([])
   const [graph, setGraph] = useState<Graph | null>(null)
@@ -152,6 +153,12 @@ export default function AskThePlatform() {
     if (named.length && !graph)
       fetchJson<Graph>('architecture/graph.json').then(setGraph, () => {})
   }, [named.length, graph])
+
+  const first = examples[0]?.answer
+  const sample =
+    ready && first?.status === 'verified'
+      ? { question: examples[0].question, answer: first.answer }
+      : null
 
   return (
     <section className="ap" aria-labelledby="ap-title">
@@ -240,6 +247,13 @@ export default function AskThePlatform() {
                   'Letar fram de närmaste passagerna…',
                 )}
           </p>
+        ) : sample && !reply && !hits ? (
+          <>
+            <p className="ap-status">
+              {l('Example:', 'Exempel:')} {sample.question}
+            </p>
+            <Quoted text={sample.answer} items={items} />
+          </>
         ) : reply?.status === 'verified' ? (
           <>
             <Quoted text={reply.answer} items={items} />

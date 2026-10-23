@@ -242,31 +242,44 @@ export const PROJECTS: ProjectEntry[] = [
   },
 
   {
-    id: 'diva-lakehouse',
-    title: t('DiVA Thesis Lakehouse', 'DiVA Thesis Lakehouse'),
-    descriptor: t('Lakehouse i Microsoft Fabric', 'Microsoft Fabric lakehouse'),
+    id: 'platform',
+    title: t('Dataplattformen', 'The data platform'),
+    descriptor: t(
+      'dbt, DuckDB, GitHub Actions, R2',
+      'dbt, DuckDB, GitHub Actions, R2',
+    ),
     summary: t(
-      'Inkrementell inläsning av uppsatsmetadata från DiVA till Bronze, Silver och Gold, med PySpark, Delta MERGE och kvalitetskontroller före publicering.',
-      'An incremental pipeline for DiVA thesis metadata, with Bronze, Silver and Gold layers, PySpark, Delta MERGE and quality checks before publishing.',
+      'Offentlig data hämtas på schema, byggs och testas med dbt i bronze, silver och gold och släpps till Cloudflare R2 när alla kontroller har gått igenom. Samma mönster finns i Microsoft Fabric för DiVA.',
+      'Public data fetched on a schedule, built and tested with dbt in bronze, silver and gold, and released to Cloudflare R2 once every check has passed. The same pattern runs on Microsoft Fabric for DiVA.',
     ),
     question: t(
-      'Hur läser man in metadata som ändras och raderas utan dubletter eller osäkra återkörningar?',
-      'How do you ingest changing and deleted metadata without duplicates or unsafe reruns?',
+      'Hur håller man många offentliga källor färska utan att publicera en felaktig siffra?',
+      'How do you keep many public sources fresh without publishing a wrong number?',
     ),
     built: t(
-      'En OAI-PMH-klient, spårbar rå XML, en Delta Lake-pipeline och genererade Fabric-notebooks.',
-      'An OAI-PMH client, traceable raw XML, a Delta Lake pipeline and generated Fabric notebooks.',
+      'Python-hämtning med proveniens, dbt-modeller med kontrakt och tester, schemalagda körningar i GitHub Actions och releaser till R2.',
+      'Python ingestion with provenance, dbt models with contracts and tests, scheduled runs in GitHub Actions and releases to R2.',
     ),
     result: t(
-      'Verifierad lokalt med Spark och Delta. Körning i Fabric och mot DiVA:s levande endpoint återstår att bekräfta.',
-      'Verified locally with Spark and Delta. Execution in Fabric and against the live DiVA endpoint remains to be confirmed.',
+      'Levande körstatus, 30 dagars körhistorik med orsaken till varje röd körning och incidentrapporter.',
+      'Live run status, 30 days of run history with the cause of each red run, and incident reports.',
     ),
-    tech: ['Microsoft Fabric', 'PySpark', 'Delta Lake', 'OAI-PMH', 'Python'],
-    href: '#diva-lakehouse',
-    pages: ['lakehouse'],
-    code: 'https://github.com/korv9/diva-fabric-lakehouse',
+    tech: [
+      'dbt',
+      'DuckDB',
+      'Python',
+      'GitHub Actions',
+      'Cloudflare R2',
+      'Microsoft Fabric',
+    ],
+    href: '#platform',
+    pages: ['platform'],
+    code: [
+      'https://github.com/korv9/anton-portfolio',
+      'https://github.com/korv9/diva-fabric-lakehouse',
+    ],
     category: 'data',
-    status: 'study',
+    status: 'live',
   },
   {
     id: 'homie',
@@ -308,7 +321,7 @@ export const PROJECT_GROUPS = [
       'drugcomb',
     ],
   },
-  { label: 'Engineering', ids: ['thesis', 'homie', 'diva-lakehouse'] },
+  { label: 'Engineering', ids: ['thesis', 'homie', 'platform'] },
 ]
 
 /** Public project listings; the thesis remains available through Education and its URL. */
