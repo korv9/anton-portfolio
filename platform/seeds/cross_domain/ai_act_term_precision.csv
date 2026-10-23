@@ -1,8 +1,12 @@
-term_id,language,term,corpus,matched,sampled,on_topic,precision
-ai_system,sv,ai-system,riksdag,19,19,19,1.0
-ai_modell,sv,ai-modell,riksdag,12,12,12,1.0
-ai_modell,en,ai model,riksdag,11,11,0,0.0
-sandlador,sv,sandlådor,riksdag,10,10,3,0.3
-sandlador,en,sandboxes,riksdag,0,0,0,
-sandladan,sv,sandlådan,riksdag,25,25,0,0.0
-sandladan,en,sandbox,riksdag,1,1,0,0.0
+term_id,language,term,corpus,matched,sampled,on_topic,precision,employers
+ai_system,sv,ai-system,riksdag,19,19,19,1.0,
+ai_modell,sv,ai-modell,riksdag,12,12,12,1.0,
+ai_modell,en,ai model,riksdag,11,11,0,0.0,
+sandlador,sv,sandlådor,riksdag,10,10,3,0.3,
+sandlador,en,sandboxes,riksdag,0,0,0,,
+sandladan,sv,sandlådan,riksdag,25,25,0,0.0,
+sandladan,en,sandbox,riksdag,1,1,0,0.0,
+ai_system,sv,ai-system,job_ads,347,50,50,1.0,30
+ai_modell,sv,ai-modell,job_ads,427,50,50,1.0,39
+ai_system_med_hog_risk,sv,ai-system med hög risk,job_ads,9,9,9,1.0,1
+ai_modeller_for_allmanna_andamal,sv,ai-modeller för allmänna ändamål,job_ads,9,9,9,1.0,1

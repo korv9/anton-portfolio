@@ -92,7 +92,7 @@ class Files:
         if path not in self.commits:
             if path in self.dirty:
                 raise ValueError(f"{path}: has uncommitted changes; commit them before building")
-            self.commits[path] = git("log", "-1", "--format=%h", "--", path).strip()
+            self.commits[path] = git("log", "-1", "--format=%H", "--", path).strip()
         return self.commits[path]
 
 
