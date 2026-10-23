@@ -81,8 +81,14 @@ test('every feed post declares the data it reads, and only published paths', () 
         all.add(path)
       }
     }
-    for (const path of reads(text))
+    const used = new Set(reads(text))
+    for (const path of used)
       assert.ok(all.has(path), `${f}: reads ${path} but no post declares it`)
+    for (const path of all)
+      assert.ok(
+        used.has(path) || (LIVE.has(path) && text.includes('loadStatus')),
+        `${f}: declares ${path} but never reads it`,
+      )
   }
   assert.ok(posts > 150, `only ${posts} posts found`)
 })

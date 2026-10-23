@@ -402,6 +402,9 @@
 .mean-trace dd > code + code::before {
   content: ', ';
 }
+.mean-trace-layers > span + span::before {
+  content: '; ';
+}
 .mean-trace a {
   color: inherit;
 }

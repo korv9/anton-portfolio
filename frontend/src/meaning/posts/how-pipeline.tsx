@@ -3,7 +3,8 @@
  * (status/ingestion.json, written by platform/pipeline.py on each scheduled run). A bar is the
  * last run's measured length, start to end; a subject past the freshness SLA the feed knows for
  * it (SUBJECTS in freshness.ts) is the focal colour.
- * The post leaves the feed when the status cannot be reached.
+ * When the status cannot be reached the thumbnail leaves the feed, as Frame does for withdrawn
+ * and expired data; an opened post stays and says the status is unavailable, so focus is kept.
  */
 import { useEffect, useState } from 'react'
 import { focal, Frame, type Post } from '../kit'
