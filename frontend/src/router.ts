@@ -21,6 +21,7 @@ export type Page =
   | 'clusters'
   | 'meaning'
   | 'lawqa'
+  | 'jobs'
 
 export type Route = {
   /** The full hash, e.g. `#politik-valjarna?partier=S`. */
@@ -201,6 +202,8 @@ export function pageOf(path: string): Page {
   if (path === '#cluster-visuals') return 'clusters'
   if (path === MEANING) return 'meaning'
   if (path === '#fraga-lagen') return 'lawqa'
+  // The job assistant (docs/job-assistant.md); #jobb and #job- still lead to the feed.
+  if (path === '#jobs') return 'jobs'
   if (path.startsWith('#concept-') || path.startsWith('#concepts-'))
     return 'concepts'
   if (path === '#philosophy-atlas' || path.startsWith('#philosophy-'))

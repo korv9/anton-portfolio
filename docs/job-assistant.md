@@ -233,6 +233,28 @@ reports precision of the list, the share of relevant ads in the outside sample, 
 class and label disagree. The labels are the owner's and the counts are small, so the numbers
 describe this search, not matching in general.
 
+## Review page
+
+`#jobs` (`frontend/src/job-assistant/`) is the work tool and the public page in one. The production
+build still shows only the start page, as for every other product, until the owner opens it.
+
+- The header says what the page is, when the ads were read and which profile version and CV the
+  matches used.
+- Four views: the review list (strong and possible), stretch, outside and the evaluation sample.
+  Filters for status and role, sorting by best match, newest or deadline, and a text search.
+- Dense rows beside the selected ad. `j`/`k` or the arrow keys move, `/` searches and Escape
+  clears it. With the owner token, `1` to `6` set the status. The selected ad is in the address
+  (`#jobs?ad=<id>`), so a link opens it.
+- The selected ad shows its class with the reasons, the checked explanation, and a table of
+  requirements: skill, how the ad asks for it, the ad sentence, the CV level and the CV line.
+  Gaps, education and conditions, uncertainty, the full text, links and dates come after.
+- Below the list: how the search works, what the ads ask for against the CV
+  (`demand.json` against the approved profile), the label counts, the runs of the last seven
+  days, and the owner's tools (token, CV upload, draft editor, approval request).
+
+The home page entry described below is not built in this task: the task brief keeps
+`frontend/src/home/` untouched while the owner works there.
+
 ## Home page entry (planned)
 
 The owner's decision of 2026-10-23 puts the job assistant high on the home page, right after the
@@ -289,3 +311,4 @@ and misses from the owner's labels).
   2,269 ads), and the export reads gold.
 - 2026-10-23: owner records in D1 behind token-protected Worker routes, the hourly CV and approval
   sync, and the D1 Terraform.
+- 2026-10-23: the review page `#jobs` with the method, demand, evaluation and owner sections.
