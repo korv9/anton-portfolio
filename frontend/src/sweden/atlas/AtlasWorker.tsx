@@ -194,7 +194,7 @@ export default function AtlasWorker() {
       revealed={revealed}
       revealedFrom={SLOTS.languageTrends.path}
       gap="Ads are not hiring decisions or working lives. Years without a counted archive stay empty and are never filled in."
-      foot="Source: JobTech historical job ads · distinct ad texts · dictionary-based NLP, validated on samples"
+      foot="Source: JobTech historical job ads · distinct ad texts · dictionary matching, not checked against hand-coded ads"
       view={{ camera: [-230, 110, 1200], target: [30, -20, 0], shift: -200 }}
       slots={states}
       loading={loading}

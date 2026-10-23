@@ -50,6 +50,8 @@ export const REDIRECTS: Record<string, string> = {
   '#sweden-explorer': MEANING,
   '#sweden-mental-health': MEANING,
   '#now': MEANING,
+  // The SWEDEN component kit was a development page.
+  '#sweden-kit': '#sweden',
   '#data-constellation': '#projekt',
   '#data-catalogue': '#projekt',
   '#idea-lineage': '#projekt',
@@ -150,7 +152,6 @@ export const SWEDEN_PATHS = [
   '#sweden-tillhorighet',
   '#sweden-framtid',
   '#sweden-samband',
-  '#sweden-kit',
   '#sweden-atlas',
   '#sweden-atlas-a',
   '#sweden-atlas-b',

@@ -87,7 +87,7 @@ export default function AtlasFutures() {
       name: 'SOU',
       note: sou
         ? (sou.label ?? 'Government Official Reports')
-        : `awaiting ${SLOTS.futuresSou.path.split('/').pop()}`,
+        : 'Government Official Reports · not published yet',
       get: sou ? (id, y) => souMap.get(id)?.get(y) ?? null : null,
       years: yearsOf(souMap),
       span: [0, 0],

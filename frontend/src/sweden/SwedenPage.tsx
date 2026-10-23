@@ -1,7 +1,7 @@
 /**
  * The SWEDEN platform's routes (router.ts SWEDEN_PATHS): the hub at #sweden, a page per research
- * product, Connections, and #sweden-kit for developing the shared components. A product page
- * whose data cannot be read shows its question and an EmptyState, never sample findings.
+ * product and Connections. A product page whose data cannot be read shows its question and an
+ * EmptyState, never sample findings.
  */
 import {
   lazy,
@@ -11,12 +11,6 @@ import {
 } from 'react'
 import { l } from '../i18n'
 import type { Route } from '../router'
-import {
-  EmptyState,
-  EvidenceStamp,
-  StatusStamp,
-  SwedenMasthead,
-} from './template'
 import './sweden.css'
 
 // Products with findings, each loaded only on its own route.
@@ -48,7 +42,6 @@ export default function SwedenPage({ route }: { route: Route }) {
         <Atlas path={route.path} />
       </Suspense>
     )
-  if (route.path === '#sweden-kit') return <Kit />
   const Page = PAGES[route.path]
   if (Page)
     return (
@@ -66,46 +59,5 @@ export default function SwedenPage({ route }: { route: Route }) {
     <Suspense fallback={null}>
       <Hub />
     </Suspense>
-  )
-}
-
-/** Internal route for developing the shared components; it shows no data. */
-function Kit() {
-  return (
-    <article className="sweden sw-page">
-      <SwedenMasthead current="#sweden-kit" />
-      <section className="sw-findings">
-        <h1>SWEDEN kit</h1>
-        <p className="sw-note">
-          {l(
-            'Component states only. Nothing on this page is data.',
-            'Bara komponentlägen. Inget på sidan är data.',
-          )}
-        </p>
-        <h2>{l('Status', 'Status')}</h2>
-        <p>
-          <StatusStamp status="findings" /> <StatusStamp status="pipeline" />{' '}
-          <StatusStamp status="unavailable" />
-        </p>
-        <h2>{l('Evidence', 'Evidens')}</h2>
-        <p>
-          <EvidenceStamp evidence="descriptive" />{' '}
-          <EvidenceStamp evidence="exploratory" />{' '}
-          <EvidenceStamp evidence="causal" />
-        </p>
-        <h2>{l('Empty state', 'Tomt läge')}</h2>
-        <EmptyState
-          state="ingestion"
-          shows={l(
-            'What the visualisation would show.',
-            'Vad visualiseringen skulle visa.',
-          )}
-          needs={l(
-            'Which source or pipeline it needs.',
-            'Vilken källa eller pipeline den behöver.',
-          )}
-        />
-      </section>
-    </article>
   )
 }
