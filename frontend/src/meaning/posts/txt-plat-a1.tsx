@@ -36,6 +36,7 @@ function QualityWaffle() {
           <>
             <Slicer
               label="Product"
+              cycles={false}
               options={['all', ...uniq(rows.map((c) => c.product_id))]}
               value={product}
               onChange={setProduct}
@@ -86,6 +87,7 @@ function GoldKpi() {
           <>
             <Slicer
               label="Measure"
+              cycles={false}
               options={keys}
               value={k}
               onChange={setKey}
@@ -121,6 +123,7 @@ function ArchStack() {
           <>
             <Slicer
               label="Scale"
+              cycles={false}
               options={SCALES}
               value={scale}
               onChange={setScale}

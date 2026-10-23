@@ -42,6 +42,8 @@ type Wedge = {
     tax_wedge_pct: number
   }[]
   series: [string, number, string, number | null][]
+  /** Household code -> [English, Swedish] name. */
+  households: Record<string, [string, string]>
 }
 
 const useWedge = () => useData<Wedge>('taxes/wedge.json')
@@ -60,6 +62,9 @@ function VatDonut() {
             <Slicer
               label="Household"
               options={d.households.map((x) => x.key)}
+              format={(k) =>
+                d.households.find((x) => x.key === k)?.name[0] ?? k
+              }
               value={hh.key}
               onChange={setH}
             />
@@ -130,6 +135,7 @@ function WedgeBars() {
           <>
             <Slicer
               label="Household and wage"
+              cycles={false}
               options={opts}
               value={k}
               onChange={setK}
@@ -207,6 +213,7 @@ function WedgeLines() {
             <Slicer
               label="Household"
               options={[...new Set(d.series.map((r) => r[2]))]}
+              format={(k) => d.households[k]?.[0] ?? k}
               value={hh}
               onChange={setHh}
             />

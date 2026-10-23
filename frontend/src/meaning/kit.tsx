@@ -13,15 +13,18 @@ import {
 import { fetchData } from '../dataSource'
 
 async function fetchJson<T>(path: string): Promise<T> {
-  const response = await fetchData(path)
-  if (!response.ok) throw new Error(`${path}: HTTP ${response.status}`)
+  // The message is the path, so a failure names the file whatever went wrong.
+  const response = await fetchData(path).catch(() => {
+    throw new Error(path)
+  })
+  if (!response.ok) throw new Error(`${path} (HTTP ${response.status})`)
   return response.json()
 }
 
 export type Post = {
   /** Unique across the feed, kebab-case, e.g. 'riksdag-votes-by-party'. */
   id: string
-  /** The data family, used only to colour the avatar ring. */
+  /** The data family: picks the pipeline subject whose freshness the card shows. */
   domain: string
   /** 'wide' spans two feed columns on large screens. */
   size?: 'square' | 'wide' | 'tall'
@@ -47,6 +50,13 @@ export const SEQ = ['var(--mean-seq-lo)', 'var(--mean-seq-hi)'] as const
 export const seq = (t: number) =>
   `color-mix(in oklab, ${SEQ[1]} ${Math.round(Math.max(0, Math.min(1, t)) * 100)}%, ${SEQ[0]})`
 export const color = (i: number) => PALETTE[i % PALETTE.length]
+/** Grey for every mark but the focal one: for more categories than the palette can tell apart. */
+export const OTHER = 'var(--mean-other)'
+export const focal = (on: boolean) => (on ? PALETTE[0] : OTHER)
+/** The i-th of n greys, each paler towards the paper: parts of a whole beside one focal part,
+ * told apart by step rather than hue. Every part gets its own step. */
+export const shade = (i: number, n: number) =>
+  `color-mix(in srgb, ${OTHER} ${Math.round(100 - (i / Math.max(1, n)) * 72)}%, var(--paper))`
 /** A number tile in a series colour: a pale tint of it, edged with the full colour, so the
  * ink stays legible on both themes. */
 export const tile = (c: string) => ({
@@ -55,6 +65,8 @@ export const tile = (c: string) => ({
 })
 
 const cache = new Map<string, Promise<unknown>>()
+/** Settled fetches, so a card that remounts or shares a file knows its data at once. */
+const settled = new Map<string, unknown>()
 
 /** A dataset past its `valid_until` date; the post that reads it leaves the feed. */
 export class Expired extends Error {}
@@ -72,10 +84,22 @@ export const expired = (v: unknown) =>
  * ({state: 'unavailable'}).
  */
 export function useData<T>(path: string): T | null | Error {
-  const [state, setState] = useState<T | null | Error>(null)
+  const [state, setState] = useState<T | null | Error>(
+    () => (settled.get(path) as T | Error | undefined) ?? null,
+  )
   useEffect(() => {
     let live = true
-    if (!cache.has(path)) cache.set(path, fetchJson<T>(path))
+    if (!cache.has(path))
+      cache.set(
+        path,
+        fetchJson<T>(path).then(
+          (v) => (settled.set(path, v), v),
+          (e: Error) => {
+            settled.set(path, e)
+            throw e
+          },
+        ),
+      )
     ;(cache.get(path) as Promise<T>).then(
       (v) => live && setState(v),
       (e: Error) => live && setState(e),
@@ -93,6 +117,8 @@ export function useData<T>(path: string): T | null | Error {
 export const PostOpen = createContext(false)
 /** Whether the post is on screen in a visible tab, so its thumbnail may tick. */
 export const PostLive = createContext(false)
+/** Takes the card out of the feed: its data expired or failed to load. */
+export const PostLeave = createContext<() => void>(() => {})
 
 /** Thumbnails step their slicer twice a second; the marks glide between steps in CSS. */
 const TICK_MS = 500
@@ -101,31 +127,45 @@ export const still =
   typeof matchMedia === 'function' &&
   matchMedia('(prefers-reduced-motion: reduce)').matches
 
+/** Extra ticks the last option holds before the loop wraps, so a sequence reads as one. */
+const SEAM_HOLD = 2
+
 /**
  * A row of toggle chips. The labels are legend text, so they count as legend. In a thumbnail
- * the chips are hidden and the slicer steps through its options by itself, so the feed moves.
+ * the chips are hidden and the slicer steps through its options by itself, so the feed moves;
+ * the current option shows as a small label in the card's corner. `cycles={false}` holds the
+ * first option in the thumbnail, for options that are not comparable steps on one axis.
  */
 export function Slicer<T extends string | number>({
   options,
   value,
   onChange,
   label,
+  cycles = true,
+  format = String,
 }: {
   options: readonly T[]
   value: T
   onChange: (v: T) => void
   /** Accessible name only; not shown. */
   label: string
+  cycles?: boolean
+  /** Plain-language text for an option, where the value is a code or an index. */
+  format?: (v: T) => string
 }) {
   const open = useContext(PostOpen)
   const live = useContext(PostLive)
   const now = useRef({ options, value, onChange })
   now.current = { options, value, onChange }
   useEffect(() => {
-    if (open || !live || still || options.length < 2) return
+    if (open || !live || still || !cycles || options.length < 2) return
+    let hold = 0
     const step = () => {
       const { options: o, value: v, onChange: set } = now.current
-      set(o[(o.indexOf(v) + 1) % o.length])
+      const next = (o.indexOf(v) + 1) % o.length
+      if (next === 0 && hold++ < SEAM_HOLD) return
+      hold = 0
+      set(o[next])
     }
     // A random phase per card, so the feed does not tick in lockstep.
     let id = 0
@@ -137,27 +177,41 @@ export function Slicer<T extends string | number>({
       clearTimeout(start)
       clearInterval(id)
     }
-  }, [open, live, options.length])
+  }, [open, live, cycles, options.length])
   return (
-    <div className="mean-slicer" role="radiogroup" aria-label={label}>
-      {options.map((o) => (
-        <button
-          key={String(o)}
-          type="button"
-          role="radio"
-          aria-checked={o === value}
-          onClick={() => onChange(o)}
-        >
-          {o}
-        </button>
-      ))}
-    </div>
+    <>
+      {!open && cycles && options.length > 1 && (
+        <span className="mean-now" aria-hidden="true">
+          {format(value)}
+        </span>
+      )}
+      <div className="mean-slicer" role="radiogroup" aria-label={label}>
+        {options.map((o) => (
+          <button
+            key={String(o)}
+            type="button"
+            role="radio"
+            aria-checked={o === value}
+            onClick={() => onChange(o)}
+          >
+            {format(o)}
+          </button>
+        ))}
+      </div>
+    </>
   )
 }
 
+/** Calls the card's PostLeave once mounted; leaving during render would update the parent. */
+function Leave() {
+  const leave = useContext(PostLeave)
+  useEffect(leave, [leave])
+  return null
+}
+
 /**
- * Wraps a chart: shows nothing while loading and an empty frame if the data is missing. Expired
- * data is thrown, so the card's error boundary removes the whole post.
+ * Wraps a chart. While loading it shows the chart's empty grid. A thumbnail whose data failed
+ * or expired leaves the feed; an opened post stays, so focus is not lost, and names the file.
  */
 export function Frame<T>({
   data,
@@ -166,8 +220,16 @@ export function Frame<T>({
   data: T | null | Error
   children: (d: T) => ReactNode
 }) {
+  const open = useContext(PostOpen)
   if (data === null) return <div className="mean-wait" aria-busy="true" />
-  if (data instanceof Expired) throw data
-  if (data instanceof Error) return <div className="mean-wait" />
+  if (data instanceof Error)
+    return open ? (
+      <p className="mean-failed">
+        {data instanceof Expired ? 'Data expired' : 'Data unavailable'}:{' '}
+        {data.message}
+      </p>
+    ) : (
+      <Leave />
+    )
   return <>{children(data)}</>
 }

@@ -114,6 +114,7 @@ function MetricHeat() {
           <>
             <Slicer
               label="Metric"
+              cycles={false}
               options={METRIC_KEYS}
               value={m}
               onChange={setM}

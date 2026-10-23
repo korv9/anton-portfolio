@@ -12,6 +12,9 @@ export type { Market }
 
 export const D = 'jobs'
 export const MARKET = 'jobs/market.json'
+/** A county with a name: ads without one sit under 'Okänt län' ('unknown county'). */
+export const knownRegion = (r: { region: string }) =>
+  r.region !== 'unknown' && !r.region.startsWith('Okänt')
 export const CLUSTERS = 'jobs/cluster-summary.json'
 export const PREVIEW = 'jobs/cluster-preview.json'
 export const COMPANIES = 'jobs/company-intelligence.json'

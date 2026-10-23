@@ -52,6 +52,9 @@ function Skills() {
             <Slicer
               label="Cluster"
               options={cs.map((k) => `#${k.cluster_id}`)}
+              format={(v) =>
+                v === 'all' ? 'All clusters' : `Cluster ${v.slice(1)}`
+              }
               value={pick}
               onChange={setPick}
             />
