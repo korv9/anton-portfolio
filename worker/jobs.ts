@@ -31,6 +31,9 @@ export const STATUSES = [
   'interesting',
   'pass',
   'applied',
+  'interview',
+  'offer',
+  'rejected',
   'closed',
 ]
 export const LABELS = ['relevant', 'maybe', 'not_relevant']

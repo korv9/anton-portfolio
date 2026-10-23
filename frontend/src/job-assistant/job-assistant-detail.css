@@ -3,7 +3,7 @@
 .ja-detail {
   padding-inline-end: var(--sp-2);
 }
-.ja-detail h2 {
+#main .ja .ja-detail h2 {
   margin: 0;
   font-size: var(--type-section-title);
   font-weight: var(--weight-heading);
@@ -17,7 +17,7 @@
 .ja-detail-meta {
   margin: var(--sp-2) 0 0;
 }
-.ja-detail-meta .ja-row-class {
+.ja-detail-meta .ja-badge {
   margin-inline-end: var(--sp-2);
 }
 .ja-dates {

@@ -1,20 +1,20 @@
 /**
- * The review list's keyboard: j/k or the arrow keys move, 1-6 set a status through the shown
- * decision block's own setter, / searches and Escape clears the search.
+ * The board's keyboard: the arrow keys (or j/k) move between the result cards and Enter opens
+ * one, as links do; / goes to the search, Escape clears it or closes an open ad, and 1-9 set a
+ * status through the shown decision block's own setter.
  */
 import { useEffect, type MutableRefObject, type RefObject } from 'react'
-import { STATUSES, type Row, type Status, type View } from './data'
+import { STATUSES, type Status } from './data'
 
 type Keys = {
-  shown: Row[]
-  selected?: Row
-  view: View
-  setView: (view: View) => void
   search: RefObject<HTMLInputElement | null>
-  select: (id: string) => void
+  list: RefObject<HTMLOListElement | null>
+  /** Clears the search text; false when there was none. */
+  clearSearch: () => boolean
+  /** Closes the open ad; absent when none is open. */
+  close?: () => void
   /** Set while the owner's decision block is shown. */
   statusKey: MutableRefObject<((status: Status) => void) | null>
-  focusRow: MutableRefObject<boolean>
 }
 
 export function useListKeys(k: Keys) {
@@ -29,29 +29,33 @@ export function useListKeys(k: Keys) {
         e.defaultPrevented
       )
         return
-      if (target.closest('input, textarea, select') && e.key !== 'Escape')
+      if (e.key === 'Escape') {
+        if (target === k.search.current && k.clearSearch()) return
+        k.close?.()
         return
-      // Arrow keys move the selection only from the list; elsewhere they scroll the page.
-      const arrow = e.key === 'ArrowDown' || e.key === 'ArrowUp'
-      if (arrow && !target.closest('.ja-list')) return
-      const index = k.shown.findIndex((r) => r.ad.id === k.selected?.ad.id)
-      if (e.key === '/') {
-        e.preventDefault()
-        k.search.current?.focus()
-      } else if (e.key === 'Escape' && k.view.q) {
-        k.setView({ ...k.view, q: '' })
-      } else if (
-        (e.key === 'j' || e.key === 'ArrowDown') &&
-        index < k.shown.length - 1
+      }
+      if (target.closest('input, textarea, select, summary')) return
+      const cards = [
+        ...(k.list.current?.querySelectorAll<HTMLElement>('.ja-card') ?? []),
+      ]
+      const at = cards.indexOf(target)
+      const down = e.key === 'ArrowDown' || e.key === 'j'
+      const up = e.key === 'ArrowUp' || e.key === 'k'
+      // Arrow keys move between cards only from the list; elsewhere they scroll the page.
+      if (
+        (down || up) &&
+        (at >= 0 || (!e.key.startsWith('Arrow') && cards.length))
       ) {
         e.preventDefault()
-        k.select(k.shown[index + 1].ad.id)
-        k.focusRow.current = true
-      } else if ((e.key === 'k' || e.key === 'ArrowUp') && index > 0) {
+        const next =
+          at < 0
+            ? 0
+            : Math.min(Math.max(at + (down ? 1 : -1), 0), cards.length - 1)
+        cards[next].focus()
+      } else if (e.key === '/') {
         e.preventDefault()
-        k.select(k.shown[index - 1].ad.id)
-        k.focusRow.current = true
-      } else if (/^[1-6]$/.test(e.key) && k.selected) {
+        k.search.current?.focus()
+      } else if (/^[1-9]$/.test(e.key)) {
         k.statusKey.current?.(STATUSES[Number(e.key) - 1])
       }
     }
