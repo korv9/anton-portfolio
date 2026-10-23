@@ -144,10 +144,16 @@ function Scatter() {
 }
 
 export const posts: Post[] = [
-  { id: 'pol-cohesion-scatter', domain: 'politics', render: () => <Scatter /> },
+  {
+    id: 'pol-cohesion-scatter',
+    domain: 'politics',
+    sources: ['parliament/sessions.json'],
+    render: () => <Scatter />,
+  },
   {
     id: 'pol-parallel',
     domain: 'politics',
+    sources: ['parliament/sessions.json'],
     size: 'wide',
     render: () => <Parallel />,
   },

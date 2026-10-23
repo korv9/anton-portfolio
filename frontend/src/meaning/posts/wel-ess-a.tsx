@@ -254,12 +254,23 @@ function EssHeat() {
 }
 
 export const posts: Post[] = [
-  { id: 'wel-ess-radar', domain: 'welfare', render: () => <Radar /> },
+  {
+    id: 'wel-ess-radar',
+    domain: 'welfare',
+    sources: ['welfare/ess-countries.json'],
+    render: () => <Radar />,
+  },
   {
     id: 'wel-ess-lines',
     domain: 'welfare',
+    sources: ['welfare/ess-countries.json'],
     size: 'wide',
     render: () => <RoundLines />,
   },
-  { id: 'wel-ess-heat', domain: 'welfare', render: () => <EssHeat /> },
+  {
+    id: 'wel-ess-heat',
+    domain: 'welfare',
+    sources: ['welfare/ess-countries.json'],
+    render: () => <EssHeat />,
+  },
 ]

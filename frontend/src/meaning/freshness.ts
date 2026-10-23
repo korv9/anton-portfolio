@@ -18,14 +18,24 @@ export const SUBJECTS: Record<string, [subject: string, hours: number]> = {
   'ai-act': ['ai_act', 8 * 24],
 }
 
-type Entry = {
+export type Entry = {
   outcome?: string
+  started_at?: string
   recorded_at?: string
   last_success_at?: string | null
+  github_run?: string
+}
+
+/** The last run's length and its Actions log, when the status records both ends. */
+export function lastRun(e: Entry) {
+  const ms = Date.parse(e.recorded_at ?? '') - Date.parse(e.started_at ?? '')
+  return ms >= 0
+    ? { seconds: Math.round(ms / 1000), url: e.github_run }
+    : undefined
 }
 
 let status: Promise<Record<string, Entry> | null> | null = null
-function load() {
+export function loadStatus() {
   // Imported here so the unit test can load this file without the delivery client.
   status ??= import('../dataSource')
     .then((d) => d.objectStorageUrl('status/ingestion.json'))
@@ -54,16 +64,24 @@ export function freshness(
   return now - since <= sla[1] * 3_600_000
 }
 
-/** Freshness and the last successful ingestion, or undefined while unknown. */
+/** Freshness, the last successful ingestion and the last run, or undefined while unknown. */
 export function useFresh(domain: string) {
-  const [fresh, setFresh] = useState<{ fresh: boolean; at?: string }>()
+  const [fresh, setFresh] = useState<{
+    fresh: boolean
+    at?: string
+    run?: ReturnType<typeof lastRun>
+  }>()
   useEffect(() => {
     let live = true
-    load().then((s) => {
+    loadStatus().then((s) => {
       const f = freshness(s, domain)
       const entry = s?.[SUBJECTS[domain]?.[0]]
       if (live && f !== undefined)
-        setFresh({ fresh: f, at: (entry && lastSuccess(entry)) ?? undefined })
+        setFresh({
+          fresh: f,
+          at: (entry && lastSuccess(entry)) ?? undefined,
+          run: entry && lastRun(entry),
+        })
     })
     return () => {
       live = false

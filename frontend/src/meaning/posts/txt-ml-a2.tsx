@@ -199,10 +199,16 @@ function TensionBoxes() {
 
 const d = 'ml'
 export const posts: Post[] = [
-  { id: 'txt-ml-works-bubble', domain: d, render: () => <WorksBubble /> },
+  {
+    id: 'txt-ml-works-bubble',
+    domain: d,
+    sources: ['philosophy/summary.json'],
+    render: () => <WorksBubble />,
+  },
   {
     id: 'txt-ml-tension-boxes',
     domain: d,
+    sources: ['philosophy/tensions.json'],
     size: 'tall',
     render: () => <TensionBoxes />,
   },

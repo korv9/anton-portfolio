@@ -185,11 +185,22 @@ function ArchStack() {
 }
 
 export const posts: Post[] = [
-  { id: 'txt-plat-quality-waffle', domain: d, render: () => <QualityWaffle /> },
-  { id: 'txt-plat-gold-kpi', domain: d, render: () => <GoldKpi /> },
+  {
+    id: 'txt-plat-quality-waffle',
+    domain: d,
+    sources: ['quality/checks.json'],
+    render: () => <QualityWaffle />,
+  },
+  {
+    id: 'txt-plat-gold-kpi',
+    domain: d,
+    sources: ['gold/overview.json'],
+    render: () => <GoldKpi />,
+  },
   {
     id: 'txt-plat-arch-stack',
     domain: d,
+    sources: ['architecture/graph.json'],
     size: 'wide',
     render: () => <ArchStack />,
   },

@@ -219,19 +219,36 @@ function Waffles() {
 }
 
 export const posts: Post[] = [
-  { id: 'wel-population-kpi', domain: 'welfare', render: () => <Population /> },
+  {
+    id: 'wel-population-kpi',
+    domain: 'welfare',
+    sources: ['welfare/headlines.json'],
+    render: () => <Population />,
+  },
   {
     id: 'wel-headline-waffles',
     domain: 'welfare',
+    sources: ['welfare/headlines.json', 'welfare/indicators.json'],
     size: 'tall',
     render: () => <Waffles />,
   },
   {
     id: 'wel-aku-grid',
     domain: 'welfare',
+    sources: ['welfare/headlines.json'],
     size: 'wide',
     render: () => <AkuGrid />,
   },
-  { id: 'wel-ess-radial', domain: 'welfare', render: () => <RadialBars /> },
-  { id: 'wel-ess-slope', domain: 'welfare', render: () => <EssSlope /> },
+  {
+    id: 'wel-ess-radial',
+    domain: 'welfare',
+    sources: ['welfare/headlines.json'],
+    render: () => <RadialBars />,
+  },
+  {
+    id: 'wel-ess-slope',
+    domain: 'welfare',
+    sources: ['welfare/headlines.json'],
+    render: () => <EssSlope />,
+  },
 ]

@@ -189,12 +189,23 @@ function Words() {
 }
 
 export const posts: Post[] = [
-  { id: 'txt-ml-eval-slope', domain: d, render: () => <EvalSlope /> },
+  {
+    id: 'txt-ml-eval-slope',
+    domain: d,
+    sources: ['philosophy/summary.json'],
+    render: () => <EvalSlope />,
+  },
   {
     id: 'txt-ml-cluster-stacks',
     domain: d,
+    sources: ['philosophy/clusters.json'],
     size: 'wide',
     render: () => <ClusterStacks />,
   },
-  { id: 'txt-ml-words', domain: d, render: () => <Words /> },
+  {
+    id: 'txt-ml-words',
+    domain: d,
+    sources: ['philosophy/summary.json'],
+    render: () => <Words />,
+  },
 ]

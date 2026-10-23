@@ -273,13 +273,15 @@ test(
     const cta = page.locator('.home-cta-link')
     await expect(page.locator('#start .home-cta-link')).toHaveCount(0)
     await page.keyboard.press('End')
-    await cta.evaluate((el) => el.scrollIntoView({ behavior: 'instant' }))
+    // The chart feed above the link loads as the reader nears it and can grow the page after
+    // one scroll (by 60,000 px on a slow CI runner), so every check scrolls to the link again.
     await expect
-      .poll(() =>
-        page.evaluate(
+      .poll(async () => {
+        await cta.evaluate((el) => el.scrollIntoView({ behavior: 'instant' }))
+        return page.evaluate(
           () => document.documentElement.scrollHeight - innerHeight - scrollY,
-        ),
-      )
+        )
+      })
       .toBeLessThan(2)
     await expect(header).toBeVisible()
     await expect(header).not.toHaveAttribute('inert', '')
@@ -310,15 +312,20 @@ test(
 test('the background finishes its fast intro with fully coloured points', async ({
   page,
 }) => {
+  // A fast machine: page time stands still until the map is in, so it arrives inside the intro
+  // window. A busy CI runner parses the 7.7 MB map more slowly and rightly takes the late path,
+  // which home-feed.spec.ts covers.
+  await page.clock.install()
+  await page.clock.pauseAt(Date.now() + 1000)
   await page.goto('/')
   const backdrop = page.locator('.home-backdrop')
   const canvas = backdrop.locator('canvas').first()
   await expect(backdrop).toHaveAttribute('data-ready', 'true', {
     timeout: 20000,
   })
-  await expect(backdrop).toHaveAttribute('data-intro', 'false', {
-    timeout: 20000,
-  })
+  await expect(backdrop).toHaveAttribute('data-intro', 'true')
+  await page.clock.resume()
+  await expect(backdrop).toHaveAttribute('data-intro', 'false')
   await expect(backdrop).toHaveAttribute('aria-hidden', 'true')
   await expect(canvas).toBeVisible()
   await expect(page.locator('.home-backdrop-toggle')).toHaveCount(0)

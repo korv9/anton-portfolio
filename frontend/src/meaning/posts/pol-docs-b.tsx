@@ -219,19 +219,27 @@ export const posts: Post[] = [
   {
     id: 'pol-tax-timeline',
     domain: 'politics',
+    sources: ['taxes/decisions.json'],
     size: 'wide',
     render: () => <TaxTimeline />,
   },
   {
     id: 'pol-tax-votes',
     domain: 'politics',
+    sources: ['taxes/decisions.json'],
     size: 'tall',
     render: () => <TaxVotes />,
   },
-  { id: 'pol-polar-kpi', domain: 'politics', render: () => <PolarKpi /> },
+  {
+    id: 'pol-polar-kpi',
+    domain: 'politics',
+    sources: ['ml/polarization.json'],
+    render: () => <PolarKpi />,
+  },
   {
     id: 'pol-polarization',
     domain: 'politics',
+    sources: ['ml/polarization.json'],
     size: 'wide',
     render: () => <Polarization />,
   },

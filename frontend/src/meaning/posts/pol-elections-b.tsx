@@ -211,18 +211,21 @@ export const posts: Post[] = [
   {
     id: 'pol-slope-2026',
     domain: 'politics',
+    sources: ['parliament/now.json'],
     size: 'tall',
     render: () => <Slope />,
   },
   {
     id: 'pol-share-multiples',
     domain: 'politics',
+    sources: ['parliament/elections.json'],
     size: 'wide',
     render: () => <Multiples />,
   },
   {
     id: 'pol-votes-treemap',
     domain: 'politics',
+    sources: ['parliament/elections.json'],
     render: () => <VotesTreemap />,
   },
 ]

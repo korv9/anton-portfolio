@@ -39,8 +39,11 @@ jobs:
       # wrangler.toml or the built assets would not deploy.
       - name: Cloudflare deploy config (dry run)
         run: npx --no-install wrangler deploy --dry-run
+      # ponytail: the runner image already carries Chromium's system libraries, so
+      # skip --with-deps; its apt step took 9-14 min on 3 of 8 recent runs.
+      # Add --with-deps back if a launch fails on a missing library.
       - name: Install Chromium
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install chromium
       - run: npm run test:security:built
       - run: npm run test:e2e
         env:
