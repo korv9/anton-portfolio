@@ -1,56 +1,46 @@
 /** Studies, news, tax decisions, debate topics, polarization and the meaning tests. */
-import { color, Frame, PALETTE, tile, useData, type Post } from '../kit'
-import { arc, squarify } from './pol-kit'
+import { focal, Frame, OTHER, tile, useData, type Post } from '../kit'
+import { Bars, int, pct } from './pol-kit'
 
 type Topic = {
   topic_id: number
   words: number
+  word_share_pct: number
   is_unclustered: boolean
   topic_label: string
 }
+type Summary = { data: Topic[] }
 type Overview = {
   data: {
     imported_speeches: number
     analyzed_segments: number
     sessions: number
+    first_date: string
+    last_date: string
   }
 }
 type Meaning = { passed: number; total: number }
 
-function TopicTree() {
+const topics = (d: Summary) =>
+  d.data.filter((t) => !t.is_unclustered).sort((a, b) => b.words - a.words)
+
+function TopicBars() {
   return (
-    <Frame data={useData<{ data: Topic[] }>('debates/summary.json')}>
-      {(d) => {
-        const ts = d.data.filter((t) => !t.is_unclustered)
-        const rects = squarify(ts, (t) => t.words, {
-          x: 0,
-          y: 0,
-          w: 300,
-          h: 300,
-        })
-        return (
-          <svg
-            viewBox="0 0 300 300"
-            role="img"
-            aria-label="Words per debate topic, treemap"
-          >
-            {rects.map((r, i) => (
-              <rect
-                key={r.item.topic_id}
-                x={r.x}
-                y={r.y}
-                width={r.w}
-                height={r.h}
-                fill={color(i)}
-                stroke="var(--paper)"
-                strokeWidth={1.5}
-              >
-                <title>{`${r.item.topic_label}: ${r.item.words}`}</title>
-              </rect>
-            ))}
-          </svg>
-        )
-      }}
+    <Frame data={useData<Summary>('debates/summary.json')}>
+      {(d) => (
+        <Bars
+          label="Share of debate words per topic, top 10"
+          format={(v) => pct(v)}
+          rows={topics(d)
+            .slice(0, 10)
+            .map((t, i) => ({
+              key: String(t.topic_id),
+              label: <span title={t.topic_label}>{t.topic_label}</span>,
+              value: t.word_share_pct,
+              color: focal(i === 0),
+            }))}
+        />
+      )}
     </Frame>
   )
 }
@@ -62,11 +52,11 @@ function DebateKpis() {
         <div className="mean-pol-grid4" style={{ gridTemplateColumns: '1fr' }}>
           {[
             [o.imported_speeches, 'speeches'],
-            [o.analyzed_segments, 'segments'],
+            [o.analyzed_segments, 'passages analysed'],
             [o.sessions, 'sessions'],
-          ].map(([v, u], i) => (
-            <div key={u} className="mean-pol-cell" style={tile(color(i + 2))}>
-              {v.toLocaleString('sv-SE')}
+          ].map(([v, u]) => (
+            <div key={u} className="mean-pol-cell" style={tile(OTHER)}>
+              {int(Number(v))}
               <small>{u}</small>
             </div>
           ))}
@@ -76,37 +66,14 @@ function DebateKpis() {
   )
 }
 
-function MeaningRing() {
+function MeaningKpi() {
   return (
     <Frame data={useData<Meaning>('politics/meaning.json')}>
       {(m) => (
-        <svg viewBox="0 0 300 300" role="img" aria-label="Meaning tests passed">
-          {Array.from({ length: m.total }, (_, i) => {
-            const a = (i / m.total) * Math.PI * 2
-            return (
-              <path
-                key={i}
-                d={arc(
-                  150,
-                  150,
-                  90,
-                  130,
-                  a + 0.04,
-                  a + (Math.PI * 2) / m.total - 0.04,
-                )}
-                fill={i < m.passed ? PALETTE[4] : 'var(--wash)'}
-              />
-            )
-          })}
-          <text
-            x={150}
-            y={162}
-            textAnchor="middle"
-            style={{ fontSize: 36, fontWeight: 600, fill: 'var(--ink)' }}
-          >
-            {m.passed}/{m.total}
-          </text>
-        </svg>
+        <div className="mean-pol-kpi">
+          {m.passed} of {m.total}
+          <small>test cases read as expected</small>
+        </div>
       )}
     </Frame>
   )
@@ -117,19 +84,37 @@ export const posts: Post[] = [
     id: 'pol-topic-tree',
     domain: 'politics',
     sources: ['debates/summary.json'],
-    render: () => <TopicTree />,
+    title: (d: Summary) => {
+      const rest = d.data.find((t) => t.is_unclustered)?.word_share_pct
+      const n = topics(d).length
+      const head = `${Math.min(10, n)} largest of ${n} debate topics`
+      return rest == null
+        ? head
+        : `${head}; ${Math.round(rest)} % of words fit no topic`
+    },
+    note: 'Share of all words in Riksdag debates, labelled by key words. Source: Riksdagen.',
+    render: () => <TopicBars />,
   },
   {
     id: 'pol-debate-kpis',
     domain: 'politics',
     sources: ['debates/overview.json'],
-    size: 'tall',
+    title: (d: Overview) =>
+      d.data.first_date && d.data.last_date
+        ? `Riksdag debate speeches, ${d.data.first_date.slice(0, 4)}–${d.data.last_date.slice(0, 4)}`
+        : 'Riksdag debate speeches',
+    note: 'Speeches read for the debate topics. Source: Riksdagen.',
     render: () => <DebateKpis />,
   },
   {
     id: 'pol-meaning-ring',
     domain: 'politics',
     sources: ['politics/meaning.json'],
-    render: () => <MeaningRing />,
+    title: (m: Meaning) =>
+      m.total
+        ? `Rule-change reader: ${m.passed} of ${m.total} test cases read as expected`
+        : 'Rule-change reader test cases',
+    note: 'Each case is a law edit to be read as loosening or tightening a rule.',
+    render: () => <MeaningKpi />,
   },
 ]

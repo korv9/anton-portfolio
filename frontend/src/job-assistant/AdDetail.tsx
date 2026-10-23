@@ -4,7 +4,9 @@ import { l } from '../i18n'
 import { ROLE_NAMES, type Row, type Status } from './data'
 import Decision, { type Saved } from './Decision'
 import Evidence from './Evidence'
-import { classLabel, day, statusLabel } from './labels'
+import { classLabel, day, left, statusLabel } from './labels'
+import { daysBetween } from './query'
+import Trace from './Trace'
 
 // Python's str.splitlines() breaks, so line numbers match platform/publish/job_content.py.
 const LINE_BREAK = /\r\n|[\n\r\v\f\x1c-\x1e\x85\u2028\u2029]/
@@ -16,6 +18,10 @@ type Props = {
   storage: boolean
   onSaved: Saved
   statusKey: MutableRefObject<((status: Status) => void) | null>
+  /** Today in Stockholm, for the deadline countdown. */
+  today: string
+  /** Back to the list; the button shows only where the detail replaces the list (mobile). */
+  onBack: () => void
 }
 
 /** Keyed by the ad id in the page, so the note, messages and scroll start fresh per ad. */
@@ -26,6 +32,8 @@ export default function AdDetail({
   storage,
   onSaved,
   statusKey,
+  today,
+  onBack,
 }: Props) {
   const { ad, match } = row
   const [hit, setHit] = useState<number | null>(null)
@@ -40,10 +48,21 @@ export default function AdDetail({
 
   return (
     <article className="ja-detail" aria-labelledby="ja-detail-title">
+      <button type="button" className="btn-text ja-back" onClick={onBack}>
+        <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true">
+          <path
+            d="M8 2L4 6l4 4"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+          />
+        </svg>
+        {l('Back to the jobs', 'Tillbaka till jobben')}
+      </button>
       <header className="ja-detail-head">
         <h2 id="ja-detail-title">{ad.headline}</h2>
         <p className="ja-detail-meta">
-          <span className="ja-row-class" data-class={match.class}>
+          <span className="ja-badge" data-class={match.class}>
             {classLabel(match.class)}
             {match.sample &&
               ` · ${l('evaluation sample', 'utvärderingsurval')}`}
@@ -58,13 +77,37 @@ export default function AdDetail({
             <dd>{day(ad.published)}</dd>
           </div>
           <div>
-            <dt>{l('Changed', 'Ändrad')}</dt>
-            <dd>{day(ad.changed)}</dd>
-          </div>
-          <div>
             <dt>{l('Apply by', 'Sök senast')}</dt>
-            <dd>{day(ad.application_deadline)}</dd>
+            <dd>
+              {day(ad.application_deadline)}
+              {ad.application_deadline && (
+                <small>
+                  {' '}
+                  {left(daysBetween(today, ad.application_deadline))}
+                </small>
+              )}
+            </dd>
           </div>
+          {ad.employment_type && (
+            <div>
+              <dt>{l('Employment', 'Anställning')}</dt>
+              <dd>{ad.employment_type}</dd>
+            </div>
+          )}
+          {ad.working_hours && (
+            <div>
+              <dt>{l('Hours', 'Omfattning')}</dt>
+              <dd>{ad.working_hours}</dd>
+            </div>
+          )}
+          {match.remote && (
+            <div>
+              <dt>{l('Remote', 'Distans')}</dt>
+              <dd>
+                <q>{match.remote}</q>
+              </dd>
+            </div>
+          )}
           <div>
             <dt>{l('Status', 'Status')}</dt>
             <dd>
@@ -99,7 +142,7 @@ export default function AdDetail({
       )}
 
       <section aria-labelledby="ja-why">
-        <h3 id="ja-why">{l('Why this class', 'Varför denna klass')}</h3>
+        <h3 id="ja-why">{l('Why it matches', 'Varför den matchar')}</h3>
         <ul className="ja-reasons">
           {match.reasons.map((r) => (
             <li key={r}>{r}</li>
@@ -154,6 +197,8 @@ export default function AdDetail({
           </ul>
         </section>
       )}
+
+      <Trace />
 
       <section aria-labelledby="ja-text">
         <h3 id="ja-text">{l('The full ad', 'Hela annonsen')}</h3>

@@ -94,7 +94,9 @@ test('every feed post declares the data it reads, and only published paths', () 
         `${f}: declares ${path} but never reads it`,
       )
   }
-  assert.ok(posts > 150, `only ${posts} posts found`)
+  // A floor that catches a parser finding no posts; the chart audit (2026-10-23) cut the feed
+  // to about a hundred posts and deleted the code of dropped ones.
+  assert.ok(posts > 80, `only ${posts} posts found`)
 })
 
 test('the provenance file covers every declared path', () => {

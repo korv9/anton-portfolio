@@ -19,27 +19,32 @@ const modules = import.meta.glob<{ posts: Post[] }>('./posts/*.tsx', {
  * lines that read as noise at card size, squeezed scatters and repeats of a stronger number.
  */
 const DROPPED = new Set<string>([
+  // A single number, a test pass rate or a weak relation (rho 0.10): a sentence says as much.
+  'wel-population-kpi',
+  'wel-connections-scatter',
+  'pol-meaning-ring',
+  'pol-debate-kpis',
+  // Answered more plainly by a sibling: issue bars, the stacked vote share, the region bars,
+  // the symbol and risk-tier bars, the named cluster sizes.
+  'pol-issue-multiples',
+  'pol-share-multiples',
+  'job-region-swarm',
+  'txt-ml-symbol-counts',
+  'txt-act-obligation-heatmap',
+  'txt-ml-cluster-skyline',
   // Empty or near-uniform.
   'pol-issue-welfare',
   'txt-plat-quality-waffle',
-  'wel-ongoing-calendar',
-  'wel-ess-heat',
   'job-ai-field-heat',
   'txt-act-signal-calendar',
   'txt-plat-compliance-funnel',
   // Tangles of lines.
-  'wel-county-bump',
-  'wel-county-parallel',
-  'wel-tax-slope',
   'txt-ml-model-parallel',
   'job-occupation-slope',
   // Squeezed or too fine to read.
   'pol-cohesion-scatter',
   'txt-plat-sfs-repealed',
-  'wel-church-swarm',
   'txt-plat-dataset-bubbles',
-  'wel-headline-waffles',
-  'wel-rate-kpis',
   'pol-ministers',
   // Single numbers beyond the strongest few.
   'txt-act-duty-total',
@@ -49,17 +54,59 @@ const DROPPED = new Set<string>([
   'txt-ml-observations',
   // Data not fit to show until the phase 1 data review: thin samples, partial periods or
   // ranges labelled wider than the data.
-  'wel-wedge-bars',
   'txt-act-signal-line',
   'pol-poll-kpi',
   'pol-poll-radial',
   'pol-poll-error',
   'pol-poll-changes',
-  'wel-ess-radar',
-  'wel-ess-radial',
-  'wel-ess-slope',
   'pol-study-bars',
   'pol-news-radial',
+  // Data withdrawn on purpose (named employers and workplaces): the files now read
+  // {state: 'unavailable'}, so these could never render.
+  'job-co-skills',
+  'job-co-locations',
+  'job-co-size',
+  'job-co-days',
+  'job-co-remote',
+  'job-co-chord',
+  'job-co-metrics',
+  'job-co-seniority',
+  'job-ws-requirements',
+  // Misleading: a silhouette measured in UMAP space read as clustering quality on a 0-1 gauge.
+  'job-cluster-gauges',
+  // Repeats of a question another post answers more plainly (chart audit, 2026-10-23).
+  'pol-bump',
+  'pol-waffle',
+  'pol-votes-treemap',
+  'pol-seat-grid',
+  'pol-gender-donut',
+  'pol-poll-stream',
+  'pol-poll-heat',
+  'pol-chord',
+  'pol-gov-gauge',
+  'job-ai-ridgeline',
+  'job-cluster-bubbles',
+  'job-lang-lines',
+  'job-occupation-treemap',
+  'job-stream',
+  'txt-act-chapter-treemap',
+  'txt-act-applies-waffle',
+  'txt-act-duty-flows',
+  'txt-ml-topic-map',
+  // Constants, analyst diagnostics, internal logs and tangles that answer no reader's question.
+  'pol-majority',
+  'pol-polar-kpi',
+  'pol-parallel',
+  'job-cluster-years',
+  'job-lang-parallel',
+  'job-archives',
+  'txt-ml-words',
+  'txt-ml-concept-wheel',
+  'txt-plat-arch-rings',
+  'txt-plat-arch-degree',
+  'txt-plat-gold-bytes',
+  'txt-plat-lineage-units',
+  'txt-plat-delivery-donut',
 ])
 
 /** Round-robin across groups so neighbouring posts come from different files. */
@@ -110,7 +157,7 @@ const SECTIONS = [
     key: 'symbols',
     title: 'Symbols',
     line: 'Myth and religious symbols across 101 public-domain books.',
-    match: /^txt-ml-(symbol|book|model|research|cluster-skyline)/,
+    match: /^txt-ml-(symbol|book|model|research|cluster-skyline|gauges)/,
   },
   {
     key: 'philosophy',

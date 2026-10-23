@@ -13,6 +13,22 @@ Graphify graph (`graphify-out/graph.json`) does not exist in this checkout or th
 one (it is ignored by `.gitignore`), so all lookups were targeted searches.
 No ts-prune or knip is installed; no dependency was added.
 
+## Cleanup status, 2026-10-23
+
+Each item was searched again before deletion (names as strings, `import.meta.glob`, `_headers`,
+catalog, YAML and tests).
+
+| Item | Status | Note |
+| --- | --- | --- |
+| `previews/politics.webp`, `welfare.webp` | deleted | no reference found |
+| Manrope font files and `Manrope-OFL.txt` | deleted | the only `@font-face` rules are in `sweden/sweden.css` and load `fonts/sweden/` |
+| `loadJobPreview`, `loadSymbolicPreview`, `backdropShade` | not done | the files are under `frontend/src/home/`, which this cleanup was not allowed to edit |
+| Dead CSS: `.builder-*`, `.budget-ledger*`, `.party-card*`, `.q-case*`, `.boxplot*` in `longread.css` | deleted | mixed selector lists keep their live selector; `.boxplot*` in `charts/charts.css` is also unused and is left for a later pass |
+| `research_domains` seed config | moved under `sweden:` | `dbt parse` shows `column_types: {sort_order: integer}`; dbt inferred `integer` before, so the type does not change |
+| Political Observatory v2 models | deleted with their YAML and two singular tests | no export, exposure or frontend reads them; the seeds stay, `ingest/riksdagen/formation_ingest.py` reads them |
+| `refresh-job-analysis.yml`, `refresh-welfare.yml` | kept | `data-subject.yml` has no schedule of its own, and no caller passes `jobs_analysis` or `welfare parliament taxes` |
+| `terraform.yml` | kept, cause found | `vars.TF_WORKER_DOMAIN_IDS` is not set, so `TF_VAR_worker_domain_ids` is empty and `terraform init` fails to parse it as `map(string)` in the cloudflare plan |
+
 ## Summary
 
 | Section | Checked | unused | test-only | duplicate | oversized | stale | check |
@@ -126,10 +142,10 @@ model. One exposure exists: `gold_semantic_model` in `models/gold/politics/schem
 
 | Item | Status | Evidence | Action |
 | --- | --- | --- | --- |
-| `gold/parliament/fct_prime_minister_ballot` | test-only | no downstream `ref()`; name outside models/tests only in `docs/parliament-data-model.md:158` and `docs/political-observatory-v2.md:76`, which says its "workspace export was removed on 2026-10-22" | check: keep if Political Observatory v2 returns; otherwise delete with its tests and the `prime_minister_ballots` seed |
-| `gold/parliament/fct_prime_minister_party_vote` | test-only | same as above; seed `prime_minister_party_votes` feeds only this model | check, as above |
-| `gold/parliament/mart_party_pair_context` | test-only | only `platform/tests/parliament/assert_context_denominators.sql` refs it | check, as above |
-| `gold/parliament/mart_party_cohesion_context` | test-only | same test file | check, as above |
+| `gold/parliament/fct_prime_minister_ballot` | test-only | no downstream `ref()`; name outside models/tests only in `docs/parliament-data-model.md:158` and `docs/political-observatory-v2.md:76`, which says its "workspace export was removed on 2026-10-22" | check: keep if Political Observatory v2 returns; otherwise delete with its tests and the `prime_minister_ballots` seed. Deleted 2026-10-23; seed kept (see cleanup status) |
+| `gold/parliament/fct_prime_minister_party_vote` | test-only | same as above; seed `prime_minister_party_votes` feeds only this model | deleted 2026-10-23 |
+| `gold/parliament/mart_party_pair_context` | test-only | only `platform/tests/parliament/assert_context_denominators.sql` refs it | deleted 2026-10-23 |
+| `gold/parliament/mart_party_cohesion_context` | test-only | same test file | deleted 2026-10-23 |
 | `gold/jobs/dim_occupation` | test-only | no downstream model or exporter; target of a `relationships` test in `models/gold/jobs/schema.yml:61`; listed in `public/data/schema/er.json` | keep: dimension of `fct_job_ads` shown in the published ER diagram |
 | Exporters (`platform/publish/**`) | check | 1 exposure covers 13 politics models; no exporter reading `gold.*` is declared as an exposure | add exposures per export script so lineage shows the delivery edge |
 | 51 bronze models with no YAML entry | check | `bronze/politics` (14): `stg_budget_coverage`, `stg_budget_frame`, `stg_budget_language_area`, `stg_budget_language_coverage`, `stg_budget_outturn`, `stg_decision_index`, `stg_decision_point`, `stg_party_activity`, `stg_party_vote`, `stg_point_citation`, `stg_point_reservation`, `stg_rfc_version`, `stg_speech_vote_candidate`, `stg_topic_session_party`; `bronze/welfare` (14): `stg_ess_respondents`, `stg_fk_diagnosis_chapters`, `stg_fk_sick_leave_cases`, `stg_fk_sick_pay_rate`, `stg_fohm_health`, `stg_fohm_measures`, `stg_kolada_kpis`, `stg_kolada_municipalities`, `stg_kolada_values`, `stg_scb_aku_month`, `stg_scb_aku_region`, `stg_scb_aku_regions`, `stg_scb_population`, `stg_scb_regions`; `bronze/parliament` (8): `stg_riksdagen_bill_preparation`, `stg_riksdagen_reports`, `stg_riksdagen_studies`, `stg_riksdagen_votes`, `stg_scb_election_seats`, `stg_scb_elections`, `stg_scb_psu`, `stg_val_riksdag_result`; `bronze/sweden` (7): `stg_kb_libraries`, `stg_kb_statistics`, `stg_similarity_panel`, `stg_similarity_points`, `stg_sweden_kolada_kpis`, `stg_sweden_scb_geography`, `stg_sweden_scb_tables`; `bronze/taxes` (4): `stg_oecd_revenue`, `stg_oecd_taxing_wages`, `stg_scb_household_spending`, `stg_skatteverket_rates`; `bronze/market` (2): `stg_market_ads`, `stg_market_conditions`; `bronze/news` (2): `stg_news_items`, `stg_news_people` | keep; add a YAML entry with key `not_null`/`unique` tests where the grain is known. 44 of them have no test at all; downstream gold tests cover them indirectly |
@@ -181,11 +197,11 @@ is reachable. Exported symbols were then searched as whole words in other files.
 | `setLocale` (`i18n.ts:14`) | unused | one occurrence; `i18n.ts:7` says the Swedish copy stays though nothing switches to it | keep: it is the switch the retained Swedish copy needs |
 | `groupRoot`, `cvMatch`, `rankJob`, `validityOf`, `nodesOfCheck`, `nodeStatuses`, `tablesOf`, `refreshDelivery`, `MEANING` | test-only | used only by `frontend/tests/unit/*.test.ts` or `r2-delivery.spec.ts` | keep: tested entry points |
 | About 60 exports used only inside their own file, e.g. `router.ts` (`REDIRECTS`, `redirectOf`, `pageOf`, `parseLocation`), `quality/QualityPanel.tsx` (`STATUS_TEXT`, `VALIDITY_TEXT`, `Glyph`, `StatusMark`, `ProductQualityView`), `quality/data.ts::loadQuality`, `clusters/debateData.ts` (`loadDebateSessions`, `loadDebateSession`), `ui/Story.tsx` (`ChartSection`, `SourceCaption`), `sweden/template.tsx` (`MethodDrawer`, `Interpretations`), `ui/dash/Dash.tsx::SlicerSelect`, `report/board/Columns.tsx::ColumnMultiples`, and type-only exports in `quality/types.ts`, `symbolic/atlasTypes.ts`, `tech/erLayout.ts`, `workersAi/*.ts` | check | no other file names them | drop the `export` keyword; no deletion. `ChartSection`, `SourceCaption`, `SlicerSelect` and `MethodDrawer` are named in `docs/data-storytelling.md`, `docs/design-system.md` and `docs/sweden-design.md` as shared components, so keep those exported |
-| `frontend/public/previews/*.webp` (2) | unused | no reference anywhere, including `frontend/public` | delete |
-| `frontend/public/fonts/manrope-*.woff2`, `Manrope-OFL.txt` (3) | unused | no `@font-face` or other reference; site font is Helvetica (`tokens.css:7`) | delete together |
+| `frontend/public/previews/*.webp` (2) | unused | no reference anywhere, including `frontend/public` | deleted 2026-10-23 |
+| `frontend/public/fonts/manrope-*.woff2`, `Manrope-OFL.txt` (3) | unused | no `@font-face` or other reference; site font is Helvetica (`tokens.css:7`) | deleted 2026-10-23 |
 | `frontend/public/data/politics/parliament/debate-stats/*.json` (34) | check | not read by `frontend/src`, not in `catalog.json`; written by `platform/publish/export_debates.py:34`; read by `politics_story.py:164`, `issue_debates.py:82` and `configs/cluster_lab/public_research*.yaml` | keep: build input for other exports and ML configs |
 | Other public data not named in frontend code (`gold/tables/*`, `gold/marts/*`, `parquet/**`, `workers-ai/ai-act-*/**`, `clusters/*.json`, `philosophy/moral/*`, `reports/*`) | used | each path is listed in `frontend/public/data/catalog.json` or a `configs/delivery/*.json` spec, so it is published open data; job cluster shards are listed in `jobs/cluster-summary.json` `shards` and read by `ClusterVisualsPage.tsx:127` | keep |
-| CSS families with no class name in any `.ts`/`.tsx`: `.builder-*` (`report/theme.css`, 19 lines), `.budget-ledger*` (`pages.css`, 22), `.party-card*` (`parties/parties.css`, 11), `.q-case*` (`quality/quality.css`, 5), `.boxplot*` (`report/longread.css`, 3) | unused | prefix search returns 0 TS/TSX files | delete |
+| CSS families with no class name in any `.ts`/`.tsx`: `.builder-*` (`report/theme.css`, 19 lines), `.budget-ledger*` (`pages.css`, 22), `.party-card*` (`parties/parties.css`, 11), `.q-case*` (`quality/quality.css`, 5), `.boxplot*` (`report/longread.css`, 3) | unused | prefix search returns 0 TS/TSX files | deleted 2026-10-23 |
 | About 440 other CSS class selectors never written literally in TS/TSX (largest: `report/longread.css` 60, `report/theme.css` 49, `styles.css` 49, `ui/dash/dash.css` 28) | check | many are built at runtime (`ph-era-${i}`, `cc-rel-${type}`, `dk-*` from props) | review per family before deleting |
 
 ## 5. GitHub workflows
@@ -195,10 +211,10 @@ Triggers read from each file; run history from `gh run list --limit 1000` (905 r
 
 | Item | Status | Evidence | Action |
 | --- | --- | --- | --- |
-| `refresh-job-analysis.yml` | duplicate | manual only; one job runs `python platform/pipeline.py run jobs_analysis` with the same data setup, concurrency group and failure issue that `data-subject.yml` provides. 0 runs in the window | merge: call `data-subject.yml` with `subjects: jobs_analysis` as `refresh-jobs.yml` and `refresh-news.yml` do |
-| `refresh-welfare.yml` | duplicate | reimplements `data-subject.yml` for `welfare parliament taxes` (push, run `--only ingest,dbt,export`, run `--only publish`), plus a `full_refresh` input that `data-subject.yml` lacks | merge after adding a `full-refresh` input to `data-subject.yml` |
+| `refresh-job-analysis.yml` | duplicate | manual only; one job runs `python platform/pipeline.py run jobs_analysis` with the same data setup, concurrency group and failure issue that `data-subject.yml` provides. 0 runs in the window | merge: call `data-subject.yml` with `subjects: jobs_analysis` as `refresh-jobs.yml` and `refresh-news.yml` do. Kept 2026-10-23 (see cleanup status) |
+| `refresh-welfare.yml` | duplicate | reimplements `data-subject.yml` for `welfare parliament taxes` (push, run `--only ingest,dbt,export`, run `--only publish`), plus a `full_refresh` input that `data-subject.yml` lacks | merge after adding a `full-refresh` input to `data-subject.yml`. Kept 2026-10-23 (see cleanup status) |
 | `refresh-diva.yml` | check | manual only, 0 runs in the window; runs ingest, then export and publish, with no dbt step | keep: the only harvester for DiVA months |
-| `terraform.yml` | check | 3 runs, 3 failures (last 2026-10-22) | fix or disable; it is not a duplicate |
+| `terraform.yml` | check | 3 runs, 3 failures (last 2026-10-22) | fix or disable; it is not a duplicate. Cause found 2026-10-23 (see cleanup status) |
 | Others (`ci`, `security`, `build-warehouse`, `cluster-jobs`, `data-heartbeat`, `data-subject`, `publish-r2`, `refresh-jobs`, `refresh-news`) | used | each ran in the window, or is called (`data-subject` by `refresh-jobs`/`refresh-news`) | keep |
 
 ## 6. Dependencies
@@ -267,4 +283,4 @@ not listed. `docs/roadmap.md`'s `platform/publish/diva_terms.py` is planned work
 | `docs/workers-ai.md` | stale (gap) | does not name `ml/research/export_workers_ai.py`, the only producer of `workers-ai/debate/` | add the command |
 | `AGENTS.md`, `CLAUDE.md`, `.claude/skills/graph-first/SKILL.md` | check | require `graphify-out/graph.json`, which is ignored (`.gitignore:13`) and absent from this checkout and the primary one | say how to build it, or that it is optional when absent |
 | `ml/cluster_lab/README.md` | check | `configs/cluster_lab/replay.local.yaml` is not tracked; it may be a local file by design | say that it is local |
-| `platform/dbt_project.yml` seed config | stale | `seeds.portfolio.sweden_language.research_domains` sets `column_types`, but the file is `seeds/sweden/research_domains.csv`, so the config does not apply | move the entry under `sweden:` |
+| `platform/dbt_project.yml` seed config | stale | `seeds.portfolio.sweden_language.research_domains` sets `column_types`, but the file is `seeds/sweden/research_domains.csv`, so the config does not apply | move the entry under `sweden:`. Done 2026-10-23 |
