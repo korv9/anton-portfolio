@@ -28,6 +28,7 @@ const ConceptConstellationPage = lazy(
 const ClusterVisualsPage = lazy(() => import('./clusters/ClusterVisualsPage'))
 const MeaningPage = lazy(() => import('./meaning/MeaningPage'))
 const AskTheLaw = lazy(() => import('./lawqa/AskTheLaw'))
+const AskThePlatform = lazy(() => import('./ask/AskThePlatform'))
 const DrugCombPage = lazy(() =>
   import('./products/CaseStudies').then((m) => ({ default: m.DrugCombPage })),
 )
@@ -116,6 +117,11 @@ export default function App() {
                 {page === 'clusters' && <ClusterVisualsPage />}
                 {page === 'meaning' && <MeaningPage />}
                 {page === 'lawqa' && <AskTheLaw route={route} />}
+                {page === 'askplatform' && (
+                  <div className="ds-container">
+                    <AskThePlatform />
+                  </div>
+                )}
                 {page === 'philosophy' && <PhilosophyAtlasPage route={route} />}
                 {page === 'concepts' && (
                   <ConceptConstellationPage route={route} />

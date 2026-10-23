@@ -8,6 +8,8 @@
  *     examples --model <chosen> --ids sfs:0,sfs:1,ai-act-sv:12,ai-act-en:12,...
  *
  * In --ids, <corpus>:<n> is the n-th eval question (from 0); for ai-act-en its question_en is asked.
+ * --questions picks another question file (eval_questions_platform.yaml for Ask the platform) and
+ * --agent the name in the ledger (default law-eval).
  *
  * The question is embedded and answered by worker/index.ts itself (its fetch handler, system
  * prompt and quote check), with env.AI.run sent to the Workers AI REST endpoint and env.ASSETS
@@ -58,7 +60,9 @@ type Usage = {
 
 function env(): Record<string, string> {
   const out: Record<string, string> = {}
-  for (const line of readFileSync(join(ROOT, '.env'), 'utf-8').split(/\r?\n/)) {
+  const file = join(ROOT, '.env')
+  const lines = existsSync(file) ? readFileSync(file, 'utf-8').split(/\r?\n/) : []
+  for (const line of lines) {
     const m = line.match(/^\s*([A-Z0-9_]+)\s*=\s*(.*)\s*$/)
     if (m) out[m[1]] = m[2].replace(/^["']|["']$/g, '')
   }
@@ -121,7 +125,7 @@ function shim(answerModel: string, calls: Usage[], options?: Record<string, unkn
         LEDGER,
         JSON.stringify({
           utc: new Date().toISOString(),
-          agent: 'law-eval',
+          agent: arg('agent') ?? 'law-eval',
           model: used,
           tokens_in: tokensIn,
           tokens_out: tokensOut,
@@ -197,7 +201,7 @@ async function ask(ai: Env['AI'], name: string, question: string, calls: Usage[]
 function questions(): Question[] {
   const out = execFileSync('python', ['-c',
     'import json,sys,yaml;print(json.dumps(yaml.safe_load(open(sys.argv[1],encoding="utf-8"))["questions"]))',
-    join(ROOT, 'configs', 'workers_ai', 'eval_questions.yaml')], { encoding: 'utf-8' })
+    join(ROOT, 'configs', 'workers_ai', arg('questions') ?? 'eval_questions.yaml')], { encoding: 'utf-8' })
   return JSON.parse(out)
 }
 
