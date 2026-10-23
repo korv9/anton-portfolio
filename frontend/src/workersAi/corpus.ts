@@ -21,10 +21,15 @@ export type Corpus<Item> = { pca: Pca; vectors: Int8Array; meta: Meta<Item> }
 const dir = (corpus: string) => `workers-ai/${corpus}`
 const loaded = new Map<string, Promise<Corpus<unknown>>>()
 
-/** A large export lists its items and vectors as parts, in order, each its own file. */
+/**
+ * A large export lists its items and vectors as parts, in order, each its own file. A passage
+ * can have a `path` too (Ask the platform's source file), so a part is told apart by its count.
+ */
 type Part = { path: string; start: number; count: number }
 const isParts = (list: unknown): list is Part[] =>
-  Array.isArray(list) && typeof list[0]?.path === 'string'
+  Array.isArray(list) &&
+  typeof list[0]?.path === 'string' &&
+  typeof list[0]?.count === 'number'
 
 export function loadCorpus<Item>(corpus: string): Promise<Corpus<Item>> {
   if (!loaded.has(corpus)) {
