@@ -1,8 +1,8 @@
 /** Fifteen policy issues: decisions, speeches, budget outturn and welfare indicators. */
 import { useState } from 'react'
-import { color, Frame, Slicer, useData, type Post } from '../kit'
+import { color, focal, Frame, Slicer, useData, type Post } from '../kit'
 import { linearScale } from '../../charts/scales'
-import { line, pc, squarify, sum, XTicks } from './pol-kit'
+import { Bars, int, line, pct, Sub, sum } from './pol-kit'
 
 type Issue = {
   issue_key: string
@@ -34,16 +34,21 @@ const keys = (d: Issues) => d.issues.map((i) => i.issue_key)
 const issueName = (d: Issues) => (k: string) =>
   d.issues.find((i) => i.issue_key === k)?.issue_name_en ?? k
 
+/** One row per party, sorted: how often it voted with the government on the issue. Government
+ * parties take the accent, the rest are grey. */
 function WithGov() {
   const data = useIssues()
   const [key, setKey] = useState('forsvar')
   return (
     <Frame data={data}>
       {(d) => {
-        const rows = [
-          ...d.issues.find((i) => i.issue_key === key)!.parties,
-        ].sort((a, b) => b.with_government_pct - a.with_government_pct)
-        const x = linearScale([0, 100], [30, 290])
+        const iss = d.issues.find((i) => i.issue_key === key)!
+        const rows = [...iss.parties].sort(
+          (a, b) => b.with_government_pct - a.with_government_pct,
+        )
+        const x = linearScale([0, 100], [34, 246])
+        const row = (i: number) => 14 + i * 26
+        const bottom = row(rows.length - 1) + 12
         return (
           <>
             <Slicer
@@ -53,56 +58,53 @@ function WithGov() {
               value={key}
               onChange={setKey}
             />
+            <Sub>{iss.issue_name_en}</Sub>
             <svg
-              viewBox="0 0 300 230"
+              viewBox="0 0 300 236"
               role="img"
-              aria-label={`How often each party voted with the government: ${key}`}
+              aria-label={`How often each party voted with the government: ${iss.issue_name_en}`}
             >
+              <g className="mean-axis">
+                {[0, 50, 100].map((v) => (
+                  <g key={v}>
+                    <line x1={x(v)} x2={x(v)} y1={4} y2={bottom} />
+                    <text x={x(v)} y={bottom + 14} textAnchor="middle">
+                      {v} %
+                    </text>
+                  </g>
+                ))}
+              </g>
               {rows.map((r, i) => {
-                const cy = 14 + i * 26
+                const gov = r.role === 'government'
                 return (
                   <g key={r.party}>
                     <line
                       x1={x(0)}
-                      x2={x(100)}
-                      y1={cy}
-                      y2={cy}
-                      className="mean-pol-grid"
-                    />
-                    <line
-                      x1={x(r.on_winning_side_pct)}
                       x2={x(r.with_government_pct)}
-                      y1={cy}
-                      y2={cy}
-                      stroke={pc(r.party)}
-                      strokeWidth={2}
-                    />
-                    <circle
-                      cx={x(r.on_winning_side_pct)}
-                      cy={cy}
-                      r={4}
-                      fill="var(--paper)"
-                      stroke={pc(r.party)}
-                      strokeWidth={2}
+                      y1={row(i)}
+                      y2={row(i)}
+                      stroke={focal(gov)}
+                      strokeWidth={1}
                     />
                     <circle
                       cx={x(r.with_government_pct)}
-                      cy={cy}
-                      r={6}
-                      fill={pc(r.party)}
+                      cy={row(i)}
+                      r={5}
+                      fill={focal(gov)}
                     >
-                      <title>{`${r.party}: ${r.with_government_pct}%`}</title>
+                      <title>{`${r.party} (${r.role}): ${r.with_government_pct} %`}</title>
                     </circle>
-                    <text x={0} y={cy + 3} className="mean-pol-t">
-                      {r.party}
-                    </text>
+                    <g className="mean-end">
+                      <text x={0} y={row(i) + 4}>
+                        {r.party}
+                      </text>
+                      <text x={298} y={row(i) + 4} textAnchor="end">
+                        {pct(r.with_government_pct, 0)}
+                      </text>
+                    </g>
                   </g>
                 )
               })}
-              <XTicks
-                y={226}
-                ticks={[0, 50, 100].map((v) => ({ x: x(v), label: `${v}%` }))}
-              />
             </svg>
           </>
         )
@@ -182,49 +184,26 @@ function Welfare() {
   )
 }
 
-function DecisionTree() {
+const total = (i: Issue) => sum(i.per_session.map((s) => s.decisions))
+const ranked = (d: Issues) => [...d.issues].sort((a, b) => total(b) - total(a))
+
+function DecisionBars() {
   return (
     <Frame data={useIssues()}>
-      {(d) => {
-        const total = (i: Issue) => sum(i.per_session.map((s) => s.decisions))
-        const rects = squarify(d.issues, total, { x: 0, y: 0, w: 300, h: 300 })
-        return (
-          <svg
-            viewBox="0 0 300 300"
-            role="img"
-            aria-label="Decisions per issue since 1993, treemap"
-          >
-            {rects.map((r) => {
-              const k = d.issues.indexOf(r.item)
-              return (
-                <g key={r.item.issue_key}>
-                  <rect
-                    x={r.x}
-                    y={r.y}
-                    width={r.w}
-                    height={r.h}
-                    fill={color(k)}
-                    stroke="var(--paper)"
-                    strokeWidth={2}
-                  >
-                    <title>{`${r.item.issue_name_en}: ${total(r.item)}`}</title>
-                  </rect>
-                  {r.w > 40 && r.h > 16 && (
-                    <text
-                      x={r.x + 4}
-                      y={r.y + 12}
-                      className="mean-pol-t"
-                      style={{ fill: 'var(--ink)' }}
-                    >
-                      {total(r.item)}
-                    </text>
-                  )}
-                </g>
-              )
-            })}
-          </svg>
-        )
-      }}
+      {(d) => (
+        <Bars
+          label="Decisions per issue since 1993/94, ten most"
+          format={int}
+          rows={ranked(d)
+            .slice(0, 10)
+            .map((i, k) => ({
+              key: i.issue_key,
+              label: <span title={i.issue_name_en}>{i.issue_name_en}</span>,
+              value: total(i),
+              color: focal(k === 0),
+            }))}
+        />
+      )}
     </Frame>
   )
 }
@@ -234,13 +213,21 @@ export const posts: Post[] = [
     id: 'pol-issue-withgov',
     domain: 'politics',
     sources: ['parliament/issues.json'],
+    title: 'How often each party voted with the government, by issue',
+    note: 'Decisions under the current government, %. Accent: parties in government. Source: Riksdagen.',
     render: () => <WithGov />,
   },
   {
     id: 'pol-issue-tree',
     domain: 'politics',
     sources: ['parliament/issues.json'],
-    render: () => <DecisionTree />,
+    title: (d: Issues) => {
+      const [top] = ranked(d)
+      const s = top.per_session
+      return `${top.issue_name_en} had the most Riksdag decisions, ${int(total(top))} in ${s[0].session}–${s.at(-1)!.session}`
+    },
+    note: 'Decisions per policy area, ten most. Source: Riksdagen.',
+    render: () => <DecisionBars />,
   },
   {
     id: 'pol-issue-welfare',

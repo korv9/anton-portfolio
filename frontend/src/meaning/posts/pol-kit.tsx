@@ -1,8 +1,11 @@
 /**
- * Shared bits for the politics posts: party colours, a legend, axis ticks, squarified treemap
- * and arc geometry. Exports no posts of its own.
+ * Shared bits for the politics posts: party colours, a legend, axis ticks, card-sized ranked
+ * bars and 100 % rows, government spans, squarified treemap and arc geometry. Exports no posts
+ * of its own.
  */
-import type { ReactNode } from 'react'
+import type { ComponentProps, ReactNode } from 'react'
+import RankBars from '../../charts/RankBars'
+import { Stacked } from '../../charts/Compare'
 import type { Post } from '../kit'
 import './pol.css'
 
@@ -161,3 +164,88 @@ export function YGrid({
 /** Every nth item, for tick thinning. */
 export const every = <T,>(xs: T[], n: number) =>
   xs.filter((_, i) => i % n === 0)
+
+/** Per cent, at most `digits` decimals, with a space before the sign. */
+export const pct = (v: number, digits = 1) => `${Number(v.toFixed(digits))} %`
+/** Whole numbers with a space between thousands, e.g. 1 071. */
+export const int = (v: number) => Math.round(v).toLocaleString('sv-SE')
+
+/** charts/RankBars at card size: caption type, one line per row at any width (pol.css). */
+export const Bars = (props: ComponentProps<typeof RankBars>) => (
+  <div className="mean-pol-bars">
+    <RankBars {...props} />
+  </div>
+)
+
+/** charts/Compare Stacked at card size, parts named once above the rows. */
+export const Shares = (props: ComponentProps<typeof Stacked>) => (
+  <div className="mean-pol-bars">
+    <Stacked {...props} />
+  </div>
+)
+
+/** The option a categorical slicer holds, named above the chart: thumbnails hide the slicer. */
+export const Sub = ({ children }: { children: ReactNode }) => (
+  <p className="mean-pol-sub">{children}</p>
+)
+
+/** Runs of sessions under one government, e.g. "Persson" over 1996/97 to 2005/06. */
+export function govSpans(
+  sessions: { government_key: string; government_name: string }[],
+) {
+  const out: { name: string; from: number; to: number }[] = []
+  sessions.forEach((s, i) => {
+    const last = out.at(-1)
+    if (last && sessions[last.from].government_key === s.government_key)
+      last.to = i
+    else
+      out.push({
+        name: s.government_name.replace(/^Regeringen /, ''),
+        from: i,
+        to: i,
+      })
+  })
+  return out
+}
+
+/** Grey bands under a session axis, one per government, named where the band has room. */
+export function GovStrip({
+  sessions,
+  x,
+  step,
+  y,
+}: {
+  sessions: { government_key: string; government_name: string }[]
+  x: (i: number) => number
+  step: number
+  y: number
+}) {
+  return (
+    <g className="mean-axis">
+      {govSpans(sessions).map((g, k) => {
+        const x0 = x(g.from) - step / 2
+        const w = (g.to - g.from + 1) * step
+        return (
+          <g key={g.from}>
+            <rect
+              x={x0 + 0.5}
+              y={y}
+              width={w - 1}
+              height={14}
+              fill={shadeOf(k)}
+            >
+              <title>{g.name}</title>
+            </rect>
+            {w > g.name.length * 5.6 + 6 && (
+              <text x={x0 + w / 2} y={y + 10.5} textAnchor="middle">
+                {g.name}
+              </text>
+            )}
+          </g>
+        )
+      })}
+    </g>
+  )
+}
+const shadeOf = (k: number) =>
+  `color-mix(in srgb, var(--mean-other) ${k % 2 ? 14 : 26}%, var(--paper))`

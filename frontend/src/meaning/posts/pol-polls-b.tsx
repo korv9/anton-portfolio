@@ -2,7 +2,8 @@
 import { useState } from 'react'
 import { Frame, Slicer, useData, type Post } from '../kit'
 import { linearScale } from '../../charts/scales'
-import { arc, band, groupBy, pc, PARTIES, sum, uniq, XTicks } from './pol-kit'
+import { niceDomain, ticksBetween } from '../axes'
+import { arc, groupBy, pc, pct, PARTIES, uniq, XTicks } from './pol-kit'
 
 type Poll = {
   survey_month: string
@@ -134,54 +135,70 @@ function Changes() {
   )
 }
 
-/** Kernel density of each party's poll shares, stacked as ridgelines. */
-function Ridges() {
+/** Each party's latest share as a dot on the range of every survey it has been in. */
+function Ranges() {
   return (
     <Frame data={usePolls()}>
       {(d) => {
         const by = groupBy(d.polls, (r) => r.party)
-        const xs = Array.from({ length: 61 }, (_, i) => i * 0.9)
-        const x = linearScale([0, 54], [10, 190])
+        const rows = latest(d)
+          .map((l) => {
+            const v = (by.get(l.party) ?? []).map((q) => q.share_pct)
+            return {
+              p: l.party,
+              now: l.share_pct,
+              lo: Math.min(...v),
+              hi: Math.max(...v),
+            }
+          })
+          .sort((a, b) => b.now - a.now)
+        const [, top] = niceDomain(0, Math.max(...rows.map((r) => r.hi)))
+        const x = linearScale([0, top], [30, 236])
+        const row = (i: number) => 14 + i * 27
+        const bottom = row(rows.length - 1) + 12
         return (
           <svg
-            viewBox="0 0 200 420"
+            viewBox="0 0 300 250"
             role="img"
-            aria-label="Distribution of poll shares per party, ridgelines"
+            aria-label="Latest poll share per party on the range of all its poll shares"
           >
-            {PARTIES.map((p, r) => {
-              const v = (by.get(p) ?? []).map((q) => q.share_pct)
-              const dens = xs.map(
-                (t) =>
-                  sum(v.map((s) => Math.exp(-((t - s) ** 2) / 2))) /
-                  (v.length || 1),
-              )
-              const peak = Math.max(...dens, 1e-9)
-              const base = 70 + r * 44
-              const pts = xs.map(
-                (t, i) =>
-                  [x(t), base - (dens[i] / peak) * 64] as [number, number],
-              )
-              return (
-                <g key={p}>
-                  <path
-                    d={band(
-                      pts,
-                      pts.map(([px]) => [px, base]),
-                    )}
-                    fill={pc(p)}
-                    stroke="var(--paper)"
-                    strokeWidth={1}
-                  />
-                  <text x={4} y={base - 3} className="mean-pol-t">
-                    {p}
+            <g className="mean-axis">
+              {ticksBetween(0, top).map((t) => (
+                <g key={t}>
+                  <line x1={x(t)} x2={x(t)} y1={4} y2={bottom} />
+                  <text x={x(t)} y={bottom + 14} textAnchor="middle">
+                    {t} %
                   </text>
                 </g>
-              )
-            })}
-            <XTicks
-              y={414}
-              ticks={[0, 20, 40].map((v) => ({ x: x(v), label: `${v}%` }))}
-            />
+              ))}
+            </g>
+            {rows.map((r, i) => (
+              <g key={r.p}>
+                <line
+                  x1={x(r.lo)}
+                  x2={x(r.hi)}
+                  y1={row(i)}
+                  y2={row(i)}
+                  stroke={pc(r.p)}
+                  strokeWidth={6}
+                  strokeLinecap="round"
+                  opacity={0.35}
+                >
+                  <title>{`${r.p}: ${r.lo}–${r.hi} %`}</title>
+                </line>
+                <circle cx={x(r.now)} cy={row(i)} r={5.5} fill={pc(r.p)}>
+                  <title>{`${r.p}: ${r.now} %`}</title>
+                </circle>
+                <g className="mean-end">
+                  <text x={0} y={row(i) + 4}>
+                    {r.p}
+                  </text>
+                  <text x={298} y={row(i) + 4} textAnchor="end">
+                    {pct(r.now)}
+                  </text>
+                </g>
+              </g>
+            ))}
           </svg>
         )
       }}
@@ -221,8 +238,17 @@ export const posts: Post[] = [
     id: 'pol-poll-ridges',
     domain: 'politics',
     sources: ['parliament/polls.json'],
-    size: 'tall',
-    render: () => <Ridges />,
+    title: (d: Polls) => {
+      const last = new Date(`${months(d).at(-1)!.slice(0, 7)}-01T00:00Z`)
+      const when = last.toLocaleString('en-GB', {
+        month: 'long',
+        year: 'numeric',
+        timeZone: 'UTC',
+      })
+      return `SCB survey, ${when}: each party against its own highest and lowest`
+    },
+    note: 'Share of voters, %. Dot: latest survey; bar: every survey since the party was first polled. Source: SCB.',
+    render: () => <Ranges />,
   },
   {
     id: 'pol-poll-radial',

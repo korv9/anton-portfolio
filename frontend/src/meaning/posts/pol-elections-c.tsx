@@ -112,6 +112,7 @@ export const posts: Post[] = [
     domain: 'politics',
     sources: ['parliament/now.json'],
     title: 'Seats won and lost at the latest Riksdag election',
+    note: 'Change in seats against the previous election. Source: Valmyndigheten.',
     render: () => <SeatSwing />,
   },
   {

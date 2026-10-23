@@ -3,10 +3,11 @@ import { useState } from 'react'
 import { color, focal, Frame, Slicer, useData, type Post } from '../kit'
 import { linearScale, niceTicks } from '../../charts/scales'
 import {
+  Bars,
   every,
+  int,
   pc,
   PARTIES,
-  squarify,
   sum,
   uniq,
   XTicks,
@@ -141,89 +142,45 @@ function NewsRadial() {
   )
 }
 
-/** Tiles under this width (in the 300-unit viewBox, about 65 px on the smallest card) carry
- * no label. A name wraps by word to the tile's width; if a word or the lines do not fit, the
- * tile shows its count alone, so no label clips. */
-const TILE_MIN = 100
-const LINE = 15
-const tileLines = (
-  w: number,
-  h: number,
-  name: string | undefined,
-  n: number,
-) => {
-  const max = Math.floor((w - 12) / 7.4)
-  const lines: string[] = []
-  for (const word of name?.split(' ') ?? []) {
-    const last = lines.at(-1)
-    if (last && `${last} ${word}`.length <= max)
-      lines[lines.length - 1] = `${last} ${word}`
-    else lines.push(word)
-  }
-  lines.push(String(n))
-  return lines.every((l) => l.length <= max) && lines.length * LINE + 8 <= h
-    ? lines
-    : [String(n)]
+/** Items per topic, most first; an item can carry several topics. */
+const topicCounts = (d: News) => {
+  const names = new Map(d.topics.map((t) => [t.key, t.name_en]))
+  const counts = new Map<string, number>()
+  for (const t of d.items.flatMap((i) => i.topics))
+    counts.set(t, (counts.get(t) ?? 0) + 1)
+  // A topic without a name is left out, so a key never shows.
+  return [...counts]
+    .filter(([k]) => names.has(k))
+    .map(([k, n]) => ({ key: k, name: names.get(k)!, n }))
+    .sort((a, b) => b.n - a.n)
 }
 
 function NewsTopics() {
   return (
     <Frame data={useData<News>('parliament/news.json')}>
-      {(d) => {
-        // A topic without a name stays unlabelled, so a key never shows.
-        const names = new Map(d.topics.map((t) => [t.key, t.name_en]))
-        const counts = [
-          ...d.items
-            .flatMap((i) => i.topics)
-            .reduce(
-              (m, t) => m.set(t, (m.get(t) ?? 0) + 1),
-              new Map<string, number>(),
-            ),
-        ]
-        const rects = squarify(counts, ([, n]) => n, {
-          x: 0,
-          y: 0,
-          w: 300,
-          h: 300,
-        })
-        return (
-          <svg
-            viewBox="0 0 300 300"
-            role="img"
-            aria-label="News items per topic, treemap"
-          >
-            {rects.map((r, i) => (
-              <g key={r.item[0]}>
-                <rect
-                  x={r.x}
-                  y={r.y}
-                  width={r.w}
-                  height={r.h}
-                  fill={focal(i === 0)}
-                  stroke="var(--paper)"
-                  strokeWidth={2}
-                />
-                {r.w >= TILE_MIN && r.h > 22 && (
-                  <text
-                    className="mean-pol-tile"
-                    style={i === 0 ? { fill: 'var(--mean-card)' } : undefined}
-                  >
-                    {tileLines(r.w, r.h, names.get(r.item[0]), r.item[1]).map(
-                      (l, k) => (
-                        <tspan key={k} x={r.x + 6} y={r.y + 17 + k * LINE}>
-                          {l}
-                        </tspan>
-                      ),
-                    )}
-                  </text>
-                )}
-              </g>
-            ))}
-          </svg>
-        )
-      }}
+      {(d) => (
+        <Bars
+          label="News items per topic, top 10"
+          format={int}
+          rows={topicCounts(d)
+            .slice(0, 10)
+            .map((t, i) => ({
+              key: t.key,
+              label: <span title={t.name}>{t.name}</span>,
+              value: t.n,
+              color: focal(i === 0),
+            }))}
+        />
+      )}
     </Frame>
   )
+}
+
+function newsTitle(d: News) {
+  const [top] = topicCounts(d)
+  return top
+    ? `${top.name} is the most common news topic: ${top.n} of ${d.items.length} items`
+    : 'News items per topic'
 }
 
 export const posts: Post[] = [
@@ -243,6 +200,8 @@ export const posts: Post[] = [
     id: 'pol-news-topics',
     domain: 'politics',
     sources: ['parliament/news.json'],
+    title: newsTitle,
+    note: 'News items per topic, top 10; an item can have several topics. Sources: SVT, Ekot, Government Offices.',
     render: () => <NewsTopics />,
   },
 ]
