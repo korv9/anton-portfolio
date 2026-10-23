@@ -1,0 +1,37 @@
+name: Refresh the job assistant
+
+# Hourly, the job_assistant subject of platform/pipeline.yml (docs/job-assistant.md):
+#  - restores warehouse/raw/job_assistant from R2 (the ad store, its cursor and the run log);
+#  - reads every Data/IT ad created, changed or removed in JobStream since the cursor;
+#  - stores the raw answers and the store in R2 again, whatever the export did;
+#  - checks job-assistant/ads.json and publishes it as its own versioned R2 group.
+# A run that stops halfway leaves the cursor at the last stored window, so the next run repeats
+# only that window.
+
+on:
+  schedule:
+    - cron: '7 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: data-refresh
+  cancel-in-progress: false
+  # Wait in order: the default keeps one pending run and cancels the one before it.
+  queue: max
+
+jobs:
+  # The steps and the failure alert are in data-subject.yml.
+  refresh:
+    uses: ./.github/workflows/data-subject.yml
+    secrets: inherit
+    permissions:
+      contents: read
+      actions: read
+      issues: write
+    with:
+      subjects: job_assistant
+      store: job_assistant
+      timeout-minutes: 30

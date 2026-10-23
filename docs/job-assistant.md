@@ -53,12 +53,12 @@ The owner's own records sit in a D1 database behind the Worker.
 | CV file | R2 `job-assistant/cv/<sha256>.<ext>` | One file per uploaded version; the current CV is already public |
 | Draft profile | D1 `profile_draft` | One row: profile JSON (schema v1 in `cv_profile.py`), CV hash, updated time |
 | Approved profile | D1 `profile_version` | One row per version: version, profile JSON, `profile_sha256`, CV hash, approved time |
-| Ad | R2 `job-assistant/ads.json` | One row per JobTech ad id: title, employer, place, full text, source URL, published, last changed, removed time, content hash, duplicate group |
-| Ad history | R2 `job-assistant/changes/<day>.jsonl` | One row per observed change: ad id, time, old and new content hash, removed flag |
+| Ad store | R2 `warehouse/raw/job_assistant/ads.json` | One row per JobTech ad id: headline, employer, place, full public text, source and application links, published, last changed, first seen, removed time, content hash, duplicate group, and its history of new, changed and removed events |
+| Ad list | delivery group `job-assistant`, `job-assistant/ads.json` | The store's current ads and those removed in the last 30 days, without the text, plus the last week of runs |
 | Match | R2 `job-assistant/matches.json` | One row per ad and profile version: role category, match class, reasons, requirement judgements, gaps, explanation (optional), `profile_version`, CV hash, engine version |
 | Review status | D1 `review` | One row per ad: status, note, updated time |
 | Relevance label | D1 `label` | One row per labelled ad: relevant, maybe or not relevant, note, the class shown when labelled |
-| Run record | R2 `job-assistant/runs.jsonl` | One row per hourly run: window, counts, neurons spent, outcome |
+| Run record | R2 `warehouse/raw/job_assistant/runs.jsonl` | One row per hourly run: windows, counts, outcome (neurons spent are added with the matching) |
 
 Statuses are `new`, `review`, `interesting`, `pass`, `applied` and `closed`. An ad without a
 review row is `new`. An ad that JobTech removes is shown as closed, but a status the owner set,
@@ -69,19 +69,25 @@ sentence and its line) and the CV side (the level and the CV quotes, or "not in 
 
 ## Ingestion, duplicates and removal
 
-The hourly run reuses the JobStream client in `platform/ingest/jobtech/ingest_stream.py`: it asks
-for every change since the stored cursor, in windows of at most six hours, and stores each answer
-with its provenance line (`platform/lib/rawstore.py`). The text projection, contact redaction and
-requirement sentences come from `platform/publish/job_content.py`.
+`platform/job_assistant/ads.py` runs every hour in `refresh-job-assistant.yml`, as the
+`job_assistant` subject of `platform/pipeline.yml`. The first run reads every current Data/IT ad
+from JobSearch, one publication day at a time over the last 60 days, with the client in
+`platform/ingest/jobtech/ingest_jobs.py`. JobStream's snapshot is not used: it ignores the
+occupation filter and returns about 40,000 ads. Later runs ask JobStream for every change since
+the stored cursor, in windows of at most six hours, as `ingest_stream.py` does. Each answer is
+stored with its provenance line (`platform/lib/rawstore.py`) under its own source,
+`job_assistant`, so its fetch log never mixes with the market subject's. The text projection and
+contact redaction come from `platform/publish/job_content.py`.
 
 - The key is the JobTech ad id. A changed ad replaces its row when its content hash differs, and
-  the change is written to the history. An unchanged repeat does nothing.
+  the old version is noted in the row's history. An unchanged repeat does nothing.
 - Ads with the same employer, title and text hash under different ids form one duplicate group;
   the list shows the group once.
-- A `removed` record, or a passed application deadline, sets the removed time. The row stays so
-  the owner's status and labels still have something to point at.
-- The cursor moves only after the outputs for its window are stored. A run that stops halfway
-  asks for the same window again, and the id plus hash rule makes that harmless.
+- A `removed` record sets the removed time, and a passed application deadline sets `expired` in
+  the list. The row stays so the owner's status and labels still have something to point at. An
+  ad that comes back after removal is reopened.
+- The store is written atomically before the cursor moves. A run that stops halfway asks for the
+  same window again, and the id plus hash rule makes that harmless.
 
 ## Matching
 
@@ -145,7 +151,7 @@ The hourly workflow must live on `main`, so it goes in its own small pull reques
 
 ## Monitoring
 
-The hourly run is a subject in `platform/pipeline.yml` with `sla.fresh_within: 2h`, so the
+The hourly run is a subject in `platform/pipeline.yml` with `sla.fresh_within: 3h`, so the
 existing data heartbeat opens an issue when it stops. `runs.jsonl` keeps one row per run, which
 is the record for the seven days of scheduled operation after the merge.
 
@@ -183,3 +189,5 @@ describe this search, not matching in general.
 ## Status
 
 - 2026-10-23: plan, CV parser, profile schema and checks (`platform/job_assistant/`), tests.
+- 2026-10-23: hourly ad store, list export and delivery group. A local run read 2,263 current
+  Data/IT ads in 41 seconds, 30 of them duplicates of another id.

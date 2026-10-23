@@ -24,7 +24,8 @@ PHASES = ("ingest", "dbt", "ml", "export")
 REFRESHERS = {"refresh-jobs.yml": (["market"], "jobs"), "refresh-news.yml": (["news"], "news"),
               "refresh-welfare.yml": (["welfare", "parliament", "taxes"], "public-data"),
               "refresh-diva.yml": (["diva"], "diva"),
-              "refresh-job-analysis.yml": (["jobs_analysis"], "jobs-analysis")}
+              "refresh-job-analysis.yml": (["jobs_analysis"], "jobs-analysis"),
+              "refresh-job-assistant.yml": (["job_assistant"], "job-assistant")}
 DATA_WORKFLOWS = [*REFRESHERS, "build-warehouse.yml", "publish-r2.yml"]
 
 

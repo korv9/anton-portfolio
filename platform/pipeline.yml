@@ -70,6 +70,10 @@ groups:
     publish:
       - python platform/publish/validate_refresh_delivery.py --group diva --root frontend/public/data
       - python platform/publish/release.py publish --group diva --root frontend/public/data --spec configs/delivery/diva.json --code-sha {sha}
+  job-assistant:
+    publish:
+      - python platform/job_assistant/export.py --check frontend/public/data
+      - python platform/publish/release.py publish --group job-assistant --root frontend/public/data --spec configs/delivery/job-assistant.json --code-sha {sha}
   # SWEDEN publishes on its own, so a failed SWEDEN source never holds back the baseline.
   sweden:
     publish:
@@ -497,3 +501,15 @@ subjects:
       - ingest: python platform/ingest/jobtech/run_history_pipeline.py
       # Not dbt: rewrites the gold job tables and marts/jobs.json in Python from the CSVs above.
       - export: python platform/legacy/build_gold.py
+
+  # The job assistant (docs/job-assistant.md): Data/IT ads from JobStream every hour, with
+  # changes and removals, kept under warehouse/raw/job_assistant and published as their own group.
+  job_assistant:
+    schedule: '7 * * * *'
+    sla: {fresh_within: 3h}
+    write: {raw: {merge: [path]}, delivery: versioned}
+    group: job-assistant
+    raw: [job_assistant]
+    steps:
+      - ingest: python platform/job_assistant/ads.py
+      - export: python platform/job_assistant/export.py

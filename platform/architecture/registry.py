@@ -100,6 +100,9 @@ INGESTION = [
     {"id": "jobtech", "path": "platform/ingest/jobtech", "domain": "jobs",
      "origins": ["arbetsformedlingen"], "raw": ["jobtech", "jobtech_market", "jobtech_governance"],
      "description": "Job ads from the JobSearch API and ad counts from every historical archive."},
+    {"id": "job_assistant", "path": "platform/job_assistant", "domain": "jobs",
+     "origins": ["arbetsformedlingen"], "raw": ["job_assistant"],
+     "description": "Current Data/IT ads for the job assistant: JobSearch once, then JobStream every hour."},
     {"id": "scb", "path": "platform/ingest/scb", "domain": "welfare",
      "origins": ["scb"], "raw": ["scb"], "description": "Labour force survey and population."},
     {"id": "fk", "path": "platform/ingest/fk", "domain": "welfare",
@@ -189,6 +192,7 @@ PUBLISHERS = [
     {"path": "platform/publish/job_ai_governance/export_job_ai_governance.py", "domain": "ai_act",
      "outputs": [{"pattern": "ai-act/jobs/*.json"}]},
     {"path": "platform/publish/export_market.py", "domain": "jobs", "outputs": [{"pattern": "jobs/market.json"}]},
+    {"path": "platform/job_assistant/export.py", "domain": "jobs", "outputs": [{"pattern": "job-assistant/*.json"}]},
     {"path": "platform/ingest/jobtech/export_presentation.py", "domain": "jobs",
      "outputs": [{"pattern": "jobs/*.csv"}]},
     {"path": "platform/publish/export_job_clusters.py", "domain": "jobs", "outputs": [
