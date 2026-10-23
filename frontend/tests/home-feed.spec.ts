@@ -21,6 +21,8 @@ async function scrollTo(page: Page, target: Locator) {
 async function tickingPost(page: Page) {
   const feed = page.locator('.home-feed')
   await feed.evaluate((el) => el.scrollIntoView({ behavior: 'instant' }))
+  // Research follows the feed, so stepping down before the posts load would scroll past them.
+  await expect(feed.locator('.mean-post').first()).toBeAttached()
   const ticking = feed
     .locator('.mean-post:not([data-dense]):has(.mean-now)')
     .first()
