@@ -187,7 +187,7 @@ Result, against what this file set out:
   first. The null was that a lag is no shorter than at random dates.
 - `ai-system` and `ai-modell` were in job ads before the Commission's proposal (first in June and
   February 2020) and rise year by year, as generative AI does. No lag after any of the ten tested
-  dates is shorter than at random dates: p is 0.27 or more for `ai-system` and 0.48 or more for
+  dates is shorter than at random dates: p is 0.27 or more for `ai-system` and 0.47 or more for
   `ai-modell`. This is a null result.
 - In the Riksdag the same two terms give the same null (PR #97). The four primary terms matched
   one speech in ten years.

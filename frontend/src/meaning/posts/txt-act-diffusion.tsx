@@ -58,7 +58,12 @@ const key = (s: { term_list: string; term_id: string }) =>
 
 /** What the pre-registered rule found for one term in one corpus, in a few words. Dates that
  * share a month count once, and short lags that all end in one month say so. */
-function verdict(lags: Lag[], matches: number, few: number) {
+function verdict(
+  lags: Lag[],
+  matches: number,
+  few: number,
+  employers?: number | null,
+) {
   if (!matches) return 'No match'
   const found = lags.filter((x) => x.lag_months !== null)
   if (!found.length) return 'No adoption after any date'
@@ -68,7 +73,7 @@ function verdict(lags: Lag[], matches: number, few: number) {
   if (!short.length) return 'No lag shorter than at random dates'
   const ends = uniq(short.map((x) => x.adoption_month))
   if (ends.length === 1)
-    return `Shorter than at random dates, all on matches in ${ends[0]}`
+    return `Shorter than at random dates, all on matches in ${ends[0]}${employers === 1 ? ', from one employer' : ''}`
   const months = uniq(lags.map((x) => x.milestone_month)).length
   return `Shorter than at random dates after ${uniq(short.map((x) => x.milestone_month)).length} of ${months} date months`
 }
@@ -149,7 +154,12 @@ function Diffusion() {
               s,
               total,
               name: NAME[c.corpus] ?? c.corpus,
-              said: verdict(own, total, diagnostics.few_matches),
+              said: verdict(
+                own,
+                total,
+                diagnostics.few_matches,
+                read?.employers,
+              ),
               read: readLine(read),
             },
           ]
