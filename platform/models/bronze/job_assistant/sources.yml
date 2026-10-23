@@ -1,0 +1,31 @@
+version: 2
+
+# The job assistant (docs/job-assistant.md). platform/job_assistant/ads.py keeps the current
+# Data/IT ads from JobTech (JobSearch once, then JobStream every hour) and rank.py matches them
+# with the owner's approved CV profile. Both write JSON under warehouse/raw/job_assistant, with
+# every fetched answer in the source's _manifest.jsonl.
+
+sources:
+  - name: job_assistant
+    description: >-
+      The job assistant's ad store, its match store and its run log, read as JSON objects and typed
+      in bronze, so a field that is null in every row keeps its type.
+    tables:
+      - name: ads
+        description: One record per JobTech ad id, with the public text and its change history.
+        meta:
+          external_location: >-
+            read_json_objects('{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/job_assistant/ads.json', format = 'array')
+      - name: matches
+        description: >-
+          One record: the profile version and CV hash the matches used, the run note (neurons, embeddings,
+          explanations) and the matches in rank order, kept as JSON and unpacked in bronze.
+        meta:
+          external_location: >-
+            read_json_objects('{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/job_assistant/matches.json')
+      - name: runs
+        description: One record per hourly run of ads.py, with its windows and outcome.
+        meta:
+          external_location: >-
+            read_json_objects('{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/job_assistant/runs.jsonl',
+            format = 'newline_delimited')

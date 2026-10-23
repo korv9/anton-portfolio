@@ -1,0 +1,365 @@
+version: 2
+
+# The job assistant's published tables (docs/job-assistant.md). platform/job_assistant/export.py
+# writes job-assistant/*.json from them; nothing here is a chance of being hired.
+
+models:
+  - name: mart_job_assistant_ads
+    description: Current Data/IT ads and those removed in the last 30 days, without the text.
+    config:
+      contract: {enforced: true}
+    columns:
+      - name: ad_id
+        data_type: VARCHAR
+        description: 'Key: JobTech ad id.'
+        data_tests: [unique, not_null]
+      - name: headline
+        data_type: VARCHAR
+        description: 'Attribute: the ad title as published.'
+      - name: employer
+        data_type: VARCHAR
+        description: 'Attribute: the advertised employer name.'
+      - name: organisation_number
+        data_type: VARCHAR
+        description: 'Attribute: the employer''s organisation number when JobTech gives one.'
+      - name: municipality
+        data_type: VARCHAR
+        description: 'Attribute: workplace municipality.'
+      - name: region
+        data_type: VARCHAR
+        description: 'Attribute: workplace county.'
+      - name: occupation
+        data_type: VARCHAR
+        description: 'Attribute: JobTech occupation label.'
+      - name: employment_type
+        data_type: VARCHAR
+        description: 'Attribute: employment type label.'
+      - name: working_hours
+        data_type: VARCHAR
+        description: 'Attribute: working hours label.'
+      - name: published
+        data_type: TIMESTAMP
+        description: 'Attribute: publication time, Stockholm local time.'
+      - name: changed
+        data_type: TIMESTAMP
+        description: 'Attribute: the last change JobTech recorded, Stockholm local time.'
+      - name: first_seen
+        data_type: TIMESTAMP WITH TIME ZONE
+        description: 'Attribute: when the job assistant first read the ad.'
+        data_tests: [not_null]
+      - name: application_deadline
+        data_type: TIMESTAMP
+        description: 'Attribute: last application day, Stockholm local time; null when none is given.'
+      - name: removed_at
+        data_type: TIMESTAMP
+        description: 'Attribute: when JobTech removed the ad, Stockholm local time; null while it is up.'
+      - name: duplicate_of
+        data_type: VARCHAR
+        description: 'Attribute: the lowest id with the same employer, headline and text; null for the first.'
+      - name: source_url
+        data_type: VARCHAR
+        description: 'Attribute: the ad on Platsbanken or the employer''s page (https).'
+        data_tests: [not_null]
+      - name: application_url
+        data_type: VARCHAR
+        description: 'Attribute: a checked https application link, or null.'
+      - name: content_hash
+        data_type: VARCHAR
+        description: 'Attribute: SHA-256 of the shown fields; changes when the ad changes.'
+        data_tests: [not_null]
+      - name: expired
+        data_type: BOOLEAN
+        description: 'Attribute: the application deadline has passed.'
+        data_tests: [not_null]
+
+  - name: mart_job_assistant_matches
+    description: One row per matched current ad, in rank order, with the profile version and CV it used.
+    config:
+      contract: {enforced: true}
+    columns:
+      - name: ad_id
+        data_type: VARCHAR
+        description: 'Key: JobTech ad id.'
+        data_tests:
+          - unique
+          - not_null
+          - relationships: {arguments: {to: ref('mart_job_assistant_ads'), field: ad_id}}
+      - name: rank
+        data_type: INTEGER
+        description: 'Attribute: position in the review order, 1 first.'
+        data_tests: [unique, not_null]
+      - name: match_class
+        data_type: VARCHAR
+        description: 'Attribute: strong, possible, stretch or outside, from the rules in platform/job_assistant/match.py.'
+        data_tests:
+          - accepted_values: {arguments: {values: [strong, possible, stretch, outside]}}
+      - name: role
+        data_type: VARCHAR
+        description: 'Attribute: role category, such as data_engineering or applied_ai; other when none fits.'
+      - name: role_from_title
+        data_type: BOOLEAN
+        description: 'Attribute: the role was read from the title, not only the ad text.'
+      - name: reasons
+        data_type: VARCHAR[]
+        description: 'Attribute: the rules that set the class, in plain words.'
+        data_tests: [not_null]
+      - name: gaps
+        data_type: VARCHAR[]
+        description: 'Attribute: required or preferred skills the CV does not show in practical work or projects.'
+      - name: uncertain
+        data_type: VARCHAR[]
+        description: 'Attribute: why the class may be wrong.'
+      - name: similarity
+        data_type: DOUBLE
+        description: 'Measure, non-additive: bge-m3 cosine between the ad and the profile, -1 to 1; null until embedded.'
+        data_tests:
+          - between: {arguments: {min: -1, max: 1}}
+      - name: remote_quote
+        data_type: VARCHAR
+        description: 'Attribute: the sentence that mentions remote work, or null.'
+      - name: senior_title
+        data_type: VARCHAR
+        description: 'Attribute: the title words that read as senior, lead or architect, or null.'
+      - name: years_asked
+        data_type: INTEGER
+        description: 'Attribute: the most years of experience the ad states, or null.'
+      - name: junior_quote
+        data_type: VARCHAR
+        description: 'Attribute: the sentence that says junior, graduate or trainee, or null.'
+      - name: explanation
+        data_type: VARCHAR
+        description: 'Attribute: the gemma explanation, only when every quote in it was found in the ad or the CV.'
+      - name: explanation_status
+        data_type: VARCHAR
+        description: 'Attribute: verified, unverified, or null when none was made.'
+      - name: explanation_model
+        data_type: VARCHAR
+        description: 'Attribute: the Workers AI model that wrote the explanation.'
+      - name: content_hash
+        data_type: VARCHAR
+        description: 'Attribute: the ad version the match was made from.'
+      - name: profile_version
+        data_type: INTEGER
+        description: 'Attribute: the approved profile version the match used.'
+        data_tests: [not_null]
+      - name: cv_sha256
+        data_type: VARCHAR
+        description: 'Attribute: SHA-256 of the CV file behind that profile.'
+        data_tests: [not_null]
+      - name: engine
+        data_type: VARCHAR
+        description: 'Attribute: the matching rules version.'
+      - name: sample
+        data_type: BOOLEAN
+        description: 'Attribute: one of the 30 outside ads in the evaluation sample.'
+      - name: detailed
+        data_type: BOOLEAN
+        description: 'Attribute: judgements and text are published (strong, possible, stretch or sample).'
+
+  - name: mart_job_assistant_judgements
+    description: One row per detailed ad and skill it names.
+    config:
+      contract: {enforced: true}
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [ad_id, skill]
+    columns:
+      - name: ad_id
+        data_type: VARCHAR
+        description: 'Key: JobTech ad id.'
+        data_tests:
+          - relationships: {arguments: {to: ref('mart_job_assistant_matches'), field: ad_id}}
+      - name: skill
+        data_type: VARCHAR
+        description: 'Key: skill name from platform/job_assistant/skills.py.'
+      - name: strength
+        data_type: VARCHAR
+        description: 'Attribute: required, preferred or ambiguous, from the ad sentence.'
+      - name: cv_level
+        data_type: VARCHAR
+        description: 'Attribute: practical, education_or_project, listed or interest; null when the CV does not name it.'
+
+  - name: mart_job_assistant_evidence
+    description: The quotes behind each published judgement, from the ad and from the CV.
+    config:
+      contract: {enforced: true}
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [ad_id, skill, side, quote_number]
+    columns:
+      - name: ad_id
+        data_type: VARCHAR
+        description: 'Key: JobTech ad id.'
+      - name: skill
+        data_type: VARCHAR
+        description: 'Key: skill name.'
+      - name: side
+        data_type: VARCHAR
+        description: 'Key: ad or cv.'
+      - name: quote_number
+        data_type: INTEGER
+        description: 'Key: order of the quote on its side, 1 first.'
+      - name: quote
+        data_type: VARCHAR
+        description: 'Attribute: the sentence or CV line, word for word.'
+        data_tests: [not_null]
+      - name: line
+        data_type: INTEGER
+        description: 'Attribute: line in the ad text; null for structured skills and CV lines.'
+      - name: source
+        data_type: VARCHAR
+        description: 'Attribute: the ad field, or the CV entry (experience-2, project-1, skills, summary).'
+      - name: cv_level
+        data_type: VARCHAR
+        description: 'Attribute: the evidence level of a CV line; null on the ad side.'
+
+  - name: mart_job_assistant_checks
+    description: Education and conditions the detailed ads state; they never change the class.
+    config:
+      contract: {enforced: true}
+    columns:
+      - name: ad_id
+        data_type: VARCHAR
+        description: 'Key: JobTech ad id.'
+      - name: kind
+        data_type: VARCHAR
+        description: 'Attribute: education or conditions.'
+        data_tests:
+          - accepted_values: {arguments: {values: [education, conditions]}}
+      - name: label
+        data_type: VARCHAR
+        description: 'Attribute: the words that matched.'
+      - name: quote
+        data_type: VARCHAR
+        description: 'Attribute: the ad sentence.'
+        data_tests: [not_null]
+      - name: line
+        data_type: INTEGER
+        description: 'Attribute: line in the ad text.'
+
+  - name: mart_job_assistant_texts
+    description: The full public text of exactly the detailed ads, contact details redacted.
+    config:
+      contract: {enforced: true}
+    columns:
+      - name: ad_id
+        data_type: VARCHAR
+        description: 'Key: JobTech ad id.'
+        data_tests: [unique, not_null]
+      - name: description
+        data_type: VARCHAR
+        description: 'Attribute: the ad text as JobTech publishes it, with e-mail, phone and contact names replaced.'
+      - name: text_origin
+        data_type: VARCHAR
+        description: 'Attribute: description.text, or the formatted text read as plain text.'
+      - name: contact_redactions
+        data_type: INTEGER
+        description: 'Measure, additive: how many contact details were replaced.'
+      - name: content_hash
+        data_type: VARCHAR
+        description: 'Attribute: the ad version of the text.'
+
+  - name: mart_job_assistant_skill_demand
+    description: >-
+      Per skill, how many matched Data/IT ads name it and the CV's evidence level for it: how the
+      documented experience compares with what the current ads ask for.
+    config:
+      contract: {enforced: true}
+    columns:
+      - name: skill
+        data_type: VARCHAR
+        description: 'Key: skill name.'
+        data_tests: [unique, not_null]
+      - name: ads_required
+        data_type: INTEGER
+        description: 'Measure, additive: matched ads that name the skill as required.'
+      - name: ads_preferred
+        data_type: INTEGER
+        description: 'Measure, additive: matched ads that name it as preferred.'
+      - name: ads_naming
+        data_type: INTEGER
+        description: 'Measure, additive: matched ads that name it in any way.'
+      - name: share_naming
+        data_type: DOUBLE
+        description: 'Measure, non-additive: ads_naming / matched ads; fraction 0-1.'
+        data_tests:
+          - between: {arguments: {min: 0, max: 1}}
+      - name: cv_level
+        data_type: VARCHAR
+        description: 'Attribute: the CV''s evidence level for the skill; null when the CV does not name it.'
+
+  - name: mart_job_assistant_runs_daily
+    description: Hourly runs per UTC day, the record of scheduled operation.
+    config:
+      contract: {enforced: true}
+    columns:
+      - name: day
+        data_type: DATE
+        description: 'Key: UTC day the runs started.'
+        data_tests: [unique, not_null]
+      - name: runs
+        data_type: INTEGER
+        description: 'Measure, additive: runs started that day.'
+      - name: runs_ok
+        data_type: INTEGER
+        description: 'Measure, additive: runs that ended without error.'
+      - name: runs_failed
+        data_type: INTEGER
+        description: 'Measure, additive: runs that stopped with an error.'
+      - name: ads_new
+        data_type: INTEGER
+        description: 'Measure, additive: ads seen for the first time.'
+      - name: ads_changed
+        data_type: INTEGER
+        description: 'Measure, additive: ads whose shown fields changed.'
+      - name: ads_removed
+        data_type: INTEGER
+        description: 'Measure, additive: ads JobTech removed.'
+      - name: last_finished
+        data_type: TIMESTAMP WITH TIME ZONE
+        description: 'Attribute: when the day''s last run ended.'
+
+  - name: mart_job_assistant_profile
+    description: The approved profile version and CV the published matches used, and the last run's AI use.
+    config:
+      contract: {enforced: true}
+    columns:
+      - name: profile_version
+        data_type: INTEGER
+        description: 'Key: approved profile version.'
+        data_tests: [unique, not_null]
+      - name: cv_sha256
+        data_type: VARCHAR
+        description: 'Attribute: SHA-256 of the CV file.'
+      - name: profile_sha256
+        data_type: VARCHAR
+        description: 'Attribute: SHA-256 of the approved profile.'
+      - name: approved_at
+        data_type: TIMESTAMP WITH TIME ZONE
+        description: 'Attribute: when the owner approved it.'
+      - name: engine
+        data_type: VARCHAR
+        description: 'Attribute: the matching rules version.'
+      - name: matched_at
+        data_type: TIMESTAMP WITH TIME ZONE
+        description: 'Attribute: when rank.py last ran.'
+      - name: neurons_before
+        data_type: DOUBLE
+        description: 'Measure, non-additive: the project''s Workers AI neurons that UTC day before the run.'
+      - name: neurons_after
+        data_type: DOUBLE
+        description: 'Measure, non-additive: the same after the run; the project cap is 1,500.'
+      - name: embedded
+        data_type: INTEGER
+        description: 'Measure, additive: texts embedded in the run.'
+      - name: embeddings_missing
+        data_type: INTEGER
+        description: 'Measure, non-additive: texts without a vector before the run.'
+      - name: embeddings_stopped
+        data_type: VARCHAR
+        description: 'Attribute: project budget or account quota when embedding stopped early; else null.'
+      - name: explained
+        data_type: INTEGER
+        description: 'Measure, additive: explanations made in the run.'

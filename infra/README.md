@@ -5,7 +5,7 @@ Both keep their state in the private R2 bucket `anton-portfolio-tfstate`, under 
 
 | Stack | Manages | Left outside Terraform |
 |---|---|---|
-| `cloudflare/` | R2 bucket `anton-portfolio` (imported), the new private bucket `anton-portfolio-warehouse`, the bucket's CORS policy from `platform/publish/r2-cors.json`, the `r2.dev` address, the Worker's custom domains `antonernstsson.com` and `www` (imported) | The Worker script and its build (Workers Builds and `wrangler.toml`); `data.antonernstsson.com` on the bucket, because the provider cannot import an R2 custom domain; the `www` redirect rule; the state bucket |
+| `cloudflare/` | R2 bucket `anton-portfolio` (imported), the new private bucket `anton-portfolio-warehouse`, the bucket's CORS policy from `platform/publish/r2-cors.json`, the `r2.dev` address, the Worker's custom domains `antonernstsson.com` and `www` (imported), the job assistant's D1 database `job-assistant` | The Worker script and its build (Workers Builds and `wrangler.toml`); `data.antonernstsson.com` on the bucket, because the provider cannot import an R2 custom domain; the `www` redirect rule; the state bucket |
 | `github/` | Ruleset for `main` with the four required checks, environment `anton-portfolio` and its `main` policy (imported), environment `terraform` | Secret values (set with `gh secret set`), the old disabled ruleset `test`, Actions variables |
 
 `.github/workflows/terraform.yml` checks format, validates and plans both stacks on pull
@@ -26,7 +26,7 @@ The owner does these steps by hand, in this order.
 2. **Cloudflare API token** (My Profile → API Tokens → Create custom token), limited to this
    account and zone:
    - Account: Workers R2 Storage Edit (buckets, CORS, `r2.dev`); Workers Scripts Edit (Worker
-     custom domains);
+     custom domains); D1 Edit (the job assistant's database);
    - Zone `antonernstsson.com`: Zone Read (the zone lookup).
 
    No resource here writes DNS records, so DNS Edit is not needed. Add it only when Terraform

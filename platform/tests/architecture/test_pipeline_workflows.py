@@ -24,7 +24,8 @@ PHASES = ("ingest", "dbt", "ml", "export")
 REFRESHERS = {"refresh-jobs.yml": (["market"], "jobs"), "refresh-news.yml": (["news"], "news"),
               "refresh-welfare.yml": (["welfare", "parliament", "taxes"], "public-data"),
               "refresh-diva.yml": (["diva"], "diva"),
-              "refresh-job-analysis.yml": (["jobs_analysis"], "jobs-analysis")}
+              "refresh-job-analysis.yml": (["jobs_analysis"], "jobs-analysis"),
+              "refresh-job-assistant.yml": (["job_assistant"], "job-assistant")}
 DATA_WORKFLOWS = [*REFRESHERS, "build-warehouse.yml", "publish-r2.yml"]
 
 
@@ -274,7 +275,7 @@ def test_source_freshness_runs_before_the_build_and_never_fails_it():
     class Recorder:
         dry_run = True
 
-        def __call__(self, argv, cwd=None, ok_exit=()):
+        def __call__(self, argv, cwd=None, ok_exit=(), hide=()):
             calls.append((argv, tuple(ok_exit)))
 
     step = {"select": ["tag:x", "+y"], "freshness": True}
@@ -284,3 +285,20 @@ def test_source_freshness_runs_before_the_build_and_never_fails_it():
     assert fresh[fresh.index("--select") + 1:][:2] == ["+tag:x", "+y"] and "build" in build
     flagged = {name for name, s in SUBJECTS.items() for st in s["steps"] if st.get("dbt", {}).get("freshness")}
     assert flagged == {"ai_act", "ai_politics", "symbolic", "philosophy", "quality", "news", "sfs"}
+
+
+def test_step_secrets_reach_only_their_step():
+    module = load_cli()
+    calls = []
+
+    class Recorder:
+        dry_run = True
+
+        def __call__(self, argv, cwd=None, ok_exit=(), hide=()):
+            calls.append((argv[-1], hide))
+
+    steps = [{"ingest": "python a.py", "secrets": ["AI_TOKEN"]}, {"ingest": "python b.py"}]
+    module.run_subject("s", {"steps": steps}, {"ingest"}, "missing", Recorder())
+    assert calls == [("a.py", ()), ("b.py", ("AI_TOKEN",))]
+    rank = next(st for st in SUBJECTS["job_assistant"]["steps"] if "rank.py" in st.get("ingest", ""))
+    assert rank["secrets"] == ["CLOUDFLARE_API_TOKEN"] and rank["ok_exit"] == [1]

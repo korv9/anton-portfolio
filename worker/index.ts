@@ -4,10 +4,12 @@
  * from passages the browser found, after checking that every passage is verbatim published text
  * (law, or the platform's own documents) and that every quote in the answer is verbatim in its
  * passage. Visitor text is never logged
- * or stored. All vector search happens in the browser.
+ * or stored. All vector search happens in the browser. /api/jobs/* is the job assistant's owner
+ * records (worker/jobs.ts): public reads, token-protected writes and CV files.
  */
+import { jobs, type JobsEnv } from './jobs.ts'
 
-export type Env = {
+export type Env = JobsEnv & {
   AI: { run: (model: string, input: unknown) => Promise<unknown> }
   ASSETS: { fetch: (request: Request) => Promise<Response> }
   RATE_LIMITER?: {
@@ -263,6 +265,17 @@ export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const { pathname } = new URL(request.url)
     if (!pathname.startsWith('/api/')) return env.ASSETS.fetch(request)
+    if (pathname.startsWith('/api/jobs/')) {
+      // Owner records are never served unlimited; reads and writes count separately so public
+      // reads cannot use up the owner's write budget.
+      if (!env.RATE_LIMITER)
+        return json({ error: 'rate limiter is not configured' }, 503)
+      const ip = request.headers.get('CF-Connecting-IP') ?? 'anonymous'
+      const key = `jobs-${request.method === 'GET' ? 'read' : 'write'}:${ip}`
+      if (!(await env.RATE_LIMITER.limit({ key })).success)
+        return json({ error: 'too many requests' }, 429)
+      return jobs(request, env)
+    }
     const route = { '/api/embed': embed, '/api/answer': answer }[pathname]
     if (!route) return json({ error: 'not found' }, 404)
     if (request.method !== 'POST') return json({ error: 'POST only' }, 405)
