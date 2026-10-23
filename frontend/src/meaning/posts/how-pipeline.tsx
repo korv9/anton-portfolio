@@ -39,7 +39,7 @@ function RunStrip() {
           .map(([subject, e]) => ({
             subject,
             run: lastRun(e),
-            failed: e.outcome !== 'success',
+            failed: e.outcome === 'failure',
             late: domainsOf(subject).some(
               (d) => freshness(status, d) === false,
             ),
