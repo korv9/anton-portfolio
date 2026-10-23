@@ -24,10 +24,14 @@ const DROPPED = new Set<string>([
   'wel-connections-scatter',
   'pol-meaning-ring',
   'pol-debate-kpis',
-  // Answered more plainly by a sibling: issue bars, the stacked vote share, the region bars.
+  // Answered more plainly by a sibling: issue bars, the stacked vote share, the region bars,
+  // the symbol and risk-tier bars, the named cluster sizes.
   'pol-issue-multiples',
   'pol-share-multiples',
   'job-region-swarm',
+  'txt-ml-symbol-counts',
+  'txt-act-obligation-heatmap',
+  'txt-ml-cluster-skyline',
   // Empty or near-uniform.
   'pol-issue-welfare',
   'txt-plat-quality-waffle',
