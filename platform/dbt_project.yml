@@ -20,6 +20,8 @@ models:
     bronze:
       +materialized: view
       +schema: bronze
+      job_assistant:
+        +tags: [job_assistant]
       cross_domain:
         +tags: [ai_act_diffusion]
       philosophy:
@@ -65,6 +67,8 @@ models:
     silver:
       +materialized: view
       +schema: silver
+      job_assistant:
+        +tags: [job_assistant]
       market:
         +tags: [market]
       philosophy:
@@ -86,6 +90,8 @@ models:
     gold:
       +materialized: table
       +schema: gold
+      job_assistant:
+        +tags: [job_assistant]
       quality:
         +tags: [quality]
       clusters:
