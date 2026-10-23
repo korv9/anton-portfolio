@@ -64,9 +64,13 @@ export const int = (v: number) => Math.round(v).toLocaleString('sv-SE')
 export const signed = (v: number, digits = 1) =>
   `${v > 0 ? '+' : v < 0 ? '−' : ''}${Math.abs(v).toFixed(digits)}`
 
-/** charts/RankBars at card size (meaning.css .mean-bars). */
-export const Bars = (props: ComponentProps<typeof RankBars>) => (
-  <div className="mean-bars">
+/** charts/RankBars at card size (meaning.css .mean-bars). `wrap` lets long labels take a
+ * second line instead of ending in an ellipsis. */
+export const Bars = ({
+  wrap,
+  ...props
+}: ComponentProps<typeof RankBars> & { wrap?: boolean }) => (
+  <div className={`mean-bars${wrap ? ' mean-pol-wrap' : ''}`}>
     <RankBars {...props} />
   </div>
 )
