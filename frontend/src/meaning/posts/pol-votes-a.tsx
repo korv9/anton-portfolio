@@ -1,14 +1,17 @@
 /** Riksdag roll calls per session since 1993/94: attendance, cohesion, agreement. */
 import { useState } from 'react'
-import { Frame, Slicer, useData, type Post } from '../kit'
-import { linearScale, niceTicks } from '../../charts/scales'
-import { arc, every, pc, PARTIES, XTicks, YGrid } from './pol-kit'
+import { focal, Frame, seq, Slicer, useData, type Post } from '../kit'
+import { linearScale } from '../../charts/scales'
+import { niceDomain, ticksBetween, XAxis, YAxis } from '../axes'
+import { best, every, fromEnd, GovStrip, int, PARTIES, Sub } from './pol-kit'
 
 type Session = {
   session: string
   roll_calls: number
   government_key: string
+  government_name: string
   government_parties: string[]
+  start_year: number
 }
 type Record_ = {
   session: string
@@ -46,51 +49,70 @@ const METRICS = {
 } as const
 type Metric = keyof typeof METRICS
 const METRIC_KEYS = Object.keys(METRICS) as Metric[]
+const METRIC_NAMES: Record<Metric, string> = {
+  attendance: 'Attendance, % of roll calls',
+  cohesion: 'Party unity: members voting with their party, %',
+  winning: 'On the winning side, %',
+  'with gov': 'Voted with the government, %',
+  abstained: 'Party abstained, % of roll calls',
+}
 
 const useSessions = () => useData<Sessions>('parliament/sessions.json')
-const short = (s: string) => s.slice(2)
-const recentFirst = (d: Sessions) => d.sessions.map((s) => s.session).reverse()
+/** A riksmöte runs from September to the next summer; until the next one opens it may still
+ * be adding roll calls, so it is not compared with full sessions. */
+const ongoing = (s: Session) => Date.now() < Date.UTC(s.start_year + 1, 8, 1)
 
-function Lollipop() {
+/** Roll calls per session as plain columns, the latest full one in the accent, with the
+ * government of each session named in grey bands underneath. A session still under way is
+ * drawn faint. */
+function Columns() {
   return (
     <Frame data={useSessions()}>
       {(d) => {
-        const ticks = niceTicks(
-          Math.max(...d.sessions.map((s) => s.roll_calls)),
+        const n = d.sessions.length
+        if (!n) return null
+        const lastFull = d.sessions.map((s) => !ongoing(s)).lastIndexOf(true)
+        const [, hi] = niceDomain(
+          0,
+          Math.max(1, ...d.sessions.map((s) => s.roll_calls)),
         )
-        const y = linearScale([0, ticks.at(-1)!], [172, 8])
-        const x = linearScale([0, d.sessions.length - 1], [40, 628])
+        const y = linearScale([0, hi], [150, 10])
+        const step = 548 / n
+        const x = (i: number) => 44 + step * (i + 0.5)
         return (
           <svg
-            viewBox="0 0 640 190"
+            viewBox="0 0 600 200"
             role="img"
-            aria-label="Roll calls per session"
+            aria-label="Roll calls per session, with the government of each session"
           >
-            <YGrid ticks={ticks} x0={36} x1={632} y={y} />
+            <YAxis
+              y={y}
+              ticks={ticksBetween(0, hi)}
+              x0={44}
+              x1={592}
+              format={int}
+            />
             {d.sessions.map((s, i) => (
-              <g
+              <rect
                 key={s.session}
-                stroke={pc(s.government_parties[0])}
-                fill={pc(s.government_parties[0])}
+                x={x(i) - step * 0.35}
+                y={y(s.roll_calls)}
+                width={step * 0.7}
+                height={y(0) - y(s.roll_calls)}
+                fill={focal(i === lastFull)}
+                opacity={ongoing(s) ? 0.4 : 1}
               >
-                <line
-                  x1={x(i)}
-                  x2={x(i)}
-                  y1={y(0)}
-                  y2={y(s.roll_calls)}
-                  strokeWidth={2}
-                />
-                <circle cx={x(i)} cy={y(s.roll_calls)} r={5}>
-                  <title>{`${s.session}: ${s.roll_calls}`}</title>
-                </circle>
-              </g>
+                <title>{`${s.session}: ${int(s.roll_calls)} roll calls${ongoing(s) ? ' so far (session under way)' : ''}`}</title>
+              </rect>
             ))}
-            <XTicks
-              y={186}
-              ticks={every(d.sessions, 4).map((s) => ({
-                x: x(d.sessions.indexOf(s)),
-                label: short(s.session),
-              }))}
+            <GovStrip sessions={d.sessions} x={x} step={step} y={156} />
+            <XAxis
+              y={194}
+              x={x}
+              ticks={every(
+                d.sessions.map((_, i) => i),
+                8,
+              ).map((i) => ({ value: i, label: d.sessions[i].session }))}
             />
           </svg>
         )
@@ -99,136 +121,97 @@ function Lollipop() {
   )
 }
 
+/** Sessions the heatmap shows: few enough that every cell can carry its number. */
+const SHOWN = 8
+
+/** Keeps one decimal from 99.5 to just under 100, so 99.6 is not rounded up to 100. */
+const cell = (v: number) =>
+  v >= 99.5 && v < 100 ? v.toFixed(1) : String(Math.round(v))
+
 function MetricHeat() {
   const data = useSessions()
-  const [m, setM] = useState<Metric>('cohesion')
+  const [m, setM] = useState<Metric>('with gov')
   return (
     <Frame data={data}>
       {(d) => {
-        const ss = d.sessions.map((s) => s.session)
-        const vals = d.party_record.map((r) => r[METRICS[m]])
+        const ss = d.sessions.slice(-SHOWN).map((s) => s.session)
+        const recs = d.party_record.filter((r) => ss.includes(r.session))
+        const ps = PARTIES.filter((p) => recs.some((r) => r.party === p))
+        if (!recs.length) return null
+        const vals = recs.map((r) => r[METRICS[m]])
         const lo = Math.min(...vals)
         const hi = Math.max(...vals)
-        const cw = 610 / ss.length
+        const cw = 560 / ss.length
+        const rh = 20
         return (
           <>
             <Slicer
-              label="Metric"
-              cycles={false}
+              label="Measure"
               options={METRIC_KEYS}
+              format={(k) => METRIC_NAMES[k]}
               value={m}
               onChange={setM}
             />
+            <Sub>{METRIC_NAMES[m]}</Sub>
             <svg
-              viewBox="0 0 640 200"
+              viewBox="0 0 600 196"
               role="img"
-              aria-label={`Party ${m} per session, heatmap`}
+              aria-label={`${METRIC_NAMES[m]} per party, last ${SHOWN} sessions`}
             >
-              {PARTIES.map((p, r) => (
+              {ps.map((p, r) => (
                 <g key={p}>
-                  <text x={0} y={r * 22 + 15} className="mean-pol-t">
-                    {p}
-                  </text>
-                  {d.party_record
-                    .filter((q) => q.party === p)
-                    .map((q) => (
-                      <rect
-                        key={q.session}
-                        x={28 + ss.indexOf(q.session) * cw}
-                        y={r * 22}
-                        width={cw - 1}
-                        height={20}
-                        rx={2}
-                        fill={pc(p)}
-                        opacity={
-                          0.08 + (0.92 * (q[METRICS[m]] - lo)) / (hi - lo || 1)
-                        }
-                      >
-                        <title>{`${p} ${q.session}: ${q[METRICS[m]]}%`}</title>
-                      </rect>
-                    ))}
-                </g>
-              ))}
-              <XTicks
-                y={196}
-                ticks={every(ss, 4).map((s) => ({
-                  x: 28 + ss.indexOf(s) * cw + cw / 2,
-                  label: short(s),
-                }))}
-              />
-            </svg>
-          </>
-        )
-      }}
-    </Frame>
-  )
-}
-
-function Chord() {
-  const data = useSessions()
-  const [s, setS] = useState('2025/26')
-  return (
-    <Frame data={data}>
-      {(d) => {
-        const pairs = d.party_pairs.filter((p) => p.session === s)
-        const ps: string[] = PARTIES.filter((p) =>
-          pairs.some((q) => q.party_a === p || q.party_b === p),
-        )
-        const at = (p: string) => (ps.indexOf(p) / ps.length) * Math.PI * 2
-        const pt = (a: number, r: number) => [
-          150 + r * Math.sin(a),
-          150 - r * Math.cos(a),
-        ]
-        return (
-          <>
-            <Slicer
-              label="Session"
-              cycles
-              options={every(recentFirst(d), 4)}
-              value={s}
-              onChange={setS}
-            />
-            <svg
-              viewBox="0 0 300 300"
-              role="img"
-              aria-label={`Voting agreement between parties, ${s}`}
-            >
-              {pairs.map((q) => {
-                const [x1, y1] = pt(at(q.party_a), 112)
-                const [x2, y2] = pt(at(q.party_b), 112)
-                return (
-                  <path
-                    key={q.party_a + q.party_b}
-                    d={`M${x1},${y1}Q150,150 ${x2},${y2}`}
-                    fill="none"
-                    stroke={pc(q.party_a)}
-                    strokeWidth={(q.agreement_pct / 100) ** 3 * 14}
-                    opacity={0.65}
-                  >
-                    <title>{`${q.party_a}–${q.party_b}: ${q.agreement_pct}%`}</title>
-                  </path>
-                )
-              })}
-              {ps.map((p) => {
-                const a = at(p)
-                const [tx, ty] = pt(a, 134)
-                return (
-                  <g key={p}>
-                    <path
-                      d={arc(150, 150, 114, 124, a - 0.3, a + 0.3)}
-                      fill={pc(p)}
-                    />
-                    <text
-                      x={tx}
-                      y={ty + 3}
-                      textAnchor="middle"
-                      className="mean-pol-t"
-                    >
+                  <g className="mean-end">
+                    <text x={0} y={r * (rh + 2) + 14}>
                       {p}
                     </text>
                   </g>
-                )
-              })}
+                  {recs
+                    .filter((q) => q.party === p)
+                    .map((q) => {
+                      const v = q[METRICS[m]]
+                      const t = (v - lo) / (hi - lo || 1)
+                      const cx = 36 + ss.indexOf(q.session) * cw
+                      return (
+                        <g key={q.session}>
+                          <rect
+                            x={cx}
+                            y={r * (rh + 2)}
+                            width={cw - 2}
+                            height={rh}
+                            fill={seq(t)}
+                          >
+                            <title>{`${p} ${q.session}: ${v} %`}</title>
+                          </rect>
+                          <text
+                            x={cx + cw / 2 - 1}
+                            y={r * (rh + 2) + 14}
+                            textAnchor="middle"
+                            className="mean-pol-cellv"
+                            style={
+                              t > 0.55
+                                ? { fill: 'var(--mean-card)' }
+                                : undefined
+                            }
+                          >
+                            {cell(v)}
+                          </text>
+                        </g>
+                      )
+                    })}
+                </g>
+              ))}
+              <g className="mean-axis">
+                {ss.map((s, i) => (
+                  <text
+                    key={s}
+                    x={36 + i * cw + cw / 2 - 1}
+                    y={ps.length * (rh + 2) + 12}
+                    textAnchor="middle"
+                  >
+                    {s}
+                  </text>
+                ))}
+              </g>
             </svg>
           </>
         )
@@ -243,19 +226,28 @@ export const posts: Post[] = [
     domain: 'politics',
     sources: ['parliament/sessions.json'],
     size: 'wide',
-    render: () => <Lollipop />,
-  },
-  {
-    id: 'pol-chord',
-    domain: 'politics',
-    sources: ['parliament/sessions.json'],
-    render: () => <Chord />,
+    title: (d: Sessions) => {
+      const top = best(
+        d.sessions.filter((s) => !ongoing(s)),
+        (s) => s.roll_calls,
+      )
+      return top
+        ? `Roll calls per Riksdag session; ${top.session} had the most, ${int(top.roll_calls)}`
+        : 'Roll calls per Riksdag session'
+    },
+    note: 'Recorded votes per session, with the government of the day. Source: Riksdagen.',
+    render: () => <Columns />,
   },
   {
     id: 'pol-metric-heat',
     domain: 'politics',
     sources: ['parliament/sessions.json'],
     size: 'wide',
+    title: (d: Sessions) =>
+      d.sessions.length
+        ? `Party voting records, ${fromEnd(d.sessions, SHOWN).session}–${d.sessions.at(-1)!.session}`
+        : 'Party voting records',
+    note: 'Per party and session; the shade follows the value written in each cell. Source: Riksdagen roll calls.',
     render: () => <MetricHeat />,
   },
 ]
