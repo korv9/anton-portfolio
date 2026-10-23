@@ -16,15 +16,15 @@ test('legacy delivery resolves JSON from the pinned site snapshots', async ({
   expect(bases.json).toBe('data/')
   expect(shard_prefixes.length).toBeGreaterThan(0)
 
-  const goldRequests: string[] = []
+  const jsonRequests: string[] = []
   page.on('request', (request) => {
-    if (request.url().includes('/gold/')) goldRequests.push(request.url())
+    if (request.url().includes('/products/')) jsonRequests.push(request.url())
   })
-  // The result tables' catalogue reads gold/semantic-model.json.
+  // The result tables' catalogue reads products/datasets.json.
   await page.goto('/#drugcomb-data')
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
   await page.waitForLoadState('networkidle')
-  expect(goldRequests.length).toBeGreaterThan(0)
-  for (const url of goldRequests)
+  expect(jsonRequests.length).toBeGreaterThan(0)
+  for (const url of jsonRequests)
     expect(url.startsWith(bases.shard)).toBeFalsy()
 })
