@@ -27,7 +27,8 @@ def test_every_subject_declares_an_sla_and_only_known_keys():
             assert within == "none", f"{name} runs by hand and promises no freshness"
             continue
         # Longer than the schedule's period, so one run on time never reads as stale.
-        period = 24 if subject["schedule"].endswith("* * *") else 7 * 24
+        period = (1 if subject["schedule"].split()[1] == "*" else
+                  24 if subject["schedule"].endswith("* * *") else 7 * 24)
         assert heartbeat.duration(within).total_seconds() > period * 3600, name
 
 

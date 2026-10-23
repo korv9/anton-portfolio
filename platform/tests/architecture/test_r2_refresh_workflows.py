@@ -18,7 +18,7 @@ from data_workflows import REUSABLE, workflow  # noqa: E402
 
 REFRESHERS = {"refresh-jobs.yml": "jobs", "refresh-news.yml": "news",
               "refresh-welfare.yml": "public-data", "refresh-diva.yml": "diva",
-              "refresh-job-analysis.yml": "jobs-analysis"}
+              "refresh-job-analysis.yml": "jobs-analysis", "refresh-job-assistant.yml": "job-assistant"}
 WORKFLOWS = [*REFRESHERS, "publish-r2.yml", "build-warehouse.yml", "cluster-jobs.yml"]
 CREDENTIALS = ("R2_ACCOUNT_ID", "R2_ACCESS_KEY_ID", "R2_SECRET_ACCESS_KEY", "R2_BUCKET")
 SHA = "a" * 40

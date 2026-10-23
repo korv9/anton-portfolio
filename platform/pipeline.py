@@ -109,13 +109,14 @@ class Runner:
         self.dry_run = dry_run
         self.missing: list[str] = []
 
-    def __call__(self, argv: list[str], cwd: Path = ROOT, ok_exit=()) -> None:
+    def __call__(self, argv: list[str], cwd: Path = ROOT, ok_exit=(), hide=()) -> None:
         shown = " ".join("python" if a == sys.executable else a for a in argv)
         print(f"  $ {shown}" + ("" if cwd == ROOT else "   (in platform/)"), flush=True)
         if self.dry_run:
             self.missing += missing_files(argv, cwd)
             return
-        env = dict(os.environ, DBT_SEND_ANONYMOUS_USAGE_STATS="false")
+        env = {k: v for k, v in os.environ.items() if k not in hide}
+        env["DBT_SEND_ANONYMOUS_USAGE_STATS"] = "false"
         code = subprocess.run(argv, cwd=cwd, env=env).returncode
         if code and code not in ok_exit:
             raise RuntimeError(f"exit {code}: {shown}")
@@ -137,8 +138,11 @@ def run_subject(name: str, subject: dict, phases: set[str], ml: str, run: Runner
     has_dbt = any("dbt" in step for step in subject["steps"])
     seen: dict[str, int] = {}
     building = False
+    # A variable a step names under `secrets` reaches that step's command and no other in the subject.
+    scoped = {n for step in subject["steps"] for n in step.get("secrets", ())}
     for step in subject["steps"]:
         phase = next(p for p in PHASES if p in step)
+        hide = tuple(sorted(scoped - set(step.get("secrets", ()))))
         seen[phase] = seen.get(phase, 0) + 1
         if phase not in phases and f"{phase}:{seen[phase]}" not in phases:
             continue
@@ -154,18 +158,18 @@ def run_subject(name: str, subject: dict, phases: set[str], ml: str, run: Runner
         if phase == "dbt":
             if step["dbt"].get("freshness"):
                 # Warn-only: a stale or unreadable source is reported and never stops the build.
-                run(freshness_argv(step["dbt"], target), cwd=PLATFORM, ok_exit=(1, 2))
-            run(dbt_argv(step["dbt"], target), cwd=PLATFORM)
+                run(freshness_argv(step["dbt"], target), cwd=PLATFORM, ok_exit=(1, 2), hide=hide)
+            run(dbt_argv(step["dbt"], target), cwd=PLATFORM, hide=hide)
         elif phase == "ml":
             argv = ml_argv(step, ml)
             if argv:
-                run(argv)
+                run(argv, hide=hide)
             else:
                 print(f"  kept {step['marker']} (--ml {ml}): {step['ml']}")
         else:
             if phase == "export" and has_dbt and not run.dry_run and not tests_passed(target):
                 raise RuntimeError(f"no passing dbt build in platform/target/{target}; not exporting")
-            run(expand(step[phase]), ok_exit=step.get("ok_exit", ()))
+            run(expand(step[phase]), ok_exit=step.get("ok_exit", ()), hide=hide)
     if building:
         mark_built(target)
 

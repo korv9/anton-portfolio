@@ -1,0 +1,29 @@
+version: 2
+
+models:
+  - name: int_job_assistant_judgements
+    description: One row per matched ad and skill the ad names, with the CV evidence level.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [ad_id, skill]
+    columns:
+      - name: strength
+        data_tests:
+          - accepted_values: {arguments: {values: [required, preferred, ambiguous]}}
+      - name: cv_level
+        data_tests:
+          - accepted_values: {arguments: {values: [practical, education_or_project, listed, interest]}}
+  - name: int_job_assistant_evidence
+    description: One row per quote behind a judgement, from the ad (side ad) or the CV (side cv).
+    columns:
+      - name: quote
+        data_tests: [not_null]
+      - name: side
+        data_tests:
+          - accepted_values: {arguments: {values: [ad, cv]}}
+  - name: int_job_assistant_checks
+    description: Education and conditions an ad states, each with its sentence.
+    columns:
+      - name: quote
+        data_tests: [not_null]

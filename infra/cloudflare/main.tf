@@ -82,3 +82,15 @@ resource "cloudflare_workers_custom_domain" "site" {
   service    = local.worker
   zone_id    = data.cloudflare_zone.site.id
 }
+
+# The job assistant's owner records (worker/jobs.ts, docs/job-assistant.md): profile drafts and
+# versions, uploaded CVs, review statuses and relevance labels. The table comes from the
+# migration in worker/migrations/, applied with wrangler after this database exists.
+resource "cloudflare_d1_database" "job_assistant" {
+  account_id = var.account_id
+  name       = "job-assistant"
+
+  lifecycle {
+    prevent_destroy = true
+  }
+}

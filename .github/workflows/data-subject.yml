@@ -31,6 +31,14 @@ on:
         description: Install the summary SDK, give the build the Anthropic key and keep the summary outcome
         type: boolean
         default: false
+      workers-ai:
+        description: Give the build a Workers AI token (the job assistant's embeddings and explanations)
+        type: boolean
+        default: false
+      job-assist-token:
+        description: Give the build the job assistant's owner token (its CV drafts and profile versions)
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -55,6 +63,9 @@ jobs:
       SCB_API_KEY: ${{ inputs.scb-key && secrets.SCB_API_KEY || '' }}
       # The news subject writes the week's summary only when this is set (platform/pipeline.yml).
       ANTHROPIC_API_KEY: ${{ inputs.summary && secrets.ANTHROPIC_API_KEY || '' }}
+      # Without them the job assistant ranks by rules and cached vectors only (platform/job_assistant/ai.py).
+      CLOUDFLARE_API_TOKEN: ${{ inputs.workers-ai && secrets.CLOUDFLARE_AI_TOKEN || '' }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ inputs.workers-ai && vars.CLOUDFLARE_ACCOUNT_ID || '' }}
       SUBJECTS: ${{ inputs.subjects }}
       STORE: ${{ inputs.store }}
     steps:
@@ -74,6 +85,10 @@ jobs:
       # publication below. Unquoted on purpose: one argument per subject.
       - name: Fetch, build, test and export
         run: python platform/pipeline.py run $SUBJECTS --only ingest,dbt,export
+        env:
+          # The job assistant's owner token for its profile records (worker/jobs.ts). Only this step
+          # runs platform/job_assistant/sync.py; empty writes nothing.
+          JOB_ASSIST_TOKEN: ${{ inputs.job-assist-token && secrets.JOB_ASSIST_TOKEN || '' }}
       # Raw checkpoints are useful even if a source or a dbt test failed.
       - name: Store the raw files in R2
         if: ${{ always() && steps.setup.outcome == 'success' && inputs.store != '' }}
