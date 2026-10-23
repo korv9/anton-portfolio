@@ -1,8 +1,8 @@
 /** Symbolic atlas, concept layer and the Workers AI eval: radial bars, treemap, parallel axes, gauges. */
 import { useState } from 'react'
-import { Frame, Slicer, color, useData, type Post } from '../kit'
+import { Frame, Slicer, useData, type Post } from '../kit'
 import { linearScale } from '../../charts/scales'
-import { Legend, Svg, arc, fmt, palette, squarify, uniq } from './txt-kit'
+import { Bars, Legend, Svg, fmt, palette, uniq } from './txt-kit'
 
 type SymSummary = {
   document_count: number
@@ -12,6 +12,7 @@ type SymSummary = {
   cluster_count: number
   symbols: { id: string; label: string; points: number; occurrences: number }[]
   documents: { id: string; title: string; tradition: string; words: number }[]
+  traditions: string[]
   evaluation: { cluster_sizes: Record<string, number> }
 }
 type ModelRow = Record<string, number> & { model: string; experiment: string }
@@ -31,69 +32,59 @@ const AXES = [
 const EXPS = ['all', 'baseline', 'book_centered'] as const
 const d = 'ml'
 
+/** Plain names for the corpus's tradition ids. */
+const TRADITION: Record<string, string> = {
+  'celtic-arthurian': 'Celtic and Arthurian',
+  'christian-biblical': 'Christian and biblical',
+  'east-asian': 'East Asian',
+  'egyptian-near-eastern': 'Egyptian and Near Eastern',
+  'european-folklore': 'European folklore',
+  'finnish-baltic': 'Finnish and Baltic',
+  'greek-roman': 'Greek and Roman',
+  'indigenous-north-american': 'Indigenous North American',
+  'middle-eastern-persian': 'Middle Eastern and Persian',
+  'norse-germanic': 'Norse and Germanic',
+  'slavic-eastern-european': 'Slavic and Eastern European',
+  'south-asian': 'South Asian',
+}
+const tradition = (id: string) => TRADITION[id] ?? id.replace(/-/g, ' ')
+const bySymbol = (s: SymSummary, k: (typeof SYM_METRICS)[number]) =>
+  [...s.symbols].sort((a, b) => b[k] - a[k])
+const byTradition = ({ documents }: SymSummary) =>
+  [
+    ...documents.reduce(
+      (m, d) => m.set(d.tradition, (m.get(d.tradition) ?? 0) + d.words),
+      new Map<string, number>(),
+    ),
+  ].sort((a, b) => b[1] - a[1])
+
 function SymbolRadial() {
   const data = useData<SymSummary>(SYM)
   const [metric, setMetric] =
     useState<(typeof SYM_METRICS)[number]>('occurrences')
   return (
     <Frame data={data}>
-      {({ symbols }) => {
-        const rows = [...symbols].sort((a, b) => b[metric] - a[metric])
-        const r = linearScale(
-          [0, Math.max(...rows.map((s) => s[metric]))],
-          [50, 150],
-        )
-        const step = (2 * Math.PI) / rows.length
-        return (
-          <>
-            <Slicer
-              label="Measure"
-              cycles={false}
-              options={SYM_METRICS}
-              value={metric}
-              onChange={setMetric}
-            />
-            <Svg
-              w={400}
-              h={400}
-              label="Symbols in myth and folklore as radial bars"
-            >
-              {rows.map((s, i) => {
-                const a = i * step + step / 2
-                const [tx, ty] = [
-                  200 + (r(s[metric]) + 6) * Math.sin(a),
-                  200 - (r(s[metric]) + 6) * Math.cos(a),
-                ]
-                return (
-                  <g key={s.id}>
-                    <path
-                      d={arc(
-                        200,
-                        200,
-                        46,
-                        r(s[metric]),
-                        i * step + 0.02,
-                        (i + 1) * step - 0.02,
-                      )}
-                      fill={color(i)}
-                    >
-                      <title>{`${s.label}: ${fmt(s[metric])}`}</title>
-                    </path>
-                    <text
-                      className="mean-txt-t"
-                      x={tx}
-                      y={ty + 3}
-                      textAnchor={a > Math.PI ? 'end' : 'start'}
-                    >
-                      {s.label}
-                    </text>
-                  </g>
-                )
-              })}
-            </Svg>
-          </>
-        )
-      }}
+      {(s) => (
+        <>
+          <Slicer
+            label="Measure"
+            cycles={false}
+            options={SYM_METRICS}
+            format={(m) => (m === 'points' ? 'Mapped passages' : 'Occurrences')}
+            value={metric}
+            onChange={setMetric}
+          />
+          <Bars
+            label="Occurrences of each symbol in the corpus, most first"
+            format={fmt}
+            rows={bySymbol(s, metric).map((x) => ({
+              key: x.id,
+              label: x.label,
+              value: x[metric],
+            }))}
+          />
+        </>
+      )}
     </Frame>
   )
 }
@@ -101,39 +92,18 @@ function BookTreemap() {
   const data = useData<SymSummary>(SYM)
   return (
     <Frame data={data}>
-      {({ documents }) => {
-        const trad = palette(uniq(documents.map((d) => d.tradition)).sort())
-        return (
-          <>
-            <Svg
-              w={300}
-              h={600}
-              label="Every book in the symbolic atlas sized by words"
-            >
-              {squarify(documents, (d) => d.words, {
-                x: 0,
-                y: 0,
-                w: 300,
-                h: 600,
-              }).map((c) => (
-                <rect
-                  key={c.t.id}
-                  x={c.x}
-                  y={c.y}
-                  width={c.w}
-                  height={c.h}
-                  fill={trad.get(c.t.tradition)}
-                  stroke="var(--paper)"
-                  className="mean-txt-hover"
-                >
-                  <title>{`${c.t.title}: ${fmt(c.t.words)}`}</title>
-                </rect>
-              ))}
-            </Svg>
-            <Legend items={[...trad]} />
-          </>
-        )
-      }}
+      {(s) => (
+        <Bars
+          label="Words per tradition in the myth and folklore corpus, most first"
+          format={fmt}
+          long
+          rows={byTradition(s).map(([t, n]) => ({
+            key: t,
+            label: tradition(t),
+            value: n,
+          }))}
+        />
+      )}
     </Frame>
   )
 }
@@ -229,13 +199,22 @@ export const posts: Post[] = [
     id: 'txt-ml-symbol-radial',
     domain: d,
     sources: ['symbolic/summary.json'],
+    title: (s: SymSummary) => {
+      const [x] = bySymbol(s, 'occurrences')
+      return `${x.label} is the most frequent of the ${s.symbols.length} symbols, with ${fmt(x.occurrences)} occurrences`
+    },
+    note: 'Times each symbol word occurs in the myth and folklore corpus',
     render: () => <SymbolRadial />,
   },
   {
     id: 'txt-ml-book-treemap',
     domain: d,
     sources: ['symbolic/summary.json'],
-    size: 'tall',
+    title: (s: SymSummary) => {
+      const [[t, n]] = byTradition(s)
+      return `${tradition(t)} texts are the largest of ${s.traditions.length} traditions, with ${fmt(n)} words`
+    },
+    note: 'Words per tradition across the books of the myth and folklore corpus',
     render: () => <BookTreemap />,
   },
   {

@@ -1,11 +1,13 @@
-/** Embedding maps and the philosophy atlas: scatters, bubbles, box plots, slopes and stacks. */
+/** The philosophy corpus: how long each work is, and where each sits between two poles. */
 import { useState } from 'react'
-import { Frame, Slicer, color, useData, type Post } from '../kit'
-import { linearScale, niceTicks } from '../../charts/scales'
-import { Legend, Svg, fmt, palette, ticksIn, uniq } from './txt-kit'
+import { Frame, OTHER, PALETTE, Slicer, useData, type Post } from '../kit'
+import { linearScale } from '../../charts/scales'
+import { niceDomain, ticksBetween } from '../axes'
+import { Bars, Svg, XGrid, fmt, uniq } from './txt-kit'
 
 type Work = {
   document_id: string
+  title: string
   author: string
   year: number
   tradition: string
@@ -14,7 +16,12 @@ type Work = {
 }
 type PhilSummary = {
   works: Work[]
-  run: { evaluation: Record<string, Record<string, number>> }
+  tensions: {
+    tension_id: string
+    pole_a: string
+    pole_b: string
+    label_en: string
+  }[]
 }
 type Tension = {
   tension_id: string
@@ -24,175 +31,131 @@ type Tension = {
   median: number
   q3: number
 }
-const extent = (xs: number[]) =>
-  [Math.min(...xs), Math.max(...xs)] as [number, number]
+const TENSIONS = 'philosophy/tensions.json'
+const DEFAULT = 'freedom_control'
+const year = (y: number) => (y < 0 ? `${-y} BC` : String(y))
+/** A work's short name from its id, e.g. 'kant-groundwork' → 'Kant'. */
+const who = (id: string) =>
+  id.startsWith('marcus')
+    ? 'Marcus Aurelius'
+    : id.charAt(0).toUpperCase() + id.slice(1).split('-')[0]
+const surname = (author: string) => author.split(' ').at(-1)!
+
+const byWords = (works: Work[]) => [...works].sort((a, b) => b.words - a.words)
 
 function WorksBubble() {
   const data = useData<PhilSummary>('philosophy/summary.json')
   return (
     <Frame data={data}>
-      {({ works }) => {
-        const trad = palette(uniq(works.map((w) => w.tradition)))
-        const [W, H, m] = [400, 400, 36]
-        const yt = niceTicks(Math.max(...works.map((w) => w.words)))
-        const x = linearScale(extent(works.map((w) => w.year)), [
-          m + 20,
-          W - 24,
-        ])
-        const y = linearScale([0, yt.at(-1)!], [H - 16, 8])
-        const r = (n: number) => 4 + Math.sqrt(n) * 0.5
-        const xt = ticksIn(extent(works.map((w) => w.year)), 5)
-        return (
-          <>
-            <Svg
-              w={W}
-              h={H}
-              label="Philosophy works by year, length and passages"
-            >
-              {yt.map((t) => (
-                <g key={t}>
-                  <line
-                    className="mean-txt-grid"
-                    x1={m}
-                    x2={W}
-                    y1={y(t)}
-                    y2={y(t)}
-                  />
-                  <text
-                    className="mean-txt-t"
-                    x={m - 3}
-                    y={y(t) + 3}
-                    textAnchor="end"
-                  >
-                    {fmt(t)}
-                  </text>
-                </g>
-              ))}
-              {xt.map((t) => (
-                <text
-                  key={t}
-                  className="mean-txt-t"
-                  x={x(t)}
-                  y={H - 2}
-                  textAnchor="middle"
-                >
-                  {t}
-                </text>
-              ))}
-              {works.map((w) => (
-                <circle
-                  key={w.document_id}
-                  cx={x(w.year)}
-                  cy={y(w.words)}
-                  r={r(w.passages)}
-                  fill={trad.get(w.tradition)}
-                  fillOpacity={0.75}
-                  stroke="var(--paper)"
-                >
-                  <title>{`${w.author} · ${w.year} · ${fmt(w.words)} words · ${w.passages} passages`}</title>
-                </circle>
-              ))}
-            </Svg>
-            <Legend items={[...trad]} />
-          </>
-        )
-      }}
+      {({ works }) => (
+        <Bars
+          label="Words per philosophy work, longest first"
+          format={fmt}
+          long
+          rows={byWords(works).map((w) => ({
+            key: w.document_id,
+            label: `${surname(w.author)}, ${w.title} (${year(w.year)})`,
+            value: w.words,
+          }))}
+        />
+      )}
     </Frame>
   )
 }
+
+/** Median positions for one tension, highest (towards pole a) first. */
+const medians = (rows: Tension[], id: string) =>
+  rows.filter((t) => t.tension_id === id).sort((a, b) => b.median - a.median)
+
 function TensionBoxes() {
-  const data = useData<{ distribution: Tension[] }>('philosophy/tensions.json')
-  const [tid, setTid] = useState('freedom_control')
+  const data = useData<{ distribution: Tension[] }>(TENSIONS)
+  const sum = useData<PhilSummary>('philosophy/summary.json')
+  const [tid, setTid] = useState(DEFAULT)
   return (
     <Frame data={data}>
-      {({ distribution }) => {
-        const ids = uniq(distribution.map((t) => t.tension_id))
-        const rows = distribution
-          .filter((t) => t.tension_id === tid)
-          .sort((a, b) => a.median - b.median)
-        const [W, H, m] = [300, 600, 112]
-        const dom = extent(distribution.flatMap((t) => [t.q1, t.q3]))
-        const x = linearScale(dom, [m, W - 8])
-        const rh = (H - 14) / Math.max(rows.length, 1)
-        return (
-          <>
-            <Slicer
-              label="Tension"
-              cycles={false}
-              options={ids}
-              value={ids.includes(tid) ? tid : ids[0]}
-              onChange={setTid}
-            />
-            <Svg
-              w={W}
-              h={H}
-              label="Where each work sits between the two poles of a tension"
-            >
-              {dom[0] < 0 && (
-                <line
-                  x1={x(0)}
-                  x2={x(0)}
-                  y1={0}
-                  y2={H - 14}
-                  stroke="var(--line-strong)"
+      {({ distribution }) => (
+        <Frame data={sum}>
+          {({ tensions }) => {
+            const ids = uniq(distribution.map((t) => t.tension_id))
+            const id = ids.includes(tid) ? tid : ids[0]
+            const poles = tensions.find((t) => t.tension_id === id)
+            const rows = medians(distribution, id)
+            // Symmetric around zero, the point between the two poles.
+            const reach = Math.max(...rows.flatMap((t) => [-t.q1, t.q3]))
+            const [, hi] = niceDomain(0, reach, 2)
+            const [W, H, m, top, bottom] = [300, 470, 96, 22, 22]
+            const x = linearScale([-hi, hi], [m, W - 10])
+            const rh = (H - top - bottom) / Math.max(rows.length, 1)
+            const cy = (i: number) => top + (i + 0.5) * rh
+            return (
+              <>
+                <Slicer
+                  label="Tension"
+                  cycles={false}
+                  options={ids}
+                  format={(k) =>
+                    tensions.find((t) => t.tension_id === k)?.label_en ?? k
+                  }
+                  value={id}
+                  onChange={setTid}
                 />
-              )}
-              {rows.map((t, i) => {
-                const cy = (i + 0.5) * rh
-                return (
-                  <g key={t.document_id}>
-                    <text
-                      className="mean-txt-t"
-                      x={m - 4}
-                      y={cy + 3}
-                      textAnchor="end"
-                    >
-                      {t.document_id}
-                    </text>
-                    <rect
-                      x={x(t.q1)}
-                      y={cy - rh * 0.3}
-                      width={x(t.q3) - x(t.q1)}
-                      height={rh * 0.6}
-                      rx={3}
-                      fill={color(i)}
-                      fillOpacity={0.8}
-                    />
-                    <line
-                      x1={x(t.median)}
-                      x2={x(t.median)}
-                      y1={cy - rh * 0.35}
-                      y2={cy + rh * 0.35}
-                      stroke="var(--ink)"
-                      strokeWidth={1.5}
-                    />
-                    <circle
-                      cx={x(t.mean_position)}
-                      cy={cy}
-                      r={2.5}
-                      fill="var(--paper)"
-                      stroke="var(--ink)"
-                    >
-                      <title>{`${t.document_id}: ${t.median.toFixed(3)}`}</title>
-                    </circle>
-                  </g>
-                )
-              })}
-              {ticksIn(dom).map((t) => (
-                <text
-                  key={t}
-                  className="mean-txt-t"
-                  x={x(t)}
-                  y={H - 2}
-                  textAnchor="middle"
+                <Svg
+                  w={W}
+                  h={H}
+                  label={`Where each work's passages sit between ${poles?.pole_b} and ${poles?.pole_a}`}
                 >
-                  {t}
-                </text>
-              ))}
-            </Svg>
-          </>
-        )
-      }}
+                  <XGrid
+                    x={x}
+                    ticks={ticksBetween(-hi, hi, 2)}
+                    y0={top - 4}
+                    y1={H - bottom}
+                    format={(t) => (t ? t.toFixed(2) : '0')}
+                  />
+                  <text className="mean-txt-v" x={m} y={11}>
+                    {`← ${poles?.pole_b ?? ''}`}
+                  </text>
+                  <text
+                    className="mean-txt-v"
+                    x={W - 10}
+                    y={11}
+                    textAnchor="end"
+                  >
+                    {`${poles?.pole_a ?? ''} →`}
+                  </text>
+                  {rows.map((t, i) => (
+                    <g key={t.document_id}>
+                      <text
+                        className="mean-txt-t"
+                        x={m - 6}
+                        y={cy(i) + 3.5}
+                        textAnchor="end"
+                      >
+                        {who(t.document_id)}
+                      </text>
+                      <line
+                        x1={x(t.q1)}
+                        x2={x(t.q3)}
+                        y1={cy(i)}
+                        y2={cy(i)}
+                        stroke={OTHER}
+                        strokeWidth={1.5}
+                      />
+                      <circle
+                        cx={x(t.median)}
+                        cy={cy(i)}
+                        r={3.5}
+                        fill={i === 0 ? PALETTE[0] : 'var(--mean-ink)'}
+                      >
+                        <title>{`${t.document_id}: median ${t.median.toFixed(3)}, middle half ${t.q1.toFixed(3)} to ${t.q3.toFixed(3)}`}</title>
+                      </circle>
+                    </g>
+                  ))}
+                </Svg>
+              </>
+            )
+          }}
+        </Frame>
+      )}
     </Frame>
   )
 }
@@ -203,13 +166,24 @@ export const posts: Post[] = [
     id: 'txt-ml-works-bubble',
     domain: d,
     sources: ['philosophy/summary.json'],
+    title: ({ works }: PhilSummary) => {
+      const [w] = byWords(works)
+      return `${w.title} is the longest of the ${works.length} works, at ${fmt(w.words)} words`
+    },
+    note: 'Words per work in the philosophy corpus, English editions from Project Gutenberg',
     render: () => <WorksBubble />,
   },
   {
     id: 'txt-ml-tension-boxes',
     domain: d,
-    sources: ['philosophy/tensions.json'],
+    sources: ['philosophy/tensions.json', 'philosophy/summary.json'],
     size: 'tall',
+    title: ({ distribution }: { distribution: Tension[] }) => {
+      const rows = medians(distribution, DEFAULT)
+      const [a] = DEFAULT.split('_')
+      return `${who(rows[0].document_id)} leans most towards ${a}, ${who(rows.at(-1)!.document_id)} least`
+    },
+    note: "Median position of each work's passages between two anchor sentences; lines span the middle half",
     render: () => <TensionBoxes />,
   },
 ]

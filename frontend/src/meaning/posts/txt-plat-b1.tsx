@@ -1,7 +1,8 @@
 /** Swedish statutes, idea lineage, compliance review and delivery: streams, units, funnels, bubbles. */
-import { useState } from 'react'
-import { Frame, Slicer, color, useData, type Post } from '../kit'
-import { linearScale } from '../../charts/scales'
+import { Frame, OTHER, PALETTE, shade, useData, type Post } from '../kit'
+import { EndLabels, XAxis, YAxis } from '../axes'
+import { Stacked } from '../../charts/Compare'
+import { linearScale, niceTicks } from '../../charts/scales'
 import { Legend, Svg, fmt, line, palette, sum, ticksIn, uniq } from './txt-kit'
 
 type Sfs = {
@@ -22,120 +23,109 @@ type Lineage = {
   }[]
 }
 const SFS = 'sfs/overview.json'
-const KINDS = ['lag', 'förordning', 'other']
-const MODES = ['stacked', 'stream', 'share'] as const
 const d = 'platform'
+
+/** Statute kinds bottom to top, with English names and one stable colour each. */
+const KINDS: [string, string, string][] = [
+  ['förordning', 'Ordinances', shade(1, 3)],
+  ['lag', 'Acts', PALETTE[0]],
+  ['other', 'Other', shade(2, 3)],
+]
+const total = (r: Sfs['years'][number]) => sum(KINDS.map(([k]) => r[k] ?? 0))
 
 function SfsStream() {
   const data = useData<Sfs>(SFS)
-  const [mode, setMode] = useState<(typeof MODES)[number]>('stream')
   return (
     <Frame data={data}>
       {({ years }) => {
-        const [W, H, m] = [600, 280, 30]
-        const tot = years.map((r) => sum(KINDS.map((k) => r[k] ?? 0)))
-        const max = Math.max(...tot)
-        const x = linearScale([years[0].year, years.at(-1)!.year], [m, W - 4])
-        const y = linearScale(
-          mode === 'share'
-            ? [0, 1]
-            : mode === 'stream'
-              ? [-max / 2, max / 2]
-              : [0, max],
-          [H - 14, 6],
+        const [W, H, l, r, top, bottom] = [600, 220, 34, 84, 10, 18]
+        const y0 = years[0].year
+        const y1 = years.at(-1)!.year
+        // Every year on the axis; a year with no statute in the data counts as zero.
+        const at = new Map(years.map((row) => [row.year, row]))
+        const all = Array.from({ length: y1 - y0 + 1 }, (_, i) =>
+          at.get(y0 + i),
         )
-        const base = (i: number) => (mode === 'stream' ? -tot[i] / 2 : 0)
-        const norm = (i: number) => (mode === 'share' ? tot[i] || 1 : 1)
+        const x = linearScale([y0, y1], [l, W - r])
+        const yt = niceTicks(Math.max(...years.map(total)))
+        const y = linearScale([0, yt.at(-1)!], [H - bottom, top])
         const layer = (upto: number) =>
-          years.map(
-            (r, i) =>
+          all.map(
+            (row, i) =>
               [
-                x(r.year),
+                x(y0 + i),
                 y(
-                  (base(i) + sum(KINDS.slice(0, upto).map((k) => r[k] ?? 0))) /
-                    norm(i),
+                  row ? sum(KINDS.slice(0, upto).map(([k]) => row[k] ?? 0)) : 0,
                 ),
               ] as [number, number],
           )
+        const last = all.at(-1)
         return (
-          <>
-            <Slicer
-              label="Layout"
-              cycles={false}
-              options={MODES}
-              value={mode}
-              onChange={setMode}
+          <Svg w={W} h={H} label="Swedish statutes per year by kind, stacked">
+            <YAxis y={y} ticks={yt} x0={l} x1={W - r} format={fmt} />
+            <XAxis
+              x={x}
+              y={H - 4}
+              ticks={ticksIn([y0, y1], 6).map((t) => ({
+                value: t,
+                label: String(t),
+              }))}
             />
-            <Svg w={W} h={H} label="Swedish statutes issued per year by kind">
-              {ticksIn([years[0].year, years.at(-1)!.year], 8).map((t) => (
-                <text
-                  key={t}
-                  className="mean-txt-t"
-                  x={x(t)}
-                  y={H - 2}
-                  textAnchor="middle"
-                >
-                  {t}
-                </text>
-              ))}
-              {KINDS.map((k, j) => (
-                <path
-                  key={k}
-                  d={`${line(layer(j + 1))}${line(layer(j).reverse()).replace('M', 'L')}Z`}
-                  fill={color(j)}
-                >
-                  <title>{k}</title>
-                </path>
-              ))}
-            </Svg>
-            <Legend items={KINDS.map((k, j) => [k, color(j)])} />
-          </>
+            {KINDS.map(([k, name, c], j) => (
+              <path
+                key={k}
+                d={`${line(layer(j + 1))}${line(layer(j).reverse()).replace('M', 'L')}Z`}
+                fill={c}
+              >
+                <title>{name}</title>
+              </path>
+            ))}
+            <EndLabels
+              x={W - r + 6}
+              top={top}
+              bottom={H - bottom}
+              items={KINDS.map(([k, name, c], j) => {
+                const lo = last
+                  ? sum(KINDS.slice(0, j).map(([q]) => last[q] ?? 0))
+                  : 0
+                return {
+                  y: y(lo + (last?.[k] ?? 0) / 2),
+                  label: name,
+                  color: j === 1 ? c : undefined,
+                }
+              })}
+            />
+          </Svg>
         )
       }}
     </Frame>
   )
 }
-/** One dot per hundred documents; filled dots are in force, rings are repealed. */
+/** In force and repealed per kind, as 100 % rows with the counts written. */
 function SfsUnits() {
   const data = useData<Sfs>(SFS)
   return (
     <Frame data={data}>
-      {({ kinds }) => {
-        const per = 100
-        const cols = 12
-        const s = 400 / cols
-        let row = 0
-        return (
-          <>
-            <Svg
-              w={400}
-              h={420}
-              label="Statute documents by kind, one dot per hundred"
-            >
-              {kinds.map((k, j) => {
-                const n = Math.round(k.documents / per)
-                const rep = Math.round(k.repealed / per)
-                const top = row
-                row += Math.ceil(n / cols) + 0.6
-                return Array.from({ length: n }, (_, i) => (
-                  <circle
-                    key={`${k.kind}${i}`}
-                    cx={(i % cols) * s + s / 2}
-                    cy={(top + Math.floor(i / cols)) * s + s / 2}
-                    r={s * 0.38}
-                    fill={i < n - rep ? color(j) : 'none'}
-                    stroke={color(j)}
-                    strokeWidth={1.5}
-                  >
-                    <title>{`${k.kind}: ${fmt(k.documents)}, ${fmt(k.repealed)} repealed`}</title>
-                  </circle>
-                ))
-              })}
-            </Svg>
-            <Legend items={kinds.map((k, j) => [k.kind, color(j)])} />
-          </>
-        )
-      }}
+      {({ kinds }) => (
+        <div className="mean-bars">
+          <Stacked
+            label="Swedish statutes in force and repealed, by kind"
+            format={fmt}
+            parts={[
+              { label: 'In force', colour: PALETTE[0] },
+              { label: 'Repealed', colour: OTHER },
+            ]}
+            rows={[...kinds]
+              .sort((a, b) => b.documents - a.documents)
+              .map((k) => ({
+                key: k.kind,
+                label: KINDS.find(([q]) => q === k.kind)?.[1] ?? k.kind,
+                values: [k.documents - k.repealed, k.repealed],
+                text: `${fmt(k.documents - k.repealed)} of ${fmt(k.documents)}`,
+              }))}
+          />
+        </div>
+      )}
     </Frame>
   )
 }
@@ -197,6 +187,11 @@ export const posts: Post[] = [
     id: 'txt-plat-sfs-stream',
     domain: d,
     sources: ['sfs/overview.json'],
+    title: ({ years }: Sfs) => {
+      const peak = [...years].sort((a, b) => total(b) - total(a))[0]
+      return `Statutes in the collection peak in ${peak.year}, with ${fmt(total(peak))} issued that year`
+    },
+    note: "Swedish statutes (SFS) in Riksdagen's open data by year issued, including those since repealed",
     size: 'wide',
     render: () => <SfsStream />,
   },
@@ -204,6 +199,12 @@ export const posts: Post[] = [
     id: 'txt-plat-sfs-units',
     domain: d,
     sources: ['sfs/overview.json'],
+    title: ({ kinds }: Sfs) => {
+      const n = sum(kinds.map((k) => k.documents))
+      const gone = sum(kinds.map((k) => k.repealed))
+      return `${Math.round((gone / n) * 100)}% of the ${fmt(n)} statutes in the collection are repealed`
+    },
+    note: "Swedish statutes (SFS) in Riksdagen's open data, by kind; statutes still in force at the row end",
     size: 'tall',
     render: () => <SfsUnits />,
   },

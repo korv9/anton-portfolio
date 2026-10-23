@@ -2,9 +2,10 @@
  * Shared bits for the text, law, ML and platform posts: geometry, a legend, a KPI tile and a
  * squarified treemap. Exports no posts of its own.
  */
-import type { ReactNode } from 'react'
-import { color, type Post } from '../kit'
+import { useContext, type ReactNode } from 'react'
+import { OTHER, PALETTE, PostOpen, color, type Post } from '../kit'
 import { niceStep } from '../../charts/scales'
+import RankBars, { type RankRow } from '../../charts/RankBars'
 import './txt.css'
 
 export const posts: Post[] = []
@@ -53,6 +54,99 @@ export function arc(
 }
 
 export type Rect = { x: number; y: number; w: number; h: number }
+
+/** A label cut to n characters with an ellipsis, for SVG rows that cannot wrap. */
+export const clip = (s: string, n: number) =>
+  s.length > n ? `${s.slice(0, n - 1).trimEnd()}…` : s
+
+/**
+ * Sorted horizontal bars (charts/RankBars) at card size: grey bars, the focal row in the
+ * accent (the first row unless `focus` names another). A thumbnail shows the first `limit`
+ * rows and says how many more the opened post lists.
+ */
+export function Bars({
+  rows,
+  format,
+  label,
+  focus,
+  limit = 10,
+  long = false,
+  max,
+}: {
+  rows: RankRow[]
+  format: (v: number) => string
+  label: string
+  focus?: string | null
+  limit?: number
+  /** A wider label column, for names that carry the meaning. */
+  long?: boolean
+  /** A fixed scale, e.g. 1 for shares; otherwise the largest value. */
+  max?: number
+}) {
+  const open = useContext(PostOpen)
+  const shown = open ? rows : rows.slice(0, limit)
+  const key = focus === undefined ? rows[0]?.key : focus
+  return (
+    <div className={long ? 'mean-bars mean-txt-long' : 'mean-bars'}>
+      <RankBars
+        rows={shown.map((r) => ({
+          ...r,
+          color: r.color ?? (r.key === key ? PALETTE[0] : OTHER),
+        }))}
+        format={format}
+        label={label}
+        max={max ?? Math.max(...rows.map((r) => Math.abs(r.value)), 1e-9)}
+      />
+      {shown.length < rows.length && (
+        <p className="mean-txt-more">
+          {rows.length - shown.length} more when opened
+        </p>
+      )}
+    </div>
+  )
+}
+
+/** Vertical gridlines from y0 to y1 with tick labels under them, for horizontal value axes. */
+export function XGrid({
+  x,
+  ticks,
+  y0,
+  y1,
+  format = String,
+}: {
+  x: (v: number) => number
+  ticks: number[]
+  y0: number
+  y1: number
+  format?: (v: number) => string
+}) {
+  return (
+    <g className="mean-axis">
+      {ticks.map((t) => (
+        <g key={t}>
+          <line x1={x(t)} x2={x(t)} y1={y0} y2={y1} />
+          <text x={x(t)} y={y1 + 12} textAnchor="middle">
+            {format(t)}
+          </text>
+        </g>
+      ))}
+    </g>
+  )
+}
+
+/** Up to four plain numbers with their labels: no colour, since none is focal. */
+export function Kpis({ items }: { items: [ReactNode, string][] }) {
+  return (
+    <div className="mean-txt-kpis">
+      {items.map(([v, label]) => (
+        <div key={label}>
+          {v}
+          <small>{label}</small>
+        </div>
+      ))}
+    </div>
+  )
+}
 
 /** Squarified treemap (Bruls et al.): lays values, largest first, into the rectangle. */
 export function squarify<T>(items: T[], value: (t: T) => number, box: Rect) {

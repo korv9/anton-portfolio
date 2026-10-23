@@ -1,8 +1,7 @@
 /** AI Act articles, chapters and dates: bars, treemap, waffle, steps, timeline and counts. */
 import { useState } from 'react'
-import { Frame, Slicer, color, tile, useData, type Post } from '../kit'
-import { linearScale, niceTicks } from '../../charts/scales'
-import { Legend, Svg, fmt, palette, squarify, sum, uniq } from './txt-kit'
+import { Frame, Slicer, color, useData, type Post } from '../kit'
+import { Bars, Kpis, Legend, Svg, fmt, squarify, sum, uniq } from './txt-kit'
 
 type Article = {
   article_number: string
@@ -17,95 +16,71 @@ type Article = {
 const ARTICLES = 'ai-act/articles.json'
 const sorted = (rows: Article[]) =>
   [...rows].sort((a, b) => a.article_sort - b.article_sort)
-function YAxis({
-  ticks,
-  y,
-  x0,
-  x1,
-}: {
-  ticks: number[]
-  y: (v: number) => number
-  x0: number
-  x1: number
-}) {
-  return ticks.map((t) => (
-    <g key={t}>
-      <line className="mean-txt-grid" x1={x0} x2={x1} y1={y(t)} y2={y(t)} />
-      <text className="mean-txt-t" x={x0 - 3} y={y(t) + 3} textAnchor="end">
-        {fmt(t)}
-      </text>
-    </g>
-  ))
-}
-const BAR_MODES = ['change', 'applies', 'chapter'] as const
 const TREE_METRICS = ['characters', 'articles', 'references'] as const
 const d = 'ai-act'
 
+/** Chapter headings of Regulation (EU) 2024/1689, shortened where long. */
+const CHAPTERS: Record<string, string> = {
+  I: 'General provisions',
+  II: 'Prohibited practices',
+  III: 'High-risk AI systems',
+  IV: 'Transparency obligations',
+  V: 'General-purpose AI models',
+  VI: 'Support for innovation',
+  VII: 'Governance',
+  VIII: 'EU database',
+  IX: 'Monitoring and market surveillance',
+  X: 'Codes of conduct',
+  XI: 'Delegated powers',
+  XII: 'Penalties',
+  XIII: 'Final provisions',
+}
+type Summary = {
+  counts: Record<string, number>
+  current_version: { published_at: string }
+  amended_by: { published_at: string }[]
+}
+/** Characters per chapter, largest first. */
+const byChapter = (rows: Article[]) =>
+  [
+    ...rows.reduce(
+      (m, a) => m.set(a.chapter, (m.get(a.chapter) ?? 0) + a.char_count),
+      new Map<string, number>(),
+    ),
+  ].sort((a, b) => b[1] - a[1])
+
 function ArticleBars() {
   const data = useData<Article[]>(ARTICLES)
-  const [mode, setMode] = useState<(typeof BAR_MODES)[number]>('change')
   return (
     <Frame data={data}>
-      {(rows) => {
-        const arts = sorted(rows)
-        const key = (a: Article) =>
-          mode === 'change'
-            ? a.change_type
-            : mode === 'applies'
-              ? (a.applies_from ?? 'none')
-              : a.chapter
-        const keys = uniq(arts.map(key))
-        const cols = palette(mode === 'chapter' ? keys : keys.sort())
-        const [W, H, m] = [600, 260, 30]
-        const ticks = niceTicks(Math.max(...arts.map((a) => a.char_count)))
-        const y = linearScale([0, ticks.at(-1)!], [H - 4, 6])
-        const bw = (W - m) / arts.length
-        return (
-          <>
-            <Slicer
-              label="Colour by"
-              cycles={false}
-              options={BAR_MODES}
-              value={mode}
-              onChange={setMode}
-            />
-            <Svg w={W} h={H} label="Length of every AI Act article">
-              <YAxis ticks={ticks} y={y} x0={m} x1={W} />
-              {arts.map((a, i) => (
-                <rect
-                  key={a.article_number}
-                  x={m + i * bw}
-                  width={bw * 0.78}
-                  y={y(a.char_count)}
-                  height={H - 4 - y(a.char_count)}
-                  fill={cols.get(key(a))}
-                >
-                  <title>{`${a.article_number}: ${fmt(a.char_count)}`}</title>
-                </rect>
-              ))}
-            </Svg>
-            <Legend items={[...cols]} />
-          </>
-        )
-      }}
+      {(rows) => (
+        <Bars
+          label="Characters per chapter of the AI Act, largest first"
+          format={fmt}
+          long
+          rows={byChapter(rows).map(([c, n]) => ({
+            key: c,
+            label: `${c} ${CHAPTERS[c] ?? ''}`,
+            value: n,
+          }))}
+        />
+      )}
     </Frame>
   )
 }
 function Counts() {
-  const data = useData<{ counts: Record<string, number> }>(
-    'ai-act/summary.json',
-  )
+  const data = useData<Summary>('ai-act/summary.json')
   return (
     <Frame data={data}>
-      {(d) => (
-        <div className="mean-txt-kpis">
-          {Object.entries(d.counts).map(([k, v], i) => (
-            <div key={k} style={tile(color(i))}>
-              {fmt(v)}
-              <small>{k.replace(/_/g, ' ')}</small>
-            </div>
-          ))}
-        </div>
+      {({ counts: c }) => (
+        <Kpis
+          items={[
+            [fmt(c.articles), 'articles'],
+            [fmt(c.articles_changed), 'new or amended since 2024'],
+            [fmt(c.obligations), 'obligations on named actors'],
+            [fmt(c.actors), 'defined actors'],
+          ]}
+        />
       )}
     </Frame>
   )
@@ -193,12 +168,21 @@ export const posts: Post[] = [
     domain: d,
     sources: ['ai-act/articles.json'],
     size: 'wide',
+    title: (rows: Article[]) => {
+      const [[c, n]] = byChapter(rows)
+      const all = sum(rows.map((a) => a.char_count))
+      return `Chapter ${c} holds ${Math.round((n / all) * 100)}% of the Act's text, the most of any chapter`
+    },
+    note: 'Characters per chapter of Regulation (EU) 2024/1689, consolidated text',
     render: () => <ArticleBars />,
   },
   {
     id: 'txt-act-counts',
     domain: d,
     sources: ['ai-act/summary.json'],
+    title: (s: Summary) =>
+      `${s.counts.articles_changed} of ${s.counts.articles} articles are new or amended since 2024`,
+    note: 'Regulation (EU) 2024/1689; counts from EUR-Lex, consolidated text',
     render: () => <Counts />,
   },
   {

@@ -1,6 +1,7 @@
 /** Swedish statutes, idea lineage, compliance review and delivery: streams, units, funnels, bubbles. */
 import { useState } from 'react'
-import { Frame, Slicer, color, useData, type Post } from '../kit'
+import { Frame, OTHER, Slicer, color, useData, type Post } from '../kit'
+import { YAxis } from '../axes'
 import { linearScale, niceTicks } from '../../charts/scales'
 import { Svg, fmt, sum, ticksIn, uniq } from './txt-kit'
 
@@ -143,6 +144,11 @@ function ComplianceFunnel() {
     </Frame>
   )
 }
+/** 67000 → '67k'. */
+const compact = (n: number) => (n >= 1000 ? `${fmt(n / 1000)}k` : fmt(n))
+const bin = (r: { up_to: number | null }, prev?: number | null) =>
+  r.up_to === null ? `>${fmt(prev ?? 0)}` : `≤${fmt(r.up_to)}`
+
 function SfsLengths() {
   const data = useData<Sfs>(SFS)
   const [kind, setKind] = useState('paragraph')
@@ -150,60 +156,45 @@ function SfsLengths() {
     <Frame data={data}>
       {({ lengths }) => {
         const rows = lengths.filter((l) => l.kind === kind)
-        const [W, H, m] = [400, 400, 40]
+        const [W, H, m, top, bottom] = [300, 220, 40, 14, 30]
         const yt = niceTicks(Math.max(...rows.map((r) => r.passages), 1))
-        const y = linearScale([0, yt.at(-1)!], [H - 14, 6])
+        const y = linearScale([0, yt.at(-1)!], [H - bottom, top])
         const bw = (W - m) / Math.max(rows.length, 1)
         return (
           <>
             <Slicer
               label="Passage kind"
               options={uniq(lengths.map((l) => l.kind))}
+              format={(k) => (k === 'paragraph' ? 'Sections' : 'Whole texts')}
               value={kind}
               onChange={setKind}
             />
             <Svg w={W} h={H} label="Statute passages by length in characters">
-              {yt.map((t) => (
-                <g key={t}>
-                  <line
-                    className="mean-txt-grid"
-                    x1={m}
-                    x2={W}
-                    y1={y(t)}
-                    y2={y(t)}
-                  />
-                  <text
-                    className="mean-txt-t"
-                    x={m - 3}
-                    y={y(t) + 3}
-                    textAnchor="end"
-                  >
-                    {fmt(t)}
-                  </text>
-                </g>
-              ))}
+              <YAxis y={y} ticks={yt} x0={m} x1={W} format={compact} />
               {rows.map((r, i) => (
                 <g key={i}>
                   <rect
-                    x={m + i * bw + 2}
-                    width={bw - 4}
+                    x={m + i * bw + 3}
+                    width={bw - 6}
                     y={y(r.passages)}
-                    height={H - 14 - y(r.passages)}
-                    rx={4}
-                    fill={color(i)}
+                    height={H - bottom - y(r.passages)}
+                    fill={OTHER}
                   >
-                    <title>{`≤ ${r.up_to ?? '∞'}: ${fmt(r.passages)}`}</title>
+                    <title>{`${bin(r, rows[i - 1]?.up_to)} characters: ${fmt(r.passages)} passages`}</title>
                   </rect>
                   <text
                     className="mean-txt-t"
                     x={m + (i + 0.5) * bw}
-                    y={H - 2}
+                    y={H - bottom + 12}
                     textAnchor="middle"
                   >
-                    {r.up_to ? `≤${fmt(r.up_to)}` : '∞'}
+                    {bin(r, rows[i - 1]?.up_to)}
                   </text>
                 </g>
               ))}
+              <text className="mean-txt-t" x={W} y={H - 2} textAnchor="end">
+                characters per passage
+              </text>
             </Svg>
           </>
         )
@@ -229,6 +220,17 @@ export const posts: Post[] = [
     id: 'txt-plat-sfs-lengths',
     domain: d,
     sources: ['sfs/overview.json'],
+    title: ({ lengths }: Sfs) => {
+      const rows = lengths.filter((l) => l.kind === 'paragraph')
+      const n = sum(rows.map((r) => r.passages))
+      const short = sum(
+        rows
+          .filter((r) => r.up_to !== null && r.up_to <= 500)
+          .map((r) => r.passages),
+      )
+      return `${Math.round((short / n) * 100)}% of statute sections are 500 characters or shorter`
+    },
+    note: 'Passages of Swedish statutes by length in characters; y axis counts passages',
     render: () => <SfsLengths />,
   },
 ]

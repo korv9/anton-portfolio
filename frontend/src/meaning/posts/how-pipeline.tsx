@@ -7,9 +7,9 @@
  * and expired data; an opened post stays and says the status is unavailable, so focus is kept.
  */
 import { useEffect, useState } from 'react'
-import { focal, Frame, type Post } from '../kit'
+import { Frame, PALETTE, type Post } from '../kit'
 import { freshness, lastRun, loadStatus, SUBJECTS } from '../freshness'
-import { fmt, Svg } from './txt-kit'
+import { Bars, fmt } from './txt-kit'
 
 type Status = Record<string, Parameters<typeof lastRun>[0]>
 
@@ -46,60 +46,21 @@ function RunStrip() {
           }))
           .filter((r) => r.run)
           .sort((a, b) => b.run!.seconds - a.run!.seconds)
-        const max = Math.max(1, ...rows.map((r) => r.run!.seconds))
         const total = rows.reduce((n, r) => n + r.run!.seconds, 0)
-        if (!rows.length)
-          return (
-            <Svg w={600} h={24} label="No run recorded">
-              <text className="mean-txt-t" x={0} y={16}>
-                No run recorded
-              </text>
-            </Svg>
-          )
-        const [W, row, left] = [600, 18, 120]
-        const H = rows.length * row + 24
+        if (!rows.length) return <p className="mean-failed">No run recorded</p>
         return (
-          <Svg
-            w={W}
-            h={H}
+          <Bars
             label={`Ingest time of the last run of each of ${rows.length} pipeline subjects, ${fmt(total / 60)} minutes summed`}
-          >
-            {rows.map((r, i) => {
-              const w = ((W - left - 110) * r.run!.seconds) / max
-              const y = i * row
-              return (
-                <g key={r.subject}>
-                  <text
-                    className="mean-txt-t"
-                    x={left - 8}
-                    y={y + row / 2 + 3}
-                    textAnchor="end"
-                  >
-                    {r.subject.replace(/_/g, ' ')}
-                  </text>
-                  <rect
-                    x={left}
-                    y={y + 3}
-                    width={Math.max(1, w)}
-                    height={row - 6}
-                    rx={2}
-                    fill={focal(r.late)}
-                  />
-                  <text
-                    className="mean-txt-t"
-                    x={left + w + 6}
-                    y={y + row / 2 + 3}
-                  >
-                    {fmt(r.run!.seconds / 60)} min{r.failed ? ', failed' : ''}
-                    {r.late ? ', overdue' : ''}
-                  </text>
-                </g>
-              )
-            })}
-            <text className="mean-txt-t" x={left} y={H - 6}>
-              {fmt(total / 60)} min of subject ingest time, summed
-            </text>
-          </Svg>
+            format={(v) => `${fmt(v / 60)} min`}
+            focus={null}
+            rows={rows.map((r) => ({
+              key: r.subject,
+              label: r.subject.replace(/_/g, ' '),
+              value: r.run!.seconds,
+              text: `${fmt(r.run!.seconds / 60)} min${r.failed ? ', failed' : ''}${r.late ? ', overdue' : ''}`,
+              color: r.late ? PALETTE[0] : undefined,
+            }))}
+          />
         )
       }}
     </Frame>
@@ -114,6 +75,7 @@ export const posts: Post[] = [
     size: 'wide',
     label: 'How it is made: ingest time of each pipeline subject',
     title: 'How long each data source takes to ingest',
+    note: 'Minutes of the last ingest per source, from the live run status; an overdue source is in colour',
     render: () => <RunStrip />,
   },
 ]

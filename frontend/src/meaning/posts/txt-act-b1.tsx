@@ -1,7 +1,6 @@
-/** AI Act duties, actors, cross-references and outside signals: heatmap, donut, flows, arcs, lines. */
-import { useState } from 'react'
-import { Frame, Slicer, color, useData, type Post } from '../kit'
-import { Legend, Svg, arc, count, palette, uniq } from './txt-kit'
+/** AI Act duties: who carries the obligations and which risk tier they attach to. */
+import { Frame, useData, type Post } from '../kit'
+import { Bars, count } from './txt-kit'
 
 type Obligation = {
   actor_id: string
@@ -9,129 +8,59 @@ type Obligation = {
   risk_class_id: string
   applies_from: string
 }
+type Field = 'actor_id' | 'risk_class_id'
 const OBL = 'ai-act/obligations.json'
-const mix = (c: string, p: number) =>
-  `color-mix(in srgb, ${c} ${Math.round(p)}%, var(--paper))`
 const d = 'ai-act'
 
-function ObligationHeatmap() {
+/** Plain names for the Act's actor and risk-class ids. */
+const ACTOR: Record<string, string> = {
+  provider: 'Provider',
+  deployer: 'Deployer',
+  gpai_provider: 'General-purpose AI provider',
+  importer: 'Importer',
+  distributor: 'Distributor',
+}
+const RISK: Record<string, string> = {
+  high_risk: 'High-risk systems',
+  transparency: 'Transparency duties',
+  gpai: 'General-purpose AI models',
+  gpai_systemic: 'GPAI with systemic risk',
+  prohibited: 'Prohibited practices',
+  all_ai_systems: 'All AI systems',
+}
+const NAMES: Record<Field, Record<string, string>> = {
+  actor_id: ACTOR,
+  risk_class_id: RISK,
+}
+const name = (field: Field, id: string) =>
+  NAMES[field][id] ?? id.replace(/_/g, ' ')
+/** Obligations per actor or tier, most first. */
+const ranked = (rows: Obligation[], field: Field) =>
+  [...count(rows, (o) => o[field])].sort((a, b) => b[1] - a[1])
+
+function ByKey({ field, label }: { field: Field; label: string }) {
   const data = useData<Obligation[]>(OBL)
   return (
     <Frame data={data}>
-      {(rows) => {
-        const reqs = [...count(rows, (o) => o.requirement_type)]
-          .sort((a, b) => b[1] - a[1])
-          .map(([k]) => k)
-        const actors = [...count(rows, (o) => o.actor_id)]
-          .sort((a, b) => b[1] - a[1])
-          .map(([k]) => k)
-        const c = count(rows, (o) => `${o.actor_id}|${o.requirement_type}`)
-        const max = Math.max(...c.values())
-        const [W, H, mx, my] = [300, 600, 100, 50]
-        const cw = (W - mx) / actors.length
-        const ch = (H - my) / reqs.length
-        return (
-          <Svg
-            w={W}
-            h={H}
-            label="Obligations of the AI Act by actor and requirement"
-          >
-            {actors.map((a, j) => (
-              <text
-                key={a}
-                className="mean-txt-t"
-                transform={`translate(${mx + (j + 0.5) * cw},${my - 4}) rotate(-40)`}
-              >
-                {a}
-              </text>
-            ))}
-            {reqs.map((r, i) => (
-              <g key={r}>
-                <text
-                  className="mean-txt-t"
-                  x={mx - 4}
-                  y={my + (i + 0.5) * ch + 3}
-                  textAnchor="end"
-                >
-                  {r.replace(/_/g, ' ')}
-                </text>
-                {actors.map((a, j) => {
-                  const n = c.get(`${a}|${r}`) ?? 0
-                  return (
-                    <rect
-                      key={a}
-                      x={mx + j * cw + 1}
-                      y={my + i * ch + 1}
-                      width={cw - 2}
-                      height={ch - 2}
-                      rx={3}
-                      fill={
-                        n ? mix(color(j), 25 + (75 * n) / max) : 'var(--wash)'
-                      }
-                    >
-                      <title>{`${a} · ${r}: ${n}`}</title>
-                    </rect>
-                  )
-                })}
-              </g>
-            ))}
-          </Svg>
-        )
-      }}
+      {(rows) => (
+        <Bars
+          label={label}
+          format={String}
+          long
+          rows={ranked(rows, field).map(([k, n]) => ({
+            key: k,
+            label: name(field, k),
+            value: n,
+          }))}
+        />
+      )}
     </Frame>
   )
 }
-function RiskDonut() {
-  const data = useData<Obligation[]>(OBL)
-  const [actor, setActor] = useState('all')
-  return (
-    <Frame data={data}>
-      {(rows) => {
-        const risks = uniq(rows.map((o) => o.risk_class_id))
-        const cols = palette(risks)
-        const sel = rows.filter((o) => actor === 'all' || o.actor_id === actor)
-        const c = count(sel, (o) => o.risk_class_id)
-        let a = 0
-        return (
-          <>
-            <Slicer
-              label="Actor"
-              cycles={false}
-              options={['all', ...uniq(rows.map((o) => o.actor_id))]}
-              value={actor}
-              onChange={setActor}
-            />
-            <Svg w={300} h={300} label="Obligations by risk class">
-              {risks.map((r) => {
-                const a0 = a
-                a += ((c.get(r) ?? 0) / sel.length) * 2 * Math.PI
-                return c.get(r) ? (
-                  <path
-                    key={r}
-                    d={arc(150, 150, 70, 140, a0, a - 0.005)}
-                    fill={cols.get(r)}
-                  >
-                    <title>{`${r}: ${c.get(r)}`}</title>
-                  </path>
-                ) : null
-              })}
-              <text
-                x={150}
-                y={162}
-                textAnchor="middle"
-                fontSize={40}
-                fontWeight={600}
-                fill="var(--ink)"
-              >
-                {sel.length}
-              </text>
-            </Svg>
-            <Legend items={[...cols]} />
-          </>
-        )
-      }}
-    </Frame>
-  )
+/** The largest group as a sentence, e.g. "25 of the 51 obligations fall on the provider". */
+const lead = (field: Field, verb: string) => (rows: Obligation[]) => {
+  const [[k, n]] = ranked(rows, field)
+  return `${n} of the ${rows.length} obligations ${verb} ${name(field, k).toLowerCase()}`
 }
 
 export const posts: Post[] = [
@@ -139,13 +68,23 @@ export const posts: Post[] = [
     id: 'txt-act-obligation-heatmap',
     domain: d,
     sources: ['ai-act/obligations.json'],
-    size: 'tall',
-    render: () => <ObligationHeatmap />,
+    title: lead('actor_id', 'fall on the'),
+    note: 'Obligations in the AI Act per actor, from the consolidated text',
+    render: () => (
+      <ByKey field="actor_id" label="Obligations per actor, most first" />
+    ),
   },
   {
     id: 'txt-act-risk-donut',
     domain: d,
     sources: ['ai-act/obligations.json'],
-    render: () => <RiskDonut />,
+    title: lead('risk_class_id', 'concern'),
+    note: 'Obligations in the AI Act per risk tier, from the consolidated text',
+    render: () => (
+      <ByKey
+        field="risk_class_id"
+        label="Obligations per risk tier, most first"
+      />
+    ),
   },
 ]

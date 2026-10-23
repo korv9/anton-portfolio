@@ -1,7 +1,7 @@
 /** AI Act duties, actors, cross-references and outside signals: heatmap, donut, flows, arcs, lines. */
-import { Frame, color, useData, type Post } from '../kit'
+import { Frame, OTHER, PALETTE, useData, type Post } from '../kit'
 import { linearScale, niceTicks } from '../../charts/scales'
-import { Kpi, Legend, Svg, count, palette } from './txt-kit'
+import { Kpi, Svg, XGrid, clip, count, palette } from './txt-kit'
 
 type Obligation = {
   actor_id: string
@@ -124,6 +124,13 @@ const DutyTotal = () => {
     </Frame>
   )
 }
+/** Short names, so the longest actor fits beside its row. */
+const SHORT: Record<string, string> = {
+  gpai_provider: 'GPAI model provider',
+  authorised_representative: 'Authorised rep.',
+  market_surveillance_authority: 'Market surveillance',
+  national_competent_authority: 'National authority',
+}
 function ActorDumbbell() {
   const data = useData<Actor[]>('ai-act/actors.json')
   return (
@@ -132,71 +139,74 @@ function ActorDumbbell() {
         const as = [...rows].sort(
           (a, b) => b.articles_mentioning - a.articles_mentioning,
         )
-        const [W, H, m] = [300, 300, 110]
+        const [W, H, m, top, bottom] = [300, 240, 118, 16, 24]
         const ticks = niceTicks(as[0].articles_mentioning)
-        const x = linearScale([0, ticks.at(-1)!], [m, W - 8])
-        const rh = (H - 14) / as.length
+        const x = linearScale([0, ticks.at(-1)!], [m, W - 10])
+        const rh = (H - top - bottom) / as.length
+        const cy = (i: number) => top + (i + 0.5) * rh
         return (
-          <>
-            <Svg
-              w={W}
-              h={H}
-              label="Articles mentioning each actor and those giving it duties"
+          <Svg
+            w={W}
+            h={H}
+            label="Articles mentioning each actor and articles giving it duties"
+          >
+            <XGrid x={x} ticks={ticks} y0={top - 4} y1={H - bottom + 2} />
+            <text className="mean-txt-t" x={W - 10} y={H - 1} textAnchor="end">
+              articles
+            </text>
+            <text
+              className="mean-txt-v"
+              x={x(as[0].articles_with_duty_sentences)}
+              y={top - 6}
+              textAnchor="middle"
             >
-              {ticks.map((t) => (
+              duties
+            </text>
+            <text
+              className="mean-txt-t"
+              x={x(as[0].articles_mentioning)}
+              y={top - 6}
+              textAnchor="end"
+            >
+              named
+            </text>
+            {as.map((a, i) => (
+              <g key={a.actor_id}>
                 <text
-                  key={t}
                   className="mean-txt-t"
-                  x={x(t)}
-                  y={H - 2}
-                  textAnchor="middle"
+                  x={m - 6}
+                  y={cy(i) + 3.5}
+                  textAnchor="end"
                 >
-                  {t}
+                  {clip(SHORT[a.actor_id] ?? a.label_en, 20)}
                 </text>
-              ))}
-              {as.map((a, i) => {
-                const cy = (i + 0.5) * rh
-                return (
-                  <g key={a.actor_id}>
-                    <text
-                      className="mean-txt-t"
-                      x={m - 5}
-                      y={cy + 3}
-                      textAnchor="end"
-                    >
-                      {a.label_en}
-                    </text>
-                    <line
-                      x1={x(a.articles_with_duty_sentences)}
-                      x2={x(a.articles_mentioning)}
-                      y1={cy}
-                      y2={cy}
-                      stroke="var(--line-strong)"
-                      strokeWidth={2}
-                    />
-                    <circle
-                      cx={x(a.articles_mentioning)}
-                      cy={cy}
-                      r={5}
-                      fill={color(0)}
-                    />
-                    <circle
-                      cx={x(a.articles_with_duty_sentences)}
-                      cy={cy}
-                      r={5}
-                      fill={color(1)}
-                    />
-                  </g>
-                )
-              })}
-            </Svg>
-            <Legend
-              items={[
-                ['articles mentioning', color(0)],
-                ['articles with duties', color(1)],
-              ]}
-            />
-          </>
+                <line
+                  x1={x(a.articles_with_duty_sentences)}
+                  x2={x(a.articles_mentioning)}
+                  y1={cy(i)}
+                  y2={cy(i)}
+                  stroke={OTHER}
+                  strokeWidth={1.5}
+                />
+                <circle
+                  cx={x(a.articles_mentioning)}
+                  cy={cy(i)}
+                  r={3.5}
+                  fill={OTHER}
+                >
+                  <title>{`${a.label_en}: named in ${a.articles_mentioning} articles`}</title>
+                </circle>
+                <circle
+                  cx={x(a.articles_with_duty_sentences)}
+                  cy={cy(i)}
+                  r={3.5}
+                  fill={PALETTE[0]}
+                >
+                  <title>{`${a.label_en}: duties in ${a.articles_with_duty_sentences} articles`}</title>
+                </circle>
+              </g>
+            ))}
+          </Svg>
         )
       }}
     </Frame>
@@ -221,6 +231,13 @@ export const posts: Post[] = [
     id: 'txt-act-actor-dumbbell',
     domain: d,
     sources: ['ai-act/actors.json'],
+    title: (rows: Actor[]) => {
+      const [a] = [...rows].sort(
+        (p, q) => q.articles_mentioning - p.articles_mentioning,
+      )
+      return `The ${a.label_en.toLowerCase()} is named in ${a.articles_mentioning} articles and given duties in ${a.articles_with_duty_sentences}`
+    },
+    note: 'Articles of the AI Act that name each actor, and those that give it a duty',
     render: () => <ActorDumbbell />,
   },
 ]

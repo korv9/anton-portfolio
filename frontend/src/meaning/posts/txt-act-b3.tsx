@@ -1,11 +1,12 @@
 /** AI Act duties, actors, cross-references and outside signals: heatmap, donut, flows, arcs, lines. */
 import { useState } from 'react'
-import { Frame, Slicer, color, useData, type Post } from '../kit'
+import { Frame, PALETTE, Slicer, color, useData, type Post } from '../kit'
 import { linearScale, niceTicks } from '../../charts/scales'
-import { Legend, Svg, line, palette, uniq } from './txt-kit'
+import { Bars, Legend, Svg, line } from './txt-kit'
 
 type Article = {
   article_number: string
+  title_en: string
   article_sort: number
   chapter: string
   char_count: number
@@ -24,58 +25,37 @@ type Signals = {
 const SIG = 'ai-act/signals.json'
 const d = 'ai-act'
 
+/** How many other articles cite each article, most first. */
+function cited(rows: Article[]) {
+  const n = new Map<string, number>()
+  for (const a of rows)
+    for (const r of new Set(a.refers_to))
+      if (r !== a.article_number) n.set(r, (n.get(r) ?? 0) + 1)
+  return [...n].sort((a, b) => b[1] - a[1])
+}
+/** The source carries a stray quote on some titles. */
+const clean = (t: string) => t.replace(/['\u2019]+$/, '')
+
 function ReferenceArcs() {
   const data = useData<Article[]>('ai-act/articles.json')
   return (
     <Frame data={data}>
       {(rows) => {
-        const arts = [...rows].sort((a, b) => a.article_sort - b.article_sort)
-        const idx = new Map(arts.map((a, i) => [a.article_number, i]))
-        const chapters = palette(uniq(arts.map((a) => a.chapter)))
-        const [W, H] = [600, 300]
-        const x = (i: number) => 6 + (i * (W - 12)) / (arts.length - 1)
+        const title = new Map(rows.map((a) => [a.article_number, a.title_en]))
+        const ranked = cited(rows)
         return (
-          <>
-            <Svg
-              w={W}
-              h={H}
-              label="Cross-references between AI Act articles as arcs"
-            >
-              {arts.flatMap((a) =>
-                a.refers_to
-                  .filter((r) => idx.has(r))
-                  .map((r) => {
-                    const [x0, x1] = [
-                      x(idx.get(a.article_number)!),
-                      x(idx.get(r)!),
-                    ]
-                    const rad = Math.abs(x1 - x0) / 2
-                    return (
-                      <path
-                        key={`${a.article_number}-${r}`}
-                        d={`M${x0},${H - 8}A${rad},${Math.min(rad, H - 12)} 0 0 ${x1 > x0 ? 1 : 0} ${x1},${H - 8}`}
-                        fill="none"
-                        stroke={chapters.get(a.chapter)}
-                        strokeOpacity={0.5}
-                        strokeWidth={0.8}
-                      />
-                    )
-                  }),
-              )}
-              {arts.map((a, i) => (
-                <circle
-                  key={a.article_number}
-                  cx={x(i)}
-                  cy={H - 6}
-                  r={2}
-                  fill={chapters.get(a.chapter)}
-                >
-                  <title>{a.article_number}</title>
-                </circle>
-              ))}
-            </Svg>
-            <Legend items={[...chapters]} />
-          </>
+          <Bars
+            label="AI Act articles cited most often by other articles"
+            format={String}
+            long
+            focus={null}
+            rows={ranked.map(([k, n]) => ({
+              key: k,
+              label: `${k} ${clean(title.get(k) ?? '')}`,
+              value: n,
+              color: n === ranked[0][1] ? PALETTE[0] : undefined,
+            }))}
+          />
         )
       }}
     </Frame>
@@ -170,7 +150,14 @@ export const posts: Post[] = [
     id: 'txt-act-reference-arcs',
     domain: d,
     sources: ['ai-act/articles.json'],
-    size: 'wide',
+    title: (rows: Article[]) => {
+      const ranked = cited(rows)
+      const top = ranked.filter(([, n]) => n === ranked[0][1]).map(([k]) => k)
+      return top.length === 1
+        ? `Article ${top[0]} is cited by ${ranked[0][1]} other articles, the most`
+        : `Articles ${top.slice(0, -1).join(', ')} and ${top.at(-1)} are each cited by ${ranked[0][1]} other articles`
+    },
+    note: 'Other AI Act articles that refer to each article; the top ten show until opened',
     render: () => <ReferenceArcs />,
   },
   {

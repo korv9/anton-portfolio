@@ -1,8 +1,7 @@
 /** The platform itself: quality checks, the architecture graph and the gold model. */
 import { useState } from 'react'
 import { Frame, Slicer, color, useData, type Post } from '../kit'
-import { linearScale, niceTicks } from '../../charts/scales'
-import { Kpi, Legend, Svg, fmt, palette, sum, uniq } from './txt-kit'
+import { Bars, Kpi, Legend, Svg, fmt, palette, sum, uniq } from './txt-kit'
 
 type Check = {
   product_id: string
@@ -16,7 +15,6 @@ type Graph = {
   domains: { id: string; label: string; counts: Record<string, number> }[]
 }
 type Gold = { parliament: Record<string, number | string> }
-const SCALES = ['count', 'share'] as const
 const d = 'platform'
 
 function QualityWaffle() {
@@ -102,84 +100,28 @@ function GoldKpi() {
     </Frame>
   )
 }
+/** Pipeline nodes per domain, most first. */
+const byDomain = ({ domains }: Graph) =>
+  domains
+    .map((d) => ({ d, n: sum(Object.values(d.counts)) }))
+    .sort((a, b) => b.n - a.n)
+
 function ArchStack() {
   const data = useData<Graph>('architecture/graph.json')
-  const [scale, setScale] = useState<(typeof SCALES)[number]>('count')
   return (
     <Frame data={data}>
-      {({ domains }) => {
-        const stages = palette(
-          uniq(domains.flatMap((d) => Object.keys(d.counts))),
-        )
-        const max = Math.max(
-          ...domains.map((d) => sum(Object.values(d.counts))),
-        )
-        const [W, H, m] = [600, 260, 90]
-        const rh = (H - 14) / domains.length
-        const ticks =
-          scale === 'share' ? [0, 0.25, 0.5, 0.75, 1] : niceTicks(max)
-        const x = linearScale([0, ticks.at(-1)!], [m, W - 6])
-        return (
-          <>
-            <Slicer
-              label="Scale"
-              cycles={false}
-              options={SCALES}
-              value={scale}
-              onChange={setScale}
-            />
-            <Svg w={W} h={H} label="Pipeline nodes per domain and stage">
-              {ticks.map((t) => (
-                <text
-                  key={t}
-                  className="mean-txt-t"
-                  x={x(t)}
-                  y={H - 2}
-                  textAnchor="middle"
-                >
-                  {scale === 'share' ? `${t * 100}%` : t}
-                </text>
-              ))}
-              {domains.map((d, i) => {
-                const total = sum(Object.values(d.counts)) || 1
-                let acc = 0
-                return (
-                  <g key={d.id}>
-                    <text
-                      className="mean-txt-t"
-                      x={m - 4}
-                      y={(i + 0.5) * rh + 3}
-                      textAnchor="end"
-                    >
-                      {d.label}
-                    </text>
-                    {Object.entries(d.counts).map(([k, n]) => {
-                      const v = scale === 'share' ? n / total : n
-                      const x0 = x(acc)
-                      acc += v
-                      return n ? (
-                        <rect
-                          key={k}
-                          x={x0}
-                          y={i * rh + 3}
-                          width={x(acc) - x0}
-                          height={rh - 6}
-                          fill={stages.get(k)}
-                          stroke="var(--paper)"
-                          strokeWidth={0.6}
-                        >
-                          <title>{`${d.label} · ${k}: ${n}`}</title>
-                        </rect>
-                      ) : null
-                    })}
-                  </g>
-                )
-              })}
-            </Svg>
-            <Legend items={[...stages]} />
-          </>
-        )
-      }}
+      {(g) => (
+        <Bars
+          label="Pipeline nodes per domain, most first"
+          format={String}
+          long
+          rows={byDomain(g).map(({ d, n }) => ({
+            key: d.id,
+            label: d.label,
+            value: n,
+          }))}
+        />
+      )}
     </Frame>
   )
 }
@@ -201,7 +143,11 @@ export const posts: Post[] = [
     id: 'txt-plat-arch-stack',
     domain: d,
     sources: ['architecture/graph.json'],
-    size: 'wide',
+    title: (g: Graph) => {
+      const rows = byDomain(g)
+      return `${rows[0].d.label} is the largest domain, with ${rows[0].n} of ${sum(rows.map((r) => r.n))} pipeline nodes`
+    },
+    note: 'Nodes per domain in the architecture graph: sources, ingestion, models, gold tables and outputs',
     render: () => <ArchStack />,
   },
 ]

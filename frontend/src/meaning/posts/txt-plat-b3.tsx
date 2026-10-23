@@ -1,7 +1,7 @@
 /** Swedish statutes, idea lineage, compliance review and delivery: streams, units, funnels, bubbles. */
 import { Frame, color, useData, type Post } from '../kit'
 import { linearScale, niceTicks } from '../../charts/scales'
-import { Legend, Svg, arc, fmt, sum, uniq } from './txt-kit'
+import { Bars, Legend, Svg, arc, fmt, sum, uniq } from './txt-kit'
 
 type Sfs = {
   kinds: { kind: string; documents: number; repealed: number }[]
@@ -78,60 +78,25 @@ function DeliveryDonut() {
     </Frame>
   )
 }
+const bySections = ({ largest }: Sfs) =>
+  [...largest].sort((a, b) => b.sections - a.sections)
+
 function SfsLargest() {
   const data = useData<Sfs>(SFS)
   return (
     <Frame data={data}>
-      {({ largest }) => {
-        const [W, H, m] = [400, 400, 56]
-        const xt = niceTicks(Math.max(...largest.map((l) => l.sections)))
-        const x = linearScale([0, xt.at(-1)!], [m, W - 6])
-        const rh = (H - 14) / largest.length
-        return (
-          <Svg w={W} h={H} label="The largest Swedish statutes by sections">
-            {xt.map((t) => (
-              <text
-                key={t}
-                className="mean-txt-t"
-                x={x(t)}
-                y={H - 2}
-                textAnchor="middle"
-              >
-                {fmt(t)}
-              </text>
-            ))}
-            {largest.map((l, i) => (
-              <g key={l.sfs}>
-                <text
-                  className="mean-txt-t"
-                  x={m - 4}
-                  y={(i + 0.5) * rh + 3}
-                  textAnchor="end"
-                >
-                  {l.sfs}
-                </text>
-                <line
-                  x1={m}
-                  x2={x(l.sections)}
-                  y1={(i + 0.5) * rh}
-                  y2={(i + 0.5) * rh}
-                  stroke={color(i)}
-                  strokeWidth={3}
-                  strokeLinecap="round"
-                />
-                <circle
-                  cx={x(l.sections)}
-                  cy={(i + 0.5) * rh}
-                  r={6}
-                  fill={color(i)}
-                >
-                  <title>{`${l.title}: ${fmt(l.sections)}`}</title>
-                </circle>
-              </g>
-            ))}
-          </Svg>
-        )
-      }}
+      {(s) => (
+        <Bars
+          label="The largest Swedish statutes by number of sections"
+          format={fmt}
+          long
+          rows={bySections(s).map((l) => ({
+            key: l.sfs,
+            label: l.title,
+            value: l.sections,
+          }))}
+        />
+      )}
     </Frame>
   )
 }
@@ -210,6 +175,11 @@ export const posts: Post[] = [
     id: 'txt-plat-sfs-largest',
     domain: d,
     sources: ['sfs/overview.json'],
+    title: (s: Sfs) => {
+      const [a] = bySections(s)
+      return `${a.title} is the largest statute, with ${fmt(a.sections)} sections`
+    },
+    note: 'Sections (paragrafer) per statute, the largest in the SFS collection',
     render: () => <SfsLargest />,
   },
   {

@@ -1,5 +1,6 @@
 /** AI Act articles, chapters and dates: bars, treemap, waffle, steps, timeline and counts. */
-import { Frame, color, useData, type Post } from '../kit'
+import { Frame, PALETTE, useData, type Post } from '../kit'
+import { XAxis, YAxis } from '../axes'
 import { linearScale, niceTicks } from '../../charts/scales'
 import { Kpi, Legend, Svg, fmt, line, palette, sum, uniq } from './txt-kit'
 
@@ -15,26 +16,6 @@ type Article = {
 }
 const ARTICLES = 'ai-act/articles.json'
 const year = (d: string) => Date.parse(`${d.slice(0, 4)}-01-01`)
-function YAxis({
-  ticks,
-  y,
-  x0,
-  x1,
-}: {
-  ticks: number[]
-  y: (v: number) => number
-  x0: number
-  x1: number
-}) {
-  return ticks.map((t) => (
-    <g key={t}>
-      <line className="mean-txt-grid" x1={x0} x2={x1} y1={y(t)} y2={y(t)} />
-      <text className="mean-txt-t" x={x0 - 3} y={y(t) + 3} textAnchor="end">
-        {fmt(t)}
-      </text>
-    </g>
-  ))
-}
 const d = 'ai-act'
 
 function AppliesWaffle() {
@@ -91,80 +72,83 @@ function Characters() {
     </Frame>
   )
 }
+/** Articles applying by each date, cumulative: [date, articles so far]. */
+const steps = (rows: Article[]) => {
+  const dates = uniq(rows.flatMap((a) => a.applies_from ?? [])).sort()
+  return dates.map(
+    (d) =>
+      [
+        d,
+        rows.filter((a) => a.applies_from && a.applies_from <= d).length,
+      ] as const,
+  )
+}
+const month = (d: string) =>
+  new Date(d).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })
+
 function ApplyStep() {
   const data = useData<Article[]>(ARTICLES)
   return (
     <Frame data={data}>
       {(rows) => {
-        const arts = rows.filter((a) => a.applies_from)
-        const dates = uniq(arts.map((a) => a.applies_from!)).sort()
-        const types = uniq(arts.map((a) => a.change_type)).sort()
-        const [W, H, m] = [600, 280, 30]
-        const t0 = year(dates[0])
-        const t1 = year(dates.at(-1)!) + 365 * 864e5
-        const x = linearScale([t0, t1], [m, W])
-        const ticks = niceTicks(arts.length)
-        const y = linearScale([0, ticks.at(-1)!], [H - 14, 6])
-        const cum = (d: string, upto: number) =>
-          arts.filter(
-            (a) => a.applies_from! <= d && types.indexOf(a.change_type) <= upto,
-          ).length
-        const top = (k: number) =>
-          dates.flatMap(
-            (d, i) =>
-              [
-                [x(Date.parse(d)), y(i ? cum(dates[i - 1], k) : 0)],
-                [x(Date.parse(d)), y(cum(d, k))],
-              ] as [number, number][],
-          )
-        const yrs = uniq(
-          dates
-            .map((d) => d.slice(0, 4))
-            .concat(String(new Date(t1).getFullYear())),
+        const cum = steps(rows)
+        const [W, H, m, b] = [600, 220, 34, 18]
+        const t0 = year(cum[0][0])
+        const t1 = year(String(+cum.at(-1)![0].slice(0, 4) + 1))
+        const x = linearScale([t0, t1], [m, W - 30])
+        const ticks = niceTicks(rows.length)
+        const y = linearScale([0, ticks.at(-1)!], [H - b, 10])
+        const pts: [number, number][] = [[m, y(0)]]
+        for (const [d, n] of cum)
+          pts.push([x(Date.parse(d)), pts.at(-1)![1]], [x(Date.parse(d)), y(n)])
+        pts.push([W - 30, pts.at(-1)![1]])
+        const yrs = uniq([
+          ...cum.map(([d]) => d.slice(0, 4)),
+          String(new Date(t1).getFullYear()),
+        ])
+        // A date followed within a month by another step is labelled at that later step.
+        const named = cum.filter(
+          ([d], i) =>
+            i === cum.length - 1 ||
+            Date.parse(cum[i + 1][0]) - Date.parse(d) > 31 * 864e5,
         )
         return (
-          <>
-            <Svg
-              w={W}
-              h={H}
-              label="Articles of the AI Act in force over time, stacked by change"
-            >
-              <YAxis ticks={ticks} y={y} x0={m} x1={W} />
-              {yrs.map((yr) => (
+          <Svg
+            w={W}
+            h={H}
+            label="AI Act articles that apply, cumulative, by date"
+          >
+            <YAxis y={y} ticks={ticks} x0={m} x1={W - 30} />
+            <XAxis
+              x={x}
+              y={H - 4}
+              ticks={yrs.map((yr) => ({ value: year(yr), label: yr }))}
+            />
+            <path
+              d={line(pts)}
+              fill="none"
+              stroke={PALETTE[0]}
+              strokeWidth={2}
+            />
+            {named.map(([d, n]) => (
+              <g key={d}>
+                <circle
+                  cx={x(Date.parse(d))}
+                  cy={y(n)}
+                  r={3}
+                  fill={PALETTE[0]}
+                />
                 <text
-                  key={yr}
-                  className="mean-txt-t"
-                  x={x(year(yr))}
-                  y={H - 2}
-                  textAnchor="middle"
+                  className="mean-txt-v"
+                  x={x(Date.parse(d)) + 5}
+                  y={y(n) - 5}
                 >
-                  {yr}
+                  {n}
+                  <title>{`${month(d)}: ${n} articles`}</title>
                 </text>
-              ))}
-              {types
-                .map((t, k) => {
-                  const hi = [...top(k), [W, top(k).at(-1)![1]]] as [
-                    number,
-                    number,
-                  ][]
-                  const lo = k
-                    ? ([...top(k - 1), [W, top(k - 1).at(-1)![1]]] as [
-                        number,
-                        number,
-                      ][])
-                    : hi.map(([px]) => [px, y(0)] as [number, number])
-                  return (
-                    <path
-                      key={t}
-                      d={`${line(hi)}${line([...lo].reverse()).replace('M', 'L')}Z`}
-                      fill={color(k)}
-                    />
-                  )
-                })
-                .reverse()}
-            </Svg>
-            <Legend items={types.map((t, k) => [t, color(k)])} />
-          </>
+              </g>
+            ))}
+          </Svg>
         )
       }}
     </Frame>
@@ -188,6 +172,14 @@ export const posts: Post[] = [
     id: 'txt-act-apply-step',
     domain: d,
     sources: ['ai-act/articles.json'],
+    title: (rows: Article[]) => {
+      const cum = steps(rows)
+      const rise = cum.map(([, n], i) => n - (cum[i - 1]?.[1] ?? 0))
+      // The largest single step: the general date of application.
+      const big = cum[rise.indexOf(Math.max(...rise))]
+      return `${big[1]} of ${rows.length} articles apply by ${month(big[0])}, all by ${month(cum.at(-1)![0])}`
+    },
+    note: 'Articles in application, cumulative, by the date the Act sets for each',
     size: 'wide',
     render: () => <ApplyStep />,
   },

@@ -1,8 +1,16 @@
 /** Embedding maps and the philosophy atlas: scatters, bubbles, box plots, slopes and stacks. */
 import { useState } from 'react'
-import { Frame, Slicer, color, useData, type Post } from '../kit'
+import {
+  Frame,
+  OTHER,
+  PALETTE,
+  Slicer,
+  color,
+  useData,
+  type Post,
+} from '../kit'
 import { linearScale } from '../../charts/scales'
-import { Kpi, Legend, Svg, fmt, palette, uniq } from './txt-kit'
+import { Kpi, Svg, fmt, uniq } from './txt-kit'
 
 type Topics = {
   observations: number
@@ -42,7 +50,6 @@ function Scatter({
 }
 const CORPORA = ['debate', 'philosophy', 'municipalities'] as const
 const VARIANTS = ['baseline', 'author_centered'] as const
-const HUES = ['cluster', 'work'] as const
 const d = 'ml'
 
 function TopicMap() {
@@ -82,26 +89,29 @@ function TopicMap() {
     </>
   )
 }
+/** Every passage grey, one work's passages in the accent and named in the corner. */
 function PhilAtlas() {
   const data = useData<Atlas>('philosophy/atlas.json')
   const [variant, setVariant] = useState<(typeof VARIANTS)[number]>('baseline')
-  const [hue, setHue] = useState<(typeof HUES)[number]>('work')
+  const [work, setWork] = useState('')
   return (
     <Frame data={data}>
       {(d) => {
         const rows = d[variant] ?? []
-        const works = palette(uniq(rows.map((r) => r[0].split(':')[0])))
-        const pts = rows.map(
+        const works = uniq(rows.map((r) => r[0].split(':')[0]))
+        const pick = works.includes(work) ? work : works[0]
+        // The focal work's dots are drawn last, so they sit on top.
+        const order = [...rows].sort(
+          (a, b) =>
+            +(a[0].split(':')[0] === pick) - +(b[0].split(':')[0] === pick),
+        )
+        const pts = order.map(
           (r) =>
             [
               r[2],
               r[3],
               r[0],
-              hue === 'work'
-                ? works.get(r[0].split(':')[0])!
-                : r[4] < 0
-                  ? noise
-                  : color(r[4]),
+              r[0].split(':')[0] === pick ? PALETTE[0] : OTHER,
             ] as [number, number, string, string],
         )
         return (
@@ -110,22 +120,25 @@ function PhilAtlas() {
               label="Map"
               cycles={false}
               options={VARIANTS}
+              format={(v) =>
+                v === 'baseline' ? 'As embedded' : 'Author style removed'
+              }
               value={variant}
               onChange={setVariant}
             />
             <Slicer
-              label="Colour"
+              label="Work"
               cycles={false}
-              options={HUES}
-              value={hue}
-              onChange={setHue}
+              options={works}
+              value={pick}
+              onChange={setWork}
             />
+            <p className="mean-txt-more">{pick.replace(/-/g, ' ')}</p>
             <Scatter
               pts={pts}
-              label="Philosophy passages on an embedding map"
+              label={`Philosophy passages on an embedding map, ${pick} highlighted`}
               fill={(i) => pts[i][3]}
             />
-            {hue === 'work' && <Legend items={[...works]} />}
           </>
         )
       }}
@@ -156,6 +169,8 @@ export const posts: Post[] = [
     id: 'txt-ml-phil-atlas',
     domain: d,
     sources: ['philosophy/atlas.json'],
+    title: 'Philosophy passages placed by text similarity, one work in colour',
+    note: 'Each dot is a passage; passages with similar text embeddings sit close (UMAP, two dimensions)',
     size: 'tall',
     render: () => <PhilAtlas />,
   },
