@@ -186,8 +186,9 @@ with a server or connection error (`stopped: "error"` in the run note), rules an
 still rank every ad, and the missing vectors and explanations wait for a later run. An explanation
 is kept only if every sentence in it quotes the ad or the CV lines and every quote is found there;
 otherwise it is marked unverified and not shown. Checked or not, each explanation counts toward the
-12 a day. The Workers AI token reaches only the `rank.py` step and the owner token only
-`sync.py` (the `secrets` step option in `platform/pipeline.yml`). A failed `rank.py` does not stop
+12 a day. The Workers AI token reaches only the `rank.py` step (the `secrets` step option in
+`platform/pipeline.yml`). The owner token reaches only `sync.py`, which runs in its own workflow
+step of `data-subject.yml` before the build. A failed `rank.py` does not stop
 the run: dbt keeps the last matches and the ad list is still published. The hourly run gets the
 token through the `workers-ai` input of `data-subject.yml`; without it the run uses rules and
 cached vectors only.

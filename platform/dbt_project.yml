@@ -146,6 +146,8 @@ seeds:
     sweden:
       +tags: [sweden]
       +schema: seeds
+      research_domains:
+        +column_types: {sort_order: integer}
     sweden_futures:
       +tags: [sweden_futures]
       +schema: seeds
@@ -156,8 +158,6 @@ seeds:
       +schema: seeds
       ad_language_terms:
         +column_types: {case_sensitive: boolean, sort_order: integer}
-      research_domains:
-        +column_types: {sort_order: integer}
     cross_domain:
       +tags: [cross_domain]
       +schema: seeds
