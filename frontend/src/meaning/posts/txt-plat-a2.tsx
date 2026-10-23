@@ -218,11 +218,22 @@ function GoldRows() {
 }
 
 export const posts: Post[] = [
-  { id: 'txt-plat-quality-matrix', domain: d, render: () => <QualityMatrix /> },
-  { id: 'txt-plat-arch-rings', domain: d, render: () => <ArchRings /> },
+  {
+    id: 'txt-plat-quality-matrix',
+    domain: d,
+    sources: ['quality/summary.json'],
+    render: () => <QualityMatrix />,
+  },
+  {
+    id: 'txt-plat-arch-rings',
+    domain: d,
+    sources: ['architecture/graph.json'],
+    render: () => <ArchRings />,
+  },
   {
     id: 'txt-plat-gold-rows',
     domain: d,
+    sources: ['gold/semantic-model.json'],
     size: 'tall',
     render: () => <GoldRows />,
   },

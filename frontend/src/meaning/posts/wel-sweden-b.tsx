@@ -209,13 +209,20 @@ export const posts: Post[] = [
   {
     id: 'wel-library-map',
     domain: 'sweden',
+    sources: ['sweden/belonging/libraries.json'],
     size: 'tall',
     render: () => <LibraryMap />,
   },
   {
     id: 'wel-connections-scatter',
     domain: 'sweden',
+    sources: ['sweden/connections/connections.json'],
     render: () => <Relations />,
   },
-  { id: 'wel-library-bands', domain: 'sweden', render: () => <LibraryTrend /> },
+  {
+    id: 'wel-library-bands',
+    domain: 'sweden',
+    sources: ['sweden/belonging/municipalities.json'],
+    render: () => <LibraryTrend />,
+  },
 ]

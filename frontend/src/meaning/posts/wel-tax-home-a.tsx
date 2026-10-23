@@ -129,9 +129,20 @@ export const posts: Post[] = [
   {
     id: 'wel-rate-units',
     domain: 'taxes',
+    sources: ['taxes/municipalities.json'],
     size: 'wide',
     render: () => <RateUnits />,
   },
-  { id: 'wel-rate-kpis', domain: 'taxes', render: () => <RateKpis /> },
-  { id: 'wel-church-swarm', domain: 'taxes', render: () => <ChurchSwarm /> },
+  {
+    id: 'wel-rate-kpis',
+    domain: 'taxes',
+    sources: ['taxes/municipalities.json'],
+    render: () => <RateKpis />,
+  },
+  {
+    id: 'wel-church-swarm',
+    domain: 'taxes',
+    sources: ['taxes/municipalities.json'],
+    render: () => <ChurchSwarm />,
+  },
 ]

@@ -138,8 +138,14 @@ export const posts: Post[] = [
   {
     id: 'txt-act-obligation-heatmap',
     domain: d,
+    sources: ['ai-act/obligations.json'],
     size: 'tall',
     render: () => <ObligationHeatmap />,
   },
-  { id: 'txt-act-risk-donut', domain: d, render: () => <RiskDonut /> },
+  {
+    id: 'txt-act-risk-donut',
+    domain: d,
+    sources: ['ai-act/obligations.json'],
+    render: () => <RiskDonut />,
+  },
 ]

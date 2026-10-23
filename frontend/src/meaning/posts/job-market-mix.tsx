@@ -196,14 +196,21 @@ export const posts: Post[] = [
   {
     id: 'job-occupation-bars',
     domain: D,
+    sources: ['jobs/market.json'],
     size: 'tall',
     render: () => <OccupationBars />,
   },
   {
     id: 'job-occupation-treemap',
     domain: D,
+    sources: ['jobs/market.json'],
     size: 'wide',
     render: () => <OccupationTreemap />,
   },
-  { id: 'job-occupation-slope', domain: D, render: () => <OccupationSlope /> },
+  {
+    id: 'job-occupation-slope',
+    domain: D,
+    sources: ['jobs/market.json'],
+    render: () => <OccupationSlope />,
+  },
 ]
