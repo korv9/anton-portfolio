@@ -88,8 +88,12 @@ def store(tmp_path, monkeypatch, profile):
     folder = tmp_path / "job_assistant"
     folder.mkdir()
     ads = {"1": ad(), "2": {**ad("Senior Data Engineer"), "id": "2", "content_hash": "h2"}}
-    (folder / "ads.json").write_text(json.dumps(ads), encoding="utf-8")
+    (folder / "ads.json").write_text(json.dumps(list(ads.values())), encoding="utf-8")
     return folder
+
+
+def by_id(result):
+    return {r["id"]: r for r in result["matches"]}
 
 
 class Http:
@@ -114,8 +118,9 @@ class Http:
 def test_rank_embeds_explains_and_reuses(store, profile, monkeypatch):
     monkeypatch.setenv("CLOUDFLARE_ACCOUNT_ID", "acct")
     result = rank.run(profile, Http(), NOW)
-    first = result["matches"]["1"]
-    assert result["order"] == ["1", "2"] and first["similarity"] == pytest.approx(1.0)
+    first = by_id(result)["1"]
+    assert [r["id"] for r in result["matches"]] == ["1", "2"] and first["rank"] == 1
+    assert first["similarity"] == pytest.approx(1.0)
     assert first["explanation"]["status"] == "verified" and result["note"]["explained"] == 1
     rows = [json.loads(line) for line in (store / "ledger.jsonl").read_text().splitlines()]
     assert {r["agent"] for r in rows} == {"job-assistant"} and rows[-1]["model"] == ai.EXPLAIN_MODEL
@@ -127,7 +132,7 @@ def test_rank_embeds_explains_and_reuses(store, profile, monkeypatch):
 def test_unverified_explanation_is_not_kept(store, profile, monkeypatch):
     monkeypatch.setenv("CLOUDFLARE_ACCOUNT_ID", "acct")
     result = rank.run(profile, Http(answer='Strong fit: "ten years of Kubernetes".'), NOW)
-    assert result["matches"]["1"]["explanation"]["status"] == "unverified"
+    assert by_id(result)["1"]["explanation"]["status"] == "unverified"
 
 
 def test_budget_and_quota_degrade_to_rules(store, profile, monkeypatch):
@@ -136,13 +141,13 @@ def test_budget_and_quota_degrade_to_rules(store, profile, monkeypatch):
     capped = Http()
     result = rank.run(profile, capped, NOW)
     assert capped.posts == [] and result["note"]["embeddings"]["stopped"] == "project budget"
-    assert result["matches"]["1"]["class"] == "strong" and result["matches"]["1"]["explanation"] is None
+    assert by_id(result)["1"]["class"] == "strong" and by_id(result)["1"]["explanation"] is None
     (store / "ledger.jsonl").unlink()
     result = rank.run(profile, Http(quota=True), NOW)
-    assert result["note"]["embeddings"]["stopped"] == "account quota" and result["matches"]["1"]["class"] == "strong"
-    assert rank.run(profile, None, NOW)["matches"]["1"]["similarity"] is None
+    assert result["note"]["embeddings"]["stopped"] == "account quota" and by_id(result)["1"]["class"] == "strong"
+    assert by_id(rank.run(profile, None, NOW))["1"]["similarity"] is None
 
 
 def test_no_profile_means_no_matches(store):
     result = rank.run(None, None, NOW)
-    assert result["matches"] == {} and result["note"]["skipped"] == "no approved profile"
+    assert result["matches"] == [] and result["note"]["skipped"] == "no approved profile"

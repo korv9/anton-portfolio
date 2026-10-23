@@ -7,7 +7,7 @@ last 60 days (JobStream's snapshot ignores the occupation filter); later runs as
 every change since the stored cursor, in windows of at most six hours. Each answer is kept as
 served, with its provenance line (lib/rawstore.py), under warehouse/raw/job_assistant/. The store:
 
-    ads.json     one row per JobTech ad id: headline, employer, place, full public text, source
+    ads.json     a JSON array, one row per JobTech ad id: headline, employer, place, full public text, source
                  links, dates, content hash, removed time, duplicate group and change history
     state.json   the cursor: the local time fetched up to
     runs.jsonl   one row per run: windows, counts and outcome
@@ -57,6 +57,15 @@ def write_atomic(path: Path, value: object) -> None:
     tmp.write_text(json.dumps(value, ensure_ascii=False, indent=1, sort_keys=True) + "\n",
                    encoding="utf-8", newline="\n")
     os.replace(tmp, path)
+
+
+def load_ads(path: Path) -> dict:
+    """The store by ad id; on disk it is a JSON array sorted by id, so dbt reads one row per ad."""
+    return {r["id"]: r for r in json.loads(path.read_text(encoding="utf-8"))} if path.exists() else {}
+
+
+def save_ads(path: Path, ads: dict) -> None:
+    write_atomic(path, [ads[k] for k in sorted(ads)])
 
 
 def fold(text: str) -> str:
@@ -112,7 +121,7 @@ def apply(ads: dict, items: list[dict], seen: str) -> dict:
         if ad.get("removed"):
             if old and not old.get("removed_at"):
                 old["removed_at"] = ad.get("removed_date") or seen
-                old["history"].append({"at": old["removed_at"], "event": "removed"})
+                old["history"].append({"at": seen, "event": "removed"})
                 counts["removed"] += 1
             continue
         row = project(ad, seen)
@@ -187,7 +196,7 @@ def run(until: datetime, http=None, now=None) -> dict:
     http = http or rawstore.session()
     folder = store_dir()
     ads_path, state_path = folder / "ads.json", folder / "state.json"
-    ads = json.loads(ads_path.read_text(encoding="utf-8")) if ads_path.exists() else {}
+    ads = load_ads(ads_path)
     state = json.loads(state_path.read_text(encoding="utf-8")) if state_path.exists() else {}
     record = {"started": now(), "windows": [], "outcome": "running"}
     try:
@@ -197,7 +206,7 @@ def run(until: datetime, http=None, now=None) -> dict:
             items = bootstrap(http, until)
             counts = apply(ads, items, now())
             duplicates(ads)
-            write_atomic(ads_path, ads)
+            save_ads(ads_path, ads)
             write_atomic(state_path, {"fetched_until": start.strftime(STAMP)})
             record["windows"].append({"snapshot": until.strftime(STAMP), **counts})
             state = {"fetched_until": start.strftime(STAMP)}
@@ -209,7 +218,7 @@ def run(until: datetime, http=None, now=None) -> dict:
             items = fetch(http, "stream", params, f"stream-{start:%Y-%m-%dT%H%M}")
             counts = apply(ads, items, now())
             duplicates(ads)
-            write_atomic(ads_path, ads)
+            save_ads(ads_path, ads)
             write_atomic(state_path, {"fetched_until": end.strftime(STAMP)})
             record["windows"].append({"from": start.strftime(STAMP), "to": end.strftime(STAMP), **counts})
             start = end

@@ -3,6 +3,7 @@
   "files": [
     "job-assistant/matches.json",
     "job-assistant/texts.json",
+    "job-assistant/demand.json",
     "job-assistant/ads.json"
   ],
   "checks": [

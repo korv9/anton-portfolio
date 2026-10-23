@@ -60,7 +60,7 @@ def clock():
 
 
 def stored(raw):
-    return json.loads((raw / "job_assistant/ads.json").read_text(encoding="utf-8"))
+    return store.load_ads(raw / "job_assistant/ads.json")
 
 
 def test_snapshot_then_new_changed_repeated_removed(raw):

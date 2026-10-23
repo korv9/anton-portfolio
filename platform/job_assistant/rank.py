@@ -5,7 +5,8 @@
 The profile comes from --profile, or from the Worker's public profile route
 (JOB_ASSIST_API, default https://antonernstsson.com/api/jobs/profile). Without an approved profile
 nothing is matched and matches.json says so: data is real or absent. Matches are written to
-warehouse/raw/job_assistant/matches.json, keyed by ad id; a match is redone when the ad's content
+warehouse/raw/job_assistant/matches.json, in rank order, where dbt reads them (models/*/job_assistant);
+a match is redone when the ad's content
 hash, the profile version or the engine changes, and a kept explanation survives as long as its
 match does.
 """
@@ -20,7 +21,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import ai  # noqa: E402
-from ads import store_dir, write_atomic  # noqa: E402
+from ads import load_ads, store_dir, write_atomic  # noqa: E402
 from cv_profile import problems  # noqa: E402
 from match import ENGINE, LISTED, match, order  # noqa: E402
 
@@ -47,18 +48,18 @@ def approved_profile(path: Path | None) -> dict | None:
 def run(profile: dict | None, http=None, now: datetime | None = None) -> dict:
     now = now or datetime.now(timezone.utc)
     folder = store_dir()
-    ads = json.loads((folder / "ads.json").read_text(encoding="utf-8"))
+    ads = load_ads(folder / "ads.json")
     path = folder / "matches.json"
-    old = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {"matches": {}}
+    old = {r["id"]: r for r in json.loads(path.read_text(encoding="utf-8"))["matches"]} if path.exists() else {}
     note: dict = {"at": now.isoformat(timespec="seconds"), "neurons_before": round(ai.spent(), 2)}
     if profile is None:
-        result = {"profile": None, "note": {**note, "skipped": "no approved profile"}, "matches": {}}
+        result = {"profile": None, "engine": ENGINE, "note": {**note, "skipped": "no approved profile"}, "matches": []}
         write_atomic(path, result)
         return result
     current = {k: a for k, a in ads.items() if not a.get("removed_at") and not a.get("duplicate_of")}
     rows = {}
     for key, ad in current.items():
-        before = old["matches"].get(key)
+        before = old.get(key)
         if (before and before["engine"] == ENGINE and before["profile_version"] == profile["version"]
                 and before["content_hash"] == ad["content_hash"]):
             rows[key] = before
@@ -84,10 +85,11 @@ def run(profile: dict | None, http=None, now: datetime | None = None) -> dict:
         explained += 1
         note["explained"] += 1
     note["neurons_after"] = round(ai.spent(), 2)
+    for position, row in enumerate(ranked, 1):
+        row["rank"] = position
     result = {"profile": {"version": profile["version"], "cv_sha256": profile["cv"]["sha256"],
                           "profile_sha256": profile["profile_sha256"], "approved_at": profile["approved_at"]},
-              "engine": ENGINE, "note": note,
-              "order": [r["id"] for r in ranked], "matches": rows}
+              "engine": ENGINE, "note": note, "matches": ranked}
     write_atomic(path, result)
     return result
 
@@ -98,7 +100,7 @@ def main() -> None:
     args = ap.parse_args()
     result = run(approved_profile(args.profile), ai.session())
     classes = {}
-    for row in result["matches"].values():
+    for row in result["matches"]:
         classes[row["class"]] = classes.get(row["class"], 0) + 1
     print(json.dumps({"profile": result["profile"] and result["profile"]["version"], "classes": classes,
                       "note": result["note"]}, ensure_ascii=False))

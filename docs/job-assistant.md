@@ -8,6 +8,25 @@ The match is decision support. It is not an estimate of the chance of being hire
 gives a percentage. Every judgement points at the sentence in the ad and the line in the CV it
 rests on.
 
+## Architecture
+
+The job assistant is built on the same platform as the rest of the site, so it can be traced the
+same way: raw files with provenance, dbt layers with tests, versioned delivery to R2.
+
+| Layer | What | Where |
+| --- | --- | --- |
+| Source | JobTech JobSearch (first run) and JobStream (every hour), CC0; the owner's CV | `platform/job_assistant/ads.py`, `cv.py` |
+| Raw | Every answer as served with its provenance line; the ad store, match store and run log | `warehouse/raw/job_assistant/` |
+| Matching | Rules, bge-m3 vectors and checked explanations, run before dbt | `rank.py`, `match.py`, `ai.py` |
+| Bronze | Typed views of the stores: ads, ad events, matches, profile, runs | `platform/models/bronze/job_assistant/` |
+| Silver | Judgements, quotes and conditions unpacked to one row each | `platform/models/silver/job_assistant/` |
+| Gold | Nine tables with enforced contracts | `platform/models/gold/job_assistant/` |
+| Delivery | `job-assistant/{ads,matches,texts,demand}.json`, checked, then released as the group `job-assistant` | `export.py`, `configs/delivery/job-assistant.json` |
+| Owner records | Profile drafts and versions, statuses, notes, labels | Worker and D1 (storage pull request) |
+
+The subject `job_assistant` in `platform/pipeline.yml` runs these steps in order every hour from
+`.github/workflows/refresh-job-assistant.yml`. The export runs only when every dbt test passed.
+
 ## Flow
 
 1. The owner uploads a CV as PDF or DOCX. The Worker stores the file in R2, and the next hourly
@@ -45,8 +64,9 @@ conditions to check.
 
 ## Data model
 
-All of it is public. The pipeline outputs sit under `job-assistant/` in the public R2 bucket.
-The owner's own records sit in a D1 database behind the Worker.
+All of it is public. The pipeline's files sit under `warehouse/raw/job_assistant/` and the
+released group `job-assistant` in the public R2 bucket. The owner's own records sit in a D1
+database behind the Worker.
 
 | Record | Store | Grain and main fields |
 | --- | --- | --- |
@@ -54,12 +74,18 @@ The owner's own records sit in a D1 database behind the Worker.
 | Draft profile | D1 `profile_draft` | One row: profile JSON (schema v1 in `cv_profile.py`), CV hash, updated time |
 | Approved profile | D1 `profile_version` | One row per version: version, profile JSON, `profile_sha256`, CV hash, approved time |
 | Ad store | R2 `warehouse/raw/job_assistant/ads.json` | One row per JobTech ad id: headline, employer, place, full public text, source and application links, published, last changed, first seen, removed time, content hash, duplicate group, and its history of new, changed and removed events |
-| Ad list | delivery group `job-assistant`, `job-assistant/ads.json` | The store's current ads and those removed in the last 30 days, without the text, plus the last week of runs |
+| Ad list | gold `mart_job_assistant_ads`; `job-assistant/ads.json` | Current ads and those removed in the last 30 days, without the text, with an `expired` flag |
+| Ad events | bronze `stg_job_assistant_ad_events` | One row per new, changed or removed event of an ad |
 | Match store | R2 `warehouse/raw/job_assistant/matches.json` | One row per current ad: role category, match class, reasons, skill judgements, gaps, conditions, similarity, explanation (optional), `profile_version`, CV hash, engine version, the ad's content hash |
-| Match list | delivery group, `job-assistant/matches.json` and `texts.json` | Every current ad's class, role and reasons; the full judgements and the ad text for the review list, stretch ads and the evaluation sample |
+| Match | gold `mart_job_assistant_matches`; `job-assistant/matches.json` | One row per matched ad in rank order: class, role, reasons, gaps, similarity, checked explanation, profile version and CV hash, and whether it is detailed (strong, possible, stretch or in the 30-ad evaluation sample) |
+| Judgement and evidence | gold `mart_job_assistant_judgements`, `mart_job_assistant_evidence` | One row per detailed ad and skill (strength, CV level), and one per quote behind it, from the ad or the CV |
+| Condition | gold `mart_job_assistant_checks` | Education and conditions a detailed ad states, with the sentence |
+| Ad text | gold `mart_job_assistant_texts`; `job-assistant/texts.json` | The full public text of exactly the detailed ads |
+| Skill demand | gold `mart_job_assistant_skill_demand`; `job-assistant/demand.json` | Per skill: matched ads that require, prefer or name it, and the CV's level for it |
+| Profile used | gold `mart_job_assistant_profile` | The profile version, CV hash and the last run's Workers AI use |
 | Review status | D1 `review` | One row per ad: status, note, updated time |
 | Relevance label | D1 `label` | One row per labelled ad: relevant, maybe or not relevant, note, the class shown when labelled |
-| Run record | R2 `warehouse/raw/job_assistant/runs.jsonl` | One row per hourly run: windows, counts, outcome (neurons spent are added with the matching) |
+| Run record | raw `runs.jsonl`; gold `mart_job_assistant_runs_daily` | One row per hourly run, and per UTC day: runs, failures, new, changed and removed ads |
 
 Statuses are `new`, `review`, `interesting`, `pass`, `applied` and `closed`. An ad without a
 review row is `new`. An ad that JobTech removes is shown as closed, but a status the owner set,
@@ -187,6 +213,28 @@ reports precision of the list, the share of relevant ads in the outside sample, 
 class and label disagree. The labels are the owner's and the counts are small, so the numbers
 describe this search, not matching in general.
 
+## Home page entry (planned)
+
+The owner's decision of 2026-10-23 puts the job assistant high on the home page, right after the
+platform section, as the second flagship: the platform's own output. The entry is built with the
+review UI and stays small:
+
+- one line on what it is: the CV matched hourly with current Data/IT ads, decision support only;
+- the latest three strong or possible matches, each with title, employer, place, class and its
+  first reason, read from `matches.json` and `ads.json` at load, without blocking first paint;
+- when the data was fetched and how many ads were read, from `ads.json`;
+- one link to the full review list and one to this method.
+
+With no approved profile or no match, the entry says so and shows no rows.
+
+## Case study outline
+
+This document becomes the case study once the scheduled week has run: problem (a CV-first search
+instead of a keyword search), architecture (the table above), decisions (rules before a model,
+evidence levels, a token instead of Access, JobSearch for the first read), and the measured
+numbers (ads per day, duplicates, removals, neurons per day, runs that failed, and the precision
+and misses from the owner's labels).
+
 ## Test plan
 
 - CV parsing: the public PDF, a DOCX with Swedish headings, a file that is neither, a CV without
@@ -217,3 +265,5 @@ describe this search, not matching in general.
   Data/IT ads in 41 seconds, 30 of them duplicates of another id.
 - 2026-10-23: matching, embeddings and checked explanations within the budget, and the public
   match and text files.
+- 2026-10-23: dbt bronze, silver and gold models with contracts (66 tests pass on the local run of
+  2,269 ads), and the export reads gold.

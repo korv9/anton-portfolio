@@ -507,11 +507,13 @@ subjects:
   job_assistant:
     schedule: '7 * * * *'
     sla: {fresh_within: 3h}
-    write: {raw: {merge: [path]}, delivery: versioned}
+    write: {raw: {merge: [path]}, warehouse: overwrite, delivery: versioned}
     group: job-assistant
     raw: [job_assistant]
     steps:
       - ingest: python platform/job_assistant/ads.py
-      # The approved profile comes from the Worker; without one nothing is matched.
-      - export: python platform/job_assistant/rank.py
+      # Matches the ads with the approved profile from the Worker into the raw match store, which
+      # dbt reads next; without a profile nothing is matched.
+      - ingest: python platform/job_assistant/rank.py
+      - dbt: {select: [tag:job_assistant]}
       - export: python platform/job_assistant/export.py

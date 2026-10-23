@@ -40,6 +40,7 @@ DBT_FOLDER_DOMAIN = {
     "eu_ai_act": "ai_act",
     "ai_politics": "ai_act",
     "job_ai_governance": "ai_act",  # AI governance words in job ads, read against the Act
+    "job_assistant": "jobs",  # the owner's CV matched with current Data/IT ads
     "philosophy": "philosophy",
     "concepts": "concepts",  # four corpora read against one set of curated concepts
     "quality": "shared",  # quality checks and validity diagnostics across every product
