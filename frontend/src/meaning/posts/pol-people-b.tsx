@@ -137,12 +137,32 @@ export const posts: Post[] = [
   {
     id: 'pol-birth-swarm',
     domain: 'politics',
+    sources: [
+      'politics/parties/c.json',
+      'politics/parties/kd.json',
+      'politics/parties/l.json',
+      'politics/parties/m.json',
+      'politics/parties/mp.json',
+      'politics/parties/s.json',
+      'politics/parties/sd.json',
+      'politics/parties/v.json',
+    ],
     size: 'wide',
     render: () => <Beeswarm />,
   },
   {
     id: 'pol-council-hist',
     domain: 'politics',
+    sources: [
+      'politics/parties/c.json',
+      'politics/parties/kd.json',
+      'politics/parties/l.json',
+      'politics/parties/m.json',
+      'politics/parties/mp.json',
+      'politics/parties/s.json',
+      'politics/parties/sd.json',
+      'politics/parties/v.json',
+    ],
     render: () => <CouncilHistogram />,
   },
 ]

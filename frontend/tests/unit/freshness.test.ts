@@ -1,7 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
-import { freshness, SUBJECTS } from '../../src/meaning/freshness.ts'
+import { freshness, lastRun, SUBJECTS } from '../../src/meaning/freshness.ts'
 
 const NOW = Date.parse('2026-10-22T12:00:00Z')
 
@@ -37,4 +37,15 @@ test('the SLA per subject matches platform/pipeline.yml', () => {
     assert.ok(m, `${subject} has no fresh_within`)
     assert.equal(Number(m[1]) * (m[2] === 'd' ? 24 : 1), hours, subject)
   }
+})
+
+test('a run length is measured only when the status records both ends', () => {
+  const run = {
+    started_at: '2026-10-22T09:30:44+00:00',
+    recorded_at: '2026-10-22T09:34:10+00:00',
+    github_run: 'https://github.com/korv9/anton-portfolio/actions/runs/1',
+  }
+  assert.deepEqual(lastRun(run), { seconds: 206, url: run.github_run })
+  assert.equal(lastRun({ recorded_at: run.recorded_at }), undefined)
+  assert.equal(lastRun({}), undefined)
 })

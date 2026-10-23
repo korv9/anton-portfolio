@@ -225,16 +225,23 @@ function ModelParallel() {
 }
 
 export const posts: Post[] = [
-  { id: 'txt-ml-symbol-radial', domain: d, render: () => <SymbolRadial /> },
+  {
+    id: 'txt-ml-symbol-radial',
+    domain: d,
+    sources: ['symbolic/summary.json'],
+    render: () => <SymbolRadial />,
+  },
   {
     id: 'txt-ml-book-treemap',
     domain: d,
+    sources: ['symbolic/summary.json'],
     size: 'tall',
     render: () => <BookTreemap />,
   },
   {
     id: 'txt-ml-model-parallel',
     domain: d,
+    sources: ['symbolic/model-comparison.json'],
     size: 'wide',
     render: () => <ModelParallel />,
   },

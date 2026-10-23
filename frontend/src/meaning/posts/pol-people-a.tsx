@@ -198,12 +198,28 @@ function Ministers() {
 }
 
 export const posts: Post[] = [
-  { id: 'pol-member-units', domain: 'politics', render: () => <Units /> },
+  {
+    id: 'pol-member-units',
+    domain: 'politics',
+    sources: ['politics/parties/index.json'],
+    render: () => <Units />,
+  },
   {
     id: 'pol-council-dumbbell',
     domain: 'politics',
+    sources: ['politics/parties/index.json'],
     render: () => <Dumbbell />,
   },
-  { id: 'pol-gender-donut', domain: 'politics', render: () => <Donut /> },
-  { id: 'pol-ministers', domain: 'politics', render: () => <Ministers /> },
+  {
+    id: 'pol-gender-donut',
+    domain: 'politics',
+    sources: ['politics/parties/index.json'],
+    render: () => <Donut />,
+  },
+  {
+    id: 'pol-ministers',
+    domain: 'politics',
+    sources: ['politics/parties/index.json'],
+    render: () => <Ministers />,
+  },
 ]

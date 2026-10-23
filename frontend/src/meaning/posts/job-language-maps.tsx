@@ -284,13 +284,29 @@ function Words() {
 }
 
 export const posts: Post[] = [
-  { id: 'job-lang-words', domain: D, render: () => <Words /> },
+  {
+    id: 'job-lang-words',
+    domain: D,
+    sources: ['sweden/language/trends.json'],
+    render: () => <Words />,
+  },
   {
     id: 'job-lang-parallel',
     domain: D,
+    sources: ['sweden/language/regions.json', 'sweden/language/trends.json'],
     size: 'wide',
     render: () => <Parallel />,
   },
-  { id: 'job-lang-field-matrix', domain: D, render: () => <FieldMatrix /> },
-  { id: 'job-lang-coverage', domain: D, render: () => <CoverageBars /> },
+  {
+    id: 'job-lang-field-matrix',
+    domain: D,
+    sources: ['sweden/language/fields.json', 'sweden/language/trends.json'],
+    render: () => <FieldMatrix />,
+  },
+  {
+    id: 'job-lang-coverage',
+    domain: D,
+    sources: ['sweden/language/coverage.json'],
+    render: () => <CoverageBars />,
+  },
 ]

@@ -77,5 +77,10 @@ function Gauges() {
 }
 
 export const posts: Post[] = [
-  { id: 'wel-trust-gauges', domain: 'welfare', render: () => <Gauges /> },
+  {
+    id: 'wel-trust-gauges',
+    domain: 'welfare',
+    sources: ['welfare/headlines.json'],
+    render: () => <Gauges />,
+  },
 ]

@@ -227,7 +227,22 @@ function NewsTopics() {
 }
 
 export const posts: Post[] = [
-  { id: 'pol-news-radial', domain: 'politics', render: () => <NewsRadial /> },
-  { id: 'pol-study-bars', domain: 'politics', render: () => <StudyBars /> },
-  { id: 'pol-news-topics', domain: 'politics', render: () => <NewsTopics /> },
+  {
+    id: 'pol-news-radial',
+    domain: 'politics',
+    sources: ['parliament/news.json'],
+    render: () => <NewsRadial />,
+  },
+  {
+    id: 'pol-study-bars',
+    domain: 'politics',
+    sources: ['parliament/studies.json'],
+    render: () => <StudyBars />,
+  },
+  {
+    id: 'pol-news-topics',
+    domain: 'politics',
+    sources: ['parliament/news.json'],
+    render: () => <NewsTopics />,
+  },
 ]

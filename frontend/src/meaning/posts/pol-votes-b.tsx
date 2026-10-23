@@ -224,11 +224,22 @@ function GovWon() {
 }
 
 export const posts: Post[] = [
-  { id: 'pol-gov-gauge', domain: 'politics', render: () => <Gauge /> },
-  { id: 'pol-agree-matrix', domain: 'politics', render: () => <Matrix /> },
+  {
+    id: 'pol-gov-gauge',
+    domain: 'politics',
+    sources: ['parliament/sessions.json'],
+    render: () => <Gauge />,
+  },
+  {
+    id: 'pol-agree-matrix',
+    domain: 'politics',
+    sources: ['parliament/sessions.json'],
+    render: () => <Matrix />,
+  },
   {
     id: 'pol-gov-won',
     domain: 'politics',
+    sources: ['parliament/sessions.json'],
     size: 'wide',
     render: () => <GovWon />,
   },

@@ -205,13 +205,20 @@ export const posts: Post[] = [
   {
     id: 'job-ai-ridgeline',
     domain: D,
+    sources: ['ai-act/jobs/monthly.json', 'ai-act/jobs/summary.json'],
     size: 'tall',
     render: () => <Ridgeline />,
   },
-  { id: 'job-ai-field-lollipop', domain: D, render: () => <FieldLollipop /> },
+  {
+    id: 'job-ai-field-lollipop',
+    domain: D,
+    sources: ['ai-act/jobs/fields.json'],
+    render: () => <FieldLollipop />,
+  },
   {
     id: 'job-ai-mentions',
     domain: D,
+    sources: ['ai-act/jobs/monthly.json', 'ai-act/jobs/summary.json'],
     size: 'tall',
     render: () => <Mentions />,
   },

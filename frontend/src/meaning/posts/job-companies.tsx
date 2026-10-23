@@ -200,10 +200,26 @@ export const posts: Post[] = [
   {
     id: 'job-co-skills',
     domain: D,
+    sources: ['jobs/company-intelligence.json'],
     size: 'wide',
     render: () => <SkillColumns />,
   },
-  { id: 'job-co-locations', domain: D, render: () => <Locations /> },
-  { id: 'job-co-size', domain: D, render: () => <SizeUnits /> },
-  { id: 'job-co-days', domain: D, render: () => <PubDays /> },
+  {
+    id: 'job-co-locations',
+    domain: D,
+    sources: ['jobs/company-intelligence.json'],
+    render: () => <Locations />,
+  },
+  {
+    id: 'job-co-size',
+    domain: D,
+    sources: ['jobs/company-intelligence.json'],
+    render: () => <SizeUnits />,
+  },
+  {
+    id: 'job-co-days',
+    domain: D,
+    sources: ['jobs/company-intelligence.json'],
+    render: () => <PubDays />,
+  },
 ]

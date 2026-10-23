@@ -115,5 +115,10 @@ function Skills() {
 }
 
 export const posts: Post[] = [
-  { id: 'job-cluster-skills', domain: D, render: () => <Skills /> },
+  {
+    id: 'job-cluster-skills',
+    domain: D,
+    sources: ['jobs/cluster-summary.json'],
+    render: () => <Skills />,
+  },
 ]

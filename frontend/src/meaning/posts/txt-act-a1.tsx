@@ -191,13 +191,20 @@ export const posts: Post[] = [
   {
     id: 'txt-act-article-bars',
     domain: d,
+    sources: ['ai-act/articles.json'],
     size: 'wide',
     render: () => <ArticleBars />,
   },
-  { id: 'txt-act-counts', domain: d, render: () => <Counts /> },
+  {
+    id: 'txt-act-counts',
+    domain: d,
+    sources: ['ai-act/summary.json'],
+    render: () => <Counts />,
+  },
   {
     id: 'txt-act-chapter-treemap',
     domain: d,
+    sources: ['ai-act/articles.json'],
     size: 'tall',
     render: () => <ChapterTreemap />,
   },

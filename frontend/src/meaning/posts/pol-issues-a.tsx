@@ -222,18 +222,21 @@ export const posts: Post[] = [
   {
     id: 'pol-issue-multiples',
     domain: 'politics',
+    sources: ['parliament/issues.json'],
     size: 'tall',
     render: () => <Multiples />,
   },
   {
     id: 'pol-issue-outturn',
     domain: 'politics',
+    sources: ['parliament/issues.json'],
     size: 'wide',
     render: () => <Outturn />,
   },
   {
     id: 'pol-issue-speeches',
     domain: 'politics',
+    sources: ['parliament/issues.json'],
     size: 'wide',
     render: () => <Speeches />,
   },

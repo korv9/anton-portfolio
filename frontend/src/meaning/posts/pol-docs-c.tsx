@@ -113,12 +113,23 @@ function MeaningRing() {
 }
 
 export const posts: Post[] = [
-  { id: 'pol-topic-tree', domain: 'politics', render: () => <TopicTree /> },
+  {
+    id: 'pol-topic-tree',
+    domain: 'politics',
+    sources: ['debates/summary.json'],
+    render: () => <TopicTree />,
+  },
   {
     id: 'pol-debate-kpis',
     domain: 'politics',
+    sources: ['debates/overview.json'],
     size: 'tall',
     render: () => <DebateKpis />,
   },
-  { id: 'pol-meaning-ring', domain: 'politics', render: () => <MeaningRing /> },
+  {
+    id: 'pol-meaning-ring',
+    domain: 'politics',
+    sources: ['politics/meaning.json'],
+    render: () => <MeaningRing />,
+  },
 ]
