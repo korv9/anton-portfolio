@@ -115,12 +115,12 @@ test('real logical paths resolve lazily and downloads and shards share a pinned 
       moduleUrl,
     ),
   ).toContain('a'.repeat(64))
+  // The refresh reloads the page, which can destroy an awaited evaluate before it returns.
   await Promise.all([
     page.waitForEvent('load'),
-    page.evaluate(
-      async (url) => (await import(url)).refreshDelivery(),
-      moduleUrl,
-    ),
+    page.evaluate((url) => {
+      void import(url).then((m) => m.refreshDelivery())
+    }, moduleUrl),
   ])
   expect(
     await page.evaluate(
