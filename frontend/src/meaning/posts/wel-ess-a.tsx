@@ -69,6 +69,7 @@ function Radar() {
           <>
             <Slicer
               label="Survey round"
+              cycles
               options={rounds}
               format={(r) => `ESS round ${r}`}
               value={p}

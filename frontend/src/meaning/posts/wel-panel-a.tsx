@@ -145,6 +145,7 @@ function IncomeScatter() {
           <>
             <Slicer
               label="Year"
+              cycles
               options={ys.filter((v) => v % 3 === ys[ys.length - 1] % 3)}
               value={year}
               onChange={setYr}

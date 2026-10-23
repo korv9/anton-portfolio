@@ -24,6 +24,9 @@ function RateUnits() {
         )
         const keys = [...bins.keys()].sort((a, b) => a - b)
         const x = scale([keys[0], keys[keys.length - 1]], [20, 780])
+        // The tallest stack fits between the baseline (370) and the top: dots shrink to fit.
+        const tallest = Math.max(...keys.map((k) => bins.get(k)!.length))
+        const step = Math.min(9, 360 / tallest)
         return (
           <Svg
             w={800}
@@ -35,8 +38,8 @@ function RateUnits() {
                 <circle
                   key={m.code}
                   cx={x(k)}
-                  cy={370 - i * 9}
-                  r={4}
+                  cy={370 - i * step}
+                  r={Math.min(4, step * 0.45)}
                   fill={color(Math.floor(i / 5))}
                 >
                   <title>{`${m.name}: ${m.local_rate}%`}</title>
@@ -131,6 +134,7 @@ export const posts: Post[] = [
     domain: 'taxes',
     sources: ['taxes/municipalities.json'],
     size: 'wide',
+    title: 'Municipal income tax rates, one dot per municipality',
     render: () => <RateUnits />,
   },
   {

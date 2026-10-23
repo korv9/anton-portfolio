@@ -32,6 +32,10 @@
   --mean-party-nyd: #b49a6a;
   /* Posts separate marks with the card colour and mix tints towards it. */
   --paper: var(--mean-card);
+  /* charts/RankBars and Compare read the site's ink roles; .sweden and the home page set
+     --ink, --muted and --line, so only the two they leave out are mapped here. */
+  --ink-2: var(--mean-ink);
+  --line-strong: color-mix(in srgb, var(--mean-ink) 32%, transparent);
   --mean-ease: cubic-bezier(0.3, 0.7, 0.2, 1);
   --mean-glide: 0.42s;
 }
@@ -173,13 +177,66 @@
   min-height: 0;
   overflow: hidden;
 }
+/* Chart text in one place: the body face with tabular figures, never smaller than 10 units
+   for ticks and 11 for labels. A size a post sets on a text element still wins. */
 .mean-body svg text {
   fill: var(--mean-muted);
-  font-family: var(--mean-font);
+  font-family: var(--font);
+  font-variant-numeric: tabular-nums;
+}
+.mean-body .mean-wel-svg {
+  font-size: 11px;
+}
+.mean-body
+  svg
+  :is(.mean-pol-t, .mean-txt-t, .mean-wel-axis text, .mean-axis text) {
+  font-size: 10px;
+}
+/* Direct labels (axes.tsx EndLabels) name the marks, so they take the ink, not the muted grey. */
+.mean-body svg .mean-end text {
+  font-size: 11px;
+  font-weight: 500;
+  fill: var(--mean-ink);
+}
+/* The card's heading: what the chart shows, readable in the thumbnail. Two lines at most
+   there; opened, it takes the chart-title size and its full length. */
+.mean-head {
+  display: grid;
+  gap: 2px;
+}
+.mean-head p {
+  margin: 0;
+  font-family: var(--font);
+  overflow: hidden;
+}
+.mean-head-title {
+  color: var(--mean-ink);
+  font-size: var(--type-label);
+  font-weight: 500;
+  line-height: 1.25;
+  text-wrap: balance;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+.mean-head-note {
+  color: var(--mean-muted);
+  font-size: var(--type-caption);
+  line-height: 1.35;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.mean-open .mean-head-title {
+  font-size: var(--type-chart-title);
+  -webkit-line-clamp: unset;
+}
+.mean-open .mean-head-note {
+  white-space: normal;
 }
 /* One gridline weight across the four families. */
 .mean-body
   :is(
+    .mean-axis line,
     .mean-pol-grid,
     .mean-txt-grid,
     .mean-job-axis line,

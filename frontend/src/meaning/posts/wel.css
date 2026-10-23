@@ -1,8 +1,3 @@
-.mean-wel-svg text {
-  font-size: 10px;
-  fill: var(--muted);
-  font-variant-numeric: tabular-nums;
-}
 .mean-wel-axis line {
   stroke: color-mix(in srgb, var(--ink) 10%, transparent);
   stroke-width: 0.6;

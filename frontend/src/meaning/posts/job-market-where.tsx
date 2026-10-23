@@ -38,6 +38,7 @@ function RegionLollipop() {
           <>
             <Slicer
               label="Year"
+              cycles
               options={m.years.filter((y) => y < m.latest_year)}
               value={year}
               onChange={setYear}
@@ -198,6 +199,7 @@ function EmploymentDonut() {
           <>
             <Slicer
               label="Year"
+              cycles
               options={m.years.filter((y) => y < m.latest_year)}
               value={year}
               onChange={setYear}

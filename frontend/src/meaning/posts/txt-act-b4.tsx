@@ -1,7 +1,7 @@
 /** AI Act duties, actors, cross-references and outside signals: heatmap, donut, flows, arcs, lines. */
 import { useState } from 'react'
 import { Frame, Slicer, color, useData, type Post } from '../kit'
-import { Legend, Svg, fmt, pct, uniq } from './txt-kit'
+import { Svg, fmt, pct, uniq } from './txt-kit'
 
 type Signals = {
   series: {
@@ -92,39 +92,44 @@ function SignalMultiples() {
     <Frame data={data}>
       {({ series }) => {
         const [W, rh] = [400, 76]
+        // One month axis for every panel, so the Riksdag series (from 2016) and the job-ad
+        // series (from 2020) line up in time.
+        const months = uniq(
+          series.flatMap((s) => s.rows.map((r) => r[0])),
+        ).sort()
+        const bw = W / months.length
         return (
-          <>
-            <Svg
-              w={W}
-              h={rh * series.length}
-              label="Monthly counts of every AI signal, small multiples"
-            >
-              {series.map((s, j) => {
-                const max = Math.max(...s.rows.map((r) => r[1]), 1)
-                const bw = W / s.rows.length
-                return (
-                  <g key={s.series_id} transform={`translate(0,${j * rh})`}>
-                    <text className="mean-txt-t" x={W} y={10} textAnchor="end">
-                      {fmt(max)}
-                    </text>
-                    {s.rows.map((r, i) => (
-                      <rect
-                        key={r[0]}
-                        x={i * bw}
-                        width={Math.max(bw - 0.6, 0.4)}
-                        y={rh - 4 - ((rh - 14) * r[1]) / max}
-                        height={((rh - 14) * r[1]) / max}
-                        fill={color(j)}
-                      >
-                        <title>{`${r[0]}: ${fmt(r[1])}`}</title>
-                      </rect>
-                    ))}
-                  </g>
-                )
-              })}
-            </Svg>
-            <Legend items={series.map((s, j) => [s.label_en, color(j)])} />
-          </>
+          <Svg
+            w={W}
+            h={rh * series.length}
+            label="Monthly counts of every AI signal, small multiples"
+          >
+            {series.map((s, j) => {
+              const max = Math.max(...s.rows.map((r) => r[1]), 1)
+              return (
+                <g key={s.series_id} transform={`translate(0,${j * rh})`}>
+                  <text className="mean-txt-t" x={0} y={10}>
+                    {s.label_en}
+                  </text>
+                  <text className="mean-txt-t" x={W} y={10} textAnchor="end">
+                    {fmt(max)}
+                  </text>
+                  {s.rows.map((r) => (
+                    <rect
+                      key={r[0]}
+                      x={months.indexOf(r[0]) * bw}
+                      width={Math.max(bw - 0.6, 0.4)}
+                      y={rh - 4 - ((rh - 14) * r[1]) / max}
+                      height={((rh - 14) * r[1]) / max}
+                      fill={color(j)}
+                    >
+                      <title>{`${r[0]}: ${fmt(r[1])}`}</title>
+                    </rect>
+                  ))}
+                </g>
+              )
+            })}
+          </Svg>
         )
       }}
     </Frame>
@@ -145,6 +150,8 @@ export const posts: Post[] = [
     domain: d,
     sources: ['ai-act/signals.json'],
     size: 'tall',
+    title: 'AI in Riksdag speeches and job ads, by month',
+    note: 'Each panel on its own scale, one shared time axis',
     render: () => <SignalMultiples />,
   },
 ]

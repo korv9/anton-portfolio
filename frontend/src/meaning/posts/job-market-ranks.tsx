@@ -159,6 +159,7 @@ function FieldRadial() {
           <>
             <Slicer
               label="Year"
+              cycles
               options={m.years}
               format={(yr) =>
                 `${yr}, Jan–${new Date(2000, m.ytd_months - 1).toLocaleString('en', { month: 'short' })}`

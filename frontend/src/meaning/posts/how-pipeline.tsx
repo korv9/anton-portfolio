@@ -113,6 +113,7 @@ export const posts: Post[] = [
     sources: ['status/ingestion.json'],
     size: 'wide',
     label: 'How it is made: ingest time of each pipeline subject',
+    title: 'How long each data source takes to ingest',
     render: () => <RunStrip />,
   },
 ]

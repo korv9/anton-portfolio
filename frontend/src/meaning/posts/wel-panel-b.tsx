@@ -142,6 +142,7 @@ function Turnout() {
           <>
             <Slicer
               label="Election year"
+              cycles
               options={opts}
               value={year}
               onChange={setYr}

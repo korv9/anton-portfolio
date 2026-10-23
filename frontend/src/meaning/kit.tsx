@@ -33,6 +33,11 @@ export type Post = {
   size?: 'square' | 'wide' | 'tall'
   /** Readable name for the card's open and close buttons; defaults to the id read as words. */
   label?: string
+  /** Visible heading above the chart, also in the thumbnail: a modest, checkable finding or
+   * the plain topic. A function gets the post's first source once it has loaded. */
+  title?: string | ((d: never) => string)
+  /** One muted line under the title: unit, period or source. */
+  note?: string
   render: () => ReactNode
 }
 
@@ -123,8 +128,9 @@ export const PostLive = createContext(false)
 /** Takes the card out of the feed: its data expired or failed to load. */
 export const PostLeave = createContext<() => void>(() => {})
 
-/** Thumbnails step their slicer twice a second; the marks glide between steps in CSS. */
-const TICK_MS = 500
+/** Thumbnails step their slicer every 2.5 s, slow enough to read each step; the marks glide
+ * between steps in CSS. */
+const TICK_MS = 2500
 
 export const still =
   typeof matchMedia === 'function' &&
@@ -136,15 +142,15 @@ const SEAM_HOLD = 2
 /**
  * A row of toggle chips. The labels are legend text, so they count as legend. In a thumbnail
  * the chips are hidden and the slicer steps through its options by itself, so the feed moves;
- * the current option shows as a small label in the card's corner. `cycles={false}` holds the
- * first option in the thumbnail, for options that are not comparable steps on one axis.
+ * the current option shows as a small label in the card's corner. Only ordered steps on one
+ * axis (years, sessions, rounds) pass `cycles`; categorical options hold the first one.
  */
 export function Slicer<T extends string | number>({
   options,
   value,
   onChange,
   label,
-  cycles = true,
+  cycles = false,
   format = String,
 }: {
   options: readonly T[]

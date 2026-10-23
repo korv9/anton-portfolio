@@ -238,6 +238,7 @@ export const posts: Post[] = [
     id: 'job-ai-big',
     domain: D,
     sources: ['ai-act/jobs/monthly.json'],
+    title: 'Share of job ads that mention AI, latest month',
     render: () => <AiBig />,
   },
   {

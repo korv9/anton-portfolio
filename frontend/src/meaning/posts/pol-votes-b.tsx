@@ -58,6 +58,7 @@ function Matrix() {
           <>
             <Slicer
               label="Session"
+              cycles
               options={every(recentFirst(d), 3)}
               value={s}
               onChange={setS}
@@ -126,6 +127,7 @@ function Gauge() {
           <>
             <Slicer
               label="Session"
+              cycles
               options={every(recentFirst(d), 4)}
               value={s}
               onChange={setS}

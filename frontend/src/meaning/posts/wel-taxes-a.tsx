@@ -126,7 +126,13 @@ function Treemap() {
         }
         return (
           <>
-            <Slicer label="Year" options={opts} value={year} onChange={setYr} />
+            <Slicer
+              label="Year"
+              cycles
+              options={opts}
+              value={year}
+              onChange={setYr}
+            />
             <Svg label="Squarified treemap of Sweden's taxes as a share of GDP">
               {rects.map((r, i) =>
                 r.w > 0 ? (
@@ -215,7 +221,10 @@ function League() {
                 </g>
               ))}
             </Svg>
-            <Legend items={['SWE', 'Nordic', 'other OECD']} />
+            <Legend
+              items={['Sweden', 'Nordic', 'other OECD']}
+              colors={[color(1), color(0), color(2)]}
+            />
           </>
         )
       }}
@@ -236,6 +245,7 @@ export const posts: Post[] = [
     domain: 'taxes',
     sources: ['taxes/countries.json'],
     size: 'tall',
+    title: 'Tax revenue as a share of GDP, OECD countries',
     render: () => <League />,
   },
   {

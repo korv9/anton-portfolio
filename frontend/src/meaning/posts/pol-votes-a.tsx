@@ -183,6 +183,7 @@ function Chord() {
           <>
             <Slicer
               label="Session"
+              cycles
               options={every(recentFirst(d), 4)}
               value={s}
               onChange={setS}

@@ -83,6 +83,7 @@ function Parallel() {
               <>
                 <Slicer
                   label="Year"
+                  cycles
                   options={years}
                   value={year}
                   onChange={setYear}
@@ -164,6 +165,7 @@ function FieldMatrix() {
               <>
                 <Slicer
                   label="Year"
+                  cycles
                   options={years}
                   value={year}
                   onChange={setYear}

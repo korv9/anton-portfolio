@@ -229,6 +229,8 @@ export const posts: Post[] = [
     id: 'job-cluster-kpis',
     domain: D,
     sources: ['jobs/cluster-summary.json'],
+    title: (s: Summary) =>
+      `${s.diagnostics.cluster_count} clusters in ${fmt(s.source_size)} tech job ads`,
     render: () => <Kpis />,
   },
   {

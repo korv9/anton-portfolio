@@ -31,7 +31,8 @@ async function tickingPost(page: Page) {
   )
 }
 
-/** Samples the checked slicer option over about 1.5 s and returns the distinct values seen. */
+/** Samples the checked slicer option over about 9 s (thumbnails step every 2.5 s) and returns
+ * the distinct values seen. */
 async function slicerValues(post: Locator) {
   const checked = post.locator('.mean-slicer [aria-checked="true"]')
   const seen: (string | null)[] = []
@@ -43,7 +44,7 @@ async function slicerValues(post: Locator) {
       },
       { intervals: [300] },
     )
-    .toBeGreaterThanOrEqual(6)
+    .toBeGreaterThanOrEqual(30)
   return new Set(seen)
 }
 
@@ -187,45 +188,47 @@ test('the name is there at first paint and the map sleeps after the hero', async
 test('posts whose data is withdrawn or past its valid_until date leave the feed', async ({
   page,
 }) => {
-  const ADS = '[data-post="job-co-remote"]'
+  // The withdrawn company files' own posts are dropped from the feed, so a live post's file is
+  // routed through each state instead: withdrawn, past its date, and ahead of it.
+  const POST = '[data-post="job-cluster-kpis"]'
+  const FILE = '**/jobs/cluster-summary.json'
   const errors: string[] = []
   page.on('console', (m) => m.type() === 'error' && errors.push(m.text()))
-  // The published company file is withdrawn ({state: 'unavailable'}): its posts leave the feed.
-  await page.goto('/')
-  await page.locator('.home-feed').evaluate((el) => el.scrollIntoView())
-  await page
-    .locator('#mean-jobs')
-    .evaluate((el) => el.scrollIntoView({ block: 'start' }))
-  await expect(page.locator(ADS)).toHaveCount(0)
+  const jobs = async () => {
+    await page.goto('/')
+    await page.locator('.home-feed').evaluate((el) => el.scrollIntoView())
+    await page
+      .locator('#mean-jobs')
+      .evaluate((el) => el.scrollIntoView({ block: 'start' }))
+  }
+  const serve = (patch: object | null) =>
+    page.route(FILE, async (route) => {
+      const real = await (await route.fetch()).json()
+      await route.fulfill({
+        json: patch ? { ...real, ...patch } : { state: 'unavailable' },
+      })
+    })
+  const until = (days: number) => ({
+    valid_until: new Date(Date.now() + days * 86_400_000).toISOString(),
+  })
+
+  await serve(null)
+  await jobs()
+  await expect(page.locator(POST)).toHaveCount(0)
   // Leaving is quiet: nothing at all in the console.
   expect(errors).toEqual([])
 
-  // A routed release, invented for the test, past its date leaves the feed; ahead, it renders.
-  const release = (days: number) => ({
-    schema_version: 1,
-    state: 'available',
-    valid_until: new Date(Date.now() + days * 86_400_000).toISOString(),
-    jobs: [{ remote_evidence: ['remote'] }],
-  })
-  await page.route('**/jobs/company-intelligence.json', (route) =>
-    route.fulfill({ json: release(-1) }),
-  )
-  await page.goto('/')
-  await page.locator('.home-feed').evaluate((el) => el.scrollIntoView())
-  await page
-    .locator('#mean-jobs')
-    .evaluate((el) => el.scrollIntoView({ block: 'start' }))
-  await expect(page.locator(ADS)).toHaveCount(0)
+  await page.unroute(FILE)
+  await serve(until(-1))
+  await jobs()
+  await expect(page.locator(POST)).toHaveCount(0)
 
-  await page.unroute('**/jobs/company-intelligence.json')
-  await page.route('**/jobs/company-intelligence.json', (route) =>
-    route.fulfill({ json: release(1) }),
-  )
-  await page.goto('/')
-  await page.locator('.home-feed').evaluate((el) => el.scrollIntoView())
-  const post = page.locator(ADS)
+  await page.unroute(FILE)
+  await serve(until(1))
+  await jobs()
+  const post = page.locator(POST)
   await post.evaluate((el) => el.scrollIntoView())
-  await expect(post).toContainText('of ads mention remote work')
+  await expect(post).toContainText('candidate ads')
 })
 
 test('the Source panel opens from the keyboard and says what is not recorded', async ({

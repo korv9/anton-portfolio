@@ -36,6 +36,7 @@ function ExperienceWaffle() {
           <>
             <Slicer
               label="Year"
+              cycles
               // 2026 is partial and uses new experience categories, so it is not a step.
               options={m.years.filter((y) => y < m.latest_year)}
               value={year}

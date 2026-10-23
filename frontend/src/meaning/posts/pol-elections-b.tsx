@@ -55,6 +55,7 @@ function VotesTreemap() {
           <>
             <Slicer
               label="Election year"
+              cycles
               options={every([...d.years].reverse(), 3)}
               value={year}
               onChange={setYear}

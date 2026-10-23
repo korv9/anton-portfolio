@@ -111,6 +111,7 @@ export const posts: Post[] = [
     id: 'pol-seat-swing',
     domain: 'politics',
     sources: ['parliament/now.json'],
+    title: 'Seats won and lost at the latest Riksdag election',
     render: () => <SeatSwing />,
   },
   {

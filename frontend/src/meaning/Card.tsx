@@ -11,7 +11,7 @@ import {
   type ReactNode,
 } from 'react'
 import { useFresh } from './freshness'
-import { PostLeave, PostLive, PostOpen, still, type Post } from './kit'
+import { PostLeave, PostLive, PostOpen, still, useData, type Post } from './kit'
 import { Trace } from './Trace'
 
 /** Above this many SVG elements a thumbnail steps without transitions. */
@@ -66,9 +66,38 @@ function observe(
   }
 }
 
-/** The card's accessible name: the post's label, or its id read as words under its section. */
+/** The card's accessible name: its fixed title, its label, or its id read as words under its
+ * section. */
 const nameOf = (post: Post, section: string) =>
-  post.label ?? `${section}: ${post.id.split('-').slice(1).join(' ')}`
+  (typeof post.title === 'string' ? post.title : undefined) ??
+  post.label ??
+  `${section}: ${post.id.split('-').slice(1).join(' ')}`
+
+/** The card's visible heading and note, above the chart. */
+function Heading({ title, note }: { title?: string; note?: string }) {
+  if (!title && !note) return null
+  return (
+    <header className="mean-head">
+      {title && <p className="mean-head-title">{title}</p>}
+      {note && <p className="mean-head-note">{note}</p>}
+    </header>
+  )
+}
+
+/** A title worked out from the post's first source; nothing until that file has loaded. The
+ * fetch is shared with the chart, so it costs no second request. */
+function DataHeading({ post }: { post: Post }) {
+  const d = useData<unknown>(post.sources[0])
+  let title = ''
+  // Data the title cannot read leaves the heading empty; the chart decides whether to stay.
+  if (d !== null && !(d instanceof Error))
+    try {
+      title = (post.title as (d: never) => string)(d as never)
+    } catch {
+      title = ''
+    }
+  return <Heading title={title} note={post.note} />
+}
 
 /** The overdue mark's text, with the day of the last ingestion when known. Only an overdue
  * source is marked: a dot on every card would say nothing. */
@@ -180,6 +209,11 @@ export function Card({
         />
       )}
       <div className="mean-body" inert={traced || undefined}>
+        {typeof post.title === 'function' ? (
+          (near || open) && <DataHeading post={post} />
+        ) : (
+          <Heading title={post.title} note={post.note} />
+        )}
         <PostLeave.Provider value={leave}>
           <PostOpen.Provider value={open}>
             <PostLive.Provider value={onScreen && moving && !dense}>

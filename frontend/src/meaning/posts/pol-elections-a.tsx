@@ -183,6 +183,7 @@ function Hemicycle() {
           <>
             <Slicer
               label="Election year"
+              cycles
               options={d.years.slice(-8)}
               value={year}
               onChange={setYear}
@@ -228,6 +229,7 @@ function Waffle() {
           <>
             <Slicer
               label="Election year"
+              cycles
               options={every(d.years, 2)}
               value={year}
               onChange={setYear}
@@ -264,6 +266,8 @@ export const posts: Post[] = [
     domain: 'politics',
     sources: ['parliament/elections.json'],
     size: 'wide',
+    title: (d: { years: number[] }) =>
+      `Vote share by party in Riksdag elections, ${d.years[0]}–${d.years.at(-1)}`,
     render: () => <StackedShare />,
   },
   {

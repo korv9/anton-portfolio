@@ -1,6 +1,8 @@
 /** Labour market and sick leave, national by month and county by year. */
 import { useState } from 'react'
 import { Frame, Slicer, color, useData, type Post } from '../kit'
+import * as axes from '../axes'
+import { yearTicks } from '../../charts/scales'
 import {
   Legend,
   Svg,
@@ -30,6 +32,14 @@ type Month = {
   psychiatric_share_of_started_12m_pct: number | null
 }
 
+/** Plain names for the monthly series in the legend. */
+const SERIES: Partial<Record<keyof Month, string>> = {
+  unemployment_rate: 'unemployment, raw',
+  unemployment_rate_sa: 'seasonally adjusted',
+  unemployment_rate_trend: 'trend',
+  employment_rate_sa: 'employment, seasonally adjusted',
+}
+
 const useMonths = () => useData<Month[]>('welfare/national-month.json')
 
 function UnemploymentLines() {
@@ -47,12 +57,15 @@ function UnemploymentLines() {
               ]
             : ['employment_rate_sa']
         const r = rows.filter((x) => num(x[keys[0]]))
-        const [lo, hi] = extent(
-          r.flatMap((x) => keys.map((k) => x[k] as number)),
+        const [lo, hi] = axes.niceDomain(
+          ...extent(r.flatMap((x) => keys.map((k) => x[k] as number))),
         )
         const x = scale([0, r.length - 1], [36, 790])
-        const y = scale([Math.floor(lo), niceMax(hi)], [370, 20])
-        const years = r.map((d) => d.month_start.slice(0, 4))
+        // The lines and the axis share this one domain, so each label sits at its value.
+        const y = scale([lo, hi], [370, 20])
+        const years = yearTicks(r.map((d) => d.month_start)).filter(
+          (_, i) => i % 3 === 0,
+        )
         return (
           <>
             <Slicer
@@ -63,13 +76,12 @@ function UnemploymentLines() {
               onChange={setM}
             />
             <Svg w={800} h={400} label="Monthly labour market rates, Sweden">
-              <YAxis
-                min={Math.floor(lo)}
-                max={hi}
+              <axes.YAxis
+                y={y}
+                ticks={axes.ticksBetween(lo, hi)}
                 x0={36}
                 x1={790}
-                y0={370}
-                y1={20}
+                format={(v) => `${v}%`}
               />
               {keys.map((k, j) => (
                 <path
@@ -80,13 +92,16 @@ function UnemploymentLines() {
                   strokeWidth={j === 2 ? 3 : 1.4}
                 />
               ))}
-              <XTicks
-                values={years.map((v, i) => (i % 36 ? '' : v))}
+              <axes.XAxis
                 x={x}
+                ticks={years.map((t) => ({ value: t.index, label: t.label }))}
                 y={390}
               />
             </Svg>
-            <Legend items={keys.map((k) => String(k).replace(/_/g, ' '))} />
+            <Legend
+              items={keys.map((k) => SERIES[k] ?? String(k))}
+              colors={keys.map((_, j) => color(j))}
+            />
           </>
         )
       }}
@@ -198,7 +213,10 @@ function SickStream() {
                 ),
               )}
             </Svg>
-            <Legend items={['stress', 'other psychiatric', 'other']} />
+            <Legend
+              items={['stress', 'other psychiatric', 'other']}
+              colors={[color(1), color(2), color(3)]}
+            />
           </>
         )
       }}
@@ -266,6 +284,8 @@ export const posts: Post[] = [
     domain: 'welfare',
     sources: ['welfare/national-month.json'],
     size: 'wide',
+    title: 'Unemployment and employment in Sweden, by month',
+    note: 'Share of the labour force, %',
     render: () => <UnemploymentLines />,
   },
   {
@@ -273,6 +293,7 @@ export const posts: Post[] = [
     domain: 'welfare',
     sources: ['welfare/national-month.json'],
     size: 'tall',
+    title: 'New sick-leave cases per month, by cause',
     render: () => <SickStream />,
   },
   {

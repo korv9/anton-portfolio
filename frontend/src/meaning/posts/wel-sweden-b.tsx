@@ -99,7 +99,9 @@ function Relations() {
                 ρ {num(r.result.rho) ? fmt(r.result.rho, 3) : '–'}
               </text>
             </Svg>
-            <Legend items={[r.x.name, r.y.name]} />
+            <p className="mean-legend">
+              Across: {r.x.name}. Up: {r.y.name}.
+            </p>
           </>
         )
       }}
@@ -197,7 +199,10 @@ function LibraryTrend() {
                 y={392}
               />
             </Svg>
-            <Legend items={['p10–p90', 'p25–p75', 'median']} />
+            <Legend
+              items={['p10–p90', 'p25–p75', 'median']}
+              colors={[color(2), color(4), color(0)]}
+            />
           </>
         )
       }}
@@ -217,12 +222,14 @@ export const posts: Post[] = [
     id: 'wel-connections-scatter',
     domain: 'sweden',
     sources: ['sweden/connections/connections.json'],
+    title: 'Municipal indicators set against each other',
     render: () => <Relations />,
   },
   {
     id: 'wel-library-bands',
     domain: 'sweden',
     sources: ['sweden/belonging/municipalities.json'],
+    title: 'Library use across municipalities: median and spread',
     render: () => <LibraryTrend />,
   },
 ]
