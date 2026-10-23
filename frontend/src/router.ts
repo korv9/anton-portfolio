@@ -22,6 +22,7 @@ export type Page =
   | 'meaning'
   | 'lawqa'
   | 'jobs'
+  | 'askplatform'
 
 export type Route = {
   /** The full hash, e.g. `#politik-valjarna?partier=S`. */
@@ -204,6 +205,8 @@ export function pageOf(path: string): Page {
   if (path === '#fraga-lagen') return 'lawqa'
   // The job assistant (docs/job-assistant.md); #jobb and #job- still lead to the feed.
   if (path === '#jobs') return 'jobs'
+  // Ask the platform on its own, for its tests until the feed's closing chapter mounts it.
+  if (path === '#ask-platform') return 'askplatform'
   if (path.startsWith('#concept-') || path.startsWith('#concepts-'))
     return 'concepts'
   if (path === '#philosophy-atlas' || path.startsWith('#philosophy-'))
