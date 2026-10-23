@@ -55,7 +55,8 @@ The owner's own records sit in a D1 database behind the Worker.
 | Approved profile | D1 `profile_version` | One row per version: version, profile JSON, `profile_sha256`, CV hash, approved time |
 | Ad store | R2 `warehouse/raw/job_assistant/ads.json` | One row per JobTech ad id: headline, employer, place, full public text, source and application links, published, last changed, first seen, removed time, content hash, duplicate group, and its history of new, changed and removed events |
 | Ad list | delivery group `job-assistant`, `job-assistant/ads.json` | The store's current ads and those removed in the last 30 days, without the text, plus the last week of runs |
-| Match | R2 `job-assistant/matches.json` | One row per ad and profile version: role category, match class, reasons, requirement judgements, gaps, explanation (optional), `profile_version`, CV hash, engine version |
+| Match store | R2 `warehouse/raw/job_assistant/matches.json` | One row per current ad: role category, match class, reasons, skill judgements, gaps, conditions, similarity, explanation (optional), `profile_version`, CV hash, engine version, the ad's content hash |
+| Match list | delivery group, `job-assistant/matches.json` and `texts.json` | Every current ad's class, role and reasons; the full judgements and the ad text for the review list, stretch ads and the evaluation sample |
 | Review status | D1 `review` | One row per ad: status, note, updated time |
 | Relevance label | D1 `label` | One row per labelled ad: relevant, maybe or not relevant, note, the class shown when labelled |
 | Run record | R2 `warehouse/raw/job_assistant/runs.jsonl` | One row per hourly run: windows, counts, outcome (neurons spent are added with the matching) |
@@ -101,27 +102,50 @@ ads: the requirement taxonomy from `job_content.py` plus a few CV terms.
 | Seniority | Senior, lead and principal titles and stated years of experience, with the experience wording that lifted the senior/junior AUC by 0.15 in the feature study (`ml/feature_study/job_ads.py`, branch `korv9/ml-feature-engineering`) |
 | Wishes | Place, remote wording and the owner's role order |
 
-The classes are `strong`, `possible`, `stretch` and `outside`. Each comes with the rule that set
-it in plain words, for example "4 of 5 required skills in practical work; title is senior".
-Within a class, ads are sorted by role priority, then by the bge-m3 cosine between the ad and
-the profile, then by date. The cosine also flags ads that resemble the profile but name no
-taxonomy skill, so they can be checked for a missed match.
+`platform/job_assistant/match.py` sets one of four classes. "Shown" means the profile has the skill
+at `practical` or `education_or_project`. The share counts required skills, or every named skill
+when the ad marks none as required.
+
+| Class | Rule |
+| --- | --- |
+| `strong` | A wished role read from the title, in a wished place, not senior; at least three skills named and at least 60 % shown |
+| `possible` | A wished role in a wished place, not senior, at least 30 % shown or no skill named; or a strong case whose role is only in the ad text or that names fewer than three skills |
+| `stretch` | A wished role in a wished place with at least 30 % shown, but a senior, lead or architect title, or three or more years of experience asked |
+| `outside` | Another role, another place without remote wording, or under 30 % shown |
+
+Hybrid work counts as work at the ad's own office, so only remote wording widens the place. Each
+match lists its reasons in plain words, for example "data engineering (from the title); 5 of 8
+named skills shown in practical work or projects; Stockholm". `strong` and `possible` make the
+review list. Within a class, ads are sorted by the owner's role order, then by the bge-m3 cosine
+between the ad and the profile, then newest first. A match is redone only when the ad's content
+hash, the profile version or the engine version changes.
+
+On the 2,233 current, non-duplicate ads of the local run, with Stockholm and Solna as places and
+nine wished roles, the rules gave 15 strong, 93 possible, 115 stretch and 2,010 outside. Most
+outside ads are support, Java or other roles outside the wishes. These counts come from one test
+profile; the owner's labels measure whether the rules are right.
 
 ## Workers AI budget
 
 The project stays on the free tier at 0 kr. The free day is 10,000 neurons, shared with other
-experiments. The ledger in `platform/nlp/workers_ai.py` (`spent_today`, `append_ledger`) gets
-the agent name `job-assistant` and a project cap of 1,500 neurons per UTC day.
+experiments. `platform/job_assistant/ai.py` uses the REST call and ledger of
+`platform/nlp/workers_ai.py` (`spent_today`, `append_ledger`) with the agent name `job-assistant`
+and its own ledger, `warehouse/raw/job_assistant/ledger.jsonl`, so the project cap of 1,500
+neurons per UTC day counts only this project. The Cloudflare quota error (4006) stops the AI part
+of a run the same way.
 
 | Use | Model | Estimate |
 | --- | --- | --- |
-| Embeddings of all new and changed ads | `@cf/baai/bge-m3`, 1,075 neurons per million tokens | about 200 ads a day at 600 tokens, roughly 130 neurons |
+| Embeddings of all new and changed ads | `@cf/baai/bge-m3`, 1,075 neurons per million tokens | about 200 ads a day at 500 tokens (headline and the first 1,500 characters), roughly 110 neurons; the first 2,200 ads take about a day of the cap |
 | Explanations for the top new candidates | `@cf/google/gemma-4-26b-a4b-it` | 30 to 80 neurons each; at most 12 a day |
 
-Vectors are cached per text hash, so an ad is embedded once per text. When the project cap or the
-account quota is reached, rules and cached embeddings still rank every ad, and the explanations
-wait for the next day. An explanation is kept only if its quotes are found in the ad or the CV,
-with the quote check the Worker already uses for `/api/answer`.
+Vectors are cached per text hash in `warehouse/raw/job_assistant/vectors.sqlite`, so an ad is
+embedded once per text. When the project cap or the account quota is reached, rules and cached
+embeddings still rank every ad, and the explanations wait for the next day. An explanation is kept
+only if every quote in it is found in the ad or the CV lines, the same rule as the Worker's quote
+check for `/api/answer`; otherwise it is marked unverified and not shown. The hourly run gets the
+token through the `workers-ai` input of `data-subject.yml`; without it the run uses rules and
+cached vectors only.
 
 ## Security of writes
 
@@ -191,3 +215,5 @@ describe this search, not matching in general.
 - 2026-10-23: plan, CV parser, profile schema and checks (`platform/job_assistant/`), tests.
 - 2026-10-23: hourly ad store, list export and delivery group. A local run read 2,263 current
   Data/IT ads in 41 seconds, 30 of them duplicates of another id.
+- 2026-10-23: matching, embeddings and checked explanations within the budget, and the public
+  match and text files.

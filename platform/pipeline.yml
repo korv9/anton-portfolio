@@ -512,4 +512,6 @@ subjects:
     raw: [job_assistant]
     steps:
       - ingest: python platform/job_assistant/ads.py
+      # The approved profile comes from the Worker; without one nothing is matched.
+      - export: python platform/job_assistant/rank.py
       - export: python platform/job_assistant/export.py

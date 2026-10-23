@@ -3,9 +3,9 @@
     python platform/job_assistant/export.py                  # writes frontend/public/data/job-assistant/
     python platform/job_assistant/export.py --check <root>   # the delivery check of the group
 
-ads.json holds every current ad and those removed in the last 30 days, without the ad text (the
-text of the ads under review is published with the matches), the cursor and the last week of hourly
-runs, which is the record of scheduled operation.
+ads.json holds every current ad and those removed in the last 30 days, without the ad text, the
+cursor and the last week of hourly runs, which is the record of scheduled operation. matches.json
+and texts.json come from export_matches.py.
 """
 from __future__ import annotations
 
@@ -19,6 +19,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from publish.job_content import instant  # noqa: E402
+import export_matches  # noqa: E402
 from ads import IT_FIELD, STREAM_URL, store_dir, write_atomic  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -90,8 +91,12 @@ def main() -> None:
     args = ap.parse_args()
     now = datetime.now(timezone.utc)
     if args.check:
-        found = problems(json.loads((args.check / "job-assistant/ads.json").read_text(encoding="utf-8")), now)
-        print("\n".join(found) or "job-assistant/ads.json: valid")
+        def read(name):
+            return json.loads((args.check / "job-assistant" / name).read_text(encoding="utf-8"))
+        data = read("ads.json")
+        found = problems(data, now) + export_matches.problems(read("matches.json"), read("texts.json"),
+                                                              {a["id"] for a in data["ads"]})
+        print("\n".join(found) or "job-assistant: valid")
         sys.exit(1 if found else 0)
     folder = store_dir()
     ads = json.loads((folder / "ads.json").read_text(encoding="utf-8"))
@@ -99,9 +104,14 @@ def main() -> None:
     runs_file = folder / "runs.jsonl"
     runs = [json.loads(line) for line in runs_file.read_text(encoding="utf-8").splitlines() if line.strip()]
     data = build(ads, state, runs, now)
-    found = problems(data, now)
+    store = folder / "matches.json"
+    matches, texts = export_matches.build(ads, json.loads(store.read_text(encoding="utf-8")) if store.exists()
+                                          else {"profile": None}, data["generated_at"])
+    found = problems(data, now) + export_matches.problems(matches, texts, {a["id"] for a in data["ads"]})
     if found:
         sys.exit("\n".join(found))
+    write_atomic(OUT / "matches.json", matches)
+    write_atomic(OUT / "texts.json", texts)
     write_atomic(OUT / "ads.json", data)
     print(f"{OUT / 'ads.json'}: {len(data['ads'])} ads, {data['counts']}")
 

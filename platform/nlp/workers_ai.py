@@ -76,11 +76,12 @@ def affordable(tokens: list[int], max_tokens: int, spent: float, cap: float = DA
     return int(np.searchsorted(total, budget, side="right"))
 
 
-def append_ledger(agent: str, tokens: int, neurons: float, ledger: Path = LEDGER) -> None:
+def append_ledger(agent: str, tokens: int, neurons: float, ledger: Path = LEDGER, model: str = MODEL,
+                  tokens_out: int = 0) -> None:
     ledger.parent.mkdir(parents=True, exist_ok=True)
     with ledger.open("a", encoding="utf-8") as out:
         out.write(json.dumps({"utc": datetime.now(timezone.utc).isoformat(timespec="seconds"), "agent": agent,
-                              "model": MODEL, "tokens_in": tokens, "tokens_out": 0,
+                              "model": model, "tokens_in": tokens, "tokens_out": tokens_out,
                               "neurons_est": round(neurons, 4)}) + "\n")
 
 
