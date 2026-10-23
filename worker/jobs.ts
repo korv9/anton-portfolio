@@ -45,10 +45,13 @@ const MEDIA: Record<string, number[]> = {
 const MAX_CV = 1_400_000
 const MAX_PROFILE = 512_000
 const AD_ID = /^[0-9A-Za-z_-]{1,40}$/
-// E-mail, phone, Swedish personnummer, street address, and a postcode before a town.
-// The same pattern as CONTACT in platform/job_assistant/cv.py.
-const CONTACT =
-  /@|\+\d[\d ]{6,}|\b0\d{2}[- ]?\d{3} ?\d{2} ?\d{2}\b|\b(?:19|20)?\d{6}[-+]?\d{4}\b|\p{L}*(?:gatan|vägen|gränd|torget|allén|stigen) \d+|\b\d{3} ?\d{2} [A-ZÅÄÖ][a-zåäö]+/u
+// E-mail, phone, Swedish personnummer or samordningsnummer (day + 60) with a valid date, street
+// address, and a postcode (100 00 to 999 99) before a town, with no word just before it unless the
+// word is an address label. Explicit lookarounds instead of \b, and [0-9] instead of \d, so this
+// and CONTACT in platform/job_assistant/cv.py agree; platform/tests/job_assistant/contact_cases.json
+// tests both.
+export const CONTACT =
+  /@|\+[0-9][0-9 ]{6,}|(?<![\p{L}0-9])0[0-9]{1,3}[- ]?[0-9]{2,3} ?[0-9]{2} ?[0-9]{2}(?![\p{L}0-9])|(?<![\p{L}0-9])(?:19|20)?[0-9]{2}(?:0[1-9]|1[0-2])(?:0[1-9]|[12][0-9]|3[01]|6[1-9]|[78][0-9]|9[01])[-+]?[0-9]{4}(?![\p{L}0-9])|\p{L}*(?:gatan|vägen|gränd|torget|allén|stigen) [0-9]+|(?:\p{L}*[Aa][Dd]{1,2}[Rr][Ee][Ss]{2}:? |(?<![\p{L}0-9] ))(?<![\p{L}0-9])[1-9][0-9]{2} ?[0-9]{2} [A-ZÅÄÖ][a-zåäö]+/u
 
 export const SQL = {
   upsert:
