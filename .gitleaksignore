@@ -134,3 +134,30 @@ e989d898705b37cd7868527954d79f70ea2ae2a4:frontend/public/data/parliament/workspa
 # Reviewed official JobSearch skill-taxonomy text; exact historical fingerprints only.
 596289c4d9eeb34c36732bfdfab4233a231529be:frontend/public/data/jobs/company-intelligence.json:atlassian-api-token:1
 596289c4d9eeb34c36732bfdfab4233a231529be:frontend/public/data/jobs/workspace-remaining.json:atlassian-api-token:1
+# Ask the platform verify shards: SHA-256 passage hashes keyed by ids whose slugs contain
+# words such as access, key or api; reviewed 2026-10-23, every value is a text hash.
+6a05e00be76885d04956e0c6ea71e7567726b069:frontend/public/data/workers-ai/platform/verify/1c.json:generic-api-key:1
+6a05e00be76885d04956e0c6ea71e7567726b069:frontend/public/data/workers-ai/platform/verify/2d.json:generic-api-key:1
+6a05e00be76885d04956e0c6ea71e7567726b069:frontend/public/data/workers-ai/platform/verify/32.json:generic-api-key:1
+6a05e00be76885d04956e0c6ea71e7567726b069:frontend/public/data/workers-ai/platform/verify/39.json:generic-api-key:1
+6a05e00be76885d04956e0c6ea71e7567726b069:frontend/public/data/workers-ai/platform/verify/3e.json:generic-api-key:1
+6a05e00be76885d04956e0c6ea71e7567726b069:frontend/public/data/workers-ai/platform/verify/42.json:generic-api-key:1
+6a05e00be76885d04956e0c6ea71e7567726b069:frontend/public/data/workers-ai/platform/verify/4f.json:generic-api-key:1
+6a05e00be76885d04956e0c6ea71e7567726b069:frontend/public/data/workers-ai/platform/verify/51.json:generic-api-key:1
+6a05e00be76885d04956e0c6ea71e7567726b069:frontend/public/data/workers-ai/platform/verify/53.json:generic-api-key:1
+6a05e00be76885d04956e0c6ea71e7567726b069:frontend/public/data/workers-ai/platform/verify/70.json:generic-api-key:1
+6a05e00be76885d04956e0c6ea71e7567726b069:frontend/public/data/workers-ai/platform/verify/81.json:generic-api-key:1
+6a05e00be76885d04956e0c6ea71e7567726b069:frontend/public/data/workers-ai/platform/verify/82.json:generic-api-key:1
+6a05e00be76885d04956e0c6ea71e7567726b069:frontend/public/data/workers-ai/platform/verify/87.json:generic-api-key:1
+6a05e00be76885d04956e0c6ea71e7567726b069:frontend/public/data/workers-ai/platform/verify/89.json:generic-api-key:1
+6a05e00be76885d04956e0c6ea71e7567726b069:frontend/public/data/workers-ai/platform/verify/92.json:generic-api-key:1
+6a05e00be76885d04956e0c6ea71e7567726b069:frontend/public/data/workers-ai/platform/verify/99.json:generic-api-key:1
+6a05e00be76885d04956e0c6ea71e7567726b069:frontend/public/data/workers-ai/platform/verify/ae.json:generic-api-key:1
+6a05e00be76885d04956e0c6ea71e7567726b069:frontend/public/data/workers-ai/platform/verify/b4.json:generic-api-key:1
+6a05e00be76885d04956e0c6ea71e7567726b069:frontend/public/data/workers-ai/platform/verify/bb.json:generic-api-key:1
+6a05e00be76885d04956e0c6ea71e7567726b069:frontend/public/data/workers-ai/platform/verify/bf.json:generic-api-key:1
+6a05e00be76885d04956e0c6ea71e7567726b069:frontend/public/data/workers-ai/platform/verify/c1.json:generic-api-key:1
+6a05e00be76885d04956e0c6ea71e7567726b069:frontend/public/data/workers-ai/platform/verify/c6.json:generic-api-key:1
+6a05e00be76885d04956e0c6ea71e7567726b069:frontend/public/data/workers-ai/platform/verify/d7.json:generic-api-key:1
+6a05e00be76885d04956e0c6ea71e7567726b069:frontend/public/data/workers-ai/platform/verify/f6.json:generic-api-key:1
+6a05e00be76885d04956e0c6ea71e7567726b069:frontend/public/data/workers-ai/platform/verify/ff.json:generic-api-key:1

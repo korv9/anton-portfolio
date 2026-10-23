@@ -111,7 +111,7 @@ Status values: `todo`, `doing`, `review`, `dev` (merged to dev), `main`, `blocke
 
 | Id | Title | Depends on | Owner files | Status | DoD beyond STD |
 | --- | --- | --- | --- | --- | --- |
-| P2.1 | H2 Ask the platform | P1.2 | `platform/nlp/workers_ai.py`, `platform/nlp/platform_docs_corpus.py`, `frontend/public/data/workers-ai/platform/`, the Worker route beside `/api/answer`, `configs/workers_ai/eval_questions_platform.yaml` | todo | At least 75 % of 20 eval answers verified; neurons per answer in `docs/workers-ai.md`. Answers quote verbatim with path and commit. The quota fallback is tested with a stubbed 503. A test fails if the corpus holds an ignored or private path. |
+| P2.1 | H2 Ask the platform | P1.2 | `platform/nlp/workers_ai.py`, `platform/nlp/platform_docs_corpus.py`, `frontend/public/data/workers-ai/platform/`, the Worker route beside `/api/answer`, `configs/workers_ai/eval_questions_platform.yaml` | review | At least 75 % of 20 eval answers verified; neurons per answer in `docs/workers-ai.md`. Answers quote verbatim with path and commit. The quota fallback is tested with a stubbed 503. A test fails if the corpus holds an ignored or private path. |
 | P2.2 | H5 academia against industry tech lag, plus H3's thesis lane | P1.5 | `refresh-diva.yml`, `platform/publish/diva_terms.py`, gold `mart_tech_term_adoption`, `jobs/tech-lag.json`, one post | todo | Terms counted in Swedish and English abstracts, coverage per year published. Bootstrap interval on each lag; only terms with at least 50 mentions in both corpora. |
 | P2.3 | Small cross-dataset posts: I-5, I-13, I-12, I-15 | P1.2 | one export, mart and post each; I-5 adds a mapping seed | todo | STD only. |
 

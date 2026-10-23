@@ -28,5 +28,6 @@ test('observatory addresses land on the meaning feed', () => {
 test('kept pages keep their addresses', () => {
   assert.equal(parseHash('#sweden').page, 'sweden')
   assert.equal(parseHash('#fraga-lagen').page, 'lawqa')
+  assert.equal(parseHash('#ask-platform').page, 'askplatform')
   assert.equal(parseHash('#symbolic-findings').page, 'symbolic')
 })
