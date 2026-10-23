@@ -38,3 +38,4 @@ jobs:
       store: job_assistant
       timeout-minutes: 30
       workers-ai: true
+      job-assist-token: true

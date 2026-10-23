@@ -512,6 +512,9 @@ subjects:
     raw: [job_assistant]
     steps:
       - ingest: python platform/job_assistant/ads.py
+      # A new CV upload becomes a draft; a draft the owner asked to approve is checked against
+      # its CV and stored as the next version (worker/jobs.ts holds the records).
+      - ingest: python platform/job_assistant/sync.py
       # Matches the ads with the approved profile from the Worker into the raw match store, which
       # dbt reads next; without a profile nothing is matched.
       - ingest: python platform/job_assistant/rank.py

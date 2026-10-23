@@ -35,6 +35,10 @@ on:
         description: Give the build a Workers AI token (the job assistant's embeddings and explanations)
         type: boolean
         default: false
+      job-assist-token:
+        description: Give the build the job assistant's owner token (its CV drafts and profile versions)
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -62,6 +66,8 @@ jobs:
       # Without them the job assistant ranks by rules and cached vectors only (platform/job_assistant/ai.py).
       CLOUDFLARE_API_TOKEN: ${{ inputs.workers-ai && secrets.CLOUDFLARE_AI_TOKEN || '' }}
       CLOUDFLARE_ACCOUNT_ID: ${{ inputs.workers-ai && vars.CLOUDFLARE_ACCOUNT_ID || '' }}
+      # The job assistant's owner token for its profile records (worker/jobs.ts); empty writes nothing.
+      JOB_ASSIST_TOKEN: ${{ inputs.job-assist-token && secrets.JOB_ASSIST_TOKEN || '' }}
       SUBJECTS: ${{ inputs.subjects }}
       STORE: ${{ inputs.store }}
     steps:

@@ -175,29 +175,49 @@ cached vectors only.
 
 ## Security of writes
 
-Reads are public. Every write route (status, note, label, profile correction, approval and CV
-upload) requires a Worker secret, `JOB_ASSIST_TOKEN`, sent as a bearer token. The Worker compares
-it in constant time, accepts writes only from the site's own origin or without an `Origin` header
-(the Actions run), and keeps the existing rate limit. A missing or wrong token gets 401 and
-changes nothing. There is no open write endpoint.
+Reads are public. Every write route requires a Worker secret, `JOB_ASSIST_TOKEN`, sent as a
+bearer token: status, note, label, profile draft, profile version and CV upload. The routes are in
+`worker/jobs.ts` under `/api/jobs/`. The Worker compares the token in constant time, as SHA-256
+digests, and refuses a write whose `Origin` header names another site. Writes without an `Origin`
+come from the Actions run. A missing or wrong token gets 401 and changes nothing. All job routes
+keep the existing rate limit of 20 requests a minute per visitor. There is no open write endpoint.
+
+| Route | Read | Write (token) |
+| --- | --- | --- |
+| `/api/jobs/profile` | draft, latest approved profile, list of versions | |
+| `/api/jobs/profile/draft` | | `PUT {profile, approval_requested, problems}`; schema v1, status draft, no contact details |
+| `/api/jobs/profile/versions` | | `POST` the next approved version only (the hourly run) |
+| `/api/jobs/cv`, `/api/jobs/cv/<sha256>` | list of uploads, the file | `POST` a PDF or DOCX up to 2 MB, checked by its first bytes |
+| `/api/jobs/reviews`, `/reviews/<ad id>` | every status and note | `PUT {status, note}` |
+| `/api/jobs/labels`, `/labels/<ad id>` | every label | `PUT {label, note, shown_class}` |
+
+D1 holds one table, `records(kind, key, value, updated_at)` (`worker/migrations/0001_job_assistant.sql`).
+The Worker cannot read a PDF, so it never approves a profile. The owner asks for approval. The next
+hourly run (`platform/job_assistant/sync.py`) checks the draft against the text of its own CV file
+and stores it as the next version, or writes the problems back to the draft. The same run parses
+a newly uploaded CV into a fresh draft and keeps the owner's wishes.
 
 A secret token was chosen over Cloudflare Access because one person writes, Access would need a
 Zero Trust application and policy for a few routes, and the token works the same for the browser
 and for the Actions run. The owner pastes the token once per device; the page keeps it in
-`localStorage` and never sends it to any other host.
+`localStorage` and sends it only to the site's own `/api/jobs/` routes.
 
 ## What the owner applies
 
-Nothing here is applied by the agent. When the storage pull request lands, the owner:
+Nothing here is applied by the agent. In this order:
 
-1. applies the Terraform in `infra/cloudflare` that adds the D1 database;
-2. puts its id in the `[[d1_databases]]` block of `wrangler.toml`;
-3. runs `npx wrangler secret put JOB_ASSIST_TOKEN` and sets the same value as the GitHub secret
-   `JOB_ASSIST_TOKEN`;
-4. sets the GitHub secret `CLOUDFLARE_AI_TOKEN`, a token limited to Workers AI, for the hourly
-   run.
+1. Run the Terraform workflow for `infra/cloudflare` from `main`, which adds
+   `cloudflare_d1_database.job_assistant`. The API token needs D1 Edit as well.
+2. Copy the output `job_assistant_d1_id` into the commented `[[d1_databases]]` block of
+   `wrangler.toml` and uncomment it.
+3. Run `npx wrangler d1 migrations apply job-assistant --remote`.
+4. Run `npx wrangler secret put JOB_ASSIST_TOKEN` with a long random value. Set the same value as
+   the secret `JOB_ASSIST_TOKEN` of the GitHub environment `anton-portfolio`.
+5. Set the secret `CLOUDFLARE_AI_TOKEN` (Workers AI Read and Edit only) in the same environment.
+6. Upload the CV on the review page, correct the draft, and ask for approval.
 
-The hourly workflow must live on `main`, so it goes in its own small pull request.
+Until step 4, `/api/jobs/*` answers 503 and the hourly run fetches ads but matches nothing. The
+hourly workflow reaches `main` with the next merge from `loop`.
 
 ## Monitoring
 
@@ -267,3 +287,5 @@ and misses from the owner's labels).
   match and text files.
 - 2026-10-23: dbt bronze, silver and gold models with contracts (66 tests pass on the local run of
   2,269 ads), and the export reads gold.
+- 2026-10-23: owner records in D1 behind token-protected Worker routes, the hourly CV and approval
+  sync, and the D1 Terraform.
