@@ -807,12 +807,6 @@
 .politik-long .bullet-track {
   background: var(--wash);
 }
-.politik-long .boxplot-track {
-  background-image: linear-gradient(var(--ink), var(--ink));
-}
-.politik-long .boxplot-track i {
-  background: var(--surface);
-}
 /* ---------- A debate as a chat sits in the middle of the page under its own heading ---------- */
 .politik-long .chat-section {
   display: grid;
@@ -1013,10 +1007,6 @@
 .politik-long .stacked li.bare .rank-value small {
   margin: 0;
   font-size: var(--small);
-}
-.politik-long .boxplot .bullet-key div:nth-child(3) dd {
-  font-size: var(--h3);
-  font-weight: var(--weight-heading);
 }
 
 /* ---------- The budget's own facts: one quiet line of four ---------- */
