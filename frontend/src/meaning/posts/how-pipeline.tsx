@@ -1,8 +1,8 @@
 /**
- * How it's made: every pipeline subject's last run, from the live run status
- * (status/ingestion.json, written by platform/pipeline.py on each scheduled run). A bar is the
- * last run's measured length, start to end; a subject past the freshness SLA the feed knows for
- * it (SUBJECTS in freshness.ts) is the focal colour.
+ * How it's made: every pipeline subject's last ingest, from the live ingest status
+ * (status/ingestion.json, written by platform/publish/ingest_status.py for each subject). A bar
+ * is the subject's ingest time, not the whole workflow; a failed ingest says so, and a subject
+ * past a freshness SLA the feed knows for it (SUBJECTS in freshness.ts) is the focal colour.
  * When the status cannot be reached the thumbnail leaves the feed, as Frame does for withdrawn
  * and expired data; an opened post stays and says the status is unavailable, so focus is kept.
  */
@@ -13,10 +13,9 @@ import { fmt, Svg } from './txt-kit'
 
 type Status = Record<string, Parameters<typeof lastRun>[0]>
 
-/** Subject -> a post domain with that subject, so freshness() can read its SLA. */
-const DOMAIN = Object.fromEntries(
-  Object.entries(SUBJECTS).map(([domain, [subject]]) => [subject, domain]),
-)
+/** Post domains per subject; a subject is late when any domain's SLA for it has lapsed. */
+const domainsOf = (subject: string) =>
+  Object.keys(SUBJECTS).filter((d) => SUBJECTS[d][0] === subject)
 
 function useStatus() {
   const [s, setS] = useState<Status | null | Error>(null)
@@ -40,21 +39,30 @@ function RunStrip() {
           .map(([subject, e]) => ({
             subject,
             run: lastRun(e),
-            late:
-              DOMAIN[subject] !== undefined &&
-              freshness(status, DOMAIN[subject]) === false,
+            failed: e.outcome !== 'success',
+            late: domainsOf(subject).some(
+              (d) => freshness(status, d) === false,
+            ),
           }))
           .filter((r) => r.run)
           .sort((a, b) => b.run!.seconds - a.run!.seconds)
         const max = Math.max(1, ...rows.map((r) => r.run!.seconds))
         const total = rows.reduce((n, r) => n + r.run!.seconds, 0)
+        if (!rows.length)
+          return (
+            <Svg w={600} h={24} label="No run recorded">
+              <text className="mean-txt-t" x={0} y={16}>
+                No run recorded
+              </text>
+            </Svg>
+          )
         const [W, row, left] = [600, 18, 120]
         const H = rows.length * row + 24
         return (
           <Svg
             w={W}
             h={H}
-            label={`How long the last run of each of ${rows.length} pipeline subjects took, ${fmt(total / 60)} minutes summed`}
+            label={`Ingest time of the last run of each of ${rows.length} pipeline subjects, ${fmt(total / 60)} minutes summed`}
           >
             {rows.map((r, i) => {
               const w = ((W - left - 110) * r.run!.seconds) / max
@@ -82,13 +90,14 @@ function RunStrip() {
                     x={left + w + 6}
                     y={y + row / 2 + 3}
                   >
-                    {fmt(r.run!.seconds / 60)} min{r.late ? ', overdue' : ''}
+                    {fmt(r.run!.seconds / 60)} min{r.failed ? ', failed' : ''}
+                    {r.late ? ', overdue' : ''}
                   </text>
                 </g>
               )
             })}
             <text className="mean-txt-t" x={left} y={H - 6}>
-              {fmt(total / 60)} min summed over the last run of each subject
+              {fmt(total / 60)} min of subject ingest time, summed
             </text>
           </Svg>
         )
@@ -103,7 +112,7 @@ export const posts: Post[] = [
     domain: 'platform',
     sources: ['status/ingestion.json'],
     size: 'wide',
-    label: 'How it is made: the last run of each pipeline subject',
+    label: 'How it is made: ingest time of each pipeline subject',
     render: () => <RunStrip />,
   },
 ]

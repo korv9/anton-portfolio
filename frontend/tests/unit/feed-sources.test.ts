@@ -52,8 +52,11 @@ function declared(text: string) {
     }))
 }
 
-/** Live R2 objects outside the release catalogue, as LIVE in feed_provenance.py. */
-const LIVE = new Set(['status/ingestion.json'])
+/** Live R2 objects outside the release catalogue, as LIVE in feed_provenance.py, and the post
+ * files that read each one through loadStatus() in freshness.ts. */
+const LIVE: Record<string, string[]> = {
+  'status/ingestion.json': ['how-pipeline.tsx'],
+}
 const catalog = new Set(
   (
     JSON.parse(readFileSync(`${DATA}/catalog.json`, 'utf8')) as {
@@ -75,7 +78,7 @@ test('every feed post declares the data it reads, and only published paths', () 
       assert.ok(paths.length, `${f}: ${p.id} declares no paths`)
       for (const path of paths) {
         assert.ok(
-          catalog.has(path) || LIVE.has(path) || existsSync(`${DATA}/${path}`),
+          catalog.has(path) || path in LIVE || existsSync(`${DATA}/${path}`),
           `${f}: ${p.id} declares an unknown path ${path}`,
         )
         all.add(path)
@@ -86,7 +89,7 @@ test('every feed post declares the data it reads, and only published paths', () 
       assert.ok(all.has(path), `${f}: reads ${path} but no post declares it`)
     for (const path of all)
       assert.ok(
-        used.has(path) || (LIVE.has(path) && text.includes('loadStatus')),
+        used.has(path) || LIVE[path]?.includes(f),
         `${f}: declares ${path} but never reads it`,
       )
   }

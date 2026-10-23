@@ -37,8 +37,8 @@ GRAPH = PUBLIC / "architecture/graph.json"
 CHECKS = PUBLIC / "quality/checks.json"
 OUT = PUBLIC / "architecture/feed-provenance.json"
 SOURCES = re.compile(r"sources:\s*\[([^\]]*)\]")
-# Live objects on R2 that no release catalogues: the run status each pipeline run rewrites.
-LIVE = {"status/ingestion.json": "platform/pipeline.py"}
+# Live objects on R2 that no release catalogues: the ingest status each subject's run rewrites.
+LIVE = {"status/ingestion.json": "platform/publish/ingest_status.py"}
 
 
 def post_sources(root: Path = POSTS) -> list[str]:

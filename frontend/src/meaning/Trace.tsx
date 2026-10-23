@@ -147,8 +147,9 @@ type Fresh = ReturnType<typeof useFresh>
 
 /**
  * The "Source" toggle of an opened card and the panel it turns over the chart. The card holds
- * `shown`, so it can make the chart beneath inert while the panel covers it. The cost row shows
- * only what is measured: a recorded Actions run, priced by GitHub's billing rule. Workers AI
+ * `shown`, so it can make the chart beneath inert while the panel covers it. The ingest and cost
+ * rows show only what is recorded: the subject's ingest time and its Actions run (a GitHub URL),
+ * free under GitHub's billing rule, with no money figure. Workers AI
  * neurons and R2 storage are not recorded per chart (every feed file is served as JSON from the
  * site, and the neuron ledger stays local), so they are left out.
  */
@@ -196,15 +197,16 @@ export function Trace({
                   : `${state}; the time of the last success is not recorded`}
               </Row>
             )}
-            {fresh?.run?.url && (
+            {fresh?.run?.url?.startsWith('https://github.com/') && (
               <>
-                <Row term="Last run">
-                  Took {duration(fresh.run.seconds)} on GitHub Actions (
-                  <a href={fresh.run.url}>log</a>)
+                <Row term="Ingest">
+                  Ingest took {duration(fresh.run.seconds)} (
+                  <a href={fresh.run.url}>workflow run log</a>)
                 </Row>
                 <Row term="Cost">
-                  0 kr: standard Actions runners are free on a public repository
-                  (<a href={ACTIONS_BILLING}>GitHub billing</a>)
+                  <a href={ACTIONS_BILLING}>
+                    Free: public repository, standard runner
+                  </a>
                 </Row>
               </>
             )}
