@@ -51,7 +51,8 @@ def trial(div: ET.Element) -> tuple[dict | None, str]:
     for node in div.iter("interp"):
         interps.setdefault(node.get("type"), {}).setdefault(node.get("inst"), set()).add(node.get("value"))
     charges = [j for j in div.iter("join") if j.get("result") == "criminalCharge"]
-    defendants = [p for p in div.iter("persName") if p.get("type") == "defendantName"]
+    # Distinct ids: one defendant may be named more than once in the account.
+    defendants = {p.get("id") for p in div.iter("persName") if p.get("type") == "defendantName"}
     offences = interps.get("offenceCategory", {})
     verdicts = interps.get("verdictCategory", {})
     if len(charges) != 1 or len(defendants) != 1:

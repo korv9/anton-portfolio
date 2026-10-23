@@ -9,6 +9,7 @@
       "required": ["preregistration", "source", "model", "prompt_sha256", "sample", "bootstrap", "amendments"],
       "properties": {
         "source": {"type": "object", "required": ["doi", "licence", "attribution"]},
+        "sample": {"type": "object", "required": ["trial_ids_sha256"]},
         "amendments": {"type": "array"}
       }
     },
@@ -26,7 +27,7 @@
             "required": ["gemma", "keyword", "majority"],
             "additionalProperties": {
               "type": "object",
-              "required": ["accuracy", "accuracy_ci95", "macro_f1"],
+              "required": ["accuracy", "accuracy_ci95", "macro_f1", "macro_f1_ci95"],
               "properties": {
                 "accuracy": {"type": "number", "minimum": 0, "maximum": 1},
                 "macro_f1": {"type": "number", "minimum": 0, "maximum": 1}

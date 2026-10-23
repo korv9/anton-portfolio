@@ -26,7 +26,10 @@ https://www.oldbaileyonline.org
 Deposit: https://doi.org/10.15131/shef.data.4775434.v2 (University of Sheffield ORDA)
 Licence: Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0)
 https://creativecommons.org/licenses/by-nc/4.0/
-Stored unchanged, as downloaded, for non-commercial research. No changes were made to the zip.
+
+This work builds on Old Bailey Online, licensed under a Creative Commons
+Attribution-NonCommercial 4.0 International License (www.oldbaileyonline.org).
+The zip is stored unchanged, as downloaded.
 """
 
 

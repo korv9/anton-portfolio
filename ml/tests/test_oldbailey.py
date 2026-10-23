@@ -2,10 +2,11 @@
 import xml.etree.ElementTree as ET
 
 import pandas as pd
+import pytest
 
-from ml.oldbailey.extract import parse
+from ml.oldbailey.extract import answered, parse
 from ml.oldbailey.rules import keyword
-from ml.oldbailey.score import field_scores
+from ml.oldbailey.score import build, field_scores
 from ml.oldbailey.trials import model_text, trial
 
 TRIAL = """<div1 type="trialAccount" id="t17500117-1">
@@ -57,3 +58,23 @@ def test_paired_scores():
     assert scores["n"] == 4
     assert scores["methods"]["gemma"]["accuracy"] == 1.0 and scores["methods"]["keyword"]["accuracy"] == 0.5
     assert scores["gemma_minus_keyword"]["accuracy"] == 0.5
+
+
+def test_macro_f1_interval():
+    gold = pd.Series(["a", "a", "b", "b"])
+    scores = field_scores(gold, {"gemma": pd.Series(["a", "a", "b", "b"])})["methods"]["gemma"]
+    assert scores["macro_f1"] == 1.0 and scores["macro_f1_ci95"] == [1.0, 1.0]
+
+
+def test_build_refuses_partial_answers():
+    trials = pd.DataFrame({"trial_id": ["t1", "t2"], "split": "sample"})
+    gemma = pd.DataFrame({"offence": ["theft"]}, index=pd.Index(["t1"], name="trial_id"))
+    with pytest.raises(SystemExit, match="1 sampled trials have no gemma answer"):
+        build(trials, gemma, {})
+
+
+def test_resume_drops_cut_off_line(tmp_path):
+    path = tmp_path / "gemma-sample.jsonl"
+    path.write_text('{"trial_id": "t1"}\n{"trial_id": "t2", "off', encoding="utf-8")
+    assert answered(path) == {"t1"}
+    assert path.read_text(encoding="utf-8") == '{"trial_id": "t1"}\n'

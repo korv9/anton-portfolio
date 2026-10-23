@@ -37,16 +37,20 @@ def field_scores(gold: pd.Series, predicted: dict[str, pd.Series], rng_seed: int
     scored = gold.notna()
     gold = gold[scored].astype(str)
     hits = {m: (p[scored].fillna("invalid").astype(str) == gold).to_numpy() for m, p in predicted.items()}
-    labels = sorted(gold.unique())
+    labels, truth = sorted(gold.unique()), gold.to_numpy()
     rng = np.random.default_rng(rng_seed)
     draws = rng.integers(0, len(gold), size=(ROUNDS, len(gold)))
     out = {"n": int(len(gold)), "methods": {}}
     for method, hit in hits.items():
-        guess = predicted[method][scored].fillna("invalid").astype(str)
+        guess = predicted[method][scored].fillna("invalid").astype(str).to_numpy()
+        # A resample can miss a rare class; each draw averages over the classes it contains.
+        f1 = [f1_score(truth[d], guess[d], labels=np.unique(truth[d]), average="macro", zero_division=0)
+              for d in draws]
         out["methods"][method] = {
             "accuracy": round(float(hit.mean()), 4),
             "accuracy_ci95": interval(hit[draws].mean(axis=1)),
             "macro_f1": round(float(f1_score(gold, guess, labels=labels, average="macro", zero_division=0)), 4),
+            "macro_f1_ci95": interval(np.asarray(f1)),
         }
     if {"gemma", "keyword"} <= hits.keys():
         difference = hits["gemma"].astype(float) - hits["keyword"]
@@ -64,7 +68,7 @@ def confusion(gold: pd.Series, guess: pd.Series) -> dict:
 
 def gemma_answers(path: Path) -> pd.DataFrame:
     rows = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
-    frame = pd.DataFrame([{"trial_id": r["trial_id"], **extract.parse(r["raw"])} for r in rows])
+    frame = pd.DataFrame([{k: r[k] for k in ("trial_id", *FIELDS)} for r in rows])
     frame.attrs["usage"] = {k: round(float(sum(r[k] for r in rows)), 1) for k in ("tokens_in", "tokens_out", "neurons")}
     return frame.set_index("trial_id")
 
@@ -101,7 +105,8 @@ def build(trials: pd.DataFrame, gemma: pd.DataFrame, counts: dict) -> dict:
                                       "Hertfordshire, The Open University), www.oldbaileyonline.org"},
             "model": extract.MODEL,
             "prompt_sha256": hashlib.sha256(extract.SYSTEM.encode()).hexdigest(),
-            "sample": {"per_period": 500, "seed": 20261022, "periods": sorted(sample["period"].unique())},
+            "sample": {"per_period": 500, "seed": 20261022, "periods": sorted(sample["period"].unique()),
+                       "trial_ids_sha256": hashlib.sha256("\n".join(sorted(sample.index)).encode()).hexdigest()},
             "bootstrap": {"rounds": ROUNDS, "seed": SEED},
             "usage": gemma.attrs.get("usage"),
             "amendments": [],
