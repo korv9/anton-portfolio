@@ -1,14 +1,8 @@
-/** The Workers AI evaluation and the size of the symbolic corpus. */
+/** The Workers AI evaluation: quote check and retrieval recall per model setup. */
 import { Frame, OTHER, PALETTE, useData, type Post } from '../kit'
 import { linearScale } from '../../charts/scales'
-import { Kpis, Svg, XGrid, fmt, pct } from './txt-kit'
+import { Svg, XGrid, heading, pct, usable } from './txt-kit'
 
-type SymSummary = {
-  document_count: number
-  occurrence_count: number
-  symbol_count: number
-  cluster_count: number
-}
 type Setup = {
   model: string
   setting: string
@@ -18,7 +12,7 @@ type Setup = {
   k: number
 }
 type Eval = { compared: Setup[] }
-const SYM = 'symbolic/summary.json'
+const EVAL = 'workers-ai/eval.json'
 /** '@cf/google/gemma-4-26b-a4b-it' → 'gemma-4-26b'. */
 const short = (m: string) =>
   m
@@ -29,7 +23,7 @@ const best = (rows: Setup[]) =>
   [...rows].sort((a, b) => b.verified_share - a.verified_share)[0]
 
 function Gauges() {
-  const data = useData<Eval>('workers-ai/eval.json')
+  const data = usable(useData<Eval>(EVAL), EVAL, (e) => e.compared.length)
   return (
     <Frame data={data}>
       {({ compared }) => {
@@ -116,44 +110,17 @@ function Gauges() {
     </Frame>
   )
 }
-function SymbolCounts() {
-  const data = useData<SymSummary>(SYM)
-  return (
-    <Frame data={data}>
-      {(d) => (
-        <Kpis
-          items={[
-            [fmt(d.occurrence_count), 'symbol occurrences'],
-            [fmt(d.symbol_count), 'symbols'],
-            [fmt(d.document_count), 'books'],
-            [fmt(d.cluster_count), 'clusters'],
-          ]}
-        />
-      )}
-    </Frame>
-  )
-}
-
 const d = 'ml'
 export const posts: Post[] = [
   {
     id: 'txt-ml-gauges',
     domain: d,
     sources: ['workers-ai/eval.json'],
-    title: ({ compared }: Eval) => {
+    title: heading(({ compared }: Eval) => {
       const b = best(compared)
-      return `${short(b.model)} (${b.setting}) passed the quote check most often: ${pct(b.verified_share)} of ${b.questions} answers`
-    },
+      return `${short(b.model)} (${b.setting}) had the highest quote-check share in this run: ${pct(b.verified_share)} (${b.questions} questions)`
+    }),
     note: 'Law questions answered by each Workers AI setup: share whose quotes match the source, and retrieval recall',
     render: () => <Gauges />,
-  },
-  {
-    id: 'txt-ml-symbol-counts',
-    domain: d,
-    sources: ['symbolic/summary.json'],
-    title: (s: SymSummary) =>
-      `${fmt(s.occurrence_count)} occurrences of ${s.symbol_count} symbols in ${s.document_count} books`,
-    note: 'The myth and folklore corpus behind the symbolic atlas',
-    render: () => <SymbolCounts />,
   },
 ]

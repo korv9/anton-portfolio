@@ -1,7 +1,7 @@
-/** Symbolic atlas, concept layer and the Workers AI eval: radial bars, treemap, parallel axes, gauges. */
+/** The concept layer: how similar the passages matched across corpora are, against chance. */
 import { Frame, OTHER, PALETTE, useData, type Post } from '../kit'
 import { linearScale } from '../../charts/scales'
-import { Legend, Svg, XGrid, palette, uniq } from './txt-kit'
+import { Svg, XGrid, heading, uniq, usable } from './txt-kit'
 
 type Pair = {
   concept_id: string
@@ -10,12 +10,7 @@ type Pair = {
   similarity: number
   baseline_p95: number
 }
-type Relation = {
-  concept_a: string
-  concept_b: string
-  relation_type: string
-  strength: number
-}
+const PAIRS = 'concepts/pairs.json'
 const d = 'ml'
 
 const median = (xs: number[]) => {
@@ -42,7 +37,7 @@ function byPair(rows: Pair[]) {
 }
 
 function PairDots() {
-  const data = useData<Pair[]>('concepts/pairs.json')
+  const data = usable(useData<Pair[]>(PAIRS), PAIRS, (r) => byPair(r).length)
   return (
     <Frame data={data}>
       {(rows) => {
@@ -113,86 +108,19 @@ function PairDots() {
     </Frame>
   )
 }
-function ConceptWheel() {
-  const data = useData<{ concepts: Relation[] }>('concepts/relations.json')
-  return (
-    <Frame data={data}>
-      {({ concepts: rel }) => {
-        const nodes = uniq(
-          rel.flatMap((r) => [r.concept_a, r.concept_b]),
-        ).sort()
-        const types = palette(uniq(rel.map((r) => r.relation_type)))
-        const pos = (n: string, rad = 140) => {
-          const a = (nodes.indexOf(n) / nodes.length) * 2 * Math.PI
-          return [200 + rad * Math.sin(a), 200 - rad * Math.cos(a), a] as const
-        }
-        return (
-          <>
-            <Svg
-              w={400}
-              h={400}
-              label="Relations between concepts around a wheel"
-            >
-              {rel.map((r, i) => {
-                const [x0, y0] = pos(r.concept_a)
-                const [x1, y1] = pos(r.concept_b)
-                return (
-                  <path
-                    key={i}
-                    d={`M${x0},${y0}Q200,200 ${x1},${y1}`}
-                    fill="none"
-                    stroke={types.get(r.relation_type)}
-                    strokeWidth={0.5 + 4 * r.strength}
-                    strokeOpacity={0.6}
-                  >
-                    <title>{`${r.concept_a} · ${r.concept_b}: ${r.strength}`}</title>
-                  </path>
-                )
-              })}
-              {nodes.map((n) => {
-                const [x, y, a] = pos(n)
-                const [tx, ty] = pos(n, 150)
-                return (
-                  <g key={n}>
-                    <circle cx={x} cy={y} r={4} fill="var(--ink)" />
-                    <text
-                      className="mean-txt-t"
-                      x={tx}
-                      y={ty + 3}
-                      textAnchor={a > Math.PI ? 'end' : 'start'}
-                    >
-                      {n}
-                    </text>
-                  </g>
-                )
-              })}
-            </Svg>
-            <Legend items={[...types]} />
-          </>
-        )
-      }}
-    </Frame>
-  )
-}
-
 export const posts: Post[] = [
   {
     id: 'txt-ml-pair-dots',
     domain: d,
     sources: ['concepts/pairs.json'],
-    title: (rows: Pair[]) => {
+    title: heading((rows: Pair[]) => {
+      if (!rows.length) return ''
       const above = rows.filter((r) => r.similarity > r.baseline_p95).length
       return above === rows.length
         ? `All ${rows.length} matched passage pairs are more similar than 95% of random pairs`
         : `${above} of ${rows.length} matched passage pairs are more similar than 95% of random pairs`
-    },
+    }),
     note: 'Cosine similarity of passages matched per concept across two corpora: median, range and the 95th percentile of random pairs',
     render: () => <PairDots />,
-  },
-  {
-    id: 'txt-ml-concept-wheel',
-    domain: d,
-    sources: ['concepts/relations.json'],
-    render: () => <ConceptWheel />,
   },
 ]

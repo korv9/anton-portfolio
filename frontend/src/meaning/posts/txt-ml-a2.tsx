@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { Frame, OTHER, PALETTE, Slicer, useData, type Post } from '../kit'
 import { linearScale } from '../../charts/scales'
 import { niceDomain, ticksBetween } from '../axes'
-import { Bars, Svg, XGrid, fmt, uniq } from './txt-kit'
+import { Bars, Svg, XGrid, fmt, heading, uniq, usable } from './txt-kit'
 
 type Work = {
   document_id: string
@@ -32,6 +32,7 @@ type Tension = {
   q3: number
 }
 const TENSIONS = 'philosophy/tensions.json'
+const SUMMARY = 'philosophy/summary.json'
 const DEFAULT = 'freedom_control'
 const year = (y: number) => (y < 0 ? `${-y} BC` : String(y))
 /** A work's short name from its id, e.g. 'kant-groundwork' → 'Kant'. */
@@ -44,7 +45,11 @@ const surname = (author: string) => author.split(' ').at(-1)!
 const byWords = (works: Work[]) => [...works].sort((a, b) => b.words - a.words)
 
 function WorksBubble() {
-  const data = useData<PhilSummary>('philosophy/summary.json')
+  const data = usable(
+    useData<PhilSummary>(SUMMARY),
+    SUMMARY,
+    (d) => d.works.length,
+  )
   return (
     <Frame data={data}>
       {({ works }) => (
@@ -68,8 +73,17 @@ const medians = (rows: Tension[], id: string) =>
   rows.filter((t) => t.tension_id === id).sort((a, b) => b.median - a.median)
 
 function TensionBoxes() {
-  const data = useData<{ distribution: Tension[] }>(TENSIONS)
-  const sum = useData<PhilSummary>('philosophy/summary.json')
+  const data = usable(
+    useData<{ distribution: Tension[] }>(TENSIONS),
+    TENSIONS,
+    (d) => d.distribution.length,
+  )
+  // Without pole names the chart cannot say which end is which.
+  const sum = usable(
+    useData<PhilSummary>(SUMMARY),
+    SUMMARY,
+    (d) => d.tensions.length,
+  )
   const [tid, setTid] = useState(DEFAULT)
   return (
     <Frame data={data}>
@@ -80,6 +94,10 @@ function TensionBoxes() {
             const id = ids.includes(tid) ? tid : ids[0]
             const poles = tensions.find((t) => t.tension_id === id)
             const rows = medians(distribution, id)
+            if (!poles || !rows.length)
+              return (
+                <p className="mean-failed">{`No poles or positions for ${id}`}</p>
+              )
             // Symmetric around zero, the point between the two poles.
             const reach = Math.max(...rows.flatMap((t) => [-t.q1, t.q3]))
             const [, hi] = niceDomain(0, reach, 2)
@@ -99,10 +117,11 @@ function TensionBoxes() {
                   value={id}
                   onChange={setTid}
                 />
+                <p className="mean-cap">{poles.label_en}</p>
                 <Svg
                   w={W}
                   h={H}
-                  label={`Where each work's passages sit between ${poles?.pole_b} and ${poles?.pole_a}`}
+                  label={`Where each work's passages sit between ${poles.pole_b} and ${poles.pole_a}`}
                 >
                   <XGrid
                     x={x}
@@ -112,7 +131,7 @@ function TensionBoxes() {
                     format={(t) => (t ? t.toFixed(2) : '0')}
                   />
                   <text className="mean-txt-v" x={m} y={11}>
-                    {`← ${poles?.pole_b ?? ''}`}
+                    {`← ${poles.pole_b}`}
                   </text>
                   <text
                     className="mean-txt-v"
@@ -120,7 +139,7 @@ function TensionBoxes() {
                     y={11}
                     textAnchor="end"
                   >
-                    {`${poles?.pole_a ?? ''} →`}
+                    {`${poles.pole_a} →`}
                   </text>
                   {rows.map((t, i) => (
                     <g key={t.document_id}>
@@ -166,10 +185,10 @@ export const posts: Post[] = [
     id: 'txt-ml-works-bubble',
     domain: d,
     sources: ['philosophy/summary.json'],
-    title: ({ works }: PhilSummary) => {
+    title: heading(({ works }: PhilSummary) => {
       const [w] = byWords(works)
       return `${w.title} is the longest of the ${works.length} works, at ${fmt(w.words)} words`
-    },
+    }),
     note: 'Words per work in the philosophy corpus, English editions from Project Gutenberg',
     render: () => <WorksBubble />,
   },
@@ -178,11 +197,14 @@ export const posts: Post[] = [
     domain: d,
     sources: ['philosophy/tensions.json', 'philosophy/summary.json'],
     size: 'tall',
-    title: ({ distribution }: { distribution: Tension[] }) => {
-      const rows = medians(distribution, DEFAULT)
-      const [a] = DEFAULT.split('_')
-      return `${who(rows[0].document_id)} leans most towards ${a}, ${who(rows.at(-1)!.document_id)} least`
-    },
+    // A topic, not a finding: it stays true whichever tension the slicer shows.
+    title: heading(({ distribution }: { distribution: Tension[] }) => {
+      const works = uniq(distribution.map((t) => t.document_id)).length
+      const tensions = uniq(distribution.map((t) => t.tension_id)).length
+      return works && tensions
+        ? `Where ${works} works sit between the two poles of ${tensions} tensions`
+        : ''
+    }),
     note: "Median position of each work's passages between two anchor sentences; lines span the middle half",
     render: () => <TensionBoxes />,
   },

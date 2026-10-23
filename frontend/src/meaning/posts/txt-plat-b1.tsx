@@ -1,9 +1,9 @@
-/** Swedish statutes, idea lineage, compliance review and delivery: streams, units, funnels, bubbles. */
+/** Swedish statutes: how many were issued per year, and how many are repealed. */
 import { Frame, OTHER, PALETTE, shade, useData, type Post } from '../kit'
-import { EndLabels, XAxis, YAxis } from '../axes'
+import { EndLabels, XAxis, YAxis, ticksBetween } from '../axes'
 import { Stacked } from '../../charts/Compare'
 import { linearScale, niceTicks } from '../../charts/scales'
-import { Legend, Svg, fmt, line, palette, sum, ticksIn, uniq } from './txt-kit'
+import { Svg, fmt, heading, line, sum, usable } from './txt-kit'
 
 type Sfs = {
   kinds: { kind: string; documents: number; repealed: number }[]
@@ -11,16 +11,6 @@ type Sfs = {
   lengths: { kind: string; up_to: number | null; passages: number }[]
   largest: { sfs: string; title: string; sections: number }[]
   tests: Record<string, number>
-}
-type Lineage = {
-  events: {
-    id: string
-    title: string
-    type: string
-    importance: string
-    occurred_on?: string
-    created_at: string
-  }[]
 }
 const SFS = 'sfs/overview.json'
 const d = 'platform'
@@ -34,14 +24,15 @@ const KINDS: [string, string, string][] = [
 const total = (r: Sfs['years'][number]) => sum(KINDS.map(([k]) => r[k] ?? 0))
 
 function SfsStream() {
-  const data = useData<Sfs>(SFS)
+  const data = usable(useData<Sfs>(SFS), SFS, (s) => s.years.length > 1)
   return (
     <Frame data={data}>
       {({ years }) => {
         const [W, H, l, r, top, bottom] = [600, 220, 34, 84, 10, 18]
         const y0 = years[0].year
         const y1 = years.at(-1)!.year
-        // Every year on the axis; a year with no statute in the data counts as zero.
+        // Every year on the axis. The file counts statutes by the year they were issued and
+        // lists only years with at least one, so a year it leaves out had none in the collection.
         const at = new Map(years.map((row) => [row.year, row]))
         const all = Array.from({ length: y1 - y0 + 1 }, (_, i) =>
           at.get(y0 + i),
@@ -66,7 +57,7 @@ function SfsStream() {
             <XAxis
               x={x}
               y={H - 4}
-              ticks={ticksIn([y0, y1], 6).map((t) => ({
+              ticks={ticksBetween(y0, y1, 6).map((t) => ({
                 value: t,
                 label: String(t),
               }))}
@@ -103,7 +94,7 @@ function SfsStream() {
 }
 /** In force and repealed per kind, as 100 % rows with the counts written. */
 function SfsUnits() {
-  const data = useData<Sfs>(SFS)
+  const data = usable(useData<Sfs>(SFS), SFS, (s) => s.kinds.length)
   return (
     <Frame data={data}>
       {({ kinds }) => (
@@ -129,68 +120,15 @@ function SfsUnits() {
     </Frame>
   )
 }
-function LineageUnits() {
-  const data = useData<Lineage>('idea-lineage/events.json')
-  return (
-    <Frame data={data}>
-      {({ events }) => {
-        const day = (e: Lineage['events'][number]) =>
-          e.occurred_on ?? e.created_at.slice(0, 10)
-        const days = uniq(events.map(day)).sort()
-        const types = palette(uniq(events.map((e) => e.type)))
-        const cw = 300 / days.length
-        const stack = new Map<string, number>()
-        return (
-          <>
-            <Svg w={300} h={300} label="Idea lineage events per day, by type">
-              {days.map((dy, i) => (
-                <text
-                  key={dy}
-                  className="mean-txt-t"
-                  x={(i + 0.5) * cw}
-                  y={296}
-                  textAnchor="middle"
-                >
-                  {dy}
-                </text>
-              ))}
-              {events.map((e) => {
-                const i = days.indexOf(day(e))
-                const k = stack.get(day(e)) ?? 0
-                stack.set(day(e), k + 1)
-                const big = e.importance === 'major'
-                return (
-                  <rect
-                    key={e.id}
-                    x={(i + 0.5) * cw - (big ? 22 : 16)}
-                    y={270 - k * 28 - (big ? 26 : 20)}
-                    width={big ? 44 : 32}
-                    height={big ? 26 : 20}
-                    rx={6}
-                    fill={types.get(e.type)}
-                  >
-                    <title>{e.title}</title>
-                  </rect>
-                )
-              })}
-            </Svg>
-            <Legend items={[...types]} />
-          </>
-        )
-      }}
-    </Frame>
-  )
-}
-
 export const posts: Post[] = [
   {
     id: 'txt-plat-sfs-stream',
     domain: d,
     sources: ['sfs/overview.json'],
-    title: ({ years }: Sfs) => {
+    title: heading(({ years }: Sfs) => {
       const peak = [...years].sort((a, b) => total(b) - total(a))[0]
       return `Statutes in the collection peak in ${peak.year}, with ${fmt(total(peak))} issued that year`
-    },
+    }),
     note: "Swedish statutes (SFS) in Riksdagen's open data by year issued, including those since repealed",
     size: 'wide',
     render: () => <SfsStream />,
@@ -199,19 +137,15 @@ export const posts: Post[] = [
     id: 'txt-plat-sfs-units',
     domain: d,
     sources: ['sfs/overview.json'],
-    title: ({ kinds }: Sfs) => {
+    title: heading(({ kinds }: Sfs) => {
       const n = sum(kinds.map((k) => k.documents))
       const gone = sum(kinds.map((k) => k.repealed))
-      return `${Math.round((gone / n) * 100)}% of the ${fmt(n)} statutes in the collection are repealed`
-    },
+      return n
+        ? `${Math.round((gone / n) * 100)}% of the ${fmt(n)} statutes in the collection are repealed`
+        : ''
+    }),
     note: "Swedish statutes (SFS) in Riksdagen's open data, by kind; statutes still in force at the row end",
     size: 'tall',
     render: () => <SfsUnits />,
-  },
-  {
-    id: 'txt-plat-lineage-units',
-    domain: d,
-    sources: ['idea-lineage/events.json'],
-    render: () => <LineageUnits />,
   },
 ]

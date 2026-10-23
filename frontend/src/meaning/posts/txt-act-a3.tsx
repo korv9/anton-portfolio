@@ -1,20 +1,10 @@
-/** AI Act articles, chapters and dates: bars, treemap, waffle, steps, timeline and counts. */
+/** AI Act milestones on one time line, from the proposal to the last deadline. */
 import { Frame, OTHER, PALETTE, useData, type Post } from '../kit'
 import { linearScale } from '../../charts/scales'
-import { Kpi, Svg, fmt, sum } from './txt-kit'
+import { Svg, day, heading, usable } from './txt-kit'
 
-type Article = {
-  article_number: string
-  article_sort: number
-  chapter: string
-  char_count: number
-  change_type: string
-  applies_from: string | null
-  refers_to: string[]
-  actors: string[]
-}
 type Milestone = { milestone_id: string; date: string; title_en: string }
-const ARTICLES = 'ai-act/articles.json'
+const TIMELINE = 'ai-act/timeline.json'
 const year = (d: string) => Date.parse(`${d.slice(0, 4)}-01-01`)
 const d = 'ai-act'
 /** The few milestones named on the chart; the rest are dots with a tooltip. */
@@ -26,24 +16,25 @@ const SHORT: Record<string, string> = {
   'high-risk-annex-iii': 'High-risk rules',
   'large-scale-it-deadline': 'Last deadline',
 }
-const day = (d: string) =>
-  new Date(d).toLocaleDateString('en-GB', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  })
-/** The first milestone after today, or none once all have passed. */
-const next = (rows: Milestone[], now = new Date().toISOString().slice(0, 10)) =>
+const today = () => new Date().toISOString().slice(0, 10)
+const sorted = (rows: Milestone[]) =>
   [...rows]
+    .filter((m) => !Number.isNaN(Date.parse(m.date)))
     .sort((a, b) => a.date.localeCompare(b.date))
-    .find((m) => m.date > now)
+/** The first milestone after today, or none once all have passed. */
+const next = (rows: Milestone[], now = today()) =>
+  sorted(rows).find((m) => m.date > now)
 
 function Timeline() {
-  const data = useData<Milestone[]>('ai-act/timeline.json')
+  const data = usable(
+    useData<Milestone[]>(TIMELINE),
+    TIMELINE,
+    (r) => sorted(r).length,
+  )
   return (
     <Frame data={data}>
       {(rows) => {
-        const items = [...rows].sort((a, b) => a.date.localeCompare(b.date))
+        const items = sorted(rows)
         const [W, H, base] = [600, 200, 120]
         const y0 = +items[0].date.slice(0, 4)
         const y1 = +items.at(-1)!.date.slice(0, 4) + 1
@@ -51,7 +42,7 @@ function Timeline() {
           [year(String(y0)), year(String(y1))],
           [16, W - 16],
         )
-        const now = new Date().toISOString().slice(0, 10)
+        const now = today()
         const focus = next(items, now)
         // Labels alternate above and below the line, each on the first level it fits.
         const ends = [-1e9, -1e9, -1e9, -1e9]
@@ -92,7 +83,7 @@ function Timeline() {
                 {yr % 2 ? '' : yr}
               </text>
             ))}
-            {now < items.at(-1)!.date && (
+            {now > items[0].date && now < items.at(-1)!.date && (
               <g className="mean-axis mean-ref">
                 <line
                   x1={x(Date.parse(now))}
@@ -144,39 +135,21 @@ function Timeline() {
     </Frame>
   )
 }
-function References() {
-  const data = useData<Article[]>(ARTICLES)
-  return (
-    <Frame data={data}>
-      {(rows) => (
-        <Kpi
-          value={fmt(sum(rows.map((a) => a.refers_to.length)))}
-          unit="cross-references"
-        />
-      )}
-    </Frame>
-  )
-}
 
 export const posts: Post[] = [
   {
     id: 'txt-act-timeline',
     domain: d,
     sources: ['ai-act/timeline.json'],
-    title: (rows: Milestone[]) => {
+    size: 'wide',
+    title: heading((rows: Milestone[]) => {
       const n = next(rows)
+      if (!sorted(rows).length) return ''
       return n
         ? `Next AI Act date: ${day(n.date)}, ${n.title_en.charAt(0).toLowerCase()}${n.title_en.slice(1)}`
         : 'Every AI Act date in the timeline has passed'
-    },
-    note: 'Milestones from proposal (2021) to the last deadline; the larger dot is the next one',
-    size: 'wide',
+    }),
+    note: 'Milestones from the proposal to the last deadline; the larger dot is the next one',
     render: () => <Timeline />,
-  },
-  {
-    id: 'txt-act-references-kpi',
-    domain: d,
-    sources: ['ai-act/articles.json'],
-    render: () => <References />,
   },
 ]

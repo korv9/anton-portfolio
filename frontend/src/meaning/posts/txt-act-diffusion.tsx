@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import { Frame, OTHER, PALETTE, Slicer, useData, type Post } from '../kit'
 import { niceTicks } from '../../charts/scales'
-import { Svg, line, uniq } from './txt-kit'
+import { Svg, heading, line, uniq, usable } from './txt-kit'
 
 type Lag = {
   corpus: string
@@ -41,7 +41,7 @@ type Data = {
   }[]
   lags: Lag[]
   precision: Check[]
-  diagnostics: { few_matches: number }
+  diagnostics: { few_matches: number; tests?: number }
 }
 
 const NAME: Record<string, string> = {
@@ -141,15 +141,24 @@ function view(data: Data, pick: string) {
 /** The verdict for the default term, as the card's title. */
 function headline(data: Data) {
   const { names, term, panels } = view(data, DEFAULT)
-  const word = `“${(names.get(term) ?? term).replace(' (amended list)', '')}”`
+  if (!term || !panels.length) return ''
+  const word = `“${names.get(term) ?? term}”`
   const said = uniq(panels.map((p) => p.said))
   return said.length === 1
-    ? `${word}: ${said[0].toLowerCase()}, in speeches and in job ads`
+    ? `${word}: ${said[0].toLowerCase()} (${panels.map((p) => p.name.toLowerCase()).join(', ')})`
     : `${word}: ${panels.map((p) => `${p.name.toLowerCase()}, ${p.said.toLowerCase()}`).join('; ')}`
 }
 
+/** The caveat the card carries: the lag rule's p-values are not corrected for the many tests. */
+const caveat = (d: Data) =>
+  `Timing, not proof: ${d.diagnostics.tests ? `${d.diagnostics.tests} lag tests, each` : 'each lag test'} at p ≤ 0.05 without correction for multiple tests`
+
 function Diffusion() {
-  const data = useData<Data>('ai-act/diffusion.json')
+  const data = usable(
+    useData<Data>('ai-act/diffusion.json'),
+    'ai-act/diffusion.json',
+    (d) => view(d, DEFAULT).panels.length,
+  )
   const [pick, setPick] = useState(DEFAULT)
   return (
     <Frame data={data}>
@@ -177,6 +186,7 @@ function Diffusion() {
               value={term}
               onChange={setPick}
             />
+            <p className="mean-cap">{`“${names.get(term) ?? term}”. ${caveat(all)}.`}</p>
             <Svg
               w={W}
               h={H}
@@ -296,7 +306,7 @@ export const posts: Post[] = [
     domain: 'ai-act',
     size: 'wide',
     label: "AI Act: when the Act's terms appear in speeches and job ads",
-    title: headline,
+    title: heading(headline),
     note: 'Share of documents using the term, per 100,000, three-month mean; dashed lines are the Act’s dates',
     render: () => <Diffusion />,
   },

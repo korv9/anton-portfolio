@@ -1,9 +1,9 @@
-/** Embedding maps and the philosophy atlas: scatters, bubbles, box plots, slopes and stacks. */
+/** The philosophy atlas evaluation: measures before and after centring, and cluster mix. */
 import { useState } from 'react'
 import { Frame, OTHER, PALETTE, Slicer, useData, type Post } from '../kit'
 import { EndLabels, RefLine, XAxis, YAxis } from '../axes'
 import { linearScale } from '../../charts/scales'
-import { Bars, Kpi, Svg, fmt, sum } from './txt-kit'
+import { Bars, Svg, heading, usable } from './txt-kit'
 
 type Work = {
   document_id: string
@@ -25,6 +25,12 @@ type Cluster = {
   distinctive_terms: string[]
 }
 const VARIANTS = ['baseline', 'author_centered'] as const
+const MAP_NAME = {
+  baseline: 'As embedded',
+  author_centered: 'Author style removed',
+}
+const SUMMARY = 'philosophy/summary.json'
+const CLUSTERS = 'philosophy/clusters.json'
 const d = 'ml'
 
 /** Three measures before and after centring, with plain names; the first is focal. */
@@ -34,15 +40,20 @@ const MEASURES: [string, string][] = [
   ['noise_share', 'Unclustered'],
 ]
 const pc = (v: number) => `${Math.round(v * 100)}%`
+/** Both maps carry every measure the slope draws, and the chance level. */
+const complete = ({ run }: PhilSummary) =>
+  VARIANTS.every((v) =>
+    [...MEASURES.map(([k]) => k), 'same_work_chance'].every((k) =>
+      Number.isFinite(run.evaluation[v]?.[k]),
+    ),
+  )
 
 function EvalSlope() {
-  const data = useData<PhilSummary>('philosophy/summary.json')
+  const data = usable(useData<PhilSummary>(SUMMARY), SUMMARY, complete)
   return (
     <Frame data={data}>
       {({ run }) => {
-        const vs = ['baseline', 'author_centered'].filter(
-          (v) => run.evaluation[v],
-        )
+        const vs = VARIANTS
         const [W, H, l, r, top, bottom] = [300, 230, 40, 150, 12, 20]
         const y = linearScale([0, 1], [H - bottom, top])
         const x = (j: number) => l + j * (W - l - r)
@@ -66,7 +77,7 @@ function EvalSlope() {
               y={H - 4}
               ticks={[
                 { value: 0, label: 'as embedded' },
-                { value: 1, label: 'by author' },
+                { value: 1, label: 'style removed' },
               ]}
             />
             <RefLine
@@ -119,15 +130,22 @@ const purity = (all: Cluster[], variant: string) =>
   all
     .filter((c) => c.variant === variant)
     .map((c) => {
-      const [t, n] = Object.entries(c.traditions).sort((a, b) => b[1] - a[1])[0]
+      const [t, n] = Object.entries(c.traditions).sort(
+        (a, b) => b[1] - a[1],
+      )[0] ?? ['', 0]
       return { c, t, share: n / c.size }
     })
+    .filter((r) => r.t && r.c.size > 0)
     .sort((a, b) => b.share - a.share)
 
 function ClusterStacks() {
-  const data = useData<Cluster[]>('philosophy/clusters.json')
   const [variant, setVariant] =
     useState<(typeof VARIANTS)[number]>('author_centered')
+  const data = usable(
+    useData<Cluster[]>(CLUSTERS),
+    CLUSTERS,
+    (all) => purity(all, variant).length,
+  )
   return (
     <Frame data={data}>
       {(all) => (
@@ -136,10 +154,11 @@ function ClusterStacks() {
             label="Map"
             cycles={false}
             options={VARIANTS}
-            format={(v) => (v === 'baseline' ? 'As embedded' : 'By author')}
+            format={(v) => MAP_NAME[v]}
             value={variant}
             onChange={setVariant}
           />
+          <p className="mean-cap">{MAP_NAME[variant]}</p>
           <Bars
             label="Share of each cluster's passages from its largest tradition"
             format={pc}
@@ -157,27 +176,16 @@ function ClusterStacks() {
     </Frame>
   )
 }
-function Words() {
-  const data = useData<PhilSummary>('philosophy/summary.json')
-  return (
-    <Frame data={data}>
-      {(d) => (
-        <Kpi
-          value={fmt(sum(d.works.map((w) => w.words)))}
-          unit="words of philosophy"
-        />
-      )}
-    </Frame>
-  )
-}
-
 export const posts: Post[] = [
   {
     id: 'txt-ml-eval-slope',
     domain: d,
     sources: ['philosophy/summary.json'],
-    title: ({ run: { evaluation: e } }: PhilSummary) =>
-      `Centring by author cut same-work neighbours from ${pc(e.baseline.same_work_neighbours)} to ${pc(e.author_centered.same_work_neighbours)}; chance is ${pc(e.baseline.same_work_chance)}`,
+    title: heading((sum: PhilSummary) => {
+      if (!complete(sum)) return ''
+      const e = sum.run.evaluation
+      return `Same-work neighbours: ${pc(e.baseline.same_work_neighbours)} as embedded, ${pc(e.author_centered.same_work_neighbours)} with author style removed; chance ${pc(e.baseline.same_work_chance)}`
+    }),
     note: "Share of each passage's nearest neighbours from the same work, and two cluster measures, before and after",
     render: () => <EvalSlope />,
   },
@@ -185,17 +193,18 @@ export const posts: Post[] = [
     id: 'txt-ml-cluster-stacks',
     domain: d,
     sources: ['philosophy/clusters.json'],
-    title: (all: Cluster[]) => {
-      const rows = purity(all, 'author_centered')
-      return `In ${rows.filter((r) => r.share > 0.5).length} of ${rows.length} clusters one tradition makes up more than half`
-    },
+    // Both maps in one sentence, so the title holds whichever one the slicer shows.
+    title: heading((all: Cluster[]) => {
+      const [after, before] = (['author_centered', 'baseline'] as const).map(
+        (v) => purity(all, v),
+      )
+      const half = (rows: typeof after) =>
+        rows.filter((r) => r.share > 0.5).length
+      return after.length && before.length
+        ? `One tradition holds more than half of ${half(after)} of ${after.length} clusters with author style removed, ${half(before)} of ${before.length} as embedded`
+        : ''
+    }),
     note: "Each cluster's largest tradition, as a share of its passages; clusters named by distinctive words; tick at 50%",
     render: () => <ClusterStacks />,
-  },
-  {
-    id: 'txt-ml-words',
-    domain: d,
-    sources: ['philosophy/summary.json'],
-    render: () => <Words />,
   },
 ]
