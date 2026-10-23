@@ -105,10 +105,13 @@ export const posts: Post[] = [
     sources: ['clusters/demand-curves.json'],
     size: 'wide',
     title: (d: Demand) => {
-      const [big, small] = bySize(d)
-      return big && small && way(big) !== way(small)
-        ? `${big.size} of ${d.diagnostics.n} occupation groups follow a rising curve in their share of job ads since 2023; ${small.size} follow a falling one`
-        : 'Two shapes of demand across occupation groups'
+      // Groups per direction, from each cluster's own curve.
+      const count = (w: string) =>
+        d.clusters.filter((c) => way(c) === w).reduce((a, c) => a + c.size, 0)
+      const [up, down] = [count('rising'), count('falling')]
+      return up && down
+        ? `${up} of ${up + down} occupation groups follow a rising curve in their share of job ads since 2023; ${down} follow a falling one`
+        : 'Shapes of demand across occupation groups'
     },
     note: 'Trend of each group’s share of job ads, scaled per group (standard deviations); line: typical group, band: 10th–90th percentile. Arbetsförmedlingen, 2023–2026',
     render: () => <DemandShapes />,

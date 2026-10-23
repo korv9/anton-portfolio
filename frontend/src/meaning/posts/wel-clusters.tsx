@@ -84,7 +84,11 @@ function swedenMix(c: Countries, year: number, floor: number) {
   const codes: Record<string, number> = {}
   for (const [cc, y, code, v] of c.rows)
     if (cc === 'SWE' && y === year) codes[code] = v
-  if (!(codes._T > 0)) return null
+  // Every code a part reads must be there, or a bar would be NaN.
+  const need = ['_T', 'T_1000', 'T_1100', 'T_1200', 'T_2000', 'T_3000']
+  need.push('T_4000', 'T_5000', 'T_5111', 'T_6000')
+  if (!need.every((k) => Number.isFinite(codes[k])) || !(codes._T > 0))
+    return null
   const raw = PARTS.map(
     ([k, , f]) =>
       [k, Math.max(floor, Math.max(0, f(codes)) / codes._T)] as const,
@@ -145,7 +149,7 @@ export const posts: Post[] = [
         ? `Municipalities that are socially alike vote alike (r ${r2(top.r)}); their job ads match far less (r ${rest.map((t) => r2(t.r)).join(', ')})`
         : 'How far three maps of Swedish municipalities agree'
     },
-    note: 'Bar: Mantel r between distance matrices of 246 municipalities; tick: r with geographic distance removed. Turnout is in both the social and vote data',
+    note: 'Bar: Mantel r between distance matrices of 246 municipalities; tick: r with geographic distance removed. Turnout is one of the social indicators, so part of the social–votes r is shared',
     render: () => <NeighbourBars />,
   },
   {
@@ -155,7 +159,7 @@ export const posts: Post[] = [
     size: 'wide',
     title:
       'Sweden raises a far larger share of its taxes as payroll tax than the OECD countries it clusters with',
-    note: 'Bar: Sweden’s share of total tax per part, latest year; tick: mean of its 35-country cluster, Sweden included. Source: OECD Revenue Statistics',
+    note: 'Bar: Sweden’s share of total tax per part, latest year; tick: mean of its 35-country cluster, Sweden included. The clustering is unstable under resampling, so read the group as loose. Source: OECD',
     render: () => <MixBars />,
   },
 ]

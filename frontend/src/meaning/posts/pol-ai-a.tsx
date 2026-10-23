@@ -33,7 +33,8 @@ const monthName = (m: string) =>
 
 const share = (v: number, digits = 1) => pct(v * 100, digits)
 
-/** The share of speeches naming AI over the first calendar year with all twelve months. */
+/** The share of speeches naming AI over the first calendar year the data covers from January.
+ * Months without sittings, usually July, have no row, so a year can have eleven. */
 function firstYear(rows: Month[]) {
   const year = rows.find((r) => r.month.endsWith('-01'))?.month.slice(0, 4)
   const inYear = rows.filter((r) => r.month.startsWith(`${year}-`))
@@ -46,14 +47,18 @@ function firstYear(rows: Month[]) {
     : null
 }
 
+/** Every month but the latest: the file runs to its last speech, so its final month is partial. */
+const complete = (rows: Month[]) => rows.slice(0, -1)
+
 function SpeechLine() {
   const months = useData<Month[]>(MONTHLY)
   const summary = useData<Summary>(SUMMARY)
   return (
     <Frame data={months}>
-      {(rows) => (
+      {(all) => (
         <Frame data={summary}>
           {(s) => {
+            const rows = complete(all)
             if (rows.length < 2) return null
             const L = 46,
               R = 540,
@@ -158,6 +163,7 @@ function PartyBars() {
           wrap
           label="Share of each party's Riksdag speeches that mention AI"
           format={(v) => share(v, 2)}
+          max={Math.max(1e-9, ...byParty(rows).map((p) => p.share))}
           rows={byParty(rows).map((p, i) => ({
             key: p.party,
             label: partyName(p.party),
@@ -178,12 +184,12 @@ export const posts: Post[] = [
     size: 'wide',
     title: (rows: Month[]) => {
       const first = firstYear(rows)
-      const last = rows.at(-1)
+      const last = complete(rows).at(-1)
       return first && last
         ? `The share of Riksdag speeches that mention AI went from ${share(first.share)} in ${first.year} to ${share(last.ai_share_rolling_3m)} by ${monthName(last.month)}`
         : 'Riksdag speeches that mention AI'
     },
-    note: 'Share of all speeches per month, three-month average; dashed lines mark the AI Act proposal and its publication. Source: Riksdagen open data',
+    note: 'Share of all speeches per month, three-month average, to the last complete month; dashed lines mark the AI Act proposal and its publication. Source: Riksdagen open data',
     render: () => <SpeechLine />,
   },
   {
@@ -194,7 +200,7 @@ export const posts: Post[] = [
       const ranked = byParty(rows)
       const [top, low] = [ranked[0], ranked.at(-1)]
       return top && low && low.share > 0
-        ? `The ${partyName(top.party)} mention AI in ${share(top.share, 2)} of their speeches, ${Math.round(top.share / low.share)} times the rate of the ${partyName(low.party)}`
+        ? `The ${partyName(top.party)} mention AI in ${share(top.share, 2)} of their speeches, ${(top.share / low.share).toFixed(1)} times the rate of the ${partyName(low.party)}`
         : 'Riksdag speeches that mention AI, by party'
     },
     note: 'Share of each party’s speeches that mention AI, all years in the data pooled. Source: Riksdagen open data',

@@ -17,6 +17,9 @@ type Foundation = {
   foundation: string
   tagger_vs_annotator_f1: number
   human_pair_f1: number
+  /** 95 % interval of tagger-vs-annotator minus annotator-vs-annotator F1. */
+  ceiling_gap_low: number
+  ceiling_gap_high: number
 }
 type Foundations = { english: Foundation[] }
 
@@ -203,6 +206,7 @@ export const posts: Post[] = [
     domain: 'ml',
     sources: ['philosophy/moral/ethics.json'],
     title: (d: Ethics) => {
+      if (!d.subsets.length) return 'A model against human moral labels'
       const beat = subsets(d).filter((n) =>
         d.subsets
           .filter((s) => s.subset === n)
@@ -211,9 +215,9 @@ export const posts: Post[] = [
       const lo = Math.min(...d.subsets.map((s) => s.accuracy))
       const hi = Math.max(...d.subsets.map((s) => s.accuracy))
       const all = subsets(d).length
-      return `An open model agreed with human moral labels ${Math.round(lo * 100)}–${pc(hi)} of the time, above guessing in ${beat.length === all ? 'all' : beat.length} of ${all} tests`
+      return `An open model agreed with human moral labels ${Math.round(lo * 100)}–${pc(hi)} of the time, above guessing in ${beat.length === all ? `all ${all}` : `${beat.length} of ${all}`} tests`
     },
-    note: 'Accuracy on 200 items per test, two prompt wordings, 95 % intervals; grey tick: always the most common label. Gemma on Workers AI',
+    note: 'Accuracy over all 200 items per test and wording, unparsed answers counted as wrong; 95 % intervals; grey tick: always the most common label. Gemma on Workers AI',
     render: () => <EthicsDots />,
   },
   {
@@ -221,12 +225,16 @@ export const posts: Post[] = [
     domain: 'ml',
     sources: ['philosophy/moral/foundations.json'],
     title: (d: Foundations) => {
-      const n = d.english.filter(
-        (r) => r.tagger_vs_annotator_f1 >= r.human_pair_f1,
+      const n = d.english.length
+      if (!n) return 'A moral-foundations tagger beside human annotators'
+      // Counted by the 95 % interval of the gap, not by point estimates.
+      const above = d.english.filter((r) => r.ceiling_gap_low > 0).length
+      const close = d.english.filter(
+        (r) => r.ceiling_gap_low <= 0 && r.ceiling_gap_high >= 0,
       ).length
-      return `In ${n} of ${d.english.length} moral foundations, a tagger matches people about as well as people match each other`
+      return `In ${above} of ${n} moral foundations, a tagger agrees with one annotator more than two annotators agree${close ? `; ${close} too close to call` : ''}`
     },
-    note: 'F1 from 0 to 1 on English Reddit comments (MFRC): tagger against each annotator, and annotator against annotator; both are low',
+    note: 'F1 from 0 to 1 on English Reddit comments (MFRC): tagger against each annotator, and annotator against annotator; both are low. Counts use the 95 % interval of the gap',
     render: () => <CeilingDumbbell />,
   },
 ]

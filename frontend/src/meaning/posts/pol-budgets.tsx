@@ -148,8 +148,10 @@ export const posts: Post[] = [
       const [hi, lo] = [rows[0], rows.at(-1)]
       if (!hi || !lo || hi === lo)
         return 'Alternative budgets against the government’s'
-      const less = lo.msek < 0
-      return `The ${partyName(hi.party)} would spend ${bn(hi.msek).slice(1)} more than the government in ${year}; the ${partyName(lo.party)} ${bn(lo.msek).slice(1)} ${less ? 'less' : 'more'}`
+      // Each end reads by its own sign: a party can add to or cut the government's spending.
+      const side = (msek: number) =>
+        `${Math.abs(Math.round(msek / 1000))} bn ${msek < 0 ? 'less' : 'more'}`
+      return `The ${partyName(hi.party)} would spend ${side(hi.msek)} than the government in ${year}; the ${partyName(lo.party)} ${side(lo.msek)}`
     },
     note: 'Sum of each party’s changes to the government’s spending across the 27 expenditure areas, SEK billion; parties without an alternative budget are not shown. Source: Riksdagen',
     render: () => <DeviationBars />,
@@ -162,10 +164,10 @@ export const posts: Post[] = [
       const { rows } = gaps(d)
       const [hi, lo] = [rows[0], rows.at(-1)]
       return hi && lo
-        ? `${areaName(d, hi.area)} lands furthest from its approved budget, a median ${pct(hi.gap * 100, 0)} a year; ${areaName(d, lo.area).toLowerCase()} ${pct(lo.gap * 100)}`
-        : 'How far spending lands from the approved budget'
+        ? `${areaName(d, hi.area)} lands furthest from its first approved budget, a median ${pct(hi.gap * 100, 0)} a year; ${areaName(d, lo.area).toLowerCase()} ${pct(lo.gap * 100)}`
+        : 'How far spending lands from the first approved budget'
     },
-    note: 'Median of |outturn ÷ approved budget − 1| per expenditure area, each year in the data; amending budgets not counted. Source: Statskontoret',
+    note: 'Median of |outturn ÷ approved budget − 1| per expenditure area and year; the baseline is the budget first approved, before amending budgets. Source: Statskontoret',
     render: () => <OutturnBars />,
   },
 ]
