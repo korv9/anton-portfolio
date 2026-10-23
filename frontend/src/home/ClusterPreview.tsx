@@ -28,9 +28,10 @@ export default function ClusterPreview({
 
   useEffect(() => {
     const el = figure.current
+    // The job-ad map sits beside the job assistant, below the platform's text and off the first screen.
     const anchor = document.querySelector(
       kind === 'jobs'
-        ? '#projects-title'
+        ? '#jobs'
         : '.work-card[href="#symbolic-atlas"] .work-title',
     )
     if (!el || !anchor || !el.parentElement) return

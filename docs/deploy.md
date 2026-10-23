@@ -63,6 +63,12 @@ change through Terraform, not the dashboard.
 
    Under Settings → Build, turn on builds for non-production branches, so every pull request
    gets its preview link.
+
+   Web Analytics (optional, cookieless): Cloudflare → Analytics & Logs → Web Analytics → Add a
+   site → `antonernstsson.com`, and choose the manual JavaScript snippet, not automatic setup.
+   Copy the token from the snippet into a build variable `VITE_CF_BEACON_TOKEN` (the Worker →
+   Settings → Build → Variables and secrets) and rebuild. Without it the site loads no beacon.
+   `_headers` already allows the beacon's script and reporting host.
 3. **Domain on the site.** The Worker → Settings → Domains & Routes → Add → Custom domain:
    `antonernstsson.com`, and `www.antonernstsson.com`. To send `www` to the bare domain, add a
    redirect rule: Rules → Redirect Rules → hostname equals `www.antonernstsson.com` → dynamic

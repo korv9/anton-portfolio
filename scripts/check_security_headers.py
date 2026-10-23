@@ -11,6 +11,9 @@ def validate_headers(headers):
     directives = dict((parts[0], parts[1:]) for directive in csp.split(';')
                       if (parts := directive.split()))
     errors = []
+    # The one outside script allowed: Cloudflare Web Analytics' beacon, loaded only when configured.
+    if directives.get('script-src') == ["'self'", 'https://static.cloudflareinsights.com']:
+        directives['script-src'] = ["'self'"]
     for name, expected in [('default-src', ["'none'"]), ('script-src', ["'self'"]),
                            ('object-src', ["'none'"]), ('base-uri', ["'none'"]),
                            ('form-action', ["'none'"]), ('frame-ancestors', ["'self'"])]:
