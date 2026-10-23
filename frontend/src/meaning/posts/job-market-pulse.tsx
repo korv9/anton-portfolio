@@ -1,16 +1,17 @@
 /** Jobs: the ad market over time, from market.json's monthly, daily and archive counts. */
 import { color, focal, Frame, useData, type Post } from '../kit'
+import { YAxis } from '../axes'
 import { linearScale, niceTicks } from '../../charts/scales'
 import {
   compact,
   D,
   fieldName,
   fmt,
-  Legend,
   linePath,
   MARKET,
   sum,
   Svg,
+  XLabels,
   YTicks,
   type Market,
 } from './job-kit'
@@ -30,21 +31,22 @@ function Sparks() {
   return (
     <Frame data={data}>
       {(m) => {
-        const fields = topFields(m, 21)
-        const W = 400,
-          rowH = 36
+        const fields = topFields(m, 12)
+        const W = 300,
+          rowH = 510 / fields.length
         return (
           <Svg
             w={W}
-            h={fields.length * rowH}
-            label="Sparkline per occupation field"
+            h={510}
+            label="Monthly ads in the twelve largest fields, each on its own scale"
           >
             {fields.map((f, j) => {
               const rows = m.monthly[f.id] ?? []
-              const x = linearScale([0, rows.length - 1], [8, 300])
+              const y0 = j * rowH + rowH - 3
+              const x = linearScale([0, rows.length - 1], [4, 244])
               const y = linearScale(
-                [0, Math.max(...rows.map((r) => r[1]))],
-                [j * rowH + rowH - 4, j * rowH + 4],
+                [0, Math.max(1, ...rows.map((r) => r[1]))],
+                [y0, j * rowH + 16],
               )
               const pts = rows.map(
                 (r, i) => [x(i), y(r[1])] as [number, number],
@@ -53,34 +55,29 @@ function Sparks() {
                 <g key={f.id}>
                   <title>{fieldName(f.name)}</title>
                   <path
-                    d={`${linePath(pts)}L300,${j * rowH + rowH - 4}L8,${j * rowH + rowH - 4}Z`}
+                    d={`${linePath(pts)}L244,${y0}L4,${y0}Z`}
                     fill={focal(j === 0)}
-                    opacity={0.35}
+                    opacity={0.3}
                   />
                   <path
                     d={linePath(pts)}
                     fill="none"
                     stroke={focal(j === 0)}
-                    strokeWidth={1.5}
+                    strokeWidth={1.25}
                   />
                   <text
-                    x={10}
-                    y={j * rowH + 12}
-                    fontSize={10}
-                    fontWeight={j === 0 ? 700 : 500}
-                    stroke="var(--paper)"
-                    strokeWidth={3}
-                    paintOrder="stroke"
+                    className={j === 0 ? 'mean-job-on' : 'mean-job-v'}
+                    x={4}
+                    y={j * rowH + 11}
                   >
                     {fieldName(f.name)}
                   </text>
-                  <circle
-                    cx={pts.at(-1)?.[0]}
-                    cy={pts.at(-1)?.[1]}
-                    r={2.5}
-                    fill="var(--ink)"
-                  />
-                  <text x={392} y={j * rowH + rowH / 2 + 4} textAnchor="end">
+                  <text
+                    className="mean-job-v"
+                    x={W - 2}
+                    y={y0 - 2}
+                    textAnchor="end"
+                  >
                     {compact(rows.at(-1)?.[1] ?? 0)}
                   </text>
                 </g>
@@ -137,52 +134,63 @@ function Archives() {
   )
 }
 
+/** Weekday ads per day, the mean over the days read whole. */
+const weekdayMean = (m: Market) => {
+  const days = (m.daily?.all ?? []).filter(
+    (r) => ![0, 6].includes(new Date(`${r[0]}T12:00`).getDay()),
+  )
+  return days.length ? sum(days.map((r) => r[1])) / days.length : 0
+}
+
 function Daily() {
   const data = useData<Market>(MARKET)
   return (
     <Frame data={data}>
       {(m) => {
         const rows = m.daily?.all ?? []
-        const max = Math.max(1, ...rows.map((r) => r[2]))
-        const W = 400,
-          H = 360,
-          cx = W / 2,
-          cy = 190
+        const ticks = niceTicks(Math.max(1, ...rows.map((r) => r[1])))
+        const W = 300,
+          H = 220,
+          L = 34,
+          B = 196
+        const y = linearScale([0, ticks.at(-1)!], [B, 14])
+        const bw = (W - L) / Math.max(1, rows.length)
+        const day = (d: string) =>
+          new Date(`${d}T12:00`).toLocaleString('en-GB', {
+            weekday: 'short',
+            day: 'numeric',
+          })
         return (
-          <>
-            <Svg w={W} h={H} label="Ads and vacancies per day, latest days">
-              {rows.map((r, i) => {
-                const a0 = (i / rows.length) * 2 * Math.PI
-                const a1 = ((i + 0.85) / rows.length) * 2 * Math.PI
-                const R = (v: number) => 40 + (v / max) * 120
-                const q = (rad: number, a: number) => [
-                  cx + rad * Math.sin(a),
-                  cy - rad * Math.cos(a),
-                ]
-                const p = (rad: number, a: number) => q(rad, a).join(',')
-                const [tx, ty] = q(R(r[2]) + 14, (a0 + a1) / 2)
-                const wedge = (v: number) =>
-                  `M${p(40, a0)}L${p(R(v), a0)}A${R(v)},${R(v)} 0 0 1 ${p(R(v), a1)}L${p(40, a1)}Z`
-                return (
-                  <g key={r[0]}>
-                    <path d={wedge(r[2])} fill={color(1)} opacity={0.55} />
-                    <path d={wedge(r[1])} fill={color(0)}>
-                      <title>{`${r[0]}: ${fmt(r[1])} ads, ${fmt(r[2])} vacancies`}</title>
-                    </path>
-                    <text x={tx} y={ty} textAnchor="middle" fontSize={10}>
-                      {r[0].slice(5)}
-                    </text>
-                  </g>
-                )
-              })}
-            </Svg>
-            <Legend
-              items={[
-                ['ads', color(0)],
-                ['vacancies', color(1)],
-              ]}
+          <Svg w={W} h={H} label="New job ads per day, latest days">
+            <YAxis ticks={ticks} y={y} x0={L} x1={W} format={compact} />
+            {rows.map((r, i) => (
+              <g key={r[0]}>
+                <title>{`${r[0]}: ${fmt(r[1])} ads, ${fmt(r[2])} vacancies`}</title>
+                <rect
+                  x={L + i * bw + bw * 0.15}
+                  y={y(r[1])}
+                  width={bw * 0.7}
+                  height={B - y(r[1])}
+                  fill="var(--mean-ink)"
+                />
+                <text
+                  className="mean-job-v"
+                  x={L + i * bw + bw / 2}
+                  y={y(r[1]) - 4}
+                  textAnchor="middle"
+                >
+                  {fmt(r[1])}
+                </text>
+              </g>
+            ))}
+            <XLabels
+              y={H - 4}
+              items={rows.map((r, i) => ({
+                x: L + i * bw + bw / 2,
+                label: day(r[0]),
+              }))}
             />
-          </>
+          </Svg>
         )
       }}
     </Frame>
@@ -195,6 +203,8 @@ export const posts: Post[] = [
     domain: D,
     sources: ['jobs/market.json'],
     size: 'tall',
+    title: 'Monthly job ads in the twelve largest fields',
+    note: 'Each line on its own scale, from 2020; the number is the latest month; Arbetsförmedlingen',
     render: () => <Sparks />,
   },
   {
@@ -207,6 +217,9 @@ export const posts: Post[] = [
     id: 'job-daily-rose',
     domain: D,
     sources: ['jobs/market.json'],
+    title: (m: Market) =>
+      `About ${fmt(Math.round(weekdayMean(m) / 100) * 100)} new ads a weekday in the latest days`,
+    note: "New ads per publication day from JobTech's daily stream, days read in full; preliminary",
     render: () => <Daily />,
   },
 ]

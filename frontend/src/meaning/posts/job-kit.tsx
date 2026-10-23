@@ -2,8 +2,9 @@
  * Shared bits for the jobs posts: dataset paths, number formats, a legend, a KPI tile, axis
  * ticks, line paths and a squarified treemap. Exports no posts of its own.
  */
-import type { ReactNode } from 'react'
-import { color, tile, type Post } from '../kit'
+import { useContext, type ReactNode } from 'react'
+import RankBars, { type RankRow } from '../../charts/RankBars'
+import { focal, OTHER, PostOpen, tile, type Post } from '../kit'
 import { FIELD_EN, type Market } from '../../jobs/market'
 import './job.css'
 
@@ -52,18 +53,10 @@ export function Legend({ items }: { items: [string, string][] }) {
   )
 }
 
-/** A giant single number with its unit. */
-export function Big({
-  value,
-  unit,
-  tone = 0,
-}: {
-  value: string
-  unit: string
-  tone?: number
-}) {
+/** A giant single number with its unit, on the focal tint. */
+export function Big({ value, unit }: { value: string; unit: string }) {
   return (
-    <div className="mean-job-big" style={tile(color(tone))}>
+    <div className="mean-job-big" style={tile(focal(true))}>
       <b>{value}</b>
       <span>{unit}</span>
     </div>
@@ -75,7 +68,7 @@ export function KpiGrid({ items }: { items: [string, string][] }) {
   return (
     <div className="mean-job-kpis">
       {items.map(([v, u], i) => (
-        <div key={i} style={{ borderColor: color(i) }}>
+        <div key={i} style={{ borderColor: OTHER }}>
           <b>{v}</b>
           <span>{u}</span>
         </div>
@@ -123,7 +116,7 @@ export function YTicks({
   f?: (v: number) => string
 }) {
   return (
-    <g className="mean-job-axis">
+    <g className="mean-axis">
       {ticks.map((t) => (
         <g key={t}>
           <line x1={x0} x2={x1} y1={y(t)} y2={y(t)} />
@@ -145,13 +138,53 @@ export function XLabels({
   y: number
 }) {
   return (
-    <g className="mean-job-axis">
+    <g className="mean-axis">
       {items.map((t) => (
         <text key={t.label + t.x} x={t.x} y={y} textAnchor="middle">
           {t.label}
         </text>
       ))}
     </g>
+  )
+}
+
+export type { RankRow }
+
+/** A signed percentage change, e.g. +12 % or −8 %, with a true minus sign. */
+export const change = (v: number) =>
+  `${v > 0 ? '+' : v < 0 ? '−' : ''}${Math.abs(Math.round(v * 100))} %`
+
+/** The first and last `k` rows of a ranked list: the largest rises and falls. */
+export const ends = <T,>(rows: T[], k = 5) =>
+  rows.length > 2 * k ? [...rows.slice(0, k), ...rows.slice(-k)] : rows
+
+/**
+ * charts/RankBars in a card: `thumb` (or the first `n` rows) in the thumbnail, every row once
+ * opened. The scale is fixed by all rows, so the thumbnail's bars match the opened chart.
+ */
+export function Bars({
+  rows,
+  n = 10,
+  thumb,
+  format,
+  label,
+}: {
+  rows: RankRow[]
+  n?: number
+  thumb?: RankRow[]
+  format: (v: number) => string
+  label: string
+}) {
+  const open = useContext(PostOpen)
+  return (
+    <div className={open ? 'mean-bars mean-job-all' : 'mean-bars'}>
+      <RankBars
+        rows={open ? rows : (thumb ?? rows.slice(0, n))}
+        format={format}
+        label={label}
+        max={Math.max(1e-9, ...rows.map((r) => Math.abs(r.value)))}
+      />
+    </div>
   )
 }
 

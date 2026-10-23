@@ -2,7 +2,17 @@
 import { useState } from 'react'
 import { color, focal, Frame, Slicer, useData, type Post } from '../kit'
 import { linearScale, niceTicks } from '../../charts/scales'
-import { D, Legend, linePath, pct, Svg, XLabels, YTicks } from './job-kit'
+import {
+  Bars,
+  change,
+  D,
+  Legend,
+  linePath,
+  pct,
+  Svg,
+  XLabels,
+  YTicks,
+} from './job-kit'
 
 /** [year, texts, texts_matching, matches, words, share, share_std, per_1000, per_1000_std] */
 type Row = [
@@ -91,75 +101,28 @@ function Lines() {
   )
 }
 
+/** Change in the standardised rate per 1,000 words from before a category's break year to after. */
+const jump = (c: Category) => c.break.mean_after / c.break.mean_before - 1
+const byJump = (t: Trends) =>
+  [...t.categories].sort((a, b) => jump(b) - jump(a))
+
 function Dumbbell() {
   const data = useData<Trends>(TRENDS)
   return (
     <Frame data={data}>
-      {(t) => {
-        const cs = [...t.categories].sort(
-          (a, b) => b.break.mean_after - a.break.mean_after,
-        )
-        const max = Math.max(
-          ...cs.flatMap((c) => [c.break.mean_before, c.break.mean_after]),
-        )
-        const x = linearScale([0, Math.sqrt(max)], [110, 385])
-        const rowH = 360 / cs.length
-        return (
-          <>
-            <Svg
-              w={400}
-              h={390}
-              label="Dumbbell of each category's rate before and after its break year"
-            >
-              {cs.map((c, j) => {
-                const cy = j * rowH + rowH / 2,
-                  b = c.break
-                return (
-                  <g key={c.id}>
-                    <title>{`${c.label_en}: ${b.mean_before.toFixed(2)} → ${b.mean_after.toFixed(2)} from ${b.first_year_after}`}</title>
-                    <text x={104} y={cy + 4} textAnchor="end" fontSize={10}>
-                      {short(c.label_en)}
-                    </text>
-                    <line
-                      x1={x(Math.sqrt(b.mean_before))}
-                      x2={x(Math.sqrt(b.mean_after))}
-                      y1={cy}
-                      y2={cy}
-                      stroke="var(--line-strong)"
-                      strokeWidth={4}
-                    />
-                    <circle
-                      cx={x(Math.sqrt(b.mean_before))}
-                      cy={cy}
-                      r={7}
-                      fill={color(2)}
-                    />
-                    <circle
-                      cx={x(Math.sqrt(b.mean_after))}
-                      cy={cy}
-                      r={7}
-                      fill={color(0)}
-                    />
-                  </g>
-                )
-              })}
-              <XLabels
-                y={384}
-                items={[1, 2, 4, Math.round(max)].map((v) => ({
-                  x: x(Math.sqrt(v)),
-                  label: String(v),
-                }))}
-              />
-            </Svg>
-            <Legend
-              items={[
-                ['before', color(2)],
-                ['after', color(0)],
-              ]}
-            />
-          </>
-        )
-      }}
+      {(t) => (
+        <Bars
+          label="Change in each category's rate per 1,000 words after its break year"
+          format={change}
+          rows={byJump(t).map((c, j) => ({
+            key: c.id,
+            label: short(c.label_en),
+            value: jump(c),
+            color: focal(j === 0),
+            note: `from ${c.break.first_year_after}`,
+          }))}
+        />
+      )}
     </Frame>
   )
 }
@@ -169,24 +132,22 @@ function Multiples() {
   return (
     <Frame data={data}>
       {(t) => {
-        const cellH = 780 / t.categories.length
+        const W = 300,
+          cellH = 500 / t.categories.length
         // The focal row is the category whose share grew most since the first year.
         const rise = (c: Category) => c.rows.at(-1)![5] - c.rows[0][5]
         const top = t.categories.reduce((a, c) => (rise(c) > rise(a) ? c : a))
         return (
           <Svg
-            w={400}
-            h={790}
+            w={W}
+            h={510}
             label="Small multiples of each category's share of ad texts"
           >
             {t.categories.map((c, k) => {
-              const x = linearScale(
-                [c.rows[0][0], c.rows.at(-1)![0]],
-                [10, 300],
-              )
+              const x = linearScale([c.rows[0][0], c.rows.at(-1)![0]], [4, 236])
               const y = linearScale(
                 [0, 1],
-                [k * cellH + cellH - 6, k * cellH + 6],
+                [k * cellH + cellH - 4, k * cellH + 4],
               )
               const pts = c.rows.map(
                 (r) => [x(r[0]), y(r[5])] as [number, number],
@@ -195,15 +156,14 @@ function Multiples() {
                 <g key={c.id}>
                   <title>{c.label_en}</title>
                   <path
-                    d={`${linePath(pts)}L300,${y(0)}L10,${y(0)}Z`}
+                    d={`${linePath(pts)}L236,${y(0)}L4,${y(0)}Z`}
                     fill={focal(c === top)}
                     opacity={c === top ? 1 : 0.55}
                   />
                   <text
-                    x={14}
-                    y={k * cellH + 20}
-                    fontSize={13}
-                    fontWeight={c === top ? 700 : 500}
+                    className={c === top ? 'mean-job-on' : 'mean-job-v'}
+                    x={8}
+                    y={k * cellH + 15}
                     stroke="var(--paper)"
                     strokeWidth={3}
                     paintOrder="stroke"
@@ -211,11 +171,10 @@ function Multiples() {
                     {short(c.label_en)}
                   </text>
                   <text
-                    x={392}
-                    y={k * cellH + cellH / 2 + 8}
+                    className="mean-job-v"
+                    x={W - 2}
+                    y={k * cellH + cellH / 2 + 4}
                     textAnchor="end"
-                    fontSize={20}
-                    fontWeight={700}
                   >
                     {pct(c.rows.at(-1)![5])}
                   </text>
@@ -241,6 +200,13 @@ export const posts: Post[] = [
     id: 'job-lang-dumbbell',
     domain: D,
     sources: ['sweden/language/trends.json'],
+    title: (t: Trends) => {
+      const c = byJump(t)[0]
+      return c
+        ? `${short(c.label_en)} words rose most after their break year: ${change(jump(c))}`
+        : 'Change in ad wording after each break year'
+    },
+    note: "Matches per 1,000 words, field mix held fixed; mean after against before each category's break year (an exploratory split), 2006 on",
     render: () => <Dumbbell />,
   },
   {
@@ -248,6 +214,8 @@ export const posts: Post[] = [
     domain: D,
     sources: ['sweden/language/trends.json'],
     size: 'tall',
+    title: 'Share of job-ad texts using each kind of wording, 2006 on',
+    note: 'Each panel 0–100 %; the latest year on the right; Arbetsförmedlingen ads',
     render: () => <Multiples />,
   },
 ]

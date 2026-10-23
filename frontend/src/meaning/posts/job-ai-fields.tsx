@@ -1,17 +1,16 @@
 /** Jobs: AI, governance and compliance terms in ads, from ai-act/jobs/*.json. */
-import { color, Frame, useData, type Post } from '../kit'
+import { color, focal, Frame, useData, type Post } from '../kit'
 import { linearScale } from '../../charts/scales'
 import {
+  Bars,
   D,
   fieldName,
   fmt,
-  KpiGrid,
   Legend,
   linePath,
   pct,
   sum,
   Svg,
-  XLabels,
 } from './job-kit'
 
 type Term = { term_id: string; family: string; label_en: string }
@@ -111,59 +110,35 @@ function Ridgeline() {
   )
 }
 
+/** The ai_any rows of the latest full year, highest share first. */
+const aiByField = (rows: Fields) => {
+  const yr = Math.max(
+    ...rows.map((r) => r.year).filter((y) => y < new Date().getFullYear()),
+  )
+  return {
+    yr,
+    sel: rows
+      .filter((r) => r.term_id === 'ai_any' && r.year === yr)
+      .sort((a, b) => b.share - a.share),
+  }
+}
+
 function FieldLollipop() {
   const data = useData<Fields>(FIELDS)
   return (
     <Frame data={data}>
-      {(rows) => {
-        const yr = Math.max(...rows.map((r) => r.year))
-        const sel = rows
-          .filter((r) => r.term_id === 'ai_any' && r.year === yr)
-          .sort((a, b) => b.share - a.share)
-        const x = linearScale([0, sel[0]?.share || 1], [150, 380])
-        const rowH = 380 / Math.max(1, sel.length)
-        return (
-          <Svg
-            w={400}
-            h={400}
-            label="Share of ads mentioning AI per field, latest year"
-          >
-            {sel.map((r, j) => (
-              <g key={r.field_id}>
-                <title>{`${fieldName(r.field)}: ${pct(r.share, 2)}, ${fmt(r.mention_count)} ads`}</title>
-                <text
-                  x={144}
-                  y={j * rowH + rowH / 2 + 3}
-                  textAnchor="end"
-                  fontSize={8}
-                >
-                  {fieldName(r.field)}
-                </text>
-                <line
-                  x1={150}
-                  x2={x(r.share)}
-                  y1={j * rowH + rowH / 2}
-                  y2={j * rowH + rowH / 2}
-                  stroke={color(2)}
-                  strokeWidth={2}
-                />
-                <circle
-                  cx={x(r.share)}
-                  cy={j * rowH + rowH / 2}
-                  r={5}
-                  fill={color(j < 3 ? 1 : 2)}
-                />
-              </g>
-            ))}
-            <XLabels
-              y={398}
-              items={[
-                { x: x(sel[0]?.share ?? 0), label: pct(sel[0]?.share ?? 0, 1) },
-              ]}
-            />
-          </Svg>
-        )
-      }}
+      {(rows) => (
+        <Bars
+          label="Share of ads mentioning AI per occupation field, latest full year"
+          format={(v) => pct(v, 1)}
+          rows={aiByField(rows).sel.map((r, j) => ({
+            key: r.field_id,
+            label: fieldName(r.field),
+            value: r.share,
+            color: focal(j === 0),
+          }))}
+        />
+      )}
     </Frame>
   )
 }
@@ -175,26 +150,29 @@ function Mentions() {
     <Frame data={terms}>
       {(t) => (
         <Frame data={data}>
-          {(rows) => (
-            <KpiGrid
-              items={[
-                [fmt(t.ads), 'ads read'],
-                ...t.terms.map(
-                  (term) =>
-                    [
-                      fmt(
-                        sum(
-                          rows
-                            .filter((r) => r.term_id === term.term_id)
-                            .map((r) => r.mention_count),
-                        ),
-                      ),
-                      term.label_en,
-                    ] as [string, string],
-                ),
-              ]}
-            />
-          )}
+          {(rows) => {
+            const count = (id: string) =>
+              sum(
+                rows
+                  .filter((r) => r.term_id === id)
+                  .map((r) => r.mention_count),
+              )
+            const ranked = t.terms
+              .map((term) => ({
+                key: term.term_id,
+                label: term.label_en,
+                value: count(term.term_id),
+              }))
+              .sort((a, b) => b.value - a.value)
+            return (
+              <Bars
+                n={13}
+                label="Ads mentioning each term since 2020"
+                format={fmt}
+                rows={ranked.map((r, j) => ({ ...r, color: focal(j === 0) }))}
+              />
+            )
+          }}
         </Frame>
       )}
     </Frame>
@@ -213,13 +191,29 @@ export const posts: Post[] = [
     id: 'job-ai-field-lollipop',
     domain: D,
     sources: ['ai-act/jobs/fields.json'],
+    title: (rows: Fields) => {
+      const { yr, sel } = aiByField(rows)
+      return sel[0]
+        ? `${fieldName(sel[0].field)} ads mention AI most often: ${pct(sel[0].share, 1)} in ${yr}`
+        : 'Share of ads that mention AI, by field'
+    },
+    note: "Share of each field's ads naming AI or machine learning; Arbetsförmedlingen",
     render: () => <FieldLollipop />,
   },
   {
     id: 'job-ai-mentions',
     domain: D,
     sources: ['ai-act/jobs/monthly.json', 'ai-act/jobs/summary.json'],
-    size: 'tall',
+    title: (rows: Monthly) => {
+      const n = new Map<string, number>()
+      for (const r of rows)
+        n.set(r.term_id, (n.get(r.term_id) ?? 0) + r.mention_count)
+      const top = [...n].sort((a, b) => b[1] - a[1])[0]?.[0]
+      return top === 'privacy'
+        ? 'Ads name data protection more often than any AI term'
+        : 'How often ads name each AI and compliance term'
+    },
+    note: 'Number of ads naming each term, 2020 on; Arbetsförmedlingen',
     render: () => <Mentions />,
   },
 ]

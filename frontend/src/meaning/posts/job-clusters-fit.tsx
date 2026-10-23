@@ -231,6 +231,7 @@ export const posts: Post[] = [
     sources: ['jobs/cluster-summary.json'],
     title: (s: Summary) =>
       `${s.diagnostics.cluster_count} clusters in ${fmt(s.source_size)} tech job ads`,
+    note: 'One clustering run over the text of tech job ads; noise is the share no cluster takes',
     render: () => <Kpis />,
   },
   {

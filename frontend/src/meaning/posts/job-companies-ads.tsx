@@ -247,7 +247,6 @@ function Remote() {
               (d.jobs.length || 1),
           )}
           unit="of ads mention remote work"
-          tone={2}
         />
       )}
     </Frame>

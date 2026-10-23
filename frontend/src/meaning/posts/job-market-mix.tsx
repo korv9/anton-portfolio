@@ -1,8 +1,9 @@
 /** Jobs: occupations and fields, from market.json's yearly occupation and monthly field counts. */
 import { useState } from 'react'
-import { color, Frame, Slicer, useData, type Post } from '../kit'
+import { color, focal, Frame, Slicer, useData, type Post } from '../kit'
 import { linearScale } from '../../charts/scales'
 import {
+  Bars,
   compact,
   D,
   fmt,
@@ -16,20 +17,16 @@ import {
 
 /** Ads per field in the months the latest year covers, so every year compares alike. */
 
+/** The focal field: its occupations are drawn in the accent. */
+const FOCUS = 'Data/IT'
+
 function OccupationBars() {
   const data = useData<Market>(MARKET)
   const [year, setYear] = useState(2025)
   return (
     <Frame data={data}>
       {(m) => {
-        const top = [...m.occupations]
-          .sort((a, b) => (b.ads[year] ?? 0) - (a.ads[year] ?? 0))
-          .slice(0, 22)
-        const W = 400,
-          rowH = 34,
-          L = 170
-        const x = linearScale([0, top[0]?.ads[year] ?? 1], [L, W - 40])
-        const fi = m.fields.map((f) => f.id)
+        const it = m.fields.find((f) => f.name === FOCUS)?.id
         return (
           <>
             <Slicer
@@ -39,39 +36,20 @@ function OccupationBars() {
               value={year}
               onChange={setYear}
             />
-            <Svg
-              w={W}
-              h={top.length * rowH}
-              label="Occupations with the most ads"
-            >
-              {top.map((o, j) => (
-                <g key={o.id}>
-                  <text
-                    x={L - 6}
-                    y={j * rowH + rowH / 2 + 4}
-                    textAnchor="end"
-                    fontSize={10}
-                  >
-                    {o.name.length > 28 ? `${o.name.slice(0, 27)}…` : o.name}
-                  </text>
-                  <rect
-                    x={L}
-                    y={j * rowH + 6}
-                    width={x(o.ads[year] ?? 0) - L}
-                    height={rowH - 12}
-                    rx={4}
-                    fill={color(fi.indexOf(o.field))}
-                  />
-                  <text
-                    x={x(o.ads[year] ?? 0) + 4}
-                    y={j * rowH + rowH / 2 + 4}
-                    fontSize={10}
-                  >
-                    {compact(o.ads[year] ?? 0)}
-                  </text>
-                </g>
-              ))}
-            </Svg>
+            <Bars
+              n={20}
+              label={`Occupations with the most ads in ${year}`}
+              format={compact}
+              rows={[...m.occupations]
+                .sort((a, b) => (b.ads[year] ?? 0) - (a.ads[year] ?? 0))
+                .slice(0, 25)
+                .map((o) => ({
+                  key: o.id,
+                  label: o.name,
+                  value: o.ads[year] ?? 0,
+                  color: focal(o.field === it),
+                }))}
+            />
           </>
         )
       }}
@@ -200,6 +178,8 @@ export const posts: Post[] = [
     domain: D,
     sources: ['jobs/market.json'],
     size: 'tall',
+    title: 'Occupations with the most job ads',
+    note: 'Ads per year by occupation group (SSYK 4), Data/IT occupations highlighted; Arbetsförmedlingen',
     render: () => <OccupationBars />,
   },
   {
