@@ -1,5 +1,5 @@
 /**
- * One axis style for the feed's SVG charts. Ticks come from the same scale and domain the
+ * Shared axes for the feed's SVG charts; families move onto it as they are converted. Ticks come from the same scale and domain the
  * marks use, so a label can never sit at another value than its gridline. meaning.css styles
  * `.mean-axis` gridlines and tick text once for every family.
  */
@@ -18,9 +18,14 @@ export function niceDomain(
   return [Math.floor(lo / step) * step, Math.ceil(hi / step) * step]
 }
 
-/** Nice ticks inside `[lo, hi]`, for axes that do not start at zero. */
-export function ticksBetween(lo: number, hi: number, count = 4) {
-  const step = niceStep(hi - lo, count)
+/** Nice ticks inside `[lo, hi]`, for axes that do not start at zero. Pass the step niceDomain
+ * used (`niceStep(rawHi - rawLo, count)`) so the gridlines meet the domain's ends. */
+export function ticksBetween(
+  lo: number,
+  hi: number,
+  count = 4,
+  step = niceStep(hi - lo, count),
+) {
   const out: number[] = []
   for (let v = Math.ceil(lo / step) * step; v <= hi + step * 1e-9; v += step)
     out.push(Number(v.toFixed(10)))

@@ -36,15 +36,12 @@ async function tickingPost(page: Page) {
 async function slicerValues(post: Locator) {
   const checked = post.locator('.mean-slicer [aria-checked="true"]')
   const seen: (string | null)[] = []
-  await expect
-    .poll(
-      async () => {
-        seen.push(await checked.textContent())
-        return seen.length
-      },
-      { intervals: [300] },
-    )
-    .toBeGreaterThanOrEqual(30)
+  // A fixed 9 s window, about three 2.5 s steps, however slow each read is under CI load.
+  const end = Date.now() + 9000
+  while (Date.now() < end) {
+    seen.push(await checked.textContent())
+    await post.page().waitForTimeout(300)
+  }
   return new Set(seen)
 }
 
@@ -110,6 +107,8 @@ test('reduced motion keeps the feed thumbnails still', async ({ page }) => {
 test('a section pause button holds its thumbnails until pressed again', async ({
   page,
 }) => {
+  // Two 9 s sampling windows.
+  test.setTimeout(60_000)
   await page.goto('/')
   const ticking = await tickingPost(page)
   const pause = ticking

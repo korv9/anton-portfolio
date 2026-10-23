@@ -170,7 +170,7 @@ const SECTIONS = [
     key: 'philosophy',
     title: 'Philosophy',
     line: 'Ideas, works and tensions in the philosophy corpus.',
-    match: /^txt-ml-(phil|works|tension|eval|cluster-stacks|words|topic-map)/,
+    match: /^txt-ml-(phil|works|tension|eval|cluster-stacks|words)/,
   },
   {
     key: 'concepts',

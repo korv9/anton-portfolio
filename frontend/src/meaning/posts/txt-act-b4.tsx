@@ -101,7 +101,7 @@ function SignalMultiples() {
         return (
           <Svg
             w={W}
-            h={rh * series.length}
+            h={rh * series.length + 14}
             label="Monthly counts of every AI signal, small multiples"
           >
             {series.map((s, j) => {
@@ -121,7 +121,7 @@ function SignalMultiples() {
                       width={Math.max(bw - 0.6, 0.4)}
                       y={rh - 4 - ((rh - 14) * r[1]) / max}
                       height={((rh - 14) * r[1]) / max}
-                      fill={color(j)}
+                      fill={color(0)}
                     >
                       <title>{`${r[0]}: ${fmt(r[1])}`}</title>
                     </rect>
@@ -129,6 +129,18 @@ function SignalMultiples() {
                 </g>
               )
             })}
+            {/* First and last month under the bottom panel: the axis every panel shares. */}
+            <text className="mean-txt-t" x={0} y={rh * series.length + 11}>
+              {months[0]}
+            </text>
+            <text
+              className="mean-txt-t"
+              x={W}
+              y={rh * series.length + 11}
+              textAnchor="end"
+            >
+              {months[months.length - 1]}
+            </text>
           </Svg>
         )
       }}
@@ -151,7 +163,7 @@ export const posts: Post[] = [
     sources: ['ai-act/signals.json'],
     size: 'tall',
     title: 'AI in Riksdag speeches and job ads, by month',
-    note: 'Each panel on its own scale, one shared time axis',
+    note: 'Each panel on its own scale; all panels share the month axis',
     render: () => <SignalMultiples />,
   },
 ]

@@ -178,10 +178,10 @@
   overflow: hidden;
 }
 /* Chart text in one place: the body face with tabular figures, never smaller than 10 units
-   for ticks and 11 for labels. A size a post sets on a text element still wins. */
+   for ticks and 11 for labels. A post's own size wins only on .mean-wel-svg text, which inherits. */
 .mean-body svg text {
   fill: var(--mean-muted);
-  font-family: var(--font);
+  font-family: var(--mean-font);
   font-variant-numeric: tabular-nums;
 }
 .mean-body .mean-wel-svg {
@@ -204,9 +204,9 @@
   display: grid;
   gap: 2px;
 }
-.mean-head p {
+.mean-head :is(p, h3) {
   margin: 0;
-  font-family: var(--font);
+  font-family: var(--mean-font);
   overflow: hidden;
 }
 .mean-head-title {
@@ -219,19 +219,24 @@
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
 }
+.mean-head-wait::before {
+  content: '';
+  min-height: calc(2 * 1.25 * var(--type-label));
+}
 .mean-head-note {
   color: var(--mean-muted);
   font-size: var(--type-caption);
   line-height: 1.35;
-  white-space: nowrap;
-  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 .mean-open .mean-head-title {
   font-size: var(--type-chart-title);
   -webkit-line-clamp: unset;
 }
 .mean-open .mean-head-note {
-  white-space: normal;
+  -webkit-line-clamp: unset;
 }
 /* One gridline weight across the four families. */
 .mean-body

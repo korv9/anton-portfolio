@@ -66,19 +66,29 @@ function observe(
   }
 }
 
-/** The card's accessible name: its fixed title, its label, or its id read as words under its
+/** The card's accessible name: its label, its fixed title, or its id read as words under its
  * section. */
 const nameOf = (post: Post, section: string) =>
-  (typeof post.title === 'string' ? post.title : undefined) ??
   post.label ??
+  (typeof post.title === 'string' ? post.title : undefined) ??
   `${section}: ${post.id.split('-').slice(1).join(' ')}`
 
 /** The card's visible heading and note, above the chart. */
-function Heading({ title, note }: { title?: string; note?: string }) {
-  if (!title && !note) return null
+function Heading({
+  title,
+  note,
+  wait,
+}: {
+  title?: string
+  note?: string
+  wait?: boolean
+}) {
+  if (!title && !note && !wait) return null
   return (
-    <header className="mean-head">
-      {title && <p className="mean-head-title">{title}</p>}
+    <header
+      className={wait && !title ? 'mean-head mean-head-wait' : 'mean-head'}
+    >
+      {title && <h3 className="mean-head-title">{title}</h3>}
       {note && <p className="mean-head-note">{note}</p>}
     </header>
   )
@@ -96,7 +106,8 @@ function DataHeading({ post }: { post: Post }) {
     } catch {
       title = ''
     }
-  return <Heading title={title} note={post.note} />
+  // Until the data has loaded, the heading keeps its two lines so the chart does not jump.
+  return <Heading title={title} note={post.note} wait />
 }
 
 /** The overdue mark's text, with the day of the last ingestion when known. Only an overdue
