@@ -47,3 +47,5 @@ frontend/public/data/parquet/welfare/
 .idea-lineage/*
 !.idea-lineage/public/
 frontend/public/data/status/
+# The job assistant's hourly files: published to R2 by refresh-job-assistant.yml, never committed.
+frontend/public/data/job-assistant/

@@ -89,7 +89,8 @@ test('every feed post declares the data it reads, and only published paths', () 
       assert.ok(all.has(path), `${f}: reads ${path} but no post declares it`)
     for (const path of all)
       assert.ok(
-        used.has(path) || LIVE[path]?.includes(f),
+        used.has(path) ||
+          (LIVE[path]?.includes(f) && text.includes('loadStatus')),
         `${f}: declares ${path} but never reads it`,
       )
   }
