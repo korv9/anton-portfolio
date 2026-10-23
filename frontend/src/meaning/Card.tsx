@@ -10,8 +10,9 @@ import {
   useState,
   type ReactNode,
 } from 'react'
+import { fitCharts } from './fit'
 import { useFresh } from './freshness'
-import { PostLeave, PostLive, PostOpen, still, type Post } from './kit'
+import { PostLeave, PostLive, PostOpen, still, useData, type Post } from './kit'
 import { Trace } from './Trace'
 
 /** Above this many SVG elements a thumbnail steps without transitions. */
@@ -66,9 +67,49 @@ function observe(
   }
 }
 
-/** The card's accessible name: the post's label, or its id read as words under its section. */
+/** The card's accessible name: its label, its fixed title, or its id read as words under its
+ * section. */
 const nameOf = (post: Post, section: string) =>
-  post.label ?? `${section}: ${post.id.split('-').slice(1).join(' ')}`
+  post.label ??
+  (typeof post.title === 'string' ? post.title : undefined) ??
+  `${section}: ${post.id.split('-').slice(1).join(' ')}`
+
+/** The card's visible heading and note, above the chart. */
+function Heading({
+  title,
+  note,
+  wait,
+}: {
+  title?: string
+  note?: string
+  wait?: boolean
+}) {
+  if (!title && !note && !wait) return null
+  return (
+    <header
+      className={wait && !title ? 'mean-head mean-head-wait' : 'mean-head'}
+    >
+      {title && <h3 className="mean-head-title">{title}</h3>}
+      {note && <p className="mean-head-note">{note}</p>}
+    </header>
+  )
+}
+
+/** A title worked out from the post's first source; nothing until that file has loaded. The
+ * fetch is shared with the chart, so it costs no second request. */
+function DataHeading({ post }: { post: Post }) {
+  const d = useData<unknown>(post.sources[0])
+  let title = ''
+  // Data the title cannot read leaves the heading empty; the chart decides whether to stay.
+  if (d !== null && !(d instanceof Error))
+    try {
+      title = (post.title as (d: never) => string)(d as never)
+    } catch {
+      title = ''
+    }
+  // Until the data has loaded, the heading keeps its two lines so the chart does not jump.
+  return <Heading title={title} note={post.note} wait />
+}
 
 /** The overdue mark's text, with the day of the last ingestion when known. Only an overdue
  * source is marked: a dot on every card would say nothing. */
@@ -146,6 +187,20 @@ export function Card({
       node?.querySelector<HTMLElement>('.mean-hit')?.focus()
     wasOpen.current = open
   }, [open])
+  // Each chart's text keeps its screen size and stays inside the chart (fit.ts).
+  useEffect(() => {
+    const node = ref.current
+    if (!node || !near) return
+    const fit = () => fitCharts(node)
+    const ro = new ResizeObserver(fit)
+    ro.observe(node)
+    const mo = new MutationObserver(fit)
+    mo.observe(node, { childList: true, subtree: true, characterData: true })
+    return () => {
+      ro.disconnect()
+      mo.disconnect()
+    }
+  }, [near])
   // Charts with thousands of marks step without gliding: tweening them all costs every frame.
   // The marks are counted once, when the chart first renders.
   useEffect(() => {
@@ -180,6 +235,11 @@ export function Card({
         />
       )}
       <div className="mean-body" inert={traced || undefined}>
+        {typeof post.title === 'function' ? (
+          (near || open) && <DataHeading post={post} />
+        ) : (
+          <Heading title={post.title} note={post.note} />
+        )}
         <PostLeave.Provider value={leave}>
           <PostOpen.Provider value={open}>
             <PostLive.Provider value={onScreen && moving && !dense}>

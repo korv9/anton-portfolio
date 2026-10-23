@@ -1,190 +1,71 @@
-/** Taxes close to home: municipal rates, church fees, household VAT and the tax wedge. */
+/** Taxes close to home: the VAT in a household's spending, and the tax wedge on a wage. */
 import { useState } from 'react'
-import { Frame, Slicer, color, useData, type Post } from '../kit'
+import { Frame, OTHER, Slicer, focal, useData, type Post } from '../kit'
+import { EndLabels, XAxis, YAxis } from '../axes'
 import {
-  Legend,
+  Ranked,
   Svg,
-  XTicks,
-  arc,
+  axis,
   extent,
   fmt,
+  sek,
   groupBy,
-  niceMax,
   num,
   path,
   scale,
 } from './wel-kit'
 
 type Household = {
+  year: string
   households: {
     key: string
     name: [string, string]
-    groups: {
-      group: string
-      name: [string, string]
-      vat: number
-      spending: number
-      vat_rate: number
-    }[]
+    groups: { group: string; name: [string, string]; vat: number }[]
   }[]
 }
 
+/** country, year, household type, tax wedge %. */
 type Wedge = {
-  countries: { country_code: string; is_nordic: boolean }[]
-  latest: {
-    country_code: string
-    household_type: string
-    wage_level: string
-    spouse_wage_level: string | null
-    income_tax_pct: number
-    employee_ssc_pct: number
-    employer_ssc_pct: number
-    tax_wedge_pct: number
-  }[]
+  countries: { country_code: string; name_en: string; is_nordic: boolean }[]
   series: [string, number, string, number | null][]
   /** Household code -> [English, Swedish] name. */
   households: Record<string, [string, string]>
 }
 
-const useWedge = () => useData<Wedge>('taxes/wedge.json')
+const ALL = 'E90'
 
-function VatDonut() {
+const household = (d: Household, key: string) =>
+  d.households.find((x) => x.key === key) ?? d.households.at(0)
+
+function Vat() {
   const data = useData<Household>('taxes/household.json')
-  const [h, setH] = useState('E90')
+  const [h, setH] = useState(ALL)
   return (
     <Frame data={data}>
       {(d) => {
-        const hh = d.households.find((x) => x.key === h) ?? d.households[0]
-        const total = hh.groups.reduce((s, g) => s + g.vat, 0)
-        let a = 0
+        const hh = household(d, h)
+        if (!hh) return null
         return (
           <>
             <Slicer
               label="Household"
               options={d.households.map((x) => x.key)}
-              format={(k) =>
-                d.households.find((x) => x.key === k)?.name[0] ?? k
-              }
+              format={(k) => household(d, k)?.name[0] ?? k}
               value={hh.key}
               onChange={setH}
             />
-            <Svg label="VAT paid per household by spending group">
-              {hh.groups.map((g, i) => {
-                const a0 = a
-                a += (g.vat / total) * 2 * Math.PI
-                return (
-                  <path
-                    key={g.group}
-                    d={arc(200, 190, 92, 170 - (25 - g.vat_rate) * 2.4, a0, a)}
-                    fill={color(i)}
-                    stroke="var(--paper)"
-                    strokeWidth={1.5}
-                  >
-                    <title>{`${g.name[0]}: ${fmt(g.vat)} SEK, ${g.vat_rate}%`}</title>
-                  </path>
-                )
-              })}
-              <text
-                x={200}
-                y={198}
-                textAnchor="middle"
-                style={{ fontSize: 30, fill: 'var(--ink)' }}
-              >
-                {fmt(total)}
-              </text>
-              <text x={200} y={218} textAnchor="middle">
-                SEK
-              </text>
-            </Svg>
-            <Legend items={hh.groups.map((g) => g.name[0].split(',')[0])} />
-          </>
-        )
-      }}
-    </Frame>
-  )
-}
-
-function WedgeBars() {
-  const data = useWedge()
-  const [k, setK] = useState('S_C0 AW100')
-  return (
-    <Frame data={data}>
-      {(d) => {
-        const keyOf = (r: Wedge['latest'][number]) =>
-          `${r.household_type} ${r.wage_level}${r.spouse_wage_level ? `+${r.spouse_wage_level}` : ''}`
-        const opts = [...new Set(d.latest.map(keyOf))]
-        const rows = d.latest
-          .filter((r) => keyOf(r) === k)
-          .sort((a, b) => b.tax_wedge_pct - a.tax_wedge_pct)
-        const parts = [
-          'income_tax_pct',
-          'employee_ssc_pct',
-          'employer_ssc_pct',
-        ] as const
-        const top = niceMax(
-          Math.max(
-            1,
-            ...rows.map((r) =>
-              parts.reduce((s, p) => s + Math.max(0, r[p]), 0),
-            ),
-          ),
-        )
-        const x = scale([0, top], [40, 392])
-        const h = 780 / Math.max(1, rows.length)
-        return (
-          <>
-            <Slicer
-              label="Household and wage"
-              cycles={false}
-              options={opts}
-              value={k}
-              onChange={setK}
+            <Ranked
+              wrap
+              head={4}
+              tail={0}
+              label={`VAT per household and year by spending group, SEK: ${hh.name[0]}`}
+              format={sek}
+              rows={hh.groups.map((g) => ({
+                key: g.group,
+                label: g.name[0],
+                value: g.vat,
+              }))}
             />
-            <Svg
-              w={400}
-              h={800}
-              label="Tax wedge split by component per country"
-            >
-              {rows.map((r, i) => {
-                let at = 0
-                return (
-                  <g
-                    key={r.country_code}
-                    opacity={r.country_code === 'SWE' ? 1 : 0.8}
-                  >
-                    {parts.map((p, j) => {
-                      const v = Math.max(0, r[p])
-                      const x0 = at
-                      at += v
-                      return (
-                        <rect
-                          key={p}
-                          x={x(x0)}
-                          y={i * h + 2}
-                          width={x(at) - x(x0)}
-                          height={h - 3}
-                          fill={color(j + 1)}
-                        />
-                      )
-                    })}
-                    <text
-                      x={36}
-                      y={i * h + h / 2 + 3}
-                      textAnchor="end"
-                      style={
-                        r.country_code === 'SWE'
-                          ? { fill: 'var(--ink)', fontWeight: 700 }
-                          : undefined
-                      }
-                    >
-                      {r.country_code}
-                    </text>
-                    <title>{`${r.country_code}: ${fmt(r.tax_wedge_pct)}%`}</title>
-                  </g>
-                )
-              })}
-            </Svg>
-            <Legend items={['income tax', 'employee SSC', 'employer SSC']} />
           </>
         )
       }}
@@ -193,21 +74,32 @@ function WedgeBars() {
 }
 
 function WedgeLines() {
-  const data = useWedge()
+  const data = useData<Wedge>('taxes/wedge.json')
   const [hh, setHh] = useState('S_C0')
   return (
     <Frame data={data}>
       {(d) => {
         const rows = d.series.filter((r) => r[2] === hh && num(r[3]))
-        const nordic = d.countries
-          .filter((c) => c.is_nordic)
-          .map((c) => c.country_code)
-        const [y0, y1] = extent(rows.map((r) => r[1]))
-        const x = scale([y0, y1], [20, 780])
-        const y = scale(
-          [0, niceMax(Math.max(...rows.map((r) => r[3]!)))],
-          [370, 20],
+        const nordic = new Map(
+          d.countries
+            .filter((c) => c.is_nordic)
+            .map((c) => [c.country_code, c.name_en]),
         )
+        const [y0, y1] = extent(rows.map((r) => r[1]))
+        const x = scale([y0, y1], [30, 500])
+        const ax = axis(
+          rows.map((r) => r[3]!),
+          [196, 12],
+        )
+        const lines = [...groupBy(rows, (r) => r[0])]
+          .map(([c, list]) => ({ c, list: list.sort((a, b) => a[1] - b[1]) }))
+          // Grey first, Nordics over them, Sweden on top.
+          .sort(
+            (a, b) =>
+              +nordic.has(a.c) +
+              +(a.c === 'SWE') -
+              (+nordic.has(b.c) + +(b.c === 'SWE')),
+          )
         return (
           <>
             <Slicer
@@ -217,25 +109,50 @@ function WedgeLines() {
               value={hh}
               onChange={setHh}
             />
-            <Svg w={800} h={400} label="Tax wedge over time, every country">
-              {[...groupBy(rows, (r) => r[0])].map(([c, list]) => {
-                const n = nordic.indexOf(c)
-                return (
-                  <path
-                    key={c}
-                    d={path(list.map((r) => [x(r[1]), y(r[3]!)]))}
-                    fill="none"
-                    stroke={n < 0 ? 'var(--muted)' : color(n)}
-                    strokeWidth={c === 'SWE' ? 4 : n < 0 ? 0.7 : 2}
-                    opacity={n < 0 ? 0.35 : 1}
-                  >
-                    <title>{c}</title>
-                  </path>
-                )
-              })}
-              <XTicks values={[y0, y1]} x={(i) => (i ? 760 : 40)} y={392} />
+            <Svg
+              w={600}
+              h={220}
+              label="Tax wedge on an average wage by year, % of labour costs, every OECD country"
+            >
+              <YAxis
+                y={ax.y}
+                ticks={ax.ticks}
+                x0={30}
+                x1={500}
+                format={(v) => `${v}%`}
+              />
+              {lines.map(({ c, list }) => (
+                <path
+                  key={c}
+                  d={path(list.map((r) => [x(r[1]), ax.y(r[3]!)]))}
+                  fill="none"
+                  stroke={c === 'SWE' ? focal(true) : OTHER}
+                  strokeWidth={c === 'SWE' ? 2.4 : nordic.has(c) ? 1.4 : 0.6}
+                  opacity={nordic.has(c) ? 1 : 0.35}
+                />
+              ))}
+              <EndLabels
+                x={506}
+                top={12}
+                bottom={196}
+                items={lines
+                  .filter(
+                    ({ c, list }) => nordic.has(c) && list.at(-1)![1] === y1,
+                  )
+                  .map(({ c, list }) => ({
+                    y: ax.y(list.at(-1)![3]!),
+                    label: nordic.get(c)!,
+                    color: c === 'SWE' ? undefined : 'var(--mean-muted)',
+                  }))}
+              />
+              <XAxis
+                x={x}
+                y={214}
+                ticks={[...new Set(rows.map((r) => r[1]))]
+                  .filter((y) => y % 5 === 0)
+                  .map((y) => ({ value: y, label: String(y) }))}
+              />
             </Svg>
-            <Legend items={nordic} />
           </>
         )
       }}
@@ -243,25 +160,45 @@ function WedgeLines() {
   )
 }
 
+/** Sweden's wedge for a single earner without children, first and latest year. */
+function swedenWedge(d: Wedge) {
+  const se = d.series
+    .filter((r) => r[0] === 'SWE' && r[2] === 'S_C0' && num(r[3]))
+    .sort((a, b) => a[1] - b[1])
+  return se.length > 1 ? [se[0], se.at(-1)!] : null
+}
+
 export const posts: Post[] = [
   {
     id: 'wel-vat-donut',
     domain: 'taxes',
     sources: ['taxes/household.json'],
-    render: () => <VatDonut />,
-  },
-  {
-    id: 'wel-wedge-bars',
-    domain: 'taxes',
-    sources: ['taxes/wedge.json'],
-    size: 'tall',
-    render: () => <WedgeBars />,
+    title: (d: Household) => {
+      const hh = household(d, ALL)
+      const top = [...(hh?.groups ?? [])].sort((a, b) => b.vat - a.vat)[0]
+      return top
+        ? `${top.name[0]} carried the most VAT in household spending in ${d.year}`
+        : 'VAT in household spending'
+    },
+    note: 'SEK per household and year, by type of household; a floor, as mixed-rate groups are left out. Source: SCB',
+    render: () => <Vat />,
   },
   {
     id: 'wel-wedge-lines',
     domain: 'taxes',
     sources: ['taxes/wedge.json'],
     size: 'wide',
+    title: (d: Wedge) => {
+      const s = swedenWedge(d)
+      if (!s) return 'The tax wedge on an average wage'
+      const [a, b] = [s[0][3]!, s[1][3]!]
+      const who = 'For a single earner without children on an average wage'
+      const span = `${s[0][1]}–${s[1][1]}`
+      return fmt(a, 1) === fmt(b, 1)
+        ? `${who}, Sweden's tax wedge stayed at ${fmt(a, 1)}%, ${span}`
+        : `${who}, Sweden's tax wedge ${b < a ? 'fell' : 'rose'} from ${fmt(a, 1)}% to ${fmt(b, 1)}%, ${span}`
+    },
+    note: 'Income tax and social contributions, % of labour costs, average wage. Source: OECD Taxing Wages',
     render: () => <WedgeLines />,
   },
 ]
