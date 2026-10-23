@@ -1,6 +1,6 @@
 /**
- * Shared bits for the jobs posts: dataset paths, number formats, a legend, a KPI tile, axis
- * ticks, line paths and a squarified treemap. Exports no posts of its own.
+ * Shared bits for the jobs posts: dataset paths, number formats, a KPI tile, an svg surface,
+ * x labels, line paths and ranked bars. Exports no posts of its own.
  */
 import { useContext, type ReactNode } from 'react'
 import RankBars, { type RankRow } from '../../charts/RankBars'
@@ -9,7 +9,7 @@ import { FIELD_EN, type Market } from '../../jobs/market'
 import './job.css'
 
 export const posts: Post[] = []
-export type { Market }
+export type { Market, RankRow }
 
 export const D = 'jobs'
 export const MARKET = 'jobs/market.json'
@@ -18,12 +18,9 @@ export const knownRegion = (r: { region: string }) =>
   r.region !== 'unknown' && !r.region.startsWith('Okänt')
 export const CLUSTERS = 'jobs/cluster-summary.json'
 export const PREVIEW = 'jobs/cluster-preview.json'
-export const COMPANIES = 'jobs/company-intelligence.json'
-export const WORKSPACE = 'jobs/workspace.json'
 
 export const fieldName = (sv: string) => FIELD_EN[sv] ?? sv
 export const sum = (xs: number[]) => xs.reduce((a, b) => a + b, 0)
-export const uniq = <T,>(xs: T[]) => [...new Set(xs)]
 export const fmt = (n: number) => Math.round(n).toLocaleString('en-GB')
 export const pct = (n: number, d = 0) => `${(n * 100).toFixed(d)} %`
 export const compact = (n: number) =>
@@ -32,26 +29,29 @@ export const compact = (n: number) =>
     maximumFractionDigits: 1,
   }).format(n)
 
-/** Count occurrences into [key, count] sorted by count, largest first. */
-export function tally(keys: string[]) {
-  const m = new Map<string, number>()
-  for (const k of keys) m.set(k, (m.get(k) ?? 0) + 1)
-  return [...m].sort((a, b) => b[1] - a[1])
-}
+/** The largest of a list that may be empty: `empty` then, so no −Infinity reaches a scale. */
+export const maxOf = (xs: number[], empty = 0) =>
+  xs.length ? Math.max(...xs) : empty
+export const minOf = (xs: number[], empty = 0) =>
+  xs.length ? Math.min(...xs) : empty
+/** The values of a list that are present: null and NaN are missing data, never zero. */
+export const present = <T,>(xs: (T | null | undefined)[]) =>
+  xs.filter((x): x is T => x != null && !Number.isNaN(x))
 
-/** Colour swatches with labels; the labels are the legend text. */
-export function Legend({ items }: { items: [string, string][] }) {
-  return (
-    <div className="mean-legend">
-      {items.map(([label, c], i) => (
-        <span key={`${i}-${label}`}>
-          <i style={{ background: c }} />
-          {label}
-        </span>
-      ))}
-    </div>
-  )
-}
+/** b / a − 1, or null when there is no earlier value to compare with. */
+export const ratio = (now: number | undefined, before: number | undefined) =>
+  now != null && before ? now / before - 1 : null
+
+/**
+ * The latest full calendar year in market.json: the latest year when its months run to
+ * December, otherwise the year before.
+ */
+export const fullYear = (m: Market) =>
+  m.last_month.endsWith('-12') ? m.latest_year : m.latest_year - 1
+
+/** 'January–September': the months the latest year covers, which every year is counted over. */
+export const span = (m: Market) =>
+  `January–${new Date(2000, m.ytd_months - 1, 15).toLocaleString('en-GB', { month: 'long' })}`
 
 /** A giant single number with its unit, on the focal tint. */
 export function Big({ value, unit }: { value: string; unit: string }) {
@@ -101,35 +101,7 @@ export function Svg({
   )
 }
 
-/** Horizontal gridlines with value labels at the left edge. */
-export function YTicks({
-  ticks,
-  y,
-  x0,
-  x1,
-  f = compact,
-}: {
-  ticks: number[]
-  y: (v: number) => number
-  x0: number
-  x1: number
-  f?: (v: number) => string
-}) {
-  return (
-    <g className="mean-axis">
-      {ticks.map((t) => (
-        <g key={t}>
-          <line x1={x0} x2={x1} y1={y(t)} y2={y(t)} />
-          <text x={x0 - 4} y={y(t) + 3} textAnchor="end">
-            {f(t)}
-          </text>
-        </g>
-      ))}
-    </g>
-  )
-}
-
-/** Year labels along the bottom at given x positions. */
+/** Labels along the bottom at given x positions. */
 export function XLabels({
   items,
   y,
@@ -147,8 +119,6 @@ export function XLabels({
     </g>
   )
 }
-
-export type { RankRow }
 
 /** A signed percentage change, e.g. +12 % or −8 %, with a true minus sign. */
 export const change = (v: number) =>
@@ -177,7 +147,7 @@ export function Bars({
 }) {
   const open = useContext(PostOpen)
   return (
-    <div className={open ? 'mean-bars mean-job-all' : 'mean-bars'}>
+    <div className="mean-bars">
       <RankBars
         rows={open ? rows : (thumb ?? rows.slice(0, n))}
         format={format}
@@ -188,83 +158,12 @@ export function Bars({
   )
 }
 
-export const linePath = (pts: [number, number][]) =>
+/** A line through points; a null point is missing data and breaks the line. */
+export const linePath = (pts: ([number, number] | null)[]) =>
   pts
-    .map(([x, y], i) => `${i ? 'L' : 'M'}${x.toFixed(1)},${y.toFixed(1)}`)
+    .map((p, i) =>
+      p
+        ? `${i && pts[i - 1] ? 'L' : 'M'}${p[0].toFixed(1)},${p[1].toFixed(1)}`
+        : '',
+    )
     .join('')
-
-/** Closed band between an upper and a lower line, for stacked areas and streams. */
-export const bandPath = (top: [number, number][], bottom: [number, number][]) =>
-  `${linePath(top)}L${linePath([...bottom].reverse()).slice(1)}Z`
-
-export type Rect = { x: number; y: number; w: number; h: number }
-
-/** Squarified treemap (Bruls et al.) of positive values into a rectangle, in input order. */
-export function squarify<T>(
-  items: T[],
-  value: (t: T) => number,
-  box: Rect,
-): (Rect & { item: T })[] {
-  const nodes = items
-    .map((item) => ({ item, v: value(item) }))
-    .filter((n) => n.v > 0)
-    .sort((a, b) => b.v - a.v)
-  const total = sum(nodes.map((n) => n.v))
-  const scale = (box.w * box.h) / (total || 1)
-  const out: (Rect & { item: T })[] = []
-  let { x, y, w, h } = box
-  let row: { item: T; a: number }[] = []
-  const worst = (r: { a: number }[], side: number) => {
-    const s = sum(r.map((n) => n.a))
-    const mx = Math.max(...r.map((n) => n.a))
-    const mn = Math.min(...r.map((n) => n.a))
-    return Math.max((side * side * mx) / (s * s), (s * s) / (side * side * mn))
-  }
-  const flush = () => {
-    const s = sum(row.map((n) => n.a))
-    if (w >= h) {
-      const rw = s / h
-      let yy = y
-      for (const n of row) {
-        out.push({ item: n.item, x, y: yy, w: rw, h: n.a / rw })
-        yy += n.a / rw
-      }
-      x += rw
-      w -= rw
-    } else {
-      const rh = s / w
-      let xx = x
-      for (const n of row) {
-        out.push({ item: n.item, x: xx, y, w: n.a / rh, h: rh })
-        xx += n.a / rh
-      }
-      y += rh
-      h -= rh
-    }
-    row = []
-  }
-  for (const n of nodes) {
-    const a = n.v * scale
-    const side = Math.min(w, h)
-    if (row.length && worst([...row, { a }], side) > worst(row, side)) flush()
-    row.push({ item: n.item, a })
-  }
-  if (row.length) flush()
-  return out
-}
-
-/** Arc segment path for donuts and sunbursts, angles in radians from 12 o'clock. */
-export function arc(
-  cx: number,
-  cy: number,
-  r0: number,
-  r1: number,
-  a0: number,
-  a1: number,
-) {
-  a1 = Math.min(a1, a0 + 2 * Math.PI - 1e-4)
-  const p = (r: number, a: number) =>
-    `${(cx + r * Math.sin(a)).toFixed(2)},${(cy - r * Math.cos(a)).toFixed(2)}`
-  const large = a1 - a0 > Math.PI ? 1 : 0
-  return `M${p(r1, a0)}A${r1},${r1} 0 ${large} 1 ${p(r1, a1)}L${p(r0, a1)}A${r0},${r0} 0 ${large} 0 ${p(r0, a0)}Z`
-}

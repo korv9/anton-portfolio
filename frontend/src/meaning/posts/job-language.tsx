@@ -1,18 +1,7 @@
 /** Jobs: the language of Swedish job ads since 2006, from sweden/language/*.json. */
-import { useState } from 'react'
-import { color, focal, Frame, Slicer, useData, type Post } from '../kit'
-import { linearScale, niceTicks } from '../../charts/scales'
-import {
-  Bars,
-  change,
-  D,
-  Legend,
-  linePath,
-  pct,
-  Svg,
-  XLabels,
-  YTicks,
-} from './job-kit'
+import { focal, Frame, useData, type Post } from '../kit'
+import { linearScale } from '../../charts/scales'
+import { Bars, change, D, linePath, pct, Svg } from './job-kit'
 
 /** [year, texts, texts_matching, matches, words, share, share_std, per_1000, per_1000_std] */
 type Row = [
@@ -34,77 +23,21 @@ type Category = {
 }
 type Trends = { categories: Category[] }
 const TRENDS = 'sweden/language/trends.json'
-const rate = (r: Row) => r[8] ?? r[7]
 const short = (s: string) => s.split(' and ')[0]
 
-function Lines() {
-  const data = useData<Trends>(TRENDS)
-  const [metric, setMetric] = useState<'per 1,000 words' | 'share'>(
-    'per 1,000 words',
-  )
-  return (
-    <Frame data={data}>
-      {(t) => {
-        const v = (r: Row) => (metric === 'share' ? (r[6] ?? r[5]) : rate(r))
-        const years = t.categories[0]?.rows.map((r) => r[0]) ?? []
-        const ticks = niceTicks(
-          Math.max(...t.categories.flatMap((c) => c.rows.map(v))),
-        )
-        const W = 800,
-          H = 340,
-          L = 40,
-          B = 310
-        const x = linearScale([years[0], years.at(-1)!], [L, W - 10])
-        const y = linearScale([0, ticks.at(-1)!], [B, 10])
-        return (
-          <>
-            <Slicer
-              label="Metric"
-              cycles={false}
-              options={['per 1,000 words', 'share'] as const}
-              value={metric}
-              onChange={setMetric}
-            />
-            <Svg w={W} h={H} label="Ad language categories per year">
-              <YTicks
-                ticks={ticks}
-                y={y}
-                x0={L}
-                x1={W - 10}
-                f={(n) => (metric === 'share' ? pct(n) : String(n))}
-              />
-              {t.categories.map((c, k) => (
-                <path
-                  key={c.id}
-                  d={linePath(c.rows.map((r) => [x(r[0]), y(v(r))]))}
-                  fill="none"
-                  stroke={color(k)}
-                  strokeWidth={k ? 2 : 3.5}
-                >
-                  <title>{c.label_en}</title>
-                </path>
-              ))}
-              <XLabels
-                y={H - 8}
-                items={years
-                  .filter((yr) => yr % 4 === 2)
-                  .map((yr) => ({ x: x(yr), label: String(yr) }))}
-              />
-            </Svg>
-            <Legend
-              items={t.categories.map((c, k) => [short(c.label_en), color(k)])}
-            />
-          </>
-        )
-      }}
-    </Frame>
-  )
-}
-
-/** Change in the standardised rate per 1,000 words from before a category's break year to after. */
+/** Change in the standardised rate per 1,000 words from before a category's break year to
+ * after; categories without a rate before the break have no change to show and are left out. */
 const jump = (c: Category) => c.break.mean_after / c.break.mean_before - 1
 const byJump = (t: Trends) =>
-  [...t.categories].sort((a, b) => jump(b) - jump(a))
+  t.categories
+    .filter((c) => c.break.mean_before > 0 && Number.isFinite(jump(c)))
+    .sort((a, b) => jump(b) - jump(a))
+/** The category whose rate changed most at its break, up or down. */
+const biggest = (t: Trends) =>
+  byJump(t).reduce<Category | undefined>(
+    (a, c) => (!a || Math.abs(jump(c)) > Math.abs(jump(a)) ? c : a),
+    undefined,
+  )
 
 function Dumbbell() {
   const data = useData<Trends>(TRENDS)
@@ -114,11 +47,11 @@ function Dumbbell() {
         <Bars
           label="Change in each category's rate per 1,000 words after its break year"
           format={change}
-          rows={byJump(t).map((c, j) => ({
+          rows={byJump(t).map((c) => ({
             key: c.id,
             label: short(c.label_en),
             value: jump(c),
-            color: focal(j === 0),
+            color: focal(c === biggest(t)),
             note: `from ${c.break.first_year_after}`,
           }))}
         />
@@ -132,18 +65,20 @@ function Multiples() {
   return (
     <Frame data={data}>
       {(t) => {
-        const W = 300,
-          cellH = 500 / t.categories.length
         // The focal row is the category whose share grew most since the first year.
+        const cats = t.categories.filter((c) => c.rows.length)
+        if (!cats.length) return null
+        const W = 300,
+          cellH = 500 / cats.length
         const rise = (c: Category) => c.rows.at(-1)![5] - c.rows[0][5]
-        const top = t.categories.reduce((a, c) => (rise(c) > rise(a) ? c : a))
+        const top = cats.reduce((a, c) => (rise(c) > rise(a) ? c : a))
         return (
           <Svg
             w={W}
             h={510}
             label="Small multiples of each category's share of ad texts"
           >
-            {t.categories.map((c, k) => {
+            {cats.map((c, k) => {
               const x = linearScale([c.rows[0][0], c.rows.at(-1)![0]], [4, 236])
               const y = linearScale(
                 [0, 1],
@@ -190,21 +125,14 @@ function Multiples() {
 
 export const posts: Post[] = [
   {
-    id: 'job-lang-lines',
-    domain: D,
-    sources: ['sweden/language/trends.json'],
-    size: 'wide',
-    render: () => <Lines />,
-  },
-  {
     id: 'job-lang-dumbbell',
     domain: D,
     sources: ['sweden/language/trends.json'],
     title: (t: Trends) => {
-      const c = byJump(t)[0]
+      const c = biggest(t)
       return c
-        ? `${short(c.label_en)} words rose most after their break year: ${change(jump(c))}`
-        : 'Change in ad wording after each break year'
+        ? `${short(c.label_en)} words changed most at an estimated break: ${change(jump(c))} from ${c.break.first_year_after}`
+        : 'Change in ad wording around an estimated break year'
     },
     note: "Matches per 1,000 words, field mix held fixed; mean after against before each category's break year (an exploratory split), 2006 on",
     render: () => <Dumbbell />,

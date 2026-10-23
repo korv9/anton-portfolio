@@ -2,7 +2,18 @@
 import { useState } from 'react'
 import { focal, Frame, OTHER, Slicer, useData, type Post } from '../kit'
 import { linearScale } from '../../charts/scales'
-import { Bars, CLUSTERS, D, fmt, pct, PREVIEW, sum, Svg } from './job-kit'
+import {
+  Bars,
+  CLUSTERS,
+  D,
+  fmt,
+  maxOf,
+  minOf,
+  pct,
+  PREVIEW,
+  sum,
+  Svg,
+} from './job-kit'
 
 type Share = { label: string; count: number; share: number }
 type Cluster = {
@@ -44,19 +55,14 @@ function Scatter() {
         <Frame data={meta}>
           {(s) => {
             const order = bySize(s)
-            const on = pick ?? order[0]?.cluster_id ?? 0
+            const on = pick ?? order[0]?.cluster_id
+            if (on == null || !p.points.length) return null
             const W = 600,
               H = 240
             const xs = p.points.map((q) => q.x),
               ys = p.points.map((q) => q.y)
-            const x = linearScale(
-              [Math.min(...xs), Math.max(...xs)],
-              [8, W - 8],
-            )
-            const y = linearScale(
-              [Math.min(...ys), Math.max(...ys)],
-              [H - 8, 8],
-            )
+            const x = linearScale([minOf(xs), maxOf(xs)], [8, W - 8])
+            const y = linearScale([minOf(ys), maxOf(ys)], [H - 8, 8])
             const mine = p.points.filter((q) => q.cluster === on)
             const n = mine.length || 1
             const cx = sum(mine.map((q) => x(q.x))) / n
@@ -74,6 +80,7 @@ function Scatter() {
                   value={on}
                   onChange={setPick}
                 />
+                {picked && <p className="mean-cap">{name(picked)}</p>}
                 <Svg
                   w={W}
                   h={H}
@@ -181,7 +188,7 @@ export const posts: Post[] = [
     sources: ['jobs/cluster-preview.json', 'jobs/cluster-summary.json'],
     size: 'wide',
     title: 'Tech job ads placed by how alike their texts read',
-    note: 'A sample of ads projected to two dimensions (UMAP), so the axes have no unit; the largest cluster is highlighted',
+    note: 'A sample of ads projected to two dimensions (UMAP), so the axes have no unit; one cluster highlighted at a time',
     render: () => <Scatter />,
   },
   {
@@ -190,7 +197,7 @@ export const posts: Post[] = [
     sources: ['jobs/cluster-summary.json'],
     title: (s: Summary) => {
       const c = bySize(s)[0]
-      return c
+      return c && s.source_size
         ? `The largest cluster, ${c.cluster_label}, holds ${pct(c.job_count / s.source_size)} of the tech ads`
         : 'Tech job ads per cluster'
     },
@@ -204,7 +211,9 @@ export const posts: Post[] = [
     title: (s: Summary) => {
       const cs = real(s)
       const n = cs.filter((c) => tilt(c) > 0).length
-      return `Senior ads outnumber junior ads in ${n} of ${cs.length} clusters`
+      return cs.length
+        ? `In ${n} of ${cs.length} clusters, a larger share of ads ask for seniors than for juniors`
+        : 'Senior and junior shares of ads per cluster'
     },
     note: "Senior share minus junior share of each cluster's ads, in percentage points",
     render: () => <Seniority />,

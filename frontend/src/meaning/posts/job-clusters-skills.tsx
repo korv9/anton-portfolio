@@ -39,7 +39,7 @@ function Skills() {
               value={c.cluster_id}
               onChange={setPick}
             />
-            <p className="mean-job-cap">{name(c)}</p>
+            <p className="mean-cap">{name(c)}</p>
             <Bars
               label={`Most distinctive skills in cluster ${name(c)}, by lift`}
               format={(v) => `${v.toFixed(1)}×`}

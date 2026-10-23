@@ -7,16 +7,6 @@
   fill: var(--mean-s1);
   font-weight: 500;
 }
-/* Opened, a ranked list shows every row and scrolls inside the card. */
-.mean-open .mean-bars.mean-job-all {
-  overflow-y: auto;
-}
-/* One line naming what a ranked list shows, where a slicer picks it. */
-.mean-job-cap {
-  margin: 0 0 4px;
-  color: var(--mean-muted);
-  font-size: var(--type-caption);
-}
 .mean-job-big {
   flex: 1;
   display: flex;

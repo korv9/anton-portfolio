@@ -1,14 +1,12 @@
 /** Jobs: the ad market over time, from market.json's monthly, daily and archive counts. */
 import { useState } from 'react'
-import { color, focal, Frame, OTHER, Slicer, useData, type Post } from '../kit'
+import { focal, Frame, OTHER, Slicer, useData, type Post } from '../kit'
 import { EndLabels, YAxis } from '../axes'
 import { linearScale, niceTicks, yearTicks } from '../../charts/scales'
 import {
-  bandPath,
   compact,
   D,
   fieldName,
-  Legend,
   linePath,
   MARKET,
   sum,
@@ -36,6 +34,7 @@ function MonthlyLine() {
         const tops = topFields(m, 7)
         const id = tops.find((f) => fieldName(f.name) === field)?.id ?? 'all'
         const rows = m.monthly[id] ?? []
+        if (!rows.length) return null
         const W = 600,
           H = 220,
           L = 40,
@@ -54,7 +53,12 @@ function MonthlyLine() {
               value={field}
               onChange={setField}
             />
-            <Svg w={W} h={H} label="Job ads and vacancies per month">
+            <p className="mean-cap">{field === 'All' ? 'All fields' : field}</p>
+            <Svg
+              w={W}
+              h={H}
+              label={`Job ads and vacancies per month, ${field === 'All' ? 'all fields' : field}`}
+            >
               <YAxis ticks={ticks} y={y} x0={L} x1={R} format={compact} />
               <path
                 d={linePath(vac)}
@@ -74,11 +78,11 @@ function MonthlyLine() {
                 bottom={B}
                 items={[
                   {
-                    y: vac.at(-1)?.[1] ?? B,
+                    y: vac.at(-1)![1],
                     label: 'vacancies',
                     color: 'var(--mean-muted)',
                   },
-                  { y: ads.at(-1)?.[1] ?? B, label: 'ads', color: focal(true) },
+                  { y: ads.at(-1)![1], label: 'ads', color: focal(true) },
                 ]}
               />
               <XLabels
@@ -96,71 +100,6 @@ function MonthlyLine() {
   )
 }
 
-function Stream() {
-  const data = useData<Market>(MARKET)
-  return (
-    <Frame data={data}>
-      {(m) => {
-        const fields = topFields(m, 12)
-        const months = (m.monthly.all ?? []).map((r) => r[0])
-        const series = fields.map(
-          (f) => new Map((m.monthly[f.id] ?? []).map((r) => [r[0], r[1]])),
-        )
-        const totals = months.map((mo) =>
-          sum(series.map((s) => s.get(mo) ?? 0)),
-        )
-        const W = 800,
-          H = 360
-        const x = linearScale([0, months.length - 1], [0, W])
-        const y = linearScale([0, Math.max(...totals)], [0, H - 30])
-        let base = totals.map((t) => (H - 30) / 2 - y(t) / 2)
-        const bands = series.map((s, k) => {
-          const top = months.map((_, i) => [x(i), base[i]] as [number, number])
-          const next = months.map((mo, i) => base[i] + y(s.get(mo) ?? 0))
-          const bottom = months.map(
-            (_, i) => [x(i), next[i]] as [number, number],
-          )
-          base = next
-          return {
-            d: bandPath(top, bottom),
-            c: color(k),
-            name: fieldName(fields[k].name),
-          }
-        })
-        return (
-          <>
-            <Svg
-              w={W}
-              h={H}
-              label="Streamgraph of monthly ads by occupation field"
-            >
-              {bands.map((b) => (
-                <path
-                  key={b.name}
-                  d={b.d}
-                  fill={b.c}
-                  stroke="var(--paper)"
-                  strokeWidth={0.5}
-                >
-                  <title>{b.name}</title>
-                </path>
-              ))}
-              <XLabels
-                y={H - 6}
-                items={yearTicks(months).map((t) => ({
-                  x: Math.max(16, x(t.index)),
-                  label: t.label,
-                }))}
-              />
-            </Svg>
-            <Legend items={bands.map((b) => [b.name, b.c])} />
-          </>
-        )
-      }}
-    </Frame>
-  )
-}
-
 const MONTHS = 'JFMAMJJASOND'.split('')
 
 /** Monthly ads for the last six years, one line each; the latest year is the focal one. */
@@ -170,6 +109,7 @@ function Calendar() {
     <Frame data={data}>
       {(m) => {
         const rows = m.monthly.all ?? []
+        if (!rows.length) return null
         const years = m.years.slice(-6)
         const ticks = niceTicks(Math.max(1, ...rows.map((r) => r[1])))
         const W = 300,
@@ -204,11 +144,19 @@ function Calendar() {
               x={R + 6}
               top={10}
               bottom={B}
-              items={years.map((yr) => ({
-                y: line(yr).at(-1)?.[1] ?? B,
-                label: String(yr),
-                color: yr === latest ? focal(true) : 'var(--mean-muted)',
-              }))}
+              items={years.flatMap((yr) => {
+                const end = line(yr).at(-1)
+                return end
+                  ? [
+                      {
+                        y: end[1],
+                        label: String(yr),
+                        color:
+                          yr === latest ? focal(true) : 'var(--mean-muted)',
+                      },
+                    ]
+                  : []
+              })}
             />
             <XLabels
               y={H - 4}
@@ -238,12 +186,5 @@ export const posts: Post[] = [
     title: 'Job ads per month, one line per year',
     note: 'New ads published each month, the last six years; the latest year runs to the latest full month',
     render: () => <Calendar />,
-  },
-  {
-    id: 'job-stream',
-    domain: D,
-    sources: ['jobs/market.json'],
-    size: 'wide',
-    render: () => <Stream />,
   },
 ]
