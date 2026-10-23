@@ -39,12 +39,16 @@ MONTH = r"(?:[A-Za-zåäöÅÄÖ]{3,9}\.?\s+)?"
 ENTRY = re.compile(
     r"^(?P<title>[^·|]+?)(?:\s*[·|]\s*|\s+[-–]\s+)(?P<org>.+?)\s+(?P<start>" + MONTH + r"\d{4})\s*[-–]\s*"
     r"(?P<end>" + MONTH + r"\d{4}|present|now|pågående|nu)$", re.I)
-# E-mail, phone, Swedish personnummer (with a valid date), street address, and a postcode (100 00 to
-# 999 99) before a town, with no word just before it. The same pattern as CONTACT in worker/jobs.ts.
-CONTACT = re.compile(r"@|\+\d[\d ]{6,}|\b0\d{2}[- ]?\d{3} ?\d{2} ?\d{2}\b"
-                     r"|\b(?:19|20)?\d{2}(?:0[1-9]|1[0-2])(?:0[1-9]|[12]\d|3[01])[-+]?\d{4}\b"
-                     r"|[^\W\d_]*(?:gatan|vägen|gränd|torget|allén|stigen) \d+"
-                     r"|(?<![^\W_] )\b[1-9]\d{2} ?\d{2} [A-ZÅÄÖ][a-zåäö]+")
+# E-mail, phone, Swedish personnummer or samordningsnummer (day + 60) with a valid date, street
+# address, and a postcode (100 00 to 999 99) before a town, with no word just before it unless the
+# word is an address label. Explicit lookarounds instead of \b, so this and CONTACT in worker/jobs.ts
+# agree on non-ASCII letters; platform/tests/job_assistant/contact_cases.json tests both.
+S, E = r"(?<![^\W_])", r"(?![^\W_])"
+CONTACT = re.compile(r"@|\+\d[\d ]{6,}|" + S + r"0\d{2}[- ]?\d{3} ?\d{2} ?\d{2}" + E
+                     + "|" + S + r"(?:19|20)?\d{2}(?:0[1-9]|1[0-2])(?:0[1-9]|[12]\d|3[01]|6[1-9]|[78]\d|9[01])"
+                     r"[-+]?\d{4}" + E
+                     + r"|[^\W\d_]*(?:gatan|vägen|gränd|torget|allén|stigen) \d+"
+                     r"|(?:[^\W\d_]*[Aa]d{1,2}ress:? |(?<![^\W_] ))" + S + r"[1-9]\d{2} ?\d{2} [A-ZÅÄÖ][a-zåäö]+")
 # What clean_lines cuts out of a CV line: a whole e-mail address, or any other CONTACT match.
 CONTACT_SPAN = re.compile(r"\S*@\S*|" + CONTACT.pattern)
 LINK = re.compile(r"(?:https?://)?(?:www\.)?[\w-]+(?:\.[\w-]+)*\.(?:com|se|io|dev|net|org|me)(?:/\S*)?", re.I)

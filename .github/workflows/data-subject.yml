@@ -83,10 +83,12 @@ jobs:
         run: pip install --require-hashes -r platform/requirements-news.lock || echo "::warning::Optional summary SDK could not be installed."
       # The job assistant's owner token for its profile records (worker/jobs.ts) reaches this step
       # only, never the build's dbt, exports or other subprocesses. It runs before the build, so the
-      # match step reads the newest approved profile.
+      # match step reads the newest approved profile. A failed sync warns and the subjects still
+      # build; the match step then reads the newest version already stored.
       - name: Sync the job assistant's profile records
         if: inputs.job-assist-token
-        run: python platform/job_assistant/sync.py
+        continue-on-error: true
+        run: python platform/job_assistant/sync.py || { echo "::warning::Job assistant profile sync failed; matching uses the newest version already stored."; exit 1; }
         env:
           JOB_ASSIST_TOKEN: ${{ secrets.JOB_ASSIST_TOKEN }}
       # One failed subject does not stop the others; the step fails if any did, which skips the

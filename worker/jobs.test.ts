@@ -4,8 +4,20 @@
  */
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
 import worker, { type Env } from './index.ts'
-import { SQL, type D1 } from './jobs.ts'
+import { CONTACT, SQL, type D1 } from './jobs.ts'
+
+// Shared with platform/tests/job_assistant/test_cv.py, so both CONTACT patterns agree.
+const CASES: { contact: string[]; not_contact: string[] } = JSON.parse(
+  readFileSync(
+    new URL(
+      '../platform/tests/job_assistant/contact_cases.json',
+      import.meta.url,
+    ),
+    'utf8',
+  ),
+)
 
 const TOKEN = 'owner-secret-token'
 const SHA = 'a'.repeat(64)
@@ -175,36 +187,20 @@ test('draft, approval request and versions', async () => {
 })
 
 test('personnummer and street addresses count as contact details', async () => {
+  for (const text of CASES.contact) assert.ok(CONTACT.test(text), text)
+  for (const text of CASES.not_contact) assert.ok(!CONTACT.test(text), text)
   const e = env()
-  for (const summary of [
-    '19900101-1234',
-    '900101+1234',
-    'Storgatan 12',
-    'Kungsvägen 3',
-    'Lilla torget 2',
-    '123 45 Stockholm',
-    '12345 Malmö',
-  ]) {
+  for (const [summary, status] of [
+    ['19900161-1234', 400],
+    ['Postadress 111 44 Stockholm', 400],
+    ['Org.nr 556677-8899', 200],
+  ] as const) {
     const r = await call(e, 'profile/draft', {
       method: 'PUT',
       body: JSON.stringify({ profile: profile({ summary }) }),
       token: TOKEN,
     })
-    assert.equal(r.status, 400, summary)
-  }
-  // An org number is not a valid birth date; a word before the digits is not an address.
-  for (const summary of [
-    '2019 - 2022',
-    'Kandidatexamen, 180 hp',
-    'Org.nr 556677-8899',
-    'Nominated 200 10 Kronor',
-  ]) {
-    const r = await call(e, 'profile/draft', {
-      method: 'PUT',
-      body: JSON.stringify({ profile: profile({ summary }) }),
-      token: TOKEN,
-    })
-    assert.equal(r.status, 200, summary)
+    assert.equal(r.status, status, summary)
   }
 })
 
