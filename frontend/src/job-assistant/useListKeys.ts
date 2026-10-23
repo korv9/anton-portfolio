@@ -1,10 +1,11 @@
 /**
  * The board's keyboard: the arrow keys (or j/k) move between the result cards and Enter opens
- * one, as links do; / goes to the search, Escape clears it or closes an open ad, and 1-9 set a
- * status through the shown decision block's own setter.
+ * one, as links do; / goes to the search, Escape clears it or closes an open ad, and 1-5 set a
+ * pipeline status (saved, applied, interview, offer, rejected) through the shown decision
+ * block's own setter.
  */
 import { useEffect, type MutableRefObject, type RefObject } from 'react'
-import { STATUSES, type Status } from './data'
+import { PIPELINE, type Status } from './data'
 
 type Keys = {
   search: RefObject<HTMLInputElement | null>
@@ -55,8 +56,8 @@ export function useListKeys(k: Keys) {
       } else if (e.key === '/') {
         e.preventDefault()
         k.search.current?.focus()
-      } else if (/^[1-9]$/.test(e.key)) {
-        k.statusKey.current?.(STATUSES[Number(e.key) - 1])
+      } else if (/^[1-5]$/.test(e.key)) {
+        k.statusKey.current?.(PIPELINE[Number(e.key) - 1])
       }
     }
     window.addEventListener('keydown', key)

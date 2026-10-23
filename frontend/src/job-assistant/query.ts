@@ -69,13 +69,23 @@ const CLOSED: Partial<Record<keyof Query, readonly string[]>> = {
   sort: SORTS,
 }
 
-/** Unknown values fall back to the default, so an edited or old link still opens a list. */
-export function parseQuery(params: URLSearchParams): Query {
+/**
+ * Unknown values fall back to the default, so an edited or old link still opens a list. A place,
+ * type or role is checked against the loaded rows; before they load it is kept as written.
+ */
+export function parseQuery(params: URLSearchParams, all: Row[] = []): Query {
   const out = { ...DEFAULT_QUERY } as Record<keyof Query, string>
   for (const k of KEYS) {
     const v = params.get(k)?.trim()
     if (v && (!CLOSED[k] || CLOSED[k]!.includes(v))) out[k] = v
   }
+  for (const f of ['place', 'type', 'role'] as const)
+    if (
+      out[f] &&
+      all.length &&
+      !all.some((r) => passes(r, f, out as Query, ''))
+    )
+      out[f] = DEFAULT_QUERY[f]
   return out as Query
 }
 
@@ -133,13 +143,13 @@ function passes(r: Row, f: Facet, q: Query, day: string): boolean {
     const left = daysBetween(day, r.ad.application_deadline)
     return left != null && left >= 0 && left <= Number(v)
   }
-  // level: junior is the ad's own junior wording; not_senior has no senior title and asks
-  // for at most two years. Only detailed ads carry seniority, so the others never pass.
+  // level: junior is the ad's own junior wording; not_senior has no senior title and states at
+  // most two years, so an ad that names no years does not pass. Only detailed ads carry seniority.
   const s = r.match.seniority
   if (!s) return false
   return v === 'junior'
     ? Boolean(s.junior)
-    : !s.title && (s.years == null || s.years <= 2)
+    : !s.title && s.years != null && s.years <= 2
 }
 
 /** Free text over the title, employer, occupation and the skills the ad names. */

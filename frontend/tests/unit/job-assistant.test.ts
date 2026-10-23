@@ -162,7 +162,7 @@ test('each filter narrows on the exported field and sorts keep the match order o
   assert.deepEqual(q({ published: '30' }), ['2', '1'])
   assert.deepEqual(q({ deadline: '7' }), ['2'])
   assert.deepEqual(q({ level: 'junior' }), ['2'])
-  assert.deepEqual(q({ level: 'not_senior' }), ['2'])
+  assert.deepEqual(q({ level: 'not_senior' }), [])
   assert.deepEqual(q({ sort: 'newest' }), ['2', '1', '3'])
   assert.deepEqual(q({ sort: 'deadline' }), ['2', '1', '3'])
 })
@@ -192,6 +192,11 @@ test('the query round-trips through the address and drops defaults and junk', ()
   assert.deepEqual(
     parseQuery(new URLSearchParams('match=everything&sort=random&published=2')),
     DEFAULT_QUERY,
+  )
+  assert.deepEqual(
+    parseQuery(new URLSearchParams('place=Atlantis&type=x&role=bi'), board()),
+    { ...DEFAULT_QUERY, role: 'bi' },
+    'a place, type or role no loaded ad has falls back to the default',
   )
   assert.equal(queryParams(new URLSearchParams(), DEFAULT_QUERY).toString(), '')
   assert.equal(isFiltered(DEFAULT_QUERY), false)

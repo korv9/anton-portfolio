@@ -102,9 +102,3 @@ test('on a phone the ad replaces the list and the back button returns to it', as
   )
   expect(overflow).toBe(false)
 })
-
-test('?lang=sv shows the board in Swedish', async ({ page }) => {
-  await board(page, '#jobs?lang=sv')
-  await expect(page.getByRole('searchbox', { name: /Sök jobb/ })).toBeVisible()
-  await expect(page.locator('.ja-stats')).toContainText('Starka matchningar')
-})

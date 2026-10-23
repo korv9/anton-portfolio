@@ -277,7 +277,7 @@ build still shows only the start page, as for every other product, until the own
   class, up to four skills the CV shows in work or projects, and up to two it does not. Twenty
   cards are shown at a time, with "Show more". The arrow keys (or `j`/`k`) move between cards and
   Enter opens one; `/` searches and Escape clears it or closes the ad. With the owner token, `1`
-  to `9` set the status.
+  to `5` set the pipeline status: saved, applied, interview, offer, rejected.
 - The open ad sits beside the list on wide screens; under 760 px it replaces the list and has a
   back button. It shows the class with the reasons, the checked explanation, and a table of
   requirements: skill, how the ad asks for it, the ad sentence, the CV level and the CV line with

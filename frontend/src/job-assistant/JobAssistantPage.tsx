@@ -5,7 +5,7 @@
  * the open ad on the right; under 760 px the ad replaces the list with a back button.
  */
 import { useMemo, useRef, useState, useEffect } from 'react'
-import { currentLocale, l, setLocale, type Locale } from '../i18n'
+import { l } from '../i18n'
 import { setHashParams, type Route } from '../router'
 import AdDetail from './AdDetail'
 import AdList from './AdList'
@@ -40,20 +40,7 @@ const TABS = [
 ] as const
 const narrow = () => matchMedia('(max-width: 760px)').matches
 
-/** ?lang=sv or ?lang=en, in the hash query or the page query; anything else keeps the site's. */
-function requested(route: Route): Locale | null {
-  const v =
-    route.params.get('lang') ?? new URLSearchParams(location.search).get('lang')
-  return v === 'sv' || v === 'en' ? v : null
-}
-
 export default function JobAssistantPage({ route }: { route: Route }) {
-  // The site has no language switch yet, so the locale applies to this page only and is put back
-  // on leaving it. It is set before the children render, as l() reads it during render.
-  const [siteLocale] = useState(currentLocale)
-  const lang = requested(route) ?? siteLocale
-  if (currentLocale() !== lang) setLocale(lang)
-  useEffect(() => () => setLocale(siteLocale), [siteLocale])
   const { data, records, setRecords, failed, retry, saved } = useJobData()
   const [owner, setOwner] = useState(() => Boolean(ownerToken()))
   const [more, setMore] = useState({ key: '', n: PAGE })
@@ -65,13 +52,16 @@ export default function JobAssistantPage({ route }: { route: Route }) {
   const now = useMemo(() => new Date(), [data])
   const day = today(now)
 
-  const query = useMemo(() => parseQuery(route.params), [route.params])
-  const tab = TABS.find((t) => t.id === route.params.get('tab'))?.id ?? 'jobs'
-  const adId = route.params.get('ad')
   const all = useMemo(
     () => (data ? joinRows(data, records) : []),
     [data, records],
   )
+  const query = useMemo(
+    () => parseQuery(route.params, all),
+    [route.params, all],
+  )
+  const tab = TABS.find((t) => t.id === route.params.get('tab'))?.id ?? 'jobs'
+  const adId = route.params.get('ad')
   const shown = useMemo(() => searchRows(all, query, day), [all, query, day])
   const counts = useMemo(() => facetCounts(all, query, day), [all, query, day])
   const qKey = queryParams(new URLSearchParams(), query).toString()
@@ -83,15 +73,16 @@ export default function JobAssistantPage({ route }: { route: Route }) {
     setHashParams(route.path, params, push)
   const setQuery = (q: Query, push = false) =>
     go(queryParams(route.params, q), push)
-  const href = (id: string) => {
+  const withAd = (id: string) => {
     const p = new URLSearchParams(route.params)
     p.set('ad', id)
     p.delete('tab')
-    return `${route.path}?${p}`
+    return p
   }
+  const href = (id: string) => `${route.path}?${withAd(id)}`
   const open = (id: string) => {
     openedHere.current = { id, y: window.scrollY }
-    go(new URLSearchParams(href(id).split('?')[1]), true)
+    go(withAd(id), true)
   }
   const close = () => {
     if (openedHere.current?.id === adId) history.back()
