@@ -236,7 +236,11 @@ test('answer: verified, unverified, no answer and 503', async () => {
   const uncited = await (
     await worker.fetch(ask(), await env({ response: 'Alla.' }))
   ).json()
-  assert.equal(uncited.status, 'unverified')
+  assert.equal(uncited.status, 'no_answer')
+  const dotted = await (
+    await worker.fetch(ask(), await env({ response: 'NO_ANSWER.' }))
+  ).json()
+  assert.equal(dotted.status, 'no_answer')
   const unknown = await (
     await worker.fetch(
       ask(),

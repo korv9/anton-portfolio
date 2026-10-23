@@ -158,8 +158,8 @@ export default function AskThePlatform() {
       <h3 id="ap-title">{l('Ask the platform', 'Fråga plattformen')}</h3>
       <p className="ap-lede">
         {l(
-          'A question about how this site is built gets an answer quoted from its own documents, dbt models and data catalogue. Every quote is checked word for word against its file.',
-          'En fråga om hur sajten är byggd får ett svar med citat ur dess egna dokument, dbt-modeller och datakatalog. Varje citat kontrolleras ord för ord mot sin fil.',
+          'A question about how this site is built gets an answer quoted from its own documents, dbt models and data catalogue. Every quote is checked word for word against its passage.',
+          'En fråga om hur sajten är byggd får ett svar med citat ur dess egna dokument, dbt-modeller och datakatalog. Varje citat kontrolleras ord för ord mot sitt textstycke.',
         )}
       </p>
       {corpus === 'missing' ? (

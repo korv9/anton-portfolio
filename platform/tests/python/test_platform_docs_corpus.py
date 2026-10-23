@@ -59,6 +59,6 @@ def test_every_document_passage_line_is_in_its_file():
     for item in docs:
         key = (item["path"], item["commit"])
         if key not in files:
-            files[key] = source(*key)
+            files[key] = {l.strip() for l in source(*key).splitlines()}
         for line in item["text"].splitlines():
             assert line.strip() in files[key], (item["id"], line)

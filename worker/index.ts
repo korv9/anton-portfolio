@@ -243,11 +243,12 @@ async function answer(request: Request, env: Env) {
   } catch (error) {
     return unavailable(error)
   }
-  if (text === 'NO_ANSWER')
-    return json({ status: 'no_answer', passages: found })
   const quotes = checkQuotes(text, found)
+  // A refusal, or an answer that quotes nothing, has nothing to check.
+  if (/^NO_ANSWER\W*$/.test(text) || !quotes.length)
+    return json({ status: 'no_answer', passages: found })
   // Generated in full, then checked: an answer with a quote that is not in its source is dropped.
-  if (!quotes.length || !quotes.every((q) => q.verbatim))
+  if (!quotes.every((q) => q.verbatim))
     return json({ status: 'unverified', passages: found })
   return json({
     status: 'verified',
