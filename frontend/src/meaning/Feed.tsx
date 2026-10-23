@@ -19,9 +19,15 @@ const modules = import.meta.glob<{ posts: Post[] }>('./posts/*.tsx', {
  * lines that read as noise at card size, squeezed scatters and repeats of a stronger number.
  */
 const DROPPED = new Set<string>([
-  // A single number or a weak relation (rho 0.10) that a sentence states as well.
+  // A single number, a test pass rate or a weak relation (rho 0.10): a sentence says as much.
   'wel-population-kpi',
   'wel-connections-scatter',
+  'pol-meaning-ring',
+  'pol-debate-kpis',
+  // Answered more plainly by a sibling: issue bars, the stacked vote share, the region bars.
+  'pol-issue-multiples',
+  'pol-share-multiples',
+  'job-region-swarm',
   // Empty or near-uniform.
   'pol-issue-welfare',
   'txt-plat-quality-waffle',
