@@ -141,7 +141,7 @@ subjects:
       - ingest: python platform/ingest/jobtech/ingest_stream.py
       - dbt: {select: [tag:market]}
       - export: python platform/publish/export_market.py
-      - export: python platform/publish/job_companies.py refresh --publish
+      - export: python platform/publish/job_companies.py refresh
 
   news:
     schedule: '17 5 * * *'
@@ -431,6 +431,50 @@ subjects:
       - export: python platform/publish/sweden/export_futures.py
       # Connections reads the other SWEDEN outputs, so it runs last.
       - export: python platform/publish/sweden/export_connections.py
+
+  # Clustering batches 0-2 (platform/publish/clusters): one DuckDB pass over the local JobTech
+  # cluster corpus, small fits on stored and published inputs, exports under clusters/. A run
+  # stored under features/clusters is kept unless --ml always; the dbt tests gate the exports.
+  # Five fits read published JSON under frontend/public/data, not marts, so each needs the
+  # subject that exports it: eras and talk_vote (politics: gold/tables/fact_topic_session_party;
+  # parliament: parliament/sessions.json), tax_mix (taxes), field_language (sweden_language);
+  # trajectories, labour_market and ml.three_swedens read sweden/similarity (sweden). session_maps reads the
+  # committed politics/parliament/sessions/*/umap.json, which no subject here writes.
+  clusters:
+    schedule: '13 21 * * 6'
+    sla: {fresh_within: 8d}
+    write: {features: {merge: [path]}, warehouse: overwrite, delivery: versioned}
+    group: sweden
+    needs: [welfare, parliament, politics, taxes, sweden, sweden_language]
+    features: [clusters]
+    steps:
+      - ml: python platform/publish/clusters/job_ads.py
+        marker: clusters/job-ads/manifest.json
+      # The three-spaces models read ml.three_swedens' output, which needs this build's job-ad mart.
+      - dbt: {select: [tag:clusters], exclude: [stg_municipality_three_spaces+]}
+      - ml: python platform/publish/clusters/debate_topics.py
+        marker: clusters/debate-topics/run/metrics.json
+      - ml: python platform/publish/clusters/session_maps.py
+        marker: clusters/session-maps/run/metrics.json
+      - ml: python platform/publish/clusters/talk_vote.py
+        marker: clusters/talk-vote/run/metrics.json
+      - ml: python platform/publish/clusters/trajectories.py
+        marker: clusters/municipal-trajectories/run/metrics.json
+      - ml: python platform/publish/clusters/eras.py
+        marker: clusters/riksdag-eras/run/metrics.json
+      - ml: python platform/publish/clusters/tax_mix.py
+        marker: clusters/tax-mix/run/metrics.json
+      - ml: python platform/publish/clusters/field_language.py
+        marker: clusters/field-language/run/metrics.json
+      - ml: python platform/publish/clusters/labour_market.py
+        marker: clusters/labour-market-types/run/metrics.json
+      - ml: python platform/publish/clusters/demand_curves.py
+        marker: clusters/demand-curves/run/metrics.json
+      - ml: python -m ml.three_swedens
+        marker: clusters/three-swedens/run/metrics.json
+      - dbt: {select: [tag:clusters]}
+      - export: python platform/publish/clusters/export.py
+      - export: python platform/publish/clusters/three_swedens.py
 
   quality:
     schedule: '13 21 * * 6'

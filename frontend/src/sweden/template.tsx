@@ -65,32 +65,6 @@ export type Finding = {
   onShow?: () => void
 }
 
-export function FindingCard({ finding }: { finding: Finding }) {
-  return (
-    <article
-      className="sw-finding"
-      data-contrary={finding.contrary || undefined}
-    >
-      {finding.contrary && (
-        <p className="sw-finding-flag">
-          {l('Against the expectation', 'Mot förväntningen')}
-        </p>
-      )}
-      <h3>{finding.statement}</h3>
-      <div className="sw-finding-values">{finding.values}</div>
-      <footer>
-        <EvidenceStamp evidence={finding.evidence} />
-        <span className="sw-source">{finding.source}</span>
-        {finding.onShow && (
-          <button type="button" className="sw-link" onClick={finding.onShow}>
-            {l('Show in the scene', 'Visa i scenen')}
-          </button>
-        )}
-      </footer>
-    </article>
-  )
-}
-
 /**
  * A finding as a numbered button in the scene's title panel. Choosing it shows its values,
  * evidence and source under the statement, and moves the scene when the page can (onShow).

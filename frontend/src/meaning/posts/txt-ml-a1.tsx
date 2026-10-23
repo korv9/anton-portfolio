@@ -54,6 +54,7 @@ function TopicMap() {
     <>
       <Slicer
         label="Corpus"
+        cycles={false}
         options={CORPORA}
         value={corpus}
         onChange={setCorpus}
@@ -107,12 +108,14 @@ function PhilAtlas() {
           <>
             <Slicer
               label="Map"
+              cycles={false}
               options={VARIANTS}
               value={variant}
               onChange={setVariant}
             />
             <Slicer
               label="Colour"
+              cycles={false}
               options={HUES}
               value={hue}
               onChange={setHue}

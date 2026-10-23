@@ -64,6 +64,7 @@ function ArticleBars() {
           <>
             <Slicer
               label="Colour by"
+              cycles={false}
               options={BAR_MODES}
               value={mode}
               onChange={setMode}
@@ -138,6 +139,7 @@ function ChapterTreemap() {
           <>
             <Slicer
               label="Size by"
+              cycles={false}
               options={TREE_METRICS}
               value={metric}
               onChange={setMetric}

@@ -36,7 +36,13 @@
     "jobs/*",
     "gold/marts/jobs.json",
     "parliament/workspace/*",
-    "sweden/*"
+    "politics/parliament/parties/*",
+    "politics/parliament/similarity/*",
+    "politics/parliament/speakers/*",
+    "politics/parliament/votes/*",
+    "politics/parliament/manifest.json",
+    "sweden/*",
+    "clusters/*"
   ],
   "schemas": {
     "ai-act/diffusion.json": "configs/delivery/schemas/ai-act-diffusion.json",

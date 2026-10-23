@@ -1,9 +1,20 @@
 {
   "schema_version": 2,
   "include": [
-    "sweden/*"
+    "sweden/*",
+    "clusters/*"
   ],
   "files": [
+    "clusters/debate-topics.json",
+    "clusters/demand-curves.json",
+    "clusters/field-language.json",
+    "clusters/labour-market-types.json",
+    "clusters/municipal-trajectories.json",
+    "clusters/riksdag-eras.json",
+    "clusters/session-maps.json",
+    "clusters/talk-vote.json",
+    "clusters/tax-mix.json",
+    "clusters/three-swedens.json",
     "sweden/belonging/change.json",
     "sweden/belonging/coverage.json",
     "sweden/belonging/libraries.json",
@@ -12,6 +23,7 @@
     "sweden/futures/coverage.json",
     "sweden/futures/examples.json",
     "sweden/futures/parties.json",
+    "sweden/futures/topics.json",
     "sweden/futures/trends.json",
     "sweden/language/composition.json",
     "sweden/language/coverage.json",
@@ -27,6 +39,16 @@
     "sweden/similarity/municipalities.json"
   ],
   "schemas": {
+    "clusters/debate-topics.json": "configs/delivery/schemas/clusters/export.json",
+    "clusters/demand-curves.json": "configs/delivery/schemas/clusters/export.json",
+    "clusters/field-language.json": "configs/delivery/schemas/clusters/export.json",
+    "clusters/labour-market-types.json": "configs/delivery/schemas/clusters/export.json",
+    "clusters/municipal-trajectories.json": "configs/delivery/schemas/clusters/export.json",
+    "clusters/riksdag-eras.json": "configs/delivery/schemas/clusters/export.json",
+    "clusters/session-maps.json": "configs/delivery/schemas/clusters/export.json",
+    "clusters/talk-vote.json": "configs/delivery/schemas/clusters/export.json",
+    "clusters/tax-mix.json": "configs/delivery/schemas/clusters/export.json",
+    "clusters/three-swedens.json": "configs/delivery/schemas/clusters/three-swedens.json",
     "sweden/belonging/change.json": "configs/delivery/schemas/sweden/belonging-change.json",
     "sweden/belonging/coverage.json": "configs/delivery/schemas/sweden/belonging-coverage.json",
     "sweden/belonging/libraries.json": "configs/delivery/schemas/sweden/belonging-libraries.json",
@@ -35,6 +57,7 @@
     "sweden/futures/coverage.json": "configs/delivery/schemas/sweden/futures-coverage.json",
     "sweden/futures/examples.json": "configs/delivery/schemas/sweden/table.json",
     "sweden/futures/parties.json": "configs/delivery/schemas/sweden/table.json",
+    "sweden/futures/topics.json": "configs/delivery/schemas/sweden/futures-topics.json",
     "sweden/futures/trends.json": "configs/delivery/schemas/sweden/futures-trends.json",
     "sweden/language/composition.json": "configs/delivery/schemas/sweden/language-composition.json",
     "sweden/language/coverage.json": "configs/delivery/schemas/sweden/language-coverage.json",

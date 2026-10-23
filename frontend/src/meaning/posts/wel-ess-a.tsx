@@ -1,20 +1,12 @@
-/** European Social Survey means and the latest welfare headline figures. */
+/** European Social Survey means (the trust gauges live in wel-ess-gauges.tsx). */
 import { useState } from 'react'
-import { Frame, Slicer, color, useData, type Post } from '../kit'
-import { Legend, Svg, XTicks, arc, fmt, num, path, scale } from './wel-kit'
+import { Frame, Slicer, color, focal, useData, type Post } from '../kit'
+import { Legend, Svg, XTicks, fmt, num, path, scale } from './wel-kit'
 
 type Ess = { unit_code: string; period_key: string } & Record<
   string,
   number | string | null
 >
-
-type Headline = {
-  indicator_key: string
-  period_label: string
-  value: number
-  previous_value: number | null
-  previous_period_label: string | null
-}
 
 const METRICS = [
   'ppltrst',
@@ -30,13 +22,27 @@ const METRICS = [
   'imwbcnt',
 ]
 
+/** ESS item codes in plain words. */
+const ESS_NAMES: Record<string, string> = {
+  ppltrst: 'Trust in people',
+  trstprl: 'Trust in parliament',
+  trstplt: 'Trust in politicians',
+  trstplc: 'Trust in the police',
+  trstlgl: 'Trust in the legal system',
+  stflife: 'Life satisfaction',
+  happy: 'Happiness',
+  stfdem: 'Satisfaction with democracy',
+  stfeco: 'Satisfaction with the economy',
+  sclmeet: 'Meets friends socially',
+  imwbcnt: 'Immigrants make the country better',
+}
+const essName = (m: string) => ESS_NAMES[m] ?? m
+
 const UNITS = ['SE', 'NO', 'DK', 'FI', 'DE', 'NORDIC', 'EU27']
 
 const round = (p: string) => +p.replace('ESS', '')
 
 const useEss = () => useData<Ess[]>('welfare/ess-countries.json')
-
-const useHeadlines = () => useData<Headline[]>('welfare/headlines.json')
 
 const val = (r: Ess | undefined, m: string) =>
   r && num(r[`${m}_mean`]) ? (r[`${m}_mean`] as number) : null
@@ -64,6 +70,7 @@ function Radar() {
             <Slicer
               label="Survey round"
               options={rounds}
+              format={(r) => `ESS round ${r}`}
               value={p}
               onChange={setP}
             />
@@ -126,7 +133,9 @@ function RoundLines() {
           <>
             <Slicer
               label="Survey measure"
+              cycles={false}
               options={METRICS}
+              format={essName}
               value={m}
               onChange={setM}
             />
@@ -135,7 +144,8 @@ function RoundLines() {
               h={400}
               label="Survey means by round for seven countries and groups"
             >
-              {UNITS.map((u, j) => {
+              {/* Sweden is the focal line, drawn last so it sits on top; the rest are grey. */}
+              {[...UNITS].reverse().map((u) => {
                 const pts = rows
                   .filter((r) => r.unit_code === u && num(val(r, m)))
                   .sort((a, b) => round(a.period_key) - round(b.period_key))
@@ -151,7 +161,7 @@ function RoundLines() {
                     <path
                       d={path(pts)}
                       fill="none"
-                      stroke={color(j)}
+                      stroke={focal(u === 'SE')}
                       strokeWidth={u === 'SE' ? 4 : 1.6}
                     />
                     {pts.map(([cx, cy]) => (
@@ -160,9 +170,24 @@ function RoundLines() {
                         cx={cx}
                         cy={cy}
                         r={u === 'SE' ? 5 : 3}
-                        fill={color(j)}
+                        fill={focal(u === 'SE')}
                       />
                     ))}
+                    {u === 'SE' && pts.length > 0 && (
+                      <text
+                        x={pts.at(-1)![0]}
+                        y={pts.at(-1)![1] - 14}
+                        textAnchor="end"
+                        fontSize={22}
+                        fontWeight={700}
+                        stroke="var(--paper)"
+                        strokeWidth={4}
+                        paintOrder="stroke"
+                        style={{ fill: 'var(--mean-ink)' }}
+                      >
+                        Sweden
+                      </text>
+                    )}
                   </g>
                 )
               })}
@@ -172,7 +197,10 @@ function RoundLines() {
                 y={392}
               />
             </Svg>
-            <Legend items={UNITS} />
+            <Legend
+              items={['Sweden', 'Other countries and groups']}
+              colors={[focal(true), focal(false)]}
+            />
           </>
         )
       }}
@@ -203,7 +231,7 @@ function EssHeat() {
                     rx={3}
                     fill={`color-mix(in srgb, var(--cv-olive) ${Math.round(v * 10)}%, var(--cluster-butter))`}
                   >
-                    <title>{`${m} ESS${round(r.period_key)}: ${fmt(v, 2)}`}</title>
+                    <title>{`${essName(m)}, ESS round ${round(r.period_key)}: ${fmt(v, 2)}`}</title>
                   </rect>
                 ) : null
               }),
@@ -225,63 +253,6 @@ function EssHeat() {
   )
 }
 
-function Gauges() {
-  const data = useHeadlines()
-  return (
-    <Frame data={data}>
-      {(rows) => {
-        const keys = [
-          'ess_trstplc',
-          'ess_trstlgl',
-          'ess_trstprl',
-          'ess_trstplt',
-        ]
-        const half = Math.PI / 2
-        return (
-          <>
-            <Svg label="Four trust gauges on a 0 to 10 scale">
-              {keys.map((k, i) => {
-                const h = rows.find((r) => r.indicator_key === k)
-                if (!h) return null
-                const cx = 100 + (i % 2) * 200
-                const cy = 150 + Math.floor(i / 2) * 190
-                return (
-                  <g key={k}>
-                    <path
-                      d={arc(cx, cy, 58, 86, -half, half)}
-                      fill="var(--wash)"
-                    />
-                    <path
-                      d={arc(
-                        cx,
-                        cy,
-                        58,
-                        86,
-                        -half,
-                        -half + (h.value / 10) * Math.PI,
-                      )}
-                      fill={color(i)}
-                    />
-                    <text
-                      x={cx}
-                      y={cy - 6}
-                      textAnchor="middle"
-                      style={{ fontSize: 26, fill: 'var(--ink)' }}
-                    >
-                      {fmt(h.value, 1)}
-                    </text>
-                  </g>
-                )
-              })}
-            </Svg>
-            <Legend items={keys.map((k) => k.slice(4))} />
-          </>
-        )
-      }}
-    </Frame>
-  )
-}
-
 export const posts: Post[] = [
   { id: 'wel-ess-radar', domain: 'welfare', render: () => <Radar /> },
   {
@@ -291,5 +262,4 @@ export const posts: Post[] = [
     render: () => <RoundLines />,
   },
   { id: 'wel-ess-heat', domain: 'welfare', render: () => <EssHeat /> },
-  { id: 'wel-trust-gauges', domain: 'welfare', render: () => <Gauges /> },
 ]

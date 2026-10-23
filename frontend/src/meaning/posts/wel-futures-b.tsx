@@ -14,6 +14,8 @@ import {
 
 type Parties = { rows: [string, string, number, number, number][] }
 
+type Themes = { themes: { id: string; label_en: string }[] }
+
 type Summary = {
   domains: {
     id: string
@@ -27,54 +29,67 @@ type Summary = {
 
 function PartyHeat() {
   const data = useData<Parties>('sweden/futures/parties.json')
+  // The theme names come from trends.json, which the feed's other futures posts load anyway.
+  const trends = useData<Themes>('sweden/futures/trends.json')
   const [theme, setTheme] = useState('environment')
   return (
-    <Frame data={data}>
-      {(d) => {
-        const themes = [...new Set(d.rows.map((r) => r[1]))]
-        const rows = d.rows.filter((r) => r[1] === theme && r[3] > 0)
-        const parties = [...new Set(d.rows.map((r) => r[0]))].sort()
-        const [y0, y1] = extent(d.rows.map((r) => r[2]))
-        const share = rows.map((r) => r[4] / r[3])
-        const max = Math.max(...share, 0.0001)
-        const cw = 740 / (y1 - y0 + 1)
-        const ch = 360 / parties.length
-        return (
-          <>
-            <Slicer
-              label="Theme"
-              options={themes}
-              value={theme}
-              onChange={setTheme}
-            />
-            <Svg
-              w={800}
-              h={400}
-              label="Share of each party's future speeches using a theme, by year"
-            >
-              {rows.map((r, i) => (
-                <rect
-                  key={r[0] + r[2]}
-                  x={50 + (r[2] - y0) * cw}
-                  y={parties.indexOf(r[0]) * ch}
-                  width={cw - 1}
-                  height={ch - 1}
-                  rx={2}
-                  fill={`color-mix(in srgb, var(--cluster-apricot) ${Math.round((share[i] / max) * 100)}%, var(--wash))`}
+    <Frame data={trends}>
+      {(t) => (
+        <Frame data={data}>
+          {(d) => {
+            const names = new Map(t.themes.map((th) => [th.id, th.label_en]))
+            const themes = [...new Set(d.rows.map((r) => r[1]))]
+            const rows = d.rows.filter((r) => r[1] === theme && r[3] > 0)
+            const parties = [...new Set(d.rows.map((r) => r[0]))].sort()
+            const [y0, y1] = extent(d.rows.map((r) => r[2]))
+            const share = rows.map((r) => r[4] / r[3])
+            const max = Math.max(...share, 0.0001)
+            const cw = 740 / (y1 - y0 + 1)
+            const ch = 360 / parties.length
+            return (
+              <>
+                <Slicer
+                  label="Theme"
+                  options={themes}
+                  value={theme}
+                  onChange={setTheme}
+                  format={(k) => names.get(k) ?? k}
+                />
+                <Svg
+                  w={800}
+                  h={400}
+                  label="Share of each party's future speeches using a theme, by year"
                 >
-                  <title>{`${r[0]} ${r[2]}: ${fmt(share[i] * 100)}%`}</title>
-                </rect>
-              ))}
-              {parties.map((p, i) => (
-                <text key={p} x={44} y={i * ch + ch / 2 + 3} textAnchor="end">
-                  {p}
-                </text>
-              ))}
-              <XTicks values={[y0, y1]} x={(i) => (i ? 770 : 70)} y={396} />
-            </Svg>
-          </>
-        )
-      }}
+                  {rows.map((r, i) => (
+                    <rect
+                      key={r[0] + r[2]}
+                      x={50 + (r[2] - y0) * cw}
+                      y={parties.indexOf(r[0]) * ch}
+                      width={cw - 1}
+                      height={ch - 1}
+                      rx={2}
+                      fill={`color-mix(in srgb, var(--cluster-apricot) ${Math.round((share[i] / max) * 100)}%, var(--wash))`}
+                    >
+                      <title>{`${r[0]} ${r[2]}: ${fmt(share[i] * 100)}%`}</title>
+                    </rect>
+                  ))}
+                  {parties.map((p, i) => (
+                    <text
+                      key={p}
+                      x={44}
+                      y={i * ch + ch / 2 + 3}
+                      textAnchor="end"
+                    >
+                      {p}
+                    </text>
+                  ))}
+                  <XTicks values={[y0, y1]} x={(i) => (i ? 770 : 70)} y={396} />
+                </Svg>
+              </>
+            )
+          }}
+        </Frame>
+      )}
     </Frame>
   )
 }

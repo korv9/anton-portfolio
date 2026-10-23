@@ -122,6 +122,7 @@ function ClusterStacks() {
           <>
             <Slicer
               label="Map"
+              cycles={false}
               options={VARIANTS}
               value={variant}
               onChange={setVariant}

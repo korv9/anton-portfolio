@@ -74,7 +74,13 @@ function Multiples() {
         const [y0, y1] = extent(rows.map((r) => r.year))
         return (
           <>
-            <Slicer label="Metric" options={NAMES} value={m} onChange={setM} />
+            <Slicer
+              label="Metric"
+              cycles={false}
+              options={NAMES}
+              value={m}
+              onChange={setM}
+            />
             <Svg w={400} h={520} label="One sparkline per county">
               {groups.map((g, i) => {
                 const cx = (i % 4) * 100
@@ -207,7 +213,13 @@ function Beeswarm() {
         }
         return (
           <>
-            <Slicer label="Metric" options={NAMES} value={m} onChange={setM} />
+            <Slicer
+              label="Metric"
+              cycles={false}
+              options={NAMES}
+              value={m}
+              onChange={setM}
+            />
             <Svg w={800} h={400} label="Counties as dots, one row per year">
               {placed.map(({ cx, cy, r }) => (
                 <circle

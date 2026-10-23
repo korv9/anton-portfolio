@@ -1,0 +1,35 @@
+version: 2
+
+# Clustering batches 0-2 (platform/publish/clusters): each run's assignments and shares under
+# warehouse/features/clusters/<name>/run, and the one-pass job-ad aggregates under
+# features/clusters/job-ads. Aggregates and public ids only; no ad text.
+
+sources:
+  - name: clusters
+    description: Cluster runs and the job-ad aggregates they are fitted on.
+    tables:
+      - name: assignments
+        description: One row per clustering × entity × period, written by stats.save.
+        meta:
+          external_location: >-
+            read_parquet('{{ env_var('PORTFOLIO_FEATURES', '../warehouse/features') }}/clusters/*/run/assignments.parquet', union_by_name = true)
+      - name: shares
+        description: Cluster shares per period and group with their bootstrap 5-95 % range.
+        meta:
+          external_location: >-
+            read_parquet('{{ env_var('PORTFOLIO_FEATURES', '../warehouse/features') }}/clusters/*/run/shares.parquet', union_by_name = true)
+      - name: job_ad_municipality_field
+        description: Distinct ads per publication year × JobTech municipality name × county × occupation field.
+        meta:
+          external_location: >-
+            read_parquet('{{ env_var('PORTFOLIO_FEATURES', '../warehouse/features') }}/clusters/job-ads/municipality_field.parquet')
+      - name: job_ad_occupation_month
+        description: Distinct ads per publication month × occupation group × occupation field.
+        meta:
+          external_location: >-
+            read_parquet('{{ env_var('PORTFOLIO_FEATURES', '../warehouse/features') }}/clusters/job-ads/occupation_month.parquet')
+      - name: three_spaces
+        description: One row per municipality of the three-spaces analysis (ml/three_swedens.py).
+        meta:
+          external_location: >-
+            read_parquet('{{ env_var('PORTFOLIO_FEATURES', '../warehouse/features') }}/clusters/three-swedens/run/municipalities.parquet')

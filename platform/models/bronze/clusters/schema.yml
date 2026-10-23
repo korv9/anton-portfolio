@@ -1,0 +1,34 @@
+version: 2
+
+models:
+  - name: stg_cluster_assignments
+    description: Cluster assignments of every run in features/clusters.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [clustering, entity_id, period]
+  - name: stg_cluster_shares
+    description: Cluster shares with bootstrap ranges.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [clustering, period, segment, cluster]
+  - name: stg_job_ad_municipality_field
+    description: Job-ad counts per year, municipality name and occupation field.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [year, municipality, region, occupation_field]
+            nullable: [municipality, region]
+  - name: stg_job_ad_occupation_month
+    description: Job-ad counts per month and occupation group.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [month, occupation_group, occupation_field]
+  - name: stg_municipality_three_spaces
+    description: Neighbour agreement of each municipality across the social, job-ad and vote spaces.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [municipality_code]
