@@ -1,77 +1,48 @@
-/** The latest trust figures from the welfare headlines, as four gauges on a 0 to 10 scale. */
-import { Frame, color, useData, type Post } from '../kit'
-import { Legend, Svg, arc, fmt } from './wel-kit'
+/** Trust in institutions and people, from the latest European Social Survey round. */
+import { Frame, useData, type Post } from '../kit'
+import { Ranked, fmt } from './wel-kit'
 
 type Headline = {
   indicator_key: string
   period_label: string
   value: number
   previous_value: number | null
-  previous_period_label: string | null
 }
 
-const NAMES: Record<string, string> = {
-  ess_trstplc: 'Police',
-  ess_trstlgl: 'Legal system',
-  ess_trstprl: 'Parliament',
-  ess_trstplt: 'Politicians',
+/** Row label and the same name inside a sentence. */
+const NAMES: Record<string, [string, string]> = {
+  ess_trstplc: ['The police', 'the police'],
+  ess_trstlgl: ['The legal system', 'the legal system'],
+  ess_trstun: ['The United Nations', 'the United Nations'],
+  ess_trstprl: ['The Riksdag', 'the Riksdag'],
+  ess_ppltrst: ['Most people', 'most people'],
+  ess_trstep: ['The European Parliament', 'the European Parliament'],
+  ess_trstprt: ['Political parties', 'political parties'],
+  ess_trstplt: ['Politicians', 'politicians'],
 }
 
-const useHeadlines = () => useData<Headline[]>('welfare/headlines.json')
+/** 'ESS11 (2023-2024)' -> '2023–2024'. */
+const years = (label: string) =>
+  /\((\d{4})-(\d{4})\)/.exec(label)?.slice(1).join('–') ?? label
 
-function Gauges() {
-  const data = useHeadlines()
+const trust = (rows: Headline[]) =>
+  rows.filter((r) => r.indicator_key in NAMES).sort((a, b) => b.value - a.value)
+
+function TrustBars() {
   return (
-    <Frame data={data}>
-      {(rows) => {
-        const keys = [
-          'ess_trstplc',
-          'ess_trstlgl',
-          'ess_trstprl',
-          'ess_trstplt',
-        ]
-        const half = Math.PI / 2
-        return (
-          <>
-            <Svg label="Four trust gauges on a 0 to 10 scale">
-              {keys.map((k, i) => {
-                const h = rows.find((r) => r.indicator_key === k)
-                if (!h) return null
-                const cx = 100 + (i % 2) * 200
-                const cy = 150 + Math.floor(i / 2) * 190
-                return (
-                  <g key={k}>
-                    <path
-                      d={arc(cx, cy, 58, 86, -half, half)}
-                      fill="var(--wash)"
-                    />
-                    <path
-                      d={arc(
-                        cx,
-                        cy,
-                        58,
-                        86,
-                        -half,
-                        -half + (h.value / 10) * Math.PI,
-                      )}
-                      fill={color(i)}
-                    />
-                    <text
-                      x={cx}
-                      y={cy - 6}
-                      textAnchor="middle"
-                      style={{ fontSize: 26, fill: 'var(--ink)' }}
-                    >
-                      {fmt(h.value, 1)}
-                    </text>
-                  </g>
-                )
-              })}
-            </Svg>
-            <Legend items={keys.map((k) => NAMES[k])} />
-          </>
-        )
-      }}
+    <Frame data={useData<Headline[]>('welfare/headlines.json')}>
+      {(rows) => (
+        <Ranked
+          label="Mean trust on a 0 to 10 scale, highest first"
+          max={10}
+          format={(v) => fmt(v, 1)}
+          rows={trust(rows).map((r) => ({
+            key: r.indicator_key,
+            label: NAMES[r.indicator_key][0],
+            value: r.value,
+          }))}
+        />
+      )}
     </Frame>
   )
 }
@@ -81,6 +52,12 @@ export const posts: Post[] = [
     id: 'wel-trust-gauges',
     domain: 'welfare',
     sources: ['welfare/headlines.json'],
-    render: () => <Gauges />,
+    title: (rows: Headline[]) => {
+      const t = trust(rows)
+      if (!t.length) return 'Trust in institutions and people'
+      return `In ${years(t[0].period_label)}, people in Sweden trusted ${NAMES[t[0].indicator_key][1]} most and ${NAMES[t.at(-1)!.indicator_key][1]} least`
+    },
+    note: 'Mean answer on a 0–10 scale, latest round. Source: European Social Survey',
+    render: () => <TrustBars />,
   },
 ]
