@@ -131,6 +131,20 @@ def test_validate_finds_problems():
     assert any("no node dbt:nowhere" in e for e in errors)
 
 
+def test_bronze_staging_of_ml_output_sits_after_the_ml_stage():
+    m = manifest()
+    m["nodes"]["model.portfolio.stg_symbol_atlas_projection"] = {
+        "resource_type": "model", "name": "stg_symbol_atlas_projection", "description": "", "columns": {},
+        "original_file_path": "models/bronze/symbolic/stg_symbol_atlas_projection.sql",
+        "config": {"materialized": "view"},
+        "depends_on": {"nodes": ["source.portfolio.symbolic_features.atlas_projection"]}}
+    g = bg.build(m, {}, [])
+    staged = ids(g)["dbt:stg_symbol_atlas_projection"]
+    assert staged["type"] == "bronze" and staged["layer"] == "ml"
+    assert ids(g)["dbt:stg_symbolic_documents"]["layer"] == "bronze"
+    assert not [e for e in bg.validate(g) if "back to" in e]
+
+
 def test_registry_entries_exist():
     for entry in [*(i["path"] for i in registry.INGESTION), *(m["path"] for m in registry.ML),
                   *(p["path"] for p in registry.PUBLISHERS), *(s["path"] for s in registry.SHARED),
