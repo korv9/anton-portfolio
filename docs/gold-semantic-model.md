@@ -66,12 +66,12 @@ erDiagram
     DIM_LAW_SNAPSHOT ||--o{ FACT_LAW_PROVISION : pool_document_id
 ```
 
-- **Party position** is the largest recorded yes/no/abstain member-vote group for that party and roll call. This normalizes a damaged `Avstår` source label without changing vote counts. A yes refers to the *committee proposal*, which may reject a cited motion.
-- **Party agreement** is same yes/no position divided by roll calls where both parties recorded yes/no. Abstentions are excluded. The published ordered-party matrix contains its numerator and denominator.
-- **Cohesion** is the sum of each party's largest cast-vote group per roll call divided by all its cast member votes. **Recorded attendance** is cast votes divided by cast plus recorded absences. Pairing arrangements are unknown.
-- **Budget–language difference** is `keyword_share_pct - budget_share_pct` in percentage points, keyed by session, party and expenditure area, *plus* a chosen corpus and matching method. It excludes incomplete party frames and missing party proposals. It is descriptive language attention, not support, intention or causal influence; speeches can postdate proposals.
-- **Topic share** belongs to one named model run. Never join old and new topics on `topic_id` alone. UMAP is a deterministic sample with axes that have no direct political meaning.
-- **Law direction** has no validated vote→versioned-provision→reviewed-annotation chain. The semantic model explicitly marks `validated_vote_direction_pairs` unavailable at zero; no tightening/loosening party score is published.
+- Party position is the largest recorded yes/no/abstain member-vote group for that party and roll call. This normalizes a damaged `Avstår` source label without changing vote counts. A yes refers to the *committee proposal*, which may reject a cited motion.
+- Party agreement is same yes/no position divided by roll calls where both parties recorded yes/no. Abstentions are excluded. The published ordered-party matrix contains its numerator and denominator.
+- Cohesion is the sum of each party's largest cast-vote group per roll call divided by all its cast member votes. **Recorded attendance** is cast votes divided by cast plus recorded absences. Pairing arrangements are unknown.
+- Budget–language difference is `keyword_share_pct - budget_share_pct` in percentage points, keyed by session, party and expenditure area, *plus* a chosen corpus and matching method. It excludes incomplete party frames and missing party proposals. It is descriptive language attention, not support, intention or causal influence; speeches can postdate proposals.
+- Topic share belongs to one named model run. Never join old and new topics on `topic_id` alone. UMAP is a deterministic sample with axes that have no direct political meaning.
+- Law direction has no validated vote→versioned-provision→reviewed-annotation chain. The semantic model explicitly marks `validated_vote_direction_pairs` unavailable at zero; no tightening/loosening party score is published.
 
 The chart feed reads `gold/overview.json` (`frontend/src/meaning/posts/txt-plat-a1.tsx` to `a3`). The data explorer on the case-study pages (`frontend/src/products/DataExplorer.tsx`) reads `gold/semantic-model.json` and loads a gold table only when the reader opens it.
 

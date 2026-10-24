@@ -38,17 +38,17 @@ Fetched on 6 October 2026: ten sessions, **129,110 speeches** from 13 September 
 `seeds/ai_politics/ai_politics_concepts.csv`: each group of words is a regular expression with a
 description and, where needed, a caveat. The export carries every pattern verbatim.
 
-- **Gate** (`ai`): a paragraph is about AI when it contains upper-case *AI* (also in compounds
+- Gate (`ai`): a paragraph is about AI when it contains upper-case *AI* (also in compounds
   such as *AI-system*), *artificiell intelligens*, *maskininlärning*, *djupinlärning*,
   *språkmodell…*, *ChatGPT* or *generativ AI*. Upper case only for the abbreviation, so words
   containing the letters do not count.
-- **The Act by name** (`ai_act`): *AI-förordningen*, *AI-akten*, *AI Act*, *förordningen om
+- The Act by name (`ai_act`): *AI-förordningen*, *AI-akten*, *AI Act*, *förordningen om
   artificiell intelligens*.
-- **Framing groups** (15): innovation; competitiveness and growth; *säkerhet*; security and
+- Framing groups (15): innovation; competitiveness and growth; *säkerhet*; security and
   defence; risk and threat; privacy and data protection; surveillance and biometrics; fundamental
   rights; transparency; responsibility; human oversight; automation and algorithms; work and
   jobs; regulation; disinformation and democracy.
-- **Pairs** (`ai_politics_framing_pairs.csv`): innovation vs *säkerhet*, privacy vs security,
+- Pairs (`ai_politics_framing_pairs.csv`): innovation vs *säkerhet*, privacy vs security,
   regulation vs competitiveness.
 
 Matching is **per paragraph**: a speech is about AI when one of its paragraphs passes the gate,

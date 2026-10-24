@@ -90,16 +90,16 @@ document per line). v1–v3 used the ten books marked `pilot`.
 
 How the books were chosen and checked:
 
-1. **From the catalogue, not from memory.** Candidates were searched per tradition in Project
+1. From the catalogue, not from memory. Candidates were searched per tradition in Project
    Gutenberg's catalogue (`pg_catalog.csv`), preferring complete, independent works: one
    translation per work, no anthology that reprints another chosen book, single files only
    (so Ovid is Howard's complete blank-verse edition and Malory is volume 1).
-2. **Against Gutenberg's own record.** For every book the Gutenberg RDF record gave the title,
+2. Against Gutenberg's own record. For every book the Gutenberg RDF record gave the title,
    the creators with their roles (author, translator, editor, compiler), the language and the
    rights. All 101 are English and "Public domain in the USA." Title, author, translator and
    editor in `corpus.json` come from that record; tradition, culture, region, genre, source
    type and period are curated.
-3. **Against the files.** `platform/ingest/symbolic/audit_corpus.py` (after the ingest) checks
+3. Against the files. `platform/ingest/symbolic/audit_corpus.py` (after the ingest) checks
    the fields, that each file's own header names the same title in English, the length (at
    least 5,000 words), and duplicated text between books: the share of one book's eight-word
    shingles found in another. It writes `corpus_audit.json` and stops on a duplicate.
@@ -156,16 +156,16 @@ the embedding model reads sentences.
 
 `platform/nlp/symbolic/pipeline.py`:
 
-1. **Sample.** At most 15 occurrences per book and symbol (30 in v1–v3), chosen by occurrence
+1. Sample. At most 15 occurrences per book and symbol (30 in v1–v3), chosen by occurrence
    id (a hash), so a long book or a common word does not fill the map, leaving out passages
    another book reprints (`duplicate_of` in silver). v4: 21,898 of 72,926 occurrences, 436
    marked as reprints. The pilot: 4,804 of 12,712 after the paratext cleaning.
-2. **Embed.** `sentence-transformers/all-MiniLM-L6-v2`, 384 dimensions, normalised, on the CPU.
+2. Embed. `sentence-transformers/all-MiniLM-L6-v2`, 384 dimensions, normalised, on the CPU.
    No text leaves the machine. The vectors stay in `warehouse/features/` and are never delivered.
-3. **Map.** UMAP to 2 dimensions: cosine, `n_neighbors` 15, `min_dist` 0.1, `random_state` 42.
-4. **Cluster.** UMAP to 10 dimensions (`min_dist` 0.0), then HDBSCAN from scikit-learn with
+3. Map. UMAP to 2 dimensions: cosine, `n_neighbors` 15, `min_dist` 0.1, `random_state` 42.
+4. Cluster. UMAP to 10 dimensions (`min_dist` 0.0), then HDBSCAN from scikit-learn with
    `min_cluster_size` 20, `min_samples` 10. The number of clusters is not set in advance.
-5. **Evaluate** and write `run.json` (model, parameters, counts, time) and `evaluation.json`.
+5. Evaluate and write `run.json` (model, parameters, counts, time) and `evaluation.json`.
 
 The run is deterministic: the same corpus gives the same map and clusters.
 
@@ -258,17 +258,17 @@ Archived in `experiments/history/v2-before-cleaning/`.
 
 What this says:
 
-- **Book-centring reduced book dependence the most**: book share 0.74 → 0.57 (0.72 → 0.50
+- Book-centring reduced book dependence the most: book share 0.74 → 0.57 (0.72 → 0.50
   weighted), cross-book clusters 5 → 24, holding 43 % of the points, and silhouette did not
   drop. Book identity is a large, removable part of the baseline structure.
-- **Masking hid the symbol, not the book**: symbol share fell (0.28 → 0.23) but book share
+- Masking hid the symbol, not the book: symbol share fell (0.28 → 0.23) but book share
   barely moved. The clusters were never mainly about the symbol word; they follow the
   surrounding prose.
-- **Combining both** sits between: fewer cross-book clusters than book-centring alone. Without
+- Combining both sits between: fewer cross-book clusters than book-centring alone. Without
   the word, what is left of a passage after removing the book's mean is weaker.
-- **Book effects are reduced, not gone**: even book-centred, a cluster's largest book holds
+- Book effects are reduced, not gone: even book-centred, a cluster's largest book holds
   57 % on average.
-- **A failure mode surfaced**: one of the largest book-centred cross-book clusters is built
+- A failure mode surfaced: one of the largest book-centred cross-book clusters is built
   from Bulfinch's glossary and index entries ("Aegisthus, murderer of Agamemnon…"), not from
   narrative. Paratext (indexes, notes, contents) survives the silver cleaning and forms its own
   clusters; it should be cut before the next run. Other cross-book clusters, such as passages
@@ -350,12 +350,12 @@ the same sample in all four.
 
 What this says, and what it does not:
 
-- **The paratext clusters are gone** in every variant, including the two glossary clusters of
+- The paratext clusters are gone in every variant, including the two glossary clusters of
   the book-centred run (Bulfinch's, 173 points, which had counted as cross-book; the Eddas', 70).
-- **Book-centred cross-book clusters held up** (24 → 25), but their share of passages fell from
+- Book-centred cross-book clusters held up (24 → 25), but their share of passages fell from
   43 % to 32 %: part of the earlier cross-book structure was glossary entries. The aggregate
   improvement claimed before the cleaning was partly paratext.
-- **The baseline lost some book dependence** (0.74 → 0.69) once front and back matter, which
+- The baseline lost some book dependence (0.74 → 0.69) once front and back matter, which
   each book has in its own style, were gone.
 - Aggregate metrics alone do not show the remaining clusters mean anything; that is what the
   review is for.
@@ -450,15 +450,15 @@ the review artefacts and never become public labels. Unreviewed clusters are "Cl
 
 The page has three views of the same points (`?view=`):
 
-- **Baseline**: the published atlas, coloured by cluster in muted hues on the dark plate.
-- **Cross-book**: the book-centred map. Noise is faint, book-bound and rejected clusters are
+- Baseline: the published atlas, coloured by cluster in muted hues on the dark plate.
+- Cross-book: the book-centred map. Noise is faint, book-bound and rejected clusters are
   grey, cross-book candidates stone, reviewed clusters off-white and labelled on the map, the
   chosen cluster on top; a key beside the map names the three tones. Choosing a cluster (a point or the cluster list) opens its
   panel: name if reviewed, number, review status and audit class, passages, books, traditions,
   symbols, largest book share, book entropy, mean membership, top symbols and traditions and
   representative passages one book at a time; for reviewed clusters also the description,
   confidence and the reviewer's "why this cluster matters".
-- **Reviewed**: only reviewed clusters lit; until there are any the page says "No reviewed
+- Reviewed: only reviewed clusters lit; until there are any the page says "No reviewed
   semantic clusters yet."
 
 Under the map, "How the investigation went" tells the steps (question, baseline, problem,

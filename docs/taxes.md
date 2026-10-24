@@ -28,7 +28,7 @@ floor. The 2026 food VAT cut assumes full pass-through.
 - The **tax wedge** is income tax plus employee and employer contributions, less cash benefits, as a share of labour cost.
   - The OECD computes it at 67, 100 and 167 % of each country's own average wage.
   - Countries are therefore compared at the same place in their own wage scale, not at the same salary in kronor.
-- **Revenue as a share of GDP** is tax *collected*, not tax *rates*.
+- Revenue as a share of GDP is tax *collected*, not tax *rates*.
   - It depends on what the tax pays for: pensions and health care are tax-financed in Sweden and partly private elsewhere.
   - It also depends on the size of the economy.
 

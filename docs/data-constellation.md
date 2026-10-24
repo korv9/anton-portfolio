@@ -116,11 +116,11 @@ this graph, the feed posts' declared sources, the dbt schema files and the quali
 
 ## Adding things
 
-- **A source:** add an `ORIGINS` entry and list it in its ingester's `origins`.
-- **An ingester:** add an `INGESTION` entry with the dbt sources (`raw`) it fills.
-- **A publisher:** add a `PUBLISHERS` entry with its output patterns; inputs are detected, or
+- A source: add an `ORIGINS` entry and list it in its ingester's `origins`.
+- An ingester: add an `INGESTION` entry with the dbt sources (`raw`) it fills.
+- A publisher: add a `PUBLISHERS` entry with its output patterns; inputs are detected, or
   set `inputs` per output when the script reads delivery files or ML output instead.
-- **A product:** add a `PRODUCTS` entry with its route and the frontend folders that hold its
+- A product: add a `PRODUCTS` entry with its route and the frontend folders that hold its
   data loading.
 
 Then run `npm run architecture:build`; the Python tests

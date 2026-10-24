@@ -44,7 +44,7 @@
 - 2026-10-18 [USER] Authorised committing and pushing workflow-efficiency changes to a branch, then merging to main after required CI passes.
 
 - 2026-10-22 [CODE] Clustering batches 0-2 (`platform/publish/clusters/`, pipeline subject `clusters`, schema `configs/delivery/schemas/clusters/export.json`): one fit script per clustering, run ids in `cluster_lab/clusters/registry.sqlite`, exports in `frontend/public/data/clusters/`. Only status `finding` may be posted. Results and statuses: `docs/cluster-batches.md`.
-- 2026-10-23 [CODE] Docs refresh (branch korv9/docs-refresh): 34 outdated docs removed or merged, `docs/README.md` is the index, new root README and folder READMEs for `frontend/`, `configs/`, `scripts/`; `ml/README.md` covers every package. Classification and evidence are in the PR body.
+- 2026-10-23 [CODE] Docs refresh (branch korv9/docs-refresh): 28 outdated docs and 6 run-log JSON files removed or merged, `docs/README.md` is the index, new root README and folder READMEs for `frontend/`, `configs/`, `scripts/`; `ml/README.md` covers every package. Classification and evidence are in the PR body.
 - 2026-10-23 [CODE] Old Bailey extraction (`ml/oldbailey/`, pre-registered in `docs/oldbailey-extraction-preregistration.md`): ORDA zip is CC BY-NC 4.0, stored in R2 `warehouse/raw/oldbailey/` with ATTRIBUTION.txt; trial text stays local. gemma answers accrue in `warehouse/features/oldbailey/gemma-sample.jsonl` at 6,000 neurons per UTC day; `python -m ml.oldbailey.score` refuses to export until all 2,000 are answered (871 on 2026-10-23).
 
 ## SWEDEN research platform (branch korv9/sweden-research-platform)

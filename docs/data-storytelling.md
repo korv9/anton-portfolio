@@ -23,18 +23,18 @@ before the first chart, no model metrics beside a research conclusion.
 
 `frontend/src/ui/Story.tsx`, styled in `frontend/src/ui/story.css`:
 
-- **DataQuestion**: number or eyebrow, the question, one line of context.
-- **FindingHero** (major finding): a number that tells the story on its own, one sentence,
+- DataQuestion: number or eyebrow, the question, one line of context.
+- FindingHero (major finding): a number that tells the story on its own, one sentence,
   an optional comparison and source.
-- **ChartSection** (supporting finding): question, a title that states the finding, a
+- ChartSection (supporting finding): question, a title that states the finding, a
   subtitle with definition and period, the chart, a one-line finding and its source.
-- **Interpretation**: *What this means* in one to three short paragraphs, with an optional
+- Interpretation: *What this means* in one to three short paragraphs, with an optional
   *What it does not mean*.
-- **SourceCaption**: source · period · definition, quiet, under the figure.
-- **ExploreSection**: folded until opened; its children render only then, so the overview
+- SourceCaption: source · period · definition, quiet, under the figure.
+- ExploreSection: folded until opened; its children render only then, so the overview
   stays light.
-- **StoryNext**: where to go next, as editorial links rather than cards.
-- **MethodSummary**: the lineage in one line and the one quality point that matters for the
+- StoryNext: where to go next, as a short list of editorial text links.
+- MethodSummary: the lineage in one line and the one quality point that matters for the
   project, with optional links.
 
 A project page shows one lineage line and one quality point, not the whole platform. The Data

@@ -15,7 +15,7 @@ SHA-256. dbt on DuckDB builds bronze, silver and gold. dbt tests, enforced model
 JSON Schemas and Python validators run before anything is published, and each publish is a
 versioned release in Cloudflare R2. One command, `python platform/pipeline.py`, runs every
 subject the same way on a laptop and in GitHub Actions. In numbers[^count]: 19 ingestion
-packages, 26 pipeline subjects, 329 dbt models (158 with an enforced contract), 6,396 published
+packages, 26 pipeline subjects, 325 dbt models (158 with an enforced contract), 6,396 published
 files and 14 workflows. The [platform case study](docs/case-studies/platform.md) covers the
 design and what went wrong.
 

@@ -120,7 +120,7 @@ delivered file, and CI keeps checking that afterwards.
 
 | What | Count | How it was counted |
 |---|---|---|
-| dbt models | 329 (bronze 117, silver 20, gold 192) | `.sql` files under `platform/models/` and each layer folder |
+| dbt models | 325 (bronze 117, silver 20, gold 188) | `.sql` files under `platform/models/` and each layer folder |
 | Models with an enforced contract | 158 | `contract: {enforced: true}` lines in `platform/models/**/*.yml` |
 | dbt source tables | 125, in 33 source definitions | `sources:` entries parsed from the model YAML files |
 | dbt data tests | 821 generic (812 on models, 9 on sources), 46 singular | `tests:`/`data_tests:` list items on models, sources and their columns in `platform/models/**/*.yml`; `.sql` files under `platform/tests/` |

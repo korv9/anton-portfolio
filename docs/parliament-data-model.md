@@ -53,12 +53,12 @@ model.
 
 ## Definitions
 
-- **Roll call.** One vote id can carry two roll calls: on the matter (sakfrågan) and on the
+- Roll call. One vote id can carry two roll calls: on the matter (sakfrågan) and on the
   reasons given for the decision (motivfrågan). `roll_call_id` is the vote id plus `:motiv`
   for the latter; `is_substantive` marks decisions. The marts count decisions only.
-- **A party's position** is what most of its present members voted; an even split is `split`.
-- **The government's position** is that of the prime minister's party that day.
-- **Role**: `government`, `agreement` (a written agreement with the government, such as the
+- A party's position is what most of its present members voted; an even split is `split`.
+- The government's position is that of the prime minister's party that day.
+- Role: `government`, `agreement` (a written agreement with the government, such as the
   Januari- and Tidö agreements) or `opposition`, on the date of the roll call.
 
 ## Tested against
