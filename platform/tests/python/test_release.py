@@ -466,9 +466,14 @@ def test_blocking_dbt_result_stops_before_upload(exports):
 
 def test_job_assistant_release_carries_no_owner_records():
     """Statuses, notes and labels stay in D1 behind the owner token, never in the public group."""
-    sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "job_assistant"))
-    import export
+    import importlib.util
     from datetime import datetime, timezone
+    # By path: other suites put their own module named export on sys.path.
+    folder = Path(__file__).resolve().parents[2] / "job_assistant"
+    sys.path.insert(0, str(folder))
+    loaded = importlib.util.spec_from_file_location("job_assistant_export", folder / "export.py")
+    export = importlib.util.module_from_spec(loaded)
+    loaded.loader.exec_module(export)
     private = {"status", "note", "notes", "label", "review", "reviews", "labels"}
     assert not private & set(export.FIELDS)
     now = datetime.now(timezone.utc)

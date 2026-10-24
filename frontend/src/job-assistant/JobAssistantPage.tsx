@@ -15,7 +15,7 @@ import Sections from './Sections'
 import Stats from './Stats'
 import { useListKeys } from './useListKeys'
 import { useJobData } from './useJobData'
-import { loadRecords, ownerToken, rows as joinRows, type Status } from './data'
+import { ownerToken, rows as joinRows, type Status } from './data'
 import {
   DEFAULT_QUERY,
   facetCounts,
@@ -41,8 +41,8 @@ const TABS = [
 const narrow = () => matchMedia('(max-width: 760px)').matches
 
 export default function JobAssistantPage({ route }: { route: Route }) {
-  const { data, records, setRecords, failed, retry, saved } = useJobData()
   const [owner, setOwner] = useState(() => Boolean(ownerToken()))
+  const { data, records, setRecords, failed, retry, saved } = useJobData(owner)
   const [more, setMore] = useState({ key: '', n: PAGE })
   const search = useRef<HTMLInputElement>(null)
   const listRef = useRef<HTMLOListElement>(null)
@@ -51,10 +51,6 @@ export default function JobAssistantPage({ route }: { route: Route }) {
   const openedHere = useRef<{ id: string; y: number } | null>(null)
   const now = useMemo(() => new Date(), [data])
   const day = today(now)
-  // Statuses and notes are owner-only reads, so they load (and clear) with the token.
-  useEffect(() => {
-    loadRecords().then(setRecords)
-  }, [owner, setRecords])
 
   const all = useMemo(
     () => (data ? joinRows(data, records) : []),
