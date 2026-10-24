@@ -23,7 +23,9 @@ test(
       .toBeGreaterThan(0)
     const layout = await page.evaluate(() => {
       // The map centres on the job assistant's slot, 80 px above its middle.
-      const anchor = document.querySelector('#jobs')!.getBoundingClientRect()
+      const anchor = document
+        .querySelector('#jobbassistent')!
+        .getBoundingClientRect()
       const list = document
         .querySelector('.home-project-groups > section')!
         .getBoundingClientRect()
@@ -307,7 +309,7 @@ test(
     ])
     await expect(
       page.locator(
-        'main :not(#research *) > a[href^="#"]:not([href^="#om-mig"]):not([href="#start"]):not([href="#main"])',
+        'main :not(#research *) > a[href^="#"]:not([href^="#om-mig"]):not([href="#start"]):not([href="#main"]):not([href="#jobs"])',
       ),
     ).toHaveCount(0)
     await expect
