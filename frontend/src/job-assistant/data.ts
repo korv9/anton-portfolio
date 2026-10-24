@@ -1,7 +1,7 @@
 /**
  * The job assistant's data (docs/job-assistant.md): the released files job-assistant/*.json,
- * read through the delivery manifest, and the owner's records at /api/jobs/*, read in public
- * and written only with the owner token, kept for this tab's session.
+ * read through the delivery manifest, and the owner's records at /api/jobs/*, read and written
+ * only with the owner token, kept for this tab's session.
  */
 import { fetchJson } from '../dataSource'
 import type { Delivered, Records } from './model'
@@ -17,11 +17,20 @@ export async function loadDelivered(): Promise<Delivered> {
   return { ads, matches, texts, demand } as Delivered
 }
 
-/** The owner's records; empty and marked unavailable when the Worker has no storage yet. */
+/**
+ * The owner's records, read only with the owner token: statuses and notes sit next to named
+ * employers. Empty and marked unavailable without the token or when the Worker has no storage.
+ */
 export async function loadRecords(): Promise<Records> {
+  const token = ownerToken()
+  if (!token) return { reviews: {}, labels: {}, available: false }
   try {
     const [r, l] = await Promise.all(
-      ['reviews', 'labels'].map((k) => fetch(`/api/jobs/${k}`)),
+      ['reviews', 'labels'].map((k) =>
+        fetch(`/api/jobs/${k}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+      ),
     )
     if (!r.ok || !l.ok) return { reviews: {}, labels: {}, available: false }
     return { ...(await r.json()), ...(await l.json()), available: true }

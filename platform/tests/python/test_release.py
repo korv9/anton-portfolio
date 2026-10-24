@@ -462,3 +462,18 @@ def test_blocking_dbt_result_stops_before_upload(exports):
     with pytest.raises(ValueError, match="not_null_x"):
         r.publish(s3, "bucket", "jobs", exports, spec("jobs/market.json"))
     assert s3.puts == []
+
+
+def test_job_assistant_release_carries_no_owner_records():
+    """Statuses, notes and labels stay in D1 behind the owner token, never in the public group."""
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "job_assistant"))
+    import export
+    from datetime import datetime, timezone
+    private = {"status", "note", "notes", "label", "review", "reviews", "labels"}
+    assert not private & set(export.FIELDS)
+    now = datetime.now(timezone.utc)
+    ad = {k: None for k in export.FIELDS} | {"id": "1", "source_url": "https://example.test/1"}
+    data = {"schema_version": 1, "generated_at": now.isoformat(), "ads": [ad], "runs": [{"runs_ok": 1}]}
+    assert export.problems(data, now) == []
+    data["ads"] = [ad | {"status": "applied", "note": "sent"}]
+    assert "ad 1: fields differ from the contract" in export.problems(data, now)

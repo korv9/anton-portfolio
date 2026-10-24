@@ -113,7 +113,7 @@ export default function Owner({ owner, available, onOwner, onRecords }: Props) {
   return (
     <details className="ja-owner">
       <summary>{l('Owner tools', 'Ägarens verktyg')}</summary>
-      {!available && (
+      {owner && !available && (
         <p className="ja-muted">
           {l(
             'The record storage is not set up yet, so statuses, labels and the profile cannot be saved.',

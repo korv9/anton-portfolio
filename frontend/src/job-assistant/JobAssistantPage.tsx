@@ -51,8 +51,11 @@ export default function JobAssistantPage({ route }: { route: Route }) {
 
   useEffect(() => {
     loadDelivered().then(setData, (e) => setFailed(String(e.message ?? e)))
-    loadRecords().then(setRecords)
   }, [])
+  // Statuses and notes are owner-only reads, so they load (and clear) with the token.
+  useEffect(() => {
+    loadRecords().then(setRecords)
+  }, [owner])
 
   const all = useMemo(
     () => (data ? joinRows(data, records) : []),
