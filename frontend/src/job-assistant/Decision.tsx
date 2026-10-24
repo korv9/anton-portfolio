@@ -3,6 +3,7 @@ import { useEffect, useState, type MutableRefObject } from 'react'
 import { l } from '../i18n'
 import {
   LABELS,
+  PIPELINE,
   STATUSES,
   write,
   type Label,
@@ -10,6 +11,12 @@ import {
   type Status,
 } from './data'
 import { statusLabel } from './labels'
+
+/** The number key for a pipeline status (1 saved to 5 rejected); the others have none. */
+const key = (s: Status) => {
+  const i = (PIPELINE as readonly Status[]).indexOf(s)
+  return i < 0 ? undefined : String(i + 1)
+}
 
 const LABEL_NAMES: Record<Label, [string, string]> = {
   relevant: ['Relevant', 'Relevant'],
@@ -81,14 +88,14 @@ export default function Decision({ row, onSaved, statusKey }: Props) {
         role="group"
         aria-label={l('Status', 'Status')}
       >
-        {STATUSES.map((s, i) => (
+        {STATUSES.map((s) => (
           <button
             key={s}
             type="button"
             aria-pressed={row.status === s}
             disabled={busy}
             onClick={() => setStatus(s)}
-            aria-keyshortcuts={String(i + 1)}
+            aria-keyshortcuts={key(s)}
           >
             {statusLabel(s)}
           </button>

@@ -1,8 +1,3 @@
-.mean-txt-t {
-  font-size: 8px;
-  fill: var(--muted);
-  font-variant-numeric: tabular-nums;
-}
 .mean-txt-grid {
   stroke: var(--line);
   stroke-width: 0.5;
@@ -17,39 +12,76 @@
   letter-spacing: -0.04em;
   line-height: 0.9;
   font-variant-numeric: tabular-nums;
-  color: var(--ink);
+  color: var(--mean-ink);
 }
 .mean-txt-kpi small {
   display: block;
-  font-size: var(--caption);
+  font-size: var(--type-caption);
   letter-spacing: 0;
   font-weight: var(--weight-body);
-  color: var(--muted);
+  color: var(--mean-muted);
   margin-top: 8px;
 }
+/* Plain numbers in a two-by-two grid, each over a hairline; labels wrap rather than clip. */
 .mean-txt-kpis {
   flex: 1;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
-  gap: 6px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-content: center;
+  gap: 14px 12px;
 }
 .mean-txt-kpis > div {
   display: grid;
-  align-content: center;
-  padding: 6px 8px;
-  border-radius: 8px;
-  font-size: clamp(14px, 8cqi, 30px);
+  align-content: start;
+  gap: 2px;
+  padding-top: 6px;
+  border-top: 1px solid var(--mean-line);
+  font-size: clamp(18px, 10cqi, 34px);
   font-weight: var(--weight-heading);
-  letter-spacing: -0.03em;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
   font-variant-numeric: tabular-nums;
-  color: var(--ink);
+  color: var(--mean-ink);
 }
 .mean-txt-kpis small {
-  font-size: var(--caption);
+  font-size: var(--type-caption);
   font-weight: var(--weight-body);
   letter-spacing: 0;
-  color: var(--ink-2);
+  line-height: 1.25;
+  color: var(--mean-muted);
+}
+/* Rows whose names carry the meaning (chapters, statutes, works) get a wider label column. */
+.mean-bars.mean-txt-long :is(.rank-bars-list li, .stacked li) {
+  grid-template-columns: minmax(0, 46%) minmax(0, 1fr) auto;
+}
+/* Exceptions under a headline number: one row per item, status in the accent. */
+.mean-txt-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 4px;
+  font-size: var(--type-caption);
+  line-height: 1.3;
+  color: var(--mean-ink);
+}
+.mean-txt-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding-top: 4px;
+  border-top: 1px solid var(--mean-line);
+}
+.mean-txt-list b {
+  font-weight: var(--weight-body);
+  color: var(--mean-muted);
+  white-space: nowrap;
 }
 .mean-txt-hover:hover {
   opacity: 0.7;
+}
+/* Values written on marks take the ink, not the muted tick grey. */
+.mean-body svg .mean-txt-v {
+  fill: var(--mean-ink);
+  font-weight: 500;
 }

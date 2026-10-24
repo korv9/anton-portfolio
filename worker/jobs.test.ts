@@ -144,6 +144,8 @@ test('statuses, labels and ids are checked', async () => {
   const put = (path: string, b: unknown) =>
     call(e, path, { method: 'PUT', body: JSON.stringify(b), token: TOKEN })
   assert.equal((await put('reviews/1', { status: 'hired' })).status, 400)
+  for (const status of ['interview', 'offer', 'rejected'])
+    assert.equal((await put('reviews/1', { status })).status, 200, status)
   assert.equal((await put('reviews/..%2F', { status: 'pass' })).status, 404)
   assert.equal(
     (await put('labels/1', { label: 'relevant' })).status,
