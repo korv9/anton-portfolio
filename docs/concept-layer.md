@@ -39,7 +39,8 @@ names how the concept is read (the anchor embedded with the shared model).
 `concept_tensions.csv` pairs concepts with the Philosophy Atlas tensions they are poles of (or
 nearest to). `concept_links.csv` links a concept to a measure elsewhere on the site only where
 the target measures the same idea: a Riksdag framing group, a job-ad term, an AI Act view or a
-tension. *Autonomy* has no Riksdag group or job term, and gets none.
+tension. The AI Act views were withdrawn on 2026-10-21, so those links redirect to
+`#what-does-it-even-mean`. *Autonomy* has no Riksdag group or job term, and gets none.
 
 ## Corpora and sampling
 

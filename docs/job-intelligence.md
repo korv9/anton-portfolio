@@ -1,14 +1,14 @@
 # Job Intelligence
 
-Job Intelligence is a continuous job research workspace at `#jobb-it?job=JOB_ID`. The reader selects an advertisement once and reads its full wording, requirements, CV explanation and company evidence in one pane. Desktop uses a 22% list capped at 270px; both panes scroll independently. Mobile puts a searchable selector above the same continuous content. Company sections have no reveal buttons or tabs.
+Job Intelligence was withdrawn from the site on 2026-10-21 (35b90a67). Its source in `frontend/src/{job-intelligence,companies,compliance}` stays unrouted because the compliance release hash and the build checks read it; `#jobb-it` and `/companies/<id>` now redirect to `#what-does-it-even-mean`. The data refresh still runs every morning in the `market` subject. The retained workspace was a continuous job research view at `#jobb-it?job=JOB_ID`. The reader selects an advertisement once and reads its full wording, requirements, CV explanation and company evidence in one pane. Desktop uses a 22% list capped at 270px; both panes scroll independently. Mobile puts a searchable selector above the same continuous content. Company sections have no reveal buttons or tabs.
 
 ## Modes and user journeys
 
-Public visitors get the latest 50 unexpired advertisements in the observed JobSearch window, generic requirements and verified company context. No applicant profile or personalised recommendations are published.
+The release publishes the latest 50 unexpired advertisements in the observed JobSearch window, generic requirements and verified company context. No applicant profile or personalised recommendations are published.
 
 Local personalisation is opt-in. A qualification-only profile in ignored `.research/` supplies documented CV facts. Location preferences, target-role weights, factor weights and the recommendation threshold are separate configuration. The browser ranks the complete fresh candidate set and displays up to 50 relevant jobs, best match first. Newest-first sorting remains available within these recommendations. Fewer than 50 qualifying ads is an explicit state.
 
-Selected advertisements survive filters and browser history. A shared link on the public site opens the same advertisement with generic analysis. `/companies/:companyId` and all `#compliance*` links continue to work. The separate Labour Market Observatory keeps its name, routes and analytics.
+Selected advertisements survive filters and browser history. A shared link on the public site opens the same advertisement with generic analysis. `/companies/:companyId` and `#compliance*` redirect to `#what-does-it-even-mean`; the Labour Market Observatory is withdrawn too.
 
 ## Repository audit and reuse
 
@@ -20,7 +20,7 @@ Selected advertisements survive filters and browser history. A shared link on th
 | SCB registry and frozen cohort | Job employers reuse canonical `company_id`; the frozen 50-company compliance cohort is unchanged |
 | `frontend/src/companies/` | Shared data loader, identity, related jobs, source links and legal release checks; continuous company presentation |
 | Compliance review, Gold, Explorer and exports | Reused intact. Added presentation files to the exact-artifact approval fingerprint |
-| Historical Labour Market Observatory | Existing archive/stream models, charts and routes retained |
+| Historical Labour Market Observatory | Archive/stream models retained; pages withdrawn |
 | `frontend/src/dataSource.ts`, delivery specs and R2 publishing | Integrity-checked, pinned releases; no new backend or company database |
 | `tokens.css`, shared charts and native controls | Grey surfaces, Helvetica, muted violet, accessible chart labels and focus states; no new theme |
 
@@ -97,6 +97,8 @@ The local run selected 25 suitable advertisements from those 599, all with verif
 
 Missing reviewed enrichment: company financial history/ratios, exact historical employee counts, long hiring history, procurement/client evidence, verified repository ownership, corporate events and stock/issuer series. Existing context rows can render automatically when approved and directly attributed; five-year financial and workforce charts need real compatible observations first. Current hiring counts by publication day are shown where multiple days support comparison. They are observed postings, not confirmed hires or causal evidence.
 
+`new_output` in `platform/compliance_intelligence/sources.py` retries only bounded Windows access and sharing locks (WinError 5 and 32) while it finalises a staged directory; it never replaces existing output.
+
 Compliance remains independently gated. The current public release is unavailable pending human review. No unapproved named findings are published; missing coverage is never shown as zero violations. KKV coverage limitations and ranking holds remain. The frozen SCB compliance cohort is unchanged and independent of both the job population and private recommendations.
 
 ## Run locally
@@ -107,7 +109,7 @@ From the repository root in PowerShell, using the existing installed dependencie
 $env:VITE_DELIVERY_MODE = 'local'
 Remove-Item Env:JOB_INTELLIGENCE_PRIVATE_PROFILE -ErrorAction SilentlyContinue
 npm.cmd run dev
-# Open http://127.0.0.1:5173/#jobb-it for generic public behaviour.
+# #jobb-it redirects while the workspace is unrouted, even in dev; add a route first.
 ```
 
 Stop that server, then enable the prepared ignored qualification profile:
@@ -116,7 +118,7 @@ Stop that server, then enable the prepared ignored qualification profile:
 $env:VITE_DELIVERY_MODE = 'local'
 $env:JOB_INTELLIGENCE_PRIVATE_PROFILE = '.research/job-intelligence/profile.json'
 npm.cmd run dev
-# Open http://127.0.0.1:5173/#jobb-it for local personalised discovery.
+# Same: #jobb-it redirects until a route is added.
 ```
 
 Edit that private JSON to change preferences or replace documented qualifications, then reload. Keep the source references/excerpts and actual CV hash; do not add contact fields. Unset the variable to disable personalisation. The profile is intentionally not committed, so another checkout must create its own validated qualification file. CV parsing/upload UI and a production access-controlled applicant service are not implemented.
@@ -139,5 +141,3 @@ Here `--publish` writes local public JSON only. It does not deploy or send data 
 ## Deployment and validation
 
 No deployment is automatic. Publish the complete validated jobs R2 group (market, company metadata and both text packages), preserving exclusive group ownership, before a frontend release expects these files. Use existing Workers/static assets and delivery activation. Keep `SCB_API_KEY` backend-only. Deploy public generic behaviour; local personalisation requires a separate authorised access-controlled design before any production use. Any change to the company/workspace presentation requires a new exact-artifact compliance publication approval.
-
-Final validation results and the exact changed-file inventory are in [implementation report](job-intelligence-report.md).

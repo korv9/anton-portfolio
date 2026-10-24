@@ -7,6 +7,9 @@ measures is described on the product's own page, in its method drawer.
 The visual direction is "Sverige i höjd": a 3D scene over the whole window is the page's main
 content, and glass panels float above it. Everything else sits below the scene.
 
+The production build currently shows only the start page (`START_ONLY` in
+`frontend/src/router.ts`), so SWEDEN runs in the dev server and the browser tests.
+
 ## Boundary
 
 - Everything lives in `frontend/src/sweden/` and is scoped to `.sweden`. Its tokens never reach
@@ -28,9 +31,10 @@ content, and glass panels float above it. Everything else sits below the scene.
 | `#sweden-framtid`      | E The Lost Futures                |
 | `#sweden-samband`      | Connections                       |
 | `#sweden-kit`          | Component states, no data         |
+| `#sweden-atlas`, `#sweden-atlas-a` to `-e`, `-x` | The atlas ([sweden-atlas.md](sweden-atlas.md)) |
 
-The Wellbeing Observatory moved from `#sweden*` to `#wellbeing*`. Its old addresses redirect in
-`router.ts`. A page's state is kept in the query, for example `#sweden-likhet?vy=likhet&kommun=2584`.
+The Wellbeing Observatory's old `#sweden-*` addresses and `#wellbeing*` were withdrawn on
+2026-10-21 and redirect to `#what-does-it-even-mean` (`router.ts`). A page's state is kept in the query, for example `#sweden-likhet?vy=likhet&kommun=2584`.
 Pages write it with `setHashParams(path, params, true)`, so back and forward step through the views.
 `?scen=2d` shows a page's 2D view in the scene's place.
 
@@ -127,7 +131,7 @@ pipeline ready, awaiting execution; or data unavailable.
 - `stage.ts`: the shared three.js stage. 32° perspective camera, damped orbit controls,
   hemisphere light plus one directional light with soft shadows, a shadow-catching ground,
   colours read from the tokens. The view is offset so the subject sits between the panels.
-  It renders on change only and caps the device pixel ratio at 2.
+  It renders on change only and caps the device pixel ratio at 1.5.
 - `BarField.tsx`: instanced boxes for A, B and E, with projected row and column labels.
 - `MunicipalityField.tsx`: SCB's municipality boundaries (SWEREF99 TM, 100 m units; one scene
   unit is 10 km) as extruded shapes over a flat map base, with an optional second position per
@@ -153,6 +157,46 @@ pipeline ready, awaiting execution; or data unavailable.
    keeping `status: 'pipeline'` until its data has run.
 2. Write `<Product>.tsx`. Load the product's files with `fetchJson` from `sweden/<product>/`,
    compute the findings from them, and render `SwedenResearchPage` with a `Scene`.
-3. Lazy-load it in `SwedenPage.tsx` and remove its `PENDING` entry.
-4. Export the data from a dbt mart under `models/gold/sweden/` through a script in
-   `platform/publish/sweden/`, and add its steps to the `sweden` subject in `platform/pipeline.yml`.
+3. Lazy-load it in `SwedenPage.tsx` by adding it to `PAGES`.
+4. Export the data from a dbt mart under `platform/models/gold/sweden/` (or its own folder, as
+   `sweden_language` and `sweden_futures` have) through a script in `platform/publish/sweden/`.
+   Add its steps to the `sweden` subject in `platform/pipeline.yml`, or give it its own subject.
+   List its files and their JSON Schemas in `configs/delivery/sweden.json`.
+
+### Lineage per product
+
+| Layer | A Measurement | B Ideal Human | C Invisible Sweden | D Belonging | E Lost Futures |
+|---|---|---|---|---|---|
+| Source | SCB API v2 table metadata; Kolada KPI catalogue | JobTech historical ads; JobTech Taxonomy | Kolada KPIs via the welfare pipeline; SCB population and boundaries | KB bibstat; Biblioteksdatabasen | Riksdag speeches (`anforande` archives); DiVA OAI-PMH set `studentThesis` |
+| Ingest | `platform/ingest/catalogue/` | `platform/ingest/jobtech/ad_language.py` (stream, count, delete) | welfare Kolada ingest; `platform/ingest/scb/boundaries.py` | `platform/ingest/kb/libraries.py` | `platform/ingest/riksdagen/futures_language.py`; `platform/ingest/diva/futures_theses.py` |
+| Gold | `mart_sweden_measurement_items`, `_coverage` | `mart_sweden_job_language`, `_trends` | welfare `mart_municipality_year_panel` | aggregated in Python | `mart_sweden_future_themes`, `_trends`, `_theses` |
+| Export | `export_measurement.py` | `export_language.py` | `export_similarity.py` | `export_belonging.py` | `export_futures.py`, `export_futures_theses.py`, `export_futures_topics.py` |
+| Published (`sweden/`) | `measurement/{summary,coverage,items}.json` | `language/{trends,fields,regions,examples,coverage,composition}.json` | `similarity/{municipalities,groups,geometry}.json` | `belonging/{municipalities,libraries,coverage,change}.json` | `futures/{trends,parties,examples,coverage,topics}.json` |
+| Page | `Measurement.tsx` | `Language.tsx` | `Similarity.tsx`, `map.ts` | `Belonging.tsx` | `Futures.tsx` |
+
+Connections: `export_connections.py` reads the published SWEDEN files and writes
+`sweden/connections/connections.json`.
+
+## Statistical conventions
+
+These conventions come from the statistical plan of 2026-10-21, applied in 3c185c71 and the
+commits after it. The code in `platform/publish/sweden/` is the reference.
+
+- Every published change carries its denominator, both endpoints and n. A relative change of a
+  small rate also carries the absolute change.
+- Intervals are percentile bootstraps with a fixed seed; Connections also resamples by county
+  cluster (`connections_stats.py`).
+- Nulls: permutation over municipalities for spatial claims, a Gaussian copula with empirical
+  marginals for cluster validity (`similarity_checks.py`), an AR(1) around a fitted trend for
+  breaks in yearly series (`export_futures.py`).
+- A family is every relationship or theme that answers one question on one page. It is declared
+  in the export, corrected with Holm, and the adjusted p is published beside the raw one.
+- No label rests on a p-value. A reading counts as supported only when the result could have come
+  out against it, the direction holds across the stated sensitivity variants and the interval
+  excludes zero. Connections labels each relationship `robust`, `uncertain` or `not_supported`
+  from its intervals (`export_connections.py`).
+- Text measures are reported three ways: share of texts, per 1,000 words, and share within fixed
+  length bands. The Riksdag and DiVA keep their own denominators and are never pooled.
+- Each analysis states its complete-case n and, for panels, its balanced-panel n and how the
+  result differs between them.
+- A municipal relationship describes municipalities, never the people in them.

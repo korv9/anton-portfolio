@@ -6,7 +6,8 @@ Data–Reality Gap, meaning what the data cannot show. The routes are `#sweden-a
 and `#sweden-atlas-a` to `-e` plus `#sweden-atlas-x` (Connections). You can also open the
 atlas from the SWEDEN menu. The product pages under `#sweden-*` are unchanged.
 
-Code lives in `frontend/src/sweden/atlas/`. three.js loads only on atlas routes.
+Code lives in `frontend/src/sweden/atlas/`. The atlas is lazy-loaded (`SwedenPage.tsx`);
+three.js loads only on SWEDEN routes.
 
 ## How a page is built
 
@@ -63,7 +64,7 @@ picks it up on the next load, and nothing else needs to change.
 | `belongingSurvey`        | `sweden/belonging/belonging.json`          | D: the belonging floor                                                    |
 | `futuresSou`             | `sweden/futures/sou.json`                  | E: a third corpus row (SOU)                                               |
 
-Some gaps fill themselves. In B, adding a counted year to `language/trends.json` turns its
+Some gaps fill themselves. In B, adding a counted year to `sweden/language/trends.json` turns its
 ghost column into a bar. In Connections, publishing a tested relationship for a pair that
 is now only conceptual replaces the dotted thread with a tested one.
 

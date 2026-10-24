@@ -71,7 +71,8 @@ The research workflow, in order:
 5. Read `review/representative_passages.parquet` (both sets) and `cluster_keywords.parquet`
    for the clusters at the top of `review/cluster_candidates.parquet`.
 6. Edit `platform/nlp/symbolic/reviewed_clusters.json` by hand (see [Human review](#human-review)).
-7. `npm run symbolic:gold && npm run symbolic:publish`, then the **Publish to R2** workflow.
+7. `npm run symbolic:gold && npm run symbolic:publish`, then
+   the *Build, store and publish the warehouse* workflow (`build-warehouse.yml`, weekly or by hand), which publishes the `baseline` group.
 
 No step writes `reviewed_clusters.json`; rerunning everything never overwrites a review.
 
@@ -79,7 +80,7 @@ The ML stage needs PyTorch (CPU) and the packages in `platform/requirements-symb
 which are kept out of `requirements.txt` so CI stays light. Scripts are run by path, like the
 rest of `platform/`: `python -m platform…` would collide with Python's own `platform` module.
 
-After publishing, run the **Publish to R2** workflow (Actions) on the branch to upload the
+After publishing, the *Build, store and publish the warehouse* workflow (`build-warehouse.yml`, weekly or by hand), which publishes the `baseline` group uploads the
 Parquet files; the site reads them from R2 and falls back to its own copy until then.
 
 ## Corpus
@@ -471,19 +472,21 @@ cluster-quality diagnostics (trustworthiness, silhouette, noise, membership) are
 - `summary.json`: counts, symbols, traditions, books, the run's model and parameters, the
   evaluation (served with the site);
 - `preview.json`: every tenth point (x, y, cluster) for the start page's picture;
-- `atlas.parquet`: one row per point with a context excerpt of at most 360 characters;
-- `symbol-profiles.parquet`: per symbol and cluster, count, share and mean probability.
+- `preview-detail.json`: all atlas coordinates and cluster ids for the layered home UMAP;
+- `v4/atlas.parquet`: one row per point with a context excerpt of at most 360 characters;
+- `v4/symbol-profiles.parquet`: per symbol and cluster, count, share and mean probability.
 
 and, from the experiments and the review:
 
 - `experiment-comparison.json`: one row per deconfounding experiment;
-- `book-centered-atlas.parquet`: the book-centred coordinates and clusters of the same points
-  (the rest of each point is joined from `atlas.parquet` by occurrence id);
+- `model-comparison.json`: one row per embedding model and experiment on the same sample;
+- `v4/book-centered-atlas.parquet`: the book-centred coordinates and clusters of the same points
+  (the rest of each point is joined from `v4/atlas.parquet` by occurrence id);
 - `book-centered-clusters.json`: every book-centred cluster with its counts, shares, entropies,
   flags, review class and status, top symbols and traditions and representative ids;
 - `cross-book-clusters.json`: the cross-book subset, each with its review status;
 - `reviewed-clusters.json`: only human-reviewed clusters (empty until a review);
-- `research-history.json`: v1–v3 with their numbers, the cleaning audit and the review counts.
+- `research-history.json`: v1–v4 with their numbers, the cleaning audit and the review counts.
 
 The export reruns the ranking first, so the published review status always matches
 `reviewed_clusters.json`. No embedding and no text beyond each point's excerpt is delivered.
@@ -496,7 +499,7 @@ It registers the files in `catalog.json` and `delivery.json` with the same rules
 `AtlasCanvas` (canvas, one dot per point, colour by cluster, noise grey, hover and click),
 `AtlasSidebar` (symbol, tradition, cluster and noise filters, kept in the address:
 `?symbol=snake`, `?tradition=norse`, `?cluster=3`, and the view, `?view=cross-book`),
-`ClusterPanel` (a book-centred cluster for review), `ResearchStory` (the investigation step by
+`ClusterPanel` (a book-centred cluster for review), `CorpusExplorer` (the books on the map as rows), `ResearchStory` (the investigation step by
 step), `ExperimentTable`, `atlasData` (loading through the delivery manifest) and `atlasTypes`.
 The review layer is optional: without its files the page is the baseline atlas.
 

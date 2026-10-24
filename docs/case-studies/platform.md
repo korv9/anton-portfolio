@@ -38,10 +38,10 @@ flowchart LR
 | Stage | Where | What it does |
 |---|---|---|
 | Ingestion | `platform/ingest/`, `platform/lib/rawstore.py` | One package per source. Each raw file is written with a manifest line: URL, fetch time, SHA-256. |
-| Transformation | `platform/models/` | dbt on DuckDB. Bronze types the raw records, silver conforms them (shared dimensions such as `dim_session`), gold holds the marts the site reads. |
+| Transformation | `platform/models/` | dbt on DuckDB. Bronze types the raw records, silver conforms them, gold holds the shared dimensions (`models/gold/shared/`) and the marts the site reads. |
 | Checks | `platform/models/**/schema.yml`, `configs/delivery/schemas/`, `python platform/pipeline.py check` | dbt tests and enforced model contracts, JSON Schemas for delivered files, and Python validators that reconcile delivered totals against the warehouse. |
 | Delivery | `frontend/public/data/`, `platform/publish/release.py` | JSON for first paint is committed and ships with the site. Parquet marts and document shards live in R2; the browser reads them from the addresses in `delivery.json`. Each publish step also uploads a versioned release, reads every file back to compare bytes, and activates it last. The site does not read those releases yet ([storage and serving](../storage-and-serving.md)). |
-| Serving | `worker/index.ts` | A Cloudflare Worker serves the static assets and two Workers AI endpoints. |
+| Serving | `worker/index.ts` | A Cloudflare Worker serves the static assets, two Workers AI endpoints and the job assistant's owner records (`/api/jobs/*`), which answer 503 until the D1 database is bound in `wrangler.toml`. |
 | Orchestration | `platform/pipeline.yml`, `platform/pipeline.py` | Lists every subject with its stages and schedule, and runs them the same way locally and in GitHub Actions. |
 
 ## Key decisions
@@ -56,9 +56,9 @@ DuckDB is single-writer, so parallel jobs queue on a shared lock.
 ### Medallion layers
 
 Bronze is files on disk, never edited. Silver and gold are schemas in
-the DuckDB file, so they can be queried and tested. Shared entities live in
-`models/silver/shared/`, so politics and research use the same session and document
-tables.
+the DuckDB file, so they can be queried and tested. Shared dimensions
+(`dim_date`, `dim_municipality`, `dim_party` and others) live in `models/gold/shared/`, so
+every subject joins to the same ones.
 
 ### Contracts before publishing
 
@@ -120,17 +120,17 @@ delivered file, and CI keeps checking that afterwards.
 
 | What | Count | How it was counted |
 |---|---|---|
-| dbt models | 302 (bronze 107, silver 17, gold 178) | `.sql` files under `platform/models/` and each layer folder |
-| Models with an enforced contract | 149 | `contract: {enforced: true}` lines in `platform/models/**/*.yml` |
+| dbt models | 329 (bronze 117, silver 20, gold 192) | `.sql` files under `platform/models/` and each layer folder |
+| Models with an enforced contract | 158 | `contract: {enforced: true}` lines in `platform/models/**/*.yml` |
 | dbt source tables | 125, in 33 source definitions | `sources:` entries parsed from the model YAML files |
 | dbt data tests | 821 generic (812 on models, 9 on sources), 46 singular | `tests:`/`data_tests:` list items on models, sources and their columns in `platform/models/**/*.yml`; `.sql` files under `platform/tests/` |
 | Python tests | 806 | `python -m pytest platform/tests --collect-only -q` |
 | Frontend and Worker unit tests | 93 | `# tests` line printed by `npm run test:unit` |
 | Browser (Playwright) tests | 88, in 28 spec files | `test(` calls in `frontend/tests/*.spec.ts` |
-| Delivery JSON Schemas | 23 | `.json` files under `configs/delivery/schemas/` |
-| Pipeline subjects | 24 | entries under `subjects:` in `platform/pipeline.yml` |
-| Published files | 6,394 (1,701 JSON, 68 Parquet, 4,625 shards) for 20 products | entries in `frontend/public/data/catalog.json`, grouped by `format` and `product` |
-| GitHub Actions workflows | 13 | files in `.github/workflows/` |
+| Delivery JSON Schemas | 26 | `.json` files under `configs/delivery/schemas/` |
+| Pipeline subjects | 26 | entries under `subjects:` in `platform/pipeline.yml` |
+| Published files | 6,396 (1,703 JSON, 68 Parquet, 4,625 shards) for 20 products | entries in `frontend/public/data/catalog.json`, grouped by `format` and `product` |
+| GitHub Actions workflows | 14 | files in `.github/workflows/` |
 
 Counts of test functions are not counts of test cases: a parametrised test counts once in
 the grep and several times in pytest's collection. The numbers will drift as the

@@ -1,4 +1,4 @@
-# Välfärd: hur Sverige mår — datamodell
+# Välfärd: datamodellen för hur Sverige mår
 
 Fem öppna källor i ett star schema med gemensamma nycklar, så att jobb, arbetsliv, hälsa,
 mående och tillit kan läsas mot varandra per region och period. Urvalet av indikatorer
@@ -28,11 +28,11 @@ bara viktade aggregat lämnar det.
 ## Lager
 
 ```
-platform/ingest/{scb,fohm,fk,ess,kolada}   hämtar till warehouse/raw/<källa>/, med _manifest.jsonl
-models/bronze/welfare/stg_*                 en rad per källpost, typad, inget annat
-models/silver/welfare/int_welfare_*         källans koder översatta till de gemensamma nycklarna
-models/gold/shared/dim_*                    gemensamma dimensioner
-models/gold/welfare/fct_*, mart_*           fakta på deklarerad grain, samt en översikt per län och år
+platform/ingest/{scb,fohm,fk,ess,kolada}             hämtar till warehouse/raw/<källa>/, med _manifest.jsonl
+platform/models/bronze/welfare/stg_*                 en rad per källpost, typad, inget annat
+platform/models/silver/welfare/int_welfare_*         källans koder översatta till de gemensamma nycklarna
+platform/models/gold/shared/dim_*                    gemensamma dimensioner
+platform/models/gold/welfare/fct_*, mart_*           fakta på deklarerad grain, samt en översikt per län och år
 ```
 
 Varje hämtad fil har en rad i `warehouse/raw/<källa>/_manifest.jsonl`: URL, metod,

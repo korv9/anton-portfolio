@@ -1,8 +1,7 @@
 # Data dictionary
 
-The current-ad identity extension is documented in the
-[job/company table dictionary](job-company-integration.md#tables-and-analytical-grain),
-including `job_company_link`, `company_resolution_review` and hiring-context marts.
+The current-ad identity extension (`job_company_link`, `company_resolution_review` and the
+hiring-context marts) is described under [Job/company tables](#jobcompany-tables).
 
 Contract version 1, 2026-10-16. Executable field types and local constraints are in
 [`schema.sql`](../../platform/compliance_intelligence/schema.sql).
@@ -326,7 +325,8 @@ sanction, appeal information, status, party role and attribution scope. Status
 values are `investigation`, `alleged`, `decided`, `appealed`, `final`, `modified`,
 `annulled`, `unknown`. The original outcome is distinct from status and finality.
 Monetary values use decimal strings with explicit SEK/EUR and administrative-fine
-type; unsupported remedies remain unclassified. See [extraction rules](phase-3.md#extraction-contract).
+type; unsupported remedies remain unclassified. The rules are under
+[Extraction contract](#extraction-contract) below.
 
 Review context binds source/record heads, registry snapshot hash, decision links
 and incoming legal-review heads. New evidence or dependency reviews invalidate
@@ -342,6 +342,43 @@ hash, verification/due dates and status-as-of time. Effective amount stays null
 without a confirmed final unchanged order. Quotes, original documents, reviewer
 IDs, model metadata and private paths are excluded. `validate-release` checks the
 projection and current approvals again before future public promotion.
+
+### Extraction contract
+
+[`legal_extraction.py`](../../platform/compliance_intelligence/legal_extraction.py)
+provides the strict JSON Schema and deterministic extractor.
+
+| Claim | Extraction and uncertainty rule |
+| --- | --- |
+| `authority` | Issuing-body evidence in the first scoped page's header. The hosting authority is separately preserved as `source_publisher`; a court PDF hosted by IMY does not become an IMY judgment. Unsupported or conflicting issuers stay null. |
+| `case_number` | Literal Swedish authority/court references. Multiple distinct references stay uncertain until a reviewer scopes the act. Docket grouping uses normalized issuer plus reference, never company or group name. |
+| `legal_entity`, `organization_number` | Literal operative subject and valid legal-person number when present. Missing numbers stay null. Context mentions are not paired into a legal operator from proximity. |
+| `case_type`, `legal_basis` | Document-supported category and literal law/regulation references. Current deterministic rules cover GDPR, competition and public procurement terminology; other supported categories require documented proposals or abstention. |
+| `decision_date`, `publication_date` | Independently labelled dates with exact excerpts. Conflicts remain null; URL year, update date and retrieval date cannot fill them. |
+| `original_outcome` | Supported outcome candidate, separate from current status. Administrative sanctions, regulatory findings, dismissal, no finding, procedural acts and judgments remain distinct. Criminal conviction requires separate explicit evidence and a criminal forum; a fine does not imply conviction. |
+| `monetary_sanction` | Decimal amount string, explicit currency and sanction type. The current parser handles administrative fines. It does not classify damages, costs or corporate/coercive fines as administrative sanctions. |
+| `appeal_information` | `unknown`, `instructions_only`, `filed`, `pending` or `decided`, with supporting excerpts. Instructions explain how to appeal; they do not establish that an appeal was filed. |
+| `status` | Proposed status of the scoped act. Conflicting issue/history/finality statements abstain to unknown. Dispositions affecting another act belong in a directed decision link. |
+| `party_role`, `attribution_scope` | Direct liability requires the named subject of the operative clause. An issuer or contextual mention cannot receive another entity's sanction. Parent, subsidiary and merger links are not traversed. |
+
+Swedish grouping spaces, decimal commas, `miljon/miljoner`, `miljarder`, `tkr`,
+`mkr` and `mnkr` are parsed using Decimal. Examples of supported units are
+`1,8 miljoner kronor` and `35 000 euro`. Missing currencies/units, negative amounts,
+ambiguous dotted/grouped decimals and conflicting currency abbreviations abstain
+or fail proposal validation. Amounts remain at the decision grain.
+
+Each known claim has `evidence`: physical PDF page number, `start`, `end` character
+offsets and a literal `quote`. Offsets address normalized page text: whitespace is
+collapsed and soft hyphens are removed. They are not byte offsets or printed court
+page labels. Imports check every excerpt against a freshly hash-verified original.
+The extractor version hashes its code and pypdf version. Unsupported text layouts,
+encrypted PDFs, empty text and scans require review; no OCR is invented.
+
+One proposal represents one scoped act and one directly attributable primary legal
+entity. Several operative parties or ambiguous joint liability stay held. A document
+containing several judgments needs separate `decision_slot` values and scoped page
+sets, with field-specific offsets for each act. The whole-document extraction
+abstains on conflicting dates or parties. It does not split an amount across parties.
 
 ## Phase 4 analytical model
 
@@ -404,3 +441,64 @@ The chart CSV instead has one row per plotted aggregate; its grain is different.
 Methodology Markdown carries complete exact references and cohort/release hashes.
 Graphic metadata embeds the same context; PNG carries the visible subset and needs
 the companion Markdown for complete machine-readable references.
+
+## Job/company tables
+
+### Resolution contract
+
+1. A validated legal-person organization number in the canonical registry verifies
+   the advertised identity, provided its name is not contradictory.
+2. A unique explicitly reviewed alias can verify an entity without a number.
+   Brand, trading and historic names require source evidence and a dated validity
+   interval covering the advertisement publication date.
+3. Normalized current names and conservative similar-name candidates remain in
+   the review queue. Confidence is evidence strength, not a calibrated probability.
+4. Contradictory names, invalid numbers, multiple candidates and unsupported
+   identities remain ambiguous, awaiting review or unresolved. An invalid supplied
+   number never falls back to a name match.
+
+An automatic link means **advertised employer**. It does not identify a recruiter
+or an undisclosed end client. `recruiter` and `actual_employer` require explicit
+human-reviewed role evidence. Workplace text and job descriptions do not establish
+those roles. Parent ownership, merger edges and brand resemblance do not transfer
+ads, finances or compliance decisions to another legal entity.
+
+Manual review is bound to both `job_payload_hash` and `registry_hash`. A changed
+ad or registry version requires a new review. The input JSON array requires:
+`job_id`, `relationship_type`, `company_id` (nullable for rejection), both hashes,
+`disposition` (`approved`/`rejected`), `reviewer_id`, UTC `reviewed_at`, HTTPS
+`evidence_url`, SHA-256 `document_hash`, `source_locator` and `rationale`.
+`--reviewers` names an explicit JSON array of authorized human reviewer IDs.
+Conflicting role reviews are rejected. This CLI is a private operator tool, not a
+public review endpoint; reviewer access must be controlled by its operator.
+
+### Tables and analytical grain
+
+The extension lives in [`job_links.sql`](../../platform/compliance_intelligence/job_links.sql).
+
+| Table/view | Grain and purpose |
+| --- | --- |
+| Existing `dim_company` | One legal entity per canonical registry snapshot. |
+| Existing `dim_company_alias` | Reviewed, sourced and dated alias of one entity. |
+| Existing `company_relationship` | Dated, sourced relationship; no automatic aggregation. |
+| `job_observation` | One native job ID and pinned payload hash per collection, with publication time. |
+| `job_company_link` | One job ID × relationship type per resolved snapshot. |
+| `company_resolution_review` | One immutable human review, bound to both input versions. |
+| `company_registry_observation` | Current sourced SNI and employee class, by exact company ID. |
+| `company_context_fact` | Reviewed, directly attributed measure/event observation, with period, unit and source. |
+| `mart_company_hiring_daily` | Company × role × publication day; distinct observed advertisements. |
+| `mart_company_hiring_context` | Daily hiring rows joined to register context and each reviewed financial observation. |
+
+`job_company_link` contains `job_id`, nullable `company_id`, `relationship_type`,
+`match_method`, `match_status`, `match_confidence`, nullable `verified_at`, original
+employer name/number/workplace, both version hashes and JSON match evidence.
+SQL constraints enforce non-null company/verification time only for verified
+links. Private Parquet exports include links, reviews and the two hiring marts.
+
+The financial join is one row per financial observation; **do not sum repeated
+ad counts across financial measures or periods**. Units/currencies are retained,
+never converted or summed implicitly. The same canonical ID enables size/activity
+and financial/activity comparisons, but current size classes are intervals and
+the observed weekly ad population is not hiring volume. Historical ads outside
+this window, withdrawn ads and company workforce history are not reconstructed.
+Neither financial nor legal outcomes establish a cause for recruitment changes.

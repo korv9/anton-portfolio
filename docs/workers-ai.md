@@ -1,7 +1,7 @@
 # Workers AI
 
 Tre demos använder Cloudflare Workers AI: en besökares mening placerad på kartan över
-partiledardebatterna, frågor med citat över ett urval av SFS och EU:s AI-förordning (Fråga lagen)
+partiledardebatterna (`#cluster-visuals`), frågor med citat över ett urval av SFS och EU:s AI-förordning (Fråga lagen)
 och frågor om hur plattformen själv är byggd (Fråga plattformen).
 
 ## Regeln
@@ -87,6 +87,10 @@ stor del av de tio närmaste grannarna med fulla vektorer som också hittas med 
 | ai-act-en | 1 413   | 0,969              | 0,987              | 256       |
 | debate    | 33 023  | 0,860              | 0,941              | 384       |
 
+Debattkartans filer i `frontend/public/data/workers-ai/debate/` skrivs av
+`python -m ml.research.export_workers_ai --map debate`, som läser vektorerna från
+`platform/nlp/workers_ai.py embed`. `--examples` skriver tre exempelmeningar med vektorer och anropar Workers AI.
+
 ## Evalresultat
 
 Sökningen hittade ett förväntat stycke bland de åtta första för 17 av 20 frågor och bland de tio
@@ -155,8 +159,8 @@ räknades in innan körningarna startade.
 Provanropen från Workern och sidorna kostade 13,2 neurons till. Loggen räknar från tokenantalen.
 För gpt-oss underskattar den kostnaden, som avsnittet om modellvalet visar.
 
-Kvar att köra är exemplen för `ai-act-en`, ungefär 180 neurons, när kvoten nollställts
-kl. 00.00 UTC den 2026-10-16. Tills dess visar den engelska sidan att exempel saknas.
+Exemplen för `ai-act-en`, ungefär 180 neurons, saknas fortfarande: det finns ingen
+`workers-ai/ai-act-en/examples.json`, så den engelska sidan visar att exempel saknas.
 
 ## Hela författningssamlingen
 
@@ -222,10 +226,11 @@ ingen bit är över 1 500 tecken och att bitarna blir samma text igen, blankteck
 och efter ändringen. `assert_sfs_whole_text_only_without_paragraphs` kontrollerar att inget
 dokument har båda sorterna och att ingen XML-text kommit med.
 
-### Sidan om lagboken
+### Översikten över samlingen
 
-Sidan `#lagboken` (projektet Swedish Statute Book) visar samlingen i tre flikar: omfattning,
-utfärdade och upphävda per år samt storlek. Guldmodellen `fct_sfs_document` har en rad per
+Sidan `#lagboken` (projektet Swedish Statute Book) togs bort från webbplatsen 2026-10-21 och
+adressen leder till `#what-does-it-even-mean`. Exporten `sfs/overview.json` finns kvar och
+beskriver samlingen: omfattning, utfärdade och upphävda per år samt storlek. Guldmodellen `fct_sfs_document` har en rad per
 dokument med typ, utfärdandeår, upphävandeår, antal numrerade paragrafer (kapitel och §, räknade
 en gång) och antal stycken. `python platform/publish/export_sfs.py` läser den och
 `int_sfs_corpus_paragraphs` och skriver `frontend/public/data/sfs/overview.json`, ungefär
@@ -233,7 +238,7 @@ en gång) och antal stycken. `python platform/publish/export_sfs.py` läser den 
 test fallerat. Filen ingår i leveransgruppen `baseline`.
 
 Raden `Ändrad:` anger bara den senaste ändrings-SFS:en, inte hur många ändringar en lag fått, så
-sidan visar inga mest ändrade lagar. Fråga lagen söker fortfarande bara i de 40 utvalda lagarna.
+exporten har inga mest ändrade lagar. Fråga lagen söker fortfarande bara i de 40 utvalda lagarna.
 
 ## Fråga plattformen
 
@@ -253,7 +258,8 @@ Varje stycke har `path` (den spårade filen), `commit` (senaste commit som ändr
 till exempel `docs/pipeline.md#subjects`, eller `dbt:<modell>`, `graph:<nod>` och
 `catalog:<produkt>`. En fil som Git inte spårar, som `.gitignore` täcker eller som ser privat ut
 (`.env`, `private/`, `warehouse/`, `.idea-lineage/`) vägras. Två driftloggar med lokala sökvägar
-(`compliance-intelligence/repository-audit.md` och `validation.md`) är undantagna, och ett stycke
+(`compliance-intelligence/repository-audit.md` och `validation.md`, borttagna 2026-10-23) var
+undantagna, och ett stycke
 som innehåller en lokal hemkatalog (`C:/Users/...`, `/home/...`) tas bort. Testet
 `test_every_published_passage_is_a_tracked_public_file` fallerar om en sådan sökväg eller ett
 sådant stycke finns i den publicerade korpusen. `test_every_document_passage_line_is_in_its_file`

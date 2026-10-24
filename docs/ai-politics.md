@@ -1,17 +1,21 @@
 # The Riksdag and AI
 
-`#ai-act-politics`, inside the EU AI Act Observatory, asks: **how has Swedish political language
+The Riksdag AI pipeline asks: **how has Swedish political language
 about AI changed as the AI Act developed?** It counts which words the Riksdag uses about AI, by
 whom and when, puts that next to the Act's milestones, and adds a separate, derived layer of
 semantic similarity between speeches and the Act's text. It describes language; it does not infer
 motives or claim that the Act caused anything.
 
+The `#ai-act-politics` page was withdrawn on 2026-10-21, and no page reads
+`ai-act/politics/*.json` now. `mart_ai_politics_monthly` still feeds the AI governance timeline
+([ai-governance-timeline.md](ai-governance-timeline.md)).
+
 ```
-npm run ai-politics              # all of the below
-npm run ai-politics:ingest       # every speech archive since 2016/17 (rawstore)
-npm run ai-politics:build        # dbt build --select tag:ai_politics
-npm run ai-politics:similarity   # embeddings and nearest pairs, then the similarity mart
-npm run ai-politics:publish      # frontend/public/data/ai-act/politics/*.json
+npm run ai-politics              # all of the below (pipeline.py run ai_politics --ml stale)
+npm run ai-politics:ingest       # --only ingest: every speech archive since 2016/17 (rawstore)
+npm run ai-politics:build        # --only dbt:1
+npm run ai-politics:similarity   # --only ml,dbt:2: embeddings and nearest pairs, then the similarity mart
+npm run ai-politics:publish      # --only export: frontend/public/data/ai-act/politics/*.json
 ```
 
 The AI Act models must be built first (`npm run ai-act:build`): the similarity stage reads the
@@ -32,7 +36,7 @@ Fetched on 6 October 2026: ten sessions, **129,110 speeches** from 13 September 
 ## The dictionary
 
 `seeds/ai_politics/ai_politics_concepts.csv`: each group of words is a regular expression with a
-description and, where needed, a caveat. The page prints every pattern verbatim.
+description and, where needed, a caveat. The export carries every pattern verbatim.
 
 - **Gate** (`ai`): a paragraph is about AI when it contains upper-case *AI* (also in compounds
   such as *AI-system*), *artificiell intelligens*, *maskininlärning*, *djupinlärning*,
@@ -53,7 +57,7 @@ once therefore does not count its other paragraphs. Code: `platform/nlp/text/con
 tests with examples that must and must not match: `platform/tests/ai_politics/`.
 
 Swedish has one word, *säkerhet*, for both safety and security; that group cannot tell them
-apart, and the page says so. The narrower security group (cybersecurity, national security,
+apart, and the export says so. The narrower security group (cybersecurity, national security,
 defence) is a separate concept.
 
 ## Data model
@@ -97,7 +101,7 @@ pairs have mean similarity 0.32 and a 95th percentile of 0.58; only pairs above 
 are published. A test checks that the mart rests on one model.
 
 This is **semantic similarity**: the passages use related language. It is not influence, a
-response to the Act, or shared meaning, and the page says so where the pairs are shown.
+response to the Act, or shared meaning.
 
 ## Results (6 October 2026)
 
@@ -110,8 +114,8 @@ response to the Act, or shared meaning, and the page says so where the pairs are
   is rare (under 1 %).
 
 The rise coincides with the Act's negotiation and application and also with the public launch of
-generative AI; the data cannot separate the two, and the page's caveat says that temporal overlap
-does not prove causation.
+generative AI; the data cannot separate the two, and temporal overlap does not prove
+causation.
 
 ## Limitations
 

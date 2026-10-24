@@ -1,7 +1,8 @@
 # The AI governance timeline (cross-domain)
 
-`#ai-act-signals` is a view in the EU AI Act Observatory. It is the first cross-domain analysis:
-it places three domains on **one time axis**:
+`ai-act/signals.json` is the first cross-domain analysis, read by the feed posts
+`frontend/src/meaning/posts/txt-act-b3.tsx` and `txt-act-b4.tsx`. The `#ai-act-signals` view
+was withdrawn on 2026-10-21. The analysis places three domains on **one time axis**:
 
 - the AI Act's milestones, from Cellar;
 - how often the Riksdag talks about AI and names the Act (`docs/ai-politics.md`);
@@ -39,7 +40,7 @@ no numerator exceeds its denominator. The publisher writes `ai-act/signals.json`
 
 ## How it is drawn
 
-Each series has its own panel with its own y-scale. All panels share one x-axis and the same
+This section describes the withdrawn view. Each series has its own panel with its own y-scale. All panels share one x-axis and the same
 numbered milestone lines (*small multiples*). There is never a second scale in one chart, and
 series are never added together. Their levels differ by orders of magnitude: about 1 % of
 speeches mention AI, while a few ads in a hundred thousand name the Act. A shared scale would
@@ -55,7 +56,7 @@ It can say that a series rose or fell in the same period as a milestone. That is
 
 It cannot separate the Act's effect from everything else that happened at the same time. Above
 all, generative AI was launched publicly in late 2022, a few months before both the Riksdag and
-the job ads begin to rise. The page says so under the panels.
+the job ads begin to rise.
 
 ## Results (6 October 2026)
 
