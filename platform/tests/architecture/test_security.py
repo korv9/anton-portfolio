@@ -52,7 +52,11 @@ def test_policy_rejects_missing_headers_and_script_relaxations():
     headers = dict(line.strip().split(': ', 1) for line in rule.splitlines() if line.strip())
     assert CHECK.validate_headers(headers) == []
     assert CHECK.validate_headers({})
+    # The deployed policy allows the Cloudflare beacon and nothing else outside the site.
+    beacon = "script-src 'self' https://static.cloudflareinsights.com"
+    assert beacon in headers['Content-Security-Policy']
     for relaxation in ("'unsafe-inline'", "'unsafe-eval'", 'https:'):
-        relaxed = {**headers, 'Content-Security-Policy': headers['Content-Security-Policy'].replace(
-            "script-src 'self'", f"script-src 'self' {relaxation}")}
-        assert CHECK.validate_headers(relaxed)
+        for spot in ("script-src 'self'", beacon):
+            relaxed = {**headers, 'Content-Security-Policy': headers['Content-Security-Policy'].replace(
+                spot, f'{spot} {relaxation}')}
+            assert CHECK.validate_headers(relaxed), (spot, relaxation)
