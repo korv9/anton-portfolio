@@ -290,7 +290,9 @@ test(
     // The start page stands alone: the platform leads with its code, then three more
     // repositories on GitHub and three research studies on this site.
     await expect(
-      page.locator('#platform .home-flagship-links a').last(),
+      page
+        .locator('#platform .home-project-intro .home-flagship-links a')
+        .last(),
     ).toHaveAttribute('href', 'https://github.com/korv9/anton-portfolio')
     const repos = page.locator('.home-project-groups .work-card')
     await expect(repos).toHaveCount(3)
