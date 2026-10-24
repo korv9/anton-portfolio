@@ -67,7 +67,7 @@ conditions to check.
 
 ## Data model
 
-Everything except the uploaded CV files is public. The pipeline's files sit under
+Everything except the uploaded CV files and the owner's statuses, notes and labels is public. The pipeline's files sit under
 `warehouse/raw/job_assistant/` and the released group `job-assistant` in the public R2 bucket. The
 owner's own records sit in a D1 database behind the Worker. Uploaded CV files (drafts and older
 versions included) never go to R2: they stay in D1 and only the owner token reads them. The
@@ -195,7 +195,8 @@ cached vectors only.
 
 ## Security of writes
 
-Reads are public, except the CV files and the unapproved draft. Every write route, both CV routes
+Reads are public, except the CV files, the unapproved draft and the owner's statuses, notes and
+labels, which sit next to named employers. Every write route, both CV routes
 and the draft require a Worker secret, `JOB_ASSIST_TOKEN`, sent as a bearer token: status, note, label, profile draft, profile
 version, CV upload, the list of uploads and the files, which are served with `no-store`. The routes are in
 `worker/jobs.ts` under `/api/jobs/`. The Worker compares the token in constant time, as SHA-256
@@ -212,8 +213,8 @@ same version number cannot both be stored: the second gets 409. There is no open
 | `/api/jobs/profile/draft` | | `PUT {profile, approval_requested, problems}`; schema v1, status draft, no contact details (e-mail, phone, personnummer, street address) |
 | `/api/jobs/profile/versions` | | `POST` the next approved version only (the hourly run) |
 | `/api/jobs/cv`, `/api/jobs/cv/<sha256>` | owner only: list of uploads, the file | `POST` a PDF or DOCX up to 1.4 MB, checked by its first bytes; D1 holds at most 2 MB per value and base64 adds a third |
-| `/api/jobs/reviews`, `/reviews/<ad id>` | every status and note | `PUT {status, note}` |
-| `/api/jobs/labels`, `/labels/<ad id>` | every label | `PUT {label, note, shown_class}` |
+| `/api/jobs/reviews`, `/reviews/<ad id>` | owner only: every status and note | `PUT {status, note}` |
+| `/api/jobs/labels`, `/labels/<ad id>` | owner only: every label | `PUT {label, note, shown_class}` |
 
 D1 holds one table, `records(kind, key, value, updated_at)` (`worker/migrations/0001_job_assistant.sql`).
 The Worker cannot read a PDF, so it never approves a profile. The owner asks for approval. The next
