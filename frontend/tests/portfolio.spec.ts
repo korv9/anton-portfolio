@@ -286,7 +286,7 @@ test(
     await expect(header).not.toHaveAttribute('inert', '')
     await expect(page.locator('.home-group-title')).toHaveCount(0)
     // The start page stands alone: the platform leads with its code, then three more
-    // repositories on GitHub and three research write-ups.
+    // repositories on GitHub and three research studies on this site.
     await expect(
       page.locator('#platform .home-flagship-links a').last(),
     ).toHaveAttribute('href', 'https://github.com/korv9/anton-portfolio')
@@ -296,10 +296,18 @@ test(
       'href',
       'https://github.com/korv9/DrugComb-Synergy-Prediction',
     )
-    await expect(page.locator('#research .work-card')).toHaveCount(3)
+    expect(
+      await page
+        .locator('#research .work-card')
+        .evaluateAll((as) => as.map((a) => a.getAttribute('href'))),
+    ).toEqual([
+      '#philosophy-atlas',
+      '#symbolic-atlas',
+      '#concept-constellation',
+    ])
     await expect(
       page.locator(
-        'main a[href^="#"]:not([href^="#om-mig"]):not([href="#start"]):not([href="#main"])',
+        'main :not(#research *) > a[href^="#"]:not([href^="#om-mig"]):not([href="#start"]):not([href="#main"])',
       ),
     ).toHaveCount(0)
     await expect

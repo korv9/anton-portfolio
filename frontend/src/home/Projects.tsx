@@ -5,7 +5,6 @@ import { RESEARCH, type Bilingual } from './content'
 
 const b = (text: Bilingual) => l(text.en, text.sv)
 const t = (sv: string, en: string): Bilingual => ({ sv, en })
-const DOCS = 'https://github.com/korv9/anton-portfolio/blob/main/docs'
 
 /** Other repositories; each card leads to its code on GitHub. */
 const REPOS: {
@@ -76,7 +75,7 @@ export function OtherProjects() {
 
 const STUDIES = ['philosophy-atlas', 'symbolic-atlas', 'concept-constellation']
 
-/** The humanities studies. Their pages are offline, so each card opens its write-up on GitHub. */
+/** The humanities studies; each card opens its page on this site. */
 export function Research() {
   const studies = STUDIES.flatMap((id) => PROJECTS.filter((p) => p.id === id))
   return (
@@ -94,12 +93,7 @@ export function Research() {
       <ul className="work-row home-research-list">
         {studies.map((p) => (
           <li key={p.id}>
-            <a
-              className="work-card"
-              href={typeof p.code === 'string' ? p.code : `${DOCS}/${p.id}.md`}
-              target="_blank"
-              rel="noreferrer"
-            >
+            <a className="work-card" href={`#${p.id}`}>
               <h3 className="work-title">{b(p.title)}</h3>
               <p className="work-question">{b(p.summary)}</p>
               <p className="work-tech">{p.tech.join(' · ')}</p>

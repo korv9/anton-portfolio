@@ -123,18 +123,12 @@ const PREFIX_REDIRECTS: [string, string][] = [
   ].map((prefix): [string, string] => [prefix, MEANING]),
 ]
 
-/**
- * The published build shows only the start page while the products are refined; every other
- * page leads there. Local dev and the browser tests (the Vite dev server) keep the full site.
- */
-const START_ONLY = import.meta.env?.PROD === true
-
 /** Where an address leads now, if it has moved. */
 export function redirectOf(path: string): string | undefined {
-  const target =
+  return (
     REDIRECTS[path] ??
     PREFIX_REDIRECTS.find(([prefix]) => path.startsWith(prefix))?.[1]
-  return START_ONLY && pageOf(target ?? path) !== 'home' ? '#start' : target
+  )
 }
 
 /**

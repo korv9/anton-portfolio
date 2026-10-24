@@ -260,7 +260,7 @@ describe this search, not matching in general.
 ## Review page
 
 `#jobs` (`frontend/src/job-assistant/`) is the work tool and the public page in one. The production
-build still shows only the start page, as for every other product, until the owner opens it.
+build shows it, as it shows every other page.
 
 - The header says what the page is. A status line below it gives the ads in the store, the ads
   published today, the strong matches, the applications per pipeline status and the time of the
