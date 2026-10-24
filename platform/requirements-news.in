@@ -1,2 +1,2 @@
 -r requirements.txt
-anthropic==1.15.0
+anthropic==1.17.0
