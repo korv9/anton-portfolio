@@ -1,7 +1,7 @@
 /** Each skill the ad asks for, with every ad sentence and every CV line behind the judgement. */
 import { l } from '../i18n'
 import type { Judgement } from './data'
-import { cvLevelLabel } from './labels'
+import { cvLevelLabel, cvSection } from './labels'
 
 const ASKS: Record<Judgement['strength'], [string, string]> = {
   required: ['required', 'krav'],
@@ -68,6 +68,9 @@ export default function Evidence({ skills, onLine }: Props) {
                   {j.cv_quotes.map((q, i) => (
                     <p key={i}>
                       <q>{q.quote}</q>
+                      {q.ref && (
+                        <small className="ja-ref">{cvSection(q.ref)}</small>
+                      )}
                     </p>
                   ))}
                 </td>

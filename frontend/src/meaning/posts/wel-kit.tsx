@@ -1,10 +1,15 @@
 /**
- * Small SVG parts shared by the wel-* posts: extents, paths, axes, legends and a squarified
- * treemap. Exports no posts of its own.
+ * Small parts shared by the wel-* posts: extents, paths, a value axis, ranked bars, a legend
+ * and a labelled number. Exports no posts of its own. Chart sizes follow the card: a square
+ * card's chart area is about 300 by 200 px, a wide one about 600 by 220, so one SVG unit is
+ * about one pixel and the card's text compensation stays near 1. The scatter and the county
+ * ranking live in wel-charts.tsx.
  */
-import type { ReactNode } from 'react'
-import { linearScale, niceTicks } from '../../charts/scales'
-import { color, type Post } from '../kit'
+import { useContext, type ReactNode } from 'react'
+import RankBars from '../../charts/RankBars'
+import { linearScale, niceStep } from '../../charts/scales'
+import { niceDomain, ticksBetween } from '../axes'
+import { PostOpen, focal, type Post } from '../kit'
 import './wel.css'
 
 export const posts: Post[] = []
@@ -39,6 +44,28 @@ export function fmt(v: number, digits = 1) {
   return v.toLocaleString('en-GB', { maximumFractionDigits: digits })
 }
 
+/** '2026-08' -> 'Aug 2026'; a year stays as it is. */
+export const month = (label: string) =>
+  /^\d{4}-\d{2}$/.test(label)
+    ? new Date(`${label}-01T00:00:00Z`).toLocaleDateString('en-GB', {
+        month: 'short',
+        year: 'numeric',
+        timeZone: 'UTC',
+      })
+    : label
+
+/** Whole kronor with Swedish digit grouping, e.g. '14 108'. */
+export const sek = (v: number) => Math.round(v).toLocaleString('sv-SE')
+
+export const pct = (v: number, digits = 1) => `${fmt(v, digits)}%`
+
+/** 1 -> '1st', 2 -> '2nd', 11 -> '11th'. */
+export const ordinal = (n: number) =>
+  `${n}${n % 100 >= 11 && n % 100 <= 13 ? 'th' : (['th', 'st', 'nd', 'rd'][n % 10] ?? 'th')}`
+
+/** The largest value, or null for an empty list (Math.max would give -Infinity). */
+export const maxOf = (v: number[]) => (v.length ? Math.max(...v) : null)
+
 export function groupBy<T, K>(rows: T[], key: (r: T) => K) {
   const out = new Map<K, T[]>()
   for (const r of rows) {
@@ -49,9 +76,26 @@ export function groupBy<T, K>(rows: T[], key: (r: T) => K) {
   return out
 }
 
+/**
+ * A value scale onto `range` (bottom, top) with its ticks: the domain is widened to whole
+ * nice steps, from zero unless `zero` is false, and the ticks use the same step, so the top
+ * and bottom gridlines are the domain's ends.
+ */
+export function axis(values: number[], range: [number, number], zero = true) {
+  const [a, b] = extent(values)
+  const lo = zero ? Math.min(0, a) : a
+  const step = niceStep(b - lo, 4)
+  const domain = niceDomain(lo, b)
+  return {
+    y: scale(domain, range),
+    domain,
+    ticks: ticksBetween(domain[0], domain[1], 4, step),
+  }
+}
+
 export function Svg({
-  w = 400,
-  h = 400,
+  w = 300,
+  h = 200,
   label,
   children,
 }: {
@@ -72,19 +116,19 @@ export function Svg({
   )
 }
 
+/** A key for the opened post; each swatch takes the colour its marks are drawn in. */
 export function Legend({
   items,
   colors,
 }: {
   items: string[]
-  /** Swatch colours, where the chart does not cycle the palette. */
-  colors?: string[]
+  colors: string[]
 }) {
   return (
     <div className="mean-legend">
       {items.map((t, i) => (
         <span key={t}>
-          <i style={{ background: colors?.[i] ?? color(i) }} />
+          <i style={{ background: colors[i] }} />
           {t}
         </span>
       ))}
@@ -92,159 +136,111 @@ export function Legend({
   )
 }
 
-/** Horizontal gridlines with left tick labels from 0 (or `min`) to a nice max. */
-export function YAxis({
+export type RankedRow = { key: string; label: string; value: number }
+
+/**
+ * Categories as sorted horizontal bars (charts/RankBars), the value written at the end. One
+ * bar takes the accent: `focus`, or else the largest. `mark` draws the same tick on every
+ * track, e.g. the national figure. A thumbnail with more rows than fit shows the `head`
+ * highest, the `tail` lowest and the focus row, with a dashed rule where rows are left out
+ * and a count of the rest; opened, the post lists them all.
+ */
+export function Ranked({
+  rows,
+  format,
+  label,
   max,
-  min = 0,
-  x0,
-  x1,
-  y0,
-  y1,
+  focus,
+  mark,
+  wrap,
+  head = 4,
+  tail = 4,
 }: {
-  max: number
-  min?: number
-  x0: number
-  x1: number
-  y0: number
-  y1: number
+  rows: RankedRow[]
+  format: (v: number) => string
+  label: string
+  max?: number
+  focus?: string
+  mark?: number
+  /** Long labels wrap onto a second line instead of being cut. */
+  wrap?: boolean
+  head?: number
+  tail?: number
 }) {
-  const ticks = niceTicks(max - min, 4).map((t) => t + min)
-  const top = ticks[ticks.length - 1]
-  const y = scale([min, top], [y0, y1])
+  const open = useContext(PostOpen)
+  const sorted = [...rows].sort((a, b) => b.value - a.value)
+  const hot = focus ?? sorted[0]?.key
+  const keep = (r: RankedRow, i: number) =>
+    open ||
+    sorted.length <= head + tail ||
+    i < head ||
+    i >= sorted.length - tail ||
+    r.key === hot
+  const shown = sorted
+    .map((r, i) => ({ r, i }))
+    .filter(({ r, i }) => keep(r, i))
+  const hidden = sorted.length - shown.length
   return (
-    <g className="mean-wel-axis">
-      {ticks.map((t) => (
-        <g key={t}>
-          <line x1={x0} x2={x1} y1={y(t)} y2={y(t)} />
-          <text x={x0 - 4} y={y(t) + 3} textAnchor="end">
-            {fmt(t)}
-          </text>
-        </g>
-      ))}
-    </g>
+    <div
+      className={`mean-bars mean-wel-rank${wrap ? ' mean-wel-wrap' : ''}`}
+      data-hidden={hidden}
+    >
+      <RankBars
+        label={label}
+        format={format}
+        max={max}
+        rows={shown.map(({ r, i }, j) => ({
+          key: r.key,
+          label:
+            j && shown[j - 1].i !== i - 1 ? (
+              <>
+                <i className="mean-wel-gap" aria-hidden="true" />
+                {r.label}
+              </>
+            ) : (
+              r.label
+            ),
+          value: r.value,
+          color: focal(r.key === hot),
+          ref: mark,
+        }))}
+      />
+    </div>
   )
 }
 
-/** Tick labels along the bottom for a few evenly spread values. */
-export function XTicks({
-  values,
-  x,
-  y,
-  every = 1,
-}: {
-  values: (number | string)[]
-  x: (i: number) => number
-  y: number
-  every?: number
-}) {
-  return (
-    <g className="mean-wel-axis">
-      {values.map((v, i) =>
-        i % every ? null : (
-          <text key={i} x={x(i)} y={y} textAnchor="middle">
-            {v}
-          </text>
-        ),
-      )}
-    </g>
-  )
-}
-
-/** The top of a nice axis for `max`, so bars and axis share a scale. */
-export const niceMax = (max: number) => {
-  const t = niceTicks(max, 4)
-  return t[t.length - 1]
-}
-
-export type Rect = { x: number; y: number; w: number; h: number }
-
-/** Squarified treemap (Bruls et al.) for positive values, largest first. */
-export function squarify(values: number[], box: Rect): Rect[] {
-  const total = values.reduce((a, b) => a + b, 0)
-  const order = values.map((_, i) => i).sort((a, b) => values[b] - values[a])
-  const out: Rect[] = new Array(values.length)
-  let { x, y, w, h } = box
-  const area = (w * h) / (total || 1)
-  let row: number[] = []
-  const worst = (r: number[], side: number) => {
-    const s = r.reduce((a, i) => a + values[i] * area, 0)
-    const max = Math.max(...r.map((i) => values[i] * area))
-    const min = Math.min(...r.map((i) => values[i] * area))
-    return Math.max(
-      (side * side * max) / (s * s),
-      (s * s) / (side * side * min),
-    )
-  }
-  const layout = (r: number[]) => {
-    const s = r.reduce((a, i) => a + values[i] * area, 0)
-    const wide = w >= h
-    const thick = s / (wide ? h : w)
-    let offset = 0
-    for (const i of r) {
-      const len = (values[i] * area) / thick
-      out[i] = wide
-        ? { x, y: y + offset, w: thick, h: len }
-        : { x: x + offset, y, w: len, h: thick }
-      offset += len
-    }
-    if (wide) {
-      x += thick
-      w -= thick
-    } else {
-      y += thick
-      h -= thick
-    }
-  }
-  for (const i of order) {
-    if (values[i] <= 0) {
-      out[i] = { x, y, w: 0, h: 0 }
-      continue
-    }
-    const side = Math.min(w, h)
-    if (row.length && worst([...row, i], side) > worst(row, side)) {
-      layout(row)
-      row = []
-    }
-    row.push(i)
-  }
-  if (row.length) layout(row)
-  return out
-}
-
-/** One arc slice of a ring from angle a0 to a1 (radians, 0 at 12 o'clock). */
-export function arc(
-  cx: number,
-  cy: number,
-  r0: number,
-  r1: number,
-  a0: number,
-  a1: number,
-) {
-  const p = (r: number, a: number) =>
-    `${(cx + r * Math.sin(a)).toFixed(2)},${(cy - r * Math.cos(a)).toFixed(2)}`
-  const large = a1 - a0 > Math.PI ? 1 : 0
-  return `M${p(r1, a0)}A${r1},${r1} 0 ${large} 1 ${p(r1, a1)}L${p(r0, a1)}A${r0},${r0} 0 ${large} 0 ${p(r0, a0)}Z`
-}
-
+/** A number with its unit, what it measures, and the change since the period before. */
 export function Kpi({
   value,
   unit,
+  label,
   delta,
+  since,
 }: {
   value: string
   unit?: string
-  delta?: number
+  label?: string
+  /** Already formatted with its sign and unit, e.g. '+0.3 points'. */
+  delta?: string
+  since?: string
 }) {
   return (
     <div className="mean-wel-kpi">
-      <b>{value}</b>
-      {unit ? <span>{unit}</span> : null}
-      {delta !== undefined && num(delta) ? (
-        <em data-up={delta > 0}>
-          {delta > 0 ? '+' : ''}
-          {fmt(delta, 2)}
+      <b>
+        {value}
+        {unit ? <small>{unit}</small> : null}
+      </b>
+      {label ? <span>{label}</span> : null}
+      {delta ? (
+        <em>
+          {delta}
+          {since ? ` from ${since}` : ''}
         </em>
       ) : null}
     </div>
   )
 }
+
+/** A signed change, e.g. +0.3 or −1.2, with its unit. */
+export const signed = (v: number, unit = '', digits = 1) =>
+  `${v > 0 ? '+' : v < 0 ? '−' : '±'}${fmt(Math.abs(v), digits)}${unit}`

@@ -1,56 +1,77 @@
-.mean-wel-svg text {
-  font-size: 10px;
-  fill: var(--muted);
-  font-variant-numeric: tabular-nums;
+/* A name on a mark (a scatter's outlier, a small multiple's heading) takes the ink. */
+.mean-body svg text.mean-wel-name {
+  fill: var(--mean-ink);
 }
-.mean-wel-axis line {
-  stroke: color-mix(in srgb, var(--ink) 10%, transparent);
+.mean-wel-base {
+  stroke: var(--mean-grid);
   stroke-width: 0.6;
+}
+/* Ranked bars sit in meaning.css .mean-bars; these add what the wel posts need on top. An
+   opened post scrolls a long list. The national tick takes the ink. */
+.mean-open .mean-bars.mean-wel-rank {
+  overflow-y: auto;
+}
+.mean-bars.mean-wel-rank .rank-ref {
+  background: var(--mean-ink);
+}
+/* Long names wrap instead: a wider label column and a muted line under the name. */
+.mean-bars.mean-wel-wrap .rank-bars-list li {
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) auto;
+}
+.mean-bars.mean-wel-wrap .rank-label {
+  white-space: normal;
+}
+.mean-bars.mean-wel-wrap .rank-label small {
+  display: block;
+  color: var(--mean-muted);
+}
+/* Where a thumbnail leaves rows out, a dashed rule. */
+.mean-wel-rank li:has(.mean-wel-gap) {
+  border-top: 1px dashed var(--mean-grid);
+  padding-top: 4px;
+}
+.mean-wel-gap {
+  display: none;
 }
 .mean-wel-kpi {
   flex: 1;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
   gap: 4px;
+  font-family: var(--mean-font);
   font-variant-numeric: tabular-nums;
 }
 .mean-wel-kpi b {
-  font-size: clamp(28px, 21cqi, 5.5rem);
+  font-size: clamp(24px, 13cqi, 4.5rem);
   font-weight: var(--weight-heading);
-  letter-spacing: -0.04em;
+  letter-spacing: -0.03em;
   line-height: 1;
-  color: var(--ink);
+  color: var(--mean-ink);
+}
+.mean-wel-kpi b small {
+  margin-left: 0.15em;
+  font-size: 0.45em;
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--mean-muted);
 }
 .mean-wel-kpi span {
   font-size: var(--caption);
-  color: var(--muted);
+  color: var(--mean-ink);
 }
 .mean-wel-kpi em {
   font-style: normal;
   font-size: var(--caption);
-  padding: 1px 8px;
-  border-radius: 999px;
-  background: var(--cluster-pistachio);
-}
-.mean-wel-kpi em[data-up='true'] {
-  background: var(--cluster-apricot);
+  color: var(--mean-muted);
 }
 .mean-wel-grid {
   flex: 1;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
-  gap: 6px;
-}
-.mean-wel-grid > div {
-  border-radius: 10px;
-  background: var(--wash);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding: 6px 10px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
 }
 .mean-wel-grid .mean-wel-kpi b {
-  font-size: clamp(14px, 9cqi, 2.2rem);
+  font-size: clamp(20px, 8cqi, 2.6rem);
 }

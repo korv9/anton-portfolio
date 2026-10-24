@@ -69,7 +69,7 @@ coverage is **2024/25–2025/26**: 840 pair/context groups and 240 party/context
 writing the parliamentary contracts; this uses all available `gold.fct_party_roll_call`
 counts. `decision_coverage` comes from dated votes, not session-start government labels.
 
-New dbt models:
+New dbt models (deleted on 2026-10-23, after the workspace export was removed):
 
 | Model | Grain |
 | --- | --- |
