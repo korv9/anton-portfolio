@@ -65,7 +65,10 @@ export default function TechPanel() {
           {l(
             'Most of these projects run on one data platform I built: public sources fetched on a schedule, built and tested with dbt, passed through machine learning where the data is text, and published to the pages. First how it works, then the projects, then the machinery itself.',
             'De flesta av projekten körs på en dataplattform jag har byggt: offentliga källor som hämtas på schema, byggs och testas med dbt, går genom maskininlärning där datan är text och publiceras till sidorna. Först hur det fungerar, sedan projekten, sedan själva maskineriet.',
-          )}
+          )}{' '}
+          <a href="#platform">
+            {l('The platform on one page', 'Plattformen på en sida')}
+          </a>
         </p>
         {ok(graph) && ok(summary) && (
           <dl className="tech-figures">
