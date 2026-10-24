@@ -1,4 +1,6 @@
-﻿/** Logical dataset paths share one pinned delivery snapshot for the page lifetime. */
+﻿import { assertJsonResponse } from './jsonResponse'
+
+/** Logical dataset paths share one pinned delivery snapshot for the page lifetime. */
 export type DeliveryFormat = 'json' | 'parquet' | 'shard'
 type Entry = { key: string; sha256: string; bytes: number }
 type Pointer = Entry & {
@@ -57,6 +59,7 @@ async function jsonAt(url: string, cache: RequestCache = 'default') {
   const response = await fetch(siteDataUrl(url), { cache })
   if (!response.ok)
     throw new Error(`Delivery manifest unavailable: HTTP ${response.status}`)
+  await assertJsonResponse(url, response)
   return response.json()
 }
 
@@ -201,13 +204,12 @@ export async function fetchData(path: string, init?: RequestInit) {
       `${path}: HTTP ${response.status}${state.activatedAt ? ` (approved delivery ${state.activatedAt})` : ''}`,
     )
   }
+  await assertJsonResponse(path, response)
   return response
 }
 
 export async function fetchJson<T>(path: string): Promise<T> {
-  const response = await fetchData(path)
-  if (!response.ok) throw new Error(`${path}: HTTP ${response.status}`)
-  return response.json()
+  return (await fetchData(path)).json()
 }
 
 export async function localDataFallbackAllowed() {

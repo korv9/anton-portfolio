@@ -70,8 +70,19 @@ test('the built site loads under CSP and blocks injected scripts', async ({
     await expect(page.locator('.cv-viewer-fallback')).toBeVisible()
   }
   await page.keyboard.press('Escape')
+  // The published build shows every page, not only the start page.
   await page.goto('/#projects')
-  await expect(page.locator('#root')).toContainText('Projects')
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Projects')
+  await page.goto('/#jobs')
+  await expect(page).toHaveURL(/#jobs$/)
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+    'Job assistant',
+  )
+  await page.goto('/#diva-lakehouse')
+  await expect(page).toHaveURL(/#diva-lakehouse$/)
+  await expect(
+    page.getByRole('heading', { name: 'Verification' }),
+  ).toBeVisible()
   expect(violations).toEqual([])
 
   await page.evaluate(() => {

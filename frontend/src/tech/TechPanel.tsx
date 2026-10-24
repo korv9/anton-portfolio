@@ -70,12 +70,12 @@ export default function TechPanel() {
         {ok(graph) && ok(summary) && (
           <dl className="tech-figures">
             <div>
-              <dt>{l('Public sources', 'Offentliga källor')}</dt>
-              <dd>{num(layer('source'))}</dd>
+              <dt>{l('dbt source tables', 'dbt-källtabeller')}</dt>
+              <dd>{num(summary.sources)}</dd>
             </div>
             <div>
               <dt>{l('dbt models', 'dbt-modeller')}</dt>
-              <dd>{num(layer('bronze', 'silver', 'gold'))}</dd>
+              <dd>{num(summary.models)}</dd>
             </div>
             <div>
               <dt>{l('dbt tests', 'dbt-tester')}</dt>

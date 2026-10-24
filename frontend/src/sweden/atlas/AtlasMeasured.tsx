@@ -147,7 +147,7 @@ export default function AtlasMeasured() {
           r.tables != null
             ? `${r.label} · ${r.tables}`
             : r.id === '_other'
-              ? `${r.label} · awaiting ${SLOTS.measurementOther.path.split('/').pop()}`
+              ? `${r.label} · not catalogued yet`
               : r.label,
         ],
         tone: r.tables === 0 || r.id === '_other' ? 'gap' : 'lab',
@@ -189,9 +189,7 @@ export default function AtlasMeasured() {
       <>
         <span className="is-head">OTHER CATALOGUES</span>
         <span>Socialstyrelsen, Brå, Folkhälsomyndigheten, Kulturanalys</span>
-        <span className="is-gap">
-          awaiting {SLOTS.measurementOther.path.split('/').pop()}
-        </span>
+        <span className="is-gap">not catalogued yet</span>
       </>
     )
   ) : (

@@ -115,7 +115,7 @@ export default function AtlasBelonging() {
         }
       : {
           name: 'BELONGING',
-          note: `not measured by any source here · awaiting ${SLOTS.belongingSurvey.path.split('/').pop()}`,
+          note: 'not measured by any source here',
           values: null,
         },
   ]

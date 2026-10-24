@@ -14,9 +14,9 @@ import {
 
 const Feed = lazy(() => import('../meaning/Feed'))
 
-/** If the feed's code fails to load or render, the home page goes on without it. */
-class FeedBoundary extends Component<
-  { children: ReactNode },
+/** If a section's code fails to load or render, the home page goes on without it. */
+export class FeedBoundary extends Component<
+  { children: ReactNode; fallback?: ReactNode },
   { failed: boolean }
 > {
   state = { failed: false }
@@ -24,7 +24,9 @@ class FeedBoundary extends Component<
     return { failed: true }
   }
   render() {
-    return this.state.failed ? null : this.props.children
+    return this.state.failed
+      ? (this.props.fallback ?? null)
+      : this.props.children
   }
 }
 
@@ -57,6 +59,7 @@ export default function HomeFeed() {
     <section
       ref={ref}
       className="home-feed mean-light"
+      lang="en"
       data-in-view={inView || undefined}
       aria-labelledby="home-feed-title"
     >

@@ -13,52 +13,25 @@ import {
   type Bilingual,
 } from './orbitContent'
 import { PROJECTS } from '../projects/projectRegistry'
+import LanguageToggle from '../site/LanguageToggle'
 import './home.css'
+import './flagships.css'
 import { useSlowScroll } from './useSlowScroll'
-import ClusterPreview from './ClusterPreview'
 import HomeFeed from './HomeFeed'
+import { PlatformFlagship } from './Flagships'
+import { OtherProjects, Research } from './Projects'
 
-const b = (text: Bilingual) => text.en
-
-/** Selected repositories, the platform first. Each card leads to its code on GitHub. */
-const REPOS: {
-  name: string
-  title: string
-  summary: string
-  tech: string[]
-}[] = [
-  {
-    name: 'anton-portfolio',
-    title: 'Data platform behind this site',
-    summary:
-      'Collects Swedish and EU public data every day and models it in dbt. The platform pages are offline for now; the code is public.',
-    tech: ['Python', 'dbt', 'DuckDB', 'React', 'Cloudflare'],
-  },
-  {
-    name: 'DrugComb-Synergy-Prediction',
-    title: 'DrugComb synergy prediction',
-    summary:
-      'Joins two public drug-research datasets in DuckDB and tests how well a LightGBM model predicts drug-combination synergy under four evaluation splits.',
-    tech: ['Python', 'DuckDB', 'SQL', 'LightGBM'],
-  },
-  {
-    name: 'swedish-job-market-analytics',
-    title: 'Swedish job market analytics',
-    summary:
-      'A dbt pipeline that turns four years of Arbetsförmedlingen job ads into role, skill and region trends.',
-    tech: ['dbt', 'DuckDB', 'Python', 'Power BI'],
-  },
-  {
-    name: 'diva-fabric-lakehouse',
-    title: 'DiVA Fabric lakehouse',
-    summary:
-      'An incremental Microsoft Fabric lakehouse for DiVA thesis metadata, with quarantine and quality gates. Re-runs add no duplicates.',
-    tech: ['PySpark', 'Delta Lake', 'Fabric', 'pytest'],
-  },
-]
+const b = (text: Bilingual) => l(text.en, text.sv)
 
 /** The sections a global address points at; the header's links scroll to them. */
-const SECTIONS = ['#erfarenhet', '#om-mig', '#utbildning']
+const SECTIONS = [
+  '#erfarenhet',
+  '#om-mig',
+  '#utbildning',
+  '#platform',
+  '#jobs',
+  '#research',
+]
 
 function Identity() {
   return (
@@ -73,6 +46,25 @@ function Identity() {
       <p className="home-roles">
         <span>SOFTWARE</span> <span>DATA</span> <span>AI</span>
       </p>
+      <p className="home-links home-hero-links">
+        {profile.email && (
+          <a href={`mailto:${profile.email}`}>{profile.email}</a>
+        )}
+        <a
+          href="https://github.com/korv9/anton-portfolio"
+          target="_blank"
+          rel="noreferrer"
+        >
+          {l('Code for this site', 'Koden för sidan')}
+        </a>
+        {profile.linkedin && (
+          <a href={profile.linkedin} target="_blank" rel="noreferrer">
+            LinkedIn
+          </a>
+        )}
+        {profile.cv && <CvButton />}
+        <LanguageToggle />
+      </p>
     </section>
   )
 }
@@ -81,7 +73,10 @@ function Identity() {
 function Profile() {
   const thesis = PROJECTS.find((p) => p.id === 'thesis')
   return (
-    <section className="home-screen home-profile" aria-label="Profile">
+    <section
+      className="home-screen home-profile"
+      aria-label={l('Profile', 'Profil')}
+    >
       <div
         className="home-column home-about"
         id="om-mig"
@@ -117,7 +112,7 @@ function Profile() {
         </div>
       </div>
       <div className="home-column home-experience" id="erfarenhet">
-        <h2 className="home-title">Experience</h2>
+        <h2 className="home-title">{l('Experience', 'Erfarenhet')}</h2>
         <ol className="home-jobs">
           {EXPERIENCE.map((job) => (
             <li key={job.org} className="home-job">
@@ -134,7 +129,9 @@ function Profile() {
           ))}
         </ol>
         <div className="home-job home-job-additional">
-          <h3 className="home-label">Additional experience</h3>
+          <h3 className="home-label">
+            {l('Additional experience', 'Övrig erfarenhet')}
+          </h3>
           <div className="home-job-head">
             <p className="home-job-org-small">
               {b(ADDITIONAL.role)} | {ADDITIONAL.org}
@@ -145,7 +142,7 @@ function Profile() {
         </div>
       </div>
       <div className="home-column home-education" id="utbildning">
-        <h2 className="home-title">Education</h2>
+        <h2 className="home-title">{l('Education', 'Utbildning')}</h2>
         {EDUCATION.map((e) => (
           <div key={e.school} className="home-job">
             <div className="home-job-head">
@@ -164,11 +161,15 @@ function Profile() {
             </div>
             <p className="home-job-role">{b(THESIS.kind)}</p>
             <p className="home-job-role">{THESIS.points.map(b).join(' ')}</p>
-            <p className="home-job-role">Tech: {THESIS.tech.join(', ')}</p>
+            <p className="home-job-role">
+              {l('Tech', 'Teknik')}: {THESIS.tech.join(', ')}
+            </p>
           </div>
         )}
         <div className="home-job home-job-additional">
-          <h3 className="home-label">Additional education</h3>
+          <h3 className="home-label">
+            {l('Additional education', 'Övrig utbildning')}
+          </h3>
           <div className="home-job-head">
             <p className="home-job-org-small">
               {b(ADDITIONAL_EDUCATION.title)} | {ADDITIONAL_EDUCATION.school}
@@ -182,47 +183,16 @@ function Profile() {
   )
 }
 
+/**
+ * The flagships first, then other projects and the profile. The feed comes after the profile, so
+ * its late height never moves a section link's target.
+ */
 function Work() {
   return (
-    <section className="home-screen home-work" aria-labelledby="projects-title">
-      <span className="home-project-marker" aria-hidden="true" />
-      <div className="home-work-heading">
-        <h2 id="projects-title" className="home-work-title">
-          Projects
-        </h2>
-        <div className="home-project-intro">
-          <p className="home-about-text">
-            My largest ongoing project is the data platform behind this site:
-            automated pipelines, dbt models and the applications on top. I build
-            the full flow, from collecting and processing data to presenting it.
-          </p>
-          <p className="home-about-text">
-            The platform’s own pages are offline while I refine them. The code
-            for it and for the projects below is on GitHub.
-          </p>
-        </div>
-      </div>
-      <ClusterPreview kind="jobs" background />
-      <div className="home-project-groups">
-        <section aria-label="Project list">
-          <ul className="work-row">
-            {REPOS.map((repo) => (
-              <li key={repo.name}>
-                <a
-                  className="work-card"
-                  href={`https://github.com/korv9/${repo.name}`}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  <h3 className="work-title">{repo.title}</h3>
-                  <p className="work-question">{repo.summary}</p>
-                  <p className="work-tech">{repo.tech.join(' · ')}</p>
-                </a>
-              </li>
-            ))}
-          </ul>
-        </section>
-      </div>
+    <section className="home-screen home-work">
+      <PlatformFlagship />
+      <OtherProjects />
+      <Profile />
       <HomeFeed />
     </section>
   )
@@ -241,10 +211,10 @@ export default function HomePage({ path }: { path: string }) {
     return () => cancelAnimationFrame(frame)
   }, [path])
   return (
-    <div className="home" lang="en">
+    <div className="home" lang={currentLocale()}>
       <Identity />
-      <Profile />
       <Work />
+      <Research />
       <footer className="home-cta">
         <a
           className="home-cta-link"
@@ -252,7 +222,8 @@ export default function HomePage({ path }: { path: string }) {
           target="_blank"
           rel="noreferrer"
         >
-          More on GitHub <span aria-hidden="true">↗</span>
+          {l('More on GitHub', 'Mer på GitHub')}{' '}
+          <span aria-hidden="true">↗</span>
         </a>
       </footer>
     </div>
