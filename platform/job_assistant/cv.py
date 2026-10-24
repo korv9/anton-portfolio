@@ -5,7 +5,8 @@
 The parser is rules only: section headings, "Title · Organisation Start - End" entry lines and the
 skill taxonomy in skills.py. It never adds a fact the text does not contain; what it cannot place
 goes to `uncertain` for the owner to correct before the profile is approved (cv_profile.py).
-Contact lines (e-mail, phone, links) are dropped before parsing.
+Contact details (e-mail, phone, personnummer, address) are cut out of each line and link-only lines
+are dropped before parsing.
 """
 from __future__ import annotations
 
@@ -38,10 +39,19 @@ MONTH = r"(?:[A-Za-zåäöÅÄÖ]{3,9}\.?\s+)?"
 ENTRY = re.compile(
     r"^(?P<title>[^·|]+?)(?:\s*[·|]\s*|\s+[-–]\s+)(?P<org>.+?)\s+(?P<start>" + MONTH + r"\d{4})\s*[-–]\s*"
     r"(?P<end>" + MONTH + r"\d{4}|present|now|pågående|nu)$", re.I)
-# E-mail, phone, Swedish personnummer, street address, and a postcode before a town.
-# The same pattern as CONTACT in worker/jobs.ts.
-CONTACT = re.compile(r"@|\+\d[\d ]{6,}|\b0\d{2}[- ]?\d{3} ?\d{2} ?\d{2}\b|\b(?:19|20)?\d{6}[-+]?\d{4}\b"
-                     r"|[^\W\d_]*(?:gatan|vägen|gränd|torget|allén|stigen) \d+|\b\d{3} ?\d{2} [A-ZÅÄÖ][a-zåäö]+")
+# E-mail, phone, Swedish personnummer or samordningsnummer (day + 60) with a valid date, street
+# address, and a postcode (100 00 to 999 99) before a town, with no word just before it unless the
+# word is an address label. Explicit lookarounds instead of \b, and [0-9] instead of \d (Python's \d
+# also takes non-ASCII digits), so this and CONTACT in worker/jobs.ts agree;
+# platform/tests/job_assistant/contact_cases.json tests both.
+S, E = r"(?<![^\W\d_])(?<![0-9])", r"(?![^\W\d_])(?![0-9])"
+CONTACT = re.compile(r"@|\+[0-9][0-9 ]{6,}|" + S + r"0[0-9]{1,3}[- ]?[0-9]{2,3} ?[0-9]{2} ?[0-9]{2}" + E
+                     + "|" + S + r"(?:19|20)?[0-9]{2}(?:0[1-9]|1[0-2])(?:0[1-9]|[12][0-9]|3[01]|6[1-9]|[78][0-9]|9[01])"
+                     r"[-+]?[0-9]{4}" + E
+                     + r"|[^\W\d_]*(?:gatan|vägen|gränd|torget|allén|stigen) [0-9]+"
+                     r"|(?:[^\W\d_]*[Aa][Dd]{1,2}[Rr][Ee][Ss]{2}:? |(?<![^\W\d_] )(?<![0-9] ))" + S + r"[1-9][0-9]{2} ?[0-9]{2} [A-ZÅÄÖ][a-zåäö]+")
+# What clean_lines cuts out of a CV line: a whole e-mail address, or any other CONTACT match.
+CONTACT_SPAN = re.compile(r"\S*@\S*|" + CONTACT.pattern)
 LINK = re.compile(r"(?:https?://)?(?:www\.)?[\w-]+(?:\.[\w-]+)*\.(?:com|se|io|dev|net|org|me)(?:/\S*)?", re.I)
 NOISE = re.compile(r"^[•·\s]*$|^\S+\s+\d+\s*/\s*\d+$")
 INTERNSHIP = re.compile(r"\blia\b|internship|praktik|\bintern\b|trainee", re.I)
@@ -65,9 +75,10 @@ def read_text(data: bytes, media_type: str) -> str:
 
 
 def clean_lines(text: str) -> list[str]:
-    lines = [re.sub(r"\s+", " ", line).strip() for line in text.replace("•", " ").splitlines()]
-    return [line for line in lines if line and not NOISE.match(line) and not CONTACT.search(line)
-            and LINK.sub("", line).strip(" /·|,")]
+    """CV lines without contact details: the contact span goes, the rest of its line stays."""
+    lines = [re.sub(r"\s+", " ", CONTACT_SPAN.sub(" ", line)).strip(" /·|,")
+             for line in text.replace("•", " ").splitlines()]
+    return [line for line in lines if line and not NOISE.match(line) and LINK.sub("", line).strip(" /·|,")]
 
 
 def sections(lines: list[str]) -> dict[str, list[str]]:

@@ -156,19 +156,20 @@ decision).
 
 ## Prime-minister ballots and party context
 
-Four Gold models add source-backed appointment ballots and contextual party comparisons:
+Four Gold models held source-backed appointment ballots and contextual party comparisons:
 `fct_prime_minister_ballot`, `fct_prime_minister_party_vote`, `mart_party_pair_context`,
-and `mart_party_cohesion_context`. Their workspace export was removed on 2026-10-22; the
-models remain with their tests. The offline committed snapshot limits detailed party
-context to 2024/25–2025/26, while the
+and `mart_party_cohesion_context`. Their workspace export was removed on 2026-10-22, and
+the models and their tests were deleted on 2026-10-23 because nothing read them. The
+ballot seeds stay; `ingest/riksdagen/formation_ingest.py` still reads them. The offline
+committed snapshot limited detailed party context to 2024/25–2025/26, while the
 existing session-pair mart still covers 1993/94 onward. Ten reviewed appointment/incumbent
 ballots cover selected dates in 2014–2026, with earlier gaps retained. Agreement metadata
-in the existing seed is not evidence of support on every date; the models keep it
-separate and join government membership by exact vote date.
+in the existing seed is not evidence of support on every date; the models kept it
+separate and joined government membership by exact vote date.
 
-The tests cover appointment totals and the rule that a candidate is rejected by 175 no votes,
+The deleted tests covered appointment totals and the rule that a candidate is rejected by 175 no votes,
 pairwise denominator pooling, missing, tied and all-absent positions, half-open government
-dates and unique joins. Participation, cohesion and PM-party alignment use separate
+dates and unique joins. Participation, cohesion and PM-party alignment used separate
 denominators. Similarity is not read as ideology or cooperation, and historical snapshots and
 candidate document relationships stay labelled.
 

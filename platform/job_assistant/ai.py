@@ -147,9 +147,14 @@ def explain(match: dict, ad: dict, http, explained_today: int, now: datetime | N
         return None
     url = (f"https://api.cloudflare.com/client/v4/accounts/{os.environ['CLOUDFLARE_ACCOUNT_ID'].strip()}"
            f"/ai/run/{EXPLAIN_MODEL}")
-    response = http.post(url, timeout=120, json={
-        "messages": [{"role": "system", "content": SYSTEM}, {"role": "user", "content": prompt}],
-        "max_tokens": 300, "temperature": 0.1, "chat_template_kwargs": {"enable_thinking": False}})
+    try:
+        response = http.post(url, timeout=120, json={
+            "messages": [{"role": "system", "content": SYSTEM}, {"role": "user", "content": prompt}],
+            "max_tokens": 300, "temperature": 0.1, "chat_template_kwargs": {"enable_thinking": False}})
+    except OSError:
+        # A timed-out call may still have run and been billed: keep its estimate, as for a failed one.
+        workers_ai.append_ledger(AGENT, (len(SYSTEM) + len(prompt)) // 3, estimate, ledger(), model=EXPLAIN_MODEL)
+        raise
     body = response.json() if response.headers.get("content-type", "").startswith("application/json") else {}
     if not (response.ok and body.get("success")):
         if any(e.get("code") == 4006 for e in body.get("errors") or []):

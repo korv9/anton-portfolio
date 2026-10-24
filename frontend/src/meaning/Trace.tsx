@@ -197,12 +197,19 @@ export function Trace({
                   : `${state}; the time of the last success is not recorded`}
               </Row>
             )}
+            {fresh?.run && (
+              <Row term="Ingest">
+                Ingest took {duration(fresh.run.seconds)}
+                {fresh.run.url?.startsWith('https://github.com/') && (
+                  <>
+                    {' '}
+                    (<a href={fresh.run.url}>workflow run log</a>)
+                  </>
+                )}
+              </Row>
+            )}
             {fresh?.run?.url?.startsWith('https://github.com/') && (
               <>
-                <Row term="Ingest">
-                  Ingest took {duration(fresh.run.seconds)} (
-                  <a href={fresh.run.url}>workflow run log</a>)
-                </Row>
                 <Row term="Cost">
                   <a href={ACTIONS_BILLING}>
                     Free: public repository, standard runner

@@ -46,82 +46,10 @@ footer a {
     padding-top: 3rem;
   }
 }
-.budget-ledger {
-  border: 1px solid var(--line);
-  background: var(--paper);
-  padding: clamp(1rem, 3vw, 2rem);
-  margin: 2rem 0;
-}
-.budget-ledger h4 {
-  font-size: 1.4rem;
-  margin: 0.4rem 0 0.8rem;
-}
-.budget-ledger > p {
-  max-width: 850px;
-}
-.budget-ledger-summary {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  border-top: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
-  margin: 1.5rem 0;
-}
-.budget-ledger-summary div {
-  display: grid;
-  gap: 0.2rem;
-  padding: 1.1rem 0.8rem;
-  border-right: 1px solid var(--line);
-}
-.budget-ledger-summary div:last-child {
-  border: 0;
-}
-.budget-ledger-summary strong {
-  font-size: clamp(1rem, 1.8vw, 1.4rem);
-}
-.budget-ledger-summary span,
-.budget-ledger-coverage {
-  color: var(--muted);
-  font-size: 0.8rem;
-}
-.budget-ledger-layout {
-  display: grid;
-  grid-template-columns: 1.4fr 0.8fr;
-  gap: 2rem;
-  margin: 1.5rem 0;
-}
-.budget-ledger-detail {
-  padding: 1.4rem;
-  background: var(--wash);
-  align-self: start;
-}
-.budget-ledger-detail > strong {
-  display: block;
-  font-size: 2rem;
-  margin: 1rem 0;
-}
-.budget-ledger-detail a {
-  color: var(--teal);
-  font-weight: 700;
-}
-.budget-ledger-all {
-  border-top: 1px solid var(--line);
-}
-.budget-ledger-all summary,
 .budget-secondary > summary {
   cursor: pointer;
   padding: 1.2rem 0;
   font-weight: 750;
-}
-.budget-ledger-all table {
-  border-collapse: collapse;
-  width: 100%;
-  font-size: 0.82rem;
-}
-.budget-ledger-all th,
-.budget-ledger-all td {
-  text-align: left;
-  padding: 0.65rem;
-  border-bottom: 1px solid var(--line);
 }
 .budget-secondary {
   margin: 1rem 0;
@@ -132,23 +60,6 @@ footer a {
 }
 .budget-secondary > .evidence-note {
   max-width: 900px;
-}
-@media (max-width: 850px) {
-  .budget-ledger-summary {
-    grid-template-columns: 1fr 1fr;
-  }
-  .budget-ledger-layout {
-    grid-template-columns: 1fr;
-  }
-}
-@media (max-width: 500px) {
-  .budget-ledger-summary {
-    grid-template-columns: 1fr;
-  }
-  .budget-ledger-summary div {
-    border-right: 0;
-    border-bottom: 1px solid var(--line);
-  }
 }
 .umap-access {
   display: flex;

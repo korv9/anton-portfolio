@@ -92,8 +92,9 @@ approved profile and the draft, with their CV quotes, are public by the owner's 
 | Relevance label | D1 `label` | One row per labelled ad: relevant, maybe or not relevant, note, the class shown when labelled |
 | Run record | raw `runs.jsonl`; gold `mart_job_assistant_runs_daily` | One row per hourly run, and per UTC day: runs, failures, new, changed and removed ads |
 
-Statuses are `new`, `review`, `interesting`, `pass`, `applied` and `closed`. An ad without a
-review row is `new`. An ad that JobTech removes is shown as closed, but a status the owner set,
+Statuses are `new`, `review`, `interesting` (shown as Saved), `pass`, `applied`, `interview`,
+`offer`, `rejected` and `closed`. Saved, applied, interview, offer and rejected form the
+application pipeline. An ad without a review row is `new`. An ad that JobTech removes is shown as closed, but a status the owner set,
 such as `applied`, is kept and shown next to it.
 
 A requirement judgement holds the ad's requirement (label, required or preferred, the exact
@@ -185,8 +186,9 @@ with a server or connection error (`stopped: "error"` in the run note), rules an
 still rank every ad, and the missing vectors and explanations wait for a later run. An explanation
 is kept only if every sentence in it quotes the ad or the CV lines and every quote is found there;
 otherwise it is marked unverified and not shown. Checked or not, each explanation counts toward the
-12 a day. The Workers AI token reaches only the `rank.py` step and the owner token only
-`sync.py` (the `secrets` step option in `platform/pipeline.yml`). A failed `rank.py` does not stop
+12 a day. The Workers AI token reaches only the `rank.py` step (the `secrets` step option in
+`platform/pipeline.yml`). The owner token reaches only `sync.py`, which runs in its own workflow
+step of `data-subject.yml` before the build. A failed `rank.py` does not stop
 the run: dbt keeps the last matches and the ad list is still published. The hourly run gets the
 token through the `workers-ai` input of `data-subject.yml`; without it the run uses rules and
 cached vectors only.
@@ -260,19 +262,31 @@ describe this search, not matching in general.
 `#jobs` (`frontend/src/job-assistant/`) is the work tool and the public page in one. The production
 build still shows only the start page, as for every other product, until the owner opens it.
 
-- The header says what the page is, when the ads were read and which profile version and CV the
-  matches used.
-- Four views: the review list (strong and possible), stretch, outside and the evaluation sample.
-  Filters for status and role, sorting by best match, newest or deadline, and a text search.
-- Dense rows beside the selected ad. `j`/`k` or the arrow keys move, `/` searches and Escape
-  clears it. With the owner token, `1` to `6` set the status. The selected ad is in the address
-  (`#jobs?ad=<id>`), so a link opens it.
-- The selected ad shows its class with the reasons, the checked explanation, and a table of
-  requirements: skill, how the ad asks for it, the ad sentence, the CV level and the CV line.
-  Gaps, education and conditions, uncertainty, the full text, links and dates come after.
-- Below the list: how the search works, what the ads ask for against the CV
-  (`demand.json` against the approved profile), the label counts, the runs of the last seven
-  days, and the owner's tools (token, CV upload, draft editor, approval request).
+- The header says what the page is. A status line below it gives the ads in the store, the ads
+  published today, the strong matches, the applications per pipeline status and the time of the
+  last hourly sync. When that sync is more than three hours old, a notice says so.
+- Three tabs: Jobs, Applications and How it works. The Applications tab is a read-only board of
+  the pipeline, from Saved to Rejected, built from the review rows.
+- Jobs: a free-text search over title, employer, occupation and the skills the ad names, and
+  filters for match class (strong and possible by default, or one class, or the evaluation
+  sample), place or remote, employment type, role, publication date, deadline and seniority. Each
+  option shows how many ads it would leave; active filters are chips that remove themselves.
+  Sorting is by best match, newest or deadline. Search, filters, sort, tab and the open ad are in
+  the address (`#jobs?q=dbt&place=Solna&ad=<id>`), so a link shares the view and the back button
+  closes an opened ad. Filtering runs in the browser over the released JSON.
+- Result cards show title, employer, place, days since publication, the days left to apply, the
+  class, up to four skills the CV shows in work or projects, and up to two it does not. Twenty
+  cards are shown at a time, with "Show more". The arrow keys (or `j`/`k`) move between cards and
+  Enter opens one; `/` searches and Escape clears it or closes the ad. With the owner token, `1`
+  to `5` set the pipeline status: saved, applied, interview, offer, rejected.
+- The open ad sits beside the list on wide screens; under 760 px it replaces the list and has a
+  back button. It shows the class with the reasons, the checked explanation, and a table of
+  requirements: skill, how the ad asks for it, the ad sentence, the CV level and the CV line with
+  its CV section. Gaps, education and conditions, uncertainty, a trace of the files, models and
+  tests behind the match, the full text, links and dates come after.
+- How it works: the method, what the ads ask for against the CV (`demand.json` against the
+  approved profile), the label counts, the runs of the last seven days, and the owner's tools
+  (token, CV upload, draft editor, approval request).
 
 The home page entry described below is not built in this task: the task brief keeps
 `frontend/src/home/` untouched while the owner works there.
@@ -334,3 +348,5 @@ and misses from the owner's labels).
 - 2026-10-23: owner records in D1 behind token-protected Worker routes, the hourly CV and approval
   sync, and the D1 Terraform.
 - 2026-10-23: the review page `#jobs` with the method, demand, evaluation and owner sections.
+- 2026-10-23: `#jobs` as a job board: search, counted filters with chips, sort and the open ad in
+  the address, result cards, the split detail view, the application pipeline and the status line.

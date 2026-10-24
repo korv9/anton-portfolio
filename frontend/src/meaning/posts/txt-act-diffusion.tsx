@@ -1,128 +1,41 @@
 /** The AI Act diffusion clock: one term's rolling share in Riksdag speeches and in job ads, side by side. */
-import { useState } from 'react'
-import { Frame, OTHER, Slicer, color, useData, type Post } from '../kit'
-import { Legend, Svg, line, uniq } from './txt-kit'
+import { useContext, useState } from 'react'
+import {
+  Frame,
+  OTHER,
+  PALETTE,
+  PostOpen,
+  Slicer,
+  useData,
+  type Post,
+} from '../kit'
+import { niceTicks } from '../../charts/scales'
+import { xTickY } from '../axes'
+import { Svg, heading, line, uniq, usable } from './txt-kit'
+import {
+  caveat,
+  DEFAULT,
+  headline,
+  view,
+  type Data,
+} from './txt-act-diffusion-data'
 
-type Lag = {
-  corpus: string
-  term_list: string
-  term_id: string
-  language: string
-  milestone_month: string
-  lag_months: number | null
-  adoption_month: string | null
-  placebo_p: number | null
-  window_matches: number | null
-}
-type Series = {
-  term_list: string
-  term_id: string
-  language: string
-  rows: [string, number, number | null][]
-}
-type Check = {
-  corpus: string
-  term_id: string
-  language: string
-  sampled: number
-  on_topic: number
-  employers: number | null
-}
-type Data = {
-  terms: { term_id: string; term_sv: string }[]
-  amended_terms: { term_id: string; term_sv: string }[]
-  milestones: { milestone_id: string; month: string; title_en: string }[]
-  corpora: {
-    corpus: string
-    first_month: string
-    last_month: string
-    series: Series[]
-  }[]
-  lags: Lag[]
-  precision: Check[]
-  diagnostics: { few_matches: number }
-}
-
-const NAME: Record<string, string> = {
-  riksdag: 'Riksdag speeches',
-  job_ads: 'Job ads',
-}
-/** The few dates named on the chart; the others are unlabelled ticks with a tooltip. */
-const ANCHOR: Record<string, string> = {
-  'document-52021pc0206': 'proposed',
-  'entry-into-force': 'in force',
-  'general-application': 'applies',
-}
-const key = (s: { term_list: string; term_id: string }) =>
-  `${s.term_list}|${s.term_id}`
-
-/** What the pre-registered rule found for one term in one corpus, in a few words. Dates that
- * share a month count once, and short lags that all end in one month say so. */
-function verdict(
-  lags: Lag[],
-  matches: number,
-  few: number,
-  employers?: number | null,
-) {
-  if (!matches) return 'No match'
-  const found = lags.filter((x) => x.lag_months !== null)
-  if (!found.length) return 'No adoption after any date'
-  const tested = found.filter((x) => (x.window_matches ?? 0) > few)
-  if (!tested.length) return `Too few matches to test (${few} or fewer)`
-  const short = tested.filter((x) => (x.placebo_p ?? 1) <= 0.05)
-  if (!short.length) return 'No lag shorter than at random dates'
-  const ends = uniq(short.map((x) => x.adoption_month))
-  if (ends.length === 1)
-    return `Shorter than at random dates, all on matches in ${ends[0]}${employers === 1 ? ', from one employer' : ''}`
-  const months = uniq(lags.map((x) => x.milestone_month)).length
-  return `Shorter than at random dates after ${uniq(short.map((x) => x.milestone_month)).length} of ${months} date months`
-}
-
-function readLine(check: Check | undefined) {
-  if (!check) return 'Not read by hand'
-  const who =
-    check.employers === null
-      ? ''
-      : `, ${check.employers} employer${check.employers === 1 ? '' : 's'}`
-  return `${check.on_topic} of ${check.sampled} read by hand on topic${who}`
-}
+/** The one date named on the chart; the others are unlabelled ticks with a tooltip. */
+const ANCHOR: Record<string, string> = { 'entry-into-force': 'in force' }
 
 function Diffusion() {
-  const data = useData<Data>('ai-act/diffusion.json')
-  const [pick, setPick] = useState('amended|ai_system')
+  const data = usable(
+    useData<Data>('ai-act/diffusion.json'),
+    'ai-act/diffusion.json',
+    (d) => view(d, DEFAULT).panels.length,
+  )
+  const [pick, setPick] = useState(DEFAULT)
+  const open = useContext(PostOpen)
   return (
     <Frame data={data}>
-      {({
-        terms,
-        amended_terms,
-        milestones,
-        corpora,
-        lags,
-        precision,
-        diagnostics,
-      }) => {
-        // Swedish terms with any match; a term only on the amended list says so.
-        const names = new Map<string, string>([
-          ...terms.map((t) => [`primary|${t.term_id}`, t.term_sv] as const),
-          ...amended_terms
-            .filter((t) => !terms.some((p) => p.term_id === t.term_id))
-            .map(
-              (t) =>
-                [
-                  `amended|${t.term_id}`,
-                  `${t.term_sv} (amended list)`,
-                ] as const,
-            ),
-        ])
-        const options = [...names.keys()].filter((k) =>
-          corpora.some((c) =>
-            c.series.some(
-              (s) =>
-                key(s) === k && s.language === 'sv' && s.rows.some((r) => r[1]),
-            ),
-          ),
-        )
-        const term = options.includes(pick) ? pick : options[0]
+      {(all) => {
+        const { milestones, corpora } = all
+        const { names, options, term, panels } = view(all, pick)
         const months = uniq(
           corpora.flatMap((c) => c.series[0].rows.map((r) => r[0])),
         ).sort()
@@ -130,40 +43,12 @@ function Diffusion() {
         const dates = uniq(
           milestones.filter((m) => m.month <= end).map((m) => m.month),
         )
-        const [W, H, gap, top, base] = [600, 192, 24, 30, 160]
+        const [W, H, gap, top, base, m] = [600, 200, 28, 32, 172, 26]
+        const years = uniq(months.map((mo) => mo.slice(0, 4)))
+        const every = Math.ceil(years.length / 4)
         const pw = (W - gap) / 2
-        const x = (m: string) => (months.indexOf(m) / (months.length - 1)) * pw
-        const panels = corpora.flatMap((c) => {
-          const s = c.series.find((s) => key(s) === term && s.language === 'sv')
-          if (!s) return []
-          const total = s.rows.reduce((a, r) => a + r[1], 0)
-          const own = lags.filter(
-            (x) =>
-              x.corpus === c.corpus && key(x) === term && x.language === 'sv',
-          )
-          const read = precision.find(
-            (p) =>
-              p.corpus === c.corpus &&
-              p.term_id === s.term_id &&
-              p.language === 'sv' &&
-              p.sampled,
-          )
-          return [
-            {
-              c,
-              s,
-              total,
-              name: NAME[c.corpus] ?? c.corpus,
-              said: verdict(
-                own,
-                total,
-                diagnostics.few_matches,
-                read?.employers,
-              ),
-              read: readLine(read),
-            },
-          ]
-        })
+        const x = (mo: string) =>
+          m + (months.indexOf(mo) / (months.length - 1)) * (pw - m)
         return (
           <>
             <Slicer
@@ -174,6 +59,9 @@ function Diffusion() {
               value={term}
               onChange={setPick}
             />
+            {open && (
+              <p className="mean-cap">{`“${names.get(term) ?? term}”. ${caveat(all)}.`}</p>
+            )}
             <Svg
               w={W}
               h={H}
@@ -181,28 +69,42 @@ function Diffusion() {
                 .map((p) => `${p.name}: ${p.total} matches. ${p.said}.`)
                 .join(' ')}`}
             >
-              {panels.map(({ c, s, total, name, said, read }, j) => {
-                const max = Math.max(...s.rows.map((r) => r[2] ?? 0), 1e-9)
-                const y = (v: number) => base - ((base - top) * v) / max
+              {panels.map(({ c, s, total, name }, j) => {
+                // Per 100,000 documents, each panel on its own scale.
+                const ticks = niceTicks(
+                  Math.max(...s.rows.map((r) => (r[2] ?? 0) * 1e5), 1e-4),
+                  3,
+                )
+                const y = (v: number) =>
+                  base - ((base - top) * v * 1e5) / ticks.at(-1)!
                 return (
                   <g
                     key={c.corpus}
                     transform={`translate(${j * (pw + gap)},0)`}
                   >
-                    <text className="mean-txt-t" x={0} y={10}>
+                    <text className="mean-txt-v" x={0} y={10}>
                       {`${name}, ${total} match${total === 1 ? '' : 'es'}`}
                     </text>
-                    <text className="mean-txt-t" x={pw} y={10} textAnchor="end">
-                      {`max ${(max * 1e5).toFixed(max * 1e5 < 10 ? 1 : 0)} per 100,000`}
-                    </text>
-                    <text className="mean-txt-t" x={0} y={21}>
-                      {said}
-                    </text>
-                    {dates.map((m) => (
+                    <g className="mean-axis">
+                      {ticks.map((t) => (
+                        <g key={t}>
+                          <line
+                            x1={m}
+                            x2={pw}
+                            y1={y(t / 1e5)}
+                            y2={y(t / 1e5)}
+                          />
+                          <text x={m - 3} y={y(t / 1e5) + 3.5} textAnchor="end">
+                            {t < 10 ? t.toFixed(t % 1 ? 1 : 0) : t}
+                          </text>
+                        </g>
+                      ))}
+                    </g>
+                    {dates.map((mo) => (
                       <line
-                        key={m}
-                        x1={x(m)}
-                        x2={x(m)}
+                        key={mo}
+                        x1={x(mo)}
+                        x2={x(mo)}
                         y1={top}
                         y2={base}
                         stroke={OTHER}
@@ -211,32 +113,27 @@ function Diffusion() {
                       >
                         <title>
                           {milestones
-                            .filter((d) => d.month === m)
-                            .map((d) => `${m}: ${d.title_en}`)
+                            .filter((d) => d.month === mo)
+                            .map((d) => `${mo}: ${d.title_en}`)
                             .join('\n')}
                         </title>
                       </line>
                     ))}
                     {milestones
-                      .filter((m) => ANCHOR[m.milestone_id] && m.month <= end)
-                      .map((m) => (
+                      .filter(
+                        (mi) => ANCHOR[mi.milestone_id] && mi.month <= end,
+                      )
+                      .map((mi) => (
                         <text
-                          key={m.milestone_id}
+                          key={mi.milestone_id}
                           className="mean-txt-t"
-                          x={x(m.month) - 2}
-                          y={top + 8}
+                          x={x(mi.month) - 2}
+                          y={top + 9}
                           textAnchor="end"
                         >
-                          {ANCHOR[m.milestone_id]}
+                          {ANCHOR[mi.milestone_id]}
                         </text>
                       ))}
-                    <line
-                      className="mean-txt-grid"
-                      x1={0}
-                      x2={pw}
-                      y1={base}
-                      y2={base}
-                    />
                     <path
                       d={line(
                         s.rows
@@ -244,42 +141,36 @@ function Diffusion() {
                           .map((r) => [x(r[0]), y(r[2]!)]),
                       )}
                       fill="none"
-                      stroke={color(0)}
+                      stroke={PALETTE[0]}
                       strokeWidth={1.4}
                     />
-                    {uniq(months.map((m) => m.slice(0, 4)))
-                      .filter((yr) => +yr % 2 === 0)
+                    {years
+                      .filter((_, i) => i % every === 0)
                       .map((yr) => (
                         <text
                           key={yr}
                           className="mean-txt-t"
-                          x={x(months.find((m) => m.startsWith(yr))!)}
-                          y={base + 12}
+                          x={x(months.find((mo) => mo.startsWith(yr))!)}
+                          {...xTickY(base + 12)}
+                          textAnchor="middle"
                         >
                           {yr}
                         </text>
                       ))}
-                    <text className="mean-txt-t" x={0} y={base + 24}>
-                      {read}
-                    </text>
-                    <text
-                      className="mean-txt-t"
-                      x={pw}
-                      y={base + 24}
-                      textAnchor="end"
-                    >
-                      {`${c.first_month} to ${c.last_month}`}
-                    </text>
                   </g>
                 )
               })}
             </Svg>
-            <Legend
-              items={[
-                ['Share of documents, three months', color(0)],
-                ['AI Act dates', OTHER],
-              ]}
-            />
+            {open && (
+              <ul className="mean-txt-list">
+                {panels.map((p) => (
+                  <li key={p.c.corpus}>
+                    <span>{`${p.name}: ${p.said}.`}</span>
+                    <span>{p.read}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
           </>
         )
       }}
@@ -294,6 +185,8 @@ export const posts: Post[] = [
     domain: 'ai-act',
     size: 'wide',
     label: "AI Act: when the Act's terms appear in speeches and job ads",
+    title: heading(headline),
+    note: 'Share of documents using the term, per 100,000, three-month mean; dashed lines are the Act’s dates',
     render: () => <Diffusion />,
   },
 ]
