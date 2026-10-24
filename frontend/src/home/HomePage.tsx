@@ -29,7 +29,7 @@ const SECTIONS = [
   '#om-mig',
   '#utbildning',
   '#platform',
-  '#jobs',
+  '#jobbassistent',
   '#research',
 ]
 

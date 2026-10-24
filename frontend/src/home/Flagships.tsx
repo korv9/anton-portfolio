@@ -89,7 +89,7 @@ export function PlatformFlagship() {
 
 /**
  * The job assistant's slot. Contract: the job assistant owns `src/jobs/JobAssistantPreview.tsx`;
- * its default export takes no props and renders inside this section (id="jobs"). Until that file
+ * its default export takes no props and renders inside this section (id="jobbassistent"). Until that file
  * exists, or if it fails to load, the slot shows the static entry below.
  */
 const preview = Object.values(
@@ -104,12 +104,15 @@ function JobAssistantSlot() {
     <div className="home-flagship-entry">
       <h2 className="work-title">{b(JOB_ASSISTANT.title)}</h2>
       <p className="work-question">{b(JOB_ASSISTANT.text)}</p>
+      <p className="home-links home-flagship-links">
+        <a href="#jobs">{b(JOB_ASSISTANT.open)}</a>
+      </p>
     </div>
   )
   return (
     <section
       className="home-flagship-slot"
-      id="jobs"
+      id="jobbassistent"
       aria-label={b(JOB_ASSISTANT.title)}
     >
       {Preview ? (
