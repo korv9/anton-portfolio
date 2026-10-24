@@ -1,16 +1,20 @@
-# EU AI Act Observatory
+# EU AI Act data pipeline
 
-`#ai-act` asks: **what does the EU AI Act actually mean for organisations building or deploying
+The AI Act pipeline asks: **what does the EU AI Act actually mean for organisations building or deploying
 AI?** It is a source-traceable map of Regulation (EU) 2024/1689's articles, actors, obligations,
 application dates and changes, built from official EU sources only. It is a navigation aid, not
 legal advice.
 
+The `#ai-act` page was withdrawn on 2026-10-21 and its address leads to
+`#what-does-it-even-mean`. Its exports feed the AI Act posts there
+(`frontend/src/meaning/posts/txt-act-*.tsx`).
+
 ```
-npm run ai-act            # ingest + dbt build + publish
-npm run ai-act:ingest     # python platform/ingest/eu_ai_act/run.py
-npm run ai-act:build      # dbt build --select tag:ai_act (models, seeds and tests)
-npm run ai-act:publish    # python platform/publish/eu_ai_act/export_ai_act.py
-npm run architecture:build  # the Data Constellation picks the domain up
+npm run ai-act            # pipeline.py run ai_act: ingest, dbt build, export
+npm run ai-act:ingest     # pipeline.py run ai_act --only ingest
+npm run ai-act:build      # pipeline.py run ai_act --only dbt
+npm run ai-act:publish    # pipeline.py run ai_act --only export
+npm run architecture:build  # adds the domain to the provenance graph behind Trace
 ```
 
 ## Official sources
@@ -125,7 +129,7 @@ Act. Each row has three kinds of content, kept apart:
 
 ## Source, derived, interpretation
 
-Every published file and every block on the page is one of three kinds, and the page marks it:
+Every published row is one of three kinds:
 
 | Kind | What |
 |---|---|
@@ -144,56 +148,20 @@ No summary replaces legal text; no LLM output is used anywhere in this product.
   Office or the Commission.
 - `assert_ai_act_dates_valid`, `assert_ai_act_one_current_version`, and unique, not-null,
   accepted-values and relationship tests on every model (115 dbt nodes and tests in all).
-- Python: `platform/tests/legal` (parser, comparison, markers, Cellar, ingest selection).
-- Unit: `frontend/tests/unit/aiact.test.ts` (files hang together, Article 113 dates, status on a
-  day, navigator rules). End to end: `frontend/tests/aiact.spec.ts`.
+- Python: `platform/tests/legal/test_parse.py` and `platform/tests/eu_ai_act/test_law_corpora.py`.
 
-## The page
-
-`frontend/src/aiact/`. The overview (`#ai-act`) answers practical questions first and leaves
-the legal modelling for later:
-
-1. **Today:** the latest application date as the main finding, with its article.
-2. **Next:** the next milestone, and the latest official change. Each carries its source label.
-   A line says when the source was last verified (`summary.latest_retrieval`).
-3. **Who are you?** The startup navigator first, then one link per operator role to its
-   obligations (`#ai-act-obligations?actor=<id>`).
-4. **In Sweden:** links to the AI governance timeline, the Riksdag and job ads. The page says
-   that these signals happen in the same period and that this does not show causation.
-5. **This month:** the snapshot, sized for a screenshot, with "copy as text".
-6. Folded: what the Act is, the latest guidance and the amendment. Then *Quality in brief*
-   (accuracy, currentness, traceability, validity, each with its evidence), *How it was built*
-   and *Trace this result*, which opens the lineage from the timeline file back to the
-   Publications Office.
-
-The project navigation follows the same order: overview, today, who it applies to, startup
-navigator, timeline, obligations, risk classes, changes, the Riksdag, job ads, the governance
-timeline, sources. `#ai-act-article?a=<n>` opens an article with its official text in the
-reader's language. The reader's date decides what applies; `?idag=YYYY-MM-DD` previews another
-day.
-
-Every obligation shows three layers that are never merged: the plain-language summary
-(interpretation), the verbatim sentence (official text), and, folded, how it is stored in
-`mart_ai_act_obligations` (derived). A changed document lists the actors its changed articles
-name as "may affect" (derived).
+## The navigator
 
 The navigator's rules live in `platform/publish/eu_ai_act/navigator.json` and are checked
-against the obligations and articles when published. Its result lists role considerations,
+against the obligations and articles when published. A result lists role considerations,
 risk classes, topics, articles and the official source, says "navigation aid, not legal
 advice", and never classifies anyone.
 
-## The Riksdag and AI
+## Related analyses
 
-`#ai-act-politics` reads every Riksdag speech since 2016/17 against the Act: how often AI comes up,
-with which words, by which party, and which speeches sit closest to which articles by semantic
-similarity. See [ai-politics.md](ai-politics.md).
-
-## Job ads and the AI governance timeline
-
-`#ai-act-jobs` counts AI governance, compliance and model-risk words in every job ad since 2020
-([ai-jobs.md](ai-jobs.md)). `#ai-act-signals` puts the Act's milestones, the Riksdag series and the
-job-ad series on one time axis, each in its own panel ([ai-governance-timeline.md](ai-governance-timeline.md)).
-Both state under the chart that temporal overlap does not prove causation.
+The Riksdag's speeches against the Act are in [ai-politics.md](ai-politics.md), AI governance
+words in job ads in [ai-jobs.md](ai-jobs.md), and the three series on one time axis in
+[ai-governance-timeline.md](ai-governance-timeline.md). Temporal overlap does not prove causation.
 
 ## Limitations
 
@@ -206,7 +174,7 @@ Both state under the chart that temporal overlap does not prove causation.
 - Corrigenda are listed from Cellar's metadata (Cellar gives no English title for them); their
   text is not compared separately.
 - Guidance pages without a publication date on the page keep none.
-- Quotes and the version comparison use the English text; the Swedish text is shown as the
+- Quotes and the version comparison use the English text; the Swedish text is published as the
   official Swedish language version.
 
 ## Built for more EU law

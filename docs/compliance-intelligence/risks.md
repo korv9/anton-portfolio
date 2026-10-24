@@ -1,7 +1,7 @@
 # Risks and publication controls
 
-Assessed 2026-10-16. These controls are product requirements for later work, not a
-claim that the unimplemented publication system already enforces them.
+Assessed 2026-10-16. The publication gates now exist (`explorer.py promote` and
+`scripts/check_compliance_release.mjs`); these are the controls they must keep enforcing.
 
 | Risk | Consequence | Required control | Owner / release condition |
 | --- | --- | --- | --- |
@@ -57,3 +57,55 @@ Removing a current manifest pointer alone does not erase a public object.
 
 The Phase 0 SQL rejects some structurally impossible states but is not an access
 control or legal-review engine. Its tests cannot establish publication permission.
+
+## Source access and reuse
+
+Checked 2026-10-17, Europe/Stockholm.
+
+| Source | Interface checked | Access observed | Scope and restrictions |
+| --- | --- | --- | --- |
+| IMY | [Published sanction index](https://www.imy.se/om-oss/beslut-publikationer-och-remisser/beslut-om-sanktionsavgift/), linked case pages and PDFs | HTTP 200 through the collection client. No supported bulk decision API or downloadable decision dataset found in the official pages checked. | Year sections 2019–2026. Entries are discovery candidates; GDPR applicability, appeal documents and legal category need review. Not an exhaustive register. |
+| IMY | [Supervision and decisions](https://www.imy.se/tillsyner/) | Official public HTML selection, separate from the sanction index | A selection from 2018 onwards. It is not substituted for sanction-index coverage. |
+| Konkurrensverket | [Published competition cases](https://www.konkurrensverket.se/konkurrens/tillsyn-arenden-och-beslut/arendelista) | The direct client received HTTP 403 and the source was halted. | Selected cases include open investigations, closures, authority acts and court attachments. Live pagination and PDF collection are unverified. |
+| Konkurrensverket | [Public diary](https://www.konkurrensverket.se/diarium/sok-i-Konkurrensverkets-diarium/) | Researched as an alternative official route; no diary adapter or bulk API | Registered cases since 1998, broader than the published selection. |
+
+No search-engine cache is used as evidence, and no proxy, alternative host or challenge
+bypass is used around the 403. The KKV adapter is tested against synthetic HTML only. Every
+run checks robots.txt again; a missing, redirected, non-plain-text or denied response stops
+collection, and source and redirect URLs must stay on the configured HTTPS origin.
+
+[IMY's reuse policy](https://www.imy.se/om-oss/vart-uppdrag/vidareutnyttjande-av-data/)
+requires a per-document assessment and grants no blanket open licence.
+[Konkurrensverket's material policy](https://www.konkurrensverket.se/om-oss/om-webbplatsen/anvanda-och-lanka-till-vart-material/)
+permits reproduction under conditions, including source and retrieval-date attribution. The
+default retention is a stable official reference, retrieval metadata, the SHA-256 of the
+exact bytes and limited extracted candidates; bodies are processed in memory and not kept.
+Nothing is sent to a language model or an external OCR service. Keeping original bytes needs
+a reviewed private-copy policy passed with `--copy-policy`.
+
+Public court PDFs are a permitted supplement (`public_documents.py`). They do not replace the
+KKV diary or establish complete competition-case coverage. Domstolsverket open data,
+individual courts, FI sanctions and the Bolagsverket APIs were assessed on 2026-10-16 and
+have no connector.
+
+## Ranking safeguards
+
+`mart_compliance_rankings` is empty unless the analysis selects
+`Integritetsskyddsmyndigheten` and no category outside data protection. The browser enforces
+the same scope before it enables metric ordering or ordinal ranks. KKV-selected,
+competition-category and combined-source views list companies by legal name and explain the
+hold; an IMY observation alone leaves the competition metric null. There is no overall
+trust, criminality or ethics score. Re-enabling KKV comparisons needs a separately reviewed
+coverage assessment and the existing publication process; importing a few PDFs does not
+unlock it.
+
+## Job/company safeguards
+
+Only an approved, unexpired public Gold release can supply legal records to a company
+profile. The join is the exact `company_id`; a parent receives no subsidiary decisions, and
+family-level metrics stop several judgments in one case becoming several sanctions. An
+unavailable or expired legal release means **not assessed**, not zero sanctions. The wording
+"No documented sanctions identified in the covered sources and period" needs a reviewed
+company-scoped search record defining those sources and dates; none exists, so the
+implementation shows the narrower unavailable or incomplete-coverage state. No legal
+ingestion, ranking or legal conclusion happens in the job pipeline.

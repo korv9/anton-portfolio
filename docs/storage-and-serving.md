@@ -9,12 +9,12 @@ when, is in [pipeline.md](pipeline.md). The rules for a versioned release are in
 | What | Where | Written by |
 |---|---|---|
 | Code, dbt models, seeds, schemas, test fixtures | Git | Commits |
-| The site's JSON, 690 files in the catalogue | `frontend/public/data/` in Git, which the site reads; also in R2 releases, which it does not | The exports; a group's publish step |
-| Parquet marts (68 files) and document shards (4,586) | R2 bucket `anton-portfolio` | A group's publish step |
+| The site's JSON, 1,703 files in the catalogue | `frontend/public/data/` in Git, which the site reads; also in R2 releases, which it does not | The exports; a group's publish step |
+| Parquet marts (68 files) and document shards (4,625) | R2 bucket `anton-portfolio` | A group's publish step |
 | Raw source files, ML features, the DuckDB warehouse | R2, under `warehouse/` | `pipeline.py push`, `build-warehouse.yml` |
 | Secrets | GitHub and Cloudflare secrets | By hand |
 
-The counts are from `catalog.json` on 13 October 2026. The bucket is public and holds only
+The counts are from `catalog.json` on 23 October 2026 (6,396 entries). The bucket is public and holds only
 open data. A folder called `private` in a public bucket is not an access boundary; private
 originals, such as the degree project's source material, are not uploaded.
 
@@ -25,7 +25,7 @@ originals, such as the degree project's source material, are not uploaded.
 
 - `catalog.json`: one entry per delivered file with `path`, `product`, `format`, `bytes`,
   `rows`, `schema_version`, `partition`, `sha256` and `run_id`. The publish step and the
-  validators read it. The browser never fetches it; it is 1.8 MB.
+  validators read it. The browser never fetches it; it is 2.2 MB.
 - `delivery.json`: what the site fetches at startup. It holds the base URL per format, the
   prefixes that mark a path as a shard, and the Parquet parts per dataset.
 
@@ -43,14 +43,17 @@ Components ask for logical paths such as `gold/overview.json`, never URLs.
 | Function | Use |
 |---|---|
 | `fetchData(path, init?)` | Any fetch of a data file |
-| `useData(path, root)`, `useGoldData(path)` | React hooks in `frontend/src/politics/data.ts` |
-| `useDataUrl(path)`, `resolveDataUrl(path)` | A resolved URL for a link or download |
+| `fetchJson(path)` | A fetch parsed as JSON |
+| `useData(path)` | React hook in `frontend/src/meaning/kit.tsx`, used by the feed posts |
+| `resolveDataUrl(path)` | A resolved URL for a link or download |
 
 The production site reads the data committed under `frontend/public/data`. The committed
 `delivery.json` has schema version 1, JSON base `data/`, and the bucket's `r2.dev` address for
-Parquet and shards. It has no `manifest_url`, and `VITE_R2_MANIFEST_URL` is not used, so the
+Parquet and shards. It has no `manifest_url`, and `VITE_R2_MANIFEST_URL` is not set, so the
 site does not read the versioned releases the workflows publish to R2
-([r2-delivery-contract.md](r2-delivery-contract.md)).
+([r2-delivery-contract.md](r2-delivery-contract.md)). The production build renders only the
+home page (`START_ONLY` in `frontend/src/router.ts`), so it fetches only the files that page
+and its chart feed use.
 
 `VITE_DELIVERY_MODE=local` reads everything from `data/`, for development and offline
 fixtures. On localhost a missing `delivery.json` is tolerated the same way.

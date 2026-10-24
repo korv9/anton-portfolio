@@ -2,9 +2,13 @@
 
 The site is static files (`npm run build` → `dist/`) served by Cloudflare Workers static
 assets at `https://antonernstsson.com`, plus a small Worker script (`worker/index.ts`) for the
-two Workers AI demos ([workers-ai.md](workers-ai.md)). Requests to `/api/*` run the script
-first; every other request is served from the files as before, and a request that matches no
-file is handed back to the files by the script. The site's JSON
+Workers AI demos ([workers-ai.md](workers-ai.md)) and the job assistant's API. Requests to
+`/api/*` run the script first (`run_worker_first` in `wrangler.toml`); every other request is
+served from the files. With `not_found_handling = "none"`, a miss also reaches the script, which
+answers a page address with `index.html` and a missing file (anything under `/data/` or with an
+extension) with 404 (`asset()` in `worker/index.ts`).
+The production build renders only the home page; every other address leads to `#start`
+(`START_ONLY` in `frontend/src/router.ts`). The site's JSON
 is part of those files. Parquet marts and document shards are served from the R2 bucket
 `anton-portfolio` on the same Cloudflare account, which also holds the versioned data releases
 the site does not read ([storage-and-serving.md](storage-and-serving.md)).
@@ -95,7 +99,7 @@ change through Terraform, not the dashboard.
    or news. They run in the `anton-portfolio` environment, whose secrets
    hold the R2 credentials, and can also be run by hand from the Actions tab. To pause one,
    comment out its `schedule:` lines. Riksdag speeches and the analyses built on them
-   (embeddings, maps) are refreshed by *Build and store the warehouse*, run by hand.
+   (embeddings, maps) are refreshed by *Build and store the warehouse*, weekly on Saturday at 21:13 UTC or by hand.
 6. **Refresh secrets.** Settings → Environments → `anton-portfolio` → Secrets:
    `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET` (an R2 API token
    with read and write on the bucket). Without them the daily refresh stops at its first step
@@ -129,7 +133,7 @@ change through Terraform, not the dashboard.
 
 ## Limits
  Free plan: 20,000 files and 25 MiB per file in a Worker's static assets; requests for static assets
-are free and unlimited. Requests that run the script (`/api/*`, and addresses that match no file)
+are free and unlimited. Requests that run the script (`/api/*` and addresses that match no file)
 count against the Free plan's 100,000 requests a day and 10 ms CPU each; Workers AI has 10,000
 neurons a day. The Worker's `[ai]` binding (`AI`) needs no secret or setup step: Workers Builds
 deploys it with the Worker, and the neurons count against the account. The `[[ratelimits]]` binding
@@ -145,8 +149,8 @@ environment. Until that is done, live calls go through the Node shim in
 REST API ([workers-ai.md](workers-ai.md)).
 
 `r2-cors.json` allows local dev only on port 5173 (`localhost` and `127.0.0.1`). On another port
-the browser cannot read the files the site loads from R2, such as the debate shards and the SFS
-`meta.json`.
+the browser cannot read the files the site loads from R2, such as the Parquet parts and
+document shards.
 
 A local build on 13 October 2026 had 950 files, the largest
-5.4 MB. Check the config locally with `npx wrangler deploy --dry-run` after `npm run build`.
+5.4 MB. On 23 October 2026 `frontend/public/` held 1,864 tracked files, all copied into `dist/`. Check the config locally with `npx wrangler deploy --dry-run` after `npm run build`.

@@ -1,82 +1,104 @@
 # Job Intelligence: compliance subsystem
 
-The public workspace is now **Job Intelligence**. See the [workspace architecture and delivery contract](../job-intelligence.md). Existing compliance routes, research cohort, internal module names and publication safeguards remain in place.
+The compliance pages were withdrawn from the site on 2026-10-21. `#compliance*`, `#jobb*`
+and `/companies/*` redirect to `#what-does-it-even-mean` (`frontend/src/router.ts`). The
+source in `frontend/src/{compliance,companies,job-intelligence}` stays unrouted, because
+`npm run build` runs `scripts/check_compliance_release.mjs` against
+`frontend/public/data/compliance/release.json` and `progress.json`. The job side is
+documented in [Job Intelligence](../job-intelligence.md).
 
-Phase 0 audit, Phase 1 registry, Phase 2 collection, Phase 3 evidence review and
-Phase 4 analytics and Phase 5 explorer/export,
-checked through 2026-10-17. Register acquisition, identity resolution, frozen cohort
-exports, private source adapters and evidence-bound review/export are implemented.
-SCB acquisition now contains 62,113 source rows and a verified frozen sample of
-50 companies from 43,836 eligible active Swedish limited companies, as of
-2026-10-17. The sample is private research, pending human source-reuse/publication
-clearance. IMY collection has expanded; KKV still returns HTTP 403. No real legal
-record has human approval. See [current completion and handoff](completion.md)
-and [aggregate status](completion-status.json) for that processing batch. The later
-[KKV alternative assessment](kkv-alternative.md) documents the 50-company search,
-independent court supplements, local import and KKV ranking hold.
+The module describes documented proceedings and outcomes for a frozen cohort of 50
+Swedish IT legal entities. Every published statement must identify its source, the
+entity concerned, its legal category and the date through which it was verified. An
+administrative sanction is not a criminal conviction. Missing records mean unknown
+coverage, never a clean bill of health.
 
-The module will describe documented proceedings and outcomes for a frozen cohort of
-50 Swedish IT legal entities. Every published statement must identify its source,
-the entity concerned, its legal category and the date through which it was verified.
-An administrative sanction is not a criminal conviction. Missing records mean
-unknown coverage, never a clean bill of health.
+## Status, checked 2026-10-17
 
-| Deliverable | Document |
+| Phase | Implemented and exercised | Open |
+| --- | --- | --- |
+| 1, cohort and identity | Authenticated SCB acquisition, complete six-segment traversal, canonical registry, conservative resolution and a verified frozen 50-company export. | Human clearance of source reuse and publication. Historical aliases, ownership and foreign parents are absent unless separately evidenced. |
+| 2, source ingestion | IMY scan and an incremental repeat bound to the real cohort, with URL, version and hash provenance, reference-only retention and failure reporting. | KKV returns HTTP 403. Two unique PDFs have no extractable text. Source-population coverage is unknown. |
+| 3, evidence and review | 53 schema-validated private candidates, queue, identity holds, exact excerpts, audit chain and pending review templates. | Zero evidence-complete records and zero human actions. |
+| 4, analytics | Six datasets built against the real cohort and the empty approved Gold: 50 unassessed company rows and 18 authority/year coverage rows. | Case, decision, amount and ranking tables have no rows. Financial history is unavailable. |
+| 5, explorer and export | Four views, SVG/PNG/CSV/Markdown export, an independent final-review gate and an aggregate progress panel. | The private stage awaits human review. The public legal release is `unavailable`. |
+
+No company outcome has been approved by a human reviewer. The audit has 113 verified
+entries; human actions, publication-eligible records and approved Gold decisions are all
+zero. That is workflow status, not evidence of zero sanctions.
+
+The IMY run `82f07b44-b305-4e88-8ee9-7fdeb6399484` (finished 2026-10-17 14:15 UTC) read
+1 list, 45 record pages and 73 documents with no HTTP or extraction failures. Its 55
+distinct PDF versions gave 53 candidates and two `no_text_ocr_not_run` holds, in 19
+provisional case groups. Coverage is `bounded_partial` for IMY and `blocked_access` for
+KKV. KKV-dependent and combined-source rankings are disabled.
+
+## Cohort
+
+SCB retrieval ran on 2026-10-17 (source as-of date 2026-10-17). The private snapshot has
+62,113 rows, 47,080 normalized legal entities and 15,033 excluded rows (natural persons and
+foreign legal persons without a local registration). 43,836 active Swedish ABs are eligible.
+
+| Primary SNI 2025 | Segment | Received rows | Pages |
+| --- | --- | ---: | ---: |
+| 58290 | Other software publishing | 4,277 | 1 |
+| 62100 | Computer programming | 31,623 | 7 |
+| 62201 | Computer consultancy | 21,492 | 5 |
+| 62202 | Computer facilities management | 1,440 | 1 |
+| 62900 | Other IT and computer services | 1,031 | 1 |
+| 63100 | Data infrastructure, processing and hosting | 2,250 | 1 |
+
+Selection sorts by employee size class descending, then organization number ascending.
+Twenty-five entities are above class 8; the other 25 come from the 72 eligible entities in
+class 8 (200–499 employees). This is a size-class sample with a fixed tie rule, not a
+ranking by headcount, revenue or group size.
+
+- Cohort ID: `se-it-50-2026-10-17`.
+- Membership SHA-256: `f0866d8ad65709168017e8cdaf0e2e19b772c6bfaeeb908eb187233f96d8b3d5`.
+- Population manifest SHA-256: `95af1fe6480472f95f70d639df32e3e15eb7ad04de583a7c75198054ee47f8cd`.
+- Private bundle: `.research/compliance-intelligence/cohort-se-it-50-2026-10-17-v2`
+  (version 2 keeps the membership hash and marks DuckDB source reuse flags `unverified`).
+
+## Documents
+
+| Document | Covers |
 | --- | --- |
-| Current real cohort, processing results, blockers and exact review commands | [Completion and handoff](completion.md) |
-| Actual repository, reusable code, deployment and tests | [Repository audit](repository-audit.md) |
-| Storage boundaries, entity identity, cohort and lifecycle | [Architecture](architecture.md) |
-| Official sources, access, history and reuse conditions | [Source feasibility](source-feasibility.md) |
-| Table grain, fields, enums and validation responsibilities | [Data dictionary](data-dictionary.md) |
-| Publication review, privacy and operational risks | [Risks](risks.md) |
-| Exact next-phase scope, inputs, outputs and acceptance criteria | [Phase 1 handoff](phase-1-handoff.md) |
-| Checks and files added by this task | [Validation](validation.md) |
-| SCB access, CSV/Parquet fallback, identity matching and cohort commands | [Phase 1 operation](phase-1.md) |
-| Current implementation checks and remaining input dependency | [Phase 1 validation](phase-1-validation.md) |
-| Authority adapters, current access/terms, private storage and cohort expansion | [Phase 2 operation](phase-2.md) |
-| Live pilot coverage, checks, limitations and changed files | [Phase 2 validation](phase-2-validation.md) |
-| Fixed pilot URLs and baseline hashes | [Phase 2 pilot manifest](phase-2-pilot-manifest.json) |
-| Structured extraction, lifecycle, human review and Gold gates | [Phase 3 operation](phase-3.md) |
-| Real evidence coverage, adversarial checks and handoff | [Phase 3 validation](phase-3-validation.md) |
-| Aggregate coverage and review counts | [Phase 3 summary](phase-3-summary.json) |
-| Approved-only analytical build, filtering and validation | [Phase 4 operation](phase-4.md) |
-| Public metric definitions, comparison limits and missingness | [Phase 4 methodology](phase-4-methodology.md) |
-| Analytical checks, actual readiness and remaining dependencies | [Phase 4 validation](phase-4-validation.md) |
-| Aggregate analytical readiness | [Phase 4 summary](phase-4-summary.json) |
-| Four explorer views, public review gate and research export | [Phase 5 operation](phase-5.md) |
-| Browser, security, build checks and current public readiness | [Phase 5 validation](phase-5-validation.md) |
-| Job advertisements, canonical profiles, matching, API and deployment | [Job/company integration](job-company-integration.md) |
-| Live match coverage, test results and changed files | [Job/company validation](job-company-validation.md) |
+| [Architecture](architecture.md) | Storage boundaries, entity identity, cohort design and lifecycle |
+| [Data dictionary](data-dictionary.md) | Table grain, fields, enums, the extraction contract and the job/company tables |
+| [Risks](risks.md) | Publication controls, source access and reuse, privacy and ranking safeguards |
+| [Phase 1 operation](phase-1.md) | SCB access, CSV/Parquet fallback, identity matching and cohort commands |
+| [Phase 4 methodology](phase-4-methodology.md) | Public metric definitions, comparison limits and missingness; the explorer embeds this file |
+| [Phase 5 operation](phase-5.md) | The four explorer views, the public review gate and research export |
 
-The executable foundation is
-[`schema.sql`](../../platform/compliance_intelligence/schema.sql) and
-[`contracts.py`](../../platform/compliance_intelligence/contracts.py). It creates
-13 empty tables in an isolated, in-memory DuckDB database. It also defines an
-original-document interface. The Phase 1 CLI acquires register data only;
-the separate Phase 2 CLI collects authority documents into a private database.
-Run the offline checks:
+## Operator commands
+
+Run from the repository root with `python -X utf8`. Keep `SCB_API_KEY` in the ignored local
+environment or a GitHub environment secret. Every command writes to private paths under
+`.research/`, never to R2.
+
+| Script in `platform/compliance_intelligence/` | Subcommands |
+| --- | --- |
+| `cli.py` | `status`, `ingest`, `build`, `verify`, `search`, `resolve` |
+| `decision_ingest.py` | `--source imy\|kkv\|all`: collect authority documents |
+| `public_documents.py` | `plan`, `fetch`, `import-local`, `coverage`: the independent court-PDF supplement |
+| `review_cli.py` | `extract`, `import-proposal`, `schema`, `queue`, `summary`, `show`, `review`, `verify-audit`, `export-gold`, `validate-release` |
+| `analytics.py` | `status`, `build`, `query`, `validate` |
+| `completion.py` | `prepare` (review handoff), `publish-progress` (writes `frontend/public/data/compliance/progress.json`, never the legal release) |
+| `explorer.py` | `stage`, `promote`, `withdraw` ([Phase 5](phase-5.md)) |
+
+Each subcommand prints its options with `--help`. A completed review request is applied with
+`review_cli.py --root PRIVATE_ROOT review --request REQUEST.json --reviewers ROSTER.json`;
+the publication reviewer for a negative record must differ from its preparer.
+
+Domstolsverket, individual courts, FI and Bolagsverket were assessed but have no connector
+yet ([source access](risks.md#source-access-and-reuse)).
+
+## Code and tests
+
+The schema is [`schema.sql`](../../platform/compliance_intelligence/schema.sql) with
+[`contracts.py`](../../platform/compliance_intelligence/contracts.py). Test records are
+synthetic and use temporary directories:
 
 ```sh
 python -m pytest platform/tests/compliance_intelligence -q
 ```
-
-No company violation or reviewed legal outcome has been asserted by these tasks.
-Phase 2 has observed real source documents without interpreting their outcomes. Test
-records are synthetic and use temporary test directories. Private compliance
-processing is separate from scheduled public data publishing. The explorer and
-canonical company routes reuse the existing frontend; the job/company projection
-uses the existing jobs delivery group. The homepage and intro animations are
-outside this change.
-
-The schema now supports a private Phase 1 registry database. The application creates
-immutable cohort bundles, verifies their hashes and provides conservative identity
-resolution. It is not a production warehouse migration or publication gate.
-Phase 3 adds private evidence review and gated release staging. Actual human
-approvals and public delivery remain pending; the real pilot has no approved rows.
-Phase 4 has built six private analytical tables against the real frozen cohort.
-The 50 company summary rows have unassessed metrics; legal fact tables are empty
-because no real decision has been approved. Empty facts do not mean no sanctions.
-Phase 5 adds `#compliance` to the portfolio, with an explicit public unavailable
-state. Exact-artifact human approval is required to replace that state with real
-company observations. Aggregate collection/review progress can be shown separately
-without publishing company findings. No actual outcomes were approved or uploaded.

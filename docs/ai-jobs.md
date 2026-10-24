@@ -1,9 +1,13 @@
 # AI governance in job ads
 
-`#ai-act-jobs` is a view in the EU AI Act Observatory. It asks: **how often do Swedish job ads
+The job-ad governance count asks: **how often do Swedish job ads
 talk about AI, AI governance, compliance and model risk, and how does that line up with the AI
 Act's milestones?** It counts words in ads. It does not measure demand for skills, and it does
 not say that the Act changed hiring.
+
+The `#ai-act-jobs` view was withdrawn on 2026-10-21. Its files (`ai-act/jobs/*.json`) feed two
+posts in `#what-does-it-even-mean`: `frontend/src/meaning/posts/job-ai.tsx` and
+`job-ai-fields.tsx`.
 
 ```
 npm run job-ai-governance   # ingest (count every archive), dbt build, publish
@@ -31,7 +35,7 @@ out in bronze.
 ## The dictionary
 
 `seeds/job_ai_governance/job_ai_governance_terms.csv` holds 13 regular expressions, matched in
-an ad's headline and description. The page prints them verbatim.
+an ad's headline and description. The export carries them verbatim.
 
 | Family | Terms |
 |---|---|
@@ -43,7 +47,7 @@ an ad's headline and description. The page prints them verbatim.
 | General | compliance, risk management |
 
 A match means the words are in the ad. It does not mean the job requires them: an ad can name
-GDPR in its privacy notice, or name AI as a feature of the employer's product. The page shows
+GDPR in its privacy notice, or name AI as a feature of the employer's product. The export keeps
 example ads per term so a reader can judge what each pattern catches.
 
 ## Data model
@@ -56,15 +60,6 @@ example ads per term so a reader can judge what each pattern catches.
 
 Every share has its denominator. Rolling and yearly shares are sums over the window, not
 averages of monthly shares.
-
-## The view
-
-- One term at a time (`?term=`), as a three-month rolling share of all ads, with the Act's
-  milestones as numbered lines. The caveat that temporal overlap does not prove causation sits
-  under the chart.
-- A table per year with ads, matches and share.
-- The occupation fields where the term is most common in the latest year.
-- Example ads, and the dictionary with the archives' sizes and hashes.
 
 ## Results (6 October 2026)
 

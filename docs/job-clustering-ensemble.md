@@ -1,11 +1,14 @@
-# Feature engineering and clustering ensemble — 4 October 2026
+# Feature engineering and clustering ensemble, 4 October 2026
 
-The current experiment combines **65% cleaned multilingual text embeddings, 15% title
+The 2025-only experiment combines **65% cleaned multilingual text embeddings, 15% title
 patterns and 20% detected technology mentions**, then takes agreement from three
 independent UMAP/HDBSCAN fits. It assigns **5,210 of the same 6,123 ads** to **17 groups**,
 leaving **913 (14.91%)** as noise. No group has a majority from one employer. This is a
 more useful grouping for technology/role exploration, with explicit tradeoffs in the
 original full-text geometry; it is not a validated occupational taxonomy.
+
+The published run applies these settings to 2022–2025 (35,861 ads, `min_cluster_size` 600):
+10 groups, 16.7 % noise ([job-market clustering](job-market-clustering.md)).
 
 ## Features and ablations
 
@@ -97,7 +100,7 @@ family, plus feature fusion; it is not a bagged ensemble of independently traine
 
 The delivered point support is **2/3 or 1 for assigned points, zero for noise**. It is a
 vote fraction, not HDBSCAN membership or a calibrated probability that the label is true.
-The UI distinguishes this meaning. Profiles use support for representative ads and retain
+Profiles use support for representative ads and retain
 automatic-label uncertainty. A skill must occur in at least 15% of a group, with lift at
 least 1.5, to enter its label; rarer distinctive mentions remain visible in the profile.
 This avoids naming a 205-ad frontend group after 17 PHP mentions.
@@ -148,4 +151,4 @@ are exported. Source text, models and feature matrices stay local and gitignored
 The display is an independent 2D UMAP of the fused features, using 60 neighbours, minimum
 distance .08 and seed 42. It changes from the prior full-text map; clusters are still fitted
 in 10D, not the display. Both original-text and fused-feature neighbour preservation are
-reported. The fitted-cluster camera/full-map control uses genuine coordinates.
+reported.

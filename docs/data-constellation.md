@@ -2,8 +2,8 @@
 
 The page is retired from the website: `#data-constellation` and `#data-catalogue` now lead to
 the project index ([site-structure.md](site-structure.md)). The graph is still generated
-(`npm run architecture:build`) and still feeds *Trace this result* on the product pages. The
-rest of this document describes the map as it was built.
+(`npm run architecture:build`) and feeds the Trace panel of the chart feed (see below). The
+page itself is gone; this document describes the graph.
 
 `#data-constellation` showed the whole data platform as one interactive map: where the data
 comes from, how it is ingested, how dbt models it, which files are published and which
@@ -47,14 +47,16 @@ publisher or product needs one registry entry.
 | Shared platform | `models/gold/shared` (date, period, region, indicator … dimensions), SCB, and the infrastructure |
 | Sweden | dbt folder `welfare` |
 | Symbolic Atlas | dbt folder `symbolic` |
-| EU AI Act | dbt folders `eu_ai_act` and `ai_politics` (the Riksdag's speeches read against the Act); the Publications Office and the Commission as sources |
+| EU AI Act | dbt folders `eu_ai_act`, `ai_politics`, `job_ai_governance` and `cross_domain`; the Publications Office and the Commission as sources |
+| Philosophy Atlas | dbt folder `philosophy` |
+| Concept layer | dbt folder `concepts` |
 
 Smaller standalone projects (DrugComb, DiVA, Homie) are not in the map: they do not
 run on the dbt warehouse.
 
 ## Node types
 
-| Type | Id | Meaning | Marker |
+| Type | Id | Meaning | Marker on the retired page |
 |---|---|---|---|
 | source | `src:<id>` | an external system (Riksdagen, SCB, Gutenberg …) | large star with a ring |
 | ingestion | `ingest:<id>` | a `platform/ingest/<dir>` loader | small square |
@@ -67,17 +69,17 @@ run on the dbt warehouse.
 | shared | `infra:<id>` | rawstore, the EU legal parser, dbt + DuckDB, the delivery catalogue, Cloudflare R2 | double ring |
 
 Models dbt switches off by default (the job-ad clustering marts, enabled by a dbt variable) are
-included, marked `enabled: false` and drawn faded.
+included and marked `enabled: false`.
 
 ## Edge types
 
-| Type | Meaning | Drawn as |
+| Type | Meaning | Drawn as on the retired page |
 |---|---|---|
 | `lineage` | data built from data: origin → ingester → raw → models → ML | solid line |
 | `delivery` | a published file written from a table (or ML output) by a publisher (`via`) | accent line |
 | `frontend-consumption` | a product reads a published file | accent line |
-| `relationship` | a key joins two tables (cardinality, basis) | dashed, Data model view only |
-| `infrastructure` | a stage runs on shared infrastructure (an ingester that stores through rawstore, a dbt Python model or ingester that imports `platform/legal`) | dotted, only on a selected path |
+| `relationship` | a key joins two tables (cardinality, basis) | dashed |
+| `infrastructure` | a stage runs on shared infrastructure (an ingester that stores through rawstore, a dbt Python model or ingester that imports `platform/legal`) | dotted |
 
 Physical lineage, logical relationships and product consumption are separate edge types and
 are never drawn the same way: a join is not a build step.
@@ -104,53 +106,25 @@ Delivery nodes add `files`, `formats`, `examples` and `published_by` (script pat
 for the pre-warehouse politics builder); sources add `url`; products add `href`; raw nodes add
 their `tables`.
 
-## The page
+## Trace
 
-- **Layout.** x is the stage (source → ingestion → raw → bronze → silver → ML → gold → delivery
-  → product), y the domain lane, shared infrastructure in the middle lane. Inside one lane and
-  stage, nodes sit on a small sunflower spiral, deterministic per graph. No force layout.
-- **Views.** Platform (the architecture), Data model (gold tables and seeds by kind, joined by
-  their keys) and Lineage (opens on a product; choose any node).
-- **Filters.** Domain (others fade; shared nodes on the domain's paths stay), layer chips (hide
-  stages), and search over labels, ids and paths.
-- **Selection.** A click, a search result or a button in the list selects a node: everything
-  upstream and downstream lights up, the rest fades, and the panel shows layer, domain,
-  repository path, materialisation, key, rows, files and publishers, joins, what it is built
-  from and what it feeds, and for a product a link to it.
-- **Address.** `?view=`, `?domain=`, `?hide=` and `?node=` keep a view shareable.
-- **Accessibility.** The canvas has a text description; "Architecture by domain" below lists
-  every node by domain and stage as keyboard-selectable buttons. Markers differ in shape, not
-  only colour; only the bronze, silver and gold layers keep their tones, the rest are greys.
-- **Phone.** Below 700 px the map stands upright and fills the screen's width: stages run top to bottom, domains become columns, stage names run up the left edge, and only products, the selection and short paths are labelled. No sideways scrolling; the details follow below, and the layer chips sit in one swipeable row.
-
-## Trace this result and the data catalogue
-
-The graph also serves two lighter views.
-
-- **Trace this result** (`frontend/src/ui/Trace.tsx`): a fold under a figure that lists, stage
-  by stage, where it comes from: the page, the published file, the gold model, silver, bronze,
-  seeds, the raw copy, the ingestion and the official source (`tracePath` in
-  `frontend/src/constellation/graph.ts`, unit-tested). It is used on the AI Act timeline and
-  obligations, the politics overview, the job market, welfare and the Concept Journey, and links
-  to the full lineage here (`#data-constellation?view=lineage&node=<id>`).
-- **Data catalogue** (`#data-catalogue`, `frontend/src/catalogue/`): every delivery node as a
-  dataset, with the gold models it is published from (description, grain, columns, rows), its
-  files from `catalog.json` (format, size, rows, download), its sources, the pages that read it
-  and the quality checks registered on its models. Above it, the platform's status: when the
-  graph was built, the export run, how many quality checks pass, and each domain's own record
-  of when it was last built or checked. A domain without such a record is left out.
+The page, *Trace this result* (`frontend/src/ui/Trace.tsx`) and the data catalogue
+(`frontend/src/catalogue/`) were removed (commits 96b9418d and 35b90a67). Trace is now
+`frontend/src/meaning/Trace.tsx`, the panel of an opened feed card. It reads
+`architecture/feed-provenance.json`, which `platform/architecture/feed_provenance.py` writes from
+this graph, the feed posts' declared sources, the dbt schema files and the quality checks.
 
 ## Adding things
 
-- **A source:** add an `ORIGINS` entry and list it in its ingester's `origins`.
-- **An ingester:** add an `INGESTION` entry with the dbt sources (`raw`) it fills.
-- **A publisher:** add a `PUBLISHERS` entry with its output patterns; inputs are detected, or
+- A source: add an `ORIGINS` entry and list it in its ingester's `origins`.
+- An ingester: add an `INGESTION` entry with the dbt sources (`raw`) it fills.
+- A publisher: add a `PUBLISHERS` entry with its output patterns; inputs are detected, or
   set `inputs` per output when the script reads delivery files or ML output instead.
-- **A product:** add a `PRODUCTS` entry with its route and the frontend folders that hold its
+- A product: add a `PRODUCTS` entry with its route and the frontend folders that hold its
   data loading.
 
-Then run `npm run architecture:build`; the Python tests (`platform/tests/architecture`) and the
-unit tests (`frontend/tests/unit/constellation.test.ts`) check the result.
+Then run `npm run architecture:build`; the Python tests
+(`platform/tests/architecture/test_graph.py`, `test_feed_provenance.py`) check the result.
 
 ## Limitations
 
@@ -161,9 +135,4 @@ unit tests (`frontend/tests/unit/constellation.test.ts`) check the result.
 - Some politics files are still built by `platform/legacy/build_gold.py` from raw Riksdagen data
   without the warehouse; they are marked legacy, with an edge from the ingester.
 - Row counts come from the ER export and exist only for tables built in the local warehouse.
-- The map shows the architecture, not run state: whether a build last succeeded is on the
-  status page.
-
-## Quality view
-
-`#data-constellation?view=quality` keeps the platform layout and adds a small mark beside each product and model that has registered quality checks: its weakest measured result (● pass, △ warning, × fail, ○ not measured, – not applicable). The marks use the site's ink, never traffic-light colours, and the legend names every mark. Choosing a node shows its checks by dimension and, for a product, its main validity analysis, with a link to `#quality`. See [quality-and-validity.md](quality-and-validity.md).
+- The graph shows the architecture, not run state.

@@ -38,7 +38,8 @@ All 28 concepts remain on the constellation.
 3. One section per domain: how often the concept is the closest there, two representative
    passages with their source link, similarity and rank, and the measures elsewhere on the site
    that count the same idea (`links.json`). Where none exists, the page says so instead of
-   filling the gap.
+   filling the gap. Job-ad and AI Act links lead to `#what-does-it-even-mean`, since those
+   pages were withdrawn on 2026-10-21.
 4. *What connects them?* The closest cross-domain pairs, each with its value and the random
    baseline.
 5. *What does not follow from this*, *Quality in brief*, *How it was built* and *Trace this

@@ -1,7 +1,8 @@
 # Phase 5 explorer and research export
 
-Implemented 2026-10-17. Open `#compliance` from the portfolio's Projects menu.
-The explorer has four persistent hash routes, with filters in the query string:
+Implemented 2026-10-17. Since 2026-10-21 the explorer is unrouted: `#compliance*`
+redirects to `#what-does-it-even-mean`, and the code stays for the release check. It
+has four hash routes, with filters in the query string:
 
 | Route | Purpose |
 | --- | --- |
@@ -14,7 +15,7 @@ The public legal artifact is an explicit unavailable state. A verified real
 company cohort now exists privately; no real Gold decision has human approval.
 An independently validated aggregate progress artifact reports the frozen sample,
 dated source processing and review counts. It contains no company findings.
-See [current completion](completion.md). Production
+See the [README](README.md#status-checked-2026-10-17). Production
 contains no test companies, invented chart points, sample amounts or implied clean
 company counts. Every route remains navigable and explains the missing inputs.
 The public methodology can be downloaded even when company data are unavailable.
@@ -30,9 +31,7 @@ uses the existing `--series-3` token. No second theme or font package is added.
 
 The fixed cohort/verification notice is the main visual marker: named legal
 identity, dated approval and source coverage stay beside the comparison. There is
-no score gauge, severity-colored leaderboard or decorative motion. The homepage
-intro and animation sources were not edited. Only the shared project registry and
-route integration expose this project through the existing navigation.
+no score gauge, severity-colored leaderboard or decorative motion.
 
 Filters select originating authority, case category, operative known legal status,
 inclusive originating-decision dates, SNI industry and employee size class. The

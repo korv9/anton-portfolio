@@ -91,7 +91,7 @@ python -m ml.cluster_lab.cli replay --run-id RUN_ID --destination configs/cluste
 python -m ml.cluster_lab.cli run --config configs/cluster_lab/replay.local.yaml --resume
 ```
 
-Replay binder den ursprungliga, hashkontrollerade snapshoten och dess exakta
+`replay` skriver `replay.local.yaml` lokalt; filen är inte incheckad. Replay binder den ursprungliga, hashkontrollerade snapshoten och dess exakta
 modellparametrar och sample. För en ny passning med samma inställningar, använd
 ett nytt `output` via `--set output=warehouse/cluster_lab/replay`.
 
@@ -121,12 +121,21 @@ passningar använder konfigurerad, strömmad PCA före UMAP; layout använder de
 sparade klusterrymden och mäts mot ursprungsfeatures. Dessa resursval är synliga
 och kan ändras. Textvektorcachen är begränsad; matrischeckpoints bevaras separat.
 
+Labbet läser annonserna med repots JobTech-arkivhämtare i fulltextläge: återupptagbara
+Range-hämtningar, retries vid throttling och serverfel, och checkpointade Parquet-block.
+ZIP-importen kan skanna tillbaka till senast färdigskrivna block efter ett avbrott. Stabilt
+annons-ID deduplicerar versioner mellan arkiv; olika annonser slås inte ihop på textlikhet.
+Årsarkiv 2023–2025 och kvartalsarkiv 2026 hämtas från den
+[officiella arkivkatalogen](https://data.arbetsformedlingen.se/annonser/historiska/).
+JobStreams [API-schema](https://jobstream.api.jobtechdev.se/swagger.json) beskriver
+`/v2/snapshot` som alla **aktiva** annonser.
+
 `ingestion.retain_downloads: false` frigör ZIP-cache efter verifierad fulltextimport.
 Textshards, metadata, källreferenser och checksummor behålls; resume hämtar inte
 färdiga arkiv igen. Sätt `true` för att också behålla ZIP-filerna.
 
-[Metoder, täckning och artefakter](../../docs/cluster-lab.md) beskriver
-centrering per verk/författare, HDBSCAN-definitioner, utvärdering och caching.
+[Metod och återkörning för de publicerade klustringarna](../../docs/public-clustering-method.md)
+beskriver centrering per verk/författare, HDBSCAN-inställningar, utvärdering och caching.
 
 ```powershell
 python -m pytest ml/cluster_lab/tests -q --basetemp warehouse/cluster_lab/unit-check

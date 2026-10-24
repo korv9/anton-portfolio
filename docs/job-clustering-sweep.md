@@ -1,4 +1,4 @@
-# Job clustering parameter sweep — 4 October 2026
+# Job clustering parameter sweep, 4 October 2026
 
 The original five-cluster fit put 84.99% of the 6,123 advertisements in one mixed group.
 The selected replacement produces **25 groups**, with the largest containing **287 ads
@@ -55,7 +55,7 @@ Examples of the selected automatic descriptive profiles:
 
 Six groups remain majority-employer groups, covering 615 ads (19.28% of assigned ads).
 These include Deploja, Veritaz, Försäkringskassan, Axis and SAAB. Employer/template
-concentration remains visible in the explorer. Some C++/Linux profiles repeat across
+concentration was visible in the former explorer. Some C++/Linux profiles repeat across
 several groups: numbering and examples distinguish them, but the skill labels alone do
 not establish separate occupations. Original-vector silhouette of approximately .074 is
 modest despite the much stronger UMAP score; parameter tuning has not eliminated the
@@ -97,12 +97,8 @@ python platform/publish/export_job_clusters.py
 These were the embedding-only defaults; the current pipeline uses the
 [feature ensemble](job-clustering-ensemble.md). For this older run the independent display UMAP is 2D with 30
 neighbours, minimum distance .08 and seed 42; clustering is performed in 5D. The changed
-colours reflect new memberships in the same display geometry. The explorer supports
-distinct colours beyond six groups and clickable numbered legend entries to isolate a
-group. Noise, original-vector silhouette and the sweep/seed provenance remain visible.
-The default camera fits the assigned clusters; it reports the number of ads outside the
-frame and has a full-map control that includes every distant noise point. This is an
-affine view change, not a refit, removal of ads or independent repositioning of groups.
+colours reflect new memberships in the same display geometry. The explorer that showed
+this run (`frontend/src/jobs/ClusterMap.tsx`) was removed on 2026-10-21 (35b90a67).
 
 The pipeline validates the chosen corpus, source metadata, model, parameters and package
 versions, and checks the recomputed labels/probabilities against the reviewed assignments

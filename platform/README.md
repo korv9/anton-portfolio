@@ -29,7 +29,15 @@ in the warehouse.
 | `legacy/` | Build and validate scripts not yet migrated into `models/` and `tests/` |
 | `sources/` | Pinned upstream snapshots that cannot be re-fetched |
 | `packages/` | The Allegoria meaningquality engine, vendored |
-| `tests/` | Ingestion and engine tests |
+| `seeds/`, `macros/` | dbt seeds (lexicons, crosswalks, hand-checked reference rows) and macros |
+| `nlp/` | Text processing that runs before dbt: lexicons, embeddings, the Workers AI corpora (`workers_ai.py`, `platform_docs_corpus.py`) |
+| `quality/` | Data quality and construct validity registries and their evaluation ([docs/quality-and-validity.md](../docs/quality-and-validity.md)) |
+| `architecture/` | The provenance graph of sources, models and published files (`build_graph.py`) and the feed's Trace data (`feed_provenance.py`) |
+| `products/` | Registry and pinned material for DrugComb, the thesis and Homie ([products/README.md](products/README.md)) |
+| `compliance_intelligence/` | The compliance research workflow; its explorer is not routed ([docs/compliance-intelligence/](../docs/compliance-intelligence/README.md)) |
+| `job_assistant/` | The job assistant: ads from JobTech, the CV profile, matching and export ([docs/job-assistant.md](../docs/job-assistant.md)) |
+| `idea_lineage/` | The idea journal behind `npm run ideas:*` ([docs/idea-lineage.md](../docs/idea-lineage.md)) |
+| `tests/` | Python tests for ingestion, models, delivery, architecture and workflows (`python -m pytest platform/tests -q`) |
 
 `legacy/` is named for what it is. Those scripts do the work that `models/` and
 `dbt test` will do; keeping them in a directory that says so means the remaining migration
@@ -65,14 +73,19 @@ before the politics build, since dbt reads the fact tables it writes.
 
 ## Subjects
 
+The observatory pages for jobs, welfare, parliament, taxes and the AI Act were withdrawn from the
+site on 2026-10-21; their subjects still run and feed the chart feed and the research pages.
+`python platform/pipeline.py list` prints all 26 subjects; the table covers the main ones.
+
 | Subject | Sources | Models | Documentation |
 |---|---|---|---|
 | Jobs (IT report) | JobTech | `models/*/jobs` | `ingest/jobtech/` |
 | News | SVT, Sveriges Radio Ekot, Regeringskansliet (feeds) | `models/*/news`, `seeds/news` | [docs/news.md](../docs/news.md) |
+| Job assistant | JobTech JobSearch and JobStream, the owner's CV | `models/*/job_assistant`, `job_assistant/` | [docs/job-assistant.md](../docs/job-assistant.md) |
 | Job market (all occupations) | JobTech, every archive from 2020 | `models/*/market` | [docs/job-market.md](../docs/job-market.md) |
 | Welfare | SCB (AKU, population), Försäkringskassan, Folkhälsomyndigheten, ESS, Kolada | `models/*/welfare`, `models/gold/shared` | [docs/welfare-data-model.md](../docs/welfare-data-model.md) |
 | Parliament | Riksdagen (roll calls, reports, news), SCB (elections, PSU), Valmyndigheten | `models/*/parliament`, `seeds/parliament` | [docs/parliament-data-model.md](../docs/parliament-data-model.md) |
-| Taxes | OECD (Revenue Statistics, Taxing Wages), Skatteverket (rates, tax tables) | `models/*/taxes`, `seeds/taxes`, `frontend/src/taxes` | [docs/taxes.md](../docs/taxes.md) |
+| Taxes | OECD (Revenue Statistics, Taxing Wages), Skatteverket (rates, tax tables) | `models/*/taxes`, `seeds/taxes` | [docs/taxes.md](../docs/taxes.md) |
 | EU AI Act | EU Publications Office (Cellar / EUR-Lex), European Commission | `models/*/eu_ai_act`, `seeds/eu_ai_act`, `publish/eu_ai_act` | [docs/ai-act.md](../docs/ai-act.md) |
 | The Riksdag and AI | Riksdagen (every speech since 2016/17), the AI Act's Swedish text | `models/*/ai_politics`, `seeds/ai_politics`, `nlp/ai_politics`, `nlp/text`, `publish/ai_politics` | [docs/ai-politics.md](../docs/ai-politics.md) |
 | Philosophy Atlas | Project Gutenberg (thirteen works, translators recorded) | `models/*/philosophy`, `seeds/philosophy`, `nlp/philosophy`, `publish/philosophy` | [docs/philosophy-atlas.md](../docs/philosophy-atlas.md) |
@@ -92,8 +105,8 @@ The shape is the same for any source:
 2. **Bronze.** A `sources.yml` and a `stg_<source>.sql` under `models/bronze/<subject>/`,
    one row per source record, typed and nothing else.
 3. **Silver.** Conform it: join to `dim_session`, normalise identifiers, apply crosswalks.
-   Entities shared across subjects (`dim_document`, `dim_session`) belong in
-   `models/silver/shared/` so politics and research use the same ones.
+   Dimensions shared across subjects (`dim_date`, `dim_municipality`, `dim_party` and others)
+   live in `models/gold/shared/`, so every subject joins to the same ones.
 4. **Gold.** The marts a reader actually wants.
 5. **Deliver.** Classify each mart: needed for first paint → JSON; filtered interactively →
    Parquet; long free text read one document at a time → shard. Give the files to a group in

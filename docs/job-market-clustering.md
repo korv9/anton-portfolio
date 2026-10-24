@@ -3,7 +3,8 @@
 The question is whether natural groups in advertisement language match the four existing
 title-based families: Data Engineer, Analytics Engineer, Data Scientist and Software Developer.
 This is **not** a model of the entire Swedish labour market, a count of hires, or a validated
-occupational taxonomy. The all-occupation market report remains a separate product.
+occupational taxonomy. The all-occupation market report was withdrawn on 2026-10-21; its data
+feeds `#what-does-it-even-mean`.
 
 ## Architecture and ownership
 
@@ -25,7 +26,7 @@ flowchart TD
     K --> L[Parquet run artefacts and raw.job_cluster_* sources]
     L --> M[dbt gold.mart_job_clusters and dim_job_cluster]
     M --> N[Dedicated compact delivery exporter]
-    N --> O[React Canvas explorer]
+    N --> O[Cluster visuals page, #cluster-visuals]
     N --> P[Sample of real coordinates for homepage]
 ```
 
@@ -56,7 +57,7 @@ occupation matches and dbt applies title exclusions.
 Archives: `https://data.arbetsformedlingen.se/annonser/historiska/<year>.jsonl.zip` for 2022,
 2023, 2024 and 2025; each month's hash is in the coverage ledger.
 
-SHA-256: `43499d2835b607f47e9641443e160bfcab26816c4f04fa17e87bb52b48ce79c6`
+SHA-256 of the 2025 archive: `43499d2835b607f47e9641443e160bfcab26816c4f04fa17e87bb52b48ce79c6`
 
 The archive includes publication-date spillover. A publication-year filter outside 2025
 does **not** imply a complete additional annual archive. The delivery manifest includes
@@ -102,7 +103,8 @@ The current defaults, selected after feature ablations and consensus checks, are
 UMAP with 60 neighbours, 10 dimensions and `min_dist=0` for
 clustering, and an independent 2D UMAP with `min_dist=.08` for display. HDBSCAN operates on
 the **10-dimensional space**, using Euclidean distance there, `min_cluster_size=600` (100 in
-the 2025-only run; six times the ads, six times the minimum),
+the 2025-only run; six times the ads, six times the minimum; the CLI default is still 100,
+so pass `--min-cluster-size 600`),
 `min_samples=3`, and eom selection. Aligned fits at seeds 42/43/44 assign a group only
 when two agree. Noise (`cluster_id=-1`) is retained. The input combines cleaned semantic
 text, title patterns and detected technology mentions with weights .65/.15/.20. See
@@ -141,8 +143,7 @@ sample capped at 1,500 rows, and the sample size is reported.
 
 `--compare` reruns two alternatives: half the neighbour count and half the minimum cluster
 size. These are sensitivity checks, not an automatic search for the prettiest picture.
-The headline result and parameter comparisons are recorded in delivery, and the website
-shows the role cross-tab alongside the map. The measured results are in the generated run
+The headline result and parameter comparisons are recorded in delivery. The measured results are in the generated run
 report, [the parameter sweep](job-clustering-sweep.md) and [the feature
 ensemble](job-clustering-ensemble.md).
 
@@ -215,16 +216,15 @@ npm run build
 choose weights; `--neighbors`, `--dimensions`, `--cluster-min-dist`, `--visual-min-dist`,
 `--min-cluster-size`, `--min-samples`, `--selection-method` and `--seed` expose parameters.
 `--limit` requests an explicit deterministic SHA-256 sample, marked as sampled in delivery.
-The published run uses all 35,861 eligible rows and no limit. It gives 10 groups, 16.7 % of the ads in none, and the largest group holds 27.6 %. The feature ablations and the parameter sweep were run on the 2025 corpus; they have not been repeated on 2022–2025, so this run applies the chosen settings without a new review file. A new corpus or dependency
+The published run uses all 35,861 eligible rows and no limit. It gives 10 groups, 16.7 % of the ads in none, and the largest group holds 27.6 %. The feature ablations and the parameter sweep were run on the 2025 corpus; they have not been repeated on 2022–2025, so this run applies the chosen settings with `--min-cluster-size 600` and no `--feature-candidate` (the candidate above holds `min_cluster_size` 100 and must match the run's parameters). A new corpus or dependency
 version produces a different sweep directory; use its printed path instead of this run's path.
 
 The exporter writes immutable JSON point shards of 5,000 rows, an aggregate manifest and
 a 1,500-point real-coordinate homepage sample. It verifies run consistency and reconciles
 row counts before export. Each point includes title and skill mentions for interaction,
-never descriptions or embeddings. The full explorer is a separately loaded Canvas module;
-the homepage requests only the compact sample and the political project preview.
+never descriptions or embeddings. `#cluster-visuals` loads the point shards; the homepage
+loads only `jobs/cluster-preview.json` and `jobs/preview-detail.json`
+(`frontend/src/home/umapIntroData.ts`).
 
-The explorer provides role/cluster/seniority/year modes, a year selector, pointer details,
-keyboard point traversal (arrows, Home/End, Enter and Escape), cluster selection and an
-HTML cross-tab/profile fallback. Legend text and point details accompany colour encoding.
-Loading, missing-data, retry and reduced-motion behaviour are covered by browser tests.
+Cluster visuals draws the points coloured by cluster, with a legend of the clusters
+(`frontend/src/clusters/ClusterScatter.tsx`); `frontend/tests/clusters.spec.ts` covers it.

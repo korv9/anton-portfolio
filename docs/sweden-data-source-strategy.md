@@ -1,16 +1,28 @@
 # SWEDEN data source strategy
 
 Phase 0B, 2026-10-20. Candidate sources for the five products, as the three Phase 0 audits found
-them, plus one own check (Trafiklab). Source tags are defined in
-[sweden-research-alignment.md](sweden-research-alignment.md#evidence-and-status-levels).
+them, plus one own check (Trafiklab). Each claim carries a source tag:
 
-Nothing here is ingested. No endpoint or licence is added beyond what an audit or the own check
+| Tag | Meaning |
+|---|---|
+| [AC], [B], [DE] | The three Phase 0 audit reports (projects A and C, B, D and E), 2026-10-20, read-only, code at `6560478a`. They and their query scripts are kept outside the repository. |
+| [own] | Checked again by reading the cited lines or running Python over the committed files in `frontend/public/data/sweden/`. |
+| [CI] | GitHub Actions run `39441114070`, "Build, store and publish the warehouse", sha `37167df9`, success, 2026-10-20. |
+
+Nothing here is ingested beyond what the table marks as done. No endpoint or licence is added beyond what an audit or the own check
 read. "Verified" means the access route was probed or the official page read. "UNVERIFIED" means it
 was not, and the cell says which part is missing. A source with a verified endpoint and an
 unverified licence is marked UNVERIFIED for the licence.
 
-Before any new source, the roadmap repairs and re-analyses existing data. Several questions below
-can be answered better with data already on disk; the "existing data first" section lists them.
+The Phase 0 repairs of existing data are done (71761a09, 3c185c71). Some questions below can
+still be answered with data already on disk; the "existing data first" section lists them.
+
+Two licence findings settled disagreements between the audits:
+
+- Kolada: [AC] read the official terms on kolada.se/om-oss/api. Use is free with the attribution
+  "Källa: Kolada", and derived data must not name Kolada as its source.
+- Trafiklab GTFS Sverige 2: own check 2026-10-20 of `trafiklab.se/api/gtfs-datasets/gtfs-sverige-2/`
+  found CC0 1.0. Static data needs an API key; the Bronze tier allows 50 calls a month.
 
 ## Priority classes
 
@@ -28,7 +40,7 @@ clear. Reject: closed, personal, not reproducible, or duplicates an existing sou
 | A | Kolada carries 2 Brå KPIs plus NTU via Kolada | crime statistics | Brå (UNVERIFIED) | Safety domain | web query tool only, no public API per Polisen's open-data page [AC]; licence unverified | high, scraping | Reject direct scraping; use Kolada |
 | A | none | culture statistics | Myndigheten för kulturanalys (UNVERIFIED) | Culture domain (6 SCB tables) | no API or download found [AC]; KU0501 Excel tables exist per a search result [DE] | medium | Optional |
 | A | KB bibstat already ingested for D | culture measured elsewhere | KB bibstat as a catalogue entry (Verified, reuse) | Shows library statistics outside SCB's database | already fetched; CC0 stated in repo, KB says "free to use", explicit CC0 not re-verified [DE] | very low | High value, reuse |
-| B | JobTech Taxonomy cached for legacy ids | harmonised field labels; SSYK-4; generic skills vocabulary | JobTech Taxonomy GraphQL (Verified API; licence UNVERIFIED) | Repairs the 2020 label artefact | `taxonomy.api.jobtechdev.se/v1/taxonomy/graphql`, 31 versions 2021-03-05 to 2026-08-12 [B]. CC0 per repo comment; jobtechdev.se unreachable in the audit | trivial | Essential |
+| B | JobTech Taxonomy cached for legacy ids | harmonised field labels; SSYK-4; generic skills vocabulary | JobTech Taxonomy GraphQL (Verified API; licence UNVERIFIED) | Repaired the 2020 label artefact (done: `platform/seeds/sweden_language/occupation_field_crosswalk.csv`) | `taxonomy.api.jobtechdev.se/v1/taxonomy/graphql`, 31 versions 2021-03-05 to 2026-08-12 [B]. CC0 per repo comment; jobtechdev.se unreachable in the audit | trivial | Done |
 | B | 23 regex-counted archives | an independent extraction of traits and skills | JobTech enriched historical ads `berikade/{kompletta,metadata,exempel}` (Verified listing; contents UNVERIFIED) | NLP validation; skills against traits | listing and sizes read: 2016 full 771.8 MB, metadata 151.2 MB, 1 % sample 8.1 MB [B]. CC0 per README. Trait fields not inspected | medium, about 150 MB a year streamed | High value; inspect the 1 % sample first |
 | B | same | second rater for the lexicon | JobAd Enrichments API (Verified endpoints; licence UNVERIFIED) | Cross-validation on a sample | swagger v1.5.7 at `jobad-enrichments-api.jobtechdev.se`: `/enrichtextdocuments`, output `competencies`, `traits` [B]. Not independent of JobTech's model | low, sample only | High value, validation sample only |
 | B | none | real occupation mix to weight ads | SCB Yrkesregistret AM0208 (Verified) | Occupation-adjusted trends against employment | PxWeb tables `YREG60BAS` 2020–2024, `YREG60N`, `YREG60`, `YREG37` (SSYK96, 2005–2013) [B]. CC0 | low; SSYK96 break in 2014 | High value |
@@ -51,7 +63,6 @@ clear. Reject: closed, personal, not reproducible, or duplicates an existing sou
 | D | none | trust and participation attitudes | SOM-institutet via SND | attitudes | restricted research access, microdata [DE] | high | Reject |
 | D | none | youth participation | MUCF Lupp (UNVERIFIED) | youth | not checked; opt-in coverage [DE] | unknown | Optional |
 | D | none | service-access analysis | Tillväxtverket Pipos (UNVERIFIED) | access | no official page found [DE] | unknown | Do not plan on it |
-| E | 32 sessions | session 1999/2000 | Riksdagen `anforande-19992000.json.zip` (Verified) | Completes the series | HEAD 200, 20,939,449 bytes [DE]; free use with attribution to Sveriges riksdag | trivial; a regex fix | Essential |
 | E | speeches only | designed futures: problem, solution, alternatives | Riksdagen SOU and propositions (Verified) | Third corpus with its own denominator | `data.riksdagen.se/dokumentlista/?doktyp=sou&utformat=json` (4,958 SOU, 31,823 prop); bulk `sou-1990-1999.json.zip` 130 MB … [DE]. SOU from 1990 only | medium to high, about 1 GB streamed | High value, SOU first |
 | E | speeches from 1993 | pre-1993 baseline | Swerik / Swedish Parliament Corpus (UNVERIFIED licence) | Speeches 1867 onward | GitHub release v2025.12.19; no licence file, API `license: null` [DE]; `riksdagen-records` about 8.4 GB | high | High value once the licence is confirmed; separate corpus |
 | E | DiVA student theses | national academic coverage | SwePub (UNVERIFIED licence) | Fixes DiVA's institution bias | dumps, OAI-PMH, SRU, JSON API per KB page; no licence named [DE]; abstracts not confirmed | medium | High value after licence check |
@@ -63,32 +74,31 @@ clear. Reject: closed, personal, not reproducible, or duplicates an existing sou
 
 ## The ten questions for Essential sources
 
-| Question | Socialstyrelsen (A) | JobTech Taxonomy (B) | SCB regional (C) | Kolada extra KPIs (C, D) | bibstat opening hours (D) | Riksdagen 1999/2000 (E) |
-|---|---|---|---|---|---|---|
-| 1 Research question | what Sweden measures, by agency | occupation key for standardisation | how the definition of similarity changes the map | independent outcomes; participation beyond libraries | does fewer service points mean less availability | completeness of the speech series |
-| 2 Missing evidence | health statistics outside SCB | harmonised fields 2020–2023 | alternative features | outcomes not in the 12 inputs | open and staffless hours | one session |
-| 3 Complements | yes, disjoint from SCB's database | required repair | yes | yes | directly | yes |
-| 4 Public access | API probed | API verified | API verified | API verified | API verified | archive verified |
-| 5 Licence | CC0 via secondary summary, UNVERIFIED | CC0 per repo, UNVERIFIED | CC0, verified | Kolada terms, verified | "free to use", CC0 not re-verified | free, attribution required |
-| 6 Coverage | per database, not verified per table | versioned since 2021 | 290 municipalities, annual; DeSO/RegSO revised 2025 | annual, municipal | 2014–2025 per organisation | 1999/2000 |
-| 7 Join key | domain seed by subject | concept id, legacy AMS id, SSYK | 4-digit municipality code | SCB municipality code | sigel to municipality | session, speech id |
-| 8 Bias | each agency structures its catalogue differently | 2020–2023 labels sit outside it | survey noise in small municipalities | Kolada recomputes and carries values forward | self-reported | same genre limits |
-| 9 Cost | metadata only | trivial | small JSON | very low | near zero | 21 MB once |
-| 10 Gap understanding | turns "unmeasured in SCB" into "measured by agency X" | indirect | shows similarity depends on definition | widens "infrastructure" beyond one institution | splits buildings from hours | removes a false "thin year" |
+| Question | Socialstyrelsen (A) | JobTech Taxonomy (B) | SCB regional (C) | Kolada extra KPIs (C, D) | bibstat opening hours (D) |
+|---|---|---|---|---|---|
+| 1 Research question | what Sweden measures, by agency | occupation key for standardisation | how the definition of similarity changes the map | independent outcomes; participation beyond libraries | does fewer service points mean less availability |
+| 2 Missing evidence | health statistics outside SCB | harmonised fields 2020–2023 | alternative features | outcomes not in the 12 inputs | open and staffless hours |
+| 3 Complements | yes, disjoint from SCB's database | required repair | yes | yes | directly |
+| 4 Public access | API probed | API verified | API verified | API verified | API verified |
+| 5 Licence | CC0 via secondary summary, UNVERIFIED | CC0 per repo, UNVERIFIED | CC0, verified | Kolada terms, verified | "free to use", CC0 not re-verified |
+| 6 Coverage | per database, not verified per table | versioned since 2021 | 290 municipalities, annual; DeSO/RegSO revised 2025 | annual, municipal | 2014–2025 per organisation |
+| 7 Join key | domain seed by subject | concept id, legacy AMS id, SSYK | 4-digit municipality code | SCB municipality code | sigel to municipality |
+| 8 Bias | each agency structures its catalogue differently | 2020–2023 labels sit outside it | survey noise in small municipalities | Kolada recomputes and carries values forward | self-reported |
+| 9 Cost | metadata only | trivial | small JSON | very low | near zero |
+| 10 Gap understanding | turns "unmeasured in SCB" into "measured by agency X" | indirect | shows similarity depends on definition | widens "infrastructure" beyond one institution | splits buildings from hours |
 
 ## Existing data first
 
 These questions need no new source:
 
 - A: measures per table from the 1,299 metadata files; keyword validation of domains from titles.
-- B: label crosswalk, complete-year endpoints, sub-lexicons, co-occurrence, SSYK-4 and employer
-  controls on the 2023–2026 corpus already in `warehouse/raw/jobtech/cluster-corpus/`.
-- C: geographic null, permutation test, sensitivity, 2020–2023 stability, and outcome comparison
-  with panel columns not used in clustering (`good_wellbeing_pct`, `low_trust_pct`,
-  `serious_mental_strain_pct`, `sick_pay_rate_1_days`) [AC].
-- D: zero and partial-sum handling, balanced panels, a 2019 baseline, intervals on ρ.
-- E: per-word marker rate, validation sample, relative horizon, party harmonisation, Swedish-only
-  DiVA abstracts.
+- B: co-occurrence, SSYK-4 and employer controls on the 2023–2026 corpus already in
+  `warehouse/raw/jobtech/cluster-corpus/`.
+- E: validation sample, relative horizon, party harmonisation.
+
+Done since 2026-10-20 (71761a09, 3c185c71): B's label crosswalk and complete-year endpoints,
+C's geographic null and sensitivity checks, D's zero and partial-sum handling and balanced
+panels, E's per-word marker rate and Swedish-only DiVA abstracts.
 
 ## Cost and maintenance
 
