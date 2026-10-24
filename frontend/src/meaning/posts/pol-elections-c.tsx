@@ -1,7 +1,7 @@
 /** Riksdag election results 1973 onward and the 2026 count. */
-import { Frame, tile, useData, type Post } from '../kit'
+import { Frame, useData, type Post } from '../kit'
 import { linearScale } from '../../charts/scales'
-import { pc } from './pol-kit'
+import { pc, signed } from './pol-kit'
 
 type NowParty = {
   party: string
@@ -27,7 +27,7 @@ function SeatSwing() {
           <svg
             viewBox="0 0 300 220"
             role="img"
-            aria-label="Change in seats at the 2026 election"
+            aria-label={`Change in seats at the ${n.election.year} election`}
           >
             <line
               x1={x(0)}
@@ -54,7 +54,7 @@ function SeatSwing() {
                     textAnchor={dv >= 0 ? 'end' : 'start'}
                     className="mean-pol-t"
                   >
-                    {p.party} {dv > 0 ? `+${dv}` : dv}
+                    {p.party} {signed(dv, 0)}
                   </text>
                 </g>
               )
@@ -66,42 +66,13 @@ function SeatSwing() {
   )
 }
 
-function Majority() {
-  return (
-    <Frame data={useNow()}>
-      {(n) => (
-        <div className="mean-pol-kpi">
-          {n.election.majority}
-          <small>seats</small>
-        </div>
-      )}
-    </Frame>
-  )
-}
-
-function SeatGrid() {
-  return (
-    <Frame data={useNow()}>
-      {(n) => (
-        <div className="mean-pol-grid4">
-          {n.election.parties.map((p) => (
-            <div
-              key={p.party}
-              className="mean-pol-cell"
-              style={tile(pc(p.party))}
-            >
-              {p.seats}
-              <small>{p.party} seats</small>
-            </div>
-          ))}
-        </div>
-      )}
-    </Frame>
-  )
-}
-
 export const posts: Post[] = [
-  { id: 'pol-majority', domain: 'politics', render: () => <Majority /> },
-  { id: 'pol-seat-swing', domain: 'politics', render: () => <SeatSwing /> },
-  { id: 'pol-seat-grid', domain: 'politics', render: () => <SeatGrid /> },
+  {
+    id: 'pol-seat-swing',
+    domain: 'politics',
+    sources: ['parliament/now.json'],
+    title: 'Seats won and lost at the latest Riksdag election',
+    note: 'Change in seats against the previous election. Source: Valmyndigheten.',
+    render: () => <SeatSwing />,
+  },
 ]

@@ -1,17 +1,10 @@
-/** Futures talk in the Riksdag and the size of what Sweden measures. */
+/** Future themes by party in the Riksdag, and what Sweden's statistics measure. */
 import { useState } from 'react'
-import { Frame, Slicer, color, useData, type Post } from '../kit'
-import {
-  Legend,
-  Svg,
-  XTicks,
-  arc,
-  extent,
-  fmt,
-  niceMax,
-  scale,
-} from './wel-kit'
+import { Frame, OTHER, Slicer, focal, useData, type Post } from '../kit'
+import { XAxis } from '../axes'
+import { Ranked, Svg, axis, fmt, maxOf, pct } from './wel-kit'
 
+/** party, theme, year, future-oriented speeches, of which use the theme. */
 type Parties = { rows: [string, string, number, number, number][] }
 
 type Themes = { themes: { id: string; label_en: string }[] }
@@ -22,12 +15,52 @@ type Summary = {
     label_en: string
     scb_tables: number
     kolada_kpis: number
-    geo: Record<'national' | 'county' | 'municipality' | 'subarea', number>
   }[]
-  totals: { catalogue: string; items: number }[]
 }
 
-function PartyHeat() {
+const PARTY: Record<string, string> = {
+  S: 'Social Democrats',
+  M: 'Moderates',
+  SD: 'Sweden Democrats',
+  C: 'Centre',
+  V: 'Left',
+  KD: 'Christian Democrats',
+  L: 'Liberals',
+  MP: 'Greens',
+  NYD: 'New Democracy',
+}
+
+/** Years pooled per party, so a share rests on enough speeches. */
+const SPAN = 4
+
+/** Fewest future-oriented speeches in the span for a party's share to be shown. */
+const MIN_SPEECHES = 100
+
+/** Per party with at least MIN_SPEECHES, the theme's share of its future-oriented speeches
+ * over the last SPAN years. */
+function shares(d: Parties, theme: string) {
+  const last = maxOf(d.rows.map((r) => r[2])) ?? 0
+  const from = last - SPAN + 1
+  const sum = new Map<string, [number, number]>()
+  for (const [p, t, y, all, used] of d.rows)
+    if (t === theme && y >= from) {
+      const s = sum.get(p) ?? [0, 0]
+      sum.set(p, [s[0] + all, s[1] + used])
+    }
+  return {
+    period: `${from}–${last}`,
+    rows: [...sum]
+      .filter(([, [all]]) => all >= MIN_SPEECHES)
+      .map(([p, [all, used]]) => ({
+        party: p,
+        share: (used / all) * 100,
+        n: all,
+      }))
+      .sort((a, b) => b.share - a.share),
+  }
+}
+
+function PartyDots() {
   const data = useData<Parties>('sweden/futures/parties.json')
   // The theme names come from trends.json, which the feed's other futures posts load anyway.
   const trends = useData<Themes>('sweden/futures/trends.json')
@@ -38,52 +71,72 @@ function PartyHeat() {
         <Frame data={data}>
           {(d) => {
             const names = new Map(t.themes.map((th) => [th.id, th.label_en]))
-            const themes = [...new Set(d.rows.map((r) => r[1]))]
-            const rows = d.rows.filter((r) => r[1] === theme && r[3] > 0)
-            const parties = [...new Set(d.rows.map((r) => r[0]))].sort()
-            const [y0, y1] = extent(d.rows.map((r) => r[2]))
-            const share = rows.map((r) => r[4] / r[3])
-            const max = Math.max(...share, 0.0001)
-            const cw = 740 / (y1 - y0 + 1)
-            const ch = 360 / parties.length
+            const { rows } = shares(d, theme)
+            const ax = axis(
+              rows.map((r) => r.share),
+              [130, 560],
+            )
+            const h = 190 / Math.max(1, rows.length)
             return (
               <>
                 <Slicer
                   label="Theme"
-                  options={themes}
+                  options={t.themes.map((th) => th.id)}
                   value={theme}
                   onChange={setTheme}
                   format={(k) => names.get(k) ?? k}
                 />
                 <Svg
-                  w={800}
-                  h={400}
-                  label="Share of each party's future speeches using a theme, by year"
+                  w={600}
+                  h={220}
+                  label={`Share of each party's future-oriented speeches that use the theme ${names.get(theme) ?? theme}, %`}
                 >
-                  {rows.map((r, i) => (
-                    <rect
-                      key={r[0] + r[2]}
-                      x={50 + (r[2] - y0) * cw}
-                      y={parties.indexOf(r[0]) * ch}
-                      width={cw - 1}
-                      height={ch - 1}
-                      rx={2}
-                      fill={`color-mix(in srgb, var(--cluster-apricot) ${Math.round((share[i] / max) * 100)}%, var(--wash))`}
-                    >
-                      <title>{`${r[0]} ${r[2]}: ${fmt(share[i] * 100)}%`}</title>
-                    </rect>
+                  {ax.ticks.map((v) => (
+                    <line
+                      key={v}
+                      className="mean-wel-base"
+                      x1={ax.y(v)}
+                      x2={ax.y(v)}
+                      y1={4}
+                      y2={196}
+                    />
                   ))}
-                  {parties.map((p, i) => (
-                    <text
-                      key={p}
-                      x={44}
-                      y={i * ch + ch / 2 + 3}
-                      textAnchor="end"
-                    >
-                      {p}
-                    </text>
-                  ))}
-                  <XTicks values={[y0, y1]} x={(i) => (i ? 770 : 70)} y={396} />
+                  {rows.map((r, i) => {
+                    const cy = 4 + i * h + h / 2
+                    return (
+                      <g key={r.party}>
+                        <text
+                          x={124}
+                          y={cy + 4}
+                          textAnchor="end"
+                          className="mean-wel-name"
+                        >
+                          {PARTY[r.party] ?? r.party}
+                        </text>
+                        <line
+                          className="mean-wel-base"
+                          x1={130}
+                          x2={ax.y(r.share)}
+                          y1={cy}
+                          y2={cy}
+                        />
+                        <circle
+                          cx={ax.y(r.share)}
+                          cy={cy}
+                          r={5}
+                          fill={i === 0 ? focal(true) : OTHER}
+                        />
+                        <text x={ax.y(r.share) + 9} y={cy + 4}>
+                          {pct(r.share, 0)}
+                        </text>
+                      </g>
+                    )
+                  })}
+                  <XAxis
+                    x={ax.y}
+                    y={214}
+                    ticks={ax.ticks.map((v) => ({ value: v, label: `${v}%` }))}
+                  />
                 </Svg>
               </>
             )
@@ -94,120 +147,24 @@ function PartyHeat() {
   )
 }
 
-function MeasuredBars() {
-  const data = useData<Summary>('sweden/measurement/summary.json')
-  return (
-    <Frame data={data}>
-      {(d) => {
-        const rows = [...d.domains].sort(
-          (a, b) =>
-            b.scb_tables + b.kolada_kpis - (a.scb_tables + a.kolada_kpis),
-        )
-        const top = niceMax(rows[0].scb_tables + rows[0].kolada_kpis)
-        const x = scale([0, top], [110, 392])
-        const h = 380 / rows.length
-        return (
-          <>
-            <Svg label="Statistics tables and municipal indicators per life domain">
-              {rows.map((r, i) => (
-                <g key={r.id}>
-                  <rect
-                    x={110}
-                    y={i * h}
-                    width={x(r.scb_tables) - 110}
-                    height={h - 3}
-                    fill={color(0)}
-                  />
-                  <rect
-                    x={x(r.scb_tables)}
-                    y={i * h}
-                    width={x(r.kolada_kpis) - 110}
-                    height={h - 3}
-                    fill={color(1)}
-                  />
-                  <text x={106} y={i * h + h / 2 + 2} textAnchor="end">
-                    {r.label_en.slice(0, 18)}
-                  </text>
-                </g>
-              ))}
-              <XTicks
-                values={[0, fmt(top)]}
-                x={(i) => (i ? 380 : 114)}
-                y={396}
-              />
-            </Svg>
-            <Legend items={['SCB tables', 'Kolada KPIs']} />
-          </>
-        )
-      }}
-    </Frame>
-  )
-}
+/** The life domains, without the bucket for items outside them. */
+const domains = (d: Summary) => d.domains.filter((r) => r.id !== 'other')
+const count = (r: Summary['domains'][number]) => r.scb_tables + r.kolada_kpis
 
-function GeoSunburst() {
-  const data = useData<Summary>('sweden/measurement/summary.json')
+function MeasuredBars() {
   return (
-    <Frame data={data}>
-      {(d) => {
-        const levels = [
-          'national',
-          'county',
-          'municipality',
-          'subarea',
-        ] as const
-        const rows = d.domains.filter((r) => levels.some((l) => r.geo[l] > 0))
-        const total = rows.reduce(
-          (s, r) => s + levels.reduce((t, l) => t + r.geo[l], 0),
-          0,
-        )
-        let a = 0
-        return (
-          <>
-            <Svg label="Sunburst: statistics tables by domain, then by geographic level">
-              {rows.map((r, i) => {
-                const n = levels.reduce((t, l) => t + r.geo[l], 0)
-                const a0 = a
-                a += (n / total) * 2 * Math.PI
-                let b = a0
-                return (
-                  <g key={r.id}>
-                    <path
-                      d={arc(200, 200, 60, 120, a0, a)}
-                      fill={color(i)}
-                      stroke="var(--paper)"
-                    >
-                      <title>{`${r.label_en}: ${n}`}</title>
-                    </path>
-                    {levels.map((l, j) => {
-                      const b0 = b
-                      b += (r.geo[l] / total) * 2 * Math.PI
-                      return r.geo[l] ? (
-                        <path
-                          key={l}
-                          d={arc(200, 200, 124, 190, b0, b)}
-                          fill={color(i)}
-                          opacity={1 - j * 0.22}
-                          stroke="var(--paper)"
-                          strokeWidth={0.5}
-                        />
-                      ) : null
-                    })}
-                  </g>
-                )
-              })}
-              <text
-                x={200}
-                y={208}
-                textAnchor="middle"
-                style={{ fontSize: 28, fill: 'var(--ink)' }}
-              >
-                {fmt(d.totals.reduce((s, t) => s + t.items, 0))}
-              </text>
-            </Svg>
-            <Legend items={[...levels]} />
-          </>
-        )
-      }}
+    <Frame data={useData<Summary>('sweden/measurement/summary.json')}>
+      {(d) => (
+        <Ranked
+          label="SCB statistics tables plus Kolada municipal indicators, counted together, per life domain"
+          format={(v) => fmt(v, 0)}
+          rows={domains(d).map((r) => ({
+            key: r.id,
+            label: r.label_en,
+            value: count(r),
+          }))}
+        />
+      )}
     </Frame>
   )
 }
@@ -216,13 +173,29 @@ export const posts: Post[] = [
   {
     id: 'wel-future-parties',
     domain: 'sweden',
+    sources: ['sweden/futures/parties.json', 'sweden/futures/trends.json'],
     size: 'wide',
-    render: () => <PartyHeat />,
+    title: (d: Parties) => {
+      const { period, rows } = shares(d, 'environment')
+      return rows[0]
+        ? `Environmental themes took the largest share of future speeches for the ${PARTY[rows[0].party] ?? rows[0].party}, ${period}`
+        : 'Future themes by party'
+    },
+    note: "Share of each party's future-oriented speeches that use the theme; parties with 100 or more such speeches. Source: Riksdagen",
+    render: () => <PartyDots />,
   },
-  { id: 'wel-measured-bars', domain: 'sweden', render: () => <MeasuredBars /> },
   {
-    id: 'wel-measured-sunburst',
+    id: 'wel-measured-bars',
     domain: 'sweden',
-    render: () => <GeoSunburst />,
+    sources: ['sweden/measurement/summary.json'],
+    title: (d: Summary) => {
+      const ds = domains(d)
+      const top = [...ds].sort((a, b) => count(b) - count(a))[0]
+      return top
+        ? `${top.label_en} has the most statistics tables and indicators of the ${ds.length} life domains`
+        : 'What Sweden measures'
+    },
+    note: 'SCB statistics tables plus Kolada municipal indicators, counted together; items outside the domains left out. Sources: SCB, Kolada',
+    render: () => <MeasuredBars />,
   },
 ]

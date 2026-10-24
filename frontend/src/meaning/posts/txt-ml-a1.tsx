@@ -1,153 +1,92 @@
-/** Embedding maps and the philosophy atlas: scatters, bubbles, box plots, slopes and stacks. */
+/** The philosophy atlas: passages on an embedding map, one work in the accent. */
 import { useState } from 'react'
-import { Frame, Slicer, color, useData, type Post } from '../kit'
+import { Frame, OTHER, PALETTE, Slicer, useData, type Post } from '../kit'
 import { linearScale } from '../../charts/scales'
-import { Kpi, Legend, Svg, fmt, palette, uniq } from './txt-kit'
+import { Svg, uniq, usable } from './txt-kit'
 
-type Topics = {
-  observations: number
-  points: [string, number, number, number, string][]
-}
 type Atlas = Record<string, [string, number, number, number, number][]>
+const ATLAS = 'philosophy/atlas.json'
+const VARIANTS = ['baseline', 'author_centered'] as const
+const MAP_NAME = {
+  baseline: 'As embedded',
+  author_centered: 'Author style removed',
+}
+const d = 'ml'
 const extent = (xs: number[]) =>
   [Math.min(...xs), Math.max(...xs)] as [number, number]
-const noise = 'var(--cluster-noise)'
-function Scatter({
-  pts,
-  label,
-  fill,
-}: {
-  pts: [number, number, string, string][]
-  label: string
-  fill: (i: number) => string
-}) {
-  const x = linearScale(extent(pts.map((p) => p[0])), [6, 394])
-  const y = linearScale(extent(pts.map((p) => p[1])), [394, 6])
-  return (
-    <Svg w={400} h={400} label={label}>
-      {pts.map((p, i) => (
-        <circle
-          key={i}
-          cx={x(p[0])}
-          cy={y(p[1])}
-          r={p[3] === noise ? 1.2 : 2}
-          fill={fill(i)}
-          fillOpacity={p[3] === noise ? 0.5 : 0.8}
-        >
-          <title>{p[2]}</title>
-        </circle>
-      ))}
-    </Svg>
-  )
-}
-const CORPORA = ['debate', 'philosophy', 'municipalities'] as const
-const VARIANTS = ['baseline', 'author_centered'] as const
-const HUES = ['cluster', 'work'] as const
-const d = 'ml'
+const workOf = (id: string) => id.split(':')[0]
 
-function TopicMap() {
-  const [corpus, setCorpus] = useState<(typeof CORPORA)[number]>('debate')
-  const data = useData<Topics>(
-    `cluster-research/${corpus === 'municipalities' ? corpus : `${corpus}-topics`}.json`,
-  )
-  return (
-    <>
-      <Slicer
-        label="Corpus"
-        cycles={false}
-        options={CORPORA}
-        value={corpus}
-        onChange={setCorpus}
-      />
-      <Frame data={data}>
-        {(d) => {
-          const pts = d.points.map(
-            (p) =>
-              [p[1], p[2], p[4], p[3] < 0 ? noise : color(p[3])] as [
-                number,
-                number,
-                string,
-                string,
-              ],
-          )
-          return (
-            <Scatter
-              pts={pts}
-              label={`Embedding map of the ${corpus} corpus, coloured by cluster`}
-              fill={(i) => pts[i][3]}
-            />
-          )
-        }}
-      </Frame>
-    </>
-  )
-}
 function PhilAtlas() {
-  const data = useData<Atlas>('philosophy/atlas.json')
   const [variant, setVariant] = useState<(typeof VARIANTS)[number]>('baseline')
-  const [hue, setHue] = useState<(typeof HUES)[number]>('work')
+  const [work, setWork] = useState('')
+  // A map missing from the file is a failure, not an empty chart.
+  const data = usable(useData<Atlas>(ATLAS), ATLAS, (a) => a[variant]?.length)
   return (
     <Frame data={data}>
-      {(d) => {
-        const rows = d[variant] ?? []
-        const works = palette(uniq(rows.map((r) => r[0].split(':')[0])))
-        const pts = rows.map(
-          (r) =>
-            [
-              r[2],
-              r[3],
-              r[0],
-              hue === 'work'
-                ? works.get(r[0].split(':')[0])!
-                : r[4] < 0
-                  ? noise
-                  : color(r[4]),
-            ] as [number, number, string, string],
+      {(atlas) => {
+        const rows = atlas[variant]
+        const works = uniq(rows.map((r) => workOf(r[0])))
+        const pick = works.includes(work) ? work : works[0]
+        // The focal work's dots are drawn last, so they sit on top.
+        const order = [...rows].sort(
+          (a, b) => +(workOf(a[0]) === pick) - +(workOf(b[0]) === pick),
         )
+        const x = linearScale(extent(rows.map((r) => r[2])), [6, 394])
+        const y = linearScale(extent(rows.map((r) => r[3])), [394, 6])
         return (
           <>
             <Slicer
               label="Map"
               cycles={false}
               options={VARIANTS}
+              format={(v) => MAP_NAME[v]}
               value={variant}
               onChange={setVariant}
             />
             <Slicer
-              label="Colour"
+              label="Work"
               cycles={false}
-              options={HUES}
-              value={hue}
-              onChange={setHue}
+              options={works}
+              value={pick}
+              onChange={setWork}
             />
-            <Scatter
-              pts={pts}
-              label="Philosophy passages on an embedding map"
-              fill={(i) => pts[i][3]}
-            />
-            {hue === 'work' && <Legend items={[...works]} />}
+            <p className="mean-cap">{`${pick.replace(/-/g, ' ')} · ${MAP_NAME[variant].toLowerCase()}`}</p>
+            <Svg
+              w={400}
+              h={400}
+              label={`Philosophy passages on an embedding map, ${pick} highlighted`}
+            >
+              {order.map((r) => {
+                const on = workOf(r[0]) === pick
+                return (
+                  <circle
+                    key={r[0]}
+                    cx={x(r[2])}
+                    cy={y(r[3])}
+                    r={on ? 2.4 : 1.8}
+                    fill={on ? PALETTE[0] : OTHER}
+                    fillOpacity={on ? 0.9 : 0.45}
+                  >
+                    <title>{r[0]}</title>
+                  </circle>
+                )
+              })}
+            </Svg>
           </>
         )
       }}
     </Frame>
   )
 }
-function Observations() {
-  const data = useData<Topics>('cluster-research/debate-topics.json')
-  return (
-    <Frame data={data}>
-      {(d) => <Kpi value={fmt(d.observations)} unit="speech segments" />}
-    </Frame>
-  )
-}
 
 export const posts: Post[] = [
-  { id: 'txt-ml-topic-map', domain: d, render: () => <TopicMap /> },
   {
     id: 'txt-ml-phil-atlas',
     domain: d,
+    sources: ['philosophy/atlas.json'],
     size: 'tall',
+    title: 'Philosophy passages placed by text similarity, one work in colour',
+    note: 'Each dot is a passage; passages with similar text embeddings sit close (UMAP, two dimensions)',
     render: () => <PhilAtlas />,
   },
-  { id: 'txt-ml-observations', domain: d, render: () => <Observations /> },
 ]

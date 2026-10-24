@@ -1,0 +1,162 @@
+/* Tables, the method and owner sections (the How it works tab), and the narrow-screen layout.
+   Loaded last, so its media queries override the rules of the other two files. */
+.ja-table-wrap {
+  overflow-x: auto;
+}
+.ja-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--type-label);
+}
+.ja-table caption {
+  padding-bottom: var(--sp-2);
+  text-align: start;
+}
+.ja-table th,
+.ja-table td {
+  padding: var(--sp-2) var(--sp-3) var(--sp-2) 0;
+  border-bottom: 1px solid var(--color-border);
+  text-align: start;
+  vertical-align: top;
+}
+.ja-table thead th {
+  color: var(--color-ink-secondary);
+  font-size: var(--type-caption);
+  font-weight: var(--weight-ui);
+}
+.ja-table tbody th {
+  font-weight: var(--weight-ui);
+  white-space: nowrap;
+}
+.ja-table tbody th span {
+  display: block;
+  color: var(--color-ink-secondary);
+  font-size: var(--type-caption);
+  font-weight: var(--weight-body);
+}
+.ja-table q {
+  display: block;
+  color: var(--color-ink-secondary);
+}
+.ja-table strong {
+  font-weight: var(--weight-ui);
+}
+.ja-table tr[data-gap='true'] strong,
+.ja-demand tr[data-gap='true'] td:last-child {
+  color: var(--color-ink-secondary);
+  font-style: italic;
+}
+.ja-table tbody tr:last-child > * {
+  border-bottom: 0;
+}
+.ja-table .num {
+  text-align: end;
+}
+
+.ja-sections {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-6) var(--sp-6);
+  margin-top: var(--sp-5);
+}
+.ja-sections h2 {
+  margin: 0 0 var(--sp-3);
+  font-size: var(--type-chart-title);
+  font-weight: var(--weight-heading);
+}
+.ja-sections p,
+.ja-steps {
+  max-width: var(--measure);
+}
+.ja-steps {
+  margin: 0;
+  padding-inline-start: 1.2rem;
+}
+.ja-steps li + li {
+  margin-top: var(--sp-2);
+}
+.ja-owner {
+  grid-column: 1 / -1;
+  padding-top: var(--sp-4);
+  border-top: 1px solid var(--color-border);
+}
+.ja-owner summary {
+  min-height: 44px;
+  font-weight: var(--weight-ui);
+  cursor: pointer;
+}
+.ja-owner-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: var(--sp-3);
+  margin: var(--sp-3) 0;
+}
+
+.ja ::selection {
+  background: var(--color-panel);
+  color: var(--color-ink);
+}
+
+@media (pointer: coarse) {
+  .ja-find select,
+  .ja-results-head select,
+  .ja-chip,
+  .ja-clear,
+  .ja-segment button {
+    min-height: 44px;
+  }
+}
+/* Under 760 px the open ad replaces the list, with a back button; the list keeps the page scroll. */
+@media (max-width: 760px) {
+  .ja-work,
+  .ja-sections {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .ja-list-pane,
+  .ja-detail {
+    position: static;
+    max-height: none;
+    overflow: visible;
+  }
+  .ja-work[data-open='true'] .ja-list-pane,
+  .ja-work[data-open='false'] .ja-detail {
+    display: none;
+  }
+  .ja-back {
+    display: inline-flex;
+  }
+  .ja:has(.ja-work[data-open='true']) .ja-find {
+    display: none;
+  }
+  .ja-filters label:first-child {
+    flex-basis: 100%;
+  }
+  .ja-find select,
+  .ja-results-head select,
+  .ja-segment button {
+    min-height: 44px;
+  }
+  .ja-filters label {
+    flex-basis: calc(50% - var(--sp-3));
+    max-width: none;
+  }
+  .ja-stats > div {
+    flex: 1 1 40%;
+    padding-inline: 0;
+    border-inline-start: 0;
+  }
+  .ja-board {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+/* On a phone no ad is open until one is tapped, so the first card is not marked as open. */
+@media (max-width: 760px) {
+  .ja-work[data-open='false'] .ja-card[aria-current='true'] {
+    border-color: var(--color-border);
+    background: none;
+  }
+  .ja-work[data-open='false'] .ja-card[aria-current='true'] .ja-card-title {
+    text-decoration: none;
+  }
+}

@@ -1,0 +1,157 @@
+/* The board around the work area: the status line, the tabs, search, filters and chips.
+   Loaded after job-assistant.css. */
+.ja-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3) 0;
+  margin: var(--sp-4) 0 0;
+  padding-block: var(--sp-2);
+  border-block: 1px solid var(--color-border);
+}
+.ja-stats > div {
+  padding-inline: var(--sp-5);
+  border-inline-start: 1px solid var(--color-border);
+}
+.ja-stats > div:first-child {
+  padding-inline-start: 0;
+  border-inline-start: 0;
+}
+.ja-stats dt {
+  color: var(--color-ink-secondary);
+  font-size: var(--type-caption);
+}
+.ja-stats dd {
+  margin: 0;
+  font-size: var(--type-chart-title);
+  font-weight: var(--weight-ui);
+  font-variant-numeric: tabular-nums;
+}
+.ja-stats small {
+  color: var(--color-ink-secondary);
+  font-size: var(--type-caption);
+  font-weight: var(--weight-body);
+}
+.ja-stats.ja-skel {
+  min-height: 4.25rem;
+}
+.ja-stale {
+  margin: var(--sp-3) 0 0;
+  padding: var(--sp-2) var(--sp-3);
+  border: 1px solid var(--color-border-control);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  font-size: var(--type-label);
+}
+
+/* Tabs: a selected text filter is weight and an underline (docs/design-system.md). */
+.ja-tabs {
+  display: flex;
+  gap: var(--sp-5);
+  margin: var(--sp-3) 0 0;
+  border-bottom: 1px solid var(--color-border);
+}
+.ja-tabs button {
+  min-height: 44px;
+  margin-bottom: -1px;
+  padding: 0;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: none;
+  color: var(--color-ink-secondary);
+  font: inherit;
+  font-weight: var(--weight-ui);
+  cursor: pointer;
+}
+.ja-tabs button:hover {
+  color: var(--color-ink);
+}
+.ja-tabs button[aria-pressed='true'] {
+  border-bottom-color: var(--color-ink);
+  color: var(--color-ink);
+  font-weight: var(--weight-heading);
+}
+
+.ja-find {
+  display: grid;
+  gap: var(--sp-3);
+  margin: var(--sp-4) 0 var(--sp-3);
+}
+.ja-find label {
+  display: grid;
+  gap: var(--sp-1);
+  color: var(--color-ink-secondary);
+  font-size: var(--type-caption);
+}
+.ja-q input {
+  min-height: 48px;
+  padding-inline: var(--sp-3);
+  border: 1px solid var(--color-border-control);
+  border-radius: var(--radius);
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  font: inherit;
+  font-size: var(--type-body);
+}
+.ja-q input::placeholder {
+  color: var(--color-ink-secondary);
+}
+.ja-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+}
+.ja-filters label {
+  flex: 1 1 9.5rem;
+  max-width: 15rem;
+}
+.ja-find select,
+.ja-results-head select {
+  min-height: 40px;
+  padding-inline: var(--sp-2);
+  color: var(--color-ink);
+  font-size: var(--type-label);
+}
+.ja-filters label[data-active] {
+  color: var(--color-ink);
+  font-weight: var(--weight-ui);
+}
+.ja-filters label[data-active] select {
+  border-color: var(--color-ink);
+  font-weight: var(--weight-ui);
+}
+.ja-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ja-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-height: 32px;
+  padding: 0 var(--sp-2) 0 var(--sp-3);
+  border: 1px solid var(--color-border-control);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font: inherit;
+  font-size: var(--type-label);
+  cursor: pointer;
+}
+.ja-chip:hover {
+  background: var(--color-panel);
+}
+.ja-clear {
+  min-height: 32px;
+  font-size: var(--type-label);
+}
+/* The / shortcut does nothing without a keyboard. */
+@media (hover: none) {
+  .ja-q kbd {
+    display: none;
+  }
+}

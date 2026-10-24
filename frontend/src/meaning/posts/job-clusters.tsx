@@ -1,18 +1,18 @@
 /** Jobs: the tech-ad clustering run, from cluster-summary.json and cluster-preview.json. */
 import { useState } from 'react'
-import { color, Frame, Slicer, useData, type Post } from '../kit'
+import { focal, Frame, OTHER, Slicer, useData, type Post } from '../kit'
 import { linearScale } from '../../charts/scales'
 import {
-  arc,
+  Bars,
   CLUSTERS,
   D,
   fmt,
-  Legend,
+  maxOf,
+  minOf,
   pct,
   PREVIEW,
   sum,
   Svg,
-  XLabels,
 } from './job-kit'
 
 type Share = { label: string; count: number; share: number }
@@ -30,154 +30,126 @@ type Summary = {
   source_size: number
   candidate_count: number
   unique_text_count: number
-  diagnostics: {
-    cluster_count: number
-    noise_share: number
-    silhouette: number
-    trustworthiness: number
-    feature_trustworthiness: number
-    mean_cluster_probability: number
-  }
   clusters: Cluster[]
 }
 type Preview = {
   points: { id: string; x: number; y: number; cluster: number }[]
 }
 
-const NOISE = 'var(--cluster-noise)'
-const cc = (id: number) => (id < 0 ? NOISE : color(id))
+/** Two clusters share a label, so the number keeps them apart. */
 const name = (c: Cluster) => `#${c.cluster_id} ${c.cluster_label}`
 const real = (s: Summary) => s.clusters.filter((c) => c.cluster_id >= 0)
+/** Clusters by size, largest first. */
+const bySize = (s: Summary) =>
+  [...real(s)].sort((a, b) => b.job_count - a.job_count)
+/** Senior minus junior share: above zero, the cluster's ads ask for seniors more often. */
+const tilt = (c: Cluster) => c.senior_share - c.junior_share
 
 function Scatter() {
   const data = useData<Preview>(PREVIEW)
   const meta = useData<Summary>(CLUSTERS)
-  const [pick, setPick] = useState('all')
+  const [pick, setPick] = useState<number | null>(null)
   return (
     <Frame data={data}>
-      {(p) => {
-        const xs = p.points.map((q) => q.x),
-          ys = p.points.map((q) => q.y)
-        const x = linearScale([Math.min(...xs), Math.max(...xs)], [10, 790])
-        const y = linearScale([Math.min(...ys), Math.max(...ys)], [370, 10])
-        const ids = [...new Set(p.points.map((q) => q.cluster))].sort(
-          (a, b) => a - b,
-        )
-        const label = (id: number) =>
-          meta && !(meta instanceof Error)
-            ? (meta.clusters.find((c) => c.cluster_id === id)?.cluster_label ??
-              `#${id}`)
-            : `#${id}`
-        return (
-          <>
-            <Slicer
-              label="Cluster"
-              options={['all', ...ids.map((i) => `#${i}`)]}
-              format={(v) =>
-                v === 'all' ? 'All clusters' : `Cluster ${v.slice(1)}`
-              }
-              value={pick}
-              onChange={setPick}
-            />
-            <Svg
-              w={800}
-              h={380}
-              label="Map of 1,500 tech ads coloured by cluster"
-            >
-              {p.points.map((q) => (
-                <circle
-                  key={q.id}
-                  cx={x(q.x)}
-                  cy={y(q.y)}
-                  r={3.2}
-                  fill={cc(q.cluster)}
-                  opacity={
-                    pick === 'all' || pick === `#${q.cluster}` ? 0.85 : 0.08
-                  }
+      {(p) => (
+        <Frame data={meta}>
+          {(s) => {
+            const order = bySize(s)
+            const on = pick ?? order[0]?.cluster_id
+            if (on == null || !p.points.length) return null
+            const W = 600,
+              H = 240
+            const xs = p.points.map((q) => q.x),
+              ys = p.points.map((q) => q.y)
+            const x = linearScale([minOf(xs), maxOf(xs)], [8, W - 8])
+            const y = linearScale([minOf(ys), maxOf(ys)], [H - 8, 8])
+            const mine = p.points.filter((q) => q.cluster === on)
+            const n = mine.length || 1
+            const cx = sum(mine.map((q) => x(q.x))) / n
+            const cy = sum(mine.map((q) => y(q.y))) / n
+            const picked = order.find((c) => c.cluster_id === on)
+            return (
+              <>
+                <Slicer
+                  label="Cluster"
+                  options={order.map((c) => c.cluster_id)}
+                  format={(id) => {
+                    const c = order.find((k) => k.cluster_id === id)
+                    return c ? name(c) : `#${id}`
+                  }}
+                  value={on}
+                  onChange={setPick}
                 />
-              ))}
-            </Svg>
-            <Legend items={ids.map((i) => [`#${i} ${label(i)}`, cc(i)])} />
-          </>
-        )
-      }}
+                {picked && <p className="mean-cap">{name(picked)}</p>}
+                <Svg
+                  w={W}
+                  h={H}
+                  label={`Map of ${fmt(p.points.length)} tech ads, ${picked ? name(picked) : ''} highlighted`}
+                >
+                  {/* Grey points first, the picked cluster on top. */}
+                  {[false, true].map((top) =>
+                    p.points
+                      .filter((q) => (q.cluster === on) === top)
+                      .map((q) => (
+                        <circle
+                          key={q.id}
+                          cx={x(q.x)}
+                          cy={y(q.y)}
+                          r={2.4}
+                          fill={focal(top)}
+                          opacity={top ? 0.9 : 0.5}
+                        />
+                      )),
+                  )}
+                  {picked && (
+                    <text
+                      className="mean-job-v"
+                      x={Math.min(W - 70, Math.max(70, cx))}
+                      y={cy + 4}
+                      textAnchor="middle"
+                      stroke="var(--paper)"
+                      strokeWidth={3}
+                      paintOrder="stroke"
+                    >
+                      {name(picked)}
+                    </text>
+                  )}
+                </Svg>
+              </>
+            )
+          }}
+        </Frame>
+      )}
     </Frame>
   )
 }
 
-function Sunburst() {
+function Sizes() {
   const data = useData<Summary>(CLUSTERS)
   return (
     <Frame data={data}>
       {(s) => {
-        const total = sum(s.clusters.map((c) => c.job_count))
-        const roles = [
-          ...new Set(
-            s.clusters.flatMap((c) => c.role_distribution.map((r) => r.label)),
-          ),
-        ]
-        let a = 0
-        const segs = s.clusters.map((c) => {
-          const a0 = a
-          a += (c.job_count / total) * 2 * Math.PI
-          let b = a0
-          const kids = c.role_distribution.map((r) => {
-            const b0 = b
-            b += r.share * (a - a0)
-            return { r, b0, b1: b }
+        const noise = s.clusters.find((c) => c.cluster_id < 0)
+        const rows = bySize(s).map((c, j) => ({
+          key: String(c.cluster_id),
+          label: name(c),
+          value: c.job_count,
+          color: focal(j === 0),
+        }))
+        if (noise)
+          rows.push({
+            key: 'noise',
+            label: 'Unassigned',
+            value: noise.job_count,
+            color: OTHER,
           })
-          return { c, a0, a1: a, kids }
-        })
         return (
-          <>
-            <Svg
-              w={400}
-              h={400}
-              label="Sunburst of clusters and the roles inside them"
-            >
-              {segs.map(({ c, a0, a1, kids }) => (
-                <g key={c.cluster_id}>
-                  <path
-                    d={arc(200, 200, 60, 128, a0, a1 - 0.006)}
-                    fill={cc(c.cluster_id)}
-                  >
-                    <title>{`${name(c)}: ${fmt(c.job_count)} ads`}</title>
-                  </path>
-                  {kids.map(({ r, b0, b1 }) => (
-                    <path
-                      key={r.label}
-                      d={arc(
-                        200,
-                        200,
-                        132,
-                        190,
-                        b0,
-                        Math.max(b0 + 0.001, b1 - 0.004),
-                      )}
-                      fill={`color-mix(in srgb, ${color(roles.indexOf(r.label) + 1)} 85%, var(--ink))`}
-                    >
-                      <title>{`${name(c)}, ${r.label}: ${pct(r.share, 1)}`}</title>
-                    </path>
-                  ))}
-                </g>
-              ))}
-              <text
-                x={200}
-                y={206}
-                textAnchor="middle"
-                fontSize={20}
-                fontWeight={700}
-              >
-                {fmt(total)}
-              </text>
-            </Svg>
-            <Legend
-              items={roles.map((r, i) => [
-                r,
-                `color-mix(in srgb, ${color(i + 1)} 85%, var(--ink))`,
-              ])}
-            />
-          </>
+          <Bars
+            n={11}
+            label="Tech job ads per cluster"
+            format={fmt}
+            rows={rows}
+          />
         )
       }}
     </Frame>
@@ -188,71 +160,62 @@ function Seniority() {
   const data = useData<Summary>(CLUSTERS)
   return (
     <Frame data={data}>
-      {(s) => {
-        const cs = real(s).sort((a, b) => b.senior_share - a.senior_share)
-        const lim = Math.max(
-          ...cs.flatMap((c) => [c.junior_share, c.senior_share]),
-        )
-        const x = linearScale([-lim, lim], [10, 390])
-        const rowH = 34
-        return (
-          <>
-            <Svg
-              w={400}
-              h={cs.length * rowH + 24}
-              label="Junior and senior shares per cluster"
-            >
-              {cs.map((c, j) => (
-                <g key={c.cluster_id}>
-                  <title>{`${name(c)}: junior ${pct(c.junior_share, 1)}, senior ${pct(c.senior_share, 1)}`}</title>
-                  <rect
-                    x={x(-c.junior_share)}
-                    y={j * rowH + 4}
-                    width={x(0) - x(-c.junior_share)}
-                    height={rowH - 8}
-                    rx={4}
-                    fill={color(4)}
-                  />
-                  <rect
-                    x={x(0)}
-                    y={j * rowH + 4}
-                    width={x(c.senior_share) - x(0)}
-                    height={rowH - 8}
-                    rx={4}
-                    fill={color(0)}
-                  />
-                  <circle
-                    cx={x(0)}
-                    cy={j * rowH + rowH / 2}
-                    r={5}
-                    fill={cc(c.cluster_id)}
-                    stroke="var(--paper)"
-                  />
-                </g>
-              ))}
-              <XLabels
-                y={cs.length * rowH + 16}
-                items={[-lim, 0, lim].map((v) => ({
-                  x: x(v),
-                  label: pct(Math.abs(v)),
-                }))}
-              />
-            </Svg>
-            <Legend
-              items={[
-                ['junior', color(4)],
-                ['senior', color(0)],
-              ]}
-            />
-          </>
-        )
-      }}
+      {(s) => (
+        <Bars
+          n={11}
+          label="Senior share minus junior share of ads per cluster"
+          format={(v) =>
+            `${v > 0 ? '+' : v < 0 ? '−' : ''}${Math.abs(Math.round(v * 100))} pt`
+          }
+          rows={real(s)
+            .sort((a, b) => tilt(b) - tilt(a))
+            .map((c) => ({
+              key: String(c.cluster_id),
+              label: name(c),
+              value: tilt(c),
+              color: focal(tilt(c) < 0),
+            }))}
+        />
+      )}
     </Frame>
   )
 }
 
 export const posts: Post[] = [
-  { id: 'job-cluster-map', domain: D, size: 'wide', render: () => <Scatter /> },
-  { id: 'job-cluster-sunburst', domain: D, render: () => <Sunburst /> },
-  { id: 'job-cluster-seniority', domain: D, render: () => <Seniority /> },
+  {
+    id: 'job-cluster-map',
+    domain: D,
+    sources: ['jobs/cluster-preview.json', 'jobs/cluster-summary.json'],
+    size: 'wide',
+    title: 'Tech job ads placed by how alike their texts read',
+    note: 'A sample of ads projected to two dimensions (UMAP), so the axes have no unit; one cluster highlighted at a time',
+    render: () => <Scatter />,
+  },
+  {
+    id: 'job-cluster-sunburst',
+    domain: D,
+    sources: ['jobs/cluster-summary.json'],
+    title: (s: Summary) => {
+      const c = bySize(s)[0]
+      return c && s.source_size
+        ? `The largest cluster, ${c.cluster_label}, holds ${pct(c.job_count / s.source_size)} of the tech ads`
+        : 'Tech job ads per cluster'
+    },
+    note: 'Ads per cluster; unassigned ads fit no cluster',
+    render: () => <Sizes />,
+  },
+  {
+    id: 'job-cluster-seniority',
+    domain: D,
+    sources: ['jobs/cluster-summary.json'],
+    title: (s: Summary) => {
+      const cs = real(s)
+      const n = cs.filter((c) => tilt(c) > 0).length
+      return cs.length
+        ? `In ${n} of ${cs.length} clusters, a larger share of ads ask for seniors than for juniors`
+        : 'Senior and junior shares of ads per cluster'
+    },
+    note: "Senior share minus junior share of each cluster's ads, in percentage points",
+    render: () => <Seniority />,
+  },
 ]

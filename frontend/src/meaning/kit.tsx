@@ -26,10 +26,18 @@ export type Post = {
   id: string
   /** The data family: picks the pipeline subject whose freshness the card shows. */
   domain: string
+  /** Every published data path the post reads, for its trace panel. A unit test holds each
+   * file's `useData` paths to these (feed-sources.test.ts). */
+  sources: readonly string[]
   /** 'wide' spans two feed columns on large screens. */
   size?: 'square' | 'wide' | 'tall'
   /** Readable name for the card's open and close buttons; defaults to the id read as words. */
   label?: string
+  /** Visible heading above the chart, also in the thumbnail: a modest, checkable finding or
+   * the plain topic. A function gets the post's first source once it has loaded. */
+  title?: string | ((d: never) => string)
+  /** One muted line under the title: unit, period or source. */
+  note?: string
   render: () => ReactNode
 }
 
@@ -49,6 +57,11 @@ export const PALETTE = [
 export const SEQ = ['var(--mean-seq-lo)', 'var(--mean-seq-hi)'] as const
 export const seq = (t: number) =>
   `color-mix(in oklab, ${SEQ[1]} ${Math.round(Math.max(0, Math.min(1, t)) * 100)}%, ${SEQ[0]})`
+/** The fill for a number written on a `seq(t)` cell: near-black on a light cell, near-white on
+ * a dark one, read from the cell's own lightness, so it holds in either theme. */
+export const cellInk = (t: number) => ({
+  fill: `oklch(from ${seq(t)} clamp(0.2, (0.6 - l) * 1000, 0.97) 0 0)`,
+})
 export const color = (i: number) => PALETTE[i % PALETTE.length]
 /** Grey for every mark but the focal one: for more categories than the palette can tell apart. */
 export const OTHER = 'var(--mean-other)'
@@ -120,8 +133,9 @@ export const PostLive = createContext(false)
 /** Takes the card out of the feed: its data expired or failed to load. */
 export const PostLeave = createContext<() => void>(() => {})
 
-/** Thumbnails step their slicer twice a second; the marks glide between steps in CSS. */
-const TICK_MS = 500
+/** Thumbnails step their slicer every 2.5 s, slow enough to read each step; the marks glide
+ * between steps in CSS. */
+const TICK_MS = 2500
 
 export const still =
   typeof matchMedia === 'function' &&
@@ -133,15 +147,15 @@ const SEAM_HOLD = 2
 /**
  * A row of toggle chips. The labels are legend text, so they count as legend. In a thumbnail
  * the chips are hidden and the slicer steps through its options by itself, so the feed moves;
- * the current option shows as a small label in the card's corner. `cycles={false}` holds the
- * first option in the thumbnail, for options that are not comparable steps on one axis.
+ * the current option shows as a small label in the card's corner. Only ordered steps on one
+ * axis (years, sessions, rounds) pass `cycles`; categorical options hold the first one.
  */
 export function Slicer<T extends string | number>({
   options,
   value,
   onChange,
   label,
-  cycles = true,
+  cycles = false,
   format = String,
 }: {
   options: readonly T[]
