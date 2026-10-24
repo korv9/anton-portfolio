@@ -1,138 +1,131 @@
-/** Symbolic atlas, concept layer and the Workers AI eval: radial bars, treemap, parallel axes, gauges. */
-import { useState } from 'react'
-import { Frame, Slicer, color, tile, useData, type Post } from '../kit'
-import { Legend, Svg, arc, fmt, pct } from './txt-kit'
+/** The Workers AI evaluation: quote check and retrieval recall per model setup. */
+import { Frame, OTHER, PALETTE, useData, type Post } from '../kit'
+import { linearScale } from '../../charts/scales'
+import { Svg, XGrid, heading, pct, usable } from './txt-kit'
 
-type SymSummary = {
-  document_count: number
-  occurrence_count: number
-  point_count: number
-  symbol_count: number
-  cluster_count: number
-  symbols: { id: string; label: string; points: number; occurrences: number }[]
-  documents: { id: string; title: string; tradition: string; words: number }[]
-  evaluation: { cluster_sizes: Record<string, number> }
+type Setup = {
+  model: string
+  setting: string
+  questions: number
+  verified_share: number
+  recall_at_k: number
+  k: number
 }
-type Eval = {
-  compared: {
-    model: string
-    setting: string
-    verified_share: number
-    recall_at_k: number
-    neurons_per_answer: number
-    tokens_in: number
-    tokens_out: number
-  }[]
-}
-const SYM = 'symbolic/summary.json'
-const short = (m: string) => m.split('/').at(-1)!
-const d = 'ml'
+type Eval = { compared: Setup[] }
+const EVAL = 'workers-ai/eval.json'
+/** '@cf/google/gemma-4-26b-a4b-it' → 'gemma-4-26b'. */
+const short = (m: string) =>
+  m
+    .split('/')
+    .at(-1)!
+    .replace(/-a\d+b-it$/, '')
+const best = (rows: Setup[]) =>
+  [...rows].sort((a, b) => b.verified_share - a.verified_share)[0]
 
 function Gauges() {
-  const data = useData<Eval>('workers-ai/eval.json')
-  const [pick, setPick] = useState(0)
+  const data = usable(useData<Eval>(EVAL), EVAL, (e) => e.compared.length)
   return (
     <Frame data={data}>
       {({ compared }) => {
-        const labels = compared.map((c) => `${short(c.model)} ${c.setting}`)
-        const c = compared[pick] ?? compared[0]
-        const g = (v: number, cx: number, i: number) => (
-          <g key={i}>
-            <path
-              d={arc(cx, 130, 60, 90, -Math.PI / 2, Math.PI / 2)}
-              fill="var(--wash)"
-            />
-            <path
-              d={arc(cx, 130, 60, 90, -Math.PI / 2, -Math.PI / 2 + Math.PI * v)}
-              fill={color(i)}
-            />
-            <text
-              x={cx}
-              y={126}
-              textAnchor="middle"
-              fontSize={26}
-              fontWeight={600}
-              fill="var(--ink)"
-            >
-              {pct(v)}
-            </text>
-          </g>
-        )
+        const top = best(compared)
+        const [W, H, m, y0, bottom] = [300, 170, 118, 22, 22]
+        const x = linearScale([0, 1], [m, W - 12])
+        const rh = (H - y0 - bottom) / compared.length
+        const cy = (i: number) => y0 + (i + 0.5) * rh
+        const k = compared[0].k
+        const first = compared[0]
+        const qFirst = first.verified_share <= first.recall_at_k
         return (
-          <>
-            <Slicer
-              label="Model"
-              options={labels}
-              value={labels[pick]}
-              onChange={(l) => setPick(labels.indexOf(l))}
+          <Svg
+            w={W}
+            h={H}
+            label="Quote check pass rate and retrieval recall for each Workers AI setup"
+          >
+            <XGrid
+              x={x}
+              ticks={[0, 0.5, 1]}
+              y0={y0 - 4}
+              y1={H - bottom}
+              format={pct}
             />
-            <Svg
-              w={400}
-              h={150}
-              label="Verified answers and retrieval recall for the selected model"
+            {/* The top row names its two dots, each on its outer side; the rows below
+                share them. Offsets are in em, so they grow with the text. */}
+            <text
+              className="mean-txt-v"
+              x={x(first.verified_share)}
+              y={cy(0)}
+              dy="-0.9em"
+              textAnchor={qFirst ? 'end' : 'start'}
             >
-              {g(c.verified_share, 100, 0)}
-              {g(c.recall_at_k, 300, 1)}
-            </Svg>
-            <Legend
-              items={[
-                ['verified', color(0)],
-                ['recall@k', color(1)],
-              ]}
-            />
-            <div className="mean-txt-kpis">
-              {(['neurons_per_answer', 'tokens_in', 'tokens_out'] as const).map(
-                (k, i) => (
-                  <div key={k} style={tile(color(i + 2))}>
-                    {fmt(c[k])}
-                    <small>{k.replace(/_/g, ' ')}</small>
-                  </div>
-                ),
-              )}
-            </div>
-          </>
+              quote check
+            </text>
+            <text
+              className="mean-txt-t"
+              x={x(first.recall_at_k)}
+              y={cy(0)}
+              dy="-0.9em"
+              textAnchor={qFirst ? 'start' : 'end'}
+            >
+              {`recall@${k}`}
+            </text>
+            {compared.map((c, i) => (
+              <g key={`${c.model}${c.setting}`}>
+                <text
+                  className="mean-txt-v"
+                  x={m - 6}
+                  y={cy(i)}
+                  dy="-0.2em"
+                  textAnchor="end"
+                >
+                  {short(c.model)}
+                </text>
+                <text
+                  className="mean-txt-t"
+                  x={m - 6}
+                  y={cy(i)}
+                  dy="0.9em"
+                  textAnchor="end"
+                >
+                  {c.setting}
+                </text>
+                <line
+                  x1={x(c.verified_share)}
+                  x2={x(c.recall_at_k)}
+                  y1={cy(i)}
+                  y2={cy(i)}
+                  stroke={OTHER}
+                  strokeWidth={1.5}
+                />
+                <circle cx={x(c.recall_at_k)} cy={cy(i)} r={3.5} fill={OTHER}>
+                  <title>{`recall@${c.k}: ${pct(c.recall_at_k)}`}</title>
+                </circle>
+                <circle
+                  cx={x(c.verified_share)}
+                  cy={cy(i)}
+                  r={4}
+                  fill={c === top ? PALETTE[0] : 'var(--mean-ink)'}
+                >
+                  <title>{`quote check: ${pct(c.verified_share)} of ${c.questions}`}</title>
+                </circle>
+              </g>
+            ))}
+          </Svg>
         )
       }}
     </Frame>
   )
 }
-function SymbolCounts() {
-  const data = useData<SymSummary>(SYM)
-  return (
-    <Frame data={data}>
-      {(d) => (
-        <div className="mean-txt-kpis">
-          {(
-            [
-              'occurrence_count',
-              'point_count',
-              'cluster_count',
-              'document_count',
-              'symbol_count',
-            ] as const
-          ).map((k, i) => (
-            <div key={k} style={tile(color(i))}>
-              {fmt(d[k])}
-              <small>{k.replace('_count', 's')}</small>
-            </div>
-          ))}
-        </div>
-      )}
-    </Frame>
-  )
-}
-
+const d = 'ml'
 export const posts: Post[] = [
   {
     id: 'txt-ml-gauges',
     domain: d,
     sources: ['workers-ai/eval.json'],
+    title: heading(({ compared }: Eval) => {
+      const b = best(compared)
+      return `${short(b.model)} (${b.setting}) had the highest quote-check share in this run: ${pct(b.verified_share)} (${b.questions} questions)`
+    }),
+    note: 'Law questions answered by each Workers AI setup: share whose quotes match the source, and retrieval recall',
     render: () => <Gauges />,
-  },
-  {
-    id: 'txt-ml-symbol-counts',
-    domain: d,
-    sources: ['symbolic/summary.json'],
-    render: () => <SymbolCounts />,
   },
 ]

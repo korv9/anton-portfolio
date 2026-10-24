@@ -1,7 +1,6 @@
-.mean-pol-t {
-  font-size: 8px;
-  fill: var(--muted);
-  font-variant-numeric: tabular-nums;
+/* Ranked bars whose labels wrap rather than end in an ellipsis (pol-kit Bars `wrap`). */
+.mean-bars.mean-pol-wrap .rank-label {
+  white-space: normal;
 }
 .mean-pol-grid {
   stroke: var(--line);
@@ -17,14 +16,14 @@
   letter-spacing: -0.04em;
   line-height: 0.9;
   font-variant-numeric: tabular-nums;
-  color: var(--ink);
+  color: var(--mean-ink);
 }
 .mean-pol-kpi small {
   display: block;
   font-size: var(--caption);
   letter-spacing: 0;
   font-weight: var(--weight-body);
-  color: var(--muted);
+  color: var(--mean-muted);
   margin-top: 8px;
 }
 .mean-pol-grid4 {
@@ -41,23 +40,26 @@
   font-size: clamp(14px, 8cqi, 30px);
   font-weight: var(--weight-heading);
   font-variant-numeric: tabular-nums;
-  color: var(--ink);
+  color: var(--mean-ink);
 }
 .mean-pol-cell small {
   font-size: var(--caption);
   font-weight: var(--weight-body);
-  color: var(--ink-2);
+  color: var(--mean-muted);
 }
-/* Treemap tile labels: 13 units in the 300-unit viewBox, about 8 px on a desktop thumbnail
-   and 15 px on a phone. */
-.mean-body svg text.mean-pol-tile {
-  font-size: 13px;
+/* The number written in a heatmap cell; dark cells switch it to the card colour inline. */
+.mean-body svg text.mean-pol-cellv {
+  font-size: calc(10px / var(--mean-k, 1));
   fill: var(--mean-ink);
-  font-variant-numeric: tabular-nums;
 }
-/* End labels beside a stacked area: they name each band, so no colour needs matching. */
-.mean-body svg text.mean-pol-end {
-  font-size: 18px;
-  font-weight: 600;
-  fill: var(--mean-ink);
+/* A value beside a direct label: the label takes the ink, the number steps back. */
+.mean-body svg .mean-pol-val {
+  fill: var(--mean-muted);
+  font-weight: 400;
+}
+/* The option a categorical slicer holds, named above the chart. */
+.mean-pol-sub {
+  margin: 0;
+  color: var(--mean-ink);
+  font: 500 var(--type-caption) / 1.3 var(--mean-font);
 }

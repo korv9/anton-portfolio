@@ -32,6 +32,10 @@
   --mean-party-nyd: #b49a6a;
   /* Posts separate marks with the card colour and mix tints towards it. */
   --paper: var(--mean-card);
+  /* charts/RankBars and Compare read the site's ink roles; .sweden and the home page set
+     --ink, --muted and --line, so only the two they leave out are mapped here. */
+  --ink-2: var(--mean-ink);
+  --line-strong: color-mix(in srgb, var(--mean-ink) 32%, transparent);
   --mean-ease: cubic-bezier(0.3, 0.7, 0.2, 1);
   --mean-glide: 0.42s;
 }
@@ -147,14 +151,16 @@
   grid-row: span 2;
   aspect-ratio: 1 / 2;
 }
+/* One column on a phone: wide and tall charts keep most of their shape, so a 2:1 chart is not
+   drawn at half size in a square with half the card empty. */
 @media (max-width: 480px) {
   .mean-wide {
     grid-column: auto;
-    aspect-ratio: 1;
+    aspect-ratio: 3 / 2;
   }
   .mean-tall {
     grid-row: auto;
-    aspect-ratio: 1;
+    aspect-ratio: 3 / 4;
   }
 }
 .mean-body {
@@ -173,13 +179,81 @@
   min-height: 0;
   overflow: hidden;
 }
+/* Chart text in one place: the body face with tabular figures, about 10 px for ticks and 11 px
+   for labels on screen. Card.tsx sets --mean-s, the scale the chart is drawn at; sizes are
+   divided by it, clamped so a chart drawn far too wide for its card cannot blow its labels up
+   past their layout. A size a post sets on its own text element still wins. */
+.mean-body svg {
+  --mean-k: clamp(0.5, var(--mean-s, 1), 2.4);
+  font-size: calc(11px / var(--mean-k));
+}
 .mean-body svg text {
   fill: var(--mean-muted);
   font-family: var(--mean-font);
+  font-variant-numeric: tabular-nums;
+}
+.mean-body
+  svg
+  :is(.mean-pol-t, .mean-txt-t, .mean-wel-axis text, .mean-axis text) {
+  font-size: calc(10px / var(--mean-k));
+}
+/* Direct labels (axes.tsx EndLabels) name the marks, so they take the ink, not the muted grey. */
+.mean-body svg .mean-end text {
+  font-size: calc(11px / var(--mean-k));
+  font-weight: 500;
+  fill: var(--mean-ink);
+}
+/* The card's heading: what the chart shows, readable in the thumbnail. Two lines at most
+   there; opened, it takes the chart-title size and its full length. */
+.mean-head {
+  display: grid;
+  gap: 2px;
+}
+.mean-head :is(p, h3) {
+  margin: 0;
+  font-family: var(--mean-font);
+  overflow: hidden;
+}
+.mean-head-title {
+  color: var(--mean-ink);
+  font-size: var(--type-label);
+  font-weight: 500;
+  line-height: 1.25;
+  text-wrap: balance;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+.mean-head-wait::before {
+  content: '';
+  min-height: calc(2 * 1.25 * var(--type-label));
+}
+.mean-head-note {
+  color: var(--mean-muted);
+  font-size: var(--type-caption);
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+/* A closed square or tall card gives the finding a third line; a square keeps the note to one. */
+.mean-post:is(.mean-square, .mean-tall):not(.mean-open) .mean-head-title {
+  -webkit-line-clamp: 3;
+}
+.mean-square:not(.mean-open) .mean-head-note {
+  -webkit-line-clamp: 1;
+}
+.mean-open .mean-head-title {
+  font-size: var(--type-chart-title);
+  -webkit-line-clamp: unset;
+}
+.mean-open .mean-head-note {
+  -webkit-line-clamp: unset;
 }
 /* One gridline weight across the four families. */
 .mean-body
   :is(
+    .mean-axis line,
     .mean-pol-grid,
     .mean-txt-grid,
     .mean-job-axis line,
@@ -326,6 +400,14 @@
   cursor: pointer;
 }
 @media (max-width: 700px) {
+  /* Opened on a phone, the close button is 44 px to tap and sits above the chart, not on it. */
+  .mean-open .mean-body {
+    padding-top: 52px;
+  }
+  .mean-close {
+    width: 44px;
+    height: 44px;
+  }
   .mean-open {
     grid-column: 1 / -1;
     aspect-ratio: auto;
@@ -426,4 +508,77 @@
   .mean-trace-toggle {
     right: 56px;
   }
+}
+/* charts/RankBars and Compare Stacked inside a card (wrap them in .mean-bars): caption type and
+   one line per row at any width, so ten rows fit a square card. The label takes 45 % of the
+   row; a longer one ends in an ellipsis in a narrow card and wraps where there is room. */
+.mean-bars {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  font-family: var(--mean-font);
+}
+.mean-bars :is(.rank-bars-list li, .stacked li) {
+  grid-template-columns: minmax(0, 45%) minmax(0, 1fr) auto;
+  gap: 0.5em;
+  font-size: var(--type-caption);
+  line-height: 1.25;
+}
+.mean-bars .rank-bars-list {
+  gap: 5px;
+}
+.mean-bars .stacked ol {
+  gap: 7px;
+}
+.mean-bars .rank-label {
+  grid-column: auto;
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--mean-ink);
+}
+/* Where there is room (a phone-wide card, or opened), a long name wraps onto a second line. */
+@container (min-width: 300px) {
+  .mean-bars .rank-label {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+}
+.mean-open .mean-bars .rank-label {
+  -webkit-line-clamp: unset;
+}
+/* A thumbnail shows the rows that fit whole and counts the rest (fit.ts sets data-more). */
+.mean-post:not(.mean-open) .mean-bars[data-more]::after {
+  content: attr(data-more) ' more when opened';
+  display: block;
+  margin-top: 4px;
+  color: var(--mean-muted);
+  font-size: var(--type-caption);
+  line-height: 1.2;
+}
+.mean-bars :is(.rank-track, .stacked-track) {
+  grid-column: auto;
+  grid-row: auto;
+  height: 10px;
+}
+.mean-bars .rank-value {
+  color: var(--mean-ink);
+}
+.mean-bars .stacked-key {
+  margin: 0 0 8px;
+  font-size: var(--type-caption);
+}
+/* Opened, a long ranked list scrolls inside the card instead of being cut off. */
+.mean-open .mean-bars {
+  overflow-y: auto;
+}
+/* The option a slicer holds, named above the chart; slicers are hidden in thumbnails. */
+.mean-cap {
+  margin: 0;
+  color: var(--mean-ink);
+  font: 500 var(--type-caption) / 1.3 var(--mean-font);
 }

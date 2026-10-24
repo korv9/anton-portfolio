@@ -1,24 +1,14 @@
-/** Riksdag roll calls per session since 1993/94: attendance, cohesion, agreement. */
+/** Riksdag roll calls per session since 1993/94: party agreement and government wins. */
 import { useState } from 'react'
-import { color, Frame, Slicer, useData, type Post } from '../kit'
+import { cellInk, focal, Frame, seq, Slicer, useData, type Post } from '../kit'
 import { linearScale } from '../../charts/scales'
-import { arc, every, line, PARTIES, uniq, XTicks, YGrid } from './pol-kit'
+import { ticksBetween, XAxis, YAxis } from '../axes'
+import { every, GovStrip, line, PARTIES } from './pol-kit'
 
 type Session = {
   session: string
-  roll_calls: number
   government_key: string
-  government_parties: string[]
-}
-type Record_ = {
-  session: string
-  party: string
-  role: string
-  attendance_pct: number
-  cohesion_pct: number
-  on_winning_side_pct: number
-  with_government_pct: number
-  abstained_pct: number
+  government_name: string
 }
 type Pair = {
   session: string
@@ -28,25 +18,26 @@ type Pair = {
 }
 type Sessions = {
   sessions: Session[]
-  party_record: Record_[]
   party_pairs: Pair[]
-  government_record: {
-    session: string
-    decisions: number
-    government_won_pct: number
-  }[]
+  government_record: { session: string; government_won_pct: number }[]
 }
 
 const useSessions = () => useData<Sessions>('parliament/sessions.json')
-const short = (s: string) => s.slice(2)
-const recentFirst = (d: Sessions) => d.sessions.map((s) => s.session).reverse()
+/** Every third session back from the latest, oldest first, so the cycle reads forwards. */
+const sessionSteps = (d: Sessions) =>
+  every(d.sessions.map((s) => s.session).reverse(), 3).reverse()
 
+/** Lower triangle of party pairs: each cell is the share of roll calls where the two parties
+ * took the same position, written out and shaded on one sequential ramp. */
 function Matrix() {
   const data = useSessions()
-  const [s, setS] = useState('2016/17')
+  const [picked, setS] = useState<string | null>(null)
   return (
     <Frame data={data}>
       {(d) => {
+        const options = sessionSteps(d)
+        const s = picked ?? options.at(-1)
+        if (!s) return null
         const pairs = d.party_pairs.filter((p) => p.session === s)
         const get = (a: string, b: string) =>
           pairs.find(
@@ -54,56 +45,70 @@ function Matrix() {
               (q.party_a === a && q.party_b === b) ||
               (q.party_a === b && q.party_b === a),
           )?.agreement_pct
+        const ps = PARTIES.filter((p) =>
+          pairs.some((q) => q.party_a === p || q.party_b === p),
+        )
+        const c = 252 / Math.max(ps.length - 1, 1)
         return (
           <>
             <Slicer
               label="Session"
-              options={every(recentFirst(d), 3)}
+              cycles
+              options={options}
               value={s}
               onChange={setS}
             />
             <svg
-              viewBox="0 0 300 300"
+              viewBox="0 0 300 280"
               role="img"
-              aria-label={`Agreement matrix, ${s}`}
+              aria-label={`Share of roll calls where two parties voted the same way, ${s}`}
             >
-              {PARTIES.map((a, i) => (
+              {ps.slice(1).map((a, i) => (
                 <g key={a}>
-                  <text
-                    x={22}
-                    y={i * 34 + 54}
-                    textAnchor="end"
-                    className="mean-pol-t"
-                  >
-                    {a}
-                  </text>
-                  <text
-                    x={i * 34 + 45}
-                    y={22}
-                    textAnchor="middle"
-                    className="mean-pol-t"
-                  >
-                    {a}
-                  </text>
-                  {PARTIES.map((b, j) => {
-                    const v = a === b ? 100 : get(a, b)
+                  <g className="mean-end">
+                    <text x={34} y={i * c + c / 2 + 4} textAnchor="end">
+                      {a}
+                    </text>
+                  </g>
+                  {ps.slice(0, i + 1).map((b, j) => {
+                    const v = get(a, b)
                     return v === undefined ? null : (
-                      <rect
-                        key={b}
-                        x={28 + j * 34}
-                        y={30 + i * 34}
-                        width={32}
-                        height={32}
-                        rx={4}
-                        fill="var(--accent)"
-                        opacity={(v / 100) ** 2}
-                      >
-                        <title>{`${a}–${b}: ${v}%`}</title>
-                      </rect>
+                      <g key={b}>
+                        <rect
+                          x={40 + j * c}
+                          y={i * c}
+                          width={c - 2}
+                          height={c - 2}
+                          fill={seq(v / 100)}
+                        >
+                          <title>{`${a} and ${b}: ${v} %`}</title>
+                        </rect>
+                        <text
+                          x={40 + j * c + c / 2 - 1}
+                          y={i * c + c / 2 + 3}
+                          textAnchor="middle"
+                          className="mean-pol-cellv"
+                          style={cellInk(v / 100)}
+                        >
+                          {Math.round(v)}
+                        </text>
+                      </g>
                     )
                   })}
                 </g>
               ))}
+              <g className="mean-end">
+                {ps.slice(0, -1).map((b, j) => (
+                  <text
+                    key={b}
+                    x={40 + j * c + c / 2 - 1}
+                    y={(ps.length - 1) * c + 14}
+                    textAnchor="middle"
+                  >
+                    {b}
+                  </text>
+                ))}
+              </g>
             </svg>
           </>
         )
@@ -112,111 +117,76 @@ function Matrix() {
   )
 }
 
-function Gauge() {
-  const data = useSessions()
-  const [s, setS] = useState('2025/26')
-  return (
-    <Frame data={data}>
-      {(d) => {
-        const v =
-          d.government_record.find((g) => g.session === s)
-            ?.government_won_pct ?? 0
-        const a0 = -Math.PI / 2
-        return (
-          <>
-            <Slicer
-              label="Session"
-              options={every(recentFirst(d), 4)}
-              value={s}
-              onChange={setS}
-            />
-            <svg
-              viewBox="0 0 300 180"
-              role="img"
-              aria-label={`Share of decisions the government won, ${s}`}
-            >
-              <path d={arc(150, 160, 90, 130, a0, -a0)} fill="var(--wash)" />
-              <path
-                d={arc(150, 160, 90, 130, a0, a0 + (v / 100) * Math.PI)}
-                fill="var(--accent)"
-              />
-              <text
-                x={150}
-                y={156}
-                textAnchor="middle"
-                style={{ fontSize: 40, fontWeight: 600, fill: 'var(--ink)' }}
-              >
-                {v}%
-              </text>
-            </svg>
-          </>
-        )
-      }}
-    </Frame>
+/** Sessions in order with the share of decisions the government won, null where the record
+ * has no figure: one list places both the line and the government bands. */
+const govRows = (d: Sessions) => {
+  const won = new Map(
+    d.government_record.map((r) => [r.session, r.government_won_pct]),
   )
+  return d.sessions.map((s) => ({ ...s, won: won.get(s.session) ?? null }))
+}
+const wonRange = (d: Sessions) => {
+  const v = govRows(d)
+    .map((r) => r.won)
+    .filter((w) => w !== null)
+  return v.length ? [Math.min(...v), Math.max(...v)] : null
 }
 
 function GovWon() {
   return (
     <Frame data={useSessions()}>
       {(d) => {
-        const g = d.government_record
-        const govs = uniq(d.sessions.map((s) => s.government_key))
-        const x = linearScale([0, g.length - 1], [30, 630])
-        const y = linearScale([50, 100], [150, 10])
-        const w = 600 / (g.length - 1)
+        const rows = govRows(d)
+        const range = wonRange(d)
+        if (!range) return null
+        const step = 548 / rows.length
+        const x = (i: number) => 44 + step * (i + 0.5)
+        const lo = Math.min(80, Math.floor(range[0] / 10) * 10)
+        const y = linearScale([lo, 100], [146, 10])
+        const pts = rows.flatMap((r, i) =>
+          r.won === null ? [] : [{ i, s: r.session, won: r.won }],
+        )
         return (
-          <>
-            <svg
-              viewBox="0 0 640 190"
-              role="img"
-              aria-label="Share of decisions won by the government per session"
-            >
-              {d.sessions.map((s, i) => (
-                <rect
-                  key={s.session}
-                  x={x(i) - w / 2}
-                  y={160}
-                  width={w}
-                  height={14}
-                  fill={color(govs.indexOf(s.government_key))}
-                />
-              ))}
-              <YGrid ticks={[50, 75, 100]} x0={30} x1={630} y={y} />
-              <path
-                d={line(g.map((r, i) => [x(i), y(r.government_won_pct)]))}
-                fill="none"
-                stroke="var(--ink)"
-                strokeWidth={2}
-              />
-              {g.map((r, i) => (
-                <circle
-                  key={r.session}
-                  cx={x(i)}
-                  cy={y(r.government_won_pct)}
-                  r={3}
-                  fill="var(--ink)"
-                >
-                  <title>{`${r.session}: ${r.government_won_pct}%`}</title>
-                </circle>
-              ))}
-              <XTicks
-                y={186}
-                ticks={every(g, 4).map((r) => ({
-                  x: x(g.indexOf(r)),
-                  label: short(r.session),
-                }))}
-              />
-            </svg>
-            <div className="mean-legend">
-              {govs.map((k, i) => (
-                <span key={k}>
-                  <i style={{ background: color(i) }} />
-                  {k}
-                </span>
-              ))}
-            </div>
-          </>
+          <svg
+            viewBox="0 0 600 200"
+            role="img"
+            aria-label="Share of decisions won by the government per session"
+          >
+            <YAxis
+              y={y}
+              ticks={ticksBetween(lo, 100)}
+              x0={44}
+              x1={592}
+              format={(v) => `${v} %`}
+            />
+            <path
+              d={line(pts.map((p) => [x(p.i), y(p.won)]))}
+              fill="none"
+              stroke={focal(true)}
+              strokeWidth={2}
+              strokeLinejoin="round"
+            />
+            {pts.map((p) => (
+              <circle
+                key={p.s}
+                cx={x(p.i)}
+                cy={y(p.won)}
+                r={2.5}
+                fill={focal(true)}
+              >
+                <title>{`${p.s}: ${p.won} %`}</title>
+              </circle>
+            ))}
+            <GovStrip sessions={rows} x={x} step={step} y={156} />
+            <XAxis
+              y={194}
+              x={x}
+              ticks={every(
+                rows.map((_, i) => i),
+                8,
+              ).map((i) => ({ value: i, label: rows[i].session }))}
+            />
+          </svg>
         )
       }}
     </Frame>
@@ -225,15 +195,11 @@ function GovWon() {
 
 export const posts: Post[] = [
   {
-    id: 'pol-gov-gauge',
-    domain: 'politics',
-    sources: ['parliament/sessions.json'],
-    render: () => <Gauge />,
-  },
-  {
     id: 'pol-agree-matrix',
     domain: 'politics',
     sources: ['parliament/sessions.json'],
+    title: 'How often two parties voted the same way',
+    note: 'Share of roll calls with the same position, %, per session. Source: Riksdagen.',
     render: () => <Matrix />,
   },
   {
@@ -241,6 +207,13 @@ export const posts: Post[] = [
     domain: 'politics',
     sources: ['parliament/sessions.json'],
     size: 'wide',
+    title: (d: Sessions) => {
+      const r = wonRange(d)
+      return r
+        ? `The government won between ${r[0]} % and ${r[1]} % of Riksdag decisions per session`
+        : 'Share of Riksdag decisions the government won'
+    },
+    note: 'Share of decisions won per session, with the government of the day. Source: Riksdagen.',
     render: () => <GovWon />,
   },
 ]

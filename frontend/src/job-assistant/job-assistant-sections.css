@@ -1,4 +1,4 @@
-/* Tables, the method and owner sections below the work area, and the narrow-screen layout.
+/* Tables, the method and owner sections (the How it works tab), and the narrow-screen layout.
    Loaded last, so its media queries override the rules of the other two files. */
 .ja-table-wrap {
   overflow-x: auto;
@@ -46,6 +46,9 @@
   color: var(--color-ink-secondary);
   font-style: italic;
 }
+.ja-table tbody tr:last-child > * {
+  border-bottom: 0;
+}
 .ja-table .num {
   text-align: end;
 }
@@ -54,9 +57,7 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--sp-6) var(--sp-6);
-  margin-top: var(--sp-section);
-  padding-top: var(--sp-5);
-  border-top: 1px solid var(--color-border);
+  margin-top: var(--sp-5);
 }
 .ja-sections h2 {
   margin: 0 0 var(--sp-3);
@@ -98,38 +99,64 @@
 }
 
 @media (pointer: coarse) {
-  .ja-toolbar select,
-  .ja-toolbar input,
+  .ja-find select,
+  .ja-results-head select,
+  .ja-chip,
+  .ja-clear,
   .ja-segment button {
     min-height: 44px;
   }
 }
+/* Under 760 px the open ad replaces the list, with a back button; the list keeps the page scroll. */
 @media (max-width: 760px) {
-  .ja-toolbar select,
-  .ja-toolbar input {
-    min-height: 44px;
-  }
   .ja-work,
   .ja-sections {
     grid-template-columns: minmax(0, 1fr);
   }
-  .ja-list-pane {
-    position: static;
-    max-height: 55dvh;
-  }
+  .ja-list-pane,
   .ja-detail {
+    position: static;
     max-height: none;
     overflow: visible;
   }
-  .ja-list a {
-    grid-template-columns: minmax(0, 1fr) auto;
-    grid-template-areas:
-      'title side'
-      'meta side'
-      'class side';
-    padding-block: var(--sp-3);
+  .ja-work[data-open='true'] .ja-list-pane,
+  .ja-work[data-open='false'] .ja-detail {
+    display: none;
   }
+  .ja-back {
+    display: inline-flex;
+  }
+  .ja:has(.ja-work[data-open='true']) .ja-find {
+    display: none;
+  }
+  .ja-filters label:first-child {
+    flex-basis: 100%;
+  }
+  .ja-find select,
+  .ja-results-head select,
   .ja-segment button {
     min-height: 44px;
+  }
+  .ja-filters label {
+    flex-basis: calc(50% - var(--sp-3));
+    max-width: none;
+  }
+  .ja-stats > div {
+    flex: 1 1 40%;
+    padding-inline: 0;
+    border-inline-start: 0;
+  }
+  .ja-board {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+/* On a phone no ad is open until one is tapped, so the first card is not marked as open. */
+@media (max-width: 760px) {
+  .ja-work[data-open='false'] .ja-card[aria-current='true'] {
+    border-color: var(--color-border);
+    background: none;
+  }
+  .ja-work[data-open='false'] .ja-card[aria-current='true'] .ja-card-title {
+    text-decoration: none;
   }
 }
