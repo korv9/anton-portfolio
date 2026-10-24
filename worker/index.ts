@@ -261,10 +261,22 @@ async function answer(request: Request, env: Env) {
   })
 }
 
+/**
+ * Static files, with the app shell for page addresses that are not files (wrangler.toml sets
+ * not_found_handling = "none", so every miss reaches here). A missing file, anything under
+ * /data/ or a last segment with an extension, answers 404 instead of index.html with 200.
+ */
+async function asset(request: Request, env: Env, pathname: string) {
+  const found = await env.ASSETS.fetch(request)
+  if (found.status !== 404) return found
+  if (pathname.startsWith('/data/') || /\.[^/]*$/.test(pathname)) return found
+  return env.ASSETS.fetch(new Request(new URL('/', request.url), request))
+}
+
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const { pathname } = new URL(request.url)
-    if (!pathname.startsWith('/api/')) return env.ASSETS.fetch(request)
+    if (!pathname.startsWith('/api/')) return asset(request, env, pathname)
     if (pathname.startsWith('/api/jobs/')) {
       // Owner records are never served unlimited; reads and writes count separately so public
       // reads cannot use up the owner's write budget.

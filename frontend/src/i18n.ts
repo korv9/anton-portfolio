@@ -4,9 +4,16 @@ export type Locale = 'en' | 'sv'
 
 const storageKey = 'anton-portfolio-language'
 
-/** The site is in English; the Swedish copy stays in the code but nothing switches to it. */
+/** English unless the address (?lang=sv) or the reader's last choice says Swedish. */
 export function initialLocale(): Locale {
-  return 'en'
+  if (typeof location === 'undefined') return 'en'
+  let saved: string | null = new URLSearchParams(location.search).get('lang')
+  try {
+    saved ??= localStorage.getItem(storageKey)
+  } catch {
+    /* Private browsing can block storage. */
+  }
+  return saved === 'sv' ? 'sv' : 'en'
 }
 
 let locale: Locale = initialLocale()
@@ -19,6 +26,11 @@ export function setLocale(next: Locale) {
   } catch {
     /* Private browsing can block storage. */
   }
+  // The address carries the choice, so a shared link opens in the same language.
+  const url = new URL(location.href)
+  url.searchParams.set('lang', next)
+  history.replaceState(history.state, '', url)
+  window.dispatchEvent(new Event('localechange'))
 }
 
 export function currentLocale() {

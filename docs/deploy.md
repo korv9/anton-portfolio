@@ -2,9 +2,11 @@
 
 The site is static files (`npm run build` → `dist/`) served by Cloudflare Workers static
 assets at `https://antonernstsson.com`, plus a small Worker script (`worker/index.ts`) for the
-two Workers AI demos ([workers-ai.md](workers-ai.md)). Requests to `/api/*` run the script
-(`run_worker_first` in `wrangler.toml`); every other request is served from the files, and an
-address that matches no file gets `index.html` (`not_found_handling = "single-page-application"`).
+Workers AI demos ([workers-ai.md](workers-ai.md)) and the job assistant's API. Requests to
+`/api/*` run the script first (`run_worker_first` in `wrangler.toml`); every other request is
+served from the files. With `not_found_handling = "none"`, a miss also reaches the script, which
+answers a page address with `index.html` and a missing file (anything under `/data/` or with an
+extension) with 404 (`asset()` in `worker/index.ts`).
 The production build renders only the home page; every other address leads to `#start`
 (`START_ONLY` in `frontend/src/router.ts`). The site's JSON
 is part of those files. Parquet marts and document shards are served from the R2 bucket
@@ -65,6 +67,12 @@ change through Terraform, not the dashboard.
 
    Under Settings → Build, turn on builds for non-production branches, so every pull request
    gets its preview link.
+
+   Web Analytics (optional, cookieless): Cloudflare → Analytics & Logs → Web Analytics → Add a
+   site → `antonernstsson.com`, and choose the manual JavaScript snippet, not automatic setup.
+   Copy the token from the snippet into a build variable `VITE_CF_BEACON_TOKEN` (the Worker →
+   Settings → Build → Variables and secrets) and rebuild. Without it the site loads no beacon.
+   `_headers` already allows the beacon's script and reporting host.
 3. **Domain on the site.** The Worker → Settings → Domains & Routes → Add → Custom domain:
    `antonernstsson.com`, and `www.antonernstsson.com`. To send `www` to the bare domain, add a
    redirect rule: Rules → Redirect Rules → hostname equals `www.antonernstsson.com` → dynamic
@@ -125,7 +133,7 @@ change through Terraform, not the dashboard.
 
 ## Limits
  Free plan: 20,000 files and 25 MiB per file in a Worker's static assets; requests for static assets
-are free and unlimited. Requests that run the script (`/api/*` only)
+are free and unlimited. Requests that run the script (`/api/*` and addresses that match no file)
 count against the Free plan's 100,000 requests a day and 10 ms CPU each; Workers AI has 10,000
 neurons a day. The Worker's `[ai]` binding (`AI`) needs no secret or setup step: Workers Builds
 deploys it with the Worker, and the neurons count against the account. The `[[ratelimits]]` binding

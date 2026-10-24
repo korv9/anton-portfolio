@@ -12,7 +12,9 @@ preview_urls = true
 
 [assets]
 directory = "./dist"
-not_found_handling = "single-page-application"
+# "none": every miss reaches the Worker, which serves the app shell only for page addresses
+# and a 404 for missing files (worker/index.ts asset()).
+not_found_handling = "none"
 binding = "ASSETS"
 run_worker_first = ["/api/*"]
 

@@ -53,17 +53,11 @@ export const swedishReports: Record<string, string> = {
   'Open data desk': 'Öppet databord',
   'Inspect the records behind the charts.':
     'Granska posterna bakom diagrammen.',
-  'Search every row in the imported datasets, including budget proposals and decisions without a recorded roll call. Downloads contain the full selected table. Coverage is limited to the imported snapshots.':
-    'Sök i varje rad i de importerade datamängderna, även budgetförslag och beslut utan registrerad votering. Nedladdningar innehåller hela den valda tabellen. Täckningen är begränsad till de importerade ögonblicksbilderna.',
-  'Popular datasets': 'Populära datamängder',
   Dataset: 'Datamängd',
   rows: 'rader',
   'Search all columns': 'Sök i alla kolumner',
-  'Try a decision title, party or document ID':
-    'Prova en beslutstitel, ett parti eller dokument-ID',
   'Download full JSON': 'Ladda ned hela JSON-filen',
   'Original CSV': 'Ursprunglig CSV',
-  'Definitions & relationships': 'Definitioner och relationer',
   'Loading selected records…': 'Läser in valda poster…',
   'matching rows of': 'matchande rader av',
   '. “–” means missing or not applicable.':

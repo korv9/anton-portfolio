@@ -43,7 +43,12 @@ const HomiePage = lazy(() =>
 
 export default function App() {
   const route = useRoute()
-  const [language] = useState<Locale>(currentLocale)
+  const [language, setLanguage] = useState<Locale>(currentLocale)
+  useEffect(() => {
+    const update = () => setLanguage(currentLocale())
+    window.addEventListener('localechange', update)
+    return () => window.removeEventListener('localechange', update)
+  }, [])
   useEffect(() => {
     document.documentElement.lang = language
   }, [language])

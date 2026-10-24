@@ -232,6 +232,7 @@
 }
 /* ---------- Profile ---------- */
 .home-profile {
+  grid-column: 1 / -1;
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 0.45fr) minmax(0, 1fr);
   gap: var(--sp-7) var(--sp-6);
@@ -302,7 +303,8 @@
   color: var(--muted);
 }
 .home-job-impact,
-.home-about-text {
+.home-about-text,
+.home-flagship-text {
   max-width: var(--layout-reading);
   margin: 0 0 var(--sp-3);
   font-size: var(--body-large);

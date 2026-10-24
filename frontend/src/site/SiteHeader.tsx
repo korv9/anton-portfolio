@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { l } from '../i18n'
 import type { Route } from '../router'
+import LanguageToggle from './LanguageToggle'
 import './header.css'
 
 export default function SiteHeader({ route }: { route: Route }) {
@@ -56,6 +57,7 @@ export default function SiteHeader({ route }: { route: Route }) {
         <a href="https://github.com/korv9" target="_blank" rel="noreferrer">
           GitHub
         </a>
+        <LanguageToggle />
       </nav>
     </header>
   )

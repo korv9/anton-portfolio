@@ -13,27 +13,8 @@ type Dataset = {
   grain?: string
   limitations?: string
 }
-type Gold = {
-  tables: Record<
-    string,
-    { path: string; rows: number; grain: string; limitations: string }
-  >
-}
-const facets = [
-  'session',
-  'party',
-  'actor',
-  'budget_year',
-  'expenditure_area',
-  'scheme',
-  'model',
-]
+const facets = ['scheme', 'model']
 const labels: Record<string, string> = {
-  session: 'Session',
-  party: 'Party',
-  actor: 'Budget proposer',
-  budget_year: 'Budget year',
-  expenditure_area: 'Expenditure area',
   scheme: 'Evaluation split',
   model: 'Model',
 }
@@ -44,8 +25,9 @@ const display = (value: unknown): string =>
       ? JSON.stringify(value)
       : String(value)
 
+/** DrugComb's published result tables (products/datasets.json), searchable and downloadable. */
 export default function DataExplorer({
-  initialDataset = 'fact_budget_frame',
+  initialDataset = 'drugcomb_metrics',
   sectionId = 'raw-data',
 }: {
   initialDataset?: string
@@ -72,32 +54,14 @@ export default function DataExplorer({
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(true)
   useEffect(() => {
-    Promise.all(
-      ['gold/semantic-model.json', 'products/datasets.json'].map(
-        async (path) => {
-          const response = await fetchData(path)
-          if (!response.ok)
-            throw Error('The dataset catalog could not be loaded.')
-          return response.json()
-        },
-      ),
-    )
-      .then(([gold, products]) =>
-        setDatasets([
-          ...Object.entries((gold as Gold).tables).map(([id, table]) => ({
-            ...table,
-            id,
-            label: id.replace(/_/g, ' '),
-            product:
-              id.includes('job_') || id === 'dim_role'
-                ? 'jobs'
-                : id.includes('rfc')
-                  ? 'allegoria'
-                  : 'politics',
-            path: 'gold/' + table.path,
-          })),
-          ...(products as Dataset[]),
-        ]),
+    fetchData('products/datasets.json')
+      .then((response) => {
+        if (!response.ok)
+          throw Error('The dataset catalog could not be loaded.')
+        return response.json() as Promise<Dataset[]>
+      })
+      .then((products) =>
+        setDatasets(products.filter((d) => d.product === 'drugcomb')),
       )
       .catch((e: Error) => {
         setError(e.message)
@@ -157,27 +121,11 @@ export default function DataExplorer({
       <p className="eyebrow">{t('Open data desk')}</p>
       <h2>{t('Inspect the records behind the charts.')}</h2>
       <p className="report-intro">
-        {t(
-          'Search every row in the imported datasets, including budget proposals and decisions without a recorded roll call. Downloads contain the full selected table. Coverage is limited to the imported snapshots.',
+        {l(
+          'Search every row of the DrugComb result tables. A download contains the full selected table.',
+          'Sök i varje rad i DrugComb-resultattabellerna. En nedladdning innehåller hela den valda tabellen.',
         )}
       </p>
-      <div className="dataset-presets" aria-label={t('Popular datasets')}>
-        {[
-          ['fact_budget_frame', 'All budget proposals'],
-          ['fact_decision_point', 'All decision points'],
-          ['fact_budget_outturn', 'Annual spending outcomes'],
-          ['fact_party_vote', 'Party votes'],
-          ['drugcomb_metrics', 'DrugComb evaluations'],
-        ].map(([id, title]) => (
-          <button
-            key={id}
-            aria-pressed={selected === id}
-            onClick={() => setSelected(id)}
-          >
-            {title}
-          </button>
-        ))}
-      </div>
       <div className="explorer-controls">
         <label>
           {t('Dataset')}
@@ -185,17 +133,11 @@ export default function DataExplorer({
             value={selected}
             onChange={(e) => setSelected(e.target.value)}
           >
-            {['politics', 'jobs', 'allegoria', 'drugcomb'].map((product) => (
-              <optgroup label={product} key={product}>
-                {datasets
-                  .filter((d) => d.product === product)
-                  .map((d) => (
-                    <option value={d.id} key={d.id}>
-                      {d.label}, {d.rows.toLocaleString(l('en-GB', 'sv-SE'))}{' '}
-                      {t('rows')}
-                    </option>
-                  ))}
-              </optgroup>
+            {datasets.map((d) => (
+              <option value={d.id} key={d.id}>
+                {d.label}, {d.rows.toLocaleString(l('en-GB', 'sv-SE'))}{' '}
+                {t('rows')}
+              </option>
             ))}
           </select>
         </label>
@@ -208,7 +150,10 @@ export default function DataExplorer({
               setQuery(e.target.value)
               setPage(0)
             }}
-            placeholder={t('Try a decision title, party or document ID')}
+            placeholder={l(
+              'Try a model or a drug',
+              'Prova en modell eller ett läkemedel',
+            )}
           />
         </label>
       </div>
@@ -245,9 +190,7 @@ export default function DataExplorer({
             </strong>
             <br />
             {dataset.limitations ||
-              (dataset.product === 'drugcomb'
-                ? 'Reported upstream results; no training run is performed by this website.'
-                : 'Source rows retain their original definitions and coverage.')}
+              'Reported upstream results; no training run is performed by this website.'}
           </p>
           <div>
             <a href={dataset.path} download>
@@ -258,9 +201,6 @@ export default function DataExplorer({
                 {t('Original CSV')}
               </a>
             )}
-            <a href="data/gold/semantic-model.json" download>
-              {t('Definitions & relationships')}
-            </a>
           </div>
         </div>
       )}

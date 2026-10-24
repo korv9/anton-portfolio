@@ -30,7 +30,6 @@ The production build currently shows only the start page (`START_ONLY` in
 | `#sweden-tillhorighet` | D The Infrastructure of Belonging |
 | `#sweden-framtid`      | E The Lost Futures                |
 | `#sweden-samband`      | Connections                       |
-| `#sweden-kit`          | Component states, no data         |
 | `#sweden-atlas`, `#sweden-atlas-a` to `-e`, `-x` | The atlas ([sweden-atlas.md](sweden-atlas.md)) |
 
 The Wellbeing Observatory's old `#sweden-*` addresses and `#wellbeing*` were withdrawn on
