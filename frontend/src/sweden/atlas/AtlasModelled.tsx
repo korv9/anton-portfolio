@@ -182,7 +182,7 @@ export default function AtlasModelled() {
         lines: [
           'ALTERNATIVE SPECIFICATION',
           'other variables, other scaling',
-          `awaiting ${SLOTS.similarityAlternatives.path.split('/').pop()}`,
+          'not published yet',
         ],
         head: true,
         tone: 'gap',

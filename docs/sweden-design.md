@@ -27,7 +27,6 @@ content, and glass panels float above it. Everything else sits below the scene.
 | `#sweden-tillhorighet` | D The Infrastructure of Belonging |
 | `#sweden-framtid`      | E The Lost Futures                |
 | `#sweden-samband`      | Connections                       |
-| `#sweden-kit`          | Component states, no data         |
 
 The Wellbeing Observatory moved from `#sweden*` to `#wellbeing*`. Its old addresses redirect in
 `router.ts`. A page's state is kept in the query, for example `#sweden-likhet?vy=likhet&kommun=2584`.

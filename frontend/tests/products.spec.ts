@@ -66,7 +66,7 @@ test(
       drugData
         .getByRole('combobox', { name: 'Dataset', exact: true })
         .locator('option'),
-    ).toHaveCount(53)
+    ).toHaveCount(22)
     await expect(drugData.locator('caption')).toHaveText('metrics')
     await drugData
       .getByRole('combobox', { name: 'Evaluation split', exact: true })

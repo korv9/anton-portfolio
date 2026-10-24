@@ -155,6 +155,25 @@ test('assets pass through untouched', async () => {
   assert.equal(await r.text(), 'asset /')
 })
 
+test('page addresses get the app shell; missing files and data 404', async () => {
+  const e = await env()
+  const get = (path: string) =>
+    worker.fetch(new Request(`https://site.test${path}`), e)
+  const page = await get('/companies/x')
+  assert.equal(page.status, 200)
+  assert.equal(await page.text(), 'asset /')
+  for (const path of [
+    '/data/missing.json',
+    '/data/dir',
+    '/assets/gone.js',
+    '/x.png',
+  ]) {
+    const r = await get(path)
+    assert.equal(r.status, 404, path)
+    assert.equal(await r.text(), `asset ${path}`)
+  }
+})
+
 test('embed: length limit, vector, and 503 on a spent quota', async () => {
   const e = await env({ data: [[0.1, 0.2]] })
   assert.equal(
