@@ -130,6 +130,11 @@ test('the projects page explains the pipeline, lists the projects and shows the 
   await expect(page.locator('#tour-step-title')).toHaveText(
     '05 Machine learning',
   )
+  // Model cards: one per model, its verdict read from ml/models.json; a held model is not an error.
+  const models = page.locator('#platform-models .model-card')
+  await expect(models).toHaveCount(3)
+  await expect(models.filter({ hasText: 'Held by its gate' })).toHaveCount(2)
+  await expect(page.locator('#platform-models')).toContainText('0.668')
   // The projects, one per row: no run or status lines under them.
   await expect(page.locator('.hub-item[href="#symbolic-atlas"]')).toBeVisible()
   await expect(page.locator('.hub-item-runs, .hub-item-status')).toHaveCount(0)

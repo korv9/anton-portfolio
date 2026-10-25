@@ -134,7 +134,7 @@ test('observatory addresses land on the meaning feed', async ({
   isMobile,
 }) => {
   test.skip(isMobile, 'routing is the same on a phone')
-  for (const from of ['/#politik', '/#jobb-lan', '/#ai-act-roles', '/#now']) {
+  for (const from of ['/#politik', '/#jobb-lan', '/#now']) {
     await page.goto(from)
     await expect(page).toHaveURL(/#what-does-it-even-mean$/)
   }

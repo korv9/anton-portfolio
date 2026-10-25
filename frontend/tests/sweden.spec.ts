@@ -12,14 +12,15 @@ const ROUTES = [
   '#sweden-likhet',
   '#sweden-tillhorighet',
   '#sweden-framtid',
+  '#sweden-valfard',
   '#sweden-samband',
 ]
 
-test('the hub lists the five research products and Connections', async ({
+test('the hub lists the six research products and Connections', async ({
   page,
 }) => {
   await page.goto('/#sweden')
-  await expect(page.locator('.sw-doors > li')).toHaveCount(6)
+  await expect(page.locator('.sw-doors > li')).toHaveCount(7)
   for (const href of ROUTES)
     await expect(page.locator(`.sw-doors a[href="${href}"]`)).toHaveCount(1)
 })
@@ -349,4 +350,40 @@ test('3D is the default, 2D is one click away, and the homepage never loads thre
   await page.getByRole('button', { name: '2D', exact: true }).click()
   await expect(page).toHaveURL(/scen=2d/)
   await expect(page.locator('.sw-matrix')).toHaveCount(1)
+})
+
+test('the welfare contract reads its numbers from the tax and survey files', async ({
+  page,
+  request,
+}) => {
+  const wedge = await (await request.get('/data/taxes/wedge.json')).json()
+  const ess = await (
+    await request.get('/data/welfare/ess-countries.json')
+  ).json()
+  const se = wedge.latest.find(
+    (r: { country_code: string; household_type: string; wage_level: string }) =>
+      r.country_code === 'SWE' &&
+      r.household_type === 'S_C0' &&
+      r.wage_level === 'AW100',
+  )
+  const dip = ess.find(
+    (r: { unit_code: string; survey_mode: string }) =>
+      r.unit_code === 'SE' && r.survey_mode === 'self_completion',
+  )
+  await page.goto('/#sweden-valfard')
+  await expect(page.locator('.sw-find')).toHaveCount(3)
+  await expect(page.locator('.sw-finds')).toContainText(
+    `${se.tax_wedge_pct.toFixed(1)} %`,
+  )
+  // The self-completed round is flagged against the expectation, never read as a trend.
+  await expect(page.locator('.sw-find[data-contrary]')).toContainText(
+    dip.ppltrst_mean.toFixed(2),
+  )
+  await expect(page.locator('.sw-method details')).toHaveCount(9)
+  const axe = await new AxeBuilder({ page }).include('main').analyze()
+  expect(
+    axe.violations.map(
+      (v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`,
+    ),
+  ).toEqual([])
 })

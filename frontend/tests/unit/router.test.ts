@@ -13,8 +13,6 @@ test('observatory addresses land on the meaning feed', () => {
     '#compliance-rankings',
     '#wellbeing-health',
     '#sweden-work',
-    '#ai-act-roles',
-    '#lagboken-tid',
     '#now-seats',
     '#politics',
     '#debates',
@@ -37,4 +35,12 @@ test('kept pages keep their addresses', () => {
   assert.equal(parseHash('#diva-lakehouse').path, '#platform-fabric')
   assert.equal(parseHash('#tech-er').page, 'projects')
   assert.equal(parseHash('#symbolic-findings').page, 'symbolic')
+})
+
+test('statute book and AI Act addresses land on Allegora', () => {
+  for (const hash of ['#ai-act-roles', '#lagboken-tid']) {
+    const route = parseHash(hash)
+    assert.equal(route.path, '#fraga-lagen', hash)
+  }
+  assert.equal(parseHash('#ai-act-clock').path, '#lag-ankomst')
 })

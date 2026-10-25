@@ -30,6 +30,9 @@ const ROUTES = [
   '#thesis',
   '#drugcomb',
   '#homie',
+  '#replik',
+  '#lag-ankomst',
+  '#sweden-valfard',
 ]
 // Wording that tells a visitor the work is not finished (docs/site-goals.md, "No 'not done' signals").
 const NOT_DONE = [

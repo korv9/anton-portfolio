@@ -41,6 +41,35 @@ export type ProjectEntry = {
 
 export const PROJECTS: ProjectEntry[] = [
   {
+    id: 'ai-act-clock',
+    title: t('När kommer en lag fram?', 'When does a law arrive?'),
+    descriptor: t(
+      'EU:s AI-förordning i platsannonser och riksdagen',
+      'The EU AI Act in job ads and the Riksdag',
+    ),
+    summary: t(
+      'Hur snabbt når en EU-lag svenskt arbetsliv och riksdagen? AI-förordningens ord räknade i 4,9 miljoner platsannonser och 129 000 anföranden, med förregistrerat placebotest av fördröjningarna.',
+      'How fast does an EU law reach Swedish working life and the Riksdag? The AI Act’s words counted in 4.9 million job ads and 129,000 speeches, with a pre-registered placebo test of the lags.',
+    ),
+    question: t(
+      'Hur snabbt når en lag arbetslivet och riksdagen?',
+      'How fast does a law reach working life and the Riksdag?',
+    ),
+    built: t(
+      'Förordningens begrepp valda med viktade log-odds mot SFS och granskade för hand; ordförrådsmatchning av 4 925 716 platsannonser (2020–2026) och 129 110 riksdagsanföranden; 266 fördröjningar, var och en mot 200 slumpade datum; artikelvis jämförelse av EUT-texten med den konsoliderade texten.',
+      'The Act’s terms chosen by weighted log-odds against the Swedish statute book and reviewed by hand; dictionary matching of 4,925,716 job ads (2020–2026) and 129,110 Riksdag speeches; 266 lags, each tested against 200 random dates; an article-by-article comparison of the Official Journal text with the consolidated text.',
+    ),
+    result: t(
+      'AI i platsannonser gick från 0,77 % till 2,8 %, men förordningen nämns vid namn i 95 annonser 2025 och 26 anföranden totalt. Lagen själv har redan ändrats: 42 av 119 artiklar.',
+      'AI in job ads rose from 0.77% to 2.8%, but the Act is named in 95 ads in 2025 and 26 speeches in all. The law itself has already changed: 42 of 119 articles.',
+    ),
+    tech: ['Python', 'dbt', 'DuckDB', 'placebo test', 'React'],
+    href: '#lag-ankomst',
+    category: 'data',
+    status: 'live',
+    pages: ['aiclock'],
+  },
+  {
     id: 'replik',
     title: t('Replik', 'Replik'),
     descriptor: t(
@@ -359,6 +388,7 @@ export const PROJECT_GROUPS = [
       'ask-the-law',
       'drugcomb',
       'replik',
+      'ai-act-clock',
     ],
   },
   { label: 'Engineering', ids: ['thesis', 'homie', 'platform'] },

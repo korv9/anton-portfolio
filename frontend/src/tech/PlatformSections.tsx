@@ -1,6 +1,6 @@
 /**
  * The data platform, a part of the projects hub (#projects-platform): what it does, the pipeline,
- * Ask the platform, 30 days of run health with the cause of each red run, the same pattern on
+ * Ask the platform, the model cards and their gates, 30 days of run health with the cause of each red run, the same pattern on
  * Microsoft Fabric (the DiVA lakehouse) and what each part maps to in another stack.
  *
  * Every number is read at load: the pipeline from architecture/graph.json, the runs and
@@ -12,6 +12,7 @@ import PipelineTour from './PipelineTour'
 import type { Graph } from './PipelineTables'
 import { RunHealth } from './RunHealth'
 import { FabricLakehouse } from './FabricLakehouse'
+import { ModelCards } from './ModelCards'
 import type { Summary } from '../hub/Headline'
 import { REPO, ok, reading, unread, useFile } from './techData'
 import './tech.css'
@@ -106,6 +107,22 @@ export default function PlatformSections() {
         ) : (
           unread
         )}
+      </section>
+
+      <section id="platform-models" aria-labelledby="platform-models-title">
+        <h2 id="platform-models-title">
+          {l(
+            'Model cards: a gate decides what ships',
+            'Modellkort: en spärr avgör vad som publiceras',
+          )}
+        </h2>
+        <p className="tech-note">
+          {l(
+            'Each model is scored against a baseline on a split it never trained on (later sessions, unseen employers or unseen speakers), with 95% intervals from a bootstrap over debates or employers where the card reports them. Its card states the gate in advance of publishing; only a model that clears it feeds a page. Bars show each interval on a 0 to 1 scale.',
+            'Varje modell mäts mot en baslinje på en uppdelning den aldrig tränats på (senare riksmöten, okända arbetsgivare eller okända talare), med 95-procentsintervall från en bootstrap över debatter eller arbetsgivare där kortet anger dem. Kortet anger spärren innan något publiceras; bara en modell som klarar den matar en sida. Staplarna visar varje intervall på en skala från 0 till 1.',
+          )}
+        </p>
+        <ModelCards />
       </section>
 
       <section id="platform-health" aria-labelledby="platform-health-title">

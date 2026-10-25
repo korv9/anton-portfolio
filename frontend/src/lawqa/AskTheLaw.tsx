@@ -20,6 +20,8 @@ import {
   type Answer,
   type Corpus,
 } from '../workersAi/corpus'
+import type { Law } from './LawData'
+import LawData from './LawData'
 import './lawqa.css'
 
 type Item = {
@@ -30,7 +32,6 @@ type Item = {
   law?: string
   fetched?: string
 }
-type Law = { sfs: string; title: string; url: string }
 type Example = {
   question: string
   question_en?: string
@@ -565,25 +566,6 @@ export default function AskTheLaw({ route }: { route: Route }) {
           </div>
 
           <div className="lq-about">
-            {choice === 'sfs' && laws.length > 0 && (
-              <section aria-labelledby="lq-laws-title">
-                <h2 id="lq-laws-title">
-                  {laws.length === 1
-                    ? l('The law in the selection', 'Lagen i urvalet')
-                    : l(
-                        `The ${laws.length} laws in the selection`,
-                        `De ${laws.length} lagarna i urvalet`,
-                      )}
-                </h2>
-                <ul className="lq-laws">
-                  {laws.map((law) => (
-                    <li key={law.sfs}>
-                      <a href={law.url}>{law.title}</a> <small>{law.sfs}</small>
-                    </li>
-                  ))}
-                </ul>
-              </section>
-            )}
             {meta && (
               <section className="lq-tech" aria-labelledby="lq-tech-title">
                 <h2 id="lq-tech-title">
@@ -681,6 +663,8 @@ export default function AskTheLaw({ route }: { route: Route }) {
               </section>
             )}
           </div>
+
+          <LawData laws={laws} />
         </section>
       </div>
     </ReportFrame>

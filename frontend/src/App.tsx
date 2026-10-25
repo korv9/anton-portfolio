@@ -27,6 +27,7 @@ const MeaningPage = lazy(() => import('./meaning/MeaningPage'))
 const AskTheLaw = lazy(() => import('./lawqa/AskTheLaw'))
 const JobAssistantPage = lazy(() => import('./job-assistant/JobAssistantPage'))
 const ReplikPage = lazy(() => import('./replik/ReplikPage'))
+const AiClockPage = lazy(() => import('./aiclock/AiClockPage'))
 const DrugCombPage = lazy(() =>
   import('./products/CaseStudies').then((m) => ({ default: m.DrugCombPage })),
 )
@@ -122,6 +123,7 @@ export default function App() {
                 {page === 'thesis' && <ThesisPage />}
                 {page === 'homie' && <HomiePage />}
                 {page === 'replik' && <ReplikPage />}
+                {page === 'aiclock' && <AiClockPage />}
               </Suspense>
             </ProjectStructure>
           </PageBoundary>

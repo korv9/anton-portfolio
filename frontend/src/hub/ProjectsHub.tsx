@@ -19,6 +19,7 @@ import {
   HomieChart,
   ThesisChart,
   ReplikChart,
+  AiClockChart,
 } from './mini/cardsOther'
 import { FeedChart, LawChart, SwedenChart } from './mini/cardsPlatform'
 import { Near } from './mini/MiniChart'
@@ -49,6 +50,7 @@ const CHARTS: Record<string, ReactNode> = {
   drugcomb: <DrugChart />,
   homie: <HomieChart />,
   replik: <ReplikChart />,
+  'ai-act-clock': <AiClockChart />,
 }
 
 /** A repository on GitHub: text only, set as a compact pair after the other projects. */
@@ -123,7 +125,7 @@ export default function ProjectsHub({ path }: { path: string }) {
           {item.id === 'sweden' && (
             <ul
               className="hub-products"
-              aria-label={l('The six products', 'De sex produkterna')}
+              aria-label={l('The seven products', 'De sju produkterna')}
             >
               {SWEDEN_PRODUCTS.map((p) => (
                 <li key={p.id}>

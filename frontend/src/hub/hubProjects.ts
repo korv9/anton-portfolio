@@ -78,6 +78,12 @@ export const HUB_GROUPS: HubGroup[] = [
     items: [registry('replik')],
   },
   {
+    id: 'aiclock',
+    title: t('När kommer en lag fram?', 'When does a law arrive?'),
+    part: 'platform',
+    items: [registry('ai-act-clock')],
+  },
+  {
     id: 'sweden',
     title: t('SWEDEN', 'SWEDEN'),
     part: 'platform',
