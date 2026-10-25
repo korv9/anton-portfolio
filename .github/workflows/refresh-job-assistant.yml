@@ -1,6 +1,7 @@
 name: Refresh the job assistant
 
-# Hourly, the job_assistant subject of platform/pipeline.yml (docs/job-assistant.md):
+# Scheduled hourly; GitHub starts it every few hours (docs/job-assistant.md, Monitoring). The
+# job_assistant subject of platform/pipeline.yml:
 #  - restores warehouse/raw/job_assistant from R2 (the ad store, its cursor and the run log);
 #  - reads every Data/IT ad created, changed or removed in JobStream since the cursor;
 #  - matches the current ads with the approved profile, with embeddings and explanations inside

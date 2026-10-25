@@ -24,8 +24,9 @@ same way: raw files with provenance, dbt layers with tests, versioned delivery t
 | Delivery | `job-assistant/{ads,matches,texts,demand}.json`, checked, then released as the group `job-assistant` | `export.py`, `configs/delivery/job-assistant.json` |
 | Owner records | Profile drafts and versions, statuses, notes, labels | Worker and D1 (storage pull request) |
 
-The subject `job_assistant` in `platform/pipeline.yml` runs these steps in order every hour from
-`.github/workflows/refresh-job-assistant.yml`. The export runs only when every dbt test passed.
+The subject `job_assistant` in `platform/pipeline.yml` runs these steps in order from
+`.github/workflows/refresh-job-assistant.yml`, which is scheduled every hour. GitHub starts the
+runs every few hours in practice (see Monitoring). The export runs only when every dbt test passed.
 
 ## Flow
 
@@ -34,7 +35,7 @@ The subject `job_assistant` in `platform/pipeline.yml` runs these steps in order
 2. The owner reads the draft, corrects it and adds wishes (places, remote work, prioritised
    roles, interests). `cv_profile.py` checks each correction, and approval freezes the draft as
    the next numbered version.
-3. Every hour a GitHub Actions run reads JobTech's JobStream for the Data/IT occupation field
+3. On an hourly schedule a GitHub Actions run reads JobTech's JobStream for the Data/IT occupation field
    and stores new, changed and removed ads.
 4. Each new or changed ad is compared with the latest approved profile on tasks, technique,
    seniority and wishes.
@@ -102,7 +103,7 @@ sentence and its line) and the CV side (the level and the CV quotes, or "not in 
 
 ## Ingestion, duplicates and removal
 
-`platform/job_assistant/ads.py` runs every hour in `refresh-job-assistant.yml`, as the
+`platform/job_assistant/ads.py` is scheduled every hour in `refresh-job-assistant.yml`, as the
 `job_assistant` subject of `platform/pipeline.yml`. The first run reads every current Data/IT ad
 from JobSearch, one publication day at a time over the last 60 days, with the client in
 `platform/ingest/jobtech/ingest_jobs.py`. An ad published earlier that is still open is missed
@@ -188,10 +189,36 @@ is kept only if every sentence in it quotes the ad or the CV lines and every quo
 otherwise it is marked unverified and not shown. Checked or not, each explanation counts toward the
 12 a day. The Workers AI token reaches only the `rank.py` step (the `secrets` step option in
 `platform/pipeline.yml`). The owner token reaches only `sync.py`, which runs in its own workflow
-step of `data-subject.yml` before the build. A failed `rank.py` does not stop
-the run: dbt keeps the last matches and the ad list is still published. The hourly run gets the
-token through the `workers-ai` input of `data-subject.yml`; without it the run uses rules and
-cached vectors only.
+step of `data-subject.yml` before the build.
+
+The hourly run gets the token through the `workers-ai` input of `data-subject.yml`; without it
+the run uses rules and cached vectors only.
+
+`rank.py` reads the approved profile from `/api/jobs/profile`. What it does without one depends
+on the answer, and the reason, the HTTP status (null when unreachable) and the time go into the
+match store's note and on to `matches.json` as `status`:
+
+| Answer | Match store | Exit |
+| --- | --- | --- |
+| 200 with `approved: null` | emptied: `profile: null`, no matches, `note.skipped` | 0 |
+| 403, 404 or 503 (503: D1 not set up), or the route cannot be reached | the last matches stand, with `note.kept`; without any, an empty store with `note.skipped` | 0 |
+| any other status, or a 200 that is not a JSON object | as above, and a `::error::` line | 1 |
+| an approved profile that fails the schema check | unchanged | 1 |
+
+dbt builds every model and test on zero matches, and the export publishes `ads.json`,
+`demand.json` and the other files with empty match lists, so the ad list is published without a
+profile. The step allows exit 1 (`ok_exit` in `platform/pipeline.yml`), so an unexpected answer
+shows as an error annotation while the run still publishes the ads. A red run would skip the
+publication, and a Worker fault would then hold back ads that do not depend on it. Kept matches
+belong to the last run that read the profile; the match mart drops those of ads that have closed
+since, and `#jobs` says that the matches were kept and why.
+
+From GitHub's runners the route answered 403 in every run from 2026-10-23 to 25 (log line:
+`requests.exceptions.HTTPError: 403 Client Error: Forbidden for url:
+https://antonernstsson.com/api/jobs/profile`), while a laptop got the Worker's 503 at the same
+time. `worker/` has no route that answers 403, so the inference is that something in front of the
+Worker, probably Cloudflare's bot protection or a WAF rule, refuses the runner. The logs do not
+show which. Until that is lifted for `/api/jobs/*`, matching from Actions cannot read a profile.
 
 ## Security of writes
 
@@ -246,9 +273,18 @@ hourly workflow reaches `main` with the next merge from `loop`.
 
 ## Monitoring
 
-The hourly run is a subject in `platform/pipeline.yml` with `sla.fresh_within: 3h`, so the
-existing data heartbeat opens an issue when it stops. `runs.jsonl` keeps one row per run, which
-is the record for the seven days of scheduled operation after the merge.
+The run is a subject in `platform/pipeline.yml` with `sla.fresh_within: 8h`, so the existing
+data heartbeat opens an issue when it stops. `runs.jsonl` keeps one row per run, which is the
+record for the seven days of scheduled operation after the merge.
+
+The cron is `7 * * * *`, but GitHub does not start every scheduled run. The ten runs from
+2026-10-23 23:04 to 2026-10-25 11:12 UTC began 2.4 to 5.7 hours apart, each created hours after
+its slot. They did not wait in the `data-refresh` concurrency queue: each run was created and
+started in the same second, and no other refresh was running at those times. The data heartbeat
+(`41 * * * *`, its own concurrency group) ran just as sparsely, every 2.4 to 5.6 hours. The cause is
+GitHub's scheduler, which delays and drops scheduled runs under load, so a separate concurrency
+group would not help. The SLA is 8 hours for that reason, and the page calls the ads stale after
+8 hours.
 
 ## Evaluation
 
@@ -265,9 +301,16 @@ build shows it, as it shows every other page.
 
 - The header says what the page is. A status line below it gives the ads in the store, the ads
   published today, the strong matches, the applications per pipeline status and the time of the
-  last hourly sync. When that sync is more than three hours old, a notice says so.
+  last sync. When that sync is more than eight hours old, a notice says so.
 - Three tabs: Jobs, Applications and How it works. The Applications tab is a read-only board of
   the pipeline, from Saved to Rejected, built from the review rows.
+- When nothing is matched, the Jobs tab lists the open ads (not removed, not expired, not a
+  duplicate), newest first, with title, employer, place, dates and a link to the ad on
+  Platsbanken. There are no classes, skills or filters. The note above the list gives the reason
+  from `status`: "matching starts when the CV profile is approved" only when the Worker answered
+  without one, otherwise that the profile store is not set up (503) or that the profile could
+  not be read or reached, with the time. When the last matches were kept, the status line says
+  so.
 - Jobs: a free-text search over title, employer, occupation and the skills the ad names, and
   filters for match class (strong and possible by default, or one class, or the evaluation
   sample), place or remote, employment type, role, publication date, deadline and seniority. Each
@@ -323,7 +366,8 @@ and misses from the owner's labels).
 - Ingestion: new, changed and repeated ads; a removed ad; duplicates under two ids; a run stopped
   between fetch and store, then resumed.
 - Matching: each class rule, education requirements never lowering the class, and every
-  judgement carrying both quotes.
+  judgement carrying both quotes. Each answer of the profile route in the table under Workers AI
+  budget (`platform/tests/job_assistant/test_rank_profile.py`).
 - Budget: the cap is reached mid-run and the run still ranks every ad.
 - Worker: writes without the token, with a wrong token and from another origin are refused.
 - Review UI: filter, sort, keyboard status changes and the full ad text.
@@ -351,3 +395,5 @@ and misses from the owner's labels).
 - 2026-10-23: the review page `#jobs` with the method, demand, evaluation and owner sections.
 - 2026-10-23: `#jobs` as a job board: search, counted filters with chips, sort and the open ad in
   the address, result cards, the split detail view, the application pipeline and the status line.
+- 2026-10-25: without an approved profile the run publishes the ad list with an empty match
+  store, and the SLA is 8 hours, which matches how often GitHub starts the scheduled runs.

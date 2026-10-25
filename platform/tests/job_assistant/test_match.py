@@ -232,4 +232,5 @@ def test_matches_of_removed_ads_are_refused():
 
 def test_no_profile_means_no_matches(store):
     result = rank.run(None, None, NOW)
-    assert result["matches"] == [] and result["note"]["skipped"] == "no approved profile"
+    assert result["matches"] == [] and result["note"]["skipped"]["reason"] == "no approved profile"
+

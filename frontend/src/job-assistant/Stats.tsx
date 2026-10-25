@@ -1,6 +1,12 @@
 /** The board's status line: ads in the store, new today, strong matches, applications and the last sync. */
 import { currentLocale, l } from '../i18n'
-import { PIPELINE, type Delivered, type Records, type Status } from './model'
+import {
+  keptNote,
+  PIPELINE,
+  type Delivered,
+  type Records,
+  type Status,
+} from './model'
 import { statusLabel } from './labels'
 import { STALE_HOURS, syncAge } from './query'
 
@@ -57,17 +63,22 @@ export default function Stats({ data, records, day, now }: Props) {
           </dd>
         </div>
         <div>
-          <dt>{l('Last hourly sync', 'Senaste timsynk')}</dt>
+          <dt>{l('Last sync', 'Senaste synk')}</dt>
           <dd>
             <time dateTime={data.ads.generated_at}>{time}</time>
           </dd>
         </div>
       </dl>
+      {data.matches.profile && data.matches.status?.kept && (
+        <p className="ja-stale" role="status">
+          {l(...keptNote(data.matches.status.kept))}
+        </p>
+      )}
       {hours != null && hours > STALE_HOURS && (
         <p className="ja-stale" role="status">
           {l(
-            `The ads were last synced ${Math.floor(hours)} hours ago, so the hourly run may have stopped. New and removed ads since then are missing.`,
-            `Annonserna synkades senast för ${Math.floor(hours)} timmar sedan, så timkörningen kan ha stannat. Nya och borttagna annonser sedan dess saknas.`,
+            `The ads were last synced ${Math.floor(hours)} hours ago, so the scheduled run may have stopped. New and removed ads since then are missing.`,
+            `Annonserna synkades senast för ${Math.floor(hours)} timmar sedan, så den schemalagda körningen kan ha stannat. Nya och borttagna annonser sedan dess saknas.`,
           )}
         </p>
       )}

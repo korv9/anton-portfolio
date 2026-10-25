@@ -2,13 +2,13 @@
 
     python platform/job_assistant/rank.py [--profile v3.json]
 
-The profile comes from --profile, or from the Worker's public profile route
-(JOB_ASSIST_API, default https://antonernstsson.com/api/jobs/profile). Without an approved profile
-nothing is matched and matches.json says so: data is real or absent. Matches are written to
-warehouse/raw/job_assistant/matches.json, in rank order, where dbt reads them (models/*/job_assistant);
-a match is redone when the ad's content
-hash, the profile version or the engine changes, and a kept explanation survives as long as its
-match does.
+The profile comes from --profile, or from the Worker's public profile route (JOB_ASSIST_API,
+default https://antonernstsson.com/api/jobs/profile). Without an approved profile (none approved
+yet, or the route answers anything but 200 or cannot be reached) nothing is matched: an existing
+matches.json is kept, and otherwise an empty one says why, so dbt and the ad list still build. Data
+is real or absent. Matches are written to warehouse/raw/job_assistant/matches.json, in rank order,
+where dbt reads them (models/*/job_assistant); a match is redone when the ad's content hash, the
+profile version or the engine changes, and a kept explanation survives as long as its match does.
 """
 from __future__ import annotations
 
@@ -28,24 +28,45 @@ from match import ENGINE, LISTED, match, order  # noqa: E402
 API = os.environ.get("JOB_ASSIST_API", "https://antonernstsson.com/api/jobs")
 
 
-def approved_profile(path: Path | None) -> dict | None:
+def approved_profile(path: Path | None) -> tuple[dict | None, dict]:
+    """The approved profile, or None and why: {reason, status, keep, error}.
+
+    keep: the Worker could not be read (unreachable, 403, 404, 503 or an error), so the last matches
+    stand. A 200 without an approved profile is an answer, so its matches.json is emptied. error: an
+    unexpected status or body, printed as ::error:: and exit 1.
+    """
     if path:
         profile = json.loads(path.read_text(encoding="utf-8"))
     else:
         import requests
-        response = requests.get(API + "/profile", timeout=30)
-        if response.status_code == 404:
-            return None
-        response.raise_for_status()
-        profile = response.json().get("approved")
+        try:
+            response = requests.get(API + "/profile", timeout=30)
+        except requests.RequestException as error:
+            return None, {"reason": f"profile route unreachable: {type(error).__name__}", "status": None,
+                          "keep": True, "error": False}
+        code = response.status_code
+        # 503: the Worker has no D1 binding yet (docs/job-assistant.md, What the owner applies). The
+        # Worker never answers 403, so a 403 is from something in front of it.
+        if code in (403, 404, 503):
+            return None, {"reason": f"profile route answered {code}", "status": code, "keep": True, "error": False}
+        if code != 200:
+            return None, {"reason": f"profile route answered {code}", "status": code, "keep": True, "error": True}
+        try:
+            profile = response.json().get("approved")
+        except (ValueError, AttributeError):
+            return None, {"reason": "profile route answered 200 without a JSON object", "status": code,
+                          "keep": True, "error": True}
         if not profile:
-            return None
+            return None, {"reason": "no approved profile", "status": code, "keep": False, "error": False}
     if profile.get("status") != "approved" or problems(profile):
         raise SystemExit("the profile is not an approved, valid schema v1 profile")
-    return profile
+    return profile, {"reason": "approved", "status": 200, "keep": False, "error": False}
 
 
-def run(profile: dict | None, http=None, now: datetime | None = None) -> dict:
+NONE = {"reason": "no approved profile", "status": 200, "keep": False, "error": False}
+
+
+def run(profile: dict | None, http=None, now: datetime | None = None, why: dict = NONE) -> dict:
     now = now or datetime.now(timezone.utc)
     folder = store_dir()
     ads = load_ads(folder / "ads.json")
@@ -53,7 +74,13 @@ def run(profile: dict | None, http=None, now: datetime | None = None) -> dict:
     old = {r["id"]: r for r in json.loads(path.read_text(encoding="utf-8"))["matches"]} if path.exists() else {}
     note: dict = {"at": now.isoformat(timespec="seconds"), "neurons_before": round(ai.spent(), 2)}
     if profile is None:
-        result = {"profile": None, "engine": ENGINE, "note": {**note, "skipped": "no approved profile"}, "matches": []}
+        found = {"reason": why["reason"], "status": why["status"], "at": note["at"]}
+        if why["keep"] and path.exists():
+            # The last matches stand; the mart drops those of closed ads, and note.kept says why.
+            result = json.loads(path.read_text(encoding="utf-8"))
+            result["note"] = {**result["note"], "kept": found}
+        else:
+            result = {"profile": None, "engine": ENGINE, "note": {**note, "skipped": found}, "matches": []}
         write_atomic(path, result)
         return result
     # A passed deadline ends an ad as removal does; the rule is mart_job_assistant_ads' `expired`.
@@ -105,12 +132,17 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--profile", type=Path, help="an approved profile file instead of the Worker's")
     args = ap.parse_args()
-    result = run(approved_profile(args.profile), ai.session())
+    profile, why = approved_profile(args.profile)
+    if why["error"]:
+        print(f"::error::{API}/profile: {why['reason']}; matches are not updated")
+    result = run(profile, ai.session() if profile else None, why=why)
     classes = {}
     for row in result["matches"]:
         classes[row["class"]] = classes.get(row["class"], 0) + 1
     print(json.dumps({"profile": result["profile"] and result["profile"]["version"], "classes": classes,
                       "note": result["note"]}, ensure_ascii=False))
+    if why["error"]:
+        sys.exit(1)
 
 
 if __name__ == "__main__":
