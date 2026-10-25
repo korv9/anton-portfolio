@@ -58,13 +58,25 @@ export function Scatter({
     zeroY,
   )
   const by = (f: (p: Dot) => number) => [...dots].sort((a, b) => f(a) - f(b))
-  const named = new Set(
-    dots.length > 30
-      ? []
-      : [by((p) => p.x)[0], by((p) => p.x).at(-1), by((p) => p.y).at(-1)].map(
-          (p) => p?.key,
-        ),
-  )
+  // The highest y first; a name that would sit on one already placed is left to its tooltip.
+  // ponytail: a box test in view-box units, not measured text widths.
+  const placed: Dot[] = []
+  if (dots.length <= 30)
+    for (const p of [
+      by((p) => p.y).at(-1),
+      by((p) => p.x)[0],
+      by((p) => p.x).at(-1),
+    ])
+      if (
+        p &&
+        !placed.some(
+          (q) =>
+            Math.abs(ay.y(q.y) - ay.y(p.y)) < 18 &&
+            Math.abs(ax.y(q.x) - ax.y(p.x)) < 110,
+        )
+      )
+        placed.push(p)
+  const named = new Set(placed.map((p) => p.key))
   return (
     <Svg label={label}>
       <YAxis y={ay.y} ticks={ay.ticks} x0={36} x1={290} format={yFormat} />

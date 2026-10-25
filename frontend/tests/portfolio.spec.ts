@@ -18,7 +18,9 @@ test(
       'Case study, spring 2026',
     )
     await expect(thesis.locator('li')).toHaveCount(0)
-    await expect(thesis).toContainText('Of 121 clusters, 72 had no link')
+    await expect(thesis).toContainText(
+      'clustering 16,811 of them gave 121 groups, 72 with no link',
+    )
     await expect(thesis).toContainText('12 groups containing 650 tickets')
     await expect(thesis).toContainText('ISO/IEC 25012')
     await expect(thesis).toContainText('21,633')

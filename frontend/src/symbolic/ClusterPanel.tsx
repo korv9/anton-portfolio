@@ -1,13 +1,15 @@
 /**
- * One book-centred cluster, as a reviewer sees it: its review status, how it is spread over
+ * One book-centred cluster, as a reader sees it: its audit class, how it is spread over
  * books, traditions and symbols, and representative passages from as many books as possible.
  * A semantic label, description and interpretation appear only when a person has reviewed the
- * cluster (reviewed-clusters.json); otherwise it is "Cluster n", and nothing is inferred.
+ * cluster (reviewed-clusters.json); otherwise it is shown by its leading symbol words and its
+ * number, and nothing is inferred.
  */
 import { l } from '../i18n'
 import { share } from '../format'
 import { StageBlock, StageFacts } from '../ui/Stage'
 import { traditionName } from './AtlasSidebar'
+import { contextName } from './atlasData'
 import type { AtlasPoint, ClusterInfo, ReviewedCluster } from './atlasTypes'
 
 const pct = share
@@ -17,12 +19,12 @@ const dec = (v: number) =>
     maximumFractionDigits: 2,
   })
 
-const STATUS: Record<ClusterInfo['review_status'], [string, string]> = {
-  unreviewed: ['Not reviewed', 'Ej granskat'],
-  candidate: ['Picked for review', 'Utvalt för granskning'],
-  reviewed: ['Reviewed', 'Granskat'],
-  rejected: ['Rejected in review', 'Avfärdat vid granskning'],
-}
+// Only a person's decision is shown as a status; the audit class covers the rest.
+const STATUS: Partial<Record<ClusterInfo['review_status'], [string, string]>> =
+  {
+    reviewed: ['Reviewed', 'Granskat'],
+    rejected: ['Rejected in review', 'Avfärdat vid granskning'],
+  }
 const AUDIT: Record<ClusterInfo['review_class'], [string, string]> = {
   candidate: ['Cross-book candidate', 'Kandidat över flera böcker'],
   warning: ['Book-bound or weak', 'Bokbundet eller svagt'],
@@ -34,13 +36,16 @@ const CONFIDENCE: Record<ReviewedCluster['confidence'], [string, string]> = {
   high: ['high', 'hög'],
 }
 
+/** A reviewed cluster's label, else its two leading symbol words, else a neutral name. */
 export function clusterTitle(
   id: number,
   reviewed: ReviewedCluster | undefined,
+  info?: ClusterInfo,
 ): string {
-  return reviewed
-    ? `${reviewed.label}, #${id}`
-    : l(`Cluster ${id}`, `Kluster ${id}`)
+  if (reviewed) return `${reviewed.label}, #${id}`
+  if (!info?.top_symbols.length) return contextName(id)
+  const words = info.top_symbols.slice(0, 2).map((s) => s.symbol_id)
+  return `${words.join(', ')} · #${id}`
 }
 
 export default function ClusterPanel({
@@ -65,11 +70,13 @@ export default function ClusterPanel({
     .slice(0, 6)
   return (
     <>
-      <StageBlock title={clusterTitle(info.cluster_id, reviewed)}>
+      <StageBlock title={clusterTitle(info.cluster_id, reviewed, info)}>
         <p className="cluster-status">
-          <span data-status={info.review_status}>
-            {l(...STATUS[info.review_status])}
-          </span>
+          {STATUS[info.review_status] && (
+            <span data-status={info.review_status}>
+              {l(...STATUS[info.review_status]!)}
+            </span>
+          )}
           <span data-class={info.review_class}>
             {l(...AUDIT[info.review_class])}
           </span>

@@ -107,6 +107,8 @@ export const REDIRECTS: Record<string, string> = {
 const PREFIX_REDIRECTS: [string, string][] = [
   ['#quality-', '#projects'],
   ['#data-model-', '#projects'],
+  // The SWEDEN 3D atlas is offline (docs/roadmap.md); its addresses lead to the hub.
+  ['#sweden-atlas', '#sweden'],
   // The withdrawn observatories: politics, jobs, Job Intelligence, wellbeing, the AI Act
   // and the statute book, with every tab, deep dive and older address of theirs.
   ...[
@@ -148,13 +150,6 @@ export const SWEDEN_PATHS = [
   '#sweden-tillhorighet',
   '#sweden-framtid',
   '#sweden-samband',
-  '#sweden-atlas',
-  '#sweden-atlas-a',
-  '#sweden-atlas-b',
-  '#sweden-atlas-c',
-  '#sweden-atlas-d',
-  '#sweden-atlas-e',
-  '#sweden-atlas-x',
 ]
 export const PHILOSOPHY_TABS = [
   '#philosophy-atlas',

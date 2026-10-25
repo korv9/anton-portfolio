@@ -12,7 +12,7 @@
  */
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { l } from '../i18n'
-import { TRADITION, clusterColour } from './atlasData'
+import { TRADITION, clusterColour, contextName } from './atlasData'
 import type { AtlasPoint } from './atlasTypes'
 
 export type Paint = { fill: string; r: number; layer: number }
@@ -221,10 +221,7 @@ export default function AtlasCanvas({
               ? l('Noise (no cluster)', 'Brus (inget kluster)')
               : clusterName
                 ? clusterName(hover.p.cluster_id)
-                : l(
-                    `Cluster ${hover.p.cluster_id}`,
-                    `Kluster ${hover.p.cluster_id}`,
-                  )}
+                : contextName(hover.p.cluster_id)}
           </span>
           <em>
             {hover.p.context.length > 150

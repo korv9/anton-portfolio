@@ -51,8 +51,9 @@ function Timeline() {
           const px = x(Date.parse(m.date))
           const text = SHORT[m.milestone_id]
           if (!text) return []
-          // Room for the text at the size a phone draws it, in drawing units.
-          const width = text.length * 10
+          // Room for the monospace text at the size a phone draws it (about 19 units a
+          // line, 12 a character), in drawing units.
+          const width = text.length * 12
           // Near the right edge the label ends at its dot instead of starting there.
           const end = px + width > W - 8
           const k = ends.findIndex((e) => e < (end ? px - width : px) - 4)

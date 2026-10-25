@@ -319,10 +319,27 @@ export default function Language({ route }: { route: Route }) {
   const scene = (
     <Scene
       product={product}
-      line={l(
-        `How often job ads use each kind of expectation, ${first}–${last}. Columns are the years counted so far; missing years are gaps, not estimates.`,
-        `Hur ofta platsannonser använder varje slags förväntan, ${first}–${last}. Kolumnerna är de år som räknats hittills; saknade år är luckor, inte skattningar.`,
-      )}
+      line={
+        l(
+          `How often job ads use each kind of expectation, ${first}–${last}. `,
+          `Hur ofta platsannonser använder varje slags förväntan, ${first}–${last}. `,
+        ) +
+        (spanNote
+          ? l(
+              'Missing years are gaps, not estimates.',
+              'Saknade år är luckor, inte skattningar.',
+            )
+          : l(
+              `Every year ${first}–${last} is counted`,
+              `Varje år ${first}–${last} är räknat`,
+            ) +
+            (partial.length
+              ? l(
+                  `; ${partial.map((p) => p.year).join(', ')} is a partial year.`,
+                  `; ${partial.map((p) => p.year).join(', ')} är ett ofullständigt år.`,
+                )
+              : '.'))
+      }
       legend={
         <>
           <b>{l(...(MEASURE[measure].slice(0, 2) as [string, string]))}</b>
@@ -594,8 +611,8 @@ export default function Language({ route }: { route: Route }) {
         {spanNote && (
           <li>
             {l(
-              `Only ${years.join(', ')} are counted so far; the other years run in the weekly cloud build.`,
-              `Bara ${years.join(', ')} är räknade hittills; övriga år körs i den veckovisa molnbygget.`,
+              `The counted years are ${years.join(', ')}; the others are gaps, not estimates.`,
+              `De räknade åren är ${years.join(', ')}; övriga år är luckor, inte skattningar.`,
             )}
           </li>
         )}

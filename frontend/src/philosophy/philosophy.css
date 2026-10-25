@@ -215,7 +215,7 @@ i.ph-era-2,
 }
 .ph-groups button {
   display: grid;
-  grid-template-columns: 7rem minmax(0, 1fr) 15rem;
+  grid-template-columns: 12rem minmax(0, 1fr) 15rem;
   grid-template-areas: 'id terms meta' 'id bar bar';
   gap: 0.2rem 1rem;
   width: 100%;
@@ -229,9 +229,11 @@ i.ph-era-2,
 }
 .ph-group-id {
   grid-area: id;
+  font-weight: 600;
 }
 .ph-group-terms {
   grid-area: terms;
+  color: var(--ph-muted);
 }
 .ph-group-meta {
   grid-area: meta;

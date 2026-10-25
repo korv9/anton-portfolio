@@ -242,8 +242,7 @@ export const posts: Post[] = [
       const k = MEASURES[0][0]
       const [a, b] = [value(steps[0], k), value(steps.at(-1)!, k)]
       if (a === null || b === null || steps.length < 2) return ''
-      const books = steps.at(-1)!.documents
-      return `Points in clusters that span books: ${pc(a)} at the first step, ${pc(b)} at the last${books ? `, which used a larger corpus of ${books} books` : ''}`
+      return `Points in clusters that span books: ${pc(a)} at the first step, ${pc(b)} at the last`
     }),
     note: 'Share of mapped points per research step; higher is better across books, lower for unclustered. The last step also changed the corpus, so the ends are not a like-for-like comparison',
     render: () => <ResearchSteps />,

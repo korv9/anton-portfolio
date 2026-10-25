@@ -1,6 +1,7 @@
 import { test, expect } from './test'
 
-// GitHub and the ingestion status live outside the repository; the test answers for both.
+// The GitHub snapshot and the ingestion status live outside the repository; the test answers
+// for both.
 const now = Date.now()
 const iso = (hoursAgo: number) => new Date(now - hoursAgo * 36e5).toISOString()
 const run = (id: number, conclusion: string, hoursAgo: number) => ({
@@ -24,42 +25,38 @@ const demo = `# Demo
 | 4 samma run_id igen | 0 | 0 | 4 | 0 | 13 |
 `
 
+const snapshot = (total = 2) => ({
+  generated_at: iso(0),
+  workflows: [],
+  scheduled_runs: {
+    since: iso(30 * 24).slice(0, 10),
+    total_count: total,
+    workflow_runs: [run(3, 'success', 2), run(2, 'failure', 26)],
+  },
+  failure_issues: [
+    {
+      number: 109,
+      title: 'Data pipeline failed: Refresh public data',
+      html_url: 'https://github.com/korv9/anton-portfolio/issues/109',
+      body: 'Workflow: Refresh public data\n\nFailed jobs and steps:\n- refresh: Data contracts',
+      created_at: iso(25),
+      closed_at: iso(1),
+    },
+  ],
+  incidents: [
+    {
+      name: '2026-10-22-warehouse-wipe.md',
+      html_url:
+        'https://github.com/korv9/anton-portfolio/blob/main/docs/incidents/2026-10-22-warehouse-wipe.md',
+    },
+  ],
+  fabric_demo: demo,
+})
+
 test.beforeEach(async ({ page }) => {
-  await page.route('https://api.github.com/**', (route) => {
-    const url = decodeURIComponent(route.request().url())
-    if (url.includes('/actions/runs'))
-      return route.fulfill({
-        json: { workflow_runs: [run(3, 'success', 2), run(2, 'failure', 26)] },
-      })
-    if (url.includes('/issues'))
-      return route.fulfill({
-        json: [
-          {
-            number: 109,
-            title: 'Data pipeline failed: Refresh public data',
-            html_url: 'https://github.com/korv9/anton-portfolio/issues/109',
-            body: 'Workflow: Refresh public data\n\nFailed jobs and steps:\n- refresh: Data contracts',
-            created_at: iso(25),
-            closed_at: iso(1),
-          },
-        ],
-      })
-    if (url.includes('/contents/docs/incidents'))
-      return route.fulfill({
-        json: [
-          {
-            name: '2026-10-22-warehouse-wipe.md',
-            html_url:
-              'https://github.com/korv9/anton-portfolio/blob/main/docs/incidents/2026-10-22-warehouse-wipe.md',
-          },
-        ],
-      })
-    if (url.includes('/contents/docs/demo.md'))
-      return route.fulfill({
-        json: { content: Buffer.from(demo).toString('base64') },
-      })
-    return route.fulfill({ status: 404, json: {} })
-  })
+  await page.route('**/status/github.json', (route) =>
+    route.fulfill({ json: snapshot() }),
+  )
   await page.route('**/status/ingestion.json', (route) =>
     route.fulfill({
       json: {
@@ -133,14 +130,9 @@ for (const [old, section] of [
 test('run health says which part of a long window it shows', async ({
   page,
 }) => {
-  // Two hourly workflows give about 1,400 scheduled runs in 30 days; GitHub returns the newest 100.
-  await page.route('https://api.github.com/**/actions/runs**', (route) =>
-    route.fulfill({
-      json: {
-        total_count: 1400,
-        workflow_runs: [run(3, 'success', 2), run(2, 'failure', 26)],
-      },
-    }),
+  // Two hourly workflows give about 1,400 scheduled runs in 30 days; the snapshot keeps the newest 100.
+  await page.route('**/status/github.json', (route) =>
+    route.fulfill({ json: snapshot(1400) }),
   )
   await page.goto('/#platform-health')
   await expect(page.getByTestId('run-health-total')).toContainText(

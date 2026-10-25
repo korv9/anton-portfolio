@@ -11,6 +11,10 @@ test(
     await expect(intro).toContainText('396,498')
     // One question per tab: the splits, then what it finds and whether it is calibrated.
     await expect(page.locator('.report-tab .feature')).toHaveCount(3)
+    // The default split is the one the tab asks about: an unseen drug pair.
+    await expect(page.locator('#dc-splits-title')).toContainText(
+      'new drug pair',
+    )
     await page.getByRole('button', { name: 'New drug', exact: true }).click()
     await expect(page).toHaveURL(/uppdelning=cold_drug/)
     await expect(page.locator('#dc-splits-title')).toContainText('new drug')

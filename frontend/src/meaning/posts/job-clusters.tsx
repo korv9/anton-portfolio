@@ -11,7 +11,6 @@ import {
   minOf,
   pct,
   PREVIEW,
-  sum,
   Svg,
 } from './job-kit'
 
@@ -63,10 +62,6 @@ function Scatter() {
               ys = p.points.map((q) => q.y)
             const x = linearScale([minOf(xs), maxOf(xs)], [8, W - 8])
             const y = linearScale([minOf(ys), maxOf(ys)], [H - 8, 8])
-            const mine = p.points.filter((q) => q.cluster === on)
-            const n = mine.length || 1
-            const cx = sum(mine.map((q) => x(q.x))) / n
-            const cy = sum(mine.map((q) => y(q.y))) / n
             const picked = order.find((c) => c.cluster_id === on)
             return (
               <>
@@ -86,7 +81,8 @@ function Scatter() {
                   h={H}
                   label={`Map of ${fmt(p.points.length)} tech ads, ${picked ? name(picked) : ''} highlighted`}
                 >
-                  {/* Grey points first, the picked cluster on top. */}
+                  {/* Grey points first, the picked cluster on top; the caption names it, as a
+                      label on the points would sit on top of them. */}
                   {[false, true].map((top) =>
                     p.points
                       .filter((q) => (q.cluster === on) === top)
@@ -100,19 +96,6 @@ function Scatter() {
                           opacity={top ? 0.9 : 0.5}
                         />
                       )),
-                  )}
-                  {picked && (
-                    <text
-                      className="mean-job-v"
-                      x={Math.min(W - 70, Math.max(70, cx))}
-                      y={cy + 4}
-                      textAnchor="middle"
-                      stroke="var(--paper)"
-                      strokeWidth={3}
-                      paintOrder="stroke"
-                    >
-                      {name(picked)}
-                    </text>
                   )}
                 </Svg>
               </>

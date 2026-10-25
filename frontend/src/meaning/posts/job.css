@@ -38,7 +38,7 @@
   flex: 1;
   display: grid;
   min-height: 0;
-  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+  grid-template-columns: repeat(2, 1fr);
   grid-auto-rows: minmax(0, 1fr);
   gap: 6px;
   overflow: hidden;
@@ -60,11 +60,10 @@
   letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
 }
+/* Labels wrap rather than cut off; a tile holds two short lines. */
 .mean-job-kpis span {
   font-size: var(--caption);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  line-height: 1.2;
   color: var(--muted);
 }
 .mean-job-hover:hover {

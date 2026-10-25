@@ -17,6 +17,10 @@ test('the Philosophy Lab maps passages, compares maps and reads tensions', async
   // The chosen map follows the reader to the groups tab.
   await page.getByRole('link', { name: 'The groups' }).click()
   await expect(page).toHaveURL(/philosophy-groups\?karta=baseline/)
+  // Groups are titled by their words, with junk tokens and review status left out.
+  await expect(page.locator('.ph-groups')).not.toContainText(
+    /Group \d|not reviewed|\biii\b|\bthou\b/,
+  )
   const group = page.locator('.ph-groups > li').first()
   await group.locator('button').click()
   await expect(group.locator('.ph-reps li').first()).toBeVisible()

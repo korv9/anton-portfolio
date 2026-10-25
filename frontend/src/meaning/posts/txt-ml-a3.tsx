@@ -202,7 +202,7 @@ export const posts: Post[] = [
       const half = (rows: typeof after) =>
         rows.filter((r) => r.share > 0.5).length
       return after.length && before.length
-        ? `One tradition holds more than half of ${half(after)} of ${after.length} clusters with author style removed, ${half(before)} of ${before.length} as embedded`
+        ? `Over half one tradition: ${half(after)} of ${after.length} clusters without author style, ${half(before)} of ${before.length} with it`
         : ''
     }),
     note: "Each cluster's largest tradition, as a share of its passages; clusters named by distinctive words; tick at 50%",

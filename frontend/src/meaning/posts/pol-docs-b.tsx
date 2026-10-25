@@ -145,10 +145,11 @@ function taxVotesTitle(d: Taxes) {
     : 'How each party voted on tax decisions'
 }
 
+/** The two measures comparable across sessions; the all-party AUC changes with who sits in the
+ * Riksdag, so it is left out. The first is the focal line. */
 const AUC = [
-  ['All parties', 'all_parties_auc'],
-  ['Seven parties', 'seven_parties_auc'],
   ['Same debate', 'within_debate_auc'],
+  ['Seven parties', 'seven_parties_auc'],
 ] as const
 
 function Polarization() {
@@ -246,10 +247,10 @@ export const posts: Post[] = [
     title: (d: Polar) => {
       const [a, b] = [d.sessions[0], d.sessions.at(-1)]
       return a && b && a !== b
-        ? `How well speech tells parties apart: ${a.all_parties_auc.toFixed(2)} in ${a.session}, ${b.all_parties_auc.toFixed(2)} in ${b.session}`
-        : 'How well speech tells parties apart'
+        ? `Within the same debate, speech tells parties apart better: AUC ${a.within_debate_auc.toFixed(2)} in ${a.session}, ${b.within_debate_auc.toFixed(2)} in ${b.session}`
+        : 'How well speech tells parties apart within a debate'
     },
-    note: 'AUC of a text classifier on Riksdag speeches; 0.5 is chance, 1 is perfect.',
+    note: 'Text-classifier AUC on Riksdag speeches, 0.5 = chance; across debates the seven parties stay level',
     render: () => <Polarization />,
   },
 ]

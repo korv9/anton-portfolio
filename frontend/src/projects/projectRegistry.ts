@@ -45,8 +45,8 @@ export const PROJECTS: ProjectEntry[] = [
     title: t('Symbol Lab', 'Symbol Lab'),
     descriptor: t('NLP, oövervakad inlärning', 'NLP, unsupervised learning'),
     summary: t(
-      'En oövervakad utforskning av återkommande symbolisk mening i mytologi, folksagor och litteratur.',
-      'An unsupervised exploration of recurring symbolic meaning in mythology, folklore and literature.',
+      'En oövervakad utforskning av återkommande symboliska sammanhang i mytologi, folksagor och litteratur.',
+      'An unsupervised exploration of recurring symbolic contexts in mythology, folklore and literature.',
     ),
     question: t(
       'Kan symbolisk mening träda fram ur datan utan att kategorierna bestäms först?',
@@ -119,8 +119,8 @@ export const PROJECTS: ProjectEntry[] = [
     title: t('Philosophy Lab', 'Philosophy Lab'),
     descriptor: t('NLP, semantisk utforskning', 'NLP, semantic exploration'),
     summary: t(
-      'En semantisk atlas över fri filosofi med inbäddningar, klustring och mänskligt granskade begrepp.',
-      'A semantic atlas of public-domain philosophy using embeddings, clustering and human-reviewed concepts.',
+      'En semantisk atlas över fri filosofi med inbäddningar och klustring, korrigerad för varje verks egen röst.',
+      'A semantic atlas of public-domain philosophy using embeddings and clustering, corrected for each work’s own voice.',
     ),
     question: t(
       'Hur organiserar återkommande moraliska och filosofiska spänningar texter över tänkare och traditioner?',
@@ -131,8 +131,8 @@ export const PROJECTS: ProjectEntry[] = [
       'Thirteen works from Plato to Nietzsche, stripped of translators’ introductions and notes, cut into passages, embedded with a multilingual model, mapped with UMAP and HDBSCAN and read through tensions such as freedom ↔ control.',
     ),
     result: t(
-      'Den råa kartan följer verken mer än idéerna; centrering per verk ökar antalet tvärgående grupper från 6 till 19. Inga grupper namnges utan granskning.',
-      'The raw map follows the works more than the ideas; centring per work raises the groups across works from 6 to 19. No group is named without review.',
+      'Den råa kartan följer verken mer än idéerna; centrering per verk ökar antalet tvärgående grupper från 6 till 19. Varje grupp visas med sina mest utmärkande ord.',
+      'The raw map follows the works more than the ideas; centring per work raises the groups across works from 6 to 19. Each group is shown by its most distinctive words.',
     ),
     tech: [
       'Python',
@@ -166,8 +166,8 @@ export const PROJECTS: ProjectEntry[] = [
       'A balanced sample of four corpora with full provenance, embedded with one multilingual model and read against 28 concepts with anchor sentences in Swedish and English; every relation has a stated type.',
     ),
     result: t(
-      'Korpusarna skiljer sig mer än deras ämnen (93 % av grannarna i samma korpus), så de jämförs bara genom begreppen: död och natur i myterna, omsorg och ansvar i riksdagen, säkerhet och transparens i lagen.',
-      'The corpora differ more than their subjects do (93 % of neighbours in the same corpus), so they are compared only through the concepts: death and nature in myth, care and responsibility in the Riksdag, safety and transparency in the law.',
+      'Korpusarna skiljer sig mer än deras ämnen (93 % av grannarna i samma korpus, delvis en språkeffekt eftersom riksdagen är den enda svenska), så de jämförs bara genom begreppen: död och natur i myterna, omsorg och ansvar i riksdagen, säkerhet och transparens i lagen.',
+      'The corpora differ more than their subjects do (93 % of neighbours in the same corpus, partly a language effect since the Riksdag is the only Swedish one), so they are compared only through the concepts: death and nature in myth, care and responsibility in the Riksdag, safety and transparency in the law.',
     ),
     home: {
       question: t(
@@ -176,7 +176,7 @@ export const PROJECTS: ProjectEntry[] = [
       ),
     },
     tech: ['Python', 'Sentence Transformers', 'dbt', 'DuckDB', 'React'],
-    href: '#concept-journey',
+    href: '#concepts-profiles',
     category: 'ai',
     status: 'experimental',
     research: true,
@@ -230,10 +230,10 @@ export const PROJECTS: ProjectEntry[] = [
       'Drug and cell-line entity resolution, a DuckDB warehouse and evaluation under four cross-validation strategies.',
     ),
     result: t(
-      'Ensemblemetoder och djupinlärning jämförda under fyra sätt att dela upp datan.',
-      'Ensemble methods and deep learning compared under four cross-validation strategies.',
+      'LightGBM mot enkla baslinjer, utvärderad på par, läkemedel och cellinjer som modellen inte sett.',
+      'LightGBM against simple baselines, evaluated on pairs, drugs and cell lines the model has not seen.',
     ),
-    tech: ['Python', 'scikit-learn', 'LightGBM', 'TensorFlow', 'DuckDB'],
+    tech: ['Python', 'scikit-learn', 'LightGBM', 'DuckDB'],
     href: '#drugcomb',
     category: 'ai',
     status: 'live',
@@ -283,7 +283,10 @@ export const PROJECTS: ProjectEntry[] = [
   {
     id: 'homie',
     title: t('Homie API', 'Homie API'),
-    descriptor: t('Python-backend, pågående', 'Python backend, in progress'),
+    descriptor: t(
+      'Python-backend, kontrakt först',
+      'Python backend, contract first',
+    ),
     summary: t(
       'FastAPI- och PostgreSQL-tjänst med autentisering, migreringar och ett OpenAPI-kontrakt för en separat frontend.',
       'FastAPI and PostgreSQL service with authentication, migrations and an OpenAPI contract for a separate frontend.',
@@ -297,8 +300,8 @@ export const PROJECTS: ProjectEntry[] = [
       'FastAPI and PostgreSQL service with authentication, migrations and an OpenAPI contract.',
     ),
     result: t(
-      'pytest, Ruff, GitHub Actions, Dockerfile i flera steg och Docker Compose.',
-      'pytest, Ruff, GitHub Actions, a multi-stage Dockerfile and Docker Compose.',
+      '16 operationer i OpenAPI-kontraktet, 4 byggda; testerna går igenom i CI mot PostgreSQL 16.',
+      '16 operations in the OpenAPI contract, 4 built; the tests pass in CI against PostgreSQL 16.',
     ),
     tech: ['FastAPI', 'PostgreSQL', 'SQLAlchemy', 'Alembic', 'Docker Compose'],
     href: '#homie',

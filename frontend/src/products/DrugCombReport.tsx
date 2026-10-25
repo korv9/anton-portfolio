@@ -135,14 +135,28 @@ const TABLES: Record<keyof Tables, string> = {
   pairs: 'sql_top_synergistic_pairs',
 }
 
+// Unseen drug pair leads; random rows (the easy, partly leaky case) comes last.
 const SPLITS: [string, string, string][] = [
-  ['random', 'Random rows', 'Slumpade rader'],
   ['cold_pair', 'New drug pair', 'Nytt läkemedelspar'],
   ['cold_drug', 'New drug', 'Nytt läkemedel'],
   ['cold_cell', 'New cell line', 'Ny cellinje'],
+  ['random', 'Random rows', 'Slumpade rader'],
 ]
+// The same splits as a phrase for the chart title.
+const ON: Record<string, [string, string]> = {
+  cold_pair: ['On a new drug pair', 'På ett nytt läkemedelspar'],
+  cold_drug: ['On a new drug', 'På ett nytt läkemedel'],
+  cold_cell: ['On a new cell line', 'På en ny cellinje'],
+  random: ['On random rows', 'På slumpade rader'],
+}
+// Swedish axis label short enough to sit under its column on a phone.
+const AXIS_SV: Record<string, string> = { cold_pair: 'Nytt par' }
 const MODELS: [string, string, string][] = [
-  ['history_ridge', 'Baseline: earlier results', 'Baslinje: tidigare resultat'],
+  [
+    'history_ridge',
+    'Baseline: ridge model on average synergy seen in training',
+    'Baslinje: ridge-modell på genomsnittlig synergi i träningen',
+  ],
   [
     'lgbm_chem_bio',
     'LightGBM: chemistry + biology',
@@ -251,7 +265,7 @@ export default function DrugCombReport({ route }: { route: Route }) {
   const [report, setReport] = useState<Report | null>(null)
   const [tables, setTables] = useState<Partial<Tables>>({})
   const [{ uppdelning: split }, set] = useViewParams(route, {
-    uppdelning: 'random',
+    uppdelning: 'cold_pair',
   })
   const [error, setError] = useState(false)
   const [treeFile, setTreeFile] = useState<TreeFile | null>(null)
@@ -314,6 +328,12 @@ export default function DrugCombReport({ route }: { route: Route }) {
     return s ? l(s[1], s[2]) : id
   }
   const best = metric(split, 'lgbm_all')
+  const baseline = metric(split, 'history_ridge')
+  const on = ON[split] ? l(...ON[split]) : splitName(split)
+  // Unseen pairs without and with each drug's own response, against the baseline.
+  const pairBase = metric('cold_pair', 'history_ridge')?.pearson
+  const pairChemBio = metric('cold_pair', 'lgbm_chem_bio')?.pearson
+  const pairAll = metric('cold_pair', 'lgbm_all')?.pearson
   const source = l(
     'DrugCombDB screens with DepMap 24Q4; the published results of the pinned pipeline revision',
     'Försök från DrugCombDB med DepMap 24Q4; publicerade resultat från den fastlåsta versionen av pipelinen',
@@ -510,17 +530,17 @@ export default function DrugCombReport({ route }: { route: Route }) {
             <Feature
               id="dc-splits"
               title={l(
-                `On ${splitName(split).toLowerCase()}, the model reaches a correlation of ${num(best?.pearson ?? 0, 2)}`,
-                `På ${splitName(split).toLowerCase()} når modellen en korrelation på ${num(best?.pearson ?? 0, 2)}`,
+                `${on}, the model reaches a correlation of ${num(best?.pearson ?? 0, 2)} ± ${num(best?.pearson_sd ?? 0, 3)}, against ${num(baseline?.pearson ?? 0, 2)} for the baseline`,
+                `${on} når modellen en korrelation på ${num(best?.pearson ?? 0, 2)} ± ${num(best?.pearson_sd ?? 0, 3)}, mot ${num(baseline?.pearson ?? 0, 2)} för baslinjen`,
               )}
               lead={l(
-                'Correlation between predicted and measured ZIP (Pearson, 0 = no relation, 1 = perfect), mean of three folds. The splits hold out rows, drug pairs, individual drugs or cell lines.',
-                'Korrelation mellan förutsagd och uppmätt ZIP (Pearson, 0 = inget samband, 1 = perfekt), medel av tre omgångar. Uppdelningarna håller undan rader, läkemedelspar, enskilda läkemedel eller cellinjer.',
+                'Correlation between predicted and measured ZIP (Pearson, 0 = no relation, 1 = perfect), mean of three folds ± their standard deviation. The splits hold out drug pairs, individual drugs, cell lines or random rows.',
+                'Korrelation mellan förutsagd och uppmätt ZIP (Pearson, 0 = inget samband, 1 = perfekt), medel av tre omgångar ± deras standardavvikelse. Uppdelningarna håller undan läkemedelspar, enskilda läkemedel, cellinjer eller slumpade rader.',
               )}
               source={source}
             >
               <Columns
-                categories={SPLITS.map((s) => l(s[1], s[2]))}
+                categories={SPLITS.map((s) => l(s[1], AXIS_SV[s[0]] ?? s[2]))}
                 series={MODELS.map(([id, en, sv]) => ({
                   key: id,
                   label: l(en, sv),
@@ -536,6 +556,20 @@ export default function DrugCombReport({ route }: { route: Route }) {
                   'Korrelation per testuppdelning och modell',
                 )}
               />
+              {pairBase != null && pairChemBio != null && pairAll != null && (
+                <p className="dc-note">
+                  <strong>
+                    {l(
+                      'The edge comes from single-drug response.',
+                      'Försprånget kommer från effekten av varje läkemedel ensamt.',
+                    )}
+                  </strong>{' '}
+                  {l(
+                    `On unseen pairs, chemistry + biology alone reaches ${num(pairChemBio, 3)} and does not beat the baseline (${num(pairBase, 3)}). Adding each drug’s response on its own, measured in the same screens, lifts it to ${num(pairAll, 3)}.`,
+                    `På osedda par når kemi + biologi ensamt ${num(pairChemBio, 3)} och slår inte baslinjen (${num(pairBase, 3)}). Med varje läkemedels egen effekt, uppmätt i samma försök, når den ${num(pairAll, 3)}.`,
+                  )}
+                </p>
+              )}
             </Feature>
           </div>
           <div className="report-pair">
@@ -633,8 +667,8 @@ export default function DrugCombReport({ route }: { route: Route }) {
                   'Så bestämmer ett beslutsträd',
                 )}
                 lead={l(
-                  `A tree asks one yes-or-no question at a time until a measurement lands in a leaf; LightGBM adds hundreds like it. This one, split by drug pair, reaches ROC AUC ${num(treeFile.metrics.roc_auc, 3)} and average precision ${num(treeFile.metrics.average_precision, 3)} on unseen pairs, against a base rate of ${pct(treeFile.metrics.base_rate)}.`,
-                  `Ett träd ställer en ja-eller-nej-fråga i taget tills en mätning hamnar i ett löv; LightGBM lägger ihop hundratals sådana. Det här, uppdelat per läkemedelspar, når ROC AUC ${num(treeFile.metrics.roc_auc, 3)} och genomsnittlig precision ${num(treeFile.metrics.average_precision, 3)} på osedda par, mot en basnivå på ${pct(treeFile.metrics.base_rate)}.`,
+                  `A tree asks one yes-or-no question at a time until a measurement lands in a leaf; LightGBM adds hundreds like it. This is a separate, small model, not the LightGBM above: a scikit-learn tree of depth ${treeFile.metrics.depth} trained here on the raw DrugCombDB scores (${num(treeFile.method.measurements)} rows, before the cleaning that leaves ${num(o.combinations)}). Split by drug pair, it reaches ROC AUC ${num(treeFile.metrics.roc_auc, 3)} and average precision ${num(treeFile.metrics.average_precision, 3)} on unseen pairs, against a base rate of ${pct(treeFile.metrics.base_rate)}.`,
+                  `Ett träd ställer en ja-eller-nej-fråga i taget tills en mätning hamnar i ett löv; LightGBM lägger ihop hundratals sådana. Det här är en separat, liten modell, inte LightGBM-modellen ovan: ett scikit-learn-träd med djup ${treeFile.metrics.depth}, tränat här på DrugCombDB:s råa värden (${num(treeFile.method.measurements)} rader, före städningen som lämnar ${num(o.combinations)}). Uppdelat per läkemedelspar når det ROC AUC ${num(treeFile.metrics.roc_auc, 3)} och genomsnittlig precision ${num(treeFile.metrics.average_precision, 3)} på osedda par, mot en basnivå på ${pct(treeFile.metrics.base_rate)}.`,
                 )}
                 controls={
                   <Select
@@ -654,8 +688,8 @@ export default function DrugCombReport({ route }: { route: Route }) {
                   />
                 }
                 source={l(
-                  `scikit-learn; ${num(treeFile.metrics.train_measurements)} training and ${num(treeFile.metrics.test_measurements)} test measurements`,
-                  `scikit-learn; ${num(treeFile.metrics.train_measurements)} tränings- och ${num(treeFile.metrics.test_measurements)} testmätningar`,
+                  `scikit-learn tree trained in this repository on raw DrugCombDB scores; ${num(treeFile.metrics.train_measurements)} training and ${num(treeFile.metrics.test_measurements)} test rows`,
+                  `scikit-learn-träd tränat i det här repot på DrugCombDB:s råa värden; ${num(treeFile.metrics.train_measurements)} tränings- och ${num(treeFile.metrics.test_measurements)} testrader`,
                 )}
               >
                 <DecisionTree
@@ -896,6 +930,12 @@ export default function DrugCombReport({ route }: { route: Route }) {
 }
 
 function Method({ report }: { report: Report }) {
+  const r = (model: string) =>
+    num(
+      report.metrics.find((m) => m.scheme === 'cold_pair' && m.model === model)
+        ?.pearson ?? 0,
+      3,
+    )
   return (
     <>
       <div className="dc-explain-grid">
@@ -948,8 +988,8 @@ function Method({ report }: { report: Report }) {
       <h2>{l('Assumptions and limits', 'Antaganden och begränsningar')}</h2>
       <p>
         {l(
-          'The effect of each drug alone comes from the same screens, so the model assumes those single-drug results are already known. Gene expression comes from the wider DepMap collection. A low score on shuffled answers is a diagnostic, not proof that every leakage risk is gone. None of this is clinical evidence.',
-          'Effekten av varje läkemedel ensamt kommer från samma försök, så modellen förutsätter att de resultaten redan finns. Genuttrycket kommer från DepMaps bredare samling. Ett lågt värde på omblandade svar är en kontroll, inte ett bevis för att varje läckrisk är borta. Inget av detta är kliniska belägg.',
+          `The effect of each drug alone comes from the same dose-response block as the combination it predicts, and the ZIP score itself is computed against those single-drug curves, so part of the gain from these features is the synergy formula’s own reference. The model assumes those single-drug results are already known; without them, chemistry + biology does not beat the baseline on unseen pairs (${r('lgbm_chem_bio')} against ${r('history_ridge')}). Gene expression comes from the wider DepMap collection. A low score on shuffled answers is a diagnostic, not proof that every leakage risk is gone. None of this is clinical evidence.`,
+          `Effekten av varje läkemedel ensamt kommer från samma dos-respons-block som kombinationen den förutsäger, och ZIP-värdet räknas mot just de kurvorna, så en del av vinsten från de egenskaperna är synergiformelns egen referens. Modellen förutsätter att de resultaten redan finns; utan dem slår kemi + biologi inte baslinjen på osedda par (${r('lgbm_chem_bio')} mot ${r('history_ridge')}). Genuttrycket kommer från DepMaps bredare samling. Ett lågt värde på omblandade svar är en kontroll, inte ett bevis för att varje läckrisk är borta. Inget av detta är kliniska belägg.`,
         )}
       </p>
       <p>

@@ -134,7 +134,7 @@ function useFontSize(ref: RefObject<SVGGElement | null>) {
 
 /**
  * Direct labels at the end of lines, moved apart so none overlap (charts/marks spreadLabels).
- * The gap is the labels' own line height at the size they are drawn. When more labels than
+ * The gap is the labels' own line height, with leading, at the size they are drawn. When more labels than
  * fit, the first item (the focal line), the top and the bottom line keep theirs, then the rest
  * in order while room lasts. Each label takes its line's colour where it has one.
  */
@@ -152,7 +152,8 @@ export function EndLabels({
   gap?: number
 }) {
   const ref = useRef<SVGGElement>(null)
-  const step = Math.max(gap, useFontSize(ref))
+  // A line and a little leading, so neighbours never touch.
+  const step = Math.max(gap, useFontSize(ref) * 1.2)
   const room = Math.floor((bottom - top) / step) + 1
   let shown = items
   if (items.length > room) {

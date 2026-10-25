@@ -28,4 +28,12 @@ export const ok = <T,>(d: T | 'error' | null): d is T =>
   d != null && d !== 'error'
 
 export const unread = <p className="tech-note">This file could not be read.</p>
-export const reading = <p className="tech-note">Loading…</p>
+// A wordless placeholder: lazy sections below the fold must not read as unfinished.
+export const reading = (
+  <p
+    className="tech-note"
+    role="status"
+    aria-busy="true"
+    aria-label="Loading"
+  />
+)

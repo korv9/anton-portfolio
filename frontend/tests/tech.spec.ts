@@ -1,7 +1,7 @@
 import { test, expect } from './test'
 import AxeBuilder from '@axe-core/playwright'
 
-// The run history is GitHub's; the test answers for it so it does not depend on the network.
+// The run history comes from the status/github.json snapshot; the test answers for it.
 const run = (id: number, conclusion: string) => ({
   id,
   status: 'completed',
@@ -16,21 +16,32 @@ const run = (id: number, conclusion: string) => ({
 test('the projects page explains the pipeline, lists the projects and shows the runs, the ER diagrams, every table and the maps', async ({
   page,
 }) => {
-  await page.route('https://api.github.com/**', (route) => {
-    const url = route.request().url()
-    return route.fulfill({
-      json: url.endsWith('/actions/workflows')
-        ? {
-            workflows: [
-              {
-                id: 1,
-                name: 'Refresh public data',
-                path: '.github/workflows/refresh-welfare.yml',
-              },
-            ],
-          }
-        : { workflow_runs: [run(3, 'failure'), run(2, 'success')] },
-    })
+  await page.route('**/status/github.json', (route) =>
+    route.fulfill({
+      json: {
+        generated_at: '2026-10-13T05:23:00+00:00',
+        workflows: [
+          {
+            id: 1,
+            name: 'Refresh public data',
+            path: '.github/workflows/refresh-welfare.yml',
+            runs: [run(3, 'failure'), run(2, 'success')],
+          },
+        ],
+        scheduled_runs: {
+          since: '2026-09-13',
+          total_count: 0,
+          workflow_runs: [],
+        },
+        failure_issues: [],
+        incidents: [],
+        fabric_demo: '',
+      },
+    }),
+  )
+  // The page never asks GitHub itself.
+  await page.route('https://api.github.com/**', () => {
+    throw new Error('the page called the GitHub API')
   })
   // The ingestion status lives in object storage, outside the repository.
   await page.route('**/status/ingestion.json', (route) =>
@@ -124,16 +135,19 @@ test('the projects page explains the pipeline, lists the projects and shows the 
 })
 
 test(
-  'the projects page fits a phone and says so when GitHub cannot be read',
+  'the projects page fits a phone and points to GitHub when the snapshot is missing',
   { tag: '@mobile' },
   async ({ page }) => {
-    await page.route('https://api.github.com/**', (route) =>
-      route.fulfill({ status: 403, json: {} }),
+    await page.route('**/status/github.json', (route) =>
+      route.fulfill({ status: 404, json: {} }),
     )
     await page.goto('/#projects')
     await expect(page.locator('.tour-rail button')).toHaveCount(7)
     await expect(page.locator('#tech-ingestion')).toContainText(
-      'could not be read from GitHub',
+      'The run history is on GitHub Actions',
+    )
+    await expect(page.locator('#projects')).not.toContainText(
+      'could not be read',
     )
     await expect(page.locator('.stages tbody tr').first()).toBeVisible()
     const overflow = await page.evaluate(

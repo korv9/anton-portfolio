@@ -6,7 +6,7 @@
  */
 import { useEffect, useState } from 'react'
 import { l } from '../i18n'
-import { github } from './github'
+import { githubStatus, type Issue } from './github'
 import { REPO, day, num, reading } from './techData'
 
 type Run = {
@@ -18,40 +18,21 @@ type Run = {
   updated_at: string
   html_url: string
 }
-type Issue = {
-  number: number
-  title: string
-  html_url: string
-  body: string | null
-  created_at: string
-  closed_at: string | null
-}
-type File = { name: string; html_url: string }
-/** `total` is every scheduled run in the window; GitHub returns at most 100 of them, newest first. */
-type Health = { runs: Run[]; total: number; issues: Issue[]; incidents: File[] }
-
 const DAYS = 30
 const HOUR = 36e5
 
+type File = { name: string; html_url: string }
+/** `total` is every scheduled run in the window; the snapshot keeps at most 100, newest first. */
+type Health = { runs: Run[]; total: number; issues: Issue[]; incidents: File[] }
+
 async function loadHealth(): Promise<Health> {
-  const since = new Date(Date.now() - DAYS * 24 * HOUR)
-    .toISOString()
-    .slice(0, 10)
-  const [runs, issues, incidents] = await Promise.all([
-    github<{ workflow_runs: Run[]; total_count?: number }>(
-      `${REPO}/actions/runs?event=schedule&created=>=${since}&per_page=100`,
-    ),
-    // Only issues touched in the window can belong to its runs.
-    github<Issue[]>(
-      `${REPO}/issues?labels=data-pipeline-failure&state=all&since=${since}T00:00:00Z&per_page=100`,
-    ),
-    github<File[]>(`${REPO}/contents/docs/incidents`).catch(() => []),
-  ])
+  const status = await githubStatus()
+  const runs = status.scheduled_runs
   return {
     runs: runs.workflow_runs,
-    total: Math.max(runs.total_count ?? 0, runs.workflow_runs.length),
-    issues,
-    incidents: incidents.filter((f) => f.name.endsWith('.md')),
+    total: Math.max(runs.total_count, runs.workflow_runs.length),
+    issues: status.failure_issues,
+    incidents: status.incidents,
   }
 }
 
@@ -91,13 +72,13 @@ export function RunHealth() {
   if (health === null) return reading
   if (health === 'error')
     return (
-      <p className="tech-note" role="status">
-        {l(
-          'The run history could not be read from GitHub just now (the open API allows 60 requests an hour).',
-          'Körhistoriken kunde inte läsas från GitHub just nu (det öppna API:et tillåter 60 anrop i timmen).',
-        )}{' '}
+      <p className="tech-note">
         <a href={`https://github.com/${REPO}/actions`}>
-          {l('Open GitHub Actions', 'Öppna GitHub Actions')}
+          {l(
+            'The run history is on GitHub Actions',
+            'Körhistoriken finns på GitHub Actions',
+          )}{' '}
+          <span aria-hidden="true">↗</span>
         </a>
       </p>
     )

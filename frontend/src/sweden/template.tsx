@@ -59,7 +59,7 @@ export type Finding = {
   values: ReactNode
   evidence: Evidence
   source: ReactNode
-  /** Contradicts or complicates the starting expectation: shown first and marked. */
+  /** Contradicts or complicates the starting expectation: shown after the leading findings, and marked. */
   contrary?: boolean
   /** Highlights the finding in the scene, when the scene supports it. */
   onShow?: () => void
@@ -341,9 +341,14 @@ export function SwedenResearchPage({
   method: Method
   readings: Reading[]
 }) {
-  const ordered = [...findings]
-    .sort((a, b) => Number(!!b.contrary) - Number(!!a.contrary))
-    .slice(0, 3)
+  // The strongest (first-listed) finding leads; a contrary one closes the three, never dropped.
+  const against = findings.filter((f) => f.contrary)
+  const ordered = [
+    ...findings
+      .filter((f) => !f.contrary)
+      .slice(0, Math.max(1, 3 - against.length)),
+    ...against,
+  ].slice(0, 3)
   return (
     <article className="sweden sw-page">
       <SwedenMasthead current={product.href} />

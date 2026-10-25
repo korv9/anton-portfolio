@@ -1,7 +1,7 @@
 /**
- * The feed of every chart the site's data allows, shared by the meaning page (dark) and the
- * end of the home page (light). Posts come from ./posts/*.tsx and are grouped by subject, each
- * under a short heading. Thumbnails animate their own slicers while on screen; a click opens one.
+ * The feed of every chart the site's data allows, on the meaning page. Posts come from
+ * ./posts/*.tsx and are grouped by subject, each under a short heading, the strongest first.
+ * Thumbnails animate their own slicers while on screen; a click opens one.
  */
 import { useEffect, useState } from 'react'
 import { flushSync } from 'react-dom'
@@ -19,95 +19,48 @@ const modules = import.meta.glob<{ posts: Post[] }>('./posts/*.tsx', {
  * lines that read as noise at card size, squeezed scatters and repeats of a stronger number.
  */
 const DROPPED = new Set<string>([
-  // A single number, a test pass rate or a weak relation (rho 0.10): a sentence says as much.
+  // A single number, a test pass rate or a weak relation (rho 0.10, r 0.04): a sentence says
+  // as much, or a sibling already shows the number.
   'wel-population-kpi',
   'wel-connections-scatter',
+  'wel-health-trust',
+  'wel-tax-kpi',
+  'job-ai-big',
   'pol-meaning-ring',
   'pol-debate-kpis',
-  // Answered more plainly by a sibling: issue bars, the stacked vote share, the region bars,
-  // the symbol and risk-tier bars, the named cluster sizes.
+  // Answered more plainly by a sibling: issue bars and the stacked vote share.
   'pol-issue-multiples',
   'pol-share-multiples',
-  'job-region-swarm',
-  'txt-ml-symbol-counts',
-  'txt-act-obligation-heatmap',
-  'txt-ml-cluster-skyline',
-  // Empty or near-uniform.
-  'pol-issue-welfare',
-  'txt-plat-quality-waffle',
-  'job-ai-field-heat',
-  'txt-act-signal-calendar',
-  'txt-plat-compliance-funnel',
-  // Tangles of lines.
-  'txt-ml-model-parallel',
-  'job-occupation-slope',
-  // Squeezed or too fine to read.
-  'pol-cohesion-scatter',
-  'txt-plat-sfs-repealed',
-  'txt-plat-dataset-bubbles',
-  'pol-ministers',
-  // Single numbers beyond the strongest few.
-  'txt-act-duty-total',
-  'txt-act-references-kpi',
-  'txt-act-characters',
-  'txt-plat-gold-kpi',
-  'txt-ml-observations',
-  // Data not fit to show until the phase 1 data review: thin samples, partial periods or
-  // ranges labelled wider than the data.
-  'txt-act-signal-line',
-  'pol-poll-kpi',
-  'pol-poll-radial',
-  'pol-poll-error',
-  'pol-poll-changes',
-  'pol-study-bars',
-  'pol-news-radial',
-  // Data withdrawn on purpose (named employers and workplaces): the files now read
-  // {state: 'unavailable'}, so these could never render.
-  'job-co-skills',
-  'job-co-locations',
-  'job-co-size',
-  'job-co-days',
-  'job-co-remote',
-  'job-co-chord',
-  'job-co-metrics',
-  'job-co-seniority',
-  'job-ws-requirements',
-  // Misleading: a silhouette measured in UMAP space read as clustering quality on a 0-1 gauge.
-  'job-cluster-gauges',
-  // Repeats of a question another post answers more plainly (chart audit, 2026-10-23).
-  'pol-bump',
-  'pol-waffle',
-  'pol-votes-treemap',
-  'pol-seat-grid',
-  'pol-gender-donut',
-  'pol-poll-stream',
-  'pol-poll-heat',
-  'pol-chord',
-  'pol-gov-gauge',
-  'job-ai-ridgeline',
-  'job-cluster-bubbles',
-  'job-lang-lines',
-  'job-occupation-treemap',
-  'job-stream',
-  'txt-act-chapter-treemap',
-  'txt-act-applies-waffle',
-  'txt-act-duty-flows',
-  'txt-ml-topic-map',
-  // Constants, analyst diagnostics, internal logs and tangles that answer no reader's question.
-  'pol-majority',
-  'pol-polar-kpi',
-  'pol-parallel',
-  'job-cluster-years',
-  'job-lang-parallel',
-  'job-archives',
-  'txt-ml-words',
-  'txt-ml-concept-wheel',
-  'txt-plat-arch-rings',
-  'txt-plat-arch-degree',
-  'txt-plat-gold-bytes',
-  'txt-plat-lineage-units',
-  'txt-plat-delivery-donut',
+  // Too fine to read at card size, or a near-uniform frame.
+  'job-sparks',
+  'job-calendar',
+  'txt-act-signal-multiples',
+  'txt-ml-tension-boxes',
+  // Thin samples: three setups compared on 16 to 20 questions.
+  'txt-ml-gauges',
+  // Internal diagnostics (sample tables, node counts) that answer no reader's question.
+  'txt-plat-gold-rows',
+  'txt-plat-arch-stack',
+  // A stale file (the debate summary the pipeline no longer refreshes) and a one-off news
+  // count with no time in it.
+  'pol-topic-tree',
+  'pol-news-topics',
 ])
+
+/** The strongest posts, which open their sections in this order; the rest follow. */
+const LEAD = [
+  'pol-ai-speech-line',
+  'pol-share-stacked',
+  'pol-riksdag-eras-heat',
+  'wel-wedge-lines',
+  'wel-tax-nordic-lines',
+  'job-ai-lines',
+  'txt-act-apply-step',
+]
+const lead = (p: Post) => {
+  const i = LEAD.indexOf(p.id)
+  return i < 0 ? LEAD.length : i
+}
 
 /** Round-robin across groups so neighbouring posts come from different files. */
 function interleave(groups: Post[][]) {
@@ -194,7 +147,8 @@ for (const key of Object.keys(modules).sort()) {
 }
 const PARTS = SECTIONS.map((s) => ({
   ...s,
-  posts: interleave(grouped.get(s.key) ?? []),
+  // A stable sort, so the posts after the lead keep their interleaved order.
+  posts: interleave(grouped.get(s.key) ?? []).sort((a, b) => lead(a) - lead(b)),
 })).filter((s) => s.posts.length)
 export const FEED = PARTS.flatMap((s) => s.posts)
 
@@ -207,7 +161,7 @@ function morph(change: () => void) {
   else change()
 }
 
-/** `level` is the section heading level: 2 under the meaning page's h1, 3 on the home page. */
+/** `level` is the section heading level: 2 under the meaning page's h1. */
 export default function Feed({ level = 2 }: { level?: 2 | 3 }) {
   const Heading = level === 2 ? 'h2' : 'h3'
   const [openId, setOpenId] = useState<string | null>(null)

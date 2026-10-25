@@ -212,7 +212,7 @@ export const posts: Post[] = [
     sources: ['welfare/national-month.json'],
     size: 'wide',
     title: 'New sick-leave cases per month, by group of diagnoses',
-    note: 'Cases started per month. Source: Försäkringskassan',
+    note: 'Cases started per month; the peak is March 2020, as covid-19 arrived. Source: Försäkringskassan',
     render: () => <SickLines />,
   },
 ]

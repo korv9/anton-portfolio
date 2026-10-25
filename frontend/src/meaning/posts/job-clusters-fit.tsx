@@ -19,14 +19,13 @@ function Kpis() {
           .filter((c) => c.cluster_id >= 0)
           .map((c) => c.job_count)
         const items: [string, string][] = [
+          // The clusters and ads clustered are in the title; four tiles fit a square card.
           [fmt(s.candidate_count), 'candidate ads'],
-          [fmt(s.source_size), 'ads clustered'],
           [fmt(s.unique_text_count), 'unique texts'],
-          [String(s.diagnostics.cluster_count), 'clusters'],
           [pct(s.diagnostics.noise_share, 1), 'noise'],
         ]
         if (sizes.length)
-          items.push([fmt(Math.max(...sizes)), 'ads, largest cluster'])
+          items.push([fmt(Math.max(...sizes)), 'largest cluster'])
         return <KpiGrid items={items} />
       }}
     </Frame>

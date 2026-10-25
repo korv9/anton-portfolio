@@ -43,7 +43,7 @@ export type Post = {
 
 /**
  * Six series colours; charts cycle through them. The first is the focal one. meaning.css maps
- * them to the SWEDEN dark palette or, on the home page, to its light palette.
+ * them to the page's dark palette.
  */
 export const PALETTE = [
   'var(--mean-s1)',
