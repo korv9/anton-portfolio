@@ -24,7 +24,7 @@ import './hub.css'
 const Machinery = lazy(() => import('../tech/Machinery'))
 
 const STACK =
-  'Python · dbt · DuckDB · GitHub Actions · Cloudflare R2 · TypeScript · React'
+  'Python · dbt · DuckDB · GitHub Actions · Cloudflare R2 · Cloudflare Workers · Workers AI · TypeScript · React'
 
 type Domain = { id: string; counts: Record<string, number> }
 
@@ -178,15 +178,21 @@ export default function ProjectsHub({ path }: { path: string }) {
     <div className="hub">
       <Sidebar />
       <article className="tech hub-main" id="projects">
-        <header className="tech-head">
+        <header className="tech-head hub-head">
           <h1>{l('Projects', 'Projekt')}</h1>
-          <p>
-            {l(
-              'The projects under Running on the platform run on one data platform I built: public sources fetched on a schedule, modelled and tested with dbt, passed through machine learning where the data is text, and published to these pages only when every blocking check has passed.',
-              'Projekten under Körs på plattformen körs på en dataplattform jag har byggt: offentliga källor som hämtas på schema, modelleras och testas med dbt, går genom maskininlärning där datan är text och publiceras till sidorna först när alla blockerande kontroller har gått igenom.',
-            )}
-          </p>
-          <p className="hub-stack">{STACK}</p>
+          <div className="hub-intro">
+            <p>
+              {l(
+                'The projects under Running on the platform run on one data platform I built: public sources fetched on a schedule, modelled and tested with dbt, passed through machine learning where the data is text, and published to these pages only when every blocking check has passed.',
+                'Projekten under Körs på plattformen körs på en dataplattform jag har byggt: offentliga källor som hämtas på schema, modelleras och testas med dbt, går genom maskininlärning där datan är text och publiceras till sidorna först när alla blockerande kontroller har gått igenom.',
+              )}
+            </p>
+            <p className="hub-stack">{STACK}</p>
+            <a className="hub-jump" href="#projects-flow">
+              {l('How the platform is built', 'Så är plattformen byggd')}{' '}
+              <span aria-hidden="true">↓</span>
+            </a>
+          </div>
         </header>
         <Headline />
         {[platform, other].map((part) => (
@@ -218,12 +224,6 @@ export default function ProjectsHub({ path }: { path: string }) {
                     data-lead={group.id === 'jobs' || undefined}
                   >
                     <a className="hub-item" href={item.href}>
-                      {part === platform &&
-                        group.title.en !== item.title.en && (
-                          <span className="hub-item-kicker">
-                            {l(group.title.en, group.title.sv)}
-                          </span>
-                        )}
                       <span className="hub-item-title">
                         {l(item.title.en, item.title.sv)}
                         {item.href.startsWith('http') && (

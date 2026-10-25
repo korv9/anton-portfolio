@@ -38,7 +38,7 @@ export default function Headline() {
     )
   if (status)
     figures.push([
-      l('Last run', 'Senaste körning'),
+      l('Last ingestion run', 'Senaste inläsning'),
       ago(status.last.recorded_at!),
     ])
   if (!figures.length) return null
@@ -54,10 +54,16 @@ export default function Headline() {
       aria-label={l('The platform in figures', 'Plattformen i siffror')}
     >
       <dl>
-        {figures.map(([label, value]) => (
+        {figures.map(([label, value], i) => (
           <div key={label}>
             <dt>{label}</dt>
-            <dd>{value}</dd>
+            <dd
+              data-kind={
+                status && i === figures.length - 1 ? 'time' : undefined
+              }
+            >
+              {value}
+            </dd>
           </div>
         ))}
       </dl>

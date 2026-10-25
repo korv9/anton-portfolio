@@ -213,8 +213,8 @@ test('the projects hub leads with the dashboard and the job search', async ({
   ).toHaveAttribute('aria-pressed', 'true')
   await expect(flow.locator('li[data-used]').first()).toBeVisible()
   // Job search first, opening the job assistant.
-  await expect(page.locator('.hub-item-kicker').first()).toHaveText(
-    'Job search',
+  await expect(page.locator('.hub-items > li').first()).toHaveAttribute(
+    'data-lead',
   )
   await expect(page.locator('#projects-jobs a[href="#jobs"]')).toBeVisible()
   const nav = page.getByRole('navigation', { name: 'Projects' })

@@ -1,7 +1,8 @@
 /*
  * The projects hub (hub/ProjectsHub.tsx): a sidebar of groups beside the content on a wide
- * screen, a menu above it on a phone. The content keeps the technical inventory's style
- * (tech.css): thin rules, uppercase section titles, metadata in small type.
+ * screen, a menu above it on a phone. Big uppercase display type for the page and its sections,
+ * mono for figures and file names, thin rules, and one focal accent (--focal, tokens.css) for
+ * the job search and the path a project takes through the flow.
  */
 .hub {
   display: grid;
@@ -12,9 +13,22 @@
 .hub .tech {
   padding-inline: 0;
 }
-/* Quiet rules between the hub's sections, so the job search's bar is the one heavy mark. */
+/* Quiet rules between the hub's sections; the display headings carry the hierarchy. */
 .hub-main > section {
   border-top: 1px solid var(--line-strong);
+}
+/* #main outranks editorial.css's page title and section heading rules. */
+#main .hub-main > section > h2 {
+  max-width: 18ch;
+  font-size: clamp(2rem, 4.2vw, 3.5rem);
+  font-weight: 750;
+  letter-spacing: -0.035em;
+  line-height: 0.98;
+  text-wrap: balance;
+}
+.hub ::selection {
+  background: var(--focal);
+  color: var(--page);
 }
 
 /* ---------- Sidebar ---------- */
@@ -61,11 +75,50 @@
   outline-offset: 3px;
 }
 
-/* ---------- Header and dashboard ---------- */
+/* ---------- Header and headline ---------- */
+/* The page name large on the left, the intro set against it on the right. */
+.hub-head {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 30rem);
+  align-items: end;
+  column-gap: var(--sp-7);
+  padding-top: var(--sp-5);
+}
+#main .hub-main .hub-head h1 {
+  max-width: none;
+  margin: 0;
+  font-size: clamp(3.25rem, 8.5vw, 6rem);
+  font-weight: 750;
+  letter-spacing: -0.04em;
+  line-height: 0.88;
+}
+.hub-intro {
+  display: grid;
+  gap: var(--sp-4);
+}
+.hub-intro p {
+  margin: 0;
+}
 .hub-stack {
+  color: var(--ink);
   font-family: var(--font-mono);
-  font-size: var(--small);
-  letter-spacing: 0.01em;
+  font-size: var(--caption);
+  letter-spacing: 0.02em;
+  line-height: 1.7;
+}
+.hub-jump {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  min-height: 44px;
+  color: var(--focal);
+  font-weight: 650;
+  text-underline-offset: 0.25em;
+}
+@media (max-width: 1100px) {
+  .hub-head {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 /* The headline: four figures on one line, the files they come from under them. */
 .hub-main > .hub-headline {
@@ -75,8 +128,16 @@
 .hub-headline dl {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--sp-4) var(--sp-7);
+  gap: var(--sp-4) 0;
   margin: 0;
+}
+.hub-headline dl > div {
+  padding-inline: 0 var(--sp-6);
+  margin-inline-end: var(--sp-6);
+  border-right: 1px solid var(--line);
+}
+.hub-headline dl > div:last-child {
+  border-right: 0;
 }
 .hub-headline dt {
   color: var(--ink-faded);
@@ -85,13 +146,49 @@
 .hub-headline dd {
   margin: 0;
   font-family: var(--font-mono);
-  font-size: var(--type-metric);
+  font-size: clamp(2rem, 4vw, 3rem);
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.02em;
   white-space: nowrap;
 }
 
-/* ---------- How the platform is built: seven steps on a rail ---------- */
+@media (max-width: 760px) {
+  .hub-headline dl {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--sp-4);
+  }
+  .hub-headline dl > div {
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+}
+/* A status in words rather than a count steps down a size. */
+.hub-headline dd[data-kind='time'] {
+  font-size: var(--h2);
+}
+
+/* ---------- How the platform is built: seven steps on a rail ----------
+   The chosen project's path is drawn in the focal accent. Where the browser ties animation to
+   scroll, the path fills down the rail as each step comes into view; otherwise, and with
+   reduced motion, it is drawn whole. Hovering or focusing a step traces what it is built from. */
+.hub-flow > .tech-note {
+  max-width: 62ch;
+}
+.hub-flow-pick button {
+  min-height: 44px;
+}
+.hub-flow-pick button[aria-pressed='true'] {
+  color: var(--focal);
+  text-decoration-color: var(--focal);
+}
+.hub-flow-summary {
+  margin: 0;
+  color: var(--focal);
+  font-family: var(--font-mono);
+  font-size: var(--small);
+}
 .hub-flow-steps {
   display: grid;
   margin: var(--sp-3) 0 0;
@@ -101,72 +198,97 @@
 .hub-flow-steps > li {
   position: relative;
   display: grid;
-  grid-template-columns: 2.5rem minmax(10rem, 15rem) minmax(0, 1fr) minmax(
+  grid-template-columns: 3rem minmax(10rem, 15rem) minmax(0, 1fr) minmax(
       12rem,
       20rem
     );
   gap: var(--sp-2) var(--sp-5);
   align-items: start;
-  padding: var(--sp-4) 0;
+  padding: var(--sp-5) 0;
   border-top: 1px solid var(--line);
 }
-/* The rail joins the step numbers from the first source to the site. */
-.hub-flow-steps > li::before {
+/* The rail, and over it the chosen project's path. */
+.hub-flow-steps > li::before,
+.hub-flow-steps > li[data-used]::after {
   content: '';
   position: absolute;
-  inset: 0 auto 0 calc(1rem - 0.5px);
+  inset: 0 auto 0 calc(1.25rem - 0.5px);
   width: 1px;
   background: var(--line-strong);
 }
-.hub-flow-steps > li:first-child::before {
-  top: calc(var(--sp-4) + 1rem);
+.hub-flow-steps > li[data-used]::after {
+  left: calc(1.25rem - 1px);
+  width: 2px;
+  background: var(--focal);
+  transform-origin: top;
 }
-.hub-flow-steps > li:last-child::before {
-  bottom: calc(100% - var(--sp-4) - 1rem);
+.hub-flow-steps > li:first-child::before,
+.hub-flow-steps > li:first-child::after {
+  top: calc(var(--sp-5) + 1.25rem);
+}
+.hub-flow-steps > li:last-child::before,
+.hub-flow-steps > li:last-child::after {
+  bottom: calc(100% - var(--sp-5) - 1.25rem);
 }
 .hub-flow-num {
   position: relative;
+  z-index: 1;
   display: grid;
   place-items: center;
-  width: 2rem;
-  height: 2rem;
+  width: 2.5rem;
+  height: 2.5rem;
   border: 1px solid var(--line-strong);
   border-radius: 50%;
   background: var(--page);
   color: var(--ink-faded);
   font-family: var(--font-mono);
   font-size: var(--caption);
+  transition:
+    background-color 300ms cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 300ms cubic-bezier(0.16, 1, 0.3, 1),
+    color 300ms cubic-bezier(0.16, 1, 0.3, 1);
 }
-/* The chosen project's steps: the page's one accent. */
 li[data-used] .hub-flow-num {
-  border-color: var(--ink-identity);
-  background: var(--ink-identity);
+  border-color: var(--focal);
+  background: var(--focal);
   color: var(--page);
 }
+/* Lineage: the step under the pointer or focus, and every step before it, ringed. */
+.hub-flow-steps > li:is(:hover, :focus-within) .hub-flow-num,
+.hub-flow-steps > li:has(~ li:is(:hover, :focus-within)) .hub-flow-num {
+  outline: 1px solid var(--focal);
+  outline-offset: 3px;
+}
+.hub-flow-steps > li:has(~ li:is(:hover, :focus-within))::before {
+  background: var(--focal);
+}
 .hub-flow-head h3 {
-  margin: 0.2rem 0 0;
+  margin: 0.4rem 0 0;
   color: var(--ink);
   font-family: inherit;
-  font-size: var(--h3);
-  font-weight: 700;
-  letter-spacing: -0.01em;
+  font-size: clamp(1.25rem, 1.8vw, 1.6rem);
+  font-weight: 750;
+  letter-spacing: -0.02em;
   text-transform: none;
 }
 .hub-flow-tool {
-  margin: var(--sp-1) 0 0;
+  margin: var(--sp-2) 0 0;
   color: var(--ink-faded);
   font-family: var(--font-mono);
   font-size: var(--caption);
+  line-height: 1.6;
 }
 .hub-flow-what {
   max-width: var(--layout-reading);
-  margin: 0.2rem 0 0;
+  margin: 0.45rem 0 0;
+  font-size: var(--body-large);
   line-height: 1.55;
 }
 .hub-flow-data {
   display: grid;
   gap: var(--sp-1);
-  margin-top: 0.2rem;
+  margin-top: 0.45rem;
+  color: var(--ink-faded);
   font-size: var(--small);
   font-variant-numeric: tabular-nums;
 }
@@ -174,12 +296,15 @@ li[data-used] .hub-flow-num {
   margin: 0;
 }
 .hub-flow-project {
+  margin-top: var(--sp-2) !important;
+  padding-top: var(--sp-2);
+  border-top: 1px solid var(--line);
   color: var(--ink-faded);
   font-family: var(--font-mono);
   font-size: var(--caption);
 }
 li[data-used] .hub-flow-project {
-  color: var(--ink-identity);
+  color: var(--focal);
 }
 .hub-flow-data a {
   justify-self: start;
@@ -190,9 +315,35 @@ li[data-used] .hub-flow-project {
   font-weight: 600;
   text-underline-offset: 0.2em;
 }
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .hub-flow-steps > li[data-used]::after {
+      animation: hub-path linear both;
+      animation-timeline: view();
+      animation-range: entry 60% cover 45%;
+    }
+    .hub-flow-steps > li > :not(.hub-flow-num) {
+      animation: hub-step linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 80%;
+    }
+  }
+}
+@keyframes hub-path {
+  from {
+    transform: scaleY(0);
+  }
+}
+@keyframes hub-step {
+  from {
+    opacity: 0.25;
+    translate: 0 1.25rem;
+    filter: blur(2px);
+  }
+}
 @media (max-width: 1100px) {
   .hub-flow-steps > li {
-    grid-template-columns: 2.5rem minmax(0, 1fr);
+    grid-template-columns: 3rem minmax(0, 1fr);
   }
   .hub-flow-steps > li > :not(.hub-flow-num) {
     grid-column: 2;
@@ -241,8 +392,7 @@ li[data-used] .hub-flow-project {
   color: var(--ink-faded);
   line-height: 1.55;
 }
-/* The job search leads the hub: one wide entry under a rule in the identity ink, the page's one
-   accent. */
+/* The job search leads the hub as its hero: the title large, the text beside the facts. */
 .hub-items > li {
   scroll-margin-top: calc(var(--header-h, 4rem) + var(--sp-5));
 }
@@ -250,23 +400,35 @@ li[data-used] .hub-flow-project {
   grid-column: 1 / -1;
 }
 li[data-lead] .hub-item {
-  padding: var(--sp-4) 0 var(--sp-5);
-  border-top: 2px solid var(--ink-identity);
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+  column-gap: var(--sp-7);
+  padding: var(--sp-5) 0 var(--sp-6);
+  border-top: 2px solid var(--focal);
 }
 li[data-lead] .hub-item-title {
-  color: var(--ink-identity);
-  font-size: var(--h2);
+  grid-column: 1 / -1;
+  color: var(--focal);
+  font-size: clamp(2.25rem, 5vw, 4rem);
+  font-weight: 750;
+  letter-spacing: -0.035em;
+  line-height: 0.95;
+}
+li[data-lead] .hub-item-title::after {
+  content: ' →' / '';
+  font-weight: 400;
 }
 li[data-lead] .hub-item-text {
+  color: var(--ink);
   font-size: var(--body-large);
 }
-.hub-item-kicker {
-  color: var(--ink-faded);
-  font-family: var(--font-meta);
-  font-size: var(--caption);
-  font-weight: 500;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+li[data-lead] .hub-item-runs {
+  align-self: end;
+  line-height: 1.8;
+}
+@media (max-width: 760px) {
+  li[data-lead] .hub-item {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 /* ---------- Phone: the sidebar folds into a menu above the content ---------- */

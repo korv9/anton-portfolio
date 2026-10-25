@@ -93,9 +93,9 @@ test('the hub shows the platform: live status, run health, the Fabric lakehouse 
   ).toBeVisible()
   // The run status sits at its step of the flow: ingestion.
   const ingestion = page.locator('.hub-flow-steps > li').nth(1)
-  await expect(ingestion).toContainText('last run 3 h ago')
+  await expect(ingestion).toContainText('last ingestion run 3 h ago')
   await expect(ingestion).toContainText(
-    '1 of 2 subjects passed their latest run',
+    '1 of 2 datasets passed their latest run',
   )
   await expect(page.locator('.tour-rail')).toBeVisible()
   await expect(page.getByText('Example:')).toBeVisible()
