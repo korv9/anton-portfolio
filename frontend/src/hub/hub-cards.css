@@ -3,30 +3,39 @@
  * job-ads map) and the cards, each a picture over a title, a line and its status in mono. No
  * fills, boxes or rules around a card: space keeps them apart, as on the start page.
  */
+/* One project per row: its words on the left, its picture on the right, much space between. */
 .hub-items {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: clamp(4rem, 8vw, 128px) clamp(2.5rem, 6vw, 96px);
+  gap: clamp(6rem, 14vw, 220px);
   margin: 0;
   padding: 0;
   list-style: none;
 }
 .hub-items > li {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-4);
+  display: grid;
+  grid-template-columns: minmax(0, 520px) minmax(0, 1fr);
+  align-items: center;
+  gap: var(--sp-5) clamp(2.5rem, 7vw, 120px);
   scroll-margin-top: calc(var(--header-h, 4rem) + var(--sp-5));
+}
+.hub-row-text {
+  display: grid;
+  gap: var(--sp-5);
+  align-content: start;
+}
+.hub-row-visual {
+  min-width: 0;
 }
 .hub-item {
   display: grid;
   align-content: start;
-  gap: var(--sp-2);
+  gap: var(--sp-3);
   color: var(--ink);
   text-decoration: none;
 }
 .hub-item-title {
   justify-self: start;
-  font-size: clamp(1.2rem, 1.6vw, 1.4rem);
+  font-size: clamp(1.4rem, 2vw, 1.75rem);
   font-weight: 700;
   letter-spacing: -0.02em;
 }
@@ -41,42 +50,23 @@
 }
 .hub-item-text {
   justify-self: start;
-  max-width: 640px;
-  font-size: var(--body);
+  font-size: var(--body-large);
   line-height: 1.5;
 }
-.hub-item-runs,
-.hub-item-where {
+.hub-item-open {
+  margin-top: var(--sp-2);
   color: var(--muted);
   font-family: var(--font-mono);
   font-size: var(--caption);
-  font-variant-numeric: tabular-nums;
-}
-.hub-item-where {
-  margin-top: var(--sp-2);
   letter-spacing: 0.08em;
 }
-.hub-item-status {
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-}
 
-/* ---------- The lead: the job assistant, its market line and the job-ads map ---------- */
+/* ---------- The lead: Arbetsförmedla, its market line and the job-ads map ---------- */
 .hub-lead {
   padding-bottom: var(--sp-7);
 }
-.hub-items > li[data-lead] {
-  grid-column: 1 / -1;
-  display: grid;
-  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
-  align-items: center;
-  gap: var(--sp-5) var(--sp-7);
-}
-li[data-lead] > :not(.home-jobs-map) {
-  grid-column: 1;
-}
 li[data-lead] .hub-item-title {
-  font-size: clamp(1.9rem, 3.4vw, 3rem);
+  font-size: clamp(1.9rem, 3.4vw, 2.6rem);
   font-weight: 750;
   letter-spacing: -0.045em;
   line-height: 1;
@@ -84,9 +74,7 @@ li[data-lead] .hub-item-title {
 /* The map bleeds off the right edge and fades at its rim, as beside PROJECTS → on the start page. */
 .hub .home-jobs-map {
   position: relative;
-  grid-column: 2;
-  grid-row: 1 / span 2;
-  height: clamp(360px, 44vw, 640px);
+  height: clamp(360px, 44vw, 600px);
   margin: 0 calc(-1 * clamp(var(--gutter), 6.5vw, 96px)) 0 0;
   overflow: hidden;
 }
@@ -94,8 +82,8 @@ li[data-lead] .hub-item-title {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: clamp(520px, 62vw, 900px);
-  height: clamp(520px, 62vw, 900px);
+  width: clamp(520px, 62vw, 860px);
+  height: clamp(520px, 62vw, 860px);
   translate: -45% -50%;
   mask-image: radial-gradient(ellipse closest-side, #000 70%, transparent 100%);
 }
@@ -137,13 +125,8 @@ li[data-lead] .hub-item-title {
   font-size: var(--caption);
 }
 
-@media (max-width: 760px) {
-  .hub-items,
-  .hub-items > li[data-lead] {
+@media (max-width: 860px) {
+  .hub-items > li {
     grid-template-columns: minmax(0, 1fr);
-  }
-  .hub .home-jobs-map {
-    grid-column: 1;
-    grid-row: auto;
   }
 }

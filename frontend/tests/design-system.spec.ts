@@ -24,14 +24,15 @@ test('project themes survive navigation between all workspace types', async ({
       workspace,
     )
     await expect(page.locator('main h1').first()).toBeVisible()
+    // Ivory on charcoal on every page, the header included.
     await expect(page.locator('body')).toHaveCSS(
       'background-color',
-      'rgb(241, 239, 231)',
+      'rgb(36, 36, 34)',
     )
     await expect(page.locator('body')).toHaveCSS('font-family', /Helvetica/)
     await expect(page.locator('.site-header')).toHaveCSS(
       'background-color',
-      'rgb(226, 223, 214)',
+      'rgb(36, 36, 34)',
     )
     expect(
       (await page.locator('.site-header').boundingBox())!.height,
@@ -73,16 +74,18 @@ test('the homepage keeps the signature, name scale, placement and palette', asyn
   )
 })
 
-test('dark visualization colors stay inside the plate', async ({ page }) => {
+test('a dark plate reads the same tokens as the charcoal page', async ({
+  page,
+}) => {
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.goto('/#symbolic-atlas')
   const plate = page.locator('main .plate').first()
   await expect(plate).toBeVisible()
   await expect(plate).toHaveCSS('color-scheme', 'dark')
   await expect(plate).toHaveCSS('background-color', 'rgb(36, 36, 34)')
-  await expect(page.locator('body')).toHaveCSS('color-scheme', 'light')
+  await expect(page.locator('body')).toHaveCSS('color-scheme', 'dark')
   await expect(page.locator('body')).toHaveCSS(
     'background-color',
-    'rgb(241, 239, 231)',
+    'rgb(36, 36, 34)',
   )
 })

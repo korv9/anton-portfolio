@@ -154,11 +154,10 @@
 }
 
 /*
- * Ivory on charcoal (the "Intro sketches" canvas): the start page and the projects hub. The
- * interface palette is replaced too, so components that read --color-* directly follow.
+ * Ivory on charcoal (the "Intro sketches" canvas) on every page. It replaces the light palette
+ * above, the interface colours (--color-*) included, so components that read them follow.
  */
-:root:has(.home-shell),
-:root:has(.hub) {
+:root {
   color-scheme: dark;
   --color-canvas: #242422;
   --color-surface: #30302d;

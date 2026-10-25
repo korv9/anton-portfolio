@@ -1,9 +1,7 @@
 /**
  * The projects in the hub (#projects), in three parts: what runs on the data platform, the
- * experiments and the other projects. The texts come from the
- * project pages, the registry and the start page's earlier project list. `domain` names the
- * subject in architecture/graph.json a project is built from and `fresh` its key in
- * meaning/freshness.ts; the hub reads both to show what each project runs on.
+ * experiments and the other projects. The texts come from the project pages, the registry and
+ * the start page's earlier project list; `domain` ties a project to its path in the flow.
  */
 import { MEANING } from '../router'
 import { PROJECTS, type Bilingual } from '../projects/projectRegistry'
@@ -16,14 +14,8 @@ export type HubItem = {
   text: Bilingual
   /** Where the item opens: a page on this site, or a repository on GitHub. */
   href: string
+  /** The subject in architecture/graph.json the project is built from (the flow marks its path). */
   domain?: string
-  fresh?: string
-  /** What the freshness line is about, when it is narrower than the project's data. */
-  data?: Bilingual
-  /** The project's own run in status/ingestion.json, if it has one. */
-  run?: string
-  /** One word or two in mono under the card: LIVE, EXPERIMENTAL, REPO and so on. */
-  status: Bilingual
 }
 
 export type HubGroup = {
@@ -43,15 +35,6 @@ export const PARTS: { id: HubGroup['part']; title: Bilingual }[] = [
   { id: 'other', title: t('Övriga projekt', 'Other projects') },
 ]
 
-const LIVE = t('Live', 'Live')
-const EXPERIMENTAL = t('Experiment', 'Experimental')
-const STATUS: Record<string, Bilingual> = {
-  live: LIVE,
-  experimental: EXPERIMENTAL,
-  'in-progress': t('Pågår', 'In progress'),
-  study: t('Studie', 'Study'),
-}
-
 const registry = (id: string, domain?: string): HubItem => {
   const p = PROJECTS.find((entry) => entry.id === id)!
   return {
@@ -60,7 +43,6 @@ const registry = (id: string, domain?: string): HubItem => {
     text: p.summary,
     href: p.href,
     domain,
-    status: STATUS[p.status],
   }
 }
 
@@ -69,7 +51,6 @@ const repo = (name: string, title: Bilingual, text: Bilingual): HubItem => ({
   title,
   text,
   href: `https://github.com/korv9/${name}`,
-  status: t('Repo', 'Repo'),
 })
 
 export const HUB_GROUPS: HubGroup[] = [
@@ -82,15 +63,11 @@ export const HUB_GROUPS: HubGroup[] = [
         id: 'jobs',
         title: t('Arbetsförmedla', 'Arbetsförmedla'),
         text: t(
-          'Mitt cv matchat varje timme mot aktuella Data/IT-annonser från JobTech. Varje klass säger varför, med annonsens mening och cv-raden bakom. Det stöder mitt beslut; det uppskattar inte chansen att bli anställd.',
-          'My CV matched every hour with current Data/IT ads from JobTech. Each class says why, with the ad sentence and the CV line behind it. It supports my decision; it does not estimate a chance of being hired.',
+          'Mitt cv matchat flera gånger om dagen mot aktuella Data/IT-annonser från JobTech. Varje klass säger varför, med annonsens mening och cv-raden bakom. Det stöder mitt beslut; det uppskattar inte chansen att bli anställd.',
+          'My CV matched several times a day with current Data/IT ads from JobTech. Each class says why, with the ad sentence and the CV line behind it. It supports my decision; it does not estimate a chance of being hired.',
         ),
         href: '#jobs',
         domain: 'jobs',
-        fresh: 'jobs',
-        data: t('annonsdatan', 'job ads data'),
-        run: 'job_assistant',
-        status: LIVE,
       },
     ],
   },
@@ -107,8 +84,6 @@ export const HUB_GROUPS: HubGroup[] = [
           'Featured research platform: research products on Swedish society',
         ),
         href: '#sweden',
-        fresh: 'sweden',
-        status: LIVE,
       },
     ],
   },
@@ -125,7 +100,6 @@ export const HUB_GROUPS: HubGroup[] = [
           'A feed of every chart the platform’s published data supports. Each chart shows the file and the source it is built from.',
         ),
         href: MEANING,
-        status: LIVE,
       },
     ],
   },
@@ -148,7 +122,6 @@ export const HUB_GROUPS: HubGroup[] = [
           'Every clustering on the site on one page: the Symbol Lab, the Philosophy Lab, job ads and Riksdag debates.',
         ),
         href: '#cluster-visuals',
-        status: LIVE,
       },
     ],
   },
@@ -165,7 +138,6 @@ export const HUB_GROUPS: HubGroup[] = [
           'Public data fetched on a schedule, built and tested with dbt in bronze, silver and gold, and released to Cloudflare R2.',
         ),
         href: '#projects-platform',
-        status: LIVE,
       },
     ],
   },
@@ -184,7 +156,7 @@ export const HUB_GROUPS: HubGroup[] = [
     title: t('Övriga projekt', 'Other projects'),
     part: 'other',
     items: [
-      { ...registry('thesis'), status: t('Examensarbete', 'Degree project') },
+      registry('thesis'),
       registry('drugcomb'),
       registry('homie'),
       repo(

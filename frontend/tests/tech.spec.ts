@@ -79,10 +79,9 @@ test('the projects page explains the pipeline, lists the projects and shows the 
   await expect(page.locator('#tour-step-title')).toHaveText(
     '05 Machine learning',
   )
-  // The projects, with what a project on the platform holds.
-  await expect(
-    page.locator('.hub-item[href="#symbolic-atlas"] .hub-item-runs'),
-  ).toContainText('dbt models')
+  // The projects, one per row: no run or status lines under them.
+  await expect(page.locator('.hub-item[href="#symbolic-atlas"]')).toBeVisible()
+  await expect(page.locator('.hub-item-runs, .hub-item-status')).toHaveCount(0)
   const fetched = page.locator('.fetches tbody tr')
   await expect(fetched).toHaveAttribute('data-state', 'failure')
   await expect(fetched).toContainText('6, 0, 2')

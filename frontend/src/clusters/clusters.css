@@ -224,7 +224,7 @@
 .cv-place-label,
 .cv-place-who {
   margin: 0;
-  color: var(--cv-ground);
+  color: var(--muted);
   font-family: var(--font-mono);
   font-size: var(--fs-label);
   font-variant-numeric: tabular-nums;
