@@ -29,14 +29,13 @@ const ClusterVisualsPage = lazy(() => import('./clusters/ClusterVisualsPage'))
 const MeaningPage = lazy(() => import('./meaning/MeaningPage'))
 const AskTheLaw = lazy(() => import('./lawqa/AskTheLaw'))
 const JobAssistantPage = lazy(() => import('./job-assistant/JobAssistantPage'))
-const AskThePlatform = lazy(() => import('./ask/AskThePlatform'))
 const DrugCombPage = lazy(() =>
   import('./products/CaseStudies').then((m) => ({ default: m.DrugCombPage })),
 )
 const ThesisPage = lazy(() =>
   import('./products/CaseStudies').then((m) => ({ default: m.ThesisPage })),
 )
-const LakehousePage = lazy(() => import('./products/LakehousePage'))
+const PlatformPage = lazy(() => import('./tech/PlatformPage'))
 const HomiePage = lazy(() =>
   import('./products/CaseStudies').then((m) => ({ default: m.HomiePage })),
 )
@@ -126,18 +125,13 @@ export default function App() {
                 {page === 'meaning' && <MeaningPage />}
                 {page === 'lawqa' && <AskTheLaw route={route} />}
                 {page === 'jobs' && <JobAssistantPage route={route} />}
-                {page === 'askplatform' && (
-                  <div className="ds-container">
-                    <AskThePlatform />
-                  </div>
-                )}
                 {page === 'philosophy' && <PhilosophyAtlasPage route={route} />}
                 {page === 'concepts' && (
                   <ConceptConstellationPage route={route} />
                 )}
                 {page === 'drugcomb' && <DrugCombPage route={route} />}
                 {page === 'thesis' && <ThesisPage />}
-                {page === 'lakehouse' && <LakehousePage />}
+                {page === 'platform' && <PlatformPage />}
                 {page === 'homie' && <HomiePage />}
               </Suspense>
             </ProjectStructure>
