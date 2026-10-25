@@ -66,7 +66,7 @@ lab:
   resources:
     cpu_threads: 3
     torch_threads: 2
-    memory_gb: 8
+    memory_gb: 1.5
     min_free_disk_gb: 3
   layouts:
     count: 12
