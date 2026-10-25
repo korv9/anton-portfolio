@@ -519,11 +519,13 @@ subjects:
       # Not dbt: rewrites the gold job tables and marts/jobs.json in Python from the CSVs above.
       - export: python platform/legacy/build_gold.py
 
-  # The job assistant (docs/job-assistant.md): Data/IT ads from JobStream every hour, with
+  # The job assistant (docs/job-assistant.md): Data/IT ads from JobStream on an hourly schedule, with
   # changes and removals, kept under warehouse/raw/job_assistant and published as their own group.
+  # GitHub starts scheduled runs late or drops them: from 2026-10-23 to 10-25 these runs began 2.4 to
+  # 5.7 hours apart, and the hourly data heartbeat's runs were as sparse, so the SLA is 8h, not 1h.
   job_assistant:
     schedule: '7 * * * *'
-    sla: {fresh_within: 3h}
+    sla: {fresh_within: 8h}
     write: {raw: {merge: [path]}, warehouse: overwrite, delivery: versioned}
     group: job-assistant
     raw: [job_assistant]
@@ -533,8 +535,9 @@ subjects:
       # step of data-subject.yml before this subject, not here.
       - ingest: python platform/job_assistant/ads.py
       # Matches the ads with the approved profile from the Worker into the raw match store, which
-      # dbt reads next; without a profile nothing is matched. A failed match run keeps the last
-      # matches.json, so the ad list is still built and published; the mart drops closed ads.
+      # dbt reads next. Without a profile (none approved, any answer but 200, or the route is down) it
+      # keeps the last matches.json, or writes an empty one, and exits 0; an invalid profile exits 1 and
+      # also keeps the last file. The ad list is built and published either way; the mart drops closed ads.
       - ingest: python platform/job_assistant/rank.py
         secrets: [CLOUDFLARE_API_TOKEN]
         ok_exit: [1]

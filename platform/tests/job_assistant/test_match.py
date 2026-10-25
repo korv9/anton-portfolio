@@ -6,6 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pytest
+import requests
 
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / "platform/job_assistant"))
@@ -233,3 +234,40 @@ def test_matches_of_removed_ads_are_refused():
 def test_no_profile_means_no_matches(store):
     result = rank.run(None, None, NOW)
     assert result["matches"] == [] and result["note"]["skipped"] == "no approved profile"
+
+
+class Answer:
+    def __init__(self, status):
+        self.status_code = status
+
+    def raise_for_status(self):
+        raise requests.HTTPError(str(self.status_code))
+
+
+def run_main(monkeypatch, get):
+    """rank.py as the hourly run calls it; a crash raises SystemExit or HTTPError here."""
+    monkeypatch.setattr(requests, "get", get)
+    monkeypatch.setattr(sys, "argv", ["rank.py"])
+    rank.main()
+
+
+@pytest.mark.parametrize("status", [503, 404, 403])
+def test_worker_without_d1_writes_an_empty_store(store, monkeypatch, status):
+    run_main(monkeypatch, lambda url, timeout: Answer(status))
+    saved = json.loads((store / "matches.json").read_text(encoding="utf-8"))
+    assert saved["profile"] is None and saved["matches"] == []
+    assert saved["note"]["skipped"] == f"profile route answered {status}"
+
+
+def test_unreachable_worker_writes_an_empty_store(store, monkeypatch):
+    def down(url, timeout):
+        raise requests.ConnectionError("down")
+    run_main(monkeypatch, down)
+    saved = json.loads((store / "matches.json").read_text(encoding="utf-8"))
+    assert saved["matches"] == [] and saved["note"]["skipped"] == "profile route unreachable: ConnectionError"
+
+
+def test_no_profile_keeps_the_last_matches(store, profile, monkeypatch):
+    kept = rank.run(profile, None, NOW)
+    run_main(monkeypatch, lambda url, timeout: Answer(503))
+    assert json.loads((store / "matches.json").read_text(encoding="utf-8")) == kept

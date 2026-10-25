@@ -2,13 +2,13 @@
 
     python platform/job_assistant/rank.py [--profile v3.json]
 
-The profile comes from --profile, or from the Worker's public profile route
-(JOB_ASSIST_API, default https://antonernstsson.com/api/jobs/profile). Without an approved profile
-nothing is matched and matches.json says so: data is real or absent. Matches are written to
-warehouse/raw/job_assistant/matches.json, in rank order, where dbt reads them (models/*/job_assistant);
-a match is redone when the ad's content
-hash, the profile version or the engine changes, and a kept explanation survives as long as its
-match does.
+The profile comes from --profile, or from the Worker's public profile route (JOB_ASSIST_API,
+default https://antonernstsson.com/api/jobs/profile). Without an approved profile (none approved
+yet, or the route answers anything but 200 or cannot be reached) nothing is matched: an existing
+matches.json is kept, and otherwise an empty one says why, so dbt and the ad list still build. Data
+is real or absent. Matches are written to warehouse/raw/job_assistant/matches.json, in rank order,
+where dbt reads them (models/*/job_assistant); a match is redone when the ad's content hash, the
+profile version or the engine changes, and a kept explanation survives as long as its match does.
 """
 from __future__ import annotations
 
@@ -28,24 +28,31 @@ from match import ENGINE, LISTED, match, order  # noqa: E402
 API = os.environ.get("JOB_ASSIST_API", "https://antonernstsson.com/api/jobs")
 
 
-def approved_profile(path: Path | None) -> dict | None:
+def approved_profile(path: Path | None) -> tuple[dict | None, str]:
+    """The approved profile and where it came from, or None and why there is none yet."""
     if path:
         profile = json.loads(path.read_text(encoding="utf-8"))
     else:
         import requests
-        response = requests.get(API + "/profile", timeout=30)
-        if response.status_code == 404:
-            return None
-        response.raise_for_status()
+        try:
+            response = requests.get(API + "/profile", timeout=30)
+        except requests.RequestException as error:
+            return None, f"profile route unreachable: {type(error).__name__}"
+        # 503: the Worker has no D1 binding yet (docs/job-assistant.md, What the owner applies). 403
+        # comes from Cloudflare's edge in front of the Worker, which refuses the Actions runner.
+        if response.status_code != 200:
+            if response.status_code not in (404, 503):
+                print(f"::warning::{API}/profile answered {response.status_code}; the last matches are kept")
+            return None, f"profile route answered {response.status_code}"
         profile = response.json().get("approved")
         if not profile:
-            return None
+            return None, "no approved profile"
     if profile.get("status") != "approved" or problems(profile):
         raise SystemExit("the profile is not an approved, valid schema v1 profile")
-    return profile
+    return profile, "approved"
 
 
-def run(profile: dict | None, http=None, now: datetime | None = None) -> dict:
+def run(profile: dict | None, http=None, now: datetime | None = None, reason: str = "no approved profile") -> dict:
     now = now or datetime.now(timezone.utc)
     folder = store_dir()
     ads = load_ads(folder / "ads.json")
@@ -53,7 +60,10 @@ def run(profile: dict | None, http=None, now: datetime | None = None) -> dict:
     old = {r["id"]: r for r in json.loads(path.read_text(encoding="utf-8"))["matches"]} if path.exists() else {}
     note: dict = {"at": now.isoformat(timespec="seconds"), "neurons_before": round(ai.spent(), 2)}
     if profile is None:
-        result = {"profile": None, "engine": ENGINE, "note": {**note, "skipped": "no approved profile"}, "matches": []}
+        # Keep the last matches; the mart drops those of closed ads. Without any, dbt still needs a store.
+        if path.exists():
+            return {**json.loads(path.read_text(encoding="utf-8")), "kept": reason}
+        result = {"profile": None, "engine": ENGINE, "note": {**note, "skipped": reason}, "matches": []}
         write_atomic(path, result)
         return result
     # A passed deadline ends an ad as removal does; the rule is mart_job_assistant_ads' `expired`.
@@ -105,12 +115,13 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--profile", type=Path, help="an approved profile file instead of the Worker's")
     args = ap.parse_args()
-    result = run(approved_profile(args.profile), ai.session())
+    profile, reason = approved_profile(args.profile)
+    result = run(profile, ai.session() if profile else None, reason=reason)
     classes = {}
     for row in result["matches"]:
         classes[row["class"]] = classes.get(row["class"], 0) + 1
     print(json.dumps({"profile": result["profile"] and result["profile"]["version"], "classes": classes,
-                      "note": result["note"]}, ensure_ascii=False))
+                      "note": result["note"], "kept": result.get("kept")}, ensure_ascii=False))
 
 
 if __name__ == "__main__":
