@@ -16,12 +16,27 @@ import PlatformSections from '../tech/PlatformSections'
 import type { Graph } from '../tech/PipelineTables'
 import { REPO, ago, day, num, ok, reading, useFile } from '../tech/techData'
 import Headline from './Headline'
+import JobsPulse from './JobsPulse'
 import PlatformFlow from './PlatformFlow'
 import { HUB_GROUPS, type HubItem } from './hubProjects'
 import '../tech/tech.css'
 import './hub.css'
 
 const Machinery = lazy(() => import('../tech/Machinery'))
+
+/**
+ * Projects with a screenshot of their own page in public/projects/, taken from the dev server on
+ * 2026-10-25. The job assistant's board has no published data yet, so its hero shows the job
+ * market it reads instead (JobsPulse.tsx).
+ */
+const THUMBS = new Set([
+  'sweden',
+  'meaning',
+  'ask-the-law',
+  'philosophy-atlas',
+  'symbolic-atlas',
+  'concept-constellation',
+])
 
 const STACK =
   'Python · dbt · DuckDB · GitHub Actions · Cloudflare R2 · Cloudflare Workers · Workers AI · TypeScript · React'
@@ -211,6 +226,20 @@ export default function ProjectsHub({ path }: { path: string }) {
               data-lead={group.id === 'jobs' || undefined}
             >
               <a className="hub-item" href={item.href}>
+                {THUMBS.has(item.id) && (
+                  <img
+                    className="hub-item-thumb"
+                    src={`/projects/${item.id}.webp`}
+                    width="800"
+                    height="500"
+                    loading="lazy"
+                    decoding="async"
+                    alt={l(
+                      `Screenshot of the ${item.title.en} page, 25 October 2026`,
+                      `Skärmbild av sidan ${item.title.sv}, 25 oktober 2026`,
+                    )}
+                  />
+                )}
                 <span className="hub-item-title">
                   {l(item.title.en, item.title.sv)}
                   {item.href.startsWith('http') && (
@@ -222,6 +251,7 @@ export default function ProjectsHub({ path }: { path: string }) {
                 </span>
                 <RunsOn item={item} domains={domains} status={status} />
               </a>
+              {item.id === 'jobs' && <JobsPulse />}
             </li>
           )),
         )}
@@ -233,7 +263,10 @@ export default function ProjectsHub({ path }: { path: string }) {
       <Sidebar />
       <article className="tech hub-main" id="projects">
         <header className="tech-head hub-head">
-          <h1>{l('Projects', 'Projekt')}</h1>
+          <div className="hub-title">
+            <h1>{l('Projects', 'Projekt')}</h1>
+            <Headline />
+          </div>
           <div className="hub-intro">
             <p>
               {l(
@@ -248,7 +281,6 @@ export default function ProjectsHub({ path }: { path: string }) {
             </a>
           </div>
         </header>
-        <Headline />
         {renderPart(platform)}
         <PlatformFlow />
         {renderPart(other)}
