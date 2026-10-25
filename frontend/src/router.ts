@@ -14,7 +14,6 @@ export type Page =
   | 'drugcomb'
   | 'thesis'
   | 'homie'
-  | 'lakehouse'
   | 'symbolic'
   | 'philosophy'
   | 'concepts'
@@ -22,7 +21,6 @@ export type Page =
   | 'meaning'
   | 'lawqa'
   | 'jobs'
-  | 'askplatform'
 
 export type Route = {
   /** The full hash, e.g. `#politik-valjarna?partier=S`. */
@@ -52,42 +50,46 @@ export const REDIRECTS: Record<string, string> = {
   '#now': MEANING,
   // The SWEDEN component kit was a development page.
   '#sweden-kit': '#sweden',
-  '#data-constellation': '#projekt',
-  '#data-catalogue': '#projekt',
-  '#idea-lineage': '#projekt',
-  '#quality': '#projekt',
-  '#data-model': '#projekt',
-  '#er': '#projekt',
-  '#er-diagram': '#projekt',
-  '#tech': '#projekt',
-  '#diva': '#projekt',
-  '#rag': '#projekt',
-  '#mimii': '#projekt',
-  '#rfc-drift': '#projekt',
+  '#data-constellation': '#projects',
+  '#data-catalogue': '#projects',
+  '#idea-lineage': '#projects',
+  '#quality': '#projects',
+  '#data-model': '#projects',
+  '#er': '#projects',
+  '#er-diagram': '#projects',
+  '#tech': '#projects',
+  '#diva': '#projects',
+  // The projects page (#projekt) and the platform page (#platform) are one hub now; Ask the
+  // platform and the DiVA lakehouse are sections of its platform part.
+  '#projekt': '#projects',
+  '#platform': '#projects-platform',
+  '#ask-platform': '#platform-ask',
+  '#diva-lakehouse': '#platform-fabric',
+  '#rag': '#projects',
+  '#mimii': '#projects',
+  '#rfc-drift': '#projects',
   '#now-election': MEANING,
   '#politik-debatter': MEANING,
   '#politics-page': MEANING,
   '#about': '#om-mig',
-  '#projects': '#projekt',
-  '#alla-projekt': '#projekt',
+  '#alla-projekt': '#projects',
   // The semantic-drift report is withdrawn while it is reworked.
-  '#contact': '#om-mig',
-  '#kontakt': '#om-mig',
+  '#contact': '#kontakt',
   '#experience': '#erfarenhet',
-  '#work': '#projekt',
+  '#work': '#projects',
   '#teknik': '#om-mig',
   '#kompetenser': '#om-mig',
   // The architecture page is the Data Constellation now.
-  '#technical': '#projekt',
-  '#teknisk': '#projekt',
+  '#technical': '#projects',
+  '#teknisk': '#projects',
   '#design': '#start',
-  '#tallman': '#projekt',
+  '#tallman': '#projects',
   '#job-market': MEANING,
   '#job-market-occupations': MEANING,
   '#job-market-regions': MEANING,
   '#job-market-conditions': MEANING,
   '#job-market-clusters': MEANING,
-  '#status': '#projekt',
+  '#status': '#projects',
   '#symbolic-map': '#symbolic-atlas',
   // The politics product's older detailed views.
   '#now-seats': MEANING,
@@ -103,8 +105,8 @@ export const REDIRECTS: Record<string, string> = {
 
 /** Older address families and the theme they lead to, checked after the exact list. */
 const PREFIX_REDIRECTS: [string, string][] = [
-  ['#quality-', '#projekt'],
-  ['#data-model-', '#projekt'],
+  ['#quality-', '#projects'],
+  ['#data-model-', '#projects'],
   // The withdrawn observatories: politics, jobs, Job Intelligence, wellbeing, the AI Act
   // and the statute book, with every tab, deep dive and older address of theirs.
   ...[
@@ -189,19 +191,19 @@ export function sameReport(a: string, b: string) {
 }
 
 export function pageOf(path: string): Page {
-  if (path === '#projekt') return 'projects'
+  // The projects hub and the addresses of its sections (#projects-jobs, #platform-health,
+  // #tech-er).
+  if (path === '#projects' || /^#(projects|platform|tech)-/.test(path))
+    return 'projects'
   if (path.startsWith('#drugcomb')) return 'drugcomb'
   if (path === '#thesis') return 'thesis'
   if (path === '#homie') return 'homie'
-  if (path === '#diva-lakehouse') return 'lakehouse'
   if (SWEDEN_PATHS.includes(path)) return 'sweden'
   if (path === '#cluster-visuals') return 'clusters'
   if (path === MEANING) return 'meaning'
   if (path === '#fraga-lagen') return 'lawqa'
   // The job assistant (docs/job-assistant.md); #jobb and #job- still lead to the feed.
   if (path === '#jobs') return 'jobs'
-  // Ask the platform on its own, for its tests until the feed's closing chapter mounts it.
-  if (path === '#ask-platform') return 'askplatform'
   if (path.startsWith('#concept-') || path.startsWith('#concepts-'))
     return 'concepts'
   if (path === '#philosophy-atlas' || path.startsWith('#philosophy-'))

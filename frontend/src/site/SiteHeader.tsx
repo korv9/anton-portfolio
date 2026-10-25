@@ -1,10 +1,10 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { l } from '../i18n'
-import type { Route } from '../router'
 import LanguageToggle from './LanguageToggle'
 import './header.css'
 
-export default function SiteHeader({ route }: { route: Route }) {
+/** The header on every page but the start page and SWEDEN's. */
+export default function SiteHeader() {
   const header = useRef<HTMLElement>(null)
   useEffect(() => {
     const element = header.current
@@ -22,30 +22,8 @@ export default function SiteHeader({ route }: { route: Route }) {
       document.documentElement.style.removeProperty('--header-h')
     }
   }, [])
-  const [projectsReached, setProjectsReached] = useState(false)
-  const hidden = route.page === 'home' && !projectsReached
-  useEffect(() => {
-    if (route.page !== 'home') return
-    const projects = document.querySelector('.home-project-marker')
-    if (!projects) return
-    const update = () =>
-      setProjectsReached(projects.getBoundingClientRect().top <= 160)
-    const observer = new IntersectionObserver(update, {
-      rootMargin: '-160px 0px 0px 0px',
-    })
-    observer.observe(projects)
-    const section = projects.parentElement
-    if (section) observer.observe(section)
-    update()
-    return () => observer.disconnect()
-  }, [route.page])
   return (
-    <header
-      ref={header}
-      className="site-header"
-      data-hidden={hidden}
-      inert={hidden}
-    >
+    <header ref={header} className="site-header">
       <a className="site-identity" href="#start">
         <strong>ANTON ERNSTSSON</strong>
       </a>

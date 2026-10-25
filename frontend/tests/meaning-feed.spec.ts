@@ -1,9 +1,11 @@
 /**
- * The chart feed that closes Projects on the home page: it loads when the reader nears it,
- * wears the home page's light colours, keeps its thumbnails moving and opens a card on click.
+ * The chart feed on its own page (#what-does-it-even-mean), and the start page's name intro: the
+ * feed keeps its thumbnails moving and opens a card on click.
  */
 import type { Locator, Page } from '@playwright/test'
 import { test, expect } from './test'
+
+const FEED = '/#what-does-it-even-mean'
 
 /** Posts mount only near the screen, so scroll down until the wanted one is there. */
 async function scrollTo(page: Page, target: Locator) {
@@ -19,9 +21,7 @@ async function scrollTo(page: Page, target: Locator) {
 
 /** The feed's first thumbnail with a slicer that steps by itself, scrolled into view. */
 async function tickingPost(page: Page) {
-  const feed = page.locator('.home-feed')
-  await feed.evaluate((el) => el.scrollIntoView({ behavior: 'instant' }))
-  // Research follows the feed, so stepping down before the posts load would scroll past them.
+  const feed = page.locator('.mean-page')
   await expect(feed.locator('.mean-post').first()).toBeAttached()
   const ticking = feed
     .locator('.mean-post:not([data-dense]):has(.mean-now)')
@@ -48,29 +48,23 @@ async function slicerValues(post: Locator) {
 }
 
 test(
-  'the chart feed closes Projects with living posts that open',
+  'the chart feed has its own page with living posts that open',
   { tag: '@mobile' },
   async ({ page }) => {
-    await page.goto('/')
-    // Nothing of the feed loads before the reader scrolls towards it.
-    await expect(page.locator('.mean-post')).toHaveCount(0)
-    const feed = page.locator('.home-work > .home-feed')
-    await feed.evaluate((el) => el.scrollIntoView({ behavior: 'instant' }))
+    await page.goto(FEED)
+    const feed = page.locator('.mean-page')
     await expect(
-      feed.getByRole('heading', { level: 2, name: 'What does it even mean?' }),
+      feed.getByRole('heading', { level: 1, name: 'What does it even mean?' }),
     ).toBeVisible()
-    await expect(
-      page.locator('.home-work > :last-child.home-feed'),
-    ).toHaveCount(1)
     await expect
       .poll(() => feed.locator('.mean-post').count())
       .toBeGreaterThan(100)
     // The feed reads by subject, politics first.
     await expect(
-      feed.getByRole('heading', { level: 3, name: 'Politics' }),
+      feed.getByRole('heading', { level: 2, name: 'Politics' }),
     ).toBeVisible()
     const first = feed.locator('.mean-post').first()
-    // Cards wear the light palette's card token.
+    // Cards wear the feed's card token.
     const card = await first.evaluate((el) => {
       const probe = document.createElement('i')
       probe.style.backgroundColor = 'var(--mean-card)'
@@ -101,7 +95,7 @@ test(
 
 test('reduced motion keeps the feed thumbnails still', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' })
-  await page.goto('/')
+  await page.goto(FEED)
   const ticking = await tickingPost(page)
   expect((await slicerValues(ticking)).size).toBe(1)
 })
@@ -111,7 +105,7 @@ test('a section pause button holds its thumbnails until pressed again', async ({
 }) => {
   // Two 9 s sampling windows.
   test.setTimeout(60_000)
-  await page.goto('/')
+  await page.goto(FEED)
   const ticking = await tickingPost(page)
   const pause = ticking
     .locator('xpath=ancestor::section[contains(@class, "mean-section")]')
@@ -145,7 +139,7 @@ test('focus moves to the close button on open and back to the card on close', as
         return start(cb)
       }
   })
-  await page.goto('/')
+  await page.goto(FEED)
   const post = await tickingPost(page)
   const morphs = () =>
     page.evaluate(() => (document as Document & { morphs?: number }).morphs)
@@ -195,9 +189,10 @@ test('posts whose data is withdrawn or past its valid_until date leave the feed'
   const FILE = '**/jobs/cluster-summary.json'
   const errors: string[] = []
   page.on('console', (m) => m.type() === 'error' && errors.push(m.text()))
+  // A fresh document each time: going to the same address with a hash would not reload it.
   const jobs = async () => {
-    await page.goto('/')
-    await page.locator('.home-feed').evaluate((el) => el.scrollIntoView())
+    await page.goto('about:blank')
+    await page.goto(FEED)
     await page
       .locator('#mean-jobs')
       .evaluate((el) => el.scrollIntoView({ block: 'start' }))
@@ -240,7 +235,7 @@ test('the Source panel opens from the keyboard and says what is not recorded', a
   await page.route('**/architecture/feed-provenance.json', (route) =>
     route.fulfill({ json: { paths: {}, deliveries: {} } }),
   )
-  await page.goto('/')
+  await page.goto(FEED)
   const post = await tickingPost(page)
   await post.getByRole('button', { name: /^Open chart: \S/ }).click()
   const toggle = post.getByRole('button', { name: 'Source', exact: true })

@@ -61,7 +61,7 @@ test('the projects page explains the pipeline, lists the projects and shows the 
   )
   // The old address leads here.
   await page.goto('/#tech')
-  await expect(page).toHaveURL(/#projekt$/)
+  await expect(page).toHaveURL(/#projects$/)
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Projects')
   // The walkthrough: seven stops, the first chosen; a stop explains itself and lists what it holds.
   const rail = page.locator('.tour-rail button')
@@ -81,7 +81,7 @@ test('the projects page explains the pipeline, lists the projects and shows the 
   )
   // The projects, with what a project on the platform holds.
   await expect(
-    page.locator('.project-card[href="#symbolic-atlas"] .project-card-holds'),
+    page.locator('.hub-item[href="#symbolic-atlas"] .hub-item-runs'),
   ).toContainText('dbt models')
   const fetched = page.locator('.fetches tbody tr')
   await expect(fetched).toHaveAttribute('data-state', 'failure')
@@ -120,7 +120,7 @@ test('the projects page explains the pipeline, lists the projects and shows the 
   await expect(dialog.locator('canvas')).toBeVisible()
   await dialog.getByRole('button', { name: 'Close' }).click()
   await expect(dialog).not.toBeVisible()
-  const scan = await new AxeBuilder({ page }).include('#projekt').analyze()
+  const scan = await new AxeBuilder({ page }).include('#projects').analyze()
   expect(scan.violations).toEqual([])
 })
 
@@ -131,7 +131,7 @@ test(
     await page.route('https://api.github.com/**', (route) =>
       route.fulfill({ status: 403, json: {} }),
     )
-    await page.goto('/#projekt')
+    await page.goto('/#projects')
     await expect(page.locator('.tour-rail button')).toHaveCount(7)
     await expect(page.locator('#tech-ingestion')).toContainText(
       'could not be read from GitHub',

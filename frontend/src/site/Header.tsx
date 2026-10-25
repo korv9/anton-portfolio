@@ -46,7 +46,7 @@ export function ProjectContext({ route }: { route: Route }) {
     >
       <ol>
         <li>
-          <a href="#projekt">{l('Projects', 'Projekt')}</a>
+          <a href="#projects">{l('Projects', 'Projekt')}</a>
         </li>
         {project && (
           <li>
@@ -60,7 +60,7 @@ export function ProjectContext({ route }: { route: Route }) {
         {!project && technical && (
           <>
             <li>
-              <a href="#projekt">{l('Tools', 'Verktyg')}</a>
+              <a href="#projects">{l('Tools', 'Verktyg')}</a>
             </li>
             <li>
               <span aria-current="page">{b(technical)}</span>

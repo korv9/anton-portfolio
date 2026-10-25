@@ -78,10 +78,10 @@ test('the built site loads under CSP and blocks injected scripts', async ({
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
     'Job assistant',
   )
-  await page.goto('/#diva-lakehouse')
-  await expect(page).toHaveURL(/#diva-lakehouse$/)
+  await page.goto('/#platform')
+  await expect(page).toHaveURL(/#projects-platform$/)
   await expect(
-    page.getByRole('heading', { name: 'Verification' }),
+    page.getByRole('heading', { level: 2, name: 'The data platform' }),
   ).toBeVisible()
   expect(violations).toEqual([])
 

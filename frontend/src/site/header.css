@@ -11,20 +11,6 @@
   border-bottom: 1px solid var(--line);
   font-family: var(--font);
 }
-.home-shell .site-header {
-  position: fixed;
-  inset: 0 0 auto;
-  transition:
-    opacity var(--dur) var(--ease),
-    transform var(--dur) var(--ease),
-    visibility var(--dur);
-}
-.site-header[data-hidden='true'] {
-  visibility: hidden;
-  opacity: 0;
-  transform: translateY(-12px);
-  pointer-events: none;
-}
 .site-identity {
   display: grid;
   gap: 0.2rem;

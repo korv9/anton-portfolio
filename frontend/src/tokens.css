@@ -56,6 +56,8 @@
   --color-chart-neutral: #484848;
   --color-chart-muted: #96938c;
   --color-error: #8f3424;
+  /* The projects hub's one focal accent: 6.05:1 on canvas, 5.23:1 on surface. */
+  --color-accent-focal: #9b3a1a;
 
   --type-display: var(--display-l);
   --type-page-title: var(--h1);
@@ -84,6 +86,7 @@
   --focus: var(--color-ink);
   --accent: var(--color-ink);
   --accent-2: var(--color-chart-neutral);
+  --focal: var(--color-accent-focal);
   --on-accent: var(--color-ink-inverse);
   --select: var(--color-panel);
   --wash-cool: var(--color-surface);

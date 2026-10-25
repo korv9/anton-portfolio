@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { REPO, ago, day } from './techData'
 
-type Run = {
+export type Run = {
   id: number
   status: string
   conclusion: string | null
@@ -10,10 +10,11 @@ type Run = {
   updated_at: string
   html_url: string
   head_sha: string
+  head_branch: string
 }
 type Workflow = { id: number; name: string; path: string; runs: Run[] }
 
-async function loadWorkflows(): Promise<Workflow[]> {
+export async function loadWorkflows(): Promise<Workflow[]> {
   // GitHub allows 60 unsigned requests an hour; keep the answer for the session.
   const key = 'tech-workflows'
   try {
