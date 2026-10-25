@@ -75,9 +75,13 @@ test(
   async ({ page }) => {
     await page.goto('/')
     await expect(page).toHaveTitle('ANTON ERNSTSSON DATA & AI')
-    // No header, and nothing but the name on the first screen.
+    // No header, and only the name and the role on the first screen.
     await expect(page.locator('.site-header')).toHaveCount(0)
-    await expect(page.locator('#start')).toHaveText('Anton Ernstsson')
+    await expect(page.locator('#start h1')).toHaveText('Anton Ernstsson')
+    await expect(page.locator('#start .home-role')).toHaveText(
+      'Data & AI Engineering',
+    )
+    await expect(page.locator('#start a, #start button')).toHaveCount(0)
     const contact = page.locator('#kontakt')
     await expect(contact).not.toBeInViewport()
     await contact.scrollIntoViewIfNeeded()
@@ -85,20 +89,28 @@ test(
     await expect(contact.getByRole('link', { name: 'GitHub' })).toBeVisible()
     await expect(contact.getByRole('button', { name: /View CV/ })).toBeVisible()
     await expect(contact.locator('a[href^="mailto:"]')).toBeVisible()
-    // Contact, then About, then experience and education.
+    // Contact, the project pages, then About, then experience and education.
+    const projects = page.locator('#projektsidor')
+    await expect(
+      projects.getByRole('heading', { name: 'Project pages' }),
+    ).toBeVisible()
+    await expect(
+      projects.getByRole('link', { name: 'See the projects' }),
+    ).toHaveAttribute('href', '#projects')
     const top = (id: string) =>
       page
         .locator(`#${id}`)
         .evaluate((el) => el.getBoundingClientRect().top + scrollY)
-    expect(await top('kontakt')).toBeLessThan(await top('om-mig'))
+    expect(await top('kontakt')).toBeLessThan(await top('projektsidor'))
+    expect(await top('projektsidor')).toBeLessThan(await top('om-mig'))
     expect(await top('om-mig')).toBeLessThan(await top('erfarenhet'))
     expect(await top('om-mig')).toBeLessThan(await top('utbildning'))
-    // No project content: the one link inside the page leads on to the projects hub.
+    // No project content: the links inside the page lead on to the projects hub.
     expect(
       await page
         .locator('main a[href^="#"]')
         .evaluateAll((as) => as.map((a) => a.getAttribute('href'))),
-    ).toEqual(['#projects'])
+    ).toEqual(['#projects', '#projects'])
     await expect(
       page.locator('.work-card, .home-feed, .mean-post'),
     ).toHaveCount(0)

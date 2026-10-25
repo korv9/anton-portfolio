@@ -1,7 +1,8 @@
 /*
  * The start page (home/HomePage.tsx), across the whole screen with no sidebar:
- *   identity: the name alone, centred, over the moving map;
+ *   identity: the name and the role, centred, over the moving map;
  *   contact: the line, the email and the profiles, centred;
+ *   project pages: a short word and one link on to the projects hub;
  *   profile: About centred above experience and education;
  *   the way on to the projects hub.
  */
@@ -286,6 +287,57 @@
   flex-wrap: wrap;
   gap: var(--sp-2) var(--sp-5);
 }
+.home-role {
+  margin: var(--sp-5) 0 0;
+  color: var(--ink-identity);
+  font-size: var(--h3);
+  font-weight: var(--weight-heading);
+  letter-spacing: -0.01em;
+}
+
+/* ---------- Project pages: right after contact, one clear way on ---------- */
+.home-project-pages {
+  display: grid;
+  justify-items: center;
+  gap: var(--sp-3);
+  max-width: var(--layout-reading);
+  margin-inline: auto;
+  padding-bottom: 0;
+  text-align: center;
+}
+.home-project-pages .home-label {
+  margin: 0;
+}
+.home-project-pages-text {
+  margin: 0;
+  font-size: var(--body-large);
+  line-height: 1.6;
+  text-wrap: pretty;
+}
+.home-project-pages-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  min-height: 44px;
+  padding: 0 var(--sp-5);
+  border: 1px solid var(--ink-identity);
+  border-radius: var(--radius);
+  color: var(--ink-identity);
+  font-weight: var(--weight-heading);
+  text-decoration: none;
+  transition:
+    background-color var(--dur) var(--ease),
+    color var(--dur) var(--ease);
+}
+.home-project-pages-link:hover {
+  background: var(--ink-identity);
+  color: var(--page);
+}
+.home-project-pages-link:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 4px;
+}
+
 /* ---------- Contact: the first scroll after the name ---------- */
 .home-contact {
   display: grid;

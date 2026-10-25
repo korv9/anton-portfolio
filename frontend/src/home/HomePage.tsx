@@ -1,6 +1,7 @@
 /**
- * The start page, about Anton for a recruiter: the name alone on the first screen, then contact,
- * About, experience and education, and one way on to the projects (#projects).
+ * The start page, about Anton for a recruiter: the name and role on the first screen, then
+ * contact, the way on to the projects (#projects), About, experience and education, and the
+ * projects link once more at the end.
  */
 import { useEffect } from 'react'
 import { profile } from '../content'
@@ -34,6 +35,7 @@ function Identity() {
       <h1 id="home-name" className="home-name">
         Anton Ernstsson
       </h1>
+      <p className="home-role">Data &amp; AI Engineering</p>
     </section>
   )
 }
@@ -67,6 +69,31 @@ function Contact() {
         {profile.cv && <CvButton />}
         <LanguageToggle />
       </nav>
+    </section>
+  )
+}
+
+/** The way on to the projects hub, close to the contact line. */
+function ProjectPages() {
+  return (
+    <section
+      className="home-screen home-project-pages"
+      id="projektsidor"
+      aria-labelledby="project-pages-title"
+    >
+      <h2 id="project-pages-title" className="home-label">
+        {l('Project pages', 'Projektsidor')}
+      </h2>
+      <p className="home-project-pages-text">
+        {l(
+          'All my projects are collected on one page. Most of them run on a data platform I built myself, and the job search comes first.',
+          'Alla mina projekt finns samlade på en sida. De flesta körs på en dataplattform som jag har byggt själv, och jobbsöket kommer först.',
+        )}
+      </p>
+      <a className="home-project-pages-link" href="#projects">
+        {l('See the projects', 'Till projekten')}{' '}
+        <span aria-hidden="true">→</span>
+      </a>
     </section>
   )
 }
@@ -178,6 +205,7 @@ export default function HomePage({ path }: { path: string }) {
     <div className="home" lang={currentLocale()}>
       <Identity />
       <Contact />
+      <ProjectPages />
       <Profile />
       <footer className="home-cta">
         <a className="home-cta-link" href="#projects">
