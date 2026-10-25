@@ -137,7 +137,7 @@ export default function JobAssistantPage({ route }: { route: Route }) {
   return (
     <div className="ja ds-container">
       <header className="ja-head">
-        <h1>{l('Job assistant', 'Jobbassistenten')}</h1>
+        <h1>Arbetsförmedla</h1>
         <p className="ja-lede">
           {l(
             'My CV matched on an hourly schedule with current Data/IT ads from JobTech. Each class says why, with the ad sentence and the CV line behind it. It supports my decision; it does not estimate a chance of being hired.',

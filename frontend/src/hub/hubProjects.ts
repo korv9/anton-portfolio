@@ -1,5 +1,6 @@
 /**
- * The projects in the hub (#projects), grouped as its sidebar shows them. The texts come from the
+ * The projects in the hub (#projects), in three parts: what runs on the data platform, the
+ * experiments and the other projects. The texts come from the
  * project pages, the registry and the start page's earlier project list. `domain` names the
  * subject in architecture/graph.json a project is built from and `fresh` its key in
  * meaning/freshness.ts; the hub reads both to show what each project runs on.
@@ -21,18 +22,46 @@ export type HubItem = {
   data?: Bilingual
   /** The project's own run in status/ingestion.json, if it has one. */
   run?: string
+  /** One word or two in mono under the card: LIVE, EXPERIMENTAL, REPO and so on. */
+  status: Bilingual
 }
 
 export type HubGroup = {
   /** The group's address in the hub is #projects-<id>. */
   id: string
   title: Bilingual
+  part: 'platform' | 'experiments' | 'other'
   items: HubItem[]
+}
+
+export const PARTS: { id: HubGroup['part']; title: Bilingual }[] = [
+  {
+    id: 'platform',
+    title: t('Körs på dataplattformen', 'Running on the data platform'),
+  },
+  { id: 'experiments', title: t('Experiment', 'Experiments') },
+  { id: 'other', title: t('Övriga projekt', 'Other projects') },
+]
+
+const LIVE = t('Live', 'Live')
+const EXPERIMENTAL = t('Experiment', 'Experimental')
+const STATUS: Record<string, Bilingual> = {
+  live: LIVE,
+  experimental: EXPERIMENTAL,
+  'in-progress': t('Pågår', 'In progress'),
+  study: t('Studie', 'Study'),
 }
 
 const registry = (id: string, domain?: string): HubItem => {
   const p = PROJECTS.find((entry) => entry.id === id)!
-  return { id, title: p.title, text: p.summary, href: p.href, domain }
+  return {
+    id,
+    title: p.title,
+    text: p.summary,
+    href: p.href,
+    domain,
+    status: STATUS[p.status],
+  }
 }
 
 const repo = (name: string, title: Bilingual, text: Bilingual): HubItem => ({
@@ -40,16 +69,18 @@ const repo = (name: string, title: Bilingual, text: Bilingual): HubItem => ({
   title,
   text,
   href: `https://github.com/korv9/${name}`,
+  status: t('Repo', 'Repo'),
 })
 
 export const HUB_GROUPS: HubGroup[] = [
   {
     id: 'jobs',
     title: t('Jobbsök', 'Job search'),
+    part: 'platform',
     items: [
       {
         id: 'jobs',
-        title: t('Jobbassistenten', 'The job assistant'),
+        title: t('Arbetsförmedla', 'Arbetsförmedla'),
         text: t(
           'Mitt cv matchat varje timme mot aktuella Data/IT-annonser från JobTech. Varje klass säger varför, med annonsens mening och cv-raden bakom. Det stöder mitt beslut; det uppskattar inte chansen att bli anställd.',
           'My CV matched every hour with current Data/IT ads from JobTech. Each class says why, with the ad sentence and the CV line behind it. It supports my decision; it does not estimate a chance of being hired.',
@@ -59,12 +90,14 @@ export const HUB_GROUPS: HubGroup[] = [
         fresh: 'jobs',
         data: t('annonsdatan', 'job ads data'),
         run: 'job_assistant',
+        status: LIVE,
       },
     ],
   },
   {
     id: 'sweden',
     title: t('SWEDEN', 'SWEDEN'),
+    part: 'platform',
     items: [
       {
         id: 'sweden',
@@ -75,12 +108,14 @@ export const HUB_GROUPS: HubGroup[] = [
         ),
         href: '#sweden',
         fresh: 'sweden',
+        status: LIVE,
       },
     ],
   },
   {
     id: 'trace',
     title: t('Diagramflöde och spårning', 'Chart feed and trace'),
+    part: 'platform',
     items: [
       {
         id: 'meaning',
@@ -90,17 +125,54 @@ export const HUB_GROUPS: HubGroup[] = [
           'A feed of every chart the platform’s published data supports. Each chart shows the file and the source it is built from.',
         ),
         href: MEANING,
+        status: LIVE,
       },
     ],
   },
   {
     id: 'law',
-    title: t('Fråga lagen', 'Ask the law'),
+    title: t('Allegora', 'Allegora'),
+    part: 'platform',
     items: [registry('ask-the-law')],
   },
   {
+    id: 'clusters',
+    title: t('Klusterbilder', 'Cluster Visuals'),
+    part: 'platform',
+    items: [
+      {
+        id: 'cluster-visuals',
+        title: t('Klusterbilder', 'Cluster Visuals'),
+        text: t(
+          'Alla klustringar på sajten på en sida: Symbollabbet, Filosofilabbet, platsannonser och riksdagsdebatter.',
+          'Every clustering on the site on one page: the Symbol Lab, the Philosophy Lab, job ads and Riksdag debates.',
+        ),
+        href: '#cluster-visuals',
+        status: LIVE,
+      },
+    ],
+  },
+  {
+    id: 'platform',
+    title: t('Dataplattformen', 'The data platform'),
+    part: 'platform',
+    items: [
+      {
+        id: 'platform',
+        title: t('Dataplattformen', 'The data platform'),
+        text: t(
+          'Offentliga data hämtas på schema, byggs och testas med dbt i brons, silver och guld och släpps till Cloudflare R2.',
+          'Public data fetched on a schedule, built and tested with dbt in bronze, silver and gold, and released to Cloudflare R2.',
+        ),
+        href: '#projects-platform',
+        status: LIVE,
+      },
+    ],
+  },
+  {
     id: 'research',
-    title: t('Forskning och textlabb', 'Research and text lab'),
+    title: t('Experiment', 'Experiments'),
+    part: 'experiments',
     items: [
       registry('philosophy-atlas', 'philosophy'),
       registry('symbolic-atlas', 'symbolic'),
@@ -110,10 +182,11 @@ export const HUB_GROUPS: HubGroup[] = [
   {
     id: 'other',
     title: t('Övriga projekt', 'Other projects'),
+    part: 'other',
     items: [
+      { ...registry('thesis'), status: t('Examensarbete', 'Degree project') },
       registry('drugcomb'),
       registry('homie'),
-      registry('thesis'),
       repo(
         'swedish-job-market-analytics',
         t('Analys av svenska arbetsmarknaden', 'Swedish job market analytics'),

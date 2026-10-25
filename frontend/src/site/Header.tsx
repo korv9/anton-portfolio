@@ -21,7 +21,7 @@ const TECHNICAL: Partial<Record<Route['page'], Bilingual>> = {
     sv: 'What does it even mean?',
   },
   projects: { en: 'Projects', sv: 'Projekt' },
-  jobs: { en: 'Job assistant', sv: 'Jobbassistenten' },
+  jobs: { en: 'Arbetsförmedla', sv: 'Arbetsförmedla' },
   sweden: { en: 'SWEDEN', sv: 'SWEDEN' },
 }
 
