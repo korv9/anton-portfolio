@@ -39,13 +39,14 @@ export const PLATFORM = {
   code: t('Koden på GitHub', 'Code on GitHub'),
 }
 
-/** The job assistant, the second flagship, until its live preview is published. */
+/** The job assistant, the second flagship: its entry on the home page until the live preview lands. */
 export const JOB_ASSISTANT = {
   title: t('Jobbassistenten', 'The job assistant'),
   text: t(
-    'Bygger på plattformens data om svenska platsannonser. Förhandsvisningen är ännu inte publicerad.',
-    'Built on the platform’s data on Swedish job ads. The live preview is not published yet.',
+    'Bygger på plattformens data om svenska platsannonser.',
+    'Built on the platform’s data on Swedish job ads.',
   ),
+  open: t('Öppna jobbassistenten', 'Open the job assistant'),
 }
 
 /** The humanities and philosophy studies, grouped low on the page. */

@@ -23,7 +23,9 @@ test(
       .toBeGreaterThan(0)
     const layout = await page.evaluate(() => {
       // The map centres on the job assistant's slot, 80 px above its middle.
-      const anchor = document.querySelector('#jobs')!.getBoundingClientRect()
+      const anchor = document
+        .querySelector('#jobbassistent')!
+        .getBoundingClientRect()
       const list = document
         .querySelector('.home-project-groups > section')!
         .getBoundingClientRect()
@@ -288,7 +290,9 @@ test(
     // The start page stands alone: the platform leads with its code, then three more
     // repositories on GitHub and three research studies on this site.
     await expect(
-      page.locator('#platform .home-flagship-links a').last(),
+      page
+        .locator('#platform .home-project-intro .home-flagship-links a')
+        .last(),
     ).toHaveAttribute('href', 'https://github.com/korv9/anton-portfolio')
     const repos = page.locator('.home-project-groups .work-card')
     await expect(repos).toHaveCount(3)
@@ -307,7 +311,7 @@ test(
     ])
     await expect(
       page.locator(
-        'main :not(#research *) > a[href^="#"]:not([href^="#om-mig"]):not([href="#start"]):not([href="#main"])',
+        'main :not(#research *) > a[href^="#"]:not([href^="#om-mig"]):not([href="#start"]):not([href="#main"]):not([href="#jobs"])',
       ),
     ).toHaveCount(0)
     await expect
