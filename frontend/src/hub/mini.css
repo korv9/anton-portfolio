@@ -8,8 +8,8 @@
   grid-template-rows: 1fr auto;
   gap: var(--sp-4);
 }
-/* Reserve the chart's room before its data arrives, so the page does not jump. */
-.hub-item-chart {
+/* The chart's room while its data loads, so the page does not jump; a missing file leaves none. */
+.mini-loading {
   min-height: 15rem;
 }
 .mini-card {
@@ -41,14 +41,6 @@
   outline: 2px solid var(--focus);
   outline-offset: 4px;
 }
-.mini-base {
-  stroke: var(--line-strong);
-}
-.mini-tick {
-  fill: var(--ink-faded);
-  font-family: var(--font-mono);
-  font-size: 20px;
-}
 .mini-line {
   fill: none;
   stroke-linejoin: round;
@@ -64,11 +56,53 @@
 .mini-end {
   fill: var(--focal);
 }
-.mini-end-label {
-  fill: var(--focal);
+/* The line's labels are HTML over the drawing, at the page's text size. */
+.mini-plot {
+  position: relative;
+}
+.mini-label {
+  position: absolute;
+  padding-left: 0.5rem;
+  transform: translateY(-50%);
   font-family: var(--font-mono);
-  font-size: 20px;
+  font-size: var(--caption);
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.mini-label-end {
+  color: var(--focal);
+  transform: translate(-100%, -150%);
+}
+.mini-label-context {
+  color: var(--ink-faded);
+  transform: translate(-100%, 40%);
+}
+.mini-label-mark {
+  color: var(--ink-faded);
+  transform: translate(0.25rem, -30%);
+}
+.mini-mark {
+  fill: var(--ink-faded);
+}
+.mini-ticks {
+  position: relative;
+  height: 1.25rem;
+  border-top: 1px solid var(--line-strong);
+}
+.mini-ticks span {
+  position: absolute;
+  top: 0.15rem;
+  transform: translateX(-50%);
+  color: var(--ink-faded);
+  font-family: var(--font-mono);
+  font-size: var(--caption);
+}
+.mini-ticks span:first-child {
+  transform: none;
+}
+.mini-ticks span:last-child {
+  transform: translateX(-100%);
 }
 .mini-cursor line {
   stroke: var(--ink-faded);

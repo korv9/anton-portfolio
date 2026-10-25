@@ -6,11 +6,12 @@
 import { l } from '../i18n'
 import type { Market } from '../jobs/market'
 import { ago, num, ok, useFile } from '../tech/techData'
-import { MiniLine } from './mini/MiniChart'
+import { Loading, MiniLine } from './mini/MiniChart'
 import { Mini } from './mini/cardsPlatform'
 
 export default function JobsPulse() {
   const market = useFile<Market>('jobs/market.json')
+  if (market === null) return <Loading />
   if (!ok(market)) return null
   const field = market.fields.find((f) => f.name === 'Data/IT')
   const series = field ? market.monthly[field.id] : undefined
@@ -22,21 +23,29 @@ export default function JobsPulse() {
   }))
   const [first] = series[0]
   const [last, lastAds] = series[series.length - 1]
+  // Ads are seasonal, so the latest month is set against the same month a year earlier.
+  const yearAgo = `${Number(last.slice(0, 4)) - 1}${last.slice(4)}`
+  const before = series.find(([month]) => month === yearAgo)
   const peak = series.reduce((a, b) => (b[1] > a[1] ? b : a))
   const preliminary = market.preliminary?.includes(last)
   const ticks = series
     .map(([month], i) => ({ x: i, label: month.slice(0, 4), month }))
     .filter((t) => t.month.endsWith('-01') && Number(t.label) % 2 === 0)
-  const head = l(
-    `${num(lastAds)} new Data/IT job ads in ${last}, against a peak of ${num(peak[1])} in ${peak[0]}.`,
-    `${num(lastAds)} nya Data/IT-annonser i ${last}, mot som mest ${num(peak[1])} i ${peak[0]}.`,
-  )
+  const head = before
+    ? l(
+        `${num(lastAds)} new Data/IT job ads in ${last}, against ${num(before[1])} in ${yearAgo}.`,
+        `${num(lastAds)} nya Data/IT-annonser i ${last}, mot ${num(before[1])} i ${yearAgo}.`,
+      )
+    : l(
+        `${num(lastAds)} new Data/IT job ads in ${last}.`,
+        `${num(lastAds)} nya Data/IT-annonser i ${last}.`,
+      )
   return (
     <Mini
       head={head}
       caption={l(
-        `New Data/IT ads per month in Sweden, ${first} to ${last}${preliminary ? ' (latest month preliminary)' : ''}. jobs/market.json, built ${ago(market.generated_at)}.`,
-        `Nya Data/IT-annonser per månad i Sverige, ${first} till ${last}${preliminary ? ' (senaste månaden preliminär)' : ''}. jobs/market.json, byggd för ${ago(market.generated_at)}.`,
+        `New Data/IT ads per month in Sweden, ${first} to ${last}${preliminary ? ' (latest month preliminary)' : ''}; grey dot: the highest month. jobs/market.json, built ${ago(market.generated_at)}.`,
+        `Nya Data/IT-annonser per månad i Sverige, ${first} till ${last}${preliminary ? ' (senaste månaden preliminär)' : ''}; grå punkt: högsta månaden. jobs/market.json, byggd för ${ago(market.generated_at)}.`,
       )}
     >
       <MiniLine
@@ -44,6 +53,10 @@ export default function JobsPulse() {
         summary={head}
         format={(v) => `${num(v)} ${l('ads', 'annonser')}`}
         ticks={ticks}
+        mark={{
+          index: series.indexOf(peak),
+          label: `${peak[0]} · ${num(peak[1])}`,
+        }}
       />
     </Mini>
   )

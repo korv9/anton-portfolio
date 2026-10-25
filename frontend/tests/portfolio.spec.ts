@@ -1,3 +1,4 @@
+import AxeBuilder from '@axe-core/playwright'
 import { test, expect } from './test'
 
 test(
@@ -264,6 +265,15 @@ test('each platform card states a finding in a small chart that answers the keyb
   })
   await law.scrollIntoViewIfNeeded()
   await expect(law.locator('.mini-bar')).toHaveCount(3)
+  // Every card's chart, loaded, passes axe.
+  const cards = page.locator('.hub-items > li')
+  for (let i = 0; i < (await cards.count()); i++)
+    await cards.nth(i).scrollIntoViewIfNeeded()
+  await expect
+    .poll(() => page.locator('.hub-items .mini-head').count())
+    .toBeGreaterThanOrEqual(7)
+  const scan = await new AxeBuilder({ page }).include('.hub-items').analyze()
+  expect(scan.violations).toEqual([])
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= innerWidth + 1,

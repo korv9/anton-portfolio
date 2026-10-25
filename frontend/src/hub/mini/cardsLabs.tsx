@@ -1,60 +1,69 @@
 /**
  * Mini dashboards for the hub's research labs, one result each from the lab's own files:
- * Philosophy (do passages group by book or by idea), Symbol (how many groups span several
- * books) and Concept (where one concept is the closest, against chance).
+ * Philosophy (do passages group by book or by idea), Symbol (how many groups mix several books)
+ * and Concept (where one concept ranks first, against chance). Each caption dates its run.
  */
 import { l } from '../../i18n'
-import { ok, useFile } from '../../tech/techData'
-import { MiniBars } from './MiniChart'
+import { day, ok, useFile } from '../../tech/techData'
+import { Loading, MiniBars } from './MiniChart'
 import { Mini, pct } from './cardsPlatform'
 
 type Cluster = { variant: string; largest_work_share: number }
+type Run = { run: { ran_at?: string; run_at?: string } }
+
+const ranAt = (s: Run | 'error' | null) =>
+  ok(s) ? (s.run.ran_at ?? s.run.run_at) : undefined
 
 export function PhilosophyChart() {
   const clusters = useFile<Cluster[]>('philosophy/clusters.json')
+  const summary = useFile<Run>('philosophy/summary.json')
+  if (clusters === null) return <Loading />
   if (!ok(clusters) || !clusters.length) return null
-  const variants = [...new Set(clusters.map((c) => c.variant))]
-  const rows = variants.map((variant) => {
+  const mostly = (variant: string) => {
     const these = clusters.filter((c) => c.variant === variant)
-    const mostly = these.filter((c) => c.largest_work_share > 0.5).length
-    return { variant, groups: these.length, mostly }
-  })
-  const name = (v: string) =>
-    v === 'baseline'
-      ? l('Plain map', 'Vanlig karta')
-      : v === 'author_centered'
-        ? l('Each work centred', 'Varje verk centrerat')
-        : v
-  const plain = rows.find((r) => r.variant === 'baseline')
-  const centred = rows.find((r) => r.variant === 'author_centered')
-  const head =
-    plain && centred
-      ? l(
-          `On the plain map ${plain.mostly} of ${plain.groups} groups are mostly one book; with each work centred, ${centred.mostly} of ${centred.groups}.`,
-          `På den vanliga kartan består ${plain.mostly} av ${plain.groups} grupper mest av en bok; med varje verk centrerat ${centred.mostly} av ${centred.groups}.`,
-        )
-      : l(
-          'How many groups are mostly one book.',
-          'Hur många grupper som mest består av en bok.',
-        )
+    const n = these.filter((c) => c.largest_work_share > 0.5).length
+    return {
+      groups: these.length,
+      n,
+      share: these.length ? n / these.length : 0,
+    }
+  }
+  const plain = mostly('baseline')
+  const centred = mostly('author_centered')
+  if (!plain.groups || !centred.groups) return null
+  const head = l(
+    `Centring each work cuts the groups that are mostly one book from ${pct(plain.share, 0)} to ${pct(centred.share, 0)}.`,
+    `Att centrera varje verk minskar grupperna som mest består av en bok från ${pct(plain.share, 0)} till ${pct(centred.share, 0)}.`,
+  )
+  const at = ranAt(summary)
   return (
     <Mini
       head={head}
       caption={l(
-        'Share of passage groups where one work supplies more than half the passages, per map. philosophy/clusters.json',
-        'Andel passagegrupper där ett verk står för mer än hälften av passagerna, per karta. philosophy/clusters.json',
+        `Share of passage groups where one work supplies more than half the passages, per map${at ? `, run ${day(at)} UTC` : ''}. philosophy/clusters.json`,
+        `Andel passagegrupper där ett verk står för mer än hälften av passagerna, per karta${at ? `, körd ${day(at)} UTC` : ''}. philosophy/clusters.json`,
       )}
     >
       <MiniBars
-        bars={rows.map((r) => ({
-          label: name(r.variant),
-          value: r.mostly / r.groups,
-          focal: r.variant === 'baseline',
-          note: l(
-            `${r.mostly} of ${r.groups} groups`,
-            `${r.mostly} av ${r.groups} grupper`,
-          ),
-        }))}
+        bars={[
+          {
+            label: l('Plain map', 'Vanlig karta'),
+            value: plain.share,
+            note: l(
+              `${plain.n} of ${plain.groups} groups`,
+              `${plain.n} av ${plain.groups} grupper`,
+            ),
+          },
+          {
+            label: l('Each work centred', 'Varje verk centrerat'),
+            value: centred.share,
+            focal: true,
+            note: l(
+              `${centred.n} of ${centred.groups} groups`,
+              `${centred.n} av ${centred.groups} grupper`,
+            ),
+          },
+        ]}
         summary={head}
         format={(v) => pct(v, 0)}
         max={1}
@@ -80,36 +89,38 @@ export function SymbolChart() {
   const comparison = useFile<{ experiments: Experiment[] }>(
     'symbolic/experiment-comparison.json',
   )
-  if (!ok(comparison) || !comparison.experiments.length) return null
-  const rows = comparison.experiments
+  const summary = useFile<Run>('symbolic/summary.json')
+  if (comparison === null) return <Loading />
+  if (!ok(comparison)) return null
+  // A mixed group draws on at least three books, none of them more than half its members
+  // (platform/nlp/symbolic/evaluation.py).
+  const rows = comparison.experiments.filter((r) => r.clusters > 0)
+  if (!rows.length) return null
   const share = (r: Experiment) => r.cross_book_cluster_count / r.clusters
   const plain = rows.find((r) => r.experiment === 'baseline')
-  const centred = rows.find((r) => r.experiment === 'book_centered')
-  const head =
-    plain && centred
-      ? l(
-          `Centring each book raises the groups that span several books from ${pct(share(plain), 0)} to ${pct(share(centred), 0)}.`,
-          `Att centrera varje bok höjer andelen grupper som spänner över flera böcker från ${pct(share(plain), 0)} till ${pct(share(centred), 0)}.`,
-        )
-      : l(
-          'Groups that span several books.',
-          'Grupper som spänner över flera böcker.',
-        )
+  const best = rows.reduce((a, b) => (share(b) > share(a) ? b : a))
+  const name = (r: Experiment) =>
+    l(...(EXPERIMENT[r.experiment] ?? [r.experiment, r.experiment]))
+  const head = plain
+    ? l(
+        `Mixed groups rise from ${pct(share(plain), 0)} on the plain map to ${pct(share(best), 0)} with the symbol word masked and each book centred.`,
+        `Blandade grupper ökar från ${pct(share(plain), 0)} på den vanliga kartan till ${pct(share(best), 0)} med symbolordet maskerat och varje bok centrerad.`,
+      )
+    : l('Mixed groups per experiment.', 'Blandade grupper per experiment.')
+  const at = ranAt(summary)
   return (
     <Mini
       head={head}
       caption={l(
-        'Share of symbol-word groups drawn from more than one book, per clustering experiment. symbolic/experiment-comparison.json',
-        'Andel grupper av symbolord från fler än en bok, per klustringsexperiment. symbolic/experiment-comparison.json',
+        `Share of symbol-word groups that mix at least three books with none supplying more than half, per clustering experiment${at ? `, run ${day(at)} UTC` : ''}. symbolic/experiment-comparison.json`,
+        `Andel grupper av symbolord som blandar minst tre böcker där ingen står för mer än hälften, per klustringsexperiment${at ? `, körd ${day(at)} UTC` : ''}. symbolic/experiment-comparison.json`,
       )}
     >
       <MiniBars
         bars={rows.map((r) => ({
-          label: l(
-            ...(EXPERIMENT[r.experiment] ?? [r.experiment, r.experiment]),
-          ),
+          label: name(r),
           value: share(r),
-          focal: r.experiment === 'book_centered',
+          focal: r === best,
           note: l(
             `${r.cross_book_cluster_count} of ${r.clusters} groups`,
             `${r.cross_book_cluster_count} av ${r.clusters} grupper`,
@@ -130,7 +141,7 @@ type Profile = {
   rank1_chunks: number
   chunks: number
 }
-type Corpora = {
+type Corpora = Run & {
   corpora: { corpus_id: string; label_en: string; label_sv: string }[]
 }
 
@@ -139,40 +150,41 @@ const CONCEPT = 'risk'
 export function ConceptChart() {
   const profiles = useFile<Profile[]>('concepts/profiles.json')
   const summary = useFile<Corpora>('concepts/summary.json')
+  if (profiles === null || summary === null) return <Loading />
   if (!ok(profiles) || !ok(summary)) return null
-  const rows = summary.corpora
-    .map((c) => ({
-      corpus: c,
-      profile: profiles.find(
-        (p) => p.concept_id === CONCEPT && p.corpus_id === c.corpus_id,
-      ),
-    }))
-    .filter((r) => r.profile)
+  const rows = summary.corpora.flatMap((corpus) => {
+    const profile = profiles.find(
+      (p) => p.concept_id === CONCEPT && p.corpus_id === corpus.corpus_id,
+    )
+    return profile ? [{ corpus, profile }] : []
+  })
   if (!rows.length) return null
   const top = rows.reduce((a, b) =>
-    b.profile!.rank1_lift > a.profile!.rank1_lift ? b : a,
+    b.profile.rank1_lift > a.profile.rank1_lift ? b : a,
   )
+  const below = rows.filter((r) => r !== top && r.profile.rank1_lift < 1)
   const x = (v: number) => `${v.toFixed(2)}×`
   const head = l(
-    `“Risk” is the closest concept to a passage most often in ${top.corpus.label_en}: ${x(top.profile!.rank1_lift)} as often as chance.`,
-    `”Risk” är oftast det närmaste begreppet i ${top.corpus.label_sv}: ${x(top.profile!.rank1_lift)} så ofta som slumpen.`,
+    `“Risk” ranks first for ${top.profile.rank1_chunks} of ${top.profile.chunks} passages in the ${top.corpus.label_en}, ${x(top.profile.rank1_lift)} chance${below.length === rows.length - 1 ? '; below chance in the other corpora' : ''}.`,
+    `”Risk” rankas först för ${top.profile.rank1_chunks} av ${top.profile.chunks} passager i ${top.corpus.label_sv}, ${x(top.profile.rank1_lift)} slumpen${below.length === rows.length - 1 ? '; under slumpen i de andra korpusarna' : ''}.`,
   )
+  const at = ranAt(summary)
   return (
     <Mini
       head={head}
       caption={l(
-        'How often “risk” ranks first among 28 concepts for a passage, against chance (dashed line at 1×), per corpus. concepts/profiles.json',
-        'Hur ofta ”risk” rankas först av 28 begrepp för en passage, mot slumpen (streckad linje vid 1×), per korpus. concepts/profiles.json',
+        `How often “risk” ranks first among 28 concepts for a passage, against chance (dashed line at 1×), per corpus${at ? `, run ${day(at)} UTC` : ''}. concepts/profiles.json`,
+        `Hur ofta ”risk” rankas först av 28 begrepp för en passage, mot slumpen (streckad linje vid 1×), per korpus${at ? `, körd ${day(at)} UTC` : ''}. concepts/profiles.json`,
       )}
     >
       <MiniBars
         bars={rows.map((r) => ({
           label: l(r.corpus.label_en, r.corpus.label_sv),
-          value: r.profile!.rank1_lift,
+          value: r.profile.rank1_lift,
           focal: r === top,
           note: l(
-            `first in ${r.profile!.rank1_chunks} of ${r.profile!.chunks} passages`,
-            `först i ${r.profile!.rank1_chunks} av ${r.profile!.chunks} passager`,
+            `first in ${r.profile.rank1_chunks} of ${r.profile.chunks} passages`,
+            `först i ${r.profile.rank1_chunks} av ${r.profile.chunks} passager`,
           ),
         }))}
         summary={head}
