@@ -95,6 +95,11 @@
   font-weight: 400;
   letter-spacing: 0;
 }
+/* A file a week old or more: its figures step back to body size and the faded ink. */
+.hub-kpis[data-stale] .tech-figures dd:not(.tech-meta) {
+  color: var(--ink-faded);
+  font-size: var(--h3);
+}
 .hub-kpis .tech-figures dd:not(.tech-meta) {
   white-space: nowrap;
   font-family: var(--font-mono);

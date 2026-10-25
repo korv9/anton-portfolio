@@ -191,7 +191,7 @@ test('the projects hub leads with the dashboard and the job search', async ({
   await expect(page.locator('.site-header')).toBeVisible()
   // Every figure group names the file it was read from.
   await expect(
-    page.locator('.hub-kpis', { hasText: 'architecture/graph.json' }),
+    page.locator('.hub-kpis', { hasText: 'schema/summary.json' }),
   ).toBeVisible()
   // Job search first, opening the job assistant.
   await expect(page.locator('.hub-item-kicker').first()).toHaveText(

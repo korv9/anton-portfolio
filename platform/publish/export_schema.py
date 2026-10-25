@@ -18,7 +18,7 @@ from __future__ import annotations
 import json
 import os
 import sys
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from decimal import Decimal
 from pathlib import Path
 
@@ -79,7 +79,7 @@ def tests_total(manifest: dict) -> int:
 
 
 def summary(nodes: list[dict], layers: dict, tests: int) -> dict:
-    """The four figures the start page shows, so it need not load the whole schema."""
+    """The four figures the projects hub shows, so it need not load the whole schema."""
     return {
         "models": sum(1 for n in nodes if n["kind"] == "model"),
         "tests": tests,
@@ -225,7 +225,11 @@ def main() -> None:
         "edges": edges,
         "nodes": nodes,
     })
-    write_json(OUT / "summary.json", summary(nodes, layers, tests_total(m)))
+    # The projects hub shows each file's age next to its figures.
+    write_json(OUT / "summary.json", {
+        **summary(nodes, layers, tests_total(m)),
+        "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+    })
     print(f"schema: {len(nodes)} tables ({layers}), {len(links)} links, "
           f"{sum(1 for n in nodes if n['has_sample'])} with example rows")
 

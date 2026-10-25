@@ -1,4 +1,4 @@
-"""The start page's four platform figures, summed from the schema export's nodes."""
+"""The projects hub's four platform figures, summed from the schema export's nodes."""
 import sys
 from pathlib import Path
 

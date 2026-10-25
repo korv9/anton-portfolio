@@ -14,7 +14,7 @@ import {
 } from '../meaning/freshness'
 import PlatformSections from '../tech/PlatformSections'
 import type { Graph } from '../tech/PipelineTables'
-import { REPO, ago, num, ok, reading, useFile } from '../tech/techData'
+import { REPO, ago, day, num, ok, reading, useFile } from '../tech/techData'
 import Dashboard from './Dashboard'
 import { HUB_GROUPS, type HubItem } from './hubProjects'
 import '../tech/tech.css'
@@ -191,6 +191,14 @@ export default function ProjectsHub({ path }: { path: string }) {
             aria-labelledby={`${part.id}-title`}
           >
             <h2 id={`${part.id}-title`}>{part.title}</h2>
+            {part === platform && ok(graph) && (
+              <p className="tech-meta">
+                {l(
+                  `Counts on each card: architecture/graph.json, the lineage graph · built ${day(graph.generated_at)} UTC (${ago(graph.generated_at)})`,
+                  `Siffrorna på varje kort: architecture/graph.json, härkomstgrafen · byggd ${day(graph.generated_at)} UTC (${ago(graph.generated_at)})`,
+                )}
+              </p>
+            )}
             <ul className="hub-items">
               {part.groups.flatMap((group) =>
                 group.items.map((item, i) => (
