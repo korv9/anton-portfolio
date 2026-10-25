@@ -12,7 +12,6 @@ import type { ReactNode } from 'react'
 import { l } from '../i18n'
 import { ExploreSection } from '../ui/Story'
 import {
-  SWEDEN_PRODUCTS,
   productById,
   type Evidence,
   type Status,
@@ -309,7 +308,6 @@ export function SwedenResearchPage({
     .slice(0, 3)
   return (
     <article className="sweden sw-page">
-      <SwedenMasthead current={product.href} />
       {scene}
       <section className="sw-findings" aria-labelledby="sw-findings-title">
         <h2 id="sw-findings-title">{l('Findings', 'Resultat')}</h2>
@@ -331,34 +329,6 @@ export function SwedenResearchPage({
   )
 }
 
-/** The black band that marks every SWEDEN page, with the platform's own navigation. */
-export function SwedenMasthead({ current }: { current: string }) {
-  return (
-    <nav className="sw-masthead" aria-label="SWEDEN">
-      <a
-        href="#sweden"
-        className="sw-wordmark"
-        aria-current={current === '#sweden' ? 'page' : undefined}
-      >
-        SWEDEN
-      </a>
-      <ul>
-        {SWEDEN_PRODUCTS.map((p) => (
-          <li key={p.href}>
-            <a
-              href={p.href}
-              aria-current={current === p.href ? 'page' : undefined}
-            >
-              <span className="sw-id">{p.id === 'X' ? '×' : p.id}</span>
-              <span className="sw-nav-name">{b(p.title)}</span>
-            </a>
-          </li>
-        ))}
-      </ul>
-    </nav>
-  )
-}
-
 /** A product page without validated data: its masthead, question and an EmptyState. */
 export function ProductEmpty({
   product,
@@ -370,7 +340,6 @@ export function ProductEmpty({
 }) {
   return (
     <article className="sweden sw-page">
-      <SwedenMasthead current={product.href} />
       <Scene
         product={product}
         line={l('No validated data yet.', 'Inga validerade data ännu.')}

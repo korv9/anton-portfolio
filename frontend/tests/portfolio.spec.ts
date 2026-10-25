@@ -284,7 +284,7 @@ test(
     await expect(header).toBeVisible()
     await expect(header).not.toHaveAttribute('inert', '')
     await expect(page.locator('.home-group-title')).toHaveCount(0)
-    await expect(page.locator('.work-card')).toHaveCount(13)
+    await expect(page.locator('.work-card')).toHaveCount(5)
     await expect(page.locator('.work-card[href="#thesis"]')).toHaveCount(0)
     await expect(page.locator('.home-project-intro')).toContainText(
       'Most of my latest projects are part of this data platform.',
@@ -303,7 +303,7 @@ test(
     await cta.click()
     await expect(page).toHaveURL(/#projekt$/)
     await expect(page.locator('.projects-group-title')).toHaveCount(0)
-    await expect(page.locator('.projects-list > li')).toHaveCount(13)
+    await expect(page.locator('.projects-list > li')).toHaveCount(5)
     await expect(page.locator('.project-card[href="#thesis"]')).toHaveCount(0)
   },
 )
@@ -388,7 +388,7 @@ test('the start page title opens the projects page, which lists every retained p
   await expect(
     page.locator('.project-card-featured[href="#sweden"]'),
   ).toHaveCount(1)
-  await expect(page.locator('.projects-list .project-card')).toHaveCount(13)
+  await expect(page.locator('.projects-list .project-card')).toHaveCount(5)
   await expect(page.locator('.project-card[href="#thesis"]')).toHaveCount(0)
   await expect(page.locator('.project-card[href="#drugcomb"]')).toContainText(
     'Drug Synergy Lab',

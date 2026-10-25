@@ -1,12 +1,11 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type RefObject } from 'react'
 import { l } from '../i18n'
 import { LISTED_PROJECTS, projectForRoute } from '../projects/projectRegistry'
 import type { Route } from '../router'
 import './header.css'
 
-export default function SiteHeader({ route }: { route: Route }) {
-  const menu = useRef<HTMLDetailsElement>(null)
-  const header = useRef<HTMLElement>(null)
+/** Publishes the header's height as --header-h, for pages that fill the rest of the screen. */
+export function useHeaderHeight(header: RefObject<HTMLElement | null>) {
   useEffect(() => {
     const element = header.current
     if (!element) return
@@ -22,7 +21,13 @@ export default function SiteHeader({ route }: { route: Route }) {
       observer.disconnect()
       document.documentElement.style.removeProperty('--header-h')
     }
-  }, [])
+  }, [header])
+}
+
+export default function SiteHeader({ route }: { route: Route }) {
+  const menu = useRef<HTMLDetailsElement>(null)
+  const header = useRef<HTMLElement>(null)
+  useHeaderHeight(header)
   const [projectsReached, setProjectsReached] = useState(false)
   const hidden = route.page === 'home' && !projectsReached
   useEffect(() => {

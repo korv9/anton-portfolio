@@ -245,3 +245,49 @@ test('the 3D view loads on demand and keeps the 2D matrix as fallback', async ({
   await expect(page).toHaveURL(/scen=3d/)
   await expect(page.locator('.sw-barfield canvas, .sw-matrix')).toHaveCount(1)
 })
+
+test('SWEDEN has one header band with every product and a menu', async ({
+  page,
+}) => {
+  await page.goto('/#sweden-likhet')
+  // One header: the band replaces the site header on SWEDEN routes.
+  await expect(page.getByRole('banner')).toHaveCount(1)
+  await expect(page.locator('.site-header')).toHaveCount(0)
+  const band = page.locator('.sw-band')
+  await expect(band).toHaveCSS('height', '60px')
+  for (const href of ROUTES)
+    await expect(band.locator(`.sw-pill[href="${href}"]`)).toHaveCount(1)
+  await expect(band.locator('.sw-pill[aria-current="page"]')).toContainText(
+    'The Invisible Sweden',
+  )
+  const button = page.getByRole('button', { name: 'Menu' })
+  await button.click()
+  await expect(page.locator('.sw-menu')).toBeVisible()
+  await expect(page.locator('.sw-menu a[href="#sweden-samband"]')).toBeVisible()
+  await page.keyboard.press('Escape')
+  await expect(page.locator('.sw-menu')).toBeHidden()
+  await expect(button).toBeFocused()
+  // Other pages keep the site header.
+  await page.goto('/#projekt')
+  await expect(page.locator('.site-header')).toHaveCount(1)
+  await expect(page.locator('.sw-band')).toHaveCount(0)
+})
+
+test(
+  'on a phone the products move to a scrolling row under the band',
+  { tag: '@mobile' },
+  async ({ page, isMobile }) => {
+    test.skip(!isMobile, 'phone layout')
+    await page.goto('/#sweden-arbete')
+    await expect(page.locator('.sw-band')).toHaveCSS('height', '52px')
+    await expect(page.locator('.sw-band-nav')).toBeHidden()
+    const row = page.locator('.sw-band-row')
+    await expect(row.locator('.sw-pill')).toHaveCount(6)
+    const box = await row.locator('.sw-pill').first().boundingBox()
+    expect(box!.height).toBeGreaterThanOrEqual(44)
+    const width = await page.evaluate(
+      () => document.documentElement.scrollWidth,
+    )
+    expect(width).toBeLessThanOrEqual(page.viewportSize()!.width + 1)
+  },
+)

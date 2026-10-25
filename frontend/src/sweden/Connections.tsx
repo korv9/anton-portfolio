@@ -14,7 +14,6 @@ import {
   EvidenceStamp,
   ProductEmpty,
   RelatedProjects,
-  SwedenMasthead,
 } from './template'
 import type { Evidence } from './products'
 
@@ -93,7 +92,6 @@ export default function Connections() {
     )
   return (
     <article className="sweden sw-page">
-      <SwedenMasthead current={product.href} />
       <header className="sw-hub-head">
         <p className="sw-kicker">
           <span className="sw-id">×</span> SWEDEN

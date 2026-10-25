@@ -26,6 +26,10 @@ const WelfareDeep = lazy(() =>
   import('./welfare/WelfareReport').then((m) => ({ default: m.WelfareDeep })),
 )
 const SwedenPage = lazy(() => import('./sweden/SwedenPage'))
+const SwedenBand = lazy(() => import('./sweden/SwedenBand'))
+const SwedenFooter = lazy(() =>
+  import('./sweden/SwedenBand').then((m) => ({ default: m.SwedenFooter })),
+)
 const SymbolicAtlasPage = lazy(() => import('./symbolic/SymbolicAtlasPage'))
 const AiActProduct = lazy(() => import('./aiact/AiActProduct'))
 const AiActReport = lazy(() => import('./aiact/AiActReport'))
@@ -93,7 +97,14 @@ export default function App() {
         <a className="skip-link" href="#main">
           {l('Skip to content', 'Hoppa till innehåll')}
         </a>
-        <SiteHeader route={route} />
+        {page === 'sweden' ? (
+          // SWEDEN has one band of its own instead of the site header.
+          <Suspense fallback={null}>
+            <SwedenBand route={route} />
+          </Suspense>
+        ) : (
+          <SiteHeader route={route} />
+        )}
         <main
           id="main"
           tabIndex={-1}
@@ -151,6 +162,11 @@ export default function App() {
           </PageBoundary>
           <ProjectPager route={route} />
         </main>
+        {page === 'sweden' && (
+          <Suspense fallback={null}>
+            <SwedenFooter />
+          </Suspense>
+        )}
       </div>
     </CvViewerProvider>
   )

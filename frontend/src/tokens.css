@@ -7,7 +7,8 @@
   --font: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   --font-meta: var(--font);
   --font-identity: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  --ink-identity: #2e2a26;
+  /* Intro text: a muted aubergine near-black, in the family of --cv-ground and --cv-powder, about 12.8:1 on --cv-ivory. */
+  --ink-identity: #2f2836;
   --font-mono:
     ui-monospace, 'SFMono-Regular', Menlo, Consolas, 'Liberation Mono',
     monospace;

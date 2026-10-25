@@ -12,12 +12,7 @@ import {
 import { l } from '../i18n'
 import type { Route } from '../router'
 import { SWEDEN_PRODUCTS } from './products'
-import {
-  EmptyState,
-  EvidenceStamp,
-  StatusStamp,
-  SwedenMasthead,
-} from './template'
+import { EmptyState, EvidenceStamp, StatusStamp } from './template'
 import './sweden.css'
 
 // Products with findings, each loaded only on its own route.
@@ -57,7 +52,6 @@ export default function SwedenPage({ route }: { route: Route }) {
 function Hub() {
   return (
     <article className="sweden sw-page sw-hub">
-      <SwedenMasthead current="#sweden" />
       <header className="sw-hub-head">
         <p className="sw-kicker">
           {l('Featured research platform', 'Utvald forskningsplattform')}
@@ -100,7 +94,6 @@ function Hub() {
 function Kit() {
   return (
     <article className="sweden sw-page">
-      <SwedenMasthead current="#sweden-kit" />
       <section className="sw-findings">
         <h1>SWEDEN kit</h1>
         <p className="sw-note">

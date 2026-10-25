@@ -105,44 +105,6 @@
   cursor: pointer;
 }
 
-/* Masthead */
-.sw-masthead {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.5rem 1.5rem;
-  padding: 0.75rem var(--gutter, 1rem);
-  background: var(--sw-band);
-  color: var(--sw-band-ink);
-}
-.sw-masthead a {
-  color: var(--sw-band-ink);
-  text-decoration: none;
-}
-.sw-masthead a[aria-current='page'] .sw-nav-name {
-  text-decoration: underline;
-  text-underline-offset: 0.3em;
-}
-.sw-wordmark {
-  font: 700 1.125rem/1 var(--sw-font-display);
-  letter-spacing: 0.18em;
-}
-.sw-masthead ul {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.25rem 1rem;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-.sw-masthead li a {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  min-height: 2.75rem;
-  font-size: 0.875rem;
-}
-
 /* Status and evidence stamps: text, not colour alone */
 .sw-stamp {
   display: inline-block;
@@ -458,9 +420,6 @@
   }
   .sw-panel {
     max-width: none;
-  }
-  .sw-masthead .sw-nav-name {
-    display: none;
   }
   .sw-method-body {
     padding-left: 0;
@@ -778,4 +737,215 @@ td.sw-cell[data-zero] .sw-cell-button span {
   display: flex;
   gap: 0.25rem;
   align-self: end;
+}
+
+/* The SWEDEN band: the only header on SWEDEN routes (App.tsx swaps it for SiteHeader). Scoped to
+   the SWEDEN workspace so no other page sees these rules. */
+[data-workspace='sweden'] .sw-band-wrap {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: #161616;
+  color: #f4f3ef;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+.sw-band {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 1.5rem;
+  height: 60px;
+  padding: 0 var(--gutter, 1rem);
+}
+.sw-band a,
+.sw-band button {
+  color: inherit;
+}
+.sw-band :focus-visible,
+.sw-band-row :focus-visible,
+.sw-menu :focus-visible {
+  outline: 2px solid #d9cff7;
+  outline-offset: 2px;
+}
+.sw-band-identity {
+  font-size: 34px;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.sw-band-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.9rem;
+  min-width: 0;
+}
+.sw-band-home {
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-decoration: none;
+}
+.sw-band-home[aria-current='page'] {
+  text-decoration: underline;
+  text-underline-offset: 0.35em;
+}
+.sw-pills {
+  display: flex;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.sw-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  height: 36px;
+  min-width: 36px;
+  justify-content: center;
+  padding: 0 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.sw-pill:hover {
+  border-color: rgba(255, 255, 255, 0.55);
+}
+.sw-pill[aria-current='page'] {
+  background: #d9cff7;
+  border-color: #d9cff7;
+  color: #141416;
+}
+.sw-pill-name {
+  font-weight: 600;
+}
+.sw-menu-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  height: 40px;
+  padding: 0 1rem;
+  border: 0;
+  border-radius: 999px;
+  background: #d9cff7;
+  color: #141416 !important;
+  font:
+    700 0.875rem/1 'Helvetica Neue',
+    Helvetica,
+    Arial,
+    sans-serif;
+  cursor: pointer;
+}
+.sw-band-row {
+  display: none;
+}
+
+/* The menu slides in from the right; with reduced motion it simply appears. */
+.sw-menu {
+  margin: 0 0 0 auto;
+  height: 100dvh;
+  max-height: none;
+  width: min(380px, 100vw);
+  padding: 0;
+  border: 0;
+  background: #161616;
+  color: #f4f3ef;
+}
+.sw-menu[open] {
+  animation: sw-slide 0.22s ease-out;
+}
+.sw-menu::backdrop {
+  background: rgba(0, 0, 0, 0.45);
+}
+@keyframes sw-slide {
+  from {
+    transform: translateX(100%);
+  }
+}
+.sw-menu-panel {
+  display: grid;
+  gap: 1.5rem;
+  padding: 1.25rem 1.5rem 2rem;
+}
+.sw-menu-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.sw-menu-close {
+  min-height: 44px;
+  padding: 0 0.9rem;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 999px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.sw-menu-group h2 {
+  margin: 0 0 0.5rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #b8b6be;
+}
+.sw-menu-group ul {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.sw-menu-group a {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  color: inherit;
+  text-decoration: none;
+}
+.sw-menu-group a:hover,
+.sw-menu-group a[aria-current='page'] {
+  text-decoration: underline;
+  text-underline-offset: 0.3em;
+}
+.sw-footer {
+  padding: 2rem var(--gutter, 1rem);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sw-muted, #55545b);
+  background: var(--sw-bg, #e9e8e4);
+}
+
+@media (max-width: 760px) {
+  .sw-band {
+    height: 52px;
+    grid-template-columns: 1fr auto;
+  }
+  .sw-band-identity {
+    font-size: 22px;
+  }
+  .sw-band-nav {
+    display: none;
+  }
+  .sw-band-row {
+    display: block;
+    overflow-x: auto;
+    padding: 4px var(--gutter, 1rem) 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+  }
+  .sw-band-row .sw-pill {
+    height: 44px;
+    min-width: 44px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sw-menu[open] {
+    animation: none;
+  }
 }
