@@ -170,7 +170,9 @@ export async function jobs(request: Request, env: JobsEnv): Promise<Response> {
     .split('/')
   const write = request.method !== 'GET'
   // Raw uploaded CVs (drafts, older versions) are owner-only; the approved profile is public.
-  if ((write || path[0] === 'cv') && !(await owner(request, env)))
+  // Statuses, notes and labels sit next to named employers, so only the owner reads them.
+  const ownerOnly = ['cv', 'reviews', 'labels'].includes(path[0])
+  if ((write || ownerOnly) && !(await owner(request, env)))
     return reply({ error: 'owner token required' }, 401)
 
   if (path[0] === 'profile' && path.length === 1 && !write) {

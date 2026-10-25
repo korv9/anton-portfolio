@@ -7,6 +7,11 @@ const shots = process.env.JOBS_SCREENSHOTS
 
 async function board(page: Page, hash = '#jobs') {
   const f = jobAssistantFixture()
+  // The committed delivery reads job-assistant/ from R2; these fixtures stand in for it locally.
+  await page.route('**/data/delivery.json', async (route) => {
+    const { live: _, ...local } = await (await route.fetch()).json()
+    return route.fulfill({ json: local })
+  })
   await page.route('**/data/job-assistant/*.json', (route) => {
     const name = new URL(route.request().url()).pathname.split('/').pop()!
     return route.fulfill({
@@ -17,6 +22,12 @@ async function board(page: Page, hash = '#jobs') {
   })
   await page.route('**/api/jobs/**', (route) => {
     const what = new URL(route.request().url()).pathname.split('/').pop()
+    // Like worker/jobs.ts: statuses, notes and labels only with the owner token.
+    if (!route.request().headers()['authorization'])
+      return route.fulfill({
+        status: 401,
+        json: { error: 'owner token required' },
+      })
     if (what === 'reviews') return route.fulfill({ json: f.reviews })
     if (what === 'labels') return route.fulfill({ json: f.labels })
     return route.fulfill({ status: 404, json: { error: 'not found' } })
@@ -31,6 +42,10 @@ test('search, a removable filter chip, an opened ad and the back button', async 
   page,
 }) => {
   await page.setViewportSize({ width: 1440, height: 900 })
+  // The Applications pipeline shows the owner's statuses, so this visit carries the token.
+  await page.addInitScript(() =>
+    sessionStorage.setItem('job-assistant-owner-token', 'fixture-token'),
+  )
   await board(page)
   await expect(page.locator('.ja-stats')).toContainText('Strong matches')
   const before = await count(page)

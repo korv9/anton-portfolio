@@ -351,6 +351,27 @@ def test_catalog_rebuild_keeps_explicit_live_connection(exports, monkeypatch):
     catalog.main()
     assert json.loads((exports / "delivery.json").read_text())["manifest_url"] == override
 
+    assert "live" not in json.loads((exports / "delivery.json").read_text())
+
+
+def test_catalog_routes_release_only_groups_through_the_manifest(exports, monkeypatch):
+    write(exports, "delivery.json", r.encoded({"schema_version": 1}))
+    monkeypatch.setattr(catalog, "PUBLIC", exports)
+    monkeypatch.setattr(catalog, "CATALOG", exports / "catalog.json")
+    monkeypatch.setattr(catalog, "DELIVERY", exports / "delivery.json")
+    monkeypatch.setattr(sys, "argv", ["build_catalog.py"])
+    monkeypatch.delenv("R2_MANIFEST_URL", raising=False)
+    monkeypatch.delenv("R2_LIVE_DELIVERY", raising=False)
+    catalog.main()
+    delivery = json.loads((exports / "delivery.json").read_text())
+    assert "manifest_url" not in delivery
+    assert delivery["live"] == {"manifest_url": catalog.OBJECT_STORAGE + "manifests/current.json",
+                                "prefixes": ["job-assistant/"]}
+    # The group's own spec owns exactly the paths the site routes to R2.
+    spec_file = Path(__file__).resolve().parents[3] / "configs/delivery/job-assistant.json"
+    owned = json.loads(spec_file.read_text())["files"]
+    assert all(path.startswith(tuple(delivery["live"]["prefixes"])) for path in owned)
+
 
 def test_prefer_active_preserves_newer_summary_after_optional_failure(exports):
     s3 = S3()
@@ -441,3 +462,23 @@ def test_blocking_dbt_result_stops_before_upload(exports):
     with pytest.raises(ValueError, match="not_null_x"):
         r.publish(s3, "bucket", "jobs", exports, spec("jobs/market.json"))
     assert s3.puts == []
+
+
+def test_job_assistant_release_carries_no_owner_records():
+    """Statuses, notes and labels stay in D1 behind the owner token, never in the public group."""
+    import importlib.util
+    from datetime import datetime, timezone
+    # By path: other suites put their own module named export on sys.path.
+    folder = Path(__file__).resolve().parents[2] / "job_assistant"
+    sys.path.insert(0, str(folder))
+    loaded = importlib.util.spec_from_file_location("job_assistant_export", folder / "export.py")
+    export = importlib.util.module_from_spec(loaded)
+    loaded.loader.exec_module(export)
+    private = {"status", "note", "notes", "label", "review", "reviews", "labels"}
+    assert not private & set(export.FIELDS)
+    now = datetime.now(timezone.utc)
+    ad = {k: None for k in export.FIELDS} | {"id": "1", "source_url": "https://example.test/1"}
+    data = {"schema_version": 1, "generated_at": now.isoformat(), "ads": [ad], "runs": [{"runs_ok": 1}]}
+    assert export.problems(data, now) == []
+    data["ads"] = [ad | {"status": "applied", "note": "sent"}]
+    assert "ad 1: fields differ from the contract" in export.problems(data, now)

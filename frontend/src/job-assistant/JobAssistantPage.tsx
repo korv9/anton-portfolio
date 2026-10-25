@@ -41,8 +41,8 @@ const TABS = [
 const narrow = () => matchMedia('(max-width: 760px)').matches
 
 export default function JobAssistantPage({ route }: { route: Route }) {
-  const { data, records, setRecords, failed, retry, saved } = useJobData()
   const [owner, setOwner] = useState(() => Boolean(ownerToken()))
+  const { data, records, setRecords, failed, retry, saved } = useJobData(owner)
   const [more, setMore] = useState({ key: '', n: PAGE })
   const search = useRef<HTMLInputElement>(null)
   const listRef = useRef<HTMLOListElement>(null)

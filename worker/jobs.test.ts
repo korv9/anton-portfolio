@@ -103,7 +103,8 @@ test('writes need the owner token and the site origin', async () => {
         .status,
       401,
     )
-  assert.deepEqual(await (await call(e, 'reviews')).json(), { reviews: {} })
+  const read = (path: string) => call(e, path, { token: TOKEN })
+  assert.deepEqual(await (await read('reviews')).json(), { reviews: {} })
   const ok = await call(e, 'reviews/31626862', {
     method: 'PUT',
     body,
@@ -111,9 +112,31 @@ test('writes need the owner token and the site origin', async () => {
     origin: 'https://site.test',
   })
   assert.equal(ok.status, 200)
-  const { reviews } = await (await call(e, 'reviews')).json()
+  const { reviews } = await (await read('reviews')).json()
   assert.equal(reviews['31626862'].status, 'interesting')
   assert.equal(reviews['31626862'].note, 'read in full')
+})
+
+test('statuses, notes and labels are owner-only reads', async () => {
+  const e = env()
+  const body = JSON.stringify({ status: 'applied', note: 'sent cover letter' })
+  await call(e, 'reviews/1', { method: 'PUT', body, token: TOKEN })
+  await call(e, 'labels/1', {
+    method: 'PUT',
+    body: JSON.stringify({
+      label: 'relevant',
+      note: 'x',
+      shown_class: 'strong',
+    }),
+    token: TOKEN,
+  })
+  for (const path of ['reviews', 'reviews/1', 'labels', 'labels/1'])
+    for (const init of [{}, { token: 'wrong' }]) {
+      const r = await call(e, path, init)
+      assert.equal(r.status, 401, path)
+      const text = await r.text()
+      assert.ok(!/applied|sent cover letter|relevant/.test(text), path)
+    }
 })
 
 test('statuses, labels and ids are checked', async () => {
@@ -134,7 +157,7 @@ test('statuses, labels and ids are checked', async () => {
       .status,
     200,
   )
-  const { labels } = await (await call(e, 'labels')).json()
+  const { labels } = await (await call(e, 'labels', { token: TOKEN })).json()
   assert.deepEqual(
     [labels['1'].label, labels['1'].shown_class],
     ['relevant', 'outside'],

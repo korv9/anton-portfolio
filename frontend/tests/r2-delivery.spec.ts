@@ -275,3 +275,86 @@ test('schema1 local deliveries retain format classification and offline fixtures
     true,
   ])
 })
+
+test('schema1 live prefixes resolve through the active manifest and the rest stays local', async ({
+  page,
+}) => {
+  const release = 'c'.repeat(64)
+  const prefix = `releases/job-assistant/${release}/`
+  const body = JSON.stringify({
+    'job-assistant/ads.json': {
+      key: prefix + 'files/job-assistant/ads.json',
+      bytes: 2,
+      sha256: '0'.repeat(64),
+    },
+  })
+  const current = {
+    schema_version: 2,
+    snapshot: release,
+    activated_at: '2026-10-24T08:00:00Z',
+    groups: {
+      'job-assistant': {
+        key: prefix + 'manifest.json',
+        release,
+        bytes: 2,
+        sha256: '0'.repeat(64),
+        published_at: '2026-10-24T08:00:00Z',
+        dependencies: {},
+      },
+    },
+    routes: [
+      {
+        first: 'job-assistant/ads.json',
+        last: 'job-assistant/ads.json',
+        group: 'job-assistant',
+        index: {
+          key: prefix + 'indexes/fixture.json',
+          bytes: Buffer.byteLength(body),
+          sha256: createHash('sha256').update(body).digest('hex'),
+        },
+      },
+    ],
+  }
+  const requests: string[] = []
+  await page.route(base + '**', (route) => {
+    const url = route.request().url()
+    requests.push(url)
+    if (url.endsWith('manifests/current.json'))
+      return route.fulfill({ json: current })
+    return route.fulfill({ contentType: 'application/json', body })
+  })
+  await harness(page)
+  await page.route('**/data/delivery.json', (route) =>
+    route.fulfill({
+      json: {
+        schema_version: 1,
+        bases: { json: 'data/', parquet: base, shard: base },
+        live: {
+          manifest_url: base + 'manifests/current.json',
+          prefixes: ['job-assistant/'],
+        },
+      },
+    }),
+  )
+  const local = await page.evaluate(
+    async (url) => (await import(url)).resolveDataUrl('jobs/market.json'),
+    moduleUrl,
+  )
+  expect(local).toBe('data/jobs/market.json')
+  expect(requests).toEqual([])
+  const values = await page.evaluate(async (url) => {
+    const m = await import(url)
+    let missing = ''
+    try {
+      await m.resolveDataUrl('job-assistant/texts.json')
+    } catch (e) {
+      missing = String(e)
+    }
+    return [await m.resolveDataUrl('job-assistant/ads.json'), missing]
+  }, moduleUrl)
+  expect(values[0]).toBe(base + prefix + 'files/job-assistant/ads.json')
+  expect(values[1]).toContain('Dataset unavailable')
+  expect(
+    requests.filter((u) => u.endsWith('manifests/current.json')),
+  ).toHaveLength(1)
+})
