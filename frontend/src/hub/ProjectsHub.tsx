@@ -100,10 +100,13 @@ function Sidebar() {
             {l(group.title.en, group.title.sv)}
           </a>
         ))}
-        <a href="#projects-flow">{l('Platform', 'Plattformen')}</a>
+        <a href="#projects-flow">
+          {l('How the platform is built', 'Så är plattformen byggd')}
+        </a>
+        <a href="#projects-platform">{l('Platform', 'Plattformen')}</a>
         <ul>
           <li>
-            <a href="#projects-platform">
+            <a href="#platform-ask">
               {l('Ask the platform', 'Fråga plattformen')}
             </a>
           </li>
@@ -174,6 +177,52 @@ export default function ProjectsHub({ path }: { path: string }) {
     title: l('Other projects', 'Övriga projekt'),
     groups: HUB_GROUPS.filter((g) => g.id === 'other'),
   }
+  const renderPart = (part: typeof platform) => (
+    <section
+      key={part.id}
+      id={part.id}
+      className="hub-group"
+      aria-labelledby={`${part.id}-title`}
+    >
+      <h2 id={`${part.id}-title`}>{part.title}</h2>
+      {part === platform && ok(graph) && (
+        <p className="tech-meta">
+          {l(
+            `Counts on each card: architecture/graph.json, the lineage graph · built ${day(graph.generated_at)} UTC (${ago(graph.generated_at)})`,
+            `Siffrorna på varje kort: architecture/graph.json, härkomstgrafen · byggd ${day(graph.generated_at)} UTC (${ago(graph.generated_at)})`,
+          )}
+        </p>
+      )}
+      <ul className="hub-items">
+        {part.groups.flatMap((group) =>
+          group.items.map((item, i) => (
+            <li
+              key={item.id}
+              id={
+                part === platform && i === 0
+                  ? `projects-${group.id}`
+                  : undefined
+              }
+              data-lead={group.id === 'jobs' || undefined}
+            >
+              <a className="hub-item" href={item.href}>
+                <span className="hub-item-title">
+                  {l(item.title.en, item.title.sv)}
+                  {item.href.startsWith('http') && (
+                    <span aria-hidden="true"> ↗</span>
+                  )}
+                </span>
+                <span className="hub-item-text">
+                  {l(item.text.en, item.text.sv)}
+                </span>
+                <RunsOn item={item} domains={domains} status={status} />
+              </a>
+            </li>
+          )),
+        )}
+      </ul>
+    </section>
+  )
   return (
     <div className="hub">
       <Sidebar />
@@ -195,53 +244,9 @@ export default function ProjectsHub({ path }: { path: string }) {
           </div>
         </header>
         <Headline />
-        {[platform, other].map((part) => (
-          <section
-            key={part.id}
-            id={part.id}
-            className="hub-group"
-            aria-labelledby={`${part.id}-title`}
-          >
-            <h2 id={`${part.id}-title`}>{part.title}</h2>
-            {part === platform && ok(graph) && (
-              <p className="tech-meta">
-                {l(
-                  `Counts on each card: architecture/graph.json, the lineage graph · built ${day(graph.generated_at)} UTC (${ago(graph.generated_at)})`,
-                  `Siffrorna på varje kort: architecture/graph.json, härkomstgrafen · byggd ${day(graph.generated_at)} UTC (${ago(graph.generated_at)})`,
-                )}
-              </p>
-            )}
-            <ul className="hub-items">
-              {part.groups.flatMap((group) =>
-                group.items.map((item, i) => (
-                  <li
-                    key={item.id}
-                    id={
-                      part === platform && i === 0
-                        ? `projects-${group.id}`
-                        : undefined
-                    }
-                    data-lead={group.id === 'jobs' || undefined}
-                  >
-                    <a className="hub-item" href={item.href}>
-                      <span className="hub-item-title">
-                        {l(item.title.en, item.title.sv)}
-                        {item.href.startsWith('http') && (
-                          <span aria-hidden="true"> ↗</span>
-                        )}
-                      </span>
-                      <span className="hub-item-text">
-                        {l(item.text.en, item.text.sv)}
-                      </span>
-                      <RunsOn item={item} domains={domains} status={status} />
-                    </a>
-                  </li>
-                )),
-              )}
-            </ul>
-          </section>
-        ))}
+        {renderPart(platform)}
         <PlatformFlow />
+        {renderPart(other)}
         <PlatformSections />
         <Suspense fallback={reading}>
           <Machinery />

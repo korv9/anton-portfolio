@@ -26,6 +26,14 @@
   line-height: 0.98;
   text-wrap: balance;
 }
+/* The platform sections' subheadings as headings, not tracked labels (tech.css). */
+#main .hub-main > section:not(.hub-flow) h3 {
+  font-family: inherit;
+  font-size: var(--h3);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  text-transform: none;
+}
 .hub ::selection {
   background: var(--focal);
   color: var(--page);
@@ -132,6 +140,8 @@
   margin: 0;
 }
 .hub-headline dl > div {
+  display: grid;
+  align-content: end;
   padding-inline: 0 var(--sp-6);
   margin-inline-end: var(--sp-6);
   border-right: 1px solid var(--line);
@@ -303,8 +313,12 @@ li[data-used] .hub-flow-num {
   font-family: var(--font-mono);
   font-size: var(--caption);
 }
-li[data-used] .hub-flow-project {
-  color: var(--focal);
+/* Pointing at a step quiets the steps after it, leaving its lineage up the rail. */
+.hub-flow-steps > li {
+  transition: opacity 250ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.hub-flow-steps > li:is(:hover, :focus-within) ~ li {
+  opacity: 0.4;
 }
 .hub-flow-data a {
   justify-self: start;
@@ -320,12 +334,12 @@ li[data-used] .hub-flow-project {
     .hub-flow-steps > li[data-used]::after {
       animation: hub-path linear both;
       animation-timeline: view();
-      animation-range: entry 60% cover 45%;
+      animation-range: cover 0% cover 35%;
     }
-    .hub-flow-steps > li > :not(.hub-flow-num) {
-      animation: hub-step linear both;
+    li[data-used] .hub-flow-num {
+      animation: hub-node linear both;
       animation-timeline: view();
-      animation-range: entry 0% entry 80%;
+      animation-range: cover 25% cover 35%;
     }
   }
 }
@@ -334,11 +348,11 @@ li[data-used] .hub-flow-project {
     transform: scaleY(0);
   }
 }
-@keyframes hub-step {
+@keyframes hub-node {
   from {
-    opacity: 0.25;
-    translate: 0 1.25rem;
-    filter: blur(2px);
+    border-color: var(--line-strong);
+    background: var(--page);
+    color: var(--ink-faded);
   }
 }
 @media (max-width: 1100px) {
@@ -414,7 +428,7 @@ li[data-lead] .hub-item-title {
   line-height: 0.95;
 }
 li[data-lead] .hub-item-title::after {
-  content: ' →' / '';
+  content: '\00a0→' / '';
   font-weight: 400;
 }
 li[data-lead] .hub-item-text {
@@ -422,7 +436,9 @@ li[data-lead] .hub-item-text {
   font-size: var(--body-large);
 }
 li[data-lead] .hub-item-runs {
-  align-self: end;
+  align-self: start;
+  padding-top: var(--sp-2);
+  border-top: 1px solid var(--line);
   line-height: 1.8;
 }
 @media (max-width: 760px) {
