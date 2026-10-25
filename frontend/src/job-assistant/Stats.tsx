@@ -1,4 +1,7 @@
-/** The board's status line: ads in the store, new today, strong matches, applications and the last sync. */
+/**
+ * The board's figures: current ads, new today, strong matches (only with a profile, else the
+ * duplicates folded), the owner's applications (only when the records were read) and the last sync.
+ */
 import { currentLocale, l } from '../i18n'
 import {
   keptNote,
@@ -35,33 +38,40 @@ export default function Stats({ data, records, day, now }: Props) {
     <>
       <dl className="ja-stats">
         <div>
-          <dt>{l('Ads in the store', 'Annonser i lagret')}</dt>
+          <dt>{l('Current Data/IT ads', 'Aktuella Data/IT-annonser')}</dt>
           <dd>{data.ads.counts.current.toLocaleString()}</dd>
         </div>
         <div>
           <dt>{l('New today', 'Nya i dag')}</dt>
           <dd>{fresh.toLocaleString()}</dd>
         </div>
-        <div>
-          <dt>{l('Strong matches', 'Starka matchningar')}</dt>
-          <dd>{strong.toLocaleString()}</dd>
-        </div>
-        <div>
-          <dt>{l('Applications', 'Ansökningar')}</dt>
-          <dd>
-            {pipeline.length === 0
-              ? records.available
+        {data.matches.profile ? (
+          <div>
+            <dt>{l('Strong matches', 'Starka matchningar')}</dt>
+            <dd>{strong.toLocaleString()}</dd>
+          </div>
+        ) : (
+          <div>
+            <dt>{l('Duplicates folded', 'Dubbletter sammanslagna')}</dt>
+            <dd>{data.ads.counts.duplicates.toLocaleString()}</dd>
+          </div>
+        )}
+        {records.available && (
+          <div>
+            <dt>{l('Applications', 'Ansökningar')}</dt>
+            <dd>
+              {pipeline.length === 0
                 ? '0'
-                : '–'
-              : pipeline.map((s, i) => (
-                  <span key={s}>
-                    {i > 0 && ' · '}
-                    {applied.get(s)}{' '}
-                    <small>{statusLabel(s).toLocaleLowerCase()}</small>
-                  </span>
-                ))}
-          </dd>
-        </div>
+                : pipeline.map((s, i) => (
+                    <span key={s}>
+                      {i > 0 && ' · '}
+                      {applied.get(s)}{' '}
+                      <small>{statusLabel(s).toLocaleLowerCase()}</small>
+                    </span>
+                  ))}
+            </dd>
+          </div>
+        )}
         <div>
           <dt>{l('Last sync', 'Senaste synk')}</dt>
           <dd>

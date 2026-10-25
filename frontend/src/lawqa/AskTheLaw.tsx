@@ -5,7 +5,8 @@
  * when every quote is verbatim in its passage. Three example questions per corpus carry their
  * vectors and work without the Worker; their checked answers come from the model evaluation.
  */
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { flushSync } from 'react-dom'
 import { l } from '../i18n'
 import { setHashParams, type Route } from '../router'
 import { fetchJson } from '../dataSource'
@@ -48,10 +49,22 @@ type Run = {
   neurons_per_answer?: number
   neurons_lower_bound?: boolean
 }
-type Eval = Run & { tokens_per_answer?: number; compared?: Run[] }
+type Eval = Run & {
+  tokens_per_answer?: number
+  compared?: Run[]
+  /** The run date, once the export writes one. */
+  run?: string
+}
 type Hit = { item: Item; score: number }
 
 const TOP = 8
+/** Passages shown before "Show all". */
+const FIRST = 3
+// eval.json carries no run date yet; docs/workers-ai.md dates the run to the night to 15 October.
+const EVAL_RUN = '2026-10-15'
+const MODEL_NAMES: Record<string, string> = {
+  '@cf/google/gemma-4-26b-a4b-it': 'Gemma 4 26B',
+}
 const MAX = 500
 const ANSWER_MODEL = '@cf/google/gemma-4-26b-a4b-it'
 // As the Worker's parser: a colon or white space may sit between [[id]] and its quote.
@@ -69,26 +82,14 @@ const neurons = (run: Run) =>
 /** The example's question in the reader's language; the corpus text itself stays as published. */
 const asked = (e: Example) => l(e.question_en ?? e.question, e.question)
 
-/** The figures that exist for a run, as one line. */
-function scores(run: Run) {
-  const parts = [
-    run.verified_share != null &&
-      l(
-        `${pct(run.verified_share)} pass the quote check`,
-        `${pct(run.verified_share)} klarar citatkontrollen`,
-      ),
-    run.recall_at_k != null &&
-      run.k != null &&
-      `recall@${run.k} ${pct(run.recall_at_k)}`,
-  ].filter(Boolean)
-  if (parts.length === 0) return null
-  return run.questions != null
-    ? `${l(`${run.questions} questions`, `${run.questions} frågor`)}: ${parts.join(', ')}`
-    : parts.join(', ')
-}
-
 /** The answer's text with each [[id]]"quote" as a marked quote that leads to its passage. */
-function Quoted({ text }: { text: string }) {
+function Quoted({
+  text,
+  onJump,
+}: {
+  text: string
+  onJump: (id: string) => void
+}) {
   const parts: ReactNode[] = []
   let at = 0
   for (const m of text.matchAll(QUOTE)) {
@@ -96,14 +97,12 @@ function Quoted({ text }: { text: string }) {
     parts.push(
       <span className="lq-quote" key={m.index}>
         <q>{m[2]}</q>{' '}
-        <button
-          type="button"
-          className="btn-text"
-          onClick={() => document.getElementById(`lq-${m[1]}`)?.focus()}
-        >
+        <button type="button" className="btn-text" onClick={() => onJump(m[1])}>
           {m[1]}
         </button>{' '}
-        <small>✓ {l('verbatim in the source', 'ordagrant i källan')}</small>
+        <small>
+          ✓ {l('checked word for word', 'kontrollerat ord för ord')}
+        </small>
       </span>,
     )
     at = m.index + m[0].length
@@ -116,7 +115,8 @@ export default function AskTheLaw({ route }: { route: Route }) {
   const choice = route.params.get('korpus') === 'ai-act' ? 'ai-act' : 'sfs'
   const file = fileOf(choice)
   const [corpus, setCorpus] = useState<Corpus<Item> | 'missing' | null>(null)
-  const [examples, setExamples] = useState<Example[]>([])
+  // null while examples.json loads; a corpus without one has none.
+  const [examples, setExamples] = useState<Example[] | null>(null)
   const [evaluation, setEvaluation] = useState<Eval | null>(null)
   const [question, setQuestion] = useState('')
   const [hits, setHits] = useState<Hit[] | null>(null)
@@ -125,9 +125,15 @@ export default function AskTheLaw({ route }: { route: Route }) {
   )
   const [notice, setNotice] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  // Until the reader asks, the page shows the first example's checked answer.
+  const [touched, setTouched] = useState(false)
+  const [all, setAll] = useState(false)
 
   useEffect(() => {
     setCorpus(null)
+    setExamples(null)
+    setTouched(false)
+    setAll(false)
     setHits(null)
     setReply(null)
     setNotice(null)
@@ -143,6 +149,8 @@ export default function AskTheLaw({ route }: { route: Route }) {
 
   async function run(q: string, example?: Example) {
     if (!corpus || corpus === 'missing') return
+    setTouched(true)
+    setAll(false)
     setBusy(true)
     setNotice(null)
     setHits(null)
@@ -164,7 +172,7 @@ export default function AskTheLaw({ route }: { route: Route }) {
       setNotice(
         fallback(
           error instanceof Unavailable ? error.reason : 'error',
-          examples.length > 0,
+          (examples?.length ?? 0) > 0,
         ),
       )
     } finally {
@@ -172,7 +180,23 @@ export default function AskTheLaw({ route }: { route: Route }) {
     }
   }
 
-  const meta = corpus && corpus !== 'missing' ? corpus.meta : null
+  const ready = corpus && corpus !== 'missing' ? corpus : null
+  const opening = touched
+    ? undefined
+    : examples?.find((e) => e.answer?.status === 'verified')
+  const openingHits = useMemo(
+    () => (opening && ready ? nearest(ready, opening.vector, TOP) : null),
+    [opening, ready],
+  )
+  const shownHits = opening ? openingHits : hits
+  const shownReply = opening ? (opening.answer ?? null) : reply
+  /** A quote leads to its passage, which may sit among the folded ones. */
+  const jump = (id: string) => {
+    flushSync(() => setAll(true))
+    document.getElementById(`lq-${id}`)?.focus()
+  }
+
+  const meta = ready?.meta ?? null
   const laws = (meta?.laws as Law[] | undefined) ?? []
   const fetched = meta?.fetched as string | undefined
   const compared = evaluation?.compared ?? []
@@ -180,44 +204,45 @@ export default function AskTheLaw({ route }: { route: Route }) {
     (run) =>
       run.model === evaluation?.model && run.setting === evaluation?.setting,
   )
-  const summary = evaluation && scores(evaluation)
+  const k = evaluation?.k ?? TOP
+  const decimal = (n: number) =>
+    n.toLocaleString(l('en-GB', 'sv-SE'), { maximumFractionDigits: 2 })
   return (
     <ReportFrame>
       <div className="report lq">
-        <header className="politik-intro">
-          <p className="politik-intro-name">Allegora</p>
-          <p className="politik-intro-data">
-            {l(
-              'Questions over a selection of Swedish statutes and the EU AI Act, answered with quotes checked word for word against the text.',
-              'Frågor över ett urval av svenska lagar och EU:s AI-förordning, besvarade med citat som kontrolleras ord för ord mot texten.',
-            )}
-          </p>
-        </header>
         <section className="report-tab" aria-labelledby="lq-title">
-          <header className="report-head">
-            <h1 id="lq-title">Allegora</h1>
-            <div
-              className="lq-switch"
-              role="group"
-              aria-label={l('Corpus', 'Korpus')}
-            >
-              {(['sfs', 'ai-act'] as const).map((c) => (
-                <button
-                  key={c}
-                  type="button"
-                  aria-pressed={choice === c}
-                  onClick={() =>
-                    setHashParams(
-                      route.path,
-                      new URLSearchParams(c === 'sfs' ? {} : { korpus: c }),
-                    )
-                  }
-                >
-                  {c === 'sfs' ? l('Swedish law', 'Svensk lag') : 'EU AI Act'}
-                </button>
-              ))}
-            </div>
+          <header className="lq-head">
+            <h1 id="lq-title" className="lq-sig">
+              Allegora
+            </h1>
+            <p className="lq-sig">
+              {l(
+                'Questions about Swedish law and the EU AI Act, answered with quotes checked word for word',
+                'Frågor om svensk lag och EU:s AI-förordning, besvarade med citat som kontrolleras ord för ord',
+              )}
+            </p>
           </header>
+          <div
+            className="lq-switch"
+            role="group"
+            aria-label={l('Corpus', 'Korpus')}
+          >
+            {(['sfs', 'ai-act'] as const).map((c) => (
+              <button
+                key={c}
+                type="button"
+                aria-pressed={choice === c}
+                onClick={() =>
+                  setHashParams(
+                    route.path,
+                    new URLSearchParams(c === 'sfs' ? {} : { korpus: c }),
+                  )
+                }
+              >
+                {c === 'sfs' ? l('Swedish law', 'Svensk lag') : 'EU AI Act'}
+              </button>
+            ))}
+          </div>
 
           <div className="lq-notices">
             <p>
@@ -284,7 +309,14 @@ export default function AskTheLaw({ route }: { route: Route }) {
                   {busy ? l('Searching…', 'Söker…') : l('Ask', 'Fråga')}
                 </button>
               </div>
-              {examples.length > 0 && (
+              {corpus === null && (
+                <p className="lq-status lq-loading" role="status">
+                  {choice === 'sfs'
+                    ? l('Reading the statute book…', 'Läser in lagboken…')
+                    : l('Reading the AI Act…', 'Läser in AI-förordningen…')}
+                </p>
+              )}
+              {examples && examples.length > 0 && (
                 <div
                   className="lq-examples"
                   role="group"
@@ -305,11 +337,11 @@ export default function AskTheLaw({ route }: { route: Route }) {
                   ))}
                 </div>
               )}
-              {examples.length === 0 && file === 'ai-act-en' && (
-                <p className="lq-count">
+              {examples?.length === 0 && (
+                <p className="lq-status">
                   {l(
-                    'Example questions for the English text are not published yet.',
-                    'Exempelfrågor för den engelska texten är inte publicerade än.',
+                    'Ask in your own words; every quote in the answer is checked against the text.',
+                    'Fråga med egna ord; varje citat i svaret kontrolleras mot texten.',
                   )}
                 </p>
               )}
@@ -322,63 +354,164 @@ export default function AskTheLaw({ route }: { route: Route }) {
             </p>
           )}
 
-          {hits && (
-            <div className="lq-result">
-              <section aria-labelledby="lq-answer-title" aria-live="polite">
-                <h2 id="lq-answer-title">{l('Answer', 'Svar')}</h2>
-                {reply === 'waiting' ? (
-                  <p className="lq-status" role="status">
-                    {l(
-                      'Writing and checking the answer…',
-                      'Svaret skrivs och kontrolleras…',
-                    )}
-                  </p>
-                ) : reply === 'example' ? (
-                  <p className="lq-status">
-                    {l(
-                      'A checked answer for this example is not published yet; the passages found are below.',
-                      'Ett kontrollerat svar på det här exemplet är inte publicerat än; de hittade paragraferna står nedan.',
-                    )}
-                  </p>
-                ) : reply?.status === 'verified' ? (
-                  <Quoted text={reply.answer} />
-                ) : reply?.status === 'unverified' ? (
-                  <p className="lq-status">
-                    {l(
-                      'The answer could not be verified against the legal text, so only the paragraphs found are shown.',
-                      'Svaret kunde inte verifieras mot lagtexten, så bara de hittade paragraferna visas.',
-                    )}
-                  </p>
-                ) : reply?.status === 'no_answer' ? (
-                  <p className="lq-status">
-                    {l(
-                      'The paragraphs found do not answer the question.',
-                      'De hittade paragraferna besvarar inte frågan.',
-                    )}
-                  </p>
-                ) : null}
-              </section>
-              <section aria-labelledby="lq-passages-title">
-                <h2 id="lq-passages-title">
-                  {l(
-                    `The ${TOP} nearest passages`,
-                    `De ${TOP} närmaste passagerna`,
+          <div className="lq-body">
+            {(shownHits || shownReply) && (
+              <div className="lq-result">
+                <section aria-labelledby="lq-answer-title" aria-live="polite">
+                  <h2 id="lq-answer-title">{l('Answer', 'Svar')}</h2>
+                  {opening && (
+                    <p className="lq-caption">
+                      {l(
+                        'A ready-made example, checked in advance',
+                        'Ett färdigt exempel, kontrollerat i förväg',
+                      )}
+                      {choice === 'sfs' &&
+                        l(' · answered in Swedish, from the Swedish text', '')}
+                      {': '}
+                      <span className="lq-asked">{asked(opening)}</span>
+                    </p>
                   )}
-                </h2>
-                <ol className="lq-passages">
-                  {hits.map(({ item }) => (
-                    <li key={item.id} id={`lq-${item.id}`} tabIndex={-1}>
-                      <p className="lq-title">
-                        <a href={item.url}>{item.title}</a>{' '}
-                        <small translate="no">{item.id}</small>
-                      </p>
-                      <p>{item.text}</p>
-                    </li>
-                  ))}
-                </ol>
-              </section>
-            </div>
-          )}
+                  {shownReply === 'waiting' ? (
+                    <p className="lq-status" role="status">
+                      {l(
+                        'Writing and checking the answer…',
+                        'Svaret skrivs och kontrolleras…',
+                      )}
+                    </p>
+                  ) : shownReply === 'example' ? (
+                    <p className="lq-status">
+                      {l(
+                        'A checked answer for this example is not published yet; the passages found are below.',
+                        'Ett kontrollerat svar på det här exemplet är inte publicerat än; de hittade paragraferna står nedan.',
+                      )}
+                    </p>
+                  ) : shownReply?.status === 'verified' ? (
+                    <Quoted text={shownReply.answer} onJump={jump} />
+                  ) : shownReply?.status === 'unverified' ? (
+                    <p className="lq-status">
+                      {l(
+                        'The answer could not be verified against the legal text, so only the paragraphs found are shown.',
+                        'Svaret kunde inte verifieras mot lagtexten, så bara de hittade paragraferna visas.',
+                      )}
+                    </p>
+                  ) : shownReply?.status === 'no_answer' ? (
+                    <p className="lq-status">
+                      {l(
+                        'The paragraphs found do not answer the question.',
+                        'De hittade paragraferna besvarar inte frågan.',
+                      )}
+                    </p>
+                  ) : null}
+                </section>
+                {shownHits && (
+                  <section aria-labelledby="lq-passages-title">
+                    <h2 id="lq-passages-title">{l('Sources', 'Källor')}</h2>
+                    <p className="lq-caption">
+                      {l(
+                        `The ${shownHits.length} nearest passages, found in your browser`,
+                        `De ${shownHits.length} närmaste passagerna, hittade i din webbläsare`,
+                      )}
+                    </p>
+                    <ol className="lq-passages">
+                      {shownHits.map(({ item }, i) => (
+                        <li
+                          key={item.id}
+                          id={`lq-${item.id}`}
+                          tabIndex={-1}
+                          hidden={!all && i >= FIRST}
+                        >
+                          <p className="lq-title">
+                            <a href={item.url}>{item.title}</a>{' '}
+                            <small translate="no">{item.id}</small>
+                          </p>
+                          <p>{item.text}</p>
+                        </li>
+                      ))}
+                    </ol>
+                    {!all && shownHits.length > FIRST && (
+                      <button
+                        type="button"
+                        className="btn-text lq-more"
+                        onClick={() => setAll(true)}
+                      >
+                        {l(
+                          `Show all ${shownHits.length}`,
+                          `Visa alla ${shownHits.length}`,
+                        )}
+                      </button>
+                    )}
+                  </section>
+                )}
+              </div>
+            )}
+            {evaluation?.verified_share != null &&
+              evaluation.questions != null && (
+                <section
+                  className="lq-checked"
+                  aria-labelledby="lq-checked-title"
+                >
+                  <h2 id="lq-checked-title">
+                    {l('How it is checked', 'Så kontrolleras det')}
+                  </h2>
+                  <p>
+                    {l(
+                      `Your question is matched to the ${k} nearest paragraphs in the browser. A model answers from those alone, and the answer is shown only if every quote sits word for word in its paragraph. Otherwise you see the paragraphs, not the answer.`,
+                      `Frågan matchas mot de ${k} närmaste paragraferna i webbläsaren. En modell svarar bara utifrån dem, och svaret visas bara om varje citat står ord för ord i sin paragraf. Annars visas paragraferna, inte svaret.`,
+                    )}
+                  </p>
+                  <dl className="lq-figures">
+                    <div>
+                      <dt className="lq-sig">
+                        {Math.round(
+                          evaluation.verified_share * evaluation.questions,
+                        )}{' '}
+                        {l('of', 'av')} {evaluation.questions}
+                      </dt>
+                      <dd>
+                        {l(
+                          `answers with every quote verified (${pct(evaluation.verified_share)})`,
+                          `svar där varje citat verifierades (${pct(evaluation.verified_share)})`,
+                        )}
+                      </dd>
+                    </div>
+                    {evaluation.recall_at_k != null && (
+                      <div>
+                        <dt className="lq-sig">
+                          {decimal(evaluation.recall_at_k)}
+                        </dt>
+                        <dd>
+                          {l(
+                            `recall@${k}: the right paragraph is among the ${k} found`,
+                            `recall@${k}: rätt paragraf finns bland de ${k} som hittas`,
+                          )}
+                        </dd>
+                      </div>
+                    )}
+                  </dl>
+                  <p className="lq-caption">
+                    {l(
+                      `Run on the night to ${evaluation.run ?? EVAL_RUN} (UTC)`,
+                      `Körd natten till ${evaluation.run ?? EVAL_RUN} (UTC)`,
+                    )}
+                    {' · '}
+                    <span translate="no">
+                      {MODEL_NAMES[evaluation.model] ??
+                        evaluation.model.split('/').pop()}
+                    </span>
+                    {evaluation.setting && `, ${evaluation.setting}`}
+                    {chosen &&
+                      neurons(chosen) &&
+                      ` · ${neurons(chosen)} ${l('neurons per answer', 'neuroner per svar')}`}
+                  </p>
+                  <p className="lq-small">
+                    {l(
+                      `n = ${evaluation.questions} hand-written questions. Verified means the quotes match the law, not that the answer is legally correct.`,
+                      `n = ${evaluation.questions} egenskrivna frågor. Verifierat betyder att citaten stämmer med lagen, inte att svaret är juridiskt korrekt.`,
+                    )}
+                  </p>
+                </section>
+              )}
+          </div>
 
           <div className="lq-about">
             {choice === 'sfs' && laws.length > 0 && (
@@ -429,12 +562,6 @@ export default function AskTheLaw({ route }: { route: Route }) {
                     </span>
                     {evaluation?.setting && `, ${evaluation.setting}`}
                   </dd>
-                  {summary && (
-                    <>
-                      <dt>{l('Evaluation', 'Utvärdering')}</dt>
-                      <dd>{summary}</dd>
-                    </>
-                  )}
                   {chosen && neurons(chosen) && (
                     <>
                       <dt>{l('Cost per answer', 'Kostnad per svar')}</dt>

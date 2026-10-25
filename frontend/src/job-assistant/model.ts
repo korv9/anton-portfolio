@@ -215,7 +215,8 @@ const utc = (at: string) => `${at.slice(0, 10)} ${at.slice(11, 16)} UTC`
 
 /**
  * What the board says when nothing is matched, as [English, Swedish]. Only a 200 without an
- * approved profile means the profile is still to be approved; a blocked or failing route says so.
+ * approved profile means the profile is still to be approved; any other reason reads as a calm
+ * pause. The HTTP status stays in matches.json, not in public copy.
  */
 export function unmatchedNote(n?: RouteNote): [string, string] {
   if (n?.status === 200)
@@ -223,24 +224,9 @@ export function unmatchedNote(n?: RouteNote): [string, string] {
       'Matching starts when the CV profile is approved.',
       'Matchningen börjar när cv-profilen är godkänd.',
     ]
-  if (n?.status === 503)
-    return [
-      'Nothing is matched yet: the profile store is not set up, so there is no approved profile.',
-      'Inget är matchat än: profillagret är inte uppsatt, så det finns ingen godkänd profil.',
-    ]
-  if (n)
-    return n.status == null
-      ? [
-          `Nothing is matched: the profile could not be reached at ${utc(n.at)}.`,
-          `Inget är matchat: profilen gick inte att nå ${utc(n.at)}.`,
-        ]
-      : [
-          `Nothing is matched: the profile could not be read at ${utc(n.at)} (the route answered ${n.status}).`,
-          `Inget är matchat: profilen gick inte att läsa ${utc(n.at)} (svaret var ${n.status}).`,
-        ]
   return [
-    'Nothing is matched: no approved profile was read.',
-    'Inget är matchat: ingen godkänd profil lästes.',
+    'Matching against my CV is paused for now.',
+    'Matchningen mot mitt cv är pausad just nu.',
   ]
 }
 

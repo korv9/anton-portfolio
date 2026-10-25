@@ -123,7 +123,7 @@ test('on a phone the ad replaces the list and the back button returns to it', as
   expect(overflow).toBe(false)
 })
 
-test('without a profile the board lists the open ads under the real reason, with no classes or filters', async ({
+test('without a profile the board lists the open ads under a calm note, with no classes, filters or error codes', async ({
   page,
 }) => {
   const f = jobAssistantFixture()
@@ -142,8 +142,9 @@ test('without a profile the board lists the open ads under the real reason, with
   }
   await board(page, '#jobs', unmatched as unknown as Fixture)
   await expect(page.locator('.ja-empty')).toContainText(
-    'the profile could not be read at 2026-10-25 11:13 UTC (the route answered 403)',
+    'Matching against my CV is paused for now.',
   )
+  await expect(page.locator('.ja-empty')).not.toContainText('403')
   await expect(page.locator('.ja-empty')).not.toContainText('starts when')
   await expect(page.locator('.ja-results-head')).toContainText(
     `${f.ads.ads.length} open ads`,
@@ -153,5 +154,10 @@ test('without a profile the board lists the open ads under the real reason, with
   await expect(
     page.getByRole('searchbox', { name: /Search jobs/ }),
   ).toHaveCount(0)
-  await expect(page.locator('.ja-stats')).toContainText('Strong matches0')
+  await expect(page.locator('.ja-stats')).not.toContainText('Strong matches')
+  // A visitor has no token: the owner-only Applications tab and stat are not offered.
+  await expect(page.locator('.ja-stats')).not.toContainText('Applications')
+  await expect(page.getByRole('button', { name: 'Applications' })).toHaveCount(
+    0,
+  )
 })

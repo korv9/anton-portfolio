@@ -1,18 +1,61 @@
-/* The job assistant (#jobs): a job board in the warm-grey workspace. Result cards beside the
-   open ad, thin rules, no shadows; the open card is the one focal mark on the screen. */
+/* Arbetsförmedla (#jobs): a job board, ivory on charcoal through the shared tokens. The title in
+   the signature's gradient, space instead of rules between the parts; result cards beside the
+   open ad, no shadows; the open card is the one focal mark on the screen. */
 .ja {
-  padding-block: var(--sp-5) var(--sp-section);
+  padding-block: clamp(3rem, 7vw, 6rem) var(--sp-section);
 }
-.ja h1 {
+/* #main outranks editorial.css's page title rule. */
+#main .ja .ja-head h1 {
+  width: max-content;
+  max-width: 100%;
   margin: 0;
-  font-size: var(--type-page-title);
-  font-weight: var(--weight-heading);
-  letter-spacing: -0.015em;
+  font-size: clamp(1.9rem, 8vw, 4.75rem);
+  font-weight: 750;
+  letter-spacing: -0.045em;
+  line-height: 1;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+  background: linear-gradient(
+    to bottom right,
+    #ebe6da 0%,
+    #c6c1b6 55%,
+    #9c978d 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.ja-sub {
+  width: max-content;
+  max-width: 100%;
+  margin: var(--sp-4) 0 0;
+  font-size: clamp(1.25rem, 2.2vw, 1.625rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.3;
+  background: linear-gradient(
+    to bottom right,
+    #ebe6da 0%,
+    #c6c1b6 55%,
+    #9c978d 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 .ja-lede {
-  max-width: var(--measure);
-  margin: var(--sp-2) 0 0;
+  max-width: 44rem;
+  margin: var(--sp-3) 0 0;
   color: var(--color-ink-secondary);
+  line-height: 1.55;
+}
+.ja-mono {
+  margin: var(--sp-3) 0 0;
+  color: var(--color-ink-secondary);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
 }
 .ja-muted {
   color: var(--color-ink-secondary);

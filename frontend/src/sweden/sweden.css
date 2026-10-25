@@ -32,20 +32,21 @@
   font-display: swap;
 }
 .sweden {
-  --sw-bg: #11100e;
-  --sw-glass: rgba(26, 24, 21, 0.8);
-  --sw-solid: #1a1815;
-  --sw-ink: #ede6d6;
-  --sw-muted: #a39e93;
-  --sw-line: rgba(237, 230, 214, 0.13);
+  /* Ivory on charcoal, like the rest of the site. */
+  --sw-bg: #242422;
+  --sw-glass: rgba(36, 36, 34, 0.82);
+  --sw-solid: #30302d;
+  --sw-ink: #f1efe7;
+  --sw-muted: #aaa59a;
+  --sw-line: rgba(241, 239, 231, 0.13);
   --sw-accent: #c9bcf2;
   --sw-seq-lo: #3a3256;
   --sw-seq-hi: #e3d8ff;
   --sw-div-neg: #e08a5c;
-  --sw-div-mid: #3a3935;
+  --sw-div-mid: #44433f;
   --sw-div-pos: #6fb3d2;
-  --sw-base: #2a2925;
-  --sw-band: #161616;
+  --sw-base: #3a3936;
+  --sw-band: #1d1d1b;
   --sw-pill: #d9cff7;
   --sw-band-ink: #f1f0ec;
   --sw-stamp: #e2b65a;
@@ -98,7 +99,7 @@
 /* The SWEDEN pages paint the whole window, under the site's own background. */
 :root:has(.site-shell[data-workspace='sweden']) body,
 .site-shell[data-workspace='sweden'] {
-  background: var(--sw-page, #11100e);
+  background: var(--sw-page, #242422);
 }
 :root[data-sw-theme='light']:has(.site-shell[data-workspace='sweden']) body,
 :root[data-sw-theme='light'] .site-shell[data-workspace='sweden'] {

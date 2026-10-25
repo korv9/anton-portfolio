@@ -253,7 +253,7 @@ test('labels give precision of the list, misses outside it and every disagreemen
   assert.deepEqual(ev.disagreements.map((x) => x.id).sort(), ['b', 'c'])
 })
 
-test('the unmatched note says approval only when the Worker answered without a profile', () => {
+test('the unmatched note says approval only when the Worker answered without a profile, and a calm pause otherwise', () => {
   const at = '2026-10-25T11:13:24+00:00'
   const [none] = unmatchedNote({
     reason: 'no approved profile',
@@ -266,14 +266,12 @@ test('the unmatched note says approval only when the Worker answered without a p
     assert.doesNotMatch(en, /starts when/, `status ${status}`)
     assert.ok(sv.length > 0)
   }
-  assert.match(
-    unmatchedNote({ reason: 'x', status: 403, at })[0],
-    /could not be read at 2026-10-25 11:13 UTC \(the route answered 403\)/,
-  )
-  assert.match(
-    unmatchedNote({ reason: 'x', status: null, at })[0],
-    /could not be reached/,
-  )
+  // Public copy reads as a pause: no HTTP status, no time, no "could not".
+  for (const status of [403, 500, null, 503]) {
+    const [en] = unmatchedNote({ reason: 'x', status, at })
+    assert.match(en, /paused/)
+    assert.doesNotMatch(en, /\d{3}|UTC|could not/)
+  }
   assert.doesNotMatch(unmatchedNote()[0], /starts when/)
   assert.match(
     keptNote({ reason: 'x', status: 500, at })[0],
