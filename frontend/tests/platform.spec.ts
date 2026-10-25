@@ -91,10 +91,12 @@ test('the hub shows the platform: live status, run health, the Fabric lakehouse 
   await expect(
     page.getByRole('heading', { level: 2, name: 'The data platform' }),
   ).toBeVisible()
-  const status = page.getByTestId('platform-status')
-  await expect(status).toContainText('3 h ago')
-  await expect(status).toContainText('1/2')
-  await expect(status).toContainText('3')
+  // The run status sits at its step of the flow: ingestion.
+  const ingestion = page.locator('.hub-flow-steps > li').nth(1)
+  await expect(ingestion).toContainText('last run 3 h ago')
+  await expect(ingestion).toContainText(
+    '1 of 2 subjects passed their latest run',
+  )
   await expect(page.locator('.tour-rail')).toBeVisible()
   await expect(page.getByText('Example:')).toBeVisible()
   await expect(page.getByTestId('run-health-total')).toContainText(

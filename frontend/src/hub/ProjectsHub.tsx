@@ -1,8 +1,8 @@
 /**
- * The projects hub (#projects), one page for everything built on the platform: the dashboard,
- * then each project with what it runs on, job search first, then the platform itself (PR #141's
- * page) and its machinery to drill into. A sidebar lists the same parts; on a phone it folds into
- * a menu above the content.
+ * The projects hub (#projects), one page for everything built on the platform: a headline row,
+ * then each project with what it runs on, job search first, then how the platform is built as a
+ * flow, the platform's own sections (PR #141's page) and its machinery to drill into. A sidebar
+ * lists the same parts; on a phone it folds into a menu above the content.
  */
 import { lazy, Suspense, useEffect, useState } from 'react'
 import { l } from '../i18n'
@@ -15,7 +15,8 @@ import {
 import PlatformSections from '../tech/PlatformSections'
 import type { Graph } from '../tech/PipelineTables'
 import { REPO, ago, day, num, ok, reading, useFile } from '../tech/techData'
-import Dashboard from './Dashboard'
+import Headline from './Headline'
+import PlatformFlow from './PlatformFlow'
 import { HUB_GROUPS, type HubItem } from './hubProjects'
 import '../tech/tech.css'
 import './hub.css'
@@ -99,8 +100,13 @@ function Sidebar() {
             {l(group.title.en, group.title.sv)}
           </a>
         ))}
-        <a href="#projects-platform">{l('Platform', 'Plattformen')}</a>
+        <a href="#projects-flow">{l('Platform', 'Plattformen')}</a>
         <ul>
+          <li>
+            <a href="#projects-platform">
+              {l('Ask the platform', 'Fråga plattformen')}
+            </a>
+          </li>
           <li>
             <a href="#platform-pipeline">{l('Pipeline', 'Pipeline')}</a>
           </li>
@@ -182,7 +188,7 @@ export default function ProjectsHub({ path }: { path: string }) {
           </p>
           <p className="hub-stack">{STACK}</p>
         </header>
-        <Dashboard />
+        <Headline />
         {[platform, other].map((part) => (
           <section
             key={part.id}
@@ -235,6 +241,7 @@ export default function ProjectsHub({ path }: { path: string }) {
             </ul>
           </section>
         ))}
+        <PlatformFlow />
         <PlatformSections />
         <Suspense fallback={reading}>
           <Machinery />

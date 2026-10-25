@@ -3,115 +3,19 @@
  * Ask the platform, 30 days of run health with the cause of each red run, the same pattern on
  * Microsoft Fabric (the DiVA lakehouse) and what each part maps to in another stack.
  *
- * Every number is read at load: the status strip from status/ingestion.json in object storage
- * (platform/publish/ingest_status.py), the pipeline from architecture/graph.json, the runs and
+ * Every number is read at load: the pipeline from architecture/graph.json, the runs and
  * failure issues from GitHub, the MERGE counts from the lakehouse repository's docs/demo.md.
  */
-import { useEffect, useState } from 'react'
 import { l } from '../i18n'
 import AskThePlatform from '../ask/AskThePlatform'
-import { loadStatus, SUBJECTS, type Entry } from '../meaning/freshness'
 import PipelineTour from './PipelineTour'
 import type { Graph } from './PipelineTables'
 import { RunHealth } from './RunHealth'
 import { FabricLakehouse } from './FabricLakehouse'
-import { REPO, ago, num, ok, reading, unread, useFile } from './techData'
+import { REPO, ok, reading, unread, useFile } from './techData'
 import './tech.css'
 
 const BLOB = `https://github.com/${REPO}/blob/main`
-
-type Status = Record<
-  string,
-  Entry & { sources?: { source_key: string; fetched_at?: string | null }[] }
->
-
-/** Subject -> its fresh_within in hours, as freshness.ts mirrors platform/pipeline.yml. */
-const SLA = new Map(Object.values(SUBJECTS))
-
-export function StatusStrip() {
-  const [status, setStatus] = useState<Status | 'error' | null>(null)
-  useEffect(() => {
-    loadStatus().then((s) => setStatus((s as Status) ?? 'error'))
-  }, [])
-  if (status === null) return reading
-  if (status === 'error')
-    return (
-      <p className="tech-note" role="status">
-        {l(
-          'The live run status could not be read just now.',
-          'Den levande körstatusen kunde inte läsas just nu.',
-        )}
-      </p>
-    )
-  const entries = Object.entries(status)
-  if (!entries.length) return null
-  const [lastName, last] = entries.reduce((a, b) =>
-    (b[1].recorded_at ?? '') > (a[1].recorded_at ?? '') ? b : a,
-  )
-  const passed = entries.filter(([, e]) => e.outcome === 'success').length
-  const failed = entries
-    .filter(([, e]) => e.outcome && e.outcome !== 'success')
-    .map(([name]) => name.replace(/_/g, ' '))
-  const sources = new Set(
-    entries.flatMap(([, e]) =>
-      (e.sources ?? []).filter((s) => s.fetched_at).map((s) => s.source_key),
-    ),
-  )
-  const timed = entries.filter(([name]) => SLA.has(name))
-  const fresh = timed.filter(([name, e]) => {
-    const at = e.outcome === 'success' ? e.recorded_at : e.last_success_at
-    return at && Date.now() - Date.parse(at) <= SLA.get(name)! * 36e5
-  }).length
-  return (
-    <dl className="tech-figures platform-status" data-testid="platform-status">
-      <div>
-        <dt>{l('Last run', 'Senaste körning')}</dt>
-        <dd>{last.recorded_at ? ago(last.recorded_at) : '–'}</dd>
-        <dd className="tech-meta">
-          {last.github_run ? (
-            <a href={last.github_run}>{lastName.replace(/_/g, ' ')}</a>
-          ) : (
-            lastName
-          )}
-          ,{' '}
-          {last.outcome === 'success'
-            ? l('passed', 'gick igenom')
-            : l('failed', 'föll')}
-        </dd>
-      </div>
-      <div>
-        <dt>{l('Subjects passing', 'Ämnen som gick igenom')}</dt>
-        <dd>
-          {num(passed)}/{num(entries.length)}
-        </dd>
-        <dd className="tech-meta">
-          {l('each by its latest run', 'var och ett vid sin senaste körning')}
-          {failed.length > 0 &&
-            `; ${l('failed', 'föll')}: ${failed.join(', ')}`}
-        </dd>
-      </div>
-      <div>
-        <dt>{l('Source feeds', 'Källflöden')}</dt>
-        <dd>{num(sources.size)}</dd>
-        <dd className="tech-meta">
-          {l('with a fetch log', 'med hämtningslogg')}
-        </dd>
-      </div>
-      <div>
-        <dt>{l('Within update limit', 'Inom uppdateringsgränsen')}</dt>
-        <dd>
-          {num(fresh)}/{num(timed.length)}
-        </dd>
-        <dd className="tech-meta">
-          {l(
-            'subjects with a limit, from each last success',
-            'ämnen med en gräns, från varje senaste lyckade körning',
-          )}
-        </dd>
-      </div>
-    </dl>
-  )
-}
 
 const STACK: [string, string, () => string][] = [
   [

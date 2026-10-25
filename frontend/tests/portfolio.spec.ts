@@ -201,10 +201,17 @@ test('the projects hub leads with the dashboard and the job search', async ({
   await expect(page).toHaveURL(/#projects$/)
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Projects')
   await expect(page.locator('.site-header')).toBeVisible()
-  // Every figure group names the file it was read from.
+  // The headline names the files its figures come from.
+  await expect(page.locator('.hub-headline')).toContainText(
+    'schema/summary.json',
+  )
+  // How the platform is built: seven steps, the job search's path marked.
+  const flow = page.locator('#projects-flow')
+  await expect(flow.locator('.hub-flow-steps > li')).toHaveCount(7)
   await expect(
-    page.locator('.hub-kpis', { hasText: 'schema/summary.json' }),
-  ).toBeVisible()
+    flow.getByRole('button', { name: 'The job assistant' }),
+  ).toHaveAttribute('aria-pressed', 'true')
+  await expect(flow.locator('li[data-used]').first()).toBeVisible()
   // Job search first, opening the job assistant.
   await expect(page.locator('.hub-item-kicker').first()).toHaveText(
     'Job search',
