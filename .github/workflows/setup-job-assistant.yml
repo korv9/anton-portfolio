@@ -1,0 +1,95 @@
+name: Set up the job assistant
+
+# One-off and safe to rerun (docs/job-assistant.md, What the owner applies). From main, in the
+# anton-portfolio environment, with the secrets CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID:
+#  1. finds the D1 database `job-assistant`, or creates it, and prints its id (not a secret);
+#  2. applies worker/migrations to it remotely; applied migrations are skipped;
+#  3. copies the secret JOB_ASSIST_TOKEN into the Worker `anton-portfolio`, through stdin, when the
+#     secret is set. Without it the step is skipped and owner writes stay off.
+# The id then goes into the [[d1_databases]] block of wrangler.toml, committed by hand, since
+# Workers Builds deploys from that file.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: setup-job-assistant
+  cancel-in-progress: false
+
+env:
+  WRANGLER: npx --yes wrangler@4.151.0
+  DATABASE: job-assistant
+  WRANGLER_SEND_METRICS: 'false'
+
+jobs:
+  setup:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: anton-portfolio
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - name: Check the secrets
+        run: |
+          for name in CLOUDFLARE_API_TOKEN CLOUDFLARE_ACCOUNT_ID; do
+            if [ -z "${!name}" ]; then
+              echo "::error::Secret $name is missing in the anton-portfolio environment (docs/job-assistant.md)."
+              exit 1
+            fi
+          done
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+      - name: Find or create the D1 database
+        id: d1
+        run: |
+          denied="::error::CLOUDFLARE_API_TOKEN cannot manage D1. Add the permission Account > D1 > Edit to that token."
+          lookup() {
+            list=$($WRANGLER d1 list --json) || { echo "$denied"; exit 1; }
+            id=$(jq -r --arg n "$DATABASE" '.[] | select(.name == $n) | .uuid' <<< "$list")
+          }
+          lookup
+          if [ -z "$id" ]; then
+            $WRANGLER d1 create "$DATABASE" || { echo "$denied"; exit 1; }
+            lookup
+          fi
+          [ -n "$id" ] || { echo "::error::D1 database $DATABASE was not found after creating it."; exit 1; }
+          echo "id=$id" >> "$GITHUB_OUTPUT"
+          echo "D1 database $DATABASE: $id"
+          echo "D1 database \`$DATABASE\`: \`$id\`. Put it in the [[d1_databases]] block of wrangler.toml." >> "$GITHUB_STEP_SUMMARY"
+      - name: Apply the migrations
+        env:
+          ID: ${{ steps.d1.outputs.id }}
+        run: |
+          # wrangler.toml keeps the block commented until the id is committed, so a config of its own.
+          cat > "$RUNNER_TEMP/wrangler-d1.toml" <<EOF
+          name = "anton-portfolio"
+          compatibility_date = "2026-09-01"
+          [[d1_databases]]
+          binding = "JOBS_DB"
+          database_name = "$DATABASE"
+          database_id = "$ID"
+          migrations_dir = "$GITHUB_WORKSPACE/worker/migrations"
+          EOF
+          $WRANGLER d1 migrations apply "$DATABASE" --remote --config "$RUNNER_TEMP/wrangler-d1.toml" ||
+            { echo "::error::Migrations failed. If the error is about authentication, add Account > D1 > Edit to CLOUDFLARE_API_TOKEN."; exit 1; }
+      - name: Copy the owner token into the Worker
+        env:
+          JOB_ASSIST_TOKEN: ${{ secrets.JOB_ASSIST_TOKEN }}
+        run: |
+          if [ -z "$JOB_ASSIST_TOKEN" ]; then
+            line="JOB_ASSIST_TOKEN is not set, so it was not copied. Owner writes (CV upload, profile approval, statuses, notes) stay off until it is added and this workflow runs again."
+            echo "::notice::$line"
+            echo "$line" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          printf '%s' "$JOB_ASSIST_TOKEN" | $WRANGLER secret put JOB_ASSIST_TOKEN --name anton-portfolio ||
+            { echo "::error::The Worker secret could not be set. Add Account > Workers Scripts > Edit to CLOUDFLARE_API_TOKEN."; exit 1; }

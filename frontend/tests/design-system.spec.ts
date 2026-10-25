@@ -12,7 +12,6 @@ test('project themes survive navigation between all workspace types', async ({
     ['#concept-constellation', 'labs'],
     ['#drugcomb', 'labs'],
     ['#thesis', 'engineering'],
-    ['#diva-lakehouse', 'engineering'],
     ['#homie', 'engineering'],
     ['#cluster-visuals', 'tool'],
   ]
@@ -60,7 +59,9 @@ test('the homepage retains its name scale, placement and palette', async ({
   await expect(name).toHaveCSS('color', 'rgb(47, 40, 54)')
   const bounds = (await name.boundingBox())!
   expect(bounds.x + bounds.width / 2).toBeCloseTo(720, 0)
-  expect(bounds.y).toBeCloseTo(372.5, 0)
+  // The name and the role under it, centred together on the first screen.
+  const role = (await page.locator('.home-role').boundingBox())!
+  expect((bounds.y + role.y + role.height) / 2).toBeCloseTo(500, 0)
 })
 
 test('dark visualization colors stay inside the plate', async ({ page }) => {

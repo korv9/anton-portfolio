@@ -13,6 +13,7 @@ import Filters from './Filters'
 import Pipeline from './Pipeline'
 import Sections from './Sections'
 import Stats from './Stats'
+import Unmatched from './Unmatched'
 import { useListKeys } from './useListKeys'
 import { useJobData } from './useJobData'
 import { ownerToken, rows as joinRows, type Status } from './data'
@@ -41,8 +42,8 @@ const TABS = [
 const narrow = () => matchMedia('(max-width: 760px)').matches
 
 export default function JobAssistantPage({ route }: { route: Route }) {
-  const { data, records, setRecords, failed, retry, saved } = useJobData()
   const [owner, setOwner] = useState(() => Boolean(ownerToken()))
+  const { data, records, setRecords, failed, retry, saved } = useJobData(owner)
   const [more, setMore] = useState({ key: '', n: PAGE })
   const search = useRef<HTMLInputElement>(null)
   const listRef = useRef<HTMLOListElement>(null)
@@ -139,8 +140,8 @@ export default function JobAssistantPage({ route }: { route: Route }) {
         <h1>{l('Job assistant', 'Jobbassistenten')}</h1>
         <p className="ja-lede">
           {l(
-            'My CV matched every hour with current Data/IT ads from JobTech. Each class says why, with the ad sentence and the CV line behind it. It supports my decision; it does not estimate a chance of being hired.',
-            'Mitt cv matchat varje timme mot aktuella Data/IT-annonser från JobTech. Varje klass säger varför, med annonsens mening och cv-raden bakom. Det stöder mitt beslut; det uppskattar inte chansen att bli anställd.',
+            'My CV matched on an hourly schedule with current Data/IT ads from JobTech. Each class says why, with the ad sentence and the CV line behind it. It supports my decision; it does not estimate a chance of being hired.',
+            'Mitt cv matchat enligt ett timschema mot aktuella Data/IT-annonser från JobTech. Varje klass säger varför, med annonsens mening och cv-raden bakom. Det stöder mitt beslut; det uppskattar inte chansen att bli anställd.',
           )}
         </p>
         {data ? (
@@ -192,6 +193,12 @@ export default function JobAssistantPage({ route }: { route: Route }) {
           owner={owner}
           onOwner={setOwner}
           onRecords={setRecords}
+        />
+      ) : !profile ? (
+        <Unmatched
+          ads={data.ads.ads}
+          day={day}
+          skipped={data.matches.status?.kept ?? data.matches.status?.skipped}
         />
       ) : (
         <>

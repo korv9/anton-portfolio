@@ -7,7 +7,9 @@ texts.json     the full public ad text of exactly the detailed ads
 demand.json    per skill, how many matched ads name it and the CV's evidence level for it
 
 Which profile version and CV the matches used is in `profile`; without an approved profile the
-files hold no matches.
+files hold no matches. `status` is rank.py's note on the profile route: `skipped` when nothing was
+matched, `kept` when the last matches stand because the route could not be read, each with the
+reason, the HTTP status (null when unreachable) and the time.
 """
 from __future__ import annotations
 
@@ -26,7 +28,7 @@ def iso(value):
     return value.isoformat() if hasattr(value, "isoformat") else value
 
 
-def build(db, generated_at: str) -> tuple[dict, dict, dict]:
+def build(db, generated_at: str, note: dict | None = None) -> tuple[dict, dict, dict]:
     head = {"schema_version": 1, "generated_at": generated_at}
     profile = rows(db, "select * from gold.mart_job_assistant_profile")
     profile = {k: iso(v) for k, v in profile[0].items()} if profile else None
@@ -57,7 +59,8 @@ def build(db, generated_at: str) -> tuple[dict, dict, dict]:
         out.append(item)
     texts = {t.pop("ad_id"): t for t in rows(db, "select * from gold.mart_job_assistant_texts order by ad_id")}
     demand = rows(db, "select * from gold.mart_job_assistant_skill_demand order by ads_naming desc, skill")
-    return ({**head, "profile": profile, "matches": out}, {**head, "texts": texts},
+    status = {k: v for k, v in (note or {}).items() if k in ("skipped", "kept")}
+    return ({**head, "profile": profile, "status": status, "matches": out}, {**head, "texts": texts},
             {**head, "profile": profile, "skills": demand})
 
 

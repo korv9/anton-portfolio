@@ -115,8 +115,6 @@ test(
   { tag: '@mobile' },
   async ({ page }) => {
     await page.goto('/#om-mig')
-    await expect(page.locator('.home-roles')).toHaveText('SOFTWARE DATA AI')
-    await expect(page.locator('.home-roles')).toHaveCSS('font-weight', '700')
     await expect(page.locator('.home-about-text').first()).toContainText(
       'I love exploring data in creative ways',
     )

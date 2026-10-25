@@ -101,7 +101,9 @@ def main() -> None:
     db.execute("set memory_limit = '1GB'")
     db.execute("set TimeZone = 'UTC'")
     data = build(db, state, now)
-    matches, texts, demand = export_matches.build(db, data["generated_at"])
+    # rank.py's note on the profile route is provenance of the run, read from the raw store as state is.
+    note = json.loads((store_dir() / "matches.json").read_text(encoding="utf-8")).get("note")
+    matches, texts, demand = export_matches.build(db, data["generated_at"], note)
     db.close()
     found = problems(data, now) + export_matches.problems(matches, texts, export_matches.open_ids(data))
     if found:

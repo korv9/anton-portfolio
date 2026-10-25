@@ -699,3 +699,28 @@
   letter-spacing: -0.02em;
   text-transform: none;
 }
+
+/* ---------- The platform page (PlatformPage.tsx) ---------- */
+.platform-status dd + dd {
+  font-size: var(--caption);
+  font-weight: 400;
+  letter-spacing: 0;
+}
+.platform-runs .runs-strip {
+  flex-wrap: wrap;
+}
+.platform-causes,
+.platform-links {
+  display: grid;
+  gap: var(--sp-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.platform-steps {
+  margin: var(--sp-1) 0 0;
+  font-family: var(--font-mono);
+  font-size: var(--caption);
+  white-space: pre-wrap;
+  color: var(--ink-faded);
+}

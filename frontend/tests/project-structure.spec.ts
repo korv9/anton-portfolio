@@ -82,8 +82,8 @@ test('removed pages lead back to the projects and are absent from navigation', a
     'rfc-drift',
   ]) {
     await page.goto(`/#${path}`)
-    await expect(page).toHaveURL(/#projekt/)
-    await expect(page.locator('.projects-page')).toBeVisible()
+    await expect(page).toHaveURL(/#projects/)
+    await expect(page.locator('.hub')).toBeVisible()
     await expect(page.locator(`a[href="#${path}"]`)).toHaveCount(0)
   }
 })
