@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { loadDebateMap } from '../clusters/debateData'
 import type { ClusterPoint } from '../clusters/ClusterScatter'
-import { BACKDROP_COLOURS, groupBackdropPoints } from './backdropGeometry'
+import { WARM_TONES, groupBackdropPoints } from './backdropGeometry'
 
 let introPlayed = false
 /** The longest a cluster takes to arrive: its glide plus the last stagger (home.css). */
@@ -194,7 +194,7 @@ export default function DebateBackdrop({
                 width: `${layer.width / 10}%`,
                 height: `${layer.height / 10}%`,
                 '--depth': 0.45 + (i % 6) * 0.2,
-                '--point-strength': `${foreground ? 100 : layer.cluster < 0 ? 55 : 80 + (i % 6) * 4}%`,
+                '--point-strength': `${foreground ? 100 : layer.cluster < 0 ? 40 : 62}%`,
                 '--float-x': `${8 + (i % 5) * 3}px`,
                 '--float-y': `${6 + (i % 7) * 2}px`,
                 '--float-time': `${14 + (i % 9) * 1.5}s`,
@@ -206,8 +206,8 @@ export default function DebateBackdrop({
                 '--arrive-delay': `${(i % 12) * 55}ms`,
                 '--point-colour':
                   layer.cluster < 0
-                    ? 'var(--cluster-noise)'
-                    : `var(${BACKDROP_COLOURS[layer.cluster % BACKDROP_COLOURS.length]})`,
+                    ? WARM_TONES[4]
+                    : WARM_TONES[layer.cluster % 6],
               } as CSSProperties
             }
           >

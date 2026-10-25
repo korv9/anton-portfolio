@@ -40,28 +40,37 @@ test('project themes survive navigation between all workspace types', async ({
   await page.goto('/#start')
   await expect(page.locator('body')).toHaveCSS(
     'background-color',
-    'rgb(244, 240, 230)',
+    'rgb(36, 36, 34)',
   )
   await expect(page.locator('.home-name')).toBeVisible()
 })
 
-test('the homepage retains its name scale, placement and palette', async ({
+test('the homepage keeps the signature, name scale, placement and palette', async ({
   page,
   isMobile,
 }) => {
   test.skip(isMobile, 'checks the protected desktop composition')
-  await page.setViewportSize({ width: 1440, height: 1000 })
+  await page.setViewportSize({ width: 1440, height: 900 })
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.goto('/#start')
   const name = page.locator('.home-name')
-  await expect(name).toHaveCSS('font-size', '112px')
-  await expect(name).toHaveCSS('line-height', '103.04px')
-  await expect(name).toHaveCSS('color', 'rgb(47, 40, 54)')
+  await expect(name).toHaveCSS('font-size', '72px')
+  await expect(name).toHaveCSS('color', 'rgb(241, 239, 231)')
+  const centre = await page.evaluate(
+    () => document.documentElement.clientWidth / 2,
+  )
   const bounds = (await name.boundingBox())!
-  expect(bounds.x + bounds.width / 2).toBeCloseTo(720, 0)
-  // The name and the role under it, centred together on the first screen.
-  const role = (await page.locator('.home-role').boundingBox())!
-  expect((bounds.y + role.y + role.height) / 2).toBeCloseTo(500, 0)
+  expect(bounds.x + bounds.width / 2).toBeCloseTo(centre, 0)
+  // The signature, 440 px wide and lifted 24 px above the centre; the name overlaps it by 8 px.
+  const signature = (await page.locator('.home-signature').boundingBox())!
+  expect(signature.width).toBeCloseTo(440, 0)
+  expect(signature.x + signature.width / 2).toBeCloseTo(centre, 0)
+  expect(signature.y + signature.height / 2).toBeCloseTo(450 - 24, 0)
+  expect(signature.y + signature.height - bounds.y).toBeCloseTo(8, 0)
+  await expect(page.locator('.home-role')).toHaveCSS(
+    'color',
+    'rgb(155, 150, 140)',
+  )
 })
 
 test('dark visualization colors stay inside the plate', async ({ page }) => {

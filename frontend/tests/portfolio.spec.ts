@@ -71,7 +71,7 @@ test('experience and education stay aligned while scrolling', async ({
 })
 
 test(
-  'the start page is about Anton: the name, then contact, profile and one way on',
+  'the start page is about Anton: the name, then About with contact, the profile and one way on',
   { tag: '@mobile' },
   async ({ page }) => {
     await page.goto('/')
@@ -90,20 +90,15 @@ test(
     await expect(contact.getByRole('link', { name: 'GitHub' })).toBeVisible()
     await expect(contact.getByRole('button', { name: /View CV/ })).toBeVisible()
     await expect(contact.locator('a[href^="mailto:"]')).toBeVisible()
-    // Contact, the project pages, then About, then experience and education.
-    const projects = page.locator('#projektsidor')
-    await expect(
-      projects.getByRole('heading', { name: 'Project pages' }),
-    ).toBeVisible()
-    await expect(
-      projects.getByRole('link', { name: 'See the projects' }),
-    ).toHaveAttribute('href', '#projects')
+    // About with contact under it, then experience and education; no project-pages section.
+    await expect(page.locator('#projektsidor')).toHaveCount(0)
+    await expect(page.getByText('Feedback or ideas are welcome')).toHaveCount(0)
     const top = (id: string) =>
       page
         .locator(`#${id}`)
         .evaluate((el) => el.getBoundingClientRect().top + scrollY)
-    expect(await top('kontakt')).toBeLessThan(await top('projektsidor'))
-    expect(await top('projektsidor')).toBeLessThan(await top('om-mig'))
+    expect(await top('om-mig')).toBeLessThan(await top('kontakt'))
+    await expect(page.locator('#om-mig #kontakt')).toHaveCount(1)
     expect(await top('om-mig')).toBeLessThan(await top('erfarenhet'))
     expect(await top('om-mig')).toBeLessThan(await top('utbildning'))
     // No project content: the links inside the page lead on to the projects hub.
@@ -111,7 +106,7 @@ test(
       await page
         .locator('main a[href^="#"]')
         .evaluateAll((as) => as.map((a) => a.getAttribute('href'))),
-    ).toEqual(['#projects', '#projects'])
+    ).toEqual(['#projects'])
     await expect(
       page.locator('.work-card, .home-feed, .mean-post'),
     ).toHaveCount(0)

@@ -16,8 +16,3 @@ export const ABOUT: Bilingual[] = [
     'I’m especially drawn to social questions, but I enjoy building data solutions in any field and have experience delivering in production. I’m looking for roles in software development, data and AI.',
   ),
 ]
-
-export const CONTACT = t(
-  'Hör gärna av dig med feedback eller idéer. Om du känner till en jobböppning inom mjukvaruutveckling, data eller AI blir jag särskilt glad att höra från dig.',
-  'Feedback or ideas are welcome. If you know of an opening in software development, data or AI, I’d especially like to hear from you.',
-)

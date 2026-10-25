@@ -2,19 +2,15 @@ import { projectClusterPoints } from '../clusters/clusterGeometry.ts'
 
 type Point = { x: number; y: number; c: number }
 
-export const BACKDROP_COLOURS = [
-  '--cv-ground',
-  '--cv-olive',
-  '--cluster-apricot',
-  '--cluster-powder',
-  '--cluster-butter',
-  '--cluster-pistachio',
+/** Warm greys on charcoal, one per `cluster % 6`, for the home maps (debate and jobs). */
+export const WARM_TONES = [
+  '#e8e0d0',
+  '#cfc5b2',
+  '#b3a896',
+  '#998f7e',
+  '#817869',
+  '#6a6256',
 ]
-
-export function backdropShade(cluster: number) {
-  if (cluster < 0 || cluster % 6 < 2) return 0
-  return cluster % 6 === 2 ? 0.2 : 0.32
-}
 
 /** Keep the complete UMAP topology; crop each canvas to its cluster to limit GPU memory. */
 export function groupBackdropPoints(points: Point[]) {
