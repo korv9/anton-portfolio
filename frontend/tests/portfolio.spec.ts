@@ -1,3 +1,4 @@
+import AxeBuilder from '@axe-core/playwright'
 import { test, expect } from './test'
 
 test(
@@ -233,6 +234,46 @@ test('on a phone the hub sidebar folds into a menu', async ({ page }) => {
   await expect(nav).toBeHidden()
   await menu.locator('summary').click()
   await expect(nav.getByRole('link', { name: 'Job search' })).toBeVisible()
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth + 1,
+    ),
+  ).toBe(true)
+})
+
+test('each platform card states a finding in a small chart that answers the keyboard', async ({
+  page,
+}) => {
+  await page.goto('/#projects')
+  const sweden = page.locator('#projects-sweden')
+  await sweden.scrollIntoViewIfNeeded()
+  // The chart loads as its card nears the screen and leads with its finding.
+  await expect(sweden.locator('.mini-head')).toContainText(
+    'Library visits fell',
+  )
+  const chart = sweden.getByRole('img')
+  await chart.focus()
+  await page.keyboard.press('Home')
+  await expect(sweden.locator('.mini-tip')).toContainText('2014:')
+  await page.keyboard.press('ArrowRight')
+  await expect(sweden.locator('.mini-tip')).toContainText('2015:')
+  // One toggle per card at most.
+  await sweden.getByRole('button', { name: 'Ad language' }).click()
+  await expect(sweden.locator('.mini-head')).toContainText('passion')
+  const law = page.locator('.hub-items > li', {
+    has: page.locator('a[href="#fraga-lagen"]'),
+  })
+  await law.scrollIntoViewIfNeeded()
+  await expect(law.locator('.mini-bar')).toHaveCount(3)
+  // Every card's chart, loaded, passes axe.
+  const cards = page.locator('.hub-items > li')
+  for (let i = 0; i < (await cards.count()); i++)
+    await cards.nth(i).scrollIntoViewIfNeeded()
+  await expect
+    .poll(() => page.locator('.hub-items .mini-head').count())
+    .toBeGreaterThanOrEqual(7)
+  const scan = await new AxeBuilder({ page }).include('.hub-items').analyze()
+  expect(scan.violations).toEqual([])
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= innerWidth + 1,

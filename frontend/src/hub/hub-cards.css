@@ -11,11 +11,11 @@
   padding: 0;
   list-style: none;
 }
-/* Thumbnail, title, text and the run line: the run line sits on the card's foot, so cards in a
-   row share their baselines. */
+/* Title, text and the run line: the run line sits on the card's foot, so cards in a row share
+   their baselines. The card's mini dashboard follows it (mini.css). */
 .hub-item {
   display: grid;
-  grid-template-rows: auto auto 1fr auto;
+  grid-template-rows: auto 1fr auto;
   align-content: start;
   gap: var(--sp-2);
   height: 100%;
@@ -90,63 +90,4 @@ li[data-lead] .hub-item-runs {
   .hub-items > li[data-lead] {
     grid-template-columns: minmax(0, 1fr);
   }
-}
-.hub-item-thumb {
-  width: 100%;
-  height: auto;
-  aspect-ratio: 8 / 5;
-  object-fit: cover;
-  object-position: top left;
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  background: var(--paper);
-  transition: border-color var(--dur) var(--ease);
-}
-.hub-item:is(:hover, :focus-visible) .hub-item-thumb {
-  border-color: var(--ink);
-}
-.hub-item:not(:has(.hub-item-thumb)) {
-  grid-template-rows: auto 1fr auto;
-}
-
-/* The job market the job assistant reads, beside the hero. */
-.hub-pulse {
-  margin: 0;
-}
-.hub-pulse svg {
-  display: block;
-  width: 100%;
-  height: auto;
-}
-.hub-pulse-area {
-  fill: color-mix(in srgb, var(--focal) 12%, transparent);
-}
-.hub-pulse-line {
-  fill: none;
-  stroke: var(--focal);
-  stroke-width: 1.5;
-  stroke-linejoin: round;
-}
-.hub-pulse-now {
-  fill: var(--focal);
-}
-.hub-pulse-year {
-  fill: var(--ink-faded);
-  font-family: var(--font-mono);
-  font-size: 15px;
-}
-@media (max-width: 760px) {
-  .hub-pulse-year {
-    font-size: 26px;
-  }
-  .hub-pulse-year[data-odd] {
-    display: none;
-  }
-}
-.hub-pulse figcaption {
-  margin-top: var(--sp-2);
-  color: var(--ink-faded);
-  font-family: var(--font-mono);
-  font-size: var(--caption);
-  line-height: 1.6;
 }
