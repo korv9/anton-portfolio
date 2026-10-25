@@ -3,9 +3,11 @@
  * control, one small chart in plain SVG with a tooltip line under it, and the unit, period and
  * file as the caption. Grey for context, --focal for the highlighted series or bar only.
  */
+/* Each card's text at its own height, its chart straight after: no gap opens above a short chart. */
 .hub-items > li:not([data-lead]) {
   display: grid;
-  grid-template-rows: 1fr auto;
+  grid-template-rows: auto auto;
+  align-content: start;
   gap: var(--sp-4);
 }
 /* The chart's room while its data loads, so the page does not jump; a missing file leaves none. */

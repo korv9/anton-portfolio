@@ -6,7 +6,7 @@
  */
 import { useState, type ReactNode } from 'react'
 import { l } from '../../i18n'
-import { ok, useFile } from '../../tech/techData'
+import { num, ok, useFile } from '../../tech/techData'
 import { Loading, MiniBars, MiniLine, type LinePoint } from './MiniChart'
 
 /** A share as a percentage; below 1 % it keeps two decimals, so a small share is not shown as 0. */
@@ -139,6 +139,14 @@ function language(trends: Trends, control: ReactNode) {
         summary={head}
         format={f}
         ticks={ends(points)}
+        endLabel={
+          partial
+            ? l(
+                `${f(points[points.length - 1].y)} (${THIS_YEAR} so far)`,
+                `${f(points[points.length - 1].y)} (${THIS_YEAR} hittills)`,
+              )
+            : undefined
+        }
       />
     </Mini>
   )
@@ -176,34 +184,51 @@ type PartyYear = {
 
 export function FeedChart() {
   const rows = useFile<PartyYear[]>('ai-act/politics/party-year.json')
-  const summary = useFile<{ first_date: string; last_date: string }>(
-    'ai-act/politics/summary.json',
-  )
+  const summary = useFile<{
+    first_date: string
+    last_date: string
+    counts: { speeches: number }
+  }>('ai-act/politics/summary.json')
   const [party, setParty] = useState('all')
   if (rows === null) return <Loading />
   if (!ok(rows) || !rows.length) return null
   const years = [...new Set(rows.map((r) => r.year))].sort()
+  const firstDate = ok(summary) ? summary.first_date : undefined
+  const lastDate = ok(summary) ? summary.last_date : undefined
+  // The file's first and last years are partial: the tooltip says so, and the headline runs
+  // between whole years only.
+  const yearLabel = (year: number) =>
+    year === years[0] && firstDate
+      ? l(`${year} (from ${firstDate})`, `${year} (från ${firstDate})`)
+      : year === years[years.length - 1] && lastDate
+        ? l(`${year} (to ${lastDate})`, `${year} (till ${lastDate})`)
+        : String(year)
+  // A year in which the party gave no speech has no share and is left out.
   const share = (keep: (r: PartyYear) => boolean): LinePoint[] =>
-    years.map((year) => {
+    years.flatMap((year) => {
       const these = rows.filter((r) => r.year === year && keep(r))
       const speeches = these.reduce((a, r) => a + r.speeches, 0)
       const ai = these.reduce((a, r) => a + r.ai_speeches, 0)
-      return { x: year, y: speeches ? ai / speeches : 0, label: String(year) }
+      return speeches
+        ? [{ x: year, y: ai / speeches, label: yearLabel(year) }]
+        : []
     })
   const all = share(() => true)
   if (all.length < 2) return null
   const parties = [...new Set(rows.map((r) => r.party))].sort()
   const shown = party === 'all' ? all : share((r) => r.party === party)
-  // The first and last years are partial (the file's first and last dates); the headline runs
-  // from the first whole year to the last.
-  const from = shown[1] ?? shown[0]
-  const last = shown[shown.length - 1]
-  const until = ok(summary) ? summary.last_date : undefined
+  const whole = shown.filter(
+    (p) => p.x !== years[0] && p.x !== years[years.length - 1],
+  )
+  if (whole.length < 2) return null
+  const from = whole[0]
+  const last = whole[whole.length - 1]
+  const withParty = rows.reduce((a, r) => a + r.speeches, 0)
   const whoSv =
     party === 'all' ? 'riksdagsanföranden' : `anföranden från ${party}`
   const head = l(
-    `The share of ${party === 'all' ? 'Riksdag' : `${party}'s`} speeches that mention AI went from ${pct(from.y)} in ${from.x} to ${pct(last.y)} in ${last.x}${until ? ` (to ${until})` : ''}.`,
-    `Andelen ${whoSv} som nämner AI gick från ${pct(from.y)} ${from.x} till ${pct(last.y)} ${last.x}${until ? ` (till ${until})` : ''}.`,
+    `The share of ${party === 'all' ? 'Riksdag' : `${party}'s`} speeches that mention AI went from ${pct(from.y)} in ${from.x} to ${pct(last.y)} in ${last.x}.`,
+    `Andelen ${whoSv} som nämner AI gick från ${pct(from.y)} ${from.x} till ${pct(last.y)} ${last.x}.`,
   )
   return (
     <Mini
@@ -222,8 +247,8 @@ export function FeedChart() {
         </label>
       }
       caption={l(
-        `Share of each year's speeches that mention AI, ${ok(summary) ? `${summary.first_date} to ${summary.last_date}` : `${years[0]}–${years[years.length - 1]}`}. ai-act/politics/party-year.json`,
-        `Andel av årets anföranden som nämner AI, ${ok(summary) ? `${summary.first_date} till ${summary.last_date}` : `${years[0]}–${years[years.length - 1]}`}. ai-act/politics/party-year.json`,
+        `Share of each year's speeches by a member with a party (${num(withParty)}${ok(summary) ? ` of all ${num(summary.counts.speeches)}` : ''}) that mention AI, ${firstDate && lastDate ? `${firstDate} to ${lastDate}` : `${years[0]}–${years[years.length - 1]}`}. ai-act/politics/party-year.json`,
+        `Andel av årets anföranden av en ledamot med parti (${num(withParty)}${ok(summary) ? ` av alla ${num(summary.counts.speeches)}` : ''}) som nämner AI, ${firstDate && lastDate ? `${firstDate} till ${lastDate}` : `${years[0]}–${years[years.length - 1]}`}. ai-act/politics/party-year.json`,
       )}
     >
       <MiniLine
@@ -242,6 +267,14 @@ export function FeedChart() {
         summary={head}
         format={(v) => pct(v)}
         ticks={ends(all)}
+        endLabel={
+          lastDate && shown[shown.length - 1].x === years[years.length - 1]
+            ? l(
+                `${pct(shown[shown.length - 1].y)} (${years[years.length - 1]} so far)`,
+                `${pct(shown[shown.length - 1].y)} (${years[years.length - 1]} hittills)`,
+              )
+            : undefined
+        }
       />
     </Mini>
   )
@@ -267,9 +300,11 @@ export function LawChart() {
     b.verified_share > a.verified_share ? b : a,
   )
   const model = (r: Eval['compared'][number]) => r.model.split('/').pop()
+  // The set-ups answered different numbers of questions, so the headline gives each base.
+  const others = rows.filter((r) => r !== best)
   const head = l(
-    `${pct(best.verified_share, 0)} of answers had every quote verified against the law: the highest of ${rows.length} model set-ups, on ${best.questions} test questions.`,
-    `${pct(best.verified_share, 0)} av svaren hade alla citat verifierade mot lagen: högst av ${rows.length} modelluppsättningar, på ${best.questions} testfrågor.`,
+    `${pct(best.verified_share, 0)} of ${best.questions} answers had every quote verified against the law, the highest share; the other set-ups answered ${others.map((r) => r.questions).join(' and ')} questions, so the bases differ.`,
+    `${pct(best.verified_share, 0)} av ${best.questions} svar hade alla citat verifierade mot lagen, den högsta andelen; de andra uppsättningarna besvarade ${others.map((r) => r.questions).join(' och ')} frågor, så underlagen skiljer sig.`,
   )
   return (
     <Mini

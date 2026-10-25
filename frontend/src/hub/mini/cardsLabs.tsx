@@ -8,59 +8,55 @@ import { day, ok, useFile } from '../../tech/techData'
 import { Loading, MiniBars } from './MiniChart'
 import { Mini, pct } from './cardsPlatform'
 
-type Cluster = { variant: string; largest_work_share: number }
 type Run = { run: { ran_at?: string; run_at?: string } }
+type Mixing = { clusters: number; cross_work_clusters: number }
+type PhilosophyRun = {
+  run: { ran_at?: string; evaluation?: Record<string, Mixing> }
+}
 
 const ranAt = (s: Run | 'error' | null) =>
   ok(s) ? (s.run.ran_at ?? s.run.run_at) : undefined
 
 export function PhilosophyChart() {
-  const clusters = useFile<Cluster[]>('philosophy/clusters.json')
-  const summary = useFile<Run>('philosophy/summary.json')
-  if (clusters === null) return <Loading />
-  if (!ok(clusters) || !clusters.length) return null
-  const mostly = (variant: string) => {
-    const these = clusters.filter((c) => c.variant === variant)
-    const n = these.filter((c) => c.largest_work_share > 0.5).length
-    return {
-      groups: these.length,
-      n,
-      share: these.length ? n / these.length : 0,
-    }
-  }
-  const plain = mostly('baseline')
-  const centred = mostly('author_centered')
-  if (!plain.groups || !centred.groups) return null
+  const summary = useFile<PhilosophyRun>('philosophy/summary.json')
+  if (summary === null) return <Loading />
+  if (!ok(summary)) return null
+  // The pipeline's own measure (platform/nlp/philosophy/pipeline.py): a group mixes works when
+  // it draws on at least three and none supplies more than half its passages.
+  const plain = summary.run.evaluation?.baseline
+  const centred = summary.run.evaluation?.author_centered
+  if (!plain?.clusters || !centred?.clusters) return null
+  const share = (m: Mixing) => m.cross_work_clusters / m.clusters
   const head = l(
-    `Centring each work cuts the groups that are mostly one book from ${pct(plain.share, 0)} to ${pct(centred.share, 0)}.`,
-    `Att centrera varje verk minskar grupperna som mest består av en bok från ${pct(plain.share, 0)} till ${pct(centred.share, 0)}.`,
+    `Groups that mix works rise from ${plain.cross_work_clusters} of ${plain.clusters} on the plain map to ${centred.cross_work_clusters} of ${centred.clusters} with each work centred.`,
+    `Grupper som blandar verk ökar från ${plain.cross_work_clusters} av ${plain.clusters} på den vanliga kartan till ${centred.cross_work_clusters} av ${centred.clusters} med varje verk centrerat.`,
   )
-  const at = ranAt(summary)
+  const at = summary.run.ran_at
   return (
     <Mini
       head={head}
       caption={l(
-        `Share of passage groups where one work supplies more than half the passages, per map${at ? `, run ${day(at)} UTC` : ''}. philosophy/clusters.json`,
-        `Andel passagegrupper där ett verk står för mer än hälften av passagerna, per karta${at ? `, körd ${day(at)} UTC` : ''}. philosophy/clusters.json`,
+        `Share of passage groups that mix at least three works with none supplying more than half, per map${at ? `, run ${day(at)} UTC` : ''}. philosophy/summary.json`,
+        `Andel passagegrupper som blandar minst tre verk där inget står för mer än hälften, per karta${at ? `, körd ${day(at)} UTC` : ''}. philosophy/summary.json`,
       )}
     >
       <MiniBars
         bars={[
           {
             label: l('Plain map', 'Vanlig karta'),
-            value: plain.share,
+            value: share(plain),
             note: l(
-              `${plain.n} of ${plain.groups} groups`,
-              `${plain.n} av ${plain.groups} grupper`,
+              `${plain.cross_work_clusters} of ${plain.clusters} groups`,
+              `${plain.cross_work_clusters} av ${plain.clusters} grupper`,
             ),
           },
           {
             label: l('Each work centred', 'Varje verk centrerat'),
-            value: centred.share,
+            value: share(centred),
             focal: true,
             note: l(
-              `${centred.n} of ${centred.groups} groups`,
-              `${centred.n} av ${centred.groups} grupper`,
+              `${centred.cross_work_clusters} of ${centred.clusters} groups`,
+              `${centred.cross_work_clusters} av ${centred.clusters} grupper`,
             ),
           },
         ]}
@@ -103,8 +99,8 @@ export function SymbolChart() {
     l(...(EXPERIMENT[r.experiment] ?? [r.experiment, r.experiment]))
   const head = plain
     ? l(
-        `Mixed groups rise from ${pct(share(plain), 0)} on the plain map to ${pct(share(best), 0)} with the symbol word masked and each book centred.`,
-        `Blandade grupper ökar från ${pct(share(plain), 0)} på den vanliga kartan till ${pct(share(best), 0)} med symbolordet maskerat och varje bok centrerad.`,
+        `Groups that mix books rise from ${pct(share(plain), 0)} on the plain map to ${pct(share(best), 0)} in the experiment “${EXPERIMENT[best.experiment]?.[0] ?? best.experiment}”.`,
+        `Grupper som blandar böcker ökar från ${pct(share(plain), 0)} på den vanliga kartan till ${pct(share(best), 0)} i experimentet ”${EXPERIMENT[best.experiment]?.[1] ?? best.experiment}”.`,
       )
     : l('Mixed groups per experiment.', 'Blandade grupper per experiment.')
   const at = ranAt(summary)

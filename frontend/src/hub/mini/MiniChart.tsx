@@ -86,8 +86,10 @@ export function MiniLine(props: {
   format: (y: number) => string
   ticks: { x: number; label: string }[]
   mark?: { index: number; label: string }
+  /** Replaces the last value's label, e.g. to flag a partial year. */
+  endLabel?: string
 }) {
-  const { series, summary, format, ticks, mark } = props
+  const { series, summary, format, ticks, mark, endLabel } = props
   const main = series[0]
   const { active, setActive, onKeyDown, onPointerLeave } = useActive(
     main.points.length,
@@ -171,7 +173,7 @@ export function MiniLine(props: {
           style={{ left: left(last.x), top: down(last.y) }}
           aria-hidden="true"
         >
-          {format(last.y)}
+          {endLabel ?? format(last.y)}
         </span>
         {series.slice(1).map((s) => {
           const end = s.points[s.points.length - 1]
