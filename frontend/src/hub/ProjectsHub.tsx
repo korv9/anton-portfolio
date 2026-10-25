@@ -21,6 +21,8 @@ import PlatformFlow from './PlatformFlow'
 import { HUB_GROUPS, type HubItem } from './hubProjects'
 import '../tech/tech.css'
 import './hub.css'
+import './hub-cards.css'
+import './hub-flow.css'
 
 const Machinery = lazy(() => import('../tech/Machinery'))
 
@@ -113,7 +115,7 @@ function Sidebar() {
     >
       <summary>{l('All projects', 'Alla projekt')}</summary>
       <nav aria-label={l('Projects', 'Projekt')}>
-        <a href="#projects-overview">{l('Overview', 'Översikt')}</a>
+        <a href="#projects">{l('Overview', 'Översikt')}</a>
         {HUB_GROUPS.filter((g) => g.id !== 'other').map((group) => (
           <a key={group.id} href={`#projects-${group.id}`}>
             {l(group.title.en, group.title.sv)}

@@ -17,7 +17,7 @@ export default function JobsPulse() {
   const field = market.fields.find((f) => f.name === 'Data/IT')
   const series = field ? market.monthly[field.id] : undefined
   if (!series || series.length < 2) return null
-  const max = Math.max(...series.map(([, ads]) => ads))
+  const max = Math.max(1, ...series.map(([, ads]) => ads))
   const x = (i: number) =>
     PAD.left + (i / (series.length - 1)) * (W - PAD.left - PAD.right)
   const y = (v: number) => PAD.top + (1 - v / max) * (H - PAD.top - PAD.bottom)

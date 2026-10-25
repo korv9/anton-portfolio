@@ -125,3 +125,21 @@ for (const [old, section] of [
     await expect(page).toHaveURL(new RegExp(`${section}$`))
     await expect(page.locator(section)).toBeInViewport()
   })
+
+test('run health says which part of a long window it shows', async ({
+  page,
+}) => {
+  // Two hourly workflows give about 1,400 scheduled runs in 30 days; GitHub returns the newest 100.
+  await page.route('https://api.github.com/**/actions/runs**', (route) =>
+    route.fulfill({
+      json: {
+        total_count: 1400,
+        workflow_runs: [run(3, 'success', 2), run(2, 'failure', 26)],
+      },
+    }),
+  )
+  await page.goto('/#platform-health')
+  await expect(page.getByTestId('run-health-total')).toContainText(
+    'The latest 2 of 1,400 scheduled runs in the last 30 days, since',
+  )
+})

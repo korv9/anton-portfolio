@@ -7,7 +7,7 @@
 import { useEffect, useState } from 'react'
 import { l } from '../i18n'
 import { github } from './github'
-import { REPO, day, reading } from './techData'
+import { REPO, day, num, reading } from './techData'
 
 type Run = {
   id: number
@@ -27,7 +27,8 @@ type Issue = {
   closed_at: string | null
 }
 type File = { name: string; html_url: string }
-type Health = { runs: Run[]; issues: Issue[]; incidents: File[] }
+/** `total` is every scheduled run in the window; GitHub returns at most 100 of them, newest first. */
+type Health = { runs: Run[]; total: number; issues: Issue[]; incidents: File[] }
 
 const DAYS = 30
 const HOUR = 36e5
@@ -37,16 +38,18 @@ async function loadHealth(): Promise<Health> {
     .toISOString()
     .slice(0, 10)
   const [runs, issues, incidents] = await Promise.all([
-    github<{ workflow_runs: Run[] }>(
+    github<{ workflow_runs: Run[]; total_count?: number }>(
       `${REPO}/actions/runs?event=schedule&created=>=${since}&per_page=100`,
     ),
+    // Only issues touched in the window can belong to its runs.
     github<Issue[]>(
-      `${REPO}/issues?labels=data-pipeline-failure&state=all&per_page=100`,
+      `${REPO}/issues?labels=data-pipeline-failure&state=all&since=${since}T00:00:00Z&per_page=100`,
     ),
     github<File[]>(`${REPO}/contents/docs/incidents`).catch(() => []),
   ])
   return {
     runs: runs.workflow_runs,
+    total: Math.max(runs.total_count ?? 0, runs.workflow_runs.length),
     issues,
     incidents: incidents.filter((f) => f.name.endsWith('.md')),
   }
@@ -104,13 +107,24 @@ export function RunHealth() {
   ))
     byWorkflow.set(r.name, [...(byWorkflow.get(r.name) ?? []), r])
   const failed = health.runs.filter(red)
+  const shown = health.runs.length
+  // GitHub caps the list at the newest 100: when the window holds more, say which part is shown.
+  const oldest = health.runs
+    .map((r) => r.created_at)
+    .sort()
+    .at(0)
   return (
     <>
       <p className="tech-meta" data-testid="run-health-total">
-        {l(
-          `${health.runs.length} scheduled runs in the last ${DAYS} days, ${failed.length} red.`,
-          `${health.runs.length} schemalagda körningar de senaste ${DAYS} dagarna, ${failed.length} röda.`,
-        )}
+        {shown < health.total
+          ? l(
+              `The latest ${shown} of ${num(health.total)} scheduled runs in the last ${DAYS} days, since ${day(oldest)} UTC; ${failed.length} of them red.`,
+              `De senaste ${shown} av ${num(health.total)} schemalagda körningar de senaste ${DAYS} dagarna, sedan ${day(oldest)} UTC; ${failed.length} av dem röda.`,
+            )
+          : l(
+              `${shown} scheduled runs in the last ${DAYS} days, ${failed.length} red.`,
+              `${shown} schemalagda körningar de senaste ${DAYS} dagarna, ${failed.length} röda.`,
+            )}
       </p>
       <ul className="runs platform-runs">
         {[...byWorkflow].map(([name, runs]) => (
