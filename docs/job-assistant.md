@@ -264,20 +264,18 @@ Nothing here is applied by the agent. Every secret lives in the GitHub environme
 | Secret | Used by | Token permissions |
 | --- | --- | --- |
 | `CLOUDFLARE_ACCOUNT_ID` | `setup-job-assistant.yml`, the hourly run (`rank.py`) | none; it is the account id (a repository variable of the same name also works) |
-| `CLOUDFLARE_API_TOKEN` | `setup-job-assistant.yml` only | Account > D1 > Edit and Account > Workers Scripts > Edit, on this account only |
-| `CLOUDFLARE_AI_TOKEN` | `rank.py` in the hourly run, through `data-subject.yml` | Account > Workers AI > Read and Edit, nothing else |
+| `CLOUDFLARE_API_TOKEN` | `setup-job-assistant.yml`; the hourly run when there is no `CLOUDFLARE_AI_TOKEN` | Account > D1 > Edit, Account > Workers Scripts > Edit and Account > Workers AI > Read and Edit, on this account only |
+| `CLOUDFLARE_AI_TOKEN` (optional) | `rank.py` in the hourly run, through `data-subject.yml`, in place of `CLOUDFLARE_API_TOKEN` | Account > Workers AI > Read and Edit, nothing else |
 | `JOB_ASSIST_TOKEN` | copied into the Worker by `setup-job-assistant.yml`; `sync.py` | none; a long random value the owner chooses and pastes on the review page |
 
-There are two Cloudflare tokens because the hourly run is scheduled and unattended. A token with
-D1 Edit and Workers Scripts Edit could change the Worker, its secrets and the owner's records, so
-it reaches only the setup workflow, which runs when the owner starts it. The scheduled run gets a
-token that can do nothing but call Workers AI. Without `CLOUDFLARE_AI_TOKEN` the run ranks by rules
-and cached vectors only.
+The owner chose one Cloudflare token (2026-10-25), so the hourly run uses `CLOUDFLARE_API_TOKEN`
+for Workers AI. That token also has D1 Edit and Workers Scripts Edit, which an unattended scheduled
+run does not need. Adding a Workers-AI-only `CLOUDFLARE_AI_TOKEN` narrows the hourly run to that
+token without any code change.
 
 The R2 secrets the other subjects use are already in the environment. In this order:
 
-1. Add `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` to the environment, and
-   `CLOUDFLARE_AI_TOKEN` for embeddings and explanations.
+1. Add `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` to the environment.
 2. Run the workflow "Set up the job assistant" from `main`. It finds or creates the D1 database
    `job-assistant`, applies `worker/migrations`, and prints the database id in the run summary.
    It is safe to run again: an existing database is reused and applied migrations are skipped.
