@@ -218,7 +218,9 @@ From GitHub's runners the route answered 403 in every run from 2026-10-23 to 25 
 https://antonernstsson.com/api/jobs/profile`), while a laptop got the Worker's 503 at the same
 time. `worker/` has no route that answers 403, so the inference is that something in front of the
 Worker, probably Cloudflare's bot protection or a WAF rule, refuses the runner. The logs do not
-show which. Until that is lifted for `/api/jobs/*`, matching from Actions cannot read a profile.
+show which. The same Worker answers on `anton-portfolio.anton-ernstson.workers.dev`, which the zone's
+security settings do not cover, so `data-subject.yml` sets `JOB_ASSIST_API` to that address and the
+runners no longer go through the zone.
 
 ## Security of writes
 
@@ -294,8 +296,9 @@ matching waits for the first approved profile. Before step 3 `/api/jobs/*` answe
 run publishes the ads with no matches.
 
 From GitHub's runners `/api/jobs/profile` answered 403 on 2026-10-23 to 25. The Worker never
-answers 403, so Cloudflare's edge in front of it refuses the runner, and `rank.py` and `sync.py`
-cannot reach the Worker from Actions until a WAF or bot rule lets them through on `/api/jobs/*`.
+answers 403, so probably Cloudflare's edge in front of it refuses the runner. Actions now reach the
+Worker through its workers.dev address (`JOB_ASSIST_API` in `data-subject.yml`), so no WAF or bot
+rule is needed.
 
 The Terraform workflow cannot plan while the repository variable `TF_WORKER_DOMAIN_IDS` is unset,
 and there is no `terraform` environment, so the setup workflow creates the database instead of
