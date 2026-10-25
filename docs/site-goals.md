@@ -4,7 +4,16 @@ The site is done when every goal below is met. Each goal has checks that can be 
 
 Rule for every product: it must carry real value and never look unfinished. Honest limits stay, but they are stated as method or scope, not as "not done", and the strongest result comes first.
 
-Progress is measured with `npm run goals` (scripts/goals.mjs): it opens every product route on desktop and phone and reports the site-wide checks below. Tick a box here only when its check passes on main.
+Progress is measured with `npm run goals` (scripts/goals.mjs): it opens every product route (46 route views since Replik, the AI Act page and SWEDEN F) on desktop and phone and reports the site-wide checks below. Tick a box here only when its check passes on main.
+
+## Needs the owner
+
+These goals cannot be finished from the code alone:
+
+- **Cloudflare JavaScript Detections** inject an inline script (`/cdn-cgi/challenge-platform/scripts/jsd/main`) on every page; the site's CSP blocks it, which logs a console error on the live site. Turn it off in the Cloudflare dashboard (Security › Bots), or accept the error. Its hash changes per request, so the CSP cannot allow it.
+- **Arbetsförmedla matching** needs the D1 setup and the CV profile approved.
+- **Allegora** English AI Act examples, a corrected AI Act example and a dated, re-scored eval need Workers AI runs with the owner's credentials.
+- **Old Bailey** needs its warehouse answers (`warehouse/features/oldbailey/`, not on this machine) or a rerun.
 
 ## Site-wide
 
@@ -145,6 +154,15 @@ Goal: a clean, contract-first backend that reads as well engineered.
 - [x] Copy leads with what is built: 16 operations, 4 implemented, CI passing on PostgreSQL 16, with a link to the run (homie-1, homie-2, homie-5).
 - [x] The figure is a correct data-model drawing that fits on a phone (homie-3, homie-4).
 - [ ] Optional: households, tasks and completions routes implemented (homie-7), after which "in progress" can go.
+
+## New products from the data scout (2026-10-25)
+
+- [x] **When does a law arrive?** (AI Act diffusion clock): its own page from the committed diffusion data, with its card on #projects.
+- [x] **SWEDEN F, the welfare contract:** welfare, taxes and ESS from the feed become a sixth SWEDEN product (tax wedge, trust, the ESS10 mode change stated).
+- [x] **Allegora** gains the statute book (11,567 texts, repealed ones marked) and the AI Act observatory as sections.
+- [x] **Replik** gains the budget-language section, if its keyword list holds up; otherwise it is left out and noted. Left out: 71 keywords for 27 areas measure the lexicon more than the debate ("företag" alone is 12.8 % of hits, "ukraina" counts as defence, 39 % of speeches match nothing, and `ml/cards/policy_area.md` calls keyword methods no valid baseline).
+- [x] **The data platform** gains a model-card wall: models whose gates failed, stated as method.
+- [ ] **Old Bailey** ("The clerk and the model"): exported and scored once its warehouse answers are available (needs the owner's warehouse or a rerun).
 
 ## Project pages
 

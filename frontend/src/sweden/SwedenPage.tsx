@@ -25,6 +25,7 @@ const PAGES: Record<
   '#sweden-likhet': lazy(() => import('./Similarity')),
   '#sweden-tillhorighet': lazy(() => import('./Belonging')),
   '#sweden-framtid': lazy(() => import('./Futures')),
+  '#sweden-valfard': lazy(() => import('./Welfare')),
   '#sweden-samband': lazy(() => import('./Connections')),
 }
 

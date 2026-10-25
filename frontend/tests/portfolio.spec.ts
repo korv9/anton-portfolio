@@ -223,7 +223,7 @@ test('the projects hub leads with the dashboard and the job search', async ({
     '#thesis',
   ])
     await expect(page.locator(`.hub-item[href="${href}"]`)).toBeVisible()
-  await expect(page.locator('#projects-sweden .hub-products a')).toHaveCount(6)
+  await expect(page.locator('#projects-sweden .hub-products a')).toHaveCount(7)
   await expect(page.locator('body')).toHaveCSS(
     'background-color',
     'rgb(36, 36, 34)',

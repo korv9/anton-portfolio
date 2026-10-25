@@ -1,5 +1,5 @@
 /**
- * The SWEDEN research platform: five research products and Connections. Their names, questions
+ * The SWEDEN research platform: six research products and Connections. Their names, questions
  * and order are fixed by the research brief; `status` says what the page can show today and is
  * changed only when a product's data has run and been validated.
  */
@@ -9,7 +9,7 @@ export type Status = 'findings' | 'pipeline' | 'unavailable'
 export type Evidence = 'descriptive' | 'exploratory' | 'causal'
 
 export type SwedenProduct = {
-  id: 'A' | 'B' | 'C' | 'D' | 'E' | 'X'
+  id: 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'X'
   href: string
   title: Bilingual
   /** One word for the navigation row. */
@@ -155,6 +155,33 @@ export const SWEDEN_PRODUCTS: SwedenProduct[] = [
         why: {
           en: 'The Riksdag and thesis abstracts are shown apart on The Lost Futures page, never joined.',
           sv: 'Riksdagen och uppsatssammanfattningarna visas var för sig på sidan De förlorade framtiderna, aldrig sammanslagna.',
+        },
+      },
+    ],
+  },
+  {
+    id: 'F',
+    href: '#sweden-valfard',
+    title: { en: 'The Welfare Contract', sv: 'Välfärdskontraktet' },
+    short: { en: 'Welfare', sv: 'Välfärd' },
+    question: {
+      en: 'What do Swedes pay into the welfare state, and how far do they trust each other?',
+      sv: 'Vad betalar svenskar in till välfärdsstaten, och hur mycket litar de på varandra?',
+    },
+    status: 'findings',
+    related: [
+      {
+        id: 'A',
+        why: {
+          en: 'A survey’s mode of collection can move its results: measurement shapes what a trend looks like.',
+          sv: 'En enkäts insamlingssätt kan flytta resultaten: mätningen formar hur en trend ser ut.',
+        },
+      },
+      {
+        id: 'X',
+        why: {
+          en: 'Taxes and trust are shown side by side, not joined: four Nordic countries are too few for a relationship.',
+          sv: 'Skatt och tillit visas sida vid sida, inte sammankopplade: fyra nordiska länder är för få för ett samband.',
         },
       },
     ],

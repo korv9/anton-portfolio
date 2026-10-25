@@ -16,6 +16,7 @@ import {
   yearly,
   type DebateTopics,
 } from '../../replik/compute'
+import { jobYears, type JobRow } from '../../aiclock/compute'
 import { Mini, pct } from './cardsPlatform'
 
 type Topics = {
@@ -210,6 +211,48 @@ export function ReplikChart() {
           index: points.findIndex((p) => p.x === Number(top.period)),
           label: top.period,
         }}
+      />
+    </Mini>
+  )
+}
+
+/** When does a law arrive?: AI's share of Swedish job ads per year. */
+export function AiClockChart() {
+  const rows = useFile<JobRow[]>('ai-act/jobs/monthly.json')
+  if (rows === null) return <Loading />
+  if (!ok(rows)) return null
+  const years = jobYears(rows, 'ai_any')
+  if (years.length < 3) return null
+  const points = years.map((y) => ({
+    x: Number(y.year),
+    y: y.share,
+    label: `${y.year}: ${pct(y.share, 2)}`,
+  }))
+  const first = points[0]
+  const last = points.at(-1)!
+  return (
+    <Mini
+      head={l(
+        `AI in Swedish job ads went from ${pct(first.y, 2)} in ${first.x} to ${pct(last.y, 2)} in ${last.x}.`,
+        `AI i svenska platsannonser gick från ${pct(first.y, 2)} ${first.x} till ${pct(last.y, 2)} ${last.x}.`,
+      )}
+      caption={l(
+        `Share of job ads that mention AI, per year; ${last.x} is a partial year. ai-act/jobs/monthly.json`,
+        `Andel platsannonser som nämner AI, per år; ${last.x} är ett delår. ai-act/jobs/monthly.json`,
+      )}
+    >
+      <MiniLine
+        series={[{ id: 'ai', name: 'AI', points }]}
+        summary={l(
+          `AI share of job ads from ${first.x} to ${last.x}.`,
+          `AI-andel av platsannonser från ${first.x} till ${last.x}.`,
+        )}
+        format={(y) => pct(y, 2)}
+        ticks={[
+          { x: first.x, label: String(first.x) },
+          { x: last.x, label: String(last.x) },
+        ]}
+        endLabel={l(`${last.x}, part`, `${last.x}, del`)}
       />
     </Mini>
   )

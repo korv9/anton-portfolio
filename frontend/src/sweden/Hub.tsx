@@ -1,5 +1,5 @@
 /**
- * The SWEDEN hub (#sweden): the platform's question and its six research pages as a list over
+ * The SWEDEN hub (#sweden): the platform's question and its seven research pages as a list over
  * the shared 3D map, every municipality coloured by C's similarity group. The map is the same
  * scene engine the products use; without WebGL the list stands on its own.
  */
@@ -75,8 +75,8 @@ export default function Hub() {
           </h1>
           <p className="sw-hub-lead">
             {l(
-              'Five research products on work, similarity, belonging and imagined futures in Sweden, built on public data with their methods and limits in view.',
-              'Fem forskningsprodukter om arbete, likhet, tillhörighet och föreställda framtider i Sverige, byggda på offentliga data med metod och begränsningar synliga.',
+              'Six research products on measurement, work, similarity, belonging, imagined futures and the welfare contract in Sweden, built on public data with their methods and limits in view.',
+              'Sex forskningsprodukter om mätning, arbete, likhet, tillhörighet, föreställda framtider och välfärdskontraktet i Sverige, byggda på offentliga data med metod och begränsningar synliga.',
             )}
           </p>
           <ol className="sw-doors">

@@ -326,3 +326,104 @@
 .lq-chosen th span {
   font-weight: 650;
 }
+/* The corpora as data (LawData.tsx): a lead line, one chart, two findings, then the lists. */
+.lq-data {
+  display: grid;
+  gap: var(--sp-5);
+  padding-top: var(--sp-7);
+}
+.project-shell #main .lq-data h2 {
+  font-size: var(--h2);
+}
+.project-shell #main .lq-data h3 {
+  margin: 0 0 var(--sp-3);
+  font-size: var(--body);
+  font-weight: 700;
+}
+.lq-lead {
+  margin: 0;
+  max-width: var(--measure);
+  font-size: var(--body-large);
+  line-height: 1.45;
+}
+.lq-figure {
+  margin: 0;
+  max-width: 90ch;
+}
+.lq-chart {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.lq-chart text {
+  fill: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+.lq-in,
+.lq-key-in {
+  fill: var(--ink);
+  background: var(--ink);
+}
+.lq-out,
+.lq-key-out {
+  fill: var(--subtle);
+  background: var(--subtle);
+}
+.lq-ahead rect {
+  opacity: 0.55;
+}
+.lq-key {
+  display: inline-block;
+  width: 0.7em;
+  height: 0.7em;
+  margin: 0 0.4em 0 0.2em;
+  border-radius: 2px;
+}
+.lq-key-out {
+  margin-left: 1em;
+}
+.lq-findings {
+  display: grid;
+  gap: var(--sp-3);
+  max-width: var(--measure);
+  margin: 0;
+  padding-left: 1.1em;
+  line-height: 1.55;
+}
+.lq-long {
+  margin: 0;
+  padding-left: 1.6em;
+  font-size: var(--small);
+}
+.lq-long li {
+  padding-block: 3px;
+}
+.lq-long small,
+.lq-articles small {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: var(--caption);
+}
+.lq-mark {
+  color: var(--ink);
+  font-weight: 700;
+}
+.lq-articles {
+  columns: 2 22rem;
+  gap: var(--sp-5);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--small);
+}
+.lq-articles li {
+  break-inside: avoid;
+  padding-block: 3px;
+}
+.lq-articles b {
+  display: inline-block;
+  min-width: 3ch;
+  font-variant-numeric: tabular-nums;
+}

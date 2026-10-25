@@ -75,6 +75,19 @@ test('a question shows its passages, then the checked answer', async ({
   // The page opens on the first example's checked answer; the corpus waits for the reader.
   await expect(page.locator('.lq-quote q')).toHaveText('Fixture paragraph 1.')
   expect(requested).not.toContain('sfs/meta.json')
+  // Below the tool, the statute book and the AI Act as data, read from their own small files.
+  await expect(page.locator('#lq-book-title')).toHaveText('The statute book')
+  await expect(page.locator('.lq-laws li')).toHaveCount(40)
+  await expect(page.locator('.lq-mark').first()).toHaveText('· in Allegora')
+  await expect(page.locator('.lq-findings').first()).toContainText(
+    'Repeal clusters in the',
+  )
+  await expect(page.locator('#lq-act-title')).toHaveText('The AI Act')
+  await expect(page.locator('.lq-findings').last()).toContainText(
+    'Regulation (EU) 2026/1744',
+  )
+  await expect(page.locator('.lq-articles li').first()).toBeVisible()
+  expect(requested).not.toContain('sfs/meta.json')
   await page.getByRole('button', { name: 'Show the 8 passages found' }).click()
   await expect(page.getByText('(fetched 2026-10-14)')).toBeVisible()
   await expect(page.locator('.lq-laws li')).toHaveCount(1)

@@ -120,9 +120,14 @@ test('removed pages lead back to the projects and are absent from navigation', a
 test('withdrawn observatories lead to the chart feed and are absent from navigation', async ({
   page,
 }) => {
-  for (const path of ['politik', 'jobb', 'wellbeing', 'ai-act', 'lagboken']) {
+  for (const path of ['politik', 'jobb', 'wellbeing']) {
     await page.goto(`/#${path}`)
     await expect(page).toHaveURL(/#what-does-it-even-mean$/)
     await expect(page.locator(`a[href="#${path}"]`)).toHaveCount(0)
+  }
+  // The statute book and the AI Act now live on Allegora's page.
+  for (const path of ['ai-act', 'lagboken']) {
+    await page.goto(`/#${path}`)
+    await expect(page).toHaveURL(/#fraga-lagen$/)
   }
 })

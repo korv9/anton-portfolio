@@ -22,6 +22,7 @@ export type Page =
   | 'lawqa'
   | 'jobs'
   | 'replik'
+  | 'aiclock'
 
 export type Route = {
   /** The full hash, e.g. `#politik-valjarna?partier=S`. */
@@ -102,6 +103,8 @@ export const REDIRECTS: Record<string, string> = {
   '#data-explorer': MEANING,
   '#debates': MEANING,
   '#raw-data': MEANING,
+  // When does a law arrive? (the AI Act diffusion clock) under its English name.
+  '#ai-act-clock': '#lag-ankomst',
 }
 
 /** Older address families and the theme they lead to, checked after the exact list. */
@@ -125,9 +128,10 @@ const PREFIX_REDIRECTS: [string, string][] = [
     '#job-',
     '#wellbeing',
     '#compliance',
-    '#ai-act',
-    '#lagboken',
   ].map((prefix): [string, string] => [prefix, MEANING]),
+  // The statute book and the AI Act now live on Allegora's page.
+  ['#ai-act', '#fraga-lagen'],
+  ['#lagboken', '#fraga-lagen'],
 ]
 
 /** Where an address leads now, if it has moved. */
@@ -142,7 +146,7 @@ export function redirectOf(path: string): string | undefined {
  * The reports: three tabs each, every tab an address of its own. All of them are laid out like
  * the start page: edge to edge, no breadcrumb or topic rows.
  */
-/** The SWEDEN research platform: the hub, the five research products and Connections. */
+/** The SWEDEN research platform: the hub, the six research products and Connections. */
 export const SWEDEN_PATHS = [
   '#sweden',
   '#sweden-matning',
@@ -150,6 +154,7 @@ export const SWEDEN_PATHS = [
   '#sweden-likhet',
   '#sweden-tillhorighet',
   '#sweden-framtid',
+  '#sweden-valfard',
   '#sweden-samband',
 ]
 export const PHILOSOPHY_TABS = [
@@ -201,6 +206,7 @@ export function pageOf(path: string): Page {
   // The job assistant (docs/job-assistant.md); #jobb and #job- still lead to the feed.
   if (path === '#jobs') return 'jobs'
   if (path === '#replik') return 'replik'
+  if (path === '#lag-ankomst') return 'aiclock'
   if (path.startsWith('#concept-') || path.startsWith('#concepts-'))
     return 'concepts'
   if (path === '#philosophy-atlas' || path.startsWith('#philosophy-'))
