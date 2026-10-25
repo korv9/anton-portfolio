@@ -4,7 +4,7 @@ name: Refresh the job assistant
 #  - restores warehouse/raw/job_assistant from R2 (the ad store, its cursor and the run log);
 #  - reads every Data/IT ad created, changed or removed in JobStream since the cursor;
 #  - matches the current ads with the approved profile, with embeddings and explanations inside
-#    the project's Workers AI budget (secrets CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID);
+#    the project's Workers AI budget (secrets CLOUDFLARE_AI_TOKEN and CLOUDFLARE_ACCOUNT_ID);
 #  - stores the raw answers and the store in R2 again, whatever the export did;
 #  - checks job-assistant/{ads,matches,texts}.json and publishes it as its own versioned R2 group.
 # A run that stops halfway leaves the cursor at the last stored window, so the next run repeats

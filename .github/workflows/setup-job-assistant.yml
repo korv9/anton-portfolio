@@ -52,11 +52,14 @@ jobs:
         id: d1
         run: |
           denied="::error::CLOUDFLARE_API_TOKEN cannot manage D1. Add the permission Account > D1 > Edit to that token."
-          lookup() { $WRANGLER d1 list --json | jq -r --arg n "$DATABASE" '.[] | select(.name == $n) | .uuid'; }
-          id=$(lookup) || { echo "$denied"; exit 1; }
+          lookup() {
+            list=$($WRANGLER d1 list --json) || { echo "$denied"; exit 1; }
+            id=$(jq -r --arg n "$DATABASE" '.[] | select(.name == $n) | .uuid' <<< "$list")
+          }
+          lookup
           if [ -z "$id" ]; then
             $WRANGLER d1 create "$DATABASE" || { echo "$denied"; exit 1; }
-            id=$(lookup)
+            lookup
           fi
           [ -n "$id" ] || { echo "::error::D1 database $DATABASE was not found after creating it."; exit 1; }
           echo "id=$id" >> "$GITHUB_OUTPUT"
@@ -83,7 +86,9 @@ jobs:
           JOB_ASSIST_TOKEN: ${{ secrets.JOB_ASSIST_TOKEN }}
         run: |
           if [ -z "$JOB_ASSIST_TOKEN" ]; then
-            echo "::notice::JOB_ASSIST_TOKEN is not set, so it was not copied. Owner writes (CV upload, profile approval, statuses, notes) stay off until it is added and this workflow runs again."
+            line="JOB_ASSIST_TOKEN is not set, so it was not copied. Owner writes (CV upload, profile approval, statuses, notes) stay off until it is added and this workflow runs again."
+            echo "::notice::$line"
+            echo "$line" >> "$GITHUB_STEP_SUMMARY"
             exit 0
           fi
           printf '%s' "$JOB_ASSIST_TOKEN" | $WRANGLER secret put JOB_ASSIST_TOKEN --name anton-portfolio ||
