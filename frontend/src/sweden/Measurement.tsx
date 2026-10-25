@@ -159,8 +159,9 @@ export default function Measurement({ route }: { route: Route }) {
       onShow: () => set({ domain: thin[0].id }),
     })
   }
+  // The clearest count leads, ahead of the classification gap.
   if (most && culture)
-    findings.push({
+    findings.unshift({
       key: 'culture',
       statement: l(
         `SCB publishes ${num(most.scb_tables)} tables on ${name(most).toLowerCase()} and ${num(culture.scb_tables)} on culture.`,

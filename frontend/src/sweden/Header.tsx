@@ -40,13 +40,26 @@ export function SwedenHeader({ current }: { current: string }) {
   const [theme, setTheme] = useSwedenTheme()
   const menu = useRef<HTMLDialogElement>(null)
   const close = () => menu.current?.close()
+  // On a phone the product row scrolls sideways: bring the current page into view.
+  const nav = useRef<HTMLElement>(null)
+  useEffect(() => {
+    // After the web fonts load, since they change the items' widths.
+    document.fonts.ready.then(() => {
+      const row = nav.current
+      const here = row?.querySelector<HTMLElement>('[aria-current="page"]')
+      if (!row || !here || row.scrollWidth <= row.clientWidth) return
+      // Align the current item's end with the row's end.
+      row.scrollLeft +=
+        here.getBoundingClientRect().right - row.getBoundingClientRect().right
+    })
+  }, [current])
   return (
     <header className="sw-header">
       <div className="sw-header-main">
         <a className="sw-wordmark" href="#start">
           Anton Ernstsson
         </a>
-        <nav className="sw-nav" aria-label="SWEDEN">
+        <nav className="sw-nav" aria-label="SWEDEN" ref={nav}>
           <a
             href="#sweden"
             aria-current={current === '#sweden' ? 'page' : undefined}
@@ -132,10 +145,6 @@ export function SwedenHeader({ current }: { current: string }) {
               <small>{p.id === 'X' ? '×' : p.id}</small>
             </a>
           ))}
-          <a href="#sweden-atlas">
-            <span>{l('Atlas (preview)', 'Atlas (förhandsvisning)')}</span>
-            <small>3D</small>
-          </a>
           <h2>{l('More', 'Övrigt')}</h2>
           <a href="#projekt">{l('All projects', 'Alla projekt')}</a>
           <a href="#cluster-visuals">Cluster Visuals</a>

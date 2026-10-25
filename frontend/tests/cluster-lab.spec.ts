@@ -5,7 +5,7 @@ test('local lab handles missing exports or reopens saved runs and keeps assignme
 }) => {
   const response = await page.request.get('/__cluster_lab/index.json')
   if (response.status() === 404) {
-    await page.goto('/#cluster-visuals')
+    await page.goto('/#cluster-visuals?lab=1')
     const lab = page.locator('.clab')
     await expect(lab).toContainText('No local export yet.')
     await expect(lab.locator('canvas')).toHaveCount(0)

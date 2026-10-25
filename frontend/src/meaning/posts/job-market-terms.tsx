@@ -55,11 +55,12 @@ function HoursStack() {
   return (
     <Frame data={data}>
       {(m) => {
+        // Full years only, so the last bar and its labels are the year the title names.
         const years = m.years.filter(
-          (yr) => hoursShare(m, yr, 'Heltid') != null,
+          (yr) => yr <= fullYear(m) && hoursShare(m, yr, 'Heltid') != null,
         )
-        const lastYr = years.at(-1)
-        if (lastYr == null) return null
+        const yr = years.at(-1)
+        if (yr == null) return null
         const W = 300,
           H = 220,
           L = 34,
@@ -82,15 +83,15 @@ function HoursStack() {
               x1={R}
               format={(v) => pct(v)}
             />
-            {years.map((yr, i) => {
+            {years.map((year, i) => {
               let top = B
               return HOURS.map((k, j) => {
-                const s = hoursShare(m, yr, k)!
+                const s = hoursShare(m, year, k)!
                 const hh = s * (B - 8)
                 top -= hh
                 return (
                   <rect
-                    key={`${yr}${k}`}
+                    key={`${year}${k}`}
                     x={L + i * bw + 2}
                     y={top}
                     width={bw - 4}
@@ -99,7 +100,7 @@ function HoursStack() {
                     stroke="var(--paper)"
                     strokeWidth={0.5}
                   >
-                    <title>{`${yr} ${HOURS_EN[k] ?? k}: ${pct(s, 1)}`}</title>
+                    <title>{`${year} ${HOURS_EN[k] ?? k}: ${pct(s, 1)}`}</title>
                   </rect>
                 )
               })
@@ -109,7 +110,7 @@ function HoursStack() {
               top={8}
               bottom={B}
               items={HOURS.map((k, j) => {
-                const s = hoursShare(m, lastYr, k)!
+                const s = hoursShare(m, yr, k)!
                 const v = s * (B - 8)
                 mid -= v
                 return {
@@ -121,9 +122,9 @@ function HoursStack() {
             />
             <XLabels
               y={H - 4}
-              items={years.map((yr, i) => ({
+              items={[0, years.length - 1].map((i) => ({
                 x: L + i * bw + bw / 2,
-                label: i % 2 ? '' : String(yr),
+                label: String(years[i]),
               }))}
             />
           </Svg>
@@ -158,7 +159,7 @@ export const posts: Post[] = [
         ? 'Full-time and part-time job ads per year'
         : `${pct(s)} of ${yr} ads were for full-time work`
     },
-    note: 'Share of ads per year by working hours; the latest year is January to the latest full month',
+    note: 'Share of ads per full year by working hours; Arbetsförmedlingen',
     render: () => <HoursStack />,
   },
 ]

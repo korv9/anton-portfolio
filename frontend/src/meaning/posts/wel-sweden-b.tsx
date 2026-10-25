@@ -279,9 +279,9 @@ export const posts: Post[] = [
         from === to
           ? `stayed at ${to}`
           : `${b.q[2] < a.q[2] ? 'fell' : 'rose'} from ${from} to ${to}`
-      return `Across municipalities, the median number of active borrowers ${change} per 100 inhabitants, ${a.yr}–${b.yr}`
+      return `Library borrowers per 100 people ${change}, ${a.yr}–${b.yr}`
     },
-    note: 'Median across municipalities by year; bands: the middle 50% and 80%. Source: KB library statistics',
+    note: 'Active borrowers, median across municipalities by year; bands: the middle 50% and 80%. Source: KB library statistics',
     render: () => <LibraryTrend />,
   },
 ]

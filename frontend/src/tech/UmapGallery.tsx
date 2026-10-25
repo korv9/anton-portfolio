@@ -86,9 +86,8 @@ function Card({ item, open }: { item: Item; open: (data: Loaded) => void }) {
           {ready ? (
             <Thumb points={ready.points} />
           ) : (
-            <span className="tech-meta">
-              {data === 'error' ? 'Could not be read' : 'Loading…'}
-            </span>
+            // An empty thumbnail until its points arrive; a missing file stays a quiet blank.
+            <span className="tech-meta" aria-busy={data !== 'error'} />
           )}
         </span>
         <b>

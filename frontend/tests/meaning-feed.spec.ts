@@ -64,6 +64,8 @@ test(
       feed.getByRole('heading', { level: 2, name: 'Politics' }),
     ).toBeVisible()
     const first = feed.locator('.mean-post').first()
+    // The strongest post leads the feed.
+    await expect(first).toHaveAttribute('data-post', 'pol-ai-speech-line')
     // Cards wear the feed's card token.
     const card = await first.evaluate((el) => {
       const probe = document.createElement('i')

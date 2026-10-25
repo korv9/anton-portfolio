@@ -110,8 +110,8 @@ export const THESIS = {
     {
       heading: t('Resultat', 'Findings'),
       text: t(
-        'Analyserade 21 633 incidentposter från Freshservice. Av 121 kluster saknade 72 koppling till ett registrerat problem. Lyfte fram 12 grupper med 650 ärenden för fortsatt granskning i verksamheten.',
-        'Analysed 21,633 Freshservice incident records. Of 121 clusters, 72 had no link to a registered problem. Highlighted 12 groups containing 650 tickets for further operational review.',
+        'Granskade 21 633 incidentposter från Freshservice. Klustringen av 16 811 av dem gav 121 grupper, varav 72 saknade koppling till ett registrerat problem. Lyfte fram 12 grupper med 650 ärenden för fortsatt granskning i verksamheten.',
+        'Assessed 21,633 Freshservice incident records; clustering 16,811 of them gave 121 groups, 72 with no link to a registered problem. Highlighted 12 groups containing 650 tickets for further operational review.',
       ),
     },
     {

@@ -4,7 +4,16 @@ import AxeBuilder from '@axe-core/playwright'
 test('the Concept Lab draws typed relations and opens concept pages', async ({
   page,
 }) => {
-  await page.goto('/#concept-constellation')
+  await page.goto('/#concepts-profiles')
+  // The lead view: a sorted lift table with each corpus's leading concept annotated.
+  await expect(page.locator('.report-tabs a')).toHaveCount(2)
+  await expect(page.locator('.cc-leaders li')).toHaveCount(4)
+  await expect(page.locator('.cc-leaders li').first()).toContainText('10.6×')
+  await expect(page.locator('.cc-leaders li').first()).toContainText('Death')
+  await expect(page.locator('.cc-table tbody th').first()).toHaveText('Death')
+  await expect(page.locator('.cc-table td.is-leader')).toHaveCount(4)
+  await page.locator('.report-deeper a[href^="#concept-constellation"]').click()
+  await expect(page).toHaveURL(/#concept-constellation/)
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
     'Which concepts belong together, and on what grounds?',
   )
@@ -28,7 +37,9 @@ test('the Concept Lab draws typed relations and opens concept pages', async ({
   ).toBeVisible()
   await expect(page.locator('.cc-bar')).toHaveCount(4)
   await expect(page.locator('.cc-column blockquote').first()).toBeVisible()
-  await expect(page.locator('.cc-links').first()).toContainText('no word group')
+  await expect(page.locator('.cc-links').first()).not.toContainText(
+    'no word group',
+  )
   const axe2 = await new AxeBuilder({ page }).include('.concepts').analyze()
   expect(axe2.violations).toEqual([])
 })

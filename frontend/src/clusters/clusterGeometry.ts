@@ -1,11 +1,8 @@
-export const CLUSTER_COLOURS = [
-  '--cv-ground',
-  '--cv-olive',
-  '--cv-apricot',
-  '--cv-powder',
-  '--cv-butter',
-  '--cv-pistachio',
-]
+/** Twelve tones, defined in clusters.css; maps colour their groups by size rank. */
+export const CLUSTER_COLOURS = Array.from(
+  { length: 12 },
+  (_, i) => `--cv-c${i + 1}`,
+)
 
 /** One scale for both axes; only extreme outliers are clamped, as in Cluster Visuals. */
 export function projectClusterPoints(

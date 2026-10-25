@@ -239,8 +239,11 @@ export default function DrugConstellation({
               style={{ background: HUES[c.id % HUES.length] }}
               aria-hidden="true"
             />
-            <b>{ROMAN[c.id]}</b>, {c.size} {l('drugs', 'läkemedel')},{' '}
-            {l('mean ZIP', 'medel-ZIP')} {num(c.mean_zip, 1)}
+            {/* One span: the button is a flex row, so loose text would get a gap before its comma. */}
+            <span>
+              <b>{ROMAN[c.id]}</b>, {c.size} {l('drugs', 'läkemedel')},{' '}
+              {l('mean ZIP', 'medel-ZIP')} {num(c.mean_zip, 1)}
+            </span>
           </button>
         ))}
       </div>

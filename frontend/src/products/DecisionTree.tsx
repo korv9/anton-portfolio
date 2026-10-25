@@ -275,8 +275,8 @@ export default function DecisionTree({
           className="dtree-root-label"
         >
           {l(
-            `${num(total)} measurements enter`,
-            `${num(total)} mätningar går in`,
+            `${num(total)} raw training rows enter`,
+            `${num(total)} råa träningsrader går in`,
           )}
         </text>
         <text x={W / 2} y={H - 22} textAnchor="middle" className="dtree-foot">

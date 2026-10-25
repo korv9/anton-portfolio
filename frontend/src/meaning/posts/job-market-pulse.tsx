@@ -97,10 +97,14 @@ function Sparks() {
 }
 
 /** Mean new ads per weekday (Monday to Friday) over the days in the daily stream, or null. */
-const weekdayMean = (m: Market) => {
-  const days = (m.daily?.all ?? []).filter(
+/** The daily rows without weekends, which carry a tenth of the ads. */
+const weekdays = (m: Market) =>
+  (m.daily?.all ?? []).filter(
     (r) => ![0, 6].includes(new Date(`${r[0]}T12:00`).getDay()),
   )
+
+const weekdayMean = (m: Market) => {
+  const days = weekdays(m)
   return days.length ? sum(days.map((r) => r[1])) / days.length : null
 }
 
@@ -109,7 +113,8 @@ function Daily() {
   return (
     <Frame data={data}>
       {(m) => {
-        const rows = m.daily?.all ?? []
+        // Weekends would read as a collapse next to the weekdays.
+        const rows = weekdays(m)
         if (!rows.length) return null
         const ticks = niceTicks(
           maxOf(
@@ -126,7 +131,6 @@ function Daily() {
         const day = (d: string) =>
           new Date(`${d}T12:00`).toLocaleString('en-GB', {
             weekday: 'short',
-            day: 'numeric',
           })
         return (
           <Svg w={W} h={H} label="New job ads per day, latest days">
@@ -147,7 +151,7 @@ function Daily() {
                   y={y(r[1]) - 4}
                   textAnchor="middle"
                 >
-                  {fmt(r[1])}
+                  {compact(r[1])}
                 </text>
               </g>
             ))}
@@ -185,7 +189,7 @@ export const posts: Post[] = [
         ? 'New job ads per day, latest days'
         : `About ${fmt(Math.round(v / 100) * 100)} new ads a weekday in the latest days`
     },
-    note: "New ads per publication day in JobTech's daily stream; preliminary until the quarter's archive",
+    note: "New ads per weekday in JobTech's daily stream; preliminary until the quarter's archive",
     render: () => <Daily />,
   },
 ]

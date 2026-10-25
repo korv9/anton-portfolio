@@ -1,7 +1,9 @@
 /**
  * C — The Invisible Sweden (#sweden-likhet). Municipalities by social similarity rather than
  * distance, from sweden/similarity/*.json (platform/publish/sweden/export_similarity.py, which
- * reuses the validated 2024 clustering of 280 municipalities on 12 indicators).
+ * reuses the 2024 clustering of 280 municipalities on 12 indicators; k = 4 fails the
+ * pre-registered stability bar, so its groups are a descriptive summary only). The Mantel tests
+ * between social, job-ad and vote neighbours come from clusters/three-swedens.json.
  *
  * The scene is one SVG: every municipality is a dot that sits on its geographic centroid
  * ("Map") or at its first two principal components ("Similarity"), over SCB's boundaries.
@@ -115,6 +117,22 @@ type Groups = {
     run_id: string | null
   }
 }
+/** The pre-registered Three Swedens tests (docs/sweden-three-spaces-preregistration.md). */
+type Spaces = {
+  diagnostics: {
+    n: number
+    tests: {
+      pair: [string, string]
+      partial_r: number
+      partial_p_holm: number
+      permutations: number
+      note?: string
+    }[]
+  }
+  grouping: {
+    candidates: Record<string, { bootstrap_ari: { mean: number; p05: number } }>
+  }
+}
 const BASE = 'sweden/similarity/'
 // Categorical: the four groups of the finer split, never a magnitude.
 const GROUP_COLOURS = GROUP_HEX
@@ -128,7 +146,9 @@ export default function Similarity({ route }: { route: Route }) {
   const [data, setData] = useState<Data | 'error' | null>(null)
   const [groups, setGroups] = useState<Groups | null>(null)
   const [geo, setGeo] = useState<Geometry | null>(null)
+  const [spaces, setSpaces] = useState<Spaces | null>(null)
   useEffect(() => {
+    fetchJson<Spaces>('clusters/three-swedens.json').then(setSpaces, () => {})
     fetchJson<Data>(BASE + 'municipalities.json').then(setData, () =>
       setData('error'),
     )
@@ -187,25 +207,12 @@ export default function Similarity({ route }: { route: Route }) {
   const carried = data.features.filter((f) => f.reference_year !== data.year)
   const featureName = (f: Feature) => l(f.label_en, f.label_sv)
 
-  const spans = finer
-    ? finer.profiles.map((p) => ({
-        group: p.group,
-        counties: new Set(
-          data.municipalities
-            .filter((m) => m.finer === p.group)
-            .map((m) => m.county),
-        ).size,
-        n: p.municipalities,
-      }))
-    : []
-  const widest = [...spans].sort((a, b) => b.counties - a.counties)[0]
-
   const findings: Finding[] = [
     {
       key: 'distance',
       statement: l(
-        `Social similarity clusters in space: for ${same} of ${s.analysed} municipalities the most similar municipality lies in the same county, ${ratio} times what chance gives.`,
-        `Social likhet samlas geografiskt: för ${same} av ${s.analysed} kommuner ligger den mest lika kommunen i samma län, ${ratio} gånger så ofta som slumpen ger.`,
+        `For ${s.nearest_in_other_county} of ${s.analysed} municipalities the most similar municipality lies in another county: a median ${s.nearest_km_median} km away, against ${chance.geographic_nearest_km_median} km to the nearest on the map. Similarity still leans local: same-county matches are ${ratio} times chance.`,
+        `För ${s.nearest_in_other_county} av ${s.analysed} kommuner ligger den mest lika kommunen i ett annat län: i median ${s.nearest_km_median} km bort, mot ${chance.geographic_nearest_km_median} km till den närmaste på kartan. Likheten lutar ändå lokalt: matchningar i samma län är ${ratio} gånger slumpen.`,
       ),
       values: (
         <ul>
@@ -241,42 +248,89 @@ export default function Similarity({ route }: { route: Route }) {
       onShow: () => set({ vy: 'likhet' }),
     },
   ]
-  if (widest && finer)
+  const spaceName = (id: string) =>
+    ({
+      social: l('social', 'sociala'),
+      jobs: l('job-ad', 'platsannons'),
+      votes: l('vote', 'röst'),
+    })[id] ?? id
+  const votes = spaces?.diagnostics.tests.find(
+    (t) => t.pair.includes('social') && t.pair.includes('votes'),
+  )
+  if (spaces && votes)
     findings.push({
-      key: 'spread',
+      key: 'spaces',
       statement: l(
-        `“${groupName(widest.group)}” spans ${widest.counties} of 21 counties.`,
-        `”${groupName(widest.group)}” finns i ${widest.counties} av 21 län.`,
+        `Municipalities that are socially alike also vote alike: partial Mantel r ${votes.partial_r.toFixed(2)} with geography held fixed (Holm p ${votes.partial_p_holm}, ${spaces.diagnostics.n} municipalities), a pre-registered test.`,
+        `Kommuner som är socialt lika röstar också lika: partiell Mantel-r ${votes.partial_r.toFixed(2)} med geografin hållen fast (Holm-p ${votes.partial_p_holm}, ${spaces.diagnostics.n} kommuner), ett förregistrerat test.`,
       ),
       values: (
         <ul>
-          {spans.map((g) => (
-            <li key={g.group}>
-              {groupName(g.group)}: {g.n} {l('municipalities', 'kommuner')},{' '}
-              {g.counties} {l('counties', 'län')}
+          {spaces.diagnostics.tests.map((t) => (
+            <li key={t.pair.join('-')}>
+              {spaceName(t.pair[0])}–{spaceName(t.pair[1])}:{' '}
+              {l('partial r', 'partiell r')} {t.partial_r.toFixed(2)} · Holm p{' '}
+              {t.partial_p_holm}
             </li>
           ))}
+          {votes.note && (
+            <li>
+              {l(
+                'Riksdag turnout is one of the social indicators, so part of the social–vote r comes from that shared indicator.',
+                'Valdeltagandet är en av de sociala indikatorerna, så en del av det sociala–röst-r kommer från den gemensamma indikatorn.',
+              )}
+            </li>
+          )}
         </ul>
       ),
       evidence: 'exploratory',
       source: l(
-        'K-means, k = 4 (finer split)',
-        'K-means, k = 4 (finare indelning)',
+        `Ten nearest neighbours in three spaces: 12 social indicators (2024), job ads by occupation field (2023–25), 2022 Riksdag votes; ${votes.permutations.toLocaleString('en-GB')} permutations, Holm over the three pairs`,
+        `Tio närmaste grannar i tre rum: 12 sociala indikatorer (2024), platsannonser per yrkesområde (2023–25), riksdagsvalet 2022; ${votes.permutations.toLocaleString('sv-SE')} permutationer, Holm över de tre paren`,
       ),
     })
+  const k4 = spaces?.grouping.candidates['4']?.bootstrap_ari
+  const k2 = spaces?.grouping.candidates['2']?.bootstrap_ari
+  const temporal = groups?.sensitivity.temporal?.years.map((y) => y.ari_k4)
   if (finer)
     findings.push({
       key: 'weak',
       contrary: true,
       statement: l(
-        `The groups are a weak structure: silhouette ${finer.silhouette.toFixed(2)}, against ${finer.copula_silhouette_95.toFixed(2)} for simulated data with the same correlations between indicators, and they only partly follow SKR’s official municipality types.`,
-        `Grupperna är en svag struktur: silhuett ${finer.silhouette.toFixed(2)}, mot ${finer.copula_silhouette_95.toFixed(2)} för simulerade data med samma samband mellan indikatorerna, och de följer bara delvis SKR:s officiella kommuntyper.`,
+        k4
+          ? `No grouping passes the pre-registered stability check: for the four groups the bootstrap ARI’s 5th percentile is ${k4.p05.toFixed(2)}, below the bar of 0.6 (two groups: ${k2?.p05.toFixed(2)}). The colours are a descriptive summary, not a finding.`
+          : `The groups are a weak structure: silhouette ${finer.silhouette.toFixed(2)}, against ${finer.copula_silhouette_95.toFixed(2)} for simulated data with the same correlations between indicators. The colours are a descriptive summary, not a finding.`,
+        k4
+          ? `Ingen gruppering klarar den förregistrerade stabilitetskontrollen: för de fyra grupperna är bootstrap-ARI:ns 5:e percentil ${k4.p05.toFixed(2).replace('.', ',')}, under gränsen 0,6 (två grupper: ${k2?.p05.toFixed(2).replace('.', ',')}). Färgerna är en beskrivande sammanfattning, inte ett resultat.`
+          : `Grupperna är en svag struktur: silhuett ${finer.silhouette.toFixed(2)}, mot ${finer.copula_silhouette_95.toFixed(2)} för simulerade data med samma samband mellan indikatorerna. Färgerna är en beskrivande sammanfattning, inte ett resultat.`,
       ),
       values: (
         <ul>
+          {k4 && (
+            <li>
+              {l('Bootstrap ARI, k = 4', 'Bootstrap-ARI, k = 4')}:{' '}
+              {l('mean', 'medel')} {k4.mean.toFixed(2)} ({l('bar', 'gräns')}{' '}
+              0.75), {l('5th percentile', '5:e percentil')} {k4.p05.toFixed(2)}{' '}
+              ({l('bar', 'gräns')} 0.6)
+            </li>
+          )}
+          {temporal?.length ? (
+            <li>
+              {l(
+                'Refitted per year 2020–23, agreement with 2024 (ARI)',
+                'Omskattad per år 2020–23, överensstämmelse med 2024 (ARI)',
+              )}
+              : {Math.min(...temporal).toFixed(2)}–
+              {Math.max(...temporal).toFixed(2)}
+            </li>
+          ) : null}
           <li>
-            {l('Bootstrap ARI', 'Bootstrap-ARI')}:{' '}
-            {finer.bootstrap_ari.toFixed(2)} ({l('bar', 'gräns')} 0.75)
+            {l('Silhouette', 'Silhuett')} {finer.silhouette.toFixed(2)} ·{' '}
+            {l(
+              'simulated data with the same correlations, 95 %',
+              'simulerade data med samma samband, 95 %',
+            )}{' '}
+            {finer.copula_silhouette_95.toFixed(2)}
           </li>
           <li>
             {l(
@@ -300,7 +354,7 @@ export default function Similarity({ route }: { route: Route }) {
       line={
         view === 'map'
           ? l(
-              'Every municipality on its map position, coloured by its similarity group. Switch to Similarity to move each to its place in indicator space.',
+              'Every municipality on its map position, coloured by a descriptive four-group summary. Switch to Similarity to move each to its place in indicator space.',
               'Varje kommun på sin plats på kartan, färgad efter sin likhetsgrupp. Byt till Likhet för att flytta varje kommun till sin plats i indikatorrummet.',
             )
           : l(
@@ -311,7 +365,12 @@ export default function Similarity({ route }: { route: Route }) {
       legend={
         finer && (
           <>
-            <b>{l('Similarity groups (k = 4)', 'Likhetsgrupper (k = 4)')}</b>
+            <b>
+              {l(
+                'Similarity groups (k = 4), descriptive summary',
+                'Likhetsgrupper (k = 4), beskrivande sammanfattning',
+              )}
+            </b>
             <ul className="sw-legend-list">
               {finer.profiles.map((p) => (
                 <li key={p.group}>
@@ -486,8 +545,8 @@ export default function Similarity({ route }: { route: Route }) {
         <li>
           {l('Choice of k', 'Val av k')}: {groups?.criterion}.{' '}
           {l(
-            'The page shows the finer split (k = 4), which passes the same stability bar.',
-            'Sidan visar den finare indelningen (k = 4), som klarar samma stabilitetsgräns.',
+            'The page colours by the finer split (k = 4) as a description only: neither k = 2 nor k = 4 meets the pre-registered bar (mean bootstrap ARI at least 0.75, 5th percentile at least 0.6).',
+            'Sidan färgar efter den finare indelningen (k = 4) enbart som beskrivning: varken k = 2 eller k = 4 klarar den förregistrerade gränsen (medel-ARI minst 0,75, 5:e percentilen minst 0,6).',
           )}
         </li>
         <li>

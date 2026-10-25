@@ -1,4 +1,21 @@
 /* Cluster visuals: neutral interface, open maps and categorical data palettes. */
+
+/* Twelve categorical tones for points on the charcoal page: the site's pastels, warm
+   clays and muted blues and greens; every pair is at least 17 ΔE apart, and apart from noise. */
+:root {
+  --cv-c1: var(--cv-apricot);
+  --cv-c2: #8fa7bd;
+  --cv-c3: var(--cv-butter);
+  --cv-c4: #c47a5e;
+  --cv-c5: #9a7b5c;
+  --cv-c6: #b48ab4;
+  --cv-c7: #7fae9f;
+  --cv-c8: var(--cv-powder);
+  --cv-c9: #c9a24a;
+  --cv-c10: #a7b86a;
+  --cv-c11: #6f86c9;
+  --cv-c12: #d98f8f;
+}
 .project-shell #main:has(.cv) {
   background: var(--page);
 }
@@ -142,8 +159,14 @@
   font-size: var(--fs-label);
   opacity: 1;
 }
+.cv-legend .cv-more button {
+  background: transparent;
+  text-decoration: underline;
+  text-underline-offset: 0.25em;
+}
 .cv-status {
-  min-height: 200px;
+  /* About a map's height, so maps further down stay off screen and load only when scrolled to. */
+  min-height: min(780px, 62vw);
   margin: 0;
   font-size: var(--fs-sm);
   opacity: 1;
@@ -306,4 +329,7 @@
 .cv-report canvas:focus-visible {
   outline: 2px solid var(--focus);
   outline-offset: 2px;
+}
+.cv-meaning + .cv-meaning {
+  margin-top: 0.5em;
 }

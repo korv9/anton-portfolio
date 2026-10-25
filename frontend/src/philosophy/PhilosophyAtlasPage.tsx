@@ -189,6 +189,18 @@ const eraOf = (period: string) =>
   ERAS.findIndex((e) => e.periods.includes(period))
 const cap = (s: string) => s[0].toUpperCase() + s.slice(1)
 const pct = (v: number) => `${Math.round(v * 100)} %`
+// Display-side cleanup of the c-TF-IDF words: roman numerals (Spinoza's "iii"), "prop", archaic
+// and function words carry no idea. The pipeline still exports them.
+const ROMAN = /^m{0,3}(cm|cd|d?c{0,3})(xc|xl|l?x{0,3})(ix|iv|v?i{0,3})$/
+const JUNK = new Set(
+  'thou thy thee thine ye unto thyself doth hath shalt shall whatsoever prop note did does say said says yes let far like make come thing things case kind matter means ought great'.split(
+    ' ',
+  ),
+)
+const cleanTerms = (terms: string[]) =>
+  terms.filter((t) => !JUNK.has(t) && !ROMAN.test(t))
+const groupTitle = (c: Cluster) =>
+  c.review_label ?? cleanTerms(c.distinctive_terms).slice(0, 3).join(', ')
 const DEFAULTS = {
   karta: 'author_centered',
   verk: '',
@@ -302,6 +314,10 @@ export default function PhilosophyAtlasPage({ route }: { route: Route }) {
     summary.tensions.find((x) => x.tension_id === params.spanning) ??
     summary.tensions[0]
   const across = variantClusters.filter((c) => c.is_cross_work).length
+  const groupName = (id: number) => {
+    const c = variantClusters.find((x) => x.cluster_id === id)
+    return c ? groupTitle(c) : ''
+  }
 
   const slicer =
     tab === 2 ? (
@@ -346,8 +362,8 @@ export default function PhilosophyAtlasPage({ route }: { route: Route }) {
         <ReportShell
           name={NAME}
           intro={l(
-            `${works.length} public-domain works, from Plato to Nietzsche, cut into passages; ${summary.run.passages_sampled.toLocaleString('en-GB')} of them placed by meaning with one sentence-embedding model and grouped where they gather. A group is named only after a person has read it; ${summary.reviewed_clusters ? `so far ${summary.reviewed_clusters} have been` : 'none has been yet'}.`,
-            `${works.length} fria filosofiska verk, från Platon till Nietzsche, indelade i passager; ${summary.run.passages_sampled} av dem placerade efter innebörd med en modell för meningsinbäddningar och grupperade där de samlas. En grupp får namn först när en människa har läst den; ${summary.reviewed_clusters ? `hittills ${summary.reviewed_clusters}` : 'ännu ingen'}.`,
+            `${works.length} public-domain works, from Plato to Nietzsche, cut into passages; ${summary.run.passages_sampled.toLocaleString('en-GB')} of them placed by meaning with one sentence-embedding model and grouped where they gather. Taking out each work’s own voice lifts the groups that span works from ${ev.baseline.cross_work_clusters} to ${ev.author_centered.cross_work_clusters}.`,
+            `${works.length} fria filosofiska verk, från Platon till Nietzsche, indelade i passager; ${summary.run.passages_sampled} av dem placerade efter innebörd med en modell för meningsinbäddningar och grupperade där de samlas. När varje verks egen röst dras bort ökar grupperna som spänner över flera verk från ${ev.baseline.cross_work_clusters} till ${ev.author_centered.cross_work_clusters}.`,
           )}
           tabs={tabs()}
           path={route.path}
@@ -362,8 +378,8 @@ export default function PhilosophyAtlasPage({ route }: { route: Route }) {
                 <Feature
                   id="kartan"
                   title={l(
-                    `${points.length.toLocaleString('en-GB')} passages placed by meaning`,
-                    `${points.length} passager placerade efter innebörd`,
+                    `Centring per work: ${ev.baseline.cross_work_clusters} → ${ev.author_centered.cross_work_clusters} groups across works, ${pct(ev.baseline.same_work_neighbours)} → ${pct(ev.author_centered.same_work_neighbours)} same-work neighbours (chance ${pct(ev.baseline.same_work_chance)})`,
+                    `Centrering per verk: ${ev.baseline.cross_work_clusters} → ${ev.author_centered.cross_work_clusters} grupper över flera verk, ${pct(ev.baseline.same_work_neighbours)} → ${pct(ev.author_centered.same_work_neighbours)} grannar från samma verk (slump ${pct(ev.baseline.same_work_chance)})`,
                   )}
                   lead={
                     variant === 'author_centered'
@@ -399,6 +415,7 @@ export default function PhilosophyAtlasPage({ route }: { route: Route }) {
                     clusterId={clusterId}
                     focus={focus}
                     onFocus={setFocus}
+                    groupName={groupName}
                   />
                   <ul className="ph-legend">
                     {ERAS.map((e, i) => (
@@ -413,7 +430,7 @@ export default function PhilosophyAtlasPage({ route }: { route: Route }) {
                         {works[focusPoint[1]].author},{' '}
                         {works[focusPoint[1]].title}
                         {focusPoint[4] >= 0
-                          ? `, ${l('group', 'grupp')} ${focusPoint[4]}`
+                          ? `, ${groupName(focusPoint[4])}`
                           : `, ${l('no group', 'ingen grupp')}`}
                       </p>
                       <blockquote>
@@ -427,8 +444,8 @@ export default function PhilosophyAtlasPage({ route }: { route: Route }) {
                 <Feature
                   id="verk-eller-ide"
                   title={l(
-                    `Centring per work raises the groups across works from ${ev.baseline.cross_work_clusters} to ${ev.author_centered.cross_work_clusters}`,
-                    `Centrering per verk ökar de tvärgående grupperna från ${ev.baseline.cross_work_clusters} till ${ev.author_centered.cross_work_clusters}`,
+                    `${points.length.toLocaleString('en-GB')} passages, two maps: how far each follows the works`,
+                    `${points.length} passager, två kartor: hur mycket var och en följer verken`,
                   )}
                   lead={l(
                     'How far the groups follow the works and translators instead of the ideas, on the raw map and on the map centred per work.',
@@ -453,8 +470,8 @@ export default function PhilosophyAtlasPage({ route }: { route: Route }) {
                   `${variantClusters.length} grupper, varav ${across} tvärgående`,
                 )}
                 lead={l(
-                  'Each group with the works it draws on and its most distinctive words. Words are not a name: open a group to read the passages nearest its centre. A group across works draws on at least three works with none above half.',
-                  'Varje grupp med de verk den hämtar från och sina mest utmärkande ord. Ord är inte ett namn: öppna en grupp för att läsa passagerna närmast dess mitt. En tvärgående grupp hämtar från minst tre verk utan att något väger över hälften.',
+                  'Each group is titled by its most distinctive words and shows the works it draws on. Words are not a name: open a group to read the passages nearest its centre. A group across works draws on at least three works with none above half.',
+                  'Varje grupp har sina mest utmärkande ord som rubrik och visar de verk den hämtar från. Ord är inte ett namn: öppna en grupp för att läsa passagerna närmast dess mitt. En tvärgående grupp hämtar från minst tre verk utan att något väger över hälften.',
                 )}
                 source={l(
                   'HDBSCAN on the chosen map; the distinctive words of each group',
@@ -479,12 +496,11 @@ export default function PhilosophyAtlasPage({ route }: { route: Route }) {
                           })
                         }
                       >
-                        <span className="ph-group-id">
-                          {c.review_label ??
-                            `${l('Group', 'Grupp')} ${c.cluster_id}`}
-                        </span>
+                        <span className="ph-group-id">{groupTitle(c)}</span>
                         <span className="ph-group-terms">
-                          {c.distinctive_terms.slice(0, 6).join(', ')}
+                          {cleanTerms(c.distinctive_terms)
+                            .slice(c.review_label ? 0 : 3, 8)
+                            .join(', ')}
                         </span>
                         <span className="ph-group-meta">
                           {c.size} {l('passages', 'passager')}, {c.work_count}{' '}
@@ -492,10 +508,8 @@ export default function PhilosophyAtlasPage({ route }: { route: Route }) {
                           {c.is_cross_work && (
                             <b>, {l('across works', 'tvärgående')}</b>
                           )}
-                          {', '}
-                          {c.review_status === 'unreviewed'
-                            ? l('not reviewed', 'ej granskad')
-                            : c.review_status}
+                          {c.review_status !== 'unreviewed' &&
+                            `, ${c.review_status}`}
                         </span>
                         <span className="ph-composition" aria-hidden="true">
                           {Object.entries(c.works).map(([w, n]) => {
@@ -560,6 +574,7 @@ function AtlasMap({
   clusterId,
   focus,
   onFocus,
+  groupName,
 }: {
   points: Point[]
   works: Work[]
@@ -567,6 +582,7 @@ function AtlasMap({
   clusterId: number | null
   focus: string | null
   onFocus: (id: string | null) => void
+  groupName: (id: number) => string
 }) {
   const bounds = useMemo(() => {
     const xs = points.map((p) => p[2])
@@ -613,7 +629,7 @@ function AtlasMap({
             >
               <title>
                 {works[p[1]].author}
-                {p[4] >= 0 ? `, ${l('group', 'grupp')} ${p[4]}` : ''}
+                {p[4] >= 0 ? `, ${groupName(p[4])}` : ''}
               </title>
             </circle>
           )

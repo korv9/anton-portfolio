@@ -119,8 +119,11 @@ test('the invisible sweden moves municipalities into similarity space', async ({
     data.summary.total,
   )
   await expect(page.locator('.sw-finds')).toContainText(
-    `${data.summary.analysed - data.summary.nearest_in_other_county} of ${data.summary.analysed}`,
+    `${data.summary.nearest_in_other_county} of ${data.summary.analysed}`,
   )
+  // The groups are a summary, not a finding; the pre-registered Mantel tests are.
+  await expect(page.locator('.sw-finds')).not.toContainText('of 21 counties')
+  await expect(page.locator('.sw-finds')).toContainText('partial Mantel r')
   // Distance to the big cities is measured, and the verdict needs both variants' intervals.
   await expect(
     page.locator('.sw-reading', { hasText: 'Centre and periphery' }),
@@ -201,6 +204,9 @@ test('the infrastructure of belonging maps libraries by municipality and year', 
   await page.goto('/#sweden-tillhorighet?scen=2d')
   await expect(page.locator('.sw-choropleth path')).toHaveCount(290)
   await expect(page.locator('.sw-libraries circle')).not.toHaveCount(0)
+  await expect(
+    page.getByText('Rural municipality with a visitor industry').first(),
+  ).toBeAttached()
   await page
     .getByRole('combobox', { name: 'Measure' })
     .selectOption('visits_rate')
@@ -291,6 +297,10 @@ test('connections state their contracts and the rejected joins', async ({
     await request.get('/data/sweden/connections/connections.json')
   ).json()
   await page.goto('/#sweden-samband')
+  // The header clears the fixed SWEDEN header.
+  const header = await page.locator('.sw-header').boundingBox()
+  const title = await page.locator('#sw-title').boundingBox()
+  expect(title!.y).toBeGreaterThanOrEqual(header!.y + header!.height)
   await expect(page.locator('.sw-connection')).toHaveCount(
     data.relationships.length,
   )

@@ -5,7 +5,7 @@
 import { l } from '../i18n'
 import { count, share } from '../format'
 import { StageBlock, StageFacts } from '../ui/Stage'
-import { TRADITION, clusterColour } from './atlasData'
+import { TRADITION, clusterColour, contextName } from './atlasData'
 import type { AtlasPoint, AtlasSummary, SymbolProfile } from './atlasTypes'
 
 export type AtlasFilters = {
@@ -39,7 +39,7 @@ export function AtlasFiltersPanel({
       .map((c) => ({
         id: c,
         size: summary.evaluation.cluster_sizes[String(c)],
-        name: l(`Cluster ${c}`, `Kluster ${c}`),
+        name: contextName(c),
       }))
   return (
     <>

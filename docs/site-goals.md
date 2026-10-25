@@ -19,8 +19,8 @@ Progress is measured with `npm run goals` (scripts/goals.mjs): it opens every pr
 ## Projects page (#projects)
 
 - [x] Charcoal page with Arbetsförmedla as the lead and three parts (merged in #166).
-- [ ] Projects listed one under another with generous space, the text on the left and a visualisation or chart on the right of each (sketch first).
-- [ ] No status words or route hashtags under the projects ("LIVE · #sweden" removed); no run/count mono lines on the cards.
+- [x] Projects listed one under another with generous space, the text on the left and a visualisation or chart on the right of each (sketch first).
+- [x] No status words or route hashtags under the projects ("LIVE · #sweden" removed); no run/count mono lines on the cards.
 - [ ] Every project has its visual, including Cluster Visuals, the data platform and the three other projects.
 - [ ] Each card links to a finished project page (below).
 - [ ] Replik has its card under "Running on the data platform".
@@ -30,9 +30,9 @@ Progress is measured with `npm run goals` (scripts/goals.mjs): it opens every pr
 Goal: a visitor sees a working CV-to-ads matcher with real matches and why each one fits.
 
 - [ ] Matching runs again: the 403 is gone, D1 is set up, a profile is approved, `matches.json` has a profile and matches (jobs-1).
-- [ ] No owner-only section is visible to visitors; nothing shows "could not be read" or "0 of 50" (jobs-2, jobs-3).
+- [x] No owner-only section is visible to visitors; nothing shows "could not be read" or "0 of 50" (jobs-2, jobs-3).
 - [ ] Copy says how often it really runs; the hub's freshness line checks the matcher's own limit (jobs-4, jobs-5).
-- [ ] The name is safe: a "not affiliated with Arbetsförmedlingen; uses its open JobTech data (CC0)" line, or a new name (jobs-6).
+- [x] The name is safe: a "not affiliated with Arbetsförmedlingen; uses its open JobTech data (CC0)" line, or a new name (jobs-6).
 - [ ] Remaining P1: jobs-7.
 
 ## SWEDEN (#sweden, A–E, X)

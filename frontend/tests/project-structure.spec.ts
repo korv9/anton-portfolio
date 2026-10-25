@@ -15,10 +15,21 @@ test(
       'Why it matters',
     ])
     await expect(page.locator('.thesis-page .project-section p')).toHaveCount(
-      11,
+      12,
     )
-    await expect(page.locator('#thesis-workflow')).toContainText('21,000')
-    await expect(page.locator('#thesis-workflow')).toContainText('ISO 25012')
+    await expect(page.locator('.thesis-stats dd')).toHaveText([
+      '21,633',
+      '121',
+      '72',
+    ])
+    await expect(page.locator('.thesis-stats')).toContainText('16,811')
+    await expect(page.locator('.thesis-dot')).toHaveCount(121)
+    await expect(page.locator('.thesis-dot.is-open')).toHaveCount(72)
+    await expect(page.locator('.thesis-split-legend')).toContainText('27.7%')
+    await expect(page.locator('#thesis-workflow')).toContainText('21,633')
+    await expect(page.locator('#thesis-workflow')).toContainText(
+      'ISO/IEC 25012',
+    )
     await expect(page.locator('#thesis-quality')).toContainText('121 clusters')
     await expect(page.locator('#thesis-quality')).toContainText(
       '72 had no link',
@@ -26,7 +37,12 @@ test(
     await expect(page.locator('#thesis-quality')).toContainText(
       'rather than confirmed root causes',
     )
-    await expect(page.locator('#thesis-quality')).toContainText('around 96%')
+    await expect(page.locator('#thesis-quality')).toContainText(
+      '3.8% written by hand',
+    )
+    await expect(page.locator('#thesis-quality')).not.toContainText(
+      'helped the analysis distinguish',
+    )
     await expect(
       page.locator(
         'main a[href*="/private/"], main a[href*="Examensarbete.pdf"]',
@@ -51,6 +67,19 @@ test(
     await expect(page.locator('#thesis-evaluation')).toBeInViewport()
   },
 )
+
+test.describe('degree project in Swedish', () => {
+  test.use({ language: 'sv' })
+  test('renders the Swedish copy', async ({ page }) => {
+    await page.goto('/#thesis')
+    await expect(page.locator('.thesis-page h1')).toHaveText(
+      'Att hitta återkommande problem i IT-supportdata',
+    )
+    await expect(page.locator('#thesis-quality')).toContainText(
+      'inte bekräftade rotorsaker',
+    )
+  })
+})
 
 test('lab deep dives open at their addresses after data loads', async ({
   page,

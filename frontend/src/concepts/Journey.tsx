@@ -1,13 +1,12 @@
 /**
- * Concept Journey (#concept-journey?begrepp=risk): pick an idea and follow where related
+ * Concept Journey (#concept-journey?begrepp=death): pick an idea and follow where related
  * language appears in stories, philosophy, the Riksdag and the AI Act.
  *
  * Read first: the question, the picker, a small constellation of the four domains for the chosen
  * concept, and why it is worth looking at. Then one section per domain with how often the concept
  * is the closest there, representative passages with their source, and the measures elsewhere on
  * the site that count the same idea. Every link states its relation type; nothing here says one
- * text influenced another. Only reviewed Symbol Lab clusters may be tied to a concept, and
- * there are none yet, so the stories section says so.
+ * text influenced another. A domain with no linked measure shows none; nothing is filled in.
  */
 import { useEffect, useState } from 'react'
 import { l } from '../i18n'
@@ -60,7 +59,7 @@ const STATUS: Record<string, [string, string]> = {
   experimental: ['experimental', 'experimentellt'],
   editorial: ['editorial', 'redaktionellt'],
 }
-const DEFAULTS = { begrepp: 'risk' }
+const DEFAULTS = { begrepp: 'death' }
 const label = (c: { label_en: string; label_sv: string }) =>
   l(c.label_en, c.label_sv)
 
@@ -111,6 +110,7 @@ export default function Journey({ route, data }: { route: Route; data: Data }) {
     (r) => r.relation_type === 'documented_reference',
   )
   const corpusOf = (c: string) => summary.corpora.find((k) => k.corpus_id === c)
+  const ev = summary.run.evaluation
 
   return (
     <>
@@ -124,12 +124,7 @@ export default function Journey({ route, data }: { route: Route; data: Data }) {
           lead={l(concept.description_en, concept.description_sv)}
           source={`${summary.run.model}; ${l('how often the concept is a passage’s closest, against chance', 'hur ofta begreppet är en passages närmaste, mot slumpen')}`}
         >
-          <JourneyMap
-            concept={concept}
-            profile={profile}
-            pairs={own}
-            reference={reference?.count ?? 0}
-          />
+          <JourneyMap concept={concept} profile={profile} pairs={own} />
           <WhyItMatters concept={concept} profile={profile} links={links} />
         </Feature>
       </div>
@@ -175,14 +170,6 @@ export default function Journey({ route, data }: { route: Route; data: Data }) {
                     </p>
                   )}
                 </DataQuestion>
-                {c === 'myth' && (
-                  <p className="cj-note">
-                    {l(
-                      `No reviewed Symbol Lab cluster is tied to a concept yet (${summary.reviewed_cluster_links}), so these are the model’s closest passages among the ${corpusOf('myth')?.documents ?? ''} books of the Symbol Lab corpus, not a reviewed symbolic meaning.`,
-                      `Inget granskat kluster i Symbol Lab är kopplat till ett begrepp ännu (${summary.reviewed_cluster_links}), så detta är modellens närmaste passager bland de ${corpusOf('myth')?.documents ?? ''} böckerna i Symbol Lab korpus, inte en granskad symbolisk betydelse.`,
-                    )}
-                  </p>
-                )}
                 {!passages ? (
                   <p className="cj-note">{l('Loading…', 'Laddar…')}</p>
                 ) : list.length === 0 ? (
@@ -306,8 +293,8 @@ export default function Journey({ route, data }: { route: Route; data: Data }) {
             'Liknande formuleringar är inte samma betydelse, och att något förekommer i två domäner är inte påverkan: myterna orsakade inte filosofin, och filosofin orsakade inte AI-förordningen. De fyra korpusarna skiljer sig dessutom mer från varandra än deras ämnen gör: ',
           )}
           {l(
-            `${pct(summary.run.evaluation.same_corpus_neighbours)} of each passage’s nearest neighbours come from its own corpus, so passages are compared within a domain and through the concepts, never on one shared map.`,
-            `${pct(summary.run.evaluation.same_corpus_neighbours)} av varje passages närmaste grannar kommer från dess egen korpus, så passagerna jämförs inom en domän och genom begreppen, aldrig på en gemensam karta.`,
+            `${pct(ev.same_corpus_neighbours)} of each passage’s nearest neighbours come from its own corpus (chance ${pct(ev.same_corpus_chance)}; ${pct(ev.same_corpus_neighbours_centred)} after centring). Part of this is language: the Riksdag corpus is Swedish, the rest English. So passages are compared within a domain and through the concepts, never on one shared map.`,
+            `${pct(ev.same_corpus_neighbours)} av varje passages närmaste grannar kommer från dess egen korpus (slump ${pct(ev.same_corpus_chance)}; ${pct(ev.same_corpus_neighbours_centred)} efter centrering). En del av detta är språk: riksdagskorpusen är svensk, resten engelska. Därför jämförs passagerna inom en domän och genom begreppen, aldrig på en gemensam karta.`,
           )}
         </p>
         <p>
@@ -350,8 +337,8 @@ export function ConceptQuality({ summary }: { summary: ConceptSummary }) {
         [
           l('Review', 'Granskning'),
           l(
-            'The concepts, anchor sentences, tensions and links are editorial; no passage-to-concept mapping has been reviewed yet.',
-            'Begreppen, ankarmeningarna, spänningarna och länkarna är redaktionella; ingen koppling mellan passage och begrepp har granskats än.',
+            'The concepts, anchor sentences, tensions and links are editorial; which passages sit closest to a concept is the model’s ranking, not a reader’s judgement.',
+            'Begreppen, ankarmeningarna, spänningarna och länkarna är redaktionella; vilka passager som ligger närmast ett begrepp är modellens rangordning, inte en läsares bedömning.',
           ),
         ],
       ]}
@@ -407,7 +394,7 @@ function WhyItMatters({
   )
 }
 
-/** The measures elsewhere on the site that count the same idea in one domain, or a plain gap. */
+/** The measures elsewhere on the site that count the same idea in one domain; nothing when none does. */
 function DomainLinks({ corpus, links }: { corpus: string; links: Link[] }) {
   const items =
     corpus === 'philosophy'
@@ -419,26 +406,7 @@ function DomainLinks({ corpus, links }: { corpus: string; links: Link[] }) {
         : corpus === 'law'
           ? links.filter((k) => k.kind === 'ai_act_view')
           : []
-  if (corpus === 'myth') return null
-  if (!items.length)
-    return (
-      <p className="cj-note">
-        {corpus === 'law'
-          ? l(
-              'No view of the AI Act is linked to this concept; nothing is filled in.',
-              'Ingen vy av AI-förordningen är kopplad till begreppet; ingenting fylls i.',
-            )
-          : corpus === 'politics'
-            ? l(
-                'No Riksdag word group or job-ad term measures this concept.',
-                'Ingen ordgrupp i riksdagen och ingen jobbannonsterm mäter begreppet.',
-              )
-            : l(
-                'No Philosophy Lab tension has this concept as a pole.',
-                'Ingen spänning i Philosophy Lab har begreppet som pol.',
-              )}
-      </p>
-    )
+  if (!items.length) return null
   return (
     <ul className="cj-links">
       {items.map((k) => (
@@ -502,12 +470,10 @@ function JourneyMap({
   concept,
   profile,
   pairs,
-  reference,
 }: {
   concept: Concept
   profile: Profile[]
   pairs: Pair[]
-  reference: number
 }) {
   const at: Record<string, { x: number; y: number }> = {
     myth: { x: 110, y: 120 },
@@ -549,9 +515,9 @@ function JourneyMap({
   }
   const lines = pairs.map((p) => ({ a: p.corpus_a, b: p.corpus_b }))
   // Soft arcs above the stars, higher for domains further apart, so no line crosses a label.
-  const arc = (a: string, b: string, lift = 0) => {
+  const arc = (a: string, b: string) => {
     const [p, q] = [at[a], at[b]]
-    const top = Math.min(p.y, q.y) - 24 - Math.abs(q.x - p.x) * 0.12 - lift
+    const top = Math.min(p.y, q.y) - 24 - Math.abs(q.x - p.x) * 0.12
     return `M${p.x},${p.y} Q${(p.x + q.x) / 2},${top} ${q.x},${q.y}`
   }
   const text = CORPUS_ORDER.map((c) => {
@@ -564,8 +530,8 @@ function JourneyMap({
         viewBox="0 0 820 200"
         role="img"
         aria-label={l(
-          `${label(concept)} across the four domains, times chance: ${text}. ${lines.length} links by semantic similarity${reference ? ', one documented reference from the Riksdag to the AI Act' : ''}.`,
-          `${label(concept)} i de fyra domänerna, gånger slumpen: ${text}. ${lines.length} länkar genom semantisk likhet${reference ? ', en dokumenterad hänvisning från riksdagen till AI-förordningen' : ''}.`,
+          `${label(concept)} across the four domains, times chance: ${text}. ${lines.length} links by semantic similarity.`,
+          `${label(concept)} i de fyra domänerna, gånger slumpen: ${text}. ${lines.length} länkar genom semantisk likhet.`,
         )}
       >
         {lines.map(({ a, b }) => (
@@ -575,12 +541,6 @@ function JourneyMap({
             d={arc(a, b)}
           />
         ))}
-        {reference > 0 && (
-          <path
-            className="cj-edge cj-edge-documented_reference"
-            d={arc('politics', 'law', 34)}
-          />
-        )}
         {CORPUS_ORDER.map((c) => {
           const r = size(c)
           const p = profile.find((x) => x.corpus_id === c)
@@ -614,15 +574,6 @@ function JourneyMap({
             'Semantisk likhet över slumpvisa par',
           )}
         </span>
-        {reference > 0 && (
-          <span>
-            <i
-              className="cj-line cj-line-documented_reference"
-              aria-hidden="true"
-            />{' '}
-            {l('Documented reference', 'Dokumenterad hänvisning')}
-          </span>
-        )}
         <span className="cj-caveat">
           {l(
             'Semantic similarity does not establish historical influence.',

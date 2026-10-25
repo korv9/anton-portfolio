@@ -1,6 +1,6 @@
 /*
- * The chart feed reads --mean-* properties only. On the meaning page they come from the SWEDEN
- * dark theme (.sweden tokens); on the home page .mean-light maps them to the home palette.
+ * The chart feed reads --mean-* properties only; they come from the SWEDEN dark theme (.sweden
+ * tokens) the meaning page sits in.
  */
 .mean-feed {
   --mean-bg: var(--sw-bg);
@@ -32,46 +32,13 @@
   --mean-party-nyd: #b49a6a;
   /* Posts separate marks with the card colour and mix tints towards it. */
   --paper: var(--mean-card);
-  /* charts/RankBars and Compare read the site's ink roles; .sweden and the home page set
-     --ink, --muted and --line, so only the two they leave out are mapped here. */
+  /* charts/RankBars and Compare read the site's ink roles; .sweden sets --ink, --muted and
+     --line, so only the two it leaves out are mapped here. */
   --ink-2: var(--mean-ink);
   --line-strong: color-mix(in srgb, var(--mean-ink) 32%, transparent);
   --mean-ease: cubic-bezier(0.3, 0.7, 0.2, 1);
   --mean-glide: 0.42s;
 }
-/* Home page: paper slips a whisper above the ivory page, olive as the focal series, deeper pastels after it. */
-.mean-light .mean-feed {
-  --mean-bg: var(--page);
-  --mean-card: #fbf9f3;
-  --mean-ink: var(--ink);
-  --mean-muted: var(--muted);
-  --mean-line: var(--line);
-  --mean-grid: rgba(15, 15, 16, 0.09);
-  --mean-accent: var(--cv-olive);
-  --mean-pill: var(--cv-olive);
-  --mean-font: var(--font);
-  --mean-s1: var(--cv-olive);
-  --mean-s2: #4c716b;
-  --mean-s3: #b8704a;
-  --mean-s4: #b0903a;
-  --mean-s5: var(--cv-ground);
-  --mean-s6: #a7777e;
-  --mean-seq-lo: #efeadf;
-  --mean-seq-hi: #3d4232;
-  --mean-other: #8f897d;
-  --mean-party-v: #8c3a33;
-  --mean-party-s: #c0574a;
-  --mean-party-mp: #98b56a;
-  --mean-party-c: #2b5238;
-  --mean-party-l: #6f97c2;
-  --mean-party-kd: #2f4c7c;
-  --mean-party-m: #3f6a9e;
-  --mean-party-sd: #c9a02c;
-  --mean-party-nyd: #8a7a52;
-  --wash: #f3efe6;
-  --line-strong: rgba(15, 15, 16, 0.32);
-}
-
 .mean-page {
   padding: clamp(10px, 1.6vw, 20px);
 }
