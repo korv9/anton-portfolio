@@ -35,41 +35,37 @@ test(
   },
 )
 
-test('experience and education stay aligned while scrolling', async ({
+test('education follows experience in one column, beside the cluster maps', async ({
   page,
+  isMobile,
 }) => {
+  test.skip(isMobile, 'one column with one map on a phone')
+  await page.setViewportSize({ width: 1440, height: 900 })
   await page.goto('/#erfarenhet')
-  await expect(page.locator('.home-experience')).toHaveCSS(
-    'animation-name',
-    'none',
-  )
-  await expect(page.locator('.home-education')).toHaveCSS(
-    'animation-name',
-    'none',
-  )
   await page.evaluate(() => document.fonts.ready)
-  const start = await page
-    .locator('.home-experience')
-    .evaluate((el) => el.getBoundingClientRect().top + scrollY)
-  for (const offset of [0, 200, 500]) {
-    await page.evaluate(
-      (top) => window.scrollTo({ top, behavior: 'instant' }),
-      start + offset,
-    )
-    await expect
-      .poll(() =>
-        page.evaluate(() => {
-          const experience = document
-            .querySelector('.home-experience .home-title')!
-            .getBoundingClientRect()
-          const education = document
-            .querySelector('.home-education .home-title')!
-            .getBoundingClientRect()
-          return Math.abs(experience.top - education.top)
-        }),
-      )
-      .toBeLessThan(0.5)
-  }
+  const box = (selector: string) =>
+    page
+      .locator(selector)
+      .evaluate((el) => el.getBoundingClientRect().toJSON() as DOMRect)
+  const experience = await box('.home-experience .home-title')
+  const education = await box('.home-education .home-title')
+  expect(Math.abs(experience.left - education.left)).toBeLessThan(0.5)
+  expect(education.top).toBeGreaterThan(experience.bottom)
+  const column = await box('.home-experience')
+  expect(column.width).toBeLessThanOrEqual(641)
+  // The maps sit to the right and stay beside the reading: decorative, drawn, one per slot.
+  const maps = page.locator('.home-map3d')
+  await expect(maps).toHaveCount(3)
+  expect((await box('.home-maps')).left).toBeGreaterThan(column.right)
+  await expect(maps.first()).toHaveCSS('position', 'sticky')
+  await expect(maps.first()).toHaveAttribute('data-ready', 'true', {
+    timeout: 20000,
+  })
+  await expect(maps.first().locator('.home-map3d-scene')).toHaveAttribute(
+    'aria-hidden',
+    'true',
+  )
+  await expect(maps.first().locator('canvas')).toHaveCount(3)
 })
 
 test(
@@ -288,7 +284,14 @@ test('each platform card states a finding in a small chart that answers the keyb
     await cards.nth(i).scrollIntoViewIfNeeded()
   await expect
     .poll(() => page.locator('.hub-items .mini-head').count())
-    .toBeGreaterThanOrEqual(7)
+    .toBeGreaterThanOrEqual(11)
+  // Every project row has its picture; the two repositories close as a text-only pair.
+  const rows = page.locator('.hub-items:not(.hub-repos) > li')
+  await expect(rows.locator('.hub-row-visual')).toHaveCount(await rows.count())
+  await expect(page.locator('.hub-repos > li')).toHaveCount(2)
+  await expect(
+    page.locator('.hub-items > li', { has: page.locator('a[href="#thesis"]') }),
+  ).toContainText('72 of the 121')
   const scan = await new AxeBuilder({ page }).include('.hub-items').analyze()
   expect(scan.violations).toEqual([])
   expect(

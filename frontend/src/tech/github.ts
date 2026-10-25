@@ -3,7 +3,7 @@
  * platform/publish/github_status.py writes on a schedule with the workflow's own token. The page
  * makes no GitHub API calls of its own, so visitors never hit the unsigned limit of 60 an hour.
  */
-import { fetchJson } from '../dataSource'
+import { objectStorageUrl } from '../dataSource'
 import type { Run } from './WorkflowRuns'
 
 export type Issue = {
@@ -29,12 +29,18 @@ export type GithubStatus = {
 
 let pending: Promise<GithubStatus> | null = null
 
-/** One read per page view, shared by every section that needs it. */
+/**
+ * One read per page view, shared by every section that needs it. Like status/ingestion.json it
+ * lives in object storage outside any release, so it is read uncached from there.
+ */
 export function githubStatus() {
-  return (pending ??= fetchJson<GithubStatus>('status/github.json').catch(
-    (error) => {
+  return (pending ??= objectStorageUrl('status/github.json')
+    .then((url) => fetch(url, { cache: 'no-cache' }))
+    .then((r) =>
+      r.ok ? (r.json() as Promise<GithubStatus>) : Promise.reject(r.status),
+    )
+    .catch((error) => {
       pending = null
       throw error
-    },
-  ))
+    }))
 }

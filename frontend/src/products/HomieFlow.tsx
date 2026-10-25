@@ -28,7 +28,7 @@ const TRUNK = 48
 const viewY = (i: number) => 214 + i * 40
 
 // The 16 operations in openapi.json, by tag; `built` ones are live and covered by CI.
-const GROUPS: { en: string; sv: string; n: number; built: boolean }[] = [
+export const GROUPS: { en: string; sv: string; n: number; built: boolean }[] = [
   { en: 'Auth', sv: 'Inloggning', n: 3, built: true },
   { en: 'Health', sv: 'Hälsa', n: 1, built: true },
   { en: 'Completions', sv: 'Utföranden', n: 2, built: false },

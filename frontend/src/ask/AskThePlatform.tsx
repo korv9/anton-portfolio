@@ -41,6 +41,18 @@ const TOP = 8
 const MAX = 500
 // As the Worker's parser: a colon or white space may sit between [[id]] and its quote.
 const QUOTE = /\[\[([^\]]+)\]\]\s*:?\s*"([^"]+)"/g
+/**
+ * A passage's file read from its id, for quotes shown before the corpus has loaded: graph and
+ * catalogue nodes live in one file each, a dbt model is named, a document passage drops its anchor.
+ */
+const fileOfId = (id: string) =>
+  id.startsWith('graph:')
+    ? 'architecture/graph.json'
+    : id.startsWith('catalog:')
+      ? 'catalog.json'
+      : id.startsWith('dbt:')
+        ? `dbt ${id.slice(4)}`
+        : id.split('#')[0]
 /** The answer with each [[id]]"quote" as a quote followed by its file and commit. */
 function Quoted({ text, items }: { text: string; items: Map<string, Item> }) {
   const parts: ReactNode[] = []
@@ -57,7 +69,7 @@ function Quoted({ text, items }: { text: string; items: Map<string, Item> }) {
           </a>
         ) : (
           <span className="ap-cite" translate="no">
-            {m[1]}
+            {fileOfId(m[1])}
           </span>
         )}
       </span>,
@@ -194,8 +206,8 @@ export default function AskThePlatform({ ready = false }: { ready?: boolean }) {
               maxLength={MAX}
               value={question}
               placeholder={l(
-                'How is the junior share tested?',
-                'Hur testas juniorandelen?',
+                'How does the site find the address of a data file?',
+                'Hur hittar sajten adressen till en datafil?',
               )}
               onFocus={() => corpus || load().then((c) => c && setNotice(null))}
               onChange={(e) => setQuestion(e.target.value)}

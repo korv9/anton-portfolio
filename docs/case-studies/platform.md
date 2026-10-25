@@ -3,7 +3,8 @@
 This page describes the data platform behind
 [antonernstsson.com](https://antonernstsson.com): what it had to do, how it is built, what
 went wrong, and how big it is. Every number below was counted from the repository on
-2026-10-23, and the method is given next to it.
+2026-10-23 (the dbt, subject and workflow rows on 2026-10-25), and the method is given next to
+it.
 
 ## Problem
 
@@ -120,17 +121,17 @@ delivered file, and CI keeps checking that afterwards.
 
 | What | Count | How it was counted |
 |---|---|---|
-| dbt models | 302 (bronze 107, silver 17, gold 178) | `.sql` files under `platform/models/` and each layer folder |
-| Models with an enforced contract | 149 | `contract: {enforced: true}` lines in `platform/models/**/*.yml` |
-| dbt source tables | 125, in 33 source definitions | `sources:` entries parsed from the model YAML files |
-| dbt data tests | 821 generic (812 on models, 9 on sources), 46 singular | `tests:`/`data_tests:` list items on models, sources and their columns in `platform/models/**/*.yml`; `.sql` files under `platform/tests/` |
+| dbt models | 334 (bronze 116, silver 32, gold 186; 321 SQL, 13 Python) | models in the manifest from `dbt parse`, by layer folder; the figure the site shows, from `frontend/public/data/schema/summary.json` |
+| Models with an enforced contract | 158 | models with `contract: {enforced: true}` in the same manifest |
+| dbt source tables | 130, in 34 source definitions | sources in the same manifest |
+| dbt data tests | 920 (879 generic, 41 singular) | tests in the same manifest |
 | Python tests | 806 | `python -m pytest platform/tests --collect-only -q` |
 | Frontend and Worker unit tests | 93 | `# tests` line printed by `npm run test:unit` |
 | Browser (Playwright) tests | 88, in 28 spec files | `test(` calls in `frontend/tests/*.spec.ts` |
 | Delivery JSON Schemas | 23 | `.json` files under `configs/delivery/schemas/` |
-| Pipeline subjects | 24 | entries under `subjects:` in `platform/pipeline.yml` |
+| Pipeline subjects | 26 | entries under `subjects:` in `platform/pipeline.yml` |
 | Published files | 6,394 (1,701 JSON, 68 Parquet, 4,625 shards) for 20 products | entries in `frontend/public/data/catalog.json`, grouped by `format` and `product` |
-| GitHub Actions workflows | 13 | files in `.github/workflows/` |
+| GitHub Actions workflows | 16 | files in `.github/workflows/` |
 
 Counts of test functions are not counts of test cases: a parametrised test counts once in
 the grep and several times in pytest's collection. The numbers will drift as the

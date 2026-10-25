@@ -14,6 +14,7 @@ import { fitCharts } from './fit'
 import { useFresh } from './freshness'
 import { PostLeave, PostLive, PostOpen, still, useData, type Post } from './kit'
 import { Trace } from './Trace'
+import { l } from '../i18n'
 
 /** Above this many SVG elements a thumbnail steps without transitions. */
 const DENSE_MARKS = 400
@@ -114,7 +115,10 @@ function DataHeading({ post }: { post: Post }) {
 /** The overdue mark's text, with the day of the last ingestion when known. Only an overdue
  * source is marked: a dot on every card would say nothing. */
 const freshText = ({ at }: { at?: string }) =>
-  `Source ingestion overdue${at ? `, last ${at.slice(0, 10)}` : ''}`
+  l(
+    `Source ingestion overdue${at ? `, last ${at.slice(0, 10)}` : ''}`,
+    `Källan är försenad${at ? `, senast ${at.slice(0, 10)}` : ''}`,
+  )
 
 /** Whether the tab is in front; thumbnails stop ticking behind another tab. */
 export function usePageVisible() {
@@ -264,7 +268,7 @@ export function Card({
         <button
           type="button"
           className="mean-close"
-          aria-label={`Close chart: ${nameOf(post, section)}`}
+          aria-label={`${l('Close chart', 'Stäng diagram')}: ${nameOf(post, section)}`}
           onClick={() => toggle(null)}
         >
           ×
@@ -273,7 +277,7 @@ export function Card({
         <button
           type="button"
           className="mean-hit"
-          aria-label={`Open chart: ${nameOf(post, section)}`}
+          aria-label={`${l('Open chart', 'Öppna diagram')}: ${nameOf(post, section)}`}
           onClick={() => toggle(post.id)}
         />
       )}

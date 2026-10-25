@@ -22,10 +22,27 @@ export type Summary = {
   committed_at?: string
 }
 
+/** The run figures, and each subject's latest Actions log by the name readStatus gives it. */
 export function useStatus() {
-  const [status, setStatus] = useState<ReturnType<typeof readStatus>>(null)
+  const [status, setStatus] = useState<
+    | (NonNullable<ReturnType<typeof readStatus>> & {
+        logs: Map<string, string>
+      })
+    | null
+  >(null)
   useEffect(() => {
-    loadStatus().then((s) => setStatus(s && readStatus(s as Status)))
+    loadStatus().then((s) => {
+      const read = s && readStatus(s as Status)
+      if (read)
+        setStatus({
+          ...read,
+          logs: new Map(
+            Object.entries(s!).flatMap(([name, e]) =>
+              e.github_run ? [[name.replace(/_/g, ' '), e.github_run]] : [],
+            ),
+          ),
+        })
+    })
   }, [])
   return status
 }

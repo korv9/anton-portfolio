@@ -13,6 +13,13 @@ import { reading } from '../tech/techData'
 import Headline from './Headline'
 import JobsPulse from './JobsPulse'
 import { ConceptChart, PhilosophyChart, SymbolChart } from './mini/cardsLabs'
+import {
+  ClusterChart,
+  DrugChart,
+  HomieChart,
+  ThesisChart,
+  ReplikChart,
+} from './mini/cardsOther'
 import { FeedChart, LawChart, SwedenChart } from './mini/cardsPlatform'
 import { Near } from './mini/MiniChart'
 import PlatformFlow from './PlatformFlow'
@@ -37,11 +44,19 @@ const CHARTS: Record<string, ReactNode> = {
   'philosophy-atlas': <PhilosophyChart />,
   'symbolic-atlas': <SymbolChart />,
   'concept-constellation': <ConceptChart />,
+  'cluster-visuals': <ClusterChart />,
+  thesis: <ThesisChart />,
+  drugcomb: <DrugChart />,
+  homie: <HomieChart />,
+  replik: <ReplikChart />,
 }
+
+/** A repository on GitHub: text only, set as a compact pair after the other projects. */
+const isRepo = (item: HubItem) => item.href.startsWith('http')
 
 /** The quiet way into a project under its text: Open →, or GitHub ↗ for a repository. */
 function Open({ item }: { item: HubItem }) {
-  const away = item.href.startsWith('http')
+  const away = isRepo(item)
   return (
     <span className="hub-item-open">
       {away ? 'GitHub' : l('Open', 'Öppna')}{' '}
@@ -137,27 +152,39 @@ export default function ProjectsHub({ path }: { path: string }) {
         <ul className="hub-items hub-lead">
           {lead.items.map((item, i) => card(lead, item, i))}
         </ul>
-        {PARTS.map((part) => (
-          <section
-            key={part.id}
-            id={
-              part.id === 'platform' ? 'projects-work' : `projects-${part.id}`
-            }
-            className="hub-group"
-            aria-labelledby={`hub-part-${part.id}`}
-          >
-            <h2 id={`hub-part-${part.id}`}>
-              {l(part.title.en, part.title.sv)}
-            </h2>
-            <ul className="hub-items">
-              {rest
-                .filter((group) => group.part === part.id)
-                .flatMap((group) =>
-                  group.items.map((item, i) => card(group, item, i)),
-                )}
-            </ul>
-          </section>
-        ))}
+        {PARTS.map((part) => {
+          const cards = rest
+            .filter((group) => group.part === part.id)
+            .flatMap((group) =>
+              group.items.map((item, i) => ({
+                item,
+                li: card(group, item, i),
+              })),
+            )
+          const repos = cards.filter((c) => isRepo(c.item))
+          return (
+            <section
+              key={part.id}
+              id={
+                part.id === 'platform' ? 'projects-work' : `projects-${part.id}`
+              }
+              className="hub-group"
+              aria-labelledby={`hub-part-${part.id}`}
+            >
+              <h2 id={`hub-part-${part.id}`}>
+                {l(part.title.en, part.title.sv)}
+              </h2>
+              <ul className="hub-items">
+                {cards.filter((c) => !isRepo(c.item)).map((c) => c.li)}
+              </ul>
+              {repos.length > 0 && (
+                <ul className="hub-items hub-repos">
+                  {repos.map((c) => c.li)}
+                </ul>
+              )}
+            </section>
+          )
+        })}
         <PlatformFlow />
         <PlatformSections />
         <Suspense fallback={reading}>

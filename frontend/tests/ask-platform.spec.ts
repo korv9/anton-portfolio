@@ -94,3 +94,17 @@ test('a failed load keeps the form and says to retry', async ({ page }) => {
     0,
   )
 })
+
+test('the opening example names its files before the corpus loads', async ({
+  page,
+}) => {
+  const requested = await serveExports(page)
+  await page.goto('/#platform')
+  const cite = page.locator('.ap-answer .ap-cite')
+  await expect(cite).toHaveText('dbt fct_election')
+  expect(requested).not.toContain('platform/meta.json')
+  await expect(page.getByLabel('Your question')).toHaveAttribute(
+    'placeholder',
+    'How does the site find the address of a data file?',
+  )
+})

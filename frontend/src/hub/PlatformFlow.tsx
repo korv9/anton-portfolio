@@ -8,7 +8,7 @@
 import { useEffect, useState } from 'react'
 import { l } from '../i18n'
 import type { Graph } from '../tech/PipelineTables'
-import { num, ok, useFile } from '../tech/techData'
+import { day, num, ok, useFile } from '../tech/techData'
 import { loadWorkflows, type Run } from '../tech/WorkflowRuns'
 import { useDbtSize, useStatus } from './Headline'
 import { HUB_GROUPS } from './hubProjects'
@@ -51,8 +51,12 @@ export default function PlatformFlow() {
   const counts = ok(graph)
     ? graph.domains.find((d) => d.id === project?.domain)?.counts
     : undefined
+  // Models dbt has switched off are in the graph too; the counts are of what dbt builds.
   const typed = (...types: string[]) =>
-    ok(graph) ? graph.nodes.filter((n) => types.includes(n.type)).length : 0
+    ok(graph)
+      ? graph.nodes.filter((n) => n.enabled !== false && types.includes(n.type))
+          .length
+      : 0
   const g = ok(graph)
   const checks = ok(quality) ? quality.run.check_statuses : {}
   const measured = ok(quality)
@@ -66,7 +70,6 @@ export default function PlatformFlow() {
     typed,
     graph: ok(graph) ? graph : undefined,
     size,
-    sizeAt,
     status,
     quality: ok(quality) ? quality : undefined,
     checks,
@@ -118,11 +121,14 @@ export default function PlatformFlow() {
       return `${step.title}${value === undefined ? '' : ` (${num(value)} ${unit})`}`
     })
     .join(', ')
+  // Each file with its own date, so a figure's age is never hidden behind a newer one.
+  const dated = (file: string, at?: string) =>
+    at ? `${file} (${day(at).slice(0, 10)})` : file
   const files = [
-    size && 'schema/summary.json',
-    g && 'architecture/graph.json',
+    size && dated('schema/summary.json', sizeAt),
+    ok(graph) && dated('architecture/graph.json', graph.generated_at),
     status && 'status/ingestion.json',
-    ok(quality) && 'quality/summary.json',
+    ok(quality) && dated('quality/summary.json', quality.run.evaluated_at),
     release && l('the active R2 manifest', 'det aktiva R2-manifestet'),
     ci && 'GitHub Actions',
   ].filter(Boolean)

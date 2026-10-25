@@ -216,8 +216,10 @@ def main() -> None:
     layers = {}
     for n in nodes:
         layers[n["layer"]] = layers.get(n["layer"], 0) + 1
+    generated_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
     write_json(OUT / "models.json", {
         "generated_from": "dbt manifest and the DuckDB warehouse",
+        "generated_at": generated_at,
         "dbt_version": m["metadata"].get("dbt_version"),
         "layers": layers,
         "tests": tests_total(m),
@@ -228,7 +230,7 @@ def main() -> None:
     # The projects hub shows each file's age next to its figures.
     write_json(OUT / "summary.json", {
         **summary(nodes, layers, tests_total(m)),
-        "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "generated_at": generated_at,
     })
     print(f"schema: {len(nodes)} tables ({layers}), {len(links)} links, "
           f"{sum(1 for n in nodes if n['has_sample'])} with example rows")

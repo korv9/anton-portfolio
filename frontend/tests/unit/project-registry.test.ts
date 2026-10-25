@@ -60,7 +60,8 @@ test('the withdrawn observatories are not listed', () => {
 test('previous and next follow the project groups without wrapping', () => {
   assert.equal(neighbours('symbolic-atlas').previous, undefined)
   assert.equal(neighbours('symbolic-atlas').next?.id, 'philosophy-atlas')
-  assert.equal(neighbours('drugcomb').next?.id, 'thesis')
+  assert.equal(neighbours('drugcomb').next?.id, 'replik')
+  assert.equal(neighbours('replik').next?.id, 'thesis')
   assert.equal(neighbours('diva-lakehouse').next, undefined)
 })
 

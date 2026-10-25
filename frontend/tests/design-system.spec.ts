@@ -55,7 +55,7 @@ test('the homepage keeps the signature, name scale, placement and palette', asyn
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.goto('/#start')
   const name = page.locator('.home-name')
-  await expect(name).toHaveCSS('font-size', '72px')
+  await expect(name).toHaveCSS('font-size', '64px')
   await expect(name).toHaveCSS('color', 'rgb(241, 239, 231)')
   const centre = await page.evaluate(
     () => document.documentElement.clientWidth / 2,

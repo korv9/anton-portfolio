@@ -71,7 +71,7 @@ li[data-lead] .hub-item-title {
   letter-spacing: -0.045em;
   line-height: 1;
 }
-/* The map bleeds off the right edge and fades at its rim, as beside PROJECTS → on the start page. */
+/* The map sits by the right edge and fades at its rim, as beside PROJECTS → on the start page. */
 .hub .home-jobs-map {
   position: relative;
   height: clamp(360px, 44vw, 600px);
@@ -82,8 +82,9 @@ li[data-lead] .hub-item-title {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: clamp(520px, 62vw, 860px);
-  height: clamp(520px, 62vw, 860px);
+  /* The tuned map fills its square: a little over the figure's height, only the faded rim cut. */
+  width: clamp(380px, 48vw, 660px);
+  height: clamp(380px, 48vw, 660px);
   translate: -45% -50%;
   mask-image: radial-gradient(ellipse closest-side, #000 70%, transparent 100%);
 }
@@ -123,6 +124,55 @@ li[data-lead] .hub-item-title {
   color: var(--muted);
   font-family: var(--font-mono);
   font-size: var(--caption);
+}
+
+/* ---------- The other projects' pictures (mini/cardsOther.tsx) ---------- */
+/* Cluster Visuals: a square point map, softly faded at its rim. */
+.hub-point-map canvas {
+  display: block;
+  width: min(100%, 440px);
+  aspect-ratio: 1;
+  mask-image: radial-gradient(ellipse closest-side, #000 80%, transparent 100%);
+}
+/* Homie API: one dot per operation, filled when built, grouped by tag. */
+.hub-ops {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-4) var(--sp-5);
+}
+.hub-ops > span {
+  display: grid;
+  gap: var(--sp-2);
+}
+.hub-ops-dots {
+  display: flex;
+  gap: 6px;
+}
+.hub-ops-dots span {
+  width: 14px;
+  height: 14px;
+  border: 1.5px solid var(--ink);
+  border-radius: 50%;
+}
+.hub-ops-dots span[data-built] {
+  background: var(--ink);
+}
+.hub-ops-name {
+  color: var(--ink-faded);
+  font-family: var(--font-mono);
+  font-size: var(--caption);
+}
+/* The two repositories: text only, side by side after the other projects. */
+.hub-repos {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
+  gap: var(--sp-6) clamp(2.5rem, 7vw, 120px);
+  margin-top: clamp(4rem, 8vw, 140px);
+}
+.hub-repos > li {
+  grid-template-columns: minmax(0, 1fr);
+}
+.hub-repos .hub-item-title {
+  font-size: var(--body-large);
 }
 
 @media (max-width: 860px) {

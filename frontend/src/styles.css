@@ -3,6 +3,8 @@
   box-sizing: border-box;
 }
 html {
+  /* One step smaller than the browser's 16px: every rem-based size follows. */
+  font-size: 93.75%;
   scroll-behavior: smooth;
 }
 body {

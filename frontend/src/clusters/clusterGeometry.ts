@@ -34,3 +34,42 @@ export function projectClusterPoints(
     sy: (y: number) => height - (oy + (Math.min(y1, Math.max(y0, y)) - y0) * k),
   }
 }
+
+export type Xyc = [x: number, y: number, cluster: number]
+
+/**
+ * The gallery's frame (cluster-maps README, "tuned"): one scale for both axes, the extent from the
+ * clustered points only (1–99 % per axis when there are more than 500), and `inside` to drop the
+ * points beyond it instead of clamping them onto the frame's edge.
+ */
+export function galleryProjection(
+  points: Xyc[],
+  width: number,
+  height: number,
+  pad: number,
+) {
+  const clustered = points.filter((p) => p[2] >= 0)
+  const basis = clustered.length ? clustered : points
+  const trim = basis.length > 500 ? 0.01 : 0
+  const q = (i: 0 | 1, at: number) => {
+    const sorted = basis.map((p) => p[i]).sort((a, b) => a - b)
+    return sorted[Math.min(sorted.length - 1, Math.floor(at * sorted.length))]
+  }
+  const [x0, x1, y0, y1] = [
+    q(0, trim),
+    q(0, 1 - trim - 1e-9),
+    q(1, trim),
+    q(1, 1 - trim - 1e-9),
+  ]
+  const k = Math.min(
+    (width - 2 * pad) / (x1 - x0 || 1),
+    (height - 2 * pad) / (y1 - y0 || 1),
+  )
+  const ox = (width - k * (x1 - x0)) / 2
+  const oy = (height - k * (y1 - y0)) / 2
+  return {
+    sx: (x: number) => ox + (x - x0) * k,
+    sy: (y: number) => height - (oy + (y - y0) * k),
+    inside: (x: number, y: number) => x >= x0 && x <= x1 && y >= y0 && y <= y1,
+  }
+}
