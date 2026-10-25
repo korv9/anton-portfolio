@@ -35,7 +35,6 @@ const DrugCombPage = lazy(() =>
 const ThesisPage = lazy(() =>
   import('./products/CaseStudies').then((m) => ({ default: m.ThesisPage })),
 )
-const PlatformPage = lazy(() => import('./tech/PlatformPage'))
 const HomiePage = lazy(() =>
   import('./products/CaseStudies').then((m) => ({ default: m.HomiePage })),
 )
@@ -66,7 +65,7 @@ export default function App() {
     const from = cameFrom.current
     cameFrom.current = route.path
     if (route.page === 'home' && route.path !== '#start') return
-    if (route.page === 'projects' && route.path !== '#projekt') return
+    if (route.page === 'projects' && route.path !== '#projects') return
     // A tab of a report opens where the reader stands, like a tab.
     if (sameReport(from, route.path)) return
     requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: 'auto' }))
@@ -131,7 +130,6 @@ export default function App() {
                 )}
                 {page === 'drugcomb' && <DrugCombPage route={route} />}
                 {page === 'thesis' && <ThesisPage />}
-                {page === 'platform' && <PlatformPage />}
                 {page === 'homie' && <HomiePage />}
               </Suspense>
             </ProjectStructure>

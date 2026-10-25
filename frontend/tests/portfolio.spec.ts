@@ -1,191 +1,4 @@
 import { test, expect } from './test'
-import AxeBuilder from '@axe-core/playwright'
-
-test(
-  'the IT job UMAP sits beside Projects without a project button',
-  { tag: '@mobile' },
-  async ({ page, isMobile }) => {
-    await page.goto('/')
-    await page
-      .locator('.home-work')
-      .evaluate((el) => el.scrollIntoView({ behavior: 'instant' }))
-    const preview = page.locator('.home-cluster-preview[data-kind="jobs"]')
-    await expect(preview.getByRole('img')).toBeVisible()
-    await expect(preview.locator('figcaption')).toHaveText('UMAP of IT job ads')
-    await expect(preview.locator('a, button')).toHaveCount(0)
-    await expect(preview).toHaveAttribute('data-ready', 'true')
-    await expect(preview.locator('img')).toHaveCount(0)
-    await expect(preview).toHaveAttribute('data-points', '28698')
-    await expect
-      .poll(() =>
-        preview.locator('canvas').evaluate((el: HTMLCanvasElement) => el.width),
-      )
-      .toBeGreaterThan(0)
-    const layout = await page.evaluate(() => {
-      // The map centres on the job assistant's slot, 80 px above its middle.
-      const anchor = document
-        .querySelector('#jobbassistent')!
-        .getBoundingClientRect()
-      const list = document
-        .querySelector('.home-project-groups > section')!
-        .getBoundingClientRect()
-      const map = document
-        .querySelector('.home-cluster-preview[data-kind="jobs"]')!
-        .getBoundingClientRect()
-      const titleText = document.createRange()
-      titleText.selectNodeContents(document.querySelector('#projects-title')!)
-      return {
-        rightOfTitle:
-          map.left + map.width / 2 > titleText.getBoundingClientRect().right,
-        centerAligned:
-          Math.abs(
-            document
-              .querySelector(
-                '.home-cluster-preview[data-kind="jobs"] .home-cluster-space',
-              )!
-              .getBoundingClientRect().top +
-              document
-                .querySelector(
-                  '.home-cluster-preview[data-kind="jobs"] .home-cluster-space',
-                )!
-                .getBoundingClientRect().height /
-                2 -
-              (anchor.top + anchor.height / 2 - 80),
-          ) < 2,
-        aboveList: map.bottom <= list.top,
-        fits: document.documentElement.scrollWidth <= innerWidth,
-      }
-    })
-    expect(layout.fits).toBe(true)
-    expect(
-      isMobile ? layout.aboveList : layout.rightOfTitle && layout.centerAligned,
-    ).toBe(true)
-  },
-)
-
-test('the IT job UMAP fades out away from its section and returns on scroll back', async ({
-  page,
-}) => {
-  await page.goto('/')
-  const preview = page.locator('.home-cluster-preview[data-kind="jobs"]')
-  const opacity = () =>
-    preview
-      .locator('.home-cluster-space')
-      .evaluate((el) => Number(getComputedStyle(el).opacity))
-  await expect.poll(opacity).toBeLessThan(0.05)
-  const enter = () =>
-    preview.evaluate((el) => {
-      const rect = el.getBoundingClientRect()
-      window.scrollTo({
-        top: scrollY + rect.top - innerHeight + rect.height * 0.15,
-        behavior: 'instant',
-      })
-    })
-  const leave = () =>
-    preview.evaluate((el) => {
-      const rect = el.getBoundingClientRect()
-      window.scrollTo({
-        top: scrollY + rect.bottom - rect.height * 0.15,
-        behavior: 'instant',
-      })
-    })
-  await enter()
-  await expect.poll(opacity).toBeGreaterThan(0.05)
-  await expect.poll(opacity).toBeLessThan(0.95)
-  await preview.evaluate((el) =>
-    el.scrollIntoView({ block: 'center', behavior: 'instant' }),
-  )
-  await expect.poll(opacity).toBeGreaterThan(0.95)
-  await leave()
-  await expect.poll(opacity).toBeGreaterThan(0.05)
-  await expect.poll(opacity).toBeLessThan(0.95)
-  await preview.evaluate((el) =>
-    window.scrollTo({
-      top: scrollY + el.getBoundingClientRect().bottom + 50,
-      behavior: 'instant',
-    }),
-  )
-  await expect.poll(opacity).toBeLessThan(0.05)
-  const ghost = page.locator('.home-cluster-ghost[data-kind="jobs"]')
-  await expect
-    .poll(() => ghost.evaluate((el) => Number(getComputedStyle(el).opacity)))
-    .toBeGreaterThan(0.015)
-  await expect
-    .poll(() => ghost.evaluate((el) => Number(getComputedStyle(el).opacity)))
-    .toBeLessThan(0.05)
-  await leave()
-  await expect.poll(opacity).toBeGreaterThan(0.05)
-  await expect.poll(opacity).toBeLessThan(0.95)
-  await preview.evaluate((el) =>
-    el.scrollIntoView({ block: 'center', behavior: 'instant' }),
-  )
-  await expect.poll(opacity).toBeGreaterThan(0.95)
-  await enter()
-  await expect.poll(opacity).toBeGreaterThan(0.05)
-  await expect.poll(opacity).toBeLessThan(0.95)
-})
-
-test('the smaller IT job UMAP floats without edge fading and respects reduced motion', async ({
-  page,
-}) => {
-  await page.goto('/')
-  await page
-    .locator('.home-work')
-    .evaluate((el) => el.scrollIntoView({ behavior: 'instant' }))
-  const preview = page.locator('.home-cluster-preview[data-kind="jobs"]')
-  await expect(preview).toHaveAttribute('data-ready', 'true')
-  await expect(preview.locator('canvas')).toHaveCount(1)
-  await expect(
-    page.locator('.home-cluster-ghost[data-kind="jobs"] canvas'),
-  ).toHaveCount(1)
-  await expect(preview.locator('canvas')).toHaveCSS(
-    'animation-name',
-    'home-job-cluster-float',
-  )
-  await expect(preview.locator('.home-cluster-space')).toHaveCSS(
-    'mask-image',
-    'none',
-  )
-  await page.mouse.move(1100, 250)
-  await expect(preview.locator('.home-cluster-space')).toHaveCSS(
-    'transform',
-    'none',
-  )
-  await page.emulateMedia({ reducedMotion: 'reduce' })
-  await expect(preview.locator('canvas')).toHaveCSS('animation-name', 'none')
-  await expect(preview.locator('.home-cluster-space')).toHaveCSS(
-    'animation-name',
-    'none',
-  )
-})
-
-test('only the IT job visualization remains faintly present in the background', async ({
-  page,
-}) => {
-  await page.goto('/')
-  await expect(
-    page.locator(
-      '.home-cluster-preview[data-kind="symbolic"], .home-cluster-ghost[data-kind="symbolic"]',
-    ),
-  ).toHaveCount(0)
-  for (const kind of ['jobs']) {
-    await expect(
-      page.locator(`.home-cluster-preview[data-kind="${kind}"]`),
-    ).toHaveAttribute('data-ready', 'true')
-    const background = page.locator(`.home-cluster-ghost[data-kind="${kind}"]`)
-    await expect(background).toHaveAttribute('aria-hidden', 'true')
-    await expect
-      .poll(() =>
-        background.evaluate((el) => Number(getComputedStyle(el).opacity)),
-      )
-      .toBeGreaterThan(0.015)
-    await expect
-      .poll(() =>
-        background.evaluate((el) => Number(getComputedStyle(el).opacity)),
-      )
-      .toBeLessThan(0.04)
-  }
-})
 
 test(
   'education presents thesis evidence and its technology stack',
@@ -257,71 +70,43 @@ test('experience and education stay aligned while scrolling', async ({
 })
 
 test(
-  'the intro eases scrolling and reveals navigation at projects',
+  'the start page is about Anton: the name, then contact, profile and one way on',
   { tag: '@mobile' },
-  async ({ page, isMobile }) => {
+  async ({ page }) => {
     await page.goto('/')
     await expect(page).toHaveTitle('ANTON ERNSTSSON DATA & AI')
-    const header = page.locator('.site-header')
-    await expect(header).not.toBeVisible()
-    await expect(header).toHaveAttribute('inert', '')
-    if (!isMobile) {
-      await page.mouse.wheel(0, 300)
-      await expect.poll(() => page.evaluate(() => scrollY)).toBeGreaterThan(200)
-      expect(await page.evaluate(() => scrollY)).toBeLessThan(300)
-      await expect.poll(() => page.evaluate(() => scrollY)).toBe(246)
-    }
-    const cta = page.locator('.home-cta-link')
-    await expect(page.locator('#start .home-cta-link')).toHaveCount(0)
-    await page.keyboard.press('End')
-    // The chart feed above the link loads as the reader nears it and can grow the page after
-    // one scroll (by 60,000 px on a slow CI runner), so every check scrolls to the link again.
-    await expect
-      .poll(async () => {
-        await cta.evaluate((el) => el.scrollIntoView({ behavior: 'instant' }))
-        return page.evaluate(
-          () => document.documentElement.scrollHeight - innerHeight - scrollY,
-        )
-      })
-      .toBeLessThan(2)
-    await expect(header).toBeVisible()
-    await expect(header).not.toHaveAttribute('inert', '')
-    await expect(page.locator('.home-group-title')).toHaveCount(0)
-    // The start page stands alone: the platform leads with its code, then three more
-    // repositories on GitHub and three research studies on this site.
-    await expect(
+    // No header, and nothing but the name on the first screen.
+    await expect(page.locator('.site-header')).toHaveCount(0)
+    await expect(page.locator('#start')).toHaveText('Anton Ernstsson')
+    const contact = page.locator('#kontakt')
+    await expect(contact).not.toBeInViewport()
+    await contact.scrollIntoViewIfNeeded()
+    await expect(contact.getByRole('link', { name: 'LinkedIn' })).toBeVisible()
+    await expect(contact.getByRole('link', { name: 'GitHub' })).toBeVisible()
+    await expect(contact.getByRole('button', { name: /View CV/ })).toBeVisible()
+    await expect(contact.locator('a[href^="mailto:"]')).toBeVisible()
+    // Contact, then About, then experience and education.
+    const top = (id: string) =>
       page
-        .locator('#platform .home-project-intro .home-flagship-links a')
-        .last(),
-    ).toHaveAttribute('href', 'https://github.com/korv9/anton-portfolio')
-    const repos = page.locator('.home-project-groups .work-card')
-    await expect(repos).toHaveCount(3)
-    await expect(repos.first()).toHaveAttribute(
-      'href',
-      'https://github.com/korv9/DrugComb-Synergy-Prediction',
-    )
+        .locator(`#${id}`)
+        .evaluate((el) => el.getBoundingClientRect().top + scrollY)
+    expect(await top('kontakt')).toBeLessThan(await top('om-mig'))
+    expect(await top('om-mig')).toBeLessThan(await top('erfarenhet'))
+    expect(await top('om-mig')).toBeLessThan(await top('utbildning'))
+    // No project content: the one link inside the page leads on to the projects hub.
     expect(
       await page
-        .locator('#research .work-card')
+        .locator('main a[href^="#"]')
         .evaluateAll((as) => as.map((a) => a.getAttribute('href'))),
-    ).toEqual([
-      '#philosophy-atlas',
-      '#symbolic-atlas',
-      '#concept-constellation',
-    ])
+    ).toEqual(['#projects'])
     await expect(
-      page.locator(
-        'main :not(#research *) > a[href^="#"]:not([href^="#om-mig"]):not([href="#start"]):not([href="#main"]):not([href="#jobs"])',
-      ),
+      page.locator('.work-card, .home-feed, .mean-post'),
     ).toHaveCount(0)
-    await expect
-      .poll(() =>
-        page
-          .locator('.home-backdrop')
-          .evaluate((el) => Number(getComputedStyle(el).opacity)),
-      )
-      .toBeLessThan(0.1)
-    await expect(cta).toHaveAttribute('href', 'https://github.com/korv9')
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth + 1,
+      ),
+    ).toBe(true)
   },
 )
 
@@ -397,19 +182,45 @@ test('home remains usable when the decorative debate map is unavailable', async 
   await expect(page.locator('#start nav')).toHaveCount(0)
 })
 
-test('the projects page lists every retained project', async ({ page }) => {
-  // Not linked from the published start page; local dev still opens it.
+test('the projects hub leads with the dashboard and the job search', async ({
+  page,
+}) => {
   await page.goto('/#projekt')
-  await expect(page).toHaveTitle('Projects | Anton Ernstsson')
-  await expect(page.locator('.projects-group')).toHaveCount(0)
-  // SWEDEN is featured above the list; the other projects follow.
+  await expect(page).toHaveURL(/#projects$/)
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Projects')
+  await expect(page.locator('.site-header')).toBeVisible()
+  // Every figure group names the file it was read from.
   await expect(
-    page.locator('.project-card-featured[href="#sweden"]'),
-  ).toHaveCount(1)
-  await expect(page.locator('.projects-list .project-card')).toHaveCount(7)
-  await expect(page.locator('.project-card[href="#politik"]')).toHaveCount(0)
-  await expect(page.locator('.project-card[href="#thesis"]')).toHaveCount(0)
-  await expect(page.locator('.project-card[href="#drugcomb"]')).toContainText(
-    'Drug Synergy Lab',
+    page.locator('.hub-kpis', { hasText: 'architecture/graph.json' }),
+  ).toBeVisible()
+  // Job search first, opening the job assistant.
+  await expect(page.locator('.hub-item-kicker').first()).toHaveText(
+    'Job search',
   )
+  await expect(page.locator('#projects-jobs a[href="#jobs"]')).toBeVisible()
+  const nav = page.getByRole('navigation', { name: 'Projects' })
+  for (const name of ['Job search', 'SWEDEN', 'Ask the law', 'Platform'])
+    await expect(nav.getByRole('link', { name, exact: true })).toBeVisible()
+  // The platform is a part of the hub; its old address leads there.
+  await page.goto('/#platform')
+  await expect(page).toHaveURL(/#projects-platform$/)
+  await expect(
+    page.getByRole('heading', { level: 2, name: 'The data platform' }),
+  ).toBeInViewport()
+})
+
+test('on a phone the hub sidebar folds into a menu', async ({ page }) => {
+  await page.setViewportSize({ width: 360, height: 740 })
+  await page.goto('/#projects')
+  const menu = page.locator('.hub-nav')
+  await expect(menu).not.toHaveAttribute('open')
+  const nav = page.getByRole('navigation', { name: 'Projects' })
+  await expect(nav).toBeHidden()
+  await menu.locator('summary').click()
+  await expect(nav.getByRole('link', { name: 'Job search' })).toBeVisible()
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth + 1,
+    ),
+  ).toBe(true)
 })

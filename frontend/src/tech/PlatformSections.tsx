@@ -1,6 +1,6 @@
 /**
- * The data platform on one page (#platform): what it does, its live status, the pipeline, Ask
- * the platform, 30 days of run health with the cause of each red run, the same pattern on
+ * The data platform, a part of the projects hub (#projects-platform): what it does, the pipeline,
+ * Ask the platform, 30 days of run health with the cause of each red run, the same pattern on
  * Microsoft Fabric (the DiVA lakehouse) and what each part maps to in another stack.
  *
  * Every number is read at load: the status strip from status/ingestion.json in object storage
@@ -20,12 +20,15 @@ import './tech.css'
 
 const BLOB = `https://github.com/${REPO}/blob/main`
 
-type Status = Record<string, Entry & { sources?: { source_key: string }[] }>
+type Status = Record<
+  string,
+  Entry & { sources?: { source_key: string; fetched_at?: string | null }[] }
+>
 
 /** Subject -> its fresh_within in hours, as freshness.ts mirrors platform/pipeline.yml. */
 const SLA = new Map(Object.values(SUBJECTS))
 
-function StatusStrip() {
+export function StatusStrip() {
   const [status, setStatus] = useState<Status | 'error' | null>(null)
   useEffect(() => {
     loadStatus().then((s) => setStatus((s as Status) ?? 'error'))
@@ -41,12 +44,18 @@ function StatusStrip() {
       </p>
     )
   const entries = Object.entries(status)
+  if (!entries.length) return null
   const [lastName, last] = entries.reduce((a, b) =>
     (b[1].recorded_at ?? '') > (a[1].recorded_at ?? '') ? b : a,
   )
   const passed = entries.filter(([, e]) => e.outcome === 'success').length
+  const failed = entries
+    .filter(([, e]) => e.outcome && e.outcome !== 'success')
+    .map(([name]) => name.replace(/_/g, ' '))
   const sources = new Set(
-    entries.flatMap(([, e]) => (e.sources ?? []).map((s) => s.source_key)),
+    entries.flatMap(([, e]) =>
+      (e.sources ?? []).filter((s) => s.fetched_at).map((s) => s.source_key),
+    ),
   )
   const timed = entries.filter(([name]) => SLA.has(name))
   const fresh = timed.filter(([name, e]) => {
@@ -76,22 +85,29 @@ function StatusStrip() {
           {num(passed)}/{num(entries.length)}
         </dd>
         <dd className="tech-meta">
-          {l('on their last run', 'vid senaste körningen')}
+          {l('each by its latest run', 'var och ett vid sin senaste körning')}
+          {failed.length > 0 &&
+            `; ${l('failed', 'föll')}: ${failed.join(', ')}`}
         </dd>
       </div>
       <div>
-        <dt>{l('Sources fetched', 'Hämtade källor')}</dt>
+        <dt>{l('Source feeds', 'Källflöden')}</dt>
         <dd>{num(sources.size)}</dd>
         <dd className="tech-meta">
           {l('with a fetch log', 'med hämtningslogg')}
         </dd>
       </div>
       <div>
-        <dt>{l('Fresh', 'Färska')}</dt>
+        <dt>{l('Within update limit', 'Inom uppdateringsgränsen')}</dt>
         <dd>
           {num(fresh)}/{num(timed.length)}
         </dd>
-        <dd className="tech-meta">{l('within their SLA', 'inom sin SLA')}</dd>
+        <dd className="tech-meta">
+          {l(
+            'subjects with a limit, from each last success',
+            'ämnen med en gräns, från varje senaste lyckade körning',
+          )}
+        </dd>
       </div>
     </dl>
   )
@@ -128,19 +144,25 @@ const STACK: [string, string, () => string][] = [
   ],
 ]
 
-export default function PlatformPage() {
+/** The platform's part of the hub; the hub's dashboard above it carries the status strip. */
+export default function PlatformSections() {
   const graph = useFile<Graph>('architecture/graph.json')
   return (
-    <article className="tech platform-page" id="platform">
-      <header className="tech-head">
-        <h1>{l('The data platform', 'Dataplattformen')}</h1>
+    <>
+      <section
+        className="platform-intro"
+        id="projects-platform"
+        aria-labelledby="projects-platform-title"
+      >
+        <h2 id="projects-platform-title">
+          {l('The data platform', 'Dataplattformen')}
+        </h2>
         <p>
           {l(
             'It fetches Swedish and EU public data on a schedule, keeps every raw file with its source and hash, builds and tests it with dbt in bronze, silver and gold, and releases it to Cloudflare R2 only when every check in the run has passed.',
             'Den hämtar svensk och europeisk offentlig data på schema, sparar varje råfil med källa och hash, bygger och testar den med dbt i bronze, silver och gold och släpper den till Cloudflare R2 först när alla kontroller i körningen har gått igenom.',
           )}
         </p>
-        <StatusStrip />
         <p className="tech-meta platform-links-inline">
           <a href={`${BLOB}/docs/case-studies/platform.md`}>
             {l('Case study', 'Fallstudie')}
@@ -152,12 +174,9 @@ export default function PlatformPage() {
           {' · '}
           <a href={`https://github.com/${REPO}`}>{l('Code', 'Kod')}</a>
         </p>
-      </header>
+      </section>
 
-      <section
-        id="platform-ask"
-        aria-label={l('Ask the platform', 'Fråga plattformen')}
-      >
+      <section id="platform-ask">
         <AskThePlatform ready />
       </section>
 
@@ -228,6 +247,6 @@ export default function PlatformPage() {
           </table>
         </div>
       </section>
-    </article>
+    </>
   )
 }

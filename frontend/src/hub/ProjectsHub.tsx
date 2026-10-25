@@ -1,10 +1,8 @@
 /**
- * The projects hub (#projekt): a live dashboard of the platform, a short word on each project,
- * then the platform's machinery to drill into. A sidebar lists every group; on a phone it folds
- * into a menu above the content.
- *
- * Every figure is read at load (schema/summary.json, status/ingestion.json, the CI runs on
- * GitHub); a figure that cannot be read is left out.
+ * The projects hub (#projects), one page for everything built on the platform: the dashboard,
+ * then each project with what it runs on, job search first, then the platform itself (PR #141's
+ * page) and its machinery to drill into. A sidebar lists the same parts; on a phone it folds into
+ * a menu above the content.
  */
 import { lazy, Suspense, useEffect, useState } from 'react'
 import { l } from '../i18n'
@@ -14,124 +12,75 @@ import {
   SUBJECTS,
   type Entry,
 } from '../meaning/freshness'
-import { ago, num, ok, reading, useFile } from '../tech/techData'
-import { loadWorkflows, type Run } from '../tech/WorkflowRuns'
-import { HUB_GROUPS } from './hubProjects'
+import PlatformSections from '../tech/PlatformSections'
+import type { Graph } from '../tech/PipelineTables'
+import { REPO, ago, num, ok, reading, useFile } from '../tech/techData'
+import Dashboard from './Dashboard'
+import { HUB_GROUPS, type HubItem } from './hubProjects'
 import '../tech/tech.css'
 import './hub.css'
 
 const Machinery = lazy(() => import('../tech/Machinery'))
 
-/** The latest finished CI run on main, or nothing when GitHub cannot be read. */
-function useCi() {
-  const [run, setRun] = useState<Run>()
-  useEffect(() => {
-    loadWorkflows().then(
-      (workflows) =>
-        setRun(
-          workflows
-            .find((w) => w.path.endsWith('/ci.yml'))
-            ?.runs.find(
-              (r) => r.head_branch === 'main' && r.status === 'completed',
-            ),
-        ),
-      () => undefined,
-    )
-  }, [])
-  return run
+const STACK =
+  'Python · dbt · DuckDB · GitHub Actions · Cloudflare R2 · TypeScript · React'
+
+type Domain = { id: string; counts: Record<string, number> }
+
+/** What a project runs on: its sources, models and ML stages, and whether its data is fresh. */
+function RunsOn(props: {
+  item: HubItem
+  domains: Domain[]
+  status: Record<string, Entry> | null
+}) {
+  const counts = props.domains.find((d) => d.id === props.item.domain)?.counts
+  const key = props.item.fresh
+  const fresh = key ? freshness(props.status, key) : undefined
+  const sla = key ? SUBJECTS[key]?.[1] : undefined
+  const count = (n: number | undefined, one: string, many: string) =>
+    n ? `${num(n)} ${n === 1 ? one : many}` : null
+  const limit = sla && (sla >= 48 ? `${sla / 24} d` : `${sla} h`)
+  const what = props.item.data
+    ? l(props.item.data.en, props.item.data.sv)
+    : l('data', 'datan')
+  const run = props.item.run ? props.status?.[props.item.run] : undefined
+  const parts = [
+    count(counts?.sources, l('source', 'källa'), l('sources', 'källor')),
+    count(
+      counts?.models,
+      l('dbt model', 'dbt-modell'),
+      l('dbt models', 'dbt-modeller'),
+    ),
+    count(counts?.ml, l('ML stage', 'ML-steg'), l('ML stages', 'ML-steg')),
+    fresh !== undefined &&
+      (fresh
+        ? l(
+            `${what} updated within its ${limit} limit`,
+            `${what} uppdaterad inom sin gräns på ${limit}`,
+          )
+        : l(
+            `${what} older than its ${limit} limit`,
+            `${what} äldre än sin gräns på ${limit}`,
+          )),
+    run?.outcome &&
+      run.outcome !== 'success' &&
+      run.recorded_at &&
+      l(
+        `last run failed ${ago(run.recorded_at)}`,
+        `senaste körningen föll ${ago(run.recorded_at)}`,
+      ),
+  ].filter(Boolean)
+  return parts.length ? (
+    <span className="hub-item-runs">{parts.join(' · ')}</span>
+  ) : null
 }
 
-function useStatus() {
-  const [status, setStatus] = useState<Record<string, Entry> | null>(null)
-  useEffect(() => {
-    loadStatus().then(setStatus)
-  }, [])
-  return status
-}
-
-function Figure(props: { label: string; value: string; note?: string }) {
-  return (
-    <div>
-      <dt>{props.label}</dt>
-      <dd>{props.value}</dd>
-      {props.note && <dd className="tech-meta">{props.note}</dd>}
-    </div>
-  )
-}
-
-function Dashboard() {
-  const summary = useFile<Record<string, number>>('schema/summary.json')
-  const status = useStatus()
-  const ci = useCi()
-  const entries = Object.values(status ?? {})
-  const last = entries
-    .filter((e) => e.recorded_at)
-    .sort((a, b) => b.recorded_at!.localeCompare(a.recorded_at!))[0]
-  const known = Object.keys(SUBJECTS)
-    .map((domain) => freshness(status, domain))
-    .filter((f) => f !== undefined)
-  const counts: [string, number | undefined][] = ok(summary)
-    ? [
-        [l('dbt models', 'dbt-modeller'), summary.models],
-        [l('dbt tests', 'dbt-tester'), summary.tests],
-        [l('dbt source tables', 'dbt-källtabeller'), summary.sources],
-        [l('Rows in the warehouse', 'Rader i lagret'), summary.rows],
-      ]
-    : []
-  return (
-    <section id="projekt-overview" aria-labelledby="projekt-overview-title">
-      <h2 id="projekt-overview-title">
-        {l('The platform now', 'Plattformen nu')}
-      </h2>
-      {summary === null && reading}
-      <dl className="tech-figures hub-figures">
-        {counts.map(
-          ([label, n]) =>
-            typeof n === 'number' && (
-              <Figure key={label} label={label} value={num(n)} />
-            ),
-        )}
-        {last?.recorded_at && (
-          <Figure
-            label={l('Last pipeline run', 'Senaste pipelinekörning')}
-            value={ago(last.recorded_at)}
-            note={
-              last.outcome === 'success'
-                ? l('passed', 'gick igenom')
-                : l('failed', 'föll')
-            }
-          />
-        )}
-        {known.length > 0 && (
-          <Figure
-            label={l('Fresh subjects', 'Färska ämnen')}
-            value={`${known.filter(Boolean).length}/${known.length}`}
-            note={l('within their SLA', 'inom sin SLA')}
-          />
-        )}
-        {ci && (
-          <Figure
-            label={l('CI on main', 'CI på main')}
-            value={
-              ci.conclusion === 'success'
-                ? l('Passing', 'Grön')
-                : l('Failing', 'Röd')
-            }
-            note={ago(ci.updated_at)}
-          />
-        )}
-      </dl>
-    </section>
-  )
-}
-
-const WIDE = '(min-width: 961px)'
-
-/** Every group of the hub; open beside the content on a wide screen, a menu on a phone. */
+/** Every part of the hub; beside the content on a wide screen, a menu above it on a phone. */
 function Sidebar() {
-  const [open, setOpen] = useState(() => matchMedia(WIDE).matches)
+  const wide = '(min-width: 961px)'
+  const [open, setOpen] = useState(() => matchMedia(wide).matches)
   useEffect(() => {
-    const query = matchMedia(WIDE)
+    const query = matchMedia(wide)
     const update = () => setOpen(query.matches)
     query.addEventListener('change', update)
     return () => query.removeEventListener('change', update)
@@ -144,79 +93,141 @@ function Sidebar() {
     >
       <summary>{l('All projects', 'Alla projekt')}</summary>
       <nav aria-label={l('Projects', 'Projekt')}>
-        <a href="#projekt-overview">{l('Overview', 'Översikt')}</a>
+        <a href="#projects-overview">{l('Overview', 'Översikt')}</a>
         {HUB_GROUPS.map((group) => (
-          <a key={group.id} href={`#projekt-${group.id}`}>
+          <a key={group.id} href={`#projects-${group.id}`}>
             {l(group.title.en, group.title.sv)}
           </a>
         ))}
-        <a href="#tech-pipeline">
-          {l('Inside the platform', 'Inuti plattformen')}
-        </a>
+        <a href="#projects-platform">{l('Platform', 'Plattformen')}</a>
+        <ul>
+          <li>
+            <a href="#platform-pipeline">{l('Pipeline', 'Pipeline')}</a>
+          </li>
+          <li>
+            <a href="#platform-health">{l('Run health', 'Körhälsa')}</a>
+          </li>
+          <li>
+            <a href="#tech-stages">{l('Lineage', 'Härkomst')}</a>
+          </li>
+          <li>
+            <a href="#tech-quality">
+              {l('Tests and quality', 'Tester och kvalitet')}
+            </a>
+          </li>
+          <li>
+            <a href="#tech-er">{l('Data model', 'Datamodell')}</a>
+          </li>
+          <li>
+            <a href={`https://github.com/${REPO}/tree/main/docs/incidents`}>
+              {l('Incidents', 'Incidenter')} <span aria-hidden="true">↗</span>
+            </a>
+          </li>
+        </ul>
       </nav>
     </details>
   )
 }
 
 export default function ProjectsHub({ path }: { path: string }) {
-  // An address inside the hub (#projekt-jobs, #tech-er) scrolls to its section; the machinery
-  // loads lazily, so its sections are looked for over a few frames.
+  const graph = useFile<Graph & { domains: Domain[] }>(
+    'architecture/graph.json',
+  )
+  const [status, setStatus] = useState<Record<string, Entry> | null>(null)
   useEffect(() => {
-    if (path === '#projekt') return
-    let tries = 0
-    let frame = 0
-    const find = () => {
-      const target = document.getElementById(path.slice(1))
-      if (target) target.scrollIntoView({ block: 'start' })
-      else if (tries++ < 120) frame = requestAnimationFrame(find)
+    loadStatus().then(setStatus)
+  }, [])
+  // An address inside the hub (#projects-jobs, #tech-er) scrolls to its section. The parts above
+  // it fill in as their data arrives, so the section is kept in place while the page settles,
+  // until the reader scrolls or after four seconds.
+  useEffect(() => {
+    if (path === '#projects') return
+    const keep = () =>
+      document.getElementById(path.slice(1))?.scrollIntoView({ block: 'start' })
+    const observer = new ResizeObserver(keep)
+    observer.observe(document.body)
+    const stop = () => observer.disconnect()
+    const timer = setTimeout(stop, 4000)
+    const events = ['wheel', 'touchstart', 'keydown'] as const
+    for (const e of events) addEventListener(e, stop, { once: true })
+    return () => {
+      stop()
+      clearTimeout(timer)
+      for (const e of events) removeEventListener(e, stop)
     }
-    frame = requestAnimationFrame(find)
-    return () => cancelAnimationFrame(frame)
   }, [path])
+  const domains = ok(graph) ? graph.domains : []
+  // The projects that run on the platform, job search first; then the others.
+  const platform = {
+    id: 'projects-work',
+    title: l('Running on the platform', 'Körs på plattformen'),
+    groups: HUB_GROUPS.filter((g) => g.id !== 'other'),
+  }
+  const other = {
+    id: 'projects-other',
+    title: l('Other projects', 'Övriga projekt'),
+    groups: HUB_GROUPS.filter((g) => g.id === 'other'),
+  }
   return (
     <div className="hub">
       <Sidebar />
-      <article className="tech projects-page" id="projekt">
+      <article className="tech hub-main" id="projects">
         <header className="tech-head">
           <h1>{l('Projects', 'Projekt')}</h1>
           <p>
             {l(
-              'Most of these projects run on one data platform I built: public sources fetched on a schedule, built and tested with dbt, passed through machine learning where the data is text, and published to the pages.',
-              'De flesta av projekten körs på en dataplattform jag har byggt: offentliga källor som hämtas på schema, byggs och testas med dbt, går genom maskininlärning där datan är text och publiceras till sidorna.',
+              'The projects under Running on the platform run on one data platform I built: public sources fetched on a schedule, modelled and tested with dbt, passed through machine learning where the data is text, and published to these pages only when every blocking check has passed.',
+              'Projekten under Körs på plattformen körs på en dataplattform jag har byggt: offentliga källor som hämtas på schema, modelleras och testas med dbt, går genom maskininlärning där datan är text och publiceras till sidorna först när alla blockerande kontroller har gått igenom.',
             )}
           </p>
+          <p className="hub-stack">{STACK}</p>
         </header>
         <Dashboard />
-        {HUB_GROUPS.map((group, i) => (
+        {[platform, other].map((part) => (
           <section
-            key={group.id}
-            id={`projekt-${group.id}`}
+            key={part.id}
+            id={part.id}
             className="hub-group"
-            data-lead={i === 0 || undefined}
-            aria-labelledby={`projekt-${group.id}-title`}
+            aria-labelledby={`${part.id}-title`}
           >
-            <h2 id={`projekt-${group.id}-title`}>
-              {l(group.title.en, group.title.sv)}
-            </h2>
+            <h2 id={`${part.id}-title`}>{part.title}</h2>
             <ul className="hub-items">
-              {group.items.map((item) => (
-                <li key={item.id}>
-                  <a className="hub-item" href={item.href}>
-                    <span className="hub-item-title">
-                      {l(item.title.en, item.title.sv)}
-                      {item.href.startsWith('http') && (
-                        <span aria-hidden="true"> ↗</span>
-                      )}
-                    </span>
-                    <span className="hub-item-text">
-                      {l(item.text.en, item.text.sv)}
-                    </span>
-                  </a>
-                </li>
-              ))}
+              {part.groups.flatMap((group) =>
+                group.items.map((item, i) => (
+                  <li
+                    key={item.id}
+                    id={
+                      part === platform && i === 0
+                        ? `projects-${group.id}`
+                        : undefined
+                    }
+                    data-lead={group.id === 'jobs' || undefined}
+                  >
+                    <a className="hub-item" href={item.href}>
+                      {part === platform &&
+                        group.title.en !== item.title.en && (
+                          <span className="hub-item-kicker">
+                            {l(group.title.en, group.title.sv)}
+                          </span>
+                        )}
+                      <span className="hub-item-title">
+                        {l(item.title.en, item.title.sv)}
+                        {item.href.startsWith('http') && (
+                          <span aria-hidden="true"> ↗</span>
+                        )}
+                      </span>
+                      <span className="hub-item-text">
+                        {l(item.text.en, item.text.sv)}
+                      </span>
+                      <RunsOn item={item} domains={domains} status={status} />
+                    </a>
+                  </li>
+                )),
+              )}
             </ul>
           </section>
         ))}
+        <PlatformSections />
         <Suspense fallback={reading}>
           <Machinery />
         </Suspense>

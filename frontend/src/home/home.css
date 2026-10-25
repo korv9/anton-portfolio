@@ -304,10 +304,18 @@
   align-items: center;
   margin: 0;
 }
-.home-contact .home-links a {
+.home-contact .home-links :is(a, button) {
   display: inline-flex;
+  min-width: 0;
   align-items: center;
   min-height: 44px;
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+/* The contact line follows the name closely; the name's screen already gives it room. */
+.home-screen.home-contact {
+  padding-block: 0;
 }
 
 @supports (animation-timeline: scroll()) {

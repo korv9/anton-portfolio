@@ -1,6 +1,6 @@
 /**
- * The platform's machinery, the drill-down at the end of the projects hub (#projekt): how the
- * pipeline works, each project stage by stage, the scheduled runs and fetches, quality checks
+ * The platform's machinery, the drill-down at the end of the projects hub (#projects): each
+ * project stage by stage, the scheduled runs and fetches, quality checks
  * and delivery, the data model (an ER diagram per subject and every table with its columns),
  * and every cluster map.
  *
@@ -12,7 +12,6 @@ import { Suspense, lazy, useEffect, useState } from 'react'
 import { deliveryState } from '../dataSource'
 import { l } from '../i18n'
 import ErDiagram from './ErDiagram'
-import PipelineTour from './PipelineTour'
 import type { ErModel } from './erLayout'
 import { useFile, ok, day, unread, reading } from './techData'
 import { Runs } from './WorkflowRuns'
@@ -44,21 +43,6 @@ export default function Machinery() {
     d === null ? reading : d === 'error' ? unread : body()
   return (
     <>
-      <section id="tech-pipeline" aria-labelledby="tech-pipeline-title">
-        <h2 id="tech-pipeline-title">
-          {l('How the pipeline works', 'Så fungerar pipelinen')}
-        </h2>
-        <p className="tech-note">
-          {l(
-            'Seven steps from a public source to a page. Choose a step to see what it does and what it holds; the numbers are counted from the code and the dbt project.',
-            'Sju steg från en offentlig källa till en sida. Välj ett steg för att se vad det gör och vad det rymmer; siffrorna räknas fram ur koden och dbt-projektet.',
-          )}
-        </p>
-        {part(graph, () => (
-          <PipelineTour nodes={(graph as Graph).nodes} />
-        ))}
-      </section>
-
       <section id="tech-stages" aria-labelledby="tech-stages-title">
         <h2 id="tech-stages-title">
           {l('Each project, stage by stage', 'Varje projekt, steg för steg')}

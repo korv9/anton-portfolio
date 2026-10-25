@@ -83,11 +83,14 @@ test.beforeEach(async ({ page }) => {
   )
 })
 
-test('the platform page shows live status, run health, the Fabric lakehouse and the stack map', async ({
+test('the hub shows the platform: live status, run health, the Fabric lakehouse and the stack map', async ({
   page,
 }) => {
   await page.goto('/#platform')
-  await expect(page.locator('main h1')).toHaveText('The data platform')
+  await expect(page).toHaveURL(/#projects-platform$/)
+  await expect(
+    page.getByRole('heading', { level: 2, name: 'The data platform' }),
+  ).toBeVisible()
   const status = page.getByTestId('platform-status')
   await expect(status).toContainText('3 h ago')
   await expect(status).toContainText('1/2')
@@ -111,15 +114,12 @@ test('the platform page shows live status, run health, the Fabric lakehouse and 
   await expect(page.locator('#platform-stack tbody tr')).toHaveCount(4)
 })
 
-for (const old of ['#ask-platform', '#diva-lakehouse'])
-  test(`${old} leads to the platform page`, async ({ page }) => {
+for (const [old, section] of [
+  ['#ask-platform', '#platform-ask'],
+  ['#diva-lakehouse', '#platform-fabric'],
+])
+  test(`${old} leads to its section of the projects hub`, async ({ page }) => {
     await page.goto(`/${old}`)
-    await expect(page).toHaveURL(/#platform$/)
-    await expect(page.locator('main h1')).toHaveText('The data platform')
+    await expect(page).toHaveURL(new RegExp(`${section}$`))
+    await expect(page.locator(section)).toBeInViewport()
   })
-
-test('the projects page links to the platform page', async ({ page }) => {
-  await page.goto('/#projekt')
-  await page.getByRole('link', { name: 'The platform on one page' }).click()
-  await expect(page).toHaveURL(/#platform$/)
-})

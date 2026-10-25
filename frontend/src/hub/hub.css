@@ -12,6 +12,10 @@
 .hub .tech {
   padding-inline: 0;
 }
+/* Quiet rules between the hub's sections, so the job search's bar is the one heavy mark. */
+.hub-main > section {
+  border-top: 1px solid var(--line-strong);
+}
 
 /* ---------- Sidebar ---------- */
 .hub-nav {
@@ -39,6 +43,15 @@
   font-weight: 600;
   text-decoration: none;
 }
+.hub-nav ul {
+  margin: 0 0 var(--sp-2);
+  padding: 0 0 0 var(--sp-4);
+  list-style: none;
+}
+.hub-nav ul a {
+  min-height: 36px;
+  font-weight: 500;
+}
 .hub-nav a:hover {
   color: var(--ink);
 }
@@ -48,18 +61,47 @@
   outline-offset: 3px;
 }
 
-/* ---------- Dashboard ---------- */
-.hub-figures {
-  row-gap: var(--sp-5);
+/* ---------- Header and dashboard ---------- */
+.hub-stack {
+  font-family: var(--font-mono);
+  font-size: var(--small);
+  letter-spacing: 0.01em;
 }
-.hub-figures dd {
+/* Four small groups of figures, each closed by the file it was read from. */
+.hub-dashboard {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+  gap: var(--sp-6) var(--sp-6);
+}
+.hub-kpis {
+  display: grid;
+  align-content: start;
+  gap: var(--sp-3);
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--line);
+}
+.hub-kpis h3 {
+  margin: 0;
+}
+.hub-kpis .tech-figures {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(min-content, 1fr));
+  gap: var(--sp-4) var(--sp-6);
+}
+.hub-kpis .tech-figures dd.tech-meta,
+.hub-kpis .tech-figures dd + dd {
+  font-family: var(--font-meta);
+  font-size: var(--caption);
+  font-weight: 400;
+  letter-spacing: 0;
+}
+.hub-kpis .tech-figures dd:not(.tech-meta) {
+  white-space: nowrap;
+  font-family: var(--font-mono);
   font-size: var(--type-metric);
   font-variant-numeric: tabular-nums;
-  letter-spacing: -0.03em;
-}
-.hub-figures dd.tech-meta {
-  font-size: var(--caption);
-  letter-spacing: 0;
+  font-weight: 500;
+  letter-spacing: -0.02em;
 }
 
 /* ---------- Groups ---------- */
@@ -73,6 +115,7 @@
 }
 .hub-item {
   display: grid;
+  align-content: start;
   gap: var(--sp-2);
   height: 100%;
   padding-top: var(--sp-3);
@@ -92,26 +135,43 @@
 .hub-item:is(:hover, :focus-visible) .hub-item-title {
   text-decoration-color: currentColor;
 }
+.hub-item-runs {
+  color: var(--ink-faded);
+  font-family: var(--font-mono);
+  font-size: var(--caption);
+  font-variant-numeric: tabular-nums;
+}
 .hub-item-text {
   max-width: var(--layout-reading);
   color: var(--ink-faded);
   line-height: 1.55;
 }
 /* The job search leads the hub: one wide entry in the identity ink, the page's one accent. */
-.hub-group[data-lead] .hub-items {
-  grid-template-columns: minmax(0, 1fr);
+.hub-items > li {
+  scroll-margin-top: calc(var(--header-h, 4rem) + var(--sp-5));
 }
-.hub-group[data-lead] .hub-item {
+.hub-items > li[data-lead] {
+  grid-column: 1 / -1;
+}
+li[data-lead] .hub-item {
   padding: var(--sp-5) 0 var(--sp-5) var(--sp-5);
   border-top: 0;
   border-left: 3px solid var(--ink-identity);
 }
-.hub-group[data-lead] .hub-item-title {
+li[data-lead] .hub-item-title {
   color: var(--ink-identity);
   font-size: var(--h2);
 }
-.hub-group[data-lead] .hub-item-text {
+li[data-lead] .hub-item-text {
   font-size: var(--body-large);
+}
+.hub-item-kicker {
+  color: var(--ink-faded);
+  font-family: var(--font-meta);
+  font-size: var(--caption);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 /* ---------- Phone: the sidebar folds into a menu above the content ---------- */

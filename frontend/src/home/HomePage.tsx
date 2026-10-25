@@ -1,6 +1,6 @@
 /**
  * The start page, about Anton for a recruiter: the name alone on the first screen, then contact,
- * About, experience and education, and one way on to the projects (#projekt).
+ * About, experience and education, and one way on to the projects (#projects).
  */
 import { useEffect } from 'react'
 import { profile } from '../content'
@@ -180,7 +180,7 @@ export default function HomePage({ path }: { path: string }) {
       <Contact />
       <Profile />
       <footer className="home-cta">
-        <a className="home-cta-link" href="#projekt">
+        <a className="home-cta-link" href="#projects">
           {l('Projects', 'Projekt')} <span aria-hidden="true">→</span>
         </a>
       </footer>
