@@ -6,12 +6,11 @@
  * the rail. A figure whose file cannot be read, or that has no date, is left out.
  */
 import { useEffect, useState, type ReactNode } from 'react'
-import { deliveryState } from '../dataSource'
 import { l } from '../i18n'
 import type { Graph } from '../tech/PipelineTables'
 import { REPO, ago, day, num, ok, useFile } from '../tech/techData'
 import { loadWorkflows, type Run } from '../tech/WorkflowRuns'
-import { useStatus, type Summary } from './Headline'
+import { useDbtSize, useStatus } from './Headline'
 import { HUB_GROUPS } from './hubProjects'
 
 type Quality = {
@@ -65,17 +64,10 @@ const plural = (n: number, [one, many]: [string, string]) =>
 
 export default function PlatformFlow() {
   const graph = useFile<Graph>('architecture/graph.json')
-  const summary = useFile<Summary>('schema/summary.json')
   const quality = useFile<Quality>('quality/summary.json')
   const status = useStatus()
   const ci = useCi()
-  const [release, setRelease] = useState<string>()
-  useEffect(() => {
-    deliveryState().then(
-      (d) => setRelease(d.activatedAt ?? undefined),
-      () => undefined,
-    )
-  }, [])
+  const { size, at: sizeAt, release } = useDbtSize()
   const [chosen, setChosen] = useState(PROJECTS[0]?.id)
   const project = PROJECTS.find((p) => p.id === chosen)
   const counts = ok(graph)
@@ -84,9 +76,6 @@ export default function PlatformFlow() {
   const typed = (...types: string[]) =>
     ok(graph) ? graph.nodes.filter((n) => types.includes(n.type)).length : 0
   const g = ok(graph)
-  // The dbt project's size is shown only with a date: its own, or the release it came in.
-  const sizeAt = ok(summary) ? (summary.generated_at ?? release) : undefined
-  const size = ok(summary) && sizeAt ? summary : undefined
   const checks = ok(quality) ? quality.run.check_statuses : {}
   const measured = ok(quality)
     ? quality.run.checks -
@@ -322,12 +311,14 @@ export default function PlatformFlow() {
                     {`${name}: `}
                     {!isUsed
                       ? l('not used', 'används inte')
-                      : own > 0
-                        ? plural(own, step.unit)
-                        : l(
-                            'through other subjects’ data',
-                            'genom andra ämnens data',
-                          )}
+                      : step.id === 'tests'
+                        ? l('its models are tested', 'dess modeller testas')
+                        : own > 0
+                          ? plural(own, step.unit)
+                          : l(
+                              'through other subjects’ data',
+                              'genom andra ämnens data',
+                            )}
                   </p>
                 )}
                 <a

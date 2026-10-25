@@ -46,7 +46,11 @@ function RunsOn(props: {
     : l('data', 'datan')
   const run = props.item.run ? props.status?.[props.item.run] : undefined
   const parts = [
-    count(counts?.sources, l('source', 'källa'), l('sources', 'källor')),
+    count(
+      counts?.sources,
+      l('publisher', 'utgivare'),
+      l('publishers', 'utgivare'),
+    ),
     count(
       counts?.models,
       l('dbt model', 'dbt-modell'),
@@ -95,7 +99,7 @@ function Sidebar() {
       <summary>{l('All projects', 'Alla projekt')}</summary>
       <nav aria-label={l('Projects', 'Projekt')}>
         <a href="#projects-overview">{l('Overview', 'Översikt')}</a>
-        {HUB_GROUPS.map((group) => (
+        {HUB_GROUPS.filter((g) => g.id !== 'other').map((group) => (
           <a key={group.id} href={`#projects-${group.id}`}>
             {l(group.title.en, group.title.sv)}
           </a>
@@ -103,6 +107,7 @@ function Sidebar() {
         <a href="#projects-flow">
           {l('How the platform is built', 'Så är plattformen byggd')}
         </a>
+        <a href="#projects-other">{l('Other projects', 'Övriga projekt')}</a>
         <a href="#projects-platform">{l('Platform', 'Plattformen')}</a>
         <ul>
           <li>

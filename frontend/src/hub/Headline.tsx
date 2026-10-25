@@ -1,9 +1,10 @@
 /**
  * The hub's headline: four figures on one line, the size of the dbt project and the newest run,
- * with the files they come from under them. The full picture is the flow further down
- * (PlatformFlow.tsx). A figure whose file cannot be read is left out.
+ * with the files they come from and their dates under them. The full picture is the flow further
+ * down (PlatformFlow.tsx). A figure whose file cannot be read, or that has no date, is left out.
  */
 import { useEffect, useState } from 'react'
+import { deliveryState } from '../dataSource'
 import { l } from '../i18n'
 import { loadStatus } from '../meaning/freshness'
 import { ago, day, num, ok, useFile } from '../tech/techData'
@@ -26,15 +27,38 @@ export function useStatus() {
   return status
 }
 
-export default function Headline() {
+/** The time the active R2 release was published, once the delivery manifest is read. */
+export function useRelease() {
+  const [release, setRelease] = useState<string>()
+  useEffect(() => {
+    deliveryState().then(
+      (d) => setRelease(d.activatedAt ?? undefined),
+      () => undefined,
+    )
+  }, [])
+  return release
+}
+
+/**
+ * The dbt project's size with its date: the file's own generated_at, or the release it came in.
+ * Without either the figures are left out, as an undated count is.
+ */
+export function useDbtSize() {
   const summary = useFile<Summary>('schema/summary.json')
+  const release = useRelease()
+  const at = ok(summary) ? (summary.generated_at ?? release) : undefined
+  return ok(summary) && at ? { size: summary, at, release } : { release }
+}
+
+export default function Headline() {
+  const { size, at } = useDbtSize()
   const status = useStatus()
   const figures: [string, string][] = []
-  if (ok(summary))
+  if (size)
     figures.push(
-      [l('dbt models', 'dbt-modeller'), num(summary.models)],
-      [l('dbt tests', 'dbt-tester'), num(summary.tests)],
-      [l('Source tables', 'Källtabeller'), num(summary.sources)],
+      [l('dbt models', 'dbt-modeller'), num(size.models)],
+      [l('dbt tests', 'dbt-tester'), num(size.tests)],
+      [l('dbt source tables', 'dbt-källtabeller'), num(size.sources)],
     )
   if (status)
     figures.push([
@@ -43,8 +67,9 @@ export default function Headline() {
     ])
   if (!figures.length) return null
   const files = [
-    ok(summary) &&
-      `schema/summary.json${summary.generated_at ? ` · ${day(summary.generated_at)} UTC` : ''}`,
+    size &&
+      at &&
+      `schema/summary.json · ${size.generated_at ? l('built', 'byggd') : l('in the release of', 'i releasen från')} ${day(at)} UTC`,
     status && `status/ingestion.json · ${day(status.last.recorded_at)} UTC`,
   ].filter(Boolean)
   return (

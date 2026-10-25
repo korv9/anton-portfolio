@@ -87,7 +87,7 @@
 /* The page name large on the left, the intro set against it on the right. */
 .hub-head {
   grid-template-columns: minmax(0, 1fr) minmax(0, 30rem);
-  align-items: end;
+  align-items: start;
   column-gap: var(--sp-7);
   padding-top: var(--sp-5);
 }
@@ -119,7 +119,7 @@
   align-items: center;
   gap: 0.4em;
   min-height: 44px;
-  color: var(--focal);
+  color: var(--ink);
   font-weight: 650;
   text-underline-offset: 0.25em;
 }
@@ -190,8 +190,7 @@
   min-height: 44px;
 }
 .hub-flow-pick button[aria-pressed='true'] {
-  color: var(--focal);
-  text-decoration-color: var(--focal);
+  color: var(--ink);
 }
 .hub-flow-summary {
   margin: 0;
