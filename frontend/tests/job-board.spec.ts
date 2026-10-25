@@ -5,8 +5,13 @@ import { jobAssistantFixture } from './fixtures/job-assistant'
 
 const shots = process.env.JOBS_SCREENSHOTS
 
-async function board(page: Page, hash = '#jobs') {
-  const f = jobAssistantFixture()
+type Fixture = ReturnType<typeof jobAssistantFixture>
+
+async function board(
+  page: Page,
+  hash = '#jobs',
+  f: Fixture = jobAssistantFixture(),
+) {
   // The committed delivery reads job-assistant/ from R2; these fixtures stand in for it locally.
   await page.route('**/data/delivery.json', async (route) => {
     const { live: _, ...local } = await (await route.fetch()).json()
@@ -116,4 +121,37 @@ test('on a phone the ad replaces the list and the back button returns to it', as
     () => document.documentElement.scrollWidth > window.innerWidth,
   )
   expect(overflow).toBe(false)
+})
+
+test('without a profile the board lists the open ads under the real reason, with no classes or filters', async ({
+  page,
+}) => {
+  const f = jobAssistantFixture()
+  const at = '2026-10-25T11:13:24+00:00'
+  const unmatched = {
+    ...f,
+    matches: {
+      ...f.matches,
+      profile: null,
+      status: {
+        skipped: { reason: 'profile route answered 403', status: 403, at },
+      },
+      matches: [],
+    },
+    texts: { ...f.texts, texts: {} },
+  }
+  await board(page, '#jobs', unmatched as unknown as Fixture)
+  await expect(page.locator('.ja-empty')).toContainText(
+    'the profile could not be read at 2026-10-25 11:13 UTC (the route answered 403)',
+  )
+  await expect(page.locator('.ja-empty')).not.toContainText('starts when')
+  await expect(page.locator('.ja-results-head')).toContainText(
+    `${f.ads.ads.length} open ads`,
+  )
+  await expect(page.locator('.ja-card')).toHaveCount(20)
+  await expect(page.locator('.ja-badge')).toHaveCount(0)
+  await expect(
+    page.getByRole('searchbox', { name: /Search jobs/ }),
+  ).toHaveCount(0)
+  await expect(page.locator('.ja-stats')).toContainText('Strong matches0')
 })

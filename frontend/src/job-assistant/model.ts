@@ -100,7 +100,12 @@ export type Delivered = {
     runs: { day: string; runs: number; runs_ok: number; runs_failed: number }[]
     ads: Ad[]
   }
-  matches: { profile: Profile | null; matches: Match[] }
+  matches: {
+    profile: Profile | null
+    /** rank.py's note on the profile route (platform/job_assistant/export_matches.py). */
+    status?: { skipped?: RouteNote; kept?: RouteNote }
+    matches: Match[]
+  }
   texts: {
     texts: Record<string, { description: string; contact_redactions: number }>
   }
@@ -201,4 +206,50 @@ export const ROLE_NAMES: Record<string, [string, string]> = {
   fullstack: ['Full stack', 'Fullstack'],
   frontend: ['Frontend', 'Frontend'],
   other: ['Other', 'Annat'],
+}
+
+/** Why rank.py matched nothing or kept the last matches: the reason, the HTTP status (null when unreachable), when. */
+export type RouteNote = { reason: string; status: number | null; at: string }
+
+const utc = (at: string) => `${at.slice(0, 10)} ${at.slice(11, 16)} UTC`
+
+/**
+ * What the board says when nothing is matched, as [English, Swedish]. Only a 200 without an
+ * approved profile means the profile is still to be approved; a blocked or failing route says so.
+ */
+export function unmatchedNote(n?: RouteNote): [string, string] {
+  if (n?.status === 200)
+    return [
+      'Matching starts when the CV profile is approved.',
+      'Matchningen börjar när cv-profilen är godkänd.',
+    ]
+  if (n?.status === 503)
+    return [
+      'Nothing is matched yet: the profile store is not set up, so there is no approved profile.',
+      'Inget är matchat än: profillagret är inte uppsatt, så det finns ingen godkänd profil.',
+    ]
+  if (n)
+    return n.status == null
+      ? [
+          `Nothing is matched: the profile could not be reached at ${utc(n.at)}.`,
+          `Inget är matchat: profilen gick inte att nå ${utc(n.at)}.`,
+        ]
+      : [
+          `Nothing is matched: the profile could not be read at ${utc(n.at)} (the route answered ${n.status}).`,
+          `Inget är matchat: profilen gick inte att läsa ${utc(n.at)} (svaret var ${n.status}).`,
+        ]
+  return [
+    'Nothing is matched: no approved profile was read.',
+    'Inget är matchat: ingen godkänd profil lästes.',
+  ]
+}
+
+/** The notice when the last matches stand because the profile route could not be read. */
+export function keptNote(n: RouteNote): [string, string] {
+  const why = n.status == null ? 'could not be reached' : `answered ${n.status}`
+  const varfor = n.status == null ? 'gick inte att nå' : `svarade ${n.status}`
+  return [
+    `The profile route ${why} at ${utc(n.at)}, so these are the matches of the last run that read it.`,
+    `Profilen ${varfor} ${utc(n.at)}, så det här är matchningarna från den senaste körningen som läste den.`,
+  ]
 }

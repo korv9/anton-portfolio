@@ -28,8 +28,13 @@ from match import ENGINE, LISTED, match, order  # noqa: E402
 API = os.environ.get("JOB_ASSIST_API", "https://antonernstsson.com/api/jobs")
 
 
-def approved_profile(path: Path | None) -> tuple[dict | None, str]:
-    """The approved profile and where it came from, or None and why there is none yet."""
+def approved_profile(path: Path | None) -> tuple[dict | None, dict]:
+    """The approved profile, or None and why: {reason, status, keep, error}.
+
+    keep: the Worker could not be read (unreachable, 403, 404, 503 or an error), so the last matches
+    stand. A 200 without an approved profile is an answer, so its matches.json is emptied. error: an
+    unexpected status or body, printed as ::error:: and exit 1.
+    """
     if path:
         profile = json.loads(path.read_text(encoding="utf-8"))
     else:
@@ -37,22 +42,31 @@ def approved_profile(path: Path | None) -> tuple[dict | None, str]:
         try:
             response = requests.get(API + "/profile", timeout=30)
         except requests.RequestException as error:
-            return None, f"profile route unreachable: {type(error).__name__}"
-        # 503: the Worker has no D1 binding yet (docs/job-assistant.md, What the owner applies). 403
-        # comes from Cloudflare's edge in front of the Worker, which refuses the Actions runner.
-        if response.status_code != 200:
-            if response.status_code not in (404, 503):
-                print(f"::warning::{API}/profile answered {response.status_code}; the last matches are kept")
-            return None, f"profile route answered {response.status_code}"
-        profile = response.json().get("approved")
+            return None, {"reason": f"profile route unreachable: {type(error).__name__}", "status": None,
+                          "keep": True, "error": False}
+        code = response.status_code
+        # 503: the Worker has no D1 binding yet (docs/job-assistant.md, What the owner applies). The
+        # Worker never answers 403, so a 403 is from something in front of it.
+        if code in (403, 404, 503):
+            return None, {"reason": f"profile route answered {code}", "status": code, "keep": True, "error": False}
+        if code != 200:
+            return None, {"reason": f"profile route answered {code}", "status": code, "keep": True, "error": True}
+        try:
+            profile = response.json().get("approved")
+        except (ValueError, AttributeError):
+            return None, {"reason": "profile route answered 200 without a JSON object", "status": code,
+                          "keep": True, "error": True}
         if not profile:
-            return None, "no approved profile"
+            return None, {"reason": "no approved profile", "status": code, "keep": False, "error": False}
     if profile.get("status") != "approved" or problems(profile):
         raise SystemExit("the profile is not an approved, valid schema v1 profile")
-    return profile, "approved"
+    return profile, {"reason": "approved", "status": 200, "keep": False, "error": False}
 
 
-def run(profile: dict | None, http=None, now: datetime | None = None, reason: str = "no approved profile") -> dict:
+NONE = {"reason": "no approved profile", "status": 200, "keep": False, "error": False}
+
+
+def run(profile: dict | None, http=None, now: datetime | None = None, why: dict = NONE) -> dict:
     now = now or datetime.now(timezone.utc)
     folder = store_dir()
     ads = load_ads(folder / "ads.json")
@@ -60,10 +74,13 @@ def run(profile: dict | None, http=None, now: datetime | None = None, reason: st
     old = {r["id"]: r for r in json.loads(path.read_text(encoding="utf-8"))["matches"]} if path.exists() else {}
     note: dict = {"at": now.isoformat(timespec="seconds"), "neurons_before": round(ai.spent(), 2)}
     if profile is None:
-        # Keep the last matches; the mart drops those of closed ads. Without any, dbt still needs a store.
-        if path.exists():
-            return {**json.loads(path.read_text(encoding="utf-8")), "kept": reason}
-        result = {"profile": None, "engine": ENGINE, "note": {**note, "skipped": reason}, "matches": []}
+        found = {"reason": why["reason"], "status": why["status"], "at": note["at"]}
+        if why["keep"] and path.exists():
+            # The last matches stand; the mart drops those of closed ads, and note.kept says why.
+            result = json.loads(path.read_text(encoding="utf-8"))
+            result["note"] = {**result["note"], "kept": found}
+        else:
+            result = {"profile": None, "engine": ENGINE, "note": {**note, "skipped": found}, "matches": []}
         write_atomic(path, result)
         return result
     # A passed deadline ends an ad as removal does; the rule is mart_job_assistant_ads' `expired`.
@@ -115,13 +132,17 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--profile", type=Path, help="an approved profile file instead of the Worker's")
     args = ap.parse_args()
-    profile, reason = approved_profile(args.profile)
-    result = run(profile, ai.session() if profile else None, reason=reason)
+    profile, why = approved_profile(args.profile)
+    if why["error"]:
+        print(f"::error::{API}/profile: {why['reason']}; matches are not updated")
+    result = run(profile, ai.session() if profile else None, why=why)
     classes = {}
     for row in result["matches"]:
         classes[row["class"]] = classes.get(row["class"], 0) + 1
     print(json.dumps({"profile": result["profile"] and result["profile"]["version"], "classes": classes,
-                      "note": result["note"], "kept": result.get("kept")}, ensure_ascii=False))
+                      "note": result["note"]}, ensure_ascii=False))
+    if why["error"]:
+        sys.exit(1)
 
 
 if __name__ == "__main__":

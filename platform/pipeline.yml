@@ -535,9 +535,9 @@ subjects:
       # step of data-subject.yml before this subject, not here.
       - ingest: python platform/job_assistant/ads.py
       # Matches the ads with the approved profile from the Worker into the raw match store, which
-      # dbt reads next. Without a profile (none approved, any answer but 200, or the route is down) it
-      # keeps the last matches.json, or writes an empty one, and exits 0; an invalid profile exits 1 and
-      # also keeps the last file. The ad list is built and published either way; the mart drops closed ads.
+      # dbt reads next. A 200 without a profile empties the store; a route it cannot read keeps the
+      # last matches (or writes an empty store) with the reason; both exit 0. An unexpected answer or
+      # an invalid profile exits 1, allowed so the ads are still published (docs/job-assistant.md).
       - ingest: python platform/job_assistant/rank.py
         secrets: [CLOUDFLARE_API_TOKEN]
         ok_exit: [1]

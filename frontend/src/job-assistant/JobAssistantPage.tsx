@@ -195,7 +195,11 @@ export default function JobAssistantPage({ route }: { route: Route }) {
           onRecords={setRecords}
         />
       ) : !profile ? (
-        <Unmatched ads={data.ads.ads} day={day} />
+        <Unmatched
+          ads={data.ads.ads}
+          day={day}
+          skipped={data.matches.status?.kept ?? data.matches.status?.skipped}
+        />
       ) : (
         <>
           <Filters

@@ -1,25 +1,29 @@
 /**
- * The Jobs tab before a CV profile is approved: the open ads from ads.json, newest first, with no
- * class or skills, since nothing has been matched (docs/job-assistant.md, What the owner applies).
+ * The Jobs tab when nothing is matched: the open ads from ads.json, newest first, with no class or
+ * skills, under the reason rank.py recorded (no approved profile, or a route it could not read).
  */
 import { useState } from 'react'
 import { l } from '../i18n'
-import type { Ad } from './model'
+import { unmatchedNote, type Ad, type RouteNote } from './model'
 import { ago, left } from './labels'
 import { daysBetween } from './query'
 
 const PAGE = 20
 
-export default function Unmatched({ ads, day }: { ads: Ad[]; day: string }) {
+type Props = { ads: Ad[]; day: string; skipped?: RouteNote }
+
+export default function Unmatched({ ads, day, skipped }: Props) {
   const [n, setN] = useState(PAGE)
+  const note = unmatchedNote(skipped)
   const open = ads.filter((a) => !a.removed_at && !a.expired && !a.duplicate_of)
   return (
     <div className="ja-list-pane">
       <div className="ja-empty">
         <p>
+          {l(...note)}{' '}
           {l(
-            'Matching starts when the CV profile is approved. Until then the list shows the open Data/IT ads as JobTech publishes them, without a match class.',
-            'Matchningen börjar när cv-profilen är godkänd. Till dess visar listan de öppna Data/IT-annonserna som JobTech publicerar dem, utan matchningsklass.',
+            'The list shows the open Data/IT ads as JobTech publishes them, without a match class.',
+            'Listan visar de öppna Data/IT-annonserna som JobTech publicerar dem, utan matchningsklass.',
           )}
         </p>
       </div>

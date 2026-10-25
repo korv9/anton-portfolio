@@ -191,20 +191,34 @@ otherwise it is marked unverified and not shown. Checked or not, each explanatio
 `platform/pipeline.yml`). The owner token reaches only `sync.py`, which runs in its own workflow
 step of `data-subject.yml` before the build.
 
-`rank.py` reads the approved profile from `/api/jobs/profile`. When there is none yet, it matches
-nothing and exits 0. That covers four cases: the Worker answers 503 because D1 is not set up, it
-answers 404 or any other status but 200, the route cannot be reached, or it answers with no
-approved profile. A `matches.json` from an earlier run is then kept unchanged; the match mart
-drops matches of ads that have closed since. Without one, `rank.py` writes an empty store: the
-same fields, `profile: null`, no matches, and the reason in `note.skipped` (for example
-`profile route answered 503`). dbt builds every model and test on zero matches, and the export
-publishes `ads.json`, `demand.json` and the other files, with empty match lists. A status other
-than 404 or 503 is also printed as a workflow warning. An invalid profile exits 1, which the step
-allows, and the last matches are kept. From GitHub's runners the route answered 403 on
-2026-10-23 to 25, where a laptop got the Worker's 503. The Worker never answers 403, so Cloudflare's
-edge refuses the runner, and matching from Actions waits until that is lifted for `/api/jobs/*`. The hourly run gets the
-token through the `workers-ai` input of `data-subject.yml`; without it the run uses rules and
-cached vectors only.
+The hourly run gets the token through the `workers-ai` input of `data-subject.yml`; without it
+the run uses rules and cached vectors only.
+
+`rank.py` reads the approved profile from `/api/jobs/profile`. What it does without one depends
+on the answer, and the reason, the HTTP status (null when unreachable) and the time go into the
+match store's note and on to `matches.json` as `status`:
+
+| Answer | Match store | Exit |
+| --- | --- | --- |
+| 200 with `approved: null` | emptied: `profile: null`, no matches, `note.skipped` | 0 |
+| 403, 404 or 503 (503: D1 not set up), or the route cannot be reached | the last matches stand, with `note.kept`; without any, an empty store with `note.skipped` | 0 |
+| any other status, or a 200 that is not a JSON object | as above, and a `::error::` line | 1 |
+| an approved profile that fails the schema check | unchanged | 1 |
+
+dbt builds every model and test on zero matches, and the export publishes `ads.json`,
+`demand.json` and the other files with empty match lists, so the ad list is published without a
+profile. The step allows exit 1 (`ok_exit` in `platform/pipeline.yml`), so an unexpected answer
+shows as an error annotation while the run still publishes the ads. A red run would skip the
+publication, and a Worker fault would then hold back ads that do not depend on it. Kept matches
+belong to the last run that read the profile; the match mart drops those of ads that have closed
+since, and `#jobs` says that the matches were kept and why.
+
+From GitHub's runners the route answered 403 in every run from 2026-10-23 to 25 (log line:
+`requests.exceptions.HTTPError: 403 Client Error: Forbidden for url:
+https://antonernstsson.com/api/jobs/profile`), while a laptop got the Worker's 503 at the same
+time. `worker/` has no route that answers 403, so the inference is that something in front of the
+Worker, probably Cloudflare's bot protection or a WAF rule, refuses the runner. The logs do not
+show which. Until that is lifted for `/api/jobs/*`, matching from Actions cannot read a profile.
 
 ## Security of writes
 
@@ -290,10 +304,13 @@ build shows it, as it shows every other page.
   last sync. When that sync is more than eight hours old, a notice says so.
 - Three tabs: Jobs, Applications and How it works. The Applications tab is a read-only board of
   the pipeline, from Saved to Rejected, built from the review rows.
-- Before a profile is approved, the Jobs tab lists the open ads (not removed, not expired, not a
+- When nothing is matched, the Jobs tab lists the open ads (not removed, not expired, not a
   duplicate), newest first, with title, employer, place, dates and a link to the ad on
-  Platsbanken. A note above the list says that matching starts when the CV profile is approved.
-  There are no classes, skills or filters until then.
+  Platsbanken. There are no classes, skills or filters. The note above the list gives the reason
+  from `status`: "matching starts when the CV profile is approved" only when the Worker answered
+  without one, otherwise that the profile store is not set up (503) or that the profile could
+  not be read or reached, with the time. When the last matches were kept, the status line says
+  so.
 - Jobs: a free-text search over title, employer, occupation and the skills the ad names, and
   filters for match class (strong and possible by default, or one class, or the evaluation
   sample), place or remote, employment type, role, publication date, deadline and seniority. Each
@@ -349,8 +366,8 @@ and misses from the owner's labels).
 - Ingestion: new, changed and repeated ads; a removed ad; duplicates under two ids; a run stopped
   between fetch and store, then resumed.
 - Matching: each class rule, education requirements never lowering the class, and every
-  judgement carrying both quotes. No profile (403, 404, 503, an unreachable route) gives an empty
-  store and a clean exit, and keeps an earlier store unchanged.
+  judgement carrying both quotes. Each answer of the profile route in the table under Workers AI
+  budget (`platform/tests/job_assistant/test_rank_profile.py`).
 - Budget: the cap is reached mid-run and the run still ranks every ad.
 - Worker: writes without the token, with a wrong token and from another origin are refused.
 - Review UI: filter, sort, keyboard status changes and the full ad text.

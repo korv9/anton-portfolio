@@ -1,6 +1,12 @@
 /** The board's status line: ads in the store, new today, strong matches, applications and the last sync. */
 import { currentLocale, l } from '../i18n'
-import { PIPELINE, type Delivered, type Records, type Status } from './model'
+import {
+  keptNote,
+  PIPELINE,
+  type Delivered,
+  type Records,
+  type Status,
+} from './model'
 import { statusLabel } from './labels'
 import { STALE_HOURS, syncAge } from './query'
 
@@ -63,6 +69,11 @@ export default function Stats({ data, records, day, now }: Props) {
           </dd>
         </div>
       </dl>
+      {data.matches.profile && data.matches.status?.kept && (
+        <p className="ja-stale" role="status">
+          {l(...keptNote(data.matches.status.kept))}
+        </p>
+      )}
       {hours != null && hours > STALE_HOURS && (
         <p className="ja-stale" role="status">
           {l(
