@@ -153,39 +153,37 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* Protected homepage: preserve its composition and palette; only the sans changes. */
+/* Homepage: ivory on charcoal (the "Intro sketches" canvas, HomeDark2). */
 :root:has(.home-shell) {
-  --page: var(--cv-ivory);
-  --paper: var(--cv-ivory);
-  --paper-strong: #ffffff;
-  --wash: var(--cv-oat);
-  --surface: var(--cv-pistachio);
-  --ink: #0f0f10;
-  --ink-2: #2a2a2c;
-  --muted: #4a4a4d;
+  color-scheme: dark;
+  --page: #242422;
+  --paper: #242422;
+  --paper-strong: #30302d;
+  --wash: #30302d;
+  --surface: #40403c;
+  --ink: #f1efe7;
+  --ink-2: #d7d2c6;
+  --ink-identity: #f1efe7;
+  --home-body: #d7d2c6;
+  --muted: #9b968c;
   --ink-faded: color-mix(in srgb, var(--ink) 70%, var(--page));
-  --subtle: #6b6b6e;
-  --stone: #c9c2b6;
-  --line: rgba(15, 15, 16, 0.16);
-  --line-strong: rgba(15, 15, 16, 0.42);
-  --focus: var(--cv-olive);
-  --accent: var(--cv-olive);
-  --accent-2: #2a2a2c;
-  --on-accent: var(--cv-ivory);
-  --select: var(--cv-butter);
-  --wash-cool: var(--cv-pistachio);
+  --subtle: #9b968c;
+  --stone: #77756e;
+  --line: rgba(241, 239, 231, 0.16);
+  --line-strong: rgba(241, 239, 231, 0.42);
+  --focus: var(--ink);
+  --accent: var(--ink);
+  --accent-2: var(--ink-2);
+  --on-accent: var(--page);
+  --select: #40403c;
+  --wash-cool: #30302d;
   --side: var(--page);
-  --info: var(--cv-olive);
+  --info: var(--ink-2);
   --negative: var(--color-error);
-  --note-bg: var(--cv-butter);
-  --note-line: var(--cv-olive);
-  --teal: #0f0f10;
-  --orange: #5b5b5e;
-  --series-1: var(--cv-olive);
-  --series-2: var(--cv-apricot);
-  --series-3: var(--cv-ground);
-  --series-4: var(--cv-butter);
-  --series-5: var(--cv-powder);
+  --note-bg: #30302d;
+  --note-line: #77756e;
+  --teal: var(--ink);
+  --orange: var(--muted);
   --h1: clamp(2.2rem, 4.4vw, 3.6rem);
   --h2: clamp(1.7rem, 3.2vw, 2.6rem);
   --h3: clamp(1.25rem, 1.8vw, 1.6rem);
@@ -197,8 +195,6 @@
 }
 
 .home-shell {
-  --ink: var(--ink-identity);
-  --muted: color-mix(in srgb, var(--ink) 80%, var(--page));
   color: var(--ink);
 }
 
