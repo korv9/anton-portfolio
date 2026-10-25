@@ -153,9 +153,26 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* Homepage: ivory on charcoal (the "Intro sketches" canvas, HomeDark2). */
-:root:has(.home-shell) {
+/*
+ * Ivory on charcoal (the "Intro sketches" canvas): the start page and the projects hub. The
+ * interface palette is replaced too, so components that read --color-* directly follow.
+ */
+:root:has(.home-shell),
+:root:has(.hub) {
   color-scheme: dark;
+  --color-canvas: #242422;
+  --color-surface: #30302d;
+  --color-panel: #40403c;
+  --color-border: #77756e;
+  --color-border-control: #96938c;
+  --color-ink: #f1efe7;
+  --color-ink-secondary: #c2beb4;
+  --color-ink-inverse: #242422;
+  --color-chart-neutral: #e2dfd6;
+  --color-chart-muted: #96938c;
+  /* The focal accent turns ivory: no colour, only weight and a rule. */
+  --color-accent-focal: #ebe6da;
+  --color-error: #e5937c;
   --page: #242422;
   --paper: #242422;
   --paper-strong: #30302d;
@@ -174,6 +191,7 @@
   --focus: var(--ink);
   --accent: var(--ink);
   --accent-2: var(--ink-2);
+  --focal: var(--color-accent-focal);
   --on-accent: var(--page);
   --select: #40403c;
   --wash-cool: #30302d;
@@ -184,6 +202,16 @@
   --note-line: #77756e;
   --teal: var(--ink);
   --orange: var(--muted);
+  --series-1: var(--color-chart-neutral);
+  --series-2: #c6a58a;
+  --series-3: #b4aac9;
+  --series-4: #9dc3b9;
+  --series-5: #d1ba8c;
+  --scrim: rgba(0, 0, 0, 0.5);
+}
+
+/* The start page's own type scale. */
+:root:has(.home-shell) {
   --h1: clamp(2.2rem, 4.4vw, 3.6rem);
   --h2: clamp(1.7rem, 3.2vw, 2.6rem);
   --h3: clamp(1.25rem, 1.8vw, 1.6rem);

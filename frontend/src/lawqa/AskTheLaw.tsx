@@ -185,9 +185,7 @@ export default function AskTheLaw({ route }: { route: Route }) {
     <ReportFrame>
       <div className="report lq">
         <header className="politik-intro">
-          <p className="politik-intro-name">
-            {l('Ask the law', 'Fråga lagen')}
-          </p>
+          <p className="politik-intro-name">Allegora</p>
           <p className="politik-intro-data">
             {l(
               'Questions over a selection of Swedish statutes and the EU AI Act, answered with quotes checked word for word against the text.',
@@ -197,7 +195,7 @@ export default function AskTheLaw({ route }: { route: Route }) {
         </header>
         <section className="report-tab" aria-labelledby="lq-title">
           <header className="report-head">
-            <h1 id="lq-title">{l('Ask the law', 'Fråga lagen')}</h1>
+            <h1 id="lq-title">Allegora</h1>
             <div
               className="lq-switch"
               role="group"

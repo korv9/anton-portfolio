@@ -185,7 +185,7 @@ export const PROJECTS: ProjectEntry[] = [
   },
   {
     id: 'ask-the-law',
-    title: t('Fråga lagen', 'Ask the law'),
+    title: t('Allegora', 'Allegora'),
     descriptor: t(
       'Workers AI, sökning med kontrollerade citat',
       'Workers AI, search with checked quotes',

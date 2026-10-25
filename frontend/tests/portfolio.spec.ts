@@ -201,7 +201,7 @@ test('the projects hub leads with the dashboard and the job search', async ({
   const flow = page.locator('#projects-flow')
   await expect(flow.locator('.hub-flow-steps > li')).toHaveCount(7)
   await expect(
-    flow.getByRole('button', { name: 'The job assistant' }),
+    flow.getByRole('button', { name: 'Arbetsförmedla' }),
   ).toHaveAttribute('aria-pressed', 'true')
   await expect(flow.locator('li[data-used]').first()).toBeVisible()
   // Job search first, opening the job assistant.
@@ -209,26 +209,46 @@ test('the projects hub leads with the dashboard and the job search', async ({
     'data-lead',
   )
   await expect(page.locator('#projects-jobs a[href="#jobs"]')).toBeVisible()
-  const nav = page.getByRole('navigation', { name: 'Projects' })
-  for (const name of ['Job search', 'SWEDEN', 'Ask the law', 'Platform'])
-    await expect(nav.getByRole('link', { name, exact: true })).toBeVisible()
+  // Every project under one of three parts, ivory on charcoal like the start page.
+  for (const name of [
+    'Running on the data platform',
+    'Experiments',
+    'Other projects',
+  ])
+    await expect(
+      page.getByRole('heading', { level: 2, name, exact: true }),
+    ).toBeVisible()
+  for (const href of [
+    '#sweden',
+    '#cluster-visuals',
+    '#symbolic-atlas',
+    '#thesis',
+  ])
+    await expect(page.locator(`.hub-item[href="${href}"]`)).toBeVisible()
+  await expect(page.locator('#projects-sweden .hub-products a')).toHaveCount(6)
+  await expect(page.locator('body')).toHaveCSS(
+    'background-color',
+    'rgb(36, 36, 34)',
+  )
   // The platform is a part of the hub; its old address leads there.
   await page.goto('/#platform')
   await expect(page).toHaveURL(/#projects-platform$/)
   await expect(
-    page.getByRole('heading', { level: 2, name: 'The data platform' }),
+    page.getByRole('heading', {
+      level: 2,
+      name: 'The data platform',
+      exact: true,
+    }),
   ).toBeInViewport()
 })
 
-test('on a phone the hub sidebar folds into a menu', async ({ page }) => {
+test('on a phone the hub is one column with the job assistant first', async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 360, height: 740 })
   await page.goto('/#projects')
-  const menu = page.locator('.hub-nav')
-  await expect(menu).not.toHaveAttribute('open')
-  const nav = page.getByRole('navigation', { name: 'Projects' })
-  await expect(nav).toBeHidden()
-  await menu.locator('summary').click()
-  await expect(nav.getByRole('link', { name: 'Job search' })).toBeVisible()
+  await expect(page.locator('.hub-nav')).toHaveCount(0)
+  await expect(page.locator('#projects-jobs a[href="#jobs"]')).toBeVisible()
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= innerWidth + 1,

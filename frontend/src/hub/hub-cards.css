@@ -1,93 +1,149 @@
 /*
- * The projects hub, part three (hub/ProjectsHub.tsx, JobsPulse.tsx): the project cards, the job
- * search hero with its market chart, and the screenshots.
+ * The projects hub, part three (hub/ProjectsHub.tsx): the lead (the job assistant beside the
+ * job-ads map) and the cards, each a picture over a title, a line and its status in mono. No
+ * fills, boxes or rules around a card: space keeps them apart, as on the start page.
  */
-/* ---------- Groups ---------- */
 .hub-items {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 19rem), 1fr));
-  gap: var(--sp-5) var(--sp-6);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(4rem, 8vw, 128px) clamp(2.5rem, 6vw, 96px);
   margin: 0;
   padding: 0;
   list-style: none;
 }
-/* Title, text and the run line: the run line sits on the card's foot, so cards in a row share
-   their baselines. The card's mini dashboard follows it (mini.css). */
+.hub-items > li {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  scroll-margin-top: calc(var(--header-h, 4rem) + var(--sp-5));
+}
 .hub-item {
   display: grid;
-  grid-template-rows: auto 1fr auto;
   align-content: start;
   gap: var(--sp-2);
-  height: 100%;
-  padding-top: var(--sp-3);
-  border-top: 1px solid var(--line);
   color: var(--ink);
   text-decoration: none;
 }
 .hub-item-title {
-  font-size: var(--h3);
+  justify-self: start;
+  font-size: clamp(1.2rem, 1.6vw, 1.4rem);
   font-weight: 700;
   letter-spacing: -0.02em;
-  text-decoration: underline;
-  text-decoration-color: transparent;
-  text-underline-offset: 0.2em;
-  transition: text-decoration-color var(--dur) var(--ease);
 }
+/* The gradient is clipped to the glyphs, an underline included, so hover turns the title solid
+   ivory instead of underlining it. */
 .hub-item:is(:hover, :focus-visible) .hub-item-title {
-  text-decoration-color: currentColor;
+  -webkit-text-fill-color: var(--ink);
 }
-.hub-item-runs {
-  color: var(--ink-faded);
+.hub-item:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 6px;
+}
+.hub-item-text {
+  justify-self: start;
+  max-width: 640px;
+  font-size: var(--body);
+  line-height: 1.5;
+}
+.hub-item-runs,
+.hub-item-where {
+  color: var(--muted);
   font-family: var(--font-mono);
   font-size: var(--caption);
   font-variant-numeric: tabular-nums;
 }
-.hub-item-text {
-  max-width: var(--layout-reading);
-  color: var(--ink-faded);
-  line-height: 1.55;
+.hub-item-where {
+  margin-top: var(--sp-2);
+  letter-spacing: 0.08em;
 }
-/* The job search leads the hub as its hero: the title large, the text beside the facts. */
-.hub-items > li {
-  scroll-margin-top: calc(var(--header-h, 4rem) + var(--sp-5));
+.hub-item-status {
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+/* ---------- The lead: the job assistant, its market line and the job-ads map ---------- */
+.hub-lead {
+  padding-bottom: var(--sp-7);
 }
 .hub-items > li[data-lead] {
   grid-column: 1 / -1;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  align-items: center;
   gap: var(--sp-5) var(--sp-7);
-  align-items: start;
-  padding: var(--sp-5) 0 var(--sp-6);
-  border-top: 2px solid var(--focal);
 }
-li[data-lead] .hub-item {
-  grid-template-rows: none;
-  padding: 0;
-  border-top: 0;
+li[data-lead] > :not(.home-jobs-map) {
+  grid-column: 1;
 }
 li[data-lead] .hub-item-title {
-  color: var(--focal);
-  font-size: clamp(2.25rem, 5vw, 4rem);
+  font-size: clamp(1.9rem, 3.4vw, 3rem);
   font-weight: 750;
-  letter-spacing: -0.035em;
-  line-height: 0.95;
+  letter-spacing: -0.045em;
+  line-height: 1;
 }
-li[data-lead] .hub-item-title::after {
-  content: '\00a0→' / '';
-  font-weight: 400;
+/* The map bleeds off the right edge and fades at its rim, as beside PROJECTS → on the start page. */
+.hub .home-jobs-map {
+  position: relative;
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  height: clamp(360px, 44vw, 640px);
+  margin: 0 calc(-1 * clamp(var(--gutter), 6.5vw, 96px)) 0 0;
+  overflow: hidden;
 }
-li[data-lead] .hub-item-text {
+.hub .home-jobs-map canvas {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: clamp(520px, 62vw, 900px);
+  height: clamp(520px, 62vw, 900px);
+  translate: -45% -50%;
+  mask-image: radial-gradient(ellipse closest-side, #000 70%, transparent 100%);
+}
+.hub .home-jobs-map figcaption {
+  position: absolute;
+  right: clamp(var(--gutter), 6.5vw, 96px);
+  bottom: 0;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+}
+
+/* ---------- SWEDEN's six products, each its own page ---------- */
+.hub-products {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 var(--sp-5);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.hub-products a {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+  min-height: 44px;
+  align-items: center;
   color: var(--ink);
-  font-size: var(--body-large);
+  text-decoration: none;
 }
-li[data-lead] .hub-item-runs {
-  align-self: start;
-  padding-top: var(--sp-2);
-  border-top: 1px solid var(--line);
-  line-height: 1.8;
+.hub-products a:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
 }
+.hub-products-id {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: var(--caption);
+}
+
 @media (max-width: 760px) {
+  .hub-items,
   .hub-items > li[data-lead] {
     grid-template-columns: minmax(0, 1fr);
+  }
+  .hub .home-jobs-map {
+    grid-column: 1;
+    grid-row: auto;
   }
 }

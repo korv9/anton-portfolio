@@ -200,8 +200,8 @@ export function buildSteps({
       title: l('This site', 'Den här sidan'),
       tool: 'React · Cloudflare Workers · Workers AI',
       what: l(
-        'The pages read the release; a Worker serves the API, and Workers AI answers the questions in Ask the platform and Ask the law.',
-        'Sidorna läser releasen; en Worker serverar API:t, och Workers AI svarar på frågorna i Fråga plattformen och Fråga lagen.',
+        'The pages read the release; a Worker serves the API, and Workers AI answers the questions in Ask the platform and Allegora.',
+        'Sidorna läser releasen; en Worker serverar API:t, och Workers AI svarar på frågorna i Fråga plattformen och Allegora.',
       ),
       figures: [
         g && `${num(typed('frontend'))} ${l('products', 'produkter')}`,

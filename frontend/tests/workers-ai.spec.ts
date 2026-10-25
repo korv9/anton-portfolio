@@ -69,9 +69,7 @@ test('a question shows its passages, then the checked answer', async ({
     })
   })
   await page.goto('/#fraga-lagen')
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-    'Ask the law',
-  )
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Allegora')
   await expect(page.getByText('not legal advice')).toBeVisible()
   await expect(page.getByText('(fetched 2026-10-14)')).toBeVisible()
   await expect(page.locator('.lq-laws li')).toHaveCount(1)

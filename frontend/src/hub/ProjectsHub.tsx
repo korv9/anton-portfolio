@@ -1,10 +1,12 @@
 /**
- * The projects hub (#projects), one page for everything built on the platform: a headline row,
- * then each project with what it runs on, job search first, then how the platform is built as a
- * flow, the platform's own sections (PR #141's page) and its machinery to drill into. A sidebar
- * lists the same parts; on a phone it folds into a menu above the content.
+ * The projects hub (#projects), ivory on charcoal like the start page ("Projects II" on the
+ * Intro sketches canvas): the job assistant as the lead beside the job-ads map, then every
+ * project as a picture and a few lines in three parts (on the data platform, experiments, other
+ * projects), then how the platform is built as a flow, its own sections and its machinery.
  */
 import { lazy, Suspense, useEffect, useState, type ReactNode } from 'react'
+import JobsMap from '../home/JobsMap'
+import { SWEDEN_PRODUCTS } from '../sweden/products'
 import { l } from '../i18n'
 import {
   freshness,
@@ -14,14 +16,14 @@ import {
 } from '../meaning/freshness'
 import PlatformSections from '../tech/PlatformSections'
 import type { Graph } from '../tech/PipelineTables'
-import { REPO, ago, day, num, ok, reading, useFile } from '../tech/techData'
+import { ago, day, num, ok, reading, useFile } from '../tech/techData'
 import Headline from './Headline'
 import JobsPulse from './JobsPulse'
 import { ConceptChart, PhilosophyChart, SymbolChart } from './mini/cardsLabs'
 import { FeedChart, LawChart, SwedenChart } from './mini/cardsPlatform'
 import { Near } from './mini/MiniChart'
 import PlatformFlow from './PlatformFlow'
-import { HUB_GROUPS, type HubItem } from './hubProjects'
+import { HUB_GROUPS, PARTS, type HubGroup, type HubItem } from './hubProjects'
 import '../tech/tech.css'
 import './hub.css'
 import './hub-cards.css'
@@ -43,9 +45,6 @@ const CHARTS: Record<string, ReactNode> = {
   'symbolic-atlas': <SymbolChart />,
   'concept-constellation': <ConceptChart />,
 }
-
-const STACK =
-  'Python · dbt · DuckDB · GitHub Actions · Cloudflare R2 · Cloudflare Workers · Workers AI · TypeScript · React'
 
 type Domain = { id: string; counts: Record<string, number> }
 
@@ -101,66 +100,17 @@ function RunsOn(props: {
   ) : null
 }
 
-/** Every part of the hub; beside the content on a wide screen, a menu above it on a phone. */
-function Sidebar() {
-  const wide = '(min-width: 961px)'
-  const [open, setOpen] = useState(() => matchMedia(wide).matches)
-  useEffect(() => {
-    const query = matchMedia(wide)
-    const update = () => setOpen(query.matches)
-    query.addEventListener('change', update)
-    return () => query.removeEventListener('change', update)
-  }, [])
+/** Status and address under a card, in mono: LIVE · #jobs →, or REPO · GitHub ↗. */
+function Where({ item }: { item: HubItem }) {
+  const away = item.href.startsWith('http')
   return (
-    <details
-      className="hub-nav"
-      open={open}
-      onToggle={(e) => setOpen(e.currentTarget.open)}
-    >
-      <summary>{l('All projects', 'Alla projekt')}</summary>
-      <nav aria-label={l('Projects', 'Projekt')}>
-        <a href="#projects">{l('Overview', 'Översikt')}</a>
-        {HUB_GROUPS.filter((g) => g.id !== 'other').map((group) => (
-          <a key={group.id} href={`#projects-${group.id}`}>
-            {l(group.title.en, group.title.sv)}
-          </a>
-        ))}
-        <a href="#projects-flow">
-          {l('How the platform is built', 'Så är plattformen byggd')}
-        </a>
-        <a href="#projects-other">{l('Other projects', 'Övriga projekt')}</a>
-        <a href="#projects-platform">{l('Platform', 'Plattformen')}</a>
-        <ul>
-          <li>
-            <a href="#platform-ask">
-              {l('Ask the platform', 'Fråga plattformen')}
-            </a>
-          </li>
-          <li>
-            <a href="#platform-pipeline">{l('Pipeline', 'Pipeline')}</a>
-          </li>
-          <li>
-            <a href="#platform-health">{l('Run health', 'Körhälsa')}</a>
-          </li>
-          <li>
-            <a href="#tech-stages">{l('Lineage', 'Härkomst')}</a>
-          </li>
-          <li>
-            <a href="#tech-quality">
-              {l('Tests and quality', 'Tester och kvalitet')}
-            </a>
-          </li>
-          <li>
-            <a href="#tech-er">{l('Data model', 'Datamodell')}</a>
-          </li>
-          <li>
-            <a href={`https://github.com/${REPO}/tree/main/docs/incidents`}>
-              {l('Incidents', 'Incidenter')} <span aria-hidden="true">↗</span>
-            </a>
-          </li>
-        </ul>
-      </nav>
-    </details>
+    <span className="hub-item-where">
+      <span className="hub-item-status">
+        {l(item.status.en, item.status.sv)}
+      </span>{' '}
+      · {away ? 'GitHub' : item.href}{' '}
+      <span aria-hidden="true">{away ? '↗' : '→'}</span>
+    </span>
   )
 }
 
@@ -192,92 +142,91 @@ export default function ProjectsHub({ path }: { path: string }) {
     }
   }, [path])
   const domains = ok(graph) ? graph.domains : []
-  // The projects that run on the platform, job search first; then the others.
-  const platform = {
-    id: 'projects-work',
-    title: l('Running on the platform', 'Körs på plattformen'),
-    groups: HUB_GROUPS.filter((g) => g.id !== 'other'),
-  }
-  const other = {
-    id: 'projects-other',
-    title: l('Other projects', 'Övriga projekt'),
-    groups: HUB_GROUPS.filter((g) => g.id === 'other'),
-  }
-  const renderPart = (part: typeof platform) => (
-    <section
-      key={part.id}
-      id={part.id}
-      className="hub-group"
-      aria-labelledby={`${part.id}-title`}
+  const [lead, ...rest] = HUB_GROUPS
+  const card = (group: HubGroup, item: HubItem, i: number) => (
+    <li
+      key={item.id}
+      // The first card of a group keeps the group's old address (#projects-sweden); the platform
+      // card links to its own sections, which hold #projects-platform.
+      id={
+        i === 0 && group.id !== 'platform' ? `projects-${group.id}` : undefined
+      }
+      data-lead={group === lead || undefined}
     >
-      <h2 id={`${part.id}-title`}>{part.title}</h2>
-      {part === platform && ok(graph) && (
-        <p className="tech-meta">
-          {l(
-            `Counts on each card: architecture/graph.json, the lineage graph · built ${day(graph.generated_at)} UTC (${ago(graph.generated_at)})`,
-            `Siffrorna på varje kort: architecture/graph.json, härkomstgrafen · byggd ${day(graph.generated_at)} UTC (${ago(graph.generated_at)})`,
-          )}
-        </p>
+      {CHARTS[item.id] && group !== lead && (
+        <Near className="hub-item-chart">{CHARTS[item.id]}</Near>
       )}
-      <ul className="hub-items">
-        {part.groups.flatMap((group) =>
-          group.items.map((item, i) => (
-            <li
-              key={item.id}
-              id={
-                part === platform && i === 0
-                  ? `projects-${group.id}`
-                  : undefined
-              }
-              data-lead={group.id === 'jobs' || undefined}
-            >
-              <a className="hub-item" href={item.href}>
-                <span className="hub-item-title">
-                  {l(item.title.en, item.title.sv)}
-                  {item.href.startsWith('http') && (
-                    <span aria-hidden="true"> ↗</span>
-                  )}
-                </span>
-                <span className="hub-item-text">
-                  {l(item.text.en, item.text.sv)}
-                </span>
-                <RunsOn item={item} domains={domains} status={status} />
+      <a className="hub-item" href={item.href}>
+        <span className="hub-item-title">
+          {l(item.title.en, item.title.sv)}
+        </span>
+        <span className="hub-item-text">{l(item.text.en, item.text.sv)}</span>
+        <RunsOn item={item} domains={domains} status={status} />
+        <Where item={item} />
+      </a>
+      {item.id === 'sweden' && (
+        <ul
+          className="hub-products"
+          aria-label={l('The six products', 'De sex produkterna')}
+        >
+          {SWEDEN_PRODUCTS.map((p) => (
+            <li key={p.id}>
+              <a href={p.href}>
+                <span className="hub-products-id">{p.id}</span>{' '}
+                {l(p.title.en, p.title.sv)}
               </a>
-              {CHARTS[item.id] && (
-                <Near className="hub-item-chart">{CHARTS[item.id]}</Near>
-              )}
             </li>
-          )),
-        )}
-      </ul>
-    </section>
+          ))}
+        </ul>
+      )}
+      {item.id === 'platform' && <Headline />}
+      {group === lead && (
+        <>
+          <Near className="hub-item-chart">{CHARTS[item.id]}</Near>
+          <JobsMap />
+        </>
+      )}
+    </li>
   )
   return (
     <div className="hub">
-      <Sidebar />
       <article className="tech hub-main" id="projects">
-        <header className="tech-head hub-head">
-          <div className="hub-title">
-            <h1>{l('Projects', 'Projekt')}</h1>
-            <Headline />
-          </div>
-          <div className="hub-intro">
-            <p>
-              {l(
-                'The projects below run on one data platform I built: public sources fetched on a schedule, modelled and tested with dbt, passed through machine learning where the data is text, and published to these pages only when every blocking check has passed.',
-                'Projekten nedan körs på en dataplattform jag har byggt: offentliga källor som hämtas på schema, modelleras och testas med dbt, går genom maskininlärning där datan är text och publiceras till sidorna först när alla blockerande kontroller har gått igenom.',
-              )}
-            </p>
-            <p className="hub-stack">{STACK}</p>
-            <a className="hub-jump" href="#projects-flow">
-              {l('How the platform is built', 'Så är plattformen byggd')}{' '}
-              <span aria-hidden="true">↓</span>
-            </a>
-          </div>
+        <header className="hub-head">
+          <h1>{l('Projects', 'Projekt')}</h1>
         </header>
-        {renderPart(platform)}
+        <ul className="hub-items hub-lead">
+          {lead.items.map((item, i) => card(lead, item, i))}
+        </ul>
+        {PARTS.map((part) => (
+          <section
+            key={part.id}
+            id={
+              part.id === 'platform' ? 'projects-work' : `projects-${part.id}`
+            }
+            className="hub-group"
+            aria-labelledby={`hub-part-${part.id}`}
+          >
+            <h2 id={`hub-part-${part.id}`}>
+              {l(part.title.en, part.title.sv)}
+            </h2>
+            {part.id === 'platform' && ok(graph) && (
+              <p className="tech-meta">
+                {l(
+                  `Counts on each card: architecture/graph.json, the lineage graph · built ${day(graph.generated_at)} UTC (${ago(graph.generated_at)})`,
+                  `Siffrorna på varje kort: architecture/graph.json, härkomstgrafen · byggd ${day(graph.generated_at)} UTC (${ago(graph.generated_at)})`,
+                )}
+              </p>
+            )}
+            <ul className="hub-items">
+              {rest
+                .filter((group) => group.part === part.id)
+                .flatMap((group) =>
+                  group.items.map((item, i) => card(group, item, i)),
+                )}
+            </ul>
+          </section>
+        ))}
         <PlatformFlow />
-        {renderPart(other)}
         <PlatformSections />
         <Suspense fallback={reading}>
           <Machinery />

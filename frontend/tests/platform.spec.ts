@@ -89,7 +89,11 @@ test('the hub shows the platform: live status, run health, the Fabric lakehouse 
   await page.goto('/#platform')
   await expect(page).toHaveURL(/#projects-platform$/)
   await expect(
-    page.getByRole('heading', { level: 2, name: 'The data platform' }),
+    page.getByRole('heading', {
+      level: 2,
+      name: 'The data platform',
+      exact: true,
+    }),
   ).toBeVisible()
   // The run status sits at its step of the flow: ingestion.
   const ingestion = page.locator('.hub-flow-steps > li').nth(1)
