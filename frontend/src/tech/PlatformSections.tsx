@@ -12,6 +12,7 @@ import PipelineTour from './PipelineTour'
 import type { Graph } from './PipelineTables'
 import { RunHealth } from './RunHealth'
 import { FabricLakehouse } from './FabricLakehouse'
+import type { Summary } from '../hub/Headline'
 import { REPO, ok, reading, unread, useFile } from './techData'
 import './tech.css'
 
@@ -51,6 +52,7 @@ const STACK: [string, string, () => string][] = [
 /** The platform's part of the hub; the hub's dashboard above it carries the status strip. */
 export default function PlatformSections() {
   const graph = useFile<Graph>('architecture/graph.json')
+  const summary = useFile<Summary>('schema/summary.json')
   return (
     <>
       <section
@@ -63,8 +65,8 @@ export default function PlatformSections() {
         </h2>
         <p>
           {l(
-            'It fetches Swedish and EU public data on a schedule, keeps every raw file with its source and hash, builds and tests it with dbt in bronze, silver and gold, and releases it to Cloudflare R2 only when every check in the run has passed.',
-            'Den hämtar svensk och europeisk offentlig data på schema, sparar varje råfil med källa och hash, bygger och testar den med dbt i bronze, silver och gold och släpper den till Cloudflare R2 först när alla kontroller i körningen har gått igenom.',
+            'It fetches Swedish and EU public data on a schedule, keeps every raw file with its source and hash, builds and tests it with dbt in bronze, silver and gold, and releases it to Cloudflare R2 only when every blocking test and contract passes.',
+            'Den hämtar svensk och europeisk offentlig data på schema, sparar varje råfil med källa och hash, bygger och testar den med dbt i bronze, silver och gold och släpper den till Cloudflare R2 först när varje blockerande test och kontrakt går igenom.',
           )}
         </p>
         <p className="tech-meta platform-links-inline">
@@ -97,7 +99,10 @@ export default function PlatformSections() {
         {graph === null ? (
           reading
         ) : ok(graph) ? (
-          <PipelineTour nodes={graph.nodes} />
+          <PipelineTour
+            nodes={graph.nodes}
+            models={ok(summary) ? summary.models : undefined}
+          />
         ) : (
           unread
         )}

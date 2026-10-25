@@ -70,6 +70,46 @@ test('the projects page explains the pipeline, lists the projects and shows the 
       },
     }),
   )
+  // The table list shows only when it is from the same export as the model count.
+  await page.route('**/schema/summary.json', (route) =>
+    route.fulfill({
+      json: {
+        models: 1,
+        tests: 2,
+        sources: 0,
+        rows: 9,
+        generated_at: '2026-10-13T05:00:00Z',
+      },
+    }),
+  )
+  await page.route('**/schema/models.json', (route) =>
+    route.fulfill({
+      json: {
+        dbt_version: '1.12.4',
+        layers: { gold: 1 },
+        tests: 2,
+        nodes: [
+          {
+            id: 'model.portfolio.fct_indicator',
+            name: 'fct_indicator',
+            kind: 'model',
+            layer: 'gold',
+            subject: 'welfare',
+            materialized: 'table',
+            description: '',
+            path: 'models/gold/welfare/fct_indicator.sql',
+            reads: [],
+            read_by: [],
+            tests: [],
+            columns: [
+              { name: 'indicator_key', type: 'VARCHAR', tests: ['not_null'] },
+            ],
+            rows: 9,
+          },
+        ],
+      },
+    }),
+  )
   // The old address leads here.
   await page.goto('/#tech')
   await expect(page).toHaveURL(/#projects$/)
@@ -114,6 +154,8 @@ test('the projects page explains the pipeline, lists the projects and shows the 
   await expect(er.locator('.er-lines path').first()).toBeAttached()
   await er.locator('.er-box').first().click()
   await expect(er.locator('.er-card .tech-table').first()).toBeVisible()
+  // A quality check that does not apply to a product is not counted against it.
+  await expect(page.locator('#tech-quality')).toContainText('9 / 9')
   // Every table, searchable by table or column.
   const tables = page.locator('#tech-tables')
   await tables.getByRole('searchbox').fill('fct_indicator')

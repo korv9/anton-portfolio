@@ -6,7 +6,6 @@
  * vectors and work without the Worker; their checked answers come from the model evaluation.
  */
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
-import { flushSync } from 'react-dom'
 import { l } from '../i18n'
 import { setHashParams, type Route } from '../router'
 import { fetchJson } from '../dataSource'
@@ -36,6 +35,7 @@ type Example = {
   question: string
   question_en?: string
   vector: number[]
+  passages?: string[]
   answer?: Answer
 }
 /** One answer model's run over the eval questions (eval.json); any figure may be missing. */
@@ -81,6 +81,14 @@ const neurons = (run: Run) =>
     : `${run.neurons_lower_bound ? l('at least ', 'minst ') : ''}${num(run.neurons_per_answer)}`
 /** The example's question in the reader's language; the corpus text itself stays as published. */
 const asked = (e: Example) => l(e.question_en ?? e.question, e.question)
+/**
+ * An example answered from recitals alone is left out: "When does the AI Act start to apply?"
+ * was answered from recital 179, not Article 113. ponytail: filtered here until the eval export
+ * re-runs that question.
+ */
+const recitalOnly = (e: Example) =>
+  e.answer?.status === 'verified' &&
+  e.answer.quotes.every((q) => q.id.startsWith('rct_'))
 
 /** The answer's text with each [[id]]"quote" as a marked quote that leads to its passage. */
 function Quoted({
@@ -128,35 +136,54 @@ export default function AskTheLaw({ route }: { route: Route }) {
   // Until the reader asks, the page shows the first example's checked answer.
   const [touched, setTouched] = useState(false)
   const [all, setAll] = useState(false)
+  // The corpus (about 12 MB for Swedish law) loads once the reader turns to the form or the
+  // sources; the opening example's answer needs only examples.json. Without examples it loads now.
+  const [wanted, setWanted] = useState(false)
+  const want = wanted || examples?.length === 0
+  const wake = () => setWanted(true)
+  // A quote's passage to focus once the passages are on the page.
+  const [target, setTarget] = useState<string | null>(null)
 
   useEffect(() => {
     setCorpus(null)
     setExamples(null)
+    setWanted(false)
     setTouched(false)
     setAll(false)
     setHits(null)
     setReply(null)
     setNotice(null)
-    loadCorpus<Item>(file).then(setCorpus, () => setCorpus('missing'))
     fetchJson<{ examples: Example[] }>(`workers-ai/${file}/examples.json`).then(
-      (e) => setExamples(e.examples),
+      (e) => setExamples(e.examples.filter((x) => !recitalOnly(x))),
       () => setExamples([]),
     )
   }, [file])
+  useEffect(() => {
+    if (want) loadCorpus<Item>(file).then(setCorpus, () => setCorpus('missing'))
+  }, [file, want])
   useEffect(() => {
     fetchJson<Eval>('workers-ai/eval.json').then(setEvaluation, () => {})
   }, [])
 
   async function run(q: string, example?: Example) {
-    if (!corpus || corpus === 'missing') return
+    if (corpus === 'missing') return
+    wake()
     setTouched(true)
     setAll(false)
     setBusy(true)
     setNotice(null)
     setHits(null)
     setReply(null)
+    let loaded: Corpus<Item>
     try {
-      const found = nearest(corpus, example?.vector ?? (await embed(q)), TOP)
+      loaded = await loadCorpus<Item>(file)
+    } catch {
+      setCorpus('missing')
+      setBusy(false)
+      return
+    }
+    try {
+      const found = nearest(loaded, example?.vector ?? (await embed(q)), TOP)
       setHits(found)
       if (example) return setReply(example.answer ?? 'example')
       setReply('waiting')
@@ -190,11 +217,17 @@ export default function AskTheLaw({ route }: { route: Route }) {
   )
   const shownHits = opening ? openingHits : hits
   const shownReply = opening ? (opening.answer ?? null) : reply
-  /** A quote leads to its passage, which may sit among the folded ones. */
+  /** A quote leads to its passage, which may sit among the folded ones or not be loaded yet. */
   const jump = (id: string) => {
-    flushSync(() => setAll(true))
-    document.getElementById(`lq-${id}`)?.focus()
+    wake()
+    setAll(true)
+    setTarget(id)
   }
+  useEffect(() => {
+    if (!target || !shownHits) return
+    document.getElementById(`lq-${target}`)?.focus()
+    setTarget(null)
+  }, [target, shownHits])
 
   const meta = ready?.meta ?? null
   const laws = (meta?.laws as Law[] | undefined) ?? []
@@ -280,6 +313,7 @@ export default function AskTheLaw({ route }: { route: Route }) {
           ) : (
             <form
               className="lq-form"
+              onFocus={wake}
               onSubmit={(e) => {
                 e.preventDefault()
                 if (question.trim()) run(question.trim())
@@ -301,21 +335,10 @@ export default function AskTheLaw({ route }: { route: Route }) {
                 <span className="lq-count">
                   {question.length} / {MAX}
                 </span>
-                <button
-                  type="submit"
-                  className="btn"
-                  disabled={busy || !corpus}
-                >
+                <button type="submit" className="btn" disabled={busy}>
                   {busy ? l('Searching…', 'Söker…') : l('Ask', 'Fråga')}
                 </button>
               </div>
-              {corpus === null && (
-                <p className="lq-status lq-loading" role="status">
-                  {choice === 'sfs'
-                    ? l('Reading the statute book…', 'Läser in lagboken…')
-                    : l('Reading the AI Act…', 'Läser in AI-förordningen…')}
-                </p>
-              )}
               {examples && examples.length > 0 && (
                 <div
                   className="lq-examples"
@@ -326,7 +349,7 @@ export default function AskTheLaw({ route }: { route: Route }) {
                     <button
                       key={e.question}
                       type="button"
-                      disabled={busy || !corpus}
+                      disabled={busy}
                       onClick={() => {
                         setQuestion(asked(e))
                         run(e.question, e)
@@ -336,6 +359,13 @@ export default function AskTheLaw({ route }: { route: Route }) {
                     </button>
                   ))}
                 </div>
+              )}
+              {want && corpus === null && (
+                <p className="lq-status lq-loading" role="status">
+                  {choice === 'sfs'
+                    ? l('Reading the statute book…', 'Läser in lagboken…')
+                    : l('Reading the AI Act…', 'Läser in AI-förordningen…')}
+                </p>
               )}
               {examples?.length === 0 && (
                 <p className="lq-status">
@@ -403,6 +433,27 @@ export default function AskTheLaw({ route }: { route: Route }) {
                     </p>
                   ) : null}
                 </section>
+                {opening && !shownHits && (
+                  <section aria-labelledby="lq-passages-title">
+                    <h2 id="lq-passages-title">{l('Sources', 'Källor')}</h2>
+                    {want ? (
+                      <p className="lq-status" role="status">
+                        {l('Finding the passages…', 'Hämtar passagerna…')}
+                      </p>
+                    ) : (
+                      <button
+                        type="button"
+                        className="btn-text lq-more"
+                        onClick={wake}
+                      >
+                        {l(
+                          `Show the ${opening.passages?.length ?? TOP} passages found`,
+                          `Visa de ${opening.passages?.length ?? TOP} passager som hittades`,
+                        )}
+                      </button>
+                    )}
+                  </section>
+                )}
                 {shownHits && (
                   <section aria-labelledby="lq-passages-title">
                     <h2 id="lq-passages-title">{l('Sources', 'Källor')}</h2>

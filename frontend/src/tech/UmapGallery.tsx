@@ -10,6 +10,7 @@ import {
   projectClusterPoints,
 } from '../clusters/clusterGeometry'
 import { MAPS, type Loaded, type MapSpec } from '../clusters/ClusterVisualsPage'
+import { l } from '../i18n'
 
 type Item = { spec: MapSpec; variant: MapSpec['variants'][number] }
 
@@ -73,6 +74,8 @@ function Card({ item, open }: { item: Item; open: (data: Loaded) => void }) {
   }, [item])
   const ready = data && data !== 'error' ? data : null
   const many = item.spec.variants.length > 1
+  // A map whose file cannot be read drops out instead of waiting as a blank card.
+  if (data === 'error') return null
   return (
     <li>
       <button
@@ -86,8 +89,8 @@ function Card({ item, open }: { item: Item; open: (data: Loaded) => void }) {
           {ready ? (
             <Thumb points={ready.points} />
           ) : (
-            // An empty thumbnail until its points arrive; a missing file stays a quiet blank.
-            <span className="tech-meta" aria-busy={data !== 'error'} />
+            // An empty thumbnail until its points arrive.
+            <span className="tech-meta" aria-busy="true" />
           )}
         </span>
         <b>
@@ -97,7 +100,7 @@ function Card({ item, open }: { item: Item; open: (data: Loaded) => void }) {
         <span className="tech-meta">
           {item.spec.project}
           {ready
-            ? ` · ${(ready.population?.observations ?? ready.points.length).toLocaleString('en-GB')} points`
+            ? ` · ${(ready.population?.observations ?? ready.points.length).toLocaleString('en-GB')} ${l('points', 'punkter')}`
             : ''}
         </span>
       </button>
@@ -144,7 +147,7 @@ export default function UmapGallery() {
                 </p>
               </div>
               <button type="button" onClick={() => dialog.current?.close()}>
-                Close
+                {l('Close', 'Stäng')}
               </button>
             </header>
             <ClusterScatter
@@ -154,7 +157,9 @@ export default function UmapGallery() {
               height={620}
             />
             <p>{shown.item.spec.meaning}</p>
-            <a href={shown.item.spec.href}>Open in {shown.item.spec.project}</a>
+            <a href={shown.item.spec.href}>
+              {l('Open in', 'Öppna i')} {shown.item.spec.project}
+            </a>
           </div>
         )}
       </dialog>

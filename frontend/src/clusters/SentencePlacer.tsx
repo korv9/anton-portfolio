@@ -10,7 +10,7 @@ import { l } from '../i18n'
 import { fetchJson } from '../dataSource'
 import RankBars from '../charts/RankBars'
 import ClusterScatter, { unnamed } from './ClusterScatter'
-import { type Loaded, type MapSpec, specLine } from './ClusterVisualsPage'
+import { type Loaded, type MapSpec } from './ClusterVisualsPage'
 import {
   embed,
   loadCorpus,
@@ -125,7 +125,8 @@ export default function SentencePlacer({
       .map(([party, value]) => ({ key: party, label: party, value, party }))
   }, [placed])
 
-  if (!examples) return null
+  // Holds the hero's place, so the gallery below does not start loading under it.
+  if (!examples) return <div className="cv-status" aria-busy="true" />
   if (!examples.length) return instead ?? null
   return (
     <section
@@ -147,12 +148,10 @@ export default function SentencePlacer({
         </h2>
         <p className="cv-meaning">
           {l(
-            'Write a sentence about politics. It lands among the debate passages that are closest to it in meaning, and the panel shows which group they form, what was said and by which parties. Your text goes to Cloudflare Workers AI to be embedded and is not logged or stored.',
-            'Skriv en mening om politik. Den hamnar bland de debattpassager som ligger närmast i betydelse, och panelen visar vilken grupp de bildar, vad som sades och av vilka partier. Texten skickas till Cloudflare Workers AI för inbäddning och loggas eller sparas inte.',
+            'Write a sentence about politics and see where it lands among 108 party-leader debates. Cloudflare Workers AI embeds it; nothing is stored.',
+            'Skriv en mening om politik och se var den hamnar bland 108 partiledardebatter. Cloudflare Workers AI bäddar in den; inget sparas.',
           )}
         </p>
-        <p className="cv-meaning">{spec.meaning}</p>
-        {map && <p className="cv-specs">{specLine(map)}</p>}
       </header>
       <form
         className="cv-place-form"
@@ -272,12 +271,6 @@ export default function SentencePlacer({
           )}
         </div>
       </div>
-      <p className="cv-specs">
-        {l(
-          'The sentence is embedded with bge-m3 and placed among its 15 nearest passages. The placement is an approximation, not a new UMAP run.',
-          'Meningen bäddas in med bge-m3 och placeras bland sina 15 närmaste passager. Placeringen är en approximation, inte en ny UMAP-körning.',
-        )}
-      </p>
     </section>
   )
 }

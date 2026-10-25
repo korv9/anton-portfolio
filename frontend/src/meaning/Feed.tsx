@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react'
 import { flushSync } from 'react-dom'
 import { Card, usePageVisible } from './Card'
 import { type Post } from './kit'
+import { l } from '../i18n'
 import './meaning.css'
 import './feed-chrome.css'
 
@@ -73,65 +74,98 @@ function interleave(groups: Post[][]) {
 
 /**
  * The feed reads as one long scroll by subject. A post joins the first section whose pattern
- * matches its id; the last section takes the rest.
+ * matches its id; the last section takes the rest. Title and line are [English, Swedish] pairs
+ * for l(), read at render so a language switch takes effect.
  */
-const SECTIONS = [
+const SECTIONS: readonly {
+  key: string
+  title: readonly [string, string]
+  line: readonly [string, string]
+  match: RegExp
+}[] = [
   {
     key: 'politics',
-    title: 'Politics',
-    line: "Elections, polls, news and the Riksdag's votes and debates.",
+    title: ['Politics', 'Politik'],
+    line: [
+      "Elections, polls, news and the Riksdag's votes and debates.",
+      'Val, opinionsmätningar, nyheter och riksdagens omröstningar och debatter.',
+    ],
     match: /^pol-/,
   },
   {
     key: 'sweden',
-    title: 'Sweden',
-    line: 'Welfare, taxes, trust, and how counties and municipalities differ.',
+    title: ['Sweden', 'Sverige'],
+    line: [
+      'Welfare, taxes, trust, and how counties and municipalities differ.',
+      'Välfärd, skatter, tillit och hur län och kommuner skiljer sig åt.',
+    ],
     match: /^wel-/,
   },
   {
     key: 'jobs',
-    title: 'Jobs',
-    line: 'Swedish job ads: demand, fields, language and AI.',
+    title: ['Jobs', 'Jobb'],
+    line: [
+      'Swedish job ads: demand, fields, language and AI.',
+      'Svenska jobbannonser: efterfrågan, yrkesområden, språk och AI.',
+    ],
     match: /^job-/,
   },
   {
     key: 'ai-act',
-    title: 'AI Act',
-    line: 'The EU AI Act: what applies, to whom and when, and how often AI comes up in ads and debates.',
+    title: ['AI Act', 'AI-förordningen'],
+    line: [
+      'The EU AI Act: what applies, to whom and when, and how often AI comes up in ads and debates.',
+      'EU:s AI-förordning: vad som gäller, för vem och när, och hur ofta AI nämns i annonser och debatter.',
+    ],
     match: /^txt-act-/,
   },
   {
     key: 'law',
-    title: 'Swedish law',
-    line: 'The statute book (SFS): its growth, length and largest laws.',
+    title: ['Swedish law', 'Svensk lag'],
+    line: [
+      'The statute book (SFS): its growth, length and largest laws.',
+      'Svensk författningssamling (SFS): dess tillväxt, längd och största lagar.',
+    ],
     match: /^txt-plat-sfs-/,
   },
   {
     key: 'symbols',
-    title: 'Symbols',
-    line: 'Myth and religious symbols across 101 public-domain books.',
+    title: ['Symbols', 'Symboler'],
+    line: [
+      'Myth and religious symbols across 101 public-domain books.',
+      'Myter och religiösa symboler i 101 fria böcker.',
+    ],
     match: /^txt-ml-(symbol|book|model|research|cluster-skyline|gauges)/,
   },
   {
     key: 'philosophy',
-    title: 'Philosophy',
-    line: 'Ideas, works and tensions in the philosophy corpus.',
+    title: ['Philosophy', 'Filosofi'],
+    line: [
+      'Ideas, works and tensions in the philosophy corpus.',
+      'Idéer, verk och spänningar i den filosofiska korpusen.',
+    ],
     match:
       /^txt-ml-(phil|works|tension|eval|cluster-stacks|words|ethics|foundations)/,
   },
   {
     key: 'concepts',
-    title: 'Concepts',
-    line: 'How concepts relate across law, myth, philosophy and politics.',
+    title: ['Concepts', 'Begrepp'],
+    line: [
+      'How concepts relate across law, myth, philosophy and politics.',
+      'Hur begrepp hänger ihop i juridik, myter, filosofi och politik.',
+    ],
     match: /^txt-ml-(concept|pair)/,
   },
   {
     key: 'platform',
-    title: 'Platform',
-    line: 'The models, data quality and lineage behind these charts.',
+    title: ['Platform', 'Plattform'],
+    line: [
+      'The models, data quality and lineage behind these charts.',
+      'Modellerna, datakvaliteten och härkomsten bakom diagrammen.',
+    ],
     match: /./,
   },
-] as const
+]
 
 /** Per section, the posts of each file, interleaved so neighbours come from different files. */
 const grouped = new Map<string, Post[][]>()
@@ -185,39 +219,45 @@ export default function Feed({ level = 2 }: { level?: 2 | 3 }) {
     })
   return (
     <div className="mean-feed">
-      {PARTS.map((s) => (
-        <section
-          key={s.key}
-          className="mean-section"
-          aria-labelledby={`mean-${s.key}`}
-        >
-          <header className="mean-section-head">
-            <Heading id={`mean-${s.key}`}>{s.title}</Heading>
-            <p>{s.line}</p>
-            <button
-              type="button"
-              className="mean-pause"
-              aria-pressed={paused.has(s.key)}
-              onClick={() => pause(s.key)}
-            >
-              Pause<span className="visually-hidden"> {s.title} charts</span>
-            </button>
-          </header>
-          <div className="mean-grid">
-            {s.posts.map((p) => (
-              <Card
-                key={p.id}
-                post={p}
-                section={s.title}
-                index={FEED.indexOf(p)}
-                open={p.id === openId}
-                moving={pageVisible && !paused.has(s.key)}
-                toggle={toggle}
-              />
-            ))}
-          </div>
-        </section>
-      ))}
+      {PARTS.map((s) => {
+        const title = l(...s.title)
+        return (
+          <section
+            key={s.key}
+            className="mean-section"
+            aria-labelledby={`mean-${s.key}`}
+          >
+            <header className="mean-section-head">
+              <Heading id={`mean-${s.key}`}>{title}</Heading>
+              <p>{l(...s.line)}</p>
+              <button
+                type="button"
+                className="mean-pause"
+                aria-pressed={paused.has(s.key)}
+                onClick={() => pause(s.key)}
+              >
+                {l('Pause', 'Pausa')}
+                <span className="visually-hidden">
+                  {l(` ${title} charts`, ` diagrammen i ${title}`)}
+                </span>
+              </button>
+            </header>
+            <div className="mean-grid">
+              {s.posts.map((p) => (
+                <Card
+                  key={p.id}
+                  post={p}
+                  section={title}
+                  index={FEED.indexOf(p)}
+                  open={p.id === openId}
+                  moving={pageVisible && !paused.has(s.key)}
+                  toggle={toggle}
+                />
+              ))}
+            </div>
+          </section>
+        )
+      })}
     </div>
   )
 }

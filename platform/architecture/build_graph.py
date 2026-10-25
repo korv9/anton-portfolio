@@ -103,7 +103,14 @@ def dbt_domain(path: str) -> str:
 def load_manifest(path: Path = MANIFEST) -> dict:
     if not path.is_file():
         subprocess.run(["dbt", "parse", "--profiles-dir", "."], cwd=PLATFORM, check=True)
-    return json.loads(path.read_text(encoding="utf-8"))
+    manifest = json.loads(path.read_text(encoding="utf-8"))
+    # dbt on Windows writes paths with backslashes; layers and domains are read from posix paths.
+    for group in (manifest["nodes"].values(), manifest["sources"].values(),
+                  *manifest.get("disabled", {}).values()):
+        for n in group:
+            if "original_file_path" in n:
+                n["original_file_path"] = n["original_file_path"].replace("\\", "/")
+    return manifest
 
 
 def public_files(root: Path = PUBLIC) -> list[str]:
@@ -362,7 +369,8 @@ def main() -> int:
     graph["generated_at"] = datetime.now(timezone.utc).isoformat(timespec="seconds")
     graph["dbt_version"] = manifest.get("metadata", {}).get("dbt_version")
     OUT.parent.mkdir(parents=True, exist_ok=True)
-    OUT.write_text(json.dumps(graph, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
+    OUT.write_text(json.dumps(graph, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8",
+                   newline="\n")
     register(OUT)
     count = Counter(n["type"] for n in graph["nodes"])
     edge_count = Counter(e["type"] for e in graph["edges"])

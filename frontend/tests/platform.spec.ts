@@ -98,6 +98,10 @@ test('the hub shows the platform: live status, run health, the Fabric lakehouse 
   await expect(ingestion).toContainText(
     '1 of 2 datasets passed their latest run',
   )
+  // A failed subject links to its cause: here the failure issues, as it has no run log.
+  await expect(
+    ingestion.getByRole('link', { name: 'market', exact: true }),
+  ).toHaveAttribute('href', /label%3Adata-pipeline-failure/)
   await expect(page.locator('.tour-rail')).toBeVisible()
   await expect(page.getByText('Example:')).toBeVisible()
   await expect(page.getByTestId('run-health-total')).toContainText(

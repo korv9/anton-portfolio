@@ -1,6 +1,10 @@
 import { useMemo, useState } from 'react'
 import { Stacked } from '../charts/Compare'
+import { l } from '../i18n'
 import { num } from './techData'
+
+const plural = (n: number, one: string, many: string) =>
+  `${num(n)} ${n === 1 ? one : many}`
 
 export type Quality = {
   products: { product_id: string; label_en: string }[]
@@ -22,11 +26,12 @@ export function Checks({ quality }: { quality: Quality }) {
     )
     const sum = (k: keyof (typeof own)[number]) =>
       own.reduce((s, d) => s + (d[k] as number), 0)
+    // A check that does not apply to a product is not a gap in it, so it is left out.
     const values = [
       sum('pass_count'),
       sum('warning_count'),
       sum('fail_count'),
-      sum('not_measured_count') + sum('not_applicable_count'),
+      sum('not_measured_count'),
     ]
     return {
       key: p.product_id,
@@ -39,13 +44,22 @@ export function Checks({ quality }: { quality: Quality }) {
     <Stacked
       rows={rows.filter((r) => r.values.some(Boolean))}
       parts={[
-        { label: 'Passed', colour: 'var(--color-chart-neutral)' },
-        { label: 'Warning', colour: 'var(--color-chart-muted)' },
-        { label: 'Failed', colour: 'var(--negative)' },
-        { label: 'Not measured', colour: 'var(--color-panel)' },
+        {
+          label: l('Passed', 'Godkänd'),
+          colour: 'var(--color-chart-neutral)',
+        },
+        {
+          label: l('Warning', 'Varning'),
+          colour: 'var(--color-chart-muted)',
+        },
+        { label: l('Failed', 'Underkänd'), colour: 'var(--negative)' },
+        { label: l('Not measured', 'Ej mätt'), colour: 'var(--color-panel)' },
       ]}
       format={(v) => String(v)}
-      label="Quality checks per product, by outcome"
+      label={l(
+        'Quality checks per product, by outcome',
+        'Kvalitetskontroller per produkt, efter utfall',
+      )}
     />
   )
 }
@@ -67,6 +81,7 @@ type Model = {
   rows: number | null
 }
 export type Models = {
+  generated_at?: string
   dbt_version: string
   layers: Record<string, number>
   tests: number
@@ -96,7 +111,7 @@ export function Tables({ models }: { models: Models }) {
     <>
       <div className="tech-filters">
         <label>
-          Search tables and columns
+          {l('Search tables and columns', 'Sök tabeller och kolumner')}
           <input
             type="search"
             value={query}
@@ -105,9 +120,11 @@ export function Tables({ models }: { models: Models }) {
           />
         </label>
         <label>
-          Layer
+          {l('Layer', 'Lager')}
           <select value={layer} onChange={(e) => setLayer(e.target.value)}>
-            <option value="">All ({models.nodes.length})</option>
+            <option value="">
+              {l('All', 'Alla')} ({models.nodes.length})
+            </option>
             {Object.entries(models.layers).map(([key, count]) => (
               <option key={key} value={key}>
                 {key} ({count})
@@ -116,7 +133,7 @@ export function Tables({ models }: { models: Models }) {
           </select>
         </label>
         <p className="tech-meta" aria-live="polite">
-          {shown.length} tables
+          {plural(shown.length, l('table', 'tabell'), l('tables', 'tabeller'))}
         </p>
       </div>
       <ul className="tables">
@@ -128,28 +145,34 @@ export function Tables({ models }: { models: Models }) {
                 <span className="tech-meta">
                   {n.layer}
                   {n.subject ? ` · ${n.subject}` : ''}
-                  {n.columns.length ? ` · ${n.columns.length} columns` : ''}
-                  {n.rows != null ? ` · ${num(n.rows)} rows` : ''}
-                  {n.tests.length ? ` · ${n.tests.length} tests` : ''}
+                  {n.columns.length
+                    ? ` · ${plural(n.columns.length, l('column', 'kolumn'), l('columns', 'kolumner'))}`
+                    : ''}
+                  {n.rows != null
+                    ? ` · ${plural(n.rows, l('row', 'rad'), l('rows', 'rader'))}`
+                    : ''}
+                  {n.tests.length
+                    ? ` · ${plural(n.tests.length, l('test', 'test'), l('tests', 'tester'))}`
+                    : ''}
                 </span>
               </summary>
               {n.description && <p>{n.description}</p>}
               <p className="tech-meta">
-                {n.path ?? 'declared source'}
+                {n.path ?? l('declared source', 'deklarerad källa')}
                 {n.reads.length
-                  ? ` · reads ${n.reads.map(short).join(', ')}`
+                  ? ` · ${l('reads', 'läser')} ${n.reads.map(short).join(', ')}`
                   : ''}
                 {n.read_by.length
-                  ? ` · read by ${n.read_by.map(short).join(', ')}`
+                  ? ` · ${l('read by', 'läses av')} ${n.read_by.map(short).join(', ')}`
                   : ''}
               </p>
               {n.columns.length > 0 && (
                 <table className="tech-table">
                   <thead>
                     <tr>
-                      <th scope="col">Column</th>
-                      <th scope="col">Type</th>
-                      <th scope="col">Tests</th>
+                      <th scope="col">{l('Column', 'Kolumn')}</th>
+                      <th scope="col">{l('Type', 'Typ')}</th>
+                      <th scope="col">{l('Tests', 'Tester')}</th>
                     </tr>
                   </thead>
                   <tbody>

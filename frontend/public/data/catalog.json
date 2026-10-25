@@ -309,11 +309,11 @@
    "path": "architecture/graph.json",
    "product": "architecture",
    "format": "json",
-   "bytes": 237561,
+   "bytes": 345038,
    "rows": null,
    "schema_version": 1,
    "partition": null,
-   "sha256": "ff0df33688bb6e585d614f0444e0dc22a236edfe04b53699594a34eb4fccf2c7",
+   "sha256": "2bb8314e41ba720097c8c8d45799feca99bd3091985d7e399e7c4db6f5a603ea",
    "run_id": "9565d82bdb1fb787"
   },
   {

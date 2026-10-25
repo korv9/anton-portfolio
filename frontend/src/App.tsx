@@ -15,9 +15,6 @@ import './site/editorial.css'
 // Everything but the start page loads on navigation, so the start page ships none of it.
 const ProjectsHub = lazy(() => import('./hub/ProjectsHub'))
 const SwedenPage = lazy(() => import('./sweden/SwedenPage'))
-const SwedenHeader = lazy(() =>
-  import('./sweden/Header').then((m) => ({ default: m.SwedenHeader })),
-)
 const SymbolicAtlasPage = lazy(() => import('./symbolic/SymbolicAtlasPage'))
 const PhilosophyAtlasPage = lazy(
   () => import('./philosophy/PhilosophyAtlasPage'),
@@ -29,6 +26,7 @@ const ClusterVisualsPage = lazy(() => import('./clusters/ClusterVisualsPage'))
 const MeaningPage = lazy(() => import('./meaning/MeaningPage'))
 const AskTheLaw = lazy(() => import('./lawqa/AskTheLaw'))
 const JobAssistantPage = lazy(() => import('./job-assistant/JobAssistantPage'))
+const ReplikPage = lazy(() => import('./replik/ReplikPage'))
 const DrugCombPage = lazy(() =>
   import('./products/CaseStudies').then((m) => ({ default: m.DrugCombPage })),
 )
@@ -74,7 +72,7 @@ export default function App() {
   const { page, path } = route
   const project = projectForRoute(route)
   const workspace =
-    page === 'sweden' || page === 'meaning'
+    page === 'sweden'
       ? 'sweden'
       : (PROJECT_GROUPS.find((group) =>
           group.ids.includes(project?.id ?? ''),
@@ -89,24 +87,16 @@ export default function App() {
         <a className="skip-link" href="#main">
           {l('Skip to content', 'Hoppa till innehåll')}
         </a>
-        {/* SWEDEN pages carry their own header (sweden/Header.tsx); the meaning page shares it.
-            The start page has none: it opens on the name alone. */}
-        {page === 'meaning' ? (
-          <div className="sweden sw-header-host">
-            <Suspense fallback={null}>
-              <SwedenHeader current="" />
-            </Suspense>
-          </div>
-        ) : (
-          page !== 'sweden' && page !== 'home' && <SiteHeader />
-        )}
+        {/* SWEDEN pages carry their own header (sweden/Header.tsx). The start page has none:
+            it opens on the name alone. */}
+        {page !== 'sweden' && page !== 'home' && <SiteHeader />}
         <main
           id="main"
           tabIndex={-1}
           key={language}
           style={{ background: 'transparent' }}
         >
-          {page !== 'meaning' && <ProjectContext route={route} />}
+          <ProjectContext route={route} />
           <PageBoundary key={page}>
             <ProjectStructure route={route}>
               <Suspense
@@ -131,6 +121,7 @@ export default function App() {
                 {page === 'drugcomb' && <DrugCombPage route={route} />}
                 {page === 'thesis' && <ThesisPage />}
                 {page === 'homie' && <HomiePage />}
+                {page === 'replik' && <ReplikPage />}
               </Suspense>
             </ProjectStructure>
           </PageBoundary>

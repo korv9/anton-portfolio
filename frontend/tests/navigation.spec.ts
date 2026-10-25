@@ -19,7 +19,7 @@ test('project pagers follow the groups', async ({ page }) => {
   // The labs open as reports without a pager; the engineering pages keep it.
   await page.goto('/#thesis')
   await expect(page.locator('.project-pager .pager-previous')).toContainText(
-    'Drug Synergy Lab',
+    'Replik',
   )
   // The last engineering page leads on to the platform's part of the projects hub.
   await page.goto('/#homie')

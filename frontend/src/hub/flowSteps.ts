@@ -3,13 +3,21 @@
  * from the published files, the keys in a subject's counts that mean a project uses it, and the
  * link to its deeper section. Figures whose file cannot be read arrive as undefined and drop out.
  */
-import type { ReactNode } from 'react'
+import { createElement, type ReactNode } from 'react'
 import { l } from '../i18n'
 import type { Graph } from '../tech/PipelineTables'
 import { REPO, ago, day, num } from '../tech/techData'
 import type { Run } from '../tech/WorkflowRuns'
-import type { Summary } from './Headline'
-import type { readStatus } from './platformStatus'
+import type { Summary, useStatus } from './Headline'
+
+/** Where a failed subject's cause is written: its run's log, or the failure issues it opened. */
+const ISSUES = `https://github.com/${REPO}/issues?q=label%3Adata-pipeline-failure`
+const link = (href: string, text: string) =>
+  createElement(
+    'a',
+    { key: text, href, target: '_blank', rel: 'noreferrer' },
+    text,
+  )
 
 export type Quality = {
   run: {
@@ -40,8 +48,7 @@ type Context = {
   typed: (...types: string[]) => number
   graph?: Graph
   size?: Summary
-  sizeAt?: string
-  status: ReturnType<typeof readStatus>
+  status: ReturnType<typeof useStatus>
   quality?: Quality
   checks: Record<string, number>
   measured: number
@@ -55,7 +62,6 @@ export function buildSteps({
   typed,
   graph,
   size,
-  sizeAt,
   status,
   quality,
   checks,
@@ -99,8 +105,13 @@ export function buildSteps({
             `senaste inläsning för ${ago(status.last.recorded_at!)}; ${status.passed} av ${status.total} dataset gick igenom sin senaste körning`,
           ),
         status &&
-          status.failed.length > 0 &&
-          `${l('failed', 'föll')}: ${status.failed.join(', ')}`,
+          status.failed.length > 0 && [
+            `${l('failed', 'föll')}: `,
+            ...status.failed.flatMap((name, i) => [
+              i > 0 ? ', ' : '',
+              link(status.logs.get(name) ?? ISSUES, name),
+            ]),
+          ],
         status &&
           status.timed > 0 &&
           l(
@@ -125,14 +136,10 @@ export function buildSteps({
       ),
       figures: [
         size &&
-          `${num(size.models)} ${l('models in the dbt project', 'modeller i dbt-projektet')} (${ago(sizeAt!)})`,
+          `${num(size.models)} ${l('models in the dbt project', 'modeller i dbt-projektet')}`,
         size &&
           `${num(size.sources)} ${l('dbt source tables read the fetched files', 'dbt-källtabeller läser de hämtade filerna')}`,
-        graph &&
-          l(
-            `the lineage graph, built ${ago(graph.generated_at)}, places ${num(typed('bronze', 'silver', 'gold'))} of them in a subject: ${layers}`,
-            `härkomstgrafen, byggd för ${ago(graph.generated_at)}, placerar ${num(typed('bronze', 'silver', 'gold'))} av dem i ett ämne: ${layers}`,
-          ),
+        graph && `${l('by layer', 'per lager')}: ${layers}`,
       ],
       count: ['models'],
       unit: [l('model', 'modell'), l('models', 'modeller')],
@@ -163,8 +170,8 @@ export function buildSteps({
         size && `${num(size.tests)} ${l('dbt tests', 'dbt-tester')}`,
         quality &&
           l(
-            `${num(checks.pass ?? 0)} of ${num(measured)} measured quality checks passed (${ago(quality.run.evaluated_at)}); ${num(checks.not_measured ?? 0)} not measured`,
-            `${num(checks.pass ?? 0)} av ${num(measured)} mätta kvalitetskontroller godkända (för ${ago(quality.run.evaluated_at)}); ${num(checks.not_measured ?? 0)} ej mätta`,
+            `${num(checks.pass ?? 0)} of ${num(measured)} measured quality checks passed; ${num(checks.not_measured ?? 0)} not measured`,
+            `${num(checks.pass ?? 0)} av ${num(measured)} mätta kvalitetskontroller godkända; ${num(checks.not_measured ?? 0)} ej mätta`,
           ),
       ],
       count: ['models'],
@@ -206,10 +213,18 @@ export function buildSteps({
       figures: [
         g && `${num(typed('frontend'))} ${l('products', 'produkter')}`,
         ci &&
-          l(
-            `CI on main ${ci.conclusion === 'success' ? 'passed' : 'failed'} ${ago(ci.updated_at)}`,
-            `CI på main ${ci.conclusion === 'success' ? 'gick igenom' : 'föll'} för ${ago(ci.updated_at)}`,
-          ),
+          (ci.conclusion === 'success'
+            ? l(
+                `CI on main passed ${ago(ci.updated_at)}`,
+                `CI på main gick igenom för ${ago(ci.updated_at)}`,
+              )
+            : [
+                l(
+                  `CI on main ${ago(ci.updated_at)}: `,
+                  `CI på main för ${ago(ci.updated_at)}: `,
+                ),
+                link(ci.html_url, l('failed, see the log', 'föll, se loggen')),
+              ]),
       ],
       count: ['products'],
       unit: [l('product', 'produkt'), l('products', 'produkter')],

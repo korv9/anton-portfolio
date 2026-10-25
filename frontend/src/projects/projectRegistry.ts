@@ -41,6 +41,43 @@ export type ProjectEntry = {
 
 export const PROJECTS: ProjectEntry[] = [
   {
+    id: 'replik',
+    title: t('Replik', 'Replik'),
+    descriptor: t(
+      'Riksdagsdata, NLP och voteringar',
+      'Riksdag data, NLP and roll calls',
+    ),
+    summary: t(
+      '33 år av partiledardebatter och voteringar i riksdagen, lästa av en maskin: vad partierna talar om, vem som sätter dagordningen och vilka som röstar ihop.',
+      '33 years of Riksdag party-leader debates and roll calls, read by machine: what the parties talk about, who sets the agenda, and who votes together.',
+    ),
+    question: t(
+      'Vad talar Sveriges partier om när de möts, och betyder att tala lika att rösta lika?',
+      'What do Sweden’s parties talk about when they face each other, and does talking alike mean voting alike?',
+    ),
+    built: t(
+      '108 partiledardebatter 1993–2026 delade i 33 023 inlägg, inbäddade och klustrade i 33 ämnen (UMAP och HDBSCAN, konsensus över 12 frön); 23 024 voteringar över 33 riksmöten; en klassificerare med maskerade partinamn och personvis uppdelning.',
+      '108 party-leader debates 1993–2026 split into 33,023 passages, embedded and clustered into 33 topics (UMAP and HDBSCAN, consensus over 12 seeds); 23,024 roll calls over 33 sessions; a classifier with party names masked and a person-grouped split.',
+    ),
+    result: t(
+      'SD ägde migrationsfrågan på 2010-talet; energin tog över debatterna 2022; partiernas språk blev lättare att skilja åt 2006. Att tala lika säger inget om att rösta lika.',
+      'SD owned migration in the 2010s; energy took over the debates in 2022; party language became easier to tell apart in 2006. Talking alike says nothing about voting alike.',
+    ),
+    tech: [
+      'Python',
+      'dbt',
+      'sentence-transformers',
+      'UMAP',
+      'HDBSCAN',
+      'scikit-learn',
+      'React',
+    ],
+    href: '#replik',
+    category: 'data',
+    status: 'live',
+    pages: ['replik'],
+  },
+  {
     id: 'symbolic-atlas',
     title: t('Symbol Lab', 'Symbol Lab'),
     descriptor: t('NLP, oövervakad inlärning', 'NLP, unsupervised learning'),
@@ -321,6 +358,7 @@ export const PROJECT_GROUPS = [
       'concept-constellation',
       'ask-the-law',
       'drugcomb',
+      'replik',
     ],
   },
   { label: 'Engineering', ids: ['thesis', 'homie', 'platform'] },

@@ -1,8 +1,7 @@
 /**
- * Cluster visuals: every clustering on the site on one page, each drawn from its own data and
- * interactive (ClusterScatter): the party-leader debates (inside SentencePlacer), the Philosophy
- * Lab, the municipalities, the Symbol Lab and the job ads. A map loads when it comes near the
- * screen.
+ * Cluster visuals: the sentence demo on the party-leader debate map, then every clustering
+ * dataset as a large map (ClusterGallery), with the method notes folded away at the bottom.
+ * MAPS and ProjectMaps keep the interactive maps for the project reports and the UMAP gallery.
  */
 import { useEffect, useRef, useState } from 'react'
 import { l } from '../i18n'
@@ -16,6 +15,7 @@ import ClusterScatter, { type ClusterPoint, unnamed } from './ClusterScatter'
 import ClusterLab from './ClusterLab'
 import './clusters.css'
 import SentencePlacer from './SentencePlacer'
+import ClusterGallery from './ClusterGallery'
 
 export type Loaded = {
   points: ClusterPoint[]
@@ -505,17 +505,54 @@ export default function ClusterVisualsPage() {
         <h1>{l('Cluster visuals', 'Klustervisualiseringar')}</h1>
         <p>
           {l(
-            'Every clustering on the site, drawn from its data. Point at a dot to read it; click it, or a cluster in the list, to pick out its cluster.',
-            'Alla klustringar på sajten, ritade ur sin data. Peka på en prick för att läsa den; klicka på den, eller på ett kluster i listan, för att lyfta fram klustret.',
+            'The clearest clusterings on the site, drawn from their data.',
+            'De tydligaste klustringarna på sajten, ritade ur sin data.',
           )}
         </p>
       </header>
-      <SentencePlacer spec={debates} instead={<MapSection spec={debates} />} />
-      {maps
-        .filter((spec) => spec !== debates)
-        .map((spec) => (
-          <MapSection key={spec.id} spec={spec} />
+      <SentencePlacer spec={debates} />
+      <ClusterGallery />
+      <details className="cv-method">
+        <summary>{l('How these maps are made', 'Så görs kartorna')}</summary>
+        <p>
+          {l(
+            'Each map is drawn straight from its published points. Clusters take the site’s warm greys by size, the largest brightest; points in no cluster sit dimmer underneath. The frame comes from the clustered points only, and the few points beyond it are left out rather than pressed onto the edge. Close points are similar in the model’s eyes; distances on a 2-D map are a picture, not a measurement.',
+            'Varje karta ritas direkt ur sina publicerade punkter. Klustren får sajtens varma grå toner efter storlek, det största ljusast; punkter utan kluster ligger dovare under. Ramen utgår bara från de klustrade punkterna, och de få punkterna utanför lämnas bort i stället för att tryckas mot kanten. Närliggande punkter liknar varandra enligt modellen; avstånd på en 2D-karta är en bild, inte ett mått.',
+          )}
+        </p>
+        <p>
+          {l(
+            'Your sentence is embedded with bge-m3 by Cloudflare Workers AI, is not logged or stored, and is placed at the closeness-weighted position of its 15 nearest passages. The placement is an approximation, not a new UMAP run.',
+            'Din mening bäddas in med bge-m3 av Cloudflare Workers AI, loggas eller sparas inte och placeras på den närhetsviktade positionen för sina 15 närmaste passager. Placeringen är en approximation, inte en ny UMAP-körning.',
+          )}
+        </p>
+        {maps.map((spec) => (
+          <p key={spec.id}>
+            <strong>{spec.title}.</strong> {spec.meaning}
+          </p>
         ))}
+        <p>
+          <strong>
+            {l('Riksdag debates by session.', 'Riksdagsdebatter per riksmöte.')}
+          </strong>{' '}
+          {l(
+            'Up to 400 speech passages from each of the 33 sessions 1993/94–2025/26, placed by one topic model so the sessions compare like with like. The four earlier sessions come from an older topic model; only its twelve largest groups are drawn.',
+            'Upp till 400 talpassager ur vart och ett av de 33 riksmötena 1993/94–2025/26, placerade av en och samma ämnesmodell så att riksmötena går att jämföra. De fyra tidigare riksmötena kommer från en äldre ämnesmodell; bara dess tolv största grupper ritas.',
+          )}
+        </p>
+        <p>
+          <strong>
+            {l(
+              'Cancer drugs by synergy profile.',
+              'Cancerläkemedel efter synergiprofil.',
+            )}
+          </strong>{' '}
+          {l(
+            'Each point is a drug with at least 300 measured combinations in DrugCombDB, placed by its mean synergy per tissue and grouped by k-means, with k chosen by silhouette.',
+            'Varje punkt är ett läkemedel med minst 300 uppmätta kombinationer i DrugCombDB, placerat efter sin genomsnittliga synergi per vävnad och grupperat med k-means, där k valdes efter silhouette.',
+          )}
+        </p>
+      </details>
       {lab && <ClusterLab />}
     </div>
   )

@@ -49,7 +49,7 @@ test(
 test('a question shows its passages, then the checked answer', async ({
   page,
 }) => {
-  await serveExports(page)
+  const requested = await serveExports(page)
   await page.route('**/api/embed', (route) =>
     route.fulfill({ json: { vector: vectorNear(0) } }),
   )
@@ -71,11 +71,13 @@ test('a question shows its passages, then the checked answer', async ({
   await page.goto('/#fraga-lagen')
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Allegora')
   await expect(page.getByText('not legal advice')).toBeVisible()
+  await expect(page.locator('.lq-examples button')).toHaveCount(1)
+  // The page opens on the first example's checked answer; the corpus waits for the reader.
+  await expect(page.locator('.lq-quote q')).toHaveText('Fixture paragraph 1.')
+  expect(requested).not.toContain('sfs/meta.json')
+  await page.getByRole('button', { name: 'Show the 8 passages found' }).click()
   await expect(page.getByText('(fetched 2026-10-14)')).toBeVisible()
   await expect(page.locator('.lq-laws li')).toHaveCount(1)
-  await expect(page.locator('.lq-examples button')).toHaveCount(1)
-  // The page opens on the first example's checked answer, three of its passages shown.
-  await expect(page.locator('.lq-quote q')).toHaveText('Fixture paragraph 1.')
   await expect(page.locator('.lq-passages li:visible')).toHaveCount(3)
   await page.getByRole('button', { name: 'Show all 8' }).click()
   await expect(page.locator('.lq-passages li:visible')).toHaveCount(8)

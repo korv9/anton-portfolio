@@ -72,6 +72,12 @@ export const HUB_GROUPS: HubGroup[] = [
     ],
   },
   {
+    id: 'replik',
+    title: t('Replik', 'Replik'),
+    part: 'platform',
+    items: [registry('replik')],
+  },
+  {
     id: 'sweden',
     title: t('SWEDEN', 'SWEDEN'),
     part: 'platform',

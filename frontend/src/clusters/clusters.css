@@ -333,3 +333,67 @@
 .cv-meaning + .cv-meaning {
   margin-top: 0.5em;
 }
+
+/* ---------- The gallery: every clustering dataset, large (ClusterGallery.tsx) ---------- */
+.cv-gallery {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--sp-7) var(--sp-5);
+  padding-top: var(--sp-7);
+}
+@media (min-width: 900px) {
+  .cv-gallery {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .cv-tile-wide {
+    grid-column: 1 / -1;
+  }
+  .cv-tile-wide .cv-tile-map {
+    aspect-ratio: 16 / 9;
+  }
+}
+.cv-tile figure {
+  margin: 0;
+}
+.cv-tile-map {
+  aspect-ratio: 1;
+}
+.cv-tile-map canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.cv-tile figcaption {
+  margin-top: var(--sp-2);
+}
+.project-shell #main .cv-tile h2 {
+  margin: 0;
+  font-size: var(--fs-md);
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+.cv-tile .cv-specs {
+  margin-top: 0.2rem;
+}
+
+/* The method notes, folded away under the maps. */
+.cv-method {
+  max-width: 75ch;
+  margin-top: var(--sp-section);
+  font-size: var(--fs-sm);
+  line-height: 1.5;
+}
+.cv-method summary {
+  font-family: var(--font-meta);
+  font-size: var(--fs-label);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.cv-method summary:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+.cv-method p {
+  margin: var(--sp-3) 0 0;
+}

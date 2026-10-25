@@ -13,6 +13,8 @@ export type TourNode = {
   type: string
   path?: string
   files?: number
+  /** False for the models dbt has switched off; they are not counted. */
+  enabled?: boolean
 }
 
 const num = (n: number) => n.toLocaleString('en-GB')
@@ -20,7 +22,7 @@ const num = (n: number) => n.toLocaleString('en-GB')
 type Step = {
   key: string
   name: () => string
-  /** The graph layers this step counts. */
+  /** The node types this step counts, the same as the flow's (PlatformFlow.tsx). */
   layers: string[]
   unit: () => string
   text: () => string
@@ -54,7 +56,7 @@ const STEPS: Step[] = [
   {
     key: 'raw',
     name: () => l('Raw store', 'Rålager'),
-    layers: ['raw'],
+    layers: ['raw', 'seed'],
     unit: () => l('raw tables and seeds', 'råtabeller och seeds'),
     text: () =>
       l(
@@ -89,7 +91,7 @@ const STEPS: Step[] = [
     key: 'delivery',
     name: () => l('Publish', 'Publicering'),
     layers: ['delivery'],
-    unit: () => l('published files', 'publicerade filer'),
+    unit: () => l('exports', 'exporter'),
     text: () =>
       l(
         'Export scripts write the gold tables as JSON and Parquet. A subject is exported only after its fetch, build, tests and ML all came through, and a group of subjects is released to R2 only when every subject in it succeeded in the same run.',
@@ -109,13 +111,19 @@ const STEPS: Step[] = [
   },
 ]
 
-export default function PipelineTour({ nodes }: { nodes: TourNode[] }) {
+export default function PipelineTour({
+  nodes,
+  models,
+}: {
+  nodes: TourNode[]
+  /** The model count in schema/summary.json, the one the headline shows. */
+  models?: number
+}) {
   const [at, setAt] = useState(0)
-  const of = (step: Step) => nodes.filter((n) => step.layers.includes(n.layer))
+  const of = (step: Step) =>
+    nodes.filter((n) => n.enabled !== false && step.layers.includes(n.type))
   const count = (step: Step) =>
-    step.key === 'delivery'
-      ? of(step).reduce((s, n) => s + (n.files ?? 0), 0)
-      : of(step).length
+    step.key === 'dbt' && models !== undefined ? models : of(step).length
   const step = STEPS[at]
   const items = of(step)
   const layers = step.key === 'dbt' ? step.layers : []
@@ -154,7 +162,7 @@ export default function PipelineTour({ nodes }: { nodes: TourNode[] }) {
         {layers.length > 0 ? (
           <dl className="tour-layers">
             {layers.map((layer) => {
-              const n = items.filter((i) => i.layer === layer).length
+              const n = items.filter((i) => i.type === layer).length
               return (
                 <div
                   key={layer}

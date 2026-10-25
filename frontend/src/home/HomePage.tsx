@@ -1,6 +1,6 @@
 /**
  * The start page, about Anton for a recruiter: the signature, name and role on the first screen,
- * then About with the contact links, experience and education, and the way on to the projects
+ * then About with the contact links, experience above education beside the cluster maps, and the way on to the projects
  * (#projects) beside the job-ads map.
  */
 import { useEffect } from 'react'
@@ -18,6 +18,7 @@ import {
 } from './orbitContent'
 import { PROJECTS } from '../projects/projectRegistry'
 import LanguageToggle from '../site/LanguageToggle'
+import ClusterDepth from './ClusterDepth'
 import JobsMap from './JobsMap'
 import Signature from './Signature'
 import './home.css'
@@ -75,7 +76,7 @@ function Contact() {
   )
 }
 
-/** About on the left above the work history, with space between experience and education. */
+/** About, then experience above education in one column, with the cluster maps beside them. */
 function Profile() {
   const thesis = PROJECTS.find((p) => p.id === 'thesis')
   return (
@@ -133,6 +134,7 @@ function Profile() {
           <p className="home-job-role">{b(ADDITIONAL.text)}</p>
         </div>
       </div>
+      <ClusterDepth />
       <div className="home-column home-education" id="utbildning">
         <h2 className="home-title">{l('Education', 'Utbildning')}</h2>
         {EDUCATION.map((e) => (

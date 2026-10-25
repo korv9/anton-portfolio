@@ -8,6 +8,7 @@
 import { useId, type ReactNode } from 'react'
 import { useData, type Post } from './kit'
 import type { useFresh } from './freshness'
+import { l } from '../i18n'
 
 type Delivery = {
   published_by: string[]
@@ -35,7 +36,7 @@ const duration = (s: number) =>
   s < 60 ? `${s} s` : `${Math.floor(s / 60)} min ${s % 60} s`
 const listed = (names: string[]) =>
   names.length > SHOWN
-    ? `${names.slice(0, SHOWN).join(', ')} and ${names.length - SHOWN} more`
+    ? `${names.slice(0, SHOWN).join(', ')} ${l('and', 'och')} ${names.length - SHOWN} ${l('more', 'till')}`
     : names.join(', ')
 
 /** Model names grouped by layer, e.g. "3 gold: a, b, c; 1 raw: d". Raw and ingestion tables
@@ -65,25 +66,28 @@ function Lineage({ d }: { d: Delivery }) {
     <>
       {d.origins.length > 0 && (
         <>
-          <dt>Origin</dt>
+          <dt>{l('Origin', 'Ursprung')}</dt>
           <dd>{d.origins.map((o) => o.label).join(', ')}</dd>
         </>
       )}
       {d.models.length > 0 && (
         <>
-          <dt>Models</dt>
+          <dt>{l('Models', 'Modeller')}</dt>
           <dd className="mean-trace-layers">{byLayer(d.models)}</dd>
-          <dt>Tests</dt>
+          <dt>{l('Tests', 'Tester')}</dt>
           <dd>
             {tests
-              ? `${tests} dbt tests (${d.test_kinds.join(', ')})`
-              : 'none recorded'}
+              ? `${tests} ${l('dbt tests', 'dbt-tester')} (${d.test_kinds.join(', ')})`
+              : l('none recorded', 'inga registrerade')}
             {evaluated.length > 0 &&
-              `; ${passed} of ${evaluated.length} quality checks passed${at ? ` on ${at}` : ' at the last build'}`}
+              l(
+                `; ${passed} of ${evaluated.length} quality checks passed${at ? ` on ${at}` : ' at the last build'}`,
+                `; ${passed} av ${evaluated.length} kvalitetskontroller godkända${at ? ` den ${at}` : ' vid senaste bygget'}`,
+              )}
           </dd>
         </>
       )}
-      <dt>Published by</dt>
+      <dt>{l('Published by', 'Publicerad av')}</dt>
       <dd>
         <code>{d.published_by.map(file).join(', ')}</code>
       </dd>
@@ -103,9 +107,14 @@ const Row = ({ term, children }: { term: string; children: ReactNode }) => (
  * failed fetch get a row of their own: Frame's markup is not valid inside a dl. */
 function Lineages({ sources }: { sources: readonly string[] }) {
   const prov = useData<Provenance>(PROVENANCE)
-  if (prov === null) return <Row term="Lineage">Loading</Row>
+  const term = l('Lineage', 'Härkomst')
+  if (prov === null) return <Row term={term}>{l('Loading', 'Laddar')}</Row>
   if (prov instanceof Error)
-    return <Row term="Lineage">Not available: {prov.message}</Row>
+    return (
+      <Row term={term}>
+        {l('Not available', 'Inte tillgänglig')}: {prov.message}
+      </Row>
+    )
   const groups = new Map<string, string[]>()
   const none: string[] = []
   for (const p of sources) {
@@ -119,7 +128,7 @@ function Lineages({ sources }: { sources: readonly string[] }) {
         <div key={k} className="mean-trace-group">
           {groups.size > 1 && (
             <>
-              <dt>For</dt>
+              <dt>{l('For', 'För')}</dt>
               <dd>
                 <code>{files.map(file).join(', ')}</code>
               </dd>
@@ -129,12 +138,12 @@ function Lineages({ sources }: { sources: readonly string[] }) {
         </div>
       ))}
       {none.length > 0 && (
-        <Row term="Lineage">
-          Lineage not recorded
+        <Row term={term}>
+          {l('Lineage not recorded', 'Härkomsten är inte registrerad')}
           {groups.size > 0 && (
             <>
               {' '}
-              for <code>{none.map(file).join(', ')}</code>
+              {l('for', 'för')} <code>{none.map(file).join(', ')}</code>
             </>
           )}
         </Row>
@@ -165,7 +174,8 @@ export function Trace({
   toggle: () => void
 }) {
   const id = useId()
-  const state = fresh && (fresh.fresh ? 'on time' : 'overdue')
+  const state =
+    fresh && (fresh.fresh ? l('on time', 'i tid') : l('overdue', 'försenad'))
   return (
     <>
       <button
@@ -175,44 +185,52 @@ export function Trace({
         aria-controls={shown ? id : undefined}
         onClick={toggle}
       >
-        Source
+        {l('Source', 'Källa')}
       </button>
       {shown && (
         <section
           id={id}
           className="mean-trace"
-          aria-label="Where this comes from"
+          aria-label={l('Where this comes from', 'Var detta kommer ifrån')}
         >
           <dl>
-            <Row term="Data">
+            <Row term={l('Data', 'Data')}>
               {post.sources.map((p) => (
                 <code key={p}>{p}</code>
               ))}
             </Row>
             <Lineages sources={post.sources} />
             {fresh && (
-              <Row term="Ingested">
+              <Row term={l('Ingested', 'Inläst')}>
                 {fresh.at
                   ? `${fresh.at.slice(0, 10)}, ${state}`
-                  : `${state}; the time of the last success is not recorded`}
+                  : `${state}; ${l('the time of the last success is not recorded', 'tiden för senaste lyckade körning är inte registrerad')}`}
               </Row>
             )}
             {fresh?.run && (
-              <Row term="Ingest">
-                Ingest took {duration(fresh.run.seconds)}
+              <Row term={l('Ingest', 'Inläsning')}>
+                {l('Ingest took', 'Inläsningen tog')}{' '}
+                {duration(fresh.run.seconds)}
                 {fresh.run.url?.startsWith('https://github.com/') && (
                   <>
                     {' '}
-                    (<a href={fresh.run.url}>workflow run log</a>)
+                    (
+                    <a href={fresh.run.url}>
+                      {l('workflow run log', 'körningslogg')}
+                    </a>
+                    )
                   </>
                 )}
               </Row>
             )}
             {fresh?.run?.url?.startsWith('https://github.com/') && (
               <>
-                <Row term="Cost">
+                <Row term={l('Cost', 'Kostnad')}>
                   <a href={ACTIONS_BILLING}>
-                    Free: public repository, standard runner
+                    {l(
+                      'Free: public repository, standard runner',
+                      'Gratis: publikt repo, standardkörare',
+                    )}
                   </a>
                 </Row>
               </>
