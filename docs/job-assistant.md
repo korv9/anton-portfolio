@@ -229,20 +229,44 @@ and for the Actions run. The owner pastes the token once per device; the page ke
 
 ## What the owner applies
 
-Nothing here is applied by the agent. In this order:
+Nothing here is applied by the agent. Every secret lives in the GitHub environment
+`anton-portfolio`; nothing is set from a laptop.
 
-1. Run the Terraform workflow for `infra/cloudflare` from `main`, which adds
-   `cloudflare_d1_database.job_assistant`. The API token needs D1 Edit as well.
-2. Copy the output `job_assistant_d1_id` into the commented `[[d1_databases]]` block of
-   `wrangler.toml` and uncomment it.
-3. Run `npx wrangler d1 migrations apply job-assistant --remote`.
-4. Run `npx wrangler secret put JOB_ASSIST_TOKEN` with a long random value. Set the same value as
-   the secret `JOB_ASSIST_TOKEN` of the GitHub environment `anton-portfolio`.
-5. Set the secret `CLOUDFLARE_AI_TOKEN` (Workers AI Read and Edit only) in the same environment.
-6. Upload the CV on the review page, correct the draft, and ask for approval.
+| Secret | Used by | Token permissions |
+| --- | --- | --- |
+| `CLOUDFLARE_ACCOUNT_ID` | `setup-job-assistant.yml`, the hourly run (`rank.py`) | none; it is the account id (a repository variable of the same name also works) |
+| `CLOUDFLARE_API_TOKEN` | `setup-job-assistant.yml`; `rank.py` through `data-subject.yml` | Account > D1 > Edit, Account > Workers Scripts > Edit, Account > Workers AI > Read and Edit, on this account only |
+| `JOB_ASSIST_TOKEN` | copied into the Worker by `setup-job-assistant.yml`; `sync.py` | none; a long random value the owner chooses and pastes on the review page |
 
-Until step 4, `/api/jobs/*` answers 503 and the hourly run fetches ads but matches nothing. The
-hourly workflow reaches `main` with the next merge from `loop`.
+The R2 secrets the other subjects use are already in the environment. In this order:
+
+1. Add `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` to the environment.
+2. Run the workflow "Set up the job assistant" from `main`. It finds or creates the D1 database
+   `job-assistant`, applies `worker/migrations`, and prints the database id in the run summary.
+   It is safe to run again: an existing database is reused and applied migrations are skipped.
+   A missing secret or a missing token permission fails the step and names it.
+3. Commit the printed id into the `[[d1_databases]]` block of `wrangler.toml` and uncomment the
+   block. Workers Builds deploys from that file, and the id is not a secret, so a committed id is
+   simpler to review than one looked up at deploy time.
+4. Add `JOB_ASSIST_TOKEN` and run the workflow again. It pipes the value into
+   `wrangler secret put` through stdin; without the secret the step is skipped with a notice.
+5. Upload the CV on the review page, correct the draft, and ask for approval.
+
+Without `JOB_ASSIST_TOKEN` the public part runs: the ad list, `demand.json` and the market data
+are published every run, and with D1 in place the profile route answers with no profile instead
+of 503. CV upload, the draft, profile approval, statuses and notes wait for the token, and
+matching waits for the first approved profile. Before step 3 `/api/jobs/*` answers 503 and the
+run publishes the ads with no matches.
+
+From GitHub's runners `/api/jobs/profile` answered 403 on 2026-10-23 to 25. The Worker never
+answers 403, so Cloudflare's edge in front of it refuses the runner, and `rank.py` and `sync.py`
+cannot reach the Worker from Actions until a WAF or bot rule lets them through on `/api/jobs/*`.
+
+The Terraform workflow cannot plan while the repository variable `TF_WORKER_DOMAIN_IDS` is unset,
+and there is no `terraform` environment, so the setup workflow creates the database instead of
+`cloudflare_d1_database.job_assistant`. Bringing it under Terraform later is optional:
+
+    terraform -chdir=infra/cloudflare import cloudflare_d1_database.job_assistant '<account id>/<database id>'
 
 ## Monitoring
 

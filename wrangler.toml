@@ -28,12 +28,10 @@ name = "RATE_LIMITER"
 namespace_id = "1001"
 simple = { limit = 20, period = 60 }
 
-# The job assistant's owner records (worker/jobs.ts). Left commented until the owner has applied
-# cloudflare_d1_database.job_assistant (infra/cloudflare) and pasted its id from the
-# job_assistant_d1_id output; a deploy with an unknown id would fail. Then:
-#   npx wrangler d1 migrations apply job-assistant --remote
-#   npx wrangler secret put JOB_ASSIST_TOKEN
-# Until then /api/jobs/* answers 503 and the hourly run matches nothing.
+# The job assistant's owner records (worker/jobs.ts). Left commented until the workflow
+# setup-job-assistant.yml has created the D1 database and printed its id (not a secret); the id is
+# then committed here and the block uncommented. A deploy with an unknown id would fail. Until
+# then /api/jobs/* answers 503 and the run matches nothing.
 # [[d1_databases]]
 # binding = "JOBS_DB"
 # database_name = "job-assistant"
