@@ -13,7 +13,7 @@ import './site/site.css'
 import './site/editorial.css'
 
 // Everything but the start page loads on navigation, so the start page ships none of it.
-const ProjectsPage = lazy(() => import('./tech/TechPanel'))
+const ProjectsHub = lazy(() => import('./hub/ProjectsHub'))
 const SwedenPage = lazy(() => import('./sweden/SwedenPage'))
 const SwedenHeader = lazy(() =>
   import('./sweden/Header').then((m) => ({ default: m.SwedenHeader })),
@@ -60,13 +60,14 @@ export default function App() {
       : 'ANTON ERNSTSSON DATA & AI'
   }, [route.path, route.page, language])
 
-  // A new address scrolls to its section on the start page, or to the top elsewhere. Changing
-  // only a view's filters (the query) keeps the reader where they are.
+  // A new address scrolls to its section on the start page or in the projects hub, or to the
+  // top elsewhere. Changing only a view's filters (the query) keeps the reader where they are.
   const cameFrom = useRef(route.path)
   useEffect(() => {
     const from = cameFrom.current
     cameFrom.current = route.path
     if (route.page === 'home' && route.path !== '#start') return
+    if (route.page === 'projects' && route.path !== '#projekt') return
     // A tab of a report opens where the reader stands, like a tab.
     if (sameReport(from, route.path)) return
     requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: 'auto' }))
@@ -90,7 +91,8 @@ export default function App() {
         <a className="skip-link" href="#main">
           {l('Skip to content', 'Hoppa till innehåll')}
         </a>
-        {/* SWEDEN pages carry their own header (sweden/Header.tsx); the meaning page shares it. */}
+        {/* SWEDEN pages carry their own header (sweden/Header.tsx); the meaning page shares it.
+            The start page has none: it opens on the name alone. */}
         {page === 'meaning' ? (
           <div className="sweden sw-header-host">
             <Suspense fallback={null}>
@@ -98,7 +100,7 @@ export default function App() {
             </Suspense>
           </div>
         ) : (
-          page !== 'sweden' && <SiteHeader route={route} />
+          page !== 'sweden' && page !== 'home' && <SiteHeader />
         )}
         <main
           id="main"
@@ -117,7 +119,7 @@ export default function App() {
                 }
               >
                 {page === 'home' && <HomePage path={path} />}
-                {page === 'projects' && <ProjectsPage />}
+                {page === 'projects' && <ProjectsHub path={path} />}
                 {page === 'sweden' && <SwedenPage route={route} />}
                 {page === 'symbolic' && <SymbolicAtlasPage route={route} />}
                 {page === 'clusters' && <ClusterVisualsPage />}

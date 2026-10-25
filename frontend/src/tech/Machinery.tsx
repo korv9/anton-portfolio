@@ -1,7 +1,6 @@
 /**
- * The projects page (#projekt): the platform behind the projects first, then the projects to
- * choose from, then the machinery. In order: what the platform holds, how the pipeline works
- * step by step and per project, the projects, the scheduled runs and fetches, quality checks
+ * The platform's machinery, the drill-down at the end of the projects hub (#projekt): how the
+ * pipeline works, each project stage by stage, the scheduled runs and fetches, quality checks
  * and delivery, the data model (an ER diagram per subject and every table with its columns),
  * and every cluster map.
  *
@@ -14,9 +13,8 @@ import { deliveryState } from '../dataSource'
 import { l } from '../i18n'
 import ErDiagram from './ErDiagram'
 import PipelineTour from './PipelineTour'
-import ProjectList from '../projects/ProjectsPage'
 import type { ErModel } from './erLayout'
-import { useFile, ok, num, day, unread, reading } from './techData'
+import { useFile, ok, day, unread, reading } from './techData'
 import { Runs } from './WorkflowRuns'
 import { Scripts, Stages, type Graph } from './PipelineTables'
 import { Fetches, RunRecord, type WelfareRun } from './IngestionRecords'
@@ -25,21 +23,10 @@ import './tech.css'
 
 const UmapGallery = lazy(() => import('./UmapGallery'))
 
-const SECTIONS: [string, () => string][] = [
-  ['tech-pipeline', () => l('How it works', 'Så fungerar det')],
-  ['projects', () => l('Projects', 'Projekt')],
-  ['tech-ingestion', () => l('Runs', 'Körningar')],
-  ['tech-quality', () => l('Quality', 'Kvalitet')],
-  ['tech-er', () => l('Data model', 'Datamodell')],
-  ['tech-tables', () => l('Tables', 'Tabeller')],
-  ['tech-maps', () => l('Cluster maps', 'Klusterkartor')],
-]
-
-export default function TechPanel() {
+export default function Machinery() {
   const graph = useFile<Graph>('architecture/graph.json')
   const er = useFile<ErModel>('schema/er.json')
   const models = useFile<Models>('schema/models.json')
-  const summary = useFile<Record<string, number>>('schema/summary.json')
   const quality = useFile<Quality>('quality/summary.json')
   const run = useFile<WelfareRun>('welfare/run.json')
   const [delivery, setDelivery] = useState<Awaited<
@@ -55,59 +42,8 @@ export default function TechPanel() {
   const chosen = domains.find((d) => d.key === domain) ?? domains[0]
   const part = (d: unknown, body: () => React.ReactNode) =>
     d === null ? reading : d === 'error' ? unread : body()
-  const layer = (...keys: string[]) =>
-    ok(graph) ? graph.nodes.filter((n) => keys.includes(n.layer)).length : 0
   return (
-    <article className="tech projects-page" id="projekt">
-      <header className="tech-head">
-        <h1>{l('Projects', 'Projekt')}</h1>
-        <p>
-          {l(
-            'Most of these projects run on one data platform I built: public sources fetched on a schedule, built and tested with dbt, passed through machine learning where the data is text, and published to the pages. First how it works, then the projects, then the machinery itself.',
-            'De flesta av projekten körs på en dataplattform jag har byggt: offentliga källor som hämtas på schema, byggs och testas med dbt, går genom maskininlärning där datan är text och publiceras till sidorna. Först hur det fungerar, sedan projekten, sedan själva maskineriet.',
-          )}
-        </p>
-        {ok(graph) && ok(summary) && (
-          <dl className="tech-figures">
-            <div>
-              <dt>{l('dbt source tables', 'dbt-källtabeller')}</dt>
-              <dd>{num(summary.sources)}</dd>
-            </div>
-            <div>
-              <dt>{l('dbt models', 'dbt-modeller')}</dt>
-              <dd>{num(summary.models)}</dd>
-            </div>
-            <div>
-              <dt>{l('dbt tests', 'dbt-tester')}</dt>
-              <dd>{num(summary.tests)}</dd>
-            </div>
-            <div>
-              <dt>{l('Rows in the warehouse', 'Rader i lagret')}</dt>
-              <dd>{num(summary.rows)}</dd>
-            </div>
-            <div>
-              <dt>{l('ML stages', 'ML-steg')}</dt>
-              <dd>{num(layer('ml'))}</dd>
-            </div>
-          </dl>
-        )}
-        <nav aria-label={l('Sections', 'Avsnitt')}>
-          {SECTIONS.map(([id, label]) => (
-            <button
-              key={id}
-              type="button"
-              onClick={() =>
-                document
-                  .getElementById(id)
-                  ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-              }
-            >
-              {label()}
-            </button>
-          ))}
-        </nav>
-      </header>
-
+    <>
       <section id="tech-pipeline" aria-labelledby="tech-pipeline-title">
         <h2 id="tech-pipeline-title">
           {l('How the pipeline works', 'Så fungerar pipelinen')}
@@ -123,18 +59,10 @@ export default function TechPanel() {
         ))}
       </section>
 
-      <section id="projects" aria-labelledby="projects-title">
-        <h2 id="projects-title">{l('Choose a project', 'Välj ett projekt')}</h2>
-        <p className="tech-note">
-          {l(
-            'Each project opens on its charts. Under a project on the platform: what it holds in the pipeline.',
-            'Varje projekt öppnas på sina grafer. Under ett projekt på plattformen: vad det rymmer i pipelinen.',
-          )}
-        </p>
-        <ProjectList domains={ok(graph) ? graph.domains : []} />
-        <h3>
+      <section id="tech-stages" aria-labelledby="tech-stages-title">
+        <h2 id="tech-stages-title">
           {l('Each project, stage by stage', 'Varje projekt, steg för steg')}
-        </h3>
+        </h2>
         {part(graph, () => (
           <>
             <Stages graph={graph as Graph} />
@@ -249,6 +177,6 @@ export default function TechPanel() {
           <UmapGallery />
         </Suspense>
       </section>
-    </article>
+    </>
   )
 }

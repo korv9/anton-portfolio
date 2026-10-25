@@ -71,8 +71,7 @@ export const REDIRECTS: Record<string, string> = {
   '#projects': '#projekt',
   '#alla-projekt': '#projekt',
   // The semantic-drift report is withdrawn while it is reworked.
-  '#contact': '#om-mig',
-  '#kontakt': '#om-mig',
+  '#contact': '#kontakt',
   '#experience': '#erfarenhet',
   '#work': '#projekt',
   '#teknik': '#om-mig',
@@ -189,7 +188,8 @@ export function sameReport(a: string, b: string) {
 }
 
 export function pageOf(path: string): Page {
-  if (path === '#projekt') return 'projects'
+  // The projects hub and the addresses of its sections (#projekt-jobs, #tech-er).
+  if (path === '#projekt' || /^#(projekt|tech)-/.test(path)) return 'projects'
   if (path.startsWith('#drugcomb')) return 'drugcomb'
   if (path === '#thesis') return 'thesis'
   if (path === '#homie') return 'homie'

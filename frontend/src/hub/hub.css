@@ -1,0 +1,139 @@
+/*
+ * The projects hub (hub/ProjectsHub.tsx): a sidebar of groups beside the content on a wide
+ * screen, a menu above it on a phone. The content keeps the technical inventory's style
+ * (tech.css): thin rules, uppercase section titles, metadata in small type.
+ */
+.hub {
+  display: grid;
+  grid-template-columns: minmax(11rem, 14rem) minmax(0, 1fr);
+  gap: 0 var(--sp-6);
+  padding-inline: var(--gutter);
+}
+.hub .tech {
+  padding-inline: 0;
+}
+
+/* ---------- Sidebar ---------- */
+.hub-nav {
+  position: sticky;
+  top: calc(var(--header-h, 4rem) + var(--sp-5));
+  align-self: start;
+  max-height: calc(100svh - var(--header-h, 4rem) - var(--sp-6));
+  margin-top: var(--sp-6);
+  overflow-y: auto;
+}
+.hub-nav summary {
+  display: none;
+}
+.hub-nav nav {
+  display: grid;
+  padding-left: var(--sp-4);
+  border-left: 1px solid var(--line);
+}
+.hub-nav a {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--ink-faded);
+  font-size: var(--small);
+  font-weight: 600;
+  text-decoration: none;
+}
+.hub-nav a:hover {
+  color: var(--ink);
+}
+.hub-nav a:focus-visible,
+.hub-nav summary:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 3px;
+}
+
+/* ---------- Dashboard ---------- */
+.hub-figures {
+  row-gap: var(--sp-5);
+}
+.hub-figures dd {
+  font-size: var(--type-metric);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+}
+.hub-figures dd.tech-meta {
+  font-size: var(--caption);
+  letter-spacing: 0;
+}
+
+/* ---------- Groups ---------- */
+.hub-items {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 19rem), 1fr));
+  gap: var(--sp-5) var(--sp-6);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.hub-item {
+  display: grid;
+  gap: var(--sp-2);
+  height: 100%;
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--line);
+  color: var(--ink);
+  text-decoration: none;
+}
+.hub-item-title {
+  font-size: var(--h3);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-underline-offset: 0.2em;
+  transition: text-decoration-color var(--dur) var(--ease);
+}
+.hub-item:is(:hover, :focus-visible) .hub-item-title {
+  text-decoration-color: currentColor;
+}
+.hub-item-text {
+  max-width: var(--layout-reading);
+  color: var(--ink-faded);
+  line-height: 1.55;
+}
+/* The job search leads the hub: one wide entry in the identity ink, the page's one accent. */
+.hub-group[data-lead] .hub-items {
+  grid-template-columns: minmax(0, 1fr);
+}
+.hub-group[data-lead] .hub-item {
+  padding: var(--sp-5) 0 var(--sp-5) var(--sp-5);
+  border-top: 0;
+  border-left: 3px solid var(--ink-identity);
+}
+.hub-group[data-lead] .hub-item-title {
+  color: var(--ink-identity);
+  font-size: var(--h2);
+}
+.hub-group[data-lead] .hub-item-text {
+  font-size: var(--body-large);
+}
+
+/* ---------- Phone: the sidebar folds into a menu above the content ---------- */
+@media (max-width: 960px) {
+  .hub {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .hub-nav {
+    position: static;
+    max-height: none;
+    margin-top: var(--sp-5);
+    border-block: 1px solid var(--line);
+  }
+  .hub-nav summary {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    font-weight: 650;
+    cursor: pointer;
+  }
+  .hub-nav nav {
+    padding: 0 0 var(--sp-3);
+    border-left: 0;
+  }
+}

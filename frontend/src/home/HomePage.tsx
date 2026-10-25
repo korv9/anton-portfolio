@@ -1,4 +1,7 @@
-/** Homepage: About, work history and selected projects on GitHub. */
+/**
+ * The start page, about Anton for a recruiter: the name alone on the first screen, then contact,
+ * About, experience and education, and one way on to the projects (#projekt).
+ */
 import { useEffect } from 'react'
 import { profile } from '../content'
 import { ABOUT, CONTACT } from './content'
@@ -15,23 +18,11 @@ import {
 import { PROJECTS } from '../projects/projectRegistry'
 import LanguageToggle from '../site/LanguageToggle'
 import './home.css'
-import './flagships.css'
-import { useSlowScroll } from './useSlowScroll'
-import HomeFeed from './HomeFeed'
-import { PlatformFlagship } from './Flagships'
-import { OtherProjects, Research } from './Projects'
 
 const b = (text: Bilingual) => l(text.en, text.sv)
 
 /** The sections a global address points at; the header's links scroll to them. */
-const SECTIONS = [
-  '#erfarenhet',
-  '#om-mig',
-  '#utbildning',
-  '#platform',
-  '#jobbassistent',
-  '#research',
-]
+const SECTIONS = ['#kontakt', '#om-mig', '#erfarenhet', '#utbildning']
 
 function Identity() {
   return (
@@ -43,28 +34,39 @@ function Identity() {
       <h1 id="home-name" className="home-name">
         Anton Ernstsson
       </h1>
-      <p className="home-roles">
-        <span>SOFTWARE</span> <span>DATA</span> <span>AI</span>
-      </p>
-      <p className="home-links home-hero-links">
-        {profile.email && (
+    </section>
+  )
+}
+
+/** The contact line the reader reaches on the first scroll. */
+function Contact() {
+  return (
+    <section
+      className="home-screen home-contact"
+      id="kontakt"
+      aria-label={l('Contact', 'Kontakt')}
+    >
+      <p className="home-contact-intro">{l(CONTACT.en, CONTACT.sv)}</p>
+      {profile.email && (
+        <p className="home-contact-email">
           <a href={`mailto:${profile.email}`}>{profile.email}</a>
-        )}
-        <a
-          href="https://github.com/korv9/anton-portfolio"
-          target="_blank"
-          rel="noreferrer"
-        >
-          {l('Code for this site', 'Koden för sidan')}
-        </a>
+        </p>
+      )}
+      <nav
+        className="home-links"
+        aria-label={l('CV and profiles', 'CV och profiler')}
+      >
         {profile.linkedin && (
           <a href={profile.linkedin} target="_blank" rel="noreferrer">
             LinkedIn
           </a>
         )}
+        <a href="https://github.com/korv9" target="_blank" rel="noreferrer">
+          GitHub
+        </a>
         {profile.cv && <CvButton />}
         <LanguageToggle />
-      </p>
+      </nav>
     </section>
   )
 }
@@ -88,28 +90,6 @@ function Profile() {
             {l(text.en, text.sv)}
           </p>
         ))}
-        <div className="home-contact">
-          <p className="home-contact-intro">{l(CONTACT.en, CONTACT.sv)}</p>
-          {profile.email && (
-            <p className="home-contact-email">
-              <a href={`mailto:${profile.email}`}>{profile.email}</a>
-            </p>
-          )}
-          <nav
-            className="home-links"
-            aria-label={l('CV and profiles', 'CV och profiler')}
-          >
-            {profile.cv && <CvButton />}
-            {profile.linkedin && (
-              <a href={profile.linkedin} target="_blank" rel="noreferrer">
-                LinkedIn
-              </a>
-            )}
-            <a href="https://github.com/korv9" target="_blank" rel="noreferrer">
-              GitHub
-            </a>
-          </nav>
-        </div>
       </div>
       <div className="home-column home-experience" id="erfarenhet">
         <h2 className="home-title">{l('Experience', 'Erfarenhet')}</h2>
@@ -183,23 +163,7 @@ function Profile() {
   )
 }
 
-/**
- * The flagships first, then other projects and the profile. The feed comes after the profile, so
- * its late height never moves a section link's target.
- */
-function Work() {
-  return (
-    <section className="home-screen home-work">
-      <PlatformFlagship />
-      <OtherProjects />
-      <Profile />
-      <HomeFeed />
-    </section>
-  )
-}
-
 export default function HomePage({ path }: { path: string }) {
-  useSlowScroll()
   // A section address (from the header, the footer or a shared link) scrolls to its section.
   useEffect(() => {
     if (!SECTIONS.includes(path)) return
@@ -213,17 +177,11 @@ export default function HomePage({ path }: { path: string }) {
   return (
     <div className="home" lang={currentLocale()}>
       <Identity />
-      <Work />
-      <Research />
+      <Contact />
+      <Profile />
       <footer className="home-cta">
-        <a
-          className="home-cta-link"
-          href="https://github.com/korv9"
-          target="_blank"
-          rel="noreferrer"
-        >
-          {l('More on GitHub', 'Mer på GitHub')}{' '}
-          <span aria-hidden="true">↗</span>
+        <a className="home-cta-link" href="#projekt">
+          {l('Projects', 'Projekt')} <span aria-hidden="true">→</span>
         </a>
       </footer>
     </div>
