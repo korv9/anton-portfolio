@@ -62,7 +62,13 @@ export default function JobsPulse() {
           r="4"
         />
         {years.map(([month, i]) => (
-          <text key={month} className="hub-pulse-year" x={x(i)} y={H - 6}>
+          <text
+            key={month}
+            className="hub-pulse-year"
+            data-odd={Number(month.slice(0, 4)) % 2 === 1 || undefined}
+            x={x(i)}
+            y={H - 6}
+          >
             {month.slice(0, 4)}
           </text>
         ))}

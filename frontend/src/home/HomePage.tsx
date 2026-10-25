@@ -81,7 +81,7 @@ function ProjectPages() {
       id="projektsidor"
       aria-labelledby="project-pages-title"
     >
-      <h2 id="project-pages-title" className="home-label">
+      <h2 id="project-pages-title" className="home-project-pages-title">
         {l('Project pages', 'Projektsidor')}
       </h2>
       <p className="home-project-pages-text">

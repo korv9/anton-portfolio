@@ -128,7 +128,7 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
-/* The headline: four figures on one line, the files they come from under them. */
+/* The headline: the dbt project's size, the newest run under it, the files they come from. */
 /* The title's column carries the headline figures under the name. */
 .hub-title {
   display: grid;
@@ -179,9 +179,14 @@
     border: 0;
   }
 }
-/* A status in words rather than a count steps down a size. */
-.hub-headline dd[data-kind='time'] {
-  font-size: var(--h2);
+.hub-headline-run {
+  margin: 0;
+  color: var(--ink-faded);
+}
+.hub-headline-run strong {
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-weight: 500;
 }
 
 /* ---------- How the platform is built: seven steps on a rail ----------
@@ -322,7 +327,7 @@ li[data-used] .hub-flow-num {
   transition: opacity 250ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 .hub-flow-steps > li:is(:hover, :focus-within) ~ li {
-  opacity: 0.4;
+  opacity: 0.6;
 }
 .hub-flow-data a {
   justify-self: start;
@@ -501,6 +506,14 @@ li[data-lead] .hub-item-runs {
   font-family: var(--font-mono);
   font-size: 15px;
 }
+@media (max-width: 760px) {
+  .hub-pulse-year {
+    font-size: 26px;
+  }
+  .hub-pulse-year[data-odd] {
+    display: none;
+  }
+}
 .hub-pulse figcaption {
   margin-top: var(--sp-2);
   color: var(--ink-faded);
@@ -525,15 +538,15 @@ li[data-lead] .hub-item-runs {
 }
 .hub-map-node rect {
   fill: var(--page);
-  stroke: var(--line-strong);
+  stroke: var(--ink);
   stroke-width: 1;
-  transition:
-    stroke 300ms cubic-bezier(0.16, 1, 0.3, 1),
-    fill 300ms cubic-bezier(0.16, 1, 0.3, 1);
 }
-.hub-map-node[data-on] rect {
-  stroke: var(--focal);
-  stroke-width: 2;
+.hub-map-node {
+  transition: opacity 300ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+/* Steps the chosen project skips step back; the accent stays on its path alone. */
+.hub-map-node[data-off] {
+  opacity: 0.45;
 }
 .hub-map-name {
   fill: var(--ink);
@@ -541,37 +554,39 @@ li[data-lead] .hub-item-runs {
   font-weight: 700;
 }
 .hub-map-value {
-  fill: var(--ink-faded);
+  fill: var(--ink);
   font-family: var(--font-mono);
   font-size: 26px;
   font-variant-numeric: tabular-nums;
-}
-.hub-map-node[data-on] .hub-map-value {
-  fill: var(--focal);
 }
 .hub-map-unit {
   fill: var(--ink-faded);
   font-family: var(--font-mono);
   font-size: 11px;
 }
-.hub-map-line {
+.hub-map-v .hub-map-unit {
+  font-size: 13px;
+}
+.hub-map-link {
   fill: none;
   stroke: var(--line-strong);
   stroke-width: 1;
 }
-.hub-map-line[data-on] {
+.hub-map-path {
+  fill: none;
   stroke: var(--focal);
-  stroke-width: 3;
+  stroke-width: 4;
+  stroke-linecap: round;
 }
-/* The path draws itself, segment by segment, when the map is first seen and on each new choice. */
+/* The path draws itself along the row, stretch by stretch, when first seen and on each choice. */
 @media (prefers-reduced-motion: no-preference) {
-  .hub-map-line[data-on] {
+  .hub-map-path {
     stroke-dasharray: 1;
     stroke-dashoffset: 1;
   }
-  .hub-map[data-seen] .hub-map-line[data-on] {
-    animation: hub-draw 420ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
-    animation-delay: calc(var(--i) * 110ms);
+  .hub-map[data-seen] .hub-map-path {
+    animation: hub-draw 380ms cubic-bezier(0.33, 0, 0.2, 1) forwards;
+    animation-delay: calc(var(--i) * 300ms);
   }
 }
 @keyframes hub-draw {

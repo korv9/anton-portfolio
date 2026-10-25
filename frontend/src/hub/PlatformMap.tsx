@@ -1,8 +1,9 @@
 /**
- * The flow's picture: the seven steps as boxes joined in a line, left to right on a wide screen
- * and top to bottom on a phone, each with its live count. The chosen project's path is drawn in
- * the focal accent, and it draws itself when the map first comes into view and again whenever
- * another project is chosen. The list below is the text the picture summarises.
+ * The flow's picture: the seven steps as boxes in a row, left to right on a wide screen and top
+ * to bottom on a phone, each with its live count. The chosen project's path is one line in the
+ * focal accent that runs along the boxes it passes through, drawing itself when the map is first
+ * seen and again whenever another project is chosen; the steps it skips are dimmed. The list
+ * below is the text the picture summarises.
  */
 import { useEffect, useRef, useState } from 'react'
 import { l } from '../i18n'
@@ -15,8 +16,8 @@ export type MapNode = {
   used: boolean
 }
 
-const H = { w: 1000, h: 132, box: 120, top: 16, boxH: 100 }
-const V = { w: 320, box: 64, gap: 22 }
+const H = { w: 1000, h: 140, box: 120, top: 8, boxH: 100, path: 126 }
+const V = { w: 320, box: 64, gap: 22, inset: 18 }
 
 function Box(props: {
   node: MapNode
@@ -28,7 +29,7 @@ function Box(props: {
 }) {
   const { node, x, y, w, h, vertical } = props
   return (
-    <g className="hub-map-node" data-on={node.used || undefined}>
+    <g className="hub-map-node" data-off={!node.used || undefined}>
       <rect x={x} y={y} width={w} height={h} rx="6" />
       <text className="hub-map-name" x={x + 14} y={y + (vertical ? 27 : 30)}>
         {node.short}
@@ -76,8 +77,14 @@ export default function PlatformMap(props: {
   }, [])
   const gap = (H.w - nodes.length * H.box) / (nodes.length - 1)
   const vh = nodes.length * V.box + (nodes.length - 1) * V.gap
-  const on = (i: number) => nodes[i].used && nodes[i + 1]?.used
+  // A stretch of the path is on while the project's data is still travelling: some step at or
+  // before it is used and some step after it is, so the line runs on through a skipped step.
+  const first = nodes.findIndex((n) => n.used)
+  const last = nodes.map((n) => n.used).lastIndexOf(true)
+  const on = (i: number) => first >= 0 && first <= i && last > i
   const title = l('The platform, step by step', 'Plattformen steg för steg')
+  const hx = (i: number) => i * (H.box + gap)
+  const vy = (i: number) => i * (V.box + V.gap)
   return (
     <div className="hub-map" ref={wrap} data-seen={seen || undefined}>
       <svg
@@ -88,32 +95,40 @@ export default function PlatformMap(props: {
       >
         <title id="hub-map-h-title">{title}</title>
         <desc id="hub-map-h-desc">{summary}</desc>
-        <g key={chosen}>
-          {nodes.slice(0, -1).map((node, i) => {
-            const x1 = i * (H.box + gap) + H.box
-            return (
-              <path
-                key={node.id}
-                className="hub-map-line"
-                data-on={on(i) || undefined}
-                style={{ '--i': i } as React.CSSProperties}
-                pathLength={1}
-                d={`M${x1.toFixed(1)},${H.top + H.boxH / 2}H${(x1 + gap).toFixed(1)}`}
-              />
-            )
-          })}
-        </g>
+        {nodes.slice(0, -1).map((node, i) => (
+          <path
+            key={node.id}
+            className="hub-map-link"
+            d={`M${(hx(i) + H.box).toFixed(1)},${H.top + H.boxH / 2}H${hx(i + 1).toFixed(1)}`}
+          />
+        ))}
         {nodes.map((node, i) => (
           <Box
             key={node.id}
             node={node}
-            x={i * (H.box + gap)}
+            x={hx(i)}
             y={H.top}
             w={H.box}
             h={H.boxH}
             vertical={false}
           />
         ))}
+        <g key={chosen}>
+          {nodes
+            .slice(0, -1)
+            .map(
+              (node, i) =>
+                on(i) && (
+                  <path
+                    key={node.id}
+                    className="hub-map-path"
+                    style={{ '--i': i } as React.CSSProperties}
+                    pathLength={1}
+                    d={`M${hx(i).toFixed(1)},${H.path}H${(hx(i + 1) + (i + 1 === last ? H.box : 0)).toFixed(1)}`}
+                  />
+                ),
+            )}
+        </g>
       </svg>
       <svg
         className="hub-map-v"
@@ -123,32 +138,40 @@ export default function PlatformMap(props: {
       >
         <title id="hub-map-v-title">{title}</title>
         <desc id="hub-map-v-desc">{summary}</desc>
-        <g key={chosen}>
-          {nodes.slice(0, -1).map((node, i) => {
-            const y1 = i * (V.box + V.gap) + V.box
-            return (
-              <path
-                key={node.id}
-                className="hub-map-line"
-                data-on={on(i) || undefined}
-                style={{ '--i': i } as React.CSSProperties}
-                pathLength={1}
-                d={`M${V.w / 2},${y1}V${y1 + V.gap}`}
-              />
-            )
-          })}
-        </g>
+        {nodes.slice(0, -1).map((node, i) => (
+          <path
+            key={node.id}
+            className="hub-map-link"
+            d={`M${(V.w + V.inset) / 2},${vy(i) + V.box}V${vy(i + 1)}`}
+          />
+        ))}
         {nodes.map((node, i) => (
           <Box
             key={node.id}
             node={node}
-            x={0}
-            y={i * (V.box + V.gap)}
-            w={V.w}
+            x={V.inset}
+            y={vy(i)}
+            w={V.w - V.inset}
             h={V.box}
             vertical
           />
         ))}
+        <g key={chosen}>
+          {nodes
+            .slice(0, -1)
+            .map(
+              (node, i) =>
+                on(i) && (
+                  <path
+                    key={node.id}
+                    className="hub-map-path"
+                    style={{ '--i': i } as React.CSSProperties}
+                    pathLength={1}
+                    d={`M4,${vy(i)}V${vy(i + 1) + (i + 1 === last ? V.box : 0)}`}
+                  />
+                ),
+            )}
+        </g>
       </svg>
     </div>
   )

@@ -270,8 +270,8 @@ export default function ProjectsHub({ path }: { path: string }) {
           <div className="hub-intro">
             <p>
               {l(
-                'The projects under Running on the platform run on one data platform I built: public sources fetched on a schedule, modelled and tested with dbt, passed through machine learning where the data is text, and published to these pages only when every blocking check has passed.',
-                'Projekten under Körs på plattformen körs på en dataplattform jag har byggt: offentliga källor som hämtas på schema, modelleras och testas med dbt, går genom maskininlärning där datan är text och publiceras till sidorna först när alla blockerande kontroller har gått igenom.',
+                'The projects below run on one data platform I built: public sources fetched on a schedule, modelled and tested with dbt, passed through machine learning where the data is text, and published to these pages only when every blocking check has passed.',
+                'Projekten nedan körs på en dataplattform jag har byggt: offentliga källor som hämtas på schema, modelleras och testas med dbt, går genom maskininlärning där datan är text och publiceras till sidorna först när alla blockerande kontroller har gått igenom.',
               )}
             </p>
             <p className="hub-stack">{STACK}</p>

@@ -1,6 +1,6 @@
 /**
- * The hub's headline: four figures on one line, the size of the dbt project and the newest run,
- * with the files they come from and their dates under them. The full picture is the flow further
+ * The hub's headline: the size of the dbt project in three figures, the newest ingestion run on a
+ * line under them, and the files they come from with their dates. The full picture is the flow further
  * down (PlatformFlow.tsx). A figure whose file cannot be read, or that has no date, is left out.
  */
 import { useEffect, useState } from 'react'
@@ -72,12 +72,7 @@ export default function Headline() {
       [l('dbt tests', 'dbt-tester'), num(size.tests)],
       [l('dbt source tables', 'dbt-källtabeller'), num(size.sources)],
     )
-  if (status)
-    figures.push([
-      l('Last ingestion run', 'Senaste inläsning'),
-      ago(status.last.recorded_at!),
-    ])
-  if (!figures.length) return null
+  if (!figures.length && !status) return null
   const files = [
     size && at && `schema/summary.json · ${how} ${day(at)} UTC`,
     status && `status/ingestion.json · ${day(status.last.recorded_at)} UTC`,
@@ -88,20 +83,22 @@ export default function Headline() {
       className="hub-headline"
       aria-label={l('The platform in figures', 'Plattformen i siffror')}
     >
-      <dl>
-        {figures.map(([label, value], i) => (
-          <div key={label}>
-            <dt>{label}</dt>
-            <dd
-              data-kind={
-                status && i === figures.length - 1 ? 'time' : undefined
-              }
-            >
-              {value}
-            </dd>
-          </div>
-        ))}
-      </dl>
+      {figures.length > 0 && (
+        <dl>
+          {figures.map(([label, value]) => (
+            <div key={label}>
+              <dt>{label}</dt>
+              <dd>{value}</dd>
+            </div>
+          ))}
+        </dl>
+      )}
+      {status && (
+        <p className="hub-headline-run">
+          {l('Last ingestion run', 'Senaste inläsning')}{' '}
+          <strong>{ago(status.last.recorded_at!)}</strong>
+        </p>
+      )}
       <p className="tech-meta">{files.join(' · ')}</p>
     </section>
   )
