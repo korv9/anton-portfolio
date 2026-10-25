@@ -63,6 +63,11 @@ SHARD_DIRECTORIES = (
     "workers-ai/sfs/meta.json",
 )
 
+# Delivery groups that exist only as R2 releases and are never committed under public/data.
+# The site resolves these prefixes through the active R2 manifest and everything else through
+# BASES, until the whole site reads the manifest (manifest_url).
+LIVE_PREFIXES = ("job-assistant/",)
+
 SESSION_PATTERN = re.compile(r"/(?:session=)?(\d{4}-\d{2,4})/")
 
 
@@ -199,7 +204,9 @@ def main() -> None:
     DELIVERY.write_text(
         json.dumps({"schema_version": SCHEMA_VERSION, "run_id": catalog["run_id"],
                     "bases": BASES, "shard_prefixes": list(SHARD_DIRECTORIES),
-                    **({"manifest_url": live} if live else {}),
+                    **({"manifest_url": live} if live else
+                       {"live": {"manifest_url": OBJECT_STORAGE + "manifests/current.json",
+                                 "prefixes": list(LIVE_PREFIXES)}}),
                     "parquet_datasets": {name: sorted(parts)
                                          for name, parts in sorted(datasets.items())}},
                    ensure_ascii=False, indent=1) + "\n",
