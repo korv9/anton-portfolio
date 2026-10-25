@@ -4,7 +4,7 @@
  * flow, the platform's own sections (PR #141's page) and its machinery to drill into. A sidebar
  * lists the same parts; on a phone it folds into a menu above the content.
  */
-import { lazy, Suspense, useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useState, type ReactNode } from 'react'
 import { l } from '../i18n'
 import {
   freshness,
@@ -17,28 +17,32 @@ import type { Graph } from '../tech/PipelineTables'
 import { REPO, ago, day, num, ok, reading, useFile } from '../tech/techData'
 import Headline from './Headline'
 import JobsPulse from './JobsPulse'
+import { ConceptChart, PhilosophyChart, SymbolChart } from './mini/cardsLabs'
+import { FeedChart, LawChart, SwedenChart } from './mini/cardsPlatform'
+import { Near } from './mini/MiniChart'
 import PlatformFlow from './PlatformFlow'
 import { HUB_GROUPS, type HubItem } from './hubProjects'
 import '../tech/tech.css'
 import './hub.css'
 import './hub-cards.css'
 import './hub-flow.css'
+import './mini.css'
 
 const Machinery = lazy(() => import('../tech/Machinery'))
 
 /**
- * Projects with a screenshot of their own page in public/projects/, taken from the dev server on
- * 2026-10-25. The job assistant's board has no published data yet, so its hero shows the job
- * market it reads instead (JobsPulse.tsx).
+ * Each platform project's mini dashboard: one finding from its own published files, mounted as
+ * its card nears the screen (Near). The job assistant's hero shows the job market it reads.
  */
-const THUMBS = new Set([
-  'sweden',
-  'meaning',
-  'ask-the-law',
-  'philosophy-atlas',
-  'symbolic-atlas',
-  'concept-constellation',
-])
+const CHARTS: Record<string, ReactNode> = {
+  jobs: <JobsPulse />,
+  sweden: <SwedenChart />,
+  meaning: <FeedChart />,
+  'ask-the-law': <LawChart />,
+  'philosophy-atlas': <PhilosophyChart />,
+  'symbolic-atlas': <SymbolChart />,
+  'concept-constellation': <ConceptChart />,
+}
 
 const STACK =
   'Python · dbt · DuckDB · GitHub Actions · Cloudflare R2 · Cloudflare Workers · Workers AI · TypeScript · React'
@@ -228,20 +232,6 @@ export default function ProjectsHub({ path }: { path: string }) {
               data-lead={group.id === 'jobs' || undefined}
             >
               <a className="hub-item" href={item.href}>
-                {THUMBS.has(item.id) && (
-                  <img
-                    className="hub-item-thumb"
-                    src={`/projects/${item.id}.webp`}
-                    width="800"
-                    height="500"
-                    loading="lazy"
-                    decoding="async"
-                    alt={l(
-                      `Screenshot of the ${item.title.en} page, 25 October 2026`,
-                      `Skärmbild av sidan ${item.title.sv}, 25 oktober 2026`,
-                    )}
-                  />
-                )}
                 <span className="hub-item-title">
                   {l(item.title.en, item.title.sv)}
                   {item.href.startsWith('http') && (
@@ -253,7 +243,9 @@ export default function ProjectsHub({ path }: { path: string }) {
                 </span>
                 <RunsOn item={item} domains={domains} status={status} />
               </a>
-              {item.id === 'jobs' && <JobsPulse />}
+              {CHARTS[item.id] && (
+                <Near className="hub-item-chart">{CHARTS[item.id]}</Near>
+              )}
             </li>
           )),
         )}

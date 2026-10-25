@@ -239,3 +239,34 @@ test('on a phone the hub sidebar folds into a menu', async ({ page }) => {
     ),
   ).toBe(true)
 })
+
+test('each platform card states a finding in a small chart that answers the keyboard', async ({
+  page,
+}) => {
+  await page.goto('/#projects')
+  const sweden = page.locator('#projects-sweden')
+  await sweden.scrollIntoViewIfNeeded()
+  // The chart loads as its card nears the screen and leads with its finding.
+  await expect(sweden.locator('.mini-head')).toContainText(
+    'Library visits fell',
+  )
+  const chart = sweden.getByRole('img')
+  await chart.focus()
+  await page.keyboard.press('Home')
+  await expect(sweden.locator('.mini-tip')).toContainText('2014:')
+  await page.keyboard.press('ArrowRight')
+  await expect(sweden.locator('.mini-tip')).toContainText('2015:')
+  // One toggle per card at most.
+  await sweden.getByRole('button', { name: 'Ad language' }).click()
+  await expect(sweden.locator('.mini-head')).toContainText('passion')
+  const law = page.locator('.hub-items > li', {
+    has: page.locator('a[href="#fraga-lagen"]'),
+  })
+  await law.scrollIntoViewIfNeeded()
+  await expect(law.locator('.mini-bar')).toHaveCount(3)
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth + 1,
+    ),
+  ).toBe(true)
+})
