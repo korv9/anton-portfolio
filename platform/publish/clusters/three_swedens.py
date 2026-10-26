@@ -40,7 +40,8 @@ def payload(con) -> dict:
                       "pairs of spaces; the list holds the 20 municipalities with the least agreement.",
                       f"{cut['at_or_below']} municipalities have an agreement of {cut['agreement']} or less, the "
                       "value of the 20th; ties are broken by municipality code, as pre-registered.",
-                      next(t["note"] for t in metrics["diagnostics"]["tests"] if t["pair"] == ["social", "votes"]),
+                      *[t["note"] for t in metrics["diagnostics"]["tests"]
+                        if t["pair"] == ["social", "votes"] and t.get("note")][:1],
                       metrics["grouping"]["note"]]}
 
 
