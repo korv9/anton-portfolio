@@ -75,8 +75,16 @@ jobs:
         with:
           python-version: '3.12'
           cache: pip
-          cache-dependency-path: platform/requirements-ci.lock
+          cache-dependency-path: |
+            platform/requirements-ci.lock
+            platform/requirements-dev.lock
       - run: pip install --require-hashes -r platform/requirements-ci.lock
+      # Compiled against the CI lock (-c), so shared packages have the same pins.
+      - run: pip install --require-hashes -r platform/requirements-dev.lock
+      # The platform as a package (pyproject.toml); its deps are the locks above, so none resolve here.
+      - run: pip install --no-deps --no-build-isolation -e .
+      - name: Package layers (higher layers import lower ones, never the reverse)
+        run: lint-imports
       # Cross-language compliance reconciliation runs the same TypeScript transform as the UI.
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
