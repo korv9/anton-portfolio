@@ -7,6 +7,7 @@ import {
   type Bilingual,
   type ProjectEntry,
 } from '../projects/projectRegistry'
+import { PROJECT_PAGES, briefPath } from '../projects/ProjectBrief'
 
 const b = (text: Bilingual) => l(text.en, text.sv)
 
@@ -73,11 +74,27 @@ export function ProjectContext({ route }: { route: Route }) {
 }
 
 /** Previous and next flagship project, at the bottom of a flagship's page. */
-export function ProjectPager({ route }: { route: Route }) {
+type PagerLink = Pick<ProjectEntry, 'href' | 'title'>
+
+/** Previous and next in the order #projects lists the pages, else in registry order. */
+function pagerNeighbours(route: Route): {
+  previous?: PagerLink
+  next?: PagerLink
+} | null {
+  const path = briefPath(route)
+  if (path) {
+    const i = PROJECT_PAGES.findIndex((p) => p.href === path)
+    return { previous: PROJECT_PAGES[i - 1], next: PROJECT_PAGES[i + 1] }
+  }
   const project = projectForRoute(route)
-  if (!project || isLongRead(route.path)) return null
-  const { previous, next } = neighbours(project.id)
-  const link = (p: ProjectEntry | undefined, dir: 'previous' | 'next') =>
+  return project && !isLongRead(route.path) ? neighbours(project.id) : null
+}
+
+export function ProjectPager({ route }: { route: Route }) {
+  const pages = pagerNeighbours(route)
+  if (!pages) return null
+  const { previous, next } = pages
+  const link = (p: PagerLink | undefined, dir: 'previous' | 'next') =>
     p ? (
       <a
         className={`pager-${dir}`}

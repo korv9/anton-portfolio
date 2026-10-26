@@ -35,7 +35,7 @@ These goals cannot be finished from the code alone:
 - [x] Projects listed one under another with generous space, the text on the left and a visualisation or chart on the right of each (sketch first).
 - [x] No status words or route hashtags under the projects ("LIVE · #sweden" removed); no run/count mono lines on the cards.
 - [x] Every project has its visual, including Cluster Visuals, the data platform and the three other projects.
-- [ ] Each card links to a finished project page (below).
+- [x] Each card links to a finished project page (below); Homie, a backend without a page, links to its repository.
 - [x] Replik has its card under "Running on the data platform".
 
 ## Arbetsförmedla (#jobs)
@@ -166,4 +166,4 @@ Goal: a clean, contract-first backend that reads as well engineered.
 
 ## Project pages
 
-- [ ] Each product has a page built from its canvas sketch ("Projects" page of the Intro sketches canvas) and its review's project-page content, in the shared template.
+- [x] Each product has a page built from its canvas sketch ("Projects" page of the Intro sketches canvas) and its review's project-page content, in the shared template.
