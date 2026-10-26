@@ -51,7 +51,7 @@ def main() -> None:
         select p.party, count(*) from gold.fct_news_item_party as p
         join gold.fct_news_item as n using (item_id)
         where n.is_political and n.published_at >= now() - interval 30 day
-        group by 1""").fetchall())
+        group by 1 order by 1""").fetchall())
     collected_since = connection.execute(
         "select min(first_seen) from gold.fct_news_item").fetchone()[0]
     status = {}
