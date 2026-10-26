@@ -21,6 +21,7 @@ import {
   XLabels,
   type Market,
 } from './job-kit'
+import { l } from '../../i18n'
 
 /** Ads per field in the months the latest year covers, so every year compares alike. A field
  * with no months in that span has no value (null), not zero ads. */
@@ -86,7 +87,14 @@ function FieldBump() {
           fieldName(m.fields.find((f) => f.id === id)?.name ?? id)
         const lastI = m.years.length - 1
         return (
-          <Svg w={W} h={H} label="Ads per year in the five largest fields">
+          <Svg
+            w={W}
+            h={H}
+            label={l(
+              'Ads per year in the five largest fields',
+              'Annonser per år i de fem största yrkesområdena',
+            )}
+          >
             <YAxis ticks={ticks} y={y} x0={L} x1={R} format={compact} />
             {/* The leader draws last, on top of the grey lines. */}
             {[...shown].reverse().map((id) => (
@@ -136,7 +144,7 @@ function FieldRadial() {
         return (
           <>
             <Slicer
-              label="Year"
+              label={l('Year', 'År')}
               options={m.years}
               value={yr}
               onChange={setYear}
@@ -145,7 +153,10 @@ function FieldRadial() {
               {span(m)} {yr}
             </p>
             <Bars
-              label={`Ads per occupation field, ${span(m)} ${yr}`}
+              label={l(
+                `Ads per occupation field, ${span(m)} ${yr}`,
+                `Annonser per yrkesområde, ${span(m)} ${yr}`,
+              )}
               format={compact}
               rows={ranked(m, yr).map((f, j) => ({
                 key: f.id,
@@ -173,7 +184,10 @@ function FieldChange() {
         }))
         return (
           <Bars
-            label={`Change in ads per field, ${span(m)} ${m.latest_year} against ${m.latest_year - 1}`}
+            label={l(
+              `Change in ads per field, ${span(m)} ${m.latest_year} against ${m.latest_year - 1}`,
+              `Förändring i annonser per yrkesområde, ${span(m)} ${m.latest_year} mot ${m.latest_year - 1}`,
+            )}
             format={change}
             rows={rows}
             thumb={ends(rows)}
@@ -193,18 +207,30 @@ export const posts: Post[] = [
     title: (m: Market) => {
       const top = ranked(m, m.latest_year)[0]
       return top
-        ? `${top.name} has the most ads in ${m.latest_year}`
-        : 'Ads in the largest occupation fields'
+        ? l(
+            `${top.name} has the most ads in ${m.latest_year}`,
+            `${top.name} har flest annonser ${m.latest_year}`,
+          )
+        : l(
+            'Ads in the largest occupation fields',
+            'Annonser i de största yrkesområdena',
+          )
     },
-    note: 'Ads published January to the latest full month, each year; the five largest fields this year',
+    note: [
+      'Ads published January to the latest full month, each year; the five largest fields this year',
+      'Annonser publicerade från januari till senaste hela månaden, varje år; årets fem största yrkesområden',
+    ],
     render: () => <FieldBump />,
   },
   {
     id: 'job-field-radial',
     domain: D,
     sources: ['jobs/market.json'],
-    title: 'Job ads per occupation field',
-    note: 'Ads published January to the latest full month of each year; Arbetsförmedlingen',
+    title: ['Job ads per occupation field', 'Platsannonser per yrkesområde'],
+    note: [
+      'Ads published January to the latest full month of each year; Arbetsförmedlingen',
+      'Annonser publicerade från januari till senaste hela månaden varje år; Arbetsförmedlingen',
+    ],
     render: () => <FieldRadial />,
   },
   {
@@ -215,10 +241,19 @@ export const posts: Post[] = [
       const c = changes(m)
       const down = c.filter((f) => f.ch < 0).length
       return c.length
-        ? `${down} of ${c.length} fields have fewer ads than a year earlier`
-        : 'Change in ads per field against a year earlier'
+        ? l(
+            `${down} of ${c.length} fields have fewer ads than a year earlier`,
+            `${down} av ${c.length} yrkesområden har färre annonser än ett år tidigare`,
+          )
+        : l(
+            'Change in ads per field against a year earlier',
+            'Förändring i annonser per yrkesområde mot ett år tidigare',
+          )
     },
-    note: 'Change in ads, January to the latest full month against the same months a year earlier; the largest rises and falls',
+    note: [
+      'Change in ads, January to the latest full month against the same months a year earlier; the largest rises and falls',
+      'Förändring i annonser, januari till senaste hela månaden mot samma månader året innan; de största ökningarna och minskningarna',
+    ],
     render: () => <FieldChange />,
   },
 ]

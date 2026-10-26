@@ -1,3 +1,4 @@
+import { l } from '../i18n'
 import { useEffect, useRef, useState } from 'react'
 import { fetchJson } from '../dataSource'
 import { galleryProjection, type Xyc } from '../clusters/clusterGeometry'
@@ -90,7 +91,12 @@ export default function JobsMap() {
   return (
     <figure className="home-jobs-map" ref={figure}>
       <PointCanvas points={points} />
-      <figcaption>IT JOB ADS IN SWEDEN · 35,861 ADS · UMAP</figcaption>
+      <figcaption>
+        {l(
+          'IT JOB ADS IN SWEDEN · 35,861 ADS · UMAP',
+          'IT-JOBBANNONSER I SVERIGE · 35 861 ANNONSER · UMAP',
+        )}
+      </figcaption>
     </figure>
   )
 }

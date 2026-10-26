@@ -41,7 +41,7 @@ const STEPS: { what: [string, string]; paths: string[] }[] = [
     ],
   },
   {
-    what: ['The hourly run', 'Timkörningen'],
+    what: ['The scheduled run', 'Den schemalagda körningen'],
     paths: ['.github/workflows/refresh-job-assistant.yml'],
   },
 ]

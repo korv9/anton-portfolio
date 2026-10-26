@@ -6,6 +6,8 @@ import type { ComponentProps, ReactNode } from 'react'
 import RankBars from '../../charts/RankBars'
 import { Stacked } from '../../charts/Compare'
 import type { Post } from '../kit'
+import { l } from '../../i18n'
+import { fixed } from '../../format'
 import './pol.css'
 
 export const posts: Post[] = []
@@ -57,12 +59,13 @@ export const every = <T,>(xs: T[], n: number) =>
   xs.filter((_, i) => i % n === 0)
 
 /** Per cent, at most `digits` decimals, with a space before the sign. */
-export const pct = (v: number, digits = 1) => `${Number(v.toFixed(digits))} %`
+export const pct = (v: number, digits = 1) =>
+  `${v.toLocaleString(l('en-GB', 'sv-SE'), { maximumFractionDigits: digits })} %`
 /** Whole numbers with a space between thousands, e.g. 1 071. */
 export const int = (v: number) => Math.round(v).toLocaleString('sv-SE')
-/** A change with its sign: +1.7, −3.0, 0.0. */
+/** A change with its sign: +1.7, −3.0, 0.0 (+1,7 in Swedish). */
 export const signed = (v: number, digits = 1) =>
-  `${v > 0 ? '+' : v < 0 ? '−' : ''}${Math.abs(v).toFixed(digits)}`
+  `${v > 0 ? '+' : v < 0 ? '−' : ''}${fixed(Math.abs(v), digits)}`
 
 /** charts/RankBars at card size (meaning.css .mean-bars). `wrap` lets long labels take a
  * second line instead of ending in an ellipsis. */

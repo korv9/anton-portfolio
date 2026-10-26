@@ -557,7 +557,7 @@ export default function Measurement({ route }: { route: Route }) {
   )
   const readings: Reading[] = [
     {
-      theory: 'Porter: trust in numbers',
+      theory: l('Porter: trust in numbers', 'Porter: tilltro till siffror'),
       expects: l(
         'Quantification concentrates where central institutions need comparable numbers to govern at a distance: the economy, the labour market, public finances.',
         'Kvantifiering koncentreras där centrala institutioner behöver jämförbara siffror för att styra på avstånd: ekonomin, arbetsmarknaden, offentliga finanser.',
@@ -575,7 +575,10 @@ export default function Measurement({ route }: { route: Route }) {
       ),
     },
     {
-      theory: 'Hacking and Foucault: categories',
+      theory: l(
+        'Hacking and Foucault: categories',
+        'Hacking och Foucault: kategorier',
+      ),
       expects: l(
         'What lacks an official category is hard to see: social life outside work and consumption should have few statistical objects of its own.',
         'Det som saknar officiell kategori är svårt att se: socialt liv utanför arbete och konsumtion borde ha få egna statistiska objekt.',
@@ -591,7 +594,7 @@ export default function Measurement({ route }: { route: Route }) {
       ),
     },
     {
-      theory: 'Goodhart’s law',
+      theory: l('Goodhart’s law', 'Goodharts lag'),
       expects: l(
         'Indicators that become targets lose their meaning; municipal key figures used for comparison would be the first to show it.',
         'Indikatorer som blir mål förlorar sin mening; kommunala nyckeltal som används för jämförelse borde visa det först.',

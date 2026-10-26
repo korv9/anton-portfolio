@@ -17,6 +17,7 @@ import {
   sum,
   type Market,
 } from './job-kit'
+import { l } from '../../i18n'
 
 const short = (r: string) => r.replace(/s? län$/, '')
 
@@ -54,7 +55,7 @@ function RegionLollipop() {
         return (
           <>
             <Slicer
-              label="Year"
+              label={l('Year', 'År')}
               options={m.years.filter((y) => y <= fullYear(m))}
               value={yr}
               onChange={setYear}
@@ -62,7 +63,10 @@ function RegionLollipop() {
             <p className="mean-cap">{yr}</p>
             <Bars
               n={21}
-              label={`Job ads per county, ${yr}`}
+              label={l(
+                `Job ads per county, ${yr}`,
+                `Platsannonser per län, ${yr}`,
+              )}
               format={compact}
               rows={byCounty(m, yr).map((r, j) => ({
                 key: r.name,
@@ -91,12 +95,12 @@ function RegionHeatmap() {
         }))
         const name = (id: string) =>
           id === 'all'
-            ? 'All fields'
+            ? l('All fields', 'Alla yrkesområden')
             : fieldName(m.fields.find((f) => f.id === id)?.name ?? id)
         return (
           <>
             <Slicer
-              label="Field"
+              label={l('Field', 'Yrkesområde')}
               options={['all', ...m.fields.slice(0, 8).map((f) => f.id)]}
               format={name}
               value={field}
@@ -104,7 +108,10 @@ function RegionHeatmap() {
             />
             <p className="mean-cap">{name(field)}</p>
             <Bars
-              label={`Change in ads per county, ${m.latest_year} so far against the same months of ${m.latest_year - 1}`}
+              label={l(
+                `Change in ads per county, ${m.latest_year} so far against the same months of ${m.latest_year - 1}`,
+                `Förändring i annonser per län, ${m.latest_year} hittills mot samma månader ${m.latest_year - 1}`,
+              )}
               format={change}
               rows={rows}
               thumb={ends(rows)}
@@ -133,7 +140,10 @@ function EmploymentDonut() {
         return r ? (
           <Big
             value={pct(r.share)}
-            unit={`of ${r.year} ads offer regular employment`}
+            unit={l(
+              `of ${r.year} ads offer regular employment`,
+              `av annonserna ${r.year} erbjuder vanlig anställning`,
+            )}
           />
         ) : null
       }}
@@ -150,10 +160,19 @@ export const posts: Post[] = [
       const c = countyChange(m, 'all')
       const down = c.filter((r) => r.ch < 0).length
       return c.length
-        ? `Across all fields, ads fell in ${down} of ${c.length} counties this year`
-        : 'Change in ads per county against a year earlier'
+        ? l(
+            `Across all fields, ads fell in ${down} of ${c.length} counties this year`,
+            `Över alla yrkesområden minskade annonserna i ${down} av ${c.length} län i år`,
+          )
+        : l(
+            'Change in ads per county against a year earlier',
+            'Förändring i annonser per län mot ett år tidigare',
+          )
     },
-    note: 'Change in ads by workplace county, January to the latest full month against the same months a year earlier',
+    note: [
+      'Change in ads by workplace county, January to the latest full month against the same months a year earlier',
+      'Förändring i annonser efter arbetsplatsens län, januari till senaste hela månaden mot samma månader året innan',
+    ],
     render: () => <RegionHeatmap />,
   },
   {
@@ -163,10 +182,19 @@ export const posts: Post[] = [
     title: (m: Market) => {
       const r = regular(m)
       return r
-        ? `${pct(r.share)} of ads offer regular employment`
-        : 'Kinds of employment in job ads'
+        ? l(
+            `${pct(r.share)} of ads offer regular employment`,
+            `${pct(r.share)} av annonserna erbjuder vanlig anställning`,
+          )
+        : l(
+            'Kinds of employment in job ads',
+            'Anställningsformer i platsannonser',
+          )
     },
-    note: 'Latest full year; the rest are other kinds, such as on-call and summer jobs; Arbetsförmedlingen',
+    note: [
+      'Latest full year; the rest are other kinds, such as on-call and summer jobs; Arbetsförmedlingen',
+      'Senaste helåret; resten är andra former, som behovsanställning och sommarjobb; Arbetsförmedlingen',
+    ],
     render: () => <EmploymentDonut />,
   },
   {
@@ -179,10 +207,16 @@ export const posts: Post[] = [
       const c = byCounty(m, yr)
       const all = sum(c.map((r) => r.v))
       return c[0] && all
-        ? `${c[0].name} had the most ads in ${yr}: ${pct(c[0].v / all)} of those with a named county`
-        : 'Job ads per county'
+        ? l(
+            `${c[0].name} had the most ads in ${yr}: ${pct(c[0].v / all)} of those with a named county`,
+            `${c[0].name} hade flest annonser ${yr}: ${pct(c[0].v / all)} av dem med angivet län`,
+          )
+        : l('Job ads per county', 'Platsannonser per län')
     },
-    note: 'Ads per full year by workplace county; the title is about the latest full year; Arbetsförmedlingen',
+    note: [
+      'Ads per full year by workplace county; the title is about the latest full year; Arbetsförmedlingen',
+      'Annonser per helår efter arbetsplatsens län; rubriken gäller senaste helåret; Arbetsförmedlingen',
+    ],
     render: () => <RegionLollipop />,
   },
 ]

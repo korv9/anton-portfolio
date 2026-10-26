@@ -2,8 +2,8 @@
  * SWEDEN research platform. Every rule is scoped to .sweden, so the homepage (.home-shell) and
  * the other projects never see these tokens. Dark by default; the header's theme control
  * switches to light (html[data-sw-theme='light']). Type: Archivo Expanded for the name,
- * IBM Plex Mono for navigation, labels and numbers, Newsreader for questions and headings,
- * all self-hosted under the OFL (public/fonts/sweden). Scene panels are the one place with
+ * IBM Plex Mono for navigation, labels and numbers, the site's Helvetica Neue for questions and
+ * headings (docs/site-goals.md, "One look"), * all self-hosted under the OFL (public/fonts/sweden). Scene panels are the one place with
  * translucency, blur and shadow (docs/sweden-design.md); below the scene the page stays flat.
  */
 @font-face {
@@ -11,12 +11,6 @@
   src: url('/fonts/sweden/archivo-wdth.woff2') format('woff2');
   font-weight: 100 900;
   font-stretch: 62% 125%;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'SW Newsreader';
-  src: url('/fonts/sweden/newsreader-opsz.woff2') format('woff2');
-  font-weight: 200 800;
   font-display: swap;
 }
 @font-face {
@@ -51,7 +45,7 @@
   --sw-band-ink: #f1f0ec;
   --sw-stamp: #e2b65a;
   --sw-font-name: 'SW Archivo', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  --sw-font-display: 'SW Newsreader', Georgia, 'Times New Roman', serif;
+  --sw-font-display: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   --sw-font-mono:
     'SW Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   /* The site's shared chart components read these. */
@@ -106,7 +100,7 @@
   --sw-page: #e9e8e4;
 }
 
-/* The site's #main heading rule has an id in it; match it so SWEDEN keeps its serif. */
+/* The site's #main heading rule has an id in it; match it so SWEDEN's headings keep their weight. */
 .sweden h1,
 .sweden h2,
 .sweden h3,
@@ -168,7 +162,6 @@
   gap: 1rem;
   padding: 1.375rem max(1.875rem, var(--gutter, 1rem)) 0.25rem;
   background: var(--sw-bg);
-  border-bottom: 1px solid var(--sw-line);
 }
 /* In-page jumps land below the header. */
 :root:has(.sw-header) {
@@ -335,7 +328,6 @@
   height: 100svh;
   min-height: 40rem;
   overflow: hidden;
-  border-bottom: 1px solid var(--sw-line);
 }
 .sw-scene-visual {
   position: absolute;
@@ -597,9 +589,6 @@
   font-weight: 400;
 }
 
-.sw-method details {
-  border-top: 1px solid var(--sw-line);
-}
 .sw-method summary {
   padding: 0.75rem 0;
   cursor: pointer;
@@ -985,7 +974,6 @@ td.sw-cell[data-zero] .sw-cell-button span {
 /* Connections */
 .sw-connection {
   padding: 1.5rem 0;
-  border-top: 1px solid var(--sw-line);
 }
 .sw-connection h2 {
   margin: 0 0 0.5rem;

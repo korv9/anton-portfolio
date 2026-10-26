@@ -31,7 +31,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "platform/lib"))
 sys.path.insert(0, str(ROOT / "platform/nlp"))
 import delivery  # noqa: E402
-from issue_lexicon import compound_index, score, stems  # noqa: E402
+from issue_lexicon import STEM, compound_index, score, stems  # noqa: E402
 
 PUBLIC = ROOT / "frontend/public/data"
 OUT = PUBLIC / "politics/parliament/story.json"
@@ -39,6 +39,8 @@ PARTIES = ["S", "SD", "M", "V", "C", "KD", "MP", "L"]
 CAST = {"Ja", "Nej", "Avstår"}
 # Field codes from word processors that survive in some older protocols' text.
 ARTIFACTS = {"mergeformat", "styleref", "kantrubrik", "charformat", "pageref", "hyperlink"}
+# Kept out of the leader-debate keywords and the rising terms alike.
+ARTIFACT_STEMS = frozenset(STEM.stemWord(w) for w in ARTIFACTS)
 
 
 # ---------------------------------------------------------------- pure helpers (tested)
@@ -226,7 +228,7 @@ def main() -> int:
     df = Counter()
     for c in docs.values():
         df.update(set(c))
-    keywords = tfidf_terms(docs, df, len(docs), exclude=names)
+    keywords = tfidf_terms(docs, df, len(docs), exclude=names | ARTIFACT_STEMS)
     forms = surface_forms(texts_for_forms)
     for d in per_debate:
         for p, row in d["parties"].items():
@@ -266,7 +268,7 @@ def main() -> int:
                         sample_texts.append(r["speech_text"])
     # A term must occur in at least 25 different speeches and not be a name; this also drops
     # leftovers of word-processor formatting in older protocols.
-    for st in {STEM.stemWord(w) for w in ARTIFACTS}:
+    for st in ARTIFACT_STEMS:
         speech_df.pop(st, None)
     allowed = {st for st, n in speech_df.items() if n >= 25 and st not in names}
     terms = rising_terms(period_counts["now"], period_counts["before"], allowed=allowed)

@@ -3,32 +3,40 @@ import { useState } from 'react'
 import { Frame, OTHER, Slicer, focal, useData, type Post } from '../kit'
 import { XAxis } from '../axes'
 import { Ranked, Svg, axis, fmt, maxOf, pct } from './wel-kit'
+import { l } from '../../i18n'
 
 /** party, theme, year, future-oriented speeches, of which use the theme. */
 type Parties = { rows: [string, string, number, number, number][] }
 
-type Themes = { themes: { id: string; label_en: string }[] }
+type Themes = {
+  themes: { id: string; label_en: string; label_sv?: string }[]
+}
 
 type Summary = {
   domains: {
     id: string
     label_en: string
+    label_sv?: string
     scb_tables: number
     kolada_kpis: number
   }[]
 }
 
-const PARTY: Record<string, string> = {
-  S: 'Social Democrats',
-  M: 'Moderates',
-  SD: 'Sweden Democrats',
-  C: 'Centre',
-  V: 'Left',
-  KD: 'Christian Democrats',
-  L: 'Liberals',
-  MP: 'Greens',
-  NYD: 'New Democracy',
+const PARTY: Record<string, [string, string]> = {
+  S: ['Social Democrats', 'Socialdemokraterna'],
+  M: ['Moderates', 'Moderaterna'],
+  SD: ['Sweden Democrats', 'Sverigedemokraterna'],
+  C: ['Centre', 'Centerpartiet'],
+  V: ['Left', 'Vänsterpartiet'],
+  KD: ['Christian Democrats', 'Kristdemokraterna'],
+  L: ['Liberals', 'Liberalerna'],
+  MP: ['Greens', 'Miljöpartiet'],
+  NYD: ['New Democracy', 'Ny demokrati'],
 }
+const party = (p: string) => (PARTY[p] ? l(...PARTY[p]) : p)
+/** A theme's or domain's name in the reader's language. */
+const named = (r: { label_en: string; label_sv?: string }) =>
+  l(r.label_en, r.label_sv ?? r.label_en)
 
 /** Years pooled per party, so a share rests on enough speeches. */
 const SPAN = 4
@@ -70,7 +78,7 @@ function PartyDots() {
       {(t) => (
         <Frame data={data}>
           {(d) => {
-            const names = new Map(t.themes.map((th) => [th.id, th.label_en]))
+            const names = new Map(t.themes.map((th) => [th.id, named(th)]))
             const { rows } = shares(d, theme)
             const ax = axis(
               rows.map((r) => r.share),
@@ -80,7 +88,7 @@ function PartyDots() {
             return (
               <>
                 <Slicer
-                  label="Theme"
+                  label={l('Theme', 'Tema')}
                   options={t.themes.map((th) => th.id)}
                   value={theme}
                   onChange={setTheme}
@@ -89,7 +97,10 @@ function PartyDots() {
                 <Svg
                   w={600}
                   h={220}
-                  label={`Share of each party's future-oriented speeches that use the theme ${names.get(theme) ?? theme}, %`}
+                  label={l(
+                    `Share of each party's future-oriented speeches that use the theme ${names.get(theme) ?? theme}, %`,
+                    `Andel av varje partis framtidsinriktade anföranden som tar upp temat ${names.get(theme) ?? theme}, %`,
+                  )}
                 >
                   {ax.ticks.map((v) => (
                     <line
@@ -111,7 +122,7 @@ function PartyDots() {
                           textAnchor="end"
                           className="mean-wel-name"
                         >
-                          {PARTY[r.party] ?? r.party}
+                          {party(r.party)}
                         </text>
                         <line
                           className="mean-wel-base"
@@ -135,7 +146,10 @@ function PartyDots() {
                   <XAxis
                     x={ax.y}
                     y={214}
-                    ticks={ax.ticks.map((v) => ({ value: v, label: `${v}%` }))}
+                    ticks={ax.ticks.map((v) => ({
+                      value: v,
+                      label: pct(v, 0),
+                    }))}
                   />
                 </Svg>
               </>
@@ -156,11 +170,14 @@ function MeasuredBars() {
     <Frame data={useData<Summary>('sweden/measurement/summary.json')}>
       {(d) => (
         <Ranked
-          label="SCB statistics tables plus Kolada municipal indicators, counted together, per life domain"
+          label={l(
+            'SCB statistics tables plus Kolada municipal indicators, counted together, per life domain',
+            'SCB:s statistiktabeller och Koladas kommunala nyckeltal, räknade tillsammans, per livsområde',
+          )}
           format={(v) => fmt(v, 0)}
           rows={domains(d).map((r) => ({
             key: r.id,
-            label: r.label_en,
+            label: named(r),
             value: count(r),
           }))}
         />
@@ -178,10 +195,16 @@ export const posts: Post[] = [
     title: (d: Parties) => {
       const { period, rows } = shares(d, 'environment')
       return rows[0]
-        ? `Environmental themes took the largest share of future speeches for the ${PARTY[rows[0].party] ?? rows[0].party}, ${period}`
-        : 'Future themes by party'
+        ? l(
+            `Environmental themes took the largest share of future speeches for the ${party(rows[0].party)}, ${period}`,
+            `Miljöteman tog störst andel av framtidsanförandena hos ${party(rows[0].party)}, ${period}`,
+          )
+        : l('Future themes by party', 'Framtidsteman per parti')
     },
-    note: "Share of each party's future-oriented speeches that use the theme; parties with 100 or more such speeches. Source: Riksdagen",
+    note: [
+      "Share of each party's future-oriented speeches that use the theme; parties with 100 or more such speeches. Source: Riksdagen",
+      'Andel av varje partis framtidsinriktade anföranden som tar upp temat; partier med minst 100 sådana anföranden. Källa: Riksdagen',
+    ],
     render: () => <PartyDots />,
   },
   {
@@ -192,10 +215,16 @@ export const posts: Post[] = [
       const ds = domains(d)
       const top = [...ds].sort((a, b) => count(b) - count(a))[0]
       return top
-        ? `${top.label_en} has the most statistics tables and indicators of the ${ds.length} life domains`
-        : 'What Sweden measures'
+        ? l(
+            `${top.label_en} has the most statistics tables and indicators of the ${ds.length} life domains`,
+            `${named(top)} har flest statistiktabeller och nyckeltal av de ${ds.length} livsområdena`,
+          )
+        : l('What Sweden measures', 'Vad Sverige mäter')
     },
-    note: 'SCB statistics tables plus Kolada municipal indicators, counted together; items outside the domains left out. Sources: SCB, Kolada',
+    note: [
+      'SCB statistics tables plus Kolada municipal indicators, counted together; items outside the domains left out. Sources: SCB, Kolada',
+      'SCB:s statistiktabeller och Koladas kommunala nyckeltal, räknade tillsammans; poster utanför områdena är borttagna. Källor: SCB, Kolada',
+    ],
     render: () => <MeasuredBars />,
   },
 ]

@@ -95,9 +95,6 @@ main {
   font-weight: 800;
   color: var(--teal);
 }
-.reports {
-  border-top: 1px solid var(--line);
-}
 .featured-projects {
   max-width: none;
   margin: auto;

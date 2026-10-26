@@ -197,8 +197,8 @@ export default function ResearchStory({
                   'av ett kluster i utgångsläget kom i snitt från en och samma bok.',
                 )}
                 comparison={l(
-                  'The clustering was strong, but it was not measuring the intended construct: it grouped style and translation, not meaning.',
-                  'Klustringen var stark, men den mätte inte det som var avsett: den grupperade stil och översättning, inte betydelse.',
+                  'The clusters were well separated, but they were not measuring the intended construct: they grouped style and translation, not meaning.',
+                  'Klustren var väl åtskilda, men de mätte inte det som var avsett: de grupperade stil och översättning, inte betydelse.',
                 )}
               />
             </li>

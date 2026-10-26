@@ -15,7 +15,9 @@ test(
     await expect(page.locator('#dc-splits-title')).toContainText(
       'new drug pair',
     )
-    await page.getByRole('button', { name: 'New drug', exact: true }).click()
+    await page
+      .getByRole('button', { name: 'New drug (one or both)', exact: true })
+      .click()
     await expect(page).toHaveURL(/uppdelning=cold_drug/)
     await expect(page.locator('#dc-splits-title')).toContainText('new drug')
     // What it learns: the tree trained on the screens, the features and a check against luck.

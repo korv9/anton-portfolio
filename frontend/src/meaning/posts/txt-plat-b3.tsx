@@ -1,6 +1,7 @@
 /** Swedish statutes: the largest by number of sections. */
 import { Frame, useData, type Post } from '../kit'
 import { Bars, fmt, heading, usable } from './txt-kit'
+import { l } from '../../i18n'
 
 type Sfs = { largest: { sfs: string; title: string; sections: number }[] }
 const SFS = 'sfs/overview.json'
@@ -15,7 +16,10 @@ function SfsLargest() {
     <Frame data={data}>
       {(s) => (
         <Bars
-          label="The largest Swedish statutes by number of sections"
+          label={l(
+            'The largest Swedish statutes by number of sections',
+            'De största svenska författningarna efter antal paragrafer',
+          )}
           format={fmt}
           long
           rows={bySections(s).map((l) => ({
@@ -36,9 +40,15 @@ export const posts: Post[] = [
     sources: ['sfs/overview.json'],
     title: heading((s: Sfs) => {
       const [a] = bySections(s)
-      return `${a.title} is the largest statute, with ${fmt(a.sections)} sections`
+      return l(
+        `${a.title} is the largest statute, with ${fmt(a.sections)} sections`,
+        `${a.title} är den största författningen, med ${fmt(a.sections)} paragrafer`,
+      )
     }),
-    note: 'Sections (paragrafer) per statute, the largest in the SFS collection',
+    note: [
+      'Sections (paragrafer) per statute, the largest in the SFS collection',
+      'Paragrafer per författning, de största i SFS-samlingen',
+    ],
     render: () => <SfsLargest />,
   },
 ]

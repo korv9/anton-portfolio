@@ -7,6 +7,8 @@ import RankBars, { type RankRow } from '../../charts/RankBars'
 import { xTickY } from '../axes'
 import { OTHER, PostOpen, type Post } from '../kit'
 import { FIELD_EN, type Market } from '../../jobs/market'
+import { l } from '../../i18n'
+import { fixed } from '../../format'
 import './job.css'
 
 export const posts: Post[] = []
@@ -20,12 +22,21 @@ export const knownRegion = (r: { region: string }) =>
 export const CLUSTERS = 'jobs/cluster-summary.json'
 export const PREVIEW = 'jobs/cluster-preview.json'
 
-export const fieldName = (sv: string) => FIELD_EN[sv] ?? sv
+/** An occupation field in the reader's language: the data names it in Swedish. */
+export const fieldName = (sv: string) => l(FIELD_EN[sv] ?? sv, sv)
+/** Cluster labels the run writes in English words; skill names like 'Python / SQL' read the
+ * same in both languages. */
+const CLUSTER_SV: Record<string, string> = {
+  'Mixed tech advertisements': 'Blandade techannonser',
+  'Unassigned / noise': 'Ej tilldelade / brus',
+}
+export const clusterLabel = (s: string) => l(s, CLUSTER_SV[s] ?? s)
 export const sum = (xs: number[]) => xs.reduce((a, b) => a + b, 0)
-export const fmt = (n: number) => Math.round(n).toLocaleString('en-GB')
-export const pct = (n: number, d = 0) => `${(n * 100).toFixed(d)} %`
+export const fmt = (n: number) =>
+  Math.round(n).toLocaleString(l('en-GB', 'sv-SE'))
+export const pct = (n: number, d = 0) => `${fixed(n * 100, d)} %`
 export const compact = (n: number) =>
-  new Intl.NumberFormat('en-GB', {
+  new Intl.NumberFormat(l('en-GB', 'sv-SE'), {
     notation: 'compact',
     maximumFractionDigits: 1,
   }).format(n)
@@ -50,9 +61,10 @@ export const ratio = (now: number | undefined, before: number | undefined) =>
 export const fullYear = (m: Market) =>
   m.last_month.endsWith('-12') ? m.latest_year : m.latest_year - 1
 
-/** 'January–September': the months the latest year covers, which every year is counted over. */
+/** 'January–September' ('januari–september'): the months the latest year covers, which every
+ * year is counted over. */
 export const span = (m: Market) =>
-  `January–${new Date(2000, m.ytd_months - 1, 15).toLocaleString('en-GB', { month: 'long' })}`
+  `${l('January', 'januari')}–${new Date(2000, m.ytd_months - 1, 15).toLocaleString(l('en-GB', 'sv-SE'), { month: 'long' })}`
 
 /** A giant single number with its unit, plain on the card like the other families' KPIs. */
 export function Big({ value, unit }: { value: string; unit: string }) {

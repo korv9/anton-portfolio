@@ -536,8 +536,8 @@ export default function ClusterVisualsPage() {
             {l('Riksdag debates by session.', 'Riksdagsdebatter per riksmöte.')}
           </strong>{' '}
           {l(
-            'Up to 400 speech passages from each of the 33 sessions 1993/94–2025/26, placed by one topic model so the sessions compare like with like. The four earlier sessions come from an older topic model; only its twelve largest groups are drawn.',
-            'Upp till 400 talpassager ur vart och ett av de 33 riksmötena 1993/94–2025/26, placerade av en och samma ämnesmodell så att riksmötena går att jämföra. De fyra tidigare riksmötena kommer från en äldre ämnesmodell; bara dess tolv största grupper ritas.',
+            'Up to 400 speech passages from each of the 33 sessions 1993/94–2025/26, placed by one shared topic model so the sessions compare like with like. It is an earlier, unvalidated model: most passages fit none of its topics, so read these maps as texture, not findings. The four earlier sessions come from an older topic model; only its twelve largest groups are drawn.',
+            'Upp till 400 talpassager ur vart och ett av de 33 riksmötena 1993/94–2025/26, placerade av en och samma ämnesmodell så att riksmötena går att jämföra. Det är en tidigare, ovaliderad modell: de flesta passager passar inget av dess ämnen, så läs kartorna som textur, inte som resultat. De fyra tidigare riksmötena kommer från en äldre ämnesmodell; bara dess tolv största grupper ritas.',
           )}
         </p>
         <p>

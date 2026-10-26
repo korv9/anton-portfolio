@@ -175,7 +175,21 @@ def store(source: str, relative: str, payload: bytes, *, url: str, method: str =
         record["headers"] = headers
     if logical_path:
         record["logical_path"] = logical_path
+    append_manifest(source, record)
+    return path
+
+
+def record_error(source: str, relative: str, url: str, error: object) -> None:
+    """Log a failed request in the fetch log (counted as `errors` by fetch_summary). The line has
+    no method or hash, so models that read the manifest for stored files skip it."""
+    append_manifest(source, {"path": relative, "url": url,
+                             "fetched_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+                             "error": str(error).splitlines()[0][:300]})
+
+
+def append_manifest(source: str, record: dict) -> None:
     manifest_path = RAW / source / "_manifest.jsonl"
+    manifest_path.parent.mkdir(parents=True, exist_ok=True)
     # A killed append may leave a fragment; discard it before writing the next record.
     if manifest_path.exists():
         with manifest_path.open("rb+") as handle:
@@ -189,7 +203,11 @@ def store(source: str, relative: str, payload: bytes, *, url: str, method: str =
                     handle.truncate(tail + 1)
     with manifest_path.open("a", encoding="utf-8") as manifest:
         manifest.write(json.dumps(record, ensure_ascii=False) + "\n")
-    return path
+
+
+def json_document(payload: bytes) -> None:
+    """Exactly one JSON value: an HTML error page or two concatenated answers raise ValueError."""
+    json.loads(payload)
 
 
 def fetch(http: requests.Session, source: str, relative: str, url: str, *, method: str = "GET",
@@ -200,7 +218,12 @@ def fetch(http: requests.Session, source: str, relative: str, url: str, *, metho
 
     `headers` are sent and recorded (content negotiation: format, language). With `versioned`
     every distinct payload is kept (see store_version) instead of replacing the file.
+    `validate` checks the payload before it is stored, and a reusable stored copy (refetched
+    when it fails). `.json` paths default to json_document, so an answer that is not one JSON
+    document raises here and never replaces the last good file.
     """
+    if validate is None and relative.endswith((".json", ".json.gz")):
+        validate = json_document
     if not versioned and reusable(source, relative, url, method=method, body=body,
                                  headers=headers, max_age_days=max_age_days):
         path = RAW / source / relative
@@ -221,7 +244,15 @@ def fetch(http: requests.Session, source: str, relative: str, url: str, *, metho
     if pause:
         time.sleep(pause)
     if validate:
-        validate(response.content)
+        try:
+            validate(response.content)
+        except (ValueError, KeyError, TypeError) as error:
+            raise ValueError(
+                f"{source}/{relative}: rejected the answer from {url} "
+                f"(HTTP {getattr(response, 'status_code', '?')}, "
+                f"{getattr(response, 'headers', {}).get('Content-Type')}, "
+                f"{len(response.content)} bytes, starts "
+                f"{response.content[:60]!r}); the stored copy is kept: {error}") from error
     save = store_version if versioned else store
     return save(source, relative, response.content, url=url, method=method, body=body,
                 headers=headers)

@@ -184,8 +184,8 @@ def rejected_joins(b_years: set[int], e_years: set[int], rho: float | None, acad
         "reason": ("The two corpora differ in genre, author and length. "
                    + ("The DiVA abstracts are shown next to the Riksdag on The Lost Futures page, never pooled into one map."
                       if academic else
-                      "The DiVA abstracts are being harvested again so that only Swedish abstracts count, each record "
-                      "once; they are shown next to the Riksdag when that is done, never pooled into one map.")),
+                      "The comparison is limited to Swedish DiVA abstracts, each record counted once; they are "
+                      "read next to the Riksdag, never pooled into one map.")),
     }]
 
 

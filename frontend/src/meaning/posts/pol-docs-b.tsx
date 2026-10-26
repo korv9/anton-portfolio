@@ -1,4 +1,6 @@
 /** Tax decisions and how parties voted on them; how far speech tells parties apart. */
+import { l } from '../../i18n'
+import { fixed } from '../../format'
 import { focal, Frame, OTHER, shade, useData, type Post } from '../kit'
 import { linearScale } from '../../charts/scales'
 import { EndLabels, niceDomain, RefLine, XAxis, YAxis } from '../axes'
@@ -51,7 +53,10 @@ function TaxTimeline() {
           <svg
             viewBox="0 0 300 220"
             role="img"
-            aria-label="Tax decisions per year, raises above the line and cuts below"
+            aria-label={l(
+              'Tax decisions per year, raises above the line and cuts below',
+              'Skattebeslut per år, höjningar ovanför linjen och sänkningar under',
+            )}
           >
             <YAxis
               y={y}
@@ -69,7 +74,12 @@ function TaxTimeline() {
                   height={y(0) - y(n(yr, 'higher'))}
                   fill={focal(true)}
                 >
-                  <title>{`${yr}: ${n(yr, 'higher')} raised`}</title>
+                  <title>
+                    {l(
+                      `${yr}: ${n(yr, 'higher')} raised`,
+                      `${yr}: ${n(yr, 'higher')} höjda`,
+                    )}
+                  </title>
                 </rect>
                 <rect
                   x={x(yr) - w / 2}
@@ -78,16 +88,21 @@ function TaxTimeline() {
                   height={y(-n(yr, 'lower')) - y(0)}
                   fill={OTHER}
                 >
-                  <title>{`${yr}: ${n(yr, 'lower')} cut`}</title>
+                  <title>
+                    {l(
+                      `${yr}: ${n(yr, 'lower')} cut`,
+                      `${yr}: ${n(yr, 'lower')} sänkta`,
+                    )}
+                  </title>
                 </rect>
               </g>
             ))}
             <g className="mean-end">
               <text x={258} y={y(hi / 2) + 4}>
-                Raises
+                {l('Raises', 'Höjningar')}
               </text>
               <text x={258} y={y(-hi / 2) + 4}>
-                Cuts
+                {l('Cuts', 'Sänkningar')}
               </text>
             </g>
             <XAxis
@@ -122,12 +137,15 @@ function TaxVotes() {
     <Frame data={useData<Taxes>('taxes/decisions.json')}>
       {(d) => (
         <Shares
-          label="Votes per party on tax decisions: yes, no and abstain"
+          label={l(
+            'Votes per party on tax decisions: yes, no and abstain',
+            'Röster per parti i skattebeslut: ja, nej och avstår',
+          )}
           format={String}
           parts={[
-            { label: 'Yes', colour: focal(true) },
-            { label: 'No', colour: shade(0, 2) },
-            { label: 'Abstain', colour: shade(1, 2) },
+            { label: l('Yes', 'Ja'), colour: focal(true) },
+            { label: l('No', 'Nej'), colour: shade(0, 2) },
+            { label: l('Abstain', 'Avstår'), colour: shade(1, 2) },
           ]}
           rows={tally(d)
             .sort((a, b) => b.yes - a.yes)
@@ -141,15 +159,21 @@ function TaxVotes() {
 function taxVotesTitle(d: Taxes) {
   const top = best(tally(d), (r) => r.yes)
   return top
-    ? `${top.p} has the highest yes share: ${top.values[0]} of ${top.n} tax decisions`
-    : 'How each party voted on tax decisions'
+    ? l(
+        `${top.p} has the highest yes share: ${top.values[0]} of ${top.n} tax decisions`,
+        `${top.p} har högst andel ja: ${top.values[0]} av ${top.n} skattebeslut`,
+      )
+    : l(
+        'How each party voted on tax decisions',
+        'Hur varje parti röstade i skattebeslut',
+      )
 }
 
 /** The two measures comparable across sessions; the all-party AUC changes with who sits in the
  * Riksdag, so it is left out. The first is the focal line. */
 const AUC = [
-  ['Same debate', 'within_debate_auc'],
-  ['Seven parties', 'seven_parties_auc'],
+  [['Same debate', 'Samma debatt'], 'within_debate_auc'],
+  [['Seven parties', 'Sju partier'], 'seven_parties_auc'],
 ] as const
 
 function Polarization() {
@@ -172,16 +196,24 @@ function Polarization() {
           <svg
             viewBox="0 0 600 200"
             role="img"
-            aria-label="How well speech text tells parties apart, AUC per session"
+            aria-label={l(
+              'How well speech text tells parties apart, AUC per session',
+              'Hur väl anförandenas text skiljer partierna åt, AUC per riksmöte',
+            )}
           >
             <YAxis
               y={y}
               ticks={ticks}
               x0={34}
               x1={500}
-              format={(v) => v.toFixed(1)}
+              format={(v) => fixed(v, 1)}
             />
-            <RefLine y={y(0.5)} x0={34} x1={500} label="0.5 = chance" />
+            <RefLine
+              y={y(0.5)}
+              x0={34}
+              x1={500}
+              label={l('0.5 = chance', '0,5 = slump')}
+            />
             {AUC.map(([, k], i) => (
               <path
                 key={k}
@@ -197,7 +229,7 @@ function Polarization() {
               top={14}
               bottom={174}
               items={AUC.map(([label, k], i) => ({
-                label,
+                label: l(label[0], label[1]),
                 y: y(s.at(-1)![k]),
                 color: i === 0 ? focal(true) : undefined,
               }))}
@@ -225,10 +257,16 @@ export const posts: Post[] = [
     title: (d: Taxes) => {
       const s = span(d)
       return s
-        ? `Tax decisions ${s.join('–')}: ${count(d, 'lower')} cuts, ${count(d, 'higher')} raises`
-        : 'Tax decisions per year'
+        ? l(
+            `Tax decisions ${s.join('–')}: ${count(d, 'lower')} cuts, ${count(d, 'higher')} raises`,
+            `Skattebeslut ${s.join('–')}: ${count(d, 'lower')} sänkningar, ${count(d, 'higher')} höjningar`,
+          )
+        : l('Tax decisions per year', 'Skattebeslut per år')
     },
-    note: 'Decisions per year they took effect. Source: Riksdagen votes.',
+    note: [
+      'Decisions per year they took effect. Source: Riksdagen votes.',
+      'Beslut per år då de trädde i kraft. Källa: riksdagens omröstningar.',
+    ],
     render: () => <TaxTimeline />,
   },
   {
@@ -236,7 +274,10 @@ export const posts: Post[] = [
     domain: 'politics',
     sources: ['taxes/decisions.json'],
     title: taxVotesTitle,
-    note: "Share of each party's yes, no and abstain votes on tax decisions it voted on. Source: Riksdagen.",
+    note: [
+      "Share of each party's yes, no and abstain votes on tax decisions it voted on. Source: Riksdagen.",
+      'Andel ja, nej och avstår för varje parti i de skattebeslut det röstade om. Källa: Riksdagen.',
+    ],
     render: () => <TaxVotes />,
   },
   {
@@ -247,10 +288,19 @@ export const posts: Post[] = [
     title: (d: Polar) => {
       const [a, b] = [d.sessions[0], d.sessions.at(-1)]
       return a && b && a !== b
-        ? `Within the same debate, speech tells parties apart better: AUC ${a.within_debate_auc.toFixed(2)} in ${a.session}, ${b.within_debate_auc.toFixed(2)} in ${b.session}`
-        : 'How well speech tells parties apart within a debate'
+        ? l(
+            `Within the same debate, speech tells parties apart better: AUC ${fixed(a.within_debate_auc, 2)} in ${a.session}, ${fixed(b.within_debate_auc, 2)} in ${b.session}`,
+            `Inom samma debatt skiljer anförandena partierna åt allt bättre: AUC ${fixed(a.within_debate_auc, 2)} riksmötet ${a.session}, ${fixed(b.within_debate_auc, 2)} riksmötet ${b.session}`,
+          )
+        : l(
+            'How well speech tells parties apart within a debate',
+            'Hur väl anförandena skiljer partierna åt inom en debatt',
+          )
     },
-    note: 'Text-classifier AUC on Riksdag speeches, 0.5 = chance; across debates the seven parties stay level',
+    note: [
+      'Text-classifier AUC on Riksdag speeches, 0.5 = chance; across debates the seven parties stay level',
+      'AUC för en textklassificerare på riksdagens anföranden, 0,5 = slump; mellan debatter ligger de sju partierna kvar på samma nivå',
+    ],
     render: () => <Polarization />,
   },
 ]

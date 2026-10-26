@@ -14,6 +14,7 @@ import {
   XLabels,
   type Market,
 } from './job-kit'
+import { l } from '../../i18n'
 
 /** The latest full year's share of ads asking for experience, of the ads that answer yes or
  * no; null when that year has no answers. */
@@ -33,7 +34,10 @@ function ExperienceWaffle() {
         return e ? (
           <Big
             value={pct(e.share)}
-            unit={`of ${e.year} ads ask for work experience`}
+            unit={l(
+              `of ${e.year} ads ask for work experience`,
+              `av annonserna ${e.year} kräver arbetslivserfarenhet`,
+            )}
           />
         ) : null
       }}
@@ -43,6 +47,9 @@ function ExperienceWaffle() {
 
 /** Hours keys in a fixed order: full time at the base of each column, not stated on top. */
 const HOURS = ['Heltid', 'Deltid', 'Okänd']
+/** The data's Swedish hours keys, in the reader's language. */
+const hoursName = (k: string) =>
+  l(HOURS_EN[k] ?? k, k === 'Okänd' ? 'Ej angivet' : k)
 /** A year's share of ads with these hours, or null when the year has no hours counted. */
 const hoursShare = (m: Market, yr: number, k: string) => {
   const h = m.conditions[yr]?.all?.hours ?? {}
@@ -74,7 +81,10 @@ function HoursStack() {
           <Svg
             w={W}
             h={H}
-            label="Shares of full-time, part-time and unstated hours in ads per year"
+            label={l(
+              'Shares of full-time, part-time and unstated hours in ads per year',
+              'Andel annonser med heltid, deltid och ej angiven arbetstid per år',
+            )}
           >
             <YAxis
               ticks={[0, 0.5, 1]}
@@ -100,7 +110,7 @@ function HoursStack() {
                     stroke="var(--paper)"
                     strokeWidth={0.5}
                   >
-                    <title>{`${year} ${HOURS_EN[k] ?? k}: ${pct(s, 1)}`}</title>
+                    <title>{`${year} ${hoursName(k)}: ${pct(s, 1)}`}</title>
                   </rect>
                 )
               })
@@ -115,7 +125,7 @@ function HoursStack() {
                 mid -= v
                 return {
                   y: mid + v / 2,
-                  label: `${HOURS_EN[k] ?? k} ${pct(s)}`,
+                  label: `${hoursName(k)} ${pct(s)}`,
                   color: j ? 'var(--mean-muted)' : focal(true),
                 }
               })}
@@ -142,10 +152,19 @@ export const posts: Post[] = [
     title: (m: Market) => {
       const e = experience(m)
       return e
-        ? `${pct(e.share)} of ads ask for work experience`
-        : 'Ads that ask for work experience'
+        ? l(
+            `${pct(e.share)} of ads ask for work experience`,
+            `${pct(e.share)} av annonserna kräver arbetslivserfarenhet`,
+          )
+        : l(
+            'Ads that ask for work experience',
+            'Annonser som kräver arbetslivserfarenhet',
+          )
     },
-    note: 'Share of ads in the latest full year that state whether experience is needed; Arbetsförmedlingen',
+    note: [
+      'Share of ads in the latest full year that state whether experience is needed; Arbetsförmedlingen',
+      'Andel av annonserna under senaste helåret som anger om erfarenhet krävs; Arbetsförmedlingen',
+    ],
     render: () => <ExperienceWaffle />,
   },
   {
@@ -156,10 +175,19 @@ export const posts: Post[] = [
       const yr = fullYear(m)
       const s = hoursShare(m, yr, 'Heltid')
       return s == null
-        ? 'Full-time and part-time job ads per year'
-        : `${pct(s)} of ${yr} ads were for full-time work`
+        ? l(
+            'Full-time and part-time job ads per year',
+            'Platsannonser på heltid och deltid per år',
+          )
+        : l(
+            `${pct(s)} of ${yr} ads were for full-time work`,
+            `${pct(s)} av annonserna ${yr} gällde heltid`,
+          )
     },
-    note: 'Share of ads per full year by working hours; Arbetsförmedlingen',
+    note: [
+      'Share of ads per full year by working hours; Arbetsförmedlingen',
+      'Andel annonser per helår efter arbetstid; Arbetsförmedlingen',
+    ],
     render: () => <HoursStack />,
   },
 ]

@@ -14,6 +14,7 @@ import {
   XLabels,
   type Market,
 } from './job-kit'
+import { l } from '../../i18n'
 
 /** The fields with the most ads over all months, biggest first. */
 const topFields = (m: Market, n: number) =>
@@ -27,12 +28,16 @@ const topFields = (m: Market, n: number) =>
 
 function MonthlyLine() {
   const data = useData<Market>(MARKET)
-  const [field, setField] = useState('All')
+  const [field, setField] = useState('all')
   return (
     <Frame data={data}>
       {(m) => {
         const tops = topFields(m, 7)
-        const id = tops.find((f) => fieldName(f.name) === field)?.id ?? 'all'
+        const id = tops.some((f) => f.id === field) ? field : 'all'
+        const name = (k: string) =>
+          k === 'all'
+            ? l('All fields', 'Alla yrkesområden')
+            : fieldName(tops.find((f) => f.id === k)?.name ?? k)
         const rows = m.monthly[id] ?? []
         if (!rows.length) return null
         const W = 600,
@@ -48,16 +53,20 @@ function MonthlyLine() {
         return (
           <>
             <Slicer
-              label="Field"
-              options={['All', ...tops.map((f) => fieldName(f.name))]}
-              value={field}
+              label={l('Field', 'Yrkesområde')}
+              options={['all', ...tops.map((f) => f.id)]}
+              format={(k) => (k === 'all' ? l('All', 'Alla') : name(k))}
+              value={id}
               onChange={setField}
             />
-            <p className="mean-cap">{field === 'All' ? 'All fields' : field}</p>
+            <p className="mean-cap">{name(id)}</p>
             <Svg
               w={W}
               h={H}
-              label={`Job ads and vacancies per month, ${field === 'All' ? 'all fields' : field}`}
+              label={l(
+                `Job ads and vacancies per month, ${name(id).toLowerCase()}`,
+                `Platsannonser och lediga jobb per månad, ${name(id).toLowerCase()}`,
+              )}
             >
               <YAxis ticks={ticks} y={y} x0={L} x1={R} format={compact} />
               <path
@@ -79,10 +88,14 @@ function MonthlyLine() {
                 items={[
                   {
                     y: vac.at(-1)![1],
-                    label: 'vacancies',
+                    label: l('vacancies', 'lediga jobb'),
                     color: 'var(--mean-muted)',
                   },
-                  { y: ads.at(-1)![1], label: 'ads', color: focal(true) },
+                  {
+                    y: ads.at(-1)![1],
+                    label: l('ads', 'annonser'),
+                    color: focal(true),
+                  },
                 ]}
               />
               <XLabels
@@ -127,7 +140,14 @@ function Calendar() {
             )
         const latest = years.at(-1)
         return (
-          <Svg w={W} h={H} label="Job ads per month, one line per year">
+          <Svg
+            w={W}
+            h={H}
+            label={l(
+              'Job ads per month, one line per year',
+              'Platsannonser per månad, en linje per år',
+            )}
+          >
             <YAxis ticks={ticks} y={y} x0={L} x1={R} format={compact} />
             {years.map((yr) => (
               <path
@@ -175,16 +195,28 @@ export const posts: Post[] = [
     domain: D,
     sources: ['jobs/market.json'],
     size: 'wide',
-    title: 'Job ads and the vacancies they list, per month',
-    note: 'One ad can list several vacancies; 2020 on, Arbetsförmedlingen',
+    title: [
+      'Job ads and the vacancies they list, per month',
+      'Platsannonser och de lediga jobb de listar, per månad',
+    ],
+    note: [
+      'One ad can list several vacancies; 2020 on, Arbetsförmedlingen',
+      'En annons kan gälla flera lediga jobb; från 2020, Arbetsförmedlingen',
+    ],
     render: () => <MonthlyLine />,
   },
   {
     id: 'job-calendar',
     domain: D,
     sources: ['jobs/market.json'],
-    title: 'Job ads per month, one line per year',
-    note: 'New ads published each month, the last six years; the latest year runs to the latest full month',
+    title: [
+      'Job ads per month, one line per year',
+      'Platsannonser per månad, en linje per år',
+    ],
+    note: [
+      'New ads published each month, the last six years; the latest year runs to the latest full month',
+      'Nya annonser publicerade varje månad, de senaste sex åren; senaste året går till senaste hela månaden',
+    ],
     render: () => <Calendar />,
   },
 ]

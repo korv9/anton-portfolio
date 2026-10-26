@@ -28,6 +28,8 @@ test('calibration scatter: predicted against measured, with zones', async ({
   await page.goto('/#drugcomb-quality')
   const f = await feature(page, 'kalibrering')
   await expect(f.locator('.calib-point')).toHaveCount(40)
-  await f.getByRole('button', { name: 'New drug', exact: true }).click()
+  await f
+    .getByRole('button', { name: 'New drug (one or both)', exact: true })
+    .click()
   await expect(f.locator('.calib-point.off')).toHaveCount(30)
 })

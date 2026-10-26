@@ -143,6 +143,12 @@ def test_tax_branch_support_from_country_bootstrap():
     assert any(s < 1 for c, s in support if c not in groups)
 
 
+def test_trajectory_groups_that_barely_beat_the_null_are_descriptive():
+    assert trajectories.margin_status("finding", 0.0084) == "descriptive"
+    assert trajectories.margin_status("finding", 0.2) == "finding"
+    assert trajectories.margin_status("counter_example", 0.0) == "counter_example"
+
+
 def test_trajectory_null_shuffles_years_within_municipality():
     flat = np.arange(2 * 15 * 3, dtype=float).reshape(2, -1)
     drawn = trajectories.shuffle_years(flat, np.random.default_rng(0))

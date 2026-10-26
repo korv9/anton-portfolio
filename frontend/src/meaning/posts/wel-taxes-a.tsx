@@ -12,10 +12,22 @@ import {
   pct,
   scale,
 } from './wel-kit'
+import { l } from '../../i18n'
 
-type TaxType = { tax_code: string; name_en: string; parent_code: string | null }
+type TaxType = {
+  tax_code: string
+  name_en: string
+  name_sv?: string
+  parent_code: string | null
+}
+const taxName = (t: TaxType) => l(t.name_en, t.name_sv ?? t.name_en)
 
-type Country = { country_code: string; name_en: string; is_nordic: boolean }
+type Country = {
+  country_code: string
+  name_en: string
+  name_sv?: string
+  is_nordic: boolean
+}
 
 /** year, tax code, % of GDP, SEK bn. */
 type Sweden = {
@@ -30,14 +42,15 @@ type Countries = {
   rows: [string, number, string, number | null][]
 }
 
-/** Short names for the six top-level tax types, for direct labels. */
-const SHORT: Record<string, string> = {
-  T_1000: 'Income and profits',
-  T_2000: 'Social security',
-  T_3000: 'Payroll',
-  T_4000: 'Property',
-  T_5000: 'Goods and services',
-  T_6000: 'Other',
+/** Short names for the six top-level tax types, for direct labels. The Swedish ones name the
+ * tax itself, so they read alone in the title as well. */
+const SHORT: Record<string, [string, string]> = {
+  T_1000: ['Income and profits', 'Skatt på inkomst och vinst'],
+  T_2000: ['Social security', 'Socialavgifter'],
+  T_3000: ['Payroll', 'Löneskatter'],
+  T_4000: ['Property', 'Fastighetsskatter'],
+  T_5000: ['Goods and services', 'Skatt på varor och tjänster'],
+  T_6000: ['Other', 'Övriga skatter'],
 }
 
 const useSweden = () => useData<Sweden>('taxes/sweden.json')
@@ -53,7 +66,7 @@ function mix(d: Sweden) {
     series: tops(d.types)
       .map((t) => ({
         code: t.tax_code,
-        name: SHORT[t.tax_code] ?? t.name_en,
+        name: SHORT[t.tax_code] ? l(...SHORT[t.tax_code]) : taxName(t),
         v: years.map((y) => at.get(`${y}:${t.tax_code}`) ?? null),
       }))
       // Types without a latest value sort last; their lines still draw.
@@ -76,14 +89,17 @@ function MixLines() {
           <Svg
             w={600}
             h={220}
-            label="Sweden's tax revenue by type of tax, % of GDP"
+            label={l(
+              "Sweden's tax revenue by type of tax, % of GDP",
+              'Sveriges skatteintäkter efter skatteslag, % av BNP',
+            )}
           >
             <YAxis
               y={ax.y}
               ticks={ax.ticks}
               x0={30}
               x1={390}
-              format={(v) => `${v}%`}
+              format={(v) => pct(v, 0)}
             />
             {series.map((s, j) => (
               <path
@@ -144,7 +160,7 @@ function leaves(d: Sweden) {
       )
       .map((t) => ({
         key: t.tax_code,
-        label: t.name_en,
+        label: taxName(t),
         value: at.get(t.tax_code)!,
       }))
       .sort((a, b) => b.value - a.value)
@@ -160,7 +176,10 @@ function LargestTaxes() {
           wrap
           head={4}
           tail={0}
-          label="Sweden's six largest taxes, % of GDP"
+          label={l(
+            "Sweden's six largest taxes, % of GDP",
+            'Sveriges sex största skatter, % av BNP',
+          )}
           format={(v) => pct(v)}
           rows={leaves(d).rows}
         />
@@ -177,11 +196,17 @@ function League() {
         const year = maxOf(rows.map((r) => r[1]))
         if (year === null) return null
         const names = new Map(
-          d.countries.map((c) => [c.country_code, c.name_en]),
+          d.countries.map((c) => [
+            c.country_code,
+            l(c.name_en, c.name_sv ?? c.name_en),
+          ]),
         )
         return (
           <Ranked
-            label={`OECD countries ranked by total tax revenue, % of GDP, ${year}`}
+            label={l(
+              `OECD countries ranked by total tax revenue, % of GDP, ${year}`,
+              `OECD-länder rangordnade efter totala skatteintäkter, % av BNP, ${year}`,
+            )}
             format={(v) => pct(v)}
             focus="SWE"
             rows={rows
@@ -209,10 +234,16 @@ export const posts: Post[] = [
       const s = series[0]
       const v = s?.v.at(-1)
       return s && v != null
-        ? `Taxes on ${s.name.toLowerCase()} raised the most in ${years.at(-1)}: ${pct(v)} of GDP`
-        : "Sweden's tax mix"
+        ? l(
+            `Taxes on ${s.name.toLowerCase()} raised the most in ${years.at(-1)}: ${pct(v)} of GDP`,
+            `${s.name} drog in mest ${years.at(-1)}: ${pct(v)} av BNP`,
+          )
+        : l("Sweden's tax mix", 'Sveriges skattemix')
     },
-    note: 'Tax revenue by type, % of GDP. Source: OECD Revenue Statistics',
+    note: [
+      'Tax revenue by type, % of GDP. Source: OECD Revenue Statistics',
+      'Skatteintäkter efter skatteslag, % av BNP. Källa: OECD Revenue Statistics',
+    ],
     render: () => <MixLines />,
   },
   {
@@ -228,10 +259,19 @@ export const posts: Post[] = [
         .sort((a, b) => b[3]! - a[3]!)
       const i = ranked.findIndex((r) => r[0] === 'SWE')
       return i < 0
-        ? 'Tax revenue as a share of GDP, OECD countries'
-        : `Sweden had the ${ordinal(i + 1)}-highest tax take of ${ranked.length} OECD countries in ${year}`
+        ? l(
+            'Tax revenue as a share of GDP, OECD countries',
+            'Skatteintäkter som andel av BNP, OECD-länder',
+          )
+        : l(
+            `Sweden had the ${ordinal(i + 1)}-highest tax take of ${ranked.length} OECD countries in ${year}`,
+            `Sverige hade ${i ? `det ${ordinal(i + 1)} högsta` : 'det högsta'} skattetrycket av ${ranked.length} OECD-länder ${year}`,
+          )
     },
-    note: 'Total tax revenue, % of GDP. Source: OECD Revenue Statistics',
+    note: [
+      'Total tax revenue, % of GDP. Source: OECD Revenue Statistics',
+      'Totala skatteintäkter, % av BNP. Källa: OECD Revenue Statistics',
+    ],
     render: () => <League />,
   },
   {
@@ -241,10 +281,16 @@ export const posts: Post[] = [
     title: (d: Sweden) => {
       const { year, rows } = leaves(d)
       return rows[0] && year !== null
-        ? `${rows[0].label} was Sweden's largest single tax in ${year}`
-        : "Sweden's largest taxes"
+        ? l(
+            `${rows[0].label} was Sweden's largest single tax in ${year}`,
+            `${rows[0].label} var Sveriges största enskilda skatt ${year}`,
+          )
+        : l("Sweden's largest taxes", 'Sveriges största skatter')
     },
-    note: 'The six largest, % of GDP. Source: OECD Revenue Statistics',
+    note: [
+      'The six largest, % of GDP. Source: OECD Revenue Statistics',
+      'De sex största, % av BNP. Källa: OECD Revenue Statistics',
+    ],
     render: () => <LargestTaxes />,
   },
 ]

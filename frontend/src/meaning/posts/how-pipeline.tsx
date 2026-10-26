@@ -10,6 +10,7 @@ import { useEffect, useState } from 'react'
 import { Frame, PALETTE, type Post } from '../kit'
 import { freshness, lastRun, loadStatus, SUBJECTS } from '../freshness'
 import { Bars, fmt } from './txt-kit'
+import { l } from '../../i18n'
 
 type Status = Record<string, Parameters<typeof lastRun>[0]>
 
@@ -47,17 +48,25 @@ function RunStrip() {
           .filter((r) => r.run)
           .sort((a, b) => b.run!.seconds - a.run!.seconds)
         const total = rows.reduce((n, r) => n + r.run!.seconds, 0)
-        if (!rows.length) return <p className="mean-failed">No run recorded</p>
+        if (!rows.length)
+          return (
+            <p className="mean-failed">
+              {l('No run recorded', 'Ingen körning registrerad')}
+            </p>
+          )
         return (
           <Bars
-            label={`Ingest time of the last run of each of ${rows.length} pipeline subjects, ${fmt(total / 60)} minutes summed`}
+            label={l(
+              `Ingest time of the last run of each of ${rows.length} pipeline subjects, ${fmt(total / 60)} minutes summed`,
+              `Inläsningstid för senaste körningen av vart och ett av ${rows.length} dataflöden, sammanlagt ${fmt(total / 60)} minuter`,
+            )}
             format={(v) => `${fmt(v / 60)} min`}
             focus={null}
             rows={rows.map((r) => ({
               key: r.subject,
               label: r.subject.replace(/_/g, ' '),
               value: r.run!.seconds,
-              text: `${fmt(r.run!.seconds / 60)} min${r.failed ? ', failed' : ''}${r.late ? ', overdue' : ''}`,
+              text: `${fmt(r.run!.seconds / 60)} min${r.failed ? l(', failed', ', misslyckad') : ''}${r.late ? l(', overdue', ', försenad') : ''}`,
               color: r.late ? PALETTE[0] : undefined,
             }))}
           />
@@ -73,9 +82,18 @@ export const posts: Post[] = [
     domain: 'platform',
     sources: ['status/ingestion.json'],
     size: 'wide',
-    label: 'How it is made: ingest time of each pipeline subject',
-    title: 'How long each data source takes to ingest',
-    note: 'Minutes of the last ingest per source, from the live run status; an overdue source is in colour',
+    label: [
+      'How it is made: ingest time of each pipeline subject',
+      'Så görs det: inläsningstid per dataflöde',
+    ],
+    title: [
+      'How long each data source takes to ingest',
+      'Hur lång tid varje datakälla tar att läsa in',
+    ],
+    note: [
+      'Minutes of the last ingest per source, from the live run status; an overdue source is in colour',
+      'Minuter för senaste inläsningen per källa, från den aktuella körstatusen; en försenad källa är färgad',
+    ],
     render: () => <RunStrip />,
   },
 ]

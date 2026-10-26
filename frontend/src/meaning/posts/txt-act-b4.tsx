@@ -1,11 +1,13 @@
 /** AI signals outside the Act: monthly counts in Riksdag speeches and job ads. */
 import { Frame, PALETTE, useData, type Post } from '../kit'
 import { Svg, fmt, uniq, usable } from './txt-kit'
+import { l } from '../../i18n'
 
 type Signals = {
   series: {
     series_id: string
     label_en: string
+    label_sv?: string | null
     rows: [string, number, number, number, number][]
   }[]
 }
@@ -30,14 +32,17 @@ function SignalMultiples() {
           <Svg
             w={W}
             h={rh * series.length + 14}
-            label="Monthly counts of every AI signal, small multiples"
+            label={l(
+              'Monthly counts of every AI signal, small multiples',
+              'Antal per månad för varje AI-signal, små multiplar',
+            )}
           >
             {series.map((s, j) => {
               const max = Math.max(...s.rows.map((r) => r[1]), 1)
               return (
                 <g key={s.series_id} transform={`translate(0,${j * rh})`}>
                   <text className="mean-txt-t" x={0} y={10}>
-                    {s.label_en}
+                    {l(s.label_en, s.label_sv || s.label_en)}
                   </text>
                   <text className="mean-txt-t" x={W} y={10} textAnchor="end">
                     {fmt(max)}
@@ -83,8 +88,14 @@ export const posts: Post[] = [
     domain: d,
     sources: ['ai-act/signals.json'],
     size: 'tall',
-    title: 'AI in Riksdag speeches and job ads, by month',
-    note: 'Each panel on its own scale; all panels share the month axis',
+    title: [
+      'AI in Riksdag speeches and job ads, by month',
+      'AI i riksdagsanföranden och jobbannonser, per månad',
+    ],
+    note: [
+      'Each panel on its own scale; all panels share the month axis',
+      'Varje panel har egen skala; alla delar månadsaxeln',
+    ],
     render: () => <SignalMultiples />,
   },
 ]

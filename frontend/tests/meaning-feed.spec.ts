@@ -287,3 +287,22 @@ test('the feed wears the site charcoal tokens and its text passes contrast', asy
     .analyze()
   expect(result.violations.map((v) => v.nodes[0]?.target.join(' '))).toEqual([])
 })
+
+test('in Swedish the first ten cards have Swedish titles', async ({ page }) => {
+  await page.goto(FEED)
+  await page.getByRole('button', { name: 'Svenska' }).click()
+  const feed = page.locator('.mean-page')
+  await expect(
+    feed.getByRole('heading', { level: 2, name: 'Politik' }),
+  ).toBeVisible()
+  for (let i = 0; i < 10; i++) {
+    const card = feed.locator('.mean-post').nth(i)
+    await card.scrollIntoViewIfNeeded()
+    const title = card.locator('.mean-head-title')
+    await expect(title).not.toBeEmpty()
+    // Common English words that never belong in a Swedish title.
+    expect(` ${await title.textContent()} `).not.toMatch(
+      / (the|of|and|from|with)\s/i,
+    )
+  }
+})

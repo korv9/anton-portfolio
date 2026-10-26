@@ -1,4 +1,5 @@
 /** State budget: the opposition's alternative budgets, and how far outturn lands from plan. */
+import { l } from '../../i18n'
 import { focal, Frame, OTHER, useData, type Post } from '../kit'
 import { partyName } from '../../parties/identity'
 import { Bars, pct, signed } from './pol-kit'
@@ -50,7 +51,7 @@ const AREA: Record<number, string> = {
   27: 'Contribution to the EU',
 }
 
-const bn = (msek: number) => `${signed(msek / 1000, 0)} bn`
+const bn = (msek: number) => `${signed(msek / 1000, 0)} ${l('bn', 'mdkr')}`
 
 /** Each opposition party's total change to the government's spending in the latest year. */
 function deviations(d: Budgets) {
@@ -74,7 +75,10 @@ function DeviationBars() {
         return (
           <Bars
             wrap
-            label={`Each party's change to the government's spending for ${year}, billion kronor`}
+            label={l(
+              `Each party's change to the government's spending for ${year}, billion kronor`,
+              `Varje partis ändring av regeringens utgifter för ${year}, miljarder kronor`,
+            )}
             format={bn}
             rows={rows.map((r) => ({
               key: r.party,
@@ -112,10 +116,13 @@ function gaps(d: Outturn) {
       .sort((a, b) => b.gap - a.gap),
   }
 }
-const areaName = (d: Outturn, area: number) =>
-  AREA[area] ??
-  d.data.find((r) => r.expenditure_area === area)?.expenditure_area_name ??
-  String(area)
+/** The area's name: English from AREA, Swedish as the data names it. */
+const areaName = (d: Outturn, area: number) => {
+  const sv = d.data.find(
+    (r) => r.expenditure_area === area,
+  )?.expenditure_area_name
+  return l(AREA[area] ?? sv ?? String(area), sv ?? AREA[area] ?? String(area))
+}
 
 function OutturnBars() {
   return (
@@ -123,7 +130,10 @@ function OutturnBars() {
       {(d) => (
         <Bars
           wrap
-          label="Median gap between outturn and approved budget per expenditure area"
+          label={l(
+            'Median gap between outturn and approved budget per expenditure area',
+            'Medianavvikelse mellan utfall och beslutad budget per utgiftsområde',
+          )}
           format={(v) => pct(v * 100)}
           rows={gaps(d).rows.map((r, i) => ({
             key: String(r.area),
@@ -147,13 +157,26 @@ export const posts: Post[] = [
       const { year, rows } = deviations(d)
       const [hi, lo] = [rows[0], rows.at(-1)]
       if (!hi || !lo || hi === lo)
-        return 'Alternative budgets against the government’s'
+        return l(
+          'Alternative budgets against the government’s',
+          'Alternativa budgetar mot regeringens',
+        )
       // Each end reads by its own sign: a party can add to or cut the government's spending.
+      const bnOf = (msek: number) => Math.abs(Math.round(msek / 1000))
       const side = (msek: number) =>
-        `${Math.abs(Math.round(msek / 1000))} bn ${msek < 0 ? 'less' : 'more'}`
-      return `The ${partyName(hi.party)} would spend ${side(hi.msek)} than the government in ${year}; the ${partyName(lo.party)} ${side(lo.msek)}`
+        l(
+          `${bnOf(msek)} bn ${msek < 0 ? 'less' : 'more'}`,
+          `${bnOf(msek)} miljarder ${msek < 0 ? 'mindre' : 'mer'}`,
+        )
+      return l(
+        `The ${partyName(hi.party)} would spend ${side(hi.msek)} than the government in ${year}; the ${partyName(lo.party)} ${side(lo.msek)}`,
+        `${partyName(hi.party)} skulle lägga ${side(hi.msek)} än regeringen ${year}; ${partyName(lo.party)} ${side(lo.msek)}`,
+      )
     },
-    note: 'Sum of each party’s changes to the government’s spending across the 27 expenditure areas, SEK billion; parties without an alternative budget are not shown. Source: Riksdagen',
+    note: [
+      'Sum of each party’s changes to the government’s spending across the 27 expenditure areas, SEK billion; parties without an alternative budget are not shown. Source: Riksdagen',
+      'Summan av varje partis ändringar av regeringens utgifter i de 27 utgiftsområdena, miljarder kronor; partier utan egen budgetmotion visas inte. Källa: Riksdagen',
+    ],
     render: () => <DeviationBars />,
   },
   {
@@ -164,10 +187,19 @@ export const posts: Post[] = [
       const { rows } = gaps(d)
       const [hi, lo] = [rows[0], rows.at(-1)]
       return hi && lo
-        ? `${areaName(d, hi.area)} lands furthest from its first approved budget, a median ${pct(hi.gap * 100, 0)} a year; ${areaName(d, lo.area).toLowerCase()} ${pct(lo.gap * 100)}`
-        : 'How far spending lands from the first approved budget'
+        ? l(
+            `${areaName(d, hi.area)} lands furthest from its first approved budget, a median ${pct(hi.gap * 100, 0)} a year; ${areaName(d, lo.area).toLowerCase()} ${pct(lo.gap * 100)}`,
+            `${areaName(d, hi.area)} hamnar längst från sin först beslutade budget, i median ${pct(hi.gap * 100, 0)} per år; ${areaName(d, lo.area).toLowerCase()} ${pct(lo.gap * 100)}`,
+          )
+        : l(
+            'How far spending lands from the first approved budget',
+            'Hur långt utfallet hamnar från den först beslutade budgeten',
+          )
     },
-    note: 'Median of |outturn ÷ approved budget − 1| per expenditure area and year; the baseline is the budget first approved, before amending budgets. Source: Statskontoret',
+    note: [
+      'Median of |outturn ÷ approved budget − 1| per expenditure area and year; the baseline is the budget first approved, before amending budgets. Source: Statskontoret',
+      'Median av |utfall ÷ beslutad budget − 1| per utgiftsområde och år; utgångspunkten är den först beslutade budgeten, före ändringsbudgetar. Källa: Statskontoret',
+    ],
     render: () => <OutturnBars />,
   },
 ]

@@ -3,6 +3,7 @@ import { focal, Frame, OTHER, useData, type Post } from '../kit'
 import { EndLabels, YAxis } from '../axes'
 import { linearScale, yearTicks } from '../../charts/scales'
 import { D, linePath, Svg, XLabels } from './job-kit'
+import { l } from '../../i18n'
 
 type Curve = {
   id: number
@@ -45,7 +46,10 @@ function DemandShapes() {
           <Svg
             w={600}
             h={220}
-            label="Typical demand trend of each occupation cluster, with the 10th to 90th percentile band"
+            label={l(
+              'Typical demand trend of each occupation cluster, with the 10th to 90th percentile band',
+              'Typisk efterfrågetrend för varje yrkeskluster, med band från 10:e till 90:e percentilen',
+            )}
           >
             <YAxis
               y={y}
@@ -80,7 +84,7 @@ function DemandShapes() {
               bottom={B}
               items={curves.map((c, i) => ({
                 y: y(c.medoid.at(-1) ?? 0),
-                label: `${c.size} ${way(c)}`,
+                label: `${c.size} ${way(c) === 'rising' ? l('rising', 'stigande') : l('falling', 'fallande')}`,
                 color: i ? 'var(--mean-muted)' : focal(true),
               }))}
             />
@@ -110,10 +114,19 @@ export const posts: Post[] = [
         d.clusters.filter((c) => way(c) === w).reduce((a, c) => a + c.size, 0)
       const [up, down] = [count('rising'), count('falling')]
       return up && down
-        ? `${up} of ${up + down} occupation groups follow a rising curve in their share of job ads since 2023; ${down} follow a falling one`
-        : 'Shapes of demand across occupation groups'
+        ? l(
+            `${up} of ${up + down} occupation groups follow a rising curve in their share of job ads since 2023; ${down} follow a falling one`,
+            `${up} av ${up + down} yrkesgrupper följer en stigande kurva i sin andel av platsannonserna sedan 2023; ${down} följer en fallande`,
+          )
+        : l(
+            'Shapes of demand across occupation groups',
+            'Efterfrågans former bland yrkesgrupper',
+          )
     },
-    note: 'Trend of each group’s share of job ads, scaled per group (standard deviations); line: typical group, band: 10th–90th percentile. Arbetsförmedlingen, 2023–2026',
+    note: [
+      'Trend of each group’s share of job ads, scaled per group (standard deviations); line: typical group, band: 10th–90th percentile. Arbetsförmedlingen, 2023–2026',
+      'Trend för varje grupps andel av platsannonserna, skalad per grupp (standardavvikelser); linje: typisk grupp, band: 10:e–90:e percentilen. Arbetsförmedlingen, 2023–2026',
+    ],
     render: () => <DemandShapes />,
   },
 ]

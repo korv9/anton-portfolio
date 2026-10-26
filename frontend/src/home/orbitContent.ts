@@ -38,8 +38,8 @@ export const EXPERIENCE: {
       {
         heading: t('Analys', 'Analysis'),
         text: t(
-          'Gjorde en reproducerbar NLP-analys av över 21 000 incidenter där datakvaliteten bedömdes med hänsyn till GDPR och anonymisering.',
-          'Ran a reproducible NLP analysis of 21,000+ incidents, assessing data quality with GDPR and anonymisation in mind.',
+          'Gjorde en reproducerbar NLP-analys av 21 633 incidentposter där datakvaliteten bedömdes med hänsyn till GDPR och anonymisering.',
+          'Ran a reproducible NLP analysis of 21,633 incident records, assessing data quality with GDPR and anonymisation in mind.',
         ),
       },
     ],

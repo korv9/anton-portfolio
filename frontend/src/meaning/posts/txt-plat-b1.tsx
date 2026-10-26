@@ -4,6 +4,7 @@ import { EndLabels, XAxis, YAxis, ticksBetween } from '../axes'
 import { Stacked } from '../../charts/Compare'
 import { linearScale, niceTicks } from '../../charts/scales'
 import { Svg, fmt, heading, line, sum, usable } from './txt-kit'
+import { l } from '../../i18n'
 
 type Sfs = {
   kinds: { kind: string; documents: number; repealed: number }[]
@@ -15,12 +16,16 @@ type Sfs = {
 const SFS = 'sfs/overview.json'
 const d = 'platform'
 
-/** Statute kinds bottom to top, with English names and one stable colour each. */
-const KINDS: [string, string, string][] = [
-  ['förordning', 'Ordinances', shade(1, 3)],
-  ['lag', 'Acts', PALETTE[0]],
-  ['other', 'Other', shade(2, 3)],
+/** Statute kinds bottom to top, with English and Swedish names and one stable colour each. */
+const KINDS: [string, readonly [string, string], string][] = [
+  ['förordning', ['Ordinances', 'Förordningar'], shade(1, 3)],
+  ['lag', ['Acts', 'Lagar'], PALETTE[0]],
+  ['other', ['Other', 'Övriga'], shade(2, 3)],
 ]
+const kindLabel = (kind: string) => {
+  const name = KINDS.find(([q]) => q === kind)?.[1]
+  return name ? l(...name) : kind
+}
 const total = (r: Sfs['years'][number]) => sum(KINDS.map(([k]) => r[k] ?? 0))
 
 function SfsStream() {
@@ -28,7 +33,7 @@ function SfsStream() {
   return (
     <Frame data={data}>
       {({ years }) => {
-        const [W, H, l, r, top, bottom] = [600, 220, 34, 84, 10, 18]
+        const [W, H, left, r, top, bottom] = [600, 220, 34, 84, 10, 18]
         const y0 = years[0].year
         const y1 = years.at(-1)!.year
         // Every year on the axis. The file counts statutes by the year they were issued and
@@ -37,7 +42,7 @@ function SfsStream() {
         const all = Array.from({ length: y1 - y0 + 1 }, (_, i) =>
           at.get(y0 + i),
         )
-        const x = linearScale([y0, y1], [l, W - r])
+        const x = linearScale([y0, y1], [left, W - r])
         const yt = niceTicks(Math.max(...years.map(total)))
         const y = linearScale([0, yt.at(-1)!], [H - bottom, top])
         const layer = (upto: number) =>
@@ -52,8 +57,15 @@ function SfsStream() {
           )
         const last = all.at(-1)
         return (
-          <Svg w={W} h={H} label="Swedish statutes per year by kind, stacked">
-            <YAxis y={y} ticks={yt} x0={l} x1={W - r} format={fmt} />
+          <Svg
+            w={W}
+            h={H}
+            label={l(
+              'Swedish statutes per year by kind, stacked',
+              'Svenska författningar per år och slag, staplade',
+            )}
+          >
+            <YAxis y={y} ticks={yt} x0={left} x1={W - r} format={fmt} />
             <XAxis
               x={x}
               y={H - 4}
@@ -68,7 +80,7 @@ function SfsStream() {
                 d={`${line(layer(j + 1))}${line(layer(j).reverse()).replace('M', 'L')}Z`}
                 fill={c}
               >
-                <title>{name}</title>
+                <title>{l(...name)}</title>
               </path>
             ))}
             <EndLabels
@@ -81,7 +93,7 @@ function SfsStream() {
                   : 0
                 return {
                   y: y(lo + (last?.[k] ?? 0) / 2),
-                  label: name,
+                  label: l(...name),
                   color: j === 1 ? c : undefined,
                 }
               })}
@@ -100,19 +112,22 @@ function SfsUnits() {
       {({ kinds }) => (
         <div className="mean-bars">
           <Stacked
-            label="Swedish statutes in force and repealed, by kind"
+            label={l(
+              'Swedish statutes in force and repealed, by kind',
+              'Svenska författningar i kraft och upphävda, per slag',
+            )}
             format={fmt}
             parts={[
-              { label: 'In force', colour: PALETTE[0] },
-              { label: 'Repealed', colour: OTHER },
+              { label: l('In force', 'I kraft'), colour: PALETTE[0] },
+              { label: l('Repealed', 'Upphävda'), colour: OTHER },
             ]}
             rows={[...kinds]
               .sort((a, b) => b.documents - a.documents)
               .map((k) => ({
                 key: k.kind,
-                label: KINDS.find(([q]) => q === k.kind)?.[1] ?? k.kind,
+                label: kindLabel(k.kind),
                 values: [k.documents - k.repealed, k.repealed],
-                text: `${fmt(k.documents - k.repealed)} of ${fmt(k.documents)}`,
+                text: `${fmt(k.documents - k.repealed)} ${l('of', 'av')} ${fmt(k.documents)}`,
               }))}
           />
         </div>
@@ -127,9 +142,15 @@ export const posts: Post[] = [
     sources: ['sfs/overview.json'],
     title: heading(({ years }: Sfs) => {
       const peak = [...years].sort((a, b) => total(b) - total(a))[0]
-      return `Statutes in the collection peak in ${peak.year}, with ${fmt(total(peak))} issued that year`
+      return l(
+        `Statutes in the collection peak in ${peak.year}, with ${fmt(total(peak))} issued that year`,
+        `Flest författningar i samlingen kom ${peak.year}, då ${fmt(total(peak))} utfärdades`,
+      )
     }),
-    note: "Swedish statutes (SFS) in Riksdagen's open data by year issued, including those since repealed",
+    note: [
+      "Swedish statutes (SFS) in Riksdagen's open data by year issued, including those since repealed",
+      'Svenska författningar (SFS) i riksdagens öppna data efter utfärdandeår, även de som sedan upphävts',
+    ],
     size: 'wide',
     render: () => <SfsStream />,
   },
@@ -141,10 +162,16 @@ export const posts: Post[] = [
       const n = sum(kinds.map((k) => k.documents))
       const gone = sum(kinds.map((k) => k.repealed))
       return n
-        ? `${Math.round((gone / n) * 100)}% of the ${fmt(n)} statutes in the collection are repealed`
+        ? l(
+            `${Math.round((gone / n) * 100)}% of the ${fmt(n)} statutes in the collection are repealed`,
+            `${Math.round((gone / n) * 100)} % av samlingens ${fmt(n)} författningar är upphävda`,
+          )
         : ''
     }),
-    note: "Swedish statutes (SFS) in Riksdagen's open data, by kind; statutes still in force at the row end",
+    note: [
+      "Swedish statutes (SFS) in Riksdagen's open data, by kind; statutes still in force at the row end",
+      'Svenska författningar (SFS) i riksdagens öppna data, per slag; de som fortfarande gäller står vid radens slut',
+    ],
     size: 'tall',
     render: () => <SfsUnits />,
   },

@@ -724,7 +724,10 @@ export default function Language({ route }: { route: Route }) {
     v >= -0.1 ? 'supports' : 'challenges'
   const readings: Reading[] = [
     {
-      theory: 'Han and Fisher: the achievement subject',
+      theory: l(
+        'Han and Fisher: the achievement subject',
+        'Han och Fisher: prestationssubjektet',
+      ),
       expects: l(
         'Ads ask increasingly for passion, drive and self-realisation, and present work as identity.',
         'Annonser efterfrågar alltmer passion, driv och självförverkligande och framställer arbete som identitet.',
@@ -748,7 +751,10 @@ export default function Language({ route }: { route: Route }) {
       ),
     },
     {
-      theory: 'Human capital: skills first',
+      theory: l(
+        'Human capital: skills first',
+        'Humankapital: kompetensen först',
+      ),
       expects: l(
         'Stated qualifications keep their weight or grow as work becomes more specialised.',
         'Uttalade kvalifikationer behåller sin vikt eller växer när arbetet blir mer specialiserat.',
@@ -764,7 +770,10 @@ export default function Language({ route }: { route: Route }) {
       ),
     },
     {
-      theory: 'Bourdieu: dispositions as capital',
+      theory: l(
+        'Bourdieu: dispositions as capital',
+        'Bourdieu: dispositioner som kapital',
+      ),
       expects: l(
         'Personal demands concentrate in occupations where cultural capital is rewarded (administration, communication, culture).',
         'Personliga krav koncentreras till yrken där kulturellt kapital belönas (administration, kommunikation, kultur).',
