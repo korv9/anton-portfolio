@@ -280,7 +280,9 @@ def main() -> int:
         },
         "domains": [{"key": k, "en": v[0], "sv": v[1]} for k, v in DOMAINS.items()],
         "tables": sorted(out_tables, key=lambda t: (t["domain"], rank[t["kind"]], t["id"])),
-        "relations": sorted(relations, key=lambda r: (r["from"], r["to"])),
+        # The columns break ties: two relations between the same tables (county and municipality
+        # code) otherwise kept the order of a set, which changed between runs.
+        "relations": sorted(relations, key=lambda r: (r["from"], r["to"], r["from_cols"])),
         "shared_codes": [{"code": "party", "tables": party_tables, "values": sorted(values)}],
     }
     OUT.write_text(json.dumps(out, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
