@@ -41,6 +41,8 @@ jobs:
           cache: pip
           cache-dependency-path: platform/requirements-ci.lock
       - run: pip install --require-hashes -r platform/requirements-ci.lock
+      # github_status.py uploads through portfolio.storage (pyproject.toml).
+      - run: pip install --no-deps --no-build-isolation -e .
       - name: Snapshot and publish status/github.json
         env:
           GH_TOKEN: ${{ github.token }}

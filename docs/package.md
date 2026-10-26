@@ -33,9 +33,13 @@ their sha256 before and after must be identical.
 
 1. **Core.** `pyproject.toml`, `portfolio.core`, the layer contract, `requirements-dev.lock`.
    Nothing existing moves; `platform/lib/common.py` stays until step 5.
-2. **Storage.** `lib/rawstore`, `lib/delivery`, `publish/release`, `upload`, `retention`,
-   `warehouse_store` move to `portfolio.storage`; the old paths stay as thin shims so
-   `pipeline.yml` and the workflows keep working.
+2. **Storage and releases (done).** `rawstore`, `delivery`, `upload` and `warehouse_store` are in
+   `portfolio.storage`; `release`, `retention` and `dq_gate` in `portfolio.publish`, because a
+   release runs the quality gate, which `storage` may not import. Each old path is a shim
+   that puts the moved module in `sys.modules` under the old name, so `import rawstore`,
+   `from lib.rawstore import …` and test monkeypatches all reach the one module, and
+   `python platform/publish/release.py …` still runs. Every workflow installs the package
+   (`.github/actions/data-setup`); `setuptools` is pinned in `requirements.txt` for that.
 3. **Exports**, one domain at a time, onto `core.io` and `core.db`.
 4. **Ingest and ML**, including the parts of `ml/` the pipeline imports; dbt's Python models
    import the package instead of adding the working directory to `sys.path`.
