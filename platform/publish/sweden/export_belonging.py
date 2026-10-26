@@ -47,10 +47,11 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from connections_stats import cluster_sample, partial, spearman  # noqa: E402
 
-ROOT = Path(__file__).resolve().parents[3]
-RAW = Path(os.environ.get("PORTFOLIO_RAW", ROOT / "warehouse/raw"))
-DATABASE = Path(os.environ.get("PORTFOLIO_DB", ROOT / "warehouse/portfolio.duckdb"))
-OUT = ROOT / "frontend/public/data/sweden/belonging"
+from portfolio.core import db
+from portfolio.core.io import write_json  # this module uses the standard io
+from portfolio.core.config import DATABASE, PUBLIC, RAW, ROOT
+from portfolio.publish.catalog import register
+OUT = PUBLIC / "sweden/belonging"
 TERMS = {"BemanService01": "service_points", "Besok01": "visits", "Publ199": "activities",
          "Aktiv99": "active_borrowers"}
 SEED = 20261021
@@ -184,7 +185,7 @@ def change(rows: list[dict], reasons: dict, skr: dict[str, str], years: list[int
 
 
 def main() -> int:
-    con = duckdb.connect(str(DATABASE), read_only=True)
+    con = db.warehouse(DATABASE)
     measures = list(TERMS.values())
     totals = con.sql(f"""select municipality_code, year, set_to_missing, population, {', '.join(measures)}
                          from gold.fct_library_municipality_year""").fetchall()
@@ -215,8 +216,7 @@ def main() -> int:
     points = [{"name": name, "code": code, "type": kind, "x": round(px / 100), "y": round(py / 100)}
               for (name, code, kind, _, _), (px, py) in zip(located, xy)]
     OUT.mkdir(parents=True, exist_ok=True)
-    write = lambda name, payload: (OUT / name).write_text(  # noqa: E731
-        json.dumps(payload, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
+    write = lambda name, payload: write_json(OUT / name, payload)  # noqa: E731
     write("municipalities.json", {
         "years": years, "rows": rows, "area_km2": {c: round(a, 1) for c, a in area.items()},
         "rates": {"service_points_rate": "per 10,000 inhabitants", "visits_rate": "per inhabitant",
@@ -243,10 +243,7 @@ def main() -> int:
         ],
         "run_id": os.environ.get("GITHUB_RUN_ID"), "code_sha": os.environ.get("GITHUB_SHA"),
     })
-    sys.path.insert(0, str(ROOT / "platform/publish/symbolic"))
-    import export_symbolic
-
-    export_symbolic.register([OUT / n for n in ("municipalities.json", "libraries.json", "coverage.json", "change.json")])
+    register([OUT / n for n in ("municipalities.json", "libraries.json", "coverage.json", "change.json")])
     print(f"SWEDEN belonging: {len(rows)} municipality-years {years[0]}–{years[-1]}, "
           f"{len(points)} located public libraries -> {OUT.relative_to(ROOT)}")
     return 0

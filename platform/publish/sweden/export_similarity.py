@@ -45,17 +45,18 @@ from pathlib import Path
 import duckdb
 import numpy as np
 
-ROOT = Path(__file__).resolve().parents[3]
+from portfolio.core import db, io
+from portfolio.core.config import DATABASE, PUBLIC, RAW, ROOT
+from portfolio.publish.catalog import register
 sys.path[:0] = [str(Path(__file__).resolve().parent), str(ROOT)]
 import similarity_checks as checks
 
 RUN = "public-consensus-2026-10-13"
-DATABASE = Path(os.environ.get("PORTFOLIO_DB", ROOT / "warehouse/portfolio.duckdb"))
 STORE = Path(os.environ.get("PORTFOLIO_FEATURES", ROOT / "warehouse/features")) / "sweden/similarity"
 RESULT = STORE / "regions-municipalities.json"
-BOUNDARIES = Path(os.environ.get("PORTFOLIO_RAW", ROOT / "warehouse/raw")) / "geography/scb_boundaries_shape.zip"
-NAMES = ROOT / "frontend/public/data/cluster-research/municipalities.json"
-OUT = ROOT / "frontend/public/data/sweden/similarity"
+BOUNDARIES = RAW / "geography/scb_boundaries_shape.zip"
+NAMES = PUBLIC / "cluster-research/municipalities.json"
+OUT = PUBLIC / "sweden/similarity"
 NEIGHBOURS = 5
 ROUNDS = 1000
 EARLIER = (2020, 2021, 2022, 2023)  # employment is missing before 2020 in the panel
@@ -89,7 +90,7 @@ def values(result: dict) -> dict[str, dict]:
     for p, recorded in result["sources"].items():
         if sha256(STORE / Path(p).name) != recorded:
             raise SystemExit(f"{STORE / Path(p).name} changed since the clustering ran; refusing to mix inputs")
-    con = duckdb.connect(str(DATABASE), read_only=True)
+    con = db.warehouse(DATABASE)
     rows = con.sql(f"""select municipality_code, municipality_name, county_name, population,
                               {', '.join(f for f in FEATURES if f != 'log_population')}
                        from gold.fct_municipal_similarity where year = {result['year']}""").fetchall()
@@ -169,7 +170,7 @@ def earlier(year: int, features: list[str], codes: list[str]) -> np.ndarray | No
 
 def outcomes(year: int, codes: list[str]) -> dict[str, np.ndarray]:
     """Party shares in the last election by that year and library rates, none of them clustering inputs."""
-    con = duckdb.connect(str(DATABASE), read_only=True)
+    con = db.warehouse(DATABASE)
     rows = {r[0]: r[1:] for r in con.sql(f"""
         select municipality_code, {', '.join(f'share_{p}_pct' for p in PARTIES)},
                library_visits / library_population, library_service_points * 10000 / library_population
@@ -269,8 +270,7 @@ def main() -> int:
                     "county_null": {k: v for k, v in null.items() if k != "observed"}},
         "municipalities": municipalities,
     }
-    (OUT / "municipalities.json").write_text(json.dumps(payload, ensure_ascii=False, separators=(",", ":")) + "\n",
-                                             encoding="utf-8")
+    io.write_json(OUT / "municipalities.json", payload)
     kmeans = {c["k"]: c for c in result["comparison"] if c["method"] == "kmeans"}
     splits = {f"k{result['k']}": np.array([points[c]["group"] for c in analysed]),
               f"k{result['finer']['k']}": np.array([points[c]["finer_group"] for c in analysed])}
@@ -302,14 +302,11 @@ def main() -> int:
                                                 for y in EARLIER if (STORE / f"kolada_structure_{y}.json").exists()},
                        "run_id": os.environ.get("GITHUB_RUN_ID"), "code_sha": os.environ.get("GITHUB_SHA")},
     }
-    (OUT / "groups.json").write_text(json.dumps(groups, ensure_ascii=False, separators=(",", ":")) + "\n",
-                                     encoding="utf-8")
-    (OUT / "geometry.json").write_text(json.dumps({"crs": "EPSG:3006", "unit": "100 m", "municipalities": shapes},
-                                                  separators=(",", ":")) + "\n", encoding="utf-8")
-    sys.path.insert(0, str(ROOT / "platform/publish/symbolic"))
-    import export_symbolic
-
-    export_symbolic.register([OUT / n for n in ("municipalities.json", "groups.json", "geometry.json")])
+    io.write_json(OUT / "groups.json", groups)
+    # ASCII-escaped, as this file has always been written.
+    io.write_json(OUT / "geometry.json", {"crs": "EPSG:3006", "unit": "100 m", "municipalities": shapes},
+                  ensure_ascii=True)
+    register([OUT / n for n in ("municipalities.json", "groups.json", "geometry.json")])
     print(f"SWEDEN similarity: {len(analysed)} of {len(raw)} municipalities, "
           f"{other_county} nearest in another county -> {OUT.relative_to(ROOT)}")
     return 0

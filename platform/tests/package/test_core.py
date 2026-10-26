@@ -38,8 +38,10 @@ def test_compact_json_matches_common_write_json(tmp_path):
 
 
 def test_indented_json_matches_common_write_json(tmp_path):
+    # Same bytes on Linux; on Windows common.write_json wrote CRLF, which io no longer does.
     old = common.write_json(tmp_path / "old.json", PAYLOAD, indent=2).read_bytes()
-    assert io.write_json(tmp_path / "new.json", PAYLOAD, indent=2).read_bytes() == old
+    new = io.write_json(tmp_path / "new.json", PAYLOAD, indent=2).read_bytes()
+    assert new == old.replace(b"\r\n", b"\n") and b"\r" not in new
 
 
 def test_export_json_matches_the_exports_dump(tmp_path):
