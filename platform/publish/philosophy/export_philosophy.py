@@ -17,16 +17,15 @@ No embedding is published.
 from __future__ import annotations
 
 import json
-import os
 import sys
 from pathlib import Path
 
-import duckdb
+from portfolio.core import db, io
+from portfolio.core.config import DATABASE, FEATURES as FEATURE_ROOT, PUBLIC, ROOT
+from portfolio.publish.catalog import register
 
-ROOT = Path(__file__).resolve().parents[3]
-DATABASE = Path(os.environ.get("PORTFOLIO_DB", ROOT / "warehouse/portfolio.duckdb"))
-FEATURES = Path(os.environ.get("PORTFOLIO_FEATURES", ROOT / "warehouse/features")) / "philosophy"
-OUT = ROOT / "frontend/public/data/philosophy"
+FEATURES = FEATURE_ROOT / "philosophy"
+OUT = PUBLIC / "philosophy"
 EXCERPT = 420
 
 
@@ -44,13 +43,11 @@ def rows(con, sql: str) -> list[dict]:
 
 
 def dump(name: str, payload) -> Path:
-    path = OUT / name
-    path.write_text(json.dumps(payload, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
-    return path
+    return io.write_json(OUT / name, payload)
 
 
 def main() -> int:
-    con = duckdb.connect(str(DATABASE), read_only=True)
+    con = db.warehouse(DATABASE)
     OUT.mkdir(parents=True, exist_ok=True)
     works = rows(con, """select document_id, title, author, year, period, tradition, area, original_language,
                                 translator, translator_note, genre, source_url, passages, words
@@ -88,10 +85,7 @@ def main() -> int:
     written = [dump("summary.json", summary), dump("atlas.json", atlas), dump("passages.json", passages),
                dump("clusters.json", clusters),
                dump("tensions.json", {"distribution": distribution, "poles": poles})]
-    sys.path.insert(0, str(ROOT / "platform/publish/symbolic"))
-    import export_symbolic
-
-    export_symbolic.register(written)
+    register(written)
     print(f"Philosophy Atlas: {len(works)} works, {run['passages_sampled']} passages -> {OUT.relative_to(ROOT)}")
     return 0
 
