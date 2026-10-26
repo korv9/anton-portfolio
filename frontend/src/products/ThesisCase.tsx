@@ -156,8 +156,8 @@ function ClusterGrid() {
       </ul>
       <figcaption>
         {l(
-          `Each dot is one of ${clusters} clusters; the ${unlinked} bright ones contain no ticket linked to a registered problem. Their order is arbitrary. The bar splits all ${num(total)} tickets of the run. Candidates for review, not root causes.`,
-          `Varje prick är ett av ${clusters} kluster; de ${unlinked} ljusa innehåller inget ärende kopplat till ett registrerat problem. Ordningen är godtycklig. Stapeln delar upp körningens alla ${num(total)} ärenden. Kandidater att granska, inte rotorsaker.`,
+          `One dot per cluster, ${clusters} in all. The ${unlinked} bright ones have no ticket linked to a registered problem. The bar splits all ${num(total)} tickets of the run.`,
+          `En prick per kluster, ${clusters} totalt. De ${unlinked} ljusa har inget ärende kopplat till ett registrerat problem. Stapeln delar upp körningens alla ${num(total)} ärenden.`,
         )}
       </figcaption>
     </figure>
@@ -347,14 +347,8 @@ export function ThesisPage() {
       >
         <p>
           {l(
-            'When an IT issue occurs, the immediate priority is to get people working again. But when similar incidents are handled separately, recurring problems can remain hidden in thousands of support tickets.',
-            'När ett IT-fel uppstår är det första målet att få folk att kunna arbeta igen. Men när liknande incidenter hanteras var för sig kan återkommande problem ligga dolda i tusentals supportärenden.',
-          )}
-        </p>
-        <p>
-          {l(
-            'For my degree project at Fora AB, I explored whether clustering could connect these incidents and highlight patterns worth investigating, on real operational data where documentation is often incomplete and personal information needs to be protected.',
-            'I mitt examensarbete hos Fora AB undersökte jag om klustring kunde koppla samman sådana incidenter och lyfta fram mönster värda att utreda, på riktig verksamhetsdata där dokumentationen ofta är ofullständig och personuppgifter måste skyddas.',
+            'Recurring IT problems can hide in thousands of tickets handled one at a time. For my degree project at Fora AB, I tested whether clustering could connect them, on real data with gaps in the documentation and personal data to protect.',
+            'Återkommande IT-fel kan gömma sig i tusentals ärenden som hanteras ett i taget. I mitt examensarbete hos Fora AB prövade jag om klustring kunde koppla ihop dem, på riktig data med luckor i dokumentationen och personuppgifter att skydda.',
           )}
         </p>
       </ProjectSection>
@@ -370,14 +364,14 @@ export function ThesisPage() {
         </p>
         <p>
           {l(
-            'A multilingual sentence model turned each ticket into a vector of its meaning. UMAP reduced the vectors to ten dimensions, and HDBSCAN grouped similar incidents without predefined categories. I then compared the clusters with existing problem links.',
-            'En flerspråkig meningsmodell gjorde om varje ärende till en vektor av dess innebörd. UMAP reducerade vektorerna till tio dimensioner och HDBSCAN grupperade liknande incidenter utan fördefinierade kategorier. Sedan jämförde jag klustren med befintliga problemkopplingar.',
+            'A multilingual sentence model embedded each ticket, UMAP reduced it to ten dimensions and HDBSCAN grouped similar incidents. I compared the clusters with existing problem links.',
+            'En flerspråkig meningsmodell gjorde varje ärende till en vektor, UMAP reducerade till tio dimensioner och HDBSCAN grupperade liknande incidenter. Jag jämförde klustren med befintliga problemkopplingar.',
           )}
         </p>
         <p>
           {l(
-            `In UMAP space HDBSCAN reached a silhouette of ${silhouette.hdbscan.toLocaleString(locale())} and K-means, with ${silhouette.kmeansClusters} clusters, ${silhouette.kmeans.toLocaleString(locale())}. HDBSCAN scores only the tickets it places in a cluster and K-means scores all of them, so the two are not a like-for-like ranking.`,
-            `I UMAP-rymden nådde HDBSCAN ett silhuettvärde på ${silhouette.hdbscan.toLocaleString(locale())} och K-means, med ${silhouette.kmeansClusters} kluster, ${silhouette.kmeans.toLocaleString(locale())}. HDBSCAN mäts bara på de ärenden det placerar i ett kluster och K-means på alla, så de två går inte att rangordna rakt av.`,
+            `Silhouette in UMAP space: HDBSCAN ${silhouette.hdbscan.toLocaleString(locale())}, K-means (${silhouette.kmeansClusters} clusters) ${silhouette.kmeans.toLocaleString(locale())}. Not like for like: HDBSCAN scores only the tickets it clusters.`,
+            `Silhuett i UMAP-rymden: HDBSCAN ${silhouette.hdbscan.toLocaleString(locale())}, K-means (${silhouette.kmeansClusters} kluster) ${silhouette.kmeans.toLocaleString(locale())}. Inte jämförbart rakt av: HDBSCAN mäts bara på de ärenden det klustrar.`,
           )}
         </p>
       </ProjectSection>
@@ -387,29 +381,29 @@ export function ThesisPage() {
       >
         <p>
           {l(
-            `The analysis identified ${FACTS.clusters} clusters of related incidents. Of these, ${FACTS.unlinked} had no link to an existing problem record, providing candidates for further investigation rather than confirmed root causes. The thesis highlighted ${highlighted.groups} groups with ${num(highlighted.tickets)} tickets among them.`,
-            `Analysen gav ${FACTS.clusters} kluster av relaterade incidenter. Av dem saknade ${FACTS.unlinked} koppling till en befintlig problempost. De är kandidater för fortsatt utredning, inte bekräftade rotorsaker. Arbetet lyfte fram ${highlighted.groups} grupper med ${num(highlighted.tickets)} ärenden bland dem.`,
+            `${FACTS.clusters} clusters of related incidents. ${FACTS.unlinked} had no link to a problem record: candidates for review rather than confirmed root causes. The thesis highlighted ${highlighted.groups} groups with ${num(highlighted.tickets)} tickets.`,
+            `${FACTS.clusters} kluster av relaterade incidenter. ${FACTS.unlinked} saknade koppling till en problempost: kandidater att granska, inte bekräftade rotorsaker. Arbetet lyfte fram ${highlighted.groups} grupper med ${num(highlighted.tickets)} ärenden.`,
           )}
         </p>
         <ClusterGrid />
         <p>
           {l(
-            `Documentation was a major limitation. The field meant to describe the underlying cause was filled in only ${pct(iso.analysis)} of records, which is why the text recipe weights that field ×4 where it exists. A filled field could also mislead: the solution field looked ${pct(iso.solutionFilled)} complete, but only ${pct(iso.solutionManual)} was written by hand.`,
-            `Dokumentationen var en stor begränsning. Fältet för den underliggande orsaken var ifyllt i bara ${pct(iso.analysis)} av posterna, och därför viktar textreceptet det fältet ×4 där det finns. Ett ifyllt fält kunde också vilseleda: lösningsfältet såg ${pct(iso.solutionFilled)} komplett ut, men bara ${pct(iso.solutionManual)} var skrivet för hand.`,
+            `Documentation was the main limit. The root-cause field was filled in only ${pct(iso.analysis)} of records, so the text recipe weights it ×4. The solution field looked ${pct(iso.solutionFilled)} complete, but only ${pct(iso.solutionManual)} written by hand.`,
+            `Dokumentationen var den största begränsningen. Rotorsaksfältet var ifyllt i bara ${pct(iso.analysis)} av posterna, så textreceptet viktar det ×4. Lösningsfältet såg ${pct(iso.solutionFilled)} komplett ut, men bara ${pct(iso.solutionManual)} var skrivet för hand.`,
           )}
         </p>
         <QualityStrip />
         <p>
           {l(
-            `Process maturity is visible in the data. Fields the system required went from almost empty to ${pct(FACTS.category[6])} filled, while the voluntary root-cause field reached ${pct(FACTS.analysisByYear[5])} in 2025 and ${pct(FACTS.analysisByYear[6])} in 2026.`,
-            `Processmognaden syns i datan. Fält som systemet krävde gick från nästan tomma till ${pct(FACTS.category[6])} ifyllda, medan det frivilliga rotorsaksfältet nådde ${pct(FACTS.analysisByYear[5])} år 2025 och ${pct(FACTS.analysisByYear[6])} år 2026.`,
+            `Required fields went from almost empty to ${pct(FACTS.category[6])} filled. The voluntary root-cause field reached ${pct(FACTS.analysisByYear[5])} in 2025 and ${pct(FACTS.analysisByYear[6])} in 2026.`,
+            `Obligatoriska fält gick från nästan tomma till ${pct(FACTS.category[6])} ifyllda. Det frivilliga rotorsaksfältet nådde ${pct(FACTS.analysisByYear[5])} år 2025 och ${pct(FACTS.analysisByYear[6])} år 2026.`,
           )}
         </p>
         <Maturity />
         <p>
           {l(
-            'Masking also left its mark: the placeholder tokens it left behind could pull unrelated tickets with the same subject template into one cluster.',
-            'Maskeringen lämnade också spår: platshållare efter maskeringen kunde dra ihop orelaterade ärenden med samma ämnesmall i ett kluster.',
+            'Masking placeholders could pull unrelated tickets with the same subject template into one cluster.',
+            'Maskeringens platshållare kunde dra ihop orelaterade ärenden med samma ämnesmall i ett kluster.',
           )}
         </p>
       </ProjectSection>
@@ -419,20 +413,14 @@ export function ThesisPage() {
       >
         <p>
           {l(
-            'Clustering can help IT teams see connections across incidents that would be difficult to review manually. These connections could support investigation, prioritisation and efforts to prevent recurring disruptions.',
-            'Klustring kan hjälpa IT-team att se samband mellan incidenter som vore svåra att granska för hand. Sambanden kan stödja utredning, prioritering och arbetet med att förebygga återkommande störningar.',
+            'Useful AI depends on the information behind it. Better documentation and clearer problem links can matter as much as a better model.',
+            'Användbar AI beror på informationen bakom den. Bättre dokumentation och tydligare problemkopplingar kan betyda lika mycket som en bättre modell.',
           )}
         </p>
         <p>
           {l(
-            'The main lesson was that useful AI depends on the quality of the information behind it. Better documentation and clearer links between incidents and known problems can be just as valuable as improving the model.',
-            'Den viktigaste lärdomen var att användbar AI beror på kvaliteten i informationen bakom den. Bättre dokumentation och tydligare kopplingar mellan incidenter och kända problem kan vara lika värdefulla som en bättre modell.',
-          )}
-        </p>
-        <p>
-          {l(
-            'The project produced an analysis pipeline and a set of candidate patterns for further review. Its impact on support workload, costs and resolution times would need to be evaluated through operational use.',
-            'Projektet gav ett analysflöde och en uppsättning kandidatmönster för fortsatt granskning. Effekten på supportens arbetsbörda, kostnader och lösningstider skulle behöva utvärderas i verklig drift.',
+            'The result is a pipeline and candidate patterns. Its effect on workload, costs and resolution times would need to be evaluated through operational use.',
+            'Resultatet är ett analysflöde och kandidatmönster. Effekten på arbetsbörda, kostnader och lösningstider skulle behöva utvärderas i verklig drift.',
           )}
         </p>
       </ProjectSection>

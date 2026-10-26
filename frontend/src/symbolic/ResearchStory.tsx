@@ -214,14 +214,14 @@ export default function ResearchStory({
       </ol>
       <Interpretation
         notMeaning={l(
-          'A cluster that spans several books does not prove a universal symbolic meaning; it is a recurring context worth reading, and only a person’s review may name it.',
-          'Ett kluster som spänner över flera böcker bevisar inte en universell symbolisk betydelse; det är ett återkommande sammanhang värt att läsa, och bara en människas granskning får namnge det.',
+          'A cluster across books is a recurring context worth reading, not proof of a universal meaning.',
+          'Ett kluster över flera böcker är ett återkommande sammanhang värt att läsa, inget bevis för en universell betydelse.',
         )}
       >
         <p>
           {l(
-            'The negative findings are part of the result. Each version removed one thing the model had been measuring instead of symbols (the book, then the paratext) and tested whether what was left held up in a larger corpus. What survives is smaller than the first map suggested, and more plausible.',
-            'De negativa fynden är en del av resultatet. Varje version tog bort en sak som modellen mätte i stället för symboler (boken, sedan paratexten) och prövade om det som återstod höll i en större korpus. Det som överlever är mindre än den första kartan antydde, och mer trovärdigt.',
+            'Each version removed one thing the model measured instead of symbols: the book, then the paratext. What survives is smaller than the first map suggested, and more plausible.',
+            'Varje version tog bort en sak som modellen mätte i stället för symboler: boken, sedan paratexten. Det som överlever är mindre än den första kartan antydde, och mer trovärdigt.',
           )}
         </p>
       </Interpretation>
@@ -417,8 +417,8 @@ function ValidityCase({ history }: { history: ResearchHistory }) {
       </h3>
       <p>
         {l(
-          `The first run (${first.id}) had tightly separated clusters and grouped books, not symbols. A larger corpus spread the clusters over more books; book-centring then loosened them in UMAP space and tied them far less to the book. Whether clusters are tightly separated and whether they measure symbolic meaning are two different questions.`,
-          `Den första körningen (${first.id}) hade tätt avgränsade kluster och grupperade böcker, inte symboler. En större korpus spred klustren över fler böcker; bokcentreringen gjorde dem sedan lösare i UMAP-rummet och mycket mindre bundna till boken. Om klustren är tätt avgränsade och om de mäter symbolisk betydelse är två olika frågor.`,
+          `The first run (${first.id}) had tight clusters that grouped books, not symbols. A larger corpus and book-centring loosened them and tied them far less to the book. Tight is not the same as meaningful.`,
+          `Den första körningen (${first.id}) hade täta kluster som grupperade böcker, inte symboler. En större korpus och bokcentrering gjorde dem lösare och mycket mindre bundna till boken. Tät är inte samma sak som meningsfull.`,
         )}
       </p>
       <h4>

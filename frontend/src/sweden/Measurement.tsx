@@ -85,7 +85,7 @@ export default function Measurement({ route }: { route: Route }) {
 
   if (summary === null)
     return (
-      <p className="sweden sw-note" role="status">
+      <p className="sw-section sw-note" role="status">
         {l('Loading…', 'Laddar…')}
       </p>
     )

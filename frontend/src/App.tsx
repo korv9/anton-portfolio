@@ -1,13 +1,13 @@
 import { Suspense, lazy, useEffect, useRef, useState } from 'react'
 import { currentLocale, l, type Locale } from './i18n'
 import { sameReport, useRoute } from './router'
-import { pageTitle, ProjectContext, ProjectPager } from './site/Header'
+import { pageTitle, ProjectContext } from './site/Header'
 import SiteHeader from './site/SiteHeader'
+import ProjectRail from './site/ProjectRail'
 import { CvViewerProvider } from './site/CvViewer'
 import HomePage from './home/HomePage'
 import DebateBackdrop from './home/DebateBackdrop'
 import ProjectStructure from './projects/ProjectStructure'
-import ProjectBrief from './projects/ProjectBrief'
 import { PROJECT_GROUPS, projectForRoute } from './projects/projectRegistry'
 import { PageBoundary } from './site/PageBoundary'
 import './site/site.css'
@@ -89,13 +89,16 @@ export default function App() {
         <a className="skip-link" href="#main">
           {l('Skip to content', 'Hoppa till innehåll')}
         </a>
-        {/* SWEDEN pages carry their own header (sweden/Header.tsx). The start page has none:
-            it opens on the name alone. */}
-        {page !== 'sweden' && page !== 'home' && <SiteHeader />}
+        {/* The start page has no header: it opens on the name alone. Project pages sit beside
+            the index; the header stays for phones and is hidden on wide screens
+            (project-rail.css). */}
+        {page !== 'home' && <ProjectRail route={route} />}
+        {page !== 'home' && <SiteHeader />}
         <main
           id="main"
           tabIndex={-1}
-          key={language}
+          // A new page enters with the projects-start motion: up from below, out of a blur.
+          key={`${language}-${page}`}
           style={{ background: 'transparent' }}
         >
           <ProjectContext route={route} />
@@ -128,8 +131,6 @@ export default function App() {
               </Suspense>
             </ProjectStructure>
           </PageBoundary>
-          <ProjectBrief route={route} />
-          <ProjectPager route={route} />
         </main>
       </div>
     </CvViewerProvider>

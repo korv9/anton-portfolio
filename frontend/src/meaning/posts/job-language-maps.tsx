@@ -218,8 +218,8 @@ export const posts: Post[] = [
       'Hur mycket annonstext språkinläggen läser',
     ],
     note: [
-      'Headline and description of each ad text; a text repeated within an archive counts once, so the count is distinct texts per archive, summed',
-      'Rubrik och beskrivning i varje annonstext; en text som upprepas inom ett arkiv räknas en gång, så antalet är unika texter per arkiv, summerade',
+      'Distinct ad texts, headline and description',
+      'Unika annonstexter, rubrik och beskrivning',
     ],
     render: () => <Words />,
   },
@@ -256,8 +256,8 @@ export const posts: Post[] = [
             'Annonser och annonstexter per arkiv',
           ),
     note: [
-      'Ads and distinct texts per yearly or quarterly archive; a text repeated within an archive counts once, and the total sums the archives',
-      'Annonser och unika texter per års- eller kvartalsarkiv; en text som upprepas inom ett arkiv räknas en gång, och summan lägger ihop arkiven',
+      'Ads and distinct texts per archive',
+      'Annonser och unika texter per arkiv',
     ],
     render: () => <CoverageBars />,
   },

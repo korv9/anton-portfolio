@@ -175,14 +175,14 @@ export default function MunicipalityField({
     const cy0 = (Math.min(...ys) + Math.max(...ys)) / 2
     const targets = places.filter((p) => p.target)
     const neutral = colour('--sw-div-mid', '#3a3935')
-    const lo = colour('--sw-seq-lo', '#3a3256')
-    const hi = colour('--sw-seq-hi', '#e3d8ff')
+    const lo = colour('--sw-seq-lo', '#34332f')
+    const hi = colour('--sw-seq-hi', '#f1efe7')
     const tint = (p: Place) =>
       p.ramp != null
         ? ramp(lo, hi, p.ramp)
         : new THREE.Color(p.colour ?? '#888888')
     const lineMat = new THREE.LineBasicMaterial({
-      color: colour('--sw-accent', '#c9bcf2'),
+      color: colour('--sw-accent', '#ebe6da'),
       transparent: true,
       opacity: 0.18,
     })
@@ -268,7 +268,7 @@ export default function MunicipalityField({
     if (points?.length) {
       const lamps = new THREE.InstancedMesh(
         new THREE.SphereGeometry(0.42, 10, 8),
-        new THREE.MeshBasicMaterial({ color: 0xff9f43 }),
+        new THREE.MeshBasicMaterial({ color: 0xffffff }),
         points.length,
       )
       const tmp = new THREE.Object3D()

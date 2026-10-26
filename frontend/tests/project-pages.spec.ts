@@ -1,10 +1,9 @@
 /**
- * Every card on #projects opens a finished project page: the page's own content, then the shared
- * close from the sketches (question, work, findings, steps, tech and limits) and a pager.
+ * Every card on #projects opens a finished project page that ends with its own content.
  */
 import { test, expect } from './test'
 
-test('every project card opens a page that ends in the shared template', async ({
+test('every project card opens its page, which ends with its own content', async ({
   page,
 }) => {
   test.setTimeout(120_000)
@@ -18,32 +17,13 @@ test('every project card opens a page that ends in the shared template', async (
   expect(cards.length).toBeGreaterThanOrEqual(13)
   for (const href of cards) {
     await page.goto('/' + href)
-    const brief = page.locator('.project-brief')
-    await expect(brief, href).toHaveCount(1)
-    for (const part of [
-      'The question',
-      'What I built',
-      'What it shows',
-      'How it works',
-      'Honest limits',
-    ])
-      await expect(
-        brief.getByRole('heading', { name: part, exact: true }),
-        `${href}: ${part}`,
-      ).toBeAttached()
-    await expect(page.locator('.project-pager a').first(), href).toBeAttached()
+    await expect(page.locator('main h1').first(), href).toBeVisible()
+    // No shared close or pager: the index on the left is the way on.
+    await expect(
+      page.locator('.project-brief, .project-pager'),
+      href,
+    ).toHaveCount(0)
   }
-})
-
-test('the shared template reads in Swedish', async ({ page }) => {
-  await page.goto('/?lang=sv#thesis')
-  const brief = page.locator('.project-brief')
-  await expect(
-    brief.getByRole('heading', { name: 'Frågan', exact: true }),
-  ).toBeAttached()
-  await expect(
-    brief.getByRole('heading', { name: 'Ärliga begränsningar', exact: true }),
-  ).toBeAttached()
 })
 
 test('the Homie card opens its repository', async ({ page }) => {

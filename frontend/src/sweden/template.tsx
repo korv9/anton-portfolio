@@ -1,47 +1,23 @@
 /**
- * The page every SWEDEN research product uses, in a fixed order:
- * scene → findings (at most three) → explore → method & limitations → interpretations → related.
+ * Every SWEDEN research product is one short section of the single #sweden page (SwedenPage.tsx):
+ * letter and title, the question, the key findings with their values, one visual, and the
+ * explore, method and readings folded away under one disclosure.
  *
- * The scene is the visual entry; its four overlay slots keep the same place on every page
- * (title top left, legend top right, primary control bottom left, selected entity bottom right).
- * A slot left out stays empty. Every scene needs a 2D or tabular equivalent under Explore.
  * Nothing here holds a finding: pages compute their statements from published data, and a
- * product without validated data shows an EmptyState instead of cards.
+ * product without validated data shows an EmptyState instead.
  */
-import { createContext, useContext, useState, type ReactNode } from 'react'
+import { createContext, useContext, type ReactNode } from 'react'
 import { l } from '../i18n'
 import { ExploreSection } from '../ui/Story'
-import {
-  productById,
-  type Evidence,
-  type Status,
-  type SwedenProduct,
-} from './products'
-import { SwedenHeader } from './Header'
+import type { Evidence, SwedenProduct } from './products'
 import './sweden.css'
 
 const b = (text: { en: string; sv: string }) => l(text.en, text.sv)
 
-const STATUS: Record<Status, [string, string]> = {
-  findings: ['Findings available', 'Resultat finns'],
-  pipeline: [
-    'Pipeline ready, awaiting execution',
-    'Pipeline klar, väntar på körning',
-  ],
-  unavailable: ['Data unavailable', 'Data saknas'],
-}
 const EVIDENCE: Record<Evidence, [string, string]> = {
   descriptive: ['Descriptive', 'Beskrivande'],
   exploratory: ['Exploratory', 'Explorativ'],
   causal: ['Causally identified', 'Kausalt identifierad'],
-}
-
-export function StatusStamp({ status }: { status: Status }) {
-  return (
-    <span className="sw-stamp" data-status={status}>
-      {l(...STATUS[status])}
-    </span>
-  )
 }
 
 export function EvidenceStamp({ evidence }: { evidence: Evidence }) {
@@ -65,41 +41,19 @@ export type Finding = {
   onShow?: () => void
 }
 
-/**
- * A finding as a numbered button in the scene's title panel. Choosing it shows its values,
- * evidence and source under the statement, and moves the scene when the page can (onShow).
- */
-function FindingButton({ finding, n }: { finding: Finding; n: number }) {
-  const [open, setOpen] = useState(false)
+/** A finding: its statement and the values behind it, both always shown; a statement that can
+ * move the scene (onShow) is a button. */
+function FindingItem({ finding }: { finding: Finding }) {
   return (
     <li className="sw-find" data-contrary={finding.contrary || undefined}>
-      <button
-        type="button"
-        aria-expanded={open}
-        onClick={() => {
-          setOpen(!open)
-          if (!open) finding.onShow?.()
-        }}
-      >
-        <span className="sw-find-n">{String(n).padStart(2, '0')}</span>
-        <span>
-          {finding.contrary && (
-            <span className="sw-finding-flag">
-              {l('Against the expectation', 'Mot förväntningen')}
-            </span>
-          )}
+      {finding.onShow ? (
+        <button type="button" onClick={finding.onShow}>
           {finding.statement}
-        </span>
-      </button>
-      {open && (
-        <div className="sw-find-more">
-          <div className="sw-finding-values">{finding.values}</div>
-          <p>
-            <EvidenceStamp evidence={finding.evidence} />{' '}
-            <span className="sw-source">{finding.source}</span>
-          </p>
-        </div>
+        </button>
+      ) : (
+        <p>{finding.statement}</p>
       )}
+      <div className="sw-finding-values">{finding.values}</div>
     </li>
   )
 }
@@ -236,33 +190,7 @@ export function Interpretations({ readings }: { readings: Reading[] }) {
   )
 }
 
-export function RelatedProjects({ product }: { product: SwedenProduct }) {
-  return (
-    <section className="sw-related" aria-labelledby="sw-related-title">
-      <h2 id="sw-related-title">
-        {l('Related research', 'Relaterad forskning')}
-      </h2>
-      <ul>
-        {product.related.map((r) => {
-          const other = productById(r.id)
-          return (
-            <li key={r.id}>
-              <a href={other.href}>
-                <span className="sw-id">
-                  {other.id === 'X' ? '×' : other.id}
-                </span>
-                <b>{b(other.title)}</b>
-                <span>{b(r.why)}</span>
-              </a>
-            </li>
-          )
-        })}
-      </ul>
-    </section>
-  )
-}
-
-/** The scene's fixed overlay slots around the visual itself. */
+/** A product's head and visual: the question, its findings, then the visual and its panels. */
 export function Scene({
   product,
   line,
@@ -272,7 +200,7 @@ export function Scene({
   children,
 }: {
   product: SwedenProduct
-  /** One sentence on what the scene shows. */
+  /** One sentence on what the visual shows. */
   line: ReactNode
   legend?: ReactNode
   control?: ReactNode
@@ -280,50 +208,41 @@ export function Scene({
   children: ReactNode
 }) {
   const findings = useContext(FindingsContext)
+  const titleId = `sw-title-${product.id}`
   return (
-    <section className="sw-scene" aria-labelledby="sw-title">
-      <div className="sw-scene-visual">{children}</div>
-      <header className="sw-panel sw-scene-title">
+    <div className="sw-scene" role="group" aria-labelledby={titleId}>
+      <header className="sw-scene-title">
         <p className="sw-kicker">
-          SWEDEN · {product.id === 'X' ? '×' : product.id} · {b(product.title)}
-          <StatusStamp status={product.status} />
+          <span className="sw-id">{product.id === 'X' ? '×' : product.id}</span>
+          {b(product.title)}
         </p>
-        <h1 id="sw-title">{b(product.question)}</h1>
-        <p className="sw-line">{line}</p>
+        <h2 id={titleId}>{b(product.question)}</h2>
         {findings.length > 0 && (
           <ol className="sw-finds" aria-label={l('Findings', 'Resultat')}>
-            {findings.map((f, i) => (
-              <FindingButton key={f.key} finding={f} n={i + 1} />
+            {findings.map((f) => (
+              <FindingItem key={f.key} finding={f} />
             ))}
           </ol>
         )}
-        {/* The hash names the route, so scroll in place instead of navigating. */}
-        <a
-          className="sw-more"
-          href="#sw-below"
-          onClick={(e) => {
-            e.preventDefault()
-            document.getElementById('sw-below')?.scrollIntoView()
-          }}
-        >
-          {l(
-            'Explore, method and interpretations',
-            'Utforska, metod och tolkningar',
-          )}{' '}
-          ↓
-        </a>
       </header>
-      {legend && <aside className="sw-panel sw-scene-legend">{legend}</aside>}
-      {control && <div className="sw-panel sw-scene-control">{control}</div>}
-      {info && (
-        <aside className="sw-panel sw-scene-info" aria-live="polite">
-          {info}
-        </aside>
+      <div className="sw-scene-visual">{children}</div>
+      <p className="sw-line">{line}</p>
+      {(legend || control || info) && (
+        <div className="sw-scene-panels">
+          {control && <div className="sw-scene-control">{control}</div>}
+          {legend && <aside className="sw-scene-legend">{legend}</aside>}
+          {info && (
+            <aside className="sw-scene-info" aria-live="polite">
+              {info}
+            </aside>
+          )}
+        </div>
       )}
-    </section>
+    </div>
   )
 }
 
+/** One product's section on the #sweden page. */
 export function SwedenResearchPage({
   product,
   scene,
@@ -341,38 +260,50 @@ export function SwedenResearchPage({
   method: Method
   readings: Reading[]
 }) {
-  // The strongest (first-listed) finding leads; a contrary one closes the three, never dropped.
+  // Two findings at most: the strongest, and a contrary one when there is one, never dropped.
   const against = findings.filter((f) => f.contrary)
   const ordered = [
-    ...findings
-      .filter((f) => !f.contrary)
-      .slice(0, Math.max(1, 3 - against.length)),
-    ...against,
-  ].slice(0, 3)
+    ...findings.filter((f) => !f.contrary).slice(0, against.length ? 1 : 2),
+    ...against.slice(0, 1),
+  ]
   return (
-    <article className="sweden sw-page">
-      <SwedenMasthead current={product.href} />
+    <ProductSection product={product}>
       <FindingsContext.Provider value={ordered}>
         {scene}
       </FindingsContext.Provider>
-      <div className="sw-explore" id="sw-below">
-        <ExploreSection summary={exploreSummary} defaultOpen>
-          {explore}
-        </ExploreSection>
-      </div>
-      <MethodDrawer method={method} />
-      <Interpretations readings={readings} />
-      <RelatedProjects product={product} />
-    </article>
+      <ExploreSection
+        title={l(
+          'Explore, method and readings',
+          'Utforska, metod och tolkningar',
+        )}
+        summary={exploreSummary}
+      >
+        {explore}
+        <MethodDrawer method={method} />
+        <Interpretations readings={readings} />
+      </ExploreSection>
+    </ProductSection>
   )
 }
 
-/** Every SWEDEN page opens with the same header (Header.tsx), in place of the site header. */
-export function SwedenMasthead({ current }: { current: string }) {
-  return <SwedenHeader current={current} />
+/** The section every product sits in; its id is what the product's address scrolls to. */
+export function ProductSection({
+  product,
+  children,
+}: {
+  product: SwedenProduct
+  children: ReactNode
+}) {
+  return (
+    <section className="sw-section" id={sectionId(product)}>
+      {children}
+    </section>
+  )
 }
 
-/** A product page without validated data: its masthead, question and an EmptyState. */
+export const sectionId = (product: SwedenProduct) => `sw-${product.id}`
+
+/** A product without validated data: its question and an EmptyState. */
 export function ProductEmpty({
   product,
   children,
@@ -382,16 +313,14 @@ export function ProductEmpty({
   children: ReactNode
 }) {
   return (
-    <article className="sweden sw-page">
-      <SwedenMasthead current={product.href} />
+    <ProductSection product={product}>
       <Scene
         product={product}
         line={l('No validated data yet.', 'Inga validerade data ännu.')}
       >
         {children}
       </Scene>
-      <RelatedProjects product={product} />
-    </article>
+    </ProductSection>
   )
 }
 

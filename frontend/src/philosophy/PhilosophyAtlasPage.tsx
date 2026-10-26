@@ -362,8 +362,8 @@ export default function PhilosophyAtlasPage({ route }: { route: Route }) {
         <ReportShell
           name={NAME}
           intro={l(
-            `${works.length} public-domain works, from Plato to Nietzsche, cut into passages; ${summary.run.passages_sampled.toLocaleString('en-GB')} of them placed by meaning with one sentence-embedding model and grouped where they gather. Taking out each work’s own voice lifts the groups that span works from ${ev.baseline.cross_work_clusters} to ${ev.author_centered.cross_work_clusters}.`,
-            `${works.length} fria filosofiska verk, från Platon till Nietzsche, indelade i passager; ${summary.run.passages_sampled} av dem placerade efter innebörd med en modell för meningsinbäddningar och grupperade där de samlas. När varje verks egen röst dras bort ökar grupperna som spänner över flera verk från ${ev.baseline.cross_work_clusters} till ${ev.author_centered.cross_work_clusters}.`,
+            `${summary.run.passages_sampled.toLocaleString('en-GB')} passages from ${works.length} works, Plato to Nietzsche, placed by meaning. Taking out each work’s own voice lifts the groups that span works from ${ev.baseline.cross_work_clusters} to ${ev.author_centered.cross_work_clusters}.`,
+            `${summary.run.passages_sampled} passager ur ${works.length} verk, Platon till Nietzsche, placerade efter innebörd. När varje verks egen röst dras bort ökar grupperna som spänner över flera verk från ${ev.baseline.cross_work_clusters} till ${ev.author_centered.cross_work_clusters}.`,
           )}
           tabs={tabs()}
           path={route.path}
@@ -384,12 +384,12 @@ export default function PhilosophyAtlasPage({ route }: { route: Route }) {
                   lead={
                     variant === 'author_centered'
                       ? l(
-                          'Each work’s average position is taken out, so passages group by what they discuss rather than by whose book, or whose translation, they come from. Point at a dot to read it.',
-                          'Varje verks genomsnittliga position dras bort, så att passager grupperas efter vad de handlar om snarare än vems bok, eller vems översättning, de kommer från. Peka på en punkt för att läsa den.',
+                          'Each work’s average position is taken out, so passages group by topic, not by book.',
+                          'Varje verks genomsnittliga position dras bort, så passager grupperas efter ämne, inte efter bok.',
                         )
                       : l(
-                          'The embeddings as they are: passages from one work tend to sit together, whatever they discuss. Point at a dot to read it.',
-                          'Inbäddningarna som de är: passager ur samma verk tenderar att hamna tillsammans, vad de än handlar om. Peka på en punkt för att läsa den.',
+                          'The raw embeddings: passages from one work sit together, whatever they discuss.',
+                          'De råa inbäddningarna: passager ur samma verk hamnar tillsammans, vad de än handlar om.',
                         )
                   }
                   controls={
@@ -448,8 +448,8 @@ export default function PhilosophyAtlasPage({ route }: { route: Route }) {
                     `${points.length} passager, två kartor: hur mycket var och en följer verken`,
                   )}
                   lead={l(
-                    'How far the groups follow the works and translators instead of the ideas, on the raw map and on the map centred per work.',
-                    'Hur mycket grupperna följer verk och översättare i stället för idéer, på den råa kartan och på kartan centrerad per verk.',
+                    'How far the groups follow works instead of ideas, raw and centred.',
+                    'Hur mycket grupperna följer verk i stället för idéer, rått och centrerat.',
                   )}
                   source={l(
                     'HDBSCAN groups and nearest neighbours on each map',
@@ -470,8 +470,8 @@ export default function PhilosophyAtlasPage({ route }: { route: Route }) {
                   `${variantClusters.length} grupper, varav ${across} tvärgående`,
                 )}
                 lead={l(
-                  'Each group is titled by its most distinctive words and shows the works it draws on. Words are not a name: open a group to read the passages nearest its centre. A group across works draws on at least three works with none above half.',
-                  'Varje grupp har sina mest utmärkande ord som rubrik och visar de verk den hämtar från. Ord är inte ett namn: öppna en grupp för att läsa passagerna närmast dess mitt. En tvärgående grupp hämtar från minst tre verk utan att något väger över hälften.',
+                  'Each group is titled by its most distinctive words. A group across works draws on at least three works, none above half.',
+                  'Varje grupp har sina mest utmärkande ord som rubrik. En tvärgående grupp hämtar från minst tre verk, inget över hälften.',
                 )}
                 source={l(
                   'HDBSCAN on the chosen map; the distinctive words of each group',
@@ -699,8 +699,8 @@ function Evaluation({ ev }: { ev: Summary['run']['evaluation'] }) {
       </table>
       <p className="ph-hint">
         {l(
-          'A well-separated group is not necessarily the structure we meant to measure: in the raw map almost half of a passage’s nearest neighbours come from its own work, against under a tenth by chance. Centring per work halves the work-dominated structure but cannot remove a translator’s voice entirely.',
-          'En tydligt avgränsad grupp är inte nödvändigtvis den struktur vi ville mäta: i den råa kartan kommer nästan hälften av en passages närmaste grannar från samma verk, mot under en tiondel av en slump. Centrering per verk minskar den verksbundna strukturen men kan inte helt ta bort en översättares röst.',
+          'Raw, almost half of a passage’s neighbours come from its own work, against under a tenth by chance. Centring halves that, but a translator’s voice remains.',
+          'Rått kommer nästan hälften av en passages grannar från samma verk, mot under en tiondel av en slump. Centrering halverar det, men översättarens röst finns kvar.',
         )}
       </p>
     </div>
@@ -733,8 +733,8 @@ function Tensions({
             `${cap(t.pole_a)} eller ${t.pole_b}: var varje tänkare står`,
           )}
           lead={l(
-            'Each pole is one sentence. Every passage is compared with both; its position is how much closer it sits to one than the other. The bar is the middle half of a work’s passages, the dot its median. A lens chosen by us, not an axis of philosophical truth, and the differences between works are small.',
-            'Varje pol är en mening. Varje passage jämförs med båda; dess position är hur mycket närmare den ligger den ena än den andra. Stapeln är verkets mittersta hälft av passager, punkten dess median. En lins vi valt, inte en axel för filosofisk sanning, och skillnaderna mellan verken är små.',
+            'Each pole is one sentence; a passage sits by how much closer it is to one. Bar: the middle half of a work’s passages, dot: the median. The differences are small.',
+            'Varje pol är en mening; en passage hamnar efter hur mycket närmare den ligger den ena. Stapel: verkets mittersta hälft, punkt: medianen. Skillnaderna är små.',
           )}
           source={`${summary.run.model}; ${l('cosine similarity to each pole sentence', 'cosinuslikhet mot varje polmening')}`}
         >

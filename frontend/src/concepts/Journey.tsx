@@ -289,12 +289,12 @@ export default function Journey({ route, data }: { route: Route; data: Data }) {
       >
         <p>
           {l(
-            'Similar wording is not the same meaning, and appearing in two domains is not influence: myths did not cause philosophy, and philosophy did not cause the AI Act. The four corpora also differ more from each other than their subjects do: ',
-            'Liknande formuleringar är inte samma betydelse, och att något förekommer i två domäner är inte påverkan: myterna orsakade inte filosofin, och filosofin orsakade inte AI-förordningen. De fyra korpusarna skiljer sig dessutom mer från varandra än deras ämnen gör: ',
+            'Similar wording is not influence. ',
+            'Liknande formuleringar är inte påverkan. ',
           )}
           {l(
-            `${pct(ev.same_corpus_neighbours)} of each passage’s nearest neighbours come from its own corpus (chance ${pct(ev.same_corpus_chance)}; ${pct(ev.same_corpus_neighbours_centred)} after centring). Part of this is language: the Riksdag corpus is Swedish, the rest English. So passages are compared within a domain and through the concepts, never on one shared map.`,
-            `${pct(ev.same_corpus_neighbours)} av varje passages närmaste grannar kommer från dess egen korpus (slump ${pct(ev.same_corpus_chance)}; ${pct(ev.same_corpus_neighbours_centred)} efter centrering). En del av detta är språk: riksdagskorpusen är svensk, resten engelska. Därför jämförs passagerna inom en domän och genom begreppen, aldrig på en gemensam karta.`,
+            `${pct(ev.same_corpus_neighbours)} of a passage’s nearest neighbours come from its own corpus (chance ${pct(ev.same_corpus_chance)}), so passages are compared within a domain, never on one shared map.`,
+            `${pct(ev.same_corpus_neighbours)} av en passages närmaste grannar kommer från dess egen korpus (slump ${pct(ev.same_corpus_chance)}), så passagerna jämförs inom en domän, aldrig på en gemensam karta.`,
           )}
         </p>
         <p>

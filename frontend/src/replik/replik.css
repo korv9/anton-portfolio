@@ -307,16 +307,6 @@
   font-size: var(--h3);
 }
 
-.rk-method {
-  display: grid;
-  gap: var(--sp-3);
-  max-width: var(--measure);
-  margin: 0;
-  padding-left: 1.1rem;
-  color: var(--ink-2);
-  line-height: 1.5;
-}
-
 @media (max-width: 760px) {
   .rk-heat-row {
     grid-template-columns: 5.5rem repeat(var(--cols), minmax(0, 1fr));

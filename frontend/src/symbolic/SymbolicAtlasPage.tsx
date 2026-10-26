@@ -358,8 +358,8 @@ export default function SymbolicAtlasPage({ route }: { route: Route }) {
         <ReportShell
           name={NAME}
           intro={l(
-            `Every use of 20 symbol words in ${summary.document_count} public-domain books of mythology, folklore and literature, placed by the language around it and grouped without labels. A cluster is named only after a person has read it.`,
-            `Varje förekomst av 20 symbolord i ${summary.document_count} fria böcker med mytologi, folksagor och litteratur, placerad efter språket omkring den och grupperad utan etiketter. Ett kluster får namn först när en människa har läst det.`,
+            `Every use of 20 symbol words in ${summary.document_count} books of myth, folklore and literature, placed by the language around it. Clusters get names only after a person reads them.`,
+            `Varje förekomst av 20 symbolord i ${summary.document_count} böcker med myter, folksagor och litteratur, placerad efter språket omkring den. Kluster får namn först när en människa har läst dem.`,
           )}
           tabs={tabs()}
           path={route.path}
@@ -591,8 +591,8 @@ export default function SymbolicAtlasPage({ route }: { route: Route }) {
             ) : (
               <p>
                 {l(
-                  `On average ${pct(ev.composition.largest_book_share ?? 0)} of a cluster comes from one book, and ${pct(ev.composition.largest_symbol_share ?? 0)} from one symbol. The baseline map groups passages more by a book's style and translation than by what a symbol means.`,
-                  `I genomsnitt kommer ${pct(ev.composition.largest_book_share ?? 0)} av ett kluster från en och samma bok, och ${pct(ev.composition.largest_symbol_share ?? 0)} från en och samma symbol. Utgångslägets karta grupperar ställen mer efter bokens stil och översättning än efter vad en symbol betyder.`,
+                  `On average ${pct(ev.composition.largest_book_share ?? 0)} of a cluster comes from one book, ${pct(ev.composition.largest_symbol_share ?? 0)} from one symbol. The map groups style more than meaning.`,
+                  `I snitt kommer ${pct(ev.composition.largest_book_share ?? 0)} av ett kluster från en bok, ${pct(ev.composition.largest_symbol_share ?? 0)} från en symbol. Kartan grupperar stil mer än betydelse.`,
                 )}
               </p>
             ))}

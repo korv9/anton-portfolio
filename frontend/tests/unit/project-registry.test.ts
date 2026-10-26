@@ -7,7 +7,6 @@ import assert from 'node:assert/strict'
 import {
   PROJECT_GROUPS,
   PROJECTS,
-  neighbours,
   projectForRoute,
 } from '../../src/projects/projectRegistry.ts'
 
@@ -55,15 +54,6 @@ test('the withdrawn observatories are not listed', () => {
       undefined,
       id,
     )
-})
-
-test('previous and next follow the project groups without wrapping', () => {
-  assert.equal(neighbours('symbolic-atlas').previous, undefined)
-  assert.equal(neighbours('symbolic-atlas').next?.id, 'philosophy-atlas')
-  assert.equal(neighbours('drugcomb').next?.id, 'replik')
-  assert.equal(neighbours('replik').next?.id, 'ai-act-clock')
-  assert.equal(neighbours('ai-act-clock').next?.id, 'thesis')
-  assert.equal(neighbours('diva-lakehouse').next, undefined)
 })
 
 test('a route finds its project, including sub-views', () => {

@@ -30,13 +30,19 @@ test('project themes survive navigation between all workspace types', async ({
       'rgb(36, 36, 34)',
     )
     await expect(page.locator('body')).toHaveCSS('font-family', /Helvetica/)
-    await expect(page.locator('.site-header')).toHaveCSS(
-      'background-color',
-      'rgb(36, 36, 34)',
-    )
-    expect(
-      (await page.locator('.site-header').boundingBox())!.height,
-    ).toBeLessThanOrEqual(80)
+    // Wide screens show the projects index beside the page; phones keep the header.
+    if (page.viewportSize()!.width >= 1024) {
+      await expect(page.locator('.project-rail')).toBeVisible()
+      await expect(page.locator('.site-header')).toBeHidden()
+    } else {
+      await expect(page.locator('.site-header')).toHaveCSS(
+        'background-color',
+        'rgb(36, 36, 34)',
+      )
+      expect(
+        (await page.locator('.site-header').boundingBox())!.height,
+      ).toBeLessThanOrEqual(80)
+    }
   }
   await page.goto('/#start')
   await expect(page.locator('body')).toHaveCSS(

@@ -167,7 +167,7 @@ export default function FuturesTopics() {
         colorOf={(k) => CORPORA.indexOf(k as Corpus) + 1}
         yFrom={0}
       />
-      <div className="sw-table-wrap">
+      <div className="sw-table-wrap" tabIndex={0}>
         <table className="sw-table">
           <caption>
             {l(

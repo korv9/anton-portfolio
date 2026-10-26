@@ -93,7 +93,7 @@ export default function Welfare() {
 
   if (ess === null || wedge === null)
     return (
-      <p className="sweden sw-note" role="status">
+      <p className="sw-section sw-note" role="status">
         {l('Loading…', 'Laddar…')}
       </p>
     )
@@ -377,7 +377,7 @@ export default function Welfare() {
           `Skattekil, ensamstående med genomsnittslön, ${wedge.year}`,
         )}
       </h3>
-      <div className="sw-table-wrap">
+      <div className="sw-table-wrap" tabIndex={0}>
         <table className="sw-table">
           <thead>
             <tr>
@@ -433,7 +433,7 @@ export default function Welfare() {
       <h3>
         {l(...METRICS[metric])} {l('per survey round', 'per enkätomgång')}
       </h3>
-      <div className="sw-table-wrap">
+      <div className="sw-table-wrap" tabIndex={0}>
         <table className="sw-table">
           <thead>
             <tr>

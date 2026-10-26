@@ -19,8 +19,7 @@
 .project-shell #main:has(.cv) {
   background: var(--page);
 }
-.project-shell #main:has(.cv) > .project-context,
-.project-shell #main:has(.cv) > .project-pager {
+.project-shell #main:has(.cv) > .project-context {
   display: none;
 }
 .cv {
@@ -377,23 +376,3 @@
 }
 
 /* The method notes, folded away under the maps. */
-.cv-method {
-  max-width: 75ch;
-  margin-top: var(--sp-section);
-  font-size: var(--fs-sm);
-  line-height: 1.5;
-}
-.cv-method summary {
-  font-family: var(--font-meta);
-  font-size: var(--fs-label);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  cursor: pointer;
-}
-.cv-method summary:focus-visible {
-  outline: 2px solid var(--ink);
-  outline-offset: 2px;
-}
-.cv-method p {
-  margin: var(--sp-3) 0 0;
-}

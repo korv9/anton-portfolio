@@ -31,33 +31,3 @@
 .project-context [aria-current] {
   color: var(--ink);
 }
-.project-pager {
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-  max-width: none;
-  margin-top: 48px;
-  padding: 24px clamp(16px, 1.8vw, 36px);
-}
-.project-pager a {
-  display: grid;
-  gap: 0.2rem;
-  color: var(--ink);
-  text-decoration: none;
-}
-.project-pager a:hover span {
-  text-decoration: underline;
-  text-underline-offset: 0.3em;
-}
-.project-pager .pager-next {
-  text-align: right;
-  margin-left: auto;
-}
-.project-pager small {
-  color: var(--muted);
-  font-size: 0.78rem;
-}
-.project-pager span {
-  font-size: 1.05rem;
-  font-weight: 650;
-}

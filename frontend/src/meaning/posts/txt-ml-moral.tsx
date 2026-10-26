@@ -249,8 +249,8 @@ export const posts: Post[] = [
       )
     },
     note: [
-      'Accuracy over all 200 items per test and wording, unparsed answers counted as wrong; 95 % intervals; grey tick: always the most common label. Gemma on Workers AI',
-      'Träffsäkerhet över alla 200 uppgifter per test och formulering, svar som inte gick att tolka räknas som fel; 95 %-intervall; grått streck: alltid den vanligaste etiketten. Gemma på Workers AI',
+      'Accuracy on 200 items per test, 95 % intervals. Grey tick: always guessing the most common label. Gemma on Workers AI',
+      'Träffsäkerhet på 200 uppgifter per test, 95 %-intervall. Grått streck: att alltid gissa den vanligaste etiketten. Gemma på Workers AI',
     ],
     render: () => <EthicsDots />,
   },
@@ -276,8 +276,8 @@ export const posts: Post[] = [
       )
     },
     note: [
-      'F1 from 0 to 1 on English Reddit comments (MFRC): tagger against each annotator, and annotator against annotator; both are low. Counts use the 95 % interval of the gap',
-      'F1 från 0 till 1 på engelska Reddit-kommentarer (MFRC): taggaren mot varje annoterare, och annoterare mot annoterare; båda är låga. Antalen bygger på 95 %-intervallet för skillnaden',
+      'F1 on English Reddit comments (MFRC): tagger against annotators, and annotators against each other. Both are low',
+      'F1 på engelska Reddit-kommentarer (MFRC): taggaren mot annoterare, och annoterare mot varandra. Båda är låga',
     ],
     render: () => <CeilingDumbbell />,
   },

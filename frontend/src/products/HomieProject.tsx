@@ -65,8 +65,8 @@ export default function HomieProject() {
           <h3>{l('Built and tested', 'Byggt och testat')}</h3>
           <p>
             {l(
-              '4 of the 16 operations are live: register, log in and the current member, plus a health check that returns 503 when the database is down. CI migrates the schema on PostgreSQL 16, runs the seed twice to prove it idempotent, and tests the trigger that keeps completions append-only. ',
-              '4 av de 16 operationerna är i drift: registrering, inloggning och aktuell medlem, plus en hälsokontroll som svarar 503 när databasen är nere. CI migrerar schemat mot PostgreSQL 16, kör seeden två gånger för att visa att den är idempotent och testar triggern som gör utförandena append-only. ',
+              '4 of the 16 operations are live: register, log in, current member and a health check. CI migrates PostgreSQL 16, runs the seed twice and tests the append-only trigger. ',
+              '4 av de 16 operationerna är i drift: registrering, inloggning, aktuell medlem och en hälsokontroll. CI migrerar PostgreSQL 16, kör seeden två gånger och testar append-only-triggern. ',
             )}
             <a href={CI_RUN} target="_blank" rel="noreferrer">
               {l(
@@ -81,8 +81,8 @@ export default function HomieProject() {
           <h3>{l('Defined by the contract', 'Definierat av kontraktet')}</h3>
           <p>
             {l(
-              'Households, tasks, completions and analytics make up the other 12 operations. They answer with contract-exact previews, so a client can be built against them now. The balance index is 1 − Σ|share − 1/n| / (2(1 − 1/n)) per UTC week, left empty for a single contributor.',
-              'Hushåll, uppgifter, utföranden och analys utgör de övriga 12 operationerna. De svarar med förhandsvisningar som följer kontraktet exakt, så en klient kan byggas mot dem redan nu. Balansindexet är 1 − Σ|andel − 1/n| / (2(1 − 1/n)) per UTC-vecka och lämnas tomt när bara en person bidrar.',
+              'The other 12 operations answer with contract-exact previews. Balance index: 1 − Σ|share − 1/n| / (2(1 − 1/n)) per week.',
+              'De övriga 12 operationerna svarar med förhandsvisningar enligt kontraktet. Balansindex: 1 − Σ|andel − 1/n| / (2(1 − 1/n)) per vecka.',
             )}
           </p>
         </section>

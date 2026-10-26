@@ -301,10 +301,9 @@ export function LawChart() {
   )
   const model = (r: Eval['compared'][number]) => r.model.split('/').pop()
   // The set-ups answered different numbers of questions, so the headline gives each base.
-  const others = rows.filter((r) => r !== best)
   const head = l(
-    `${pct(best.verified_share, 0)} of ${best.questions} answers had every quote verified against the law, the highest share; the other set-ups answered ${others.map((r) => r.questions).join(' and ')} questions, so the bases differ.`,
-    `${pct(best.verified_share, 0)} av ${best.questions} svar hade alla citat verifierade mot lagen, den högsta andelen; de andra uppsättningarna besvarade ${others.map((r) => r.questions).join(' och ')} frågor, så underlagen skiljer sig.`,
+    `${pct(best.verified_share, 0)} of ${best.questions} answers had every quote verified against the law.`,
+    `${pct(best.verified_share, 0)} av ${best.questions} svar hade alla citat verifierade mot lagen.`,
   )
   return (
     <Mini

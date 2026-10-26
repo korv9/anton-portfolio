@@ -3,7 +3,7 @@
  * products, each with its measurement contract, result, uncertainty, confounders and
  * assessment, and the joins rejected because their grains do not meet
  * (sweden/connections/connections.json, platform/publish/sweden/export_connections.py).
- * No 3D: compact cards with one chart or table per relationship.
+ * Each relationship shows its chart or table; the rest is folded under one disclosure.
  */
 import { useEffect, useState } from 'react'
 import { l } from '../i18n'
@@ -16,12 +16,12 @@ import {
 } from './ConnectionsViews'
 import { GradientCard, type Base, type Gradient } from './ConnectionsGradient'
 import { productById } from './products'
+import { ExploreSection } from '../ui/Story'
 import {
   EmptyState,
   EvidenceStamp,
   ProductEmpty,
-  RelatedProjects,
-  SwedenMasthead,
+  ProductSection,
 } from './template'
 
 type Relationship =
@@ -61,7 +61,7 @@ export default function Connections() {
   }, [])
   if (data === null)
     return (
-      <p className="sweden sw-note" role="status">
+      <p className="sw-section sw-note" role="status">
         {l('Loading…', 'Laddar…')}
       </p>
     )
@@ -82,57 +82,56 @@ export default function Connections() {
       </ProductEmpty>
     )
   return (
-    <article className="sweden sw-page">
-      <SwedenMasthead current={product.href} />
-      <header className="sw-hub-head">
+    <ProductSection product={product}>
+      <header className="sw-scene-title">
         <p className="sw-kicker">
-          <span className="sw-id">×</span> SWEDEN
+          <span className="sw-id">×</span>
+          {l(product.title.en, product.title.sv)}
         </p>
-        <h1 id="sw-title">{l(product.title.en, product.title.sv)}</h1>
-        <p className="sw-question">
-          {l(product.question.en, product.question.sv)}
-        </p>
-        <p className="sw-note">
+        <h2 id="sw-title-X">{l(product.question.en, product.question.sv)}</h2>
+        <p className="sw-line">
           {l(
-            'Each relationship below is stated with its geography, years and denominator. The first was chosen by the authors after the data were available; the other two were pre-registered before they were computed. Holm-adjusted p-values stand beside the raw ones within each question, and no label rests on a p-value. Correlation is not causation, and none of these is causally identified.',
-            'Varje samband nedan anges med geografi, år och nämnare. Det första valdes av författarna när data redan fanns; de två andra förregistrerades innan de beräknades. Holm-justerade p-värden står bredvid de ojusterade inom varje fråga, och ingen bedömning vilar på ett p-värde. Korrelation är inte orsak, och inget av dessa är kausalt identifierat.',
+            'Correlation, not causation: none of these is causally identified.',
+            'Korrelation, inte orsak: inget av dessa är kausalt identifierat.',
           )}
         </p>
       </header>
-      <section
-        className="sw-findings"
-        aria-label={l('Relationships', 'Samband')}
-      >
+      <div className="sw-connections">
         {data.relationships.map((r) => (
           <article
             key={r.id}
             className="sw-connection"
             data-assessment={r.assessment}
           >
-            <h2>{r.question}</h2>
+            <h3>{r.question}</h3>
             <p className="sw-kicker">
-              {r.products.map((p) => (
-                <span key={p} className="sw-id">
-                  {p}
-                </span>
-              ))}
-              <span className="sw-stamp">
-                {l(ASSESSMENT[r.assessment][0], ASSESSMENT[r.assessment][1])}
-              </span>
-              <EvidenceStamp evidence={r.evidence} />
+              {r.products.join(' × ')} ·{' '}
+              {l(ASSESSMENT[r.assessment][0], ASSESSMENT[r.assessment][1])}
             </p>
             {r.kind === 'gradient' ? (
               <GradientCard r={r} />
+            ) : r.kind === 'neighbours' ? (
+              <NeighbourPlot result={r.result} />
             ) : (
-              <>
-                <Contract r={r} />
-                {r.kind === 'neighbours' ? (
-                  <NeighbourPlot result={r.result} />
-                ) : (
-                  <ChangeTable result={r.result} />
-                )}
-              </>
+              <ChangeTable result={r.result} />
             )}
+          </article>
+        ))}
+      </div>
+      <ExploreSection
+        title={l('Method and rejected joins', 'Metod och avvisade kopplingar')}
+        summary={l(
+          'Contracts, confounders, alternatives and the joins that were turned down.',
+          'Kontrakt, störfaktorer, alternativ och kopplingarna som avvisades.',
+        )}
+      >
+        {data.relationships.map((r) => (
+          <div key={r.id} className="sw-method-body">
+            <h3>{r.question}</h3>
+            <p className="sw-kicker">
+              <EvidenceStamp evidence={r.evidence} />
+            </p>
+            {r.kind !== 'gradient' && <Contract r={r} />}
             <p>
               <b>{l('Confounders', 'Störfaktorer')}:</b>{' '}
               {r.confounders.join('; ')}.
@@ -146,13 +145,11 @@ export default function Connections() {
             <p className="sw-note">
               {l('Specification', 'Specifikation')}: {r.specification}.
             </p>
-          </article>
+          </div>
         ))}
-      </section>
-      <section className="sw-method" aria-labelledby="sw-rejected">
-        <h2 id="sw-rejected">{l('Rejected joins', 'Avvisade kopplingar')}</h2>
+        <h3>{l('Rejected joins', 'Avvisade kopplingar')}</h3>
         {data.rejected.map((r) => (
-          <details key={r.id} open>
+          <details key={r.id}>
             <summary>
               {r.products.join(' × ')}: {r.question}
             </summary>
@@ -172,9 +169,8 @@ export default function Connections() {
             : {data.method.deviations.join(' ')}
           </p>
         )}
-      </section>
-      <RelatedProjects product={product} />
-    </article>
+      </ExploreSection>
+    </ProductSection>
   )
 }
 

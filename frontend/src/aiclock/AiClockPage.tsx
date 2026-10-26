@@ -95,7 +95,6 @@ function QuestionSection({
 }) {
   if (!d || !end) return null
   const p = proposal(d)
-  const ahead = d.milestones.filter((m) => m.month > end).length
   return (
     <ProjectSection
       id="aiclock-question"
@@ -107,15 +106,15 @@ function QuestionSection({
     >
       <Finding>
         {l(
-          `The Commission proposed the AI Act in ${monthName(p.month)}. This page follows its ${d.milestones.length} dates and asks when Swedish employers and the Riksdag started to use its words: in job ads, in speeches, and in the terms the Act itself defines.`,
-          `Kommissionen föreslog AI-förordningen i ${monthName(p.month)}. Sidan följer dess ${d.milestones.length} datum och frågar när svenska arbetsgivare och riksdagen började använda dess ord: i platsannonser, i anföranden och i de begrepp som förordningen själv definierar.`,
+          `The Commission proposed the AI Act in ${monthName(p.month)}. When did Swedish job ads and the Riksdag start using its words?`,
+          `Kommissionen föreslog AI-förordningen i ${monthName(p.month)}. När började svenska platsannonser och riksdagen använda dess ord?`,
         )}
       </Finding>
       <Timeline d={d} end={end} />
       <Note>
         {l(
-          `Grey dates fall after the last counted month (${monthName(end)}); ${ahead} of the ${d.milestones.length} are still ahead.`,
-          `Grå datum ligger efter den sista räknade månaden (${monthName(end)}); ${ahead} av de ${d.milestones.length} ligger fortfarande framför oss.`,
+          `Grey dates are after ${monthName(end)}, the last counted month.`,
+          `Grå datum ligger efter ${monthName(end)}, den sista räknade månaden.`,
         )}
       </Note>
     </ProjectSection>
@@ -215,8 +214,8 @@ function JobsSection({
       </div>
       <Note>
         {l(
-          `Arbetsförmedlingen’s historical ads, ${summary.first_month} to ${summary.last_month}, matched with a fixed dictionary. An ad can discuss the Act without naming it.`,
-          `Arbetsförmedlingens historiska annonser, ${summary.first_month} till ${summary.last_month}, matchade mot ett fast ordförråd. En annons kan handla om förordningen utan att nämna den.`,
+          `Arbetsförmedlingen ads, ${summary.first_month} to ${summary.last_month}. An ad can discuss the Act without naming it.`,
+          `Arbetsförmedlingens annonser, ${summary.first_month} till ${summary.last_month}. En annons kan handla om förordningen utan att nämna den.`,
         )}
       </Note>
     </ProjectSection>
@@ -303,8 +302,8 @@ function RiksdagSection({
       </div>
       <Note>
         {l(
-          `Riksdagen’s open speech data. ${first.year} and ${last.year} are partial years (the data runs ${summary.first_date} to ${summary.last_date}). A speech can discuss the Act without naming it.`,
-          `Riksdagens öppna data om anföranden. ${first.year} och ${last.year} är ofullständiga år (datan går från ${summary.first_date} till ${summary.last_date}). Ett anförande kan handla om förordningen utan att nämna den.`,
+          `${first.year} and ${last.year} are partial years.`,
+          `${first.year} och ${last.year} är ofullständiga år.`,
         )}
       </Note>
     </ProjectSection>
@@ -331,8 +330,8 @@ function LagSection({ d }: { d: Diffusion | null }) {
     >
       <Finding>
         {l(
-          `For each of the Act’s own terms, corpus and date, the test asks how many months pass before the term’s share jumps, and compares that with ${t.rounds} random dates. Of ${num(t.total)} lags, ${num(t.censored)} never jump in the data, ${num(t.notSig)} are no shorter than at random dates, and ${num(t.sig)} reach p ≤ 0.05.`,
-          `För vart och ett av förordningens egna begrepp, korpus och datum frågar testet hur många månader som går innan begreppets andel tar ett skutt, och jämför med ${t.rounds} slumpade datum. Av ${num(t.total)} fördröjningar tar ${num(t.censored)} aldrig något skutt i datan, ${num(t.notSig)} är inte kortare än vid slumpade datum och ${num(t.sig)} når p ≤ 0,05.`,
+          `Months from each of the Act’s dates until a term’s share jumps, against ${t.rounds} random dates. Of ${num(t.total)} lags, ${num(t.censored)} never jump, ${num(t.notSig)} are no shorter than at random dates, and ${num(t.sig)} reach p ≤ 0.05.`,
+          `Månader från förordningens datum tills ett begrepps andel tar ett skutt, mot ${t.rounds} slumpade datum. Av ${num(t.total)} fördröjningar tar ${num(t.censored)} aldrig något skutt, ${num(t.notSig)} är inte kortare än vid slumpade datum och ${num(t.sig)} når p ≤ 0,05.`,
         )}
       </Finding>
       <RankBars
@@ -359,14 +358,14 @@ function LagSection({ d }: { d: Diffusion | null }) {
       />
       <Finding>
         {l(
-          `Read what the ${num(t.sig)} rest on. ${num(t.solid)} point at the same month, ${t.solidMonths.map(monthName).join(', ')}, when “${t.solidTerms.join('” and “')}” turned up in at most ${num(t.solidMatches)} ${t.solidCorpora.map(where).join(' and ')} each: one burst, counted against every date. The other ${num(t.thin)} rest on at most ${num(t.thinMatches)} match${t.thinMatches === 1 ? '' : 'es'} each. So the Act’s own vocabulary has not yet arrived in Swedish working life or the Riksdag in a way this test can tell from chance.`,
-          `Läs vad de ${num(t.sig)} vilar på. ${num(t.solid)} pekar på samma månad, ${t.solidMonths.map(monthName).join(', ')}, då ”${t.solidTerms.join('” och ”')}” dök upp i högst ${num(t.solidMatches)} ${t.solidCorpora.map(where).join(' och ')} vardera: ett enda utbrott, räknat mot varje datum. De övriga ${num(t.thin)} vilar på högst ${num(t.thinMatches)} ${t.thinMatches === 1 ? 'träff' : 'träffar'} var. Förordningens egna ord har alltså ännu inte nått svenskt arbetsliv eller riksdagen på ett sätt som testet kan skilja från slumpen.`,
+          `The ${num(t.sig)} rest on little. ${num(t.solid)} point at one month, ${t.solidMonths.map(monthName).join(', ')}: “${t.solidTerms.join('” and “')}” in at most ${num(t.solidMatches)} ${t.solidCorpora.map(where).join(' and ')} each. The other ${num(t.thin)} rest on at most ${num(t.thinMatches)} match${t.thinMatches === 1 ? '' : 'es'} each. The Act’s own words have not arrived in a way the test can tell from chance.`,
+          `De ${num(t.sig)} vilar på lite. ${num(t.solid)} pekar på en månad, ${t.solidMonths.map(monthName).join(', ')}: ”${t.solidTerms.join('” och ”')}” i högst ${num(t.solidMatches)} ${t.solidCorpora.map(where).join(' och ')} vardera. De övriga ${num(t.thin)} vilar på högst ${num(t.thinMatches)} ${t.thinMatches === 1 ? 'träff' : 'träffar'} var. Förordningens egna ord har inte kommit fram på ett sätt som testet kan skilja från slumpen.`,
         )}
       </Finding>
       <Note>
         {l(
-          `Pre-registered: ${num(d.diagnostics.primary.tests)} lags on the original term list (${num(d.diagnostics.primary.p_at_most_0_05)} at p ≤ 0.05) and ${num(d.diagnostics.amended.tests)} on the amended list (${num(d.diagnostics.amended.p_at_most_0_05)}), reported side by side and never pooled. No multiple-test adjustment: with ${num(t.tested)} p-values, about ${num(Math.round(t.tested * 0.05))} would reach 0.05 by chance alone. A shorter lag is timing, not proof that the Act caused it.`,
-          `Förregistrerat: ${num(d.diagnostics.primary.tests)} fördröjningar på den ursprungliga begreppslistan (${num(d.diagnostics.primary.p_at_most_0_05)} med p ≤ 0,05) och ${num(d.diagnostics.amended.tests)} på den ändrade listan (${num(d.diagnostics.amended.p_at_most_0_05)}), redovisade sida vid sida och aldrig sammanslagna. Ingen justering för många test: med ${num(t.tested)} p-värden skulle ungefär ${num(Math.round(t.tested * 0.05))} nå 0,05 av ren slump. En kortare fördröjning visar tidpunkt, inte att förordningen orsakade den.`,
+          `Pre-registered. No multiple-test adjustment: of ${num(t.tested)} p-values, about ${num(Math.round(t.tested * 0.05))} would reach 0.05 by chance. Timing, not cause.`,
+          `Förregistrerat. Ingen justering för många test: av ${num(t.tested)} p-värden skulle ungefär ${num(Math.round(t.tested * 0.05))} nå 0,05 av slump. Tidpunkt, inte orsak.`,
         )}
       </Note>
     </ProjectSection>
@@ -396,8 +395,8 @@ function LawSection({
     >
       <Finding>
         {l(
-          `Before most of it applies, the Act has already been rewritten. ${num(s.counts.articles_changed)} of its ${num(s.counts.articles)} articles are new or amended since ${s.original_version.published_at.slice(0, 4)}: ${num(amended.length)} amended and ${num(inserted.length)} inserted, by Regulation ${by.celex.slice(1, 5)}/${Number(by.celex.slice(6))} (${by.published_at}). The consolidated text of ${s.current_version.published_at} carries the changes.`,
-          `Innan det mesta av den gäller har förordningen redan skrivits om. ${num(s.counts.articles_changed)} av dess ${num(s.counts.articles)} artiklar är nya eller ändrade sedan ${s.original_version.published_at.slice(0, 4)}: ${num(amended.length)} ändrade och ${num(inserted.length)} införda, genom förordning ${by.celex.slice(1, 5)}/${Number(by.celex.slice(6))} (${by.published_at}). Den konsoliderade texten från ${s.current_version.published_at} bär ändringarna.`,
+          `${num(s.counts.articles_changed)} of its ${num(s.counts.articles)} articles are new or amended since ${s.original_version.published_at.slice(0, 4)}: ${num(amended.length)} amended, ${num(inserted.length)} inserted, by Regulation ${by.celex.slice(1, 5)}/${Number(by.celex.slice(6))}.`,
+          `${num(s.counts.articles_changed)} av dess ${num(s.counts.articles)} artiklar är nya eller ändrade sedan ${s.original_version.published_at.slice(0, 4)}: ${num(amended.length)} ändrade, ${num(inserted.length)} införda, genom förordning ${by.celex.slice(1, 5)}/${Number(by.celex.slice(6))}.`,
         )}
       </Finding>
       <h3>{l('The new articles', 'De nya artiklarna')}</h3>
@@ -410,63 +409,10 @@ function LawSection({
       </ul>
       <Note>
         {l(
-          `Amended articles: ${amended.map((a) => a.n).join(', ')}. Found by comparing the Official Journal text with the consolidated text from EUR-Lex; article titles are the official English ones.`,
-          `Ändrade artiklar: ${amended.map((a) => a.n).join(', ')}. Hittade genom att jämföra texten i EUT med den konsoliderade texten från EUR-Lex; artikelrubrikerna är de officiella engelska.`,
+          `Amended articles: ${amended.map((a) => a.n).join(', ')}.`,
+          `Ändrade artiklar: ${amended.map((a) => a.n).join(', ')}.`,
         )}
       </Note>
-    </ProjectSection>
-  )
-}
-
-// ---------------------------------------------------------------- method
-
-function Method({ d }: { d: Diffusion | null }) {
-  return (
-    <ProjectSection
-      id="aiclock-method"
-      label={l('Method and limits', 'Metod och begränsningar')}
-      title={l('How to read this page', 'Så läser du sidan')}
-    >
-      <ul className="ac-method">
-        <li>
-          {l(
-            'The Act’s terms were chosen by weighted log-odds of its phrases against the Swedish statute book (SFS), then reviewed by hand; every dropped term and its reason is kept.',
-            'Förordningens begrepp valdes med viktade log-odds för dess fraser mot svensk författningssamling (SFS) och granskades sedan för hand; varje bortvald term och skälet sparas.',
-          )}
-        </li>
-        <li>
-          {l(
-            'A term counts as arrived in the first month after a date whose three-month share is above the 95th percentile of all earlier months, with at least 12 earlier months. Partial months are left out.',
-            'Ett begrepp räknas som framme den första månaden efter ett datum då tremånadersandelen ligger över 95:e percentilen av alla tidigare månader, med minst 12 tidigare månader. Ofullständiga månader räknas inte.',
-          )}
-        </li>
-        {d && (
-          <li>
-            {l(
-              `Placebo test: ${d.diagnostics.placebo_rounds} random months per lag, p = (1 + placebo lags no longer than the observed) / ${d.diagnostics.placebo_rounds + 1}. A lag whose window holds ${d.diagnostics.few_matches} matches or fewer says nothing.`,
-              `Placebotest: ${d.diagnostics.placebo_rounds} slumpade månader per fördröjning, p = (1 + placebofördröjningar som inte är längre än den observerade) / ${d.diagnostics.placebo_rounds + 1}. En fördröjning vars fönster har ${d.diagnostics.few_matches} träffar eller färre säger ingenting.`,
-            )}
-          </li>
-        )}
-        <li>
-          {l(
-            'Re-admitted terms were checked by reading up to 50 random matched ads or speeches each; a term is kept at a precision of 0.8 or more.',
-            'Återinsatta begrepp kontrollerades genom att läsa upp till 50 slumpade träffar i annonser eller anföranden vardera; ett begrepp behålls vid en precision på 0,8 eller mer.',
-          )}
-        </li>
-        <li>
-          {l(
-            'Timing is not cause: AI talk in ads and speeches also rises for reasons that have nothing to do with the law, and this page cannot separate them.',
-            'Tidpunkt är inte orsak: AI-språket i annonser och anföranden ökar också av skäl som inte har med lagen att göra, och sidan kan inte skilja dem åt.',
-          )}
-        </li>
-        <li>
-          {l(
-            'Sources: Arbetsförmedlingen / JobTech historical job ads, Riksdagen open data (speeches), and the Publications Office of the EU (Cellar, EUR-Lex). Raw ads are never published; the page reads only counts.',
-            'Källor: Arbetsförmedlingens / JobTechs historiska platsannonser, riksdagens öppna data (anföranden) och EU:s publikationsbyrå (Cellar, EUR-Lex). Råa annonser publiceras aldrig; sidan läser bara antal.',
-          )}
-        </li>
-      </ul>
     </ProjectSection>
   )
 }
@@ -550,8 +496,8 @@ export default function AiClockPage() {
       >
         <p>
           {l(
-            'The EU wrote “AI system” into law in 2024. This page counts when Swedish employers and MPs began to use the Act’s words, tests whether those dates are closer to the law than chance, and shows the law changing under them.',
-            'EU skrev in ”AI-system” i lag 2024. Sidan räknar när svenska arbetsgivare och riksdagsledamöter började använda förordningens ord, prövar om de tidpunkterna ligger närmare lagen än slumpen, och visar hur lagen ändras under tiden.',
+            'The EU wrote “AI system” into law in 2024. When did Swedish employers and MPs start using the Act’s words?',
+            'EU skrev in ”AI-system” i lag 2024. När började svenska arbetsgivare och riksdagsledamöter använda förordningens ord?',
           )}
         </p>
         <Stats jobs={jobs} speeches={speeches} act={act} rows={jobRows} />
@@ -571,7 +517,6 @@ export default function AiClockPage() {
       <RiksdagSection rows={speechRows} summary={speeches} d={d} />
       <LagSection d={d} />
       <LawSection s={act} changes={changes} />
-      <Method d={d} />
     </article>
   )
 }

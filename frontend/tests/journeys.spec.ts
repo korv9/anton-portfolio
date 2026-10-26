@@ -22,7 +22,7 @@ test('a visitor follows an idea across stories, philosophy, politics and law', a
     'Where does one idea appear, from stories to law?',
   )
   await expect(page.locator('.politik-intro')).toContainText(
-    'never that one text influenced another',
+    'Similarity, not influence.',
   )
   // Four domains, each with passages that open their source.
   await expect(page.locator('.cj-domain')).toHaveCount(4)

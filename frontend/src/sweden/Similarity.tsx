@@ -171,7 +171,7 @@ export default function Similarity({ route }: { route: Route }) {
 
   if (data === null)
     return (
-      <p className="sweden sw-note" role="status">
+      <p className="sw-section sw-note" role="status">
         {l('Loading…', 'Laddar…')}
       </p>
     )
@@ -926,7 +926,7 @@ function Explore({
               `${selected!.name} och dess fem närmaste kommuner`,
             )}
           </h3>
-          <div className="sw-table-wrap">
+          <div className="sw-table-wrap" tabIndex={0}>
             <table className="sw-table">
               <caption className="visually-hidden">
                 {l('Indicator values', 'Indikatorvärden')}
@@ -1005,7 +1005,7 @@ function Explore({
           <h3>
             {l('Group profiles, mean values', 'Gruppprofiler, medelvärden')}
           </h3>
-          <div className="sw-table-wrap">
+          <div className="sw-table-wrap" tabIndex={0}>
             <table className="sw-table">
               <caption className="visually-hidden">
                 {l('Group profiles', 'Gruppprofiler')}

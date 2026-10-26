@@ -176,8 +176,8 @@ export const posts: Post[] = [
           )
     },
     note: [
-      'Bar: Mantel r between distance matrices of 246 municipalities; tick: r with geographic distance removed. Turnout is one of the social indicators, so part of the social–votes r is shared',
-      'Stapel: Mantels r mellan avståndsmatriser för 246 kommuner; streck: r när det geografiska avståndet räknats bort. Valdeltagandet är en av de sociala indikatorerna, så en del av r mellan socialt och röster är gemensam',
+      'Bar: Mantel r across 246 municipalities. Tick: with geography removed',
+      'Stapel: Mantels r över 246 kommuner. Streck: med geografin borträknad',
     ],
     render: () => <NeighbourBars />,
   },
@@ -191,8 +191,8 @@ export const posts: Post[] = [
       'Sverige tar in en betydligt större del av skatterna som löneskatt än de OECD-länder det grupperas med',
     ],
     note: [
-      'Bar: Sweden’s share of total tax per part, latest year; tick: mean of its 35-country cluster, Sweden included. The clustering is unstable under resampling, so read the group as loose. Source: OECD',
-      'Stapel: Sveriges andel av de totala skatterna per del, senaste året; streck: snittet för dess kluster på 35 länder, Sverige inräknat. Klustringen är instabil vid omsampling, så läs gruppen som lös. Källa: OECD',
+      'Bar: Sweden’s share of total tax per part. Tick: its 35-country cluster, a loose group. Source: OECD',
+      'Stapel: Sveriges andel av skatterna per del. Streck: dess kluster på 35 länder, en lös grupp. Källa: OECD',
     ],
     render: () => <MixBars />,
   },
