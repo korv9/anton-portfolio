@@ -197,8 +197,8 @@ export const PROJECTS: ProjectEntry[] = [
       'Thirteen works from Plato to Nietzsche, stripped of translators’ introductions and notes, cut into passages, embedded with a multilingual model, mapped with UMAP and HDBSCAN and read through tensions such as freedom ↔ control.',
     ),
     result: t(
-      'Den råa kartan följer verken mer än idéerna; centrering per verk ökar antalet tvärgående grupper från 6 till 19. Varje grupp visas med sina mest utmärkande ord.',
-      'The raw map follows the works more than the ideas; centring per work raises the groups across works from 6 to 19. Each group is shown by its most distinctive words.',
+      'Den råa kartan följer verken mer än idéerna; centrering per verk ökar antalet tvärgående grupper från 6 till 21. Varje grupp visas med sina mest utmärkande ord.',
+      'The raw map follows the works more than the ideas; centring per work raises the groups across works from 6 to 21. Each group is shown by its most distinctive words.',
     ),
     tech: [
       'Python',

@@ -57,7 +57,7 @@ export const BRIEFS: Record<string, Brief> = {
     ],
     shows: [
       {
-        value: '5 064 186',
+        value: '5 086 595',
         text: t(
           'Annonser i marknadsunderlaget: JobTechs historiska arkiv sedan 2020 plus strömmen.',
           'Ads in the market base: JobTech’s historical archives since 2020 plus the stream.',
@@ -73,8 +73,8 @@ export const BRIEFS: Record<string, Brief> = {
       {
         value: '651 → 187',
         text: t(
-          'Juniora annonser bland mjukvaru- och dataroller 2022 och 2025, en minskning med 71,3 %. Annonserna för mjukvaruutvecklare föll 52,6 %.',
-          'Junior ads among software and data roles in 2022 and 2025, down 71.3%. Software Developer ads fell 52.6%.',
+          'Juniora annonser för mjukvaruutvecklare 2022 och 2025, en minskning med 71,3 %. Alla annonser för mjukvaruutvecklare föll 52,6 %.',
+          'Junior Software Developer ads in 2022 and 2025, down 71.3%. All Software Developer ads fell 52.6%.',
         ),
       },
     ],
@@ -259,8 +259,8 @@ export const BRIEFS: Record<string, Brief> = {
       {
         title: t('Ordräkning', 'Dictionary counts'),
         text: t(
-          '4 925 716 platsannonser (2020–2026) och 129 110 riksdagsanföranden matchade månad för månad.',
-          '4,925,716 job ads (2020–2026) and 129,110 Riksdag speeches matched month by month.',
+          '5 055 437 platsannonser (2020–2026) och 129 110 riksdagsanföranden matchade månad för månad.',
+          '5,055,437 job ads (2020–2026) and 129,110 Riksdag speeches matched month by month.',
         ),
       },
       {
@@ -282,8 +282,8 @@ export const BRIEFS: Record<string, Brief> = {
       {
         value: '95',
         text: t(
-          'Annonser som nämnde förordningen vid namn 2025, medan andelen annonser som nämner AI steg från 0,77 % 2020 till 2,80 % under årets första sju månader 2026. I riksdagen nämner 26 anföranden den totalt.',
-          'Ads naming the Act in 2025, while the share of ads mentioning AI rose from 0.77% in 2020 to 2.80% in the first seven months of 2026. In the Riksdag, 26 speeches name it in all.',
+          'Annonser som nämnde förordningen vid namn 2025, medan andelen annonser som nämner AI steg från 0,77 % 2020 till 3,07 % under årets första nio månader 2026. I riksdagen nämner 26 anföranden den totalt.',
+          'Ads naming the Act in 2025, while the share of ads mentioning AI rose from 0.77% in 2020 to 3.07% in the first nine months of 2026. In the Riksdag, 26 speeches name it in all.',
         ),
       },
       {
@@ -361,8 +361,8 @@ export const BRIEFS: Record<string, Brief> = {
       {
         title: t('Statistikkatalogen', 'The statistics catalogue'),
         text: t(
-          '10 130 SCB-tabeller och Kolada-nyckeltal klassade efter område.',
-          '10,130 SCB tables and Kolada key figures classified by domain.',
+          '10 126 SCB-tabeller och Kolada-nyckeltal klassade efter område.',
+          '10,126 SCB tables and Kolada key figures classified by domain.',
         ),
       },
       {
@@ -839,15 +839,15 @@ export const BRIEFS: Record<string, Brief> = {
       {
         value: '334',
         text: t(
-          'dbt-modeller över 130 källtabeller, skyddade av 920 tester och med 22 823 145 rader (incheckat 2026-10-24).',
-          'dbt models over 130 source tables, guarded by 920 tests and holding 22,823,145 rows (committed 2026-10-24).',
+          'dbt-modeller över 130 källtabeller, skyddade av 920 tester och med 23 681 601 rader (exporterat 2026-10-26).',
+          'dbt models over 130 source tables, guarded by 920 tests and holding 23,681,601 rows (exported 2026-10-26).',
         ),
       },
       {
-        value: '39 / 42',
+        value: '38 / 42',
         text: t(
-          'Kvalitetskontroller som går igenom; 2 är inte tillämpliga och 1 mäts inte (utvärderat 2026-10-07).',
-          'Quality checks that pass; 2 are not applicable and 1 is not measured (evaluated 2026-10-07).',
+          'Kvalitetskontroller som går igenom; 2 är inte tillämpliga och 2 mäts inte (utvärderat 2026-10-26).',
+          'Quality checks that pass; 2 are not applicable and 2 are not measured (evaluated 2026-10-26).',
         ),
       },
       {
@@ -908,8 +908,8 @@ export const BRIEFS: Record<string, Brief> = {
       'Microsoft Fabric',
     ],
     limits: t(
-      'Några politikbyggare körs fortfarande som äldre skript utanför registret, och GitHub startar schemalagda körningar sent eller hoppar över dem. Kvalitetsutvärderingen som visas är från 2026-10-07.',
-      'Some politics builders still run as legacy scripts outside the registry, and GitHub starts scheduled runs late or drops them. The quality evaluation shown dates from 2026-10-07.',
+      'Några politikbyggare körs fortfarande som äldre skript utanför registret, och GitHub startar schemalagda körningar sent eller hoppar över dem. Kvalitetsutvärderingen som visas är från 2026-10-26.',
+      'Some politics builders still run as legacy scripts outside the registry, and GitHub starts scheduled runs late or drops them. The quality evaluation shown dates from 2026-10-26.',
     ),
     code: 'https://github.com/korv9/anton-portfolio',
   },
@@ -965,7 +965,7 @@ export const BRIEFS: Record<string, Brief> = {
         ),
       },
       {
-        value: '6 → 19',
+        value: '6 → 21',
         text: t(
           'Grupper som blandar minst tre verk utan att något har mer än hälften, när kartan centreras; grupper som domineras av ett verk går från 2 till 0.',
           'Groups that mix at least three works with none above half, once the map is centred; groups dominated by one work fall from 2 to 0.',
@@ -1184,10 +1184,10 @@ export const BRIEFS: Record<string, Brief> = {
         ),
       },
       {
-        value: '10.6×',
+        value: '10.7×',
         text: t(
-          'Död är närmaste begrepp för 38 % av myternas passager, 10,6 gånger slumpen; omsorg för 24 % av riksdagens.',
-          'Death is the closest concept for 38% of myth passages, 10.6 times chance; care for 24% of Riksdag passages.',
+          'Död är närmaste begrepp för 38 % av myternas passager, 10,7 gånger slumpen; omsorg för 24 % av riksdagens.',
+          'Death is the closest concept for 38% of myth passages, 10.7 times chance; care for 24% of Riksdag passages.',
         ),
       },
       {

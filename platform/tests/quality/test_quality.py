@@ -141,6 +141,17 @@ def test_symbolic_diagnostics_read_the_right_experiment(tmp_path, monkeypatch):
     assert change.value == 0.2 and change.details["baseline"] == 0.3
 
 
+def test_symbolic_diagnostics_fall_back_to_the_published_comparison(tmp_path, monkeypatch):
+    # The scheduled build has no experiment run in its features; it reads the published rows.
+    public = tmp_path / "public"
+    (public / "symbolic").mkdir(parents=True)
+    (public / "symbolic/experiment-comparison.json").write_text(json.dumps({"experiments": [
+        {"experiment": "baseline", "occurrences": 10, "clusters": 3, "mean_largest_book_share": 0.5}]}))
+    monkeypatch.setattr(measures, "FEATURES", tmp_path / "features")
+    monkeypatch.setattr(measures, "PUBLIC", public)
+    assert measures.symbolic_experiment_metric("baseline", "mean_largest_book_share").value == 0.5
+
+
 def test_symbolic_diagnostics_match_the_current_artefact():
     path = ROOT / "warehouse/features/symbolic/experiments/comparison.json"
     if not path.is_file():

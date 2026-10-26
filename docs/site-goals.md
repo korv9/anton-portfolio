@@ -94,10 +94,10 @@ Goal: every clustering on the site, legible, with honest names.
 Goal: a hiring manager for data engineering sees a real, healthy, tested platform in one minute.
 
 - [x] No GitHub calls from the page: run history comes from `status/runs.json` (platform-1).
-- [ ] One model count everywhere; every export refreshed by the pipeline, none older than its own SLA (platform-2, platform-3).
+- [x] One model count everywhere; every export refreshed by the pipeline, none older than its own SLA (platform-2, platform-3).
 - [x] Quality bars count only checks that apply.
 - [x] No "failed" step without its cause; no section stuck on "Loading…"; Machinery reads in Swedish too.
-- [ ] Remaining P1: platform-4 to platform-7.
+- [x] Remaining P1: platform-4 to platform-7.
 
 ## Symbol Lab (#symbolic-atlas)
 
@@ -109,11 +109,11 @@ Goal: a rigorous unsupervised study that shows contexts crossing traditions.
 
 ## Philosophy Lab (#philosophy-atlas)
 
-Goal: show that correcting for each work's voice reveals ideas shared across works (6 → 19).
+Goal: show that correcting for each work's voice reveals ideas shared across works (6 → 21).
 
 - [x] No "none has been yet" or "not reviewed" text; groups are shown by their distinctive words, not "Group N".
-- [x] Registry copy matches the data, or the 19 cross-work groups are reviewed by hand and the copy says so.
-- [ ] Junk words removed from group word lists.
+- [x] Registry copy matches the data, or the 21 cross-work groups are reviewed by hand and the copy says so.
+- [x] Junk words removed from group word lists.
 
 ## Concept Lab (#concept-journey)
 
