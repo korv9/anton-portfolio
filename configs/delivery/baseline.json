@@ -42,6 +42,7 @@
     "politics/parliament/votes/*",
     "politics/parliament/manifest.json",
     "sweden/*",
+    "job-assistant/*",
     "clusters/*"
   ],
   "schemas": {
