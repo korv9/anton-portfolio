@@ -128,7 +128,7 @@ Goal: one clear view of which ideas belong to which kind of text.
 Goal: the flagship politics product: 33 years of Riksdag debate, what parties talk about, who sets the agenda, and how they vote.
 
 - [x] The page exists with its six sections and the debate-map explore block.
-- [ ] Field-code keywords are gone from `story.json`; groups 1 and 6 are named or labelled.
+- [x] Field-code keywords are gone from `story.json`; groups 1 and 6 are named or labelled.
 - [x] Per-session topic shares are exported, or the sections that need them are scoped to what exists.
 - [x] Every finding on the page (R1–R8) re-verified from its file; misleading or stale politics posts are hidden.
 
