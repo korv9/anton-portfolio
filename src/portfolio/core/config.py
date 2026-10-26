@@ -33,6 +33,7 @@ PLATFORM = ROOT / "platform"
 PUBLIC = ROOT / "frontend/public/data"
 WAREHOUSE = ROOT / "warehouse"
 DATABASE = _env_path("PORTFOLIO_DB", WAREHOUSE / "portfolio.duckdb")
+RAW = _env_path("PORTFOLIO_RAW", WAREHOUSE / "raw")
 FEATURES = _env_path("PORTFOLIO_FEATURES", WAREHOUSE / "features")
 CLUSTER_LAB = _env_path("PORTFOLIO_CLUSTER_LAB", WAREHOUSE / "cluster_lab")
 

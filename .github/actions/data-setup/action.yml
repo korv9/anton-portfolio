@@ -38,6 +38,10 @@ runs:
       shell: bash
       run: |
         pip install --require-hashes -r platform/requirements-ml.lock
+    # The platform package (pyproject.toml); its dependencies are the locks above.
+    - name: Platform package
+      shell: bash
+      run: pip install --no-deps --no-build-isolation -e .
     - name: Restore stored raw and feature files
       if: inputs.pull != ''
       shell: bash
