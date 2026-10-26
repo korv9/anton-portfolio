@@ -20,7 +20,6 @@ metrics and the assignments, so an unchanged rerun keeps its id. NaN stops the s
 from __future__ import annotations
 
 import json
-import os
 import sys
 from pathlib import Path
 
@@ -30,7 +29,8 @@ from scipy.cluster.hierarchy import fcluster, linkage
 from sklearn.cluster import KMeans
 from sklearn.metrics import adjusted_mutual_info_score
 
-ROOT = Path(__file__).resolve().parents[3]
+from portfolio.core.config import CLUSTER_LAB, DATABASE, PUBLIC, ROOT
+from portfolio.core.config import FEATURES as FEATURE_ROOT
 sys.path.insert(0, str(ROOT))
 from ml.cluster_lab.evaluate import silhouette as lab_silhouette  # noqa: E402
 from ml.cluster_lab.io import atomic_json, atomic_parquet, digest  # noqa: E402
@@ -42,10 +42,8 @@ MIN_ARI = 0.6
 MIN_N = 50
 NEAR_TIE = 0.005
 KS = range(2, 9)
-FEATURES = Path(os.environ.get("PORTFOLIO_FEATURES", ROOT / "warehouse/features")) / "clusters"
-LAB = Path(os.environ.get("PORTFOLIO_CLUSTER_LAB", ROOT / "warehouse/cluster_lab")) / "clusters"
-DATABASE = Path(os.environ.get("PORTFOLIO_DB", ROOT / "warehouse/portfolio.duckdb"))
-PUBLIC = ROOT / "frontend/public/data"
+FEATURES = FEATURE_ROOT / "clusters"
+LAB = CLUSTER_LAB / "clusters"
 ASSIGNMENT_COLUMNS = ["clustering", "entity_id", "entity_name", "period", "cluster", "probability"]
 
 
