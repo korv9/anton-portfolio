@@ -1,6 +1,7 @@
 /** The platform itself: data quality checks and the size of the gold tables. */
 import { Frame, useData, type Post } from '../kit'
 import { Bars, Kpi, fmt, heading, usable } from './txt-kit'
+import { l } from '../../i18n'
 
 type Check = {
   quality_check_id: string
@@ -13,11 +14,20 @@ const CHECKS = 'quality/checks.json'
 const GOLD = 'gold/semantic-model.json'
 const d = 'platform'
 
-const STATUS: Record<string, string> = {
-  not_measured: 'not measured yet',
-  not_applicable: 'not applicable',
-  warning: 'warning',
-  fail: 'failed',
+const STATUS: Record<string, readonly [string, string]> = {
+  not_measured: ['not measured', 'inte mätt'],
+  not_applicable: ['not applicable', 'ej tillämplig'],
+  warning: ['warning', 'varning'],
+  fail: ['failed', 'underkänd'],
+}
+/** The quality dimensions in Swedish, as ISO 25012 names them. */
+const DIMENSION_SV: Record<string, string> = {
+  accuracy: 'korrekthet',
+  completeness: 'fullständighet',
+  consistency: 'konsistens',
+  credibility: 'trovärdighet',
+  currentness: 'aktualitet',
+  traceability: 'spårbarhet',
 }
 /** Passing, applicable (all but not_applicable) and the rest, from the statuses in the file. */
 function tally(rows: Check[]) {
@@ -44,13 +54,26 @@ function QualityMatrix() {
           <>
             <Kpi
               value={`${t.pass} / ${t.applicable}`}
-              unit="applicable checks pass"
+              unit={l(
+                'applicable checks pass',
+                'tillämpliga kontroller godkända',
+              )}
             />
-            <ul className="mean-txt-list" aria-label="Checks that did not pass">
+            <ul
+              className="mean-txt-list"
+              aria-label={l(
+                'Checks that did not pass',
+                'Kontroller som inte blev godkända',
+              )}
+            >
               {rest.map((c) => (
                 <li key={c.quality_check_id}>
-                  <span>{`${c.product_id.replace(/_/g, ' ')}, ${c.dimension}`}</span>
-                  <b>{STATUS[c.status] ?? c.status.replace(/_/g, ' ')}</b>
+                  <span>{`${c.product_id.replace(/_/g, ' ')}, ${l(c.dimension, DIMENSION_SV[c.dimension] ?? c.dimension)}`}</span>
+                  <b>
+                    {STATUS[c.status]
+                      ? l(...STATUS[c.status])
+                      : c.status.replace(/_/g, ' ')}
+                  </b>
                 </li>
               ))}
             </ul>
@@ -75,7 +98,10 @@ function GoldRows() {
     <Frame data={data}>
       {(g) => (
         <Bars
-          label="Rows per gold table, largest first"
+          label={l(
+            'Rows per gold table, largest first',
+            'Rader per guldtabell, störst först',
+          )}
           format={fmt}
           long
           rows={bySize(g).map(([name, t]) => ({
@@ -98,13 +124,24 @@ export const posts: Post[] = [
       if (!rows.length) return ''
       const t = tally(rows)
       const parts = [
-        `${t.pass} of ${t.applicable} applicable data quality checks pass`,
-        t.failed ? `${t.failed} fail` : '',
-        t.unmeasured ? `${t.unmeasured} not measured` : '',
+        l(
+          `${t.pass} of ${t.applicable} applicable data quality checks pass`,
+          `${t.pass} av ${t.applicable} tillämpliga datakvalitetskontroller är godkända`,
+        ),
+        t.failed ? l(`${t.failed} fail`, `${t.failed} underkända`) : '',
+        t.unmeasured
+          ? l(
+              `${t.unmeasured} not measured`,
+              `${t.unmeasured} ${t.unmeasured === 1 ? 'inte mätt' : 'inte mätta'}`,
+            )
+          : '',
       ]
       return parts.filter(Boolean).join('; ')
     }),
-    note: 'Checks across the data products; the list names each one that did not pass',
+    note: [
+      'Checks across the data products; the list names each one that did not pass',
+      'Kontroller över dataprodukterna; listan namnger varje kontroll som inte blev godkänd',
+    ],
     render: () => <QualityMatrix />,
   },
   {
@@ -113,9 +150,15 @@ export const posts: Post[] = [
     sources: ['gold/semantic-model.json'],
     title: heading((g: Semantic) => {
       const rows = bySize(g)
-      return `“${tableName(rows[0][0])}” is the largest of ${rows.length} gold tables, with ${fmt(rows[0][1].rows)} rows`
+      return l(
+        `“${tableName(rows[0][0])}” is the largest of ${rows.length} gold tables, with ${fmt(rows[0][1].rows)} rows`,
+        `”${tableName(rows[0][0])}” är störst av ${rows.length} guldtabeller, med ${fmt(rows[0][1].rows)} rader`,
+      )
     }),
-    note: 'Rows per table in the gold layer; fact, dim and mart prefixes left out of the names',
+    note: [
+      'Rows per table in the gold layer; fact, dim and mart prefixes left out of the names',
+      'Rader per tabell i guldlagret; prefixen fact, dim och mart är borttagna ur namnen',
+    ],
     render: () => <GoldRows />,
   },
 ]

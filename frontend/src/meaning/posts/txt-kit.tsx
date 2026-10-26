@@ -7,6 +7,7 @@ import { useContext, type ReactNode } from 'react'
 import { OTHER, PALETTE, PostOpen, type Post } from '../kit'
 import { xTickY } from '../axes'
 import RankBars, { type RankRow } from '../../charts/RankBars'
+import { l } from '../../i18n'
 import './txt.css'
 
 export const posts: Post[] = []
@@ -19,11 +20,14 @@ export const count = <T,>(xs: T[], key: (x: T) => string) => {
   return m
 }
 export const fmt = (n: number) =>
-  n.toLocaleString('en', { maximumFractionDigits: n < 10 ? 2 : 0 })
-export const pct = (n: number) => `${(n * 100).toFixed(0)}%`
+  n.toLocaleString(l('en-GB', 'sv-SE'), {
+    maximumFractionDigits: n < 10 ? 2 : 0,
+  })
+export const pct = (n: number) =>
+  l(`${(n * 100).toFixed(0)}%`, `${(n * 100).toFixed(0)} %`)
 /** An ISO date in words, read in UTC so 2026-08-02 never shows as 1 August. */
 export const day = (d: string, withDay = true) =>
-  new Date(d).toLocaleDateString('en-GB', {
+  new Date(d).toLocaleDateString(l('en-GB', 'sv-SE'), {
     ...(withDay ? { day: 'numeric' } : {}),
     month: 'long',
     year: 'numeric',

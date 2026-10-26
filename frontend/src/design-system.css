@@ -23,6 +23,30 @@ h4 {
   letter-spacing: -0.035em;
   font-weight: var(--weight-heading);
 }
+/* One look (docs/site-goals.md): every page title wears the signature's ink, the gradient of
+   home.css and hub.css. :where() keeps it weak, so a page's own title rule still wins. */
+:where(#main, main) h1 {
+  background: linear-gradient(
+    to bottom right,
+    #ebe6da 0%,
+    #c6c1b6 55%,
+    #9c978d 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+/* SWEDEN's light theme and forced colours keep a plain, readable title. */
+:root[data-sw-theme='light'] :where(#main, main) h1 {
+  background: none;
+  -webkit-text-fill-color: currentColor;
+}
+@media (forced-colors: active) {
+  :where(#main, main) h1 {
+    background: none;
+    -webkit-text-fill-color: currentColor;
+  }
+}
 a {
   color: inherit;
 }
@@ -169,7 +193,6 @@ body .project-page > .reports > .report {
   margin: 0 0 20px;
   background: transparent;
   border: 0;
-  border-top: 1px solid var(--line);
 }
 body .topic-tabs {
   gap: 0;

@@ -15,6 +15,7 @@ import {
   XLabels,
   type Market,
 } from './job-kit'
+import { l } from '../../i18n'
 
 /** The fields with the most ads over all months, biggest first; fields without months are left out. */
 const topFields = (m: Market, n: number) =>
@@ -40,7 +41,10 @@ function Sparks() {
           <Svg
             w={W}
             h={510}
-            label="Monthly ads in the twelve largest fields, each on its own scale"
+            label={l(
+              'Monthly ads in the twelve largest fields, each on its own scale',
+              'Annonser per månad i de tolv största yrkesområdena, var och en på egen skala',
+            )}
           >
             {fields.map((f, j) => {
               const rows = m.monthly[f.id]
@@ -129,15 +133,27 @@ function Daily() {
         const y = linearScale([0, ticks.at(-1)!], [B, 14])
         const bw = (W - L) / rows.length
         const day = (d: string) =>
-          new Date(`${d}T12:00`).toLocaleString('en-GB', {
+          new Date(`${d}T12:00`).toLocaleString(l('en-GB', 'sv-SE'), {
             weekday: 'short',
           })
         return (
-          <Svg w={W} h={H} label="New job ads per day, latest days">
+          <Svg
+            w={W}
+            h={H}
+            label={l(
+              'New job ads per day, latest days',
+              'Nya platsannonser per dag, senaste dagarna',
+            )}
+          >
             <YAxis ticks={ticks} y={y} x0={L} x1={W} format={compact} />
             {rows.map((r, i) => (
               <g key={r[0]}>
-                <title>{`${r[0]}: ${fmt(r[1])} ads, ${fmt(r[2])} vacancies`}</title>
+                <title>
+                  {l(
+                    `${r[0]}: ${fmt(r[1])} ads, ${fmt(r[2])} vacancies`,
+                    `${r[0]}: ${fmt(r[1])} annonser, ${fmt(r[2])} lediga jobb`,
+                  )}
+                </title>
                 <rect
                   x={L + i * bw + bw * 0.15}
                   y={y(r[1])}
@@ -175,8 +191,14 @@ export const posts: Post[] = [
     domain: D,
     sources: ['jobs/market.json'],
     size: 'tall',
-    title: 'Monthly job ads in the twelve largest fields',
-    note: 'Each line on its own scale, from 2020; the number is the latest month; Arbetsförmedlingen',
+    title: [
+      'Monthly job ads in the twelve largest fields',
+      'Platsannonser per månad i de tolv största yrkesområdena',
+    ],
+    note: [
+      'Each line on its own scale, from 2020; the number is the latest month; Arbetsförmedlingen',
+      'Varje linje på egen skala, från 2020; siffran är senaste månaden; Arbetsförmedlingen',
+    ],
     render: () => <Sparks />,
   },
   {
@@ -186,10 +208,19 @@ export const posts: Post[] = [
     title: (m: Market) => {
       const v = weekdayMean(m)
       return v == null
-        ? 'New job ads per day, latest days'
-        : `About ${fmt(Math.round(v / 100) * 100)} new ads a weekday in the latest days`
+        ? l(
+            'New job ads per day, latest days',
+            'Nya platsannonser per dag, senaste dagarna',
+          )
+        : l(
+            `About ${fmt(Math.round(v / 100) * 100)} new ads a weekday in the latest days`,
+            `Omkring ${fmt(Math.round(v / 100) * 100)} nya annonser per vardag de senaste dagarna`,
+          )
     },
-    note: "New ads per weekday in JobTech's daily stream; preliminary until the quarter's archive",
+    note: [
+      "New ads per weekday in JobTech's daily stream; preliminary until the quarter's archive",
+      'Nya annonser per vardag i JobTechs dagliga flöde; preliminärt tills kvartalets arkiv finns',
+    ],
     render: () => <Daily />,
   },
 ]

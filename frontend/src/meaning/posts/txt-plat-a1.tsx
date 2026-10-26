@@ -1,6 +1,7 @@
 /** The platform itself: how the architecture graph's nodes split across domains. */
 import { Frame, useData, type Post } from '../kit'
 import { Bars, count, heading, usable } from './txt-kit'
+import { l } from '../../i18n'
 
 type Graph = {
   nodes: { id: string; domain: string }[]
@@ -8,6 +9,16 @@ type Graph = {
 }
 const GRAPH = 'architecture/graph.json'
 const d = 'platform'
+/** Swedish names for the graph's domain labels; a new label shows as it is. */
+const SV: Record<string, string> = {
+  Politics: 'Politik',
+  'Job market': 'Arbetsmarknad',
+  'Shared platform': 'Gemensam plattform',
+  Sweden: 'Sverige',
+  'EU AI Act': 'EU:s AI-förordning',
+  'Concept layer': 'Begreppslager',
+}
+const domainName = (label: string) => l(label, SV[label] ?? label)
 
 /** Nodes per domain, counted from the node list, most first. */
 const byDomain = ({ nodes }: Graph) =>
@@ -18,10 +29,13 @@ function ArchStack() {
   return (
     <Frame data={data}>
       {(g) => {
-        const label = new Map(g.domains.map((x) => [x.id, x.label]))
+        const label = new Map(g.domains.map((x) => [x.id, domainName(x.label)]))
         return (
           <Bars
-            label="Pipeline nodes per domain, most first"
+            label={l(
+              'Pipeline nodes per domain, most first',
+              'Noder i flödet per domän, flest först',
+            )}
             format={String}
             long
             rows={byDomain(g).map(([id, n]) => ({
@@ -43,10 +57,17 @@ export const posts: Post[] = [
     sources: ['architecture/graph.json'],
     title: heading((g: Graph) => {
       const [[id, n]] = byDomain(g)
-      const name = g.domains.find((x) => x.id === id)?.label ?? id
-      return `${name} is the largest domain, with ${n} of the ${g.nodes.length} nodes in the architecture graph`
+      const found = g.domains.find((x) => x.id === id)?.label
+      const name = found ? domainName(found) : id
+      return l(
+        `${name} is the largest domain, with ${n} of the ${g.nodes.length} nodes in the architecture graph`,
+        `${name} är den största domänen, med ${n} av arkitekturgrafens ${g.nodes.length} noder`,
+      )
     }),
-    note: 'Nodes per domain in the architecture graph: sources, ingestion, dbt models, outputs and apps',
+    note: [
+      'Nodes per domain in the architecture graph: sources, ingestion, dbt models, outputs and apps',
+      'Noder per domän i arkitekturgrafen: källor, inläsning, dbt-modeller, utdata och appar',
+    ],
     render: () => <ArchStack />,
   },
 ]

@@ -3,6 +3,7 @@ import { Frame, PALETTE, useData, type Post } from '../kit'
 import { XAxis, YAxis } from '../axes'
 import { linearScale, niceTicks } from '../../charts/scales'
 import { Svg, day, heading, line, uniq, usable } from './txt-kit'
+import { l } from '../../i18n'
 
 type Article = { article_number: string; applies_from: string | null }
 const ARTICLES = 'ai-act/articles.json'
@@ -55,7 +56,10 @@ function ApplyStep() {
           <Svg
             w={W}
             h={H}
-            label="AI Act articles that apply, cumulative, by date"
+            label={l(
+              'AI Act articles that apply, cumulative, by date',
+              'Tillämpliga artiklar i AI-förordningen, kumulativt, per datum',
+            )}
           >
             <YAxis y={y} ticks={ticks} x0={m} x1={W - r} />
             <XAxis
@@ -83,7 +87,9 @@ function ApplyStep() {
                   y={y(n) - 5}
                 >
                   {n}
-                  <title>{`${day(d)}: ${n} articles`}</title>
+                  <title>
+                    {l(`${day(d)}: ${n} articles`, `${day(d)}: ${n} artiklar`)}
+                  </title>
                 </text>
               </g>
             ))}
@@ -106,9 +112,15 @@ export const posts: Post[] = [
       // The largest single step: the general date of application.
       const big = cum[rise.indexOf(Math.max(...rise))]
       const [end, n] = cum.at(-1)!
-      return `${big[1]} of ${rows.length} articles apply by ${day(big[0], false)}, ${n === rows.length ? 'all' : n} by ${day(end, false)}`
+      return l(
+        `${big[1]} of ${rows.length} articles apply by ${day(big[0], false)}, ${n === rows.length ? 'all' : n} by ${day(end, false)}`,
+        `${big[1]} av ${rows.length} artiklar gäller från ${day(big[0], false)}, ${n === rows.length ? 'alla' : n} från ${day(end, false)}`,
+      )
     }),
-    note: 'Articles in application, cumulative, by the date the Act sets for each',
+    note: [
+      'Articles in application, cumulative, by the date the Act sets for each',
+      'Artiklar som tillämpas, kumulativt, efter det datum förordningen anger för var och en',
+    ],
     render: () => <ApplyStep />,
   },
 ]

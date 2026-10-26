@@ -138,7 +138,7 @@ const TABLES: Record<keyof Tables, string> = {
 // Unseen drug pair leads; random rows (the easy, partly leaky case) comes last.
 const SPLITS: [string, string, string][] = [
   ['cold_pair', 'New drug pair', 'Nytt läkemedelspar'],
-  ['cold_drug', 'New drug', 'Nytt läkemedel'],
+  ['cold_drug', 'New drug (one or both)', 'Nytt läkemedel (ett eller båda)'],
   ['cold_cell', 'New cell line', 'Ny cellinje'],
   ['random', 'Random rows', 'Slumpade rader'],
 ]
@@ -736,8 +736,8 @@ export default function DrugCombReport({ route }: { route: Route }) {
               id="dc-scramble"
               title={l('A check against luck', 'En kontroll mot slumpen')}
               lead={l(
-                'The same model trained on shuffled answers finds nothing, so the result comes from real patterns, not from information leaking between training and test. A useful check, not proof that every leak is ruled out.',
-                'Samma modell tränad på omblandade svar hittar ingenting, så resultatet kommer från verkliga mönster, inte från information som läcker mellan träning och test. En användbar kontroll, inte ett bevis för att varje läcka är utesluten.',
+                'The same model trained on shuffled answers finds nothing, so the result comes from real patterns, not from information leaking between training and test. It was run once, on one fold of the new-drug-pair split, with one shuffle: a useful check, not proof that every leak is ruled out.',
+                'Samma modell tränad på omblandade svar hittar ingenting, så resultatet kommer från verkliga mönster, inte från information som läcker mellan träning och test. Den kördes en gång, på en fold av uppdelningen med nya läkemedelspar och en omblandning: en användbar kontroll, inte ett bevis för att varje läcka är utesluten.',
               )}
               source={source}
             >

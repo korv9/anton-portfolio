@@ -7,13 +7,14 @@ import {
   Svg,
   axis,
   extent,
-  fmt,
+  pct,
   sek,
   groupBy,
   num,
   path,
   scale,
 } from './wel-kit'
+import { l } from '../../i18n'
 
 type Household = {
   year: string
@@ -26,7 +27,12 @@ type Household = {
 
 /** country, year, household type, tax wedge %. */
 type Wedge = {
-  countries: { country_code: string; name_en: string; is_nordic: boolean }[]
+  countries: {
+    country_code: string
+    name_en: string
+    name_sv?: string
+    is_nordic: boolean
+  }[]
   series: [string, number, string, number | null][]
   /** Household code -> [English, Swedish] name. */
   households: Record<string, [string, string]>
@@ -48,9 +54,12 @@ function Vat() {
         return (
           <>
             <Slicer
-              label="Household"
+              label={l('Household', 'Hushåll')}
               options={d.households.map((x) => x.key)}
-              format={(k) => household(d, k)?.name[0] ?? k}
+              format={(k) => {
+                const n = household(d, k)?.name
+                return n ? l(...n) : k
+              }}
               value={hh.key}
               onChange={setH}
             />
@@ -58,11 +67,14 @@ function Vat() {
               wrap
               head={4}
               tail={0}
-              label={`VAT per household and year by spending group, SEK: ${hh.name[0]}`}
+              label={l(
+                `VAT per household and year by spending group, SEK: ${hh.name[0]}`,
+                `Moms per hushåll och år efter utgiftsgrupp, kr: ${hh.name[1]}`,
+              )}
               format={sek}
               rows={hh.groups.map((g) => ({
                 key: g.group,
-                label: g.name[0],
+                label: l(...g.name),
                 value: g.vat,
               }))}
             />
@@ -83,7 +95,7 @@ function WedgeLines() {
         const nordic = new Map(
           d.countries
             .filter((c) => c.is_nordic)
-            .map((c) => [c.country_code, c.name_en]),
+            .map((c) => [c.country_code, l(c.name_en, c.name_sv ?? c.name_en)]),
         )
         const [y0, y1] = extent(rows.map((r) => r[1]))
         const x = scale([y0, y1], [30, 500])
@@ -103,23 +115,26 @@ function WedgeLines() {
         return (
           <>
             <Slicer
-              label="Household"
+              label={l('Household', 'Hushåll')}
               options={[...new Set(d.series.map((r) => r[2]))]}
-              format={(k) => d.households[k]?.[0] ?? k}
+              format={(k) => (d.households[k] ? l(...d.households[k]) : k)}
               value={hh}
               onChange={setHh}
             />
             <Svg
               w={600}
               h={220}
-              label="Tax wedge on an average wage by year, % of labour costs, every OECD country"
+              label={l(
+                'Tax wedge on an average wage by year, % of labour costs, every OECD country',
+                'Skattekil på en genomsnittslön per år, % av arbetskostnaden, alla OECD-länder',
+              )}
             >
               <YAxis
                 y={ax.y}
                 ticks={ax.ticks}
                 x0={30}
                 x1={500}
-                format={(v) => `${v}%`}
+                format={(v) => pct(v, 0)}
               />
               {lines.map(({ c, list }) => (
                 <path
@@ -177,10 +192,16 @@ export const posts: Post[] = [
       const hh = household(d, ALL)
       const top = [...(hh?.groups ?? [])].sort((a, b) => b.vat - a.vat)[0]
       return top
-        ? `${top.name[0]} carried the most VAT in household spending in ${d.year}`
-        : 'VAT in household spending'
+        ? l(
+            `${top.name[0]} carried the most VAT in household spending in ${d.year}`,
+            `${top.name[1]} stod för mest moms i hushållens konsumtion ${d.year}`,
+          )
+        : l('VAT in household spending', 'Moms i hushållens konsumtion')
     },
-    note: 'SEK per household and year, by type of household; a floor, as mixed-rate groups are left out. Source: SCB',
+    note: [
+      'SEK per household and year, by type of household; a floor, as mixed-rate groups are left out. Source: SCB',
+      'Kronor per hushåll och år, efter hushållstyp; ett minimum, eftersom grupper med blandad momssats är borttagna. Källa: SCB',
+    ],
     render: () => <Vat />,
   },
   {
@@ -190,15 +211,28 @@ export const posts: Post[] = [
     size: 'wide',
     title: (d: Wedge) => {
       const s = swedenWedge(d)
-      if (!s) return 'The tax wedge on an average wage'
+      if (!s)
+        return l(
+          'The tax wedge on an average wage',
+          'Skattekilen på en genomsnittslön',
+        )
       const [a, b] = [s[0][3]!, s[1][3]!]
-      const who = 'For a single earner without children on an average wage'
       const span = `${s[0][1]}–${s[1][1]}`
-      return fmt(a, 1) === fmt(b, 1)
-        ? `${who}, Sweden's tax wedge stayed at ${fmt(a, 1)}%, ${span}`
-        : `${who}, Sweden's tax wedge ${b < a ? 'fell' : 'rose'} from ${fmt(a, 1)}% to ${fmt(b, 1)}%, ${span}`
+      const [from, to] = [pct(a, 1), pct(b, 1)]
+      if (from === to)
+        return l(
+          `For a single earner without children on an average wage, Sweden's tax wedge stayed at ${from}, ${span}`,
+          `För en ensamstående utan barn med genomsnittslön låg Sveriges skattekil kvar på ${from}, ${span}`,
+        )
+      return l(
+        `For a single earner without children on an average wage, Sweden's tax wedge ${b < a ? 'fell' : 'rose'} from ${from} to ${to}, ${span}`,
+        `För en ensamstående utan barn med genomsnittslön ${b < a ? 'sjönk' : 'steg'} Sveriges skattekil från ${from} till ${to}, ${span}`,
+      )
     },
-    note: 'Income tax and social contributions, % of labour costs, average wage. Source: OECD Taxing Wages',
+    note: [
+      'Income tax and social contributions, % of labour costs, average wage. Source: OECD Taxing Wages',
+      'Inkomstskatt och sociala avgifter, % av arbetskostnaden, genomsnittslön. Källa: OECD Taxing Wages',
+    ],
     render: () => <WedgeLines />,
   },
 ]

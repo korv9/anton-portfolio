@@ -4,6 +4,7 @@ import { Frame, Slicer, focal, useData, type Post } from '../kit'
 import { niceStep } from '../../charts/scales'
 import { EndLabels, niceDomain, ticksBetween, XAxis, YAxis } from '../axes'
 import { Svg, extent, maxOf, num, path, scale } from './wel-kit'
+import { l } from '../../i18n'
 
 type Ess = {
   unit_code: string
@@ -12,29 +13,33 @@ type Ess = {
 } & Record<string, number | string | null>
 
 /** ESS item codes in plain words. */
-const ESS_NAMES: Record<string, string> = {
-  ppltrst: 'Trust in people',
-  trstprl: 'Trust in parliament',
-  trstplt: 'Trust in politicians',
-  trstplc: 'Trust in the police',
-  trstlgl: 'Trust in the legal system',
-  stflife: 'Life satisfaction',
-  happy: 'Happiness',
-  stfdem: 'Satisfaction with democracy',
-  stfeco: 'Satisfaction with the economy',
-  sclmeet: 'Meets friends socially',
-  imwbcnt: 'Immigrants make the country better',
+const ESS_NAMES: Record<string, [string, string]> = {
+  ppltrst: ['Trust in people', 'Tillit till andra människor'],
+  trstprl: ['Trust in parliament', 'Förtroende för riksdagen'],
+  trstplt: ['Trust in politicians', 'Förtroende för politiker'],
+  trstplc: ['Trust in the police', 'Förtroende för polisen'],
+  trstlgl: ['Trust in the legal system', 'Förtroende för rättsväsendet'],
+  stflife: ['Life satisfaction', 'Nöjdhet med livet'],
+  happy: ['Happiness', 'Lycka'],
+  stfdem: ['Satisfaction with democracy', 'Nöjdhet med demokratin'],
+  stfeco: ['Satisfaction with the economy', 'Nöjdhet med ekonomin'],
+  sclmeet: ['Meets friends socially', 'Träffar vänner'],
+  imwbcnt: [
+    'Immigrants make the country better',
+    'Invandrare gör landet bättre',
+  ],
 }
+const essName = (k: string) => l(...ESS_NAMES[k])
 const METRICS = Object.keys(ESS_NAMES)
 
-const UNITS: Record<string, string> = {
-  SE: 'Sweden',
-  NO: 'Norway',
-  DK: 'Denmark',
-  FI: 'Finland',
-  DE: 'Germany',
-  NORDIC: 'Nordic',
-  EU27: 'EU27',
+const UNITS: Record<string, [string, string]> = {
+  SE: ['Sweden', 'Sverige'],
+  NO: ['Norway', 'Norge'],
+  DK: ['Denmark', 'Danmark'],
+  FI: ['Finland', 'Finland'],
+  DE: ['Germany', 'Tyskland'],
+  NORDIC: ['Nordic', 'Norden'],
+  EU27: ['EU27', 'EU27'],
 }
 
 const val = (r: Ess | undefined, m: string) =>
@@ -86,16 +91,19 @@ function RoundLines() {
         return (
           <>
             <Slicer
-              label="Survey measure"
+              label={l('Survey measure', 'Enkätmått')}
               options={METRICS}
-              format={(k) => ESS_NAMES[k]}
+              format={essName}
               value={m}
               onChange={setM}
             />
             <Svg
               w={600}
               h={220}
-              label={`${ESS_NAMES[m]}, mean on a ${lo} to ${hi} scale by survey year`}
+              label={l(
+                `${essName(m)}, mean on a ${lo} to ${hi} scale by survey year`,
+                `${essName(m)}, medelvärde på en skala ${lo}–${hi} per undersökningsår`,
+              )}
             >
               <YAxis
                 y={y}
@@ -118,7 +126,7 @@ function RoundLines() {
                 bottom={200}
                 items={ends.map(({ u, pts }) => ({
                   y: y(val(pts.at(-1), m)!),
-                  label: UNITS[u],
+                  label: l(...UNITS[u]),
                   color: u === 'SE' ? undefined : 'var(--mean-muted)',
                 }))}
               />
@@ -147,11 +155,20 @@ export const posts: Post[] = [
     title: (rows: Ess[]) => {
       const a = aboveEu(rows)
       if (a.y === null || !a.of)
-        return 'Sweden and its neighbours in the European Social Survey'
-      const n = a.above === a.of ? `all ${a.of}` : `${a.above} of ${a.of}`
-      return `In ${a.y}, Sweden was above the EU27 average on ${n} survey measures`
+        return l(
+          'Sweden and its neighbours in the European Social Survey',
+          'Sverige och grannländerna i European Social Survey',
+        )
+      const all = a.above === a.of
+      return l(
+        `In ${a.y}, Sweden was above the EU27 average on ${all ? `all ${a.of}` : `${a.above} of ${a.of}`} survey measures`,
+        `${a.y} låg Sverige över EU27-snittet på ${all ? `alla ${a.of}` : `${a.above} av ${a.of}`} enkätmått`,
+      )
     },
-    note: 'Mean answer by survey year on a 0–10 scale (meeting friends: 1–7); the axis covers only the range of the means. Source: European Social Survey',
+    note: [
+      'Mean answer by survey year on a 0–10 scale (meeting friends: 1–7); the axis covers only the range of the means. Source: European Social Survey',
+      'Medelsvar per undersökningsår på en skala 0–10 (träffa vänner: 1–7); axeln täcker bara medelvärdenas spann. Källa: European Social Survey',
+    ],
     render: () => <RoundLines />,
   },
 ]

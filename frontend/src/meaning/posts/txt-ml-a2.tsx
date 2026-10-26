@@ -4,6 +4,8 @@ import { Frame, OTHER, PALETTE, Slicer, useData, type Post } from '../kit'
 import { linearScale } from '../../charts/scales'
 import { niceDomain, ticksBetween } from '../axes'
 import { Bars, Svg, XGrid, fmt, heading, uniq, usable } from './txt-kit'
+import { l } from '../../i18n'
+import { fixed } from '../../format'
 
 type Work = {
   document_id: string
@@ -21,6 +23,7 @@ type PhilSummary = {
     pole_a: string
     pole_b: string
     label_en: string
+    label_sv?: string
   }[]
 }
 type Tension = {
@@ -34,7 +37,7 @@ type Tension = {
 const TENSIONS = 'philosophy/tensions.json'
 const SUMMARY = 'philosophy/summary.json'
 const DEFAULT = 'freedom_control'
-const year = (y: number) => (y < 0 ? `${-y} BC` : String(y))
+const year = (y: number) => (y < 0 ? l(`${-y} BC`, `${-y} f.Kr.`) : String(y))
 /** A work's short name from its id, e.g. 'kant-groundwork' → 'Kant'. */
 const who = (id: string) =>
   id.startsWith('marcus')
@@ -54,7 +57,10 @@ function WorksBubble() {
     <Frame data={data}>
       {({ works }) => (
         <Bars
-          label="Words per philosophy work, longest first"
+          label={l(
+            'Words per philosophy work, longest first',
+            'Ord per filosofiskt verk, längst först',
+          )}
           format={fmt}
           long
           rows={byWords(works).map((w) => ({
@@ -96,9 +102,20 @@ function TensionBoxes() {
             const rows = medians(distribution, id)
             if (!poles || !rows.length)
               return (
-                <p className="mean-failed">{`No poles or positions for ${id}`}</p>
+                <p className="mean-failed">
+                  {l(
+                    `No poles or positions for ${id}`,
+                    `Inga poler eller positioner för ${id}`,
+                  )}
+                </p>
               )
             // Symmetric around zero, the point between the two poles.
+            // Swedish pole names from the Swedish label, 'Frihet ↔ kontroll' (pole a first).
+            const sv = poles.label_sv?.toLowerCase().split(' ↔ ')
+            const poleA = l(poles.pole_a, sv?.[0] ?? poles.pole_a)
+            const poleB = l(poles.pole_b, sv?.[1] ?? poles.pole_b)
+            const name = (t?: PhilSummary['tensions'][number]) =>
+              t && l(t.label_en, t.label_sv ?? t.label_en)
             const reach = Math.max(...rows.flatMap((t) => [-t.q1, t.q3]))
             const [, hi] = niceDomain(0, reach, 2)
             const [W, H, m, top, bottom] = [300, 470, 96, 22, 22]
@@ -108,30 +125,33 @@ function TensionBoxes() {
             return (
               <>
                 <Slicer
-                  label="Tension"
+                  label={l('Tension', 'Spänning')}
                   cycles={false}
                   options={ids}
                   format={(k) =>
-                    tensions.find((t) => t.tension_id === k)?.label_en ?? k
+                    name(tensions.find((t) => t.tension_id === k)) ?? k
                   }
                   value={id}
                   onChange={setTid}
                 />
-                <p className="mean-cap">{poles.label_en}</p>
+                <p className="mean-cap">{name(poles)}</p>
                 <Svg
                   w={W}
                   h={H}
-                  label={`Where each work's passages sit between ${poles.pole_b} and ${poles.pole_a}`}
+                  label={l(
+                    `Where each work's passages sit between ${poleB} and ${poleA}`,
+                    `Var varje verks stycken ligger mellan ${poleB} och ${poleA}`,
+                  )}
                 >
                   <XGrid
                     x={x}
                     ticks={ticksBetween(-hi, hi, 2)}
                     y0={top - 4}
                     y1={H - bottom}
-                    format={(t) => (t ? t.toFixed(2) : '0')}
+                    format={(t) => (t ? fixed(t, 2) : '0')}
                   />
                   <text className="mean-txt-v" x={m} y={11}>
-                    {`← ${poles.pole_b}`}
+                    {`← ${poleB}`}
                   </text>
                   <text
                     className="mean-txt-v"
@@ -139,7 +159,7 @@ function TensionBoxes() {
                     y={11}
                     textAnchor="end"
                   >
-                    {`${poles.pole_a} →`}
+                    {`${poleA} →`}
                   </text>
                   {rows.map((t, i) => (
                     <g key={t.document_id}>
@@ -165,7 +185,12 @@ function TensionBoxes() {
                         r={3.5}
                         fill={i === 0 ? PALETTE[0] : 'var(--mean-ink)'}
                       >
-                        <title>{`${t.document_id}: median ${t.median.toFixed(3)}, middle half ${t.q1.toFixed(3)} to ${t.q3.toFixed(3)}`}</title>
+                        <title>
+                          {l(
+                            `${t.document_id}: median ${fixed(t.median, 3)}, middle half ${fixed(t.q1, 3)} to ${fixed(t.q3, 3)}`,
+                            `${t.document_id}: median ${fixed(t.median, 3)}, mittersta hälften ${fixed(t.q1, 3)} till ${fixed(t.q3, 3)}`,
+                          )}
+                        </title>
                       </circle>
                     </g>
                   ))}
@@ -187,9 +212,15 @@ export const posts: Post[] = [
     sources: ['philosophy/summary.json'],
     title: heading(({ works }: PhilSummary) => {
       const [w] = byWords(works)
-      return `${w.title} is the longest of the ${works.length} works, at ${fmt(w.words)} words`
+      return l(
+        `${w.title} is the longest of the ${works.length} works, at ${fmt(w.words)} words`,
+        `${w.title} är det längsta av de ${works.length} verken, med ${fmt(w.words)} ord`,
+      )
     }),
-    note: 'Words per work in the philosophy corpus, English editions from Project Gutenberg',
+    note: [
+      'Words per work in the philosophy corpus, English editions from Project Gutenberg',
+      'Ord per verk i den filosofiska korpusen, engelska utgåvor från Project Gutenberg',
+    ],
     render: () => <WorksBubble />,
   },
   {
@@ -202,10 +233,16 @@ export const posts: Post[] = [
       const works = uniq(distribution.map((t) => t.document_id)).length
       const tensions = uniq(distribution.map((t) => t.tension_id)).length
       return works && tensions
-        ? `Where ${works} works sit between the two poles of ${tensions} tensions`
+        ? l(
+            `Where ${works} works sit between the two poles of ${tensions} tensions`,
+            `Var ${works} verk ligger mellan polerna i ${tensions} spänningar`,
+          )
         : ''
     }),
-    note: "Median position of each work's passages between two anchor sentences; lines span the middle half",
+    note: [
+      "Median position of each work's passages between two anchor sentences; lines span the middle half",
+      'Medianläget för varje verks stycken mellan två ankarmeningar; linjerna spänner över den mittersta hälften',
+    ],
     render: () => <TensionBoxes />,
   },
 ]

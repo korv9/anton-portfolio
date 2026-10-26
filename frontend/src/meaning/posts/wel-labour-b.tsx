@@ -10,6 +10,7 @@ import {
   type CountyYear,
 } from './wel-charts'
 import { Svg, axis, fmt, month, num, path, pct, scale } from './wel-kit'
+import { l } from '../../i18n'
 
 type Month = {
   month_start: string
@@ -29,13 +30,18 @@ function PsychShare() {
         const x = scale([0, r.length - 1], [30, 250])
         if (!v.length) return null
         return (
-          <Svg label="Psychiatric diagnoses as a share of new sick-leave cases, rolling 12 months">
+          <Svg
+            label={l(
+              'Psychiatric diagnoses as a share of new sick-leave cases, rolling 12 months',
+              'Psykiatriska diagnoser som andel av nya sjukfall, rullande 12 månader',
+            )}
+          >
             <YAxis
               y={ax.y}
               ticks={ax.ticks}
               x0={30}
               x1={250}
-              format={(t) => `${t}%`}
+              format={(t) => pct(t, 0)}
             />
             <path
               d={path(v.map((d, i) => [x(i), ax.y(d)]))}
@@ -67,12 +73,18 @@ const METRICS: Record<string, CountyMetric> = {
   unemployment: {
     field: 'unemployment_rate_pct',
     format: (v) => pct(v),
-    name: 'unemployment, % of the labour force',
+    name: [
+      'unemployment, % of the labour force',
+      'arbetslöshet, % av arbetskraften',
+    ],
   },
   stress: {
     field: 'stress_cases_per_1000',
     format: (v) => fmt(v, 1),
-    name: 'new stress-related sick-leave cases per 1,000 inhabitants',
+    name: [
+      'new stress-related sick-leave cases per 1,000 inhabitants',
+      'nya stressrelaterade sjukfall per 1 000 invånare',
+    ],
   },
 }
 
@@ -92,10 +104,19 @@ export const posts: Post[] = [
     title: (rows: Month[]) => {
       const r = psych(rows).at(-1)
       return r
-        ? `Psychiatric diagnoses: ${pct(r.psychiatric_share_of_started_12m_pct!, 0)} of new sick-leave cases in the year to ${month(r.month_start.slice(0, 7))}`
-        : 'Psychiatric diagnoses in new sick leave'
+        ? l(
+            `Psychiatric diagnoses: ${pct(r.psychiatric_share_of_started_12m_pct!, 0)} of new sick-leave cases in the year to ${month(r.month_start.slice(0, 7))}`,
+            `Psykiatriska diagnoser: ${pct(r.psychiatric_share_of_started_12m_pct!, 0)} av nya sjukfall under året fram till ${month(r.month_start.slice(0, 7))}`,
+          )
+        : l(
+            'Psychiatric diagnoses in new sick leave',
+            'Psykiatriska diagnoser bland nya sjukfall',
+          )
     },
-    note: 'Share of cases started, rolling 12 months. Source: Försäkringskassan',
+    note: [
+      'Share of cases started, rolling 12 months. Source: Försäkringskassan',
+      'Andel av påbörjade fall, rullande 12 månader. Källa: Försäkringskassan',
+    ],
     render: () => <PsychShare />,
   },
   {
@@ -109,10 +130,16 @@ export const posts: Post[] = [
         METRICS.unemployment.field,
       )
       return year !== null && counties.length
-        ? `${county(counties[0].region_name)} had the highest unemployment of the counties in ${year}`
-        : 'Unemployment by county'
+        ? l(
+            `${county(counties[0].region_name)} had the highest unemployment of the counties in ${year}`,
+            `${county(counties[0].region_name)} hade högst arbetslöshet av länen ${year}`,
+          )
+        : l('Unemployment by county', 'Arbetslöshet per län')
     },
-    note: '% of the labour force aged 15–74; tick: Sweden as a whole. Source: SCB Labour Force Survey',
+    note: [
+      '% of the labour force aged 15–74; tick: Sweden as a whole. Source: SCB Labour Force Survey',
+      '% av arbetskraften 15–74 år; streck: hela Sverige. Källa: SCB:s arbetskraftsundersökningar (AKU)',
+    ],
     render: () => <CountyBars />,
   },
 ]

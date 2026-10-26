@@ -1,9 +1,10 @@
 /** Riksdag roll calls per session since 1993/94: party agreement and government wins. */
+import { l } from '../../i18n'
 import { useState } from 'react'
 import { cellInk, focal, Frame, seq, Slicer, useData, type Post } from '../kit'
 import { linearScale } from '../../charts/scales'
 import { ticksBetween, XAxis, YAxis } from '../axes'
-import { every, GovStrip, line, PARTIES } from './pol-kit'
+import { every, GovStrip, line, PARTIES, pct } from './pol-kit'
 
 type Session = {
   session: string
@@ -52,7 +53,7 @@ function Matrix() {
         return (
           <>
             <Slicer
-              label="Session"
+              label={l('Session', 'Riksmöte')}
               cycles
               options={options}
               value={s}
@@ -61,7 +62,10 @@ function Matrix() {
             <svg
               viewBox="0 0 300 280"
               role="img"
-              aria-label={`Share of roll calls where two parties voted the same way, ${s}`}
+              aria-label={l(
+                `Share of roll calls where two parties voted the same way, ${s}`,
+                `Andel voteringar där två partier röstade lika, ${s}`,
+              )}
             >
               {ps.slice(1).map((a, i) => (
                 <g key={a}>
@@ -81,7 +85,12 @@ function Matrix() {
                           height={c - 2}
                           fill={seq(v / 100)}
                         >
-                          <title>{`${a} and ${b}: ${v} %`}</title>
+                          <title>
+                            {l(
+                              `${a} and ${b}: ${pct(v)}`,
+                              `${a} och ${b}: ${pct(v)}`,
+                            )}
+                          </title>
                         </rect>
                         <text
                           x={40 + j * c + c / 2 - 1}
@@ -150,7 +159,10 @@ function GovWon() {
           <svg
             viewBox="0 0 600 200"
             role="img"
-            aria-label="Share of decisions won by the government per session"
+            aria-label={l(
+              'Share of decisions won by the government per session',
+              'Andel beslut som regeringen vann per riksmöte',
+            )}
           >
             <YAxis
               y={y}
@@ -174,7 +186,7 @@ function GovWon() {
                 r={2.5}
                 fill={focal(true)}
               >
-                <title>{`${p.s}: ${p.won} %`}</title>
+                <title>{`${p.s}: ${pct(p.won)}`}</title>
               </circle>
             ))}
             <GovStrip sessions={rows} x={x} step={step} y={156} />
@@ -198,8 +210,14 @@ export const posts: Post[] = [
     id: 'pol-agree-matrix',
     domain: 'politics',
     sources: ['parliament/sessions.json'],
-    title: 'How often two parties voted the same way',
-    note: 'Share of roll calls with the same position, %, per session. Source: Riksdagen.',
+    title: [
+      'How often two parties voted the same way',
+      'Hur ofta två partier röstade lika',
+    ],
+    note: [
+      'Share of roll calls with the same position, %, per session. Source: Riksdagen.',
+      'Andel voteringar med samma ståndpunkt, %, per riksmöte. Källa: Riksdagen.',
+    ],
     render: () => <Matrix />,
   },
   {
@@ -210,10 +228,19 @@ export const posts: Post[] = [
     title: (d: Sessions) => {
       const r = wonRange(d)
       return r
-        ? `The government won between ${r[0]} % and ${r[1]} % of Riksdag decisions per session`
-        : 'Share of Riksdag decisions the government won'
+        ? l(
+            `The government won between ${pct(r[0])} and ${pct(r[1])} of Riksdag decisions per session`,
+            `Regeringen vann mellan ${pct(r[0])} och ${pct(r[1])} av riksdagens beslut per riksmöte`,
+          )
+        : l(
+            'Share of Riksdag decisions the government won',
+            'Andel av riksdagens beslut som regeringen vann',
+          )
     },
-    note: 'Share of decisions won per session, with the government of the day. Source: Riksdagen.',
+    note: [
+      'Share of decisions won per session, with the government of the day. Source: Riksdagen.',
+      'Andel vunna beslut per riksmöte, med dåvarande regering. Källa: Riksdagen.',
+    ],
     render: () => <GovWon />,
   },
 ]

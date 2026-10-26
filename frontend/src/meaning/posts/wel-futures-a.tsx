@@ -2,6 +2,7 @@
 import { Frame, OTHER, focal, useData, type Post } from '../kit'
 import { EndLabels, XAxis, YAxis } from '../axes'
 import { Svg, axis, extent, fmt, path, pct, scale } from './wel-kit'
+import { l } from '../../i18n'
 
 type Trends = {
   themes: { id: string; label_en: string; rows: number[][] }[]
@@ -16,16 +17,16 @@ const PER_1000 = 7
 
 /** Short theme names for a panel heading, one word so each fits over its panel on a phone;
  * label_en where none is set. */
-const SHORT: Record<string, string> = {
-  technology: 'Technology',
-  collective: 'Collective',
-  career: 'Careers',
-  environment: 'Environment',
-  crisis: 'Crisis',
-  utopia: 'Utopias',
-  alternatives: 'Alternatives',
-  security: 'Security',
-  culture: 'Culture',
+const SHORT: Record<string, [string, string]> = {
+  technology: ['Technology', 'Teknik'],
+  collective: ['Collective', 'Gemenskap'],
+  career: ['Careers', 'Karriär'],
+  environment: ['Environment', 'Miljö'],
+  crisis: ['Crisis', 'Kris'],
+  utopia: ['Utopias', 'Utopier'],
+  alternatives: ['Alternatives', 'Alternativ'],
+  security: ['Security', 'Säkerhet'],
+  culture: ['Culture', 'Kultur'],
 }
 
 function FutureShare() {
@@ -36,9 +37,13 @@ function FutureShare() {
         const pairs = (rows: (number | null)[][]) =>
           rows.map((r) => [r[0]!, r[1]!])
         const series = [
-          { name: 'Riksdag', rows: pairs(d.future_share), focal: true },
           {
-            name: 'Theses',
+            name: l('Riksdag', 'Riksdagen'),
+            rows: pairs(d.future_share),
+            focal: true,
+          },
+          {
+            name: l('Theses', 'Uppsatser'),
             rows: pairs(d.academic.future_share),
             focal: false,
           },
@@ -51,13 +56,18 @@ function FutureShare() {
         const [y0, y1] = extent(all.map((r) => r[0]))
         const x = scale([y0, y1], [30, 246])
         return (
-          <Svg label="Share of Riksdag speeches and of student theses that speak of the future, %">
+          <Svg
+            label={l(
+              'Share of Riksdag speeches and of student theses that speak of the future, %',
+              'Andel riksdagsanföranden och studentuppsatser som talar om framtiden, %',
+            )}
+          >
             <YAxis
               y={ax.y}
               ticks={ax.ticks}
               x0={30}
               x1={246}
-              format={(v) => `${v}%`}
+              format={(v) => pct(v, 0)}
             />
             {series.map((s) => (
               <path
@@ -99,7 +109,7 @@ const themes = (d: Trends) =>
   d.themes
     .map((t) => ({
       id: t.id,
-      name: SHORT[t.id] ?? t.label_en,
+      name: SHORT[t.id] ? l(...SHORT[t.id]) : t.label_en,
       years: t.rows.map((r) => r[0]),
       v: t.rows.map((r) => r[PER_1000]),
     }))
@@ -117,7 +127,10 @@ function ThemeMultiples() {
           <Svg
             w={600}
             h={250}
-            label="Nine small multiples, one per future theme, on a shared scale of mentions per thousand words"
+            label={l(
+              'Nine small multiples, one per future theme, on a shared scale of mentions per thousand words',
+              'Nio små diagram, ett per framtidstema, på en gemensam skala av omnämnanden per tusen ord',
+            )}
           >
             {ts.map((t, k) => {
               const ox = (k % 3) * 200
@@ -166,10 +179,16 @@ export const posts: Post[] = [
     title: (d: Trends) => {
       const r = d.future_share.at(-1)
       return r
-        ? `In ${r[0]}, ${pct(r[1] * 100, 0)} of Riksdag speeches used future-marker words`
-        : 'Talk of the future in the Riksdag'
+        ? l(
+            `In ${r[0]}, ${pct(r[1] * 100, 0)} of Riksdag speeches used future-marker words`,
+            `${r[0]} innehöll ${pct(r[1] * 100, 0)} av riksdagsanförandena ord som pekar mot framtiden`,
+          )
+        : l('Talk of the future in the Riksdag', 'Framtidssnack i riksdagen')
     },
-    note: 'Share of speeches, and of thesis abstracts, matching a future marker. Sources: Riksdagen, DiVA',
+    note: [
+      'Share of speeches, and of thesis abstracts, matching a future marker. Sources: Riksdagen, DiVA',
+      'Andel anföranden, och uppsatssammanfattningar, med en framtidsmarkör. Källor: Riksdagen, DiVA',
+    ],
     render: () => <FutureShare />,
   },
   {
@@ -180,10 +199,16 @@ export const posts: Post[] = [
     title: (d: Trends) => {
       const t = themes(d)[0]
       return t
-        ? `${t.name} was the most mentioned future theme in the Riksdag in ${t.years.at(-1)}`
-        : 'Future themes in the Riksdag'
+        ? l(
+            `${t.name} was the most mentioned future theme in the Riksdag in ${t.years.at(-1)}`,
+            `${t.name} var det mest omtalade framtidstemat i riksdagen ${t.years.at(-1)}`,
+          )
+        : l('Future themes in the Riksdag', 'Framtidsteman i riksdagen')
     },
-    note: 'Theme mentions per 1,000 words of all speeches, by year; one scale for all panels. Source: Riksdagen',
+    note: [
+      'Theme mentions per 1,000 words of all speeches, by year; one scale for all panels. Source: Riksdagen',
+      'Omnämnanden av temat per 1 000 ord i alla anföranden, per år; samma skala i alla paneler. Källa: Riksdagen',
+    ],
     render: () => <ThemeMultiples />,
   },
 ]

@@ -45,14 +45,14 @@ analyses:
         args: {experiment: book_centered, metric: mean_largest_book_share}
         label_en: Largest book's share of a cluster (mean)
         rule: {metric_below: 0.5, then: supported, otherwise: warning}
-        interpretation_en: Subtracting each book's mean vector lowers book dominance, but most clusters are still led by one book.
+        interpretation_en: Subtracting each book's mean vector lowers book dominance; 87 of 114 clusters are cross-book and the largest book holds 36 % of a cluster on average.
       - id: book_centered_cross_book_share
         experiment: book_centered
         function: symbolic_experiment_metric
         args: {experiment: book_centered, metric: cross_book_occurrence_share}
         label_en: Occurrences in clusters drawn from several books
         rule: {metric_above: 0.5, then: supported, otherwise: warning}
-        interpretation_en: About three times as many occurrences sit in cross-book clusters as in the baseline, still a minority.
+        interpretation_en: More occurrences sit in cross-book clusters than in the baseline (44 % against 34 %), still under half.
       - id: book_entropy_change
         experiment: book_centered
         function: symbolic_experiment_change
@@ -339,7 +339,7 @@ confounders:
     diagnostic: "mean largest book share; cross-book occurrence share"
     effect: "baseline clusters are mostly single-book"
     mitigation: "subtract each book's mean vector (book_centered); paratext cleaning"
-    remaining_risk: "most clusters are still led by one book"
+    remaining_risk: "27 of 114 book-centred clusters are not cross-book, and under half of the occurrences sit in cross-book clusters"
   - analysis: symbolic_atlas_clustering
     confounder: "the symbol word itself"
     diagnostic: "masked experiment"

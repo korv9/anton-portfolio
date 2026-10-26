@@ -1,5 +1,6 @@
 /** Cluster checks on Sweden: whether municipal neighbours agree, and Sweden's tax mix. */
 import { focal, Frame, OTHER, useData, type Post } from '../kit'
+import { l } from '../../i18n'
 
 import RankBars from '../../charts/RankBars'
 import { fmt, pct } from './wel-kit'
@@ -25,15 +26,16 @@ const SWEDENS = 'clusters/three-swedens.json'
 const TAX_MIX = 'clusters/tax-mix.json'
 const COUNTRIES = 'taxes/countries.json'
 
-const SPACE: Record<string, string> = {
-  social: 'Social profile',
-  jobs: 'Job ads',
-  votes: 'Votes',
+const SPACE: Record<string, [string, string]> = {
+  social: ['Social profile', 'Social profil'],
+  jobs: ['Job ads', 'Jobbannonser'],
+  votes: ['Votes', 'Röster'],
 }
+const space = (p: string) => (SPACE[p] ? l(...SPACE[p]) : p)
 const pairName = (t: Test) =>
   t.pair
-    .map((p, i) => (i ? (SPACE[p] ?? p).toLowerCase() : (SPACE[p] ?? p)))
-    .join(' and ')
+    .map((p, i) => (i ? space(p).toLowerCase() : space(p)))
+    .join(l(' and ', ' och '))
 const r2 = (v: number) => fmt(v, 2)
 const ranked = (d: Swedens) =>
   [...d.diagnostics.tests].sort((a, b) => b.r - a.r)
@@ -45,7 +47,10 @@ function NeighbourBars() {
       {(d) => (
         <div className="mean-bars mean-wel-wrap">
           <RankBars
-            label="Mantel correlation between municipal distance matrices, per pair of spaces"
+            label={l(
+              'Mantel correlation between municipal distance matrices, per pair of spaces',
+              'Mantelkorrelation mellan kommunernas avståndsmatriser, per par av rum',
+            )}
             format={r2}
             max={1}
             rows={ranked(d).map((t, i) => ({
@@ -63,20 +68,32 @@ function NeighbourBars() {
 }
 
 /** Tax parts as tax-mix.py builds them from OECD codes, each a share of total tax. */
-const PARTS: [string, string, (c: Record<string, number>) => number][] = [
-  ['personal_income', 'Personal income', (c) => c.T_1100],
-  ['social_security', 'Social security', (c) => c.T_2000],
-  ['vat', 'VAT', (c) => c.T_5111],
-  ['payroll', 'Payroll', (c) => c.T_3000],
-  ['corporate_income', 'Corporate income', (c) => c.T_1200],
+const PARTS: [
+  string,
+  readonly [string, string],
+  (c: Record<string, number>) => number,
+][] = [
+  [
+    'personal_income',
+    ['Personal income', 'Inkomstskatt, personer'],
+    (c) => c.T_1100,
+  ],
+  ['social_security', ['Social security', 'Socialavgifter'], (c) => c.T_2000],
+  ['vat', ['VAT', 'Moms'], (c) => c.T_5111],
+  ['payroll', ['Payroll', 'Löneskatt'], (c) => c.T_3000],
+  ['corporate_income', ['Corporate income', 'Bolagsskatt'], (c) => c.T_1200],
   [
     'other_goods_services',
-    'Other goods and services',
+    ['Other goods and services', 'Övriga varor och tjänster'],
     (c) => c.T_5000 - c.T_5111,
   ],
-  ['property', 'Property', (c) => c.T_4000],
-  ['other_income', 'Other income', (c) => c.T_1000 - c.T_1100 - c.T_1200],
-  ['other', 'Other', (c) => c.T_6000],
+  ['property', ['Property', 'Fastighet'], (c) => c.T_4000],
+  [
+    'other_income',
+    ['Other income', 'Övrig inkomst'],
+    (c) => c.T_1000 - c.T_1100 - c.T_1200,
+  ],
+  ['other', ['Other', 'Övrigt'], (c) => c.T_6000],
 ]
 
 /** Sweden's nine shares in the year the clustering used, clipped and closed as tax_mix.py does. */
@@ -119,11 +136,14 @@ function MixBars() {
             return (
               <div className="mean-bars mean-wel-wrap">
                 <RankBars
-                  label={`Sweden's tax mix in ${year}, with the mean of its ${group.size}-country group as a tick`}
+                  label={l(
+                    `Sweden's tax mix in ${year}, with the mean of its ${group.size}-country group as a tick`,
+                    `Sveriges skattemix ${year}, med snittet för dess grupp på ${group.size} länder som streck`,
+                  )}
                   format={(v) => pct(v * 100, 0)}
                   rows={PARTS.map(([k, name]) => ({
                     key: k,
-                    label: name,
+                    label: l(...name),
                     value: swe[k],
                     color: k === widest ? focal(true) : OTHER,
                     ref: group.mean_share[k],
@@ -146,10 +166,19 @@ export const posts: Post[] = [
     title: (d: Swedens) => {
       const [top, ...rest] = ranked(d)
       return top && rest.length
-        ? `Municipalities that are socially alike vote alike (r ${r2(top.r)}); their job ads match far less (r ${rest.map((t) => r2(t.r)).join(', ')})`
-        : 'How far three maps of Swedish municipalities agree'
+        ? l(
+            `Municipalities that are socially alike vote alike (r ${r2(top.r)}); their job ads match far less (r ${rest.map((t) => r2(t.r)).join(', ')})`,
+            `Kommuner som liknar varandra socialt röstar lika (r ${r2(top.r)}); deras jobbannonser stämmer mycket sämre överens (r ${rest.map((t) => r2(t.r)).join('; ')})`,
+          )
+        : l(
+            'How far three maps of Swedish municipalities agree',
+            'Hur väl tre kartor över Sveriges kommuner stämmer överens',
+          )
     },
-    note: 'Bar: Mantel r between distance matrices of 246 municipalities; tick: r with geographic distance removed. Turnout is one of the social indicators, so part of the social–votes r is shared',
+    note: [
+      'Bar: Mantel r between distance matrices of 246 municipalities; tick: r with geographic distance removed. Turnout is one of the social indicators, so part of the social–votes r is shared',
+      'Stapel: Mantels r mellan avståndsmatriser för 246 kommuner; streck: r när det geografiska avståndet räknats bort. Valdeltagandet är en av de sociala indikatorerna, så en del av r mellan socialt och röster är gemensam',
+    ],
     render: () => <NeighbourBars />,
   },
   {
@@ -157,9 +186,14 @@ export const posts: Post[] = [
     domain: 'taxes',
     sources: ['clusters/tax-mix.json', 'taxes/countries.json'],
     size: 'wide',
-    title:
+    title: [
       'Sweden raises a far larger share of its taxes as payroll tax than the OECD countries it clusters with',
-    note: 'Bar: Sweden’s share of total tax per part, latest year; tick: mean of its 35-country cluster, Sweden included. The clustering is unstable under resampling, so read the group as loose. Source: OECD',
+      'Sverige tar in en betydligt större del av skatterna som löneskatt än de OECD-länder det grupperas med',
+    ],
+    note: [
+      'Bar: Sweden’s share of total tax per part, latest year; tick: mean of its 35-country cluster, Sweden included. The clustering is unstable under resampling, so read the group as loose. Source: OECD',
+      'Stapel: Sveriges andel av de totala skatterna per del, senaste året; streck: snittet för dess kluster på 35 länder, Sverige inräknat. Klustringen är instabil vid omsampling, så läs gruppen som lös. Källa: OECD',
+    ],
     render: () => <MixBars />,
   },
 ]

@@ -574,7 +574,10 @@ export default function Futures({ route }: { route: Route }) {
       : ''
   const readings: Reading[] = [
     {
-      theory: 'Fisher: the slow cancellation of the future',
+      theory: l(
+        'Fisher: the slow cancellation of the future',
+        'Fisher: framtidens långsamma upphävande',
+      ),
       expects: l(
         'Collective, utopian and alternative futures recede.',
         'Kollektiva, utopiska och alternativa framtider drar sig tillbaka.',

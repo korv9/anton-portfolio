@@ -4,6 +4,7 @@ import { Frame, OTHER, PALETTE, Slicer, useData, type Post } from '../kit'
 import { EndLabels, RefLine, XAxis, YAxis } from '../axes'
 import { linearScale } from '../../charts/scales'
 import { Bars, Svg, heading, usable } from './txt-kit'
+import { l } from '../../i18n'
 
 type Work = {
   document_id: string
@@ -26,8 +27,8 @@ type Cluster = {
 }
 const VARIANTS = ['baseline', 'author_centered'] as const
 const MAP_NAME = {
-  baseline: 'As embedded',
-  author_centered: 'Author style removed',
+  baseline: () => l('As embedded', 'Som inbäddad'),
+  author_centered: () => l('Author style removed', 'Författarstil borttagen'),
 }
 const SUMMARY = 'philosophy/summary.json'
 const CLUSTERS = 'philosophy/clusters.json'
@@ -35,12 +36,25 @@ const d = 'ml'
 
 /** Three measures before and after centring, with plain names and the short ones the line
  * ends carry; the first is focal. */
-const MEASURES: [string, string, string][] = [
-  ['same_work_neighbours', 'Same-work neighbours', 'Same work'],
-  ['mean_largest_work_share', 'Largest work share', 'Largest work'],
-  ['noise_share', 'Unclustered', 'Unclustered'],
+const MEASURES: [string, () => string, () => string][] = [
+  [
+    'same_work_neighbours',
+    () => l('Same-work neighbours', 'Grannar från samma verk'),
+    () => l('Same work', 'Samma verk'),
+  ],
+  [
+    'mean_largest_work_share',
+    () => l('Largest work share', 'Största verkets andel'),
+    () => l('Largest work', 'Största verk'),
+  ],
+  [
+    'noise_share',
+    () => l('Unclustered', 'Utan kluster'),
+    () => l('Unclustered', 'Utan kluster'),
+  ],
 ]
-const pc = (v: number) => `${Math.round(v * 100)}%`
+const pc = (v: number) =>
+  l(`${Math.round(v * 100)}%`, `${Math.round(v * 100)} %`)
 /** Both maps carry every measure the slope draws, and the chance level. */
 const complete = ({ run }: PhilSummary) =>
   VARIANTS.every((v) =>
@@ -55,21 +69,24 @@ function EvalSlope() {
     <Frame data={data}>
       {({ run }) => {
         const vs = VARIANTS
-        const [W, H, l, r, top, bottom] = [300, 190, 40, 100, 12, 20]
+        const [W, H, left, r, top, bottom] = [300, 190, 40, 100, 12, 20]
         const y = linearScale([0, 1], [H - bottom, top])
-        const x = (j: number) => l + j * (W - l - r)
+        const x = (j: number) => left + j * (W - left - r)
         const ev = (v: string, k: string) => run.evaluation[v][k]
         const chance = ev(vs[0], 'same_work_chance')
         return (
           <Svg
             w={W}
             h={H}
-            label="Clustering measures before and after centring passages by author"
+            label={l(
+              'Clustering measures before and after centring passages by author',
+              'Klustermått före och efter att styckena centrerats per författare',
+            )}
           >
             <YAxis
               y={y}
               ticks={[0, 0.25, 0.5, 0.75, 1]}
-              x0={l}
+              x0={left}
               x1={x(1)}
               format={pc}
             />
@@ -77,15 +94,15 @@ function EvalSlope() {
               x={x}
               y={H + 8}
               ticks={[
-                { value: 0, label: 'embedded' },
-                { value: 1, label: 'style removed' },
+                { value: 0, label: l('embedded', 'inbäddad') },
+                { value: 1, label: l('style removed', 'stil borttagen') },
               ]}
             />
             <RefLine
               y={y(chance)}
-              x0={l}
+              x0={left}
               x1={x(1)}
-              label={`chance ${pc(chance)}`}
+              label={l(`chance ${pc(chance)}`, `slump ${pc(chance)}`)}
             />
             {MEASURES.map(([k], i) => (
               <g key={k}>
@@ -105,7 +122,7 @@ function EvalSlope() {
                     r={3}
                     fill={i ? OTHER : PALETTE[0]}
                   >
-                    <title>{`${MEASURES[i][1]}, ${v}: ${pc(ev(v, k))}`}</title>
+                    <title>{`${MEASURES[i][1]()}, ${MAP_NAME[v]().toLowerCase()}: ${pc(ev(v, k))}`}</title>
                   </circle>
                 ))}
               </g>
@@ -116,7 +133,7 @@ function EvalSlope() {
               bottom={H - bottom}
               items={MEASURES.map(([k, , name], i) => ({
                 y: y(ev(vs[1], k)),
-                label: `${name} ${pc(ev(vs[1], k))}`,
+                label: `${name()} ${pc(ev(vs[1], k))}`,
                 color: i ? undefined : PALETTE[0],
               }))}
             />
@@ -152,16 +169,19 @@ function ClusterStacks() {
       {(all) => (
         <>
           <Slicer
-            label="Map"
+            label={l('Map', 'Karta')}
             cycles={false}
             options={VARIANTS}
-            format={(v) => MAP_NAME[v]}
+            format={(v) => MAP_NAME[v]()}
             value={variant}
             onChange={setVariant}
           />
-          <p className="mean-cap">{MAP_NAME[variant]}</p>
+          <p className="mean-cap">{MAP_NAME[variant]()}</p>
           <Bars
-            label="Share of each cluster's passages from its largest tradition"
+            label={l(
+              "Share of each cluster's passages from its largest tradition",
+              'Andel av varje klusters stycken från dess största tradition',
+            )}
             format={pc}
             max={1}
             rows={purity(all, variant).map(({ c, t, share }) => ({
@@ -185,9 +205,15 @@ export const posts: Post[] = [
     title: heading((sum: PhilSummary) => {
       if (!complete(sum)) return ''
       const e = sum.run.evaluation
-      return `Same-work neighbours: ${pc(e.baseline.same_work_neighbours)} as embedded, ${pc(e.author_centered.same_work_neighbours)} with author style removed; chance ${pc(e.baseline.same_work_chance)}`
+      return l(
+        `Same-work neighbours: ${pc(e.baseline.same_work_neighbours)} as embedded, ${pc(e.author_centered.same_work_neighbours)} with author style removed; chance ${pc(e.baseline.same_work_chance)}`,
+        `Grannar från samma verk: ${pc(e.baseline.same_work_neighbours)} som inbäddat, ${pc(e.author_centered.same_work_neighbours)} utan författarstil; slumpen ger ${pc(e.baseline.same_work_chance)}`,
+      )
     }),
-    note: "Share of each passage's nearest neighbours from the same work, and two cluster measures, before and after",
+    note: [
+      "Share of each passage's nearest neighbours from the same work, and two cluster measures, before and after",
+      'Andel av varje styckes närmaste grannar som kommer från samma verk, och två klustermått, före och efter',
+    ],
     render: () => <EvalSlope />,
   },
   {
@@ -202,10 +228,16 @@ export const posts: Post[] = [
       const half = (rows: typeof after) =>
         rows.filter((r) => r.share > 0.5).length
       return after.length && before.length
-        ? `Over half one tradition: ${half(after)} of ${after.length} clusters without author style, ${half(before)} of ${before.length} with it`
+        ? l(
+            `Over half one tradition: ${half(after)} of ${after.length} clusters without author style, ${half(before)} of ${before.length} with it`,
+            `Över hälften från en tradition: ${half(after)} av ${after.length} kluster utan författarstil, ${half(before)} av ${before.length} med den`,
+          )
         : ''
     }),
-    note: "Each cluster's largest tradition, as a share of its passages; clusters named by distinctive words; tick at 50%",
+    note: [
+      "Each cluster's largest tradition, as a share of its passages; clusters named by distinctive words; tick at 50%",
+      'Varje klusters största tradition som andel av dess stycken; klustren namnges efter utmärkande ord; streck vid 50 %',
+    ],
     render: () => <ClusterStacks />,
   },
 ]

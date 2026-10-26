@@ -17,12 +17,12 @@ These goals cannot be finished from the code alone:
 
 ## Site-wide
 
-- [ ] **One look.** Every page is ivory on charcoal (`body` background `rgb(36, 36, 34)`), Helvetica Neue display type, the signature gradient on titles, no rules between sections.
+- [x] **One look.** Every page is ivory on charcoal (`body` background `rgb(36, 36, 34)`), Helvetica Neue display type, the signature gradient on titles, no rules between sections.
 - [x] **No "not done" signals.** No visible text matching: `not reviewed`, `0 reviewed`, `no reviewed`, `not published yet`, `so far` (as progress), `not yet explained`, `could not be read`, `Loading…` after load, `Cluster \d+` / `Group \d+` as a name, bare numeric legend labels.
 - [ ] **Clean loads.** No console errors, no failed requests (403/404/5xx) on any product route; no route waits more than 3 s before showing content or a loading state.
 - [x] **Accessible.** axe passes on every route; no horizontal scroll at 320, 375, 768, 1440 px; every interactive element reachable by keyboard.
-- [ ] **Claims match data.** Every number on a page comes from a committed or released file, and no copy claims more than the data shows (the corrections listed in each product's inventory section are done).
-- [ ] **Both languages.** Every product page reads fully in Swedish and English (titles, labels, legends).
+- [x] **Claims match data.** Every number on a page comes from a committed or released file, and no copy claims more than the data shows (the corrections listed in each product's inventory section are done).
+- [x] **Both languages.** Every product page reads fully in Swedish and English (titles, labels, legends).
 - [x] **One count.** The platform's figures (dbt models, tests, sources, workflows) agree everywhere they appear, from one source file.
 
 ## Start page (#start)
@@ -46,7 +46,7 @@ Goal: a visitor sees a working CV-to-ads matcher with real matches and why each 
 - [x] No owner-only section is visible to visitors; nothing shows "could not be read" or "0 of 50" (jobs-2, jobs-3).
 - [x] Copy says how often it really runs; the hub's freshness line checks the matcher's own limit (jobs-4, jobs-5).
 - [x] The name is safe: a "not affiliated with Arbetsförmedlingen; uses its open JobTech data (CC0)" line, or a new name (jobs-6).
-- [ ] Remaining P1: jobs-7.
+- [x] Remaining P1: jobs-7.
 
 ## SWEDEN (#sweden, A–E, X)
 

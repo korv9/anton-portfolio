@@ -550,7 +550,6 @@
 .cj-connects {
   margin-top: var(--sp-6);
   padding-top: var(--sp-4);
-  border-top: 1px solid var(--line);
 }
 .cj-passages {
   list-style: none;

@@ -2,19 +2,26 @@
 import { Frame, OTHER, PALETTE, useData, type Post } from '../kit'
 import { linearScale } from '../../charts/scales'
 import { Svg, day, heading, usable } from './txt-kit'
+import { l } from '../../i18n'
 
-type Milestone = { milestone_id: string; date: string; title_en: string }
+type Milestone = {
+  milestone_id: string
+  date: string
+  title_en: string
+  title_sv?: string | null
+}
+const titleOf = (m: Milestone) => l(m.title_en, m.title_sv || m.title_en)
 const TIMELINE = 'ai-act/timeline.json'
 const year = (d: string) => Date.parse(`${d.slice(0, 4)}-01-01`)
 const d = 'ai-act'
 /** The few milestones named on the chart; the rest are dots with a tooltip. */
-const SHORT: Record<string, string> = {
-  'document-52021pc0206': 'Proposed',
-  'entry-into-force': 'In force',
-  'prohibitions-and-literacy': 'Bans apply',
-  'general-application': 'Most rules apply',
-  'high-risk-annex-iii': 'High-risk rules',
-  'large-scale-it-deadline': 'Last deadline',
+const SHORT: Record<string, readonly [string, string]> = {
+  'document-52021pc0206': ['Proposed', 'Förslag'],
+  'entry-into-force': ['In force', 'Ikraft'],
+  'prohibitions-and-literacy': ['Bans apply', 'Förbud gäller'],
+  'general-application': ['Most rules apply', 'Det mesta gäller'],
+  'high-risk-annex-iii': ['High-risk rules', 'Regler för hög risk'],
+  'large-scale-it-deadline': ['Last deadline', 'Sista fristen'],
 }
 const today = () => new Date().toISOString().slice(0, 10)
 const sorted = (rows: Milestone[]) =>
@@ -49,8 +56,9 @@ function Timeline() {
         const LEVEL = [-22, 26, -44, 48]
         const named = items.flatMap((m) => {
           const px = x(Date.parse(m.date))
-          const text = SHORT[m.milestone_id]
-          if (!text) return []
+          const short = SHORT[m.milestone_id]
+          if (!short) return []
+          const text = l(...short)
           // Room for the monospace text at the size a phone draws it (about 19 units a
           // line, 12 a character), in drawing units.
           const width = text.length * 12
@@ -66,7 +74,10 @@ function Timeline() {
           <Svg
             w={W}
             h={H}
-            label="AI Act milestones from proposal to the last deadline"
+            label={l(
+              'AI Act milestones from proposal to the last deadline',
+              'AI-förordningens milstolpar från förslag till sista fristen',
+            )}
           >
             <line
               className="mean-txt-grid"
@@ -96,7 +107,7 @@ function Timeline() {
                   strokeDasharray="3 3"
                 />
                 <text x={x(Date.parse(now))} y={base - 64} textAnchor="middle">
-                  today
+                  {l('today', 'idag')}
                 </text>
               </g>
             )}
@@ -129,7 +140,7 @@ function Timeline() {
                 fill={m === focus ? PALETTE[0] : OTHER}
                 stroke="var(--paper)"
               >
-                <title>{`${day(m.date)}: ${m.title_en}`}</title>
+                <title>{`${day(m.date)}: ${titleOf(m)}`}</title>
               </circle>
             ))}
           </Svg>
@@ -148,11 +159,22 @@ export const posts: Post[] = [
     title: heading((rows: Milestone[]) => {
       const n = next(rows)
       if (!sorted(rows).length) return ''
-      return n
-        ? `Next AI Act date: ${day(n.date)}, ${n.title_en.charAt(0).toLowerCase()}${n.title_en.slice(1)}`
-        : 'Every AI Act date in the timeline has passed'
+      if (!n)
+        return l(
+          'Every AI Act date in the timeline has passed',
+          'Alla datum i AI-förordningens tidslinje har passerats',
+        )
+      const t = titleOf(n)
+      const lower = `${t.charAt(0).toLowerCase()}${t.slice(1)}`
+      return l(
+        `Next AI Act date: ${day(n.date)}, ${lower}`,
+        `Nästa datum i AI-förordningen: ${day(n.date)}, ${lower}`,
+      )
     }),
-    note: 'Milestones from the proposal to the last deadline; the larger dot is the next one',
+    note: [
+      'Milestones from the proposal to the last deadline; the larger dot is the next one',
+      'Milstolpar från förslaget till sista fristen; den större punkten är nästa',
+    ],
     render: () => <Timeline />,
   },
 ]

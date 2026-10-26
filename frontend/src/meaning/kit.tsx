@@ -11,6 +11,7 @@ import {
   type ReactNode,
 } from 'react'
 import { fetchData } from '../dataSource'
+import { l } from '../i18n'
 
 async function fetchJson<T>(path: string): Promise<T> {
   // The message is the path, so a failure names the file whatever went wrong.
@@ -20,6 +21,12 @@ async function fetchJson<T>(path: string): Promise<T> {
   if (!response.ok) throw new Error(`${path} (HTTP ${response.status})`)
   return response.json()
 }
+
+/** Visible copy: one string, or an [English, Swedish] pair read at render so a language
+ * switch takes effect. */
+export type Text = string | readonly [string, string]
+export const tx = (t: Text | undefined) =>
+  t === undefined || typeof t === 'string' ? t : l(t[0], t[1])
 
 export type Post = {
   /** Unique across the feed, kebab-case, e.g. 'riksdag-votes-by-party'. */
@@ -32,12 +39,13 @@ export type Post = {
   /** 'wide' spans two feed columns on large screens. */
   size?: 'square' | 'wide' | 'tall'
   /** Readable name for the card's open and close buttons; defaults to the id read as words. */
-  label?: string
+  label?: Text
   /** Visible heading above the chart, also in the thumbnail: a modest, checkable finding or
    * the plain topic. A function gets the post's first source once it has loaded. */
-  title?: string | ((d: never) => string)
+  title?: Text | ((d: never) => string)
   /** One muted line under the title: unit, period or source. */
-  note?: string
+  /** A function, like a title's, gets the post's first source once it has loaded. */
+  note?: Text | ((d: never) => string)
   render: () => ReactNode
 }
 
@@ -239,8 +247,10 @@ export function Frame<T>({
   if (data instanceof Error)
     return open ? (
       <p className="mean-failed">
-        {data instanceof Expired ? 'Data expired' : 'Data unavailable'}:{' '}
-        {data.message}
+        {data instanceof Expired
+          ? l('Data expired', 'Data har gått ut')
+          : l('Data unavailable', 'Data saknas')}
+        : {data.message}
       </p>
     ) : (
       <Leave />

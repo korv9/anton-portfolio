@@ -16,10 +16,12 @@ import {
   Svg,
   XLabels,
 } from './job-kit'
+import { l } from '../../i18n'
 
 /** [year, texts, texts_matching, matches, words, ...]; this file reads only the counts. */
 type Row = number[]
-type Category = { id: string; label_en: string; rows: Row[] }
+type Category = { id: string; label_en: string; label_sv?: string; rows: Row[] }
+const name = (c: Category) => l(c.label_en, c.label_sv ?? c.label_en)
 type Trends = { categories: Category[] }
 type Cells = { rows: [string, string, number, number, number][] }
 type Coverage = {
@@ -61,19 +63,23 @@ function FieldMatrix() {
                 return (
                   <>
                     <Slicer
-                      label="Kind of wording"
+                      label={l('Kind of wording', 'Slags ordval')}
                       options={t.categories.map((k) => k.id)}
-                      format={(id) =>
-                        t.categories.find((k) => k.id === id)?.label_en ?? id
-                      }
+                      format={(id) => {
+                        const k = t.categories.find((x) => x.id === id)
+                        return k ? name(k) : id
+                      }}
                       value={c.id}
                       onChange={setCat}
                     />
                     <p className="mean-cap">
-                      {c.label_en}, {year}
+                      {name(c)}, {year}
                     </p>
                     <Bars
-                      label={`Share of each field's ad texts using ${c.label_en}, ${year}`}
+                      label={l(
+                        `Share of each field's ad texts using ${c.label_en}, ${year}`,
+                        `Andel av varje yrkesområdes annonstexter med ${name(c).toLowerCase()}, ${year}`,
+                      )}
                       format={(v) => pct(v)}
                       rows={rows.map((r, j) => ({
                         key: r.field,
@@ -115,11 +121,23 @@ function CoverageBars() {
         const y = linearScale([0, ticks.at(-1)!], [B, 8])
         const bw = (R - L) / a.length
         return (
-          <Svg w={W} h={H} label="Ads and distinct ad texts per archive">
+          <Svg
+            w={W}
+            h={H}
+            label={l(
+              'Ads and distinct ad texts per archive',
+              'Annonser och unika annonstexter per arkiv',
+            )}
+          >
             <YAxis ticks={ticks} y={y} x0={L} x1={R} format={compact} />
             {a.map((r, i) => (
               <g key={r.archive}>
-                <title>{`${r.archive}: ${fmt(r.ads)} ads, ${fmt(r.distinct_texts)} texts`}</title>
+                <title>
+                  {l(
+                    `${r.archive}: ${fmt(r.ads)} ads, ${fmt(r.distinct_texts)} texts`,
+                    `${r.archive}: ${fmt(r.ads)} annonser, ${fmt(r.distinct_texts)} texter`,
+                  )}
+                </title>
                 <rect
                   x={L + i * bw + 0.5}
                   y={y(r.ads)}
@@ -141,10 +159,14 @@ function CoverageBars() {
               top={8}
               bottom={B}
               items={[
-                { y: y(last.ads), label: 'ads', color: 'var(--mean-muted)' },
+                {
+                  y: y(last.ads),
+                  label: l('ads', 'annonser'),
+                  color: 'var(--mean-muted)',
+                },
                 {
                   y: y(last.distinct_texts),
-                  label: 'distinct texts',
+                  label: l('distinct texts', 'unika texter'),
                   color: focal(true),
                 },
               ]}
@@ -175,7 +197,10 @@ function Words() {
         return (
           <Big
             value={compact(sum(rows.map((r) => r[4])))}
-            unit={`words in ${compact(sum(rows.map((r) => r[1])))} ad texts, ${rows[0][0]}–${rows.at(-1)![0]}`}
+            unit={l(
+              `words in ${compact(sum(rows.map((r) => r[1])))} ad texts, ${rows[0][0]}–${rows.at(-1)![0]}`,
+              `ord i ${compact(sum(rows.map((r) => r[1])))} annonstexter, ${rows[0][0]}–${rows.at(-1)![0]}`,
+            )}
           />
         )
       }}
@@ -188,8 +213,14 @@ export const posts: Post[] = [
     id: 'job-lang-words',
     domain: D,
     sources: ['sweden/language/trends.json'],
-    title: 'How much job-ad text the language posts read',
-    note: 'Headline and description of each ad text; a text repeated within an archive counts once, so the count is distinct texts per archive, summed',
+    title: [
+      'How much job-ad text the language posts read',
+      'Hur mycket annonstext språkinläggen läser',
+    ],
+    note: [
+      'Headline and description of each ad text; a text repeated within an archive counts once, so the count is distinct texts per archive, summed',
+      'Rubrik och beskrivning i varje annonstext; en text som upprepas inom ett arkiv räknas en gång, så antalet är unika texter per arkiv, summerade',
+    ],
     render: () => <Words />,
   },
   {
@@ -200,8 +231,14 @@ export const posts: Post[] = [
       'sweden/language/trends.json',
       'sweden/language/coverage.json',
     ],
-    title: 'Which fields use each kind of wording most',
-    note: "Share of a field's distinct ad texts using the wording, latest whole-year archive; fields with under 30 texts left out",
+    title: [
+      'Which fields use each kind of wording most',
+      'Vilka yrkesområden som använder varje slags ordval mest',
+    ],
+    note: [
+      "Share of a field's distinct ad texts using the wording, latest whole-year archive; fields with under 30 texts left out",
+      'Andel av ett yrkesområdes unika annonstexter med ordvalet, senaste helårsarkivet; yrkesområden med under 30 texter utelämnade',
+    ],
     render: () => <FieldMatrix />,
   },
   {
@@ -210,9 +247,18 @@ export const posts: Post[] = [
     sources: ['sweden/language/coverage.json'],
     title: (c: Coverage) =>
       c.archives.length
-        ? `${compact(sum(c.archives.map((a) => a.distinct_texts)))} ad texts in ${c.archives.length} archives`
-        : 'Ads and ad texts per archive',
-    note: 'Ads and distinct texts per yearly or quarterly archive; a text repeated within an archive counts once, and the total sums the archives',
+        ? l(
+            `${compact(sum(c.archives.map((a) => a.distinct_texts)))} ad texts in ${c.archives.length} archives`,
+            `${compact(sum(c.archives.map((a) => a.distinct_texts)))} annonstexter i ${c.archives.length} arkiv`,
+          )
+        : l(
+            'Ads and ad texts per archive',
+            'Annonser och annonstexter per arkiv',
+          ),
+    note: [
+      'Ads and distinct texts per yearly or quarterly archive; a text repeated within an archive counts once, and the total sums the archives',
+      'Annonser och unika texter per års- eller kvartalsarkiv; en text som upprepas inom ett arkiv räknas en gång, och summan lägger ihop arkiven',
+    ],
     render: () => <CoverageBars />,
   },
 ]

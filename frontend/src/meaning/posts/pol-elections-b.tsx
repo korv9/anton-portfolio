@@ -1,4 +1,5 @@
 /** Riksdag election results 1973 onward and the 2026 count. */
+import { l } from '../../i18n'
 import { Frame, useData, type Post } from '../kit'
 import { linearScale } from '../../charts/scales'
 import { niceDomain, ticksBetween } from '../axes'
@@ -48,7 +49,10 @@ function Multiples() {
           <svg
             viewBox="0 0 600 220"
             role="img"
-            aria-label="Vote share per party over elections, one panel per party"
+            aria-label={l(
+              'Vote share per party over elections, one panel per party',
+              'Röstandel per parti över valen, en panel per parti',
+            )}
           >
             {PARTIES.map((p, i) => {
               const rows = (by.get(p) ?? []).filter((r) => r.share_pct != null)
@@ -130,7 +134,10 @@ function Dumbbell() {
           <svg
             viewBox="0 0 300 250"
             role="img"
-            aria-label={`Vote share per party, previous election and ${n.election.year}`}
+            aria-label={l(
+              `Vote share per party, previous election and ${n.election.year}`,
+              `Röstandel per parti, föregående val och ${n.election.year}`,
+            )}
           >
             <g className="mean-axis">
               {ticksBetween(0, hi, 2).map((t) => (
@@ -166,7 +173,7 @@ function Dumbbell() {
                   r={5.5}
                   fill={pc(p.party)}
                 >
-                  <title>{`${p.party}: ${p.previous_share_pct} → ${p.share_pct} %`}</title>
+                  <title>{`${p.party}: ${pct(p.previous_share_pct)} → ${pct(p.share_pct)}`}</title>
                 </circle>
                 <g className="mean-end">
                   <text x={0} y={row(i) + 4}>
@@ -191,15 +198,31 @@ function swingTitle(n: Now) {
   const ps = parties(n)
   const up = best(ps, change)
   const down = best(ps, (p) => -change(p))
-  if (!up || !down) return 'Vote share per party, previous and latest election'
+  if (!up || !down)
+    return l(
+      'Vote share per party, previous and latest election',
+      'Röstandel per parti, föregående och senaste val',
+    )
   const rise =
     change(up) > 0
-      ? `${up.party} gained the most share (${signed(change(up))} points)`
-      : `every party lost share; ${up.party} the least (${signed(change(up))})`
+      ? l(
+          `${up.party} gained the most share (${signed(change(up))} points)`,
+          `${up.party} ökade mest (${signed(change(up))} procentenheter)`,
+        )
+      : l(
+          `every party lost share; ${up.party} the least (${signed(change(up))})`,
+          `alla partier backade; ${up.party} minst (${signed(change(up))})`,
+        )
   const fall =
     change(down) < 0
-      ? `${down.party} lost the most (${signed(change(down))})`
-      : `${down.party} gained the least (${signed(change(down))})`
+      ? l(
+          `${down.party} lost the most (${signed(change(down))})`,
+          `${down.party} backade mest (${signed(change(down))})`,
+        )
+      : l(
+          `${down.party} gained the least (${signed(change(down))})`,
+          `${down.party} ökade minst (${signed(change(down))})`,
+        )
   return `${n.election.year}: ${rise}, ${fall}`
 }
 
@@ -209,7 +232,10 @@ export const posts: Post[] = [
     domain: 'politics',
     sources: ['parliament/now.json'],
     title: swingTitle,
-    note: 'Vote share, %: previous election (open dot), latest (filled). Source: Valmyndigheten.',
+    note: [
+      'Vote share, %: previous election (open dot), latest (filled). Source: Valmyndigheten.',
+      'Röstandel, %: föregående val (ofylld punkt), senaste (fylld). Källa: Valmyndigheten.',
+    ],
     render: () => <Dumbbell />,
   },
   {
@@ -219,9 +245,15 @@ export const posts: Post[] = [
     size: 'wide',
     title: (d: Elections) =>
       d.years.length
-        ? `Each party's vote share, ${d.years[0]}–${d.years.at(-1)}`
-        : "Each party's vote share",
-    note: 'Share of votes, %; every panel uses the same scale. Source: Valmyndigheten.',
+        ? l(
+            `Each party's vote share, ${d.years[0]}–${d.years.at(-1)}`,
+            `Varje partis röstandel, ${d.years[0]}–${d.years.at(-1)}`,
+          )
+        : l("Each party's vote share", 'Varje partis röstandel'),
+    note: [
+      'Share of votes, %; every panel uses the same scale. Source: Valmyndigheten.',
+      'Andel av rösterna, %; alla paneler har samma skala. Källa: Valmyndigheten.',
+    ],
     render: () => <Multiples />,
   },
 ]

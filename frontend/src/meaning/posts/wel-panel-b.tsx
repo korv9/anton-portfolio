@@ -9,6 +9,7 @@ import {
   type Dot,
 } from './wel-charts'
 import { Ranked, fmt, maxOf, num, pct } from './wel-kit'
+import { l } from '../../i18n'
 
 const usePanel = () => useData<CountyYear[]>('welfare/panel-county-year.json')
 
@@ -41,14 +42,17 @@ function Turnout() {
         return (
           <>
             <Slicer
-              label="Election year"
+              label={l('Election year', 'Valår')}
               cycles
               options={opts}
               value={year}
               onChange={setYr}
             />
             <Ranked
-              label={`Turnout in the ${year} Riksdag election by county, %; tick: Sweden as a whole`}
+              label={l(
+                `Turnout in the ${year} Riksdag election by county, %; tick: Sweden as a whole`,
+                `Valdeltagande i riksdagsvalet ${year} per län, %; streck: hela Sverige`,
+              )}
               max={100}
               format={(v) => pct(v, 0)}
               mark={num(nation) ? nation : undefined}
@@ -94,9 +98,12 @@ function HealthTrust() {
       {(rows) => (
         <Scatter
           dots={healthTrust(rows).dots}
-          label="Share in good health against the share who find it hard to trust others, one dot per county"
-          xFormat={(v) => `${v}%`}
-          yFormat={(v) => `${v}%`}
+          label={l(
+            'Share in good health against the share who find it hard to trust others, one dot per county',
+            'Andel med god hälsa mot andel som har svårt att lita på andra, en punkt per län',
+          )}
+          xFormat={(v) => pct(v, 1)}
+          yFormat={(v) => pct(v, 1)}
         />
       )}
     </Frame>
@@ -110,14 +117,25 @@ export const posts: Post[] = [
     sources: ['welfare/panel-county-year.json'],
     title: (rows: CountyYear[]) => {
       const year = elections(rows).at(-1)
-      if (year === undefined) return 'Riksdag election turnout by county'
+      const topic = l(
+        'Riksdag election turnout by county',
+        'Valdeltagande i riksdagsvalet per län',
+      )
+      if (year === undefined) return topic
       const v = turnoutIn(rows, year)
         .filter((r) => !r.is_country)
         .map((r) => r[TURNOUT] as number)
-      if (!v.length) return 'Riksdag election turnout by county'
-      return `Turnout in the ${year} Riksdag election ranged from ${pct(Math.min(...v), 0)} to ${pct(Math.max(...v), 0)} across counties`
+      if (!v.length) return topic
+      const [lo, hi] = [pct(Math.min(...v), 0), pct(Math.max(...v), 0)]
+      return l(
+        `Turnout in the ${year} Riksdag election ranged from ${lo} to ${hi} across counties`,
+        `Valdeltagandet i riksdagsvalet ${year} varierade mellan ${lo} och ${hi} i länen`,
+      )
     },
-    note: 'Share of eligible voters who voted; tick: Sweden as a whole. Source: Kolada',
+    note: [
+      'Share of eligible voters who voted; tick: Sweden as a whole. Source: Kolada',
+      'Andel röstberättigade som röstade; streck: hela Sverige. Källa: Kolada',
+    ],
     render: () => <Turnout />,
   },
   {
@@ -126,18 +144,31 @@ export const posts: Post[] = [
     sources: ['welfare/panel-county-year.json'],
     title: (rows: CountyYear[]) => {
       const { period, dots } = healthTrust(rows)
-      if (dots.length < 3) return 'Health and trust by county'
+      const topic = l('Health and trust by county', 'Hälsa och tillit per län')
+      if (dots.length < 3) return topic
       const r = pearson(dots)
-      if (r === null) return `Health and trust by county, ${period}`
+      if (r === null) return `${topic}, ${period}`
       const link =
         Math.abs(r) < 0.3
-          ? 'barely related'
+          ? l('barely related', 'knappt sammanhängande')
           : r < 0
-            ? 'related: better health, less distrust'
-            : 'related: better health, more distrust'
-      return `Across counties, good health and distrust were ${link} in ${period} (r = ${fmt(r, 2)})`
+            ? l(
+                'related: better health, less distrust',
+                'sammanhängande: bättre hälsa, mindre misstro',
+              )
+            : l(
+                'related: better health, more distrust',
+                'sammanhängande: bättre hälsa, mer misstro',
+              )
+      return l(
+        `Across counties, good health and distrust were ${link} in ${period} (r = ${fmt(r, 2)})`,
+        `Mellan länen var god hälsa och misstro ${link} ${period} (r = ${fmt(r, 2)})`,
+      )
     },
-    note: 'Across: rate their health as good, %. Up: find it hard to trust others, %. Source: Folkhälsomyndigheten',
+    note: [
+      'Across: rate their health as good, %. Up: find it hard to trust others, %. Source: Folkhälsomyndigheten',
+      'Vågrätt: bedömer sin hälsa som god, %. Lodrätt: har svårt att lita på andra, %. Källa: Folkhälsomyndigheten',
+    ],
     render: () => <HealthTrust />,
   },
 ]

@@ -1,4 +1,5 @@
 /** Members of the Riksdag and municipal council seats per party. */
+import { l } from '../../i18n'
 import { focal, Frame, shade, useData, type Post } from '../kit'
 import { linearScale } from '../../charts/scales'
 import { niceDomain, ticksBetween } from '../axes'
@@ -22,11 +23,14 @@ function Units() {
     <Frame data={useIndex()}>
       {(d) => (
         <Shares
-          label="Women and men among each party's members of the Riksdag"
+          label={l(
+            "Women and men among each party's members of the Riksdag",
+            'Kvinnor och män bland varje partis riksdagsledamöter',
+          )}
           format={String}
           parts={[
-            { label: 'Women', colour: focal(true) },
-            { label: 'Men', colour: shade(1, 2) },
+            { label: l('Women', 'Kvinnor'), colour: focal(true) },
+            { label: l('Men', 'Män'), colour: shade(1, 2) },
           ]}
           rows={present(d)
             .map((p) => ({
@@ -71,7 +75,10 @@ function Dumbbell() {
           <svg
             viewBox="0 0 300 250"
             role="img"
-            aria-label="Municipal council seats per party, before and after the election"
+            aria-label={l(
+              'Municipal council seats per party, before and after the election',
+              'Mandat i kommunfullmäktige per parti, före och efter valet',
+            )}
           >
             <g className="mean-axis">
               {ticksBetween(0, max, 2).map((t) => (
@@ -139,8 +146,14 @@ function membersTitle(d: Index) {
   const w = sum(ps.map((p) => d.parties[p].women))
   const n = sum(ps.map((p) => d.parties[p].members))
   return n
-    ? `${w} of the ${n} members from the eight Riksdag parties are women, ${Math.round((100 * w) / n)} %`
-    : 'Women and men among Riksdag members'
+    ? l(
+        `${w} of the ${n} members from the eight Riksdag parties are women, ${Math.round((100 * w) / n)} %`,
+        `${w} av de ${n} ledamöterna från de åtta riksdagspartierna är kvinnor, ${Math.round((100 * w) / n)} %`,
+      )
+    : l(
+        'Women and men among Riksdag members',
+        'Kvinnor och män bland riksdagsledamöterna',
+      )
 }
 
 /** The largest gain and the largest loss in council seats, worded by their actual sign. */
@@ -149,15 +162,31 @@ function councilTitle(d: Index) {
   const ch = (p: string) => councilChange(d.parties[p])
   const up = best(ps, ch)
   const down = best(ps, (p) => -ch(p))
-  if (!up || !down) return 'Municipal council seats per party'
+  if (!up || !down)
+    return l(
+      'Municipal council seats per party',
+      'Mandat i kommunfullmäktige per parti',
+    )
   const rise =
     ch(up) > 0
-      ? `${up} gained the most municipal council seats (${signed(ch(up), 0)})`
-      : `every party lost council seats; ${up} the fewest (${signed(ch(up), 0)})`
+      ? l(
+          `${up} gained the most municipal council seats (${signed(ch(up), 0)})`,
+          `${up} vann flest mandat i kommunfullmäktige (${signed(ch(up), 0)})`,
+        )
+      : l(
+          `every party lost council seats; ${up} the fewest (${signed(ch(up), 0)})`,
+          `alla partier förlorade fullmäktigemandat; ${up} minst (${signed(ch(up), 0)})`,
+        )
   const fall =
     ch(down) < 0
-      ? `${down} lost the most (${signed(ch(down), 0)})`
-      : `${down} gained the fewest (${signed(ch(down), 0)})`
+      ? l(
+          `${down} lost the most (${signed(ch(down), 0)})`,
+          `${down} förlorade flest (${signed(ch(down), 0)})`,
+        )
+      : l(
+          `${down} gained the fewest (${signed(ch(down), 0)})`,
+          `${down} vann minst (${signed(ch(down), 0)})`,
+        )
   return `${rise}; ${fall}`
 }
 
@@ -167,7 +196,10 @@ export const posts: Post[] = [
     domain: 'politics',
     sources: ['politics/parties/index.json'],
     title: membersTitle,
-    note: 'Women and men per party among current members. Source: Riksdagen.',
+    note: [
+      'Women and men per party among current members. Source: Riksdagen.',
+      'Kvinnor och män per parti bland nuvarande ledamöter. Källa: Riksdagen.',
+    ],
     render: () => <Units />,
   },
   {
@@ -175,7 +207,10 @@ export const posts: Post[] = [
     domain: 'politics',
     sources: ['politics/parties/index.json'],
     title: councilTitle,
-    note: 'Council seats before (open dot) and after (filled) the 2026 election. Source: Valmyndigheten.',
+    note: [
+      'Council seats before (open dot) and after (filled) the 2026 election. Source: Valmyndigheten.',
+      'Fullmäktigemandat före (ofylld punkt) och efter (fylld) valet 2026. Källa: Valmyndigheten.',
+    ],
     render: () => <Dumbbell />,
   },
 ]

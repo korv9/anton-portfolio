@@ -112,7 +112,6 @@
   width: 100%;
   grid-column: 1 / -1;
   margin-block: 2rem;
-  border-top: 1px solid var(--line);
   padding-top: 1rem;
 }
 .project-method > .dk-grid {
@@ -245,8 +244,7 @@
   #main
   :is(.dk-card, .board-card, .theme-figure, .chart-section) {
   background: transparent;
-  border-inline: 0;
-  border-bottom: 0;
+  border: 0;
   padding-inline: 0;
 }
 .project-shell[data-workspace='engineering'] #main .project-section > p {

@@ -4,7 +4,8 @@
  */
 import { useState } from 'react'
 import { XAxis, YAxis } from '../axes'
-import { OTHER, Slicer } from '../kit'
+import { OTHER, Slicer, tx, type Text } from '../kit'
+import { l } from '../../i18n'
 import { Ranked, Svg, axis, maxOf, num } from './wel-kit'
 
 export type Dot = { key: string; name: string; x: number; y: number }
@@ -120,7 +121,7 @@ export type CountyYear = {
 
 export type CountyMetric = {
   field: string
-  name: string
+  name: Text
   format: (v: number) => string
 }
 
@@ -162,14 +163,17 @@ export function CountyRank({
   return (
     <>
       <Slicer
-        label="Measure"
+        label={l('Measure', 'Mått')}
         options={names}
-        format={(o) => metrics[o].name}
+        format={(o) => tx(metrics[o].name)!}
         value={m}
         onChange={setM}
       />
       <Ranked
-        label={`Counties ranked by ${metric.name}, ${year}; tick: Sweden as a whole`}
+        label={l(
+          `Counties ranked by ${tx(metric.name)}, ${year}; tick: Sweden as a whole`,
+          `Län rangordnade efter ${tx(metric.name)}, ${year}; streck: hela Sverige`,
+        )}
         format={metric.format}
         mark={nation}
         rows={counties.map((r) => ({

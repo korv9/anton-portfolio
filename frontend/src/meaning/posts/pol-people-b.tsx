@@ -1,4 +1,6 @@
 /** Members of the Riksdag and municipal council seats per party. */
+import { l } from '../../i18n'
+import { count } from '../../format'
 import { useState } from 'react'
 import { Frame, Slicer, useData, type Post } from '../kit'
 import { linearScale } from '../../charts/scales'
@@ -70,7 +72,10 @@ function BirthYears() {
           <svg
             viewBox="0 0 300 250"
             role="img"
-            aria-label="Birth year of members per party: median and middle half"
+            aria-label={l(
+              'Birth year of members per party: median and middle half',
+              'Ledamöternas födelseår per parti: median och mittersta hälften',
+            )}
           >
             <g className="mean-axis">
               {ticksBetween(lo, hi).map((t) => (
@@ -95,7 +100,12 @@ function BirthYears() {
                   opacity={0.45}
                 />
                 <circle cx={x(r.mid)} cy={row(i)} r={5.5} fill={pc(r.p)}>
-                  <title>{`${r.p}: median ${Math.round(r.mid)}, middle half ${Math.round(r.q1)}–${Math.round(r.q3)}`}</title>
+                  <title>
+                    {l(
+                      `${r.p}: median ${Math.round(r.mid)}, middle half ${Math.round(r.q1)}–${Math.round(r.q3)}`,
+                      `${r.p}: median ${Math.round(r.mid)}, mittersta hälften ${Math.round(r.q1)}–${Math.round(r.q3)}`,
+                    )}
+                  </title>
                 </circle>
                 <g className="mean-end">
                   <text x={0} y={row(i) + 4}>
@@ -120,7 +130,12 @@ function CouncilHistogram() {
   const f = files.find(([q]) => q === p)![1]
   return (
     <>
-      <Slicer label="Party" options={PARTIES} value={p} onChange={setP} />
+      <Slicer
+        label={l('Party', 'Parti')}
+        options={PARTIES}
+        value={p}
+        onChange={setP}
+      />
       <Frame data={f}>
         {(f) => {
           // 2.5-point bands over the whole 0–100 % range; a full council lands in the last band.
@@ -137,7 +152,10 @@ function CouncilHistogram() {
               <svg
                 viewBox="0 0 300 220"
                 role="img"
-                aria-label={`Municipalities by ${p} share of council seats`}
+                aria-label={l(
+                  `Municipalities by ${p} share of council seats`,
+                  `Kommuner efter ${p}:s andel av fullmäktigemandaten`,
+                )}
               >
                 <YAxis y={y} ticks={ticksBetween(0, max)} x0={30} x1={296} />
                 {bins.map((b, i) => (
@@ -149,7 +167,12 @@ function CouncilHistogram() {
                     height={y(0) - y(b)}
                     fill={pc(p)}
                   >
-                    <title>{`${i * 2.5}–${i * 2.5 + 2.5} %: ${b} municipalities`}</title>
+                    <title>
+                      {l(
+                        `${count(i * 2.5)}–${count(i * 2.5 + 2.5)} %: ${b} municipalities`,
+                        `${count(i * 2.5)}–${count(i * 2.5 + 2.5)} %: ${b} kommuner`,
+                      )}
+                    </title>
                   </rect>
                 ))}
                 <XAxis
@@ -183,8 +206,14 @@ export const posts: Post[] = [
       'politics/parties/sd.json',
       'politics/parties/v.json',
     ],
-    title: 'Birth year of Riksdag members by party, youngest first',
-    note: 'Dot: median; bar: the middle half of members. Source: Riksdagen.',
+    title: [
+      'Birth year of Riksdag members by party, youngest first',
+      'Riksdagsledamöternas födelseår per parti, yngst först',
+    ],
+    note: [
+      'Dot: median; bar: the middle half of members. Source: Riksdagen.',
+      'Punkt: median; stapel: den mittersta hälften av ledamöterna. Källa: Riksdagen.',
+    ],
     render: () => <BirthYears />,
   },
   {
@@ -200,8 +229,14 @@ export const posts: Post[] = [
       'politics/parties/sd.json',
       'politics/parties/v.json',
     ],
-    title: "Municipalities by a party's share of council seats",
-    note: 'Number of municipalities per 2.5-point band of seat share. Source: Valmyndigheten.',
+    title: [
+      "Municipalities by a party's share of council seats",
+      'Kommuner efter ett partis andel av fullmäktigemandaten',
+    ],
+    note: [
+      'Number of municipalities per 2.5-point band of seat share. Source: Valmyndigheten.',
+      'Antal kommuner per intervall om 2,5 procentenheter av mandatandelen. Källa: Valmyndigheten.',
+    ],
     render: () => <CouncilHistogram />,
   },
 ]

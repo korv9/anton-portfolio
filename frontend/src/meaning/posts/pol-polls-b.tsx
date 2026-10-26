@@ -1,4 +1,5 @@
 /** SCB party preference survey, 1972 onward. */
+import { l } from '../../i18n'
 import { Frame, useData, type Post } from '../kit'
 import { linearScale } from '../../charts/scales'
 import { niceDomain, ticksBetween } from '../axes'
@@ -45,7 +46,10 @@ function Ranges() {
           <svg
             viewBox="0 0 300 250"
             role="img"
-            aria-label="Latest poll share per party on the range of all its poll shares"
+            aria-label={l(
+              'Latest poll share per party on the range of all its poll shares',
+              'Senaste opinionsstöd per parti mot spannet av alla dess mätningar',
+            )}
           >
             <g className="mean-axis">
               {ticksBetween(0, top).map((t) => (
@@ -69,10 +73,10 @@ function Ranges() {
                   strokeLinecap="round"
                   opacity={0.35}
                 >
-                  <title>{`${r.p}: ${r.lo}–${r.hi} %`}</title>
+                  <title>{`${r.p}: ${pct(r.lo)}–${pct(r.hi)}`}</title>
                 </line>
                 <circle cx={x(r.now)} cy={row(i)} r={5.5} fill={pc(r.p)}>
-                  <title>{`${r.p}: ${r.now} %`}</title>
+                  <title>{`${r.p}: ${pct(r.now)}`}</title>
                 </circle>
                 <g className="mean-end">
                   <text x={0} y={row(i) + 4}>
@@ -98,14 +102,24 @@ export const posts: Post[] = [
     sources: ['parliament/polls.json'],
     title: (d: Polls) => {
       const m = months(d).at(-1)
-      if (!m) return "Latest SCB survey against each party's range"
+      if (!m)
+        return l(
+          "Latest SCB survey against each party's range",
+          'Senaste SCB-undersökningen mot varje partis spann',
+        )
       const when = new Date(`${m.slice(0, 7)}-01T00:00Z`).toLocaleString(
-        'en-GB',
+        l('en-GB', 'sv-SE'),
         { month: 'long', year: 'numeric', timeZone: 'UTC' },
       )
-      return `SCB survey, ${when}: each party against its own highest and lowest`
+      return l(
+        `SCB survey, ${when}: each party against its own highest and lowest`,
+        `SCB:s undersökning, ${when}: varje parti mot sitt eget högsta och lägsta`,
+      )
     },
-    note: 'Share of voters, %. Dot: latest survey; bar: every survey since the party was first polled. Source: SCB.',
+    note: [
+      'Share of voters, %. Dot: latest survey; bar: every survey since the party was first polled. Source: SCB.',
+      'Andel av väljarna, %. Punkt: senaste undersökningen; stapel: alla undersökningar sedan partiet först mättes. Källa: SCB.',
+    ],
     render: () => <Ranges />,
   },
 ]

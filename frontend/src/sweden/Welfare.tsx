@@ -524,7 +524,10 @@ export default function Welfare() {
 
   const readings: Reading[] = [
     {
-      theory: 'Rothstein: universal institutions build trust',
+      theory: l(
+        'Rothstein: universal institutions build trust',
+        'Rothstein: generella institutioner bygger tillit',
+      ),
       expects: l(
         'The countries with the most universal, tax-financed welfare should show the most trust in other people.',
         'De länder som har mest generell, skattefinansierad välfärd borde visa mest tillit till andra människor.',
@@ -540,7 +543,7 @@ export default function Welfare() {
       ),
     },
     {
-      theory: 'An eroding contract',
+      theory: l('An eroding contract', 'Ett kontrakt som nöts ned'),
       expects: l(
         'As taxes are cut and services narrowed, trust should fall with them.',
         'När skatterna sänks och tjänsterna smalnar av borde tilliten falla med dem.',
@@ -556,7 +559,7 @@ export default function Welfare() {
       ),
     },
     {
-      theory: 'Measurement makes the trend',
+      theory: l('Measurement makes the trend', 'Mätningen skapar trenden'),
       expects: l(
         'Breaks in how a survey is collected can look like social change.',
         'Brott i hur en enkät samlas in kan se ut som social förändring.',

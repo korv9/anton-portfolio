@@ -57,7 +57,10 @@ export const DATASETS: Dataset[] = [
     key: 'debate-backdrop',
     title: () =>
       l('Riksdag debates, 33 sessions', 'Riksdagsdebatter, 33 riksmöten'),
-    method: l('UMAP · one topic model', 'UMAP · en ämnesmodell'),
+    method: l(
+      'UMAP · an earlier, unvalidated topic model',
+      'UMAP · en tidigare, ovaliderad ämnesmodell',
+    ),
     load: () => loadDebateMap().then((m) => ({ points: objects(m.points) })),
   },
   {

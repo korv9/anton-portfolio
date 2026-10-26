@@ -3,6 +3,8 @@ import { useState, type ReactNode } from 'react'
 import RankBars from '../../charts/RankBars'
 import { Frame, Slicer, focal, useData, type Post } from '../kit'
 import { Ranked, fmt } from './wel-kit'
+import { l } from '../../i18n'
+import { fixed } from '../../format'
 
 type Clusters = {
   names: Record<string, [string, string]>
@@ -22,21 +24,39 @@ type Groups = {
 }
 
 /** The twelve indicators, short enough for a bar label. */
-const INDICATORS: Record<string, string> = {
-  open_unemployment_18_65_pct: 'Unemployment',
-  employment_rate_20_64_pct: 'Employment',
-  ill_health_days: 'Ill-health days',
-  median_earned_income_sek: 'Median income',
-  social_assistance_pct: 'Social assistance',
-  turnout_riksdag_pct: 'Turnout',
-  eligible_vocational_programme_pct: 'School eligibility',
-  log_population: 'Population size',
-  out_commuting_pct: 'Out-commuting',
-  in_commuting_pct: 'In-commuting',
-  dependency_ratio: 'Dependency ratio',
-  post_secondary_25_64_pct: 'Higher education',
+const INDICATORS: Record<string, [string, string]> = {
+  open_unemployment_18_65_pct: ['Unemployment', 'Arbetslöshet'],
+  employment_rate_20_64_pct: ['Employment', 'Sysselsättning'],
+  ill_health_days: ['Ill-health days', 'Ohälsodagar'],
+  median_earned_income_sek: ['Median income', 'Medianinkomst'],
+  social_assistance_pct: ['Social assistance', 'Ekonomiskt bistånd'],
+  turnout_riksdag_pct: ['Turnout', 'Valdeltagande'],
+  eligible_vocational_programme_pct: [
+    'School eligibility',
+    'Gymnasiebehörighet',
+  ],
+  log_population: ['Population size', 'Folkmängd'],
+  out_commuting_pct: ['Out-commuting', 'Utpendling'],
+  in_commuting_pct: ['In-commuting', 'Inpendling'],
+  dependency_ratio: ['Dependency ratio', 'Försörjningskvot'],
+  post_secondary_25_64_pct: ['Higher education', 'Eftergymnasial utbildning'],
 }
 
+/** The stability check of the four-group split, pre-registered in
+ * docs/sweden-three-spaces-preregistration.md. */
+type Swedens = {
+  grouping: {
+    n: number
+    candidates: Record<
+      string,
+      { qualifies: boolean; bootstrap_ari: { mean: number; p05: number } }
+    >
+  }
+}
+/** The pre-registered bar for the 5th percentile of the bootstrap ARI. */
+const ARI_P05_BAR = 0.6
+
+const useSwedens = () => useData<Swedens>('clusters/three-swedens.json')
 const useClusters = () =>
   useData<Clusters>('cluster-research/municipalities.json')
 const useGroups = () => useData<Groups>('sweden/similarity/groups.json')
@@ -49,10 +69,14 @@ function named(c: Clusters, g: Groups) {
   const split = g.splits.find((s) => s.k === 4) ?? g.splits.at(-1)
   return (split?.profiles ?? []).map((p) => {
     const size = c.points.filter((q) => q[3] === p.group).length
-    const name = c.names[String(p.group)]?.[0]
+    const both = c.names[String(p.group)]
+    const name = both && l(both[0], both[1] ?? both[0])
     return {
       ...p,
-      name: name && size === p.municipalities ? name : `Group ${p.group + 1}`,
+      name:
+        name && size === p.municipalities
+          ? name
+          : l(`Group ${p.group + 1}`, `Grupp ${p.group + 1}`),
     }
   })
 }
@@ -72,35 +96,45 @@ function Both({
 }
 
 function GroupSizes() {
+  // The heading's note reads this file; the chart waits for it so the two arrive together.
+  const swedens = useSwedens()
   return (
-    <Both>
-      {(groups) => {
-        const sorted = [...groups].sort(
-          (a, b) => b.municipalities - a.municipalities,
-        )
-        return (
-          <div className="mean-bars mean-wel-rank mean-wel-wrap">
-            <RankBars
-              label="Municipalities per group, with the towns nearest each group's centre"
-              format={(v) => String(v)}
-              rows={sorted.map((p, i) => ({
-                key: String(p.group),
-                label: (
-                  <span>
-                    {p.name}
-                    <small>
-                      e.g. {p.nearest_to_centre.slice(0, 3).join(', ')}
-                    </small>
-                  </span>
-                ),
-                value: p.municipalities,
-                color: focal(i === 0),
-              }))}
-            />
-          </div>
-        )
-      }}
-    </Both>
+    <Frame data={swedens}>
+      {() => (
+        <Both>
+          {(groups) => {
+            const sorted = [...groups].sort(
+              (a, b) => b.municipalities - a.municipalities,
+            )
+            return (
+              <div className="mean-bars mean-wel-rank mean-wel-wrap">
+                <RankBars
+                  label={l(
+                    "Municipalities per group, with the towns nearest each group's centre",
+                    'Kommuner per grupp, med orterna närmast varje grupps mitt',
+                  )}
+                  format={(v) => String(v)}
+                  rows={sorted.map((p, i) => ({
+                    key: String(p.group),
+                    label: (
+                      <span>
+                        {p.name}
+                        <small>
+                          {l('e.g.', 't.ex.')}{' '}
+                          {p.nearest_to_centre.slice(0, 3).join(', ')}
+                        </small>
+                      </span>
+                    ),
+                    value: p.municipalities,
+                    color: focal(i === 0),
+                  }))}
+                />
+              </div>
+            )
+          }}
+        </Both>
+      )}
+    </Frame>
   )
 }
 
@@ -114,20 +148,25 @@ function Profiles() {
         return (
           <>
             <Slicer
-              label="Group"
+              label={l('Group', 'Grupp')}
               options={groups.map((q) => q.group)}
               format={(k) => groups.find((q) => q.group === k)?.name ?? ''}
               value={p.group}
               onChange={setG}
             />
             <Ranked
-              label={`${p.name}: each indicator's group mean in standard deviations from the average municipality`}
+              label={l(
+                `${p.name}: each indicator's group mean in standard deviations from the average municipality`,
+                `${p.name}: gruppens medelvärde per indikator i standardavvikelser från genomsnittskommunen`,
+              )}
               format={(v) =>
                 `${v > 0 ? '+' : v < 0 ? '−' : ''}${fmt(Math.abs(v), 1)}`
               }
               rows={Object.entries(p.standardised_means).map(([k, v]) => ({
                 key: k,
-                label: INDICATORS[k] ?? k.replace(/_/g, ' '),
+                label: INDICATORS[k]
+                  ? l(...INDICATORS[k])
+                  : k.replace(/_/g, ' '),
                 value: v,
               }))}
             />
@@ -143,17 +182,30 @@ export const posts: Post[] = [
     id: 'wel-cluster-map',
     domain: 'sweden',
     sources: [
+      'clusters/three-swedens.json',
       'cluster-research/municipalities.json',
       'sweden/similarity/groups.json',
     ],
-    // The group names need both files, and a title reads only the first, so it names none.
-    title: (c: Clusters) => {
-      const n = new Set(c.points.map((p) => p[3])).size
-      return n
-        ? `${c.points.length} municipalities sorted into ${n} groups by twelve indicators`
-        : 'Kinds of municipality'
+    // The title and note read the stability check; the group names need the other two files.
+    title: (s: Swedens) =>
+      l(
+        `${s.grouping.n} municipalities in four descriptive groups by twelve indicators`,
+        `${s.grouping.n} kommuner i fyra beskrivande grupper efter tolv indikatorer`,
+      ),
+    note: (s: Swedens) => {
+      const k4 = s.grouping.candidates['4']
+      const p05 = fixed(k4.bootstrap_ari.p05, 2)
+      const bar = fixed(ARI_P05_BAR, 1)
+      return k4.qualifies
+        ? l(
+            `Municipalities per group; under each name, the towns nearest its centre. The groups pass their pre-registered stability check (bootstrap ARI 5th percentile ${p05}, bar ${bar})`,
+            `Kommuner per grupp; under varje namn orterna närmast gruppens mitt. Grupperna klarar sin förregistrerade stabilitetskontroll (bootstrap-ARI, 5:e percentilen ${p05}, gräns ${bar})`,
+          )
+        : l(
+            `Municipalities per group; under each name, the towns nearest its centre. The groups failed their pre-registered stability check (bootstrap ARI 5th percentile ${p05} < ${bar}), so they describe, not find`,
+            `Kommuner per grupp; under varje namn orterna närmast gruppens mitt. Grupperna klarade inte sin förregistrerade stabilitetskontroll (bootstrap-ARI, 5:e percentilen ${p05} < ${bar}) och är en beskrivning, inget fynd`,
+          )
     },
-    note: 'Municipalities per group, clustered on twelve indicators; under each name, the towns nearest its centre',
     render: () => <GroupSizes />,
   },
   {
@@ -163,8 +215,14 @@ export const posts: Post[] = [
       'cluster-research/municipalities.json',
       'sweden/similarity/groups.json',
     ],
-    title: 'What sets each kind of municipality apart',
-    note: 'Group mean in standard deviations above (+) or below (−) the average municipality',
+    title: [
+      'What sets each kind of municipality apart',
+      'Vad som skiljer varje typ av kommun från de andra',
+    ],
+    note: [
+      'Group mean in standard deviations above (+) or below (−) the average municipality',
+      'Gruppens medelvärde i standardavvikelser över (+) eller under (−) genomsnittskommunen',
+    ],
     render: () => <Profiles />,
   },
 ]

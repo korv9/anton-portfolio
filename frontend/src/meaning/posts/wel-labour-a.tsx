@@ -1,9 +1,10 @@
 /** The labour market and new sick leave, national by month. */
 import { useState } from 'react'
-import { Frame, OTHER, Slicer, focal, useData, type Post } from '../kit'
+import { Frame, OTHER, Slicer, focal, tx, useData, type Post } from '../kit'
 import { EndLabels, XAxis, YAxis } from '../axes'
 import { yearTicks } from '../../charts/scales'
 import { Svg, axis, fmt, month, num, path, pct, scale } from './wel-kit'
+import { l } from '../../i18n'
 
 type Month = {
   month_start: string
@@ -19,14 +20,21 @@ type Month = {
 type Key = keyof Omit<Month, 'month_start'>
 
 /** Each series' direct label; the first of a set is the focal line. */
-const SETS: Record<'unemployment' | 'employment', [Key, string][]> = {
+const SETS: Record<
+  'unemployment' | 'employment',
+  [Key, readonly [string, string]][]
+> = {
   unemployment: [
-    ['unemployment_rate_trend', 'Trend'],
-    ['unemployment_rate_sa', 'Adjusted'],
-    ['unemployment_rate', 'Unadjusted'],
+    ['unemployment_rate_trend', ['Trend', 'Trend']],
+    ['unemployment_rate_sa', ['Adjusted', 'Säsongsrensad']],
+    ['unemployment_rate', ['Unadjusted', 'Ej rensad']],
   ],
-  employment: [['employment_rate_sa', 'Adjusted']],
+  employment: [['employment_rate_sa', ['Adjusted', 'Säsongsrensad']]],
 }
+const MEASURE = {
+  unemployment: ['Unemployment', 'Arbetslöshet'],
+  employment: ['Employment', 'Sysselsättning'],
+} as const
 
 const useMonths = () => useData<Month[]>('welfare/national-month.json')
 
@@ -55,18 +63,26 @@ function UnemploymentLines() {
         return (
           <>
             <Slicer
-              label="Measure"
+              label={l('Measure', 'Mått')}
               options={['unemployment', 'employment'] as const}
+              format={(o) => tx(MEASURE[o])!}
               value={m}
               onChange={setM}
             />
-            <Svg w={600} h={220} label={`Monthly ${m} rate in Sweden, %`}>
+            <Svg
+              w={600}
+              h={220}
+              label={l(
+                `Monthly ${m} rate in Sweden, %`,
+                `${tx(MEASURE[m])} i Sverige per månad, %`,
+              )}
+            >
               <YAxis
                 y={ax.y}
                 ticks={ax.ticks}
                 x0={32}
                 x1={470}
-                format={(v) => `${v}%`}
+                format={(v) => pct(v, 0)}
               />
               {[...set].reverse().map(([k]) => (
                 <path
@@ -91,7 +107,7 @@ function UnemploymentLines() {
                   .filter(([k]) => num(last[k]))
                   .map(([k, label]) => ({
                     y: ax.y(last[k]!),
-                    label: `${label} ${pct(last[k]!)}`,
+                    label: `${l(...label)} ${pct(last[k]!)}`,
                     color: k === set[0][0] ? undefined : 'var(--mean-muted)',
                   }))}
               />
@@ -114,12 +130,15 @@ function UnemploymentLines() {
 
 /** Started cases split into three non-overlapping groups of diagnoses. */
 const CAUSES = [
-  ['Stress-related', (d: Month) => d.started_stress!],
+  [['Stress-related', 'Stressrelaterade'], (d: Month) => d.started_stress!],
   [
-    'Other psychiatric',
+    ['Other psychiatric', 'Övriga psykiatriska'],
     (d: Month) => d.started_psychiatric! - d.started_stress!,
   ],
-  ['Other diagnoses', (d: Month) => d.started_cases! - d.started_psychiatric!],
+  [
+    ['Other diagnoses', 'Övriga diagnoser'],
+    (d: Month) => d.started_cases! - d.started_psychiatric!,
+  ],
 ] as const
 
 function SickLines() {
@@ -147,7 +166,10 @@ function SickLines() {
           <Svg
             w={600}
             h={220}
-            label="New sick-leave cases per month by group of diagnoses, Sweden"
+            label={l(
+              'New sick-leave cases per month by group of diagnoses, Sweden',
+              'Nya sjukfall per månad efter diagnosgrupp, Sverige',
+            )}
           >
             <YAxis
               y={ax.y}
@@ -158,7 +180,7 @@ function SickLines() {
             />
             {CAUSES.map(([name, f], j) => (
               <path
-                key={name}
+                key={name[0]}
                 d={path(r.map((d, i) => [x(i), ax.y(f(d))]))}
                 fill="none"
                 stroke={j === 0 ? focal(true) : OTHER}
@@ -171,7 +193,7 @@ function SickLines() {
               bottom={196}
               items={CAUSES.map(([name, f], j) => ({
                 y: ax.y(f(last)),
-                label: name,
+                label: tx(name)!,
                 color: j ? 'var(--mean-muted)' : undefined,
               }))}
             />
@@ -200,10 +222,19 @@ export const posts: Post[] = [
     title: (rows: Month[]) => {
       const r = rows.filter((d) => num(d.unemployment_rate_trend)).at(-1)
       return r
-        ? `The unemployment trend stood at ${pct(r.unemployment_rate_trend!)} in ${month(r.month_start.slice(0, 7))}`
-        : 'Unemployment in Sweden, by month'
+        ? l(
+            `The unemployment trend stood at ${pct(r.unemployment_rate_trend!)} in ${month(r.month_start.slice(0, 7))}`,
+            `Arbetslöshetens trend låg på ${pct(r.unemployment_rate_trend!)} i ${month(r.month_start.slice(0, 7))}`,
+          )
+        : l(
+            'Unemployment in Sweden, by month',
+            'Arbetslösheten i Sverige per månad',
+          )
     },
-    note: 'Monthly, ages 15–74; adjusted means seasonally adjusted. Source: SCB Labour Force Survey',
+    note: [
+      'Monthly, ages 15–74; adjusted means seasonally adjusted. Source: SCB Labour Force Survey',
+      'Per månad, 15–74 år. Källa: SCB:s arbetskraftsundersökningar (AKU)',
+    ],
     render: () => <UnemploymentLines />,
   },
   {
@@ -211,8 +242,14 @@ export const posts: Post[] = [
     domain: 'welfare',
     sources: ['welfare/national-month.json'],
     size: 'wide',
-    title: 'New sick-leave cases per month, by group of diagnoses',
-    note: 'Cases started per month; the peak is March 2020, as covid-19 arrived. Source: Försäkringskassan',
+    title: [
+      'New sick-leave cases per month, by group of diagnoses',
+      'Nya sjukfall per månad, efter diagnosgrupp',
+    ],
+    note: [
+      'Cases started per month; the peak is March 2020, as covid-19 arrived. Source: Försäkringskassan',
+      'Påbörjade fall per månad; toppen är mars 2020, när covid-19 kom. Källa: Försäkringskassan',
+    ],
     render: () => <SickLines />,
   },
 ]

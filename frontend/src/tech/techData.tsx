@@ -41,6 +41,6 @@ export const reading = (
     className="tech-note"
     role="status"
     aria-busy="true"
-    aria-label="Loading"
+    aria-label={l('Loading', 'Laddar')}
   />
 )

@@ -134,7 +134,6 @@
 /* Depth: folded until asked for. */
 .explore-section {
   margin: var(--sp-5) 0;
-  border-top: 1px solid var(--line-strong);
 }
 .explore-section > h2 {
   margin: 0;

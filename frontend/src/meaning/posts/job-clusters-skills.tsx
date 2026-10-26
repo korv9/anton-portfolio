@@ -1,7 +1,9 @@
 /** Jobs: the tech-ad clustering run, from cluster-summary.json and cluster-preview.json. */
 import { useState } from 'react'
 import { focal, Frame, Slicer, useData, type Post } from '../kit'
-import { Bars, CLUSTERS, D, fmt } from './job-kit'
+import { Bars, clusterLabel, CLUSTERS, D, fmt } from './job-kit'
+import { l } from '../../i18n'
+import { fixed } from '../../format'
 
 type Cluster = {
   cluster_id: number
@@ -10,7 +12,7 @@ type Cluster = {
 }
 type Summary = { clusters: Cluster[] }
 
-const name = (c: Cluster) => `#${c.cluster_id} ${c.cluster_label}`
+const name = (c: Cluster) => `#${c.cluster_id} ${clusterLabel(c.cluster_label)}`
 const topLift = (c: Cluster) => Math.max(0, ...c.top_skills.map((k) => k.lift))
 /** Real clusters, the one with the most distinctive skill first: it opens the post. */
 const ranked = (s: Summary) =>
@@ -30,7 +32,7 @@ function Skills() {
         return (
           <>
             <Slicer
-              label="Cluster"
+              label={l('Cluster', 'Kluster')}
               options={cs.map((k) => k.cluster_id)}
               format={(id) => {
                 const k = cs.find((x) => x.cluster_id === id)
@@ -41,8 +43,11 @@ function Skills() {
             />
             <p className="mean-cap">{name(c)}</p>
             <Bars
-              label={`Most distinctive skills in cluster ${name(c)}, by lift`}
-              format={(v) => `${v.toFixed(1)}×`}
+              label={l(
+                `Most distinctive skills in cluster ${name(c)}, by lift`,
+                `Mest utmärkande kompetenser i kluster ${name(c)}, efter lyft`,
+              )}
+              format={(v) => `${fixed(v, 1)}×`}
               rows={[...c.top_skills]
                 .sort((a, b) => b.lift - a.lift)
                 .map((r, j) => ({
@@ -51,7 +56,7 @@ function Skills() {
                   value: r.lift,
                   color: focal(j === 0),
                   ref: 1,
-                  note: `${fmt(r.count)} ads`,
+                  note: `${fmt(r.count)} ${l('ads', 'annonser')}`,
                 }))}
             />
           </>
@@ -70,10 +75,19 @@ export const posts: Post[] = [
       const c = ranked(s)[0]
       const k = c && [...c.top_skills].sort((a, b) => b.lift - a.lift)[0]
       return c && k
-        ? `${k.skill} is ${k.lift.toFixed(0)} times as common in ${c.cluster_label} ads as in all tech ads`
-        : 'Skills that set each cluster apart'
+        ? l(
+            `${k.skill} is ${k.lift.toFixed(0)} times as common in ${c.cluster_label} ads as in all tech ads`,
+            `${k.skill} är ${k.lift.toFixed(0)} gånger så vanligt i annonser inom ${clusterLabel(c.cluster_label)} som i alla techannonser`,
+          )
+        : l(
+            'Skills that set each cluster apart',
+            'Kompetenser som skiljer ut varje kluster',
+          )
     },
-    note: 'Lift: how much more often a skill appears in the cluster than in all tech ads; the tick marks 1×',
+    note: [
+      'Lift: how much more often a skill appears in the cluster than in all tech ads; the tick marks 1×',
+      'Lyft: hur mycket oftare en kompetens förekommer i klustret än i alla techannonser; strecket markerar 1×',
+    ],
     render: () => <Skills />,
   },
 ]

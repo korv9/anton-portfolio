@@ -272,7 +272,15 @@ export const PROJECTS: ProjectEntry[] = [
       'Varje citat i ett svar kontrolleras mot sin paragraf innan svaret visas. Ett svar som inte klarar kontrollen visas inte, bara de hittade paragraferna.',
       'Every quote in an answer is checked against its paragraph before the answer is shown. An answer that fails the check is withheld, and only the paragraphs found are shown.',
     ),
-    tech: ['Cloudflare Workers AI', 'bge-m3', 'TypeScript', 'React', 'Python'],
+    tech: [
+      'Cloudflare Workers AI',
+      'Gemma 4',
+      'bge-m3',
+      'PCA + int8',
+      'TypeScript',
+      'React',
+      'Python',
+    ],
     href: '#fraga-lagen',
     category: 'ai',
     status: 'experimental',
@@ -282,7 +290,10 @@ export const PROJECTS: ProjectEntry[] = [
   {
     id: 'drugcomb',
     title: t('Drug Synergy Lab', 'Drug Synergy Lab'),
-    descriptor: t('Multimodal maskininlärning', 'Multimodal machine learning'),
+    descriptor: t(
+      'LightGBM på läkemedels-, RNA- och cellinjedata',
+      'LightGBM on drug, RNA and cell-line features',
+    ),
     summary: t(
       'Molekylfingeravtryck, RNA-uttryck och cellinjedata kombinerade för att förutsäga synergi, med skydd mot dataläckage.',
       'Drug fingerprints, RNA expression and cell-line data combined to predict synergy, with leakage prevention.',
