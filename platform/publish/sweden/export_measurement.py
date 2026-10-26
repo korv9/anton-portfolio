@@ -61,7 +61,7 @@ def sensitivity(con) -> dict:
     per_domain = {r["domain"]: r for r in rows(con, """
         select keyword_domain as domain, count(*) filter (where catalogue = 'scb') as scb,
                count(*) filter (where catalogue = 'kolada') as kolada
-        from keyword_hits group by all""")}
+        from keyword_hits group by all order by 1""")}
     status = rows(con, """
         select coalesce(st, 'unmatched') as status, count(*) as n
         from gold.mart_sweden_measurement_items i
@@ -98,7 +98,7 @@ def elsewhere(con) -> list[dict]:
         from seeds.other_agencies a
         left join gold.mart_sweden_measurement_items i
                on regexp_matches(lower(i.institution), a.pattern)
-        group by all order by a.agency, items desc""")
+        group by all order by a.agency, items desc, i.domain_id""")
     out: dict[str, dict] = {}
     for r in found:
         a = out.setdefault(r["agency"], {"agency": r["agency"], "holds": r["holds"], "items": 0,
